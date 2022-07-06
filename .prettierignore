@@ -1,0 +1,7 @@
+dist/
+build/
+node_modules/
+package.json
+coverage/
+*.md
+e2e/dist/

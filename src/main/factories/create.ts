@@ -1,7 +1,8 @@
 import { BrowserWindow } from 'electron';
-import { ENVIRONMENT } from 'shared/constants';
-import { WindowProps } from 'shared/types';
-import { APP_CONFIG } from '~/app.config';
+
+import { ENVIRONMENT } from '../../shared/constants';
+import { WindowProps } from '../../shared/types';
+import { APP_CONFIG } from '../../../app.config';
 
 export function createWindow({ id, ...settings }: WindowProps) {
   const window = new BrowserWindow(settings);

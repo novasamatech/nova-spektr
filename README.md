@@ -16,6 +16,7 @@ Polkadot & Kusama ecosystem Enterprise Desktop application.
 ### Requirements
 
 Minimum version of `Node.js` is `v16.x`.
+
 Minimum version of `pnpm` is `v7.x`.
 
 ## Install dependencies
@@ -31,7 +32,7 @@ pnpm install
 Start the app in the `dev` environment with hot-reload:
 
 ```bash
-yarn start
+pnpm start
 ```
 
 ## Packaging for production
@@ -39,5 +40,7 @@ yarn start
 To package app for the local platform:
 
 ```bash
-yarn package
+yarn build
+yarn postbuild
+yarn dist
 ```
