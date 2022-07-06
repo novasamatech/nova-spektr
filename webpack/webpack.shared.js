@@ -13,7 +13,8 @@ exports.sharedOptions = {
     hints: false,
   },
 
-  devtool: isDev ? 'eval-source-map' : 'source-map',
+  devtool: 'source-map',
+  // devtool: isDev ? 'eval-source-map' : 'source-map',
 
   resolve: {
     extensions: ['.tsx', '.ts', '.js', '.jsx'],
