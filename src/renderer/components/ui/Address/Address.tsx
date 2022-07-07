@@ -2,7 +2,7 @@
 /* eslint-disable jsx-a11y/label-has-associated-control */
 import Identicon from '@polkadot/react-identicon';
 import cn from 'classnames';
-import { toShortText } from '../../utils/strings';
+import { toShortText } from '../../../utils/strings';
 
 interface Props {
   address: string;

@@ -1,4 +1,4 @@
-import React, { InputHTMLAttributes } from 'react';
+import { InputHTMLAttributes } from 'react';
 import cn from 'classnames';
 import './checkbox.css';
 
@@ -6,7 +6,7 @@ interface Props extends InputHTMLAttributes<HTMLInputElement> {
   label?: string;
 }
 
-const Checkbox: React.FC<Props> = ({ label, checked, disabled, className, onChange }) => {
+const Checkbox = ({ label, checked, disabled, className, onChange }: Props) => {
   return (
     <div className={cn({ 'hover:cursor-pointer': disabled }, className)}>
       <label className="flex items-center">

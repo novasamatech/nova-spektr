@@ -1,6 +1,6 @@
-import React, { useState, InputHTMLAttributes } from 'react';
 import { Switch as HeadlessSwitch } from '@headlessui/react';
 import cn from 'classnames';
+import { noop } from 'lodash';
 
 interface Props {
   label?: string;
@@ -10,7 +10,7 @@ interface Props {
   onChange?: (checked: boolean) => void;
 }
 
-const Switch: React.FC<Props> = ({ label, checked = false, disabled, className, onChange = () => {} }) => {
+const Switch = ({ label, checked = false, disabled, className, onChange = noop }: Props) => {
   return (
     <HeadlessSwitch.Group>
       <div className="flex items-center">
