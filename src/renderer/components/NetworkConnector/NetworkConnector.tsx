@@ -1,10 +1,14 @@
 import { useEffect, useState } from 'react';
 import { ApiPromise, WsProvider } from '@polkadot/api';
 import type { ProviderInterface } from '@polkadot/rpc-provider/types';
-import { ScProvider } from '@polkadot/rpc-provider/substrate-connect';
+import { ScProvider, WellKnownChain } from '@polkadot/rpc-provider/substrate-connect';
 
-import statemine from './statemine.json';
-import westmint from './westmint.json';
+import chains from './chains.json';
+import westmint from './chainSpecs/westend-westmint.json';
+import statemine from './chainSpecs/kusama-statemine.json';
+import karura from './chainSpecs/kusama-karura.json';
+import acala from './chainSpecs/polkadot-acala.json';
+import statemint from './chainSpecs/polkadot-statemint.json';
 
 type HexString = `0x${string}`;
 type ChainMap = Record<HexString, any>;
@@ -16,23 +20,37 @@ export const enum ActiveType {
   EXTERNAL_NODE = 'externalNode',
 }
 
-const KnownChainSpecs: Record<string, string> = {
+const ChainSpecs: Record<string, string> = {
   Statemine: JSON.stringify(statemine),
   Westmint: JSON.stringify(westmint),
+  Karura: JSON.stringify(karura),
+  Acala: JSON.stringify(acala),
+  Statemint: JSON.stringify(statemint),
+};
+
+const RelayChainIds: Record<string, string> = {
+  b0a8d493285c2df73290dfb7e61f870f17b41801197a149ca93654499ea3dafe: 'Kusama',
+  '91b171bb158e2d3848fa23a9f1c25182fb8e20313b2c1eb49219da7a70ce90c3': 'Polkadot',
+  e143f23803ac50e8f6f8e62695d1ce9e4e1d68aa36c1cd2cfd15340213f3423e: 'Westend',
 };
 
 const KnownChains: Record<string, string> = {
-  Kusama: 'ksmcc3',
-  Polkadot: 'polkadot',
-  Westend: 'westend2',
+  Kusama: WellKnownChain.ksmcc3,
+  Polkadot: WellKnownChain.polkadot,
+  Westend: WellKnownChain.westend2,
+  Rococo: WellKnownChain.rococo_v2_2,
 };
 
-export function getKnownChainId(chainId: string): string | undefined {
-  return KnownChains[chainId];
+export function getKnownChainName(chainId: string): string {
+  return RelayChainIds[chainId] || '';
+}
+
+export function getKnownChainId(chainId: string): string {
+  return KnownChains[chainId] || '';
 }
 
 export function getChainSpec(name: string): string {
-  return KnownChainSpecs[name] || '';
+  return ChainSpecs[name] || '';
 }
 
 const CONFIG_API = 'https://raw.githubusercontent.com/nova-wallet/nova-utils/master/chains/v3/chains_dev.json';
@@ -47,10 +65,23 @@ export const createConnection = async (network: any): Promise<ApiPromise | undef
       provider = new ScProvider(chainId);
       await provider.connect();
     } else {
-      const chainSpec = getChainSpec(network.chainId);
+      const chainSpec = getChainSpec(network.name);
+
       if (chainSpec) {
-        provider = new ScProvider(chainSpec);
+        if (network.parentId) {
+          const parentName = getKnownChainName(network.parentId);
+          const parentId = getKnownChainId(parentName);
+          const relayProvider = new ScProvider(parentId);
+
+          console.log(parentName, parentId, relayProvider);
+          provider = new ScProvider(chainSpec, relayProvider);
+        } else {
+          provider = new ScProvider(chainSpec);
+        }
+
         await provider.connect();
+      } else {
+        console.error('No chain spec found for', network.name);
       }
     }
   } else if (network.activeType === ActiveType.EXTERNAL_NODE) {
@@ -64,9 +95,9 @@ export const createConnection = async (network: any): Promise<ApiPromise | undef
 };
 
 async function getChains(): Promise<any[]> {
-  const chains = await fetch(CONFIG_API);
-
-  return chains.json();
+  // const chains = await fetch(CONFIG_API);
+  // return chains.json();
+  return chains;
 }
 
 // @ts-ignore
