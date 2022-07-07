@@ -227,15 +227,12 @@
         "name": "Parity node"
       }
     ],
-    "explorers": [
-    ],
+    "explorers": [],
     "color": "linear-gradient(315deg, #6f36dc 0%, #6f36dc 100%)",
     "icon": "https://raw.githubusercontent.com/nova-wallet/nova-utils/master/icons/chains/white/Westend.svg",
     "addressPrefix": 42,
-    "types": {
-    },
-    "externalApi": {
-    },
+    "types": {},
+    "externalApi": {},
     "options": ["testnet"]
   },
 
@@ -992,5 +989,54 @@
     "color": "linear-gradient(97.21deg, #E40C5B 0%, #645AFD 100%)",
     "icon": "https://raw.githubusercontent.com/nova-wallet/nova-utils/master/icons/chains/white/Acala.svg",
     "addressPrefix": 10
+  },
+  {
+    "chainId": "68d56f15f85d3136970ec16946040bc1752654e906147f7e43e9d539d7c3de2f",
+    "parentId": "91b171bb158e2d3848fa23a9f1c25182fb8e20313b2c1eb49219da7a70ce90c3",
+    "name": "Statemint",
+    "assets": [
+      {
+        "assetId": 0,
+        "symbol": "DOT",
+        "precision": 10,
+        "priceId": "polkadot",
+        "icon": "https://raw.githubusercontent.com/nova-wallet/nova-utils/master/icons/chains/white/Polkadot.svg"
+      }
+    ],
+    "nodes": [
+      {
+        "url": "wss://statemint-rpc.polkadot.io",
+        "name": "Parity node"
+      },
+      {
+        "url": "wss://statemint.api.onfinality.io/public-ws",
+        "name": "OnFinality node"
+      },
+      {
+        "url": "wss://statemint-rpc.dwellir.com",
+        "name": "Dwellir node"
+      }
+    ],
+    "explorers": [
+      {
+        "name": "Statescan",
+        "account": "https://statemint.statescan.io/account/{address}",
+        "extrinsic": "https://statemint.statescan.io/extrinsic/{hash}",
+        "event": "https://statemint.statescan.io/event/{event}"
+      }
+    ],
+    "types": {
+      "url": "https://raw.githubusercontent.com/nova-wallet/nova-utils/master/chains/v2/types/statemine.json",
+      "overridesCommon": true
+    },
+    "externalApi": {
+      "history": {
+        "type": "subquery",
+        "url": "https://api.subquery.network/sq/nova-wallet/nova-wallet-statemint"
+      }
+    },
+    "color": "linear-gradient(315deg, #23371A 0%, #89C62D 75%, #D43079 75.01%)",
+    "icon": "https://raw.githubusercontent.com/nova-wallet/nova-utils/master/icons/chains/white/Statemine-Statemint.svg",
+    "addressPrefix": 0
   }
 ]

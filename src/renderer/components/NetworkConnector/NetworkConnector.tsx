@@ -8,6 +8,7 @@ import westmint from './chainSpecs/westend-westmint.json';
 import statemine from './chainSpecs/kusama-statemine.json';
 import karura from './chainSpecs/kusama-karura.json';
 import acala from './chainSpecs/polkadot-acala.json';
+import statemint from './chainSpecs/polkadot-statemint.json';
 
 type HexString = `0x${string}`;
 type ChainMap = Record<HexString, any>;
@@ -24,6 +25,7 @@ const ChainSpecs: Record<string, string> = {
   Westmint: JSON.stringify(westmint),
   Karura: JSON.stringify(karura),
   Acala: JSON.stringify(acala),
+  Statemint: JSON.stringify(statemint),
 };
 
 const RelayChainIds: Record<string, string> = {
@@ -69,15 +71,15 @@ export const createConnection = async (network: any): Promise<ApiPromise | undef
         if (network.parentId) {
           const parentName = getKnownChainName(network.parentId);
           const parentId = getKnownChainId(parentName);
-          console.log(parentName, parentId);
           const relayProvider = new ScProvider(parentId);
 
+          console.log(parentName, parentId, relayProvider);
           provider = new ScProvider(chainSpec, relayProvider);
         } else {
           provider = new ScProvider(chainSpec);
         }
 
-         await provider.connect();
+        await provider.connect();
       } else {
         console.error('No chain spec found for', network.name);
       }
