@@ -1,9 +1,9 @@
 import { render, screen } from '@testing-library/react';
 
 import Main from '../Main';
-import { useI18n } from '@context/I18Context';
+import { useI18n } from '@renderer/context/I18Context';
 
-jest.mock('@context/I18Context', () => ({
+jest.mock('@renderer/context/I18Context', () => ({
   useI18n: jest.fn(),
 }));
 

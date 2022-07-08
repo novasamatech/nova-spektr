@@ -1,8 +1,8 @@
 import i18n from 'i18next';
 import { initReactI18next } from 'react-i18next';
 
-import enLocale from '#shared/locale/en.json';
-import ruLocale from '#shared/locale/ru.json';
+import enLocale from '@shared/locale/en.json';
+import ruLocale from '@shared/locale/ru.json';
 
 export type SupportedLocales = 'en' | 'ru' | 'hu';
 

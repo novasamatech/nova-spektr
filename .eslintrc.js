@@ -31,15 +31,10 @@ module.exports = {
     'import/resolver': {
       alias: {
         map: [
-          ['#', './src/'],
-          ['#main', './src/main/'],
-          ['#shared', './src/shared/'],
-
-          ['@', './src/renderer/'],
-          ['@components', './src/renderer/components/'],
-          ['@assets', './src/renderer/assets/'],
-          ['@context', './src/renderer/context/'],
-          ['@screens', './src/renderer/screens/'],
+          ['@', './src/'],
+          ['@main', './src/main/'],
+          ['@shared', './src/shared/'],
+          ['@renderer', './src/renderer/'],
         ],
         extensions: ['.js', '.jsx', '.ts', '.tsx', 'json'],
       },

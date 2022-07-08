@@ -40,7 +40,7 @@ pnpm start
 To package app for the local platform:
 
 ```bash
-yarn build
-yarn postbuild
-yarn dist
+pnpm build
+pnpm postbuild
+pnpm dist
 ```
