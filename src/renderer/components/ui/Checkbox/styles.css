@@ -1,0 +1,9 @@
+input[type="checkbox"]:checked::before {
+  content: '✓';
+  color: white;
+  display: block;
+  width: 100%;
+  line-height: 20px;
+  font-weight: bold;
+  text-align: center;
+}

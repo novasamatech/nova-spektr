@@ -1,7 +1,7 @@
 import { useRoutes } from 'react-router-dom';
 
 // import NetworkConnector from './components/NetworkConnector';
-import I18Provider from '@context/I18Context';
+import I18Provider from '@renderer/context/I18Context';
 import routesConfig from './routes';
 
 const App = () => {

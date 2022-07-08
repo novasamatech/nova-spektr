@@ -2,7 +2,7 @@ import { createContext, PropsWithChildren, useContext } from 'react';
 import type { TFunction } from 'react-i18next';
 import { useTranslation } from 'react-i18next';
 
-import { SupportedLocales } from '@/i18n';
+import { SupportedLocales } from '@renderer/i18n';
 
 type I18ContextProps = {
   t: TFunction<'translation'>;

@@ -1,4 +1,4 @@
-import { useI18n } from '@context/I18Context';
+import { useI18n } from '@renderer/context/I18Context';
 
 const Main = () => {
   const { t, onLocaleChange } = useI18n();

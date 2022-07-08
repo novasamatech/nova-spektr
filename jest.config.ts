@@ -17,21 +17,18 @@ const config: Config = {
     '^.+\\.tsx?$': '@swc/jest',
   },
   moduleNameMapper: {
-    '^#(.*)$': '<rootDir>/src$1',
-    '^#main(.*)$': '<rootDir>/src/main$1',
-    '^#shared(.*)$': '<rootDir>/src/shared$1',
-
-    '^@components(.*)$': '<rootDir>/src/renderer/components$1',
-    '^@assets(.*)$': '<rootDir>/src/renderer/assets$1',
-    '^@context(.*)$': '<rootDir>/src/renderer/context$1',
-    '^@screens(.*)$': '<rootDir>/src/renderer/screens$1',
+    // '^@(.*)$': '<rootDir>/src$1',
+    '^@main(.*)$': '<rootDir>/src/main$1',
+    '^@shared(.*)$': '<rootDir>/src/shared$1',
+    '^@renderer(.*)$': '<rootDir>/src/renderer$1',
+    '\\.(css|less|scss|sass)$': 'identity-obj-proxy',
   },
   collectCoverageFrom: [
     'src/renderer/**/*.{js,jsx,ts,tsx}',
     '!src/main/',
     '!src/shared/',
     '!src/scripts/',
-    '!src/renderer/**/*.stories.{js,jsx,ts,tsx}',
+    '!src/stories/stories/**/*.{js,jsx,ts,tsx}',
     '!<rootDir>/node_modules/',
   ],
 };
