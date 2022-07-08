@@ -1,4 +1,5 @@
 {
+  "extends": "./tsconfig.paths.json",
   "compilerOptions": {
     "strict": true,
     "target": "esnext",
@@ -16,24 +17,8 @@
     "allowSyntheticDefaultImports": true,
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
-    "noEmit": true,
-    "baseUrl": ".",
-    "typeRoots": ["./node_modules/@types"],
-    "paths": {
-      "~": ["./*"],
-      "#": ["./src/*"],
-      "#main": ["./src/shared/*"],
-      "#shared": ["./src/shared/*"],
-      "@": ["./src/renderer/*"],
-      "@components": ["./src/renderer/components/*"],
-      "@assets": ["./src/renderer/assets/*"],
-    }
+    "noEmit": true
   },
-  "include": [
-    "src",
-    "globals.d.ts",
-  ],
-  "exclude": [
-    "node_modules"
-  ],
+  "include": ["src", "globals.d.ts"],
+  "exclude": ["node_modules"]
 }

@@ -29,7 +29,7 @@ exports.APP_CONFIG = {
     },
 
     INDEX_HTML: 'src/renderer/index.html',
-    RESOURCES: 'src/resources',
+    RESOURCES: 'src/main/resources',
     DEV_TEMP_BUILD: devBuild,
   },
 };

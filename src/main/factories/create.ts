@@ -1,7 +1,7 @@
 import { BrowserWindow } from 'electron';
 
-import { ENVIRONMENT } from '../../shared/constants';
-import { WindowProps } from '../../shared/types';
+import { ENVIRONMENT } from '#shared/constants';
+import { WindowProps } from '#shared/types';
 import { APP_CONFIG } from '../../../app.config';
 
 export function createWindow({ id, ...settings }: WindowProps) {

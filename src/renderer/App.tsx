@@ -1,6 +1,7 @@
 import { useRoutes } from 'react-router-dom';
 
-import NetworkConnector from './components/NetworkConnector';
+// import NetworkConnector from './components/NetworkConnector';
+import I18Provider from '@context/I18Context';
 import routesConfig from './routes';
 
 const App = () => {
@@ -8,8 +9,8 @@ const App = () => {
 
   return (
     <>
-      <NetworkConnector />
-      {appRoutes}
+      {/*<NetworkConnector />*/}
+      <I18Provider>{appRoutes}</I18Provider>
     </>
   );
 };

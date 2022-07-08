@@ -1,3 +1,4 @@
+// Default configuration: https://swc.rs/docs/configuration/swcrc
 {
   "sourceMaps": true,
   "jsc": {

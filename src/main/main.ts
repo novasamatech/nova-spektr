@@ -1,7 +1,7 @@
 import { BrowserWindow } from 'electron';
 import { join } from 'path';
 
-import { ENVIRONMENT } from '../shared/constants';
+import { ENVIRONMENT } from '#shared/constants';
 import { APP_CONFIG } from '../../app.config';
 import { createWindow } from './factories/create';
 

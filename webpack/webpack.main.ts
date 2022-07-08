@@ -1,14 +1,15 @@
-const { resolve } = require('path');
+import { Configuration } from 'webpack';
+import { resolve } from 'path';
 
-const { sharedOptions } = require('./webpack.shared');
-const { APP_CONFIG } = require('../app.config');
+import sharedConfig from './webpack.shared';
+import { APP_CONFIG } from '../app.config';
 
 const { FOLDERS } = APP_CONFIG;
 
-module.exports = {
+const config: Configuration = {
   target: 'electron-main',
 
-  ...sharedOptions,
+  ...sharedConfig,
 
   entry: {
     main: resolve(FOLDERS.ENTRY_POINTS.MAIN),
@@ -20,3 +21,5 @@ module.exports = {
     filename: '[name].js',
   },
 };
+
+export default config;

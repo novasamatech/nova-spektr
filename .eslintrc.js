@@ -12,11 +12,11 @@ module.exports = {
   },
   extends: [
     'eslint:recommended',
-    'prettier',
     'plugin:jest-dom/recommended',
     'plugin:import/recommended',
     'plugin:import/errors',
     'plugin:import/warnings',
+    'prettier',
   ],
   parser: '@typescript-eslint/parser',
   parserOptions: {
@@ -29,9 +29,23 @@ module.exports = {
   plugins: ['@typescript-eslint', 'prettier', 'testing-library', 'import', 'jest-dom'],
   settings: {
     'import/resolver': {
+      alias: {
+        map: [
+          ['#', './src/'],
+          ['#main', './src/main/'],
+          ['#shared', './src/shared/'],
+
+          ['@', './src/renderer/'],
+          ['@components', './src/renderer/components/'],
+          ['@assets', './src/renderer/assets/'],
+          ['@context', './src/renderer/context/'],
+          ['@screens', './src/renderer/screens/'],
+        ],
+        extensions: ['.js', '.jsx', '.ts', '.tsx', 'json'],
+      },
+      typescript: {},
       node: {
-        extensions: ['.ts', '.tsx', '.js', '.jsx'],
-        moduleDirectory: ['node_modules', 'src'],
+        extensions: ['.js', '.jsx', '.ts', '.tsx'],
       },
     },
   },
@@ -52,4 +66,5 @@ module.exports = {
     '@typescript-eslint/no-empty-interface': 0,
     'prettier/prettier': ['error', prettierOptions],
   },
+  ignorePatterns: ['e2e/', 'node_modules/', 'dist/'],
 };
