@@ -1,0 +1,5 @@
+{
+  "src/**/*.{ts,js,tsx,jsx,json}": ["prettier --write", "eslint --fix"],
+  "webpack/**/*.{ts,js,json}": ["prettier --write", "eslint --fix"],
+  "*.{json,js,ts,md,yaml}": ["prettier --write"]
+}

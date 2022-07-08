@@ -11,20 +11,23 @@
   "scripts": {
     "start": "pnpm clean:dev && concurrently \"pnpm start:renderer\" \"pnpm start:main\" && watch",
     "start:electron": "electron .",
-    "start:renderer": "cross-env BROWSER=none NODE_ENV=development pnpm webpack:serve",
+    "start:renderer": "cross-env NODE_ENV=development pnpm webpack:serve",
     "start:main": "cross-env NODE_ENV=development pnpm r webpack:main start:electron",
-    "watch": "nodemon --watch src/main --watch src/renderer/bridge --watch src/shared --ignore src/resources --ext \"*\" --exec",
-    "webpack:serve": "webpack serve --config webpack/webpack.renderer.js",
-    "webpack:main": "webpack --config webpack/webpack.main.js",
-    "webpack:renderer": "webpack --config webpack/webpack.renderer.js",
-    "test": "craco test",
-    "test:coverage": "pnpm test --coverage --passWithNoTests --watchAll=false",
+    "watch": "nodemon --watch src/main --watch src/renderer/bridge --watch src/shared --ignore src/main/resources --ext \\\"*\\\" --exec",
+    "webpack:serve": "webpack serve --config webpack/webpack.renderer.ts",
+    "webpack:main": "webpack --config webpack/webpack.main.ts",
+    "webpack:renderer": "webpack --config webpack/webpack.renderer.ts",
     "build": "cross-env NODE_ENV=production pnpm r clean:prod webpack:renderer webpack:main",
-    "postbuild": "node src/scripts/postbuild.js",
-    "dist": "./node_modules/.bin/electron-builder",
-    "lint": "cross-env NODE_ENV=development eslint . --cache --ext .js,.jsx,.ts,.tsx",
+    "postbuild": "node scripts/postbuild.js",
+    "dist": "electron-builder",
     "clean:dev": "cross-var \"rimraf $npm_package_devBuild\"",
     "clean:prod": "rimraf dist",
+    "test": "jest --config=jest.config.js",
+    "test:coverage": "yarn test --coverage --passWithNoTests --watchAll=false",
+    "lint": "cross-env NODE_ENV=production eslint . --ext=ts,tsx,js,jsx",
+    "lint:fix": "pnpm lint --fix",
+    "githook:pre-commit": "cross-env NODE_ENV=production lint-staged && tsc",
+    "githook:pre-push": "cross-env pnpm test:coverage",
     "r": "pnpm run-s"
   },
   "engines": {
@@ -34,8 +37,11 @@
   "dependencies": {
     "@polkadot/api": "^8.11.2",
     "@polkadot/rpc-provider": "^8.11.2",
+    "i18next": "^21.8.13",
+    "lodash": "^4.17.21",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
+    "react-i18next": "^11.18.0",
     "react-router-dom": "^6.3.0",
     "tailwindcss": "^3.1.4"
   },
@@ -52,9 +58,11 @@
     "@testing-library/react-hooks": "^8.0.1",
     "@testing-library/user-event": "^14.2.1",
     "@types/jest": "^28.1.4",
+    "@types/lodash": "^4.14.182",
     "@types/node": "^18.0.0",
     "@types/react": "^18.0.14",
     "@types/react-dom": "^18.0.5",
+    "@types/testing-library__jest-dom": "^5.14.5",
     "@typescript-eslint/eslint-plugin": "^5.30.4",
     "@typescript-eslint/parser": "^5.30.4",
     "autoprefixer": "^10.4.7",
@@ -69,6 +77,7 @@
     "electron-react-devtools": "^0.5.3",
     "eslint": "^8.19.0",
     "eslint-config-prettier": "^8.5.0",
+    "eslint-import-resolver-alias": "^1.1.2",
     "eslint-plugin-import": "^2.26.0",
     "eslint-plugin-jest-dom": "^4.0.2",
     "eslint-plugin-jsx-a11y": "^6.6.0",
@@ -76,6 +85,7 @@
     "eslint-plugin-prettier": "^4.2.1",
     "eslint-plugin-testing-library": "^5.5.1",
     "html-webpack-plugin": "^5.5.0",
+    "husky": "^8.0.0",
     "jest": "^28.1.2",
     "jest-environment-jsdom": "^28.1.2",
     "lint-staged": "^13.0.3",
@@ -90,19 +100,13 @@
     "semver": "^7.3.7",
     "simple-progress-webpack-plugin": "^2.0.0",
     "style-loader": "^3.3.1",
+    "suppress-exit-code": "^1.0.0",
     "swc-loader": "^0.2.3",
+    "ts-node": "^10.8.2",
     "tsconfig-paths-webpack-plugin": "^3.5.2",
     "typescript": "^4.7.4",
     "webpack": "^5.73.0",
     "webpack-cli": "^4.10.0",
     "webpack-dev-server": "^4.9.3"
-  },
-  "lint-staged": {
-    "*.{js,ts}": [
-      "eslint --quiet --fix"
-    ]
-  },
-  "eslintIgnore": [
-    "dist"
-  ]
+  }
 }

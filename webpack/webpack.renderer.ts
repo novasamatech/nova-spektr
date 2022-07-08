@@ -1,25 +1,25 @@
-const ReactRefreshWebpackPlugin = require('@pmmmwh/react-refresh-webpack-plugin');
-const HTMLWebpackPlugin = require('html-webpack-plugin');
-const CopyWebpackPlugin = require('copy-webpack-plugin');
-const webpack = require('webpack');
-const { resolve } = require('path');
+/* eslint-disable import/default */
+import webpack from 'webpack';
+import { resolve } from 'path';
+import HTMLWebpackPlugin from 'html-webpack-plugin';
+import CopyPlugin from 'copy-webpack-plugin';
+import ReactRefreshWebpackPlugin from '@pmmmwh/react-refresh-webpack-plugin';
 
-const { sharedOptions } = require('./webpack.shared');
-const { isDev } = require('./utils');
-const { APP_CONFIG } = require('../app.config');
+import { isDev } from './utils';
+import sharedConfig from './webpack.shared';
+import { APP_CONFIG } from '../app.config';
 
 const { FOLDERS, RENDERER } = APP_CONFIG;
 
-module.exports = {
+const config = {
   target: 'web',
   entry: resolve(FOLDERS.ENTRY_POINTS.RENDERER),
 
-  ...sharedOptions,
+  ...sharedConfig,
 
   resolve: {
-    ...sharedOptions.resolve,
+    ...sharedConfig.resolve,
     alias: {
-      ...sharedOptions.resolve.alias,
       react: resolve('node_modules', 'react'),
     },
   },
@@ -41,7 +41,7 @@ module.exports = {
 
   module: {
     rules: [
-      ...sharedOptions.module.rules,
+      ...(sharedConfig.module?.rules || []),
 
       {
         test: /\.[jt]sx?$/,
@@ -69,7 +69,7 @@ module.exports = {
       },
 
       {
-        test: /\.(woff2|png|jpe?g|gif|webp)$/,
+        test: /\.(woff2|png|jpeg|gif|webp)$/,
         type: 'asset/resource',
       },
 
@@ -82,11 +82,11 @@ module.exports = {
   },
 
   plugins: [
-    ...sharedOptions.plugins,
+    ...(sharedConfig.plugins || []),
 
     isDev && new ReactRefreshWebpackPlugin(),
 
-    new CopyWebpackPlugin({
+    new CopyPlugin({
       patterns: [
         {
           from: resolve(FOLDERS.RESOURCES),
@@ -110,3 +110,5 @@ module.exports = {
     // }),
   ].filter(Boolean),
 };
+
+export default config;
