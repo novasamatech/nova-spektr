@@ -1,18 +1,23 @@
-const { writeFile } = require('fs/promises');
 const { resolve } = require('path');
+const { writeFile } = require('fs/promises');
 
 const packageJSON = require('../package.json');
+const { APP_CONFIG } = require('../app.config');
 
 async function createPackageJSONDistVersion() {
-  const { main, devBuild, scripts, dependencies, devDependencies, ...restOfPackageJSON } = packageJSON;
+  const { main, scripts, dependencies, devDependencies, ...restOfPackageJSON } = packageJSON;
 
+  const entry = main?.split('/')?.reverse()?.[0];
   const packageJSONDistVersion = {
-    main: main?.split('/')?.reverse()?.[0] || 'postbuild.js',
+    main: entry || 'main.js',
     ...restOfPackageJSON,
   };
 
   try {
-    await writeFile(resolve(devBuild, 'package.json'), JSON.stringify(packageJSONDistVersion, null, 2));
+    await writeFile(
+      resolve(APP_CONFIG.FOLDERS.DEV_BUILD, 'package.json'),
+      JSON.stringify(packageJSONDistVersion, null, 2),
+    );
   } catch ({ message }) {
     console.log(`
     🛑 Something went wrong!\n

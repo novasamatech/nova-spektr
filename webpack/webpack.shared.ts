@@ -1,39 +1,9 @@
-// import path from 'path';
+import { Configuration } from 'webpack';
 import TsconfigPathsPlugin from 'tsconfig-paths-webpack-plugin';
 import SimpleProgressWebpackPlugin from 'simple-progress-webpack-plugin';
-import { Configuration } from 'webpack';
-
-import { isDev } from './utils';
 
 const sharedConfig: Configuration = {
-  mode: isDev ? 'development' : 'production',
-
-  stats: 'minimal',
-
-  performance: {
-    hints: false,
-  },
-
-  devtool: 'source-map',
-  // devtool: isDev ? 'eval-source-map' : 'source-map',
-
-  resolve: {
-    // alias: {
-    //   '~': path.resolve(__dirname, ''),
-    //
-    //   '#': path.resolve(__dirname, 'src/'),
-    //   '#main': path.resolve(__dirname, 'src/main/'),
-    //   '#shared': path.resolve(__dirname, 'src/shared/'),
-    //
-    //   '@': path.resolve(__dirname, 'src/renderer/'),
-    //   '@components': path.resolve(__dirname, 'src/renderer/components/'),
-    //   '@assets': path.resolve(__dirname, 'src/renderer/assets/'),
-    //   '@context': path.resolve(__dirname, 'src/renderer/context/'),
-    //   '@screens': path.resolve(__dirname, 'src/renderer/screens/'),
-    // },
-    extensions: ['.tsx', '.ts', '.js', '.jsx', 'json'],
-    plugins: [new TsconfigPathsPlugin({})],
-  },
+  stats: 'errors-only',
 
   optimization: {
     usedExports: true,
@@ -43,13 +13,54 @@ const sharedConfig: Configuration = {
     rules: [
       {
         test: /\.(js|ts|tsx|jsx)$/,
-        loader: 'swc-loader',
         exclude: /node_modules/,
+        loader: 'swc-loader',
+      },
+      {
+        test: /\.svg$/,
+        use: [
+          '@svgr/webpack',
+          {
+            loader: 'file-loader',
+            options: {
+              name: '[name]-[hash:8].[ext]',
+              outputPath: 'images/',
+            },
+          },
+        ],
+      },
+      {
+        test: /\.(woff2|png|jpeg|gif|webp|wasm)$/,
+        type: 'asset/resource',
+        generator: {
+          filename: 'fonts/[name].[ext]',
+        },
       },
     ],
   },
 
+  resolve: {
+    extensions: ['.tsx', '.ts', '.js', '.jsx', 'json'],
+    plugins: [new TsconfigPathsPlugin({})],
+  },
+
   plugins: [new SimpleProgressWebpackPlugin({ format: 'minimal' })],
+
+  // plugins: [
+  //   new webpack.EnvironmentPlugin({
+  //     NODE_ENV: 'production',
+  //   }),
+  //   new webpack.ProvidePlugin({
+  //     Buffer: ['buffer', 'Buffer'],
+  //   }),
+  //   new webpack.DefinePlugin({
+  //     'process.env': {
+  //       // VERSION: JSON.stringify(getAppVersion()),
+  //       PRODUCT_NAME: JSON.stringify(productName),
+  //       WS_URL: JSON.stringify(process.env.WS_URL),
+  //     },
+  //   }),
+  // ],
 };
 
 export default sharedConfig;

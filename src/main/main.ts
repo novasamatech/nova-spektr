@@ -1,5 +1,5 @@
-import { BrowserWindow } from 'electron';
 import { join } from 'path';
+import { BrowserWindow } from 'electron';
 
 import { ENVIRONMENT } from '@shared/constants';
 import { APP_CONFIG } from '../../app.config';
@@ -9,10 +9,10 @@ const { MAIN, TITLE } = APP_CONFIG;
 
 export async function MainWindow() {
   const window = createWindow({
-    id: 'main',
     title: TITLE,
     width: MAIN.WINDOW.WIDTH,
     height: MAIN.WINDOW.HEIGHT,
+    show: false,
     center: true,
     autoHideMenuBar: true,
 
@@ -25,6 +25,13 @@ export async function MainWindow() {
 
   window.on('close', () => {
     BrowserWindow.getAllWindows().forEach((window) => window.destroy());
+  });
+
+  window.on('ready-to-show', () => {
+    if (!window) {
+      throw new Error('"MainWindow" is not defined');
+    }
+    window.show();
   });
 
   return window;

@@ -1,4 +1,4 @@
-const { devBuild, name: NAME, author: AUTHOR, version: VERSION, description: DESCRIPTION } = require('./package.json');
+const { name: NAME, author: AUTHOR, version: VERSION, description: DESCRIPTION } = require('./package.json');
 
 exports.APP_CONFIG = {
   NAME,
@@ -17,7 +17,8 @@ exports.APP_CONFIG = {
 
   RENDERER: {
     DEV_SERVER: {
-      URL: 'http://localhost:3000',
+      URL: 'http://localhost',
+      PORT: '3000',
     },
   },
 
@@ -30,6 +31,7 @@ exports.APP_CONFIG = {
 
     INDEX_HTML: 'src/renderer/index.html',
     RESOURCES: 'src/main/resources',
-    DEV_TEMP_BUILD: devBuild,
+    DEV_BUILD: 'release/build/',
+    PROD_BUILD: 'release/dist/',
   },
 };

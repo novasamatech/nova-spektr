@@ -1,4 +1,5 @@
 import { render, screen } from '@testing-library/react';
+import { MemoryRouter } from 'react-router-dom';
 
 import Main from '../Main';
 import { useI18n } from '@renderer/context/I18Context';
@@ -17,7 +18,7 @@ describe('Main', () => {
       t: jest.fn(),
     });
 
-    render(<Main />);
+    render(<Main />, { wrapper: MemoryRouter });
 
     const header = screen.getByText('Change language');
     expect(header).toBeInTheDocument();
@@ -31,7 +32,7 @@ describe('Main', () => {
       onLocaleChange: mockLocaleChange,
     });
 
-    render(<Main />);
+    render(<Main />, { wrapper: MemoryRouter });
 
     const button = screen.getByRole('button', { name: 'RU' });
     button.click();
