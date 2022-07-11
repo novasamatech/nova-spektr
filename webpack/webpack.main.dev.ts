@@ -1,15 +1,16 @@
-import { Configuration } from 'webpack';
 import { resolve } from 'path';
+import { merge } from 'webpack-merge';
+import { Configuration as WpConfig, Configuration } from 'webpack';
+import { Configuration as WdsConfig } from 'webpack-dev-server';
 
 import sharedConfig from './webpack.shared';
 import { APP_CONFIG } from '../app.config';
 
 const { FOLDERS } = APP_CONFIG;
 
-const config: Configuration = {
+const config: Configuration = merge<WpConfig & WdsConfig>(sharedConfig, {
+  mode: 'development',
   target: 'electron-main',
-
-  ...sharedConfig,
 
   entry: {
     main: resolve(FOLDERS.ENTRY_POINTS.MAIN),
@@ -17,9 +18,9 @@ const config: Configuration = {
   },
 
   output: {
-    path: resolve(FOLDERS.DEV_TEMP_BUILD),
+    path: resolve(FOLDERS.DEV_BUILD),
     filename: '[name].js',
   },
-};
+});
 
 export default config;

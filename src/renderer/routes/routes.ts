@@ -1,4 +1,4 @@
-const Routes: Record<string, string> = {
+const Routes = {
   TEST: '/test',
 };
 
