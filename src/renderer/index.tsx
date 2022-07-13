@@ -18,3 +18,6 @@ createRoot(container).render(
     </Router>
   </StrictMode>,
 );
+
+// NOTE: React 18 Strict mode renders twice in DEV mode
+// https://reactjs.org/docs/strict-mode.html#ensuring-reusable-state

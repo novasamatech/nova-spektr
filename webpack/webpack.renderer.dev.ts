@@ -1,6 +1,6 @@
 import { resolve } from 'path';
 import { merge } from 'webpack-merge';
-import webpack, { Configuration as WpConfig } from 'webpack';
+import { Configuration as WpConfig } from 'webpack';
 import { Configuration as WdsConfig } from 'webpack-dev-server';
 import HTMLWebpackPlugin from 'html-webpack-plugin';
 import ReactRefreshWebpackPlugin from '@pmmmwh/react-refresh-webpack-plugin';
@@ -14,6 +14,7 @@ const port = RENDERER.DEV_SERVER.URL.split(':')?.[2] || 3000;
 const config = merge<WpConfig & WdsConfig>(sharedConfig, {
   mode: 'development',
   target: 'web',
+  devtool: 'inline-source-map',
 
   entry: resolve(FOLDERS.ENTRY_POINTS.RENDERER),
 
@@ -45,7 +46,27 @@ const config = merge<WpConfig & WdsConfig>(sharedConfig, {
           {
             loader: 'swc-loader',
             options: {
-              jsc: { transform: { react: { development: true, refresh: true } } },
+              sourceMaps: true,
+              jsc: {
+                parser: {
+                  target: 'es2021',
+                  syntax: 'typescript',
+                  jsx: true,
+                  tsx: true,
+                  dynamicImport: true,
+                  allowJs: true,
+                },
+                transform: {
+                  react: {
+                    pragma: 'React.createElement',
+                    pragmaFrag: 'React.Fragment',
+                    throwIfNamespace: true,
+                    runtime: 'automatic',
+                    development: true,
+                    refresh: true,
+                  },
+                },
+              },
             },
           },
         ],
@@ -55,12 +76,6 @@ const config = merge<WpConfig & WdsConfig>(sharedConfig, {
 
   plugins: [
     new ReactRefreshWebpackPlugin(),
-
-    new webpack.DefinePlugin({
-      process: JSON.stringify({
-        platform: process.platform,
-      }),
-    }),
 
     new HTMLWebpackPlugin({
       template: resolve(FOLDERS.INDEX_HTML),

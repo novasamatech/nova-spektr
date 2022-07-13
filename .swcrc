@@ -1,6 +1,7 @@
-// Default configuration: https://swc.rs/docs/configuration/swcrc
+// Configuration for PROD swc-loader
 {
-  "sourceMaps": true,
+  "sourceMaps": false,
+  "minify": true,
   "jsc": {
     "parser": {
       "target": "es2021",
@@ -15,7 +16,8 @@
         "pragma": "React.createElement",
         "pragmaFrag": "React.Fragment",
         "throwIfNamespace": true,
-        "runtime": "automatic"
+        "runtime": "automatic",
+        "development": false
       }
     }
   }

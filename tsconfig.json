@@ -1,9 +1,12 @@
 {
   "extends": "./tsconfig.paths.json",
+  "ts-node": {
+    "swc": true
+  },
   "compilerOptions": {
     "strict": true,
-    "target": "esnext",
-    "lib": ["esnext", "dom", "dom.iterable"],
+    "target": "es2021",
+    "lib": ["es2021", "dom", "dom.iterable"],
     "jsx": "react-jsx",
     "importHelpers": true,
     "noUnusedLocals": true,
@@ -19,6 +22,6 @@
     "forceConsistentCasingInFileNames": true,
     "noEmit": true
   },
-  "include": ["src", "globals.d.ts"],
+  "include": ["src", "webpack", "globals.d.ts"],
   "exclude": ["node_modules"]
 }

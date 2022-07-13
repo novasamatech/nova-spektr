@@ -11,6 +11,7 @@ const { FOLDERS } = APP_CONFIG;
 const config: Configuration = merge<WpConfig & WdsConfig>(sharedConfig, {
   mode: 'development',
   target: 'electron-main',
+  devtool: 'inline-source-map',
 
   entry: {
     main: resolve(FOLDERS.ENTRY_POINTS.MAIN),
@@ -20,6 +21,31 @@ const config: Configuration = merge<WpConfig & WdsConfig>(sharedConfig, {
   output: {
     path: resolve(FOLDERS.DEV_BUILD),
     filename: '[name].js',
+  },
+
+  module: {
+    rules: [
+      {
+        test: /\.(js|ts)$/,
+        exclude: /node_modules/,
+        use: [
+          {
+            loader: 'swc-loader',
+            options: {
+              sourceMaps: true,
+              jsc: {
+                parser: {
+                  target: 'es2021',
+                  syntax: 'typescript',
+                  dynamicImport: true,
+                  allowJs: true,
+                },
+              },
+            },
+          },
+        ],
+      },
+    ],
   },
 });
 

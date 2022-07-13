@@ -2,7 +2,6 @@ import { resolve } from 'path';
 import { merge } from 'webpack-merge';
 import webpack, { Configuration as WpConfig, Configuration } from 'webpack';
 import { Configuration as WdsConfig } from 'webpack-dev-server';
-import TerserPlugin from 'terser-webpack-plugin';
 
 import sharedConfig from './webpack.shared';
 import { APP_CONFIG } from '../app.config';
@@ -23,8 +22,14 @@ const config: Configuration = merge<WpConfig & WdsConfig>(sharedConfig, {
     filename: '[name].js',
   },
 
-  optimization: {
-    minimizer: [new TerserPlugin({ parallel: true })],
+  module: {
+    rules: [
+      {
+        test: /\.(js|ts)$/,
+        exclude: /node_modules/,
+        loader: 'swc-loader',
+      },
+    ],
   },
 
   plugins: [
