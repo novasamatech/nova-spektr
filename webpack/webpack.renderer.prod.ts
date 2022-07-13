@@ -5,7 +5,6 @@ import { Configuration as WdsConfig } from 'webpack-dev-server';
 import HtmlWebpackPlugin from 'html-webpack-plugin';
 import MiniCssExtractPlugin from 'mini-css-extract-plugin';
 import CssMinimizerPlugin from 'css-minimizer-webpack-plugin';
-import TerserPlugin from 'terser-webpack-plugin';
 
 import baseConfig from './webpack.shared';
 import { APP_CONFIG } from '../app.config';
@@ -26,6 +25,11 @@ const config = merge<WpConfig & WdsConfig>(baseConfig, {
   module: {
     rules: [
       {
+        test: /\.(js|ts|tsx|jsx)$/,
+        exclude: /node_modules/,
+        loader: 'swc-loader',
+      },
+      {
         test: /\.css$/,
         use: [
           MiniCssExtractPlugin.loader,
@@ -44,7 +48,7 @@ const config = merge<WpConfig & WdsConfig>(baseConfig, {
 
   optimization: {
     minimize: true,
-    minimizer: [new TerserPlugin({ parallel: true }), new CssMinimizerPlugin()],
+    minimizer: [new CssMinimizerPlugin()],
   },
 
   plugins: [

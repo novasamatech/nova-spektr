@@ -12,11 +12,6 @@ const sharedConfig: Configuration = {
   module: {
     rules: [
       {
-        test: /\.(js|ts|tsx|jsx)$/,
-        exclude: /node_modules/,
-        loader: 'swc-loader',
-      },
-      {
         test: /\.svg$/,
         use: [
           '@svgr/webpack',
@@ -30,7 +25,18 @@ const sharedConfig: Configuration = {
         ],
       },
       {
-        test: /\.(woff2|png|jpeg|gif|webp|wasm)$/,
+        test: /\.wasm$/,
+        type: 'asset/resource',
+      },
+      {
+        test: /\.(png|jpeg|gif|webp)$/,
+        type: 'asset/resource',
+        generator: {
+          filename: 'images/[name].[ext]',
+        },
+      },
+      {
+        test: /\.woff2$/,
         type: 'asset/resource',
         generator: {
           filename: 'fonts/[name].[ext]',
@@ -40,27 +46,34 @@ const sharedConfig: Configuration = {
   },
 
   resolve: {
-    extensions: ['.tsx', '.ts', '.js', '.jsx', 'json'],
+    extensions: ['.js', '.jsx', '.json', '.ts', '.tsx'],
     plugins: [new TsconfigPathsPlugin({})],
+    fallback: {
+      crypto: require.resolve('crypto-browserify'),
+      // stream: require.resolve('stream-browserify'),
+      // buffer: require.resolve('buffer'),
+      // url: false,
+      fs: false,
+      path: false,
+      stream: false,
+    },
   },
 
-  plugins: [new SimpleProgressWebpackPlugin({ format: 'minimal' })],
+  plugins: [
+    new SimpleProgressWebpackPlugin({ format: 'minimal' }),
 
-  // plugins: [
-  //   new webpack.EnvironmentPlugin({
-  //     NODE_ENV: 'production',
-  //   }),
-  //   new webpack.ProvidePlugin({
-  //     Buffer: ['buffer', 'Buffer'],
-  //   }),
-  //   new webpack.DefinePlugin({
-  //     'process.env': {
-  //       // VERSION: JSON.stringify(getAppVersion()),
-  //       PRODUCT_NAME: JSON.stringify(productName),
-  //       WS_URL: JSON.stringify(process.env.WS_URL),
-  //     },
-  //   }),
-  // ],
+    // new webpack.ProvidePlugin({
+    //   Buffer: ['buffer', 'Buffer'],
+    // }),
+
+    // new webpack.DefinePlugin({
+    //   'process.env': {
+    //     VERSION: JSON.stringify(getAppVersion()),
+    //     PRODUCT_NAME: JSON.stringify(productName),
+    //     WS_URL: JSON.stringify(process.env.WS_URL),
+    //   },
+    // }),
+  ],
 };
 
 export default sharedConfig;
