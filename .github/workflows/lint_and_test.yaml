@@ -5,7 +5,7 @@ on:
     branches:
       - "main"
       - "dev"
-  pull_request:
+  # pull_request:
 
 jobs:
   cache-and-install:
