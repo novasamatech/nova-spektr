@@ -44,7 +44,7 @@ jobs:
         run: pnpm install
 
       - name: Check by linter
-        uses: pnpm lint
+        run: pnpm lint
 
       - name: Run tests
-        uses: pnpm test
+        run: pnpm test
