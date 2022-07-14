@@ -1,0 +1,9 @@
+{
+    "Window.Name": "Название",
+    "Window.Input_name": "Название будет отображаться только для вас.",
+    "Window.Address": "Адрес",
+    "Window.Wallet_address": "Введите или вставьте адрес вашей учетной записи",
+    "Window.Title": "Добавить кошелек по адресу",
+    "Window.Button": "Отмена",
+    "header.test": "Тест"
+}

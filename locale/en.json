@@ -1,0 +1,9 @@
+{
+    "Window.Name": "Name",
+    "Window.Input_name": "This name will be visible only for you.",
+    "Window.Address": "Address",
+    "Window.Wallet_address": "Enter or paste your account address",
+    "Window.Title": "Add wallet by address",
+    "Window.Button": "Cancel",
+    "header.test": "Test"
+}
