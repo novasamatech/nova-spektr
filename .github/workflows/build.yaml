@@ -31,21 +31,18 @@ jobs:
           version: 7
           run_install: false
 
-      # - name: Get pnpm store directory
-      #   id: pnpm-cache
-      #   run: |
-      #     echo "::set-output name=pnpm_cache_dir::$(pnpm store path)"
+      - name: Get yarn store directory
+        id: yarn-cache
+        run: |
+          echo "::set-output name=yarn_cache_dir::$(yarn cache dir)"
 
-      # - uses: actions/cache@v3
-      #   name: Setup pnpm cache
-      #   with:
-      #     path: ${{ steps.pnpm-cache.outputs.pnpm_cache_dir }}
-      #     key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
-      #     restore-keys: |
-      #       ${{ runner.os }}-pnpm-store-
-
-      # - name: Install dependencies
-      #   run: pnpm install
+      - uses: actions/cache@v3
+        name: Setup yarn cache
+        with:
+          path: ${{ steps.yarn-cache.outputs.yarn_cache_dir }}
+          key: ${{ runner.os }}-yarn-store-${{ hashFiles('**/yarn.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-yarn-store-
 
       - name: Build/release Electron app
         uses: samuelmeuli/action-electron-builder@v1
