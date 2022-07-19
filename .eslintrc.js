@@ -61,5 +61,5 @@ module.exports = {
     '@typescript-eslint/no-empty-interface': 0,
     'prettier/prettier': ['error', prettierOptions],
   },
-  ignorePatterns: ['e2e/', 'node_modules/', 'dist/'],
+  ignorePatterns: ['e2e/', 'node_modules/', 'dist/', 'release/'],
 };
