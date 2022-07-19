@@ -1,11 +1,7 @@
 name: Lint and unit tests
 
 on:
-  push:
-    branches:
-      - "main"
-      - "dev"
-  # pull_request:
+  pull_request:
 
 jobs:
   cache-and-install:
