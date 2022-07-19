@@ -1,0 +1,54 @@
+name: Build/release
+
+on:
+  push:
+    branches:
+      - 'main'
+      - 'dev'
+
+jobs:
+  release:
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [macos-latest, ubuntu-latest, windows-latest]
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Install Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 16
+
+      - uses: pnpm/action-setup@v2.0.1
+        name: Install pnpm
+        id: pnpm-install
+        with:
+          version: 7
+          run_install: false
+
+      - name: Get yarn store directory
+        id: yarn-cache
+        run: |
+          echo "::set-output name=yarn_cache_dir::$(yarn cache dir)"
+
+      - uses: actions/cache@v3
+        name: Setup yarn cache
+        with:
+          path: ${{ steps.yarn-cache.outputs.yarn_cache_dir }}
+          key: ${{ runner.os }}-yarn-store-${{ hashFiles('**/yarn.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-yarn-store-
+
+      - name: Build/release Electron app
+        uses: samuelmeuli/action-electron-builder@v1
+        with:
+          github_token: ${{ secrets.github_token }}
+
+          # If the commit is tagged with a version (e.g. "v1.0.0"),
+          # release the app after building
+          release: ${{ startsWith(github.ref, 'refs/tags/v') }}
