@@ -8,7 +8,7 @@
     "name": "Novasama Technologies"
   },
   "scripts": {
-    "start": "pnpm clean:dev && concurrently \"pnpm start:renderer\" \"pnpm start:main\" && watch",
+    "start": "pnpm clean:build && concurrently \"pnpm start:renderer\" \"pnpm start:main\" && watch",
     "start:electron": "electron .",
     "start:renderer": "cross-env NODE_ENV=development pnpm webpack:serve",
     "start:main": "cross-env NODE_ENV=development pnpm r webpack:main:dev start:electron",
