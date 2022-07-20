@@ -2,7 +2,7 @@ import { render, screen } from '@testing-library/react';
 
 import Staking from './Staking';
 
-describe('Staking', () => {
+describe('screen/Staking', () => {
   test('should render component', () => {
     render(<Staking />);
 

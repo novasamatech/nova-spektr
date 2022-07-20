@@ -43,6 +43,9 @@ module.exports = {
       backgroundImage: {
         stripes: "url('src/renderer/assets/images/misc/stripes.png')",
       },
+      outlineOffset: {
+        reduced: '-5px',
+      },
     },
   },
   plugins: [],

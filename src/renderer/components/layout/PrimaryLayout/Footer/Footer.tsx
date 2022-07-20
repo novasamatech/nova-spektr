@@ -6,7 +6,7 @@ const mock = [
   { token: 'ACA', value: 1.05 },
 ];
 
-export const Footer = () => {
+const Footer = () => {
   return (
     <footer className="flex justify-between items-center px-5 py-2.5 rounded-t-lg shadow-1 bg-white">
       <ul className="flex gap-x-2.5 mr-3 h-max">
@@ -30,3 +30,5 @@ export const Footer = () => {
     </footer>
   );
 };
+
+export default Footer;

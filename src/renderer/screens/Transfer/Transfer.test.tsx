@@ -2,7 +2,7 @@ import { render, screen } from '@testing-library/react';
 
 import Transfer from './Transfer';
 
-describe('Transfer', () => {
+describe('screen/Transfer', () => {
   test('should render component', () => {
     render(<Transfer />);
 

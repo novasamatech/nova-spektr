@@ -2,7 +2,7 @@ import { render, screen } from '@testing-library/react';
 
 import Address from './Address';
 
-describe('Address', () => {
+describe('ui/Address', () => {
   test('should render component', () => {
     const address = '0x5DCXVewfw123';
     render(<Address address={address} full />);

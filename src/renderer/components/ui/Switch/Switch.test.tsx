@@ -2,7 +2,7 @@ import { render, screen } from '@testing-library/react';
 
 import Switch from './Switch';
 
-describe('Switch', () => {
+describe('ui/Switch', () => {
   test('should render component', () => {
     render(<Switch label="test label" />);
 

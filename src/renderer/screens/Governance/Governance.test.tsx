@@ -2,7 +2,7 @@ import { render, screen } from '@testing-library/react';
 
 import Governance from './Governance';
 
-describe('Governance', () => {
+describe('screen/Governance', () => {
   test('should render component', () => {
     render(<Governance />);
 

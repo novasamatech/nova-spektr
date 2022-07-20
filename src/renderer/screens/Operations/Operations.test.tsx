@@ -2,7 +2,7 @@ import { render, screen } from '@testing-library/react';
 
 import Operations from './Operations';
 
-describe('Operations', () => {
+describe('screen/Operations', () => {
   test('should render component', () => {
     render(<Operations />);
 

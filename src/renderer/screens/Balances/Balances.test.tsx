@@ -2,7 +2,7 @@ import { render, screen } from '@testing-library/react';
 
 import Balances from './Balances';
 
-describe('Balances', () => {
+describe('screen/Balances', () => {
   test('should render component', () => {
     render(<Balances />);
 

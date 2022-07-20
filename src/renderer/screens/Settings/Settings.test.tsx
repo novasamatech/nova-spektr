@@ -2,7 +2,7 @@ import { render, screen } from '@testing-library/react';
 
 import Settings from './Settings';
 
-describe('Settings', () => {
+describe('screen/Settings', () => {
   test('should render component', () => {
     render(<Settings />);
 

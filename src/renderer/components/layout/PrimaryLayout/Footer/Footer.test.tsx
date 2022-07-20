@@ -1,6 +1,6 @@
 import { render, screen } from '@testing-library/react';
 
-import { Footer } from './Footer';
+import Footer from './Footer';
 
 describe('layout/PrimaryLayout/Footer', () => {
   test('should render component', () => {

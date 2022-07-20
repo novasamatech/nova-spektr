@@ -1,10 +1,10 @@
 import { render, screen } from '@testing-library/react';
 
-import PrimaryLayout from '.';
+import PrimaryLayout from './PrimaryLayout';
 
 jest.mock('react-router-dom', () => ({ Outlet: () => 'outlet' }));
-jest.mock('./Navigation', () => () => 'navigation');
-jest.mock('./Footer', () => () => 'footer');
+jest.mock('./Navigation/Navigation', () => () => 'navigation');
+jest.mock('./Footer/Footer', () => () => 'footer');
 
 describe('layout/PrimaryLayout', () => {
   test('should render component', () => {

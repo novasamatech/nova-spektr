@@ -25,7 +25,8 @@ const Identicon = ({ theme = 'polkadot', address, size }: Props) => {
     <button
       type="button"
       ref={wrapperRef}
-      className={`flex justify-center items-center bg-white rounded-full w-[${size}px] h-[${size}px] cursor-copy`}
+      className={`flex justify-center items-center bg-white rounded-full cursor-copy`}
+      style={{ width: size, height: size }}
       data-testid={`identicon-${address}`}
       onClick={onCopyToClipboard}
     >
