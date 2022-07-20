@@ -29,10 +29,6 @@ module.exports = {
   plugins: ['@typescript-eslint', 'prettier', 'testing-library', 'import', 'jest-dom'],
   settings: {
     'import/resolver': {
-      typescript: {
-        alwaysTryTypes: true,
-        project: './tsconfig.json',
-      },
       alias: {
         map: [
           ['@', './src/'],
@@ -59,12 +55,10 @@ module.exports = {
         'newlines-between': 'always',
       },
     ],
-    // 'import/no-duplicates': ['error', { considerQueryString: true }],
     'no-unused-vars': 'off',
     'newline-before-return': 'error',
-    // '@typescript-eslint/no-unused-vars': [1, { args: 'none', ignoreRestSiblings: true }],
     '@typescript-eslint/no-empty-interface': 0,
     'prettier/prettier': ['error', prettierOptions],
   },
-  ignorePatterns: ['e2e/', 'node_modules/', 'dist/', 'release/'],
+  ignorePatterns: ['e2e/', 'node_modules/', 'release/'],
 };

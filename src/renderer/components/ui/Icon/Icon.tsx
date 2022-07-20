@@ -9,7 +9,6 @@ type Props = {
 
 const Icon = ({ as = 'svg', name, size = 24, className }: Props) => {
   const IconComponent = AllIcons[name][as];
-  // console.log(AllIcons);
 
   if (!IconComponent) {
     throw new Error('Icons not found or unknown icon type');
