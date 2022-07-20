@@ -8,6 +8,12 @@ module.exports = {
       fontFamily: {
         sans: ['Public Sans', ...defaultTheme.fontFamily.sans],
       },
+      boxShadow: {
+        1: '0 0 25px rgba(0, 0, 0, 0.05)',
+      },
+      height: {
+        stretch: 'calc(100vh - 44px)',
+      },
       colors: {
         primary: '#0070f3',
         'primary-variant': '#D5DEF6',
@@ -33,6 +39,9 @@ module.exports = {
       spacing: {
         5.5: '1.375rem',
         9.5: '2.375rem',
+      },
+      backgroundImage: {
+        stripes: "url('src/renderer/assets/images/misc/stripes.png')",
       },
     },
   },

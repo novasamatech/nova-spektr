@@ -4,7 +4,7 @@ const TestRoute = () => {
   return (
     <>
       <div>Test route</div>
-      <Link to="/" className="bg-green-300">
+      <Link to="/main" className="bg-green-300">
         go to main
       </Link>
     </>

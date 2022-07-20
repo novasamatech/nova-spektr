@@ -29,16 +29,20 @@ module.exports = {
   plugins: ['@typescript-eslint', 'prettier', 'testing-library', 'import', 'jest-dom'],
   settings: {
     'import/resolver': {
+      typescript: {
+        alwaysTryTypes: true,
+        project: './tsconfig.json',
+      },
       alias: {
         map: [
           ['@', './src/'],
           ['@main', './src/main/'],
           ['@shared', './src/shared/'],
           ['@renderer', './src/renderer/'],
+          ['@images', './src/renderer/assets/images/'],
         ],
-        extensions: ['.js', '.jsx', '.ts', '.tsx', 'json'],
+        extensions: ['.js', '.jsx', '.ts', '.tsx', '.json'],
       },
-      typescript: {},
       node: {
         extensions: ['.js', '.jsx', '.ts', '.tsx'],
       },
@@ -55,6 +59,7 @@ module.exports = {
         'newlines-between': 'always',
       },
     ],
+    // 'import/no-duplicates': ['error', { considerQueryString: true }],
     'no-unused-vars': 'off',
     'newline-before-return': 'error',
     // '@typescript-eslint/no-unused-vars': [1, { args: 'none', ignoreRestSiblings: true }],
