@@ -71,5 +71,3 @@ describe('service/dataVerification', () => {
     expect(verified).toEqual(false);
   });
 });
-
-export {};

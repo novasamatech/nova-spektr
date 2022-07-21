@@ -15,7 +15,7 @@ import {
 } from './constants';
 import { keyLEToNibbles, getNodeType } from './utils';
 
-function decodeHeaderByte(header: number) {
+const decodeHeaderByte = (header: number) => {
   // variants is a slice of all variants sorted in ascending
   // order by the number of bits each variant mask occupy
   // in the header byte.
@@ -39,9 +39,9 @@ function decodeHeaderByte(header: number) {
   }
 
   throw new Error('Invalid header byte');
-}
+};
 
-function decodeHeader(reader: Uint8Array): [number, number] {
+const decodeHeader = (reader: Uint8Array): [number, number] => {
   let currentIndex = 0;
   const headerByte = reader[currentIndex];
   currentIndex = 1;
@@ -84,7 +84,7 @@ function decodeHeader(reader: Uint8Array): [number, number] {
       return [variant, partialKeyLength];
     }
   }
-}
+};
 
 const decodeKey = (reader: Uint8Array, keyLength: number): [Uint8Array, number] => {
   const keyLen = keyLength / 2 + (keyLength % 2);
@@ -167,7 +167,7 @@ const decodeBranch = (reader: Uint8Array, variant: number, keyLen: number): Node
   return node;
 };
 
-function decode(reader: Uint8Array): Node {
+const decode = (reader: Uint8Array): Node => {
   const [variant, partialKeyLength] = decodeHeader(reader);
 
   const len = partialKeyLength > 63 ? 2 : 1;

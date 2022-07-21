@@ -7,7 +7,7 @@ import { getNodeType, keyLEToNibbles } from './utils';
 
 // lenCommonPrefix returns the length of the
 // common prefix between two byte slices.
-function lenCommonPrefix(a: Uint8Array, b: Uint8Array): number {
+const lenCommonPrefix = (a: Uint8Array, b: Uint8Array): number => {
   let min = a.length;
   if (b.length < min) {
     min = b.length;
@@ -22,17 +22,17 @@ function lenCommonPrefix(a: Uint8Array, b: Uint8Array): number {
   }
 
   return i;
-}
+};
 
-function retrieveFromLeaf(leaf: Node, key: Uint8Array) {
+const retrieveFromLeaf = (leaf: Node, key: Uint8Array) => {
   if (u8aToHex(leaf.key) === u8aToHex(key)) {
     return leaf.value;
   }
 
   return null;
-}
+};
 
-function retrieveFromBranch(branch: Node, key: Uint8Array) {
+const retrieveFromBranch = (branch: Node, key: Uint8Array) => {
   if (key.length === 0 || u8aToHex(branch.key) === u8aToHex(key)) {
     return branch.value;
   }
@@ -48,9 +48,9 @@ function retrieveFromBranch(branch: Node, key: Uint8Array) {
 
   // eslint-disable-next-line @typescript-eslint/no-use-before-define
   return retrieve(child, childKey);
-}
+};
 
-function retrieve(node: Node, key: Uint8Array): Uint8Array | null {
+const retrieve = (node: Node, key: Uint8Array): Uint8Array | null => {
   if (!node) {
     return null;
   }
@@ -60,7 +60,7 @@ function retrieve(node: Node, key: Uint8Array): Uint8Array | null {
   }
 
   return retrieveFromBranch(node, key);
-}
+};
 
 /**
  * get the value for a given key from the trie
