@@ -15,13 +15,14 @@ const config: Config = {
   },
   transform: {
     '^.+\\.tsx?$': '@swc/jest',
+    '^(?!.*\\.(js|jsx|mjs|cjs|ts|tsx|css|json)$)': '<rootDir>/scripts/fileTransform.js',
   },
   moduleNameMapper: {
-    // '^@(.*)$': '<rootDir>/src$1',
-    '^@main(.*)$': '<rootDir>/src/main$1',
-    '^@shared(.*)$': '<rootDir>/src/shared$1',
-    '^@renderer(.*)$': '<rootDir>/src/renderer$1',
     '\\.(css|less|scss|sass)$': 'identity-obj-proxy',
+    '^@main(.*)$': '<rootDir>/src/main/$1',
+    '^@shared(.*)$': '<rootDir>/src/shared/$1',
+    '^@renderer(.*)$': '<rootDir>/src/renderer/$1',
+    '^@images(.*)$': '<rootDir>/src/renderer/assets/images/$1',
   },
   collectCoverageFrom: [
     'src/renderer/**/*.{js,jsx,ts,tsx}',

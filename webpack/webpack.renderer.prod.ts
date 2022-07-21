@@ -19,7 +19,7 @@ const config = merge<WpConfig & WdsConfig>(baseConfig, {
 
   output: {
     path: resolve(FOLDERS.DEV_BUILD),
-    filename: 'renderer.js',
+    filename: 'renderer-[fullhash].js',
   },
 
   module: {
@@ -58,7 +58,7 @@ const config = merge<WpConfig & WdsConfig>(baseConfig, {
     }),
 
     new MiniCssExtractPlugin({
-      filename: 'style.css',
+      filename: 'style-[fullhash].css',
     }),
 
     new HtmlWebpackPlugin({

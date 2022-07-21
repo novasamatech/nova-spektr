@@ -1,6 +1,6 @@
 import { ComponentStory, ComponentMeta } from '@storybook/react';
 
-import { Switch } from '@renderer/components/ui';
+import Switch from './Switch';
 
 export default {
   title: 'Switch',

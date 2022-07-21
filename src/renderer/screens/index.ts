@@ -1,4 +1,10 @@
-import Main from './Main/Main';
-import TestRoute from './TestRoute/TestRoute';
+import AddressBook from './AddressBook/AddressBook';
+import Assets from './Assets/Assets';
+import Balances from './Balances/Balances';
+import Dashboard from './Dashboard/Dashboard';
+import Operations from './Operations/Operations';
+import Settings from './Settings/Settings';
+import Transfer from './Transfer/Transfer';
+import Wallets from './Wallets/Wallets';
 
-export { Main, TestRoute };
+export { Dashboard, Assets, Operations, Wallets, Settings, Transfer, Balances, AddressBook };

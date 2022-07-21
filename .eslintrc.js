@@ -35,10 +35,10 @@ module.exports = {
           ['@main', './src/main/'],
           ['@shared', './src/shared/'],
           ['@renderer', './src/renderer/'],
+          ['@images', './src/renderer/assets/images/'],
         ],
-        extensions: ['.js', '.jsx', '.ts', '.tsx', 'json'],
+        extensions: ['.js', '.jsx', '.ts', '.tsx', '.json'],
       },
-      typescript: {},
       node: {
         extensions: ['.js', '.jsx', '.ts', '.tsx'],
       },
@@ -57,9 +57,8 @@ module.exports = {
     ],
     'no-unused-vars': 'off',
     'newline-before-return': 'error',
-    // '@typescript-eslint/no-unused-vars': [1, { args: 'none', ignoreRestSiblings: true }],
     '@typescript-eslint/no-empty-interface': 0,
     'prettier/prettier': ['error', prettierOptions],
   },
-  ignorePatterns: ['e2e/', 'node_modules/', 'dist/', 'release/'],
+  ignorePatterns: ['e2e/', 'node_modules/', 'release/'],
 };

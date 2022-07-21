@@ -1,0 +1,22 @@
+import { ComponentMeta } from '@storybook/react';
+
+import Icon from './Icon';
+
+export default {
+  title: 'Icon',
+  component: Icon,
+  parameters: { actions: { argTypesRegex: '^on.*' } },
+} as ComponentMeta<typeof Icon>;
+
+// const Template: ComponentStory<typeof Icon> = (args) => <Icon {...args} />;
+
+// export const Primary = Template.bind({});
+// Primary.args = {
+//   label: 'Icon lable',
+// };
+//
+// export const Disabled = Template.bind({});
+// Disabled.args = {
+//   label: 'Icon label',
+//   disabled: true,
+// };

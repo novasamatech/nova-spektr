@@ -1,6 +1,6 @@
 import { ComponentStory, ComponentMeta } from '@storybook/react';
 
-import { Address } from '@renderer/components/ui';
+import Address from './Address';
 
 export default {
   title: 'Address',
