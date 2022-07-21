@@ -61,3 +61,18 @@
   font-display: swap;
   src: url('./assets/fonts/fira-sans/fira-sans-700.woff2') format('woff2');
 }
+
+/* Thin scrollbar */
+.scrollbar::-webkit-scrollbar {
+  width: 4px;
+}
+
+.scrollbar::-webkit-scrollbar-track {
+  background: hsl(0, 0%, 90%);
+  border-radius: 20px;
+}
+
+.scrollbar::-webkit-scrollbar-thumb {
+  background-color: hsl(0, 0%, 72%);
+  border-radius: 20px;
+}
