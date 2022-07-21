@@ -182,7 +182,7 @@ const decode = (reader: Uint8Array): Node => {
     default:
       throw new Error(`not implemented for node type: ${variant}`);
   }
-}
+};
 
 const loadProof = (proofHashToNode: Record<string, Node>, branch: Node | undefined) => {
   if (!branch || getNodeType(branch) !== NodeType.Branch) {
