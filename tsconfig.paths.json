@@ -5,7 +5,8 @@
       "@/*": ["./src/*"],
       "@main/*": ["./src/main/*"],
       "@shared/*": ["./src/shared/*"],
-      "@renderer/*": ["./src/renderer/*"]
+      "@renderer/*": ["./src/renderer/*"],
+      "@images/*": ["./src/renderer/assets/images/*"]
     }
   }
 }

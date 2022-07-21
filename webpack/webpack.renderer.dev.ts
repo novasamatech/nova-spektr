@@ -30,7 +30,7 @@ const config = merge<WpConfig & WdsConfig>(sharedConfig, {
 
   output: {
     path: resolve(FOLDERS.DEV_BUILD),
-    filename: 'renderer.js',
+    filename: 'renderer-[fullhash].js',
   },
 
   module: {
