@@ -1,7 +1,4 @@
 const Paths = {
-  TEST: '/test',
-  MAIN: '/main',
-
   // Navigation
   DASHBOARD: '/dashboard',
   WALLETS: '/wallets',
@@ -10,9 +7,6 @@ const Paths = {
   BALANCES: '/balances',
   ASSETS: '/assets',
   TRANSFER: '/transfer',
-  STAKING: '/staking',
-  GOVERNANCE: '/governance',
-  CROWDLOANS: '/crowdloans',
   SETTINGS: '/settings',
 };
 

@@ -25,7 +25,7 @@ const sharedConfig: Configuration = {
           {
             loader: 'file-loader',
             options: {
-              name: '[name].[hash-8][ext]',
+              name: '[name]-[fullhash].[ext]',
               outputPath: 'images/',
             },
           },
@@ -39,14 +39,14 @@ const sharedConfig: Configuration = {
         test: /\.(png|jpeg|gif|webp)$/,
         type: 'asset/resource',
         generator: {
-          filename: 'images/[name].[ext]',
+          filename: 'images/[name]-[fullhash][ext]',
         },
       },
       {
         test: /\.woff2$/,
         type: 'asset/resource',
         generator: {
-          filename: 'fonts/[name].[ext]',
+          filename: 'fonts/[name][ext]',
         },
       },
     ],

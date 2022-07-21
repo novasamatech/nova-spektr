@@ -7,13 +7,11 @@ import * as Screens from '@renderer/screens';
 // React router v6 hint:
 // https://github.com/remix-run/react-router/blob/main/docs/upgrading/v5.md#use-useroutes-instead-of-react-router-config
 const routesConfig: RouteObject[] = [
-  { path: Paths.TEST, element: <Screens.TestRoute /> },
   {
     path: '/',
     element: <PrimaryLayout />,
     children: [
-      { index: true, element: <Screens.Main /> },
-      { path: Paths.MAIN, element: <Screens.Main /> },
+      // { index: true, element: <Screens.Main /> },
       { path: Paths.DASHBOARD, element: <Screens.Dashboard /> },
       { path: Paths.WALLETS, element: <Screens.Wallets /> },
       { path: Paths.ADDRESS_BOOK, element: <Screens.AddressBook /> },
@@ -21,9 +19,6 @@ const routesConfig: RouteObject[] = [
       { path: Paths.TRANSFER, element: <Screens.Transfer /> },
       { path: Paths.ASSETS, element: <Screens.Assets /> },
       { path: Paths.BALANCES, element: <Screens.Balances /> },
-      { path: Paths.STAKING, element: <Screens.Staking /> },
-      { path: Paths.GOVERNANCE, element: <Screens.Governance /> },
-      { path: Paths.CROWDLOANS, element: <Screens.Crowdloans /> },
       { path: Paths.SETTINGS, element: <Screens.Settings /> },
     ],
   },
