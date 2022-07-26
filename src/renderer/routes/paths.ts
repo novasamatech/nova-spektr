@@ -1,4 +1,6 @@
 const Paths = {
+  LOGIN: '/login',
+
   // Navigation
   DASHBOARD: '/dashboard',
   WALLETS: '/wallets',

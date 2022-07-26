@@ -38,6 +38,7 @@ specifiers:
   autoprefixer: ^10.4.7
   babel-loader: ^8.2.5
   camelcase: 6.3.0
+  child_process: ^1.0.2
   classnames: ^2.3.1
   concurrently: ^7.2.2
   copy-webpack-plugin: ^11.0.0
@@ -79,6 +80,7 @@ specifiers:
   prettier: ^2.7.1
   react: ^18.2.0
   react-dom: ^18.2.0
+  react-hook-form: ^7.33.1
   react-i18next: ^11.18.0
   react-refresh: ^0.14.0
   react-router-dom: ^6.3.0
@@ -101,7 +103,7 @@ dependencies:
   '@headlessui/react': 1.6.6_biqbaboplfbrettd7655fr4n2y
   '@matrix-org/olm': '@gitlab.matrix.org/api/v4/projects/27/packages/npm/@matrix-org/olm/-/@matrix-org/olm-3.2.12.tgz'
   '@polkadot/api': 8.12.2
-  '@polkadot/react-identicon': 2.8.2_biqbaboplfbrettd7655fr4n2y
+  '@polkadot/react-identicon': 2.8.2_7i5myeigehqah43i5u7wbekgba
   '@polkadot/rpc-provider': 8.12.2
   classnames: 2.3.1
   crypto-browserify: 3.12.0
@@ -112,6 +114,7 @@ dependencies:
   matrix-js-sdk: 19.0.0
   react: 18.2.0
   react-dom: 18.2.0_react@18.2.0
+  react-hook-form: 7.33.1_react@18.2.0
   react-i18next: 11.18.0_zqwsj3zkvc6lj2if6vhvnllc7u
   react-router-dom: 6.3.0_biqbaboplfbrettd7655fr4n2y
   tailwindcss: 3.1.5_ts-node@10.8.2
@@ -128,7 +131,7 @@ devDependencies:
   '@storybook/addon-postcss': 2.0.0_webpack@5.73.0
   '@storybook/builder-webpack5': 6.5.9_mujshny4pissikfir3a5boanjy
   '@storybook/manager-webpack5': 6.5.9_mujshny4pissikfir3a5boanjy
-  '@storybook/react': 6.5.9_4dlknrcrowhgisjzexht4y3dh4
+  '@storybook/react': 6.5.9_oyyfoo56k4dzz2thl5m7i5k5lu
   '@storybook/testing-library': 0.0.13_biqbaboplfbrettd7655fr4n2y
   '@svgr/webpack': 6.2.1
   '@swc/cli': 0.1.57_@swc+core@1.2.212
@@ -137,7 +140,7 @@ devDependencies:
   '@swc/jest': 0.2.21_@swc+core@1.2.212
   '@testing-library/jest-dom': 5.16.4
   '@testing-library/react': 13.3.0_biqbaboplfbrettd7655fr4n2y
-  '@testing-library/user-event': 14.2.1
+  '@testing-library/user-event': 14.2.1_gwcpuyfvwbszhlmedmugzivgzu
   '@types/jest': 28.1.4
   '@types/lodash': 4.14.182
   '@types/node': 18.0.3
@@ -149,6 +152,7 @@ devDependencies:
   autoprefixer: 10.4.7_postcss@8.4.14
   babel-loader: 8.2.5_fswvdo7jykdwhfxrdcvghfn6pa
   camelcase: 6.3.0
+  child_process: 1.0.2
   concurrently: 7.2.2
   copy-webpack-plugin: 11.0.0_webpack@5.73.0
   cross-env: 7.0.3
@@ -2886,7 +2890,7 @@ packages:
       '@substrate/ss58-registry': 1.23.0
     dev: false
 
-  /@polkadot/react-identicon/2.8.2_biqbaboplfbrettd7655fr4n2y:
+  /@polkadot/react-identicon/2.8.2_7i5myeigehqah43i5u7wbekgba:
     resolution:
       { integrity: sha512-rcNPzUu/0O6SPdjymXPvVjeceYxxUxBRFLCLdkSNsn1bISEbwb3dJ/g9T9JElF997EfHrmtgsN4hfC9Szyfbyw== }
     peerDependencies:
@@ -2906,7 +2910,8 @@ packages:
       react: 18.2.0
       react-copy-to-clipboard: 5.1.0_react@18.2.0
       react-dom: 18.2.0_react@18.2.0
-      styled-components: 5.3.5_biqbaboplfbrettd7655fr4n2y
+      react-is: 18.2.0
+      styled-components: 5.3.5_7i5myeigehqah43i5u7wbekgba
     dev: false
 
   /@polkadot/rpc-augment/8.12.2:
@@ -4504,7 +4509,7 @@ packages:
       - supports-color
     dev: true
 
-  /@storybook/react/6.5.9_4dlknrcrowhgisjzexht4y3dh4:
+  /@storybook/react/6.5.9_oyyfoo56k4dzz2thl5m7i5k5lu:
     resolution:
       { integrity: sha512-Rp+QaTQAzxJhwuzJXVd49mnIBLQRlF8llTxPT2YoGHdrGkku/zl/HblQ6H2yzEf15367VyzaAv/BpLsO9Jlfxg== }
     engines: { node: '>=10.13.0' }
@@ -4570,6 +4575,7 @@ packages:
       react-refresh: 0.11.0
       read-pkg-up: 7.0.1
       regenerator-runtime: 0.13.9
+      require-from-string: 2.0.2
       ts-dedent: 2.2.0
       typescript: 4.7.4
       util-deprecate: 1.0.2
@@ -5187,12 +5193,14 @@ packages:
       '@testing-library/dom': 8.16.0
     dev: true
 
-  /@testing-library/user-event/14.2.1:
+  /@testing-library/user-event/14.2.1_gwcpuyfvwbszhlmedmugzivgzu:
     resolution:
       { integrity: sha512-HOr1QiODrq+0j9lKU5i10y9TbhxMBMRMGimNx10asdmau9cb8Xb1Vyg0GvTwyIL2ziQyh2kAloOtAQFBQVuecA== }
     engines: { node: '>=12', npm: '>=6' }
     peerDependencies:
       '@testing-library/dom': '>=7.21.4'
+    dependencies:
+      '@testing-library/dom': 8.16.0
     dev: true
 
   /@tootallnate/once/2.0.0:
@@ -7066,7 +7074,7 @@ packages:
       babel-plugin-syntax-jsx: 6.18.0
       lodash: 4.17.21
       picomatch: 2.3.1
-      styled-components: 5.3.5_biqbaboplfbrettd7655fr4n2y
+      styled-components: 5.3.5_7i5myeigehqah43i5u7wbekgba
     dev: false
 
   /babel-plugin-syntax-jsx/6.18.0:
@@ -7813,6 +7821,11 @@ packages:
   /character-reference-invalid/1.1.4:
     resolution:
       { integrity: sha512-mKKUkUbhPpQlCOfIuZkvSEgktjPFIsZKRRbC6KWVEMvlzblj3i3asQv5ODsrwt0N3pHAEvjP8KTQPHkp0+6jOg== }
+    dev: true
+
+  /child_process/1.0.2:
+    resolution:
+      { integrity: sha512-Wmza/JzL0SiWz7kl6MhIKT5ceIlnFPJX+lwUGj7Clhy5MMldsSoJR0+uvRzOS5Kv45Mq7t1PoE8TsOA9bzvb6g== }
     dev: true
 
   /chokidar/2.1.8:
@@ -16420,6 +16433,16 @@ packages:
       react-is: 17.0.2
     dev: true
 
+  /react-hook-form/7.33.1_react@18.2.0:
+    resolution:
+      { integrity: sha512-ydTfTxEJdvgjCZBj5DDXRc58oTEfnFupEwwTAQ9FSKzykEJkX+3CiAkGtAMiZG7IPWHuzgT6AOBfogiKhUvKgg== }
+    engines: { node: '>=12.22.0' }
+    peerDependencies:
+      react: ^16.8.0 || ^17 || ^18
+    dependencies:
+      react: 18.2.0
+    dev: false
+
   /react-i18next/11.18.0_zqwsj3zkvc6lj2if6vhvnllc7u:
     resolution:
       { integrity: sha512-coJujU20xJ5Wa5rHjTyB5LFKZb1yfXo2A+40RRSyAF0FlZRHyy+3C1Mr92x1JPfS7W7v2TWNn8mRhpDFGJwXVg== }
@@ -16465,7 +16488,6 @@ packages:
   /react-is/18.2.0:
     resolution:
       { integrity: sha512-xWGDIW6x921xtzPkhiULtthJHoJvBbF3q26fzloPCK0hsvxtPVelvftw3zjbHWSkR2km9Z+4uxbDDK/6Zw9B8w== }
-    dev: true
 
   /react-merge-refs/1.1.0:
     resolution:
@@ -18120,7 +18142,7 @@ packages:
       inline-style-parser: 0.1.1
     dev: true
 
-  /styled-components/5.3.5_biqbaboplfbrettd7655fr4n2y:
+  /styled-components/5.3.5_7i5myeigehqah43i5u7wbekgba:
     resolution:
       { integrity: sha512-ndETJ9RKaaL6q41B69WudeqLzOpY1A/ET/glXkNZ2T7dPjPqpPCXXQjDFYZWwNnE5co0wX+gTCqx9mfxTmSIPg== }
     engines: { node: '>=10' }
@@ -18140,6 +18162,7 @@ packages:
       hoist-non-react-statics: 3.3.2
       react: 18.2.0
       react-dom: 18.2.0_react@18.2.0
+      react-is: 18.2.0
       shallowequal: 1.1.0
       supports-color: 5.5.0
     dev: false

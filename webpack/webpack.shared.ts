@@ -1,6 +1,35 @@
-import { Configuration } from 'webpack';
+import webpack, { Configuration } from 'webpack';
 import TsconfigPathsPlugin from 'tsconfig-paths-webpack-plugin';
 import SimpleProgressWebpackPlugin from 'simple-progress-webpack-plugin';
+
+import { APP_CONFIG } from '../app.config';
+
+export const getSwcConfig = (isDev: boolean) => {
+  return {
+    sourceMaps: isDev,
+    minify: !isDev,
+    jsc: {
+      parser: {
+        target: 'es2021',
+        syntax: 'typescript',
+        jsx: true,
+        tsx: true,
+        dynamicImport: true,
+        allowJs: true,
+      },
+      transform: {
+        react: {
+          pragma: 'React.createElement',
+          pragmaFrag: 'React.Fragment',
+          throwIfNamespace: true,
+          runtime: 'automatic',
+          development: isDev,
+          refresh: isDev,
+        },
+      },
+    },
+  };
+};
 
 const sharedConfig: Configuration = {
   stats: 'errors-only',
@@ -11,6 +40,16 @@ const sharedConfig: Configuration = {
 
   module: {
     rules: [
+      {
+        test: /\.(js|ts|jsx|tsx)$/,
+        exclude: /node_modules/,
+        use: [
+          {
+            loader: 'swc-loader',
+            options: getSwcConfig(process.env.NODE_ENV === 'development'),
+          },
+        ],
+      },
       {
         test: /\.svg$/,
         use: [
@@ -25,7 +64,7 @@ const sharedConfig: Configuration = {
           {
             loader: 'file-loader',
             options: {
-              name: '[name]-[fullhash].[ext]',
+              name: '[name]-[hash:8].[ext]',
               outputPath: 'images/',
             },
           },
@@ -39,7 +78,7 @@ const sharedConfig: Configuration = {
         test: /\.(png|jpeg|gif|webp)$/,
         type: 'asset/resource',
         generator: {
-          filename: 'images/[name]-[fullhash][ext]',
+          filename: 'images/[name]-[hash:8][ext]',
         },
       },
       {
@@ -73,13 +112,11 @@ const sharedConfig: Configuration = {
     //   Buffer: ['buffer', 'Buffer'],
     // }),
 
-    // new webpack.DefinePlugin({
-    //   'process.env': {
-    //     VERSION: JSON.stringify(getAppVersion()),
-    //     PRODUCT_NAME: JSON.stringify(productName),
-    //     WS_URL: JSON.stringify(process.env.WS_URL),
-    //   },
-    // }),
+    new webpack.DefinePlugin({
+      'process.env': {
+        PRODUCT_NAME: JSON.stringify(APP_CONFIG.TITLE),
+      },
+    }),
   ],
 };
 
