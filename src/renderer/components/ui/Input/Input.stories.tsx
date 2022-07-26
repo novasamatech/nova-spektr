@@ -14,3 +14,8 @@ export const Primary = Template.bind({});
 Primary.args = {
   placeholder: 'Test input',
 };
+
+export const Filled = Template.bind({});
+Filled.args = {
+  value: 'This is value',
+};

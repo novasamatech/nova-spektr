@@ -30,7 +30,7 @@ const Input = ({
   return (
     <label
       className={cn(
-        'relative border-b text-lg leading-5',
+        'relative inline-block border-b text-lg leading-5',
         value ? 'border-primary' : 'border-shade-20',
         invalid && 'border-error',
         wrapperClass,

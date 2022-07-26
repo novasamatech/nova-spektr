@@ -40,7 +40,7 @@ describe('service/matrix/storage', () => {
     expect(item?.username).toEqual('new name');
   });
 
-  test('should set and get skip', () => {
+  test('should set and get skip value', () => {
     storage.setSkip({ skip: true });
     const item = storage.getSkip();
     expect(item.skip).toEqual(true);

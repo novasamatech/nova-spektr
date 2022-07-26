@@ -43,7 +43,7 @@ module.exports = {
         9.5: '2.375rem',
       },
       backgroundImage: {
-        stripes: "url('@images/misc/stripes.png')",
+        stripes: "url('/src/renderer/assets/images/misc/stripes.png')",
       },
       outlineOffset: {
         reduced: '-5px',
