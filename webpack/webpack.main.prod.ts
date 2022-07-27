@@ -1,10 +1,10 @@
 import { resolve } from 'path';
-import { merge } from 'webpack-merge';
 import webpack, { Configuration as WpConfig, Configuration } from 'webpack';
 import { Configuration as WdsConfig } from 'webpack-dev-server';
+import { merge } from 'webpack-merge';
 
-import sharedConfig from './webpack.shared';
 import { APP_CONFIG } from '../app.config';
+import sharedConfig from './webpack.shared';
 
 const { FOLDERS } = APP_CONFIG;
 
@@ -20,16 +20,6 @@ const config: Configuration = merge<WpConfig & WdsConfig>(sharedConfig, {
   output: {
     path: resolve(FOLDERS.DEV_BUILD),
     filename: '[name].js',
-  },
-
-  module: {
-    rules: [
-      {
-        test: /\.(js|ts)$/,
-        exclude: /node_modules/,
-        loader: 'swc-loader',
-      },
-    ],
   },
 
   plugins: [

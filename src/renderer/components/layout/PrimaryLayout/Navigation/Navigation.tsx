@@ -1,7 +1,9 @@
 import cn from 'classnames';
-import { NavLink } from 'react-router-dom';
+import { useState } from 'react';
+import { NavLink, useNavigate } from 'react-router-dom';
 
-import { Icon, Identicon } from '@renderer/components/ui';
+import { Button, Icon, Identicon } from '@renderer/components/ui';
+import { useMatrix } from '@renderer/context/MatrixContext';
 import Paths from '@renderer/routes/paths';
 
 const NavItems = [
@@ -13,6 +15,24 @@ const NavItems = [
 ];
 
 const Navigation = () => {
+  const navigate = useNavigate();
+  const { matrix, setIsLoggedIn } = useMatrix();
+
+  const [isProcessing, setIsProcessing] = useState(false);
+
+  const onLogout = async () => {
+    setIsProcessing(true);
+
+    try {
+      await matrix.logout();
+      setIsLoggedIn(false);
+      navigate(Paths.LOGIN);
+    } catch (error) {
+      console.warn(error);
+      setIsProcessing(false);
+    }
+  };
+
   return (
     <aside className="flex gap-y-5 flex-col w-[280px] py-5 pl-5">
       <div className="bg-primary rounded-xl text-white">
@@ -50,6 +70,11 @@ const Navigation = () => {
           ))}
         </ul>
       </nav>
+      {matrix.isLoggedIn && (
+        <Button variant="outline" pallet="primary" disabled={isProcessing} onClick={onLogout}>
+          Logout
+        </Button>
+      )}
     </aside>
   );
 };

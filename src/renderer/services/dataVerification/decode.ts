@@ -25,10 +25,10 @@ const decodeHeaderByte = (header: number) => {
   // it at global scope.
 
   // eslint-disable-next-line no-plusplus
-  for (let i = VARIANTS.length - 1; i >= 0; i--) {
+  for (let index = VARIANTS.length - 1; index >= 0; index--) {
     const variantBits = header & HEADER_MASK;
 
-    if (variantBits !== VARIANTS[i]) {
+    if (variantBits !== VARIANTS[index]) {
       // eslint-disable-next-line no-continue
       continue;
     }
@@ -204,10 +204,10 @@ const loadProof = (proofHashToNode: Record<string, Node>, branch: Node | undefin
   });
 };
 /**
- * Build trie from proof encoded nodes
+ * Get decoded trie root from proof encoded nodes
  * @param proofEncodedNodes - proof encoded nodes from parachain
  * @param root - state root from relay chain
- * @returns decoded trie root
+ * @return {Object}
  */
 export const buildTrie = (proofEncodedNodes: Uint8Array[], root: Uint8Array): Node => {
   if (proofEncodedNodes.length === 0) {

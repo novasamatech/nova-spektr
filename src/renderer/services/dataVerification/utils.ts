@@ -3,8 +3,8 @@ import { NodeType } from './constants';
 
 /**
  * Transform little endian byte array to nibbles array
- * @param key little endian biyte array
- * @returns nibbles byte array
+ * @param key little endian byte array
+ * @return {Array}
  */
 export const keyLEToNibbles = (key: Uint8Array): Uint8Array => {
   if (key.length === 0) {
@@ -29,7 +29,7 @@ export const keyLEToNibbles = (key: Uint8Array): Uint8Array => {
 /**
  * Get node type by children amount
  * @param n node
- * @returns node type
+ * @return {Object}
  */
 export const getNodeType = (n: Node): NodeType => {
   if (n.children?.length > 0) {

@@ -5,9 +5,10 @@ type Props = {
   name: IconNames;
   size?: number;
   className?: string;
+  alt?: string;
 };
 
-const Icon = ({ as = 'svg', name, size = 24, className }: Props) => {
+const Icon = ({ as = 'svg', name, size = 24, className, alt = '' }: Props) => {
   const IconComponent = AllIcons[name][as];
 
   if (!IconComponent) {
@@ -23,7 +24,7 @@ const Icon = ({ as = 'svg', name, size = 24, className }: Props) => {
       <img
         className={className}
         src={IconComponent as string}
-        alt=""
+        alt={alt}
         width={size}
         height={size}
         data-testid={`${name}-img`}
