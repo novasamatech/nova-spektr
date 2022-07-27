@@ -21,7 +21,7 @@ export class MatrixStorage implements ICredentialStorage {
    * Add new credential to the storage
    * @param credential value of credentials
    */
-  addCreds(credential: Credential): void {
+  saveCredentials(credential: Credential): void {
     const storage = this.getCredentialsStorage();
 
     storage.push(credential);
@@ -34,7 +34,7 @@ export class MatrixStorage implements ICredentialStorage {
    * @param value search value
    * @return {Object | undefined}
    */
-  getCreds(key: keyof Credential, value: any): Credential | undefined {
+  getCredentials(key: keyof Credential, value: any): Credential | undefined {
     const storage = this.getCredentialsStorage();
 
     return storage.find((item) => item[key] === value);
@@ -45,7 +45,7 @@ export class MatrixStorage implements ICredentialStorage {
    *  @param userId key to use in search
    *  @param credentials credentials data
    */
-  updateCreds(userId: string, credentials: Partial<Credential>): void {
+  updateCredentials(userId: string, credentials: Partial<Credential>): void {
     const storage = this.getCredentialsStorage();
 
     const index = storage.findIndex((item) => item.userId === userId);
@@ -63,7 +63,7 @@ export class MatrixStorage implements ICredentialStorage {
    * Set flag about skip login
    * @param data skip data
    */
-  setSkip(data: SkipLogin): void {
+  saveSkipLogin(data: SkipLogin): void {
     localStorage.setItem(this.skipKey, JSON.stringify(data));
   }
 
@@ -71,7 +71,7 @@ export class MatrixStorage implements ICredentialStorage {
    * Get skip login data from the storage
    * @return {Object}
    */
-  getSkip(): SkipLogin {
+  getSkipLogin(): SkipLogin {
     return this.getSkipStorage();
   }
 

@@ -106,7 +106,7 @@ export class Matrix implements ISecureMessenger {
    * Save skip flag to the storage
    */
   skipLogin(value: boolean): void {
-    this.storage.setSkip({ skip: value });
+    this.storage.saveSkipLogin({ skip: value });
   }
 
   /**
@@ -145,7 +145,7 @@ export class Matrix implements ISecureMessenger {
     if (!this.isEncryptionActive) {
       throw this.createError(Errors.ENCRYPTION_NOT_STARTED);
     }
-    if (this.storage.getSkip().skip) return;
+    if (this.storage.getSkipLogin().skip) return;
 
     try {
       this.initClientFromCache();
@@ -300,11 +300,11 @@ export class Matrix implements ISecureMessenger {
   async logout(): Promise<void | ErrorObject> {
     this.checkClientLoggedIn();
 
-    const credentials = this.storage.getCreds('userId', this.userId);
+    const credentials = this.storage.getCredentials('userId', this.userId);
     if (!credentials) {
       throw this.createError(Errors.LOGOUT);
     }
-    this.storage.updateCreds(credentials.userId, { isLastLogin: false });
+    this.storage.updateCredentials(credentials.userId, { isLastLogin: false });
 
     try {
       await this.matrixClient.logout();
@@ -706,7 +706,7 @@ export class Matrix implements ISecureMessenger {
     try {
       await Promise.all(verifyRequests);
     } catch (error) {
-      throw this.createError(Errors.MASS_VERIFY, error);
+      throw this.createError(Errors.MEMBERS_VERIFICATION, error);
     }
   }
 
@@ -718,7 +718,7 @@ export class Matrix implements ISecureMessenger {
    * @throws {ErrorObject}
    */
   private async initClientWithCreds(username: string, password: string): Promise<void | ErrorObject> {
-    const credentials = this.storage.getCreds('username', username);
+    const credentials = this.storage.getCredentials('username', username);
     const userLoginResult = await this.matrixClient.login('m.login.password', {
       ...(credentials?.deviceId && { device_id: credentials.deviceId }),
       initial_device_display_name: process.env.PRODUCT_NAME,
@@ -735,12 +735,12 @@ export class Matrix implements ISecureMessenger {
     });
 
     if (credentials) {
-      this.storage.updateCreds(credentials.userId, {
+      this.storage.updateCredentials(credentials.userId, {
         accessToken: userLoginResult.access_token,
         isLastLogin: true,
       });
     } else {
-      this.storage.addCreds({
+      this.storage.saveCredentials({
         username,
         userId: userLoginResult.user_id,
         accessToken: userLoginResult.access_token,
@@ -757,7 +757,7 @@ export class Matrix implements ISecureMessenger {
    * @throws {ErrorObject}
    */
   private initClientFromCache(): void | ErrorObject {
-    const credentials = this.storage.getCreds('isLastLogin', true);
+    const credentials = this.storage.getCredentials('isLastLogin', true);
 
     if (!credentials) {
       throw this.createError(Errors.NO_CREDS_IN_DB);

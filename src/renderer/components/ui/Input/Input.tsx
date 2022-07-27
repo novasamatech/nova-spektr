@@ -6,8 +6,8 @@ export interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
   label?: string;
   invalid?: boolean;
   wrapperClass?: string;
-  startAdornment?: ReactNode;
-  endAdornment?: ReactNode;
+  prefixElement?: ReactNode;
+  suffixElement?: ReactNode;
 }
 
 const Input = ({
@@ -23,8 +23,8 @@ const Input = ({
   wrapperClass,
   value,
   invalid = false,
-  startAdornment,
-  endAdornment,
+  prefixElement,
+  suffixElement,
   onChange,
 }: InputProps) => {
   return (
@@ -36,7 +36,7 @@ const Input = ({
         wrapperClass,
       )}
     >
-      {startAdornment && <span>{startAdornment}</span>}
+      {prefixElement && <span>{prefixElement}</span>}
       {/*{label && <span className="absolute top-1/2 -translate-y-1/2">{label}</span>}*/}
       <input
         className={cn(
@@ -53,7 +53,7 @@ const Input = ({
         placeholder={placeholder}
         onChange={onChange}
       />
-      {endAdornment && <span>{endAdornment}</span>}
+      {suffixElement && <span>{suffixElement}</span>}
     </label>
   );
 };

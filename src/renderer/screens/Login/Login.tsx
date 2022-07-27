@@ -3,7 +3,6 @@ import { Controller, SubmitHandler, useForm } from 'react-hook-form';
 import { useNavigate } from 'react-router-dom';
 
 import { Button, Input } from '@renderer/components/ui';
-import { ViewColor, ViewType } from '@renderer/components/ui/Button/Button';
 import { useMatrix } from '@renderer/context/MatrixContext';
 import { BASE_MATRIX_URL, ErrorObject } from '@renderer/services/matrix';
 import Paths from '@renderer/routes/paths';
@@ -122,7 +121,7 @@ const Login = () => {
           )}
         />
         <div className="text-error text-sm break-words">{formError}</div>
-        <Button type="submit" weight="lg" view={[ViewType.Fill, ViewColor.Primary]} disabled={!isValid || isProcessing}>
+        <Button type="submit" weight="lg" variant="fill" pallet="primary" disabled={!isValid || isProcessing}>
           Login
         </Button>
       </form>
@@ -130,7 +129,8 @@ const Login = () => {
         <Button
           className="w-[300px] mx-auto"
           weight="lg"
-          view={[ViewType.Outline, ViewColor.Primary]}
+          variant="outline"
+          pallet="primary"
           disabled={isProcessing}
           onClick={onSkip}
         >

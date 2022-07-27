@@ -1,7 +1,6 @@
 import { PropsWithChildren } from 'react';
 
 import { Button } from '@renderer/components/ui';
-import { ViewColor, ViewType } from '@renderer/components/ui/Button/Button';
 import BaseModal from '../BaseModal/BaseModal';
 
 type Props = {
@@ -15,10 +14,10 @@ const ConfirmModal = ({ isOpen, children, onClose, onConfirm }: PropsWithChildre
     <BaseModal isOpen={isOpen} onClose={onClose}>
       {children}
       <div className="grid grid-cols-2 gap-x-3">
-        <Button view={[ViewType.Outline, ViewColor.Primary]} onClick={() => onClose()}>
+        <Button variant="outline" pallet="primary" onClick={() => onClose()}>
           Cancel
         </Button>
-        <Button view={[ViewType.Fill, ViewColor.Primary]} onClick={() => onConfirm()}>
+        <Button variant="fill" pallet="primary" onClick={() => onConfirm()}>
           Confirm
         </Button>
       </div>

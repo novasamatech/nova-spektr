@@ -32,18 +32,6 @@ const retrieveFromLeaf = (leaf: Node, key: Uint8Array) => {
   return null;
 };
 
-const retrieve = (node: Node, key: Uint8Array): Uint8Array | null => {
-  if (!node) {
-    return null;
-  }
-
-  if (getNodeType(node) === NodeType.Leaf) {
-    return retrieveFromLeaf(node, key);
-  }
-
-  return retrieveFromBranch(node, key);
-};
-
 const retrieveFromBranch = (branch: Node, key: Uint8Array) => {
   if (key.length === 0 || u8aToHex(branch.key) === u8aToHex(key)) {
     return branch.value;
@@ -58,7 +46,20 @@ const retrieveFromBranch = (branch: Node, key: Uint8Array) => {
   const childKey = key.subarray(commonPrefixLength + 1);
   const child = branch.children[childIndex];
 
+  // eslint-disable-next-line @typescript-eslint/no-use-before-define
   return retrieve(child, childKey);
+};
+
+const retrieve = (node: Node, key: Uint8Array): Uint8Array | null => {
+  if (!node) {
+    return null;
+  }
+
+  if (getNodeType(node) === NodeType.Leaf) {
+    return retrieveFromLeaf(node, key);
+  }
+
+  return retrieveFromBranch(node, key);
 };
 
 /**

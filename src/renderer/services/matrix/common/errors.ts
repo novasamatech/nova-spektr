@@ -117,9 +117,9 @@ const MATRIX_ERRORS: Record<Errors, ErrorObject> = {
     code: Errors.INVITE_USERS,
     message: 'Could not invite users',
   },
-  [Errors.MASS_VERIFY]: {
-    code: Errors.MASS_VERIFY,
-    message: 'Could not verify devices',
+  [Errors.MEMBERS_VERIFICATION]: {
+    code: Errors.MEMBERS_VERIFICATION,
+    message: 'Could not verify members devices in room',
   },
   [Errors.READ_TIMELINE]: {
     code: Errors.READ_TIMELINE,

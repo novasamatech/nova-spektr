@@ -69,12 +69,12 @@ export type SkipLogin = {
 };
 
 export interface ICredentialStorage {
-  getCreds: (key: keyof Credential, value: any) => Credential | undefined;
-  addCreds: (credential: Credential) => void;
-  updateCreds: (userId: string, credential: Partial<Credential>) => void;
+  getCredentials: (key: keyof Credential, value: any) => Credential | undefined;
+  saveCredentials: (credential: Credential) => void;
+  updateCredentials: (userId: string, credential: Partial<Credential>) => void;
 
-  getSkip: () => SkipLogin;
-  setSkip: (data: SkipLogin) => void;
+  getSkipLogin: () => SkipLogin;
+  saveSkipLogin: (data: SkipLogin) => void;
 
   clear: () => void;
 }
@@ -210,7 +210,7 @@ export const enum Errors {
   ROOM_TOPIC,
   OUTSIDE_ROOM,
   INVITE_USERS,
-  MASS_VERIFY,
+  MEMBERS_VERIFICATION,
   READ_TIMELINE,
 }
 

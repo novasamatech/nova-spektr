@@ -1,6 +1,6 @@
 import { ComponentMeta, ComponentStory } from '@storybook/react';
 
-import Button, { ViewColor, ViewType } from './Button';
+import Button from './Button';
 
 export default {
   title: 'Button',
@@ -12,7 +12,8 @@ const Template: ComponentStory<typeof Button> = (args) => <Button {...args} />;
 
 export const Primary = Template.bind({});
 Primary.args = {
-  view: [ViewType.Outline, ViewColor.Primary],
+  variant: 'outline',
+  pallet: 'primary',
   children: 'Hello button',
   disabled: false,
 };

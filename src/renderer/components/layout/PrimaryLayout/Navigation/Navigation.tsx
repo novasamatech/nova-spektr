@@ -3,7 +3,6 @@ import { useState } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
 
 import { Button, Icon, Identicon } from '@renderer/components/ui';
-import { ViewColor, ViewType } from '@renderer/components/ui/Button/Button';
 import { useMatrix } from '@renderer/context/MatrixContext';
 import Paths from '@renderer/routes/paths';
 
@@ -72,12 +71,7 @@ const Navigation = () => {
         </ul>
       </nav>
       {matrix.isLoggedIn && (
-        <Button
-          view={[ViewType.Outline, ViewColor.Primary]}
-          disabled={isProcessing}
-          endAdornment={isProcessing}
-          onClick={onLogout}
-        >
+        <Button variant="outline" pallet="primary" disabled={isProcessing} onClick={onLogout}>
           Logout
         </Button>
       )}
