@@ -6,5 +6,6 @@ import Operations from './Operations/Operations';
 import Settings from './Settings/Settings';
 import Transfer from './Transfer/Transfer';
 import Wallets from './Wallets/Wallets';
+import Login from './Login/Login';
 
-export { Dashboard, Assets, Operations, Wallets, Settings, Transfer, Balances, AddressBook };
+export { Dashboard, Assets, Operations, Wallets, Settings, Transfer, Balances, AddressBook, Login };

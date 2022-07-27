@@ -25,11 +25,6 @@ const config = merge<WpConfig & WdsConfig>(baseConfig, {
   module: {
     rules: [
       {
-        test: /\.(js|ts|tsx|jsx)$/,
-        exclude: /node_modules/,
-        loader: 'swc-loader',
-      },
-      {
         test: /\.css$/,
         use: [
           MiniCssExtractPlugin.loader,

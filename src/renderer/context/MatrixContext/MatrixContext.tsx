@@ -1,3 +1,4 @@
+import { ErrorObject } from 'css-minimizer-webpack-plugin';
 import { createContext, PropsWithChildren, ReactNode, useContext, useEffect, useRef, useState } from 'react';
 
 import Matrix, { InvitePayload, ISecureMessenger, MSTPayload } from '@renderer/services/matrix';
@@ -12,32 +13,32 @@ const MatrixContext = createContext<MatrixContextProps>({} as MatrixContextProps
 
 type Props = {
   loader: ReactNode;
-  onAutoLoginFail: (message: string) => void;
+  onAutoLoginFail: (errorMsg: string) => void;
 };
 
 export const MatrixProvider = ({ loader, onAutoLoginFail, children }: PropsWithChildren<Props>) => {
-  const { current: matrix } = useRef<ISecureMessenger>(new Matrix({}));
+  const { current: matrix } = useRef<ISecureMessenger>(new Matrix());
 
-  const [isMatrixLoading, setIsMatrixLoading] = useState(true);
+  const [isProcessing, setIsProcessing] = useState(true);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
 
   useEffect(() => {
     const initMatrix = async () => {
       try {
         await matrix.init();
-        //   await matrix.loginFromCache();
-        //   setIsLoggedIn(true);
+        await matrix.loginFromCache();
+        setIsLoggedIn(true);
       } catch (error) {
-        onAutoLoginFail((error as Error).message);
+        onAutoLoginFail((error as ErrorObject).message);
       }
 
-      setIsMatrixLoading(false);
+      setIsProcessing(false);
     };
 
     initMatrix();
 
     return () => {
-      matrix.stopClient();
+      matrix.stopClient(true);
     };
   }, []);
 
@@ -73,7 +74,7 @@ export const MatrixProvider = ({ loader, onAutoLoginFail, children }: PropsWithC
     });
   }, [isLoggedIn]);
 
-  if (isMatrixLoading) {
+  if (isProcessing) {
     return <>{loader}</>;
   }
 

@@ -13,15 +13,15 @@ const lenCommonPrefix = (a: Uint8Array, b: Uint8Array): number => {
     min = b.length;
   }
 
-  let i;
+  let index;
   // eslint-disable-next-line no-plusplus
-  for (i = 0; i < min; i++) {
-    if (a[i] !== b[i]) {
+  for (index = 0; index < min; index++) {
+    if (a[index] !== b[index]) {
       break;
     }
   }
 
-  return i;
+  return index;
 };
 
 const retrieveFromLeaf = (leaf: Node, key: Uint8Array) => {
@@ -63,10 +63,10 @@ const retrieve = (node: Node, key: Uint8Array): Uint8Array | null => {
 };
 
 /**
- * get the value for a given key from the trie
+ * Get the value for a given key from the trie as Uint8Array
  * @param node root node of the trie
  * @param key key to retrieve
- * @returns value for the key as a Uint8Array
+ * @return {Array}
  */
 export const get = (node: Node, key: Uint8Array): Uint8Array | null => {
   const keyNibbles = keyLEToNibbles(key);

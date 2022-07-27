@@ -21,7 +21,7 @@ const Switch = ({ label, checked = false, disabled, className, onChange = noop }
           onChange={onChange}
           className={cn(
             className,
-            checked ? 'bg-primary' : 'bg-shadow-30',
+            checked ? 'bg-primary' : 'bg-shade-30',
             disabled && 'opacity-50',
             'relative inline-flex h-[22px] w-[38px] items-center rounded-full transition-colors focus:outline-none',
           )}

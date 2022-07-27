@@ -19,7 +19,7 @@ const Checkbox = ({ label, checked, disabled, className, onChange }: Props) => {
           className={cn(
             'relative',
             'appearance-none w-5 h-5 text-primary bg-white ',
-            'rounded-md border-shadow-30 border-2',
+            'rounded-md border-shade-30 border-2',
             'checked:bg-primary checked:border-0',
             disabled && 'opacity-50',
           )}
