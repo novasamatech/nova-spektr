@@ -4,6 +4,8 @@ import db, { Connection } from '@renderer/services/storage';
 import { HexString } from '@renderer/domain/types';
 import { ConnectionType } from './common/types';
 
+export type { Connection } from '@renderer/services/storage';
+
 interface IConnectionStorage {
   getConnection: (chainId: HexString) => PromiseExtended<Connection | undefined>;
   getConnections: () => PromiseExtended<Connection[]>;

@@ -5,8 +5,8 @@ import { ScProvider } from '@polkadot/rpc-provider/substrate-connect';
 
 import { useChains } from './chainsService';
 import { Chain, ConnectionType, ExtendedChain, INetworkService } from './common/types';
-import { useConnectionStorage } from './connectionStorage';
-import { arrayToObject, notNull } from '@renderer/utils/objects';
+import { useConnectionStorage, Connection } from './connectionStorage';
+import { arrayToObject } from '@renderer/utils/objects';
 import { useChainSpec } from './chainSpecService';
 import { HexString } from '@renderer/domain/types';
 
@@ -32,16 +32,14 @@ export const useNetwork = (): INetworkService => {
     const currentConnections = await getConnections();
     const connectionData = arrayToObject(currentConnections, 'chainId');
 
-    const connections = Object.values(chains.current)
-      .map(({ chainId }) => {
-        if (!connectionData[chainId]) {
-          return {
-            chainId,
-            type: getKnownChain(chainId) ? ConnectionType.LIGHT_CLIENT : ConnectionType.RPC_NODE,
-          };
-        }
-      })
-      .filter(notNull);
+    const connections = Object.values(chains.current).reduce((acc, { chainId }) => {
+      if (!connectionData[chainId]) {
+        const type = getKnownChain(chainId) ? ConnectionType.LIGHT_CLIENT : ConnectionType.RPC_NODE;
+        acc.push({ chainId, type });
+      }
+
+      return acc;
+    }, [] as Connection[]);
 
     await addConnections(connections);
   };
