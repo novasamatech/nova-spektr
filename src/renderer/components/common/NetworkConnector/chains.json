@@ -1,6 +1,6 @@
 [
   {
-    "chainId": "91b171bb158e2d3848fa23a9f1c25182fb8e20313b2c1eb49219da7a70ce90c3",
+    "chainId": "0x91b171bb158e2d3848fa23a9f1c25182fb8e20313b2c1eb49219da7a70ce90c3",
     "name": "Polkadot",
     "assets": [
       {
@@ -74,7 +74,7 @@
     "options": ["crowdloans"]
   },
   {
-    "chainId": "b0a8d493285c2df73290dfb7e61f870f17b41801197a149ca93654499ea3dafe",
+    "chainId": "0xb0a8d493285c2df73290dfb7e61f870f17b41801197a149ca93654499ea3dafe",
     "name": "Kusama",
     "assets": [
       {
@@ -151,7 +151,7 @@
     "options": ["crowdloans"]
   },
   {
-    "chainId": "e143f23803ac50e8f6f8e62695d1ce9e4e1d68aa36c1cd2cfd15340213f3423e",
+    "chainId": "0xe143f23803ac50e8f6f8e62695d1ce9e4e1d68aa36c1cd2cfd15340213f3423e",
     "name": "Westend",
     "assets": [
       {
@@ -211,7 +211,7 @@
     "options": ["testnet", "crowdloans"]
   },
   {
-    "chainId": "6408de7737c59c238890533af25896a2c20608d8b380bb01029acb392781063e",
+    "chainId": "0x6408de7737c59c238890533af25896a2c20608d8b380bb01029acb392781063e",
     "name": "Rococo",
     "assets": [
       {
@@ -237,7 +237,7 @@
   },
 
   {
-    "chainId": "67f9723393ef76214df0118c34bbbd3dbebc8ed46a10973a8c969d48fe7598c9",
+    "chainId": "0x67f9723393ef76214df0118c34bbbd3dbebc8ed46a10973a8c969d48fe7598c9",
     "parentId": "e143f23803ac50e8f6f8e62695d1ce9e4e1d68aa36c1cd2cfd15340213f3423e",
     "name": "Westmint",
     "assets": [
@@ -291,7 +291,7 @@
     "options": ["testnet"]
   },
   {
-    "chainId": "48239ef607d7928874027a43a67689209727dfb3d3dc5e5b03a39bdc2eda771a",
+    "chainId": "0x48239ef607d7928874027a43a67689209727dfb3d3dc5e5b03a39bdc2eda771a",
     "parentId": "b0a8d493285c2df73290dfb7e61f870f17b41801197a149ca93654499ea3dafe",
     "name": "Statemine",
     "assets": [
@@ -422,7 +422,7 @@
     "addressPrefix": 2
   },
   {
-    "chainId": "baf5aabe40646d11f0ee8abbdc64f4a4b7674925cba08e4a05ff9ebed6e2126b",
+    "chainId": "0xbaf5aabe40646d11f0ee8abbdc64f4a4b7674925cba08e4a05ff9ebed6e2126b",
     "parentId": "b0a8d493285c2df73290dfb7e61f870f17b41801197a149ca93654499ea3dafe",
     "name": "Karura",
     "assets": [
@@ -842,7 +842,7 @@
   },
 
   {
-    "chainId": "fc41b9bd8ef8fe53d58c7ea67c794c7ec9a73daf05e6d54b14ff6342c99ba64c",
+    "chainId": "0xfc41b9bd8ef8fe53d58c7ea67c794c7ec9a73daf05e6d54b14ff6342c99ba64c",
     "parentId": "91b171bb158e2d3848fa23a9f1c25182fb8e20313b2c1eb49219da7a70ce90c3",
     "name": "Acala",
     "assets": [
@@ -991,7 +991,7 @@
     "addressPrefix": 10
   },
   {
-    "chainId": "68d56f15f85d3136970ec16946040bc1752654e906147f7e43e9d539d7c3de2f",
+    "chainId": "0x68d56f15f85d3136970ec16946040bc1752654e906147f7e43e9d539d7c3de2f",
     "parentId": "91b171bb158e2d3848fa23a9f1c25182fb8e20313b2c1eb49219da7a70ce90c3",
     "name": "Statemint",
     "assets": [
