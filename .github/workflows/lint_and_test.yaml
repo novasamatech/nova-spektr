@@ -1,10 +1,14 @@
 name: Lint and unit tests
 
 on:
-  pull_request:
+  # pull_request:
+  push:
+    branches:
+      - 'main'
+      - 'dev'
 
 jobs:
-  cache-and-install:
+  lint-and-test:
     runs-on: ubuntu-latest
 
     steps:
