@@ -1,5 +1,5 @@
-import { Chain, IChainService } from './types';
-import chains from './chains.json';
+import { Chain, IChainService } from './common/types';
+import chains from './common/chains.json';
 
 export function useChains(): IChainService {
   return {

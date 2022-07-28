@@ -1,7 +1,7 @@
 import { ApiPromise } from '@polkadot/api';
 
 import { HexString } from '@renderer/domain/types';
-import { Connection } from '../storage';
+import { Connection } from '../../storage';
 
 // ------------------
 // Service interfaces
@@ -11,7 +11,7 @@ export interface IChainService {
 }
 
 export interface IChainSpecService {
-  getChainSpec: (chainId: HexString) => Promise<string>;
+  getChainSpec: (chainId: HexString) => Promise<string | undefined>;
   getKnownChain: (chainId: HexString) => string | undefined;
 }
 

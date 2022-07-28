@@ -1,5 +1,5 @@
 import { useChains } from '../chainsService';
-import chains from '../chains.json';
+import chains from '../common/chains.json';
 
 describe('service/network', () => {
   test('should init', () => {
@@ -12,6 +12,6 @@ describe('service/network', () => {
     const { getChainsData } = useChains();
     const data = await getChainsData();
 
-    expect(data).toBe(chains);
+    expect(data).toEqual(chains);
   });
 });

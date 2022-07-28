@@ -4,9 +4,9 @@ import { ProviderInterface } from '@polkadot/rpc-provider/types';
 import { ScProvider } from '@polkadot/rpc-provider/substrate-connect';
 
 import { useChains } from './chainsService';
-import { Chain, ConnectionType, ExtendedChain, INetworkService } from './types';
+import { Chain, ConnectionType, ExtendedChain, INetworkService } from './common/types';
 import { useConnectionStorage } from './connectionStorage';
-import { arrayToObject } from '@renderer/utils/objects';
+import { arrayToObject, notNull } from '@renderer/utils/objects';
 import { useChainSpec } from './chainSpecService';
 import { HexString } from '@renderer/domain/types';
 
@@ -16,9 +16,9 @@ export const useNetwork = (): INetworkService => {
 
   const { getChainsData } = useChains();
   const { getKnownChain, getChainSpec } = useChainSpec();
-  const { getConnections, addConnection, changeConnectionType } = useConnectionStorage();
+  const { getConnections, addConnections, changeConnectionType } = useConnectionStorage();
 
-  const updateConnectionType = async (chainId: HexString, type: ConnectionType) => {
+  const updateConnectionType = async (chainId: HexString, type: ConnectionType): Promise<void> => {
     const connection = connections.current[chainId];
     if (connection) {
       await changeConnectionType(connection.connection, type);
@@ -32,14 +32,18 @@ export const useNetwork = (): INetworkService => {
     const currentConnections = await getConnections();
     const connectionData = arrayToObject(currentConnections, 'chainId');
 
-    Object.values(chains.current).forEach(async (chain) => {
-      if (!connectionData[chain.chainId]) {
-        await addConnection(
-          chain.chainId,
-          getKnownChain(chain.chainId) ? ConnectionType.LIGHT_CLIENT : ConnectionType.RPC_NODE,
-        );
-      }
-    });
+    const connections = Object.values(chains.current)
+      .map(({ chainId }) => {
+        if (!connectionData[chainId]) {
+          return {
+            chainId,
+            type: getKnownChain(chainId) ? ConnectionType.LIGHT_CLIENT : ConnectionType.RPC_NODE,
+          };
+        }
+      })
+      .filter(notNull);
+
+    await addConnections(connections);
   };
 
   const connect = async (): Promise<void> => {
@@ -56,6 +60,10 @@ export const useNetwork = (): INetworkService => {
           await provider.connect();
         } else {
           const chainSpec = await getChainSpec(chain.chainId);
+
+          if (!chainSpec) {
+            throw new Error('Chain spec not found');
+          }
 
           const parentName = getKnownChain(chains.current[chain.chainId].parentId);
           if (parentName) {
@@ -97,6 +105,7 @@ export const useNetwork = (): INetworkService => {
     try {
       await api.disconnect();
     } catch (e) {
+      // TODO: Add error handling
       console.error(e);
     }
 
