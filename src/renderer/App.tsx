@@ -3,6 +3,7 @@ import { useNavigate, useRoutes } from 'react-router-dom';
 import { SplashScreen } from '@renderer/components/common';
 import I18Provider from '@renderer/context/I18Context';
 import MatrixProvider from '@renderer/context/MatrixContext';
+import NetworkProvider from '@renderer/context/NetworkContext';
 import Paths from '@renderer/routes/paths';
 import routesConfig from './routes';
 
@@ -17,9 +18,11 @@ const App = () => {
 
   return (
     <I18Provider>
-      <MatrixProvider loader={<SplashScreen />} onAutoLoginFail={onAutoLoginFail}>
-        {appRoutes}
-      </MatrixProvider>
+      <NetworkProvider>
+        <MatrixProvider loader={<SplashScreen />} onAutoLoginFail={onAutoLoginFail}>
+          {appRoutes}
+        </MatrixProvider>
+      </NetworkProvider>
     </I18Provider>
   );
 };
