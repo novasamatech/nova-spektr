@@ -1,5 +1,5 @@
 import { HexString } from '@renderer/domain/types';
-import { ConnectionType } from '@/renderer/services/network/common/types';
+import { ConnectionType } from '@renderer/services/network/common/types';
 
 // =====================================================
 // ================ Storage interface ==================

@@ -1,7 +1,7 @@
 import { createContext, PropsWithChildren, useContext, useEffect } from 'react';
 
 import { useNetwork } from '@renderer/services/network/networkService';
-import { ConnectionType, ExtendedChain } from '@/renderer/services/network/common/types';
+import { ConnectionType, ExtendedChain } from '@renderer/services/network/common/types';
 import { HexString } from '@renderer/domain/types';
 
 type NetworkContextProps = {
