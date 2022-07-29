@@ -4,7 +4,7 @@ on:
   pull_request:
 
 jobs:
-  cache-and-install:
+  lint-and-test:
     runs-on: ubuntu-latest
 
     steps:
