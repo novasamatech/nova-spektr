@@ -19,7 +19,7 @@
     "webpack:renderer:prod": "webpack --config webpack/webpack.renderer.prod.ts",
     "build": "cross-env NODE_ENV=production pnpm r clean:prod webpack:renderer:prod webpack:main:prod",
     "postbuild": "node scripts/postbuild.js",
-    "dist": "electron-builder",
+    "dist": "electron-builder -p never",
     "clean:build": "rimraf release/build",
     "clean:prod": "rimraf release/dist",
     "test": "jest --config=jest.config.ts",

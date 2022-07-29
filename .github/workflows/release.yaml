@@ -3,11 +3,11 @@ on:
     # Sequence of patterns matched against refs/tags
     tags:
       - 'v*' # Push events to matching v*, i.e. v1.0, v20.15.10
-  pull_request:
 
 jobs:
   release-build:
     runs-on: ${{ matrix.os }}
+    timeout-minutes: 30
 
     strategy:
       fail-fast: false
@@ -46,6 +46,16 @@ jobs:
       - name: Install dependencies
         run: pnpm install
 
+      - name: Get tag name
+        uses: olegtarasov/get-tag@v2.1 # Put version in GIT_TAG_NAME environment variable
+
+      - name: Update package.json version
+        uses: jossef/action-set-json-field@v2
+        with:
+          file: package.json
+          field: version
+          value: ${{ env.GIT_TAG_NAME }}
+
       - name: Build app
         run: |
           pnpm build
@@ -57,9 +67,9 @@ jobs:
         with:
           name: build-artifats
           path: |
-            "./release/dist/*.exe"
-            "./release/dist/*.dmg"
-            "./release/dist/*.AppImage"
+            release/dist/*.exe
+            release/dist/*.dmg
+            release/dist/*.AppImage
 
 
   releas-project:

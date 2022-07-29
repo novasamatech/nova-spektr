@@ -1,4 +1,4 @@
-name: Build
+name: Build test
 
 on:
   push:
@@ -9,6 +9,7 @@ on:
 jobs:
   test-build:
     runs-on: ${{ matrix.os }}
+    timeout-minutes: 30
 
     strategy:
       fail-fast: false
@@ -51,4 +52,3 @@ jobs:
         run: |
           pnpm build
           pnpm postbuild
-          pnpm dist
