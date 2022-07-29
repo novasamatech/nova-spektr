@@ -1,4 +1,4 @@
-name: Build/release
+name: Build test
 
 on:
   push:
@@ -7,8 +7,9 @@ on:
       - 'dev'
 
 jobs:
-  release:
+  test-build:
     runs-on: ${{ matrix.os }}
+    timeout-minutes: 30
 
     strategy:
       fail-fast: false
@@ -31,24 +32,23 @@ jobs:
           version: 7
           run_install: false
 
-      - name: Get yarn store directory
-        id: yarn-cache
+      - name: Get pnpm store directory
+        id: pnpm-cache
         run: |
-          echo "::set-output name=yarn_cache_dir::$(yarn cache dir)"
+          echo "::set-output name=pnpm_cache_dir::$(pnpm store path)"
 
       - uses: actions/cache@v3
-        name: Setup yarn cache
+        name: Setup pnpm cache
         with:
-          path: ${{ steps.yarn-cache.outputs.yarn_cache_dir }}
-          key: ${{ runner.os }}-yarn-store-${{ hashFiles('**/yarn.lock') }}
+          path: ${{ steps.pnpm-cache.outputs.pnpm_cache_dir }}
+          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
           restore-keys: |
-            ${{ runner.os }}-yarn-store-
+            ${{ runner.os }}-pnpm-store-
 
-      - name: Build/release Electron app
-        uses: samuelmeuli/action-electron-builder@v1
-        with:
-          github_token: ${{ secrets.github_token }}
+      - name: Install dependencies
+        run: pnpm install
 
-          # If the commit is tagged with a version (e.g. "v1.0.0"),
-          # release the app after building
-          release: ${{ startsWith(github.ref, 'refs/tags/v') }}
+      - name: Build app
+        run: |
+          pnpm build
+          pnpm postbuild
