@@ -10,6 +10,7 @@ const Paths = {
   ASSETS: '/assets',
   TRANSFER: '/transfer',
   SETTINGS: '/settings',
+  CHAT_DEV: '/chat_dev',
 };
 
 export default Paths;

@@ -2,7 +2,6 @@
   "compilerOptions": {
     "baseUrl": ".",
     "paths": {
-      "@/*": ["./src/*"],
       "@main/*": ["./src/main/*"],
       "@shared/*": ["./src/shared/*"],
       "@renderer/*": ["./src/renderer/*"],

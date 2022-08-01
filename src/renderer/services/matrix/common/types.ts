@@ -8,34 +8,35 @@ import { HexString } from '@renderer/domain/types';
 
 export interface ISecureMessenger {
   // Init
-  init: () => Promise<void | ErrorObject>;
-  setHomeserver: (url: string) => Promise<void | ErrorObject>;
+  init: () => Promise<void | never>;
+  setHomeserver: (url: string) => Promise<void | never>;
   skipLogin: (value: boolean) => void;
-  loginWithCreds: (login: string, password: string) => Promise<void | ErrorObject>;
-  loginFromCache: () => Promise<void | ErrorObject>;
-  logout: () => Promise<void | ErrorObject>;
-  // registration: (login: string, password: string) => Promise<void | ErrorObject>;
-  stopClient: (shutdown?: boolean) => void;
+  loginWithCreds: (login: string, password: string) => Promise<void | never>;
+  loginFromCache: () => Promise<void | never>;
+  logout: () => Promise<void | never>;
+  // registration: (login: string, password: string) => Promise<void | never>;
+  stopClient: () => void;
 
   // Actions
-  startRoomCreation: (mstAccountAddress: string) => Promise<RoomSignature | ErrorObject>;
-  finishRoomCreation: (params: RoomParams) => Promise<void | ErrorObject>;
-  cancelRoomCreation: (roomId: string) => Promise<void | ErrorObject>;
-  joinRoom: (roomId: string) => Promise<void | ErrorObject>;
-  leaveRoom: (roomId: string) => Promise<void | ErrorObject>;
-  invite: (roomId: string, signatoryId: string) => Promise<void | ErrorObject>;
+  startRoomCreation: (mstAccountAddress: string) => Promise<RoomSignature | never>;
+  finishRoomCreation: (params: RoomParams) => Promise<void | never>;
+  cancelRoomCreation: (roomId: string) => Promise<void | never>;
+  joinRoom: (roomId: string) => Promise<void | never>;
+  leaveRoom: (roomId: string) => Promise<void | never>;
+  invite: (roomId: string, signatoryId: string) => Promise<void | never>;
   listOfOmniRooms: (type: Membership.INVITE | Membership.JOIN) => Room[];
-  setRoom: (roomId: string) => void;
-  readTimeline: () => Promise<MSTPayload[] | ErrorObject>;
+  setActiveRoom: (roomId: string) => void;
+  readTimeline: () => Promise<MSTPayload[] | never>;
   sendMessage: (message: string) => void;
-  markAsRead: (event: MatrixEvent) => Promise<void | ErrorObject>;
+  markAsRead: (event: MatrixEvent) => Promise<void | never>;
   setupSubscribers: (handlers: Callbacks) => void;
   clearSubscribers: () => void;
   // checkUserExists: (userId: string) => Promise<boolean>;
 
   // Verification
-  verifyWithKey: (securityKey: string) => Promise<boolean | ErrorObject>;
-  verifyWithPhrase: (securityPhrase: string) => Promise<boolean | ErrorObject>;
+  verifyWithKey: (securityKey: string) => Promise<boolean | never>;
+  verifyWithFile: (securityFile: File) => Promise<boolean | never>;
+  verifyWithPhrase: (securityPhrase: string) => Promise<boolean | never>;
 
   // MST operations
   mstInitiate: (params: MstParams) => void;
@@ -69,6 +70,7 @@ export type SkipLogin = {
 };
 
 export interface ICredentialStorage {
+  // Actions
   getCredentials: (key: keyof Credential, value: any) => Credential | undefined;
   saveCredentials: (credential: Credential) => void;
   updateCredentials: (userId: string, credential: Partial<Credential>) => void;
@@ -77,6 +79,25 @@ export interface ICredentialStorage {
   saveSkipLogin: (data: SkipLogin) => void;
 
   clear: () => void;
+}
+
+// =====================================================
+// ============= ISecretStorage interface ==============
+// =====================================================
+
+export interface ISecretStorage {
+  // Actions
+  storePrivateKey: (keyId: string, privateKey: Uint8Array | unknown) => void | never;
+  hasPrivateKey: (keyId: string) => boolean;
+  getPrivateKey: (keyId: string) => Uint8Array | undefined;
+  deletePrivateKey: (keyId: string) => void;
+  clearSecretStorageKeys: () => void;
+
+  // Properties
+  cryptoCallbacks: {
+    getSecretStorageKey: (value: { keys: Record<string, any> }) => Promise<[string, Uint8Array] | null>;
+    cacheSecretStorageKey: (keyId: string, keyInfo: any, privateKey: Uint8Array) => void;
+  };
 }
 
 // =====================================================
@@ -189,10 +210,12 @@ export const enum Errors {
   WRONG_HOMESERVER,
   REGISTRATION,
   KEY_VERIFICATION,
+  FILE_VERIFICATION,
   PHRASE_VERIFICATION,
   LOGOUT,
   LOGIN_CREDS,
   LOGIN_CACHE,
+  INIT_WITH_CREDENTIALS,
   NO_CREDS_IN_DB,
   START_ROOM,
   FINISH_ROOM,
@@ -212,6 +235,10 @@ export const enum Errors {
   INVITE_USERS,
   MEMBERS_VERIFICATION,
   READ_TIMELINE,
+  CREATE_MATRIX_CLIENT,
+  VERIFY_FILE_MAX_SIZE,
+  READ_VERIFY_FILE,
+  VERIFY_FILE_BAD_CONTENT,
 }
 
 export type ErrorObject = {

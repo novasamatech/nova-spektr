@@ -1,6 +1,6 @@
-import { ICredentialStorage, Credential, SkipLogin } from '../common/types';
+import { ICredentialStorage, Credential, SkipLogin } from './common/types';
 
-export class MatrixStorage implements ICredentialStorage {
+class CredentialStorage implements ICredentialStorage {
   private credsKey = 'matrix_credentials';
   private skipKey = 'matrix_skip_login';
 
@@ -21,7 +21,7 @@ export class MatrixStorage implements ICredentialStorage {
    * Add new credential to the storage
    * @param credential value of credentials
    */
-  saveCredentials(credential: Credential): void {
+  public saveCredentials(credential: Credential): void {
     const storage = this.getCredentialsStorage();
 
     storage.push(credential);
@@ -34,7 +34,7 @@ export class MatrixStorage implements ICredentialStorage {
    * @param value search value
    * @return {Object | undefined}
    */
-  getCredentials(key: keyof Credential, value: any): Credential | undefined {
+  public getCredentials(key: keyof Credential, value: any): Credential | undefined {
     const storage = this.getCredentialsStorage();
 
     return storage.find((item) => item[key] === value);
@@ -45,7 +45,7 @@ export class MatrixStorage implements ICredentialStorage {
    *  @param userId key to use in search
    *  @param credentials credentials data
    */
-  updateCredentials(userId: string, credentials: Partial<Credential>): void {
+  public updateCredentials(userId: string, credentials: Partial<Credential>): void {
     const storage = this.getCredentialsStorage();
 
     const index = storage.findIndex((item) => item.userId === userId);
@@ -63,7 +63,7 @@ export class MatrixStorage implements ICredentialStorage {
    * Set flag about skip login
    * @param data skip data
    */
-  saveSkipLogin(data: SkipLogin): void {
+  public saveSkipLogin(data: SkipLogin): void {
     localStorage.setItem(this.skipKey, JSON.stringify(data));
   }
 
@@ -71,14 +71,14 @@ export class MatrixStorage implements ICredentialStorage {
    * Get skip login data from the storage
    * @return {Object}
    */
-  getSkipLogin(): SkipLogin {
+  public getSkipLogin(): SkipLogin {
     return this.getSkipStorage();
   }
 
   /**
    * Clear matrix storage
    */
-  clear() {
+  public clear() {
     localStorage.removeItem(this.credsKey);
     localStorage.removeItem(this.skipKey);
   }
@@ -115,3 +115,5 @@ export class MatrixStorage implements ICredentialStorage {
     }
   }
 }
+
+export default CredentialStorage;
