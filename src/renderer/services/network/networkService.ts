@@ -1,4 +1,4 @@
-import { useRef } from 'react';
+import { useRef, useState } from 'react';
 import { ApiPromise, WsProvider } from '@polkadot/api';
 import { ProviderInterface } from '@polkadot/rpc-provider/types';
 import { ScProvider } from '@polkadot/rpc-provider/substrate-connect';
@@ -12,14 +12,14 @@ import { HexString } from '@renderer/domain/types';
 
 export const useNetwork = (): INetworkService => {
   const chains = useRef<Record<string, Chain>>({});
-  const connections = useRef<Record<string, ExtendedChain>>({});
+  const [connections, setConnections] = useState<Record<string, ExtendedChain>>({});
 
   const { getChainsData } = useChains();
   const { getKnownChain, getChainSpec } = useChainSpec();
   const { getConnections, addConnections, changeConnectionType } = useConnectionStorage();
 
   const updateConnectionType = async (chainId: HexString, type: ConnectionType): Promise<void> => {
-    const connection = connections.current[chainId];
+    const connection = connections[chainId];
     if (connection) {
       await changeConnectionType(connection.connection, type);
       connection.connection.type = type;
@@ -47,23 +47,23 @@ export const useNetwork = (): INetworkService => {
   const connect = async (): Promise<void> => {
     const currentConnections = await getConnections();
 
-    currentConnections.forEach(async (chain) => {
+    currentConnections.forEach(async (connection, i) => {
       let provider: ProviderInterface | undefined;
 
-      if (chain.type === ConnectionType.LIGHT_CLIENT) {
-        const chainId = getKnownChain(chain.chainId);
+      if (connection.type === ConnectionType.LIGHT_CLIENT) {
+        const chainId = getKnownChain(connection.chainId);
 
         if (chainId) {
           provider = new ScProvider(chainId);
           await provider.connect();
         } else {
-          const chainSpec = await getChainSpec(chain.chainId);
+          const chainSpec = await getChainSpec(connection.chainId);
 
           if (!chainSpec) {
             throw new Error('Chain spec not found');
           }
 
-          const parentName = getKnownChain(chains.current[chain.chainId].parentId);
+          const parentName = getKnownChain(chains.current[connection.chainId].parentId);
           if (parentName) {
             const relayProvider = new ScProvider(parentName);
 
@@ -72,19 +72,22 @@ export const useNetwork = (): INetworkService => {
             provider = new ScProvider(chainSpec);
           }
         }
-      } else if (chain.type === ConnectionType.RPC_NODE) {
+      } else if (connection.type === ConnectionType.RPC_NODE) {
         // TODO: Add possibility to select best node
-        provider = new WsProvider(chains.current[chain.chainId].nodes[0].url);
+        provider = new WsProvider(chains.current[connection.chainId].nodes[0].url);
       }
 
       if (!provider) return;
       const api = await ApiPromise.create({ provider });
 
-      connections.current[chain.chainId] = {
-        ...chains.current[chain.chainId],
-        connection: chain,
-        api,
-      };
+      setConnections((currentConnections) => ({
+        ...currentConnections,
+        [connection.chainId]: {
+          ...chains.current[connection.chainId],
+          connection,
+          api,
+        },
+      }));
     });
   };
 
@@ -94,7 +97,7 @@ export const useNetwork = (): INetworkService => {
   };
 
   const reconnect = async (chainId: HexString): Promise<void> => {
-    const connection = connections.current[chainId];
+    const connection = connections[chainId];
 
     if (!connection) return;
 
@@ -111,7 +114,7 @@ export const useNetwork = (): INetworkService => {
   };
 
   return {
-    connections: connections.current,
+    connections,
     init,
     reconnect,
     updateConnectionType,

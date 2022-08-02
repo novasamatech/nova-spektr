@@ -1,12 +1,12 @@
 // import { render, screen } from '@testing-library/react';
 
-// import Balances from './Balances';
+// import Balance from './Balance';
 
-describe('screen/Balances', () => {
+describe('screen/Balance', () => {
   test('should render component', () => {
-    // render(<Balances />);
+    // render(<Balance asset={} chain={} publicKey={} />);
     // const text = screen.getByText('Balances');
-    // expect(text).toEqual('Balances');
+    // expect(text).toBeInTheDocument();
   });
 });
 

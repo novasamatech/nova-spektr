@@ -32,11 +32,30 @@ export const enum ConnectionType {
   DISABLED = 'DISABLED',
 }
 
+export type StatemineExtras = {
+  assetId: string;
+};
+
+export type OrmlExtras = {
+  currencyIdScale: string;
+  currencyIdType: string;
+  existentialDeposit: string;
+  transfersEnabled?: boolean;
+};
+
+export const enum AssetType {
+  ORML = 'orml',
+  STATEMINE = 'statemine',
+}
+
 export type Asset = {
   assetId: number;
   symbol: string;
   precision: number;
   priceId: string;
+  icon: string;
+  type?: AssetType;
+  typeExtras?: StatemineExtras | OrmlExtras;
 };
 
 export type RPCNode = {
