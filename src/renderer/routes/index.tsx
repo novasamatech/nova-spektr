@@ -20,6 +20,7 @@ const routesConfig: RouteObject[] = [
       { path: Paths.TRANSFER, element: <Screens.Transfer /> },
       { path: Paths.ASSETS, element: <Screens.Assets /> },
       { path: Paths.BALANCES, element: <Screens.Balances /> },
+      { path: Paths.CHAT_DEV, element: <Screens.ChatDev /> },
       { path: Paths.SETTINGS, element: <Screens.Settings /> },
     ],
   },

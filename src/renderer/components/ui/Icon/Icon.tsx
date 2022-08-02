@@ -16,7 +16,7 @@ const Icon = ({ as = 'svg', name, size = 24, className, alt = '' }: Props) => {
   }
 
   if (as === 'svg') {
-    return <IconComponent className={className} width={size} height={size} data-testid={`${name}-svg`} />;
+    return <IconComponent className={className} width={size} height={size} role="img" data-testid={`${name}-svg`} />;
   }
 
   if (as === 'img') {

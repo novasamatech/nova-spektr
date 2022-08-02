@@ -1,7 +1,7 @@
-import { MatrixStorage } from './storage';
+import CredentialStorage from '../credentialStorage';
 import { ICredentialStorage } from '../common/types';
 
-describe('service/matrix/storage', () => {
+describe('service/matrix/credentialStorage', () => {
   let storage: ICredentialStorage;
   const credentials = {
     userId: '1',
@@ -13,11 +13,11 @@ describe('service/matrix/storage', () => {
   };
 
   beforeEach(() => {
-    storage = new MatrixStorage();
+    storage = new CredentialStorage();
   });
 
   afterEach(() => {
-    storage.clear();
+    localStorage.clear();
   });
 
   test('should init with default values', () => {
@@ -44,5 +44,14 @@ describe('service/matrix/storage', () => {
     storage.saveSkipLogin({ skip: true });
     const item = storage.getSkipLogin();
     expect(item.skip).toEqual(true);
+  });
+
+  test('should clear the storage', () => {
+    storage.saveCredentials(credentials);
+    storage.saveSkipLogin({ skip: true });
+    storage.clear();
+
+    expect(localStorage.getItem('matrix_credentials')).toBeNull();
+    expect(localStorage.getItem('matrix_skip')).toBeNull();
   });
 });

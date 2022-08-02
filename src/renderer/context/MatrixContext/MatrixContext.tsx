@@ -38,7 +38,7 @@ export const MatrixProvider = ({ loader, onAutoLoginFail, children }: PropsWithC
     initMatrix();
 
     return () => {
-      matrix.stopClient(true);
+      matrix.stopClient();
     };
   }, []);
 
