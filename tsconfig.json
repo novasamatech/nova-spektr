@@ -8,6 +8,7 @@
     "target": "es2021",
     "lib": ["es2021", "dom", "dom.iterable"],
     "jsx": "react-jsx",
+    "pretty": true,
     "importHelpers": true,
     "noUnusedLocals": true,
     "noFallthroughCasesInSwitch": true,

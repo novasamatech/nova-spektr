@@ -1,5 +1,6 @@
 dist/
 build/
+release/
 node_modules/
 package.json
 coverage/

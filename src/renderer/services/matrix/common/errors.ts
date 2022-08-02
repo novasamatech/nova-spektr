@@ -17,6 +17,14 @@ const MATRIX_ERRORS: Record<Errors, ErrorObject> = {
     code: Errors.IS_LOGGED_IN,
     message: 'Client is already logged in',
   },
+  [Errors.CREATE_MATRIX_CLIENT]: {
+    code: Errors.CREATE_MATRIX_CLIENT,
+    message: 'Error while creating matrix client',
+  },
+  [Errors.INIT_WITH_CREDENTIALS]: {
+    code: Errors.INIT_WITH_CREDENTIALS,
+    message: 'Failed to init client with credentials',
+  },
   [Errors.NOT_LOGGED_IN]: {
     code: Errors.NOT_LOGGED_IN,
     message: 'Client is not logged in',
@@ -32,6 +40,10 @@ const MATRIX_ERRORS: Record<Errors, ErrorObject> = {
   [Errors.KEY_VERIFICATION]: {
     code: Errors.KEY_VERIFICATION,
     message: 'Verification with security key failed',
+  },
+  [Errors.FILE_VERIFICATION]: {
+    code: Errors.FILE_VERIFICATION,
+    message: 'Verification with security file failed',
   },
   [Errors.PHRASE_VERIFICATION]: {
     code: Errors.PHRASE_VERIFICATION,
@@ -124,6 +136,18 @@ const MATRIX_ERRORS: Record<Errors, ErrorObject> = {
   [Errors.READ_TIMELINE]: {
     code: Errors.READ_TIMELINE,
     message: 'Failed to read the timeline',
+  },
+  [Errors.VERIFY_FILE_MAX_SIZE]: {
+    code: Errors.VERIFY_FILE_MAX_SIZE,
+    message: 'File exceeded max size limit',
+  },
+  [Errors.READ_VERIFY_FILE]: {
+    code: Errors.READ_VERIFY_FILE,
+    message: 'Failed to read verification file',
+  },
+  [Errors.VERIFY_FILE_BAD_CONTENT]: {
+    code: Errors.VERIFY_FILE_BAD_CONTENT,
+    message: 'Verification file has bad content',
   },
 };
 

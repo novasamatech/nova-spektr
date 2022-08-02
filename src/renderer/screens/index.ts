@@ -7,5 +7,6 @@ import Settings from './Settings/Settings';
 import Transfer from './Transfer/Transfer';
 import Wallets from './Wallets/Wallets';
 import Login from './Login/Login';
+import ChatDev from './ChatDev/ChatDev';
 
-export { Dashboard, Assets, Operations, Wallets, Settings, Transfer, Balances, AddressBook, Login };
+export { Dashboard, Assets, Operations, Wallets, Settings, Transfer, Balances, AddressBook, Login, ChatDev };

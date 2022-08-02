@@ -26,7 +26,7 @@
     "test:coverage": "yarn test --coverage --passWithNoTests --watchAll=false",
     "lint": "cross-env NODE_ENV=production eslint . --ext=ts,tsx,js,jsx",
     "lint:fix": "pnpm lint --fix",
-    "githook:pre-commit": "cross-env NODE_ENV=production lint-staged && tsc",
+    "githook:pre-commit": "cross-env NODE_ENV=production lint-staged && tsc -p tsconfig.json",
     "githook:pre-push": "cross-env pnpm test:coverage",
     "storybook": "start-storybook -p 6006",
     "build:storybook": "build-storybook",
@@ -42,6 +42,9 @@
     "@polkadot/api": "^8.12.2",
     "@polkadot/react-identicon": "^2.8.2",
     "@polkadot/rpc-provider": "^8.12.2",
+    "@polkadot/util": "^10.1.2",
+    "@polkadot/util-crypto": "^10.1.2",
+    "buffer": "^6.0.3",
     "classnames": "^2.3.1",
     "crypto-browserify": "^3.12.0",
     "dexie": "^3.2.2",
@@ -54,6 +57,7 @@
     "react-hook-form": "^7.33.1",
     "react-i18next": "^11.18.0",
     "react-router-dom": "^6.3.0",
+    "stream-browserify": "^3.0.0",
     "tailwindcss": "^3.1.4"
   },
   "devDependencies": {

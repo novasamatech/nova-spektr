@@ -96,21 +96,19 @@ const sharedConfig: Configuration = {
     plugins: [new TsconfigPathsPlugin({})],
     fallback: {
       crypto: require.resolve('crypto-browserify'),
-      // stream: require.resolve('stream-browserify'),
-      // buffer: require.resolve('buffer'),
-      // url: false,
+      stream: require.resolve('stream-browserify'),
+      buffer: require.resolve('buffer'),
       fs: false,
       path: false,
-      stream: false,
     },
   },
 
   plugins: [
     new SimpleProgressWebpackPlugin({ format: 'minimal' }),
 
-    // new webpack.ProvidePlugin({
-    //   Buffer: ['buffer', 'Buffer'],
-    // }),
+    new webpack.ProvidePlugin({
+      Buffer: ['buffer', 'Buffer'],
+    }),
 
     new webpack.DefinePlugin({
       'process.env': {

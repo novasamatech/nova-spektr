@@ -1,3 +1,3 @@
-export { Matrix as default } from './source/matrix';
+export { Matrix as default } from './matrix';
 export * from './common/types';
 export * from './common/constants';
