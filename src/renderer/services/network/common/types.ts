@@ -80,15 +80,14 @@ export type ExternalApi = {
 
 export type Chain = {
   chainId: HexString;
-  parentId: HexString;
+  parentId?: HexString;
   name: string;
   assets: Asset[];
   nodes: RPCNode[];
   explorers: Explorer[];
-  color: string;
   icon: string;
   addressPrefix: number;
-  externalApi: Record<ApiType, ExternalApi>;
+  externalApi?: Record<ApiType, ExternalApi>;
 };
 
 export type ExtendedChain = Chain & {

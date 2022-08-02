@@ -23,7 +23,7 @@ const Balance = ({ chain, asset, publicKey }: Props) => {
         </div>
         {asset.symbol}
       </div>
-      <div>
+      <div data-testId="balance">
         {balance && formatBalance(transferable(balance), asset.precision)} {asset.symbol}
       </div>
     </div>

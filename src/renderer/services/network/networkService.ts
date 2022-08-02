@@ -63,8 +63,14 @@ export const useNetwork = (): INetworkService => {
             throw new Error('Chain spec not found');
           }
 
-          const parentName = getKnownChain(chains.current[connection.chainId].parentId);
-          if (parentName) {
+          const parentId = chains.current[connection.chainId].parentId;
+          if (parentId) {
+            const parentName = getKnownChain(parentId);
+
+            if (!parentName) {
+              throw new Error('Relay chain not found');
+            }
+
             const relayProvider = new ScProvider(parentName);
 
             provider = new ScProvider(chainSpec, relayProvider);
