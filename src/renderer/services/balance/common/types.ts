@@ -14,5 +14,5 @@ export interface IBalanceStorage {
 export interface IBalanceService {
   getBalance: (publicKey: HexString, chainId: HexString, assetId: string) => PromiseExtended<Balance | undefined>;
   getBalances: (publicKey: HexString) => PromiseExtended<Balance[]>;
-  subscribeBalances: (chain: ExtendedChain, publicKey: HexString) => Promise<any>;
+  subscribeBalances: (chain: ExtendedChain, parachain: ExtendedChain | undefined, publicKey: HexString) => Promise<any>;
 }

@@ -10,7 +10,7 @@ export const useBalanceStorage = (): IBalanceStorage => ({
   },
 
   getBalances: (publicKey: HexString): PromiseExtended<Balance[]> => {
-    return db.balances.where({ publicKey: publicKey }).toArray();
+    return db.balances.where({ publicKey }).toArray();
   },
 
   updateBalance: (balance: Balance): PromiseExtended<IndexableType> => {

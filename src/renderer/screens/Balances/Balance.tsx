@@ -1,4 +1,5 @@
 import { useLiveQuery } from 'dexie-react-hooks';
+import cn from 'classnames';
 
 import { useBalance } from '@renderer/services/balance/balanceService';
 import { HexString } from '@renderer/domain/types';
@@ -17,13 +18,13 @@ const Balance = ({ chain, asset, publicKey }: Props) => {
 
   return (
     <div className="flex bg-white bg-opacity-25 h-[60px] items-center justify-between gap-[30px] p-[15px]">
-      <div className="flex items-center gap-[10px]">
+      <div className="flex items-center gap-x-2.5">
         <div className="flex items-center justify-center bg-shade-40 border border-white border-opacity-75 rounded-full w-[34px] h-[34px] box-border">
-          <img src={asset.icon} className="w-[26px] h-[26px]" />
+          <img width="26px" height="26px" src={asset.icon} />
         </div>
         {asset.symbol}
       </div>
-      <div data-testId="balance">
+      <div className={cn(!balance?.verified && 'text-shade-50')} data-testid="balance">
         {balance && formatBalance(transferable(balance), asset.precision)} {asset.symbol}
       </div>
     </div>

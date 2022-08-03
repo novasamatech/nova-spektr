@@ -27,7 +27,7 @@ jest.mock('@renderer/context/NetworkContext', () => ({
 }));
 
 // TODO: Find way to avoid warnings with this mock
-jest.mock('./Balance', () => 'Balance');
+jest.mock('./Balance', () => () => <div>Balance</div>);
 
 describe('screen/Balances', () => {
   test('should render component', () => {
@@ -39,17 +39,16 @@ describe('screen/Balances', () => {
 
   test('should render chains', () => {
     render(<Balances />);
-    const text = screen.getAllByText('Token');
+    const chains = screen.getAllByText('Token');
 
-    expect(text.length).toEqual(2);
+    expect(chains.length).toEqual(2);
   });
 
   test('should render balances', () => {
     render(<Balances />);
-    const text = screen.queryAllByText((_, element) => element?.tagName.toLowerCase() === 'balance');
 
-    expect(text.length).toEqual(3);
+    const balances = screen.getAllByText('Balance');
+
+    expect(balances.length).toEqual(3);
   });
 });
-
-export {};

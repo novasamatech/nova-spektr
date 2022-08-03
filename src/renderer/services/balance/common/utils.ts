@@ -34,7 +34,7 @@ export const formatAmount = (amount: string, precision: number): string => {
   return new BN(amount.replace(/\D/g, '')).mul(BN_TEN.pow(bnPrecision)).toString();
 };
 
-export const getAssetId = (asset: Asset) => {
+export const getAssetId = (asset: Asset): string | number => {
   const assetId = {
     [AssetType.ORML]: () => (asset.typeExtras as OrmlExtras).currencyIdScale,
     [AssetType.STATEMINE]: () => (asset.typeExtras as StatemineExtras).assetId,

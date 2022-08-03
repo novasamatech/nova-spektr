@@ -12,7 +12,7 @@ const Balances = () => {
       {Object.values(connections).map((chain) => {
         return (
           <div key={chain.chainId} className="mb-5 rounded-[10px]">
-            <h2 className="flex items-center p-[15px] gap-[10px] h-[50px] bg-shade-2 text-sm font-bold text-gray-700 uppercase">
+            <h2 className="flex items-center p-[15px] gap-x-2.5 h-[50px] bg-shade-2 text-sm font-bold text-gray-700 uppercase">
               <img src={chain.icon} className="w-5 h-5" />
               <div>{chain.name}</div>
             </h2>

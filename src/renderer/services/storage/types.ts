@@ -23,6 +23,7 @@ export interface Balance {
   chainId: HexString;
   publicKey: HexString;
   assetId: string;
+  verified: boolean;
   free: string;
   reserved: string;
   frozen: string;
