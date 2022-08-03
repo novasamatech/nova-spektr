@@ -1,3 +1,5 @@
+import { sortBy } from 'lodash';
+
 import { Chain, IChainService } from './common/types';
 import chains from './common/chains.json';
 import { notNull } from '@renderer/utils/objects';
@@ -16,21 +18,7 @@ export function useChains(): IChainService {
         chains.splice(chains.indexOf(kusama), 1);
       }
 
-      return [
-        polkadot,
-        kusama,
-        ...chains.sort((a, b) => {
-          if (a.name < b.name) {
-            return -1;
-          }
-
-          if (a.name > b.name) {
-            return 1;
-          }
-
-          return 0;
-        }),
-      ].filter(notNull);
+      return [polkadot, kusama, ...sortBy(chains, 'name')].filter(notNull);
     },
   };
 }
