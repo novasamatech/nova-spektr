@@ -8,6 +8,7 @@ import { Connection } from '../../storage';
 // ------------------
 export interface IChainService {
   getChainsData: () => Promise<Chain[]>;
+  sortChains: (chains: Chain[]) => Chain[];
 }
 
 export interface IChainSpecService {

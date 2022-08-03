@@ -1,15 +1,17 @@
 import Balance from './Balance';
 import { useNetworkContext } from '@renderer/context/NetworkContext';
 import { TEST_PUBLIC_KEY } from '@renderer/services/balance/common/constants';
+import { useChains } from '@renderer/services/network/chainsService';
 
 const Balances = () => {
   const { connections } = useNetworkContext();
+  const { sortChains } = useChains();
 
   return (
     <div className="h-full overflow-auto">
       <h1>Balances</h1>
 
-      {Object.values(connections).map((chain) => {
+      {sortChains(Object.values(connections)).map((chain) => {
         return (
           <div key={chain.chainId} className="mb-5 rounded-[10px]">
             <h2 className="flex items-center p-[15px] gap-x-2.5 h-[50px] bg-shade-2 text-sm font-bold text-gray-700 uppercase">
