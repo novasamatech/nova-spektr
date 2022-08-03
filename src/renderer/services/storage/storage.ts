@@ -1,14 +1,16 @@
 import Dexie, { Table } from 'dexie';
 
-import { Connection, IStorage } from './types';
+import { Balance, Connection, IStorage } from './types';
 
 export class Storage extends Dexie implements IStorage {
   connections!: Table<Connection>;
+  balances!: Table<Balance>;
 
   constructor() {
     super('omni'); // TODO: naming is not final
-    this.version(1).stores({
+    this.version(2).stores({
       connections: '++id,chainId,type',
+      balances: '[publicKey+chainId+assetId]',
     });
   }
 }

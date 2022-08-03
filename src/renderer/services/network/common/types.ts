@@ -8,6 +8,7 @@ import { Connection } from '../../storage';
 // ------------------
 export interface IChainService {
   getChainsData: () => Promise<Chain[]>;
+  sortChains: (chains: Chain[]) => Chain[];
 }
 
 export interface IChainSpecService {
@@ -32,11 +33,30 @@ export const enum ConnectionType {
   DISABLED = 'DISABLED',
 }
 
+export type StatemineExtras = {
+  assetId: string;
+};
+
+export type OrmlExtras = {
+  currencyIdScale: string;
+  currencyIdType: string;
+  existentialDeposit: string;
+  transfersEnabled?: boolean;
+};
+
+export const enum AssetType {
+  ORML = 'orml',
+  STATEMINE = 'statemine',
+}
+
 export type Asset = {
   assetId: number;
   symbol: string;
   precision: number;
   priceId: string;
+  icon: string;
+  type?: AssetType;
+  typeExtras?: StatemineExtras | OrmlExtras;
 };
 
 export type RPCNode = {
@@ -61,15 +81,14 @@ export type ExternalApi = {
 
 export type Chain = {
   chainId: HexString;
-  parentId: HexString;
+  parentId?: HexString;
   name: string;
   assets: Asset[];
   nodes: RPCNode[];
   explorers: Explorer[];
-  color: string;
   icon: string;
   addressPrefix: number;
-  externalApi: Record<ApiType, ExternalApi>;
+  externalApi?: Record<ApiType, ExternalApi>;
 };
 
 export type ExtendedChain = Chain & {
