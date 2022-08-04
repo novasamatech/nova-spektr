@@ -16,9 +16,9 @@ export function useChains(): IChainService {
       const kusama = chains.find(isKusama);
       const testnets = chains.filter(isTestnet);
 
-      const otherChains = chains.filter((chain) => !isPolkadot(chain) && !isKusama(chain) && !isTestnet(chain));
+      const parachains = chains.filter((chain) => !isPolkadot(chain) && !isKusama(chain) && !isTestnet(chain));
 
-      return [polkadot, kusama, ...sortBy(otherChains, 'name'), ...sortBy(testnets, 'name')].filter(notNull);
+      return [polkadot, kusama, ...sortBy(parachains, 'name'), ...sortBy(testnets, 'name')].filter(notNull);
     },
   };
 }
