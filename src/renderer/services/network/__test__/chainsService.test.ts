@@ -1,5 +1,5 @@
 import { useChains } from '../chainsService';
-import chains from '../common/chains.json';
+import { Chain } from '../common/types';
 
 describe('service/network', () => {
   test('should init', () => {
@@ -8,10 +8,15 @@ describe('service/network', () => {
     expect(params.getChainsData).toBeDefined();
   });
 
-  test('should provide data', async () => {
-    const { getChainsData } = useChains();
-    const data = await getChainsData();
+  test('should sort data', async () => {
+    const polkadot = { name: 'Polkadot' } as Chain;
+    const kusama = { name: 'Kusama' } as Chain;
+    const testnet = { name: 'Westend', options: ['testnet'] } as Chain;
+    const parachain = { name: 'Acala' } as Chain;
 
-    expect(data).toEqual(chains);
+    const { sortChains } = useChains();
+    const data = sortChains([testnet, polkadot, parachain, kusama]);
+
+    expect(data).toEqual([polkadot, kusama, parachain, testnet]);
   });
 });
