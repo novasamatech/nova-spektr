@@ -79,6 +79,8 @@ export type ExternalApi = {
   url: string;
 };
 
+export type ChainOptions = 'testnet' | 'crowdloans';
+
 export type Chain = {
   chainId: HexString;
   parentId?: HexString;
@@ -89,6 +91,7 @@ export type Chain = {
   icon: string;
   addressPrefix: number;
   externalApi?: Record<ApiType, ExternalApi>;
+  options: ChainOptions[];
 };
 
 export type ExtendedChain = Chain & {
