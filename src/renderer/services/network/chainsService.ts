@@ -5,20 +5,20 @@ import chains from './common/chains.json';
 import { notNull } from '@renderer/utils/objects';
 
 export function useChains(): IChainService {
+  const isPolkadot = (chain: Chain) => chain.name === 'Polkadot';
+  const isKusama = (chain: Chain) => chain.name === 'Kusama';
+  const isTestnet = (chain: Chain) => chain.options?.includes('testnet');
+
   return {
     getChainsData: () => Promise.resolve(chains as unknown as Chain[]),
     sortChains: (chains: Chain[]): Chain[] => {
-      const polkadot = chains.find((chain) => chain.name === 'Polkadot');
-      if (polkadot) {
-        chains.splice(chains.indexOf(polkadot), 1);
-      }
+      const polkadot = chains.find(isPolkadot);
+      const kusama = chains.find(isKusama);
+      const testnets = chains.filter(isTestnet);
 
-      const kusama = chains.find((chain) => chain.name === 'Kusama');
-      if (kusama) {
-        chains.splice(chains.indexOf(kusama), 1);
-      }
+      const otherChains = chains.filter((chain) => !isPolkadot(chain) && !isKusama(chain) && !isTestnet(chain));
 
-      return [polkadot, kusama, ...sortBy(chains, 'name')].filter(notNull);
+      return [polkadot, kusama, ...sortBy(otherChains, 'name'), ...sortBy(testnets, 'name')].filter(notNull);
     },
   };
 }
