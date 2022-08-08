@@ -51,6 +51,7 @@ const config: Config = {
     '!src/stories/stories/**/*.{js,jsx,ts,tsx}',
     '!<rootDir>/node_modules/',
   ],
+  runner: 'groups',
 };
 
 export default config;
