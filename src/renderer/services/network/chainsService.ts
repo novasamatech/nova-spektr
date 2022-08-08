@@ -1,8 +1,31 @@
-import { Chain, IChainService } from './common/types';
+import { sortBy } from 'lodash';
+
 import chains from './common/chains.json';
+import { Chain, IChainService } from './common/types';
+import { notNull } from '@renderer/utils/objects';
+import { isKusama, isPolkadot, isTestnet } from './common/utils';
 
 export function useChains(): IChainService {
+  const getChainsData = () => Promise.resolve(chains as unknown as Chain[]);
+
+  const sortChains = (chains: Chain[]): Chain[] => {
+    let polkadot;
+    let kusama;
+    const testnets = [] as Chain[];
+    const parachains = [] as Chain[];
+
+    chains.forEach((chain) => {
+      if (isPolkadot(chain)) polkadot = chain;
+      else if (isKusama(chain)) kusama = chain;
+      else if (isTestnet(chain)) testnets.push(chain);
+      else parachains.push(chain);
+    });
+
+    return [polkadot, kusama, ...sortBy(parachains, 'name'), ...sortBy(testnets, 'name')].filter(notNull);
+  };
+
   return {
-    getChainsData: () => Promise.resolve(chains as unknown as Chain[]),
+    getChainsData,
+    sortChains,
   };
 }

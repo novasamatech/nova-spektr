@@ -18,3 +18,13 @@ export interface Connection extends WithID {
   chainId: HexString;
   type: ConnectionType;
 }
+
+export interface Balance {
+  chainId: HexString;
+  publicKey: HexString;
+  assetId: string;
+  verified: boolean;
+  free: string;
+  reserved: string;
+  frozen: string;
+}
