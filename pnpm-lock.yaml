@@ -10,7 +10,6 @@ specifiers:
   '@polkadot/api': ^9.0.1
   '@polkadot/keyring': ^10.1.2
   '@polkadot/react-identicon': ^2.8.2
-  '@polkadot/react-qr': ^2.9.3
   '@polkadot/rpc-provider': ^9.0.1
   '@polkadot/types': ^9.0.1
   '@polkadot/util': ^10.1.2
@@ -114,7 +113,6 @@ dependencies:
   '@polkadot/api': 9.0.1
   '@polkadot/keyring': 10.1.2
   '@polkadot/react-identicon': 2.8.2_7i5myeigehqah43i5u7wbekgba
-  '@polkadot/react-qr': 2.9.3_7i5myeigehqah43i5u7wbekgba
   '@polkadot/rpc-provider': 9.0.1
   '@polkadot/types': 9.0.1
   '@polkadot/util': 10.1.2
@@ -2939,26 +2937,6 @@ packages:
       styled-components: 5.3.5_7i5myeigehqah43i5u7wbekgba
     dev: false
 
-  /@polkadot/react-qr/2.9.3_7i5myeigehqah43i5u7wbekgba:
-    resolution:
-      { integrity: sha512-/pT0m/Nyr4tw3lgzK4dJB3qfNQTswDeDyNXPaw0lPS6qlh+valEDtcjpWDrWGJ5eI/LJxIUOO2c5gfayCw00Ag== }
-    peerDependencies:
-      react: '*'
-      react-dom: '*'
-    dependencies:
-      '@babel/runtime': 7.18.9
-      '@polkadot/ui-settings': 2.9.3
-      '@polkadot/util': 10.1.2
-      '@polkadot/util-crypto': 10.1.2
-      qrcode-generator: 1.4.4
-      react: 18.2.0
-      react-dom: 18.2.0_react@18.2.0
-      react-qr-reader: 2.2.1_biqbaboplfbrettd7655fr4n2y
-      styled-components: 5.3.5_7i5myeigehqah43i5u7wbekgba
-    transitivePeerDependencies:
-      - react-is
-    dev: false
-
   /@polkadot/rpc-augment/9.0.1:
     resolution:
       { integrity: sha512-Oe8O65K3zlameCxMHklEj42Xx3oRfk8+6tyhUc4L5DHutDv0jNwiT8CvvDf49nKyZFNjfnD6EOR84ikMzUf/0g== }
@@ -3081,17 +3059,6 @@ packages:
   /@polkadot/ui-settings/2.8.2:
     resolution:
       { integrity: sha512-95hlSRl2qmOhCTIrCe44WF+KMuukvNDtN7hNPr3FCeUpNVYrWqdBzxfulLusEAyVmFdwDFm5GJx5lyBj/mrZvw== }
-    dependencies:
-      '@babel/runtime': 7.18.9
-      '@polkadot/networks': 10.1.2
-      '@polkadot/util': 10.1.2
-      eventemitter3: 4.0.7
-      store: 2.0.12
-    dev: false
-
-  /@polkadot/ui-settings/2.9.3:
-    resolution:
-      { integrity: sha512-OJLGY3jq8+uMltwUswk/WS44VQ+T6/ZOwDmiJFi0x4sSNK4SaqrpdWhEffxQ3T4HAemnZG8r4ZAjMcRTfeWdXQ== }
     dependencies:
       '@babel/runtime': 7.18.9
       '@polkadot/networks': 10.1.2
@@ -13494,11 +13461,6 @@ packages:
       verror: 1.10.0
     dev: false
 
-  /jsqr/1.4.0:
-    resolution:
-      { integrity: sha512-dxLob7q65Xg2DvstYkRpkYtmKm2sPJ9oFhrhmudT1dZvNFFTlroai3AWSpLey/w5vMcLBXRgOJsbXpdN9HzU/A== }
-    dev: false
-
   /jsx-ast-utils/3.3.2:
     resolution:
       { integrity: sha512-4ZCADZHRkno244xlNnn4AOG6sRQ7iBZ5BbgZ4vW4y5IZw7cVUD1PPeblm1xx/nfmMxPdt/LHsXZW8z/j58+l9Q== }
@@ -16325,11 +16287,6 @@ packages:
       '@types/offscreencanvas': 2019.7.0
     dev: false
 
-  /qrcode-generator/1.4.4:
-    resolution:
-      { integrity: sha512-HM7yY8O2ilqhmULxGMpcHSF1EhJJ9yBj8gvDEuZ6M+KGJ0YY2hKpnXvRD+hZPLrDVck3ExIGhmPtSdcjC+guuw== }
-    dev: false
-
   /qs/6.10.3:
     resolution:
       { integrity: sha512-wr7M2E0OFRfIfJZjKGieI8lBKb7fRCH4Fv5KNPEs7gJ8jadvotdsS08PzOKR7opXhZ/Xkjtt3WF9g38drmyRqQ== }
@@ -16569,20 +16526,6 @@ packages:
     resolution:
       { integrity: sha512-alTKsjEL0dKH/ru1Iyn7vliS2QRcBp9zZPGoWxUOvRGWPUYgjo+V01is7p04It6KhgrzhJGnIj9GgX8W4bZoCQ== }
     dev: true
-
-  /react-qr-reader/2.2.1_biqbaboplfbrettd7655fr4n2y:
-    resolution:
-      { integrity: sha512-EL5JEj53u2yAOgtpAKAVBzD/SiKWn0Bl7AZy6ZrSf1lub7xHwtaXe6XSx36Wbhl1VMGmvmrwYMRwO1aSCT2fwA== }
-    peerDependencies:
-      react: ~16
-      react-dom: ~16
-    dependencies:
-      jsqr: 1.4.0
-      prop-types: 15.8.1
-      react: 18.2.0
-      react-dom: 18.2.0_react@18.2.0
-      webrtc-adapter: 7.7.1
-    dev: false
 
   /react-refresh/0.11.0:
     resolution:
@@ -17184,14 +17127,6 @@ packages:
     engines: { node: 6.* || >= 7.* }
     dev: true
 
-  /rtcpeerconnection-shim/1.2.15:
-    resolution:
-      { integrity: sha512-C6DxhXt7bssQ1nHb154lqeL0SXz5Dx4RczXZu2Aa/L1NJFnEVDxFwCBo3fqtuljhHIGceg5JKBV4XJ0gW5JKyw== }
-    engines: { node: '>=6.0.0', npm: '>=3.10.0' }
-    dependencies:
-      sdp: 2.12.0
-    dev: false
-
   /run-parallel/1.2.0:
     resolution:
       { integrity: sha512-5l4VyZR86LZ/lDxZTR6jqL8AFE2S0IFLMP26AbjsLVADxHdhB/c0GUsH+y39UfCi3dzz8OlQuPmnaJOMoDHQBA== }
@@ -17332,11 +17267,6 @@ packages:
       ajv-formats: 2.1.1
       ajv-keywords: 5.1.0_ajv@8.11.0
     dev: true
-
-  /sdp/2.12.0:
-    resolution:
-      { integrity: sha512-jhXqQAQVM+8Xj5EjJGVweuEzgtGWb3tmEEpl3CLP3cStInSbVHSg0QWOGQzNq8pSID4JkpeV2mPqlMDLrm0/Vw== }
-    dev: false
 
   /select-hose/2.0.0:
     resolution:
@@ -19842,15 +19772,6 @@ packages:
       - esbuild
       - uglify-js
     dev: true
-
-  /webrtc-adapter/7.7.1:
-    resolution:
-      { integrity: sha512-TbrbBmiQBL9n0/5bvDdORc6ZfRY/Z7JnEj+EYOD1ghseZdpJ+nF2yx14k3LgQKc7JZnG7HAcL+zHnY25So9d7A== }
-    engines: { node: '>=6.0.0', npm: '>=3.10.0' }
-    dependencies:
-      rtcpeerconnection-shim: 1.2.15
-      sdp: 2.12.0
-    dev: false
 
   /websocket-driver/0.7.4:
     resolution:

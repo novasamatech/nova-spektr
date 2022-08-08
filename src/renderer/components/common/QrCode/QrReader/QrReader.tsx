@@ -118,7 +118,7 @@ const QrReader = ({ size = 300, cameraId = '', onCameraList, onResult, onError }
         {isScanComplete && (
           <Icon
             as="svg"
-            name="checkCut"
+            name="checkmarkCutout"
             className={cn(
               'absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 text-white',
               isScanComplete ? 'text-success' : 'text-white',

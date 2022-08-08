@@ -153,11 +153,11 @@ describe('common/QrCode/QrReader', () => {
       render(<QrReader onResult={() => {}} />);
     });
 
-    const checkmarkBefore = screen.queryByTestId('checkCut-svg');
+    const checkmarkBefore = screen.queryByTestId('checkmarkCutout-svg');
     expect(checkmarkBefore).not.toBeInTheDocument();
     act(() => resultCallback({ data: 'result' }));
 
-    const checkmarkAfter = screen.getByTestId('checkCut-svg');
+    const checkmarkAfter = screen.getByTestId('checkmarkCutout-svg');
     expect(checkmarkAfter).toBeInTheDocument();
   });
 

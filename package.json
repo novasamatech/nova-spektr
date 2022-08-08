@@ -42,7 +42,6 @@
     "@polkadot/api": "^9.0.1",
     "@polkadot/keyring": "^10.1.2",
     "@polkadot/react-identicon": "^2.8.2",
-    "@polkadot/react-qr": "^2.9.3",
     "@polkadot/rpc-provider": "^9.0.1",
     "@polkadot/types": "^9.0.1",
     "@polkadot/util": "^10.1.2",
