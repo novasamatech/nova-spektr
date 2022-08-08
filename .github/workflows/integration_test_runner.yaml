@@ -9,7 +9,7 @@ on:
 
 
 jobs:
-  lint-and-test:
+  integration_test_run:
     runs-on: ubuntu-latest
 
     steps:
