@@ -1,5 +1,7 @@
 import { BASE_MATRIX_URL } from '@renderer/services/matrix/common/constants';
-import Matrix from '@renderer/services/matrix';
+import Matrix, { Membership, RoomParams, Signatory } from '../../../src/renderer/services/matrix';
+import { createRoom } from '../utils/matrixCreateRoom';
+import signatories from './data.json';
 
 /**
  * Matrix integration tests
@@ -15,19 +17,42 @@ describe('services/matrix', () => {
     matrix = new Matrix();
     await matrix.init();
     await matrix.setHomeserver(BASE_MATRIX_URL);
-  }, 60_000);
+  });
 
   afterEach(async () => {
     await matrix.logout();
   });
 
-  test.each([['omni_test_account', '1q2w3eQWE!@']])(
-    'User %s login with password: %s',
-    async (login, password) => {
+  test.each([['omni_test_account', '1q2w3eQWE!@']])('User %s can login', async (login, password) => {
+    await matrix.loginWithCreds(login, password);
+
+    expect(matrix.isLoggedIn).toBe(true);
+  });
+
+  test.each([['omni_test_account', '1q2w3eQWE!@', signatories]])(
+    'User %s can create the room',
+    async (login, password, signatories) => {
       await matrix.loginWithCreds(login, password);
 
-      expect(matrix.isLoggedIn).toBe(true);
+      const signatoriesArray: Signatory[] = signatories;
+
+      const room = await createRoom(
+        matrix,
+        '5Cf68pb7B4kDS59PXwXKXf196HECmRh6St6aZ22U8PS13iMN',
+        login,
+        2,
+        signatoriesArray,
+      );
+
+      const room_list_after = matrix.listOfOmniRooms(Membership.INVITE); // Return empty array after creating room
+
+      expect(
+        room_list_after.filter((value) => {
+          if (value.roomId == room.roomId) {
+            return true;
+          }
+        }),
+      ).toBe(true);
     },
-    60_000,
   );
 });
