@@ -28,4 +28,6 @@ module.exports = async () => {
       getRandomValues: (arr: string | any[]) => crypto.randomBytes(arr.length),
     },
   });
+
+  jest.setTimeout(60_000); // in milliseconds
 };
