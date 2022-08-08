@@ -44,15 +44,15 @@ describe('services/matrix', () => {
         signatoriesArray,
       );
 
-      const room_list_after = matrix.listOfOmniRooms(Membership.INVITE); // Return empty array after creating room
+      const room_list_after_creating = matrix.listOfOmniRooms(Membership.JOIN);
 
-      expect(
-        room_list_after.filter((value) => {
-          if (value.roomId == room.roomId) {
-            return true;
-          }
-        }),
-      ).toBe(true);
+      expect(room_list_after_creating).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({
+            roomId: room.roomId,
+          }),
+        ]),
+      );
     },
   );
 });
