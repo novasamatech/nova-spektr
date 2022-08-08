@@ -45,6 +45,7 @@ const config: Config = {
     '^@images(.*)$': '<rootDir>../../src/renderer/assets/images/$1',
   },
   runner: 'groups',
+  reporters: ['default', 'github-actions'],
 };
 
 export default config;
