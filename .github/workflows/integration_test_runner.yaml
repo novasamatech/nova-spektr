@@ -1,8 +1,11 @@
 name: Integration test
 
 on:
-  pull_request:
   workflow_dispatch:
+  push:
+    branches:
+      - 'main'
+      - 'dev'
 
 
 jobs:
