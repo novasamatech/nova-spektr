@@ -12,9 +12,7 @@ type NetworkContextProps = {
 
 const NetworkContext = createContext<NetworkContextProps>({} as NetworkContextProps);
 
-type Props = {};
-
-export const NetworkProvider = ({ children }: PropsWithChildren<Props>) => {
+export const NetworkProvider = ({ children }: PropsWithChildren) => {
   const { init, connections, reconnect, updateConnectionType } = useNetwork();
 
   useEffect(() => {

@@ -20,6 +20,8 @@ module.exports = {
         secondary: '#A7DB57',
         'secondary-variant': '#E9F6D5',
         tertiary: '#262E42',
+        success: '#55BA4C',
+        alert: '#FFBF1A',
         error: '#C05941',
         'error-variant': '#EBD0CA',
         shade: {
