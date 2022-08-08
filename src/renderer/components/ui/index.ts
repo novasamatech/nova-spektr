@@ -7,5 +7,6 @@ import Input from './Input/Input';
 import Button from './Button/Button';
 import BaseModal from './Modals/BaseModal/BaseModal';
 import ConfirmModal from './Modals/ConfirmModal/ConfirmModal';
+import Stepper from './Stepper/Stepper';
 
-export { Address, Checkbox, Switch, Icon, Identicon, Input, Button, BaseModal, ConfirmModal };
+export { Address, Checkbox, Switch, Icon, Identicon, Input, Button, BaseModal, ConfirmModal, Stepper };
