@@ -106,7 +106,7 @@ export class Matrix implements ISecureMessenger {
     if (response?.status !== 200) {
       this.createError(Errors.WRONG_HOMESERVER);
     }
-    this.setBaseUrl(`https://${url}`);
+    this.setBaseUrl(`https://${normalizedUrl}`);
   }
 
   /**
