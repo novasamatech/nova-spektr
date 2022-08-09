@@ -44,24 +44,22 @@ const Button = ({
   prefixElement,
   suffixElement,
   onClick,
-}: PropsWithChildren<Props>) => {
-  return (
-    <button
-      type={type}
-      disabled={disabled}
-      className={cn(
-        'block rounded-lg border font-semibold',
-        WeightClass[weight],
-        ViewClass[`${variant}_${disabled ? 'shade' : pallet}`],
-        className,
-      )}
-      onClick={onClick}
-    >
-      {prefixElement && <span>{prefixElement}</span>}
-      {children}
-      {suffixElement && <span>{suffixElement}</span>}
-    </button>
-  );
-};
+}: PropsWithChildren<Props>) => (
+  <button
+    type={type}
+    disabled={disabled}
+    className={cn(
+      'flex items-center justify-center gap-x-2.5 rounded-lg border font-semibold',
+      WeightClass[weight],
+      ViewClass[`${variant}_${disabled ? 'shade' : pallet}`],
+      className,
+    )}
+    onClick={onClick}
+  >
+    {prefixElement && <div data-testid="prefix">{prefixElement}</div>}
+    <div className={cn(prefixElement && 'ml-auto', suffixElement && 'ml-0 mr-auto')}>{children}</div>
+    {suffixElement && <div data-testid="suffix">{suffixElement}</div>}
+  </button>
+);
 
 export default Button;
