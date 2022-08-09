@@ -13,4 +13,40 @@ describe('Button', () => {
     const button = screen.getByRole('button', { name: 'Hello button' });
     expect(button).toBeInTheDocument();
   });
+
+  test('should render prefix', () => {
+    render(
+      <Button variant="fill" pallet="error" prefixElement="Prefix">
+        Hello button
+      </Button>,
+    );
+
+    const prefix = screen.getByTestId('prefix');
+    expect(prefix).toBeInTheDocument();
+  });
+
+  test('should render suffix', () => {
+    render(
+      <Button variant="fill" pallet="error" suffixElement="Suffix">
+        Hello button
+      </Button>,
+    );
+
+    const suffix = screen.getByTestId('suffix');
+    expect(suffix).toBeInTheDocument();
+  });
+
+  test('should call onClick', () => {
+    const spyClick = jest.fn();
+    render(
+      <Button variant="fill" pallet="error" onClick={spyClick}>
+        Hello button
+      </Button>,
+    );
+
+    const button = screen.getByRole('button', { name: 'Hello button' });
+    button.click();
+
+    expect(spyClick).toBeCalledTimes(1);
+  });
 });
