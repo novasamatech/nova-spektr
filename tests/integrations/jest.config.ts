@@ -24,6 +24,7 @@ const config: Config = {
   testEnvironment: 'jest-environment-jsdom',
   coverageReporters: ['json-summary', 'text', 'text-summary'],
   setupFilesAfterEnv: ['@testing-library/jest-dom'],
+  setupFiles: ['<rootDir>/setup.integration.tests.ts'],
   coverageThreshold: {
     global: {
       branches: 5,
@@ -34,24 +35,17 @@ const config: Config = {
   },
   transform: {
     '^.+\\.(t|j)sx?$': ['@swc/jest', swcConfig],
-    '^(?!.*\\.(js|jsx|mjs|cjs|ts|tsx|css|json)$)': '<rootDir>/scripts/fileTransform.js',
+    '^(?!.*\\.(js|jsx|mjs|cjs|ts|tsx|css|json)$)': '<rootDir>../../scripts/fileTransform.js',
   },
   moduleNameMapper: {
     '\\.(css|less|scss|sass)$': 'identity-obj-proxy',
-    '^@main(.*)$': '<rootDir>/src/main/$1',
-    '^@shared(.*)$': '<rootDir>/src/shared/$1',
-    '^@renderer(.*)$': '<rootDir>/src/renderer/$1',
-    '^@images(.*)$': '<rootDir>/src/renderer/assets/images/$1',
+    '^@main(.*)$': '<rootDir>../../src/main/$1',
+    '^@shared(.*)$': '<rootDir>../../src/shared/$1',
+    '^@renderer(.*)$': '<rootDir>../../src/renderer/$1',
+    '^@images(.*)$': '<rootDir>../../src/renderer/assets/images/$1',
   },
-  modulePathIgnorePatterns: ['<rootDir>/tests'],
-  collectCoverageFrom: [
-    'src/renderer/**/*.{js,jsx,ts,tsx}',
-    '!src/main/',
-    '!src/shared/',
-    '!src/scripts/',
-    '!src/stories/stories/**/*.{js,jsx,ts,tsx}',
-    '!<rootDir>/node_modules/',
-  ],
+  runner: 'groups',
+  reporters: ['default', 'github-actions'],
 };
 
 export default config;
