@@ -6,7 +6,7 @@ import { SupportedLocales } from '@renderer/i18n';
 
 type I18ContextProps = {
   t: TFunction<'translation'>;
-  onLocaleChange: (locale: SupportedLocales) => void;
+  onLocaleChange: (locale: SupportedLocales) => Promise<void>;
 };
 
 const I18Context = createContext<I18ContextProps>({} as I18ContextProps);
