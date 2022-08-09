@@ -8,6 +8,7 @@ import * as Screens from '@renderer/screens';
 // https://github.com/remix-run/react-router/blob/main/docs/upgrading/v5.md#use-useroutes-instead-of-react-router-config
 const routesConfig: RouteObject[] = [
   { path: Paths.LOGIN, element: <Screens.Login /> },
+  { path: Paths.ONBOARDING, element: <Screens.Onboarding /> },
   {
     path: '/',
     element: <PrimaryLayout />,
@@ -21,6 +22,7 @@ const routesConfig: RouteObject[] = [
       { path: Paths.ASSETS, element: <Screens.Assets /> },
       { path: Paths.BALANCES, element: <Screens.Balances /> },
       { path: Paths.CHAT_DEV, element: <Screens.ChatDev /> },
+      { path: Paths.CAMERA_DEV, element: <Screens.CameraDev /> },
       { path: Paths.SETTINGS, element: <Screens.Settings /> },
     ],
   },
