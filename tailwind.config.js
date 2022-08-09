@@ -23,6 +23,7 @@ module.exports = {
         neutral: '#333333',
         'neutral-variant': '#666666',
         success: '#55BA4C',
+        alert: '#FFBF1A',
         error: '#C05941',
         'error-variant': '#EBD0CA',
         shade: {
