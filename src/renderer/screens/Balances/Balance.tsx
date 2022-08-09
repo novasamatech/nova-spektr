@@ -20,7 +20,7 @@ const Balance = ({ chain, asset, publicKey }: Props) => {
     <div className="flex bg-white bg-opacity-25 h-[60px] items-center justify-between gap-[30px] p-[15px]">
       <div className="flex items-center gap-x-2.5">
         <div className="flex items-center justify-center bg-shade-40 border border-white border-opacity-75 rounded-full w-[34px] h-[34px] box-border">
-          <img width="26px" height="26px" src={asset.icon} />
+          <img width="26px" height="26px" src={asset.icon} alt="" />
         </div>
         {asset.symbol}
       </div>

@@ -9,6 +9,7 @@ import Wallets from './Wallets/Wallets';
 import Login from './Login/Login';
 import Onboarding from './Onboarding/Onboarding';
 import ChatDev from './ChatDev/ChatDev';
+import CameraDev from './CameraDev/CameraDev';
 
 export {
   Dashboard,
@@ -22,4 +23,5 @@ export {
   Login,
   Onboarding,
   ChatDev,
+  CameraDev,
 };
