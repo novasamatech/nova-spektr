@@ -47,7 +47,7 @@ export const useNetwork = (): INetworkService => {
   const connect = async (): Promise<void> => {
     const currentConnections = await getConnections();
 
-    currentConnections.forEach(async (connection, i) => {
+    currentConnections.forEach(async (connection) => {
       let provider: ProviderInterface | undefined;
 
       if (connection.type === ConnectionType.LIGHT_CLIENT) {
