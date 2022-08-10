@@ -1,7 +1,7 @@
 import { ApiPromise } from '@polkadot/api';
 
 import { HexString } from '@renderer/domain/types';
-import { Connection } from '../../storage';
+import { Connection, ConnectionType } from '@renderer/services/storage';
 
 // ------------------
 // Service interfaces
@@ -26,12 +26,6 @@ export interface INetworkService {
 // ------------------
 // ----- Types ------
 // ------------------
-
-export const enum ConnectionType {
-  LIGHT_CLIENT = 'LIGHT_CLIENT',
-  RPC_NODE = 'RPC_NODE',
-  DISABLED = 'DISABLED',
-}
 
 export type StatemineExtras = {
   assetId: string;
