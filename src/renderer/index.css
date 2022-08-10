@@ -76,13 +76,3 @@
   background-color: hsl(0, 0%, 72%);
   border-radius: 20px;
 }
-
-.justify-text {
-  text-align: justify;
-}
-
-.justify-text:after {
-  content: "";
-  display: inline-block;
-  width: 100%;
-}

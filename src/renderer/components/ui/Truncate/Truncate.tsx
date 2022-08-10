@@ -96,7 +96,7 @@ const Truncate = (
   } as CSSProperties;
 
   return (
-    <div ref={containerRef} style={containerStyle} className={cn('justify-text', className)}>
+    <div ref={containerRef} style={containerStyle} className={className}>
       <span ref={textRef} className="hidden">
         {text}
       </span>
