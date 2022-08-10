@@ -6,9 +6,9 @@ import { ScProvider } from '@polkadot/rpc-provider/substrate-connect';
 import { useChains } from './chainsService';
 import { Chain, ConnectionType, ExtendedChain, INetworkService } from './common/types';
 import { useConnectionStorage, Connection } from './connectionStorage';
-import { arrayToObject } from '@renderer/utils/objects';
 import { useChainSpec } from './chainSpecService';
 import { HexString } from '@renderer/domain/types';
+import { keyBy } from 'lodash';
 
 export const useNetwork = (): INetworkService => {
   const chains = useRef<Record<string, Chain>>({});
@@ -28,9 +28,9 @@ export const useNetwork = (): INetworkService => {
 
   const initConnnections = async (): Promise<void> => {
     const chainsData = await getChainsData();
-    chains.current = arrayToObject(chainsData, 'chainId');
+    chains.current = keyBy(chainsData, 'chainId');
     const currentConnections = await getConnections();
-    const connectionData = arrayToObject(currentConnections, 'chainId');
+    const connectionData = keyBy(currentConnections, 'chainId');
 
     const connections = Object.values(chains.current).reduce((acc, { chainId }) => {
       if (!connectionData[chainId]) {

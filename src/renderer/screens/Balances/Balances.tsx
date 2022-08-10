@@ -1,17 +1,23 @@
+import { sortBy } from 'lodash';
+
 import Balance from './Balance';
 import { useNetworkContext } from '@renderer/context/NetworkContext';
-import { TEST_PUBLIC_KEY } from '@renderer/services/balance/common/constants';
 import { useChains } from '@renderer/services/network/chainsService';
+import { TEST_PUBLIC_KEY } from '@renderer/services/balance/common/constants';
+import { toAddress } from '@renderer/services/balance/common/utils';
+import { Address } from '@renderer/components/ui';
 
 const Balances = () => {
   const { connections } = useNetworkContext();
   const { sortChains } = useChains();
 
+  const sortedChains = sortChains(Object.values(connections));
+
   return (
     <div className="h-full overflow-auto">
       <h1>Balances</h1>
 
-      {sortChains(Object.values(connections)).map((chain) => {
+      {sortedChains.map((chain) => {
         return (
           <div key={chain.chainId} className="mb-5 rounded-[10px]">
             <h2 className="flex items-center p-[15px] gap-x-2.5 h-[50px] bg-shade-2 text-sm font-bold text-gray-700 uppercase">
@@ -23,7 +29,7 @@ const Balances = () => {
               <div>Portfolio</div>
             </div>
             <div className="flex flex-col divide-y divide-shade-5 shadow-1">
-              {chain.assets?.map((asset) => (
+              {sortBy(chain.assets || [], (a) => a.symbol.toLowerCase()).map((asset) => (
                 <Balance
                   key={`${chain.chainId}-${asset.assetId}`}
                   asset={asset}
