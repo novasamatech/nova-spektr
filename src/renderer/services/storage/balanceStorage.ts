@@ -1,9 +1,9 @@
 import { IndexableType, PromiseExtended } from 'dexie';
 import { useLiveQuery } from 'dexie-react-hooks';
 
-import db, { Balance } from '@renderer/services/storage';
+import { db } from './storage';
+import { IBalanceStorage, Balance } from './types';
 import { HexString } from '@renderer/domain/types';
-import { IBalanceStorage } from './common/types';
 
 export const useBalanceStorage = (): IBalanceStorage => ({
   getBalance: (publicKey: HexString, chainId: HexString, assetId: string): Balance | undefined => {

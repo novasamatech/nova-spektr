@@ -4,8 +4,6 @@ import Balance from './Balance';
 import { useNetworkContext } from '@renderer/context/NetworkContext';
 import { useChains } from '@renderer/services/network/chainsService';
 import { TEST_PUBLIC_KEY } from '@renderer/services/balance/common/constants';
-import { toAddress } from '@renderer/services/balance/common/utils';
-import { Address } from '@renderer/components/ui';
 
 const Balances = () => {
   const { connections } = useNetworkContext();

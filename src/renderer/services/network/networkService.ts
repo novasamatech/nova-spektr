@@ -5,8 +5,8 @@ import { ScProvider } from '@polkadot/rpc-provider/substrate-connect';
 import { keyBy } from 'lodash';
 
 import { useChains } from './chainsService';
-import { Chain, ConnectionType, ExtendedChain, INetworkService } from './common/types';
-import { useConnectionStorage, Connection } from './connectionStorage';
+import { Chain, ExtendedChain, INetworkService } from './common/types';
+import { useConnectionStorage, Connection, ConnectionType } from '@renderer/services/storage';
 import { useChainSpec } from './chainSpecService';
 import { HexString } from '@renderer/domain/types';
 

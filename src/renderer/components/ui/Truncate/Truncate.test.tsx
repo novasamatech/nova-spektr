@@ -2,7 +2,7 @@ import { render, screen } from '@testing-library/react';
 
 import Truncate from './Truncate';
 
-describe('ui/Address', () => {
+describe('ui/Truncate', () => {
   test('should render component', () => {
     // TODO: Find way to set the width for screen and test short value
 

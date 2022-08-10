@@ -1,28 +1,18 @@
 import { CSSProperties, useEffect, useRef, useState } from 'react';
 import { debounce } from 'lodash';
-import cn from 'classnames';
 
 import { getTextMeasurement, getContainerMeasurement } from './utils';
 
 type Props = {
-  className?: string;
+  text: string;
   ellipsis: string;
   end: number;
   start: number;
+  className?: string;
   style?: CSSProperties;
-  text: string;
 };
 
-const Truncate = (
-  { className, ellipsis, end, start, style, text }: Props = {
-    className: '',
-    ellipsis: '...',
-    end: 0,
-    start: 0,
-    style: {},
-    text: '',
-  },
-) => {
+const Truncate = ({ text, ellipsis, end, start, className = '', style = {} }: Props) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const textRef = useRef<HTMLElement>(null);
   const ellipsisRef = useRef<HTMLElement>(null);

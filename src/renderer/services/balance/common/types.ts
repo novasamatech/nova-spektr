@@ -1,15 +1,8 @@
-import { PromiseExtended, IndexableType } from 'dexie';
-// import { ApiPromise } from '@polkadot/api';
+import { PromiseExtended } from 'dexie';
 
 import { HexString } from '@renderer/domain/types';
 import { Balance } from '@renderer/services/storage';
 import { ExtendedChain } from '@renderer/services/network/common/types';
-
-export interface IBalanceStorage {
-  getBalance: (publicKey: HexString, chainId: HexString, assetId: string) => Balance | undefined;
-  getBalances: (publicKey: HexString) => PromiseExtended<Balance[]>;
-  updateBalance: (balance: Balance) => PromiseExtended<IndexableType>;
-}
 
 export interface IBalanceService {
   getBalance: (publicKey: HexString, chainId: HexString, assetId: string) => Balance | undefined;
