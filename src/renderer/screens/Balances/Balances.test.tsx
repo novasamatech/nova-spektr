@@ -10,8 +10,9 @@ jest.mock('@renderer/context/NetworkContext', () => ({
         assets: [
           {
             assetId: '1',
+            symbol: '1',
           },
-          { assetId: '2' },
+          { assetId: '2', symbol: '2' },
         ],
       },
       '0x0000000000000000000000000000000000000001': {
@@ -19,6 +20,7 @@ jest.mock('@renderer/context/NetworkContext', () => ({
         assets: [
           {
             assetId: '1',
+            symbol: '1',
           },
         ],
       },

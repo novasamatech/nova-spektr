@@ -1,8 +1,7 @@
-import { sortBy } from 'lodash';
+import { compact, sortBy } from 'lodash';
 
 import chains from './common/chains.json';
 import { Chain, IChainService } from './common/types';
-import { notNull } from '@renderer/utils/objects';
 import { isKusama, isPolkadot, isTestnet } from './common/utils';
 
 export function useChains(): IChainService {
@@ -21,7 +20,7 @@ export function useChains(): IChainService {
       else parachains.push(chain);
     });
 
-    return [polkadot, kusama, ...sortBy(parachains, 'name'), ...sortBy(testnets, 'name')].filter(notNull);
+    return compact([polkadot, kusama, ...sortBy(parachains, 'name'), ...sortBy(testnets, 'name')]);
   };
 
   return {

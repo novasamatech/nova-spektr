@@ -1,4 +1,3 @@
-import { useLiveQuery } from 'dexie-react-hooks';
 import cn from 'classnames';
 
 import { useBalance } from '@renderer/services/balance/balanceService';
@@ -14,7 +13,7 @@ type Props = {
 
 const Balance = ({ chain, asset, publicKey }: Props) => {
   const { getBalance } = useBalance();
-  const balance = useLiveQuery(() => getBalance(publicKey, chain.chainId, asset.assetId.toString()));
+  const balance = getBalance(publicKey, chain.chainId, asset.assetId.toString());
 
   return (
     <div className="flex bg-white bg-opacity-25 h-[60px] items-center justify-between gap-[30px] p-[15px]">

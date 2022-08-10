@@ -10,14 +10,10 @@ const testAsset = testChain.assets[0];
 
 jest.mock('@renderer/services/balance/balanceService', () => ({
   useBalance: jest.fn().mockReturnValue({
-    getBalance: jest.fn(),
-  }),
-}));
-
-jest.mock('dexie-react-hooks', () => ({
-  useLiveQuery: jest.fn().mockReturnValue({
-    free: 100,
-    frozen: 10,
+    getBalance: jest.fn().mockReturnValue({
+      free: 100,
+      frozen: 10,
+    }),
   }),
 }));
 

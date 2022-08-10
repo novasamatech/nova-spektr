@@ -1,15 +1,16 @@
 import { createContext, PropsWithChildren, useContext, useEffect } from 'react';
 
 import { useNetwork } from '@renderer/services/network/networkService';
-import { ConnectionType, ExtendedChain } from '@renderer/services/network/common/types';
+import { ExtendedChain } from '@renderer/services/network/common/types';
 import { HexString } from '@renderer/domain/types';
 import { useBalance } from '@renderer/services/balance/balanceService';
 import { TEST_PUBLIC_KEY } from '@renderer/services/balance/common/constants';
+import { ConnectionType } from '@renderer/services/storage';
 
 type NetworkContextProps = {
   connections: Record<string, ExtendedChain>;
   reconnect: (chainId: HexString) => void;
-  updateConnectionType: (chainId: HexString, type: ConnectionType) => void;
+  updateConnectionType: (chainId: HexString, type: ConnectionType) => Promise<void>;
 };
 
 const NetworkContext = createContext<NetworkContextProps>({} as NetworkContextProps);
