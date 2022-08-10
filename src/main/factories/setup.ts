@@ -29,6 +29,9 @@ export async function makeAppSetup(createWindow: () => Promise<BrowserWindow>) {
 
 PLATFORM.IS_LINUX && app.disableHardwareAcceleration();
 
+if (ENVIRONMENT.IS_DEV) {
+  app.commandLine.appendSwitch('ignore-certificate-errors');
+}
 app.commandLine.appendSwitch('force-color-profile', 'srgb');
 
 process.env.ELECTRON_DISABLE_SECURITY_WARNINGS = 'true';
