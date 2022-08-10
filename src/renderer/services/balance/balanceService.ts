@@ -1,8 +1,7 @@
 import { HexString } from '@renderer/domain/types';
 import { validate } from '../dataVerification/dataVerification';
 import { Asset, AssetType, ExtendedChain, OrmlExtras, StatemineExtras } from '../network/common/types';
-import { Balance } from '../storage';
-import { useBalanceStorage } from './balanceStorage';
+import { Balance, useBalanceStorage } from '../storage';
 import { IBalanceService } from './common/types';
 import { toAddress } from './common/utils';
 
