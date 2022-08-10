@@ -1,4 +1,4 @@
-import { IndexableType, PromiseExtended } from 'dexie';
+import { IndexableType } from 'dexie';
 import { useLiveQuery } from 'dexie-react-hooks';
 
 import { db } from './storage';
@@ -10,11 +10,11 @@ export const useBalanceStorage = (): IBalanceStorage => ({
     return useLiveQuery(() => db.balances.where({ publicKey, chainId, assetId }).first());
   },
 
-  getBalances: (publicKey: HexString): PromiseExtended<Balance[]> => {
+  getBalances: (publicKey: HexString): Promise<Balance[]> => {
     return db.balances.where({ publicKey }).toArray();
   },
 
-  updateBalance: (balance: Balance): PromiseExtended<IndexableType> => {
+  updateBalance: (balance: Balance): Promise<IndexableType> => {
     return db.balances.put(balance);
   },
 });

@@ -1,23 +1,23 @@
-import { IndexableType, PromiseExtended } from 'dexie';
+import { IndexableType } from 'dexie';
 
 import { db } from './storage';
 import { Connection, ConnectionType, IConnectionStorage } from './types';
 import { HexString } from '@renderer/domain/types';
 
 export const useConnectionStorage = (): IConnectionStorage => ({
-  getConnection: (chainId: HexString): PromiseExtended<Connection | undefined> => {
+  getConnection: (chainId: HexString): Promise<Connection | undefined> => {
     return db.connections.get({ chainId });
   },
-  getConnections: (): PromiseExtended<Connection[]> => {
+  getConnections: (): Promise<Connection[]> => {
     return db.connections.toArray();
   },
-  addConnection: (chainId: HexString, type: ConnectionType): PromiseExtended<IndexableType> => {
+  addConnection: (chainId: HexString, type: ConnectionType): Promise<IndexableType> => {
     return db.connections.add({ chainId, type });
   },
-  addConnections: (connections: Connection[]): PromiseExtended<IndexableType> => {
+  addConnections: (connections: Connection[]): Promise<IndexableType> => {
     return db.connections.bulkAdd(connections);
   },
-  changeConnectionType: (connection: Connection, type: ConnectionType): PromiseExtended<IndexableType> => {
+  changeConnectionType: (connection: Connection, type: ConnectionType): Promise<IndexableType> => {
     return db.connections.update(connection, { type });
   },
 });

@@ -1,4 +1,4 @@
-import { IndexableType, PromiseExtended } from 'dexie';
+import { IndexableType } from 'dexie';
 
 import { HexString } from '@renderer/domain/types';
 
@@ -10,16 +10,16 @@ export interface IStorage {}
 
 export interface IBalanceStorage {
   getBalance: (publicKey: HexString, chainId: HexString, assetId: string) => Balance | undefined;
-  getBalances: (publicKey: HexString) => PromiseExtended<Balance[]>;
-  updateBalance: (balance: Balance) => PromiseExtended<IndexableType>;
+  getBalances: (publicKey: HexString) => Promise<Balance[]>;
+  updateBalance: (balance: Balance) => Promise<IndexableType>;
 }
 
 export interface IConnectionStorage {
-  getConnection: (chainId: HexString) => PromiseExtended<Connection | undefined>;
-  getConnections: () => PromiseExtended<Connection[]>;
-  addConnection: (chainId: HexString, type: ConnectionType) => PromiseExtended<IndexableType>;
-  addConnections: (connections: Connection[]) => PromiseExtended<IndexableType>;
-  changeConnectionType: (connection: Connection, type: ConnectionType) => PromiseExtended<IndexableType>;
+  getConnection: (chainId: HexString) => Promise<Connection | undefined>;
+  getConnections: () => Promise<Connection[]>;
+  addConnection: (chainId: HexString, type: ConnectionType) => Promise<IndexableType>;
+  addConnections: (connections: Connection[]) => Promise<IndexableType>;
+  changeConnectionType: (connection: Connection, type: ConnectionType) => Promise<IndexableType>;
 }
 
 // =====================================================
