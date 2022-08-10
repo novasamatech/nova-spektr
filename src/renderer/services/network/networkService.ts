@@ -2,13 +2,13 @@ import { useRef, useState } from 'react';
 import { ApiPromise, WsProvider } from '@polkadot/api';
 import { ProviderInterface } from '@polkadot/rpc-provider/types';
 import { ScProvider } from '@polkadot/rpc-provider/substrate-connect';
+import { keyBy } from 'lodash';
 
 import { useChains } from './chainsService';
 import { Chain, ConnectionType, ExtendedChain, INetworkService } from './common/types';
 import { useConnectionStorage, Connection } from './connectionStorage';
 import { useChainSpec } from './chainSpecService';
 import { HexString } from '@renderer/domain/types';
-import { keyBy } from 'lodash';
 
 export const useNetwork = (): INetworkService => {
   const chains = useRef<Record<string, Chain>>({});
