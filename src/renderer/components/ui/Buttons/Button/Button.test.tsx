@@ -2,7 +2,7 @@ import { render, screen } from '@testing-library/react';
 
 import Button from './Button';
 
-describe('Button', () => {
+describe('ui/Buttons/Button', () => {
   test('should render component', () => {
     render(
       <Button variant="fill" pallet="error">

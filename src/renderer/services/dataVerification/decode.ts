@@ -2,7 +2,7 @@
 import { blake2AsU8a } from '@polkadot/util-crypto';
 import { u8aToHex } from '@polkadot/util';
 
-import { Node } from './types';
+import { Node } from './common/types';
 import {
   NodeType,
   VARIANTS,
@@ -12,8 +12,8 @@ import {
   HEADER_MASK,
   KEY_LENGTH_MASK,
   HASH_LENGTH,
-} from './constants';
-import { keyLEToNibbles, getNodeType } from './utils';
+} from './common/constants';
+import { keyLEToNibbles, getNodeType } from './common/utils';
 
 const decodeHeaderByte = (header: number) => {
   // variants is a slice of all variants sorted in ascending

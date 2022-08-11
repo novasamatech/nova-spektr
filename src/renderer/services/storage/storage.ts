@@ -1,6 +1,6 @@
 import Dexie, { Table } from 'dexie';
 
-import { Balance, Connection, IStorage } from './types';
+import { Balance, Connection, IStorage } from './common/types';
 
 export class Storage extends Dexie implements IStorage {
   connections!: Table<Connection>;
