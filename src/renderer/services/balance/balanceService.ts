@@ -1,12 +1,21 @@
-import { HexString } from '@renderer/domain/types';
+import { useLiveQuery } from 'dexie-react-hooks';
+
+import storage, { BalanceDS } from '../storage';
+import { Balance } from '@renderer/domain/balance';
+import { ChainId, PublicKey } from '@renderer/domain/shared-kernel';
 import { validate } from '../dataVerification/dataVerification';
 import { Asset, AssetType, ExtendedChain, OrmlExtras, StatemineExtras } from '../network/common/types';
-import { Balance, useBalanceStorage } from '../storage';
 import { IBalanceService } from './common/types';
 import { toAddress } from './common/utils';
 
 export const useBalance = (): IBalanceService => {
-  const { updateBalance, getBalances, getBalance } = useBalanceStorage();
+  const balanceStorage = storage.connectTo('balances');
+
+  if (!balanceStorage) {
+    throw new Error('=== 🔴 Balances storage in not defined 🔴 ===');
+  }
+
+  const { updateBalance, getBalances, getBalance } = balanceStorage;
 
   const handleValidation = (balance: Balance, isValid: boolean) => {
     if (isValid) {
@@ -14,8 +23,12 @@ export const useBalance = (): IBalanceService => {
     }
   };
 
+  const getLiveBalance = (publicKey: PublicKey, chainId: ChainId, assetId: string): BalanceDS | undefined => {
+    return useLiveQuery(() => getBalance(publicKey, chainId, assetId));
+  };
+
   const subscribeBalanceChange = (
-    publicKey: HexString,
+    publicKey: PublicKey,
     chain: ExtendedChain,
     relaychain: ExtendedChain | undefined,
     asset: Asset,
@@ -44,7 +57,7 @@ export const useBalance = (): IBalanceService => {
   };
 
   const subscribeStatemineAssetChange = (
-    publicKey: HexString,
+    publicKey: PublicKey,
     chain: ExtendedChain,
     relaychain: ExtendedChain | undefined,
     asset: Asset,
@@ -75,7 +88,7 @@ export const useBalance = (): IBalanceService => {
   };
 
   const subscribeOrmlAssetChange = async (
-    publicKey: HexString,
+    publicKey: PublicKey,
     chain: ExtendedChain,
     relaychain: ExtendedChain | undefined,
     asset: Asset,
@@ -110,7 +123,7 @@ export const useBalance = (): IBalanceService => {
   const subscribeBalances = (
     chain: ExtendedChain,
     relaychain: ExtendedChain | undefined,
-    publicKey: HexString,
+    publicKey: PublicKey,
   ): Promise<any> => {
     const unsubscribe = chain.assets?.map((asset) => {
       if (!asset.type) {
@@ -132,6 +145,7 @@ export const useBalance = (): IBalanceService => {
   return {
     getBalances,
     getBalance,
+    getLiveBalance,
     subscribeBalances,
   };
 };

@@ -1,7 +1,7 @@
 import { ApiPromise } from '@polkadot/api';
 
-import { HexString } from '@renderer/domain/types';
-import { Connection, ConnectionType } from '@renderer/services/storage';
+import { ChainId, HexString } from '@renderer/domain/shared-kernel';
+import { Connection, ConnectionType } from '@renderer/domain/connection';
 
 // ------------------
 // Service interfaces
@@ -12,15 +12,15 @@ export interface IChainService {
 }
 
 export interface IChainSpecService {
-  getChainSpec: (chainId: HexString) => Promise<string | undefined>;
-  getKnownChain: (chainId: HexString) => string | undefined;
+  getChainSpec: (chainId: ChainId) => Promise<string | undefined>;
+  getKnownChain: (chainId: ChainId) => string | undefined;
 }
 
 export interface INetworkService {
   connections: Record<string, ExtendedChain>;
   init: () => Promise<void>;
-  reconnect: (chainId: HexString) => Promise<void>;
-  updateConnectionType: (chainId: HexString, connectionType: ConnectionType) => Promise<void>;
+  reconnect: (chainId: ChainId) => Promise<void>;
+  updateConnectionType: (chainId: ChainId, connectionType: ConnectionType) => Promise<void>;
 }
 
 // ------------------
@@ -76,7 +76,7 @@ export type ExternalApi = {
 export type ChainOptions = 'testnet' | 'crowdloans';
 
 export type Chain = {
-  chainId: HexString;
+  chainId: ChainId;
   parentId?: HexString;
   name: string;
   assets: Asset[];
