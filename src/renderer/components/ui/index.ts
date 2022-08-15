@@ -6,7 +6,7 @@ import Identicon from './Identicon/Identicon';
 import Input from './Input/Input';
 import Button from './Buttons/Button/Button';
 import ButtonLink from './Buttons/ButtonLink/ButtonLink';
-import ButtonReturn from './Buttons/ButtonReturn/ButtonReturn';
+import ButtonBack from './Buttons/ButtonBack/ButtonBack';
 import BaseModal from './Modals/BaseModal/BaseModal';
 import ConfirmModal from './Modals/ConfirmModal/ConfirmModal';
 import Stepper from './Stepper/Stepper';
@@ -20,7 +20,7 @@ export {
   Input,
   Button,
   ButtonLink,
-  ButtonReturn,
+  ButtonBack,
   BaseModal,
   ConfirmModal,
   Stepper,

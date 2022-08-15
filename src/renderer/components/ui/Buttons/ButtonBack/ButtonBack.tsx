@@ -7,7 +7,7 @@ type Props = {
   onCustomReturn?: () => void;
 };
 
-const ButtonReturn = ({ path, onCustomReturn }: Props) => {
+const ButtonBack = ({ path, onCustomReturn }: Props) => {
   const navigate = useNavigate();
 
   const onClick = () => {
@@ -31,4 +31,4 @@ const ButtonReturn = ({ path, onCustomReturn }: Props) => {
   );
 };
 
-export default ButtonReturn;
+export default ButtonBack;
