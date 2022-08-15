@@ -5,7 +5,7 @@ import { useTranslation } from 'react-i18next';
 import { SupportedLocales } from '@renderer/services/translation/common/types';
 import LanguageSwitcher from '@renderer/components/ui/LanguageSwitcher/LanguageSwitcher';
 import { LanguageOptions } from '@renderer/services/translation/common/constants';
-import { useLocaleStorage } from '@renderer/services/translation/localeStorage';
+import { useTranslationService } from '@renderer/services/translation/translationService';
 
 type Props = {
   className?: string;
@@ -22,7 +22,7 @@ const I18Context = createContext<I18ContextProps>({} as I18ContextProps);
 
 export const I18Provider = ({ children }: PropsWithChildren<{}>) => {
   const { t, i18n } = useTranslation();
-  const { setLocale } = useLocaleStorage();
+  const { setLocale } = useTranslationService();
 
   const onLocaleChange = async (locale: SupportedLocales) => {
     try {

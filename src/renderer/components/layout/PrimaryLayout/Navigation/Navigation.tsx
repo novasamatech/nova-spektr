@@ -5,7 +5,7 @@ import { NavLink, useNavigate } from 'react-router-dom';
 import { Button, Icon, Identicon } from '@renderer/components/ui';
 import { useMatrix } from '@renderer/context/MatrixContext';
 import Paths from '@renderer/routes/paths';
-import { useI18n } from '@renderer/context/I18Context';
+import { useI18n } from '@renderer/context/I18nContext';
 
 const NavItems = [
   { icon: <Icon name="wallets" />, title: 'NavItem.Wallets', link: Paths.WALLETS },

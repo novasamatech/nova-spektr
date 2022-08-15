@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 import { Outlet } from 'react-router-dom';
 
-import { useI18n } from '@renderer/context/I18Context';
+import { useI18n } from '@renderer/context/I18nContext';
 
 const Onboarding = () => {
   // const navigate = useNavigate();
