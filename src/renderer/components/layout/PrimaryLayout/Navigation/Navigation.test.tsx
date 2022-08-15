@@ -11,6 +11,7 @@ jest.mock('@renderer/context/MatrixContext', () => ({
 jest.mock('@renderer/context/I18nContext', () => ({
   useI18n: jest.fn().mockReturnValue({
     LocaleComponent: () => <div>localeComponent</div>,
+    t: (key: string) => key,
   }),
 }));
 
