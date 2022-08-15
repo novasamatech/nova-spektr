@@ -1,3 +1,4 @@
 import PrimaryLayout from './PrimaryLayout/PrimaryLayout';
+import Onboarding from './Onboarding/Onboarding';
 
-export { PrimaryLayout };
+export default { PrimaryLayout, Onboarding };

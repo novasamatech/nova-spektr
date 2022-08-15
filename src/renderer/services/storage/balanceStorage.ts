@@ -2,7 +2,7 @@ import { IndexableType } from 'dexie';
 import { useLiveQuery } from 'dexie-react-hooks';
 
 import { db } from './storage';
-import { IBalanceStorage, Balance } from './types';
+import { IBalanceStorage, Balance } from './common/types';
 import { HexString } from '@renderer/domain/types';
 
 export const useBalanceStorage = (): IBalanceStorage => ({

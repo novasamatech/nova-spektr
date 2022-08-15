@@ -7,7 +7,6 @@ on:
       - 'main'
       - 'dev'
 
-
 jobs:
   integration_test_run:
     runs-on: ubuntu-latest
@@ -48,4 +47,4 @@ jobs:
         run: pnpm lint
 
       - name: Run tests
-        run: pnpm integration_test
+        run: pnpm test:integration

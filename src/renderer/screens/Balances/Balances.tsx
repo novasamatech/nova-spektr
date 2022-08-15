@@ -26,7 +26,7 @@ const Balances = () => {
               <div>Token</div>
               <div>Portfolio</div>
             </div>
-            <div className="flex flex-col divide-y divide-shade-5 shadow-1">
+            <div className="flex flex-col divide-y divide-shade-5 shadow-surface">
               {sortBy(chain.assets || [], (a) => a.symbol.toLowerCase()).map((asset) => (
                 <Balance
                   key={`${chain.chainId}-${asset.assetId}`}

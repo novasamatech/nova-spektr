@@ -1,7 +1,7 @@
 import { IndexableType } from 'dexie';
 
 import { db } from './storage';
-import { Connection, ConnectionType, IConnectionStorage } from './types';
+import { Connection, ConnectionType, IConnectionStorage } from './common/types';
 import { HexString } from '@renderer/domain/types';
 
 export const useConnectionStorage = (): IConnectionStorage => ({
