@@ -1,9 +1,9 @@
 /* eslint-disable no-bitwise */
 import { u8aToHex } from '@polkadot/util';
 
-import { Node } from './types';
-import { NodeType } from './constants';
-import { getNodeType, keyLEToNibbles } from './utils';
+import { Node } from './common/types';
+import { NodeType } from './common/constants';
+import { getNodeType, keyLEToNibbles } from './common/utils';
 
 // lenCommonPrefix returns the length of the
 // common prefix between two byte slices.

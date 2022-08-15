@@ -7,11 +7,11 @@ import Settings from './Settings/Settings';
 import Transfer from './Transfer/Transfer';
 import Wallets from './Wallets/Wallets';
 import Login from './Login/Login';
-import Onboarding from './Onboarding/Onboarding';
 import ChatDev from './ChatDev/ChatDev';
 import CameraDev from './CameraDev/CameraDev';
+import Onboarding from './Onboarding';
 
-export {
+export default {
   Dashboard,
   Assets,
   Operations,
