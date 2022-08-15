@@ -23,11 +23,12 @@ const LanguageSwitcher = ({ className, languages, selected, short, onChange, top
       <Listbox value={selectedLanguage.value} onChange={onChange}>
         <Listbox.Button
           className={cn(
-            'w-full h-[30px] pr-1 pl-2.5',
+            'w-full h-7.5 pr-1 pl-2.5',
             'hover:bg-primary hover:text-white',
             'bg-shade-5 text-neutral-variant',
             'rounded-l-full rounded-r-full flex justify-between items-center',
           )}
+          data-testid="language-switcher-button"
         >
           {short ? selectedLanguage.shortLabel : selectedLanguage.label}{' '}
           <Icon as="svg" className="rounded-full border border-white" name={selectedLanguage.value} />
@@ -38,7 +39,7 @@ const LanguageSwitcher = ({ className, languages, selected, short, onChange, top
           {languagesList.map((language) => (
             <Listbox.Option
               className={cn(
-                'w-full h-[30px] pr-1 pl-2.5 cursor-pointer',
+                'w-full h-7.5 pr-1 pl-2.5 cursor-pointer',
                 'hover:bg-primary hover:text-white',
                 'bg-shade-5 text-neutral-variant',
                 'rounded-l-full rounded-r-full  flex justify-between items-center',

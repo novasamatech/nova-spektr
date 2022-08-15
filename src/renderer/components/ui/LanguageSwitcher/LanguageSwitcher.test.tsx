@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react';
+import { act, render, screen } from '@testing-library/react';
 
 import { LanguageItem } from '@renderer/services/translation/common/types';
 import LanguageSwitcher from './LanguageSwitcher';
@@ -29,5 +29,25 @@ describe('ui/LanguageSwitcher', () => {
 
     const label = screen.getByText('Russian');
     expect(label).toBeInTheDocument();
+  });
+
+  test('should render full component', () => {
+    const changeLanguage = jest.fn();
+    render(<LanguageSwitcher languages={languages} onChange={changeLanguage} selected={'ru'} />);
+
+    const button = screen.getByTestId('language-switcher-button');
+
+    act(() => {
+      button.click();
+    });
+
+    const englishButton = screen.getByText('English');
+    expect(englishButton).toBeInTheDocument();
+
+    act(() => {
+      englishButton.click();
+    });
+
+    expect(changeLanguage).toBeCalledWith('en');
   });
 });

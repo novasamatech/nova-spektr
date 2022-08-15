@@ -5,7 +5,7 @@ import huLocale from '@shared/locale/hu.json';
 
 export const LOCALE_KEY = 'locale';
 
-export const LanguageOptions = [
+export const LanguageOptions: LanguageItem[] = [
   {
     value: 'en',
     label: 'English',
@@ -29,7 +29,7 @@ export const Locales: Record<string, SupportedLocales> = {
   hu: 'hu',
 };
 
-export const LocaleFiles = {
+export const LocaleFiles: Record<string, object> = {
   [Locales.en]: enLocale,
   [Locales.ru]: ruLocale,
   [Locales.hu]: huLocale,
