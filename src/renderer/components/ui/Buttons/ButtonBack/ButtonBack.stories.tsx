@@ -1,11 +1,11 @@
 import { MemoryRouter } from 'react-router-dom';
 import { ComponentMeta, ComponentStory } from '@storybook/react';
 
-import ButtonReturn from './ButtonReturn';
+import ButtonBack from './ButtonBack';
 
 export default {
-  title: 'ButtonReturn',
-  component: ButtonReturn,
+  title: 'ButtonBack',
+  component: ButtonBack,
   parameters: { actions: { argTypesRegex: '^on.*' } },
   decorators: [
     (Story) => (
@@ -14,9 +14,9 @@ export default {
       </MemoryRouter>
     ),
   ],
-} as ComponentMeta<typeof ButtonReturn>;
+} as ComponentMeta<typeof ButtonBack>;
 
-const Template: ComponentStory<typeof ButtonReturn> = (args) => <ButtonReturn {...args} />;
+const Template: ComponentStory<typeof ButtonBack> = (args) => <ButtonBack {...args} />;
 
 export const Primary = Template.bind({});
 Primary.args = {
