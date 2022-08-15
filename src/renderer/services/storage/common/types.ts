@@ -58,16 +58,3 @@ export type WalletDS = WithID & Wallet;
 export type MultisigWalletDS = Wallet & MultisigWallet;
 
 export type ContactDS = WithID & Contact;
-
-// =====================================================
-// ==================== Utilities ======================
-// =====================================================
-
-// const enum BooleanValue {
-//   FALSE = 0,
-//   TRUE = 1,
-// }
-//
-// type ReplacedBoolean<T extends Object> = {
-//   [R in keyof T]: T[R] extends boolean ? BooleanValue : T[R];
-// };
