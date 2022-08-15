@@ -1,18 +1,19 @@
-import i18n from 'i18next';
+import i18next, { InitOptions } from 'i18next';
 import { initReactI18next } from 'react-i18next';
 
-import enLocale from '@shared/locale/en.json';
-import ruLocale from '@shared/locale/ru.json';
+import { LocaleFiles, Locales } from '@renderer/services/translation/common/constants';
+import { useLocaleStorage } from '@renderer/services/translation/localeStorage';
 
-export type SupportedLocales = 'en' | 'ru' | 'hu';
+const { getLocale } = useLocaleStorage();
 
-const i18nConfig = {
+const i18nConfig: InitOptions = {
   resources: {
-    en: { translation: enLocale },
-    ru: { translation: ruLocale },
+    [Locales.en]: { translation: LocaleFiles.en },
+    [Locales.ru]: { translation: LocaleFiles.ru },
+    [Locales.hu]: { translation: LocaleFiles.hu },
   },
-  lng: 'en',
-  fallbackLng: 'en',
+  lng: getLocale(),
+  fallbackLng: Locales.en,
   debug: false,
 
   interpolation: {
@@ -20,12 +21,10 @@ const i18nConfig = {
   },
 };
 
-i18n
+i18next
   .use(initReactI18next)
   .init(i18nConfig)
   .catch((error) => {
     console.error(error);
     throw new Error('Failed to configure react-i18next');
   });
-
-export default i18n;

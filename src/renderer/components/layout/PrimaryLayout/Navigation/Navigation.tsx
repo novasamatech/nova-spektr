@@ -5,18 +5,21 @@ import { NavLink, useNavigate } from 'react-router-dom';
 import { Button, Icon, Identicon } from '@renderer/components/ui';
 import { useMatrix } from '@renderer/context/MatrixContext';
 import Paths from '@renderer/routes/paths';
+import { useI18n } from '@renderer/context/I18Context';
 
 const NavItems = [
-  { icon: <Icon name="wallets" />, title: 'Wallets', link: Paths.WALLETS },
-  { icon: <Icon name="book" />, title: 'Address Book', link: Paths.ADDRESS_BOOK },
-  { icon: <Icon name="operations" />, title: 'Operations', link: Paths.OPERATIONS },
-  { icon: <Icon name="balance" />, title: 'Balances', link: Paths.BALANCES },
-  { icon: <Icon name="transfer" />, title: 'Transfer', link: Paths.TRANSFER },
-  { icon: <Icon name="btc" />, title: 'Chat DEV', link: Paths.CHAT_DEV },
-  { icon: <Icon name="eth" />, title: 'Camera DEV', link: Paths.CAMERA_DEV },
+  { icon: <Icon name="wallets" />, title: 'NavItem.Wallets', link: Paths.WALLETS },
+  { icon: <Icon name="book" />, title: 'NavItem.AddressBook', link: Paths.ADDRESS_BOOK },
+  { icon: <Icon name="operations" />, title: 'NavItem.Operations', link: Paths.OPERATIONS },
+  { icon: <Icon name="balance" />, title: 'NavItem.Balances', link: Paths.BALANCES },
+  { icon: <Icon name="transfer" />, title: 'NavItem.Transfer', link: Paths.TRANSFER },
+  { icon: <Icon name="btc" />, title: 'NavItem.ChatDEV', link: Paths.CHAT_DEV },
+  { icon: <Icon name="eth" />, title: 'NavItem.CameraDEV', link: Paths.CAMERA_DEV },
 ];
 
 const Navigation = () => {
+  const { LocaleComponent, t } = useI18n();
+
   const navigate = useNavigate();
   const { matrix, setIsLoggedIn } = useMatrix();
 
@@ -66,7 +69,7 @@ const Navigation = () => {
                 }
               >
                 {icon}
-                <span className="font-semibold text-sm ml-3">{title}</span>
+                <span className="font-semibold text-sm ml-3">{t(title)}</span>
               </NavLink>
             </li>
           ))}
@@ -74,9 +77,10 @@ const Navigation = () => {
       </nav>
       {matrix.isLoggedIn && (
         <Button variant="outline" pallet="primary" disabled={isProcessing} onClick={onLogout}>
-          Logout
+          {t('Logout')}
         </Button>
       )}
+      <LocaleComponent className="w-16" top short />
     </aside>
   );
 };
