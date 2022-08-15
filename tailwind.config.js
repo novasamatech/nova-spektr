@@ -9,7 +9,9 @@ module.exports = {
         sans: ['Public Sans', ...defaultTheme.fontFamily.sans],
       },
       boxShadow: {
-        1: '0 0 25px rgba(0, 0, 0, 0.05)',
+        surface: '0 0 25px rgba(0, 0, 0, 0.05)',
+        element: '0 0 5px rgba(0, 0, 0, 0.15)',
+        component: '0 0 50px rgba(0, 0, 0, 0.1)',
       },
       height: {
         stretch: 'calc(100vh - 44px)',
@@ -44,7 +46,11 @@ module.exports = {
       },
       spacing: {
         5.5: '1.375rem',
+        7.5: '1.875rem',
         9.5: '2.375rem',
+      },
+      borderRadius: {
+        '2lg': '10px',
       },
       backgroundImage: {
         stripes: "url('/src/renderer/assets/images/misc/stripes.png')",
