@@ -13,12 +13,12 @@ type Props = {
   top?: boolean;
 };
 
-type I18ContextProps = {
+type I18nContextProps = {
   t: TFunction<'translation'>;
   LocaleComponent: FC<Props>;
 };
 
-const I18Context = createContext<I18ContextProps>({} as I18ContextProps);
+const I18nContext = createContext<I18nContextProps>({} as I18nContextProps);
 
 export const I18Provider = ({ children }: PropsWithChildren<{}>) => {
   const { t, i18n } = useTranslation();
@@ -44,7 +44,7 @@ export const I18Provider = ({ children }: PropsWithChildren<{}>) => {
     />
   );
 
-  return <I18Context.Provider value={{ t, LocaleComponent }}>{children}</I18Context.Provider>;
+  return <I18nContext.Provider value={{ t, LocaleComponent }}>{children}</I18nContext.Provider>;
 };
 
-export const useI18n = () => useContext<I18ContextProps>(I18Context);
+export const useI18n = () => useContext<I18nContextProps>(I18nContext);

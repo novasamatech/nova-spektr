@@ -8,7 +8,7 @@ jest.mock('@renderer/context/MatrixContext', () => ({
   useMatrix: jest.fn(),
 }));
 
-jest.mock('@renderer/context/I18Context', () => ({
+jest.mock('@renderer/context/I18nContext', () => ({
   useI18n: jest.fn().mockReturnValue({
     LocaleComponent: () => <div>localeComponent</div>,
   }),

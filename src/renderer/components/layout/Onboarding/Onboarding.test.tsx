@@ -2,7 +2,7 @@ import { render, screen } from '@testing-library/react';
 
 import Onboarding from './Onboarding';
 
-jest.mock('@renderer/context/I18Context', () => ({
+jest.mock('@renderer/context/I18nContext', () => ({
   useI18n: () => ({
     LocaleComponent: () => <div>localeComponent</div>,
   }),
