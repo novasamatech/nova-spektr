@@ -1,15 +1,15 @@
 import { WellKnownChain } from '@polkadot/rpc-provider/substrate-connect';
 
-import { HexString } from '@renderer/domain/types';
-import { Chains, TestChains } from './common/constants';
-import { IChainSpecService } from './common/types';
-import westmint from './common/chainSpecs/westend-westmint.json';
-import statemine from './common/chainSpecs/kusama-statemine.json';
+import { ChainId } from '@renderer/domain/shared-kernel';
 import karura from './common/chainSpecs/kusama-karura.json';
+import statemine from './common/chainSpecs/kusama-statemine.json';
 import acala from './common/chainSpecs/polkadot-acala.json';
 import statemint from './common/chainSpecs/polkadot-statemint.json';
+import westmint from './common/chainSpecs/westend-westmint.json';
+import { Chains, TestChains } from './common/constants';
+import { IChainSpecService } from './common/types';
 
-const ChainSpecs: Record<HexString, string> = {
+const ChainSpecs: Record<ChainId, string> = {
   [Chains.STATEMINE]: JSON.stringify(statemine),
   [Chains.STATEMINT]: JSON.stringify(statemint),
   [Chains.KARURA]: JSON.stringify(karura),
@@ -17,17 +17,15 @@ const ChainSpecs: Record<HexString, string> = {
   [TestChains.WESTMINT]: JSON.stringify(westmint),
 };
 
-const KnownChains: Record<HexString, WellKnownChain> = {
+const KnownChains: Record<ChainId, WellKnownChain> = {
   [Chains.POLKADOT]: WellKnownChain.polkadot,
   [Chains.KUSAMA]: WellKnownChain.ksmcc3,
   [TestChains.WESTEND]: WellKnownChain.westend2,
 };
 
-export function useChainSpec(): IChainSpecService {
-  return {
-    getChainSpec: (chainId: HexString): Promise<string | undefined> => {
-      return Promise.resolve(ChainSpecs[chainId]);
-    },
-    getKnownChain: (chainId: HexString): WellKnownChain | undefined => KnownChains[chainId],
-  };
-}
+export const useChainSpec = (): IChainSpecService => ({
+  getChainSpec: (chainId: ChainId): Promise<string | undefined> => {
+    return Promise.resolve(ChainSpecs[chainId]);
+  },
+  getKnownChain: (chainId: ChainId): WellKnownChain | undefined => KnownChains[chainId],
+});

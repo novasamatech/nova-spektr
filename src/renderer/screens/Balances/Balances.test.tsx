@@ -3,7 +3,7 @@ import { render, screen } from '@testing-library/react';
 import Balances from './Balances';
 
 jest.mock('@renderer/context/NetworkContext', () => ({
-  useNetworkContext: jest.fn().mockReturnValue({
+  useNetworkContext: jest.fn(() => ({
     connections: {
       '0x0000000000000000000000000000000000000000': {
         chainId: '1',
@@ -25,12 +25,12 @@ jest.mock('@renderer/context/NetworkContext', () => ({
         ],
       },
     },
-  }),
+  })),
 }));
 
-jest.mock('./Balance', () => () => <div>Balance</div>);
+jest.mock('./BalanceRow', () => () => <div>Balance</div>);
 
-describe('screen/Balances', () => {
+describe('screen/Balances/Balances', () => {
   test('should render component', () => {
     render(<Balances />);
     const text = screen.getByText('Balances');

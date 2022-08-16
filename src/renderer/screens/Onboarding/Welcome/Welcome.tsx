@@ -8,7 +8,7 @@ import WatchBg from '@images/misc/watch-bg.webp';
 import WatchOnlyImg from '@images/misc/watch-only.svg';
 
 const Welcome = () => (
-  <>
+  <div className="flex flex-col h-full">
     <h1 className="flex flex-col text-center mt-7">
       <span className="text-4xl text-neutral">Welcome to</span>
       <span className="font-bold text-[44px] text-primary">Omni Enterprise</span>
@@ -66,7 +66,7 @@ const Welcome = () => (
         </ButtonLink>
       </li>
     </ul>
-  </>
+  </div>
 );
 
 export default Welcome;

@@ -1,4 +1,4 @@
-import { render, screen, waitFor } from '@testing-library/react';
+import { act, render, screen } from '@testing-library/react';
 
 import Matrix from '@renderer/services/matrix';
 import { MatrixProvider } from './MatrixContext';
@@ -10,7 +10,7 @@ describe('context/MatrixContext', () => {
     jest.clearAllMocks();
   });
 
-  test('should render children and loader', async () => {
+  test('should render children', async () => {
     (Matrix as jest.Mock).mockImplementation(() => ({
       init: jest.fn(),
       loginFromCache: jest.fn(),
@@ -18,23 +18,16 @@ describe('context/MatrixContext', () => {
       stopClient: jest.fn(),
     }));
 
-    render(
-      <MatrixProvider loader="loading" onAutoLoginFail={() => {}}>
-        children
-      </MatrixProvider>,
-    );
-
-    expect(screen.getByText('loading')).toBeInTheDocument();
-    expect(screen.queryByText('children')).not.toBeInTheDocument();
-
-    await waitFor(() => {
-      expect(screen.queryByText('loading')).not.toBeInTheDocument();
-      expect(screen.getByText('children')).toBeInTheDocument();
+    await act(async () => {
+      render(<MatrixProvider onAutoLoginFail={() => {}}>children</MatrixProvider>);
     });
+
+    expect(screen.getByText('children')).toBeInTheDocument();
   });
 
   test('should setup subscribers after login', async () => {
     const setupSubscribers = jest.fn();
+    const loginFailSpy = jest.fn();
 
     (Matrix as jest.Mock).mockImplementation(() => ({
       init: jest.fn(),
@@ -43,24 +36,16 @@ describe('context/MatrixContext', () => {
       setupSubscribers,
     }));
 
-    const loginFailSpy = jest.fn();
-    render(
-      <MatrixProvider loader="loading" onAutoLoginFail={loginFailSpy}>
-        children
-      </MatrixProvider>,
-    );
-
-    expect(screen.queryByText('loading')).toBeInTheDocument();
-    expect(setupSubscribers).not.toBeCalled();
-    expect(loginFailSpy).not.toBeCalled();
-
-    await waitFor(() => {
-      expect(screen.queryByText('loading')).not.toBeInTheDocument();
-      expect(setupSubscribers).toBeCalled();
+    await act(async () => {
+      render(<MatrixProvider onAutoLoginFail={loginFailSpy}>children</MatrixProvider>);
     });
+
+    expect(setupSubscribers).toBeCalled();
   });
 
-  test('should handle call onAutoLoginFail', () => {
+  test('should handle call onAutoLoginFail', async () => {
+    const loginFailSpy = jest.fn();
+
     (Matrix as jest.Mock).mockReturnValue({
       stopClient: jest.fn(),
       init: jest.fn(() => {
@@ -68,12 +53,9 @@ describe('context/MatrixContext', () => {
       }),
     });
 
-    const loginFailSpy = jest.fn();
-    render(
-      <MatrixProvider loader="loading" onAutoLoginFail={loginFailSpy}>
-        children
-      </MatrixProvider>,
-    );
+    await act(async () => {
+      render(<MatrixProvider onAutoLoginFail={loginFailSpy}>children</MatrixProvider>);
+    });
 
     expect(loginFailSpy).toBeCalledTimes(1);
     expect(loginFailSpy).toBeCalledWith('fail');

@@ -1,14 +1,14 @@
 /* eslint-disable import/prefer-default-export */
 import { BN, BN_TEN } from '@polkadot/util';
 import BigNumber from 'bignumber.js';
-import { HexString } from '@polkadot/util/types';
 import { encodeAddress } from '@polkadot/util-crypto';
 
 import { DEFAULT, Suffix, Decimal, SS58_DEFAULT_PREFIX } from './constants';
 import { Asset, AssetType, OrmlExtras, StatemineExtras } from '@renderer/services/network/common/types';
-import { Balance } from '@renderer/services/storage';
+import { PublicKey } from '@renderer/domain/shared-kernel';
+import { Balance } from '@renderer/domain/balance';
 
-export const toAddress = (publicKey: HexString, prefix = SS58_DEFAULT_PREFIX): string => {
+export const toAddress = (publicKey: PublicKey, prefix = SS58_DEFAULT_PREFIX): string => {
   if (!publicKey) return '';
 
   return encodeAddress(publicKey, prefix);
