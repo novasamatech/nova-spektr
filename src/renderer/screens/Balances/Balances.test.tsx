@@ -28,7 +28,6 @@ jest.mock('@renderer/context/NetworkContext', () => ({
   })),
 }));
 
-// TODO: Find way to avoid warnings with this mock
 jest.mock('./BalanceRow', () => () => <div>Balance</div>);
 
 describe('screen/Balances/Balances', () => {

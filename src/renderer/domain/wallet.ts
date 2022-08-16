@@ -6,21 +6,17 @@ export type SimpleWallet = {
   mainAccounts: Account[];
   chainAccounts: ChainAccount[];
   isMultisig: boolean;
+  isActive: boolean;
   type: WalletType;
 };
 
-export type MultisigWallet = {
-  name: string;
-  mainAccounts: Account[];
-  chainAccounts: ChainAccount[];
-  isMultisig: boolean;
-  type: WalletType;
-  threshold?: number;
-  originContacts?: Contact[];
-  messengerRoomId?: string;
+export type MultisigWallet = SimpleWallet & {
+  threshold: number;
+  originContacts: Contact[];
+  messengerRoomId: string;
 };
 
-export type Wallet = SimpleWallet | MultisigWallet;
+export type Wallet = MultisigWallet;
 
 export const enum WalletType {
   WATCH_ONLY,
@@ -37,14 +33,17 @@ export function createSimpleWallet<T extends SimpleWallet>({
   type,
   mainAccounts,
   chainAccounts,
-  isMultisig,
-}: T): Wallet {
+}: Omit<T, 'isMultisig' | 'isActive'>): Wallet {
   return {
     name,
     type,
     mainAccounts,
     chainAccounts,
-    isMultisig,
+    isMultisig: false,
+    isActive: false,
+    threshold: 0,
+    messengerRoomId: '',
+    originContacts: [],
   };
 }
 
@@ -53,17 +52,17 @@ export function createMultisigWallet<T extends MultisigWallet>({
   type,
   mainAccounts,
   chainAccounts,
-  isMultisig,
   threshold,
   originContacts,
   messengerRoomId,
-}: T): Wallet {
+}: Omit<T, 'isMultisig' | 'isActive'>): Wallet {
   return {
     name,
     type,
     mainAccounts,
     chainAccounts,
-    isMultisig,
+    isMultisig: true,
+    isActive: false,
     threshold,
     originContacts,
     messengerRoomId,

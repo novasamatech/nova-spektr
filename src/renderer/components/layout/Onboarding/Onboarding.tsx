@@ -1,21 +1,13 @@
 import { Outlet } from 'react-router-dom';
 
-import { Button } from '@renderer/components/ui';
-import { useI18n } from '@renderer/context/I18Context';
+import { useI18n } from '@renderer/context/I18nContext';
 import { createSimpleWallet, WalletType } from '@renderer/domain/wallet';
 import { useWallet } from '@renderer/services/wallet/walletService';
+import { Button } from '@renderer/components/ui';
 
 const Onboarding = () => {
-  const { onLocaleChange } = useI18n();
+  const { LocaleComponent } = useI18n();
   const { addWallet } = useWallet();
-
-  const onLanguageSwitch = async () => {
-    try {
-      await onLocaleChange('ru');
-    } catch (error) {
-      console.warn(error);
-    }
-  };
 
   const onAddTestWallet = async () => {
     const newWallet = createSimpleWallet({
@@ -23,7 +15,6 @@ const Onboarding = () => {
       type: WalletType.WATCH_ONLY,
       mainAccounts: [],
       chainAccounts: [],
-      isMultisig: false,
     });
 
     await addWallet(newWallet);
@@ -31,12 +22,12 @@ const Onboarding = () => {
 
   return (
     <main className="px-9 pt-5 pb-6 flex flex-col h-screen bg-stripes bg-cover">
-      <Outlet />
+      <div className="flex-1">
+        <Outlet />
+      </div>
 
       <div className="flex justify-between">
-        <Button className="w-max" variant="fill" pallet="primary" onClick={onLanguageSwitch}>
-          Switch language
-        </Button>
+        <LocaleComponent className="w-16" short top />
         <Button variant="outline" pallet="primary" onClick={onAddTestWallet}>
           Add test wallet
         </Button>

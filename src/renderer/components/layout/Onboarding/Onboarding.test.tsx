@@ -12,6 +12,12 @@ jest.mock('@renderer/services/wallet/walletService', () => ({
   useWallet: jest.fn(),
 }));
 
+jest.mock('@renderer/context/I18nContext', () => ({
+  useI18n: () => ({
+    LocaleComponent: () => <div>localeComponent</div>,
+  }),
+}));
+
 describe('Onboarding', () => {
   test('should render component', async () => {
     (useWallet as jest.Mock).mockImplementation(() => ({
@@ -22,7 +28,7 @@ describe('Onboarding', () => {
       render(<Onboarding />, { wrapper: MemoryRouter });
     });
 
-    const langSwitch = screen.getByRole('button', { name: 'Switch language' });
+    const langSwitch = screen.getByText('localeComponent');
     expect(langSwitch).toBeInTheDocument();
   });
 });
