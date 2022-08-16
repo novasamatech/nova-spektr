@@ -1,9 +1,10 @@
-import { HexString } from '@renderer/domain/types';
-import { Balance } from '@renderer/services/storage';
+import { ChainId, PublicKey } from '@renderer/domain/shared-kernel';
+import { BalanceDS } from '@renderer/services/storage/common/types';
 import { ExtendedChain } from '@renderer/services/network/common/types';
 
 export interface IBalanceService {
-  getBalance: (publicKey: HexString, chainId: HexString, assetId: string) => Balance | undefined;
-  getBalances: (publicKey: HexString) => Promise<Balance[]>;
-  subscribeBalances: (chain: ExtendedChain, parachain: ExtendedChain | undefined, publicKey: HexString) => Promise<any>;
+  getBalance: (publicKey: PublicKey, chainId: ChainId, assetId: string) => Promise<BalanceDS | undefined>;
+  getLiveBalance: (publicKey: PublicKey, chainId: ChainId, assetId: string) => BalanceDS | undefined;
+  getBalances: (publicKey: PublicKey) => Promise<BalanceDS[]>;
+  subscribeBalances: (chain: ExtendedChain, parachain: ExtendedChain | undefined, publicKey: PublicKey) => Promise<any>;
 }

@@ -1,19 +1,32 @@
 import cn from 'classnames';
+import { useEffect, useState } from 'react';
 
+import { PublicKey } from '@renderer/domain/shared-kernel';
+import { Balance } from '@renderer/domain/balance';
 import { useBalance } from '@renderer/services/balance/balanceService';
-import { HexString } from '@renderer/domain/types';
-import { Asset, Chain } from '@renderer/services/network/common/types';
 import { formatBalance, transferable } from '@renderer/services/balance/common/utils';
+import { Asset, Chain } from '@renderer/services/network/common/types';
 
 type Props = {
   chain: Chain;
   asset: Asset;
-  publicKey: HexString;
+  publicKey: PublicKey;
 };
 
-const Balance = ({ chain, asset, publicKey }: Props) => {
+const BalanceRow = ({ chain, asset, publicKey }: Props) => {
   const { getBalance } = useBalance();
-  const balance = getBalance(publicKey, chain.chainId, asset.assetId.toString());
+
+  const [balance, setBalance] = useState<Balance>();
+
+  // TODO: better to get all balances in parent component
+  useEffect(() => {
+    const getCurrentBalance = async () => {
+      const data = await getBalance(publicKey, chain.chainId, asset.assetId.toString());
+      setBalance(data);
+    };
+
+    getCurrentBalance();
+  }, []);
 
   return (
     <div className="flex bg-white bg-opacity-25 h-[60px] items-center justify-between gap-7.5 p-[15px]">
@@ -23,11 +36,11 @@ const Balance = ({ chain, asset, publicKey }: Props) => {
         </div>
         {asset.symbol}
       </div>
-      <div className={cn(!balance?.verified && 'text-shade-50')} data-testid="balance">
+      <p className={cn(!balance?.verified && 'text-shade-50')} data-testid="balance">
         {balance && formatBalance(transferable(balance), asset.precision)} {asset.symbol}
-      </div>
+      </p>
     </div>
   );
 };
 
-export default Balance;
+export default BalanceRow;

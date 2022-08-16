@@ -1,23 +1,27 @@
-import { IndexableType } from 'dexie';
+import { IndexableType, Table } from 'dexie';
 
-import { db } from './storage';
-import { Connection, ConnectionType, IConnectionStorage } from './common/types';
-import { HexString } from '@renderer/domain/types';
+import { ChainId } from '@renderer/domain/shared-kernel';
+import { Connection, ConnectionType } from '@renderer/domain/connection';
+import { ConnectionDS, IConnectionStorage } from './common/types';
 
-export const useConnectionStorage = (): IConnectionStorage => ({
-  getConnection: (chainId: HexString): Promise<Connection | undefined> => {
-    return db.connections.get({ chainId });
+export const useConnectionStorage = (db: Table<ConnectionDS>): IConnectionStorage => ({
+  getConnection: (chainId: ChainId): Promise<ConnectionDS | undefined> => {
+    return db.get({ chainId });
   },
-  getConnections: (): Promise<Connection[]> => {
-    return db.connections.toArray();
+
+  getConnections: (): Promise<ConnectionDS[]> => {
+    return db.toArray();
   },
-  addConnection: (chainId: HexString, type: ConnectionType): Promise<IndexableType> => {
-    return db.connections.add({ chainId, type });
+
+  addConnection: (chainId: ChainId, type: ConnectionType): Promise<IndexableType> => {
+    return db.add({ chainId, type });
   },
+
   addConnections: (connections: Connection[]): Promise<IndexableType> => {
-    return db.connections.bulkAdd(connections);
+    return db.bulkAdd(connections);
   },
+
   changeConnectionType: (connection: Connection, type: ConnectionType): Promise<IndexableType> => {
-    return db.connections.update(connection, { type });
+    return db.update(connection, { type });
   },
 });

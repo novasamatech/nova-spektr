@@ -1,20 +1,19 @@
-import { IndexableType } from 'dexie';
-import { useLiveQuery } from 'dexie-react-hooks';
+import { IndexableType, Table } from 'dexie';
 
-import { db } from './storage';
-import { IBalanceStorage, Balance } from './common/types';
-import { HexString } from '@renderer/domain/types';
+import { Balance } from '@renderer/domain/balance';
+import { ChainId, PublicKey } from '@renderer/domain/shared-kernel';
+import { BalanceDS, IBalanceStorage } from './common/types';
 
-export const useBalanceStorage = (): IBalanceStorage => ({
-  getBalance: (publicKey: HexString, chainId: HexString, assetId: string): Balance | undefined => {
-    return useLiveQuery(() => db.balances.where({ publicKey, chainId, assetId }).first());
+export const useBalanceStorage = (db: Table<BalanceDS>): IBalanceStorage => ({
+  getBalance: (publicKey: PublicKey, chainId: ChainId, assetId: string): Promise<BalanceDS | undefined> => {
+    return db.where({ publicKey, chainId, assetId }).first();
   },
 
-  getBalances: (publicKey: HexString): Promise<Balance[]> => {
-    return db.balances.where({ publicKey }).toArray();
+  getBalances: (publicKey: PublicKey): Promise<BalanceDS[]> => {
+    return db.where({ publicKey }).toArray();
   },
 
   updateBalance: (balance: Balance): Promise<IndexableType> => {
-    return db.balances.put(balance);
+    return db.put(balance);
   },
 });
