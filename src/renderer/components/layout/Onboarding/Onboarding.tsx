@@ -21,8 +21,8 @@ const Onboarding = () => {
   };
 
   return (
-    <main className="px-9 pt-5 pb-6 flex flex-col justify-between h-screen bg-stripes bg-cover">
-      <div>
+    <main className="px-9 pt-5 pb-6 flex flex-col h-screen bg-stripes bg-cover">
+      <div className="flex-1">
         <Outlet />
       </div>
 
