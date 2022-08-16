@@ -1,9 +1,9 @@
 import Dexie, { Table } from 'dexie';
 
 import { BalanceDS, WalletDS, ConnectionDS, DataStorage, IStorage } from './common/types';
-import { useBalanceStorage } from './balanceDS';
-import { useConnectionStorage } from './connectionDS';
-import { useWalletStorage } from './walletDS';
+import { useBalanceStorage } from './balanceStorage';
+import { useConnectionStorage } from './connectionStorage';
+import { useWalletStorage } from './walletStorage';
 
 class DexieStorage extends Dexie {
   connections: Table<ConnectionDS>;

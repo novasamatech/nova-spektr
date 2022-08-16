@@ -1,4 +1,4 @@
-describe('service/balanceDS', () => {
+describe('service/balanceStorage', () => {
   test('should init', () => {
     expect(1).toEqual(1);
   });

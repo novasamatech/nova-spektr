@@ -12,8 +12,8 @@ const NavItems = [
   { icon: <Icon name="operations" />, title: 'Operations', link: Paths.OPERATIONS },
   { icon: <Icon name="balance" />, title: 'Balances', link: Paths.BALANCES },
   { icon: <Icon name="transfer" />, title: 'Transfer', link: Paths.TRANSFER },
-  { icon: <Icon name="btc" />, title: 'Chat DEV', link: Paths.CHAT_DEV },
-  { icon: <Icon name="eth" />, title: 'Camera DEV', link: Paths.CAMERA_DEV },
+  // { icon: <Icon name="btc" />, title: 'Chat DEV', link: Paths.CHAT_DEV },
+  // { icon: <Icon name="eth" />, title: 'Camera DEV', link: Paths.CAMERA_DEV },
 ];
 
 const Navigation = () => {

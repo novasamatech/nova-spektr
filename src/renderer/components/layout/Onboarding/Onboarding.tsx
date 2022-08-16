@@ -23,7 +23,6 @@ const Onboarding = () => {
       type: WalletType.WATCH_ONLY,
       mainAccounts: [],
       chainAccounts: [],
-      isMultisig: false,
     });
 
     await addWallet(newWallet);

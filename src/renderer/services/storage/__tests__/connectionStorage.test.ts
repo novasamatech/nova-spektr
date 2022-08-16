@@ -1,7 +1,7 @@
 import { ConnectionType } from '@renderer/domain/connection';
-import { useConnectionStorage } from '@renderer/services/storage/connectionDS';
+import { useConnectionStorage } from '@renderer/services/storage/connectionStorage';
 
-describe('service/storage/connectionDS', () => {
+describe('service/storage/connectionStorage', () => {
   const setupDbMock = jest.fn((methodsToMock: any = {}) => {
     return methodsToMock;
   });
