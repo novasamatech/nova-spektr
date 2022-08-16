@@ -21,6 +21,7 @@ export const useWallet = (): IWalletService => {
     }
   };
 
+  // TODO: in future implement setWalletInactive
   const setActiveWallet = async (walletId: string): Promise<void> => {
     try {
       const newActiveWallet = await getWallet(walletId);
