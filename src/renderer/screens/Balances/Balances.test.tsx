@@ -28,7 +28,7 @@ jest.mock('@renderer/context/NetworkContext', () => ({
   })),
 }));
 
-jest.mock('./Balance', () => () => <div>Balance</div>);
+jest.mock('./BalanceRow', () => () => <div>Balance</div>);
 
 describe('screen/Balances/Balances', () => {
   test('should render component', () => {
