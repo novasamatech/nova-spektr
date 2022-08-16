@@ -1,12 +1,11 @@
 import { useEffect } from 'react';
 import { Outlet } from 'react-router-dom';
 
-import { Button } from '@renderer/components/ui';
-import { useI18n } from '@renderer/context/I18Context';
+import { useI18n } from '@renderer/context/I18nContext';
 
 const Onboarding = () => {
   // const navigate = useNavigate();
-  const { onLocaleChange } = useI18n();
+  const { LocaleComponent } = useI18n();
 
   useEffect(() => {
     // TODO: check wallets and navigate
@@ -14,21 +13,13 @@ const Onboarding = () => {
     // navigate(Paths.BALANCES, { replace: true });
   }, []);
 
-  const onLanguageSwitch = async () => {
-    try {
-      await onLocaleChange('ru');
-    } catch (error) {
-      console.warn(error);
-    }
-  };
-
   return (
-    <main className="px-9 pt-5 pb-6 flex flex-col h-screen bg-stripes bg-cover">
-      <Outlet />
+    <main className="px-9 pt-5 pb-6 flex flex-col justify-between h-screen bg-stripes bg-cover">
+      <div>
+        <Outlet />
+      </div>
 
-      <Button className="w-max" variant="fill" pallet="primary" onClick={onLanguageSwitch}>
-        Switch language
-      </Button>
+      <LocaleComponent className="w-16" short top />
     </main>
   );
 };

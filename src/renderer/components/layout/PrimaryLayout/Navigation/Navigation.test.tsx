@@ -8,6 +8,13 @@ jest.mock('@renderer/context/MatrixContext', () => ({
   useMatrix: jest.fn(),
 }));
 
+jest.mock('@renderer/context/I18nContext', () => ({
+  useI18n: jest.fn().mockReturnValue({
+    LocaleComponent: () => <div>localeComponent</div>,
+    t: (key: string) => key,
+  }),
+}));
+
 describe('layout/PrimaryLayout/Navigation', () => {
   afterEach(() => {
     jest.clearAllMocks();
@@ -26,5 +33,8 @@ describe('layout/PrimaryLayout/Navigation', () => {
 
     const text = screen.getByText('$1,148.14');
     expect(text).toBeInTheDocument();
+
+    const langSwitch = screen.getByText('localeComponent');
+    expect(langSwitch).toBeInTheDocument();
   });
 });
