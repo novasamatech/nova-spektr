@@ -13,8 +13,8 @@ const NavItems = [
   { icon: <Icon name="operations" />, title: 'NavItem.Operations', link: Paths.OPERATIONS },
   { icon: <Icon name="balance" />, title: 'NavItem.Balances', link: Paths.BALANCES },
   { icon: <Icon name="transfer" />, title: 'NavItem.Transfer', link: Paths.TRANSFER },
-  { icon: <Icon name="btc" />, title: 'NavItem.ChatDEV', link: Paths.CHAT_DEV },
-  { icon: <Icon name="eth" />, title: 'NavItem.CameraDEV', link: Paths.CAMERA_DEV },
+  // { icon: <Icon name="btc" />, title: 'NavItem.ChatDEV', link: Paths.CHAT_DEV },
+  // { icon: <Icon name="eth" />, title: 'NavItem.CameraDEV', link: Paths.CAMERA_DEV },
 ];
 
 const Navigation = () => {

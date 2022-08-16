@@ -1,14 +1,15 @@
 import { useRef, useState } from 'react';
-import { ApiPromise, WsProvider } from '@polkadot/api';
-import { ProviderInterface } from '@polkadot/rpc-provider/types';
-import { ScProvider } from '@polkadot/rpc-provider/substrate-connect';
 import { keyBy } from 'lodash';
+import { ApiPromise, WsProvider } from '@polkadot/api';
+import { ScProvider } from '@polkadot/rpc-provider/substrate-connect';
+import { ProviderInterface } from '@polkadot/rpc-provider/types';
 
+import { Connection, ConnectionType } from '@renderer/domain/connection';
+import { ChainId } from '@renderer/domain/shared-kernel';
+import storage from '@renderer/services/storage';
+import { useChainSpec } from './chainSpecService';
 import { useChains } from './chainsService';
 import { Chain, ExtendedChain, INetworkService } from './common/types';
-import { useConnectionStorage, Connection, ConnectionType } from '@renderer/services/storage';
-import { useChainSpec } from './chainSpecService';
-import { HexString } from '@renderer/domain/types';
 
 export const useNetwork = (): INetworkService => {
   const chains = useRef<Record<string, Chain>>({});
@@ -16,9 +17,16 @@ export const useNetwork = (): INetworkService => {
 
   const { getChainsData } = useChains();
   const { getKnownChain, getChainSpec } = useChainSpec();
-  const { getConnections, addConnections, changeConnectionType } = useConnectionStorage();
 
-  const updateConnectionType = async (chainId: HexString, type: ConnectionType): Promise<void> => {
+  const connectionStorage = storage.connectTo('connections');
+
+  if (!connectionStorage) {
+    throw new Error('=== 🔴 Connections storage in not defined 🔴 ===');
+  }
+
+  const { getConnections, addConnections, changeConnectionType } = connectionStorage;
+
+  const updateConnectionType = async (chainId: ChainId, type: ConnectionType): Promise<void> => {
     const connection = connections[chainId];
     if (connection) {
       await changeConnectionType(connection.connection, type);
@@ -102,7 +110,7 @@ export const useNetwork = (): INetworkService => {
     await connect();
   };
 
-  const reconnect = async (chainId: HexString): Promise<void> => {
+  const reconnect = async (chainId: ChainId): Promise<void> => {
     const connection = connections[chainId];
 
     if (!connection) return;
