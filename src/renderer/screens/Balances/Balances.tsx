@@ -21,7 +21,7 @@ const Balances = () => {
             <img src={chain.icon} className="w-5 h-5" alt="" />
             <p>{chain.name}</p>
           </h2>
-          <div className="flex items-center justify-between p-[15px] gap-[30px] h-[30px] bg-shade-5 text-xs font-bold text-gray-500 uppercase">
+          <div className="flex items-center justify-between p-[15px] gap-7.5 h-7.5 bg-shade-5 text-xs font-bold text-gray-500 uppercase">
             <p>Token</p>
             <p>Portfolio</p>
           </div>

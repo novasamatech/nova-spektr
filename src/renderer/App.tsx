@@ -2,7 +2,7 @@ import { useNavigate, useRoutes } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 
 import { SplashScreen } from '@renderer/components/common';
-import I18Provider from '@renderer/context/I18Context';
+import I18Provider from '@renderer/context/I18nContext';
 import MatrixProvider from '@renderer/context/MatrixContext';
 import NetworkProvider from '@renderer/context/NetworkContext';
 import { useWallet } from '@renderer/services/wallet/walletService';
