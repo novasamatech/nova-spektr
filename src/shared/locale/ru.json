@@ -1,3 +1,10 @@
 {
-  "header.test": "тест"
+  "header.test": "тест",
+  "NavItem.Wallets": "Кошельки",
+  "NavItem.AddressBook": "Контакты",
+  "NavItem.Operations": "Операции",
+  "NavItem.Balances": "Балансы",
+  "NavItem.Transfer": "Отправить",
+  "NavItem.ChatDEV": "Чат DEV",
+  "NavItem.CameraDEV": "Камера DEV"
 }

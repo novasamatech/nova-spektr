@@ -1,3 +1,10 @@
 {
-  "header.test": "test"
+  "header.test": "test",
+  "NavItem.Wallets": "Wallets",
+  "NavItem.AddressBook": "Address Book",
+  "NavItem.Operations": "Operations",
+  "NavItem.Balances": "Balances",
+  "NavItem.Transfer": "Transfer",
+  "NavItem.ChatDEV": "Chat DEV",
+  "NavItem.CameraDEV": "Camera DEV"
 }
