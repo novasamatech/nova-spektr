@@ -1,15 +1,15 @@
 import { act, render, screen } from '@testing-library/react';
 
-import DropDown from './DropDown';
+import Dropdown from './Dropdown';
 
-describe('ui/DropDown', () => {
+describe('ui/Dropdown', () => {
   const options = [
     { label: 'label_0', value: '0' },
     { label: 'label_1', value: '1' },
   ];
 
   test('should render component', () => {
-    render(<DropDown placeholder="Select option" options={options} onSelected={() => {}} />);
+    render(<Dropdown placeholder="Select option" options={options} onSelected={() => {}} />);
 
     const button = screen.getByRole('button');
     const placeholder = screen.getByText('Select option');
@@ -19,7 +19,7 @@ describe('ui/DropDown', () => {
 
   test('should call onSelected', async () => {
     const spySelected = jest.fn();
-    render(<DropDown placeholder="Select option" options={options} onSelected={spySelected} />);
+    render(<Dropdown placeholder="Select option" options={options} onSelected={spySelected} />);
 
     const button = screen.getByRole('button');
     await act(() => button.click());

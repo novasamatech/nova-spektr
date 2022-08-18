@@ -21,28 +21,32 @@ type Props = {
   onSelected: (data: OptionType) => void;
 };
 
-const DropDown = ({ className, placeholder, selected, options, onSelected }: Props) => (
+const Dropdown = ({ className, placeholder, selected, options, onSelected }: Props) => (
   <Listbox value={selected} onChange={onSelected}>
     {({ open }) => (
       <div className={cn('relative w-full', className)}>
         <Listbox.Button
           className={cn(
-            'group relative w-full rounded-2lg border bg-white py-3 px-2.5 pr-10 text-left text-sm leading-4 font-semibold hover:text-primary hover:border-primary focus:text-primary focus:border-primary transition',
+            'group relative w-full rounded-2lg border bg-white',
+            'py-3 px-2.5 pr-10 text-left text-sm leading-4 font-semibold transition',
+            'hover:text-primary hover:border-primary focus:text-primary focus:border-primary',
             open && 'border-primary',
           )}
         >
           <p
             className={cn(
               'block truncate group-hover:text-primary group-hover:text-primary group-focus:text-primary transition',
+              selected && !open && 'text-neutral',
+              !selected && !open && 'text-shade-30',
               open && 'text-primary',
-              !open && selected ? 'text-neutral' : 'text-shade-30',
             )}
           >
             {selected?.label || placeholder}
           </p>
           <span
             className={cn(
-              'pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2.5 group-hover:text-primary group-focus:text-primary transition',
+              'flex items-center pointer-events-none absolute inset-y-0 right-0 pr-2.5',
+              'group-hover:text-primary group-focus:text-primary transition',
               open ? 'text-primary' : 'text-neutral-variant',
             )}
           >
@@ -50,7 +54,10 @@ const DropDown = ({ className, placeholder, selected, options, onSelected }: Pro
           </span>
         </Listbox.Button>
         <Transition as={Fragment} leave="transition" leaveFrom="opacity-100" leaveTo="opacity-0">
-          <Listbox.Options className="absolute bottom-10.5 mb-2.5 py-2.5 max-h-60 w-full overflow-auto border border-primary rounded-2lg bg-white shadow-surface focus:outline-none">
+          <Listbox.Options
+            className="absolute bottom-10.5 mb-2.5 py-2.5 max-h-60 w-full overflow-auto border
+            border-primary rounded-2lg bg-white shadow-surface focus:outline-none"
+          >
             {options.map((option, index) => (
               <Listbox.Option
                 key={`${index}-${option.label}`}
@@ -76,4 +83,4 @@ const DropDown = ({ className, placeholder, selected, options, onSelected }: Pro
   </Listbox>
 );
 
-export default DropDown;
+export default Dropdown;

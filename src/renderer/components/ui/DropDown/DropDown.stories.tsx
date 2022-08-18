@@ -1,10 +1,10 @@
 import { ComponentMeta, ComponentStory } from '@storybook/react';
 
-import DropDown from './DropDown';
+import Dropdown from './Dropdown';
 
 export default {
-  title: 'DropDown',
-  component: DropDown,
+  title: 'Dropdown',
+  component: Dropdown,
   parameters: { actions: { argTypesRegex: '^on.*' } },
   decorators: [
     (Story) => (
@@ -13,9 +13,9 @@ export default {
       </div>
     ),
   ],
-} as ComponentMeta<typeof DropDown>;
+} as ComponentMeta<typeof Dropdown>;
 
-const Template: ComponentStory<typeof DropDown> = (args) => <DropDown {...args} />;
+const Template: ComponentStory<typeof Dropdown> = (args) => <Dropdown {...args} />;
 
 const options = [
   { label: 'label_0', value: '0' },
