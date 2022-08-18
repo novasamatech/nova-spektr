@@ -48,6 +48,8 @@ module.exports = {
         5.5: '1.375rem',
         7.5: '1.875rem',
         9.5: '2.375rem',
+        10.5: '2.625rem',
+        15: '3.75rem',
       },
       borderRadius: {
         '2lg': '10px',
