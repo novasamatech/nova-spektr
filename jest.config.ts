@@ -34,8 +34,10 @@ const config: Config = {
   },
   transform: {
     '^.+\\.(t|j)sx?$': ['@swc/jest', swcConfig],
-    '^(?!.*\\.(js|jsx|mjs|cjs|ts|tsx|css|json)$)': '<rootDir>/scripts/fileTransform.js',
+    '^(?!.*\\.(js|jsx|mjs|cjs|ts|tsx|json)$)': '<rootDir>/scripts/fileTransform.js',
   },
+  // help @swc/jest to transform node_modules esm packages (swiper.js I look at you)
+  transformIgnorePatterns: [],
   moduleNameMapper: {
     '\\.(css|less|scss|sass)$': 'identity-obj-proxy',
     '^@main(.*)$': '<rootDir>/src/main/$1',
