@@ -6,5 +6,6 @@
   "NavItem.Balances": "Балансы",
   "NavItem.Transfer": "Отправить",
   "NavItem.ChatDEV": "Чат DEV",
-  "NavItem.CameraDEV": "Камера DEV"
+  "NavItem.CameraDEV": "Камера DEV",
+  "Explorer.Button": "Открыть на {{ name }}"
 }

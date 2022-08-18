@@ -1,4 +1,4 @@
-import { createContext, PropsWithChildren, useContext, useEffect } from 'react';
+import { createContext, PropsWithChildren, useContext, useEffect, useRef } from 'react';
 
 import { ConnectionType } from '@renderer/domain/connection';
 import { ChainId } from '@renderer/domain/shared-kernel';
@@ -18,15 +18,15 @@ const NetworkContext = createContext<NetworkContextProps>({} as NetworkContextPr
 export const NetworkProvider = ({ children }: PropsWithChildren) => {
   const { init, connections, reconnect, updateConnectionType } = useNetwork();
   const { subscribeBalances } = useBalance();
+  const initedRef = useRef(false);
 
   useEffect(() => {
-    let ignore = false;
-    if (!ignore) {
+    if (!initedRef.current) {
       init();
     }
 
     return () => {
-      ignore = true;
+      initedRef.current = true;
     };
   }, []);
 
