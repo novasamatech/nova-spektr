@@ -10,7 +10,7 @@ import ButtonBack from './Buttons/ButtonBack/ButtonBack';
 import BaseModal from './Modals/BaseModal/BaseModal';
 import ConfirmModal from './Modals/ConfirmModal/ConfirmModal';
 import Stepper from './Stepper/Stepper';
-import DropDown from './DropDown/DropDown';
+import Dropdown from './Dropdown/Dropdown';
 
 export {
   Address,
@@ -25,5 +25,5 @@ export {
   BaseModal,
   ConfirmModal,
   Stepper,
-  DropDown,
+  Dropdown,
 };
