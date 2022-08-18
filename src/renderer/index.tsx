@@ -6,7 +6,7 @@ import { ErrorBoundary } from 'react-error-boundary';
 import App from './App';
 import './i18n';
 import './index.css';
-import { ButtonLink } from './components/ui';
+import { FallbackScreen } from './components/common';
 
 const container = document.getElementById('app');
 if (!container) {
@@ -16,16 +16,7 @@ if (!container) {
 createRoot(container).render(
   <StrictMode>
     <Router>
-      <ErrorBoundary
-        fallbackRender={() => (
-          <div>
-            <ButtonLink to="/" variant="fill" pallet="error">
-              Reload
-            </ButtonLink>
-          </div>
-        )}
-        onError={console.error}
-      >
+      <ErrorBoundary FallbackComponent={FallbackScreen} onError={console.error}>
         <App />
       </ErrorBoundary>
     </Router>

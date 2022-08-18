@@ -10,6 +10,7 @@ import ButtonBack from './Buttons/ButtonBack/ButtonBack';
 import BaseModal from './Modals/BaseModal/BaseModal';
 import ConfirmModal from './Modals/ConfirmModal/ConfirmModal';
 import Stepper from './Stepper/Stepper';
+import LanguageSwitcher from './LanguageSwitcher/LanguageSwitcher';
 
 export {
   Address,
@@ -24,4 +25,5 @@ export {
   BaseModal,
   ConfirmModal,
   Stepper,
+  LanguageSwitcher,
 };

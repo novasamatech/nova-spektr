@@ -4,7 +4,6 @@ import BalanceRow from './BalanceRow';
 import { useNetworkContext } from '@renderer/context/NetworkContext';
 import { useChains } from '@renderer/services/network/chainsService';
 import { TEST_PUBLIC_KEY } from '@renderer/services/balance/common/constants';
-import AccountsList from '@renderer/components/common/AccountsList/AccountsList';
 
 const Balances = () => {
   const { connections } = useNetworkContext();
@@ -15,8 +14,6 @@ const Balances = () => {
   return (
     <div className="h-full overflow-auto">
       <h1>Balances</h1>
-
-      <AccountsList publicKey={TEST_PUBLIC_KEY} chains={sortedChains} />
 
       {sortedChains.map((chain) => (
         <div key={chain.chainId} className="mb-5 rounded-2lg">
