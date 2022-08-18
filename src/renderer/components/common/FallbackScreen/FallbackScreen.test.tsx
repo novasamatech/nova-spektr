@@ -1,4 +1,5 @@
 import { render, screen } from '@testing-library/react';
+import { MemoryRouter } from 'react-router-dom';
 
 import FallbackScreen from './FallbackScreen';
 
@@ -10,7 +11,7 @@ jest.mock('@renderer/context/I18nContext', () => ({
 
 describe('FallbackScreen', () => {
   test('should render component', () => {
-    render(<FallbackScreen />);
+    render(<FallbackScreen />, { wrapper: MemoryRouter });
 
     const logo = screen.getByTestId('logo-img');
     expect(logo).toBeInTheDocument();
