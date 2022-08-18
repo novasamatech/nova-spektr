@@ -6,5 +6,10 @@
   "NavItem.Balances": "Балансы",
   "NavItem.Transfer": "Отправить",
   "NavItem.ChatDEV": "Чат DEV",
-  "NavItem.CameraDEV": "Камера DEV"
+  "NavItem.CameraDEV": "Камера DEV",
+  "explorer.button": "Открыть на {{ name }}",
+  "fallbackScreen": {
+    "message": "Что-то пошло не так",
+    "reloadButton": "Перезагрузить"
+  }
 }

@@ -107,7 +107,11 @@ export const useNetwork = (): INetworkService => {
 
   const init = async (): Promise<void> => {
     await initConnnections();
-    await connect();
+    try {
+      await connect();
+    } catch (e) {
+      console.error(e);
+    }
   };
 
   const reconnect = async (chainId: ChainId): Promise<void> => {

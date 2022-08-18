@@ -1,5 +1,5 @@
 import { join } from 'path';
-import { BrowserWindow } from 'electron';
+import { BrowserWindow, shell } from 'electron';
 
 import { ENVIRONMENT } from '@shared/constants';
 import { APP_CONFIG } from '../../app.config';
@@ -22,6 +22,12 @@ export async function MainWindow() {
   });
 
   ENVIRONMENT.IS_DEV && window.webContents.openDevTools({ mode: 'bottom' });
+
+  // Open urls in the user's browser
+  window.webContents.on('new-window', (event, url) => {
+    event.preventDefault();
+    shell.openExternal(url);
+  });
 
   window.on('close', () => {
     BrowserWindow.getAllWindows().forEach((window) => window.destroy());
