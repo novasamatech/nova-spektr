@@ -1,10 +1,12 @@
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import { HashRouter as Router } from 'react-router-dom';
+import { ErrorBoundary } from 'react-error-boundary';
 
 import App from './App';
 import './i18n';
 import './index.css';
+import { ButtonLink } from './components/ui';
 
 const container = document.getElementById('app');
 if (!container) {
@@ -14,7 +16,18 @@ if (!container) {
 createRoot(container).render(
   <StrictMode>
     <Router>
-      <App />
+      <ErrorBoundary
+        fallbackRender={() => (
+          <div>
+            <ButtonLink to="/" variant="fill" pallet="error">
+              Reload
+            </ButtonLink>
+          </div>
+        )}
+        onError={console.error}
+      >
+        <App />
+      </ErrorBoundary>
     </Router>
   </StrictMode>,
 );

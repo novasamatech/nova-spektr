@@ -4,10 +4,10 @@ import SubscanImg, { ReactComponent as SubscanSvg } from '@images/explorers/subs
 import StatescanImg, { ReactComponent as StatescanSvg } from '@images/explorers/statescan.svg';
 
 const ExplorerImages = {
-  Polkascan: { svg: PolkascanSvg, img: PolkascanImg },
-  'Sub.ID': { svg: SubIdSvg, img: SubIdImg },
-  Subscan: { svg: SubscanSvg, img: SubscanImg },
-  Statescan: { svg: StatescanSvg, img: StatescanImg },
+  polkascan: { svg: PolkascanSvg, img: PolkascanImg },
+  subid: { svg: SubIdSvg, img: SubIdImg },
+  subscan: { svg: SubscanSvg, img: SubscanImg },
+  statescan: { svg: StatescanSvg, img: StatescanImg },
 } as const;
 
 export type Explorer = keyof typeof ExplorerImages;

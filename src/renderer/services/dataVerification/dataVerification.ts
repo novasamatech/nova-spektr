@@ -22,7 +22,9 @@ async function getBlockHash(api: ApiPromise, header: Header): Promise<string> {
   let blockNumber: BlockNumber = 0 as unknown as u32;
 
   try {
-    blockNumber = parachainBlockNumber.isEmpty ? (0 as unknown as u32) : parachainBlockNumber.unwrap();
+    if (!parachainBlockNumber.isEmpty) {
+      blockNumber = parachainBlockNumber.unwrap();
+    }
   } catch (e) {
     console.warn(e);
   }
@@ -97,7 +99,9 @@ export const validate = async (
   let blockNumber: BlockNumber = 0 as unknown as u32;
 
   try {
-    blockNumber = block.block.header.number.isEmpty ? (0 as unknown as u32) : block.block.header.number.unwrap();
+    if (!block.block.header.number.isEmpty) {
+      blockNumber = block.block.header.number.unwrap();
+    }
   } catch (e) {
     console.warn(e);
   }

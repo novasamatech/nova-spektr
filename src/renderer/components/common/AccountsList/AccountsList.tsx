@@ -8,6 +8,13 @@ import { Explorer } from '@renderer/components/ui/Icon/data/explorer';
 import { PublicKey } from '@renderer/domain/shared-kernel';
 import { useI18n } from '@renderer/context/I18nContext';
 
+const ExplorerIcons: Record<string, Explorer> = {
+  Polkascan: 'polkascan',
+  'Sub.ID': 'subid',
+  Subscan: 'subscan',
+  Statescan: 'statescan',
+};
+
 type Props = {
   publicKey: PublicKey;
   chains: Chain[];
@@ -28,31 +35,29 @@ const AccountsList = ({ publicKey, chains, className }: Props) => {
           </div>
           <div className="relative flex-none">
             <Menu>
-              <Menu.Button>•••</Menu.Button>
+              <Menu.Button className={'hover:bg-primary hover:text-white px-1 rounded-2xl'}>•••</Menu.Button>
               <Menu.Items
-                className={'z-10 absolute right-0 top-0 rounded-[10px] shadow-surface w-max border border-primary'}
+                className={'z-10 absolute right-0 top-0 rounded-2lg shadow-surface w-max border border-primary'}
               >
                 {explorers?.map(({ name, account }) => {
-                  if (!account) {
-                    return null;
-                  }
-
                   return (
-                    <Menu.Item key={name}>
-                      {({ active }) => (
-                        <a
-                          className={cn(
-                            'rounded-[10px] flex items-center gap-1 p-2.5 font-semibold',
-                            active ? 'bg-primary text-white' : 'bg-shade-5 text-neutral-variant',
-                          )}
-                          href={account.replace('{address}', encodeAddress(publicKey, addressPrefix))}
-                          rel="noreferrer"
-                          target="_blank"
-                        >
-                          <Icon as="svg" name={name as Explorer} /> {t('Explorer.Button', { name })}
-                        </a>
-                      )}
-                    </Menu.Item>
+                    account && (
+                      <Menu.Item key={name}>
+                        {({ active }) => (
+                          <a
+                            className={cn(
+                              'rounded-2lg flex items-center gap-1 p-2.5 font-semibold',
+                              active ? 'bg-primary text-white' : 'bg-shade-5 text-neutral-variant',
+                            )}
+                            href={account.replace('{address}', encodeAddress(publicKey, addressPrefix))}
+                            rel="noopener noreferrer"
+                            target="_blank"
+                          >
+                            <Icon as="svg" name={ExplorerIcons[name]} /> {t('explorer.button', { name })}
+                          </a>
+                        )}
+                      </Menu.Item>
+                    )
                   );
                 })}
               </Menu.Items>
