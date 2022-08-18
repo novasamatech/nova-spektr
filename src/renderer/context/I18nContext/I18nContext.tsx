@@ -3,7 +3,7 @@ import type { TFunction } from 'react-i18next';
 import { useTranslation } from 'react-i18next';
 
 import { SupportedLocales } from '@renderer/services/translation/common/types';
-import LanguageSwitcher from '@renderer/components/ui/LanguageSwitcher/LanguageSwitcher';
+import { LanguageSwitcher } from '@renderer/components/ui';
 import { LanguageOptions } from '@renderer/services/translation/common/constants';
 import { useTranslationService } from '@renderer/services/translation/translationService';
 

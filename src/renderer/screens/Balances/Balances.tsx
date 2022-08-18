@@ -16,7 +16,7 @@ const Balances = () => {
       <h1>Balances</h1>
 
       {sortedChains.map((chain) => (
-        <div key={chain.chainId} className="mb-5 rounded-[10px]">
+        <div key={chain.chainId} className="mb-5 rounded-2lg">
           <h2 className="flex items-center p-[15px] gap-x-2.5 h-[50px] bg-shade-2 text-sm font-bold text-gray-700 uppercase">
             <img src={chain.icon} className="w-5 h-5" alt="" />
             <p>{chain.name}</p>
