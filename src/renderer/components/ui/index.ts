@@ -11,6 +11,7 @@ import BaseModal from './Modals/BaseModal/BaseModal';
 import ConfirmModal from './Modals/ConfirmModal/ConfirmModal';
 import Stepper from './Stepper/Stepper';
 import Carousel from './Carousel/Carousel';
+import Dropdown from './Dropdown/Dropdown';
 
 export {
   Address,
@@ -25,5 +26,6 @@ export {
   BaseModal,
   ConfirmModal,
   Stepper,
+  Dropdown,
   Carousel,
 };
