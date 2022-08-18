@@ -85,7 +85,7 @@ export type Chain = {
   icon: string;
   addressPrefix: number;
   externalApi?: Record<ApiType, ExternalApi>;
-  options: ChainOptions[];
+  options?: ChainOptions[];
 };
 
 export type ExtendedChain = Chain & {

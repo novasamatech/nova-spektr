@@ -37,18 +37,19 @@ const LanguageSwitcher = ({ className, languages, selected, short, onChange, top
           className={cn('absolute flex flex-col gap-1 w-full', top ? 'bottom-0 top-auto' : 'top-0 bottom-auto')}
         >
           {languagesList.map((language) => (
-            <Listbox.Option
-              className={cn(
-                'w-full h-7.5 pr-1 pl-2.5 cursor-pointer',
-                'hover:bg-primary hover:text-white',
-                'bg-shade-5 text-neutral-variant',
-                'rounded-l-full rounded-r-full  flex justify-between items-center',
+            <Listbox.Option key={language.value} value={language.value}>
+              {({ active }) => (
+                <div
+                  className={cn(
+                    'w-full h-7.5 pr-1 pl-2.5 cursor-pointer',
+                    active ? 'bg-primary text-white' : 'bg-shade-5 text-neutral-variant',
+                    'rounded-l-full rounded-r-full  flex justify-between items-center',
+                  )}
+                >
+                  {short ? language.shortLabel : language.label}{' '}
+                  <Icon as="svg" className="rounded-full border border-white" name={language.value} />
+                </div>
               )}
-              key={language.value}
-              value={language.value}
-            >
-              {short ? language.shortLabel : language.label}{' '}
-              <Icon as="svg" className="rounded-full border border-white" name={language.value} />
             </Listbox.Option>
           ))}
         </Listbox.Options>
