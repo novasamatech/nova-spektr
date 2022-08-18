@@ -10,6 +10,7 @@ import ButtonBack from './Buttons/ButtonBack/ButtonBack';
 import BaseModal from './Modals/BaseModal/BaseModal';
 import ConfirmModal from './Modals/ConfirmModal/ConfirmModal';
 import Stepper from './Stepper/Stepper';
+import Carousel from './Carousel/Carousel';
 import Dropdown from './Dropdown/Dropdown';
 
 export {
@@ -26,4 +27,5 @@ export {
   ConfirmModal,
   Stepper,
   Dropdown,
+  Carousel,
 };
