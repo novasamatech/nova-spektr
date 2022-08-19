@@ -3,6 +3,10 @@ import storage from '@renderer/services/storage';
 
 jest.mock('@renderer/services/storage', () => jest.fn());
 
+jest.mock('dexie-react-hooks', () => ({
+  useLiveQuery: (handler: () => any) => handler(),
+}));
+
 describe('service/walletService', () => {
   test('should get all active wallets', async () => {
     const walletsDb = [
@@ -18,7 +22,7 @@ describe('service/walletService', () => {
     const wallets = await getActiveWallets();
 
     expect(wallets).toHaveLength(1);
-    expect(wallets[0]).toEqual(walletsDb[0]);
+    expect(wallets?.[0]).toEqual(walletsDb[0]);
   });
 
   test('should set new active wallet', async () => {

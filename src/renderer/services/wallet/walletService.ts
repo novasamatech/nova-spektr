@@ -1,3 +1,6 @@
+import { IndexableType } from 'dexie';
+import { useLiveQuery } from 'dexie-react-hooks';
+
 import storage, { WalletDS } from '@renderer/services/storage';
 import { IWalletService } from './common/types';
 
@@ -9,24 +12,27 @@ export const useWallet = (): IWalletService => {
   }
   const { getWallet, getWallets, addWallet, updateWallet, deleteWallet } = walletStorage;
 
-  const getActiveWallets = async (): Promise<WalletDS[]> => {
-    try {
-      const wallets = await getWallets();
+  const getActiveWallets = () =>
+    useLiveQuery(async (): Promise<WalletDS[]> => {
+      try {
+        const wallets = await getWallets();
 
-      return wallets.filter((wallet) => wallet.isActive);
-    } catch (error) {
-      console.warn('Error trying to get active wallet');
+        return wallets.filter((wallet) => wallet.isActive);
+      } catch (error) {
+        console.warn('Error trying to get active wallet');
 
-      return [];
-    }
-  };
+        return [];
+      }
+    });
 
   // TODO: in future implement setWalletInactive
-  const setActiveWallet = async (walletId: string): Promise<void> => {
+  const setActiveWallet = async (walletId: IndexableType): Promise<void> => {
     try {
       const newActiveWallet = await getWallet(walletId);
       if (newActiveWallet) {
         await updateWallet({ ...newActiveWallet, isActive: true });
+      } else {
+        console.warn('Could not find wallet with such id');
       }
     } catch (error) {
       console.warn('Could not set new active wallet');

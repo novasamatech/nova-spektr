@@ -15,7 +15,7 @@ class DexieStorage extends Dexie {
     this.version(3).stores({
       connections: '++id,chainId,type',
       balances: '[publicKey+chainId+assetId]',
-      wallets: '++id',
+      wallets: '++id,isActive',
     });
 
     this.connections = this.table('connections');
