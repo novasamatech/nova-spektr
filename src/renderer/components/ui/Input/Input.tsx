@@ -39,7 +39,7 @@ const Input = forwardRef<Ref, InputProps>(
           'relative inline-block text-lg leading-5',
           value ? 'border-primary' : 'border-shade-20',
           invalid && 'border-error',
-          label ? 'bg-shade-2 rounded-2lg p-2.5 pt-5' : 'border-b',
+          label ? 'bg-shade-2 rounded-2lg px-2.5 pb-0 pt-5 font-normal' : 'border-b',
           wrapperClass,
         )}
       >
@@ -47,7 +47,7 @@ const Input = forwardRef<Ref, InputProps>(
         {label && <span className="absolute top-2.5 font-bold text-neutral-variant uppercase text-xs">{label}</span>}
         <input
           className={cn(
-            'focus:outline-none focus-visible:ring rounded-sm py-3 bg-transparent flex-1',
+            'focus:outline-none rounded-sm py-3 leading-5 bg-transparent flex-1',
             value && !invalid && 'text-primary',
             invalid && 'text-error',
             label && 'py-1 my-4',

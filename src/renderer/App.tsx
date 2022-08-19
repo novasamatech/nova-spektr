@@ -1,7 +1,8 @@
 import { useNavigate, useRoutes } from 'react-router-dom';
 import { useEffect, useState } from 'react';
+import { ErrorBoundary } from 'react-error-boundary';
 
-import { SplashScreen } from '@renderer/components/common';
+import { FallbackScreen, SplashScreen } from '@renderer/components/common';
 import I18Provider from '@renderer/context/I18nContext';
 import MatrixProvider from '@renderer/context/MatrixContext';
 import NetworkProvider from '@renderer/context/NetworkContext';
@@ -41,9 +42,11 @@ const App = () => {
 
   return (
     <I18Provider>
-      <NetworkProvider>
-        <MatrixProvider onAutoLoginFail={onAutoLoginFail}>{appRoutes}</MatrixProvider>
-      </NetworkProvider>
+      <ErrorBoundary FallbackComponent={FallbackScreen} onError={console.error}>
+        <NetworkProvider>
+          <MatrixProvider onAutoLoginFail={onAutoLoginFail}>{appRoutes}</MatrixProvider>
+        </NetworkProvider>
+      </ErrorBoundary>
     </I18Provider>
   );
 };

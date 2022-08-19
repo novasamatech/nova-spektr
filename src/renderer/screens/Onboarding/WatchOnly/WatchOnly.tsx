@@ -30,7 +30,7 @@ const WatchOnly = () => {
   const publicKey = correctAddress && toPublicKey(address);
 
   const createWallet = async () => {
-    if (!publicKey || publicKey.length === 0) return;
+    if (!publicKey || publicKey.length === 0 || walletName.length === 0) return;
 
     const newWallet = createSimpleWallet({
       name: walletName,
@@ -69,9 +69,10 @@ const WatchOnly = () => {
                 wrapperClass="flex items-center"
                 label="Wallet name"
                 placeholder="Wallet name"
-                onChange={(e) => setWalletName(e.target.value)}
+                value={walletName}
+                onChange={(e) => setWalletName(e.target.value.trim())}
               />
-              <p className="uppercase pt-2.5 pb-10 font-bold text-2xs text-shade-40">
+              <p className="uppercase pt-5 pb-7.5 font-bold text-2xs text-shade-40">
                 name examples: Main account, My validator, Dotsama crowdloans, etc.
               </p>
               <Input
@@ -89,7 +90,7 @@ const WatchOnly = () => {
                     pallet="primary"
                     onClick={async () => {
                       const text = await navigator.clipboard.readText();
-                      setAddress(text);
+                      setAddress(text.trim());
                     }}
                   >
                     Paste
@@ -98,27 +99,26 @@ const WatchOnly = () => {
                 label="Account address"
                 placeholder="Account address"
                 value={address}
-                onChange={(e) => setAddress(e.target.value)}
+                onChange={(e) => setAddress(e.target.value.trim())}
               />
             </div>
-            <Button
-              weight="lg"
-              variant="fill"
-              pallet="primary"
-              disabled={!correctAddress || !walletName}
-              onClick={createWallet}
-            >
-              {correctAddress ? 'Yes, these are my accounts' : 'Type or paste an address...'}
-            </Button>
           </div>
-          <div className="flex flex-col bg-white shadow-surface rounded-2lg w-[480px] max-h-[400px]">
+          <div className="flex flex-col bg-white shadow-surface rounded-2lg w-[480px] max-h-[274px]">
             <div className="p-4">
-              <h2 className="text-neutral font-semibold">Your accounts will be showing up here</h2>
-              <p className="text-neutral-variant font-normal">All of your derived account</p>
+              <h3 className="text-neutral font-semibold">Your accounts will be showing up here</h3>
             </div>
             {<AccountsList chains={chains} publicKey={publicKey && publicKey.length ? publicKey : '0x'} />}
           </div>
         </div>
+        <Button
+          weight="lg"
+          variant="fill"
+          pallet="primary"
+          disabled={!correctAddress || !walletName}
+          onClick={createWallet}
+        >
+          {correctAddress ? 'Yes, these are my accounts' : 'Type or paste an address...'}
+        </Button>
       </div>
     </>
   );
