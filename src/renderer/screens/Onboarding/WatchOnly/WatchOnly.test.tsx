@@ -21,9 +21,8 @@ jest.mock('@renderer/services/wallet/walletService', () => ({
 }));
 
 describe('screens/Onboarding/WatchOnly', () => {
-  test('should render component', () => {
-    // TODO: Fix warning
-    act(() => {
+  test('should render component', async () => {
+    await act(async () => {
       render(<WatchOnly />, { wrapper: MemoryRouter });
     });
 

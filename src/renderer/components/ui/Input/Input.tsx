@@ -39,8 +39,7 @@ const Input = forwardRef<Ref, InputProps>(
           'relative inline-block text-lg leading-5',
           value ? 'border-primary' : 'border-shade-20',
           invalid && 'border-error',
-          !label && 'border-b',
-          label && 'bg-shade-2 rounded-2lg p-2.5 pt-5',
+          label ? 'bg-shade-2 rounded-2lg p-2.5 pt-5' : 'border-b',
           wrapperClass,
         )}
       >

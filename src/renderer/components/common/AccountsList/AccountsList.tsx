@@ -7,6 +7,7 @@ import { Address, Icon } from '@renderer/components/ui';
 import { Explorer } from '@renderer/components/ui/Icon/data/explorer';
 import { PublicKey } from '@renderer/domain/shared-kernel';
 import { useI18n } from '@renderer/context/I18nContext';
+import { isCorrectPublicKey } from '@renderer/utils/address';
 
 const ExplorerIcons: Record<string, Explorer> = {
   Polkascan: 'polkascan',
@@ -26,7 +27,7 @@ const AccountsList = ({ publicKey, chains, className }: Props) => {
 
   return (
     <div className={cn('flex flex-col divide-y divide-gray-200 overflow-y-auto overflow-x-hidden', className)}>
-      {publicKey && publicKey.length === 66
+      {isCorrectPublicKey(publicKey)
         ? chains.map(({ name, addressPrefix, icon, explorers }) => (
             <div key={name} className="flex flex-row items-center gap-2.5 pl-4 pr-6 pt-2 pb-2">
               <img width="36px" height="36px" alt={name} src={icon} />
@@ -66,8 +67,8 @@ const AccountsList = ({ publicKey, chains, className }: Props) => {
               </div>
             </div>
           ))
-        : chains.map(() => (
-            <div className="flex items-center gap-2.5 pl-4 pr-6 pt-2 pb-2">
+        : chains.map(({ name }) => (
+            <div key={name} className="flex items-center gap-2.5 pl-4 pr-6 pt-2 pb-2">
               <div className="border border-shade-20 border-dashed rounded-2lg w-9 h-9 box-border"></div>
               <div className="flex flex-col gap-2">
                 <div className="border border-shade-20 border-dashed rounded-2lg w-16 h-3 box-border"></div>
