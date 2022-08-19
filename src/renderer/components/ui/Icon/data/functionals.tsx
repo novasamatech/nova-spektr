@@ -13,6 +13,8 @@ const FunctionalImages = {
   qrSimple: { svg: QrSimpleSvg, img: QrSimpleImg },
   qrCutout: { svg: QrCutoutSvg, img: QrCutoutImg },
   checkmarkCutout: { svg: CheckCutoutSvg, img: CheckCutoutImg },
+  warnCutout: { svg: WarnCutoutSvg, img: WarnCutoutImg },
+  removeCutout: { svg: RemoveCutoutSvg, img: RemoveCutoutImg },
   emptyIdenticon: { svg: EmptyIdenticonSvg, img: EmptyIdenticonImg },
   warnCutout: { svg: WarnCutoutSvg, img: WarnCutoutImg },
   removeCutout: { svg: RemoveCutoutSvg, img: RemoveCutoutImg },
