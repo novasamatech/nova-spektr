@@ -21,8 +21,9 @@ const enum Steps {
 }
 
 const Parity = () => {
-  const [activeStep, setActiveStep] = useState<Steps>(Steps.PREPARE);
-  const [address, setAddress] = useState('');
+  // const [activeStep, setActiveStep] = useState<Steps>(Steps.PREPARE);
+  const [activeStep, setActiveStep] = useState<Steps>(Steps.CHECK);
+  const [address, setAddress] = useState('15hwmZknpCaGffUFKHSLz8wNeQPuhvdD5cc1o1AGiL4QHoU7');
 
   const onReceiveAddress = (value: string) => {
     setAddress(value);
@@ -39,7 +40,13 @@ const Parity = () => {
         <Stepper steps={PARITY_FLOW_STEPS} active={activeStep} />
         {activeStep === 0 && <StepOne onNextStep={() => setActiveStep(Steps.SCAN)} />}
         {activeStep === 1 && <StepTwo onNextStep={onReceiveAddress} />}
-        {activeStep === 2 && <StepThree ss58Address={address} onNextStep={() => setActiveStep(Steps.FINAL)} />}
+        {activeStep === 2 && (
+          <StepThree
+            ss58Address={address}
+            onNextStep={() => setActiveStep(Steps.FINAL)}
+            onPrevStep={() => setActiveStep(Steps.SCAN)}
+          />
+        )}
         {activeStep === 3 && <FinalStep walletType={WalletType.PARITY} />}
       </section>
     </div>
