@@ -21,7 +21,7 @@ type Props = {
   onSelected: (data: OptionType) => void;
 };
 
-const DropDown = ({ className, placeholder, selected, options, onSelected }: Props) => (
+const Dropdown = ({ className, placeholder, selected, options, onSelected }: Props) => (
   <Listbox value={selected} onChange={onSelected}>
     {({ open }) => (
       <div className={cn('relative w-full', className)}>
@@ -77,4 +77,4 @@ const DropDown = ({ className, placeholder, selected, options, onSelected }: Pro
   </Listbox>
 );
 
-export default DropDown;
+export default Dropdown;
