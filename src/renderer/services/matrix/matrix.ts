@@ -1,7 +1,7 @@
 import Olm from '@matrix-org/olm';
 // @ts-ignore
 import olmWasmPath from '@matrix-org/olm/olm.wasm';
-import { uniq } from 'lodash';
+import uniq from 'lodash/uniq';
 import {
   ClientEvent,
   createClient,
