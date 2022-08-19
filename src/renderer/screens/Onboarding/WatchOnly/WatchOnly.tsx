@@ -57,8 +57,10 @@ const WatchOnly = () => {
         <h1 className="text-neutral">Add watch-only Wallet</h1>
       </div>
       <div className="flex h-full flex-col gap-10 justify-center items-center">
-        <h2 className="text-2xl leading-10 font-normal text-neutral-variant">
-          Track the activity of any wallet without injecting your private key to Omni Enterprise
+        <h2 className="text-2xl leading-relaxed font-normal text-neutral-variant text-center">
+          Track the activity of any wallet without injecting
+          <br />
+          your private key to Omni Enterprise
         </h2>
         <div className="flex gap-10">
           <div className="flex flex-col gap-10 w-[480px]">

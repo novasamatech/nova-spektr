@@ -16,8 +16,6 @@ const FunctionalImages = {
   warnCutout: { svg: WarnCutoutSvg, img: WarnCutoutImg },
   removeCutout: { svg: RemoveCutoutSvg, img: RemoveCutoutImg },
   emptyIdenticon: { svg: EmptyIdenticonSvg, img: EmptyIdenticonImg },
-  warnCutout: { svg: WarnCutoutSvg, img: WarnCutoutImg },
-  removeCutout: { svg: RemoveCutoutSvg, img: RemoveCutoutImg },
 } as const;
 
 export type Functional = keyof typeof FunctionalImages;
