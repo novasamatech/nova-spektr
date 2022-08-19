@@ -21,9 +21,8 @@ const enum Steps {
 }
 
 const Parity = () => {
-  // const [activeStep, setActiveStep] = useState<Steps>(Steps.PREPARE);
-  const [activeStep, setActiveStep] = useState<Steps>(Steps.CHECK);
-  const [address, setAddress] = useState('15hwmZknpCaGffUFKHSLz8wNeQPuhvdD5cc1o1AGiL4QHoU7');
+  const [activeStep, setActiveStep] = useState<Steps>(Steps.PREPARE);
+  const [address, setAddress] = useState('');
 
   const onReceiveAddress = (value: string) => {
     setAddress(value);

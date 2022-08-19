@@ -56,9 +56,9 @@ const WatchOnly = () => {
         <h1 className="text-neutral">Add watch-only Wallet</h1>
       </div>
       <div className="flex h-full flex-col gap-10 justify-center items-center">
-        <h1 className="text-2xl leading-relaxed font-normal text-neutral-variant">
-          Track the activity of any wallet without injecting your private key to Omni Enterprise.
-        </h1>
+        <h2 className="text-2xl leading-10 font-normal text-neutral-variant">
+          Track the activity of any wallet without injecting your private key to Omni Enterprise
+        </h2>
         <div className="flex gap-10">
           <div className="flex flex-col gap-10 w-[480px]">
             <div className="flex flex-col p-4 bg-white shadow-surface rounded-2lg">
@@ -98,7 +98,13 @@ const WatchOnly = () => {
                 onChange={(e) => setAddress(e.target.value)}
               />
             </div>
-            <Button weight="lg" variant="fill" pallet="primary" disabled={!correctAddress} onClick={createWallet}>
+            <Button
+              weight="lg"
+              variant="fill"
+              pallet="primary"
+              disabled={!correctAddress || !walletName}
+              onClick={createWallet}
+            >
               {correctAddress ? 'Yes, these are my accounts' : 'Type or paste an address...'}
             </Button>
           </div>
