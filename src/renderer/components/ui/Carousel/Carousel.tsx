@@ -36,7 +36,7 @@ const Carousel = ({ loop, autoplay, animationDuration = 300, slides }: Props) =>
         </SwiperSlide>
       ))}
 
-      <div className="flex justify-center items-center gap-x-12 mt-5">
+      <div className="flex justify-center items-center gap-x-12 py-4">
         <button
           type="button"
           className="text-shade-30 hover:text-shade-50 focus:text-shade-50"

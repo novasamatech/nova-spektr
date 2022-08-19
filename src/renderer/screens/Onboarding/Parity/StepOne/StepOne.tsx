@@ -7,7 +7,7 @@ import SlideThree from '@images/misc/onboarding/slide-3.svg';
 
 const CAROUSEL_SLIDES: ReactNode[] = [
   <>
-    <img src={SlideOne} alt="Parity Signer application is being opened on your smartphone" width={500} height={385} />
+    <img src={SlideOne} alt="Parity Signer application is being opened on your smartphone" width={500} height={384} />
     <div className="flex items-center justify-center h-15 px-5">
       <h2 className="text-neutral-variant text-center">
         Open the <span className="font-bold">Parity Signer</span> application on your smartphone
@@ -15,7 +15,7 @@ const CAROUSEL_SLIDES: ReactNode[] = [
     </div>
   </>,
   <>
-    <img src={SlideTwo} alt="'Keys' tab is opened with appropriate account" width={500} height={385} />
+    <img src={SlideTwo} alt="'Keys' tab is opened with appropriate account" width={500} height={384} />
     <div className="flex items-center justify-center h-15 px-5">
       <h2 className="text-neutral-variant text-center">
         Go to “<span className="font-bold">Keys</span>” tab. Select <span className="font-bold">seed</span>, then
@@ -26,7 +26,7 @@ const CAROUSEL_SLIDES: ReactNode[] = [
     </div>
   </>,
   <>
-    <img src={SlideThree} alt="Parity Signer built-in QR code" width={500} height={385} />
+    <img src={SlideThree} alt="Parity Signer built-in QR code" width={500} height={384} />
     <div className="flex items-center justify-center h-15 px-5">
       <h2 className="text-neutral-variant text-center">
         Parity Signer will provide you a <span className="font-bold">QR code</span> for scanning
