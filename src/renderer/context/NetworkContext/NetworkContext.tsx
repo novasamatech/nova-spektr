@@ -7,7 +7,6 @@ import { TEST_PUBLIC_KEY } from '@renderer/services/balance/common/constants';
 import { ExtendedChain } from '@renderer/services/network/common/types';
 import { useNetwork } from '@renderer/services/network/networkService';
 import { useWallet } from '@renderer/services/wallet/walletService';
-import { Wallet } from '@renderer/domain/wallet';
 
 type NetworkContextProps = {
   connections: Record<string, ExtendedChain>;
