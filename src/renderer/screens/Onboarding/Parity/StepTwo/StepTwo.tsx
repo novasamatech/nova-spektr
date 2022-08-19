@@ -28,8 +28,6 @@ const StepTwo = ({ onNextStep }: Props) => {
   const [availableCameras, setAvailableCameras] = useState<OptionType[]>([]);
 
   const onScanResult = (data: string) => {
-    console.info(data);
-
     const handleBadCode = () => {
       setCameraState(CameraState.BAD_CODE);
       setIsCameraExist(false);

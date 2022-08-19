@@ -37,10 +37,12 @@ const Parity = () => {
       </div>
       <section className="flex flex-col gap-y-16 h-max max-w-[1000px] w-full m-auto">
         <Stepper steps={PARITY_FLOW_STEPS} active={activeStep} />
-        {activeStep === 0 && <StepOne onNextStep={() => setActiveStep(Steps.SCAN)} />}
-        {activeStep === 1 && <StepTwo onNextStep={onReceiveAddress} />}
-        {activeStep === 2 && <StepThree ss58Address={address} onNextStep={() => setActiveStep(Steps.FINAL)} />}
-        {activeStep === 3 && <FinalStep walletType={WalletType.PARITY} />}
+        {activeStep === Steps.PREPARE && <StepOne onNextStep={() => setActiveStep(Steps.SCAN)} />}
+        {activeStep === Steps.SCAN && <StepTwo onNextStep={onReceiveAddress} />}
+        {activeStep === Steps.CHECK && (
+          <StepThree ss58Address={address} onNextStep={() => setActiveStep(Steps.FINAL)} />
+        )}
+        {activeStep === Steps.FINAL && <FinalStep walletType={WalletType.PARITY} />}
       </section>
     </div>
   );
