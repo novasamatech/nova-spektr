@@ -14,6 +14,7 @@ const WatchOnly = () => {
   const navigate = useNavigate();
   const { getChainsData } = useChains();
   const { addWallet, setActiveWallet } = useWallet();
+
   const [walletName, setWalletName] = useState('');
   const [chains, setChains] = useState<Chain[]>([]);
   const [address, setAddress] = useState('');

@@ -2,21 +2,16 @@ import { act, render, screen } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 
 import StepThree from './StepThree';
-import { TEST_PUBLIC_KEY } from '@renderer/services/balance/common/constants';
 
 jest.mock('@renderer/services/wallet/walletService', () => ({
   useWallet: jest.fn().mockReturnValue({
-    getActiveWallets: () => [
-      {
-        name: 'Test Wallet',
-        mainAccounts: [
-          {
-            address: '1ChFWeNRLarAPRCTM3bfJmncJbSAbSS9yqjueWz7jX7iTVZ',
-            publicKey: TEST_PUBLIC_KEY,
-          },
-        ],
-      },
-    ],
+    setActiveWallets: jest.fn(),
+  }),
+}));
+
+jest.mock('@renderer/services/network/chainsService', () => ({
+  useChains: jest.fn().mockReturnValue({
+    getChainsData: jest.fn().mockReturnValue([]),
   }),
 }));
 

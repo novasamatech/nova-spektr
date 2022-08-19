@@ -16,8 +16,8 @@ type Props = {
 
 const StepThree = ({ ss58Address, onNextStep, onPrevStep }: Props) => {
   const { getChainsData } = useChains();
-
   const { addWallet, setActiveWallet } = useWallet();
+
   const [walletName, setWalletName] = useState('');
   const [chains, setChains] = useState<Chain[]>([]);
 
