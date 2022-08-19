@@ -5,6 +5,7 @@ import FunctionalImages, { Functional } from './functionals';
 import MiscImages, { Misc } from './misc';
 import FlagImages, { Flag } from './flag';
 import ExplorerImages, { Explorer } from './explorer';
+import AestheticImages, { Aesthetic } from './aesthetics';
 
 const AllIcons = {
   ...CurrencyImages,
@@ -14,8 +15,9 @@ const AllIcons = {
   ...MiscImages,
   ...FlagImages,
   ...ExplorerImages,
+  ...AestheticImages,
 };
 
-export type IconNames = Currency | Navigation | Chevron | Functional | Misc | Flag | Explorer;
+export type IconNames = Currency | Navigation | Chevron | Functional | Misc | Flag | Explorer | Aesthetic;
 
 export default AllIcons;

@@ -1,5 +1,5 @@
 import { useRef, useState } from 'react';
-import { keyBy } from 'lodash';
+import keyBy from 'lodash/keyBy';
 import { ApiPromise, WsProvider } from '@polkadot/api';
 import { ScProvider } from '@polkadot/rpc-provider/substrate-connect';
 import { ProviderInterface } from '@polkadot/rpc-provider/types';

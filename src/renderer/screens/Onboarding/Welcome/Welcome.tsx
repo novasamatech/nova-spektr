@@ -1,11 +1,11 @@
 import { ButtonLink, Icon } from '@renderer/components/ui';
 import Paths from '@renderer/routes/paths';
-import LedgerBg from '@images/misc/ledger-bg.webp';
-import LedgerImg from '@images/misc/ledger.svg';
-import ParityBg from '@images/misc/parity-bg.webp';
-import ParitySignerImg from '@images/misc/parity-signer.svg';
-import WatchBg from '@images/misc/watch-bg.webp';
-import WatchOnlyImg from '@images/misc/watch-only.svg';
+import LedgerBg from '@images/misc/onboarding/ledger-bg.webp';
+import LedgerImg from '@images/misc/onboarding/ledger.svg';
+import ParityBg from '@images/misc/onboarding/parity-bg.webp';
+import ParitySignerImg from '@images/misc/onboarding/parity-signer.svg';
+import WatchBg from '@images/misc/onboarding/watch-bg.webp';
+import WatchOnlyImg from '@images/misc/onboarding/watch-only.svg';
 
 const Welcome = () => (
   <div className="flex flex-col h-full">
