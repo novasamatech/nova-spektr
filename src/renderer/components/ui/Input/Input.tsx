@@ -36,19 +36,24 @@ const Input = forwardRef<Ref, InputProps>(
     return (
       <label
         className={cn(
-          'relative inline-block border-b text-lg leading-5',
+          'relative inline-block text-lg leading-5',
           value ? 'border-primary' : 'border-shade-20',
           invalid && 'border-error',
+          !label && 'border-b',
+          label && 'bg-shade-2 rounded-2lg p-2.5 pt-5',
           wrapperClass,
         )}
       >
         {prefixElement && <span>{prefixElement}</span>}
-        {/*{label && <span className="absolute top-1/2 -translate-y-1/2">{label}</span>}*/}
+        {label && <span className="absolute top-2.5 font-bold text-neutral-variant uppercase text-xs">{label}</span>}
         <input
           className={cn(
-            'focus:outline-none focus-visible:ring rounded-sm py-3 bg-transparent',
+            'focus:outline-none focus-visible:ring rounded-sm py-3 bg-transparent flex-1',
             value && !invalid && 'text-primary',
             invalid && 'text-error',
+            label && 'py-1 my-4',
+            prefixElement && 'ml-3',
+            suffixElement && 'mr-3',
             className,
           )}
           id={id}
