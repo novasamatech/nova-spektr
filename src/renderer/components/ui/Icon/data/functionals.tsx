@@ -3,6 +3,8 @@ import QrImg, { ReactComponent as QrSvg } from '@images/functionals/qr.svg';
 import QrSimpleImg, { ReactComponent as QrSimpleSvg } from '@images/functionals/qr-simple.svg';
 import QrCutoutImg, { ReactComponent as QrCutoutSvg } from '@images/functionals/qr-cutout.svg';
 import CheckCutoutImg, { ReactComponent as CheckCutoutSvg } from '@images/functionals/checkmark-cutout.svg';
+import WarnCutoutImg, { ReactComponent as WarnCutoutSvg } from '@images/functionals/warning-cutout.svg';
+import RemoveCutoutImg, { ReactComponent as RemoveCutoutSvg } from '@images/functionals/remove-cutout.svg';
 
 const FunctionalImages = {
   copy: { svg: CopySvg, img: CopyImg },
@@ -10,6 +12,8 @@ const FunctionalImages = {
   qrSimple: { svg: QrSimpleSvg, img: QrSimpleImg },
   qrCutout: { svg: QrCutoutSvg, img: QrCutoutImg },
   checkmarkCutout: { svg: CheckCutoutSvg, img: CheckCutoutImg },
+  warnCutout: { svg: WarnCutoutSvg, img: WarnCutoutImg },
+  removeCutout: { svg: RemoveCutoutSvg, img: RemoveCutoutImg },
 } as const;
 
 export type Functional = keyof typeof FunctionalImages;

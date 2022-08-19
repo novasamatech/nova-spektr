@@ -28,7 +28,7 @@ const Dropdown = ({ className, placeholder, selected, options, onSelected }: Pro
         <Listbox.Button
           className={cn(
             'group relative w-full rounded-2lg border bg-white',
-            'py-3 px-2.5 pr-10 text-left text-sm leading-4 font-semibold transition',
+            'py-3 px-2.5 pr-10 text-left text-sm leading-[14px] font-semibold transition',
             'hover:text-primary hover:border-primary focus:text-primary focus:border-primary',
             open && 'border-primary',
           )}

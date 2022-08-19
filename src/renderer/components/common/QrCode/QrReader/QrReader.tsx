@@ -2,7 +2,6 @@
 import QrScanner from 'qr-scanner';
 import cn from 'classnames';
 import { useEffect, useRef, useState } from 'react';
-import isUndefined from 'lodash/isUndefined';
 
 import { Icon } from '@renderer/components/ui';
 import { QR_READER_ERRORS } from './common/errors';
@@ -13,10 +12,11 @@ type Props = {
   cameraId?: string;
   onCameraList?: (cameras: QrScanner.Camera[]) => void;
   onResult: (data: string) => void;
+  onStart?: () => void;
   onError?: (error: ErrorObject) => void;
 };
 
-const QrReader = ({ size = 300, cameraId, onCameraList, onResult, onError }: Props) => {
+const QrReader = ({ size = 300, cameraId, onCameraList, onResult, onStart, onError }: Props) => {
   const videoRef = useRef<HTMLVideoElement>(null);
   const qrScanner = useRef<QrScanner>();
 
@@ -31,14 +31,17 @@ const QrReader = ({ size = 300, cameraId, onCameraList, onResult, onError }: Pro
     } catch (error) {
       throw QR_READER_ERRORS[Errors.UNABLE_TO_GET_MEDIA];
     }
-
     if (cameras.length === 0) {
       throw QR_READER_ERRORS[Errors.NO_VIDEO_INPUT];
-    } else {
-      onCameraList(cameras);
-
-      return cameras.length;
     }
+    if (cameras.length === 1 && !cameras[0].id) {
+      throw QR_READER_ERRORS[Errors.USER_DENY];
+    }
+    if (cameras.length > 1) {
+      onCameraList(cameras);
+    }
+
+    return cameras.length;
   };
 
   const startCamera = async () => {
@@ -48,8 +51,6 @@ const QrReader = ({ size = 300, cameraId, onCameraList, onResult, onError }: Pro
       videoRef.current,
       ({ data }) => {
         setIsScanComplete(true);
-        scanner.stop();
-        scanner.destroy();
         onResult(data);
       },
       { maxScansPerSecond: 10, preferredCamera: cameraId },
@@ -58,6 +59,7 @@ const QrReader = ({ size = 300, cameraId, onCameraList, onResult, onError }: Pro
     try {
       await scanner.start();
       qrScanner.current = scanner;
+      onStart?.();
     } catch (error) {
       scanner.stop();
       scanner.destroy();
@@ -69,9 +71,10 @@ const QrReader = ({ size = 300, cameraId, onCameraList, onResult, onError }: Pro
     (async () => {
       try {
         const camerasAmount = await getVideoInputs();
-        if (!isUndefined(camerasAmount) && camerasAmount > 1) return;
 
-        await startCamera();
+        if (!camerasAmount || camerasAmount === 1) {
+          await startCamera();
+        }
       } catch (error) {
         onError?.(error as ErrorObject);
       }
