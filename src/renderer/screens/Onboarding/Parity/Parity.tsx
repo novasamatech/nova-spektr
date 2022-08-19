@@ -40,7 +40,11 @@ const Parity = () => {
         {activeStep === Steps.PREPARE && <StepOne onNextStep={() => setActiveStep(Steps.SCAN)} />}
         {activeStep === Steps.SCAN && <StepTwo onNextStep={onReceiveAddress} />}
         {activeStep === Steps.CHECK && (
-          <StepThree ss58Address={address} onNextStep={() => setActiveStep(Steps.FINAL)} />
+          <StepThree
+            ss58Address={address}
+            onNextStep={() => setActiveStep(Steps.FINAL)}
+            onPrevStep={() => setActiveStep(Steps.SCAN)}
+          />
         )}
         {activeStep === Steps.FINAL && <FinalStep walletType={WalletType.PARITY} />}
       </section>
