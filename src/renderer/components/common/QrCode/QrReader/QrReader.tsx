@@ -5,23 +5,24 @@ import { useEffect, useRef, useState } from 'react';
 
 import { Icon } from '@renderer/components/ui';
 import { QR_READER_ERRORS } from './common/errors';
-import { Errors, ErrorObject } from './common/types';
+import { ErrorObject, Errors } from './common/types';
 
 type Props = {
   size?: number;
   cameraId?: string;
   onCameraList?: (cameras: QrScanner.Camera[]) => void;
   onResult: (data: string) => void;
+  onStart?: () => void;
   onError?: (error: ErrorObject) => void;
 };
 
-const QrReader = ({ size = 300, cameraId = '', onCameraList, onResult, onError }: Props) => {
+const QrReader = ({ size = 300, cameraId, onCameraList, onResult, onStart, onError }: Props) => {
   const videoRef = useRef<HTMLVideoElement>(null);
   const qrScanner = useRef<QrScanner>();
 
   const [isScanComplete, setIsScanComplete] = useState(false);
 
-  const getVideoInputs = async () => {
+  const getVideoInputs = async (): Promise<number | undefined> => {
     if (!onCameraList) return;
 
     let cameras = [];
@@ -30,12 +31,17 @@ const QrReader = ({ size = 300, cameraId = '', onCameraList, onResult, onError }
     } catch (error) {
       throw QR_READER_ERRORS[Errors.UNABLE_TO_GET_MEDIA];
     }
-
     if (cameras.length === 0) {
       throw QR_READER_ERRORS[Errors.NO_VIDEO_INPUT];
-    } else {
+    }
+    if (cameras.length === 1 && !cameras[0].id) {
+      throw QR_READER_ERRORS[Errors.USER_DENY];
+    }
+    if (cameras.length > 1) {
       onCameraList(cameras);
     }
+
+    return cameras.length;
   };
 
   const startCamera = async () => {
@@ -45,8 +51,6 @@ const QrReader = ({ size = 300, cameraId = '', onCameraList, onResult, onError }
       videoRef.current,
       ({ data }) => {
         setIsScanComplete(true);
-        scanner.stop();
-        scanner.destroy();
         onResult(data);
       },
       { maxScansPerSecond: 10, preferredCamera: cameraId },
@@ -55,6 +59,7 @@ const QrReader = ({ size = 300, cameraId = '', onCameraList, onResult, onError }
     try {
       await scanner.start();
       qrScanner.current = scanner;
+      onStart?.();
     } catch (error) {
       scanner.stop();
       scanner.destroy();
@@ -65,8 +70,11 @@ const QrReader = ({ size = 300, cameraId = '', onCameraList, onResult, onError }
   useEffect(() => {
     (async () => {
       try {
-        await startCamera();
-        await getVideoInputs();
+        const camerasAmount = await getVideoInputs();
+
+        if (!camerasAmount || camerasAmount === 1) {
+          await startCamera();
+        }
       } catch (error) {
         onError?.(error as ErrorObject);
       }
@@ -79,17 +87,21 @@ const QrReader = ({ size = 300, cameraId = '', onCameraList, onResult, onError }
   }, []);
 
   useEffect(() => {
-    if (!qrScanner.current) return;
+    if (!cameraId) return;
 
-    const setNewCamera = async () => {
-      try {
-        await qrScanner.current?.setCamera(cameraId);
-      } catch (error) {
-        onError?.(QR_READER_ERRORS[Errors.BAD_NEW_CAMERA]);
-      }
-    };
+    if (qrScanner.current) {
+      const setNewCamera = async () => {
+        try {
+          await qrScanner.current?.setCamera(cameraId);
+        } catch (error) {
+          onError?.(QR_READER_ERRORS[Errors.BAD_NEW_CAMERA]);
+        }
+      };
 
-    setNewCamera();
+      setNewCamera();
+    } else {
+      startCamera();
+    }
   }, [cameraId]);
 
   return (

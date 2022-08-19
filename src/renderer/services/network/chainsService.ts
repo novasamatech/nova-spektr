@@ -1,4 +1,5 @@
-import { compact, sortBy } from 'lodash';
+import compact from 'lodash/compact';
+import sortBy from 'lodash/sortBy';
 
 import chains from './common/chains.json';
 import { Chain, IChainService } from './common/types';

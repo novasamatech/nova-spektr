@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { sortBy } from 'lodash';
+import sortBy from 'lodash/sortBy';
 
 import BalanceRow from './BalanceRow';
 import { useNetworkContext } from '@renderer/context/NetworkContext';

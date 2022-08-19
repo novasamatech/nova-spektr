@@ -55,9 +55,26 @@ describe('common/QrCode/QrReader', () => {
     expect(spyError).toBeCalledWith(QR_READER_ERRORS[Errors.CANNOT_START]);
   });
 
-  test('should call onCameraList', async () => {
+  test('should not call onCameraList on a single camera', async () => {
     const spyCameraList = jest.fn();
     const list = [{ id: '1', label: 'Camera 1' }];
+
+    mockQrScanner();
+    QrScanner.listCameras = jest.fn().mockResolvedValue(list);
+
+    await act(async () => {
+      render(<QrReader onCameraList={spyCameraList} onResult={() => {}} />);
+    });
+
+    expect(spyCameraList).not.toBeCalledWith();
+  });
+
+  test('should call onCameraList with more than 1 camera', async () => {
+    const spyCameraList = jest.fn();
+    const list = [
+      { id: '1', label: 'Camera 1' },
+      { id: '2', label: 'Camera 2' },
+    ];
 
     mockQrScanner();
     QrScanner.listCameras = jest.fn().mockResolvedValue(list);

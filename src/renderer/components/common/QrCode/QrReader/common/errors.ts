@@ -13,6 +13,10 @@ export const QR_READER_ERRORS: Record<Errors, ErrorObject> = {
     code: Errors.CANNOT_START,
     message: 'No devices or user denied camera access',
   },
+  [Errors.USER_DENY]: {
+    code: Errors.USER_DENY,
+    message: 'User denied camera access',
+  },
   [Errors.BAD_NEW_CAMERA]: {
     code: Errors.BAD_NEW_CAMERA,
     message: 'Could not change camera',
