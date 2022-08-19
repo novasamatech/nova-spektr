@@ -103,7 +103,7 @@ const WatchOnly = () => {
               />
             </div>
           </div>
-          <div className="flex flex-col bg-white shadow-surface rounded-2lg w-[480px] max-h-[274px]">
+          <div className="flex flex-col bg-white shadow-surface rounded-2lg w-[480px] max-h-[254px]">
             <div className="p-4">
               <h3 className="text-neutral font-semibold">Your accounts will be showing up here</h3>
             </div>
