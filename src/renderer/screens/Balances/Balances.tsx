@@ -1,13 +1,27 @@
+import { useEffect, useState } from 'react';
 import { sortBy } from 'lodash';
 
 import BalanceRow from './BalanceRow';
 import { useNetworkContext } from '@renderer/context/NetworkContext';
 import { useChains } from '@renderer/services/network/chainsService';
-import { TEST_PUBLIC_KEY } from '@renderer/services/balance/common/constants';
+import { useWallet } from '@renderer/services/wallet/walletService';
+import { PublicKey } from '@renderer/domain/shared-kernel';
 
 const Balances = () => {
   const { connections } = useNetworkContext();
+  const { getActiveWallets } = useWallet();
   const { sortChains } = useChains();
+  const [publicKey, setPublicKey] = useState<PublicKey>();
+  const activeWallets = getActiveWallets();
+
+  useEffect(() => {
+    (async () => {
+      if (activeWallets && activeWallets.length > 0) {
+        const tempPublicKey = activeWallets[0].mainAccounts[0].publicKey;
+        setPublicKey(tempPublicKey);
+      }
+    })();
+  }, [activeWallets]);
 
   const sortedChains = sortChains(Object.values(connections));
 
@@ -26,14 +40,15 @@ const Balances = () => {
             <p>Portfolio</p>
           </div>
           <div className="flex flex-col divide-y divide-shade-5 shadow-surface">
-            {sortBy(chain.assets || [], (a) => a.symbol.toLowerCase()).map((asset) => (
-              <BalanceRow
-                key={`${chain.chainId}-${asset.assetId}`}
-                asset={asset}
-                chain={chain}
-                publicKey={TEST_PUBLIC_KEY}
-              />
-            ))}
+            {publicKey &&
+              sortBy(chain.assets || [], (a) => a.symbol.toLowerCase()).map((asset) => (
+                <BalanceRow
+                  key={`${chain.chainId}-${asset.assetId}`}
+                  asset={asset}
+                  chain={chain}
+                  publicKey={publicKey}
+                />
+              ))}
           </div>
         </div>
       ))}

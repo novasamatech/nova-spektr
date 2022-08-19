@@ -111,8 +111,8 @@ export const useBalance = (): IBalanceService => {
         assetId: asset.assetId.toString(),
         verified: !relaychain,
         free: free.toString(),
-        reserved: frozen.toString(),
-        frozen: reserved.toString(),
+        reserved: reserved.toString(),
+        frozen: frozen.toString(),
       };
 
       updateBalance(balance);
