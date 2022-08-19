@@ -20,6 +20,12 @@ jest.mock('@renderer/services/wallet/walletService', () => ({
   }),
 }));
 
+jest.mock('@renderer/services/network/chainsService', () => ({
+  useChains: jest.fn().mockReturnValue({
+    getChainsData: jest.fn().mockReturnValue([]),
+  }),
+}));
+
 describe('screens/Onboarding/WatchOnly', () => {
   test('should render component', async () => {
     await act(async () => {
