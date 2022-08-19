@@ -10,10 +10,10 @@ const testAsset = testChain.assets[0];
 
 jest.mock('@renderer/services/balance/balanceService', () => ({
   useBalance: jest.fn(() => ({
-    getBalance: jest.fn(() => ({
+    getLiveBalance: () => ({
       free: 100,
       frozen: 10,
-    })),
+    }),
   })),
 }));
 
