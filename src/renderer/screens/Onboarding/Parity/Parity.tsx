@@ -31,10 +31,12 @@ const Parity = () => {
 
   return (
     <div className="flex flex-col h-full">
-      <div className="flex items-center gap-x-2.5">
-        <ButtonBack />
-        <h1 className="text-neutral">Add wallet by Parity Signer</h1>
-      </div>
+      {activeStep !== Steps.FINAL && (
+        <div className="flex items-center gap-x-2.5">
+          <ButtonBack />
+          <h1 className="text-neutral">Add wallet by Parity Signer</h1>
+        </div>
+      )}
       <section className="flex flex-col gap-y-16 h-max max-w-[1000px] w-full m-auto">
         <Stepper steps={PARITY_FLOW_STEPS} active={activeStep} />
         {activeStep === Steps.PREPARE && <StepOne onNextStep={() => setActiveStep(Steps.SCAN)} />}
