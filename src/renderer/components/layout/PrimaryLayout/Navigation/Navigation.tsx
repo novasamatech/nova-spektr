@@ -6,6 +6,7 @@ import { Button, Icon, Identicon } from '@renderer/components/ui';
 import { useMatrix } from '@renderer/context/MatrixContext';
 import Paths from '@renderer/routes/paths';
 import { useI18n } from '@renderer/context/I18nContext';
+import { useWallet } from '@renderer/services/wallet/walletService';
 
 const NavItems = [
   { icon: <Icon name="wallets" />, title: 'NavItem.Wallets', link: Paths.WALLETS },
@@ -19,6 +20,8 @@ const NavItems = [
 
 const Navigation = () => {
   const { LocaleComponent, t } = useI18n();
+  const { getActiveWallets } = useWallet();
+  const activeWallets = getActiveWallets();
 
   const navigate = useNavigate();
   const { matrix, setIsLoggedIn } = useMatrix();
@@ -42,9 +45,15 @@ const Navigation = () => {
     <aside className="flex gap-y-5 flex-col w-[280px] py-5 pl-5">
       <div className="bg-primary rounded-xl text-white">
         <div className="flex gap-x-2.5 pl-4 pt-4 pr-2">
-          <Identicon theme="polkadot" address="5DXYNRXmNmFLFxxUjMXSzKh3vqHRDfDGGbY3BnSdQcta1SkX" size={46} />
-          <button type="button" className="flex justify-between flex-1">
-            <span className="text-xl leading-6 mr-1 text-left">Bob (Accountant)</span>
+          <Identicon
+            theme="polkadot"
+            address={(activeWallets && activeWallets.length && activeWallets[0].mainAccounts[0].accountId) || ''}
+            size={46}
+          />
+          <button type="button" className="flex justify-between flex-1 truncate">
+            <span className="text-xl leading-6 mr-1 text-left truncate">
+              {(activeWallets && activeWallets.length && activeWallets[0].name) || 'Unknown wallet'}
+            </span>
             <Icon name="right" size={40} className="shrink-0" />
           </button>
         </div>

@@ -1,5 +1,6 @@
 import { Contact } from './contact';
 import { Account, ChainAccount } from './account';
+import { CryptoType } from './shared-kernel';
 
 export type SimpleWallet = {
   name: string;
@@ -67,4 +68,11 @@ export function createMultisigWallet<T extends MultisigWallet>({
     originContacts,
     messengerRoomId,
   };
+}
+export function createMainAccount({ accountId, publicKey }: Omit<Account, 'cryptoType'>): Account {
+  return {
+    accountId,
+    publicKey,
+    cryptoType: CryptoType.ED25519,
+  } as Account;
 }

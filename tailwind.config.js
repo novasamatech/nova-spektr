@@ -51,6 +51,9 @@ module.exports = {
         10.5: '2.625rem',
         15: '3.75rem',
       },
+      fontSize: {
+        '2xs': ['0.625rem', '0.75rem'],
+      },
       borderRadius: {
         '2lg': '10px',
       },
