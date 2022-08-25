@@ -1,4 +1,5 @@
 import { useLiveQuery } from 'dexie-react-hooks';
+import { AccountInfo } from '@polkadot/types/interfaces';
 
 import storage, { BalanceDS } from '../storage';
 import { Balance } from '@renderer/domain/balance';
@@ -36,15 +37,19 @@ export const useBalance = (): IBalanceService => {
     const api = chain.api;
     const address = toAddress(publicKey, chain.addressPrefix);
 
-    return api.query.system.account(address, (data: any) => {
+    return api.query.system.account(address, async (data: AccountInfo) => {
+      const feeFrozen = data.data.feeFrozen.toBigInt();
+      const miscFrozen = data.data.miscFrozen.toBigInt();
+      const frozen = feeFrozen > miscFrozen ? feeFrozen : miscFrozen;
+
       const balance = {
         publicKey,
         chainId: chain.chainId,
         assetId: asset.assetId.toString(),
         verified: !relaychain,
         free: data.data.free.toString(),
-        reserved: data.data.free.toString(),
-        frozen: data.data.feeFrozen.toString(),
+        reserved: data.data.reserved.toString(),
+        frozen: frozen.toString(),
       };
 
       updateBalance(balance);

@@ -36,9 +36,8 @@ const Input = forwardRef<Ref, InputProps>(
     return (
       <label
         className={cn(
-          'relative inline-block text-lg leading-5',
-          value ? 'border-primary' : 'border-shade-20',
-          invalid && 'border-error',
+          'relative inline-block box-border border-2 text-lg leading-5',
+          invalid ? 'border-error' : 'border-shade-2',
           label ? 'bg-shade-2 rounded-2lg px-2.5 pb-0 pt-5 font-normal' : 'border-b',
           wrapperClass,
         )}

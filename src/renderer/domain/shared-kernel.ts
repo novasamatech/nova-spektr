@@ -16,3 +16,10 @@ export const enum CryptoType {
   ECDSA,
   ETHEREUM,
 }
+
+export const enum ErrorTypes {
+  REQUIRED = 'required',
+  VALIDATE = 'validate',
+  PATTERN = 'pattern',
+  MAX_LENGTH = 'maxLength',
+}

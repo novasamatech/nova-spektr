@@ -15,7 +15,7 @@ type Props = {
 };
 
 const StepThree = ({ ss58Address, onNextStep, onPrevStep }: Props) => {
-  const { getChainsData } = useChains();
+  const { getChainsData, sortChains } = useChains();
   const { addWallet, setActiveWallet } = useWallet();
 
   const [walletName, setWalletName] = useState('');
@@ -24,7 +24,7 @@ const StepThree = ({ ss58Address, onNextStep, onPrevStep }: Props) => {
   useEffect(() => {
     (async () => {
       const chains = await getChainsData();
-      setChains(chains);
+      setChains(sortChains(chains));
     })();
   }, []);
 
@@ -50,42 +50,31 @@ const StepThree = ({ ss58Address, onNextStep, onPrevStep }: Props) => {
     <div className="flex h-full flex-col gap-10 justify-center items-center pt-5">
       <h2 className="text-2xl leading-10 font-normal text-neutral-variant">Please choose a name for your wallet</h2>
       <div className="flex gap-10">
-        <div className="flex flex-col gap-10 w-[480px]">
-          <div className="flex flex-col p-4 bg-white shadow-surface rounded-2lg">
-            <Input
-              wrapperClass="flex items-center"
-              label="Wallet name"
-              placeholder="Wallet name"
-              onChange={(e) => setWalletName(e.target.value)}
-            />
-            <p className="uppercase pt-2.5 pb-10 font-bold text-2xs text-shade-40">
-              Name examples: Main account, My validator, Dotsama crowdloans, etc.
-            </p>
-            <Input
-              label="Account address"
-              placeholder="Account address"
-              value={ss58Address}
-              wrapperClass="flex items-center"
-              disabled
-              prefixElement={<Identicon address={ss58Address} size={32} />}
-              suffixElement={
-                <Button variant="outline" pallet="primary" onClick={onPrevStep}>
-                  Rescan QR code
-                </Button>
-              }
-            />
-          </div>
-          <Button
-            weight="lg"
-            variant="fill"
-            pallet="primary"
-            disabled={!correctAddress || !walletName}
-            onClick={createWallet}
-          >
-            Type a name to finish...
-          </Button>
+        <div className="flex flex-col w-[480px] h-[260] p-4 bg-white shadow-surface rounded-2lg">
+          <Input
+            wrapperClass="flex items-center"
+            label="Wallet name"
+            placeholder="Wallet name"
+            onChange={(e) => setWalletName(e.target.value)}
+          />
+          <p className="uppercase pt-2.5 pb-10 font-bold text-2xs text-shade-40">
+            Name examples: Main account, My validator, Dotsama crowdloans, etc.
+          </p>
+          <Input
+            label="Account address"
+            placeholder="Account address"
+            value={ss58Address}
+            wrapperClass="flex items-center"
+            disabled
+            prefixElement={<Identicon address={ss58Address} size={32} />}
+            suffixElement={
+              <Button variant="outline" pallet="primary" onClick={onPrevStep}>
+                Rescan QR code
+              </Button>
+            }
+          />
         </div>
-        <div className="flex flex-col bg-white shadow-surface rounded-2lg w-[480px] max-h-[400px]">
+        <div className="flex flex-col bg-white shadow-surface rounded-2lg w-[480px] max-h-[260px]">
           <div className="p-4">
             <h2 className="text-neutral font-semibold">Here are your accounts</h2>
             <p className="text-neutral-variant font-normal">
@@ -95,6 +84,16 @@ const StepThree = ({ ss58Address, onNextStep, onPrevStep }: Props) => {
           <AccountsList chains={chains} publicKey={publicKey} />
         </div>
       </div>
+
+      <Button
+        weight="lg"
+        variant="fill"
+        pallet="primary"
+        disabled={!correctAddress || !walletName}
+        onClick={createWallet}
+      >
+        {!correctAddress || !walletName ? 'Type a name to finish...' : 'Yes, these are my accounts'}
+      </Button>
     </div>
   );
 };

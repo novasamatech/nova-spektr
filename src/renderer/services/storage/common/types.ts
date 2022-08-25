@@ -52,7 +52,7 @@ type WithID = {
 
 export type ConnectionDS = WithID & Connection;
 
-export type BalanceDS = WithID & Balance;
+export type BalanceDS = Balance;
 
 export type WalletDS = WithID & Wallet;
 export type MultisigWalletDS = Wallet & MultisigWallet;
