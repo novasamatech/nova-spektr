@@ -53,6 +53,7 @@ specifiers:
   crypto-browserify: ^3.12.0
   css-loader: ^6.7.1
   css-minimizer-webpack-plugin: ^4.0.0
+  date-fns: ^2.29.2
   dexie: ^3.2.2
   dexie-react-hooks: ^1.1.1
   electron: ^19.0.7
@@ -129,6 +130,7 @@ dependencies:
   buffer: 6.0.3
   classnames: 2.3.1
   crypto-browserify: 3.12.0
+  date-fns: 2.29.2
   dexie: 3.2.2
   dexie-react-hooks: 1.1.1_ugasl56bq7goab4h476ffxfsvu
   i18next: 21.8.13
@@ -7572,7 +7574,7 @@ packages:
     hasBin: true
     dependencies:
       chalk: 4.1.2
-      date-fns: 2.28.0
+      date-fns: 2.29.2
       lodash: 4.17.21
       rxjs: 7.5.6
       shell-quote: 1.7.3
@@ -8186,10 +8188,9 @@ packages:
       whatwg-url: 11.0.0
     dev: true
 
-  /date-fns/2.28.0:
-    resolution: {integrity: sha512-8d35hViGYx/QH0icHYCeLmsLmMUheMmTyV9Fcm6gvNwdw31yXXH+O85sOBJ+OLnLQMKZowvpKb6FgMIQjcpvQw==}
+  /date-fns/2.29.2:
+    resolution: {integrity: sha512-0VNbwmWJDS/G3ySwFSJA3ayhbURMTJLtwM2DTxf9CWondCnh6DTNlO9JgRSq6ibf4eD0lfMJNBxUdEAHHix+bA==}
     engines: {node: '>=0.11'}
-    dev: true
 
   /debug/2.6.9:
     resolution: {integrity: sha512-bC7ElrdJaJnPbAP+1EotYvqZsb3ecl5wi6Bfi6BJTUcNowp6cvspg0jXznRTKDjm/E7AdgFBVeAPVMNcKGsHMA==}

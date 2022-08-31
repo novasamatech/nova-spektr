@@ -44,6 +44,7 @@ export const enum AssetType {
 }
 
 export type Asset = {
+  name: string;
   assetId: number;
   symbol: string;
   precision: number;
