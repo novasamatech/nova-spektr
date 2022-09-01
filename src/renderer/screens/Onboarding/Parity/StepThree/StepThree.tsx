@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 
 import { createMainAccount, createSimpleWallet, WalletType } from '@renderer/domain/wallet';
-import { Button, Identicon, Input } from '@renderer/components/ui';
+import { BaseModal, Button, Identicon, Input } from '@renderer/components/ui';
 import { useWallet } from '@renderer/services/wallet/walletService';
 import { useChains } from '@renderer/services/network/chainsService';
 import { Chain } from '@renderer/services/network/common/types';
@@ -20,6 +20,7 @@ const StepThree = ({ ss58Address, onNextStep, onPrevStep }: Props) => {
 
   const [walletName, setWalletName] = useState('');
   const [chains, setChains] = useState<Chain[]>([]);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   useEffect(() => {
     (async () => {
@@ -74,14 +75,27 @@ const StepThree = ({ ss58Address, onNextStep, onPrevStep }: Props) => {
             }
           />
         </div>
-        <div className="flex flex-col bg-white shadow-surface rounded-2lg w-[480px] max-h-[260px]">
-          <div className="p-4">
-            <h2 className="text-neutral font-semibold">Here are your accounts</h2>
-            <p className="text-neutral-variant font-normal">
+        <div className="flex flex-col bg-white shadow-surface rounded-2lg w-[480px] max-h-[310px]">
+          <div className="p-4 pt-3.5 pb-3.5">
+            <h2 className="text-neutral font-semibold leading-5">Here are your accounts</h2>
+            <p className="text-neutral-variant text-xs leading-4 font-normal">
               Following accounts have been successfully read from Parity Signer
             </p>
           </div>
-          <AccountsList chains={chains} publicKey={publicKey} />
+          <AccountsList chains={chains} publicKey={publicKey} limitNumber={publicKey && 4} />
+          {publicKey && (
+            <div>
+              <Button
+                weight="md"
+                className="w-content p-4 mt-2"
+                onClick={() => setIsModalOpen(true)}
+                variant="text"
+                pallet="primary"
+              >
+                Check your accounts
+              </Button>
+            </div>
+          )}
         </div>
       </div>
 
@@ -94,6 +108,16 @@ const StepThree = ({ ss58Address, onNextStep, onPrevStep }: Props) => {
       >
         {!correctAddress || !walletName ? 'Type a name to finish...' : 'Yes, these are my accounts'}
       </Button>
+
+      <BaseModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        className="px-0 pb-0 max-w-2xl"
+        title="Here are your accounts"
+        description="Following accounts have been successfully read"
+      >
+        <AccountsList className="pt-6" chains={chains} publicKey={publicKey} />
+      </BaseModal>
     </div>
   );
 };

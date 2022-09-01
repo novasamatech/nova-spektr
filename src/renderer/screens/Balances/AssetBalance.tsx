@@ -17,7 +17,10 @@ const BalanceRow = ({ asset, balance }: Props) => {
   return (
     <div
       onClick={() => setIsExpanded(!isExpanded)}
-      className={cn(isExpanded && 'rounded-2lg border-2 border-primary', 'hover:bg-shade-5 cursor-pointer')}
+      className={cn(
+        'hover:bg-shade-5 cursor-pointer border-2',
+        isExpanded ? 'rounded-2lg border-primary' : 'border-transparent',
+      )}
     >
       <div className="flex items-center justify-between gap-7.5 h-[60px] p-[15px] text-xl ">
         <div className="flex items-center gap-x-2.5 text-neutral">
@@ -27,7 +30,7 @@ const BalanceRow = ({ asset, balance }: Props) => {
           {asset.name}
         </div>
         <div className={cn('font-semibold', !balance?.verified && 'text-shade-50')} data-testid="balance">
-          {balance ? (
+          {balance && balance.free !== undefined ? (
             `${formatBalance(total(balance), asset.precision)} ${asset.symbol}`
           ) : (
             <Shimmering width="200px" height="20px" />

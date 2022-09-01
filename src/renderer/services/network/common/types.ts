@@ -91,5 +91,5 @@ export type Chain = {
 
 export type ExtendedChain = Chain & {
   connection: Connection;
-  api: ApiPromise;
+  api?: ApiPromise;
 };

@@ -6,9 +6,9 @@ import { useWallet } from '@renderer/services/wallet/walletService';
 import { PublicKey } from '@renderer/domain/shared-kernel';
 import { Icon, Input, Switch } from '@renderer/components/ui';
 import NetworkBalances from './NetworkBalances';
+import { useSettingsStorage } from '@renderer/services/settings/settingsStorage';
 
 const Balances = () => {
-  const [hideZeroBalances, setHideZeroBalances] = useState(false);
   const [query, setQuery] = useState('');
 
   const { connections } = useNetworkContext();
@@ -16,6 +16,14 @@ const Balances = () => {
   const { sortChains } = useChains();
   const [publicKey, setPublicKey] = useState<PublicKey>();
   const activeWallets = getActiveWallets();
+
+  const { setHideZeroBalance, getHideZeroBalance } = useSettingsStorage();
+  const [hideZeroBalance, setHideZeroBalanceState] = useState(getHideZeroBalance());
+
+  const updateHideZeroBalance = (value: boolean) => {
+    setHideZeroBalance(value);
+    setHideZeroBalanceState(value);
+  };
 
   useEffect(() => {
     (async () => {
@@ -29,31 +37,34 @@ const Balances = () => {
   const sortedChains = sortChains(Object.values(connections));
 
   return (
-    <div className="h-full overflow-auto">
-      <h1 className="font-semibold text-2xl text-neutral mb-9">Balances</h1>
+    <div className="h-full flex flex-col">
+      <div className="flex-none">
+        <h1 className="font-semibold text-2xl text-neutral mb-9">Balances</h1>
 
-      <div className="flex justify-between items-center mb-5">
-        <Input
-          className="w-[300px]"
-          prefixElement={<Icon as="svg" name="search" className="w-5 h-5" />}
-          value={query}
-          onChange={(e) => setQuery(e.target.value.toLowerCase())}
-          placeholder="Search by token, network or anything"
-        />
-        <div className="text-sm text-neutral font-semibold flex gap-2.5">
-          Hide zero balances <Switch checked={hideZeroBalances} onChange={setHideZeroBalances} />
+        <div className="flex justify-between items-center mb-5">
+          <Input
+            className="w-[300px]"
+            prefixElement={<Icon as="svg" name="search" className="w-5 h-5" />}
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder="Search by token, network or anything"
+          />
+          <div className="text-sm text-neutral font-semibold flex gap-2.5">
+            Hide zero balances <Switch checked={hideZeroBalance} onChange={updateHideZeroBalance} />
+          </div>
         </div>
       </div>
-
-      {sortedChains.map((chain) => (
-        <NetworkBalances
-          key={chain.chainId}
-          hideZeroBalances={hideZeroBalances}
-          query={query}
-          chain={chain}
-          publicKey={publicKey}
-        />
-      ))}
+      <div className="flex-1 overflow-x-auto">
+        {sortedChains.map((chain) => (
+          <NetworkBalances
+            key={chain.chainId}
+            hideZeroBalance={hideZeroBalance}
+            query={query.toLowerCase()}
+            chain={chain}
+            publicKey={publicKey}
+          />
+        ))}
+      </div>
     </div>
   );
 };

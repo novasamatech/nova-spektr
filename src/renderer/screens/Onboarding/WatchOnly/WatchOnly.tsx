@@ -10,7 +10,7 @@ import { toPublicKey } from '@renderer/utils/address';
 import { useChains } from '@renderer/services/network/chainsService';
 import { Chain } from '@renderer/services/network/common/types';
 import FinalStep from '../FinalStep/FinalStep';
-import { ErrorTypes } from '@renderer/domain/shared-kernel';
+import { ErrorTypes, PublicKey } from '@renderer/domain/shared-kernel';
 
 type WalletForm = {
   walletName: string;
@@ -35,10 +35,15 @@ const WatchOnly = () => {
   const { addWallet, setActiveWallet } = useWallet();
 
   const [chains, setChains] = useState<Chain[]>([]);
+  const [publicKey, setPublicKey] = useState<PublicKey>();
 
   const [isCompleted, setIsCompleted] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const address = watch('address');
+
+  useEffect(() => {
+    setPublicKey(toPublicKey(address));
+  }, [address]);
 
   useEffect(() => {
     (async () => {
@@ -48,7 +53,6 @@ const WatchOnly = () => {
   }, []);
 
   const handleCreateWallet: SubmitHandler<WalletForm> = async ({ walletName, address }) => {
-    const publicKey = toPublicKey(address);
     if (!publicKey || publicKey.length === 0) return;
 
     const newWallet = createSimpleWallet({
@@ -75,6 +79,13 @@ const WatchOnly = () => {
     return <FinalStep walletType={WalletType.WATCH_ONLY} />;
   }
 
+  const errorButtonText =
+    (errors.address && errors.walletName) || Object.values(errors).length === 0
+      ? 'Type address and name'
+      : errors.address
+      ? 'Type or paste an address'
+      : errors.walletName && 'Type a wallet name';
+
   return (
     <>
       <div className="flex items-center gap-x-2.5">
@@ -91,7 +102,7 @@ const WatchOnly = () => {
           your private key to Omni Enterprise
         </h2>
         <div className="flex gap-10">
-          <div className="flex flex-col w-[480px] h-[260px] p-4 bg-white shadow-surface rounded-2lg">
+          <div className="flex flex-col w-[480px] h-[310px] p-4 bg-white shadow-surface rounded-2lg">
             <Controller
               name="walletName"
               control={control}
@@ -161,26 +172,31 @@ const WatchOnly = () => {
               </p>
             )}
           </div>
-          <div className="flex flex-col bg-white shadow-surface rounded-2lg w-[480px] max-h-[260px]">
+          <div className="flex flex-col bg-white shadow-surface rounded-2lg w-[480px] h-[310px]">
             <div className="p-4">
               <h3 className="text-neutral font-semibold">Your accounts will be showing up here</h3>
             </div>
-            <AccountsList chains={chains} publicKey={toPublicKey(address)} />
+            <AccountsList chains={chains} publicKey={publicKey} limitNumber={publicKey && 4} />
+            {publicKey && (
+              <div>
+                <Button
+                  weight="md"
+                  className="w-content p-4 mt-2"
+                  onClick={() => setIsModalOpen(true)}
+                  variant="text"
+                  pallet="primary"
+                  disabled={!!errors.address}
+                >
+                  Check your accounts
+                </Button>
+              </div>
+            )}
           </div>
         </div>
 
         <div className="flex justify-center items-center gap-4">
           <Button type="submit" weight="lg" variant="fill" pallet="primary" disabled={!isValid}>
-            {isValid ? 'Yes, these are my accounts' : 'Type or paste an address...'}
-          </Button>
-          <Button
-            weight="lg"
-            onClick={() => setIsModalOpen(true)}
-            variant="outline"
-            pallet="primary"
-            disabled={!!errors.address}
-          >
-            Check your sub-accounts
+            {isValid ? 'Yes, these are my accounts' : errorButtonText}
           </Button>
         </div>
 
@@ -191,7 +207,7 @@ const WatchOnly = () => {
           title="Here are your accounts"
           description="Following accounts have been successfully read"
         >
-          <AccountsList className="pt-6" chains={chains} publicKey={toPublicKey(address)} />
+          <AccountsList className="pt-6" chains={chains} publicKey={publicKey} />
         </BaseModal>
       </form>
     </>
