@@ -58,7 +58,7 @@ const Balances = () => {
           </div>
         </div>
       </div>
-      {connections && Object.keys(connections).length > 0 && (
+      {publicKey && (
         <div className="flex-1 overflow-x-auto">
           {sortedChains.map((chain) => (
             <NetworkBalances

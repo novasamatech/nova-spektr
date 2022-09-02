@@ -15,14 +15,10 @@ type Props = {
   searchSymbolOnly?: boolean;
   query?: string;
   chain: Chain;
-  publicKey?: PublicKey;
+  publicKey: PublicKey;
 };
 
 const NetworkBalances = ({ query, hideZeroBalance, chain, publicKey, searchSymbolOnly }: Props) => {
-  if (!publicKey) {
-    return null;
-  }
-
   const [isHidden, setIsHidden] = useState(false);
 
   const { getLiveNetworkBalances } = useBalance();
