@@ -144,7 +144,7 @@ const WatchOnly = () => {
                     isValid ? (
                       <Identicon address={value} size={32} />
                     ) : (
-                      <Icon as="svg" size={24} name="emptyIdenticon" />
+                      <Icon className="mx-1" as="svg" size={24} name="emptyIdenticon" />
                     )
                   }
                   suffixElement={
@@ -181,7 +181,7 @@ const WatchOnly = () => {
               <div>
                 <Button
                   weight="md"
-                  className="w-content p-4 mt-2"
+                  className="w-content p-4 mt-2 underline underline-offset-2"
                   onClick={() => setIsModalOpen(true)}
                   variant="text"
                   pallet="primary"

@@ -12,7 +12,7 @@ import { Icon } from '@renderer/components/ui';
 
 type Props = {
   hideZeroBalance: boolean;
-  query: string;
+  query?: string;
   chain: Chain;
   publicKey?: PublicKey;
 };

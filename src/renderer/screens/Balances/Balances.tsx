@@ -59,11 +59,16 @@ const Balances = () => {
           <NetworkBalances
             key={chain.chainId}
             hideZeroBalance={hideZeroBalance}
-            query={query.toLowerCase()}
+            query={query ? query.toLowerCase() : ''}
             chain={chain}
             publicKey={publicKey}
           />
         ))}
+        <div className="hidden only:flex w-full h-full flex-col items-center justify-center">
+          <Icon as="svg" name="empty" className="w-[380px] h-[380px] text-neutral-variant" />
+          <p className="text-neutral text-3xl font-bold">Nothing to show</p>
+          <p className="text-neutral-variant text-base font-normal">Try to reset filters or search for another key</p>
+        </div>
       </div>
     </div>
   );

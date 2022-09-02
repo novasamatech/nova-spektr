@@ -87,7 +87,7 @@ const StepThree = ({ ss58Address, onNextStep, onPrevStep }: Props) => {
             <div>
               <Button
                 weight="md"
-                className="w-content p-4 mt-2"
+                className="w-content p-4 mt-2 underline underline-offset-2"
                 onClick={() => setIsModalOpen(true)}
                 variant="text"
                 pallet="primary"
