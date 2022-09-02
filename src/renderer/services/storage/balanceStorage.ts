@@ -17,17 +17,11 @@ export const useBalanceStorage = (db: Table<BalanceDS>): IBalanceStorage => ({
     return db.where({ publicKey, chainId }).toArray();
   },
 
-  updateBalance: async (balance: Balance): Promise<IndexableType> => {
-    const currentBalance = await db.get({
-      publicKey: balance.publicKey,
-      chainId: balance.chainId,
-      assetId: balance.assetId,
-    });
-
-    if (!currentBalance) {
-      return db.put(balance);
+  updateBalance: async (balance: Balance): Promise<void> => {
+    try {
+      await db.add(balance);
+    } catch (e) {
+      await db.update([balance.publicKey, balance.chainId, balance.assetId], balance);
     }
-
-    return db.update([balance.publicKey, balance.chainId, balance.assetId], balance);
   },
 });

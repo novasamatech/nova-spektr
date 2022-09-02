@@ -18,7 +18,7 @@ export interface IBalanceStorage {
   getBalance: (publicKey: PublicKey, chainId: ChainId, assetId: string) => Promise<BalanceDS | undefined>;
   getNetworkBalances: (publicKey: PublicKey, chainId: ChainId) => Promise<BalanceDS[]>;
   getBalances: (publicKey: PublicKey) => Promise<BalanceDS[]>;
-  updateBalance: (balance: Balance) => Promise<IndexableType>;
+  updateBalance: (balance: Balance) => Promise<void>;
 }
 
 export interface IConnectionStorage {
