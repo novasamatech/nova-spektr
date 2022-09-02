@@ -12,12 +12,13 @@ import { Icon } from '@renderer/components/ui';
 
 type Props = {
   hideZeroBalance: boolean;
+  searchSymbolOnly?: boolean;
   query?: string;
   chain: Chain;
   publicKey?: PublicKey;
 };
 
-const NetworkBalances = ({ query, hideZeroBalance, chain, publicKey }: Props) => {
+const NetworkBalances = ({ query, hideZeroBalance, chain, publicKey, searchSymbolOnly }: Props) => {
   if (!publicKey) {
     return null;
   }
@@ -32,8 +33,7 @@ const NetworkBalances = ({ query, hideZeroBalance, chain, publicKey }: Props) =>
   const filteredAssets = chain.assets.filter((asset) => {
     if (query) {
       return (
-        chain.name.toLowerCase().includes(query) ||
-        asset.name.toLowerCase().includes(query) ||
+        (!searchSymbolOnly && (chain.name.toLowerCase().includes(query) || asset.name.toLowerCase().includes(query))) ||
         asset.symbol.toLowerCase().includes(query)
       );
     }

@@ -36,6 +36,10 @@ const Balances = () => {
 
   const sortedChains = sortChains(Object.values(connections));
 
+  const searchSymbolOnly = sortedChains.some((chain) =>
+    chain.assets.some((a) => a.symbol.toLowerCase() === query.toLowerCase()),
+  );
+
   return (
     <div className="h-full flex flex-col">
       <div className="flex-none">
@@ -54,22 +58,25 @@ const Balances = () => {
           </div>
         </div>
       </div>
-      <div className="flex-1 overflow-x-auto">
-        {sortedChains.map((chain) => (
-          <NetworkBalances
-            key={chain.chainId}
-            hideZeroBalance={hideZeroBalance}
-            query={query ? query.toLowerCase() : ''}
-            chain={chain}
-            publicKey={publicKey}
-          />
-        ))}
-        <div className="hidden only:flex w-full h-full flex-col items-center justify-center">
-          <Icon as="svg" name="empty" className="w-[380px] h-[380px] text-neutral-variant" />
-          <p className="text-neutral text-3xl font-bold">Nothing to show</p>
-          <p className="text-neutral-variant text-base font-normal">Try to reset filters or search for another key</p>
+      {connections && Object.keys(connections).length > 0 && (
+        <div className="flex-1 overflow-x-auto">
+          {sortedChains.map((chain) => (
+            <NetworkBalances
+              key={chain.chainId}
+              hideZeroBalance={hideZeroBalance}
+              searchSymbolOnly={searchSymbolOnly}
+              query={query ? query.toLowerCase() : ''}
+              chain={chain}
+              publicKey={publicKey}
+            />
+          ))}
+          <div className="hidden only:flex w-full h-full flex-col items-center justify-center">
+            <Icon as="svg" name="empty" className="w-[380px] h-[380px] text-neutral-variant" />
+            <p className="text-neutral text-3xl font-bold">Nothing to show</p>
+            <p className="text-neutral-variant text-base font-normal">Try to reset filters or search for another key</p>
+          </div>
         </div>
-      </div>
+      )}
     </div>
   );
 };

@@ -11,7 +11,7 @@ type Props = {
   balance: Balance;
 };
 
-const BalanceRow = ({ asset, balance }: Props) => {
+const AssetBalance = ({ asset, balance }: Props) => {
   const [isExpanded, setIsExpanded] = useState(false);
 
   return (
@@ -30,7 +30,7 @@ const BalanceRow = ({ asset, balance }: Props) => {
             {asset.name}
           </div>
           <div className={cn('font-semibold', !balance?.verified && 'text-shade-50')} data-testid="balance">
-            {balance && balance.free !== undefined ? (
+            {balance?.free !== undefined ? (
               `${formatBalance(total(balance), asset.precision)} ${asset.symbol}`
             ) : (
               <Shimmering width="200px" height="20px" />
@@ -42,7 +42,7 @@ const BalanceRow = ({ asset, balance }: Props) => {
             <div>
               <div className="text-neutral text-sm font-semibold">Transferable</div>
               <div className="text-neutral-variant text-xs font-bold">
-                {balance ? (
+                {balance?.free !== undefined ? (
                   `${formatBalance(transferable(balance), asset.precision)} ${asset.symbol}`
                 ) : (
                   <Shimmering width="200px" height="20px" />
@@ -62,7 +62,7 @@ const BalanceRow = ({ asset, balance }: Props) => {
             <div className="pl-6">
               <div className="text-neutral text-sm font-semibold">Reserved</div>
               <div className="text-neutral-variant text-xs font-bold">
-                {balance ? (
+                {balance?.reserved !== undefined ? (
                   `${formatBalance(balance.reserved || '0', asset.precision)} ${asset.symbol}`
                 ) : (
                   <Shimmering width="200px" height="20px" />
@@ -76,4 +76,4 @@ const BalanceRow = ({ asset, balance }: Props) => {
   );
 };
 
-export default BalanceRow;
+export default AssetBalance;
