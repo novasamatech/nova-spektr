@@ -29,20 +29,24 @@ const NetworkBalances = ({ query, hideZeroBalance, chain, publicKey }: Props) =>
   const balances = getLiveNetworkBalances(publicKey, chain.chainId);
   const balancesObject = keyBy(balances, 'assetId');
 
-  const filteredAssets = chain.assets.filter((asset) => {
-    if (query) {
-      return (
-        chain.name.toLowerCase().includes(query) ||
-        asset.name.toLowerCase().includes(query) ||
-        asset.symbol.toLowerCase().includes(query)
-      );
-    }
+  const searchedAsset = chain.assets.find((asset) => asset.symbol.toLowerCase() === query);
 
-    return !(
-      hideZeroBalance &&
-      (!balancesObject[asset.assetId] || total(balancesObject[asset.assetId]) === ZERO_BALANCE)
-    );
-  });
+  const filteredAssets = searchedAsset
+    ? [searchedAsset]
+    : chain.assets.filter((asset) => {
+        if (query) {
+          return (
+            chain.name.toLowerCase().includes(query) ||
+            asset.name.toLowerCase().includes(query) ||
+            asset.symbol.toLowerCase().includes(query)
+          );
+        }
+
+        return !(
+          hideZeroBalance &&
+          (!balancesObject[asset.assetId] || total(balancesObject[asset.assetId]) === ZERO_BALANCE)
+        );
+      });
 
   if (filteredAssets.length === 0) {
     return null;
