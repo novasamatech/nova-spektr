@@ -1,5 +1,6 @@
 import { act, render, screen } from '@testing-library/react';
 
+import { Chain } from '@renderer/services/network/common/types';
 import StepThree from './StepThree';
 
 jest.mock('@renderer/services/wallet/walletService', () => ({
@@ -11,6 +12,7 @@ jest.mock('@renderer/services/wallet/walletService', () => ({
 jest.mock('@renderer/services/network/chainsService', () => ({
   useChains: jest.fn().mockReturnValue({
     getChainsData: jest.fn().mockReturnValue([]),
+    sortChains: (value: Array<Chain>) => value,
   }),
 }));
 

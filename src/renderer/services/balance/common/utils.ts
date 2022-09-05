@@ -3,7 +3,7 @@ import { BN, BN_TEN } from '@polkadot/util';
 import BigNumber from 'bignumber.js';
 import { encodeAddress } from '@polkadot/util-crypto';
 
-import { DEFAULT, Suffix, Decimal, SS58_DEFAULT_PREFIX } from './constants';
+import { DEFAULT, Suffix, Decimal, SS58_DEFAULT_PREFIX, ZERO_BALANCE } from './constants';
 import { Asset, AssetType, OrmlExtras, StatemineExtras } from '@renderer/services/network/common/types';
 import { PublicKey } from '@renderer/domain/shared-kernel';
 import { Balance } from '@renderer/domain/balance';
@@ -84,11 +84,18 @@ export const formatBalance = (balance: string, precision = 0): string => {
 export const formatBalanceFromAmount = (balance: string, precision = 0): string =>
   formatBalance(formatAmount(balance, precision), precision);
 
-export const total = ({ free, reserved }: Balance): string => new BN(free).add(new BN(reserved)).toString();
+export const total = ({ free, reserved }: Balance): string => new BN(free || 0).add(new BN(reserved || 0)).toString();
 
-export const transferable = ({ free, frozen }: Balance): string => {
-  const bnFree = new BN(free);
-  const bnFrozen = new BN(frozen);
+export const locked = ({ frozen }: Balance): string => {
+  const bnLocks = (frozen || []).map((lock) => new BN(lock.amount));
+  const bnFrozen = bnLocks?.reduce((acc, bnLock) => acc.add(bnLock), new BN(0));
 
-  return bnFree.gt(bnFrozen) ? bnFree.sub(bnFrozen).toString() : '0';
+  return bnFrozen.toString();
+};
+
+export const transferable = (balance: Balance): string => {
+  const bnFree = new BN(balance.free || 0);
+  const bnFrozen = new BN(locked(balance));
+
+  return bnFree.gt(bnFrozen) ? bnFree.sub(bnFrozen).toString() : ZERO_BALANCE;
 };

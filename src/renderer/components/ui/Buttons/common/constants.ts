@@ -16,7 +16,7 @@ export const ViewClass: Record<`${Variant}_${Pallet}`, string> = {
 };
 
 export const WeightClass = {
-  sm: 'text-xs leading-3.5 h-6 px-2 rounded-md',
-  md: 'text-xs leading-3.5 h-7.5 px-2 rounded-lg',
-  lg: 'text-sm leading-4 h-10 px-3 rounded-2lg',
+  sm: 'text-xs leading-3.5 font-semibold h-6 px-2 rounded-md',
+  md: 'text-sm leading-3.5 font-semibold h-7.5 px-2 rounded-lg',
+  lg: 'text-base leading-5 font-semibold h-10 px-3 rounded-2lg',
 };

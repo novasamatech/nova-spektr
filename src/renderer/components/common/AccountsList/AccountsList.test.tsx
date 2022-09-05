@@ -51,6 +51,6 @@ describe('AccountsList', () => {
     });
 
     const explorerLinks = screen.getAllByText('explorer.button');
-    expect(explorerLinks.length).toEqual(3);
+    expect(explorerLinks).toHaveLength(3);
   });
 });
