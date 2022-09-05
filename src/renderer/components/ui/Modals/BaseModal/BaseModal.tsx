@@ -1,14 +1,16 @@
 import { Fragment, PropsWithChildren, ReactNode } from 'react';
 import { Dialog, Transition } from '@headlessui/react';
+import cn from 'classnames';
 
 type Props = {
   isOpen: boolean;
   title?: ReactNode;
   description?: ReactNode;
   onClose: () => void;
+  className?: string;
 };
 
-const BaseModal = ({ isOpen, title, description, children, onClose }: PropsWithChildren<Props>) => {
+const BaseModal = ({ isOpen, title, description, children, onClose, className }: PropsWithChildren<Props>) => {
   return (
     <Transition appear show={isOpen} as={Fragment}>
       <Dialog as="div" className="relative z-10" onClose={onClose}>
@@ -35,9 +37,20 @@ const BaseModal = ({ isOpen, title, description, children, onClose }: PropsWithC
               leaveFrom="opacity-100 scale-100"
               leaveTo="opacity-0 scale-95"
             >
-              <Dialog.Panel className="w-full max-w-md transform overflow-hidden rounded-2xl bg-white p-6 text-left align-middle shadow-xl transition-all">
-                {title && <Dialog.Title>{title}</Dialog.Title>}
-                {description && <Dialog.Description>{description}</Dialog.Description>}
+              <Dialog.Panel
+                className={cn(
+                  'w-full transform overflow-hidden rounded-2xl bg-white p-6 text-left align-middle shadow-xl transition-all',
+                  className,
+                )}
+              >
+                {title && (
+                  <Dialog.Title className={'text-xl font-semibold leading-5 text-center'}>{title}</Dialog.Title>
+                )}
+                {description && (
+                  <Dialog.Description className={'text-base font-normal leading-5 text-center text-neutral-variant'}>
+                    {description}
+                  </Dialog.Description>
+                )}
                 {children}
               </Dialog.Panel>
             </Transition.Child>

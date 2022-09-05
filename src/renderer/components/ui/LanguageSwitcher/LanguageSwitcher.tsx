@@ -23,7 +23,7 @@ const LanguageSwitcher = ({ className, languages, selected, short, onChange, top
       <Listbox value={selectedLanguage.value} onChange={onChange}>
         <Listbox.Button
           className={cn(
-            'w-full h-7.5 pr-1 pl-2.5',
+            'w-full h-7.5 pr-1 pl-2.5 select-none',
             'hover:bg-primary hover:text-white',
             'bg-shade-5 text-neutral-variant',
             'rounded-l-full rounded-r-full flex justify-between items-center',
@@ -41,7 +41,7 @@ const LanguageSwitcher = ({ className, languages, selected, short, onChange, top
               {({ active }) => (
                 <div
                   className={cn(
-                    'w-full h-7.5 pr-1 pl-2.5 cursor-pointer',
+                    'w-full h-7.5 pr-1 pl-2.5 cursor-pointer select-none',
                     active ? 'bg-primary text-white' : 'bg-shade-5 text-neutral-variant',
                     'rounded-l-full rounded-r-full  flex justify-between items-center',
                   )}

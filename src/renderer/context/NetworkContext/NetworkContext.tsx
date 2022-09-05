@@ -18,7 +18,7 @@ const NetworkContext = createContext<NetworkContextProps>({} as NetworkContextPr
 
 export const NetworkProvider = ({ children }: PropsWithChildren) => {
   const { init, connections, reconnect, updateConnectionType } = useNetwork();
-  const { subscribeBalances } = useBalance();
+  const { subscribeBalances, subscribeLockBalances } = useBalance();
   const { getActiveWallets } = useWallet();
   const initedRef = useRef(false);
   const activeWallets = getActiveWallets();
@@ -34,7 +34,7 @@ export const NetworkProvider = ({ children }: PropsWithChildren) => {
   }, []);
 
   useEffect(() => {
-    const unsubscribe = Object.values(connections).map((chain) => {
+    const unsubscribeBalance = Object.values(connections).map((chain) => {
       const relayChain = chain.parentId && connections[chain.parentId];
       // TODO: Remove TEST_PUBLIC_KEY when select wallet will be implemented
       const publicKey = (activeWallets && activeWallets[0]?.mainAccounts[0]?.publicKey) || TEST_PUBLIC_KEY;
@@ -42,8 +42,16 @@ export const NetworkProvider = ({ children }: PropsWithChildren) => {
       return subscribeBalances(chain, relayChain, publicKey);
     });
 
+    const unsubscribeLockBalance = Object.values(connections).map((chain) => {
+      // TODO: Remove TEST_PUBLIC_KEY when select wallet will be implemented
+      const publicKey = (activeWallets && activeWallets[0]?.mainAccounts[0]?.publicKey) || TEST_PUBLIC_KEY;
+
+      return subscribeLockBalances(chain, publicKey);
+    });
+
     return () => {
-      Promise.all(unsubscribe).catch((e) => console.error(e));
+      Promise.all(unsubscribeBalance).catch((e) => console.error(e));
+      Promise.all(unsubscribeLockBalance).catch((e) => console.error(e));
     };
   }, [connections, activeWallets]);
 

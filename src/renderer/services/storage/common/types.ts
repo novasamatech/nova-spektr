@@ -16,8 +16,9 @@ export interface IStorage {
 
 export interface IBalanceStorage {
   getBalance: (publicKey: PublicKey, chainId: ChainId, assetId: string) => Promise<BalanceDS | undefined>;
+  getNetworkBalances: (publicKey: PublicKey, chainId: ChainId) => Promise<BalanceDS[]>;
   getBalances: (publicKey: PublicKey) => Promise<BalanceDS[]>;
-  updateBalance: (balance: Balance) => Promise<IndexableType>;
+  updateBalance: (balance: Balance) => Promise<void>;
 }
 
 export interface IConnectionStorage {
@@ -52,7 +53,7 @@ type WithID = {
 
 export type ConnectionDS = WithID & Connection;
 
-export type BalanceDS = WithID & Balance;
+export type BalanceDS = Balance;
 
 export type WalletDS = WithID & Wallet;
 export type MultisigWalletDS = Wallet & MultisigWallet;

@@ -45,7 +45,7 @@ jest.mock('@renderer/context/NetworkContext', () => ({
   })),
 }));
 
-jest.mock('./BalanceRow', () => () => <div>Balance</div>);
+jest.mock('./NetworkBalances', () => () => <div>NetworkBalances</div>);
 
 describe('screen/Balances/Balances', () => {
   test('should render component', () => {
@@ -55,18 +55,11 @@ describe('screen/Balances/Balances', () => {
     expect(text).toBeInTheDocument();
   });
 
-  test('should render chains', () => {
-    render(<Balances />);
-    const chains = screen.getAllByText('Token');
-
-    expect(chains.length).toEqual(2);
-  });
-
-  test('should render balances', () => {
+  test('should render networks', () => {
     render(<Balances />);
 
-    const balances = screen.getAllByText('Balance');
+    const balances = screen.getAllByText('NetworkBalances');
 
-    expect(balances.length).toEqual(3);
+    expect(balances).toHaveLength(2);
   });
 });

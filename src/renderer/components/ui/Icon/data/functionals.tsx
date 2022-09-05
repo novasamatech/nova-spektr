@@ -6,6 +6,7 @@ import CheckCutoutImg, { ReactComponent as CheckCutoutSvg } from '@images/functi
 import WarnCutoutImg, { ReactComponent as WarnCutoutSvg } from '@images/functionals/warning-cutout.svg';
 import RemoveCutoutImg, { ReactComponent as RemoveCutoutSvg } from '@images/functionals/remove-cutout.svg';
 import EmptyIdenticonImg, { ReactComponent as EmptyIdenticonSvg } from '@images/functionals/empty-identicon.svg';
+import SearchImg, { ReactComponent as SearchSvg } from '@images/functionals/search.svg';
 
 const FunctionalImages = {
   copy: { svg: CopySvg, img: CopyImg },
@@ -16,6 +17,7 @@ const FunctionalImages = {
   warnCutout: { svg: WarnCutoutSvg, img: WarnCutoutImg },
   removeCutout: { svg: RemoveCutoutSvg, img: RemoveCutoutImg },
   emptyIdenticon: { svg: EmptyIdenticonSvg, img: EmptyIdenticonImg },
+  search: { svg: SearchSvg, img: SearchImg },
 } as const;
 
 export type Functional = keyof typeof FunctionalImages;

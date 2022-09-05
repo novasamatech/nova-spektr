@@ -44,6 +44,7 @@ export const enum AssetType {
 }
 
 export type Asset = {
+  name: string;
   assetId: number;
   symbol: string;
   precision: number;
@@ -90,5 +91,5 @@ export type Chain = {
 
 export type ExtendedChain = Chain & {
   connection: Connection;
-  api: ApiPromise;
+  api?: ApiPromise;
 };

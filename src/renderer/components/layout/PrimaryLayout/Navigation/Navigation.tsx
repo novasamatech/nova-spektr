@@ -7,6 +7,13 @@ import { useMatrix } from '@renderer/context/MatrixContext';
 import Paths from '@renderer/routes/paths';
 import { useI18n } from '@renderer/context/I18nContext';
 import { useWallet } from '@renderer/services/wallet/walletService';
+import { WalletType } from '@renderer/domain/wallet';
+
+const CardStyle = {
+  [WalletType.WATCH_ONLY]: 'bg-alert',
+  [WalletType.PARITY]: 'bg-primary',
+  [WalletType.LEDGER]: 'bg-primary',
+};
 
 const NavItems = [
   { icon: <Icon name="wallets" />, title: 'NavItem.Wallets', link: Paths.WALLETS },
@@ -22,6 +29,7 @@ const Navigation = () => {
   const { LocaleComponent, t } = useI18n();
   const { getActiveWallets } = useWallet();
   const activeWallets = getActiveWallets();
+  const walletType = activeWallets?.[0].type || WalletType.PARITY;
 
   const navigate = useNavigate();
   const { matrix, setIsLoggedIn } = useMatrix();
@@ -43,7 +51,7 @@ const Navigation = () => {
 
   return (
     <aside className="flex gap-y-5 flex-col w-[280px] py-5 pl-5">
-      <div className="bg-primary rounded-xl text-white">
+      <div className={cn('rounded-xl text-white', CardStyle[walletType])}>
         <div className="flex gap-x-2.5 pl-4 pt-4 pr-2">
           <Identicon
             theme="polkadot"
@@ -70,7 +78,7 @@ const Navigation = () => {
       <nav className="flex-1 overflow-y-auto scrollbar">
         <ul className="pr-2.5">
           {NavItems.map(({ icon, title, link }) => (
-            <li key={title} className="cursor-pointer rounded-lg hover:bg-black/5 text-gray-500">
+            <li key={title} className="cursor-pointer select-none rounded-lg hover:bg-black/5 text-gray-500">
               <NavLink
                 to={link}
                 className={({ isActive }) =>

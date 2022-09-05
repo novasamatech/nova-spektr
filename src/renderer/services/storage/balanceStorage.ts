@@ -1,4 +1,4 @@
-import { IndexableType, Table } from 'dexie';
+import { Table } from 'dexie';
 
 import { Balance } from '@renderer/domain/balance';
 import { ChainId, PublicKey } from '@renderer/domain/shared-kernel';
@@ -13,7 +13,15 @@ export const useBalanceStorage = (db: Table<BalanceDS>): IBalanceStorage => ({
     return db.where({ publicKey }).toArray();
   },
 
-  updateBalance: (balance: Balance): Promise<IndexableType> => {
-    return db.put(balance);
+  getNetworkBalances: (publicKey: PublicKey, chainId: ChainId): Promise<BalanceDS[]> => {
+    return db.where({ publicKey, chainId }).toArray();
+  },
+
+  updateBalance: async (balance: Balance): Promise<void> => {
+    try {
+      await db.add(balance);
+    } catch (e) {
+      await db.update([balance.publicKey, balance.chainId, balance.assetId], balance);
+    }
   },
 });

@@ -28,7 +28,7 @@ const ButtonLink = ({
   suffixElement,
 }: PropsWithChildren<Props>) => {
   const classes = cn(
-    'flex items-center justify-center gap-x-2.5 border font-semibold',
+    'flex items-center justify-center gap-x-2.5 border font-semibold select-none',
     WeightClass[weight],
     ViewClass[`${variant}_${disabled ? 'shade' : pallet}`],
     className,

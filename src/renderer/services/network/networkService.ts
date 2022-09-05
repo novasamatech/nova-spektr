@@ -49,6 +49,17 @@ export const useNetwork = (): INetworkService => {
       return acc;
     }, [] as Connection[]);
 
+    const extendedConnections = connections.reduce((acc, connection) => {
+      acc[connection.chainId] = {
+        ...chains.current[connection.chainId],
+        connection,
+      };
+
+      return acc;
+    }, {} as Record<string, ExtendedChain>);
+
+    setConnections(extendedConnections);
+
     await addConnections(connections);
   };
 
@@ -57,6 +68,14 @@ export const useNetwork = (): INetworkService => {
 
     currentConnections.forEach(async (connection) => {
       let provider: ProviderInterface | undefined;
+
+      setConnections((currentConnections) => ({
+        ...currentConnections,
+        [connection.chainId]: {
+          ...chains.current[connection.chainId],
+          connection,
+        },
+      }));
 
       if (connection.type === ConnectionType.LIGHT_CLIENT) {
         const chainId = getKnownChain(connection.chainId);
@@ -120,7 +139,7 @@ export const useNetwork = (): INetworkService => {
     if (!connection) return;
 
     const { api } = connection;
-
+    if (!api) return;
     try {
       await api.disconnect();
     } catch (e) {

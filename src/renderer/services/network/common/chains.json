@@ -5,6 +5,7 @@
     "assets": [
       {
         "assetId": 0,
+        "name": "Polkadot",
         "symbol": "DOT",
         "precision": 10,
         "priceId": "polkadot",
@@ -81,6 +82,7 @@
       {
         "assetId": 0,
         "symbol": "KSM",
+        "name": "Kusama",
         "precision": 12,
         "priceId": "kusama",
         "icon": "https://raw.githubusercontent.com/nova-wallet/nova-utils/master/icons/chains/white/Kusama.svg",
@@ -159,6 +161,7 @@
       {
         "assetId": 0,
         "symbol": "WND",
+        "name": "Westend",
         "precision": 12,
         "icon": "https://raw.githubusercontent.com/nova-wallet/nova-utils/master/icons/chains/white/Westend.svg",
         "staking": "relaychain"
@@ -220,6 +223,7 @@
       {
         "assetId": 0,
         "symbol": "ROC",
+        "name": "Rococo",
         "precision": 12,
         "icon": "https://raw.githubusercontent.com/nova-wallet/nova-utils/master/icons/chains/white/Rococo.svg"
       }
@@ -246,12 +250,14 @@
       {
         "assetId": 0,
         "symbol": "WND",
+        "name": "Westend",
         "precision": 12,
         "icon": "https://raw.githubusercontent.com/nova-wallet/nova-utils/master/icons/chains/white/Westend.svg"
       },
       {
         "assetId": 1,
         "symbol": "SIRI",
+        "name": "Siri",
         "precision": 10,
         "icon": "https://raw.githubusercontent.com/nova-wallet/nova-utils/master/icons/tokens/white/Default.svg",
         "type": "statemine",
@@ -301,6 +307,7 @@
       {
         "assetId": 0,
         "symbol": "KSM",
+        "name": "Kusama",
         "precision": 12,
         "icon": "https://raw.githubusercontent.com/nova-wallet/nova-utils/master/icons/chains/white/Kusama.svg",
         "priceId": "kusama"
@@ -308,6 +315,7 @@
       {
         "assetId": 1,
         "symbol": "RMRK",
+        "name": "RMRK",
         "precision": 10,
         "priceId": "rmrk",
         "type": "statemine",
@@ -319,6 +327,7 @@
       {
         "assetId": 2,
         "symbol": "CHAOS",
+        "name": "Chaos",
         "precision": 10,
         "type": "statemine",
         "icon": "https://raw.githubusercontent.com/nova-wallet/nova-utils/master/icons/tokens/white/CHAOS.svg",
@@ -329,6 +338,7 @@
       {
         "assetId": 3,
         "symbol": "CHRWNA",
+        "name": "Chrawnna",
         "precision": 10,
         "type": "statemine",
         "icon": "https://raw.githubusercontent.com/nova-wallet/nova-utils/master/icons/tokens/white/CHRWNA.svg",
@@ -339,6 +349,7 @@
       {
         "assetId": 4,
         "symbol": "SHIBATALES",
+        "name": "Shiba Tales",
         "precision": 0,
         "type": "statemine",
         "icon": "https://raw.githubusercontent.com/nova-wallet/nova-utils/master/icons/tokens/white/Default.svg",
@@ -349,6 +360,7 @@
       {
         "assetId": 5,
         "symbol": "BILLCOIN",
+        "name": "BILLCOIN",
         "precision": 8,
         "type": "statemine",
         "icon": "https://raw.githubusercontent.com/nova-wallet/nova-utils/master/icons/tokens/white/BILLCOIN.svg",
@@ -359,6 +371,7 @@
       {
         "assetId": 7,
         "symbol": "USDT",
+        "name": "Tether USD",
         "precision": 4,
         "priceId": "tether",
         "type": "statemine",
@@ -422,6 +435,7 @@
       {
         "assetId": 0,
         "symbol": "KAR",
+        "name": "Karura",
         "precision": 12,
         "icon": "https://raw.githubusercontent.com/nova-wallet/nova-utils/master/icons/chains/white/Karura.svg",
         "priceId": "karura"
@@ -429,6 +443,7 @@
       {
         "assetId": 1,
         "symbol": "aUSD",
+        "name": "Acala USD",
         "precision": 12,
         "icon": "https://raw.githubusercontent.com/nova-wallet/nova-utils/master/icons/tokens/white/AUSD.svg",
         "priceId": "tether",
@@ -444,6 +459,7 @@
         "assetId": 2,
         "symbol": "KSM",
         "precision": 12,
+        "name": "Kusama",
         "icon": "https://raw.githubusercontent.com/nova-wallet/nova-utils/master/icons/chains/white/Kusama.svg",
         "priceId": "kusama",
         "type": "orml",
@@ -457,6 +473,7 @@
       {
         "assetId": 3,
         "symbol": "RMRK",
+        "name": "RMRK",
         "precision": 10,
         "type": "orml",
         "icon": "https://raw.githubusercontent.com/nova-wallet/nova-utils/master/icons/tokens/white/RMRK.svg",
@@ -471,6 +488,7 @@
       {
         "assetId": 4,
         "symbol": "BNC",
+        "name": "Bifrost Native Coin",
         "precision": 12,
         "type": "orml",
         "icon": "https://raw.githubusercontent.com/nova-wallet/nova-utils/master/icons/chains/white/Bifrost.svg",
@@ -485,6 +503,7 @@
       {
         "assetId": 5,
         "symbol": "LKSM",
+        "name": "Liquid KSM",
         "precision": 12,
         "type": "orml",
         "icon": "https://raw.githubusercontent.com/nova-wallet/nova-utils/master/icons/tokens/white/LKSM.svg",
@@ -498,6 +517,7 @@
       {
         "assetId": 6,
         "symbol": "PHA",
+        "name": "Phala",
         "precision": 12,
         "priceId": "pha",
         "type": "orml",
@@ -512,6 +532,7 @@
       {
         "assetId": 7,
         "symbol": "KINT",
+        "name": "Kintsugi",
         "precision": 12,
         "priceId": "kintsugi",
         "type": "orml",
@@ -526,6 +547,7 @@
       {
         "assetId": 8,
         "symbol": "kBTC",
+        "name": "k Bitcoin",
         "precision": 8,
         "priceId": "bitcoin",
         "type": "orml",
@@ -540,6 +562,7 @@
       {
         "assetId": 9,
         "symbol": "TAI",
+        "name": "TAI",
         "precision": 12,
         "type": "orml",
         "icon": "https://raw.githubusercontent.com/nova-wallet/nova-utils/master/icons/tokens/white/TAI.svg",
@@ -553,6 +576,7 @@
       {
         "assetId": 10,
         "symbol": "vsKSM",
+        "name": "vs Kusama",
         "precision": 12,
         "type": "orml",
         "icon": "https://raw.githubusercontent.com/nova-wallet/nova-utils/master/icons/tokens/white/vsKSM.svg",
@@ -566,6 +590,7 @@
       {
         "assetId": 11,
         "symbol": "taiKSM",
+        "name": "tai Kusama",
         "precision": 12,
         "type": "orml",
         "icon": "https://raw.githubusercontent.com/nova-wallet/nova-utils/master/icons/tokens/white/taiKSM.svg",
@@ -579,6 +604,7 @@
       {
         "assetId": 12,
         "symbol": "QTZ",
+        "name": "Quartz",
         "precision": 18,
         "priceId": "quartz",
         "type": "orml",
@@ -593,6 +619,7 @@
       {
         "assetId": 14,
         "symbol": "MOVR",
+        "name": "Moonriver",
         "precision": 18,
         "priceId": "moonriver",
         "type": "orml",
@@ -607,6 +634,7 @@
       {
         "assetId": 15,
         "symbol": "HKO",
+        "name": "HKO",
         "precision": 12,
         "type": "orml",
         "icon": "https://raw.githubusercontent.com/nova-wallet/nova-utils/master/icons/tokens/white/HKO.svg",
@@ -620,6 +648,7 @@
       {
         "assetId": 16,
         "symbol": "CSM",
+        "name": "Crust Shadow",
         "precision": 12,
         "priceId": "crust-storage-market",
         "type": "orml",
@@ -634,6 +663,7 @@
       {
         "assetId": 17,
         "symbol": "USDT",
+        "name": "Tether USD",
         "precision": 6,
         "priceId": "tether",
         "type": "orml",
@@ -648,6 +678,7 @@
       {
         "assetId": 18,
         "symbol": "KMA",
+        "name": "Calamari",
         "precision": 12,
         "priceId": "calamari-network",
         "type": "orml",
@@ -662,6 +693,7 @@
       {
         "assetId": 19,
         "symbol": "TEER",
+        "name": "Integritee",
         "precision": 12,
         "priceId": "integritee",
         "type": "orml",
@@ -676,6 +708,7 @@
       {
         "assetId": 20,
         "symbol": "KICO",
+        "name": "KICO",
         "precision": 14,
         "type": "orml",
         "icon": "https://raw.githubusercontent.com/nova-wallet/nova-utils/master/icons/chains/white/KICO.svg",
@@ -689,6 +722,7 @@
       {
         "assetId": 21,
         "symbol": "NEER",
+        "name": "Bit.Country",
         "precision": 18,
         "type": "orml",
         "icon": "https://raw.githubusercontent.com/nova-wallet/nova-utils/master/icons/chains/white/Bit.Country.svg",
@@ -702,6 +736,7 @@
       {
         "assetId": 22,
         "symbol": "BSX",
+        "name": "Basilisk",
         "precision": 12,
         "type": "orml",
         "icon": "https://raw.githubusercontent.com/nova-wallet/nova-utils/master/icons/chains/white/Basilisk.svg",
@@ -715,6 +750,7 @@
       {
         "assetId": 23,
         "symbol": "AIR",
+        "name": "Altair",
         "precision": 18,
         "priceId": "altair",
         "type": "orml",
@@ -729,6 +765,7 @@
       {
         "assetId": 24,
         "symbol": "GENS",
+        "name": "Genshiro",
         "precision": 9,
         "type": "orml",
         "priceId": "genshiro",
@@ -743,6 +780,7 @@
       {
         "assetId": 25,
         "symbol": "EQD",
+        "name": "Equilibrium USD",
         "precision": 9,
         "priceId": "tether",
         "type": "orml",
@@ -757,6 +795,7 @@
       {
         "assetId": 26,
         "symbol": "CRAB",
+        "name": "Darwinia Crab",
         "precision": 18,
         "type": "orml",
         "priceId": "darwinia-crab-network",
@@ -826,6 +865,7 @@
       {
         "assetId": 0,
         "symbol": "ACA",
+        "name": "Acala",
         "priceId": "acala",
         "precision": 12,
         "icon": "https://raw.githubusercontent.com/nova-wallet/nova-utils/master/icons/chains/white/Acala.svg"
@@ -833,6 +873,7 @@
       {
         "assetId": 1,
         "symbol": "LDOT",
+        "name": "Liquid DOT",
         "precision": 10,
         "priceId": "liquid-staking-dot",
         "type": "orml",
@@ -847,6 +888,7 @@
       {
         "assetId": 2,
         "symbol": "aUSD",
+        "name": "Acala USD",
         "precision": 12,
         "priceId": "tether",
         "type": "orml",
@@ -861,6 +903,7 @@
       {
         "assetId": 3,
         "symbol": "DOT",
+        "name": "Polkadot",
         "precision": 10,
         "priceId": "polkadot",
         "type": "orml",
@@ -875,6 +918,7 @@
       {
         "assetId": 4,
         "symbol": "lcDOT",
+        "name": "Crowdloan DOT",
         "precision": 10,
         "priceId": "liquid-crowdloan-dot",
         "type": "orml",
@@ -889,6 +933,7 @@
       {
         "assetId": 5,
         "symbol": "GLMR",
+        "name": "Moonbeam",
         "precision": 18,
         "priceId": "moonbeam",
         "type": "orml",
@@ -903,6 +948,7 @@
       {
         "assetId": 6,
         "symbol": "PARA",
+        "name": "PARA",
         "precision": 12,
         "type": "orml",
         "icon": "https://raw.githubusercontent.com/nova-wallet/nova-utils/master/icons/tokens/white/PARA.svg",
@@ -916,6 +962,7 @@
       {
         "assetId": 7,
         "symbol": "TAP",
+        "name": "TAP",
         "precision": 12,
         "type": "orml",
         "icon": "https://raw.githubusercontent.com/nova-wallet/nova-utils/master/icons/tokens/white/TAP.svg",
@@ -929,6 +976,7 @@
       {
         "assetId": 8,
         "symbol": "tDOT",
+        "name": "tDOT",
         "precision": 10,
         "type": "orml",
         "icon": "https://raw.githubusercontent.com/nova-wallet/nova-utils/master/icons/tokens/white/tDOT.svg",
@@ -985,6 +1033,7 @@
       {
         "assetId": 0,
         "symbol": "DOT",
+        "name": "Polkadot",
         "precision": 10,
         "priceId": "polkadot",
         "icon": "https://raw.githubusercontent.com/nova-wallet/nova-utils/master/icons/chains/white/Polkadot.svg"
