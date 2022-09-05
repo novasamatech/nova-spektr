@@ -1,4 +1,4 @@
-import { IndexableType, Table } from 'dexie';
+import { Table } from 'dexie';
 
 import { Balance } from '@renderer/domain/balance';
 import { ChainId, PublicKey } from '@renderer/domain/shared-kernel';

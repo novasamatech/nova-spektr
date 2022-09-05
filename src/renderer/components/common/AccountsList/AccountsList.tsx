@@ -25,8 +25,6 @@ type Props = {
 
 const AccountsList = ({ publicKey, chains, className, limitNumber }: Props) => {
   const { t } = useI18n();
-
-  console.log(limitNumber);
   const limitedChains = limitNumber ? chains.slice(0, limitNumber) : chains;
 
   return (

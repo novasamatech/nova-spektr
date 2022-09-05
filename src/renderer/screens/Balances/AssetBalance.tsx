@@ -15,7 +15,7 @@ const AssetBalance = ({ asset, balance }: Props) => {
   const [isExpanded, setIsExpanded] = useState(false);
 
   return (
-    <div onClick={() => setIsExpanded(!isExpanded)}>
+    <div onClick={() => setIsExpanded(!isExpanded)} role="button" aria-expanded={isExpanded}>
       <div
         className={cn(
           'hover:bg-shade-5 cursor-pointer border-2',
@@ -41,7 +41,7 @@ const AssetBalance = ({ asset, balance }: Props) => {
           <div className="flex divide-x gap-6 px-[15px] py-2">
             <div>
               <div className="text-neutral text-sm font-semibold">Transferable</div>
-              <div className="text-neutral-variant text-xs font-bold">
+              <div className="text-neutral-variant text-xs font-bold" data-testid="transferable">
                 {balance?.free !== undefined ? (
                   `${formatBalance(transferable(balance), asset.precision)} ${asset.symbol}`
                 ) : (

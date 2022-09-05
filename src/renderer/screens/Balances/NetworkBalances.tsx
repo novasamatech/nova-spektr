@@ -8,10 +8,10 @@ import { Chain } from '@renderer/services/network/common/types';
 import { useBalance } from '@renderer/services/balance/balanceService';
 import { total } from '@renderer/services/balance/common/utils';
 import { ZERO_BALANCE } from '@renderer/services/balance/common/constants';
-import { Icon } from '@renderer/components/ui';
+import { Button, Icon } from '@renderer/components/ui';
 
 type Props = {
-  hideZeroBalance: boolean;
+  hideZeroBalance?: boolean;
   searchSymbolOnly?: boolean;
   query?: string;
   chain: Chain;
@@ -63,9 +63,9 @@ const NetworkBalances = ({ query, hideZeroBalance, chain, publicKey, searchSymbo
           <p>{chain.name}</p>
         </h2>
         <div className="flex items-center">
-          <button className="bg-white border-0 mr-4" onClick={() => setIsHidden(!isHidden)}>
+          <Button pallet="shade" variant="text" className="mr-2" onClick={() => setIsHidden(!isHidden)}>
             <Icon name={isHidden ? 'down' : 'up'} className="w-5 h-5" />
-          </button>
+          </Button>
         </div>
       </div>
       {!isHidden && (

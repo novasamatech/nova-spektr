@@ -18,15 +18,62 @@ describe('screen/Balances/AssetBalance', () => {
             assetId: testAsset.assetId.toString(),
             chainId: testChain.chainId,
             publicKey: TEST_PUBLIC_KEY,
-            free: '1',
-            frozen: [],
+            free: '10',
+            frozen: [
+              {
+                type: 'test',
+                amount: '1',
+              },
+            ],
           }}
         />,
       );
     });
 
     const text = screen.getByTestId('balance');
-    expect(text).toHaveTextContent('0.0000000001 DOT');
+    expect(text).toHaveTextContent('0.000000001 DOT');
+  });
+
+  test('should render component', async () => {
+    await act(async () => {
+      render(
+        <AssetBalance
+          asset={testAsset}
+          balance={{
+            assetId: testAsset.assetId.toString(),
+            chainId: testChain.chainId,
+            publicKey: TEST_PUBLIC_KEY,
+            free: '10',
+            frozen: [
+              {
+                type: 'test',
+                amount: '1',
+              },
+              {
+                type: 'test-2',
+                amount: '1',
+              },
+            ],
+          }}
+        />,
+      );
+    });
+
+    const row = screen.getByRole('button');
+
+    await act(async () => {
+      row.click();
+    });
+
+    const text = screen.getByTestId('transferable');
+    expect(text).toHaveTextContent('0.0000000008 DOT');
+
+    await act(async () => {
+      row.click();
+    });
+
+    const textHidden = screen.queryByTestId('transferable');
+    expect(textHidden).not.toBeInTheDocument();
   });
 });
 
