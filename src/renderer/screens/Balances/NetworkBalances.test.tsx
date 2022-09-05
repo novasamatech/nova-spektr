@@ -70,7 +70,7 @@ describe('screen/Balances/NetworkBalances', () => {
       button.click();
     });
 
-    const balancesAfter = screen.queryAllByText('AssetBalance');
+    const balancesAfter = screen.queryByText('AssetBalance');
     expect(balancesAfter).not.toBeInTheDocument();
   });
 });
