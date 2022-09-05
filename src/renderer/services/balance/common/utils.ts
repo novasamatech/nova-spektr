@@ -87,7 +87,7 @@ export const formatBalanceFromAmount = (balance: string, precision = 0): string 
 export const total = ({ free, reserved }: Balance): string => new BN(free || 0).add(new BN(reserved || 0)).toString();
 
 export const locked = ({ frozen }: Balance): string => {
-  const bnLocks = (frozen || []).map((lock) => new BN(lock.amount)) || [];
+  const bnLocks = (frozen || []).map((lock) => new BN(lock.amount));
   const bnFrozen = bnLocks?.reduce((acc, bnLock) => acc.add(bnLock), new BN(0));
 
   return bnFrozen.toString();
