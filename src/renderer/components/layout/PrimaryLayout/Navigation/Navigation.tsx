@@ -29,7 +29,7 @@ const Navigation = () => {
   const { LocaleComponent, t } = useI18n();
   const { getActiveWallets } = useWallet();
   const activeWallets = getActiveWallets();
-  const walletType = activeWallets?.[0].type === undefined ? WalletType.PARITY : activeWallets?.[0].type;
+  const walletType = activeWallets?.[0].type || WalletType.PARITY;
 
   const navigate = useNavigate();
   const { matrix, setIsLoggedIn } = useMatrix();

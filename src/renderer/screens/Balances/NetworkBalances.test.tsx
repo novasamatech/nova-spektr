@@ -56,14 +56,14 @@ describe('screen/Balances/NetworkBalances', () => {
 
     const balances = screen.getAllByText('AssetBalance');
 
-    expect(balances.length).toEqual(2);
+    expect(balances).toHaveLength(2);
   });
 
   test('should hide assets', async () => {
     render(<NetworkBalances chain={testChain} publicKey={TEST_PUBLIC_KEY} />);
 
     const balancesBefore = screen.queryAllByText('AssetBalance');
-    expect(balancesBefore.length).toEqual(2);
+    expect(balancesBefore).toHaveLength(2);
 
     const button = screen.getByRole('button');
     await act(async () => {
@@ -71,6 +71,6 @@ describe('screen/Balances/NetworkBalances', () => {
     });
 
     const balancesAfter = screen.queryAllByText('AssetBalance');
-    expect(balancesAfter.length).toEqual(0);
+    expect(balancesAfter).not.toBeInTheDocument();
   });
 });

@@ -60,6 +60,6 @@ describe('screen/Balances/Balances', () => {
 
     const balances = screen.getAllByText('NetworkBalances');
 
-    expect(balances.length).toEqual(2);
+    expect(balances).toHaveLength(2);
   });
 });

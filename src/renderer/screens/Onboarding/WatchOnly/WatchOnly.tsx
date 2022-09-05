@@ -176,7 +176,7 @@ const WatchOnly = () => {
             <div className="p-4">
               <h3 className="text-neutral font-semibold">Your accounts will be showing up here</h3>
             </div>
-            <AccountsList chains={chains} publicKey={publicKey} limitNumber={publicKey && 4} />
+            <AccountsList chains={chains} publicKey={publicKey} limit={publicKey && 4} />
             {publicKey && (
               <div>
                 <Button

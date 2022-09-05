@@ -15,7 +15,12 @@ const AssetBalance = ({ asset, balance }: Props) => {
   const [isExpanded, setIsExpanded] = useState(false);
 
   return (
-    <div onClick={() => setIsExpanded(!isExpanded)} role="button" aria-expanded={isExpanded}>
+    <button
+      onClick={() => setIsExpanded(!isExpanded)}
+      role="button"
+      aria-expanded={isExpanded}
+      className={cn('outline-none', !isExpanded && 'focus:bg-shade-5')}
+    >
       <div
         className={cn(
           'hover:bg-shade-5 cursor-pointer border-2',
@@ -30,7 +35,7 @@ const AssetBalance = ({ asset, balance }: Props) => {
             {asset.name}
           </div>
           <div className={cn('font-semibold', !balance?.verified && 'text-shade-50')} data-testid="balance">
-            {balance?.free !== undefined ? (
+            {balance?.free ? (
               `${formatBalance(total(balance), asset.precision)} ${asset.symbol}`
             ) : (
               <Shimmering width="200px" height="20px" />
@@ -38,11 +43,11 @@ const AssetBalance = ({ asset, balance }: Props) => {
           </div>
         </div>
         {isExpanded && (
-          <div className="flex divide-x gap-6 px-[15px] py-2">
+          <div className="flex divide-x gap-6 px-[15px] py-2 text-left">
             <div>
               <div className="text-neutral text-sm font-semibold">Transferable</div>
               <div className="text-neutral-variant text-xs font-bold" data-testid="transferable">
-                {balance?.free !== undefined ? (
+                {balance?.free ? (
                   `${formatBalance(transferable(balance), asset.precision)} ${asset.symbol}`
                 ) : (
                   <Shimmering width="200px" height="20px" />
@@ -62,7 +67,7 @@ const AssetBalance = ({ asset, balance }: Props) => {
             <div className="pl-6">
               <div className="text-neutral text-sm font-semibold">Reserved</div>
               <div className="text-neutral-variant text-xs font-bold">
-                {balance?.reserved !== undefined ? (
+                {balance?.reserved ? (
                   `${formatBalance(balance.reserved || '0', asset.precision)} ${asset.symbol}`
                 ) : (
                   <Shimmering width="200px" height="20px" />
@@ -72,7 +77,7 @@ const AssetBalance = ({ asset, balance }: Props) => {
           </div>
         )}
       </div>
-    </div>
+    </button>
   );
 };
 

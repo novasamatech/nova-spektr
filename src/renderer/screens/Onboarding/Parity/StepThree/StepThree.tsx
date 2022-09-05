@@ -82,7 +82,7 @@ const StepThree = ({ ss58Address, onNextStep, onPrevStep }: Props) => {
               Following accounts have been successfully read from Parity Signer
             </p>
           </div>
-          <AccountsList chains={chains} publicKey={publicKey} limitNumber={publicKey && 4} />
+          <AccountsList chains={chains} publicKey={publicKey} limit={publicKey && 4} />
           {publicKey && (
             <div>
               <Button

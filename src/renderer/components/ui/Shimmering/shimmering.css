@@ -4,21 +4,11 @@
   animation: shimmer 2.2s linear infinite forwards;
 }
 
-@-webkit-keyframes shimmer {
-  0% {
-    background-position: -100% 0;
-  }
-
-  100% {
-    background-position: 100% 0;
-  }
-}
-
 @keyframes shimmer {
   0% {
-    background-position: -1000px 0;
+    background-position: 100% 0;
   }
   100% {
-    background-position: 1000px 0;
+    background-position: -100% 0;
   }
 }

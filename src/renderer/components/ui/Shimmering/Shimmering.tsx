@@ -1,5 +1,3 @@
-import React from 'react';
-
 import './shimmering.css';
 
 type Props = {
@@ -7,7 +5,7 @@ type Props = {
   height?: string;
 };
 
-const Shimmering: React.FC<Props> = ({ width = 'auto', height = 'auto' }) => {
+const Shimmering = ({ width = 'auto', height = 'auto' }: Props) => {
   return <div className="h-full w-full rounded-lg shimmer" style={{ width, height }} />;
 };
 
