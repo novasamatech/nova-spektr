@@ -1,39 +1,62 @@
 import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Controller, SubmitHandler, useForm } from 'react-hook-form';
+import cn from 'classnames';
 
-import { Button, ButtonBack, Icon, Identicon, Input } from '@renderer/components/ui';
+import { BaseModal, Button, ButtonBack, Icon, Identicon, Input } from '@renderer/components/ui';
 import { AccountsList } from '@renderer/components/common';
 import { useWallet } from '@renderer/services/wallet/walletService';
 import { createMainAccount, createSimpleWallet, WalletType } from '@renderer/domain/wallet';
 import { toPublicKey } from '@renderer/utils/address';
-import Paths from '@renderer/routes/paths';
 import { useChains } from '@renderer/services/network/chainsService';
 import { Chain } from '@renderer/services/network/common/types';
+import FinalStep from '../FinalStep/FinalStep';
+import { ErrorTypes, PublicKey } from '@renderer/domain/shared-kernel';
+
+type WalletForm = {
+  walletName: string;
+  address: string;
+};
 
 const WatchOnly = () => {
-  const navigate = useNavigate();
-  const { getChainsData } = useChains();
+  const {
+    handleSubmit,
+    control,
+    watch,
+    formState: { errors, isValid },
+  } = useForm<WalletForm>({
+    mode: 'onChange',
+    defaultValues: {
+      walletName: '',
+      address: '',
+    },
+  });
+
+  const { getChainsData, sortChains } = useChains();
   const { addWallet, setActiveWallet } = useWallet();
 
-  const [walletName, setWalletName] = useState('');
   const [chains, setChains] = useState<Chain[]>([]);
-  const [address, setAddress] = useState('');
+  const [publicKey, setPublicKey] = useState<PublicKey>();
+
+  const [isCompleted, setIsCompleted] = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const address = watch('address');
+
+  useEffect(() => {
+    setPublicKey(toPublicKey(address));
+  }, [address]);
 
   useEffect(() => {
     (async () => {
       const chains = await getChainsData();
-      setChains(chains);
+      setChains(sortChains(chains));
     })();
   }, []);
 
-  const correctAddress = address && address.length === 48;
-  const publicKey = correctAddress && toPublicKey(address);
-
-  const createWallet = async () => {
-    if (!publicKey || publicKey.length === 0 || walletName.length === 0) return;
+  const handleCreateWallet: SubmitHandler<WalletForm> = async ({ walletName, address }) => {
+    if (!publicKey || publicKey.length === 0) return;
 
     const newWallet = createSimpleWallet({
-      name: walletName,
+      name: walletName.trim(),
       type: WalletType.WATCH_ONLY,
       mainAccounts: [
         createMainAccount({
@@ -47,8 +70,21 @@ const WatchOnly = () => {
     const walletId = await addWallet(newWallet);
 
     await setActiveWallet(walletId);
-    navigate(Paths.BALANCES);
+    setIsCompleted(true);
   };
+
+  const validateAddress = (a: string) => !!toPublicKey(a);
+
+  if (isCompleted) {
+    return <FinalStep walletType={WalletType.WATCH_ONLY} />;
+  }
+
+  const errorButtonText =
+    (errors.address && errors.walletName) || Object.values(errors).length === 0
+      ? 'Type address and name'
+      : errors.address
+      ? 'Type or paste an address'
+      : errors.walletName && 'Type a wallet name';
 
   return (
     <>
@@ -56,70 +92,124 @@ const WatchOnly = () => {
         <ButtonBack />
         <h1 className="text-neutral">Add watch-only Wallet</h1>
       </div>
-      <div className="flex h-full flex-col gap-10 justify-center items-center">
+      <form
+        onSubmit={handleSubmit(handleCreateWallet)}
+        className="flex h-full flex-col gap-10 justify-center items-center"
+      >
         <h2 className="text-2xl leading-relaxed font-normal text-neutral-variant text-center">
           Track the activity of any wallet without injecting
           <br />
           your private key to Omni Enterprise
         </h2>
         <div className="flex gap-10">
-          <div className="flex flex-col gap-10 w-[480px]">
-            <div className="flex flex-col p-4 bg-white shadow-surface rounded-2lg">
-              <Input
-                wrapperClass="flex items-center"
-                label="Wallet name"
-                placeholder="Wallet name"
-                value={walletName}
-                onChange={(e) => setWalletName(e.target.value.trim())}
-              />
-              <p className="uppercase pt-5 pb-7.5 font-bold text-2xs text-shade-40">
+          <div className="flex flex-col w-[480px] h-[310px] p-4 bg-white shadow-surface rounded-2lg">
+            <Controller
+              name="walletName"
+              control={control}
+              rules={{ required: true, maxLength: 256 }}
+              render={({ field: { onChange, value } }) => (
+                <Input
+                  wrapperClass={cn('flex items-center')}
+                  label="Wallet name"
+                  placeholder="Wallet name"
+                  invalid={!!errors.walletName}
+                  value={value}
+                  onChange={onChange}
+                />
+              )}
+            />
+            {!errors.walletName && (
+              <p className="uppercase pt-2.5 pb-10 font-bold text-2xs text-shade-40">
                 name examples: Main account, My validator, Dotsama crowdloans, etc.
               </p>
-              <Input
-                wrapperClass="flex items-center"
-                prefixElement={
-                  correctAddress ? (
-                    <Identicon address={address} size={32} />
-                  ) : (
-                    <Icon as="svg" size={24} name="emptyIdenticon" />
-                  )
-                }
-                suffixElement={
-                  <Button
-                    variant="outline"
-                    pallet="primary"
-                    onClick={async () => {
-                      const text = await navigator.clipboard.readText();
-                      setAddress(text.trim());
-                    }}
-                  >
-                    Paste
-                  </Button>
-                }
-                label="Account address"
-                placeholder="Account address"
-                value={address}
-                onChange={(e) => setAddress(e.target.value.trim())}
-              />
-            </div>
+            )}
+            {errors.walletName?.type === ErrorTypes.MAX_LENGTH && (
+              <p className="uppercase pt-2.5 pb-10 font-bold text-2xs text-error">
+                Wallet name should be shorter then 256 symbols
+              </p>
+            )}
+            {errors.walletName?.type === ErrorTypes.REQUIRED && (
+              <p className="uppercase pt-2.5 pb-10 font-bold text-2xs text-error">Please, enter wallet name</p>
+            )}
+
+            <Controller
+              name="address"
+              control={control}
+              rules={{ required: true, validate: validateAddress }}
+              render={({ field: { onChange, value } }) => (
+                <Input
+                  wrapperClass={cn('flex items-center')}
+                  invalid={!!errors.address}
+                  prefixElement={
+                    isValid ? (
+                      <Identicon address={value} size={32} />
+                    ) : (
+                      <Icon className="mx-1" as="svg" size={24} name="emptyIdenticon" />
+                    )
+                  }
+                  suffixElement={
+                    <Button
+                      variant="outline"
+                      pallet="primary"
+                      onClick={async () => {
+                        const text = await navigator.clipboard.readText();
+                        onChange(text.trim());
+                      }}
+                    >
+                      Paste
+                    </Button>
+                  }
+                  label="Account address"
+                  placeholder="Enter or paste your account address"
+                  value={value}
+                  onChange={onChange}
+                />
+              )}
+            />
+            {errors.address && (
+              <p className="uppercase pt-2.5 pb-10 font-bold text-2xs text-error">
+                The entered address is not a valid one, please type or paste it again
+              </p>
+            )}
           </div>
-          <div className="flex flex-col bg-white shadow-surface rounded-2lg w-[480px] max-h-[254px]">
+          <div className="flex flex-col bg-white shadow-surface rounded-2lg w-[480px] h-[310px]">
             <div className="p-4">
               <h3 className="text-neutral font-semibold">Your accounts will be showing up here</h3>
             </div>
-            {<AccountsList chains={chains} publicKey={publicKey && publicKey.length ? publicKey : '0x'} />}
+            <AccountsList chains={chains} publicKey={publicKey} limit={publicKey && 4} />
+            {publicKey && (
+              <div>
+                <Button
+                  weight="md"
+                  className="w-content p-4 mt-2 underline underline-offset-2"
+                  onClick={() => setIsModalOpen(true)}
+                  variant="text"
+                  pallet="primary"
+                  disabled={!!errors.address}
+                >
+                  Check your accounts
+                </Button>
+              </div>
+            )}
           </div>
         </div>
-        <Button
-          weight="lg"
-          variant="fill"
-          pallet="primary"
-          disabled={!correctAddress || !walletName}
-          onClick={createWallet}
+
+        <div className="flex justify-center items-center gap-4">
+          <Button type="submit" weight="lg" variant="fill" pallet="primary" disabled={!isValid}>
+            {isValid ? 'Yes, these are my accounts' : errorButtonText}
+          </Button>
+        </div>
+
+        <BaseModal
+          isOpen={isModalOpen}
+          onClose={() => setIsModalOpen(false)}
+          className="px-0 pb-0 max-w-2xl"
+          title="Here are your accounts"
+          description="Following accounts have been successfully read"
         >
-          {correctAddress ? 'Yes, these are my accounts' : 'Type or paste an address...'}
-        </Button>
-      </div>
+          <AccountsList className="pt-6" chains={chains} publicKey={publicKey} />
+        </BaseModal>
+      </form>
     </>
   );
 };

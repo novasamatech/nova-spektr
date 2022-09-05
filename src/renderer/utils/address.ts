@@ -13,7 +13,11 @@ export const formatAddress = (address: string, prefix = SS58_DEFAULT_PREFIX): st
 export const toPublicKey = (address: string): PublicKey | undefined => {
   if (!address) return;
 
-  return u8aToHex(decodeAddress(address));
+  try {
+    return u8aToHex(decodeAddress(address));
+  } catch (e) {
+    return;
+  }
 };
 
 export const isCorrectPublicKey = (publicKey: PublicKey): boolean => {

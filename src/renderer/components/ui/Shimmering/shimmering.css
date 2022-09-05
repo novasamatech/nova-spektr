@@ -1,0 +1,14 @@
+.shimmer {
+  background: linear-gradient(90deg, rgba(203, 203, 203) 0%, rgba(203, 203, 203) 10%, white 15%, rgba(203, 203, 203) 20%, rgba(203, 203, 203) 100%);
+  background-size: 1000px 100%;
+  animation: shimmer 2.2s linear infinite forwards;
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: 100% 0;
+  }
+  100% {
+    background-position: -100% 0;
+  }
+}
