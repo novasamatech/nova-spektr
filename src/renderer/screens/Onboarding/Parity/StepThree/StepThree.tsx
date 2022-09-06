@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { FormEvent, useEffect, useState } from 'react';
 
 import { createMainAccount, createSimpleWallet, WalletType } from '@renderer/domain/wallet';
 import { BaseModal, Button, Identicon, Input } from '@renderer/components/ui';
@@ -32,7 +32,9 @@ const StepThree = ({ ss58Address, onNextStep, onPrevStep }: Props) => {
   const correctAddress = ss58Address.length === 48;
   const publicKey = toPublicKey(ss58Address) || '0x';
 
-  const createWallet = async () => {
+  const createWallet = async (event: FormEvent) => {
+    event.preventDefault();
+
     if (!publicKey || publicKey.length === 0) return;
 
     const newWallet = createSimpleWallet({
@@ -48,10 +50,14 @@ const StepThree = ({ ss58Address, onNextStep, onPrevStep }: Props) => {
   };
 
   return (
-    <div className="flex h-full flex-col gap-10 justify-center items-center pt-5">
+    <div className="flex h-full flex-col gap-10 justify-center items-center pt-7.5">
       <h2 className="text-2xl leading-10 font-normal text-neutral-variant">Please choose a name for your wallet</h2>
       <div className="flex gap-10">
-        <div className="flex flex-col w-[480px] h-[260] p-4 bg-white shadow-surface rounded-2lg">
+        <form
+          id="stepForm"
+          className="flex flex-col w-[480px] h-[260] p-4 bg-white shadow-surface rounded-2lg"
+          onSubmit={createWallet}
+        >
           <Input
             wrapperClass="flex items-center"
             label="Wallet name"
@@ -74,7 +80,7 @@ const StepThree = ({ ss58Address, onNextStep, onPrevStep }: Props) => {
               </Button>
             }
           />
-        </div>
+        </form>
         <div className="flex flex-col bg-white shadow-surface rounded-2lg w-[480px] max-h-[310px]">
           <div className="p-4 pt-3.5 pb-3.5">
             <h2 className="text-neutral font-semibold leading-5">Here are your accounts</h2>
@@ -100,11 +106,12 @@ const StepThree = ({ ss58Address, onNextStep, onPrevStep }: Props) => {
       </div>
 
       <Button
+        form="stepForm"
+        type="submit"
         weight="lg"
         variant="fill"
         pallet="primary"
         disabled={!correctAddress || !walletName}
-        onClick={createWallet}
       >
         {!correctAddress || !walletName ? 'Type a name to finish...' : 'Yes, these are my accounts'}
       </Button>
