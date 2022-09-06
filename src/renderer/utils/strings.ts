@@ -2,10 +2,11 @@
  * Get short address representation
  * `5DXYNRXmNmFLFxxUjMXSzKh3vqHRDfDGGbY3BnSdQcta1SkX --> 5DXYNR...ta1SkX`
  * @param address value to make short
+ * @param size how many letters should be visible from start/end
  * @return {String}
  */
-export const getShortAddress = (address = ''): string => {
-  return address.length < 13 ? address : `${address.slice(0, 6)}...${address.slice(-6)}`;
+export const getShortAddress = (address = '', size = 6): string => {
+  return address.length < 13 ? address : `${address.slice(0, size)}...${address.slice(-1 * size)}`;
 };
 
 /**
