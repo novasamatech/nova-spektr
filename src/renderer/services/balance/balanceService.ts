@@ -1,5 +1,6 @@
 import { useLiveQuery } from 'dexie-react-hooks';
 import { AccountInfo, BalanceLock } from '@polkadot/types/interfaces';
+import { BN } from '@polkadot/util';
 
 import storage, { BalanceDS } from '../storage';
 import { Balance } from '@renderer/domain/balance';
@@ -44,12 +45,16 @@ export const useBalance = (): IBalanceService => {
     const address = toAddress(publicKey, chain.addressPrefix);
 
     return api.query.system.account(address, async (data: AccountInfo) => {
+      const miscFrozen = new BN(data.data.miscFrozen);
+      const feeFrozen = new BN(data.data.feeFrozen);
+
       const balance = {
         publicKey,
         chainId: chain.chainId,
         assetId: asset.assetId.toString(),
         verified: !relaychain,
         free: data.data.free.toString(),
+        frozen: miscFrozen.gt(feeFrozen) ? miscFrozen.toString() : feeFrozen.toString(),
         reserved: data.data.reserved.toString(),
       };
 
@@ -83,7 +88,7 @@ export const useBalance = (): IBalanceService => {
           assetId: asset.assetId.toString(),
           verified: !relaychain,
           free: free.toString(),
-          frozen: [],
+          frozen: (0).toString(),
           reserved: (0).toString(),
         };
 
@@ -114,13 +119,14 @@ export const useBalance = (): IBalanceService => {
     const method = api.query.tokens ? api.query.tokens.accounts : api.query.currencies.accounts;
 
     return method(address, ormlAssetId, (data: any) => {
-      const { free, reserved } = data;
+      const { free, reserved, frozen } = data;
       const balance = {
         publicKey,
         chainId: chain.chainId,
         assetId: asset.assetId.toString(),
         verified: !relaychain,
         free: free.toString(),
+        frozen: frozen.toString(),
         reserved: reserved.toString(),
       };
 
@@ -144,7 +150,7 @@ export const useBalance = (): IBalanceService => {
         publicKey,
         chainId: chain.chainId,
         assetId: asset.assetId.toString(),
-        frozen: [
+        locked: [
           ...data.map((lock: BalanceLock) => ({
             type: lock.id.toString(),
             amount: lock.amount.toString(),
@@ -170,7 +176,7 @@ export const useBalance = (): IBalanceService => {
         publicKey,
         chainId: chain.chainId,
         assetId: asset.assetId.toString(),
-        frozen: [
+        locked: [
           ...data.map((lock: BalanceLock) => ({
             type: lock.id.toString(),
             amount: lock.amount.toString(),

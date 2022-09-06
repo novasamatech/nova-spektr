@@ -44,12 +44,22 @@ export const getAssetId = (asset: Asset): string | number => {
   return assetId[asset.type || DEFAULT]();
 };
 
-export const formatBalance = (balance: string, precision = 0): string => {
+type FormatedBalance = {
+  value: string;
+  suffix: string;
+  decimalPlaces: number;
+};
+
+export const formatBalance = (balance: string, precision = 0): FormatedBalance => {
   const BNWithConfig = BigNumber.clone();
   BNWithConfig.config({
     // HOOK: for divide with decimal part
     DECIMAL_PLACES: precision || Decimal.SMALL_NUMBER,
     ROUNDING_MODE: BNWithConfig.ROUND_DOWN,
+    FORMAT: {
+      decimalSeparator: '.',
+      groupSeparator: '',
+    },
   });
   const TEN = new BNWithConfig(10);
   const bnPrecision = new BNWithConfig(precision);
@@ -78,24 +88,25 @@ export const formatBalance = (balance: string, precision = 0): string => {
     suffix = Suffix.TRILLIONS;
   }
 
-  return new BNWithConfig(bnBalance).div(divider).decimalPlaces(decimalPlaces).toFormat() + suffix;
+  return {
+    value: new BNWithConfig(bnBalance).div(divider).decimalPlaces(decimalPlaces).toFormat(),
+    suffix,
+    decimalPlaces,
+  };
 };
-
-export const formatBalanceFromAmount = (balance: string, precision = 0): string =>
-  formatBalance(formatAmount(balance, precision), precision);
 
 export const total = ({ free, reserved }: Balance): string => new BN(free || 0).add(new BN(reserved || 0)).toString();
 
-export const locked = ({ frozen }: Balance): string => {
-  const bnLocks = (frozen || []).map((lock) => new BN(lock.amount));
+export const locked = ({ locked }: Balance): string => {
+  const bnLocks = (locked || []).map((lock) => new BN(lock.amount));
   const bnFrozen = bnLocks?.reduce((acc, bnLock) => acc.add(bnLock), new BN(0));
 
   return bnFrozen.toString();
 };
 
 export const transferable = (balance: Balance): string => {
-  const bnFree = new BN(balance.free || 0);
-  const bnFrozen = new BN(locked(balance));
+  const bnFree = new BN(balance?.free || 0);
+  const bnFrozen = new BN(balance?.frozen || 0);
 
   return bnFree.gt(bnFrozen) ? bnFree.sub(bnFrozen).toString() : ZERO_BALANCE;
 };

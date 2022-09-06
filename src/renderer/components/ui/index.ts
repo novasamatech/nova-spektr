@@ -13,6 +13,7 @@ import Stepper from './Stepper/Stepper';
 import LanguageSwitcher from './LanguageSwitcher/LanguageSwitcher';
 import Carousel from './Carousel/Carousel';
 import Dropdown from './Dropdown/Dropdown';
+import Balance from './Balance/Balance';
 
 export {
   Address,
@@ -30,4 +31,5 @@ export {
   LanguageSwitcher,
   Dropdown,
   Carousel,
+  Balance,
 };
