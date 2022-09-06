@@ -12,5 +12,6 @@ export type Balance = {
   verified?: boolean;
   free?: string;
   reserved?: string;
-  frozen?: BalanceLock[];
+  frozen?: string;
+  locked?: BalanceLock[];
 };

@@ -1,10 +1,11 @@
 import cn from 'classnames';
 import { useState } from 'react';
 
-import { formatBalance, transferable, total, locked } from '@renderer/services/balance/common/utils';
+import { transferable, total } from '@renderer/services/balance/common/utils';
 import { Asset } from '@renderer/services/network/common/types';
 import Shimmering from '@renderer/components/ui/Shimmering/Shimmering';
 import { Balance } from '@renderer/domain/balance';
+import { Balance as BalanceComponent } from '@renderer/components/ui';
 
 type Props = {
   asset: Asset;
@@ -36,7 +37,9 @@ const AssetBalance = ({ asset, balance }: Props) => {
           </div>
           <div className={cn('font-semibold', !balance?.verified && 'text-shade-50')} data-testid="balance">
             {balance?.free ? (
-              `${formatBalance(total(balance), asset.precision)} ${asset.symbol}`
+              <>
+                <BalanceComponent value={total(balance)} precision={asset.precision} /> {asset.symbol}
+              </>
             ) : (
               <Shimmering width="200px" height="20px" />
             )}
@@ -48,7 +51,9 @@ const AssetBalance = ({ asset, balance }: Props) => {
               <div className="text-neutral text-sm font-semibold">Transferable</div>
               <div className="text-neutral-variant text-xs font-bold" data-testid="transferable">
                 {balance?.free ? (
-                  `${formatBalance(transferable(balance), asset.precision)} ${asset.symbol}`
+                  <>
+                    <BalanceComponent value={transferable(balance)} precision={asset.precision} /> {asset.symbol}
+                  </>
                 ) : (
                   <Shimmering width="200px" height="20px" />
                 )}
@@ -58,7 +63,9 @@ const AssetBalance = ({ asset, balance }: Props) => {
               <div className="text-neutral text-sm font-semibold">Locked</div>
               <div className="text-neutral-variant text-xs font-bold">
                 {balance?.frozen ? (
-                  `${formatBalance(locked(balance), asset.precision)} ${asset.symbol}`
+                  <>
+                    <BalanceComponent value={balance.frozen} precision={asset.precision} /> {asset.symbol}
+                  </>
                 ) : (
                   <Shimmering width="200px" height="20px" />
                 )}
@@ -68,7 +75,9 @@ const AssetBalance = ({ asset, balance }: Props) => {
               <div className="text-neutral text-sm font-semibold">Reserved</div>
               <div className="text-neutral-variant text-xs font-bold">
                 {balance?.reserved ? (
-                  `${formatBalance(balance.reserved || '0', asset.precision)} ${asset.symbol}`
+                  <>
+                    <BalanceComponent value={balance.reserved} precision={asset.precision} /> {asset.symbol}
+                  </>
                 ) : (
                   <Shimmering width="200px" height="20px" />
                 )}
