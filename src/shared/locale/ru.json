@@ -11,5 +11,6 @@
   "fallbackScreen": {
     "message": "Что-то пошло не так",
     "reloadButton": "Перезагрузить"
-  }
+  },
+  "number": "{{value, number}}"
 }
