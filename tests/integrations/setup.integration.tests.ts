@@ -1,5 +1,5 @@
 import request from 'request';
-import matrixcs from 'matrix-js-sdk';
+import matrix from 'matrix-js-sdk';
 
 // Adding fake indexdb for fix
 //      🔶 Matrix original error object: Error: Missing required option: indexedDB 🔶
@@ -15,10 +15,10 @@ module.exports = async () => {
     return 'node_modules/@matrix-org/olm/olm.wasm';
   });
 
-  // Load request before all aonther modules it is tricky solution for
+  // Load request before all other modules it is tricky solution for
   //      🔶 Matrix original error object: TypeError: this.opts.request is not a function 🔶
   // https://github.com/matrix-org/matrix-js-sdk/issues/2415#issuecomment-1188812401
-  matrixcs.request(request);
+  matrix.request(request);
 
   // Adding crypto.randomBytes for Matrix client initialization
   const crypto = require('crypto');

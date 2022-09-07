@@ -8,6 +8,7 @@ import { Pallet, Variant } from '../common/types';
 type Props = {
   className?: string;
   type?: 'button' | 'submit';
+  form?: string;
   variant: Variant;
   pallet: Pallet;
   weight?: keyof typeof WeightClass;
@@ -22,6 +23,7 @@ const Button = ({
   pallet,
   type = 'button',
   weight = 'md',
+  form,
   className,
   disabled,
   children,
@@ -31,6 +33,7 @@ const Button = ({
 }: PropsWithChildren<Props>) => (
   <button
     type={type}
+    form={form}
     disabled={disabled}
     className={cn(
       'flex items-center justify-center gap-x-2.5 border font-semibold select-none',

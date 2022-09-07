@@ -1,15 +1,20 @@
 import { useRef, useState } from 'react';
 
 import { QrGenerator, QrReader } from '@renderer/components/common';
+import { COMMAND } from '@renderer/components/common/QrCode/QrGenerator/common/constants';
 import { Button, Input } from '@renderer/components/ui';
 
 const CameraDev = () => {
   const inputRef = useRef<HTMLInputElement>(null);
-  const [encodeString, setEncodeString] = useState('');
+  const [payload, setPayload] = useState<Uint8Array | string>();
 
   const [availableCameras, setAvailableCameras] = useState<{ id: string; label: string }[]>([]);
   const [activeCameraId, setActiveCameraId] = useState('');
-  console.log(availableCameras);
+
+  const onSetPayload = () => {
+    const value = 'hello test this is my message';
+    setPayload(value);
+  };
 
   return (
     <div>
@@ -50,12 +55,21 @@ const CameraDev = () => {
         </div>
         <div>
           <div className="flex gap-x-3 mb-3">
-            <Input placeholder="String to encode" ref={inputRef} />
-            <Button variant="fill" pallet="primary" onClick={() => setEncodeString(inputRef.current?.value || '')}>
-              Encode
+            <Input placeholder="Qr payload" ref={inputRef} />
+            <Button variant="fill" pallet="primary" onClick={onSetPayload}>
+              Set payload
             </Button>
           </div>
-          <QrGenerator value={encodeString} />
+          {payload && (
+            // Fast test with Westend genesisHash
+            <QrGenerator
+              cmd={COMMAND.Message}
+              address={inputRef.current?.value || ''}
+              genesisHash="0xe143f23803ac50e8f6f8e62695d1ce9e4e1d68aa36c1cd2cfd15340213f3423e"
+              payload={payload}
+              size={200}
+            />
+          )}
         </div>
       </div>
     </div>
