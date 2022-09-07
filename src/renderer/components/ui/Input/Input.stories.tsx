@@ -19,3 +19,23 @@ export const Filled = Template.bind({});
 Filled.args = {
   value: 'This is value',
 };
+
+export const Label = Template.bind({});
+Label.args = {
+  label: 'With label',
+  value: 'This is value',
+};
+
+export const Invalid = Template.bind({});
+Invalid.args = {
+  label: 'With invalid',
+  value: 'This is value',
+  invalid: true,
+};
+
+export const Disabled = Template.bind({});
+Disabled.args = {
+  label: 'With disabled label',
+  value: 'This is value',
+  disabled: true,
+};

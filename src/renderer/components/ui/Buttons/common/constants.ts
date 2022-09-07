@@ -9,10 +9,10 @@ export const ViewClass: Record<`${Variant}_${Pallet}`, string> = {
   fill_secondary: 'text-white border-secondary bg-secondary',
   fill_error: 'text-white border-error bg-error',
   fill_shade: 'text-shade-40 border-shade-20 bg-shade-20',
-  outline_primary: 'text-primary border-current bg-white',
-  outline_secondary: 'text-secondary border-current bg-white',
-  outline_error: 'text-error border-current bg-white',
-  outline_shade: 'text-shade-40 border-shade-20 bg-white',
+  outline_primary: 'text-primary border-current',
+  outline_secondary: 'text-secondary border-current',
+  outline_error: 'text-error border-current',
+  outline_shade: 'text-shade-40 border-shade-20',
 };
 
 export const WeightClass = {

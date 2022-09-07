@@ -1,12 +1,13 @@
 import { useEffect, useState } from 'react';
 
-import { createMainAccount, createSimpleWallet, WalletType } from '@renderer/domain/wallet';
+import { AccountsList } from '@renderer/components/common';
 import { BaseModal, Button, Identicon, Input } from '@renderer/components/ui';
-import { useWallet } from '@renderer/services/wallet/walletService';
+import { createMainAccount, createSimpleWallet, WalletType } from '@renderer/domain/wallet';
 import { useChains } from '@renderer/services/network/chainsService';
 import { Chain } from '@renderer/services/network/common/types';
-import { AccountsList } from '@renderer/components/common';
+import { useWallet } from '@renderer/services/wallet/walletService';
 import { toPublicKey } from '@renderer/utils/address';
+import { getShortAddress } from '@renderer/utils/strings';
 
 type Props = {
   ss58Address: string;
@@ -62,12 +63,12 @@ const StepThree = ({ ss58Address, onNextStep, onPrevStep }: Props) => {
             Name examples: Main account, My validator, Dotsama crowdloans, etc.
           </p>
           <Input
+            disabled
             label="Account address"
             placeholder="Account address"
-            value={ss58Address}
+            value={getShortAddress(ss58Address, 10)}
             wrapperClass="flex items-center"
-            disabled
-            prefixElement={<Identicon address={ss58Address} size={32} />}
+            prefixElement={<Identicon address={ss58Address} background={false} />}
             suffixElement={
               <Button variant="outline" pallet="primary" onClick={onPrevStep}>
                 Rescan QR code
