@@ -141,11 +141,7 @@ const WatchOnly = () => {
                   wrapperClass={cn('flex items-center')}
                   invalid={!!errors.address}
                   prefixElement={
-                    isValid ? (
-                      <Identicon address={value} size={32} />
-                    ) : (
-                      <Icon className="mx-1" as="svg" size={24} name="emptyIdenticon" />
-                    )
+                    isValid ? <Identicon address={value} background={false} /> : <Icon as="svg" name="emptyIdenticon" />
                   }
                   suffixElement={
                     <Button
