@@ -3,12 +3,13 @@ import { objectSpread } from '@polkadot/util';
 import { xxhashAsHex } from '@polkadot/util-crypto';
 import qrcode from 'qrcode-generator';
 
-import { DEFAULT_FRAME_DELAY, TIMER_INC } from './common/constants';
+import { COMMAND, DEFAULT_FRAME_DELAY, TIMER_INC } from './common/constants';
 import { createFrames, createImgSize, createSignPayload } from './common/utils';
 
 // HACK The default function take string -> number[], the Uint8array is compatible
 // with that signature and the use thereof
 (qrcode as any).stringToBytes = (data: Uint8Array): Uint8Array => data;
+
 const getDataUrl = (value: Uint8Array): string => {
   const qr = qrcode(0, 'M');
 
@@ -33,7 +34,7 @@ type TimerState = {
 
 type Props = {
   address: string;
-  cmd: number; // 0 - transaction, 3 - message
+  cmd: COMMAND;
   genesisHash: Uint8Array | string;
   payload: Uint8Array | string;
   size?: number;

@@ -4,3 +4,8 @@ export const CRYPTO_SR25519 = new Uint8Array([0x01]);
 
 export const DEFAULT_FRAME_DELAY = 2750;
 export const TIMER_INC = 500;
+
+export const enum COMMAND {
+  Transaction = 0,
+  Message = 3,
+}
