@@ -35,8 +35,8 @@ jest.mock('../AssetBalance/AssetBalance', () => () => <div>AssetBalance</div>);
 describe('screen/Balances/NetworkBalances', () => {
   test('should render component', () => {
     render(<NetworkBalances chain={testChain} publicKey={TEST_PUBLIC_KEY} />);
-    const text = screen.getByText(testChain.name);
 
+    const text = screen.getByText(testChain.name);
     expect(text).toBeInTheDocument();
   });
 
@@ -44,20 +44,17 @@ describe('screen/Balances/NetworkBalances', () => {
     render(<NetworkBalances chain={testChain} publicKey={TEST_PUBLIC_KEY} />);
 
     const balances = screen.getAllByText('AssetBalance');
-
     expect(balances).toHaveLength(2);
   });
 
   test('should hide assets', async () => {
     render(<NetworkBalances chain={testChain} publicKey={TEST_PUBLIC_KEY} />);
 
-    const balancesBefore = screen.queryAllByText('AssetBalance');
+    const balancesBefore = screen.getAllByText('AssetBalance');
     expect(balancesBefore).toHaveLength(2);
 
     const button = screen.getByRole('button');
-    await act(async () => {
-      button.click();
-    });
+    await act(() => button.click());
 
     const balancesAfter = screen.queryByText('AssetBalance');
     expect(balancesAfter).not.toBeInTheDocument();

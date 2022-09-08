@@ -32,6 +32,8 @@ describe('ReceiveModal', () => {
     render(<ReceiveModal {...defaultProps} />);
 
     const title = screen.getByRole('heading', { name: 'Receive' });
+    const address = screen.getByText('5GmedEVixRJoE8TjMePLqz7DnnQG1d5517sXdiAvAF2t7EYW');
     expect(title).toBeInTheDocument();
+    expect(address).toBeInTheDocument();
   });
 });

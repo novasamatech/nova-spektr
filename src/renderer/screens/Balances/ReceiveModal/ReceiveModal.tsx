@@ -59,7 +59,7 @@ const ReceiveModal = ({ data, isOpen, onClose }: Props) => {
           <div className="flex flex-col items-center pt-7.5 pb-2.5 rounded-b-2lg bg-shade-5">
             <QrTextGenerator payload={qrCodePayload} size={280} bgColor="#F1F1F1" />
 
-            <Address className="mt-6 mb-2 text-sm text-neutral-variant" address={address} />
+            <Address className="mt-6 mb-2 text-sm text-neutral-variant" full address={address} />
 
             <ul className="flex gap-x-3">
               {data?.chain.explorers.map(({ name, account }) => (
