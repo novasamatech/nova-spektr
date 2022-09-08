@@ -1,7 +1,8 @@
 import { act, render, screen } from '@testing-library/react';
 
 import AssetBalance from './AssetBalance';
-import { Asset, Chain } from '@renderer/services/network/common/types';
+import { Chain } from '@renderer/domain/chain';
+import { Asset } from '@renderer/domain/asset';
 import chains from '@renderer/services/network/common/chains.json';
 import { TEST_PUBLIC_KEY } from '@renderer/services/balance/common/constants';
 import { Balance } from '@renderer/domain/balance';

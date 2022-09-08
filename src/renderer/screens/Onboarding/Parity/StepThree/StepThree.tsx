@@ -1,10 +1,11 @@
 import { FormEvent, useEffect, useState } from 'react';
 
+import useToggle from '@renderer/hooks/useToggle';
 import { AccountsList } from '@renderer/components/common';
 import { BaseModal, Button, Identicon, Input } from '@renderer/components/ui';
 import { createMainAccount, createSimpleWallet, WalletType } from '@renderer/domain/wallet';
 import { useChains } from '@renderer/services/network/chainsService';
-import { Chain } from '@renderer/services/network/common/types';
+import { Chain } from '@renderer/domain/chain';
 import { useWallet } from '@renderer/services/wallet/walletService';
 import { toPublicKey } from '@renderer/utils/address';
 import { getShortAddress } from '@renderer/utils/strings';
@@ -18,10 +19,10 @@ type Props = {
 const StepThree = ({ ss58Address, onNextStep, onPrevStep }: Props) => {
   const { getChainsData, sortChains } = useChains();
   const { addWallet, setActiveWallet } = useWallet();
+  const [isModalOpen, toggleModal] = useToggle();
 
   const [walletName, setWalletName] = useState('');
   const [chains, setChains] = useState<Chain[]>([]);
-  const [isModalOpen, setIsModalOpen] = useState(false);
 
   useEffect(() => {
     (async () => {
@@ -40,7 +41,7 @@ const StepThree = ({ ss58Address, onNextStep, onPrevStep }: Props) => {
 
     const newWallet = createSimpleWallet({
       name: walletName,
-      type: WalletType.WATCH_ONLY,
+      type: WalletType.PARITY,
       chainAccounts: [],
       mainAccounts: [createMainAccount({ accountId: ss58Address, publicKey })],
     });
@@ -95,7 +96,7 @@ const StepThree = ({ ss58Address, onNextStep, onPrevStep }: Props) => {
               <Button
                 weight="md"
                 className="w-content p-4 mt-2 underline underline-offset-2"
-                onClick={() => setIsModalOpen(true)}
+                onClick={toggleModal}
                 variant="text"
                 pallet="primary"
               >
@@ -118,13 +119,14 @@ const StepThree = ({ ss58Address, onNextStep, onPrevStep }: Props) => {
       </Button>
 
       <BaseModal
-        isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
-        className="px-0 pb-0 max-w-2xl"
+        closeButton
+        className="p-4 max-w-2xl"
         title="Here are your accounts"
         description="Following accounts have been successfully read"
+        isOpen={isModalOpen}
+        onClose={toggleModal}
       >
-        <AccountsList className="pt-6" chains={chains} publicKey={publicKey} />
+        <AccountsList className="pt-6 -mx-4" chains={chains} publicKey={publicKey} />
       </BaseModal>
     </div>
   );

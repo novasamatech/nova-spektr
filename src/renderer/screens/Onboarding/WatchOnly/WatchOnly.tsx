@@ -2,15 +2,16 @@ import { useEffect, useState } from 'react';
 import { Controller, SubmitHandler, useForm } from 'react-hook-form';
 import cn from 'classnames';
 
-import { BaseModal, Button, ButtonBack, Icon, Identicon, Input } from '@renderer/components/ui';
 import { AccountsList } from '@renderer/components/common';
-import { useWallet } from '@renderer/services/wallet/walletService';
-import { createMainAccount, createSimpleWallet, WalletType } from '@renderer/domain/wallet';
-import { toPublicKey } from '@renderer/utils/address';
-import { useChains } from '@renderer/services/network/chainsService';
-import { Chain } from '@renderer/services/network/common/types';
-import FinalStep from '../FinalStep/FinalStep';
+import { BaseModal, Button, ButtonBack, Icon, Identicon, Input } from '@renderer/components/ui';
+import { Chain } from '@renderer/domain/chain';
 import { ErrorTypes, PublicKey } from '@renderer/domain/shared-kernel';
+import { createMainAccount, createSimpleWallet, WalletType } from '@renderer/domain/wallet';
+import useToggle from '@renderer/hooks/useToggle';
+import { useChains } from '@renderer/services/network/chainsService';
+import { useWallet } from '@renderer/services/wallet/walletService';
+import { toPublicKey } from '@renderer/utils/address';
+import FinalStep from '../FinalStep/FinalStep';
 
 type WalletForm = {
   walletName: string;
@@ -33,12 +34,12 @@ const WatchOnly = () => {
 
   const { getChainsData, sortChains } = useChains();
   const { addWallet, setActiveWallet } = useWallet();
+  const [isModalOpen, toggleModal] = useToggle();
 
   const [chains, setChains] = useState<Chain[]>([]);
   const [publicKey, setPublicKey] = useState<PublicKey>();
 
   const [isCompleted, setIsCompleted] = useState(false);
-  const [isModalOpen, setIsModalOpen] = useState(false);
   const address = watch('address');
 
   useEffect(() => {
@@ -178,7 +179,7 @@ const WatchOnly = () => {
                 <Button
                   weight="md"
                   className="w-content p-4 mt-2 underline underline-offset-2"
-                  onClick={() => setIsModalOpen(true)}
+                  onClick={toggleModal}
                   variant="text"
                   pallet="primary"
                   disabled={!!errors.address}
@@ -195,17 +196,18 @@ const WatchOnly = () => {
             {isValid ? 'Yes, these are my accounts' : errorButtonText}
           </Button>
         </div>
-
-        <BaseModal
-          isOpen={isModalOpen}
-          onClose={() => setIsModalOpen(false)}
-          className="px-0 pb-0 max-w-2xl"
-          title="Here are your accounts"
-          description="Following accounts have been successfully read"
-        >
-          <AccountsList className="pt-6" chains={chains} publicKey={publicKey} />
-        </BaseModal>
       </form>
+
+      <BaseModal
+        closeButton
+        className="p-4 max-w-2xl"
+        title="Here are your accounts"
+        description="Following accounts have been successfully read"
+        isOpen={isModalOpen}
+        onClose={toggleModal}
+      >
+        <AccountsList className="pt-6 -mx-4" chains={chains} publicKey={publicKey} />
+      </BaseModal>
     </>
   );
 };

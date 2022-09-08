@@ -25,27 +25,19 @@ jest.mock('@renderer/context/NetworkContext', () => ({
       '0x0000000000000000000000000000000000000000': {
         chainId: '1',
         assets: [
-          {
-            assetId: '1',
-            symbol: '1',
-          },
+          { assetId: '1', symbol: '1' },
           { assetId: '2', symbol: '2' },
         ],
       },
       '0x0000000000000000000000000000000000000001': {
         chainId: '2',
-        assets: [
-          {
-            assetId: '1',
-            symbol: '1',
-          },
-        ],
+        assets: [{ assetId: '1', symbol: '1' }],
       },
     },
   })),
 }));
 
-jest.mock('./NetworkBalances', () => () => <div>NetworkBalances</div>);
+jest.mock('../NetworkBalances/NetworkBalances', () => () => <div>NetworkBalances</div>);
 
 describe('screen/Balances/Balances', () => {
   test('should render component', () => {

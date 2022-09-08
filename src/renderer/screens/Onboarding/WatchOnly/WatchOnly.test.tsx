@@ -3,7 +3,7 @@ import { MemoryRouter } from 'react-router-dom';
 
 import WatchOnly from './WatchOnly';
 import { TEST_PUBLIC_KEY } from '@renderer/services/balance/common/constants';
-import { Chain } from '@renderer/services/network/common/types';
+import { Chain } from '@renderer/domain/chain';
 
 jest.mock('@renderer/services/wallet/walletService', () => ({
   useWallet: jest.fn().mockReturnValue({

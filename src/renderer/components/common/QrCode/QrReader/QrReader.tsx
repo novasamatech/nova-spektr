@@ -119,7 +119,6 @@ const QrReader = ({ size = 300, cameraId, onCameraList, onResult, onStart, onErr
         </video>
         {isScanComplete && <div className="absolute inset-0 backdrop-blur-sm rounded-3xl" />}
         <Icon
-          as="svg"
           name="qrFrame"
           className={cn(
             'absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2',
@@ -129,7 +128,6 @@ const QrReader = ({ size = 300, cameraId, onCameraList, onResult, onStart, onErr
         />
         {isScanComplete && (
           <Icon
-            as="svg"
             name="checkmarkCutout"
             className={cn(
               'absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 text-white',
