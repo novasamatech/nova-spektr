@@ -1,6 +1,6 @@
 import { useRef, useState } from 'react';
 
-import { QrGenerator, QrReader } from '@renderer/components/common';
+import { QrTxGenerator, QrReader } from '@renderer/components/common';
 import { COMMAND } from '@renderer/components/common/QrCode/QrGenerator/common/constants';
 import { Button, Input } from '@renderer/components/ui';
 
@@ -62,7 +62,7 @@ const CameraDev = () => {
           </div>
           {payload && (
             // Fast test with Westend genesisHash
-            <QrGenerator
+            <QrTxGenerator
               cmd={COMMAND.Message}
               address={inputRef.current?.value || ''}
               genesisHash="0xe143f23803ac50e8f6f8e62695d1ce9e4e1d68aa36c1cd2cfd15340213f3423e"

@@ -1,7 +1,10 @@
+import { QrTextGenerator } from '@renderer/components/common';
 import { Address, BaseModal, Button, Icon } from '@renderer/components/ui';
 import { Explorer } from '@renderer/components/ui/Icon/data/explorer';
 import { Asset } from '@renderer/domain/asset';
 import { Chain } from '@renderer/domain/chain';
+import { PublicKey } from '@renderer/domain/shared-kernel';
+import { toAddress } from '@renderer/services/balance/common/utils';
 import { copyToClipboard } from '@renderer/utils/strings';
 
 // TODO: create a separate components for Explorer links
@@ -17,7 +20,7 @@ export type ReceivePayload = {
   asset: Asset;
   activeWallets: {
     name: string;
-    address: string;
+    publicKey: PublicKey;
   }[];
 };
 
@@ -28,10 +31,14 @@ type Props = {
 };
 
 const ReceiveModal = ({ data, isOpen, onClose }: Props) => {
-  const wallet = data?.activeWallets[0] || { name: '', address: '' };
+  const wallet = data?.activeWallets[0] || { name: '', publicKey: '' as PublicKey };
+
+  const address = toAddress(wallet.publicKey, data?.chain.addressPrefix);
+
+  const qrCodePayload = `substrate:${address}:${wallet.publicKey}:Ff`;
 
   const onCopyAddress = () => {
-    copyToClipboard(wallet.address);
+    copyToClipboard(address);
   };
 
   return (
@@ -50,16 +57,14 @@ const ReceiveModal = ({ data, isOpen, onClose }: Props) => {
         {/* TODO: in future add Dropdown for wallet select */}
         <div className="w-full bg-shade-2 rounded-2lg overflow-hidden">
           <div className="flex flex-col items-center pt-7.5 pb-2.5 rounded-b-2lg bg-shade-5">
-            <div className="bg-green-200 w-[280px] h-[280px]">QR</div>
+            <QrTextGenerator payload={qrCodePayload} size={280} bgColor="#F1F1F1" />
 
-            <div className="mt-6 mb-2 text-sm text-neutral-variant">
-              <Address address={wallet.address} />
-            </div>
+            <Address className="mt-6 mb-2 text-sm text-neutral-variant" address={address} />
 
             <ul className="flex gap-x-3">
               {data?.chain.explorers.map(({ name, account }) => (
                 <li aria-label={`Link to ${name}`} key={name}>
-                  <a href={account?.replace('{address}', wallet.address)} rel="noopener noreferrer" target="_blank">
+                  <a href={account?.replace('{address}', address)} rel="noopener noreferrer" target="_blank">
                     <Icon as="img" name={ExplorerIcons[name]} />
                   </a>
                 </li>

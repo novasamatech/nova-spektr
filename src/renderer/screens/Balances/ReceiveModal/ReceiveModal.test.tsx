@@ -1,5 +1,6 @@
 import { render, screen } from '@testing-library/react';
 
+import { HexString } from '@renderer/domain/shared-kernel';
 import { Asset } from '@renderer/domain/asset';
 import { Chain } from '@renderer/domain/chain';
 import chains from '@renderer/services/network/common/chains.json';
@@ -18,7 +19,12 @@ describe('ReceiveModal', () => {
         explorers: westendExplorers,
       } as Chain,
       asset: { name: 'WND', icon: 'wnd-icon' } as Asset,
-      activeWallets: [{ name: 'my wallet', address: '5GmedEVixRJoE8TjMePLqz7DnnQG1d5517sXdiAvAF2t7EYW' }],
+      activeWallets: [
+        {
+          name: 'my wallet',
+          publicKey: '0xd02b1de0e29d201d48f1a48fb0ead05bf292366ffe90efec9368bb2c7849de59' as HexString,
+        },
+      ],
     },
   };
 

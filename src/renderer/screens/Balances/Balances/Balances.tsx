@@ -1,5 +1,4 @@
 import { useEffect, useState } from 'react';
-import { encodeAddress } from '@polkadot/util-crypto';
 
 import useToggle from '@renderer/hooks/useToggle';
 import { Icon, Input, Switch } from '@renderer/components/ui';
@@ -55,7 +54,7 @@ const Balances = () => {
       asset,
       activeWallets: (activeWallets || []).map((wallet) => ({
         name: wallet.name,
-        address: encodeAddress(wallet.mainAccounts[0].publicKey || '', chain.addressPrefix),
+        publicKey: wallet.mainAccounts[0].publicKey,
       })),
     });
     toggleReceive();
