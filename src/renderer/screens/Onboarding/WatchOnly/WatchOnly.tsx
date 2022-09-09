@@ -5,7 +5,7 @@ import cn from 'classnames';
 import { AccountsList } from '@renderer/components/common';
 import { BaseModal, Button, ButtonBack, Icon, Identicon, Input } from '@renderer/components/ui';
 import { Chain } from '@renderer/domain/chain';
-import { ErrorTypes, PublicKey } from '@renderer/domain/shared-kernel';
+import { ErrorType, PublicKey } from '@renderer/domain/shared-kernel';
 import { createMainAccount, createSimpleWallet, WalletType } from '@renderer/domain/wallet';
 import useToggle from '@renderer/hooks/useToggle';
 import { useChains } from '@renderer/services/network/chainsService';
@@ -124,12 +124,12 @@ const WatchOnly = () => {
                 name examples: Main account, My validator, Dotsama crowdloans, etc.
               </p>
             )}
-            {errors.walletName?.type === ErrorTypes.MAX_LENGTH && (
+            {errors.walletName?.type === ErrorType.MAX_LENGTH && (
               <p className="uppercase pt-2.5 pb-10 font-bold text-2xs text-error">
                 Wallet name should be shorter then 256 symbols
               </p>
             )}
-            {errors.walletName?.type === ErrorTypes.REQUIRED && (
+            {errors.walletName?.type === ErrorType.REQUIRED && (
               <p className="uppercase pt-2.5 pb-10 font-bold text-2xs text-error">Please, enter wallet name</p>
             )}
 

@@ -1,5 +1,5 @@
 import useGenerator from './common/useGenerator';
-import { COMMAND, DEFAULT_FRAME_DELAY } from './common/constants';
+import { Command, DEFAULT_FRAME_DELAY } from './common/constants';
 import { createSignPayload } from './common/utils';
 
 type Props = {
@@ -8,7 +8,7 @@ type Props = {
   skipEncoding?: boolean;
   delay?: number;
   address: string;
-  cmd: COMMAND;
+  cmd: Command;
   payload: Uint8Array | string;
   genesisHash: Uint8Array | string;
 };

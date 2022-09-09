@@ -13,7 +13,7 @@ const PARITY_FLOW_STEPS: Record<'title', string>[] = [
   { title: 'Check the result' },
 ];
 
-const enum Steps {
+const enum Step {
   PREPARE,
   SCAN,
   CHECK,
@@ -21,17 +21,17 @@ const enum Steps {
 }
 
 const Parity = () => {
-  const [activeStep, setActiveStep] = useState<Steps>(Steps.PREPARE);
+  const [activeStep, setActiveStep] = useState<Step>(Step.PREPARE);
   const [address, setAddress] = useState('');
 
   const onReceiveAddress = (value: string) => {
     setAddress(value);
-    setActiveStep(Steps.CHECK);
+    setActiveStep(Step.CHECK);
   };
 
   return (
     <div className="flex flex-col h-full">
-      {activeStep !== Steps.FINAL && (
+      {activeStep !== Step.FINAL && (
         <div className="flex items-center gap-x-2.5">
           <ButtonBack />
           <h1 className="text-neutral">Add wallet by Parity Signer</h1>
@@ -39,16 +39,16 @@ const Parity = () => {
       )}
       <section className="flex flex-col gap-y-16 h-max max-w-[1000px] w-full m-auto">
         <Stepper steps={PARITY_FLOW_STEPS} active={activeStep} />
-        {activeStep === Steps.PREPARE && <StepOne onNextStep={() => setActiveStep(Steps.SCAN)} />}
-        {activeStep === Steps.SCAN && <StepTwo onNextStep={onReceiveAddress} />}
-        {activeStep === Steps.CHECK && (
+        {activeStep === Step.PREPARE && <StepOne onNextStep={() => setActiveStep(Step.SCAN)} />}
+        {activeStep === Step.SCAN && <StepTwo onNextStep={onReceiveAddress} />}
+        {activeStep === Step.CHECK && (
           <StepThree
             ss58Address={address}
-            onNextStep={() => setActiveStep(Steps.FINAL)}
-            onPrevStep={() => setActiveStep(Steps.SCAN)}
+            onNextStep={() => setActiveStep(Step.FINAL)}
+            onPrevStep={() => setActiveStep(Step.SCAN)}
           />
         )}
-        {activeStep === Steps.FINAL && <FinalStep walletType={WalletType.PARITY} />}
+        {activeStep === Step.FINAL && <FinalStep walletType={WalletType.PARITY} />}
       </section>
     </div>
   );

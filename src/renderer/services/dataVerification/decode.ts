@@ -185,7 +185,7 @@ const decode = (reader: Uint8Array): Node => {
 };
 
 const loadProof = (proofHashToNode: Record<string, Node>, branch: Node | undefined) => {
-  if (!branch || getNodeType(branch) !== NodeType.Branch) {
+  if (!branch || getNodeType(branch) !== NodeType.BRANCH) {
     return;
   }
 
