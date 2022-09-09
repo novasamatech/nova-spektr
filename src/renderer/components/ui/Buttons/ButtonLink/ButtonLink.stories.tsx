@@ -38,7 +38,7 @@ Prefix.args = {
   children: 'Link',
   className: 'w-[200px]',
   disabled: false,
-  prefixElement: <Icon as="svg" name="wallets" className="text-white" size={16} />,
+  prefixElement: <Icon name="wallets" className="text-white" size={16} />,
 };
 export const Suffix = Template.bind({});
 
@@ -49,7 +49,7 @@ Suffix.args = {
   children: 'Link',
   className: 'w-[200px]',
   disabled: false,
-  suffixElement: <Icon as="svg" name="wallets" className="text-white" size={16} />,
+  suffixElement: <Icon name="wallets" className="text-white" size={16} />,
 };
 export const Both = Template.bind({});
 
@@ -60,8 +60,8 @@ Both.args = {
   children: 'Link',
   className: 'w-[200px]',
   disabled: false,
-  prefixElement: <Icon as="svg" name="wallets" className="text-white" size={16} />,
-  suffixElement: <Icon as="svg" name="asset" className="text-white" size={16} />,
+  prefixElement: <Icon name="wallets" className="text-white" size={16} />,
+  suffixElement: <Icon name="asset" className="text-white" size={16} />,
 };
 
 export const OnlyIcon = Template.bind({});
@@ -70,6 +70,6 @@ OnlyIcon.args = {
   variant: 'fill',
   pallet: 'primary',
   className: 'w-max',
-  children: <Icon as="svg" name="wallets" className="text-white" size={16} />,
+  children: <Icon name="wallets" className="text-white" size={16} />,
   disabled: false,
 };

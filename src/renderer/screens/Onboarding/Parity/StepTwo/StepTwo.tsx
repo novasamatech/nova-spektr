@@ -3,7 +3,7 @@ import { useState } from 'react';
 import { decodeAddress, encodeAddress } from '@polkadot/util-crypto';
 
 import { OptionType } from '@renderer/components/ui/Dropdown/Dropdown';
-import { ErrorObject, Errors } from '@renderer/components/common/QrCode/QrReader/common/types';
+import { ErrorObject, QrError } from '@renderer/components/common/QrCode/QrReader/common/types';
 import { Button, Dropdown, Icon } from '@renderer/components/ui';
 import { QrReader } from '@renderer/components/common';
 import ScanQr from '@images/misc/onboarding/scan-qr.svg';
@@ -46,7 +46,7 @@ const StepTwo = ({ onNextStep }: Props) => {
 
   const onError = (error: ErrorObject) => {
     console.warn(error);
-    if (error.code === Errors.USER_DENY) {
+    if (error.code === QrError.USER_DENY) {
       setCameraState(CameraState.DENY);
     } else {
       setCameraState(CameraState.ERROR);

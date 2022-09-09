@@ -1,17 +1,17 @@
-import { u8aToHex } from '@polkadot/util';
+import { stringToU8a, u8aToHex } from '@polkadot/util';
 
-import { createFrames, createSignPayload, encodeNumber } from './utils';
+import { createFrames, createSignPayload, encodeNumber, getSvgString } from './utils';
 
-describe('QrCode/QrGenerator/utils', (): void => {
-  test('should encodes 1 correctly', (): void => {
+describe('QrCode/QrGenerator/utils', () => {
+  test('should encodes 1 correctly', () => {
     expect(encodeNumber(1)).toEqual(new Uint8Array([0, 1]));
   });
 
-  test('should encodes 257 correctly', (): void => {
+  test('should encodes 257 correctly', () => {
     expect(encodeNumber(257)).toEqual(new Uint8Array([1, 1]));
   });
 
-  test('should encodes a payload properly', (): void => {
+  test('should encodes a payload properly', () => {
     expect(
       u8aToHex(
         createSignPayload(
@@ -32,7 +32,7 @@ describe('QrCode/QrGenerator/utils', (): void => {
     );
   });
 
-  test('should encodes frames properly', (): void => {
+  test('should encodes frames properly', () => {
     expect(
       createFrames(
         createSignPayload(
@@ -52,5 +52,12 @@ describe('QrCode/QrGenerator/utils', (): void => {
         '12345678' + // data
         'b0a8d493285c2df73290dfb7e61f870f17b41801197a149ca93654499ea3dafe', // genesisHash
     ]);
+  });
+
+  test('should create svg string', () => {
+    const svg = getSvgString(stringToU8a('test'), 'red');
+
+    expect(svg).toMatch(/<svg version="1.1" xmlns="http:\/\/www.w3.org\/2000\/svg" width="100%" height="100%"/);
+    expect(svg).toMatch(/<rect width="100%" height="100%" fill="red"/);
   });
 });
