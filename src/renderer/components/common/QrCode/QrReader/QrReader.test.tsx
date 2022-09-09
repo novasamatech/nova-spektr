@@ -3,7 +3,7 @@ import QrScanner from 'qr-scanner';
 import { act, render, screen } from '@testing-library/react';
 
 import { QR_READER_ERRORS } from './common/errors';
-import { Errors } from './common/types';
+import { QrError } from './common/types';
 import QrReader from './QrReader';
 
 jest.mock('qr-scanner');
@@ -52,7 +52,7 @@ describe('common/QrCode/QrReader', () => {
     });
 
     expect(spyStart).toBeCalledTimes(1);
-    expect(spyError).toBeCalledWith(QR_READER_ERRORS[Errors.CANNOT_START]);
+    expect(spyError).toBeCalledWith(QR_READER_ERRORS[QrError.CANNOT_START]);
   });
 
   test('should not call onCameraList on a single camera', async () => {
@@ -125,7 +125,7 @@ describe('common/QrCode/QrReader', () => {
     });
 
     expect(spyError).toBeCalledTimes(1);
-    expect(spyError).toBeCalledWith(QR_READER_ERRORS[Errors.BAD_NEW_CAMERA]);
+    expect(spyError).toBeCalledWith(QR_READER_ERRORS[QrError.BAD_NEW_CAMERA]);
   });
 
   test('should call onResult', async () => {

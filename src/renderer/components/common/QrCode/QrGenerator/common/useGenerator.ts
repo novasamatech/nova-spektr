@@ -1,24 +1,9 @@
 import { useEffect, useRef, useState } from 'react';
 import { objectSpread } from '@polkadot/util';
 import { xxhashAsHex } from '@polkadot/util-crypto';
-import qrcode from 'qrcode-generator';
 
-import { COMMAND, DEFAULT_FRAME_DELAY, TIMER_INC } from './common/constants';
-import { createFrames, createImgSize, createSignPayload } from './common/utils';
-
-// HACK The default function take string -> number[], the Uint8array is compatible
-// with that signature and the use thereof
-(qrcode as any).stringToBytes = (data: Uint8Array): Uint8Array => data;
-
-const getDataUrl = (value: Uint8Array): string => {
-  const qr = qrcode(0, 'M');
-
-  // This will only work for the case where we actually pass `Bytes` in here
-  qr.addData(value as unknown as string, 'Byte');
-  qr.make();
-
-  return qr.createDataURL(16, 0);
-};
+import { TIMER_INC } from './constants';
+import { createFrames, getSvgString } from './utils';
 
 type FrameState = {
   frames: Uint8Array[];
@@ -32,34 +17,15 @@ type TimerState = {
   timerId: number | null;
 };
 
-type Props = {
-  address: string;
-  cmd: COMMAND;
-  genesisHash: Uint8Array | string;
-  payload: Uint8Array | string;
-  size?: number;
-  skipEncoding?: boolean;
-  delay?: number;
-};
-
-export const QrGenerator = ({
-  address,
-  cmd,
-  genesisHash,
-  payload,
-  size,
-  skipEncoding,
-  delay = DEFAULT_FRAME_DELAY,
-}: Props) => {
+const useGenerator = (payload: Uint8Array, skipEncoding: boolean, delay: number, bgColor: string): string | null => {
   const timerRef = useRef<TimerState>({ timerDelay: delay, timerId: null });
+
   const [{ image }, setFrameState] = useState<FrameState>({
     frameIdx: 0,
     frames: [],
     image: null,
     valueHash: null,
   });
-
-  const signPayload = createSignPayload(address, cmd, payload, genesisHash);
 
   useEffect(() => {
     const nextFrame = () =>
@@ -81,7 +47,7 @@ export const QrGenerator = ({
         // in the case of large payloads, this should be slightly more responsive on initial load
         const newState = objectSpread<FrameState>({}, state, {
           frameIdx,
-          image: getDataUrl(state.frames[frameIdx]),
+          image: getSvgString(state.frames[frameIdx], bgColor),
         });
 
         // set the new timer last
@@ -101,28 +67,24 @@ export const QrGenerator = ({
 
   useEffect(() => {
     setFrameState((state): FrameState => {
-      const valueHash = xxhashAsHex(signPayload);
+      const valueHash = xxhashAsHex(payload);
 
       if (valueHash === state.valueHash) {
         return state;
       }
 
-      const frames: Uint8Array[] = skipEncoding ? [signPayload] : createFrames(signPayload);
+      const frames: Uint8Array[] = skipEncoding ? [payload] : createFrames(payload);
 
       return {
         frames,
         valueHash,
         frameIdx: 0,
-        image: getDataUrl(frames[0]),
+        image: getSvgString(frames[0], bgColor),
       };
     });
-  }, [skipEncoding, signPayload]);
+  }, [skipEncoding, payload]);
 
-  if (!signPayload || !image) {
-    return null;
-  }
-
-  return <img src={image} alt="Generated QR code for Parity Signer" style={createImgSize(size)} />;
+  return image;
 };
 
-export default QrGenerator;
+export default useGenerator;

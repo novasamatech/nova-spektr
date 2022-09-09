@@ -1,152 +1,152 @@
-import { ErrorObject, Errors } from './types';
+import { ErrorObject, MatrixError } from './types';
 
-const MATRIX_ERRORS: Record<Errors, ErrorObject> = {
-  [Errors.OLM_FAILED]: {
-    code: Errors.OLM_FAILED,
+const MATRIX_ERRORS: Record<MatrixError, ErrorObject> = {
+  [MatrixError.OLM_FAILED]: {
+    code: MatrixError.OLM_FAILED,
     message: 'Olm failed',
   },
-  [Errors.ENCRYPTION_STARTED]: {
-    code: Errors.ENCRYPTION_STARTED,
+  [MatrixError.ENCRYPTION_STARTED]: {
+    code: MatrixError.ENCRYPTION_STARTED,
     message: 'Encryption has already been initialized',
   },
-  [Errors.ENCRYPTION_NOT_STARTED]: {
-    code: Errors.ENCRYPTION_NOT_STARTED,
+  [MatrixError.ENCRYPTION_NOT_STARTED]: {
+    code: MatrixError.ENCRYPTION_NOT_STARTED,
     message: 'Encryption has not been initialized',
   },
-  [Errors.IS_LOGGED_IN]: {
-    code: Errors.IS_LOGGED_IN,
+  [MatrixError.IS_LOGGED_IN]: {
+    code: MatrixError.IS_LOGGED_IN,
     message: 'Client is already logged in',
   },
-  [Errors.CREATE_MATRIX_CLIENT]: {
-    code: Errors.CREATE_MATRIX_CLIENT,
+  [MatrixError.CREATE_MATRIX_CLIENT]: {
+    code: MatrixError.CREATE_MATRIX_CLIENT,
     message: 'Error while creating matrix client',
   },
-  [Errors.INIT_WITH_CREDENTIALS]: {
-    code: Errors.INIT_WITH_CREDENTIALS,
+  [MatrixError.INIT_WITH_CREDENTIALS]: {
+    code: MatrixError.INIT_WITH_CREDENTIALS,
     message: 'Failed to init client with credentials',
   },
-  [Errors.NOT_LOGGED_IN]: {
-    code: Errors.NOT_LOGGED_IN,
+  [MatrixError.NOT_LOGGED_IN]: {
+    code: MatrixError.NOT_LOGGED_IN,
     message: 'Client is not logged in',
   },
-  [Errors.WRONG_HOMESERVER]: {
-    code: Errors.WRONG_HOMESERVER,
+  [MatrixError.WRONG_HOMESERVER]: {
+    code: MatrixError.WRONG_HOMESERVER,
     message: 'Wrong homeserver URL',
   },
-  [Errors.REGISTRATION]: {
-    code: Errors.REGISTRATION,
+  [MatrixError.REGISTRATION]: {
+    code: MatrixError.REGISTRATION,
     message: 'Registration failed',
   },
-  [Errors.KEY_VERIFICATION]: {
-    code: Errors.KEY_VERIFICATION,
+  [MatrixError.KEY_VERIFICATION]: {
+    code: MatrixError.KEY_VERIFICATION,
     message: 'Verification with security key failed',
   },
-  [Errors.FILE_VERIFICATION]: {
-    code: Errors.FILE_VERIFICATION,
+  [MatrixError.FILE_VERIFICATION]: {
+    code: MatrixError.FILE_VERIFICATION,
     message: 'Verification with security file failed',
   },
-  [Errors.PHRASE_VERIFICATION]: {
-    code: Errors.PHRASE_VERIFICATION,
+  [MatrixError.PHRASE_VERIFICATION]: {
+    code: MatrixError.PHRASE_VERIFICATION,
     message: 'Verification with security phrase failed',
   },
-  [Errors.LOGOUT]: {
-    code: Errors.LOGOUT,
+  [MatrixError.LOGOUT]: {
+    code: MatrixError.LOGOUT,
     message: 'Logout failed',
   },
-  [Errors.LOGIN_CREDS]: {
-    code: Errors.LOGIN_CREDS,
+  [MatrixError.LOGIN_CREDS]: {
+    code: MatrixError.LOGIN_CREDS,
     message: 'Login with credentials failed',
   },
-  [Errors.LOGIN_CACHE]: {
-    code: Errors.LOGIN_CACHE,
+  [MatrixError.LOGIN_CACHE]: {
+    code: MatrixError.LOGIN_CACHE,
     message: 'Login from cache failed',
   },
-  [Errors.NO_CREDS_IN_DB]: {
-    code: Errors.NO_CREDS_IN_DB,
+  [MatrixError.NO_CREDS_IN_DB]: {
+    code: MatrixError.NO_CREDS_IN_DB,
     message: 'No credentials in DataBase',
   },
-  [Errors.START_ROOM]: {
-    code: Errors.START_ROOM,
+  [MatrixError.START_ROOM]: {
+    code: MatrixError.START_ROOM,
     message: 'Start room creation failed',
   },
-  [Errors.FINISH_ROOM]: {
-    code: Errors.FINISH_ROOM,
+  [MatrixError.FINISH_ROOM]: {
+    code: MatrixError.FINISH_ROOM,
     message: 'Finish room creation failed',
   },
-  [Errors.LEAVE_ROOM]: {
-    code: Errors.LEAVE_ROOM,
+  [MatrixError.LEAVE_ROOM]: {
+    code: MatrixError.LEAVE_ROOM,
     message: 'Failed to leave room',
   },
-  [Errors.JOIN_ROOM]: {
-    code: Errors.JOIN_ROOM,
+  [MatrixError.JOIN_ROOM]: {
+    code: MatrixError.JOIN_ROOM,
     message: 'Failed to join room',
   },
-  [Errors.INVITE_IN_ROOM]: {
-    code: Errors.INVITE_IN_ROOM,
+  [MatrixError.INVITE_IN_ROOM]: {
+    code: MatrixError.INVITE_IN_ROOM,
     message: 'Failed to invite in room',
   },
-  [Errors.JOINED_ROOMS]: {
-    code: Errors.JOINED_ROOMS,
+  [MatrixError.JOINED_ROOMS]: {
+    code: MatrixError.JOINED_ROOMS,
     message: 'Failed to load joined rooms',
   },
-  [Errors.MESSAGE]: {
-    code: Errors.MESSAGE,
+  [MatrixError.MESSAGE]: {
+    code: MatrixError.MESSAGE,
     message: 'Message not sent',
   },
-  [Errors.MARK_AS_READ]: {
-    code: Errors.MARK_AS_READ,
+  [MatrixError.MARK_AS_READ]: {
+    code: MatrixError.MARK_AS_READ,
     message: 'Mark as read failed',
   },
-  [Errors.MST_INIT]: {
-    code: Errors.MST_INIT,
+  [MatrixError.MST_INIT]: {
+    code: MatrixError.MST_INIT,
     message: 'Mst init failed',
   },
-  [Errors.MST_APPROVE]: {
-    code: Errors.MST_APPROVE,
+  [MatrixError.MST_APPROVE]: {
+    code: MatrixError.MST_APPROVE,
     message: 'Mst approve failed',
   },
-  [Errors.MST_FINAL_APPROVE]: {
-    code: Errors.MST_FINAL_APPROVE,
+  [MatrixError.MST_FINAL_APPROVE]: {
+    code: MatrixError.MST_FINAL_APPROVE,
     message: 'Mst final approve failed',
   },
-  [Errors.MST_CANCEL]: {
-    code: Errors.MST_CANCEL,
+  [MatrixError.MST_CANCEL]: {
+    code: MatrixError.MST_CANCEL,
     message: 'Mst cancel failder',
   },
-  [Errors.ROOM_ENCRYPTION]: {
-    code: Errors.ROOM_ENCRYPTION,
+  [MatrixError.ROOM_ENCRYPTION]: {
+    code: MatrixError.ROOM_ENCRYPTION,
     message: 'Failed activating room encryption',
   },
-  [Errors.ROOM_TOPIC]: {
-    code: Errors.ROOM_TOPIC,
+  [MatrixError.ROOM_TOPIC]: {
+    code: MatrixError.ROOM_TOPIC,
     message: "Failed setting room's topic",
   },
-  [Errors.OUTSIDE_ROOM]: {
-    code: Errors.OUTSIDE_ROOM,
+  [MatrixError.OUTSIDE_ROOM]: {
+    code: MatrixError.OUTSIDE_ROOM,
     message: 'Matrix client is outside of room',
   },
-  [Errors.INVITE_USERS]: {
-    code: Errors.INVITE_USERS,
+  [MatrixError.INVITE_USERS]: {
+    code: MatrixError.INVITE_USERS,
     message: 'Could not invite users',
   },
-  [Errors.MEMBERS_VERIFICATION]: {
-    code: Errors.MEMBERS_VERIFICATION,
+  [MatrixError.MEMBERS_VERIFICATION]: {
+    code: MatrixError.MEMBERS_VERIFICATION,
     message: 'Could not verify members devices in room',
   },
-  [Errors.READ_TIMELINE]: {
-    code: Errors.READ_TIMELINE,
+  [MatrixError.READ_TIMELINE]: {
+    code: MatrixError.READ_TIMELINE,
     message: 'Failed to read the timeline',
   },
-  [Errors.VERIFY_FILE_MAX_SIZE]: {
-    code: Errors.VERIFY_FILE_MAX_SIZE,
+  [MatrixError.VERIFY_FILE_MAX_SIZE]: {
+    code: MatrixError.VERIFY_FILE_MAX_SIZE,
     message: 'File exceeded max size limit',
   },
-  [Errors.READ_VERIFY_FILE]: {
-    code: Errors.READ_VERIFY_FILE,
+  [MatrixError.READ_VERIFY_FILE]: {
+    code: MatrixError.READ_VERIFY_FILE,
     message: 'Failed to read verification file',
   },
-  [Errors.VERIFY_FILE_BAD_CONTENT]: {
-    code: Errors.VERIFY_FILE_BAD_CONTENT,
+  [MatrixError.VERIFY_FILE_BAD_CONTENT]: {
+    code: MatrixError.VERIFY_FILE_BAD_CONTENT,
     message: 'Verification file has bad content',
   },
 };

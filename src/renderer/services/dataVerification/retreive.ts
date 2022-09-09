@@ -55,7 +55,7 @@ const retrieve = (node: Node, key: Uint8Array): Uint8Array | null => {
     return null;
   }
 
-  if (getNodeType(node) === NodeType.Leaf) {
+  if (getNodeType(node) === NodeType.LEAF) {
     return retrieveFromLeaf(node, key);
   }
 

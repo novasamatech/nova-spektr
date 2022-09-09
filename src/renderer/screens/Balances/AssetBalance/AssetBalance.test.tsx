@@ -1,7 +1,8 @@
 import { act, render, screen } from '@testing-library/react';
 
 import AssetBalance from './AssetBalance';
-import { Asset, Chain } from '@renderer/services/network/common/types';
+import { Chain } from '@renderer/domain/chain';
+import { Asset } from '@renderer/domain/asset';
 import chains from '@renderer/services/network/common/chains.json';
 import { TEST_PUBLIC_KEY } from '@renderer/services/balance/common/constants';
 import { Balance } from '@renderer/domain/balance';
@@ -36,25 +37,53 @@ describe('screen/Balances/AssetBalance', () => {
     expect(text).toHaveTextContent('0.000000001 DOT');
   });
 
-  test('should render component', async () => {
+  test('should show expanded row', async () => {
     await act(async () => {
       render(<AssetBalance {...defaultProps} />);
     });
 
-    const row = screen.getByRole('button');
+    const textHidden = screen.queryByTestId('transferable');
+    expect(textHidden).not.toBeInTheDocument();
 
-    await act(async () => {
-      row.click();
-    });
+    const row = screen.getByRole('button');
+    await act(() => row.click());
 
     const text = screen.getByTestId('transferable');
     expect(text).toHaveTextContent('0.0000000008 DOT');
+  });
 
+  test('should hide action buttons', async () => {
     await act(async () => {
-      row.click();
+      render(<AssetBalance {...defaultProps} />);
     });
 
-    const textHidden = screen.queryByTestId('transferable');
-    expect(textHidden).not.toBeInTheDocument();
+    const buttons = screen.getAllByRole('button');
+    expect(buttons.length).toEqual(1);
+  });
+
+  test('should init transfer', async () => {
+    const spyTransfer = jest.fn();
+
+    await act(async () => {
+      render(<AssetBalance {...defaultProps} canMakeActions onTransferClick={spyTransfer} />);
+    });
+
+    const buttons = screen.getAllByRole('button');
+    buttons[1].click();
+
+    expect(spyTransfer).toBeCalled();
+  });
+
+  test('should init receive', async () => {
+    const spyReceive = jest.fn();
+
+    await act(async () => {
+      render(<AssetBalance {...defaultProps} canMakeActions onReceiveClick={spyReceive} />);
+    });
+
+    const buttons = screen.getAllByRole('button');
+    buttons[2].click();
+
+    expect(spyReceive).toBeCalled();
   });
 });

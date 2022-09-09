@@ -1,6 +1,6 @@
 import { act, render, screen } from '@testing-library/react';
 
-import { Chain } from '@renderer/services/network/common/types';
+import { Chain } from '@renderer/domain/chain';
 import StepThree from './StepThree';
 
 jest.mock('@renderer/services/wallet/walletService', () => ({

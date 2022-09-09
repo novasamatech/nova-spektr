@@ -17,7 +17,7 @@ export const enum CryptoType {
   ETHEREUM,
 }
 
-export const enum ErrorTypes {
+export const enum ErrorType {
   REQUIRED = 'required',
   VALIDATE = 'validate',
   PATTERN = 'pattern',

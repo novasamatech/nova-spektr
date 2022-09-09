@@ -145,7 +145,7 @@ export type OmniExtras = {
 // ============== MST Events / Callbacks ===============
 // =====================================================
 
-export enum OmniMstEvents {
+export enum OmniMstEvent {
   INIT = 'io.novafoundation.omni.mst_initiated',
   APPROVE = 'io.novafoundation.omni.mst_approved',
   FINAL_APPROVE = 'io.novafoundation.omni.mst_executed',
@@ -178,7 +178,7 @@ export type InvitePayload = EventPayload & {
 
 export type MSTPayload = EventPayload & {
   content: MstParams;
-  type: OmniMstEvents;
+  type: OmniMstEvent;
 };
 
 export type CombinedEventPayload = InvitePayload | MSTPayload;
@@ -201,7 +201,7 @@ export type Callbacks = GeneralCallbacks & MSTCallbacks;
 // ===================== Errors ========================
 // =====================================================
 
-export const enum Errors {
+export const enum MatrixError {
   ENCRYPTION_STARTED,
   ENCRYPTION_NOT_STARTED,
   IS_LOGGED_IN,
@@ -242,6 +242,6 @@ export const enum Errors {
 }
 
 export type ErrorObject = {
-  code: Errors;
+  code: MatrixError;
   message: string;
 };

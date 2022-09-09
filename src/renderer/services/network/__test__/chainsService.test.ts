@@ -1,5 +1,5 @@
 import { useChains } from '../chainsService';
-import { Chain } from '../common/types';
+import { Chain } from '@renderer/domain/chain';
 
 describe('service/network', () => {
   test('should init', () => {

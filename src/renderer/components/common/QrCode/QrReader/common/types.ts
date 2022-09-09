@@ -1,4 +1,4 @@
-export const enum Errors {
+export const enum QrError {
   UNABLE_TO_GET_MEDIA,
   USER_DENY,
   NO_VIDEO_INPUT,
@@ -7,6 +7,6 @@ export const enum Errors {
 }
 
 export type ErrorObject = {
-  code: Errors;
+  code: QrError;
   message: string;
 };

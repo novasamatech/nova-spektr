@@ -4,12 +4,13 @@ import { ApiPromise, WsProvider } from '@polkadot/api';
 import { ScProvider } from '@polkadot/rpc-provider/substrate-connect';
 import { ProviderInterface } from '@polkadot/rpc-provider/types';
 
+import { Chain } from '@renderer/domain/chain';
 import { Connection, ConnectionType } from '@renderer/domain/connection';
 import { ChainId } from '@renderer/domain/shared-kernel';
 import storage from '@renderer/services/storage';
 import { useChainSpec } from './chainSpecService';
 import { useChains } from './chainsService';
-import { Chain, ExtendedChain, INetworkService } from './common/types';
+import { ExtendedChain, INetworkService } from './common/types';
 
 export const useNetwork = (): INetworkService => {
   const chains = useRef<Record<string, Chain>>({});

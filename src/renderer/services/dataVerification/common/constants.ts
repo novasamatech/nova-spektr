@@ -1,6 +1,6 @@
 export const enum NodeType {
-  Leaf,
-  Branch,
+  LEAF,
+  BRANCH,
 }
 
 export const HASH_LENGTH = 32;

@@ -29,7 +29,7 @@ import {
   Callbacks,
   Credential,
   ErrorObject,
-  Errors,
+  MatrixError,
   ICredentialStorage,
   InvitePayload,
   ISecretStorage,
@@ -38,7 +38,7 @@ import {
   MstParams,
   MSTPayload,
   OmniExtras,
-  OmniMstEvents,
+  OmniMstEvent,
   RoomParams,
   Signatory,
 } from './common/types';
@@ -76,7 +76,7 @@ export class Matrix implements ISecureMessenger {
    */
   async init(): Promise<void | never> {
     if (this.isEncryptionActive) {
-      throw this.createError(Errors.ENCRYPTION_STARTED);
+      throw this.createError(MatrixError.ENCRYPTION_STARTED);
     }
 
     try {
@@ -84,7 +84,7 @@ export class Matrix implements ISecureMessenger {
       this.isEncryptionActive = true;
       console.info('=== 🟢 Olm started 🟢 ===');
     } catch (error) {
-      throw this.createError(Errors.OLM_FAILED, error);
+      throw this.createError(MatrixError.OLM_FAILED, error);
     }
   }
 
@@ -100,11 +100,11 @@ export class Matrix implements ISecureMessenger {
     try {
       response = await fetch(`https://${normalizedUrl}/_matrix/client/versions`);
     } catch (error) {
-      throw this.createError(Errors.WRONG_HOMESERVER, error);
+      throw this.createError(MatrixError.WRONG_HOMESERVER, error);
     }
 
     if (response?.status !== 200) {
-      this.createError(Errors.WRONG_HOMESERVER);
+      this.createError(MatrixError.WRONG_HOMESERVER);
     }
     this.setBaseUrl(`https://${normalizedUrl}`);
   }
@@ -125,7 +125,7 @@ export class Matrix implements ISecureMessenger {
    */
   async loginWithCreds(login: string, password: string): Promise<void | never> {
     if (!this.isEncryptionActive) {
-      throw this.createError(Errors.ENCRYPTION_NOT_STARTED);
+      throw this.createError(MatrixError.ENCRYPTION_NOT_STARTED);
     }
 
     try {
@@ -136,7 +136,7 @@ export class Matrix implements ISecureMessenger {
       this.subscribeToEvents();
       this.skipLogin(false);
     } catch (error) {
-      throw this.createError(Errors.LOGIN_CREDS, error);
+      throw this.createError(MatrixError.LOGIN_CREDS, error);
     }
   }
 
@@ -147,7 +147,7 @@ export class Matrix implements ISecureMessenger {
    */
   async loginFromCache(): Promise<void | never> {
     if (!this.isEncryptionActive) {
-      throw this.createError(Errors.ENCRYPTION_NOT_STARTED);
+      throw this.createError(MatrixError.ENCRYPTION_NOT_STARTED);
     }
     if (this.credentialStorage.getSkipLogin().skip) return;
 
@@ -159,7 +159,7 @@ export class Matrix implements ISecureMessenger {
       this.subscribeToEvents();
       this.skipLogin(false);
     } catch (error) {
-      throw this.createError(Errors.LOGIN_CACHE, error);
+      throw this.createError(MatrixError.LOGIN_CACHE, error);
     }
   }
 
@@ -204,7 +204,7 @@ export class Matrix implements ISecureMessenger {
 
       return isCorrect;
     } catch (error) {
-      throw this.createError(Errors.KEY_VERIFICATION, error);
+      throw this.createError(MatrixError.KEY_VERIFICATION, error);
     }
   }
 
@@ -218,7 +218,7 @@ export class Matrix implements ISecureMessenger {
     this.checkClientLoggedIn();
 
     if (securityFile.size > KEY_FILE_MAX_SIZE) {
-      throw this.createError(Errors.VERIFY_FILE_MAX_SIZE);
+      throw this.createError(MatrixError.VERIFY_FILE_MAX_SIZE);
     }
 
     let securityKey = '';
@@ -226,18 +226,18 @@ export class Matrix implements ISecureMessenger {
       const fileKey = await securityFile.text();
       securityKey = fileKey.replace(/(\r\n|\n|\r)/gm, ' ');
     } catch (error) {
-      throw this.createError(Errors.VERIFY_FILE_MAX_SIZE, error);
+      throw this.createError(MatrixError.VERIFY_FILE_MAX_SIZE, error);
     }
 
     // test it's within the base58 alphabet
     if (!/^[123456789A-Za-z\s]+$/.test(securityKey)) {
-      throw this.createError(Errors.VERIFY_FILE_BAD_CONTENT);
+      throw this.createError(MatrixError.VERIFY_FILE_BAD_CONTENT);
     }
 
     try {
       return this.verifyWithKey(securityKey);
     } catch (error) {
-      throw this.createError(Errors.FILE_VERIFICATION, error);
+      throw this.createError(MatrixError.FILE_VERIFICATION, error);
     }
   }
 
@@ -265,7 +265,7 @@ export class Matrix implements ISecureMessenger {
 
       return isCorrect;
     } catch (error) {
-      throw this.createError(Errors.PHRASE_VERIFICATION, error);
+      throw this.createError(MatrixError.PHRASE_VERIFICATION, error);
     }
   }
 
@@ -287,7 +287,7 @@ export class Matrix implements ISecureMessenger {
 
     const credentials = this.credentialStorage.getCredentials('userId', this.userId);
     if (!credentials) {
-      throw this.createError(Errors.LOGOUT);
+      throw this.createError(MatrixError.LOGOUT);
     }
     this.credentialStorage.updateCredentials(credentials.userId, { isLastLogin: false });
 
@@ -297,7 +297,7 @@ export class Matrix implements ISecureMessenger {
       await this.matrixClient.clearStores();
       this.credentialStorage.clear();
     } catch (error) {
-      throw this.createError(Errors.LOGOUT, error);
+      throw this.createError(MatrixError.LOGOUT, error);
     }
   }
 
@@ -319,7 +319,7 @@ export class Matrix implements ISecureMessenger {
 
       return { roomId, sign: `${mstAccountAddress}${roomId}` };
     } catch (error) {
-      throw this.createError(Errors.START_ROOM, error);
+      throw this.createError(MatrixError.START_ROOM, error);
     }
   }
 
@@ -339,7 +339,7 @@ export class Matrix implements ISecureMessenger {
       const members = params.signatories.map((signatory) => signatory.matrixAddress);
       await this.verifyDevices(members);
     } catch (error) {
-      throw this.createError(Errors.FINISH_ROOM, error);
+      throw this.createError(MatrixError.FINISH_ROOM, error);
     }
   }
 
@@ -355,7 +355,7 @@ export class Matrix implements ISecureMessenger {
     try {
       await this.matrixClient.leave(roomId);
     } catch (error) {
-      throw this.createError(Errors.LEAVE_ROOM, error);
+      throw this.createError(MatrixError.LEAVE_ROOM, error);
     }
   }
 
@@ -381,7 +381,7 @@ export class Matrix implements ISecureMessenger {
     try {
       await this.matrixClient.joinRoom(roomId);
     } catch (error) {
-      throw this.createError(Errors.JOIN_ROOM, error);
+      throw this.createError(MatrixError.JOIN_ROOM, error);
     }
   }
 
@@ -398,7 +398,7 @@ export class Matrix implements ISecureMessenger {
     try {
       await this.matrixClient.invite(roomId, signatoryId);
     } catch (error) {
-      throw this.createError(Errors.INVITE_IN_ROOM, error);
+      throw this.createError(MatrixError.INVITE_IN_ROOM, error);
     }
   }
 
@@ -432,7 +432,7 @@ export class Matrix implements ISecureMessenger {
       const data = await this.matrixClient.getJoinedRooms();
       rooms = data.joined_rooms || [];
     } catch (error) {
-      throw this.createError(Errors.JOINED_ROOMS, error);
+      throw this.createError(MatrixError.JOINED_ROOMS, error);
     }
 
     const timeline = rooms.reduce((acc, roomId) => {
@@ -454,7 +454,7 @@ export class Matrix implements ISecureMessenger {
     try {
       await Promise.all(timeline.map(this.markAsRead));
     } catch (error) {
-      throw this.createError(Errors.READ_TIMELINE, error);
+      throw this.createError(MatrixError.READ_TIMELINE, error);
     }
 
     return timeline.map((event) => this.createEventPayload<MSTPayload>(event));
@@ -472,7 +472,7 @@ export class Matrix implements ISecureMessenger {
     try {
       await this.matrixClient.sendTextMessage(this.activeRoomId, message);
     } catch (error) {
-      throw this.createError(Errors.MESSAGE, error);
+      throw this.createError(MatrixError.MESSAGE, error);
     }
   }
 
@@ -487,7 +487,7 @@ export class Matrix implements ISecureMessenger {
     try {
       await this.matrixClient.sendReadReceipt(event);
     } catch (error) {
-      throw this.createError(Errors.MARK_AS_READ, error);
+      throw this.createError(MatrixError.MARK_AS_READ, error);
     }
   }
 
@@ -543,9 +543,9 @@ export class Matrix implements ISecureMessenger {
     this.checkInsideRoom();
 
     try {
-      await this.matrixClient.sendEvent(this.activeRoomId, OmniMstEvents.INIT, params);
+      await this.matrixClient.sendEvent(this.activeRoomId, OmniMstEvent.INIT, params);
     } catch (error) {
-      throw this.createError(Errors.MST_INIT, error);
+      throw this.createError(MatrixError.MST_INIT, error);
     }
   }
 
@@ -561,9 +561,9 @@ export class Matrix implements ISecureMessenger {
     this.checkInsideRoom();
 
     try {
-      await this.matrixClient.sendEvent(this.activeRoomId, OmniMstEvents.APPROVE, params);
+      await this.matrixClient.sendEvent(this.activeRoomId, OmniMstEvent.APPROVE, params);
     } catch (error) {
-      throw this.createError(Errors.MST_APPROVE, error);
+      throw this.createError(MatrixError.MST_APPROVE, error);
     }
   }
 
@@ -579,9 +579,9 @@ export class Matrix implements ISecureMessenger {
     this.checkInsideRoom();
 
     try {
-      await this.matrixClient.sendEvent(this.activeRoomId, OmniMstEvents.FINAL_APPROVE, params);
+      await this.matrixClient.sendEvent(this.activeRoomId, OmniMstEvent.FINAL_APPROVE, params);
     } catch (error) {
-      throw this.createError(Errors.MST_FINAL_APPROVE, error);
+      throw this.createError(MatrixError.MST_FINAL_APPROVE, error);
     }
   }
 
@@ -597,9 +597,9 @@ export class Matrix implements ISecureMessenger {
     this.checkInsideRoom();
 
     try {
-      await this.matrixClient.sendEvent(this.activeRoomId, OmniMstEvents.CANCEL, params);
+      await this.matrixClient.sendEvent(this.activeRoomId, OmniMstEvent.CANCEL, params);
     } catch (error) {
-      throw this.createError(Errors.MST_CANCEL, error);
+      throw this.createError(MatrixError.MST_CANCEL, error);
     }
   }
 
@@ -668,7 +668,7 @@ export class Matrix implements ISecureMessenger {
     try {
       await this.matrixClient.sendStateEvent(params.roomId, 'm.room.encryption', ROOM_CRYPTO_CONFIG);
     } catch (error) {
-      throw this.createError(Errors.ROOM_ENCRYPTION, error);
+      throw this.createError(MatrixError.ROOM_ENCRYPTION, error);
     }
 
     try {
@@ -689,7 +689,7 @@ export class Matrix implements ISecureMessenger {
         omni_extras: omniExtras,
       });
     } catch (error) {
-      throw this.createError(Errors.ROOM_TOPIC, error);
+      throw this.createError(MatrixError.ROOM_TOPIC, error);
     }
   }
 
@@ -716,7 +716,7 @@ export class Matrix implements ISecureMessenger {
     try {
       await Promise.all(inviteRequests);
     } catch (error) {
-      throw this.createError(Errors.INVITE_USERS, error);
+      throw this.createError(MatrixError.INVITE_USERS, error);
     }
   }
 
@@ -740,7 +740,7 @@ export class Matrix implements ISecureMessenger {
     try {
       await Promise.all(verifyRequests);
     } catch (error) {
-      throw this.createError(Errors.MEMBERS_VERIFICATION, error);
+      throw this.createError(MatrixError.MEMBERS_VERIFICATION, error);
     }
   }
 
@@ -785,7 +785,7 @@ export class Matrix implements ISecureMessenger {
         });
       }
     } catch (error) {
-      throw this.createError(Errors.INIT_WITH_CREDENTIALS, error);
+      throw this.createError(MatrixError.INIT_WITH_CREDENTIALS, error);
     }
   }
 
@@ -798,7 +798,7 @@ export class Matrix implements ISecureMessenger {
     const credentials = this.credentialStorage.getCredentials('isLastLogin', true);
 
     if (!credentials) {
-      throw this.createError(Errors.NO_CREDS_IN_DB);
+      throw this.createError(MatrixError.NO_CREDS_IN_DB);
     }
 
     this.matrixClient = await this.createMatrixClient({
@@ -921,7 +921,7 @@ export class Matrix implements ISecureMessenger {
    * @param origin original error object
    * @return {ErrorObject}
    */
-  private createError(error: Errors, origin?: unknown | never | Error): ErrorObject {
+  private createError(error: MatrixError, origin?: unknown | never | MatrixError): ErrorObject {
     if (!origin) return MATRIX_ERRORS[error];
 
     if (origin instanceof Error) {
@@ -943,7 +943,7 @@ export class Matrix implements ISecureMessenger {
    */
   private checkClientLoggedIn(): void | never {
     if (!this.matrixClient.isLoggedIn()) {
-      throw this.createError(Errors.NOT_LOGGED_IN);
+      throw this.createError(MatrixError.NOT_LOGGED_IN);
     }
   }
 
@@ -953,7 +953,7 @@ export class Matrix implements ISecureMessenger {
    */
   private checkInsideRoom(): void | never {
     if (!this.activeRoomId) {
-      throw this.createError(Errors.OUTSIDE_ROOM);
+      throw this.createError(MatrixError.OUTSIDE_ROOM);
     }
   }
 
@@ -1039,7 +1039,7 @@ export class Matrix implements ISecureMessenger {
         cryptoCallbacks: this.secretStorage.cryptoCallbacks,
       });
     } catch (error) {
-      throw this.createError(Errors.CREATE_MATRIX_CLIENT, error);
+      throw this.createError(MatrixError.CREATE_MATRIX_CLIENT, error);
     }
   }
 
@@ -1049,7 +1049,7 @@ export class Matrix implements ISecureMessenger {
    * @return {Boolean}
    */
   private isMstEvent(event: MatrixEvent): boolean {
-    return MST_EVENTS.includes(event.getType() as OmniMstEvents);
+    return MST_EVENTS.includes(event.getType() as OmniMstEvent);
   }
 
   /**

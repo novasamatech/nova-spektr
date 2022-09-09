@@ -2,7 +2,8 @@ import compact from 'lodash/compact';
 import sortBy from 'lodash/sortBy';
 
 import chains from './common/chains.json';
-import { Chain, IChainService } from './common/types';
+import { IChainService } from './common/types';
+import { Chain } from '@renderer/domain/chain';
 import { isKusama, isPolkadot, isTestnet } from './common/utils';
 
 export function useChains(): IChainService {

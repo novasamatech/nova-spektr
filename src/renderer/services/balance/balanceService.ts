@@ -2,11 +2,12 @@ import { useLiveQuery } from 'dexie-react-hooks';
 import { AccountInfo, BalanceLock } from '@polkadot/types/interfaces';
 import { BN } from '@polkadot/util';
 
-import storage, { BalanceDS } from '../storage';
+import { Asset, AssetType, OrmlExtras, StatemineExtras } from '@renderer/domain/asset';
 import { Balance } from '@renderer/domain/balance';
 import { ChainId, PublicKey } from '@renderer/domain/shared-kernel';
+import { ExtendedChain } from '@renderer/services/network/common/types';
 import { validate } from '../dataVerification/dataVerification';
-import { Asset, AssetType, ExtendedChain, OrmlExtras, StatemineExtras } from '../network/common/types';
+import storage, { BalanceDS } from '../storage';
 import { IBalanceService } from './common/types';
 import { toAddress } from './common/utils';
 

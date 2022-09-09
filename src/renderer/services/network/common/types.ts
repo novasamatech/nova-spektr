@@ -1,7 +1,8 @@
 import { ApiPromise } from '@polkadot/api';
 
-import { ChainId, HexString } from '@renderer/domain/shared-kernel';
+import { Chain } from '@renderer/domain/chain';
 import { Connection, ConnectionType } from '@renderer/domain/connection';
+import { ChainId } from '@renderer/domain/shared-kernel';
 
 // ------------------
 // Service interfaces
@@ -26,68 +27,6 @@ export interface INetworkService {
 // ------------------
 // ----- Types ------
 // ------------------
-
-export type StatemineExtras = {
-  assetId: string;
-};
-
-export type OrmlExtras = {
-  currencyIdScale: string;
-  currencyIdType: string;
-  existentialDeposit: string;
-  transfersEnabled?: boolean;
-};
-
-export const enum AssetType {
-  ORML = 'orml',
-  STATEMINE = 'statemine',
-}
-
-export type Asset = {
-  name: string;
-  assetId: number;
-  symbol: string;
-  precision: number;
-  priceId: string;
-  icon: string;
-  type?: AssetType;
-  typeExtras?: StatemineExtras | OrmlExtras;
-};
-
-export type RPCNode = {
-  url: string;
-  name: string;
-};
-
-export type Explorer = {
-  name: string;
-  extrinsic?: string;
-  account?: string;
-  event?: string;
-};
-
-export type ApiType = 'history';
-export type HistoryType = 'subquery';
-
-export type ExternalApi = {
-  type: HistoryType;
-  url: string;
-};
-
-export type ChainOptions = 'testnet' | 'crowdloans';
-
-export type Chain = {
-  chainId: ChainId;
-  parentId?: HexString;
-  name: string;
-  assets: Asset[];
-  nodes: RPCNode[];
-  explorers: Explorer[];
-  icon: string;
-  addressPrefix: number;
-  externalApi?: Record<ApiType, ExternalApi>;
-  options?: ChainOptions[];
-};
 
 export type ExtendedChain = Chain & {
   connection: Connection;
