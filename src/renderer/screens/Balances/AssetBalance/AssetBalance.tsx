@@ -1,5 +1,5 @@
 import cn from 'classnames';
-import { MouseEvent } from 'react';
+import { MouseEvent, KeyboardEvent } from 'react';
 
 import { Balance as BalanceValue, Button, Icon } from '@renderer/components/ui';
 import Shimmering from '@renderer/components/ui/Shimmering/Shimmering';
@@ -12,21 +12,29 @@ type Props = {
   asset: Asset;
   balance: Balance;
   canMakeActions?: boolean;
-  onReceive?: () => void;
-  onTransfer?: () => void;
+  onReceiveClick?: () => void;
+  onTransferClick?: () => void;
 };
 
-const AssetBalance = ({ asset, balance, canMakeActions, onTransfer, onReceive }: Props) => {
+const AssetBalance = ({ asset, balance, canMakeActions, onTransferClick, onReceiveClick }: Props) => {
   const [isExpanded, toggleExpanded] = useToggle();
 
-  const onInitTransfer = (event: MouseEvent<HTMLButtonElement>) => {
+  const onTransfer = (event: MouseEvent<HTMLButtonElement>) => {
     event.stopPropagation();
-    onTransfer?.();
+    onTransferClick?.();
   };
 
-  const onInitReceive = (event: MouseEvent<HTMLButtonElement>) => {
+  const onReceive = (event: MouseEvent<HTMLButtonElement>) => {
     event.stopPropagation();
-    onReceive?.();
+    onReceiveClick?.();
+  };
+
+  const onWrapperKeyDown = (event: KeyboardEvent<HTMLDivElement>) => {
+    event.stopPropagation();
+
+    if (event.currentTarget === event.target && event.key === 'Enter') {
+      toggleExpanded();
+    }
   };
 
   return (
@@ -36,7 +44,7 @@ const AssetBalance = ({ asset, balance, canMakeActions, onTransfer, onReceive }:
       aria-expanded={isExpanded}
       className={cn('group outline-none cursor-pointer', !isExpanded && 'focus:bg-shade-2 hover:bg-shade-2')}
       onClick={toggleExpanded}
-      // TODO: think about accessibility (interactive elements cannot be inside buttons)
+      onKeyDown={onWrapperKeyDown}
     >
       <div className={cn('border-2', isExpanded ? 'rounded-2lg border-primary' : 'border-transparent')}>
         <div className="flex items-center h-15 p-[15px] text-xl">
@@ -65,7 +73,7 @@ const AssetBalance = ({ asset, balance, canMakeActions, onTransfer, onReceive }:
                 variant="fill"
                 pallet="primary"
                 weight="lg"
-                onClick={onInitTransfer}
+                onClick={onTransfer}
               >
                 <Icon as="svg" name="arrowUp" size={22} />
               </Button>
@@ -77,7 +85,7 @@ const AssetBalance = ({ asset, balance, canMakeActions, onTransfer, onReceive }:
                 variant="fill"
                 pallet="secondary"
                 weight="lg"
-                onClick={onInitReceive}
+                onClick={onReceive}
               >
                 <Icon as="svg" name="arrowDown" size={22} />
               </Button>

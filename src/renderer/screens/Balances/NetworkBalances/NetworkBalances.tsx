@@ -18,8 +18,8 @@ type Props = {
   chain: Chain;
   publicKey: PublicKey;
   canMakeActions?: boolean;
-  onReceive?: (asset: Asset) => void;
-  onTransfer?: () => void;
+  onReceiveClick?: (asset: Asset) => void;
+  onTransferClick?: () => void;
 };
 
 const NetworkBalances = ({
@@ -29,8 +29,8 @@ const NetworkBalances = ({
   publicKey,
   searchSymbolOnly,
   canMakeActions,
-  onTransfer,
-  onReceive,
+  onTransferClick,
+  onReceiveClick,
 }: Props) => {
   const [isHidden, setIsHidden] = useState(false);
 
@@ -88,8 +88,8 @@ const NetworkBalances = ({
               asset={asset}
               balance={balancesObject[asset.assetId.toString()]}
               canMakeActions={canMakeActions}
-              onReceive={() => onReceive?.(asset)}
-              onTransfer={onTransfer}
+              onReceiveClick={() => onReceiveClick?.(asset)}
+              onTransferClick={onTransferClick}
             />
           ))}
         </div>

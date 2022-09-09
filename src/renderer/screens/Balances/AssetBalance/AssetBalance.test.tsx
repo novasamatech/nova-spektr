@@ -65,7 +65,7 @@ describe('screen/Balances/AssetBalance', () => {
     const spyTransfer = jest.fn();
 
     await act(async () => {
-      render(<AssetBalance {...defaultProps} canMakeActions onTransfer={spyTransfer} />);
+      render(<AssetBalance {...defaultProps} canMakeActions onTransferClick={spyTransfer} />);
     });
 
     const buttons = screen.getAllByRole('button');
@@ -78,7 +78,7 @@ describe('screen/Balances/AssetBalance', () => {
     const spyReceive = jest.fn();
 
     await act(async () => {
-      render(<AssetBalance {...defaultProps} canMakeActions onReceive={spyReceive} />);
+      render(<AssetBalance {...defaultProps} canMakeActions onReceiveClick={spyReceive} />);
     });
 
     const buttons = screen.getAllByRole('button');

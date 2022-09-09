@@ -48,7 +48,7 @@ const Balances = () => {
 
   const canMakeActions = activeWallets?.some((wallet) => wallet.type === WalletType.PARITY) || false;
 
-  const onReceive = (asset: Asset, chain: Chain) => {
+  const onReceive = (chain: Chain) => (asset: Asset) => {
     setReceiveData({
       chain,
       asset,
@@ -91,8 +91,8 @@ const Balances = () => {
                 chain={chain}
                 publicKey={publicKey}
                 canMakeActions={canMakeActions}
-                onTransfer={() => console.log('transfer')}
-                onReceive={(asset) => onReceive(asset, chain)}
+                onTransferClick={() => console.log('transfer')}
+                onReceiveClick={onReceive(chain)}
               />
             ))}
           </ul>
