@@ -33,8 +33,8 @@ export const keyLEToNibbles = (key: Uint8Array): Uint8Array => {
  */
 export const getNodeType = (n: Node): NodeType => {
   if (n.children?.length > 0) {
-    return NodeType.Branch;
+    return NodeType.BRANCH;
   }
 
-  return NodeType.Leaf;
+  return NodeType.LEAF;
 };

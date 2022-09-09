@@ -2,7 +2,7 @@ import cn from 'classnames';
 import { encodeAddress } from '@polkadot/util-crypto';
 import { Menu } from '@headlessui/react';
 
-import { Chain } from '@renderer/services/network/common/types';
+import { Chain } from '@renderer/domain/chain';
 import { Address, Icon } from '@renderer/components/ui';
 import { Explorer } from '@renderer/components/ui/Icon/data/explorer';
 import { PublicKey } from '@renderer/domain/shared-kernel';
@@ -47,9 +47,9 @@ const AccountsList = ({ publicKey, chains, className, limit }: Props) => {
   }
 
   return (
-    <div className={cn('flex flex-col z-0 divide-y divide-gray-200 overflow-y-auto overflow-x-hidden', className)}>
+    <ul className={cn('flex flex-col z-0 divide-y divide-gray-200 overflow-y-auto overflow-x-hidden', className)}>
       {limitedChains.map(({ name, addressPrefix, icon, explorers }) => (
-        <div key={name} className="flex flex-row items-center gap-2.5 pr-6 pl-4 pt-1.25 pb-1.25">
+        <li key={name} className="flex flex-row items-center gap-2.5 pr-6 pl-4 pt-1.25 pb-1.25">
           <img width="36px" height="36px" alt={name} src={icon} />
           <div className="flex flex-col flex-1 overflow-hidden whitespace-nowrap">
             <div className="font-bold text-neutral text-base w-full leading-5">{name}</div>
@@ -61,8 +61,8 @@ const AccountsList = ({ publicKey, chains, className, limit }: Props) => {
               <Menu.Items
                 className={'z-10 absolute right-0 top-0 rounded-2lg shadow-surface w-max border border-primary'}
               >
-                {explorers?.map(({ name, account }) => {
-                  return (
+                {explorers?.map(
+                  ({ name, account }) =>
                     account && (
                       <Menu.Item key={name}>
                         {({ active }) => (
@@ -75,19 +75,18 @@ const AccountsList = ({ publicKey, chains, className, limit }: Props) => {
                             rel="noopener noreferrer"
                             target="_blank"
                           >
-                            <Icon as="svg" name={ExplorerIcons[name]} /> {t('explorer.button', { name })}
+                            <Icon as="img" name={ExplorerIcons[name]} /> {t('explorer.button', { name })}
                           </a>
                         )}
                       </Menu.Item>
-                    )
-                  );
-                })}
+                    ),
+                )}
               </Menu.Items>
             </Menu>
           </div>
-        </div>
+        </li>
       ))}
-    </div>
+    </ul>
   );
 };
 

@@ -2,15 +2,26 @@ import { Fragment, PropsWithChildren, ReactNode } from 'react';
 import { Dialog, Transition } from '@headlessui/react';
 import cn from 'classnames';
 
+import { ReactComponent as CloseCutout } from '@images/functionals/close-cutout.svg';
+
 type Props = {
   isOpen: boolean;
   title?: ReactNode;
   description?: ReactNode;
-  onClose: () => void;
   className?: string;
+  closeButton?: boolean;
+  onClose: () => void;
 };
 
-const BaseModal = ({ isOpen, title, description, children, onClose, className }: PropsWithChildren<Props>) => {
+const BaseModal = ({
+  isOpen,
+  title,
+  description,
+  children,
+  onClose,
+  className,
+  closeButton,
+}: PropsWithChildren<Props>) => {
   return (
     <Transition appear show={isOpen} as={Fragment}>
       <Dialog as="div" className="relative z-10" onClose={onClose}>
@@ -39,18 +50,37 @@ const BaseModal = ({ isOpen, title, description, children, onClose, className }:
             >
               <Dialog.Panel
                 className={cn(
-                  'w-full transform overflow-hidden rounded-2xl bg-white p-6 text-left align-middle shadow-xl transition-all',
+                  'w-full transform overflow-hidden rounded-2xl bg-white text-left align-middle shadow-xl transition-all',
                   className,
                 )}
               >
-                {title && (
-                  <Dialog.Title className={'text-xl font-semibold leading-5 text-center'}>{title}</Dialog.Title>
+                {title && closeButton && (
+                  <Dialog.Title as="header">
+                    <div className="relative flex justify-center">
+                      <h2 className="text-xl text-neutral font-semibold leading-5">{title}</h2>
+                      <button
+                        aria-label="Close modal window"
+                        type="button"
+                        className="absolute right-0.5 text-neutral-variant"
+                        onClick={onClose}
+                      >
+                        <CloseCutout role="img" width={24} height={24} />
+                      </button>
+                    </div>
+                  </Dialog.Title>
                 )}
+                {title && !closeButton && (
+                  <Dialog.Title as="header" className="text-xl text-neutral font-semibold leading-5 text-center">
+                    {title}
+                  </Dialog.Title>
+                )}
+
                 {description && (
-                  <Dialog.Description className={'text-base font-normal leading-5 text-center text-neutral-variant'}>
+                  <Dialog.Description className="text-base text-neutral-variant text-center">
                     {description}
                   </Dialog.Description>
                 )}
+
                 {children}
               </Dialog.Panel>
             </Transition.Child>

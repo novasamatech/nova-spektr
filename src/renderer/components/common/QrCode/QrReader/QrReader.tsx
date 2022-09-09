@@ -5,7 +5,7 @@ import { useEffect, useRef, useState } from 'react';
 
 import { Icon } from '@renderer/components/ui';
 import { QR_READER_ERRORS } from './common/errors';
-import { ErrorObject, Errors } from './common/types';
+import { ErrorObject, QrError } from './common/types';
 
 type Props = {
   size?: number;
@@ -29,13 +29,13 @@ const QrReader = ({ size = 300, cameraId, onCameraList, onResult, onStart, onErr
     try {
       cameras = await QrScanner.listCameras(true);
     } catch (error) {
-      throw QR_READER_ERRORS[Errors.UNABLE_TO_GET_MEDIA];
+      throw QR_READER_ERRORS[QrError.UNABLE_TO_GET_MEDIA];
     }
     if (cameras.length === 0) {
-      throw QR_READER_ERRORS[Errors.NO_VIDEO_INPUT];
+      throw QR_READER_ERRORS[QrError.NO_VIDEO_INPUT];
     }
     if (cameras.length === 1 && !cameras[0].id) {
-      throw QR_READER_ERRORS[Errors.USER_DENY];
+      throw QR_READER_ERRORS[QrError.USER_DENY];
     }
     if (cameras.length > 1) {
       onCameraList(cameras);
@@ -63,7 +63,7 @@ const QrReader = ({ size = 300, cameraId, onCameraList, onResult, onStart, onErr
     } catch (error) {
       scanner.stop();
       scanner.destroy();
-      throw QR_READER_ERRORS[Errors.CANNOT_START];
+      throw QR_READER_ERRORS[QrError.CANNOT_START];
     }
   };
 
@@ -94,7 +94,7 @@ const QrReader = ({ size = 300, cameraId, onCameraList, onResult, onStart, onErr
         try {
           await qrScanner.current?.setCamera(cameraId);
         } catch (error) {
-          onError?.(QR_READER_ERRORS[Errors.BAD_NEW_CAMERA]);
+          onError?.(QR_READER_ERRORS[QrError.BAD_NEW_CAMERA]);
         }
       };
 
@@ -119,7 +119,6 @@ const QrReader = ({ size = 300, cameraId, onCameraList, onResult, onStart, onErr
         </video>
         {isScanComplete && <div className="absolute inset-0 backdrop-blur-sm rounded-3xl" />}
         <Icon
-          as="svg"
           name="qrFrame"
           className={cn(
             'absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2',
@@ -129,7 +128,6 @@ const QrReader = ({ size = 300, cameraId, onCameraList, onResult, onStart, onErr
         />
         {isScanComplete && (
           <Icon
-            as="svg"
             name="checkmarkCutout"
             className={cn(
               'absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 text-white',

@@ -4,7 +4,7 @@ import BigNumber from 'bignumber.js';
 import { encodeAddress } from '@polkadot/util-crypto';
 
 import { DEFAULT, Suffix, Decimal, SS58_DEFAULT_PREFIX, ZERO_BALANCE } from './constants';
-import { Asset, AssetType, OrmlExtras, StatemineExtras } from '@renderer/services/network/common/types';
+import { Asset, AssetType, OrmlExtras, StatemineExtras } from '@renderer/domain/asset';
 import { PublicKey } from '@renderer/domain/shared-kernel';
 import { Balance } from '@renderer/domain/balance';
 
