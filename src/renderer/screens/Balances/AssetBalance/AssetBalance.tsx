@@ -1,5 +1,5 @@
 import cn from 'classnames';
-import { MouseEvent, KeyboardEvent } from 'react';
+import { KeyboardEvent, MouseEvent } from 'react';
 
 import { Balance as BalanceValue, Button, Icon } from '@renderer/components/ui';
 import Shimmering from '@renderer/components/ui/Shimmering/Shimmering';
@@ -7,6 +7,7 @@ import { Asset } from '@renderer/domain/asset';
 import { Balance } from '@renderer/domain/balance';
 import useToggle from '@renderer/hooks/useToggle';
 import { total, transferable } from '@renderer/services/balance/common/utils';
+import { KeyboardKey } from '@renderer/utils/constants';
 
 type Props = {
   asset: Asset;
@@ -32,7 +33,7 @@ const AssetBalance = ({ asset, balance, canMakeActions, onTransferClick, onRecei
   const onWrapperKeyDown = (event: KeyboardEvent<HTMLDivElement>) => {
     event.stopPropagation();
 
-    if (event.currentTarget === event.target && event.key === 'Enter') {
+    if (event.currentTarget === event.target && event.key === KeyboardKey.ENTER) {
       toggleExpanded();
     }
   };
