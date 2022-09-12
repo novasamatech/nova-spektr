@@ -1,6 +1,9 @@
+import { MatrixClient } from 'matrix-js-sdk';
+
 import { BASE_MATRIX_URL } from '@renderer/services/matrix/common/constants';
 import Matrix, { Membership, Signatory } from '../../../src/renderer/services/matrix';
 import { createRoom } from '../utils/matrixCreateRoom';
+import { matrixLoginAndSync } from '../utils/matrixLogin';
 import signatories from './data.json';
 
 /**
@@ -24,7 +27,7 @@ describe('services/matrix', () => {
   });
 
   test.each([['omni_test_account', '1q2w3eQWE!@']])('User %s can login', async (login, password) => {
-    await matrix.loginWithCreds(login, password);
+    await matrixLoginAndSync(matrix, login, password);
 
     expect(matrix.isLoggedIn).toBe(true);
   });
@@ -32,7 +35,7 @@ describe('services/matrix', () => {
   test.each([['omni_test_account', '1q2w3eQWE!@', signatories]])(
     'User %s can create the room',
     async (login, password, signatories) => {
-      await matrix.loginWithCreds(login, password);
+      await matrixLoginAndSync(matrix, login, password);
 
       const signatoriesArray: Signatory[] = signatories;
 
