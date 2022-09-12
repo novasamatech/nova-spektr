@@ -39,6 +39,8 @@ const AssetBalance = ({ asset, balance, canMakeActions, onTransferClick, onRecei
     }
   };
 
+  const isVerificationFailed = balance?.free && !balance?.verified;
+
   return (
     <div
       role="button"
@@ -54,10 +56,10 @@ const AssetBalance = ({ asset, balance, canMakeActions, onTransferClick, onRecei
             <div
               className={cn(
                 'relative flex items-center justify-center  border rounded-full w-[34px] h-[34px] box-border',
-                balance?.verified ? 'border-shade-30 bg-shade-70' : 'border-alert bg-warning-gradient',
+                isVerificationFailed ? 'border-alert bg-warning-gradient' : 'border-shade-30 bg-shade-70',
               )}
             >
-              {!balance?.verified && (
+              {isVerificationFailed && (
                 <div className="absolute top-0 left-0 w-4 h-4 bg-alert rounded-full flex justify-center items-center">
                   <Icon className="text-neutral-variant" name="shield" size={12} />
                 </div>
