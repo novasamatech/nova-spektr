@@ -11,7 +11,7 @@ const Overview = () => {
 
   const locales: OptionType[] = LanguageOptions.map((option) => {
     return {
-      prefix: <Icon className="rounded-full border border-white" name={option.value} />,
+      prefix: <Icon className="rounded-full border border-white" name={option.value} size={20} />,
       value: option.value,
       label: option.label,
     };
@@ -31,7 +31,7 @@ const Overview = () => {
     <div className="h-full flex flex-col gap-y-9">
       <h1 className="font-semibold text-2xl text-neutral">Settings</h1>
 
-      <section className="flex flex-col items-center mx-auto w-full max-w-[740px] p-5 rounded-t-2lg bg-shade-2">
+      <section className="flex flex-col items-center mx-auto w-full max-w-[740px] p-5 rounded-2lg bg-shade-2">
         <ul className="flex flex-col gap-y-2.5 w-full" data-testid="settings">
           <li className="flex items-center gap-x-2.5 w-full px-[15px] py-5 text-neutral-variant bg-white rounded-2lg shadow-surface">
             <Icon name="language" />
