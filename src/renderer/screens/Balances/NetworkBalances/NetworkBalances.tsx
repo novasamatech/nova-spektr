@@ -61,7 +61,7 @@ const NetworkBalances = ({
     <li className="mb-5 rounded-2lg bg-white shadow-surface">
       <div
         className={cn(
-          'flex items-center justify-between border-b bg-white sticky top-0 rounded-t-2lg',
+          'flex items-center justify-between border-b bg-white sticky top-0 rounded-t-2lg z-10',
           isHidden ? 'rounded-2lg border-white' : 'border-shade-5',
         )}
       >
