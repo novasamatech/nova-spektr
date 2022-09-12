@@ -8,6 +8,7 @@ import { Balance } from '@renderer/domain/balance';
 import useToggle from '@renderer/hooks/useToggle';
 import { total, transferable } from '@renderer/services/balance/common/utils';
 import { KeyboardKey } from '@renderer/utils/constants';
+import './AssetBalance.css';
 
 type Props = {
   asset: Asset;
@@ -50,12 +51,23 @@ const AssetBalance = ({ asset, balance, canMakeActions, onTransferClick, onRecei
       <div className={cn('border-2', isExpanded ? 'rounded-2lg border-primary' : 'border-transparent')}>
         <div className="flex items-center h-15 p-[15px] text-xl">
           <div className="flex items-center gap-x-2.5 text-neutral mr-auto">
-            <div className="flex items-center justify-center bg-shade-70 border border-white border-opacity-75 rounded-full w-[34px] h-[34px] box-border">
+            <div
+              className={cn(
+                'relative flex items-center justify-center  border rounded-full w-[34px] h-[34px] box-border',
+                balance?.verified ? 'border-shade-30 bg-shade-70' : 'border-alert bg-warning-gradient',
+              )}
+            >
+              {!balance?.verified && (
+                <div className="absolute top-0 left-0 w-4 h-4 bg-alert rounded-full flex justify-center items-center">
+                  <Icon className="text-neutral-variant" name="shield" size={12} />
+                </div>
+              )}
               <img src={asset.icon} alt="" width={26} height={26} />
             </div>
+
             {asset.name}
           </div>
-          <div className={cn('font-semibold', !balance?.verified && 'text-shade-50')} data-testid="balance">
+          <div className={cn('font-semibold')} data-testid="balance">
             {balance?.free ? (
               <>
                 <BalanceValue value={total(balance)} precision={asset.precision} /> {asset.symbol}

@@ -86,4 +86,29 @@ describe('screen/Balances/AssetBalance', () => {
 
     expect(spyReceive).toBeCalled();
   });
+
+  test('should show label for unverified balance', async () => {
+    const spyReceive = jest.fn();
+
+    await act(async () => {
+      render(
+        <AssetBalance
+          asset={testAsset}
+          balance={{
+            assetId: testAsset.assetId.toString(),
+            chainId: testChain.chainId,
+            publicKey: TEST_PUBLIC_KEY,
+            free: '10',
+            frozen: '2',
+            verified: false,
+          }}
+          canMakeActions
+          onReceiveClick={spyReceive}
+        />,
+      );
+    });
+
+    const shield = screen.getByTestId('shield-svg');
+    expect(shield).toBeInTheDocument();
+  });
 });

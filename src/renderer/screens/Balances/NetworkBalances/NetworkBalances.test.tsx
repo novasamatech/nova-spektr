@@ -25,6 +25,7 @@ jest.mock('@renderer/services/balance/balanceService', () => ({
         publicKey: TEST_PUBLIC_KEY,
         free: '100',
         frozen: [{ type: 'test', amount: '1' }],
+        verified: false,
       },
     ],
   }),
@@ -58,5 +59,12 @@ describe('screen/Balances/NetworkBalances', () => {
 
     const balancesAfter = screen.queryByText('AssetBalance');
     expect(balancesAfter).not.toBeInTheDocument();
+  });
+
+  test('should show unverfied badge', async () => {
+    render(<NetworkBalances chain={testChain} publicKey={TEST_PUBLIC_KEY} />);
+
+    const unverifiedBagde = screen.queryByText('verification failed');
+    expect(unverifiedBagde).toBeInTheDocument();
   });
 });
