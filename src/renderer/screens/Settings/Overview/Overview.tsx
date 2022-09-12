@@ -11,7 +11,7 @@ const Overview = () => {
 
   const locales: OptionType[] = LanguageOptions.map((option) => {
     return {
-      prefix: <Icon className="rounded-full border border-white" name={option.value} />,
+      prefix: <Icon className="rounded-full border border-white" name={option.value} size={20} />,
       value: option.value,
       label: option.label,
     };
