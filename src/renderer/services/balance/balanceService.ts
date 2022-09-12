@@ -21,8 +21,8 @@ export const useBalance = (): IBalanceService => {
   const { updateBalance, getBalances, getBalance, getNetworkBalances } = balanceStorage;
 
   const handleValidation = (balance: Balance, isValid: boolean) => {
-    if (isValid) {
-      updateBalance({ ...balance, verified: true });
+    if (!isValid) {
+      updateBalance({ ...balance, verified: false });
     }
   };
 
@@ -53,7 +53,7 @@ export const useBalance = (): IBalanceService => {
         publicKey,
         chainId: chain.chainId,
         assetId: asset.assetId.toString(),
-        verified: !relaychain,
+        verified: true,
         free: data.data.free.toString(),
         frozen: miscFrozen.gt(feeFrozen) ? miscFrozen.toString() : feeFrozen.toString(),
         reserved: data.data.reserved.toString(),
@@ -87,7 +87,7 @@ export const useBalance = (): IBalanceService => {
           publicKey,
           chainId: chain.chainId,
           assetId: asset.assetId.toString(),
-          verified: !relaychain,
+          verified: true,
           free: free.toString(),
           frozen: (0).toString(),
           reserved: (0).toString(),
@@ -125,7 +125,7 @@ export const useBalance = (): IBalanceService => {
         publicKey,
         chainId: chain.chainId,
         assetId: asset.assetId.toString(),
-        verified: !relaychain,
+        verified: true,
         free: free.toString(),
         frozen: frozen.toString(),
         reserved: reserved.toString(),

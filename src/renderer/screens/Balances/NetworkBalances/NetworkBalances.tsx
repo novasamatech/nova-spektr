@@ -57,23 +57,34 @@ const NetworkBalances = ({
     return null;
   }
 
+  const hasFaildVerification = balances?.some((b) => !b.verified);
+
   return (
     <li className="mb-5 rounded-2lg bg-white shadow-surface">
       <div
         className={cn(
-          'flex items-center justify-between border-b bg-white sticky top-0 z-10 rounded-t-2lg py-2.5 px-4',
+          'flex items-center justify-between border-b bg-white sticky top-0 rounded-t-2lg z-10',
           isHidden ? 'rounded-2lg border-white' : 'border-shade-5',
         )}
       >
-        <h2
-          className={cn(
-            'flex items-center rounded-t-2lg bg-white gap-x-2.5',
-            'text-sm font-bold text-neutral-variant uppercase',
+        <div className="flex items-center">
+          <h2
+            className={cn(
+              'flex items-center p-[15px] rounded-t-2lg border-shade-5 bg-white gap-x-2.5 sticky top-0 h-10',
+              'text-xs font-bold text-neutral-variant uppercase',
+              !isHidden && 'border-b',
+            )}
+          >
+            <img src={chain.icon} width={20} height={20} alt="" />
+            <p>{chain.name}</p>
+          </h2>
+          {hasFaildVerification && (
+            <div className="flex items-center gap-1 text-alert">
+              <Icon name="shield" size={14} />
+              <span className="uppercase text-2xs">verification failed</span>
+            </div>
           )}
-        >
-          <img src={chain.icon} width={20} height={20} alt="" />
-          <p>{chain.name}</p>
-        </h2>
+        </div>
         <div className="flex items-center">
           <Button pallet="shade" variant="text" className="max-h-5 px-0" onClick={() => setIsHidden(!isHidden)}>
             <Icon name={isHidden ? 'down' : 'up'} size={20} />
