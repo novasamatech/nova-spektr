@@ -7,15 +7,17 @@ const Paths = {
   PARITY: '/onboarding/parity',
   LEDGER: '/onboarding/ledger',
 
-  // Navigation
-  DASHBOARD: '/dashboard',
-  WALLETS: '/wallets',
-  ADDRESS_BOOK: '/address-book',
-  OPERATIONS: '/operations',
-  BALANCES: '/balances',
-  ASSETS: '/assets',
-  TRANSFER: '/transfer',
+  // Settings
   SETTINGS: '/settings',
+  NETWORK: '/settings/network',
+  CREDENTIALS: '/settings/credentials',
+
+  // Navigation
+  ADDRESS_BOOK: '/address-book',
+  HISTORY: '/history',
+  MULTISIG: '/multisig',
+  BALANCES: '/balances',
+  TRANSFER: '/transfer',
 
   // DEV
   CHAT_DEV: '/chat-dev',

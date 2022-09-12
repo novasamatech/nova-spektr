@@ -113,6 +113,7 @@ const sharedConfig: Configuration = {
     new webpack.DefinePlugin({
       'process.env': {
         PRODUCT_NAME: JSON.stringify(APP_CONFIG.TITLE),
+        VERSION: JSON.stringify(APP_CONFIG.VERSION),
       },
     }),
   ],

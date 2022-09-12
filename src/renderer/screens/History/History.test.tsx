@@ -1,12 +1,12 @@
 import { render, screen } from '@testing-library/react';
 
-import Settings from './Settings';
+import History from './History';
 
-describe('screen/Settings', () => {
+describe('screens/History', () => {
   test('should render component', () => {
-    render(<Settings />);
+    render(<History />);
 
-    const text = screen.getByText('Settings');
+    const text = screen.getByText('History');
     expect(text).toBeInTheDocument();
   });
 });

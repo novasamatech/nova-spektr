@@ -1,3 +1,5 @@
+import { InitOptions } from 'i18next';
+
 export type SupportedLocales = 'en' | 'ru' | 'hu';
 
 export type LanguageItem = {
@@ -9,9 +11,10 @@ export type LanguageItem = {
 export type ITranslationService = {
   getLocale: () => SupportedLocales;
   setLocale: (locale: SupportedLocales) => void;
+  getConfig: () => InitOptions;
 };
 
 export type ILocaleStorage = {
-  setLocale(locale: string): void;
-  getLocale(): SupportedLocales | undefined;
+  getLocale: () => SupportedLocales;
+  setLocale: (locale: SupportedLocales) => void;
 };

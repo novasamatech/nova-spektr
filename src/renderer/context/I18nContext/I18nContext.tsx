@@ -2,8 +2,8 @@ import { createContext, FC, PropsWithChildren, useContext } from 'react';
 import type { TFunction } from 'react-i18next';
 import { useTranslation } from 'react-i18next';
 
-import { SupportedLocales } from '@renderer/services/translation/common/types';
 import { LanguageSwitcher } from '@renderer/components/ui';
+import { SupportedLocales } from '@renderer/services/translation/common/types';
 import { LanguageOptions } from '@renderer/services/translation/common/constants';
 import { useTranslationService } from '@renderer/services/translation/translationService';
 
@@ -15,6 +15,8 @@ type Props = {
 
 type I18nContextProps = {
   t: TFunction<'translation'>;
+  locale: SupportedLocales;
+  changeLocale: (locale: SupportedLocales) => Promise<void>;
   LocaleComponent: FC<Props>;
 };
 
@@ -22,7 +24,7 @@ const I18nContext = createContext<I18nContextProps>({} as I18nContextProps);
 
 export const I18Provider = ({ children }: PropsWithChildren<{}>) => {
   const { t, i18n } = useTranslation();
-  const { setLocale } = useTranslationService();
+  const { setLocale, getLocale } = useTranslationService();
 
   const onLocaleChange = async (locale: SupportedLocales) => {
     try {
@@ -44,7 +46,14 @@ export const I18Provider = ({ children }: PropsWithChildren<{}>) => {
     />
   );
 
-  return <I18nContext.Provider value={{ t, LocaleComponent }}>{children}</I18nContext.Provider>;
+  const value: I18nContextProps = {
+    t,
+    locale: getLocale(),
+    changeLocale: onLocaleChange,
+    LocaleComponent,
+  };
+
+  return <I18nContext.Provider value={value}>{children}</I18nContext.Provider>;
 };
 
 export const useI18n = () => useContext<I18nContextProps>(I18nContext);

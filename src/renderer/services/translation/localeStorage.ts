@@ -5,6 +5,7 @@ export const useLocaleStorage = (): ILocaleStorage => ({
   setLocale: (locale: string) => {
     localStorage.setItem(LOCALE_KEY, locale);
   },
+
   getLocale: (): SupportedLocales => {
     const locale = localStorage.getItem(LOCALE_KEY) || Locales[navigator.language.split('-')[0]];
 
