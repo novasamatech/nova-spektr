@@ -86,4 +86,25 @@ describe('screen/Balances/AssetBalance', () => {
 
     expect(spyReceive).toBeCalled();
   });
+
+  test('should show label for unverified balance', async () => {
+    await act(async () => {
+      render(
+        <AssetBalance
+          asset={testAsset}
+          balance={{
+            assetId: testAsset.assetId.toString(),
+            chainId: testChain.chainId,
+            publicKey: TEST_PUBLIC_KEY,
+            free: '10',
+            frozen: '2',
+            verified: false,
+          }}
+        />,
+      );
+    });
+
+    const shield = screen.getByTestId('shield-svg');
+    expect(shield).toBeInTheDocument();
+  });
 });
