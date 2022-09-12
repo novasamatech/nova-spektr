@@ -57,6 +57,8 @@ const NetworkBalances = ({
     return null;
   }
 
+  const hasFaildVerification = balances?.some((b) => !b.verified);
+
   return (
     <li className="mb-5 rounded-2lg bg-white shadow-surface">
       <div
@@ -76,7 +78,7 @@ const NetworkBalances = ({
             <img src={chain.icon} width={20} height={20} alt="" />
             <p>{chain.name}</p>
           </h2>
-          {balances?.some((b) => !b.verified) && (
+          {hasFaildVerification && (
             <div className="flex items-center gap-1 text-alert">
               <Icon name="shield" size={14} />
               <span className="uppercase text-2xs">verification failed</span>

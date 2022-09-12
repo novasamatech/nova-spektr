@@ -88,8 +88,6 @@ describe('screen/Balances/AssetBalance', () => {
   });
 
   test('should show label for unverified balance', async () => {
-    const spyReceive = jest.fn();
-
     await act(async () => {
       render(
         <AssetBalance
@@ -102,8 +100,6 @@ describe('screen/Balances/AssetBalance', () => {
             frozen: '2',
             verified: false,
           }}
-          canMakeActions
-          onReceiveClick={spyReceive}
         />,
       );
     });

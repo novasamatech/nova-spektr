@@ -55,7 +55,7 @@ const AssetBalance = ({ asset, balance, canMakeActions, onTransferClick, onRecei
           <div className="flex items-center gap-x-2.5 text-neutral mr-auto">
             <div
               className={cn(
-                'relative flex items-center justify-center  border rounded-full w-[34px] h-[34px] box-border',
+                'relative flex items-center justify-center  border rounded-full w-8.5 h-8.5 box-border',
                 isVerificationFailed ? 'border-alert bg-warning-gradient' : 'border-shade-30 bg-shade-70',
               )}
             >

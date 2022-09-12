@@ -61,10 +61,10 @@ describe('screen/Balances/NetworkBalances', () => {
     expect(balancesAfter).not.toBeInTheDocument();
   });
 
-  test('should show unverfied badge', async () => {
+  test('should show unverfied badge', () => {
     render(<NetworkBalances chain={testChain} publicKey={TEST_PUBLIC_KEY} />);
 
-    const unverifiedBagde = screen.queryByText('verification failed');
-    expect(unverifiedBagde).toBeInTheDocument();
+    const unverifiedBadge = screen.getByText('verification failed');
+    expect(unverifiedBadge).toBeInTheDocument();
   });
 });
