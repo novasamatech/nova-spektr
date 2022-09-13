@@ -13,9 +13,6 @@ module.exports = {
         element: '0 0 5px rgba(0, 0, 0, 0.15)',
         component: '0 0 50px rgba(0, 0, 0, 0.1)',
       },
-      height: {
-        stretch: 'calc(100vh - 44px)',
-      },
       colors: {
         primary: '#567CDC',
         'primary-variant': '#D5DEF6',
