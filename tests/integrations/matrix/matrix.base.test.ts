@@ -13,6 +13,8 @@ import test_data from './matrix_data.json';
  * @group matrix/base
  */
 
+jest.retryTimes(1);
+
 describe('services/matrix', () => {
   let matrix: Matrix;
 
