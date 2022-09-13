@@ -46,7 +46,6 @@ jobs:
             release/dist/*.dmg
             release/dist/*.AppImage
 
-
   releas-project:
     name: Release Omni build-project
     runs-on: ubuntu-latest
@@ -67,7 +66,7 @@ jobs:
       - name: Release
         uses: softprops/action-gh-release@v1
         with:
-          name: "Release ${{ steps.get_version.outputs.VERSION }}"
+          name: 'Release ${{ steps.get_version.outputs.VERSION }}'
           tag_name: ${{ github.ref }}
           files: |
             *.dmg

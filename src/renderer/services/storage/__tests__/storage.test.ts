@@ -26,7 +26,7 @@ describe('service/storage/storage', () => {
   });
 
   test('should return undefined for wrong storage name', () => {
-    // @ts-ignore
+    // @ts-ignore remove TS warning about wrong storage
     const wrongStorage = storage.connectTo('wrong_name');
 
     expect(wrongStorage).toBeUndefined();

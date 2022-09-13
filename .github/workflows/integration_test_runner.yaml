@@ -7,7 +7,6 @@ on:
       - 'main'
       - 'dev'
 
-
 jobs:
   integration_test_run:
     runs-on: ubuntu-latest

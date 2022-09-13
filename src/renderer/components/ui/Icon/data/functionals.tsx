@@ -8,6 +8,8 @@ import WarnCutoutImg, { ReactComponent as WarnCutoutSvg } from '@images/function
 import RemoveCutoutImg, { ReactComponent as RemoveCutoutSvg } from '@images/functionals/remove-cutout.svg';
 import EmptyIdenticonImg, { ReactComponent as EmptyIdenticonSvg } from '@images/functionals/empty-identicon.svg';
 import SearchImg, { ReactComponent as SearchSvg } from '@images/functionals/search.svg';
+import NetworkDuotoneImg, { ReactComponent as NetworkDuotoneSvg } from '@images/functionals/network-duotone.svg';
+import NetworkImg, { ReactComponent as NetworkSvg } from '@images/functionals/network.svg';
 
 const FunctionalImages = {
   copy: { svg: CopySvg, img: CopyImg },
@@ -20,6 +22,8 @@ const FunctionalImages = {
   removeCutout: { svg: RemoveCutoutSvg, img: RemoveCutoutImg },
   emptyIdenticon: { svg: EmptyIdenticonSvg, img: EmptyIdenticonImg },
   search: { svg: SearchSvg, img: SearchImg },
+  networkDuotone: { svg: NetworkDuotoneSvg, img: NetworkDuotoneImg },
+  network: { svg: NetworkSvg, img: NetworkImg },
 } as const;
 
 export type Functional = keyof typeof FunctionalImages;

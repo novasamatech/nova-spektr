@@ -1,5 +1,5 @@
 import cn from 'classnames';
-import { Fragment } from 'react';
+import { Fragment, ReactNode } from 'react';
 import { Listbox, Transition } from '@headlessui/react';
 
 import { Icon } from '@renderer/components/ui';
@@ -9,13 +9,14 @@ import { Icon } from '@renderer/components/ui';
 // currently uses ** md ** weight
 
 export type OptionType = {
+  prefix?: ReactNode;
   label: string;
   value: any;
 };
 
 type Props = {
   className?: string;
-  placeholder: string;
+  placeholder?: string;
   selected?: OptionType;
   options: OptionType[];
   onSelected: (data: OptionType) => void;
@@ -24,24 +25,32 @@ type Props = {
 const Dropdown = ({ className, placeholder, selected, options, onSelected }: Props) => (
   <Listbox value={selected} onChange={onSelected}>
     {({ open }) => (
-      <div className={cn('relative w-full', className)}>
+      <div className={cn('relative', className)}>
         <Listbox.Button
           className={cn(
             'group relative w-full rounded-2lg border bg-white',
-            'py-3 px-2.5 pr-10 text-left text-sm leading-4 font-semibold transition',
+            'h-10 px-2.5 pr-10 text-left text-sm leading-4 font-semibold transition',
             'hover:text-primary hover:border-primary focus:text-primary focus:border-primary',
             open && 'border-primary',
           )}
         >
           <p
             className={cn(
-              'block truncate group-hover:text-primary group-hover:text-primary group-focus:text-primary transition',
+              'flex items-center gap-x-2.5 truncate',
+              'group-hover:text-primary group-hover:text-primary group-focus:text-primary transition',
               selected && !open && 'text-neutral',
               !selected && !open && 'text-shade-30',
               open && 'text-primary',
             )}
           >
-            {selected?.label || placeholder}
+            {selected ? (
+              <>
+                {selected.prefix}
+                {selected.label}
+              </>
+            ) : (
+              placeholder || 'Choose an option'
+            )}
           </p>
           <span
             className={cn(
@@ -70,9 +79,15 @@ const Dropdown = ({ className, placeholder, selected, options, onSelected }: Pro
                 }
               >
                 {({ selected }) => (
-                  <span className={cn('block truncate text-sm leading-10', selected ? 'text-primary' : 'text-neutral')}>
+                  <div
+                    className={cn(
+                      'flex items-center gap-x-2.5 truncate text-sm leading-10',
+                      selected ? 'text-primary' : 'text-neutral',
+                    )}
+                  >
+                    {option.prefix}
                     {option.label}
-                  </span>
+                  </div>
                 )}
               </Listbox.Option>
             ))}

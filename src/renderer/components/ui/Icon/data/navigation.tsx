@@ -5,8 +5,8 @@ import GovernanceImg, { ReactComponent as GovernanceSvg } from '@images/navigati
 import OperationsImg, { ReactComponent as OperationsSvg } from '@images/navigation/operations.svg';
 import SettingsImg, { ReactComponent as SettingsSvg } from '@images/navigation/settings.svg';
 import StakingImg, { ReactComponent as StakingSvg } from '@images/navigation/staking.svg';
-import WalletsImg, { ReactComponent as WalletsSvg } from '@images/navigation/wallets.svg';
 import BalanceImg, { ReactComponent as BalanceSvg } from '@images/navigation/balance.svg';
+import HistoryImg, { ReactComponent as HistorySvg } from '@images/navigation/history.svg';
 import TransferImg, { ReactComponent as TransferSvg } from '@images/navigation/transfer.svg';
 import BookImg, { ReactComponent as BookSvg } from '@images/navigation/book.svg';
 import HelpImg, { ReactComponent as HelpSvg } from '@images/navigation/help.svg';
@@ -19,8 +19,8 @@ const NavigationImages = {
   operations: { svg: OperationsSvg, img: OperationsImg },
   settings: { svg: SettingsSvg, img: SettingsImg },
   staking: { svg: StakingSvg, img: StakingImg },
-  wallets: { svg: WalletsSvg, img: WalletsImg },
   balance: { svg: BalanceSvg, img: BalanceImg },
+  history: { svg: HistorySvg, img: HistoryImg },
   transfer: { svg: TransferSvg, img: TransferImg },
   book: { svg: BookSvg, img: BookImg },
   help: { svg: HelpSvg, img: HelpImg },

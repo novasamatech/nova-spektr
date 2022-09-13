@@ -1,4 +1,4 @@
-import { LanguageItem, SupportedLocales } from './types';
+import { LanguageItem, SupportedLocale } from './types';
 import enLocale from '@shared/locale/en.json';
 import ruLocale from '@shared/locale/ru.json';
 
@@ -15,9 +15,9 @@ export const LanguageOptions: LanguageItem[] = [
     label: 'Russian',
     shortLabel: 'RU',
   },
-] as LanguageItem[];
+];
 
-export const Locales: Record<string, SupportedLocales> = {
+export const Locales: Record<string, SupportedLocale> = {
   en: 'en',
   ru: 'ru',
 };

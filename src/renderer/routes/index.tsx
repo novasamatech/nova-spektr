@@ -23,16 +23,21 @@ const routesConfig: RouteObject[] = [
     element: <Layouts.PrimaryLayout />,
     children: [
       { index: true, element: <Screens.Balances /> },
-      { path: Paths.DASHBOARD, element: <Screens.Dashboard /> },
-      { path: Paths.WALLETS, element: <Screens.Wallets /> },
       { path: Paths.ADDRESS_BOOK, element: <Screens.AddressBook /> },
-      { path: Paths.OPERATIONS, element: <Screens.Operations /> },
+      { path: Paths.MULTISIG, element: <Screens.MultisigOperations /> },
+      { path: Paths.HISTORY, element: <Screens.History /> },
       { path: Paths.TRANSFER, element: <Screens.Transfer /> },
-      { path: Paths.ASSETS, element: <Screens.Assets /> },
       { path: Paths.BALANCES, element: <Screens.Balances /> },
       { path: Paths.CHAT_DEV, element: <Screens.ChatDev /> },
       { path: Paths.CAMERA_DEV, element: <Screens.CameraDev /> },
-      { path: Paths.SETTINGS, element: <Screens.Settings /> },
+      {
+        path: Paths.SETTINGS,
+        children: [
+          { index: true, element: <Screens.Settings.Overview /> },
+          { path: Paths.NETWORK, element: <Screens.Settings.Networks /> },
+          { path: Paths.CREDENTIALS, element: <Screens.Settings.Credentials /> },
+        ],
+      },
     ],
   },
 ];
