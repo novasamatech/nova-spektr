@@ -1,23 +1,20 @@
 import { Link } from 'react-router-dom';
 
-import { OptionType } from '@renderer/components/ui/Dropdown/Dropdown';
-import { LanguageOptions } from '@renderer/services/translation/common/constants';
-import { useI18n } from '@renderer/context/I18nContext';
 import { Dropdown, Icon } from '@renderer/components/ui';
+import { OptionType } from '@renderer/components/ui/Dropdown/Dropdown';
+import { useI18n } from '@renderer/context/I18nContext';
 import Paths from '@renderer/routes/paths';
 
 const Overview = () => {
-  const { locale, changeLocale } = useI18n();
+  const { locale, locales, changeLocale } = useI18n();
 
-  const locales: OptionType[] = LanguageOptions.map((option) => {
-    return {
-      prefix: <Icon className="rounded-full border border-white" name={option.value} size={20} />,
-      value: option.value,
-      label: option.label,
-    };
-  });
+  const localeOptions: OptionType[] = locales.map((option) => ({
+    prefix: <Icon className="rounded-full border border-white" name={option.value} size={20} />,
+    value: option.value,
+    label: option.label,
+  }));
 
-  const selectedLocale = locales.find((l) => l.value === locale);
+  const selectedLocale = localeOptions.find((option) => option.value === locale);
 
   const onLocaleChange = async (data: OptionType) => {
     try {

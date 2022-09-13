@@ -1,13 +1,13 @@
 import { Listbox } from '@headlessui/react';
 import cn from 'classnames';
 
-import { LanguageItem, SupportedLocales } from '@renderer/services/translation/common/types';
+import { LanguageItem, SupportedLocale } from '@renderer/services/translation/common/types';
 import Icon from '../Icon/Icon';
 
 type Props = {
   className?: string;
   languages: LanguageItem[];
-  onChange: (value: SupportedLocales) => void;
+  onChange: (value: SupportedLocale) => void;
   selected: string;
   short?: boolean;
   top?: boolean;

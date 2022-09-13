@@ -1,20 +1,21 @@
 import { InitOptions } from 'i18next';
 
-export type SupportedLocales = 'en' | 'ru' | 'hu';
+export type SupportedLocale = 'en' | 'ru' | 'hu';
 
 export type LanguageItem = {
-  value: SupportedLocales;
+  value: SupportedLocale;
   label: string;
   shortLabel: string;
 };
 
 export type ITranslationService = {
-  getLocale: () => SupportedLocales;
-  setLocale: (locale: SupportedLocales) => void;
+  getLocale: () => SupportedLocale;
+  getLocales: () => LanguageItem[];
+  setLocale: (locale: SupportedLocale) => void;
   getConfig: () => InitOptions;
 };
 
 export type ILocaleStorage = {
-  getLocale: () => SupportedLocales;
-  setLocale: (locale: SupportedLocales) => void;
+  getLocale: () => SupportedLocale;
+  setLocale: (locale: SupportedLocale) => void;
 };

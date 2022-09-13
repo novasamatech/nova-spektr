@@ -3,6 +3,13 @@ import { MemoryRouter } from 'react-router-dom';
 
 import Overview from './Overview';
 
+jest.mock('@renderer/context/I18nContext', () => ({
+  useI18n: jest.fn().mockReturnValue({
+    locale: 'en',
+    locales: [],
+  }),
+}));
+
 describe('screen/Overview/Credentials', () => {
   test('should render component', () => {
     render(<Overview />, { wrapper: MemoryRouter });
