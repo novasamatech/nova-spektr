@@ -1,6 +1,8 @@
 import { useLiveQuery } from 'dexie-react-hooks';
 import { AccountInfo, BalanceLock } from '@polkadot/types/interfaces';
 import { BN } from '@polkadot/util';
+import { ApiPromise } from '@polkadot/api';
+import { Codec } from '@polkadot/types/types';
 
 import { Asset, AssetType, OrmlExtras, StatemineExtras } from '@renderer/domain/asset';
 import { Balance } from '@renderer/domain/balance';
@@ -34,6 +36,23 @@ export const useBalance = (): IBalanceService => {
     return useLiveQuery(() => getNetworkBalances(publicKey, chainId));
   };
 
+  const runValidation = async (
+    relaychainApi: ApiPromise,
+    parachainApi: ApiPromise,
+    storageKey: string,
+    data: Codec,
+    onValid?: () => void,
+    onInvalid?: () => void,
+  ) => {
+    const isValid = await validate(relaychainApi, parachainApi, storageKey, data);
+    if (isValid) {
+      onValid && onValid();
+    } else {
+      onInvalid && onInvalid();
+      runValidation(relaychainApi, parachainApi, storageKey, data, onValid, onInvalid);
+    }
+  };
+
   const subscribeBalanceChange = (
     publicKey: PublicKey,
     chain: ExtendedChain,
@@ -63,7 +82,14 @@ export const useBalance = (): IBalanceService => {
 
       if (relaychain?.api) {
         const storageKey = api.query.system.account.key(address);
-        validate(relaychain.api, api, storageKey, data).then((isValid) => handleValidation(balance, isValid));
+        runValidation(
+          relaychain.api,
+          api,
+          storageKey,
+          data,
+          () => handleValidation(balance, true),
+          () => handleValidation(balance, false),
+        );
       }
     });
   };
@@ -97,7 +123,14 @@ export const useBalance = (): IBalanceService => {
 
         if (relaychain?.api) {
           const storageKey = api.query.assets.account.key(statemineAssetId, address);
-          validate(relaychain.api, api, storageKey, data).then((isValid) => handleValidation(balance, isValid));
+          runValidation(
+            relaychain.api,
+            api,
+            storageKey,
+            data,
+            () => handleValidation(balance, true),
+            () => handleValidation(balance, false),
+          );
         }
       } catch (e) {
         console.warn(e);
@@ -135,7 +168,14 @@ export const useBalance = (): IBalanceService => {
 
       if (relaychain?.api) {
         const storageKey = method.key(address, ormlAssetId);
-        validate(relaychain.api, api, storageKey, data).then((isValid) => handleValidation(balance, isValid));
+        runValidation(
+          relaychain.api,
+          api,
+          storageKey,
+          data,
+          () => handleValidation(balance, true),
+          () => handleValidation(balance, false),
+        );
       }
     });
   };

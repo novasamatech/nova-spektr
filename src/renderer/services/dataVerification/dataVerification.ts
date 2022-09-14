@@ -85,7 +85,7 @@ const validateWithBlockNumber = async (
 
   console.warn('block is not found');
 
-  return validateWithBlockNumber(relaychainApi, parachainApi, blockNumber, key, value);
+  return false;
 };
 
 export const validate = async (
