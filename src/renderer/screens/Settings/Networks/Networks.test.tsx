@@ -9,6 +9,7 @@ jest.mock('@renderer/context/NetworkContext', () => ({
     connections: {
       '0x123': {
         chainId: '1',
+        name: 'Westmint',
         connection: {
           chainId: '0x123',
           connectionType: ConnectionType.DISABLED,

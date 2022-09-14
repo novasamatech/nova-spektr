@@ -26,6 +26,7 @@ export interface IConnectionStorage {
   getConnections: () => Promise<ConnectionDS[]>;
   addConnection: (connection: Connection) => Promise<IndexableType>;
   addConnections: (connections: Connection[]) => Promise<IndexableType>;
+  updateConnection: (connection: Connection) => Promise<IndexableType>;
   changeConnectionType: (connection: Connection, type: ConnectionType) => Promise<IndexableType>;
   changeConnectionStatus: (connection: Connection, status: ConnectionStatus) => Promise<IndexableType>;
 }

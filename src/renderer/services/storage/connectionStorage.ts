@@ -21,6 +21,10 @@ export const useConnectionStorage = (db: Table<ConnectionDS>): IConnectionStorag
     return db.bulkAdd(connections);
   },
 
+  updateConnection: (connection: Connection): Promise<IndexableType> => {
+    return db.update(connection, { ...connection });
+  },
+
   changeConnectionType: (connection: Connection, type: ConnectionType): Promise<IndexableType> => {
     return db.update(connection, { connectionType: type });
   },

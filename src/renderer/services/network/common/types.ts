@@ -1,7 +1,7 @@
 import { ApiPromise } from '@polkadot/api';
 
 import { Chain } from '@renderer/domain/chain';
-import { Connection, ConnectionStatus, ConnectionType } from '@renderer/domain/connection';
+import { Connection, ConnectionNode, ConnectionStatus, ConnectionType } from '@renderer/domain/connection';
 import { ChainId } from '@renderer/domain/shared-kernel';
 
 // ------------------
@@ -21,7 +21,7 @@ export interface INetworkService {
   connections: Record<string, ExtendedChain>;
   init: () => Promise<void>;
   reconnect: (chainId: ChainId) => Promise<void>;
-  connectToNetwork: (chainId: ChainId, type: ConnectionType, nodeUrl?: string) => Promise<void>;
+  connectToNetwork: (chainId: ChainId, type: ConnectionType, node?: ConnectionNode) => Promise<void>;
   updateConnectionType: (chainId: ChainId, type: ConnectionType) => Promise<void>;
   updateConnectionStatus: (chainId: ChainId, status: ConnectionStatus) => Promise<void>;
 }
@@ -34,3 +34,5 @@ export type ExtendedChain = Chain & {
   connection: Connection;
   api?: ApiPromise;
 };
+
+export type ConnectionsMap = Record<ChainId, ExtendedChain>;

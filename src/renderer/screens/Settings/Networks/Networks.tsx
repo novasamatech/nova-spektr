@@ -1,41 +1,51 @@
+import { ReactNode, useState } from 'react';
 import cn from 'classnames';
-import { useState } from 'react';
 
 import { Button, ButtonBack, Icon, Input } from '@renderer/components/ui';
 import { useNetworkContext } from '@renderer/context/NetworkContext';
 import { ConnectionStatus, ConnectionType } from '@renderer/domain/connection';
 import { ExtendedChain } from '@renderer/services/network/common/types';
 
-// const NETWORK_STATUS: Record<ConnectionStatus, (status: string) => ReactNode> = {
-//   [ConnectionStatus.NONE]: () => null,
-//   [ConnectionStatus.ERROR]: (status) => (
-//     <>
-//       <Icon className="text-error border border-error rounded-full bg-white" name="checkmark" size={10} />
-//       <p className="text-xs font-semibold text-neutral-variant">{status}</p>
-//     </>
-//   ),
-//   [ConnectionStatus.CONNECTED]: (status) => (
-//     <>
-//       <Icon className="text-success border border-success rounded-full bg-white" name="checkmark" size={10} />
-//       <p className="text-xs font-semibold text-neutral-variant">{status}</p>
-//     </>
-//   ),
-//   [ConnectionStatus.CONNECTING]: () => (
-//     <>
-//       <Icon className="text-shade-30" name="loader" size={10} />
-//       <p className="text-xs font-semibold text-shade-30">Connecting...</p>
-//     </>
-//   ),
-// };
+const CONNECTION_VARIANTS: Record<ConnectionStatus, (type: ConnectionType, nodeUrl: string) => ReactNode> = {
+  [ConnectionStatus.NONE]: () => null,
+  [ConnectionStatus.ERROR]: (type: ConnectionType, nodeUrl: string) => (
+    <div className="flex items-center gap-x-1">
+      <Icon className="text-error border border-error rounded-full bg-white p-[1px]" name="checkmark" size={12} />
+      <p className="text-xs font-semibold text-neutral-variant">
+        {type === ConnectionType.LIGHT_CLIENT && 'Light client'}
+        {type === ConnectionType.RPC_NODE && nodeUrl}
+      </p>
+    </div>
+  ),
+  [ConnectionStatus.CONNECTED]: (type: ConnectionType, nodeUrl: string) => (
+    <div className="flex items-center gap-x-1">
+      <Icon className="text-success border border-success rounded-full bg-white p-[1px]" name="checkmark" size={12} />
+      <p className="text-xs font-semibold text-neutral-variant">
+        {type === ConnectionType.LIGHT_CLIENT && 'Connected'}
+        {type === ConnectionType.RPC_NODE && nodeUrl}
+      </p>
+    </div>
+  ),
+  [ConnectionStatus.CONNECTING]: () => (
+    <div className="flex items-center gap-x-1">
+      <Icon className="text-shade-30 animate-spin" name="loader" size={14} />
+      <p className="text-xs font-semibold text-shade-30">Connecting...</p>
+    </div>
+  ),
+};
 
 const Networks = () => {
-  const { connections, connectToNetwork } = useNetworkContext();
-
   const [query, setQuery] = useState('');
   const [isDisabledHidden, setIsDisabledHidden] = useState(false);
   const [isActiveHidden, setIsActiveHidden] = useState(false);
 
-  const [activeNetworks, disabledNetworks] = Object.values(connections).reduce(
+  const { connections, connectToNetwork } = useNetworkContext();
+
+  const filteredConnections = Object.values(connections).filter((connection) =>
+    connection.name.toLowerCase().includes(query),
+  );
+
+  const [activeNetworks, disabledNetworks] = filteredConnections.reduce(
     (acc, c) => {
       c.connection.connectionType !== ConnectionType.DISABLED ? acc[0].push(c) : acc[1].push(c);
 
@@ -56,12 +66,14 @@ const Networks = () => {
   );
 
   const onConnect = async (network: ExtendedChain) => {
-    await connectToNetwork(network.chainId, ConnectionType.LIGHT_CLIENT);
-    console.log(`🟢 ${network.name} Connected`);
+    await connectToNetwork(network.chainId, ConnectionType.RPC_NODE, {
+      url: 'wss://westmint-rpc.polkadot.io',
+      name: 'Parity node',
+    });
   };
 
   return (
-    <div className="h-full flex flex-col">
+    <div className="h-full flex flex-col overflow-y-auto">
       <div className="flex items-center gap-x-2.5 mb-9">
         <ButtonBack />
         <p className="font-semibold text-2xl text-neutral-variant">Settings</p>
@@ -69,7 +81,7 @@ const Networks = () => {
         <h1 className="font-semibold text-2xl text-neutral">Networks</h1>
       </div>
 
-      <section className="flex flex-col gap-y-5 mx-auto w-full max-w-[740px] p-5 rounded-2lg bg-shade-2">
+      <section className="flex flex-col gap-y-5 mx-auto mb-5 w-full max-w-[740px] p-5 rounded-2lg bg-shade-2">
         <Input
           wrapperClass="!bg-shade-5 w-[300px]"
           placeholder="Search for a network..."
@@ -120,8 +132,13 @@ const Networks = () => {
                     <p className="text-xl text-neutral">{network.name}</p>
                   </div>
                   {/* TODO: create custom DropDown */}
-                  <Button variant="outline" pallet="primary" onClick={() => onConnect(network)}>
-                    Select connection type
+                  <Button
+                    variant="outline"
+                    pallet="primary"
+                    disabled={network.name !== 'Westmint'}
+                    onClick={() => onConnect(network)}
+                  >
+                    Westmint RPC test
                   </Button>
                 </li>
               ))}
@@ -198,15 +215,15 @@ const Networks = () => {
                 >
                   <img src={icon} alt="" width={34} height={34} />
                   <div className="flex flex-col mr-auto">
-                    <p className="text-xl text-neutral">{name}</p>
-                    <div className="flex items-center gap-x-1">
-                      {connection.connectionStatus}
-                      {/*{NETWORK_STATUS[connection.connectionStatus]('TEST')}*/}
-                    </div>
+                    <p className="text-xl leading-5 text-neutral">{name}</p>
+                    {CONNECTION_VARIANTS[connection.connectionStatus](
+                      connection.connectionType,
+                      connection.activeNode?.url || '',
+                    )}
                   </div>
                   {/* TODO: create custom DropDown */}
                   <Button variant="outline" pallet="primary">
-                    Auto Balance
+                    Placeholder
                   </Button>
                 </li>
               ))}
