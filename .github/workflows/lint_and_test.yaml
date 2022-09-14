@@ -28,15 +28,3 @@ jobs:
           results-file: jest-unit-results.json
           report-name: 'Jest Unit tests results'
           create-status-check: true
-
-      - name: Coverage report
-        uses: ArtiomTr/jest-coverage-report-action@v2
-        id: coverage
-        with:
-            output: report-markdown
-            coverage-file: jest-unit-results.json
-
-      - name: Make comment with report
-        uses: marocchino/sticky-pull-request-comment@v2
-        with:
-            message: ${{ steps.coverage.outputs.report }}
