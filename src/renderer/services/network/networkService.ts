@@ -1,11 +1,11 @@
-import { useRef, useState } from 'react';
-import keyBy from 'lodash/keyBy';
 import { ApiPromise, WsProvider } from '@polkadot/api';
 import { ScProvider } from '@polkadot/rpc-provider/substrate-connect';
 import { ProviderInterface } from '@polkadot/rpc-provider/types';
+import keyBy from 'lodash/keyBy';
+import { useRef, useState } from 'react';
 
 import { Chain } from '@renderer/domain/chain';
-import { Connection, ConnectionType } from '@renderer/domain/connection';
+import { Connection, ConnectionStatus, ConnectionType } from '@renderer/domain/connection';
 import { ChainId } from '@renderer/domain/shared-kernel';
 import storage from '@renderer/services/storage';
 import { useChainSpec } from './chainSpecService';
@@ -14,9 +14,9 @@ import { ExtendedChain, INetworkService } from './common/types';
 
 export const useNetwork = (): INetworkService => {
   const chains = useRef<Record<string, Chain>>({});
-  const [connections, setConnections] = useState<Record<string, ExtendedChain>>({});
+  const [connections, setConnections] = useState<Record<ChainId, ExtendedChain>>({});
 
-  const { getChainsData } = useChains();
+  const { getChainsData, sortChains } = useChains();
   const { getKnownChain, getChainSpec } = useChainSpec();
 
   const connectionStorage = storage.connectTo('connections');
@@ -25,112 +25,156 @@ export const useNetwork = (): INetworkService => {
     throw new Error('=== 🔴 Connections storage in not defined 🔴 ===');
   }
 
-  const { getConnections, addConnections, changeConnectionType } = connectionStorage;
+  const { getConnections, addConnections, changeConnectionType, changeConnectionStatus } = connectionStorage;
 
   const updateConnectionType = async (chainId: ChainId, type: ConnectionType): Promise<void> => {
-    const connection = connections[chainId];
-    if (connection) {
-      await changeConnectionType(connection.connection, type);
-      connection.connection.type = type;
-    }
+    const match = connections[chainId];
+    if (!match) return;
+
+    const { connection, api, ...rest } = match;
+
+    await changeConnectionType(connection, type);
+    setConnections((currentConnections) => ({
+      ...currentConnections,
+      [chainId]: {
+        api,
+        connection: { ...connection, connectionType: type },
+        ...rest,
+      },
+    }));
   };
 
-  const initConnnections = async (): Promise<void> => {
+  const updateConnectionStatus = async (chainId: ChainId, status: ConnectionStatus): Promise<void> => {
+    const match = connections[chainId];
+    if (!match) return;
+
+    const { connection, api, ...rest } = match;
+
+    await changeConnectionStatus(connection, status);
+    setConnections((currentConnections) => ({
+      ...currentConnections,
+      [chainId]: {
+        api,
+        connection: { ...connection, connectionStatus: status },
+        ...rest,
+      },
+    }));
+  };
+
+  const getNewConnections = async (): Promise<Connection[]> => {
     const chainsData = await getChainsData();
-    chains.current = keyBy(chainsData, 'chainId');
     const currentConnections = await getConnections();
+
+    chains.current = keyBy(sortChains(chainsData), 'chainId');
     const connectionData = keyBy(currentConnections, 'chainId');
 
-    const connections = Object.values(chains.current).reduce((acc, { chainId }) => {
+    return Object.values(chains.current).reduce((acc, { chainId }) => {
       if (!connectionData[chainId]) {
-        const type = getKnownChain(chainId) ? ConnectionType.LIGHT_CLIENT : ConnectionType.RPC_NODE;
-        acc.push({ chainId, type });
+        acc.push({
+          chainId,
+          connectionType: ConnectionType.DISABLED,
+          connectionStatus: ConnectionStatus.NONE,
+          customNodes: [],
+          activeNode: undefined,
+        });
       }
 
       return acc;
     }, [] as Connection[]);
+  };
 
-    const extendedConnections = connections.reduce((acc, connection) => {
-      acc[connection.chainId] = {
-        ...chains.current[connection.chainId],
-        connection,
+  const extendConnections = async () => {
+    const chainsData = await getChainsData();
+    const currentConnections = await getConnections();
+
+    chains.current = keyBy(sortChains(chainsData), 'chainId');
+    const connectionData = keyBy(currentConnections, 'chainId');
+
+    const extendedConnections = Object.values(chains.current).reduce((acc, chain) => {
+      acc[chain.chainId] = {
+        ...chains.current[chain.chainId],
+        connection: connectionData[chain.chainId],
       };
 
       return acc;
-    }, {} as Record<string, ExtendedChain>);
+    }, {} as Record<ChainId, ExtendedChain>);
 
     setConnections(extendedConnections);
-
-    await addConnections(connections);
   };
 
-  const connect = async (): Promise<void> => {
-    const currentConnections = await getConnections();
+  const connectToNetwork = async (chainId: ChainId, type: ConnectionType, nodeUrl = ''): Promise<void> => {
+    const connection = connections[chainId];
+    if (!connection) return;
 
-    currentConnections.forEach(async (connection) => {
-      let provider: ProviderInterface | undefined;
+    await updateConnectionType(chainId, type);
+    await updateConnectionStatus(chainId, ConnectionStatus.CONNECTING);
 
-      setConnections((currentConnections) => ({
-        ...currentConnections,
-        [connection.chainId]: {
-          ...chains.current[connection.chainId],
-          connection,
-        },
-      }));
+    let provider: ProviderInterface | undefined;
+    if (type === ConnectionType.LIGHT_CLIENT) {
+      const knownChainId = getKnownChain(connection.chainId);
 
-      if (connection.type === ConnectionType.LIGHT_CLIENT) {
-        const chainId = getKnownChain(connection.chainId);
+      if (knownChainId) {
+        provider = new ScProvider(knownChainId);
+        await provider.connect();
+      } else {
+        const chainSpec = await getChainSpec(connection.chainId);
 
-        if (chainId) {
-          provider = new ScProvider(chainId);
-          await provider.connect();
-        } else {
-          const chainSpec = await getChainSpec(connection.chainId);
-
-          if (!chainSpec) {
-            throw new Error('Chain spec not found');
-          }
-
-          const parentId = chains.current[connection.chainId].parentId;
-          if (parentId) {
-            const parentName = getKnownChain(parentId);
-
-            if (!parentName) {
-              throw new Error('Relay chain not found');
-            }
-
-            const relayProvider = new ScProvider(parentName);
-
-            provider = new ScProvider(chainSpec, relayProvider);
-          } else {
-            provider = new ScProvider(chainSpec);
-          }
+        if (!chainSpec) {
+          throw new Error('Chain spec not found');
         }
-      } else if (connection.type === ConnectionType.RPC_NODE) {
-        // TODO: Add possibility to select best node
-        provider = new WsProvider(chains.current[connection.chainId].nodes[0].url);
+
+        const parentId = chains.current[connection.chainId].parentId;
+        if (parentId) {
+          const parentName = getKnownChain(parentId);
+
+          if (!parentName) {
+            throw new Error('Relay chain not found');
+          }
+
+          const relayProvider = new ScProvider(parentName);
+
+          provider = new ScProvider(chainSpec, relayProvider);
+        } else {
+          provider = new ScProvider(chainSpec);
+        }
       }
+    }
 
-      if (!provider) return;
-      const api = await ApiPromise.create({ provider });
+    if (type === ConnectionType.RPC_NODE && nodeUrl) {
+      provider = new WsProvider(nodeUrl);
 
-      setConnections((currentConnections) => ({
-        ...currentConnections,
-        [connection.chainId]: {
-          ...chains.current[connection.chainId],
-          connection,
-          api,
-        },
-      }));
+      // TODO: also set active Rpc_node
+    }
+
+    const api = provider ? await ApiPromise.create({ provider }) : undefined;
+    const status = api ? ConnectionStatus.CONNECTED : ConnectionStatus.ERROR;
+
+    await updateConnectionStatus(chainId, status);
+
+    setConnections((currentConnections) => ({
+      ...currentConnections,
+      [chainId]: { ...connection, api },
+    }));
+  };
+
+  const connectToNetworks = () => {
+    Object.values(connections).forEach(({ connection }) => {
+      const { chainId, connectionType, activeNode } = connection;
+
+      if (connectionType === ConnectionType.DISABLED) return;
+
+      connectToNetwork(chainId, connectionType, activeNode?.url);
     });
   };
 
   const init = async (): Promise<void> => {
-    await initConnnections();
     try {
-      await connect();
-    } catch (e) {
-      console.error(e);
+      const newConnections = await getNewConnections();
+      await addConnections(newConnections);
+      await extendConnections();
+      connectToNetworks();
+    } catch (error) {
+      console.error(error);
     }
   };
 
@@ -141,11 +185,12 @@ export const useNetwork = (): INetworkService => {
 
     const { api } = connection;
     if (!api) return;
+
     try {
       await api.disconnect();
-    } catch (e) {
+    } catch (error) {
       // TODO: Add error handling
-      console.error(e);
+      console.error(error);
     }
 
     await api.connect();
@@ -155,6 +200,8 @@ export const useNetwork = (): INetworkService => {
     connections,
     init,
     reconnect,
+    connectToNetwork,
     updateConnectionType,
+    updateConnectionStatus,
   };
 };

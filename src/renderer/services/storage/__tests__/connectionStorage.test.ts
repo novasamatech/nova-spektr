@@ -1,4 +1,5 @@
-import { ConnectionType } from '@renderer/domain/connection';
+import { ConnectionStatus, ConnectionType } from '@renderer/domain/connection';
+import { ChainId } from '@renderer/domain/shared-kernel';
 import { useConnectionStorage } from '@renderer/services/storage/connectionStorage';
 
 describe('service/storage/connectionStorage', () => {
@@ -53,7 +54,12 @@ describe('service/storage/connectionStorage', () => {
     });
 
     const { addConnection } = useConnectionStorage(mock);
-    await addConnection('0x123', ConnectionType.RPC_NODE);
+    await addConnection({
+      chainId: '0x123',
+      connectionType: ConnectionType.RPC_NODE,
+      connectionStatus: ConnectionStatus.NONE,
+      customNodes: [],
+    });
 
     expect(mockValue).toHaveLength(1);
   });
@@ -68,26 +74,41 @@ describe('service/storage/connectionStorage', () => {
 
     const { addConnections } = useConnectionStorage(mock);
     await addConnections([
-      { chainId: '0x123', type: ConnectionType.RPC_NODE },
-      { chainId: '0x234', type: ConnectionType.DISABLED },
+      {
+        chainId: '0x123',
+        connectionType: ConnectionType.RPC_NODE,
+        connectionStatus: ConnectionStatus.NONE,
+        customNodes: [],
+      },
+      {
+        chainId: '0x234',
+        connectionType: ConnectionType.DISABLED,
+        connectionStatus: ConnectionStatus.NONE,
+        customNodes: [],
+      },
     ]);
 
     expect(mockValue).toHaveLength(2);
   });
 
   test('should change connection type', async () => {
-    const mockValue = { chainId: '0x234', type: ConnectionType.DISABLED };
+    const mockValue = {
+      chainId: '0x123' as ChainId,
+      connectionType: ConnectionType.DISABLED,
+      connectionStatus: ConnectionStatus.NONE,
+      customNodes: [],
+    };
     const mock = setupDbMock({
-      update: jest.fn().mockImplementation((_: any, { type }: any) => {
-        mockValue.type = type;
+      update: jest.fn().mockImplementation((_: any, { connectionType }: any) => {
+        mockValue.connectionType = connectionType;
       }),
     });
 
-    expect(mockValue.type).toEqual(ConnectionType.DISABLED);
+    expect(mockValue.connectionType).toEqual(ConnectionType.DISABLED);
 
     const { changeConnectionType } = useConnectionStorage(mock);
-    await changeConnectionType({ chainId: '0x234', type: ConnectionType.DISABLED }, ConnectionType.RPC_NODE);
+    await changeConnectionType(mockValue, ConnectionType.RPC_NODE);
 
-    expect(mockValue.type).toEqual(ConnectionType.RPC_NODE);
+    expect(mockValue.connectionType).toEqual(ConnectionType.RPC_NODE);
   });
 });

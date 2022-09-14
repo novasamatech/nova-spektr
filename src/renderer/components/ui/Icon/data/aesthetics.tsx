@@ -1,4 +1,5 @@
 import LoaderImg, { ReactComponent as LoaderSvg } from '@images/aesthetics/loader.svg';
+import LoaderCutoutImg, { ReactComponent as LoaderCutoutSvg } from '@images/aesthetics/loader-cutout.svg';
 import TwitterCutoutImg, { ReactComponent as TwitterCutoutSvg } from '@images/aesthetics/twitter-cutout.svg';
 import TelegramCutoutImg, { ReactComponent as TelegramCutoutSvg } from '@images/aesthetics/telegram-cutout.svg';
 import YoutubeCutoutImg, { ReactComponent as YoutubeCutoutSvg } from '@images/aesthetics/youtube-cutout.svg';
@@ -8,6 +9,7 @@ import ShieldImg, { ReactComponent as ShieldSvg } from '@images/aesthetics/shiel
 
 const AestheticImages = {
   loader: { svg: LoaderSvg, img: LoaderImg },
+  loaderCutout: { svg: LoaderCutoutSvg, img: LoaderCutoutImg },
   twitterCutout: { svg: TwitterCutoutSvg, img: TwitterCutoutImg },
   telegramCutout: { svg: TelegramCutoutSvg, img: TelegramCutoutImg },
   youtubeCutout: { svg: YoutubeCutoutSvg, img: YoutubeCutoutImg },

@@ -1,7 +1,7 @@
 import { IndexableType, Table } from 'dexie';
 
 import { ChainId } from '@renderer/domain/shared-kernel';
-import { Connection, ConnectionType } from '@renderer/domain/connection';
+import { Connection, ConnectionStatus, ConnectionType } from '@renderer/domain/connection';
 import { ConnectionDS, IConnectionStorage } from './common/types';
 
 export const useConnectionStorage = (db: Table<ConnectionDS>): IConnectionStorage => ({
@@ -13,8 +13,8 @@ export const useConnectionStorage = (db: Table<ConnectionDS>): IConnectionStorag
     return db.toArray();
   },
 
-  addConnection: (chainId: ChainId, type: ConnectionType): Promise<IndexableType> => {
-    return db.add({ chainId, type });
+  addConnection: (connection: Connection): Promise<IndexableType> => {
+    return db.add(connection);
   },
 
   addConnections: (connections: Connection[]): Promise<IndexableType> => {
@@ -22,6 +22,10 @@ export const useConnectionStorage = (db: Table<ConnectionDS>): IConnectionStorag
   },
 
   changeConnectionType: (connection: Connection, type: ConnectionType): Promise<IndexableType> => {
-    return db.update(connection, { type });
+    return db.update(connection, { connectionType: type });
+  },
+
+  changeConnectionStatus: (connection: Connection, status: ConnectionStatus): Promise<IndexableType> => {
+    return db.update(connection, { connectionStatus: status });
   },
 });

@@ -1,6 +1,6 @@
 import { createContext, PropsWithChildren, useContext, useEffect, useRef } from 'react';
 
-import { ConnectionType } from '@renderer/domain/connection';
+import { ConnectionStatus, ConnectionType } from '@renderer/domain/connection';
 import { ChainId } from '@renderer/domain/shared-kernel';
 import { useBalance } from '@renderer/services/balance/balanceService';
 import { TEST_PUBLIC_KEY } from '@renderer/services/balance/common/constants';
@@ -11,25 +11,27 @@ import { useWallet } from '@renderer/services/wallet/walletService';
 type NetworkContextProps = {
   connections: Record<string, ExtendedChain>;
   reconnect: (chainId: ChainId) => void;
+  connectToNetwork: (chainId: ChainId, type: ConnectionType, nodeUrl?: string) => Promise<void>;
   updateConnectionType: (chainId: ChainId, type: ConnectionType) => Promise<void>;
+  updateConnectionStatus: (chainId: ChainId, status: ConnectionStatus) => Promise<void>;
 };
 
 const NetworkContext = createContext<NetworkContextProps>({} as NetworkContextProps);
 
 export const NetworkProvider = ({ children }: PropsWithChildren) => {
-  const { init, connections, reconnect, updateConnectionType } = useNetwork();
+  const { init, connections, reconnect, connectToNetwork, updateConnectionType, updateConnectionStatus } = useNetwork();
   const { subscribeBalances, subscribeLockBalances } = useBalance();
   const { getActiveWallets } = useWallet();
-  const initedRef = useRef(false);
+  const isInitStarted = useRef(false);
   const activeWallets = getActiveWallets();
 
   useEffect(() => {
-    if (!initedRef.current) {
+    if (!isInitStarted.current) {
       init();
     }
 
     return () => {
-      initedRef.current = true;
+      isInitStarted.current = true;
     };
   }, []);
 
@@ -55,11 +57,15 @@ export const NetworkProvider = ({ children }: PropsWithChildren) => {
     };
   }, [connections, activeWallets]);
 
-  return (
-    <NetworkContext.Provider value={{ connections, reconnect, updateConnectionType }}>
-      {children}
-    </NetworkContext.Provider>
-  );
+  const value: NetworkContextProps = {
+    connections,
+    reconnect,
+    connectToNetwork,
+    updateConnectionType,
+    updateConnectionStatus,
+  };
+
+  return <NetworkContext.Provider value={value}>{children}</NetworkContext.Provider>;
 };
 
 export const useNetworkContext = () => useContext<NetworkContextProps>(NetworkContext);

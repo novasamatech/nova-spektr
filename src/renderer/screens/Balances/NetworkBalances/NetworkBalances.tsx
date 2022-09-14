@@ -66,14 +66,9 @@ const NetworkBalances = ({
         )}
       >
         <div className="flex items-center gap-x-2.5">
-          <h2
-            className={cn(
-              'flex items-center rounded-t-2lg bg-white gap-x-2.5',
-              'text-sm font-bold text-neutral-variant uppercase',
-            )}
-          >
+          <h2 className="flex items-center bg-white gap-x-2.5 text-neutral-variant">
             <img src={chain.icon} width={20} height={20} alt="" />
-            <p>{chain.name}</p>
+            <p className="text-sm font-bold uppercase">{chain.name}</p>
           </h2>
           {hasFailedVerification && (
             <div className="flex items-center gap-x-1 text-alert">

@@ -24,8 +24,7 @@ const KnownChains: Record<ChainId, WellKnownChain> = {
 };
 
 export const useChainSpec = (): IChainSpecService => ({
-  getChainSpec: (chainId: ChainId): Promise<string | undefined> => {
-    return Promise.resolve(ChainSpecs[chainId]);
-  },
+  getChainSpec: (chainId: ChainId): Promise<string | undefined> => Promise.resolve(ChainSpecs[chainId]),
+
   getKnownChain: (chainId: ChainId): WellKnownChain | undefined => KnownChains[chainId],
 });
