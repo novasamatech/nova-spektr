@@ -93,10 +93,6 @@ const validateWithBlockNumber = async (
 
     return false;
   }
-
-  console.warn('block is not found');
-
-  return false;
 };
 
 export const validate = async (
