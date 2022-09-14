@@ -22,7 +22,7 @@
     "dist": "electron-builder -p never",
     "clean:build": "rimraf release/build",
     "clean:prod": "rimraf release/dist",
-    "test": "jest --config=jest.config.ts",
+    "test": "jest --config=jest.config.ts --json --outputFile=jest-unit-results.json",
     "test:integration": "jest --config=tests/integrations/jest.config.ts --group=integration",
     "test:coverage": "yarn test --coverage --passWithNoTests --watchAll=false",
     "lint": "cross-env NODE_ENV=production eslint . --ext=ts,tsx,js,jsx",
