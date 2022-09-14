@@ -19,7 +19,7 @@ async function getParachainId(api: ApiPromise): Promise<number> {
 
 async function getBlockHash(api: ApiPromise, header: Header): Promise<string> {
   const parachainBlockNumber = header.number;
-  let blockNumber: BlockNumber = 0 as unknown as u32;
+  let blockNumber;
 
   try {
     if (!parachainBlockNumber.isEmpty) {
@@ -28,6 +28,8 @@ async function getBlockHash(api: ApiPromise, header: Header): Promise<string> {
   } catch (e) {
     console.warn(e);
   }
+
+  if (!blockNumber) return '';
 
   return (await api.rpc.chain.getBlockHash(blockNumber)).toHex();
 }
@@ -53,7 +55,9 @@ const getProof = async (api: ApiPromise, storageKey: string, hash: string): Prom
  * @param value - value from relay chain
  * @return {Boolean}
  */
-export const verify = (proof: Uint8Array[], root: Uint8Array, key: string, value: Uint8Array): boolean => {
+export const verify = (proof: Uint8Array[] | undefined, root: Uint8Array, key: string, value: Uint8Array): boolean => {
+  if (!proof) return false;
+
   const rootNode = buildTrie(proof, root);
 
   const proofValue = get(rootNode, hexToU8a(key));
@@ -77,18 +81,13 @@ const validateWithBlockNumber = async (
     const header = await getHeader(relaychainApi, parachainId);
     const decodedHeader: Header = parachainApi.registry.createType('Header', header.toString()) as unknown as Header;
 
-    if (decodedHeader.number.toBn().gte(blockNumber.toBn())) {
-      const parachainStateRoot = decodedHeader.stateRoot;
-      const parachainBlockHash = await getBlockHash(parachainApi, decodedHeader);
+    if (decodedHeader.number.toBn().lte(blockNumber.toBn())) return false;
+    const parachainStateRoot = decodedHeader.stateRoot;
+    const parachainBlockHash = await getBlockHash(parachainApi, decodedHeader);
 
-      const proof = await getProof(parachainApi, key, parachainBlockHash);
+    const proof = await getProof(parachainApi, key, parachainBlockHash);
 
-      try {
-        return verify(proof, parachainStateRoot, key, value);
-      } catch (e) {
-        return false;
-      }
-    }
+    return verify(proof, parachainStateRoot, key, value);
   } catch (e) {
     console.warn(e);
 
@@ -111,12 +110,8 @@ export const validate = async (
     const block = await parachainApi.rpc.chain.getBlock(blockHash);
     let blockNumber: BlockNumber = 0 as unknown as u32;
 
-    try {
-      if (!block.block.header.number.isEmpty) {
-        blockNumber = block.block.header.number.unwrap();
-      }
-    } catch (e) {
-      console.warn(e);
+    if (!block.block.header.number.isEmpty) {
+      blockNumber = block.block.header.number.unwrap();
     }
 
     return validateWithBlockNumber(relaychainApi, parachainApi, blockNumber, key, value.toU8a());

@@ -12,6 +12,7 @@ import { validate } from '../dataVerification/dataVerification';
 import storage, { BalanceDS } from '../storage';
 import { IBalanceService } from './common/types';
 import { toAddress } from './common/utils';
+import { VERIFY_TIMEOUT } from './common/constants';
 
 export const useBalance = (): IBalanceService => {
   const balanceStorage = storage.connectTo('balances');
@@ -51,7 +52,7 @@ export const useBalance = (): IBalanceService => {
       onInvalid && onInvalid();
       setTimeout(() => {
         runValidation(relaychainApi, parachainApi, storageKey, data, onValid, onInvalid);
-      }, 5000);
+      }, VERIFY_TIMEOUT);
     }
   };
 
