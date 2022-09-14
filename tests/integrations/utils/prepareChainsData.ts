@@ -9,9 +9,9 @@ export function prepareTestData(chains: ChainJSON[]): [ChainJSON[], ChainJSON[],
 
   const [polkadotParachains, kusamaParachains] = chains.reduce(
     (result, currentChain) => {
-      currentChain.parentId === kusamaId
+      currentChain.parentId === polkadotId
         ? result[0].push(currentChain)
-        : currentChain.parentId === polkadotId
+        : currentChain.parentId === kusamaId
         ? result[1].push(currentChain)
         : null;
 
