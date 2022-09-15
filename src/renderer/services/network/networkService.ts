@@ -5,12 +5,12 @@ import { ProviderInterface } from '@polkadot/rpc-provider/types';
 import keyBy from 'lodash/keyBy';
 
 import { Chain } from '@renderer/domain/chain';
-import { Connection, ConnectionNode, ConnectionStatus, ConnectionType } from '@renderer/domain/connection';
+import { Connection, RpcNode, ConnectionStatus, ConnectionType } from '@renderer/domain/connection';
 import { ChainId } from '@renderer/domain/shared-kernel';
 import storage from '@renderer/services/storage';
-import { ConnectionsMap, ExtendedChain, INetworkService } from './common/types';
 import { useChainSpec } from './chainSpecService';
 import { useChains } from './chainsService';
+import { ConnectionsMap, INetworkService } from './common/types';
 
 export const useNetwork = (): INetworkService => {
   const chains = useRef<Record<ChainId, Chain>>({});
@@ -46,7 +46,6 @@ export const useNetwork = (): INetworkService => {
           chainId,
           connectionType: ConnectionType.DISABLED,
           connectionStatus: ConnectionStatus.NONE,
-          customNodes: [],
           activeNode: undefined,
         });
       }
@@ -66,10 +65,10 @@ export const useNetwork = (): INetworkService => {
       };
 
       return acc;
-    }, {} as Record<ChainId, ExtendedChain>);
+    }, {} as ConnectionsMap);
   };
 
-  const connectToNetwork = async (chainId: ChainId, type: ConnectionType, node?: ConnectionNode): Promise<void> => {
+  const connectToNetwork = async (chainId: ChainId, type: ConnectionType, node?: RpcNode): Promise<void> => {
     const connection = connections[chainId];
     if (!connection) return;
 
@@ -161,7 +160,7 @@ export const useNetwork = (): INetworkService => {
 
   return {
     connections,
-    setupConnections: setupConnections,
+    setupConnections,
     reconnect,
     connectToNetwork,
   };

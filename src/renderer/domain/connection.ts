@@ -4,11 +4,11 @@ export type Connection = {
   chainId: ChainId;
   connectionType: ConnectionType;
   connectionStatus: ConnectionStatus;
-  customNodes: ConnectionNode[];
-  activeNode?: ConnectionNode;
+  customNodes?: RpcNode[];
+  activeNode?: RpcNode;
 };
 
-export type ConnectionNode = {
+export type RpcNode = {
   url: string;
   name: string;
 };

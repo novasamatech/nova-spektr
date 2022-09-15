@@ -21,7 +21,6 @@ describe('screen/Settings/NetworkItem', () => {
     icon: 'test_icon.svg',
     connection: {
       chainId: '0x123',
-      customNodes: [],
       connectionType: ConnectionType.RPC_NODE,
       connectionStatus: ConnectionStatus.CONNECTED,
       activeNode: { name: 'test node', url: 'wss://test.com' },

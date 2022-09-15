@@ -1,6 +1,6 @@
 import { createContext, PropsWithChildren, useContext, useEffect, useState } from 'react';
 
-import { ConnectionNode, ConnectionType } from '@renderer/domain/connection';
+import { RpcNode, ConnectionType } from '@renderer/domain/connection';
 import { ChainId } from '@renderer/domain/shared-kernel';
 import { useBalance } from '@renderer/services/balance/balanceService';
 import { TEST_PUBLIC_KEY } from '@renderer/services/balance/common/constants';
@@ -11,7 +11,7 @@ import { useWallet } from '@renderer/services/wallet/walletService';
 type NetworkContextProps = {
   connections: Record<string, ExtendedChain>;
   reconnect: (chainId: ChainId) => void;
-  connectToNetwork: (chainId: ChainId, type: ConnectionType, node?: ConnectionNode) => Promise<void>;
+  connectToNetwork: (chainId: ChainId, type: ConnectionType, node?: RpcNode) => Promise<void>;
 };
 
 const NetworkContext = createContext<NetworkContextProps>({} as NetworkContextProps);

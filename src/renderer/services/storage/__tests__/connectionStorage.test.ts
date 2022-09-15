@@ -58,7 +58,6 @@ describe('service/storage/connectionStorage', () => {
       chainId: '0x123',
       connectionType: ConnectionType.RPC_NODE,
       connectionStatus: ConnectionStatus.NONE,
-      customNodes: [],
     });
 
     expect(mockValue).toHaveLength(1);
@@ -78,13 +77,11 @@ describe('service/storage/connectionStorage', () => {
         chainId: '0x123',
         connectionType: ConnectionType.RPC_NODE,
         connectionStatus: ConnectionStatus.NONE,
-        customNodes: [],
       },
       {
         chainId: '0x234',
         connectionType: ConnectionType.DISABLED,
         connectionStatus: ConnectionStatus.NONE,
-        customNodes: [],
       },
     ]);
 
@@ -96,7 +93,6 @@ describe('service/storage/connectionStorage', () => {
       chainId: '0x123' as ChainId,
       connectionType: ConnectionType.DISABLED,
       connectionStatus: ConnectionStatus.NONE,
-      customNodes: [],
     };
     const mock = setupDbMock({
       update: jest.fn().mockImplementation((_: any, { connectionType }: any) => {
