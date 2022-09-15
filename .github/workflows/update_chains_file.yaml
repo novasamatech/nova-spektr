@@ -15,6 +15,7 @@ on:
       options:
       - chains_dev.json
       - chains.json
+  pull_request:
 
 jobs:
   lint-and-test:
