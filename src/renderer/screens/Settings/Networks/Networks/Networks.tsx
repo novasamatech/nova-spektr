@@ -13,29 +13,46 @@ const Networks = () => {
   const { connections } = useNetworkContext();
   const { sortChains } = useChains();
 
-  const [disabledNetworks, activeNetworksGroup] = Object.values(connections).reduce(
+  const { disabledNetworks, activeNetworksGroup } = Object.values(connections).reduce(
     (acc, c) => {
       if (!c.name.toLowerCase().includes(query)) return acc;
 
-      if (c.connection.connectionType === ConnectionType.DISABLED) {
-        acc[0] = sortChains<ExtendedChain>(acc[0].concat(c));
-      } else {
-        const groupIndex = {
-          [ConnectionStatus.NONE]: 0,
-          [ConnectionStatus.ERROR]: 0,
-          [ConnectionStatus.CONNECTING]: 1,
-          [ConnectionStatus.CONNECTED]: 2,
-        }[c.connection.connectionStatus];
+      const {
+        disabledNetworks,
+        activeNetworksGroup: { error, connecting, connected },
+      } = acc;
 
-        acc[1][groupIndex] = sortChains<ExtendedChain>(acc[1][groupIndex].concat(c));
+      if (c.connection.connectionType === ConnectionType.DISABLED) {
+        acc.disabledNetworks = sortChains<ExtendedChain>(disabledNetworks.concat(c));
+      } else {
+        if (c.connection.connectionStatus === ConnectionStatus.ERROR) {
+          acc.activeNetworksGroup.error = sortChains<ExtendedChain>(error.concat(c));
+        }
+        if (c.connection.connectionStatus === ConnectionStatus.CONNECTING) {
+          acc.activeNetworksGroup.connecting = sortChains<ExtendedChain>(connecting.concat(c));
+        }
+        if (c.connection.connectionStatus === ConnectionStatus.CONNECTED) {
+          acc.activeNetworksGroup.connected = sortChains<ExtendedChain>(connected.concat(c));
+        }
       }
 
       return acc;
     },
-    [[], [[], [], []]] as [ExtendedChain[], ExtendedChain[][]],
+    {
+      disabledNetworks: [] as ExtendedChain[],
+      activeNetworksGroup: {
+        error: [] as ExtendedChain[],
+        connecting: [] as ExtendedChain[],
+        connected: [] as ExtendedChain[],
+      },
+    },
   );
 
-  const activeNetworks = activeNetworksGroup.flat();
+  const activeNetworks = [
+    ...activeNetworksGroup.error,
+    ...activeNetworksGroup.connecting,
+    ...activeNetworksGroup.connected,
+  ];
 
   return (
     <div className="h-full flex flex-col overflow-y-auto">
@@ -79,7 +96,7 @@ const Networks = () => {
                     size={10}
                   />
                   <p className="bg-success rounded-full w-5 h-5 pt-1 text-center text-white text-2xs">
-                    {activeNetworksGroup[2].length || 0}
+                    {activeNetworksGroup.connected.length || 0}
                   </p>
                   <p className="text-xs font-semibold text-neutral-variant">Connected</p>
                 </div>
@@ -90,7 +107,7 @@ const Networks = () => {
                     size={10}
                   />
                   <p className="bg-error rounded-full w-5 h-5 pt-1 text-center text-white text-2xs">
-                    {activeNetworksGroup[0].length || 0}
+                    {activeNetworksGroup.error.length || 0}
                   </p>
                   <p className="text-xs font-semibold text-neutral-variant">Connection error</p>
                 </div>
@@ -101,7 +118,7 @@ const Networks = () => {
                     size={10}
                   />
                   <p className="bg-shade-30 rounded-full w-5 h-5 pt-1 text-center text-white text-2xs">
-                    {activeNetworksGroup[1].length || 0}
+                    {activeNetworksGroup.connecting.length || 0}
                   </p>
                   <p className="text-xs font-semibold text-shade-30">Connecting</p>
                 </div>
