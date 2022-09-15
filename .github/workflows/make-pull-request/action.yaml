@@ -1,0 +1,34 @@
+runs:
+  using: 'composite'
+  steps:
+    - name: Commit files
+      id: commit
+      continue-on-error: true
+      run: |
+        git config --local user.email "41898282+github-actions[bot]@users.noreply.github.com"
+        git config --local user.name "github-actions[bot]"
+        git add src/**
+        git commit -m "Update chains file"
+      shell: bash
+
+    - name: Push changes
+      if: steps.commit.outcome == 'success'
+      uses: ad-m/github-push-action@master
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        branch: refs/heads/update-chain-file-${{github.run_number}}
+
+    - uses: repo-sync/pull-request@v2
+      if: steps.commit.outcome == 'success'
+      name: pull-request
+      with:
+        source_branch: "update-chain-file-${{github.run_number}}"
+        destination_branch: "master"
+        pr_title: "Update Test data File"
+        pr_body: |
+            Update test data file
+        pr_reviewer: |
+          "stepanLav"
+          "pgolovkin"
+        pr_draft: false
+        github_token: ${{ secrets.GITHUB_TOKEN }}

@@ -4,8 +4,11 @@ const axios = require('axios');
 
 const tokenNames = require('./assetsNameMap.json');
 
+const NOVA_CONFIG_VERSION = process.env.CHAINS_VERSION ? process.env.CHAINS_VERSION : 'v5';
 const CONFIG_PATH = 'src/renderer/services/network/common';
-const NOVA_CONFIG_URL = 'https://raw.githubusercontent.com/nova-wallet/nova-utils/master/chains/v5/chains_dev.json';
+const CHAINS_ENVIRONMENT = process.env.CHAINS_ENV ? process.env.CHAINS_ENV : 'chains_dev.json';
+const NOVA_CONFIG_URL = `https://raw.githubusercontent.com/nova-wallet/nova-utils/master/chains/${NOVA_CONFIG_VERSION}/${CHAINS_ENVIRONMENT}`;
+
 const DO_NOT_SUPPORT_CHAINS = ['Moonriver', 'Moonbeam'];
 
 async function getDataViaHttp(url) {
@@ -60,6 +63,8 @@ async function buildFullChainsJSON() {
   const novaChainsConfig = await getDataViaHttp(NOVA_CONFIG_URL);
   const modifiedData = await modifydData(novaChainsConfig);
   await saveNewFile(modifiedData);
+
+  console.log('Success!');
 }
 
 buildFullChainsJSON();
