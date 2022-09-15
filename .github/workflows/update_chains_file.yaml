@@ -18,7 +18,7 @@ on:
   pull_request:
 
 jobs:
-  lint-and-test:
+  update-chains-file:
     env:
       CHAINS_VERSION: ${{ github.event.inputs.file_path }}
       CHAINS_ENV: ${{ github.event.inputs.file_env }}
