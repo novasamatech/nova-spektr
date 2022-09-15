@@ -25,44 +25,7 @@ export const useNetwork = (): INetworkService => {
     throw new Error('=== 🔴 Connections storage in not defined 🔴 ===');
   }
 
-  const { getConnections, addConnections, updateConnection, changeConnectionType, changeConnectionStatus } =
-    connectionStorage;
-
-  // TODO: probably not needed
-  const updateConnectionType = async (chainId: ChainId, type: ConnectionType): Promise<void> => {
-    const match = connections[chainId];
-    if (!match) return;
-
-    const { connection, api, ...rest } = match;
-
-    await changeConnectionType(connection, type);
-    setConnections((currentConnections) => ({
-      ...currentConnections,
-      [chainId]: {
-        api,
-        connection: { ...connection, connectionType: type },
-        ...rest,
-      },
-    }));
-  };
-
-  // TODO: probably not needed
-  const updateConnectionStatus = async (chainId: ChainId, status: ConnectionStatus): Promise<void> => {
-    const match = connections[chainId];
-    if (!match) return;
-
-    const { connection, api, ...rest } = match;
-
-    await changeConnectionStatus(connection, status);
-    setConnections((currentConnections) => ({
-      ...currentConnections,
-      [chainId]: {
-        api,
-        connection: { ...connection, connectionStatus: status },
-        ...rest,
-      },
-    }));
-  };
+  const { getConnections, addConnections, updateConnection } = connectionStorage;
 
   const updateEntireConnection = async (connection: Connection): Promise<void> => {
     await updateConnection(connection);
@@ -176,10 +139,9 @@ export const useNetwork = (): INetworkService => {
     }));
   };
 
-  const init = async (): Promise<void> => {
+  const setupConnections = async (): Promise<void> => {
     try {
       const newConnections = await getNewConnections();
-      console.log(newConnections);
       await addConnections(newConnections);
       const connectionsMap = await getExtendConnections();
       setConnections(connectionsMap);
@@ -208,10 +170,8 @@ export const useNetwork = (): INetworkService => {
 
   return {
     connections,
-    init,
+    setupConnections: setupConnections,
     reconnect,
     connectToNetwork,
-    updateConnectionType,
-    updateConnectionStatus,
   };
 };

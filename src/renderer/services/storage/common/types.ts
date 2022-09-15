@@ -1,10 +1,10 @@
 import { IndexableType } from 'dexie';
 
 import { Balance } from '@renderer/domain/balance';
+import { Connection, ConnectionType } from '@renderer/domain/connection';
 import { Contact } from '@renderer/domain/contact';
-import { MultisigWallet, Wallet } from '@renderer/domain/wallet';
-import { Connection, ConnectionStatus, ConnectionType } from '@renderer/domain/connection';
 import { ChainId, PublicKey } from '@renderer/domain/shared-kernel';
+import { MultisigWallet, Wallet } from '@renderer/domain/wallet';
 
 // =====================================================
 // ================ Storage interface ==================
@@ -28,7 +28,6 @@ export interface IConnectionStorage {
   addConnections: (connections: Connection[]) => Promise<IndexableType>;
   updateConnection: (connection: Connection) => Promise<IndexableType>;
   changeConnectionType: (connection: Connection, type: ConnectionType) => Promise<IndexableType>;
-  changeConnectionStatus: (connection: Connection, status: ConnectionStatus) => Promise<IndexableType>;
 }
 
 export interface IWalletStorage {

@@ -1,6 +1,6 @@
 import { createContext, PropsWithChildren, useContext, useEffect, useState } from 'react';
 
-import { ConnectionNode, ConnectionStatus, ConnectionType } from '@renderer/domain/connection';
+import { ConnectionNode, ConnectionType } from '@renderer/domain/connection';
 import { ChainId } from '@renderer/domain/shared-kernel';
 import { useBalance } from '@renderer/services/balance/balanceService';
 import { TEST_PUBLIC_KEY } from '@renderer/services/balance/common/constants';
@@ -12,8 +12,6 @@ type NetworkContextProps = {
   connections: Record<string, ExtendedChain>;
   reconnect: (chainId: ChainId) => void;
   connectToNetwork: (chainId: ChainId, type: ConnectionType, node?: ConnectionNode) => Promise<void>;
-  updateConnectionType: (chainId: ChainId, type: ConnectionType) => Promise<void>;
-  updateConnectionStatus: (chainId: ChainId, status: ConnectionStatus) => Promise<void>;
 };
 
 const NetworkContext = createContext<NetworkContextProps>({} as NetworkContextProps);
@@ -21,7 +19,7 @@ const NetworkContext = createContext<NetworkContextProps>({} as NetworkContextPr
 export const NetworkProvider = ({ children }: PropsWithChildren) => {
   const [connectionsReady, setConnectionReady] = useState(false);
 
-  const { init, connections, reconnect, connectToNetwork, updateConnectionType, updateConnectionStatus } = useNetwork();
+  const { connections, setupConnections, reconnect, connectToNetwork } = useNetwork();
   const { subscribeBalances, subscribeLockBalances } = useBalance();
   const { getActiveWallets } = useWallet();
   const activeWallets = getActiveWallets();
@@ -30,7 +28,7 @@ export const NetworkProvider = ({ children }: PropsWithChildren) => {
     if (connectionsReady) return;
 
     (async () => {
-      await init();
+      await setupConnections();
       setConnectionReady(true);
     })();
   }, []);
@@ -38,13 +36,23 @@ export const NetworkProvider = ({ children }: PropsWithChildren) => {
   useEffect(() => {
     if (!connectionsReady) return;
 
-    Object.values(connections).forEach(({ connection }) => {
-      const { chainId, connectionType, activeNode } = connection;
+    const startNetworks = async () => {
+      const requestConnections = Object.values(connections).map(({ connection }) => {
+        const { chainId, connectionType, activeNode } = connection;
 
-      if (connectionType === ConnectionType.DISABLED) return;
+        if (connectionType === ConnectionType.DISABLED) return;
 
-      connectToNetwork(chainId, connectionType, activeNode);
-    });
+        return connectToNetwork(chainId, connectionType, activeNode);
+      });
+
+      try {
+        await Promise.allSettled(requestConnections);
+      } catch (error) {
+        console.warn(error);
+      }
+    };
+
+    startNetworks();
   }, [connectionsReady]);
 
   useEffect(() => {
@@ -69,15 +77,9 @@ export const NetworkProvider = ({ children }: PropsWithChildren) => {
     };
   }, [connections, activeWallets]);
 
-  const value: NetworkContextProps = {
-    connections,
-    reconnect,
-    connectToNetwork,
-    updateConnectionType,
-    updateConnectionStatus,
-  };
-
-  return <NetworkContext.Provider value={value}>{children}</NetworkContext.Provider>;
+  return (
+    <NetworkContext.Provider value={{ connections, reconnect, connectToNetwork }}>{children}</NetworkContext.Provider>
+  );
 };
 
 export const useNetworkContext = () => useContext<NetworkContextProps>(NetworkContext);

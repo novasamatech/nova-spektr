@@ -96,7 +96,7 @@ const Balances = () => {
           </ul>
         ) : (
           <div className="flex w-full h-full flex-col items-center justify-center">
-            <Icon name="empty" size={380} className="text-neutral-variant" />
+            <Icon name="noResult" size={380} />
             <p className="text-neutral text-3xl font-bold">Nothing to show</p>
             <p className="text-neutral-variant text-base font-normal">Try to reset filters or search for another key</p>
           </div>
