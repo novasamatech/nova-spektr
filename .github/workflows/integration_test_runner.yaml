@@ -21,6 +21,15 @@ jobs:
       - name: 🧪 Run tests
         uses: ./.github/workflows/integration-test
 
+      - name: 📄 Post results
+        if: always()
+        uses: im-open/process-jest-test-results@v2.0.6
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          results-file: jest-results.json
+          report-name: 'Jest Integration tests results'
+          create-status-check: true
+
   alert:
     runs-on: ubuntu-latest
     needs: integration_test_run
