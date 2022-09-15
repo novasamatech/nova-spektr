@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { ButtonBack, Icon, Input } from '@renderer/components/ui';
 import { useNetworkContext } from '@renderer/context/NetworkContext';
 import { ConnectionStatus, ConnectionType } from '@renderer/domain/connection';
+import { useChains } from '@renderer/services/network/chainsService';
 import { ExtendedChain } from '@renderer/services/network/common/types';
 import NetworkList from '../NetworkList/NetworkList';
 
@@ -10,30 +11,31 @@ const Networks = () => {
   const [query, setQuery] = useState('');
 
   const { connections } = useNetworkContext();
+  const { sortChains } = useChains();
 
-  const filteredConnections = Object.values(connections).filter((connection) =>
-    connection.name.toLowerCase().includes(query),
-  );
-
-  const [activeNetworks, disabledNetworks] = filteredConnections.reduce(
+  const [disabledNetworks, activeNetworksGroup] = Object.values(connections).reduce(
     (acc, c) => {
-      c.connection.connectionType !== ConnectionType.DISABLED ? acc[0].push(c) : acc[1].push(c);
+      if (!c.name.toLowerCase().includes(query)) return acc;
+
+      if (c.connection.connectionType === ConnectionType.DISABLED) {
+        acc[0] = sortChains<ExtendedChain>(acc[0].concat(c));
+      } else {
+        const groupIndex = {
+          [ConnectionStatus.NONE]: 0,
+          [ConnectionStatus.ERROR]: 0,
+          [ConnectionStatus.CONNECTING]: 1,
+          [ConnectionStatus.CONNECTED]: 2,
+        }[c.connection.connectionStatus];
+
+        acc[1][groupIndex] = sortChains<ExtendedChain>(acc[1][groupIndex].concat(c));
+      }
 
       return acc;
     },
-    [[], []] as ExtendedChain[][],
+    [[], [[], [], []]] as [ExtendedChain[], ExtendedChain[][]],
   );
 
-  const [connectedAmount, connectingAmount, errorAmount] = activeNetworks.reduce(
-    (acc, { connection }) => {
-      if (connection.connectionStatus === ConnectionStatus.CONNECTED) acc[0] += 1;
-      if (connection.connectionStatus === ConnectionStatus.CONNECTING) acc[1] += 1;
-      if (connection.connectionStatus === ConnectionStatus.ERROR) acc[2] += 1;
-
-      return acc;
-    },
-    [0, 0, 0],
-  );
+  const activeNetworks = activeNetworksGroup.flat();
 
   return (
     <div className="h-full flex flex-col overflow-y-auto">
@@ -77,7 +79,7 @@ const Networks = () => {
                     size={10}
                   />
                   <p className="bg-success rounded-full w-5 h-5 pt-1 text-center text-white text-2xs">
-                    {connectedAmount}
+                    {activeNetworksGroup[2].length || 0}
                   </p>
                   <p className="text-xs font-semibold text-neutral-variant">Connected</p>
                 </div>
@@ -87,7 +89,9 @@ const Networks = () => {
                     name="closeCutout"
                     size={10}
                   />
-                  <p className="bg-error rounded-full w-5 h-5 pt-1 text-center text-white text-2xs">{errorAmount}</p>
+                  <p className="bg-error rounded-full w-5 h-5 pt-1 text-center text-white text-2xs">
+                    {activeNetworksGroup[0].length || 0}
+                  </p>
                   <p className="text-xs font-semibold text-neutral-variant">Connection error</p>
                 </div>
                 <div className="flex items-center gap-x-1 relative">
@@ -97,7 +101,7 @@ const Networks = () => {
                     size={10}
                   />
                   <p className="bg-shade-30 rounded-full w-5 h-5 pt-1 text-center text-white text-2xs">
-                    {connectingAmount}
+                    {activeNetworksGroup[1].length || 0}
                   </p>
                   <p className="text-xs font-semibold text-shade-30">Connecting</p>
                 </div>

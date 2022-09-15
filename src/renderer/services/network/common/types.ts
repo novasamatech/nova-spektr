@@ -9,7 +9,7 @@ import { ChainId } from '@renderer/domain/shared-kernel';
 // ------------------
 export interface IChainService {
   getChainsData: () => Promise<Chain[]>;
-  sortChains: (chains: Chain[]) => Chain[];
+  sortChains: <T extends Chain = Chain>(chains: T[]) => T[];
 }
 
 export interface IChainSpecService {
