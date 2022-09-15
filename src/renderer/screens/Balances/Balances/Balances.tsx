@@ -63,20 +63,18 @@ const Balances = () => {
   return (
     <>
       <div className="h-full flex flex-col">
-        <div className="flex-none">
-          <h1 className="font-semibold text-2xl text-neutral mb-9">Balances</h1>
+        <h1 className="font-semibold text-2xl text-neutral mb-9">Balances</h1>
 
-          <div className="flex justify-between items-center mb-5">
-            <Input
-              className="w-[300px]"
-              prefixElement={<Icon name="search" className="w-5 h-5" />}
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              placeholder="Search by token, network or anything"
-            />
-            <div className="text-sm text-neutral font-semibold flex gap-2.5">
-              Hide zero balances <Switch checked={hideZeroBalance} onChange={updateHideZeroBalance} />
-            </div>
+        <div className="flex justify-between items-center mb-5">
+          <Input
+            className="w-[300px]"
+            prefixElement={<Icon name="search" className="w-5 h-5" />}
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder="Search by token, network or anything"
+          />
+          <div className="text-sm text-neutral font-semibold flex gap-2.5">
+            Hide zero balances <Switch checked={hideZeroBalance} onChange={updateHideZeroBalance} />
           </div>
         </div>
 
@@ -98,7 +96,7 @@ const Balances = () => {
           </ul>
         ) : (
           <div className="flex w-full h-full flex-col items-center justify-center">
-            <Icon name="empty" size={380} className="text-neutral-variant" />
+            <Icon name="noResult" size={380} />
             <p className="text-neutral text-3xl font-bold">Nothing to show</p>
             <p className="text-neutral-variant text-base font-normal">Try to reset filters or search for another key</p>
           </div>
