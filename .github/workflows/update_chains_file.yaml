@@ -38,7 +38,7 @@ jobs:
       - name: ➡️ Make pull request
         uses: ./.github/workflows/make-pull-request
         with:
-          commit-path: src/**
+          commit-path: src/renderer/services/network/common/*.json
           commit-message: Update chains.json file
           brnach-name: update-chains-file
           github-token: ${{ secrets.GITHUB_TOKEN }}
