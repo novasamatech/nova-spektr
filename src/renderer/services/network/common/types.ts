@@ -1,7 +1,7 @@
 import { ApiPromise } from '@polkadot/api';
 
 import { Chain } from '@renderer/domain/chain';
-import { Connection, ConnectionType } from '@renderer/domain/connection';
+import { Connection, RpcNode, ConnectionType } from '@renderer/domain/connection';
 import { ChainId } from '@renderer/domain/shared-kernel';
 
 // ------------------
@@ -9,7 +9,7 @@ import { ChainId } from '@renderer/domain/shared-kernel';
 // ------------------
 export interface IChainService {
   getChainsData: () => Promise<Chain[]>;
-  sortChains: (chains: Chain[]) => Chain[];
+  sortChains: <T extends Chain = Chain>(chains: T[]) => T[];
 }
 
 export interface IChainSpecService {
@@ -19,9 +19,9 @@ export interface IChainSpecService {
 
 export interface INetworkService {
   connections: Record<string, ExtendedChain>;
-  init: () => Promise<void>;
+  setupConnections: () => Promise<void>;
   reconnect: (chainId: ChainId) => Promise<void>;
-  updateConnectionType: (chainId: ChainId, connectionType: ConnectionType) => Promise<void>;
+  connectToNetwork: (chainId: ChainId, type: ConnectionType, node?: RpcNode) => Promise<void>;
 }
 
 // ------------------
@@ -32,3 +32,5 @@ export type ExtendedChain = Chain & {
   connection: Connection;
   api?: ApiPromise;
 };
+
+export type ConnectionsMap = Record<ChainId, ExtendedChain>;
