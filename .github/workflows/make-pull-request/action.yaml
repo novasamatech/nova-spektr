@@ -1,0 +1,52 @@
+name: Making a pull request
+description: That action create a pull request with all changes
+inputs:
+  commit-path:
+    description: 'Path to files which will commit'
+    required: true
+  commit-message:
+    description: 'Message for commit'
+    required: true
+    default: 'Updating'
+  brnach-name:
+    description: 'Name for creating branch'
+    required: true
+    default: 'update'
+  github-token:
+    description: 'Token for making operations with GitHub'
+    required: true
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Commit files
+      id: commit
+      continue-on-error: true
+      run: |
+        git config --local user.email "41898282+github-actions[bot]@users.noreply.github.com"
+        git config --local user.name "github-actions[bot]"
+        git add ${{ inputs.commit-path }}
+        git commit -m "${{ inputs.commit-message }}"
+      shell: bash
+
+    - name: Push changes
+      if: steps.commit.outcome == 'success'
+      uses: ad-m/github-push-action@master
+      with:
+        github_token: ${{ inputs.github-token }}
+        branch: refs/heads/${{ inputs.brnach-name }}-${{github.run_number}}
+
+    - uses: repo-sync/pull-request@v2
+      if: steps.commit.outcome == 'success'
+      name: pull-request
+      with:
+        source_branch: "${{ inputs.brnach-name }}-${{github.run_number}}"
+        destination_branch: "dev"
+        pr_title: ${{ inputs.commit-message }}
+        pr_body: |
+            Updating
+        pr_reviewer: |
+          "stepanLav"
+          "pgolovkin"
+        pr_draft: false
+        github_token: ${{ inputs.github-token }}

@@ -29,6 +29,7 @@
     "test:coverage": "yarn test --coverage --passWithNoTests --watchAll=false",
     "lint": "cross-env NODE_ENV=production eslint . --ext=ts,tsx,js,jsx",
     "lint:fix": "pnpm lint --fix",
+    "update:chains-file": "node scripts/buildChainJson.js",
     "githook:pre-commit": "cross-env NODE_ENV=production lint-staged && tsc -p tsconfig.json",
     "githook:pre-push": "cross-env pnpm test:coverage",
     "storybook": "start-storybook -p 6006",
