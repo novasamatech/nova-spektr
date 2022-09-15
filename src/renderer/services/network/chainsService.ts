@@ -9,7 +9,7 @@ import { isKusama, isPolkadot, isTestnet } from './common/utils';
 export function useChains(): IChainService {
   const getChainsData = () => Promise.resolve(chains as unknown as Chain[]);
 
-  const sortChains = (chains: Chain[]): Chain[] => {
+  const sortChains = <T extends Chain = Chain>(chains: T[]): T[] => {
     let polkadot;
     let kusama;
     const testnets = [] as Chain[];
@@ -22,7 +22,7 @@ export function useChains(): IChainService {
       else parachains.push(chain);
     });
 
-    return compact([polkadot, kusama, ...sortBy(parachains, 'name'), ...sortBy(testnets, 'name')]);
+    return compact([polkadot, kusama, ...sortBy(parachains, 'name'), ...sortBy(testnets, 'name')]) as T[];
   };
 
   return {
