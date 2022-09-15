@@ -41,7 +41,7 @@ const Login = () => {
       await matrix.setHomeserver(homeserver);
       await matrix.loginWithCreds(username, password);
       setIsLoggedIn(true);
-      navigate(Paths.WALLETS);
+      navigate(Paths.BALANCES);
     } catch (error) {
       console.warn(error);
       setIsLoginFailed(true);
@@ -60,7 +60,7 @@ const Login = () => {
 
   const onSkip = () => {
     matrix.skipLogin(true);
-    navigate(Paths.WALLETS);
+    navigate(Paths.BALANCES);
   };
 
   return (

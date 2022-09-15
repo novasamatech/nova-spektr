@@ -14,3 +14,5 @@ export const enum Decimal {
 }
 
 export const TEST_PUBLIC_KEY = '0x08eb319467ea54784cd9edfbd03bbcc53f7a021ed8d9ed2ca97b6ae46b3f6014';
+
+export const VERIFY_TIMEOUT = 5000;

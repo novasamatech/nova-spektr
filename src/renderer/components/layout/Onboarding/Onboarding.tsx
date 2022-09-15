@@ -11,7 +11,7 @@ const Onboarding = () => {
         <Outlet />
       </div>
 
-      <LocaleComponent className="w-16" short top />
+      <LocaleComponent short top />
     </main>
   );
 };

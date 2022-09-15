@@ -22,7 +22,7 @@
     "dist": "electron-builder -p never",
     "clean:build": "rimraf release/build",
     "clean:prod": "rimraf release/dist",
-    "test": "jest --config=jest.config.ts",
+    "test": "jest --config=jest.config.ts --json --outputFile=jest-unit-results.json",
     "test:integration": "jest --config=tests/integrations/jest.config.ts --group=integration --json --outputFile=jest-results.json",
     "test:dataVerification": "jest --config=tests/integrations/jest.config.ts --group=dataVerification --json --outputFile=jest-results.json",
     "test:matrix": "jest --config=tests/integrations/jest.config.ts --group=matrix --json --outputFile=jest-results.json",

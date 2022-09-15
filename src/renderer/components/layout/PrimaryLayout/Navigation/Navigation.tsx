@@ -16,11 +16,10 @@ const CardStyle = {
 };
 
 const NavItems = [
-  { icon: <Icon name="wallets" />, title: 'NavItem.Wallets', link: Paths.WALLETS },
-  { icon: <Icon name="book" />, title: 'NavItem.AddressBook', link: Paths.ADDRESS_BOOK },
-  { icon: <Icon name="operations" />, title: 'NavItem.Operations', link: Paths.OPERATIONS },
   { icon: <Icon name="balance" />, title: 'NavItem.Balances', link: Paths.BALANCES },
-  { icon: <Icon name="transfer" />, title: 'NavItem.Transfer', link: Paths.TRANSFER },
+  { icon: <Icon name="history" />, title: 'NavItem.History', link: Paths.HISTORY },
+  { icon: <Icon name="operations" />, title: 'NavItem.MstOperations', link: Paths.MULTISIG },
+  { icon: <Icon name="book" />, title: 'NavItem.AddressBook', link: Paths.ADDRESS_BOOK },
   // { icon: <Icon name="btc" />, title: 'NavItem.ChatDEV', link: Paths.CHAT_DEV },
   // { icon: <Icon name="eth" />, title: 'NavItem.CameraDEV', link: Paths.CAMERA_DEV },
 ];
@@ -97,7 +96,25 @@ const Navigation = () => {
           {t('Logout')}
         </Button>
       )}
-      <LocaleComponent className="w-16" top short />
+
+      <div>
+        <NavLink
+          to={Paths.SETTINGS}
+          className={({ isActive }) =>
+            cn(
+              'select-none rounded-lg text-gray-500 flex items-center p-3 mr-2.5 outline-offset-reduced hover:bg-black/5 ',
+              isActive && 'text-primary',
+            )
+          }
+        >
+          <Icon name="settings" />
+          <span className="font-semibold text-sm ml-3">{t('NavItem.Settings')}</span>
+        </NavLink>
+        <div className="flex justify-between bg-gradient-to-b from-shade-2 py-2 px-3 rounded-t-2lg">
+          <LocaleComponent top short />
+          <Icon className="text-success" name="networkDuotone" />
+        </div>
+      </div>
     </aside>
   );
 };
