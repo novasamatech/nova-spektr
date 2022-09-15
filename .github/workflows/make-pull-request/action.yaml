@@ -44,7 +44,7 @@ runs:
         destination_branch: "dev"
         pr_title: ${{ inputs.commit-message }}
         pr_body: |
-            Updating
+            That pull-request was generated automatically 🤖
         pr_reviewer: |
           "stepanLav"
           "pgolovkin"
