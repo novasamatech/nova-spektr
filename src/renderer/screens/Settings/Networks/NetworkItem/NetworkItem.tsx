@@ -5,7 +5,7 @@ import { useNetworkContext } from '@renderer/context/NetworkContext';
 import { ConnectionStatus, ConnectionType } from '@renderer/domain/connection';
 import { ExtendedChain } from '@renderer/services/network/common/types';
 
-const CONNECTION_VARIANTS: Record<ConnectionStatus, (type: ConnectionType, nodeUrl: string) => ReactNode> = {
+const NETWORK_CONNECTION_STATUS: Record<ConnectionStatus, (type: ConnectionType, nodeUrl: string) => ReactNode> = {
   [ConnectionStatus.NONE]: () => null,
   [ConnectionStatus.ERROR]: (type: ConnectionType, nodeUrl: string) => (
     <div className="flex items-center gap-x-1">
@@ -45,6 +45,7 @@ const NetworkItem = ({ networkItem }: Props) => {
 
   const connect = async () => {
     try {
+      // TODO: testing purpose
       await connectToNetwork(networkItem.chainId, ConnectionType.RPC_NODE, {
         url: 'wss://westmint-rpc.polkadot.io',
         name: 'Parity node',
@@ -79,7 +80,7 @@ const NetworkItem = ({ networkItem }: Props) => {
       <img src={icon} alt="" width={34} height={34} />
       <div className="flex flex-col mr-auto">
         <p className="text-xl leading-5 text-neutral">{name}</p>
-        {CONNECTION_VARIANTS[connectionStatus](connectionType, activeNode?.url || '')}
+        {NETWORK_CONNECTION_STATUS[connectionStatus](connectionType, activeNode?.url || '')}
       </div>
       {/* TODO: create custom DropDown */}
       <Button variant="outline" pallet="primary" onClick={onChangeConnection}>

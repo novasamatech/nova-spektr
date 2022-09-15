@@ -1,19 +1,19 @@
+import { useRef, useState } from 'react';
 import { ApiPromise, WsProvider } from '@polkadot/api';
 import { ScProvider } from '@polkadot/rpc-provider/substrate-connect';
 import { ProviderInterface } from '@polkadot/rpc-provider/types';
 import keyBy from 'lodash/keyBy';
-import { useRef, useState } from 'react';
 
 import { Chain } from '@renderer/domain/chain';
 import { Connection, ConnectionNode, ConnectionStatus, ConnectionType } from '@renderer/domain/connection';
-import { ConnectionsMap, ExtendedChain, INetworkService } from './common/types';
 import { ChainId } from '@renderer/domain/shared-kernel';
 import storage from '@renderer/services/storage';
+import { ConnectionsMap, ExtendedChain, INetworkService } from './common/types';
 import { useChainSpec } from './chainSpecService';
 import { useChains } from './chainsService';
 
 export const useNetwork = (): INetworkService => {
-  const chains = useRef<Record<string, Chain>>({});
+  const chains = useRef<Record<ChainId, Chain>>({});
   const [connections, setConnections] = useState<ConnectionsMap>({});
 
   const { getChainsData, sortChains } = useChains();
@@ -27,19 +27,17 @@ export const useNetwork = (): INetworkService => {
 
   const { getConnections, addConnections, updateConnection } = connectionStorage;
 
-  const updateEntireConnection = async (connection: Connection): Promise<void> => {
+  const updateConnectionStateAndDb = async (connection: Connection, api?: ApiPromise): Promise<void> => {
     await updateConnection(connection);
+
     setConnections((currentConnections) => ({
       ...currentConnections,
-      [connection.chainId]: { ...currentConnections[connection.chainId], connection },
+      [connection.chainId]: { ...currentConnections[connection.chainId], connection, api },
     }));
   };
 
   const getNewConnections = async (): Promise<Connection[]> => {
-    const chainsData = await getChainsData();
     const currentConnections = await getConnections();
-
-    chains.current = keyBy(sortChains(chainsData), 'chainId');
     const connectionData = keyBy(currentConnections, 'chainId');
 
     return Object.values(chains.current).reduce((acc, { chainId }) => {
@@ -58,10 +56,7 @@ export const useNetwork = (): INetworkService => {
   };
 
   const getExtendConnections = async (): Promise<ConnectionsMap> => {
-    const chainsData = await getChainsData();
     const currentConnections = await getConnections();
-
-    chains.current = keyBy(sortChains(chainsData), 'chainId');
     const connectionData = keyBy(currentConnections, 'chainId');
 
     return Object.values(chains.current).reduce((acc, chain) => {
@@ -78,7 +73,7 @@ export const useNetwork = (): INetworkService => {
     const connection = connections[chainId];
     if (!connection) return;
 
-    await updateEntireConnection({
+    await updateConnectionStateAndDb({
       ...connection.connection,
       connectionType: type,
       connectionStatus: ConnectionStatus.CONNECTING,
@@ -125,22 +120,21 @@ export const useNetwork = (): INetworkService => {
 
     const api = provider ? await ApiPromise.create({ provider }) : undefined;
 
-    const updatedConnection = {
-      ...connection.connection,
-      activeNode: node,
-      connectionType: type,
-      connectionStatus: api ? ConnectionStatus.CONNECTED : ConnectionStatus.ERROR,
-    };
-
-    await updateConnection(updatedConnection);
-    setConnections((currentConnections) => ({
-      ...currentConnections,
-      [chainId]: { ...connection, api, connection: updatedConnection },
-    }));
+    await updateConnectionStateAndDb(
+      {
+        ...connection.connection,
+        activeNode: node,
+        connectionType: type,
+        connectionStatus: api ? ConnectionStatus.CONNECTED : ConnectionStatus.ERROR,
+      },
+      api,
+    );
   };
 
   const setupConnections = async (): Promise<void> => {
     try {
+      const chainsData = await getChainsData();
+      chains.current = keyBy(sortChains(chainsData), 'chainId');
       const newConnections = await getNewConnections();
       await addConnections(newConnections);
       const connectionsMap = await getExtendConnections();
@@ -153,19 +147,16 @@ export const useNetwork = (): INetworkService => {
   const reconnect = async (chainId: ChainId): Promise<void> => {
     const connection = connections[chainId];
 
-    if (!connection) return;
-
-    const { api } = connection;
-    if (!api) return;
+    if (!connection?.api) return;
 
     try {
-      await api.disconnect();
+      await connection.api.disconnect();
     } catch (error) {
       // TODO: Add error handling
       console.error(error);
     }
 
-    await api.connect();
+    await connection.api.connect();
   };
 
   return {
