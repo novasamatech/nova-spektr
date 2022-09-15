@@ -7,14 +7,6 @@ on:
       required: true
       type: string
       default: "v5"
-    file_env:
-      description: 'chains_dev.json or chains.json?'
-      required: true
-      default: chains_dev.json
-      type: choice
-      options:
-      - chains_dev.json
-      - chains.json
 
 jobs:
   update-chains-file:

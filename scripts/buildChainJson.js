@@ -6,14 +6,15 @@ const tokenNames = require('./assetsNameMap.json');
 
 const NOVA_CONFIG_VERSION = process.env.CHAINS_VERSION ? process.env.CHAINS_VERSION : 'v5';
 const CONFIG_PATH = 'src/renderer/services/network/common';
-const CHAINS_ENVIRONMENT = process.env.CHAINS_ENV ? process.env.CHAINS_ENV : 'chains_dev.json';
-const NOVA_CONFIG_URL = `https://raw.githubusercontent.com/nova-wallet/nova-utils/master/chains/${NOVA_CONFIG_VERSION}/${CHAINS_ENVIRONMENT}`;
+const NOVA_CONFIG_URL = `https://raw.githubusercontent.com/nova-wallet/nova-utils/master/chains/${NOVA_CONFIG_VERSION}/`;
+
+const CHAINS_ENV = ['chains_dev.json', 'chains.json'];
 
 const DO_NOT_SUPPORT_CHAINS = ['Moonriver', 'Moonbeam'];
 
-async function getDataViaHttp(url) {
+async function getDataViaHttp(url, file_path) {
   return await axios
-    .get(url)
+    .get(url + file_path)
     .then((res) => {
       return res.data;
     })
@@ -41,9 +42,9 @@ async function modifydData(rawData) {
   });
 }
 
-async function saveNewFile(new_json) {
+async function saveNewFile(new_json, file_name) {
   try {
-    await writeFile(resolve(CONFIG_PATH, 'full-chains.json'), JSON.stringify(new_json, null, 2));
+    await writeFile(resolve(CONFIG_PATH, file_name), JSON.stringify(new_json, null, 2));
   } catch ({ message }) {
     console.log(`
     🛑 Something went wrong!\n
@@ -53,18 +54,12 @@ async function saveNewFile(new_json) {
 }
 
 async function buildFullChainsJSON() {
-  /*
-  What we should to do:
-  1. Get chains.json from nova-utils
-  2. Modified all received data
-  3. Save new file
-  */
-
-  const novaChainsConfig = await getDataViaHttp(NOVA_CONFIG_URL);
-  const modifiedData = await modifydData(novaChainsConfig);
-  await saveNewFile(modifiedData);
-
-  console.log('Success!');
+  CHAINS_ENV.forEach(async function (chain) {
+    const novaChainsConfig = await getDataViaHttp(NOVA_CONFIG_URL, chain);
+    const modifiedData = await modifydData(novaChainsConfig);
+    await saveNewFile(modifiedData, 'omni-' + chain);
+    console.log('Was successfuly generated for ', chain);
+  });
 }
 
 buildFullChainsJSON();
