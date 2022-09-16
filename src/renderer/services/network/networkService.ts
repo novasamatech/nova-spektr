@@ -27,7 +27,7 @@ export const useNetwork = (): INetworkService => {
 
   const { getConnections, addConnections, updateConnection } = connectionStorage;
 
-  const updateConnectionStateAndDb = async (connection: Connection, api?: ApiPromise): Promise<void> => {
+  const updateConnectionState = async (connection: Connection, api?: ApiPromise): Promise<void> => {
     await updateConnection(connection);
 
     setConnections((currentConnections) => ({
@@ -36,17 +36,30 @@ export const useNetwork = (): INetworkService => {
     }));
   };
 
+  const updateConnectionStatus = async (connection: Connection, connectionStatus: ConnectionStatus): Promise<void> => {
+    setConnections((currentConnections) => ({
+      ...currentConnections,
+      [connection.chainId]: {
+        ...currentConnections[connection.chainId],
+        connection: { ...connection, connectionStatus },
+      },
+    }));
+  };
+
   const getNewConnections = async (): Promise<Connection[]> => {
     const currentConnections = await getConnections();
     const connectionData = keyBy(currentConnections, 'chainId');
 
-    return Object.values(chains.current).reduce((acc, { chainId }) => {
+    return Object.values(chains.current).reduce((acc, { chainId, nodes }) => {
       if (!connectionData[chainId]) {
+        const connectionType = getKnownChain(chainId) ? ConnectionType.LIGHT_CLIENT : ConnectionType.RPC_NODE;
+        const activeNode = connectionType === ConnectionType.RPC_NODE ? nodes[0] : undefined;
+
         acc.push({
           chainId,
-          connectionType: ConnectionType.DISABLED,
+          connectionType,
           connectionStatus: ConnectionStatus.NONE,
-          activeNode: undefined,
+          activeNode,
         });
       }
 
@@ -68,11 +81,25 @@ export const useNetwork = (): INetworkService => {
     }, {} as ConnectionsMap);
   };
 
+  const subscribeConnectionEvents = (connection: Connection, provider: ProviderInterface): void => {
+    provider.on('connected', () => {
+      updateConnectionStatus(connection, ConnectionStatus.CONNECTED);
+    });
+
+    provider.on('disconnected', () => {
+      updateConnectionStatus(connection, ConnectionStatus.CONNECTING);
+    });
+
+    provider.on('error', () => {
+      updateConnectionStatus(connection, ConnectionStatus.ERROR);
+    });
+  };
+
   const connectToNetwork = async (chainId: ChainId, type: ConnectionType, node?: RpcNode): Promise<void> => {
     const connection = connections[chainId];
     if (!connection) return;
 
-    await updateConnectionStateAndDb({
+    await updateConnectionState({
       ...connection.connection,
       connectionType: type,
       connectionStatus: ConnectionStatus.CONNECTING,
@@ -113,13 +140,15 @@ export const useNetwork = (): INetworkService => {
     if (type === ConnectionType.RPC_NODE && node) {
       // TODO: handle limited retries provider = new WsProvider(node.url, 5000, {}, 11000);
       provider = new WsProvider(node.url);
-    } else {
-      throw new Error('RPC node not provided');
     }
 
     const api = provider ? await ApiPromise.create({ provider }) : undefined;
 
-    await updateConnectionStateAndDb(
+    if (provider) {
+      subscribeConnectionEvents(connection.connection, provider);
+    }
+
+    await updateConnectionState(
       {
         ...connection.connection,
         activeNode: node,
@@ -134,8 +163,10 @@ export const useNetwork = (): INetworkService => {
     try {
       const chainsData = await getChainsData();
       chains.current = keyBy(sortChains(chainsData), 'chainId');
+
       const newConnections = await getNewConnections();
       await addConnections(newConnections);
+
       const connectionsMap = await getExtendConnections();
       setConnections(connectionsMap);
     } catch (error) {
@@ -143,25 +174,9 @@ export const useNetwork = (): INetworkService => {
     }
   };
 
-  const reconnect = async (chainId: ChainId): Promise<void> => {
-    const connection = connections[chainId];
-
-    if (!connection?.api) return;
-
-    try {
-      await connection.api.disconnect();
-    } catch (error) {
-      // TODO: Add error handling
-      console.error(error);
-    }
-
-    await connection.api.connect();
-  };
-
   return {
     connections,
     setupConnections,
-    reconnect,
     connectToNetwork,
   };
 };

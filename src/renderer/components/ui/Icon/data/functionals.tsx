@@ -7,6 +7,7 @@ import CheckCutoutImg, { ReactComponent as CheckCutoutSvg } from '@images/functi
 import CheckImg, { ReactComponent as CheckSvg } from '@images/functionals/checkmark.svg';
 import WarnCutoutImg, { ReactComponent as WarnCutoutSvg } from '@images/functionals/warning-cutout.svg';
 import DisableCutoutImg, { ReactComponent as DisableCutoutSvg } from '@images/functionals/disable-cutout.svg';
+import DisableImg, { ReactComponent as DisableSvg } from '@images/functionals/disable.svg';
 import RemoveCutoutImg, { ReactComponent as RemoveCutoutSvg } from '@images/functionals/remove-cutout.svg';
 import EmptyIdenticonImg, { ReactComponent as EmptyIdenticonSvg } from '@images/functionals/empty-identicon.svg';
 import SearchImg, { ReactComponent as SearchSvg } from '@images/functionals/search.svg';
@@ -14,6 +15,7 @@ import NetworkDuotoneImg, { ReactComponent as NetworkDuotoneSvg } from '@images/
 import NetworkOnImg, { ReactComponent as NetworkOnSvg } from '@images/functionals/network-on.svg';
 import NetworkOffImg, { ReactComponent as NetworkOffSvg } from '@images/functionals/network-off.svg';
 import NetworkImg, { ReactComponent as NetworkSvg } from '@images/functionals/network.svg';
+import AddImg, { ReactComponent as AddSvg } from '@images/functionals/add.svg';
 
 const FunctionalImages = {
   copy: { svg: CopySvg, img: CopyImg },
@@ -25,6 +27,7 @@ const FunctionalImages = {
   checkmark: { svg: CheckSvg, img: CheckImg },
   warnCutout: { svg: WarnCutoutSvg, img: WarnCutoutImg },
   disableCutout: { svg: DisableCutoutSvg, img: DisableCutoutImg },
+  disable: { svg: DisableSvg, img: DisableImg },
   removeCutout: { svg: RemoveCutoutSvg, img: RemoveCutoutImg },
   emptyIdenticon: { svg: EmptyIdenticonSvg, img: EmptyIdenticonImg },
   search: { svg: SearchSvg, img: SearchImg },
@@ -32,6 +35,7 @@ const FunctionalImages = {
   networkOn: { svg: NetworkOnSvg, img: NetworkOnImg },
   networkOff: { svg: NetworkOffSvg, img: NetworkOffImg },
   network: { svg: NetworkSvg, img: NetworkImg },
+  add: { svg: AddSvg, img: AddImg },
 } as const;
 
 export type Functional = keyof typeof FunctionalImages;

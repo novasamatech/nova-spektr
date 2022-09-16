@@ -1,4 +1,5 @@
 import { ApiPromise } from '@polkadot/api';
+import { ProviderInterface } from '@polkadot/rpc-provider/types';
 
 import { Chain } from '@renderer/domain/chain';
 import { Connection, RpcNode, ConnectionType } from '@renderer/domain/connection';
@@ -20,7 +21,6 @@ export interface IChainSpecService {
 export interface INetworkService {
   connections: Record<string, ExtendedChain>;
   setupConnections: () => Promise<void>;
-  reconnect: (chainId: ChainId) => Promise<void>;
   connectToNetwork: (chainId: ChainId, type: ConnectionType, node?: RpcNode) => Promise<void>;
 }
 
@@ -28,9 +28,13 @@ export interface INetworkService {
 // ----- Types ------
 // ------------------
 
+export type ConnectionStatus = 'connected' | 'connecting' | 'disconnected' | 'error';
+
 export type ExtendedChain = Chain & {
   connection: Connection;
   api?: ApiPromise;
+  provider?: ProviderInterface;
+  status: ConnectionStatus;
 };
 
 export type ConnectionsMap = Record<ChainId, ExtendedChain>;
