@@ -32,6 +32,7 @@ export type ExtendedChain = Chain & {
   connection: Connection;
   api?: ApiPromise;
   provider?: ProviderInterface;
+  disconnect?: () => Promise<void>;
 };
 
 export type ConnectionsMap = Record<ChainId, ExtendedChain>;
