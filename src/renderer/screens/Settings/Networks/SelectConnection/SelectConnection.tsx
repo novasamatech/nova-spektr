@@ -29,7 +29,7 @@ const SelectConnection = ({ networkItem }: Props) => {
   );
   const [isDisableConfirmOpen, setIsDisableConfirmOpen] = useState(false);
 
-  const changeConnection = (nodeId: string) => {
+  const changeConnection = (nodeId: string, onClose: () => void) => {
     setSelectedNode(nodeId);
     networkItem.disconnect?.();
 
@@ -41,6 +41,8 @@ const SelectConnection = ({ networkItem }: Props) => {
     if (node) {
       selectRpcNode(node);
     }
+
+    onClose && onClose();
   };
 
   const selectRpcNode = async (rpcNode: RPCNode) => {
@@ -87,33 +89,16 @@ const SelectConnection = ({ networkItem }: Props) => {
         </Popover.Button>
 
         <Popover.Panel className="absolute top-0 right-0 z-20 rounded-2lg shadow-surface bg-white border-2 border-shade-10 w-[350px]">
-          <div>
-            <div className="flex flex-col max-h-64 overflow-auto mb-5">
-              <RadioGroup value={selectedNode} onChange={changeConnection} className="divide-y divide-shade-5">
-                <RadioGroup.Option
-                  value={LIGHT_CLIENT_KEY}
-                  className={cn(
-                    'h-10 flex gap-2.5 px-4 box-border cursor-pointer items-center text-sm font-semibold text-neutral hover:bg-shade-2',
-                  )}
+          {({ close }) => (
+            <div>
+              <div className="flex flex-col max-h-64 overflow-auto mb-5">
+                <RadioGroup
+                  value={selectedNode}
+                  onChange={(value: string) => changeConnection(value, close)}
+                  className="divide-y divide-shade-5"
                 >
-                  {({ checked }) => (
-                    <>
-                      <div
-                        className={cn(
-                          'rounded-full w-5 h-5',
-                          checked ? 'border-[6px] border-primary' : 'border-2 border-shade-30',
-                        )}
-                      ></div>
-                      <div>
-                        <div className={checked ? 'text-primary' : ''}>Light client</div>
-                      </div>
-                    </>
-                  )}
-                </RadioGroup.Option>
-                {nodes.map((node) => (
                   <RadioGroup.Option
-                    value={node.url}
-                    key={node.name}
+                    value={LIGHT_CLIENT_KEY}
                     className={cn(
                       'h-10 flex gap-2.5 px-4 box-border cursor-pointer items-center text-sm font-semibold text-neutral hover:bg-shade-2',
                     )}
@@ -127,39 +112,62 @@ const SelectConnection = ({ networkItem }: Props) => {
                           )}
                         ></div>
                         <div>
-                          <div className={checked ? 'text-primary' : ''}>{node.name}</div>
-                          <div className={cn('font-semibold text-xs text-neutral-variant')}>{node.url}</div>
+                          <div className={checked ? 'text-primary' : ''}>Light client</div>
                         </div>
                       </>
                     )}
                   </RadioGroup.Option>
-                ))}
-              </RadioGroup>
+                  {nodes.map((node) => (
+                    <RadioGroup.Option
+                      value={node.url}
+                      key={node.name}
+                      className={cn(
+                        'h-10 flex gap-2.5 px-4 box-border cursor-pointer items-center text-sm font-semibold text-neutral hover:bg-shade-2',
+                      )}
+                    >
+                      {({ checked }) => (
+                        <>
+                          <div
+                            className={cn(
+                              'rounded-full w-5 h-5',
+                              checked ? 'border-[6px] border-primary' : 'border-2 border-shade-30',
+                            )}
+                          ></div>
+                          <div>
+                            <div className={checked ? 'text-primary' : ''}>{node.name}</div>
+                            <div className={cn('font-semibold text-xs text-neutral-variant')}>{node.url}</div>
+                          </div>
+                        </>
+                      )}
+                    </RadioGroup.Option>
+                  ))}
+                </RadioGroup>
+              </div>
+              <div className="ml-2 mb-2">
+                <Button
+                  pallet="primary"
+                  variant="text"
+                  className="h-7.5"
+                  prefixElement={
+                    <div className="flex justify-center items-center rounded-full border w-4 h-4 border-primary text-primary">
+                      <Icon name="add" size={12} />
+                    </div>
+                  }
+                >
+                  Add Custom Node
+                </Button>
+                <Button
+                  onClick={() => setIsDisableConfirmOpen(true)}
+                  pallet="error"
+                  variant="text"
+                  className="h-7.5"
+                  prefixElement={<Icon name="disable" size={16} />}
+                >
+                  Disable Network
+                </Button>
+              </div>
             </div>
-            <div className="ml-2 mb-2">
-              <Button
-                pallet="primary"
-                variant="text"
-                className="h-7.5"
-                prefixElement={
-                  <div className="flex justify-center items-center rounded-full border w-4 h-4 border-primary text-primary">
-                    <Icon name="add" size={12} />
-                  </div>
-                }
-              >
-                Add Custom Node
-              </Button>
-              <Button
-                onClick={() => setIsDisableConfirmOpen(true)}
-                pallet="error"
-                variant="text"
-                className="h-7.5"
-                prefixElement={<Icon name="disable" size={16} />}
-              >
-                Disable Network
-              </Button>
-            </div>
-          </div>
+          )}
         </Popover.Panel>
       </Popover>
 
