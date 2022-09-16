@@ -66,8 +66,6 @@ export const useNetwork = (): INetworkService => {
     const connection = connections[chainId];
     if (!connection) return;
 
-    console.log(connection);
-
     const disabledConnection = {
       ...connection.connection,
       activeNode: undefined,
