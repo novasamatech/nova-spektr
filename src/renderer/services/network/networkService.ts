@@ -27,13 +27,21 @@ export const useNetwork = (): INetworkService => {
 
   const { getConnections, addConnections, updateConnection } = connectionStorage;
 
-  const updateConnectionState = async (connection: Connection, api?: ApiPromise): Promise<void> => {
+  const updateConnectionState = async (
+    connection: Connection,
+    api?: ApiPromise,
+    disconnect?: () => Promise<void>,
+  ): Promise<void> => {
     await updateConnection(connection);
 
-    setConnections((currentConnections) => ({
-      ...currentConnections,
-      [connection.chainId]: { ...currentConnections[connection.chainId], connection, api },
-    }));
+    setConnections((currentConnections) => {
+      const chainData = currentConnections[connection.chainId] || chains.current[connection.chainId];
+
+      return {
+        ...currentConnections,
+        [connection.chainId]: { ...chainData, connection, api, disconnect },
+      };
+    });
   };
 
   const updateConnectionStatus = async (connection: Connection, connectionStatus: ConnectionStatus): Promise<void> => {
@@ -41,9 +49,44 @@ export const useNetwork = (): INetworkService => {
       ...currentConnections,
       [connection.chainId]: {
         ...currentConnections[connection.chainId],
-        connection: { ...connection, connectionStatus },
+        connection: { ...currentConnections[connection.chainId].connection, connectionStatus },
       },
     }));
+  };
+
+  const removeConnection = (chainId: ChainId): void => {
+    setConnections((currentConnections) => {
+      const { [chainId]: connection, ...rest } = currentConnections;
+
+      return rest;
+    });
+  };
+
+  const disconnectFromNetwork = async (chainId: ChainId, provider?: ProviderInterface) => {
+    const connection = connections[chainId];
+    if (!connection) return;
+
+    const disabledConnection = {
+      ...connection.connection,
+      activeNode: undefined,
+      connectionType: ConnectionType.DISABLED,
+      connectionStatus: ConnectionStatus.NONE,
+    };
+
+    removeConnection(chainId);
+    await updateConnectionState(disabledConnection);
+
+    try {
+      await connection.api?.disconnect();
+    } catch (e) {
+      console.warn(e);
+    }
+
+    try {
+      await provider?.disconnect();
+    } catch (e) {
+      console.warn(e);
+    }
   };
 
   const getNewConnections = async (): Promise<Connection[]> => {
@@ -85,13 +128,11 @@ export const useNetwork = (): INetworkService => {
     provider.on('connected', () => {
       updateConnectionStatus(connection, ConnectionStatus.CONNECTED);
     });
-
-    provider.on('disconnected', () => {
-      updateConnectionStatus(connection, ConnectionStatus.CONNECTING);
-    });
-
     provider.on('error', () => {
       updateConnectionStatus(connection, ConnectionStatus.ERROR);
+    });
+    provider.on('disconnected', () => {
+      updateConnectionStatus(connection, ConnectionStatus.NONE);
     });
   };
 
@@ -156,6 +197,7 @@ export const useNetwork = (): INetworkService => {
         connectionStatus: api ? ConnectionStatus.CONNECTED : ConnectionStatus.ERROR,
       },
       api,
+      async () => disconnectFromNetwork(connection.chainId, provider),
     );
   };
 
