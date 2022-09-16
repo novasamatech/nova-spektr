@@ -74,7 +74,16 @@ const WatchOnly = () => {
     setIsCompleted(true);
   };
 
-  const validateAddress = (a: string) => !!toPublicKey(a);
+  const validateAddress = (a: string) => Boolean(toPublicKey(a));
+
+  const onPasteAddress = (handler: (value: string) => void) => async () => {
+    try {
+      const text = await navigator.clipboard.readText();
+      handler(text.trim());
+    } catch (error) {
+      console.warn(error);
+    }
+  };
 
   if (isCompleted) {
     return <FinalStep walletType={WalletType.WATCH_ONLY} />;
@@ -94,8 +103,8 @@ const WatchOnly = () => {
         <h1 className="text-neutral">Add watch-only Wallet</h1>
       </div>
       <form
-        onSubmit={handleSubmit(handleCreateWallet)}
         className="flex h-full flex-col gap-10 justify-center items-center"
+        onSubmit={handleSubmit(handleCreateWallet)}
       >
         <h2 className="text-2xl leading-relaxed font-normal text-neutral-variant text-center">
           Track the activity of any wallet without injecting
@@ -113,7 +122,7 @@ const WatchOnly = () => {
                   wrapperClass={cn('flex items-center')}
                   label="Wallet name"
                   placeholder="Wallet name"
-                  invalid={!!errors.walletName}
+                  invalid={Boolean(errors.walletName)}
                   value={value}
                   onChange={onChange}
                 />
@@ -140,26 +149,19 @@ const WatchOnly = () => {
               render={({ field: { onChange, value } }) => (
                 <Input
                   wrapperClass={cn('flex items-center')}
-                  invalid={!!errors.address}
-                  prefixElement={
-                    isValid ? <Identicon address={value} background={false} /> : <Icon as="svg" name="emptyIdenticon" />
-                  }
-                  suffixElement={
-                    <Button
-                      variant="outline"
-                      pallet="primary"
-                      onClick={async () => {
-                        const text = await navigator.clipboard.readText();
-                        onChange(text.trim());
-                      }}
-                    >
-                      Paste
-                    </Button>
-                  }
+                  invalid={Boolean(errors.address)}
                   label="Account address"
                   placeholder="Enter or paste your account address"
                   value={value}
                   onChange={onChange}
+                  prefixElement={
+                    isValid ? <Identicon address={value} background={false} /> : <Icon as="svg" name="emptyIdenticon" />
+                  }
+                  suffixElement={
+                    <Button variant="outline" pallet="primary" onClick={onPasteAddress(onChange)}>
+                      Paste
+                    </Button>
+                  }
                 />
               )}
             />
@@ -182,7 +184,7 @@ const WatchOnly = () => {
                   onClick={toggleModal}
                   variant="text"
                   pallet="primary"
-                  disabled={!!errors.address}
+                  disabled={Boolean(errors.address)}
                 >
                   Check your accounts
                 </Button>
