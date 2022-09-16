@@ -28,8 +28,6 @@ export interface INetworkService {
 // ----- Types ------
 // ------------------
 
-export type ConnectionStatus = 'connected' | 'connecting' | 'disconnected' | 'error';
-
 export type ExtendedChain = Chain & {
   connection: Connection;
   api?: ApiPromise;
