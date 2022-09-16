@@ -1,4 +1,3 @@
-import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import { HashRouter as Router } from 'react-router-dom';
 
@@ -12,11 +11,9 @@ if (!container) {
 }
 
 createRoot(container).render(
-  <StrictMode>
-    <Router>
-      <App />
-    </Router>
-  </StrictMode>,
+  <Router>
+    <App />
+  </Router>,
 );
 
 // NOTE: React 18 Strict mode renders twice in DEV mode

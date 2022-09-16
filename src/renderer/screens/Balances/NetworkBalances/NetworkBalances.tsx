@@ -1,17 +1,16 @@
-import { useState } from 'react';
 import cn from 'classnames';
 import keyBy from 'lodash/keyBy';
-import { Popover, RadioGroup } from '@headlessui/react';
+import { useState } from 'react';
 
-import AssetBalance from '../AssetBalance/AssetBalance';
-import { PublicKey } from '@renderer/domain/shared-kernel';
+import { Button, Icon } from '@renderer/components/ui';
 import { Asset } from '@renderer/domain/asset';
 import { Chain } from '@renderer/domain/chain';
+import { PublicKey } from '@renderer/domain/shared-kernel';
 import { useBalance } from '@renderer/services/balance/balanceService';
-import { total } from '@renderer/services/balance/common/utils';
 import { ZERO_BALANCE } from '@renderer/services/balance/common/constants';
-import { BaseModal, Button, Icon } from '@renderer/components/ui';
+import { total } from '@renderer/services/balance/common/utils';
 import { ExtendedChain } from '@renderer/services/network/common/types';
+import AssetBalance from '../AssetBalance/AssetBalance';
 
 type Props = {
   hideZeroBalance?: boolean;
@@ -35,7 +34,6 @@ const NetworkBalances = ({
   onReceiveClick,
 }: Props) => {
   const [isHidden, setIsHidden] = useState(false);
-  const [selectedNode, setSelectedNode] = useState(-1);
 
   const { getLiveNetworkBalances } = useBalance();
 

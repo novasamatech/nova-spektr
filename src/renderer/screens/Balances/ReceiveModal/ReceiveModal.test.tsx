@@ -6,17 +6,22 @@ import { Chain } from '@renderer/domain/chain';
 import chains from '@renderer/services/network/common/chains.json';
 import ReceiveModal from './ReceiveModal';
 
+window.IntersectionObserver = jest.fn().mockImplementation(() => ({
+  observe: jest.fn(),
+  disconnect: jest.fn(),
+}));
+
 const westendExplorers = chains.find((chain) => chain.name === 'Westend')?.explorers || [];
 
-describe('ReceiveModal', () => {
-  const defaultProps = {
+describe('screens/Balances/ReceiveModal', () => {
+  const defaultProps = (explorers?: any[]) => ({
     onClose: () => {},
     isOpen: true,
     data: {
       chain: {
         name: 'Westend',
         icon: 'westend-icon',
-        explorers: westendExplorers,
+        explorers,
       } as Chain,
       asset: { name: 'WND', icon: 'wnd-icon' } as Asset,
       activeWallets: [
@@ -26,14 +31,21 @@ describe('ReceiveModal', () => {
         },
       ],
     },
-  };
+  });
 
   test('should render component', () => {
-    render(<ReceiveModal {...defaultProps} />);
+    render(<ReceiveModal {...defaultProps(westendExplorers)} />);
 
     const title = screen.getByRole('heading', { name: 'Receive' });
     const address = screen.getByText('5GmedEVixRJoE8TjMePLqz7DnnQG1d5517sXdiAvAF2t7EYW');
     expect(title).toBeInTheDocument();
     expect(address).toBeInTheDocument();
+  });
+
+  test('should not render empty explorer links', () => {
+    render(<ReceiveModal {...defaultProps()} />);
+
+    const explorers = screen.queryByRole('list');
+    expect(explorers).not.toBeInTheDocument();
   });
 });

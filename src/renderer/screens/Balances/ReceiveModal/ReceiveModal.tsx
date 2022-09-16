@@ -61,15 +61,17 @@ const ReceiveModal = ({ data, isOpen, onClose }: Props) => {
 
             <Address className="mt-6 mb-2 text-sm text-neutral-variant" full address={address} />
 
-            <ul className="flex gap-x-3">
-              {data?.chain.explorers.map(({ name, account }) => (
-                <li aria-label={`Link to ${name}`} key={name}>
-                  <a href={account?.replace('{address}', address)} rel="noopener noreferrer" target="_blank">
-                    <Icon as="img" name={ExplorerIcons[name]} />
-                  </a>
-                </li>
-              ))}
-            </ul>
+            {(data?.chain.explorers || []).length > 0 && (
+              <ul className="flex gap-x-3">
+                {data?.chain.explorers?.map(({ name, account }) => (
+                  <li aria-label={`Link to ${name}`} key={name}>
+                    <a href={account?.replace('{address}', address)} rel="noopener noreferrer" target="_blank">
+                      <Icon as="img" name={ExplorerIcons[name]} />
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            )}
           </div>
 
           <div className="flex items-center gap-x-2.5 px-2.5 py-3.5 text-neutral-variant bg-shade-2">

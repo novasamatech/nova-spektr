@@ -1,12 +1,12 @@
-import { ReactNode, useState } from 'react';
 import { Popover, RadioGroup } from '@headlessui/react';
 import cn from 'classnames';
+import { useState } from 'react';
 
 import { Button, Icon } from '@renderer/components/ui';
 import { useNetworkContext } from '@renderer/context/NetworkContext';
+import { RPCNode } from '@renderer/domain/chain';
 import { ConnectionType } from '@renderer/domain/connection';
 import { ExtendedChain } from '@renderer/services/network/common/types';
-import { RPCNode } from '@renderer/domain/chain';
 
 const LIGHT_CLIENT_KEY = 'light-client';
 
