@@ -22,12 +22,14 @@ const SelectConnection = ({ networkItem }: Props) => {
 
   const [selectedNode, setSelectedNode] = useState(
     {
-      [ConnectionType.DISABLED]: '',
+      [ConnectionType.DISABLED]: 'Select connection type',
       [ConnectionType.RPC_NODE]: activeNode?.url,
       [ConnectionType.LIGHT_CLIENT]: LIGHT_CLIENT_KEY,
     }[connectionType] || 'Select connection type',
   );
   const [isDisableConfirmOpen, setIsDisableConfirmOpen] = useState(false);
+
+  const isDisabled = connectionType === ConnectionType.DISABLED;
 
   const changeConnection = (nodeId: string, onClose: () => void) => {
     setSelectedNode(nodeId);
@@ -76,7 +78,7 @@ const SelectConnection = ({ networkItem }: Props) => {
           className={cn(
             'h-10 w-72 rounded-2lg border border-shade-10 flex items-center justify-between px-2.5',
             'text-neutral font-semibold text-sm',
-            connectionType === ConnectionType.DISABLED && 'text-shade-30',
+            isDisabled && 'text-shade-30',
           )}
         >
           {{
@@ -156,15 +158,17 @@ const SelectConnection = ({ networkItem }: Props) => {
                 >
                   Add Custom Node
                 </Button>
-                <Button
-                  onClick={() => setIsDisableConfirmOpen(true)}
-                  pallet="error"
-                  variant="text"
-                  className="h-7.5"
-                  prefixElement={<Icon name="disable" size={16} />}
-                >
-                  Disable Network
-                </Button>
+                {!isDisabled && (
+                  <Button
+                    onClick={() => setIsDisableConfirmOpen(true)}
+                    pallet="error"
+                    variant="text"
+                    className="h-7.5"
+                    prefixElement={<Icon name="disable" size={16} />}
+                  >
+                    Disable Network
+                  </Button>
+                )}
               </div>
             </div>
           )}

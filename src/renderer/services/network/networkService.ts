@@ -30,7 +30,7 @@ export const useNetwork = (): INetworkService => {
   const updateConnectionState = async (
     connection: Connection,
     api?: ApiPromise,
-    disconnect?: () => void,
+    disconnect?: () => Promise<void>,
   ): Promise<void> => {
     await updateConnection(connection);
 
@@ -62,18 +62,24 @@ export const useNetwork = (): INetworkService => {
     });
   };
 
-  const disconnectFromNetwork = async (connection: Connection, api?: ApiPromise, provider?: ProviderInterface) => {
+  const disconnectFromNetwork = async (chainId: ChainId, provider?: ProviderInterface) => {
+    const connection = connections[chainId];
+    if (!connection) return;
+
+    console.log(connection);
+
     const disabledConnection = {
-      ...connection,
+      ...connection.connection,
       activeNode: undefined,
       connectionType: ConnectionType.DISABLED,
       connectionStatus: ConnectionStatus.NONE,
     };
-    removeConnection(connection.chainId);
+
+    removeConnection(chainId);
     await updateConnectionState(disabledConnection);
 
     try {
-      await api?.disconnect();
+      await connection.api?.disconnect();
     } catch (e) {
       console.warn(e);
     }
@@ -193,7 +199,7 @@ export const useNetwork = (): INetworkService => {
         connectionStatus: api ? ConnectionStatus.CONNECTED : ConnectionStatus.ERROR,
       },
       api,
-      async () => disconnectFromNetwork(connection.connection, api, provider),
+      async () => disconnectFromNetwork(connection.chainId, provider),
     );
   };
 
