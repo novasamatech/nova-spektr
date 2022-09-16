@@ -34,7 +34,6 @@ export type ExtendedChain = Chain & {
   connection: Connection;
   api?: ApiPromise;
   provider?: ProviderInterface;
-  status: ConnectionStatus;
 };
 
 export type ConnectionsMap = Record<ChainId, ExtendedChain>;
