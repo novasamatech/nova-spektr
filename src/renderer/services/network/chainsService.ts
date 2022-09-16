@@ -12,8 +12,8 @@ export function useChains(): IChainService {
   const sortChains = <T extends Chain = Chain>(chains: T[]): T[] => {
     let polkadot;
     let kusama;
-    const testnets = [] as Chain[];
-    const parachains = [] as Chain[];
+    const testnets = [] as T[];
+    const parachains = [] as T[];
 
     chains.forEach((chain) => {
       if (isPolkadot(chain)) polkadot = chain;

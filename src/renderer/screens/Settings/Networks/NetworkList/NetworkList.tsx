@@ -30,15 +30,17 @@ const NetworkList = ({ title, isDefaultOpen, networkList, children }: PropsWithC
             <Icon name="networkOff" />
             <p className="text-base font-semibold">{title}</p>
           </h2>
-          {children}
         </div>
-        {networkList.length > 0 && (
-          <div className="flex items-center">
-            <Button pallet="shade" variant="text" className="max-h-5 px-0" onClick={toggleList}>
-              <Icon name={isListOpen ? 'down' : 'up'} size={20} />
-            </Button>
-          </div>
-        )}
+        <div className="flex items-center gap-x-2.5">
+          {children}
+          {networkList.length > 0 && (
+            <div className="flex items-center">
+              <Button pallet="shade" variant="text" className="max-h-5 px-0" onClick={toggleList}>
+                <Icon name={isListOpen ? 'down' : 'up'} size={20} />
+              </Button>
+            </div>
+          )}
+        </div>
       </div>
       {!isListOpen && (
         <ul>

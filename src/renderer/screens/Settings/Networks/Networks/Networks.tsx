@@ -98,7 +98,6 @@ const Networks = () => {
                   <p className="bg-success rounded-full w-5 h-5 pt-1 text-center text-white text-2xs">
                     {activeNetworksGroup.connected.length || 0}
                   </p>
-                  <p className="text-xs font-semibold text-neutral-variant">Connected</p>
                 </div>
                 <div className="flex items-center gap-x-1 relative">
                   <Icon
@@ -109,7 +108,6 @@ const Networks = () => {
                   <p className="bg-error rounded-full w-5 h-5 pt-1 text-center text-white text-2xs">
                     {activeNetworksGroup.error.length || 0}
                   </p>
-                  <p className="text-xs font-semibold text-neutral-variant">Connection error</p>
                 </div>
                 <div className="flex items-center gap-x-1 relative">
                   <Icon
@@ -120,7 +118,6 @@ const Networks = () => {
                   <p className="bg-shade-30 rounded-full w-5 h-5 pt-1 text-center text-white text-2xs">
                     {activeNetworksGroup.connecting.length || 0}
                   </p>
-                  <p className="text-xs font-semibold text-shade-30">Connecting</p>
                 </div>
               </div>
             </NetworkList>
