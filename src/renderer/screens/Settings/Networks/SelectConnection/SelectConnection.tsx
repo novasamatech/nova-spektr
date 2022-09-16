@@ -81,8 +81,8 @@ const SelectConnection = ({ networkItem }: Props) => {
 
       <Popover.Panel className="absolute top-0 right-0 z-20 rounded-2lg shadow-surface bg-white border-2 border-shade-10 w-[350px]">
         <div>
-          <div className="flex flex-col max-h-64 overflow-auto divide-y mb-5">
-            <RadioGroup value={selectedNode} onChange={changeConnection}>
+          <div className="flex flex-col max-h-64 overflow-auto mb-5">
+            <RadioGroup value={selectedNode} onChange={changeConnection} className="divide-y divide-shade-5">
               <RadioGroup.Option
                 value={LIGHT_CLIENT_KEY}
                 className={cn(
@@ -129,7 +129,7 @@ const SelectConnection = ({ networkItem }: Props) => {
               ))}
             </RadioGroup>
           </div>
-          <div className="ml-2">
+          <div className="ml-2 mb-2">
             <Button
               pallet="primary"
               variant="text"
