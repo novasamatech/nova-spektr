@@ -6,6 +6,7 @@ export type Connection = {
   connectionStatus: ConnectionStatus;
   customNodes?: RpcNode[];
   activeNode?: RpcNode;
+  disconnect?: () => void;
 };
 
 export type RpcNode = {
