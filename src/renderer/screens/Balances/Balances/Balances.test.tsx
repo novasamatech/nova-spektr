@@ -3,6 +3,7 @@ import { render, screen } from '@testing-library/react';
 import { useWallet } from '@renderer/services/wallet/walletService';
 import Balances from './Balances';
 import { TEST_PUBLIC_KEY } from '@renderer/services/balance/common/constants';
+import { ConnectionType } from '@renderer/domain/connection';
 
 jest.mock('@renderer/services/wallet/walletService', () => ({
   useWallet: jest.fn().mockReturnValue({
@@ -29,10 +30,16 @@ jest.mock('@renderer/context/NetworkContext', () => ({
           { assetId: '1', symbol: '1' },
           { assetId: '2', symbol: '2' },
         ],
+        connection: {
+          connectionType: ConnectionType.RPC_NODE,
+        },
       },
       '0x0000000000000000000000000000000000000001': {
         chainId: '2',
         assets: [{ assetId: '1', symbol: '1' }],
+        connection: {
+          connectionType: ConnectionType.RPC_NODE,
+        },
       },
     },
   })),

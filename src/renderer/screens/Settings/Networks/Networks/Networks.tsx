@@ -89,36 +89,42 @@ const Networks = () => {
 
             <NetworkList isDefaultOpen title="Active Networks" networkList={activeNetworks}>
               <div className="flex gap-x-3">
-                <div className="flex items-center gap-x-1 relative">
-                  <Icon
-                    className="absolute -top-[1px] -left-[5px] rounded-full bg-white border border-white text-success"
-                    name="checkmarkCutout"
-                    size={10}
-                  />
-                  <p className="bg-success rounded-full w-5 h-5 pt-1 text-center text-white text-2xs">
-                    {activeNetworksGroup.connected.length || 0}
-                  </p>
-                </div>
-                <div className="flex items-center gap-x-1 relative">
-                  <Icon
-                    className="absolute -top-[1px] -left-[5px] rounded-full bg-white border border-white text-error"
-                    name="closeCutout"
-                    size={10}
-                  />
-                  <p className="bg-error rounded-full w-5 h-5 pt-1 text-center text-white text-2xs">
-                    {activeNetworksGroup.error.length || 0}
-                  </p>
-                </div>
-                <div className="flex items-center gap-x-1 relative">
-                  <Icon
-                    className="absolute -top-[1px] -left-[5px] rounded-full bg-white border border-white text-neutral-variant"
-                    name="loaderCutout"
-                    size={10}
-                  />
-                  <p className="bg-shade-30 rounded-full w-5 h-5 pt-1 text-center text-white text-2xs">
-                    {activeNetworksGroup.connecting.length || 0}
-                  </p>
-                </div>
+                {activeNetworksGroup.connected.length > 0 && (
+                  <div className="flex items-center gap-x-1 relative">
+                    <Icon
+                      className="absolute -top-[1px] -left-[5px] rounded-full bg-white border border-white text-success"
+                      name="checkmarkCutout"
+                      size={10}
+                    />
+                    <p className="bg-success rounded-full w-5 h-5 pt-1 text-center text-white text-2xs">
+                      {activeNetworksGroup.connected.length}
+                    </p>
+                  </div>
+                )}
+                {activeNetworksGroup.error.length > 0 && (
+                  <div className="flex items-center gap-x-1 relative">
+                    <Icon
+                      className="absolute -top-[1px] -left-[5px] rounded-full bg-white border border-white text-error"
+                      name="closeCutout"
+                      size={10}
+                    />
+                    <p className="bg-error rounded-full w-5 h-5 pt-1 text-center text-white text-2xs">
+                      {activeNetworksGroup.error.length}
+                    </p>
+                  </div>
+                )}
+                {activeNetworksGroup.connecting.length > 0 && (
+                  <div className="flex items-center gap-x-1 relative">
+                    <Icon
+                      className="absolute -top-[1px] -left-[5px] rounded-full bg-white border border-white text-neutral-variant"
+                      name="loaderCutout"
+                      size={10}
+                    />
+                    <p className="bg-shade-30 rounded-full w-5 h-5 pt-1 text-center text-white text-2xs">
+                      {activeNetworksGroup.connecting.length}
+                    </p>
+                  </div>
+                )}
               </div>
             </NetworkList>
           </>

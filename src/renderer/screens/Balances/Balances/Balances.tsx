@@ -12,6 +12,7 @@ import { useSettingsStorage } from '@renderer/services/settings/settingsStorage'
 import { useWallet } from '@renderer/services/wallet/walletService';
 import NetworkBalances from '../NetworkBalances/NetworkBalances';
 import ReceiveModal, { ReceivePayload } from '../ReceiveModal/ReceiveModal';
+import { ConnectionType } from '@renderer/domain/connection';
 
 const Balances = () => {
   const [query, setQuery] = useState('');
@@ -40,7 +41,9 @@ const Balances = () => {
     setPublicKey(activePublicKey);
   }, [activeWallets]);
 
-  const sortedChains = sortChains(Object.values(connections));
+  const sortedChains = sortChains(
+    Object.values(connections).filter((c) => c.connection.connectionType !== ConnectionType.DISABLED),
+  );
 
   const searchSymbolOnly = sortedChains.some((chain) =>
     chain.assets.some((a) => a.symbol.toLowerCase() === query.toLowerCase()),
