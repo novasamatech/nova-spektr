@@ -1,8 +1,8 @@
+import { useState } from 'react';
 import { Popover, RadioGroup } from '@headlessui/react';
 import cn from 'classnames';
-import { useState } from 'react';
 
-import { Button, Icon } from '@renderer/components/ui';
+import { Button, ConfirmModal, Icon } from '@renderer/components/ui';
 import { useNetworkContext } from '@renderer/context/NetworkContext';
 import { RPCNode } from '@renderer/domain/chain';
 import { ConnectionType } from '@renderer/domain/connection';
@@ -25,12 +25,14 @@ const SelectConnection = ({ networkItem }: Props) => {
       [ConnectionType.DISABLED]: '',
       [ConnectionType.RPC_NODE]: activeNode?.url,
       [ConnectionType.LIGHT_CLIENT]: LIGHT_CLIENT_KEY,
-    }[connectionType] || '',
+    }[connectionType] || 'Select connection type',
   );
+  const [isDisableConfirmOpen, setIsDisableConfirmOpen] = useState(false);
 
   const changeConnection = (nodeId: string) => {
     setSelectedNode(nodeId);
-    // TODO: Disable current connection first
+    networkItem.disconnect?.();
+
     if (nodeId === LIGHT_CLIENT_KEY) {
       selectLightClient();
     }
@@ -49,14 +51,12 @@ const SelectConnection = ({ networkItem }: Props) => {
     }
   };
 
-  // TODO: Implement in future
   const disableNetwork = async () => {
-    console.info('disconnect');
-    //   try {
-    //     await disconnectFromNetwork(networkItem.chainId);
-    //   } catch (error) {
-    //     console.warn(error);
-    //   }
+    try {
+      await networkItem.disconnect?.();
+    } catch (error) {
+      console.warn(error);
+    }
   };
 
   const selectLightClient = async () => {
@@ -68,45 +68,30 @@ const SelectConnection = ({ networkItem }: Props) => {
   };
 
   return (
-    <Popover className="relative">
-      <Popover.Button
-        className={cn(
-          'h-10 w-72 rounded-2lg border border-shade-10 flex items-center justify-between px-2.5',
-          'text-neutral font-semibold text-sm',
-        )}
-      >
-        {connectionType === ConnectionType.RPC_NODE ? activeNode?.name : 'Light client'}
-        <Icon name="dropdown" size={20} />
-      </Popover.Button>
+    <>
+      <Popover className="relative">
+        <Popover.Button
+          className={cn(
+            'h-10 w-72 rounded-2lg border border-shade-10 flex items-center justify-between px-2.5',
+            'text-neutral font-semibold text-sm',
+            connectionType === ConnectionType.DISABLED && 'text-shade-30',
+          )}
+        >
+          {{
+            [ConnectionType.DISABLED]: 'Select connection type',
+            [ConnectionType.RPC_NODE]: activeNode?.name,
+            [ConnectionType.LIGHT_CLIENT]: 'Light Client',
+          }[connectionType] || ''}
 
-      <Popover.Panel className="absolute top-0 right-0 z-20 rounded-2lg shadow-surface bg-white border-2 border-shade-10 w-[350px]">
-        <div>
-          <div className="flex flex-col max-h-64 overflow-auto mb-5">
-            <RadioGroup value={selectedNode} onChange={changeConnection} className="divide-y divide-shade-5">
-              <RadioGroup.Option
-                value={LIGHT_CLIENT_KEY}
-                className={cn(
-                  'h-10 flex gap-2.5 px-4 box-border cursor-pointer items-center text-sm font-semibold text-neutral hover:bg-shade-2',
-                )}
-              >
-                {({ checked }) => (
-                  <>
-                    <div
-                      className={cn(
-                        'rounded-full w-5 h-5',
-                        checked ? 'border-[6px] border-primary' : 'border-2 border-shade-30',
-                      )}
-                    ></div>
-                    <div>
-                      <div className={checked ? 'text-primary' : ''}>Light client</div>
-                    </div>
-                  </>
-                )}
-              </RadioGroup.Option>
-              {nodes.map((node) => (
+          <Icon name="dropdown" size={20} />
+        </Popover.Button>
+
+        <Popover.Panel className="absolute top-0 right-0 z-20 rounded-2lg shadow-surface bg-white border-2 border-shade-10 w-[350px]">
+          <div>
+            <div className="flex flex-col max-h-64 overflow-auto mb-5">
+              <RadioGroup value={selectedNode} onChange={changeConnection} className="divide-y divide-shade-5">
                 <RadioGroup.Option
-                  value={node.url}
-                  key={node.name}
+                  value={LIGHT_CLIENT_KEY}
                   className={cn(
                     'h-10 flex gap-2.5 px-4 box-border cursor-pointer items-center text-sm font-semibold text-neutral hover:bg-shade-2',
                   )}
@@ -120,41 +105,77 @@ const SelectConnection = ({ networkItem }: Props) => {
                         )}
                       ></div>
                       <div>
-                        <div className={checked ? 'text-primary' : ''}>{node.name}</div>
-                        <div className={cn('font-semibold text-xs text-neutral-variant')}>{node.url}</div>
+                        <div className={checked ? 'text-primary' : ''}>Light client</div>
                       </div>
                     </>
                   )}
                 </RadioGroup.Option>
-              ))}
-            </RadioGroup>
+                {nodes.map((node) => (
+                  <RadioGroup.Option
+                    value={node.url}
+                    key={node.name}
+                    className={cn(
+                      'h-10 flex gap-2.5 px-4 box-border cursor-pointer items-center text-sm font-semibold text-neutral hover:bg-shade-2',
+                    )}
+                  >
+                    {({ checked }) => (
+                      <>
+                        <div
+                          className={cn(
+                            'rounded-full w-5 h-5',
+                            checked ? 'border-[6px] border-primary' : 'border-2 border-shade-30',
+                          )}
+                        ></div>
+                        <div>
+                          <div className={checked ? 'text-primary' : ''}>{node.name}</div>
+                          <div className={cn('font-semibold text-xs text-neutral-variant')}>{node.url}</div>
+                        </div>
+                      </>
+                    )}
+                  </RadioGroup.Option>
+                ))}
+              </RadioGroup>
+            </div>
+            <div className="ml-2 mb-2">
+              <Button
+                pallet="primary"
+                variant="text"
+                className="h-7.5"
+                prefixElement={
+                  <div className="flex justify-center items-center rounded-full border w-4 h-4 border-primary text-primary">
+                    <Icon name="add" size={12} />
+                  </div>
+                }
+              >
+                Add Custom Node
+              </Button>
+              <Button
+                onClick={() => setIsDisableConfirmOpen(true)}
+                pallet="error"
+                variant="text"
+                className="h-7.5"
+                prefixElement={<Icon name="disable" size={16} />}
+              >
+                Disable Network
+              </Button>
+            </div>
           </div>
-          <div className="ml-2 mb-2">
-            <Button
-              pallet="primary"
-              variant="text"
-              className="h-7.5"
-              prefixElement={
-                <div className="flex justify-center items-center rounded-full border w-4 h-4 border-primary text-primary">
-                  <Icon name="add" size={12} />
-                </div>
-              }
-            >
-              Add Custom Node
-            </Button>
-            <Button
-              onClick={disableNetwork}
-              pallet="error"
-              variant="text"
-              className="h-7.5"
-              prefixElement={<Icon name="disable" size={16} />}
-            >
-              Disable Network
-            </Button>
-          </div>
-        </div>
-      </Popover.Panel>
-    </Popover>
+        </Popover.Panel>
+      </Popover>
+
+      <ConfirmModal
+        isOpen={isDisableConfirmOpen}
+        onClose={() => setIsDisableConfirmOpen(false)}
+        onConfirm={() => {
+          setIsDisableConfirmOpen(false);
+          disableNetwork();
+        }}
+        className="w-[350px]"
+      >
+        <h2 className="text-error font-semibold text-xl border-b border-error pb-2.5">Disable network</h2>
+        <p className="pt-2.5 pb-5 text-neutral-variant"> You are about to disable {networkItem.name} network</p>
+      </ConfirmModal>
+    </>
   );
 };
 
