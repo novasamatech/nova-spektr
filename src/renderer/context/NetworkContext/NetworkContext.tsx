@@ -10,7 +10,6 @@ import { useWallet } from '@renderer/services/wallet/walletService';
 
 type NetworkContextProps = {
   connections: Record<string, ExtendedChain>;
-  reconnect: (chainId: ChainId) => void;
   connectToNetwork: (chainId: ChainId, type: ConnectionType, node?: RpcNode) => Promise<void>;
 };
 
@@ -19,7 +18,7 @@ const NetworkContext = createContext<NetworkContextProps>({} as NetworkContextPr
 export const NetworkProvider = ({ children }: PropsWithChildren) => {
   const [connectionsReady, setConnectionReady] = useState(false);
 
-  const { connections, setupConnections, reconnect, connectToNetwork } = useNetwork();
+  const { connections, setupConnections, connectToNetwork } = useNetwork();
   const { subscribeBalances, subscribeLockBalances } = useBalance();
   const { getActiveWallets } = useWallet();
   const activeWallets = getActiveWallets();
@@ -77,9 +76,7 @@ export const NetworkProvider = ({ children }: PropsWithChildren) => {
     };
   }, [connections, activeWallets]);
 
-  return (
-    <NetworkContext.Provider value={{ connections, reconnect, connectToNetwork }}>{children}</NetworkContext.Provider>
-  );
+  return <NetworkContext.Provider value={{ connections, connectToNetwork }}>{children}</NetworkContext.Provider>;
 };
 
 export const useNetworkContext = () => useContext<NetworkContextProps>(NetworkContext);
