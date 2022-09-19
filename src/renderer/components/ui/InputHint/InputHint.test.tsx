@@ -2,7 +2,7 @@ import { render, screen } from '@testing-library/react';
 
 import InputHint from './InputHint';
 
-describe('InputError', () => {
+describe('InputHint', () => {
   test('should render component', () => {
     render(<InputHint type="hint">test hint</InputHint>);
 

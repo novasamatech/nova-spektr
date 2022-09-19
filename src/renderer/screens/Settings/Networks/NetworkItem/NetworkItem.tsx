@@ -2,10 +2,8 @@ import { ReactNode } from 'react';
 
 import { Icon } from '@renderer/components/ui';
 import { ConnectionStatus, ConnectionType } from '@renderer/domain/connection';
-import useToggle from '@renderer/hooks/useToggle';
 import { ExtendedChain } from '@renderer/services/network/common/types';
-import CustomRpc from '../CustomRpc/CustomRpc';
-import SelectConnection from '../SelectConnection/SelectConnection';
+import ConnectionSelector from '../ConnectionSelector';
 
 const NETWORK_CONNECTION_STATUS: Record<ConnectionStatus, (type: ConnectionType, nodeUrl: string) => ReactNode> = {
   [ConnectionStatus.NONE]: () => null,
@@ -40,8 +38,6 @@ type Props = {
 };
 
 const NetworkItem = ({ networkItem }: Props) => {
-  const [isCustomRpcOpen, toggleCustomRpc] = useToggle();
-
   const { chainId, icon, name, connection } = networkItem;
   const { connectionType, connectionStatus, activeNode } = connection;
 
@@ -53,8 +49,7 @@ const NetworkItem = ({ networkItem }: Props) => {
         {NETWORK_CONNECTION_STATUS[connectionStatus](connectionType, activeNode?.url || '')}
       </div>
 
-      <SelectConnection networkItem={networkItem} />
-      <CustomRpc isOpen={isCustomRpcOpen} onClose={toggleCustomRpc} />
+      <ConnectionSelector networkItem={networkItem} />
     </li>
   );
 };

@@ -4,9 +4,9 @@ import { ScProvider } from '@polkadot/rpc-provider/substrate-connect';
 import { ProviderInterface } from '@polkadot/rpc-provider/types';
 import keyBy from 'lodash/keyBy';
 
-import { Chain } from '@renderer/domain/chain';
-import { Connection, RpcNode, ConnectionStatus, ConnectionType } from '@renderer/domain/connection';
-import { ChainId } from '@renderer/domain/shared-kernel';
+import { Chain, RpcNode } from '@renderer/domain/chain';
+import { Connection, ConnectionStatus, ConnectionType } from '@renderer/domain/connection';
+import { ChainId, HexString } from '@renderer/domain/shared-kernel';
 import storage from '@renderer/services/storage';
 import { useChainSpec } from './chainSpecService';
 import { useChains } from './chainsService';
@@ -201,6 +201,44 @@ export const useNetwork = (): INetworkService => {
     );
   };
 
+  const validateRpcNode = (genesisHash: HexString, rpcUrl: string): Promise<boolean> => {
+    return new Promise((resolve) => {
+      const provider = new WsProvider(rpcUrl);
+
+      provider.on('connected', async () => {
+        let isValid = false;
+        try {
+          const api = await ApiPromise.create({ provider });
+          isValid = genesisHash === api.genesisHash.toHex();
+          await api.disconnect();
+          await provider.disconnect();
+        } catch (error) {
+          console.warn(error);
+        }
+        resolve(isValid);
+      });
+
+      provider.on('error', async () => {
+        try {
+          await provider.disconnect();
+        } catch (error) {
+          console.warn(error);
+        }
+        resolve(false);
+      });
+    });
+  };
+
+  const addRpcNode = async (chainId: ChainId, rpcNode: RpcNode): Promise<void> => {
+    const connection = connections[chainId];
+    if (!connection) return;
+
+    await updateConnectionState({
+      ...connection.connection,
+      customNodes: (connection.connection.customNodes || []).concat(rpcNode),
+    });
+  };
+
   const setupConnections = async (): Promise<void> => {
     try {
       const chainsData = await getChainsData();
@@ -220,5 +258,7 @@ export const useNetwork = (): INetworkService => {
     connections,
     setupConnections,
     connectToNetwork,
+    addRpcNode,
+    validateRpcNode,
   };
 };

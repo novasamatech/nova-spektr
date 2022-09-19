@@ -21,20 +21,18 @@ const ConfirmModal = ({
   className,
   confirmText = 'Confirm',
   cancelText = 'Cancel',
-}: PropsWithChildren<Props>) => {
-  return (
-    <BaseModal isOpen={isOpen} onClose={onClose} className={cn('p-5', className)}>
-      {children}
-      <div className="grid grid-cols-2 gap-x-3">
-        <Button variant="outline" pallet="primary" onClick={() => onClose()}>
-          {cancelText}
-        </Button>
-        <Button variant="fill" pallet="primary" onClick={() => onConfirm()}>
-          {confirmText}
-        </Button>
-      </div>
-    </BaseModal>
-  );
-};
+}: PropsWithChildren<Props>) => (
+  <BaseModal isOpen={isOpen} onClose={onClose} className={cn('p-5', className)}>
+    {children}
+    <div className="grid grid-cols-2 gap-x-3">
+      <Button variant="outline" pallet="primary" onClick={() => onClose()}>
+        {cancelText}
+      </Button>
+      <Button variant="fill" pallet="primary" onClick={() => onConfirm()}>
+        {confirmText}
+      </Button>
+    </div>
+  </BaseModal>
+);
 
 export default ConfirmModal;
