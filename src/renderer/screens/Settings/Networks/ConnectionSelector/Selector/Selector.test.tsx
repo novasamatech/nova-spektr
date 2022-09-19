@@ -33,6 +33,14 @@ describe('screen/Settings/Networks/ConnectionSelector/Selector', () => {
     },
   };
 
+  beforeEach(() => {
+    (useToggle as jest.Mock).mockReturnValue([false, () => {}]);
+  });
+
+  afterEach(() => {
+    jest.clearAllMocks();
+  });
+
   test('should render component', () => {
     render(<ConnectionSelector networkItem={defaultNetwork} />);
 

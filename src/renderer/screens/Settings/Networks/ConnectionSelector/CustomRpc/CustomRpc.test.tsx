@@ -82,12 +82,12 @@ describe('screen/Settings/Networks/ConnectionSelector/CustomRpc', () => {
       validateRpcNode: spyValidateRpc,
     }));
 
-    const formPayload = await renderAndFillTheForm();
+    const { address } = await renderAndFillTheForm();
 
     const submit = screen.getByRole('button', { name: 'Check connection' });
     await act(async () => submit.click());
 
-    expect(spyValidateRpc).toBeCalledWith(defaultProps.genesisHash, formPayload.address);
+    expect(spyValidateRpc).toBeCalledWith(defaultProps.genesisHash, address);
   });
 
   test('should call validateRpcNode', async () => {
@@ -98,14 +98,14 @@ describe('screen/Settings/Networks/ConnectionSelector/CustomRpc', () => {
       addRpcNode: spyAddRpcNode,
     }));
 
-    const formPayload = await renderAndFillTheForm();
+    const { name, address } = await renderAndFillTheForm();
 
     const validate = screen.getByRole('button', { name: 'Check connection' });
     await act(async () => validate.click());
     const save = screen.getByRole('button', { name: 'Save Custom Node' });
     await act(async () => save.click());
 
-    expect(spyAddRpcNode).toBeCalledWith(defaultProps.chainId, formPayload);
+    expect(spyAddRpcNode).toBeCalledWith(defaultProps.chainId, { name, url: address });
   });
 
   test('should show error for existing address', async () => {
