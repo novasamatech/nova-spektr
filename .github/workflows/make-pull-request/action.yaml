@@ -2,7 +2,7 @@ name: Making a pull request
 description: That action create a pull request with all changes
 inputs:
   commit-path:
-    description: 'Path to files which will commit'
+    description: 'Path to the files that will be committed'
     required: true
   commit-message:
     description: 'Message for commit'
