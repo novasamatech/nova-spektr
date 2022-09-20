@@ -25,8 +25,8 @@ async function getBlockHash(api: ApiPromise, header: Header): Promise<string> {
     if (!parachainBlockNumber.isEmpty) {
       blockNumber = parachainBlockNumber.unwrap();
     }
-  } catch (e) {
-    console.warn(e);
+  } catch (error) {
+    console.warn(error);
   }
 
   if (!blockNumber) return '';
@@ -39,8 +39,8 @@ const getProof = async (api: ApiPromise, storageKey: string, hash: string): Prom
     const readProof = await api.rpc.state.getReadProof([storageKey], hash);
 
     return readProof.proof;
-  } catch (e) {
-    console.warn(e);
+  } catch (error) {
+    console.warn(error);
 
     return;
   }
@@ -88,8 +88,8 @@ const validateWithBlockNumber = async (
     const proof = await getProof(parachainApi, key, parachainBlockHash);
 
     return verify(proof, parachainStateRoot, key, value);
-  } catch (e) {
-    console.warn(e);
+  } catch (error) {
+    console.warn(error);
 
     return false;
   }
@@ -111,8 +111,8 @@ export const validate = async (
     }
 
     return validateWithBlockNumber(relaychainApi, parachainApi, blockNumber, key, value.toU8a());
-  } catch (e) {
-    console.warn(e);
+  } catch (error) {
+    console.warn(error);
 
     return false;
   }
