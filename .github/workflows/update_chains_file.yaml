@@ -3,7 +3,7 @@ name: Update chains file
 on:
   workflow_dispatch:
     file_path:
-      description: 'Which version of chains.json will we use?'
+      description: 'Which version of chains.json will be used?'
       required: true
       type: string
       default: "v5"
