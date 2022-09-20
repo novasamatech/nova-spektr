@@ -26,6 +26,12 @@ To install all dependencies:
 ```bash
 pnpm install
 ```
+Setup husky to enable pre commit/push hooks:
+
+```bash
+pnpx husky-init
+```
+**P.S. don't update pre-commit file to `npm githook:pre-commit`**
 
 ## Starting development
 
