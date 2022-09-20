@@ -56,11 +56,11 @@ export const NetworkProvider = ({ children }: PropsWithChildren) => {
 
   useEffect(() => {
     const unsubscribeBalance = Object.values(connections).map((chain) => {
-      const relayChain = chain.parentId && connections[chain.parentId];
+      const relaychain = chain.parentId && connections[chain.parentId];
       // TODO: Remove TEST_PUBLIC_KEY when select wallet will be implemented
       const publicKey = (activeWallets && activeWallets[0]?.mainAccounts[0]?.publicKey) || TEST_PUBLIC_KEY;
 
-      return subscribeBalances(chain, relayChain, publicKey);
+      return subscribeBalances(chain, relaychain, publicKey);
     });
 
     const unsubscribeLockBalance = Object.values(connections).map((chain) => {
