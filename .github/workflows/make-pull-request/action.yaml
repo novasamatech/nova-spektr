@@ -48,5 +48,7 @@ runs:
         pr_reviewer: |
           "stepanLav"
           "pgolovkin"
+          "tuul-wq"
+          "Asmadek"
         pr_draft: false
         github_token: ${{ inputs.github-token }}
