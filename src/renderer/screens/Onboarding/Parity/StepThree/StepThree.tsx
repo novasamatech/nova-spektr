@@ -31,7 +31,6 @@ const StepThree = ({ ss58Address, onNextStep, onPrevStep }: Props) => {
     })();
   }, []);
 
-  const correctAddress = ss58Address.length === 48;
   const publicKey = toPublicKey(ss58Address) || '0x';
 
   const createWallet = async (event: FormEvent) => {
@@ -113,9 +112,9 @@ const StepThree = ({ ss58Address, onNextStep, onPrevStep }: Props) => {
         weight="lg"
         variant="fill"
         pallet="primary"
-        disabled={!correctAddress || !walletName}
+        disabled={!publicKey || !walletName}
       >
-        {!correctAddress || !walletName ? 'Type a name to finish...' : 'Yes, these are my accounts'}
+        {!publicKey || !walletName ? 'Type a name to finish...' : 'Yes, these are my accounts'}
       </Button>
 
       <BaseModal
