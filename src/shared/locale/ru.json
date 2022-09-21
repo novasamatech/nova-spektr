@@ -1,18 +1,18 @@
 {
-  "header.test": "тест",
-  "NavItem.Wallets": "Кошельки",
   "NavItem.AddressBook": "Контакты",
-  "NavItem.MstOperations": "Мульти-Операции",
-  "NavItem.History": "История",
   "NavItem.Balances": "Балансы",
-  "NavItem.Transfer": "Отправить",
-  "NavItem.Settings": "Настройки",
-  "NavItem.ChatDEV": "Чат DEV",
   "NavItem.CameraDEV": "Камера DEV",
-  "explorer.button": "Открыть на {{ name }}",
+  "NavItem.ChatDEV": "Чат DEV",
+  "NavItem.History": "История",
+  "NavItem.MstOperations": "Мульти-Операции",
+  "NavItem.Settings": "Настройки",
+  "NavItem.Transfer": "Отправить",
+  "NavItem.Wallets": "Кошельки",
+  "explorer.button": "Открыть на { name }",
   "fallbackScreen": {
     "message": "Что-то пошло не так",
     "reloadButton": "Перезагрузить"
   },
-  "number": "{{value, number}}"
+  "header.test": "тест",
+  "number": "{value, number}"
 }
