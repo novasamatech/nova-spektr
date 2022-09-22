@@ -95,7 +95,19 @@ module.exports = {
         mode: 'jsx-text-only',
         'jsx-attributes': {
           include: [],
-          exclude: ['className', 'styleName', 'style', 'type', 'key', 'id', 'width', 'height', 'data-testid'],
+          exclude: [
+            'className',
+            'styleName',
+            'style',
+            'type',
+            'key',
+            'id',
+            'width',
+            'height',
+            'data-testid',
+            'pallet',
+            'variant',
+          ],
         },
         callees: {
           exclude: [

@@ -72,17 +72,15 @@ const ChatDev = () => {
 
   return (
     <div>
+      {/* eslint-disable i18next/no-literal-string */}
       <div>
         <span className="text-lg block">
-          {/* eslint-disable-next-line */}
           Verification status:{' '}
           <span className={cn(matrix.isVerified ? 'text-green-500' : 'text-red-500')}>
-            {/* eslint-disable-next-line */}
             {matrix.isVerified.toString()}
           </span>
         </span>
         <span className="block">
-          {/* eslint-disable-next-line */}
           Session Key: <span className="text-gray-600">{matrix.sessionKey}</span>
         </span>
       </div>
@@ -90,14 +88,12 @@ const ChatDev = () => {
         <div className="flex gap-x-3">
           <input ref={keyRef} type="text" className="flex-1 border-2 rounded-lg px-2" />
           <button type="button" className="basis-44 border p-1 bg-green-200 rounded-lg" onClick={handleVerifyKey}>
-            {/* eslint-disable-next-line */}
             verify with key
           </button>
         </div>
         <div className="flex gap-x-3">
           <input ref={phraseRef} type="text" className="flex-1 border-2 rounded-lg px-2" />
           <button type="button" className="basis-44 border p-1 bg-green-200 rounded-lg" onClick={handleVerifyPhrase}>
-            {/* eslint-disable-next-line */}
             verify with phrase
           </button>
         </div>
@@ -108,7 +104,6 @@ const ChatDev = () => {
             className="basis-44 border p-1 bg-blue-300 rounded-lg"
             onClick={() => uploadRef.current?.click()}
           >
-            {/* eslint-disable-next-line */}
             upload file
           </button>
         </div>
@@ -126,11 +121,9 @@ const ChatDev = () => {
           <li key={room.roomId}>
             {room.name}
             <button type="button" className="border ml-1 p-1" onClick={() => handleSetRoom(room.roomId)}>
-              {/* eslint-disable-next-line */}
               set room
             </button>
             <button type="button" className="border ml-1 p-1" onClick={() => handleLeaveRoom(room.roomId)}>
-              {/* eslint-disable-next-line */}
               leave room
             </button>
           </li>

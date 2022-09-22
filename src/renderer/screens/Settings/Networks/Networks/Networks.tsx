@@ -6,6 +6,7 @@ import { ConnectionStatus, ConnectionType } from '@renderer/domain/connection';
 import { useChains } from '@renderer/services/network/chainsService';
 import { ExtendedChain } from '@renderer/services/network/common/types';
 import NetworkList from '../NetworkList/NetworkList';
+import { useI18n } from '@renderer/context/I18nContext';
 
 const Networks = () => {
   const [query, setQuery] = useState('');
@@ -54,13 +55,15 @@ const Networks = () => {
     ...activeNetworksGroup.connected,
   ];
 
+  const { t } = useI18n();
+
   return (
     <div className="h-full flex flex-col overflow-y-auto">
       <div className="flex items-center gap-x-2.5 mb-9">
         <ButtonBack />
-        <p className="font-semibold text-2xl text-neutral-variant">Settings</p>
+        <p className="font-semibold text-2xl text-neutral-variant">{t('networkManagement.title')}</p>
         <p className="font-semibold text-2xl text-neutral">/</p>
-        <h1 className="font-semibold text-2xl text-neutral">Networks</h1>
+        <h1 className="font-semibold text-2xl text-neutral">{t('networkManagement.subTitle')}</h1>
       </div>
 
       <section className="flex flex-col gap-y-5 mx-auto mb-5 w-full max-w-[740px] p-5 rounded-2lg bg-shade-2">
@@ -132,9 +135,9 @@ const Networks = () => {
           <div className="flex flex-col items-center mx-auto pt-12 pb-15">
             <Icon as="img" name="noResult" size={300} />
             <p className="text-center text-2xl font-bold leading-7 text-neutral">
-              No networks with the entered name were found
+              {t('networkManagement.emptyStateLabel')}
             </p>
-            <p className="text-center text-base text-neutral-variant">Try to search for another key</p>
+            <p className="text-center text-base text-neutral-variant">{t('networkManagement.emptyStateDescription')}</p>
           </div>
         )}
       </section>

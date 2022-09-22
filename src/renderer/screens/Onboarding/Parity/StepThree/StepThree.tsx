@@ -9,6 +9,7 @@ import { Chain } from '@renderer/domain/chain';
 import { useWallet } from '@renderer/services/wallet/walletService';
 import { toPublicKey } from '@renderer/utils/address';
 import { getShortAddress } from '@renderer/utils/strings';
+import { useI18n } from '@renderer/context/I18nContext';
 
 type Props = {
   ss58Address: string;
@@ -20,6 +21,7 @@ const StepThree = ({ ss58Address, onNextStep, onPrevStep }: Props) => {
   const { getChainsData, sortChains } = useChains();
   const { addWallet, setActiveWallet } = useWallet();
   const [isModalOpen, toggleModal] = useToggle();
+  const { t } = useI18n();
 
   const [walletName, setWalletName] = useState('');
   const [chains, setChains] = useState<Chain[]>([]);
@@ -52,7 +54,7 @@ const StepThree = ({ ss58Address, onNextStep, onPrevStep }: Props) => {
 
   return (
     <div className="flex h-full flex-col gap-10 justify-center items-center pt-7.5">
-      <h2 className="text-2xl leading-10 font-normal text-neutral-variant">Please choose a name for your wallet</h2>
+      <h2 className="text-2xl leading-10 font-normal text-neutral-variant">{t('onboarding.choseWalletNameLabel')}</h2>
       <div className="flex gap-10">
         <form
           id="stepForm"
@@ -65,9 +67,7 @@ const StepThree = ({ ss58Address, onNextStep, onPrevStep }: Props) => {
             placeholder="Wallet name"
             onChange={(e) => setWalletName(e.target.value)}
           />
-          <p className="uppercase pt-2.5 pb-10 font-bold text-2xs text-shade-40">
-            Name examples: Main account, My validator, Dotsama crowdloans, etc.
-          </p>
+          <p className="uppercase pt-2.5 pb-10 font-bold text-2xs text-shade-40">{t('onboarding.nameExampleLabel')}</p>
           <Input
             disabled
             label="Account address"
@@ -77,16 +77,16 @@ const StepThree = ({ ss58Address, onNextStep, onPrevStep }: Props) => {
             prefixElement={<Identicon address={ss58Address} background={false} />}
             suffixElement={
               <Button variant="outline" pallet="primary" onClick={onPrevStep}>
-                Rescan QR code
+                {t('onboarding.rescanQRButton')}
               </Button>
             }
           />
         </form>
         <div className="flex flex-col bg-white shadow-surface rounded-2lg w-[480px] max-h-[310px]">
           <div className="p-4 pt-3.5 pb-3.5">
-            <h2 className="text-neutral font-semibold leading-5">Here are your accounts</h2>
+            <h2 className="text-neutral font-semibold leading-5">{t('onboarding.youAccountsLabel')}</h2>
             <p className="text-neutral-variant text-xs leading-4 font-normal">
-              Following accounts have been successfully read from Parity Signer
+              {t('onboarding.readAccountsParitySignerLabel')}
             </p>
           </div>
           <AccountsList chains={chains} publicKey={publicKey} limit={publicKey && 4} />
@@ -99,7 +99,7 @@ const StepThree = ({ ss58Address, onNextStep, onPrevStep }: Props) => {
                 variant="text"
                 pallet="primary"
               >
-                Check your accounts
+                {t('onboarding.checkAccountsButton')}
               </Button>
             </div>
           )}
@@ -120,7 +120,7 @@ const StepThree = ({ ss58Address, onNextStep, onPrevStep }: Props) => {
       <BaseModal
         closeButton
         className="p-4 max-w-2xl"
-        title="Here are your accounts"
+        title={t('onboarding.youAccountsLabel')}
         description="Following accounts have been successfully read"
         isOpen={isModalOpen}
         onClose={toggleModal}

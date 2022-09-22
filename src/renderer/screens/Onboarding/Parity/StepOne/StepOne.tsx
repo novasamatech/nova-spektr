@@ -4,6 +4,7 @@ import { Button, Carousel, Icon } from '@renderer/components/ui';
 import SlideOne from '@images/misc/onboarding/slide-1.svg';
 import SlideTwo from '@images/misc/onboarding/slide-2.svg';
 import SlideThree from '@images/misc/onboarding/slide-3.svg';
+import { useI18n } from '@renderer/context/I18nContext';
 
 const CAROUSEL_SLIDES: ReactNode[] = [
   <>
@@ -38,6 +39,7 @@ const CAROUSEL_SLIDES: ReactNode[] = [
 type Props = {
   onNextStep: () => void;
 };
+const { t } = useI18n();
 
 const StepOne = ({ onNextStep }: Props) => (
   <div className="flex">
@@ -62,7 +64,7 @@ const StepOne = ({ onNextStep }: Props) => (
       </div>
 
       <Button className="absolute w-max bottom-5" weight="lg" variant="fill" pallet="primary" onClick={onNextStep}>
-        Scan QR code from Parity Signer
+        {t('onboarding.scanQRFromParitySignerButton')}
       </Button>
     </div>
   </div>

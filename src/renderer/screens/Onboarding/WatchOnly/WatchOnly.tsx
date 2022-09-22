@@ -12,6 +12,7 @@ import { useChains } from '@renderer/services/network/chainsService';
 import { useWallet } from '@renderer/services/wallet/walletService';
 import { toPublicKey } from '@renderer/utils/address';
 import FinalStep from '../FinalStep/FinalStep';
+import { useI18n } from '@renderer/context/I18nContext';
 
 type WalletForm = {
   walletName: string;
@@ -87,20 +88,20 @@ const WatchOnly = () => {
       ? 'Type or paste an address'
       : errors.walletName && 'Type a wallet name';
 
+  const { t } = useI18n();
+
   return (
     <>
       <div className="flex items-center gap-x-2.5">
         <ButtonBack />
-        <h1 className="text-neutral">Add watch-only Wallet</h1>
+        <h1 className="text-neutral">{t('onboarding.addWatchOnlyLabel')}</h1>
       </div>
       <form
         onSubmit={handleSubmit(handleCreateWallet)}
         className="flex h-full flex-col gap-10 justify-center items-center"
       >
         <h2 className="text-2xl leading-relaxed font-normal text-neutral-variant text-center">
-          Track the activity of any wallet without injecting
-          <br />
-          your private key to Omni Enterprise
+          {t('onboarding.addWatchOnlyDescription1')} <br /> {t('onboarding.addWatchOnlyDescription2')}
         </h2>
         <div className="flex gap-10">
           <div className="flex flex-col w-[480px] h-[310px] p-4 bg-white shadow-surface rounded-2lg">
@@ -121,16 +122,18 @@ const WatchOnly = () => {
             />
             {!errors.walletName && (
               <p className="uppercase pt-2.5 pb-10 font-bold text-2xs text-shade-40">
-                name examples: Main account, My validator, Dotsama crowdloans, etc.
+                {t('onboarding.nameExampleLabel')}
               </p>
             )}
             {errors.walletName?.type === ErrorType.MAX_LENGTH && (
               <p className="uppercase pt-2.5 pb-10 font-bold text-2xs text-error">
-                Wallet name should be shorter then 256 symbols
+                {t('onboarding.walletNameMaxLenError')}
               </p>
             )}
             {errors.walletName?.type === ErrorType.REQUIRED && (
-              <p className="uppercase pt-2.5 pb-10 font-bold text-2xs text-error">Please, enter wallet name</p>
+              <p className="uppercase pt-2.5 pb-10 font-bold text-2xs text-error">
+                {t('onboarding.walletNameRequiredError')}
+              </p>
             )}
 
             <Controller
@@ -153,11 +156,11 @@ const WatchOnly = () => {
                         onChange(text.trim());
                       }}
                     >
-                      Paste
+                      {t('onboarding.paste')}
                     </Button>
                   }
-                  label="Account address"
-                  placeholder="Enter or paste your account address"
+                  label={t('onboarding.accountAddressLabel')}
+                  placeholder={t('onboarding.accountAddressPlaceholder')}
                   value={value}
                   onChange={onChange}
                 />
@@ -165,13 +168,13 @@ const WatchOnly = () => {
             />
             {errors.address && (
               <p className="uppercase pt-2.5 pb-10 font-bold text-2xs text-error">
-                The entered address is not a valid one, please type or paste it again
+                {t('onboarding.accountAddressError')}
               </p>
             )}
           </div>
           <div className="flex flex-col bg-white shadow-surface rounded-2lg w-[480px] h-[310px]">
             <div className="p-4">
-              <h3 className="text-neutral font-semibold">Your accounts will be showing up here</h3>
+              <h3 className="text-neutral font-semibold">{t('onboarding.youAccountsLoadingLabel')}</h3>
             </div>
             <AccountsList chains={chains} publicKey={publicKey} limit={publicKey && 4} />
             {publicKey && (
@@ -184,7 +187,7 @@ const WatchOnly = () => {
                   pallet="primary"
                   disabled={!!errors.address}
                 >
-                  Check your accounts
+                  {t('onboarding.checkAccountsButton')}
                 </Button>
               </div>
             )}
@@ -201,8 +204,8 @@ const WatchOnly = () => {
       <BaseModal
         closeButton
         className="p-4 max-w-2xl"
-        title="Here are your accounts"
-        description="Following accounts have been successfully read"
+        title={t('onboarding.youAccountsLabel')}
+        description={t('onboarding.Following accounts have been successfully read')}
         isOpen={isModalOpen}
         onClose={toggleModal}
       >

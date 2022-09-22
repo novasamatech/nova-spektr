@@ -8,51 +8,44 @@
   "NavItem.Settings": "Настройки",
   "NavItem.Transfer": "Отправить",
   "NavItem.Wallets": "Кошельки",
-  "explorer.button": "Открыть на { name }",
-  "fallbackScreen": {
-    "message": "Что-то пошло не так",
-    "reloadButton": "Перезагрузить"
-  },
   "accountList": {
     "menuButton": "•••"
-  },
-  "qrReader": {
-    "videoError": "Браузер не поддерживает видео"
   },
   "addressBook": {
     "title": "Адресная книга"
   },
   "assetBalance": {
-    "transferable": "Доступно",
     "locked": "Заблокировано",
-    "reserved": "Зарезервировано"
+    "reserved": "Зарезервировано",
+    "transferable": "Доступно"
   },
   "balances": {
-    "title": "Баланс",
-    "searchPlaceholder": "Поиск по название сети или токена",
-    "hideZeroBalancesLabel": "Скрыть активы с нулевыми балансами",
-    "emptyStateLabel": "Ничего не найдено",
     "emptyStateDescription": "Попробуйте сбросить фильтры",
+    "emptyStateLabel": "Ничего не найдено",
+    "hideZeroBalancesLabel": "Скрыть активы с нулевыми балансами",
+    "searchPlaceholder": "Поиск по название сети или токена",
+    "title": "Баланс",
     "verificationFailedLabel": "данные недостоверны"
   },
-  "receive": {
-    "title": "Получить",
-    "on": "в",
-    "explorerLinkLabel": "Ссылка на {name}",
-    "sendOnlyLabel": "Отправляйте только",
-    "chainLabel1": "токен на этот адрес в",
-    "chainLabel2": "{name} (Парачейн)",
-    "chainLabel3": "сети",
-    "copyAddressButton": "Копировать адрес"
-  },
-  "camera": {
-    "title": "Камера",
-    "cameraListLabel": "Список камер:",
-    "selectButton": "Выбрать",
-    "noCamerasFoundLabel": "Камер не найдено",
-    "setPayloadButton": "Загрузить QR код"
+  "explorer.button": "Открыть на { name }",
+  "fallbackScreen": {
+    "message": "Что-то пошло не так",
+    "reloadButton": "Перезагрузить"
   },
   "history": {
     "title": "История операций"
+  },
+  "qrReader": {
+    "videoError": "Браузер не поддерживает видео"
+  },
+  "receive": {
+    "chainLabel1": "токен на этот адрес в",
+    "chainLabel2": "{name} (Парачейн)",
+    "chainLabel3": "сети",
+    "copyAddressButton": "Копировать адрес",
+    "explorerLinkLabel": "Ссылка на {name}",
+    "on": "в",
+    "sendOnlyLabel": "Отправляйте только",
+    "title": "Получить"
   }
 }

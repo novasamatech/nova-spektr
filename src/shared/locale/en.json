@@ -8,44 +8,126 @@
   "NavItem.Settings": "Settings",
   "NavItem.Transfer": "Transfer",
   "NavItem.Wallets": "Wallets",
-  "explorer.button": "View on { name }",
-  "fallbackScreen": {
-    "message": "Something went wrong",
-    "reloadButton": "Reload"
-  },
   "accountList": {
     "menuButton": "•••"
-  },
-  "qrReader": {
-    "videoError": "Your browser doesn't support video"
   },
   "addressBook": {
     "title": "Address Book"
   },
   "assetBalance": {
-    "transferable": "Transferable",
     "locked": "Locked",
-    "reserved": "Reserved"
+    "reserved": "Reserved",
+    "transferable": "Transferable"
   },
   "balances": {
-    "title": "Balances",
-    "searchPlaceholder": "Search by token or network",
-    "hideZeroBalancesLabel": "Hide zero balances",
-    "emptyStateLabel": "Nothing to show",
     "emptyStateDescription": "Try to reset filters or search for another key",
+    "emptyStateLabel": "Nothing to show",
+    "hideZeroBalancesLabel": "Hide zero balances",
+    "searchPlaceholder": "Search by token or network",
+    "title": "Balances",
     "verificationFailedLabel": "verification failed"
   },
-  "receive": {
-    "title": "Receive",
-    "on": "on",
-    "explorerLinkLabel": "Link to {name}",
-    "sendOnlyLabel": "Send only",
-    "chainLabel1": "token to this address on the",
-    "chainLabel2": "{name} (Parachain)",
-    "chainLabel3": "network",
-    "copyAddressButton": "Copy address"
+  "explorer.button": "View on { name }",
+  "fallbackScreen": {
+    "message": "Something went wrong",
+    "reloadButton": "Reload"
   },
   "history": {
     "title": "History"
+  },
+  "qrReader": {
+    "videoError": "Your browser doesn't support video"
+  },
+  "receive": {
+    "chainLabel1": "token to this address on the",
+    "chainLabel2": "{name} (Parachain)",
+    "chainLabel3": "network",
+    "copyAddressButton": "Copy address",
+    "explorerLinkLabel": "Link to {name}",
+    "on": "on",
+    "sendOnlyLabel": "Send only",
+    "title": "Receive"
+  },
+  "transfers": {
+    "title": "Transfers"
+  },
+  "multisigOperations": {
+    "title": "Multisig Operations"
+  },
+  "onboarding": {
+    "readyToUserLabel": "Your wallet is ready to use!",
+    "addByParitySignerLabel": "Add wallet by Parity Signer",
+    "scanQRFromParitySignerButton": "Scan QR code from Parity Signer",
+    "choseWalletNameLabel": "Please choose a name for your wallet",
+    "nameExampleLabel": "Name examples: Main account, My validator, Dotsama crowdloans, etc.",
+    "rescanQRButton": "Rescan QR code",
+    "youAccountsLoadingLabel": "Your accounts will be showing up here",
+    "youAccountsLabel": "Here are your accounts",
+    "readAccountsParitySignerLabel": "Following accounts have been successfully read from Parity Signer",
+    "readAccountsWatchOnlyLabel": "Following accounts have been successfully read",
+    "checkAccountsButton": "Check your accounts",
+    "addWatchOnlyLabel": "Add watch-only Wallet",
+    "addWatchOnlyDescription1": "Track the activity of any wallet without injecting",
+    "addWatchOnlyDescription2": "your private key to Omni Enterprise",
+    "walletNameMaxLenError": "Wallet name should be shorter then 256 symbols",
+    "walletNameRequiredError": "Please, enter wallet name",
+    "accountAddressLabel": "Account address",
+    "accountAddressPlaceholder": "Enter or paste your account address",
+    "accountAddressError": "The entered address is not a valid one, please type or paste it again"
+    "pasteButton": "Paste",
+    "scanQRLabel1": "Scan",
+    "scanQRLabel2": "QR code",
+    "scanQRLabel3": "from Parity Signer",
+    "multipleCamerasLabel": "There are multiple cameras!",
+    "chooseCameraLabel": "Please choose one to continue",
+    "wrongQRCodeLabel": "Wrong QR code!",
+    "wrongQRCodeDescription": "The scanned QR code doesn't contain valid network address. Please scan another one",
+    "cameraNotWorkLabel": "Camera is not working!",
+    "cameraNotWorkDescription": "Please make sure you camera is turned on",
+    "cameraAccessDeniedLabel": "Access denied!",
+    "cameraAccessDeniedDescription": "Please make sure you grant access to camera",
+    "startingCameraLabel": "Starting camera",
+    "selectCameraLabel": "Select camera",
+    "cameraErrorTryAgainLabel": "Try again",
+    "cameraScanAgainButton": "Scan again"
+  },
+  "welcome": {
+    "welcomeToLabel": "Welcome to",
+    "omniEnterpriseLabel": "Omni Enterprise",
+    "addWatchOnlyLabel": "Track the activity of any wallet without injecting your private key to Omni Enterprise.",
+    "addWatchOnlyButton": "Add Watch-Only wallet",
+    "addParitySignerLabel": "Use dedicated hardware wallet for Polkadot, Kusama, and other Substrate-based chains.",
+    "addParitySignerButton": "Add Parity Signer wallet",
+    "addLedgerComingSoonLabel": "Add Ledger wallet (coming soon)",
+    "addLedgerLabel": "Ledger's the smartest way to secure, buy, exchange and grow your crypto assets.",
+    "addLedgerButton": "Coming soon"
+  },
+
+  "settings": {
+    "title": "Settings",
+    "languageLabel": "Language",
+    "networkLabel": "Network",
+    "networkDetailsLabel": "Manage network connection",
+    "matrixLabel": "Matrix Credentials",
+    "matrixDetailsLabel": "Manage Omni Matrix Protocol credentials",
+    "getInTouchLabel": "Get in touch for more information"
+  },
+  "networkManagement": {
+    "title": "Settings",
+    "subTitle": "Networks",
+    "emptyStateDescription": "Try to search for another key",
+    "emptyStateLabel": "No networks with the entered name were found",
+
+    "lightClientLabel": "Light client",
+    "addCustomNodeButton": "Add Custom Node",
+    "disableNetworkButton": "Disable Network",
+    "disableNetworkModal": {
+      "title": "Disable network",
+      "label": " You are about to disable {network} network"
+    }
+  },
+  "matrixCredentials": {
+    "title": "Settings",
+    "subTitle": "Matrix Credentials"
   }
 }
