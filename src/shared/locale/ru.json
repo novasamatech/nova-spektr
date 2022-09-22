@@ -13,6 +13,46 @@
     "message": "Что-то пошло не так",
     "reloadButton": "Перезагрузить"
   },
-  "header.test": "тест",
-  "number": "{value, number}"
+  "accountList": {
+    "menuButton": "•••"
+  },
+  "qrReader": {
+    "videoError": "Браузер не поддерживает видео"
+  },
+  "addressBook": {
+    "title": "Адресная книга"
+  },
+  "assetBalance": {
+    "transferable": "Доступно",
+    "locked": "Заблокировано",
+    "reserved": "Зарезервировано"
+  },
+  "balances": {
+    "title": "Баланс",
+    "searchPlaceholder": "Поиск по название сети или токена",
+    "hideZeroBalancesLabel": "Скрыть активы с нулевыми балансами",
+    "emptyStateLabel": "Ничего не найдено",
+    "emptyStateDescription": "Попробуйте сбросить фильтры",
+    "verificationFailedLabel": "данные недостоверны"
+  },
+  "receive": {
+    "title": "Получить",
+    "on": "в",
+    "explorerLinkLabel": "Ссылка на {name}",
+    "sendOnlyLabel": "Отправляйте только",
+    "chainLabel1": "токен на этот адрес в",
+    "chainLabel2": "{name} (Парачейн)",
+    "chainLabel3": "сети",
+    "copyAddressButton": "Копировать адрес"
+  },
+  "camera": {
+    "title": "Камера",
+    "cameraListLabel": "Список камер:",
+    "selectButton": "Выбрать",
+    "noCamerasFoundLabel": "Камер не найдено",
+    "setPayloadButton": "Загрузить QR код"
+  },
+  "history": {
+    "title": "История операций"
+  }
 }

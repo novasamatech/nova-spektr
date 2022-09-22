@@ -11,6 +11,7 @@ import { ZERO_BALANCE } from '@renderer/services/balance/common/constants';
 import { total } from '@renderer/services/balance/common/utils';
 import { ExtendedChain } from '@renderer/services/network/common/types';
 import AssetBalance from '../AssetBalance/AssetBalance';
+import { useI18n } from '@renderer/context/I18nContext';
 
 type Props = {
   hideZeroBalance?: boolean;
@@ -34,6 +35,8 @@ const NetworkBalances = ({
   onReceiveClick,
 }: Props) => {
   const [isHidden, setIsHidden] = useState(false);
+
+  const { t } = useI18n();
 
   const { getLiveNetworkBalances } = useBalance();
 
@@ -74,7 +77,7 @@ const NetworkBalances = ({
           {hasFailedVerification && (
             <div className="flex items-center gap-x-1 text-alert">
               <Icon name="shield" size={14} />
-              <p className="uppercase text-2xs leading-[15px]">verification failed</p>
+              <p className="uppercase text-2xs leading-[15px]">{t("balances.verificationFailedLabel")}</p>
             </div>
           )}
         </div>

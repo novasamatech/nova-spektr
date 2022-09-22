@@ -31,18 +31,22 @@ const CameraDev = () => {
                     {c.id} - {c.label}
                   </span>
                   <Button variant="outline" pallet="primary" onClick={() => setActiveCameraId(c.id)}>
+                    {/* eslint-disable-next-line */}
                     Select
                   </Button>
                 </li>
               ))}
               <li className="flex gap-x-3">
+                {/* eslint-disable-next-line */}
                 <span>Test id - Test camera name</span>
                 <Button variant="outline" pallet="primary" onClick={() => setActiveCameraId('121212')}>
+                  {/* eslint-disable-next-line */}
                   Select
                 </Button>
               </li>
             </ul>
           ) : (
+            //eslint-disable-next-line
             <p>No cameras found</p>
           )}
           <div className="flex justify-between">
@@ -58,6 +62,7 @@ const CameraDev = () => {
           <div className="flex gap-x-3 mb-3">
             <Input placeholder="Qr payload" ref={inputRef} />
             <Button variant="fill" pallet="primary" onClick={onSetPayload}>
+              {/* eslint-disable-next-line */}
               Set payload
             </Button>
           </div>

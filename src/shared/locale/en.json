@@ -13,6 +13,39 @@
     "message": "Something went wrong",
     "reloadButton": "Reload"
   },
-  "header.test": "test",
-  "number": "{value, number}"
+  "accountList": {
+    "menuButton": "•••"
+  },
+  "qrReader": {
+    "videoError": "Your browser doesn't support video"
+  },
+  "addressBook": {
+    "title": "Address Book"
+  },
+  "assetBalance": {
+    "transferable": "Transferable",
+    "locked": "Locked",
+    "reserved": "Reserved"
+  },
+  "balances": {
+    "title": "Balances",
+    "searchPlaceholder": "Search by token or network",
+    "hideZeroBalancesLabel": "Hide zero balances",
+    "emptyStateLabel": "Nothing to show",
+    "emptyStateDescription": "Try to reset filters or search for another key",
+    "verificationFailedLabel": "verification failed"
+  },
+  "receive": {
+    "title": "Receive",
+    "on": "on",
+    "explorerLinkLabel": "Link to {name}",
+    "sendOnlyLabel": "Send only",
+    "chainLabel1": "token to this address on the",
+    "chainLabel2": "{name} (Parachain)",
+    "chainLabel3": "network",
+    "copyAddressButton": "Copy address"
+  },
+  "history": {
+    "title": "History"
+  }
 }

@@ -3,7 +3,9 @@ import QrScanner from 'qr-scanner';
 import cn from 'classnames';
 import { useEffect, useRef, useState } from 'react';
 
+
 import { Icon } from '@renderer/components/ui';
+import { useI18n } from '@renderer/context/I18nContext';
 import { QR_READER_ERRORS } from './common/errors';
 import { ErrorObject, QrError } from './common/types';
 
@@ -19,6 +21,8 @@ type Props = {
 const QrReader = ({ size = 300, cameraId, onCameraList, onResult, onStart, onError }: Props) => {
   const videoRef = useRef<HTMLVideoElement>(null);
   const qrScanner = useRef<QrScanner>();
+
+  const { t } = useI18n();
 
   const [isScanComplete, setIsScanComplete] = useState(false);
 
@@ -115,7 +119,7 @@ const QrReader = ({ size = 300, cameraId, onCameraList, onResult, onStart, onErr
           className="rounded-3xl bg-shade-60 object-cover -scale-x-100"
           style={{ width: size + 'px', height: size + 'px' }}
         >
-          Your browser doesn't support video
+          {t("qrReader.videoError")}
         </video>
         {isScanComplete && <div className="absolute inset-0 backdrop-blur-sm rounded-3xl" />}
         <Icon
