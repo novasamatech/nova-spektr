@@ -41,7 +41,7 @@ type Props = {
 };
 
 const StepOne = ({ onNextStep }: Props) => {
-  const {t} = useI18n();
+  const { t } = useI18n();
 
   return (
     <div className="flex">
@@ -59,11 +59,10 @@ const StepOne = ({ onNextStep }: Props) => {
           />
         </div>
       </div>
-      <div
-        className="relative flex flex-col justify-center items-center flex-1 py-5 shadow-surface rounded-2lg bg-white overflow-hidden">
+      <div className="relative flex flex-col justify-center items-center flex-1 py-5 shadow-surface rounded-2lg bg-white overflow-hidden">
         <div className="flex items-center justify-center bg-white w-full h-full">
-          <Icon className="absolute text-shade-10" as="svg" name="qrSimple" size={66}/>
-          <Icon className="absolute text-shade-10" as="svg" name="qrFrame" size={320}/>
+          <Icon className="absolute text-shade-10" as="svg" name="qrSimple" size={66} />
+          <Icon className="absolute text-shade-10" as="svg" name="qrFrame" size={320} />
         </div>
 
         <Button className="absolute w-max bottom-5" weight="lg" variant="fill" pallet="primary" onClick={onNextStep}>
@@ -72,6 +71,6 @@ const StepOne = ({ onNextStep }: Props) => {
       </div>
     </div>
   );
-}
+};
 
 export default StepOne;
