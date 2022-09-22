@@ -3,6 +3,7 @@ import { Dialog, Transition } from '@headlessui/react';
 import cn from 'classnames';
 
 import { ReactComponent as CloseCutout } from '@images/functionals/close-cutout.svg';
+import { useI18n } from '@renderer/context/I18nContext';
 
 type Props = {
   isOpen: boolean;
@@ -22,6 +23,8 @@ const BaseModal = ({
   className,
   closeButton,
 }: PropsWithChildren<Props>) => {
+  const { t } = useI18n();
+
   return (
     <Transition appear show={isOpen} as={Fragment}>
       <Dialog as="div" className="relative z-10" onClose={onClose}>
@@ -59,7 +62,7 @@ const BaseModal = ({
                     <div className="relative flex justify-center">
                       <h2 className="text-xl text-neutral font-semibold leading-5">{title}</h2>
                       <button
-                        aria-label="Close modal window"
+                        aria-label={t('basemodal.closeButton')}
                         type="button"
                         className="absolute right-0.5 text-neutral-variant"
                         onClick={onClose}

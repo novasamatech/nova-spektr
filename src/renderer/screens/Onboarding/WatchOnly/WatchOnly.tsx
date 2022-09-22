@@ -94,14 +94,15 @@ const WatchOnly = () => {
     <>
       <div className="flex items-center gap-x-2.5">
         <ButtonBack />
-        <h1 className="text-neutral">{t('onboarding.addWatchOnlyLabel')}</h1>
+        <h1 className="text-neutral">{t('onboarding.watchonly.addWatchOnlyLabel')}</h1>
       </div>
       <form
         onSubmit={handleSubmit(handleCreateWallet)}
         className="flex h-full flex-col gap-10 justify-center items-center"
       >
         <h2 className="text-2xl leading-relaxed font-normal text-neutral-variant text-center">
-          {t('onboarding.addWatchOnlyDescription1')} <br /> {t('onboarding.addWatchOnlyDescription2')}
+          {t('onboarding.watchonly.addWatchOnlyDescription1')} <br />{' '}
+          {t('onboarding.watchonly.addWatchOnlyDescription2')}
         </h2>
         <div className="flex gap-10">
           <div className="flex flex-col w-[480px] h-[310px] p-4 bg-white shadow-surface rounded-2lg">
@@ -112,8 +113,8 @@ const WatchOnly = () => {
               render={({ field: { onChange, value } }) => (
                 <Input
                   wrapperClass={cn('flex items-center')}
-                  label="Wallet name"
-                  placeholder="Wallet name"
+                  label={t('onboarding.walletNameLabel')}
+                  placeholder={t('onboarding.walletNamePlaceholder')}
                   invalid={!!errors.walletName}
                   value={value}
                   onChange={onChange}
@@ -122,17 +123,17 @@ const WatchOnly = () => {
             />
             {!errors.walletName && (
               <p className="uppercase pt-2.5 pb-10 font-bold text-2xs text-shade-40">
-                {t('onboarding.nameExampleLabel')}
+                {t('onboarding.walletNameExample')}
               </p>
             )}
             {errors.walletName?.type === ErrorType.MAX_LENGTH && (
               <p className="uppercase pt-2.5 pb-10 font-bold text-2xs text-error">
-                {t('onboarding.walletNameMaxLenError')}
+                {t('onboarding.watchonly.walletNameMaxLenError')}
               </p>
             )}
             {errors.walletName?.type === ErrorType.REQUIRED && (
               <p className="uppercase pt-2.5 pb-10 font-bold text-2xs text-error">
-                {t('onboarding.walletNameRequiredError')}
+                {t('onboarding.watchonly.walletNameRequiredError')}
               </p>
             )}
 
@@ -156,11 +157,11 @@ const WatchOnly = () => {
                         onChange(text.trim());
                       }}
                     >
-                      {t('onboarding.paste')}
+                      {t('onboarding.pasteButton')}
                     </Button>
                   }
                   label={t('onboarding.accountAddressLabel')}
-                  placeholder={t('onboarding.accountAddressPlaceholder')}
+                  placeholder={t('onboarding.watchonly.accountAddressPlaceholder')}
                   value={value}
                   onChange={onChange}
                 />
@@ -168,13 +169,13 @@ const WatchOnly = () => {
             />
             {errors.address && (
               <p className="uppercase pt-2.5 pb-10 font-bold text-2xs text-error">
-                {t('onboarding.accountAddressError')}
+                {t('onboarding.watchonly.accountAddressError')}
               </p>
             )}
           </div>
           <div className="flex flex-col bg-white shadow-surface rounded-2lg w-[480px] h-[310px]">
             <div className="p-4">
-              <h3 className="text-neutral font-semibold">{t('onboarding.youAccountsLoadingLabel')}</h3>
+              <h3 className="text-neutral font-semibold">{t('onboarding.watchonly.yourAccountsLoadingLabel')}</h3>
             </div>
             <AccountsList chains={chains} publicKey={publicKey} limit={publicKey && 4} />
             {publicKey && (
@@ -196,7 +197,7 @@ const WatchOnly = () => {
 
         <div className="flex justify-center items-center gap-4">
           <Button type="submit" weight="lg" variant="fill" pallet="primary" disabled={!isValid}>
-            {isValid ? 'Yes, these are my accounts' : errorButtonText}
+            {isValid ? t('onboarding.confirmAccountsListButton') : errorButtonText}
           </Button>
         </div>
       </form>
@@ -204,8 +205,8 @@ const WatchOnly = () => {
       <BaseModal
         closeButton
         className="p-4 max-w-2xl"
-        title={t('onboarding.youAccountsLabel')}
-        description={t('onboarding.Following accounts have been successfully read')}
+        title={t('onboarding.yourAccountsLabel')}
+        description={t('onboarding.readAccountsLabel')}
         isOpen={isModalOpen}
         onClose={toggleModal}
       >

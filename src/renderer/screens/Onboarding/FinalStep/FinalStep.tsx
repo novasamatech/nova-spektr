@@ -30,7 +30,7 @@ const FinalStep = ({ walletType }: Props) => {
         <img className="absolute" src={WatchImg} alt="" width={260} height={120} />
       )}
       {walletType === WalletType.PARITY && <img className="absolute" src={ParityImg} alt="" width={260} height={120} />}
-      <p className="absolute mt-[160px] text-neutral-variant font-semibold">{t('onboarding.readyToUserLabel')}</p>
+      <p className="absolute mt-[160px] text-neutral-variant font-semibold">{t('onboarding.readyToUseLabel')}</p>
     </div>
   );
 };

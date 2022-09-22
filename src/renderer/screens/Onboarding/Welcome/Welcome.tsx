@@ -20,24 +20,24 @@ const Welcome = () => {
 
       <ul className="flex items-center gap-x-9 m-auto">
         <li
-          aria-label="Add Watch only wallet"
+          aria-label={t('welcome.addWatchOnlyAreaLabel')}
           role="listitem"
           style={{ background: `white url(${WatchBg}) no-repeat 20px 25%` }}
           className="flex flex-col items-center gap-y-5 border-2 border-transparent rounded-2lg p-5 shadow-element text-center focus:shadow-surface hover:shadow-surface focus-within:border-primary hover:border-primary focus-within:scale-105 hover:scale-105 ease-in transition-all"
         >
-          <img src={WatchOnlyImg} alt="Icon of Watch-only option" width={132} height={56} />
+          <img src={WatchOnlyImg} alt={t('welcome.addWatchOnlyAlt')} width={132} height={56} />
           <p className="text-neutral-variant text-sm">{t('welcome.addWatchOnlyLabel')}</p>
           <ButtonLink to={Paths.WATCH_ONLY} className="mt-10" variant="outline" pallet="primary" weight="lg">
             {t('welcome.addWatchOnlyButton')}
           </ButtonLink>
         </li>
         <li
-          aria-label="Add Parity Signer wallet"
+          aria-label={t('welcome.addParitySignerAreaLabel')}
           role="listitem"
           style={{ background: `white url(${ParityBg}) no-repeat 30% 10%` }}
           className="flex flex-col items-center gap-y-5 border-2 border-transparent rounded-2lg p-10 shadow-element text-center focus:shadow-surface hover:shadow-surface focus-within:border-primary hover:border-primary focus-within:scale-105 hover:scale-105 ease-in transition-all"
         >
-          <img src={ParitySignerImg} alt="Icon of Parity Signer option" width={266} height={170} />
+          <img src={ParitySignerImg} alt={t('welcome.addParitySignerAlt')} width={266} height={170} />
           <p className="text-neutral-variant text-sm">{t('welcome.addParitySignerLabel')}</p>
           <ButtonLink
             to={Paths.PARITY}

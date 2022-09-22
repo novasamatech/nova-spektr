@@ -77,7 +77,7 @@ const Networks = () => {
 
         {disabledNetworks.length > 0 || activeNetworks.length > 0 ? (
           <>
-            <NetworkList title="Disabled Networks" networkList={disabledNetworks}>
+            <NetworkList title={t('networkManagement.disabledNetworksLabel')} networkList={disabledNetworks}>
               <div className="flex items-center gap-x-1 relative">
                 <Icon
                   className="absolute -top-[1px] -left-[5px] rounded-full bg-white border border-white text-neutral"
@@ -90,7 +90,7 @@ const Networks = () => {
               </div>
             </NetworkList>
 
-            <NetworkList isDefaultOpen title="Active Networks" networkList={activeNetworks}>
+            <NetworkList isDefaultOpen title={t('networkManagement.activeNetworksLabel')} networkList={activeNetworks}>
               <div className="flex gap-x-3">
                 {activeNetworksGroup.connected.length > 0 && (
                   <div className="flex items-center gap-x-1 relative">

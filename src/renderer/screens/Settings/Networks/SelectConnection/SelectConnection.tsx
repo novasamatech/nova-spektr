@@ -85,9 +85,9 @@ const SelectConnection = ({ networkItem }: Props) => {
           )}
         >
           {{
-            [ConnectionType.DISABLED]: 'Select connection type',
+            [ConnectionType.DISABLED]: t('networkManagement.selectConnection.selectConnectionLabel'),
             [ConnectionType.RPC_NODE]: activeNode?.name,
-            [ConnectionType.LIGHT_CLIENT]: 'Light Client',
+            [ConnectionType.LIGHT_CLIENT]: t('networkManagement.selectConnection.lightClient'),
           }[connectionType] || ''}
 
           <Icon name="dropdown" size={20} />

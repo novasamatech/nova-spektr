@@ -92,7 +92,7 @@ module.exports = {
     'i18next/no-literal-string': [
       checkTranslation ? 'warn' : 'off',
       {
-        mode: 'jsx-text-only',
+        mode: 'jsx-only',
         'jsx-attributes': {
           include: [],
           exclude: [
@@ -107,6 +107,23 @@ module.exports = {
             'data-testid',
             'pallet',
             'variant',
+            'as',
+            'weight',
+            'name',
+            'effect',
+            'tag',
+            'leave',
+            'leaveFrom',
+            'leaveTo',
+            'role',
+            'enter',
+            'enterFrom',
+            'enterTo',
+            'wrapperClass',
+            'cn',
+            'form',
+            'bgColor',
+            'theme',
           ],
         },
         callees: {

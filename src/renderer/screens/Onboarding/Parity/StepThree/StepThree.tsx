@@ -54,7 +54,7 @@ const StepThree = ({ ss58Address, onNextStep, onPrevStep }: Props) => {
 
   return (
     <div className="flex h-full flex-col gap-10 justify-center items-center pt-7.5">
-      <h2 className="text-2xl leading-10 font-normal text-neutral-variant">{t('onboarding.choseWalletNameLabel')}</h2>
+      <h2 className="text-2xl leading-10 font-normal text-neutral-variant">{t('onboarding.paritysigner.choseWalletNameLabel')}</h2>
       <div className="flex gap-10">
         <form
           id="stepForm"
@@ -63,28 +63,28 @@ const StepThree = ({ ss58Address, onNextStep, onPrevStep }: Props) => {
         >
           <Input
             wrapperClass="flex items-center"
-            label="Wallet name"
-            placeholder="Wallet name"
+            label={t('onboarding.walletNameLabel')}
+            placeholder={t('onboarding.walletNamePlaceholder')}
             onChange={(e) => setWalletName(e.target.value)}
           />
-          <p className="uppercase pt-2.5 pb-10 font-bold text-2xs text-shade-40">{t('onboarding.nameExampleLabel')}</p>
+          <p className="uppercase pt-2.5 pb-10 font-bold text-2xs text-shade-40">{t('onboarding.walletNameExample')}</p>
           <Input
             disabled
-            label="Account address"
-            placeholder="Account address"
+            label={t('onboarding.accountAddressLabel')}
+            placeholder={t('onboarding.paritysigner.accountAddressPlaceholder')}
             value={getShortAddress(ss58Address, 10)}
             wrapperClass="flex items-center"
             prefixElement={<Identicon address={ss58Address} background={false} />}
             suffixElement={
               <Button variant="outline" pallet="primary" onClick={onPrevStep}>
-                {t('onboarding.rescanQRButton')}
+                {t('onboarding.paritysigner.rescanQRButton')}
               </Button>
             }
           />
         </form>
         <div className="flex flex-col bg-white shadow-surface rounded-2lg w-[480px] max-h-[310px]">
           <div className="p-4 pt-3.5 pb-3.5">
-            <h2 className="text-neutral font-semibold leading-5">{t('onboarding.youAccountsLabel')}</h2>
+            <h2 className="text-neutral font-semibold leading-5">{t('onboarding.yourAccountsLabel')}</h2>
             <p className="text-neutral-variant text-xs leading-4 font-normal">
               {t('onboarding.readAccountsParitySignerLabel')}
             </p>
@@ -114,14 +114,16 @@ const StepThree = ({ ss58Address, onNextStep, onPrevStep }: Props) => {
         pallet="primary"
         disabled={!publicKey || !walletName}
       >
-        {!publicKey || !walletName ? 'Type a name to finish...' : 'Yes, these are my accounts'}
+        {!publicKey || !walletName
+          ? t('onboarding.paritysigner.typeNameButton')
+          : t('onboarding.confirmAccountsListButton')}
       </Button>
 
       <BaseModal
         closeButton
         className="p-4 max-w-2xl"
         title={t('onboarding.youAccountsLabel')}
-        description="Following accounts have been successfully read"
+        description={t('onboarding.readAccountsLabel')}
         isOpen={isModalOpen}
         onClose={toggleModal}
       >

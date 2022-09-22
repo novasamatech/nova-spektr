@@ -1,13 +1,4 @@
 {
-  "NavItem.AddressBook": "Контакты",
-  "NavItem.Balances": "Балансы",
-  "NavItem.CameraDEV": "Камера DEV",
-  "NavItem.ChatDEV": "Чат DEV",
-  "NavItem.History": "История",
-  "NavItem.MstOperations": "Мульти-Операции",
-  "NavItem.Settings": "Настройки",
-  "NavItem.Transfer": "Отправить",
-  "NavItem.Wallets": "Кошельки",
   "accountList": {
     "menuButton": "•••"
   },
@@ -28,9 +19,16 @@
     "title": "Балансы",
     "verificationFailedLabel": "данные недостоверны"
   },
+  "basemodal": {
+    "closeButton": "Close modal window"
+  },
+  "dropdown": {
+    "chooseOptionLabel": "Choose an option"
+  },
   "explorer.button": "Открыть на { name }",
   "fallbackScreen": {
     "message": "Что-то пошло не так",
+    "omniLogoAlt": "Omni logo",
     "reloadButton": "Перезагрузить"
   },
   "history": {
@@ -42,54 +40,81 @@
   "multisigOperations": {
     "title": "Операции с мультиподписью"
   },
+  "navigation": {
+    "addressBookLabel": "Контакты",
+    "balancesLabel": "Балансы",
+    "cameraDEVLabel": "Камера DEV",
+    "chatDEVLabel": "Чат DEV",
+    "historyLabel": "История",
+    "mstOperationLabel": "Мульти-Операции",
+    "settingsLabel": "Настройки",
+    "transfersLabel": "Отправить",
+    "unknownWalletLabel": "Unknown wallet",
+    "walletsLabel": "Кошельки"
+  },
   "networkManagement": {
+    "activeNetworksLabel": "Active Networks",
     "addCustomNodeButton": "Add Custom Node",
     "disableNetworkButton": "Disable Network",
     "disableNetworkModal": {
       "label": " You are about to disable {network} network",
       "title": "Disable network"
     },
+    "disabledNetworksLabel": "Disabled Networks",
     "emptyStateDescription": "Try to search for another key",
     "emptyStateLabel": "No networks with the entered name were found",
     "lightClientLabel": "Light client",
+    "selectConnection": {
+      "lightClient": "Light Client",
+      "selectConnectionLabel": "Select connection type"
+    },
     "subTitle": "Networks"
   },
   "onboarding": {
-    "accountAddressError": "The entered address is not a valid one, please type or paste it again",
     "accountAddressLabel": "Account address",
-    "accountAddressPlaceholder": "Enter or paste your account address",
-    "addByParitySignerLabel": "Add wallet by Parity Signer",
-    "addWatchOnlyDescription1": "Track the activity of any wallet without injecting",
-    "addWatchOnlyDescription2": "your private key to Omni Enterprise",
-    "addWatchOnlyLabel": "Add watch-only Wallet",
-    "cameraAccessDeniedDescription": "Please make sure you grant access to camera",
-    "cameraAccessDeniedLabel": "Access denied!",
-    "cameraErrorTryAgainLabel": "Try again",
-    "cameraNotWorkDescription": "Please make sure you camera is turned on",
-    "cameraNotWorkLabel": "Camera is not working!",
-    "cameraScanAgainButton": "Scan again",
     "checkAccountsButton": "Check your accounts",
-    "chooseCameraLabel": "Please choose one to continue",
-    "choseWalletNameLabel": "Please choose a name for your wallet",
-    "multipleCamerasLabel": "There are multiple cameras!",
-    "nameExampleLabel": "Name examples: Main account, My validator, Dotsama crowdloans, etc.",
+    "confirmAccountsListButton": "Yes, these are my accounts",
+    "paritysigner": {
+      "accountAddressPlaceholder": "Account adddress",
+      "addByParitySignerLabel": "Add wallet by Parity Signer",
+      "cameraAccessDeniedDescription": "Please make sure you grant access to camera",
+      "cameraAccessDeniedLabel": "Access denied!",
+      "cameraErrorTryAgainLabel": "Try again",
+      "cameraNotWorkDescription": "Please make sure you camera is turned on",
+      "cameraNotWorkLabel": "Camera is not working!",
+      "cameraScanAgainButton": "Scan again",
+      "chooseCameraLabel": "Please choose one to continue",
+      "choseWalletNameLabel": "Please choose a name for your wallet",
+      "multipleCamerasLabel": "There are multiple cameras!",
+      "rescanQRButton": "Rescan QR code",
+      "scanQRCodeAlt": "Scan QR code from Parity Signer",
+      "scanQRFromParitySignerButton": "Scan QR code from Parity Signer",
+      "scanQRLabel1": "Scan",
+      "scanQRLabel2": "QR code",
+      "scanQRLabel3": "from Parity Signer",
+      "selectCameraLabel": "Select camera",
+      "startingCameraLabel": "Starting camera",
+      "typeNameButton": "Type a name to finish...",
+      "wrongQRCodeDescription": "The scanned QR code doesn't contain valid network address. Please scan another one",
+      "wrongQRCodeLabel": "Wrong QR code!"
+    },
     "pasteButton": "Paste",
-    "readAccountsParitySignerLabel": "Following accounts have been successfully read from Parity Signer",
-    "readAccountsWatchOnlyLabel": "Following accounts have been successfully read",
-    "readyToUserLabel": "Your wallet is ready to use!",
-    "rescanQRButton": "Rescan QR code",
-    "scanQRFromParitySignerButton": "Scan QR code from Parity Signer",
-    "scanQRLabel1": "Scan",
-    "scanQRLabel2": "QR code",
-    "scanQRLabel3": "from Parity Signer",
-    "selectCameraLabel": "Select camera",
-    "startingCameraLabel": "Starting camera",
-    "walletNameMaxLenError": "Wallet name should be shorter then 256 symbols",
-    "walletNameRequiredError": "Please, enter wallet name",
-    "wrongQRCodeDescription": "The scanned QR code doesn't contain valid network address. Please scan another one",
-    "wrongQRCodeLabel": "Wrong QR code!",
-    "youAccountsLabel": "Here are your accounts",
-    "youAccountsLoadingLabel": "Your accounts will be showing up here"
+    "readAccountsLabel": "Following accounts have been successfully read.",
+    "readyToUseLabel": "Your wallet is ready to use!",
+    "walletNameExample": "Name examples: Main account, My validator, Dotsama crowdloans, etc.",
+    "walletNameLabel": "Wallet name",
+    "walletNamePlaceholder": "Enter a name for your wallet",
+    "watchonly": {
+      "accountAddressError": "The entered address is not a valid one, please type or paste it again",
+      "accountAddressPlaceholder": "Enter or paste your account address",
+      "addWatchOnlyDescription1": "Track the activity of any wallet without injecting",
+      "addWatchOnlyDescription2": "your private key to Omni Enterprise",
+      "addWatchOnlyLabel": "Add watch-only Wallet",
+      "walletNameMaxLenError": "Wallet name should be shorter then 256 symbols",
+      "walletNameRequiredError": "Please, enter wallet name",
+      "yourAccountsLoadingLabel": "Your accounts will be showing up here"
+    },
+    "yourAccountsLabel": "Here are your accounts"
   },
   "qrReader": {
     "videoError": "Браузер не поддерживает видео"
@@ -120,8 +145,12 @@
     "addLedgerButton": "Coming soon",
     "addLedgerComingSoonLabel": "Add Ledger wallet (coming soon)",
     "addLedgerLabel": "Ledger's the smartest way to secure, buy, exchange and grow your crypto assets.",
+    "addParitySignerAlt": "Icon of Watch-only option",
+    "addParitySignerAreaLabel": "Add Watch only wallet",
     "addParitySignerButton": "Add Parity Signer wallet",
     "addParitySignerLabel": "Use dedicated hardware wallet for Polkadot, Kusama, and other Substrate-based chains.",
+    "addWatchOnlyAlt": "Icon of Watch-only option",
+    "addWatchOnlyAreaLabel": "Add Watch only wallet",
     "addWatchOnlyButton": "Add Watch-Only wallet",
     "addWatchOnlyLabel": "Track the activity of any wallet without injecting your private key to Omni Enterprise.",
     "ledgerImageAlt": "Icon of Ledger option",

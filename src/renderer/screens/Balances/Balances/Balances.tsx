@@ -95,7 +95,7 @@ const Balances = () => {
                 chain={chain}
                 publicKey={publicKey}
                 canMakeActions={canMakeActions}
-                onTransferClick={() => console.log('transfer')}
+                onTransferClick={() => console.log(t('transfers.title'))}
                 onReceiveClick={onReceive(chain)}
               />
             ))}

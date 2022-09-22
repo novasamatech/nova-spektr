@@ -3,22 +3,28 @@ import { MemoryRouter } from 'react-router-dom';
 
 import Welcome from './Welcome';
 
+jest.mock('@renderer/context/I18nContext', () => ({
+  useI18n: jest.fn().mockReturnValue({
+    t: (key: string) => key,
+  }),
+}));
+
 describe('screens/Onboarding/Welcome', () => {
   const renderComponent = () => render(<Welcome />, { wrapper: MemoryRouter });
 
   test('should render component', () => {
     renderComponent();
 
-    const title = screen.getByRole('heading', { name: 'Welcome to Omni Enterprise' });
+    const title = screen.getByRole('heading', { name: 'welcome.welcomeToLabel welcome.omniEnterpriseLabel' });
     expect(title).toBeInTheDocument();
   });
 
   test('should render 3 options with text', () => {
     renderComponent();
 
-    const option1 = screen.getByText(/Track the activity of any wallet/);
-    const option2 = screen.getByText(/Use dedicated hardware wallet/);
-    const option3 = screen.getByText(/Ledger's the smartest way to secure/);
+    const option1 = screen.getByText('welcome.addWatchOnlyLabel');
+    const option2 = screen.getByText('welcome.addParitySignerLabel');
+    const option3 = screen.getByText('welcome.addWatchOnlyLabel');
     [option1, option2, option3].forEach((option) => expect(option).toBeInTheDocument());
   });
 

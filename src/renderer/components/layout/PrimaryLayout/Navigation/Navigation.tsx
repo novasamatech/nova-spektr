@@ -16,12 +16,12 @@ const CardStyle = {
 };
 
 const NavItems = [
-  { icon: <Icon name="balance" />, title: 'NavItem.Balances', link: Paths.BALANCES },
-  { icon: <Icon name="history" />, title: 'NavItem.History', link: Paths.HISTORY },
-  { icon: <Icon name="operations" />, title: 'NavItem.MstOperations', link: Paths.MULTISIG },
-  { icon: <Icon name="book" />, title: 'NavItem.AddressBook', link: Paths.ADDRESS_BOOK },
-  // { icon: <Icon name="btc" />, title: 'NavItem.ChatDEV', link: Paths.CHAT_DEV },
-  // { icon: <Icon name="eth" />, title: 'NavItem.CameraDEV', link: Paths.CAMERA_DEV },
+  { icon: <Icon name="balance" />, title: 'navigation.balancesLabel', link: Paths.BALANCES },
+  { icon: <Icon name="history" />, title: 'navigation.historyLabel', link: Paths.HISTORY },
+  { icon: <Icon name="operations" />, title: 'navigation.mstOperationLabel', link: Paths.MULTISIG },
+  { icon: <Icon name="book" />, title: 'navigation.addressBookLabel', link: Paths.ADDRESS_BOOK },
+  // { icon: <Icon name="btc" />, title: 'navigation.chatDEVLabel', link: Paths.CHAT_DEV },
+  // { icon: <Icon name="eth" />, title: 'navigation.cameraDEVLabel', link: Paths.CAMERA_DEV },
 ];
 
 const Navigation = () => {
@@ -59,7 +59,7 @@ const Navigation = () => {
           />
           <button type="button" className="flex justify-between flex-1 truncate">
             <span className="text-xl leading-6 mr-1 text-left truncate">
-              {(activeWallets && activeWallets.length && activeWallets[0].name) || 'Unknown wallet'}
+              {(activeWallets && activeWallets.length && activeWallets[0].name) || t('navigation.unknownWalletLabel')}
             </span>
             <Icon name="right" size={40} className="shrink-0" />
           </button>
@@ -108,7 +108,7 @@ const Navigation = () => {
           }
         >
           <Icon name="settings" />
-          <span className="font-semibold text-sm ml-3">{t('NavItem.Settings')}</span>
+          <span className="font-semibold text-sm ml-3">{t('navigation.settingsLabel')}</span>
         </NavLink>
         <div className="flex justify-between bg-gradient-to-b from-shade-2 py-2 px-3 rounded-t-2lg">
           <LocaleComponent top short />

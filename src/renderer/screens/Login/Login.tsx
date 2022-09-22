@@ -72,6 +72,7 @@ const Login = () => {
         <div className="text-xl">Let&apos;s start by login to Matrix</div>
       </header>
       <form className="flex flex-col mt-14 mb-3 gap-4 w-[300px]" onSubmit={handleSubmit(onLogin)}>
+        {/* eslint-disable i18next/no-literal-string */}
         <Controller
           name="homeserver"
           control={control}
@@ -88,6 +89,7 @@ const Login = () => {
             />
           )}
         />
+        {/* eslint-disable i18next/no-literal-string */}
         <Controller
           name="username"
           control={control}
@@ -105,6 +107,7 @@ const Login = () => {
           )}
         />
 
+        {/* eslint-disable i18next/no-literal-string */}
         <Controller
           name="password"
           control={control}

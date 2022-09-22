@@ -66,7 +66,7 @@ const StepOne = ({ onNextStep }: Props) => {
         </div>
 
         <Button className="absolute w-max bottom-5" weight="lg" variant="fill" pallet="primary" onClick={onNextStep}>
-          {t('onboarding.scanQRFromParitySignerButton')}
+          {t('onboarding.paritysigner.scanQRFromParitySignerButton')}
         </Button>
       </div>
     </div>
