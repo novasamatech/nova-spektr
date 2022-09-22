@@ -112,7 +112,7 @@ const AssetBalance = ({ asset, balance, canMakeActions, onTransferClick, onRecei
         {isExpanded && (
           <div className="flex divide-x border-t gap-x-6 px-[15px] py-2 text-left">
             <div>
-              <div className="text-neutral text-sm font-semibold">{t("assetBalance.transferable")}</div>
+              <div className="text-neutral text-sm font-semibold">{t('assetBalance.transferable')}</div>
               <div className="text-neutral-variant text-xs font-bold" data-testid="transferable">
                 {balance?.free ? (
                   <>
@@ -124,7 +124,7 @@ const AssetBalance = ({ asset, balance, canMakeActions, onTransferClick, onRecei
               </div>
             </div>
             <div className="pl-6">
-              <div className="text-neutral text-sm font-semibold">{t("assetBalance.locked")}</div>
+              <div className="text-neutral text-sm font-semibold">{t('assetBalance.locked')}</div>
               <div className="text-neutral-variant text-xs font-bold">
                 {balance?.frozen ? (
                   <>
@@ -136,7 +136,7 @@ const AssetBalance = ({ asset, balance, canMakeActions, onTransferClick, onRecei
               </div>
             </div>
             <div className="pl-6">
-              <div className="text-neutral text-sm font-semibold">{t("assetBalance.reserved")}</div>
+              <div className="text-neutral text-sm font-semibold">{t('assetBalance.reserved')}</div>
               <div className="text-neutral-variant text-xs font-bold">
                 {balance?.reserved ? (
                   <>

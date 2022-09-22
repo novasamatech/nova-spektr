@@ -3,7 +3,6 @@ import QrScanner from 'qr-scanner';
 import cn from 'classnames';
 import { useEffect, useRef, useState } from 'react';
 
-
 import { Icon } from '@renderer/components/ui';
 import { useI18n } from '@renderer/context/I18nContext';
 import { QR_READER_ERRORS } from './common/errors';
@@ -119,7 +118,7 @@ const QrReader = ({ size = 300, cameraId, onCameraList, onResult, onStart, onErr
           className="rounded-3xl bg-shade-60 object-cover -scale-x-100"
           style={{ width: size + 'px', height: size + 'px' }}
         >
-          {t("qrReader.videoError")}
+          {t('qrReader.videoError')}
         </video>
         {isScanComplete && <div className="absolute inset-0 backdrop-blur-sm rounded-3xl" />}
         <Icon

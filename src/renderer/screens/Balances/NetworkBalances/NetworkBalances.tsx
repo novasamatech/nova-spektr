@@ -77,7 +77,7 @@ const NetworkBalances = ({
           {hasFailedVerification && (
             <div className="flex items-center gap-x-1 text-alert">
               <Icon name="shield" size={14} />
-              <p className="uppercase text-2xs leading-[15px]">{t("balances.verificationFailedLabel")}</p>
+              <p className="uppercase text-2xs leading-[15px]">{t('balances.verificationFailedLabel')}</p>
             </div>
           )}
         </div>

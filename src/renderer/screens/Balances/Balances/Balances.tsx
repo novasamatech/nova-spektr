@@ -15,7 +15,6 @@ import ReceiveModal, { ReceivePayload } from '../ReceiveModal/ReceiveModal';
 import { ConnectionType } from '@renderer/domain/connection';
 import { useI18n } from '@renderer/context/I18nContext';
 
-
 const Balances = () => {
   const { t } = useI18n();
 
@@ -70,7 +69,7 @@ const Balances = () => {
   return (
     <>
       <div className="h-full flex flex-col">
-        <h1 className="font-semibold text-2xl text-neutral mb-9">{t("balances.title")}</h1>
+        <h1 className="font-semibold text-2xl text-neutral mb-9">{t('balances.title')}</h1>
 
         <div className="flex justify-between items-center mb-5">
           <Input
@@ -78,10 +77,10 @@ const Balances = () => {
             prefixElement={<Icon name="search" className="w-5 h-5" />}
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder={t("balances.searchPlaceholder")}
+            placeholder={t('balances.searchPlaceholder')}
           />
           <div className="text-sm text-neutral font-semibold flex gap-2.5">
-            {t("balances.hideZeroBalancesLabel")} <Switch checked={hideZeroBalance} onChange={updateHideZeroBalance} />
+            {t('balances.hideZeroBalancesLabel')} <Switch checked={hideZeroBalance} onChange={updateHideZeroBalance} />
           </div>
         </div>
 
@@ -104,8 +103,8 @@ const Balances = () => {
         ) : (
           <div className="flex w-full h-full flex-col items-center justify-center">
             <Icon name="noResult" size={380} />
-            <p className="text-neutral text-3xl font-bold">{t("balances.emptyStateLabel")}</p>
-            <p className="text-neutral-variant text-base font-normal">{t("balances.emptyStateDescription")}</p>
+            <p className="text-neutral text-3xl font-bold">{t('balances.emptyStateLabel')}</p>
+            <p className="text-neutral-variant text-base font-normal">{t('balances.emptyStateDescription')}</p>
           </div>
         )}
       </div>
