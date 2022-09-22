@@ -18,4 +18,5 @@ jobs:
         run: pnpm lint:translation-files
 
       - name: 🌐 Check if pages are translated
+        if: always()
         run: pnpm lint:translation-pages
