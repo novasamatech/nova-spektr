@@ -63,17 +63,17 @@ In some cases there is no need to translate the text. For example
 {data?.asset.symbol} ({data?.asset.name})
 </span>{' '}
 ```
-In that case the `{/* eslint-disable-next-line */}`
+In that case the `{/* eslint-disable-next-line i18next/no-literal-string */}`
 should be added
 ```typescript
 <span className="font-bold">
-{/* eslint-disable-next-line */}
+{/* eslint-disable-next-line i18next/no-literal-string */}
 {data?.asset.symbol} ({data?.asset.name})
 </span>{' '}
 ```
 or
 ```typescript
-//eslint-disable-next-line
+//eslint-disable-next-line i18next/no-literal-string
 const qrCodePayload = `substrate:${address}:${wallet.publicKey}:Ff`;
 ```
 

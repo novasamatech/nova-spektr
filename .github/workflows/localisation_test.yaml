@@ -1,0 +1,22 @@
+name: Check localisation
+
+on:
+  pull_request:
+
+jobs:
+  check-localisation:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: ⚙️ Install dependencies
+        uses: ./.github/workflows/install-pnpm
+
+      - name: 📝 Check localisation files
+        run: pnpm lint:translation-files
+
+      - name: 🌐 Check if pages are translated
+        if: always()
+        run: pnpm lint:translation-pages
