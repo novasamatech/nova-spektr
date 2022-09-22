@@ -18,6 +18,8 @@ export const useTranslationService = (): ITranslationService => {
 
     interpolation: {
       escapeValue: false,
+      prefix: '{',
+      suffix: '}',
     },
   });
 
