@@ -8,7 +8,7 @@ const Credentials = () => {
     <div className="h-full flex flex-col">
       <div className="flex items-center gap-x-2.5 mb-9">
         <ButtonBack />
-        <p className="font-semibold text-2xl text-neutral-variant">{t('matrixCredentials.title')}</p>
+        <p className="font-semibold text-2xl text-neutral-variant">{t('settings.title')}</p>
         <p className="font-semibold text-2xl text-neutral">/</p>
         <h1 className="font-semibold text-2xl text-neutral">{t('matrixCredentials.subTitle')}</h1>
       </div>

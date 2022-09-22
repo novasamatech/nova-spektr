@@ -35,6 +35,61 @@
   "history": {
     "title": "История операций"
   },
+  "matrixCredentials": {
+    "subTitle": "Реквизиты Matrix"
+  },
+  "multisigOperations": {
+    "title": "Операции с мультиподписью"
+  },
+  "networkManagement": {
+    "addCustomNodeButton": "Add Custom Node",
+    "disableNetworkButton": "Disable Network",
+    "disableNetworkModal": {
+      "label": " You are about to disable {network} network",
+      "title": "Disable network"
+    },
+    "emptyStateDescription": "Try to search for another key",
+    "emptyStateLabel": "No networks with the entered name were found",
+    "lightClientLabel": "Light client",
+    "subTitle": "Networks"
+  },
+  "onboarding": {
+    "accountAddressError": "The entered address is not a valid one, please type or paste it again",
+    "accountAddressLabel": "Account address",
+    "accountAddressPlaceholder": "Enter or paste your account address",
+    "addByParitySignerLabel": "Add wallet by Parity Signer",
+    "addWatchOnlyDescription1": "Track the activity of any wallet without injecting",
+    "addWatchOnlyDescription2": "your private key to Omni Enterprise",
+    "addWatchOnlyLabel": "Add watch-only Wallet",
+    "cameraAccessDeniedDescription": "Please make sure you grant access to camera",
+    "cameraAccessDeniedLabel": "Access denied!",
+    "cameraErrorTryAgainLabel": "Try again",
+    "cameraNotWorkDescription": "Please make sure you camera is turned on",
+    "cameraNotWorkLabel": "Camera is not working!",
+    "cameraScanAgainButton": "Scan again",
+    "checkAccountsButton": "Check your accounts",
+    "chooseCameraLabel": "Please choose one to continue",
+    "choseWalletNameLabel": "Please choose a name for your wallet",
+    "multipleCamerasLabel": "There are multiple cameras!",
+    "nameExampleLabel": "Name examples: Main account, My validator, Dotsama crowdloans, etc.",
+    "pasteButton": "Paste",
+    "readAccountsParitySignerLabel": "Following accounts have been successfully read from Parity Signer",
+    "readAccountsWatchOnlyLabel": "Following accounts have been successfully read",
+    "readyToUserLabel": "Your wallet is ready to use!",
+    "rescanQRButton": "Rescan QR code",
+    "scanQRFromParitySignerButton": "Scan QR code from Parity Signer",
+    "scanQRLabel1": "Scan",
+    "scanQRLabel2": "QR code",
+    "scanQRLabel3": "from Parity Signer",
+    "selectCameraLabel": "Select camera",
+    "startingCameraLabel": "Starting camera",
+    "walletNameMaxLenError": "Wallet name should be shorter then 256 symbols",
+    "walletNameRequiredError": "Please, enter wallet name",
+    "wrongQRCodeDescription": "The scanned QR code doesn't contain valid network address. Please scan another one",
+    "wrongQRCodeLabel": "Wrong QR code!",
+    "youAccountsLabel": "Here are your accounts",
+    "youAccountsLoadingLabel": "Your accounts will be showing up here"
+  },
   "qrReader": {
     "videoError": "Браузер не поддерживает видео"
   },
@@ -47,5 +102,28 @@
     "on": "в",
     "sendOnlyLabel": "Отправляйте только",
     "title": "Получить"
+  },
+  "settings": {
+    "getInTouchLabel": "Get in touch for more information",
+    "languageLabel": "Language",
+    "matrixDetailsLabel": "Manage Omni Matrix Protocol credentials",
+    "matrixLabel": "Matrix Credentials",
+    "networkDetailsLabel": "Manage network connection",
+    "networkLabel": "Network",
+    "title": "Settings"
+  },
+  "transfers": {
+    "title": "Переводы"
+  },
+  "welcome": {
+    "addLedgerButton": "Coming soon",
+    "addLedgerComingSoonLabel": "Add Ledger wallet (coming soon)",
+    "addLedgerLabel": "Ledger's the smartest way to secure, buy, exchange and grow your crypto assets.",
+    "addParitySignerButton": "Add Parity Signer wallet",
+    "addParitySignerLabel": "Use dedicated hardware wallet for Polkadot, Kusama, and other Substrate-based chains.",
+    "addWatchOnlyButton": "Add Watch-Only wallet",
+    "addWatchOnlyLabel": "Track the activity of any wallet without injecting your private key to Omni Enterprise.",
+    "omniEnterpriseLabel": "Omni Enterprise",
+    "welcomeToLabel": "Welcome to"
   }
 }

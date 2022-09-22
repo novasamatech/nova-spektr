@@ -61,7 +61,7 @@ const Networks = () => {
     <div className="h-full flex flex-col overflow-y-auto">
       <div className="flex items-center gap-x-2.5 mb-9">
         <ButtonBack />
-        <p className="font-semibold text-2xl text-neutral-variant">{t('networkManagement.title')}</p>
+        <p className="font-semibold text-2xl text-neutral-variant">{t('settings.title')}</p>
         <p className="font-semibold text-2xl text-neutral">/</p>
         <h1 className="font-semibold text-2xl text-neutral">{t('networkManagement.subTitle')}</h1>
       </div>
