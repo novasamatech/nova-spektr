@@ -10,7 +10,7 @@
   "NavItem.Wallets": "Кошельки",
   "explorer.button": "Открыть на { name }",
   "fallbackScreen": {
-    "message": "Что-то пошло не так",
+    "message": "Что-то пошло не так {}",
     "reloadButton": "Перезагрузить"
   },
   "header.test": "тест",
