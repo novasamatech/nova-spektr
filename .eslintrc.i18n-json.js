@@ -40,7 +40,7 @@ module.exports = {
       },
     ],
     'i18next/no-literal-string': [
-      2,
+      1,
       {
         mode: 'jsx-text-only',
         'jsx-attributes': {
