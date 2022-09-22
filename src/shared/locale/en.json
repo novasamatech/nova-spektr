@@ -16,6 +16,7 @@
   },
   "assetBalance": {
     "locked": "Locked",
+    "number": "{value, number}",
     "reserved": "Reserved",
     "transferable": "Transferable"
   },

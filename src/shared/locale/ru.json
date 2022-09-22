@@ -16,6 +16,7 @@
   },
   "assetBalance": {
     "locked": "Заблокировано",
+    "number": "{value, number}",
     "reserved": "Зарезервировано",
     "transferable": "Доступно"
   },
@@ -23,7 +24,7 @@
     "emptyStateDescription": "Попробуйте сбросить фильтры",
     "emptyStateLabel": "Ничего не найдено",
     "hideZeroBalancesLabel": "Скрыть активы с нулевыми балансами",
-    "searchPlaceholder": "Поиск по название сети или токена",
+    "searchPlaceholder": "Поиск по названию сети или токена",
     "title": "Балансы",
     "verificationFailedLabel": "данные недостоверны"
   },
