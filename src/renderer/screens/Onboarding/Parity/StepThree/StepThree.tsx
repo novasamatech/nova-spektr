@@ -54,7 +54,9 @@ const StepThree = ({ ss58Address, onNextStep, onPrevStep }: Props) => {
 
   return (
     <div className="flex h-full flex-col gap-10 justify-center items-center pt-7.5">
-      <h2 className="text-2xl leading-10 font-normal text-neutral-variant">{t('onboarding.paritysigner.choseWalletNameLabel')}</h2>
+      <h2 className="text-2xl leading-10 font-normal text-neutral-variant">
+        {t('onboarding.paritysigner.choseWalletNameLabel')}
+      </h2>
       <div className="flex gap-10">
         <form
           id="stepForm"
