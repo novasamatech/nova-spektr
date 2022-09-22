@@ -24,7 +24,7 @@
     "emptyStateLabel": "Ничего не найдено",
     "hideZeroBalancesLabel": "Скрыть активы с нулевыми балансами",
     "searchPlaceholder": "Поиск по название сети или токена",
-    "title": "Баланс",
+    "title": "Балансы",
     "verificationFailedLabel": "данные недостоверны"
   },
   "explorer.button": "Открыть на { name }",
@@ -123,6 +123,7 @@
     "addParitySignerLabel": "Use dedicated hardware wallet for Polkadot, Kusama, and other Substrate-based chains.",
     "addWatchOnlyButton": "Add Watch-Only wallet",
     "addWatchOnlyLabel": "Track the activity of any wallet without injecting your private key to Omni Enterprise.",
+    "ledgerImageAlt": "Icon of Ledger option",
     "omniEnterpriseLabel": "Omni Enterprise",
     "welcomeToLabel": "Welcome to"
   }
