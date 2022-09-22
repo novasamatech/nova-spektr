@@ -35,6 +35,7 @@ const ReceiveModal = ({ data, isOpen, onClose }: Props) => {
 
   const address = toAddress(wallet.publicKey, data?.chain.addressPrefix);
 
+  //eslint-disable-next-line
   const qrCodePayload = `substrate:${address}:${wallet.publicKey}:Ff`;
 
   const onCopyAddress = () => {
@@ -79,6 +80,7 @@ const ReceiveModal = ({ data, isOpen, onClose }: Props) => {
             <p className="uppercase text-xs leading-[14px]">
               Send only{' '}
               <span className="font-bold">
+                {/* eslint-disable-next-line */}
                 {data?.asset.symbol} ({data?.asset.name})
               </span>{' '}
               token to this address on the <span className="font-bold">{data?.chain.name} (Parachain)</span> network
