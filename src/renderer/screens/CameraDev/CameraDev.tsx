@@ -27,7 +27,7 @@ const CameraDev = () => {
               {availableCameras.map((c) => (
                 <li key={c.id} className="flex gap-x-3">
                   <span>
-                    {/* eslint-disable-next-line */}
+                    {/* eslint-disable-next-line i18next/no-literal-string */}
                     {c.id} - {c.label}
                   </span>
                   <Button variant="outline" pallet="primary" onClick={() => setActiveCameraId(c.id)}>
