@@ -13,8 +13,11 @@ import { useWallet } from '@renderer/services/wallet/walletService';
 import NetworkBalances from '../NetworkBalances/NetworkBalances';
 import ReceiveModal, { ReceivePayload } from '../ReceiveModal/ReceiveModal';
 import { ConnectionType } from '@renderer/domain/connection';
+import { useI18n } from '@renderer/context/I18nContext';
 
 const Balances = () => {
+  const { t } = useI18n();
+
   const [query, setQuery] = useState('');
   const [publicKey, setPublicKey] = useState<PublicKey>();
   const [receiveData, setReceiveData] = useState<ReceivePayload>();
@@ -66,7 +69,7 @@ const Balances = () => {
   return (
     <>
       <div className="h-full flex flex-col">
-        <h1 className="font-semibold text-2xl text-neutral mb-9">Balances</h1>
+        <h1 className="font-semibold text-2xl text-neutral mb-9">{t('balances.title')}</h1>
 
         <div className="flex justify-between items-center mb-5">
           <Input
@@ -74,10 +77,10 @@ const Balances = () => {
             prefixElement={<Icon name="search" className="w-5 h-5" />}
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder="Search by token, network or anything"
+            placeholder={t('balances.searchPlaceholder')}
           />
           <div className="text-sm text-neutral font-semibold flex gap-2.5">
-            Hide zero balances <Switch checked={hideZeroBalance} onChange={updateHideZeroBalance} />
+            {t('balances.hideZeroBalancesLabel')} <Switch checked={hideZeroBalance} onChange={updateHideZeroBalance} />
           </div>
         </div>
 
@@ -92,7 +95,7 @@ const Balances = () => {
                 chain={chain}
                 publicKey={publicKey}
                 canMakeActions={canMakeActions}
-                onTransferClick={() => console.log('transfer')}
+                onTransferClick={() => console.log(t('transfers.title'))}
                 onReceiveClick={onReceive(chain)}
               />
             ))}
@@ -100,8 +103,8 @@ const Balances = () => {
         ) : (
           <div className="flex w-full h-full flex-col items-center justify-center">
             <Icon name="noResult" size={380} />
-            <p className="text-neutral text-3xl font-bold">Nothing to show</p>
-            <p className="text-neutral-variant text-base font-normal">Try to reset filters or search for another key</p>
+            <p className="text-neutral text-3xl font-bold">{t('balances.emptyStateLabel')}</p>
+            <p className="text-neutral-variant text-base font-normal">{t('balances.emptyStateDescription')}</p>
           </div>
         )}
       </div>

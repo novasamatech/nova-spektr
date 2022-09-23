@@ -1,5 +1,9 @@
+import { useI18n } from '@renderer/context/I18nContext';
+
 const History = () => {
-  return <div>History</div>;
+  const { t } = useI18n();
+
+  return <div>{t('history.title')}</div>;
 };
 
 export default History;

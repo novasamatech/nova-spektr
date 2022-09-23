@@ -45,7 +45,7 @@ describe('AccountsList', () => {
     const chainTitle = screen.getByText('Polkadot');
     expect(chainTitle).toBeInTheDocument();
 
-    const explorer = screen.getByText('•••');
+    const explorer = screen.getByText('accountList.menuButton');
     act(() => {
       explorer.click();
     });

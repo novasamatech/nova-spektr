@@ -72,6 +72,7 @@ const ChatDev = () => {
 
   return (
     <div>
+      {/* eslint-disable i18next/no-literal-string */}
       <div>
         <span className="text-lg block">
           Verification status:{' '}

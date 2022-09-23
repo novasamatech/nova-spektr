@@ -45,13 +45,19 @@ jest.mock('@renderer/context/NetworkContext', () => ({
   })),
 }));
 
+jest.mock('@renderer/context/I18nContext', () => ({
+  useI18n: jest.fn().mockReturnValue({
+    t: (key: string) => key,
+  }),
+}));
+
 jest.mock('../NetworkBalances/NetworkBalances', () => () => <div>NetworkBalances</div>);
 
 describe('screen/Balances/Balances', () => {
   test('should render component', () => {
     render(<Balances />);
 
-    const text = screen.getByText('Balances');
+    const text = screen.getByText('balances.title');
     expect(text).toBeInTheDocument();
   });
 
@@ -68,7 +74,7 @@ describe('screen/Balances/Balances', () => {
     });
     render(<Balances />);
 
-    const noResults = screen.getByText('Nothing to show');
+    const noResults = screen.getByText('balances.emptyStateLabel');
     const networks = screen.queryByRole('list');
     expect(noResults).toBeInTheDocument();
     expect(networks).not.toBeInTheDocument();

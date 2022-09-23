@@ -11,7 +11,7 @@ jest.mock('@renderer/context/I18nContext', () => ({
 describe('ui/Balance', () => {
   test('should render component', () => {
     render(<Balance value={'100'} precision={10} />);
-    const balance = screen.getByText('number');
+    const balance = screen.getByText('assetBalance.number');
     expect(balance).toBeInTheDocument();
   });
 });

@@ -8,6 +8,12 @@ import QrReader from './QrReader';
 
 jest.mock('qr-scanner');
 
+jest.mock('@renderer/context/I18nContext', () => ({
+  useI18n: jest.fn().mockReturnValue({
+    t: (key: string) => key,
+  }),
+}));
+
 describe('common/QrCode/QrReader', () => {
   const mockQrScanner = (override: any = {}) => {
     (QrScanner as unknown as jest.Mock).mockReturnValue({

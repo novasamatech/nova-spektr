@@ -31,6 +31,12 @@ jest.mock('@renderer/services/balance/balanceService', () => ({
   }),
 }));
 
+jest.mock('@renderer/context/I18nContext', () => ({
+  useI18n: jest.fn().mockReturnValue({
+    t: (key: string) => key,
+  }),
+}));
+
 jest.mock('../AssetBalance/AssetBalance', () => () => <div>AssetBalance</div>);
 
 describe('screen/Balances/NetworkBalances', () => {
@@ -64,7 +70,7 @@ describe('screen/Balances/NetworkBalances', () => {
   test('should show unverfied badge', () => {
     render(<NetworkBalances chain={testChain} publicKey={TEST_PUBLIC_KEY} />);
 
-    const unverifiedBadge = screen.getByText('verification failed');
+    const unverifiedBadge = screen.getByText('balances.verificationFailedLabel');
     expect(unverifiedBadge).toBeInTheDocument();
   });
 });

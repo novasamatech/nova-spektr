@@ -2,6 +2,7 @@ import cn from 'classnames';
 import { KeyboardEvent, MouseEvent } from 'react';
 
 import { Balance as BalanceValue, Button, Icon } from '@renderer/components/ui';
+import { useI18n } from '@renderer/context/I18nContext';
 import Shimmering from '@renderer/components/ui/Shimmering/Shimmering';
 import { Asset } from '@renderer/domain/asset';
 import { Balance } from '@renderer/domain/balance';
@@ -20,6 +21,7 @@ type Props = {
 
 const AssetBalance = ({ asset, balance, canMakeActions, onTransferClick, onReceiveClick }: Props) => {
   const [isExpanded, toggleExpanded] = useToggle();
+  const { t } = useI18n();
 
   const onTransfer = (event: MouseEvent<HTMLButtonElement>) => {
     event.stopPropagation();
@@ -110,7 +112,7 @@ const AssetBalance = ({ asset, balance, canMakeActions, onTransferClick, onRecei
         {isExpanded && (
           <div className="flex divide-x border-t gap-x-6 px-[15px] py-2 text-left">
             <div>
-              <div className="text-neutral text-sm font-semibold">Transferable</div>
+              <div className="text-neutral text-sm font-semibold">{t('assetBalance.transferable')}</div>
               <div className="text-neutral-variant text-xs font-bold" data-testid="transferable">
                 {balance?.free ? (
                   <>
@@ -122,7 +124,7 @@ const AssetBalance = ({ asset, balance, canMakeActions, onTransferClick, onRecei
               </div>
             </div>
             <div className="pl-6">
-              <div className="text-neutral text-sm font-semibold">Locked</div>
+              <div className="text-neutral text-sm font-semibold">{t('assetBalance.locked')}</div>
               <div className="text-neutral-variant text-xs font-bold">
                 {balance?.frozen ? (
                   <>
@@ -134,7 +136,7 @@ const AssetBalance = ({ asset, balance, canMakeActions, onTransferClick, onRecei
               </div>
             </div>
             <div className="pl-6">
-              <div className="text-neutral text-sm font-semibold">Reserved</div>
+              <div className="text-neutral text-sm font-semibold">{t('assetBalance.reserved')}</div>
               <div className="text-neutral-variant text-xs font-bold">
                 {balance?.reserved ? (
                   <>

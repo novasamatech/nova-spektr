@@ -7,6 +7,7 @@ jest.mock('@renderer/context/I18nContext', () => ({
   useI18n: jest.fn().mockReturnValue({
     locale: 'en',
     locales: [],
+    t: (key: string) => key,
   }),
 }));
 
@@ -14,7 +15,7 @@ describe('screen/Overview/Credentials', () => {
   test('should render component', () => {
     render(<Overview />, { wrapper: MemoryRouter });
 
-    const text = screen.getByText('Settings');
+    const text = screen.getByText('settings.title');
     const settings = screen.getByTestId('settings');
     const settingsLinks = settings.querySelectorAll('a');
     const social = screen.getByTestId('social');
