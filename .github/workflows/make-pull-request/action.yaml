@@ -8,7 +8,7 @@ inputs:
     description: 'Message for commit'
     required: true
     default: 'Updating'
-  brnach-name:
+  branch-name:
     description: 'Name for creating branch'
     required: true
     default: 'update'
@@ -34,13 +34,13 @@ runs:
       uses: ad-m/github-push-action@master
       with:
         github_token: ${{ inputs.github-token }}
-        branch: refs/heads/${{ inputs.brnach-name }}-${{github.run_number}}
+        branch: refs/heads/${{ inputs.branch-name }}-${{github.run_number}}
 
     - uses: repo-sync/pull-request@v2
       if: steps.commit.outcome == 'success'
       name: pull-request
       with:
-        source_branch: "${{ inputs.brnach-name }}-${{github.run_number}}"
+        source_branch: "${{ inputs.branch-name }}-${{github.run_number}}"
         destination_branch: "dev"
         pr_title: ${{ inputs.commit-message }}
         pr_body: |

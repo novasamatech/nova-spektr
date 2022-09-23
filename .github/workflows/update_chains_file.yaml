@@ -31,5 +31,5 @@ jobs:
         with:
           commit-path: src/renderer/services/network/common/*.json
           commit-message: Update chains.json file
-          brnach-name: update-chains-file
+          branch-name: update-chains-file
           github-token: ${{ secrets.GITHUB_TOKEN }}
