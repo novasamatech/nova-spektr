@@ -14,6 +14,12 @@ jest.mock('../NetworkList/NetworkList', () => ({ networkList }: any) => (
   </ul>
 ));
 
+jest.mock('@renderer/context/I18nContext', () => ({
+  useI18n: jest.fn().mockReturnValue({
+    t: (key: string) => key,
+  }),
+}));
+
 jest.mock('@renderer/context/NetworkContext', () => ({
   useNetworkContext: jest.fn(() => ({
     connections: {},
@@ -24,7 +30,7 @@ describe('screen/Overview/Networks', () => {
   test('should render component', () => {
     render(<Networks />, { wrapper: MemoryRouter });
 
-    const text = screen.getByText('Networks');
+    const text = screen.getByText('networkManagement.subTitle');
     expect(text).toBeInTheDocument();
   });
 
@@ -35,7 +41,7 @@ describe('screen/Overview/Networks', () => {
     const input = screen.getByRole('textbox');
     await user.type(input, 'xxx');
 
-    const noResults = screen.getByText('No networks with the entered name were found');
+    const noResults = screen.getByText('networkManagement.emptyStateLabel');
     expect(noResults).toBeInTheDocument();
   });
 

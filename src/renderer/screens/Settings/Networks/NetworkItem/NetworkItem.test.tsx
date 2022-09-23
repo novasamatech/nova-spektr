@@ -10,6 +10,12 @@ jest.mock('@renderer/context/NetworkContext', () => ({
   })),
 }));
 
+jest.mock('@renderer/context/I18nContext', () => ({
+  useI18n: jest.fn().mockReturnValue({
+    t: (key: string) => key,
+  }),
+}));
+
 describe('screen/Settings/NetworkItem', () => {
   const network: ExtendedChain = {
     addressPrefix: 0,
