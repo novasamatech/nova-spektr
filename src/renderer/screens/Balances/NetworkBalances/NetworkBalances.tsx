@@ -1,21 +1,22 @@
-import { useState } from 'react';
 import cn from 'classnames';
 import keyBy from 'lodash/keyBy';
+import { useState } from 'react';
 
-import AssetBalance from '../AssetBalance/AssetBalance';
-import { PublicKey } from '@renderer/domain/shared-kernel';
+import { Button, Icon } from '@renderer/components/ui';
 import { Asset } from '@renderer/domain/asset';
 import { Chain } from '@renderer/domain/chain';
+import { PublicKey } from '@renderer/domain/shared-kernel';
 import { useBalance } from '@renderer/services/balance/balanceService';
-import { total } from '@renderer/services/balance/common/utils';
 import { ZERO_BALANCE } from '@renderer/services/balance/common/constants';
-import { Button, Icon } from '@renderer/components/ui';
+import { total } from '@renderer/services/balance/common/utils';
+import { ExtendedChain } from '@renderer/services/network/common/types';
+import AssetBalance from '../AssetBalance/AssetBalance';
 
 type Props = {
   hideZeroBalance?: boolean;
   searchSymbolOnly?: boolean;
   query?: string;
-  chain: Chain;
+  chain: Chain | ExtendedChain;
   publicKey: PublicKey;
   canMakeActions?: boolean;
   onReceiveClick?: (asset: Asset) => void;
@@ -41,47 +42,39 @@ const NetworkBalances = ({
 
   const filteredAssets = chain.assets.filter((asset) => {
     if (query) {
-      return (
-        (!searchSymbolOnly && (chain.name.toLowerCase().includes(query) || asset.name.toLowerCase().includes(query))) ||
-        asset.symbol.toLowerCase().includes(query)
-      );
+      const hasMatch = (name: string) => name.toLowerCase().includes(query);
+
+      return hasMatch(asset.symbol) || (!searchSymbolOnly && (hasMatch(chain.name) || hasMatch(asset.name)));
     }
 
-    return !(
-      hideZeroBalance &&
-      (!balancesObject[asset.assetId] || total(balancesObject[asset.assetId]) === ZERO_BALANCE)
-    );
+    const balance = balancesObject[asset.assetId];
+
+    return !hideZeroBalance || (balance && total(balance) !== ZERO_BALANCE);
   });
 
   if (filteredAssets.length === 0) {
     return null;
   }
 
-  const hasFaildVerification = balances?.some((b) => !b.verified);
+  const hasFailedVerification = balances?.some((b) => !b.verified);
 
   return (
     <li className="mb-5 rounded-2lg bg-white shadow-surface">
       <div
         className={cn(
-          'flex items-center justify-between border-b bg-white sticky top-0 rounded-t-2lg z-10',
+          'flex items-center justify-between border-b bg-white sticky top-0 z-10 rounded-t-2lg py-2.5 px-4',
           isHidden ? 'rounded-2lg border-white' : 'border-shade-5',
         )}
       >
-        <div className="flex items-center">
-          <h2
-            className={cn(
-              'flex items-center p-[15px] rounded-t-2lg border-shade-5 bg-white gap-x-2.5 sticky top-0 h-10',
-              'text-xs font-bold text-neutral-variant uppercase',
-              !isHidden && 'border-b',
-            )}
-          >
+        <div className="flex items-center gap-x-2.5">
+          <h2 className="flex items-center bg-white gap-x-2.5 text-neutral-variant">
             <img src={chain.icon} width={20} height={20} alt="" />
-            <p>{chain.name}</p>
+            <p className="text-sm font-bold uppercase">{chain.name}</p>
           </h2>
-          {hasFaildVerification && (
-            <div className="flex items-center gap-1 text-alert">
+          {hasFailedVerification && (
+            <div className="flex items-center gap-x-1 text-alert">
               <Icon name="shield" size={14} />
-              <span className="uppercase text-2xs">verification failed</span>
+              <p className="uppercase text-2xs leading-[15px]">verification failed</p>
             </div>
           )}
         </div>

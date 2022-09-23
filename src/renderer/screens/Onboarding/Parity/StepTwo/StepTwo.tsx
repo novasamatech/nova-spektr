@@ -62,6 +62,7 @@ const StepTwo = ({ onNextStep }: Props) => {
 
   const onCameraList = (cameras: { id: string; label: string }[]) => {
     const formattedCameras = cameras.map((camera, index) => ({
+      //eslint-disable-next-line i18next/no-literal-string
       label: `${index + 1}. ${camera.label}`,
       value: camera.id,
     }));

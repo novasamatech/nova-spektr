@@ -1,18 +1,18 @@
 {
-  "header.test": "test",
-  "NavItem.Wallets": "Wallets",
   "NavItem.AddressBook": "Address Book",
-  "NavItem.MstOperations": "Multisig Operations",
-  "NavItem.History": "History",
   "NavItem.Balances": "Balances",
-  "NavItem.Transfer": "Transfer",
-  "NavItem.Settings": "Settings",
-  "NavItem.ChatDEV": "Chat DEV",
   "NavItem.CameraDEV": "Camera DEV",
-  "explorer.button": "View on {{ name }}",
+  "NavItem.ChatDEV": "Chat DEV",
+  "NavItem.History": "History",
+  "NavItem.MstOperations": "Multisig Operations",
+  "NavItem.Settings": "Settings",
+  "NavItem.Transfer": "Transfer",
+  "NavItem.Wallets": "Wallets",
+  "explorer.button": "View on { name }",
   "fallbackScreen": {
     "message": "Something went wrong",
     "reloadButton": "Reload"
   },
-  "number": "{{value, number}}"
+  "header.test": "test",
+  "number": "{value, number}"
 }

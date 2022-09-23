@@ -7,7 +7,7 @@ export type Chain = {
   name: string;
   assets: Asset[];
   nodes: RPCNode[];
-  explorers: Explorer[];
+  explorers?: Explorer[];
   icon: string;
   addressPrefix: number;
   externalApi?: Record<ApiType, ExternalApi>;
