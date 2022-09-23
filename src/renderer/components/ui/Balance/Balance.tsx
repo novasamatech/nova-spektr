@@ -14,7 +14,7 @@ const Balance = ({ value, precision, className }: Props) => {
   const { value: formatedValue, decimalPlaces, suffix } = formatBalance(value, precision);
 
   return (
-    <span className={cn(className)}>{`${t('number', {
+    <span className={cn(className)}>{`${t('assetBalance.number', {
       value: formatedValue,
       maximumFractionDigits: decimalPlaces,
     })}${suffix}`}</span>

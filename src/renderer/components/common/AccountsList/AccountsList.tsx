@@ -57,7 +57,9 @@ const AccountsList = ({ publicKey, chains, className, limit }: Props) => {
           </div>
           <div className="relative flex-none">
             <Menu>
-              <Menu.Button className={'hover:bg-primary hover:text-white px-1 rounded-2xl'}>•••</Menu.Button>
+              <Menu.Button className={'hover:bg-primary hover:text-white px-1 rounded-2xl'}>
+                {t('accountList.menuButton')}
+              </Menu.Button>
               <Menu.Items
                 className={'z-10 absolute right-0 top-0 rounded-2lg shadow-surface w-max border border-primary'}
               >

@@ -18,6 +18,12 @@ jest.mock('@renderer/services/network/chainsService', () => ({
   }),
 }));
 
+jest.mock('@renderer/context/I18nContext', () => ({
+  useI18n: jest.fn().mockReturnValue({
+    t: (key: string) => key,
+  }),
+}));
+
 describe('screens/Onboard/Parity/StepThree', () => {
   const ss58Address = 'HHGHYqbanKiynHB8MCPjwUDwNgVpHtFTViH2NSse3FNrHnF';
 
@@ -26,7 +32,7 @@ describe('screens/Onboard/Parity/StepThree', () => {
       render(<StepThree ss58Address={ss58Address} onNextStep={() => {}} onPrevStep={() => {}} />);
     });
 
-    const title = screen.getByRole('heading', { name: 'Please choose a name for your wallet' });
+    const title = screen.getByRole('heading', { name: 'onboarding.paritysigner.choseWalletNameLabel' });
     const address = screen.getByDisplayValue('HHGHYqbanK...Sse3FNrHnF');
     expect(title).toBeInTheDocument();
     expect(address).toBeInTheDocument();
@@ -40,10 +46,10 @@ describe('screens/Onboard/Parity/StepThree', () => {
       render(<StepThree ss58Address={ss58Address} onNextStep={spyNextStep} onPrevStep={() => {}} />);
     });
 
-    const name = screen.getByPlaceholderText('Wallet name');
+    const name = screen.getByPlaceholderText('onboarding.walletNamePlaceholder');
     await user.type(name, 'test_wallet');
 
-    const button = screen.getByRole('button', { name: 'Yes, these are my accounts' });
+    const button = screen.getByRole('button', { name: 'onboarding.confirmAccountsListButton' });
     await act(async () => button.click());
 
     expect(spyNextStep).toBeCalled();
@@ -56,7 +62,7 @@ describe('screens/Onboard/Parity/StepThree', () => {
       render(<StepThree ss58Address={ss58Address} onNextStep={spyNextStep} onPrevStep={() => {}} />);
     });
 
-    const button = screen.getByRole('button', { name: 'Type a name to finish...' });
+    const button = screen.getByRole('button', { name: 'onboarding.paritysigner.typeNameButton' });
     await act(async () => button.click());
 
     expect(spyNextStep).not.toBeCalled();
@@ -69,7 +75,7 @@ describe('screens/Onboard/Parity/StepThree', () => {
       render(<StepThree ss58Address={ss58Address} onNextStep={() => {}} onPrevStep={spyPrevStep} />);
     });
 
-    const button = screen.getByRole('button', { name: 'Rescan QR code' });
+    const button = screen.getByRole('button', { name: 'onboarding.paritysigner.rescanQRButton' });
     await act(async () => button.click());
 
     expect(spyPrevStep).toBeCalled();

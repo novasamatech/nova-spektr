@@ -18,6 +18,7 @@ const CameraDev = () => {
 
   return (
     <div>
+      {/* eslint-disable i18next/no-literal-string */}
       <h2>Camera Dev</h2>
       <div className="flex justify-between">
         <div>
@@ -27,7 +28,6 @@ const CameraDev = () => {
               {availableCameras.map((c) => (
                 <li key={c.id} className="flex gap-x-3">
                   <span>
-                    {/* eslint-disable-next-line i18next/no-literal-string */}
                     {c.id} - {c.label}
                   </span>
                   <Button variant="outline" pallet="primary" onClick={() => setActiveCameraId(c.id)}>
