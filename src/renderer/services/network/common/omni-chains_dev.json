@@ -356,16 +356,16 @@
     ],
     "nodes": [
       {
-        "url": "wss://statemine-rpc.polkadot.io",
-        "name": "Parity node"
-      },
-      {
         "url": "wss://statemine.api.onfinality.io/public-ws",
         "name": "OnFinality node"
       },
       {
         "url": "wss://statemine-rpc.dwellir.com",
         "name": "Dwellir node"
+      },
+      {
+        "url": "wss://statemine-rpc.polkadot.io",
+        "name": "Parity node"
       }
     ],
     "explorers": [
@@ -1822,14 +1822,6 @@
       {
         "url": "wss://ws.calamari.systems/",
         "name": "Manta network node"
-      },
-      {
-        "url": "wss://calamari.api.onfinality.io/public-ws",
-        "name": "OnFinality node"
-      },
-      {
-        "url": "wss://calamari-rpc.dwellir.com",
-        "name": "Dwellir node"
       }
     ],
     "explorers": [
@@ -2755,7 +2747,7 @@
       },
       {
         "url": "wss://rpc.api.kico.dico.io",
-        "name": "OnFinality node"
+        "name": "DICO FOUNDATION 2 node"
       }
     ],
     "types": {
@@ -2864,7 +2856,7 @@
   {
     "chainId": "0x4a12be580bb959937a1c7a61d5cf24428ed67fa571974b4007645d1886e7c89f",
     "parentId": "0xb0a8d493285c2df73290dfb7e61f870f17b41801197a149ca93654499ea3dafe",
-    "name": "Subsocial Parachain",
+    "name": "Subsocial",
     "assets": [
       {
         "assetId": 0,
@@ -4040,6 +4032,10 @@
       {
         "url": "wss://kusama.kylin-node.co.uk",
         "name": "Kylin node"
+      },
+      {
+        "url": "wss://pichiu.api.onfinality.io/public-ws",
+        "name": "OnFinality node"
       }
     ],
     "types": {
@@ -4276,7 +4272,7 @@
     "externalApi": {
       "history": {
         "type": "subquery",
-        "url": "https://api.subquery.network/sq/nova-wallet/nova-wallet-tinkernet__bm92Y"
+        "url": "https://api.subquery.network/sq/nova-wallet/nova-wallet-tinkernet"
       }
     },
     "icon": "https://raw.githubusercontent.com/nova-wallet/nova-utils/master/icons/chains/gradient/Tinkernet.svg",
@@ -4344,7 +4340,7 @@
     "externalApi": {
       "history": {
         "type": "subquery",
-        "url": "https://api.subquery.network/sq/nova-wallet/nova-wallet-gm-network__bm92Y"
+        "url": "https://api.subquery.network/sq/nova-wallet/nova-wallet-gm-network"
       }
     },
     "icon": "https://raw.githubusercontent.com/nova-wallet/nova-utils/master/icons/chains/gradient/GM.svg",
