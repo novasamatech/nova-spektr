@@ -21,7 +21,11 @@ export interface IChainSpecService {
 export interface INetworkService {
   connections: Record<string, ExtendedChain>;
   setupConnections: () => Promise<void>;
-  connectToNetwork: (chainId: ChainId, type: ConnectionType, node?: RpcNode) => Promise<void>;
+  connectToNetwork: (
+    chainId: ChainId,
+    type: ConnectionType.RPC_NODE | ConnectionType.LIGHT_CLIENT,
+    node?: RpcNode,
+  ) => Promise<void>;
 }
 
 // ------------------

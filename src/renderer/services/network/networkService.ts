@@ -1,11 +1,11 @@
-import { useRef, useState } from 'react';
 import { ApiPromise, WsProvider } from '@polkadot/api';
 import { ScProvider } from '@polkadot/rpc-provider/substrate-connect';
 import { ProviderInterface } from '@polkadot/rpc-provider/types';
 import keyBy from 'lodash/keyBy';
+import { useRef, useState } from 'react';
 
 import { Chain } from '@renderer/domain/chain';
-import { Connection, RpcNode, ConnectionStatus, ConnectionType } from '@renderer/domain/connection';
+import { Connection, ConnectionStatus, ConnectionType, RpcNode } from '@renderer/domain/connection';
 import { ChainId } from '@renderer/domain/shared-kernel';
 import storage from '@renderer/services/storage';
 import { useChainSpec } from './chainSpecService';
@@ -54,15 +54,7 @@ export const useNetwork = (): INetworkService => {
     }));
   };
 
-  const removeConnection = (chainId: ChainId): void => {
-    setConnections((currentConnections) => {
-      const { [chainId]: connection, ...rest } = currentConnections;
-
-      return rest;
-    });
-  };
-
-  const disconnectFromNetwork = async (chainId: ChainId, provider?: ProviderInterface) => {
+  const disconnectFromNetwork = async (chainId: ChainId, provider?: ProviderInterface): Promise<void> => {
     const connection = connections[chainId];
     if (!connection) return;
 
@@ -73,7 +65,6 @@ export const useNetwork = (): INetworkService => {
       connectionStatus: ConnectionStatus.NONE,
     };
 
-    removeConnection(chainId);
     await updateConnectionState(disabledConnection);
 
     try {
@@ -101,8 +92,8 @@ export const useNetwork = (): INetworkService => {
         acc.push({
           chainId,
           connectionType,
-          connectionStatus: ConnectionStatus.NONE,
           activeNode,
+          connectionStatus: ConnectionStatus.NONE,
         });
       }
 
@@ -124,19 +115,91 @@ export const useNetwork = (): INetworkService => {
     }, {} as ConnectionsMap);
   };
 
-  const subscribeConnectionEvents = (connection: Connection, provider: ProviderInterface): void => {
-    provider.on('connected', () => {
-      updateConnectionStatus(connection, ConnectionStatus.CONNECTED);
-    });
-    provider.on('error', () => {
-      updateConnectionStatus(connection, ConnectionStatus.ERROR);
-    });
-    provider.on('disconnected', () => {
-      updateConnectionStatus(connection, ConnectionStatus.NONE);
-    });
+  const createSubstrateProvider = async (chainId: ChainId): Promise<ProviderInterface> => {
+    const knownChainId = getKnownChain(chainId);
+
+    if (knownChainId) {
+      return new ScProvider(knownChainId);
+    }
+
+    const chainSpec = await getChainSpec(chainId);
+    if (!chainSpec) {
+      throw new Error('Chain spec not found');
+    }
+
+    const parentId = chains.current[chainId].parentId;
+    if (parentId) {
+      const parentName = getKnownChain(parentId);
+      if (!parentName) {
+        throw new Error('Relay chain not found');
+      }
+      const relayProvider = new ScProvider(parentName);
+
+      return new ScProvider(chainSpec, relayProvider);
+    }
+
+    return new ScProvider(chainSpec);
   };
 
-  const connectToNetwork = async (chainId: ChainId, type: ConnectionType, node?: RpcNode): Promise<void> => {
+  const createWebsocketProvider = (rpcUrl: string): ProviderInterface => {
+    // TODO: handle limited retries provider = new WsProvider(node.url, 5000, {1}, 11000);
+    return new WsProvider(rpcUrl, 2000);
+  };
+
+  const subscribeConnected = (
+    chainId: ChainId,
+    provider: ProviderInterface,
+    type: ConnectionType,
+    disconnect: () => Promise<void>,
+    node?: RpcNode,
+  ) => {
+    const handler = async () => {
+      console.log('🟢 connected ==> ', chainId);
+      const updatedConnection = connections[chainId];
+
+      const api = await ApiPromise.create({ provider });
+      await updateConnectionState(
+        {
+          ...updatedConnection.connection,
+          activeNode: node,
+          connectionType: type,
+          connectionStatus: api ? ConnectionStatus.CONNECTED : ConnectionStatus.ERROR,
+        },
+        api,
+        disconnect,
+      );
+    };
+
+    provider.on('connected', handler);
+  };
+
+  const subscribeDisconnected = (chainId: ChainId, provider: ProviderInterface) => {
+    // TODO: when disconnect is followed up but reconnect status should be ConnectionStatus.CONNECTING
+    // if I disconnect manually status should be ConnectionStatus.NONE
+    const handler = async () => {
+      console.log('🔶 disconnected ==> ', chainId);
+      const updatedConnection = connections[chainId];
+      await updateConnectionStatus(updatedConnection.connection, ConnectionStatus.NONE);
+    };
+
+    provider.on('disconnected', handler);
+  };
+
+  const subscribeError = (chainId: ChainId, provider: ProviderInterface) => {
+    const handler = async () => {
+      console.log('🔴 error ==> ', chainId);
+      const updatedConnection = connections[chainId];
+      await updateConnectionStatus(updatedConnection.connection, ConnectionStatus.ERROR);
+    };
+
+    provider.on('error', handler);
+  };
+
+  const connectToNetwork = async (
+    chainId: ChainId,
+    type: ConnectionType.RPC_NODE | ConnectionType.LIGHT_CLIENT,
+    node?: RpcNode,
+  ): Promise<void> => {
     const connection = connections[chainId];
     if (!connection) return;
 
@@ -146,59 +209,39 @@ export const useNetwork = (): INetworkService => {
       connectionStatus: ConnectionStatus.CONNECTING,
     });
 
-    let provider: ProviderInterface | undefined;
+    const provider: { instance?: ProviderInterface; isScProvider: boolean } = {
+      instance: undefined,
+      isScProvider: type === ConnectionType.LIGHT_CLIENT,
+    };
 
     if (type === ConnectionType.LIGHT_CLIENT) {
-      const knownChainId = getKnownChain(chainId);
+      provider.instance = await createSubstrateProvider(chainId);
+    } else if (type === ConnectionType.RPC_NODE && node) {
+      provider.instance = createWebsocketProvider(node.url);
+    }
 
-      if (knownChainId) {
-        provider = new ScProvider(knownChainId);
-        await provider.connect();
-      } else {
-        const chainSpec = await getChainSpec(chainId);
+    if (provider.instance) {
+      const disconnect = () => disconnectFromNetwork(connection.chainId, provider.instance);
+      setConnections((currentConnections) => ({
+        ...currentConnections,
+        [connection.chainId]: { ...currentConnections[chainId], disconnect },
+      }));
 
-        if (!chainSpec) {
-          throw new Error('Chain spec not found');
-        }
+      subscribeConnected(chainId, provider.instance, type, disconnect, node);
+      subscribeDisconnected(chainId, provider.instance);
+      subscribeError(chainId, provider.instance);
 
-        const parentId = chains.current[chainId].parentId;
-        if (parentId) {
-          const parentName = getKnownChain(parentId);
-
-          if (!parentName) {
-            throw new Error('Relay chain not found');
-          }
-
-          const relayProvider = new ScProvider(parentName);
-
-          provider = new ScProvider(chainSpec, relayProvider);
-        } else {
-          provider = new ScProvider(chainSpec);
-        }
+      if (provider.isScProvider) {
+        await provider.instance.connect();
       }
-    }
-
-    if (type === ConnectionType.RPC_NODE && node) {
-      // TODO: handle limited retries provider = new WsProvider(node.url, 5000, {}, 11000);
-      provider = new WsProvider(node.url);
-    }
-
-    const api = provider ? await ApiPromise.create({ provider }) : undefined;
-
-    if (provider) {
-      subscribeConnectionEvents(connection.connection, provider);
-    }
-
-    await updateConnectionState(
-      {
+    } else {
+      await updateConnectionState({
         ...connection.connection,
         activeNode: node,
         connectionType: type,
-        connectionStatus: api ? ConnectionStatus.CONNECTED : ConnectionStatus.ERROR,
-      },
-      api,
-      async () => disconnectFromNetwork(connection.chainId, provider),
-    );
+        connectionStatus: ConnectionStatus.ERROR,
+      });
+    }
   };
 
   const setupConnections = async (): Promise<void> => {

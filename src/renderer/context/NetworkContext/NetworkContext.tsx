@@ -1,6 +1,6 @@
 import { createContext, PropsWithChildren, useContext, useEffect, useState } from 'react';
 
-import { RpcNode, ConnectionType } from '@renderer/domain/connection';
+import { ConnectionType, RpcNode } from '@renderer/domain/connection';
 import { ChainId } from '@renderer/domain/shared-kernel';
 import { useBalance } from '@renderer/services/balance/balanceService';
 import { TEST_PUBLIC_KEY } from '@renderer/services/balance/common/constants';
@@ -10,7 +10,11 @@ import { useWallet } from '@renderer/services/wallet/walletService';
 
 type NetworkContextProps = {
   connections: Record<string, ExtendedChain>;
-  connectToNetwork: (chainId: ChainId, type: ConnectionType, node?: RpcNode) => Promise<void>;
+  connectToNetwork: (
+    chainId: ChainId,
+    type: ConnectionType.RPC_NODE | ConnectionType.LIGHT_CLIENT,
+    node?: RpcNode,
+  ) => Promise<void>;
 };
 
 const NetworkContext = createContext<NetworkContextProps>({} as NetworkContextProps);
@@ -52,6 +56,19 @@ export const NetworkProvider = ({ children }: PropsWithChildren) => {
     };
 
     startNetworks();
+
+    return () => {
+      if (!connectionsReady) return;
+
+      (async () => {
+        try {
+          const requests = Object.values(connections).map((connection) => connection.disconnect || (() => {}));
+          await Promise.allSettled(requests);
+        } catch (error) {
+          console.warn('Disconnect all error ==> ', error);
+        }
+      })();
+    };
   }, [connectionsReady]);
 
   useEffect(() => {
