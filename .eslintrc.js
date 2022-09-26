@@ -90,7 +90,7 @@ module.exports = {
       },
     ],
     'i18next/no-literal-string': [
-      checkTranslation ? 'warn' : 'off',
+      checkTranslation ? 'error' : 'off',
       {
         mode: 'jsx-only',
         'jsx-attributes': {
