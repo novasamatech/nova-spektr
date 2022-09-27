@@ -24,7 +24,13 @@ jest.mock('@renderer/services/wallet/walletService', () => ({
 jest.mock('@renderer/services/network/chainsService', () => ({
   useChains: jest.fn().mockReturnValue({
     getChainsData: jest.fn().mockReturnValue([]),
-    sortChains: (value: Array<Chain>) => value,
+    sortChains: (value: Chain[]) => value,
+  }),
+}));
+
+jest.mock('@renderer/context/I18nContext', () => ({
+  useI18n: jest.fn().mockReturnValue({
+    t: (key: string) => key,
   }),
 }));
 
@@ -34,7 +40,7 @@ describe('screens/Onboarding/WatchOnly', () => {
       render(<WatchOnly />, { wrapper: MemoryRouter });
     });
 
-    const title = screen.getByRole('heading', { name: 'Add watch-only Wallet' });
+    const title = screen.getByRole('heading', { name: 'onboarding.watchonly.addWatchOnlyLabel' });
     expect(title).toBeInTheDocument();
   });
 });

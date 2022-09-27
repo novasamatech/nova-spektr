@@ -7,6 +7,7 @@ import { ErrorObject, QrError } from '@renderer/components/common/QrCode/QrReade
 import { Button, Dropdown, Icon } from '@renderer/components/ui';
 import { QrReader } from '@renderer/components/common';
 import ScanQr from '@images/misc/onboarding/scan-qr.svg';
+import { useI18n } from '@renderer/context/I18nContext';
 
 const enum CameraState {
   LOADING,
@@ -22,6 +23,8 @@ type Props = {
 };
 
 const StepTwo = ({ onNextStep }: Props) => {
+  const { t } = useI18n();
+
   const [cameraState, setCameraState] = useState<CameraState>(CameraState.LOADING);
   const [isCameraExist, setIsCameraExist] = useState(true);
   const [activeCamera, setActiveCamera] = useState<OptionType>();
@@ -62,6 +65,7 @@ const StepTwo = ({ onNextStep }: Props) => {
 
   const onCameraList = (cameras: { id: string; label: string }[]) => {
     const formattedCameras = cameras.map((camera, index) => ({
+      //eslint-disable-next-line i18next/no-literal-string
       label: `${index + 1}. ${camera.label}`,
       value: camera.id,
     }));
@@ -83,9 +87,11 @@ const StepTwo = ({ onNextStep }: Props) => {
   return (
     <div className="flex">
       <div className="flex-1">
-        <img src={ScanQr} alt="Scan QR code from Parity Signer" width={500} height={440} />
+        <img src={ScanQr} alt={t('oboarding.paritysigner.scanQRCodeAlt')} width={500} height={440} />
         <h2 className="text-neutral-variant text-center py-5 px-10 leading-5">
-          Scan <span className="font-bold">QR code</span> from Parity Signer
+          {t('onboarding.paritysigner.scanQRLabel1')}{' '}
+          <span className="font-bold">{t('onboarding.paritysigner.scanQRLabel2')}</span>{' '}
+          {t('onboarding.paritysigner.scanQRLabel3')}
         </h2>
       </div>
       <div className="relative flex flex-col justify-center items-center flex-1 py-5 shadow-surface rounded-2lg bg-white overflow-hidden">
@@ -94,31 +100,41 @@ const StepTwo = ({ onNextStep }: Props) => {
             {cameraState === CameraState.SELECT && (
               <div className="flex flex-col items-center text-center">
                 <Icon className="text-neutral-variant" as="svg" name="warnCutout" size={60} />
-                <p className="text-neutral text-xl leading-6 font-semibold mt-5">There are multiple cameras!</p>
-                <p className="text-neutral-variant text-sm">Please choose one to continue</p>
+                <p className="text-neutral text-xl leading-6 font-semibold mt-5">
+                  {t('onboarding.paritysigner.multipleCamerasLabel')}
+                </p>
+                <p className="text-neutral-variant text-sm">{t('onboarding.paritysigner.chooseCameraLabel')}</p>
               </div>
             )}
             {cameraState === CameraState.BAD_CODE && (
               <div className="flex flex-col items-center text-center">
                 <Icon className="text-alert" as="svg" name="removeCutout" size={60} />
-                <p className="text-neutral text-xl leading-6 font-semibold mt-5">Wrong QR code!</p>
+                <p className="text-neutral text-xl leading-6 font-semibold mt-5">
+                  {t('onboarding.paritysigner.wrongQRCodeLabel')}
+                </p>
                 <p className="text-neutral-variant text-sm max-w-[290px]">
-                  The scanned QR code doesn't contain valid network address. Please scan another one
+                  {t('onboarding.paritysigner.wrongQRCodeDescription')}
                 </p>
               </div>
             )}
             {cameraState === CameraState.ERROR && (
               <div className="flex flex-col items-center text-center">
                 <Icon className="text-neutral-variant" as="svg" name="warnCutout" size={60} />
-                <p className="text-neutral text-xl leading-6 font-semibold mt-5">Camera is not working!</p>
-                <p className="text-neutral-variant text-sm">Please make sure you camera is turned on</p>
+                <p className="text-neutral text-xl leading-6 font-semibold mt-5">
+                  {t('onboarding.paritysigner.cameraNotWorkLabel')}
+                </p>
+                <p className="text-neutral-variant text-sm">{t('onboarding.paritysigner.cameraNotWorkDescription')}</p>
               </div>
             )}
             {cameraState === CameraState.DENY && (
               <div className="flex flex-col items-center text-center">
                 <Icon className="text-neutral-variant" as="svg" name="warnCutout" size={60} />
-                <p className="text-neutral text-xl leading-6 font-semibold mt-5">Access denied!</p>
-                <p className="text-neutral-variant text-sm">Please make sure you grant access to camera</p>
+                <p className="text-neutral text-xl leading-6 font-semibold mt-5">
+                  {t('onboarding.paritysigner.cameraAccessDeniedLabel')}
+                </p>
+                <p className="text-neutral-variant text-sm">
+                  {t('onboarding.paritysigner.cameraAccessDeniedDescription')}
+                </p>
               </div>
             )}
             {cameraState === CameraState.LOADING && (
@@ -143,13 +159,13 @@ const StepTwo = ({ onNextStep }: Props) => {
 
         {cameraState === CameraState.LOADING && (
           <p className="absolute bottom-5 flex items-center gap-x-2.5 text-alert font-semibold py-2">
-            <Icon as="svg" name="loader" className="animate-spin" /> Starting camera
+            <Icon as="svg" name="loader" className="animate-spin" /> {t('onboarding.paritysigner.startingCameraLabel')}
           </p>
         )}
         {cameraState === CameraState.SELECT && (
           <div className="absolute bottom-5 w-[242px]">
             <Dropdown
-              placeholder="Select camera"
+              placeholder={t('onboarding.paritysigner.selectCameraLabel')}
               selected={activeCamera}
               options={availableCameras}
               onSelected={setActiveCamera}
@@ -164,12 +180,12 @@ const StepTwo = ({ onNextStep }: Props) => {
             pallet="primary"
             onClick={onRetryCamera}
           >
-            Try again
+            {t('onboarding.paritysigner.cameraErrorTryAgainLabel')}
           </Button>
         )}
         {cameraState === CameraState.BAD_CODE && (
           <Button className="absolute w-max bottom-5" weight="lg" variant="fill" pallet="primary" onClick={onRetryScan}>
-            Scan again
+            {t('onboarding.paritysigner.cameraScanAgainButton')}
           </Button>
         )}
       </div>

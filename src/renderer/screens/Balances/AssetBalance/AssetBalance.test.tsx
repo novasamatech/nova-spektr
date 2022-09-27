@@ -9,7 +9,7 @@ import { Balance } from '@renderer/domain/balance';
 
 jest.mock('@renderer/context/I18nContext', () => ({
   useI18n: jest.fn().mockReturnValue({
-    t: (key: string, value: any) => value.value,
+    t: (key: string, _: any) => key,
   }),
 }));
 
@@ -34,7 +34,7 @@ describe('screen/Balances/AssetBalance', () => {
     });
 
     const text = screen.getByTestId('balance');
-    expect(text).toHaveTextContent('0.000000001 DOT');
+    expect(text).toHaveTextContent('assetBalance.number DOT');
   });
 
   test('should show expanded row', async () => {
@@ -49,7 +49,7 @@ describe('screen/Balances/AssetBalance', () => {
     await act(() => row.click());
 
     const text = screen.getByTestId('transferable');
-    expect(text).toHaveTextContent('0.0000000008 DOT');
+    expect(text).toHaveTextContent('assetBalance.number DOT');
   });
 
   test('should hide action buttons', async () => {

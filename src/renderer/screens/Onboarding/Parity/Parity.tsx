@@ -6,6 +6,7 @@ import StepTwo from './StepTwo/StepTwo';
 import StepThree from './StepThree/StepThree';
 import FinalStep from '@renderer/screens/Onboarding/FinalStep/FinalStep';
 import { WalletType } from '@renderer/domain/wallet';
+import { useI18n } from '@renderer/context/I18nContext';
 
 const PARITY_FLOW_STEPS: Record<'title', string>[] = [
   { title: 'Prepare the QR code' },
@@ -21,6 +22,8 @@ const enum Step {
 }
 
 const Parity = () => {
+  const { t } = useI18n();
+
   const [activeStep, setActiveStep] = useState<Step>(Step.PREPARE);
   const [address, setAddress] = useState('');
 
@@ -34,7 +37,7 @@ const Parity = () => {
       {activeStep !== Step.FINAL && (
         <div className="flex items-center gap-x-2.5">
           <ButtonBack />
-          <h1 className="text-neutral">Add wallet by Parity Signer</h1>
+          <h1 className="text-neutral">{t('onboarding.paritysigner.addByParitySignerLabel')}</h1>
         </div>
       )}
       <section className="flex flex-col gap-y-16 h-max max-w-[1000px] w-full m-auto">

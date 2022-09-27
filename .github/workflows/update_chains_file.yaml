@@ -1,0 +1,35 @@
+name: Update chains file
+
+on:
+  workflow_dispatch:
+    file_path:
+      description: 'Which version of chains.json will be used?'
+      required: true
+      type: string
+      default: 'v5'
+
+jobs:
+  update-chains-file:
+    env:
+      CHAINS_VERSION: ${{ github.event.inputs.file_path }}
+      CHAINS_ENV: ${{ github.event.inputs.file_env }}
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: ⚙️ Install dependencies
+        uses: ./.github/workflows/install-pnpm
+
+      - name: 📝 Update chains file
+        run: pnpm update:chains-file
+
+      - name: ➡️ Make pull request
+        uses: ./.github/workflows/make-pull-request
+        with:
+          commit-path: src/renderer/services/network/common/*.json
+          commit-message: Update chains.json file
+          branch-name: update-chains-file
+          github-token: ${{ secrets.GITHUB_TOKEN }}

@@ -6,7 +6,7 @@ import { useI18n } from '@renderer/context/I18nContext';
 import Paths from '@renderer/routes/paths';
 
 const Overview = () => {
-  const { locale, locales, changeLocale } = useI18n();
+  const { t, locale, locales, changeLocale } = useI18n();
 
   const localeOptions: OptionType[] = locales.map((option) => ({
     prefix: <Icon className="rounded-full border border-white" name={option.value} size={20} />,
@@ -26,13 +26,13 @@ const Overview = () => {
 
   return (
     <div className="h-full flex flex-col gap-y-9">
-      <h1 className="font-semibold text-2xl text-neutral">Settings</h1>
+      <h1 className="font-semibold text-2xl text-neutral">{t('settings.title')}</h1>
 
       <section className="flex flex-col items-center mx-auto w-full max-w-[740px] p-5 rounded-2lg bg-shade-2">
         <ul className="flex flex-col gap-y-2.5 w-full" data-testid="settings">
           <li className="flex items-center gap-x-2.5 w-full px-[15px] py-5 text-neutral-variant bg-white rounded-2lg shadow-surface">
             <Icon name="language" />
-            <p className="font-semibold text-base">Language</p>
+            <p className="font-semibold text-base">{t('settings.languageLabel')}</p>
             <Dropdown
               className="ml-auto w-[200px]"
               selected={selectedLocale}
@@ -47,8 +47,8 @@ const Overview = () => {
             >
               <Icon name="network" />
               <div>
-                <p className="font-semibold text-base">Network</p>
-                <p className="text-shade-40 text-xs">Manage network connection</p>
+                <p className="font-semibold text-base">{t('settings.networkLabel')}</p>
+                <p className="text-shade-40 text-xs">{t('settings.networkDetailsLabel')}</p>
               </div>
               <Icon className="ml-auto" name="right" />
             </Link>
@@ -60,8 +60,8 @@ const Overview = () => {
             >
               <Icon name="network" />
               <div>
-                <p className="font-semibold text-base">Matrix Credentials</p>
-                <p className="text-shade-40 text-xs">Manage Omni Matrix Protocol credentials</p>
+                <p className="font-semibold text-base">{t('settings.matrixLabel')}</p>
+                <p className="text-shade-40 text-xs">{t('settings.matrixDetailsLabel')}</p>
               </div>
               <Icon className="ml-auto" name="right" />
             </Link>
@@ -69,7 +69,7 @@ const Overview = () => {
         </ul>
 
         <div className="mt-15 mb-7.5">
-          <p className="uppercase font-bold text-neutral-variant text-2xs">Get in touch for more information!</p>
+          <p className="uppercase font-bold text-neutral-variant text-2xs">{t('settings.getInTouchLabel')}!</p>
           <ul className="flex justify-center gap-x-2.5 mt-2.5" data-testid="social">
             <li>
               <a href="#" target="_blank" rel="noopener noreferrer">
