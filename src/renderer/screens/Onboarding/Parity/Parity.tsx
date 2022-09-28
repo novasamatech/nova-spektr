@@ -9,9 +9,9 @@ import { WalletType } from '@renderer/domain/wallet';
 import { useI18n } from '@renderer/context/I18nContext';
 
 const PARITY_FLOW_STEPS: Record<'title', string>[] = [
-  { title: 'Prepare the QR code' },
-  { title: 'Scan the QR code' },
-  { title: 'Check the result' },
+  { title: 'onboarding.paritysigner.step0' },
+  { title: 'onboarding.paritysigner.step1' },
+  { title: 'onboarding.paritysigner.step2' },
 ];
 
 const enum Step {

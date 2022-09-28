@@ -1,6 +1,7 @@
 import cn from 'classnames';
 
 import { ReactComponent as CheckSvg } from '@images/functionals/checkmark.svg';
+import { useI18n } from '@renderer/context/I18nContext';
 
 const getTitleClass = (isStart: boolean, isEnd: boolean): string => {
   const defaultClass = 'mt-2.5 absolute top-full w-max ';
@@ -18,39 +19,53 @@ type StepProps = {
   isEnd: boolean;
 };
 
-const InactiveStep = ({ index, title, isStart, isEnd }: StepProps) => (
-  <div className="flex items-center cursor-default gap-x-2.5" data-testid="inactive-step">
-    <div className="relative">
-      <div className="flex justify-center items-center rounded-full border-2 border-shade-20 bg-white text-shade-40 w-10 h-10">
-        {index + 1}
-      </div>
-      <p className={cn('text-shade-40', getTitleClass(isStart, isEnd))}>{title}</p>
-    </div>
-    {!isEnd && <hr className="w-full border-shade-20" />}
-  </div>
-);
+const InactiveStep = ({ index, title, isStart, isEnd }: StepProps) => {
+  const { t } = useI18n();
 
-const ActiveStep = ({ index, title, isStart, isEnd }: StepProps) => (
-  <div className="flex items-center cursor-default gap-x-2.5" data-testid="active-step">
-    <div className="relative">
-      <div className="flex justify-center items-center rounded-full bg-tertiary text-white w-10 h-10">{index + 1}</div>
-      <p className={cn('font-bold text-neutral-variant', getTitleClass(isStart, isEnd))}>{title}</p>
-    </div>
-    {!isEnd && <hr className="w-full border-shade-20" />}
-  </div>
-);
-
-const CompleteStep = ({ title, isStart, isEnd }: StepProps) => (
-  <div className="flex items-center cursor-default gap-x-2.5" data-testid="complete-step">
-    <div className="relative">
-      <div className="flex justify-center items-center rounded-full bg-success text-white w-10 h-10">
-        <CheckSvg width={24} height={24} className="text-white" role="img" />
+  return (
+    <div className="flex items-center cursor-default gap-x-2.5" data-testid="inactive-step">
+      <div className="relative">
+        <div className="flex justify-center items-center rounded-full border-2 border-shade-20 bg-white text-shade-40 w-10 h-10">
+          {index + 1}
+        </div>
+        <p className={cn('text-shade-40', getTitleClass(isStart, isEnd))}>{t(title)}</p>
       </div>
-      <p className={cn('text-shade-40', getTitleClass(isStart, isEnd))}>{title}</p>
+      {!isEnd && <hr className="w-full border-shade-20" />}
     </div>
-    {!isEnd && <hr className="w-full border-t-2 border-success" />}
-  </div>
-);
+  );
+};
+
+const ActiveStep = ({ index, title, isStart, isEnd }: StepProps) => {
+  const { t } = useI18n();
+
+  return (
+    <div className="flex items-center cursor-default gap-x-2.5" data-testid="active-step">
+      <div className="relative">
+        <div className="flex justify-center items-center rounded-full bg-tertiary text-white w-10 h-10">
+          {index + 1}
+        </div>
+        <p className={cn('font-bold text-neutral-variant', getTitleClass(isStart, isEnd))}>{t(title)}</p>
+      </div>
+      {!isEnd && <hr className="w-full border-shade-20" />}
+    </div>
+  );
+};
+
+const CompleteStep = ({ title, isStart, isEnd }: StepProps) => {
+  const { t } = useI18n();
+
+  return (
+    <div className="flex items-center cursor-default gap-x-2.5" data-testid="complete-step">
+      <div className="relative">
+        <div className="flex justify-center items-center rounded-full bg-success text-white w-10 h-10">
+          <CheckSvg width={24} height={24} className="text-white" role="img" />
+        </div>
+        <p className={cn('text-shade-40', getTitleClass(isStart, isEnd))}>{t(title)}</p>
+      </div>
+      {!isEnd && <hr className="w-full border-t-2 border-success" />}
+    </div>
+  );
+};
 
 type Props = {
   steps: Record<'title', string>[];
