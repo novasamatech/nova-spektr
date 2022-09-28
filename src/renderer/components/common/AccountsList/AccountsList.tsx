@@ -77,7 +77,7 @@ const AccountsList = ({ publicKey, chains, className, limit }: Props) => {
                             rel="noopener noreferrer"
                             target="_blank"
                           >
-                            <Icon as="img" name={ExplorerIcons[name]} /> {t('explorer.button', { name })}
+                            <Icon as="img" name={ExplorerIcons[name]} /> {t('accountList.explorerButton', { name })}
                           </a>
                         )}
                       </Menu.Item>

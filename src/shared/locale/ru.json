@@ -1,5 +1,6 @@
 {
   "accountList": {
+    "explorerButton": "Открыть в { name }",
     "menuButton": "•••"
   },
   "addressBook": {
@@ -20,15 +21,14 @@
     "verificationFailedLabel": "данные недостоверны"
   },
   "basemodal": {
-    "closeButton": "Close modal window"
+    "closeButton": "Закрыть окно"
   },
   "dropdown": {
     "chooseOptionLabel": "Choose an option"
   },
-  "explorer.button": "Открыть на { name }",
   "fallbackScreen": {
     "message": "Что-то пошло не так",
-    "omniLogoAlt": "Omni logo",
+    "omniLogoAlt": "Логотип Omni Enterprise",
     "reloadButton": "Перезагрузить"
   },
   "history": {
@@ -53,30 +53,30 @@
     "walletsLabel": "Кошельки"
   },
   "networkManagement": {
-    "activeNetworksLabel": "Active Networks",
-    "addCustomNodeButton": "Add Custom Node",
-    "disableNetworkButton": "Disable Network",
+    "activeNetworksLabel": "Активные сети",
+    "addCustomNodeButton": "Добавить свою ноду",
+    "disableNetworkButton": "Выключить сеть",
     "disableNetworkModal": {
-      "label": " You are about to disable {network} network",
-      "title": "Disable network"
+      "label": "Вы отключаете сеть {network}",
+      "title": "Отключить сеть"
     },
-    "disabledNetworksLabel": "Disabled Networks",
+    "disabledNetworksLabel": "Отключенные сети",
     "emptyStateDescription": "Try to search for another key",
     "emptyStateLabel": "No networks with the entered name were found",
     "lightClientLabel": "Light client",
     "selectConnection": {
       "lightClient": "Light Client",
-      "selectConnectionLabel": "Select connection type"
+      "selectConnectionLabel": "Выберите тип подключения"
     },
-    "subTitle": "Networks"
+    "subTitle": "Сети"
   },
   "onboarding": {
-    "accountAddressLabel": "Account address",
-    "checkAccountsButton": "Check your accounts",
-    "confirmAccountsListButton": "Yes, these are my accounts",
+    "accountAddressLabel": "Адрес аккаунта",
+    "checkAccountsButton": "Ваши аккаунты",
+    "confirmAccountsListButton": "Да, это мои аккаунты",
     "paritysigner": {
-      "accountAddressPlaceholder": "Account adddress",
-      "addByParitySignerLabel": "Add wallet by Parity Signer",
+      "accountAddressPlaceholder": "Адрес аккаунта",
+      "addByParitySignerLabel": "Добавить Parity Signer кошелёк",
       "cameraAccessDeniedDescription": "Please make sure you grant access to camera",
       "cameraAccessDeniedLabel": "Access denied!",
       "cameraErrorTryAgainLabel": "Try again",
@@ -84,37 +84,41 @@
       "cameraNotWorkLabel": "Camera is not working!",
       "cameraScanAgainButton": "Scan again",
       "chooseCameraLabel": "Please choose one to continue",
-      "choseWalletNameLabel": "Please choose a name for your wallet",
-      "multipleCamerasLabel": "There are multiple cameras!",
-      "rescanQRButton": "Rescan QR code",
-      "scanQRCodeAlt": "Scan QR code from Parity Signer",
-      "scanQRFromParitySignerButton": "Scan QR code from Parity Signer",
-      "scanQRLabel1": "Scan",
-      "scanQRLabel2": "QR code",
-      "scanQRLabel3": "from Parity Signer",
-      "selectCameraLabel": "Select camera",
-      "startingCameraLabel": "Starting camera",
-      "typeNameButton": "Type a name to finish...",
+      "choseWalletNameLabel": "Укажите название Вашего кошелька",
+      "multipleCamerasLabel": "Обнаружено несколько камер!",
+      "rescanQRButton": "Пересканировать",
+      "scanQRCodeAlt": "Отсканировать QR код из Parity Signer",
+      "scanQRFromParitySignerButton": "Отсканировать QR код из Parity Signer",
+      "scanQRLabel1": "Отсканировать",
+      "scanQRLabel2": "QR код",
+      "scanQRLabel3": "из Parity Signer",
+      "selectCameraLabel": "Выберите камеру",
+      "startingCameraLabel": "Запуск камеры",
+      "step0": "Подготовьте QR код",
+      "step1": "Отсканируйте QR код",
+      "step2": "Проверьте результат",
+      "typeNameButton": "Введите название ...",
       "wrongQRCodeDescription": "The scanned QR code doesn't contain valid network address. Please scan another one",
-      "wrongQRCodeLabel": "Wrong QR code!"
+      "wrongQRCodeLabel": "Неверный QR код!"
     },
-    "pasteButton": "Paste",
+    "pasteButton": "Вставить",
     "readAccountsLabel": "Following accounts have been successfully read.",
-    "readyToUseLabel": "Your wallet is ready to use!",
-    "walletNameExample": "Name examples: Main account, My validator, Dotsama crowdloans, etc.",
-    "walletNameLabel": "Wallet name",
-    "walletNamePlaceholder": "Enter a name for your wallet",
+    "readAccountsParitySignerLabel": "Следующие аккаунты были получены из Parity Signer",
+    "readyToUseLabel": "Ваш кошелёк готов к использованию!",
+    "walletNameExample": "Например: Основной аккаунт, My validator, Dotsama crowdloans, и т.д.",
+    "walletNameLabel": "Название кошелька",
+    "walletNamePlaceholder": "Введите название кошелька",
     "watchonly": {
-      "accountAddressError": "The entered address is not a valid one, please type or paste it again",
-      "accountAddressPlaceholder": "Enter or paste your account address",
-      "addWatchOnlyDescription1": "Track the activity of any wallet without injecting",
-      "addWatchOnlyDescription2": "your private key to Omni Enterprise",
-      "addWatchOnlyLabel": "Add watch-only Wallet",
-      "walletNameMaxLenError": "Wallet name should be shorter then 256 symbols",
-      "walletNameRequiredError": "Please, enter wallet name",
+      "accountAddressError": "Некорректный адрес, пожалуйста введите или скопируйте адрес заново",
+      "accountAddressPlaceholder": "Введите или вставьте адрес аккаунта",
+      "addWatchOnlyDescription1": "Отследить любой кошелек не указывая",
+      "addWatchOnlyDescription2": "приватный ключ в Omni Enterprise",
+      "addWatchOnlyLabel": "Добавить Watch-Only кошелёк",
+      "walletNameMaxLenError": "Имя кошелька должно быть короче 256 символов",
+      "walletNameRequiredError": "Пожалуйста, введите название кошелька",
       "yourAccountsLoadingLabel": "Your accounts will be showing up here"
     },
-    "yourAccountsLabel": "Here are your accounts"
+    "yourAccountsLabel": "Ваши аккаунты"
   },
   "qrReader": {
     "videoError": "Браузер не поддерживает видео"
@@ -130,31 +134,31 @@
     "title": "Получить"
   },
   "settings": {
-    "getInTouchLabel": "Get in touch for more information",
-    "languageLabel": "Language",
-    "matrixDetailsLabel": "Manage Omni Matrix Protocol credentials",
-    "matrixLabel": "Matrix Credentials",
-    "networkDetailsLabel": "Manage network connection",
-    "networkLabel": "Network",
-    "title": "Settings"
+    "getInTouchLabel": "На связи",
+    "languageLabel": "Язык",
+    "matrixDetailsLabel": "Управление доступом в Omni Matrix Protocol",
+    "matrixLabel": "Реквизиты доступа Matrix",
+    "networkDetailsLabel": "Управления подключением к сетям",
+    "networkLabel": "Сети",
+    "title": "Настройки"
   },
   "transfers": {
     "title": "Переводы"
   },
   "welcome": {
-    "addLedgerButton": "Coming soon",
-    "addLedgerComingSoonLabel": "Add Ledger wallet (coming soon)",
+    "addLedgerButton": "Скоро",
+    "addLedgerComingSoonLabel": "Добавите Ledger кошелёк (скоро)",
     "addLedgerLabel": "Ledger's the smartest way to secure, buy, exchange and grow your crypto assets.",
-    "addParitySignerAlt": "Icon of Watch-only option",
-    "addParitySignerAreaLabel": "Add Watch only wallet",
-    "addParitySignerButton": "Add Parity Signer wallet",
-    "addParitySignerLabel": "Use dedicated hardware wallet for Polkadot, Kusama, and other Substrate-based chains.",
-    "addWatchOnlyAlt": "Icon of Watch-only option",
-    "addWatchOnlyAreaLabel": "Add Watch only wallet",
-    "addWatchOnlyButton": "Add Watch-Only wallet",
+    "addParitySignerAlt": "Иконка для онбординга с Parity Signer",
+    "addParitySignerAreaLabel": "Добавить Parity Signer кошелёк",
+    "addParitySignerButton": "Добавить Parity Signer кошелёк",
+    "addParitySignerLabel": "Использовать аппаратный кошелёк для Polkadot, Kusama и других Substrate сетей.",
+    "addWatchOnlyAlt": "Иконка онбординга Watch-Only",
+    "addWatchOnlyAreaLabel": "Добавить Watch-Only кошелёк",
+    "addWatchOnlyButton": "Добавить Watch-Only кошелёк",
     "addWatchOnlyLabel": "Track the activity of any wallet without injecting your private key to Omni Enterprise.",
-    "ledgerImageAlt": "Icon of Ledger option",
+    "ledgerImageAlt": "Иконка онбординга с Ledger",
     "omniEnterpriseLabel": "Omni Enterprise",
-    "welcomeToLabel": "Welcome to"
+    "welcomeToLabel": "Добро пожаловать в"
   }
 }
