@@ -50,7 +50,7 @@ describe('AccountsList', () => {
       explorer.click();
     });
 
-    const explorerLinks = screen.getAllByText('explorer.button');
+    const explorerLinks = screen.getAllByText('accountList.explorerButton');
     expect(explorerLinks).toHaveLength(3);
   });
 });
