@@ -55,6 +55,25 @@
   "networkManagement": {
     "activeNetworksLabel": "Активные сети",
     "addCustomNodeButton": "Добавить свою ноду",
+    "customRpc": {
+      "addressConnected": "Connection established",
+      "addressHint": "Example: wss://rpc.polkadot.io",
+      "addressInvalidUrl": "Invalid url, please type or paste it again",
+      "addressLabel": "Node address",
+      "addressMaxLength": "Invalid url, maximum length is 50 symbols",
+      "addressPending": "Please wait, establishing connection to node",
+      "addressPlaceholder": "Type or paste the node address",
+      "addressUrlExist": "Url address already exists",
+      "checkConnectionButton": "Check connection",
+      "invalidNameError": "Invalid name, maximum length is 256 symbols",
+      "nameHint": "Example: My Custom node",
+      "nameLabel": "Name",
+      "namePlaceholder": "Type a name",
+      "pasteButton": "Paste",
+      "saveNodeButton": "Save Custom Node",
+      "title": "Add Custom Node",
+      "typeAddressButton": "Type or paste an address..."
+    },
     "disableNetworkButton": "Выключить сеть",
     "disableNetworkModal": {
       "label": "Вы отключаете сеть {network}",
@@ -68,26 +87,7 @@
       "lightClient": "Light Client",
       "selectConnectionLabel": "Выберите тип подключения"
     },
-    "subTitle": "Сети",
-    "customRpc": {
-      "title": "Add Custom Node",
-      "nameLabel": "Name",
-      "namePlaceholder": "Type a name",
-      "invalidNameError": "Invalid name, maximum length is 256 symbols",
-      "nameHint": "Example: My Custom node",
-      "addressLabel": "Node address",
-      "addressPlaceholder": "Type or paste the node address",
-      "addressHint": "Example: wss://rpc.polkadot.io",
-      "addressUrlExist": "Url address already exists",
-      "addressInvalidUrl": "Invalid url, please type or paste it again",
-      "addressMaxLength": "Invalid url, maximum length is 50 symbols",
-      "addressPending": "Please wait, establishing connection to node",
-      "addressConnected": "Connection established",
-      "pasteButton": "Paste",
-      "typeAddressButton": "Type or paste an address...",
-      "checkConnectionButton": "Check connection",
-      "saveNodeButton": "Save Custom Node"
-    }
+    "subTitle": "Сети"
   },
   "onboarding": {
     "accountAddressLabel": "Адрес аккаунта",
