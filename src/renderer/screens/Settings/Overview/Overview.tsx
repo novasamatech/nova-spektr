@@ -6,7 +6,7 @@ import { useI18n } from '@renderer/context/I18nContext';
 import Paths from '@renderer/routes/paths';
 
 const Overview = () => {
-  const { locale, locales, changeLocale } = useI18n();
+  const { t, locale, locales, changeLocale } = useI18n();
 
   const localeOptions: OptionType[] = locales.map((option) => ({
     prefix: <Icon className="rounded-full border border-white" name={option.value} size={20} />,
@@ -23,7 +23,6 @@ const Overview = () => {
       console.warn(error);
     }
   };
-  const { t } = useI18n();
 
   return (
     <div className="h-full flex flex-col gap-y-9">
@@ -36,6 +35,7 @@ const Overview = () => {
             <p className="font-semibold text-base">{t('settings.languageLabel')}</p>
             <Dropdown
               className="ml-auto w-[200px]"
+              placeholder={t('dropdown.chooseOptionLabel')}
               selected={selectedLocale}
               options={locales}
               onSelected={onLocaleChange}

@@ -2,12 +2,6 @@ import { render, screen } from '@testing-library/react';
 
 import Stepper from './Stepper';
 
-jest.mock('@renderer/context/I18nContext', () => ({
-  useI18n: jest.fn().mockReturnValue({
-    t: (key: string) => key,
-  }),
-}));
-
 describe('ui/Stepper', () => {
   test('should render correct steps', () => {
     const steps = [{ title: 'Step_1' }, { title: 'Step_2' }];
