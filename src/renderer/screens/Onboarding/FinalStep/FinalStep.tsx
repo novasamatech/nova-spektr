@@ -7,6 +7,7 @@ import LaptopImg from '@images/misc/onboarding/laptop.png';
 import ParityImg from '@images/misc/onboarding/parity-card.png';
 import WatchImg from '@images/misc/onboarding/watch-card.png';
 import Paths from '@renderer/routes/paths';
+import { useI18n } from '@renderer/context/I18nContext';
 
 type Props = {
   walletType: WalletType;
@@ -14,6 +15,7 @@ type Props = {
 
 const FinalStep = ({ walletType }: Props) => {
   const navigate = useNavigate();
+  const { t } = useI18n();
 
   useEffect(() => {
     setTimeout(() => {
@@ -28,7 +30,7 @@ const FinalStep = ({ walletType }: Props) => {
         <img className="absolute" src={WatchImg} alt="" width={260} height={120} />
       )}
       {walletType === WalletType.PARITY && <img className="absolute" src={ParityImg} alt="" width={260} height={120} />}
-      <p className="absolute mt-[160px] text-neutral-variant font-semibold">Your wallet is ready to use!</p>
+      <p className="absolute mt-[160px] text-neutral-variant font-semibold">{t('onboarding.readyToUseLabel')}</p>
     </div>
   );
 };

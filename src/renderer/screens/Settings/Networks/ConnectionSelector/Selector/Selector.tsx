@@ -9,6 +9,7 @@ import { useNetworkContext } from '@renderer/context/NetworkContext';
 import { RpcNode } from '@renderer/domain/chain';
 import { ConnectionType } from '@renderer/domain/connection';
 import { ExtendedChain } from '@renderer/services/network/common/types';
+import { useI18n } from '@renderer/context/I18nContext';
 
 const LIGHT_CLIENT_KEY = 'light-client';
 
@@ -75,6 +76,8 @@ const Selector = ({ networkItem }: Props) => {
     }
   };
 
+  const { t } = useI18n();
+
   return (
     <>
       <Popover className="relative">
@@ -86,9 +89,9 @@ const Selector = ({ networkItem }: Props) => {
           )}
         >
           {{
-            [ConnectionType.DISABLED]: 'Select connection type',
+            [ConnectionType.DISABLED]: t('networkManagement.selectConnection.selectConnectionLabel'),
             [ConnectionType.RPC_NODE]: activeNode?.name,
-            [ConnectionType.LIGHT_CLIENT]: 'Light Client',
+            [ConnectionType.LIGHT_CLIENT]: t('networkManagement.selectConnection.lightClient'),
           }[connectionType] || ''}
 
           <Icon name="dropdown" size={20} />
@@ -118,7 +121,7 @@ const Selector = ({ networkItem }: Props) => {
                           )}
                         ></div>
                         <div>
-                          <div className={checked ? 'text-primary' : ''}>Light client</div>
+                          <div className={checked ? 'text-primary' : ''}>{t('networkManagement.lightClientLabel')}</div>
                         </div>
                       </>
                     )}
@@ -161,7 +164,7 @@ const Selector = ({ networkItem }: Props) => {
                     </div>
                   }
                 >
-                  Add Custom Node
+                  {t('networkManagement.addCustomNodeButton')}
                 </Button>
                 {!isDisabled && (
                   <Button
@@ -171,7 +174,7 @@ const Selector = ({ networkItem }: Props) => {
                     className="h-7.5"
                     prefixElement={<Icon name="disable" size={16} />}
                   >
-                    Disable Network
+                    {t('networkManagement.disableNetworkButton')}
                   </Button>
                 )}
               </div>
@@ -189,8 +192,12 @@ const Selector = ({ networkItem }: Props) => {
           disableNetwork();
         }}
       >
-        <h2 className="text-error font-semibold text-xl border-b border-error pb-2.5">Disable network</h2>
-        <p className="pt-2.5 pb-5 text-neutral-variant"> You are about to disable {networkItem.name} network</p>
+        <h2 className="text-error font-semibold text-xl border-b border-error pb-2.5">
+          {t('networkManagement.disableNetworkModal.title')}
+        </h2>
+        <p className="pt-2.5 pb-5 text-neutral-variant">
+          {t('networkManagement.disableNetworkModal.label', { network: networkItem.name })}
+        </p>
       </ConfirmModal>
 
       <CustomRpc

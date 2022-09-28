@@ -1,7 +1,10 @@
 const fs = require('fs');
+const path = require('path');
 
 const prettierConfig = fs.readFileSync('./.prettierrc', 'utf8');
 const prettierOptions = JSON.parse(prettierConfig);
+
+const checkTranslation = process.env.CHECK_TRANSLATION;
 
 module.exports = {
   root: true,
@@ -17,6 +20,8 @@ module.exports = {
     'plugin:import/errors',
     'plugin:import/warnings',
     'prettier',
+    'plugin:i18n-json/recommended',
+    'plugin:i18next/recommended',
   ],
   parser: '@typescript-eslint/parser',
   parserOptions: {
@@ -58,6 +63,94 @@ module.exports = {
     'newline-before-return': 'error',
     '@typescript-eslint/no-empty-interface': 0,
     'prettier/prettier': ['error', prettierOptions],
+    'i18n-json/valid-json': [checkTranslation ? 'error' : 'off'],
+    'i18n-json/valid-message-syntax': [
+      checkTranslation ? 'error' : 'off',
+      {
+        syntax: 'icu',
+      },
+    ],
+    'i18n-json/identical-keys': [
+      checkTranslation ? 'error' : 'off',
+      {
+        filePath: path.resolve('./src/shared/locale/en.json'),
+      },
+    ],
+    'i18n-json/identical-placeholders': [
+      checkTranslation ? 'error' : 'off',
+      {
+        filePath: path.resolve('./src/shared/locale/en.json'),
+      },
+    ],
+    'i18n-json/sorted-keys': [
+      checkTranslation ? 'error' : 'off',
+      {
+        order: 'asc',
+        indentSpaces: 2,
+      },
+    ],
+    'i18next/no-literal-string': [
+      checkTranslation ? 'error' : 'off',
+      {
+        mode: 'jsx-only',
+        'jsx-attributes': {
+          include: [],
+          exclude: [
+            'className',
+            'styleName',
+            'style',
+            'type',
+            'key',
+            'id',
+            'width',
+            'height',
+            'data-testid',
+            'pallet',
+            'variant',
+            'as',
+            'weight',
+            'name',
+            'effect',
+            'tag',
+            'leave',
+            'leaveFrom',
+            'leaveTo',
+            'role',
+            'enter',
+            'enterFrom',
+            'enterTo',
+            'wrapperClass',
+            'cn',
+            'form',
+            'bgColor',
+            'theme',
+          ],
+        },
+        callees: {
+          exclude: [
+            'i18n(ext)?',
+            't',
+            'require',
+            'addEventListener',
+            'removeEventListener',
+            'postMessage',
+            'getElementById',
+            'dispatch',
+            'commit',
+            'includes',
+            'indexOf',
+            'endsWith',
+            'startsWith',
+            'Error',
+          ],
+        },
+        words: {
+          include: [],
+          exclude: ['[0-9!-/:-@[-`{-~]+', '[A-Z_-]+'],
+        },
+        'should-validate-template': true,
+      },
+    ],
   },
-  ignorePatterns: ['e2e/', 'node_modules/', 'release/'],
+  ignorePatterns: ['e2e/', 'node_modules/', 'release/', 'omni-chains.json', 'omni-chains_dev.json'],
 };

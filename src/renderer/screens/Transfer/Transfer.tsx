@@ -1,9 +1,9 @@
-type Props = {
-  test?: string;
-};
+import { useI18n } from '@renderer/context/I18nContext';
 
-const Transfer = ({ test }: Props) => {
-  return <div>Transfer</div>;
+const Transfer = () => {
+  const { t } = useI18n();
+
+  return <div>{t('transfers.title')}</div>;
 };
 
 export default Transfer;

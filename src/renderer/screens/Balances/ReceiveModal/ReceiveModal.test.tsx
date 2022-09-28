@@ -11,6 +11,12 @@ window.IntersectionObserver = jest.fn().mockImplementation(() => ({
   disconnect: jest.fn(),
 }));
 
+jest.mock('@renderer/context/I18nContext', () => ({
+  useI18n: jest.fn().mockReturnValue({
+    t: (key: string) => key,
+  }),
+}));
+
 const westendExplorers = chains.find((chain) => chain.name === 'Westend')?.explorers || [];
 
 describe('screens/Balances/ReceiveModal', () => {
@@ -36,7 +42,7 @@ describe('screens/Balances/ReceiveModal', () => {
   test('should render component', () => {
     render(<ReceiveModal {...defaultProps(westendExplorers)} />);
 
-    const title = screen.getByRole('heading', { name: 'Receive' });
+    const title = screen.getByRole('heading', { name: 'receive.title' });
     const address = screen.getByText('5GmedEVixRJoE8TjMePLqz7DnnQG1d5517sXdiAvAF2t7EYW');
     expect(title).toBeInTheDocument();
     expect(address).toBeInTheDocument();

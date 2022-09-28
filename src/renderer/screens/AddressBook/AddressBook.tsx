@@ -1,9 +1,9 @@
-type Props = {
-  test?: string;
-};
+import { useI18n } from '@renderer/context/I18nContext';
 
-const AddressBook = ({ test }: Props) => {
-  return <div>AddressBook</div>;
+const AddressBook = () => {
+  const { t } = useI18n();
+
+  return <div>{t('addressBook.title')}</div>;
 };
 
 export default AddressBook;

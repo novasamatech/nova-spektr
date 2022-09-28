@@ -18,6 +18,7 @@ const CameraDev = () => {
 
   return (
     <div>
+      {/* eslint-disable i18next/no-literal-string */}
       <h2>Camera Dev</h2>
       <div className="flex justify-between">
         <div>

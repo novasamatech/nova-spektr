@@ -1,18 +1,160 @@
 {
-  "header.test": "test",
-  "NavItem.Wallets": "Wallets",
-  "NavItem.AddressBook": "Address Book",
-  "NavItem.MstOperations": "Multisig Operations",
-  "NavItem.History": "History",
-  "NavItem.Balances": "Balances",
-  "NavItem.Transfer": "Transfer",
-  "NavItem.Settings": "Settings",
-  "NavItem.ChatDEV": "Chat DEV",
-  "NavItem.CameraDEV": "Camera DEV",
-  "explorer.button": "View on {{ name }}",
+  "accountList": {
+    "menuButton": "•••"
+  },
+  "addressBook": {
+    "title": "Address Book"
+  },
+  "assetBalance": {
+    "locked": "Locked",
+    "number": "{value, number}",
+    "reserved": "Reserved",
+    "transferable": "Transferable"
+  },
+  "balances": {
+    "emptyStateDescription": "Try to reset filters or search for another key",
+    "emptyStateLabel": "Nothing to show",
+    "hideZeroBalancesLabel": "Hide zero balances",
+    "searchPlaceholder": "Search by token or network",
+    "title": "Balances",
+    "verificationFailedLabel": "verification failed"
+  },
+  "basemodal": {
+    "closeButton": "Close modal window"
+  },
+  "dropdown": {
+    "chooseOptionLabel": "Choose an option"
+  },
+  "explorer.button": "View on { name }",
   "fallbackScreen": {
     "message": "Something went wrong",
+    "omniLogoAlt": "Omni logo",
     "reloadButton": "Reload"
   },
-  "number": "{{value, number}}"
+  "history": {
+    "title": "History"
+  },
+  "matrixCredentials": {
+    "subTitle": "Matrix Credentials"
+  },
+  "multisigOperations": {
+    "title": "Multisig Operations"
+  },
+  "navigation": {
+    "addressBookLabel": "Address Book",
+    "balancesLabel": "Balances",
+    "cameraDEVLabel": "Camera DEV",
+    "chatDEVLabel": "Chat DEV",
+    "historyLabel": "History",
+    "mstOperationLabel": "Multisig Operations",
+    "settingsLabel": "Settings",
+    "transfersLabel": "Transfer",
+    "unknownWalletLabel": "Unknown wallet",
+    "walletsLabel": "Wallets"
+  },
+  "networkManagement": {
+    "activeNetworksLabel": "Active Networks",
+    "addCustomNodeButton": "Add Custom Node",
+    "disableNetworkButton": "Disable Network",
+    "disableNetworkModal": {
+      "label": " You are about to disable {network} network",
+      "title": "Disable network"
+    },
+    "disabledNetworksLabel": "Disabled Networks",
+    "emptyStateDescription": "Try to search for another name",
+    "emptyStateLabel": "No networks with the entered name were found",
+    "lightClientLabel": "Light client",
+    "selectConnection": {
+      "lightClient": "Light Client",
+      "selectConnectionLabel": "Select connection type"
+    },
+    "subTitle": "Networks"
+  },
+  "onboarding": {
+    "accountAddressLabel": "Account address",
+    "checkAccountsButton": "Check your accounts",
+    "confirmAccountsListButton": "Yes, these are my accounts",
+    "paritysigner": {
+      "accountAddressPlaceholder": "Account adddress",
+      "addByParitySignerLabel": "Add wallet by Parity Signer",
+      "cameraAccessDeniedDescription": "Please make sure you grant access to camera",
+      "cameraAccessDeniedLabel": "Access denied!",
+      "cameraErrorTryAgainLabel": "Try again",
+      "cameraNotWorkDescription": "Please make sure you camera is turned on",
+      "cameraNotWorkLabel": "Camera is not working!",
+      "cameraScanAgainButton": "Scan again",
+      "chooseCameraLabel": "Please choose one to continue",
+      "choseWalletNameLabel": "Please choose a name for your wallet",
+      "multipleCamerasLabel": "There are multiple cameras!",
+      "rescanQRButton": "Rescan QR code",
+      "scanQRCodeAlt": "Scan QR code from Parity Signer",
+      "scanQRFromParitySignerButton": "Scan QR code from Parity Signer",
+      "scanQRLabel1": "Scan",
+      "scanQRLabel2": "QR code",
+      "scanQRLabel3": "from Parity Signer",
+      "selectCameraLabel": "Select camera",
+      "startingCameraLabel": "Starting camera",
+      "typeNameButton": "Type a name to finish...",
+      "wrongQRCodeDescription": "The scanned QR code doesn't contain valid network address. Please scan another one",
+      "wrongQRCodeLabel": "Wrong QR code!"
+    },
+    "pasteButton": "Paste",
+    "readAccountsLabel": "Following accounts have been successfully read.",
+    "readyToUseLabel": "Your wallet is ready to use!",
+    "walletNameExample": "Name examples: Main account, My validator, Dotsama crowdloans, etc.",
+    "walletNameLabel": "Wallet name",
+    "walletNamePlaceholder": "Enter a name for your wallet",
+    "watchonly": {
+      "accountAddressError": "The entered address is not a valid one, please type or paste it again",
+      "accountAddressPlaceholder": "Enter or paste your account address",
+      "addWatchOnlyDescription1": "Track the activity of any wallet without injecting",
+      "addWatchOnlyDescription2": "your private key to Omni Enterprise",
+      "addWatchOnlyLabel": "Add watch-only Wallet",
+      "walletNameMaxLenError": "Wallet name should be shorter then 256 symbols",
+      "walletNameRequiredError": "Please, enter wallet name",
+      "yourAccountsLoadingLabel": "Your accounts will be showing up here"
+    },
+    "yourAccountsLabel": "Here are your accounts"
+  },
+  "qrReader": {
+    "videoError": "Your browser doesn't support video"
+  },
+  "receive": {
+    "chainLabel1": "token to this address on the",
+    "chainLabel2": "{name} (Parachain)",
+    "chainLabel3": "network",
+    "copyAddressButton": "Copy address",
+    "explorerLinkLabel": "Link to {name}",
+    "on": "on",
+    "sendOnlyLabel": "Send only",
+    "title": "Receive"
+  },
+  "settings": {
+    "getInTouchLabel": "Get in touch for more information",
+    "languageLabel": "Language",
+    "matrixDetailsLabel": "Manage Omni Matrix Protocol credentials",
+    "matrixLabel": "Matrix Credentials",
+    "networkDetailsLabel": "Manage network connection",
+    "networkLabel": "Network",
+    "title": "Settings"
+  },
+  "transfers": {
+    "title": "Transfers"
+  },
+  "welcome": {
+    "addLedgerButton": "Coming soon",
+    "addLedgerComingSoonLabel": "Add Ledger wallet (coming soon)",
+    "addLedgerLabel": "Ledger's the smartest way to secure, buy, exchange and grow your crypto assets.",
+    "addParitySignerAlt": "Icon of Watch-only option",
+    "addParitySignerAreaLabel": "Add Watch only wallet",
+    "addParitySignerButton": "Add Parity Signer wallet",
+    "addParitySignerLabel": "Use dedicated hardware wallet for Polkadot, Kusama, and other Substrate-based chains.",
+    "addWatchOnlyAlt": "Icon of Watch-only option",
+    "addWatchOnlyAreaLabel": "Add Watch only wallet",
+    "addWatchOnlyButton": "Add Watch-Only wallet",
+    "addWatchOnlyLabel": "Track the activity of any wallet without injecting your private key to Omni Enterprise.",
+    "ledgerImageAlt": "Icon of Ledger option",
+    "omniEnterpriseLabel": "Omni Enterprise",
+    "welcomeToLabel": "Welcome to"
+  }
 }
