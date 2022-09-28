@@ -11,6 +11,12 @@ jest.mock('@renderer/context/NetworkContext', () => ({
   })),
 }));
 
+jest.mock('@renderer/context/I18nContext', () => ({
+  useI18n: jest.fn().mockReturnValue({
+    t: (key: string) => key,
+  }),
+}));
+
 jest.mock('@renderer/hooks/useToggle');
 
 jest.mock('../CustomRpc/CustomRpc', () => () => 'customRpc');
@@ -44,7 +50,7 @@ describe('screen/Settings/Networks/ConnectionSelector/Selector', () => {
   test('should render component', () => {
     render(<ConnectionSelector networkItem={defaultNetwork} />);
 
-    const text = screen.getByText('Select connection type');
+    const text = screen.getByText('networkManagement.selectConnection.selectConnectionLabel');
     expect(text).toBeInTheDocument();
   });
 
@@ -67,7 +73,7 @@ describe('screen/Settings/Networks/ConnectionSelector/Selector', () => {
     const selectorBtn = screen.getByRole('button');
     await act(async () => selectorBtn.click());
 
-    const addRpcBtn = screen.getByRole('button', { name: /Add Custom Node/ });
+    const addRpcBtn = screen.getByRole('button', { name: /networkManagement.addCustomNodeButton/ });
     await act(async () => addRpcBtn.click());
 
     expect(spyToggle).toBeCalled();

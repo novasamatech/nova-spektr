@@ -17,6 +17,12 @@ window.IntersectionObserver = jest.fn().mockImplementation(() => ({
   disconnect: jest.fn(),
 }));
 
+jest.mock('@renderer/context/I18nContext', () => ({
+  useI18n: jest.fn().mockReturnValue({
+    t: (key: string) => key,
+  }),
+}));
+
 describe('screen/Settings/Networks/ConnectionSelector/CustomRpc', () => {
   const defaultProps = {
     isOpen: true,
@@ -35,12 +41,12 @@ describe('screen/Settings/Networks/ConnectionSelector/CustomRpc', () => {
     });
 
     if (!skipName) {
-      const name = screen.getByPlaceholderText('Type a name');
-      await user.type(name, formPayload.name);
+      const name = screen.getByPlaceholderText('networkManagement.customRpc.namePlaceholder');
+      await act(async () => user.type(name, formPayload.name));
     }
     if (!skipAddress) {
-      const address = screen.getByPlaceholderText('Type or paste the node address');
-      await user.type(address, formPayload.address);
+      const address = screen.getByPlaceholderText('networkManagement.customRpc.addressPlaceholder');
+      await act(async () => user.type(address, formPayload.address));
     }
 
     return formPayload;
@@ -51,9 +57,9 @@ describe('screen/Settings/Networks/ConnectionSelector/CustomRpc', () => {
       render(<CustomRpc {...defaultProps} />);
     });
 
-    const name = screen.getByPlaceholderText('Type a name');
-    const address = screen.getByPlaceholderText('Type or paste the node address');
-    const submit = screen.getByRole('button', { name: 'Type or paste an address...' });
+    const name = screen.getByPlaceholderText('networkManagement.customRpc.namePlaceholder');
+    const address = screen.getByPlaceholderText('networkManagement.customRpc.addressPlaceholder');
+    const submit = screen.getByRole('button', { name: 'networkManagement.customRpc.typeAddressButton' });
     expect(name).toBeInTheDocument();
     expect(address).toBeInTheDocument();
     expect(submit).toBeInTheDocument();
@@ -62,14 +68,12 @@ describe('screen/Settings/Networks/ConnectionSelector/CustomRpc', () => {
 
   test('should focus name input', async () => {
     jest.useFakeTimers();
-
     await act(async () => {
       render(<CustomRpc {...defaultProps} />);
     });
-
     jest.advanceTimersByTime(500);
 
-    const name = screen.getByPlaceholderText('Type a name');
+    const name = screen.getByPlaceholderText('networkManagement.customRpc.namePlaceholder');
     expect(name).toHaveFocus();
 
     jest.useRealTimers();
@@ -84,13 +88,13 @@ describe('screen/Settings/Networks/ConnectionSelector/CustomRpc', () => {
 
     const { address } = await renderAndFillTheForm();
 
-    const submit = screen.getByRole('button', { name: 'Check connection' });
-    await act(async () => submit.click());
+    const validate = screen.getByRole('button', { name: 'networkManagement.customRpc.checkConnectionButton' });
+    await act(async () => validate.click());
 
     expect(spyValidateRpc).toBeCalledWith(defaultProps.genesisHash, address);
   });
 
-  test('should call validateRpcNode', async () => {
+  test('should call addRpcNode', async () => {
     const spyAddRpcNode = jest.fn();
 
     (useNetworkContext as jest.Mock).mockImplementation(() => ({
@@ -100,9 +104,9 @@ describe('screen/Settings/Networks/ConnectionSelector/CustomRpc', () => {
 
     const { name, address } = await renderAndFillTheForm();
 
-    const validate = screen.getByRole('button', { name: 'Check connection' });
+    const validate = screen.getByRole('button', { name: 'networkManagement.customRpc.checkConnectionButton' });
     await act(async () => validate.click());
-    const save = screen.getByRole('button', { name: 'Save Custom Node' });
+    const save = screen.getByRole('button', { name: 'networkManagement.customRpc.saveNodeButton' });
     await act(async () => save.click());
 
     expect(spyAddRpcNode).toBeCalledWith(defaultProps.chainId, { name, url: address });
@@ -114,8 +118,8 @@ describe('screen/Settings/Networks/ConnectionSelector/CustomRpc', () => {
       props: { ...defaultProps, existingUrls: ['wss://localhost:3000'] },
     });
 
-    const hint = screen.getByText('Url address already exists');
-    const submit = screen.getByRole('button', { name: 'Type or paste an address...' });
+    const hint = screen.getByText('networkManagement.customRpc.addressUrlExist');
+    const submit = screen.getByRole('button', { name: 'networkManagement.customRpc.typeAddressButton' });
     expect(hint).toBeInTheDocument();
     expect(submit).toBeDisabled();
   });

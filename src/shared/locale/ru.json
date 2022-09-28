@@ -68,7 +68,27 @@
       "lightClient": "Light Client",
       "selectConnectionLabel": "Select connection type"
     },
-    "subTitle": "Networks"
+    "subTitle": "Networks",
+    "customRpc": {
+      "title": "Add Custom Node",
+      "nameLabel": "Name",
+      "namePlaceholder": "Type a name",
+      "invalidNameError": "Invalid name, maximum length is 256 symbols",
+      "nameHint": "Example: My Custom node",
+      "addressLabel": "Node address",
+      "addressPlaceholder": "Type or paste the node address",
+      "addressHint": "Example: wss://rpc.polkadot.io",
+      "addressUrlExist": "Url address already exists",
+      "addressInvalidUrl": "Invalid url, please type or paste it again",
+      "addressMaxLength": "Invalid url, maximum length is 50 symbols",
+      "addressPending": "Please wait, establishing connection to node",
+      "addressConnected": "Connection established",
+      "pasteButton": "Paste",
+      "typeAddressButton": "Type or paste an address...",
+      "checkConnectionButton": "Check connection",
+      "saveNodeButton": "Save Custom Node"
+    }
+
   },
   "onboarding": {
     "accountAddressLabel": "Account address",

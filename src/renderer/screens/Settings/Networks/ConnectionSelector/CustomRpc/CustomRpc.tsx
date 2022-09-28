@@ -1,6 +1,7 @@
 import { ChangeEvent, useEffect, useState } from 'react';
 import { Controller, SubmitHandler, useForm } from 'react-hook-form';
 
+import { useI18n } from '@renderer/context/I18nContext';
 import { BaseModal, Button, Icon, Input, InputHint } from '@renderer/components/ui';
 import { useNetworkContext } from '@renderer/context/NetworkContext';
 import { RpcNode } from '@renderer/domain/chain';
@@ -22,6 +23,7 @@ type Props = {
 };
 
 const CustomRpc = ({ chainId, genesisHash, existingUrls, isOpen, onClose }: Props) => {
+  const { t } = useI18n();
   const { validateRpcNode, addRpcNode } = useNetworkContext();
 
   const [formState, setFormState] = useState<'init' | 'loading' | 'done'>('init');
@@ -110,7 +112,13 @@ const CustomRpc = ({ chainId, genesisHash, existingUrls, isOpen, onClose }: Prop
     /^wss:\/\/.+(\.[a-z]{2,}|:\d{1,5})(\/[a-z\d_-]+)*\W{0}\/?$/i.test(address);
 
   return (
-    <BaseModal closeButton title="Add Custom Node" className="p-5 max-w-[500px]" isOpen={isOpen} onClose={onCloseModal}>
+    <BaseModal
+      closeButton
+      title={t('networkManagement.customRpc.title')}
+      className="p-5 max-w-[500px]"
+      isOpen={isOpen}
+      onClose={onCloseModal}
+    >
       <form className="flex flex-col gap-y-7.5 mt-9" onSubmit={handleSubmit(onSubmitCustomNode)}>
         <div className="flex flex-col gap-y-2.5">
           <Controller
@@ -120,8 +128,8 @@ const CustomRpc = ({ chainId, genesisHash, existingUrls, isOpen, onClose }: Prop
             render={({ field: { onChange, value, ref } }) => (
               <Input
                 ref={ref}
-                label="Name"
-                placeholder="Type a name"
+                label={t('networkManagement.customRpc.nameLabel')}
+                placeholder={t('networkManagement.customRpc.namePlaceholder')}
                 invalid={Boolean(errors.name)}
                 value={value}
                 onChange={onChange}
@@ -130,11 +138,11 @@ const CustomRpc = ({ chainId, genesisHash, existingUrls, isOpen, onClose }: Prop
           />
           {errors.name ? (
             <InputHint type="error" className="px-2.5">
-              Invalid name, maximum length is 256 symbols
+              {t('networkManagement.customRpc.invalidNameError')}
             </InputHint>
           ) : (
             <InputHint type="hint" className="px-2.5">
-              Example: My Custom node
+              {t('networkManagement.customRpc.nameHint')}
             </InputHint>
           )}
         </div>
@@ -146,8 +154,8 @@ const CustomRpc = ({ chainId, genesisHash, existingUrls, isOpen, onClose }: Prop
             rules={{ maxLength: 50, validate: validateAddress }}
             render={({ field: { onChange, value } }) => (
               <Input
-                label="Node address"
-                placeholder="Type or paste the node address"
+                label={t('networkManagement.customRpc.addressLabel')}
+                placeholder={t('networkManagement.customRpc.addressPlaceholder')}
                 value={value}
                 invalid={Boolean(errors.address)}
                 onChange={onAddressChange(onChange)}
@@ -158,7 +166,7 @@ const CustomRpc = ({ chainId, genesisHash, existingUrls, isOpen, onClose }: Prop
                     </button>
                   ) : (
                     <Button variant="outline" pallet="primary" onClick={onPasteAddress(onChange)}>
-                      Paste
+                      {t('networkManagement.customRpc.pasteButton')}
                     </Button>
                   )
                 }
@@ -167,32 +175,32 @@ const CustomRpc = ({ chainId, genesisHash, existingUrls, isOpen, onClose }: Prop
           />
           {formState === 'init' && !errors.address && !isExistingUrl && (
             <InputHint type="hint" className="px-2.5">
-              Example: wss://rpc.polkadot.io
+              {t('networkManagement.customRpc.addressHint')}
             </InputHint>
           )}
           {formState === 'init' && !errors.address && isExistingUrl && (
             <InputHint type="error" className="px-2.5">
-              Url address already exists
+              {t('networkManagement.customRpc.addressUrlExist')}
             </InputHint>
           )}
           {formState === 'init' && errors.address?.type === 'validate' && (
             <InputHint type="error" className="px-2.5">
-              Invalid url, please type or paste it again
+              {t('networkManagement.customRpc.addressInvalidUrl')}
             </InputHint>
           )}
           {formState === 'init' && errors.address?.type === 'maxLength' && (
             <InputHint type="error" className="px-2.5">
-              Invalid url, maximum length is 50 symbols
+              {t('networkManagement.customRpc.addressMaxLength')}
             </InputHint>
           )}
           {formState === 'loading' && (
             <InputHint type="alert" className="px-2.5">
-              Please wait, establishing connection to node
+              {t('networkManagement.customRpc.addressPending')}
             </InputHint>
           )}
           {formState === 'done' && (
             <InputHint type="success" className="px-2.5">
-              Connection established
+              {t('networkManagement.customRpc.addressConnected')}
             </InputHint>
           )}
         </div>
@@ -206,7 +214,9 @@ const CustomRpc = ({ chainId, genesisHash, existingUrls, isOpen, onClose }: Prop
             pallet="primary"
             disabled={!isValid || isExistingUrl}
           >
-            {!isValid || isExistingUrl ? 'Type or paste an address...' : 'Check connection'}
+            {!isValid || isExistingUrl
+              ? t('networkManagement.customRpc.typeAddressButton')
+              : t('networkManagement.customRpc.checkConnectionButton')}
           </Button>
         )}
         {formState === 'loading' && (
@@ -223,7 +233,7 @@ const CustomRpc = ({ chainId, genesisHash, existingUrls, isOpen, onClose }: Prop
             pallet="primary"
             disabled={!isValid}
           >
-            Save Custom Node
+            {t('networkManagement.customRpc.saveNodeButton')}
           </Button>
         )}
       </form>
