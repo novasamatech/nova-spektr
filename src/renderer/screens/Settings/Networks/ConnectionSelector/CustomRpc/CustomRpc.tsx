@@ -26,7 +26,7 @@ const CustomRpc = ({ chainId, genesisHash, existingUrls, isOpen, onClose }: Prop
   const { t } = useI18n();
   const { validateRpcNode, addRpcNode } = useNetworkContext();
 
-  const [formState, setFormState] = useState<'init' | 'loading' | 'done'>('init');
+  const [formState, setFormState] = useState<'init' | 'loading' | 'done' | 'invalid'>('init');
   const [newRpcNode, setNewRpcNode] = useState<RpcNode>();
 
   const {
@@ -77,7 +77,7 @@ const CustomRpc = ({ chainId, genesisHash, existingUrls, isOpen, onClose }: Prop
     setFormState('loading');
     const isValidNode = await validateRpcNode(genesisHash, formData.address);
 
-    setFormState(isValidNode ? 'done' : 'init');
+    setFormState(isValidNode ? 'done' : 'invalid');
     setNewRpcNode({ name: formData.name, url: formData.address });
   };
 
@@ -94,7 +94,8 @@ const CustomRpc = ({ chainId, genesisHash, existingUrls, isOpen, onClose }: Prop
   const onSubmitCustomNode: SubmitHandler<CustomRpcForm> = async (formData) => {
     if (formState === 'init') {
       await checkRpcNode(formData);
-    } else if (formState === 'done') {
+    }
+    if (formState === 'done') {
       await saveRpcNode();
       onCloseModal();
     }
@@ -103,13 +104,13 @@ const CustomRpc = ({ chainId, genesisHash, existingUrls, isOpen, onClose }: Prop
   const onAddressChange = (handler: (value: string) => void) => (event: ChangeEvent<HTMLInputElement>) => {
     handler(event.target.value);
 
-    if (formState === 'done') {
+    if (['done', 'invalid'].includes(formState)) {
       setFormState('init');
     }
   };
 
   const validateAddress = (address: string) =>
-    /^wss:\/\/.+(\.[a-z]{2,}|:\d{1,5})(\/[a-z\d_-]+)*\W{0}\/?$/i.test(address);
+    /^ws(s)?:\/\/.+(\.[a-z]{2,}|:\d{1,5})(\/[a-z\d_-]+)*\W{0}\/?$/i.test(address);
 
   return (
     <BaseModal
@@ -203,16 +204,21 @@ const CustomRpc = ({ chainId, genesisHash, existingUrls, isOpen, onClose }: Prop
               {t('networkManagement.customRpc.addressConnected')}
             </InputHint>
           )}
+          {formState === 'invalid' && (
+            <InputHint type="error" className="px-2.5">
+              {t('networkManagement.customRpc.addressWrong')}
+            </InputHint>
+          )}
         </div>
 
-        {formState === 'init' && (
+        {['init', 'invalid'].includes(formState) && (
           <Button
             className="w-max mx-auto"
             type="submit"
             weight="lg"
             variant="fill"
             pallet="primary"
-            disabled={!isValid || isExistingUrl}
+            disabled={formState === 'invalid' || !isValid || isExistingUrl}
           >
             {!isValid || isExistingUrl
               ? t('networkManagement.customRpc.typeAddressButton')
