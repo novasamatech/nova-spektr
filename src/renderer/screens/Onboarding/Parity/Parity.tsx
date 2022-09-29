@@ -8,12 +8,6 @@ import FinalStep from '@renderer/screens/Onboarding/FinalStep/FinalStep';
 import { WalletType } from '@renderer/domain/wallet';
 import { useI18n } from '@renderer/context/I18nContext';
 
-const PARITY_FLOW_STEPS: Record<'title', string>[] = [
-  { title: 'Prepare the QR code' },
-  { title: 'Scan the QR code' },
-  { title: 'Check the result' },
-];
-
 const enum Step {
   PREPARE,
   SCAN,
@@ -32,6 +26,12 @@ const Parity = () => {
     setActiveStep(Step.CHECK);
   };
 
+  const parityFlowSteps: Record<'title', string>[] = [
+    { title: t('onboarding.paritysigner.step0') },
+    { title: t('onboarding.paritysigner.step1') },
+    { title: t('onboarding.paritysigner.step2') },
+  ];
+
   return (
     <div className="flex flex-col h-full">
       {activeStep !== Step.FINAL && (
@@ -41,7 +41,7 @@ const Parity = () => {
         </div>
       )}
       <section className="flex flex-col gap-y-16 h-max max-w-[1000px] w-full m-auto">
-        <Stepper steps={PARITY_FLOW_STEPS} active={activeStep} />
+        <Stepper steps={parityFlowSteps} active={activeStep} />
         {activeStep === Step.PREPARE && <StepOne onNextStep={() => setActiveStep(Step.SCAN)} />}
         {activeStep === Step.SCAN && <StepTwo onNextStep={onReceiveAddress} />}
         {activeStep === Step.CHECK && (

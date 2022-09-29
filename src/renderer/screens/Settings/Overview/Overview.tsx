@@ -35,6 +35,7 @@ const Overview = () => {
             <p className="font-semibold text-base">{t('settings.languageLabel')}</p>
             <Dropdown
               className="ml-auto w-[200px]"
+              placeholder={t('dropdown.chooseOptionLabel')}
               selected={selectedLocale}
               options={locales}
               onSelected={onLocaleChange}
