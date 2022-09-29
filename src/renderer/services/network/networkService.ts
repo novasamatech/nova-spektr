@@ -158,6 +158,9 @@ export const useNetwork = (): INetworkService => {
       const updatedConnection = connections[chainId];
 
       const api = await ApiPromise.create({ provider });
+
+      if (!api) await provider.disconnect();
+
       await updateConnectionState(
         {
           ...updatedConnection.connection,
