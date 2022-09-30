@@ -16,6 +16,8 @@ jobs:
           git checkout -b dev
           git checkout ${{ github.event.pull_request.head.sha }}
 
+      - uses: actions/checkout@v2
+
       - name: ⚙️ Install dependencies
         uses: ./.github/workflows/install-pnpm
 
