@@ -1,7 +1,9 @@
 name: Check localisation
 
 on:
-  pull_request:
+  push:
+    branches:
+      - "master"
 
 jobs:
   check-localisation:

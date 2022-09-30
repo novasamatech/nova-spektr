@@ -17,13 +17,12 @@ jobs:
         uses: ./.github/workflows/install-pnpm
 
       - name: Coverage report
-        uses: ArtiomTr/jest-coverage-report-action@v2
+        uses: ArtiomTr/jest-coverage-report-action@master
         id: coverage
         with:
             output: report-markdown
             package-manager: pnpm
             skip-step: install
-            threshold: 50
 
       - name: Make comment with report
         uses: marocchino/sticky-pull-request-comment@v2
