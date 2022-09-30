@@ -16,12 +16,5 @@ createRoot(container).render(
   </Router>,
 );
 
-window.addEventListener('error', (event) => {
-  event.preventDefault();
-
-  const { message, filename } = event;
-  console.error(`🛑 Something went wrong!\nError: ${message} in ${filename}`);
-});
-
 // NOTE: React 18 Strict mode renders twice in DEV mode
 // https://reactjs.org/docs/strict-mode.html#ensuring-reusable-state

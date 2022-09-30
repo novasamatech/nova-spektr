@@ -35,7 +35,7 @@ const SelectConnection = ({ networkItem }: Props) => {
 
   const disableNetwork = async () => {
     try {
-      await networkItem.disconnect?.();
+      await networkItem.disconnect?.(false);
     } catch (error) {
       console.warn(error);
     }
@@ -45,7 +45,7 @@ const SelectConnection = ({ networkItem }: Props) => {
     setSelectedNode(nodeId);
 
     try {
-      await networkItem.disconnect?.();
+      await networkItem.disconnect?.(true);
 
       if (nodeId === LIGHT_CLIENT_KEY) {
         await connectToNetwork(networkItem.chainId, ConnectionType.LIGHT_CLIENT);

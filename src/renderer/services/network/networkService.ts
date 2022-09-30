@@ -27,58 +27,57 @@ export const useNetwork = (): INetworkService => {
 
   const { getConnections, addConnections, updateConnection } = connectionStorage;
 
-  const updateConnectionState = async (
-    connection: Connection,
+  const updateConnectionState = (
+    chainId: ChainId,
+    updates: Partial<Connection>,
+    disconnect?: (switchNetwork: boolean) => Promise<void>,
     api?: ApiPromise,
-    disconnect?: () => Promise<void>,
-  ): Promise<void> => {
-    await updateConnection(connection);
-
+  ) => {
     setConnections((currentConnections) => {
-      const chainData = currentConnections[connection.chainId] || chains.current[connection.chainId];
+      const currentConnection = currentConnections[chainId];
+      const { api: currentApi, disconnect: currentDisconnect, ...rest } = currentConnection || chains.current[chainId];
+
+      // TODO: not a good solution, but here we got the most fresh connection
+      updateConnection({ ...currentConnection.connection, ...updates });
 
       return {
         ...currentConnections,
-        [connection.chainId]: { ...chainData, connection, api, disconnect },
+        [chainId]: {
+          ...rest,
+          connection: { ...currentConnection.connection, ...updates },
+          api: api || currentApi,
+          disconnect: disconnect || currentDisconnect,
+        },
       };
     });
   };
 
-  const updateConnectionStatus = async (connection: Connection, connectionStatus: ConnectionStatus): Promise<void> => {
-    setConnections((currentConnections) => ({
-      ...currentConnections,
-      [connection.chainId]: {
-        ...currentConnections[connection.chainId],
-        connection: { ...currentConnections[connection.chainId].connection, connectionStatus },
-      },
-    }));
-  };
+  const disconnectFromNetwork =
+    (chainId: ChainId, provider?: ProviderInterface, api?: ApiPromise) =>
+    async (switchNetwork: boolean): Promise<void> => {
+      try {
+        await api?.disconnect();
+      } catch (e) {
+        console.warn(e);
+      }
 
-  const disconnectFromNetwork = async (chainId: ChainId, provider?: ProviderInterface): Promise<void> => {
-    const connection = connections[chainId];
-    if (!connection) return;
+      try {
+        await provider?.disconnect();
+      } catch (e) {
+        console.warn(e);
+      }
 
-    const disabledConnection = {
-      ...connection.connection,
-      activeNode: undefined,
-      connectionType: ConnectionType.DISABLED,
-      connectionStatus: ConnectionStatus.NONE,
+      if (switchNetwork) return;
+
+      const connection = connections[chainId];
+      if (!connection) return;
+
+      updateConnectionState(chainId, {
+        activeNode: undefined,
+        connectionType: ConnectionType.DISABLED,
+        connectionStatus: ConnectionStatus.NONE,
+      });
     };
-
-    await updateConnectionState(disabledConnection);
-
-    try {
-      await connection.api?.disconnect();
-    } catch (e) {
-      console.warn(e);
-    }
-
-    try {
-      await provider?.disconnect();
-    } catch (e) {
-      console.warn(e);
-    }
-  };
 
   const getNewConnections = async (): Promise<Connection[]> => {
     const currentConnections = await getConnections();
@@ -141,35 +140,33 @@ export const useNetwork = (): INetworkService => {
     return new ScProvider(chainSpec);
   };
 
-  const createWebsocketProvider = (rpcUrl: string): ProviderInterface => {
-    // TODO: handle limited retries provider = new WsProvider(node.url, 5000, {1}, 11000);
-    return new WsProvider(rpcUrl, 2000);
+  const createWebsocketProvider = (rpcUrl: string): ProviderInterface | undefined => {
+    try {
+      // TODO: handle limited retries provider = new WsProvider(node.url, 5000, {1}, 11000);
+      return new WsProvider(rpcUrl);
+    } catch (error) {
+      console.warn(error);
+    }
+
+    return undefined;
   };
 
-  const subscribeConnected = (
-    chainId: ChainId,
-    provider: ProviderInterface,
-    type: ConnectionType,
-    disconnect: () => Promise<void>,
-    node?: RpcNode,
-  ) => {
+  const subscribeConnected = (chainId: ChainId, provider: ProviderInterface, type: ConnectionType, node?: RpcNode) => {
     const handler = async () => {
       console.log('🟢 connected ==> ', chainId);
-      const updatedConnection = connections[chainId];
 
       const api = await ApiPromise.create({ provider });
-
       if (!api) await provider.disconnect();
 
-      await updateConnectionState(
+      updateConnectionState(
+        chainId,
         {
-          ...updatedConnection.connection,
           activeNode: node,
           connectionType: type,
           connectionStatus: api ? ConnectionStatus.CONNECTED : ConnectionStatus.ERROR,
         },
+        disconnectFromNetwork(chainId, provider, api),
         api,
-        disconnect,
       );
     };
 
@@ -177,22 +174,20 @@ export const useNetwork = (): INetworkService => {
   };
 
   const subscribeDisconnected = (chainId: ChainId, provider: ProviderInterface) => {
-    // TODO: when disconnect is followed up but reconnect status should be ConnectionStatus.CONNECTING
-    // if I disconnect manually status should be ConnectionStatus.NONE
     const handler = async () => {
       console.log('🔶 disconnected ==> ', chainId);
-      const updatedConnection = connections[chainId];
-      await updateConnectionStatus(updatedConnection.connection, ConnectionStatus.NONE);
     };
 
     provider.on('disconnected', handler);
   };
 
   const subscribeError = (chainId: ChainId, provider: ProviderInterface) => {
-    const handler = async () => {
+    const handler = () => {
       console.log('🔴 error ==> ', chainId);
-      const updatedConnection = connections[chainId];
-      await updateConnectionStatus(updatedConnection.connection, ConnectionStatus.ERROR);
+
+      updateConnectionState(chainId, {
+        connectionStatus: ConnectionStatus.ERROR,
+      });
     };
 
     provider.on('error', handler);
@@ -206,8 +201,8 @@ export const useNetwork = (): INetworkService => {
     const connection = connections[chainId];
     if (!connection) return;
 
-    await updateConnectionState({
-      ...connection.connection,
+    updateConnectionState(chainId, {
+      activeNode: node,
       connectionType: type,
       connectionStatus: ConnectionStatus.CONNECTING,
     });
@@ -223,14 +218,16 @@ export const useNetwork = (): INetworkService => {
       provider.instance = createWebsocketProvider(node.url);
     }
 
-    if (provider.instance) {
-      const disconnect = () => disconnectFromNetwork(connection.chainId, provider.instance);
-      setConnections((currentConnections) => ({
-        ...currentConnections,
-        [connection.chainId]: { ...currentConnections[chainId], disconnect },
-      }));
+    setConnections((currentConnections) => ({
+      ...currentConnections,
+      [connection.chainId]: {
+        ...currentConnections[chainId],
+        disconnect: disconnectFromNetwork(chainId, provider.instance),
+      },
+    }));
 
-      subscribeConnected(chainId, provider.instance, type, disconnect, node);
+    if (provider.instance) {
+      subscribeConnected(chainId, provider.instance, type, node);
       subscribeDisconnected(chainId, provider.instance);
       subscribeError(chainId, provider.instance);
 
@@ -238,8 +235,7 @@ export const useNetwork = (): INetworkService => {
         await provider.instance.connect();
       }
     } else {
-      await updateConnectionState({
-        ...connection.connection,
+      updateConnectionState(chainId, {
         activeNode: node,
         connectionType: type,
         connectionStatus: ConnectionStatus.ERROR,
