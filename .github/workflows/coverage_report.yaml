@@ -10,10 +10,11 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout
-        uses: actions/checkout@main
-        with:
-          fetch-depth: 0
+      - uses: actions/checkout@v2
+      - run: |
+          git fetch --no-tags --depth=1 origin dev
+          git checkout -b dev
+          git checkout ${{ github.event.pull_request.head.sha }}
 
       - name: ⚙️ Install dependencies
         uses: ./.github/workflows/install-pnpm
