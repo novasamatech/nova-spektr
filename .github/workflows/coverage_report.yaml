@@ -14,7 +14,7 @@ jobs:
       - run: |
           git fetch --no-tags --depth=1 origin dev
           git checkout -b dev
-          git --progress --force ${{ github.event.pull_request.head }}
+          git checkout --progress --force ${{ github.event.pull_request.head }}
 
       - name: ⚙️ Install dependencies
         uses: ./.github/workflows/install-pnpm
