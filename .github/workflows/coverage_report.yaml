@@ -23,6 +23,7 @@ jobs:
             output: report-markdown
             package-manager: pnpm
             skip-step: install
+            threshold: 40
 
       - name: Make comment with report
         uses: marocchino/sticky-pull-request-comment@v2
