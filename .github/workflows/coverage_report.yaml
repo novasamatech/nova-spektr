@@ -36,6 +36,6 @@ jobs:
           coverage-path: ./coverage.txt
 
       - name: Is the threshold satisfied?
-        if: ${{ ${{ steps.coverage-report.outputs.coverage }} < 60 }}
+        if: ${{ steps.coverage-report.outputs.coverage < 60 }}
         run: exit 1
 
