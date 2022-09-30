@@ -17,7 +17,7 @@ jobs:
         uses: ./.github/workflows/install-pnpm
 
       - name: Coverage report
-        uses: ArtiomTr/jest-coverage-report-action@master
+        uses: ArtiomTr/jest-coverage-report-action@main
         id: coverage
         with:
             output: report-markdown
