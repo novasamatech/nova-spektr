@@ -2,7 +2,7 @@ name: Coverage report
 
 on:
   pull_request:
-    types: [ labeled ]
+    # types: [ labeled ]
 
 jobs:
   test-coverage:
@@ -16,16 +16,26 @@ jobs:
       - name: ⚙️ Install dependencies
         uses: ./.github/workflows/install-pnpm
 
-      - name: Coverage report
-        uses: ArtiomTr/jest-coverage-report-action@main
-        id: coverage
-        with:
-            output: report-markdown
-            package-manager: pnpm
-            skip-step: install
-            threshold: 40
+      - name: 🧪 Run tests with coverage
+        run: pnpm test:coverage
 
-      - name: Make comment with report
-        uses: marocchino/sticky-pull-request-comment@v2
+      - name: Jest coverage comment
+        id: coverage-report
+        uses: MishaKav/jest-coverage-comment@main
         with:
-            message: ${{ steps.coverage.outputs.report }}
+          coverage-summary-path: ./coverage/coverage-summary.json
+          title: Current coverage report
+          summary-title: Summary
+          badge-title: Covered
+          hide-comment: false
+          create-new-comment: false
+          hide-summary: false
+          junitxml-title: Detailed analysis
+          junitxml-path: ./junit.xml
+          coverage-title: Coverage by files
+          coverage-path: ./coverage.txt
+
+      - name: Is the threshold satisfied?
+        if: ${{ ${{ steps.coverage-report.outputs.coverage }} < 60 }}
+        run: exit 1
+

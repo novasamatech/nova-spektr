@@ -54,6 +54,7 @@ const config: Config = {
     '!src/stories/stories/**/*.{js,jsx,ts,tsx}',
     '!<rootDir>/node_modules/',
   ],
+  reporters: ['default', 'jest-junit'],
 };
 
 export default config;
