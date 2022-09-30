@@ -4,9 +4,6 @@ on:
   pull_request:
     # types: [ labeled ]
 
-env:
-  THRESHOLD: 50
-
 jobs:
   test-coverage:
     # if: ${{ github.event.label.name == 'coverage-check' }}
@@ -20,10 +17,11 @@ jobs:
         uses: ./.github/workflows/install-pnpm
 
       - name: 🧪 Run tests with coverage
-        run: pnpm test:coverage
+        run: pnpm test:coverage-new-files
 
       - name: Jest coverage comment
         id: coverage-report
+        if: always()
         uses: MishaKav/jest-coverage-comment@main
         with:
           coverage-summary-path: ./coverage/coverage-summary.json
@@ -37,8 +35,4 @@ jobs:
           junitxml-path: ./junit.xml
           coverage-title: Coverage by files
           coverage-path: ./coverage.txt
-
-      - name: Is the threshold satisfied?
-        if: ${{ steps.coverage-report.outputs.coverage < env.THRESHOLD }}
-        run: exit 1
 
