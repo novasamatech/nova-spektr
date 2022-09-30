@@ -14,7 +14,6 @@ jobs:
       - run: |
           git fetch --no-tags --depth=1 origin dev
           git checkout -b dev
-          git checkout ${{ github.event.pull_request.head.sha }}
 
       - uses: actions/checkout@v2
 
