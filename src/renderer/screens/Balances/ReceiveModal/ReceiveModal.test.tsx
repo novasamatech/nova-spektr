@@ -3,7 +3,7 @@ import { render, screen } from '@testing-library/react';
 import { HexString } from '@renderer/domain/shared-kernel';
 import { Asset } from '@renderer/domain/asset';
 import { Chain } from '@renderer/domain/chain';
-import chains from '@renderer/services/network/common/chains.json';
+import chains from '@renderer/services/network/common/chains/chains.json';
 import ReceiveModal from './ReceiveModal';
 
 window.IntersectionObserver = jest.fn().mockImplementation(() => ({

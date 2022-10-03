@@ -23,7 +23,9 @@ const config = merge<WpConfig & WdsConfig>(sharedConfig, {
     historyApiFallback: true,
     compress: true,
     hot: true,
-    https: true,
+    server: {
+      type: 'https',
+    },
     client: {
       overlay: true,
     },

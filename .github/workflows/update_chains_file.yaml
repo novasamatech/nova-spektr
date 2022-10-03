@@ -6,7 +6,7 @@ on:
       description: 'Which version of chains.json will be used?'
       required: true
       type: string
-      default: "v5"
+      default: 'v5'
 
 jobs:
   update-chains-file:

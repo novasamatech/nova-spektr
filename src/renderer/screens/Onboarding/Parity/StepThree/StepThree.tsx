@@ -18,10 +18,11 @@ type Props = {
 };
 
 const StepThree = ({ ss58Address, onNextStep, onPrevStep }: Props) => {
+  const { t } = useI18n();
+
   const { getChainsData, sortChains } = useChains();
   const { addWallet, setActiveWallet } = useWallet();
   const [isModalOpen, toggleModal] = useToggle();
-  const { t } = useI18n();
 
   const [walletName, setWalletName] = useState('');
   const [chains, setChains] = useState<Chain[]>([]);
