@@ -58,8 +58,6 @@ export const NetworkProvider = ({ children }: PropsWithChildren) => {
     startNetworks();
 
     return () => {
-      if (!connectionsReady) return;
-
       const requests = Object.values(connections).map((connection) => connection.disconnect || (() => {}));
       Promise.allSettled(requests).catch((error) => console.warn('Disconnect all error ==> ', error));
     };
