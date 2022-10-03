@@ -42,11 +42,11 @@ describe('screen/Settings/Networks/ConnectionSelector/CustomRpcModal', () => {
 
     if (!skipName) {
       const name = screen.getByPlaceholderText('networkManagement.customRpc.namePlaceholder');
-      await act(async () => await user.type(name, formPayload.name));
+      await act(async () => user.type(name, formPayload.name));
     }
     if (!skipAddress) {
       const address = screen.getByPlaceholderText('networkManagement.customRpc.addressPlaceholder');
-      await act(async () => await user.type(address, formPayload.address));
+      await act(async () => user.type(address, formPayload.address));
     }
 
     return formPayload;
@@ -88,7 +88,7 @@ describe('screen/Settings/Networks/ConnectionSelector/CustomRpcModal', () => {
 
     const { address } = await renderAndFillTheForm();
 
-    const validate = screen.getByRole('button', { name: 'networkManagement.customRpc.checkConnectionButton' });
+    const validate = await screen.findByRole('button', { name: 'networkManagement.customRpc.checkConnectionButton' });
     await act(async () => validate.click());
 
     expect(spyValidateRpc).toBeCalledWith(defaultProps.genesisHash, address);
@@ -104,9 +104,9 @@ describe('screen/Settings/Networks/ConnectionSelector/CustomRpcModal', () => {
 
     const { name, address } = await renderAndFillTheForm();
 
-    const validate = screen.getByRole('button', { name: 'networkManagement.customRpc.checkConnectionButton' });
+    const validate = await screen.findByRole('button', { name: 'networkManagement.customRpc.checkConnectionButton' });
     await act(async () => validate.click());
-    const save = screen.getByRole('button', { name: 'networkManagement.customRpc.saveNodeButton' });
+    const save = await screen.findByRole('button', { name: 'networkManagement.customRpc.saveNodeButton' });
     await act(async () => save.click());
 
     expect(spyAddRpcNode).toBeCalledWith(defaultProps.chainId, { name, url: address });
