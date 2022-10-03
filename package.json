@@ -27,7 +27,7 @@
     "test:dataVerification": "jest --config=tests/integrations/jest.config.ts --group=dataVerification --json --outputFile=jest-results.json",
     "test:matrix": "jest --config=tests/integrations/jest.config.ts --group=matrix --json --outputFile=jest-results.json",
     "test:coverage": "yarn test --coverage --passWithNoTests --watchAll=false",
-    "lint": "cross-env NODE_ENV=production eslint . --ext=ts,tsx,js,jsx,json",
+    "lint": "cross-env NODE_ENV=production eslint . --ext=ts,tsx,js,jsx",
     "lint:fix": "pnpm lint --fix",
     "lint:translation-files": "cross-env NODE_ENV=production process.env.CHECK_TRANSLATION=true eslint ./src/shared/locale/ --ext=json --plugin i18n-json",
     "lint:translation-pages": "cross-env NODE_ENV=production process.env.CHECK_TRANSLATION=true eslint . --ext=tsx --ignore-pattern=**/*.test.* --ignore-pattern=**/*.stories.* --plugin i18next",

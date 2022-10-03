@@ -60,14 +60,8 @@ export const NetworkProvider = ({ children }: PropsWithChildren) => {
     return () => {
       if (!connectionsReady) return;
 
-      (async () => {
-        try {
-          const requests = Object.values(connections).map((connection) => connection.disconnect || (() => {}));
-          await Promise.allSettled(requests);
-        } catch (error) {
-          console.warn('Disconnect all error ==> ', error);
-        }
-      })();
+      const requests = Object.values(connections).map((connection) => connection.disconnect || (() => {}));
+      Promise.allSettled(requests).catch((error) => console.warn('Disconnect all error ==> ', error));
     };
   }, [connectionsReady]);
 
