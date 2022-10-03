@@ -1,18 +1,18 @@
+import cn from 'classnames';
 import { useEffect, useState } from 'react';
 import { Controller, SubmitHandler, useForm } from 'react-hook-form';
-import cn from 'classnames';
 
 import { AccountsList } from '@renderer/components/common';
 import { BaseModal, Button, ButtonBack, Icon, Identicon, Input } from '@renderer/components/ui';
+import { useI18n } from '@renderer/context/I18nContext';
 import { Chain } from '@renderer/domain/chain';
 import { ErrorType, PublicKey } from '@renderer/domain/shared-kernel';
 import { createMainAccount, createSimpleWallet, WalletType } from '@renderer/domain/wallet';
 import useToggle from '@renderer/hooks/useToggle';
 import { useChains } from '@renderer/services/network/chainsService';
 import { useWallet } from '@renderer/services/wallet/walletService';
-import { toPublicKey } from '@renderer/utils/address';
+import { pasteAddressHandler, toPublicKey } from '@renderer/utils/address';
 import FinalStep from '../FinalStep/FinalStep';
-import { useI18n } from '@renderer/context/I18nContext';
 
 type WalletForm = {
   walletName: string;
@@ -20,6 +20,8 @@ type WalletForm = {
 };
 
 const WatchOnly = () => {
+  const { t } = useI18n();
+
   const {
     handleSubmit,
     control,
@@ -77,15 +79,6 @@ const WatchOnly = () => {
 
   const validateAddress = (a: string) => Boolean(toPublicKey(a));
 
-  const onPasteAddress = (handler: (value: string) => void) => async () => {
-    try {
-      const text = await navigator.clipboard.readText();
-      handler(text.trim());
-    } catch (error) {
-      console.warn(error);
-    }
-  };
-
   if (isCompleted) {
     return <FinalStep walletType={WalletType.WATCH_ONLY} />;
   }
@@ -96,8 +89,6 @@ const WatchOnly = () => {
       : errors.address
       ? 'Type or paste an address'
       : errors.walletName && 'Type a wallet name';
-
-  const { t } = useI18n();
 
   return (
     <>
@@ -162,7 +153,7 @@ const WatchOnly = () => {
                     isValid ? <Identicon address={value} background={false} /> : <Icon as="svg" name="emptyIdenticon" />
                   }
                   suffixElement={
-                    <Button variant="outline" pallet="primary" onClick={onPasteAddress(onChange)}>
+                    <Button variant="outline" pallet="primary" onClick={pasteAddressHandler(onChange)}>
                       {t('onboarding.pasteButton')}
                     </Button>
                   }

@@ -13,7 +13,11 @@ type NetworkContextProps = {
   connections: Record<string, ExtendedChain>;
   addRpcNode: (chainId: ChainId, rpcNode: RpcNode) => Promise<void>;
   validateRpcNode: (genesisHash: HexString, rpcUrl: string) => Promise<boolean>;
-  connectToNetwork: (chainId: ChainId, type: ConnectionType, node?: RpcNode) => Promise<void>;
+  connectToNetwork: (
+    chainId: ChainId,
+    type: ConnectionType.RPC_NODE | ConnectionType.LIGHT_CLIENT,
+    node?: RpcNode,
+  ) => Promise<void>;
 };
 
 const NetworkContext = createContext<NetworkContextProps>({} as NetworkContextProps);
@@ -55,27 +59,38 @@ export const NetworkProvider = ({ children }: PropsWithChildren) => {
     };
 
     startNetworks();
+
+    return () => {
+      const requests = Object.values(connections).map((connection) => connection.disconnect || (() => {}));
+      Promise.allSettled(requests).catch((error) => console.warn('Disconnect all error ==> ', error));
+    };
   }, [connectionsReady]);
 
   useEffect(() => {
-    const unsubscribeBalance = Object.values(connections).map((chain) => {
-      const relaychain = chain.parentId && connections[chain.parentId];
-      // TODO: Remove TEST_PUBLIC_KEY when select wallet will be implemented
-      const publicKey = (activeWallets && activeWallets[0]?.mainAccounts[0]?.publicKey) || TEST_PUBLIC_KEY;
+    const unsubscribeBalance = Object.values(connections).reduce((acc, chain) => {
+      if (chain.api?.isConnected) {
+        const relaychain = chain.parentId && connections[chain.parentId];
+        // TODO: Remove TEST_PUBLIC_KEY when select wallet will be implemented
+        const publicKey = (activeWallets && activeWallets[0]?.mainAccounts[0]?.publicKey) || TEST_PUBLIC_KEY;
+        acc.push(subscribeBalances(chain, relaychain, publicKey));
+      }
 
-      return subscribeBalances(chain, relaychain, publicKey);
-    });
+      return acc;
+    }, [] as Promise<any>[]);
 
-    const unsubscribeLockBalance = Object.values(connections).map((chain) => {
-      // TODO: Remove TEST_PUBLIC_KEY when select wallet will be implemented
-      const publicKey = (activeWallets && activeWallets[0]?.mainAccounts[0]?.publicKey) || TEST_PUBLIC_KEY;
+    const unsubscribeLockBalance = Object.values(connections).reduce((acc, chain) => {
+      if (chain.api?.isConnected) {
+        // TODO: Remove TEST_PUBLIC_KEY when select wallet will be implemented
+        const publicKey = (activeWallets && activeWallets[0]?.mainAccounts[0]?.publicKey) || TEST_PUBLIC_KEY;
+        acc.push(subscribeLockBalances(chain, publicKey));
+      }
 
-      return subscribeLockBalances(chain, publicKey);
-    });
+      return acc;
+    }, [] as Promise<any>[]);
 
     return () => {
-      Promise.all(unsubscribeBalance).catch((e) => console.error(e));
-      Promise.all(unsubscribeLockBalance).catch((e) => console.error(e));
+      Promise.all(unsubscribeBalance).catch(console.warn);
+      Promise.all(unsubscribeLockBalance).catch(console.warn);
     };
   }, [connections, activeWallets]);
 

@@ -18,10 +18,10 @@ type Props = {
 };
 
 const QrReader = ({ size = 300, cameraId, onCameraList, onResult, onStart, onError }: Props) => {
+  const { t } = useI18n();
+
   const videoRef = useRef<HTMLVideoElement>(null);
   const qrScanner = useRef<QrScanner>();
-
-  const { t } = useI18n();
 
   const [isScanComplete, setIsScanComplete] = useState(false);
 

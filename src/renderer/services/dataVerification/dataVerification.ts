@@ -31,7 +31,15 @@ async function getBlockHash(api: ApiPromise, header: Header): Promise<string> {
 
   if (!blockNumber) return '';
 
-  return (await api.rpc.chain.getBlockHash(blockNumber)).toHex();
+  try {
+    const blockHash = await api.rpc.chain.getBlockHash(blockNumber);
+
+    return blockHash.toHex();
+  } catch (error) {
+    console.warn(error);
+
+    return '';
+  }
 }
 
 const getProof = async (api: ApiPromise, storageKey: string, hash: string): Promise<Vec<Bytes> | undefined> => {
@@ -42,7 +50,7 @@ const getProof = async (api: ApiPromise, storageKey: string, hash: string): Prom
   } catch (error) {
     console.warn(error);
 
-    return;
+    return undefined;
   }
 };
 
@@ -59,7 +67,6 @@ export const verify = (proof: Uint8Array[] | undefined, root: Uint8Array, key: s
   if (!proof) return false;
 
   const rootNode = buildTrie(proof, root);
-
   const proofValue = get(rootNode, hexToU8a(key));
 
   if (!proofValue) {
@@ -82,6 +89,7 @@ const validateWithBlockNumber = async (
     const decodedHeader: Header = parachainApi.registry.createType('Header', header.toString()) as unknown as Header;
 
     if (decodedHeader.number.toBn().lte(blockNumber.toBn())) return false;
+
     const parachainStateRoot = decodedHeader.stateRoot;
     const parachainBlockHash = await getBlockHash(parachainApi, decodedHeader);
 
