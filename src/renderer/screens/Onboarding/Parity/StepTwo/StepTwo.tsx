@@ -23,6 +23,8 @@ type Props = {
 };
 
 const StepTwo = ({ onNextStep }: Props) => {
+  const { t } = useI18n();
+
   const [cameraState, setCameraState] = useState<CameraState>(CameraState.LOADING);
   const [isCameraExist, setIsCameraExist] = useState(true);
   const [activeCamera, setActiveCamera] = useState<OptionType>();
@@ -81,7 +83,6 @@ const StepTwo = ({ onNextStep }: Props) => {
     setIsCameraExist(true);
     setCameraState(CameraState.ON);
   };
-  const { t } = useI18n();
 
   return (
     <div className="flex">

@@ -24,8 +24,6 @@ const App = () => {
 
       if (wallets.length === 0) {
         navigate(Paths.ONBOARDING, { replace: true });
-      } else {
-        navigate(Paths.BALANCES, { replace: true });
       }
     };
 

@@ -40,11 +40,11 @@ runs:
       if: steps.commit.outcome == 'success'
       name: pull-request
       with:
-        source_branch: "${{ inputs.branch-name }}-${{github.run_number}}"
-        destination_branch: "dev"
+        source_branch: '${{ inputs.branch-name }}-${{github.run_number}}'
+        destination_branch: 'dev'
         pr_title: ${{ inputs.commit-message }}
         pr_body: |
-            That pull-request was generated automatically 🤖
+          That pull-request was generated automatically 🤖
         pr_reviewer: |
           "stepanLav"
           "pgolovkin"

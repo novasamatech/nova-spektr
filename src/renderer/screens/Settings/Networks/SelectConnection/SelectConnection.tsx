@@ -4,7 +4,6 @@ import cn from 'classnames';
 
 import { Button, ConfirmModal, Icon } from '@renderer/components/ui';
 import { useNetworkContext } from '@renderer/context/NetworkContext';
-import { RPCNode } from '@renderer/domain/chain';
 import { ConnectionType } from '@renderer/domain/connection';
 import { ExtendedChain } from '@renderer/services/network/common/types';
 import { useI18n } from '@renderer/context/I18nContext';
@@ -16,6 +15,8 @@ type Props = {
 };
 
 const SelectConnection = ({ networkItem }: Props) => {
+  const { t } = useI18n();
+
   const { connectToNetwork } = useNetworkContext();
 
   const { connection, nodes } = networkItem;
@@ -32,47 +33,40 @@ const SelectConnection = ({ networkItem }: Props) => {
 
   const isDisabled = connectionType === ConnectionType.DISABLED;
 
-  const changeConnection = (nodeId: string, onClose: () => void) => {
-    setSelectedNode(nodeId);
-    networkItem.disconnect?.();
-
-    if (nodeId === LIGHT_CLIENT_KEY) {
-      selectLightClient();
-    }
-
-    const node = nodes.find((n) => n.url === nodeId);
-    if (node) {
-      selectRpcNode(node);
-    }
-
-    onClose && onClose();
-  };
-
-  const selectRpcNode = async (rpcNode: RPCNode) => {
-    try {
-      await connectToNetwork(networkItem.chainId, ConnectionType.RPC_NODE, rpcNode);
-    } catch (error) {
-      console.warn(error);
-    }
-  };
-
   const disableNetwork = async () => {
     try {
-      await networkItem.disconnect?.();
+      await networkItem.disconnect?.(false);
     } catch (error) {
       console.warn(error);
     }
   };
 
-  const selectLightClient = async () => {
+  const changeConnection = async (nodeId: string, onClose: () => void) => {
+    setSelectedNode(nodeId);
+
     try {
-      await connectToNetwork(networkItem.chainId, ConnectionType.LIGHT_CLIENT);
+      await networkItem.disconnect?.(true);
+
+      if (nodeId === LIGHT_CLIENT_KEY) {
+        // Let unsubscribe from previous Provider, microtask first - macrotask second
+        setTimeout(() => {
+          connectToNetwork(networkItem.chainId, ConnectionType.LIGHT_CLIENT);
+        });
+      }
+
+      const node = nodes.find((n) => n.url === nodeId);
+      if (node) {
+        // Let unsubscribe from previous Provider, microtask first - macrotask second
+        setTimeout(() => {
+          connectToNetwork(networkItem.chainId, ConnectionType.RPC_NODE, node);
+        });
+      }
+
+      onClose();
     } catch (error) {
       console.warn(error);
     }
   };
-
-  const { t } = useI18n();
 
   return (
     <>
@@ -99,7 +93,7 @@ const SelectConnection = ({ networkItem }: Props) => {
               <div className="flex flex-col max-h-64 overflow-auto mb-5">
                 <RadioGroup
                   value={selectedNode}
-                  onChange={(value: string) => changeConnection(value, close)}
+                  onChange={(value) => changeConnection(value, close)}
                   className="divide-y divide-shade-5"
                 >
                   <RadioGroup.Option

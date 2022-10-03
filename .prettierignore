@@ -7,3 +7,5 @@ coverage/
 *.md
 e2e/dist/
 src/shared/locale/
+src/renderer/services/network/common/chains/*
+src/renderer/services/network/common/chainSpecs/*

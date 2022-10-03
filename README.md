@@ -58,18 +58,18 @@ ESlint checks if localisation files are well-formed and valid including:
 
 ### How to ignore localisation errors
 In some cases there is no need to translate the text. For example
-```typescript
+```tsx
 <span className="font-bold">
-{data?.asset.symbol} ({data?.asset.name})
-</span>{' '}
+  {data?.asset.symbol} ({data?.asset.name})
+</span>
 ```
 In that case the `{/* eslint-disable-next-line i18next/no-literal-string */}`
 should be added
-```typescript
+```tsx
 <span className="font-bold">
-{/* eslint-disable-next-line i18next/no-literal-string */}
-{data?.asset.symbol} ({data?.asset.name})
-</span>{' '}
+  {/* eslint-disable-next-line i18next/no-literal-string */}
+  {data?.asset.symbol} ({data?.asset.name})
+</span>
 ```
 or
 ```typescript

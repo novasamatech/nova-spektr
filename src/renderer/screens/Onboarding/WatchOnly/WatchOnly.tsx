@@ -20,6 +20,8 @@ type WalletForm = {
 };
 
 const WatchOnly = () => {
+  const { t } = useI18n();
+
   const {
     handleSubmit,
     control,
@@ -87,8 +89,6 @@ const WatchOnly = () => {
       : errors.address
       ? 'Type or paste an address'
       : errors.walletName && 'Type a wallet name';
-
-  const { t } = useI18n();
 
   return (
     <>

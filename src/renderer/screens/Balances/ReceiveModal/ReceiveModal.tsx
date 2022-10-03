@@ -32,9 +32,9 @@ type Props = {
 };
 
 const ReceiveModal = ({ data, isOpen, onClose }: Props) => {
-  const wallet = data?.activeWallets[0] || { name: '', publicKey: '' as PublicKey };
   const { t } = useI18n();
 
+  const wallet = data?.activeWallets[0] || { name: '', publicKey: '' as PublicKey };
   const address = toAddress(wallet.publicKey, data?.chain.addressPrefix);
 
   //eslint-disable-next-line i18next/no-literal-string
