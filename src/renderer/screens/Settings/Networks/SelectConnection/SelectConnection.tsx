@@ -48,12 +48,18 @@ const SelectConnection = ({ networkItem }: Props) => {
       await networkItem.disconnect?.(true);
 
       if (nodeId === LIGHT_CLIENT_KEY) {
-        await connectToNetwork(networkItem.chainId, ConnectionType.LIGHT_CLIENT);
+        // Let unsubscribe from previous Provider, microtask first - macrotask second
+        setTimeout(() => {
+          connectToNetwork(networkItem.chainId, ConnectionType.LIGHT_CLIENT);
+        });
       }
 
       const node = nodes.find((n) => n.url === nodeId);
       if (node) {
-        await connectToNetwork(networkItem.chainId, ConnectionType.RPC_NODE, node);
+        // Let unsubscribe from previous Provider, microtask first - macrotask second
+        setTimeout(() => {
+          connectToNetwork(networkItem.chainId, ConnectionType.RPC_NODE, node);
+        });
       }
 
       onClose();

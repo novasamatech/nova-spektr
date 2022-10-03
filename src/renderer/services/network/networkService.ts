@@ -140,15 +140,9 @@ export const useNetwork = (): INetworkService => {
     return new ScProvider(chainSpec);
   };
 
-  const createWebsocketProvider = (rpcUrl: string): ProviderInterface | undefined => {
-    try {
-      // TODO: handle limited retries provider = new WsProvider(node.url, 5000, {1}, 11000);
-      return new WsProvider(rpcUrl);
-    } catch (error) {
-      console.warn(error);
-    }
-
-    return undefined;
+  const createWebsocketProvider = (rpcUrl: string): ProviderInterface => {
+    // TODO: handle limited retries provider = new WsProvider(node.url, 5000, {1}, 11000);
+    return new WsProvider(rpcUrl, 2000);
   };
 
   const subscribeConnected = (chainId: ChainId, provider: ProviderInterface, type: ConnectionType, node?: RpcNode) => {
