@@ -34,7 +34,7 @@ describe('screen/Settings/Networks/ConnectionSelector/CustomRpcModal', () => {
 
   const renderAndFillTheForm = async ({ skipName, skipAddress, props = defaultProps }: Partial<any> = {}) => {
     const formPayload = { name: 'test_name', address: 'wss://localhost:3000' };
-    const user = userEvent.setup();
+    const user = userEvent.setup({ delay: 0.1 });
 
     await act(async () => {
       render(<CustomRpcModal {...props} />);
