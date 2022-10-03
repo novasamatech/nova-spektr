@@ -2,8 +2,8 @@ import { ApiPromise } from '@polkadot/api';
 import { AccountInfo } from '@polkadot/types/interfaces';
 import { Codec } from '@polkadot/types/types';
 
-import chains from '../../../src/renderer/services/network/common/chains.json';
-import { validate } from '../../../src/renderer/services/dataVerification/dataVerification';
+import chains from '@renderer/services/network/common/chains/chains.json';
+import { validate } from '@renderer/services/dataVerification/dataVerification';
 import {
   getTestAccounts,
   TestAccountsURL,
@@ -13,7 +13,7 @@ import {
   TestAccounts,
 } from '../utils';
 
-let [networks, polkadotParachains, kusamaParachains, polkadot, kusama] = prepareTestData(<ChainJSON[]>chains);
+const [_, polkadotParachains, kusamaParachains, polkadot, kusama] = prepareTestData(chains as ChainJSON[]);
 
 /**
  * Data Verification integration tests

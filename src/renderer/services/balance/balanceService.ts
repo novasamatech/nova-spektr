@@ -45,11 +45,17 @@ export const useBalance = (): IBalanceService => {
     onValid?: () => void,
     onInvalid?: () => void,
   ) => {
-    const isValid = await validate(relaychainApi, parachainApi, storageKey, data);
+    let isValid = false;
+    try {
+      isValid = await validate(relaychainApi, parachainApi, storageKey, data);
+    } catch (error) {
+      console.warn(error);
+    }
+
     if (isValid) {
-      onValid && onValid();
+      onValid?.();
     } else {
-      onInvalid && onInvalid();
+      onInvalid?.();
       setTimeout(() => {
         runValidation(relaychainApi, parachainApi, storageKey, data, onValid, onInvalid);
       }, VERIFY_TIMEOUT);

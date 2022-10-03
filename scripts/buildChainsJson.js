@@ -5,7 +5,7 @@ const axios = require('axios');
 const tokenNames = require('./assetsNameMap.json');
 
 const NOVA_CONFIG_VERSION = process.env.CHAINS_VERSION || 'v5';
-const CONFIG_PATH = 'src/renderer/services/network/common';
+const CONFIG_PATH = 'src/renderer/services/network/common/chains';
 const NOVA_CONFIG_URL = `https://raw.githubusercontent.com/nova-wallet/nova-utils/master/chains/${NOVA_CONFIG_VERSION}/`;
 
 const CHAINS_ENV = ['chains_dev.json', 'chains.json'];
@@ -46,7 +46,7 @@ async function saveNewFile(newJson, file_name) {
 }
 
 async function buildFullChainsJSON() {
-  CHAINS_ENV.forEach(async function (chain) {
+  CHAINS_ENV.forEach(async (chain) => {
     const novaChainsConfig = await getDataViaHttp(NOVA_CONFIG_URL, chain);
     const modifiedData = await getTransformedData(novaChainsConfig);
     await saveNewFile(modifiedData, 'omni-' + chain);
