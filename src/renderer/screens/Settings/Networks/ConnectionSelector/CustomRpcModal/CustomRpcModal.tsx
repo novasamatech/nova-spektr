@@ -1,11 +1,13 @@
 import { ChangeEvent, useEffect, useState } from 'react';
 import { Controller, SubmitHandler, useForm } from 'react-hook-form';
 
-import { useI18n } from '@renderer/context/I18nContext';
 import { BaseModal, Button, Icon, Input, InputHint } from '@renderer/components/ui';
+import { useI18n } from '@renderer/context/I18nContext';
 import { useNetworkContext } from '@renderer/context/NetworkContext';
 import { RpcNode } from '@renderer/domain/chain';
 import { ChainId, HexString } from '@renderer/domain/shared-kernel';
+import { pasteAddressHandler } from '@renderer/utils/address';
+import { validateWsAddress } from '@renderer/utils/strings';
 
 const MODAL_ANIMATION = 300;
 
@@ -22,7 +24,7 @@ type Props = {
   onClose: () => void;
 };
 
-const CustomRpc = ({ chainId, genesisHash, existingUrls, isOpen, onClose }: Props) => {
+const CustomRpcModal = ({ chainId, genesisHash, existingUrls, isOpen, onClose }: Props) => {
   const { t } = useI18n();
   const { validateRpcNode, addRpcNode } = useNetworkContext();
 
@@ -51,15 +53,6 @@ const CustomRpc = ({ chainId, genesisHash, existingUrls, isOpen, onClose }: Prop
 
     setTimeout(() => setFocus('name'), MODAL_ANIMATION);
   }, [isOpen, setFocus]);
-
-  const onPasteAddress = (handler: (value: string) => void) => async () => {
-    try {
-      const text = await navigator.clipboard.readText();
-      handler(text.trim());
-    } catch (error) {
-      console.warn(error);
-    }
-  };
 
   const onCloseModal = () => {
     onClose();
@@ -109,9 +102,6 @@ const CustomRpc = ({ chainId, genesisHash, existingUrls, isOpen, onClose }: Prop
     }
   };
 
-  const validateAddress = (address: string) =>
-    /^ws(s)?:\/\/.+(\.[a-z]{2,}|:\d{1,5})(\/[a-z\d_-]+)*\W{0}\/?$/i.test(address);
-
   return (
     <BaseModal
       closeButton
@@ -152,7 +142,7 @@ const CustomRpc = ({ chainId, genesisHash, existingUrls, isOpen, onClose }: Prop
           <Controller
             name="address"
             control={control}
-            rules={{ maxLength: 50, validate: validateAddress }}
+            rules={{ maxLength: 50, validate: validateWsAddress }}
             render={({ field: { onChange, value } }) => (
               <Input
                 label={t('networkManagement.customRpc.addressLabel')}
@@ -166,7 +156,7 @@ const CustomRpc = ({ chainId, genesisHash, existingUrls, isOpen, onClose }: Prop
                       <Icon name="clearOutline" />
                     </button>
                   ) : (
-                    <Button variant="outline" pallet="primary" onClick={onPasteAddress(onChange)}>
+                    <Button variant="outline" pallet="primary" onClick={pasteAddressHandler(onChange)}>
                       {t('networkManagement.customRpc.pasteButton')}
                     </Button>
                   )
@@ -247,4 +237,4 @@ const CustomRpc = ({ chainId, genesisHash, existingUrls, isOpen, onClose }: Prop
   );
 };
 
-export default CustomRpc;
+export default CustomRpcModal;

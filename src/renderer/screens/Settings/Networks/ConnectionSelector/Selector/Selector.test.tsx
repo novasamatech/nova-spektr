@@ -19,7 +19,7 @@ jest.mock('@renderer/context/I18nContext', () => ({
 
 jest.mock('@renderer/hooks/useToggle');
 
-jest.mock('../CustomRpc/CustomRpc', () => () => 'customRpc');
+jest.mock('../CustomRpcModal/CustomRpcModal', () => () => 'customRpc');
 
 describe('screen/Settings/Networks/ConnectionSelector/Selector', () => {
   const defaultNetwork: ExtendedChain = {

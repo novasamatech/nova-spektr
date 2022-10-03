@@ -24,7 +24,11 @@ export interface INetworkService {
   setupConnections: () => Promise<void>;
   addRpcNode: (chainId: ChainId, rpcNode: RpcNode) => Promise<void>;
   validateRpcNode: (genesisHash: HexString, rpcUrl: string) => Promise<boolean>;
-  connectToNetwork: (chainId: ChainId, type: ConnectionType, node?: RpcNode) => Promise<void>;
+  connectToNetwork: (
+    chainId: ChainId,
+    type: ConnectionType.RPC_NODE | ConnectionType.LIGHT_CLIENT,
+    node?: RpcNode,
+  ) => Promise<void>;
 }
 
 // =====================================================
@@ -35,7 +39,7 @@ export type ExtendedChain = Chain & {
   connection: Connection;
   api?: ApiPromise;
   provider?: ProviderInterface;
-  disconnect?: () => Promise<void>;
+  disconnect?: (switchNetwork: boolean) => Promise<void>;
 };
 
 export type ConnectionsMap = Record<ChainId, ExtendedChain>;

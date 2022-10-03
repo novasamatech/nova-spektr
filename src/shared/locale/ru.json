@@ -57,7 +57,6 @@
     "addCustomNodeButton": "Добавить свою ноду",
     "customRpc": {
       "addressConnected": "Connection established",
-      "addressWrong": "Could not connect to node, try again later",
       "addressHint": "Example: wss://rpc.polkadot.io",
       "addressInvalidUrl": "Invalid url, please type or paste it again",
       "addressLabel": "Node address",
@@ -65,6 +64,7 @@
       "addressPending": "Please wait, establishing connection to node",
       "addressPlaceholder": "Type or paste the node address",
       "addressUrlExist": "Url address already exists",
+      "addressWrong": "Could not connect to node, try again later",
       "checkConnectionButton": "Check connection",
       "invalidNameError": "Invalid name, maximum length is 256 symbols",
       "nameHint": "Example: My Custom node",

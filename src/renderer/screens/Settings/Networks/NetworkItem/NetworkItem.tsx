@@ -46,7 +46,8 @@ const NetworkItem = ({ networkItem }: Props) => {
       <img src={icon} alt="" width={34} height={34} />
       <div className="flex flex-col mr-auto">
         <p className="text-xl leading-5 text-neutral">{name}</p>
-        {NETWORK_CONNECTION_STATUS[connectionStatus](connectionType, activeNode?.url || '')}
+        {connectionType !== ConnectionType.DISABLED &&
+          NETWORK_CONNECTION_STATUS[connectionStatus](connectionType, activeNode?.url || '')}
       </div>
 
       <ConnectionSelector networkItem={networkItem} />

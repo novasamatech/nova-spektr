@@ -3,7 +3,7 @@ import { act, render, screen } from '@testing-library/react';
 import NetworkBalances from './NetworkBalances';
 import { Chain } from '@renderer/domain/chain';
 import { TEST_PUBLIC_KEY } from '@renderer/services/balance/common/constants';
-import chains from '@renderer/services/network/common/chains.json';
+import chains from '@renderer/services/network/common/chains/chains.json';
 
 const testChain = chains.find((chain) => chain.assets.length > 1) as Chain;
 const testAsset = testChain.assets[0];

@@ -3,7 +3,7 @@ import userEvent from '@testing-library/user-event';
 
 import { useNetworkContext } from '@renderer/context/NetworkContext';
 import { ChainId, HexString } from '@renderer/domain/shared-kernel';
-import CustomRpc from './CustomRpc';
+import CustomRpcModal from './CustomRpcModal';
 
 jest.mock('@renderer/context/NetworkContext', () => ({
   useNetworkContext: jest.fn(() => ({
@@ -23,7 +23,7 @@ jest.mock('@renderer/context/I18nContext', () => ({
   }),
 }));
 
-describe('screen/Settings/Networks/ConnectionSelector/CustomRpc', () => {
+describe('screen/Settings/Networks/ConnectionSelector/CustomRpcModal', () => {
   const defaultProps = {
     isOpen: true,
     chainId: '0x123' as ChainId,
@@ -37,7 +37,7 @@ describe('screen/Settings/Networks/ConnectionSelector/CustomRpc', () => {
     const user = userEvent.setup();
 
     await act(async () => {
-      render(<CustomRpc {...props} />);
+      render(<CustomRpcModal {...props} />);
     });
 
     if (!skipName) {
@@ -54,7 +54,7 @@ describe('screen/Settings/Networks/ConnectionSelector/CustomRpc', () => {
 
   test('should render component', async () => {
     await act(async () => {
-      render(<CustomRpc {...defaultProps} />);
+      render(<CustomRpcModal {...defaultProps} />);
     });
 
     const name = screen.getByPlaceholderText('networkManagement.customRpc.namePlaceholder');
@@ -69,7 +69,7 @@ describe('screen/Settings/Networks/ConnectionSelector/CustomRpc', () => {
   test('should focus name input', async () => {
     jest.useFakeTimers();
     await act(async () => {
-      render(<CustomRpc {...defaultProps} />);
+      render(<CustomRpcModal {...defaultProps} />);
     });
     jest.advanceTimersByTime(500);
 

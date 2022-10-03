@@ -4,7 +4,7 @@ const path = require('path');
 const prettierConfig = fs.readFileSync('./.prettierrc', 'utf8');
 const prettierOptions = JSON.parse(prettierConfig);
 
-const checkTranslation = process.env.CHECK_TRANSLATION;
+const checkTranslation = process.env.CHECK_TRANSLATION === 'true';
 
 module.exports = {
   root: true,
