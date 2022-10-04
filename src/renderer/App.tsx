@@ -6,6 +6,7 @@ import { FallbackScreen, SplashScreen } from '@renderer/components/common';
 import I18Provider from '@renderer/context/I18nContext';
 import MatrixProvider from '@renderer/context/MatrixContext';
 import NetworkProvider from '@renderer/context/NetworkContext';
+import ConfirmContext from '@renderer/context/ConfirmContext';
 import { useWallet } from '@renderer/services/wallet/walletService';
 import Paths from '@renderer/routes/paths';
 import routesConfig from './routes';
@@ -42,7 +43,9 @@ const App = () => {
     <I18Provider>
       <ErrorBoundary FallbackComponent={FallbackScreen} onError={console.error}>
         <NetworkProvider>
-          <MatrixProvider onAutoLoginFail={onAutoLoginFail}>{appRoutes}</MatrixProvider>
+          <ConfirmContext>
+            <MatrixProvider onAutoLoginFail={onAutoLoginFail}>{appRoutes}</MatrixProvider>
+          </ConfirmContext>
         </NetworkProvider>
       </ErrorBoundary>
     </I18Provider>

@@ -25,10 +25,10 @@ const ConfirmModal = ({
   <BaseModal isOpen={isOpen} onClose={onClose} className={cn('p-5', className)}>
     {children}
     <div className="grid grid-cols-2 gap-x-3">
-      <Button variant="outline" pallet="primary" onClick={() => onClose()}>
+      <Button variant="fill" pallet="primary" onClick={() => onClose()}>
         {cancelText}
       </Button>
-      <Button variant="fill" pallet="primary" onClick={() => onConfirm()}>
+      <Button variant="outline" pallet="error" onClick={() => onConfirm()}>
         {confirmText}
       </Button>
     </div>

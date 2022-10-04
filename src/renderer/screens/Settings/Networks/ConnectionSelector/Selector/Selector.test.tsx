@@ -11,6 +11,14 @@ jest.mock('@renderer/context/NetworkContext', () => ({
   })),
 }));
 
+const confirmSpy = jest.fn();
+
+jest.mock('@renderer/context/ConfirmContext', () => ({
+  useConfirmContext: jest.fn(() => ({
+    confirm: confirmSpy,
+  })),
+}));
+
 jest.mock('@renderer/context/I18nContext', () => ({
   useI18n: jest.fn().mockReturnValue({
     t: (key: string) => key,
@@ -36,6 +44,24 @@ describe('screen/Settings/Networks/ConnectionSelector/Selector', () => {
       chainId: '0x123',
       connectionStatus: ConnectionStatus.NONE,
       connectionType: ConnectionType.DISABLED,
+    },
+  };
+
+  const networkWithConnection: ExtendedChain = {
+    addressPrefix: 0,
+    assets: [],
+    chainId: '0x123',
+    icon: '',
+    name: '',
+    nodes: [
+      { url: 'wss://westend-rpc.polkadot.io', name: 'Parity node' },
+      { url: 'wss://westend.api.onfinality.io/public-ws', name: 'OnFinality node' },
+    ],
+    connection: {
+      chainId: '0x123',
+      connectionStatus: ConnectionStatus.CONNECTED,
+      connectionType: ConnectionType.RPC_NODE,
+      activeNode: { url: 'wss://westend-rpc.polkadot.io', name: 'Parity node' },
     },
   };
 
@@ -77,5 +103,18 @@ describe('screen/Settings/Networks/ConnectionSelector/Selector', () => {
     await act(async () => addRpcBtn.click());
 
     expect(spyToggle).toBeCalled();
+  });
+
+  test('should change current node', async () => {
+    render(<ConnectionSelector networkItem={networkWithConnection} />);
+
+    const selectorBtn = screen.getByRole('button');
+    await act(async () => selectorBtn.click());
+
+    const disableButton = screen.getByRole('button', { name: /networkManagement.disableNetworkButton/ });
+    expect(disableButton).toBeInTheDocument();
+
+    await act(async () => disableButton.click());
+    expect(confirmSpy).toBeCalled();
   });
 });

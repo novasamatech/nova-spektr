@@ -2,7 +2,7 @@ import { render, screen } from '@testing-library/react';
 
 import { useWallet } from '@renderer/services/wallet/walletService';
 import Balances from './Balances';
-import { TEST_PUBLIC_KEY } from '@renderer/services/balance/common/constants';
+import { TEST_ADDRESS, TEST_PUBLIC_KEY } from '@renderer/services/balance/common/constants';
 import { ConnectionType } from '@renderer/domain/connection';
 
 jest.mock('@renderer/services/wallet/walletService', () => ({
@@ -68,15 +68,24 @@ describe('screen/Balances/Balances', () => {
     expect(balances).toHaveLength(2);
   });
 
-  test('should render empty list', () => {
+  test('should render empty state', () => {
     (useWallet as jest.Mock).mockReturnValue({
-      getActiveWallets: () => [],
+      getActiveWallets: () => [
+        {
+          name: 'Test Wallet',
+          mainAccounts: [
+            {
+              address: TEST_ADDRESS,
+              publicKey: TEST_PUBLIC_KEY,
+            },
+          ],
+        },
+      ],
     });
     render(<Balances />);
 
     const noResults = screen.getByText('balances.emptyStateLabel');
-    const networks = screen.queryByRole('list');
+
     expect(noResults).toBeInTheDocument();
-    expect(networks).not.toBeInTheDocument();
   });
 });
