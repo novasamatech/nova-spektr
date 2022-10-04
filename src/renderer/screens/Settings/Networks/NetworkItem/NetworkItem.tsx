@@ -3,7 +3,7 @@ import { ReactNode } from 'react';
 import { Icon } from '@renderer/components/ui';
 import { ConnectionStatus, ConnectionType } from '@renderer/domain/connection';
 import { ExtendedChain } from '@renderer/services/network/common/types';
-import SelectConnection from '../SelectConnection/SelectConnection';
+import ConnectionSelector from '../ConnectionSelector';
 
 const NETWORK_CONNECTION_STATUS: Record<ConnectionStatus, (type: ConnectionType, nodeUrl: string) => ReactNode> = {
   [ConnectionStatus.NONE]: () => null,
@@ -50,7 +50,7 @@ const NetworkItem = ({ networkItem }: Props) => {
           NETWORK_CONNECTION_STATUS[connectionStatus](connectionType, activeNode?.url || '')}
       </div>
 
-      <SelectConnection networkItem={networkItem} />
+      <ConnectionSelector networkItem={networkItem} />
     </li>
   );
 };

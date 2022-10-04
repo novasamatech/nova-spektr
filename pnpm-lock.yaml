@@ -3336,6 +3336,24 @@ packages:
       webpack-dev-server: 4.9.3_77l47gmqkrqiei5z7sbwz5iaj4
     dev: true
 
+  /@polkadot/api-augment/9.2.4:
+    resolution:
+      { integrity: sha512-oL8JJS3RClbv+yVdVTjRHoU2d3az/YvD+Ex2UFnMtBCBk22kDnDEoJAstJJjnXW2RT7CsEmCj3ffP0pmJGvF4A== }
+    engines: { node: '>=14.0.0' }
+    dependencies:
+      '@babel/runtime': 7.18.9
+      '@polkadot/api-base': 9.2.4
+      '@polkadot/rpc-augment': 9.2.4
+      '@polkadot/types': 9.2.4
+      '@polkadot/types-augment': 9.2.4
+      '@polkadot/types-codec': 9.2.4
+      '@polkadot/util': 10.1.7
+    transitivePeerDependencies:
+      - bufferutil
+      - supports-color
+      - utf-8-validate
+    dev: false
+
   /@polkadot/api-augment/9.3.3:
     resolution:
       { integrity: sha512-usO5G2lDjzmwrPCgpe9IS5J2gddrDfeuWECc9/ruw35/ag4x8uZkiViC9762pF9fu9ZzNfSrk2QRnVGRcbG1ZQ== }

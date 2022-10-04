@@ -16,6 +16,7 @@ import NetworkOnImg, { ReactComponent as NetworkOnSvg } from '@images/functional
 import NetworkOffImg, { ReactComponent as NetworkOffSvg } from '@images/functionals/network-off.svg';
 import NetworkImg, { ReactComponent as NetworkSvg } from '@images/functionals/network.svg';
 import AddImg, { ReactComponent as AddSvg } from '@images/functionals/add.svg';
+import ClearOutlineImg, { ReactComponent as ClearOutlineSvg } from '@images/functionals/clear-outline.svg';
 
 const FunctionalImages = {
   copy: { svg: CopySvg, img: CopyImg },
@@ -36,6 +37,7 @@ const FunctionalImages = {
   networkOff: { svg: NetworkOffSvg, img: NetworkOffImg },
   network: { svg: NetworkSvg, img: NetworkImg },
   add: { svg: AddSvg, img: AddImg },
+  clearOutline: { svg: ClearOutlineSvg, img: ClearOutlineImg },
 } as const;
 
 export type Functional = keyof typeof FunctionalImages;

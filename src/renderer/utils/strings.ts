@@ -10,6 +10,14 @@ export const getShortAddress = (address = '', size = 6): string => {
 };
 
 /**
+ * Validate WebSocket address
+ * @param address address to validate
+ * @return {Boolean}
+ */
+export const validateWsAddress = (address: string): boolean =>
+  /^ws(s)?:\/\/.+(\.[a-z]{2,}|:\d{1,5})(\/[a-z\d_-]+)*\W{0}\/?$/i.test(address);
+
+/**
  * Copies string value to clipboard
  * @param text value to copy
  */

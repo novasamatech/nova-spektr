@@ -7,7 +7,7 @@ describe('service/storage/connectionStorage', () => {
     return methodsToMock;
   });
 
-  beforeEach(() => {
+  afterEach(() => {
     jest.clearAllMocks();
   });
 

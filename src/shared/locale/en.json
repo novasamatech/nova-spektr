@@ -55,6 +55,26 @@
   "networkManagement": {
     "activeNetworksLabel": "Active Networks",
     "addCustomNodeButton": "Add Custom Node",
+    "customRpc": {
+      "addressConnected": "Connection established",
+      "addressHint": "Example: wss://rpc.polkadot.io",
+      "addressInvalidUrl": "Invalid url, please type or paste it again",
+      "addressLabel": "Node address",
+      "addressMaxLength": "Invalid url, maximum length is 50 symbols",
+      "addressPending": "Please wait, establishing connection to node",
+      "addressPlaceholder": "Type or paste the node address",
+      "addressUrlExist": "Url address already exists",
+      "addressWrong": "Could not connect to node, try again later",
+      "checkConnectionButton": "Check connection",
+      "invalidNameError": "Invalid name, maximum length is 256 symbols",
+      "nameHint": "Example: My Custom node",
+      "nameLabel": "Name",
+      "namePlaceholder": "Type a name",
+      "pasteButton": "Paste",
+      "saveNodeButton": "Save Custom Node",
+      "title": "Add Custom Node",
+      "typeAddressButton": "Type or paste an address..."
+    },
     "disableNetworkButton": "Disable Network",
     "disableNetworkModal": {
       "label": "You are about to disable {network} network",

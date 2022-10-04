@@ -47,7 +47,7 @@ describe('screens/Onboard/Parity/StepThree', () => {
     });
 
     const name = screen.getByPlaceholderText('onboarding.walletNamePlaceholder');
-    await user.type(name, 'test_wallet');
+    await act(async () => user.type(name, 'test_wallet'));
 
     const button = screen.getByRole('button', { name: 'onboarding.confirmAccountsListButton' });
     await act(async () => button.click());

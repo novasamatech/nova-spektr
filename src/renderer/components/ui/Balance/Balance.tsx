@@ -11,11 +11,11 @@ interface Props {
 
 const Balance = ({ value, precision, className }: Props) => {
   const { t } = useI18n();
-  const { value: formatedValue, decimalPlaces, suffix } = formatBalance(value, precision);
+  const { value: formattedValue, decimalPlaces, suffix } = formatBalance(value, precision);
 
   return (
     <span className={cn(className)}>{`${t('assetBalance.number', {
-      value: formatedValue,
+      value: formattedValue,
       maximumFractionDigits: decimalPlaces,
     })}${suffix}`}</span>
   );

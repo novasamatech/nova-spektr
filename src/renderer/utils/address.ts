@@ -27,3 +27,17 @@ export const isCorrectPublicKey = (publicKey: PublicKey): boolean => {
 
   return publicKeyTrimmed.length === PUBLIC_KEY_LENGTH && /^[0-9a-fA-F]+$/.test(publicKeyTrimmed);
 };
+
+/**
+ * Paste address input handler
+ * @param handler input's onChange function
+ * @return {Function}
+ */
+export const pasteAddressHandler = (handler: (value: string) => void) => async () => {
+  try {
+    const text = await navigator.clipboard.readText();
+    handler(text.trim());
+  } catch (error) {
+    console.warn(error);
+  }
+};

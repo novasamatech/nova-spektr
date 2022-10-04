@@ -2,6 +2,8 @@ import { useState } from 'react';
 import { Popover, RadioGroup } from '@headlessui/react';
 import cn from 'classnames';
 
+import useToggle from '@renderer/hooks/useToggle';
+import CustomRpcModal from '@renderer/screens/Settings/Networks/ConnectionSelector/CustomRpcModal/CustomRpcModal';
 import { Button, ConfirmModal, Icon } from '@renderer/components/ui';
 import { useNetworkContext } from '@renderer/context/NetworkContext';
 import { ConnectionType } from '@renderer/domain/connection';
@@ -14,13 +16,15 @@ type Props = {
   networkItem: ExtendedChain;
 };
 
-const SelectConnection = ({ networkItem }: Props) => {
+const Selector = ({ networkItem }: Props) => {
   const { t } = useI18n();
-
   const { connectToNetwork } = useNetworkContext();
+  const [isCustomRpcOpen, toggleCustomRpc] = useToggle();
+  const [isConfirmOpen, toggleConfirmModal] = useToggle();
 
-  const { connection, nodes } = networkItem;
+  const { api, connection, nodes } = networkItem;
   const { connectionType, activeNode } = connection;
+  const combinedNodes = nodes.concat(connection.customNodes || []);
 
   const [selectedNode, setSelectedNode] = useState(
     {
@@ -29,7 +33,6 @@ const SelectConnection = ({ networkItem }: Props) => {
       [ConnectionType.LIGHT_CLIENT]: LIGHT_CLIENT_KEY,
     }[connectionType] || 'Select connection type',
   );
-  const [isDisableConfirmOpen, setIsDisableConfirmOpen] = useState(false);
 
   const isDisabled = connectionType === ConnectionType.DISABLED;
 
@@ -116,7 +119,7 @@ const SelectConnection = ({ networkItem }: Props) => {
                       </>
                     )}
                   </RadioGroup.Option>
-                  {nodes.map((node) => (
+                  {combinedNodes.map((node) => (
                     <RadioGroup.Option
                       value={node.url}
                       key={node.name}
@@ -147,6 +150,7 @@ const SelectConnection = ({ networkItem }: Props) => {
                   pallet="primary"
                   variant="text"
                   className="h-7.5"
+                  onClick={toggleCustomRpc}
                   prefixElement={
                     <div className="flex justify-center items-center rounded-full border w-4 h-4 border-primary text-primary">
                       <Icon name="add" size={12} />
@@ -157,7 +161,7 @@ const SelectConnection = ({ networkItem }: Props) => {
                 </Button>
                 {!isDisabled && (
                   <Button
-                    onClick={() => setIsDisableConfirmOpen(true)}
+                    onClick={toggleConfirmModal}
                     pallet="error"
                     variant="text"
                     className="h-7.5"
@@ -173,13 +177,13 @@ const SelectConnection = ({ networkItem }: Props) => {
       </Popover>
 
       <ConfirmModal
-        isOpen={isDisableConfirmOpen}
-        onClose={() => setIsDisableConfirmOpen(false)}
+        className="w-[350px]"
+        isOpen={isConfirmOpen}
+        onClose={toggleConfirmModal}
         onConfirm={() => {
-          setIsDisableConfirmOpen(false);
+          toggleConfirmModal();
           disableNetwork();
         }}
-        className="w-[350px]"
       >
         <h2 className="text-error font-semibold text-xl border-b border-error pb-2.5">
           {t('networkManagement.disableNetworkModal.title')}
@@ -188,8 +192,16 @@ const SelectConnection = ({ networkItem }: Props) => {
           {t('networkManagement.disableNetworkModal.label', { network: networkItem.name })}
         </p>
       </ConfirmModal>
+
+      <CustomRpcModal
+        chainId={networkItem.chainId}
+        genesisHash={api?.genesisHash.toHex()}
+        existingUrls={combinedNodes.map((node) => node.url)}
+        isOpen={isCustomRpcOpen}
+        onClose={toggleCustomRpc}
+      />
     </>
   );
 };
 
-export default SelectConnection;
+export default Selector;

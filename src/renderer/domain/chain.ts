@@ -6,7 +6,7 @@ export type Chain = {
   parentId?: HexString;
   name: string;
   assets: Asset[];
-  nodes: RPCNode[];
+  nodes: RpcNode[];
   explorers?: Explorer[];
   icon: string;
   addressPrefix: number;
@@ -16,7 +16,7 @@ export type Chain = {
 
 export type ChainOptions = 'testnet' | 'crowdloans';
 
-export type RPCNode = {
+export type RpcNode = {
   url: string;
   name: string;
 };

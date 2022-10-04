@@ -1,3 +1,3 @@
 export type Variant = 'text' | 'fill' | 'outline';
 
-export type Pallet = 'primary' | 'secondary' | 'error' | 'shade';
+export type Pallet = 'primary' | 'secondary' | 'error' | 'alert' | 'shade';
