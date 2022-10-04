@@ -5,13 +5,16 @@ on:
     paths-ignore:
       - '**/*.md'
       - '**/*.yml'
+      - '**/*.yaml'
+      - '**/*.json'
+      - '**/jest.config.ts'
+      - '.gitignore'
       - '.github/**'
       - 'scripts/**'
       - 'tests/**'
 
 jobs:
   test-coverage:
-    # if: ${{ github.event.label.name == 'coverage-check' }}
     runs-on: ubuntu-latest
 
     steps:
