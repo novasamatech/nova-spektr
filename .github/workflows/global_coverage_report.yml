@@ -7,13 +7,11 @@ on:
       - '**/*.md'
       - '**/*.yml'
       - '.github/**'
-      - 'data/**'
-      - 'dist/**'
-      - '**/app/local/**'
-  pull_request:
+      - 'scripts/**'
+      - 'tests/**'
 
 env:
-  JEST_COVERAGE_AUTH: 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
+  JEST_COVERAGE_AUTH: ${{ secrets.PAT_GIST_TOKEN }}
   GIST_ID: 77132f25d05c7e9264cd410aef162a7e
 
 jobs:

@@ -1,9 +1,7 @@
 name: Lint and unit tests
 
 on:
-  push:
-    branches:
-      - "master"
+  pull_request:
 
 jobs:
   lint-and-test:

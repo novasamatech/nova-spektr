@@ -2,7 +2,12 @@ name: Coverage report for pull request
 
 on:
   pull_request:
-    types: [ labeled ]
+    paths-ignore:
+      - '**/*.md'
+      - '**/*.yml'
+      - '.github/**'
+      - 'scripts/**'
+      - 'tests/**'
 
 jobs:
   test-coverage:
