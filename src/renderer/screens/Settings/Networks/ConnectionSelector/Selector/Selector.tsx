@@ -46,14 +46,25 @@ const Selector = ({ networkItem }: Props) => {
     }
   };
 
+  const confirmDisableLightClient = () =>
+    confirm({
+      title: t('networkManagement.disableLightClientNetworkModal.title'),
+      message: t('networkManagement.disableLightClientNetworkModal.label'),
+      confirmText: t('networkManagement.disableLightClientNetworkModal.confirm'),
+      cancelText: t('networkManagement.disableLightClientNetworkModal.cancel'),
+    });
+
+  const confirmDisableNetwork = () =>
+    confirm({
+      title: t('networkManagement.disableLightClientNetworkModal.title'),
+      message: t('networkManagement.disableLightClientNetworkModal.label'),
+      confirmText: t('networkManagement.disableLightClientNetworkModal.confirm'),
+      cancelText: t('networkManagement.disableLightClientNetworkModal.cancel'),
+    });
+
   const changeConnection = async (nodeId: string, onClose: () => void) => {
     if (connectionType === ConnectionType.LIGHT_CLIENT) {
-      const result = await confirm({
-        title: t('networkManagement.disableLightClientNetworkModal.title'),
-        message: t('networkManagement.disableLightClientNetworkModal.label'),
-        confirmText: t('networkManagement.disableLightClientNetworkModal.confirm'),
-        cancelText: t('networkManagement.disableLightClientNetworkModal.cancel'),
-      });
+      const result = await confirmDisableLightClient();
 
       if (!result) return;
     }
@@ -86,22 +97,12 @@ const Selector = ({ networkItem }: Props) => {
 
   const openDisableModal = async () => {
     if (connectionType === ConnectionType.LIGHT_CLIENT) {
-      const result = await confirm({
-        title: t('networkManagement.disableLightClientNetworkModal.title'),
-        message: t('networkManagement.disableLightClientNetworkModal.label'),
-        confirmText: t('networkManagement.disableLightClientNetworkModal.confirm'),
-        cancelText: t('networkManagement.disableLightClientNetworkModal.cancel'),
-      });
+      const result = await confirmDisableLightClient();
 
       if (!result) return;
       disableNetwork();
     } else if (connectionType === ConnectionType.RPC_NODE) {
-      const result = await confirm({
-        title: t('networkManagement.disableNetworkModal.title'),
-        message: t('networkManagement.disableNetworkModal.label', { network: networkItem.name }),
-        confirmText: t('networkManagement.disableNetworkModal.confirm'),
-        cancelText: t('networkManagement.disableNetworkModal.cancel'),
-      });
+      const result = await confirmDisableNetwork();
 
       if (!result) return;
       disableNetwork();
