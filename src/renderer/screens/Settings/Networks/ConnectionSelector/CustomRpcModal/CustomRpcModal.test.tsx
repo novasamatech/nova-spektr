@@ -34,7 +34,7 @@ describe('screen/Settings/Networks/ConnectionSelector/CustomRpcModal', () => {
 
   const renderAndFillTheForm = async ({ skipName, skipAddress, props = defaultProps }: Partial<any> = {}) => {
     const formPayload = { name: 'test_name', address: 'wss://localhost:3000' };
-    const user = userEvent.setup({ delay: 0.1 });
+    const user = userEvent.setup({ delay: null });
 
     await act(async () => {
       render(<CustomRpcModal {...props} />);
@@ -88,7 +88,7 @@ describe('screen/Settings/Networks/ConnectionSelector/CustomRpcModal', () => {
 
     const { address } = await renderAndFillTheForm();
 
-    const validate = await screen.findByRole('button', { name: 'networkManagement.customRpc.checkConnectionButton' });
+    const validate = screen.getByRole('button', { name: 'networkManagement.customRpc.checkConnectionButton' });
     await act(async () => validate.click());
 
     expect(spyValidateRpc).toBeCalledWith(defaultProps.genesisHash, address);
