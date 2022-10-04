@@ -12,6 +12,7 @@ on:
 
 env:
   JEST_COVERAGE_AUTH: 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
+  GIST_ID: 77132f25d05c7e9264cd410aef162a7e
 
 jobs:
   update-coverage-on-readme:
@@ -58,7 +59,7 @@ jobs:
         uses: schneegans/dynamic-badges-action@v1.0.0
         with:
           auth: ${{ env.JEST_COVERAGE_COMMENT }}
-          gistID: 5e90d640f8c212ab7bbac38f72323f80
+          gistID: ${{ env.GIST_ID }}
           filename: jest-coverage-main.json
           label: Coverage
           message: ${{ steps.coverageComment.outputs.coverage }}%
