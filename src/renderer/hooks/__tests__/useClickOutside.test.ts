@@ -22,7 +22,7 @@ const createDocumentListenersMock = () => {
 };
 
 describe('hooks/useClickOutside', () => {
-  beforeEach(() => {
+  afterEach(() => {
     jest.clearAllMocks();
   });
 

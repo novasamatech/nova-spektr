@@ -4,6 +4,7 @@ import Switch from './Switch/Switch';
 import Icon from './Icon/Icon';
 import Identicon from './Identicon/Identicon';
 import Input from './Input/Input';
+import InputHint from './InputHint/InputHint';
 import Button from './Buttons/Button/Button';
 import ButtonLink from './Buttons/ButtonLink/ButtonLink';
 import ButtonBack from './Buttons/ButtonBack/ButtonBack';
@@ -22,6 +23,7 @@ export {
   Icon,
   Identicon,
   Input,
+  InputHint,
   Button,
   ButtonLink,
   ButtonBack,

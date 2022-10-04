@@ -1,7 +1,8 @@
 import { createContext, PropsWithChildren, useContext, useEffect, useState } from 'react';
 
-import { ConnectionType, RpcNode } from '@renderer/domain/connection';
-import { ChainId } from '@renderer/domain/shared-kernel';
+import { ConnectionType } from '@renderer/domain/connection';
+import { ChainId, HexString } from '@renderer/domain/shared-kernel';
+import { RpcNode } from '@renderer/domain/chain';
 import { useBalance } from '@renderer/services/balance/balanceService';
 import { TEST_PUBLIC_KEY } from '@renderer/services/balance/common/constants';
 import { ExtendedChain } from '@renderer/services/network/common/types';
@@ -10,6 +11,8 @@ import { useWallet } from '@renderer/services/wallet/walletService';
 
 type NetworkContextProps = {
   connections: Record<string, ExtendedChain>;
+  addRpcNode: (chainId: ChainId, rpcNode: RpcNode) => Promise<void>;
+  validateRpcNode: (genesisHash: HexString, rpcUrl: string) => Promise<boolean>;
   connectToNetwork: (
     chainId: ChainId,
     type: ConnectionType.RPC_NODE | ConnectionType.LIGHT_CLIENT,
@@ -22,7 +25,7 @@ const NetworkContext = createContext<NetworkContextProps>({} as NetworkContextPr
 export const NetworkProvider = ({ children }: PropsWithChildren) => {
   const [connectionsReady, setConnectionReady] = useState(false);
 
-  const { connections, setupConnections, connectToNetwork } = useNetwork();
+  const { connections, setupConnections, connectToNetwork, addRpcNode, validateRpcNode } = useNetwork();
   const { subscribeBalances, subscribeLockBalances } = useBalance();
   const { getActiveWallets } = useWallet();
   const activeWallets = getActiveWallets();
@@ -86,12 +89,16 @@ export const NetworkProvider = ({ children }: PropsWithChildren) => {
     }, [] as Promise<any>[]);
 
     return () => {
-      Promise.all(unsubscribeBalance).catch((e) => console.error(e));
-      Promise.all(unsubscribeLockBalance).catch((e) => console.error(e));
+      Promise.all(unsubscribeBalance).catch(console.warn);
+      Promise.all(unsubscribeLockBalance).catch(console.warn);
     };
   }, [connections, activeWallets]);
 
-  return <NetworkContext.Provider value={{ connections, connectToNetwork }}>{children}</NetworkContext.Provider>;
+  return (
+    <NetworkContext.Provider value={{ connections, connectToNetwork, addRpcNode, validateRpcNode }}>
+      {children}
+    </NetworkContext.Provider>
+  );
 };
 
 export const useNetworkContext = () => useContext<NetworkContextProps>(NetworkContext);

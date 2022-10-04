@@ -4,9 +4,9 @@ import { ProviderInterface } from '@polkadot/rpc-provider/types';
 import keyBy from 'lodash/keyBy';
 import { useRef, useState } from 'react';
 
-import { Chain } from '@renderer/domain/chain';
-import { Connection, ConnectionStatus, ConnectionType, RpcNode } from '@renderer/domain/connection';
-import { ChainId } from '@renderer/domain/shared-kernel';
+import { Chain, RpcNode } from '@renderer/domain/chain';
+import { Connection, ConnectionStatus, ConnectionType } from '@renderer/domain/connection';
+import { ChainId, HexString } from '@renderer/domain/shared-kernel';
 import storage from '@renderer/services/storage';
 import { useChainSpec } from './chainSpecService';
 import { useChains } from './chainsService';
@@ -38,7 +38,7 @@ export const useNetwork = (): INetworkService => {
       const { api: currentApi, disconnect: currentDisconnect, ...rest } = currentConnection || chains.current[chainId];
 
       // TODO: not a good solution, but here we got the most fresh connection
-      updateConnection({ ...currentConnection.connection, ...updates });
+      updateConnection({ ...currentConnection.connection, ...updates }).catch(console.warn);
 
       return {
         ...currentConnections,
@@ -237,6 +237,44 @@ export const useNetwork = (): INetworkService => {
     }
   };
 
+  const validateRpcNode = (genesisHash: HexString, rpcUrl: string): Promise<boolean> => {
+    return new Promise((resolve) => {
+      const provider = new WsProvider(rpcUrl);
+
+      provider.on('connected', async () => {
+        let isValid = false;
+        try {
+          const api = await ApiPromise.create({ provider });
+          isValid = genesisHash === api.genesisHash.toHex();
+
+          api.disconnect().catch(console.warn);
+          provider.disconnect().catch(console.warn);
+        } catch (error) {
+          console.warn(error);
+        }
+        resolve(isValid);
+      });
+
+      provider.on('error', async () => {
+        try {
+          await provider.disconnect();
+        } catch (error) {
+          console.warn(error);
+        }
+        resolve(false);
+      });
+    });
+  };
+
+  const addRpcNode = async (chainId: ChainId, rpcNode: RpcNode): Promise<void> => {
+    const connection = connections[chainId];
+    if (!connection) return;
+
+    await updateConnectionState(chainId, {
+      customNodes: (connection.connection.customNodes || []).concat(rpcNode),
+    });
+  };
+
   const setupConnections = async (): Promise<void> => {
     try {
       const chainsData = await getChainsData();
@@ -256,5 +294,7 @@ export const useNetwork = (): INetworkService => {
     connections,
     setupConnections,
     connectToNetwork,
+    addRpcNode,
+    validateRpcNode,
   };
 };

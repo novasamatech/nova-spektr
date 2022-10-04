@@ -1,3 +1,4 @@
+import { RpcNode } from './chain';
 import { ChainId } from './shared-kernel';
 
 export type Connection = {
@@ -7,11 +8,6 @@ export type Connection = {
   customNodes?: RpcNode[];
   activeNode?: RpcNode;
   disconnect?: () => void;
-};
-
-export type RpcNode = {
-  url: string;
-  name: string;
 };
 
 export const enum ConnectionType {

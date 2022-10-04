@@ -1,18 +1,18 @@
+import cn from 'classnames';
 import { useEffect, useState } from 'react';
 import { Controller, SubmitHandler, useForm } from 'react-hook-form';
-import cn from 'classnames';
 
 import { AccountsList } from '@renderer/components/common';
 import { BaseModal, Button, ButtonBack, Icon, Identicon, Input } from '@renderer/components/ui';
+import { useI18n } from '@renderer/context/I18nContext';
 import { Chain } from '@renderer/domain/chain';
 import { ErrorType, PublicKey } from '@renderer/domain/shared-kernel';
 import { createMainAccount, createSimpleWallet, WalletType } from '@renderer/domain/wallet';
 import useToggle from '@renderer/hooks/useToggle';
 import { useChains } from '@renderer/services/network/chainsService';
 import { useWallet } from '@renderer/services/wallet/walletService';
-import { toPublicKey } from '@renderer/utils/address';
+import { pasteAddressHandler, toPublicKey } from '@renderer/utils/address';
 import FinalStep from '../FinalStep/FinalStep';
-import { useI18n } from '@renderer/context/I18nContext';
 
 type WalletForm = {
   walletName: string;
@@ -77,7 +77,7 @@ const WatchOnly = () => {
     setIsCompleted(true);
   };
 
-  const validateAddress = (a: string) => !!toPublicKey(a);
+  const validateAddress = (a: string) => Boolean(toPublicKey(a));
 
   if (isCompleted) {
     return <FinalStep walletType={WalletType.WATCH_ONLY} />;
@@ -97,8 +97,8 @@ const WatchOnly = () => {
         <h1 className="text-neutral">{t('onboarding.watchonly.addWatchOnlyLabel')}</h1>
       </div>
       <form
-        onSubmit={handleSubmit(handleCreateWallet)}
         className="flex h-full flex-col gap-10 justify-center items-center"
+        onSubmit={handleSubmit(handleCreateWallet)}
       >
         <h2 className="text-2xl leading-relaxed font-normal text-neutral-variant text-center">
           {t('onboarding.watchonly.addWatchOnlyDescription1')} <br />{' '}
@@ -115,7 +115,7 @@ const WatchOnly = () => {
                   wrapperClass={cn('flex items-center')}
                   label={t('onboarding.walletNameLabel')}
                   placeholder={t('onboarding.walletNamePlaceholder')}
-                  invalid={!!errors.walletName}
+                  invalid={Boolean(errors.walletName)}
                   value={value}
                   onChange={onChange}
                 />
@@ -144,26 +144,19 @@ const WatchOnly = () => {
               render={({ field: { onChange, value } }) => (
                 <Input
                   wrapperClass={cn('flex items-center')}
-                  invalid={!!errors.address}
-                  prefixElement={
-                    isValid ? <Identicon address={value} background={false} /> : <Icon as="svg" name="emptyIdenticon" />
-                  }
-                  suffixElement={
-                    <Button
-                      variant="outline"
-                      pallet="primary"
-                      onClick={async () => {
-                        const text = await navigator.clipboard.readText();
-                        onChange(text.trim());
-                      }}
-                    >
-                      {t('onboarding.pasteButton')}
-                    </Button>
-                  }
+                  invalid={Boolean(errors.address)}
                   label={t('onboarding.accountAddressLabel')}
                   placeholder={t('onboarding.watchonly.accountAddressPlaceholder')}
                   value={value}
                   onChange={onChange}
+                  prefixElement={
+                    isValid ? <Identicon address={value} background={false} /> : <Icon as="svg" name="emptyIdenticon" />
+                  }
+                  suffixElement={
+                    <Button variant="outline" pallet="primary" onClick={pasteAddressHandler(onChange)}>
+                      {t('onboarding.pasteButton')}
+                    </Button>
+                  }
                 />
               )}
             />
@@ -186,7 +179,7 @@ const WatchOnly = () => {
                   onClick={toggleModal}
                   variant="text"
                   pallet="primary"
-                  disabled={!!errors.address}
+                  disabled={Boolean(errors.address)}
                 >
                   {t('onboarding.checkAccountsButton')}
                 </Button>
