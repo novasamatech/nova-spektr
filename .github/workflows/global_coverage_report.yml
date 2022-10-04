@@ -58,7 +58,7 @@ jobs:
       - name: Create the Badge
         uses: schneegans/dynamic-badges-action@v1.0.0
         with:
-          auth: ${{ env.JEST_COVERAGE_COMMENT }}
+          auth: ${{ env.JEST_COVERAGE_AUTH }}
           gistID: ${{ env.GIST_ID }}
           filename: jest-coverage-main.json
           label: Coverage
