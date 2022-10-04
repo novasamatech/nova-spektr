@@ -75,18 +75,18 @@
       "title": "Add Custom Node",
       "typeAddressButton": "Type or paste an address..."
     },
+    "disableLightClientNetworkModal": {
+      "cancel": "No, take me back",
+      "confirm": "Yes, I'm sure",
+      "label": "Changing Light Client on Polkadot or Kusama network will turn off Data Verification",
+      "title": "Are you sure?"
+    },
     "disableNetworkButton": "Disable Network",
     "disableNetworkModal": {
+      "cancel": "No, take me back",
+      "confirm": "Yes, I'm sure",
       "label": "You are about to disable {network} network",
-      "title": "Disable network",
-      "confirm": "Yes, I'm sure",
-      "cancel": "No, take me back"
-    },
-    "disableLightClientNetworkModal": {
-      "label": "Changing Light Client on Polkadot or Kusama network will turn off Data Verification",
-      "title": "Are you sure?",
-      "confirm": "Yes, I'm sure",
-      "cancel": "No, take me back"
+      "title": "Disable network"
     },
     "disabledNetworksLabel": "Disabled Networks",
     "emptyStateDescription": "Try to search for another name",
