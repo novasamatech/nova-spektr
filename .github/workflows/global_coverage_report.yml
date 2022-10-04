@@ -1,6 +1,8 @@
 name: Update global Coverage on Readme
 on:
   push:
+    branches:
+      - "dev"
     paths-ignore:
       - '**/*.md'
       - '**/*.yml'
@@ -64,4 +66,4 @@ jobs:
           label: Test coverage
           message: ${{ steps.coverageComment.outputs.coverage }}%
           color: ${{ steps.coverageComment.outputs.color }}
-          namedLogo: typescript
+          namedLogo: jest
