@@ -78,7 +78,15 @@
     "disableNetworkButton": "Disable Network",
     "disableNetworkModal": {
       "label": "You are about to disable {network} network",
-      "title": "Disable network"
+      "title": "Disable network",
+      "confirm": "Yes, I'm sure",
+      "cancel": "No, take me back"
+    },
+    "disableLightClientNetworkModal": {
+      "label": "Changing Light Client on Polkadot or Kusama network will turn off Data Verification",
+      "title": "Are you sure?",
+      "confirm": "Yes, I'm sure",
+      "cancel": "No, take me back"
     },
     "disabledNetworksLabel": "Disabled Networks",
     "emptyStateDescription": "Try to search for another name",

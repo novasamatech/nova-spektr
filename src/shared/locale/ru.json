@@ -78,7 +78,15 @@
     "disableNetworkButton": "Выключить сеть",
     "disableNetworkModal": {
       "label": "Вы отключаете сеть {network}",
-      "title": "Отключить сеть"
+      "title": "Отключить сеть",
+      "confirm": "Да, я уверен",
+      "cancel": "Нет, вернуться назад"
+    },
+    "disableLightClientNetworkModal": {
+      "label": "Changing Light Client on Polkadot or Kusama network will turn off Data Verification",
+      "title": "Вы уверены?",
+      "confirm": "Да, я уверен",
+      "cancel": "Нет, вернуться назад"
     },
     "disabledNetworksLabel": "Отключенные сети",
     "emptyStateDescription": "Try to search for another key",
