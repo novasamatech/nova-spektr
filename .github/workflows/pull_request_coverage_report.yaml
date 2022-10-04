@@ -2,7 +2,7 @@ name: Coverage report for pull request
 
 on:
   pull_request:
-    # types: [ labeled ]
+    types: [ labeled ]
 
 jobs:
   test-coverage:
