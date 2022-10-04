@@ -84,7 +84,7 @@ const Balances = () => {
           </div>
         </div>
 
-        {publicKey ? (
+        {publicKey && (
           <ul className="flex-1 overflow-y-auto">
             {sortedChains.map((chain) => (
               <NetworkBalances
@@ -99,13 +99,13 @@ const Balances = () => {
                 onReceiveClick={onReceive(chain)}
               />
             ))}
+
+            <div className="hidden only:flex w-full h-full flex-col items-center justify-center">
+              <Icon name="noResult" size={380} />
+              <p className="text-neutral text-3xl font-bold">{t('balances.emptyStateLabel')}</p>
+              <p className="text-neutral-variant text-base font-normal">{t('balances.emptyStateDescription')}</p>
+            </div>
           </ul>
-        ) : (
-          <div className="flex w-full h-full flex-col items-center justify-center">
-            <Icon name="noResult" size={380} />
-            <p className="text-neutral text-3xl font-bold">{t('balances.emptyStateLabel')}</p>
-            <p className="text-neutral-variant text-base font-normal">{t('balances.emptyStateDescription')}</p>
-          </div>
         )}
       </div>
 
