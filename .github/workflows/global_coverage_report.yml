@@ -61,7 +61,7 @@ jobs:
           auth: ${{ env.JEST_COVERAGE_AUTH }}
           gistID: ${{ env.GIST_ID }}
           filename: jest-coverage-main.json
-          label: Coverage
+          label: Test coverage
           message: ${{ steps.coverageComment.outputs.coverage }}%
           color: ${{ steps.coverageComment.outputs.color }}
-          namedLogo: javascript
+          namedLogo: typescript

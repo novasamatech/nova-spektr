@@ -1,4 +1,4 @@
-![badge](https://img.shields.io/endpoint?url=https://gist.githubusercontent.com/stepanLav/5e90d640f8c212ab7bbac38f72323f80/raw/jest-coverage-main.json)
+![badge](https://img.shields.io/endpoint?url=https://gist.githubusercontent.com/stepanLav/77132f25d05c7e9264cd410aef162a7e/raw/jest-coverage-main.json)
 
 # Omni Enterprise
 
