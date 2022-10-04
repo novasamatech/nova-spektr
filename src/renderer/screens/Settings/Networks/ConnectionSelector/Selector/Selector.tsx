@@ -4,11 +4,12 @@ import cn from 'classnames';
 
 import useToggle from '@renderer/hooks/useToggle';
 import CustomRpcModal from '@renderer/screens/Settings/Networks/ConnectionSelector/CustomRpcModal/CustomRpcModal';
-import { Button, ConfirmModal, Icon } from '@renderer/components/ui';
+import { Button, Icon } from '@renderer/components/ui';
 import { useNetworkContext } from '@renderer/context/NetworkContext';
 import { ConnectionType } from '@renderer/domain/connection';
 import { ExtendedChain } from '@renderer/services/network/common/types';
 import { useI18n } from '@renderer/context/I18nContext';
+import { useConfirmContext } from '@renderer/context/ConfirmContext';
 
 const LIGHT_CLIENT_KEY = 'light-client';
 
@@ -20,7 +21,8 @@ const Selector = ({ networkItem }: Props) => {
   const { t } = useI18n();
   const { connectToNetwork } = useNetworkContext();
   const [isCustomRpcOpen, toggleCustomRpc] = useToggle();
-  const [isConfirmOpen, toggleConfirmModal] = useToggle();
+
+  const { confirm } = useConfirmContext();
 
   const { api, connection, nodes } = networkItem;
   const { connectionType, activeNode } = connection;
@@ -44,7 +46,29 @@ const Selector = ({ networkItem }: Props) => {
     }
   };
 
+  const confirmDisableLightClient = () =>
+    confirm({
+      title: t('networkManagement.disableLightClientNetworkModal.title'),
+      message: t('networkManagement.disableLightClientNetworkModal.label'),
+      confirmText: t('networkManagement.disableLightClientNetworkModal.confirm'),
+      cancelText: t('networkManagement.disableLightClientNetworkModal.cancel'),
+    });
+
+  const confirmDisableNetwork = () =>
+    confirm({
+      title: t('networkManagement.disableLightClientNetworkModal.title'),
+      message: t('networkManagement.disableLightClientNetworkModal.label'),
+      confirmText: t('networkManagement.disableLightClientNetworkModal.confirm'),
+      cancelText: t('networkManagement.disableLightClientNetworkModal.cancel'),
+    });
+
   const changeConnection = async (nodeId: string, onClose: () => void) => {
+    if (connectionType === ConnectionType.LIGHT_CLIENT) {
+      const result = await confirmDisableLightClient();
+
+      if (!result) return;
+    }
+
     setSelectedNode(nodeId);
 
     try {
@@ -68,6 +92,20 @@ const Selector = ({ networkItem }: Props) => {
       onClose();
     } catch (error) {
       console.warn(error);
+    }
+  };
+
+  const openDisableModal = async () => {
+    if (connectionType === ConnectionType.LIGHT_CLIENT) {
+      const result = await confirmDisableLightClient();
+
+      if (!result) return;
+      disableNetwork();
+    } else if (connectionType === ConnectionType.RPC_NODE) {
+      const result = await confirmDisableNetwork();
+
+      if (!result) return;
+      disableNetwork();
     }
   };
 
@@ -96,7 +134,7 @@ const Selector = ({ networkItem }: Props) => {
               <div className="flex flex-col max-h-64 overflow-auto mb-5">
                 <RadioGroup
                   value={selectedNode}
-                  onChange={(value) => changeConnection(value, close)}
+                  onChange={(value: string) => changeConnection(value, close)}
                   className="divide-y divide-shade-5"
                 >
                   <RadioGroup.Option
@@ -161,7 +199,7 @@ const Selector = ({ networkItem }: Props) => {
                 </Button>
                 {!isDisabled && (
                   <Button
-                    onClick={toggleConfirmModal}
+                    onClick={openDisableModal}
                     pallet="error"
                     variant="text"
                     className="h-7.5"
@@ -175,23 +213,6 @@ const Selector = ({ networkItem }: Props) => {
           )}
         </Popover.Panel>
       </Popover>
-
-      <ConfirmModal
-        className="w-[350px]"
-        isOpen={isConfirmOpen}
-        onClose={toggleConfirmModal}
-        onConfirm={() => {
-          toggleConfirmModal();
-          disableNetwork();
-        }}
-      >
-        <h2 className="text-error font-semibold text-xl border-b border-error pb-2.5">
-          {t('networkManagement.disableNetworkModal.title')}
-        </h2>
-        <p className="pt-2.5 pb-5 text-neutral-variant">
-          {t('networkManagement.disableNetworkModal.label', { network: networkItem.name })}
-        </p>
-      </ConfirmModal>
 
       <CustomRpcModal
         chainId={networkItem.chainId}

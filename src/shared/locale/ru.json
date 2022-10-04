@@ -75,8 +75,16 @@
       "title": "Add Custom Node",
       "typeAddressButton": "Type or paste an address..."
     },
+    "disableLightClientNetworkModal": {
+      "cancel": "Нет, вернуться назад",
+      "confirm": "Да, я уверен",
+      "label": "Отключение Light Client для сетей Polkadot или Kusama отключит возможность верификации данных",
+      "title": "Вы уверены?"
+    },
     "disableNetworkButton": "Выключить сеть",
     "disableNetworkModal": {
+      "cancel": "Нет, вернуться назад",
+      "confirm": "Да, я уверен",
       "label": "Вы отключаете сеть {network}",
       "title": "Отключить сеть"
     },
