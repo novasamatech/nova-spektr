@@ -53,7 +53,7 @@ const BaseModal = ({
             >
               <Dialog.Panel
                 className={cn(
-                  'w-full transform overflow-hidden rounded-2xl bg-white text-left align-middle shadow-xl transition-all',
+                  'transform overflow-hidden rounded-2xl bg-white text-left align-middle shadow-xl transition-all',
                   className,
                 )}
               >

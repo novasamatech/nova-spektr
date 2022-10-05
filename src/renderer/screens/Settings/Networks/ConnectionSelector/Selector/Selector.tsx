@@ -2,14 +2,15 @@ import { Popover, RadioGroup } from '@headlessui/react';
 import cn from 'classnames';
 import { MouseEvent, useState } from 'react';
 
-import { Button, ConfirmModal, Icon } from '@renderer/components/ui';
-import { useI18n } from '@renderer/context/I18nContext';
+import { Button, Icon } from '@renderer/components/ui';
 import { useNetworkContext } from '@renderer/context/NetworkContext';
 import { RpcNode } from '@renderer/domain/chain';
 import { ConnectionType } from '@renderer/domain/connection';
 import useToggle from '@renderer/hooks/useToggle';
 import CustomRpcModal from '@renderer/screens/Settings/Networks/ConnectionSelector/CustomRpcModal/CustomRpcModal';
 import { ExtendedChain } from '@renderer/services/network/common/types';
+import { useI18n } from '@renderer/context/I18nContext';
+import { useConfirmContext } from '@renderer/context/ConfirmContext';
 
 const LIGHT_CLIENT_KEY = 'light-client';
 
@@ -21,7 +22,8 @@ const Selector = ({ networkItem }: Props) => {
   const { t } = useI18n();
   const { connectToNetwork, removeRpcNode } = useNetworkContext();
   const [isCustomRpcOpen, toggleCustomRpc] = useToggle();
-  const [isConfirmOpen, toggleConfirmModal] = useToggle();
+
+  const { confirm } = useConfirmContext();
 
   const { chainId, name, icon, api, connection, nodes, disconnect } = networkItem;
   const { connectionType, activeNode } = connection;
@@ -55,7 +57,29 @@ const Selector = ({ networkItem }: Props) => {
     }
   };
 
+  const confirmDisableLightClient = () =>
+    confirm({
+      title: t('networkManagement.disableLightClientNetworkModal.title'),
+      message: t('networkManagement.disableLightClientNetworkModal.label'),
+      confirmText: t('networkManagement.disableLightClientNetworkModal.confirm'),
+      cancelText: t('networkManagement.disableLightClientNetworkModal.cancel'),
+    });
+
+  const confirmDisableNetwork = () =>
+    confirm({
+      title: t('networkManagement.disableLightClientNetworkModal.title'),
+      message: t('networkManagement.disableLightClientNetworkModal.label'),
+      confirmText: t('networkManagement.disableLightClientNetworkModal.confirm'),
+      cancelText: t('networkManagement.disableLightClientNetworkModal.cancel'),
+    });
+
   const changeConnection = async (nodeId: string, onClose: () => void) => {
+    if (connectionType === ConnectionType.LIGHT_CLIENT) {
+      const result = await confirmDisableLightClient();
+
+      if (!result) return;
+    }
+
     setSelectedNode(nodeId);
 
     try {
@@ -99,6 +123,20 @@ const Selector = ({ networkItem }: Props) => {
     toggleCustomRpc();
   };
 
+  const openDisableModal = async () => {
+    if (connectionType === ConnectionType.LIGHT_CLIENT) {
+      const result = await confirmDisableLightClient();
+
+      if (!result) return;
+      disableNetwork();
+    } else if (connectionType === ConnectionType.RPC_NODE) {
+      const result = await confirmDisableNetwork();
+
+      if (!result) return;
+      disableNetwork();
+    }
+  };
+
   return (
     <>
       <Popover className="relative">
@@ -124,7 +162,7 @@ const Selector = ({ networkItem }: Props) => {
               <div className="flex flex-col max-h-64 overflow-auto mb-5">
                 <RadioGroup
                   value={selectedNode}
-                  onChange={(value) => changeConnection(value, close)}
+                  onChange={(value: string) => changeConnection(value, close)}
                   className="divide-y divide-shade-5"
                 >
                   <RadioGroup.Option
@@ -203,7 +241,7 @@ const Selector = ({ networkItem }: Props) => {
                 </Button>
                 {!isDisabled && (
                   <Button
-                    onClick={toggleConfirmModal}
+                    onClick={openDisableModal}
                     pallet="error"
                     variant="text"
                     className="h-7.5"
@@ -217,23 +255,6 @@ const Selector = ({ networkItem }: Props) => {
           )}
         </Popover.Panel>
       </Popover>
-
-      <ConfirmModal
-        className="w-[350px]"
-        isOpen={isConfirmOpen}
-        onClose={toggleConfirmModal}
-        onConfirm={() => {
-          toggleConfirmModal();
-          disableNetwork();
-        }}
-      >
-        <h2 className="text-error font-semibold text-xl border-b border-error pb-2.5">
-          {t('networkManagement.disableNetworkModal.title')}
-        </h2>
-        <p className="pt-2.5 pb-5 text-neutral-variant">
-          {t('networkManagement.disableNetworkModal.label', { network: name })}
-        </p>
-      </ConfirmModal>
 
       <CustomRpcModal
         chainId={chainId}
