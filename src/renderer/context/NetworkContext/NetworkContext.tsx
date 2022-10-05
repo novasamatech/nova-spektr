@@ -21,7 +21,7 @@ type NetworkContextProps = {
   ) => Promise<void>;
 };
 
-const NetworkContext = createContext<NetworkContextProps>({} as NetworkContextProps);
+export const NetworkContext = createContext<NetworkContextProps>({} as NetworkContextProps);
 
 export const NetworkProvider = ({ children }: PropsWithChildren) => {
   const [connectionsReady, setConnectionReady] = useState(false);

@@ -25,28 +25,26 @@ const defaultState = {
 };
 
 export const ConfirmDialogProvider = ({ children }: PropsWithChildren) => {
-  const [dialogState, setDialogState] = useState(defaultState);
   const [isDialogOpen, toggleDialog] = useToggle();
+
+  const [dialogState, setDialogState] = useState(defaultState);
 
   const fn = useRef<(choice: any) => void>();
 
-  const confirm = useCallback(
-    (data: ConfirmDialogProps): Promise<boolean> => {
-      return new Promise((resolve) => {
-        setDialogState(data);
-        toggleDialog();
+  const confirm = useCallback((data: ConfirmDialogProps): Promise<boolean> => {
+    return new Promise((resolve) => {
+      setDialogState(data);
+      toggleDialog();
 
-        fn.current = (choice: boolean) => {
-          toggleDialog();
-          resolve(choice);
-          setTimeout(() => {
-            setDialogState(defaultState);
-          }, ANIMATION_DURATION);
-        };
-      });
-    },
-    [setDialogState],
-  );
+      fn.current = (choice: boolean) => {
+        toggleDialog();
+        resolve(choice);
+        setTimeout(() => {
+          setDialogState(defaultState);
+        }, ANIMATION_DURATION);
+      };
+    });
+  }, []);
 
   return (
     <ConfirmDialog.Provider value={{ confirm }}>
@@ -55,10 +53,10 @@ export const ConfirmDialogProvider = ({ children }: PropsWithChildren) => {
       <ConfirmModal
         className="w-[400px]"
         isOpen={isDialogOpen}
-        onClose={() => fn.current?.(false)}
-        onConfirm={() => fn.current?.(true)}
         confirmText={dialogState.confirmText}
         cancelText={dialogState.cancelText}
+        onClose={() => fn.current?.(false)}
+        onConfirm={() => fn.current?.(true)}
       >
         <h2 className="text-error font-semibold text-xl border-b border-error pb-2.5">{dialogState.title}</h2>
         <p className="pt-2.5 pb-5 text-neutral-variant">{dialogState.message}</p>
