@@ -1,14 +1,15 @@
-import { useState } from 'react';
 import { Popover, RadioGroup } from '@headlessui/react';
 import cn from 'classnames';
+import { MouseEvent, useState } from 'react';
 
+import { Button, ConfirmModal, Icon } from '@renderer/components/ui';
+import { useI18n } from '@renderer/context/I18nContext';
+import { useNetworkContext } from '@renderer/context/NetworkContext';
+import { RpcNode } from '@renderer/domain/chain';
+import { ConnectionType } from '@renderer/domain/connection';
 import useToggle from '@renderer/hooks/useToggle';
 import CustomRpcModal from '@renderer/screens/Settings/Networks/ConnectionSelector/CustomRpcModal/CustomRpcModal';
-import { Button, ConfirmModal, Icon } from '@renderer/components/ui';
-import { useNetworkContext } from '@renderer/context/NetworkContext';
-import { ConnectionType } from '@renderer/domain/connection';
 import { ExtendedChain } from '@renderer/services/network/common/types';
-import { useI18n } from '@renderer/context/I18nContext';
 
 const LIGHT_CLIENT_KEY = 'light-client';
 
@@ -18,14 +19,14 @@ type Props = {
 
 const Selector = ({ networkItem }: Props) => {
   const { t } = useI18n();
-  const { connectToNetwork } = useNetworkContext();
+  const { connectToNetwork, removeRpcNode } = useNetworkContext();
   const [isCustomRpcOpen, toggleCustomRpc] = useToggle();
   const [isConfirmOpen, toggleConfirmModal] = useToggle();
 
-  const { api, connection, nodes } = networkItem;
+  const { chainId, name, icon, api, connection, nodes, disconnect } = networkItem;
   const { connectionType, activeNode } = connection;
-  const combinedNodes = nodes.concat(connection.customNodes || []);
 
+  const [nodeToEdit, setNodeToEdit] = useState<RpcNode>();
   const [selectedNode, setSelectedNode] = useState(
     {
       [ConnectionType.DISABLED]: 'Select connection type',
@@ -35,10 +36,20 @@ const Selector = ({ networkItem }: Props) => {
   );
 
   const isDisabled = connectionType === ConnectionType.DISABLED;
+  const combinedNodes = nodes.concat(connection.customNodes || []);
+  console.log('nodeToEdit ==> ', nodeToEdit);
+
+  // {
+  //   "url": "wss://polkadot.api.onfinality.io/public-ws",
+  //   "name": "OnFinality node"
+  // },
+  const isCustomNode = (url: string) => {
+    return connection.customNodes?.some((node) => node.url === url);
+  };
 
   const disableNetwork = async () => {
     try {
-      await networkItem.disconnect?.(false);
+      await disconnect?.(false);
     } catch (error) {
       console.warn(error);
     }
@@ -48,20 +59,20 @@ const Selector = ({ networkItem }: Props) => {
     setSelectedNode(nodeId);
 
     try {
-      await networkItem.disconnect?.(true);
+      await disconnect?.(true);
 
       if (nodeId === LIGHT_CLIENT_KEY) {
         // Let unsubscribe from previous Provider, microtask first - macrotask second
         setTimeout(() => {
-          connectToNetwork(networkItem.chainId, ConnectionType.LIGHT_CLIENT);
+          connectToNetwork(chainId, ConnectionType.LIGHT_CLIENT);
         });
       }
 
-      const node = nodes.find((n) => n.url === nodeId);
+      const node = combinedNodes.find((n) => n.url === nodeId);
       if (node) {
         // Let unsubscribe from previous Provider, microtask first - macrotask second
         setTimeout(() => {
-          connectToNetwork(networkItem.chainId, ConnectionType.RPC_NODE, node);
+          connectToNetwork(chainId, ConnectionType.RPC_NODE, node);
         });
       }
 
@@ -69,6 +80,23 @@ const Selector = ({ networkItem }: Props) => {
     } catch (error) {
       console.warn(error);
     }
+  };
+
+  const onRemoveNode = (rpcNode: RpcNode) => async (event: MouseEvent<HTMLButtonElement>) => {
+    event.preventDefault();
+
+    try {
+      await removeRpcNode(chainId, rpcNode);
+    } catch (error) {
+      console.warn(error);
+    }
+  };
+
+  const onEditNode = (rpcNode: RpcNode) => (event: MouseEvent<HTMLButtonElement>) => {
+    event.preventDefault();
+
+    setNodeToEdit(rpcNode);
+    toggleCustomRpc();
   };
 
   return (
@@ -124,21 +152,35 @@ const Selector = ({ networkItem }: Props) => {
                       value={node.url}
                       key={node.name}
                       className={cn(
-                        'h-10 flex gap-2.5 px-4 box-border cursor-pointer items-center text-sm font-semibold text-neutral hover:bg-shade-2',
+                        'group flex h-10 px-4 box-border items-center',
+                        ' cursor-pointer text-sm font-semibold text-neutral hover:bg-shade-2',
                       )}
                     >
                       {({ checked }) => (
                         <>
                           <div
                             className={cn(
-                              'rounded-full w-5 h-5',
+                              'shrink-0 rounded-full w-5 h-5 mr-2.5',
                               checked ? 'border-[6px] border-primary' : 'border-2 border-shade-30',
                             )}
-                          ></div>
-                          <div>
-                            <div className={checked ? 'text-primary' : ''}>{node.name}</div>
-                            <div className={cn('font-semibold text-xs text-neutral-variant')}>{node.url}</div>
+                          />
+                          <div className="mr-auto overflow-clip">
+                            <p className={cn('truncate', checked && 'text-primary')}>{node.name}</p>
+                            <p className={cn('font-semibold text-xs text-neutral-variant truncate')}>{node.url}</p>
                           </div>
+                          {isCustomNode(node.url) && (
+                            <div className="gap-x-2.5 ml-1 h-full hidden group-hover:flex group-focus:flex">
+                              <button className="text-neutral-variant" type="button" onClick={onEditNode(node)}>
+                                <Icon name="editOutline" size={20} />
+                              </button>
+
+                              {activeNode?.url !== node.url && (
+                                <button className="text-error" type="button" onClick={onRemoveNode(node)}>
+                                  <Icon name="deleteOutline" size={20} />
+                                </button>
+                              )}
+                            </div>
+                          )}
                         </>
                       )}
                     </RadioGroup.Option>
@@ -189,12 +231,15 @@ const Selector = ({ networkItem }: Props) => {
           {t('networkManagement.disableNetworkModal.title')}
         </h2>
         <p className="pt-2.5 pb-5 text-neutral-variant">
-          {t('networkManagement.disableNetworkModal.label', { network: networkItem.name })}
+          {t('networkManagement.disableNetworkModal.label', { network: name })}
         </p>
       </ConfirmModal>
 
       <CustomRpcModal
-        chainId={networkItem.chainId}
+        chainId={chainId}
+        networkName={name}
+        networkIcon={icon}
+        node={nodeToEdit}
         genesisHash={api?.genesisHash.toHex()}
         existingUrls={combinedNodes.map((node) => node.url)}
         isOpen={isCustomRpcOpen}

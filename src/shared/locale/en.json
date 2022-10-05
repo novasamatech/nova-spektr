@@ -60,7 +60,6 @@
       "addressHint": "Example: wss://rpc.polkadot.io",
       "addressInvalidUrl": "Invalid url, please type or paste it again",
       "addressLabel": "Node address",
-      "addressMaxLength": "Invalid url, maximum length is 50 symbols",
       "addressPending": "Please wait, establishing connection to node",
       "addressPlaceholder": "Type or paste the node address",
       "addressUrlExist": "Url address already exists",
