@@ -117,14 +117,14 @@ const CustomRpcModal = ({
   return (
     <BaseModal
       closeButton
-      title={t('networkManagement.customRpc.title')}
+      title={node ? t('networkManagement.customRpc.titleEdit') : t('networkManagement.customRpc.titleAdd')}
       description={
         <div className="flex gap-x-1 justify-center">
           <img src={networkIcon} alt="" width={20} height={20} />
           <p className="uppercase font-bold text-sm">{networkName}</p>
         </div>
       }
-      className="p-5 max-w-[500px]"
+      className="p-5 w-[500px]"
       isOpen={isOpen}
       onClose={onCloseModal}
     >

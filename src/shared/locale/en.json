@@ -71,22 +71,27 @@
       "namePlaceholder": "Type a name",
       "pasteButton": "Paste",
       "saveNodeButton": "Save Custom Node",
-      "title": "Add Custom Node",
+      "titleAdd": "Add Custom Node",
+      "titleEdit": "Edit Custom Node",
       "typeAddressButton": "Type or paste an address..."
     },
-    "disableLightClientNetworkModal": {
-      "cancel": "No, take me back",
-      "confirm": "Yes, I'm sure",
-      "label": "Changing Light Client on Polkadot or Kusama network will turn off Data Verification",
-      "title": "Are you sure?"
+    "disableNetworkModal": {
+      "disableTitle": "Disable network",
+      "disableLabel": "You are about to disable {network} network",
+      "relayChainTitle": "Are you sure?",
+      "relayChainLabel": "Changing Light Client on Polkadot or Kusama network will turn off Data Verification",
+      "lightClientTitle": "Are you sure?",
+      "lightClientLabel": "In order to have a smooth experience, we do not suggest to have more than 3 Light Clients running at the same time",
+      "cancelButton": "No, take me back",
+      "confirmButton": "Yes, I’m sure"
+    },
+    "removeCustomNodeModal": {
+      "title": "Delete Custom node?",
+      "label": "Are you sure you want to delete Custom Node?",
+      "cancelButton": "No, take me back",
+      "confirmButton": "Yes, I’m sure"
     },
     "disableNetworkButton": "Disable Network",
-    "disableNetworkModal": {
-      "cancel": "No, take me back",
-      "confirm": "Yes, I'm sure",
-      "label": "You are about to disable {network} network",
-      "title": "Disable network"
-    },
     "disabledNetworksLabel": "Disabled Networks",
     "emptyStateDescription": "Try to search for another name",
     "emptyStateLabel": "No networks with the entered name were found",

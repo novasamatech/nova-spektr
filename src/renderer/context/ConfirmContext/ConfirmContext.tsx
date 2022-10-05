@@ -1,6 +1,7 @@
 import { createContext, PropsWithChildren, useCallback, useContext, useRef, useState } from 'react';
 
 import { ConfirmModal } from '@renderer/components/ui';
+import useToggle from '@renderer/hooks/useToggle';
 
 export type ConfirmDialogProps = {
   title: string;
@@ -10,13 +11,13 @@ export type ConfirmDialogProps = {
 };
 
 type ConfirmContextProps = {
-  confirm: (props: ConfirmDialogProps) => Promise<any>;
+  confirm: (props: ConfirmDialogProps) => Promise<boolean>;
 };
 
 const ConfirmDialog = createContext<ConfirmContextProps>({} as ConfirmContextProps);
 
+const ANIMATION_DURATION = 350;
 const defaultState = {
-  isOpen: false,
   title: '',
   message: '',
   confirmText: '',
@@ -25,17 +26,22 @@ const defaultState = {
 
 export const ConfirmDialogProvider = ({ children }: PropsWithChildren) => {
   const [dialogState, setDialogState] = useState(defaultState);
+  const [isDialogOpen, toggleDialog] = useToggle();
 
   const fn = useRef<(choice: any) => void>();
 
   const confirm = useCallback(
-    (data: ConfirmDialogProps) => {
+    (data: ConfirmDialogProps): Promise<boolean> => {
       return new Promise((resolve) => {
-        setDialogState({ ...data, isOpen: true });
+        setDialogState(data);
+        toggleDialog();
 
         fn.current = (choice: boolean) => {
+          toggleDialog();
           resolve(choice);
-          setDialogState(defaultState);
+          setTimeout(() => {
+            setDialogState(defaultState);
+          }, ANIMATION_DURATION);
         };
       });
     },
@@ -48,7 +54,7 @@ export const ConfirmDialogProvider = ({ children }: PropsWithChildren) => {
 
       <ConfirmModal
         className="w-[400px]"
-        isOpen={dialogState.isOpen}
+        isOpen={isDialogOpen}
         onClose={() => fn.current?.(false)}
         onConfirm={() => fn.current?.(true)}
         confirmText={dialogState.confirmText}

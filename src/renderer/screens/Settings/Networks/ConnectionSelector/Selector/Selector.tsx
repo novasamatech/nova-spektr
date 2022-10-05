@@ -39,12 +39,7 @@ const Selector = ({ networkItem }: Props) => {
 
   const isDisabled = connectionType === ConnectionType.DISABLED;
   const combinedNodes = nodes.concat(connection.customNodes || []);
-  console.log('nodeToEdit ==> ', nodeToEdit);
 
-  // {
-  //   "url": "wss://polkadot.api.onfinality.io/public-ws",
-  //   "name": "OnFinality node"
-  // },
   const isCustomNode = (url: string) => {
     return connection.customNodes?.some((node) => node.url === url);
   };
@@ -57,20 +52,28 @@ const Selector = ({ networkItem }: Props) => {
     }
   };
 
-  const confirmDisableLightClient = () =>
+  const confirmRemoveCustomNode = (): Promise<boolean> =>
     confirm({
-      title: t('networkManagement.disableLightClientNetworkModal.title'),
-      message: t('networkManagement.disableLightClientNetworkModal.label'),
-      confirmText: t('networkManagement.disableLightClientNetworkModal.confirm'),
-      cancelText: t('networkManagement.disableLightClientNetworkModal.cancel'),
+      title: t('networkManagement.removeCustomNodeModal.title'),
+      message: t('networkManagement.removeCustomNodeModal.label'),
+      confirmText: t('networkManagement.removeCustomNodeModal.confirmButton'),
+      cancelText: t('networkManagement.removeCustomNodeModal.cancelButton'),
     });
 
-  const confirmDisableNetwork = () =>
+  const confirmDisableNetwork = (): Promise<boolean> =>
     confirm({
-      title: t('networkManagement.disableLightClientNetworkModal.title'),
-      message: t('networkManagement.disableLightClientNetworkModal.label'),
-      confirmText: t('networkManagement.disableLightClientNetworkModal.confirm'),
-      cancelText: t('networkManagement.disableLightClientNetworkModal.cancel'),
+      title: t('networkManagement.disableNetworkModal.disableTitle'),
+      message: t('networkManagement.disableNetworkModal.disableLabel', { network: name }),
+      confirmText: t('networkManagement.disableNetworkModal.confirmButton'),
+      cancelText: t('networkManagement.disableNetworkModal.cancelButton'),
+    });
+
+  const confirmDisableLightClient = (): Promise<boolean> =>
+    confirm({
+      title: t('networkManagement.disableNetworkModal.relayChainTitle'),
+      message: t('networkManagement.disableNetworkModal.relayChainLabel'),
+      confirmText: t('networkManagement.disableNetworkModal.confirmButton'),
+      cancelText: t('networkManagement.disableNetworkModal.cancelButton'),
     });
 
   const changeConnection = async (nodeId: string, onClose: () => void) => {
@@ -99,15 +102,16 @@ const Selector = ({ networkItem }: Props) => {
           connectToNetwork(chainId, ConnectionType.RPC_NODE, node);
         });
       }
-
-      onClose();
     } catch (error) {
       console.warn(error);
     }
+    onClose();
   };
 
-  const onRemoveNode = (rpcNode: RpcNode) => async (event: MouseEvent<HTMLButtonElement>) => {
+  const onRemoveCustomNode = (rpcNode: RpcNode) => async (event: MouseEvent<HTMLButtonElement>) => {
     event.preventDefault();
+    const result = await confirmRemoveCustomNode();
+    if (!result) return;
 
     try {
       await removeRpcNode(chainId, rpcNode);
@@ -116,7 +120,7 @@ const Selector = ({ networkItem }: Props) => {
     }
   };
 
-  const onEditNode = (rpcNode: RpcNode) => (event: MouseEvent<HTMLButtonElement>) => {
+  const onEditCustomNode = (rpcNode: RpcNode) => (event: MouseEvent<HTMLButtonElement>) => {
     event.preventDefault();
 
     setNodeToEdit(rpcNode);
@@ -124,17 +128,15 @@ const Selector = ({ networkItem }: Props) => {
   };
 
   const openDisableModal = async () => {
+    let result = false;
     if (connectionType === ConnectionType.LIGHT_CLIENT) {
-      const result = await confirmDisableLightClient();
-
-      if (!result) return;
-      disableNetwork();
+      result = await confirmDisableLightClient();
     } else if (connectionType === ConnectionType.RPC_NODE) {
-      const result = await confirmDisableNetwork();
-
-      if (!result) return;
-      disableNetwork();
+      result = await confirmDisableNetwork();
     }
+    if (!result) return;
+
+    disableNetwork();
   };
 
   return (
@@ -208,12 +210,12 @@ const Selector = ({ networkItem }: Props) => {
                           </div>
                           {isCustomNode(node.url) && (
                             <div className="gap-x-2.5 ml-1 h-full hidden group-hover:flex group-focus:flex">
-                              <button className="text-neutral-variant" type="button" onClick={onEditNode(node)}>
+                              <button className="text-neutral-variant" type="button" onClick={onEditCustomNode(node)}>
                                 <Icon name="editOutline" size={20} />
                               </button>
 
                               {activeNode?.url !== node.url && (
-                                <button className="text-error" type="button" onClick={onRemoveNode(node)}>
+                                <button className="text-error" type="button" onClick={onRemoveCustomNode(node)}>
                                   <Icon name="deleteOutline" size={20} />
                                 </button>
                               )}
@@ -264,7 +266,10 @@ const Selector = ({ networkItem }: Props) => {
         genesisHash={api?.genesisHash.toHex()}
         existingUrls={combinedNodes.map((node) => node.url)}
         isOpen={isCustomRpcOpen}
-        onClose={toggleCustomRpc}
+        onClose={() => {
+          toggleCustomRpc();
+          setNodeToEdit(undefined);
+        }}
       />
     </>
   );

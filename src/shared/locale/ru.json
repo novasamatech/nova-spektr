@@ -71,8 +71,25 @@
       "namePlaceholder": "Type a name",
       "pasteButton": "Paste",
       "saveNodeButton": "Save Custom Node",
-      "title": "Add Custom Node",
+      "titleAdd": "Add Custom Node",
+      "titleEdit": "Edit Custom Node",
       "typeAddressButton": "Type or paste an address..."
+    },
+    "disableNetworkModal": {
+      "disableTitle": "Отключить сеть",
+      "disableLabel": "Вы отключаете сеть {network}",
+      "relayChainTitle": "Вы уверены?",
+      "relayChainLabel": "Отключение Light Client для сетей Polkadot или Kusama отключит возможность верификации данных",
+      "lightClientTitle": "Вы уверены?",
+      "lightClientLabel": "Мы советуем не подключать более 3-ех Light Client, чтобы сохранить лучший пользовательский опыт",
+      "cancelButton": "Нет, вернуться назад",
+      "confirmButton": "Да, я уверен"
+    },
+    "removeCustomNodeModal": {
+      "title": "Удалить Custom node?",
+      "label": "Вы уверены, что хотите удалить Custom Node?",
+      "cancelButton": "Нет, вернуться назад",
+      "confirmButton": "Да, я уверен"
     },
     "disableLightClientNetworkModal": {
       "cancel": "Нет, вернуться назад",
@@ -81,12 +98,6 @@
       "title": "Вы уверены?"
     },
     "disableNetworkButton": "Выключить сеть",
-    "disableNetworkModal": {
-      "cancel": "Нет, вернуться назад",
-      "confirm": "Да, я уверен",
-      "label": "Вы отключаете сеть {network}",
-      "title": "Отключить сеть"
-    },
     "disabledNetworksLabel": "Отключенные сети",
     "emptyStateDescription": "Try to search for another key",
     "emptyStateLabel": "No networks with the entered name were found",
