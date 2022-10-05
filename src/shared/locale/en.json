@@ -75,27 +75,27 @@
       "titleEdit": "Edit Custom Node",
       "typeAddressButton": "Type or paste an address..."
     },
-    "disableNetworkModal": {
-      "disableTitle": "Disable network",
-      "disableLabel": "You are about to disable {network} network",
-      "relayChainTitle": "Are you sure?",
-      "relayChainLabel": "Changing Light Client on Polkadot or Kusama network will turn off Data Verification",
-      "lightClientTitle": "Are you sure?",
-      "lightClientLabel": "In order to have a smooth experience, we do not suggest to have more than 3 Light Clients running at the same time",
-      "cancelButton": "No, take me back",
-      "confirmButton": "Yes, I’m sure"
-    },
-    "removeCustomNodeModal": {
-      "title": "Delete Custom node?",
-      "label": "Are you sure you want to delete Custom Node?",
-      "cancelButton": "No, take me back",
-      "confirmButton": "Yes, I’m sure"
-    },
     "disableNetworkButton": "Disable Network",
+    "disableNetworkModal": {
+      "cancelButton": "No, take me back",
+      "confirmButton": "Yes, I’m sure",
+      "disableLabel": "You are about to disable {network} network",
+      "disableTitle": "Disable network",
+      "lightClientLabel": "In order to have a smooth experience, we do not suggest to have more than 3 Light Clients running at the same time",
+      "lightClientTitle": "Are you sure?",
+      "relayChainLabel": "Changing Light Client on Polkadot or Kusama network will turn off Data Verification",
+      "relayChainTitle": "Are you sure?"
+    },
     "disabledNetworksLabel": "Disabled Networks",
     "emptyStateDescription": "Try to search for another name",
     "emptyStateLabel": "No networks with the entered name were found",
     "lightClientLabel": "Light client",
+    "removeCustomNodeModal": {
+      "cancelButton": "No, take me back",
+      "confirmButton": "Yes, I’m sure",
+      "label": "Are you sure you want to delete Custom Node?",
+      "title": "Delete Custom node?"
+    },
     "selectConnection": {
       "lightClient": "Light Client",
       "selectConnectionLabel": "Select connection type"
