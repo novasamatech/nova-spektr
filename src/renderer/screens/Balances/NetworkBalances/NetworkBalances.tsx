@@ -52,7 +52,12 @@ const NetworkBalances = ({
 
     const balance = balancesObject[asset.assetId];
 
-    return !hideZeroBalance || (balance && total(balance) !== ZERO_BALANCE);
+    return (
+      !hideZeroBalance ||
+      (balance && total(balance) !== ZERO_BALANCE) ||
+      balance?.verified !== true ||
+      balance === undefined
+    );
   });
 
   if (filteredAssets.length === 0) {
