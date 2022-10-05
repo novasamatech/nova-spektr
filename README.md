@@ -1,3 +1,5 @@
+![badge](https://img.shields.io/endpoint?url=https://gist.githubusercontent.com/stepanLav/77132f25d05c7e9264cd410aef162a7e/raw/jest-coverage-main.json)
+
 # Omni Enterprise
 
 Polkadot & Kusama ecosystem Enterprise Desktop application.

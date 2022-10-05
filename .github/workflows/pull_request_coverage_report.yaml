@@ -1,0 +1,51 @@
+name: Coverage report for pull request
+
+on:
+  pull_request:
+    paths-ignore:
+      - '**/*.md'
+      - '**/*.yml'
+      - '**/*.yaml'
+      - '**/*.json'
+      - '**/jest.config.ts'
+      - '.gitignore'
+      - '.github/**'
+      - 'scripts/**'
+      - 'tests/**'
+
+jobs:
+  test-coverage:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      - run: |
+          git checkout -b dev origin/dev
+          git checkout -
+
+      - name: ⚙️ Install dependencies
+        uses: ./.github/workflows/install-pnpm
+
+      - name: 🧪 Run tests with coverage
+        run: pnpm test:coverage-new-files
+
+      - name: Jest coverage comment
+        id: coverage-report
+        if: always()
+        uses: MishaKav/jest-coverage-comment@main
+        with:
+          coverage-summary-path: ./coverage/coverage-summary.json
+          title: Current coverage report
+          summary-title: Summary
+          badge-title: Covered
+          hide-comment: false
+          create-new-comment: false
+          hide-summary: false
+          junitxml-title: Tests which was executed
+          junitxml-path: ./junit.xml
+          coverage-title: Coverage by files
+          coverage-path: ./coverage.txt
+
