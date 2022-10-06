@@ -57,11 +57,9 @@ const Selector = ({ networkItem }: Props) => {
     confirm({
       title: t('networkManagement.removeCustomNodeModal.title'),
       message: (
-        <>
-          <Trans i18nKey="networkManagement.removeCustomNodeModal.label">
-            {t('networkManagement.removeCustomNodeModal.label')}
-          </Trans>
-        </>
+        <Trans i18nKey="networkManagement.removeCustomNodeModal.label">
+          {t('networkManagement.removeCustomNodeModal.label')}
+        </Trans>
       ),
       confirmText: t('networkManagement.removeCustomNodeModal.confirmButton'),
       cancelText: t('networkManagement.removeCustomNodeModal.cancelButton'),
@@ -70,7 +68,12 @@ const Selector = ({ networkItem }: Props) => {
   const confirmDisableNetwork = (): Promise<boolean> =>
     confirm({
       title: t('networkManagement.disableNetworkModal.disableTitle'),
-      message: t('networkManagement.disableNetworkModal.disableLabel', { network: name }),
+      message: (
+        <Trans i18nKey="networkManagement.disableNetworkModal.disableLabel">
+          {t('networkManagement.disableNetworkModal.disableLabel', { network: name })}
+        </Trans>
+      ),
+
       confirmText: t('networkManagement.disableNetworkModal.confirmButton'),
       cancelText: t('networkManagement.disableNetworkModal.cancelButton'),
     });
@@ -79,11 +82,9 @@ const Selector = ({ networkItem }: Props) => {
     confirm({
       title: t('networkManagement.disableNetworkModal.relayChainTitle'),
       message: (
-        <>
-          <Trans i18nKey="networkManagement.disableNetworkModal.relayChainLabel">
-            {t('networkManagement.disableNetworkModal.relayChainLabel')}
-          </Trans>
-        </>
+        <Trans i18nKey="networkManagement.disableNetworkModal.relayChainLabel">
+          {t('networkManagement.disableNetworkModal.relayChainLabel')}
+        </Trans>
       ),
       confirmText: t('networkManagement.disableNetworkModal.confirmButton'),
       cancelText: t('networkManagement.disableNetworkModal.cancelButton'),
