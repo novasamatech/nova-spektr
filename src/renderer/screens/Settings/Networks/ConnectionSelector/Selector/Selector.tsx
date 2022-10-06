@@ -1,6 +1,7 @@
 import { Popover, RadioGroup } from '@headlessui/react';
 import cn from 'classnames';
 import { MouseEvent, useState } from 'react';
+import { Trans } from 'react-i18next';
 
 import { Button, Icon } from '@renderer/components/ui';
 import { useNetworkContext } from '@renderer/context/NetworkContext';
@@ -55,7 +56,13 @@ const Selector = ({ networkItem }: Props) => {
   const confirmRemoveCustomNode = (): Promise<boolean> =>
     confirm({
       title: t('networkManagement.removeCustomNodeModal.title'),
-      message: t('networkManagement.removeCustomNodeModal.label'),
+      message: (
+        <>
+          <Trans i18nKey="networkManagement.removeCustomNodeModal.label">
+            {t('networkManagement.removeCustomNodeModal.label')}
+          </Trans>
+        </>
+      ),
       confirmText: t('networkManagement.removeCustomNodeModal.confirmButton'),
       cancelText: t('networkManagement.removeCustomNodeModal.cancelButton'),
     });
@@ -71,7 +78,13 @@ const Selector = ({ networkItem }: Props) => {
   const confirmDisableLightClient = (): Promise<boolean> =>
     confirm({
       title: t('networkManagement.disableNetworkModal.relayChainTitle'),
-      message: t('networkManagement.disableNetworkModal.relayChainLabel'),
+      message: (
+        <>
+          <Trans i18nKey="networkManagement.disableNetworkModal.relayChainLabel">
+            {t('networkManagement.disableNetworkModal.relayChainLabel')}
+          </Trans>
+        </>
+      ),
       confirmText: t('networkManagement.disableNetworkModal.confirmButton'),
       cancelText: t('networkManagement.disableNetworkModal.cancelButton'),
     });
