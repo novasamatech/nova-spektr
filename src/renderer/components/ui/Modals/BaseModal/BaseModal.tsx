@@ -79,7 +79,7 @@ const BaseModal = ({
                 )}
 
                 {description && (
-                  <Dialog.Description className="text-base text-neutral-variant text-center">
+                  <Dialog.Description as="div" className="mt-1.5 text-base text-neutral-variant text-center">
                     {description}
                   </Dialog.Description>
                 )}

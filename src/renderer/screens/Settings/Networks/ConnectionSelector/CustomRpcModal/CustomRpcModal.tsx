@@ -18,13 +18,25 @@ type CustomRpcForm = {
 
 type Props = {
   chainId: ChainId;
+  networkName: string;
+  networkIcon: string;
+  node?: RpcNode;
   genesisHash?: HexString;
   existingUrls: string[];
   isOpen: boolean;
   onClose: () => void;
 };
 
-const CustomRpcModal = ({ chainId, genesisHash, existingUrls, isOpen, onClose }: Props) => {
+const CustomRpcModal = ({
+  chainId,
+  networkName,
+  networkIcon,
+  node,
+  genesisHash,
+  existingUrls,
+  isOpen,
+  onClose,
+}: Props) => {
   const { t } = useI18n();
   const { validateRpcNode, addRpcNode } = useNetworkContext();
 
@@ -105,8 +117,14 @@ const CustomRpcModal = ({ chainId, genesisHash, existingUrls, isOpen, onClose }:
   return (
     <BaseModal
       closeButton
-      title={t('networkManagement.customRpc.title')}
-      className="p-5 max-w-[500px]"
+      title={node ? t('networkManagement.customRpc.titleEdit') : t('networkManagement.customRpc.titleAdd')}
+      description={
+        <div className="flex gap-x-1 justify-center">
+          <img src={networkIcon} alt="" width={20} height={20} />
+          <p className="uppercase font-bold text-sm">{networkName}</p>
+        </div>
+      }
+      className="p-5 w-[500px]"
       isOpen={isOpen}
       onClose={onCloseModal}
     >
@@ -115,14 +133,14 @@ const CustomRpcModal = ({ chainId, genesisHash, existingUrls, isOpen, onClose }:
           <Controller
             name="name"
             control={control}
-            rules={{ required: true, maxLength: 256 }}
+            rules={{ required: true, maxLength: 50 }}
             render={({ field: { onChange, value, ref } }) => (
               <Input
                 ref={ref}
                 label={t('networkManagement.customRpc.nameLabel')}
                 placeholder={t('networkManagement.customRpc.namePlaceholder')}
                 invalid={Boolean(errors.name)}
-                value={value}
+                value={value || node?.name}
                 onChange={onChange}
               />
             )}
@@ -142,12 +160,12 @@ const CustomRpcModal = ({ chainId, genesisHash, existingUrls, isOpen, onClose }:
           <Controller
             name="address"
             control={control}
-            rules={{ maxLength: 50, validate: validateWsAddress }}
+            rules={{ validate: validateWsAddress }}
             render={({ field: { onChange, value } }) => (
               <Input
                 label={t('networkManagement.customRpc.addressLabel')}
                 placeholder={t('networkManagement.customRpc.addressPlaceholder')}
-                value={value}
+                value={value || node?.url}
                 invalid={Boolean(errors.address)}
                 onChange={onAddressChange(onChange)}
                 suffixElement={
@@ -177,11 +195,6 @@ const CustomRpcModal = ({ chainId, genesisHash, existingUrls, isOpen, onClose }:
           {formState === 'init' && errors.address?.type === 'validate' && (
             <InputHint type="error" className="px-2.5">
               {t('networkManagement.customRpc.addressInvalidUrl')}
-            </InputHint>
-          )}
-          {formState === 'init' && errors.address?.type === 'maxLength' && (
-            <InputHint type="error" className="px-2.5">
-              {t('networkManagement.customRpc.addressMaxLength')}
             </InputHint>
           )}
           {formState === 'loading' && (

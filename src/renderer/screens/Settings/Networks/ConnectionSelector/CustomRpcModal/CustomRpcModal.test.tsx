@@ -25,6 +25,8 @@ jest.mock('@renderer/context/I18nContext', () => ({
 
 describe('screen/Settings/Networks/ConnectionSelector/CustomRpcModal', () => {
   const defaultProps = {
+    networkName: 'polkadot',
+    networkIcon: 'polkadot.svg',
     isOpen: true,
     chainId: '0x123' as ChainId,
     genesisHash: '0x999' as HexString,
