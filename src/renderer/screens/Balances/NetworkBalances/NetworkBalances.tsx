@@ -52,7 +52,7 @@ const NetworkBalances = ({
 
     const balance = balancesObject[asset.assetId];
 
-    return !hideZeroBalance || (balance && total(balance) !== ZERO_BALANCE);
+    return !hideZeroBalance || !balance || balance.verified !== true || (balance && total(balance) !== ZERO_BALANCE);
   });
 
   if (filteredAssets.length === 0) {
