@@ -60,7 +60,6 @@
       "addressHint": "Example: wss://rpc.polkadot.io",
       "addressInvalidUrl": "Invalid url, please type or paste it again",
       "addressLabel": "Node address",
-      "addressMaxLength": "Invalid url, maximum length is 50 symbols",
       "addressPending": "Please wait, establishing connection to node",
       "addressPlaceholder": "Type or paste the node address",
       "addressUrlExist": "Url address already exists",
@@ -72,26 +71,31 @@
       "namePlaceholder": "Type a name",
       "pasteButton": "Paste",
       "saveNodeButton": "Save Custom Node",
-      "title": "Add Custom Node",
+      "titleAdd": "Add Custom Node",
+      "titleEdit": "Edit Custom Node",
       "typeAddressButton": "Type or paste an address..."
-    },
-    "disableLightClientNetworkModal": {
-      "cancel": "Нет, вернуться назад",
-      "confirm": "Да, я уверен",
-      "label": "Отключение Light Client для сетей Polkadot или Kusama отключит возможность верификации данных",
-      "title": "Вы уверены?"
     },
     "disableNetworkButton": "Выключить сеть",
     "disableNetworkModal": {
-      "cancel": "Нет, вернуться назад",
-      "confirm": "Да, я уверен",
-      "label": "Вы отключаете сеть {network}",
-      "title": "Отключить сеть"
+      "cancelButton": "Нет, вернуться назад",
+      "confirmButton": "Да, я уверен",
+      "disableLabel": "Вы отключаете сеть {network}",
+      "disableTitle": "Отключить сеть",
+      "lightClientLabel": "Мы советуем не подключать более 3-ех Light Client, чтобы сохранить лучший пользовательский опыт",
+      "lightClientTitle": "Вы уверены?",
+      "relayChainLabel": "Отключение Light Client для сетей Polkadot или Kusama отключит возможность верификации данных",
+      "relayChainTitle": "Вы уверены?"
     },
     "disabledNetworksLabel": "Отключенные сети",
     "emptyStateDescription": "Try to search for another key",
     "emptyStateLabel": "No networks with the entered name were found",
     "lightClientLabel": "Light client",
+    "removeCustomNodeModal": {
+      "cancelButton": "Нет, вернуться назад",
+      "confirmButton": "Да, я уверен",
+      "label": "Вы уверены, что хотите удалить Custom Node?",
+      "title": "Удалить Custom node?"
+    },
     "selectConnection": {
       "lightClient": "Light Client",
       "selectConnectionLabel": "Выберите тип подключения"

@@ -275,6 +275,15 @@ export const useNetwork = (): INetworkService => {
     });
   };
 
+  const removeRpcNode = async (chainId: ChainId, rpcNode: RpcNode): Promise<void> => {
+    const connection = connections[chainId];
+    if (!connection) return;
+
+    await updateConnectionState(chainId, {
+      customNodes: (connection.connection.customNodes || []).filter((node) => node.url !== rpcNode.url),
+    });
+  };
+
   const setupConnections = async (): Promise<void> => {
     try {
       const chainsData = await getChainsData();
@@ -295,6 +304,7 @@ export const useNetwork = (): INetworkService => {
     setupConnections,
     connectToNetwork,
     addRpcNode,
+    removeRpcNode,
     validateRpcNode,
   };
 };

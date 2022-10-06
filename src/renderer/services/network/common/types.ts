@@ -23,6 +23,7 @@ export interface INetworkService {
   connections: Record<string, ExtendedChain>;
   setupConnections: () => Promise<void>;
   addRpcNode: (chainId: ChainId, rpcNode: RpcNode) => Promise<void>;
+  removeRpcNode: (chainId: ChainId, rpcNode: RpcNode) => Promise<void>;
   validateRpcNode: (genesisHash: HexString, rpcUrl: string) => Promise<boolean>;
   connectToNetwork: (
     chainId: ChainId,
