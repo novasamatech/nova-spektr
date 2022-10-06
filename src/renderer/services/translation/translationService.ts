@@ -15,6 +15,9 @@ export const useTranslationService = (): ITranslationService => {
     lng: getLocale(),
     fallbackLng: Locales.en,
     debug: false,
+    react: {
+      transKeepBasicHtmlNodesFor: ['br', 'strong', 'i', 'u'],
+    },
 
     interpolation: {
       escapeValue: false,

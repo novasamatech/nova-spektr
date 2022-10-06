@@ -79,11 +79,11 @@
     "disableNetworkModal": {
       "cancelButton": "Нет, вернуться назад",
       "confirmButton": "Да, я уверен",
-      "disableLabel": "Вы отключаете сеть {network}",
+      "disableLabel": "Вы отключаете сеть <strong>{network}</strong>",
       "disableTitle": "Отключить сеть",
-      "lightClientLabel": "Мы советуем не подключать более 3-ех Light Client, чтобы сохранить лучший пользовательский опыт",
+      "lightClientLabel": "Мы советуем подключать не более <strong>3-ех Light Client</strong>, чтобы сохранить лучший <u>пользовательский опыт</u>",
       "lightClientTitle": "Вы уверены?",
-      "relayChainLabel": "Отключение Light Client для сетей Polkadot или Kusama отключит возможность верификации данных",
+      "relayChainLabel": "Отключение Light Client для сетей <strong>Polkadot</strong> или <strong>Kusama</strong> отключит возможность <u>верификации данных</u>",
       "relayChainTitle": "Вы уверены?"
     },
     "disabledNetworksLabel": "Отключенные сети",

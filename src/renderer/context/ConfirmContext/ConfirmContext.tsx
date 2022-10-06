@@ -1,11 +1,11 @@
-import { createContext, PropsWithChildren, useCallback, useContext, useRef, useState } from 'react';
+import { createContext, PropsWithChildren, useCallback, useContext, useRef, useState, ReactNode } from 'react';
 
 import { ConfirmModal } from '@renderer/components/ui';
 import useToggle from '@renderer/hooks/useToggle';
 
 export type ConfirmDialogProps = {
   title: string;
-  message: string;
+  message: ReactNode;
   confirmText: string;
   cancelText: string;
 };
@@ -27,7 +27,7 @@ const defaultState = {
 export const ConfirmDialogProvider = ({ children }: PropsWithChildren) => {
   const [isDialogOpen, toggleDialog] = useToggle();
 
-  const [dialogState, setDialogState] = useState(defaultState);
+  const [dialogState, setDialogState] = useState<ConfirmDialogProps>(defaultState);
 
   const fn = useRef<(choice: any) => void>();
 
