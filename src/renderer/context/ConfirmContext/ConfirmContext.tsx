@@ -16,7 +16,7 @@ type ConfirmContextProps = {
 
 const ConfirmDialog = createContext<ConfirmContextProps>({} as ConfirmContextProps);
 
-const ANIMATION_DURATION = 350;
+const MODAL_ANIMATION = 350;
 const defaultState = {
   title: '',
   message: '',
@@ -41,7 +41,7 @@ export const ConfirmDialogProvider = ({ children }: PropsWithChildren) => {
         resolve(choice);
         setTimeout(() => {
           setDialogState(defaultState);
-        }, ANIMATION_DURATION);
+        }, MODAL_ANIMATION);
       };
     });
   }, []);

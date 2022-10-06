@@ -39,6 +39,13 @@ const Selector = ({ networkItem }: Props) => {
 
   const isDisabled = connectionType === ConnectionType.DISABLED;
   const combinedNodes = nodes.concat(connection.customNodes || []);
+  const existingUrls = combinedNodes.reduce((acc, node) => {
+    if (!nodeToEdit || nodeToEdit.url !== node.url) {
+      acc.push(node.url);
+    }
+
+    return acc;
+  }, [] as string[]);
 
   const isCustomNode = (url: string) => {
     return connection.customNodes?.some((node) => node.url === url);
@@ -139,23 +146,49 @@ const Selector = ({ networkItem }: Props) => {
     disableNetwork();
   };
 
+  const onCloseRpcModal = async (newNode?: RpcNode) => {
+    toggleCustomRpc();
+
+    const shouldReconnect =
+      newNode &&
+      nodeToEdit &&
+      (newNode.name !== nodeToEdit.name || newNode.url !== nodeToEdit.url) &&
+      selectedNode === nodeToEdit.url;
+
+    setNodeToEdit(undefined);
+    if (!shouldReconnect) return;
+
+    setSelectedNode(newNode.url);
+    try {
+      await disconnect?.(true);
+
+      // Let unsubscribe from previous Provider, microtask first - macrotask second
+      setTimeout(() => {
+        connectToNetwork(chainId, ConnectionType.RPC_NODE, newNode);
+      });
+    } catch (error) {
+      console.warn(error);
+    }
+  };
+
   return (
     <>
       <Popover className="relative">
         <Popover.Button
           className={cn(
-            'h-10 w-72 rounded-2lg border border-shade-10 flex items-center justify-between px-2.5',
+            'flex items-center justify-between px-2.5 h-10 w-72 rounded-2lg border border-shade-10',
             'text-neutral font-semibold text-sm',
             isDisabled && 'text-shade-30',
           )}
         >
-          {{
-            [ConnectionType.DISABLED]: t('networkManagement.selectConnection.selectConnectionLabel'),
-            [ConnectionType.RPC_NODE]: activeNode?.name,
-            [ConnectionType.LIGHT_CLIENT]: t('networkManagement.selectConnection.lightClient'),
-          }[connectionType] || ''}
-
-          <Icon name="dropdown" size={20} />
+          <span className="truncate">
+            {{
+              [ConnectionType.DISABLED]: t('networkManagement.selectConnection.selectConnectionLabel'),
+              [ConnectionType.RPC_NODE]: activeNode?.name,
+              [ConnectionType.LIGHT_CLIENT]: t('networkManagement.selectConnection.lightClient'),
+            }[connectionType] || ''}
+          </span>
+          <Icon className="shrink-0 ml-2" name="dropdown" size={20} />
         </Popover.Button>
 
         <Popover.Panel className="absolute top-0 right-0 z-20 rounded-2lg shadow-surface bg-white border-2 border-shade-10 w-[350px]">
@@ -260,16 +293,11 @@ const Selector = ({ networkItem }: Props) => {
 
       <CustomRpcModal
         chainId={chainId}
-        networkName={name}
-        networkIcon={icon}
         node={nodeToEdit}
-        genesisHash={api?.genesisHash.toHex()}
-        existingUrls={combinedNodes.map((node) => node.url)}
+        network={{ name, icon, genesisHash: api?.genesisHash.toHex() }}
+        existingUrls={existingUrls}
         isOpen={isCustomRpcOpen}
-        onClose={() => {
-          toggleCustomRpc();
-          setNodeToEdit(undefined);
-        }}
+        onClose={onCloseRpcModal}
       />
     </>
   );

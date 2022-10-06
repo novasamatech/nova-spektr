@@ -1,8 +1,9 @@
 import { act, render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 
-import useToggle from '@renderer/hooks/useToggle';
+import CustomRpcModal from '@renderer/screens/Settings/Networks/ConnectionSelector/CustomRpcModal/CustomRpcModal';
 import { ConnectionStatus, ConnectionType } from '@renderer/domain/connection';
+import useToggle from '@renderer/hooks/useToggle';
 import { ExtendedChain } from '@renderer/services/network/common/types';
 import ConnectionSelector from './Selector';
 
@@ -28,7 +29,10 @@ jest.mock('@renderer/context/I18nContext', () => ({
 
 jest.mock('@renderer/hooks/useToggle');
 
-jest.mock('../CustomRpcModal/CustomRpcModal', () => () => 'customRpc');
+jest.mock('../CustomRpcModal/CustomRpcModal', () => ({
+  __esModule: true,
+  default: jest.fn(),
+}));
 
 describe('screen/Settings/Networks/ConnectionSelector/Selector', () => {
   const defaultNetwork: ExtendedChain = {
@@ -64,7 +68,15 @@ describe('screen/Settings/Networks/ConnectionSelector/Selector', () => {
     connection: {
       ...connectedNetwork.connection,
       activeNode: { url: 'wss://westend.api.onfinality.io/public-ws', name: 'OnFinality node' },
-      customNodes: [{ url: 'wss://westend-rpc.polkadot.io', name: 'My inactive custom node' }],
+      customNodes: [{ url: 'wss://westend-rpc.polkadot.io', name: 'My custom node' }],
+    },
+  };
+
+  const withCustomActiveNetwork: ExtendedChain = {
+    ...withCustomNetwork,
+    connection: {
+      ...withCustomNetwork.connection,
+      activeNode: { url: 'wss://westend-rpc.polkadot.io', name: 'My custom node' },
     },
   };
 
@@ -153,5 +165,32 @@ describe('screen/Settings/Networks/ConnectionSelector/Selector', () => {
     await act(async () => editNode.click());
 
     expect(confirmSpy).toBeCalled();
+  });
+
+  test('should reconnect after edit custom node', async () => {
+    const user = userEvent.setup();
+    const spyDisconnect = jest.fn();
+
+    (CustomRpcModal as jest.Mock).mockImplementation(({ onClose }: any) => (
+      <button type="button" onClick={() => onClose({ name: 'edit_node', url: 'edit_url' })}>
+        editCustomRpc
+      </button>
+    ));
+
+    render(<ConnectionSelector networkItem={{ ...withCustomActiveNetwork, disconnect: spyDisconnect }} />);
+
+    const selectorBtn = screen.getByRole('button', { name: /My custom node/ });
+    await act(async () => selectorBtn.click());
+
+    const row = screen.getByText('wss://westend-rpc.polkadot.io');
+    await user.hover(row);
+
+    const editNode = screen.getByRole('button', { name: 'edit-outline.svg' });
+    await act(async () => editNode.click());
+
+    const rpcCloseBtn = screen.getByRole('button', { name: 'editCustomRpc' });
+    act(() => rpcCloseBtn.click());
+
+    expect(spyDisconnect).toBeCalled();
   });
 });
