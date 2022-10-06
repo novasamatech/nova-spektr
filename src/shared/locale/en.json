@@ -81,11 +81,11 @@
     "disableNetworkModal": {
       "cancelButton": "No, take me back",
       "confirmButton": "Yes, I’m sure",
-      "disableLabel": "You are about to disable {network} network",
+      "disableLabel": "You are about to disable <strong>{network}</strong> network",
       "disableTitle": "Disable network",
-      "lightClientLabel": "In order to have a smooth experience, we do not suggest to have more than 3 Light Clients running at the same time",
+      "lightClientLabel": "In order to have a <u>smooth experience</u>, we do not suggest to have more than <strong>3 Light Clients</strong> running at the same time",
       "lightClientTitle": "Are you sure?",
-      "relayChainLabel": "Changing Light Client on Polkadot or Kusama network will turn off Data Verification",
+      "relayChainLabel": "Changing Light Client on <strong>Polkadot</strong> or <strong>Kusama</strong> network will turn off <u>Data Verification</u>",
       "relayChainTitle": "Are you sure?"
     },
     "disabledNetworksLabel": "Disabled Networks",

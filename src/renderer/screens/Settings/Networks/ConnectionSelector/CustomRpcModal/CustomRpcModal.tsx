@@ -157,7 +157,7 @@ const CustomRpcModal = ({ chainId, network, node, existingUrls, isOpen, onClose 
                 placeholder={t('networkManagement.customRpc.namePlaceholder')}
                 invalid={Boolean(errors.name)}
                 disabled={formState === FormState.LOADING}
-                value={value}
+                value={value || node?.name}
                 onChange={onChange}
               />
             )}
@@ -183,7 +183,7 @@ const CustomRpcModal = ({ chainId, network, node, existingUrls, isOpen, onClose 
               <Input
                 label={t('networkManagement.customRpc.addressLabel')}
                 placeholder={t('networkManagement.customRpc.addressPlaceholder')}
-                value={value}
+                value={value || node?.url}
                 invalid={Boolean(errors.url) || [FormState.INVALID, FormState.WRONG_NETWORK].includes(formState)}
                 disabled={formState === FormState.LOADING}
                 onChange={onAddressChange(onChange)}
