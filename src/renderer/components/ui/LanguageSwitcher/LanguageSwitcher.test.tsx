@@ -37,16 +37,12 @@ describe('ui/LanguageSwitcher', () => {
 
     const button = screen.getByTestId('language-switcher-button');
 
-    act(() => {
-      button.click();
-    });
+    act(() => button.click());
 
     const englishButton = screen.getByText('English');
     expect(englishButton).toBeInTheDocument();
 
-    act(() => {
-      englishButton.click();
-    });
+    act(() => englishButton.click());
 
     expect(changeLanguage).toBeCalledWith('en');
   });

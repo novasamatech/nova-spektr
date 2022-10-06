@@ -1,6 +1,7 @@
 import { createContext, PropsWithChildren, useCallback, useContext, useRef, useState } from 'react';
 
 import { ConfirmModal } from '@renderer/components/ui';
+import useToggle from '@renderer/hooks/useToggle';
 
 export type ConfirmDialogProps = {
   title: string;
@@ -10,13 +11,13 @@ export type ConfirmDialogProps = {
 };
 
 type ConfirmContextProps = {
-  confirm: (props: ConfirmDialogProps) => Promise<any>;
+  confirm: (props: ConfirmDialogProps) => Promise<boolean>;
 };
 
 const ConfirmDialog = createContext<ConfirmContextProps>({} as ConfirmContextProps);
 
+const ANIMATION_DURATION = 350;
 const defaultState = {
-  isOpen: false,
   title: '',
   message: '',
   confirmText: '',
@@ -24,23 +25,26 @@ const defaultState = {
 };
 
 export const ConfirmDialogProvider = ({ children }: PropsWithChildren) => {
+  const [isDialogOpen, toggleDialog] = useToggle();
+
   const [dialogState, setDialogState] = useState(defaultState);
 
   const fn = useRef<(choice: any) => void>();
 
-  const confirm = useCallback(
-    (data: ConfirmDialogProps) => {
-      return new Promise((resolve) => {
-        setDialogState({ ...data, isOpen: true });
+  const confirm = useCallback((data: ConfirmDialogProps): Promise<boolean> => {
+    return new Promise((resolve) => {
+      setDialogState(data);
+      toggleDialog();
 
-        fn.current = (choice: boolean) => {
-          resolve(choice);
+      fn.current = (choice: boolean) => {
+        toggleDialog();
+        resolve(choice);
+        setTimeout(() => {
           setDialogState(defaultState);
-        };
-      });
-    },
-    [setDialogState],
-  );
+        }, ANIMATION_DURATION);
+      };
+    });
+  }, []);
 
   return (
     <ConfirmDialog.Provider value={{ confirm }}>
@@ -48,11 +52,11 @@ export const ConfirmDialogProvider = ({ children }: PropsWithChildren) => {
 
       <ConfirmModal
         className="w-[400px]"
-        isOpen={dialogState.isOpen}
-        onClose={() => fn.current?.(false)}
-        onConfirm={() => fn.current?.(true)}
+        isOpen={isDialogOpen}
         confirmText={dialogState.confirmText}
         cancelText={dialogState.cancelText}
+        onClose={() => fn.current?.(false)}
+        onConfirm={() => fn.current?.(true)}
       >
         <h2 className="text-error font-semibold text-xl border-b border-error pb-2.5">{dialogState.title}</h2>
         <p className="pt-2.5 pb-5 text-neutral-variant">{dialogState.message}</p>
