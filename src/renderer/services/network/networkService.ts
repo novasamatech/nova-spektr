@@ -25,7 +25,7 @@ export const useNetwork = (): INetworkService => {
     throw new Error('=== 🔴 Connections storage in not defined 🔴 ===');
   }
 
-  const { getConnections, addConnections, updateConnection } = connectionStorage;
+  const { getConnections, addConnections, clearConnections, updateConnection } = connectionStorage;
 
   const updateConnectionState = (
     chainId: ChainId,
@@ -85,7 +85,9 @@ export const useNetwork = (): INetworkService => {
     const lightClientChains = getLightClientChains();
 
     return Object.values(chains.current).reduce((acc, { chainId, nodes }) => {
-      if (!connectionData[chainId]) {
+      if (connectionData[chainId]) {
+        acc.push(connectionData[chainId]);
+      } else {
         const connectionType = getKnownChain(chainId) ? ConnectionType.LIGHT_CLIENT : ConnectionType.RPC_NODE;
         const activeNode = connectionType === ConnectionType.RPC_NODE ? nodes[0] : undefined;
 
@@ -301,6 +303,7 @@ export const useNetwork = (): INetworkService => {
       chains.current = keyBy(sortChains(chainsData), 'chainId');
 
       const newConnections = await getNewConnections();
+      await clearConnections();
       await addConnections(newConnections);
 
       const connectionsMap = await getExtendConnections();

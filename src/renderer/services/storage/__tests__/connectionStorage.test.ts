@@ -107,4 +107,26 @@ describe('service/storage/connectionStorage', () => {
 
     expect(mockValue.connectionType).toEqual(ConnectionType.RPC_NODE);
   });
+
+  test('should clear connection storage', async () => {
+    const mockValues = [
+      {
+        chainId: '0x123' as ChainId,
+        connectionType: ConnectionType.DISABLED,
+        connectionStatus: ConnectionStatus.NONE,
+      },
+    ];
+    const mock = setupDbMock({
+      clear: jest.fn().mockImplementation(() => {
+        mockValues.pop();
+      }),
+    });
+
+    expect(mockValues).toHaveLength(1);
+
+    const { clearConnections } = useConnectionStorage(mock);
+    await clearConnections();
+
+    expect(mockValues).toHaveLength(0);
+  });
 });
