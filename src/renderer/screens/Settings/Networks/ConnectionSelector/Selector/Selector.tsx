@@ -8,7 +8,7 @@ import { useConfirmContext } from '@renderer/context/ConfirmContext';
 import { useI18n } from '@renderer/context/I18nContext';
 import { useNetworkContext } from '@renderer/context/NetworkContext';
 import { RpcNode } from '@renderer/domain/chain';
-import { ConnectionStatus, ConnectionType } from '@renderer/domain/connection';
+import { ConnectionType } from '@renderer/domain/connection';
 import useToggle from '@renderer/hooks/useToggle';
 import CustomRpcModal from '@renderer/screens/Settings/Networks/ConnectionSelector/CustomRpcModal/CustomRpcModal';
 import { ExtendedChain } from '@renderer/services/network/common/types';
@@ -101,9 +101,7 @@ const Selector = ({ networkItem }: Props) => {
 
     if (nodeId === LIGHT_CLIENT_KEY) {
       const lightClientsAmount = Object.values(connections).filter(
-        ({ connection }) =>
-          connection.connectionType === ConnectionType.LIGHT_CLIENT &&
-          connection.connectionStatus === ConnectionStatus.CONNECTED,
+        ({ connection }) => connection.connectionType === ConnectionType.LIGHT_CLIENT,
       ).length;
 
       if (lightClientsAmount >= MAX_LIGHT_CLIENTS) {
