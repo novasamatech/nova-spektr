@@ -47,8 +47,17 @@ describe('screen/Settings/Networks/ConnectionSelector/Selector', () => {
     ],
     connection: {
       chainId: '0x123',
+      canUseLightClient: false,
       connectionStatus: ConnectionStatus.NONE,
       connectionType: ConnectionType.DISABLED,
+    },
+  };
+
+  const lightClientNetworks: ExtendedChain = {
+    ...defaultNetwork,
+    connection: {
+      ...defaultNetwork.connection,
+      canUseLightClient: true,
     },
   };
 
@@ -96,13 +105,23 @@ describe('screen/Settings/Networks/ConnectionSelector/Selector', () => {
   });
 
   test('should render list of nodes', async () => {
-    render(<ConnectionSelector networkItem={defaultNetwork} />);
+    render(<ConnectionSelector networkItem={lightClientNetworks} />);
 
     const button = screen.getByRole('button');
     await act(async () => button.click());
 
     const nodes = screen.getAllByRole('radio');
     expect(nodes).toHaveLength(3);
+  });
+
+  test('should not show light client option', async () => {
+    render(<ConnectionSelector networkItem={defaultNetwork} />);
+
+    const selectorBtn = screen.getByRole('button');
+    await act(async () => selectorBtn.click());
+
+    const lightClient = screen.queryByText('networkManagement.lightClientLabel');
+    expect(lightClient).not.toBeInTheDocument();
   });
 
   test('should call open custom rpc component', async () => {

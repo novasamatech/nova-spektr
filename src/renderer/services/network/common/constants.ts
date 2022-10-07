@@ -8,6 +8,7 @@ export const enum Chains {
 }
 
 export const enum TestChains {
+  ROCOCO = '0x6408de7737c59c238890533af25896a2c20608d8b380bb01029acb392781063e',
   WESTEND = '0xe143f23803ac50e8f6f8e62695d1ce9e4e1d68aa36c1cd2cfd15340213f3423e',
   WESTMINT = '0x67f9723393ef76214df0118c34bbbd3dbebc8ed46a10973a8c969d48fe7598c9',
 }

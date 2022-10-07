@@ -17,7 +17,7 @@ export const useNetwork = (): INetworkService => {
   const [connections, setConnections] = useState<ConnectionsMap>({});
 
   const { getChainsData, sortChains } = useChains();
-  const { getKnownChain, getChainSpec } = useChainSpec();
+  const { getKnownChain, getChainSpec, getLightClientChains } = useChainSpec();
 
   const connectionStorage = storage.connectTo('connections');
 
@@ -82,6 +82,7 @@ export const useNetwork = (): INetworkService => {
   const getNewConnections = async (): Promise<Connection[]> => {
     const currentConnections = await getConnections();
     const connectionData = keyBy(currentConnections, 'chainId');
+    const lightClientChains = getLightClientChains();
 
     return Object.values(chains.current).reduce((acc, { chainId, nodes }) => {
       if (!connectionData[chainId]) {
@@ -92,6 +93,7 @@ export const useNetwork = (): INetworkService => {
           chainId,
           connectionType,
           activeNode,
+          canUseLightClient: lightClientChains.includes(chainId),
           connectionStatus: ConnectionStatus.NONE,
         });
       }

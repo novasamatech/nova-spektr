@@ -27,7 +27,7 @@ const Selector = ({ networkItem }: Props) => {
   const { confirm } = useConfirmContext();
 
   const { chainId, name, icon, api, connection, nodes, disconnect } = networkItem;
-  const { connectionType, activeNode } = connection;
+  const { canUseLightClient, connectionType, activeNode } = connection;
 
   const [nodeToEdit, setNodeToEdit] = useState<RpcNode>();
   const [selectedNode, setSelectedNode] = useState(
@@ -201,26 +201,30 @@ const Selector = ({ networkItem }: Props) => {
                   onChange={(value: string) => changeConnection(value, close)}
                   className="divide-y divide-shade-5"
                 >
-                  <RadioGroup.Option
-                    value={LIGHT_CLIENT_KEY}
-                    className={cn(
-                      'h-10 flex gap-2.5 px-4 box-border cursor-pointer items-center text-sm font-semibold text-neutral hover:bg-shade-2',
-                    )}
-                  >
-                    {({ checked }) => (
-                      <>
-                        <div
-                          className={cn(
-                            'rounded-full w-5 h-5',
-                            checked ? 'border-[6px] border-primary' : 'border-2 border-shade-30',
-                          )}
-                        ></div>
-                        <div>
-                          <div className={checked ? 'text-primary' : ''}>{t('networkManagement.lightClientLabel')}</div>
-                        </div>
-                      </>
-                    )}
-                  </RadioGroup.Option>
+                  {canUseLightClient && (
+                    <RadioGroup.Option
+                      value={LIGHT_CLIENT_KEY}
+                      className={cn(
+                        'h-10 flex gap-2.5 px-4 box-border cursor-pointer items-center text-sm font-semibold text-neutral hover:bg-shade-2',
+                      )}
+                    >
+                      {({ checked }) => (
+                        <>
+                          <div
+                            className={cn(
+                              'rounded-full w-5 h-5',
+                              checked ? 'border-[6px] border-primary' : 'border-2 border-shade-30',
+                            )}
+                          ></div>
+                          <div>
+                            <div className={checked ? 'text-primary' : ''}>
+                              {t('networkManagement.lightClientLabel')}
+                            </div>
+                          </div>
+                        </>
+                      )}
+                    </RadioGroup.Option>
+                  )}
                   {combinedNodes.map((node) => (
                     <RadioGroup.Option
                       value={node.url}

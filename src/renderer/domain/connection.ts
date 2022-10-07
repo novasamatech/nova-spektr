@@ -3,6 +3,7 @@ import { ChainId } from './shared-kernel';
 
 export type Connection = {
   chainId: ChainId;
+  canUseLightClient?: boolean;
   connectionType: ConnectionType;
   connectionStatus: ConnectionStatus;
   customNodes?: RpcNode[];

@@ -16,6 +16,7 @@ export interface IChainService {
 
 export interface IChainSpecService {
   getChainSpec: (chainId: ChainId) => Promise<string | undefined>;
+  getLightClientChains: () => ChainId[];
   getKnownChain: (chainId: ChainId) => string | undefined;
 }
 
