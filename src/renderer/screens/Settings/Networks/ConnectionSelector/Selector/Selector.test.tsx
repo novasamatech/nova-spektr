@@ -1,9 +1,10 @@
 import { act, render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 
-import CustomRpcModal from '@renderer/screens/Settings/Networks/ConnectionSelector/CustomRpcModal/CustomRpcModal';
+import { useNetworkContext } from '@renderer/context/NetworkContext';
 import { ConnectionStatus, ConnectionType } from '@renderer/domain/connection';
 import useToggle from '@renderer/hooks/useToggle';
+import CustomRpcModal from '@renderer/screens/Settings/Networks/ConnectionSelector/CustomRpcModal/CustomRpcModal';
 import { ExtendedChain } from '@renderer/services/network/common/types';
 import ConnectionSelector from './Selector';
 
@@ -182,6 +183,34 @@ describe('screen/Settings/Networks/ConnectionSelector/Selector', () => {
 
     const editNode = screen.getByRole('button', { name: 'delete-outline.svg' });
     await act(async () => editNode.click());
+
+    expect(confirmSpy).toBeCalled();
+  });
+
+  test('should call light client warning for 3+ light clients', async () => {
+    (useNetworkContext as jest.Mock).mockImplementation(() => ({
+      connectToNetwork: jest.fn(),
+      connections: {
+        '0x123': {
+          connection: { connectionType: ConnectionType.LIGHT_CLIENT, connectionStatus: ConnectionStatus.CONNECTED },
+        },
+        '0x456': {
+          connection: { connectionType: ConnectionType.LIGHT_CLIENT, connectionStatus: ConnectionStatus.CONNECTED },
+        },
+        '0x789': {
+          connection: { connectionType: ConnectionType.LIGHT_CLIENT, connectionStatus: ConnectionStatus.CONNECTED },
+        },
+      },
+    }));
+
+    const props = { ...defaultNetwork, connection: { ...defaultNetwork.connection, canUseLightClient: true } };
+    render(<ConnectionSelector networkItem={props} />);
+
+    const button = screen.getByRole('button');
+    await act(async () => button.click());
+
+    const lightClientBtn = screen.getByText('networkManagement.lightClientLabel');
+    await act(async () => lightClientBtn.click());
 
     expect(confirmSpy).toBeCalled();
   });
