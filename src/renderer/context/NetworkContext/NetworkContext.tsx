@@ -1,24 +1,21 @@
 import { createContext, PropsWithChildren, useContext, useEffect, useState } from 'react';
 
+import { RpcNode } from '@renderer/domain/chain';
 import { ConnectionType } from '@renderer/domain/connection';
 import { ChainId, HexString } from '@renderer/domain/shared-kernel';
-import { RpcNode } from '@renderer/domain/chain';
 import { useBalance } from '@renderer/services/balance/balanceService';
 import { TEST_PUBLIC_KEY } from '@renderer/services/balance/common/constants';
-import { ExtendedChain } from '@renderer/services/network/common/types';
+import { ExtendedChain, RpcValidation } from '@renderer/services/network/common/types';
 import { useNetwork } from '@renderer/services/network/networkService';
 import { useWallet } from '@renderer/services/wallet/walletService';
 
 type NetworkContextProps = {
   connections: Record<string, ExtendedChain>;
   addRpcNode: (chainId: ChainId, rpcNode: RpcNode) => Promise<void>;
+  updateRpcNode: (chainId: ChainId, oldNode: RpcNode, newNode: RpcNode) => Promise<void>;
   removeRpcNode: (chainId: ChainId, rpcNode: RpcNode) => Promise<void>;
-  validateRpcNode: (genesisHash: HexString, rpcUrl: string) => Promise<boolean>;
-  connectToNetwork: (
-    chainId: ChainId,
-    type: ConnectionType.RPC_NODE | ConnectionType.LIGHT_CLIENT,
-    node?: RpcNode,
-  ) => Promise<void>;
+  validateRpcNode: (genesisHash: HexString, rpcUrl: string) => Promise<RpcValidation>;
+  connectToNetwork: (chainId: ChainId, type: ConnectionType, node?: RpcNode) => Promise<void>;
 };
 
 export const NetworkContext = createContext<NetworkContextProps>({} as NetworkContextProps);
@@ -26,7 +23,7 @@ export const NetworkContext = createContext<NetworkContextProps>({} as NetworkCo
 export const NetworkProvider = ({ children }: PropsWithChildren) => {
   const [connectionsReady, setConnectionReady] = useState(false);
 
-  const { connections, setupConnections, connectToNetwork, addRpcNode, removeRpcNode, validateRpcNode } = useNetwork();
+  const { connections, setupConnections, connectToNetwork, ...rest } = useNetwork();
   const { subscribeBalances, subscribeLockBalances } = useBalance();
   const { getActiveWallets } = useWallet();
   const activeWallets = getActiveWallets();
@@ -96,9 +93,7 @@ export const NetworkProvider = ({ children }: PropsWithChildren) => {
   }, [connections, activeWallets]);
 
   return (
-    <NetworkContext.Provider value={{ connections, connectToNetwork, addRpcNode, removeRpcNode, validateRpcNode }}>
-      {children}
-    </NetworkContext.Provider>
+    <NetworkContext.Provider value={{ connections, connectToNetwork, ...rest }}>{children}</NetworkContext.Provider>
   );
 };
 

@@ -10,7 +10,7 @@ import { ChainId, HexString } from '@renderer/domain/shared-kernel';
 import storage from '@renderer/services/storage';
 import { useChainSpec } from './chainSpecService';
 import { useChains } from './chainsService';
-import { ConnectionsMap, INetworkService } from './common/types';
+import { ConnectionsMap, INetworkService, RpcValidation } from './common/types';
 
 export const useNetwork = (): INetworkService => {
   const chains = useRef<Record<ChainId, Chain>>({});
@@ -141,7 +141,7 @@ export const useNetwork = (): INetworkService => {
   };
 
   const createWebsocketProvider = (rpcUrl: string): ProviderInterface => {
-    // TODO: handle limited retries provider = new WsProvider(node.url, 5000, {1}, 11000);
+    // TODO: handle limited retries provider = new WsProvider(node.address, 5000, {1}, 11000);
     return new WsProvider(rpcUrl, 2000);
   };
 
@@ -187,13 +187,9 @@ export const useNetwork = (): INetworkService => {
     provider.on('error', handler);
   };
 
-  const connectToNetwork = async (
-    chainId: ChainId,
-    type: ConnectionType.RPC_NODE | ConnectionType.LIGHT_CLIENT,
-    node?: RpcNode,
-  ): Promise<void> => {
+  const connectToNetwork = async (chainId: ChainId, type: ConnectionType, node?: RpcNode): Promise<void> => {
     const connection = connections[chainId];
-    if (!connection) return;
+    if (!connection || type === ConnectionType.DISABLED) return;
 
     updateConnectionState(chainId, {
       activeNode: node,
@@ -237,22 +233,22 @@ export const useNetwork = (): INetworkService => {
     }
   };
 
-  const validateRpcNode = (genesisHash: HexString, rpcUrl: string): Promise<boolean> => {
+  const validateRpcNode = (genesisHash: HexString, rpcUrl: string): Promise<RpcValidation> => {
     return new Promise((resolve) => {
       const provider = new WsProvider(rpcUrl);
 
       provider.on('connected', async () => {
-        let isValid = false;
+        let isNetworkMatch = false;
         try {
           const api = await ApiPromise.create({ provider });
-          isValid = genesisHash === api.genesisHash.toHex();
+          isNetworkMatch = genesisHash === api.genesisHash.toHex();
 
           api.disconnect().catch(console.warn);
           provider.disconnect().catch(console.warn);
         } catch (error) {
           console.warn(error);
         }
-        resolve(isValid);
+        resolve(isNetworkMatch ? RpcValidation.VALID : RpcValidation.WRONG_NETWORK);
       });
 
       provider.on('error', async () => {
@@ -261,7 +257,7 @@ export const useNetwork = (): INetworkService => {
         } catch (error) {
           console.warn(error);
         }
-        resolve(false);
+        resolve(RpcValidation.INVALID);
       });
     });
   };
@@ -272,6 +268,19 @@ export const useNetwork = (): INetworkService => {
 
     await updateConnectionState(chainId, {
       customNodes: (connection.connection.customNodes || []).concat(rpcNode),
+    });
+  };
+
+  const updateRpcNode = async (chainId: ChainId, oldNode: RpcNode, newRpc: RpcNode): Promise<void> => {
+    const connection = connections[chainId];
+    if (!connection) return;
+
+    await updateConnectionState(chainId, {
+      customNodes: (connection.connection.customNodes || []).map((node) => {
+        if (node.url === oldNode.url && node.name === oldNode.name) return newRpc;
+
+        return node;
+      }),
     });
   };
 
@@ -304,6 +313,7 @@ export const useNetwork = (): INetworkService => {
     setupConnections,
     connectToNetwork,
     addRpcNode,
+    updateRpcNode,
     removeRpcNode,
     validateRpcNode,
   };
