@@ -28,6 +28,7 @@ export interface IConnectionStorage {
   addConnections: (connections: Connection[]) => Promise<IndexableType>;
   updateConnection: (connection: Connection) => Promise<IndexableType>;
   changeConnectionType: (connection: Connection, type: ConnectionType) => Promise<IndexableType>;
+  clearConnections: () => Promise<void>;
 }
 
 export interface IWalletStorage {
