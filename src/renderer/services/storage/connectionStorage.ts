@@ -28,4 +28,8 @@ export const useConnectionStorage = (db: Table<ConnectionDS>): IConnectionStorag
   changeConnectionType: (connection: Connection, type: ConnectionType): Promise<IndexableType> => {
     return db.update(connection, { connectionType: type });
   },
+
+  clearConnections: (): Promise<void> => {
+    return db.clear();
+  },
 });
