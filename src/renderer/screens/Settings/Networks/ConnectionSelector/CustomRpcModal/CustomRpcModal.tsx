@@ -105,8 +105,11 @@ const CustomRpcModal = ({ chainId, network, node, existingUrls, isOpen, onClose 
 
   const saveRpcNode = async (formData: CustomRpcForm) => {
     try {
-      if (node) await updateRpcNode(chainId, node, formData);
-      else await addRpcNode(chainId, formData);
+      if (node) {
+        await updateRpcNode(chainId, node, formData);
+      } else {
+        await addRpcNode(chainId, formData);
+      }
     } catch (error) {
       console.warn(error);
     }
