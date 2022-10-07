@@ -49,6 +49,14 @@ describe('screen/Settings/Networks/ConnectionSelector/Selector', () => {
     },
   };
 
+  const lightClientNetworks: ExtendedChain = {
+    ...defaultNetwork,
+    connection: {
+      ...defaultNetwork.connection,
+      canUseLightClient: true,
+    },
+  };
+
   const connectedNetwork: ExtendedChain = {
     ...defaultNetwork,
     connection: {
@@ -85,7 +93,7 @@ describe('screen/Settings/Networks/ConnectionSelector/Selector', () => {
   });
 
   test('should render list of nodes', async () => {
-    render(<ConnectionSelector networkItem={defaultNetwork} />);
+    render(<ConnectionSelector networkItem={lightClientNetworks} />);
 
     const button = screen.getByRole('button');
     await act(async () => button.click());
