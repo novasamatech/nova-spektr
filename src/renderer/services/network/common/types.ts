@@ -23,18 +23,21 @@ export interface INetworkService {
   connections: Record<string, ExtendedChain>;
   setupConnections: () => Promise<void>;
   addRpcNode: (chainId: ChainId, rpcNode: RpcNode) => Promise<void>;
+  updateRpcNode: (chainId: ChainId, oldNode: RpcNode, newNode: RpcNode) => Promise<void>;
   removeRpcNode: (chainId: ChainId, rpcNode: RpcNode) => Promise<void>;
-  validateRpcNode: (genesisHash: HexString, rpcUrl: string) => Promise<boolean>;
-  connectToNetwork: (
-    chainId: ChainId,
-    type: ConnectionType.RPC_NODE | ConnectionType.LIGHT_CLIENT,
-    node?: RpcNode,
-  ) => Promise<void>;
+  validateRpcNode: (genesisHash: HexString, rpcUrl: string) => Promise<RpcValidation>;
+  connectToNetwork: (chainId: ChainId, type: ConnectionType, node?: RpcNode) => Promise<void>;
 }
 
 // =====================================================
 // ======================= General =====================
 // =====================================================
+
+export const enum RpcValidation {
+  'INVALID',
+  'VALID',
+  'WRONG_NETWORK',
+}
 
 export type ExtendedChain = Chain & {
   connection: Connection;
