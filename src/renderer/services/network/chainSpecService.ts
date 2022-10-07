@@ -21,6 +21,7 @@ const KnownChains: Record<ChainId, WellKnownChain> = {
   [Chains.POLKADOT]: WellKnownChain.polkadot,
   [Chains.KUSAMA]: WellKnownChain.ksmcc3,
   [TestChains.WESTEND]: WellKnownChain.westend2,
+  [TestChains.ROCOCO]: WellKnownChain.rococo_v2_2,
 };
 
 export const useChainSpec = (): IChainSpecService => ({
