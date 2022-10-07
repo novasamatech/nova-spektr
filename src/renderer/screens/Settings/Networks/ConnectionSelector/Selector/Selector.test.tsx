@@ -191,15 +191,9 @@ describe('screen/Settings/Networks/ConnectionSelector/Selector', () => {
     (useNetworkContext as jest.Mock).mockImplementation(() => ({
       connectToNetwork: jest.fn(),
       connections: {
-        '0x123': {
-          connection: { connectionType: ConnectionType.LIGHT_CLIENT, connectionStatus: ConnectionStatus.CONNECTED },
-        },
-        '0x456': {
-          connection: { connectionType: ConnectionType.LIGHT_CLIENT, connectionStatus: ConnectionStatus.CONNECTED },
-        },
-        '0x789': {
-          connection: { connectionType: ConnectionType.LIGHT_CLIENT, connectionStatus: ConnectionStatus.CONNECTED },
-        },
+        '0x123': { connection: { connectionType: ConnectionType.LIGHT_CLIENT } },
+        '0x456': { connection: { connectionType: ConnectionType.LIGHT_CLIENT } },
+        '0x789': { connection: { connectionType: ConnectionType.LIGHT_CLIENT } },
       },
     }));
 
