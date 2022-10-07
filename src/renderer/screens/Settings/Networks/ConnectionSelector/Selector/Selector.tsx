@@ -52,14 +52,6 @@ const Selector = ({ networkItem }: Props) => {
     return connection.customNodes?.some((node) => node.url === url);
   };
 
-  const disableNetwork = async () => {
-    try {
-      await disconnect?.(false);
-    } catch (error) {
-      console.warn(error);
-    }
-  };
-
   const confirmRemoveCustomNode = (): Promise<boolean> =>
     confirm({
       title: t('networkManagement.removeCustomNodeModal.title'),
@@ -84,11 +76,33 @@ const Selector = ({ networkItem }: Props) => {
       cancelText: t('networkManagement.disableNetworkModal.cancelButton'),
     });
 
+  const confirmEnableLightClient = (): Promise<boolean> =>
+    confirm({
+      title: t('networkManagement.disableNetworkModal.lightClientTitle'),
+      message: <Trans i18nKey="networkManagement.disableNetworkModal.lightClientLabel" />,
+      confirmText: t('networkManagement.disableNetworkModal.confirmButton'),
+      cancelText: t('networkManagement.disableNetworkModal.cancelButton'),
+    });
+
+  const disableNetwork = async () => {
+    try {
+      await disconnect?.(false);
+    } catch (error) {
+      console.warn(error);
+    }
+  };
+
   const changeConnection = async (nodeId: string, onClose: () => void) => {
     if (connectionType === ConnectionType.LIGHT_CLIENT) {
-      const result = await confirmDisableLightClient();
+      const proceed = await confirmDisableLightClient();
 
-      if (!result) return;
+      if (!proceed) return;
+    }
+
+    if (nodeId === ConnectionType.LIGHT_CLIENT) {
+      const proceed = await confirmEnableLightClient();
+
+      if (proceed) return;
     }
 
     setSelectedNode(nodeId);
@@ -118,8 +132,8 @@ const Selector = ({ networkItem }: Props) => {
 
   const onRemoveCustomNode = (rpcNode: RpcNode) => async (event: MouseEvent<HTMLButtonElement>) => {
     event.preventDefault();
-    const result = await confirmRemoveCustomNode();
-    if (!result) return;
+    const proceed = await confirmRemoveCustomNode();
+    if (!proceed) return;
 
     try {
       await removeRpcNode(chainId, rpcNode);
@@ -136,13 +150,13 @@ const Selector = ({ networkItem }: Props) => {
   };
 
   const openDisableModal = async () => {
-    let result = false;
+    let proceed = false;
     if (connectionType === ConnectionType.LIGHT_CLIENT) {
-      result = await confirmDisableLightClient();
+      proceed = await confirmDisableLightClient();
     } else if (connectionType === ConnectionType.RPC_NODE) {
-      result = await confirmDisableNetwork();
+      proceed = await confirmDisableNetwork();
     }
-    if (!result) return;
+    if (!proceed) return;
 
     disableNetwork();
   };
