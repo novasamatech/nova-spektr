@@ -4,7 +4,7 @@ import userEvent from '@testing-library/user-event';
 import { useNetworkContext } from '@renderer/context/NetworkContext';
 import { ConnectionStatus, ConnectionType } from '@renderer/domain/connection';
 import useToggle from '@renderer/hooks/useToggle';
-import CustomRpcModal from '@renderer/screens/Settings/Networks/ConnectionSelector/CustomRpcModal/CustomRpcModal';
+import CustomRpcModal from '../CustomRpcModal/CustomRpcModal';
 import { ExtendedChain } from '@renderer/services/network/common/types';
 import ConnectionSelector from './Selector';
 
