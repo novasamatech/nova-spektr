@@ -17,7 +17,7 @@ export const useNetwork = (): INetworkService => {
   const [connections, setConnections] = useState<ConnectionsMap>({});
 
   const { getChainsData, sortChains } = useChains();
-  const { getKnownChain, getChainSpec, getLightClientChains } = useChainSpec();
+  const { getKnownChain, getLightClientChains } = useChainSpec();
 
   const connectionStorage = storage.connectTo('connections');
 
@@ -118,30 +118,14 @@ export const useNetwork = (): INetworkService => {
     }, {} as ConnectionsMap);
   };
 
-  const createSubstrateProvider = async (chainId: ChainId): Promise<ProviderInterface> => {
+  const createSubstrateProvider = (chainId: ChainId): ProviderInterface | undefined => {
     const knownChainId = getKnownChain(chainId);
 
     if (knownChainId) {
       return new ScProvider(knownChainId);
+    } else {
+      throw new Error('Parachains do not support Substrate Connect yet');
     }
-
-    const chainSpec = await getChainSpec(chainId);
-    if (!chainSpec) {
-      throw new Error('Chain spec not found');
-    }
-
-    const parentId = chains.current[chainId].parentId;
-    if (parentId) {
-      const parentName = getKnownChain(parentId);
-      if (!parentName) {
-        throw new Error('Relay chain not found');
-      }
-      const relayProvider = new ScProvider(parentName);
-
-      return new ScProvider(chainSpec, relayProvider);
-    }
-
-    return new ScProvider(chainSpec);
   };
 
   const createWebsocketProvider = (rpcUrl: string): ProviderInterface => {
@@ -207,7 +191,7 @@ export const useNetwork = (): INetworkService => {
     };
 
     if (type === ConnectionType.LIGHT_CLIENT) {
-      provider.instance = await createSubstrateProvider(chainId);
+      provider.instance = createSubstrateProvider(chainId);
     } else if (type === ConnectionType.RPC_NODE && node) {
       provider.instance = createWebsocketProvider(node.url);
     }

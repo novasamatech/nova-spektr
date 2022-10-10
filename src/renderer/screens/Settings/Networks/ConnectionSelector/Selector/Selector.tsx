@@ -4,16 +4,17 @@ import { MouseEvent, useState } from 'react';
 import { Trans } from 'react-i18next';
 
 import { Button, Icon } from '@renderer/components/ui';
+import { useConfirmContext } from '@renderer/context/ConfirmContext';
+import { useI18n } from '@renderer/context/I18nContext';
 import { useNetworkContext } from '@renderer/context/NetworkContext';
 import { RpcNode } from '@renderer/domain/chain';
 import { ConnectionType } from '@renderer/domain/connection';
 import useToggle from '@renderer/hooks/useToggle';
 import CustomRpcModal from '@renderer/screens/Settings/Networks/ConnectionSelector/CustomRpcModal/CustomRpcModal';
 import { ExtendedChain } from '@renderer/services/network/common/types';
-import { useI18n } from '@renderer/context/I18nContext';
-import { useConfirmContext } from '@renderer/context/ConfirmContext';
 
-const LIGHT_CLIENT_KEY = 'light-client';
+const LIGHT_CLIENT_KEY = 'LIGHT_CLIENT';
+const MAX_LIGHT_CLIENTS = 3;
 
 type Props = {
   networkItem: ExtendedChain;
@@ -21,7 +22,7 @@ type Props = {
 
 const Selector = ({ networkItem }: Props) => {
   const { t } = useI18n();
-  const { connectToNetwork, removeRpcNode } = useNetworkContext();
+  const { connections, connectToNetwork, removeRpcNode } = useNetworkContext();
   const [isCustomRpcOpen, toggleCustomRpc] = useToggle();
 
   const { confirm } = useConfirmContext();
@@ -52,14 +53,6 @@ const Selector = ({ networkItem }: Props) => {
     return connection.customNodes?.some((node) => node.url === url);
   };
 
-  const disableNetwork = async () => {
-    try {
-      await disconnect?.(false);
-    } catch (error) {
-      console.warn(error);
-    }
-  };
-
   const confirmRemoveCustomNode = (): Promise<boolean> =>
     confirm({
       title: t('networkManagement.removeCustomNodeModal.title'),
@@ -84,11 +77,37 @@ const Selector = ({ networkItem }: Props) => {
       cancelText: t('networkManagement.disableNetworkModal.cancelButton'),
     });
 
+  const confirmEnableLightClient = (): Promise<boolean> =>
+    confirm({
+      title: t('networkManagement.disableNetworkModal.lightClientTitle'),
+      message: <Trans i18nKey="networkManagement.disableNetworkModal.lightClientLabel" />,
+      confirmText: t('networkManagement.disableNetworkModal.confirmButton'),
+      cancelText: t('networkManagement.disableNetworkModal.cancelButton'),
+    });
+
+  const disableNetwork = async () => {
+    try {
+      await disconnect?.(false);
+    } catch (error) {
+      console.warn(error);
+    }
+  };
+
   const changeConnection = async (nodeId: string, onClose: () => void) => {
     if (connectionType === ConnectionType.LIGHT_CLIENT) {
-      const result = await confirmDisableLightClient();
+      const proceed = await confirmDisableLightClient();
+      if (!proceed) return;
+    }
 
-      if (!result) return;
+    if (nodeId === LIGHT_CLIENT_KEY) {
+      const lightClientsAmount = Object.values(connections).filter(
+        ({ connection }) => connection.connectionType === ConnectionType.LIGHT_CLIENT,
+      ).length;
+
+      if (lightClientsAmount >= MAX_LIGHT_CLIENTS) {
+        const proceed = await confirmEnableLightClient();
+        if (!proceed) return;
+      }
     }
 
     setSelectedNode(nodeId);
@@ -118,8 +137,8 @@ const Selector = ({ networkItem }: Props) => {
 
   const onRemoveCustomNode = (rpcNode: RpcNode) => async (event: MouseEvent<HTMLButtonElement>) => {
     event.preventDefault();
-    const result = await confirmRemoveCustomNode();
-    if (!result) return;
+    const proceed = await confirmRemoveCustomNode();
+    if (!proceed) return;
 
     try {
       await removeRpcNode(chainId, rpcNode);
@@ -136,13 +155,13 @@ const Selector = ({ networkItem }: Props) => {
   };
 
   const openDisableModal = async () => {
-    let result = false;
+    let proceed = false;
     if (connectionType === ConnectionType.LIGHT_CLIENT) {
-      result = await confirmDisableLightClient();
+      proceed = await confirmDisableLightClient();
     } else if (connectionType === ConnectionType.RPC_NODE) {
-      result = await confirmDisableNetwork();
+      proceed = await confirmDisableNetwork();
     }
-    if (!result) return;
+    if (!proceed) return;
 
     disableNetwork();
   };
@@ -192,9 +211,14 @@ const Selector = ({ networkItem }: Props) => {
           <Icon className="shrink-0 ml-2" name="dropdown" size={20} />
         </Popover.Button>
 
-        <Popover.Panel className="absolute top-0 right-0 z-20 rounded-2lg shadow-surface bg-white border-2 border-shade-10 w-[350px]">
+        <Popover.Panel
+          className={cn(
+            'absolute top-0 right-0 z-20 overflow-hidden rounded-2lg',
+            'shadow-surface bg-white border-2 border-shade-10 w-[350px]',
+          )}
+        >
           {({ close }) => (
-            <div>
+            <>
               <div className="flex flex-col max-h-64 overflow-auto mb-5">
                 <RadioGroup
                   value={selectedNode}
@@ -205,7 +229,8 @@ const Selector = ({ networkItem }: Props) => {
                     <RadioGroup.Option
                       value={LIGHT_CLIENT_KEY}
                       className={cn(
-                        'h-10 flex gap-2.5 px-4 box-border cursor-pointer items-center text-sm font-semibold text-neutral hover:bg-shade-2',
+                        'h-10 flex gap-2.5 px-4 box-border cursor-pointer items-center',
+                        'text-sm font-semibold text-neutral hover:bg-shade-2',
                       )}
                     >
                       {({ checked }) => (
@@ -231,7 +256,7 @@ const Selector = ({ networkItem }: Props) => {
                       key={node.name}
                       className={cn(
                         'group flex h-10 px-4 box-border items-center',
-                        ' cursor-pointer text-sm font-semibold text-neutral hover:bg-shade-2',
+                        'cursor-pointer text-sm font-semibold text-neutral hover:bg-shade-2',
                       )}
                     >
                       {({ checked }) => (
@@ -281,17 +306,17 @@ const Selector = ({ networkItem }: Props) => {
                 </Button>
                 {!isDisabled && (
                   <Button
-                    onClick={openDisableModal}
-                    pallet="error"
+                    pallet="dark"
                     variant="text"
                     className="h-7.5"
                     prefixElement={<Icon name="disable" size={16} />}
+                    onClick={openDisableModal}
                   >
                     {t('networkManagement.disableNetworkButton')}
                   </Button>
                 )}
               </div>
-            </div>
+            </>
           )}
         </Popover.Panel>
       </Popover>
