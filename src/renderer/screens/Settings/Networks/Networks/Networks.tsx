@@ -9,14 +9,15 @@ import NetworkList from '../NetworkList/NetworkList';
 import { useI18n } from '@renderer/context/I18nContext';
 
 const Networks = () => {
-  const [query, setQuery] = useState('');
-
+  const { t } = useI18n();
   const { connections } = useNetworkContext();
   const { sortChains } = useChains();
 
+  const [query, setQuery] = useState('');
+
   const { disabledNetworks, activeNetworksGroup } = Object.values(connections).reduce(
     (acc, c) => {
-      if (!c.name.toLowerCase().includes(query)) return acc;
+      if (!c.name.toLowerCase().includes(query.toLowerCase())) return acc;
 
       const {
         disabledNetworks,
@@ -55,8 +56,6 @@ const Networks = () => {
     ...activeNetworksGroup.connected,
   ];
 
-  const { t } = useI18n();
-
   return (
     <div className="h-full flex flex-col overflow-y-auto">
       <div className="flex items-center gap-x-2.5 mb-9">
@@ -75,63 +74,7 @@ const Networks = () => {
           onChange={(e) => setQuery(e.target.value)}
         />
 
-        {disabledNetworks.length > 0 || activeNetworks.length > 0 ? (
-          <>
-            <NetworkList title={t('networkManagement.disabledNetworksLabel')} networkList={disabledNetworks}>
-              <div className="flex items-center gap-x-1 relative">
-                <Icon
-                  className="absolute -top-[1px] -left-[5px] rounded-full bg-white border border-white text-neutral"
-                  name="disableCutout"
-                  size={10}
-                />
-                <p className="bg-shade-70 rounded-full w-5 h-5 pt-1 text-center text-white text-2xs">
-                  {disabledNetworks.length}
-                </p>
-              </div>
-            </NetworkList>
-
-            <NetworkList isDefaultOpen title={t('networkManagement.activeNetworksLabel')} networkList={activeNetworks}>
-              <div className="flex gap-x-3">
-                {activeNetworksGroup.connected.length > 0 && (
-                  <div className="flex items-center gap-x-1 relative">
-                    <Icon
-                      className="absolute -top-[1px] -left-[5px] rounded-full bg-white border border-white text-success"
-                      name="checkmarkCutout"
-                      size={10}
-                    />
-                    <p className="bg-success rounded-full w-5 h-5 pt-1 text-center text-white text-2xs">
-                      {activeNetworksGroup.connected.length}
-                    </p>
-                  </div>
-                )}
-                {activeNetworksGroup.error.length > 0 && (
-                  <div className="flex items-center gap-x-1 relative">
-                    <Icon
-                      className="absolute -top-[1px] -left-[5px] rounded-full bg-white border border-white text-error"
-                      name="closeCutout"
-                      size={10}
-                    />
-                    <p className="bg-error rounded-full w-5 h-5 pt-1 text-center text-white text-2xs">
-                      {activeNetworksGroup.error.length}
-                    </p>
-                  </div>
-                )}
-                {activeNetworksGroup.connecting.length > 0 && (
-                  <div className="flex items-center gap-x-1 relative">
-                    <Icon
-                      className="absolute -top-[1px] -left-[5px] rounded-full bg-white border border-white text-neutral-variant"
-                      name="loaderCutout"
-                      size={10}
-                    />
-                    <p className="bg-shade-30 rounded-full w-5 h-5 pt-1 text-center text-white text-2xs">
-                      {activeNetworksGroup.connecting.length}
-                    </p>
-                  </div>
-                )}
-              </div>
-            </NetworkList>
-          </>
-        ) : (
+        {disabledNetworks.length === 0 && activeNetworks.length === 0 && (
           <div className="flex flex-col items-center mx-auto pt-12 pb-15">
             <Icon as="img" name="noResult" size={300} />
             <p className="text-center text-2xl font-bold leading-7 text-neutral">
@@ -140,6 +83,65 @@ const Networks = () => {
             <p className="text-center text-base text-neutral-variant">{t('networkManagement.emptyStateDescription')}</p>
           </div>
         )}
+
+        <NetworkList query={query} title={t('networkManagement.disabledNetworksLabel')} networkList={disabledNetworks}>
+          <div className="flex items-center gap-x-1 relative">
+            <Icon
+              className="absolute -top-[1px] -left-[5px] rounded-full bg-white border border-white text-neutral"
+              name="disableCutout"
+              size={10}
+            />
+            <p className="bg-shade-70 rounded-full w-5 h-5 pt-1 text-center text-white text-2xs">
+              {disabledNetworks.length}
+            </p>
+          </div>
+        </NetworkList>
+
+        <NetworkList
+          isDefaultOpen
+          query={query}
+          title={t('networkManagement.activeNetworksLabel')}
+          networkList={activeNetworks}
+        >
+          <div className="flex gap-x-3">
+            {activeNetworksGroup.connected.length > 0 && (
+              <div className="flex items-center gap-x-1 relative">
+                <Icon
+                  className="absolute -top-[1px] -left-[5px] rounded-full bg-white border border-white text-success"
+                  name="checkmarkCutout"
+                  size={10}
+                />
+                <p className="bg-success rounded-full w-5 h-5 pt-1 text-center text-white text-2xs">
+                  {activeNetworksGroup.connected.length}
+                </p>
+              </div>
+            )}
+            {activeNetworksGroup.error.length > 0 && (
+              <div className="flex items-center gap-x-1 relative">
+                <Icon
+                  className="absolute -top-[1px] -left-[5px] rounded-full bg-white border border-white text-error"
+                  name="closeCutout"
+                  size={10}
+                />
+                <p className="bg-error rounded-full w-5 h-5 pt-1 text-center text-white text-2xs">
+                  {activeNetworksGroup.error.length}
+                </p>
+              </div>
+            )}
+            {activeNetworksGroup.connecting.length > 0 && (
+              <div className="flex items-center gap-x-1 relative">
+                <Icon
+                  className="absolute -top-[1px] -left-[5px] rounded-full bg-white border border-white text-neutral-variant"
+                  name="loaderCutout"
+                  size={10}
+                />
+                <p className="bg-shade-30 rounded-full w-5 h-5 pt-1 text-center text-white text-2xs">
+                  {activeNetworksGroup.connecting.length}
+                </p>
+              </div>
+            )}
+          </div>
+        </NetworkList>
       </section>
     </div>
   );
