@@ -1,9 +1,9 @@
-import { act, render, renderHook, screen } from '@testing-library/react';
+import { act, render, renderHook, screen, waitFor } from '@testing-library/react';
 
 import { ConnectionType } from '@renderer/domain/connection';
 import { useBalance } from '@renderer/services/balance/balanceService';
 import { useNetwork } from '@renderer/services/network/networkService';
-import { NetworkContext, NetworkProvider, useNetworkContext } from './NetworkContext';
+import { NetworkProvider, useNetworkContext } from './NetworkContext';
 
 jest.mock('@renderer/services/network/networkService', () => ({
   useNetwork: jest.fn().mockReturnValue({
@@ -100,25 +100,16 @@ describe('context/NetworkContext/useNetworkContext', () => {
   });
 
   test('should have defined functions', () => {
-    (useNetwork as jest.Mock).mockImplementation(() => ({
-      connections: {},
-      connectToNetwork: jest.fn(),
-      addRpcNode: jest.fn(),
-      removeRpcNode: jest.fn(),
-      validateRpcNode: jest.fn(),
-    }));
-    const wrapper = ({ children }: any) => {
-      const { setupConnections, ...rest } = useNetwork();
-
-      return <NetworkContext.Provider value={rest}>{children}</NetworkContext.Provider>;
-    };
+    const wrapper = ({ children }: any) => <NetworkProvider>{children}</NetworkProvider>;
 
     const { result } = renderHook(() => useNetworkContext(), { wrapper });
     const { connections, connectToNetwork, addRpcNode, removeRpcNode, validateRpcNode } = result.current;
-    expect(connections).toBeDefined();
-    expect(connectToNetwork).toBeDefined();
-    expect(addRpcNode).toBeDefined();
-    expect(removeRpcNode).toBeDefined();
-    expect(validateRpcNode).toBeDefined();
+    waitFor(() => {
+      expect(connections).toBeDefined();
+      expect(connectToNetwork).toBeDefined();
+      expect(addRpcNode).toBeDefined();
+      expect(removeRpcNode).toBeDefined();
+      expect(validateRpcNode).toBeDefined();
+    });
   });
 });

@@ -7,7 +7,7 @@ import { Chain } from '@renderer/domain/chain';
 import { isKusama, isPolkadot, isTestnet } from './common/utils';
 
 export function useChains(): IChainService {
-  const getChainsData = () => Promise.resolve(chains as unknown as Chain[]);
+  const getChainsData = (): Promise<Chain[]> => Promise.resolve(chains as unknown as Chain[]);
 
   const sortChains = <T extends Chain = Chain>(chains: T[]): T[] => {
     let polkadot;

@@ -18,7 +18,7 @@ type NetworkContextProps = {
   connectToNetwork: (chainId: ChainId, type: ConnectionType, node?: RpcNode) => Promise<void>;
 };
 
-export const NetworkContext = createContext<NetworkContextProps>({} as NetworkContextProps);
+const NetworkContext = createContext<NetworkContextProps>({} as NetworkContextProps);
 
 export const NetworkProvider = ({ children }: PropsWithChildren) => {
   const [connectionsReady, setConnectionReady] = useState(false);

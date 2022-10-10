@@ -1,5 +1,5 @@
+import { Chains, TestChains } from '@renderer/services/network/common/constants';
 import { useChainSpec } from '../chainSpecService';
-import statemine from '../common/chainSpecs/kusama-statemine.json';
 
 jest.mock('@polkadot/rpc-provider/substrate-connect', () => ({
   WellKnownChain: {
@@ -11,7 +11,7 @@ describe('service/chainSpec', () => {
   test('should init', () => {
     const params = useChainSpec();
 
-    expect(params.getChainSpec).toBeDefined();
+    expect(params.getLightClientChains).toBeDefined();
     expect(params.getKnownChain).toBeDefined();
   });
 
@@ -29,17 +29,11 @@ describe('service/chainSpec', () => {
     expect(unknown).toEqual(undefined);
   });
 
-  test('should provide correct chain spec', async () => {
-    const { getChainSpec } = useChainSpec();
-    const spec = await getChainSpec('0x48239ef607d7928874027a43a67689209727dfb3d3dc5e5b03a39bdc2eda771a');
-
-    expect(spec).toEqual(JSON.stringify(statemine));
-  });
-
-  test('should provide empty string for incorrect id', async () => {
-    const { getChainSpec } = useChainSpec();
-    const spec = await getChainSpec('0x0000000000000000000000000000000000000000000000000000000000000000');
-
-    expect(spec).toEqual(undefined);
+  test('should get chains supporting Light Client', () => {
+    const { getLightClientChains } = useChainSpec();
+    const chains = getLightClientChains();
+    [Chains.POLKADOT, Chains.KUSAMA, TestChains.WESTEND, TestChains.ROCOCO].forEach((chain, index) => {
+      expect(chains[index]).toEqual(chain);
+    });
   });
 });
