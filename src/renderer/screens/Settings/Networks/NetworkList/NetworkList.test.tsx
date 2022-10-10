@@ -52,4 +52,24 @@ describe('screen/Settings/NetworkList', () => {
     const visibleNetworkItem = screen.getByText('networkItem');
     expect(visibleNetworkItem).toBeInTheDocument();
   });
+
+  test('should render open list with active search query', async () => {
+    const { rerender } = render(
+      <NetworkList title="Test list" networkList={networks}>
+        children
+      </NetworkList>,
+    );
+
+    const hiddenNetworkItemBefore = screen.queryByText('networkItem');
+    expect(hiddenNetworkItemBefore).not.toBeInTheDocument();
+
+    rerender(
+      <NetworkList query="My test chain" title="Test list" networkList={networks}>
+        children
+      </NetworkList>,
+    );
+
+    const hiddenNetworkItemAfter = screen.getByText('networkItem');
+    expect(hiddenNetworkItemAfter).toBeInTheDocument();
+  });
 });
