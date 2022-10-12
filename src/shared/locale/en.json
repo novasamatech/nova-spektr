@@ -93,6 +93,7 @@
     "emptyStateDescription": "Try to search for another name",
     "emptyStateLabel": "No networks with the entered name were found",
     "lightClientLabel": "Light client",
+    "autoBalanceLabel": "Auto balance",
     "removeCustomNodeModal": {
       "cancelButton": "No, take me back",
       "confirmButton": "Yes, I’m sure",
@@ -100,7 +101,8 @@
       "title": "Delete Custom node?"
     },
     "selectConnection": {
-      "lightClient": "Light Client",
+      "autoBalance": "Auto balance",
+      "lightClient": "Light client",
       "selectConnectionLabel": "Select connection type"
     },
     "subTitle": "Networks"

@@ -13,6 +13,7 @@ export type Connection = {
 
 export const enum ConnectionType {
   LIGHT_CLIENT = 'LIGHT_CLIENT',
+  AUTO_BALANCE = 'AUTO_BALANCE',
   RPC_NODE = 'RPC_NODE',
   DISABLED = 'DISABLED',
 }
