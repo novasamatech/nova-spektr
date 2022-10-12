@@ -24,9 +24,9 @@ export const useBalance = (): IBalanceService => {
   const { updateBalance, getBalances, getBalance, getNetworkBalances } = balanceStorage;
 
   const handleValidation = (balance: Balance, isValid: boolean) => {
-    if (!isValid) {
-      updateBalance({ ...balance, verified: false });
-    }
+    if (isValid) return;
+
+    updateBalance({ ...balance, verified: false });
   };
 
   const getLiveBalance = (publicKey: PublicKey, chainId: ChainId, assetId: string): BalanceDS | undefined => {
@@ -44,7 +44,7 @@ export const useBalance = (): IBalanceService => {
     data: Codec,
     onValid?: () => void,
     onInvalid?: () => void,
-  ) => {
+  ): Promise<void> => {
     let isValid = false;
 
     try {
@@ -72,10 +72,10 @@ export const useBalance = (): IBalanceService => {
     relaychain: ExtendedChain | undefined,
     asset: Asset,
   ) => {
-    const api = chain.api;
-    if (!api) return;
+    if (!chain.api) return;
 
-    const address = toAddress(publicKey, chain.addressPrefix);
+    const { api, addressPrefix, chainId } = chain;
+    const address = toAddress(publicKey, addressPrefix);
 
     return api.query.system.account(address, async (data: AccountInfo) => {
       const miscFrozen = new BN(data.data.miscFrozen);
@@ -83,7 +83,7 @@ export const useBalance = (): IBalanceService => {
 
       const balance = {
         publicKey,
-        chainId: chain.chainId,
+        chainId,
         assetId: asset.assetId.toString(),
         verified: true,
         free: data.data.free.toString(),
@@ -93,17 +93,16 @@ export const useBalance = (): IBalanceService => {
 
       updateBalance(balance);
 
-      if (relaychain?.api) {
-        const storageKey = api.query.system.account.key(address);
-        runValidation(
-          relaychain.api,
-          api,
-          storageKey,
-          data,
-          () => handleValidation(balance, true),
-          () => handleValidation(balance, false),
-        );
-      }
+      if (!relaychain?.api) return;
+
+      runValidation(
+        relaychain.api,
+        api,
+        api.query.system.account.key(address),
+        data,
+        () => handleValidation(balance, true),
+        () => handleValidation(balance, false),
+      );
     });
   };
 
@@ -113,18 +112,18 @@ export const useBalance = (): IBalanceService => {
     relaychain: ExtendedChain | undefined,
     asset: Asset,
   ) => {
-    const statemineAssetId = (asset?.typeExtras as StatemineExtras).assetId;
-    const api = chain.api;
-    if (!api) return;
+    if (!chain.api) return;
 
-    const address = toAddress(publicKey, chain.addressPrefix);
+    const { api, addressPrefix, chainId } = chain;
+    const statemineAssetId = (asset?.typeExtras as StatemineExtras).assetId;
+    const address = toAddress(publicKey, addressPrefix);
 
     return api.query.assets.account(statemineAssetId, address, (data: any) => {
       try {
         const free = data.isNone ? '0' : data.unwrap().balance.toString();
         const balance = {
           publicKey,
-          chainId: chain.chainId,
+          chainId,
           assetId: asset.assetId.toString(),
           verified: true,
           free: free.toString(),
@@ -134,19 +133,18 @@ export const useBalance = (): IBalanceService => {
 
         updateBalance(balance);
 
-        if (relaychain?.api) {
-          const storageKey = api.query.assets.account.key(statemineAssetId, address);
-          runValidation(
-            relaychain.api,
-            api,
-            storageKey,
-            data,
-            () => handleValidation(balance, true),
-            () => handleValidation(balance, false),
-          );
-        }
-      } catch (e) {
-        console.warn(e);
+        if (!relaychain?.api) return;
+
+        runValidation(
+          relaychain.api,
+          api,
+          api.query.assets.account.key(statemineAssetId, address),
+          data,
+          () => handleValidation(balance, true),
+          () => handleValidation(balance, false),
+        );
+      } catch (error) {
+        console.warn(error);
       }
     });
   };
@@ -157,11 +155,11 @@ export const useBalance = (): IBalanceService => {
     relaychain: ExtendedChain | undefined,
     asset: Asset,
   ) => {
-    const ormlAssetId = (asset?.typeExtras as OrmlExtras).currencyIdScale;
-    const api = chain.api;
-    if (!api) return;
+    if (!chain.api) return;
 
-    const address = toAddress(publicKey, chain.addressPrefix);
+    const { api, addressPrefix, chainId } = chain;
+    const ormlAssetId = (asset?.typeExtras as OrmlExtras).currencyIdScale;
+    const address = toAddress(publicKey, addressPrefix);
 
     const method = api.query.tokens ? api.query.tokens.accounts : api.query.currencies.accounts;
 
@@ -169,7 +167,7 @@ export const useBalance = (): IBalanceService => {
       const { free, reserved, frozen } = data;
       const balance = {
         publicKey,
-        chainId: chain.chainId,
+        chainId,
         assetId: asset.assetId.toString(),
         verified: true,
         free: free.toString(),
@@ -179,30 +177,29 @@ export const useBalance = (): IBalanceService => {
 
       updateBalance(balance);
 
-      if (relaychain?.api) {
-        const storageKey = method.key(address, ormlAssetId);
-        runValidation(
-          relaychain.api,
-          api,
-          storageKey,
-          data,
-          () => handleValidation(balance, true),
-          () => handleValidation(balance, false),
-        );
-      }
+      if (!relaychain?.api) return;
+
+      runValidation(
+        relaychain.api,
+        api,
+        method.key(address, ormlAssetId),
+        data,
+        () => handleValidation(balance, true),
+        () => handleValidation(balance, false),
+      );
     });
   };
 
   const subscribeLockBalanceChange = (publicKey: PublicKey, chain: ExtendedChain, asset: Asset) => {
-    const api = chain.api;
-    if (!api) return;
+    if (!chain.api) return;
 
-    const address = toAddress(publicKey, chain.addressPrefix);
+    const { api, addressPrefix, chainId } = chain;
+    const address = toAddress(publicKey, addressPrefix);
 
-    return api.query.balances.locks(address, async (data: BalanceLock[]) => {
-      const balance = {
+    return api.query.balances.locks(address, (data: BalanceLock[]) => {
+      updateBalance({
         publicKey,
-        chainId: chain.chainId,
+        chainId: chainId,
         assetId: asset.assetId.toString(),
         locked: [
           ...data.map((lock: BalanceLock) => ({
@@ -210,25 +207,23 @@ export const useBalance = (): IBalanceService => {
             amount: lock.amount.toString(),
           })),
         ],
-      };
-
-      updateBalance(balance);
+      });
     });
   };
 
   const subscribeLockOrmlAssetChange = async (publicKey: PublicKey, chain: ExtendedChain, asset: Asset) => {
-    const ormlAssetId = (asset?.typeExtras as OrmlExtras).currencyIdScale;
-    const api = chain.api;
-    if (!api) return;
+    if (!chain.api) return;
 
-    const address = toAddress(publicKey, chain.addressPrefix);
+    const { api, addressPrefix, chainId } = chain;
+    const ormlAssetId = (asset?.typeExtras as OrmlExtras).currencyIdScale;
+    const address = toAddress(publicKey, addressPrefix);
 
     const method = api.query.tokens ? api.query.tokens.locks : api.query.currencies.locks;
 
     return method(address, ormlAssetId, (data: BalanceLock[]) => {
-      const balance = {
+      updateBalance({
         publicKey,
-        chainId: chain.chainId,
+        chainId,
         assetId: asset.assetId.toString(),
         locked: [
           ...data.map((lock: BalanceLock) => ({
@@ -236,9 +231,7 @@ export const useBalance = (): IBalanceService => {
             amount: lock.amount.toString(),
           })),
         ],
-      };
-
-      updateBalance(balance);
+      });
     });
   };
 

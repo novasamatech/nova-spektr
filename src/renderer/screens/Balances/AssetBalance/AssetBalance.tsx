@@ -20,8 +20,8 @@ type Props = {
 };
 
 const AssetBalance = ({ asset, balance, canMakeActions, onTransferClick, onReceiveClick }: Props) => {
-  const [isExpanded, toggleExpanded] = useToggle();
   const { t } = useI18n();
+  const [isExpanded, toggleExpanded] = useToggle();
 
   const onTransfer = (event: MouseEvent<HTMLButtonElement>) => {
     event.stopPropagation();
@@ -112,8 +112,8 @@ const AssetBalance = ({ asset, balance, canMakeActions, onTransferClick, onRecei
         {isExpanded && (
           <div className="flex divide-x border-t gap-x-6 px-[15px] py-2 text-left">
             <div>
-              <div className="text-neutral text-sm font-semibold">{t('assetBalance.transferable')}</div>
-              <div className="text-neutral-variant text-xs font-bold" data-testid="transferable">
+              <p className="text-neutral text-sm font-semibold">{t('assetBalance.transferable')}</p>
+              <p className="text-neutral-variant text-xs font-bold" data-testid="transferable">
                 {balance?.free ? (
                   <>
                     <BalanceValue value={transferable(balance)} precision={asset.precision} /> {asset.symbol}
@@ -121,11 +121,11 @@ const AssetBalance = ({ asset, balance, canMakeActions, onTransferClick, onRecei
                 ) : (
                   <Shimmering width="200px" height="20px" />
                 )}
-              </div>
+              </p>
             </div>
             <div className="pl-6">
-              <div className="text-neutral text-sm font-semibold">{t('assetBalance.locked')}</div>
-              <div className="text-neutral-variant text-xs font-bold">
+              <p className="text-neutral text-sm font-semibold">{t('assetBalance.locked')}</p>
+              <p className="text-neutral-variant text-xs font-bold">
                 {balance?.frozen ? (
                   <>
                     <BalanceValue value={balance.frozen} precision={asset.precision} /> {asset.symbol}
@@ -133,11 +133,11 @@ const AssetBalance = ({ asset, balance, canMakeActions, onTransferClick, onRecei
                 ) : (
                   <Shimmering width="200px" height="20px" />
                 )}
-              </div>
+              </p>
             </div>
             <div className="pl-6">
-              <div className="text-neutral text-sm font-semibold">{t('assetBalance.reserved')}</div>
-              <div className="text-neutral-variant text-xs font-bold">
+              <p className="text-neutral text-sm font-semibold">{t('assetBalance.reserved')}</p>
+              <p className="text-neutral-variant text-xs font-bold">
                 {balance?.reserved ? (
                   <>
                     <BalanceValue value={balance.reserved} precision={asset.precision} /> {asset.symbol}
@@ -145,7 +145,7 @@ const AssetBalance = ({ asset, balance, canMakeActions, onTransferClick, onRecei
                 ) : (
                   <Shimmering width="200px" height="20px" />
                 )}
-              </div>
+              </p>
             </div>
           </div>
         )}
