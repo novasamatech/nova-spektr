@@ -55,6 +55,7 @@
   "networkManagement": {
     "activeNetworksLabel": "Active Networks",
     "addCustomNodeButton": "Add Custom Node",
+    "autoBalanceLabel": "Auto balance",
     "customRpc": {
       "addressConnected": "Connection established",
       "addressEmpty": "Address can not be empty",
@@ -93,7 +94,6 @@
     "emptyStateDescription": "Try to search for another name",
     "emptyStateLabel": "No networks with the entered name were found",
     "lightClientLabel": "Light client",
-    "autoBalanceLabel": "Auto balance",
     "removeCustomNodeModal": {
       "cancelButton": "No, take me back",
       "confirmButton": "Yes, I’m sure",

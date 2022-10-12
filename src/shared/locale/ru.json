@@ -55,6 +55,7 @@
   "networkManagement": {
     "activeNetworksLabel": "Активные сети",
     "addCustomNodeButton": "Добавить свою ноду",
+    "autoBalanceLabel": "Auto balance",
     "customRpc": {
       "addressConnected": "Connection established",
       "addressEmpty": "Address can not be empty",
@@ -93,7 +94,6 @@
     "emptyStateDescription": "Try to search for another key",
     "emptyStateLabel": "No networks with the entered name were found",
     "lightClientLabel": "Light client",
-    "autoBalanceLabel": "Auto balance",
     "removeCustomNodeModal": {
       "cancelButton": "Нет, вернуться назад",
       "confirmButton": "Да, я уверен",
