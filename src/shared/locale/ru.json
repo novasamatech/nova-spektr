@@ -86,7 +86,7 @@
       "disableTitle": "Отключить сеть",
       "lightClientLabel": "Мы советуем подключать не более <strong>3-ех Light Client</strong>, чтобы сохранить лучший <u>пользовательский опыт</u>",
       "lightClientTitle": "Вы уверены?",
-      "relayChainLabel": "Отключение Light Client для сетей <strong>Polkadot</strong> или <strong>Kusama</strong> отключит возможность <u>верификации данных</u>",
+      "relayChainLabel": "Отключение Light Client для сетей <strong>{network}</strong> отключит возможность <u>верификации данных</u>",
       "relayChainTitle": "Вы уверены?"
     },
     "disabledNetworksLabel": "Отключенные сети",
