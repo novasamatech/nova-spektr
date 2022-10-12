@@ -2097,7 +2097,7 @@
         "typeExtras": {
           "assetId": "200060013"
         },
-        "name": "Should be included in assetsNameMap"
+        "name": "Special DOT token"
       },
       {
         "assetId": 8,
@@ -2108,7 +2108,7 @@
         "typeExtras": {
           "assetId": "200070014"
         },
-        "name": "Should be included in assetsNameMap"
+        "name": "Special DOT token"
       },
       {
         "assetId": 9,
@@ -2119,7 +2119,7 @@
         "typeExtras": {
           "assetId": "200080015"
         },
-        "name": "Should be included in assetsNameMap"
+        "name": "Special DOT token"
       },
       {
         "assetId": 10,
@@ -2130,7 +2130,7 @@
         "typeExtras": {
           "assetId": "200090016"
         },
-        "name": "Should be included in assetsNameMap"
+        "name": "Special DOT token"
       },
       {
         "assetId": 11,
@@ -2141,7 +2141,7 @@
         "typeExtras": {
           "assetId": "200100017"
         },
-        "name": "Should be included in assetsNameMap"
+        "name": "Special DOT token"
       },
       {
         "assetId": 12,
@@ -4150,7 +4150,7 @@
         "precision": 18,
         "priceId": "kylin-network",
         "icon": "https://raw.githubusercontent.com/nova-wallet/nova-utils/master/icons/tokens/white/KYL.svg",
-        "name": "Should be included in assetsNameMap"
+        "name": "Kylin"
       }
     ],
     "nodes": [
@@ -4183,7 +4183,7 @@
         "precision": 18,
         "priceId": "darwinia-network-native-token",
         "icon": "https://raw.githubusercontent.com/nova-wallet/nova-utils/master/icons/tokens/white/RING.svg",
-        "name": "Should be included in assetsNameMap"
+        "name": "Darwinia"
       }
     ],
     "nodes": [
@@ -4227,7 +4227,7 @@
         "symbol": "KAPEX",
         "precision": 12,
         "icon": "https://raw.githubusercontent.com/nova-wallet/nova-utils/master/icons/tokens/white/KAPEX.svg",
-        "name": "Should be included in assetsNameMap"
+        "name": "Kapex"
       }
     ],
     "nodes": [
