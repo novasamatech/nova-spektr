@@ -67,6 +67,7 @@
       "addressUrlExist": "Url address already exists",
       "addressWrongNetwork": "The node is not a valid { networkName } node. Try another address",
       "checkConnectionButton": "Check connection",
+      "maxLengthNameError": "Name can not be longer than 50 characters",
       "minLengthNameError": "Name can not be empty or less than 3 characters",
       "nameHint": "Example: My Custom node",
       "nameLabel": "Name",
