@@ -72,7 +72,7 @@ const Selector = ({ networkItem }: Props) => {
   const confirmDisableLightClient = (): Promise<boolean> =>
     confirm({
       title: t('networkManagement.disableNetworkModal.relayChainTitle'),
-      message: <Trans i18nKey="networkManagement.disableNetworkModal.relayChainLabel" />,
+      message: <Trans i18nKey="networkManagement.disableNetworkModal.relayChainLabel" values={{ network: name }} />,
       confirmText: t('networkManagement.disableNetworkModal.confirmButton'),
       cancelText: t('networkManagement.disableNetworkModal.cancelButton'),
     });
