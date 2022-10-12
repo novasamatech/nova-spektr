@@ -152,7 +152,7 @@ const CustomRpcModal = ({ chainId, network, node, existingUrls, isOpen, onClose 
           <Controller
             name="name"
             control={control}
-            rules={{ required: true, minLength: 3 }}
+            rules={{ required: true, minLength: 3, maxLength: 50 }}
             render={({ field: { onChange, value, ref } }) => (
               <Input
                 ref={ref}
@@ -168,6 +168,11 @@ const CustomRpcModal = ({ chainId, network, node, existingUrls, isOpen, onClose 
           {!errors.name && (
             <InputHint type="hint" className="px-2.5">
               {t('networkManagement.customRpc.nameHint')}
+            </InputHint>
+          )}
+          {errors.name?.type === 'maxLength' && (
+            <InputHint type="error" className="px-2.5">
+              {t('networkManagement.customRpc.maxLengthNameError')}
             </InputHint>
           )}
           {['minLength', 'required'].includes(errors.name?.type || '') && (
