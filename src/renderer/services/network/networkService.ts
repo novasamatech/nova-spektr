@@ -84,9 +84,27 @@ export const useNetwork = (): INetworkService => {
     const connectionData = keyBy(currentConnections, 'chainId');
     const lightClientChains = getLightClientChains();
 
+    const updatedActiveNode = (chainId: ChainId, connection: Connection, defaultNode: RpcNode): RpcNode | undefined => {
+      const { activeNode, connectionType } = connection;
+      if (!activeNode) return undefined;
+
+      const [insideCustomNodes, insideChainNodes] = [connection.customNodes || [], chains.current[chainId].nodes].map(
+        (nodeGroup) => nodeGroup.find((node) => node.name === activeNode.name && node.url === activeNode.url),
+      );
+
+      if (!insideCustomNodes && !insideChainNodes) {
+        return connectionType === ConnectionType.RPC_NODE ? defaultNode : undefined;
+      }
+
+      return activeNode;
+    };
+
     return Object.values(chains.current).reduce((acc, { chainId, nodes }) => {
       if (connectionData[chainId]) {
-        acc.push(connectionData[chainId]);
+        acc.push({
+          ...connectionData[chainId],
+          activeNode: updatedActiveNode(chainId, connectionData[chainId], nodes[0]),
+        });
       } else {
         const connectionType = getKnownChain(chainId) ? ConnectionType.LIGHT_CLIENT : ConnectionType.RPC_NODE;
         const activeNode = connectionType === ConnectionType.RPC_NODE ? nodes[0] : undefined;
