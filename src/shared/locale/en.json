@@ -55,6 +55,7 @@
   "networkManagement": {
     "activeNetworksLabel": "Active Networks",
     "addCustomNodeButton": "Add Custom Node",
+    "autoBalanceLabel": "Auto balance",
     "customRpc": {
       "addressConnected": "Connection established",
       "addressEmpty": "Address can not be empty",
@@ -100,7 +101,8 @@
       "title": "Delete Custom node?"
     },
     "selectConnection": {
-      "lightClient": "Light Client",
+      "autoBalance": "Auto balance",
+      "lightClient": "Light client",
       "selectConnectionLabel": "Select connection type"
     },
     "subTitle": "Networks"
