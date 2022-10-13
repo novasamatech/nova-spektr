@@ -13,19 +13,17 @@ const CameraDev = () => {
   const [activeCameraId, setActiveCameraId] = useState('');
 
   const onSetPayload = () => {
-    const value = 'hello test this is my message';
-    setPayload(value);
+    setPayload('<Bytes>hello test this is my message</Bytes>');
   };
 
-  const handleResult = (data: string) => {
-    console.log('key ==> ', data);
+  const onCheckSignature = () => {
+    // Pavel's signature & address
+    const signature =
+      '0xd469609af86830c83972a4d05cf5c8641577ed74b17e3db247025da641f6cf0b02e681a9ffb3c1d558b1dbd8294c22a1863d91e231037aa099ac33d8a3825286';
+    const address = '12YK3LD8FzVgyBuN6mQkCaZUHyExQdjyvX1Fn67DJ5A4rL2R';
+    const verification = signatureVerify('hello test this is my message', signature, address);
 
-    const { isValid } = signatureVerify(
-      'hello test this is my message',
-      data,
-      '12YK3LD8FzVgyBuN6mQkCaZUHyExQdjyvX1Fn67DJ5A4rL2R',
-    );
-    console.log('isValid ==> ', isValid);
+    console.log('isValid ==> ', verification);
   };
 
   return (
@@ -61,21 +59,18 @@ const CameraDev = () => {
             <QrReader
               cameraId={activeCameraId}
               onCameraList={(cameras) => setAvailableCameras(cameras)}
-              onResult={handleResult}
+              onResult={(data) => console.info(data)}
               onError={(error) => console.warn(error)}
             />
-            {/*<QrReader*/}
-            {/*  cameraId={activeCameraId}*/}
-            {/*  onCameraList={(cameras) => setAvailableCameras(cameras)}*/}
-            {/*  onResult={(data) => console.info(data)}*/}
-            {/*  onError={(error) => console.warn(error)}*/}
-            {/*/>*/}
           </div>
         </div>
         <div>
-          <div className="flex gap-x-3 mb-3">
-            <Input placeholder="Qr payload" ref={inputRef} />
-            <Button variant="fill" pallet="primary" onClick={onSetPayload}>
+          <div className="flex gap-x-3 items-center mb-3">
+            <Button weight="lg" variant="fill" pallet="alert" onClick={onCheckSignature}>
+              Check Parity signature
+            </Button>
+            <Input placeholder="Address" ref={inputRef} />
+            <Button weight="lg" variant="fill" pallet="primary" onClick={onSetPayload}>
               Set payload
             </Button>
           </div>
@@ -83,12 +78,9 @@ const CameraDev = () => {
             // Fast test with Westend genesisHash
             <QrTxGenerator
               cmd={Command.Message}
-              address="12YK3LD8FzVgyBuN6mQkCaZUHyExQdjyvX1Fn67DJ5A4rL2R"
-              // address={inputRef.current?.value || ''}
-              genesisHash="0x91b171bb158e2d3848fa23a9f1c25182fb8e20313b2c1eb49219da7a70ce90c3"
-              // genesisHash="0xe143f23803ac50e8f6f8e62695d1ce9e4e1d68aa36c1cd2cfd15340213f3423e"
-              // payload={payload}
-              payload="<Bytes>hello test this is my message</Bytes>"
+              address={inputRef.current?.value || ''}
+              genesisHash="0xe143f23803ac50e8f6f8e62695d1ce9e4e1d68aa36c1cd2cfd15340213f3423e"
+              payload={payload}
               size={200}
             />
           )}
