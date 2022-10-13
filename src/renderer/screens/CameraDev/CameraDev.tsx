@@ -1,6 +1,7 @@
+import { signatureVerify } from '@polkadot/util-crypto';
 import { useRef, useState } from 'react';
 
-import { QrTxGenerator, QrReader } from '@renderer/components/common';
+import { QrReader, QrTxGenerator } from '@renderer/components/common';
 import { Command } from '@renderer/components/common/QrCode/QrGenerator/common/constants';
 import { Button, Input } from '@renderer/components/ui';
 
@@ -14,6 +15,17 @@ const CameraDev = () => {
   const onSetPayload = () => {
     const value = 'hello test this is my message';
     setPayload(value);
+  };
+
+  const handleResult = (data: string) => {
+    console.log('key ==> ', data);
+
+    const { isValid } = signatureVerify(
+      'hello test this is my message',
+      data,
+      '12YK3LD8FzVgyBuN6mQkCaZUHyExQdjyvX1Fn67DJ5A4rL2R',
+    );
+    console.log('isValid ==> ', isValid);
   };
 
   return (
@@ -49,9 +61,15 @@ const CameraDev = () => {
             <QrReader
               cameraId={activeCameraId}
               onCameraList={(cameras) => setAvailableCameras(cameras)}
-              onResult={(data) => console.info(data)}
+              onResult={handleResult}
               onError={(error) => console.warn(error)}
             />
+            {/*<QrReader*/}
+            {/*  cameraId={activeCameraId}*/}
+            {/*  onCameraList={(cameras) => setAvailableCameras(cameras)}*/}
+            {/*  onResult={(data) => console.info(data)}*/}
+            {/*  onError={(error) => console.warn(error)}*/}
+            {/*/>*/}
           </div>
         </div>
         <div>
@@ -65,9 +83,12 @@ const CameraDev = () => {
             // Fast test with Westend genesisHash
             <QrTxGenerator
               cmd={Command.Message}
-              address={inputRef.current?.value || ''}
-              genesisHash="0xe143f23803ac50e8f6f8e62695d1ce9e4e1d68aa36c1cd2cfd15340213f3423e"
-              payload={payload}
+              address="12YK3LD8FzVgyBuN6mQkCaZUHyExQdjyvX1Fn67DJ5A4rL2R"
+              // address={inputRef.current?.value || ''}
+              genesisHash="0x91b171bb158e2d3848fa23a9f1c25182fb8e20313b2c1eb49219da7a70ce90c3"
+              // genesisHash="0xe143f23803ac50e8f6f8e62695d1ce9e4e1d68aa36c1cd2cfd15340213f3423e"
+              // payload={payload}
+              payload="<Bytes>hello test this is my message</Bytes>"
               size={200}
             />
           )}
