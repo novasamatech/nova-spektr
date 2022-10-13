@@ -12,6 +12,7 @@ const NETWORK_CONNECTION_STATUS: Record<ConnectionStatus, (type: ConnectionType,
       <Icon className="text-error border border-error rounded-full bg-white p-[1px]" name="checkmark" size={12} />
       <p className="text-xs font-semibold text-neutral-variant">
         {type === ConnectionType.LIGHT_CLIENT && 'Light client'}
+        {type === ConnectionType.AUTO_BALANCE && 'Auto balance'}
         {type === ConnectionType.RPC_NODE && nodeUrl}
       </p>
     </div>
@@ -21,7 +22,7 @@ const NETWORK_CONNECTION_STATUS: Record<ConnectionStatus, (type: ConnectionType,
       <Icon className="text-success border border-success rounded-full bg-white p-[1px]" name="checkmark" size={12} />
       <p className="text-xs font-semibold text-neutral-variant">
         {type === ConnectionType.LIGHT_CLIENT && 'Connected'}
-        {type === ConnectionType.RPC_NODE && nodeUrl}
+        {[ConnectionType.RPC_NODE, ConnectionType.AUTO_BALANCE].includes(type) && nodeUrl}
       </p>
     </div>
   ),
