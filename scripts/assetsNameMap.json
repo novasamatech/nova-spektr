@@ -90,5 +90,14 @@
   "HDX": "HydraDX",
   "NODL": "Nodle",
   "DEV": "Test token",
-  "xcUNIT": "Test token"
+  "xcUNIT": "Test token",
+  "cDOT-6/13": "Special DOT token",
+  "cDOT-7/14": "Special DOT token",
+  "cDOT-8/15": "Special DOT token",
+  "cDOT-9/16": "Special DOT token",
+  "cDOT-10/17": "Special DOT token",
+  "KYL": "Kylin",
+  "RING": "Darwinia",
+  "KAPEX": "Kapex",
+  "tEDG": "Beresheet"
 }
