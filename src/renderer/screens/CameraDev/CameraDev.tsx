@@ -1,8 +1,9 @@
 import { useRef, useState } from 'react';
 
-import { QrTxGenerator, QrReader } from '@renderer/components/common';
+import { QrTxGenerator } from '@renderer/components/common';
 import { Command } from '@renderer/components/common/QrCode/QrGenerator/common/constants';
 import { Button, Input } from '@renderer/components/ui';
+import MultiframeQRReader from '@renderer/screens/CameraDev/MultiframeQrReader';
 
 const CameraDev = () => {
   const inputRef = useRef<HTMLInputElement>(null);
@@ -45,8 +46,16 @@ const CameraDev = () => {
           ) : (
             <p>No cameras found</p>
           )}
+          {/*<div className="flex justify-between">*/}
+          {/*  <QrReader*/}
+          {/*    cameraId={activeCameraId}*/}
+          {/*    onCameraList={(cameras) => setAvailableCameras(cameras)}*/}
+          {/*    onResult={(data) => console.info(data)}*/}
+          {/*    onError={(error) => console.warn(error)}*/}
+          {/*  />*/}
+          {/*</div>*/}
           <div className="flex justify-between">
-            <QrReader
+            <MultiframeQRReader
               cameraId={activeCameraId}
               onCameraList={(cameras) => setAvailableCameras(cameras)}
               onResult={(data) => console.info(data)}
