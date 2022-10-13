@@ -115,6 +115,7 @@ const Balances = () => {
 
   return (
     <>
+      {/* eslint-disable-next-line i18next/no-literal-string */}
       <button className="p-1 bg-success text-white rounded-2lg" type="button" onClick={getCrowdLoan}>
         GET
       </button>
