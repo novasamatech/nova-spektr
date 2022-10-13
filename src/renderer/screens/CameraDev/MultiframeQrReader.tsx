@@ -5,13 +5,16 @@ import { useEffect, useRef, useState } from 'react';
 import { BrowserCodeReader, BrowserQRCodeReader } from '@zxing/browser';
 import init, { Decoder, Encoder, EncodingPacket, RaptorqFrame } from 'raptorq';
 import { int } from '@zxing/library/es2015/customTypings';
-import { collective } from '@polkadot/types/interfaces/definitions';
+import {collective, scaleInfo} from '@polkadot/types/interfaces/definitions';
 import { u8aToHex } from '@polkadot/util';
 
 import { ErrorObject, QrError } from '../../components/common/QrCode/QrReader/common/types';
 import { QR_READER_ERRORS } from '../../components/common/QrCode/QrReader/common/errors';
 import { useI18n } from '@renderer/context/I18nContext';
 import { Icon } from '@renderer/components/ui';
+import {Codec} from "parity-scale-codec";
+import * as $ from "parity-scale-codec";
+
 
 type Props = {
   size?: number;
@@ -21,6 +24,34 @@ type Props = {
   onStart?: () => void;
   onError?: (error: ErrorObject) => void;
 };
+
+interface AddrInfo {
+  name: string;
+  network: string;
+  address: string;
+  derivation_path: string | undefined;
+  encryption: Encryption
+}
+
+enum Encryption {
+  Ed25519,
+  Sr25519,
+  Ecdsa,
+  Ethereum,
+}
+
+const $encryption = $.u8 as $.Codec<Encryption>;
+
+const $addr_info: Codec<AddrInfo> = $.object(
+  ["name", $.str],
+  ["address", $.str],
+  ["network", $.str],
+  ["derivation_path", $.option($.str)],
+  ["encryption", $encryption],
+);
+
+const $export_address = $.taggedUnion("ExportAddrs", [["V1", ["addrs", $.array($addr_info)]]]);
+
 
 const MultiframeQRReader = ({ size = 300, cameraId, onCameraList, onResult, onStart, onError }: Props) => {
   const { t } = useI18n();
@@ -59,16 +90,16 @@ const MultiframeQRReader = ({ size = 300, cameraId, onCameraList, onResult, onSt
               let length = frame.size();
               let total = frame.total();
               let newPacket = frame.payload();
-              console.log(u8aToHex(newPacket));
               let decodedPacket = EncodingPacket.deserialize(newPacket);
               let blockNumber = decodedPacket.encoding_symbol_id();
-              console.log(`block number is ${blockNumber}`);
               let raptorDecoder = Decoder.with_defaults(BigInt(length), decodedPacket.data().length);
               packets.push(newPacket);
               if (status == 0) {
                 let fountainResult = raptorDecoder.decode(newPacket);
                 if (fountainResult) {
                   console.log(`result ${u8aToHex(fountainResult)}`);
+                  let res = $export_address.decode(fountainResult);
+                  console.log(res);
                   status = 0;
                   packets = [];
                 } else {
@@ -90,6 +121,8 @@ const MultiframeQRReader = ({ size = 300, cameraId, onCameraList, onResult, onSt
                   let fountainResult = raptorDecoder.decode(packets[i]);
                   if (fountainResult) {
                     console.log(`result ${u8aToHex(fountainResult)}`);
+                    let res = $export_address.decode(fountainResult);
+                    console.log(res);
                     status = 0;
                     packets = [];
                     inProgress = {
