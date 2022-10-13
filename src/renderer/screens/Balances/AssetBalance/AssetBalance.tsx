@@ -1,5 +1,5 @@
 import cn from 'classnames';
-import { KeyboardEvent, MouseEvent, memo } from 'react';
+import { KeyboardEvent, MouseEvent } from 'react';
 
 import { Balance as BalanceValue, Button, Icon } from '@renderer/components/ui';
 import { useI18n } from '@renderer/context/I18nContext';
@@ -155,9 +155,3 @@ const AssetBalance = ({ asset, balance, canMakeActions, onTransferClick, onRecei
 };
 
 export default AssetBalance;
-
-// export default memo(AssetBalance, (_, nextProps) => {
-//   console.log(nextProps);
-
-//   return nextProps.balance === undefined;
-// });
