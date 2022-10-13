@@ -10,7 +10,7 @@ import { ChainId, HexString } from '@renderer/domain/shared-kernel';
 import storage from '@renderer/services/storage';
 import { useChainSpec } from './chainSpecService';
 import { useChains } from './chainsService';
-import { ConnectionsMap, INetworkService, RpcValidation } from './common/types';
+import { ConnectionsMap, INetworkService, RpcValidation, ConnectProps } from './common/types';
 import { AUTO_BALANCE_TIMEOUT, MAX_ATTEMPTS, PROGRESSION_BASE } from './common/constants';
 
 export const useNetwork = (): INetworkService => {
@@ -196,27 +196,22 @@ export const useNetwork = (): INetworkService => {
     provider.on('error', handler);
   };
 
-  const connectWithAutoBalance = async (chainId: ChainId, attempt: number = 0): Promise<void> => {
+  const connectWithAutoBalance = async (chainId: ChainId, attempt = 0): Promise<void> => {
     if (Number.isNaN(attempt)) attempt = 0;
 
     const currentTimeout = AUTO_BALANCE_TIMEOUT * (PROGRESSION_BASE ^ attempt % MAX_ATTEMPTS);
-    console.log('currentTimeout', chainId, currentTimeout, attempt);
 
     const timeoutId = setTimeout(() => {
-      const nodes = connections[chainId].nodes;
-      const currentNode = nodes[Math.floor(attempt / MAX_ATTEMPTS) % nodes.length];
+      const nodes = [...connections[chainId].nodes, ...(connections[chainId].connection.customNodes || [])];
 
-      connectToNetwork(chainId, ConnectionType.AUTO_BALANCE, currentNode, attempt, timeoutId);
+      const node = nodes[Math.floor(attempt / MAX_ATTEMPTS) % nodes.length];
+
+      connectToNetwork({ chainId, type: ConnectionType.AUTO_BALANCE, node, attempt, timeoutId });
     }, currentTimeout);
   };
 
-  const connectToNetwork = async (
-    chainId: ChainId,
-    type: ConnectionType,
-    node?: RpcNode,
-    attempt?: number,
-    timeoutId?: any,
-  ): Promise<void> => {
+  const connectToNetwork = async (props: ConnectProps): Promise<void> => {
+    const { chainId, type, node } = props;
     const connection = connections[chainId];
     if (!connection || type === ConnectionType.DISABLED) return;
 
@@ -245,11 +240,11 @@ export const useNetwork = (): INetworkService => {
       },
     }));
 
-    let runned = false;
+    let autoBalanceStarted = false;
     const onAutoBalanceError = () => {
-      if (type !== ConnectionType.AUTO_BALANCE) return;
-      if (runned) return;
-      runned = true;
+      const { attempt, timeoutId } = props;
+      if (autoBalanceStarted || type !== ConnectionType.AUTO_BALANCE) return;
+      autoBalanceStarted = true;
 
       clearTimeout(timeoutId);
       disconnectFromNetwork(chainId, provider.instance)(true);

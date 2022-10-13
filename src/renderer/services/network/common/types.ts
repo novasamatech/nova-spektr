@@ -26,7 +26,7 @@ export interface INetworkService {
   updateRpcNode: (chainId: ChainId, oldNode: RpcNode, newNode: RpcNode) => Promise<void>;
   removeRpcNode: (chainId: ChainId, rpcNode: RpcNode) => Promise<void>;
   validateRpcNode: (genesisHash: HexString, rpcUrl: string) => Promise<RpcValidation>;
-  connectToNetwork: (chainId: ChainId, type: ConnectionType, node?: RpcNode) => Promise<void>;
+  connectToNetwork: (props: ConnectProps) => Promise<void>;
   connectWithAutoBalance: (chainId: ChainId, attempt: number) => Promise<void>;
 }
 
@@ -48,3 +48,11 @@ export type ExtendedChain = Chain & {
 };
 
 export type ConnectionsMap = Record<ChainId, ExtendedChain>;
+
+export type ConnectProps = {
+  chainId: ChainId;
+  type: ConnectionType;
+  node?: RpcNode;
+  attempt?: number;
+  timeoutId?: any;
+};

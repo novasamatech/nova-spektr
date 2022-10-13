@@ -121,7 +121,7 @@ const Selector = ({ networkItem }: Props) => {
       if (nodeId === LIGHT_CLIENT_KEY) {
         // Let unsubscribe from previous Provider, microtask first - macrotask second
         setTimeout(() => {
-          connectToNetwork(chainId, ConnectionType.LIGHT_CLIENT);
+          connectToNetwork({ chainId, type: ConnectionType.LIGHT_CLIENT });
         });
       }
 
@@ -136,7 +136,7 @@ const Selector = ({ networkItem }: Props) => {
       if (node) {
         // Let unsubscribe from previous Provider, microtask first - macrotask second
         setTimeout(() => {
-          connectToNetwork(chainId, ConnectionType.RPC_NODE, node);
+          connectToNetwork({ chainId, type: ConnectionType.RPC_NODE, node });
         });
       }
     } catch (error) {
@@ -195,7 +195,7 @@ const Selector = ({ networkItem }: Props) => {
 
       // Let unsubscribe from previous Provider, microtask first - macrotask second
       setTimeout(() => {
-        connectToNetwork(chainId, ConnectionType.RPC_NODE, newNode);
+        connectToNetwork({ chainId, type: ConnectionType.RPC_NODE, node: newNode });
       });
     } catch (error) {
       console.warn(error);

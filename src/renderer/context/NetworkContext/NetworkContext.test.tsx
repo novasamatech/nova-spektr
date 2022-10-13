@@ -67,7 +67,7 @@ describe('context/NetworkContext', () => {
     });
 
     expect(spyConnectToNetwork).toBeCalledTimes(1);
-    expect(spyConnectToNetwork).toBeCalledWith(connection.chainId, connection.connectionType, undefined);
+    expect(spyConnectToNetwork).toBeCalledWith({ chainId: connection.chainId, type: connection.connectionType });
   });
 
   test('should connect with auto balance', async () => {

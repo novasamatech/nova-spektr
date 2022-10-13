@@ -41,6 +41,7 @@ const NetworkBalances = ({
   const { getLiveNetworkBalances } = useBalance();
 
   const balances = getLiveNetworkBalances(publicKey, chain.chainId);
+
   const balancesObject = keyBy(balances, 'assetId');
 
   const filteredAssets = chain.assets.filter((asset) => {
@@ -106,3 +107,10 @@ const NetworkBalances = ({
 };
 
 export default NetworkBalances;
+
+// export default memo(NetworkBalances, (prevProps, nextProps) => {
+//   console.log((prevProps.chain as ExtendedChain).connection, (nextProps.chain as ExtendedChain).connection);
+//   console.log(1, (prevProps.chain as ExtendedChain).connection === (nextProps.chain as ExtendedChain).connection);
+
+//   return (prevProps.chain as ExtendedChain).connection === (nextProps.chain as ExtendedChain).connection;
+// });
