@@ -1,8 +1,8 @@
 import { ApiPromise } from '@polkadot/api';
-import { u8aToHex, hexToU8a } from '@polkadot/util';
+import { Bytes, u32, Vec } from '@polkadot/types';
 import { BlockNumber, Header } from '@polkadot/types/interfaces';
-import { u32, Bytes, Vec } from '@polkadot/types';
 import { Codec } from '@polkadot/types/types';
+import { hexToU8a, u8aToHex } from '@polkadot/util';
 
 import { buildTrie } from './decode';
 import { get } from './retreive';
@@ -85,6 +85,8 @@ const validateWithBlockNumber = async (
 ): Promise<boolean> => {
   try {
     const parachainId = await getParachainId(parachainApi);
+    if (!parachainId) return false;
+
     const header = await getHeader(relaychainApi, parachainId);
     const decodedHeader: Header = parachainApi.registry.createType('Header', header.toString()) as unknown as Header;
 

@@ -44,13 +44,13 @@ export const getAssetId = (asset: Asset): string | number => {
   return assetId[asset.type || DEFAULT]();
 };
 
-type FormatedBalance = {
-  value: string;
+type FormattedBalance = {
+  formattedValue: string;
   suffix: string;
   decimalPlaces: number;
 };
 
-export const formatBalance = (balance: string, precision = 0): FormatedBalance => {
+export const formatBalance = (balance: string, precision = 0): FormattedBalance => {
   const BNWithConfig = BigNumber.clone();
   BNWithConfig.config({
     // HOOK: for divide with decimal part
@@ -87,18 +87,15 @@ export const formatBalance = (balance: string, precision = 0): FormatedBalance =
     divider = TEN.pow(new BNWithConfig(12));
     suffix = Suffix.TRILLIONS;
   }
+  const formattedValue = new BNWithConfig(bnBalance).div(divider).decimalPlaces(decimalPlaces).toFormat();
 
-  return {
-    value: new BNWithConfig(bnBalance).div(divider).decimalPlaces(decimalPlaces).toFormat(),
-    suffix,
-    decimalPlaces,
-  };
+  return { formattedValue, suffix, decimalPlaces };
 };
 
 export const total = ({ free, reserved }: Balance): string => new BN(free || 0).add(new BN(reserved || 0)).toString();
 
-export const locked = ({ locked }: Balance): string => {
-  const bnLocks = (locked || []).map((lock) => new BN(lock.amount));
+export const locked = ({ locked = [] }: Balance): string => {
+  const bnLocks = locked.map((lock) => new BN(lock.amount));
   const bnFrozen = bnLocks?.reduce((acc, bnLock) => acc.add(bnLock), new BN(0));
 
   return bnFrozen.toString();

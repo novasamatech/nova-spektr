@@ -1,19 +1,22 @@
+import { AnyJson } from '@polkadot/types/types';
+import { u8aConcat, u8aToHex } from '@polkadot/util';
+import { blake2AsU8a } from '@polkadot/util-crypto';
 import { useEffect, useState } from 'react';
 
-import useToggle from '@renderer/hooks/useToggle';
 import { Icon, Input, Switch } from '@renderer/components/ui';
+import { useI18n } from '@renderer/context/I18nContext';
 import { useNetworkContext } from '@renderer/context/NetworkContext';
 import { Asset } from '@renderer/domain/asset';
 import { Chain } from '@renderer/domain/chain';
+import { ConnectionType } from '@renderer/domain/connection';
 import { PublicKey } from '@renderer/domain/shared-kernel';
 import { WalletType } from '@renderer/domain/wallet';
+import useToggle from '@renderer/hooks/useToggle';
 import { useChains } from '@renderer/services/network/chainsService';
 import { useSettingsStorage } from '@renderer/services/settings/settingsStorage';
 import { useWallet } from '@renderer/services/wallet/walletService';
 import NetworkBalances from '../NetworkBalances/NetworkBalances';
 import ReceiveModal, { ReceivePayload } from '../ReceiveModal/ReceiveModal';
-import { ConnectionType } from '@renderer/domain/connection';
-import { useI18n } from '@renderer/context/I18nContext';
 
 const Balances = () => {
   const { t } = useI18n();
@@ -66,8 +69,56 @@ const Balances = () => {
     toggleReceive();
   };
 
+  // Method to get all Crowdloans for specific relay chain
+  const getCrowdLoan = async () => {
+    const dotApi = connections['0x91b171bb158e2d3848fa23a9f1c25182fb8e20313b2c1eb49219da7a70ce90c3'].api;
+    // const ksmApi = connections['0xb0a8d493285c2df73290dfb7e61f870f17b41801197a149ca93654499ea3dafe'].api;
+    const api = dotApi;
+
+    if (!api || !activeWallets) return;
+
+    const publicKey = activeWallets[0].mainAccounts[0].publicKey;
+
+    const createChildKey = (info: any): string =>
+      u8aToHex(
+        u8aConcat(
+          ':child_storage:default:',
+          blake2AsU8a(u8aConcat('crowdloan', (info.fundIndex || info.trieIndex).toU8a())),
+        ),
+      );
+
+    try {
+      const entries = await api.query.crowdloan.funds.entries<any>();
+      const childKeys = entries.map(([_, info]) => createChildKey(info.unwrap()));
+
+      const storageRequests = childKeys.reduce((acc, childKey) => {
+        const getValue = (async (key): Promise<AnyJson> => {
+          const storage = await api.rpc.childstate.getStorage(key, publicKey);
+          const storageData = api.registry.createType('Option<StorageData>', storage);
+
+          if (storageData.isSome) {
+            return api.registry.createType('Balance', storageData.unwrap()).toHuman();
+          } else {
+            return api.registry.createType('Balance').toHuman();
+          }
+        })(childKey);
+
+        return [...acc, getValue];
+      }, [] as Promise<AnyJson>[]);
+
+      const crowdloanValues = await Promise.all(storageRequests);
+      console.info(crowdloanValues.filter((value) => value !== '0'));
+    } catch (error) {
+      console.warn('🔴 Error getting crowdloans ==> ', error);
+    }
+  };
+
   return (
     <>
+      {/* eslint-disable-next-line i18next/no-literal-string */}
+      <button className="p-1 bg-success text-white rounded-2lg" type="button" onClick={getCrowdLoan}>
+        GET
+      </button>
       <div className="h-full flex flex-col">
         <h1 className="font-semibold text-2xl text-neutral mb-9">{t('balances.title')}</h1>
 
