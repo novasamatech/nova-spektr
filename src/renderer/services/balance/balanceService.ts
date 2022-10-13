@@ -8,6 +8,7 @@ import { Asset, AssetType, OrmlExtras, StatemineExtras } from '@renderer/domain/
 import { Balance } from '@renderer/domain/balance';
 import { ChainId, PublicKey } from '@renderer/domain/shared-kernel';
 import { ExtendedChain } from '@renderer/services/network/common/types';
+import { isLightClient } from '@renderer/services/network/common/utils';
 import { validate } from '../dataVerification/dataVerification';
 import storage, { BalanceDS } from '../storage';
 import { IBalanceService } from './common/types';
@@ -77,7 +78,7 @@ export const useBalance = (): IBalanceService => {
 
     const address = toAddress(publicKey, chain.addressPrefix);
 
-    return api.query.system.account(address, async (data: AccountInfo) => {
+    return api.query.system.account(address, (data: AccountInfo) => {
       const miscFrozen = new BN(data.data.miscFrozen);
       const feeFrozen = new BN(data.data.feeFrozen);
 
@@ -93,7 +94,7 @@ export const useBalance = (): IBalanceService => {
 
       updateBalance(balance);
 
-      if (relaychain?.api) {
+      if (relaychain?.api && isLightClient(relaychain)) {
         const storageKey = api.query.system.account.key(address);
         runValidation(
           relaychain.api,
@@ -134,7 +135,7 @@ export const useBalance = (): IBalanceService => {
 
         updateBalance(balance);
 
-        if (relaychain?.api) {
+        if (relaychain?.api && isLightClient(relaychain)) {
           const storageKey = api.query.assets.account.key(statemineAssetId, address);
           runValidation(
             relaychain.api,
@@ -179,7 +180,7 @@ export const useBalance = (): IBalanceService => {
 
       updateBalance(balance);
 
-      if (relaychain?.api) {
+      if (relaychain?.api && isLightClient(relaychain)) {
         const storageKey = method.key(address, ormlAssetId);
         runValidation(
           relaychain.api,
@@ -199,7 +200,7 @@ export const useBalance = (): IBalanceService => {
 
     const address = toAddress(publicKey, chain.addressPrefix);
 
-    return api.query.balances.locks(address, async (data: BalanceLock[]) => {
+    return api.query.balances.locks(address, (data: BalanceLock[]) => {
       const balance = {
         publicKey,
         chainId: chain.chainId,

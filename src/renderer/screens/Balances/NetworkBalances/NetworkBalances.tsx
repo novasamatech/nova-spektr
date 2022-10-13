@@ -41,6 +41,7 @@ const NetworkBalances = ({
   const { getLiveNetworkBalances } = useBalance();
 
   const balances = getLiveNetworkBalances(publicKey, chain.chainId);
+
   const balancesObject = keyBy(balances, 'assetId');
 
   const filteredAssets = chain.assets.filter((asset) => {

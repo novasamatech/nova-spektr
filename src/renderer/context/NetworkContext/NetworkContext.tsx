@@ -5,7 +5,7 @@ import { ConnectionType } from '@renderer/domain/connection';
 import { ChainId, HexString } from '@renderer/domain/shared-kernel';
 import { useBalance } from '@renderer/services/balance/balanceService';
 import { TEST_PUBLIC_KEY } from '@renderer/services/balance/common/constants';
-import { ExtendedChain, RpcValidation } from '@renderer/services/network/common/types';
+import { ConnectProps, ExtendedChain, RpcValidation } from '@renderer/services/network/common/types';
 import { useNetwork } from '@renderer/services/network/networkService';
 import { useWallet } from '@renderer/services/wallet/walletService';
 
@@ -15,7 +15,8 @@ type NetworkContextProps = {
   updateRpcNode: (chainId: ChainId, oldNode: RpcNode, newNode: RpcNode) => Promise<void>;
   removeRpcNode: (chainId: ChainId, rpcNode: RpcNode) => Promise<void>;
   validateRpcNode: (genesisHash: HexString, rpcUrl: string) => Promise<RpcValidation>;
-  connectToNetwork: (chainId: ChainId, type: ConnectionType, node?: RpcNode) => Promise<void>;
+  connectToNetwork: (props: ConnectProps) => Promise<void>;
+  connectWithAutoBalance: (chainId: ChainId, attempt: number) => Promise<void>;
 };
 
 const NetworkContext = createContext<NetworkContextProps>({} as NetworkContextProps);
@@ -23,7 +24,7 @@ const NetworkContext = createContext<NetworkContextProps>({} as NetworkContextPr
 export const NetworkProvider = ({ children }: PropsWithChildren) => {
   const [connectionsReady, setConnectionReady] = useState(false);
 
-  const { connections, setupConnections, connectToNetwork, ...rest } = useNetwork();
+  const { connections, setupConnections, connectToNetwork, connectWithAutoBalance, ...rest } = useNetwork();
   const { subscribeBalances, subscribeLockBalances } = useBalance();
   const { getActiveWallets } = useWallet();
   const activeWallets = getActiveWallets();
@@ -45,8 +46,11 @@ export const NetworkProvider = ({ children }: PropsWithChildren) => {
         const { chainId, connectionType, activeNode } = connection;
 
         if (connectionType === ConnectionType.DISABLED) return;
+        if (connectionType === ConnectionType.AUTO_BALANCE) {
+          return connectWithAutoBalance(chainId, 0);
+        }
 
-        return connectToNetwork(chainId, connectionType, activeNode);
+        return connectToNetwork({ chainId, type: connectionType, node: activeNode });
       });
 
       try {
@@ -93,7 +97,9 @@ export const NetworkProvider = ({ children }: PropsWithChildren) => {
   }, [connections, activeWallets]);
 
   return (
-    <NetworkContext.Provider value={{ connections, connectToNetwork, ...rest }}>{children}</NetworkContext.Provider>
+    <NetworkContext.Provider value={{ connections, connectToNetwork, connectWithAutoBalance, ...rest }}>
+      {children}
+    </NetworkContext.Provider>
   );
 };
 
