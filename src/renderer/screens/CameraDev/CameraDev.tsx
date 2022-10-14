@@ -1,6 +1,7 @@
+import { signatureVerify } from '@polkadot/util-crypto';
 import { useRef, useState } from 'react';
 
-import { QrTxGenerator, QrReader } from '@renderer/components/common';
+import { QrReader, QrTxGenerator } from '@renderer/components/common';
 import { Command } from '@renderer/components/common/QrCode/QrGenerator/common/constants';
 import { Button, Input } from '@renderer/components/ui';
 
@@ -12,8 +13,17 @@ const CameraDev = () => {
   const [activeCameraId, setActiveCameraId] = useState('');
 
   const onSetPayload = () => {
-    const value = 'hello test this is my message';
-    setPayload(value);
+    setPayload('<Bytes>hello test this is my message</Bytes>');
+  };
+
+  const onCheckSignature = () => {
+    // Pavel's signature & address
+    const signature =
+      '0xd469609af86830c83972a4d05cf5c8641577ed74b17e3db247025da641f6cf0b02e681a9ffb3c1d558b1dbd8294c22a1863d91e231037aa099ac33d8a3825286';
+    const address = '12YK3LD8FzVgyBuN6mQkCaZUHyExQdjyvX1Fn67DJ5A4rL2R';
+    const verification = signatureVerify('hello test this is my message', signature, address);
+
+    console.log('isValid ==> ', verification);
   };
 
   return (
@@ -55,9 +65,12 @@ const CameraDev = () => {
           </div>
         </div>
         <div>
-          <div className="flex gap-x-3 mb-3">
-            <Input placeholder="Qr payload" ref={inputRef} />
-            <Button variant="fill" pallet="primary" onClick={onSetPayload}>
+          <div className="flex gap-x-3 items-center mb-3">
+            <Button weight="lg" variant="fill" pallet="alert" onClick={onCheckSignature}>
+              Check Parity signature
+            </Button>
+            <Input placeholder="Address" ref={inputRef} />
+            <Button weight="lg" variant="fill" pallet="primary" onClick={onSetPayload}>
               Set payload
             </Button>
           </div>
