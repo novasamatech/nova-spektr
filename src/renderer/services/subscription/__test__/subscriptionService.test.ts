@@ -1,27 +1,29 @@
-import { ISubscriptionService } from '../common/types';
+import { renderHook } from '@testing-library/react';
+
 import { useSubscription } from '../subscriptionService';
-
-jest.mock('react', () => {
-  const originReact = jest.requireActual('react');
-  const mUseRef = jest.fn();
-
-  return {
-    ...originReact,
-    useRef: mUseRef,
-  };
-});
 
 describe('service/subscription/subscriptionService', () => {
   afterEach(() => {
     jest.clearAllMocks();
   });
 
-  test('should init subscription service', async () => {
-    const { subscribe, unsubscribe, unsubscribeAll, hasSubscription } = useSubscription();
+  test('should subscribe and unsubscribe with callback', async () => {
+    const {
+      result: {
+        current: { subscribe, unsubscribe, hasSubscription },
+      },
+    } = renderHook(() => useSubscription());
 
-    expect(subscribe).toBeDefined();
-    expect(unsubscribe).toBeDefined();
-    expect(unsubscribeAll).toBeDefined();
-    expect(hasSubscription).toBeDefined();
+    const spyUnsubscribe = jest.fn();
+    const unsubscribePromise = Promise.resolve(spyUnsubscribe());
+    const chainId = '0x00';
+
+    subscribe(chainId, unsubscribePromise);
+    expect(hasSubscription(chainId)).toBeTruthy();
+
+    await unsubscribe(chainId);
+
+    expect(spyUnsubscribe).toBeCalled();
+    expect(hasSubscription(chainId)).toBeFalsy();
   });
 });
