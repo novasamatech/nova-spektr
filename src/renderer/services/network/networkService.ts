@@ -158,7 +158,7 @@ export const useNetwork = (unsubscribe?: (chainId: ChainId) => Promise<void>): I
     const handler = async () => {
       console.log('🟢 connected ==> ', chainId);
 
-      const api = await ApiPromise.create({ provider });
+      const api = await ApiPromise.create({ provider, throwOnConnect: true, throwOnUnknown: true });
       if (!api) await provider.disconnect();
 
       updateConnectionState(
@@ -277,14 +277,14 @@ export const useNetwork = (unsubscribe?: (chainId: ChainId) => Promise<void>): I
       provider.on('connected', async () => {
         let isNetworkMatch = false;
         try {
-          const api = await ApiPromise.create({ provider });
+          const api = await ApiPromise.create({ provider, throwOnConnect: true, throwOnUnknown: true });
           isNetworkMatch = genesisHash === api.genesisHash.toHex();
 
           api.disconnect().catch(console.warn);
-          provider.disconnect().catch(console.warn);
         } catch (error) {
           console.warn(error);
         }
+        provider.disconnect().catch(console.warn);
         resolve(isNetworkMatch ? RpcValidation.VALID : RpcValidation.WRONG_NETWORK);
       });
 
