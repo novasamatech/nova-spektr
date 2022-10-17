@@ -25,6 +25,14 @@ jest.mock('@renderer/services/wallet/walletService', () => ({
   }),
 }));
 
+jest.mock('@renderer/services/subscription/subscriptionService', () => ({
+  useSubscription: jest.fn().mockReturnValue({
+    subscribe: jest.fn(),
+    hasSubscription: jest.fn(),
+    unsubscribe: jest.fn(),
+  }),
+}));
+
 describe('context/NetworkContext', () => {
   afterEach(() => {
     jest.clearAllMocks();
