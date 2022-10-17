@@ -79,7 +79,7 @@ export const NetworkProvider = ({ children }: PropsWithChildren) => {
   };
 
   useEffect(() => {
-    const publicKey = (activeWallets && activeWallets[0]?.mainAccounts[0]?.publicKey) || TEST_PUBLIC_KEY;
+    const publicKey = activeWallets?.[0]?.mainAccounts[0]?.publicKey || TEST_PUBLIC_KEY;
     Object.values(connections).forEach((chain) => {
       subscribeBalanceChanges(chain, publicKey);
     });

@@ -13,7 +13,7 @@ import { useChains } from './chainsService';
 import { ConnectionsMap, INetworkService, RpcValidation, ConnectProps } from './common/types';
 import { AUTO_BALANCE_TIMEOUT, MAX_ATTEMPTS, PROGRESSION_BASE } from './common/constants';
 
-export const useNetwork = (unsubscribe: (chainId: ChainId) => Promise<void>): INetworkService => {
+export const useNetwork = (unsubscribe?: (chainId: ChainId) => Promise<void>): INetworkService => {
   const chains = useRef<Record<ChainId, Chain>>({});
   const [connections, setConnections] = useState<ConnectionsMap>({});
 

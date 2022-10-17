@@ -4,5 +4,5 @@ export type ISubscriptionService = {
   hasSubscription: (chainId: ChainId) => boolean;
   subscribe: (chainId: ChainId, unsubscribe: Promise<any>) => void;
   unsubscribe: (chainId: ChainId) => Promise<void>;
-  unsubscribeAll: () => void;
+  unsubscribeAll: () => Promise<void>;
 };
