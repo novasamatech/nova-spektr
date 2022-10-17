@@ -169,7 +169,7 @@ const Selector = ({ networkItem }: Props) => {
     let proceed = false;
     if (connectionType === ConnectionType.LIGHT_CLIENT) {
       proceed = await confirmDisableLightClient();
-    } else if (connectionType === ConnectionType.RPC_NODE) {
+    } else if ([ConnectionType.RPC_NODE, ConnectionType.AUTO_BALANCE].includes(connectionType)) {
       proceed = await confirmDisableNetwork();
     }
     if (!proceed) return;

@@ -2,12 +2,13 @@ import { createContext, PropsWithChildren, useContext, useEffect, useState } fro
 
 import { RpcNode } from '@renderer/domain/chain';
 import { ConnectionType } from '@renderer/domain/connection';
-import { ChainId, HexString } from '@renderer/domain/shared-kernel';
+import { ChainId, HexString, PublicKey } from '@renderer/domain/shared-kernel';
 import { useBalance } from '@renderer/services/balance/balanceService';
 import { TEST_PUBLIC_KEY } from '@renderer/services/balance/common/constants';
 import { ConnectProps, ExtendedChain, RpcValidation } from '@renderer/services/network/common/types';
 import { useNetwork } from '@renderer/services/network/networkService';
 import { useWallet } from '@renderer/services/wallet/walletService';
+import { useSubscription } from '@renderer/services/subscription/subscriptionService';
 
 type NetworkContextProps = {
   connections: Record<string, ExtendedChain>;
@@ -23,8 +24,8 @@ const NetworkContext = createContext<NetworkContextProps>({} as NetworkContextPr
 
 export const NetworkProvider = ({ children }: PropsWithChildren) => {
   const [connectionsReady, setConnectionReady] = useState(false);
-
-  const { connections, setupConnections, connectToNetwork, connectWithAutoBalance, ...rest } = useNetwork();
+  const { subscribe, hasSubscription, unsubscribe } = useSubscription();
+  const { connections, setupConnections, connectToNetwork, connectWithAutoBalance, ...rest } = useNetwork(unsubscribe);
   const { subscribeBalances, subscribeLockBalances } = useBalance();
   const { getActiveWallets } = useWallet();
   const activeWallets = getActiveWallets();
@@ -68,32 +69,20 @@ export const NetworkProvider = ({ children }: PropsWithChildren) => {
     };
   }, [connectionsReady]);
 
+  const subscribeBalanceChanges = async (chain: ExtendedChain, publicKey: PublicKey) => {
+    if (!hasSubscription(chain.chainId) && chain.api?.isConnected) {
+      const relaychain = chain.parentId && connections[chain.parentId];
+
+      subscribe(chain.chainId, subscribeBalances(chain, relaychain, publicKey));
+      subscribe(chain.chainId, subscribeLockBalances(chain, publicKey));
+    }
+  };
+
   useEffect(() => {
-    const unsubscribeBalance = Object.values(connections).reduce((acc, chain) => {
-      if (chain.api?.isConnected) {
-        const relaychain = chain.parentId && connections[chain.parentId];
-        // TODO: Remove TEST_PUBLIC_KEY when select wallet will be implemented
-        const publicKey = (activeWallets && activeWallets[0]?.mainAccounts[0]?.publicKey) || TEST_PUBLIC_KEY;
-        acc.push(subscribeBalances(chain, relaychain, publicKey));
-      }
-
-      return acc;
-    }, [] as Promise<any>[]);
-
-    const unsubscribeLockBalance = Object.values(connections).reduce((acc, chain) => {
-      if (chain.api?.isConnected) {
-        // TODO: Remove TEST_PUBLIC_KEY when select wallet will be implemented
-        const publicKey = (activeWallets && activeWallets[0]?.mainAccounts[0]?.publicKey) || TEST_PUBLIC_KEY;
-        acc.push(subscribeLockBalances(chain, publicKey));
-      }
-
-      return acc;
-    }, [] as Promise<any>[]);
-
-    return () => {
-      Promise.all(unsubscribeBalance).catch(console.warn);
-      Promise.all(unsubscribeLockBalance).catch(console.warn);
-    };
+    const publicKey = activeWallets?.[0]?.mainAccounts[0]?.publicKey || TEST_PUBLIC_KEY;
+    Object.values(connections).forEach((chain) => {
+      subscribeBalanceChanges(chain, publicKey);
+    });
   }, [connections, activeWallets]);
 
   return (
