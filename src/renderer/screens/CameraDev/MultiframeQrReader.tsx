@@ -3,18 +3,18 @@ import QrScanner from 'qr-scanner';
 import cn from 'classnames';
 import { useEffect, useRef, useState } from 'react';
 import { BrowserCodeReader, BrowserQRCodeReader } from '@zxing/browser';
-import init, { Decoder, Encoder, EncodingPacket, RaptorqFrame } from 'raptorq';
+import init, { Decoder, Encoder, EncodingPacket } from 'raptorq';
 import { int } from '@zxing/library/es2015/customTypings';
-import {collective, scaleInfo} from '@polkadot/types/interfaces/definitions';
+import { collective, payment, scaleInfo } from '@polkadot/types/interfaces/definitions';
 import { u8aToHex } from '@polkadot/util';
+import { array, Codec } from 'parity-scale-codec';
+import * as $ from 'parity-scale-codec';
+import { Parser } from 'binary-parser';
 
 import { ErrorObject, QrError } from '../../components/common/QrCode/QrReader/common/types';
 import { QR_READER_ERRORS } from '../../components/common/QrCode/QrReader/common/errors';
 import { useI18n } from '@renderer/context/I18nContext';
 import { Icon } from '@renderer/components/ui';
-import {Codec} from "parity-scale-codec";
-import * as $ from "parity-scale-codec";
-
 
 type Props = {
   size?: number;
@@ -31,7 +31,40 @@ interface AddrInfo {
   network: string;
   address: string;
   derivation_path: string | undefined;
-  encryption: Encryption
+  encryption: Encryption;
+}
+
+//this class holds the frame structure that should be decoded
+class RaptorFrame {
+  _size: int;
+  _total: int;
+  _payload: Uint8Array;
+
+  constructor(data: Uint8Array) {
+    let result = new Parser()
+      .bit1('tag')
+      .array('size', { type: 'uint8', lengthInBytes: 3 })
+      .array('payload', { type: 'uint8', readUntil: 'eof' })
+      .parse(data);
+    if (!result._payload || result._payload.length == 0) {
+      throw new Error('Not a raptor package');
+    }
+    this._size = parseInt(u8aToHex(result.size), 16);
+    this._payload = result.payload;
+    this._total = Math.trunc(this._size / this._payload.length) + 1;
+  }
+
+  get size(): int {
+    return this._size;
+  }
+
+  get total(): int {
+    return this._total;
+  }
+
+  get payload(): Uint8Array {
+    return this._payload;
+  }
 }
 
 //encryption enum
@@ -45,16 +78,15 @@ enum Encryption {
 const $encryption = $.u8 as $.Codec<Encryption>;
 
 const $addr_info: Codec<AddrInfo> = $.object(
-  ["name", $.str],
-  ["address", $.str],
-  ["network", $.str],
-  ["derivation_path", $.option($.str)],
-  ["encryption", $encryption],
+  ['name', $.str],
+  ['address', $.str],
+  ['network', $.str],
+  ['derivation_path', $.option($.str)],
+  ['encryption', $encryption],
 );
 
 //export address format for decoding. Rust enum is a tagged union.
-const $export_address = $.taggedUnion("ExportAddrs", [["V1", ["addrs", $.array($addr_info)]]]);
-
+const $export_address = $.taggedUnion('ExportAddrs', [['V1', ['addrs', $.array($addr_info)]]]);
 
 const MultiframeQRReader = ({ size = 300, cameraId, onCameraList, onResult, onStart, onError }: Props) => {
   const { t } = useI18n();
@@ -85,7 +117,7 @@ const MultiframeQRReader = ({ size = 300, cameraId, onCameraList, onResult, onSt
           if (scanningResult) {
             let frame;
             try {
-              frame = RaptorqFrame.try_from(scanningResult[0]);
+              frame = new RaptorFrame(scanningResult[0]);
             } catch (e) {
               //if frame may not be recognized then it's a plain text, like `substrate:${address}:${wallet.publicKey}:Ff`
               console.log(`text in the result is ${result.getText()}`);
@@ -94,9 +126,9 @@ const MultiframeQRReader = ({ size = 300, cameraId, onCameraList, onResult, onSt
             } //non text result
             if (frame) {
               //if frame was recognized it has to be processed
-              let length = frame.size();
-              let total = frame.total();
-              let newPacket = frame.payload();
+              let length = frame.size;
+              let total = frame.total;
+              let newPacket = frame.payload;
               let decodedPacket = EncodingPacket.deserialize(newPacket);
               let blockNumber = decodedPacket.encoding_symbol_id();
               let raptorDecoder = Decoder.with_defaults(BigInt(length), decodedPacket.data().length);
