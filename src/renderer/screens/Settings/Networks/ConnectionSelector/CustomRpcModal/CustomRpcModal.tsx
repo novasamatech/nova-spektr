@@ -145,7 +145,7 @@ const CustomRpcModal = ({ chainId, network, node, existingUrls, isOpen, onClose 
       }
       className="p-5 w-[500px]"
       isOpen={isOpen}
-      onClose={onCloseModal}
+      onClose={() => onCloseModal()}
     >
       <form className="flex flex-col gap-y-7.5 mt-9" onSubmit={handleSubmit(onSubmitCustomNode)}>
         <div className="flex flex-col gap-y-2.5">
