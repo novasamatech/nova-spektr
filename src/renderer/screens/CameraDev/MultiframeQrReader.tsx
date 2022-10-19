@@ -6,7 +6,7 @@ import { BrowserCodeReader, BrowserQRCodeReader } from '@zxing/browser';
 import init, { Decoder, Encoder, EncodingPacket } from 'raptorq';
 import { int } from '@zxing/library/es2015/customTypings';
 import { collective, payment, scaleInfo } from '@polkadot/types/interfaces/definitions';
-import { u8aToHex } from '@polkadot/util';
+import { hexToU8a, u8aToHex, u8aToString } from '@polkadot/util';
 import { array, Codec } from 'parity-scale-codec';
 import * as $ from 'parity-scale-codec';
 import { Parser } from 'binary-parser';
@@ -120,6 +120,11 @@ const MultiframeQRReader = ({ size = 300, cameraId, onCameraList, onResult, onSt
               frame = new RaptorFrame(scanningResult[0]);
             } catch (e) {
               //if frame may not be recognized then it's a plain text, like `substrate:${address}:${wallet.publicKey}:Ff`
+              if (inProgress.length > 0) {
+                console.error(`This is conflicted payload`);
+
+                return;
+              }
               console.log(`text in the result is ${result.getText()}`);
 
               return;
@@ -157,6 +162,8 @@ const MultiframeQRReader = ({ size = 300, cameraId, onCameraList, onResult, onSt
                 //check if the user has started to scan another QR code.
                 if (inProgress.length != length) {
                   console.error(`This is conflicted payload ${inProgress.length} ${length}`);
+
+                  return;
                 }
                 //collect new frame
                 inProgress.collected.add(blockNumber);
