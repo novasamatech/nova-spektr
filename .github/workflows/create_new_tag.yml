@@ -1,0 +1,32 @@
+name: Create new tag
+
+on:
+  push:
+    branches:
+      - "main"
+
+jobs:
+  release-build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0 # Required due to the way Git works, without it this action won't be able to find any or the correct tags
+      - name: 'Get Previous tag'
+        id: previoustag
+        uses: WyriHaximus/github-action-get-previous-tag@v1
+
+      - name: Read package.json
+        uses: dutscher/read-package-json-endpoint-actions@v1.33.7
+        id: package-json-endpoint
+
+      - name: Show version number
+        run: echo "${{ steps.package-json-endpoint.outputs.endpoint }}"
+
+      - name: Create new tag
+        if: ${{ steps.previoustag.outputs.tag != steps.package-json-endpoint.outputs.endpoint }}
+        uses: rickstaa/action-create-tag@v1
+        with:
+          tag: v${{ steps.package-json-endpoint.outputs.endpoint }}
