@@ -4,9 +4,55 @@ on:
   push:
     branches:
       - "main"
+  workflow_dispatch:
+    inputs:
+      component:
+        description: 'Version component to increment'
+        required: true
+        type: choice
+        options:
+          - patch
+          - minor
+          - major
+        default: patch
 
 jobs:
-  release-build:
+  bump_package_verion:
+    if: ${{ github.event.action == 'workflow_dispatch' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0 # Required due to the way Git works, without it this action won't be able to find any or the correct tags
+
+      - uses: fwilhe2/bump-version@main
+        id: bump
+        with:
+          component: patch
+
+      - run: echo ${{ steps.bump.outputs.newVersion }}
+
+      - name: Update package.json version
+        uses: jossef/action-set-json-field@v2
+        with:
+          file: package.json
+          field: description
+          value: ${{ steps.bump.outputs.newVersion }}
+
+      - name: ➡️ Make pull request
+        uses: ./.github/workflows/make-pull-request
+        with:
+          commit-path: package.json
+          commit-message: Bump version in package.json
+          branch-name: update-package-file
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+
+
+
+  create_new_tag:
+    if: ${{ github.event.action == 'push' }}
     runs-on: ubuntu-latest
     timeout-minutes: 30
 
