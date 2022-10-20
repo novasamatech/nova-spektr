@@ -37,13 +37,11 @@ jobs:
         run: |
           bash .github/bump_release_version.sh ${{ steps.previoustag.outputs.tag }} patch
 
-      - run: echo ${{ steps.bump.outputs.newVersion }}
-
       - name: Update package.json version
         uses: jossef/action-set-json-field@v2
         with:
           file: package.json
-          field: description
+          field: version
           value: ${{ steps.bump.outputs.major }}.${{ steps.bump.outputs.minor }}.${{ steps.bump.outputs.patch }}
 
       - name: ➡️ Make pull request
