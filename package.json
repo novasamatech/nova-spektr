@@ -1,6 +1,6 @@
 {
   "name": "omni-enterprise",
-  "description": "Polkadot Enterprise application",
+  "description": "..",
   "version": "0.0.1",
   "main": "./release/build/main.js",
   "license": "MIT",
