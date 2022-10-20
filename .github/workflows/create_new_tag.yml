@@ -19,7 +19,7 @@ on:
 
 jobs:
   bump_package_verion:
-    if: ${{ github.event.action == 'pull_request' }}
+    if: ${{ github.event_name == 'pull_request' }}
     runs-on: ubuntu-latest
     timeout-minutes: 30
 
@@ -53,7 +53,7 @@ jobs:
 
 
   create_new_tag:
-    if: ${{ github.event.action == 'push' }}
+    if: ${{ github.event_name == 'push' }}
     runs-on: ubuntu-latest
     timeout-minutes: 30
 
