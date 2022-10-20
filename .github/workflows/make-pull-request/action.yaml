@@ -45,10 +45,6 @@ runs:
         pr_title: ${{ inputs.commit-message }}
         pr_body: |
           That pull-request was generated automatically 🤖
-        pr_reviewer: |
-          "stepanLav"
-          "pgolovkin"
-          "tuul-wq"
-          "Asmadek"
+        pr_reviewer: "stepanLav,pgolovkin,tuul-wq,Asmadek"
         pr_draft: false
         github_token: ${{ inputs.github-token }}
