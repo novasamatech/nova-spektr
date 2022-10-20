@@ -19,7 +19,7 @@ on:
 
 jobs:
   bump_package_verion:
-    if: ${{ github.event.action == 'workflow_dispatch' }}
+    if: ${{ github.event.action == 'pull_request' }}
     runs-on: ubuntu-latest
     timeout-minutes: 30
 
