@@ -28,6 +28,13 @@ jobs:
         with:
           fetch-depth: 0 # Required due to the way Git works, without it this action won't be able to find any or the correct tags
 
+      - name: 'Get Previous tag'
+        id: previoustag
+        uses: WyriHaximus/github-action-get-previous-tag@v1
+
+      - name: Debug
+        run: ${{ steps.previoustag.outputs.tag }}
+
       - uses: fwilhe2/bump-version@main
         id: bump
         with:
