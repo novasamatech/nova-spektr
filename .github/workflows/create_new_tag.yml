@@ -32,13 +32,10 @@ jobs:
         id: previoustag
         uses: WyriHaximus/github-action-get-previous-tag@v1
 
-      - name: Debug
-        run: ${{ steps.previoustag.outputs.tag }}
-
-      - uses: fwilhe2/bump-version@main
+      - name: Bump version
         id: bump
-        with:
-          component: patch
+        run: |
+          sh .github/bump_release_version.sh ${{ steps.previoustag.outputs.tag }} patch
 
       - run: echo ${{ steps.bump.outputs.newVersion }}
 
@@ -47,7 +44,7 @@ jobs:
         with:
           file: package.json
           field: description
-          value: ${{ steps.bump.outputs.newVersion }}
+          value: ${{ steps.bump.outputs.major }}.${{ steps.bump.outputs.minor }}.${{ steps.bump.outputs.patch }}
 
       - name: ➡️ Make pull request
         uses: ./.github/workflows/make-pull-request
