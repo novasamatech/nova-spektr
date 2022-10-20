@@ -35,7 +35,7 @@ jobs:
       - name: Bump version
         id: bump
         run: |
-          sh .github/bump_release_version.sh ${{ steps.previoustag.outputs.tag }} patch
+          bash .github/bump_release_version.sh ${{ steps.previoustag.outputs.tag }} patch
 
       - run: echo ${{ steps.bump.outputs.newVersion }}
 
