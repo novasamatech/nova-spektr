@@ -15,7 +15,6 @@ on:
           - minor
           - major
         default: patch
-  pull_request:
 
 jobs:
   bump_package_verion:
