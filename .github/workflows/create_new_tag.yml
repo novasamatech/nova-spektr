@@ -19,7 +19,7 @@ on:
 
 jobs:
   bump_package_verion:
-    if: ${{ github.event.action == 'workflow_dispatch' }}
+    if: ${{ github.event_name == 'workflow_dispatch' }}
     runs-on: ubuntu-latest
     timeout-minutes: 30
 
@@ -28,19 +28,21 @@ jobs:
         with:
           fetch-depth: 0 # Required due to the way Git works, without it this action won't be able to find any or the correct tags
 
-      - uses: fwilhe2/bump-version@main
-        id: bump
-        with:
-          component: patch
+      - name: 'Get Previous tag'
+        id: previoustag
+        uses: WyriHaximus/github-action-get-previous-tag@v1
 
-      - run: echo ${{ steps.bump.outputs.newVersion }}
+      - name: Bump version
+        id: bump
+        run: |
+          bash .github/bump_release_version.sh ${{ steps.previoustag.outputs.tag }} patch
 
       - name: Update package.json version
         uses: jossef/action-set-json-field@v2
         with:
           file: package.json
-          field: description
-          value: ${{ steps.bump.outputs.newVersion }}
+          field: version
+          value: ${{ steps.bump.outputs.major }}.${{ steps.bump.outputs.minor }}.${{ steps.bump.outputs.patch }}
 
       - name: ➡️ Make pull request
         uses: ./.github/workflows/make-pull-request
@@ -53,27 +55,31 @@ jobs:
 
 
   create_new_tag:
-    if: ${{ github.event.action == 'push' }}
+    if: ${{ github.event_name == 'pull_request' }}
     runs-on: ubuntu-latest
     timeout-minutes: 30
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v2
         with:
           fetch-depth: 0 # Required due to the way Git works, without it this action won't be able to find any or the correct tags
+          token: ${{ secrets.CREATE_TAG_PAT }}
+
       - name: 'Get Previous tag'
         id: previoustag
         uses: WyriHaximus/github-action-get-previous-tag@v1
 
       - name: Read package.json
-        uses: dutscher/read-package-json-endpoint-actions@v1.33.7
-        id: package-json-endpoint
+        run: |
+          echo "PACKAGE_JSON=$(jq -c . < package.json)" >> $GITHUB_ENV
 
-      - name: Show version number
-        run: echo "${{ steps.package-json-endpoint.outputs.endpoint }}"
+      - name: Put text version to env
+        run: |
+          echo "${{ fromJson(env.PACKAGE_JSON).version }}"
+          echo "PACKAGE_VERSION=${{ format('{0}{1}', 'v', fromJson(env.PACKAGE_JSON).version) }}" >> $GITHUB_ENV
 
       - name: Create new tag
-        if: ${{ steps.previoustag.outputs.tag != steps.package-json-endpoint.outputs.endpoint }}
+        if: ${{ steps.previoustag.outputs.tag != env.PACKAGE_VERSION }}
         uses: rickstaa/action-create-tag@v1
         with:
-          tag: v${{ steps.package-json-endpoint.outputs.endpoint }}
+          tag: v${{ fromJson(env.PACKAGE_JSON).version }}
