@@ -26,6 +26,7 @@ const config = merge<WpConfig & WdsConfig>(sharedConfig, {
     server: {
       type: 'https',
     },
+    allowedHosts: 'all',
     client: {
       overlay: true,
     },
