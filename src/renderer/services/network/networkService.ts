@@ -10,9 +10,10 @@ import { ChainId, HexString } from '@renderer/domain/shared-kernel';
 import storage from '@renderer/services/storage';
 import { useChainSpec } from './chainSpecService';
 import { useChains } from './chainsService';
-import { ConnectionsMap, INetworkService, RpcValidation } from './common/types';
+import { ConnectionsMap, INetworkService, RpcValidation, ConnectProps } from './common/types';
+import { AUTO_BALANCE_TIMEOUT, MAX_ATTEMPTS, PROGRESSION_BASE } from './common/constants';
 
-export const useNetwork = (): INetworkService => {
+export const useNetwork = (unsubscribe?: (chainId: ChainId) => Promise<void>): INetworkService => {
   const chains = useRef<Record<ChainId, Chain>>({});
   const [connections, setConnections] = useState<ConnectionsMap>({});
 
@@ -55,6 +56,8 @@ export const useNetwork = (): INetworkService => {
   const disconnectFromNetwork =
     (chainId: ChainId, provider?: ProviderInterface, api?: ApiPromise) =>
     async (switchNetwork: boolean): Promise<void> => {
+      await unsubscribe?.(chainId);
+
       try {
         await api?.disconnect();
       } catch (e) {
@@ -155,7 +158,7 @@ export const useNetwork = (): INetworkService => {
     const handler = async () => {
       console.log('🟢 connected ==> ', chainId);
 
-      const api = await ApiPromise.create({ provider });
+      const api = await ApiPromise.create({ provider, throwOnConnect: true, throwOnUnknown: true });
       if (!api) await provider.disconnect();
 
       updateConnectionState(
@@ -181,19 +184,36 @@ export const useNetwork = (): INetworkService => {
     provider.on('disconnected', handler);
   };
 
-  const subscribeError = (chainId: ChainId, provider: ProviderInterface) => {
+  const subscribeError = (chainId: ChainId, provider: ProviderInterface, onError?: () => void) => {
     const handler = () => {
       console.log('🔴 error ==> ', chainId);
 
       updateConnectionState(chainId, {
         connectionStatus: ConnectionStatus.ERROR,
       });
+
+      onError?.();
     };
 
     provider.on('error', handler);
   };
 
-  const connectToNetwork = async (chainId: ChainId, type: ConnectionType, node?: RpcNode): Promise<void> => {
+  const connectWithAutoBalance = async (chainId: ChainId, attempt = 0): Promise<void> => {
+    if (Number.isNaN(attempt)) attempt = 0;
+
+    const currentTimeout = AUTO_BALANCE_TIMEOUT * (PROGRESSION_BASE ^ attempt % MAX_ATTEMPTS);
+
+    const timeoutId = setTimeout(() => {
+      const nodes = [...connections[chainId].nodes, ...(connections[chainId].connection.customNodes || [])];
+
+      const node = nodes[Math.floor(attempt / MAX_ATTEMPTS) % nodes.length];
+
+      connectToNetwork({ chainId, type: ConnectionType.AUTO_BALANCE, node, attempt, timeoutId });
+    }, currentTimeout);
+  };
+
+  const connectToNetwork = async (props: ConnectProps): Promise<void> => {
+    const { chainId, type, node } = props;
     const connection = connections[chainId];
     if (!connection || type === ConnectionType.DISABLED) return;
 
@@ -210,7 +230,7 @@ export const useNetwork = (): INetworkService => {
 
     if (type === ConnectionType.LIGHT_CLIENT) {
       provider.instance = createSubstrateProvider(chainId);
-    } else if (type === ConnectionType.RPC_NODE && node) {
+    } else if ([ConnectionType.RPC_NODE, ConnectionType.AUTO_BALANCE].includes(type) && node) {
       provider.instance = createWebsocketProvider(node.url);
     }
 
@@ -222,10 +242,21 @@ export const useNetwork = (): INetworkService => {
       },
     }));
 
+    let autoBalanceStarted = false;
+    const onAutoBalanceError = () => {
+      const { attempt, timeoutId } = props;
+      if (autoBalanceStarted || type !== ConnectionType.AUTO_BALANCE) return;
+      autoBalanceStarted = true;
+
+      clearTimeout(timeoutId);
+      disconnectFromNetwork(chainId, provider.instance)(true);
+      connectWithAutoBalance(chainId, attempt! + 1);
+    };
+
     if (provider.instance) {
       subscribeConnected(chainId, provider.instance, type, node);
       subscribeDisconnected(chainId, provider.instance);
-      subscribeError(chainId, provider.instance);
+      subscribeError(chainId, provider.instance, onAutoBalanceError);
 
       if (provider.isScProvider) {
         await provider.instance.connect();
@@ -246,14 +277,14 @@ export const useNetwork = (): INetworkService => {
       provider.on('connected', async () => {
         let isNetworkMatch = false;
         try {
-          const api = await ApiPromise.create({ provider });
+          const api = await ApiPromise.create({ provider, throwOnConnect: true, throwOnUnknown: true });
           isNetworkMatch = genesisHash === api.genesisHash.toHex();
 
           api.disconnect().catch(console.warn);
-          provider.disconnect().catch(console.warn);
         } catch (error) {
           console.warn(error);
         }
+        provider.disconnect().catch(console.warn);
         resolve(isNetworkMatch ? RpcValidation.VALID : RpcValidation.WRONG_NETWORK);
       });
 
@@ -319,6 +350,7 @@ export const useNetwork = (): INetworkService => {
     connections,
     setupConnections,
     connectToNetwork,
+    connectWithAutoBalance,
     addRpcNode,
     updateRpcNode,
     removeRpcNode,

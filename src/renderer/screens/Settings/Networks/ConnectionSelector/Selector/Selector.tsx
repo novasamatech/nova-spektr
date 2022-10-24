@@ -14,6 +14,8 @@ import CustomRpcModal from '@renderer/screens/Settings/Networks/ConnectionSelect
 import { ExtendedChain } from '@renderer/services/network/common/types';
 
 const LIGHT_CLIENT_KEY = 'LIGHT_CLIENT';
+const AUTO_BALANCE_KEY = 'AUTO_BALANCE';
+
 const MAX_LIGHT_CLIENTS = 3;
 
 type Props = {
@@ -22,7 +24,7 @@ type Props = {
 
 const Selector = ({ networkItem }: Props) => {
   const { t } = useI18n();
-  const { connections, connectToNetwork, removeRpcNode } = useNetworkContext();
+  const { connections, connectToNetwork, connectWithAutoBalance, removeRpcNode } = useNetworkContext();
   const [isCustomRpcOpen, toggleCustomRpc] = useToggle();
 
   const { confirm } = useConfirmContext();
@@ -36,6 +38,7 @@ const Selector = ({ networkItem }: Props) => {
       [ConnectionType.DISABLED]: 'Select connection type',
       [ConnectionType.RPC_NODE]: activeNode?.url,
       [ConnectionType.LIGHT_CLIENT]: LIGHT_CLIENT_KEY,
+      [ConnectionType.AUTO_BALANCE]: AUTO_BALANCE_KEY,
     }[connectionType] || 'Select connection type',
   );
 
@@ -118,7 +121,14 @@ const Selector = ({ networkItem }: Props) => {
       if (nodeId === LIGHT_CLIENT_KEY) {
         // Let unsubscribe from previous Provider, microtask first - macrotask second
         setTimeout(() => {
-          connectToNetwork(chainId, ConnectionType.LIGHT_CLIENT);
+          connectToNetwork({ chainId, type: ConnectionType.LIGHT_CLIENT });
+        });
+      }
+
+      if (nodeId === AUTO_BALANCE_KEY) {
+        // Let unsubscribe from previous Provider, microtask first - macrotask second
+        setTimeout(() => {
+          connectWithAutoBalance(chainId, 0);
         });
       }
 
@@ -126,12 +136,13 @@ const Selector = ({ networkItem }: Props) => {
       if (node) {
         // Let unsubscribe from previous Provider, microtask first - macrotask second
         setTimeout(() => {
-          connectToNetwork(chainId, ConnectionType.RPC_NODE, node);
+          connectToNetwork({ chainId, type: ConnectionType.RPC_NODE, node });
         });
       }
     } catch (error) {
       console.warn(error);
     }
+
     onClose();
   };
 
@@ -158,7 +169,7 @@ const Selector = ({ networkItem }: Props) => {
     let proceed = false;
     if (connectionType === ConnectionType.LIGHT_CLIENT) {
       proceed = await confirmDisableLightClient();
-    } else if (connectionType === ConnectionType.RPC_NODE) {
+    } else if ([ConnectionType.RPC_NODE, ConnectionType.AUTO_BALANCE].includes(connectionType)) {
       proceed = await confirmDisableNetwork();
     }
     if (!proceed) return;
@@ -184,7 +195,7 @@ const Selector = ({ networkItem }: Props) => {
 
       // Let unsubscribe from previous Provider, microtask first - macrotask second
       setTimeout(() => {
-        connectToNetwork(chainId, ConnectionType.RPC_NODE, newNode);
+        connectToNetwork({ chainId, type: ConnectionType.RPC_NODE, node: newNode });
       });
     } catch (error) {
       console.warn(error);
@@ -206,6 +217,7 @@ const Selector = ({ networkItem }: Props) => {
               [ConnectionType.DISABLED]: t('networkManagement.selectConnection.selectConnectionLabel'),
               [ConnectionType.RPC_NODE]: activeNode?.name,
               [ConnectionType.LIGHT_CLIENT]: t('networkManagement.selectConnection.lightClient'),
+              [ConnectionType.AUTO_BALANCE]: t('networkManagement.selectConnection.autoBalance'),
             }[connectionType] || ''}
           </span>
           <Icon className="shrink-0 ml-2" name="dropdown" size={20} />
@@ -250,6 +262,27 @@ const Selector = ({ networkItem }: Props) => {
                       )}
                     </RadioGroup.Option>
                   )}
+                  <RadioGroup.Option
+                    value={AUTO_BALANCE_KEY}
+                    className={cn(
+                      'h-10 flex gap-2.5 px-4 box-border cursor-pointer items-center text-sm font-semibold text-neutral hover:bg-shade-2',
+                    )}
+                  >
+                    {({ checked }) => (
+                      <>
+                        <div
+                          className={cn(
+                            'rounded-full w-5 h-5',
+                            checked ? 'border-[6px] border-primary' : 'border-2 border-shade-30',
+                          )}
+                        ></div>
+                        <div>
+                          <div className={checked ? 'text-primary' : ''}>{t('networkManagement.autoBalanceLabel')}</div>
+                        </div>
+                      </>
+                    )}
+                  </RadioGroup.Option>
+
                   {combinedNodes.map((node) => (
                     <RadioGroup.Option
                       value={node.url}

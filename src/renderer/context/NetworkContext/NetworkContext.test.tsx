@@ -25,6 +25,14 @@ jest.mock('@renderer/services/wallet/walletService', () => ({
   }),
 }));
 
+jest.mock('@renderer/services/subscription/subscriptionService', () => ({
+  useSubscription: jest.fn().mockReturnValue({
+    subscribe: jest.fn(),
+    hasSubscription: jest.fn(),
+    unsubscribe: jest.fn(),
+  }),
+}));
+
 describe('context/NetworkContext', () => {
   afterEach(() => {
     jest.clearAllMocks();
@@ -67,7 +75,25 @@ describe('context/NetworkContext', () => {
     });
 
     expect(spyConnectToNetwork).toBeCalledTimes(1);
-    expect(spyConnectToNetwork).toBeCalledWith(connection.chainId, connection.connectionType, undefined);
+    expect(spyConnectToNetwork).toBeCalledWith({ chainId: connection.chainId, type: connection.connectionType });
+  });
+
+  test('should connect with auto balance', async () => {
+    const spyConnectWithAutoBalance = jest.fn();
+    const connection = { chainId: '0x123', connectionType: ConnectionType.AUTO_BALANCE };
+
+    (useNetwork as jest.Mock).mockImplementation(() => ({
+      connections: { [connection.chainId]: { connection } },
+      setupConnections: jest.fn(),
+      connectWithAutoBalance: spyConnectWithAutoBalance,
+    }));
+
+    await act(async () => {
+      render(<NetworkProvider>children</NetworkProvider>);
+    });
+
+    expect(spyConnectWithAutoBalance).toBeCalledTimes(1);
+    expect(spyConnectWithAutoBalance).toBeCalledWith(connection.chainId, 0);
   });
 
   test('should start balance subscription', async () => {

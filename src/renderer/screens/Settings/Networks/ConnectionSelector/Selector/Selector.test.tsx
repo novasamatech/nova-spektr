@@ -8,9 +8,12 @@ import CustomRpcModal from '../CustomRpcModal/CustomRpcModal';
 import { ExtendedChain } from '@renderer/services/network/common/types';
 import ConnectionSelector from './Selector';
 
+const connectWithAutoBalanceSpy = jest.fn();
+
 jest.mock('@renderer/context/NetworkContext', () => ({
   useNetworkContext: jest.fn(() => ({
     connectToNetwork: jest.fn(),
+    connectWithAutoBalance: connectWithAutoBalanceSpy,
   })),
 }));
 
@@ -112,7 +115,19 @@ describe('screen/Settings/Networks/ConnectionSelector/Selector', () => {
     await act(async () => button.click());
 
     const nodes = screen.getAllByRole('radio');
-    expect(nodes).toHaveLength(3);
+    expect(nodes).toHaveLength(4);
+  });
+
+  test('should select auto balance option', async () => {
+    render(<ConnectionSelector networkItem={lightClientNetworks} />);
+
+    const button = screen.getByRole('button');
+    await act(async () => button.click());
+
+    const autoBalance = screen.getByText('networkManagement.autoBalanceLabel');
+    await act(async () => autoBalance.click());
+
+    expect(connectWithAutoBalanceSpy).toBeCalled();
   });
 
   test('should not show light client option', async () => {
