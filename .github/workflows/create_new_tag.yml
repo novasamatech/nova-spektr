@@ -34,7 +34,7 @@ jobs:
       - name: Bump version
         id: bump
         run: |
-          bash .github/bump_release_version.sh ${{ steps.previoustag.outputs.tag }} patch
+          bash .github/bump_release_version.sh ${{ steps.previoustag.outputs.tag }} ${{ github.event.inputs.component }}
 
       - name: Update package.json version
         uses: jossef/action-set-json-field@v2
