@@ -1,12 +1,13 @@
+import { hexToU8a, isHex, u8aToString } from '@polkadot/util';
+import { decodeAddress, encodeAddress } from '@polkadot/util-crypto';
 import cn from 'classnames';
 import { useState } from 'react';
-import { decodeAddress, encodeAddress } from '@polkadot/util-crypto';
 
-import { OptionType } from '@renderer/components/ui/Dropdown/Dropdown';
-import { ErrorObject, QrError } from '@renderer/components/common/QrCode/QrReader/common/types';
-import { Button, Dropdown, Icon } from '@renderer/components/ui';
-import { QrReader } from '@renderer/components/common';
 import ScanQr from '@images/misc/onboarding/scan-qr.svg';
+import { Button, Dropdown, Icon } from '@renderer/components/ui';
+import { ErrorObject, QrError, SeedInfo, VideoInput } from '@renderer/components/common/QrCode/QrReader/common/types';
+import { OptionType } from '@renderer/components/ui/Dropdown/Dropdown';
+import ParitySignerQrReader from '../ParitySignerQrReader/ParitySignerQrReader';
 import { useI18n } from '@renderer/context/I18nContext';
 
 const enum CameraState {
@@ -19,7 +20,7 @@ const enum CameraState {
 }
 
 type Props = {
-  onNextStep: (ss58Address: string) => void;
+  onNextStep: (payload: SeedInfo) => void;
 };
 
 const StepTwo = ({ onNextStep }: Props) => {
@@ -30,25 +31,26 @@ const StepTwo = ({ onNextStep }: Props) => {
   const [activeCamera, setActiveCamera] = useState<OptionType>();
   const [availableCameras, setAvailableCameras] = useState<OptionType[]>([]);
 
-  const onScanResult = (data: string) => {
-    const handleBadCode = () => {
+  const onScanResult = (qrPayload: SeedInfo) => {
+    console.log(qrPayload);
+
+    try {
+      if (qrPayload.derivedKeys.length > 0) {
+        qrPayload.derivedKeys.forEach(({ address }) =>
+          encodeAddress(isHex(address) ? hexToU8a(address) : decodeAddress(address)),
+        );
+      }
+
+      encodeAddress(u8aToString(qrPayload.multiSigner?.public));
+      onNextStep(qrPayload);
+    } catch (error) {
       setCameraState(CameraState.BAD_CODE);
       setIsCameraExist(false);
       setActiveCamera(undefined);
-    };
-
-    const [_, ss58Address] = data.split(':');
-    try {
-      encodeAddress(decodeAddress(ss58Address));
-
-      setTimeout(() => onNextStep(ss58Address), 500);
-    } catch (error) {
-      handleBadCode();
     }
   };
 
   const onError = (error: ErrorObject) => {
-    console.warn(error);
     if (error.code === QrError.USER_DENY) {
       setCameraState(CameraState.DENY);
     } else {
@@ -63,17 +65,19 @@ const StepTwo = ({ onNextStep }: Props) => {
     setCameraState(CameraState.ON);
   };
 
-  const onCameraList = (cameras: { id: string; label: string }[]) => {
+  const onCameraList = (cameras: VideoInput[]) => {
     const formattedCameras = cameras.map((camera, index) => ({
       //eslint-disable-next-line i18next/no-literal-string
       label: `${index + 1}. ${camera.label}`,
       value: camera.id,
     }));
+
     setAvailableCameras(formattedCameras);
     setCameraState(CameraState.SELECT);
   };
 
-  // FIXME: investigate QrReader to make Retry
+  // FIXME: camera is blocked after 3 denies (that's intended browser reaction)
+  // Set attempts counter and show special notification
   const onRetryCamera = () => {
     setIsCameraExist(true);
     setCameraState(CameraState.LOADING);
@@ -94,12 +98,12 @@ const StepTwo = ({ onNextStep }: Props) => {
           {t('onboarding.paritysigner.scanQRLabel3')}
         </h2>
       </div>
-      <div className="relative flex flex-col justify-center items-center flex-1 py-5 shadow-surface rounded-2lg bg-white overflow-hidden">
+      <div className="relative flex flex-col justify-center items-center flex-1 shadow-surface rounded-2lg bg-white overflow-hidden">
         {cameraState !== CameraState.ON && (
           <div className="flex items-center justify-center bg-white w-full h-full">
             {cameraState === CameraState.SELECT && (
               <div className="flex flex-col items-center text-center">
-                <Icon className="text-neutral-variant" as="svg" name="warnCutout" size={60} />
+                <Icon className="text-alert" as="svg" name="warnCutout" size={60} />
                 <p className="text-neutral text-xl leading-6 font-semibold mt-5">
                   {t('onboarding.paritysigner.multipleCamerasLabel')}
                 </p>
@@ -119,7 +123,7 @@ const StepTwo = ({ onNextStep }: Props) => {
             )}
             {cameraState === CameraState.ERROR && (
               <div className="flex flex-col items-center text-center">
-                <Icon className="text-neutral-variant" as="svg" name="warnCutout" size={60} />
+                <Icon className="text-alert" as="svg" name="warnCutout" size={60} />
                 <p className="text-neutral text-xl leading-6 font-semibold mt-5">
                   {t('onboarding.paritysigner.cameraNotWorkLabel')}
                 </p>
@@ -128,7 +132,7 @@ const StepTwo = ({ onNextStep }: Props) => {
             )}
             {cameraState === CameraState.DENY && (
               <div className="flex flex-col items-center text-center">
-                <Icon className="text-neutral-variant" as="svg" name="warnCutout" size={60} />
+                <Icon className="text-alert" as="svg" name="warnCutout" size={60} />
                 <p className="text-neutral text-xl leading-6 font-semibold mt-5">
                   {t('onboarding.paritysigner.cameraAccessDeniedLabel')}
                 </p>
@@ -146,8 +150,8 @@ const StepTwo = ({ onNextStep }: Props) => {
 
         {isCameraExist && (
           <div className={cn(cameraState !== CameraState.ON && 'hidden')}>
-            <QrReader
-              size={380}
+            <ParitySignerQrReader
+              size={500}
               cameraId={activeCamera?.value}
               onCameraList={onCameraList}
               onResult={onScanResult}
@@ -158,7 +162,7 @@ const StepTwo = ({ onNextStep }: Props) => {
         )}
 
         {cameraState === CameraState.LOADING && (
-          <p className="absolute bottom-5 flex items-center gap-x-2.5 text-alert font-semibold py-2">
+          <p className="absolute bottom-5 flex items-center gap-x-2.5 text-shade-40 font-semibold py-2">
             <Icon as="svg" name="loader" className="animate-spin" /> {t('onboarding.paritysigner.startingCameraLabel')}
           </p>
         )}

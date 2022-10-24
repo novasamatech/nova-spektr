@@ -156,6 +156,8 @@
     "yourAccountsLabel": "Ваши аккаунты"
   },
   "qrReader": {
+    "parsingLabel": "Обработка данных",
+    "parsingSubLabel": "Пожалуйста, держите устройство ровно...",
     "videoError": "Браузер не поддерживает видео"
   },
   "receive": {

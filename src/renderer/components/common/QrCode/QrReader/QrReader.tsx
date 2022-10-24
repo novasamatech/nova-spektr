@@ -1,82 +1,224 @@
-// eslint-disable-next-line import/default
-import QrScanner from 'qr-scanner';
+import { stringToU8a } from '@polkadot/util';
+import { BrowserCodeReader, BrowserQRCodeReader, IScannerControls } from '@zxing/browser';
 import cn from 'classnames';
-import { useEffect, useRef, useState } from 'react';
+import init, { Decoder, EncodingPacket } from 'raptorq';
+import { useEffect, useLayoutEffect, useRef } from 'react';
 
-import { Icon } from '@renderer/components/ui';
+import { validateSignerFormat } from '@renderer/utils/strings';
 import { useI18n } from '@renderer/context/I18nContext';
+import { EXPORT_ADDRESS } from './common/constants';
 import { QR_READER_ERRORS } from './common/errors';
-import { ErrorObject, QrError } from './common/types';
+import { ErrorObject, Progress, QrError, SeedInfo, VideoInput } from './common/types';
+import RaptorFrame from './RaptorFrame';
 
-type Props = {
+const enum Status {
+  'FIRST_FRAME',
+  'NEXT_FRAME',
+}
+
+export interface QrReaderProps {
   size?: number;
   cameraId?: string;
-  onCameraList?: (cameras: QrScanner.Camera[]) => void;
-  onResult: (data: string) => void;
-  onStart?: () => void;
+  className?: string;
+  onStart: () => void;
+  onResult: (scanResult: SeedInfo) => void;
   onError?: (error: ErrorObject) => void;
-};
+  onProgress?: (progress: Progress) => void;
+  onCameraList?: (cameras: VideoInput[]) => void;
+}
 
-const QrReader = ({ size = 300, cameraId, onCameraList, onResult, onStart, onError }: Props) => {
+const QrReader = ({
+  size = 300,
+  cameraId,
+  className,
+  onCameraList,
+  onResult,
+  onProgress,
+  onStart,
+  onError,
+}: QrReaderProps) => {
   const { t } = useI18n();
 
   const videoRef = useRef<HTMLVideoElement>(null);
-  const qrScanner = useRef<QrScanner>();
+  const streamRef = useRef<MediaStream>();
 
-  const [isScanComplete, setIsScanComplete] = useState(false);
+  const scannerRef = useRef<BrowserQRCodeReader>();
+  const controlsRef = useRef<IScannerControls>();
 
-  const getVideoInputs = async (): Promise<number | undefined> => {
-    if (!onCameraList) return;
+  const status = useRef<Status>(Status.FIRST_FRAME);
+  const packets = useRef<Map<string, Uint8Array>>(new Map());
+  const progress = useRef({ size: 0, total: 0, collected: new Set() });
+  const isComplete = useRef(false);
 
-    let cameras = [];
+  const isQrErrorObject = (error: any): boolean => {
+    return error && typeof error === 'object' && 'code' in error && 'message' in error;
+  };
+
+  const makeResultPayload = <T extends string | SeedInfo>(data: T): SeedInfo => {
+    if (typeof data !== 'string') return data;
+
+    return {
+      name: '',
+      derivedKeys: [],
+      multiSigner: {
+        MultiSigner: 'Sr25519',
+        public: stringToU8a(data.split(':')[1]),
+      },
+    };
+  };
+
+  const getVideoInputs = async (): Promise<number> => {
+    const cameras: VideoInput[] = [];
     try {
-      cameras = await QrScanner.listCameras(true);
+      streamRef.current = await navigator.mediaDevices.getUserMedia({ video: true });
+
+      const mediaDevices = await BrowserCodeReader.listVideoInputDevices();
+      mediaDevices.forEach(({ deviceId, label }) => cameras.push({ id: deviceId, label }));
     } catch (error) {
-      throw QR_READER_ERRORS[QrError.UNABLE_TO_GET_MEDIA];
+      throw QR_READER_ERRORS[QrError.USER_DENY];
     }
+
     if (cameras.length === 0) {
       throw QR_READER_ERRORS[QrError.NO_VIDEO_INPUT];
     }
-    if (cameras.length === 1 && !cameras[0].id) {
-      throw QR_READER_ERRORS[QrError.USER_DENY];
-    }
     if (cameras.length > 1) {
-      onCameraList(cameras);
+      onCameraList?.(cameras);
     }
 
     return cameras.length;
   };
 
-  const startCamera = async () => {
-    if (!videoRef.current) return;
+  const handleSimpleQr = (signerAddress: string): Boolean => {
+    if (!validateSignerFormat(signerAddress)) return false;
 
-    const scanner = new QrScanner(
-      videoRef.current,
-      ({ data }) => {
-        setIsScanComplete(true);
-        onResult(data);
-      },
-      { maxScansPerSecond: 10, preferredCamera: cameraId },
-    );
+    isComplete.current = true;
+    onProgress?.({ decoded: 1, total: 1 });
+    onResult?.(makeResultPayload<string>(signerAddress));
 
-    try {
-      await scanner.start();
-      qrScanner.current = scanner;
-      onStart?.();
-    } catch (error) {
-      scanner.stop();
-      scanner.destroy();
-      throw QR_READER_ERRORS[QrError.CANNOT_START];
+    return true;
+  };
+
+  const createFrame = (metadata?: Uint8Array[]): RaptorFrame => {
+    if (!metadata) {
+      throw QR_READER_ERRORS[QrError.FRAME_METADATA];
+    }
+
+    return new RaptorFrame(metadata[0]);
+  };
+
+  const handleFirstFrame = (
+    raptorDecoder: Decoder,
+    blockNumber: number,
+    frameData: { size: number; total: number; payload: Uint8Array },
+  ) => {
+    // if it's the first frame from the multiframe QR
+    const fountainResult = raptorDecoder.decode(frameData.payload);
+
+    if (fountainResult) {
+      // decode the 1st frame --> it's a single frame QR
+      const result = EXPORT_ADDRESS.decode(fountainResult.slice(3));
+      isComplete.current = true;
+      onResult?.(makeResultPayload<SeedInfo>(result.payload[0]));
+    } else {
+      // if there is more than 1 frame --> proceed scanning and keep the progress
+      onProgress?.({ decoded: 1, total: frameData.total });
+      status.current = Status.NEXT_FRAME;
+      progress.current = {
+        size: frameData.size,
+        total: frameData.total,
+        collected: new Set([blockNumber]),
+      };
     }
   };
 
-  useEffect(() => {
+  const handleNextFrames = (raptorDecoder: Decoder, blockNumber: number, newSize: number) => {
+    const { size, total, collected } = progress.current;
+
+    // check if the user has started scanning another QR code
+    if (size !== newSize) {
+      throw QR_READER_ERRORS[QrError.NOT_SAME_QR];
+    }
+
+    if (collected.has(blockNumber)) return;
+
+    collected.add(blockNumber);
+    onProgress?.({ decoded: collected.size, total });
+
+    for (const [_, packet] of packets.current) {
+      const fountainResult = raptorDecoder.decode(packet);
+      if (!fountainResult) continue;
+
+      const result = EXPORT_ADDRESS.decode(fountainResult.slice(3));
+      isComplete.current = true;
+      onResult?.(makeResultPayload<SeedInfo>(result.payload[0]));
+      break;
+    }
+  };
+
+  const startScanning = async (): Promise<void> => {
+    if (!videoRef.current || !scannerRef.current) return;
+
+    type Callback = Parameters<typeof scannerRef.current.decodeFromVideoDevice>[2];
+    const decodeCallback: Callback = async (result): Promise<void> => {
+      if (!result || isComplete.current) return;
+
+      try {
+        await init();
+
+        const isSimpleQr = handleSimpleQr(result.getText());
+        if (isSimpleQr) return;
+
+        const frame = createFrame(result.getResultMetadata().get(2) as Uint8Array[]);
+
+        const stringPayload = JSON.stringify(frame.data.payload);
+        const isPacketExist = packets.current.get(stringPayload);
+        if (isPacketExist) return;
+
+        packets.current.set(stringPayload, frame.data.payload);
+        const decodedPacket = EncodingPacket.deserialize(frame.data.payload);
+        const blockNumber = decodedPacket.encoding_symbol_id();
+        const raptorDecoder = Decoder.with_defaults(BigInt(frame.data.size), decodedPacket.data().length);
+
+        if (status.current === Status.FIRST_FRAME) {
+          handleFirstFrame(raptorDecoder, blockNumber, frame.data);
+        } else if (status.current === Status.NEXT_FRAME) {
+          handleNextFrames(raptorDecoder, blockNumber, frame.data.size);
+        }
+      } catch (error) {
+        if (!isQrErrorObject(error)) {
+          onError?.(QR_READER_ERRORS[QrError.DECODE_ERROR]);
+        } else if ((error as ErrorObject).code === QrError.NOT_SAME_QR) {
+          // Restart process for new QR
+          packets.current = new Map();
+          status.current = Status.FIRST_FRAME;
+          progress.current = { size: 0, total: 0, collected: new Set() };
+        } else {
+          onError?.(error as ErrorObject);
+        }
+      }
+    };
+
+    try {
+      controlsRef.current = await scannerRef.current.decodeFromVideoDevice(cameraId, videoRef.current, decodeCallback);
+      onStart?.();
+    } catch (error) {
+      throw QR_READER_ERRORS[QrError.DECODE_ERROR];
+    }
+  };
+
+  const stopScanning = () => {
+    streamRef.current?.getVideoTracks().forEach((track) => track.stop());
+    controlsRef.current?.stop();
+  };
+
+  useLayoutEffect(() => {
     (async () => {
       try {
         const camerasAmount = await getVideoInputs();
+        scannerRef.current = new BrowserQRCodeReader();
 
         if (!camerasAmount || camerasAmount === 1) {
-          await startCamera();
+          await startScanning();
         }
       } catch (error) {
         onError?.(error as ErrorObject);
@@ -84,63 +226,35 @@ const QrReader = ({ size = 300, cameraId, onCameraList, onResult, onStart, onErr
     })();
 
     return () => {
-      qrScanner.current?.stop();
-      qrScanner.current?.destroy();
+      stopScanning();
     };
   }, []);
 
   useEffect(() => {
     if (!cameraId) return;
 
-    if (qrScanner.current) {
-      const setNewCamera = async () => {
-        try {
-          await qrScanner.current?.setCamera(cameraId);
-        } catch (error) {
-          onError?.(QR_READER_ERRORS[QrError.BAD_NEW_CAMERA]);
-        }
-      };
-
-      setNewCamera();
-    } else {
-      startCamera();
-    }
+    (async () => {
+      try {
+        controlsRef.current?.stop();
+        await startScanning();
+      } catch (error) {
+        onError?.(QR_READER_ERRORS[QrError.BAD_NEW_CAMERA]);
+      }
+    })();
   }, [cameraId]);
 
   return (
-    <div className="flex flex-col" data-testid="qr-reader">
-      <div className="relative rounded-3xl after:absolute after:inset-0 after:rounded-3xl after:border-4 after:border-shade-70/20">
-        <video
-          muted
-          autoPlay
-          controls={false}
-          ref={videoRef}
-          className="rounded-3xl bg-shade-60 object-cover -scale-x-100"
-          style={{ width: size + 'px', height: size + 'px' }}
-        >
-          {t('qrReader.videoError')}
-        </video>
-        {isScanComplete && <div className="absolute inset-0 backdrop-blur-sm rounded-3xl" />}
-        <Icon
-          name="qrFrame"
-          className={cn(
-            'absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2',
-            isScanComplete ? 'text-success' : 'text-white',
-          )}
-          size={size * 0.8}
-        />
-        {isScanComplete && (
-          <Icon
-            name="checkmarkCutout"
-            className={cn(
-              'absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 text-white',
-              isScanComplete ? 'text-success' : 'text-white',
-            )}
-            size={size * 0.25}
-          />
-        )}
-      </div>
-    </div>
+    <video
+      muted
+      autoPlay
+      controls={false}
+      ref={videoRef}
+      data-testid="qr-reader"
+      className={cn('object-cover -scale-x-100', className)}
+      style={{ width: size + 'px', height: size + 'px' }}
+    >
+      {t('qrReader.videoError')}
+    </video>
   );
 };
 

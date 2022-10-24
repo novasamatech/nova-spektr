@@ -40,6 +40,7 @@ const config: Config = {
   transformIgnorePatterns: [],
   moduleNameMapper: {
     '\\.(css|less|scss|sass)$': 'identity-obj-proxy',
+    '^raptorq$': '<rootDir>/node_modules/raptorq/raptorq.js',
     '^@main(.*)$': '<rootDir>/src/main/$1',
     '^@shared(.*)$': '<rootDir>/src/shared/$1',
     '^@renderer(.*)$': '<rootDir>/src/renderer/$1',
@@ -55,6 +56,7 @@ const config: Config = {
     '!<rootDir>/node_modules/',
   ],
   reporters: ['default', 'jest-junit'],
+  setupFiles: [`<rootDir>/jest-setup.js`],
 };
 
 export default config;
