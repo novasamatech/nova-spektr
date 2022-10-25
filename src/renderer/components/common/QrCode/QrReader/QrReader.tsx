@@ -217,7 +217,10 @@ const QrReader = ({
     (async () => {
       try {
         const camerasAmount = await getVideoInputs();
-        scannerRef.current = new BrowserQRCodeReader();
+        scannerRef.current = new BrowserQRCodeReader(undefined, {
+          delayBetweenScanAttempts: 50,
+          delayBetweenScanSuccess: 50,
+        });
 
         if (!camerasAmount || camerasAmount === 1) {
           await startScanning();
