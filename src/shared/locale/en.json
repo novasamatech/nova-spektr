@@ -112,7 +112,7 @@
     "checkAccountsButton": "Check your accounts",
     "confirmAccountsListButton": "Yes, these are my accounts",
     "paritysigner": {
-      "accountAddressPlaceholder": "Account adddress",
+      "accountAddressPlaceholder": "Account address",
       "addByParitySignerLabel": "Add wallet by Parity Signer",
       "cameraAccessDeniedDescription": "Please make sure you grant access to camera",
       "cameraAccessDeniedLabel": "Access denied!",
@@ -158,6 +158,8 @@
     "yourAccountsLabel": "Here are your accounts"
   },
   "qrReader": {
+    "parsingLabel": "Parsing data",
+    "parsingSubLabel": "Please hold still...",
     "videoError": "Your browser doesn't support video"
   },
   "receive": {

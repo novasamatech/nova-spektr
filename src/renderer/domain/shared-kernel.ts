@@ -11,6 +11,13 @@ export const enum CryptoType {
   ETHEREUM,
 }
 
+export const enum CryptoTypeString {
+  SR25519 = 'SR25519',
+  ED25519 = 'ED25519',
+  ECDSA = 'ECDSA',
+  ETHEREUM = 'ETHEREUM',
+}
+
 export const enum ErrorType {
   REQUIRED = 'required',
   VALIDATE = 'validate',

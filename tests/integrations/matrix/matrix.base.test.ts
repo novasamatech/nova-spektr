@@ -1,7 +1,5 @@
-import { MatrixClient } from 'matrix-js-sdk';
-
 import { BASE_MATRIX_URL } from '@renderer/services/matrix/common/constants';
-import Matrix, { Membership, Signatory } from '../../../src/renderer/services/matrix';
+import Matrix, { Membership, Signatory } from '@renderer/services/matrix';
 import { createRoom } from '../utils/matrixCreateRoom';
 import { matrixLoginAndSync } from '../utils/matrixLogin';
 import test_data from './matrix_data.json';

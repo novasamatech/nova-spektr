@@ -1,10 +1,48 @@
+// eslint-disable-next-line import/named
+import { DecodeContinuouslyCallback } from '@zxing/browser/esm/common/DecodeContinuouslyCallback';
+
+import { CryptoType, CryptoTypeString } from '@renderer/domain/shared-kernel';
+
 export const enum QrError {
-  UNABLE_TO_GET_MEDIA,
   USER_DENY,
   NO_VIDEO_INPUT,
-  CANNOT_START,
   BAD_NEW_CAMERA,
+  FRAME_METADATA,
+  NOT_RAPTOR_PACKAGE,
+  NOT_SAME_QR,
+  DECODE_ERROR,
 }
+
+export type DecodeCallback = DecodeContinuouslyCallback;
+
+export type VideoInput = {
+  id: string;
+  label: string;
+};
+
+export type Progress = {
+  decoded: number;
+  total: number;
+};
+
+// Public root key
+type MultiSigner = {
+  MultiSigner: Exclude<CryptoTypeString, CryptoTypeString.ETHEREUM>;
+  public: Uint8Array;
+};
+
+export type SeedInfo = {
+  name: string;
+  multiSigner: MultiSigner | undefined;
+  derivedKeys: AddressInfo[];
+};
+
+export type AddressInfo = {
+  address: string;
+  derivationPath: string | undefined;
+  encryption: CryptoType;
+  genesisHash: Uint8Array;
+};
 
 export type ErrorObject = {
   code: QrError;
