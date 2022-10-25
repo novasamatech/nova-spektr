@@ -1,12 +1,13 @@
 import { useState } from 'react';
 
+import { SeedInfo } from '@renderer/components/common/QrCode/QrReader/common/types';
 import { ButtonBack, Stepper } from '@renderer/components/ui';
-import StepOne from './StepOne/StepOne';
-import StepTwo from './StepTwo/StepTwo';
-import StepThree from './StepThree/StepThree';
-import FinalStep from '@renderer/screens/Onboarding/FinalStep/FinalStep';
-import { WalletType } from '@renderer/domain/wallet';
 import { useI18n } from '@renderer/context/I18nContext';
+import { WalletType } from '@renderer/domain/wallet';
+import FinalStep from '@renderer/screens/Onboarding/FinalStep/FinalStep';
+import StepOne from './StepOne/StepOne';
+import StepThree from './StepThree/StepThree';
+import StepTwo from './StepTwo/StepTwo';
 
 const enum Step {
   PREPARE,
@@ -19,10 +20,10 @@ const Parity = () => {
   const { t } = useI18n();
 
   const [activeStep, setActiveStep] = useState<Step>(Step.PREPARE);
-  const [address, setAddress] = useState('');
+  const [qrPayload, setQrPayload] = useState<SeedInfo>();
 
-  const onReceiveAddress = (value: string) => {
-    setAddress(value);
+  const onReceiveQr = (payload: SeedInfo) => {
+    setQrPayload(payload);
     setActiveStep(Step.CHECK);
   };
 
@@ -43,10 +44,10 @@ const Parity = () => {
       <section className="flex flex-col gap-y-16 h-max max-w-[1000px] w-full m-auto">
         <Stepper steps={parityFlowSteps} active={activeStep} />
         {activeStep === Step.PREPARE && <StepOne onNextStep={() => setActiveStep(Step.SCAN)} />}
-        {activeStep === Step.SCAN && <StepTwo onNextStep={onReceiveAddress} />}
-        {activeStep === Step.CHECK && (
+        {activeStep === Step.SCAN && <StepTwo onNextStep={onReceiveQr} />}
+        {activeStep === Step.CHECK && qrPayload && (
           <StepThree
-            ss58Address={address}
+            qrData={qrPayload}
             onNextStep={() => setActiveStep(Step.FINAL)}
             onPrevStep={() => setActiveStep(Step.SCAN)}
           />

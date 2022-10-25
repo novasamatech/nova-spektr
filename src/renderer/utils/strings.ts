@@ -14,8 +14,18 @@ export const getShortAddress = (address = '', size = 6): string => {
  * @param address address to validate
  * @return {Boolean}
  */
-export const validateWsAddress = (address: string): boolean =>
-  /^ws(s)?:\/\/.+(\.[a-z]{2,}|:\d{4,5})(\/[a-z\d_-]+)*\W{0}\/?/i.test(address);
+export const validateWsAddress = (address: string): boolean => {
+  return /^ws(s)?:\/\/.+(\.[a-z]{2,}|:\d{4,5})(\/[a-z\d_-]+)*\W{0}\/?/i.test(address);
+};
+
+/**
+ * Validate Parity Signer QR format
+ * @param value qr code to validate
+ * @return {Boolean}
+ */
+export const validateSignerFormat = (value: string): boolean => {
+  return /^substrate:[a-zA-Z0-9]+:0x[a-zA-Z0-9]+$/.test(value);
+};
 
 /**
  * Copies string value to clipboard

@@ -1,12 +1,25 @@
-// eslint-disable-next-line import/default
-import QrScanner from 'qr-scanner';
 import { act, render, screen } from '@testing-library/react';
+import { BrowserCodeReader, BrowserQRCodeReader } from '@zxing/browser';
 
-import { QR_READER_ERRORS } from './common/errors';
-import { QrError } from './common/types';
+import { QR_READER_ERRORS } from '@renderer/components/common/QrCode/QrReader/common/errors';
+import { QrError } from '@renderer/components/common/QrCode/QrReader/common/types';
 import QrReader from './QrReader';
 
-jest.mock('qr-scanner');
+jest.mock('raptorq');
+
+const spyStop = jest.fn();
+const spyTrackStop = jest.fn();
+
+jest.mock('@zxing/browser', () => ({
+  BrowserCodeReader: {
+    listVideoInputDevices: jest.fn().mockResolvedValue([{ deviceId: '123', label: 'my_device' }]),
+  },
+  BrowserQRCodeReader: jest.fn().mockImplementation(() => ({
+    decodeFromVideoDevice: jest.fn().mockResolvedValue({
+      stop: spyStop,
+    }),
+  })),
+}));
 
 jest.mock('@renderer/context/I18nContext', () => ({
   useI18n: jest.fn().mockReturnValue({
@@ -15,109 +28,99 @@ jest.mock('@renderer/context/I18nContext', () => ({
 }));
 
 describe('common/QrCode/QrReader', () => {
-  const mockQrScanner = (override: any = {}) => {
-    (QrScanner as unknown as jest.Mock).mockReturnValue({
-      start: jest.fn().mockResolvedValue({}),
-      stop: jest.fn(),
-      destroy: jest.fn(),
-      ...override,
-    });
+  const mockUserMedia = () => {
+    const mediaValue = {
+      getUserMedia: jest.fn().mockResolvedValue({
+        getVideoTracks: jest.fn().mockReturnValue([{ stop: spyTrackStop }]),
+      }),
+    };
+
+    Object.defineProperty(window.navigator, 'mediaDevices', { writable: true, value: mediaValue });
   };
 
   afterEach(() => {
+    Object.defineProperty(window.navigator, 'mediaDevices', { writable: true, value: undefined });
+
     jest.clearAllMocks();
   });
 
   test('should render component', () => {
     render(<QrReader onResult={() => {}} />);
 
-    const root = screen.getByTestId('qr-reader');
-    expect(root).toBeInTheDocument();
+    const video = screen.getByTestId('qr-reader');
+    expect(video).toBeInTheDocument();
   });
 
-  test('should successfully start camera', async () => {
+  test('should clean on unmount', async () => {
+    mockUserMedia();
+
+    let unmount = () => {};
+    await act(async () => {
+      const callbacks = render(<QrReader onResult={() => {}} />);
+      unmount = callbacks.unmount;
+    });
+
+    unmount();
+
+    expect(spyStop).toBeCalledTimes(1);
+    expect(spyTrackStop).toBeCalledTimes(1);
+  });
+
+  test('should successfully start camera with 1 camera', async () => {
     const spyError = jest.fn();
-    const spyStart = jest.fn().mockResolvedValue({});
-    mockQrScanner({ start: spyStart });
+    const spyStart = jest.fn();
+    const spyCameraList = jest.fn();
+    mockUserMedia();
 
     await act(async () => {
-      render(<QrReader onResult={() => {}} onError={spyError} />);
+      render(<QrReader onStart={spyStart} onResult={() => {}} onError={spyError} onCameraList={spyCameraList} />);
     });
 
     expect(spyStart).toBeCalledTimes(1);
-    expect(spyError).toBeCalledTimes(0);
+    expect(spyError).not.toBeCalled();
+    expect(spyCameraList).not.toBeCalled();
   });
 
   test('should throw error on camera start', async () => {
     const spyError = jest.fn();
-    const spyStart = jest.fn().mockRejectedValue({});
-    mockQrScanner({ start: spyStart });
+    const spyStart = jest.fn();
 
     await act(async () => {
-      render(<QrReader onResult={() => {}} onError={spyError} />);
+      render(<QrReader onStart={spyStart} onResult={() => {}} onError={spyError} />);
     });
 
-    expect(spyStart).toBeCalledTimes(1);
-    expect(spyError).toBeCalledWith(QR_READER_ERRORS[QrError.CANNOT_START]);
-  });
-
-  test('should not call onCameraList on a single camera', async () => {
-    const spyCameraList = jest.fn();
-    const list = [{ id: '1', label: 'Camera 1' }];
-
-    mockQrScanner();
-    QrScanner.listCameras = jest.fn().mockResolvedValue(list);
-
-    await act(async () => {
-      render(<QrReader onCameraList={spyCameraList} onResult={() => {}} />);
-    });
-
-    expect(spyCameraList).not.toBeCalledWith();
-  });
-
-  test('should call onCameraList with more than 1 camera', async () => {
-    const spyCameraList = jest.fn();
-    const list = [
-      { id: '1', label: 'Camera 1' },
-      { id: '2', label: 'Camera 2' },
-    ];
-
-    mockQrScanner();
-    QrScanner.listCameras = jest.fn().mockResolvedValue(list);
-
-    await act(async () => {
-      render(<QrReader onCameraList={spyCameraList} onResult={() => {}} />);
-    });
-
-    expect(spyCameraList).toBeCalledWith(list);
+    expect(spyStart).not.toBeCalled();
+    expect(spyError).toBeCalledWith(QR_READER_ERRORS[QrError.USER_DENY]);
   });
 
   test('should switch camera', async () => {
     const spyError = jest.fn();
-    const spySetCamera = jest.fn();
-    mockQrScanner({ setCamera: spySetCamera });
+    const spyStart = jest.fn();
+    mockUserMedia();
 
     let rerender = (_: any) => {};
     await act(async () => {
-      const callbacks = render(<QrReader cameraId="camera_1" onResult={() => {}} onError={spyError} />);
+      const callbacks = render(<QrReader onResult={() => {}} />);
       rerender = callbacks.rerender;
     });
     expect(spyError).not.toBeCalled();
-    expect(spySetCamera).not.toBeCalled();
 
     await act(async () => {
-      rerender(<QrReader cameraId="camera_2" onResult={() => {}} onError={spyError} />);
+      rerender(<QrReader cameraId="camera_2" onStart={spyStart} onResult={() => {}} onError={spyError} />);
     });
 
+    expect(spyStop).toBeCalled();
+    expect(spyStart).toBeCalled();
     expect(spyError).not.toBeCalled();
-    expect(spySetCamera).toBeCalledWith('camera_2');
   });
 
   test('should throw error on camera switch', async () => {
     const spyError = jest.fn();
-    mockQrScanner({
-      setCamera: jest.fn().mockRejectedValue({}),
-    });
+    mockUserMedia();
+
+    (BrowserQRCodeReader as unknown as jest.Mock).mockImplementation(() => ({
+      decodeFromVideoDevice: jest.fn().mockResolvedValueOnce({ stop: spyStop }).mockRejectedValueOnce({}),
+    }));
 
     let rerender = (_: any) => {};
     await act(async () => {
@@ -134,74 +137,42 @@ describe('common/QrCode/QrReader', () => {
     expect(spyError).toBeCalledWith(QR_READER_ERRORS[QrError.BAD_NEW_CAMERA]);
   });
 
+  test('should call onCameraList with more than 1 camera', async () => {
+    const spyCameraList = jest.fn();
+    const list = [
+      { deviceId: '1', label: 'Camera 1' },
+      { deviceId: '2', label: 'Camera 2' },
+    ];
+    mockUserMedia();
+
+    BrowserCodeReader.listVideoInputDevices = jest.fn().mockResolvedValue(list);
+
+    await act(async () => {
+      render(<QrReader onResult={() => {}} onCameraList={spyCameraList} />);
+    });
+
+    const result = list.map(({ deviceId, label }) => ({ id: deviceId, label }));
+    expect(spyCameraList).toBeCalledWith(result);
+  });
+
   test('should call onResult', async () => {
     const spyResult = jest.fn();
-    const result = 'scan_result';
-    let resultCallback = (_: any) => {};
+    mockUserMedia();
 
-    (QrScanner as unknown as jest.Mock).mockImplementation((_, callback) => {
-      resultCallback = callback;
+    BrowserCodeReader.listVideoInputDevices = jest.fn().mockResolvedValue([{ deviceId: '123', label: 'my_device' }]);
+    (BrowserQRCodeReader as unknown as jest.Mock).mockImplementation(() => ({
+      decodeFromVideoDevice: jest.fn().mockImplementation(() => {
+        spyResult('test');
 
-      return {
-        start: jest.fn().mockResolvedValue({}),
-        stop: jest.fn(),
-        destroy: jest.fn(),
-      };
-    });
+        return { stop: jest.fn() };
+      }),
+    }));
 
     await act(async () => {
       render(<QrReader onResult={spyResult} />);
     });
 
-    act(() => resultCallback({ data: result }));
-
     expect(spyResult).toBeCalledTimes(1);
-    expect(spyResult).toBeCalledWith(result);
-  });
-
-  test('should display check mark on success', async () => {
-    let resultCallback = (_: any) => {};
-
-    (QrScanner as unknown as jest.Mock).mockImplementation((_, callback) => {
-      resultCallback = callback;
-
-      return {
-        start: jest.fn().mockResolvedValue({}),
-        stop: jest.fn(),
-        destroy: jest.fn(),
-      };
-    });
-
-    await act(async () => {
-      render(<QrReader onResult={() => {}} />);
-    });
-
-    const checkmarkBefore = screen.queryByTestId('checkmarkCutout-svg');
-    expect(checkmarkBefore).not.toBeInTheDocument();
-    act(() => resultCallback({ data: 'result' }));
-
-    const checkmarkAfter = screen.getByTestId('checkmarkCutout-svg');
-    expect(checkmarkAfter).toBeInTheDocument();
-  });
-
-  test('should clean on unmount', async () => {
-    const spyStop = jest.fn();
-    const spyDestroy = jest.fn();
-
-    mockQrScanner({
-      stop: spyStop,
-      destroy: spyDestroy,
-    });
-
-    let unmount = () => {};
-    await act(async () => {
-      const callbacks = render(<QrReader onResult={() => {}} />);
-      unmount = callbacks.unmount;
-    });
-
-    unmount();
-
-    expect(spyStop).toBeCalledTimes(1);
-    expect(spyDestroy).toBeCalledTimes(1);
+    expect(spyResult).toBeCalledWith('test');
   });
 });

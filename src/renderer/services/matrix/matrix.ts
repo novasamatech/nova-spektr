@@ -649,6 +649,9 @@ export class Matrix implements ISecureMessenger {
     const mx = this.matrixClient;
     const crossSignInfo = mx.getStoredCrossSigningForUser(this.userId);
     const deviceInfo = mx.getStoredDevice(this.userId, mx.getDeviceId());
+
+    if (!deviceInfo) return false;
+
     const deviceTrust = crossSignInfo.checkDeviceTrust(crossSignInfo, deviceInfo, false, true);
 
     return deviceTrust.isCrossSigningVerified();

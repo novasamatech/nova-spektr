@@ -3,13 +3,14 @@ import { useRef, useState } from 'react';
 
 import { QrReader, QrTxGenerator } from '@renderer/components/common';
 import { Command } from '@renderer/components/common/QrCode/QrGenerator/common/constants';
+import { VideoInput } from '@renderer/components/common/QrCode/QrReader/common/types';
 import { Button, Input } from '@renderer/components/ui';
 
 const CameraDev = () => {
   const inputRef = useRef<HTMLInputElement>(null);
   const [payload, setPayload] = useState<Uint8Array | string>();
 
-  const [availableCameras, setAvailableCameras] = useState<{ id: string; label: string }[]>([]);
+  const [availableCameras, setAvailableCameras] = useState<VideoInput[]>([]);
   const [activeCameraId, setActiveCameraId] = useState('');
 
   const onSetPayload = () => {
@@ -60,6 +61,7 @@ const CameraDev = () => {
               cameraId={activeCameraId}
               onCameraList={(cameras) => setAvailableCameras(cameras)}
               onResult={(data) => console.info(data)}
+              onStart={() => console.info('start camera')}
               onError={(error) => console.warn(error)}
             />
           </div>
