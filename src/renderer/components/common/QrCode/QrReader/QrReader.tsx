@@ -7,7 +7,7 @@ import { useEffect, useRef } from 'react';
 import { validateSignerFormat } from '@renderer/utils/strings';
 import { CryptoTypeString } from '@renderer/domain/shared-kernel';
 import { useI18n } from '@renderer/context/I18nContext';
-import { ErrorFields, EXPORT_ADDRESS, METADATA_KEY } from './common/constants';
+import { ErrorFields, EXPORT_ADDRESS, FRAME_KEY } from './common/constants';
 import { QR_READER_ERRORS } from './common/errors';
 import { DecodeCallback, ErrorObject, Progress, QrError, SeedInfo, VideoInput } from './common/types';
 import RaptorFrame from './RaptorFrame';
@@ -170,7 +170,7 @@ const QrReader = ({
         const isSimpleQr = handleSimpleQr(result.getText());
         if (isSimpleQr) return;
 
-        const frame = createFrame(result.getResultMetadata().get(METADATA_KEY) as Uint8Array[]);
+        const frame = createFrame(result.getResultMetadata().get(FRAME_KEY) as Uint8Array[]);
 
         const stringPayload = JSON.stringify(frame.data.payload);
         const isPacketExist = packets.current.get(stringPayload);

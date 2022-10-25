@@ -3,7 +3,7 @@ import { array, Codec, object, option, sizedUint8Array, str, taggedUnion, u8 } f
 import { CryptoType, CryptoTypeString } from '@renderer/domain/shared-kernel';
 import { SeedInfo, AddressInfo } from './types';
 
-export const METADATA_KEY = 2;
+export const FRAME_KEY = 2;
 
 export const ErrorFields = {
   CODE: 'code',
