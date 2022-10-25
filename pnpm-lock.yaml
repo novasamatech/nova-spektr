@@ -43,6 +43,7 @@ specifiers:
   '@typescript-eslint/eslint-plugin': ^5.30.4
   '@typescript-eslint/parser': ^5.30.4
   '@zxing/browser': ^0.1.1
+  '@zxing/library': ^0.19.1
   autoprefixer: ^10.4.7
   axios: ^0.27.2
   babel-loader: ^8.2.5
@@ -139,6 +140,7 @@ dependencies:
   '@substrate/txwrapper-orml': 3.2.2
   '@substrate/txwrapper-polkadot': 3.2.2
   '@zxing/browser': 0.1.1_@zxing+library@0.19.1
+  '@zxing/library': 0.19.1
   bignumber.js: 9.1.0
   binary-parser: 2.2.1
   buffer: 6.0.3

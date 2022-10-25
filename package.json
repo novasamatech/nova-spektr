@@ -57,6 +57,7 @@
     "@substrate/txwrapper-orml": "^3.2.2",
     "@substrate/txwrapper-polkadot": "^3.2.2",
     "@zxing/browser": "^0.1.1",
+    "@zxing/library": "^0.19.1",
     "bignumber.js": "^9.0.2",
     "binary-parser": "^2.2.1",
     "buffer": "^6.0.3",
