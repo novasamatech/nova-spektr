@@ -1,14 +1,15 @@
-import { stringToU8a } from '@polkadot/util';
+import { decodeAddress } from '@polkadot/util-crypto';
 import { BrowserCodeReader, BrowserQRCodeReader, IScannerControls } from '@zxing/browser';
 import cn from 'classnames';
 import init, { Decoder, EncodingPacket } from 'raptorq';
-import { useEffect, useLayoutEffect, useRef } from 'react';
+import { useEffect, useRef } from 'react';
 
 import { validateSignerFormat } from '@renderer/utils/strings';
+import { CryptoTypeString } from '@renderer/domain/shared-kernel';
 import { useI18n } from '@renderer/context/I18nContext';
-import { EXPORT_ADDRESS } from './common/constants';
+import { ErrorFields, EXPORT_ADDRESS, METADATA_KEY } from './common/constants';
 import { QR_READER_ERRORS } from './common/errors';
-import { ErrorObject, Progress, QrError, SeedInfo, VideoInput } from './common/types';
+import { DecodeCallback, ErrorObject, Progress, QrError, SeedInfo, VideoInput } from './common/types';
 import RaptorFrame from './RaptorFrame';
 
 const enum Status {
@@ -20,7 +21,7 @@ export interface QrReaderProps {
   size?: number;
   cameraId?: string;
   className?: string;
-  onStart: () => void;
+  onStart?: () => void;
   onResult: (scanResult: SeedInfo) => void;
   onError?: (error: ErrorObject) => void;
   onProgress?: (progress: Progress) => void;
@@ -50,8 +51,10 @@ const QrReader = ({
   const progress = useRef({ size: 0, total: 0, collected: new Set() });
   const isComplete = useRef(false);
 
-  const isQrErrorObject = (error: any): boolean => {
-    return error && typeof error === 'object' && 'code' in error && 'message' in error;
+  const isQrErrorObject = (error: unknown): boolean => {
+    if (!error) return false;
+
+    return typeof error === 'object' && ErrorFields.CODE in error && ErrorFields.MESSAGE in error;
   };
 
   const makeResultPayload = <T extends string | SeedInfo>(data: T): SeedInfo => {
@@ -61,8 +64,8 @@ const QrReader = ({
       name: '',
       derivedKeys: [],
       multiSigner: {
-        MultiSigner: 'Sr25519',
-        public: stringToU8a(data.split(':')[1]),
+        MultiSigner: CryptoTypeString.SR25519,
+        public: decodeAddress(data.split(':')[1]),
       },
     };
   };
@@ -158,8 +161,7 @@ const QrReader = ({
   const startScanning = async (): Promise<void> => {
     if (!videoRef.current || !scannerRef.current) return;
 
-    type Callback = Parameters<typeof scannerRef.current.decodeFromVideoDevice>[2];
-    const decodeCallback: Callback = async (result): Promise<void> => {
+    const decodeCallback: DecodeCallback = async (result): Promise<void> => {
       if (!result || isComplete.current) return;
 
       try {
@@ -168,7 +170,7 @@ const QrReader = ({
         const isSimpleQr = handleSimpleQr(result.getText());
         if (isSimpleQr) return;
 
-        const frame = createFrame(result.getResultMetadata().get(2) as Uint8Array[]);
+        const frame = createFrame(result.getResultMetadata().get(METADATA_KEY) as Uint8Array[]);
 
         const stringPayload = JSON.stringify(frame.data.payload);
         const isPacketExist = packets.current.get(stringPayload);
@@ -211,7 +213,7 @@ const QrReader = ({
     controlsRef.current?.stop();
   };
 
-  useLayoutEffect(() => {
+  useEffect(() => {
     (async () => {
       try {
         const camerasAmount = await getVideoInputs();

@@ -1,4 +1,7 @@
-import { CryptoType } from '@renderer/domain/shared-kernel';
+// eslint-disable-next-line import/named
+import { DecodeContinuouslyCallback } from '@zxing/browser/esm/common/DecodeContinuouslyCallback';
+
+import { CryptoType, CryptoTypeString } from '@renderer/domain/shared-kernel';
 
 export const enum QrError {
   USER_DENY,
@@ -10,6 +13,8 @@ export const enum QrError {
   DECODE_ERROR,
 }
 
+export type DecodeCallback = DecodeContinuouslyCallback;
+
 export type VideoInput = {
   id: string;
   label: string;
@@ -20,11 +25,9 @@ export type Progress = {
   total: number;
 };
 
-type CryptoWithoutEthereum = Exclude<keyof typeof CryptoType, 'ETHEREUM'>;
-
 // Public root key
 type MultiSigner = {
-  MultiSigner: Capitalize<Lowercase<CryptoWithoutEthereum>>;
+  MultiSigner: Exclude<CryptoTypeString, CryptoTypeString.ETHEREUM>;
   public: Uint8Array;
 };
 

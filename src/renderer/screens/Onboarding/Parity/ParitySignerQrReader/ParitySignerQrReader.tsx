@@ -30,24 +30,23 @@ const ParitySignerQrReader = ({ cameraId, size = 300, onStart, onResult, onError
         onResult={handleResult}
         onError={onError}
       />
-      {isComplete && (
+      {isComplete ? (
         <div className="absolute inset-0 backdrop-blur-sm rounded-2lg after:absolute after:inset-0 after:bg-white/50" />
-      )}
-      {!isComplete && (
+      ) : (
         <Icon name="qrFrame" size={size * 0.55} className="absolute left-1/2 top-[15%] -translate-x-1/2 text-white" />
       )}
       {isComplete && (
         <Icon
           name="checkmarkCutout"
           size={size * 0.25}
-          className="absolute left-1/2 top-[30%] -translate-x-1/2 texЩt-success"
+          className="absolute left-1/2 top-[30%] -translate-x-1/2 text-success"
         />
       )}
       <div className="absolute bottom-2.5 left-1/2 -translate-x-1/2 w-[calc(100%-20px)] p-[15px] pb-6 rounded-lg bg-white">
         <div className="grid grid-flow-col grid-rows-2">
           <p className="text-2xs text-neutral">{t('qrReader.parsingLabel')}</p>
           <p className="text-2xs text-shade-40">{t('qrReader.parsingSubLabel')}</p>
-          <p className="row-span-2 self-center justify-self-end text-lg leading-6 text-shade-40">
+          <p className="row-span-2 self-center justify-self-end text-lg leading-6 text-shade-40" data-testid="progress">
             <span className={cn(decoded > 0 ? 'text-success' : 'text-shade-40')}>{decoded}</span>
             {/* eslint-disable-next-line i18next/no-literal-string */}
             <span className={cn(decoded > 0 && decoded === total && 'text-success')}> / {total}</span>

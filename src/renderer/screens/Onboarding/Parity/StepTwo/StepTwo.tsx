@@ -1,4 +1,4 @@
-import { hexToU8a, isHex, u8aToString } from '@polkadot/util';
+import { hexToU8a, isHex } from '@polkadot/util';
 import { decodeAddress, encodeAddress } from '@polkadot/util-crypto';
 import cn from 'classnames';
 import { useState } from 'react';
@@ -33,7 +33,6 @@ const StepTwo = ({ onNextStep }: Props) => {
 
   const onScanResult = (qrPayload: SeedInfo) => {
     console.log(qrPayload);
-
     try {
       if (qrPayload.derivedKeys.length > 0) {
         qrPayload.derivedKeys.forEach(({ address }) =>
@@ -41,8 +40,8 @@ const StepTwo = ({ onNextStep }: Props) => {
         );
       }
 
-      encodeAddress(u8aToString(qrPayload.multiSigner?.public));
-      onNextStep(qrPayload);
+      encodeAddress(qrPayload.multiSigner?.public || '');
+      setTimeout(() => onNextStep(qrPayload), 200);
     } catch (error) {
       setCameraState(CameraState.BAD_CODE);
       setIsCameraExist(false);

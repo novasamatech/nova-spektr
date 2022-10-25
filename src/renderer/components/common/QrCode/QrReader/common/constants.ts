@@ -1,12 +1,19 @@
 import { array, Codec, object, option, sizedUint8Array, str, taggedUnion, u8 } from 'parity-scale-codec';
 
-import { CryptoType } from '@renderer/domain/shared-kernel';
+import { CryptoType, CryptoTypeString } from '@renderer/domain/shared-kernel';
 import { SeedInfo, AddressInfo } from './types';
 
+export const METADATA_KEY = 2;
+
+export const ErrorFields = {
+  CODE: 'code',
+  MESSAGE: 'message',
+};
+
 const MULTI_SIGNER = taggedUnion('MultiSigner', [
-  ['Ed25519', ['public', sizedUint8Array(32)]],
-  ['Sr25519', ['public', sizedUint8Array(32)]],
-  ['Ecdsa', ['public', sizedUint8Array(33)]],
+  [CryptoTypeString.ED25519, ['public', sizedUint8Array(32)]],
+  [CryptoTypeString.SR25519, ['public', sizedUint8Array(32)]],
+  [CryptoTypeString.ECDSA, ['public', sizedUint8Array(33)]],
 ]);
 
 const ADDRESS_INFO: Codec<AddressInfo> = object(
