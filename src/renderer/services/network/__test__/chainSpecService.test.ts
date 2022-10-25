@@ -1,4 +1,4 @@
-import { Chains, TestChains } from '@renderer/services/network/common/constants';
+import { Chains } from '@renderer/services/network/common/constants';
 import { useChainSpec } from '../chainSpecService';
 
 jest.mock('@polkadot/rpc-provider/substrate-connect', () => ({
@@ -32,7 +32,7 @@ describe('service/chainSpec', () => {
   test('should get chains supporting Light Client', () => {
     const { getLightClientChains } = useChainSpec();
     const chains = getLightClientChains();
-    [Chains.POLKADOT, Chains.KUSAMA, TestChains.WESTEND, TestChains.ROCOCO].forEach((chain, index) => {
+    [Chains.POLKADOT, Chains.KUSAMA].forEach((chain, index) => {
       expect(chains[index]).toEqual(chain);
     });
   });
