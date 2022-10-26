@@ -2,6 +2,8 @@ import { FormEvent, useEffect, useState } from 'react';
 import { Menu } from '@headlessui/react';
 import cn from 'classnames';
 import { hexToU8a, u8aToHex } from '@polkadot/util';
+import { cloneDeep, keyBy } from 'lodash';
+import { encodeAddress } from '@polkadot/util-crypto';
 
 import useToggle from '@renderer/hooks/useToggle';
 import { AccountsList } from '@renderer/components/common';
@@ -15,8 +17,6 @@ import { useI18n } from '@renderer/context/I18nContext';
 import { SeedInfo, AddressInfo } from '@renderer/components/common/QrCode/QrReader/common/types';
 import './StepThree.css';
 import { toAddress } from '@renderer/services/balance/common/utils';
-import { cloneDeep, keyBy } from 'lodash';
-import { encodeAddress } from '@polkadot/util-crypto';
 import { Explorer } from '@renderer/components/ui/Icon/data/explorer';
 
 const ExplorerIcons: Record<string, Explorer> = {
@@ -56,7 +56,6 @@ const StepThree = ({ qrData, onNextStep }: Props) => {
       setChainsObject(keyBy(chains, 'chainId'));
     })();
   }, []);
-
 
   const publicKey = u8aToHex(qrData.multiSigner?.public) || '0x';
   const ss58Address = toAddress(publicKey, 0);
@@ -224,7 +223,7 @@ const StepThree = ({ qrData, onNextStep }: Props) => {
                         <div className="flex items-center mt-2.5">
                           <div className="rounded-full border border-shade-30 w-[5px] h-[5px] box-border ml-[18px] mr-4 start-tree relative"></div>
                           <span className="text-neutral-variant uppercase font-bold text-2xs leading-[14px]">
-                            derived accounts on{' '}
+                            {t('derrived from')}{' '}
                             <img
                               className="inline-block"
                               width="14px"
