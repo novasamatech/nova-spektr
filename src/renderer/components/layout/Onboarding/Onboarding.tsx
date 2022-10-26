@@ -6,7 +6,7 @@ const Onboarding = () => {
   const { LocaleComponent } = useI18n();
 
   return (
-    <main className="px-9 pt-5 pb-6 flex flex-col h-screen bg-stripes bg-cover">
+    <main className="px-9 pt-5 pb-6 flex flex-col h-screen">
       <div className="flex-1">
         <Outlet />
       </div>

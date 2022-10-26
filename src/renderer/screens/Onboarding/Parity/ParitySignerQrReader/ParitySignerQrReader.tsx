@@ -33,14 +33,10 @@ const ParitySignerQrReader = ({ cameraId, size = 300, onStart, onResult, onError
       {isComplete ? (
         <div className="absolute inset-0 backdrop-blur-sm rounded-2lg after:absolute after:inset-0 after:bg-white/50" />
       ) : (
-        <Icon name="qrFrame" size={size * 0.55} className="absolute left-1/2 top-[15%] -translate-x-1/2 text-white" />
+        <Icon name="qrFrame" size={250} className="absolute left-1/2 top-20 -translate-x-1/2 text-white" />
       )}
       {isComplete && (
-        <Icon
-          name="checkmarkCutout"
-          size={size * 0.25}
-          className="absolute left-1/2 top-[30%] -translate-x-1/2 text-success"
-        />
+        <Icon name="checkmarkCutout" size={100} className="absolute left-1/2 top-40 -translate-x-1/2 text-success" />
       )}
       <div className="absolute bottom-2.5 left-1/2 -translate-x-1/2 w-[calc(100%-20px)] p-[15px] pb-6 rounded-lg bg-white">
         <div className="grid grid-flow-col grid-rows-2">
