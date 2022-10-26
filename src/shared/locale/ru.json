@@ -112,6 +112,9 @@
     "checkAccountsButton": "Ваши аккаунты",
     "confirmAccountsListButton": "Да, это мои аккаунты",
     "paritysigner": {
+      "sliderLabel1": "Откройте <strong>Parity Signer</strong> на своем смартфоне",
+      "sliderLabel2": "Перейдите во вкладку “<strong>Keys</strong>”. Выберите <strong>аккаунты</strong>,<br />которые вы хотите добавить в Omni Enterprise",
+      "sliderLabel3": "Parity Signer сгенерирует специальный <strong>QR код</strong> для сканирования",
       "accountAddressPlaceholder": "Адрес аккаунта",
       "addByParitySignerLabel": "Добавить Parity Signer кошелёк",
       "cameraAccessDeniedDescription": "Please make sure you grant access to camera",

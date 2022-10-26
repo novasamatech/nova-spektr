@@ -112,6 +112,9 @@
     "checkAccountsButton": "Check your accounts",
     "confirmAccountsListButton": "Yes, these are my accounts",
     "paritysigner": {
+      "sliderLabel1": "Open the <strong>Parity Signer</strong> application on your smartphone",
+      "sliderLabel2": "Go to “<strong>Keys</strong>” tab. Select <strong>accounts</strong>,<br />you would like to add to Omni Enterprise",
+      "sliderLabel3": "Parity Signer will provide you a <strong>QR code</strong> for scanning",
       "accountAddressPlaceholder": "Account address",
       "addByParitySignerLabel": "Add wallet by Parity Signer",
       "cameraAccessDeniedDescription": "Please make sure you grant access to camera",

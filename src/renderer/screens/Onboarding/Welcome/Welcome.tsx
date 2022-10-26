@@ -18,7 +18,7 @@ const Welcome = () => {
         <span className="font-bold text-[44px] text-primary">{t('welcome.omniEnterpriseLabel')}</span>
       </h1>
 
-      <ul className="flex items-center gap-x-9 m-auto">
+      <ul className="flex items-center gap-x-9 m-auto p-5 bg-shade-2 rounded-2lg">
         <li
           aria-label={t('welcome.addWatchOnlyAreaLabel')}
           role="listitem"
