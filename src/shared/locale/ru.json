@@ -113,8 +113,8 @@
     "confirmAccountsListButton": "Да, это мои аккаунты",
     "paritysigner": {
       "accountAddressPlaceholder": "Адрес аккаунта",
-      "addByParitySignerLabel": "Добавить Parity Signer кошелёк",
       "addAccount": "Добавить кошелёк",
+      "addByParitySignerLabel": "Добавить Parity Signer кошелёк",
       "cameraAccessDeniedDescription": "Please make sure you grant access to camera",
       "cameraAccessDeniedLabel": "Access denied!",
       "cameraErrorTryAgainLabel": "Try again",

@@ -113,8 +113,8 @@
     "confirmAccountsListButton": "Yes, these are my accounts",
     "paritysigner": {
       "accountAddressPlaceholder": "Account address",
-      "addByParitySignerLabel": "Add wallet by Parity Signer",
       "addAccount": "Add new accounts",
+      "addByParitySignerLabel": "Add wallet by Parity Signer",
       "cameraAccessDeniedDescription": "Please make sure you grant access to camera",
       "cameraAccessDeniedLabel": "Access denied!",
       "cameraErrorTryAgainLabel": "Try again",
