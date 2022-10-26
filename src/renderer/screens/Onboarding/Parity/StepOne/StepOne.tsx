@@ -10,7 +10,7 @@ import { useI18n } from '@renderer/context/I18nContext';
 
 const getCarouselSlider = (t: TFunction): ReactNode[] => [
   <>
-    <img src={SlideOne} alt="Parity Signer application is being opened on your smartphone" width={500} height={384} />
+    <img src={SlideOne} alt={t('onboarding.paritysigner.sliderLabel1')} width={500} height={384} />
     <div className="flex items-center justify-center h-15 px-5">
       <h2 className="text-neutral-variant text-center">
         <Trans t={t} i18nKey="onboarding.paritysigner.sliderLabel1" />
@@ -18,7 +18,7 @@ const getCarouselSlider = (t: TFunction): ReactNode[] => [
     </div>
   </>,
   <>
-    <img src={SlideTwo} alt="'Keys' tab is opened with appropriate account" width={500} height={384} />
+    <img src={SlideTwo} alt={t('onboarding.paritysigner.sliderLabel2')} width={500} height={384} />
     <div className="flex items-center justify-center h-15 px-5">
       <h2 className="text-neutral-variant text-center">
         <Trans t={t} i18nKey="onboarding.paritysigner.sliderLabel2" />
@@ -26,7 +26,7 @@ const getCarouselSlider = (t: TFunction): ReactNode[] => [
     </div>
   </>,
   <>
-    <img src={SlideThree} alt="Parity Signer built-in QR code" width={500} height={384} />
+    <img src={SlideThree} alt={t('onboarding.paritysigner.sliderLabel3')} width={500} height={384} />
     <div className="flex items-center justify-center h-15 px-5">
       <h2 className="text-neutral-variant text-center">
         <Trans t={t} i18nKey="onboarding.paritysigner.sliderLabel3" />

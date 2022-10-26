@@ -4,11 +4,11 @@ import cn from 'classnames';
 import { useState } from 'react';
 
 import ScanQr from '@images/misc/onboarding/scan-qr.svg';
-import { Button, Dropdown, Icon } from '@renderer/components/ui';
 import { ErrorObject, QrError, SeedInfo, VideoInput } from '@renderer/components/common/QrCode/QrReader/common/types';
+import { Button, Dropdown, Icon } from '@renderer/components/ui';
 import { OptionType } from '@renderer/components/ui/Dropdown/Dropdown';
-import ParitySignerQrReader from '../ParitySignerQrReader/ParitySignerQrReader';
 import { useI18n } from '@renderer/context/I18nContext';
+import ParitySignerQrReader from '../ParitySignerQrReader/ParitySignerQrReader';
 
 const enum CameraState {
   LOADING,
@@ -111,11 +111,11 @@ const StepTwo = ({ onNextStep }: Props) => {
             )}
             {cameraState === CameraState.BAD_CODE && (
               <div className="flex flex-col items-center text-center">
-                <Icon className="text-alert" as="svg" name="removeCutout" size={70} />
+                <Icon className="text-alert" as="svg" name="warnCutout" size={70} />
                 <p className="text-neutral text-xl leading-6 font-semibold mt-5">
                   {t('onboarding.paritysigner.wrongQRCodeLabel')}
                 </p>
-                <p className="text-neutral-variant text-sm max-w-[290px]">
+                <p className="text-neutral-variant text-sm max-w-[395px]">
                   {t('onboarding.paritysigner.wrongQRCodeDescription')}
                 </p>
               </div>
@@ -141,9 +141,11 @@ const StepTwo = ({ onNextStep }: Props) => {
               </div>
             )}
             {cameraState === CameraState.LOADING && (
-              <Icon className="absolute text-shade-10" as="svg" name="qrSimple" size={70} />
+              <>
+                <Icon className="absolute text-shade-10" as="svg" name="qrSimple" size={70} />
+                <Icon className="absolute text-shade-10" as="svg" name="qrFrame" size={250} />
+              </>
             )}
-            <Icon className="absolute text-shade-10" as="svg" name="qrFrame" size={250} />
           </div>
         )}
 
@@ -176,12 +178,12 @@ const StepTwo = ({ onNextStep }: Props) => {
           </div>
         )}
         {[CameraState.ERROR, CameraState.DENY].includes(cameraState) && (
-          <Button className="w-max" weight="lg" variant="fill" pallet="primary" onClick={onRetryCamera}>
+          <Button className="w-max mb-5" weight="lg" variant="fill" pallet="primary" onClick={onRetryCamera}>
             {t('onboarding.paritysigner.cameraErrorTryAgainLabel')}
           </Button>
         )}
         {cameraState === CameraState.BAD_CODE && (
-          <Button className="w-max" weight="lg" variant="fill" pallet="primary" onClick={onRetryScan}>
+          <Button className="w-max mb-5" weight="lg" variant="fill" pallet="primary" onClick={onRetryScan}>
             {t('onboarding.paritysigner.cameraScanAgainButton')}
           </Button>
         )}
