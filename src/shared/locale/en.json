@@ -114,6 +114,7 @@
     "paritysigner": {
       "accountAddressPlaceholder": "Account address",
       "addByParitySignerLabel": "Add wallet by Parity Signer",
+      "addAccount": "Add new accounts",
       "cameraAccessDeniedDescription": "Please make sure you grant access to camera",
       "cameraAccessDeniedLabel": "Access denied!",
       "cameraErrorTryAgainLabel": "Try again",
@@ -121,7 +122,7 @@
       "cameraNotWorkLabel": "Camera is not working!",
       "cameraScanAgainButton": "Scan again",
       "chooseCameraLabel": "Please choose one to continue",
-      "choseWalletNameLabel": "Please choose a name for your wallet",
+      "choseWalletNameLabel": "Here is your account scanned from Parity Signer.",
       "multipleCamerasLabel": "There are multiple cameras!",
       "rescanQRButton": "Rescan QR code",
       "scanQRCodeAlt": "Scan QR code from Parity Signer",

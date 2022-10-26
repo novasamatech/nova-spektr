@@ -36,7 +36,7 @@ const Input = forwardRef<Ref, InputProps>(
     return (
       <label
         className={cn(
-          'relative flex items-center rounded-2lg p-2.5 box-border border-2 bg-shade-2',
+          'relative flex items-center rounded-2lg p-2 box-border border-2 bg-shade-2',
           'text-sm font-normal leading-5 focus-within:border-primary',
           invalid ? 'border-error' : 'border-shade-2',
           label && 'rounded-2lg text-lg px-2.5 pb-0 pt-5',
@@ -51,8 +51,8 @@ const Input = forwardRef<Ref, InputProps>(
             value && !invalid && 'text-neutral',
             invalid && 'text-error',
             label && 'py-1 my-4',
-            prefixElement && 'ml-3',
-            suffixElement && 'mr-3',
+            prefixElement && 'ml-2',
+            suffixElement && 'mr-2',
             className,
           )}
           id={id}

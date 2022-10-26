@@ -9,6 +9,7 @@ import WarnCutoutImg, { ReactComponent as WarnCutoutSvg } from '@images/function
 import DisableCutoutImg, { ReactComponent as DisableCutoutSvg } from '@images/functionals/disable-cutout.svg';
 import DisableImg, { ReactComponent as DisableSvg } from '@images/functionals/disable.svg';
 import RemoveCutoutImg, { ReactComponent as RemoveCutoutSvg } from '@images/functionals/remove-cutout.svg';
+import RemoveLineImg, { ReactComponent as RemoveLineSvg } from '@images/functionals/remove-line.svg';
 import EmptyIdenticonImg, { ReactComponent as EmptyIdenticonSvg } from '@images/functionals/empty-identicon.svg';
 import SearchImg, { ReactComponent as SearchSvg } from '@images/functionals/search.svg';
 import NetworkDuotoneImg, { ReactComponent as NetworkDuotoneSvg } from '@images/functionals/network-duotone.svg';
@@ -16,6 +17,7 @@ import NetworkOnImg, { ReactComponent as NetworkOnSvg } from '@images/functional
 import NetworkOffImg, { ReactComponent as NetworkOffSvg } from '@images/functionals/network-off.svg';
 import NetworkImg, { ReactComponent as NetworkSvg } from '@images/functionals/network.svg';
 import AddImg, { ReactComponent as AddSvg } from '@images/functionals/add.svg';
+import AddLineImg, { ReactComponent as AddLineSvg } from '@images/functionals/add-line.svg';
 import ClearOutlineImg, { ReactComponent as ClearOutlineSvg } from '@images/functionals/clear-outline.svg';
 import EditOutlineImg, { ReactComponent as EditOutlineSvg } from '@images/functionals/edit-outline.svg';
 import DeleteOutlineImg, { ReactComponent as DeleteOutlineSvg } from '@images/functionals/delete-outline.svg';
@@ -32,6 +34,7 @@ const FunctionalImages = {
   disableCutout: { svg: DisableCutoutSvg, img: DisableCutoutImg },
   disable: { svg: DisableSvg, img: DisableImg },
   removeCutout: { svg: RemoveCutoutSvg, img: RemoveCutoutImg },
+  removeLine: { svg: RemoveLineSvg, img: RemoveLineImg },
   emptyIdenticon: { svg: EmptyIdenticonSvg, img: EmptyIdenticonImg },
   search: { svg: SearchSvg, img: SearchImg },
   networkDuotone: { svg: NetworkDuotoneSvg, img: NetworkDuotoneImg },
@@ -39,6 +42,7 @@ const FunctionalImages = {
   networkOff: { svg: NetworkOffSvg, img: NetworkOffImg },
   network: { svg: NetworkSvg, img: NetworkImg },
   add: { svg: AddSvg, img: AddImg },
+  addLine: { svg: AddLineSvg, img: AddLineImg },
   clearOutline: { svg: ClearOutlineSvg, img: ClearOutlineImg },
   editOutline: { svg: EditOutlineSvg, img: EditOutlineImg },
   deleteOutline: { svg: DeleteOutlineSvg, img: DeleteOutlineImg },
