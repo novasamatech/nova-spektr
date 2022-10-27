@@ -1,7 +1,8 @@
+import { IndexableType } from 'dexie';
+
 import { Contact } from './contact';
 import { Account, ChainAccount } from './account';
 import { CryptoType } from './shared-kernel';
-import { IndexableType } from 'dexie';
 
 export type SimpleWallet = {
   name: string;
@@ -82,11 +83,7 @@ export function createMainAccount({ accountId, publicKey }: Omit<Account, 'crypt
   } as Account;
 }
 
-export function createChainAccount({
-  accountId,
-  publicKey,
-  chainId,
-}: Omit<ChainAccount, 'cryptoType'>): ChainAccount {
+export function createChainAccount({ accountId, publicKey, chainId }: Omit<ChainAccount, 'cryptoType'>): ChainAccount {
   return {
     accountId,
     publicKey,
