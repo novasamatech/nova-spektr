@@ -11,13 +11,15 @@ import { BaseModal, Button, Icon, Identicon, Input } from '@renderer/components/
 import { Explorer } from '@renderer/components/ui/Icon/data/explorer';
 import { useI18n } from '@renderer/context/I18nContext';
 import { Chain } from '@renderer/domain/chain';
-import { PublicKey } from '@renderer/domain/shared-kernel';
+import { ChainId, PublicKey } from '@renderer/domain/shared-kernel';
 import useToggle from '@renderer/hooks/useToggle';
 import { toAddress } from '@renderer/services/balance/common/utils';
 import { useChains } from '@renderer/services/network/chainsService';
 import { toPublicKey } from '@renderer/utils/address';
 import { getShortAddress } from '@renderer/utils/strings';
 import './StepThree.css';
+import { createChainAccount, createMainAccount, createSimpleWallet, Wallet, WalletType } from '@renderer/domain/wallet';
+import { useWallet } from '@renderer/services/wallet/walletService';
 
 const ExplorerIcons: Record<string, Explorer> = {
   Polkascan: 'polkascan',
@@ -37,6 +39,7 @@ const StepThree = ({ qrData, onNextStep }: Props) => {
 
   const { getChainsData, sortChains } = useChains();
   const [isModalOpen, toggleModal] = useToggle();
+  const { addWallet, setActiveWallet } = useWallet();
 
   const [chains, setChains] = useState<Chain[]>([]);
   const [chainsObject, setChainsObject] = useState<Record<string, Chain>>({});
@@ -84,14 +87,6 @@ const StepThree = ({ qrData, onNextStep }: Props) => {
     }, {} as Record<string, AddressInfo[]>);
   };
 
-  const createWallet = async (event: FormEvent) => {
-    event.preventDefault();
-
-    // TODO: add create wallets logic
-
-    onNextStep();
-  };
-
   const getWalletId = (accountIndex: number, chainId?: string, derivedKeyIndex?: number) =>
     `${accountIndex}${chainId ? `-${chainId}` : ''}${derivedKeyIndex !== undefined ? `-${derivedKeyIndex}` : ''}`;
 
@@ -123,13 +118,76 @@ const StepThree = ({ qrData, onNextStep }: Props) => {
     return [...acc, getWalletId(accountIndex), ...derivedKeysIds.flat()];
   }, [] as string[]);
 
-  const activeWalletsHaveName = walletIds.every((walletId) => !inactiveWallets[walletId] && walletNames[walletId]);
+  const activeWalletsHaveName = walletIds.every((walletId) => !!walletNames[walletId] === !inactiveWallets[walletId]);
+
+  const createWallets = async (event: FormEvent) => {
+    event.preventDefault();
+
+    const promises = accounts.map(async ({ address, derivedKeys }, accountIndex) => {
+      const chainIds = Object.keys(derivedKeys);
+
+      const mainAccountId = getWalletId(accountIndex);
+
+      const wallet = createSimpleWallet({
+        name: walletNames[mainAccountId],
+        type: WalletType.PARITY,
+        mainAccounts: [
+          createMainAccount({
+            accountId: address,
+            publicKey: toPublicKey(address) || '0x',
+          }),
+        ],
+        chainAccounts: [],
+      });
+
+      const mainWalletId = await addWallet(wallet);
+
+      setActiveWallet(mainWalletId);
+
+      const chainWallets = chainIds
+        .map((chainId) => {
+          const chainDerivedKeys = derivedKeys[chainId];
+
+          const chainAccounts = chainDerivedKeys.reduce((acc, derivedKey, index) => {
+            const walletId = getWalletId(accountIndex, chainId, index);
+
+            if (inactiveWallets[walletId]) return acc;
+
+            return [
+              ...acc,
+              createSimpleWallet({
+                name: walletNames[walletId],
+                type: WalletType.PARITY,
+                parentWalletId: mainWalletId,
+                mainAccounts: [],
+                chainAccounts: [
+                  createChainAccount({
+                    accountId: derivedKey.address,
+                    publicKey: toPublicKey(derivedKey.address) || '0x',
+                    chainId: chainId as ChainId,
+                  }),
+                ],
+              }),
+            ];
+          }, [] as Wallet[]);
+
+          return chainAccounts;
+        })
+        .flat();
+
+      return chainWallets.map((chainWallet) => addWallet(chainWallet));
+    });
+
+    await Promise.all(promises);
+
+    onNextStep();
+  };
 
   return (
     <div className="flex h-full flex-col gap-10 justify-center items-center pt-7.5">
       <div className="flex flex-col items-center bg-slate-50 rounded-2lg w-full p-5">
         <h2 className="text-xl font-semibold text-neutral mb-5">{t('onboarding.paritysigner.choseWalletNameLabel')}</h2>
-        <form id="stepForm" className="w-full p-4 bg-white shadow-surface rounded-2lg mb-10" onSubmit={createWallet}>
+        <form id="stepForm" className="w-full p-4 bg-white shadow-surface rounded-2lg mb-10" onSubmit={createWallets}>
           <div className="flex flex-col gap-2.5">
             {accounts.map((account, accountIndex) => (
               <div key={getWalletId(accountIndex)}>
@@ -175,7 +233,7 @@ const StepThree = ({ qrData, onNextStep }: Props) => {
                   </div>
                   <div className="flex flex-1 items-center">
                     <Input
-                      required
+                      className="text-primary"
                       disabled={inactiveWallets[getWalletId(accountIndex)]}
                       disabledStyle={inactiveWallets[getWalletId(accountIndex)]}
                       wrapperClass="flex flex-1 items-center"
@@ -280,9 +338,9 @@ const StepThree = ({ qrData, onNextStep }: Props) => {
                             </div>
                             <div className="flex flex-1 items-center">
                               <Input
+                                className="text-primary"
                                 disabled={inactiveWallets[getWalletId(accountIndex, chainId, derivedKeyIndex)]}
                                 disabledStyle={inactiveWallets[getWalletId(accountIndex, chainId, derivedKeyIndex)]}
-                                required
                                 wrapperClass="flex flex-1 items-center"
                                 placeholder={t('onboarding.walletNamePlaceholder')}
                                 value={walletNames[getWalletId(accountIndex, chainId, derivedKeyIndex)] || ''}
