@@ -1,0 +1,34 @@
+:root {
+  --width: 1px;
+  --bg-color: rgba(0, 0, 0, 0.3);
+}
+
+.start-tree:after {
+  content: '';
+  position: absolute;
+  background: var(--bg-color);
+  top: 4px;
+  left: 1px;
+  width: var(--width);
+  height: 16px;
+}
+
+.middle-tree:before {
+  content: '';
+  position: absolute;
+  background: var(--bg-color);
+  bottom: 2px;
+  left: 0px;
+  width: var(--width);
+  height: 19px;
+}
+
+.tree-wrapper:not(:last-of-type) .middle-tree:after {
+  content: '';
+  position: absolute;
+  background: var(--bg-color);
+  top: 3px;
+  left: 0px;
+  width: var(--width);
+  height: 31px;
+}
