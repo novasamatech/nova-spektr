@@ -20,9 +20,9 @@ const Parity = () => {
   const { t } = useI18n();
 
   const [activeStep, setActiveStep] = useState<Step>(Step.PREPARE);
-  const [qrPayload, setQrPayload] = useState<SeedInfo>();
+  const [qrPayload, setQrPayload] = useState<SeedInfo[]>();
 
-  const onReceiveQr = (payload: SeedInfo) => {
+  const onReceiveQr = (payload: SeedInfo[]) => {
     setQrPayload(payload);
     setActiveStep(Step.CHECK);
   };
