@@ -6,6 +6,7 @@ export interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
   label?: string;
   invalid?: boolean;
   wrapperClass?: string;
+  disabledStyle?: boolean;
   prefixElement?: ReactNode;
   suffixElement?: ReactNode;
 }
@@ -23,6 +24,7 @@ const Input = forwardRef<Ref, InputProps>(
       placeholder,
       name,
       disabled,
+      disabledStyle,
       className,
       wrapperClass,
       value,
@@ -36,10 +38,11 @@ const Input = forwardRef<Ref, InputProps>(
     return (
       <label
         className={cn(
-          'relative flex items-center rounded-2lg p-2 box-border border-2 bg-shade-2',
+          'relative flex items-center rounded-2lg p-2 box-border border-2',
           'text-sm font-normal leading-5 focus-within:border-primary',
           invalid ? 'border-error' : 'border-shade-2',
           label && 'rounded-2lg text-lg px-2.5 pb-0 pt-5',
+          disabledStyle ? 'bg-white' : 'bg-shade-2',
           wrapperClass,
         )}
       >
@@ -48,7 +51,7 @@ const Input = forwardRef<Ref, InputProps>(
         <input
           className={cn(
             'rounded-sm leading-5 bg-transparent flex-1 focus:outline-none focus:text-primary',
-            value && !invalid && 'text-neutral',
+            disabledStyle ? 'text-shade-40' : (value && !invalid) && 'text-neutral',
             invalid && 'text-error',
             label && 'py-1 my-4',
             prefixElement && 'ml-2',

@@ -1,8 +1,8 @@
 import { FormEvent, useEffect, useState } from 'react';
 import { Menu } from '@headlessui/react';
 import cn from 'classnames';
-import { hexToU8a, u8aToHex } from '@polkadot/util';
-import { cloneDeep, keyBy } from 'lodash';
+import keyBy from 'lodash/keyBy';
+import { u8aToHex } from '@polkadot/util';
 import { encodeAddress } from '@polkadot/util-crypto';
 
 import useToggle from '@renderer/hooks/useToggle';
@@ -15,9 +15,11 @@ import { useWallet } from '@renderer/services/wallet/walletService';
 import { getShortAddress } from '@renderer/utils/strings';
 import { useI18n } from '@renderer/context/I18nContext';
 import { SeedInfo, AddressInfo } from '@renderer/components/common/QrCode/QrReader/common/types';
-import './StepThree.css';
 import { toAddress } from '@renderer/services/balance/common/utils';
 import { Explorer } from '@renderer/components/ui/Icon/data/explorer';
+import './StepThree.css';
+import { toPublicKey } from '@renderer/utils/address';
+import { PublicKey } from '@renderer/domain/shared-kernel';
 
 const ExplorerIcons: Record<string, Explorer> = {
   Polkascan: 'polkascan',
@@ -32,21 +34,26 @@ type Props = {
   onPrevStep: () => void;
 };
 
-type DerivedKey = AddressInfo & {
-  disabled?: boolean;
-  name?: string;
-};
-
 const StepThree = ({ qrData, onNextStep }: Props) => {
   const { t } = useI18n();
 
   const { getChainsData, sortChains } = useChains();
-  const { addWallet, setActiveWallet } = useWallet();
   const [isModalOpen, toggleModal] = useToggle();
 
-  const [walletName, setWalletName] = useState('');
   const [chains, setChains] = useState<Chain[]>([]);
   const [chainsObject, setChainsObject] = useState<Record<string, Chain>>({});
+
+  const [inactiveWallets, setInactiveWallets] = useState<Record<string, boolean>>({});
+  const [walletNames, setWalletNames] = useState<Record<string, string>>({});
+
+  const [currentPublicKey, setCurrentPublicKey] = useState<PublicKey>();
+  const [accounts, setAccounts] = useState<
+    {
+      address: string;
+      name: string;
+      derivedKeys: Record<string, AddressInfo[]>;
+    }[]
+  >([]);
 
   useEffect(() => {
     (async () => {
@@ -54,100 +61,83 @@ const StepThree = ({ qrData, onNextStep }: Props) => {
       setChains(sortChains(chains));
 
       setChainsObject(keyBy(chains, 'chainId'));
+      setAccounts([
+        {
+          address: toAddress(u8aToHex(qrData.multiSigner?.public), 0),
+          name: qrData.name,
+          derivedKeys: groupDerivedKeys(qrData.derivedKeys),
+        },
+      ]);
     })();
   }, []);
 
-  const publicKey = u8aToHex(qrData.multiSigner?.public) || '0x';
-  const ss58Address = toAddress(publicKey, 0);
+  const groupDerivedKeys = (derivedKeys: AddressInfo[]): Record<string, AddressInfo[]> => {
+    return derivedKeys.reduce((acc, key) => {
+      const genesisHash = u8aToHex(key.genesisHash);
 
-  const getName = (path: string = '') => {
-    const name = path.replaceAll('/', ' ').trim();
-
-    return name;
-  };
-
-  const groupDerivedKeys = (derivedKeys: DerivedKey[]): Record<string, DerivedKey[]> => {
-    // groupe derivedKeys by genersisHash
-    const groupedDerivedKeys: Record<string, DerivedKey[]> = {};
-    derivedKeys.forEach((derivedKey) => {
-      const genersisHash = u8aToHex(derivedKey.genesisHash);
-
-      if (groupedDerivedKeys[genersisHash]) {
-        groupedDerivedKeys[genersisHash].push({
-          ...derivedKey,
-          name: getName(derivedKey.derivationPath),
-        });
+      if (acc[genesisHash]) {
+        acc[genesisHash].push(key);
       } else {
-        groupedDerivedKeys[genersisHash] = [
-          {
-            ...derivedKey,
-            name: getName(derivedKey.derivationPath),
-          },
-        ];
+        acc[genesisHash] = [key];
       }
-    });
 
-    return groupedDerivedKeys;
+      return acc;
+    }, {} as Record<string, AddressInfo[]>);
   };
-
-  const [accounts, setAccounts] = useState<
-    {
-      address: string;
-      name: string;
-      disabled?: boolean;
-      derivedKeys: Record<string, DerivedKey[]>;
-    }[]
-  >([{ address: ss58Address, name: qrData.name, derivedKeys: groupDerivedKeys(qrData.derivedKeys) }]);
 
   const createWallet = async (event: FormEvent) => {
     event.preventDefault();
 
-    if (!publicKey || publicKey.length === 0) return;
+    // TODO: add create wallets logic
 
-    const newWallet = createSimpleWallet({
-      name: walletName,
-      type: WalletType.PARITY,
-      chainAccounts: [],
-      mainAccounts: [createMainAccount({ accountId: ss58Address, publicKey })],
-    });
-
-    const walletId = await addWallet(newWallet);
-    await setActiveWallet(walletId);
     onNextStep();
   };
 
-  const updateWalletName = (name: string, accountIndex: number, chainId?: string, derrivedKeyIndex?: number) => {
-    setAccounts((prev) => {
-      const newAccounts = cloneDeep(prev);
+  const getWalletId = (accountIndex: number, chainId?: string, derivedKeyIndex?: number) =>
+    `${accountIndex}${chainId ? `-${chainId}` : ''}${derivedKeyIndex !== undefined ? `-${derivedKeyIndex}` : ''}`;
 
-      if (chainId && derrivedKeyIndex !== undefined) {
-        newAccounts[accountIndex].derivedKeys[chainId][derrivedKeyIndex].name = name;
-      } else {
-        newAccounts[accountIndex].name = name;
-      }
+  const updateWalletName = (name: string, accountIndex: number, chainId?: string, derivedKeyIndex?: number) => {
+    setWalletNames((prev) => {
+      const walletId = getWalletId(accountIndex, chainId, derivedKeyIndex);
 
-      return newAccounts;
+      return { ...prev, [walletId]: name };
     });
   };
 
-  const toggleWallet = (accountIndex: number, chainId?: string, derrivedKeyIndex?: number) => {
-    setAccounts((prev) => {
-      const newAccounts = cloneDeep(prev);
+  const toggleWallet = (accountIndex: number, chainId?: string, derivedKeyIndex?: number) => {
+    const walletId = getWalletId(accountIndex, chainId, derivedKeyIndex);
 
-      if (chainId && derrivedKeyIndex !== undefined) {
-        newAccounts[accountIndex].derivedKeys[chainId][derrivedKeyIndex].disabled =
-          !newAccounts[accountIndex].derivedKeys[chainId][derrivedKeyIndex].disabled;
-      } else {
-        newAccounts[accountIndex].disabled = !newAccounts[accountIndex].disabled;
-      }
-
-      return newAccounts;
+    setInactiveWallets((prev) => {
+      return { ...prev, [walletId]: !prev[walletId] };
     });
   };
 
   const addNewAccount = () => {
     // TODO: Add new account
+    setAccounts((prev) => [
+      ...prev,
+      {
+        address: toAddress(u8aToHex(qrData.multiSigner?.public), 0),
+        name: qrData.name,
+        derivedKeys: groupDerivedKeys(qrData.derivedKeys),
+      },
+    ]);
   };
+
+  const walletIds = accounts.reduce((acc, { derivedKeys }, accountIndex) => {
+    const derivedKeysIds = Object.keys(derivedKeys).map((chainId, index) => {
+      const chainDerivedKeys = derivedKeys[chainId];
+
+      const chainDerivedKeysIds = chainDerivedKeys.map((_, index) => getWalletId(accountIndex, chainId, index));
+
+      return chainDerivedKeysIds;
+    });
+
+    return [...acc, getWalletId(accountIndex), ...derivedKeysIds.flat()];
+  }, [] as string[]);
+
+  // check that every active wallet has a name
+  const canSave = walletIds.filter((walletId) => !inactiveWallets[walletId]).every((walletId) => walletNames[walletId]);
 
   return (
     <div className="flex h-full flex-col gap-10 justify-center items-center pt-7.5">
@@ -156,15 +146,16 @@ const StepThree = ({ qrData, onNextStep }: Props) => {
         <form id="stepForm" className="w-full p-4 bg-white shadow-surface rounded-2lg mb-10" onSubmit={createWallet}>
           <div className="flex flex-col gap-2.5">
             {accounts.map((account, accountIndex) => (
-              <div key={account.address + accountIndex}>
+              <div key={getWalletId(accountIndex)}>
                 <div className="flex w-full gap-4">
                   <div className="flex-1">
                     <Input
                       disabled
+                      disabledStyle={inactiveWallets[getWalletId(accountIndex)]}
                       placeholder={t('onboarding.paritysigner.accountAddressPlaceholder')}
-                      value={getShortAddress(ss58Address, 10)}
-                      wrapperClass="flex items-center"
-                      prefixElement={<Identicon size={20} address={ss58Address} background={false} />}
+                      value={getShortAddress(account.address, 10)}
+                      wrapperClass={cn('flex items-center')}
+                      prefixElement={<Identicon size={20} address={account.address} background={false} />}
                       suffixElement={
                         <Menu>
                           <Menu.Button className={'hover:bg-primary hover:text-white px-1 rounded-2xl'}>
@@ -180,11 +171,14 @@ const StepThree = ({ qrData, onNextStep }: Props) => {
                                 <Button
                                   variant="text"
                                   pallet="dark"
-                                  onClick={toggleModal}
+                                  onClick={() => {
+                                    setCurrentPublicKey(toPublicKey(account.address));
+                                    toggleModal();
+                                  }}
                                   className={cn('font-normal text-neutral', active && 'bg-primary text-white')}
                                   prefixElement={<Icon as="img" name="checkmark" />}
                                 >
-                                  {t('Check accounts')}
+                                  {t('onboarding.paritysigner.checkAddress')}
                                 </Button>
                               )}
                             </Menu.Item>
@@ -195,25 +189,30 @@ const StepThree = ({ qrData, onNextStep }: Props) => {
                   </div>
                   <div className="flex flex-1 items-center">
                     <Input
+                      required
+                      disabled={inactiveWallets[getWalletId(accountIndex)]}
+                      disabledStyle={inactiveWallets[getWalletId(accountIndex)]}
                       wrapperClass="flex flex-1 items-center"
                       placeholder={t('onboarding.walletNamePlaceholder')}
                       onChange={(e) => updateWalletName(e.target.value, accountIndex)}
+                      value={walletNames[getWalletId(accountIndex)] || ''}
                     />
 
-                    {accounts.length > 1 && (
-                      <Button
-                        variant="text"
-                        pallet={account.disabled ? 'dark' : 'error'}
-                        className="ml-4 px-0"
-                        onClick={() => toggleWallet(accountIndex)}
-                      >
-                        {account.disabled ? (
-                          <Icon name="removeCutout" size={24} />
-                        ) : (
-                          <Icon name="removeLine" size={24} />
-                        )}
-                      </Button>
-                    )}
+                    {accounts.length > 1 ||
+                      (Object.values(account.derivedKeys).length > 0 && (
+                        <Button
+                          variant="text"
+                          pallet={inactiveWallets[getWalletId(accountIndex)] ? 'dark' : 'error'}
+                          className="ml-4 px-0"
+                          onClick={() => toggleWallet(accountIndex)}
+                        >
+                          {inactiveWallets[getWalletId(accountIndex)] ? (
+                            <Icon name="removeCutout" size={24} />
+                          ) : (
+                            <Icon name="removeLine" size={24} />
+                          )}
+                        </Button>
+                      ))}
                   </div>
                 </div>
                 {Object.entries(account.derivedKeys).length > 0 && (
@@ -221,21 +220,24 @@ const StepThree = ({ qrData, onNextStep }: Props) => {
                     {Object.entries(account.derivedKeys).map(([chainId, derivedKeys]) => (
                       <div key={chainId} className="flex flex-col gap-2.5">
                         <div className="flex items-center mt-2.5">
-                          <div className="rounded-full border border-shade-30 w-[5px] h-[5px] box-border ml-[18px] mr-4 start-tree relative"></div>
-                          <span className="text-neutral-variant uppercase font-bold text-2xs leading-[14px]">
-                            {t('derrived from')}{' '}
+                          <div className="rounded-full border border-shade-30 w-[5px] h-[5px] box-border ml-4.5 mr-4 start-tree relative"></div>
+                          <div className="flex items-center text-neutral-variant uppercase font-bold text-2xs">
+                            {t('onboarding.paritysigner.derivedLabel')}
                             <img
-                              className="inline-block"
+                              className="inline-block mx-1"
                               width="14px"
                               height="14px"
                               alt={chainsObject[chainId].name}
                               src={chainsObject[chainId].icon}
-                            />{' '}
+                            />
                             {chainsObject[chainId].name}
-                          </span>
+                          </div>
                         </div>
-                        {derivedKeys.map(({ address, name, disabled }, derrivedKeyIndex) => (
-                          <div key={address + derrivedKeyIndex} className="tree-wrapper flex gap-4">
+                        {derivedKeys.map(({ address }, derivedKeyIndex) => (
+                          <div
+                            key={getWalletId(accountIndex, chainId, derivedKeyIndex)}
+                            className="tree-wrapper flex gap-4"
+                          >
                             <div className="flex-1 flex items-center">
                               <div className="relative w-[14px] h-[5px] ml-5 mr-4 middle-tree">
                                 <div className="bg-shade-30 absolute w-[9px] h-[1px] top-[2px] left-[1px]"></div>
@@ -243,6 +245,7 @@ const StepThree = ({ qrData, onNextStep }: Props) => {
                               </div>
                               <Input
                                 disabled
+                                disabledStyle={inactiveWallets[getWalletId(accountIndex, chainId, derivedKeyIndex)]}
                                 placeholder={t('onboarding.paritysigner.accountAddressPlaceholder')}
                                 value={getShortAddress(address, 10)}
                                 wrapperClass="flex flex-1 items-center"
@@ -269,7 +272,10 @@ const StepThree = ({ qrData, onNextStep }: Props) => {
                                                   )}
                                                   href={account.replace(
                                                     '{address}',
-                                                    encodeAddress(publicKey, chainsObject[chainId].addressPrefix),
+                                                    encodeAddress(
+                                                      toPublicKey(address) || '',
+                                                      chainsObject[chainId].addressPrefix,
+                                                    ),
                                                   )}
                                                   rel="noopener noreferrer"
                                                   target="_blank"
@@ -288,21 +294,27 @@ const StepThree = ({ qrData, onNextStep }: Props) => {
                             </div>
                             <div className="flex flex-1 items-center">
                               <Input
-                                disabled={account.disabled || disabled}
+                                disabled={inactiveWallets[getWalletId(accountIndex, chainId, derivedKeyIndex)]}
+                                disabledStyle={inactiveWallets[getWalletId(accountIndex, chainId, derivedKeyIndex)]}
+                                required
                                 wrapperClass="flex flex-1 items-center"
                                 placeholder={t('onboarding.walletNamePlaceholder')}
-                                value={name}
+                                value={walletNames[getWalletId(accountIndex, chainId, derivedKeyIndex)] || ''}
                                 onChange={(e) =>
-                                  updateWalletName(e.target.value, accountIndex, chainId, derrivedKeyIndex)
+                                  updateWalletName(e.target.value, accountIndex, chainId, derivedKeyIndex)
                                 }
                               />
                               <Button
                                 variant="text"
-                                pallet={account.disabled || disabled ? 'dark' : 'error'}
+                                pallet={
+                                  inactiveWallets[getWalletId(accountIndex, chainId, derivedKeyIndex)]
+                                    ? 'dark'
+                                    : 'error'
+                                }
                                 className="ml-4 px-0"
-                                onClick={() => toggleWallet(accountIndex, chainId, derrivedKeyIndex)}
+                                onClick={() => toggleWallet(accountIndex, chainId, derivedKeyIndex)}
                               >
-                                {account.disabled || disabled ? (
+                                {inactiveWallets[getWalletId(accountIndex, chainId, derivedKeyIndex)] ? (
                                   <Icon name="removeCutout" size={24} />
                                 ) : (
                                   <Icon name="removeLine" size={24} />
@@ -324,17 +336,8 @@ const StepThree = ({ qrData, onNextStep }: Props) => {
           </Button>
         </form>
 
-        <Button
-          form="stepForm"
-          type="submit"
-          weight="lg"
-          variant="fill"
-          pallet="primary"
-          disabled={!publicKey || !walletName}
-        >
-          {!publicKey || !walletName
-            ? t('onboarding.paritysigner.typeNameButton')
-            : t('onboarding.confirmAccountsListButton')}
+        <Button form="stepForm" type="submit" weight="lg" variant="fill" pallet="primary" disabled={!canSave}>
+          {canSave ? t('onboarding.confirmAccountsListButton') : t('onboarding.paritysigner.typeNameButton')}
         </Button>
       </div>
 
@@ -346,7 +349,7 @@ const StepThree = ({ qrData, onNextStep }: Props) => {
         isOpen={isModalOpen}
         onClose={toggleModal}
       >
-        <AccountsList className="pt-6 -mx-4" chains={chains} publicKey={publicKey} />
+        <AccountsList className="pt-6 -mx-4" chains={chains} publicKey={currentPublicKey} />
       </BaseModal>
     </div>
   );
