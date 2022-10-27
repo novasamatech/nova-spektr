@@ -114,14 +114,6 @@ const StepThree = ({ qrData, onNextStep }: Props) => {
 
   const addNewAccount = () => {
     // TODO: Add new account
-    setAccounts((prev) => [
-      ...prev,
-      {
-        address: toAddress(u8aToHex(qrData.multiSigner?.public), 0),
-        name: qrData.name,
-        derivedKeys: groupDerivedKeys(qrData.derivedKeys),
-      },
-    ]);
   };
 
   const walletIds = accounts.reduce((acc, { derivedKeys }, accountIndex) => {
