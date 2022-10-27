@@ -2,6 +2,7 @@ import { hexToU8a, isHex } from '@polkadot/util';
 import { decodeAddress, encodeAddress } from '@polkadot/util-crypto';
 import cn from 'classnames';
 import { useState } from 'react';
+import { Trans } from 'react-i18next';
 
 import ScanQr from '@images/misc/onboarding/scan-qr.svg';
 import { ErrorObject, QrError, SeedInfo, VideoInput } from '@renderer/components/common/QrCode/QrReader/common/types';
@@ -15,12 +16,13 @@ const enum CameraState {
   SELECT,
   ERROR,
   BAD_CODE,
+  DECODE,
   DENY,
   ON,
 }
 
 type Props = {
-  onNextStep: (payload: SeedInfo) => void;
+  onNextStep: (payload: SeedInfo[]) => void;
 };
 
 const StepTwo = ({ onNextStep }: Props) => {
@@ -31,16 +33,18 @@ const StepTwo = ({ onNextStep }: Props) => {
   const [activeCamera, setActiveCamera] = useState<OptionType>();
   const [availableCameras, setAvailableCameras] = useState<OptionType[]>([]);
 
-  const onScanResult = (qrPayload: SeedInfo) => {
+  const onScanResult = (qrPayload: SeedInfo[]) => {
     console.log(qrPayload);
     try {
-      if (qrPayload.derivedKeys.length > 0) {
-        qrPayload.derivedKeys.forEach(({ address }) =>
+      qrPayload.forEach((qr) => {
+        encodeAddress(qr.multiSigner?.public || '');
+        if (qr.derivedKeys.length === 0) return;
+
+        qr.derivedKeys.forEach(({ address }) =>
           encodeAddress(isHex(address) ? hexToU8a(address) : decodeAddress(address)),
         );
-      }
+      });
 
-      encodeAddress(qrPayload.multiSigner?.public || '');
       setTimeout(() => onNextStep(qrPayload), 200);
     } catch (error) {
       setCameraState(CameraState.BAD_CODE);
@@ -52,6 +56,8 @@ const StepTwo = ({ onNextStep }: Props) => {
   const onError = (error: ErrorObject) => {
     if (error.code === QrError.USER_DENY) {
       setCameraState(CameraState.DENY);
+    } else if (error.code === QrError.DECODE_ERROR) {
+      setCameraState(CameraState.DECODE);
     } else {
       setCameraState(CameraState.ERROR);
     }
@@ -113,10 +119,10 @@ const StepTwo = ({ onNextStep }: Props) => {
               <div className="flex flex-col items-center text-center">
                 <Icon className="text-alert" as="svg" name="warnCutout" size={70} />
                 <p className="text-neutral text-xl leading-6 font-semibold mt-5">
-                  {t('onboarding.paritysigner.wrongQRCodeLabel')}
+                  <Trans t={t} i18nKey={t('onboarding.paritysigner.wrongQRCodeLabel')} />
                 </p>
                 <p className="text-neutral-variant text-sm max-w-[395px]">
-                  {t('onboarding.paritysigner.wrongQRCodeDescription')}
+                  <Trans t={t} i18nKey={t('onboarding.paritysigner.wrongQRCodeDescription')} />
                 </p>
               </div>
             )}
@@ -127,6 +133,15 @@ const StepTwo = ({ onNextStep }: Props) => {
                   {t('onboarding.paritysigner.cameraNotWorkLabel')}
                 </p>
                 <p className="text-neutral-variant text-sm">{t('onboarding.paritysigner.cameraNotWorkDescription')}</p>
+              </div>
+            )}
+            {cameraState === CameraState.DECODE && (
+              <div className="flex flex-col items-center text-center">
+                <Icon className="text-alert" as="svg" name="warnCutout" size={70} />
+                <p className="text-neutral text-xl leading-6 font-semibold mt-5">
+                  {t('onboarding.paritysigner.decodeErrorLabel')}
+                </p>
+                <p className="text-neutral-variant text-sm">{t('onboarding.paritysigner.decodeErrorDescription')}</p>
               </div>
             )}
             {cameraState === CameraState.DENY && (
@@ -177,7 +192,7 @@ const StepTwo = ({ onNextStep }: Props) => {
             />
           </div>
         )}
-        {[CameraState.ERROR, CameraState.DENY].includes(cameraState) && (
+        {[CameraState.ERROR, CameraState.DENY, CameraState.DECODE].includes(cameraState) && (
           <Button className="w-max mb-5" weight="lg" variant="fill" pallet="primary" onClick={onRetryCamera}>
             {t('onboarding.paritysigner.cameraErrorTryAgainLabel')}
           </Button>
