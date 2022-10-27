@@ -17,9 +17,9 @@ import { useI18n } from '@renderer/context/I18nContext';
 import { SeedInfo, AddressInfo } from '@renderer/components/common/QrCode/QrReader/common/types';
 import { toAddress } from '@renderer/services/balance/common/utils';
 import { Explorer } from '@renderer/components/ui/Icon/data/explorer';
-import './StepThree.css';
 import { toPublicKey } from '@renderer/utils/address';
 import { PublicKey } from '@renderer/domain/shared-kernel';
+import './StepThree.css';
 
 const ExplorerIcons: Record<string, Explorer> = {
   Polkascan: 'polkascan',
@@ -50,7 +50,6 @@ const StepThree = ({ qrData, onNextStep }: Props) => {
   const [accounts, setAccounts] = useState<
     {
       address: string;
-      name: string;
       derivedKeys: Record<string, AddressInfo[]>;
     }[]
   >([]);
@@ -59,12 +58,12 @@ const StepThree = ({ qrData, onNextStep }: Props) => {
     (async () => {
       const chains = await getChainsData();
       setChains(sortChains(chains));
-
       setChainsObject(keyBy(chains, 'chainId'));
+
+      setWalletNames({ [getWalletId(0)]: qrData.name });
       setAccounts([
         {
           address: toAddress(u8aToHex(qrData.multiSigner?.public), 0),
-          name: qrData.name,
           derivedKeys: groupDerivedKeys(qrData.derivedKeys),
         },
       ]);

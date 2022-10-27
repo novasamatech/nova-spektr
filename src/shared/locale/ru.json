@@ -124,7 +124,7 @@
       "checkAddress": "Проверить адрес",
       "chooseCameraLabel": "Please choose one to continue",
       "choseWalletNameLabel": "Укажите название Вашего кошелька",
-      "derivedLabel": "Derived from",
+      "derivedLabel": "Derived accounts on",
       "multipleCamerasLabel": "Обнаружено несколько камер!",
       "rescanQRButton": "Пересканировать",
       "scanQRCodeAlt": "Отсканировать QR код из Parity Signer",

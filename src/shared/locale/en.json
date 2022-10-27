@@ -124,7 +124,7 @@
       "checkAddress": "Check address",
       "chooseCameraLabel": "Please choose one to continue",
       "choseWalletNameLabel": "Here is your account scanned from Parity Signer.",
-      "derivedLabel": "Derived from",
+      "derivedLabel": "Derived accounts on",
       "multipleCamerasLabel": "There are multiple cameras!",
       "rescanQRButton": "Rescan QR code",
       "scanQRCodeAlt": "Scan QR code from Parity Signer",
