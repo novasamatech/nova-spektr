@@ -51,7 +51,7 @@ const Input = forwardRef<Ref, InputProps>(
         <input
           className={cn(
             'rounded-sm leading-5 bg-transparent flex-1 focus:outline-none focus:text-primary',
-            disabledStyle ? 'text-shade-40' : (value && !invalid) && 'text-neutral',
+            disabledStyle ? 'text-shade-40' : value && !invalid && 'text-neutral',
             invalid && 'text-error',
             label && 'py-1 my-4',
             prefixElement && 'ml-2',

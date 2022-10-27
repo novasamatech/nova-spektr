@@ -117,7 +117,7 @@ const StepThree = ({ qrData, onNextStep }: Props) => {
   };
 
   const walletIds = accounts.reduce((acc, { derivedKeys }, accountIndex) => {
-    const derivedKeysIds = Object.keys(derivedKeys).map((chainId, index) => {
+    const derivedKeysIds = Object.keys(derivedKeys).map((chainId) => {
       const chainDerivedKeys = derivedKeys[chainId];
 
       const chainDerivedKeysIds = chainDerivedKeys.map((_, index) => getWalletId(accountIndex, chainId, index));
