@@ -13,7 +13,7 @@ const ParitySignerQrReader = ({ cameraId, size = 300, onStart, onResult, onError
   const [isComplete, setIsComplete] = useState(false);
   const [{ decoded, total }, setProgress] = useState({ decoded: 0, total: 0 });
 
-  const handleResult = (data: SeedInfo) => {
+  const handleResult = (data: SeedInfo[]) => {
     setIsComplete(true);
     onResult(data);
   };
