@@ -18,7 +18,7 @@
   position: absolute;
   background: var(--bg-color);
   bottom: 2px;
-  left: 0px;
+  left: 0;
   width: var(--width);
   height: 19px;
 }
@@ -28,7 +28,7 @@
   position: absolute;
   background: var(--bg-color);
   top: 3px;
-  left: 0px;
+  left: 0;
   width: var(--width);
   height: 31px;
 }

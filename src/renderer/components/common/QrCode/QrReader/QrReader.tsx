@@ -22,7 +22,7 @@ export interface QrReaderProps {
   cameraId?: string;
   className?: string;
   onStart?: () => void;
-  onResult: (scanResult: SeedInfo) => void;
+  onResult: (scanResult: SeedInfo[]) => void;
   onError?: (error: ErrorObject) => void;
   onProgress?: (progress: Progress) => void;
   onCameraList?: (cameras: VideoInput[]) => void;
@@ -57,17 +57,19 @@ const QrReader = ({
     return typeof error === 'object' && ErrorFields.CODE in error && ErrorFields.MESSAGE in error;
   };
 
-  const makeResultPayload = <T extends string | SeedInfo>(data: T): SeedInfo => {
+  const makeResultPayload = <T extends string | SeedInfo[]>(data: T): SeedInfo[] => {
     if (typeof data !== 'string') return data;
 
-    return {
-      name: '',
-      derivedKeys: [],
-      multiSigner: {
-        MultiSigner: CryptoTypeString.SR25519,
-        public: decodeAddress(data.split(':')[1]),
+    return [
+      {
+        name: '',
+        derivedKeys: [],
+        multiSigner: {
+          MultiSigner: CryptoTypeString.SR25519,
+          public: decodeAddress(data.split(':')[1]),
+        },
       },
-    };
+    ];
   };
 
   const getVideoInputs = async (): Promise<number> => {
@@ -121,7 +123,7 @@ const QrReader = ({
       // decode the 1st frame --> it's a single frame QR
       const result = EXPORT_ADDRESS.decode(fountainResult.slice(3));
       isComplete.current = true;
-      onResult?.(makeResultPayload<SeedInfo>(result.payload[0]));
+      onResult?.(makeResultPayload<SeedInfo[]>(result.payload));
     } else {
       // if there is more than 1 frame --> proceed scanning and keep the progress
       onProgress?.({ decoded: 1, total: frameData.total });
@@ -153,7 +155,7 @@ const QrReader = ({
 
       const result = EXPORT_ADDRESS.decode(fountainResult.slice(3));
       isComplete.current = true;
-      onResult?.(makeResultPayload<SeedInfo>(result.payload[0]));
+      onResult?.(makeResultPayload<SeedInfo[]>(result.payload));
       break;
     }
   };
@@ -178,8 +180,8 @@ const QrReader = ({
 
         packets.current.set(stringPayload, frame.data.payload);
         const decodedPacket = EncodingPacket.deserialize(frame.data.payload);
-        const blockNumber = decodedPacket.encoding_symbol_id();
         const raptorDecoder = Decoder.with_defaults(BigInt(frame.data.size), decodedPacket.data().length);
+        const blockNumber = decodedPacket.encoding_symbol_id();
 
         if (status.current === Status.FIRST_FRAME) {
           handleFirstFrame(raptorDecoder, blockNumber, frame.data);

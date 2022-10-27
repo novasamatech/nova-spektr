@@ -36,18 +36,20 @@ jest.mock('@renderer/services/network/chainsService', () => ({
 
 describe('screens/Onboard/Parity/StepThree', () => {
   test('should render component', async () => {
-    const data: SeedInfo = {
-      name: 'test wallet',
-      multiSigner: { MultiSigner: CryptoTypeString.SR25519, public: new Uint8Array([0]) },
-      derivedKeys: [
-        {
-          address: TEST_ADDRESS,
-          derivationPath: '//test',
-          encryption: 1,
-          genesisHash: hexToU8a('0x00'),
-        },
-      ],
-    };
+    const data: SeedInfo[] = [
+      {
+        name: 'test wallet',
+        multiSigner: { MultiSigner: CryptoTypeString.SR25519, public: new Uint8Array([0]) },
+        derivedKeys: [
+          {
+            address: TEST_ADDRESS,
+            derivationPath: '//test',
+            encryption: 1,
+            genesisHash: hexToU8a('0x00'),
+          },
+        ],
+      },
+    ];
 
     await act(async () => {
       render(<StepThree qrData={data} onNextStep={() => {}} onPrevStep={() => {}} />);

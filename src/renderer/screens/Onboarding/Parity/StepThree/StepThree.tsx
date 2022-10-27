@@ -1,24 +1,22 @@
-import { FormEvent, useEffect, useState } from 'react';
 import { Menu } from '@headlessui/react';
-import cn from 'classnames';
-import keyBy from 'lodash/keyBy';
 import { u8aToHex } from '@polkadot/util';
 import { encodeAddress } from '@polkadot/util-crypto';
+import cn from 'classnames';
+import keyBy from 'lodash/keyBy';
+import { FormEvent, useEffect, useState } from 'react';
 
-import useToggle from '@renderer/hooks/useToggle';
 import { AccountsList } from '@renderer/components/common';
+import { AddressInfo, SeedInfo } from '@renderer/components/common/QrCode/QrReader/common/types';
 import { BaseModal, Button, Icon, Identicon, Input } from '@renderer/components/ui';
-import { createMainAccount, createSimpleWallet, WalletType } from '@renderer/domain/wallet';
-import { useChains } from '@renderer/services/network/chainsService';
-import { Chain } from '@renderer/domain/chain';
-import { useWallet } from '@renderer/services/wallet/walletService';
-import { getShortAddress } from '@renderer/utils/strings';
-import { useI18n } from '@renderer/context/I18nContext';
-import { SeedInfo, AddressInfo } from '@renderer/components/common/QrCode/QrReader/common/types';
-import { toAddress } from '@renderer/services/balance/common/utils';
 import { Explorer } from '@renderer/components/ui/Icon/data/explorer';
-import { toPublicKey } from '@renderer/utils/address';
+import { useI18n } from '@renderer/context/I18nContext';
+import { Chain } from '@renderer/domain/chain';
 import { PublicKey } from '@renderer/domain/shared-kernel';
+import useToggle from '@renderer/hooks/useToggle';
+import { toAddress } from '@renderer/services/balance/common/utils';
+import { useChains } from '@renderer/services/network/chainsService';
+import { toPublicKey } from '@renderer/utils/address';
+import { getShortAddress } from '@renderer/utils/strings';
 import './StepThree.css';
 
 const ExplorerIcons: Record<string, Explorer> = {
@@ -29,7 +27,7 @@ const ExplorerIcons: Record<string, Explorer> = {
 };
 
 type Props = {
-  qrData: SeedInfo;
+  qrData: SeedInfo[];
   onNextStep: () => void;
   onPrevStep: () => void;
 };
@@ -60,13 +58,15 @@ const StepThree = ({ qrData, onNextStep }: Props) => {
       setChains(sortChains(chains));
       setChainsObject(keyBy(chains, 'chainId'));
 
-      setWalletNames({ [getWalletId(0)]: qrData.name });
-      setAccounts([
-        {
-          address: toAddress(u8aToHex(qrData.multiSigner?.public), 0),
-          derivedKeys: groupDerivedKeys(qrData.derivedKeys),
-        },
-      ]);
+      qrData.forEach((data, index) => {
+        setWalletNames((prev) => ({ ...prev, [getWalletId(index)]: data.name }));
+
+        const newAccount = {
+          address: toAddress(u8aToHex(data.multiSigner?.public), 0),
+          derivedKeys: groupDerivedKeys(data.derivedKeys),
+        };
+        setAccounts((prev) => [...prev, newAccount]);
+      });
     })();
   }, []);
 
@@ -116,19 +116,14 @@ const StepThree = ({ qrData, onNextStep }: Props) => {
   };
 
   const walletIds = accounts.reduce((acc, { derivedKeys }, accountIndex) => {
-    const derivedKeysIds = Object.keys(derivedKeys).map((chainId) => {
-      const chainDerivedKeys = derivedKeys[chainId];
-
-      const chainDerivedKeysIds = chainDerivedKeys.map((_, index) => getWalletId(accountIndex, chainId, index));
-
-      return chainDerivedKeysIds;
-    });
+    const derivedKeysIds = Object.keys(derivedKeys).map((chainId) =>
+      derivedKeys[chainId].map((_, index) => getWalletId(accountIndex, chainId, index)),
+    );
 
     return [...acc, getWalletId(accountIndex), ...derivedKeysIds.flat()];
   }, [] as string[]);
 
-  // check that every active wallet has a name
-  const canSave = walletIds.filter((walletId) => !inactiveWallets[walletId]).every((walletId) => walletNames[walletId]);
+  const activeWalletsHaveName = walletIds.every((walletId) => !inactiveWallets[walletId] && walletNames[walletId]);
 
   return (
     <div className="flex h-full flex-col gap-10 justify-center items-center pt-7.5">
@@ -327,8 +322,17 @@ const StepThree = ({ qrData, onNextStep }: Props) => {
           </Button>
         </form>
 
-        <Button form="stepForm" type="submit" weight="lg" variant="fill" pallet="primary" disabled={!canSave}>
-          {canSave ? t('onboarding.confirmAccountsListButton') : t('onboarding.paritysigner.typeNameButton')}
+        <Button
+          form="stepForm"
+          type="submit"
+          weight="lg"
+          variant="fill"
+          pallet="primary"
+          disabled={!activeWalletsHaveName}
+        >
+          {activeWalletsHaveName
+            ? t('onboarding.confirmAccountsListButton')
+            : t('onboarding.paritysigner.typeNameButton')}
         </Button>
       </div>
 

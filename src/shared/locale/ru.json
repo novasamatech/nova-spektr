@@ -124,6 +124,8 @@
       "checkAddress": "Проверить адрес",
       "chooseCameraLabel": "Please choose one to continue",
       "choseWalletNameLabel": "Укажите название Вашего кошелька",
+      "decodeErrorDescription": "Произошла ошибка декодирования QR кода",
+      "decodeErrorLabel": "Ошибка распознавания!",
       "derivedLabel": "Derived accounts on",
       "multipleCamerasLabel": "Обнаружено несколько камер!",
       "rescanQRButton": "Пересканировать",
@@ -144,7 +146,7 @@
       "step1": "Отсканируйте QR код",
       "step2": "Проверьте результат",
       "typeNameButton": "Введите название ...",
-      "wrongQRCodeDescription": "The scanned QR code doesn't contain valid network address Please scan another one",
+      "wrongQRCodeDescription": "QR код содержит некорректный адрес сети<br />Пожалуйста, попробуйте другой QR код",
       "wrongQRCodeLabel": "Неверный QR код!"
     },
     "pasteButton": "Вставить",

@@ -124,6 +124,8 @@
       "checkAddress": "Check address",
       "chooseCameraLabel": "Please choose one to continue",
       "choseWalletNameLabel": "Here is your account scanned from Parity Signer.",
+      "decodeErrorDescription": "Error occurred while decoding QR code",
+      "decodeErrorLabel": "Recognition error!",
       "derivedLabel": "Derived accounts on",
       "multipleCamerasLabel": "There are multiple cameras!",
       "rescanQRButton": "Rescan QR code",
@@ -144,7 +146,7 @@
       "step1": "Scan the QR code",
       "step2": "Check the result",
       "typeNameButton": "Type a name to finish...",
-      "wrongQRCodeDescription": "The scanned QR code doesn't contain valid network address Please scan another one",
+      "wrongQRCodeDescription": "The scanned QR code doesn't contain valid network address<br />Please scan another one",
       "wrongQRCodeLabel": "Wrong QR code!"
     },
     "pasteButton": "Paste",
