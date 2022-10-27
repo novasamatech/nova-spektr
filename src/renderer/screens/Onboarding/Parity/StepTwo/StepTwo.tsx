@@ -34,7 +34,6 @@ const StepTwo = ({ onNextStep }: Props) => {
   const [availableCameras, setAvailableCameras] = useState<OptionType[]>([]);
 
   const onScanResult = (qrPayload: SeedInfo[]) => {
-    console.log(qrPayload);
     try {
       qrPayload.forEach((qr) => {
         encodeAddress(qr.multiSigner?.public || '');
