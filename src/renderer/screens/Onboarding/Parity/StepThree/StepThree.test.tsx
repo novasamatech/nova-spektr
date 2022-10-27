@@ -1,11 +1,11 @@
 import { render, screen, act } from '@testing-library/react';
+import { hexToU8a } from '@polkadot/util';
 
 import { SeedInfo } from '@renderer/components/common/QrCode/QrReader/common/types';
 import { CryptoTypeString } from '@renderer/domain/shared-kernel';
 import StepThree from './StepThree';
 import { Chain } from '@renderer/domain/chain';
 import { TEST_ADDRESS } from '@renderer/services/balance/common/constants';
-import { hexToU8a } from '@polkadot/util';
 
 jest.mock('@renderer/context/I18nContext', () => ({
   useI18n: jest.fn().mockReturnValue({
@@ -28,7 +28,7 @@ jest.mock('@renderer/services/network/chainsService', () => ({
         assets: [],
         chainId: '0x00',
         name: 'My test chain',
-      }
+      },
     ]),
     sortChains: (value: Chain[]) => value,
   }),
