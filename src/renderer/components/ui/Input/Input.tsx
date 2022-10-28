@@ -58,6 +58,7 @@ const Input = forwardRef<Ref, InputProps>(
             suffixElement && 'mr-2',
             className,
           )}
+          required={required}
           id={id}
           ref={ref}
           disabled={disabled}
