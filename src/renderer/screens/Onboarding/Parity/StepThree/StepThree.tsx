@@ -3,6 +3,7 @@ import { u8aToHex } from '@polkadot/util';
 import cn from 'classnames';
 import keyBy from 'lodash/keyBy';
 import { FormEvent, useEffect, useState } from 'react';
+import { IndexableType } from 'dexie';
 
 import { AccountsList, Explorers } from '@renderer/components/common';
 import { AddressInfo, SeedInfo } from '@renderer/components/common/QrCode/QrReader/common/types';
@@ -18,7 +19,6 @@ import { getShortAddress } from '@renderer/utils/strings';
 import './StepThree.css';
 import { createChainAccount, createMainAccount, createSimpleWallet, Wallet, WalletType } from '@renderer/domain/wallet';
 import { useWallet } from '@renderer/services/wallet/walletService';
-import { IndexableType } from 'dexie';
 
 type Props = {
   qrData: SeedInfo[];
@@ -204,7 +204,11 @@ const StepThree = ({ qrData, onNextStep }: Props) => {
     <div className="flex h-full flex-col gap-10 justify-center items-center pt-7.5">
       <div className="flex flex-col items-center bg-slate-50 rounded-2lg w-full p-5">
         <h2 className="text-xl font-semibold text-neutral mb-5">{t('onboarding.paritysigner.choseWalletNameLabel')}</h2>
-        <form id="stepForm" className="w-full max-h-[370px] overflow-auto p-4 bg-white shadow-surface rounded-2lg mb-10" onSubmit={createWallets}>
+        <form
+          id="stepForm"
+          className="w-full max-h-[370px] overflow-auto p-4 bg-white shadow-surface rounded-2lg mb-10"
+          onSubmit={createWallets}
+        >
           <div className="flex flex-col gap-2.5">
             {accounts.map((account, accountIndex) => (
               <div key={getWalletId(accountIndex)}>

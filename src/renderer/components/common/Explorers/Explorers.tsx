@@ -1,10 +1,10 @@
 import { Menu } from '@headlessui/react';
 import cn from 'classnames';
+import { encodeAddress } from '@polkadot/util-crypto';
 
 import { Icon } from '@renderer/components/ui';
 import { Chain } from '@renderer/domain/chain';
 import { Explorer } from '@renderer/components/ui/Icon/data/explorer';
-import { encodeAddress } from '@polkadot/util-crypto';
 import { toPublicKey } from '@renderer/utils/address';
 import { useI18n } from '@renderer/context/I18nContext';
 
