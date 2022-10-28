@@ -1,14 +1,12 @@
 import { Menu } from '@headlessui/react';
 import { u8aToHex } from '@polkadot/util';
-import { encodeAddress } from '@polkadot/util-crypto';
 import cn from 'classnames';
 import keyBy from 'lodash/keyBy';
 import { FormEvent, useEffect, useState } from 'react';
 
-import { AccountsList } from '@renderer/components/common';
+import { AccountsList, Explorers } from '@renderer/components/common';
 import { AddressInfo, SeedInfo } from '@renderer/components/common/QrCode/QrReader/common/types';
 import { BaseModal, Button, Icon, Identicon, Input } from '@renderer/components/ui';
-import { Explorer } from '@renderer/components/ui/Icon/data/explorer';
 import { useI18n } from '@renderer/context/I18nContext';
 import { Chain } from '@renderer/domain/chain';
 import { ChainId, PublicKey } from '@renderer/domain/shared-kernel';
@@ -20,13 +18,7 @@ import { getShortAddress } from '@renderer/utils/strings';
 import './StepThree.css';
 import { createChainAccount, createMainAccount, createSimpleWallet, Wallet, WalletType } from '@renderer/domain/wallet';
 import { useWallet } from '@renderer/services/wallet/walletService';
-
-const ExplorerIcons: Record<string, Explorer> = {
-  Polkascan: 'polkascan',
-  'Sub.ID': 'subid',
-  Subscan: 'subscan',
-  Statescan: 'statescan',
-};
+import { IndexableType } from 'dexie';
 
 type Props = {
   qrData: SeedInfo[];
@@ -120,65 +112,90 @@ const StepThree = ({ qrData, onNextStep }: Props) => {
 
   const activeWalletsHaveName = walletIds.every((walletId) => !!walletNames[walletId] === !inactiveWallets[walletId]);
 
+  const saveMainAccount = async (address: string, accountIndex: number) => {
+    const mainAccountId = getWalletId(accountIndex);
+
+    const wallet = createSimpleWallet({
+      name: walletNames[mainAccountId],
+      type: WalletType.PARITY,
+      mainAccounts: [
+        createMainAccount({
+          accountId: address,
+          publicKey: toPublicKey(address) || '0x',
+        }),
+      ],
+      chainAccounts: [],
+    });
+
+    const mainWalletId = await addWallet(wallet);
+
+    setActiveWallet(mainWalletId);
+
+    return mainWalletId;
+  };
+
+  const createDerivedAccounts = (
+    derivedKeys: AddressInfo[],
+    chainId: ChainId,
+    accountIndex: number,
+    mainWalletId: IndexableType,
+  ): Wallet[] => {
+    const chainAccounts = derivedKeys.reduce((acc, derivedKey, index) => {
+      const walletId = getWalletId(accountIndex, chainId, index);
+
+      if (inactiveWallets[walletId]) return acc;
+
+      return [
+        ...acc,
+        createSimpleWallet({
+          name: walletNames[walletId],
+          type: WalletType.PARITY,
+          parentWalletId: mainWalletId,
+          mainAccounts: [],
+          chainAccounts: [
+            createChainAccount({
+              accountId: derivedKey.address,
+              publicKey: toPublicKey(derivedKey.address) || '0x',
+              chainId: chainId as ChainId,
+            }),
+          ],
+        }),
+      ];
+    }, [] as Wallet[]);
+
+    return chainAccounts;
+  };
+
   const createWallets = async (event: FormEvent) => {
     event.preventDefault();
 
     const promises = accounts.map(async ({ address, derivedKeys }, accountIndex) => {
+      let mainWalletId: IndexableType;
+
+      try {
+        mainWalletId = await saveMainAccount(address, accountIndex);
+      } catch (e) {
+        console.warn('Error saving main account', e);
+      }
+
       const chainIds = Object.keys(derivedKeys);
-
-      const mainAccountId = getWalletId(accountIndex);
-
-      const wallet = createSimpleWallet({
-        name: walletNames[mainAccountId],
-        type: WalletType.PARITY,
-        mainAccounts: [
-          createMainAccount({
-            accountId: address,
-            publicKey: toPublicKey(address) || '0x',
-          }),
-        ],
-        chainAccounts: [],
-      });
-
-      const mainWalletId = await addWallet(wallet);
-
-      setActiveWallet(mainWalletId);
 
       const chainWallets = chainIds
         .map((chainId) => {
           const chainDerivedKeys = derivedKeys[chainId];
 
-          const chainAccounts = chainDerivedKeys.reduce((acc, derivedKey, index) => {
-            const walletId = getWalletId(accountIndex, chainId, index);
-
-            if (inactiveWallets[walletId]) return acc;
-
-            return [
-              ...acc,
-              createSimpleWallet({
-                name: walletNames[walletId],
-                type: WalletType.PARITY,
-                parentWalletId: mainWalletId,
-                mainAccounts: [],
-                chainAccounts: [
-                  createChainAccount({
-                    accountId: derivedKey.address,
-                    publicKey: toPublicKey(derivedKey.address) || '0x',
-                    chainId: chainId as ChainId,
-                  }),
-                ],
-              }),
-            ];
-          }, [] as Wallet[]);
-
-          return chainAccounts;
+          return createDerivedAccounts(chainDerivedKeys, chainId as ChainId, accountIndex, mainWalletId);
         })
         .flat();
 
       return chainWallets.map((chainWallet) => addWallet(chainWallet));
     });
 
-    await Promise.all(promises);
+    try {
+      await Promise.all(promises);
+    } catch (e) {
+      console.warn('Error saving wallets', e);
+    }
 
     onNextStep();
   };
@@ -187,7 +204,7 @@ const StepThree = ({ qrData, onNextStep }: Props) => {
     <div className="flex h-full flex-col gap-10 justify-center items-center pt-7.5">
       <div className="flex flex-col items-center bg-slate-50 rounded-2lg w-full p-5">
         <h2 className="text-xl font-semibold text-neutral mb-5">{t('onboarding.paritysigner.choseWalletNameLabel')}</h2>
-        <form id="stepForm" className="w-full p-4 bg-white shadow-surface rounded-2lg mb-10" onSubmit={createWallets}>
+        <form id="stepForm" className="w-full max-h-[370px] overflow-auto p-4 bg-white shadow-surface rounded-2lg mb-10" onSubmit={createWallets}>
           <div className="flex flex-col gap-2.5">
             {accounts.map((account, accountIndex) => (
               <div key={getWalletId(accountIndex)}>
@@ -240,6 +257,18 @@ const StepThree = ({ qrData, onNextStep }: Props) => {
                       placeholder={t('onboarding.walletNamePlaceholder')}
                       onChange={(e) => updateWalletName(e.target.value, accountIndex)}
                       value={walletNames[getWalletId(accountIndex)] || ''}
+                      suffixElement={
+                        walletNames[getWalletId(accountIndex)] && (
+                          <Button
+                            variant="text"
+                            pallet="dark"
+                            weight="xs"
+                            onClick={() => updateWalletName('', accountIndex)}
+                          >
+                            <Icon name="clearOutline" size={20} />
+                          </Button>
+                        )
+                      }
                     />
 
                     {accounts.length > 1 ||
@@ -294,46 +323,7 @@ const StepThree = ({ qrData, onNextStep }: Props) => {
                                 value={getShortAddress(address, 10)}
                                 wrapperClass="flex flex-1 items-center"
                                 prefixElement={<Identicon size={20} address={address} background={false} />}
-                                suffixElement={
-                                  <Menu>
-                                    <Menu.Button className={'hover:bg-primary hover:text-white px-1 rounded-2xl'}>
-                                      {t('accountList.menuButton')}
-                                    </Menu.Button>
-                                    <Menu.Items
-                                      className={
-                                        'bg-white z-10 absolute right-0 top-0 rounded-2lg shadow-surface w-max border-2 border-shade-5 p-2.5'
-                                      }
-                                    >
-                                      {chainsObject[chainId].explorers?.map(
-                                        ({ name, account }) =>
-                                          account && (
-                                            <Menu.Item key={name}>
-                                              {({ active }) => (
-                                                <a
-                                                  className={cn(
-                                                    'rounded-2lg flex items-center gap-1 p-2.5 font-normal select-none',
-                                                    active ? 'bg-primary text-white' : 'bg-white text-neutral',
-                                                  )}
-                                                  href={account.replace(
-                                                    '{address}',
-                                                    encodeAddress(
-                                                      toPublicKey(address) || '',
-                                                      chainsObject[chainId].addressPrefix,
-                                                    ),
-                                                  )}
-                                                  rel="noopener noreferrer"
-                                                  target="_blank"
-                                                >
-                                                  <Icon as="img" name={ExplorerIcons[name]} />{' '}
-                                                  {t('accountList.explorerButton', { name })}
-                                                </a>
-                                              )}
-                                            </Menu.Item>
-                                          ),
-                                      )}
-                                    </Menu.Items>
-                                  </Menu>
-                                }
+                                suffixElement={<Explorers chain={chainsObject[chainId]} address={address} />}
                               />
                             </div>
                             <div className="flex flex-1 items-center">
@@ -346,6 +336,18 @@ const StepThree = ({ qrData, onNextStep }: Props) => {
                                 value={walletNames[getWalletId(accountIndex, chainId, derivedKeyIndex)] || ''}
                                 onChange={(e) =>
                                   updateWalletName(e.target.value, accountIndex, chainId, derivedKeyIndex)
+                                }
+                                suffixElement={
+                                  walletNames[getWalletId(accountIndex, chainId, derivedKeyIndex)] && (
+                                    <Button
+                                      variant="text"
+                                      pallet="dark"
+                                      weight="xs"
+                                      onClick={() => updateWalletName('', accountIndex, chainId, derivedKeyIndex)}
+                                    >
+                                      <Icon name="clearOutline" size={20} />
+                                    </Button>
+                                  )
                                 }
                               />
                               <Button
@@ -397,7 +399,7 @@ const StepThree = ({ qrData, onNextStep }: Props) => {
       <BaseModal
         closeButton
         className="p-4 max-w-2xl"
-        title={t('onboarding.youAccountsLabel')}
+        title={t('onboarding.yourAccountsLabel')}
         description={t('onboarding.readAccountsLabel')}
         isOpen={isModalOpen}
         onClose={toggleModal}
