@@ -1,20 +1,11 @@
 import cn from 'classnames';
 import { encodeAddress } from '@polkadot/util-crypto';
-import { Menu } from '@headlessui/react';
 
 import { Chain } from '@renderer/domain/chain';
-import { Address, Icon } from '@renderer/components/ui';
-import { Explorer } from '@renderer/components/ui/Icon/data/explorer';
+import { Address } from '@renderer/components/ui';
 import { PublicKey } from '@renderer/domain/shared-kernel';
-import { useI18n } from '@renderer/context/I18nContext';
 import { isCorrectPublicKey } from '@renderer/utils/address';
-
-const ExplorerIcons: Record<string, Explorer> = {
-  Polkascan: 'polkascan',
-  'Sub.ID': 'subid',
-  Subscan: 'subscan',
-  Statescan: 'statescan',
-};
+import Explorers from '../Explorers/Explorers';
 
 type Props = {
   publicKey?: PublicKey;
@@ -24,7 +15,6 @@ type Props = {
 };
 
 const AccountsList = ({ publicKey, chains, className, limit }: Props) => {
-  const { t } = useI18n();
   const limitedChains = limit ? chains.slice(0, limit) : chains;
 
   if (!publicKey || !isCorrectPublicKey(publicKey)) {
@@ -48,46 +38,22 @@ const AccountsList = ({ publicKey, chains, className, limit }: Props) => {
 
   return (
     <ul className={cn('flex flex-col z-0 divide-y divide-gray-200 overflow-y-auto overflow-x-hidden', className)}>
-      {limitedChains.map(({ name, addressPrefix, icon, explorers }) => (
-        <li key={name} className="flex flex-row items-center gap-2.5 pr-6 pl-4 pt-1.25 pb-1.25">
-          <img width="36px" height="36px" alt={name} src={icon} />
-          <div className="flex flex-col flex-1 overflow-hidden whitespace-nowrap">
-            <div className="font-bold text-neutral text-base w-full leading-5">{name}</div>
-            <Address className="w-full" address={encodeAddress(publicKey, addressPrefix)} />
-          </div>
-          <div className="relative flex-none">
-            <Menu>
-              <Menu.Button className={'hover:bg-primary hover:text-white px-1 rounded-2xl'}>
-                {t('accountList.menuButton')}
-              </Menu.Button>
-              <Menu.Items
-                className={'z-10 absolute right-0 top-0 rounded-2lg shadow-surface w-max border border-primary'}
-              >
-                {explorers?.map(
-                  ({ name, account }) =>
-                    account && (
-                      <Menu.Item key={name}>
-                        {({ active }) => (
-                          <a
-                            className={cn(
-                              'rounded-2lg flex items-center gap-1 p-2.5 font-semibold select-none',
-                              active ? 'bg-primary text-white' : 'bg-shade-5 text-neutral-variant',
-                            )}
-                            href={account.replace('{address}', encodeAddress(publicKey, addressPrefix))}
-                            rel="noopener noreferrer"
-                            target="_blank"
-                          >
-                            <Icon as="img" name={ExplorerIcons[name]} /> {t('accountList.explorerButton', { name })}
-                          </a>
-                        )}
-                      </Menu.Item>
-                    ),
-                )}
-              </Menu.Items>
-            </Menu>
-          </div>
-        </li>
-      ))}
+      {limitedChains.map((chain) => {
+        const { name, icon, addressPrefix } = chain;
+
+        return (
+          <li key={name} className="flex flex-row items-center gap-2.5 pr-6 pl-4 pt-1.25 pb-1.25">
+            <img width="36px" height="36px" alt={name} src={icon} />
+            <div className="flex flex-col flex-1 overflow-hidden whitespace-nowrap">
+              <div className="font-bold text-neutral text-base w-full leading-5">{name}</div>
+              <Address className="w-full" address={encodeAddress(publicKey, addressPrefix)} />
+            </div>
+            <div className="relative flex-none">
+              <Explorers chain={chain} address={encodeAddress(publicKey, addressPrefix)} />
+            </div>
+          </li>
+        );
+      })}
     </ul>
   );
 };

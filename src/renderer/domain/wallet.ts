@@ -1,3 +1,5 @@
+import { IndexableType } from 'dexie';
+
 import { Contact } from './contact';
 import { Account, ChainAccount } from './account';
 import { CryptoType } from './shared-kernel';
@@ -9,6 +11,7 @@ export type SimpleWallet = {
   isMultisig: boolean;
   isActive: boolean;
   type: WalletType;
+  parentWalletId?: IndexableType;
 };
 
 export type MultisigWallet = SimpleWallet & {
@@ -34,6 +37,7 @@ export function createSimpleWallet<T extends SimpleWallet>({
   type,
   mainAccounts,
   chainAccounts,
+  parentWalletId,
 }: Omit<T, 'isMultisig' | 'isActive'>): Wallet {
   return {
     name,
@@ -42,6 +46,7 @@ export function createSimpleWallet<T extends SimpleWallet>({
     chainAccounts,
     isMultisig: false,
     isActive: false,
+    parentWalletId,
     threshold: 0,
     messengerRoomId: '',
     originContacts: [],
@@ -69,10 +74,20 @@ export function createMultisigWallet<T extends MultisigWallet>({
     messengerRoomId,
   };
 }
+
 export function createMainAccount({ accountId, publicKey }: Omit<Account, 'cryptoType'>): Account {
   return {
     accountId,
     publicKey,
     cryptoType: CryptoType.ED25519,
   } as Account;
+}
+
+export function createChainAccount({ accountId, publicKey, chainId }: Omit<ChainAccount, 'cryptoType'>): ChainAccount {
+  return {
+    accountId,
+    publicKey,
+    chainId,
+    cryptoType: CryptoType.ED25519,
+  } as ChainAccount;
 }
