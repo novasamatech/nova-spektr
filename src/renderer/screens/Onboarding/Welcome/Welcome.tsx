@@ -45,7 +45,7 @@ const Welcome = () => {
             variant="fill"
             pallet="primary"
             weight="lg"
-            suffixElement={<Icon as="svg" name="qrCutout" size={20} />}
+            suffixElement={<Icon name="qrCutout" size={20} />}
           >
             {t('welcome.addParitySignerButton')}
           </ButtonLink>

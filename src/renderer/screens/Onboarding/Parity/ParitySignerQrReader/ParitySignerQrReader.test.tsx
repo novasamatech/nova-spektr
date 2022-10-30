@@ -1,4 +1,4 @@
-import { act, render, screen } from '@testing-library/react';
+import { act, render, screen, waitFor } from '@testing-library/react';
 
 import { QrReader } from '@renderer/components/common';
 import ParitySignerQrReader from './ParitySignerQrReader';
@@ -15,7 +15,7 @@ describe('screens/Onboarding/Parity/ParitySignerQrReader', () => {
   test('should render component', () => {
     (QrReader as jest.Mock).mockImplementation(() => 'qr_reader');
 
-    render(<ParitySignerQrReader onResult={() => {}} onStart={() => {}} />);
+    render(<ParitySignerQrReader onResult={() => {}} />);
 
     const qrReader = screen.getByText('qr_reader');
     expect(qrReader).toBeInTheDocument();
@@ -28,7 +28,7 @@ describe('screens/Onboarding/Parity/ParitySignerQrReader', () => {
       </button>
     ));
 
-    render(<ParitySignerQrReader onResult={() => {}} onStart={() => {}} />);
+    render(<ParitySignerQrReader onResult={() => {}} />);
 
     const checkmarkBefore = screen.queryByTestId('checkmarkCutout-svg');
     expect(checkmarkBefore).not.toBeInTheDocument();
@@ -36,8 +36,10 @@ describe('screens/Onboarding/Parity/ParitySignerQrReader', () => {
     const qrButton = screen.getByRole('button');
     act(() => qrButton.click());
 
-    const checkmarkAfter = screen.getByTestId('checkmarkCutout-svg');
-    expect(checkmarkAfter).toBeInTheDocument();
+    waitFor(() => {
+      const checkmarkAfter = screen.getByTestId('checkmarkCutout-svg');
+      expect(checkmarkAfter).toBeInTheDocument();
+    });
   });
 
   test('should render decoded progress', () => {
@@ -47,7 +49,7 @@ describe('screens/Onboarding/Parity/ParitySignerQrReader', () => {
       </button>
     ));
 
-    render(<ParitySignerQrReader onResult={() => {}} onStart={() => {}} />);
+    render(<ParitySignerQrReader onResult={() => {}} />);
 
     const qrButton = screen.getByRole('button');
     act(() => qrButton.click());
