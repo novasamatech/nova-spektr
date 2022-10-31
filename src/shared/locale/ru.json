@@ -195,6 +195,11 @@
   "transfers": {
     "title": "Переводы"
   },
+  "wallets": {
+    "paritySignerLabel": "Parity Signer",
+    "searchPlaceholder": "Поиск кошелька",
+    "watchOnlyLabel": "Watch-only"
+  },
   "welcome": {
     "addLedgerButton": "Скоро",
     "addLedgerComingSoonLabel": "Добавите Ledger кошелёк (скоро)",
@@ -210,10 +215,5 @@
     "ledgerImageAlt": "Иконка онбординга с Ledger",
     "omniEnterpriseLabel": "Omni Enterprise",
     "welcomeToLabel": "Добро пожаловать в"
-  },
-  "wallets": {
-    "paritySignerLabel": "Parity Signer",
-    "watchOnlyLabel": "Watch-only",
-    "searchPlaceholder": "Поиск кошелька"
   }
 }

@@ -195,6 +195,11 @@
   "transfers": {
     "title": "Transfers"
   },
+  "wallets": {
+    "paritySignerLabel": "Parity Signer",
+    "searchPlaceholder": "Search for a wallet",
+    "watchOnlyLabel": "Watch-only"
+  },
   "welcome": {
     "addLedgerButton": "Coming soon",
     "addLedgerComingSoonLabel": "Add Ledger wallet (coming soon)",
@@ -210,10 +215,5 @@
     "ledgerImageAlt": "Icon of Ledger option",
     "omniEnterpriseLabel": "Omni Enterprise",
     "welcomeToLabel": "Welcome to"
-  },
-  "wallets": {
-    "paritySignerLabel": "Parity Signer",
-    "watchOnlyLabel": "Watch-only",
-    "searchPlaceholder": "Search for a wallet"
   }
 }
