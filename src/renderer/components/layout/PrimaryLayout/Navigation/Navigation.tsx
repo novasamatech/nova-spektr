@@ -1,5 +1,5 @@
 import cn from 'classnames';
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
 
 import { Button, Icon, Identicon } from '@renderer/components/ui';
@@ -8,6 +8,8 @@ import Paths from '@renderer/routes/paths';
 import { useI18n } from '@renderer/context/I18nContext';
 import { useWallet } from '@renderer/services/wallet/walletService';
 import { WalletType } from '@renderer/domain/wallet';
+import Wallets from '../Wallets/Wallets';
+import useClickOutside from '@renderer/hooks/useClickOutside';
 
 const CardStyle = {
   [WalletType.WATCH_ONLY]: 'bg-alert',
@@ -25,15 +27,22 @@ const NavItems = [
 ];
 
 const Navigation = () => {
+  const walletsRef = useRef(null);
+  const showWalletsRef = useRef(null);
   const { LocaleComponent, t } = useI18n();
   const { getActiveWallets } = useWallet();
   const activeWallets = getActiveWallets();
-  const walletType = activeWallets?.[0].type || WalletType.PARITY;
+  const walletType = activeWallets?.[0]?.type || WalletType.PARITY;
 
   const navigate = useNavigate();
   const { matrix, setIsLoggedIn } = useMatrix();
 
   const [isProcessing, setIsProcessing] = useState(false);
+  const [isWalletsOpen, setIsWalletsOpen] = useState(false);
+
+  useClickOutside([walletsRef, showWalletsRef], () => {
+    setIsWalletsOpen((value) => value && false);
+  });
 
   const onLogout = async () => {
     setIsProcessing(true);
@@ -48,18 +57,22 @@ const Navigation = () => {
     }
   };
 
+  const currentWallet = activeWallets?.length ? activeWallets[0] : undefined;
+  const currentAccount = currentWallet?.mainAccounts[0] || currentWallet?.chainAccounts[0];
+
   return (
-    <aside className="flex gap-y-5 flex-col w-[280px] py-5 pl-5">
+    <aside className="relative flex gap-y-5 flex-col w-[300px] bg-shade-5 p-5">
       <div className={cn('rounded-xl text-white', CardStyle[walletType])}>
         <div className="flex gap-x-2.5 pl-4 pt-4 pr-2">
-          <Identicon
-            theme="polkadot"
-            address={(activeWallets && activeWallets.length && activeWallets[0].mainAccounts[0].accountId) || ''}
-            size={46}
-          />
-          <button type="button" className="flex justify-between flex-1 truncate">
+          <Identicon theme="polkadot" address={currentAccount?.accountId || ''} size={46} />
+          <button
+            ref={showWalletsRef}
+            onClick={() => setIsWalletsOpen((value) => !value && true)}
+            type="button"
+            className="flex justify-between flex-1 truncate"
+          >
             <span className="text-xl leading-6 mr-1 text-left truncate">
-              {(activeWallets && activeWallets.length && activeWallets[0].name) || t('navigation.unknownWalletLabel')}
+              {currentWallet?.name || t('navigation.unknownWalletLabel')}
             </span>
             <Icon name="right" size={40} className="shrink-0" />
           </button>
@@ -115,6 +128,11 @@ const Navigation = () => {
           <Icon className="text-success" name="networkDuotone" />
         </div>
       </div>
+
+      <Wallets
+        ref={walletsRef}
+        className={cn(isWalletsOpen ? 'block' : 'hidden', 'absolute z-20 w-[350px] top-0 left-[300px]')}
+      />
     </aside>
   );
 };

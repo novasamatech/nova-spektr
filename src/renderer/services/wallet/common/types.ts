@@ -7,7 +7,8 @@ export interface IWalletService {
   getWallet: (walletId: string) => Promise<WalletDS | undefined>;
   getWallets: (where?: Record<string, any>) => Promise<WalletDS[]>;
   getActiveWallets: () => WalletDS[] | undefined;
-  setActiveWallet: (walletId: IndexableType) => Promise<void>;
+  getLiveWallets: (where?: Record<string, any>) => WalletDS[] | undefined;
+  toggleActiveWallet: (walletId: IndexableType) => Promise<void>;
   addWallet: (wallet: Wallet) => Promise<IndexableType>;
   updateWallet: (wallet: Wallet) => Promise<IndexableType>;
   deleteWallet: (walletId: string) => Promise<void>;
