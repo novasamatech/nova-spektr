@@ -87,7 +87,7 @@ describe('screens/Onboarding/Parity/ScanMoreModal', () => {
   });
 
   // We have: 2 derived, receive: 1 root + 4 derived
-  test('should render some accounts exist state', async () => {
+  test('should render some accounts exist state_1', async () => {
     const oldAccs: SimpleSeedInfo[] = [
       { address: DERIVED_ADDRESS, derivedKeys: {} },
       { address: '15dQe7XkGCExuWYH72VcDkf74aTT7ncDfKVtTKs2DHrbA2cY', derivedKeys: {} },
@@ -105,6 +105,31 @@ describe('screens/Onboarding/Parity/ScanMoreModal', () => {
     const result = {
       ...qrPayload[0],
       derivedKeys: [qrPayload[0].derivedKeys[0], qrPayload[0].derivedKeys[1]],
+    };
+    const accountExists = screen.getByText('onboarding.paritySigner.someOldAccountDescription');
+    expect(accountExists).toBeInTheDocument();
+    expect(spyResult).toBeCalledWith([result]);
+  });
+
+  // We have: 1 root, 1 derived, receive: 1 root + 4 derived
+  test('should render some accounts exist state_2', async () => {
+    const oldAccs: SimpleSeedInfo[] = [
+      { address: ROOT_ADDRESS, derivedKeys: {} },
+      { address: DERIVED_ADDRESS, derivedKeys: {} },
+    ];
+    const qrPayload: SeedInfo[] = [
+      createRootQrPayload(ROOT_PUBLIC_KEY, [
+        'Cdt6mgcXHFzAQkATy15QMHCBEjVqTSVcEqdhvrbE29eS4SK',
+        '5ChqJwP89ajjGaS6mZjP5N2mT6BJ7ztVQMM1EaZ4tyPGFsQ3',
+        '15dQe7XkGCExuWYH72VcDkf74aTT7ncDfKVtTKs2DHrbA2cY',
+        DERIVED_ADDRESS,
+      ]),
+    ];
+    const spyResult = await renderWithAccounts(oldAccs, qrPayload);
+
+    const result = {
+      ...qrPayload[0],
+      derivedKeys: [qrPayload[0].derivedKeys[0], qrPayload[0].derivedKeys[1], qrPayload[0].derivedKeys[2]],
     };
     const accountExists = screen.getByText('onboarding.paritySigner.someOldAccountDescription');
     expect(accountExists).toBeInTheDocument();

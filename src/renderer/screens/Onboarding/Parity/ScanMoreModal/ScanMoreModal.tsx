@@ -145,15 +145,13 @@ const ScanMoreModal = ({ isOpen, accounts, onResult, onClose }: Props) => {
         onResult(newAccs);
         setCameraState(CameraState.SOME_ACCOUNTS_EXIST);
       }
+    } else if (oldAccs.length > 1 || oldAccs[0].derivedKeys.length > 0) {
+      setCameraState(CameraState.NO_NEW_ACCOUNTS);
+      const oldAddresses = oldAccs.map(({ multiSigner }) => toAddress(u8aToHex(multiSigner?.public), 0));
+      setExistingAccounts(oldAddresses);
     } else {
-      if (oldAccs.length > 1 || oldAccs[0].derivedKeys.length > 0) {
-        setCameraState(CameraState.NO_NEW_ACCOUNTS);
-        const oldAddresses = oldAccs.map(({ multiSigner }) => toAddress(u8aToHex(multiSigner?.public), 0));
-        setExistingAccounts(oldAddresses);
-      } else {
-        setCameraState(CameraState.ACCOUNT_EXISTS);
-        setExistingAccounts([toAddress(u8aToHex(oldAccs[0].multiSigner?.public), 0)]);
-      }
+      setCameraState(CameraState.ACCOUNT_EXISTS);
+      setExistingAccounts([toAddress(u8aToHex(oldAccs[0].multiSigner?.public), 0)]);
     }
   };
 

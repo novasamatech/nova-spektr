@@ -64,8 +64,6 @@ const StepThree = ({ qrData, onNextStep }: Props) => {
   };
 
   const mergeNewAccounts = (newAccounts: SeedInfo[]) => {
-    console.log(newAccounts);
-
     const { oldAccs, newAccs, newNames } = newAccounts.reduce(
       (acc, current) => {
         if (current.derivedKeys.length === 0) {
