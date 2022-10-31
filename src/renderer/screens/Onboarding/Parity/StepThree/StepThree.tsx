@@ -66,10 +66,11 @@ const StepThree = ({ qrData, onNextStep }: Props) => {
   const mergeNewAccounts = (newAccounts: SeedInfo[]) => {
     console.log(newAccounts);
 
-    const { oldAccs, newAccs } = newAccounts.reduce(
+    const { oldAccs, newAccs, newNames } = newAccounts.reduce(
       (acc, current) => {
         if (current.derivedKeys.length === 0) {
           acc.newAccs.push(formatAccount(current));
+          acc.newNames.push(current.name);
         } else {
           const address = u8aToHex(current.multiSigner?.public);
           const rootAccountIndex = acc.oldAccs.findIndex((a) => toPublicKey(a.address) === address);
@@ -82,10 +83,17 @@ const StepThree = ({ qrData, onNextStep }: Props) => {
 
         return acc;
       },
-      { oldAccs: accounts, newAccs: [] } as Record<'oldAccs' | 'newAccs', SimpleSeedInfo[]>,
+      { oldAccs: accounts, newAccs: [], newNames: [] } as {
+        oldAccs: SimpleSeedInfo[];
+        newAccs: SimpleSeedInfo[];
+        newNames: string[];
+      },
     );
 
-    // TODO: setNames
+    const newLastIndex = parseInt(Object.keys(walletNames).pop()?.split('-')[0] || '0') + 1;
+    const namesMap = newNames.reduce((_, name, index) => ({ [getWalletId(index + newLastIndex)]: name }), {});
+
+    setWalletNames({ ...walletNames, ...namesMap });
     setAccounts(oldAccs.concat(newAccs));
   };
 
@@ -103,7 +111,7 @@ const StepThree = ({ qrData, onNextStep }: Props) => {
     }, {} as Record<HexString, AddressInfo[]>);
   };
 
-  const getWalletId = (accountIndex: number, chainId?: string, derivedKeyIndex?: number) =>
+  const getWalletId = (accountIndex: number, chainId?: string, derivedKeyIndex?: number): string =>
     `${accountIndex}${chainId ? `-${chainId}` : ''}${derivedKeyIndex !== undefined ? `-${derivedKeyIndex}` : ''}`;
 
   const updateWalletName = (name: string, accountIndex: number, chainId?: string, derivedKeyIndex?: number) => {

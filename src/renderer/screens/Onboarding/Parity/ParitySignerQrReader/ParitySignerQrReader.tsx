@@ -194,10 +194,7 @@ const ParitySignerQrReader = ({ size = 300, className, onResult }: Props) => {
         </div>
       )}
 
-      <div
-        className={cn('relative bg-shade-40', isCameraPending && 'hidden', className)}
-        // style={{ width: size + 'px', height: size + 'px' }}
-      >
+      <div className={cn('relative bg-shade-40', isCameraPending && 'hidden', className)}>
         <QrReader
           size={size}
           className={className}
@@ -212,8 +209,8 @@ const ParitySignerQrReader = ({ size = 300, className, onResult }: Props) => {
           <>
             <div className="absolute inset-0 backdrop-blur-sm rounded-2lg after:absolute after:inset-0 after:bg-white/50" />
             <Icon
-              name="checkmarkCutout"
               size={100}
+              name="checkmarkCutout"
               className="absolute left-1/2 top-40 -translate-x-1/2 text-success"
             />
           </>

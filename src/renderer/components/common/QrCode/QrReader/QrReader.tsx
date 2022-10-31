@@ -65,7 +65,6 @@ const QrReader = ({ size = 300, cameraId, className, onCameraList, onResult, onP
 
   const getVideoInputs = async (): Promise<number> => {
     const cameras: VideoInput[] = [];
-    // const cameras: VideoInput[] = [{ id: 'xXXX', label: 'xxxx' }];
     try {
       streamRef.current = await navigator.mediaDevices.getUserMedia({ video: true });
 

@@ -1,6 +1,6 @@
 import { hexToU8a, u8aToHex } from '@polkadot/util';
 import { HexString } from '@polkadot/util/types';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 import { SeedInfo, SimpleSeedInfo } from '@renderer/components/common/QrCode/QrReader/common/types';
 import { BaseModal, Button, Icon, Identicon } from '@renderer/components/ui';
@@ -10,8 +10,6 @@ import { toAddress } from '@renderer/services/balance/common/utils';
 import { toPublicKey } from '@renderer/utils/address';
 import { getShortAddress } from '@renderer/utils/strings';
 import ParitySignerQrReader from '../ParitySignerQrReader/ParitySignerQrReader';
-
-const CLOSE_DURATION = 200;
 
 const enum CameraState {
   ACTIVE,
@@ -42,6 +40,13 @@ const ScanMoreModal = ({ isOpen, accounts, onResult, onClose }: Props) => {
 
   const [cameraState, setCameraState] = useState<CameraState>(CameraState.ACTIVE);
   const [existingAccounts, setExistingAccounts] = useState<AccountID[]>([]);
+
+  useEffect(() => {
+    if (!isOpen) return;
+
+    setCameraState(CameraState.ACTIVE);
+    setExistingAccounts([]);
+  }, [isOpen]);
 
   const allRootAndDerivedKeys = (): RootAndDerived => {
     return accounts.reduce(
@@ -92,7 +97,6 @@ const ScanMoreModal = ({ isOpen, accounts, onResult, onClose }: Props) => {
 
         const partialDerives = newAccount.derivedKeys.filter((key) => {
           const deriveIndex = allRoot.findIndex((address) => address === toPublicKey(key.address));
-          // If we don't need oldAccs on the screen this can be removed
           if (deriveIndex >= 0) {
             acc.oldAccs.push({
               name: '',
@@ -106,6 +110,10 @@ const ScanMoreModal = ({ isOpen, accounts, onResult, onClose }: Props) => {
 
           return deriveIndex === -1;
         });
+
+        if (rootAccountIndex >= 0 && partialDerives.length === 0) {
+          return { newAccs: acc.newAccs, oldAccs: acc.oldAccs.concat({ ...newAccount, derivedKeys: [] }) };
+        }
 
         return {
           oldAccs: acc.oldAccs,
@@ -126,29 +134,19 @@ const ScanMoreModal = ({ isOpen, accounts, onResult, onClose }: Props) => {
     return groupRootAccounts(newAccounts, keys.allRoot);
   };
 
-  const resetAndClose = () => {
-    onClose();
-    setTimeout(() => {
-      setCameraState(CameraState.ACTIVE);
-      setExistingAccounts([]);
-    }, CLOSE_DURATION);
-  };
-
   const onScanResult = (qrPayload: SeedInfo[]) => {
     const { newAccs, oldAccs } = groupNewAccounts(qrPayload);
-    console.log('newAccs ==> ', newAccs);
-    console.log('oldAccs ==> ', oldAccs);
 
     if (newAccs.length > 0) {
       if (oldAccs.length === 0) {
         onResult(newAccs);
-        resetAndClose();
+        onClose();
       } else {
         onResult(newAccs);
         setCameraState(CameraState.SOME_ACCOUNTS_EXIST);
       }
     } else {
-      if (oldAccs.length > 1 || oldAccs[0].derivedKeys.length > 1) {
+      if (oldAccs.length > 1 || oldAccs[0].derivedKeys.length > 0) {
         setCameraState(CameraState.NO_NEW_ACCOUNTS);
         const oldAddresses = oldAccs.map(({ multiSigner }) => toAddress(u8aToHex(multiSigner?.public), 0));
         setExistingAccounts(oldAddresses);
@@ -197,7 +195,7 @@ const ScanMoreModal = ({ isOpen, accounts, onResult, onClose }: Props) => {
             </p>
             <p className="text-neutral-variant text-sm">{t('onboarding.paritySigner.someOldAccountDescription')}</p>
           </div>
-          <Button className="w-max mb-5" weight="lg" variant="fill" pallet="primary" onClick={resetAndClose}>
+          <Button className="w-max mb-5" weight="lg" variant="fill" pallet="primary" onClick={onClose}>
             {t('onboarding.paritySigner.continueButton')}
           </Button>
         </div>
