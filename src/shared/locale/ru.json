@@ -227,5 +227,10 @@
     "ledgerImageAlt": "Иконка онбординга с Ledger",
     "omniEnterpriseLabel": "Omni Enterprise",
     "welcomeToLabel": "Добро пожаловать в"
+  },
+  "wallets": {
+    "paritySignerLabel": "Parity Signer",
+    "watchOnlyLabel": "Watch-only",
+    "searchPlaceholder": "Поиск кошелька"
   }
 }
