@@ -97,11 +97,13 @@ const Wallets = forwardRef<HTMLDivElement, Props>(({ className }: Props, ref) =>
                   />
                   <div className="overflow-hidden">
                     <div className="text-neutral text-sm text-semibold leading-4">{wallet.name}</div>
+                    {/* eslint-disable i18next/no-literal-string */}
                     <Address
                       type="short"
                       addressStyle="small"
                       address={(wallet.mainAccounts[0] || wallet.chainAccounts[0]).accountId}
                     />
+                    {/* eslint-enable i18next/no-literal-string */}
                   </div>
                 </label>
               ))}
