@@ -16,7 +16,7 @@ jest.mock('@renderer/context/I18nContext', () => ({
 jest.mock('@renderer/services/wallet/walletService', () => ({
   useWallet: jest.fn().mockReturnValue({
     addWallet: jest.fn(),
-    setActiveWallet: jest.fn(),
+    toggleActiveWallet: jest.fn(),
   }),
 }));
 
