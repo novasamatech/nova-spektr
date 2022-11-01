@@ -150,7 +150,7 @@ const WatchOnly = () => {
                   value={value}
                   onChange={onChange}
                   prefixElement={
-                    isValid ? <Identicon address={value} background={false} /> : <Icon as="svg" name="emptyIdenticon" />
+                    isValid ? <Identicon address={value} background={false} /> : <Icon name="emptyIdenticon" />
                   }
                   suffixElement={
                     <Button variant="outline" pallet="primary" onClick={pasteAddressHandler(onChange)}>
@@ -197,13 +197,12 @@ const WatchOnly = () => {
 
       <BaseModal
         closeButton
-        className="p-4 max-w-2xl"
         title={t('onboarding.yourAccountsLabel')}
         description={t('onboarding.readAccountsLabel')}
         isOpen={isModalOpen}
         onClose={toggleModal}
       >
-        <AccountsList className="pt-6 -mx-4" chains={chains} publicKey={publicKey} />
+        <AccountsList className="pt-6 -mx-4 max-w-2xl" chains={chains} publicKey={publicKey} />
       </BaseModal>
     </>
   );

@@ -9,7 +9,8 @@ type Props = {
   isOpen: boolean;
   title?: ReactNode;
   description?: ReactNode;
-  className?: string;
+  contentClass?: string;
+  headerClass?: string;
   closeButton?: boolean;
   onClose: () => void;
 };
@@ -20,7 +21,8 @@ const BaseModal = ({
   description,
   children,
   onClose,
-  className,
+  contentClass = 'pb-5 px-5',
+  headerClass = 'pt-5 px-5',
   closeButton,
 }: PropsWithChildren<Props>) => {
   const { t } = useI18n();
@@ -51,29 +53,29 @@ const BaseModal = ({
               leaveFrom="opacity-100 scale-100"
               leaveTo="opacity-0 scale-95"
             >
-              <Dialog.Panel
-                className={cn(
-                  'transform overflow-hidden rounded-2xl bg-white text-left align-middle shadow-xl transition-all',
-                  className,
-                )}
-              >
+              <Dialog.Panel className="transform overflow-hidden rounded-2xl bg-white text-left align-middle shadow-xl transition-all">
                 {title && closeButton && (
                   <Dialog.Title as="header">
-                    <div className="relative flex justify-center">
-                      <h2 className="text-xl text-neutral font-semibold leading-5">{title}</h2>
+                    <div className={cn('relative flex justify-end items-center', headerClass)}>
+                      <h2 className="absolute left-1/2 -translate-x-1/2 w-max text-xl text-neutral font-semibold leading-5">
+                        {title}
+                      </h2>
                       <button
                         aria-label={t('basemodal.closeButton')}
                         type="button"
-                        className="absolute right-0.5 text-neutral-variant"
+                        className="text-neutral-variant -outline-offset-2"
                         onClick={onClose}
                       >
-                        <CloseCutout role="img" width={24} height={24} />
+                        <CloseCutout role="img" width={22} height={22} />
                       </button>
                     </div>
                   </Dialog.Title>
                 )}
                 {title && !closeButton && (
-                  <Dialog.Title as="header" className="text-xl text-neutral font-semibold leading-5 text-center">
+                  <Dialog.Title
+                    as="header"
+                    className={cn('text-xl text-neutral font-semibold leading-5 text-center', headerClass)}
+                  >
                     {title}
                   </Dialog.Title>
                 )}
@@ -84,7 +86,7 @@ const BaseModal = ({
                   </Dialog.Description>
                 )}
 
-                {children}
+                <div className={contentClass}>{children}</div>
               </Dialog.Panel>
             </Transition.Child>
           </div>
