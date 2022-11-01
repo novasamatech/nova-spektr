@@ -97,6 +97,8 @@ module.exports = {
           include: [],
           exclude: [
             'className',
+            'headerClass',
+            'contentClass',
             'styleName',
             'style',
             'type',

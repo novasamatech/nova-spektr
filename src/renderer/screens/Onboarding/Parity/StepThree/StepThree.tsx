@@ -1,24 +1,25 @@
 import { Menu } from '@headlessui/react';
 import { u8aToHex } from '@polkadot/util';
 import cn from 'classnames';
+import { IndexableType } from 'dexie';
 import keyBy from 'lodash/keyBy';
 import { FormEvent, useEffect, useState } from 'react';
-import { IndexableType } from 'dexie';
 
 import { AccountsList, Explorers } from '@renderer/components/common';
-import { AddressInfo, SeedInfo } from '@renderer/components/common/QrCode/QrReader/common/types';
+import { AddressInfo, SeedInfo, SimpleSeedInfo } from '@renderer/components/common/QrCode/QrReader/common/types';
 import { BaseModal, Button, Icon, Identicon, Input } from '@renderer/components/ui';
 import { useI18n } from '@renderer/context/I18nContext';
 import { Chain } from '@renderer/domain/chain';
-import { ChainId, PublicKey } from '@renderer/domain/shared-kernel';
+import { ChainId, HexString, PublicKey } from '@renderer/domain/shared-kernel';
+import { createChainAccount, createMainAccount, createSimpleWallet, Wallet, WalletType } from '@renderer/domain/wallet';
 import useToggle from '@renderer/hooks/useToggle';
+import ScanMoreModal from '@renderer/screens/Onboarding/Parity/ScanMoreModal/ScanMoreModal';
 import { toAddress } from '@renderer/services/balance/common/utils';
 import { useChains } from '@renderer/services/network/chainsService';
+import { useWallet } from '@renderer/services/wallet/walletService';
 import { toPublicKey } from '@renderer/utils/address';
 import { getShortAddress } from '@renderer/utils/strings';
 import './StepThree.css';
-import { createChainAccount, createMainAccount, createSimpleWallet, Wallet, WalletType } from '@renderer/domain/wallet';
-import { useWallet } from '@renderer/services/wallet/walletService';
 
 type Props = {
   qrData: SeedInfo[];
@@ -30,7 +31,8 @@ const StepThree = ({ qrData, onNextStep }: Props) => {
   const { t } = useI18n();
 
   const { getChainsData, sortChains } = useChains();
-  const [isModalOpen, toggleModal] = useToggle();
+  const [isAccountsModalOpen, toggleAccountsModal] = useToggle();
+  const [isQrModalOpen, toggleQrModal] = useToggle();
   const { addWallet, setActiveWallet } = useWallet();
 
   const [chains, setChains] = useState<Chain[]>([]);
@@ -40,12 +42,7 @@ const StepThree = ({ qrData, onNextStep }: Props) => {
   const [walletNames, setWalletNames] = useState<Record<string, string>>({});
 
   const [currentPublicKey, setCurrentPublicKey] = useState<PublicKey>();
-  const [accounts, setAccounts] = useState<
-    {
-      address: string;
-      derivedKeys: Record<string, AddressInfo[]>;
-    }[]
-  >([]);
+  const [accounts, setAccounts] = useState<SimpleSeedInfo[]>([]);
 
   useEffect(() => {
     (async () => {
@@ -53,19 +50,52 @@ const StepThree = ({ qrData, onNextStep }: Props) => {
       setChains(sortChains(chains));
       setChainsObject(keyBy(chains, 'chainId'));
 
-      qrData.forEach((data, index) => {
-        setWalletNames((prev) => ({ ...prev, [getWalletId(index)]: data.name }));
-
-        const newAccount = {
-          address: toAddress(u8aToHex(data.multiSigner?.public), 0),
-          derivedKeys: groupDerivedKeys(data.derivedKeys),
-        };
-        setAccounts((prev) => [...prev, newAccount]);
-      });
+      const names = qrData.reduce((acc, data, index) => ({ ...acc, [getWalletId(index)]: data.name }), {});
+      setWalletNames(names);
+      setAccounts(qrData.map(formatAccount));
     })();
   }, []);
 
-  const groupDerivedKeys = (derivedKeys: AddressInfo[]): Record<string, AddressInfo[]> => {
+  const formatAccount = (newAccount: SeedInfo): SimpleSeedInfo => {
+    return {
+      address: toAddress(u8aToHex(newAccount.multiSigner?.public), 0),
+      derivedKeys: groupDerivedKeys(newAccount.derivedKeys),
+    };
+  };
+
+  const mergeNewAccounts = (newAccounts: SeedInfo[]) => {
+    const { oldAccs, newAccs, newNames } = newAccounts.reduce(
+      (acc, current) => {
+        if (current.derivedKeys.length === 0) {
+          acc.newAccs.push(formatAccount(current));
+          acc.newNames.push(current.name);
+        } else {
+          const address = u8aToHex(current.multiSigner?.public);
+          const rootAccountIndex = acc.oldAccs.findIndex((a) => toPublicKey(a.address) === address);
+          if (rootAccountIndex >= 0) {
+            acc.oldAccs[rootAccountIndex] = formatAccount(current);
+          } else {
+            acc.oldAccs.push(formatAccount(current));
+          }
+        }
+
+        return acc;
+      },
+      { oldAccs: accounts, newAccs: [], newNames: [] } as {
+        oldAccs: SimpleSeedInfo[];
+        newAccs: SimpleSeedInfo[];
+        newNames: string[];
+      },
+    );
+
+    const newLastIndex = parseInt(Object.keys(walletNames).pop()?.split('-')[0] || '0') + 1;
+    const namesMap = newNames.reduce((_, name, index) => ({ [getWalletId(index + newLastIndex)]: name }), {});
+
+    setWalletNames({ ...walletNames, ...namesMap });
+    setAccounts(oldAccs.concat(newAccs));
+  };
+
+  const groupDerivedKeys = (derivedKeys: AddressInfo[]): Record<HexString, AddressInfo[]> => {
     return derivedKeys.reduce((acc, key) => {
       const genesisHash = u8aToHex(key.genesisHash);
 
@@ -76,10 +106,10 @@ const StepThree = ({ qrData, onNextStep }: Props) => {
       }
 
       return acc;
-    }, {} as Record<string, AddressInfo[]>);
+    }, {} as Record<HexString, AddressInfo[]>);
   };
 
-  const getWalletId = (accountIndex: number, chainId?: string, derivedKeyIndex?: number) =>
+  const getWalletId = (accountIndex: number, chainId?: string, derivedKeyIndex?: number): string =>
     `${accountIndex}${chainId ? `-${chainId}` : ''}${derivedKeyIndex !== undefined ? `-${derivedKeyIndex}` : ''}`;
 
   const updateWalletName = (name: string, accountIndex: number, chainId?: string, derivedKeyIndex?: number) => {
@@ -98,13 +128,9 @@ const StepThree = ({ qrData, onNextStep }: Props) => {
     });
   };
 
-  const addNewAccount = () => {
-    // TODO: Add new account
-  };
-
   const walletIds = accounts.reduce((acc, { derivedKeys }, accountIndex) => {
     const derivedKeysIds = Object.keys(derivedKeys).map((chainId) =>
-      derivedKeys[chainId].map((_, index) => getWalletId(accountIndex, chainId, index)),
+      derivedKeys[chainId as HexString].map((_, index) => getWalletId(accountIndex, chainId, index)),
     );
 
     return [...acc, getWalletId(accountIndex), ...derivedKeysIds.flat()];
@@ -140,7 +166,7 @@ const StepThree = ({ qrData, onNextStep }: Props) => {
     accountIndex: number,
     mainWalletId: IndexableType,
   ): Wallet[] => {
-    const chainAccounts = derivedKeys.reduce((acc, derivedKey, index) => {
+    return derivedKeys.reduce((acc, derivedKey, index) => {
       const walletId = getWalletId(accountIndex, chainId, index);
 
       if (inactiveWallets[walletId]) return acc;
@@ -162,8 +188,6 @@ const StepThree = ({ qrData, onNextStep }: Props) => {
         }),
       ];
     }, [] as Wallet[]);
-
-    return chainAccounts;
   };
 
   const createWallets = async (event: FormEvent) => {
@@ -178,11 +202,9 @@ const StepThree = ({ qrData, onNextStep }: Props) => {
         console.warn('Error saving main account', e);
       }
 
-      const chainIds = Object.keys(derivedKeys);
-
-      const chainWallets = chainIds
+      const chainWallets = Object.keys(derivedKeys)
         .map((chainId) => {
-          const chainDerivedKeys = derivedKeys[chainId];
+          const chainDerivedKeys = derivedKeys[chainId as HexString];
 
           return createDerivedAccounts(chainDerivedKeys, chainId as ChainId, accountIndex, mainWalletId);
         })
@@ -203,7 +225,7 @@ const StepThree = ({ qrData, onNextStep }: Props) => {
   return (
     <div className="flex h-full flex-col gap-10 justify-center items-center pt-7.5">
       <div className="flex flex-col items-center bg-slate-50 rounded-2lg w-full p-5">
-        <h2 className="text-xl font-semibold text-neutral mb-5">{t('onboarding.paritysigner.choseWalletNameLabel')}</h2>
+        <h2 className="text-xl font-semibold text-neutral mb-5">{t('onboarding.paritySigner.choseWalletNameLabel')}</h2>
         <form
           id="stepForm"
           className="w-full max-h-[370px] overflow-auto p-4 bg-white shadow-surface rounded-2lg mb-10"
@@ -217,7 +239,7 @@ const StepThree = ({ qrData, onNextStep }: Props) => {
                     <Input
                       disabled
                       disabledStyle={inactiveWallets[getWalletId(accountIndex)]}
-                      placeholder={t('onboarding.paritysigner.accountAddressPlaceholder')}
+                      placeholder={t('onboarding.paritySigner.accountAddressPlaceholder')}
                       value={getShortAddress(account.address, 10)}
                       wrapperClass={cn('flex items-center')}
                       prefixElement={<Identicon size={20} address={account.address} background={false} />}
@@ -238,12 +260,12 @@ const StepThree = ({ qrData, onNextStep }: Props) => {
                                   pallet="dark"
                                   onClick={() => {
                                     setCurrentPublicKey(toPublicKey(account.address));
-                                    toggleModal();
+                                    toggleAccountsModal();
                                   }}
                                   className={cn('font-normal text-neutral', active && 'bg-primary text-white')}
                                   prefixElement={<Icon as="img" name="checkmark" />}
                                 >
-                                  {t('onboarding.paritysigner.checkAddress')}
+                                  {t('onboarding.paritySigner.checkAddress')}
                                 </Button>
                               )}
                             </Menu.Item>
@@ -284,9 +306,9 @@ const StepThree = ({ qrData, onNextStep }: Props) => {
                           onClick={() => toggleWallet(accountIndex)}
                         >
                           {inactiveWallets[getWalletId(accountIndex)] ? (
-                            <Icon name="removeCutout" size={24} />
+                            <Icon name="removeCutout" />
                           ) : (
-                            <Icon name="removeLine" size={24} />
+                            <Icon name="removeLine" />
                           )}
                         </Button>
                       ))}
@@ -299,7 +321,7 @@ const StepThree = ({ qrData, onNextStep }: Props) => {
                         <div className="flex items-center mt-2.5">
                           <div className="rounded-full border border-shade-30 w-[5px] h-[5px] box-border ml-4.5 mr-4 start-tree relative"></div>
                           <div className="flex items-center text-neutral-variant uppercase font-bold text-2xs">
-                            {t('onboarding.paritysigner.derivedLabel')}
+                            {t('onboarding.paritySigner.derivedLabel')}
                             <img
                               className="inline-block mx-1"
                               width="14px"
@@ -323,7 +345,7 @@ const StepThree = ({ qrData, onNextStep }: Props) => {
                               <Input
                                 disabled
                                 disabledStyle={inactiveWallets[getWalletId(accountIndex, chainId, derivedKeyIndex)]}
-                                placeholder={t('onboarding.paritysigner.accountAddressPlaceholder')}
+                                placeholder={t('onboarding.paritySigner.accountAddressPlaceholder')}
                                 value={getShortAddress(address, 10)}
                                 wrapperClass="flex flex-1 items-center"
                                 prefixElement={<Identicon size={20} address={address} background={false} />}
@@ -355,19 +377,19 @@ const StepThree = ({ qrData, onNextStep }: Props) => {
                                 }
                               />
                               <Button
+                                className="ml-4 px-0"
                                 variant="text"
                                 pallet={
                                   inactiveWallets[getWalletId(accountIndex, chainId, derivedKeyIndex)]
                                     ? 'dark'
                                     : 'error'
                                 }
-                                className="ml-4 px-0"
                                 onClick={() => toggleWallet(accountIndex, chainId, derivedKeyIndex)}
                               >
                                 {inactiveWallets[getWalletId(accountIndex, chainId, derivedKeyIndex)] ? (
-                                  <Icon name="removeCutout" size={24} />
+                                  <Icon name="removeCutout" />
                                 ) : (
-                                  <Icon name="removeLine" size={24} />
+                                  <Icon name="removeLine" />
                                 )}
                               </Button>
                             </div>
@@ -381,8 +403,8 @@ const StepThree = ({ qrData, onNextStep }: Props) => {
             ))}
           </div>
 
-          <Button variant="text" pallet="primary" className="m-auto" onClick={addNewAccount}>
-            <Icon name="addLine" size={24} alt={t('onboarding.paritysigner.addAccount')} />
+          <Button variant="text" pallet="primary" className="m-auto mt-2.5" onClick={toggleQrModal}>
+            <Icon name="addLine" alt={t('onboarding.paritySigner.addAccount')} />
           </Button>
         </form>
 
@@ -396,20 +418,22 @@ const StepThree = ({ qrData, onNextStep }: Props) => {
         >
           {activeWalletsHaveName
             ? t('onboarding.confirmAccountsListButton')
-            : t('onboarding.paritysigner.typeNameButton')}
+            : t('onboarding.paritySigner.typeNameButton')}
         </Button>
       </div>
 
       <BaseModal
         closeButton
-        className="p-4 max-w-2xl"
+        contentClass="px-4 pb-4 max-w-2xl"
         title={t('onboarding.yourAccountsLabel')}
         description={t('onboarding.readAccountsLabel')}
-        isOpen={isModalOpen}
-        onClose={toggleModal}
+        isOpen={isAccountsModalOpen}
+        onClose={toggleAccountsModal}
       >
         <AccountsList className="pt-6 -mx-4" chains={chains} publicKey={currentPublicKey} />
       </BaseModal>
+
+      <ScanMoreModal isOpen={isQrModalOpen} accounts={accounts} onResult={mergeNewAccounts} onClose={toggleQrModal} />
     </div>
   );
 };
