@@ -126,7 +126,7 @@ module.exports = {
             'form',
             'bgColor',
             'theme',
-            'addressStyle'
+            'addressStyle',
           ],
         },
         callees: {
