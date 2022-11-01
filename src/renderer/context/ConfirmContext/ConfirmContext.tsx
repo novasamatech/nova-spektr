@@ -51,7 +51,7 @@ export const ConfirmDialogProvider = ({ children }: PropsWithChildren) => {
       {children}
 
       <ConfirmModal
-        className="w-[400px]"
+        contentClass="w-[400px]"
         isOpen={isDialogOpen}
         confirmText={dialogState.confirmText}
         cancelText={dialogState.cancelText}

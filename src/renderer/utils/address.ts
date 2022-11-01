@@ -10,13 +10,18 @@ export const formatAddress = (address: string, prefix = SS58_DEFAULT_PREFIX): st
   return encodeAddress(decodeAddress(address), prefix) || address;
 };
 
+/**
+ * Get public key of the address
+ * @param address account's address
+ * @return {string | undefined}
+ */
 export const toPublicKey = (address: string): PublicKey | undefined => {
   if (!address) return;
 
   try {
     return u8aToHex(decodeAddress(address));
   } catch (e) {
-    return;
+    return undefined;
   }
 };
 

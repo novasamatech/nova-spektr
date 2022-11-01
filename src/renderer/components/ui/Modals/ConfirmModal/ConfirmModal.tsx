@@ -6,11 +6,11 @@ import BaseModal from '../BaseModal/BaseModal';
 
 type Props = {
   isOpen: boolean;
-  onClose: () => void;
-  onConfirm: () => void;
-  className?: string;
+  contentClass?: string;
   confirmText?: string;
   cancelText?: string;
+  onClose: () => void;
+  onConfirm: () => void;
 };
 
 const ConfirmModal = ({
@@ -18,11 +18,11 @@ const ConfirmModal = ({
   children,
   onClose,
   onConfirm,
-  className,
+  contentClass,
   confirmText = 'Confirm',
   cancelText = 'Cancel',
 }: PropsWithChildren<Props>) => (
-  <BaseModal isOpen={isOpen} onClose={onClose} className={cn('p-5', className)}>
+  <BaseModal isOpen={isOpen} onClose={onClose} contentClass={cn('p-5', contentClass)}>
     {children}
     <div className="grid grid-cols-2 gap-x-3">
       <Button variant="fill" pallet="primary" onClick={() => onClose()}>

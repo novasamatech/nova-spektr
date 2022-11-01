@@ -42,7 +42,7 @@ const Carousel = ({ loop, autoplay, animationDuration = 300, slides }: Props) =>
           className="text-shade-30 hover:text-shade-50 focus:text-shade-50"
           onClick={() => swiper?.slidePrev()}
         >
-          <Icon as="svg" name="left" />
+          <Icon name="left" />
         </button>
         <div className="flex gap-x-2.5">
           {slides.map((slide, index) => (
@@ -62,7 +62,7 @@ const Carousel = ({ loop, autoplay, animationDuration = 300, slides }: Props) =>
           className="text-shade-30 hover:text-shade-50 focus:text-shade-50"
           onClick={() => swiper?.slideNext()}
         >
-          <Icon as="svg" name="right" />
+          <Icon name="right" />
         </button>
       </div>
     </SwiperRoot>

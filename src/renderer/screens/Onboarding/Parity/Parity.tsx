@@ -28,9 +28,9 @@ const Parity = () => {
   };
 
   const parityFlowSteps: Record<'title', string>[] = [
-    { title: t('onboarding.paritysigner.step0') },
-    { title: t('onboarding.paritysigner.step1') },
-    { title: t('onboarding.paritysigner.step2') },
+    { title: t('onboarding.paritySigner.step0') },
+    { title: t('onboarding.paritySigner.step1') },
+    { title: t('onboarding.paritySigner.step2') },
   ];
 
   return (
@@ -38,7 +38,7 @@ const Parity = () => {
       {activeStep !== Step.FINAL && (
         <div className="flex items-center gap-x-2.5">
           <ButtonBack />
-          <h1 className="text-neutral">{t('onboarding.paritysigner.addByParitySignerLabel')}</h1>
+          <h1 className="text-neutral">{t('onboarding.paritySigner.addByParitySignerLabel')}</h1>
         </div>
       )}
       <section className="flex flex-col gap-y-16 h-max max-w-[1000px] w-full m-auto">

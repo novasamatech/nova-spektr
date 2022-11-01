@@ -1,7 +1,7 @@
 // eslint-disable-next-line import/named
 import { DecodeContinuouslyCallback } from '@zxing/browser/esm/common/DecodeContinuouslyCallback';
 
-import { CryptoType, CryptoTypeString } from '@renderer/domain/shared-kernel';
+import { AccountID, CryptoType, CryptoTypeString, HexString } from '@renderer/domain/shared-kernel';
 
 export const enum QrError {
   USER_DENY,
@@ -26,7 +26,7 @@ export type Progress = {
 };
 
 // Public root key
-type MultiSigner = {
+export type MultiSigner = {
   MultiSigner: Exclude<CryptoTypeString, CryptoTypeString.ETHEREUM>;
   public: Uint8Array;
 };
@@ -37,8 +37,14 @@ export type SeedInfo = {
   derivedKeys: AddressInfo[];
 };
 
+export type SimpleSeedInfo = {
+  address: AccountID;
+  derivedKeys: Record<HexString, AddressInfo[]>;
+};
+
 export type AddressInfo = {
-  address: string;
+  // TODO: Eth would have HexString
+  address: AccountID;
   derivationPath: string | undefined;
   encryption: CryptoType;
   genesisHash: Uint8Array;

@@ -59,7 +59,7 @@ const Dropdown = ({ className, placeholder, selected, options, onSelected }: Pro
               open ? 'text-primary' : 'text-neutral-variant',
             )}
           >
-            <Icon as="svg" name="dropdown" size={20} />
+            <Icon name="dropdown" size={20} />
           </span>
         </Listbox.Button>
         <Transition as={Fragment} leave="transition" leaveFrom="opacity-100" leaveTo="opacity-0">

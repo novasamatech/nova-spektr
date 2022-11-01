@@ -10,26 +10,26 @@ import { useI18n } from '@renderer/context/I18nContext';
 
 const getCarouselSlider = (t: TFunction): ReactNode[] => [
   <>
-    <img src={SlideOne} alt={t('onboarding.paritysigner.sliderLabel1')} width={500} height={384} />
+    <img src={SlideOne} alt={t('onboarding.paritySigner.sliderLabel1')} width={500} height={384} />
     <div className="flex items-center justify-center h-15 px-5">
       <h2 className="text-neutral-variant text-center">
-        <Trans t={t} i18nKey="onboarding.paritysigner.sliderLabel1" />
+        <Trans t={t} i18nKey="onboarding.paritySigner.sliderLabel1" />
       </h2>
     </div>
   </>,
   <>
-    <img src={SlideTwo} alt={t('onboarding.paritysigner.sliderLabel2')} width={500} height={384} />
+    <img src={SlideTwo} alt={t('onboarding.paritySigner.sliderLabel2')} width={500} height={384} />
     <div className="flex items-center justify-center h-15 px-5">
       <h2 className="text-neutral-variant text-center">
-        <Trans t={t} i18nKey="onboarding.paritysigner.sliderLabel2" />
+        <Trans t={t} i18nKey="onboarding.paritySigner.sliderLabel2" />
       </h2>
     </div>
   </>,
   <>
-    <img src={SlideThree} alt={t('onboarding.paritysigner.sliderLabel3')} width={500} height={384} />
+    <img src={SlideThree} alt={t('onboarding.paritySigner.sliderLabel3')} width={500} height={384} />
     <div className="flex items-center justify-center h-15 px-5">
       <h2 className="text-neutral-variant text-center">
-        <Trans t={t} i18nKey="onboarding.paritysigner.sliderLabel3" />
+        <Trans t={t} i18nKey="onboarding.paritySigner.sliderLabel3" />
       </h2>
     </div>
   </>,
@@ -57,11 +57,11 @@ const StepOne = ({ onNextStep }: Props) => {
       </div>
       <div className="flex flex-col justify-center items-center flex-1 py-5 shadow-surface rounded-2lg bg-white overflow-hidden">
         <div className="relative flex items-center justify-center bg-white w-full h-full">
-          <Icon className="absolute text-shade-10" as="svg" name="qrSimple" size={70} />
-          <Icon className="absolute text-shade-10" as="svg" name="qrFrame" size={250} />
+          <Icon className="absolute text-shade-10" name="qrSimple" size={70} />
+          <Icon className="absolute text-shade-10" name="qrFrame" size={250} />
         </div>
         <Button className="w-max" weight="lg" variant="fill" pallet="primary" onClick={onNextStep}>
-          {t('onboarding.paritysigner.scanQRFromParitySignerButton')}
+          {t('onboarding.paritySigner.scanQRFromParitySignerButton')}
         </Button>
       </div>
     </div>

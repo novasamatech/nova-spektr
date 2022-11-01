@@ -23,6 +23,7 @@ junit.xml
 .swc
 .vscode
 .idea
+/.nova
 
 npm-debug.log*
 yarn-debug.log*

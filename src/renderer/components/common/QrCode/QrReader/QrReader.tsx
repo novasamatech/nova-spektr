@@ -17,7 +17,7 @@ const enum Status {
   'NEXT_FRAME',
 }
 
-export interface QrReaderProps {
+type Props = {
   size?: number;
   cameraId?: string;
   className?: string;
@@ -26,18 +26,9 @@ export interface QrReaderProps {
   onError?: (error: ErrorObject) => void;
   onProgress?: (progress: Progress) => void;
   onCameraList?: (cameras: VideoInput[]) => void;
-}
+};
 
-const QrReader = ({
-  size = 300,
-  cameraId,
-  className,
-  onCameraList,
-  onResult,
-  onProgress,
-  onStart,
-  onError,
-}: QrReaderProps) => {
+const QrReader = ({ size = 300, cameraId, className, onCameraList, onResult, onProgress, onStart, onError }: Props) => {
   const { t } = useI18n();
 
   const videoRef = useRef<HTMLVideoElement>(null);

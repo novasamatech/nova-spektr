@@ -92,7 +92,7 @@ const AssetBalance = ({ asset, balance, canMakeActions, onTransferClick, onRecei
                 weight="lg"
                 onClick={onTransfer}
               >
-                <Icon as="svg" name="arrowUp" size={22} />
+                <Icon name="arrowUp" size={22} />
               </Button>
               <Button
                 className={cn(
@@ -104,7 +104,7 @@ const AssetBalance = ({ asset, balance, canMakeActions, onTransferClick, onRecei
                 weight="lg"
                 onClick={onReceive}
               >
-                <Icon as="svg" name="arrowDown" size={22} />
+                <Icon name="arrowDown" size={22} />
               </Button>
             </div>
           )}

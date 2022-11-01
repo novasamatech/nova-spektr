@@ -17,7 +17,7 @@ describe('screens/Onboarding/Parity', () => {
   test('should render component', () => {
     render(<Parity />, { wrapper: MemoryRouter });
 
-    const title = screen.getByRole('heading', { name: 'onboarding.paritysigner.addByParitySignerLabel' });
+    const title = screen.getByRole('heading', { name: 'onboarding.paritySigner.addByParitySignerLabel' });
     const stepOne = screen.getByText('step_1');
 
     expect(title).toBeInTheDocument();
