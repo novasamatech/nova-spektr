@@ -10,7 +10,6 @@ import { useWallet } from '@renderer/services/wallet/walletService';
 import { WalletType } from '@renderer/domain/wallet';
 import Wallets from '../Wallets/Wallets';
 import useClickOutside from '@renderer/hooks/useClickOutside';
-import { Transition } from '@headlessui/react';
 
 const CardStyle = {
   [WalletType.WATCH_ONLY]: 'bg-alert',
