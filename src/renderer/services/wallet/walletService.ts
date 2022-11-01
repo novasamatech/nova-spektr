@@ -13,13 +13,13 @@ export const useWallet = (): IWalletService => {
   const { getWallet, getWallets, addWallet, updateWallet, deleteWallet } = walletStorage;
 
   const getLiveWallets = (where?: Record<string, any>) =>
-    useLiveQuery(async (): Promise<WalletDS[]> => {
+    useLiveQuery((): Promise<WalletDS[]> => {
       try {
-        return await getWallets(where);
+        return getWallets(where);
       } catch (error) {
         console.warn('Error trying to get active wallet');
 
-        return [];
+        return Promise.resolve([]);
       }
     });
 

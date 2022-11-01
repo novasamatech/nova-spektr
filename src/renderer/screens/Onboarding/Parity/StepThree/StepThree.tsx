@@ -110,9 +110,7 @@ const StepThree = ({ qrData, onNextStep }: Props) => {
     return [...acc, getWalletId(accountIndex), ...derivedKeysIds.flat()];
   }, [] as string[]);
 
-  const activeWalletsHaveName = walletIds.every(
-    (walletId) => inactiveWallets[walletId] || !!walletNames[walletId] === !inactiveWallets[walletId],
-  );
+  const activeWalletsHaveName = walletIds.every((walletId) => inactiveWallets[walletId] || walletNames[walletId]);
 
   const saveMainAccount = async (address: string, accountIndex: number) => {
     const mainAccountId = getWalletId(accountIndex);

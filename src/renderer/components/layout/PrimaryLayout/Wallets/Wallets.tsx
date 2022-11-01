@@ -13,7 +13,7 @@ type Props = {
   className?: string;
 };
 
-const WalletTypeImages: Record<any, IconNames> = {
+const WalletTypeImages: Record<WalletType, IconNames> = {
   [WalletType.WATCH_ONLY]: 'watchOnly',
   [WalletType.PARITY]: 'paritySigner',
 };
@@ -23,7 +23,7 @@ const WalletTypeLabels = {
   [WalletType.PARITY]: 'wallets.paritySignerLabel',
 };
 
-const Wallets = forwardRef<HTMLDivElement, Props>(({ className }: Props, ref) => {
+const Wallets = forwardRef<HTMLDivElement, Props>(({ className }, ref) => {
   const { t } = useI18n();
   const { getLiveWallets, toggleActiveWallet } = useWallet();
   const paritySignerWallets = getLiveWallets({ type: WalletType.PARITY });
@@ -42,7 +42,7 @@ const Wallets = forwardRef<HTMLDivElement, Props>(({ className }: Props, ref) =>
   const searchedParitySignerWallets = searchWallet(paritySignerWallets, query);
   const searchedWatchOnlyWallets = searchWallet(watchOnlyWallets, query);
 
-  const wallets = [
+  const walletGroups = [
     {
       label: WalletTypeLabels[WalletType.PARITY],
       icon: WalletTypeImages[WalletType.PARITY],
@@ -69,7 +69,7 @@ const Wallets = forwardRef<HTMLDivElement, Props>(({ className }: Props, ref) =>
         placeholder={t('wallets.searchPlaceholder')}
       />
 
-      {wallets.map(({ label, icon, wallets, shown, toggle }) => (
+      {walletGroups.map(({ label, icon, wallets, shown, toggle }) => (
         <div
           key={label}
           className="border border-shade-5 shadow-surface rounded-2lg bg-white font-semibold text-xs divide-y"
@@ -83,9 +83,9 @@ const Wallets = forwardRef<HTMLDivElement, Props>(({ className }: Props, ref) =>
               <Icon name={shown ? 'up' : 'down'} />
             </Button>
           </div>
-          <div>
-            {shown &&
-              wallets?.map((wallet) => (
+          {shown && !!wallets.length && (
+            <div>
+              {wallets?.map((wallet) => (
                 <label
                   key={wallet.id}
                   className="flex cursor-pointer rounded-2lg hover:bg-shade-10 items-center mx-2.5 h-10"
@@ -97,17 +97,16 @@ const Wallets = forwardRef<HTMLDivElement, Props>(({ className }: Props, ref) =>
                   />
                   <div className="overflow-hidden">
                     <div className="text-neutral text-sm text-semibold leading-4">{wallet.name}</div>
-                    {/* eslint-disable i18next/no-literal-string */}
                     <Address
                       type="short"
                       addressStyle="small"
                       address={(wallet.mainAccounts[0] || wallet.chainAccounts[0]).accountId}
                     />
-                    {/* eslint-enable i18next/no-literal-string */}
                   </div>
                 </label>
               ))}
-          </div>
+            </div>
+          )}
         </div>
       ))}
     </div>
