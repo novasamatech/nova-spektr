@@ -12,6 +12,17 @@ export const useWallet = (): IWalletService => {
   }
   const { getWallet, getWallets, addWallet, updateWallet, deleteWallet } = walletStorage;
 
+  const getLiveWallets = (where?: Record<string, any>) =>
+    useLiveQuery((): Promise<WalletDS[]> => {
+      try {
+        return getWallets(where);
+      } catch (error) {
+        console.warn('Error trying to get active wallet');
+
+        return Promise.resolve([]);
+      }
+    });
+
   const getActiveWallets = () =>
     useLiveQuery(async (): Promise<WalletDS[]> => {
       try {
@@ -26,11 +37,11 @@ export const useWallet = (): IWalletService => {
     });
 
   // TODO: in future implement setWalletInactive
-  const setActiveWallet = async (walletId: IndexableType): Promise<void> => {
+  const toggleActiveWallet = async (walletId: IndexableType): Promise<void> => {
     try {
       const newActiveWallet = await getWallet(walletId);
       if (newActiveWallet) {
-        await updateWallet({ ...newActiveWallet, isActive: true });
+        await updateWallet({ ...newActiveWallet, isActive: !newActiveWallet.isActive });
       } else {
         console.warn('Could not find wallet with such id');
       }
@@ -42,8 +53,9 @@ export const useWallet = (): IWalletService => {
   return {
     getWallet,
     getWallets,
+    getLiveWallets,
     getActiveWallets,
-    setActiveWallet,
+    toggleActiveWallet,
     addWallet,
     updateWallet,
     deleteWallet,

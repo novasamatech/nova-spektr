@@ -35,8 +35,8 @@ describe('service/walletService', () => {
       }),
     });
 
-    const { setActiveWallet } = useWallet();
-    await setActiveWallet('wallet_id');
+    const { toggleActiveWallet } = useWallet();
+    await toggleActiveWallet('wallet_id');
 
     expect(walletsDb[0].isActive).toEqual(true);
   });

@@ -32,6 +32,8 @@ jest.mock('@renderer/services/wallet/walletService', () => ({
   }),
 }));
 
+jest.mock('../Wallets/Wallets', () => () => 'wallets-mock');
+
 describe('layout/PrimaryLayout/Navigation', () => {
   afterEach(() => {
     jest.clearAllMocks();

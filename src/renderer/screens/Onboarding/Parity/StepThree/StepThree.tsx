@@ -33,7 +33,7 @@ const StepThree = ({ qrData, onNextStep }: Props) => {
   const { getChainsData, sortChains } = useChains();
   const [isAccountsModalOpen, toggleAccountsModal] = useToggle();
   const [isQrModalOpen, toggleQrModal] = useToggle();
-  const { addWallet, setActiveWallet } = useWallet();
+  const { addWallet, toggleActiveWallet } = useWallet();
 
   const [chains, setChains] = useState<Chain[]>([]);
   const [chainsObject, setChainsObject] = useState<Record<string, Chain>>({});
@@ -136,7 +136,7 @@ const StepThree = ({ qrData, onNextStep }: Props) => {
     return [...acc, getWalletId(accountIndex), ...derivedKeysIds.flat()];
   }, [] as string[]);
 
-  const activeWalletsHaveName = walletIds.every((walletId) => !!walletNames[walletId] === !inactiveWallets[walletId]);
+  const activeWalletsHaveName = walletIds.every((walletId) => inactiveWallets[walletId] || walletNames[walletId]);
 
   const saveMainAccount = async (address: string, accountIndex: number) => {
     const mainAccountId = getWalletId(accountIndex);
@@ -155,7 +155,7 @@ const StepThree = ({ qrData, onNextStep }: Props) => {
 
     const mainWalletId = await addWallet(wallet);
 
-    setActiveWallet(mainWalletId);
+    toggleActiveWallet(mainWalletId);
 
     return mainWalletId;
   };

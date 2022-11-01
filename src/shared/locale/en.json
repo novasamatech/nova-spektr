@@ -207,6 +207,11 @@
   "transfers": {
     "title": "Transfers"
   },
+  "wallets": {
+    "paritySignerLabel": "Parity Signer",
+    "searchPlaceholder": "Search for a wallet",
+    "watchOnlyLabel": "Watch-only"
+  },
   "welcome": {
     "addLedgerButton": "Coming soon",
     "addLedgerComingSoonLabel": "Add Ledger wallet (coming soon)",
