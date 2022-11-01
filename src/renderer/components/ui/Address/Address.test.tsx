@@ -15,7 +15,7 @@ describe('ui/Address', () => {
   test('should render short component', () => {
     render(<Address type="short" address={address} />);
 
-    const elipsis = screen.getByText('15UHvP...GPM3p9')
+    const elipsis = screen.getByText('15UHvP...GPM3p9');
     expect(elipsis).toBeInTheDocument();
   });
 });
