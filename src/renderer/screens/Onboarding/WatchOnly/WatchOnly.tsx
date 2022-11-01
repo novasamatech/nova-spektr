@@ -36,7 +36,7 @@ const WatchOnly = () => {
   });
 
   const { getChainsData, sortChains } = useChains();
-  const { addWallet, setActiveWallet } = useWallet();
+  const { addWallet, toggleActiveWallet } = useWallet();
   const [isModalOpen, toggleModal] = useToggle();
 
   const [chains, setChains] = useState<Chain[]>([]);
@@ -73,7 +73,7 @@ const WatchOnly = () => {
 
     const walletId = await addWallet(newWallet);
 
-    await setActiveWallet(walletId);
+    await toggleActiveWallet(walletId);
     setIsCompleted(true);
   };
 

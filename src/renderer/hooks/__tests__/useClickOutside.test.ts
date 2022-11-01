@@ -34,7 +34,7 @@ describe('hooks/useClickOutside', () => {
     ref.setAttribute('id', 'refId');
     document.body.appendChild(ref);
 
-    const { unmount } = renderHook(() => useClickOutside({ current: ref }, handler));
+    const { unmount } = renderHook(() => useClickOutside([{ current: ref }], handler));
 
     expect(document.addEventListener).toBeCalled();
     fireDocumentEvent.mouseDown(document.body);
@@ -51,7 +51,7 @@ describe('hooks/useClickOutside', () => {
     ref.setAttribute('id', 'refId');
     document.body.appendChild(ref);
 
-    renderHook(() => useClickOutside({ current: ref }, handler));
+    renderHook(() => useClickOutside([{ current: ref }], handler));
     fireDocumentEvent.mouseDown(ref);
     expect(handler).not.toBeCalled();
   });
@@ -64,7 +64,7 @@ describe('hooks/useClickOutside', () => {
     ref.setAttribute('id', 'refId');
     document.body.appendChild(ref);
 
-    renderHook(() => useClickOutside({ current: null }, handler));
+    renderHook(() => useClickOutside([{ current: null }], handler));
     fireDocumentEvent.mouseDown(document.body);
     expect(handler).not.toBeCalled();
   });

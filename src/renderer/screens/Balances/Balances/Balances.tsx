@@ -40,7 +40,7 @@ const Balances = () => {
   useEffect(() => {
     if (!activeWallets || activeWallets.length === 0) return;
 
-    const activePublicKey = activeWallets[0].mainAccounts[0].publicKey;
+    const activePublicKey = (activeWallets[0].mainAccounts[0] || activeWallets[0].chainAccounts[0]).publicKey;
     setPublicKey(activePublicKey);
   }, [activeWallets]);
 

@@ -25,7 +25,6 @@ export type Wallet = MultisigWallet;
 export const enum WalletType {
   WATCH_ONLY,
   PARITY,
-  LEDGER,
 }
 
 export function isMultisig(wallet?: Wallet): boolean {
