@@ -22,7 +22,6 @@ interface Props extends HTMLAttributes<HTMLSpanElement> {
 
 const Address = ({ address, className, size = 16, addressStyle = 'normal', type = 'full' }: Props) => {
   const theme = 'polkadot';
-
   const addressToShow = type === 'short' ? getShortAddress(address) : address;
 
   if (['short', 'full'].includes(type)) {
