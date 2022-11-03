@@ -45,6 +45,7 @@
     "pnpm": ">=7.x"
   },
   "dependencies": {
+    "@apollo/client": "^3.7.1",
     "@headlessui/react": "^1.6.5",
     "@matrix-org/olm": "https://gitlab.matrix.org/api/v4/projects/27/packages/npm/@matrix-org/olm/-/@matrix-org/olm-3.2.12.tgz",
     "@polkadot/api": "^9.6.1",
@@ -66,6 +67,7 @@
     "date-fns": "^2.29.2",
     "dexie": "^3.2.2",
     "dexie-react-hooks": "^1.1.1",
+    "graphql": "^16.6.0",
     "i18next": "^21.8.13",
     "lodash": "^4.17.21",
     "matrix-js-sdk": "^19.0.0",
@@ -131,6 +133,7 @@
     "eslint": "^8.19.0",
     "eslint-config-prettier": "^8.5.0",
     "eslint-import-resolver-alias": "^1.1.2",
+    "eslint-plugin-graphql": "^4.0.0",
     "eslint-plugin-i18n-json": "^4.0.0",
     "eslint-plugin-i18next": "6.0.0-2",
     "eslint-plugin-import": "^2.26.0",

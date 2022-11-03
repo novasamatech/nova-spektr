@@ -31,7 +31,7 @@ module.exports = {
     tsconfigRootDir: __dirname,
     createDefaultProgram: true,
   },
-  plugins: ['@typescript-eslint', 'prettier', 'testing-library', 'import', 'jest-dom'],
+  plugins: ['@typescript-eslint', 'graphql', 'prettier', 'testing-library', 'import', 'jest-dom'],
   settings: {
     'import/resolver': {
       alias: {
