@@ -60,7 +60,6 @@ const ParitySignerQrReader = ({ size = 300, className, onResult }: Props) => {
   // FIXME: camera is blocked after 3 denies (that's intended browser reaction)
   // Set attempts counter and show special notification
   const onRetryCamera = () => {
-    setProgress({ decoded: 0, total: 0 });
     setCameraState(CameraState.LOADING);
   };
 
@@ -93,6 +92,7 @@ const ParitySignerQrReader = ({ size = 300, className, onResult }: Props) => {
     }
 
     setActiveCamera(undefined);
+    setProgress({ decoded: 0, total: 0 });
   };
 
   if (isCameraError) {
@@ -145,13 +145,7 @@ const ParitySignerQrReader = ({ size = 300, className, onResult }: Props) => {
           </Button>
         )}
         {cameraState === CameraState.INVALID_ERROR && (
-          <Button
-            className="w-max mb-5"
-            weight="lg"
-            variant="fill"
-            pallet="primary"
-            onClick={() => setCameraState(CameraState.ACTIVE)}
-          >
+          <Button className="w-max mb-5" weight="lg" variant="fill" pallet="primary" onClick={onRetryCamera}>
             {t('onboarding.paritySigner.scanAgainButton')}
           </Button>
         )}
