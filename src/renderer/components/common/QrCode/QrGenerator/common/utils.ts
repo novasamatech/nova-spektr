@@ -1,6 +1,7 @@
 import { u8aConcat, u8aToU8a } from '@polkadot/util';
 import { decodeAddress } from '@polkadot/util-crypto';
 import qrcode from 'qrcode-generator';
+import { Encoder } from 'raptorq';
 
 import { CRYPTO_SR25519, FRAME_SIZE, SUBSTRATE_ID } from './constants';
 
@@ -42,17 +43,25 @@ export const createSignPayload = (
     u8aToU8a(genesisHash),
   );
 
-export const createFrames = (input: Uint8Array): Uint8Array[] => {
-  const frames = [];
-  let idx = 0;
+export const createFrames = (input: Uint8Array, encoder?: Encoder): Uint8Array[] => {
+  if (encoder) {
+    // raptorq encoder https://paritytech.github.io/parity-signer/development/UOS.html#raptorq-multipart-payload
+    let res = encoder.encode_with_packet_size(Math.trunc(input.length / 128));
 
-  while (idx < input.length) {
-    frames.push(input.subarray(idx, idx + FRAME_SIZE));
+    return res;
+  } else {
+    // legacy encoder https://paritytech.github.io/parity-signer/development/UOS.html#legacy-multipart-payload
+    const frames = [];
+    let idx = 0;
 
-    idx += FRAME_SIZE;
+    while (idx < input.length) {
+      frames.push(input.subarray(idx, idx + FRAME_SIZE));
+
+      idx += FRAME_SIZE;
+    }
+
+    return frames.map(
+      (frame, index): Uint8Array => u8aConcat(MULTIPART, encodeNumber(frames.length), encodeNumber(index), frame),
+    );
   }
-
-  return frames.map(
-    (frame, index): Uint8Array => u8aConcat(MULTIPART, encodeNumber(frames.length), encodeNumber(index), frame),
-  );
 };

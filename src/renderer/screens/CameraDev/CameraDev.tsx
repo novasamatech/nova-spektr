@@ -1,20 +1,32 @@
 import { signatureVerify } from '@polkadot/util-crypto';
 import { useRef, useState } from 'react';
+import init, { Encoder } from 'raptorq';
 
-import { QrReader, QrTxGenerator } from '@renderer/components/common';
+import { QrReader, QrTextGenerator, QrTxGenerator } from '@renderer/components/common';
 import { Command } from '@renderer/components/common/QrCode/QrGenerator/common/constants';
 import { VideoInput } from '@renderer/components/common/QrCode/QrReader/common/types';
 import { Button, Input } from '@renderer/components/ui';
+import { EXPORT_ADDRESS } from '@renderer/components/common/QrCode/QrReader/common/constants';
 
 const CameraDev = () => {
   const inputRef = useRef<HTMLInputElement>(null);
   const [payload, setPayload] = useState<Uint8Array | string>();
+  const [scannedData, setScannedData] = useState<Uint8Array>();
+  const [encoder, setEncoder] = useState<Encoder>();
 
   const [availableCameras, setAvailableCameras] = useState<VideoInput[]>([]);
   const [activeCameraId, setActiveCameraId] = useState('');
 
   const onSetPayload = () => {
     setPayload('<Bytes>hello test this is my message</Bytes>');
+  };
+
+  const onScannedData = (scannedData: Uint8Array) => {
+    setScannedData(scannedData);
+  };
+
+  const onEncoder = (encoder: Encoder) => {
+    setEncoder(encoder);
   };
 
   const onCheckSignature = () => {
@@ -60,10 +72,23 @@ const CameraDev = () => {
             <QrReader
               cameraId={activeCameraId}
               onCameraList={(cameras) => setAvailableCameras(cameras)}
-              onResult={(data) => console.info(data)}
+              onResult={(data) => {
+                console.info(data);
+                let bytes: Uint8Array = EXPORT_ADDRESS.encode({ ExportAddrs: 'V1', payload: data });
+                let bytes_standard = Uint8Array.of(0x53, 0xff, 0xde, ...bytes);
+                init().then(() => {
+                  let encoder = Encoder.with_defaults(bytes_standard, 128);
+                  onScannedData(bytes_standard);
+                  onEncoder(encoder);
+                });
+              }}
               onStart={() => console.info('start camera')}
               onError={(error) => console.warn(error)}
             />
+          </div>
+          <div className="flex justify-between">
+            <span>The same data that was just scanned</span>
+            {scannedData && encoder && <QrTextGenerator payload={scannedData} encoder={encoder} />}
           </div>
         </div>
         <div>
