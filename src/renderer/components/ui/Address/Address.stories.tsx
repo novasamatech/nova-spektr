@@ -18,5 +18,5 @@ Primary.args = {
 export const Full = Template.bind({});
 Full.args = {
   address: '5F3sa2TJAWMqDhXG6jhV4N8ko9SxwGy8TpaNS1repo5EYjQX',
-  full: true,
+  type: 'full',
 };
