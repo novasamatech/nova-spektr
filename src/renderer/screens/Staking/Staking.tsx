@@ -39,7 +39,7 @@ const Staking = () => {
     },
   });
 
-  console.log(data);
+  console.log('SubQuery data ==> ', data);
 
   const getEra = async () => {
     // Gets data about epoch and era
