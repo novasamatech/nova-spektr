@@ -1,24 +1,52 @@
 import { signatureVerify } from '@polkadot/util-crypto';
 import { useRef, useState } from 'react';
 import init, { Encoder } from 'raptorq';
+import { stringToU8a, u8aConcat } from '@polkadot/util';
 
-import { QrReader, QrTextGenerator, QrTxGenerator } from '@renderer/components/common';
+import { QrReader, QrTxGenerator } from '@renderer/components/common';
 import { Command } from '@renderer/components/common/QrCode/QrGenerator/common/constants';
 import { VideoInput } from '@renderer/components/common/QrCode/QrReader/common/types';
 import { Button, Input } from '@renderer/components/ui';
-import { EXPORT_ADDRESS } from '@renderer/components/common/QrCode/QrReader/common/constants';
+import { EXPORT_ADDRESS, TRANSACTION_BULK } from '@renderer/components/common/QrCode/QrReader/common/constants';
+import QrMultiframeGenerator from '@renderer/components/common/QrCode/QrGenerator/QrMultiframeGenerator';
 
 const CameraDev = () => {
   const inputRef = useRef<HTMLInputElement>(null);
   const [payload, setPayload] = useState<Uint8Array | string>();
   const [scannedData, setScannedData] = useState<Uint8Array>();
   const [encoder, setEncoder] = useState<Encoder>();
+  const [multipleTransactions, setMultipleTransaction] = useState<Uint8Array>();
 
   const [availableCameras, setAvailableCameras] = useState<VideoInput[]>([]);
   const [activeCameraId, setActiveCameraId] = useState('');
 
   const onSetPayload = () => {
     setPayload('<Bytes>hello test this is my message</Bytes>');
+  };
+
+  const onSetMultipleTransactions = () => {
+    let transactions = [
+      Uint8Array.of(0x53, 0xff, 0xde), // UOS prefix
+      stringToU8a('0x0400007a28037947ecebe0dd86dc0e910911cb33185fd0714b37b75943f67dcf9b6e7c0700e40b5402'), //transfer in westend
+      stringToU8a('0x0400007a28037947ecebe0dd86dc0e910911cb33185fd0714b37b75943f67dcf9b6e7c02286bee'), //transfer in westend
+      stringToU8a('0x0400007a28037947ecebe0dd86dc0e910911cb33185fd0714b37b75943f67dcf9b6e7c0284d717'), //transfer in westend
+      stringToU8a('0x0400007a28037947ecebe0dd86dc0e910911cb33185fd0714b37b75943f67dcf9b6e7c0700e8764817'), //transfer in westend
+      stringToU8a('0x0400007a28037947ecebe0dd86dc0e910911cb33185fd0714b37b75943f67dcf9b6e7c0b00407a10f35a'), //transfer in westend
+      stringToU8a('0x0400007a28037947ecebe0dd86dc0e910911cb33185fd0714b37b75943f67dcf9b6e7c0f0000c16ff28623'), //transfer in westend
+      stringToU8a('0x0400007a28037947ecebe0dd86dc0e910911cb33185fd0714b37b75943f67dcf9b6e7c8dc0'), //transfer in westend
+      stringToU8a('0x0400007a28037947ecebe0dd86dc0e910911cb33185fd0714b37b75943f67dcf9b6e7cee27f002'), //transfer in westend
+      stringToU8a('0x0400007a28037947ecebe0dd86dc0e910911cb33185fd0714b37b75943f67dcf9b6e7c0760fd86de02'), //transfer in westend
+      stringToU8a('0x0400007a28037947ecebe0dd86dc0e910911cb33185fd0714b37b75943f67dcf9b6e7c0be8bf4d3f350b'), //transfer in westend
+    ];
+    let encodedData = u8aConcat(
+      Uint8Array.of(0x53, 0xff, 0xde),
+      TRANSACTION_BULK.encode({ TransactionBulk: 'V1', payload: transactions }),
+    );
+    setMultipleTransaction(encodedData);
+    init().then(() => {
+      let encoder = Encoder.with_defaults(encodedData, 128);
+      onEncoder(encoder);
+    });
   };
 
   const onScannedData = (scannedData: Uint8Array) => {
@@ -88,7 +116,7 @@ const CameraDev = () => {
           </div>
           <div className="flex justify-between">
             <span>The same data that was just scanned</span>
-            {scannedData && encoder && <QrTextGenerator payload={scannedData} encoder={encoder} />}
+            {scannedData && encoder && <QrMultiframeGenerator payload={scannedData} encoder={encoder} />}
           </div>
         </div>
         <div>
@@ -110,6 +138,17 @@ const CameraDev = () => {
               payload={payload}
               size={200}
             />
+          )}
+        </div>
+
+        <div>
+          <div className="flex justify-between">
+            <Button weight="lg" variant="fill" pallet="primary" onClick={onSetMultipleTransactions}>
+              Create multiple transaction signature
+            </Button>
+          </div>
+          {multipleTransactions && encoder && (
+            <QrMultiframeGenerator payload={multipleTransactions} size={200} encoder={encoder} />
           )}
         </div>
       </div>

@@ -1,4 +1,4 @@
-import { array, Codec, object, option, sizedUint8Array, str, taggedUnion, u8 } from 'parity-scale-codec';
+import { array, Codec, object, option, sizedUint8Array, str, taggedUnion, u8, uint8Array } from 'parity-scale-codec';
 
 import { CryptoType, CryptoTypeString } from '@renderer/domain/shared-kernel';
 import { SeedInfo, AddressInfo } from './types';
@@ -31,3 +31,5 @@ const SEED_INFO: Codec<SeedInfo> = object(
 
 // Export address format for decoding; Rust enum is a tagged union
 export const EXPORT_ADDRESS = taggedUnion('ExportAddrs', [['V1', ['payload', array(SEED_INFO)]]]);
+
+export const TRANSACTION_BULK = taggedUnion('TransactionBulk', [['V1', ['payload', array(uint8Array)]]]);
