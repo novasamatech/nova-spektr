@@ -48,6 +48,7 @@
     "historyLabel": "History",
     "mstOperationLabel": "Multisig Operations",
     "settingsLabel": "Settings",
+    "stakingLabel": "Staking",
     "transfersLabel": "Transfer",
     "unknownWalletLabel": "Unknown wallet",
     "walletsLabel": "Wallets"
@@ -204,8 +205,8 @@
     "networkLabel": "Network",
     "title": "Settings"
   },
-  "transfers": {
-    "title": "Transfers"
+  "staking": {
+    "title": "Staking"
   },
   "wallets": {
     "paritySignerLabel": "Parity Signer",
