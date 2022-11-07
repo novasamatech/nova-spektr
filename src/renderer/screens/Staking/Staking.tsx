@@ -1,3 +1,4 @@
+/* eslint-disable i18next/no-literal-string */
 import { useQuery } from '@apollo/client';
 import { ApiPromise } from '@polkadot/api';
 import {
