@@ -17,7 +17,7 @@ const Paths = {
   HISTORY: '/history',
   MULTISIG: '/multisig',
   BALANCES: '/balances',
-  TRANSFER: '/transfer',
+  STAKING: '/staking',
 
   // DEV
   CHAT_DEV: '/chat-dev',

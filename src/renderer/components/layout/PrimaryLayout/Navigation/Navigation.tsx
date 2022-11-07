@@ -2,22 +2,23 @@ import cn from 'classnames';
 import { useRef, useState } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
 
+import Paths from '@renderer/routes/paths';
 import { Button, Icon, Identicon } from '@renderer/components/ui';
 import { useMatrix } from '@renderer/context/MatrixContext';
-import Paths from '@renderer/routes/paths';
 import { useI18n } from '@renderer/context/I18nContext';
 import { useWallet } from '@renderer/services/wallet/walletService';
 import { WalletType } from '@renderer/domain/wallet';
 import Wallets from '../Wallets/Wallets';
 import useClickOutside from '@renderer/hooks/useClickOutside';
 
-const CardStyle = {
+const CardStyle: Record<WalletType, string> = {
   [WalletType.WATCH_ONLY]: 'bg-alert',
   [WalletType.PARITY]: 'bg-primary',
 };
 
 const NavItems = [
   { icon: <Icon name="balance" />, title: 'navigation.balancesLabel', link: Paths.BALANCES },
+  { icon: <Icon name="staking" />, title: 'navigation.stakingLabel', link: Paths.STAKING },
   // { icon: <Icon name="history" />, title: 'navigation.historyLabel', link: Paths.HISTORY },
   // { icon: <Icon name="operations" />, title: 'navigation.mstOperationLabel', link: Paths.MULTISIG },
   // { icon: <Icon name="book" />, title: 'navigation.addressBookLabel', link: Paths.ADDRESS_BOOK },

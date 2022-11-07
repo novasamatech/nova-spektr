@@ -1,28 +1,25 @@
 import { Listbox, Transition } from '@headlessui/react';
 import cn from 'classnames';
-import { Fragment, ReactNode } from 'react';
+import { Fragment } from 'react';
 
 import { Icon } from '@renderer/components/ui';
+import { ViewClass } from './common/constants';
+import { OptionType, Variant } from './common/types';
 
 // TODO: lg - 10px - x 14px - y
 // TODO: md - 10px - x 12px - y
 // currently uses ** md ** weight
-
-export type OptionType = {
-  prefix?: ReactNode;
-  label: string;
-  value: any;
-};
 
 type Props = {
   className?: string;
   placeholder: string;
   selected?: OptionType;
   options: OptionType[];
+  variant?: Variant;
   onSelected: (data: OptionType) => void;
 };
 
-const Dropdown = ({ className, placeholder, selected, options, onSelected }: Props) => (
+const Dropdown = ({ className, placeholder, selected, options, variant = 'down', onSelected }: Props) => (
   <Listbox value={selected} onChange={onSelected}>
     {({ open }) => (
       <div className={cn('relative', className)}>
@@ -64,8 +61,11 @@ const Dropdown = ({ className, placeholder, selected, options, onSelected }: Pro
         </Listbox.Button>
         <Transition as={Fragment} leave="transition" leaveFrom="opacity-100" leaveTo="opacity-0">
           <Listbox.Options
-            className="absolute bottom-10.5 mb-2.5 py-2.5 max-h-60 w-full overflow-auto border
-            border-primary rounded-2lg bg-white shadow-surface focus:outline-none"
+            className={cn(
+              'absolute top-10.5 mt-2.5 py-2.5 max-h-60 w-full overflow-auto',
+              'border border-primary rounded-2lg bg-white shadow-surface focus:outline-none',
+              variant !== 'auto' && ViewClass[variant],
+            )}
           >
             {options.map((option, index) => (
               <Listbox.Option

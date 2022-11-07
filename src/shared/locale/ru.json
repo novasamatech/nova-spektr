@@ -48,6 +48,7 @@
     "historyLabel": "История",
     "mstOperationLabel": "Мульти-Операции",
     "settingsLabel": "Настройки",
+    "stakingLabel": "Стейкинг",
     "transfersLabel": "Отправить",
     "unknownWalletLabel": "Unknown wallet",
     "walletsLabel": "Кошельки"
@@ -204,8 +205,8 @@
     "networkLabel": "Сети",
     "title": "Настройки"
   },
-  "transfers": {
-    "title": "Переводы"
+  "staking": {
+    "title": "Стейкинг"
   },
   "wallets": {
     "paritySignerLabel": "Parity Signer",

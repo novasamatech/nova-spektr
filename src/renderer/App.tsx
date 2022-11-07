@@ -1,7 +1,9 @@
+import { ApolloProvider } from '@apollo/client';
 import { useNavigate, useRoutes } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import { ErrorBoundary } from 'react-error-boundary';
 
+import createApolloClient from '@renderer/graphql';
 import { FallbackScreen, SplashScreen } from '@renderer/components/common';
 import I18Provider from '@renderer/context/I18nContext';
 import MatrixProvider from '@renderer/context/MatrixContext';
@@ -42,11 +44,13 @@ const App = () => {
   return (
     <I18Provider>
       <ErrorBoundary FallbackComponent={FallbackScreen} onError={console.error}>
-        <NetworkProvider>
-          <ConfirmContext>
-            <MatrixProvider onAutoLoginFail={onAutoLoginFail}>{appRoutes}</MatrixProvider>
-          </ConfirmContext>
-        </NetworkProvider>
+        <ApolloProvider client={createApolloClient()}>
+          <NetworkProvider>
+            <ConfirmContext>
+              <MatrixProvider onAutoLoginFail={onAutoLoginFail}>{appRoutes}</MatrixProvider>
+            </ConfirmContext>
+          </NetworkProvider>
+        </ApolloProvider>
       </ErrorBoundary>
     </I18Provider>
   );
