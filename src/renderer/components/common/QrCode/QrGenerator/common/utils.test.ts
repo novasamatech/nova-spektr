@@ -12,13 +12,21 @@ describe('QrCode/QrGenerator/utils', () => {
   });
 
   test('should encodes a payload properly', () => {
+    console.log(
+      createSignPayload(
+        '5Dc1tzx4QDEDXetr98Mk4RjKSMFJiLBqr2Gmco7rjz8YfwMP',
+        3,
+        'This is test',
+        '0xe143f23803ac50e8f6f8e62695d1ce9e4e1d68aa36c1cd2cfd15340213f3423e',
+      ),
+    );
     expect(
       u8aToHex(
         createSignPayload(
-          '5HbgaJEuVN5qGbkhgtuDQANivSWwHXWsC2erP1SQUXgciTVq',
+          '5Dc1tzx4QDEDXetr98Mk4RjKSMFJiLBqr2Gmco7rjz8YfwMP',
           3,
           'This is test',
-          '0xb0a8d493285c2df73290dfb7e61f870f17b41801197a149ca93654499ea3dafe',
+          '0xe143f23803ac50e8f6f8e62695d1ce9e4e1d68aa36c1cd2cfd15340213f3423e',
         ),
       ),
     ).toEqual(

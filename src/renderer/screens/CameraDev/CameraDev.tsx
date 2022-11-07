@@ -1,7 +1,9 @@
 import { signatureVerify } from '@polkadot/util-crypto';
 import { useRef, useState } from 'react';
 import init, { Encoder } from 'raptorq';
-import { stringToU8a, u8aConcat } from '@polkadot/util';
+import { hexToU8a, stringToU8a, u8aConcat, u8aToHex } from '@polkadot/util';
+import { methods } from '@substrate/txwrapper-polkadot';
+import { info } from 'autoprefixer';
 
 import { QrReader, QrTxGenerator } from '@renderer/components/common';
 import { Command } from '@renderer/components/common/QrCode/QrGenerator/common/constants';
@@ -9,6 +11,12 @@ import { VideoInput } from '@renderer/components/common/QrCode/QrReader/common/t
 import { Button, Input } from '@renderer/components/ui';
 import { EXPORT_ADDRESS, TRANSACTION_BULK } from '@renderer/components/common/QrCode/QrReader/common/constants';
 import QrMultiframeGenerator from '@renderer/components/common/QrCode/QrGenerator/QrMultiframeGenerator';
+import { formatAmount } from '@renderer/services/balance/common/utils';
+import {
+  createMultipleTransactionSignedPayload,
+  createSignPayload,
+  createSignPayloadForMultipleTransactionSigning,
+} from '@renderer/components/common/QrCode/QrGenerator/common/utils';
 
 const CameraDev = () => {
   const inputRef = useRef<HTMLInputElement>(null);
@@ -26,25 +34,21 @@ const CameraDev = () => {
 
   const onSetMultipleTransactions = () => {
     let transactions = [
-      Uint8Array.of(0x53, 0xff, 0xde), // UOS prefix
-      stringToU8a('0x0400007a28037947ecebe0dd86dc0e910911cb33185fd0714b37b75943f67dcf9b6e7c0700e40b5402'), //transfer in westend
-      stringToU8a('0x0400007a28037947ecebe0dd86dc0e910911cb33185fd0714b37b75943f67dcf9b6e7c02286bee'), //transfer in westend
-      stringToU8a('0x0400007a28037947ecebe0dd86dc0e910911cb33185fd0714b37b75943f67dcf9b6e7c0284d717'), //transfer in westend
-      stringToU8a('0x0400007a28037947ecebe0dd86dc0e910911cb33185fd0714b37b75943f67dcf9b6e7c0700e8764817'), //transfer in westend
-      stringToU8a('0x0400007a28037947ecebe0dd86dc0e910911cb33185fd0714b37b75943f67dcf9b6e7c0b00407a10f35a'), //transfer in westend
-      stringToU8a('0x0400007a28037947ecebe0dd86dc0e910911cb33185fd0714b37b75943f67dcf9b6e7c0f0000c16ff28623'), //transfer in westend
-      stringToU8a('0x0400007a28037947ecebe0dd86dc0e910911cb33185fd0714b37b75943f67dcf9b6e7c8dc0'), //transfer in westend
-      stringToU8a('0x0400007a28037947ecebe0dd86dc0e910911cb33185fd0714b37b75943f67dcf9b6e7cee27f002'), //transfer in westend
-      stringToU8a('0x0400007a28037947ecebe0dd86dc0e910911cb33185fd0714b37b75943f67dcf9b6e7c0760fd86de02'), //transfer in westend
-      stringToU8a('0x0400007a28037947ecebe0dd86dc0e910911cb33185fd0714b37b75943f67dcf9b6e7c0be8bf4d3f350b'), //transfer in westend
+      createSignPayloadForMultipleTransactionSigning(
+        '5Dc1tzx4QDEDXetr98Mk4RjKSMFJiLBqr2Gmco7rjz8YfwMP',
+        Command.Transaction,
+        '0x0403007a28037947ecebe0dd86dc0e910911cb33185fd0714b37b75943f67dcf9b6e7c02286bee',
+        '0xe143f23803ac50e8f6f8e62695d1ce9e4e1d68aa36c1cd2cfd15340213f3423e',
+      ),
+      new Uint8Array(),
     ];
-    let encodedData = u8aConcat(
-      Uint8Array.of(0x53, 0xff, 0xde),
-      TRANSACTION_BULK.encode({ TransactionBulk: 'V1', payload: transactions }),
-    );
-    setMultipleTransaction(encodedData);
+
+    let transactionsEncoded = u8aConcat(TRANSACTION_BULK.encode({ TransactionBulk: 'V1', payload: transactions }));
+    let bulk = createMultipleTransactionSignedPayload(transactionsEncoded);
+    console.log(bulk);
+    setMultipleTransaction(bulk);
     init().then(() => {
-      let encoder = Encoder.with_defaults(encodedData, 128);
+      let encoder = Encoder.with_defaults(bulk, 128);
       onEncoder(encoder);
     });
   };
