@@ -18,9 +18,9 @@ const CardStyle = {
 
 const NavItems = [
   { icon: <Icon name="balance" />, title: 'navigation.balancesLabel', link: Paths.BALANCES },
-  { icon: <Icon name="history" />, title: 'navigation.historyLabel', link: Paths.HISTORY },
-  { icon: <Icon name="operations" />, title: 'navigation.mstOperationLabel', link: Paths.MULTISIG },
-  { icon: <Icon name="book" />, title: 'navigation.addressBookLabel', link: Paths.ADDRESS_BOOK },
+  // { icon: <Icon name="history" />, title: 'navigation.historyLabel', link: Paths.HISTORY },
+  // { icon: <Icon name="operations" />, title: 'navigation.mstOperationLabel', link: Paths.MULTISIG },
+  // { icon: <Icon name="book" />, title: 'navigation.addressBookLabel', link: Paths.ADDRESS_BOOK },
   // { icon: <Icon name="btc" />, title: 'navigation.chatDEVLabel', link: Paths.CHAT_DEV },
   // { icon: <Icon name="eth" />, title: 'navigation.cameraDEVLabel', link: Paths.CAMERA_DEV },
 ];
