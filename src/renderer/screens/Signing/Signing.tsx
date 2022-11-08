@@ -160,7 +160,7 @@ const Balances = () => {
                   countdown={countdown}
                   size={460}
                   onResult={(signature) => {
-                    console.log('Signature from Parity Signer', signature);
+                    console.log(signature);
                   }}
                 />
               </div>

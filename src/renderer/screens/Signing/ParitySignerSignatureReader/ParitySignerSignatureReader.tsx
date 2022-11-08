@@ -235,7 +235,9 @@ const ParitySignerSignatureReader = ({ size = 300, className, onResult, countdow
             </div>
           ) : (
             <div>
-              <p className="text-error text-xl text-center leading-6 font-semibold">{t('signing.signatureExpiredLabel')}</p>
+              <p className="text-error text-xl text-center leading-6 font-semibold">
+                {t('signing.signatureExpiredLabel')}
+              </p>
               <p className="text-neutral-variant text-center text-sm">{t('signing.signatureExpiredDescription')}</p>
             </div>
           )}
