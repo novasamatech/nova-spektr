@@ -21,5 +21,5 @@ export default {
   Staking,
   ChatDev,
   CameraDev,
-  Signing
+  Signing,
 };
