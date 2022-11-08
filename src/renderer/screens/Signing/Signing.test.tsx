@@ -1,5 +1,6 @@
 import { act, render, screen } from '@testing-library/react';
 
+import { Button, Icon } from '@renderer/components/ui';
 import { ConnectionType } from '@renderer/domain/connection';
 import { TEST_PUBLIC_KEY } from '@renderer/services/balance/common/constants';
 import Signing from './Signing';
@@ -51,6 +52,12 @@ jest.mock('@renderer/services/wallet/walletService', () => ({
 }));
 
 describe('screens/Signing', () => {
+  jest.mock('@renderer/components/ui', () => ({
+    Address: () => <div>address-mock</div>,
+    Button,
+    Icon,
+  }));
+
   test('should render component', async () => {
     render(<Signing />);
 

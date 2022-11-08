@@ -19,7 +19,7 @@ const enum Steps {
 
 const DEFAULT_QR_LIFETIME = 60;
 
-const Balances = () => {
+const Signing = () => {
   const { t } = useI18n();
 
   const { connections } = useNetworkContext();
@@ -185,4 +185,4 @@ const Balances = () => {
   );
 };
 
-export default Balances;
+export default Signing;
