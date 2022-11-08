@@ -130,7 +130,7 @@ const Signing = () => {
                 </a>
                 <a
                   className="flex items-center"
-                  href={`https://nova-wallet.github.io/metadata-portal/#/${currentConnection.name}`}
+                  href={`https://nova-wallet.github.io/metadata-portal/#/${currentConnection.chainId}`}
                   rel="noopener noreferrer"
                   target="_blank"
                 >
