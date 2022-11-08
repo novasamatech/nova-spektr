@@ -114,6 +114,7 @@ const sharedConfig: Configuration = {
       'process.env': {
         PRODUCT_NAME: JSON.stringify(APP_CONFIG.TITLE),
         VERSION: JSON.stringify(APP_CONFIG.VERSION),
+        CHAINS_FILE: JSON.stringify(process.env.CHAINS_FILE),
       },
     }),
   ],
