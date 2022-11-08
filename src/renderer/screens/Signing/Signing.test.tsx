@@ -12,6 +12,11 @@ jest.mock('@renderer/context/I18nContext', () => ({
   }),
 }));
 
+jest.mock('@renderer/components/common', () => ({
+  Explorers: () => <div>explorers-mock</div>,
+  QrTxGenerator: () => <div>qr-tx-generator-mock</div>,
+}));
+
 jest.mock('@renderer/context/NetworkContext', () => ({
   useNetworkContext: jest.fn(() => ({
     connections: {
@@ -45,7 +50,7 @@ jest.mock('@renderer/services/wallet/walletService', () => ({
   }),
 }));
 
-describe('screens/Onboarding/Parity', () => {
+describe('screens/Signing', () => {
   test('should render component', async () => {
     render(<Signing />);
 
