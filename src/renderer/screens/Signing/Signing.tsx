@@ -87,7 +87,7 @@ const Signing = () => {
                   <Icon name="paritySigner" size={32} />
                   <div>
                     <div className="font-bold text-lg text-neutral">{currentWallet.name}</div>
-                    <Address type="adaptive" address={currentAddress} addressStyle="small" />
+                    <Address type="short" address={currentAddress} addressStyle="small" />
                   </div>
                 </div>
                 <Explorers chain={currentConnection} address={currentAddress} />
@@ -130,7 +130,7 @@ const Signing = () => {
                 </a>
                 <a
                   className="flex items-center"
-                  href={'https://nova-wallet.github.io/metadata-portal/'}
+                  href={`https://nova-wallet.github.io/metadata-portal/#/${currentConnection.name}`}
                   rel="noopener noreferrer"
                   target="_blank"
                 >
