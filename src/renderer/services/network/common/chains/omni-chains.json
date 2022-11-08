@@ -1709,7 +1709,7 @@
           "existentialDeposit": "0",
           "transfersEnabled": true
         },
-        "name": "Should be included in assetsNameMap"
+        "name": "Bit.Country Pioneer"
       }
     ],
     "nodes": [
@@ -4346,7 +4346,7 @@
         "symbol": "ICZ",
         "precision": 18,
         "icon": "https://raw.githubusercontent.com/nova-wallet/nova-utils/master/icons/tokens/white/ICZ.svg",
-        "name": "Should be included in assetsNameMap"
+        "name": "Snow token"
       }
     ],
     "nodes": [
@@ -4380,7 +4380,7 @@
         "symbol": "MITO",
         "precision": 12,
         "icon": "https://raw.githubusercontent.com/nova-wallet/nova-utils/master/icons/tokens/white/MITO.svg",
-        "name": "Should be included in assetsNameMap"
+        "name": "DAO IPCI"
       }
     ],
     "nodes": [
