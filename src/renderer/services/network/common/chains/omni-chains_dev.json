@@ -22,16 +22,20 @@
     ],
     "nodes": [
       {
-        "url": "wss://polkadot-rpc.dwellir.com",
-        "name": "Dwellir node"
-      },
-      {
-        "url": "wss://rpc.polkadot.io",
-        "name": "Parity node"
-      },
-      {
         "url": "wss://polkadot.api.onfinality.io/public-ws",
         "name": "OnFinality node"
+      },
+      {
+        "url": "wss://public-rpc.pinknode.io/polkadot",
+        "name": "Pinknode node"
+      },
+      {
+        "url": "wss://polkadot.public.curie.radiumblock.io/ws",
+        "name": "Radium block node"
+      },
+      {
+        "url": "wss://1rpc.io/dot",
+        "name": "Automata 1RPC node"
       }
     ],
     "explorers": [
@@ -70,10 +74,15 @@
       "crowdloans": {
         "type": "github",
         "url": "https://raw.githubusercontent.com/nova-wallet/nova-utils/master/crowdloan/polkadot-dev.json"
+      },
+      "governance": {
+        "type": "polkassembly",
+        "url": "https://polkadot.polkassembly.io/v1/graphql"
       }
     },
     "options": [
-      "crowdloans"
+      "crowdloans",
+      "governance-v1"
     ]
   },
   {
@@ -98,20 +107,20 @@
     ],
     "nodes": [
       {
-        "url": "wss://kusama-rpc.polkadot.io",
-        "name": "Parity node"
-      },
-      {
         "url": "wss://kusama.api.onfinality.io/public-ws",
         "name": "OnFinality node"
       },
       {
-        "url": "wss://kusama-rpc.dwellir.com",
-        "name": "Dwellir node"
+        "url": "wss://kusama.public.curie.radiumblock.xyz/ws",
+        "name": "Radium block node"
       },
       {
-        "url": "wss://kusama.public.curie.radiumblock.co/ws",
-        "name": "Radium block node"
+        "url": "wss://public-rpc.pinknode.io/kusama",
+        "name": "Pinknode node"
+      },
+      {
+        "url": "wss://kusama-rpc.polkadot.io",
+        "name": "Parity node"
       }
     ],
     "explorers": [
@@ -150,10 +159,15 @@
       "crowdloans": {
         "type": "github",
         "url": "https://raw.githubusercontent.com/nova-wallet/nova-utils/master/crowdloan/kusama.json"
+      },
+      "governance": {
+        "type": "polkassembly",
+        "url": "https://kusama.polkassembly.io/v1/graphql"
       }
     },
     "options": [
-      "crowdloans"
+      "crowdloans",
+      "governance-v1"
     ]
   },
   {
@@ -213,6 +227,10 @@
       "crowdloans": {
         "type": "github",
         "url": "https://raw.githubusercontent.com/nova-wallet/nova-utils/master/crowdloan/westend.json"
+      },
+      "governance": {
+        "type": "polkassembly",
+        "url": "https://polkassembly-hasura.herokuapp.com/v1/graphql"
       }
     },
     "options": [
@@ -824,10 +842,17 @@
       "history": {
         "type": "subquery",
         "url": "https://api.subquery.network/sq/nova-wallet/nova-wallet-karura"
+      },
+      "governance": {
+        "type": "polkassembly",
+        "url": "https://polkassembly-hasura.herokuapp.com/v1/graphql"
       }
     },
     "icon": "https://raw.githubusercontent.com/nova-wallet/nova-utils/master/icons/chains/gradient/Karura.svg",
-    "addressPrefix": 8
+    "addressPrefix": 8,
+    "options": [
+      "governance-v1"
+    ]
   },
   {
     "chainId": "0x91bc6e169807aaa54802737e1c504b2577d4fafedd5a02c10293b1cd60e39527",
@@ -946,6 +971,10 @@
       "history": {
         "type": "subquery",
         "url": "https://api.subquery.network/sq/nova-wallet/nova-wallet-shiden"
+      },
+      "governance": {
+        "type": "polkassembly",
+        "url": "https://polkassembly-hasura.herokuapp.com/v1/graphql"
       }
     }
   },
@@ -1060,7 +1089,7 @@
         "type": "orml",
         "icon": "https://raw.githubusercontent.com/nova-wallet/nova-utils/master/icons/tokens/white/USDT.svg",
         "typeExtras": {
-          "currencyIdScale": "0x0700000000",
+          "currencyIdScale": "0x0800",
           "currencyIdType": "node_primitives.currency.CurrencyId",
           "existentialDeposit": "1000",
           "transfersEnabled": true
@@ -1153,7 +1182,10 @@
       }
     },
     "icon": "https://raw.githubusercontent.com/nova-wallet/nova-utils/master/icons/chains/gradient/Bifrost_Kusama.svg",
-    "addressPrefix": 6
+    "addressPrefix": 6,
+    "options": [
+      "governance-v1"
+    ]
   },
   {
     "chainId": "0x9af9a64e6e4da8e3073901c3ff0cc4c3aad9563786d89daf6ad820b6e14a0b8b",
@@ -1438,7 +1470,10 @@
       }
     },
     "icon": "https://raw.githubusercontent.com/nova-wallet/nova-utils/master/icons/chains/gradient/ParallelHeiko.svg",
-    "addressPrefix": 110
+    "addressPrefix": 110,
+    "options": [
+      "governance-v1"
+    ]
   },
   {
     "chainId": "0xa85cfb9b9fd4d622a5b28289a02347af987d8f73fa3108450e2b4a11c1ce5755",
@@ -1482,6 +1517,20 @@
           "transfersEnabled": true
         },
         "name": "Acala USD"
+      },
+      {
+        "assetId": 3,
+        "symbol": "TNKR",
+        "precision": 12,
+        "type": "orml",
+        "icon": "https://raw.githubusercontent.com/nova-wallet/nova-utils/master/icons/chains/white/Tinkernet.svg",
+        "typeExtras": {
+          "currencyIdScale": "0x06000000",
+          "currencyIdType": "u32",
+          "existentialDeposit": "1000000000",
+          "transfersEnabled": true
+        },
+        "name": "Tinkernet"
       }
     ],
     "nodes": [
@@ -1514,10 +1563,17 @@
       "history": {
         "type": "subquery",
         "url": "https://api.subquery.network/sq/nova-wallet/nova-wallet-basilisk"
+      },
+      "governance": {
+        "type": "polkassembly",
+        "url": "https://polkassembly-hasura.herokuapp.com/v1/graphql"
       }
     },
     "icon": "https://raw.githubusercontent.com/nova-wallet/nova-utils/master/icons/chains/gradient/Basilisk.svg",
-    "addressPrefix": 10041
+    "addressPrefix": 10041,
+    "options": [
+      "governance-v1"
+    ]
   },
   {
     "chainId": "0xaa3876c1dc8a1afcc2e9a685a49ff7704cfd36ad8c90bf2702b9d1b00cc40011",
@@ -1567,10 +1623,17 @@
       "history": {
         "type": "subquery",
         "url": "https://api.subquery.network/sq/nova-wallet/nova-wallet-altair"
+      },
+      "governance": {
+        "type": "polkassembly",
+        "url": "https://polkassembly-hasura.herokuapp.com/v1/graphql"
       }
     },
     "icon": "https://raw.githubusercontent.com/nova-wallet/nova-utils/master/icons/chains/gradient/Altair.svg",
-    "addressPrefix": 136
+    "addressPrefix": 136,
+    "options": [
+      "governance-v1"
+    ]
   },
   {
     "chainId": "0xd43540ba6d3eb4897c28a77d48cb5b729fea37603cbbfc7a86a73b72adb3be8d",
@@ -1738,15 +1801,22 @@
       "history": {
         "type": "subquery",
         "url": "https://api.subquery.network/sq/nova-wallet/nova-wallet-khala"
+      },
+      "governance": {
+        "type": "polkassembly",
+        "url": "https://polkassembly-hasura.herokuapp.com/v1/graphql"
       }
     },
     "icon": "https://raw.githubusercontent.com/nova-wallet/nova-utils/master/icons/chains/gradient/Khala.svg",
-    "addressPrefix": 30
+    "addressPrefix": 30,
+    "options": [
+      "governance-v1"
+    ]
   },
   {
     "chainId": "0x411f057b9107718c9624d6aa4a3f23c1653898297f3d4d529d9bb6511a39dd21",
-    "parentId": "0xb0a8d493285c2df73290dfb7e61f870f17b41801197a149ca93654499ea3dafe",
-    "name": "KILT Spiritnet",
+    "parentId": "0x91b171bb158e2d3848fa23a9f1c25182fb8e20313b2c1eb49219da7a70ce90c3",
+    "name": "KILT",
     "assets": [
       {
         "assetId": 0,
@@ -1787,10 +1857,17 @@
       "history": {
         "type": "subquery",
         "url": "https://api.subquery.network/sq/nova-wallet/nova-wallet-kilt"
+      },
+      "governance": {
+        "type": "polkassembly",
+        "url": "https://kilt-hasura.herokuapp.com/v1/graphql"
       }
     },
     "icon": "https://raw.githubusercontent.com/nova-wallet/nova-utils/master/icons/chains/gradient/KILT_Spiritnet.svg",
-    "addressPrefix": 38
+    "addressPrefix": 38,
+    "options": [
+      "governance-v1"
+    ]
   },
   {
     "chainId": "0xa0c6e3bac382b316a68bca7141af1fba507207594c761076847ce358aeedcc21",
@@ -1873,10 +1950,17 @@
       "staking": {
         "type": "subquery",
         "url": "https://api.subquery.network/sq/nova-wallet/nova-wallet-calamari"
+      },
+      "governance": {
+        "type": "polkassembly",
+        "url": "https://polkassembly-hasura.herokuapp.com/v1/graphql"
       }
     },
     "icon": "https://raw.githubusercontent.com/nova-wallet/nova-utils/master/icons/chains/gradient/Calamari.svg",
-    "addressPrefix": 78
+    "addressPrefix": 78,
+    "options": [
+      "governance-v1"
+    ]
   },
   {
     "chainId": "0xcd4d732201ebe5d6b014edda071c4203e16867305332301dc8d092044b28e554",
@@ -1945,8 +2029,22 @@
         "symbol": "NEER",
         "precision": 18,
         "priceId": "metaverse-network-pioneer",
-        "icon": "https://raw.githubusercontent.com/nova-wallet/nova-utils/master/icons/chains/white/Bit.Country.svg",
+        "icon": "https://raw.githubusercontent.com/nova-wallet/nova-utils/master/icons/tokens/white/NEER.svg",
         "name": "Metaverse.Network Pioneer"
+      },
+      {
+        "assetId": 1,
+        "symbol": "BIT",
+        "precision": 18,
+        "icon": "https://raw.githubusercontent.com/nova-wallet/nova-utils/master/icons/tokens/white/BIT.svg",
+        "type": "orml",
+        "typeExtras": {
+          "currencyIdScale": "0x030000000000000000",
+          "currencyIdType": "bit_country_primitives.FungibleTokenId",
+          "existentialDeposit": "0",
+          "transfersEnabled": true
+        },
+        "name": "Should be included in assetsNameMap"
       }
     ],
     "nodes": [
@@ -1974,7 +2072,10 @@
       }
     },
     "icon": "https://raw.githubusercontent.com/nova-wallet/nova-utils/master/icons/chains/gradient/Bit.Country_Pioneer.svg",
-    "addressPrefix": 268
+    "addressPrefix": 268,
+    "options": [
+      "governance-v1"
+    ]
   },
   {
     "chainId": "0xfc41b9bd8ef8fe53d58c7ea67c794c7ec9a73daf05e6d54b14ff6342c99ba64c",
@@ -2213,10 +2314,17 @@
       "history": {
         "type": "subquery",
         "url": "https://api.subquery.network/sq/nova-wallet/nova-wallet-acala"
+      },
+      "governance": {
+        "type": "polkassembly",
+        "url": "https://polkassembly-hasura.herokuapp.com/v1/graphql"
       }
     },
     "icon": "https://raw.githubusercontent.com/nova-wallet/nova-utils/master/icons/chains/gradient/Acala.svg",
-    "addressPrefix": 10
+    "addressPrefix": 10,
+    "options": [
+      "governance-v1"
+    ]
   },
   {
     "chainId": "0x23fc729c2cdb7bd6770a4e8c58748387cc715fcf338f1f74a16833d90383f4b0",
@@ -2333,6 +2441,10 @@
       "history": {
         "type": "subquery",
         "url": "https://api.subquery.network/sq/nova-wallet/nova-wallet-astar"
+      },
+      "governance": {
+        "type": "polkassembly",
+        "url": "https://polkassembly-hasura.herokuapp.com/v1/graphql"
       }
     },
     "icon": "https://raw.githubusercontent.com/nova-wallet/nova-utils/master/icons/chains/gradient/Astar.svg",
@@ -2587,10 +2699,17 @@
       "history": {
         "type": "subquery",
         "url": "https://api.subquery.network/sq/nova-wallet/nova-wallet-parallel"
+      },
+      "governance": {
+        "type": "polkassembly",
+        "url": "https://polkassembly-hasura.herokuapp.com/v1/graphql"
       }
     },
     "icon": "https://raw.githubusercontent.com/nova-wallet/nova-utils/master/icons/chains/gradient/Parallel.svg",
-    "addressPrefix": 172
+    "addressPrefix": 172,
+    "options": [
+      "governance-v1"
+    ]
   },
   {
     "chainId": "0x5c7bd13edf349b33eb175ffae85210299e324d852916336027391536e686f267",
@@ -2708,6 +2827,10 @@
       {
         "url": "wss://robonomics-rpc.dwellir.com",
         "name": "Dwellir node"
+      },
+      {
+        "url": "wss://robonomics.leemo.me",
+        "name": "Leemo node"
       }
     ],
     "explorers": [
@@ -2730,10 +2853,17 @@
       "history": {
         "type": "subquery",
         "url": "https://api.subquery.network/sq/nova-wallet/nova-wallet-robonomics"
+      },
+      "governance": {
+        "type": "polkassembly",
+        "url": "https://polkassembly-hasura.herokuapp.com/v1/graphql"
       }
     },
     "icon": "https://raw.githubusercontent.com/nova-wallet/nova-utils/master/icons/chains/gradient/Robonomics.svg",
-    "addressPrefix": 32
+    "addressPrefix": 32,
+    "options": [
+      "governance-v1"
+    ]
   },
   {
     "chainId": "0x7dd99936c1e9e6d1ce7d90eb6f33bea8393b4bf87677d675aa63c9cb3e8c5b5b",
@@ -2822,7 +2952,10 @@
       }
     },
     "icon": "https://raw.githubusercontent.com/nova-wallet/nova-utils/master/icons/chains/gradient/Picasso.svg",
-    "addressPrefix": 49
+    "addressPrefix": 49,
+    "options": [
+      "governance-v1"
+    ]
   },
   {
     "chainId": "0x1bf2a2ecb4a868de66ea8610f2ce7c8c43706561b6476031315f6640fe38e060",
@@ -2843,10 +2976,6 @@
       {
         "url": "wss://zeitgeist-rpc.dwellir.com",
         "name": "Dwellir node"
-      },
-      {
-        "url": "wss://rpc-0.zeitgeist.pm",
-        "name": "ZeitgeistPM node"
       },
       {
         "url": "wss://zeitgeist.api.onfinality.io/public-ws",
@@ -2880,7 +3009,10 @@
       }
     },
     "icon": "https://raw.githubusercontent.com/nova-wallet/nova-utils/master/icons/chains/gradient/Zeitgeist.svg",
-    "addressPrefix": 73
+    "addressPrefix": 73,
+    "options": [
+      "governance-v1"
+    ]
   },
   {
     "chainId": "0x52149c30c1eb11460dce6c08b73df8d53bb93b4a15d0a2e7fd5dafe86a73c0da",
@@ -2899,10 +3031,6 @@
       {
         "url": "wss://rpc.kico.dico.io",
         "name": "DICO FOUNDATION node"
-      },
-      {
-        "url": "wss://rpc.api.kico.dico.io",
-        "name": "DICO FOUNDATION 2 node"
       }
     ],
     "types": {
@@ -2961,7 +3089,10 @@
       }
     },
     "icon": "https://raw.githubusercontent.com/nova-wallet/nova-utils/master/icons/chains/gradient/Litmus.svg",
-    "addressPrefix": 131
+    "addressPrefix": 131,
+    "options": [
+      "governance-v1"
+    ]
   },
   {
     "chainId": "0xeac895d7768b17837a9c3a9f0280c01502c3ef40193df923490a0fa9c60ea076",
@@ -3090,10 +3221,17 @@
       "history": {
         "type": "subquery",
         "url": "https://api.subquery.network/sq/nova-wallet/nova-wallet-shadow"
+      },
+      "governance": {
+        "type": "polkassembly",
+        "url": "https://polkassembly-hasura.herokuapp.com/v1/graphql"
       }
     },
     "icon": "https://raw.githubusercontent.com/nova-wallet/nova-utils/master/icons/chains/gradient/Crust_Shadow.svg",
-    "addressPrefix": 66
+    "addressPrefix": 66,
+    "options": [
+      "governance-v1"
+    ]
   },
   {
     "chainId": "0xcdedc8eadbfa209d3f207bba541e57c3c58a667b05a2e1d1e86353c9000758da",
@@ -3195,7 +3333,10 @@
       }
     },
     "icon": "https://raw.githubusercontent.com/nova-wallet/nova-utils/master/icons/chains/gradient/Centrifuge.svg",
-    "addressPrefix": 36
+    "addressPrefix": 36,
+    "options": [
+      "governance-v1"
+    ]
   },
   {
     "chainId": "0x335369975fced3fc22e23498da306a712f4fd964c957364d53c49cea9db8bc2f",
@@ -3240,7 +3381,10 @@
       }
     },
     "icon": "https://raw.githubusercontent.com/nova-wallet/nova-utils/master/icons/chains/gradient/Efinity.svg",
-    "addressPrefix": 1110
+    "addressPrefix": 1110,
+    "options": [
+      "governance-v1"
+    ]
   },
   {
     "chainId": "0xafdc188f45c71dacbaa0b62e16a91f726c7b8699a9748cdf715459de6b7f366d",
@@ -3281,10 +3425,17 @@
       "history": {
         "type": "subquery",
         "url": "https://api.subquery.network/sq/nova-wallet/nova-wallet-hydra"
+      },
+      "governance": {
+        "type": "polkassembly",
+        "url": "https://polkassembly-hasura.herokuapp.com/v1/graphql"
       }
     },
     "icon": "https://raw.githubusercontent.com/nova-wallet/nova-utils/master/icons/chains/gradient/HydraDX.svg",
-    "addressPrefix": 63
+    "addressPrefix": 63,
+    "options": [
+      "governance-v1"
+    ]
   },
   {
     "chainId": "0xbf88efe70e9e0e916416e8bed61f2b45717f517d7f3523e33c7b001e5ffcbc72",
@@ -3529,7 +3680,10 @@
       }
     },
     "icon": "https://raw.githubusercontent.com/nova-wallet/nova-utils/master/icons/chains/gradient/Phala.svg",
-    "addressPrefix": 30
+    "addressPrefix": 30,
+    "options": [
+      "governance-v1"
+    ]
   },
   {
     "chainId": "0x0f62b701fb12d02237a33b84818c11f621653d2b1614c777973babf4652b535d",
@@ -3677,10 +3831,17 @@
       "staking": {
         "type": "subquery",
         "url": "https://api.subquery.network/sq/nova-wallet/nova-wallet-turing"
+      },
+      "governance": {
+        "type": "polkassembly",
+        "url": "https://polkassembly-hasura.herokuapp.com/v1/graphql"
       }
     },
     "icon": "https://raw.githubusercontent.com/nova-wallet/nova-utils/master/icons/chains/gradient/Turing.svg",
-    "addressPrefix": 51
+    "addressPrefix": 51,
+    "options": [
+      "governance-v1"
+    ]
   },
   {
     "chainId": "0x70255b4d28de0fc4e1a193d7e175ad1ccef431598211c55538f1018651a0344e",
@@ -3744,10 +3905,6 @@
       {
         "url": "wss://rpc.composable.finance",
         "name": "Composable node"
-      },
-      {
-        "url": "wss://composable-rpc.dwellir.com",
-        "name": "Dwellir node"
       }
     ],
     "explorers": [
@@ -3766,10 +3923,17 @@
       "history": {
         "type": "subquery",
         "url": "https://api.subquery.network/sq/nova-wallet/nova-wallet-composable"
+      },
+      "governance": {
+        "type": "polkassembly",
+        "url": "https://polkassembly-hasura.herokuapp.com/v1/graphql"
       }
     },
     "icon": "https://raw.githubusercontent.com/nova-wallet/nova-utils/master/icons/chains/gradient/Composable.png",
-    "addressPrefix": 49
+    "addressPrefix": 49,
+    "options": [
+      "governance-v1"
+    ]
   },
   {
     "chainId": "0x3920bcb4960a1eef5580cd5367ff3f430eef052774f78468852f7b9cb39f8a3c",
@@ -3819,10 +3983,17 @@
       "history": {
         "type": "subquery",
         "url": "https://api.subquery.network/sq/nova-wallet/nova-wallet-polkadex"
+      },
+      "governance": {
+        "type": "polkassembly",
+        "url": "https://polkassembly-hasura.herokuapp.com/v1/graphql"
       }
     },
     "icon": "https://raw.githubusercontent.com/nova-wallet/nova-utils/master/icons/chains/gradient/Polkadex.svg",
-    "addressPrefix": 88
+    "addressPrefix": 88,
+    "options": [
+      "governance-v1"
+    ]
   },
   {
     "chainId": "0xe7e0962324a3b86c83404dbea483f25fb5dab4c224791c81b756cfc948006174",
@@ -4220,7 +4391,10 @@
       }
     },
     "icon": "https://raw.githubusercontent.com/nova-wallet/nova-utils/master/icons/chains/gradient/Pichiu.svg",
-    "addressPrefix": 42
+    "addressPrefix": 42,
+    "options": [
+      "governance-v1"
+    ]
   },
   {
     "chainId": "0xfeb426ca713f0f46c96465b8f039890370cf6bfd687c9076ea2843f58a6ae8a7",
@@ -4290,10 +4464,17 @@
       "history": {
         "type": "subquery",
         "url": "https://api.subquery.network/sq/nova-wallet/nova-wallet-tanganika"
+      },
+      "governance": {
+        "type": "polkassembly",
+        "url": "https://polkassembly-hasura.herokuapp.com/v1/graphql"
       }
     },
     "icon": "https://raw.githubusercontent.com/nova-wallet/nova-utils/master/icons/chains/gradient/Tanganika_DataHighway.svg",
-    "addressPrefix": 33
+    "addressPrefix": 33,
+    "options": [
+      "governance-v1"
+    ]
   },
   {
     "chainId": "0x35a06bfec2edf0ff4be89a6428ccd9ff5bd0167d618c5a0d4341f9600a458d14",
@@ -4325,7 +4506,7 @@
     "externalApi": {
       "history": {
         "type": "subquery",
-        "url": "https://api.subquery.network/sq/nova-wallet/nova-wallet-bajun__bm92Y"
+        "url": "https://api.subquery.network/sq/nova-wallet/nova-wallet-bajun"
       }
     },
     "icon": "https://raw.githubusercontent.com/nova-wallet/nova-utils/master/icons/chains/gradient/Bajun.svg",
@@ -4438,6 +4619,10 @@
       {
         "url": "wss://tinker.invarch.network",
         "name": "InvArch node"
+      },
+      {
+        "url": "wss://invarch-tinkernet.api.onfinality.io/public-ws",
+        "name": "OnFinality node"
       }
     ],
     "types": {
@@ -4506,6 +4691,10 @@
       {
         "url": "wss://kusama.gmordie.com",
         "name": "GMorDieDAO node"
+      },
+      {
+        "url": "wss://leemo.gmordie.com",
+        "name": "Leemo node"
       }
     ],
     "types": {
@@ -4536,16 +4725,25 @@
     ],
     "nodes": [
       {
-        "url": "wss://rpc.pendulumchain.tech",
+        "url": "wss://rpc-amplitude.pendulumchain.tech",
         "name": "PendulumChain node"
       }
     ],
+    "externalApi": {
+      "governance": {
+        "type": "polkassembly",
+        "url": "https://polkassembly-hasura.herokuapp.com/v1/graphql"
+      }
+    },
     "types": {
       "url": "https://raw.githubusercontent.com/nova-wallet/nova-utils/master/chains/v2/types/amplitude.json",
       "overridesCommon": true
     },
     "icon": "https://raw.githubusercontent.com/nova-wallet/nova-utils/master/icons/chains/gradient/Amplitude.svg",
-    "addressPrefix": 57
+    "addressPrefix": 57,
+    "options": [
+      "governance-v1"
+    ]
   },
   {
     "chainId": "0x6859c81ca95ef624c9dfe4dc6e3381c33e5d6509e35e147092bfbc780f777c4e",
@@ -4681,7 +4879,7 @@
       {
         "name": "Governance2 Testnet explorer",
         "extrinsic": "https://gov2.statescan.io/extrinsic/{hash}",
-        "account": "https://gov2.statescan.io/{address}",
+        "account": "https://gov2.statescan.io/account/{address}",
         "event": null
       }
     ],
@@ -4720,6 +4918,10 @@
       "history": {
         "type": "subquery",
         "url": "https://api.subquery.network/sq/nova-wallet/nova-wallet-kylin"
+      },
+      "governance": {
+        "type": "polkassembly",
+        "url": "https://polkassembly-hasura.herokuapp.com/v1/graphql"
       }
     },
     "types": {
@@ -4850,7 +5052,7 @@
         "symbol": "tEDG",
         "precision": 18,
         "icon": "https://raw.githubusercontent.com/nova-wallet/nova-utils/master/icons/chains/white/Edgeware.svg",
-        "name": "Should be included in assetsNameMap"
+        "name": "Beresheet"
       }
     ],
     "nodes": [
@@ -4867,6 +5069,127 @@
     "addressPrefix": 7,
     "options": [
       "testnet"
+    ]
+  },
+  {
+    "chainId": "0xb34f6cd03a41f0fab38ba9fd5b11cce5f303633c46f39f0c6fdc7c3c602bafa9",
+    "parentId": "0xb0a8d493285c2df73290dfb7e61f870f17b41801197a149ca93654499ea3dafe",
+    "name": "Snow",
+    "assets": [
+      {
+        "assetId": 0,
+        "symbol": "ICZ",
+        "precision": 18,
+        "icon": "https://raw.githubusercontent.com/nova-wallet/nova-utils/master/icons/tokens/white/ICZ.svg",
+        "name": "Should be included in assetsNameMap"
+      }
+    ],
+    "nodes": [
+      {
+        "url": "wss://snow-rpc.icenetwork.io",
+        "name": "Snow node"
+      }
+    ],
+    "explorers": [
+      {
+        "name": "Subscan",
+        "extrinsic": "https://snow.subscan.io/extrinsic/{hash}",
+        "account": "https://snow.subscan.io/account/{address}",
+        "event": null
+      }
+    ],
+    "types": {
+      "url": "https://raw.githubusercontent.com/nova-wallet/nova-utils/master/chains/v2/types/snow.json",
+      "overridesCommon": true
+    },
+    "icon": "https://raw.githubusercontent.com/nova-wallet/nova-utils/master/icons/chains/gradient/SNOW.svg",
+    "addressPrefix": 2207,
+    "options": [
+      "governance-v1"
+    ]
+  },
+  {
+    "chainId": "0xf179a15464514e00fe355a66b2bdafa490c4e232eed60f036bc46302b5d898eb",
+    "name": "Governance2 Novasama Testnet",
+    "assets": [
+      {
+        "assetId": 0,
+        "symbol": "Unit",
+        "precision": 12,
+        "icon": "https://raw.githubusercontent.com/nova-wallet/nova-utils/master/icons/tokens/white/GOV2.svg",
+        "name": "Test token"
+      }
+    ],
+    "nodes": [
+      {
+        "url": "wss://novasama.uz",
+        "name": "Development node"
+      }
+    ],
+    "types": {
+      "url": "https://raw.githubusercontent.com/nova-wallet/nova-utils/master/chains/v2/types/governance2_testnet.json",
+      "overridesCommon": true
+    },
+    "icon": "https://raw.githubusercontent.com/nova-wallet/nova-utils/master/icons/chains/gradient/Governance2_Testnet.svg",
+    "addressPrefix": 42,
+    "options": [
+      "testnet",
+      "governance"
+    ]
+  },
+  {
+    "chainId": "0x6f0f071506de39058fe9a95bbca983ac0e9c5da3443909574e95d52eb078d348",
+    "parentId": "0xb0a8d493285c2df73290dfb7e61f870f17b41801197a149ca93654499ea3dafe",
+    "name": "DAO IPCI",
+    "assets": [
+      {
+        "assetId": 0,
+        "symbol": "MITO",
+        "precision": 12,
+        "icon": "https://raw.githubusercontent.com/nova-wallet/nova-utils/master/icons/tokens/white/MITO.svg",
+        "name": "Should be included in assetsNameMap"
+      }
+    ],
+    "nodes": [
+      {
+        "url": "wss://kusama.rpc.ipci.io",
+        "name": "Airalab node"
+      }
+    ],
+    "types": {
+      "url": "https://raw.githubusercontent.com/nova-wallet/nova-utils/master/chains/v2/types/dao_ipci.json",
+      "overridesCommon": true
+    },
+    "icon": "https://raw.githubusercontent.com/nova-wallet/nova-utils/master/icons/chains/gradient/DAOIPCI.svg",
+    "addressPrefix": 32
+  },
+  {
+    "chainId": "0xdebc82d28e63857f236a6d1ab981a35e2401e1a5834656667747f39303d52e07",
+    "name": "Governance1 Novasama Testnet",
+    "assets": [
+      {
+        "assetId": 0,
+        "symbol": "Unit",
+        "precision": 10,
+        "icon": "https://raw.githubusercontent.com/nova-wallet/nova-utils/master/icons/tokens/white/GOV2.svg",
+        "name": "Test token"
+      }
+    ],
+    "nodes": [
+      {
+        "url": "wss://novasama.uz/gov1",
+        "name": "Development node"
+      }
+    ],
+    "types": {
+      "url": "https://raw.githubusercontent.com/nova-wallet/nova-utils/master/chains/v2/types/polkadot.json",
+      "overridesCommon": true
+    },
+    "icon": "https://raw.githubusercontent.com/nova-wallet/nova-utils/master/icons/chains/gradient/Governance2_Testnet.svg",
+    "addressPrefix": 0,
+    "options": [
+      "testnet",
+      "governance-v1"
     ]
   }
 ]
