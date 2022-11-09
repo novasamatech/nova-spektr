@@ -101,22 +101,24 @@ const Signing = () => {
           <div className="flex flex-col gap-2.5 w-full">
             <div className="bg-white p-5 shadow-surface rounded-2xl flex flex-col items-center gap-5 w-full">
               <div className="text-neutral-variant text-base font-semibold">{t('signing.scanQrTitle')}</div>
-
-              <div className="w-[220px] h-[220px] bg-shade-20">
-                {txPayload && currentAddress && (
+              {txPayload && currentAddress ? (
+                <div className="w-[220px] h-[220px]">
                   <QrTxGenerator
                     cmd={0}
                     payload={txPayload}
                     address={currentAddress}
                     genesisHash={currentConnection.chainId}
                   />
-                )}
-              </div>
-
-              <div className="flex items-center uppercase font-normal text-xs gap-1.25">
-                {t('signing.qrCountdownTitle')}
-                <div className="rounded-md bg-success text-white py-0.5 px-1.5">{secondsToMinutes(countdown)}</div>
-              </div>
+                </div>
+              ) : (
+                <div className='w-[220px] h-[220px] rounded-2lg bg-shade-20 animate-pulse' />
+              )}
+              {txPayload && currentAddress && (
+                <div className="flex items-center uppercase font-normal text-xs gap-1.25">
+                  {t('signing.qrCountdownTitle')}
+                  <div className="rounded-md bg-success text-white py-0.5 px-1.5">{secondsToMinutes(countdown)}</div>
+                </div>
+              )}
             </div>
 
             <div className="flex flex-col items-center text-xs font-semibold text-primary">

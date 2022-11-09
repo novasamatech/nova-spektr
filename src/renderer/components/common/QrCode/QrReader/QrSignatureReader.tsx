@@ -61,15 +61,6 @@ const QrSignatureReader = ({ size = 300, cameraId, className, onCameraList, onRe
     return cameras.length;
   };
 
-  const handleSimpleQr = (signature: string): Boolean => {
-    if (!isHex(signature)) return false;
-
-    isComplete.current = true;
-    onResult?.(signature);
-
-    return true;
-  };
-
   const startScanning = async (): Promise<void> => {
     if (!videoRef.current || !scannerRef.current) return;
 
@@ -79,8 +70,10 @@ const QrSignatureReader = ({ size = 300, cameraId, className, onCameraList, onRe
       try {
         await init();
 
-        const isSimpleQr = handleSimpleQr(result.getText());
-        if (isSimpleQr) return;
+        const signature = result.getText();
+
+        isComplete.current = true;
+        onResult?.(signature);
       } catch (error) {
         if (!isQrErrorObject(error)) {
           onError?.(QR_READER_ERRORS[QrError.DECODE_ERROR]);
