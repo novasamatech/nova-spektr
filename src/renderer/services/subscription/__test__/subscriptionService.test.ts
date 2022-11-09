@@ -7,6 +7,19 @@ describe('service/subscription/subscriptionService', () => {
     jest.clearAllMocks();
   });
 
+  test('should return methods', async () => {
+    const {
+      result: {
+        current: { subscribe, unsubscribe, hasSubscription, unsubscribeAll },
+      },
+    } = renderHook(() => useSubscription());
+
+    expect(subscribe).toBeDefined();
+    expect(unsubscribe).toBeDefined();
+    expect(hasSubscription).toBeDefined();
+    expect(unsubscribeAll).toBeDefined();
+  });
+
   test('should subscribe and unsubscribe with callback', async () => {
     const {
       result: {
@@ -16,14 +29,38 @@ describe('service/subscription/subscriptionService', () => {
 
     const spyUnsubscribe = jest.fn();
     const unsubscribePromise = Promise.resolve(spyUnsubscribe());
-    const chainId = '0x00';
+    const key = '0x00';
 
-    subscribe(chainId, unsubscribePromise);
-    expect(hasSubscription(chainId)).toBeTruthy();
+    subscribe(key, unsubscribePromise);
+    expect(hasSubscription(key)).toBeDefined();
 
-    await unsubscribe(chainId);
+    await unsubscribe(key);
 
     expect(spyUnsubscribe).toBeCalled();
-    expect(hasSubscription(chainId)).toBeFalsy();
+    expect(hasSubscription(key)).toEqual(false);
+  });
+
+  test('should unsubscribe all', async () => {
+    const {
+      result: {
+        current: { subscribe, hasSubscription, unsubscribeAll },
+      },
+    } = renderHook(() => useSubscription());
+
+    const spyUnsubscribe = jest.fn();
+    const keys = ['0x00', '0x01', '0x02'];
+
+    keys.forEach((key) => {
+      const unsubscribePromise = Promise.resolve(spyUnsubscribe());
+      subscribe(key, unsubscribePromise);
+      expect(hasSubscription(key)).toBeDefined();
+    });
+
+    await unsubscribeAll();
+
+    expect(spyUnsubscribe).toBeCalledTimes(3);
+    keys.forEach((key) => {
+      expect(hasSubscription(key)).toEqual(false);
+    });
   });
 });

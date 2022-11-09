@@ -206,7 +206,24 @@
     "title": "Settings"
   },
   "staking": {
-    "title": "Staking"
+    "title": "Staking",
+    "overview": {
+      "searchPlaceholder": "Search by account name",
+      "noActiveWalletsLabel": "No wallet selected",
+      "noActiveWalletsDescription": "Please select a wallet for staking",
+      "noResultsLabel": "No staking found",
+      "noResultsDescription": "Please try another filter parameters"
+    },
+    "startStaking": {
+      "subtitle": "Start Staking",
+      "selectNetworkLabel": "Select network"
+    },
+    "unbond": {
+      "subtitle": "Unbond"
+    },
+    "validators": {
+      "subtitle": "Validators"
+    }
   },
   "wallets": {
     "paritySignerLabel": "Parity Signer",

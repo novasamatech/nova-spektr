@@ -1,8 +1,8 @@
-import { render, screen, act } from '@testing-library/react';
+import { act, render, screen } from '@testing-library/react';
 
+import { Chain } from '@renderer/domain/chain';
 import { TEST_PUBLIC_KEY } from '@renderer/services/balance/common/constants';
 import AccountsList from './AccountsList';
-import { Chain } from '@renderer/domain/chain';
 
 jest.mock('@renderer/context/I18nContext', () => ({
   useI18n: jest.fn().mockReturnValue({

@@ -29,16 +29,17 @@ const NavItems = [
 const Navigation = () => {
   const walletsRef = useRef<HTMLDivElement>(null);
   const showWalletsRef = useRef<HTMLButtonElement>(null);
-  const { LocaleComponent, t } = useI18n();
-  const { getActiveWallets } = useWallet();
-  const activeWallets = getActiveWallets();
-  const walletType = activeWallets?.[0]?.type || WalletType.PARITY;
 
   const navigate = useNavigate();
+  const { LocaleComponent, t } = useI18n();
   const { matrix, setIsLoggedIn } = useMatrix();
+  const { getActiveWallets } = useWallet();
 
   const [isProcessing, setIsProcessing] = useState(false);
   const [isWalletsOpen, setIsWalletsOpen] = useState(false);
+
+  const activeWallets = getActiveWallets();
+  const walletType = activeWallets?.[0]?.type || WalletType.PARITY;
 
   useClickOutside([walletsRef, showWalletsRef], () => {
     setIsWalletsOpen(false);

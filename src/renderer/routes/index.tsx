@@ -27,7 +27,6 @@ const routesConfig: RouteObject[] = [
       { path: Paths.MULTISIG, element: <Screens.MultisigOperations /> },
       { path: Paths.HISTORY, element: <Screens.History /> },
       { path: Paths.BALANCES, element: <Screens.Balances /> },
-      { path: Paths.STAKING, element: <Screens.Staking /> },
       { path: Paths.CHAT_DEV, element: <Screens.ChatDev /> },
       { path: Paths.CAMERA_DEV, element: <Screens.CameraDev /> },
       {
@@ -36,6 +35,14 @@ const routesConfig: RouteObject[] = [
           { index: true, element: <Screens.Settings.Overview /> },
           { path: Paths.NETWORK, element: <Screens.Settings.Networks /> },
           { path: Paths.CREDENTIALS, element: <Screens.Settings.Credentials /> },
+        ],
+      },
+      {
+        path: Paths.STAKING,
+        children: [
+          { index: true, element: <Screens.Staking.Overview /> },
+          { path: Paths.STAKING_START, element: <Screens.Staking.StartStaking /> },
+          { path: Paths.UNBOND, element: <Screens.Staking.Unbond /> },
         ],
       },
     ],

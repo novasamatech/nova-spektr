@@ -206,7 +206,24 @@
     "title": "Настройки"
   },
   "staking": {
-    "title": "Стейкинг"
+    "title": "Стейкинг",
+    "overview": {
+      "searchPlaceholder": "Искать по имени кошелька",
+      "noActiveWalletsLabel": "Нет выбранных кошельков",
+      "noActiveWalletsDescription": "Пожалуйста, выберите кошелек для просмотра стейкинга",
+      "noResultsLabel": "Сттейкинги не найдены",
+      "noResultsDescription": "Пожалуйста, попробуйте другие параметры фильтрации"
+    },
+    "startStaking": {
+      "startSubtitle": "Начать Стейкинг",
+      "selectNetworkLabel": "Select network"
+    },
+    "unbond": {
+      "unbondSubtitle": "Отвязать токены"
+    },
+    "validators": {
+      "validatorsSubtitle": "Валидаторы"
+    }
   },
   "wallets": {
     "paritySignerLabel": "Parity Signer",

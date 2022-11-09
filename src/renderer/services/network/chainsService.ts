@@ -1,13 +1,21 @@
 import compact from 'lodash/compact';
 import sortBy from 'lodash/sortBy';
 
-import chains from './common/chains/chains.json';
+import chainsDev from './common/chains/chains.json';
+import chainsOmniDev from './common/chains/omni-chains_dev.json';
+import chainsOmniProd from './common/chains/omni-chains.json';
 import { IChainService } from './common/types';
 import { Chain } from '@renderer/domain/chain';
 import { isKusama, isPolkadot, isTestnet } from './common/utils';
 
+const CHAINS: Record<string, any> = {
+  dev: chainsDev,
+  'omni-dev': chainsOmniDev,
+  'omni-prod': chainsOmniProd,
+};
+
 export function useChains(): IChainService {
-  const getChainsData = (): Promise<Chain[]> => Promise.resolve(chains as unknown as Chain[]);
+  const getChainsData = (): Promise<Chain[]> => Promise.resolve(CHAINS[process.env.CHAINS_FILE || 'dev']);
 
   const sortChains = <T extends Chain = Chain>(chains: T[]): T[] => {
     let polkadot;

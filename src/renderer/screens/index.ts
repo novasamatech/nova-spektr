@@ -7,7 +7,7 @@ import CameraDev from './CameraDev/CameraDev';
 import Onboarding from './Onboarding';
 import History from './History/History';
 import Balances from './Balances';
-import Staking from './Staking/Staking';
+import Staking from './Staking';
 
 export default {
   MultisigOperations,

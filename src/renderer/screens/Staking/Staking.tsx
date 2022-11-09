@@ -15,7 +15,7 @@ import { useState } from 'react';
 import { QrTxGenerator } from '@renderer/components/common';
 import { Command } from '@renderer/components/common/QrCode/QrGenerator/common/constants';
 import { Button, Dropdown } from '@renderer/components/ui';
-import { OptionType } from '@renderer/components/ui/Dropdown/common/types';
+import { DropdownOption } from '@renderer/components/ui/Dropdown/common/types';
 import { useI18n } from '@renderer/context/I18nContext';
 import { useNetworkContext } from '@renderer/context/NetworkContext';
 import { AccountID } from '@renderer/domain/shared-kernel';
@@ -28,7 +28,7 @@ const Staking = () => {
   const { connections } = useNetworkContext();
   const networksApis = Object.values(connections).map(({ name, api }) => ({ label: name, value: api }));
 
-  const [activeNetwork, setActiveNetwork] = useState<OptionType<ApiPromise>>();
+  const [activeNetwork, setActiveNetwork] = useState<DropdownOption<ApiPromise>>();
   const [eraIndex, setEraIndex] = useState();
   const [qrPayload, setQrPayload] = useState('');
   const [randomValidators, setRandomValidators] = useState<string[]>([]);
