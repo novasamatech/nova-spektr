@@ -6,7 +6,7 @@ import { ErrorBoundary } from 'react-error-boundary';
 import createApolloClient from '@renderer/graphql';
 import { FallbackScreen, SplashScreen } from '@renderer/components/common';
 import I18Provider from '@renderer/context/I18nContext';
-import MatrixProvider from '@renderer/context/MatrixContext';
+// import MatrixProvider from '@renderer/context/MatrixContext';
 import NetworkProvider from '@renderer/context/NetworkContext';
 import ConfirmContext from '@renderer/context/ConfirmContext';
 import { useWallet } from '@renderer/services/wallet/walletService';
@@ -33,9 +33,9 @@ const App = () => {
     fetchWallets();
   }, []);
 
-  const onAutoLoginFail = (errorMsg: string) => {
-    console.warn(errorMsg);
-  };
+  // const onAutoLoginFail = (errorMsg: string) => {
+  //   console.warn(errorMsg);
+  // };
 
   if (isWalletsLoading) {
     return <SplashScreen />;
@@ -47,7 +47,8 @@ const App = () => {
         <ApolloProvider client={createApolloClient()}>
           <NetworkProvider>
             <ConfirmContext>
-              <MatrixProvider onAutoLoginFail={onAutoLoginFail}>{appRoutes}</MatrixProvider>
+              {/*<MatrixProvider onAutoLoginFail={onAutoLoginFail}>{appRoutes}</MatrixProvider>*/}
+              {appRoutes}
             </ConfirmContext>
           </NetworkProvider>
         </ApolloProvider>
