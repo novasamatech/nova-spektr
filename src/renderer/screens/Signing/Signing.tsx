@@ -11,6 +11,7 @@ import ParitySignerSignatureReader from './ParitySignerSignatureReader/ParitySig
 import { useTransaction } from '@renderer/services/transaction/transactionService';
 import { TransactionType } from '@renderer/services/transaction/common/types';
 import { secondsToMinutes } from './common/utils';
+import { getMetadataPortalUrl, TROUBLESHOOTING_URL } from './common/consts';
 
 const enum Steps {
   SCANNING = 0,
@@ -36,7 +37,9 @@ const Signing = () => {
     if (countdown > 0) {
       const timer = setTimeout(() => setCountdown(countdown - 1), 1000);
 
-      return () => clearTimeout(timer);
+      return () => {
+        clearTimeout(timer);
+      };
     }
   }, [countdown]);
 
@@ -75,113 +78,102 @@ const Signing = () => {
   }, [currentConnection, currentAddress]);
 
   return (
-    <>
-      <div className="h-full flex flex-col">
-        <h1 className="font-semibold text-2xl text-neutral mb-9">{t('signing.title')}</h1>
+    <div className="h-full flex flex-col">
+      <h1 className="font-semibold text-2xl text-neutral mb-9">{t('signing.title')}</h1>
 
-        <div className="w-[500px] rounded-2xl bg-shade-2 p-5 flex flex-col items-center m-auto gap-2.5 overflow-auto">
-          {currentWallet && currentConnection && currentAddress && (
-            <div className="bg-white shadow-surface p-5 rounded-2xl w-full">
-              <div className="flex items-center justify-between h-15">
-                <div className="flex gap-2.5">
-                  <Icon name="paritySigner" size={32} />
-                  <div>
-                    <div className="font-bold text-lg text-neutral">{currentWallet.name}</div>
-                    <Address type="short" address={currentAddress} addressStyle="small" />
-                  </div>
+      <div className="w-[500px] rounded-2xl bg-shade-2 p-5 flex flex-col items-center m-auto gap-2.5 overflow-auto">
+        {currentWallet && currentConnection && currentAddress && (
+          <div className="bg-white shadow-surface p-5 rounded-2xl w-full">
+            <div className="flex items-center justify-between h-15">
+              <div className="flex gap-2.5">
+                <Icon name="paritySigner" size={32} />
+                <div>
+                  <div className="font-bold text-lg text-neutral">{currentWallet.name}</div>
+                  <Address type="short" address={currentAddress} addressStyle="small" />
                 </div>
-                <Explorers chain={currentConnection} address={currentAddress} />
+              </div>
+              <Explorers chain={currentConnection} address={currentAddress} />
+            </div>
+          </div>
+        )}
+
+        {currentStep === Steps.SCANNING && (
+          <div className="flex flex-col gap-2.5 w-full">
+            <div className="bg-white p-5 shadow-surface rounded-2xl flex flex-col items-center gap-5 w-full">
+              <div className="text-neutral-variant text-base font-semibold">{t('signing.scanQrTitle')}</div>
+
+              <div className="w-[220px] h-[220px] bg-shade-20">
+                {txPayload && currentAddress && (
+                  <QrTxGenerator
+                    cmd={0}
+                    payload={txPayload}
+                    address={currentAddress}
+                    genesisHash={currentConnection.chainId}
+                  />
+                )}
+              </div>
+
+              <div className="flex items-center uppercase font-normal text-xs gap-1.25">
+                {t('signing.qrCountdownTitle')}
+                <div className="rounded-md bg-success text-white py-0.5 px-1.5">{secondsToMinutes(countdown)}</div>
               </div>
             </div>
-          )}
 
-          {currentStep === Steps.SCANNING && (
-            <div className="flex flex-col gap-2.5 w-full">
-              <div className="bg-white p-5 shadow-surface rounded-2xl flex flex-col items-center gap-5 w-full">
-                <div className="text-neutral-variant text-base font-semibold">{t('signing.scanQrTitle')}</div>
+            <div className="flex flex-col items-center text-xs font-semibold text-primary">
+              <a className="flex items-center" href={TROUBLESHOOTING_URL} rel="noopener noreferrer" target="_blank">
+                <Icon as="img" name="globe" /> {t('signing.troubleshootingLink')}
+              </a>
+              <a
+                className="flex items-center"
+                href={getMetadataPortalUrl(currentConnection.chainId)}
+                rel="noopener noreferrer"
+                target="_blank"
+              >
+                <Icon as="img" name="globe" /> {t('signing.metadataPortalLink')}
+              </a>
+            </div>
 
-                {txPayload && currentAddress ? (
-                  <div className="w-[220px] h-[220px]">
-                    <QrTxGenerator
-                      cmd={0}
-                      payload={txPayload}
-                      address={currentAddress}
-                      genesisHash={currentConnection.chainId}
-                    />
-                  </div>
-                ) : (
-                  <div className="bg-shade-20 w-[220px] h-[220px]"></div>
-                )}
+            <Button
+              className="w-fit m-auto"
+              variant="fill"
+              pallet="primary"
+              weight="lg"
+              onClick={() => setCurrentStep(Steps.SIGNING)}
+            >
+              {t('signing.continueButton')}
+            </Button>
+          </div>
+        )}
 
-                <div className="flex items-center uppercase font-normal text-xs gap-1.25">
-                  {t('signing.qrCountdownTitle')}
-                  <div className="rounded-md bg-success text-white py-0.5 px-1.5">{secondsToMinutes(countdown)}</div>
-                </div>
-              </div>
+        {currentStep === Steps.SIGNING && (
+          <div className="bg-white shadow-surface rounded-2xl flex flex-col items-center gap-5 w-full">
+            <div className="my-4 text-neutral-variant text-base font-semibold">{t('signing.scanSignatureTitle')}</div>
 
-              <div className="flex flex-col items-center text-xs font-semibold text-primary">
-                <a
-                  className="flex items-center"
-                  href={'https://github.com/nova-wallet/nova-utils/wiki/Parity-Signer-troubleshooting'}
-                  rel="noopener noreferrer"
-                  target="_blank"
-                >
-                  <Icon as="img" name="globe" /> {t('signing.troubleshootingLink')}
-                </a>
-                <a
-                  className="flex items-center"
-                  href={`https://nova-wallet.github.io/metadata-portal/#/${currentConnection.chainId}`}
-                  rel="noopener noreferrer"
-                  target="_blank"
-                >
-                  <Icon as="img" name="globe" /> {t('signing.metadataPortalLink')}
-                </a>
-              </div>
-
+            <div className="h-[460px]">
+              <ParitySignerSignatureReader
+                className="w-full rounded-2lg"
+                countdown={countdown}
+                size={460}
+                onResult={() => {}}
+              />
+            </div>
+            {countdown === 0 && (
               <Button
-                className="w-fit m-auto"
                 variant="fill"
                 pallet="primary"
                 weight="lg"
-                onClick={() => setCurrentStep(Steps.SIGNING)}
+                onClick={() => {
+                  setCurrentStep(Steps.SCANNING);
+                  setupTransaction();
+                }}
               >
-                {t('signing.continueButton')}
+                {t('signing.generateNewQrButton')}
               </Button>
-            </div>
-          )}
-
-          {currentStep === Steps.SIGNING && (
-            <div className="bg-white shadow-surface rounded-2xl flex flex-col items-center gap-5 w-full">
-              <div className="my-4 text-neutral-variant text-base font-semibold">{t('signing.scanSignatureTitle')}</div>
-
-              <div className="h-[460px]">
-                <ParitySignerSignatureReader
-                  className="w-full rounded-2lg"
-                  countdown={countdown}
-                  size={460}
-                  onResult={(signature) => {
-                    console.log(signature);
-                  }}
-                />
-              </div>
-              {countdown === 0 && (
-                <Button
-                  variant="fill"
-                  pallet="primary"
-                  weight="lg"
-                  onClick={() => {
-                    setCurrentStep(Steps.SCANNING);
-                    setupTransaction();
-                  }}
-                >
-                  {t('signing.generateNewQrButton')}
-                </Button>
-              )}
-            </div>
-          )}
-        </div>
+            )}
+          </div>
+        )}
       </div>
-    </>
+    </div>
   );
 };
 

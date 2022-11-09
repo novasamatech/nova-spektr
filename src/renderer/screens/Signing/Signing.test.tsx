@@ -4,7 +4,7 @@ import { ConnectionType } from '@renderer/domain/connection';
 import { TEST_PUBLIC_KEY } from '@renderer/services/balance/common/constants';
 import Signing from './Signing';
 
-jest.mock('./ParitySignerSignatureReader/ParitySignerSignatureReader', () => () => <>scan-signature</>);
+jest.mock('./ParitySignerSignatureReader/ParitySignerSignatureReader', () => () => 'scan-signature');
 
 jest.mock('@renderer/context/I18nContext', () => ({
   useI18n: jest.fn().mockReturnValue({
@@ -55,9 +55,7 @@ describe('screens/Signing', () => {
     const scanComponentHidden = screen.queryByText('scan-signature');
     expect(scanComponentHidden).not.toBeInTheDocument();
 
-    await act(async () => {
-      await continueButton.click();
-    });
+    await act(async () => continueButton.click());
 
     const scanComponentShown = screen.getByText('scan-signature');
     expect(scanComponentShown).toBeInTheDocument();

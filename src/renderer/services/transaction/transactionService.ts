@@ -1,6 +1,14 @@
 import { ApiPromise } from '@polkadot/api';
 import { hexToU8a } from '@polkadot/util';
-import { construct, getRegistry, methods, GetRegistryOpts } from '@substrate/txwrapper-polkadot';
+import {
+  construct,
+  getRegistry,
+  methods,
+  GetRegistryOpts,
+  BaseTxInfo,
+  OptionsWithMeta,
+  UnsignedTransaction,
+} from '@substrate/txwrapper-polkadot';
 
 import { ITransactionService, Transaction, TransactionType } from './common/types';
 
@@ -47,7 +55,10 @@ export const useTransaction = (): ITransactionService => {
     };
   };
 
-  const UnsignedTransaactions: Record<TransactionType, (args: Record<string, any>, info: any, options: any) => any> = {
+  const getUnsignedTransaction: Record<
+    TransactionType,
+    (args: Record<string, any>, info: BaseTxInfo, options: OptionsWithMeta) => UnsignedTransaction
+  > = {
     [TransactionType.TRANSFER]: (transaction, info, options) => {
       return methods.balances.transfer(
         {
@@ -63,7 +74,7 @@ export const useTransaction = (): ITransactionService => {
   const createPayload = async (transaction: Transaction, api: ApiPromise) => {
     const { info, options, registry } = await createMetaInfo(transaction, api);
 
-    const unsigned = UnsignedTransaactions[transaction.type](transaction, info, options);
+    const unsigned = getUnsignedTransaction[transaction.type](transaction, info, options);
 
     const signingPayloadHex = construct.signingPayload(unsigned, {
       registry,
