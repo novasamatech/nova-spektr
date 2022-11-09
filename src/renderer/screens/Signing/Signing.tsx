@@ -111,7 +111,7 @@ const Signing = () => {
                   />
                 </div>
               ) : (
-                <div className='w-[220px] h-[220px] rounded-2lg bg-shade-20 animate-pulse' />
+                <div className="w-[220px] h-[220px] rounded-2lg bg-shade-20 animate-pulse" />
               )}
               {txPayload && currentAddress && (
                 <div className="flex items-center uppercase font-normal text-xs gap-1.25">
