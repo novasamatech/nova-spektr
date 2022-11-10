@@ -24,6 +24,7 @@ const routesConfig: RouteObject[] = [
     children: [
       { index: true, element: <Screens.Balances /> },
       { path: Paths.ADDRESS_BOOK, element: <Screens.AddressBook /> },
+      { path: Paths.SIGNING, element: <Screens.Signing /> },
       { path: Paths.MULTISIG, element: <Screens.MultisigOperations /> },
       { path: Paths.HISTORY, element: <Screens.History /> },
       { path: Paths.BALANCES, element: <Screens.Balances /> },
