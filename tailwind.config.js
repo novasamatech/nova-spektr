@@ -58,9 +58,6 @@ module.exports = {
       borderRadius: {
         '2lg': '10px',
       },
-      backgroundImage: {
-        stripes: "url('/src/renderer/assets/images/misc/stripes.png')",
-      },
       outlineOffset: {
         reduced: '-5px',
       },

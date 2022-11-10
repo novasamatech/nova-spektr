@@ -63,6 +63,11 @@ const ParitySignerQrReader = ({ size = 300, className, onResult }: Props) => {
     setCameraState(CameraState.LOADING);
   };
 
+  const resetCamera = () => {
+    setActiveCamera(undefined);
+    setProgress({ decoded: 0, total: 0 });
+  };
+
   const onScanResult = (qrPayload: SeedInfo[]) => {
     try {
       qrPayload.forEach((qr) => {
@@ -78,7 +83,7 @@ const ParitySignerQrReader = ({ size = 300, className, onResult }: Props) => {
       setTimeout(() => onResult(qrPayload), RESULT_DELAY);
     } catch (error) {
       setCameraState(CameraState.INVALID_ERROR);
-      setActiveCamera(undefined);
+      resetCamera();
     }
   };
 
@@ -91,8 +96,7 @@ const ParitySignerQrReader = ({ size = 300, className, onResult }: Props) => {
       setCameraState(CameraState.UNKNOWN_ERROR);
     }
 
-    setActiveCamera(undefined);
-    setProgress({ decoded: 0, total: 0 });
+    resetCamera();
   };
 
   if (isCameraError) {

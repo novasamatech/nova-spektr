@@ -9,7 +9,7 @@ const NETWORK_CONNECTION_STATUS: Record<ConnectionStatus, (type: ConnectionType,
   [ConnectionStatus.NONE]: () => null,
   [ConnectionStatus.ERROR]: (type: ConnectionType, nodeUrl: string) => (
     <div className="flex items-center gap-x-1">
-      <Icon className="text-error border border-error rounded-full bg-white p-[1px]" name="checkmark" size={12} />
+      <Icon className="text-error border border-error rounded-full bg-white p-[1px]" name="close" size={12} />
       <p className="text-xs font-semibold text-neutral-variant">
         {type === ConnectionType.LIGHT_CLIENT && 'Light client'}
         {type === ConnectionType.AUTO_BALANCE && 'Auto balance'}
