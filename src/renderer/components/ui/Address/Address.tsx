@@ -6,11 +6,12 @@ import Truncate from '../Truncate/Truncate';
 import { getShortAddress } from '@renderer/utils/strings';
 
 type AddressType = 'full' | 'short' | 'adaptive';
-type AddressStyle = 'small' | 'normal';
+type AddressStyle = 'small' | 'normal' | 'large';
 
 const Styles: Record<AddressStyle, string> = {
   small: 'text-2xs text-neutral-variant font-normal',
-  normal: 'text-gray-500 text-sm',
+  normal: 'text-xs text-neutral-variant font-normal',
+  large: 'text-sm text-gray-500',
 };
 
 interface Props extends HTMLAttributes<HTMLSpanElement> {

@@ -8,6 +8,7 @@ import Onboarding from './Onboarding';
 import History from './History/History';
 import Balances from './Balances';
 import Staking from './Staking/Staking';
+import Signing from './Signing/Signing';
 
 export default {
   MultisigOperations,
@@ -20,4 +21,5 @@ export default {
   Staking,
   ChatDev,
   CameraDev,
+  Signing,
 };
