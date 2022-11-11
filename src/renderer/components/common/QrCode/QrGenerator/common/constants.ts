@@ -1,4 +1,4 @@
-export const FRAME_SIZE = 128;
+export const FRAME_SIZE = 512;
 export const SUBSTRATE_ID = new Uint8Array([0x53]);
 export const CRYPTO_SR25519 = new Uint8Array([0x01]);
 export const CRYPTO_ED25519 = new Uint8Array([0x00]);
