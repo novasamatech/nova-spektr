@@ -24,10 +24,11 @@ const routesConfig: RouteObject[] = [
     children: [
       { index: true, element: <Screens.Balances /> },
       { path: Paths.ADDRESS_BOOK, element: <Screens.AddressBook /> },
+      { path: Paths.SIGNING, element: <Screens.Signing /> },
       { path: Paths.MULTISIG, element: <Screens.MultisigOperations /> },
       { path: Paths.HISTORY, element: <Screens.History /> },
-      { path: Paths.TRANSFER, element: <Screens.Transfer /> },
       { path: Paths.BALANCES, element: <Screens.Balances /> },
+      { path: Paths.STAKING, element: <Screens.Staking /> },
       { path: Paths.CHAT_DEV, element: <Screens.ChatDev /> },
       { path: Paths.CAMERA_DEV, element: <Screens.CameraDev /> },
       {

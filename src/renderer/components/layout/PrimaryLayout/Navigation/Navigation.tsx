@@ -1,28 +1,30 @@
 import cn from 'classnames';
 import { useRef, useState } from 'react';
-import { NavLink, useNavigate } from 'react-router-dom';
+import { NavLink } from 'react-router-dom';
 
-import { Button, Icon, Identicon } from '@renderer/components/ui';
-import { useMatrix } from '@renderer/context/MatrixContext';
 import Paths from '@renderer/routes/paths';
+import { Icon, Identicon } from '@renderer/components/ui';
+// import { useMatrix } from '@renderer/context/MatrixContext';
 import { useI18n } from '@renderer/context/I18nContext';
 import { useWallet } from '@renderer/services/wallet/walletService';
 import { WalletType } from '@renderer/domain/wallet';
 import Wallets from '../Wallets/Wallets';
 import useClickOutside from '@renderer/hooks/useClickOutside';
 
-const CardStyle = {
+const CardStyle: Record<WalletType, string> = {
   [WalletType.WATCH_ONLY]: 'bg-alert',
   [WalletType.PARITY]: 'bg-primary',
 };
 
 const NavItems = [
   { icon: <Icon name="balance" />, title: 'navigation.balancesLabel', link: Paths.BALANCES },
-  { icon: <Icon name="history" />, title: 'navigation.historyLabel', link: Paths.HISTORY },
-  { icon: <Icon name="operations" />, title: 'navigation.mstOperationLabel', link: Paths.MULTISIG },
-  { icon: <Icon name="book" />, title: 'navigation.addressBookLabel', link: Paths.ADDRESS_BOOK },
+  { icon: <Icon name="staking" />, title: 'navigation.stakingLabel', link: Paths.STAKING },
+  // { icon: <Icon name="history" />, title: 'navigation.historyLabel', link: Paths.HISTORY },
+  // { icon: <Icon name="operations" />, title: 'navigation.mstOperationLabel', link: Paths.MULTISIG },
+  // { icon: <Icon name="book" />, title: 'navigation.addressBookLabel', link: Paths.ADDRESS_BOOK },
   // { icon: <Icon name="btc" />, title: 'navigation.chatDEVLabel', link: Paths.CHAT_DEV },
   { icon: <Icon name="eth" />, title: 'navigation.cameraDEVLabel', link: Paths.CAMERA_DEV },
+  { icon: <Icon name="history" />, title: 'navigation.signingDEVLabel', link: Paths.SIGNING },
 ];
 
 const Navigation = () => {
@@ -33,28 +35,28 @@ const Navigation = () => {
   const activeWallets = getActiveWallets();
   const walletType = activeWallets?.[0]?.type || WalletType.PARITY;
 
-  const navigate = useNavigate();
-  const { matrix, setIsLoggedIn } = useMatrix();
+  // const navigate = useNavigate();
+  // const { matrix, setIsLoggedIn } = useMatrix();
 
-  const [isProcessing, setIsProcessing] = useState(false);
+  // const [isProcessing, setIsProcessing] = useState(false);
   const [isWalletsOpen, setIsWalletsOpen] = useState(false);
 
   useClickOutside([walletsRef, showWalletsRef], () => {
     setIsWalletsOpen(false);
   });
 
-  const onLogout = async () => {
-    setIsProcessing(true);
-
-    try {
-      await matrix.logout();
-      setIsLoggedIn(false);
-      navigate(Paths.LOGIN);
-    } catch (error) {
-      console.warn(error);
-      setIsProcessing(false);
-    }
-  };
+  // const onLogout = async () => {
+  //   setIsProcessing(true);
+  //
+  //   try {
+  //     await matrix.logout();
+  //     setIsLoggedIn(false);
+  //     navigate(Paths.LOGIN);
+  //   } catch (error) {
+  //     console.warn(error);
+  //     setIsProcessing(false);
+  //   }
+  // };
 
   const currentWallet = activeWallets?.length ? activeWallets[0] : undefined;
   const currentAccount = currentWallet?.mainAccounts[0] || currentWallet?.chainAccounts[0];
@@ -104,11 +106,11 @@ const Navigation = () => {
             ))}
           </ul>
         </nav>
-        {matrix.isLoggedIn && (
-          <Button variant="outline" pallet="primary" disabled={isProcessing} onClick={onLogout}>
-            {t('Logout')}
-          </Button>
-        )}
+        {/*{matrix.isLoggedIn && (*/}
+        {/*  <Button variant="outline" pallet="primary" disabled={isProcessing} onClick={onLogout}>*/}
+        {/*    {t('Logout')}*/}
+        {/*  </Button>*/}
+        {/*)}*/}
 
         <div>
           <NavLink
@@ -125,7 +127,7 @@ const Navigation = () => {
           </NavLink>
           <div className="flex justify-between bg-gradient-to-b from-shade-2 py-2 px-3 rounded-t-2lg">
             <LocaleComponent top short />
-            <Icon className="text-success" name="networkDuotone" />
+            {/*<Icon className="text-success" name="networkDuotone" />*/}
           </div>
         </div>
       </aside>

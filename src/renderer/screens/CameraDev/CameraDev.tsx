@@ -17,6 +17,11 @@ import {
   createSignPayload,
   createSignPayloadForMultipleTransactionSigning,
 } from '@renderer/components/common/QrCode/QrGenerator/common/utils';
+import { TransactionType } from '@renderer/services/transaction/common/types';
+import { useNetworkContext } from '@renderer/context/NetworkContext';
+import { useChains } from '@renderer/services/network/chainsService';
+import { ConnectionType } from '@renderer/domain/connection';
+import { useTransaction } from '@renderer/services/transaction/transactionService';
 
 const CameraDev = () => {
   const inputRef = useRef<HTMLInputElement>(null);
@@ -27,25 +32,50 @@ const CameraDev = () => {
 
   const [availableCameras, setAvailableCameras] = useState<VideoInput[]>([]);
   const [activeCameraId, setActiveCameraId] = useState('');
+  const { connections } = useNetworkContext();
+  const { sortChains } = useChains();
+  const { createPayload } = useTransaction();
+  const sortedChains = sortChains(
+    Object.values(connections).filter((c) => c.connection.connectionType !== ConnectionType.DISABLED),
+  );
+  const currentConnection = sortedChains.find(
+    (c) => c.chainId == '0xe143f23803ac50e8f6f8e62695d1ce9e4e1d68aa36c1cd2cfd15340213f3423e',
+  );
 
   const onSetPayload = () => {
     setPayload('<Bytes>hello test this is my message</Bytes>');
   };
 
-  const onSetMultipleTransactions = () => {
+  const onSetMultipleTransactions = async () => {
+    //westend
+    const payload = await createPayload(
+      {
+        address: '5Dc1tzx4QDEDXetr98Mk4RjKSMFJiLBqr2Gmco7rjz8YfwMP',
+        type: TransactionType.TRANSFER,
+        args: {
+          dest: '5EZegcM27RuogrSoTbJWYRWmyBqDMeNK92FXjwcsbPBHavoP',
+          value: '1',
+        },
+      },
+      currentConnection.api,
+    );
     let transactions = [
       createSignPayloadForMultipleTransactionSigning(
         '5Dc1tzx4QDEDXetr98Mk4RjKSMFJiLBqr2Gmco7rjz8YfwMP',
         Command.Transaction,
-        '0x0403007a28037947ecebe0dd86dc0e910911cb33185fd0714b37b75943f67dcf9b6e7c02286bee',
+        payload,
         '0xe143f23803ac50e8f6f8e62695d1ce9e4e1d68aa36c1cd2cfd15340213f3423e',
       ),
-      new Uint8Array(),
+      createSignPayloadForMultipleTransactionSigning(
+        '5Dc1tzx4QDEDXetr98Mk4RjKSMFJiLBqr2Gmco7rjz8YfwMP',
+        Command.Transaction,
+        payload,
+        '0xe143f23803ac50e8f6f8e62695d1ce9e4e1d68aa36c1cd2cfd15340213f3423e',
+      ),
     ];
 
     let transactionsEncoded = u8aConcat(TRANSACTION_BULK.encode({ TransactionBulk: 'V1', payload: transactions }));
     let bulk = createMultipleTransactionSignedPayload(transactionsEncoded);
-    console.log(bulk);
     setMultipleTransaction(bulk);
     init().then(() => {
       let encoder = Encoder.with_defaults(bulk, 128);

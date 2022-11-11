@@ -1,7 +1,7 @@
 {
   "name": "omni-enterprise",
   "description": "Polkadot Enterprise application",
-  "version": "0.0.3",
+  "version": "0.1.0",
   "main": "./release/build/main.js",
   "license": "MIT",
   "author": {
@@ -10,14 +10,14 @@
   "scripts": {
     "start": "pnpm clean:build && concurrently \"pnpm start:renderer\" \"pnpm start:main\" && watch",
     "start:electron": "electron .",
-    "start:renderer": "cross-env NODE_ENV=development pnpm webpack:serve",
+    "start:renderer": "cross-env NODE_ENV=development CHAINS_FILE=dev pnpm webpack:serve",
     "start:main": "cross-env NODE_ENV=development pnpm r webpack:main:dev start:electron",
     "watch": "nodemon --watch src/main --watch src/renderer/bridge --watch src/shared --ignore src/main/resources --ext \"*\" --exec",
     "webpack:serve": "webpack serve --config webpack/webpack.renderer.dev.ts",
     "webpack:main:dev": "webpack --config webpack/webpack.main.dev.ts",
     "webpack:main:prod": "webpack --config webpack/webpack.main.prod.ts",
     "webpack:renderer:prod": "webpack --config webpack/webpack.renderer.prod.ts",
-    "build": "cross-env NODE_ENV=production pnpm r clean:prod webpack:renderer:prod webpack:main:prod",
+    "build": "cross-env NODE_ENV=production CHAINS_FILE=omni-prod pnpm r clean:prod webpack:renderer:prod webpack:main:prod",
     "postbuild": "node scripts/postbuild.js",
     "dist": "electron-builder -p never",
     "clean:build": "rimraf release/build",
@@ -45,6 +45,7 @@
     "pnpm": ">=7.x"
   },
   "dependencies": {
+    "@apollo/client": "^3.7.1",
     "@headlessui/react": "^1.6.5",
     "@matrix-org/olm": "https://gitlab.matrix.org/api/v4/projects/27/packages/npm/@matrix-org/olm/-/@matrix-org/olm-3.2.12.tgz",
     "@polkadot/api": "^9.6.1",
@@ -66,6 +67,7 @@
     "date-fns": "^2.29.2",
     "dexie": "^3.2.2",
     "dexie-react-hooks": "^1.1.1",
+    "graphql": "^16.6.0",
     "i18next": "^21.8.13",
     "lodash": "^4.17.21",
     "matrix-js-sdk": "^19.0.0",

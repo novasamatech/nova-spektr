@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom';
 
 import { Dropdown, Icon } from '@renderer/components/ui';
-import { OptionType } from '@renderer/components/ui/Dropdown/Dropdown';
+import { OptionType } from '@renderer/components/ui/Dropdown/common/types';
 import { useI18n } from '@renderer/context/I18nContext';
 import Paths from '@renderer/routes/paths';
 
@@ -54,26 +54,26 @@ const Overview = () => {
               <Icon className="ml-auto" name="right" />
             </Link>
           </li>
-          <li>
-            <Link
-              to={Paths.CREDENTIALS}
-              className="flex items-center gap-x-2.5 w-full px-[15px] py-5 text-neutral-variant bg-white rounded-2lg shadow-surface transition focus:shadow-element hover:shadow-element"
-            >
-              <Icon name="network" />
-              <div>
-                <p className="font-semibold text-base">{t('settings.matrixLabel')}</p>
-                <p className="text-shade-40 text-xs">{t('settings.matrixDetailsLabel')}</p>
-              </div>
-              <Icon className="ml-auto" name="right" />
-            </Link>
-          </li>
+          {/*<li>*/}
+          {/*  <Link*/}
+          {/*    to={Paths.CREDENTIALS}*/}
+          {/*    className="flex items-center gap-x-2.5 w-full px-[15px] py-5 text-neutral-variant bg-white rounded-2lg shadow-surface transition focus:shadow-element hover:shadow-element"*/}
+          {/*  >*/}
+          {/*    <Icon name="network" />*/}
+          {/*    <div>*/}
+          {/*      <p className="font-semibold text-base">{t('settings.matrixLabel')}</p>*/}
+          {/*      <p className="text-shade-40 text-xs">{t('settings.matrixDetailsLabel')}</p>*/}
+          {/*    </div>*/}
+          {/*    <Icon className="ml-auto" name="right" />*/}
+          {/*  </Link>*/}
+          {/*</li>*/}
         </ul>
 
         <div className="mt-15 mb-7.5">
           <p className="uppercase font-bold text-neutral-variant text-2xs">{t('settings.getInTouchLabel')}!</p>
           <ul className="flex justify-center gap-x-2.5 mt-2.5" data-testid="social">
             <li>
-              <a href="#" target="_blank" rel="noopener noreferrer">
+              <a href="https://twitter.com/NovasamaTech" target="_blank" rel="noopener noreferrer">
                 <Icon className="text-[#1DA1F2]" name="twitterCutout" size={32} />
               </a>
             </li>
@@ -88,7 +88,7 @@ const Overview = () => {
               </a>
             </li>
             <li>
-              <a href="#" target="_blank" rel="noopener noreferrer">
+              <a href="https://github.com/nova-wallet/" target="_blank" rel="noopener noreferrer">
                 <Icon className="text-neutral" name="githubCutout" size={32} />
               </a>
             </li>

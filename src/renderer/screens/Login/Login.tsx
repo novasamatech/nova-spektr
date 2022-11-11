@@ -64,7 +64,7 @@ const Login = () => {
   };
 
   return (
-    <div className="flex flex-col items-center mx-auto bg-stripes bg-cover h-screen">
+    <div className="flex flex-col items-center mx-auto bg-cover h-screen">
       <header className="flex flex-col items-center pt-14">
         {/* eslint-disable-next-line i18next/no-literal-string */}
         <h1 className="mt-5 mb-3 font-bold text-3xl">Welcome to Omni Enterprise!</h1>
