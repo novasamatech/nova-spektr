@@ -219,7 +219,24 @@
     "troubleshootingLink": "I have an error in Parity Signer"
   },
   "staking": {
-    "title": "Стейкинг"
+    "overview": {
+      "noActiveWalletsDescription": "Пожалуйста, выберите кошелек для просмотра стейкинга",
+      "noActiveWalletsLabel": "Нет выбранных кошельков",
+      "noResultsDescription": "Пожалуйста, попробуйте другие параметры фильтрации",
+      "noResultsLabel": "Сттейкинги не найдены",
+      "searchPlaceholder": "Искать по имени кошелька"
+    },
+    "startStaking": {
+      "selectNetworkLabel": "Select network",
+      "subtitle": "Начать Стейкинг"
+    },
+    "title": "Стейкинг",
+    "unbond": {
+      "subtitle": "Отвязать токены"
+    },
+    "validators": {
+      "subtitle": "Валидаторы"
+    }
   },
   "transfers": {
     "title": "Переводы"

@@ -2,7 +2,7 @@ import { createContext, PropsWithChildren, useContext, useEffect, useState } fro
 
 import { RpcNode } from '@renderer/domain/chain';
 import { ConnectionType } from '@renderer/domain/connection';
-import { ChainId, HexString, PublicKey } from '@renderer/domain/shared-kernel';
+import { ChainId, PublicKey } from '@renderer/domain/shared-kernel';
 import { useBalance } from '@renderer/services/balance/balanceService';
 import { TEST_PUBLIC_KEY } from '@renderer/services/balance/common/constants';
 import { ConnectProps, ExtendedChain, RpcValidation } from '@renderer/services/network/common/types';
@@ -11,11 +11,11 @@ import { useWallet } from '@renderer/services/wallet/walletService';
 import { useSubscription } from '@renderer/services/subscription/subscriptionService';
 
 type NetworkContextProps = {
-  connections: Record<string, ExtendedChain>;
+  connections: Record<ChainId, ExtendedChain>;
   addRpcNode: (chainId: ChainId, rpcNode: RpcNode) => Promise<void>;
   updateRpcNode: (chainId: ChainId, oldNode: RpcNode, newNode: RpcNode) => Promise<void>;
   removeRpcNode: (chainId: ChainId, rpcNode: RpcNode) => Promise<void>;
-  validateRpcNode: (genesisHash: HexString, rpcUrl: string) => Promise<RpcValidation>;
+  validateRpcNode: (genesisHash: ChainId, rpcUrl: string) => Promise<RpcValidation>;
   connectToNetwork: (props: ConnectProps) => Promise<void>;
   connectWithAutoBalance: (chainId: ChainId, attempt: number) => Promise<void>;
 };
@@ -23,16 +23,15 @@ type NetworkContextProps = {
 const NetworkContext = createContext<NetworkContextProps>({} as NetworkContextProps);
 
 export const NetworkProvider = ({ children }: PropsWithChildren) => {
-  const [connectionsReady, setConnectionReady] = useState(false);
-  const { subscribe, hasSubscription, unsubscribe } = useSubscription();
+  const { subscribe, hasSubscription, unsubscribe } = useSubscription<ChainId>();
   const { connections, setupConnections, connectToNetwork, connectWithAutoBalance, ...rest } = useNetwork(unsubscribe);
   const { subscribeBalances, subscribeLockBalances } = useBalance();
   const { getActiveWallets } = useWallet();
   const activeWallets = getActiveWallets();
 
-  useEffect(() => {
-    if (connectionsReady) return;
+  const [connectionsReady, setConnectionReady] = useState(false);
 
+  useEffect(() => {
     (async () => {
       await setupConnections();
       setConnectionReady(true);

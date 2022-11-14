@@ -2,17 +2,11 @@ import { BrowserCodeReader, BrowserQRCodeReader, IScannerControls } from '@zxing
 import cn from 'classnames';
 import init from 'raptorq';
 import { useEffect, useRef } from 'react';
-import { isHex } from '@polkadot/util';
 
 import { useI18n } from '@renderer/context/I18nContext';
 import { ErrorFields } from './common/constants';
 import { QR_READER_ERRORS } from './common/errors';
 import { DecodeCallback, ErrorObject, QrError, VideoInput } from './common/types';
-
-const enum Status {
-  'FIRST_FRAME',
-  'NEXT_FRAME',
-}
 
 type Props = {
   size?: number;

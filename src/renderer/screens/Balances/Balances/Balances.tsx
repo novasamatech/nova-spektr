@@ -101,7 +101,7 @@ const Balances = () => {
             ))}
 
             <div className="hidden only:flex w-full h-full flex-col items-center justify-center">
-              <Icon name="noResult" size={380} />
+              <Icon name="noResults" size={380} />
               <p className="text-neutral text-3xl font-bold">{t('balances.emptyStateLabel')}</p>
               <p className="text-neutral-variant text-base font-normal">{t('balances.emptyStateDescription')}</p>
             </div>

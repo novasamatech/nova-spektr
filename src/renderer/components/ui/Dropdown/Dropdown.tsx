@@ -4,7 +4,7 @@ import { Fragment } from 'react';
 
 import { Icon } from '@renderer/components/ui';
 import { ViewClass } from './common/constants';
-import { OptionType, Variant } from './common/types';
+import { DropdownOption, Variant } from './common/types';
 
 // TODO: lg - 10px - x 14px - y
 // TODO: md - 10px - x 12px - y
@@ -13,10 +13,10 @@ import { OptionType, Variant } from './common/types';
 type Props = {
   className?: string;
   placeholder: string;
-  selected?: OptionType;
-  options: OptionType[];
+  selected?: DropdownOption;
+  options: DropdownOption[];
   variant?: Variant;
-  onSelected: (data: OptionType) => void;
+  onSelected: (data: DropdownOption) => void;
 };
 
 const Dropdown = ({ className, placeholder, selected, options, variant = 'down', onSelected }: Props) => (
@@ -62,7 +62,7 @@ const Dropdown = ({ className, placeholder, selected, options, variant = 'down',
         <Transition as={Fragment} leave="transition" leaveFrom="opacity-100" leaveTo="opacity-0">
           <Listbox.Options
             className={cn(
-              'absolute top-10.5 mt-2.5 py-2.5 max-h-60 w-full overflow-auto',
+              'absolute z-10 top-10.5 mt-2.5 py-2.5 max-h-60 w-full overflow-auto shadow-element',
               'border border-primary rounded-2lg bg-white shadow-surface focus:outline-none',
               variant !== 'auto' && ViewClass[variant],
             )}

@@ -1,11 +1,10 @@
-import { isHex } from '@polkadot/util';
 import cn from 'classnames';
 import { useState } from 'react';
 
 import { QrSignatureReader } from '@renderer/components/common';
 import { ErrorObject, QrError, VideoInput } from '@renderer/components/common/QrCode/QrReader/common/types';
 import { Button, Dropdown, Icon } from '@renderer/components/ui';
-import { OptionType } from '@renderer/components/ui/Dropdown/Dropdown';
+import { DropdownOption } from '@renderer/components/ui/Dropdown/common/types';
 import { useI18n } from '@renderer/context/I18nContext';
 import { secondsToMinutes } from '../common/utils';
 
@@ -33,8 +32,8 @@ const ParitySignerSignatureReader = ({ size = 300, className, onResult, countdow
   const { t } = useI18n();
 
   const [cameraState, setCameraState] = useState<CameraState>(CameraState.LOADING);
-  const [activeCamera, setActiveCamera] = useState<OptionType>();
-  const [availableCameras, setAvailableCameras] = useState<OptionType[]>([]);
+  const [activeCamera, setActiveCamera] = useState<DropdownOption<string>>();
+  const [availableCameras, setAvailableCameras] = useState<DropdownOption<string>[]>([]);
 
   const [isScanComplete, setIsScanComplete] = useState(false);
 

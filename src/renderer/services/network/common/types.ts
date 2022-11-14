@@ -3,7 +3,7 @@ import { ProviderInterface } from '@polkadot/rpc-provider/types';
 
 import { Chain, RpcNode } from '@renderer/domain/chain';
 import { Connection, ConnectionType } from '@renderer/domain/connection';
-import { ChainId, HexString } from '@renderer/domain/shared-kernel';
+import { ChainId } from '@renderer/domain/shared-kernel';
 
 // =====================================================
 // ================ Service interface ==================
@@ -11,7 +11,7 @@ import { ChainId, HexString } from '@renderer/domain/shared-kernel';
 
 export interface IChainService {
   getChainsData: () => Promise<Chain[]>;
-  sortChains: <T extends Chain = Chain>(chains: T[]) => T[];
+  sortChains: <T extends ChainLike>(chains: T[]) => T[];
 }
 
 export interface IChainSpecService {
@@ -20,12 +20,12 @@ export interface IChainSpecService {
 }
 
 export interface INetworkService {
-  connections: Record<string, ExtendedChain>;
+  connections: ConnectionsMap;
   setupConnections: () => Promise<void>;
   addRpcNode: (chainId: ChainId, rpcNode: RpcNode) => Promise<void>;
   updateRpcNode: (chainId: ChainId, oldNode: RpcNode, newNode: RpcNode) => Promise<void>;
   removeRpcNode: (chainId: ChainId, rpcNode: RpcNode) => Promise<void>;
-  validateRpcNode: (genesisHash: HexString, rpcUrl: string) => Promise<RpcValidation>;
+  validateRpcNode: (genesisHash: ChainId, rpcUrl: string) => Promise<RpcValidation>;
   connectToNetwork: (props: ConnectProps) => Promise<void>;
   connectWithAutoBalance: (chainId: ChainId, attempt: number) => Promise<void>;
 }
@@ -33,6 +33,8 @@ export interface INetworkService {
 // =====================================================
 // ======================= General =====================
 // =====================================================
+
+export type ChainLike = Pick<Chain, 'name' | 'options'>;
 
 export const enum RpcValidation {
   'INVALID',
