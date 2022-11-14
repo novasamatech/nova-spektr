@@ -1,13 +1,12 @@
-import { hexToU8a, isHex } from '@polkadot/util';
-import { decodeAddress, encodeAddress } from '@polkadot/util-crypto';
 import cn from 'classnames';
 import { useState } from 'react';
 
-import { QrReader } from '@renderer/components/common';
-import { ErrorObject, QrError, SeedInfo, VideoInput } from '@renderer/components/common/QrCode/QrReader/common/types';
+import { QrSignatureReader } from '@renderer/components/common';
+import { ErrorObject, QrError, VideoInput } from '@renderer/components/common/QrCode/QrReader/common/types';
 import { Button, Dropdown, Icon } from '@renderer/components/ui';
 import { DropdownOption } from '@renderer/components/ui/Dropdown/common/types';
 import { useI18n } from '@renderer/context/I18nContext';
+import { secondsToMinutes } from '../common/utils';
 
 const enum CameraState {
   ACTIVE,
@@ -17,6 +16,7 @@ const enum CameraState {
   INVALID_ERROR,
   DECODE_ERROR,
   DENY_ERROR,
+  EXPIRED_ERROR,
 }
 
 const RESULT_DELAY = 250;
@@ -24,18 +24,18 @@ const RESULT_DELAY = 250;
 type Props = {
   size?: number;
   className?: string;
-  onResult: (payload: SeedInfo[]) => void;
+  onResult: (payload: string) => void;
+  countdown?: number;
 };
 
-const ParitySignerQrReader = ({ size = 300, className, onResult }: Props) => {
+const ParitySignerSignatureReader = ({ size = 300, className, onResult, countdown }: Props) => {
   const { t } = useI18n();
 
   const [cameraState, setCameraState] = useState<CameraState>(CameraState.LOADING);
-  const [activeCamera, setActiveCamera] = useState<DropdownOption>();
-  const [availableCameras, setAvailableCameras] = useState<DropdownOption[]>([]);
+  const [activeCamera, setActiveCamera] = useState<DropdownOption<string>>();
+  const [availableCameras, setAvailableCameras] = useState<DropdownOption<string>[]>([]);
 
   const [isScanComplete, setIsScanComplete] = useState(false);
-  const [{ decoded, total }, setProgress] = useState({ decoded: 0, total: 0 });
 
   const isCameraPending = [CameraState.LOADING, CameraState.SELECT].includes(cameraState);
 
@@ -44,6 +44,7 @@ const ParitySignerQrReader = ({ size = 300, className, onResult }: Props) => {
     CameraState.INVALID_ERROR,
     CameraState.DECODE_ERROR,
     CameraState.DENY_ERROR,
+    CameraState.EXPIRED_ERROR,
   ].includes(cameraState);
 
   const onCameraList = (cameras: VideoInput[]) => {
@@ -63,27 +64,20 @@ const ParitySignerQrReader = ({ size = 300, className, onResult }: Props) => {
     setCameraState(CameraState.LOADING);
   };
 
-  const resetCamera = () => {
-    setActiveCamera(undefined);
-    setProgress({ decoded: 0, total: 0 });
-  };
+  const onScanResult = (qrPayload: string) => {
+    if (countdown === 0) {
+      setIsScanComplete(true);
+      setCameraState(CameraState.EXPIRED_ERROR);
 
-  const onScanResult = (qrPayload: SeedInfo[]) => {
+      return;
+    }
+
     try {
-      qrPayload.forEach((qr) => {
-        encodeAddress(qr.multiSigner?.public || '');
-        if (qr.derivedKeys.length === 0) return;
-
-        qr.derivedKeys.forEach(({ address }) =>
-          encodeAddress(isHex(address) ? hexToU8a(address) : decodeAddress(address)),
-        );
-      });
-
       setIsScanComplete(true);
       setTimeout(() => onResult(qrPayload), RESULT_DELAY);
     } catch (error) {
       setCameraState(CameraState.INVALID_ERROR);
-      resetCamera();
+      setActiveCamera(undefined);
     }
   };
 
@@ -96,7 +90,7 @@ const ParitySignerQrReader = ({ size = 300, className, onResult }: Props) => {
       setCameraState(CameraState.UNKNOWN_ERROR);
     }
 
-    resetCamera();
+    setActiveCamera(undefined);
   };
 
   if (isCameraError) {
@@ -141,6 +135,13 @@ const ParitySignerQrReader = ({ size = 300, className, onResult }: Props) => {
               <p className="text-neutral-variant text-sm">{t('onboarding.paritySigner.accessDeniedDescription')}</p>
             </>
           )}
+          {cameraState === CameraState.EXPIRED_ERROR && (
+            <>
+              <Icon className="text-alert" name="warnCutout" size={70} />
+              <p className="text-neutral text-xl leading-6 font-semibold mt-5">{t('signing.signatureExpiredLabel')}</p>
+              <p className="text-neutral-variant text-sm">{t('signing.signatureExpiredDescription')}</p>
+            </>
+          )}
         </div>
 
         {[CameraState.UNKNOWN_ERROR, CameraState.DENY_ERROR, CameraState.DECODE_ERROR].includes(cameraState) && (
@@ -149,7 +150,13 @@ const ParitySignerQrReader = ({ size = 300, className, onResult }: Props) => {
           </Button>
         )}
         {cameraState === CameraState.INVALID_ERROR && (
-          <Button className="w-max mb-5" weight="lg" variant="fill" pallet="primary" onClick={onRetryCamera}>
+          <Button
+            className="w-max mb-5"
+            weight="lg"
+            variant="fill"
+            pallet="primary"
+            onClick={() => setCameraState(CameraState.ACTIVE)}
+          >
             {t('onboarding.paritySigner.scanAgainButton')}
           </Button>
         )}
@@ -193,13 +200,12 @@ const ParitySignerQrReader = ({ size = 300, className, onResult }: Props) => {
       )}
 
       <div className={cn('relative bg-shade-40', isCameraPending && 'hidden', className)}>
-        <QrReader
+        <QrSignatureReader
           size={size}
           className={className}
           cameraId={activeCamera?.value}
           onStart={() => setCameraState(CameraState.ACTIVE)}
           onCameraList={onCameraList}
-          onProgress={setProgress}
           onResult={onScanResult}
           onError={onError}
         />
@@ -213,32 +219,31 @@ const ParitySignerQrReader = ({ size = 300, className, onResult }: Props) => {
             />
           </>
         ) : (
-          <Icon name="qrFrame" size={250} className="absolute left-1/2 top-20 -translate-x-1/2 text-white" />
+          <Icon
+            name="qrFrame"
+            size={250}
+            className="absolute left-1/2 top-1/2 -translate-y-1/2 -translate-x-1/2 text-white"
+          />
         )}
-        <div className="absolute bottom-2.5 left-1/2 -translate-x-1/2 w-[calc(100%-20px)] p-[15px] pb-6 rounded-lg bg-white">
-          <div className="grid grid-flow-col grid-rows-2">
-            <p className="text-2xs text-neutral">{t('qrReader.parsingLabel')}</p>
-            <p className="text-2xs text-shade-40">{t('qrReader.parsingSubLabel')}</p>
-            <p
-              className="row-span-2 self-center justify-self-end text-lg leading-6 text-shade-40"
-              data-testid="progress"
-            >
-              <span className={cn(decoded > 0 ? 'text-success' : 'text-shade-40')}>{decoded}</span>
-              {/* eslint-disable-next-line i18next/no-literal-string */}
-              <span className={cn(decoded > 0 && decoded === total && 'text-success')}> / {total}</span>
-            </p>
-          </div>
-          <div className="relative mt-2">
-            <div className="absolute top-0 left-0 h-2 w-full border-2 border-shade-20 rounded-2lg" />
-            <div
-              className="absolute top-0 left-0 h-2 bg-neutral rounded-2lg transition-[width]"
-              style={{ width: (decoded / total || 0) * 100 + '%' }}
-            />
-          </div>
+
+        <div className="absolute bottom-2.5 left-1/2 -translate-x-1/2 w-[calc(100%-20px)] p-[15px] rounded-lg bg-white">
+          {countdown && countdown > 0 ? (
+            <div className="flex m-auto items-center justify-center uppercase font-normal text-xs gap-1.25">
+              {t('signing.qrCountdownTitle')}
+              <div className="rounded-md bg-success text-white py-0.5 px-1.5">{secondsToMinutes(countdown || 0)}</div>
+            </div>
+          ) : (
+            <div>
+              <p className="text-error text-xl text-center leading-6 font-semibold">
+                {t('signing.signatureExpiredLabel')}
+              </p>
+              <p className="text-neutral-variant text-center text-sm">{t('signing.signatureExpiredDescription')}</p>
+            </div>
+          )}
         </div>
       </div>
     </>
   );
 };
 
-export default ParitySignerQrReader;
+export default ParitySignerSignatureReader;

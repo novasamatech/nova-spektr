@@ -12,6 +12,7 @@ import { useChainSpec } from './chainSpecService';
 import { useChains } from './chainsService';
 import { AUTO_BALANCE_TIMEOUT, MAX_ATTEMPTS, PROGRESSION_BASE } from './common/constants';
 import { ConnectionsMap, ConnectProps, INetworkService, RpcValidation } from './common/types';
+import { isKusama } from '@renderer/services/network/common/utils';
 
 export const useNetwork = (unsubscribe?: (chainId: ChainId) => Promise<void>): INetworkService => {
   const chains = useRef<Record<ChainId, Chain>>({});
@@ -109,8 +110,11 @@ export const useNetwork = (unsubscribe?: (chainId: ChainId) => Promise<void>): I
           activeNode: updatedActiveNode(chainId, connectionData[chainId], nodes[0]),
         });
       } else {
-        const connectionType = getKnownChain(chainId) ? ConnectionType.LIGHT_CLIENT : ConnectionType.RPC_NODE;
-        const activeNode = connectionType === ConnectionType.RPC_NODE ? nodes[0] : undefined;
+        const connectionType =
+          getKnownChain(chainId) && !isKusama(chains.current[chainId].name)
+            ? ConnectionType.LIGHT_CLIENT
+            : ConnectionType.AUTO_BALANCE;
+        const activeNode = connectionType === ConnectionType.AUTO_BALANCE ? nodes[0] : undefined;
 
         acc.push({
           chainId,

@@ -6,6 +6,7 @@ import YoutubeCutoutImg, { ReactComponent as YoutubeCutoutSvg } from '@images/ae
 import GithubCutoutImg, { ReactComponent as GithubCutoutSvg } from '@images/aesthetics/github-cutout.svg';
 import LanguageImg, { ReactComponent as LanguageSvg } from '@images/aesthetics/language.svg';
 import ShieldImg, { ReactComponent as ShieldSvg } from '@images/aesthetics/shield.svg';
+import GlobeImg, { ReactComponent as GlobeSvg } from '@images/aesthetics/globe.svg';
 
 const AestheticImages = {
   loader: { svg: LoaderSvg, img: LoaderImg },
@@ -16,6 +17,7 @@ const AestheticImages = {
   githubCutout: { svg: GithubCutoutSvg, img: GithubCutoutImg },
   language: { svg: LanguageSvg, img: LanguageImg },
   shield: { svg: ShieldSvg, img: ShieldImg },
+  globe: { svg: GlobeSvg, img: GlobeImg },
 } as const;
 
 export type Aesthetic = keyof typeof AestheticImages;

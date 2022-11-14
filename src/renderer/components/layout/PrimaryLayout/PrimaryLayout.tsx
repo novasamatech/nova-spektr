@@ -4,7 +4,7 @@ import Navigation from './Navigation/Navigation';
 
 const PrimaryLayout = () => {
   return (
-    <div className="flex bg-stripes bg-cover h-screen">
+    <div className="flex bg-cover h-screen">
       <Navigation />
       <main className="pl-10 pt-5 pr-5 flex-1">
         <Outlet />
