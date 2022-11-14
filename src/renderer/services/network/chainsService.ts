@@ -1,11 +1,11 @@
 import compact from 'lodash/compact';
 import sortBy from 'lodash/sortBy';
 
-import chainsDev from './common/chains/chains.json';
-import chainsOmniDev from './common/chains/omni-chains_dev.json';
-import chainsOmniProd from './common/chains/omni-chains.json';
-import { ChainLike, IChainService } from './common/types';
 import { Chain } from '@renderer/domain/chain';
+import chainsDev from './common/chains/chains.json';
+import chainsOmniProd from './common/chains/omni-chains.json';
+import chainsOmniDev from './common/chains/omni-chains_dev.json';
+import { ChainLike, IChainService } from './common/types';
 import { isKusama, isPolkadot, isTestnet } from './common/utils';
 
 const CHAINS: Record<string, any> = {

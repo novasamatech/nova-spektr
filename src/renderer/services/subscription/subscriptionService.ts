@@ -5,10 +5,10 @@ import { ISubscriptionService, SubsType } from './common/types';
 export const useSubscription = <T extends string>(): ISubscriptionService<T> => {
   const subscriptions = useRef<SubsType<T>>({} as SubsType<T>);
 
-  const subscribe = (chainId: T, unsubscribe: Promise<any>): void => {
-    subscriptions.current[chainId]
-      ? subscriptions.current[chainId].push(unsubscribe)
-      : (subscriptions.current[chainId] = [unsubscribe]);
+  const subscribe = (key: T, unsubscribe: Promise<any>): void => {
+    subscriptions.current[key]
+      ? subscriptions.current[key].push(unsubscribe)
+      : (subscriptions.current[key] = [unsubscribe]);
   };
 
   const unsubscribe = async (key: T): Promise<void> => {

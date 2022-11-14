@@ -2,9 +2,8 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 
-import { getShortAddress } from '@renderer/utils/strings';
 import wallets from '@renderer/components/layout/PrimaryLayout/Wallets/Wallets';
-import { ButtonBack, Dropdown, Icon, Identicon, Input } from '@renderer/components/ui';
+import { Address, ButtonBack, Dropdown, Icon, Identicon, Input } from '@renderer/components/ui';
 import { DropdownOption } from '@renderer/components/ui/Dropdown/common/types';
 import { useI18n } from '@renderer/context/I18nContext';
 import { useNetworkContext } from '@renderer/context/NetworkContext';
@@ -113,7 +112,7 @@ const Overview = () => {
         </div>
         {wallets.length === 0 && (
           <div className="flex flex-col items-center mx-auto pt-12 pb-15">
-            <Icon as="img" name="noResultVar2" size={300} />
+            <Icon as="img" name="noWallets" size={300} />
             <p className="text-center text-2xl font-bold leading-7 text-neutral">
               {t('staking.overview.noActiveWalletsLabel')}
             </p>
@@ -124,7 +123,7 @@ const Overview = () => {
         )}
         {wallets.length > 0 && formattedWallets.length === 0 && (
           <div className="flex flex-col items-center mx-auto pt-12 pb-15">
-            <Icon as="img" name="noResultVar2" size={300} />
+            <Icon as="img" name="noWallets" size={300} />
             <p className="text-center text-2xl font-bold leading-7 text-neutral">
               {t('staking.overview.noResultsLabel')}
             </p>
@@ -141,9 +140,11 @@ const Overview = () => {
                     <p className="text-lg">{wallet.name}</p>
                   </div>
                   <div className="p-2.5 pt-[66px] rounded-2lg bg-tertiary text-white">
-                    <p className="text-xs">Stash - {getShortAddress(staking[wallet.accountId]?.stash, 10) || 'NONE'}</p>
                     <p className="text-xs">
-                      Controller - {getShortAddress(staking[wallet.accountId]?.controller, 10) || 'NONE'}
+                      S - <Address address={staking[wallet.accountId]?.stash || ''} type="short" />
+                    </p>
+                    <p className="text-xs">
+                      C - <Address address={staking[wallet.accountId]?.controller || ''} type="short" />
                     </p>
                   </div>
                   {staking[wallet.accountId] ? (
