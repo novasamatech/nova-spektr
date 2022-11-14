@@ -11,7 +11,7 @@ import { useWallet } from '@renderer/services/wallet/walletService';
 import { useSubscription } from '@renderer/services/subscription/subscriptionService';
 
 type NetworkContextProps = {
-  connections: Record<string, ExtendedChain>;
+  connections: Record<ChainId, ExtendedChain>;
   addRpcNode: (chainId: ChainId, rpcNode: RpcNode) => Promise<void>;
   updateRpcNode: (chainId: ChainId, oldNode: RpcNode, newNode: RpcNode) => Promise<void>;
   removeRpcNode: (chainId: ChainId, rpcNode: RpcNode) => Promise<void>;
@@ -23,16 +23,15 @@ type NetworkContextProps = {
 const NetworkContext = createContext<NetworkContextProps>({} as NetworkContextProps);
 
 export const NetworkProvider = ({ children }: PropsWithChildren) => {
-  const [connectionsReady, setConnectionReady] = useState(false);
   const { subscribe, hasSubscription, unsubscribe } = useSubscription<ChainId>();
   const { connections, setupConnections, connectToNetwork, connectWithAutoBalance, ...rest } = useNetwork(unsubscribe);
   const { subscribeBalances, subscribeLockBalances } = useBalance();
   const { getActiveWallets } = useWallet();
   const activeWallets = getActiveWallets();
 
-  useEffect(() => {
-    if (connectionsReady) return;
+  const [connectionsReady, setConnectionReady] = useState(false);
 
+  useEffect(() => {
     (async () => {
       await setupConnections();
       setConnectionReady(true);

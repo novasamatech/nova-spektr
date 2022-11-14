@@ -1,9 +1,25 @@
 import { act, render, screen } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 
+import { StakingType } from '@renderer/domain/asset';
+import { ConnectionType } from '@renderer/domain/connection';
 import { TEST_PUBLIC_KEY } from '@renderer/services/balance/common/constants';
 import { Chain } from '@renderer/domain/chain';
 import Overview from './Overview';
+
+jest.mock('@renderer/context/NetworkContext', () => ({
+  useNetworkContext: jest.fn(() => ({
+    connections: {
+      '0x123': {
+        chainId: '0x123',
+        assets: [{ assetId: '1', symbol: '1', staking: StakingType.RELAYCHAIN }],
+        connection: {
+          connectionType: ConnectionType.RPC_NODE,
+        },
+      },
+    },
+  })),
+}));
 
 jest.mock('@renderer/services/network/chainsService', () => ({
   useChains: jest.fn().mockReturnValue({
@@ -27,6 +43,14 @@ jest.mock('@renderer/services/wallet/walletService', () => ({
         mainAccounts: [{ address: '1ChFWeNRLarAPRCTM3bfJmncJbSAbSS9yqjueWz7jX7iTVZ', publicKey: TEST_PUBLIC_KEY }],
       },
     ],
+  }),
+}));
+
+jest.mock('@renderer/services/staking/stakingService', () => ({
+  useStaking: jest.fn().mockReturnValue({
+    staking: [],
+    getNominators: jest.fn(),
+    getLedger: jest.fn(),
   }),
 }));
 

@@ -2,11 +2,13 @@
 // ============ IStakingService interface ==============
 // =====================================================
 
-import { AccountID } from '@renderer/domain/shared-kernel';
+import { AccountID, ChainId } from '@renderer/domain/shared-kernel';
 
 export interface IStakingService {
-  staking: StakingsMap;
-  getBonded: () => Promise<void>;
+  staking: StakingMap;
+  getLedger: (accounts: AccountID[]) => void;
+  getNominators: (account: AccountID) => Promise<string[]>;
+  // getBonded: () => Promise<void>;
   // bond: () => Promise<void>;
   // bondExtra: () => Promise<void>;
   // unbond: () => Promise<void>;
@@ -23,8 +25,19 @@ export interface IStakingService {
 // ============ IStakingService interface ==============
 // =====================================================
 
-export type StakingsMap = Record<AccountID, Staking>;
+export type StakingMap = Record<AccountID, Staking | undefined>;
 
 export type Staking = {
-  test: string;
+  accountId: AccountID;
+  chainId: ChainId;
+  controller: AccountID;
+  stash: AccountID;
+  active: string;
+  total: string;
+  unlocking: Unlocking[];
+};
+
+type Unlocking = {
+  value: string;
+  era: string;
 };

@@ -11,7 +11,7 @@ import { ChainId } from '@renderer/domain/shared-kernel';
 
 export interface IChainService {
   getChainsData: () => Promise<Chain[]>;
-  sortChains: <T extends Chain = Chain>(chains: T[]) => T[];
+  sortChains: <T extends ChainLike>(chains: T[]) => T[];
 }
 
 export interface IChainSpecService {
@@ -33,6 +33,8 @@ export interface INetworkService {
 // =====================================================
 // ======================= General =====================
 // =====================================================
+
+export type ChainLike = Pick<Chain, 'name' | 'options'>;
 
 export const enum RpcValidation {
   'INVALID',

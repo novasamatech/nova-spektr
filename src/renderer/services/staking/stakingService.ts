@@ -1,55 +1,152 @@
+import { ApiPromise } from '@polkadot/api';
 import { useEffect, useState } from 'react';
 
-import { ChainId } from '@renderer/domain/shared-kernel';
-import { useSubscription } from '../subscription/subscriptionService';
-import { IStakingService, StakingsMap } from './common/types';
+import { AccountID, ChainId } from '@renderer/domain/shared-kernel';
+import { useSubscription } from '@renderer/services/subscription/subscriptionService';
+import { IStakingService, StakingMap } from './common/types';
 
-const useStaking = (): IStakingService => {
+export const useStaking = (chainId?: ChainId, api?: ApiPromise): IStakingService => {
   // const { data } = useQuery<Rewards>(GET_TOTAL_REWARDS, {
   //   variables: {
   //     first: 10,
   //     address: '111B8CxcmnWbuDLyGvgUmRezDCK1brRZmvUuQ6SrFdMyc3S',
   //   },
   // });
-
-  // @ts-ignore
   const eraSubscription = useSubscription<ChainId>();
-  // @ts-ignore
-  const ledgerSubscription = useSubscription<ChainId>();
+  const ledgerSubscription = useSubscription<AccountID>();
 
-  // @ts-ignore
-  const [staking, setStaking] = useState<StakingsMap>({});
+  const [_, setActiveEra] = useState<number>();
+  const [activeAccounts, setActiveAccounts] = useState<AccountID[]>([]);
+  const [staking, setStaking] = useState<StakingMap>({});
 
-  useEffect(() => {}, []);
+  useEffect(() => {
+    if (!api) return;
 
-  // @ts-ignore
-  const getEra = async () => {
-    // Gets data about epoch and era
-    // activeNetwork?.value.derive.session.progress((result) => {
-    //   console.log('start => ', sessionInfo?.activeEraStart.toHuman());
-    //   console.log('progress => ', sessionInfo?.eraProgress.toHuman());
-    //   console.log('length => ', sessionInfo?.eraLength.toHuman());
-    // });
-    // const data = (await activeNetwork?.value.query.staking.activeEra()) as any;
-    // const unwrappedData = data.unwrap();
-    // setEraIndex(unwrappedData.get('index').toNumber());
-    // console.log(unwrappedData.get('index').toHuman(), unwrappedData.get('start').toHuman());
-    // 5,761 – "1,667,361,402,002" - Westend
+    (async () => {
+      await eraSubscription.unsubscribeAll();
+      subscribeActiveEra();
+    })();
+  }, [api]);
+
+  const subscribeActiveEra = () => {
+    if (!chainId || !api) return;
+
+    const unsubscribe = api.query.staking.activeEra((data: any) => {
+      try {
+        const unwrappedData = data.unwrap();
+        setActiveEra(unwrappedData.get('index').toNumber());
+      } catch (error) {
+        console.warn(error);
+      }
+    });
+
+    eraSubscription.subscribe(chainId, unsubscribe as Promise<any>);
   };
 
-  const getBonded = (): Promise<void> => {
-    // const data = (await activeNetwork?.value.query.staking.ledger(
-    //   '15hwmZknpCaGffUFKHSLz8wNeQPuhvdD5cc1o1AGiL4QHoU7',
-    // )) as any;
-    // const unwrappedData = data.unwrap();
-    // console.log(unwrappedData.toHuman());
-    // active: "2,701,475,935,769" - Westend
-    // claimedRewards: ["5,673", "5,674", "5,675", "5,676", "5,677", "5,678", "5,679", "5,680", "5,681", "5,682", …] (84)
-    // stash: "5GmedEVixRJoE8TjMePLqz7DnnQG1d5517sXdiAvAF2t7EYW"
-    // total: "2,701,475,935,769"
-    // unlocking: [] (0)
-    // unlocking: [{value: "900,000,000,000", era: "911"}] - Filled variant
-    return Promise.resolve();
+  const getLedger = async (newAccounts: AccountID[]) => {
+    const apiHasChanges = activeAccounts.length === newAccounts.length;
+    if (apiHasChanges) {
+      await resubscribeLedgerAll(newAccounts);
+    } else {
+      await resubscribeLedger(newAccounts);
+    }
+
+    setActiveAccounts(newAccounts);
+  };
+
+  const subscribeLedger = async (accountId: AccountID): Promise<void> => {
+    if (!chainId) return;
+
+    const controller = await getController(accountId);
+
+    const unsubscribe = api?.query.staking.ledger(controller || accountId, async (data) => {
+      if (!data.isNone) {
+        try {
+          const { active, stash, total, unlocking } = data.unwrap();
+          const formattedUnlocking = unlocking.toArray().map((unlock) => ({
+            value: unlock.value.toString(),
+            era: unlock.era.toString(),
+          }));
+
+          setStaking((prev) => ({
+            ...prev,
+            [accountId]: {
+              accountId,
+              chainId,
+              controller: controller || stash.toHuman(),
+              stash: stash.toHuman(),
+              active: active.toString(),
+              total: total.toString(),
+              unlocking: formattedUnlocking,
+            },
+          }));
+        } catch (error) {
+          console.warn(error);
+          setStaking((prev) => ({ ...prev, [accountId]: undefined }));
+        }
+      } else if (staking[accountId]?.chainId === chainId) {
+        await ledgerSubscription.unsubscribe(accountId);
+        await subscribeLedger(accountId);
+      } else {
+        setStaking((prev) => ({ ...prev, [accountId]: undefined }));
+      }
+    });
+
+    ledgerSubscription.subscribe(accountId, unsubscribe as Promise<any>);
+  };
+
+  const resubscribeLedgerAll = async (newAccounts: AccountID[]): Promise<void> => {
+    await ledgerSubscription.unsubscribeAll();
+    await Promise.all(newAccounts.map(subscribeLedger));
+  };
+
+  const resubscribeLedger = async (newAccounts: AccountID[]): Promise<void> => {
+    if (newAccounts.length < activeAccounts.length) {
+      const removedAccounts = activeAccounts.filter((account) => !newAccounts.includes(account));
+      await Promise.all(removedAccounts.map(ledgerSubscription.unsubscribe));
+
+      const newStaking = newAccounts.reduce(
+        (acc, account) => ({ ...acc, [account]: staking[account] }),
+        {} as StakingMap,
+      );
+
+      setStaking(newStaking);
+    } else {
+      const incomingAccounts = newAccounts.filter((account) => !activeAccounts.includes(account));
+      await Promise.all(incomingAccounts.map(subscribeLedger));
+    }
+  };
+
+  const getNominators = async (account: AccountID): Promise<string[]> => {
+    if (!api) return [];
+
+    try {
+      const data = await api?.query.staking.nominators(account);
+      if (data.isNone) return [];
+      const unwrappedData = data.unwrap();
+
+      return unwrappedData.targets.toArray().map((nominator) => nominator.toString());
+    } catch (error) {
+      console.warn(error);
+
+      return [];
+    }
+  };
+
+  const getController = async (account: AccountID): Promise<string | undefined> => {
+    if (!api) return undefined;
+
+    try {
+      const data = await api?.query.staking.bonded(account);
+      if (data.isNone) return undefined;
+      const unwrappedData = data.unwrap();
+
+      return unwrappedData.toString();
+    } catch (error) {
+      console.warn(error);
+
+      return undefined;
+    }
   };
 
   // const bond = (): Promise<void> => {
@@ -174,7 +271,9 @@ const useStaking = (): IStakingService => {
 
   return {
     staking,
-    getBonded,
+    getLedger,
+    getNominators,
+    // getBonded,
     // bond,
     // bondExtra,
     // rebond,
@@ -187,5 +286,3 @@ const useStaking = (): IStakingService => {
     // getValidatorsPrefs,
   };
 };
-
-export default useStaking;
