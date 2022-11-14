@@ -1,8 +1,8 @@
+import { AccountID, ChainId } from '@renderer/domain/shared-kernel';
+
 // =====================================================
 // ============ IStakingService interface ==============
 // =====================================================
-
-import { AccountID, ChainId } from '@renderer/domain/shared-kernel';
 
 export interface IStakingService {
   staking: StakingMap;
@@ -22,7 +22,7 @@ export interface IStakingService {
 }
 
 // =====================================================
-// ============ IStakingService interface ==============
+// ======================= General =====================
 // =====================================================
 
 export type StakingMap = Record<AccountID, Staking | undefined>;
