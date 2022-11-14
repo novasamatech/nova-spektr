@@ -1,3 +1,4 @@
+/* eslint-disable i18next/no-literal-string */
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 
