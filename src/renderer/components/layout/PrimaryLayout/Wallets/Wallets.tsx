@@ -1,13 +1,13 @@
 import cn from 'classnames';
 import { forwardRef, useState } from 'react';
 
-import { useI18n } from '@renderer/context/I18nContext';
-import { useWallet } from '@renderer/services/wallet/walletService';
 import { Address, Button, Checkbox, Icon, Input } from '@renderer/components/ui';
+import { IconNames } from '@renderer/components/ui/Icon/data';
+import { useI18n } from '@renderer/context/I18nContext';
 import { WalletType } from '@renderer/domain/wallet';
 import useToggle from '@renderer/hooks/useToggle';
-import { IconNames } from '@renderer/components/ui/Icon/data';
 import { WalletDS } from '@renderer/services/storage';
+import { useWallet } from '@renderer/services/wallet/walletService';
 
 type Props = {
   className?: string;
@@ -26,12 +26,13 @@ const WalletTypeLabels = {
 const Wallets = forwardRef<HTMLDivElement, Props>(({ className }, ref) => {
   const { t } = useI18n();
   const { getLiveWallets, toggleActiveWallet } = useWallet();
-  const paritySignerWallets = getLiveWallets({ type: WalletType.PARITY });
-  const watchOnlyWallets = getLiveWallets({ type: WalletType.WATCH_ONLY });
-
   const [isParitySignerOpen, toggleParitySigner] = useToggle(false);
   const [isWatchOnlyOpen, toggleWatchOnly] = useToggle(false);
+
   const [query, setQuery] = useState('');
+
+  const paritySignerWallets = getLiveWallets({ type: WalletType.PARITY });
+  const watchOnlyWallets = getLiveWallets({ type: WalletType.WATCH_ONLY });
 
   const searchWallet = (wallets: WalletDS[] = [], query: string = '') => {
     return wallets.filter((wallet) => {
@@ -64,9 +65,9 @@ const Wallets = forwardRef<HTMLDivElement, Props>(({ className }, ref) => {
       <Input
         wrapperClass="w-full bg-shade-5 rounded-2lg text-sm"
         prefixElement={<Icon name="search" className="w-5 h-5" />}
+        placeholder={t('wallets.searchPlaceholder')}
         value={query}
         onChange={(e) => setQuery(e.target.value)}
-        placeholder={t('wallets.searchPlaceholder')}
       />
 
       {walletGroups.map(({ label, icon, wallets, shown, toggle }) => (
@@ -83,7 +84,7 @@ const Wallets = forwardRef<HTMLDivElement, Props>(({ className }, ref) => {
               <Icon name={shown ? 'up' : 'down'} />
             </Button>
           </div>
-          {shown && !!wallets.length && (
+          {shown && wallets.length > 0 && (
             <div>
               {wallets?.map((wallet) => (
                 <label

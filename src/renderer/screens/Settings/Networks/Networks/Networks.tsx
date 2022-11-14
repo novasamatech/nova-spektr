@@ -76,7 +76,7 @@ const Networks = () => {
 
         {disabledNetworks.length === 0 && activeNetworks.length === 0 && (
           <div className="flex flex-col items-center mx-auto pt-12 pb-15">
-            <Icon as="img" name="noResult" size={300} />
+            <Icon as="img" name="noResults" size={300} />
             <p className="text-center text-2xl font-bold leading-7 text-neutral">
               {t('networkManagement.emptyStateLabel')}
             </p>

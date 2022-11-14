@@ -2,6 +2,7 @@ import { u8aConcat, u8aToU8a } from '@polkadot/util';
 import { decodeAddress } from '@polkadot/util-crypto';
 import qrcode from 'qrcode-generator';
 
+import { ChainId } from '@renderer/domain/shared-kernel';
 import { CRYPTO_SR25519, FRAME_SIZE, SUBSTRATE_ID } from './constants';
 
 const MULTIPART = new Uint8Array([0]);
@@ -31,7 +32,7 @@ export const createSignPayload = (
   address: string,
   cmd: number,
   payload: string | Uint8Array,
-  genesisHash: string | Uint8Array,
+  genesisHash: ChainId | Uint8Array,
 ): Uint8Array =>
   u8aConcat(
     SUBSTRATE_ID,

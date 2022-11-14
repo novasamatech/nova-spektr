@@ -1,4 +1,4 @@
-import { useLocaleStorage } from './localeStorage';
+import { useLocaleStorage } from '../localeStorage';
 
 describe('service/locale/storage', () => {
   test('should set and get current locale', () => {

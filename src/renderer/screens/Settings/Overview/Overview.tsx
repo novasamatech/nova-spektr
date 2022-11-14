@@ -1,14 +1,14 @@
 import { Link } from 'react-router-dom';
 
 import { Dropdown, Icon } from '@renderer/components/ui';
-import { OptionType } from '@renderer/components/ui/Dropdown/common/types';
+import { DropdownOption } from '@renderer/components/ui/Dropdown/common/types';
 import { useI18n } from '@renderer/context/I18nContext';
 import Paths from '@renderer/routes/paths';
 
 const Overview = () => {
   const { t, locale, locales, changeLocale } = useI18n();
 
-  const localeOptions: OptionType[] = locales.map((option) => ({
+  const localeOptions: DropdownOption[] = locales.map((option) => ({
     prefix: <Icon className="rounded-full border border-white" name={option.value} size={20} />,
     value: option.value,
     label: option.label,
@@ -16,7 +16,7 @@ const Overview = () => {
 
   const selectedLocale = localeOptions.find((option) => option.value === locale);
 
-  const onLocaleChange = async (data: OptionType) => {
+  const onLocaleChange = async (data: DropdownOption) => {
     try {
       await changeLocale(data.value);
     } catch (error) {

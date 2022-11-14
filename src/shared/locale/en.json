@@ -219,7 +219,24 @@
     "troubleshootingLink": "I have an error in Parity Signer"
   },
   "staking": {
-    "title": "Staking"
+    "overview": {
+      "noActiveWalletsDescription": "Please select a wallet for staking",
+      "noActiveWalletsLabel": "No wallet selected",
+      "noResultsDescription": "Please try another filter parameters",
+      "noResultsLabel": "No staking found",
+      "searchPlaceholder": "Search by account name"
+    },
+    "startStaking": {
+      "selectNetworkLabel": "Select network",
+      "subtitle": "Start Staking"
+    },
+    "title": "Staking",
+    "unbond": {
+      "subtitle": "Unbond"
+    },
+    "validators": {
+      "subtitle": "Validators"
+    }
   },
   "transfers": {
     "title": "Transfers"

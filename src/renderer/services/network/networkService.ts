@@ -6,12 +6,12 @@ import { useRef, useState } from 'react';
 
 import { Chain, RpcNode } from '@renderer/domain/chain';
 import { Connection, ConnectionStatus, ConnectionType } from '@renderer/domain/connection';
-import { ChainId, HexString } from '@renderer/domain/shared-kernel';
+import { ChainId } from '@renderer/domain/shared-kernel';
 import storage from '@renderer/services/storage';
 import { useChainSpec } from './chainSpecService';
 import { useChains } from './chainsService';
-import { ConnectionsMap, INetworkService, RpcValidation, ConnectProps } from './common/types';
 import { AUTO_BALANCE_TIMEOUT, MAX_ATTEMPTS, PROGRESSION_BASE } from './common/constants';
+import { ConnectionsMap, ConnectProps, INetworkService, RpcValidation } from './common/types';
 import { isKusama } from '@renderer/services/network/common/utils';
 
 export const useNetwork = (unsubscribe?: (chainId: ChainId) => Promise<void>): INetworkService => {
@@ -103,7 +103,7 @@ export const useNetwork = (unsubscribe?: (chainId: ChainId) => Promise<void>): I
       return activeNode;
     };
 
-    return Object.values(chains.current).reduce((acc, { chainId, nodes, name }) => {
+    return Object.values(chains.current).reduce((acc, { chainId, nodes }) => {
       if (connectionData[chainId]) {
         acc.push({
           ...connectionData[chainId],
@@ -111,7 +111,7 @@ export const useNetwork = (unsubscribe?: (chainId: ChainId) => Promise<void>): I
         });
       } else {
         const connectionType =
-          getKnownChain(chainId) && !isKusama(chains.current[chainId])
+          getKnownChain(chainId) && !isKusama(chains.current[chainId].name)
             ? ConnectionType.LIGHT_CLIENT
             : ConnectionType.AUTO_BALANCE;
         const activeNode = connectionType === ConnectionType.AUTO_BALANCE ? nodes[0] : undefined;
@@ -274,7 +274,7 @@ export const useNetwork = (unsubscribe?: (chainId: ChainId) => Promise<void>): I
     }
   };
 
-  const validateRpcNode = (genesisHash: HexString, rpcUrl: string): Promise<RpcValidation> => {
+  const validateRpcNode = (genesisHash: ChainId, rpcUrl: string): Promise<RpcValidation> => {
     return new Promise((resolve) => {
       const provider = new WsProvider(rpcUrl);
 

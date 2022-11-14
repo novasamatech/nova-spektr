@@ -44,13 +44,13 @@ export const getAssetId = (asset: Asset): string | number => {
   return assetId[asset.type || DEFAULT]();
 };
 
-type FormatedBalance = {
+type FormattedBalance = {
   value: string;
   suffix: string;
   decimalPlaces: number;
 };
 
-export const formatBalance = (balance: string, precision = 0): FormatedBalance => {
+export const formatBalance = (balance = '0', precision = 0): FormattedBalance => {
   const BNWithConfig = BigNumber.clone();
   BNWithConfig.config({
     // HOOK: for divide with decimal part

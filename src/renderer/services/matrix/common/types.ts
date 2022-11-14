@@ -3,7 +3,7 @@ import { EventType, MatrixEvent, Room } from 'matrix-js-sdk';
 import { HexString } from '@renderer/domain/shared-kernel';
 
 // =====================================================
-// ============ SecureMessenger interface ==============
+// ============ ISecureMessenger interface =============
 // =====================================================
 
 export interface ISecureMessenger {

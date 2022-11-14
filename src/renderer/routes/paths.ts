@@ -12,12 +12,16 @@ const Paths = {
   NETWORK: '/settings/network',
   CREDENTIALS: '/settings/credentials',
 
+  // Staking
+  STAKING: '/staking',
+  STAKING_START: '/staking/start',
+  UNBOND: '/staking/unbond',
+
   // Navigation
   ADDRESS_BOOK: '/address-book',
   HISTORY: '/history',
   MULTISIG: '/multisig',
   BALANCES: '/balances',
-  STAKING: '/staking',
   TRANSFER: '/transfer',
   SIGNING: '/signing',
 
