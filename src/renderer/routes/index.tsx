@@ -42,7 +42,7 @@ const routesConfig: RouteObject[] = [
         path: Paths.STAKING,
         children: [
           { index: true, element: <Screens.Staking.Overview /> },
-          { path: Paths.STAKING_START, element: <Screens.Staking.StartStaking /> },
+          { path: Paths.STAKING_START, element: <Screens.Staking.Bond /> },
           { path: Paths.UNBOND, element: <Screens.Staking.Unbond /> },
         ],
       },

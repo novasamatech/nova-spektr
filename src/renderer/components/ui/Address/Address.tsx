@@ -27,10 +27,10 @@ const Address = ({ address, className, size = 16, addressStyle = 'normal', type 
 
   if (['short', 'full'].includes(type)) {
     return (
-      <span className={cn('inline align-middle', className)}>
+      <div className={cn('inline align-middle', className)}>
         <Identicon className="align-middle" value={address} size={size} theme={theme} />
-        <span className={cn('break-all ml-1', Styles[addressStyle])}>{addressToShow}</span>
-      </span>
+        <p className={cn('inline-block break-all ml-1', Styles[addressStyle])}>{addressToShow}</p>
+      </div>
     );
   }
 

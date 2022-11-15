@@ -1,7 +1,7 @@
 import { render, screen } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 
-import Validators from './Validators';
+import ConfirmBond from './ConfirmBond';
 
 jest.mock('@renderer/context/I18nContext', () => ({
   useI18n: jest.fn().mockReturnValue({
@@ -9,9 +9,9 @@ jest.mock('@renderer/context/I18nContext', () => ({
   }),
 }));
 
-describe('screens/Staking/Validators', () => {
+describe('screens/Bond/ConfirmBond', () => {
   test('should render component', () => {
-    render(<Validators />, { wrapper: MemoryRouter });
+    render(<ConfirmBond />, { wrapper: MemoryRouter });
 
     const title = screen.getByText('staking.title');
     const subTitle = screen.getByText('staking.validators.subtitle');

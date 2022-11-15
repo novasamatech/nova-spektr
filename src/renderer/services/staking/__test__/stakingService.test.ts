@@ -6,12 +6,12 @@ describe('services/staking', () => {
   test('should return functions', () => {
     const {
       result: {
-        current: { staking, getLedger, getNominators },
+        current: { staking, subscribeLedger, getNominators },
       },
     } = renderHook(() => useStaking('0x123'));
 
     expect(staking).toBeDefined();
-    expect(getLedger).toBeDefined();
+    expect(subscribeLedger).toBeDefined();
     expect(getNominators).toBeDefined();
   });
 });

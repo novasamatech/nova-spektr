@@ -226,9 +226,11 @@
       "noResultsLabel": "Сттейкинги не найдены",
       "searchPlaceholder": "Искать по имени кошелька"
     },
-    "startStaking": {
-      "selectNetworkLabel": "Select network",
-      "subtitle": "Начать Стейкинг"
+    "bond": {
+      "confirmBondSubtitle": "Потверждение",
+      "initBondSubtitle": "Начало Стейкинга",
+      "selectNetworkLabel": "Выберите сеть",
+      "validatorsSubtitle": "Валидаторы"
     },
     "title": "Стейкинг",
     "unbond": {

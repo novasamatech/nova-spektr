@@ -226,16 +226,15 @@
       "noResultsLabel": "No staking found",
       "searchPlaceholder": "Search by account name"
     },
-    "startStaking": {
+    "bond": {
+      "confirmBondSubtitle": "Confirm",
+      "initBondSubtitle": "Start Staking",
       "selectNetworkLabel": "Select network",
-      "subtitle": "Start Staking"
+      "validatorsSubtitle": "Validators"
     },
     "title": "Staking",
     "unbond": {
       "subtitle": "Unbond"
-    },
-    "validators": {
-      "subtitle": "Validators"
     }
   },
   "transfers": {

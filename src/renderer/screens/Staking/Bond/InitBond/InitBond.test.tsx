@@ -1,7 +1,7 @@
 import { render, screen } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 
-import Unbond from './Unbond';
+import InitBond from './InitBond';
 
 jest.mock('@renderer/context/I18nContext', () => ({
   useI18n: jest.fn().mockReturnValue({
@@ -9,12 +9,12 @@ jest.mock('@renderer/context/I18nContext', () => ({
   }),
 }));
 
-describe('screens/Staking/Unbond', () => {
+describe('screens/Bond/Bond', () => {
   test('should render component', () => {
-    render(<Unbond />, { wrapper: MemoryRouter });
+    render(<InitBond />, { wrapper: MemoryRouter });
 
     const title = screen.getByText('staking.title');
-    const subTitle = screen.getByText('staking.unbond.subtitle');
+    const subTitle = screen.getByText('staking.startStaking.subtitle');
     expect(title).toBeInTheDocument();
     expect(subTitle).toBeInTheDocument();
   });

@@ -6,10 +6,13 @@ import { AccountID, ChainId } from '@renderer/domain/shared-kernel';
 
 export interface IStakingService {
   staking: StakingMap;
-  getLedger: (accounts: AccountID[]) => void;
+  validators: Validator[];
+  subscribeActiveEra: () => Promise<void>;
+  subscribeLedger: (accounts: AccountID[]) => Promise<void>;
   getNominators: (account: AccountID) => Promise<string[]>;
-  // getBonded: () => Promise<void>;
-  // bond: () => Promise<void>;
+  bondAndNominate: (address: AccountID, value: string, payee: Payee, targets: AccountID[]) => Promise<string>;
+  bondExtra: (address: AccountID, value: string) => Promise<string>;
+
   // bondExtra: () => Promise<void>;
   // unbond: () => Promise<void>;
   // rebond: () => Promise<void>;
@@ -41,3 +44,32 @@ type Unlocking = {
   value: string;
   era: string;
 };
+
+// TODO: maybe move to kernel
+export type Validator = {
+  name: string;
+  address: AccountID;
+  ownStake: string;
+  totalStake: string;
+  isOversubscribed: boolean;
+  isSlashed: boolean;
+  apy: number;
+  identity?: Identity;
+};
+
+type Identity = {
+  rawName: string;
+  address: AccountID;
+  email: string;
+  website: string;
+  twitter: string;
+  riot: string;
+  parent: ParentIdentity;
+};
+
+type ParentIdentity = {
+  address: AccountID;
+  name: string;
+};
+
+export type Payee = 'Stash' | 'Staked' | 'Controller' | { Account: string };

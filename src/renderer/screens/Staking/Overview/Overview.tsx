@@ -30,7 +30,7 @@ const Overview = () => {
   const chainId = activeNetwork?.value.chainId || ('' as ChainId);
   const api = connections[chainId]?.api;
 
-  const { staking, getLedger, getNominators } = useStaking(chainId, api);
+  const { staking, subscribeActiveEra, subscribeLedger, getNominators } = useStaking(chainId, api);
 
   const activeWallets = getActiveWallets();
 
@@ -57,12 +57,20 @@ const Overview = () => {
   }, []);
 
   useEffect(() => {
-    if (!api || !activeWallets) return;
+    if (!api?.isConnected) return;
 
-    const accounts = activeWallets.map(
-      (wallet) => wallet.mainAccounts[0]?.accountId || wallet.chainAccounts[0]?.accountId,
-    );
-    getLedger(accounts);
+    (async () => {
+      await subscribeActiveEra();
+    })();
+  }, [api]);
+
+  useEffect(() => {
+    if (!api?.isConnected || !activeWallets) return;
+
+    (async () => {
+      const accounts = activeWallets.map((wallet) => (wallet.mainAccounts[0] || wallet.chainAccounts[0])?.accountId);
+      await subscribeLedger(accounts);
+    })();
   }, [activeWallets, api]);
 
   const formattedWallets = (activeWallets || [])?.reduce((acc, wallet) => {
@@ -132,20 +140,20 @@ const Overview = () => {
         )}
         {formattedWallets.length > 0 && Object.values(staking).length > 0 && (
           <ul className="flex gap-5 flex-wrap mt-5">
-            {formattedWallets?.map((wallet, index) => (
-              <li key={index}>
+            {formattedWallets?.map((wallet) => (
+              <li key={wallet.accountId}>
                 <div className="relative w-[200px] rounded-2lg bg-white shadow-element">
                   <div className="absolute flex gap-x-2.5 w-full p-2.5 rounded-2lg bg-primary text-white">
                     <Identicon theme="polkadot" address={wallet.accountId} size={46} />
                     <p className="text-lg">{wallet.name}</p>
                   </div>
                   <div className="p-2.5 pt-[66px] rounded-2lg bg-tertiary text-white">
-                    <p className="text-xs">
+                    <div className="text-xs">
                       S - <Address address={staking[wallet.accountId]?.stash || ''} type="short" />
-                    </p>
-                    <p className="text-xs">
+                    </div>
+                    <div className="text-xs">
                       C - <Address address={staking[wallet.accountId]?.controller || ''} type="short" />
-                    </p>
+                    </div>
                   </div>
                   {staking[wallet.accountId] ? (
                     <div className="flex flex-col items-center p-2.5">
