@@ -17,17 +17,32 @@ export const Primary = Template.bind({});
 Primary.args = {
   animationDuration: 500,
   slides: [
-    <div className="flex flex-col items-center gap-y-3">
-      <img src={SlideOne} alt="" width={500} height={385} />
-      <p>Description 1</p>
-    </div>,
-    <div className="flex flex-col items-center gap-y-3">
-      <img src={SlideTwo} alt="" width={500} height={385} />
-      <p>Description 2</p>
-    </div>,
-    <div className="flex flex-col items-center gap-y-3">
-      <img src={SlideThree} alt="" width={500} height={385} />
-      <p>Description 3</p>
-    </div>,
+    {
+      id: '1',
+      node: (
+        <div key="1" className="flex flex-col items-center gap-y-3">
+          <img src={SlideOne} alt="" width={500} height={385} />
+          <p>Description 1</p>
+        </div>
+      ),
+    },
+    {
+      id: '2',
+      node: (
+        <div key="2" className="flex flex-col items-center gap-y-3">
+          <img src={SlideTwo} alt="" width={500} height={385} />
+          <p>Description 2</p>
+        </div>
+      ),
+    },
+    {
+      id: '3',
+      node: (
+        <div key="3" className="flex flex-col items-center gap-y-3">
+          <img src={SlideThree} alt="" width={500} height={385} />
+          <p>Description 3</p>
+        </div>
+      ),
+    },
   ],
 };

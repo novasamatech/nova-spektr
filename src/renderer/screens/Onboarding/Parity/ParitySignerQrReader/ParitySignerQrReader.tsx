@@ -48,7 +48,6 @@ const ParitySignerQrReader = ({ size = 300, className, onResult }: Props) => {
 
   const onCameraList = (cameras: VideoInput[]) => {
     const formattedCameras = cameras.map((camera, index) => ({
-      //eslint-disable-next-line i18next/no-literal-string
       label: `${index + 1}. ${camera.label}`,
       value: camera.id,
     }));
@@ -224,7 +223,6 @@ const ParitySignerQrReader = ({ size = 300, className, onResult }: Props) => {
               data-testid="progress"
             >
               <span className={cn(decoded > 0 ? 'text-success' : 'text-shade-40')}>{decoded}</span>
-              {/* eslint-disable-next-line i18next/no-literal-string */}
               <span className={cn(decoded > 0 && decoded === total && 'text-success')}> / {total}</span>
             </p>
           </div>

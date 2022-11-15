@@ -67,9 +67,9 @@ const Dropdown = ({ className, placeholder, selected, options, variant = 'down',
               variant !== 'auto' && ViewClass[variant],
             )}
           >
-            {options.map((option, index) => (
+            {options.map((option) => (
               <Listbox.Option
-                key={`${index}-${option.label}`}
+                key={option.label}
                 value={option}
                 className={({ active }) =>
                   cn(
