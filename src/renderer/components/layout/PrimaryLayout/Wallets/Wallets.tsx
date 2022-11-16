@@ -93,8 +93,8 @@ const Wallets = forwardRef<HTMLDivElement, Props>(({ className }, ref) => {
                 >
                   <Checkbox
                     checked={wallet.isActive}
-                    onChange={() => toggleActiveWallet(wallet.id || '')}
                     className="m-2.5"
+                    onChange={() => toggleActiveWallet(wallet.id || '')}
                   />
                   <div className="overflow-hidden">
                     <div className="text-neutral text-sm text-semibold leading-4">{wallet.name}</div>

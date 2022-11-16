@@ -36,8 +36,6 @@ const ReceiveModal = ({ data, isOpen, onClose }: Props) => {
 
   const wallet = data?.activeWallets[0] || { name: '', publicKey: '' as PublicKey };
   const address = toAddress(wallet.publicKey, data?.chain.addressPrefix);
-
-  //eslint-disable-next-line i18next/no-literal-string
   const qrCodePayload = `substrate:${address}:${wallet.publicKey}:Ff`;
 
   const onCopyAddress = () => {

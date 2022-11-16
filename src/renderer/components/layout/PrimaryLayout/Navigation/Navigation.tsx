@@ -69,9 +69,9 @@ const Navigation = () => {
             <Identicon theme="polkadot" address={currentAccount?.accountId || ''} size={46} />
             <button
               ref={showWalletsRef}
-              onClick={() => setIsWalletsOpen((value) => !value)}
               type="button"
               className="flex justify-between flex-1 truncate"
+              onClick={() => setIsWalletsOpen((value) => !value)}
             >
               <span className="text-xl leading-6 mr-1 text-left truncate">
                 {currentWallet?.name || t('navigation.unknownWalletLabel')}

@@ -1,7 +1,9 @@
 const fs = require('fs');
+const path = require('path');
 
 const prettierConfig = fs.readFileSync('./.prettierrc', 'utf8');
 const prettierOptions = JSON.parse(prettierConfig);
+const isProd = process.env.NODE_ENV === 'production';
 
 module.exports = {
   root: true,
@@ -17,6 +19,9 @@ module.exports = {
     'plugin:import/recommended',
     'plugin:import/errors',
     'plugin:import/warnings',
+    'plugin:jest-dom/recommended',
+    'plugin:i18n-json/recommended',
+    'plugin:i18next/recommended',
     'prettier',
   ],
   plugins: ['@typescript-eslint', 'prettier', 'import', 'unused-imports', 'jest-dom', 'json'],
@@ -38,10 +43,10 @@ module.exports = {
           ['@renderer', './src/renderer/'],
           ['@images', './src/renderer/assets/images/'],
         ],
-        extensions: ['.js', '.jsx', '.ts', '.tsx'],
+        extensions: ['.js', '.jsx', '.ts', '.tsx', '.json'],
       },
       node: {
-        extensions: ['.js', '.jsx', '.ts', '.tsx'],
+        extensions: ['.js', '.jsx', '.ts', '.tsx', '.json'],
       },
     },
   },
@@ -57,12 +62,33 @@ module.exports = {
       },
     ],
     'no-unused-vars': 'off',
-    // 'newline-before-return': 'error',
+    'newline-before-return': 'error',
     '@typescript-eslint/no-empty-interface': 0,
     'prettier/prettier': ['error', prettierOptions],
     'unused-imports/no-unused-imports': 'error',
     'react/no-array-index-key': 'warn',
     'react/display-name': 'off',
     'react/react-in-jsx-scope': 'off',
+    'react/jsx-sort-props': ['error', { callbacksLast: true, noSortAlphabetically: true }],
+    'react/function-component-definition': [
+      'error',
+      {
+        namedComponents: 'arrow-function',
+        unnamedComponents: 'arrow-function',
+      },
+    ],
+    'i18n-json/identical-keys': ['error', { filePath: path.resolve('./src/shared/locale/en.json') }],
+    'i18n-json/identical-placeholders': ['error', { filePath: path.resolve('./src/shared/locale/en.json') }],
+    'i18next/no-literal-string': [
+      isProd ? 'error' : 'off',
+      {
+        mode: 'jsx-text-only',
+        'should-validate-template': false,
+        words: {
+          exclude: ['[0-9!-/:-@[-`{-~]+', '[A-Z_-]+'],
+        },
+      },
+    ],
   },
+  ignorePatterns: ['node_modules', 'coverage.txt', 'junit.xml', 'jest-unit-results.json'],
 };

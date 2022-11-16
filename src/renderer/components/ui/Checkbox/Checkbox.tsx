@@ -14,7 +14,6 @@ const Checkbox = ({ label, checked, disabled, className, onChange }: Props) => (
         name="checkbox"
         disabled={disabled}
         checked={checked}
-        onChange={onChange}
         className={cn(
           'relative',
           'appearance-none w-5 h-5 text-primary bg-white ',
@@ -22,6 +21,7 @@ const Checkbox = ({ label, checked, disabled, className, onChange }: Props) => (
           'checked:bg-primary checked:border-0',
           disabled && 'opacity-50',
         )}
+        onChange={onChange}
       />
       {label && <span className="ml-2 text-gray-700 font-normal">{label}</span>}
     </label>

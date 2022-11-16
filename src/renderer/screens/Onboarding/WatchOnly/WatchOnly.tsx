@@ -148,7 +148,6 @@ const WatchOnly = () => {
                   label={t('onboarding.accountAddressLabel')}
                   placeholder={t('onboarding.watchonly.accountAddressPlaceholder')}
                   value={value}
-                  onChange={onChange}
                   prefixElement={
                     isValid ? <Identicon address={value} background={false} /> : <Icon name="emptyIdenticon" />
                   }
@@ -157,6 +156,7 @@ const WatchOnly = () => {
                       {t('onboarding.pasteButton')}
                     </Button>
                   }
+                  onChange={onChange}
                 />
               )}
             />
@@ -176,10 +176,10 @@ const WatchOnly = () => {
                 <Button
                   weight="md"
                   className="w-content p-4 mt-2 underline underline-offset-2"
-                  onClick={toggleModal}
                   variant="text"
                   pallet="primary"
                   disabled={Boolean(errors.address)}
+                  onClick={toggleModal}
                 >
                   {t('onboarding.checkAccountsButton')}
                 </Button>

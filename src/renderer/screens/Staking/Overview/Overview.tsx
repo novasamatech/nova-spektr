@@ -132,8 +132,8 @@ const Overview = () => {
         )}
         {formattedWallets.length > 0 && Object.values(staking).length > 0 && (
           <ul className="flex gap-5 flex-wrap mt-5">
-            {formattedWallets?.map((wallet, index) => (
-              <li key={index}>
+            {formattedWallets?.map((wallet) => (
+              <li key={wallet.accountId}>
                 <div className="relative w-[200px] rounded-2lg bg-white shadow-element">
                   <div className="absolute flex gap-x-2.5 w-full p-2.5 rounded-2lg bg-primary text-white">
                     <Identicon theme="polkadot" address={wallet.accountId} size={46} />

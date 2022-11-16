@@ -1,3 +1,4 @@
+src/shared/locale
 node_modules/
 package.json
 coverage/
