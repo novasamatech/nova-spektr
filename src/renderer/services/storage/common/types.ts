@@ -5,6 +5,7 @@ import { Connection, ConnectionType } from '@renderer/domain/connection';
 import { Contact } from '@renderer/domain/contact';
 import { ChainId, PublicKey } from '@renderer/domain/shared-kernel';
 import { MultisigWallet, Wallet } from '@renderer/domain/wallet';
+import { Transaction } from '@renderer/domain/transaction';
 
 // =====================================================
 // ================ Storage interface ==================
@@ -61,3 +62,4 @@ export type WalletDS = WithID & Wallet;
 export type MultisigWalletDS = Wallet & MultisigWallet;
 
 export type ContactDS = WithID & Contact;
+export type TransactionDS = WithID & Transaction;

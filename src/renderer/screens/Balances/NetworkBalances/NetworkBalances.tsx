@@ -21,7 +21,7 @@ type Props = {
   publicKey: PublicKey;
   canMakeActions?: boolean;
   onReceiveClick?: (asset: Asset) => void;
-  onTransferClick?: () => void;
+  onTransferClick?: (asset: Asset) => void;
 };
 
 const NetworkBalances = ({

@@ -238,8 +238,22 @@
       "subtitle": "Validators"
     }
   },
-  "transfers": {
-    "title": "Transfers"
+  "transfer": {
+    "continueButton": "Continue",
+    "executing": "Confirming transaction",
+    "formTitle": "Send <strong>{ asset }</strong> on <strong>{ network }</strong>",
+    "networkFee": "Network fee",
+    "startSigningButton": "Sign with Parity Signer",
+    "title": "Transfer",
+    "transferable": "Transferable"
+  },
+  "transferDetails": {
+    "fromNetwork": "From network",
+    "networkFee": "Network fee",
+    "recipient": "Recipient",
+    "sender": "Sender",
+    "title": "Send",
+    "wallet": "Wallet"
   },
   "wallets": {
     "paritySignerLabel": "Parity Signer",

@@ -3,7 +3,7 @@ import { InputHTMLAttributes, ReactNode, forwardRef } from 'react';
 
 export interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
   weight?: 'md' | 'lg';
-  label?: string;
+  label?: ReactNode;
   invalid?: boolean;
   wrapperClass?: string;
   disabledStyle?: boolean;
@@ -44,7 +44,9 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
       )}
     >
       {prefixElement}
-      {label && <span className="absolute top-2.5 font-bold text-neutral-variant uppercase text-xs">{label}</span>}
+      {label && (
+        <div className="absolute top-2.5 font-bold text-neutral-variant uppercase text-xs w-full pr-5">{label}</div>
+      )}
       <input
         className={cn(
           'rounded-sm leading-5 bg-transparent flex-1 focus:outline-none focus:text-primary',

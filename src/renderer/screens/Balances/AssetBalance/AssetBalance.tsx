@@ -16,7 +16,7 @@ type Props = {
   balance: Balance;
   canMakeActions?: boolean;
   onReceiveClick?: () => void;
-  onTransferClick?: () => void;
+  onTransferClick?: (asset: Asset) => void;
 };
 
 const AssetBalance = ({ asset, balance, canMakeActions, onTransferClick, onReceiveClick }: Props) => {
@@ -25,7 +25,7 @@ const AssetBalance = ({ asset, balance, canMakeActions, onTransferClick, onRecei
 
   const onTransfer = (event: MouseEvent<HTMLButtonElement>) => {
     event.stopPropagation();
-    onTransferClick?.();
+    onTransferClick?.(asset);
   };
 
   const onReceive = (event: MouseEvent<HTMLButtonElement>) => {

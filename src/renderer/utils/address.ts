@@ -46,3 +46,5 @@ export const pasteAddressHandler = (handler: (value: string) => void) => async (
     console.warn(error);
   }
 };
+
+export const validateAddress = (address: string) => Boolean(toPublicKey(address));

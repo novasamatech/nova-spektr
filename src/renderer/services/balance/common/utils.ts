@@ -7,6 +7,7 @@ import { DEFAULT, Suffix, Decimal, SS58_DEFAULT_PREFIX, ZERO_BALANCE } from './c
 import { Asset, AssetType, OrmlExtras, StatemineExtras } from '@renderer/domain/asset';
 import { PublicKey } from '@renderer/domain/shared-kernel';
 import { Balance } from '@renderer/domain/balance';
+import { FormattedBalance } from './types';
 
 export const toAddress = (publicKey: PublicKey, prefix = SS58_DEFAULT_PREFIX): string => {
   if (!publicKey) return '';
@@ -42,12 +43,6 @@ export const getAssetId = (asset: Asset): string | number => {
   };
 
   return assetId[asset.type || DEFAULT]();
-};
-
-type FormattedBalance = {
-  value: string;
-  suffix: string;
-  decimalPlaces: number;
 };
 
 export const formatBalance = (balance = '0', precision = 0): FormattedBalance => {

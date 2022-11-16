@@ -190,6 +190,7 @@ const ParitySignerSignatureReader = ({ size = 300, className, onResult, countdow
           </div>
           <div className="mb-5 w-[242px]">
             <Dropdown
+              // variant="up"
               placeholder={t('onboarding.paritySigner.selectCameraLabel')}
               selected={activeCamera}
               options={availableCameras}
