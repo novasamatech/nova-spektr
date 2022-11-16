@@ -239,15 +239,15 @@
     }
   },
   "transfer": {
+    "amountLabel": "Amount",
     "continueButton": "Continue",
     "executing": "Confirming transaction",
     "formTitle": "Send <strong>{ asset }</strong> on <strong>{ network }</strong>",
     "networkFee": "Network fee",
+    "recipientLabel": "Recipient",
     "startSigningButton": "Sign with Parity Signer",
     "title": "Transfer",
-    "transferable": "Transferable",
-    "recipientLabel": "Recipient",
-    "amountLabel": "Amount"
+    "transferable": "Transferable"
   },
   "transferDetails": {
     "fromNetwork": "From network",

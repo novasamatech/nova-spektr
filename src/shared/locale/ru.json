@@ -239,15 +239,15 @@
     }
   },
   "transfer": {
+    "amountLabel": "Сумма",
     "continueButton": "Продолжить",
     "executing": "Подтверждение транзакции",
     "formTitle": "Отправить <strong>{ asset }</strong> в сети <strong>{ network }</strong>",
     "networkFee": "Комиссия сети",
+    "recipientLabel": "Получатель",
     "startSigningButton": "Подписать с помощью Parity Signer",
     "title": "Переводы",
-    "transferable": "Доступно",
-    "recipientLabel": "Получатель",
-    "amountLabel": "Сумма"
+    "transferable": "Доступно"
   },
   "transferDetails": {
     "fromNetwork": "Из сети",
