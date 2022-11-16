@@ -95,8 +95,8 @@ const Transfer = ({ onCreateTransaction, wallet, asset, connection }: Props) => 
                 value={value}
                 name="address"
                 className="w-full"
-                label="Recipient"
-                placeholder="Recipient"
+                label={t('transfer.recipientLabel')}
+                placeholder={t('transfer.recipientLabel')}
                 onChange={onChange}
               />
             )}
@@ -128,7 +128,7 @@ const Transfer = ({ onCreateTransaction, wallet, asset, connection }: Props) => 
                 className="w-full text-xl font-semibold text-right"
                 label={
                   <div className="flex justify-between">
-                    <div>Amount</div>
+                    <div>{t('transfer.amountLabel')}</div>
                     <div>
                       <span className="font-normal">{t('transfer.transferable')}:</span>{' '}
                       <Balance className="text-neutral font-semibold" value={balance} precision={asset.precision} />{' '}
@@ -136,7 +136,7 @@ const Transfer = ({ onCreateTransaction, wallet, asset, connection }: Props) => 
                     </div>
                   </div>
                 }
-                placeholder="Amount"
+                placeholder={t('transfer.amountLabel')}
               />
             )}
           />
