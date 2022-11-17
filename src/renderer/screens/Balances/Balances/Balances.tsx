@@ -68,9 +68,6 @@ const Balances = () => {
     toggleReceive();
   };
 
-  //eslint-disable-next-line i18next/no-literal-string
-  const getTransferUrl = (chain: Chain, asset: Asset) => `/transfer/${chain.chainId}/${asset.assetId}`;
-
   return (
     <>
       <div className="h-full flex flex-col">
