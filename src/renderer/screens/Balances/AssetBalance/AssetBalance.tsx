@@ -1,7 +1,7 @@
 import cn from 'classnames';
 import { KeyboardEvent, MouseEvent } from 'react';
 
-import { Balance as BalanceValue, Button, Icon } from '@renderer/components/ui';
+import { Balance as BalanceValue, Button, ButtonLink, Icon } from '@renderer/components/ui';
 import { useI18n } from '@renderer/context/I18nContext';
 import Shimmering from '@renderer/components/ui/Shimmering/Shimmering';
 import { Asset } from '@renderer/domain/asset';
@@ -10,23 +10,21 @@ import useToggle from '@renderer/hooks/useToggle';
 import { total, transferable } from '@renderer/services/balance/common/utils';
 import { KeyboardKey } from '@renderer/utils/constants';
 import './AssetBalance.css';
+import { ChainId } from '@renderer/domain/shared-kernel';
+import { createLink } from '@renderer/routes/utils';
+import Paths from '@renderer/routes/paths';
 
 type Props = {
   asset: Asset;
+  chainId: ChainId;
   balance: Balance;
   canMakeActions?: boolean;
   onReceiveClick?: () => void;
-  onTransferClick?: (asset: Asset) => void;
 };
 
-const AssetBalance = ({ asset, balance, canMakeActions, onTransferClick, onReceiveClick }: Props) => {
+const AssetBalance = ({ asset, chainId, balance, canMakeActions, onReceiveClick }: Props) => {
   const [isExpanded, toggleExpanded] = useToggle();
   const { t } = useI18n();
-
-  const onTransfer = (event: MouseEvent<HTMLButtonElement>) => {
-    event.stopPropagation();
-    onTransferClick?.(asset);
-  };
 
   const onReceive = (event: MouseEvent<HTMLButtonElement>) => {
     event.stopPropagation();
@@ -82,7 +80,8 @@ const AssetBalance = ({ asset, balance, canMakeActions, onTransferClick, onRecei
           </div>
           {canMakeActions && (
             <div className="flex gap-x-2 ml-4">
-              <Button
+              <ButtonLink
+                to={createLink('TRANSFER', { chainId, assetId: asset.assetId })}
                 className={cn(
                   '!px-2 group-hover:opacity-100 focus:opacity-100',
                   isExpanded ? 'opacity-100' : 'opacity-40',
@@ -90,10 +89,9 @@ const AssetBalance = ({ asset, balance, canMakeActions, onTransferClick, onRecei
                 variant="fill"
                 pallet="primary"
                 weight="lg"
-                onClick={onTransfer}
               >
                 <Icon name="arrowUp" size={22} />
-              </Button>
+              </ButtonLink>
               <Button
                 className={cn(
                   '!px-2 group-hover:opacity-100 focus:opacity-100',

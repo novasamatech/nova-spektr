@@ -58,6 +58,7 @@ const Signing = () => {
       {
         address: currentAddress,
         type: TransactionType.TRANSFER,
+        chainId: currentConnection.chainId,
         args: {
           dest: currentAddress,
           value: '1',

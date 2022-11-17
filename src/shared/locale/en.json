@@ -246,6 +246,7 @@
     "networkFee": "Network fee",
     "recipientLabel": "Recipient",
     "startSigningButton": "Sign with Parity Signer",
+    "successMessage": "transaction submitted!",
     "title": "Transfer",
     "transferable": "Transferable"
   },

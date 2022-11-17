@@ -9,7 +9,7 @@ module.exports = {
         sans: ['Public Sans', ...defaultTheme.fontFamily.sans],
       },
       boxShadow: {
-        surface: '0 0 25px rgba(0, 0, 0, 0.05)',
+        surface: '0 0 15px rgba(0, 0, 0, 0.05)',
         element: '0 0 5px rgba(0, 0, 0, 0.15)',
         component: '0 0 50px rgba(0, 0, 0, 0.1)',
       },

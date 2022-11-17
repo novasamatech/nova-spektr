@@ -2,6 +2,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import { UnsignedTransaction } from '@substrate/txwrapper-polkadot';
 import { BN, BN_THOUSAND } from '@polkadot/util';
+import cn from 'classnames';
 
 import { QrTxGenerator } from '@renderer/components/common';
 import { Button, ButtonBack, Icon } from '@renderer/components/ui';
@@ -21,13 +22,14 @@ import { useChains } from '@renderer/services/network/chainsService';
 import TransferForm from './components/TransferForm';
 import TransferDetails from './components/TransferDetails';
 import SelectedAddress from './components/SelectedAddress';
+import Message from './components/Message';
 
 const enum Steps {
-  CREATING = 'CREATING',
-  CONFIRMATION = 'CONFIRMATION',
-  SCANNING = 'SCANNING',
-  SIGNING = 'SIGNING',
-  EXECUTING = 'EXECUTING',
+  CREATING,
+  CONFIRMATION,
+  SCANNING,
+  SIGNING,
+  EXECUTING,
 }
 const DEFAULT_QR_LIFETIME = 64;
 
@@ -44,6 +46,8 @@ const Transfer = () => {
   const [unsigned, setUnsigned] = useState<UnsignedTransaction>();
   const [transaction, setTransaction] = useState<Transaction>();
   const [countdown, setCountdown] = useState<number>(DEFAULT_QR_LIFETIME);
+  const [isSuccessMessageOpen, setIsSuccessMessageOpen] = useState(false);
+
   const { createPayload, getSignedExtrinsic, submitAndWatchExtrinsic } = useTransaction();
 
   const activeWallets = getActiveWallets();
@@ -113,7 +117,7 @@ const Transfer = () => {
 
     submitAndWatchExtrinsic(extrinsic, currentConnection.api, (executed, params) => {
       if (executed) {
-        navigate(-1);
+        setIsSuccessMessageOpen(true);
       }
     });
   };
@@ -188,13 +192,17 @@ const Transfer = () => {
                   {txPayload && currentAddress && (
                     <div className="flex items-center uppercase font-normal text-xs gap-1.25">
                       {t('signing.qrCountdownTitle')}
-                      <div className="rounded-md bg-success text-white py-0.5 px-1.5">
+                      <div
+                        className={cn(
+                          'rounded-md text-white py-0.5 px-1.5',
+                          countdown > 60 ? 'bg-success' : countdown > 0 ? 'bg-alert' : 'bg-error',
+                        )}
+                      >
                         {secondsToMinutes(countdown)}
                       </div>
                     </div>
                   )}
                 </div>
-
                 <div className="flex flex-col items-center text-xs font-semibold text-primary">
                   <a className="flex items-center" href={TROUBLESHOOTING_URL} rel="noopener noreferrer" target="_blank">
                     <Icon as="img" name="globe" /> {t('signing.troubleshootingLink')}
@@ -208,16 +216,21 @@ const Transfer = () => {
                     <Icon as="img" name="globe" /> {t('signing.metadataPortalLink')}
                   </a>
                 </div>
-
-                <Button
-                  className="w-fit m-auto"
-                  variant="fill"
-                  pallet="primary"
-                  weight="lg"
-                  onClick={() => setCurrentStep(Steps.SIGNING)}
-                >
-                  {t('signing.continueButton')}
-                </Button>
+                {countdown > 0 ? (
+                  <Button
+                    className="w-fit m-auto"
+                    variant="fill"
+                    pallet="primary"
+                    weight="lg"
+                    onClick={() => setCurrentStep(Steps.SIGNING)}
+                  >
+                    {t('signing.continueButton')}
+                  </Button>
+                ) : (
+                  <Button variant="fill" pallet="primary" weight="lg" onClick={() => setupTransaction()}>
+                    {t('signing.generateNewQrButton')}
+                  </Button>
+                )}
               </div>
             )}
 
@@ -266,13 +279,28 @@ const Transfer = () => {
               asset={currentAsset}
             />
 
-            <div className="mt-8 text-neutral-variant font-semibold flex items-center gap-3">
-              <Icon className="animate-spin" name="loader" size={15} />
-              {t('transfer.executing')}
-            </div>
+            {!isSuccessMessageOpen && (
+              <div className="mt-8 text-neutral-variant font-semibold flex items-center gap-3 w-fit m-auto">
+                <Icon className="animate-spin" name="loader" size={15} />
+                {t('transfer.executing')}
+              </div>
+            )}
           </>
         )}
       </div>
+
+      <Message
+        isOpen={isSuccessMessageOpen}
+        onClose={() => {
+          setIsSuccessMessageOpen(false);
+          navigate(-1);
+        }}
+      >
+        <div className="flex uppercase items-center gap-2.5">
+          <Icon name="checkmarkCutout" size={20} className="text-success" />
+          {t('transfer.successMessage')}
+        </div>
+      </Message>
     </div>
   );
 };

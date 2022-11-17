@@ -40,26 +40,26 @@ const Transfer = ({ transaction, wallet, asset, connection }: Props) => {
         <div className="mt-10 bg-shade-2 rounded-2lg border border-shade-5 divide-y">
           <div className="flex justify-between px-5 py-3">
             <div className="text-sm text-neutral-variant ">{t('transferDetails.fromNetwork')}</div>
-            <div className="flex gap-1 items-center">
+            <div className="flex gap-1 items-center font-semibold">
               <img src={asset?.icon} alt="" width={16} height={16} />
               {asset?.name}
             </div>
           </div>
           <div className="flex justify-between px-5 py-3">
             <div className="text-sm text-neutral-variant ">{t('transferDetails.wallet')}</div>
-            <div className="flex gap-1 items-center">
+            <div className="flex gap-1 items-center font-semibold">
               <Icon name="paritySigner" size={16} />
               {wallet.name}
             </div>
           </div>
           <div className="flex justify-between px-5 py-3">
             <div className="text-sm text-neutral-variant ">{t('transferDetails.sender')}</div>
-            <div className="flex gap-1 items-center">
+            <div className="flex gap-1 items-center font-semibold">
               {currentAddress && connection && (
-                <div className="flex gap-1 items-center">
+                <>
                   <Address type="short" address={currentAddress} addressStyle="normal" size={14} />
                   <Explorers chain={connection} address={currentAddress} />
-                </div>
+                </>
               )}
             </div>
           </div>
@@ -68,7 +68,7 @@ const Transfer = ({ transaction, wallet, asset, connection }: Props) => {
           <div className="flex justify-between px-5 py-3">
             <div className="text-sm text-neutral-variant ">{t('transferDetails.networkFee')}</div>
             <div className="flex gap-1 items-center">
-              <div className="flex gap-1 items-center">
+              <div className="flex gap-1 items-center font-semibold">
                 <Fee connection={connection} wallet={wallet} transaction={transaction} />
               </div>
             </div>
@@ -76,7 +76,7 @@ const Transfer = ({ transaction, wallet, asset, connection }: Props) => {
           <div className="flex justify-between px-5 py-3">
             <div className="text-sm text-neutral-variant ">{t('transferDetails.recipient')}</div>
             <div className="flex gap-1 items-center">
-              <div className="flex gap-1 items-center">
+              <div className="flex gap-1 items-center font-semibold">
                 <Address type="short" address={dest} addressStyle="normal" size={14} />
                 <Explorers chain={connection} address={currentAddress} />
               </div>

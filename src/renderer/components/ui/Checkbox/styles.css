@@ -7,3 +7,9 @@ input[type="checkbox"]:checked::before {
   font-weight: bold;
   text-align: center;
 }
+
+input::-webkit-outer-spin-button,
+input::-webkit-inner-spin-button {
+  appearance: none;
+  margin: 0;
+}

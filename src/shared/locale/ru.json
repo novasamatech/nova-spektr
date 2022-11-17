@@ -246,6 +246,7 @@
     "networkFee": "Комиссия сети",
     "recipientLabel": "Получатель",
     "startSigningButton": "Подписать с помощью Parity Signer",
+    "successMessage": "transaction submitted!",
     "title": "Переводы",
     "transferable": "Доступно"
   },

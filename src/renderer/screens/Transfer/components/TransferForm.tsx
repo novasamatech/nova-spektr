@@ -13,7 +13,7 @@ import SelectedAddress from './SelectedAddress';
 import Fee from './Fee';
 import { TransactionType } from '@renderer/domain/transaction';
 import { useBalance } from '@renderer/services/balance/balanceService';
-import { transferable } from '@renderer/services/balance/common/utils';
+import { formatAmount, transferable } from '@renderer/services/balance/common/utils';
 
 type TransferForm = {
   address: string;
@@ -153,7 +153,7 @@ const Transfer = ({ onCreateTransaction, wallet, asset, connection }: Props) => 
                   address: currentAddress,
                   chainId: connection.chainId,
                   args: {
-                    value: amount,
+                    value: formatAmount(amount, asset.precision),
                     dest: address,
                   },
                 }}

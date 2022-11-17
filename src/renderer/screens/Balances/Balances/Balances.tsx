@@ -100,7 +100,6 @@ const Balances = () => {
                 chain={chain}
                 publicKey={publicKey}
                 canMakeActions={canMakeActions}
-                onTransferClick={(asset: Asset) => navigate(getTransferUrl(chain, asset))}
                 onReceiveClick={onReceive(chain)}
               />
             ))}

@@ -38,7 +38,7 @@ export const useTransaction = (): ITransactionService => {
     (args: Record<string, any>, info: BaseTxInfo, options: OptionsWithMeta) => UnsignedTransaction
   > = {
     [TransactionType.TRANSFER]: (transaction, info, options) => {
-      return methods.balances.transfer(
+      return methods.balances.transferKeepAlive(
         {
           dest: transaction.args.dest,
           value: transaction.args.value,
@@ -53,7 +53,7 @@ export const useTransaction = (): ITransactionService => {
     TransactionType,
     (args: Record<string, any>, api: ApiPromise) => SubmittableExtrinsic<'promise'>
   > = {
-    [TransactionType.TRANSFER]: ({ dest, value }, api) => api.tx.balances.transfer(dest, value),
+    [TransactionType.TRANSFER]: ({ dest, value }, api) => api.tx.balances.transferKeepAlive(dest, value),
   };
 
   const createPayload = async (
@@ -81,12 +81,10 @@ export const useTransaction = (): ITransactionService => {
   ): Promise<string> => {
     const { registry, metadataRpc } = await createRegistry(api);
 
-    const tx = construct.signedTx(unsigned, signature, {
+    return construct.signedTx(unsigned, signature, {
       metadataRpc,
       registry,
     });
-
-    return tx;
   };
 
   const getTransactionFee = async (transaction: Transaction, api: ApiPromise): Promise<string> => {
@@ -109,8 +107,6 @@ export const useTransaction = (): ITransactionService => {
       registry,
     });
 
-    console.log(txInfo);
-
     api.rpc.author.submitAndWatchExtrinsic(tx, async (result) => {
       if (!result.isInBlock || extrinsicCalls > 1) return;
 
@@ -123,7 +119,7 @@ export const useTransaction = (): ITransactionService => {
       let isSuccessExtrinsic = false;
 
       // information for each contained extrinsic
-      signedBlock.block.extrinsics.forEach(({ method: { method, section }, signer, args, hash }, index) => {
+      signedBlock.block.extrinsics.forEach(({ method: { method, section }, signer, hash }, index) => {
         if (signer.toString() !== txInfo.address || method !== txInfo.method.name || section !== txInfo.method.pallet) {
           return;
         }
