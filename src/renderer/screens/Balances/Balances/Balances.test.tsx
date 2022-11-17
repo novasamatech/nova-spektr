@@ -1,4 +1,5 @@
 import { render, screen } from '@testing-library/react';
+import { MemoryRouter } from 'react-router-dom';
 
 import { useWallet } from '@renderer/services/wallet/walletService';
 import Balances from './Balances';
@@ -55,14 +56,14 @@ jest.mock('../NetworkBalances/NetworkBalances', () => () => <div>NetworkBalances
 
 describe('screen/Balances/Balances', () => {
   test('should render component', () => {
-    render(<Balances />);
+    render(<Balances />, { wrapper: MemoryRouter });
 
     const text = screen.getByText('balances.title');
     expect(text).toBeInTheDocument();
   });
 
   test('should render networks', () => {
-    render(<Balances />);
+    render(<Balances />, { wrapper: MemoryRouter });
 
     const balances = screen.getAllByText('NetworkBalances');
     expect(balances).toHaveLength(2);
@@ -82,7 +83,8 @@ describe('screen/Balances/Balances', () => {
         },
       ],
     });
-    render(<Balances />);
+
+    render(<Balances />, { wrapper: MemoryRouter });
 
     const noResults = screen.getByText('balances.emptyStateLabel');
 

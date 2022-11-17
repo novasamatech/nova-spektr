@@ -1,0 +1,308 @@
+import { useNavigate, useParams } from 'react-router-dom';
+import { useEffect, useState } from 'react';
+import { UnsignedTransaction } from '@substrate/txwrapper-polkadot';
+import { BN, BN_THOUSAND } from '@polkadot/util';
+import cn from 'classnames';
+
+import { QrTxGenerator } from '@renderer/components/common';
+import { Button, ButtonBack, Icon } from '@renderer/components/ui';
+import { useI18n } from '@renderer/context/I18nContext';
+import { useNetworkContext } from '@renderer/context/NetworkContext';
+import { useWallet } from '@renderer/services/wallet/walletService';
+import { Asset } from '@renderer/domain/asset';
+import { formatAddress } from '@renderer/utils/address';
+import { useTransaction } from '@renderer/services/transaction/transactionService';
+import { Transaction, TransactionType } from '@renderer/domain/transaction';
+import { getMetadataPortalUrl, TROUBLESHOOTING_URL } from '../Signing/common/consts';
+import { secondsToMinutes } from '../Signing/common/utils';
+import ParitySignerSignatureReader from '../Signing/ParitySignerSignatureReader/ParitySignerSignatureReader';
+import { ChainId, HexString } from '@renderer/domain/shared-kernel';
+import { formatAmount } from '@renderer/services/balance/common/utils';
+import { useChains } from '@renderer/services/network/chainsService';
+import TransferForm from './components/TransferForm';
+import TransferDetails from './components/TransferDetails';
+import SelectedAddress from './components/SelectedAddress';
+import Message from './components/Message';
+
+const enum Steps {
+  CREATING,
+  CONFIRMATION,
+  SCANNING,
+  SIGNING,
+  EXECUTING,
+}
+const DEFAULT_QR_LIFETIME = 64;
+
+const Transfer = () => {
+  const { t } = useI18n();
+  const { chainId, assetId } = useParams<{ chainId: string; assetId: string }>();
+
+  const { connections } = useNetworkContext();
+  const { getActiveWallets } = useWallet();
+  const navigate = useNavigate();
+
+  const [currentStep, setCurrentStep] = useState(Steps.CREATING);
+  const [txPayload, setTxPayload] = useState<Uint8Array>();
+  const [unsigned, setUnsigned] = useState<UnsignedTransaction>();
+  const [transaction, setTransaction] = useState<Transaction>();
+  const [countdown, setCountdown] = useState<number>(DEFAULT_QR_LIFETIME);
+  const [isSuccessMessageOpen, setIsSuccessMessageOpen] = useState(false);
+
+  const { createPayload, getSignedExtrinsic, submitAndWatchExtrinsic } = useTransaction();
+
+  const activeWallets = getActiveWallets();
+  const currentWallet = activeWallets?.find(
+    (wallet) => wallet.mainAccounts[0] || wallet.chainAccounts[0].chainId === chainId,
+  );
+  const currentConnection = chainId ? connections[chainId as ChainId] : undefined;
+  const currentAsset = assetId && currentConnection ? (currentConnection.assets[Number(assetId)] as Asset) : undefined;
+  const currentAddress = formatAddress(
+    currentWallet?.mainAccounts[0].accountId || currentWallet?.chainAccounts[0].accountId || '',
+    currentConnection?.addressPrefix,
+  );
+  const { getExpectedBlockTime } = useChains();
+
+  const expectedBlockTime = currentConnection?.api ? getExpectedBlockTime(currentConnection?.api) : undefined;
+
+  const addTransaction = ({ address, amount }: { address: string; amount: string }) => {
+    if (!currentConnection || !currentAddress || !currentAsset || !amount) return;
+
+    setTransaction({
+      address: currentAddress,
+      type: TransactionType.TRANSFER,
+      chainId: currentConnection.chainId,
+      args: {
+        dest: formatAddress(address, currentConnection.addressPrefix),
+        value: formatAmount(amount, currentAsset.precision),
+        asset: currentAsset,
+      },
+    });
+
+    setCurrentStep(Steps.CONFIRMATION);
+  };
+
+  useEffect(() => {
+    if (countdown > 0) {
+      const timer = setTimeout(() => setCountdown(countdown - 1), 1000);
+
+      return () => {
+        clearTimeout(timer);
+      };
+    }
+  }, [countdown]);
+
+  const setupTransaction = async () => {
+    if (!currentConnection?.api || !transaction || !currentAddress) return;
+
+    const { payload, unsigned } = await createPayload(transaction, currentConnection.api);
+
+    setTxPayload(payload);
+    setUnsigned(unsigned);
+  };
+
+  useEffect(() => {
+    setCountdown(expectedBlockTime?.mul(new BN(DEFAULT_QR_LIFETIME)).div(BN_THOUSAND).toNumber() || 0);
+  }, [txPayload]);
+
+  const sign = () => {
+    setupTransaction();
+    setCurrentStep(Steps.SCANNING);
+  };
+
+  const sendSignedTransaction = async (signature: HexString) => {
+    if (!currentConnection?.api || !unsigned || !signature) return;
+
+    const extrinsic = await getSignedExtrinsic(unsigned, signature, currentConnection.api);
+    setCurrentStep(Steps.EXECUTING);
+
+    submitAndWatchExtrinsic(extrinsic, currentConnection.api, (executed, params) => {
+      if (executed) {
+        setIsSuccessMessageOpen(true);
+      }
+    });
+  };
+
+  const handleBackButton = () => {
+    if (currentStep === Steps.CREATING) {
+      navigate(-1);
+    } else {
+      setCurrentStep(Steps.CREATING);
+    }
+  };
+
+  // TS doesn't work with Boolean type
+  const readyToCreate = !!(currentWallet && currentAsset && currentAddress && currentConnection);
+  const readyToConfirm = !!(readyToCreate && transaction);
+
+  return (
+    <div className="h-full pb-5 overflow-auto">
+      <div className="flex items-center gap-x-2.5 mb-9">
+        <ButtonBack onCustomReturn={handleBackButton} />
+        <p className="font-semibold text-2xl text-neutral-variant">{t('balances.title')}</p>
+        <p className="font-semibold text-2xl text-neutral">/</p>
+        <h1 className="font-semibold text-2xl text-neutral">{t('transfer.title')}</h1>
+      </div>
+
+      <div>
+        {currentStep === Steps.CREATING && readyToCreate && (
+          <TransferForm
+            wallet={currentWallet}
+            onCreateTransaction={addTransaction}
+            asset={currentAsset}
+            connection={currentConnection}
+          />
+        )}
+
+        {currentStep === Steps.CONFIRMATION && readyToConfirm && (
+          <>
+            <TransferDetails
+              wallet={currentWallet}
+              transaction={transaction}
+              asset={currentAsset}
+              connection={currentConnection}
+            />
+            <Button variant="outline" weight="lg" pallet="primary" className="w-fit flex-0 m-auto mt-5" onClick={sign}>
+              {t('transfer.startSigningButton')}
+            </Button>
+          </>
+        )}
+
+        {[Steps.SCANNING, Steps.SIGNING].includes(currentStep) && currentConnection && (
+          <div className="w-[500px] rounded-2xl bg-shade-2 p-5 flex flex-col items-center m-auto gap-2.5 overflow-auto">
+            {currentWallet && currentConnection && (
+              <SelectedAddress wallet={currentWallet} connection={currentConnection} />
+            )}
+
+            {currentStep === Steps.SCANNING && (
+              <div className="flex flex-col gap-2.5 w-full">
+                <div className="bg-white p-5 shadow-surface rounded-2xl flex flex-col items-center gap-5 w-full">
+                  <div className="text-neutral-variant text-base font-semibold">{t('signing.scanQrTitle')}</div>
+                  {txPayload && currentAddress ? (
+                    <div className="w-[220px] h-[220px]">
+                      <QrTxGenerator
+                        cmd={0}
+                        payload={txPayload}
+                        address={currentAddress}
+                        genesisHash={currentConnection.chainId}
+                      />
+                    </div>
+                  ) : (
+                    <div className="w-[220px] h-[220px] rounded-2lg bg-shade-20 animate-pulse" />
+                  )}
+                  {txPayload && currentAddress && (
+                    <div className="flex items-center uppercase font-normal text-xs gap-1.25">
+                      {t('signing.qrCountdownTitle')}
+                      <div
+                        className={cn(
+                          'rounded-md text-white py-0.5 px-1.5',
+                          countdown > 60 ? 'bg-success' : countdown > 0 ? 'bg-alert' : 'bg-error',
+                        )}
+                      >
+                        {secondsToMinutes(countdown)}
+                      </div>
+                    </div>
+                  )}
+                </div>
+                <div className="flex flex-col items-center text-xs font-semibold text-primary">
+                  <a className="flex items-center" href={TROUBLESHOOTING_URL} rel="noopener noreferrer" target="_blank">
+                    <Icon as="img" name="globe" /> {t('signing.troubleshootingLink')}
+                  </a>
+                  <a
+                    className="flex items-center"
+                    href={getMetadataPortalUrl(currentConnection.chainId)}
+                    rel="noopener noreferrer"
+                    target="_blank"
+                  >
+                    <Icon as="img" name="globe" /> {t('signing.metadataPortalLink')}
+                  </a>
+                </div>
+                {countdown > 0 ? (
+                  <Button
+                    className="w-fit m-auto"
+                    variant="fill"
+                    pallet="primary"
+                    weight="lg"
+                    onClick={() => setCurrentStep(Steps.SIGNING)}
+                  >
+                    {t('signing.continueButton')}
+                  </Button>
+                ) : (
+                  <Button variant="fill" pallet="primary" weight="lg" onClick={() => setupTransaction()}>
+                    {t('signing.generateNewQrButton')}
+                  </Button>
+                )}
+              </div>
+            )}
+
+            {currentStep === Steps.SIGNING && (
+              <>
+                <div className="bg-white shadow-surface rounded-2xl flex flex-col items-center gap-5 w-full">
+                  <div className="my-4 text-neutral-variant text-base font-semibold">
+                    {t('signing.scanSignatureTitle')}
+                  </div>
+
+                  <div className="h-[460px]">
+                    <ParitySignerSignatureReader
+                      className="w-full rounded-2lg"
+                      countdown={countdown}
+                      size={460}
+                      onResult={(signature) => {
+                        sendSignedTransaction(signature as HexString);
+                      }}
+                    />
+                  </div>
+                </div>
+                {countdown === 0 && (
+                  <Button
+                    variant="fill"
+                    pallet="primary"
+                    weight="lg"
+                    onClick={() => {
+                      setCurrentStep(Steps.SCANNING);
+                      setupTransaction();
+                    }}
+                  >
+                    {t('signing.generateNewQrButton')}
+                  </Button>
+                )}
+              </>
+            )}
+          </div>
+        )}
+
+        {currentStep === Steps.EXECUTING && readyToConfirm && (
+          <>
+            <TransferDetails
+              wallet={currentWallet}
+              connection={currentConnection}
+              transaction={transaction}
+              asset={currentAsset}
+            />
+
+            {!isSuccessMessageOpen && (
+              <div className="mt-8 text-neutral-variant font-semibold flex items-center gap-3 w-fit m-auto">
+                <Icon className="animate-spin" name="loader" size={15} />
+                {t('transfer.executing')}
+              </div>
+            )}
+          </>
+        )}
+      </div>
+
+      <Message
+        isOpen={isSuccessMessageOpen}
+        onClose={() => {
+          setIsSuccessMessageOpen(false);
+          navigate(-1);
+        }}
+      >
+        <div className="flex uppercase items-center gap-2.5">
+          <Icon name="checkmarkCutout" size={20} className="text-success" />
+          {t('transfer.successMessage')}
+        </div>
+      </Message>
+    </div>
+  );
+};
+
+export default Transfer;

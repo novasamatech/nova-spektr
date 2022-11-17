@@ -1,4 +1,5 @@
 import { act, render, screen } from '@testing-library/react';
+import { MemoryRouter } from 'react-router-dom';
 
 import AssetBalance from './AssetBalance';
 import { Chain } from '@renderer/domain/chain';
@@ -18,6 +19,7 @@ const testAsset = testChain.assets[0];
 
 const defaultProps = {
   asset: testAsset as Asset,
+  chainId: testChain.chainId,
   balance: {
     assetId: testAsset.assetId.toString(),
     chainId: testChain.chainId,
@@ -62,27 +64,23 @@ describe('screen/Balances/AssetBalance', () => {
   });
 
   test('should init transfer', async () => {
-    const spyTransfer = jest.fn();
-
     await act(async () => {
-      render(<AssetBalance {...defaultProps} canMakeActions onTransferClick={spyTransfer} />);
+      render(<AssetBalance {...defaultProps} canMakeActions />, { wrapper: MemoryRouter });
     });
 
-    const buttons = screen.getAllByRole('button');
-    buttons[1].click();
-
-    expect(spyTransfer).toBeCalled();
+    const transferIcon = screen.getByTestId('arrowUp-svg');
+    expect(transferIcon).toBeInTheDocument();
   });
 
   test('should init receive', async () => {
     const spyReceive = jest.fn();
 
     await act(async () => {
-      render(<AssetBalance {...defaultProps} canMakeActions onReceiveClick={spyReceive} />);
+      render(<AssetBalance {...defaultProps} canMakeActions onReceiveClick={spyReceive} />, { wrapper: MemoryRouter });
     });
 
     const buttons = screen.getAllByRole('button');
-    buttons[2].click();
+    buttons[1].click();
 
     expect(spyReceive).toBeCalled();
   });
@@ -92,6 +90,7 @@ describe('screen/Balances/AssetBalance', () => {
       render(
         <AssetBalance
           asset={testAsset}
+          chainId={testChain.chainId}
           balance={{
             assetId: testAsset.assetId.toString(),
             chainId: testChain.chainId,

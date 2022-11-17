@@ -238,8 +238,25 @@
       "subtitle": "Валидаторы"
     }
   },
-  "transfers": {
-    "title": "Переводы"
+  "transfer": {
+    "amountLabel": "Сумма",
+    "continueButton": "Продолжить",
+    "executing": "Подтверждение транзакции",
+    "formTitle": "Отправить <strong>{ asset }</strong> в сети <strong>{ network }</strong>",
+    "networkFee": "Комиссия сети",
+    "recipientLabel": "Получатель",
+    "startSigningButton": "Подписать с помощью Parity Signer",
+    "successMessage": "transaction submitted!",
+    "title": "Переводы",
+    "transferable": "Доступно"
+  },
+  "transferDetails": {
+    "fromNetwork": "Из сети",
+    "networkFee": "Комиссия сети",
+    "recipient": "Получатель",
+    "sender": "Отправитель",
+    "title": "Отправить",
+    "wallet": "Кошелёк"
   },
   "wallets": {
     "paritySignerLabel": "Parity Signer",

@@ -22,7 +22,7 @@ const Paths = {
   HISTORY: '/history',
   MULTISIG: '/multisig',
   BALANCES: '/balances',
-  TRANSFER: '/transfer',
+  TRANSFER: '/transfer/:chainId/:assetId',
   SIGNING: '/signing',
 
   // DEV
