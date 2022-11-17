@@ -190,6 +190,7 @@ const ParitySignerSignatureReader = ({ size = 300, className, onResult, countdow
           </div>
           <div className="mb-5 w-[242px]">
             <Dropdown
+              // variant="up"
               placeholder={t('onboarding.paritySigner.selectCameraLabel')}
               selected={activeCamera}
               options={availableCameras}
@@ -230,7 +231,9 @@ const ParitySignerSignatureReader = ({ size = 300, className, onResult, countdow
           {countdown && countdown > 0 ? (
             <div className="flex m-auto items-center justify-center uppercase font-normal text-xs gap-1.25">
               {t('signing.qrCountdownTitle')}
-              <div className="rounded-md bg-success text-white py-0.5 px-1.5">{secondsToMinutes(countdown || 0)}</div>
+              <div className={cn('rounded-md text-white py-0.5 px-1.5', countdown > 60 ? 'bg-success' : 'bg-alert')}>
+                {secondsToMinutes(countdown || 0)}
+              </div>
             </div>
           ) : (
             <div>

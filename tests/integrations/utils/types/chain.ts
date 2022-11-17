@@ -30,7 +30,7 @@ export interface History {
 }
 
 export interface ExternalApi {
-  history: History;
+  history: History[];
 }
 
 export interface ChainJSON {

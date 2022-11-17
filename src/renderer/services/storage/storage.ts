@@ -1,6 +1,6 @@
 import Dexie, { Table } from 'dexie';
 
-import { BalanceDS, WalletDS, ConnectionDS, DataStorage, IStorage } from './common/types';
+import { BalanceDS, WalletDS, ConnectionDS, DataStorage, IStorage, TransactionDS } from './common/types';
 import { useBalanceStorage } from './balanceStorage';
 import { useConnectionStorage } from './connectionStorage';
 import { useWalletStorage } from './walletStorage';
@@ -9,6 +9,7 @@ class DexieStorage extends Dexie {
   connections: Table<ConnectionDS>;
   balances: Table<BalanceDS>;
   wallets: Table<WalletDS>;
+  transactions: Table<TransactionDS>;
 
   constructor() {
     super('omni'); // TODO: naming is not final
@@ -16,11 +17,13 @@ class DexieStorage extends Dexie {
       connections: '++id,chainId,type',
       balances: '[publicKey+chainId+assetId],[publicKey+chainId]',
       wallets: '++id,isActive,type',
+      transactions: '++id,type',
     });
 
     this.connections = this.table('connections');
     this.balances = this.table('balances');
     this.wallets = this.table('wallets');
+    this.transactions = this.table('transactions');
   }
 }
 

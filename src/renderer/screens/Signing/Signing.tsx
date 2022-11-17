@@ -9,7 +9,7 @@ import { Address, Button, Icon } from '@renderer/components/ui';
 import { Explorers, QrTxGenerator } from '@renderer/components/common';
 import ParitySignerSignatureReader from './ParitySignerSignatureReader/ParitySignerSignatureReader';
 import { useTransaction } from '@renderer/services/transaction/transactionService';
-import { TransactionType } from '@renderer/services/transaction/common/types';
+import { TransactionType } from '@renderer/domain/transaction';
 import { secondsToMinutes } from './common/utils';
 import { getMetadataPortalUrl, TROUBLESHOOTING_URL } from './common/consts';
 
@@ -54,10 +54,11 @@ const Signing = () => {
   const setupTransaction = async () => {
     if (!currentConnection?.api || !currentAddress) return;
 
-    const payload = await createPayload(
+    const { payload } = await createPayload(
       {
         address: currentAddress,
         type: TransactionType.TRANSFER,
+        chainId: currentConnection.chainId,
         args: {
           dest: currentAddress,
           value: '1',

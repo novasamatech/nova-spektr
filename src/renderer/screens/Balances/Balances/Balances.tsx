@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 import useToggle from '@renderer/hooks/useToggle';
 import { Icon, Input, Switch } from '@renderer/components/ui';
@@ -17,6 +18,7 @@ import { useI18n } from '@renderer/context/I18nContext';
 
 const Balances = () => {
   const { t } = useI18n();
+  const navigate = useNavigate();
 
   const [query, setQuery] = useState('');
   const [publicKey, setPublicKey] = useState<PublicKey>();
@@ -95,7 +97,6 @@ const Balances = () => {
                 chain={chain}
                 publicKey={publicKey}
                 canMakeActions={canMakeActions}
-                onTransferClick={() => console.log(t('transfers.title'))}
                 onReceiveClick={onReceive(chain)}
               />
             ))}

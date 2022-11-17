@@ -28,6 +28,7 @@ const routesConfig: RouteObject[] = [
       { path: Paths.MULTISIG, element: <Screens.MultisigOperations /> },
       { path: Paths.HISTORY, element: <Screens.History /> },
       { path: Paths.BALANCES, element: <Screens.Balances /> },
+      { path: Paths.TRANSFER, element: <Screens.Transfer /> },
       { path: Paths.CHAT_DEV, element: <Screens.ChatDev /> },
       { path: Paths.CAMERA_DEV, element: <Screens.CameraDev /> },
       {
