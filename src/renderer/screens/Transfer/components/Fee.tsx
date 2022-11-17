@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 
 import { ExtendedChain } from '@renderer/services/network/common/types';
-import { formatAddress } from '@renderer/utils/address';
+import { formatAddress, validateAddress } from '@renderer/utils/address';
 import { Wallet } from '@renderer/domain/wallet';
 import { useTransaction } from '@renderer/services/transaction/transactionService';
 import { Transaction } from '@renderer/domain/transaction';
@@ -25,10 +25,13 @@ const Fee = ({ wallet, connection, transaction, className }: Props) => {
     connection?.addressPrefix,
   );
 
+  const isValidTransaction = transaction?.args.value > 0 && validateAddress(transaction?.args.dest);
+
   useEffect(() => {
     (async () => {
-      if (!currentAddress || !connection?.api) {
-        setTransactionFee('');
+      if (!currentAddress || !connection?.api || !isValidTransaction) {
+        setTransactionFee('0');
+        setIsLoading(false);
 
         return;
       }
@@ -40,10 +43,10 @@ const Fee = ({ wallet, connection, transaction, className }: Props) => {
       setTransactionFee(fee);
       setIsLoading(false);
     })();
-  }, [currentAddress, connection?.api]);
+  }, [transaction.args, currentAddress]);
 
   if (isLoading) {
-    return <div className="animate-pulse w-20 h-5"></div>;
+    return <div className="animate-pulse bg-shade-20 rounded-lg w-20 h-2.5"></div>;
   }
 
   return (
