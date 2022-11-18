@@ -8,7 +8,7 @@ describe('services/staking', () => {
       result: {
         current: { staking, subscribeLedger, getNominators },
       },
-    } = renderHook(() => useStaking('0x123'));
+    } = renderHook(() => useStaking());
 
     expect(staking).toBeDefined();
     expect(subscribeLedger).toBeDefined();

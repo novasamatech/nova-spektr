@@ -237,8 +237,25 @@
       "subtitle": "Unbond"
     }
   },
-  "transfers": {
-    "title": "Transfers"
+  "transfer": {
+    "amountLabel": "Amount",
+    "continueButton": "Continue",
+    "executing": "Confirming transaction",
+    "formTitle": "Send <strong>{ asset }</strong> on <strong>{ network }</strong>",
+    "networkFee": "Network fee",
+    "recipientLabel": "Recipient",
+    "startSigningButton": "Sign with Parity Signer",
+    "successMessage": "transaction submitted!",
+    "title": "Transfer",
+    "transferable": "Transferable"
+  },
+  "transferDetails": {
+    "fromNetwork": "From network",
+    "networkFee": "Network fee",
+    "recipient": "Recipient",
+    "sender": "Sender",
+    "title": "Send",
+    "wallet": "Wallet"
   },
   "wallets": {
     "paritySignerLabel": "Parity Signer",

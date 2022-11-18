@@ -1,3 +1,5 @@
+import { ApiPromise } from '@polkadot/api';
+
 import { AccountID, ChainId } from '@renderer/domain/shared-kernel';
 
 // =====================================================
@@ -6,12 +8,20 @@ import { AccountID, ChainId } from '@renderer/domain/shared-kernel';
 
 export interface IStakingService {
   staking: StakingMap;
-  validators: Validator[];
-  subscribeActiveEra: () => Promise<void>;
-  subscribeLedger: (accounts: AccountID[]) => Promise<void>;
-  getNominators: (account: AccountID) => Promise<string[]>;
-  bondAndNominate: (address: AccountID, value: string, payee: Payee, targets: AccountID[]) => Promise<string>;
-  bondExtra: (address: AccountID, value: string) => Promise<string>;
+  validators: ValidatorMap;
+  subscribeActiveEra: (chainId: ChainId, api: ApiPromise) => Promise<void>;
+  subscribeLedger: (chainId: ChainId, api: ApiPromise, accounts: AccountID[]) => Promise<void>;
+  subscribeValidators: (chainId: ChainId, api: ApiPromise) => Promise<void>;
+  getMaxValidators: (api: ApiPromise) => number;
+  getNominators: (api: ApiPromise, account: AccountID) => Promise<string[]>;
+  bondAndNominate: (
+    api: ApiPromise,
+    address: AccountID,
+    value: string,
+    payee: Payee,
+    targets: AccountID[],
+  ) => Promise<string>;
+  bondExtra: (api: ApiPromise, address: AccountID, value: string) => Promise<string>;
 
   // bondExtra: () => Promise<void>;
   // unbond: () => Promise<void>;
@@ -29,6 +39,7 @@ export interface IStakingService {
 // =====================================================
 
 export type StakingMap = Record<AccountID, Staking | undefined>;
+export type ValidatorMap = Record<AccountID, Validator | undefined>;
 
 export type Staking = {
   accountId: AccountID;
@@ -51,6 +62,8 @@ export type Validator = {
   address: AccountID;
   ownStake: string;
   totalStake: string;
+  commission: number;
+  blocked: boolean;
   isOversubscribed: boolean;
   isSlashed: boolean;
   apy: number;

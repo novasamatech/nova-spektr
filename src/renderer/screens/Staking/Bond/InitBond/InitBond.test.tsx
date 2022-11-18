@@ -11,7 +11,7 @@ jest.mock('@renderer/context/I18nContext', () => ({
 
 describe('screens/Bond/Bond', () => {
   test('should render component', () => {
-    render(<InitBond />, { wrapper: MemoryRouter });
+    render(<InitBond onResult={() => {}} />, { wrapper: MemoryRouter });
 
     const title = screen.getByText('staking.title');
     const subTitle = screen.getByText('staking.startStaking.subtitle');

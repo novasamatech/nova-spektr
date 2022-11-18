@@ -1,13 +1,13 @@
 import { ApiPromise } from '@polkadot/api';
 import { construct, methods } from '@substrate/txwrapper-polkadot';
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 
 import { AccountID, ChainId } from '@renderer/domain/shared-kernel';
 import { useSubscription } from '@renderer/services/subscription/subscriptionService';
 import { createTxMetadata } from '@renderer/utils/substrate';
-import { IStakingService, Payee, StakingMap, Validator } from './common/types';
+import { IStakingService, Payee, StakingMap, ValidatorMap } from './common/types';
 
-export const useStaking = (chainId?: ChainId, api?: ApiPromise): IStakingService => {
+export const useStaking = (): IStakingService => {
   // const { data } = useQuery<Rewards>(GET_TOTAL_REWARDS, {
   //   variables: {
   //     first: 10,
@@ -16,48 +16,46 @@ export const useStaking = (chainId?: ChainId, api?: ApiPromise): IStakingService
   // });
   const eraSubscription = useSubscription<ChainId>();
   const ledgerSubscription = useSubscription<ChainId>();
+  const validatorsSubscription = useSubscription<ChainId>();
 
+  const era = useRef<number>();
   const [staking, setStaking] = useState<StakingMap>({});
-  const [activeEra, setActiveEra] = useState<number>();
-  const [validators, setValidators] = useState<Validator[]>([]);
-  const [activeAccounts, setActiveAccounts] = useState<AccountID[]>([]);
+  const [validators, setValidators] = useState<ValidatorMap>({});
 
-  const subscribeActiveEra = async (): Promise<void> => {
+  const subscribeActiveEra = async (chainId: ChainId, api: ApiPromise): Promise<void> => {
     await ledgerSubscription.unsubscribeAll();
-    listenToActiveEra();
+    await listenToActiveEra(chainId, api);
   };
 
-  const listenToActiveEra = () => {
-    if (!chainId || !api) return;
+  const listenToActiveEra = async (chainId: ChainId, api: ApiPromise): Promise<void> => {
+    return new Promise((resolve, reject) => {
+      const unsubscribe = api.query.staking.activeEra((data: any) => {
+        try {
+          const unwrappedData = data.unwrap();
+          era.current = unwrappedData.get('index').toNumber();
+          resolve();
+        } catch (error) {
+          console.warn(error);
+          reject();
+        }
+      });
 
-    const unsubscribe = api.query.staking.activeEra((data: any) => {
-      try {
-        const unwrappedData = data.unwrap();
-        setActiveEra(unwrappedData.get('index').toNumber());
-      } catch (error) {
-        console.warn(error);
-      }
+      eraSubscription.subscribe(chainId, unsubscribe);
     });
-
-    eraSubscription.subscribe(chainId, unsubscribe);
   };
 
-  const subscribeLedger = async (newAccounts: AccountID[]): Promise<void> => {
-    const apiHasChanges = activeAccounts.length === newAccounts.length;
-    if (apiHasChanges) {
+  const subscribeLedger = async (chainId: ChainId, api: ApiPromise, newAccounts: AccountID[]): Promise<void> => {
+    const apiHasChanged = Object.keys(staking).length === newAccounts.length;
+    if (apiHasChanged) {
       setStaking({});
     }
 
     await ledgerSubscription.unsubscribeAll();
-    await listenToLedger(newAccounts);
-
-    setActiveAccounts(newAccounts);
+    await listenToLedger(chainId, api, newAccounts);
   };
 
-  const listenToLedger = async (accounts: AccountID[]): Promise<void> => {
-    if (!chainId || !api) return;
-
-    const controllers = await getControllers(accounts);
+  const listenToLedger = async (chainId: ChainId, api: ApiPromise, accounts: AccountID[]): Promise<void> => {
+    const controllers = await getControllers(api, accounts);
 
     const unsubscribe = api.query.staking.ledger.multi(controllers, async (data) => {
       let isControllerChanged = false;
@@ -66,9 +64,10 @@ export const useStaking = (chainId?: ChainId, api?: ApiPromise): IStakingService
         const accountId: string = accounts[index];
 
         if (ledger.isNone) {
-          isControllerChanged ||= Boolean(staking[accountId]?.chainId === chainId);
+          const isSameChain = Boolean(staking[accountId]?.chainId === chainId);
+          isControllerChanged ||= isSameChain;
 
-          return { [accountId]: undefined };
+          return isSameChain ? staking[accountId] : { [accountId]: undefined };
         }
 
         try {
@@ -99,16 +98,100 @@ export const useStaking = (chainId?: ChainId, api?: ApiPromise): IStakingService
 
       if (isControllerChanged) {
         await ledgerSubscription.unsubscribeAll();
-        await listenToLedger(accounts);
+        await listenToLedger(chainId, api, accounts);
       }
     });
 
     ledgerSubscription.subscribe(chainId, unsubscribe);
   };
 
-  const getNominators = async (account: AccountID): Promise<string[]> => {
-    if (!api) return [];
+  const subscribeValidators = async (chainId: ChainId, api: ApiPromise): Promise<void> => {
+    await validatorsSubscription.unsubscribeAll();
+    await listenToValidators(chainId, api);
+    await listenToValidatorsPrefs(chainId, api);
+    // await listenToIdentities();
+  };
 
+  // @ts-ignore
+  const getMaxValidators = (api: ApiPromise): number => {
+    return api.consts.staking.maxNominations.toNumber();
+  };
+
+  const listenToValidators = async (chainId: ChainId, api: ApiPromise): Promise<void> => {
+    if (!era.current) throw new Error('No ActiveEra');
+
+    const unsubscribe = api.query.staking.erasStakersClipped.entries(era.current, (data: any) => {
+      setValidators((prev) =>
+        data.reduce((acc: ValidatorMap, [storageKey, type]: any) => {
+          // era, validatorAddress
+          const [_, validatorAddress] = storageKey.args;
+          const address = validatorAddress.toString();
+
+          const payload = {
+            ...prev[address],
+            address,
+            ownStake: type.own.toString(),
+            totalStake: type.total.toString(),
+          };
+
+          return { ...acc, [address]: payload };
+        }, {}),
+      );
+    });
+
+    validatorsSubscription.subscribe(chainId, unsubscribe);
+  };
+
+  const listenToValidatorsPrefs = async (chainId: ChainId, api: ApiPromise): Promise<void> => {
+    if (!era.current) throw new Error('No ApiPromise or ActiveEra');
+
+    const unsubscribe = api.query.staking.erasValidatorPrefs.entries(era.current, (data: any) => {
+      setValidators((prev) => {
+        return data.reduce((acc: ValidatorMap, [storageKey, type]: any) => {
+          // era, validatorAddress
+          const [_, validatorAddress] = storageKey.args;
+          const address = validatorAddress.toString();
+          const { commission, blocked } = type.toHuman();
+
+          const payload = {
+            ...prev[address],
+            address,
+            blocked,
+            commission: parseFloat(commission),
+          };
+
+          return { ...acc, [address]: payload };
+        }, {});
+      });
+    });
+
+    validatorsSubscription.subscribe(chainId, unsubscribe);
+  };
+
+  // @ts-ignore
+  const getIdentities = async (api: ApiPromise, address: AccountID): Promise<void> => {
+    if (!era.current) throw new Error('No ApiPromise or ActiveEra');
+
+    // Polkadot user with SubIdentity - 11uMPbeaEDJhUxzU4ZfWW9VQEsryP9XqFcNRfPdYda6aFWJ
+    // ["14QBQABMSFBsT3pDTaEQdshq7ZLmhzKiae2weZH45pw5ErYu", {Raw: "4"}]
+    // Raw - subIdentity name
+    try {
+      const data = await api.query.identity.superOf(address);
+      const unwrappedData = data.unwrap();
+      console.log(unwrappedData.toHuman());
+    } catch (error) {
+      console.warn(error);
+    }
+
+    // Parent of previous subIdentity - 14QBQABMSFBsT3pDTaEQdshq7ZLmhzKiae2weZH45pw5ErYu
+    // const data = (await activeNetwork?.value.query.identity.identityOf(
+    //   '14QBQABMSFBsT3pDTaEQdshq7ZLmhzKiae2weZH45pw5ErYu',
+    // )) as any;
+    // const unwrappedData = data.unwrap();
+    // console.log(unwrappedData.toHuman());
+  };
+
+  const getNominators = async (api: ApiPromise, account: AccountID): Promise<string[]> => {
     try {
       const data = await api?.query.staking.nominators(account);
       if (data.isNone) return [];
@@ -122,9 +205,7 @@ export const useStaking = (chainId?: ChainId, api?: ApiPromise): IStakingService
     }
   };
 
-  const getControllers = async (accounts: AccountID[]): Promise<AccountID[]> => {
-    if (!api) return [];
-
+  const getControllers = async (api: ApiPromise, accounts: AccountID[]): Promise<AccountID[]> => {
     try {
       const controllers = await api.query.staking.bonded.multi(accounts);
 
@@ -139,13 +220,12 @@ export const useStaking = (chainId?: ChainId, api?: ApiPromise): IStakingService
   };
 
   const bondAndNominate = async (
+    api: ApiPromise,
     address: AccountID,
     value: string,
     payee: Payee,
     targets: AccountID[],
   ): Promise<string> => {
-    if (!api) throw new Error('No ApiPromise');
-
     const { registry, options, info } = await createTxMetadata(address, api);
 
     const bondPayload = { value, payee, controller: address };
@@ -160,9 +240,7 @@ export const useStaking = (chainId?: ChainId, api?: ApiPromise): IStakingService
     return construct.signingPayload(unsignedBatch, { registry });
   };
 
-  const bondExtra = async (address: AccountID, value: string): Promise<string> => {
-    if (!api) throw new Error('No ApiPromise');
-
+  const bondExtra = async (api: ApiPromise, address: AccountID, value: string): Promise<string> => {
     const { registry, options, info } = await createTxMetadata(address, api);
 
     const bondExtraPayload = { maxAdditional: value };
@@ -208,85 +286,17 @@ export const useStaking = (chainId?: ChainId, api?: ApiPromise): IStakingService
   //   return Promise.resolve();
   // }
 
-  // @ts-ignore
-  const getMaxValidators = (): number => {
-    if (!api) throw new Error('No ApiPromise');
-
-    return api.consts.staking.maxNominations.toNumber();
-  };
-
-  // @ts-ignore
-  const getValidators = async (): Promise<void> => {
-    if (!api || !activeEra) throw new Error('No ApiPromise or ActiveEra');
-
-    try {
-      const data = await api.query.staking.erasStakersClipped.entries(activeEra);
-      const validators = data.map(([storageKey, type]) => {
-        const [_, validatorAddress] = storageKey.args;
-        const { own, total } = type.toHuman();
-
-        return {
-          address: validatorAddress.toString(),
-          name: '',
-          apy: 0,
-          ownStake: own,
-          totalStake: total,
-          isOversubscribed: false,
-          isSlashed: false,
-          identity: undefined,
-        } as Validator;
-      });
-      setValidators(validators);
-    } catch (error) {
-      console.warn(error);
-      setValidators([]);
-    }
-  };
-
-  // @ts-ignore
-  const getValidatorsPrefs = async (): Promise<void> => {
-    if (!api || !activeEra) throw new Error('No ApiPromise or ActiveEra');
-
-    const data = await api.query.staking.erasValidatorPrefs.entries(activeEra);
-    console.log(
-      data.map(([storageKey, type]: any[]) => ({
-        validator: storageKey.toHuman(),
-        prefs: type.toHuman(),
-      })),
-    );
-  };
-
-  // @ts-ignore
-  const getIdentities = async (address: AccountID): Promise<void> => {
-    if (!api || !activeEra) throw new Error('No ApiPromise or ActiveEra');
-
-    // Polkadot user with SubIdentity - 11uMPbeaEDJhUxzU4ZfWW9VQEsryP9XqFcNRfPdYda6aFWJ
-    // ["14QBQABMSFBsT3pDTaEQdshq7ZLmhzKiae2weZH45pw5ErYu", {Raw: "4"}]
-    // Raw - subIdentity name
-    try {
-      const data = await api.query.identity.superOf(address);
-      const unwrappedData = data.unwrap();
-      console.log(unwrappedData.toHuman());
-    } catch (error) {
-      console.warn(error);
-    }
-
-    // Parent of previous subIdentity - 14QBQABMSFBsT3pDTaEQdshq7ZLmhzKiae2weZH45pw5ErYu
-    // const data = (await activeNetwork?.value.query.identity.identityOf(
-    //   '14QBQABMSFBsT3pDTaEQdshq7ZLmhzKiae2weZH45pw5ErYu',
-    // )) as any;
-    // const unwrappedData = data.unwrap();
-    // console.log(unwrappedData.toHuman());
-  };
-
   return {
     staking,
     validators,
     subscribeActiveEra,
     subscribeLedger,
-    getNominators,
+    subscribeValidators,
+    getMaxValidators,
     bondAndNominate,
     bondExtra,
+
+    getNominators,
     // rebond,
     // unbond,
     // withdrawUnbonded,

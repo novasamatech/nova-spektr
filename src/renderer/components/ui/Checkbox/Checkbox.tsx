@@ -1,10 +1,13 @@
-import { InputHTMLAttributes } from 'react';
 import cn from 'classnames';
 import './styles.css';
 
-interface Props extends InputHTMLAttributes<HTMLInputElement> {
+type Props = {
   label?: string;
-}
+  checked?: boolean;
+  disabled?: boolean;
+  className?: string;
+  onChange?: () => void;
+};
 
 const Checkbox = ({ label, checked, disabled, className, onChange }: Props) => (
   <div className={cn(disabled && 'hover:cursor-pointer', className)}>

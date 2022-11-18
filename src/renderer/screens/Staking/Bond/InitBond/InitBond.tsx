@@ -1,19 +1,24 @@
-import { ButtonBack } from '@renderer/components/ui';
-import { useI18n } from '@renderer/context/I18nContext';
+import { ApiPromise } from '@polkadot/api';
 
-const InitBond = () => {
-  const { t } = useI18n();
+// import { useI18n } from '@renderer/context/I18nContext';
+import { ChainId } from '@renderer/domain/shared-kernel';
+// import { useStaking } from '@renderer/services/staking/stakingService';
 
-  return (
-    <div className="h-full flex flex-col">
-      <div className="flex items-center gap-x-2.5 mb-9">
-        <ButtonBack />
-        <p className="font-semibold text-2xl text-neutral-variant">{t('staking.title')}</p>
-        <p className="font-semibold text-2xl text-neutral">/</p>
-        <h1 className="font-semibold text-2xl text-neutral">{t('staking.bond.initBondSubtitle')}</h1>
-      </div>
-    </div>
-  );
+type Props = {
+  api?: ApiPromise;
+  chainId?: ChainId;
+  onResult: () => void;
+};
+
+const InitBond = ({ api, chainId, onResult }: Props) => {
+  // const { t } = useI18n();
+  // const data = useStaking();
+
+  if (!chainId || !api) {
+    return <div>LOADING</div>;
+  }
+
+  return <div>you man BOND!</div>;
 };
 
 export default InitBond;

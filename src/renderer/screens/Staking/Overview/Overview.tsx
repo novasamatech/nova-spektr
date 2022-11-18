@@ -10,6 +10,7 @@ import { useNetworkContext } from '@renderer/context/NetworkContext';
 import { Asset, StakingType } from '@renderer/domain/asset';
 import { AccountID, ChainId } from '@renderer/domain/shared-kernel';
 import Paths from '@renderer/routes/paths';
+import { createLink } from '@renderer/routes/utils';
 import { formatBalance } from '@renderer/services/balance/common/utils';
 import { useChains } from '@renderer/services/network/chainsService';
 import { useStaking } from '@renderer/services/staking/stakingService';
@@ -30,7 +31,7 @@ const Overview = () => {
   const chainId = activeNetwork?.value.chainId || ('' as ChainId);
   const api = connections[chainId]?.api;
 
-  const { staking, subscribeActiveEra, subscribeLedger, getNominators } = useStaking(chainId, api);
+  const { staking, subscribeActiveEra, subscribeLedger, getNominators } = useStaking();
 
   const activeWallets = getActiveWallets();
 
@@ -57,19 +58,19 @@ const Overview = () => {
   }, []);
 
   useEffect(() => {
-    if (!api?.isConnected) return;
+    if (!chainId || !api?.isConnected) return;
 
     (async () => {
-      await subscribeActiveEra();
+      await subscribeActiveEra(chainId, api);
     })();
   }, [api]);
 
   useEffect(() => {
-    if (!api?.isConnected || !activeWallets) return;
+    if (!chainId || !api?.isConnected || !activeWallets) return;
 
     (async () => {
       const accounts = activeWallets.map((wallet) => (wallet.mainAccounts[0] || wallet.chainAccounts[0])?.accountId);
-      await subscribeLedger(accounts);
+      await subscribeLedger(chainId, api, accounts);
     })();
   }, [activeWallets, api]);
 
@@ -91,7 +92,9 @@ const Overview = () => {
   }, [] as { name: string; accountId: AccountID }[]);
 
   const nominators = async (account: AccountID) => {
-    const nominators = await getNominators(account);
+    if (!api) return;
+
+    const nominators = await getNominators(api, account);
     console.log(account, ' my nominators - ', nominators);
   };
 
@@ -188,7 +191,10 @@ const Overview = () => {
                         <Link className="bg-error rounded-lg py-1 px-2 text-white" to={Paths.UNBOND}>
                           Unbond
                         </Link>
-                        <Link className="bg-primary rounded-lg py-1 px-2 text-white" to={Paths.STAKING_START}>
+                        <Link
+                          className="bg-primary rounded-lg py-1 px-2 text-white"
+                          to={createLink('STAKING_START', { chainId })}
+                        >
                           Bond
                         </Link>
                       </div>
@@ -196,7 +202,10 @@ const Overview = () => {
                   ) : (
                     <div className="flex flex-col items-center gap-y-2 p-2.5">
                       <p>Start staking</p>
-                      <Link className="bg-primary rounded-lg mt-2 py-1 px-2 text-white" to={Paths.STAKING_START}>
+                      <Link
+                        className="bg-primary rounded-lg mt-2 py-1 px-2 text-white"
+                        to={createLink('STAKING_START', { chainId })}
+                      >
                         Bond
                       </Link>
                     </div>

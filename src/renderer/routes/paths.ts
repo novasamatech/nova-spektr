@@ -14,7 +14,7 @@ const Paths = {
 
   // Staking
   STAKING: '/staking',
-  STAKING_START: '/staking/start',
+  STAKING_START: '/staking/start/:chainId',
   UNBOND: '/staking/unbond',
 
   // Navigation
@@ -22,7 +22,7 @@ const Paths = {
   HISTORY: '/history',
   MULTISIG: '/multisig',
   BALANCES: '/balances',
-  TRANSFER: '/transfer',
+  TRANSFER: '/transfer/:chainId/:assetId',
   SIGNING: '/signing',
 
   // DEV

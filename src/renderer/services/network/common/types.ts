@@ -1,5 +1,6 @@
 import { ApiPromise } from '@polkadot/api';
 import { ProviderInterface } from '@polkadot/rpc-provider/types';
+import { BN } from '@polkadot/util';
 
 import { Chain, RpcNode } from '@renderer/domain/chain';
 import { Connection, ConnectionType } from '@renderer/domain/connection';
@@ -12,6 +13,7 @@ import { ChainId } from '@renderer/domain/shared-kernel';
 export interface IChainService {
   getChainsData: () => Promise<Chain[]>;
   sortChains: <T extends ChainLike>(chains: T[]) => T[];
+  getExpectedBlockTime: (api: ApiPromise) => BN;
 }
 
 export interface IChainSpecService {
