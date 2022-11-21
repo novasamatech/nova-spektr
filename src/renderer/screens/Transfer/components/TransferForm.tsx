@@ -15,6 +15,7 @@ import { Transaction, TransactionType } from '@renderer/domain/transaction';
 import { useBalance } from '@renderer/services/balance/balanceService';
 import { formatAmount, transferable } from '@renderer/services/balance/common/utils';
 import { useTransaction } from '@renderer/services/transaction/transactionService';
+import ErrorMessage from './ErrorMessage';
 
 type TransferForm = {
   address: string;
@@ -91,10 +92,16 @@ const Transfer = ({ onCreateTransaction, wallet, asset, connection }: Props) => 
     })();
   }, [transaction, connection.api]);
 
-  const validateBalance = async (amount: string) => {
+  const validateBalanceForFee = async (amount: string) => {
     if (!fee || !balance) return false;
 
     return parseInt(fee) + parseInt(formatAmount(amount, asset.precision)) <= parseInt(balance);
+  };
+
+  const validateBalance = async (amount: string) => {
+    if (!fee || !balance) return false;
+
+    return parseInt(formatAmount(amount, asset.precision)) <= parseInt(balance);
   };
 
   return (
@@ -115,58 +122,88 @@ const Transfer = ({ onCreateTransaction, wallet, asset, connection }: Props) => 
             control={control}
             rules={{ required: true, validate: validateAddress }}
             render={({ field: { onChange, value }, fieldState: { error } }) => (
-              <Input
-                prefixElement={
-                  value && !error ? <Identicon address={value} background={false} /> : <Icon name="emptyIdenticon" />
-                }
-                invalid={!!error}
-                value={value}
-                name="address"
-                className="w-full"
-                label={t('transfer.recipientLabel')}
-                placeholder={t('transfer.recipientLabel')}
-                onChange={onChange}
-              />
+              <>
+                <Input
+                  prefixElement={
+                    value && !error ? <Identicon address={value} background={false} /> : <Icon name="emptyIdenticon" />
+                  }
+                  invalid={!!error}
+                  value={value}
+                  name="address"
+                  className="w-full"
+                  label={t('transfer.recipientLabel')}
+                  placeholder={t('transfer.recipientLabel')}
+                  onChange={onChange}
+                />
+                <ErrorMessage error={error} type="validate">
+                  {t('transfer.incorrectRecipientError')}
+                </ErrorMessage>
+                <ErrorMessage error={error} type="required">
+                  {t('transfer.requiredRecipientError')}
+                </ErrorMessage>
+              </>
             )}
           />
 
           <Controller
             name="amount"
             control={control}
-            rules={{ required: true, validate: (v) => Number(v) > 0 && validateBalance(v) }}
+            rules={{
+              required: true,
+              validate: {
+                notZero: (v) => Number(v) > 0,
+                insufficientBalance: validateBalance,
+                insufficientBalanceForFee: validateBalanceForFee,
+              },
+            }}
             render={({ field: { onChange, value }, fieldState: { error } }) => (
-              <Input
-                prefixElement={
-                  <div className="flex items-center gap-1">
-                    <div
-                      className={cn(
-                        'relative flex items-center justify-center  border rounded-full w-6 h-6 box-border',
-                        'border-shade-30 bg-shade-70',
-                      )}
-                    >
-                      <img src={asset.icon} alt="" width={26} height={26} />
+              <>
+                <Input
+                  prefixElement={
+                    <div className="flex items-center gap-1">
+                      <div
+                        className={cn(
+                          'relative flex items-center justify-center  border rounded-full w-6 h-6 box-border',
+                          'border-shade-30 bg-shade-70',
+                        )}
+                      >
+                        <img src={asset.icon} alt="" width={26} height={26} />
+                      </div>
+                      <p className="text-lg">{asset.symbol}</p>
                     </div>
-                    <p className="text-lg">{asset.symbol}</p>
-                  </div>
-                }
-                invalid={!!error}
-                onChange={onChange}
-                value={value}
-                type="number"
-                name="amount"
-                className="w-full text-xl font-semibold text-right"
-                label={
-                  <div className="flex justify-between">
-                    <div>{t('transfer.amountLabel')}</div>
-                    <div>
-                      <span className="font-normal">{t('transfer.transferable')}:</span>{' '}
-                      <Balance className="text-neutral font-semibold" value={balance} precision={asset.precision} />{' '}
-                      {asset.symbol}
+                  }
+                  invalid={!!error}
+                  onChange={onChange}
+                  value={value}
+                  type="number"
+                  name="amount"
+                  className="w-full text-xl font-semibold text-right"
+                  label={
+                    <div className="flex justify-between">
+                      <div>{t('transfer.amountLabel')}</div>
+                      <div>
+                        <span className="font-normal">{t('transfer.transferable')}:</span>{' '}
+                        <Balance className="text-neutral font-semibold" value={balance} precision={asset.precision} />{' '}
+                        {asset.symbol}
+                      </div>
                     </div>
-                  </div>
-                }
-                placeholder={t('transfer.amountLabel')}
-              />
+                  }
+                  placeholder={t('transfer.amountLabel')}
+                />
+
+                <ErrorMessage error={error} type="insufficientBalance">
+                  {t('transfer.notEnoughBalanceError')}
+                </ErrorMessage>
+                <ErrorMessage error={error} type="insufficientBalanceForFee">
+                  {t('transfer.notEnoughBalanceForFeeError')}
+                </ErrorMessage>
+                <ErrorMessage error={error} type="required">
+                  {t('transfer.requiredAmountError')}
+                </ErrorMessage>
+                <ErrorMessage error={error} type="notZero">
+                  {t('transfer.requiredAmountError')}
+                </ErrorMessage>
+              </>
             )}
           />
 
