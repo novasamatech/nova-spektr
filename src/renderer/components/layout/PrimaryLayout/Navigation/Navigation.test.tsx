@@ -50,7 +50,7 @@ describe('layout/PrimaryLayout/Navigation', () => {
 
     render(<Navigation />, { wrapper: MemoryRouter });
 
-    const text = screen.getByText('$1,148.14');
+    const text = screen.getByText('Test Wallet');
     expect(text).toBeInTheDocument();
 
     const langSwitch = screen.getByText('localeComponent');

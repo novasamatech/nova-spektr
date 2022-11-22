@@ -10,10 +10,15 @@ import { useWallet } from '@renderer/services/wallet/walletService';
 import { WalletType } from '@renderer/domain/wallet';
 import Wallets from '../Wallets/Wallets';
 import useClickOutside from '@renderer/hooks/useClickOutside';
+import './Navigation.css';
 
-const CardStyle: Record<WalletType, string> = {
-  [WalletType.WATCH_ONLY]: 'bg-alert',
-  [WalletType.PARITY]: 'bg-primary',
+type CardType = WalletType | 'multiple' | 'none';
+
+const CardStyle: Record<CardType, string> = {
+  [WalletType.WATCH_ONLY]: 'bg-alert border-[3px] border-alert',
+  [WalletType.PARITY]: 'bg-primary border-[3px] border-primary',
+  multiple: 'bg-shade-40 multiple-card',
+  none: 'bg-shade-40 border-[3px] border-shade-40',
 };
 
 const NavItems = [
@@ -33,7 +38,8 @@ const Navigation = () => {
   const { LocaleComponent, t } = useI18n();
   const { getActiveWallets } = useWallet();
   const activeWallets = getActiveWallets();
-  const walletType = activeWallets?.[0]?.type || WalletType.PARITY;
+  const walletType =
+    !activeWallets || !activeWallets.length ? 'none' : activeWallets.length > 1 ? 'multiple' : activeWallets?.[0]?.type;
 
   // const navigate = useNavigate();
   // const { matrix, setIsLoggedIn } = useMatrix();
@@ -64,9 +70,44 @@ const Navigation = () => {
   return (
     <>
       <aside className="relative flex gap-y-5 flex-col w-[300px] bg-shade-5 p-5 z-30">
-        <div className={cn('rounded-xl text-white', CardStyle[walletType])}>
-          <div className="flex gap-x-2.5 pl-4 pt-4 pr-2">
-            <Identicon theme="polkadot" address={currentAccount?.accountId || ''} size={46} />
+        <div className={cn('rounded-xl text-white p-4', CardStyle[walletType])}>
+          <div className="flex gap-x-2.5">
+            <div className="relative">
+              {walletType === WalletType.PARITY && (
+                <>
+                  <Identicon theme="polkadot" address={currentAccount?.accountId || ''} size={46} />
+
+                  <div className="absolute box-border right-0 bottom-0 bg-shade-70 w-5 h-5 flex justify-center items-center rounded-full border border-primary border-solid">
+                    <Icon name="paritySigner" size={12} />
+                  </div>
+                </>
+              )}
+              {walletType === WalletType.WATCH_ONLY && (
+                <>
+                  <Identicon theme="polkadot" address={currentAccount?.accountId || ''} size={46} />
+
+                  <div className="absolute box-border right-0 bottom-0 bg-shade-70 w-5 h-5 flex justify-center items-center rounded-full border border-alert border-solid">
+                    <Icon name="watchOnly" size={12} />
+                  </div>
+                </>
+              )}
+              {walletType === 'multiple' && (
+                <div className="relative flex justify-center items-center w-[46px] h-[46px]">
+                  <div className="rounded-full w-8 h-8 bg-white flex justify-center items-center z-10">
+                    <Icon name="emptyIdenticon" size={16} />
+                  </div>
+                  <div className="bg-shade-30 rounded-full w-5 h-5 absolute left-0"></div>
+                  <div className="bg-shade-30 rounded-full w-5 h-5 absolute top-0"></div>
+                  <div className="bg-shade-30 rounded-full w-5 h-5 absolute right-0"></div>
+                  <div className="bg-shade-30 rounded-full w-5 h-5 absolute bottom-0"></div>
+                </div>
+              )}
+              {walletType === 'none' && (
+                <div className="bg-white flex justify-center items-center w-[46px] h-[46px] rounded-full">
+                  <Icon name="emptyIdenticon" size={30} />
+                </div>
+              )}
+            </div>
             <button
               ref={showWalletsRef}
               onClick={() => setIsWalletsOpen((value) => !value)}
@@ -78,15 +119,6 @@ const Navigation = () => {
               </span>
               <Icon name="right" size={40} className="shrink-0" />
             </button>
-          </div>
-          <div className="flex gap-x-1.5 px-4 pb-4 mt-7">
-            <button type="button">
-              <Icon name="copy" />
-            </button>
-            <button type="button">
-              <Icon name="qr" />
-            </button>
-            <span className="ml-auto">$1,148.14</span>
           </div>
         </div>
         <nav className="flex-1 overflow-y-auto scrollbar">
