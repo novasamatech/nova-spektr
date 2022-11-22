@@ -1074,5 +1074,44 @@
     "color": "linear-gradient(315deg, #23371A 0%, #89C62D 75%, #D43079 75.01%)",
     "icon": "https://raw.githubusercontent.com/nova-wallet/nova-utils/master/icons/chains/gradient/Statemint.svg",
     "addressPrefix": 0
+  },
+  {
+    "chainId": "0x4a12be580bb959937a1c7a61d5cf24428ed67fa571974b4007645d1886e7c89f",
+    "parentId": "0xb0a8d493285c2df73290dfb7e61f870f17b41801197a149ca93654499ea3dafe",
+    "name": "Subsocial",
+    "assets": [
+      {
+        "assetId": 0,
+        "symbol": "SUB",
+        "precision": 10,
+        "icon": "https://raw.githubusercontent.com/nova-wallet/nova-utils/master/icons/chains/white/Subsocial.svg",
+        "name": "Subsocial"
+      }
+    ],
+    "nodes": [
+      {
+        "url": "wss://para.subsocial.network",
+        "name": "Dappforce node"
+      }
+    ],
+    "explorers": [
+      {
+        "name": "Sub.ID",
+        "account": "https://sub.id/{address}"
+      }
+    ],
+    "types": {
+      "url": "https://raw.githubusercontent.com/nova-wallet/nova-utils/master/chains/v2/types/subsocial.json",
+      "overridesCommon": true
+    },
+    "externalApi": {
+      "history": {
+        "type": "subquery",
+        "url": "https://api.subquery.network/sq/nova-wallet/nova-wallet-subsocial"
+      }
+    },
+    "icon": "https://raw.githubusercontent.com/nova-wallet/nova-utils/master/icons/chains/gradient/Subsocial_Parachain.svg",
+    "addressPrefix": 28
   }
 ]
+
