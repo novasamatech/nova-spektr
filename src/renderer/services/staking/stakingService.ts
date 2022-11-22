@@ -1,11 +1,22 @@
 import { ApiPromise } from '@polkadot/api';
+import { u8aToString } from '@polkadot/util';
 import { construct, methods } from '@substrate/txwrapper-polkadot';
 import { useRef, useState } from 'react';
 
+import { getValidatorsApy } from '@renderer/services/staking/apyCalculator';
 import { AccountID, ChainId } from '@renderer/domain/shared-kernel';
 import { useSubscription } from '@renderer/services/subscription/subscriptionService';
 import { createTxMetadata } from '@renderer/utils/substrate';
-import { IStakingService, Payee, StakingMap, ValidatorMap } from './common/types';
+import {
+  Identity,
+  IStakingService,
+  Payee,
+  Staking,
+  StakingMap,
+  SubIdentity,
+  Validator,
+  ValidatorMap,
+} from './common/types';
 
 export const useStaking = (): IStakingService => {
   // const { data } = useQuery<Rewards>(GET_TOTAL_REWARDS, {
@@ -16,7 +27,6 @@ export const useStaking = (): IStakingService => {
   // });
   const eraSubscription = useSubscription<ChainId>();
   const ledgerSubscription = useSubscription<ChainId>();
-  const validatorsSubscription = useSubscription<ChainId>();
 
   const era = useRef<number>();
   const [staking, setStaking] = useState<StakingMap>({});
@@ -61,7 +71,7 @@ export const useStaking = (): IStakingService => {
       let isControllerChanged = false;
 
       const newStaking = data.map((ledger, index) => {
-        const accountId: string = accounts[index];
+        const accountId = accounts[index];
 
         if (ledger.isNone) {
           const isSameChain = Boolean(staking[accountId]?.chainId === chainId);
@@ -76,18 +86,17 @@ export const useStaking = (): IStakingService => {
             value: unlock.value.toString(),
             era: unlock.era.toString(),
           }));
-
-          return {
-            [accountId]: {
-              accountId,
-              chainId,
-              controller: controllers[index] || stash.toHuman(),
-              stash: stash.toHuman(),
-              active: active.toString(),
-              total: total.toString(),
-              unlocking: formattedUnlocking,
-            },
+          const payload: Staking = {
+            accountId,
+            chainId,
+            controller: controllers[index] || stash.toHuman(),
+            stash: stash.toHuman(),
+            active: active.toString(),
+            total: total.toString(),
+            unlocking: formattedUnlocking,
           };
+
+          return { [accountId]: payload };
         } catch (error) {
           console.warn(error);
 
@@ -105,90 +114,155 @@ export const useStaking = (): IStakingService => {
     ledgerSubscription.subscribe(chainId, unsubscribe);
   };
 
-  const subscribeValidators = async (chainId: ChainId, api: ApiPromise): Promise<void> => {
-    await validatorsSubscription.unsubscribeAll();
-    await listenToValidators(chainId, api);
-    await listenToValidatorsPrefs(chainId, api);
-    // await listenToIdentities();
+  const getValidators = async (chainId: ChainId, api: ApiPromise): Promise<void> => {
+    const [totalStake, commission] = await Promise.all([setValidatorsStake(api), setValidatorsPrefs(api)]);
+
+    const { addresses, apyPayload } = Object.entries(totalStake).reduce(
+      (acc, [address, totalStake]) => {
+        acc.addresses.push(address);
+        acc.apyPayload.push({ address, totalStake, commission: commission[address] });
+
+        return acc;
+      },
+      { addresses: [], apyPayload: [] } as Record<string, any[]>,
+    );
+
+    await Promise.all([setIdentities(api, addresses), calculateValidatorsApy(api, apyPayload)]);
   };
 
-  // @ts-ignore
+  const setValidatorsStake = async (api: ApiPromise): Promise<Record<AccountID, string>> => {
+    if (!era.current) throw new Error('No ActiveEra');
+
+    const data = await api.query.staking.erasStakersClipped.entries(era.current);
+
+    const { full, short } = data.reduce(
+      (acc, [storageKey, type]) => {
+        const address = storageKey.args[1].toString();
+        const totalStake = type.total.toString();
+        const payload = { totalStake, address, ownStake: type.own.toString() };
+
+        acc.full = { ...acc.full, [address]: payload };
+        acc.short = { ...acc.short, [address]: totalStake };
+
+        return acc;
+      },
+      { full: {}, short: {} },
+    );
+
+    setValidators((prev) =>
+      Object.entries(full).reduce((acc, [address, prefs]) => {
+        const payload = { ...prev[address], ...(prefs as ValidatorMap) };
+
+        return { ...acc, [address]: payload };
+      }, {}),
+    );
+
+    return short;
+  };
+
+  const setValidatorsPrefs = async (api: ApiPromise): Promise<Record<AccountID, number>> => {
+    if (!era.current) throw new Error('No ApiPromise or ActiveEra');
+
+    const data = await api.query.staking.erasValidatorPrefs.entries(era.current);
+
+    const { full, short } = data.reduce(
+      (acc, [storageKey, type]) => {
+        const address = storageKey.args[1].toString();
+        const commission = parseFloat(type.commission.toHuman() as string);
+        const payload = { address, commission, blocked: type.blocked.toHuman() };
+
+        acc.full = { ...acc.full, [address]: payload };
+        acc.short = { ...acc.short, [address]: commission };
+
+        return acc;
+      },
+      { full: {}, short: {} },
+    );
+
+    setValidators((prev) =>
+      Object.entries(full).reduce((acc, [address, prefs]) => {
+        const payload = { ...prev[address], ...(prefs as ValidatorMap) };
+
+        return { ...acc, [address]: payload };
+      }, {}),
+    );
+
+    return short;
+  };
+
   const getMaxValidators = (api: ApiPromise): number => {
     return api.consts.staking.maxNominations.toNumber();
   };
 
-  const listenToValidators = async (chainId: ChainId, api: ApiPromise): Promise<void> => {
-    if (!era.current) throw new Error('No ActiveEra');
+  const setIdentities = async (api: ApiPromise, addresses: AccountID[]): Promise<void> => {
+    const subIdentities = await getSubIdentities(api, addresses);
+    const parentIdentities = await getParentIdentities(api, subIdentities);
 
-    const unsubscribe = api.query.staking.erasStakersClipped.entries(era.current, (data: any) => {
-      setValidators((prev) =>
-        data.reduce((acc: ValidatorMap, [storageKey, type]: any) => {
-          // era, validatorAddress
-          const [_, validatorAddress] = storageKey.args;
-          const address = validatorAddress.toString();
+    setValidators((prev) =>
+      Object.entries(prev).reduce((acc, [address, validator]) => {
+        const payload = { ...validator, identity: parentIdentities[address] };
 
-          const payload = {
-            ...prev[address],
-            address,
-            ownStake: type.own.toString(),
-            totalStake: type.total.toString(),
-          };
-
-          return { ...acc, [address]: payload };
-        }, {}),
-      );
-    });
-
-    validatorsSubscription.subscribe(chainId, unsubscribe);
+        return { ...acc, [address]: payload };
+      }, {}),
+    );
   };
 
-  const listenToValidatorsPrefs = async (chainId: ChainId, api: ApiPromise): Promise<void> => {
-    if (!era.current) throw new Error('No ApiPromise or ActiveEra');
+  const getSubIdentities = async (api: ApiPromise, addresses: AccountID[]): Promise<SubIdentity[]> => {
+    const subIdentities = await api.query.identity.superOf.multi(addresses);
 
-    const unsubscribe = api.query.staking.erasValidatorPrefs.entries(era.current, (data: any) => {
-      setValidators((prev) => {
-        return data.reduce((acc: ValidatorMap, [storageKey, type]: any) => {
-          // era, validatorAddress
-          const [_, validatorAddress] = storageKey.args;
-          const address = validatorAddress.toString();
-          const { commission, blocked } = type.toHuman();
+    return subIdentities.reduce((acc, identity, index) => {
+      const payload = { sub: addresses[index], parent: addresses[index], subName: '' };
+      if (!identity.isNone) {
+        const [address, rawData] = identity.unwrap();
+        payload.parent = address.toHuman();
+        payload.subName = rawData.isRaw ? u8aToString(rawData.asRaw) : rawData.value.toString();
+      }
 
-          const payload = {
-            ...prev[address],
-            address,
-            blocked,
-            commission: parseFloat(commission),
-          };
-
-          return { ...acc, [address]: payload };
-        }, {});
-      });
-    });
-
-    validatorsSubscription.subscribe(chainId, unsubscribe);
+      return acc.concat(payload);
+    }, [] as SubIdentity[]);
   };
 
-  // @ts-ignore
-  const getIdentities = async (api: ApiPromise, address: AccountID): Promise<void> => {
-    if (!era.current) throw new Error('No ApiPromise or ActiveEra');
+  const getParentIdentities = async (
+    api: ApiPromise,
+    subIdentities: SubIdentity[],
+  ): Promise<Record<AccountID, Identity>> => {
+    const identityAddresses = subIdentities.map((identity) => identity.parent);
 
-    // Polkadot user with SubIdentity - 11uMPbeaEDJhUxzU4ZfWW9VQEsryP9XqFcNRfPdYda6aFWJ
-    // ["14QBQABMSFBsT3pDTaEQdshq7ZLmhzKiae2weZH45pw5ErYu", {Raw: "4"}]
-    // Raw - subIdentity name
-    try {
-      const data = await api.query.identity.superOf(address);
-      const unwrappedData = data.unwrap();
-      console.log(unwrappedData.toHuman());
-    } catch (error) {
-      console.warn(error);
-    }
+    const parentIdentities = await api.query.identity.identityOf.multi(identityAddresses);
 
-    // Parent of previous subIdentity - 14QBQABMSFBsT3pDTaEQdshq7ZLmhzKiae2weZH45pw5ErYu
-    // const data = (await activeNetwork?.value.query.identity.identityOf(
-    //   '14QBQABMSFBsT3pDTaEQdshq7ZLmhzKiae2weZH45pw5ErYu',
-    // )) as any;
-    // const unwrappedData = data.unwrap();
-    // console.log(unwrappedData.toHuman());
+    return parentIdentities.reduce((acc, identity, index) => {
+      if (identity.isNone) return acc;
+
+      const { parent, sub, subName } = subIdentities[index];
+      const { info } = identity.unwrap(); // { judgements, info }
+      const { display, web, riot, email, twitter } = info;
+
+      const payload: Identity = {
+        subName,
+        email: email.isRaw ? u8aToString(email.asRaw) : email.value.toString(),
+        riot: riot.isRaw ? u8aToString(riot.asRaw) : riot.value.toString(),
+        twitter: twitter.isRaw ? u8aToString(twitter.asRaw) : twitter.value.toString(),
+        website: web.isRaw ? u8aToString(web.asRaw) : web.value.toString(),
+        parent: {
+          address: parent,
+          name: display.isRaw ? u8aToString(display.asRaw) : display.value.toString(),
+        },
+      };
+
+      return { ...acc, [sub]: payload };
+    }, {} as Record<AccountID, Identity>);
+  };
+
+  const calculateValidatorsApy = async (api: ApiPromise, validators: Validator[]) => {
+    const apys = await getValidatorsApy(api, validators);
+
+    setValidators((prev) =>
+      Object.entries(apys).reduce((acc, [address, apy]) => {
+        const payload = { ...prev[address], apy };
+
+        return { ...acc, [address]: payload };
+      }, {}),
+    );
   };
 
   const getNominators = async (api: ApiPromise, account: AccountID): Promise<string[]> => {
@@ -291,7 +365,7 @@ export const useStaking = (): IStakingService => {
     validators,
     subscribeActiveEra,
     subscribeLedger,
-    subscribeValidators,
+    getValidators,
     getMaxValidators,
     bondAndNominate,
     bondExtra,
@@ -300,10 +374,6 @@ export const useStaking = (): IStakingService => {
     // rebond,
     // unbond,
     // withdrawUnbonded,
-    // getIdentities,
-    // getMaxValidators,
     // getRewards,
-    // getValidators,
-    // getValidatorsPrefs,
   };
 };

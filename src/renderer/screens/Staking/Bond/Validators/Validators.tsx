@@ -14,26 +14,32 @@ type Props = {
   api?: ApiPromise;
   chainId?: ChainId;
   asset?: Asset;
-  onResult: (addresses: AccountID[]) => void;
+  onResult: (validators: Validator[]) => void;
 };
 
 const Validators = ({ api, chainId, asset, onResult }: Props) => {
   const { t } = useI18n();
   const [isInfoOpen, toggleInfo] = useToggle();
-  const { validators, getMaxValidators, subscribeActiveEra, subscribeValidators } = useStaking();
+  const { validators, getMaxValidators, getValidators, subscribeActiveEra } = useStaking();
 
   const [query, setQuery] = useState('');
   const [maxValidators, setMaxValidators] = useState<number>();
   const [myValidators, setMyValidators] = useState<Record<AccountID, boolean>>({});
 
-  const validatorList = Object.values(validators) as Validator[];
+  const validatorList = Object.values(validators).filter((validator) => {
+    const addressMatch = validator.address?.toLowerCase().includes(query.toLowerCase());
+    const identityMatch = validator.identity?.subName.toLowerCase().includes(query.toLowerCase());
+    const subIdentityMatch = validator.identity?.parent.name.toLowerCase().includes(query.toLowerCase());
+
+    return addressMatch || identityMatch || subIdentityMatch;
+  });
 
   useEffect(() => {
     if (!chainId || !api?.isConnected) return;
 
     (async () => {
       await subscribeActiveEra(chainId, api);
-      await subscribeValidators(chainId, api);
+      await getValidators(chainId, api);
     })();
     setMaxValidators(getMaxValidators(api));
   }, [api]);
@@ -47,8 +53,8 @@ const Validators = ({ api, chainId, asset, onResult }: Props) => {
   };
 
   const selectedValidators = Object.entries(myValidators).reduce(
-    (acc, [address, isSelected]) => (isSelected ? acc.concat(address) : acc),
-    [] as AccountID[],
+    (acc, [address, isSelected]) => (isSelected ? acc.concat(validators[address]) : acc),
+    [] as Validator[],
   );
 
   return (
@@ -73,18 +79,29 @@ const Validators = ({ api, chainId, asset, onResult }: Props) => {
           <p className="pl-3 w-[125px] text-2xs font-bold uppercase text-neutral-variant text-right">Total stake</p>
         </div>
         <ul>
-          {validatorList.map(({ name, address, ownStake, totalStake, commission }) => (
+          {validatorList.map(({ address, ownStake, totalStake, apy, identity }) => (
             <li key={address} className="flex items-center pl-4 pr-2 h-12.5 border-b border-shade-5 text-neutral">
-              <div className="flex items-center gap-x-2.5 mr-auto">
-                <Checkbox checked={myValidators[address]} onChange={() => selectValidator(address)} />
-                <div className="flex flex-col justify-center">
-                  {name && (
-                    <p className={cn('text-sm font-semibold', myValidators[address] && 'text-primary')}>{name}</p>
+              <Checkbox
+                className="mr-auto h-full"
+                checked={myValidators[address]}
+                onChange={() => selectValidator(address)}
+              >
+                <div className="flex flex-col justify-center ml-2.5">
+                  {identity && (
+                    <p className={cn('text-sm font-semibold', myValidators[address] && 'text-primary')}>
+                      {identity.subName ? `${identity.parent.name}/${identity.subName}` : identity.parent.name}
+                    </p>
                   )}
-                  <Address address={address || ''} type="short" size={14} symbols={14} />
+                  <Address
+                    address={address || ''}
+                    type="short"
+                    addressStyle={identity ? 'small' : 'normal'}
+                    size={12}
+                    symbols={16}
+                  />
                 </div>
-              </div>
-              <div className="pl-3 w-[125px] text-sm font-semibold text-success text-right">{commission}%</div>
+              </Checkbox>
+              <div className="pl-3 w-[125px] text-sm font-semibold text-success text-right">{apy}%</div>
               <div className="pl-3 w-[125px] text-xs font-semibold text-right">
                 <BalanceValue value={ownStake || '0'} precision={asset.precision} /> {asset.symbol}
               </div>

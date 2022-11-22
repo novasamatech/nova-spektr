@@ -18,7 +18,7 @@ const ConfirmBond = ({ api, chainId, onResult }: Props) => {
     return <div>LOADING</div>;
   }
 
-  return <div>you man confirm</div>;
+  return <div>FINISH CONFIRM</div>;
 };
 
 export default ConfirmBond;

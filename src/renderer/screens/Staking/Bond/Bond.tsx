@@ -1,15 +1,16 @@
 import { useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 
-import { StakingType } from '@renderer/domain/asset';
 import { ButtonBack } from '@renderer/components/ui';
 import { useI18n } from '@renderer/context/I18nContext';
 import { useNetworkContext } from '@renderer/context/NetworkContext';
-import { AccountID, ChainId } from '@renderer/domain/shared-kernel';
+import { StakingType } from '@renderer/domain/asset';
+import { ChainId } from '@renderer/domain/shared-kernel';
 import Paths from '@renderer/routes/paths';
 import ConfirmBond from '@renderer/screens/Staking/Bond/ConfirmBond/ConfirmBond';
 import InitBond from '@renderer/screens/Staking/Bond/InitBond/InitBond';
 import Validators from '@renderer/screens/Staking/Bond/Validators/Validators';
+import { Validator } from '@renderer/services/staking/common/types';
 
 const enum Step {
   InitBond,
@@ -24,7 +25,7 @@ const Bond = () => {
   const { chainId = '0x0' } = useParams<{ chainId: ChainId }>();
 
   const [activeStep, setActiveStep] = useState<Step>(Step.Validators);
-  const [_, setValidators] = useState<AccountID[]>([]);
+  const [_, setValidators] = useState<Validator[]>([]);
 
   const api = connections[chainId]?.api;
   const asset = connections[chainId]?.assets.find((asset) => asset.staking === StakingType.RELAYCHAIN);
@@ -43,8 +44,9 @@ const Bond = () => {
     console.log(123);
   };
 
-  const onSelectValidators = (accounts: AccountID[]) => {
-    setValidators(accounts);
+  const onSelectValidators = (validators: Validator[]) => {
+    setValidators(validators);
+    setActiveStep(Step.ConfirmBond);
   };
 
   const onConfirmResult = () => {

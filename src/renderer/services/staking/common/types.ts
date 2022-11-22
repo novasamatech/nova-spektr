@@ -11,7 +11,7 @@ export interface IStakingService {
   validators: ValidatorMap;
   subscribeActiveEra: (chainId: ChainId, api: ApiPromise) => Promise<void>;
   subscribeLedger: (chainId: ChainId, api: ApiPromise, accounts: AccountID[]) => Promise<void>;
-  subscribeValidators: (chainId: ChainId, api: ApiPromise) => Promise<void>;
+  getValidators: (chainId: ChainId, api: ApiPromise) => Promise<void>;
   getMaxValidators: (api: ApiPromise) => number;
   getNominators: (api: ApiPromise, account: AccountID) => Promise<string[]>;
   bondAndNominate: (
@@ -39,7 +39,7 @@ export interface IStakingService {
 // =====================================================
 
 export type StakingMap = Record<AccountID, Staking | undefined>;
-export type ValidatorMap = Record<AccountID, Validator | undefined>;
+export type ValidatorMap = Record<AccountID, Validator>;
 
 export type Staking = {
   accountId: AccountID;
@@ -58,8 +58,8 @@ type Unlocking = {
 
 // TODO: maybe move to kernel
 export type Validator = {
-  name: string;
   address: AccountID;
+  chainId: ChainId;
   ownStake: string;
   totalStake: string;
   commission: number;
@@ -70,9 +70,8 @@ export type Validator = {
   identity?: Identity;
 };
 
-type Identity = {
-  rawName: string;
-  address: AccountID;
+export type Identity = {
+  subName: string;
   email: string;
   website: string;
   twitter: string;
@@ -83,6 +82,20 @@ type Identity = {
 type ParentIdentity = {
   address: AccountID;
   name: string;
+  // judgements: Judgement[];
 };
 
+// type Judgement = {
+//   votes: number;
+//   verdict: string;
+// };
+
 export type Payee = 'Stash' | 'Staked' | 'Controller' | { Account: string };
+
+export type SubIdentity = {
+  sub: AccountID;
+  parent: AccountID;
+  subName: string;
+};
+
+export type ApyValidator = Pick<Validator, 'address' | 'totalStake' | 'commission'>;

@@ -18,7 +18,7 @@ const InitBond = ({ api, chainId, onResult }: Props) => {
     return <div>LOADING</div>;
   }
 
-  return <div>you man BOND!</div>;
+  return <div>START BOND!</div>;
 };
 
 export default InitBond;
