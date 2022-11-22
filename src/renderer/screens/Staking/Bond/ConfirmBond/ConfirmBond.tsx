@@ -1,3 +1,4 @@
+/* eslint-disable i18next/no-literal-string */
 import { ApiPromise } from '@polkadot/api';
 
 // import { useI18n } from '@renderer/context/I18nContext';

@@ -1,3 +1,4 @@
+import { ApiPromise } from '@polkadot/api';
 import { render, screen } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 
@@ -9,13 +10,18 @@ jest.mock('@renderer/context/I18nContext', () => ({
   }),
 }));
 
-describe('screens/Bond/Bond', () => {
+describe('screens/Bond/InitBond', () => {
   test('should render component', () => {
+    render(<InitBond api={{} as ApiPromise} chainId="0x123" onResult={() => {}} />, { wrapper: MemoryRouter });
+
+    const title = screen.getByText('START BOND');
+    expect(title).toBeInTheDocument();
+  });
+
+  test('should render loading', () => {
     render(<InitBond onResult={() => {}} />, { wrapper: MemoryRouter });
 
-    const title = screen.getByText('staking.title');
-    const subTitle = screen.getByText('staking.startStaking.subtitle');
-    expect(title).toBeInTheDocument();
-    expect(subTitle).toBeInTheDocument();
+    const loading = screen.getByText('LOADING');
+    expect(loading).toBeInTheDocument();
   });
 });

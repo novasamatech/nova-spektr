@@ -1,3 +1,4 @@
+/* eslint-disable i18next/no-literal-string */
 import { ApiPromise } from '@polkadot/api';
 
 // import { useI18n } from '@renderer/context/I18nContext';
@@ -18,7 +19,7 @@ const InitBond = ({ api, chainId, onResult }: Props) => {
     return <div>LOADING</div>;
   }
 
-  return <div>START BOND!</div>;
+  return <div>START BOND</div>;
 };
 
 export default InitBond;
