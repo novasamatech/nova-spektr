@@ -306,12 +306,12 @@
       {
         "assetId": 7,
         "symbol": "USDT",
-        "precision": 4,
+        "precision": 6,
         "priceId": "tether",
         "type": "statemine",
         "icon": "https://raw.githubusercontent.com/nova-wallet/nova-utils/master/icons/tokens/white/USDT.svg",
         "typeExtras": {
-          "assetId": "11"
+          "assetId": "1984"
         },
         "name": "USD Tether"
       }
@@ -1349,21 +1349,21 @@
     ],
     "nodes": [
       {
-        "url": "wss://mainnet.edgewa.re",
-        "name": "Commonwealth Labs"
-      },
-      {
         "url": "wss://edgeware.api.onfinality.io/public-ws",
         "name": "OnFinality node"
       },
       {
         "url": "wss://edgeware-rpc.dwellir.com",
         "name": "Dwellir node"
+      },
+      {
+        "url": "wss://edgeware.jelliedowl.net",
+        "name": "JelliedOwl node"
       }
     ],
     "types": {
-      "url": "https://raw.githubusercontent.com/nova-wallet/nova-utils/master/chains/types/edgeware.json",
-      "overridesCommon": false
+      "url": "https://raw.githubusercontent.com/nova-wallet/nova-utils/master/chains/v2/types/edgeware.json",
+      "overridesCommon": true
     },
     "explorers": [
       {
@@ -2354,6 +2354,18 @@
         "priceId": "polkadot",
         "icon": "https://raw.githubusercontent.com/nova-wallet/nova-utils/master/icons/chains/white/Polkadot.svg",
         "name": "Polkadot"
+      },
+      {
+        "assetId": 1,
+        "symbol": "USDT",
+        "precision": 6,
+        "priceId": "tether",
+        "type": "statemine",
+        "icon": "https://raw.githubusercontent.com/nova-wallet/nova-utils/master/icons/tokens/white/USDT.svg",
+        "typeExtras": {
+          "assetId": "1984"
+        },
+        "name": "USD Tether"
       }
     ],
     "nodes": [
@@ -2409,10 +2421,6 @@
       {
         "url": "wss://kusama.rpc.robonomics.network/",
         "name": "Airalab node"
-      },
-      {
-        "url": "wss://robonomics-rpc.dwellir.com",
-        "name": "Dwellir node"
       },
       {
         "url": "wss://robonomics.leemo.me",
@@ -2759,10 +2767,6 @@
       {
         "url": "wss://crab-parachain-rpc.darwinia.network/",
         "name": "Crab node"
-      },
-      {
-        "url": "wss://darwiniacrab-rpc.dwellir.com",
-        "name": "Dwellir node"
       }
     ],
     "explorers": [
@@ -2805,6 +2809,10 @@
     ],
     "nodes": [
       {
+        "url": "wss://para.f3joule.space",
+        "name": "Subsocial node"
+      },
+      {
         "url": "wss://para.subsocial.network",
         "name": "Dappforce node"
       }
@@ -2844,7 +2852,7 @@
     ],
     "nodes": [
       {
-        "url": "wss://rpc2-shadow.crust.network/",
+        "url": "wss://rpc-sha-subscan.crust.network",
         "name": "Crust node"
       },
       {
@@ -4395,5 +4403,39 @@
     },
     "icon": "https://raw.githubusercontent.com/nova-wallet/nova-utils/master/icons/chains/gradient/DAOIPCI.svg",
     "addressPrefix": 32
+  },
+  {
+    "chainId": "0x74ed91fbc18497f011290f9119a2217908649170337b6414a2d44923ade07063",
+    "name": "Myriad",
+    "assets": [
+      {
+        "assetId": 0,
+        "symbol": "MYRIA",
+        "precision": 18,
+        "priceId": "myriad-social",
+        "icon": "https://raw.githubusercontent.com/nova-wallet/nova-utils/master/icons/tokens/white/MYRIA.svg",
+        "name": "Should be included in assetsNameMap"
+      }
+    ],
+    "nodes": [
+      {
+        "url": "wss://gateway.mainnet.octopus.network/myriad/a4cb0a6e30ff5233a3567eb4e8cb71e0",
+        "name": "Octopus node"
+      }
+    ],
+    "explorers": [
+      {
+        "name": "Explorer",
+        "extrinsic": null,
+        "account": "https://explorer.mainnet.oct.network/myriad/accounts/{address}",
+        "event": null
+      }
+    ],
+    "types": {
+      "url": "https://raw.githubusercontent.com/nova-wallet/nova-utils/master/chains/v2/types/myriad.json",
+      "overridesCommon": true
+    },
+    "icon": "https://raw.githubusercontent.com/nova-wallet/nova-utils/master/icons/chains/gradient/Myriad.svg",
+    "addressPrefix": 42
   }
 ]
