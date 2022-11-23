@@ -48,9 +48,21 @@ const CameraDev = () => {
 
   const onSetMultipleTransactions = async () => {
     //westend
-    const payload = await createPayload(
+    const payload1 = await createPayload(
       {
-        address: '5Dc1tzx4QDEDXetr98Mk4RjKSMFJiLBqr2Gmco7rjz8YfwMP',
+        address: '5DCg8K2gy6ThqxRY7QFNUVhogxSCoTMGw6TwPAy5wXXjhdcr',
+        type: TransactionType.TRANSFER,
+        args: {
+          dest: '5EZegcM27RuogrSoTbJWYRWmyBqDMeNK92FXjwcsbPBHavoP',
+          value: '1',
+        },
+      },
+      currentConnection.api,
+    );
+
+    const payload2 = await createPayload(
+      {
+        address: '5FjpbccqasRmJ7eR2bGk3tMhYu8Qg4eNpa9J6ksF3umoPkqu',
         type: TransactionType.TRANSFER,
         args: {
           dest: '5EZegcM27RuogrSoTbJWYRWmyBqDMeNK92FXjwcsbPBHavoP',
@@ -61,15 +73,15 @@ const CameraDev = () => {
     );
     let transactions = [
       createSignPayloadForMultipleTransactionSigning(
-        '5Dc1tzx4QDEDXetr98Mk4RjKSMFJiLBqr2Gmco7rjz8YfwMP',
+        '5DCg8K2gy6ThqxRY7QFNUVhogxSCoTMGw6TwPAy5wXXjhdcr',
         Command.Transaction,
-        payload,
+        payload1,
         '0xe143f23803ac50e8f6f8e62695d1ce9e4e1d68aa36c1cd2cfd15340213f3423e',
       ),
       createSignPayloadForMultipleTransactionSigning(
-        '5Dc1tzx4QDEDXetr98Mk4RjKSMFJiLBqr2Gmco7rjz8YfwMP',
+        '5FjpbccqasRmJ7eR2bGk3tMhYu8Qg4eNpa9J6ksF3umoPkqu',
         Command.Transaction,
-        payload,
+        payload2,
         '0xe143f23803ac50e8f6f8e62695d1ce9e4e1d68aa36c1cd2cfd15340213f3423e',
       ),
     ];
