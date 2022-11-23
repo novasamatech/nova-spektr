@@ -64,7 +64,7 @@ const Transfer = () => {
 
   const expectedBlockTime = currentConnection?.api ? getExpectedBlockTime(currentConnection?.api) : undefined;
 
-  const addTransaction = ({ address, amount }: { address: string; amount: string }) => {
+  const addTransaction = ({ address, amount }: Record<'address' | 'amount', string>) => {
     if (!currentConnection || !currentAddress || !currentAsset || !amount) return;
 
     setTransaction({
