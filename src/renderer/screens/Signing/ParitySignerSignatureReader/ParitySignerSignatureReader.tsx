@@ -164,7 +164,9 @@ const ParitySignerSignatureReader = ({ size = 300, className, onResult, countdow
         )}
       </div>
     );
-  } else if (validationError) {
+  }
+
+  if (validationError) {
     return (
       <div className="flex flex-col justify-center items-center w-full h-full">
         <div className="flex flex-col items-center justify-center text-center w-full h-full">

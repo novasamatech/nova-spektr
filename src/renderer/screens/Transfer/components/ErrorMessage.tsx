@@ -13,7 +13,7 @@ const ErrorMessage = ({ error, type, className, children }: PropsWithChildren<Pr
     return null;
   }
 
-  return <div className={cn('text-error text-2xs font-bold uppercase', className)}>{children}</div>;
+  return <p className={cn('text-error text-2xs font-bold uppercase', className)}>{children}</p>;
 };
 
 export default ErrorMessage;

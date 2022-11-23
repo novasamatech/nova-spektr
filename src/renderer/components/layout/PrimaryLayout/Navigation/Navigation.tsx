@@ -11,6 +11,7 @@ import { WalletType } from '@renderer/domain/wallet';
 import Wallets from '../Wallets/Wallets';
 import useClickOutside from '@renderer/hooks/useClickOutside';
 import './Navigation.css';
+import { WalletDS } from '@renderer/services/storage';
 
 type CardType = WalletType | 'multiple' | 'none';
 
@@ -19,6 +20,13 @@ const CardStyle: Record<CardType, string> = {
   [WalletType.PARITY]: 'bg-primary border-[3px] border-primary',
   multiple: 'bg-shade-40 multiple-card',
   none: 'bg-shade-40 border-[3px] border-shade-40',
+};
+
+const getCardType = (wallets?: WalletDS[]): CardType => {
+  if (!wallets || !wallets.length) return 'none';
+  if (wallets.length > 1) return 'multiple';
+
+  return wallets[0].type;
 };
 
 const NavItems = [
@@ -38,8 +46,7 @@ const Navigation = () => {
   const { LocaleComponent, t } = useI18n();
   const { getActiveWallets } = useWallet();
   const activeWallets = getActiveWallets();
-  const walletType =
-    !activeWallets || !activeWallets.length ? 'none' : activeWallets.length > 1 ? 'multiple' : activeWallets?.[0]?.type;
+  const walletType = getCardType(activeWallets);
 
   // const navigate = useNavigate();
   // const { matrix, setIsLoggedIn } = useMatrix();
