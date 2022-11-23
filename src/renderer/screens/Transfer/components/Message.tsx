@@ -1,4 +1,4 @@
-import { useState, Fragment, PropsWithChildren } from 'react';
+import { Fragment, PropsWithChildren } from 'react';
 import { Dialog, Transition } from '@headlessui/react';
 
 type Props = {

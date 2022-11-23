@@ -7,6 +7,7 @@ import { Button, Dropdown, Icon } from '@renderer/components/ui';
 import { DropdownOption } from '@renderer/components/ui/Dropdown/common/types';
 import { useI18n } from '@renderer/context/I18nContext';
 import { secondsToMinutes } from '../common/utils';
+import { ValidationErrors } from '@renderer/screens/Transfer/common/constants';
 
 const enum CameraState {
   ACTIVE,
@@ -26,9 +27,10 @@ type Props = {
   className?: string;
   onResult: (payload: string) => void;
   countdown?: number;
+  validationError?: ValidationErrors;
 };
 
-const ParitySignerSignatureReader = ({ size = 300, className, onResult, countdown }: Props) => {
+const ParitySignerSignatureReader = ({ size = 300, className, onResult, countdown, validationError }: Props) => {
   const { t } = useI18n();
 
   const [cameraState, setCameraState] = useState<CameraState>(CameraState.LOADING);
@@ -160,6 +162,29 @@ const ParitySignerSignatureReader = ({ size = 300, className, onResult, countdow
             {t('onboarding.paritySigner.scanAgainButton')}
           </Button>
         )}
+      </div>
+    );
+  }
+
+  if (validationError) {
+    return (
+      <div className="flex flex-col justify-center items-center w-full h-full">
+        <div className="flex flex-col items-center justify-center text-center w-full h-full">
+          {validationError === ValidationErrors.INSUFFICIENT_BALANCE && (
+            <>
+              <Icon className="text-alert" name="warnCutout" size={70} />
+              <p className="text-neutral text-xl leading-6 font-semibold mt-5">{t('transfer.notEnoughBalanceError')}</p>
+            </>
+          )}
+          {validationError === ValidationErrors.INSUFFICIENT_BALANCE_FOR_FEE && (
+            <>
+              <Icon className="text-alert" name="warnCutout" size={70} />
+              <p className="text-neutral text-xl leading-6 font-semibold mt-5">
+                {t('transfer.notEnoughBalanceForFeeError')}
+              </p>
+            </>
+          )}
+        </div>
       </div>
     );
   }
