@@ -19,7 +19,7 @@ const SelectedAddress = ({ wallet, connection }: Props) => {
     <div className="bg-white shadow-surface p-5 rounded-2xl w-full">
       <div className="flex items-center justify-between h-15 bg-shade-2 p-2.5 rounded-2lg">
         <div className="flex gap-2.5 items-center">
-          <Icon name="paritySigner" size={34} />
+          <Icon name="paritySignerBackground" size={34} />
           <div className="flex flex-col">
             <div className="font-bold text-lg leading-5 text-neutral">{wallet.name}</div>
             <Address className="leading-4" type="short" address={currentAddress} addressStyle="normal" size={14} />

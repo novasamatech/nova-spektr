@@ -14,8 +14,8 @@ type Props = {
 };
 
 const WalletTypeImages: Record<WalletType, IconNames> = {
-  [WalletType.WATCH_ONLY]: 'watchOnly',
-  [WalletType.PARITY]: 'paritySigner',
+  [WalletType.WATCH_ONLY]: 'watchOnlyBackground',
+  [WalletType.PARITY]: 'paritySignerBackground',
 };
 
 const WalletTypeLabels = {

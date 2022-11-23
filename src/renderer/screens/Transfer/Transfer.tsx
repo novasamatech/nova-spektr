@@ -10,19 +10,21 @@ import { useI18n } from '@renderer/context/I18nContext';
 import { useNetworkContext } from '@renderer/context/NetworkContext';
 import { useWallet } from '@renderer/services/wallet/walletService';
 import { Asset } from '@renderer/domain/asset';
-import { formatAddress } from '@renderer/utils/address';
+import { formatAddress, toPublicKey, validateAddress } from '@renderer/utils/address';
 import { useTransaction } from '@renderer/services/transaction/transactionService';
 import { Transaction, TransactionType } from '@renderer/domain/transaction';
 import { getMetadataPortalUrl, TROUBLESHOOTING_URL } from '../Signing/common/consts';
 import { secondsToMinutes } from '../Signing/common/utils';
 import ParitySignerSignatureReader from '../Signing/ParitySignerSignatureReader/ParitySignerSignatureReader';
 import { ChainId, HexString } from '@renderer/domain/shared-kernel';
-import { formatAmount } from '@renderer/services/balance/common/utils';
+import { formatAmount, transferable } from '@renderer/services/balance/common/utils';
 import { useChains } from '@renderer/services/network/chainsService';
 import TransferForm from './components/TransferForm';
 import TransferDetails from './components/TransferDetails';
 import SelectedAddress from './components/SelectedAddress';
 import Message from './components/Message';
+import { ValidationErrors } from './common/constants';
+import { useBalance } from '@renderer/services/balance/balanceService';
 
 const enum Steps {
   CREATING,
@@ -47,8 +49,13 @@ const Transfer = () => {
   const [transaction, setTransaction] = useState<Transaction>();
   const [countdown, setCountdown] = useState<number>(DEFAULT_QR_LIFETIME);
   const [isSuccessMessageOpen, setIsSuccessMessageOpen] = useState(false);
+  const [validationError, setValidationError] = useState<ValidationErrors>();
 
-  const { createPayload, getSignedExtrinsic, submitAndWatchExtrinsic } = useTransaction();
+  const [balance, setBalance] = useState('');
+  const [fee, setFee] = useState('');
+
+  const { getBalance } = useBalance();
+  const { createPayload, getSignedExtrinsic, submitAndWatchExtrinsic, getTransactionFee } = useTransaction();
 
   const activeWallets = getActiveWallets();
   const currentWallet = activeWallets?.find(
@@ -109,8 +116,58 @@ const Transfer = () => {
     setCurrentStep(Steps.SCANNING);
   };
 
+  useEffect(() => {
+    if (!currentConnection || !currentAsset) return;
+
+    (async () => {
+      const balance = await getBalance(
+        toPublicKey(currentAddress) || '0x',
+        currentConnection.chainId,
+        currentAsset.assetId.toString(),
+      );
+
+      setBalance(balance ? transferable(balance) : '0');
+    })();
+  }, [currentAddress, currentConnection?.chainId, currentAsset?.assetId]);
+
+  useEffect(() => {
+    (async () => {
+      const amount = transaction?.args.value;
+      const address = transaction?.args.dest;
+
+      if (!currentConnection?.api || !amount || !validateAddress(address)) return;
+
+      setFee(await getTransactionFee(transaction, currentConnection.api));
+    })();
+  }, [transaction, currentConnection?.api]);
+
+  const validateBalanceForFee = (): boolean => {
+    const amount = transaction?.args.value;
+    if (!fee || !balance || !currentAsset) return false;
+
+    return parseInt(fee) + parseInt(formatAmount(amount, currentAsset.precision)) <= parseInt(balance);
+  };
+
+  const validateBalance = (): boolean => {
+    const amount = transaction?.args.value;
+
+    if (!fee || !balance || !currentAsset) return false;
+
+    return parseInt(formatAmount(amount, currentAsset.precision)) <= parseInt(balance);
+  };
+
   const sendSignedTransaction = async (signature: HexString) => {
     if (!currentConnection?.api || !unsigned || !signature) return;
+
+    if (!validateBalance()) {
+      setValidationError(ValidationErrors.INSUFFICIENT_BALANCE);
+
+      return;
+    } else if (!validateBalanceForFee()) {
+      setValidationError(ValidationErrors.INSUFFICIENT_BALANCE);
+
+      return;
+    }
 
     const extrinsic = await getSignedExtrinsic(unsigned, signature, currentConnection.api);
     setCurrentStep(Steps.EXECUTING);
@@ -246,6 +303,7 @@ const Transfer = () => {
                       className="w-full rounded-2lg"
                       countdown={countdown}
                       size={460}
+                      validationError={validationError}
                       onResult={(signature) => {
                         sendSignedTransaction(signature as HexString);
                       }}
@@ -263,6 +321,18 @@ const Transfer = () => {
                     }}
                   >
                     {t('signing.generateNewQrButton')}
+                  </Button>
+                )}
+
+                {validationError && (
+                  <Button
+                    className="w-max mb-5"
+                    weight="lg"
+                    variant="fill"
+                    pallet="primary"
+                    onClick={() => setCurrentStep(Steps.CREATING)}
+                  >
+                    {t('transfer.editOperationButton')}
                   </Button>
                 )}
               </>
