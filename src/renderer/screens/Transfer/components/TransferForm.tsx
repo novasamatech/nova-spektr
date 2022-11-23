@@ -13,6 +13,7 @@ import { formatAmount, transferable } from '@renderer/services/balance/common/ut
 import { ExtendedChain } from '@renderer/services/network/common/types';
 import { useTransaction } from '@renderer/services/transaction/transactionService';
 import { formatAddress, toPublicKey, validateAddress } from '@renderer/utils/address';
+import ErrorMessage from './ErrorMessage';
 import Fee from './Fee';
 import SelectedAddress from './SelectedAddress';
 
@@ -91,10 +92,16 @@ const Transfer = ({ onCreateTransaction, wallet, asset, connection }: Props) => 
     })();
   }, [transaction, connection.api]);
 
-  const validateBalance = async (amount: string) => {
+  const validateBalanceForFee = async (amount: string) => {
     if (!fee || !balance) return false;
 
     return parseInt(fee) + parseInt(formatAmount(amount, asset.precision)) <= parseInt(balance);
+  };
+
+  const validateBalance = async (amount: string) => {
+    if (!fee || !balance) return false;
+
+    return parseInt(formatAmount(amount, asset.precision)) <= parseInt(balance);
   };
 
   return (
@@ -115,27 +122,56 @@ const Transfer = ({ onCreateTransaction, wallet, asset, connection }: Props) => 
             control={control}
             rules={{ required: true, validate: validateAddress }}
             render={({ field: { onChange, value }, fieldState: { error } }) => (
-              <Input
-                prefixElement={
-                  value && !error ? <Identicon address={value} background={false} /> : <Icon name="emptyIdenticon" />
-                }
-                invalid={!!error}
-                value={value}
-                name="address"
-                className="w-full"
-                label={t('transfer.recipientLabel')}
-                placeholder={t('transfer.recipientLabel')}
-                onChange={onChange}
-              />
+              <>
+                <Input
+                  prefixElement={
+                    value && !error ? <Identicon address={value} background={false} /> : <Icon name="emptyIdenticon" />
+                  }
+                  invalid={!!error}
+                  value={value}
+                  name="address"
+                  className="w-full"
+                  label={t('transfer.recipientLabel')}
+                  placeholder={t('transfer.recipientLabel')}
+                  onChange={onChange}
+                />
+                <ErrorMessage error={error} type="validate">
+                  {t('transfer.incorrectRecipientError')}
+                </ErrorMessage>
+                <ErrorMessage error={error} type="required">
+                  {t('transfer.requiredRecipientError')}
+                </ErrorMessage>
+              </>
             )}
           />
 
           <Controller
             name="amount"
             control={control}
-            rules={{ required: true, validate: (v) => Number(v) > 0 && validateBalance(v) }}
+            rules={{
+              required: true,
+              validate: {
+                notZero: (v) => Number(v) > 0,
+                insufficientBalance: validateBalance,
+                insufficientBalanceForFee: validateBalanceForFee,
+              },
+            }}
             render={({ field: { onChange, value }, fieldState: { error } }) => (
-              <Amount value={value} name="amount" asset={asset} balance={balance} error={error} onChange={onChange} />
+              <>
+                <Amount value={value} name="amount" asset={asset} balance={balance} error={error} onChange={onChange} />
+                <ErrorMessage error={error} type="insufficientBalance">
+                  {t('transfer.notEnoughBalanceError')}
+                </ErrorMessage>
+                <ErrorMessage error={error} type="insufficientBalanceForFee">
+                  {t('transfer.notEnoughBalanceForFeeError')}
+                </ErrorMessage>
+                <ErrorMessage error={error} type="required">
+                  {t('transfer.requiredAmountError')}
+                </ErrorMessage>
+                <ErrorMessage error={error} type="notZero">
+                  {t('transfer.requiredAmountError')}
+                </ErrorMessage>
+              </>
             )}
           />
 
