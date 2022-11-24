@@ -172,7 +172,7 @@ const Transfer = () => {
     const extrinsic = await getSignedExtrinsic(unsigned, signature, currentConnection.api);
     setCurrentStep(Steps.EXECUTING);
 
-    submitAndWatchExtrinsic(extrinsic, currentConnection.api, (executed, params) => {
+    submitAndWatchExtrinsic(extrinsic, currentConnection.api, (executed) => {
       if (executed) {
         setIsSuccessMessageOpen(true);
       }

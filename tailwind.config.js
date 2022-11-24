@@ -50,10 +50,12 @@ module.exports = {
         8.5: '2.125rem',
         9.5: '2.375rem',
         10.5: '2.625rem',
+        12.5: '3.125rem',
         15: '3.75rem',
       },
       fontSize: {
         '2xs': ['0.625rem', '0.75rem'],
+        '4.5xl': ['2.75rem', '3rem'],
       },
       borderRadius: {
         '2lg': '10px',
