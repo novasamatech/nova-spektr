@@ -51,9 +51,9 @@ const calculateValidatorApy = (
   avgValidatorStake: BigNumber,
 ): number => {
   const yearlyRewardPercent = avgValidatorStake.multipliedBy(avgRewardPercent).div(validator.totalStake);
-  const pureApy = yearlyRewardPercent.multipliedBy(1 - validator.commission / 100).toNumber();
+  const pureApy = yearlyRewardPercent.multipliedBy(1 - validator.commission / 100);
 
-  return +(pureApy * 100).toFixed(2);
+  return +pureApy.multipliedBy(100).toFixed(2);
 };
 
 /**
