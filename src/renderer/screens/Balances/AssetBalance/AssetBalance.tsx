@@ -2,17 +2,16 @@ import cn from 'classnames';
 import { KeyboardEvent, MouseEvent } from 'react';
 
 import { Balance as BalanceValue, Button, ButtonLink, Icon } from '@renderer/components/ui';
-import { useI18n } from '@renderer/context/I18nContext';
 import Shimmering from '@renderer/components/ui/Shimmering/Shimmering';
+import { useI18n } from '@renderer/context/I18nContext';
 import { Asset } from '@renderer/domain/asset';
 import { Balance } from '@renderer/domain/balance';
+import { ChainId } from '@renderer/domain/shared-kernel';
 import useToggle from '@renderer/hooks/useToggle';
+import { createLink } from '@renderer/routes/utils';
 import { total, transferable } from '@renderer/services/balance/common/utils';
 import { KeyboardKey } from '@renderer/utils/constants';
 import './AssetBalance.css';
-import { ChainId } from '@renderer/domain/shared-kernel';
-import { createLink } from '@renderer/routes/utils';
-import Paths from '@renderer/routes/paths';
 
 type Props = {
   asset: Asset;

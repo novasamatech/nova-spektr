@@ -40,8 +40,8 @@ const ReceiveModal = ({ data, isOpen, onClose }: Props) => {
   //eslint-disable-next-line i18next/no-literal-string
   const qrCodePayload = `substrate:${address}:${wallet.publicKey}:Ff`;
 
-  const onCopyAddress = () => {
-    copyToClipboard(address);
+  const onCopyAddress = async () => {
+    await copyToClipboard(address);
   };
 
   return (

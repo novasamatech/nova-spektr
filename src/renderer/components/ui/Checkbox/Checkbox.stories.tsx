@@ -12,11 +12,11 @@ const Template: ComponentStory<typeof Checkbox> = (args) => <Checkbox {...args} 
 
 export const Primary = Template.bind({});
 Primary.args = {
-  label: 'Checkbox',
+  children: 'Checkbox',
 };
 
 export const Disabled = Template.bind({});
 Disabled.args = {
-  label: 'Checkbox',
+  children: 'Checkbox',
   disabled: true,
 };

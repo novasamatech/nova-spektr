@@ -9,7 +9,7 @@ jest.mock('@renderer/context/I18nContext', () => ({
   }),
 }));
 
-describe('screens/Staking/Validators', () => {
+describe('screens/Staking/Unbond', () => {
   test('should render component', () => {
     render(<Unbond />, { wrapper: MemoryRouter });
 

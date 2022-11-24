@@ -20,7 +20,3 @@ export type ITransactionService = {
   submitAndWatchExtrinsic: (tx: string, api: ApiPromise, callback: (executed: boolean, params: any) => void) => void;
   getTransactionFee: (transaction: Transaction, api: ApiPromise) => Promise<string>;
 };
-
-// =====================================================
-// ======================= General =====================
-// =====================================================

@@ -14,8 +14,8 @@ type Props = {
 
 const Truncate = ({ text, ellipsis, end, start, className = '', style = {} }: Props) => {
   const containerRef = useRef<HTMLDivElement>(null);
-  const textRef = useRef<HTMLElement>(null);
-  const ellipsisRef = useRef<HTMLElement>(null);
+  const textRef = useRef<HTMLParagraphElement>(null);
+  const ellipsisRef = useRef<HTMLParagraphElement>(null);
 
   const [truncatedText, setTruncatedText] = useState(text);
 
@@ -87,13 +87,12 @@ const Truncate = ({ text, ellipsis, end, start, className = '', style = {} }: Pr
 
   return (
     <div ref={containerRef} style={containerStyle} className={className}>
-      <span ref={textRef} className="hidden">
+      <p ref={textRef} className="hidden">
         {text}
-      </span>
-      <span ref={ellipsisRef} className="hidden">
+      </p>
+      <p ref={ellipsisRef} className="hidden">
         {ellipsis}
-      </span>
-
+      </p>
       {truncatedText}
     </div>
   );

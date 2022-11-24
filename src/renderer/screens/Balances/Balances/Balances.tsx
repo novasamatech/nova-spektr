@@ -1,24 +1,22 @@
 import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 
-import useToggle from '@renderer/hooks/useToggle';
 import { Icon, Input, Switch } from '@renderer/components/ui';
+import { useI18n } from '@renderer/context/I18nContext';
 import { useNetworkContext } from '@renderer/context/NetworkContext';
 import { Asset } from '@renderer/domain/asset';
 import { Chain } from '@renderer/domain/chain';
+import { ConnectionType } from '@renderer/domain/connection';
 import { PublicKey } from '@renderer/domain/shared-kernel';
 import { WalletType } from '@renderer/domain/wallet';
+import useToggle from '@renderer/hooks/useToggle';
 import { useChains } from '@renderer/services/network/chainsService';
 import { useSettingsStorage } from '@renderer/services/settings/settingsStorage';
 import { useWallet } from '@renderer/services/wallet/walletService';
 import NetworkBalances from '../NetworkBalances/NetworkBalances';
 import ReceiveModal, { ReceivePayload } from '../ReceiveModal/ReceiveModal';
-import { ConnectionType } from '@renderer/domain/connection';
-import { useI18n } from '@renderer/context/I18nContext';
 
 const Balances = () => {
   const { t } = useI18n();
-  const navigate = useNavigate();
 
   const [query, setQuery] = useState('');
   const [publicKey, setPublicKey] = useState<PublicKey>();

@@ -14,7 +14,7 @@ const Paths = {
 
   // Staking
   STAKING: '/staking',
-  STAKING_START: '/staking/start',
+  STAKING_START: '/staking/start/:chainId',
   UNBOND: '/staking/unbond',
 
   // Navigation

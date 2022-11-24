@@ -219,6 +219,12 @@
     "troubleshootingLink": "I have an error in Parity Signer"
   },
   "staking": {
+    "bond": {
+      "confirmBondSubtitle": "Confirm",
+      "initBondSubtitle": "Start Staking",
+      "selectNetworkLabel": "Select network",
+      "validatorsSubtitle": "Validators"
+    },
     "overview": {
       "noActiveWalletsDescription": "Please select a wallet for staking",
       "noActiveWalletsLabel": "No wallet selected",
@@ -226,16 +232,12 @@
       "noResultsLabel": "No staking found",
       "searchPlaceholder": "Search by account name"
     },
-    "startStaking": {
-      "selectNetworkLabel": "Select network",
-      "subtitle": "Start Staking"
-    },
     "title": "Staking",
     "unbond": {
       "subtitle": "Unbond"
     },
     "validators": {
-      "subtitle": "Validators"
+      "subtitle": "Валидаторы"
     }
   },
   "transfer": {

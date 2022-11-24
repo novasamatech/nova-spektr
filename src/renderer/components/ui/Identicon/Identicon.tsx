@@ -3,6 +3,8 @@ import { IconTheme } from '@polkadot/react-identicon/types';
 import cn from 'classnames';
 import { useLayoutEffect, useRef } from 'react';
 
+import { copyToClipboard } from '@renderer/utils/strings';
+
 type Props = {
   theme?: IconTheme;
   address: string;
@@ -19,8 +21,8 @@ const Identicon = ({ theme = 'polkadot', address, size = 24, background = true }
     wrapperRef.current.querySelector('circle')?.setAttribute('fill', 'none');
   }, []);
 
-  const onCopyToClipboard = () => {
-    navigator.clipboard.writeText(address);
+  const onCopyToClipboard = async () => {
+    await copyToClipboard(address);
   };
 
   return (
