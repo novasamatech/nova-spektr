@@ -87,7 +87,7 @@ const Signing = () => {
           <div className="bg-white shadow-surface p-5 rounded-2xl w-full">
             <div className="flex items-center justify-between h-15">
               <div className="flex gap-2.5">
-                <Icon name="paritySigner" size={32} />
+                <Icon name="paritySignerBackground" size={32} />
                 <div>
                   <div className="font-bold text-lg text-neutral">{currentWallet.name}</div>
                   <Address type="short" address={currentAddress} addressStyle="small" />

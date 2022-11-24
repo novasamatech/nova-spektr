@@ -48,7 +48,7 @@ const Transfer = ({ transaction, wallet, asset, connection }: Props) => {
           <div className="flex justify-between px-5 py-3">
             <div className="text-sm text-neutral-variant ">{t('transferDetails.wallet')}</div>
             <div className="flex gap-1 items-center font-semibold">
-              <Icon name="paritySigner" size={16} />
+              <Icon name="paritySignerBackground" size={16} />
               {wallet.name}
             </div>
           </div>
