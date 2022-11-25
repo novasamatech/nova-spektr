@@ -16,7 +16,7 @@ import './AssetBalance.css';
 type Props = {
   asset: Asset;
   chainId: ChainId;
-  balance: Balance;
+  balance?: Balance;
   canMakeActions?: boolean;
   onReceiveClick?: () => void;
 };

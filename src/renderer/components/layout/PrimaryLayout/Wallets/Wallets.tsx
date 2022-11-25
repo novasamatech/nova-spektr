@@ -94,7 +94,7 @@ const Wallets = forwardRef<HTMLDivElement, Props>(({ className }, ref) => {
                     onChange={() => toggleActiveWallet(wallet.id || '')}
                   >
                     <div className="ml-2.5 overflow-hidden">
-                      <div className="text-neutral text-sm text-semibold leading-4">{wallet.name}</div>
+                      <div className="text-neutral text-sm text-semibold leading-4 truncate">{wallet.name}</div>
                       <Address
                         type="short"
                         addressStyle="small"

@@ -5,7 +5,7 @@ import { Trans } from 'react-i18next';
 
 import { Balance, Button, Icon, Identicon, Input } from '@renderer/components/ui';
 import { useI18n } from '@renderer/context/I18nContext';
-import { Asset } from '@renderer/domain/asset';
+import { Asset, AssetType, OrmlExtras, StatemineExtras } from '@renderer/domain/asset';
 import { formatAddress, toPublicKey, validateAddress } from '@renderer/utils/address';
 import { Wallet } from '@renderer/domain/wallet';
 import { ExtendedChain } from '@renderer/services/network/common/types';
@@ -29,6 +29,30 @@ type Props = {
   connection: ExtendedChain;
 };
 
+const getTransactionType = (assetType: AssetType | undefined): TransactionType => {
+  if (assetType === AssetType.STATEMINE) {
+    return TransactionType.ASSET_TRANSFER;
+  }
+
+  if (assetType === AssetType.ORML) {
+    return TransactionType.ORML_TRANSFER;
+  }
+
+  return TransactionType.TRANSFER;
+};
+
+const getAssetId = (asset: Asset): string => {
+  if (asset.type === AssetType.STATEMINE) {
+    return (asset.typeExtras as StatemineExtras).assetId;
+  }
+
+  if (asset.type === AssetType.ORML) {
+    return (asset.typeExtras as OrmlExtras).currencyIdScale;
+  }
+
+  return asset.assetId.toString();
+};
+
 const Transfer = ({ onCreateTransaction, wallet, asset, connection }: Props) => {
   const { t } = useI18n();
 
@@ -37,6 +61,7 @@ const Transfer = ({ onCreateTransaction, wallet, asset, connection }: Props) => 
 
   const [balance, setBalance] = useState('');
   const [fee, setFee] = useState('');
+  const [transaction, setTransaction] = useState<Transaction>();
 
   const currentAddress = formatAddress(
     wallet.mainAccounts[0].accountId || wallet.chainAccounts[0].accountId || '',
@@ -59,6 +84,7 @@ const Transfer = ({ onCreateTransaction, wallet, asset, connection }: Props) => 
     handleSubmit,
     control,
     watch,
+    trigger,
     formState: { isValid },
   } = useForm<TransferForm>({
     mode: 'onChange',
@@ -74,32 +100,42 @@ const Transfer = ({ onCreateTransaction, wallet, asset, connection }: Props) => 
     onCreateTransaction({ address, amount });
   };
 
-  const transaction = {
-    type: TransactionType.TRANSFER,
-    address: currentAddress,
-    chainId: connection.chainId,
-    args: {
-      value: formatAmount(amount, asset.precision),
-      dest: address,
-    },
-  } as Transaction;
+  useEffect(() => {
+    setTransaction({
+      type: getTransactionType(asset.type),
+      address: currentAddress,
+      chainId: connection.chainId,
+      args: {
+        value: formatAmount(amount, asset.precision),
+        dest: address,
+        asset: getAssetId(asset),
+      },
+    } as Transaction);
+  }, [address, amount]);
 
   useEffect(() => {
     (async () => {
-      if (!connection.api || !amount || !validateAddress(address)) return;
+      if (!connection.api || !amount || !validateAddress(transaction?.args.dest) || !transaction) return;
 
       setFee(await getTransactionFee(transaction, connection.api));
     })();
-  }, [transaction, connection.api]);
+  }, [address, amount]);
+
+  useEffect(() => {
+    if (!fee) return;
+
+    trigger('amount');
+  }, [fee]);
 
   const validateBalanceForFee = async (amount: string) => {
-    if (!fee || !balance) return false;
+    if (!balance) return false;
+    const currentFee = fee || '0';
 
-    return parseInt(fee) + parseInt(formatAmount(amount, asset.precision)) <= parseInt(balance);
+    return parseInt(currentFee) + parseInt(formatAmount(amount, asset.precision)) <= parseInt(balance);
   };
 
   const validateBalance = async (amount: string) => {
-    if (!fee || !balance) return false;
+    if (!balance) return false;
 
     return parseInt(formatAmount(amount, asset.precision)) <= parseInt(balance);
   };
@@ -210,12 +246,7 @@ const Transfer = ({ onCreateTransaction, wallet, asset, connection }: Props) => 
           <div className="flex justify-between items-center uppercase text-neutral-variant text-2xs">
             <div>{t('transfer.networkFee')}</div>
 
-            <Fee
-              className="text-neutral font-semibold"
-              connection={connection}
-              wallet={wallet}
-              transaction={transaction}
-            />
+            <Fee className="text-neutral font-semibold" connection={connection} transaction={transaction} />
           </div>
         </form>
       </div>
