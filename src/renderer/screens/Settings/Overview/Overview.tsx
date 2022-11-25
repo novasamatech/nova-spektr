@@ -11,7 +11,7 @@ const Overview = () => {
   const localeOptions: DropdownOption[] = locales.map((option) => ({
     prefix: <Icon className="rounded-full border border-white" name={option.value} size={20} />,
     value: option.value,
-    label: option.label,
+    element: option.label,
   }));
 
   const selectedLocale = localeOptions.find((option) => option.value === locale);
@@ -37,7 +37,7 @@ const Overview = () => {
               className="ml-auto w-[200px]"
               placeholder={t('dropdown.chooseOptionLabel')}
               selected={selectedLocale}
-              options={locales}
+              options={localeOptions}
               onSelected={onLocaleChange}
             />
           </li>
