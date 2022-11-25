@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { Controller, SubmitHandler, useForm } from 'react-hook-form';
 import cn from 'classnames';
 import { Trans } from 'react-i18next';
+import { BN } from '@polkadot/util';
 
 import { Balance, Button, Icon, Identicon, Input } from '@renderer/components/ui';
 import { useI18n } from '@renderer/context/I18nContext';
@@ -16,7 +17,6 @@ import { useBalance } from '@renderer/services/balance/balanceService';
 import { formatAmount, transferable } from '@renderer/services/balance/common/utils';
 import { useTransaction } from '@renderer/services/transaction/transactionService';
 import ErrorMessage from './ErrorMessage';
-import { BN } from '@polkadot/util';
 
 type TransferForm = {
   address: string;
