@@ -10,6 +10,7 @@ import {
   UnsignedTransaction,
   decode,
 } from '@substrate/txwrapper-polkadot';
+import { methods as ormlMethods } from '@substrate/txwrapper-orml';
 import { SubmittableExtrinsic } from '@polkadot/api/types';
 
 import { createTxMetadata } from '@renderer/utils/substrate';
@@ -47,6 +48,28 @@ export const useTransaction = (): ITransactionService => {
         options,
       );
     },
+    [TransactionType.ASSET_TRANSFER]: (transaction, info, options) => {
+      return methods.assets.transferKeepAlive(
+        {
+          id: transaction.args.asset,
+          target: transaction.args.dest,
+          amount: transaction.args.value,
+        },
+        info,
+        options,
+      );
+    },
+    [TransactionType.ORML_TRANSFER]: (transaction, info, options) => {
+      return ormlMethods.tokens.transfer(
+        {
+          dest: transaction.args.dest,
+          amount: transaction.args.value,
+          currencyId: transaction.args.asset,
+        },
+        info,
+        options,
+      );
+    },
   };
 
   const getExtrinsic: Record<
@@ -54,6 +77,9 @@ export const useTransaction = (): ITransactionService => {
     (args: Record<string, any>, api: ApiPromise) => SubmittableExtrinsic<'promise'>
   > = {
     [TransactionType.TRANSFER]: ({ dest, value }, api) => api.tx.balances.transferKeepAlive(dest, value),
+    [TransactionType.ASSET_TRANSFER]: ({ dest, value, asset }, api) =>
+      api.tx.assets.transferKeepAlive(asset, dest, value),
+    [TransactionType.ORML_TRANSFER]: ({ dest, value, asset }, api) => api.tx.currencies.transfer(dest, asset, value),
   };
 
   const createPayload = async (

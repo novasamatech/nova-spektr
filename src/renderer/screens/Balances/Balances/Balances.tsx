@@ -58,10 +58,6 @@ const Balances = () => {
     setReceiveData({
       chain,
       asset,
-      activeWallets: (activeWallets || []).map((wallet) => ({
-        name: wallet.name,
-        publicKey: wallet.mainAccounts[0].publicKey,
-      })),
     });
     toggleReceive();
   };

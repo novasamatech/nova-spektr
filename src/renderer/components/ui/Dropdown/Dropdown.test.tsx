@@ -4,8 +4,8 @@ import Dropdown from './Dropdown';
 
 describe('ui/Dropdown', () => {
   const options = [
-    { label: 'label_0', value: '0' },
-    { label: 'label_1', value: '1' },
+    { element: 'label_0', value: '0' },
+    { element: 'label_1', value: '1' },
   ];
 
   test('should render component', () => {
@@ -24,7 +24,7 @@ describe('ui/Dropdown', () => {
     const button = screen.getByRole('button');
     await act(() => button.click());
 
-    const option = await screen.findByRole('option', { name: options[0].label });
+    const option = await screen.findByRole('option', { name: options[0].element });
     await act(() => option.click());
 
     expect(spySelected).toBeCalledWith(options[0]);

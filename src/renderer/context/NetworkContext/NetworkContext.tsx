@@ -4,7 +4,6 @@ import { RpcNode } from '@renderer/domain/chain';
 import { ConnectionType } from '@renderer/domain/connection';
 import { ChainId, PublicKey } from '@renderer/domain/shared-kernel';
 import { useBalance } from '@renderer/services/balance/balanceService';
-import { TEST_PUBLIC_KEY } from '@renderer/services/balance/common/constants';
 import { ConnectProps, ExtendedChain, RpcValidation } from '@renderer/services/network/common/types';
 import { useNetwork } from '@renderer/services/network/networkService';
 import { useWallet } from '@renderer/services/wallet/walletService';
@@ -68,8 +67,8 @@ export const NetworkProvider = ({ children }: PropsWithChildren) => {
     };
   }, [connectionsReady]);
 
-  const subscribeBalanceChanges = async (chain: ExtendedChain, publicKey: PublicKey) => {
-    if (!hasSubscription(chain.chainId) && chain.api?.isConnected) {
+  const subscribeBalanceChanges = async (chain: ExtendedChain, publicKey?: PublicKey) => {
+    if (!hasSubscription(chain.chainId) && chain.api?.isConnected && publicKey) {
       const relaychain = chain.parentId && connections[chain.parentId];
 
       subscribe(chain.chainId, subscribeBalances(chain, relaychain, publicKey));
@@ -78,9 +77,14 @@ export const NetworkProvider = ({ children }: PropsWithChildren) => {
   };
 
   useEffect(() => {
-    const publicKey = activeWallets?.[0]?.mainAccounts[0]?.publicKey || TEST_PUBLIC_KEY;
-    Object.values(connections).forEach((chain) => {
-      subscribeBalanceChanges(chain, publicKey);
+    const publicKeys = activeWallets?.map(
+      (wallet) => wallet?.mainAccounts[0]?.publicKey || wallet?.chainAccounts[0]?.publicKey,
+    );
+
+    publicKeys?.forEach((publicKey) => {
+      Object.values(connections).forEach((chain) => {
+        subscribeBalanceChanges(chain, publicKey);
+      });
     });
   }, [connections, activeWallets]);
 

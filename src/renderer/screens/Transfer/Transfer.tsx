@@ -130,41 +130,38 @@ const Transfer = () => {
     })();
   }, [currentAddress, currentConnection?.chainId, currentAsset?.assetId]);
 
-  useEffect(() => {
-    (async () => {
-      const amount = transaction?.args.value;
-      const address = transaction?.args.dest;
-
-      if (!currentConnection?.api || !amount || !validateAddress(address)) return;
-
-      setFee(await getTransactionFee(transaction, currentConnection.api));
-    })();
-  }, [transaction, currentConnection?.api]);
-
   const validateBalanceForFee = (): boolean => {
     const amount = transaction?.args.value;
-    if (!fee || !balance || !currentAsset) return false;
 
-    return parseInt(fee) + parseInt(formatAmount(amount, currentAsset.precision)) <= parseInt(balance);
+    if (!fee || !balance) return false;
+
+    return fee + amount <= balance;
   };
 
   const validateBalance = (): boolean => {
     const amount = transaction?.args.value;
 
-    if (!fee || !balance || !currentAsset) return false;
+    if (!fee || !balance) return false;
 
-    return parseInt(formatAmount(amount, currentAsset.precision)) <= parseInt(balance);
+    return amount <= balance;
   };
 
   const sendSignedTransaction = async (signature: HexString) => {
     if (!currentConnection?.api || !unsigned || !signature) return;
+
+    const amount = transaction?.args.value;
+    const address = transaction?.args.dest;
+
+    if (!currentConnection?.api || !amount || !validateAddress(address)) return;
+
+    setFee(await getTransactionFee(transaction, currentConnection.api));
 
     if (!validateBalance()) {
       setValidationError(ValidationErrors.INSUFFICIENT_BALANCE);
 
       return;
     } else if (!validateBalanceForFee()) {
-      setValidationError(ValidationErrors.INSUFFICIENT_BALANCE);
+      setValidationError(ValidationErrors.INSUFFICIENT_BALANCE_FOR_FEE);
 
       return;
     }
@@ -190,6 +187,11 @@ const Transfer = () => {
   // TS doesn't work with Boolean type
   const readyToCreate = !!(currentWallet && currentAsset && currentAddress && currentConnection);
   const readyToConfirm = !!(readyToCreate && transaction);
+
+  const editOperation = () => {
+    setValidationError(undefined);
+    setCurrentStep(Steps.CREATING);
+  };
 
   return (
     <div className="h-full pb-5 overflow-auto">
@@ -325,13 +327,7 @@ const Transfer = () => {
                 )}
 
                 {validationError && (
-                  <Button
-                    className="w-max mb-5"
-                    weight="lg"
-                    variant="fill"
-                    pallet="primary"
-                    onClick={() => setCurrentStep(Steps.CREATING)}
-                  >
+                  <Button className="w-max mb-5" weight="lg" variant="fill" pallet="primary" onClick={editOperation}>
                     {t('transfer.editOperationButton')}
                   </Button>
                 )}

@@ -194,6 +194,7 @@
     "copyAddressButton": "Копировать адрес",
     "explorerLinkLabel": "Ссылка на {name}",
     "on": "в",
+    "selectWalletPlaceholder": "Выберите кошелек...",
     "sendOnlyLabel": "Отправляйте только",
     "title": "Получить"
   },

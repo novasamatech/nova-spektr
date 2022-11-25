@@ -52,7 +52,7 @@ const ParitySignerSignatureReader = ({ size = 300, className, onResult, countdow
   const onCameraList = (cameras: VideoInput[]) => {
     const formattedCameras = cameras.map((camera, index) => ({
       //eslint-disable-next-line i18next/no-literal-string
-      label: `${index + 1}. ${camera.label}`,
+      element: `${index + 1}. ${camera.label}`,
       value: camera.id,
     }));
 
