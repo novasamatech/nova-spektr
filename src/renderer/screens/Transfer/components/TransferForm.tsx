@@ -29,12 +29,12 @@ type Props = {
   connection: ExtendedChain;
 };
 
-const getTransactionType = (asset: Asset): TransactionType => {
-  if (asset.type === AssetType.STATEMINE) {
+const getTransactionType = (assetType: AssetType | undefined): TransactionType => {
+  if (assetType === AssetType.STATEMINE) {
     return TransactionType.ASSET_TRANSFER;
   }
 
-  if (asset.type === AssetType.ORML) {
+  if (assetType === AssetType.ORML) {
     return TransactionType.ORML_TRANSFER;
   }
 
@@ -102,7 +102,7 @@ const Transfer = ({ onCreateTransaction, wallet, asset, connection }: Props) => 
 
   useEffect(() => {
     setTransaction({
-      type: getTransactionType(asset),
+      type: getTransactionType(asset.type),
       address: currentAddress,
       chainId: connection.chainId,
       args: {

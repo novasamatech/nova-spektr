@@ -104,7 +104,7 @@ describe('screens/Balances/ReceiveModal', () => {
 
     render(<ReceiveModal {...defaultProps(westendExplorers)} />);
 
-    const title = screen.queryByText('receive.selectWalletPlaceholder');
+    const title = screen.getByText('receive.selectWalletPlaceholder');
 
     expect(title).toBeInTheDocument();
   });

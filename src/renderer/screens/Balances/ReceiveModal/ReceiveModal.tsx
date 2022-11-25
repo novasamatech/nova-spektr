@@ -64,7 +64,7 @@ const ReceiveModal = ({ data, isOpen, onClose }: Props) => {
         return [
           ...result,
           {
-            label: (
+            element: (
               <div className="flex items-center  gap-2.5">
                 <Icon
                   name={wallet.type === WalletType.PARITY ? 'paritySignerBackground' : 'watchOnlyBackground'}
@@ -92,7 +92,7 @@ const ReceiveModal = ({ data, isOpen, onClose }: Props) => {
   const address = toAddress(publicKey, data?.chain.addressPrefix);
 
   //eslint-disable-next-line i18next/no-literal-string
-  const qrCodePayload = `substrate:${address}:${publicKey}:Ff`;
+  const qrCodePayload = `substrate:${address}:${publicKey}`;
 
   const onCopyAddress = async () => {
     await copyToClipboard(address);

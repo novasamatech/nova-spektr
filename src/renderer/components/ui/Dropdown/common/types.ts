@@ -4,6 +4,6 @@ export type Variant = 'up' | 'down' | 'auto';
 
 export type DropdownOption<T extends any = any> = {
   prefix?: ReactNode;
-  label: ReactNode;
+  element: ReactNode;
   value: T;
 };

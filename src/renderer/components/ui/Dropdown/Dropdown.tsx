@@ -45,7 +45,7 @@ const Dropdown = ({ className, placeholder, selected, options, variant = 'down',
             {selected ? (
               <>
                 {selected.prefix}
-                {selected.label}
+                {selected.element}
               </>
             ) : (
               placeholder
@@ -71,7 +71,7 @@ const Dropdown = ({ className, placeholder, selected, options, variant = 'down',
           >
             {options.map((option, index) => (
               <Listbox.Option
-                key={`${index}-${option.label}`}
+                key={`${index}-${option.element}`}
                 value={option}
                 className={({ active }) =>
                   cn(
@@ -89,7 +89,7 @@ const Dropdown = ({ className, placeholder, selected, options, variant = 'down',
                     )}
                   >
                     {option.prefix}
-                    {option.label}
+                    {option.element}
                   </div>
                 )}
               </Listbox.Option>
