@@ -145,14 +145,11 @@ const Transfer = () => {
 
     const fee = await getTransactionFee(transaction, currentConnection.api);
 
-    if (Number(amount) > Number(transferableBalance)) {
-      console.log(1, amount, balance, fee);
+    if (new BN(amount).gt(new BN(transferableBalance))) {
       setValidationError(ValidationErrors.INSUFFICIENT_BALANCE);
 
       return false;
-    } else if (Number(fee) + Number(amount) > Number(transferableBalance)) {
-      console.log(2, amount, balance, fee);
-
+    } else if (new BN(fee).add(new BN(amount)).gt(new BN(transferableBalance))) {
       setValidationError(ValidationErrors.INSUFFICIENT_BALANCE_FOR_FEE);
 
       return false;
