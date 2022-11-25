@@ -22,13 +22,13 @@ const Bond = () => {
   const { t } = useI18n();
   const navigate = useNavigate();
   const { connections } = useNetworkContext();
-  const { chainId = '0x0' } = useParams<{ chainId: ChainId }>();
+  const { chainId } = useParams<{ chainId: ChainId }>();
 
   const [activeStep, setActiveStep] = useState<Step>(Step.Validators);
   const [_, setValidators] = useState<Validator[]>([]);
 
-  const api = connections[chainId]?.api;
-  const asset = connections[chainId]?.assets.find((asset) => asset.staking === StakingType.RELAYCHAIN);
+  const api = chainId && connections[chainId]?.api;
+  const asset = chainId && connections[chainId]?.assets.find((asset) => asset.staking === StakingType.RELAYCHAIN);
 
   const goToPrevStep = () => {
     if (activeStep === Step.InitBond) {
@@ -40,7 +40,7 @@ const Bond = () => {
   };
 
   const onBondResult = () => {
-    // save data
+    // TODO: save bond value and selected wallets
     console.log(123);
   };
 
@@ -50,7 +50,7 @@ const Bond = () => {
   };
 
   const onConfirmResult = () => {
-    // navigate?
+    // TODO: init bond and nominate call
     console.log(123);
   };
 
