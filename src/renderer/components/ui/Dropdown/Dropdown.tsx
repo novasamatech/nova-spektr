@@ -16,11 +16,11 @@ type Props = {
   selected?: DropdownOption;
   options: DropdownOption[];
   variant?: Variant;
-  onSelected: (data: DropdownOption) => void;
+  onChange: (data: DropdownOption) => void;
 };
 
-const Dropdown = ({ className, placeholder, selected, options, variant = 'down', onSelected }: Props) => (
-  <Listbox value={selected} onChange={onSelected}>
+const Dropdown = ({ className, placeholder, selected, options, variant = 'down', onChange }: Props) => (
+  <Listbox value={selected} onChange={onChange}>
     {({ open }) => (
       <div className={cn('relative', className)}>
         <Listbox.Button
@@ -43,7 +43,7 @@ const Dropdown = ({ className, placeholder, selected, options, variant = 'down',
             {selected ? (
               <>
                 {selected.prefix}
-                {selected.label}
+                {selected.element}
               </>
             ) : (
               placeholder
@@ -69,7 +69,7 @@ const Dropdown = ({ className, placeholder, selected, options, variant = 'down',
           >
             {options.map((option, index) => (
               <Listbox.Option
-                key={`${index}-${option.label}`}
+                key={`${index}-${option.element}`}
                 value={option}
                 className={({ active }) =>
                   cn(
@@ -86,7 +86,7 @@ const Dropdown = ({ className, placeholder, selected, options, variant = 'down',
                     )}
                   >
                     {option.prefix}
-                    {option.label}
+                    {option.element}
                   </div>
                 )}
               </Listbox.Option>

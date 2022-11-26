@@ -15,6 +15,7 @@ import LanguageSwitcher from './LanguageSwitcher/LanguageSwitcher';
 import Carousel from './Carousel/Carousel';
 import Dropdown from './Dropdown/Dropdown';
 import Balance from './Balance/Balance';
+import Radio from './Radio/Radio';
 
 export {
   Address,
@@ -34,4 +35,5 @@ export {
   Dropdown,
   Carousel,
   Balance,
+  Radio,
 };

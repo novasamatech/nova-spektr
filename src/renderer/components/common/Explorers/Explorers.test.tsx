@@ -14,26 +14,19 @@ describe('ui/Explorers', () => {
     render(
       <Explorers
         address={TEST_ADDRESS}
-        chain={{
-          name: 'My test chain',
-          chainId: '0x123',
-          addressPrefix: 0,
-          assets: [],
-          nodes: [],
-          icon: 'test_icon.svg',
-          explorers: [
-            {
-              name: 'Subscan',
-              extrinsic: 'https://polkadot.subscan.io/extrinsic/{hash}',
-              account: 'https://polkadot.subscan.io/account/{address}',
-            },
-            {
-              name: 'Polkascan',
-              extrinsic: 'https://polkadot.subscan.io/extrinsic/{hash}',
-              account: 'https://polkadot.subscan.io/account/{address}',
-            },
-          ],
-        }}
+        addressPrefix={0}
+        explorers={[
+          {
+            name: 'Subscan',
+            extrinsic: 'https://polkadot.subscan.io/extrinsic/{hash}',
+            account: 'https://polkadot.subscan.io/account/{address}',
+          },
+          {
+            name: 'Polkascan',
+            extrinsic: 'https://polkadot.subscan.io/extrinsic/{hash}',
+            account: 'https://polkadot.subscan.io/account/{address}',
+          },
+        ]}
       />,
     );
 

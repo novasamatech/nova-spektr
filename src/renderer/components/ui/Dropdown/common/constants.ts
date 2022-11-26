@@ -1,6 +1,11 @@
 import { Variant } from './types';
 
 export const ViewClass: Record<Exclude<Variant, 'auto'>, string> = {
-  up: 'bottom-10.5 mb-2.5',
-  down: 'top-10.5 mt-2.5',
+  up: 'bottom-full mb-2.5',
+  down: 'top-full mt-2.5',
+};
+
+export const WeightClass = {
+  md: 'h-10',
+  lg: 'h-15',
 };

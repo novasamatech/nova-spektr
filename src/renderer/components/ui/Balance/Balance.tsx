@@ -13,11 +13,16 @@ const Balance = ({ value, precision, className }: Props) => {
   const { t } = useI18n();
   const { value: formattedValue, decimalPlaces, suffix } = formatBalance(value, precision);
 
+  const balanceValue = t('assetBalance.number', {
+    value: formattedValue,
+    maximumFractionDigits: decimalPlaces,
+  });
+
   return (
-    <span className={cn(className)}>{`${t('assetBalance.number', {
-      value: formattedValue,
-      maximumFractionDigits: decimalPlaces,
-    })}${suffix}`}</span>
+    <span className={cn(className)}>
+      {balanceValue}
+      {suffix}
+    </span>
   );
 };
 

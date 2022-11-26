@@ -3,9 +3,9 @@ import { Controller, SubmitHandler, useForm } from 'react-hook-form';
 import { Trans } from 'react-i18next';
 
 import Amount from '@renderer/components/common/Amount/Amount';
-import { Button, Icon, Identicon, Input } from '@renderer/components/ui';
+import { Button, Icon, Identicon, Input, InputHint } from '@renderer/components/ui';
 import { useI18n } from '@renderer/context/I18nContext';
-import { Asset } from '@renderer/domain/asset';
+import { Asset, AssetType, OrmlExtras, StatemineExtras } from '@renderer/domain/asset';
 import { Transaction, TransactionType } from '@renderer/domain/transaction';
 import { Wallet } from '@renderer/domain/wallet';
 import { useBalance } from '@renderer/services/balance/balanceService';
@@ -13,8 +13,7 @@ import { formatAmount, transferable } from '@renderer/services/balance/common/ut
 import { ExtendedChain } from '@renderer/services/network/common/types';
 import { useTransaction } from '@renderer/services/transaction/transactionService';
 import { formatAddress, toPublicKey, validateAddress } from '@renderer/utils/address';
-import ErrorMessage from './ErrorMessage';
-import Fee from './Fee';
+// import Fee from '../../../components/common/Fee/Fee';
 import SelectedAddress from './SelectedAddress';
 
 type TransferForm = {
@@ -29,6 +28,30 @@ type Props = {
   onCreateTransaction: (data: TransferForm) => void;
 };
 
+const getTransactionType = (assetType: AssetType | undefined): TransactionType => {
+  if (assetType === AssetType.STATEMINE) {
+    return TransactionType.ASSET_TRANSFER;
+  }
+
+  if (assetType === AssetType.ORML) {
+    return TransactionType.ORML_TRANSFER;
+  }
+
+  return TransactionType.TRANSFER;
+};
+
+const getAssetId = (asset: Asset): string => {
+  if (asset.type === AssetType.STATEMINE) {
+    return (asset.typeExtras as StatemineExtras).assetId;
+  }
+
+  if (asset.type === AssetType.ORML) {
+    return (asset.typeExtras as OrmlExtras).currencyIdScale;
+  }
+
+  return asset.assetId.toString();
+};
+
 const Transfer = ({ onCreateTransaction, wallet, asset, connection }: Props) => {
   const { t } = useI18n();
 
@@ -37,11 +60,10 @@ const Transfer = ({ onCreateTransaction, wallet, asset, connection }: Props) => 
 
   const [balance, setBalance] = useState('');
   const [fee, setFee] = useState('');
+  const [transaction, setTransaction] = useState<Transaction>();
 
-  const currentAddress = formatAddress(
-    wallet.mainAccounts[0].accountId || wallet.chainAccounts[0].accountId || '',
-    connection.addressPrefix,
-  );
+  const accountId = wallet.mainAccounts[0].accountId || wallet.chainAccounts[0].accountId;
+  const currentAddress = formatAddress(accountId, connection.addressPrefix);
 
   useEffect(() => {
     (async () => {
@@ -59,6 +81,7 @@ const Transfer = ({ onCreateTransaction, wallet, asset, connection }: Props) => 
     handleSubmit,
     control,
     watch,
+    trigger,
     formState: { isValid },
   } = useForm<TransferForm>({
     mode: 'onChange',
@@ -68,50 +91,62 @@ const Transfer = ({ onCreateTransaction, wallet, asset, connection }: Props) => 
   const address = watch('address');
   const amount = watch('amount');
 
-  const addTransaction: SubmitHandler<TransferForm> = async ({ address, amount }) => {
+  const addTransaction: SubmitHandler<TransferForm> = ({ address, amount }) => {
     if (!currentAddress || !amount) return;
 
     onCreateTransaction({ address, amount });
   };
 
-  const transaction = {
-    type: TransactionType.TRANSFER,
-    address: currentAddress,
-    chainId: connection.chainId,
-    args: {
-      value: formatAmount(amount, asset.precision),
-      dest: address,
-    },
-  } as Transaction;
+  useEffect(() => {
+    setTransaction({
+      type: getTransactionType(asset.type),
+      address: currentAddress,
+      chainId: connection.chainId,
+      args: {
+        value: formatAmount(amount, asset.precision),
+        dest: address,
+        asset: getAssetId(asset),
+      },
+    } as Transaction);
+  }, [address, amount]);
 
   useEffect(() => {
     (async () => {
-      if (!connection.api || !amount || !validateAddress(address)) return;
+      if (!connection.api || !amount || !validateAddress(transaction?.args.dest) || !transaction) return;
 
       setFee(await getTransactionFee(transaction, connection.api));
     })();
-  }, [transaction, connection.api]);
+  }, [address, amount]);
+
+  useEffect(() => {
+    if (!fee) return;
+
+    trigger('amount');
+  }, [fee]);
 
   const validateBalanceForFee = async (amount: string) => {
-    if (!fee || !balance) return false;
+    if (!balance) return false;
+    const currentFee = fee || '0';
 
-    return parseInt(fee) + parseInt(formatAmount(amount, asset.precision)) <= parseInt(balance);
+    return parseInt(currentFee) + parseInt(formatAmount(amount, asset.precision)) <= parseInt(balance);
   };
 
   const validateBalance = async (amount: string) => {
-    if (!fee || !balance) return false;
+    if (!balance) return false;
 
     return parseInt(formatAmount(amount, asset.precision)) <= parseInt(balance);
   };
 
   return (
     <div>
-      <div className="w-[500px] rounded-2xl bg-shade-2 p-5 flex flex-col items-center m-auto gap-2.5">
-        {connection && wallet && <SelectedAddress wallet={wallet} connection={connection} />}
+      <div className="w-[500px] rounded-2lg bg-shade-2 p-5 flex flex-col items-center m-auto gap-2.5">
+        {connection && wallet && (
+          <SelectedAddress wallet={wallet} addressPrefix={connection.addressPrefix} explorers={connection.explorers} />
+        )}
 
         <form
           id="transferForm"
-          className="flex flex-col gap-5 bg-white shadow-surface p-5 rounded-2xl w-full"
+          className="flex flex-col gap-5 bg-white shadow-surface p-5 rounded-2lg w-full"
           onSubmit={handleSubmit(addTransaction)}
         >
           <p>
@@ -135,12 +170,12 @@ const Transfer = ({ onCreateTransaction, wallet, asset, connection }: Props) => 
                   placeholder={t('transfer.recipientLabel')}
                   onChange={onChange}
                 />
-                <ErrorMessage error={error} type="validate">
+                <InputHint active={error?.type === 'validate'} variant="error">
                   {t('transfer.incorrectRecipientError')}
-                </ErrorMessage>
-                <ErrorMessage error={error} type="required">
+                </InputHint>
+                <InputHint active={error?.type === 'required'} variant="error">
                   {t('transfer.requiredRecipientError')}
-                </ErrorMessage>
+                </InputHint>
               </>
             )}
           />
@@ -158,19 +193,19 @@ const Transfer = ({ onCreateTransaction, wallet, asset, connection }: Props) => 
             }}
             render={({ field: { onChange, value }, fieldState: { error } }) => (
               <>
-                <Amount value={value} name="amount" asset={asset} balance={balance} error={error} onChange={onChange} />
-                <ErrorMessage error={error} type="insufficientBalance">
+                <Amount value={value} name="amount" asset={asset} balance={balance} onChange={onChange} />
+                <InputHint active={error?.type === 'insufficientBalance'} variant="error">
                   {t('transfer.notEnoughBalanceError')}
-                </ErrorMessage>
-                <ErrorMessage error={error} type="insufficientBalanceForFee">
+                </InputHint>
+                <InputHint active={error?.type === 'insufficientBalanceForFee'} variant="error">
                   {t('transfer.notEnoughBalanceForFeeError')}
-                </ErrorMessage>
-                <ErrorMessage error={error} type="required">
+                </InputHint>
+                <InputHint active={error?.type === 'required'} variant="error">
                   {t('transfer.requiredAmountError')}
-                </ErrorMessage>
-                <ErrorMessage error={error} type="notZero">
+                </InputHint>
+                <InputHint active={error?.type === 'notZero'} variant="error">
                   {t('transfer.requiredAmountError')}
-                </ErrorMessage>
+                </InputHint>
               </>
             )}
           />
@@ -178,12 +213,14 @@ const Transfer = ({ onCreateTransaction, wallet, asset, connection }: Props) => 
           <div className="flex justify-between items-center uppercase text-neutral-variant text-2xs">
             <p>{t('transfer.networkFee')}</p>
 
-            <Fee
-              className="text-neutral font-semibold"
-              connection={connection}
-              wallet={wallet}
-              transaction={transaction}
-            />
+            {/*<Fee*/}
+            {/*  className="text-neutral font-semibold"*/}
+            {/*  api={connection.api}*/}
+            {/*  accountId={accountId}*/}
+            {/*  asset={asset}*/}
+            {/*  addressPrefix={connection.addressPrefix}*/}
+            {/*  transaction={transaction}*/}
+            {/*/>*/}
           </div>
         </form>
       </div>

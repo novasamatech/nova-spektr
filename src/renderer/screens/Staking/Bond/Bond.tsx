@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 
 import { ButtonBack } from '@renderer/components/ui';
 import { useI18n } from '@renderer/context/I18nContext';
@@ -23,10 +23,12 @@ const Bond = () => {
   const navigate = useNavigate();
   const { connections } = useNetworkContext();
   const { chainId } = useParams<{ chainId: ChainId }>();
+  const [wallets] = useSearchParams();
 
-  const [activeStep, setActiveStep] = useState<Step>(Step.Validators);
+  const [activeStep, setActiveStep] = useState<Step>(Step.InitBond);
   const [_, setValidators] = useState<Validator[]>([]);
 
+  const walletsIds = wallets.get('id')?.split(',') || [];
   const api = chainId && connections[chainId]?.api;
   const asset = chainId && connections[chainId]?.assets.find((asset) => asset.staking === StakingType.RELAYCHAIN);
 
@@ -69,7 +71,9 @@ const Bond = () => {
         <h1 className="font-semibold text-2xl text-neutral">{headerTitle[activeStep]}</h1>
       </div>
 
-      {activeStep === Step.InitBond && <InitBond api={api} chainId={chainId} onResult={onBondResult} />}
+      {activeStep === Step.InitBond && (
+        <InitBond walletsIds={walletsIds} api={api} chainId={chainId} asset={asset} onResult={onBondResult} />
+      )}
       {activeStep === Step.Validators && (
         <Validators api={api} chainId={chainId} asset={asset} onResult={onSelectValidators} />
       )}

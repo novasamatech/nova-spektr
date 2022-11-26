@@ -41,6 +41,9 @@ module.exports = {
           100: '#000000',
         },
       },
+      gridTemplateColumns: {
+        'max-full': 'max-content 1fr',
+      },
       spacing: {
         1.25: '0.3125rem',
         2.5: '0.625rem',

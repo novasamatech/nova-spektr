@@ -4,7 +4,7 @@ import { decodeAddress, encodeAddress } from '@polkadot/util-crypto';
 import { PublicKey } from '@renderer/domain/shared-kernel';
 import { PUBLIC_KEY_LENGTH, SS58_DEFAULT_PREFIX } from './constants';
 
-export const formatAddress = (address: string, prefix = SS58_DEFAULT_PREFIX): string => {
+export const formatAddress = (address = '', prefix = SS58_DEFAULT_PREFIX): string => {
   if (!address) return '';
 
   return encodeAddress(decodeAddress(address), prefix) || address;

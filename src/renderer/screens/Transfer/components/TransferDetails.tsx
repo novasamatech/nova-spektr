@@ -2,11 +2,11 @@ import { Explorers } from '@renderer/components/common';
 import { Address, Balance, Icon } from '@renderer/components/ui';
 import { useI18n } from '@renderer/context/I18nContext';
 import { Asset } from '@renderer/domain/asset';
-import { formatAddress } from '@renderer/utils/address';
 import { Transaction } from '@renderer/domain/transaction';
 import { Wallet } from '@renderer/domain/wallet';
 import { ExtendedChain } from '@renderer/services/network/common/types';
-import Fee from './Fee';
+import { formatAddress } from '@renderer/utils/address';
+// import Fee from '../../../components/common/Fee/Fee';
 
 type Props = {
   transaction: Transaction;
@@ -18,18 +18,14 @@ type Props = {
 const Transfer = ({ transaction, wallet, asset, connection }: Props) => {
   const { t } = useI18n();
 
-  const currentAddress = formatAddress(
-    wallet?.mainAccounts[0].accountId || wallet?.chainAccounts[0].accountId || '',
-    connection?.addressPrefix,
-  );
+  const { value, dest } = transaction.args;
 
-  const {
-    args: { value, dest },
-  } = transaction;
+  const accountId = wallet.mainAccounts[0].accountId || wallet.chainAccounts[0].accountId;
+  const currentAddress = formatAddress(accountId, connection?.addressPrefix);
 
   return (
-    <div className="w-[500px] rounded-2xl bg-shade-2 p-5 flex flex-col items-center m-auto gap-2.5">
-      <div className="bg-white shadow-surface p-5 rounded-2xl w-full">
+    <div className="w-[500px] rounded-2lg bg-shade-2 p-5 flex flex-col items-center m-auto gap-2.5">
+      <div className="bg-white shadow-surface p-5 rounded-2lg w-full">
         <div className="font-semibold text-xl text-neutral mb-5 m-auto w-fit">{t('transferDetails.title')}</div>
         <div className="font-bold text-[44px] text-neutral m-auto w-fit">
           {/* eslint-disable i18next/no-literal-string */}
@@ -58,7 +54,11 @@ const Transfer = ({ transaction, wallet, asset, connection }: Props) => {
               {currentAddress && connection && (
                 <>
                   <Address type="short" address={currentAddress} addressStyle="normal" size={14} />
-                  <Explorers chain={connection} address={currentAddress} />
+                  <Explorers
+                    address={currentAddress}
+                    addressPrefix={connection.addressPrefix}
+                    explorers={connection.explorers}
+                  />
                 </>
               )}
             </div>
@@ -69,7 +69,13 @@ const Transfer = ({ transaction, wallet, asset, connection }: Props) => {
             <div className="text-sm text-neutral-variant ">{t('transferDetails.networkFee')}</div>
             <div className="flex gap-1 items-center">
               <div className="flex gap-1 items-center font-semibold">
-                <Fee connection={connection} wallet={wallet} transaction={transaction} />
+                {/*<Fee*/}
+                {/*  api={connection.api}*/}
+                {/*  addressPrefix={connection.addressPrefix}*/}
+                {/*  asset={asset}*/}
+                {/*  accountId={accountId}*/}
+                {/*  transaction={transaction}*/}
+                {/*/>*/}
               </div>
             </div>
           </div>
@@ -78,7 +84,11 @@ const Transfer = ({ transaction, wallet, asset, connection }: Props) => {
             <div className="flex gap-1 items-center">
               <div className="flex gap-1 items-center font-semibold">
                 <Address type="short" address={dest} addressStyle="normal" size={14} />
-                <Explorers chain={connection} address={currentAddress} />
+                <Explorers
+                  address={currentAddress}
+                  addressPrefix={connection.addressPrefix}
+                  explorers={connection.explorers}
+                />
               </div>
             </div>
           </div>

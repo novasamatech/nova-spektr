@@ -4,12 +4,12 @@ import Dropdown from './Dropdown';
 
 describe('ui/Dropdown', () => {
   const options = [
-    { label: 'label_0', value: '0' },
-    { label: 'label_1', value: '1' },
+    { id: 0, element: 'label_0', value: '0' },
+    { id: 1, element: 'label_1', value: '1' },
   ];
 
   test('should render component', () => {
-    render(<Dropdown placeholder="Select option" options={options} onSelected={() => {}} />);
+    render(<Dropdown placeholder="Select option" options={options} onChange={() => {}} />);
 
     const button = screen.getByRole('button');
     const placeholder = screen.getByText('Select option');
@@ -19,12 +19,12 @@ describe('ui/Dropdown', () => {
 
   test('should call onSelected', async () => {
     const spySelected = jest.fn();
-    render(<Dropdown placeholder="Select option" options={options} onSelected={spySelected} />);
+    render(<Dropdown placeholder="Select option" options={options} onChange={spySelected} />);
 
     const button = screen.getByRole('button');
     await act(() => button.click());
 
-    const option = await screen.findByRole('option', { name: options[0].label });
+    const option = await screen.findByRole('option', { name: options[0].element });
     await act(() => option.click());
 
     expect(spySelected).toBeCalledWith(options[0]);

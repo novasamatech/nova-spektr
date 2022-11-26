@@ -9,9 +9,10 @@ const Overview = () => {
   const { t, locale, locales, changeLocale } = useI18n();
 
   const localeOptions: DropdownOption[] = locales.map((option) => ({
+    id: option.label,
     prefix: <Icon className="rounded-full border border-white" name={option.value} size={20} />,
     value: option.value,
-    label: option.label,
+    element: option.label,
   }));
 
   const selectedLocale = localeOptions.find((option) => option.value === locale);
@@ -37,8 +38,8 @@ const Overview = () => {
               className="ml-auto w-[200px]"
               placeholder={t('dropdown.chooseOptionLabel')}
               selected={selectedLocale}
-              options={locales}
-              onSelected={onLocaleChange}
+              options={localeOptions}
+              onChange={onLocaleChange}
             />
           </li>
           <li>

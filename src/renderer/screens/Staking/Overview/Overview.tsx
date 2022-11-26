@@ -46,8 +46,9 @@ const Overview = () => {
       }, [] as { chainId: ChainId; icon: string; name: string; asset: Asset }[]);
 
       const sortGenesisHashes = sortChains(relaychains).map(({ chainId, name, icon, asset }) => ({
+        id: chainId,
+        element: name,
         prefix: <img src={icon} alt={`${name} icon`} width={20} height={20} />,
-        label: name,
         value: { chainId, asset },
       }));
       setStakingNetworks(sortGenesisHashes);
@@ -118,7 +119,7 @@ const Overview = () => {
             placeholder={t('staking.startStaking.selectNetworkLabel')}
             selected={activeNetwork}
             options={stakingNetworks}
-            onSelected={setActiveNetwork}
+            onChange={setActiveNetwork}
           />
         </div>
         {wallets.length === 0 && (
@@ -204,7 +205,7 @@ const Overview = () => {
                       <p>Start staking</p>
                       <Link
                         className="bg-primary rounded-lg mt-2 py-1 px-2 text-white"
-                        to={createLink('STAKING_START', { chainId })}
+                        to={createLink('STAKING_START', { chainId }, { ids: ['1', '2', '3'] })}
                       >
                         Bond
                       </Link>

@@ -194,6 +194,7 @@
     "copyAddressButton": "Copy address",
     "explorerLinkLabel": "Link to {name}",
     "on": "on",
+    "selectWalletPlaceholder": "Select a wallet...",
     "sendOnlyLabel": "Send only",
     "title": "Receive"
   },

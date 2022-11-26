@@ -130,41 +130,38 @@ const Transfer = () => {
     })();
   }, [currentAddress, currentConnection?.chainId, currentAsset?.assetId]);
 
-  useEffect(() => {
-    (async () => {
-      const amount = transaction?.args.value;
-      const address = transaction?.args.dest;
-
-      if (!currentConnection?.api || !amount || !validateAddress(address)) return;
-
-      setFee(await getTransactionFee(transaction, currentConnection.api));
-    })();
-  }, [transaction, currentConnection?.api]);
-
   const validateBalanceForFee = (): boolean => {
     const amount = transaction?.args.value;
-    if (!fee || !balance || !currentAsset) return false;
 
-    return parseInt(fee) + parseInt(formatAmount(amount, currentAsset.precision)) <= parseInt(balance);
+    if (!fee || !balance) return false;
+
+    return fee + amount <= balance;
   };
 
   const validateBalance = (): boolean => {
     const amount = transaction?.args.value;
 
-    if (!fee || !balance || !currentAsset) return false;
+    if (!fee || !balance) return false;
 
-    return parseInt(formatAmount(amount, currentAsset.precision)) <= parseInt(balance);
+    return amount <= balance;
   };
 
   const sendSignedTransaction = async (signature: HexString) => {
     if (!currentConnection?.api || !unsigned || !signature) return;
+
+    const amount = transaction?.args.value;
+    const address = transaction?.args.dest;
+
+    if (!currentConnection?.api || !amount || !validateAddress(address)) return;
+
+    setFee(await getTransactionFee(transaction, currentConnection.api));
 
     if (!validateBalance()) {
       setValidationError(ValidationErrors.INSUFFICIENT_BALANCE);
 
       return;
     } else if (!validateBalanceForFee()) {
-      setValidationError(ValidationErrors.INSUFFICIENT_BALANCE);
+      setValidationError(ValidationErrors.INSUFFICIENT_BALANCE_FOR_FEE);
 
       return;
     }
@@ -190,6 +187,11 @@ const Transfer = () => {
   // TS doesn't work with Boolean type
   const readyToCreate = !!(currentWallet && currentAsset && currentAddress && currentConnection);
   const readyToConfirm = !!(readyToCreate && transaction);
+
+  const editOperation = () => {
+    setValidationError(undefined);
+    setCurrentStep(Steps.CREATING);
+  };
 
   return (
     <div className="h-full pb-5 overflow-auto">
@@ -225,14 +227,18 @@ const Transfer = () => {
         )}
 
         {[Steps.SCANNING, Steps.SIGNING].includes(currentStep) && currentConnection && (
-          <div className="w-[500px] rounded-2xl bg-shade-2 p-5 flex flex-col items-center m-auto gap-2.5 overflow-auto">
-            {currentWallet && currentConnection && (
-              <SelectedAddress wallet={currentWallet} connection={currentConnection} />
+          <div className="w-[500px] rounded-2lg bg-shade-2 p-5 flex flex-col items-center m-auto gap-2.5 overflow-auto">
+            {currentWallet && (
+              <SelectedAddress
+                wallet={currentWallet}
+                addressPrefix={currentConnection.addressPrefix}
+                explorers={currentConnection.explorers}
+              />
             )}
 
             {currentStep === Steps.SCANNING && (
               <div className="flex flex-col gap-2.5 w-full">
-                <div className="bg-white p-5 shadow-surface rounded-2xl flex flex-col items-center gap-5 w-full">
+                <div className="bg-white p-5 shadow-surface rounded-2lg flex flex-col items-center gap-5 w-full">
                   <div className="text-neutral-variant text-base font-semibold">{t('signing.scanQrTitle')}</div>
                   {txPayload && currentAddress ? (
                     <div className="w-[220px] h-[220px]">
@@ -293,7 +299,7 @@ const Transfer = () => {
 
             {currentStep === Steps.SIGNING && (
               <>
-                <div className="bg-white shadow-surface rounded-2xl flex flex-col items-center gap-5 w-full">
+                <div className="bg-white shadow-surface rounded-2lg flex flex-col items-center gap-5 w-full">
                   <div className="my-4 text-neutral-variant text-base font-semibold">
                     {t('signing.scanSignatureTitle')}
                   </div>
@@ -325,13 +331,7 @@ const Transfer = () => {
                 )}
 
                 {validationError && (
-                  <Button
-                    className="w-max mb-5"
-                    weight="lg"
-                    variant="fill"
-                    pallet="primary"
-                    onClick={() => setCurrentStep(Steps.CREATING)}
-                  >
+                  <Button className="w-max mb-5" weight="lg" variant="fill" pallet="primary" onClick={editOperation}>
                     {t('transfer.editOperationButton')}
                   </Button>
                 )}

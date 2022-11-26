@@ -12,6 +12,7 @@ jest.mock('@renderer/context/I18nContext', () => ({
 
 describe('screens/Bond/InitBond', () => {
   test('should render component', () => {
+    // @ts-ignore
     render(<InitBond api={{} as ApiPromise} chainId="0x123" onResult={() => {}} />, { wrapper: MemoryRouter });
 
     const title = screen.getByText('START BOND');
@@ -19,6 +20,7 @@ describe('screens/Bond/InitBond', () => {
   });
 
   test('should render loading', () => {
+    // @ts-ignore
     render(<InitBond onResult={() => {}} />, { wrapper: MemoryRouter });
 
     const loading = screen.getByText('LOADING');

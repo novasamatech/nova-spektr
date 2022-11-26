@@ -4,6 +4,7 @@ import { ConnectionType } from '@renderer/domain/connection';
 import { useBalance } from '@renderer/services/balance/balanceService';
 import { useNetwork } from '@renderer/services/network/networkService';
 import { NetworkProvider, useNetworkContext } from './NetworkContext';
+import { TEST_ADDRESS, TEST_PUBLIC_KEY } from '@renderer/services/balance/common/constants';
 
 jest.mock('@renderer/services/network/networkService', () => ({
   useNetwork: jest.fn().mockReturnValue({
@@ -30,6 +31,22 @@ jest.mock('@renderer/services/subscription/subscriptionService', () => ({
     subscribe: jest.fn(),
     hasSubscription: jest.fn(),
     unsubscribe: jest.fn(),
+  }),
+}));
+
+jest.mock('@renderer/services/wallet/walletService', () => ({
+  useWallet: jest.fn().mockReturnValue({
+    getActiveWallets: () => [
+      {
+        name: 'Test Wallet',
+        mainAccounts: [
+          {
+            address: TEST_ADDRESS,
+            publicKey: TEST_PUBLIC_KEY,
+          },
+        ],
+      },
+    ],
   }),
 }));
 

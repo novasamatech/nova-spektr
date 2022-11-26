@@ -1,22 +1,23 @@
 import { Explorers } from '@renderer/components/common';
 import { Address, Icon } from '@renderer/components/ui';
-import { formatAddress } from '@renderer/utils/address';
+import { Explorer } from '@renderer/domain/chain';
 import { Wallet } from '@renderer/domain/wallet';
-import { ExtendedChain } from '@renderer/services/network/common/types';
+import { formatAddress } from '@renderer/utils/address';
 
 type Props = {
   wallet: Wallet;
-  connection: ExtendedChain;
+  addressPrefix: number;
+  explorers?: Explorer[];
 };
 
-const SelectedAddress = ({ wallet, connection }: Props) => {
+const SelectedAddress = ({ wallet, addressPrefix, explorers = [] }: Props) => {
   const currentAddress = formatAddress(
     wallet.mainAccounts[0].accountId || wallet.chainAccounts[0].accountId || '',
-    connection.addressPrefix,
+    addressPrefix,
   );
 
   return (
-    <div className="bg-white shadow-surface p-5 rounded-2xl w-full">
+    <div className="bg-white shadow-surface p-5 rounded-2lg w-full">
       <div className="flex items-center justify-between h-15 bg-shade-2 p-2.5 rounded-2lg">
         <div className="flex gap-2.5 items-center">
           <Icon name="paritySignerBackground" size={34} />
@@ -25,7 +26,7 @@ const SelectedAddress = ({ wallet, connection }: Props) => {
             <Address className="leading-4" type="short" address={currentAddress} addressStyle="normal" size={14} />
           </div>
         </div>
-        <Explorers chain={connection} address={currentAddress} />
+        <Explorers address={currentAddress} addressPrefix={addressPrefix} explorers={explorers} />
       </div>
     </div>
   );

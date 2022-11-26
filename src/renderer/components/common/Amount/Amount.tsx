@@ -1,5 +1,4 @@
 import cn from 'classnames';
-import { FieldError } from 'react-hook-form';
 
 import { Balance, Input } from '@renderer/components/ui';
 import { useI18n } from '@renderer/context/I18nContext';
@@ -10,11 +9,11 @@ type Props = {
   name: string;
   balance: string;
   asset: Asset;
-  error?: FieldError;
+  invalid?: boolean;
   onChange?: (...event: any[]) => void;
 };
 
-const Amount = ({ value, name, balance, asset, error, onChange }: Props) => {
+const Amount = ({ value, name, balance, asset, invalid, onChange }: Props) => {
   const { t } = useI18n();
 
   return (
@@ -46,7 +45,7 @@ const Amount = ({ value, name, balance, asset, error, onChange }: Props) => {
       type="text"
       className="w-full text-xl font-semibold text-right"
       placeholder={t('transfer.amountLabel')}
-      invalid={Boolean(error)}
+      invalid={invalid}
       value={value}
       onChange={onChange}
     />

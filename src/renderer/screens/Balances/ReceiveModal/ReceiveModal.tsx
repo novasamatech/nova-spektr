@@ -1,12 +1,18 @@
+import { useEffect, useState } from 'react';
+
 import { QrTextGenerator } from '@renderer/components/common';
-import { Address, BaseModal, Button, Icon } from '@renderer/components/ui';
+import { Address, BaseModal, Button, Dropdown, Icon } from '@renderer/components/ui';
 import { Explorer } from '@renderer/components/ui/Icon/data/explorer';
 import { Asset } from '@renderer/domain/asset';
 import { Chain } from '@renderer/domain/chain';
-import { PublicKey } from '@renderer/domain/shared-kernel';
 import { toAddress } from '@renderer/services/balance/common/utils';
 import { copyToClipboard } from '@renderer/utils/strings';
 import { useI18n } from '@renderer/context/I18nContext';
+import { DropdownOption } from '@renderer/components/ui/Dropdown/common/types';
+import { useWallet } from '@renderer/services/wallet/walletService';
+import { WalletType } from '@renderer/domain/wallet';
+import { ChainId } from '@renderer/domain/shared-kernel';
+import { WalletDS } from '@renderer/services/storage';
 
 // TODO: create a separate components for Explorer links
 const ExplorerIcons: Record<string, Explorer> = {
@@ -19,10 +25,6 @@ const ExplorerIcons: Record<string, Explorer> = {
 export type ReceivePayload = {
   chain: Chain;
   asset: Asset;
-  activeWallets: {
-    name: string;
-    publicKey: PublicKey;
-  }[];
 };
 
 type Props = {
@@ -31,14 +33,67 @@ type Props = {
   onClose: () => void;
 };
 
+const getAddress = (wallet: WalletDS, chainId: ChainId): string | undefined => {
+  const mainAccounts = wallet.mainAccounts?.[0];
+  const chainAccounts = wallet.chainAccounts?.[0];
+
+  if (mainAccounts) {
+    return mainAccounts.accountId;
+  }
+
+  if (chainAccounts && chainAccounts.chainId === chainId) {
+    return chainAccounts.accountId;
+  }
+};
+
 const ReceiveModal = ({ data, isOpen, onClose }: Props) => {
   const { t } = useI18n();
 
-  const wallet = data?.activeWallets[0] || { name: '', publicKey: '' as PublicKey };
-  const address = toAddress(wallet.publicKey, data?.chain.addressPrefix);
+  const [activeAccount, setActiveAccount] = useState<DropdownOption>();
+  const [accounts, setAccoounts] = useState<DropdownOption[]>([]);
+  const { getActiveWallets } = useWallet();
+  const activeWallets = getActiveWallets();
+
+  useEffect(() => {
+    const accounts =
+      activeWallets?.reduce((acc, wallet, index) => {
+        const address = getAddress(wallet, data?.chain.chainId || '0x');
+
+        if (!address) return acc;
+
+        return [
+          ...acc,
+          {
+            id: index,
+            value: index,
+            element: (
+              <div className="flex items-center  gap-2.5">
+                <Icon
+                  name={wallet.type === WalletType.PARITY ? 'paritySignerBackground' : 'watchOnlyBackground'}
+                  size={34}
+                />
+                <div>
+                  <div className="text-neutral text-lg font-semibold leading-5">{wallet.name}</div>
+                  <div>
+                    <Address type="short" address={address} />
+                  </div>
+                </div>
+              </div>
+            ),
+          },
+        ];
+      }, [] as DropdownOption[]) || [];
+
+    setAccoounts(accounts);
+    setActiveAccount(accounts[0]);
+  }, [activeWallets?.length]);
+
+  const wallet = activeWallets?.[activeAccount?.value as number] || activeWallets?.[0];
+  const publicKey = wallet?.mainAccounts?.[0]?.publicKey || wallet?.chainAccounts?.[0]?.publicKey || '0x00';
+  const address = toAddress(publicKey, data?.chain.addressPrefix);
 
   //eslint-disable-next-line i18next/no-literal-string
-  const qrCodePayload = `substrate:${address}:${wallet.publicKey}:Ff`;
+  const qrCodePayload = `substrate:${address}:${publicKey}`;
 
   const onCopyAddress = async () => {
     await copyToClipboard(address);
@@ -57,10 +112,21 @@ const ReceiveModal = ({ data, isOpen, onClose }: Props) => {
           <span className="ml-1">{data?.chain.name}</span>
         </div>
 
-        {/* TODO: in future add Dropdown for wallet select */}
         <div className="w-full bg-shade-2 rounded-2lg overflow-hidden">
-          <div className="flex flex-col items-center pt-7.5 pb-2.5 rounded-b-2lg bg-shade-5">
-            <QrTextGenerator skipEncoding payload={qrCodePayload} size={280} bgColor="#F1F1F1" />
+          <div className="flex flex-col items-center  pb-2.5 rounded-b-2lg bg-shade-5">
+            {activeWallets && activeWallets.length > 1 && (
+              <Dropdown
+                placeholder={t('receive.selectWalletPlaceholder')}
+                className="w-full"
+                selected={activeAccount}
+                options={accounts}
+                onChange={setActiveAccount}
+              />
+            )}
+
+            <div className="mt-4">
+              <QrTextGenerator skipEncoding payload={qrCodePayload} size={280} bgColor="#F1F1F1" />
+            </div>
 
             <Address className="mt-6 mb-2 text-sm text-neutral-variant" type="full" address={address} />
 

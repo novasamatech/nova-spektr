@@ -2,16 +2,16 @@ import cn from 'classnames';
 import { useRef, useState } from 'react';
 import { NavLink } from 'react-router-dom';
 
+// import { useMatrix } from '@renderer/context/MatrixContext';
 import Paths from '@renderer/routes/paths';
 import { Icon, Identicon } from '@renderer/components/ui';
-// import { useMatrix } from '@renderer/context/MatrixContext';
 import { useI18n } from '@renderer/context/I18nContext';
 import { useWallet } from '@renderer/services/wallet/walletService';
 import { WalletType } from '@renderer/domain/wallet';
 import Wallets from '../Wallets/Wallets';
 import useClickOutside from '@renderer/hooks/useClickOutside';
-import './Navigation.css';
 import { WalletDS } from '@renderer/services/storage';
+import './Navigation.css';
 
 type CardType = WalletType | 'multiple' | 'none';
 
