@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { Controller, SubmitHandler, useForm } from 'react-hook-form';
 import cn from 'classnames';
 import { Trans } from 'react-i18next';
+import { BN } from '@polkadot/util';
 
 import { Balance, Button, Icon, Identicon, Input } from '@renderer/components/ui';
 import { useI18n } from '@renderer/context/I18nContext';
@@ -131,13 +132,13 @@ const Transfer = ({ onCreateTransaction, wallet, asset, connection }: Props) => 
     if (!balance) return false;
     const currentFee = fee || '0';
 
-    return parseInt(currentFee) + parseInt(formatAmount(amount, asset.precision)) <= parseInt(balance);
+    return new BN(currentFee).add(new BN(formatAmount(amount, asset.precision))).lte(new BN(balance));
   };
 
   const validateBalance = async (amount: string) => {
     if (!balance) return false;
 
-    return parseInt(formatAmount(amount, asset.precision)) <= parseInt(balance);
+    return new BN(formatAmount(amount, asset.precision)).lte(new BN(balance));
   };
 
   return (

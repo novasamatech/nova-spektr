@@ -47,7 +47,7 @@ const Overview = () => {
 
       const sortGenesisHashes = sortChains(relaychains).map(({ chainId, name, icon, asset }) => ({
         prefix: <img src={icon} alt={`${name} icon`} width={20} height={20} />,
-        label: name,
+        element: name,
         value: { chainId, asset },
       }));
       setStakingNetworks(sortGenesisHashes);
