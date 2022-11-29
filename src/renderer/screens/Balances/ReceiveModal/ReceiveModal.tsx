@@ -56,31 +56,27 @@ const ReceiveModal = ({ data, isOpen, onClose }: Props) => {
 
   useEffect(() => {
     const accounts =
-      activeWallets?.reduce((result, wallet, id) => {
+      activeWallets?.reduce((acc, wallet, index) => {
         const address = getAddress(wallet, data?.chain.chainId || '0x');
 
-        if (!address) return result;
+        if (!address) return acc;
 
-        return [
-          ...result,
-          {
-            element: (
-              <div className="flex items-center  gap-2.5">
-                <Icon
-                  name={wallet.type === WalletType.PARITY ? 'paritySignerBackground' : 'watchOnlyBackground'}
-                  size={34}
-                />
-                <div>
-                  <div className="text-neutral text-lg font-semibold leading-5">{wallet.name}</div>
-                  <div>
-                    <Address type="short" address={address} />
-                  </div>
-                </div>
+        const walletType = wallet.type === WalletType.PARITY ? 'paritySignerBackground' : 'watchOnlyBackground';
+        const walletOption = {
+          id: address,
+          value: index,
+          element: (
+            <div className="flex items-center gap-2.5">
+              <Icon name={walletType} size={34} />
+              <div>
+                <p className="text-neutral text-lg font-semibold leading-5">{wallet.name}</p>
+                <Address type="short" address={address} />
               </div>
-            ),
-            value: id,
-          },
-        ];
+            </div>
+          ),
+        };
+
+        return acc.concat(walletOption);
       }, [] as DropdownOption[]) || [];
 
     setAccoounts(accounts);
@@ -117,10 +113,10 @@ const ReceiveModal = ({ data, isOpen, onClose }: Props) => {
               <Dropdown
                 placeholder={t('receive.selectWalletPlaceholder')}
                 className="w-full"
-                selected={activeAccount}
+                value={activeAccount}
                 options={accounts}
-                height={15}
-                onSelected={setActiveAccount}
+                weight="lg"
+                onChange={setActiveAccount}
               />
             )}
 

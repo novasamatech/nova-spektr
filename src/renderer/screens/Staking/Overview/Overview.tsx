@@ -46,8 +46,9 @@ const Overview = () => {
       }, [] as { chainId: ChainId; icon: string; name: string; asset: Asset }[]);
 
       const sortGenesisHashes = sortChains(relaychains).map(({ chainId, name, icon, asset }) => ({
-        prefix: <img src={icon} alt={`${name} icon`} width={20} height={20} />,
+        id: chainId,
         element: name,
+        prefix: <img src={icon} alt={`${name} icon`} width={20} height={20} />,
         value: { chainId, asset },
       }));
       setStakingNetworks(sortGenesisHashes);
@@ -116,9 +117,9 @@ const Overview = () => {
           <Dropdown
             className="w-40"
             placeholder={t('staking.startStaking.selectNetworkLabel')}
-            selected={activeNetwork}
+            value={activeNetwork}
             options={stakingNetworks}
-            onSelected={setActiveNetwork}
+            onChange={setActiveNetwork}
           />
         </div>
         {wallets.length === 0 && (

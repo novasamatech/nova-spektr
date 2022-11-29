@@ -54,6 +54,7 @@ const ParitySignerSignatureReader = ({ size = 300, className, onResult, countdow
       //eslint-disable-next-line i18next/no-literal-string
       element: `${index + 1}. ${camera.label}`,
       value: camera.id,
+      id: camera.id,
     }));
 
     setAvailableCameras(formattedCameras);
@@ -217,9 +218,9 @@ const ParitySignerSignatureReader = ({ size = 300, className, onResult, countdow
             <Dropdown
               // variant="up"
               placeholder={t('onboarding.paritySigner.selectCameraLabel')}
-              selected={activeCamera}
+              value={activeCamera}
               options={availableCameras}
-              onSelected={setActiveCamera}
+              onChange={setActiveCamera}
             />
           </div>
         </div>

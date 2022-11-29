@@ -9,6 +9,7 @@ const Overview = () => {
   const { t, locale, locales, changeLocale } = useI18n();
 
   const localeOptions: DropdownOption[] = locales.map((option) => ({
+    id: option.value,
     prefix: <Icon className="rounded-full border border-white" name={option.value} size={20} />,
     value: option.value,
     element: option.label,
@@ -36,9 +37,9 @@ const Overview = () => {
             <Dropdown
               className="ml-auto w-[200px]"
               placeholder={t('dropdown.chooseOptionLabel')}
-              selected={selectedLocale}
+              value={selectedLocale}
               options={localeOptions}
-              onSelected={onLocaleChange}
+              onChange={onLocaleChange}
             />
           </li>
           <li>

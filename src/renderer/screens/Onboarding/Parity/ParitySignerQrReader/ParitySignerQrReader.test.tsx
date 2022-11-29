@@ -2,7 +2,7 @@ import { act, render, screen, waitFor } from '@testing-library/react';
 
 import { Button, Dropdown } from '@renderer/components/ui';
 import { QrReader } from '@renderer/components/common';
-import { QrError, VideoInput } from '@renderer/components/common/QrCode/QrReader/common/types';
+import { QrError } from '@renderer/components/common/QrCode/QrReader/common/types';
 import ParitySignerQrReader from './ParitySignerQrReader';
 
 jest.mock('@renderer/components/common');
@@ -42,12 +42,12 @@ describe('screens/Onboarding/Parity/ParitySignerQrReader', () => {
         </button>
       ));
       (Dropdown as jest.Mock).mockImplementation(({ options }: any) =>
-        options.map((o: VideoInput) => <span>{o.label}</span>),
+        options.map((o: any) => <span>{o.element}</span>),
       );
 
       render(<ParitySignerQrReader onResult={() => {}} />);
-      const qrButton = screen.getByRole('button');
 
+      const qrButton = screen.getByRole('button');
       act(() => qrButton.click());
 
       const label = screen.getByText('onboarding.paritySigner.multipleCamerasLabel');

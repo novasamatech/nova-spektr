@@ -1,26 +1,38 @@
 import { Listbox, Transition } from '@headlessui/react';
 import cn from 'classnames';
-import { Fragment } from 'react';
+import { Fragment, ReactNode } from 'react';
 
-import { Icon } from '@renderer/components/ui';
+import { Checkbox, Icon } from '@renderer/components/ui';
 import { ViewClass, WeightClass } from './common/constants';
-import { DropdownOption, Variant } from './common/types';
+import { SelectOption, Variant } from './common/types';
 
 type Props = {
+  summary: ReactNode;
   className?: string;
-  placeholder: string;
-  value?: DropdownOption['value'];
-  options: DropdownOption[];
+  placeholder?: string;
+  value: SelectOption['value'][];
+  options: SelectOption[];
   variant?: Variant;
+  suffix?: ReactNode;
   weight?: keyof typeof WeightClass;
-  onChange: (data: DropdownOption) => void;
+  onChange: (data: SelectOption['value'][]) => void;
 };
 
-const Dropdown = ({ className, placeholder, value, options, variant = 'down', weight = 'md', onChange }: Props) => {
+const Select = ({
+  className,
+  suffix,
+  value = [],
+  summary,
+  placeholder,
+  options,
+  variant = 'down',
+  weight = 'md',
+  onChange,
+}: Props) => {
   const weightStyle = WeightClass[weight];
 
   return (
-    <Listbox value={value} onChange={onChange}>
+    <Listbox multiple value={value} onChange={onChange}>
       {({ open }) => (
         <div className={cn('relative', className)}>
           <Listbox.Button
@@ -33,33 +45,37 @@ const Dropdown = ({ className, placeholder, value, options, variant = 'down', we
           >
             <div
               className={cn(
-                'flex items-center gap-x-2.5 truncate text-left mr-auto',
-                'group-hover:text-primary group-focus:text-primary transition',
-                value && !open && 'text-neutral',
-                !value && !open && 'text-shade-30',
-                open && 'text-primary',
+                'mr-auto group-hover:text-primary group-focus:text-primary transition',
+                open && 'border-primary',
               )}
             >
-              {value && (
-                <>
-                  {value.prefix}
-                  {typeof value.element === 'string' ? (
-                    <p className={cn(weightStyle.text)}>{value.element}</p>
-                  ) : (
-                    value.elment
-                  )}
-                </>
+              {value.length === 0 && (
+                <p className={cn(weightStyle.placeholder, open ? 'text-primary' : 'text-shade-30')}>{placeholder}</p>
               )}
-              {!value && <p className={cn(weightStyle.placeholder)}>{placeholder}</p>}
+              {value.length > 0 && (
+                <div className="flex gap-x-2.5 items-center">
+                  <p
+                    className={cn(
+                      'flex items-center justify-center bg-neutral rounded-full text-white text-xs font-bold',
+                      weightStyle.count,
+                    )}
+                  >
+                    {value.length}
+                  </p>
+                  <p className={cn('text-neutral font-semibold', weightStyle.summary)}>{summary}</p>
+                </div>
+              )}
             </div>
             <span
               className={cn(
-                'pointer-events-none pr-2.5 group-hover:text-primary group-focus:text-primary transition',
+                'pointer-events-none',
+                'group-hover:text-primary group-focus:text-primary transition',
                 open ? 'text-primary' : 'text-neutral-variant',
               )}
             >
               <Icon name="dropdown" size={weightStyle.arrows} />
             </span>
+            {suffix}
           </Listbox.Button>
           <Transition as={Fragment} leave="transition" leaveFrom="opacity-100" leaveTo="opacity-0">
             <Listbox.Options
@@ -72,7 +88,7 @@ const Dropdown = ({ className, placeholder, value, options, variant = 'down', we
               {options.map((option) => (
                 <Listbox.Option
                   key={option.id}
-                  value={option}
+                  value={option.value}
                   className={({ active }) =>
                     cn(
                       'flex items-center cursor-pointer select-none px-2.5 rounded-2lg',
@@ -82,20 +98,9 @@ const Dropdown = ({ className, placeholder, value, options, variant = 'down', we
                   }
                 >
                   {({ selected }) => (
-                    <div
-                      className={cn(
-                        'flex items-center gap-x-2.5 truncate text-sm',
-                        selected ? 'text-primary' : 'text-neutral',
-                        weightStyle.option,
-                      )}
-                    >
-                      {option.prefix}
-                      {typeof option.element === 'string' ? (
-                        <p className={cn(weightStyle.text)}>{option.element}</p>
-                      ) : (
-                        option.element
-                      )}
-                    </div>
+                    <Checkbox readOnly checked={selected} position="left" className="w-full pointer-events-none">
+                      <div className="w-full">{option.element}</div>
+                    </Checkbox>
                   )}
                 </Listbox.Option>
               ))}
@@ -107,4 +112,4 @@ const Dropdown = ({ className, placeholder, value, options, variant = 'down', we
   );
 };
 
-export default Dropdown;
+export default Select;

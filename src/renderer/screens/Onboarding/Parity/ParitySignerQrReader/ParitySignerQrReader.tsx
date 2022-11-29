@@ -49,8 +49,9 @@ const ParitySignerQrReader = ({ size = 300, className, onResult }: Props) => {
   const onCameraList = (cameras: VideoInput[]) => {
     const formattedCameras = cameras.map((camera, index) => ({
       //eslint-disable-next-line i18next/no-literal-string
-      label: `${index + 1}. ${camera.label}`,
+      element: `${index + 1}. ${camera.label}`,
       value: camera.id,
+      id: camera.id,
     }));
 
     setAvailableCameras(formattedCameras);
@@ -184,9 +185,9 @@ const ParitySignerQrReader = ({ size = 300, className, onResult }: Props) => {
           <div className="mb-5 w-[242px]">
             <Dropdown
               placeholder={t('onboarding.paritySigner.selectCameraLabel')}
-              selected={activeCamera}
+              value={activeCamera}
               options={availableCameras}
-              onSelected={setActiveCamera}
+              onChange={setActiveCamera}
             />
           </div>
         </div>

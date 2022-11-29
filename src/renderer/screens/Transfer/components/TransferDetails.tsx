@@ -69,7 +69,7 @@ const Transfer = ({ transaction, wallet, asset, connection }: Props) => {
             <div className="text-sm text-neutral-variant ">{t('transferDetails.networkFee')}</div>
             <div className="flex gap-1 items-center">
               <div className="flex gap-1 items-center font-semibold">
-                <Fee connection={connection} wallet={wallet} transaction={transaction} />
+                <Fee connection={connection} transaction={transaction} />
               </div>
             </div>
           </div>

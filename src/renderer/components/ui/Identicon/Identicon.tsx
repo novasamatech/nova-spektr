@@ -10,10 +10,11 @@ type Props = {
   address: string;
   size?: number;
   background?: boolean;
+  noCopy?: boolean;
 };
 
-const Identicon = ({ theme = 'polkadot', address, size = 24, background = true }: Props) => {
-  const wrapperRef = useRef<HTMLButtonElement>(null);
+const Identicon = ({ theme = 'polkadot', address, size = 24, background = true, noCopy }: Props) => {
+  const wrapperRef = useRef<HTMLDivElement>(null);
 
   useLayoutEffect(() => {
     if (!wrapperRef.current) return;
@@ -25,21 +26,38 @@ const Identicon = ({ theme = 'polkadot', address, size = 24, background = true }
     await copyToClipboard(address);
   };
 
-  return (
-    <button
-      type="button"
-      ref={wrapperRef}
-      className={cn(`flex justify-center items-center rounded-full cursor-copy`, background && 'bg-white')}
-      style={{ width: size, height: size }}
-      data-testid={`identicon-${address}`}
-      onClick={onCopyToClipboard}
-    >
+  const icon = (
+    <div ref={wrapperRef} className="h-full">
       <PolkadotIdenticon
         theme={theme}
         value={address}
         size={background ? size * 0.75 : size}
         className="pointer-events-none"
       />
+    </div>
+  );
+
+  if (noCopy) {
+    return (
+      <div
+        className={cn(`flex justify-center items-center rounded-full cursor-copy`, background && 'bg-white')}
+        style={{ width: size, height: size }}
+        data-testid={`identicon-${address}`}
+      >
+        {icon}
+      </div>
+    );
+  }
+
+  return (
+    <button
+      type="button"
+      className={cn(`flex justify-center items-center rounded-full cursor-copy`, background && 'bg-white')}
+      style={{ width: size, height: size }}
+      data-testid={`identicon-${address}`}
+      onClick={onCopyToClipboard}
+    >
+      {icon}
     </button>
   );
 };

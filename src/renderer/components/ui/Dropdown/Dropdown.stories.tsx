@@ -18,21 +18,30 @@ export default {
 const Template: ComponentStory<typeof Dropdown> = (args) => <Dropdown {...args} />;
 
 const options = [
-  { label: 'label_0', value: '0' },
-  { label: 'label_1', value: '1' },
+  { id: 0, element: 'label_0', value: '0' },
+  { id: 1, element: 'label_1', value: '1' },
 ];
 
-export const Default = Template.bind({});
-Default.args = {
+export const Primary = Template.bind({});
+Primary.args = {
   placeholder: 'Select an option',
   options,
-  onSelected: () => {},
+  onChange: () => {},
 };
 
 export const Selected = Template.bind({});
 Selected.args = {
   placeholder: 'Select an option',
-  selected: options[1],
+  value: options[1],
   options,
-  onSelected: () => {},
+  onChange: () => {},
+};
+
+export const Large = Template.bind({});
+Large.args = {
+  placeholder: 'Select an option',
+  value: options[1],
+  options,
+  weight: 'lg',
+  onChange: () => {},
 };
