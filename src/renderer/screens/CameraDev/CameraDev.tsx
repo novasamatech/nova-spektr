@@ -9,7 +9,11 @@ import { QrReader, QrTxGenerator } from '@renderer/components/common';
 import { Command } from '@renderer/components/common/QrCode/QrGenerator/common/constants';
 import { VideoInput } from '@renderer/components/common/QrCode/QrReader/common/types';
 import { Button, Input } from '@renderer/components/ui';
-import { EXPORT_ADDRESS, TRANSACTION_BULK } from '@renderer/components/common/QrCode/QrReader/common/constants';
+import {
+  EXPORT_ADDRESS,
+  SIGNED_TRANSACTION_BULK,
+  TRANSACTION_BULK,
+} from '@renderer/components/common/QrCode/QrReader/common/constants';
 import QrMultiframeGenerator from '@renderer/components/common/QrCode/QrGenerator/QrMultiframeGenerator';
 import { formatAmount } from '@renderer/services/balance/common/utils';
 import {
@@ -22,6 +26,7 @@ import { useNetworkContext } from '@renderer/context/NetworkContext';
 import { useChains } from '@renderer/services/network/chainsService';
 import { ConnectionType } from '@renderer/domain/connection';
 import { useTransaction } from '@renderer/services/transaction/transactionService';
+import MultiframeSignatureQrReader from '@renderer/components/common/QrCode/QrReader/MultiframeSignatureQrReader';
 
 const CameraDev = () => {
   const inputRef = useRef<HTMLInputElement>(null);
@@ -143,22 +148,22 @@ const CameraDev = () => {
             <p>No cameras found</p>
           )}
           <div className="flex justify-between">
-            <QrReader
-              cameraId={activeCameraId}
-              onCameraList={(cameras) => setAvailableCameras(cameras)}
-              onResult={(data) => {
-                console.info(data);
-                let bytes: Uint8Array = EXPORT_ADDRESS.encode({ ExportAddrs: 'V1', payload: data });
-                let bytes_standard = Uint8Array.of(0x53, 0xff, 0xde, ...bytes);
-                init().then(() => {
-                  let encoder = Encoder.with_defaults(bytes_standard, 128);
-                  onScannedData(bytes_standard);
-                  onEncoder(encoder);
-                });
-              }}
-              onStart={() => console.info('start camera')}
-              onError={(error) => console.warn(error)}
-            />
+            {/*<QrReader*/}
+            {/*  cameraId={activeCameraId}*/}
+            {/*  onCameraList={(cameras) => setAvailableCameras(cameras)}*/}
+            {/*  onResult={(data) => {*/}
+            {/*    console.info(data);*/}
+            {/*    let bytes: Uint8Array = EXPORT_ADDRESS.encode({ ExportAddrs: 'V1', payload: data });*/}
+            {/*    let bytes_standard = Uint8Array.of(0x53, 0xff, 0xde, ...bytes);*/}
+            {/*    init().then(() => {*/}
+            {/*      let encoder = Encoder.with_defaults(bytes_standard, 128);*/}
+            {/*      onScannedData(bytes_standard);*/}
+            {/*      onEncoder(encoder);*/}
+            {/*    });*/}
+            {/*  }}*/}
+            {/*  onStart={() => console.info('start camera')}*/}
+            {/*  onError={(error) => console.warn(error)}*/}
+            {/*/>*/}
           </div>
           <div className="flex justify-between">
             <span>The same data that was just scanned</span>
@@ -196,6 +201,19 @@ const CameraDev = () => {
           {multipleTransactions && encoder && (
             <QrMultiframeGenerator payload={multipleTransactions} size={200} encoder={encoder} />
           )}
+        </div>
+        <div>
+          <div className="flex justify-between">
+            <MultiframeSignatureQrReader
+              cameraId={activeCameraId}
+              onCameraList={(cameras) => setAvailableCameras(cameras)}
+              onResult={(data) => {
+                console.info(data);
+              }}
+              onStart={() => console.info('start camera')}
+              onError={(error) => console.warn(error)}
+            />
+          </div>
         </div>
       </div>
     </div>
