@@ -40,10 +40,6 @@ export const EXPORT_ADDRESS = taggedUnion('ExportAddrs', [['V1', ['payload', arr
 
 export const TRANSACTION_BULK = taggedUnion('TransactionBulk', [['V1', ['payload', array(uint8Array)]]]);
 
-export const SIGNED_TRANSACTION_BULK = taggedUnion('SignaturesBulk', [
-  ['V-3'],
-  ['V-2'],
-  ['V-1'],
-  ['V-0'],
-  ['V1', ['payload', array(MULTI_SIGNATURE)]],
-]);
+export const SIGNED_TRANSACTION_BULK = taggedUnion('SignaturesBulk', {
+  4: ['V1', ['payload', array(MULTI_SIGNATURE)]],
+});
