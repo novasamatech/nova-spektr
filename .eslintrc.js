@@ -127,6 +127,7 @@ module.exports = {
             'bgColor',
             'theme',
             'addressStyle',
+            'position',
           ],
         },
         callees: {

@@ -8,3 +8,8 @@ export type DropdownOption<T extends any = any> = {
   element: ReactNode;
   value: T;
 };
+
+export type ResultOption<T extends any = any> = {
+  id: string | number;
+  value: T;
+};

@@ -27,20 +27,19 @@ const Identicon = ({ theme = 'polkadot', address, size = 24, background = true, 
   };
 
   const icon = (
-    <div ref={wrapperRef} className="h-full">
-      <PolkadotIdenticon
-        theme={theme}
-        value={address}
-        size={background ? size * 0.75 : size}
-        className="pointer-events-none"
-      />
-    </div>
+    <PolkadotIdenticon
+      theme={theme}
+      value={address}
+      size={background ? size * 0.75 : size}
+      className="pointer-events-none"
+    />
   );
 
   if (noCopy) {
     return (
       <div
-        className={cn(`flex justify-center items-center rounded-full cursor-copy`, background && 'bg-white')}
+        ref={wrapperRef}
+        className={cn('flex justify-center items-center rounded-full', background && 'bg-white')}
         style={{ width: size, height: size }}
         data-testid={`identicon-${address}`}
       >
@@ -50,15 +49,17 @@ const Identicon = ({ theme = 'polkadot', address, size = 24, background = true, 
   }
 
   return (
-    <button
-      type="button"
-      className={cn(`flex justify-center items-center rounded-full cursor-copy`, background && 'bg-white')}
-      style={{ width: size, height: size }}
-      data-testid={`identicon-${address}`}
-      onClick={onCopyToClipboard}
-    >
-      {icon}
-    </button>
+    <div ref={wrapperRef}>
+      <button
+        type="button"
+        className={cn('flex justify-center items-center rounded-full cursor-copy', background && 'bg-white')}
+        style={{ width: size, height: size }}
+        data-testid={`identicon-${address}`}
+        onClick={onCopyToClipboard}
+      >
+        {icon}
+      </button>
+    </div>
   );
 };
 

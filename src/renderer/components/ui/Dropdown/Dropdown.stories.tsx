@@ -32,7 +32,7 @@ Primary.args = {
 export const Selected = Template.bind({});
 Selected.args = {
   placeholder: 'Select an option',
-  value: options[1],
+  activeId: options[1].id,
   options,
   onChange: () => {},
 };
@@ -40,7 +40,7 @@ Selected.args = {
 export const Large = Template.bind({});
 Large.args = {
   placeholder: 'Select an option',
-  value: options[1],
+  activeId: options[1].id,
   options,
   weight: 'lg',
   onChange: () => {},

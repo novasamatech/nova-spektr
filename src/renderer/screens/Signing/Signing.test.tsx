@@ -34,12 +34,7 @@ jest.mock('@renderer/services/wallet/walletService', () => ({
     getActiveWallets: () => [
       {
         name: 'Test Wallet',
-        mainAccounts: [
-          {
-            accountId: '1ChFWeNRLarAPRCTM3bfJmncJbSAbSS9yqjueWz7jX7iTVZ',
-            publicKey: TEST_PUBLIC_KEY,
-          },
-        ],
+        mainAccounts: [{ accountId: '1ChFWeNRLarAPRCTM3bfJmncJbSAbSS9yqjueWz7jX7iTVZ', publicKey: TEST_PUBLIC_KEY }],
       },
     ],
   }),

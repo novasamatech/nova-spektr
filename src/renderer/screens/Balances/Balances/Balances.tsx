@@ -55,10 +55,7 @@ const Balances = () => {
   const canMakeActions = activeWallets?.some((wallet) => wallet.type === WalletType.PARITY) || false;
 
   const onReceive = (chain: Chain) => (asset: Asset) => {
-    setReceiveData({
-      chain,
-      asset,
-    });
+    setReceiveData({ chain, asset });
     toggleReceive();
   };
 

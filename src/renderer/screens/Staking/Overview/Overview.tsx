@@ -4,7 +4,7 @@ import { Link } from 'react-router-dom';
 
 import wallets from '@renderer/components/layout/PrimaryLayout/Wallets/Wallets';
 import { Address, ButtonBack, Dropdown, Icon, Identicon, Input } from '@renderer/components/ui';
-import { DropdownOption } from '@renderer/components/ui/Dropdown/common/types';
+import { DropdownOption, ResultOption } from '@renderer/components/ui/Dropdown/common/types';
 import { useI18n } from '@renderer/context/I18nContext';
 import { useNetworkContext } from '@renderer/context/NetworkContext';
 import { Asset, StakingType } from '@renderer/domain/asset';
@@ -16,7 +16,8 @@ import { useChains } from '@renderer/services/network/chainsService';
 import { useStaking } from '@renderer/services/staking/stakingService';
 import { useWallet } from '@renderer/services/wallet/walletService';
 
-type NetworkOption = DropdownOption<{ chainId: ChainId; asset: Asset }>;
+type ResultNetwork = ResultOption<{ chainId: ChainId; asset: Asset }>;
+type DropdownNetwork = DropdownOption<{ chainId: ChainId; asset: Asset }>;
 
 const Overview = () => {
   const { t } = useI18n();
@@ -25,8 +26,8 @@ const Overview = () => {
   const { getActiveWallets } = useWallet();
 
   const [query, setQuery] = useState('');
-  const [activeNetwork, setActiveNetwork] = useState<NetworkOption>();
-  const [stakingNetworks, setStakingNetworks] = useState<NetworkOption[]>([]);
+  const [activeNetwork, setActiveNetwork] = useState<ResultNetwork>();
+  const [stakingNetworks, setStakingNetworks] = useState<DropdownNetwork[]>([]);
 
   const chainId = activeNetwork?.value.chainId || ('' as ChainId);
   const api = connections[chainId]?.api;
@@ -51,8 +52,9 @@ const Overview = () => {
         prefix: <img src={icon} alt={`${name} icon`} width={20} height={20} />,
         value: { chainId, asset },
       }));
+
       setStakingNetworks(sortGenesisHashes);
-      setActiveNetwork(sortGenesisHashes[0]);
+      setActiveNetwork({ id: sortGenesisHashes[0].id, value: sortGenesisHashes[0].value });
     };
 
     setupAvailableNetworks();
@@ -117,7 +119,7 @@ const Overview = () => {
           <Dropdown
             className="w-40"
             placeholder={t('staking.startStaking.selectNetworkLabel')}
-            value={activeNetwork}
+            activeId={activeNetwork?.id}
             options={stakingNetworks}
             onChange={setActiveNetwork}
           />
