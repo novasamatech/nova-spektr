@@ -67,26 +67,23 @@ export const NetworkProvider = ({ children }: PropsWithChildren) => {
     };
   }, [connectionsReady]);
 
-  const subscribeBalanceChanges = async (chain: ExtendedChain, publicKey?: PublicKey) => {
-    if (!hasSubscription(chain.chainId) && chain.api?.isConnected && publicKey) {
+  const subscribeBalanceChanges = async (chain: ExtendedChain, publicKeys: PublicKey[]) => {
+    if (!hasSubscription(chain.chainId) && chain.api?.isConnected && publicKeys.length) {
       const relaychain = chain.parentId && connections[chain.parentId];
 
-      subscribe(chain.chainId, subscribeBalances(chain, relaychain, publicKey));
-      subscribe(chain.chainId, subscribeLockBalances(chain, publicKey));
+      subscribe(chain.chainId, subscribeBalances(chain, relaychain, publicKeys));
+      subscribe(chain.chainId, subscribeLockBalances(chain, publicKeys));
     }
   };
 
   useEffect(() => {
-    const publicKeys = activeWallets?.map(
-      (wallet) => wallet?.mainAccounts[0]?.publicKey || wallet?.chainAccounts[0]?.publicKey,
-    );
+    const publicKeys =
+      activeWallets?.map((wallet) => wallet?.mainAccounts[0]?.publicKey || wallet?.chainAccounts[0]?.publicKey) || [];
 
-    publicKeys?.forEach((publicKey) => {
-      Object.values(connections).forEach((chain) => {
-        subscribeBalanceChanges(chain, publicKey);
-      });
+    Object.values(connections).forEach((chain) => {
+      subscribeBalanceChanges(chain, publicKeys);
     });
-  }, [connections, activeWallets]);
+  }, [connections, activeWallets?.length]);
 
   return (
     <NetworkContext.Provider value={{ connections, connectToNetwork, connectWithAutoBalance, ...rest }}>
