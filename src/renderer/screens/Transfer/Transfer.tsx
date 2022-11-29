@@ -52,7 +52,6 @@ const Transfer = () => {
   const [validationError, setValidationError] = useState<ValidationErrors>();
 
   const [balance, setBalance] = useState('');
-  const [fee, setFee] = useState('');
 
   const { getBalance } = useBalance();
   const { createPayload, getSignedExtrinsic, submitAndWatchExtrinsic, getTransactionFee } = useTransaction();
@@ -130,41 +129,38 @@ const Transfer = () => {
     })();
   }, [currentAddress, currentConnection?.chainId, currentAsset?.assetId]);
 
-  const validateBalanceForFee = (): boolean => {
-    const amount = transaction?.args.value;
-
-    if (!fee || !balance) return false;
-
-    return fee + amount <= balance;
-  };
-
-  const validateBalance = (): boolean => {
-    const amount = transaction?.args.value;
-
-    if (!fee || !balance) return false;
-
-    return amount <= balance;
-  };
-
-  const sendSignedTransaction = async (signature: HexString) => {
-    if (!currentConnection?.api || !unsigned || !signature) return;
-
+  const validateTransaction = async () => {
     const amount = transaction?.args.value;
     const address = transaction?.args.dest;
 
-    if (!currentConnection?.api || !amount || !validateAddress(address)) return;
+    if (!currentConnection?.api || !amount || !validateAddress(address) || !currentAsset) return false;
 
-    setFee(await getTransactionFee(transaction, currentConnection.api));
+    const currentBalance = await getBalance(
+      toPublicKey(currentAddress) || '0x',
+      currentConnection.chainId,
+      currentAsset.assetId.toString(),
+    );
 
-    if (!validateBalance()) {
+    const transferableBalance = currentBalance ? transferable(currentBalance) : '0';
+
+    const fee = await getTransactionFee(transaction, currentConnection.api);
+
+    if (new BN(amount).gt(new BN(transferableBalance))) {
       setValidationError(ValidationErrors.INSUFFICIENT_BALANCE);
 
-      return;
-    } else if (!validateBalanceForFee()) {
+      return false;
+    } else if (new BN(fee).add(new BN(amount)).gt(new BN(transferableBalance))) {
       setValidationError(ValidationErrors.INSUFFICIENT_BALANCE_FOR_FEE);
 
-      return;
+      return false;
     }
+    console.log(3);
+
+    return true;
+  };
+
+  const sendSignedTransaction = async (signature: HexString) => {
+    if (!currentConnection?.api || !unsigned || !signature || !(await validateTransaction())) return;
 
     const extrinsic = await getSignedExtrinsic(unsigned, signature, currentConnection.api);
     setCurrentStep(Steps.EXECUTING);
