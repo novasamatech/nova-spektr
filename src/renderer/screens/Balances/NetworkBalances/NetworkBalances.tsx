@@ -54,8 +54,6 @@ const NetworkBalances = ({
 
   const balances = getLiveNetworkBalances(publicKeys, chain.chainId);
 
-  console.log(publicKeys, balances);
-
   const balancesObject =
     balances?.reduce((result, balance) => {
       return {

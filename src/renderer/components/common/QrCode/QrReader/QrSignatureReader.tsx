@@ -68,8 +68,6 @@ const QrSignatureReader = ({ size = 300, cameraId, className, onCameraList, onRe
         const qr = result.getText();
 
         const signature = u8aToHex(hexToU8a(qr));
-        console.log(signature);
-
         isComplete.current = true;
         onResult?.(signature);
       } catch (error) {
