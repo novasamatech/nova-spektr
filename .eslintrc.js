@@ -96,6 +96,7 @@ module.exports = {
         'jsx-attributes': {
           include: [],
           exclude: [
+            'by',
             'className',
             'headerClass',
             'contentClass',

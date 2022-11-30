@@ -3,8 +3,8 @@ import cn from 'classnames';
 import { Fragment } from 'react';
 
 import { Icon } from '@renderer/components/ui';
-import { ViewClass, WeightClass } from './common/constants';
-import { DropdownOption, ResultOption, Variant } from './common/types';
+import { ViewClass, DropdownClass } from '../common/constants';
+import { DropdownOption, ResultOption, Variant } from '../common/types';
 
 type Props = {
   className?: string;
@@ -12,17 +12,17 @@ type Props = {
   activeId?: DropdownOption['id'];
   options: DropdownOption[];
   variant?: Variant;
-  weight?: keyof typeof WeightClass;
+  weight?: keyof typeof DropdownClass;
   onChange: (data: ResultOption) => void;
 };
 
 const Dropdown = ({ className, placeholder, activeId, options, variant = 'down', weight = 'md', onChange }: Props) => {
-  const weightStyle = WeightClass[weight];
+  const weightStyle = DropdownClass[weight];
 
-  const selected = options.find((option) => option.id === activeId);
+  const activeOptions = options.find((option) => option.id === activeId);
 
   return (
-    <Listbox value={selected} onChange={onChange}>
+    <Listbox by="id" value={activeOptions} onChange={onChange}>
       {({ open }) => (
         <div className={cn('relative', className)}>
           <Listbox.Button
@@ -37,22 +37,22 @@ const Dropdown = ({ className, placeholder, activeId, options, variant = 'down',
               className={cn(
                 'flex items-center gap-x-2.5 truncate text-left mr-auto',
                 'group-hover:text-primary group-focus:text-primary transition',
-                selected && !open && 'text-neutral',
-                !selected && !open && 'text-shade-30',
+                activeOptions && !open && 'text-neutral',
+                !activeOptions && !open && 'text-shade-30',
                 open && 'text-primary',
               )}
             >
-              {selected && (
+              {activeOptions && (
                 <>
-                  {selected.prefix}
-                  {typeof selected.element === 'string' ? (
-                    <p className={cn(weightStyle.text)}>{selected.element}</p>
+                  {activeOptions.prefix}
+                  {typeof activeOptions.element === 'string' ? (
+                    <p className={cn(weightStyle.text)}>{activeOptions.element}</p>
                   ) : (
-                    selected.element
+                    activeOptions.element
                   )}
                 </>
               )}
-              {!selected && <p className={cn(weightStyle.placeholder)}>{placeholder}</p>}
+              {!activeOptions && <p className={cn(weightStyle.placeholder)}>{placeholder}</p>}
             </div>
             <span
               className={cn(
@@ -71,34 +71,26 @@ const Dropdown = ({ className, placeholder, activeId, options, variant = 'down',
                 variant !== 'auto' && ViewClass[variant],
               )}
             >
-              {options.map((option) => (
+              {options.map(({ id, value, element, prefix }) => (
                 <Listbox.Option
-                  key={option.id}
-                  value={{ id: option.id, value: option.value }}
-                  className={({ active }) =>
+                  key={id}
+                  value={{ id, value }}
+                  className={({ active, selected }) =>
                     cn(
                       'flex items-center cursor-pointer select-none px-2.5 rounded-2lg',
-                      active && 'bg-shade-5',
+                      (active || selected) && 'bg-shade-5',
                       weightStyle.option,
                     )
                   }
                 >
-                  {({ selected }) => (
-                    <div
-                      className={cn(
-                        'flex items-center gap-x-2.5 truncate text-sm',
-                        selected ? 'text-primary' : 'text-neutral',
-                        weightStyle.option,
-                      )}
-                    >
-                      {option.prefix}
-                      {typeof option.element === 'string' ? (
-                        <p className={cn(weightStyle.text)}>{option.element}</p>
-                      ) : (
-                        option.element
-                      )}
-                    </div>
-                  )}
+                  <div className={cn('flex items-center gap-x-2.5 truncate text-sm', weightStyle.option)}>
+                    {prefix}
+                    {typeof element === 'string' ? (
+                      <p className={cn('text-neutral', weightStyle.text)}>{element}</p>
+                    ) : (
+                      element
+                    )}
+                  </div>
                 </Listbox.Option>
               ))}
             </Listbox.Options>

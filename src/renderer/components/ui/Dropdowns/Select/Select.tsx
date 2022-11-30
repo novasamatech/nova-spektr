@@ -3,25 +3,25 @@ import cn from 'classnames';
 import { Fragment, ReactNode } from 'react';
 
 import { Checkbox, Icon } from '@renderer/components/ui';
-import { ViewClass, WeightClass } from './common/constants';
-import { SelectOption, Variant } from './common/types';
+import { ViewClass, SelectClass } from '../common/constants';
+import { ResultOption, SelectOption, Variant } from '../common/types';
 
 type Props = {
   summary: ReactNode;
   className?: string;
   placeholder?: string;
-  value: SelectOption['value'][];
+  activeIds: SelectOption['id'][];
   options: SelectOption[];
   variant?: Variant;
   suffix?: ReactNode;
-  weight?: keyof typeof WeightClass;
-  onChange: (data: SelectOption['value'][]) => void;
+  weight?: keyof typeof SelectClass;
+  onChange: (data: ResultOption[]) => void;
 };
 
 const Select = ({
   className,
   suffix,
-  value = [],
+  activeIds = [],
   summary,
   placeholder,
   options,
@@ -29,10 +29,12 @@ const Select = ({
   weight = 'md',
   onChange,
 }: Props) => {
-  const weightStyle = WeightClass[weight];
+  const weightStyle = SelectClass[weight];
+
+  const activeOptions = options.filter((option) => activeIds.includes(option.id));
 
   return (
-    <Listbox multiple value={value} onChange={onChange}>
+    <Listbox multiple by="id" value={activeOptions} onChange={onChange}>
       {({ open }) => (
         <div className={cn('relative', className)}>
           <Listbox.Button
@@ -49,10 +51,10 @@ const Select = ({
                 open && 'border-primary',
               )}
             >
-              {value.length === 0 && (
+              {activeOptions.length === 0 && (
                 <p className={cn(weightStyle.placeholder, open ? 'text-primary' : 'text-shade-30')}>{placeholder}</p>
               )}
-              {value.length > 0 && (
+              {activeOptions.length > 0 && (
                 <div className="flex gap-x-2.5 items-center">
                   <p
                     className={cn(
@@ -60,7 +62,7 @@ const Select = ({
                       weightStyle.count,
                     )}
                   >
-                    {value.length}
+                    {activeOptions.length}
                   </p>
                   <p className={cn('text-neutral font-semibold', weightStyle.summary)}>{summary}</p>
                 </div>
@@ -85,10 +87,10 @@ const Select = ({
                 variant !== 'auto' && ViewClass[variant],
               )}
             >
-              {options.map((option) => (
+              {options.map(({ id, value, element }) => (
                 <Listbox.Option
-                  key={option.id}
-                  value={option.value}
+                  key={id}
+                  value={{ id, value }}
                   className={({ active }) =>
                     cn(
                       'flex items-center cursor-pointer select-none px-2.5 rounded-2lg',
@@ -99,7 +101,7 @@ const Select = ({
                 >
                   {({ selected }) => (
                     <Checkbox readOnly checked={selected} position="left" className="w-full pointer-events-none">
-                      <div className="w-full">{option.element}</div>
+                      <div className="w-full">{element}</div>
                     </Checkbox>
                   )}
                 </Listbox.Option>
