@@ -195,7 +195,7 @@ const CameraDev = () => {
         <div>
           <div className="flex justify-between">
             <Button weight="lg" variant="fill" pallet="primary" onClick={onSetMultipleTransactions}>
-              Create multiple transaction signature
+              Create multiple transactions operation
             </Button>
           </div>
           {multipleTransactions && encoder && (
