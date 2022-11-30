@@ -55,10 +55,10 @@ const NetworkBalances = ({
   const balances = getLiveNetworkBalances(publicKeys, chain.chainId);
 
   const balancesObject =
-    balances?.reduce((result, balance) => {
+    balances?.reduce((acc, balance) => {
       return {
-        ...result,
-        [balance.assetId]: sumBalances(balance, result[balance.assetId]),
+        ...acc,
+        [balance.assetId]: sumBalances(balance, acc[balance.assetId]),
       };
     }, {} as Record<string, Balance>) || {};
 
