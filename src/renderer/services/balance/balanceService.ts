@@ -31,11 +31,11 @@ export const useBalance = (): IBalanceService => {
   };
 
   const getLiveBalance = (publicKey: PublicKey, chainId: ChainId, assetId: string): BalanceDS | undefined => {
-    return useLiveQuery(() => getBalance(publicKey, chainId, assetId));
+    return useLiveQuery(() => getBalance(publicKey, chainId, assetId), [publicKey, chainId, assetId]);
   };
 
-  const getLiveNetworkBalances = (publicKey: PublicKey, chainId: ChainId): BalanceDS[] | undefined => {
-    return useLiveQuery(() => getNetworkBalances(publicKey, chainId));
+  const getLiveNetworkBalances = (publicKeys: PublicKey[], chainId: ChainId): BalanceDS[] | undefined => {
+    return useLiveQuery(() => getNetworkBalances(publicKeys, chainId), [publicKeys.length, chainId]);
   };
 
   const runValidation = async (
@@ -246,37 +246,41 @@ export const useBalance = (): IBalanceService => {
   const subscribeBalances = (
     chain: ExtendedChain,
     relaychain: ExtendedChain | undefined,
-    publicKey: PublicKey,
+    publicKeys: PublicKey[],
   ): Promise<any> => {
-    const unsubscribe = chain.assets?.map((asset) => {
-      if (!asset.type) {
-        return subscribeBalanceChange(publicKey, chain, relaychain, asset);
-      }
+    const unsubscribe = publicKeys.map((publicKey) =>
+      chain.assets?.map((asset) => {
+        if (!asset.type) {
+          return subscribeBalanceChange(publicKey, chain, relaychain, asset);
+        }
 
-      if (asset.type === AssetType.STATEMINE) {
-        return subscribeStatemineAssetChange(publicKey, chain, relaychain, asset);
-      }
+        if (asset.type === AssetType.STATEMINE) {
+          return subscribeStatemineAssetChange(publicKey, chain, relaychain, asset);
+        }
 
-      if (asset.type === AssetType.ORML) {
-        return subscribeOrmlAssetChange(publicKey, chain, relaychain, asset);
-      }
-    });
+        if (asset.type === AssetType.ORML) {
+          return subscribeOrmlAssetChange(publicKey, chain, relaychain, asset);
+        }
+      }),
+    );
 
-    return Promise.all(unsubscribe);
+    return Promise.all(unsubscribe.flat());
   };
 
-  const subscribeLockBalances = (chain: ExtendedChain, publicKey: PublicKey): Promise<any> => {
-    const unsubscribe = chain.assets?.map((asset) => {
-      if (!asset.type) {
-        return subscribeLockBalanceChange(publicKey, chain, asset);
-      }
+  const subscribeLockBalances = (chain: ExtendedChain, publicKeys: PublicKey[]): Promise<any> => {
+    const unsubscribe = publicKeys.map((publicKey) =>
+      chain.assets?.map((asset) => {
+        if (!asset.type) {
+          return subscribeLockBalanceChange(publicKey, chain, asset);
+        }
 
-      if (asset.type === AssetType.ORML) {
-        return subscribeLockOrmlAssetChange(publicKey, chain, asset);
-      }
-    });
+        if (asset.type === AssetType.ORML) {
+          return subscribeLockOrmlAssetChange(publicKey, chain, asset);
+        }
+      }),
+    );
 
-    return Promise.all(unsubscribe);
+    return Promise.all(unsubscribe.flat());
   };
 
   return {

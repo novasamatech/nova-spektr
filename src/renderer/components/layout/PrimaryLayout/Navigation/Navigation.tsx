@@ -74,6 +74,11 @@ const Navigation = () => {
   const currentWallet = activeWallets?.length ? activeWallets[0] : undefined;
   const currentAccount = currentWallet?.mainAccounts[0] || currentWallet?.chainAccounts[0];
 
+  const walletName =
+    walletType === 'multiple'
+      ? t('navigation.multipleWalletsLabel')
+      : currentWallet?.name || t('navigation.unknownWalletLabel');
+
   return (
     <>
       <aside className="relative flex gap-y-5 flex-col w-[300px] bg-shade-5 p-5 z-30">
@@ -121,9 +126,7 @@ const Navigation = () => {
               type="button"
               className="flex justify-between flex-1 truncate"
             >
-              <span className="text-xl leading-6 mr-1 text-left truncate">
-                {currentWallet?.name || t('navigation.unknownWalletLabel')}
-              </span>
+              <span className="text-xl leading-6 mr-1 text-left truncate">{walletName}</span>
               <Icon name="right" size={40} className="shrink-0" />
             </button>
           </div>

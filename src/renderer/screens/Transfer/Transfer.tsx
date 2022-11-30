@@ -154,7 +154,6 @@ const Transfer = () => {
 
       return false;
     }
-    console.log(3);
 
     return true;
   };

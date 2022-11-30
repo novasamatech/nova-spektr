@@ -8,14 +8,14 @@ export function prepareTestData(chains: ChainJSON[]): [ChainJSON[], ChainJSON[],
   const kusama = chains.find((chain) => chain.chainId === kusamaId)!;
 
   const [polkadotParachains, kusamaParachains] = chains.reduce(
-    (result, currentChain) => {
+    (acc, currentChain) => {
       currentChain.parentId === polkadotId
-        ? result[0].push(currentChain)
+        ? acc[0].push(currentChain)
         : currentChain.parentId === kusamaId
-        ? result[1].push(currentChain)
+        ? acc[1].push(currentChain)
         : null;
 
-      return result;
+      return acc;
     },
     [<ChainJSON[]>(<unknown>[]), <ChainJSON[]>(<unknown>[])],
   );
