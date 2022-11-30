@@ -1,19 +1,12 @@
 import { Menu } from '@headlessui/react';
-import cn from 'classnames';
 import { encodeAddress } from '@polkadot/util-crypto';
+import cn from 'classnames';
 
+import { ExplorerIcons } from './common/constants';
 import { Icon } from '@renderer/components/ui';
-import { Chain } from '@renderer/domain/chain';
-import { Explorer } from '@renderer/components/ui/Icon/data/explorer';
-import { toPublicKey } from '@renderer/utils/address';
 import { useI18n } from '@renderer/context/I18nContext';
-
-const ExplorerIcons: Record<string, Explorer> = {
-  Polkascan: 'polkascan',
-  'Sub.ID': 'subid',
-  Subscan: 'subscan',
-  Statescan: 'statescan',
-};
+import { Chain } from '@renderer/domain/chain';
+import { toPublicKey } from '@renderer/utils/address';
 
 type Props = {
   chain: Chain;

@@ -51,7 +51,7 @@ const Transfer = () => {
   const [isSuccessMessageOpen, setIsSuccessMessageOpen] = useState(false);
   const [validationError, setValidationError] = useState<ValidationErrors>();
 
-  const [balance, setBalance] = useState('');
+  const [_, setBalance] = useState('');
 
   const { getBalance } = useBalance();
   const { createPayload, getSignedExtrinsic, submitAndWatchExtrinsic, getTransactionFee } = useTransaction();

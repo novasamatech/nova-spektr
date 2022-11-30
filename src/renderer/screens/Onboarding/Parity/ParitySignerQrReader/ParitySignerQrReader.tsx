@@ -6,7 +6,7 @@ import { useState } from 'react';
 import { QrReader } from '@renderer/components/common';
 import { ErrorObject, QrError, SeedInfo, VideoInput } from '@renderer/components/common/QrCode/QrReader/common/types';
 import { Button, Dropdown, Icon } from '@renderer/components/ui';
-import { DropdownOption } from '@renderer/components/ui/Dropdown/common/types';
+import { DropdownOption, ResultOption } from '@renderer/components/ui/Dropdown/common/types';
 import { useI18n } from '@renderer/context/I18nContext';
 
 const enum CameraState {
@@ -31,8 +31,8 @@ const ParitySignerQrReader = ({ size = 300, className, onResult }: Props) => {
   const { t } = useI18n();
 
   const [cameraState, setCameraState] = useState<CameraState>(CameraState.LOADING);
-  const [activeCamera, setActiveCamera] = useState<DropdownOption>();
-  const [availableCameras, setAvailableCameras] = useState<DropdownOption[]>([]);
+  const [activeCamera, setActiveCamera] = useState<ResultOption<string>>();
+  const [availableCameras, setAvailableCameras] = useState<DropdownOption<string>[]>([]);
 
   const [isScanComplete, setIsScanComplete] = useState(false);
   const [{ decoded, total }, setProgress] = useState({ decoded: 0, total: 0 });
@@ -49,8 +49,9 @@ const ParitySignerQrReader = ({ size = 300, className, onResult }: Props) => {
   const onCameraList = (cameras: VideoInput[]) => {
     const formattedCameras = cameras.map((camera, index) => ({
       //eslint-disable-next-line i18next/no-literal-string
-      label: `${index + 1}. ${camera.label}`,
+      element: `${index + 1}. ${camera.label}`,
       value: camera.id,
+      id: camera.id,
     }));
 
     setAvailableCameras(formattedCameras);
@@ -184,9 +185,9 @@ const ParitySignerQrReader = ({ size = 300, className, onResult }: Props) => {
           <div className="mb-5 w-[242px]">
             <Dropdown
               placeholder={t('onboarding.paritySigner.selectCameraLabel')}
-              selected={activeCamera}
+              activeId={activeCamera?.id}
               options={availableCameras}
-              onSelected={setActiveCamera}
+              onChange={setActiveCamera}
             />
           </div>
         </div>

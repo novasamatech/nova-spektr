@@ -94,10 +94,11 @@ const Validators = ({ api, chainId, asset, onResult }: Props) => {
                     </p>
                   )}
                   <Address
+                    noCopy
                     address={address || ''}
                     type="short"
                     addressStyle={identity ? 'small' : 'normal'}
-                    size={12}
+                    size={identity ? 12 : 14}
                     symbols={16}
                   />
                 </div>

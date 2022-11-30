@@ -20,16 +20,17 @@ interface Props extends HTMLAttributes<HTMLSpanElement> {
   addressStyle?: AddressStyle;
   size?: number;
   symbols?: number;
+  noCopy?: boolean;
 }
 
-const Address = ({ address, className, symbols, size = 16, addressStyle = 'normal', type = 'full' }: Props) => {
+const Address = ({ address, className, symbols, size = 16, addressStyle = 'normal', type = 'full', noCopy }: Props) => {
   const theme = 'polkadot';
   const addressToShow = type === 'short' ? getShortAddress(address, symbols) : address;
 
   if (['short', 'full'].includes(type)) {
     return (
       <div className={cn('flex items-center gap-x-1', className)}>
-        <Identicon address={address} size={size} theme={theme} background={false} />
+        <Identicon address={address} size={size} theme={theme} background={false} noCopy={noCopy} />
         <p className={cn('inline-block break-all', Styles[addressStyle])}>{addressToShow}</p>
       </div>
     );
@@ -37,7 +38,7 @@ const Address = ({ address, className, symbols, size = 16, addressStyle = 'norma
 
   return (
     <div className={cn('flex items-center gap-x-1', className)}>
-      <Identicon address={address} size={size} theme={theme} background={false} />
+      <Identicon address={address} size={size} theme={theme} background={false} noCopy={noCopy} />
       <Truncate className={Styles[addressStyle]} ellipsis="..." start={4} end={4} text={addressToShow} />
     </div>
   );

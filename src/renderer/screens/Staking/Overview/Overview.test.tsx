@@ -26,7 +26,7 @@ jest.mock('@renderer/services/network/chainsService', () => ({
     getChainsData: jest.fn().mockReturnValue([
       {
         addressPrefix: 0,
-        assets: [],
+        assets: [{ staking: 'relaychain' }],
         chainId: '0x00',
         name: 'My test chain',
       },
@@ -40,7 +40,7 @@ jest.mock('@renderer/services/wallet/walletService', () => ({
     getActiveWallets: () => [
       {
         name: 'Test Wallet',
-        mainAccounts: [{ address: '1ChFWeNRLarAPRCTM3bfJmncJbSAbSS9yqjueWz7jX7iTVZ', publicKey: TEST_PUBLIC_KEY }],
+        mainAccounts: [{ accountId: '1ChFWeNRLarAPRCTM3bfJmncJbSAbSS9yqjueWz7jX7iTVZ', publicKey: TEST_PUBLIC_KEY }],
       },
     ],
   }),
