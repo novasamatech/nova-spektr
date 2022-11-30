@@ -2,10 +2,10 @@ import { render, screen } from '@testing-library/react';
 
 import { Asset } from '@renderer/domain/asset';
 import { Chain } from '@renderer/domain/chain';
-import chains from '@renderer/services/network/common/chains/chains.json';
-import ReceiveModal from './ReceiveModal';
 import { TEST_ADDRESS, TEST_PUBLIC_KEY } from '@renderer/services/balance/common/constants';
+import chains from '@renderer/services/network/common/chains/chains.json';
 import { useWallet } from '@renderer/services/wallet/walletService';
+import ReceiveModal from './ReceiveModal';
 
 window.IntersectionObserver = jest.fn().mockImplementation(() => ({
   observe: jest.fn(),
@@ -23,12 +23,7 @@ jest.mock('@renderer/services/wallet/walletService', () => ({
     getActiveWallets: () => [
       {
         name: 'Test Wallet',
-        mainAccounts: [
-          {
-            address: TEST_ADDRESS,
-            publicKey: TEST_PUBLIC_KEY,
-          },
-        ],
+        mainAccounts: [{ accountId: TEST_ADDRESS, publicKey: TEST_PUBLIC_KEY }],
       },
     ],
   }),
@@ -74,38 +69,26 @@ describe('screens/Balances/ReceiveModal', () => {
     render(<ReceiveModal {...defaultProps(westendExplorers)} />);
 
     const title = screen.queryByText('receive.selectWalletPlaceholder');
-
     expect(title).not.toBeInTheDocument();
   });
 
   test('should render select wallet component', () => {
-    (useWallet as unknown as jest.Mock).mockImplementation(() => ({
+    (useWallet as jest.Mock).mockImplementation(() => ({
       getActiveWallets: () => [
         {
-          name: 'Test Wallet',
-          mainAccounts: [
-            {
-              address: TEST_ADDRESS,
-              publicKey: TEST_PUBLIC_KEY,
-            },
-          ],
+          name: 'Test Wallet 1',
+          mainAccounts: [{ accountId: TEST_ADDRESS, publicKey: TEST_PUBLIC_KEY }],
         },
         {
           name: 'Test Wallet 2',
-          mainAccounts: [
-            {
-              address: TEST_ADDRESS,
-              publicKey: TEST_PUBLIC_KEY,
-            },
-          ],
+          mainAccounts: [{ accountId: TEST_ADDRESS, publicKey: TEST_PUBLIC_KEY }],
         },
       ],
     }));
 
     render(<ReceiveModal {...defaultProps(westendExplorers)} />);
 
-    const title = screen.getByText('receive.selectWalletPlaceholder');
-
+    const title = screen.getByRole('button', { name: /Test Wallet 1/ });
     expect(title).toBeInTheDocument();
   });
 });

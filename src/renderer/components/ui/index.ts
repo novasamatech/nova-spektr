@@ -13,7 +13,8 @@ import ConfirmModal from './Modals/ConfirmModal/ConfirmModal';
 import Stepper from './Stepper/Stepper';
 import LanguageSwitcher from './LanguageSwitcher/LanguageSwitcher';
 import Carousel from './Carousel/Carousel';
-import Dropdown from './Dropdown/Dropdown';
+import Dropdown from './Dropdowns/Dropdown/Dropdown';
+import Select from './Dropdowns/Select/Select';
 import Balance from './Balance/Balance';
 
 export {
@@ -32,6 +33,7 @@ export {
   Stepper,
   LanguageSwitcher,
   Dropdown,
+  Select,
   Carousel,
   Balance,
 };

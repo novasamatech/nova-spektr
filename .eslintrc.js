@@ -96,6 +96,7 @@ module.exports = {
         'jsx-attributes': {
           include: [],
           exclude: [
+            'by',
             'className',
             'headerClass',
             'contentClass',
@@ -127,6 +128,7 @@ module.exports = {
             'bgColor',
             'theme',
             'addressStyle',
+            'position',
           ],
         },
         callees: {

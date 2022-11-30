@@ -9,6 +9,7 @@ type Props = {
   skipEncoding?: boolean;
   delay?: number;
   payload: string;
+  className?: string;
 };
 
 const QrTextGenerator = ({
@@ -17,6 +18,7 @@ const QrTextGenerator = ({
   skipEncoding = false,
   delay = DEFAULT_FRAME_DELAY,
   bgColor = 'none',
+  className,
 }: Props) => {
   const image = useGenerator(stringToU8a(payload), skipEncoding, delay, bgColor);
 
@@ -24,7 +26,9 @@ const QrTextGenerator = ({
     return null;
   }
 
-  return <div style={{ width: size, height: size }} dangerouslySetInnerHTML={{ __html: image }} />;
+  return (
+    <div style={{ width: size, height: size }} className={className} dangerouslySetInnerHTML={{ __html: image }} />
+  );
 };
 
 export default QrTextGenerator;

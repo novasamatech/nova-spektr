@@ -15,6 +15,12 @@ Primary.args = {
   children: 'Checkbox',
 };
 
+export const Left = Template.bind({});
+Left.args = {
+  position: 'left',
+  children: 'Checkbox',
+};
+
 export const Disabled = Template.bind({});
 Disabled.args = {
   children: 'Checkbox',
