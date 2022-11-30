@@ -22,13 +22,11 @@ const Checkbox = ({
   children,
   onChange,
 }: PropsWithChildren<Props>) => {
-  const content =
-    children &&
-    (typeof children === 'string' ? <span className="text-gray-700 font-normal">{children}</span> : children);
+  const content = typeof children === 'string' ? <p className="text-gray-700 font-normal">{children}</p> : children;
 
   return (
     <label className={cn('flex items-center gap-x-2.5', !disabled && 'hover:cursor-pointer', className)}>
-      {position === 'left' && content}
+      {children && position === 'left' && content}
       <input
         type="checkbox"
         name="checkbox"
@@ -45,7 +43,7 @@ const Checkbox = ({
           disabled && 'opacity-50',
         )}
       />
-      {position === 'right' && content}
+      {children && position === 'right' && content}
     </label>
   );
 };

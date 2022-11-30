@@ -10,7 +10,7 @@ describe('ui/Select', () => {
   ];
 
   const defaultProps = {
-    value: [],
+    activeIds: [],
     options,
     summary: 'Total',
     placeholder: 'Select option',
@@ -35,15 +35,15 @@ describe('ui/Select', () => {
 
     const optionOne = screen.getByRole('option', { name: options[0].element });
     await act(() => optionOne.click());
-    expect(spyChange).toBeCalledWith([options[0].value]);
+    expect(spyChange).toBeCalledWith([{ id: options[0].id, value: options[0].value }]);
 
     const optionTwo = screen.getByRole('option', { name: options[1].element });
     await act(() => optionTwo.click());
-    expect(spyChange).toBeCalledWith([options[1].value]);
+    expect(spyChange).toBeCalledWith([{ id: options[1].id, value: options[1].value }]);
   });
 
   test('should render summary options', () => {
-    render(<Select {...defaultProps} value={[options[1].value]} />);
+    render(<Select {...defaultProps} activeIds={[options[1].id]} />);
 
     const summary = screen.getByRole('button');
     expect(summary).toHaveTextContent(/1Total/);
@@ -58,7 +58,7 @@ describe('ui/Select', () => {
     let selectedOption = screen.queryByRole('checkbox', { checked: true });
     expect(selectedOption).not.toBeInTheDocument();
 
-    rerender(<Select {...defaultProps} value={[options[1].value]} />);
+    rerender(<Select {...defaultProps} activeIds={[options[1].id]} />);
 
     selectedOption = screen.getByRole('checkbox', { checked: true });
     expect(selectedOption).toBeInTheDocument();

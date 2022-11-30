@@ -59,6 +59,6 @@ export const PreSelected = Template.bind({});
 PreSelected.args = {
   placeholder: 'Select options',
   summary: 'Summary',
-  value: [options[0].value, options[2].value],
+  activeIds: [options[0].id, options[2].id],
   options,
 };
