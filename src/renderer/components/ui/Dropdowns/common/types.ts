@@ -8,7 +8,7 @@ interface BaseOption<T extends any = any> {
   value: T;
 }
 
-export interface DropdownOption extends BaseOption {
+export interface DropdownOption<T extends any = any> extends BaseOption<T> {
   prefix?: ReactNode;
 }
 

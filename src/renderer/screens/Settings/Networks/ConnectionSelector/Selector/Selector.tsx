@@ -234,8 +234,8 @@ const Selector = ({ networkItem }: Props) => {
               <div className="flex flex-col max-h-64 overflow-auto mb-5">
                 <RadioGroup
                   value={selectedNode}
-                  onChange={(value: string) => changeConnection(value, close)}
                   className="divide-y divide-shade-5"
+                  onChange={(value: string) => changeConnection(value, close)}
                 >
                   {canUseLightClient && (
                     <RadioGroup.Option
@@ -328,12 +328,12 @@ const Selector = ({ networkItem }: Props) => {
                   pallet="primary"
                   variant="text"
                   className="h-7.5"
-                  onClick={toggleCustomRpc}
                   prefixElement={
                     <div className="flex justify-center items-center rounded-full border w-4 h-4 border-primary text-primary">
                       <Icon name="add" size={12} />
                     </div>
                   }
+                  onClick={toggleCustomRpc}
                 >
                   {t('networkManagement.addCustomNodeButton')}
                 </Button>

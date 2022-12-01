@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { QrSignatureReader } from '@renderer/components/common';
 import { ErrorObject, QrError, VideoInput } from '@renderer/components/common/QrCode/QrReader/common/types';
 import { Button, Dropdown, Icon } from '@renderer/components/ui';
-import { DropdownOption, ResultOption } from '@renderer/components/ui/Dropdown/common/types';
+import { DropdownOption, ResultOption } from '@renderer/components/ui/Dropdowns/common/types';
 import { useI18n } from '@renderer/context/I18nContext';
 import { secondsToMinutes } from '../common/utils';
 import { ValidationErrors } from '@renderer/screens/Transfer/common/constants';

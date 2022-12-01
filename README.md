@@ -76,7 +76,7 @@ should be added
 or
 ```typescript
 //eslint-disable-next-line i18next/no-literal-string
-const qrCodePayload = `substrate:${address}:${wallet.publicKey}:Ff`;
+const qrCodePayload = `substrate:${address}:${wallet.publicKey}`;
 ```
 
 ## Packaging for production

@@ -201,9 +201,9 @@ const Transfer = () => {
         {currentStep === Steps.CREATING && readyToCreate && (
           <TransferForm
             wallet={currentWallet}
-            onCreateTransaction={addTransaction}
             asset={currentAsset}
             connection={currentConnection}
+            onCreateTransaction={addTransaction}
           />
         )}
 

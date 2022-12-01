@@ -12,7 +12,12 @@ type Props = {
   animationDuration?: number;
   loop?: boolean;
   autoplay?: boolean | AutoplayOptions;
-  slides: ReactNode[];
+  slides: SlideNode[];
+};
+
+export type SlideNode = {
+  id: string | number;
+  node: ReactNode;
 };
 
 const Carousel = ({ loop, autoplay, animationDuration = 300, slides }: Props) => {
@@ -30,9 +35,9 @@ const Carousel = ({ loop, autoplay, animationDuration = 300, slides }: Props) =>
       onBeforeInit={setSwiper}
       onActiveIndexChange={(swiper) => setActiveIndex(swiper.realIndex)}
     >
-      {slides.map((slide, index) => (
-        <SwiperSlide key={index} tag="div">
-          {slide}
+      {slides.map((slide) => (
+        <SwiperSlide key={slide.id} tag="div">
+          {slide.node}
         </SwiperSlide>
       ))}
 
@@ -47,7 +52,7 @@ const Carousel = ({ loop, autoplay, animationDuration = 300, slides }: Props) =>
         <div className="flex gap-x-2.5">
           {slides.map((slide, index) => (
             <button
-              key={index}
+              key={slide.id}
               type="button"
               className={cn(
                 'border-2 rounded-full w-4 h-4',
