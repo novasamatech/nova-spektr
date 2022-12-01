@@ -1,16 +1,16 @@
 import { ApolloProvider } from '@apollo/client';
-import { useNavigate, useRoutes } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import { ErrorBoundary } from 'react-error-boundary';
+import { useNavigate, useRoutes } from 'react-router-dom';
 
-import createApolloClient from '@renderer/graphql';
 import { FallbackScreen, SplashScreen } from '@renderer/components/common';
+import ConfirmContext from '@renderer/context/ConfirmContext';
 import I18Provider from '@renderer/context/I18nContext';
 // import MatrixProvider from '@renderer/context/MatrixContext';
 import NetworkProvider from '@renderer/context/NetworkContext';
-import ConfirmContext from '@renderer/context/ConfirmContext';
-import { useWallet } from '@renderer/services/wallet/walletService';
+import createApolloClient from '@renderer/graphql';
 import Paths from '@renderer/routes/paths';
+import { useWallet } from '@renderer/services/wallet/walletService';
 import routesConfig from './routes';
 
 const App = () => {

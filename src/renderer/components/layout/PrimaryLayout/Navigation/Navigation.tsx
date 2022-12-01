@@ -122,9 +122,9 @@ const Navigation = () => {
             </div>
             <button
               ref={showWalletsRef}
-              onClick={() => setIsWalletsOpen((value) => !value)}
               type="button"
               className="flex justify-between flex-1 truncate"
+              onClick={() => setIsWalletsOpen((value) => !value)}
             >
               <span className="text-xl leading-6 mr-1 text-left truncate">{walletName}</span>
               <Icon name="right" size={40} className="shrink-0" />

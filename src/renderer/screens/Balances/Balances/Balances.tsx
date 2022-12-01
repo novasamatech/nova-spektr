@@ -76,8 +76,8 @@ const Balances = () => {
             className="w-[300px]"
             prefixElement={<Icon name="search" className="w-5 h-5" />}
             value={query}
-            onChange={(e) => setQuery(e.target.value)}
             placeholder={t('balances.searchPlaceholder')}
+            onChange={(e) => setQuery(e.target.value)}
           />
           <div className="text-sm text-neutral font-semibold flex gap-2.5">
             {t('balances.hideZeroBalancesLabel')} <Switch checked={hideZeroBalance} onChange={updateHideZeroBalance} />

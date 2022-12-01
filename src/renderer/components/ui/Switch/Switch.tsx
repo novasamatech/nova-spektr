@@ -18,13 +18,13 @@ const Switch = ({ label, checked = false, disabled, className, onChange = noop }
         <HeadlessSwitch
           disabled={disabled}
           checked={checked}
-          onChange={onChange}
           className={cn(
             className,
             checked ? 'bg-primary' : 'bg-shade-30',
             disabled && 'opacity-50',
             'relative inline-flex h-[22px] w-[38px] items-center rounded-full transition-colors focus:outline-none',
           )}
+          onChange={onChange}
         >
           <span
             className={cn(

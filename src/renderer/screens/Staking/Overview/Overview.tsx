@@ -4,7 +4,7 @@ import { Link } from 'react-router-dom';
 
 import wallets from '@renderer/components/layout/PrimaryLayout/Wallets/Wallets';
 import { Address, ButtonBack, Dropdown, Icon, Identicon, Input } from '@renderer/components/ui';
-import { DropdownOption, ResultOption } from '@renderer/components/ui/Dropdown/common/types';
+import { DropdownOption, ResultOption } from '@renderer/components/ui/Dropdowns/common/types';
 import { useI18n } from '@renderer/context/I18nContext';
 import { useNetworkContext } from '@renderer/context/NetworkContext';
 import { Asset, StakingType } from '@renderer/domain/asset';

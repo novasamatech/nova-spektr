@@ -15,8 +15,8 @@ jobs:
         uses: ./.github/workflows/install-pnpm
 
       - name: 📝 Check localisation files
-        run: pnpm lint:translation-files
+        run: pnpm lint:i18n-locale
 
-      - name: 🌐 Check if pages are translated
+      - name: 🌐 Check if components are translated
         if: always()
-        run: pnpm lint:translation-pages
+        run: pnpm lint:i18n-tsx

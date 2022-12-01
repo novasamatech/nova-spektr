@@ -1,8 +1,8 @@
 import { act, render, screen, waitFor } from '@testing-library/react';
 
-import { Button, Dropdown } from '@renderer/components/ui';
 import { QrReader } from '@renderer/components/common';
 import { QrError } from '@renderer/components/common/QrCode/QrReader/common/types';
+import { Button, Dropdown } from '@renderer/components/ui';
 import ParitySignerQrReader from './ParitySignerQrReader';
 
 jest.mock('@renderer/components/common');
@@ -42,7 +42,7 @@ describe('screens/Onboarding/Parity/ParitySignerQrReader', () => {
         </button>
       ));
       (Dropdown as jest.Mock).mockImplementation(({ options }: any) =>
-        options.map((o: any) => <span>{o.element}</span>),
+        options.map((o: any) => <span key="1">{o.element}</span>),
       );
 
       render(<ParitySignerQrReader onResult={() => {}} />);

@@ -13,21 +13,18 @@ export default {
 
 const Template: ComponentStory<typeof Carousel> = (args) => <Carousel {...args} />;
 
+const slides = [SlideOne, SlideTwo, SlideThree].map((slide, index) => ({
+  id: index,
+  node: (
+    <div key="1" className="flex flex-col items-center gap-y-3">
+      <img src={slide} alt="" width={500} height={385} />
+      <p>Description {index}</p>
+    </div>
+  ),
+}));
+
 export const Primary = Template.bind({});
 Primary.args = {
   animationDuration: 500,
-  slides: [
-    <div className="flex flex-col items-center gap-y-3">
-      <img src={SlideOne} alt="" width={500} height={385} />
-      <p>Description 1</p>
-    </div>,
-    <div className="flex flex-col items-center gap-y-3">
-      <img src={SlideTwo} alt="" width={500} height={385} />
-      <p>Description 2</p>
-    </div>,
-    <div className="flex flex-col items-center gap-y-3">
-      <img src={SlideThree} alt="" width={500} height={385} />
-      <p>Description 3</p>
-    </div>,
-  ],
+  slides,
 };

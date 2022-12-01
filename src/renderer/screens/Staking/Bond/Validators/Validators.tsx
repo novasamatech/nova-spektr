@@ -136,7 +136,7 @@ const Validators = ({ api, chainId, asset, onResult }: Props) => {
         </div>
       )}
       <BaseModal isOpen={isInfoOpen} onClose={toggleInfo}>
-        Validator's info
+        Validator&apos;s info
       </BaseModal>
     </>
   );

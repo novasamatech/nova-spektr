@@ -3,7 +3,10 @@ import { render, screen } from '@testing-library/react';
 import Carousel from './Carousel';
 
 describe('ui/Carousel', () => {
-  const slides = [<div>slide 1</div>, <div>slide 2</div>];
+  const slides = [
+    { id: '1', node: <div key="1">slide 1</div> },
+    { id: '2', node: <div key="2">slide 2</div> },
+  ];
 
   test('should render component', () => {
     render(<Carousel slides={slides} />);

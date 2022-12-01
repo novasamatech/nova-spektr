@@ -41,21 +41,21 @@ jest.mock('../AssetBalance/AssetBalance', () => () => <div>AssetBalance</div>);
 
 describe('screen/Balances/NetworkBalances', () => {
   test('should render component', () => {
-    render(<NetworkBalances chain={testChain} publicKey={TEST_PUBLIC_KEY} />);
+    render(<NetworkBalances chain={testChain} publicKeys={[TEST_PUBLIC_KEY]} />);
 
     const text = screen.getByText(testChain.name);
     expect(text).toBeInTheDocument();
   });
 
   test('should render assets', () => {
-    render(<NetworkBalances chain={testChain} publicKey={TEST_PUBLIC_KEY} />);
+    render(<NetworkBalances chain={testChain} publicKeys={[TEST_PUBLIC_KEY]} />);
 
     const balances = screen.getAllByText('AssetBalance');
     expect(balances).toHaveLength(2);
   });
 
   test('should hide assets', async () => {
-    render(<NetworkBalances chain={testChain} publicKey={TEST_PUBLIC_KEY} />);
+    render(<NetworkBalances chain={testChain} publicKeys={[TEST_PUBLIC_KEY]} />);
 
     const balancesBefore = screen.getAllByText('AssetBalance');
     expect(balancesBefore).toHaveLength(2);
@@ -68,7 +68,7 @@ describe('screen/Balances/NetworkBalances', () => {
   });
 
   test('should show unverfied badge', () => {
-    render(<NetworkBalances chain={testChain} publicKey={TEST_PUBLIC_KEY} />);
+    render(<NetworkBalances chain={testChain} publicKeys={[TEST_PUBLIC_KEY]} />);
 
     const unverifiedBadge = screen.getByText('balances.verificationFailedLabel');
     expect(unverifiedBadge).toBeInTheDocument();

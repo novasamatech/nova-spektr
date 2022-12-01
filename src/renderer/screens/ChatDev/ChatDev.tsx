@@ -1,3 +1,4 @@
+/* eslint-disable i18next/no-literal-string */
 import { ChangeEvent, useEffect, useRef, useState } from 'react';
 import { Room } from 'matrix-js-sdk';
 import cn from 'classnames';
@@ -72,7 +73,6 @@ const ChatDev = () => {
 
   return (
     <div>
-      {/* eslint-disable i18next/no-literal-string */}
       <div>
         <span className="text-lg block">
           Verification status:{' '}

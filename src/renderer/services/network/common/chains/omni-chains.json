@@ -80,10 +80,7 @@
         "url": "https://polkadot.polkassembly.io/v1/graphql"
       }
     },
-    "options": [
-      "crowdloans",
-      "governance-v1"
-    ]
+    "options": ["crowdloans", "governance-v1"]
   },
   {
     "chainId": "0xb0a8d493285c2df73290dfb7e61f870f17b41801197a149ca93654499ea3dafe",
@@ -165,10 +162,7 @@
         "url": "https://kusama.polkassembly.io/v1/graphql"
       }
     },
-    "options": [
-      "crowdloans",
-      "governance-v1"
-    ]
+    "options": ["crowdloans", "governance-v1"]
   },
   {
     "chainId": "0xe143f23803ac50e8f6f8e62695d1ce9e4e1d68aa36c1cd2cfd15340213f3423e",
@@ -229,10 +223,7 @@
         "url": "https://raw.githubusercontent.com/nova-wallet/nova-utils/master/crowdloan/westend.json"
       }
     },
-    "options": [
-      "testnet",
-      "crowdloans"
-    ]
+    "options": ["testnet", "crowdloans"]
   },
   {
     "chainId": "0x48239ef607d7928874027a43a67689209727dfb3d3dc5e5b03a39bdc2eda771a",

@@ -12,7 +12,7 @@ const Template: ComponentStory<typeof Switch> = (args) => <Switch {...args} />;
 
 export const Primary = Template.bind({});
 Primary.args = {
-  label: 'Switch lable',
+  label: 'Switch label',
 };
 
 export const Disabled = Template.bind({});

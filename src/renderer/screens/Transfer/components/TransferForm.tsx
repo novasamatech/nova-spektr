@@ -164,7 +164,7 @@ const Transfer = ({ onCreateTransaction, wallet, asset, connection }: Props) => 
                   prefixElement={
                     value && !error ? <Identicon address={value} background={false} /> : <Icon name="emptyIdenticon" />
                   }
-                  invalid={!!error}
+                  invalid={Boolean(error)}
                   value={value}
                   name="address"
                   className="w-full"
@@ -209,12 +209,6 @@ const Transfer = ({ onCreateTransaction, wallet, asset, connection }: Props) => 
                       <p className="text-lg">{asset.symbol}</p>
                     </div>
                   }
-                  invalid={!!error}
-                  onChange={onChange}
-                  value={value}
-                  type="number"
-                  name="amount"
-                  className="w-full text-xl font-semibold text-right"
                   label={
                     <div className="flex justify-between">
                       <div>{t('transfer.amountLabel')}</div>
@@ -225,7 +219,13 @@ const Transfer = ({ onCreateTransaction, wallet, asset, connection }: Props) => 
                       </div>
                     </div>
                   }
+                  invalid={Boolean(error)}
+                  value={value}
+                  type="number"
+                  name="amount"
+                  className="w-full text-xl font-semibold text-right"
                   placeholder={t('transfer.amountLabel')}
+                  onChange={onChange}
                 />
 
                 <ErrorMessage error={error} type="insufficientBalance">
