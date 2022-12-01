@@ -31,6 +31,10 @@ export const validateSignerFormat = (value: string): boolean => {
  * Copies string value to clipboard
  * @param text value to copy
  */
-export const copyToClipboard = (text = '') => {
-  navigator.clipboard.writeText(text);
+export const copyToClipboard = async (text = ''): Promise<void> => {
+  try {
+    await navigator.clipboard.writeText(text);
+  } catch (error) {
+    console.warn('Clipboard is not supported');
+  }
 };

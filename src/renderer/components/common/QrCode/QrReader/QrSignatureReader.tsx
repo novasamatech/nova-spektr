@@ -2,6 +2,7 @@ import { BrowserCodeReader, BrowserQRCodeReader, IScannerControls } from '@zxing
 import cn from 'classnames';
 import init from 'raptorq';
 import { useEffect, useRef } from 'react';
+import { hexToU8a, u8aToHex } from '@polkadot/util';
 
 import { useI18n } from '@renderer/context/I18nContext';
 import { ErrorFields } from './common/constants';
@@ -64,8 +65,9 @@ const QrSignatureReader = ({ size = 300, cameraId, className, onCameraList, onRe
       try {
         await init();
 
-        const signature = result.getText();
+        const qr = result.getText();
 
+        const signature = u8aToHex(hexToU8a(qr));
         isComplete.current = true;
         onResult?.(signature);
       } catch (error) {

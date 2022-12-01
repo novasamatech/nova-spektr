@@ -1,11 +1,24 @@
 import { ApiPromise } from '@polkadot/api';
-import { useEffect, useState } from 'react';
+import { u8aToString } from '@polkadot/util';
+import { construct, methods } from '@substrate/txwrapper-polkadot';
+import { useRef, useState } from 'react';
 
+import { getValidatorsApy } from '@renderer/services/staking/apyCalculator';
 import { AccountID, ChainId } from '@renderer/domain/shared-kernel';
 import { useSubscription } from '@renderer/services/subscription/subscriptionService';
-import { IStakingService, StakingMap } from './common/types';
+import { createTxMetadata } from '@renderer/utils/substrate';
+import {
+  Identity,
+  IStakingService,
+  Payee,
+  Staking,
+  StakingMap,
+  SubIdentity,
+  Validator,
+  ValidatorMap,
+} from './common/types';
 
-export const useStaking = (chainId?: ChainId, api?: ApiPromise): IStakingService => {
+export const useStaking = (): IStakingService => {
   // const { data } = useQuery<Rewards>(GET_TOTAL_REWARDS, {
   //   variables: {
   //     first: 10,
@@ -13,113 +26,246 @@ export const useStaking = (chainId?: ChainId, api?: ApiPromise): IStakingService
   //   },
   // });
   const eraSubscription = useSubscription<ChainId>();
-  const ledgerSubscription = useSubscription<AccountID>();
+  const ledgerSubscription = useSubscription<ChainId>();
 
-  const [_, setActiveEra] = useState<number>();
-  const [activeAccounts, setActiveAccounts] = useState<AccountID[]>([]);
+  const era = useRef<number>();
   const [staking, setStaking] = useState<StakingMap>({});
+  const [validators, setValidators] = useState<ValidatorMap>({});
 
-  useEffect(() => {
-    if (!api) return;
-
-    (async () => {
-      await eraSubscription.unsubscribeAll();
-      subscribeActiveEra();
-    })();
-  }, [api]);
-
-  const subscribeActiveEra = () => {
-    if (!chainId || !api) return;
-
-    const unsubscribe = api.query.staking.activeEra((data: any) => {
-      try {
-        const unwrappedData = data.unwrap();
-        setActiveEra(unwrappedData.get('index').toNumber());
-      } catch (error) {
-        console.warn(error);
-      }
-    });
-
-    eraSubscription.subscribe(chainId, unsubscribe as Promise<any>);
+  const subscribeActiveEra = async (chainId: ChainId, api: ApiPromise): Promise<void> => {
+    await ledgerSubscription.unsubscribeAll();
+    await listenToActiveEra(chainId, api);
   };
 
-  const getLedger = async (newAccounts: AccountID[]) => {
-    const apiHasChanges = activeAccounts.length === newAccounts.length;
-    if (apiHasChanges) {
-      await resubscribeLedgerAll(newAccounts);
-    } else {
-      await resubscribeLedger(newAccounts);
+  const listenToActiveEra = async (chainId: ChainId, api: ApiPromise): Promise<void> => {
+    return new Promise((resolve, reject) => {
+      const unsubscribe = api.query.staking.activeEra((data: any) => {
+        try {
+          const unwrappedData = data.unwrap();
+          era.current = unwrappedData.get('index').toNumber();
+          resolve();
+        } catch (error) {
+          console.warn(error);
+          reject();
+        }
+      });
+
+      eraSubscription.subscribe(chainId, unsubscribe);
+    });
+  };
+
+  const subscribeLedger = async (chainId: ChainId, api: ApiPromise, newAccounts: AccountID[]): Promise<void> => {
+    const apiHasChanged = Object.keys(staking).length === newAccounts.length;
+    if (apiHasChanged) {
+      setStaking({});
     }
 
-    setActiveAccounts(newAccounts);
+    await ledgerSubscription.unsubscribeAll();
+    await listenToLedger(chainId, api, newAccounts);
   };
 
-  const subscribeLedger = async (accountId: AccountID): Promise<void> => {
-    if (!chainId) return;
+  const listenToLedger = async (chainId: ChainId, api: ApiPromise, accounts: AccountID[]): Promise<void> => {
+    const controllers = await getControllers(api, accounts);
 
-    const controller = await getController(accountId);
+    const unsubscribe = api.query.staking.ledger.multi(controllers, async (data) => {
+      let isControllerChanged = false;
 
-    const unsubscribe = api?.query.staking.ledger(controller || accountId, async (data) => {
-      if (!data.isNone) {
+      const newStaking = data.map((ledger, index) => {
+        const accountId = accounts[index];
+
+        if (ledger.isNone) {
+          const isSameChain = Boolean(staking[accountId]?.chainId === chainId);
+          isControllerChanged ||= isSameChain;
+
+          return isSameChain ? staking[accountId] : { [accountId]: undefined };
+        }
+
         try {
-          const { active, stash, total, unlocking } = data.unwrap();
+          const { active, stash, total, unlocking } = ledger.unwrap();
           const formattedUnlocking = unlocking.toArray().map((unlock) => ({
             value: unlock.value.toString(),
             era: unlock.era.toString(),
           }));
+          const payload: Staking = {
+            accountId,
+            chainId,
+            controller: controllers[index] || stash.toHuman(),
+            stash: stash.toHuman(),
+            active: active.toString(),
+            total: total.toString(),
+            unlocking: formattedUnlocking,
+          };
 
-          setStaking((prev) => ({
-            ...prev,
-            [accountId]: {
-              accountId,
-              chainId,
-              controller: controller || stash.toHuman(),
-              stash: stash.toHuman(),
-              active: active.toString(),
-              total: total.toString(),
-              unlocking: formattedUnlocking,
-            },
-          }));
+          return { [accountId]: payload };
         } catch (error) {
           console.warn(error);
-          setStaking((prev) => ({ ...prev, [accountId]: undefined }));
+
+          return { [accountId]: undefined };
         }
-      } else if (staking[accountId]?.chainId === chainId) {
-        await ledgerSubscription.unsubscribe(accountId);
-        await subscribeLedger(accountId);
-      } else {
-        setStaking((prev) => ({ ...prev, [accountId]: undefined }));
+      });
+      setStaking(Object.assign({}, ...newStaking));
+
+      if (isControllerChanged) {
+        await ledgerSubscription.unsubscribeAll();
+        await listenToLedger(chainId, api, accounts);
       }
     });
 
-    ledgerSubscription.subscribe(accountId, unsubscribe as Promise<any>);
+    ledgerSubscription.subscribe(chainId, unsubscribe);
   };
 
-  const resubscribeLedgerAll = async (newAccounts: AccountID[]): Promise<void> => {
-    await ledgerSubscription.unsubscribeAll();
-    await Promise.all(newAccounts.map(subscribeLedger));
+  const getValidators = async (chainId: ChainId, api: ApiPromise): Promise<void> => {
+    const [totalStake, commission] = await Promise.all([setValidatorsStake(api), setValidatorsPrefs(api)]);
+
+    const { addresses, apyPayload } = Object.entries(totalStake).reduce(
+      (acc, [address, totalStake]) => {
+        acc.addresses.push(address);
+        acc.apyPayload.push({ address, totalStake, commission: commission[address] });
+
+        return acc;
+      },
+      { addresses: [], apyPayload: [] } as Record<string, any[]>,
+    );
+
+    await Promise.all([setIdentities(api, addresses), calculateValidatorsApy(api, apyPayload)]);
   };
 
-  const resubscribeLedger = async (newAccounts: AccountID[]): Promise<void> => {
-    if (newAccounts.length < activeAccounts.length) {
-      const removedAccounts = activeAccounts.filter((account) => !newAccounts.includes(account));
-      await Promise.all(removedAccounts.map(ledgerSubscription.unsubscribe));
+  const setValidatorsStake = async (api: ApiPromise): Promise<Record<AccountID, string>> => {
+    if (!era.current) throw new Error('No ActiveEra');
 
-      const newStaking = newAccounts.reduce(
-        (acc, account) => ({ ...acc, [account]: staking[account] }),
-        {} as StakingMap,
-      );
+    const data = await api.query.staking.erasStakersClipped.entries(era.current);
 
-      setStaking(newStaking);
-    } else {
-      const incomingAccounts = newAccounts.filter((account) => !activeAccounts.includes(account));
-      await Promise.all(incomingAccounts.map(subscribeLedger));
-    }
+    const { full, short } = data.reduce(
+      (acc, [storageKey, type]) => {
+        const address = storageKey.args[1].toString();
+        const totalStake = type.total.toString();
+        const payload = { totalStake, address, ownStake: type.own.toString() };
+
+        acc.full = { ...acc.full, [address]: payload };
+        acc.short = { ...acc.short, [address]: totalStake };
+
+        return acc;
+      },
+      { full: {}, short: {} },
+    );
+
+    setValidators((prev) =>
+      Object.entries(full).reduce((acc, [address, prefs]) => {
+        const payload = { ...prev[address], ...(prefs as ValidatorMap) };
+
+        return { ...acc, [address]: payload };
+      }, {}),
+    );
+
+    return short;
   };
 
-  const getNominators = async (account: AccountID): Promise<string[]> => {
-    if (!api) return [];
+  const setValidatorsPrefs = async (api: ApiPromise): Promise<Record<AccountID, number>> => {
+    if (!era.current) throw new Error('No ApiPromise or ActiveEra');
 
+    const data = await api.query.staking.erasValidatorPrefs.entries(era.current);
+
+    const { full, short } = data.reduce(
+      (acc, [storageKey, type]) => {
+        const address = storageKey.args[1].toString();
+        const commission = parseFloat(type.commission.toHuman() as string);
+        const payload = { address, commission, blocked: type.blocked.toHuman() };
+
+        acc.full = { ...acc.full, [address]: payload };
+        acc.short = { ...acc.short, [address]: commission };
+
+        return acc;
+      },
+      { full: {}, short: {} },
+    );
+
+    setValidators((prev) =>
+      Object.entries(full).reduce((acc, [address, prefs]) => {
+        const payload = { ...prev[address], ...(prefs as ValidatorMap) };
+
+        return { ...acc, [address]: payload };
+      }, {}),
+    );
+
+    return short;
+  };
+
+  const getMaxValidators = (api: ApiPromise): number => {
+    return api.consts.staking.maxNominations.toNumber();
+  };
+
+  const setIdentities = async (api: ApiPromise, addresses: AccountID[]): Promise<void> => {
+    const subIdentities = await getSubIdentities(api, addresses);
+    const parentIdentities = await getParentIdentities(api, subIdentities);
+
+    setValidators((prev) =>
+      Object.entries(prev).reduce((acc, [address, validator]) => {
+        const payload = { ...validator, identity: parentIdentities[address] };
+
+        return { ...acc, [address]: payload };
+      }, {}),
+    );
+  };
+
+  const getSubIdentities = async (api: ApiPromise, addresses: AccountID[]): Promise<SubIdentity[]> => {
+    const subIdentities = await api.query.identity.superOf.multi(addresses);
+
+    return subIdentities.reduce((acc, identity, index) => {
+      const payload = { sub: addresses[index], parent: addresses[index], subName: '' };
+      if (!identity.isNone) {
+        const [address, rawData] = identity.unwrap();
+        payload.parent = address.toHuman();
+        payload.subName = rawData.isRaw ? u8aToString(rawData.asRaw) : rawData.value.toString();
+      }
+
+      return acc.concat(payload);
+    }, [] as SubIdentity[]);
+  };
+
+  const getParentIdentities = async (
+    api: ApiPromise,
+    subIdentities: SubIdentity[],
+  ): Promise<Record<AccountID, Identity>> => {
+    const identityAddresses = subIdentities.map((identity) => identity.parent);
+
+    const parentIdentities = await api.query.identity.identityOf.multi(identityAddresses);
+
+    return parentIdentities.reduce((acc, identity, index) => {
+      if (identity.isNone) return acc;
+
+      const { parent, sub, subName } = subIdentities[index];
+      const { info } = identity.unwrap(); // { judgements, info }
+      const { display, web, riot, email, twitter } = info;
+
+      const payload: Identity = {
+        subName,
+        email: email.isRaw ? u8aToString(email.asRaw) : email.value.toString(),
+        riot: riot.isRaw ? u8aToString(riot.asRaw) : riot.value.toString(),
+        twitter: twitter.isRaw ? u8aToString(twitter.asRaw) : twitter.value.toString(),
+        website: web.isRaw ? u8aToString(web.asRaw) : web.value.toString(),
+        parent: {
+          address: parent,
+          name: display.isRaw ? u8aToString(display.asRaw) : display.value.toString(),
+        },
+      };
+
+      return { ...acc, [sub]: payload };
+    }, {} as Record<AccountID, Identity>);
+  };
+
+  const calculateValidatorsApy = async (api: ApiPromise, validators: Validator[]) => {
+    const apys = await getValidatorsApy(api, validators);
+
+    setValidators((prev) =>
+      Object.entries(apys).reduce((acc, [address, apy]) => {
+        const payload = { ...prev[address], apy };
+
+        return { ...acc, [address]: payload };
+      }, {}),
+    );
+  };
+
+  const getNominators = async (api: ApiPromise, account: AccountID): Promise<string[]> => {
     try {
       const data = await api?.query.staking.nominators(account);
       if (data.isNone) return [];
@@ -133,54 +279,50 @@ export const useStaking = (chainId?: ChainId, api?: ApiPromise): IStakingService
     }
   };
 
-  const getController = async (account: AccountID): Promise<string | undefined> => {
-    if (!api) return undefined;
-
+  const getControllers = async (api: ApiPromise, accounts: AccountID[]): Promise<AccountID[]> => {
     try {
-      const data = await api?.query.staking.bonded(account);
-      if (data.isNone) return undefined;
-      const unwrappedData = data.unwrap();
+      const controllers = await api.query.staking.bonded.multi(accounts);
 
-      return unwrappedData.toString();
+      return controllers.map((controller, index) =>
+        controller.isNone ? accounts[index] : controller.unwrap().toString(),
+      );
     } catch (error) {
       console.warn(error);
 
-      return undefined;
+      return [];
     }
   };
 
-  // const bond = (): Promise<void> => {
-  // if (!activeNetwork) return;
-  //
-  // const address = '5GmedEVixRJoE8TjMePLqz7DnnQG1d5517sXdiAvAF2t7EYW';
-  // const { registry, options, info } = await offlineTxMetadata(address, activeNetwork?.label, activeNetwork?.value);
-  //
-  // const unsignedRemark = methods.staking.nominate({ targets: randomValidators }, info, options);
-  // const unsignedBond = methods.staking.bond(
-  //   { value: '1000000000000', payee: 'Stash', controller: address },
-  //   info,
-  //   options,
-  // );
-  // const unsignedBatch = methods.utility.batchAll(
-  //   { calls: [unsignedBond.method, unsignedRemark.method] },
-  //   info,
-  //   options,
-  // );
-  // const signingPayload = construct.signingPayload(unsignedBatch, { registry });
-  //   return Promise.resolve();
-  // };
-  //
-  // const bondExtra = (): Promise<void> => {
-  // if (!activeNetwork) return;
-  //
-  // const address = '5GmedEVixRJoE8TjMePLqz7DnnQG1d5517sXdiAvAF2t7EYW';
-  // const { registry, options, info } = await offlineTxMetadata(address, activeNetwork?.label, activeNetwork?.value);
-  //
-  // const unsignedBondExtra = methods.staking.bondExtra({ maxAdditional: '1000000000000' }, info, options);
-  // const signingPayload = construct.signingPayload(unsignedBondExtra, { registry });
-  //   return Promise.resolve();
-  // };
-  //
+  const bondAndNominate = async (
+    api: ApiPromise,
+    address: AccountID,
+    value: string,
+    payee: Payee,
+    targets: AccountID[],
+  ): Promise<string> => {
+    const { registry, options, info } = await createTxMetadata(address, api);
+
+    const bondPayload = { value, payee, controller: address };
+    const unsignedBond = methods.staking.bond(bondPayload, info, options);
+
+    const nominatePayload = { targets };
+    const unsignedNominate = methods.staking.nominate(nominatePayload, info, options);
+
+    const batchPayload = { calls: [unsignedNominate.method, unsignedBond.method] };
+    const unsignedBatch = methods.utility.batchAll(batchPayload, info, options);
+
+    return construct.signingPayload(unsignedBatch, { registry });
+  };
+
+  const bondExtra = async (api: ApiPromise, address: AccountID, value: string): Promise<string> => {
+    const { registry, options, info } = await createTxMetadata(address, api);
+
+    const bondExtraPayload = { maxAdditional: value };
+    const unsignedBondExtra = methods.staking.bondExtra(bondExtraPayload, info, options);
+
+    return construct.signingPayload(unsignedBondExtra, { registry });
+  };
+
   // const rebond = (): Promise<void> => {
   // if (!activeNetwork) return;
   //
@@ -217,72 +359,21 @@ export const useStaking = (chainId?: ChainId, api?: ApiPromise): IStakingService
   // const signingPayload = construct.signingPayload(unsignedWithdraw, { registry });
   //   return Promise.resolve();
   // }
-  //
-  // const getIdentities = (): Promise<void> => {
-  //   // Polkadot user with SubIdentity - 11uMPbeaEDJhUxzU4ZfWW9VQEsryP9XqFcNRfPdYda6aFWJ
-  //   // ["14QBQABMSFBsT3pDTaEQdshq7ZLmhzKiae2weZH45pw5ErYu", {Raw: "4"}]
-  //   // Raw - subIdentity name
-  //   const data = (await activeNetwork?.value.query.identity.superOf(
-  //     '11uMPbeaEDJhUxzU4ZfWW9VQEsryP9XqFcNRfPdYda6aFWJ',
-  //   )) as any;
-  //   const unwrappedData = data.unwrap();
-  //   console.log(unwrappedData.toHuman());
-  //
-  //   // Parent of previous subIdentity - 14QBQABMSFBsT3pDTaEQdshq7ZLmhzKiae2weZH45pw5ErYu
-  //   // const data = (await activeNetwork?.value.query.identity.identityOf(
-  //   //   '14QBQABMSFBsT3pDTaEQdshq7ZLmhzKiae2weZH45pw5ErYu',
-  //   // )) as any;
-  //   // const unwrappedData = data.unwrap();
-  //   // console.log(unwrappedData.toHuman());
-  //   return Promise.resolve();
-  // };
-  //
-  // const getMaxValidators = (): Promise<void> => {
-  //   const data = activeNetwork?.value.consts.staking.maxNominations;
-  //   return Promise.resolve();
-  // };
-  //
-  // const getRewards = (): Promise<void> => {
-  //   return Promise.resolve();
-  // };
-  //
-  // const getValidators = (): Promise<void> => {
-  //   const data = (await activeNetwork?.value.query.staking.erasStakersClipped.entries(eraIndex)) as any;
-  //   const wholeData = data.map(([storageKey, type]: any[]) => ({
-  //     validator: storageKey.toHuman(),
-  //     value: type.toHuman(),
-  //   }));
-  //   setRandomValidators(wholeData.map((d: any) => d.validator[1]));
-  //
-  //   console.log(wholeData);
-  //   return Promise.resolve();
-  // };
-  //
-  // const getValidatorsPrefs = (): Promise<void> => {
-  //   const data = (await activeNetwork?.value.query.staking.erasValidatorPrefs.entries(eraIndex)) as any;
-  //   console.log(
-  //     data.map(([storageKey, type]: any[]) => ({
-  //       validator: storageKey.toHuman(),
-  //       prefs: type.toHuman(),
-  //     })),
-  //   );
-  //   return Promise.resolve();
-  // };
 
   return {
     staking,
-    getLedger,
+    validators,
+    subscribeActiveEra,
+    subscribeLedger,
+    getValidators,
+    getMaxValidators,
+    bondAndNominate,
+    bondExtra,
+
     getNominators,
-    // getBonded,
-    // bond,
-    // bondExtra,
     // rebond,
     // unbond,
     // withdrawUnbonded,
-    // getIdentities,
-    // getMaxValidators,
     // getRewards,
-    // getValidators,
-    // getValidatorsPrefs,
   };
 };

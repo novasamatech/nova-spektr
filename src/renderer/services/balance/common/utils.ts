@@ -1,12 +1,18 @@
-/* eslint-disable import/prefer-default-export */
 import { BN, BN_TEN } from '@polkadot/util';
-import BigNumber from 'bignumber.js';
 import { encodeAddress } from '@polkadot/util-crypto';
+import BigNumber from 'bignumber.js';
 
-import { DEFAULT, Suffix, Decimal, SS58_DEFAULT_PREFIX, ZERO_BALANCE } from './constants';
 import { Asset, AssetType, OrmlExtras, StatemineExtras } from '@renderer/domain/asset';
-import { PublicKey } from '@renderer/domain/shared-kernel';
 import { Balance } from '@renderer/domain/balance';
+import { PublicKey } from '@renderer/domain/shared-kernel';
+import {
+  Decimal,
+  DEFAULT,
+  SS58_DEFAULT_PREFIX,
+  Suffix,
+  ZERO_BALANCE,
+} from '@renderer/services/balance/common/constants';
+import { FormattedBalance } from './types';
 
 export const toAddress = (publicKey: PublicKey, prefix = SS58_DEFAULT_PREFIX): string => {
   if (!publicKey) return '';
@@ -15,7 +21,6 @@ export const toAddress = (publicKey: PublicKey, prefix = SS58_DEFAULT_PREFIX): s
 };
 
 export const formatAmount = (amount: string, precision: number): string => {
-  // eslint-disable-next-line @typescript-eslint/prefer-regexp-exec
   if (!amount) return '0';
 
   const isDecimalValue = amount.match(/^(\d+)\.(\d+)$/);
@@ -42,12 +47,6 @@ export const getAssetId = (asset: Asset): string | number => {
   };
 
   return assetId[asset.type || DEFAULT]();
-};
-
-type FormattedBalance = {
-  value: string;
-  suffix: string;
-  decimalPlaces: number;
 };
 
 export const formatBalance = (balance = '0', precision = 0): FormattedBalance => {

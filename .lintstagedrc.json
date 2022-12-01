@@ -1,5 +1,5 @@
 {
-  "src/**/*.{ts,js,tsx,jsx,json}": ["prettier --write", "eslint --fix"],
-  "webpack/**/*.{ts,js,json}": ["prettier --write", "eslint --fix"],
-  "*.{json,js,ts,md,yaml}": ["prettier --write"]
+  "*.{ts,js,tsx,jsx,json,html,css,yml}": ["pretty-quick --pattern '**/*.*(js|tx|jsx|tsx|json|html|css|yml)' --staged"],
+  "src/renderer/**/*.{tsx}": ["pnpm lint:i18n-tsx"],
+  "src/shared/locale/*.{json}": ["pnpm lint:i18n-fix"]
 }

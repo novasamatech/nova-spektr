@@ -1,9 +1,10 @@
 import { render, screen } from '@testing-library/react';
 
-import { HexString } from '@renderer/domain/shared-kernel';
 import { Asset } from '@renderer/domain/asset';
 import { Chain } from '@renderer/domain/chain';
+import { TEST_ADDRESS, TEST_PUBLIC_KEY } from '@renderer/services/balance/common/constants';
 import chains from '@renderer/services/network/common/chains/chains.json';
+import { useWallet } from '@renderer/services/wallet/walletService';
 import ReceiveModal from './ReceiveModal';
 
 window.IntersectionObserver = jest.fn().mockImplementation(() => ({
@@ -17,9 +18,24 @@ jest.mock('@renderer/context/I18nContext', () => ({
   }),
 }));
 
+jest.mock('@renderer/services/wallet/walletService', () => ({
+  useWallet: jest.fn().mockReturnValue({
+    getActiveWallets: () => [
+      {
+        name: 'Test Wallet',
+        mainAccounts: [{ accountId: TEST_ADDRESS, publicKey: TEST_PUBLIC_KEY }],
+      },
+    ],
+  }),
+}));
+
 const westendExplorers = chains.find((chain) => chain.name === 'Westend')?.explorers || [];
 
 describe('screens/Balances/ReceiveModal', () => {
+  afterEach(() => {
+    jest.clearAllMocks();
+  });
+
   const defaultProps = (explorers?: any[]) => ({
     onClose: () => {},
     isOpen: true,
@@ -30,12 +46,6 @@ describe('screens/Balances/ReceiveModal', () => {
         explorers,
       } as Chain,
       asset: { name: 'WND', icon: 'wnd-icon' } as Asset,
-      activeWallets: [
-        {
-          name: 'my wallet',
-          publicKey: '0xd02b1de0e29d201d48f1a48fb0ead05bf292366ffe90efec9368bb2c7849de59' as HexString,
-        },
-      ],
     },
   });
 
@@ -43,7 +53,7 @@ describe('screens/Balances/ReceiveModal', () => {
     render(<ReceiveModal {...defaultProps(westendExplorers)} />);
 
     const title = screen.getByRole('heading', { name: 'receive.title' });
-    const address = screen.getByText('5GmedEVixRJoE8TjMePLqz7DnnQG1d5517sXdiAvAF2t7EYW');
+    const address = screen.getByText('5CGQ7BPJZZKNirQgVhzbX9wdkgbnUHtJ5V7FkMXdZeVbXyr9');
     expect(title).toBeInTheDocument();
     expect(address).toBeInTheDocument();
   });
@@ -53,5 +63,32 @@ describe('screens/Balances/ReceiveModal', () => {
 
     const explorers = screen.queryByRole('list');
     expect(explorers).not.toBeInTheDocument();
+  });
+
+  test('should not render select wallet component', () => {
+    render(<ReceiveModal {...defaultProps(westendExplorers)} />);
+
+    const title = screen.queryByText('receive.selectWalletPlaceholder');
+    expect(title).not.toBeInTheDocument();
+  });
+
+  test('should render select wallet component', () => {
+    (useWallet as jest.Mock).mockImplementation(() => ({
+      getActiveWallets: () => [
+        {
+          name: 'Test Wallet 1',
+          mainAccounts: [{ accountId: TEST_ADDRESS, publicKey: TEST_PUBLIC_KEY }],
+        },
+        {
+          name: 'Test Wallet 2',
+          mainAccounts: [{ accountId: TEST_ADDRESS, publicKey: TEST_PUBLIC_KEY }],
+        },
+      ],
+    }));
+
+    render(<ReceiveModal {...defaultProps(westendExplorers)} />);
+
+    const title = screen.getByRole('button', { name: /Test Wallet 1/ });
+    expect(title).toBeInTheDocument();
   });
 });

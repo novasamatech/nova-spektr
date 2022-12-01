@@ -1,9 +1,16 @@
-input[type="checkbox"]:checked::before {
+input[type='checkbox']:checked::before {
   content: '✓';
   color: white;
   display: block;
   width: 100%;
   line-height: 20px;
   font-weight: bold;
+  font-size: 14px;
   text-align: center;
+}
+
+input::-webkit-outer-spin-button,
+input::-webkit-inner-spin-button {
+  appearance: none;
+  margin: 0;
 }

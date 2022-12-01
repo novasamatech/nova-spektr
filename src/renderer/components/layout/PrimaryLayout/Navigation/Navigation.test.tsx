@@ -21,12 +21,7 @@ jest.mock('@renderer/services/wallet/walletService', () => ({
     getActiveWallets: () => [
       {
         name: 'Test Wallet',
-        mainAccounts: [
-          {
-            address: '1ChFWeNRLarAPRCTM3bfJmncJbSAbSS9yqjueWz7jX7iTVZ',
-            publicKey: TEST_PUBLIC_KEY,
-          },
-        ],
+        mainAccounts: [{ accountId: '1ChFWeNRLarAPRCTM3bfJmncJbSAbSS9yqjueWz7jX7iTVZ', publicKey: TEST_PUBLIC_KEY }],
       },
     ],
   }),
@@ -50,7 +45,7 @@ describe('layout/PrimaryLayout/Navigation', () => {
 
     render(<Navigation />, { wrapper: MemoryRouter });
 
-    const text = screen.getByText('$1,148.14');
+    const text = screen.getByText('Test Wallet');
     expect(text).toBeInTheDocument();
 
     const langSwitch = screen.getByText('localeComponent');

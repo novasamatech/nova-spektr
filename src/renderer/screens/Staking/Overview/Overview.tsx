@@ -4,18 +4,20 @@ import { Link } from 'react-router-dom';
 
 import wallets from '@renderer/components/layout/PrimaryLayout/Wallets/Wallets';
 import { Address, ButtonBack, Dropdown, Icon, Identicon, Input } from '@renderer/components/ui';
-import { DropdownOption } from '@renderer/components/ui/Dropdown/common/types';
+import { DropdownOption, ResultOption } from '@renderer/components/ui/Dropdowns/common/types';
 import { useI18n } from '@renderer/context/I18nContext';
 import { useNetworkContext } from '@renderer/context/NetworkContext';
 import { Asset, StakingType } from '@renderer/domain/asset';
 import { AccountID, ChainId } from '@renderer/domain/shared-kernel';
 import Paths from '@renderer/routes/paths';
+import { createLink } from '@renderer/routes/utils';
 import { formatBalance } from '@renderer/services/balance/common/utils';
 import { useChains } from '@renderer/services/network/chainsService';
 import { useStaking } from '@renderer/services/staking/stakingService';
 import { useWallet } from '@renderer/services/wallet/walletService';
 
-type NetworkOption = DropdownOption<{ chainId: ChainId; asset: Asset }>;
+type ResultNetwork = ResultOption<{ chainId: ChainId; asset: Asset }>;
+type DropdownNetwork = DropdownOption<{ chainId: ChainId; asset: Asset }>;
 
 const Overview = () => {
   const { t } = useI18n();
@@ -24,13 +26,13 @@ const Overview = () => {
   const { getActiveWallets } = useWallet();
 
   const [query, setQuery] = useState('');
-  const [activeNetwork, setActiveNetwork] = useState<NetworkOption>();
-  const [stakingNetworks, setStakingNetworks] = useState<NetworkOption[]>([]);
+  const [activeNetwork, setActiveNetwork] = useState<ResultNetwork>();
+  const [stakingNetworks, setStakingNetworks] = useState<DropdownNetwork[]>([]);
 
   const chainId = activeNetwork?.value.chainId || ('' as ChainId);
   const api = connections[chainId]?.api;
 
-  const { staking, getLedger, getNominators } = useStaking(chainId, api);
+  const { staking, subscribeActiveEra, subscribeLedger, getNominators } = useStaking();
 
   const activeWallets = getActiveWallets();
 
@@ -45,24 +47,34 @@ const Overview = () => {
       }, [] as { chainId: ChainId; icon: string; name: string; asset: Asset }[]);
 
       const sortGenesisHashes = sortChains(relaychains).map(({ chainId, name, icon, asset }) => ({
+        id: chainId,
+        element: name,
         prefix: <img src={icon} alt={`${name} icon`} width={20} height={20} />,
-        label: name,
         value: { chainId, asset },
       }));
+
       setStakingNetworks(sortGenesisHashes);
-      setActiveNetwork(sortGenesisHashes[0]);
+      setActiveNetwork({ id: sortGenesisHashes[0].id, value: sortGenesisHashes[0].value });
     };
 
     setupAvailableNetworks();
   }, []);
 
   useEffect(() => {
-    if (!api || !activeWallets) return;
+    if (!chainId || !api?.isConnected) return;
 
-    const accounts = activeWallets.map(
-      (wallet) => wallet.mainAccounts[0]?.accountId || wallet.chainAccounts[0]?.accountId,
-    );
-    getLedger(accounts);
+    (async () => {
+      await subscribeActiveEra(chainId, api);
+    })();
+  }, [api]);
+
+  useEffect(() => {
+    if (!chainId || !api?.isConnected || !activeWallets) return;
+
+    (async () => {
+      const accounts = activeWallets.map((wallet) => (wallet.mainAccounts[0] || wallet.chainAccounts[0])?.accountId);
+      await subscribeLedger(chainId, api, accounts);
+    })();
   }, [activeWallets, api]);
 
   const formattedWallets = (activeWallets || [])?.reduce((acc, wallet) => {
@@ -83,7 +95,9 @@ const Overview = () => {
   }, [] as { name: string; accountId: AccountID }[]);
 
   const nominators = async (account: AccountID) => {
-    const nominators = await getNominators(account);
+    if (!api) return;
+
+    const nominators = await getNominators(api, account);
     console.log(account, ' my nominators - ', nominators);
   };
 
@@ -105,9 +119,9 @@ const Overview = () => {
           <Dropdown
             className="w-40"
             placeholder={t('staking.startStaking.selectNetworkLabel')}
-            selected={activeNetwork}
+            activeId={activeNetwork?.id}
             options={stakingNetworks}
-            onSelected={setActiveNetwork}
+            onChange={setActiveNetwork}
           />
         </div>
         {wallets.length === 0 && (
@@ -140,12 +154,12 @@ const Overview = () => {
                     <p className="text-lg">{wallet.name}</p>
                   </div>
                   <div className="p-2.5 pt-[66px] rounded-2lg bg-tertiary text-white">
-                    <p className="text-xs">
+                    <div className="text-xs">
                       S - <Address address={staking[wallet.accountId]?.stash || ''} type="short" />
-                    </p>
-                    <p className="text-xs">
+                    </div>
+                    <div className="text-xs">
                       C - <Address address={staking[wallet.accountId]?.controller || ''} type="short" />
-                    </p>
+                    </div>
                   </div>
                   {staking[wallet.accountId] ? (
                     <div className="flex flex-col items-center p-2.5">
@@ -180,7 +194,10 @@ const Overview = () => {
                         <Link className="bg-error rounded-lg py-1 px-2 text-white" to={Paths.UNBOND}>
                           Unbond
                         </Link>
-                        <Link className="bg-primary rounded-lg py-1 px-2 text-white" to={Paths.STAKING_START}>
+                        <Link
+                          className="bg-primary rounded-lg py-1 px-2 text-white"
+                          to={createLink('STAKING_START', { chainId })}
+                        >
                           Bond
                         </Link>
                       </div>
@@ -188,7 +205,10 @@ const Overview = () => {
                   ) : (
                     <div className="flex flex-col items-center gap-y-2 p-2.5">
                       <p>Start staking</p>
-                      <Link className="bg-primary rounded-lg mt-2 py-1 px-2 text-white" to={Paths.STAKING_START}>
+                      <Link
+                        className="bg-primary rounded-lg mt-2 py-1 px-2 text-white"
+                        to={createLink('STAKING_START', { chainId })}
+                      >
                         Bond
                       </Link>
                     </div>

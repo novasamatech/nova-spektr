@@ -9,7 +9,7 @@ module.exports = {
         sans: ['Public Sans', ...defaultTheme.fontFamily.sans],
       },
       boxShadow: {
-        surface: '0 0 25px rgba(0, 0, 0, 0.05)',
+        surface: '0 0 15px rgba(0, 0, 0, 0.05)',
         element: '0 0 5px rgba(0, 0, 0, 0.15)',
         component: '0 0 50px rgba(0, 0, 0, 0.1)',
       },
@@ -44,16 +44,21 @@ module.exports = {
       spacing: {
         1.25: '0.3125rem',
         2.5: '0.625rem',
+        3.5: '0.875rem',
         4.5: '1.125rem',
         5.5: '1.375rem',
+        6.5: '1.625rem',
         7.5: '1.875rem',
         8.5: '2.125rem',
         9.5: '2.375rem',
         10.5: '2.625rem',
+        11.5: '2.875rem',
+        12.5: '3.125rem',
         15: '3.75rem',
       },
       fontSize: {
         '2xs': ['0.625rem', '0.75rem'],
+        '4.5xl': ['2.75rem', '3rem'],
       },
       borderRadius: {
         '2lg': '10px',

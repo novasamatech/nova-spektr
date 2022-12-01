@@ -10,10 +10,23 @@ import { useWallet } from '@renderer/services/wallet/walletService';
 import { WalletType } from '@renderer/domain/wallet';
 import Wallets from '../Wallets/Wallets';
 import useClickOutside from '@renderer/hooks/useClickOutside';
+import './Navigation.css';
+import { WalletDS } from '@renderer/services/storage';
 
-const CardStyle: Record<WalletType, string> = {
-  [WalletType.WATCH_ONLY]: 'bg-alert',
-  [WalletType.PARITY]: 'bg-primary',
+type CardType = WalletType | 'multiple' | 'none';
+
+const CardStyle: Record<CardType, string> = {
+  [WalletType.WATCH_ONLY]: 'bg-alert border-[3px] border-alert',
+  [WalletType.PARITY]: 'bg-primary border-[3px] border-primary',
+  multiple: 'bg-shade-40 multiple-card',
+  none: 'bg-shade-40 border-[3px] border-shade-40',
+};
+
+const getCardType = (wallets?: WalletDS[]): CardType => {
+  if (!wallets || !wallets.length) return 'none';
+  if (wallets.length > 1) return 'multiple';
+
+  return wallets[0].type;
 };
 
 const NavItems = [
@@ -24,7 +37,7 @@ const NavItems = [
   // { icon: <Icon name="book" />, title: 'navigation.addressBookLabel', link: Paths.ADDRESS_BOOK },
   // { icon: <Icon name="btc" />, title: 'navigation.chatDEVLabel', link: Paths.CHAT_DEV },
   // { icon: <Icon name="eth" />, title: 'navigation.cameraDEVLabel', link: Paths.CAMERA_DEV },
-  { icon: <Icon name="history" />, title: 'navigation.signingDEVLabel', link: Paths.SIGNING },
+  // { icon: <Icon name="history" />, title: 'navigation.signingDEVLabel', link: Paths.SIGNING },
 ];
 
 const Navigation = () => {
@@ -33,7 +46,7 @@ const Navigation = () => {
   const { LocaleComponent, t } = useI18n();
   const { getActiveWallets } = useWallet();
   const activeWallets = getActiveWallets();
-  const walletType = activeWallets?.[0]?.type || WalletType.PARITY;
+  const walletType = getCardType(activeWallets);
 
   // const navigate = useNavigate();
   // const { matrix, setIsLoggedIn } = useMatrix();
@@ -61,32 +74,61 @@ const Navigation = () => {
   const currentWallet = activeWallets?.length ? activeWallets[0] : undefined;
   const currentAccount = currentWallet?.mainAccounts[0] || currentWallet?.chainAccounts[0];
 
+  const walletName =
+    walletType === 'multiple'
+      ? t('navigation.multipleWalletsLabel')
+      : currentWallet?.name || t('navigation.unknownWalletLabel');
+
   return (
     <>
       <aside className="relative flex gap-y-5 flex-col w-[300px] bg-shade-5 p-5 z-30">
-        <div className={cn('rounded-xl text-white', CardStyle[walletType])}>
-          <div className="flex gap-x-2.5 pl-4 pt-4 pr-2">
-            <Identicon theme="polkadot" address={currentAccount?.accountId || ''} size={46} />
+        <div className={cn('rounded-xl text-white p-4', CardStyle[walletType])}>
+          <div className="flex gap-x-2.5">
+            <div className="relative">
+              {walletType === WalletType.PARITY && (
+                <>
+                  <Identicon theme="polkadot" address={currentAccount?.accountId || ''} size={46} />
+
+                  <div className="absolute box-border right-0 bottom-0 bg-shade-70 w-5 h-5 flex justify-center items-center rounded-full border border-primary border-solid">
+                    <Icon name="paritySigner" size={12} />
+                  </div>
+                </>
+              )}
+              {walletType === WalletType.WATCH_ONLY && (
+                <>
+                  <Identicon theme="polkadot" address={currentAccount?.accountId || ''} size={46} />
+
+                  <div className="absolute box-border right-0 bottom-0 bg-shade-70 w-5 h-5 flex justify-center items-center rounded-full border border-alert border-solid">
+                    <Icon name="watchOnly" size={12} />
+                  </div>
+                </>
+              )}
+              {walletType === 'multiple' && (
+                <div className="relative flex justify-center items-center w-[46px] h-[46px]">
+                  <div className="rounded-full w-8 h-8 bg-white flex justify-center items-center z-10">
+                    <Icon name="emptyIdenticon" size={16} />
+                  </div>
+                  <div className="bg-shade-30 rounded-full w-5 h-5 absolute left-0"></div>
+                  <div className="bg-shade-30 rounded-full w-5 h-5 absolute top-0"></div>
+                  <div className="bg-shade-30 rounded-full w-5 h-5 absolute right-0"></div>
+                  <div className="bg-shade-30 rounded-full w-5 h-5 absolute bottom-0"></div>
+                </div>
+              )}
+              {walletType === 'none' && (
+                <div className="bg-white flex justify-center items-center w-[46px] h-[46px] rounded-full">
+                  <Icon name="emptyIdenticon" size={30} />
+                </div>
+              )}
+            </div>
             <button
               ref={showWalletsRef}
               type="button"
               className="flex justify-between flex-1 truncate"
               onClick={() => setIsWalletsOpen((value) => !value)}
             >
-              <span className="text-xl leading-6 mr-1 text-left truncate">
-                {currentWallet?.name || t('navigation.unknownWalletLabel')}
-              </span>
+              <span className="text-xl leading-6 mr-1 text-left truncate">{walletName}</span>
               <Icon name="right" size={40} className="shrink-0" />
             </button>
-          </div>
-          <div className="flex gap-x-1.5 px-4 pb-4 mt-7">
-            <button type="button">
-              <Icon name="copy" />
-            </button>
-            <button type="button">
-              <Icon name="qr" />
-            </button>
-            <span className="ml-auto">$1,148.14</span>
           </div>
         </div>
         <nav className="flex-1 overflow-y-auto scrollbar">

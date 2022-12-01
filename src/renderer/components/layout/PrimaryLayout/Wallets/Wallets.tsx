@@ -14,8 +14,8 @@ type Props = {
 };
 
 const WalletTypeImages: Record<WalletType, IconNames> = {
-  [WalletType.WATCH_ONLY]: 'watchOnly',
-  [WalletType.PARITY]: 'paritySigner',
+  [WalletType.WATCH_ONLY]: 'watchOnlyBackground',
+  [WalletType.PARITY]: 'paritySignerBackground',
 };
 
 const WalletTypeLabels = {
@@ -85,28 +85,26 @@ const Wallets = forwardRef<HTMLDivElement, Props>(({ className }, ref) => {
             </Button>
           </div>
           {shown && wallets.length > 0 && (
-            <div>
+            <ul>
               {wallets?.map((wallet) => (
-                <label
-                  key={wallet.id}
-                  className="flex cursor-pointer rounded-2lg hover:bg-shade-10 items-center mx-2.5 h-10"
-                >
+                <li key={wallet.id} className="flex cursor-pointer hover:bg-shade-10 items-center px-2.5 py-1">
                   <Checkbox
+                    className="w-full h-full"
                     checked={wallet.isActive}
-                    className="m-2.5"
                     onChange={() => toggleActiveWallet(wallet.id || '')}
-                  />
-                  <div className="overflow-hidden">
-                    <div className="text-neutral text-sm text-semibold leading-4">{wallet.name}</div>
-                    <Address
-                      type="short"
-                      addressStyle="small"
-                      address={(wallet.mainAccounts[0] || wallet.chainAccounts[0]).accountId}
-                    />
-                  </div>
-                </label>
+                  >
+                    <div className="ml-2.5 overflow-hidden">
+                      <div className="text-neutral text-sm text-semibold leading-4 truncate">{wallet.name}</div>
+                      <Address
+                        type="short"
+                        addressStyle="small"
+                        address={(wallet.mainAccounts[0] || wallet.chainAccounts[0]).accountId}
+                      />
+                    </div>
+                  </Checkbox>
+                </li>
               ))}
-            </div>
+            </ul>
           )}
         </div>
       ))}

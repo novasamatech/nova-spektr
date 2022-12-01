@@ -1,4 +1,5 @@
 import { render, screen } from '@testing-library/react';
+import { MemoryRouter } from 'react-router-dom';
 
 import { useWallet } from '@renderer/services/wallet/walletService';
 import Balances from './Balances';
@@ -10,12 +11,7 @@ jest.mock('@renderer/services/wallet/walletService', () => ({
     getActiveWallets: () => [
       {
         name: 'Test Wallet',
-        mainAccounts: [
-          {
-            address: '1ChFWeNRLarAPRCTM3bfJmncJbSAbSS9yqjueWz7jX7iTVZ',
-            publicKey: TEST_PUBLIC_KEY,
-          },
-        ],
+        mainAccounts: [{ accountId: '1ChFWeNRLarAPRCTM3bfJmncJbSAbSS9yqjueWz7jX7iTVZ', publicKey: TEST_PUBLIC_KEY }],
       },
     ],
   }),
@@ -55,14 +51,14 @@ jest.mock('../NetworkBalances/NetworkBalances', () => () => <div>NetworkBalances
 
 describe('screen/Balances/Balances', () => {
   test('should render component', () => {
-    render(<Balances />);
+    render(<Balances />, { wrapper: MemoryRouter });
 
     const text = screen.getByText('balances.title');
     expect(text).toBeInTheDocument();
   });
 
   test('should render networks', () => {
-    render(<Balances />);
+    render(<Balances />, { wrapper: MemoryRouter });
 
     const balances = screen.getAllByText('NetworkBalances');
     expect(balances).toHaveLength(2);
@@ -73,16 +69,12 @@ describe('screen/Balances/Balances', () => {
       getActiveWallets: () => [
         {
           name: 'Test Wallet',
-          mainAccounts: [
-            {
-              address: TEST_ADDRESS,
-              publicKey: TEST_PUBLIC_KEY,
-            },
-          ],
+          mainAccounts: [{ accountId: TEST_ADDRESS, publicKey: TEST_PUBLIC_KEY }],
         },
       ],
     });
-    render(<Balances />);
+
+    render(<Balances />, { wrapper: MemoryRouter });
 
     const noResults = screen.getByText('balances.emptyStateLabel');
 

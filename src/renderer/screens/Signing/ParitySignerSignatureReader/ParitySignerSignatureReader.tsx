@@ -4,9 +4,10 @@ import { useState } from 'react';
 import { QrSignatureReader } from '@renderer/components/common';
 import { ErrorObject, QrError, VideoInput } from '@renderer/components/common/QrCode/QrReader/common/types';
 import { Button, Dropdown, Icon } from '@renderer/components/ui';
-import { DropdownOption } from '@renderer/components/ui/Dropdown/common/types';
+import { DropdownOption, ResultOption } from '@renderer/components/ui/Dropdowns/common/types';
 import { useI18n } from '@renderer/context/I18nContext';
 import { secondsToMinutes } from '../common/utils';
+import { ValidationErrors } from '@renderer/screens/Transfer/common/constants';
 
 const enum CameraState {
   ACTIVE,
@@ -26,13 +27,14 @@ type Props = {
   className?: string;
   onResult: (payload: string) => void;
   countdown?: number;
+  validationError?: ValidationErrors;
 };
 
-const ParitySignerSignatureReader = ({ size = 300, className, onResult, countdown }: Props) => {
+const ParitySignerSignatureReader = ({ size = 300, className, onResult, countdown, validationError }: Props) => {
   const { t } = useI18n();
 
   const [cameraState, setCameraState] = useState<CameraState>(CameraState.LOADING);
-  const [activeCamera, setActiveCamera] = useState<DropdownOption<string>>();
+  const [activeCamera, setActiveCamera] = useState<ResultOption<string>>();
   const [availableCameras, setAvailableCameras] = useState<DropdownOption<string>[]>([]);
 
   const [isScanComplete, setIsScanComplete] = useState(false);
@@ -49,8 +51,10 @@ const ParitySignerSignatureReader = ({ size = 300, className, onResult, countdow
 
   const onCameraList = (cameras: VideoInput[]) => {
     const formattedCameras = cameras.map((camera, index) => ({
-      label: `${index + 1}. ${camera.label}`,
+      //eslint-disable-next-line i18next/no-literal-string
+      element: `${index + 1}. ${camera.label}`,
       value: camera.id,
+      id: camera.id,
     }));
 
     setAvailableCameras(formattedCameras);
@@ -163,6 +167,29 @@ const ParitySignerSignatureReader = ({ size = 300, className, onResult, countdow
     );
   }
 
+  if (validationError) {
+    return (
+      <div className="flex flex-col justify-center items-center w-full h-full">
+        <div className="flex flex-col items-center justify-center text-center w-full h-full">
+          {validationError === ValidationErrors.INSUFFICIENT_BALANCE && (
+            <>
+              <Icon className="text-alert" name="warnCutout" size={70} />
+              <p className="text-neutral text-xl leading-6 font-semibold mt-5">{t('transfer.notEnoughBalanceError')}</p>
+            </>
+          )}
+          {validationError === ValidationErrors.INSUFFICIENT_BALANCE_FOR_FEE && (
+            <>
+              <Icon className="text-alert" name="warnCutout" size={70} />
+              <p className="text-neutral text-xl leading-6 font-semibold mt-5">
+                {t('transfer.notEnoughBalanceForFeeError')}
+              </p>
+            </>
+          )}
+        </div>
+      </div>
+    );
+  }
+
   return (
     <>
       {cameraState === CameraState.LOADING && (
@@ -190,9 +217,9 @@ const ParitySignerSignatureReader = ({ size = 300, className, onResult, countdow
           <div className="mb-5 w-[242px]">
             <Dropdown
               placeholder={t('onboarding.paritySigner.selectCameraLabel')}
-              selected={activeCamera}
+              activeId={activeCamera?.id}
               options={availableCameras}
-              onSelected={setActiveCamera}
+              onChange={setActiveCamera}
             />
           </div>
         </div>
@@ -229,7 +256,9 @@ const ParitySignerSignatureReader = ({ size = 300, className, onResult, countdow
           {countdown && countdown > 0 ? (
             <div className="flex m-auto items-center justify-center uppercase font-normal text-xs gap-1.25">
               {t('signing.qrCountdownTitle')}
-              <div className="rounded-md bg-success text-white py-0.5 px-1.5">{secondsToMinutes(countdown || 0)}</div>
+              <div className={cn('rounded-md text-white py-0.5 px-1.5', countdown > 60 ? 'bg-success' : 'bg-alert')}>
+                {secondsToMinutes(countdown || 0)}
+              </div>
             </div>
           ) : (
             <div>

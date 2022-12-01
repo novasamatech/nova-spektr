@@ -9,7 +9,7 @@ import { Address, Button, Icon } from '@renderer/components/ui';
 import { Explorers, QrTxGenerator } from '@renderer/components/common';
 import ParitySignerSignatureReader from './ParitySignerSignatureReader/ParitySignerSignatureReader';
 import { useTransaction } from '@renderer/services/transaction/transactionService';
-import { TransactionType } from '@renderer/services/transaction/common/types';
+import { TransactionType } from '@renderer/domain/transaction';
 import { secondsToMinutes } from './common/utils';
 import { getMetadataPortalUrl, TROUBLESHOOTING_URL } from './common/consts';
 
@@ -54,10 +54,11 @@ const Signing = () => {
   const setupTransaction = async () => {
     if (!currentConnection?.api || !currentAddress) return;
 
-    const payload = await createPayload(
+    const { payload } = await createPayload(
       {
         address: currentAddress,
         type: TransactionType.TRANSFER,
+        chainId: currentConnection.chainId,
         args: {
           dest: currentAddress,
           value: '1',
@@ -86,7 +87,7 @@ const Signing = () => {
           <div className="bg-white shadow-surface p-5 rounded-2xl w-full">
             <div className="flex items-center justify-between h-15">
               <div className="flex gap-2.5">
-                <Icon name="paritySigner" size={32} />
+                <Icon name="paritySignerBackground" size={32} />
                 <div>
                   <div className="font-bold text-lg text-neutral">{currentWallet.name}</div>
                   <Address type="short" address={currentAddress} addressStyle="small" />

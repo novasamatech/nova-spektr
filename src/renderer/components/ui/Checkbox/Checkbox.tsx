@@ -1,18 +1,38 @@
-import { InputHTMLAttributes } from 'react';
 import cn from 'classnames';
+import { PropsWithChildren } from 'react';
 import './styles.css';
 
-interface Props extends InputHTMLAttributes<HTMLInputElement> {
-  label?: string;
-}
+type Props = {
+  defaultChecked?: boolean;
+  position?: 'right' | 'left';
+  checked?: boolean;
+  disabled?: boolean;
+  readOnly?: boolean;
+  className?: string;
+  onChange?: () => void;
+};
 
-const Checkbox = ({ label, checked, disabled, className, onChange }: Props) => (
-  <div className={cn(disabled && 'hover:cursor-pointer', className)}>
-    <label className="flex items-center">
+const Checkbox = ({
+  checked,
+  defaultChecked,
+  position = 'right',
+  disabled,
+  readOnly,
+  className,
+  children,
+  onChange,
+}: PropsWithChildren<Props>) => {
+  const content = typeof children === 'string' ? <p className="text-gray-700 font-normal">{children}</p> : children;
+
+  return (
+    <label className={cn('flex items-center gap-x-2.5', !disabled && 'hover:cursor-pointer', className)}>
+      {children && position === 'left' && content}
       <input
         type="checkbox"
         name="checkbox"
+        defaultChecked={defaultChecked}
         disabled={disabled}
+        readOnly={readOnly}
         checked={checked}
         className={cn(
           'relative',
@@ -23,9 +43,9 @@ const Checkbox = ({ label, checked, disabled, className, onChange }: Props) => (
         )}
         onChange={onChange}
       />
-      {label && <span className="ml-2 text-gray-700 font-normal">{label}</span>}
+      {children && position === 'right' && content}
     </label>
-  </div>
-);
+  );
+};
 
 export default Checkbox;

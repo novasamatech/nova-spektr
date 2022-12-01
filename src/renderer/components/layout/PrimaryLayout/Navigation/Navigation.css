@@ -1,0 +1,25 @@
+.multiple-card {
+  position: relative;
+  box-sizing: border-box;
+
+  background-clip: padding-box; /* !importanté */
+  border: solid 3px transparent; /* !importanté */
+}
+
+.multiple-card:before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  margin: -3px;
+  border-radius: inherit; /* !importanté */
+  background: linear-gradient(
+    135deg,
+    rgba(255, 191, 26, 1) 0%,
+    rgba(255, 191, 26, 1) 33%,
+    rgba(92, 118, 184, 1) 33%,
+    rgba(92, 118, 184, 1) 66%,
+    rgba(68, 81, 116, 1) 66%,
+    rgba(68, 81, 116, 1) 100%
+  );
+}

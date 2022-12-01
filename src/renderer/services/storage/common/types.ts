@@ -5,6 +5,7 @@ import { Connection, ConnectionType } from '@renderer/domain/connection';
 import { Contact } from '@renderer/domain/contact';
 import { ChainId, PublicKey } from '@renderer/domain/shared-kernel';
 import { MultisigWallet, Wallet } from '@renderer/domain/wallet';
+import { Transaction } from '@renderer/domain/transaction';
 
 // =====================================================
 // ================ Storage interface ==================
@@ -16,7 +17,7 @@ export interface IStorage {
 
 export interface IBalanceStorage {
   getBalance: (publicKey: PublicKey, chainId: ChainId, assetId: string) => Promise<BalanceDS | undefined>;
-  getNetworkBalances: (publicKey: PublicKey, chainId: ChainId) => Promise<BalanceDS[]>;
+  getNetworkBalances: (publicKeys: PublicKey[], chainId: ChainId) => Promise<BalanceDS[]>;
   getBalances: (publicKey: PublicKey) => Promise<BalanceDS[]>;
   updateBalance: (balance: Balance) => Promise<void>;
 }
@@ -61,3 +62,4 @@ export type WalletDS = WithID & Wallet;
 export type MultisigWalletDS = Wallet & MultisigWallet;
 
 export type ContactDS = WithID & Contact;
+export type TransactionDS = WithID & Transaction;

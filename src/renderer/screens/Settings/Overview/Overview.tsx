@@ -1,22 +1,24 @@
 import { Link } from 'react-router-dom';
 
 import { Dropdown, Icon } from '@renderer/components/ui';
-import { DropdownOption } from '@renderer/components/ui/Dropdown/common/types';
+import { DropdownOption, ResultOption } from '@renderer/components/ui/Dropdowns/common/types';
 import { useI18n } from '@renderer/context/I18nContext';
 import Paths from '@renderer/routes/paths';
+import { SupportedLocale } from '@renderer/services/translation/common/types';
 
 const Overview = () => {
   const { t, locale, locales, changeLocale } = useI18n();
 
   const localeOptions: DropdownOption[] = locales.map((option) => ({
+    id: option.value,
     prefix: <Icon className="rounded-full border border-white" name={option.value} size={20} />,
     value: option.value,
-    label: option.label,
+    element: option.label,
   }));
 
   const selectedLocale = localeOptions.find((option) => option.value === locale);
 
-  const onLocaleChange = async (data: DropdownOption) => {
+  const onLocaleChange = async (data: ResultOption<SupportedLocale>) => {
     try {
       await changeLocale(data.value);
     } catch (error) {
@@ -36,9 +38,9 @@ const Overview = () => {
             <Dropdown
               className="ml-auto w-[200px]"
               placeholder={t('dropdown.chooseOptionLabel')}
-              selected={selectedLocale}
-              options={locales}
-              onSelected={onLocaleChange}
+              activeId={selectedLocale?.id}
+              options={localeOptions}
+              onChange={onLocaleChange}
             />
           </li>
           <li>

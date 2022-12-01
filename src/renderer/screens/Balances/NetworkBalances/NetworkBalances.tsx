@@ -1,6 +1,6 @@
 import cn from 'classnames';
-import keyBy from 'lodash/keyBy';
 import { useState } from 'react';
+import { BN } from '@polkadot/util';
 
 import { Button, Icon } from '@renderer/components/ui';
 import { Asset } from '@renderer/domain/asset';
@@ -12,26 +12,38 @@ import { total } from '@renderer/services/balance/common/utils';
 import { ExtendedChain } from '@renderer/services/network/common/types';
 import AssetBalance from '../AssetBalance/AssetBalance';
 import { useI18n } from '@renderer/context/I18nContext';
+import { Balance } from '@renderer/domain/balance';
 
 type Props = {
   hideZeroBalance?: boolean;
   searchSymbolOnly?: boolean;
   query?: string;
   chain: Chain | ExtendedChain;
-  publicKey: PublicKey;
+  publicKeys: PublicKey[];
   canMakeActions?: boolean;
   onReceiveClick?: (asset: Asset) => void;
-  onTransferClick?: () => void;
+};
+
+const sumBalances = (firstBalance: Balance, secondBalance?: Balance): Balance => {
+  if (!secondBalance) return firstBalance;
+
+  return {
+    ...firstBalance,
+    verified: firstBalance.verified && secondBalance.verified,
+    free: new BN(firstBalance.free || 0).add(new BN(secondBalance.free || 0)).toString(),
+    reserved: new BN(firstBalance.reserved || 0).add(new BN(secondBalance.reserved || 0)).toString(),
+    frozen: new BN(firstBalance.frozen || 0).add(new BN(secondBalance.frozen || 0)).toString(),
+    locked: (firstBalance.locked || []).concat(secondBalance.locked || []),
+  };
 };
 
 const NetworkBalances = ({
   query,
   hideZeroBalance,
   chain,
-  publicKey,
+  publicKeys,
   searchSymbolOnly,
   canMakeActions,
-  onTransferClick,
   onReceiveClick,
 }: Props) => {
   const [isHidden, setIsHidden] = useState(false);
@@ -40,9 +52,15 @@ const NetworkBalances = ({
 
   const { getLiveNetworkBalances } = useBalance();
 
-  const balances = getLiveNetworkBalances(publicKey, chain.chainId);
+  const balances = getLiveNetworkBalances(publicKeys, chain.chainId);
 
-  const balancesObject = keyBy(balances, 'assetId');
+  const balancesObject =
+    balances?.reduce((acc, balance) => {
+      return {
+        ...acc,
+        [balance.assetId]: sumBalances(balance, acc[balance.assetId]),
+      };
+    }, {} as Record<string, Balance>) || {};
 
   const filteredAssets = chain.assets.filter((asset) => {
     if (query) {
@@ -93,11 +111,11 @@ const NetworkBalances = ({
           {filteredAssets.map((asset) => (
             <AssetBalance
               key={asset.assetId}
+              chainId={chain.chainId}
               asset={asset}
               balance={balancesObject[asset.assetId.toString()]}
               canMakeActions={canMakeActions}
               onReceiveClick={() => onReceiveClick?.(asset)}
-              onTransferClick={onTransferClick}
             />
           ))}
         </div>

@@ -1,25 +1,25 @@
 import { useEffect, useState } from 'react';
 
-import useToggle from '@renderer/hooks/useToggle';
 import { Icon, Input, Switch } from '@renderer/components/ui';
+import { useI18n } from '@renderer/context/I18nContext';
 import { useNetworkContext } from '@renderer/context/NetworkContext';
 import { Asset } from '@renderer/domain/asset';
 import { Chain } from '@renderer/domain/chain';
+import { ConnectionType } from '@renderer/domain/connection';
 import { PublicKey } from '@renderer/domain/shared-kernel';
 import { WalletType } from '@renderer/domain/wallet';
+import useToggle from '@renderer/hooks/useToggle';
 import { useChains } from '@renderer/services/network/chainsService';
 import { useSettingsStorage } from '@renderer/services/settings/settingsStorage';
 import { useWallet } from '@renderer/services/wallet/walletService';
 import NetworkBalances from '../NetworkBalances/NetworkBalances';
 import ReceiveModal, { ReceivePayload } from '../ReceiveModal/ReceiveModal';
-import { ConnectionType } from '@renderer/domain/connection';
-import { useI18n } from '@renderer/context/I18nContext';
 
 const Balances = () => {
   const { t } = useI18n();
 
   const [query, setQuery] = useState('');
-  const [publicKey, setPublicKey] = useState<PublicKey>();
+  const [publicKeys, setPublicKeys] = useState<PublicKey[]>([]);
   const [receiveData, setReceiveData] = useState<ReceivePayload>();
 
   const [isReceiveOpen, toggleReceive] = useToggle();
@@ -38,11 +38,18 @@ const Balances = () => {
   };
 
   useEffect(() => {
-    if (!activeWallets || activeWallets.length === 0) return;
+    if (!activeWallets || activeWallets.length === 0) {
+      setPublicKeys([]);
 
-    const activePublicKey = (activeWallets[0].mainAccounts[0] || activeWallets[0].chainAccounts[0]).publicKey;
-    setPublicKey(activePublicKey);
-  }, [activeWallets]);
+      return;
+    }
+
+    const activePublicKeys = activeWallets.map(
+      (wallet) => (wallet.mainAccounts[0] || wallet.chainAccounts[0]).publicKey,
+    );
+
+    setPublicKeys(activePublicKeys);
+  }, [activeWallets?.length]);
 
   const sortedChains = sortChains(
     Object.values(connections).filter((c) => c.connection.connectionType !== ConnectionType.DISABLED),
@@ -55,14 +62,7 @@ const Balances = () => {
   const canMakeActions = activeWallets?.some((wallet) => wallet.type === WalletType.PARITY) || false;
 
   const onReceive = (chain: Chain) => (asset: Asset) => {
-    setReceiveData({
-      chain,
-      asset,
-      activeWallets: (activeWallets || []).map((wallet) => ({
-        name: wallet.name,
-        publicKey: wallet.mainAccounts[0].publicKey,
-      })),
-    });
+    setReceiveData({ chain, asset });
     toggleReceive();
   };
 
@@ -84,7 +84,7 @@ const Balances = () => {
           </div>
         </div>
 
-        {publicKey && (
+        {publicKeys.length > 0 && (
           <ul className="flex-1 overflow-y-auto">
             {sortedChains.map((chain) => (
               <NetworkBalances
@@ -93,9 +93,8 @@ const Balances = () => {
                 searchSymbolOnly={searchSymbolOnly}
                 query={query?.toLowerCase() || ''}
                 chain={chain}
-                publicKey={publicKey}
+                publicKeys={publicKeys}
                 canMakeActions={canMakeActions}
-                onTransferClick={() => console.log(t('transfers.title'))}
                 onReceiveClick={onReceive(chain)}
               />
             ))}

@@ -3,7 +3,7 @@ const path = require('path');
 
 const prettierConfig = fs.readFileSync('./.prettierrc', 'utf8');
 const prettierOptions = JSON.parse(prettierConfig);
-const isProd = process.env.NODE_ENV === 'production';
+const checkI18n = process.env.I18N === 'true';
 
 module.exports = {
   root: true,
@@ -80,10 +80,17 @@ module.exports = {
     'i18n-json/identical-keys': ['error', { filePath: path.resolve('./src/shared/locale/en.json') }],
     'i18n-json/identical-placeholders': ['error', { filePath: path.resolve('./src/shared/locale/en.json') }],
     'i18next/no-literal-string': [
-      isProd ? 'error' : 'off',
+      checkI18n ? 'error' : 'off',
       {
         mode: 'jsx-text-only',
-        'should-validate-template': false,
+        'should-validate-template': true,
+        'jsx-attributes': {
+          include: ['alt', 'aria-label', 'title', 'placeholder', 'label', 'description'],
+          exclude: ['data-testid'],
+        },
+        callees: {
+          exclude: ['Error'],
+        },
         words: {
           exclude: ['[0-9!-/:-@[-`{-~]+', '[A-Z_-]+'],
         },

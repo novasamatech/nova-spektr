@@ -15,7 +15,8 @@
           "moonpay": {},
           "transak": {
             "network": "MAINNET"
-          }
+          },
+          "mercuryo": {}
         },
         "name": "Polkadot"
       }
@@ -97,7 +98,8 @@
           "ramp": {},
           "transak": {
             "network": "MAINNET"
-          }
+          },
+          "mercuryo": {}
         },
         "name": "Kusama"
       }
@@ -351,12 +353,12 @@
       {
         "assetId": 7,
         "symbol": "USDT",
-        "precision": 4,
+        "precision": 6,
         "priceId": "tether",
         "type": "statemine",
         "icon": "https://raw.githubusercontent.com/nova-wallet/nova-utils/master/icons/tokens/white/USDT.svg",
         "typeExtras": {
-          "assetId": "11"
+          "assetId": "1984"
         },
         "name": "USD Tether"
       }
@@ -1271,21 +1273,21 @@
     ],
     "nodes": [
       {
-        "url": "wss://mainnet.edgewa.re",
-        "name": "Commonwealth Labs"
-      },
-      {
         "url": "wss://edgeware.api.onfinality.io/public-ws",
         "name": "OnFinality node"
       },
       {
         "url": "wss://edgeware-rpc.dwellir.com",
         "name": "Dwellir node"
+      },
+      {
+        "url": "wss://edgeware.jelliedowl.net",
+        "name": "JelliedOwl node"
       }
     ],
     "types": {
-      "url": "https://raw.githubusercontent.com/nova-wallet/nova-utils/master/chains/types/edgeware.json",
-      "overridesCommon": false
+      "url": "https://raw.githubusercontent.com/nova-wallet/nova-utils/master/chains/v2/types/edgeware.json",
+      "overridesCommon": true
     },
     "explorers": [
       {
@@ -2635,10 +2637,6 @@
       {
         "url": "wss://parallel.api.onfinality.io/public-ws",
         "name": "OnFinality node"
-      },
-      {
-        "url": "wss://parallel-rpc.dwellir.com",
-        "name": "Dwellir node"
       }
     ],
     "explorers": [
@@ -2728,6 +2726,18 @@
         "priceId": "polkadot",
         "icon": "https://raw.githubusercontent.com/nova-wallet/nova-utils/master/icons/chains/white/Polkadot.svg",
         "name": "Polkadot"
+      },
+      {
+        "assetId": 1,
+        "symbol": "USDT",
+        "precision": 6,
+        "priceId": "tether",
+        "type": "statemine",
+        "icon": "https://raw.githubusercontent.com/nova-wallet/nova-utils/master/icons/tokens/white/USDT.svg",
+        "typeExtras": {
+          "assetId": "1984"
+        },
+        "name": "USD Tether"
       }
     ],
     "nodes": [
@@ -2783,10 +2793,6 @@
       {
         "url": "wss://kusama.rpc.robonomics.network/",
         "name": "Airalab node"
-      },
-      {
-        "url": "wss://robonomics-rpc.dwellir.com",
-        "name": "Dwellir node"
       },
       {
         "url": "wss://robonomics.leemo.me",
@@ -3064,10 +3070,6 @@
       {
         "url": "wss://crab-parachain-rpc.darwinia.network/",
         "name": "Crab node"
-      },
-      {
-        "url": "wss://darwiniacrab-rpc.dwellir.com",
-        "name": "Dwellir node"
       }
     ],
     "explorers": [
@@ -3110,6 +3112,10 @@
     ],
     "nodes": [
       {
+        "url": "wss://para.f3joule.space",
+        "name": "Subsocial node"
+      },
+      {
         "url": "wss://para.subsocial.network",
         "name": "Dappforce node"
       }
@@ -3149,7 +3155,7 @@
     ],
     "nodes": [
       {
-        "url": "wss://rpc2-shadow.crust.network/",
+        "url": "wss://rpc-sha-subscan.crust.network",
         "name": "Crust node"
       },
       {
@@ -3973,6 +3979,36 @@
         "priceId": "bifrost-native-coin",
         "icon": "https://raw.githubusercontent.com/nova-wallet/nova-utils/master/icons/chains/white/Bifrost.svg",
         "name": "Bifrost"
+      },
+      {
+        "assetId": 1,
+        "symbol": "GLMR",
+        "precision": 18,
+        "priceId": "moonbeam",
+        "type": "orml",
+        "icon": "https://raw.githubusercontent.com/nova-wallet/nova-utils/master/icons/chains/white/Moonbeam.svg",
+        "typeExtras": {
+          "currencyIdScale": "0x0801",
+          "currencyIdType": "node_primitives.currency.CurrencyId",
+          "existentialDeposit": "1000000000000",
+          "transfersEnabled": true
+        },
+        "name": "Moonbeam"
+      },
+      {
+        "assetId": 2,
+        "symbol": "DOT",
+        "precision": 10,
+        "priceId": "polkadot",
+        "type": "orml",
+        "icon": "https://raw.githubusercontent.com/nova-wallet/nova-utils/master/icons/chains/white/Polkadot.svg",
+        "typeExtras": {
+          "currencyIdScale": "0x0800",
+          "currencyIdType": "node_primitives.currency.CurrencyId",
+          "existentialDeposit": "1000000",
+          "transfersEnabled": true
+        },
+        "name": "Polkadot"
       }
     ],
     "nodes": [
@@ -5091,5 +5127,73 @@
     "icon": "https://raw.githubusercontent.com/nova-wallet/nova-utils/master/icons/chains/gradient/Governance2_Testnet.svg",
     "addressPrefix": 0,
     "options": ["testnet", "governance-v1"]
+  },
+  {
+    "chainId": "0x74ed91fbc18497f011290f9119a2217908649170337b6414a2d44923ade07063",
+    "name": "Myriad",
+    "assets": [
+      {
+        "assetId": 0,
+        "symbol": "MYRIA",
+        "precision": 18,
+        "priceId": "myriad-social",
+        "icon": "https://raw.githubusercontent.com/nova-wallet/nova-utils/master/icons/tokens/white/MYRIA.svg",
+        "name": "Myriad Social"
+      }
+    ],
+    "nodes": [
+      {
+        "url": "wss://gateway.mainnet.octopus.network/myriad/a4cb0a6e30ff5233a3567eb4e8cb71e0",
+        "name": "Octopus node"
+      }
+    ],
+    "explorers": [
+      {
+        "name": "Explorer",
+        "extrinsic": null,
+        "account": "https://explorer.mainnet.oct.network/myriad/accounts/{address}",
+        "event": null
+      }
+    ],
+    "types": {
+      "url": "https://raw.githubusercontent.com/nova-wallet/nova-utils/master/chains/v2/types/myriad.json",
+      "overridesCommon": true
+    },
+    "icon": "https://raw.githubusercontent.com/nova-wallet/nova-utils/master/icons/chains/gradient/Myriad.svg",
+    "addressPrefix": 42
+  },
+  {
+    "chainId": "0xa7113159e275582ee71ee499b24378a2416f34dc5aaf714443f0d11c6c3d99d3",
+    "name": "Fusotao",
+    "assets": [
+      {
+        "assetId": 0,
+        "symbol": "TAO",
+        "precision": 18,
+        "priceId": "fusotao",
+        "icon": "https://raw.githubusercontent.com/nova-wallet/nova-utils/master/icons/tokens/white/TAO.svg",
+        "name": "Should be included in assetsNameMap"
+      }
+    ],
+    "nodes": [
+      {
+        "url": "wss://gateway.mainnet.octopus.network/fusotao/0efwa9v0crdx4dg3uj8jdmc5y7dj4ir2",
+        "name": "Octopus node"
+      }
+    ],
+    "explorers": [
+      {
+        "name": "Explorer",
+        "extrinsic": null,
+        "account": "https://explorer.mainnet.oct.network/fusotao/accounts/{address}",
+        "event": null
+      }
+    ],
+    "types": {
+      "url": "https://raw.githubusercontent.com/nova-wallet/nova-utils/master/chains/v2/types/fusotao.json",
+      "overridesCommon": true
+    },
+    "icon": "https://raw.githubusercontent.com/nova-wallet/nova-utils/master/icons/chains/gradient/Fusotao.svg",
+    "addressPrefix": 42
   }
 ]

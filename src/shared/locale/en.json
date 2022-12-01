@@ -47,6 +47,7 @@
     "chatDEVLabel": "Chat DEV",
     "historyLabel": "History",
     "mstOperationLabel": "Multisig Operations",
+    "multipleWalletsLabel": "Multiple wallets",
     "settingsLabel": "Settings",
     "signingDEVLabel": "Signing DEV",
     "stakingLabel": "Staking",
@@ -194,6 +195,7 @@
     "copyAddressButton": "Copy address",
     "explorerLinkLabel": "Link to {name}",
     "on": "on",
+    "selectWalletPlaceholder": "Select a wallet...",
     "sendOnlyLabel": "Send only",
     "title": "Receive"
   },
@@ -219,6 +221,12 @@
     "troubleshootingLink": "I have an error in Parity Signer"
   },
   "staking": {
+    "bond": {
+      "confirmBondSubtitle": "Confirm",
+      "initBondSubtitle": "Start Staking",
+      "selectNetworkLabel": "Select network",
+      "validatorsSubtitle": "Validators"
+    },
     "overview": {
       "noActiveWalletsDescription": "Please select a wallet for staking",
       "noActiveWalletsLabel": "No wallet selected",
@@ -226,20 +234,39 @@
       "noResultsLabel": "No staking found",
       "searchPlaceholder": "Search by account name"
     },
-    "startStaking": {
-      "selectNetworkLabel": "Select network",
-      "subtitle": "Start Staking"
-    },
     "title": "Staking",
     "unbond": {
       "subtitle": "Unbond"
     },
     "validators": {
-      "subtitle": "Validators"
+      "subtitle": "Валидаторы"
     }
   },
-  "transfers": {
-    "title": "Transfers"
+  "transfer": {
+    "amountLabel": "Amount",
+    "continueButton": "Continue",
+    "editOperationButton": "Edit operation",
+    "executing": "Confirming transaction",
+    "formTitle": "Send <strong>{ asset }</strong> on <strong>{ network }</strong>",
+    "incorrectRecipientError": "Please, enter correct recipient address",
+    "networkFee": "Network fee",
+    "notEnoughBalanceError": "Not enough funds to transfer specific amount",
+    "notEnoughBalanceForFeeError": "Insufficient balance to pay network fee",
+    "recipientLabel": "Recipient",
+    "requiredAmountError": "Please, enter amount",
+    "requiredRecipientError": "Please, enter recipient address",
+    "startSigningButton": "Sign with Parity Signer",
+    "successMessage": "transaction submitted!",
+    "title": "Transfer",
+    "transferable": "Transferable"
+  },
+  "transferDetails": {
+    "fromNetwork": "From network",
+    "networkFee": "Network fee",
+    "recipient": "Recipient",
+    "sender": "Sender",
+    "title": "Send",
+    "wallet": "Wallet"
   },
   "wallets": {
     "paritySignerLabel": "Parity Signer",
