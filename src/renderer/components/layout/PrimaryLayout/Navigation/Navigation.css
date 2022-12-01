@@ -2,8 +2,8 @@
   position: relative;
   box-sizing: border-box;
 
-  background-clip: padding-box; /* !importanté */
-  border: solid 3px transparent; /* !importanté */
+  background-clip: padding-box;
+  border: solid 3px transparent;
 }
 
 .multiple-card:before {
@@ -12,7 +12,7 @@
   inset: 0;
   z-index: -1;
   margin: -3px;
-  border-radius: inherit; /* !importanté */
+  border-radius: inherit;
   background: linear-gradient(
     135deg,
     rgba(255, 191, 26, 1) 0%,

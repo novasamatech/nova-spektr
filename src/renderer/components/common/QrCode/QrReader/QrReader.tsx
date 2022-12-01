@@ -146,7 +146,6 @@ const QrReader = ({ size = 300, cameraId, className, onCameraList, onResult, onP
 
       const result = EXPORT_ADDRESS.decode(fountainResult.slice(3));
       isComplete.current = true;
-      console.log(result.payload);
       onResult?.(makeResultPayload<SeedInfo[]>(result.payload));
       break;
     }

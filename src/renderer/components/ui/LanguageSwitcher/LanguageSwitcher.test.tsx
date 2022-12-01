@@ -18,14 +18,14 @@ const languages: LanguageItem[] = [
 
 describe('ui/LanguageSwitcher', () => {
   test('should render short component', () => {
-    render(<LanguageSwitcher short languages={languages} selected={'ru'} onChange={() => {}} />);
+    render(<LanguageSwitcher short languages={languages} selected="ru" onChange={() => {}} />);
 
     const label = screen.getByText('RU');
     expect(label).toBeInTheDocument();
   });
 
   test('should render full component', () => {
-    render(<LanguageSwitcher languages={languages} selected={'ru'} onChange={() => {}} />);
+    render(<LanguageSwitcher languages={languages} selected="ru" onChange={() => {}} />);
 
     const label = screen.getByText('Russian');
     expect(label).toBeInTheDocument();
@@ -33,7 +33,7 @@ describe('ui/LanguageSwitcher', () => {
 
   test('should render full component', () => {
     const changeLanguage = jest.fn();
-    render(<LanguageSwitcher languages={languages} selected={'ru'} onChange={changeLanguage} />);
+    render(<LanguageSwitcher languages={languages} selected="ru" onChange={changeLanguage} />);
 
     const button = screen.getByTestId('language-switcher-button');
 
