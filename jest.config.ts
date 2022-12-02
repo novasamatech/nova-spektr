@@ -53,7 +53,7 @@ const config: Config = {
     '!src/main/',
     '!src/shared/',
     '!src/scripts/',
-    '!src/stories/stories/**/*.{js,jsx,ts,tsx}',
+    '!src/**/*.stories.{js,jsx,ts,tsx}',
     '!<rootDir>/node_modules/',
   ],
   reporters: ['default', 'jest-junit'],
