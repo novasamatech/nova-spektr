@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom';
 
 import { Dropdown, Icon } from '@renderer/components/ui';
-import { DropdownOption, ResultOption } from '@renderer/components/ui/Dropdowns/common/types';
+import { Option, ResultOption } from '@renderer/components/ui/Dropdowns/common/types';
 import { useI18n } from '@renderer/context/I18nContext';
 import Paths from '@renderer/routes/paths';
 import { SupportedLocale } from '@renderer/services/translation/common/types';
@@ -9,11 +9,15 @@ import { SupportedLocale } from '@renderer/services/translation/common/types';
 const Overview = () => {
   const { t, locale, locales, changeLocale } = useI18n();
 
-  const localeOptions: DropdownOption[] = locales.map((option) => ({
+  const localeOptions: Option[] = locales.map((option) => ({
     id: option.value,
-    prefix: <Icon className="rounded-full border border-white" name={option.value} size={20} />,
     value: option.value,
-    element: option.label,
+    element: (
+      <>
+        <Icon className="rounded-full border border-white" name={option.value} size={20} />
+        {option.label}
+      </>
+    ),
   }));
 
   const selectedLocale = localeOptions.find((option) => option.value === locale);
