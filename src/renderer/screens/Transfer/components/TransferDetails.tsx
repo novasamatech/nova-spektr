@@ -1,4 +1,4 @@
-import { Explorers } from '@renderer/components/common';
+import { Explorers, Fee } from '@renderer/components/common';
 import { Address, Balance, Icon } from '@renderer/components/ui';
 import { useI18n } from '@renderer/context/I18nContext';
 import { Asset } from '@renderer/domain/asset';
@@ -69,13 +69,7 @@ const Transfer = ({ transaction, wallet, asset, connection }: Props) => {
             <div className="text-sm text-neutral-variant ">{t('transferDetails.networkFee')}</div>
             <div className="flex gap-1 items-center">
               <div className="flex gap-1 items-center font-semibold">
-                {/*<Fee*/}
-                {/*  api={connection.api}*/}
-                {/*  addressPrefix={connection.addressPrefix}*/}
-                {/*  asset={asset}*/}
-                {/*  accountId={accountId}*/}
-                {/*  transaction={transaction}*/}
-                {/*/>*/}
+                <Fee connection={connection} transaction={transaction} />
               </div>
             </div>
           </div>

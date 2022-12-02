@@ -191,7 +191,6 @@ const CustomRpcModal = ({ chainId, network, node, existingUrls, isOpen, onClose 
                 value={value}
                 invalid={Boolean(errors.url) || [FormState.INVALID, FormState.WRONG_NETWORK].includes(formState)}
                 disabled={formState === FormState.LOADING}
-                onChange={onAddressChange(onChange)}
                 suffixElement={
                   value ? (
                     <button
@@ -208,6 +207,7 @@ const CustomRpcModal = ({ chainId, network, node, existingUrls, isOpen, onClose 
                     </Button>
                   )
                 }
+                onChange={onAddressChange(onChange)}
               />
             )}
           />

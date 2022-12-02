@@ -21,6 +21,7 @@ const swcConfig = {
   },
 };
 const config: Config = {
+  preset: 'ts-jest',
   testEnvironment: 'jest-environment-jsdom',
   coverageReporters: ['json-summary', 'text', 'text-summary'],
   setupFilesAfterEnv: ['@testing-library/jest-dom'],
@@ -52,7 +53,7 @@ const config: Config = {
     '!src/main/',
     '!src/shared/',
     '!src/scripts/',
-    '!src/stories/stories/**/*.{js,jsx,ts,tsx}',
+    '!src/**/*.stories.{js,jsx,ts,tsx}',
     '!<rootDir>/node_modules/',
   ],
   reporters: ['default', 'jest-junit'],

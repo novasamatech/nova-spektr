@@ -3,9 +3,9 @@ import { encodeAddress } from '@polkadot/util-crypto';
 import cn from 'classnames';
 
 import { Icon } from '@renderer/components/ui';
+import { Explorer as IconExplorer } from '@renderer/components/ui/Icon/data/explorer';
 import { useI18n } from '@renderer/context/I18nContext';
 import { Explorer } from '@renderer/domain/chain';
-import { Explorer as IconExplorer } from '@renderer/components/ui/Icon/data/explorer';
 import { toPublicKey } from '@renderer/utils/address';
 
 const ExplorerIcons: Record<string, IconExplorer> = {

@@ -258,12 +258,12 @@ const StepThree = ({ qrData, onNextStep }: Props) => {
                                 <Button
                                   variant="text"
                                   pallet="dark"
+                                  className={cn('font-normal text-neutral', active && 'bg-primary text-white')}
+                                  prefixElement={<Icon as="img" name="checkmark" />}
                                   onClick={() => {
                                     setCurrentPublicKey(toPublicKey(account.address));
                                     toggleAccountsModal();
                                   }}
-                                  className={cn('font-normal text-neutral', active && 'bg-primary text-white')}
-                                  prefixElement={<Icon as="img" name="checkmark" />}
                                 >
                                   {t('onboarding.paritySigner.checkAddress')}
                                 </Button>
@@ -281,7 +281,6 @@ const StepThree = ({ qrData, onNextStep }: Props) => {
                       disabledStyle={inactiveWallets[getWalletId(accountIndex)]}
                       wrapperClass="flex flex-1 items-center"
                       placeholder={t('onboarding.walletNamePlaceholder')}
-                      onChange={(e) => updateWalletName(e.target.value, accountIndex)}
                       value={walletNames[getWalletId(accountIndex)] || ''}
                       suffixElement={
                         walletNames[getWalletId(accountIndex)] && (
@@ -295,6 +294,7 @@ const StepThree = ({ qrData, onNextStep }: Props) => {
                           </Button>
                         )
                       }
+                      onChange={(e) => updateWalletName(e.target.value, accountIndex)}
                     />
 
                     {accounts.length > 1 ||
@@ -359,9 +359,6 @@ const StepThree = ({ qrData, onNextStep }: Props) => {
                                   wrapperClass="flex flex-1 items-center"
                                   placeholder={t('onboarding.walletNamePlaceholder')}
                                   value={walletNames[getWalletId(accountIndex, chainId, derivedKeyIndex)] || ''}
-                                  onChange={(e) =>
-                                    updateWalletName(e.target.value, accountIndex, chainId, derivedKeyIndex)
-                                  }
                                   suffixElement={
                                     walletNames[getWalletId(accountIndex, chainId, derivedKeyIndex)] && (
                                       <Button
@@ -373,6 +370,9 @@ const StepThree = ({ qrData, onNextStep }: Props) => {
                                         <Icon name="clearOutline" size={20} />
                                       </Button>
                                     )
+                                  }
+                                  onChange={(e) =>
+                                    updateWalletName(e.target.value, accountIndex, chainId, derivedKeyIndex)
                                   }
                                 />
                                 <Button

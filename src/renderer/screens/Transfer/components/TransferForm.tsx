@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Controller, SubmitHandler, useForm } from 'react-hook-form';
 import { Trans } from 'react-i18next';
+import { BN } from '@polkadot/util';
 
 import Amount from '@renderer/components/common/Amount/Amount';
 import { Button, Icon, Identicon, Input, InputHint } from '@renderer/components/ui';
@@ -128,13 +129,13 @@ const Transfer = ({ onCreateTransaction, wallet, asset, connection }: Props) => 
     if (!balance) return false;
     const currentFee = fee || '0';
 
-    return parseInt(currentFee) + parseInt(formatAmount(amount, asset.precision)) <= parseInt(balance);
+    return new BN(currentFee).add(new BN(formatAmount(amount, asset.precision))).lte(new BN(balance));
   };
 
   const validateBalance = async (amount: string) => {
     if (!balance) return false;
 
-    return parseInt(formatAmount(amount, asset.precision)) <= parseInt(balance);
+    return new BN(formatAmount(amount, asset.precision)).lte(new BN(balance));
   };
 
   return (
@@ -162,7 +163,7 @@ const Transfer = ({ onCreateTransaction, wallet, asset, connection }: Props) => 
                   prefixElement={
                     value && !error ? <Identicon address={value} background={false} /> : <Icon name="emptyIdenticon" />
                   }
-                  invalid={!!error}
+                  invalid={Boolean(error)}
                   value={value}
                   name="address"
                   className="w-full"

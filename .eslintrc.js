@@ -3,8 +3,7 @@ const path = require('path');
 
 const prettierConfig = fs.readFileSync('./.prettierrc', 'utf8');
 const prettierOptions = JSON.parse(prettierConfig);
-
-const checkTranslation = process.env.CHECK_TRANSLATION === 'true';
+const checkI18n = process.env.I18N === 'true';
 
 module.exports = {
   root: true,
@@ -13,26 +12,29 @@ module.exports = {
     node: true,
     jest: true,
   },
+  parser: '@typescript-eslint/parser',
   extends: [
     'eslint:recommended',
-    'plugin:jest-dom/recommended',
+    'plugin:react/recommended',
     'plugin:import/recommended',
     'plugin:import/errors',
     'plugin:import/warnings',
-    'prettier',
+    'plugin:jest-dom/recommended',
     'plugin:i18n-json/recommended',
     'plugin:i18next/recommended',
+    'prettier',
   ],
-  parser: '@typescript-eslint/parser',
+  plugins: ['@typescript-eslint', 'prettier', 'import', 'unused-imports', 'jest-dom', 'json'],
   parserOptions: {
-    ecmaVersion: 2020,
+    ecmaVersion: 2021,
     sourceType: 'module',
     project: './tsconfig.json',
     tsconfigRootDir: __dirname,
     createDefaultProgram: true,
   },
-  plugins: ['@typescript-eslint', 'prettier', 'testing-library', 'import', 'jest-dom'],
   settings: {
+    react: { version: 'detect' },
+
     'import/resolver': {
       alias: {
         map: [
@@ -44,7 +46,7 @@ module.exports = {
         extensions: ['.js', '.jsx', '.ts', '.tsx', '.json'],
       },
       node: {
-        extensions: ['.js', '.jsx', '.ts', '.tsx'],
+        extensions: ['.js', '.jsx', '.ts', '.tsx', '.json'],
       },
     },
   },
@@ -63,97 +65,37 @@ module.exports = {
     'newline-before-return': 'error',
     '@typescript-eslint/no-empty-interface': 0,
     'prettier/prettier': ['error', prettierOptions],
-    'i18n-json/valid-json': [checkTranslation ? 'error' : 'off'],
-    'i18n-json/valid-message-syntax': [
-      checkTranslation ? 'error' : 'off',
+    'unused-imports/no-unused-imports': 'error',
+    'react/no-array-index-key': 'warn',
+    'react/display-name': 'off',
+    'react/react-in-jsx-scope': 'off',
+    'react/jsx-sort-props': ['error', { callbacksLast: true, noSortAlphabetically: true }],
+    'react/function-component-definition': [
+      'error',
       {
-        syntax: 'icu',
+        namedComponents: 'arrow-function',
+        unnamedComponents: 'arrow-function',
       },
     ],
-    'i18n-json/identical-keys': [
-      checkTranslation ? 'error' : 'off',
-      {
-        filePath: path.resolve('./src/shared/locale/en.json'),
-      },
-    ],
-    'i18n-json/identical-placeholders': [
-      checkTranslation ? 'error' : 'off',
-      {
-        filePath: path.resolve('./src/shared/locale/en.json'),
-      },
-    ],
-    'i18n-json/sorted-keys': [
-      checkTranslation ? 'error' : 'off',
-      {
-        order: 'asc',
-        indentSpaces: 2,
-      },
-    ],
+    'i18n-json/identical-keys': ['error', { filePath: path.resolve('./src/shared/locale/en.json') }],
+    'i18n-json/identical-placeholders': ['error', { filePath: path.resolve('./src/shared/locale/en.json') }],
     'i18next/no-literal-string': [
-      checkTranslation ? 'error' : 'off',
+      checkI18n ? 'error' : 'off',
       {
-        mode: 'jsx-only',
+        mode: 'jsx-text-only',
+        'should-validate-template': true,
         'jsx-attributes': {
-          include: [],
-          exclude: [
-            'className',
-            'headerClass',
-            'contentClass',
-            'styleName',
-            'style',
-            'type',
-            'key',
-            'id',
-            'width',
-            'height',
-            'data-testid',
-            'pallet',
-            'variant',
-            'as',
-            'weight',
-            'name',
-            'effect',
-            'tag',
-            'leave',
-            'leaveFrom',
-            'leaveTo',
-            'role',
-            'enter',
-            'enterFrom',
-            'enterTo',
-            'wrapperClass',
-            'cn',
-            'form',
-            'bgColor',
-            'theme',
-            'addressStyle',
-          ],
+          include: ['alt', 'aria-label', 'title', 'placeholder', 'label', 'description'],
+          exclude: ['data-testid', 'className'],
         },
         callees: {
-          exclude: [
-            'i18n(ext)?',
-            't',
-            'require',
-            'addEventListener',
-            'removeEventListener',
-            'postMessage',
-            'getElementById',
-            'dispatch',
-            'commit',
-            'includes',
-            'indexOf',
-            'endsWith',
-            'startsWith',
-            'Error',
-          ],
+          exclude: ['Error'],
         },
         words: {
-          include: [],
           exclude: ['[0-9!-/:-@[-`{-~]+', '[A-Z_-]+'],
         },
-        'should-validate-template': true,
       },
     ],
   },
-  ignorePatterns: ['e2e/', 'node_modules/', 'release/', 'omni-chains.json', 'omni-chains_dev.json'],
+  ignorePatterns: ['node_modules', 'coverage.txt', 'junit.xml', 'jest-unit-results.json'],
 };

@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { QrSignatureReader } from '@renderer/components/common';
 import { ErrorObject, QrError, VideoInput } from '@renderer/components/common/QrCode/QrReader/common/types';
 import { Button, Dropdown, Icon } from '@renderer/components/ui';
-import { DropdownOption } from '@renderer/components/ui/Dropdown/common/types';
+import { Option, ResultOption } from '@renderer/components/ui/Dropdowns/common/types';
 import { useI18n } from '@renderer/context/I18nContext';
 import { secondsToMinutes } from '../common/utils';
 import { ValidationErrors } from '@renderer/screens/Transfer/common/constants';
@@ -34,8 +34,8 @@ const ParitySignerSignatureReader = ({ size = 300, className, onResult, countdow
   const { t } = useI18n();
 
   const [cameraState, setCameraState] = useState<CameraState>(CameraState.LOADING);
-  const [activeCamera, setActiveCamera] = useState<DropdownOption<string>>();
-  const [availableCameras, setAvailableCameras] = useState<DropdownOption<string>[]>([]);
+  const [activeCamera, setActiveCamera] = useState<ResultOption<string>>();
+  const [availableCameras, setAvailableCameras] = useState<Option<string>[]>([]);
 
   const [isScanComplete, setIsScanComplete] = useState(false);
 
@@ -52,9 +52,9 @@ const ParitySignerSignatureReader = ({ size = 300, className, onResult, countdow
   const onCameraList = (cameras: VideoInput[]) => {
     const formattedCameras = cameras.map((camera, index) => ({
       //eslint-disable-next-line i18next/no-literal-string
-      id: camera.id,
       element: `${index + 1}. ${camera.label}`,
       value: camera.id,
+      id: camera.id,
     }));
 
     setAvailableCameras(formattedCameras);
@@ -216,9 +216,8 @@ const ParitySignerSignatureReader = ({ size = 300, className, onResult, countdow
           </div>
           <div className="mb-5 w-[242px]">
             <Dropdown
-              // variant="up"
               placeholder={t('onboarding.paritySigner.selectCameraLabel')}
-              selected={activeCamera}
+              activeId={activeCamera?.id}
               options={availableCameras}
               onChange={setActiveCamera}
             />

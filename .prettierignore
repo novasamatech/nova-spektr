@@ -1,11 +1,5 @@
-dist/
-build/
-release/
+src/shared/locale
 node_modules/
 package.json
 coverage/
 *.md
-e2e/dist/
-src/shared/locale/
-src/renderer/services/network/common/chains/*
-src/renderer/services/network/common/chainSpecs/*

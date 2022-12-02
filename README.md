@@ -1,8 +1,8 @@
-![badge](https://img.shields.io/endpoint?url=https://gist.githubusercontent.com/stepanLav/77132f25d05c7e9264cd410aef162a7e/raw/jest-coverage-main.json)
-
 # Omni Enterprise
 
 Polkadot & Kusama ecosystem Enterprise Desktop application.
+
+![badge](https://img.shields.io/endpoint?url=https://gist.githubusercontent.com/stepanLav/77132f25d05c7e9264cd410aef162a7e/raw/jest-coverage-main.json)
 
 ## Key features
 
@@ -28,19 +28,24 @@ To install all dependencies:
 ```bash
 pnpm install
 ```
-Setup husky to enable pre commit/push hooks:
+Husky hooks will be installed automatically after installing project dependencies:
 
-```bash
-pnpx husky-init
+```json
+"prepare": "husky install"
 ```
 **P.S. don't update pre-commit file to `npm githook:pre-commit`**
 
 ## Starting development
 
-Start the app in the `dev` environment with hot-reload:
+Start application in the `dev` environment with hot-reload:
 
+Electron:
 ```bash
 pnpm start
+```
+Web:
+```bash
+pnpm start:renderer
 ```
 
 ## Project localisation
@@ -54,19 +59,12 @@ ESlint checks if localisation files are well-formed and valid including:
 4. All `tsx` files are translated
 
 ### How to run localisation check
-1. `pnpm lint:translation-files` checks if localization files are well-formed and valid
-2. `pnpm lint:translation-pages` checks if `tsx` files are translated
-3. `pnpm lint:translation-fix` fixes the keys sorting order
+1. `pnpm lint:i18n-locale` checks if localization files are well-formed and valid
+2. `pnpm lint:i18n-fix` fixes the keys sorting order
+3. `pnpm lint:i18n-tsx` checks if `tsx` files are translated
 
 ### How to ignore localisation errors
-In some cases there is no need to translate the text. For example
-```tsx
-<span className="font-bold">
-  {data?.asset.symbol} ({data?.asset.name})
-</span>
-```
-In that case the `{/* eslint-disable-next-line i18next/no-literal-string */}`
-should be added
+In some cases there is no need to translate the text, so ESlint ignore rules should be used.
 ```tsx
 <span className="font-bold">
   {/* eslint-disable-next-line i18next/no-literal-string */}
@@ -76,12 +74,12 @@ should be added
 or
 ```typescript
 //eslint-disable-next-line i18next/no-literal-string
-const qrCodePayload = `substrate:${address}:${wallet.publicKey}:Ff`;
+const qrCodePayload = `substrate:${address}:${wallet.publicKey}`;
 ```
 
 ## Packaging for production
 
-To package app for the local platform:
+To package application for the local platform:
 
 ```bash
 pnpm build

@@ -94,10 +94,11 @@ const Validators = ({ api, chainId, asset, onResult }: Props) => {
                     </p>
                   )}
                   <Address
+                    noCopy
                     address={address || ''}
                     type="short"
                     addressStyle={identity ? 'small' : 'normal'}
-                    size={12}
+                    size={identity ? 12 : 14}
                     symbols={16}
                   />
                 </div>
@@ -135,7 +136,7 @@ const Validators = ({ api, chainId, asset, onResult }: Props) => {
         </div>
       )}
       <BaseModal isOpen={isInfoOpen} onClose={toggleInfo}>
-        Validator's info
+        Validator&apos;s info
       </BaseModal>
     </>
   );

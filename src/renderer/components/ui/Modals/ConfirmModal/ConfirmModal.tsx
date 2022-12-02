@@ -22,7 +22,7 @@ const ConfirmModal = ({
   confirmText = 'Confirm',
   cancelText = 'Cancel',
 }: PropsWithChildren<Props>) => (
-  <BaseModal isOpen={isOpen} onClose={onClose} contentClass={cn('p-5', contentClass)}>
+  <BaseModal isOpen={isOpen} contentClass={cn('p-5', contentClass)} onClose={onClose}>
     {children}
     <div className="grid grid-cols-2 gap-x-3">
       <Button variant="fill" pallet="primary" onClick={() => onClose()}>

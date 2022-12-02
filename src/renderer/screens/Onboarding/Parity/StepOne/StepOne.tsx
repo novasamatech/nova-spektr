@@ -1,38 +1,48 @@
 import { ReactNode } from 'react';
-import { Trans } from 'react-i18next';
 import type { TFunction } from 'react-i18next';
+import { Trans } from 'react-i18next';
 
-import { Button, Carousel, Icon } from '@renderer/components/ui';
 import SlideOne from '@images/misc/onboarding/slide-1.svg';
 import SlideTwo from '@images/misc/onboarding/slide-2.svg';
 import SlideThree from '@images/misc/onboarding/slide-3.svg';
+import { Button, Carousel, Icon } from '@renderer/components/ui';
+import { SlideNode } from '@renderer/components/ui/Carousel/Carousel';
 import { useI18n } from '@renderer/context/I18nContext';
 
-const getCarouselSlider = (t: TFunction): ReactNode[] => [
+const createNode = (src: string, alt: string, header: ReactNode) => (
   <>
-    <img src={SlideOne} alt={t('onboarding.paritySigner.sliderLabel1')} width={500} height={384} />
+    <img src={src} alt={alt} width={500} height={384} />
     <div className="flex items-center justify-center h-15 px-5">
-      <h2 className="text-neutral-variant text-center">
-        <Trans t={t} i18nKey="onboarding.paritySigner.sliderLabel1" />
-      </h2>
+      <h2 className="text-neutral-variant text-center">{header}</h2>
     </div>
-  </>,
-  <>
-    <img src={SlideTwo} alt={t('onboarding.paritySigner.sliderLabel2')} width={500} height={384} />
-    <div className="flex items-center justify-center h-15 px-5">
-      <h2 className="text-neutral-variant text-center">
-        <Trans t={t} i18nKey="onboarding.paritySigner.sliderLabel2" />
-      </h2>
-    </div>
-  </>,
-  <>
-    <img src={SlideThree} alt={t('onboarding.paritySigner.sliderLabel3')} width={500} height={384} />
-    <div className="flex items-center justify-center h-15 px-5">
-      <h2 className="text-neutral-variant text-center">
-        <Trans t={t} i18nKey="onboarding.paritySigner.sliderLabel3" />
-      </h2>
-    </div>
-  </>,
+  </>
+);
+
+const getCarouselSlider = (t: TFunction): SlideNode[] => [
+  {
+    id: '1',
+    node: createNode(
+      SlideOne,
+      t('onboarding.paritySigner.sliderLabel1'),
+      <Trans t={t} i18nKey="onboarding.paritySigner.sliderLabel1" />,
+    ),
+  },
+  {
+    id: '2',
+    node: createNode(
+      SlideTwo,
+      t('onboarding.paritySigner.sliderLabel2'),
+      <Trans t={t} i18nKey="onboarding.paritySigner.sliderLabel2" />,
+    ),
+  },
+  {
+    id: '3',
+    node: createNode(
+      SlideThree,
+      t('onboarding.paritySigner.sliderLabel3'),
+      <Trans t={t} i18nKey="onboarding.paritySigner.sliderLabel3" />,
+    ),
+  },
 ];
 
 const AUTOPLAY_CONFIG = {

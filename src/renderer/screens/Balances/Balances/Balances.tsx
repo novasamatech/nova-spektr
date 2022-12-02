@@ -19,7 +19,7 @@ const Balances = () => {
   const { t } = useI18n();
 
   const [query, setQuery] = useState('');
-  const [publicKey, setPublicKey] = useState<PublicKey>();
+  const [publicKeys, setPublicKeys] = useState<PublicKey[]>([]);
   const [receiveData, setReceiveData] = useState<ReceivePayload>();
 
   const [isReceiveOpen, toggleReceive] = useToggle();
@@ -38,11 +38,18 @@ const Balances = () => {
   };
 
   useEffect(() => {
-    if (!activeWallets || activeWallets.length === 0) return;
+    if (!activeWallets || activeWallets.length === 0) {
+      setPublicKeys([]);
 
-    const activePublicKey = (activeWallets[0].mainAccounts[0] || activeWallets[0].chainAccounts[0]).publicKey;
-    setPublicKey(activePublicKey);
-  }, [activeWallets]);
+      return;
+    }
+
+    const activePublicKeys = activeWallets.map(
+      (wallet) => (wallet.mainAccounts[0] || wallet.chainAccounts[0]).publicKey,
+    );
+
+    setPublicKeys(activePublicKeys);
+  }, [activeWallets?.length]);
 
   const sortedChains = sortChains(
     Object.values(connections).filter((c) => c.connection.connectionType !== ConnectionType.DISABLED),
@@ -55,10 +62,7 @@ const Balances = () => {
   const canMakeActions = activeWallets?.some((wallet) => wallet.type === WalletType.PARITY) || false;
 
   const onReceive = (chain: Chain) => (asset: Asset) => {
-    setReceiveData({
-      chain,
-      asset,
-    });
+    setReceiveData({ chain, asset });
     toggleReceive();
   };
 
@@ -72,15 +76,15 @@ const Balances = () => {
             className="w-[300px]"
             prefixElement={<Icon name="search" className="w-5 h-5" />}
             value={query}
-            onChange={(e) => setQuery(e.target.value)}
             placeholder={t('balances.searchPlaceholder')}
+            onChange={(e) => setQuery(e.target.value)}
           />
           <div className="text-sm text-neutral font-semibold flex gap-2.5">
             {t('balances.hideZeroBalancesLabel')} <Switch checked={hideZeroBalance} onChange={updateHideZeroBalance} />
           </div>
         </div>
 
-        {publicKey && (
+        {publicKeys.length > 0 && (
           <ul className="flex-1 overflow-y-auto">
             {sortedChains.map((chain) => (
               <NetworkBalances
@@ -89,7 +93,7 @@ const Balances = () => {
                 searchSymbolOnly={searchSymbolOnly}
                 query={query?.toLowerCase() || ''}
                 chain={chain}
-                publicKey={publicKey}
+                publicKeys={publicKeys}
                 canMakeActions={canMakeActions}
                 onReceiveClick={onReceive(chain)}
               />
