@@ -1,9 +1,9 @@
-import { RadioGroup } from '@headlessui/react';
+import { RadioGroup as RadioSet } from '@headlessui/react';
 import cn from 'classnames';
 import { Fragment } from 'react';
 
 import { RadioOption, ResultOption } from './common/types';
-import './Radio.css';
+import './RadioGroup.css';
 
 type Props = {
   name?: string;
@@ -14,13 +14,13 @@ type Props = {
   onChange: (data: ResultOption) => void;
 };
 
-const Radio = ({ name, activeId, options, optionClass, className, onChange }: Props) => {
+const RadioGroup = ({ name, activeId, options, optionClass, className, onChange }: Props) => {
   const activeOption = options.find((option) => option.id === activeId);
 
   return (
-    <RadioGroup by="id" className={className} name={name} value={activeOption} onChange={onChange}>
+    <RadioSet by="id" className={className} name={name} value={activeOption} onChange={onChange}>
       {options.map(({ id, value, element }) => (
-        <RadioGroup.Option key={id} value={{ id, value }} as={Fragment}>
+        <RadioSet.Option key={id} value={{ id, value }} as={Fragment}>
           {({ checked, disabled }) => (
             <div className={cn('flex items-center gap-x-2.5 cursor-pointer', optionClass)}>
               <span
@@ -33,10 +33,10 @@ const Radio = ({ name, activeId, options, optionClass, className, onChange }: Pr
               {element}
             </div>
           )}
-        </RadioGroup.Option>
+        </RadioSet.Option>
       ))}
-    </RadioGroup>
+    </RadioSet>
   );
 };
 
-export default Radio;
+export default RadioGroup;

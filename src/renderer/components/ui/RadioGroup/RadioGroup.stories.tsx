@@ -1,14 +1,14 @@
 import { ComponentMeta, ComponentStory } from '@storybook/react';
 
-import Radio from './Radio';
+import RadioGroup from './RadioGroup';
 
 export default {
-  title: 'Radio',
-  component: Radio,
+  title: 'RadioGroup',
+  component: RadioGroup,
   parameters: { actions: { argTypesRegex: '^on.*' } },
-} as ComponentMeta<typeof Radio>;
+} as ComponentMeta<typeof RadioGroup>;
 
-const Template: ComponentStory<typeof Radio> = (args) => <Radio {...args} />;
+const Template: ComponentStory<typeof RadioGroup> = (args) => <RadioGroup {...args} />;
 
 const defaultOptions = [
   { id: 1, value: 1, element: <span>Test 1</span> },

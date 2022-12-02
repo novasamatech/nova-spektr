@@ -1,8 +1,8 @@
 import { act, render, screen } from '@testing-library/react';
 
-import Radio from './Radio';
+import RadioGroup from './RadioGroup';
 
-describe('Radio', () => {
+describe('RadioGroup', () => {
   const options = [
     { id: 1, value: 1, element: <span>Test 1</span> },
     { id: 2, value: 2, element: <span>Test 2</span> },
@@ -14,7 +14,7 @@ describe('Radio', () => {
   };
 
   test('should render component', () => {
-    render(<Radio {...defaultProps} />);
+    render(<RadioGroup {...defaultProps} />);
 
     const items = screen.getAllByRole('radio');
     expect(items).toHaveLength(2);
@@ -22,7 +22,7 @@ describe('Radio', () => {
 
   test('should call onChange', async () => {
     const spyChange = jest.fn();
-    render(<Radio {...defaultProps} onChange={spyChange} />);
+    render(<RadioGroup {...defaultProps} onChange={spyChange} />);
 
     const item = screen.getByRole('radio', { checked: false });
     await act(async () => item.click());
@@ -31,13 +31,13 @@ describe('Radio', () => {
   });
 
   test('should change active value', async () => {
-    const { rerender } = render(<Radio {...defaultProps} />);
+    const { rerender } = render(<RadioGroup {...defaultProps} />);
 
     let items = screen.getAllByRole('radio');
     expect(items[0]).toBeChecked();
     expect(items[1]).not.toBeChecked();
 
-    rerender(<Radio {...defaultProps} activeId={options[1].id} />);
+    rerender(<RadioGroup {...defaultProps} activeId={options[1].id} />);
 
     items = screen.getAllByRole('radio');
     expect(items[0]).not.toBeChecked();
