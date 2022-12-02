@@ -86,7 +86,7 @@ module.exports = {
         'should-validate-template': true,
         'jsx-attributes': {
           include: ['alt', 'aria-label', 'title', 'placeholder', 'label', 'description'],
-          exclude: ['data-testid'],
+          exclude: ['data-testid', 'className'],
         },
         callees: {
           exclude: ['Error'],

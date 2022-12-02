@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { QrTextGenerator } from '@renderer/components/common';
 import { ExplorerIcons } from '@renderer/components/common/Explorers/common/constants';
 import { Address, BaseModal, Button, Dropdown, Icon } from '@renderer/components/ui';
-import { DropdownOption, ResultOption } from '@renderer/components/ui/Dropdowns/common/types';
+import { Option, ResultOption } from '@renderer/components/ui/Dropdowns/common/types';
 import { useI18n } from '@renderer/context/I18nContext';
 import { Asset } from '@renderer/domain/asset';
 import { Chain } from '@renderer/domain/chain';
@@ -44,7 +44,7 @@ const ReceiveModal = ({ data, isOpen, onClose }: Props) => {
   const { getActiveWallets } = useWallet();
 
   const [activeAccount, setActiveAccount] = useState<ResultOption<number>>();
-  const [accounts, setAccounts] = useState<DropdownOption<number>[]>([]);
+  const [accounts, setAccounts] = useState<Option<number>[]>([]);
 
   const activeWallets = getActiveWallets() || [];
 
@@ -60,16 +60,16 @@ const ReceiveModal = ({ data, isOpen, onClose }: Props) => {
           id: address,
           value: index,
           element: (
-            <div className="grid grid-rows-2 grid-flow-col items-center gap-x-2.5">
-              <Icon className="row-span-2" name={walletType} size={34} />
-              <p className="text-neutral text-lg font-semibold leading-5">{wallet.name}</p>
+            <div className="grid grid-rows-2 grid-flow-col gap-x-2.5">
+              <Icon className="row-span-2 self-center" name={walletType} size={34} />
+              <p className="text-left text-neutral text-lg font-semibold leading-5">{wallet.name}</p>
               <Address type="short" address={address} noCopy />
             </div>
           ),
         };
 
         return acc.concat(walletOption);
-      }, [] as DropdownOption[]) || [];
+      }, [] as Option[]) || [];
 
     if (accounts.length === 0) return;
 

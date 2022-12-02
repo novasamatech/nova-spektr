@@ -4,14 +4,14 @@ import { Fragment, ReactNode } from 'react';
 
 import { Checkbox, Icon } from '@renderer/components/ui';
 import { ViewClass, SelectClass } from '../common/constants';
-import { ResultOption, SelectOption, Variant } from '../common/types';
+import { ResultOption, Option, Variant } from '../common/types';
 
 type Props = {
   summary: ReactNode;
   className?: string;
   placeholder?: string;
-  activeIds: SelectOption['id'][];
-  options: SelectOption[];
+  activeIds: Option['id'][];
+  options: Option[];
   variant?: Variant;
   suffix?: ReactNode;
   weight?: keyof typeof SelectClass;
@@ -70,8 +70,7 @@ const Select = ({
             </div>
             <span
               className={cn(
-                'pointer-events-none',
-                'group-hover:text-primary group-focus:text-primary transition',
+                'pointer-events-none group-hover:text-primary group-focus:text-primary transition',
                 open ? 'text-primary' : 'text-neutral-variant',
               )}
             >

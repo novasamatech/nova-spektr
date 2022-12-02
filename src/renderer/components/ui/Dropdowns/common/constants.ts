@@ -24,10 +24,20 @@ export const DropdownClass = {
   md: {
     ...BaseWeightClass.md,
     text: 'text-sm',
+    label: {
+      height: 'h-[82px]',
+      content: 'h-12.5',
+      text: 'text-2xs',
+    },
   },
   lg: {
     ...BaseWeightClass.lg,
     text: 'text-lg',
+    label: {
+      height: 'h-[94px]',
+      content: 'h-15',
+      text: 'text-xs',
+    },
   },
 };
 

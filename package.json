@@ -31,13 +31,14 @@
     "lint": "eslint . --ext=js,ts,tsx,json",
     "lint:fix": "pnpm lint --fix",
     "lint:i18n-locale": "cross-env I18N=true eslint ./src/shared/locale/ --ext=json --plugin i18n-json",
-    "lint:i18n-tsx": "cross-env I18N=true eslint . --ext=tsx --ignore-pattern=**/*.test.* --ignore-pattern=**/*.stories.* --plugin i18next",
     "lint:i18n-fix": "cross-env I18N=true pnpm lint:i18n-locale --fix",
+    "lint:i18n-tsx": "cross-env I18N=true eslint . --ext=tsx --ignore-pattern=**/*.test.* --ignore-pattern=**/*.stories.* --plugin i18next",
     "update:chains-file": "node scripts/buildChainsJson.js",
     "githook:pre-commit": "cross-env NODE_ENV=production lint-staged && tsc -p tsconfig.json",
     "githook:pre-push": "cross-env pnpm test:coverage",
     "storybook": "start-storybook -p 6006",
     "build:storybook": "build-storybook",
+    "prepare": "husky install",
     "r": "pnpm run-s"
   },
   "engines": {
@@ -64,7 +65,6 @@
     "buffer": "^6.0.3",
     "classnames": "^2.3.1",
     "crypto-browserify": "^3.12.0",
-    "date-fns": "^2.29.2",
     "dexie": "^3.2.2",
     "dexie-react-hooks": "^1.1.1",
     "graphql": "^16.6.0",
