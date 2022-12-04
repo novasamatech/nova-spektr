@@ -10,7 +10,7 @@ export const useWallet = (): IWalletService => {
   if (!walletStorage) {
     throw new Error('=== 🔴 Wallet storage in not defined 🔴 ===');
   }
-  const { getWallet, getWallets, addWallet, updateWallet, deleteWallet } = walletStorage;
+  const { getWallet, getWallets, getWalletsByIds, addWallet, updateWallet, deleteWallet } = walletStorage;
 
   const getLiveWallets = (where?: Record<string, any>) =>
     useLiveQuery((): Promise<WalletDS[]> => {
@@ -53,6 +53,7 @@ export const useWallet = (): IWalletService => {
   return {
     getWallet,
     getWallets,
+    getWalletsByIds,
     getLiveWallets,
     getActiveWallets,
     toggleActiveWallet,

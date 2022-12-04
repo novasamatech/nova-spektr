@@ -39,10 +39,11 @@ const Select = ({
         <div className={cn('relative', className)}>
           <Listbox.Button
             className={cn(
-              'group relative flex items-center gap-x-2.5 w-full rounded-2lg border bg-white px-2.5 transition',
+              'group relative flex items-center gap-x-2.5 w-full border rounded-2lg px-2.5 transition',
               'hover:text-primary hover:border-primary focus:text-primary focus:border-primary',
-              weightStyle.height,
+              activeOptions.length > 0 ? 'border-shade-2 bg-shade-2' : 'bg-white',
               open && 'border-primary',
+              weightStyle.height,
             )}
           >
             <div
@@ -81,7 +82,7 @@ const Select = ({
           <Transition as={Fragment} leave="transition" leaveFrom="opacity-100" leaveTo="opacity-0">
             <Listbox.Options
               className={cn(
-                'absolute z-10 py-[15px] px-2.5 max-h-60 w-full overflow-auto shadow-element',
+                'absolute z-10 py-[15px] px-2.5 max-h-60 w-full overflow-auto overscroll-contain shadow-element',
                 'border border-primary rounded-2lg bg-white shadow-surface focus:outline-none',
                 variant !== 'auto' && ViewClass[variant],
               )}
@@ -99,8 +100,8 @@ const Select = ({
                   }
                 >
                   {({ selected }) => (
-                    <Checkbox readOnly checked={selected} position="left" className="w-full pointer-events-none">
-                      <div className="w-full">{element}</div>
+                    <Checkbox readOnly checked={selected} className="w-full pointer-events-none">
+                      {element}
                     </Checkbox>
                   )}
                 </Listbox.Option>

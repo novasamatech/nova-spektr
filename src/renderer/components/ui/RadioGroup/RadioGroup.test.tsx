@@ -4,8 +4,8 @@ import RadioGroup from './RadioGroup';
 
 describe('RadioGroup', () => {
   const options = [
-    { id: 1, value: 1, element: <span>Test 1</span> },
-    { id: 2, value: 2, element: <span>Test 2</span> },
+    { id: '1', value: 1, element: <span>Test 1</span> },
+    { id: '2', value: 2, element: <span>Test 2</span> },
   ];
   const defaultProps = {
     activeId: options[0].id,

@@ -1,16 +1,16 @@
 import { useState } from 'react';
-import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
+import { useLocation, useNavigate, useParams } from 'react-router-dom';
 
 import { ButtonBack } from '@renderer/components/ui';
 import { useI18n } from '@renderer/context/I18nContext';
 import { useNetworkContext } from '@renderer/context/NetworkContext';
+import { Validator } from '@renderer/domain/validator';
 import { StakingType } from '@renderer/domain/asset';
 import { ChainId } from '@renderer/domain/shared-kernel';
 import Paths from '@renderer/routes/paths';
 import ConfirmBond from '@renderer/screens/Staking/Bond/ConfirmBond/ConfirmBond';
 import InitBond from '@renderer/screens/Staking/Bond/InitBond/InitBond';
 import Validators from '@renderer/screens/Staking/Bond/Validators/Validators';
-import { Validator } from '@renderer/services/staking/common/types';
 
 const enum Step {
   InitBond,
@@ -23,12 +23,11 @@ const Bond = () => {
   const navigate = useNavigate();
   const { connections } = useNetworkContext();
   const { chainId } = useParams<{ chainId: ChainId }>();
-  const [wallets] = useSearchParams();
+  const { state } = useLocation();
 
   const [activeStep, setActiveStep] = useState<Step>(Step.InitBond);
   const [_, setValidators] = useState<Validator[]>([]);
 
-  const walletsIds = wallets.get('id')?.split(',') || [];
   const api = chainId && connections[chainId]?.api;
   const asset = chainId && connections[chainId]?.assets.find((asset) => asset.staking === StakingType.RELAYCHAIN);
 
@@ -72,7 +71,7 @@ const Bond = () => {
       </div>
 
       {activeStep === Step.InitBond && (
-        <InitBond walletsIds={walletsIds} api={api} chainId={chainId} asset={asset} onResult={onBondResult} />
+        <InitBond walletsIds={state.ids || []} api={api} chainId={chainId} asset={asset} onResult={onBondResult} />
       )}
       {activeStep === Step.Validators && (
         <Validators api={api} chainId={chainId} asset={asset} onResult={onSelectValidators} />

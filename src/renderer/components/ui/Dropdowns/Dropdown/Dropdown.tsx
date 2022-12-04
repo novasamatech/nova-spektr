@@ -91,7 +91,7 @@ const Dropdown = ({
           <Transition as={Fragment} leave="transition" leaveFrom="opacity-100" leaveTo="opacity-0">
             <Listbox.Options
               className={cn(
-                'absolute z-10 py-2.5 px-2 max-h-60 w-full overflow-auto shadow-element',
+                'absolute z-10 py-2.5 px-2 max-h-60 w-full overflow-auto overscroll-contain shadow-element',
                 'border border-primary rounded-2lg bg-white shadow-surface focus:outline-none',
                 variant !== 'auto' && ViewClass[variant],
               )}

@@ -16,6 +16,10 @@ export const useWalletStorage = (db: Table<WalletDS>): IWalletStorage => ({
     return db.toArray();
   },
 
+  getWalletsByIds: (walletsIds: IndexableType[]): Promise<WalletDS[]> => {
+    return db.filter((wallet) => (wallet.id ? walletsIds.includes(wallet.id) : false)).toArray();
+  },
+
   addWallet: (wallet: Wallet): Promise<IndexableType> => {
     return db.add(wallet);
   },

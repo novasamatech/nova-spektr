@@ -1,6 +1,8 @@
 import { ApiPromise } from '@polkadot/api';
 
 import { AccountID, ChainId } from '@renderer/domain/shared-kernel';
+import { Staking } from '@renderer/domain/staking';
+import { Validator } from '@renderer/domain/validator';
 
 // =====================================================
 // ============ IStakingService interface ==============
@@ -41,61 +43,6 @@ export interface IStakingService {
 export type StakingMap = Record<AccountID, Staking | undefined>;
 export type ValidatorMap = Record<AccountID, Validator>;
 
-export type Staking = {
-  accountId: AccountID;
-  chainId: ChainId;
-  controller: AccountID;
-  stash: AccountID;
-  active: string;
-  total: string;
-  unlocking: Unlocking[];
-};
-
-type Unlocking = {
-  value: string;
-  era: string;
-};
-
-// TODO: maybe move to kernel
-export type Validator = {
-  address: AccountID;
-  chainId: ChainId;
-  ownStake: string;
-  totalStake: string;
-  commission: number;
-  blocked: boolean;
-  isOversubscribed: boolean;
-  isSlashed: boolean;
-  apy: number;
-  identity?: Identity;
-};
-
-export type Identity = {
-  subName: string;
-  email: string;
-  website: string;
-  twitter: string;
-  riot: string;
-  parent: ParentIdentity;
-};
-
-type ParentIdentity = {
-  address: AccountID;
-  name: string;
-  // judgements: Judgement[];
-};
-
-// type Judgement = {
-//   votes: number;
-//   verdict: string;
-// };
-
 export type Payee = 'Stash' | 'Staked' | 'Controller' | { Account: string };
-
-export type SubIdentity = {
-  sub: AccountID;
-  parent: AccountID;
-  subName: string;
-};
 
 export type ApyValidator = Pick<Validator, 'address' | 'totalStake' | 'commission'>;

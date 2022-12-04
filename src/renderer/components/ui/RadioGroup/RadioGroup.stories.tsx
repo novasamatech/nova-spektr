@@ -11,8 +11,8 @@ export default {
 const Template: ComponentStory<typeof RadioGroup> = (args) => <RadioGroup {...args} />;
 
 const defaultOptions = [
-  { id: 1, value: 1, element: <span>Test 1</span> },
-  { id: 2, value: 2, element: <span>Test 2</span> },
+  { id: '1', value: 1, element: <span>Test 1</span> },
+  { id: '2', value: 2, element: <span>Test 2</span> },
 ];
 
 export const Default = Template.bind({});

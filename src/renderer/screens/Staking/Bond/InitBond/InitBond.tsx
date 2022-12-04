@@ -1,22 +1,46 @@
 /* eslint-disable i18next/no-literal-string */
 import { ApiPromise } from '@polkadot/api';
-import { ReactNode, useState } from 'react';
+import { ReactNode, useEffect, useState } from 'react';
 import { Controller, SubmitHandler, useForm } from 'react-hook-form';
 
 import Amount from '@renderer/components/common/Amount/Amount';
-import { Button, Dropdown, Icon, InputHint, Radio } from '@renderer/components/ui';
-import { RadioOption } from '@renderer/components/ui/Radio/common/types';
+import { Button, Dropdown, Icon, Identicon, InputHint, RadioGroup, Select } from '@renderer/components/ui';
+import { Option as DropdownOption } from '@renderer/components/ui/Dropdowns/common/types';
+import { Option as RadioOption, ResultOption } from '@renderer/components/ui/RadioGroup/common/types';
 import { useI18n } from '@renderer/context/I18nContext';
 import { Asset } from '@renderer/domain/asset';
-import { ChainId } from '@renderer/domain/shared-kernel';
+import { AccountID, ChainId } from '@renderer/domain/shared-kernel';
+import { WalletType } from '@renderer/domain/wallet';
 import { useBalance } from '@renderer/services/balance/balanceService';
+import { WalletDS } from '@renderer/services/storage';
+import { useWallet } from '@renderer/services/wallet/walletService';
 
 const PAYOUT_URL = 'https://wiki.polkadot.network/docs/learn-simple-payouts';
 
+const enum RewardsDestination {
+  RESTAKE,
+  TRANSFERABLE,
+}
+
+const getDropdownPayload = (wallet: WalletDS): DropdownOption<AccountID> => {
+  const address = wallet.mainAccounts[0]?.accountId || wallet.chainAccounts[0]?.accountId;
+
+  return {
+    id: address,
+    value: address,
+    element: (
+      <>
+        <Identicon address={address} size={34} background={false} noCopy />
+        <p className="text-left text-neutral text-lg font-semibold leading-5">{wallet.name}</p>
+      </>
+    ),
+  };
+};
+
 type BondForm = {
   amount: string;
-  destination: string;
-  payoutAccount: string;
+  destination: AccountID;
+  // destination: Payee;
 };
 
 type Props = {
@@ -31,9 +55,17 @@ const InitBond = ({ walletsIds, api, chainId, asset, onResult }: Props) => {
   const { t } = useI18n();
   // @ts-ignore
   const { getBalance } = useBalance();
+  const { getWallets, getWalletsByIds } = useWallet();
 
-  // @ts-ignore
-  const [balances, setBalances] = useState<string[]>([]);
+  // const [balances, setBalances] = useState<string[]>([]);
+
+  const [wallets, setWallets] = useState<DropdownOption<AccountID>[]>([]);
+  const [activeWallets, setActiveWallets] = useState<ResultOption<AccountID>[]>([]);
+
+  const [activeRadio, setActiveRadio] = useState<ResultOption<RewardsDestination>>();
+
+  const [payoutWallets, setPayoutWallets] = useState<DropdownOption<AccountID>[]>([]);
+  const [activePayoutWallet, setActivePayoutWallet] = useState<ResultOption<AccountID>>();
 
   // useEffect(() => {
   //   if (!api || asset) return;
@@ -45,58 +77,81 @@ const InitBond = ({ walletsIds, api, chainId, asset, onResult }: Props) => {
   //   })();
   // }, [api]);
 
+  useEffect(() => {
+    (async () => {
+      const wallets = await getWalletsByIds(walletsIds);
+      const formattedWallets = wallets.map(getDropdownPayload);
+
+      setWallets(formattedWallets);
+    })();
+  }, []);
+
+  useEffect(() => {
+    (async () => {
+      const wallets = await getWallets({ type: WalletType.PARITY });
+
+      const formattedWallets = wallets
+        .filter((wallet) => wallet.mainAccounts[0] || wallet.chainAccounts[0]?.chainId !== chainId)
+        .map(getDropdownPayload);
+
+      setPayoutWallets(formattedWallets);
+    })();
+  }, []);
+
   const {
     handleSubmit,
     control,
-    watch,
-    formState: { isValid },
+    // formState: { isValid },
   } = useForm<BondForm>({
     mode: 'onChange',
-    defaultValues: { amount: '', destination: '', payoutAccount: '' },
+    defaultValues: { amount: '', destination: '' },
   });
-
-  const am = watch('amount');
-  const destination = watch('destination');
-  const pay = watch('payoutAccount');
-  console.log(am, destination, pay);
 
   if (!asset) {
     return <div>LOADING</div>;
   }
 
-  const initBond: SubmitHandler<BondForm> = ({ amount, destination, payoutAccount }) => {
-    console.log(amount, destination, payoutAccount);
+  const initBond: SubmitHandler<BondForm> = ({ amount, destination }) => {
+    console.log(amount, destination);
   };
 
-  const getDestinations = (): RadioOption<string>[] => {
+  const getDestinations = (): RadioOption<number>[] => {
     const setElement = (label: string, amount: string, apy: number): ReactNode => (
-      <div className="w-full grid grid-cols-2">
+      <div className="grid grid-cols-2 items-center">
         <p className="text-neutral text-lg leading-5 font-semibold">{label}</p>
-        <p className="text-shade-30 text-lg leading-5 font-semibold text-right">{amount} DOT</p>
+        <p className="row-span-2 text-shade-30 text-lg leading-5 font-semibold text-right">{amount} DOT</p>
         <p className="text-success text-xs">{apy}% APY</p>
       </div>
     );
 
     return [
       {
-        id: 1,
-        value: '123',
+        id: '1',
+        value: RewardsDestination.RESTAKE,
         element: setElement('Restake rewards', '12.25', 16.04),
       },
       {
-        id: 2,
-        value: '4444',
+        id: '2',
+        value: RewardsDestination.TRANSFERABLE,
         element: setElement('Transferable rewards', '12.01', 15.57),
       },
     ];
   };
 
-  const onChangeWallets = () => {};
+  const onChangeDestination = (option: ResultOption) => {
+    setActiveRadio(option);
+  };
 
   return (
     <div className="w-[600px] flex flex-col items-center m-auto rounded-2lg bg-shade-2 p-5 ">
       <div className="w-full p-5 rounded-2lg bg-white shadow-surface">
-        <Dropdown placeholder="Select" options={[]} onChange={onChangeWallets} />
+        <Select
+          placeholder="Select accounts"
+          summary="Multiple Accounts"
+          activeIds={activeWallets.map((w) => w.id)}
+          options={wallets}
+          onChange={setActiveWallets}
+        />
       </div>
       <form
         id="initBondForm"
@@ -116,7 +171,14 @@ const InitBond = ({ walletsIds, api, chainId, asset, onResult }: Props) => {
           }}
           render={({ field: { onChange, value }, fieldState: { error } }) => (
             <>
-              <Amount value={value} name="amount" balance={'1'} asset={asset} invalid={!!error} onChange={onChange} />
+              <Amount
+                value={value}
+                name="amount"
+                balance={'1'}
+                asset={asset}
+                invalid={Boolean(error)}
+                onChange={onChange}
+              />
               <InputHint active={error?.type === 'required'} variant="error">
                 REQUIRED
               </InputHint>
@@ -136,35 +198,32 @@ const InitBond = ({ walletsIds, api, chainId, asset, onResult }: Props) => {
             <span className="underline text-xs">About rewards</span>
           </a>
           <p className="text-2xs text-neutral-variant col-span-2">Approximate amounts are calculated yearly</p>
+          <RadioGroup
+            activeId={activeRadio?.id}
+            options={getDestinations()}
+            className="col-span-2"
+            optionClass="p-2.5 rounded-2lg bg-shade-2 mt-2.5"
+            onChange={onChangeDestination}
+          />
+        </div>
+        {activeRadio?.value === RewardsDestination.TRANSFERABLE && (
           <Controller
             name="destination"
             control={control}
-            render={({ field: { value, onChange } }) => (
-              <Radio
-                selected={value}
-                options={getDestinations()}
-                className="col-span-2"
-                optionClass="p-2.5 rounded-2lg bg-shade-2 mt-2.5"
-                onChange={onChange}
+            render={({ field: { onChange } }) => (
+              <Dropdown
+                label="Payout account"
+                placeholder="Select a payout account"
+                activeId={activePayoutWallet?.id}
+                options={payoutWallets}
+                onChange={(option) => {
+                  setActivePayoutWallet(option);
+                  onChange(option.value);
+                }}
               />
             )}
           />
-        </div>
-        {/*{destination === '4444' && (*/}
-        {/*  <Controller*/}
-        {/*    name="payoutAccount"*/}
-        {/*    control={control}*/}
-        {/*    render={({ field: { value, onChange } }) => (*/}
-        {/*      <Dropdown*/}
-        {/*        label={<p>Hello map</p>}*/}
-        {/*        placeholder="Select a payout account"*/}
-        {/*        selected={value}*/}
-        {/*        options={[]}*/}
-        {/*        onChange={onChange}*/}
-        {/*      />*/}
-        {/*    )}*/}
-        {/*  />*/}
-        {/*)}*/}
+        )}
         <div className="flex justify-between items-center uppercase text-neutral-variant text-2xs">
           <p>{t('transfer.networkFee')}</p>
 
@@ -179,7 +238,8 @@ const InitBond = ({ walletsIds, api, chainId, asset, onResult }: Props) => {
           {/*/>*/}
         </div>
       </form>
-      <Button type="submit" form="initBondForm" variant="fill" pallet="primary" weight="lg" disabled={!isValid}>
+      {/*<Button type="submit" form="initBondForm" variant="fill" pallet="primary" weight="lg" disabled={!isValid}>*/}
+      <Button type="submit" form="initBondForm" variant="fill" pallet="primary" weight="lg">
         Continue
       </Button>
     </div>

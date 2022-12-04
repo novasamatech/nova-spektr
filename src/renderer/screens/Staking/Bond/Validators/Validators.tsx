@@ -4,11 +4,11 @@ import cn from 'classnames';
 import { useEffect, useState } from 'react';
 
 import { Address, Balance as BalanceValue, BaseModal, Button, Checkbox, Icon, Input } from '@renderer/components/ui';
+import { Validator } from '@renderer/domain/validator';
 import { useI18n } from '@renderer/context/I18nContext';
 import { Asset } from '@renderer/domain/asset';
 import { AccountID, ChainId } from '@renderer/domain/shared-kernel';
 import useToggle from '@renderer/hooks/useToggle';
-import { Validator } from '@renderer/services/staking/common/types';
 import { useStaking } from '@renderer/services/staking/stakingService';
 
 type Props = {

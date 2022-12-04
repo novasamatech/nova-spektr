@@ -3,20 +3,14 @@ import { u8aToString } from '@polkadot/util';
 import { construct, methods } from '@substrate/txwrapper-polkadot';
 import { useRef, useState } from 'react';
 
-import { getValidatorsApy } from '@renderer/services/staking/apyCalculator';
+import { Identity, SubIdentity } from '@renderer/domain/identity';
 import { AccountID, ChainId } from '@renderer/domain/shared-kernel';
+import { Staking } from '@renderer/domain/staking';
+import { Validator } from '@renderer/domain/validator';
+import { getValidatorsApy } from '@renderer/services/staking/apyCalculator';
 import { useSubscription } from '@renderer/services/subscription/subscriptionService';
 import { createTxMetadata } from '@renderer/utils/substrate';
-import {
-  Identity,
-  IStakingService,
-  Payee,
-  Staking,
-  StakingMap,
-  SubIdentity,
-  Validator,
-  ValidatorMap,
-} from './common/types';
+import { IStakingService, Payee, StakingMap, ValidatorMap } from './common/types';
 
 export const useStaking = (): IStakingService => {
   // const { data } = useQuery<Rewards>(GET_TOTAL_REWARDS, {

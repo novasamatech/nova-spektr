@@ -1,5 +1,4 @@
 export type HexString = `0x${string}`;
-
 export type AccountID = string;
 export type PublicKey = HexString;
 export type ChainId = HexString;

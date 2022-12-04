@@ -87,16 +87,16 @@ const Overview = () => {
 
     const isParentWallet = wallet.parentWalletId === undefined;
     if (isParentWallet) {
-      return acc.concat({ name: wallet.name, accountId: wallet.mainAccounts[0]?.accountId });
+      return acc.concat({ id: wallet.id, name: wallet.name, accountId: wallet.mainAccounts[0]?.accountId });
     }
 
     const isRelevantDerived = wallet.chainAccounts[0]?.chainId === activeNetwork?.value.chainId;
     if (isRelevantDerived) {
-      acc.push({ name: wallet.name, accountId: wallet.chainAccounts[0]?.accountId });
+      acc.push({ id: wallet.id, name: wallet.name, accountId: wallet.chainAccounts[0]?.accountId });
     }
 
     return acc;
-  }, [] as { name: string; accountId: AccountID }[]);
+  }, [] as { id?: string; name: string; accountId: AccountID }[]);
 
   const nominators = async (account: AccountID) => {
     if (!api) return;
@@ -211,7 +211,8 @@ const Overview = () => {
                       <p>Start staking</p>
                       <Link
                         className="bg-primary rounded-lg mt-2 py-1 px-2 text-white"
-                        to={createLink('STAKING_START', { chainId }, { ids: ['1', '2', '3'] })}
+                        to={createLink('STAKING_START', { chainId })}
+                        state={{ ids: [25, 27] }}
                       >
                         Bond
                       </Link>

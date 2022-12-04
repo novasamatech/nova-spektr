@@ -1,12 +1,12 @@
 import { ReactNode } from 'react';
 
-export type RadioOption<T extends any = any> = {
-  id: string | number;
+export type Option<T extends any = any> = {
+  id: string;
   value: T;
   element: ReactNode;
 };
 
 export type ResultOption<T extends any = any> = {
-  id: string | number;
+  id: string;
   value: T;
 };

@@ -35,6 +35,7 @@ export interface IConnectionStorage {
 export interface IWalletStorage {
   getWallet: (walletId: IndexableType) => Promise<WalletDS | undefined>;
   getWallets: (where?: Record<string, any>) => Promise<WalletDS[]>;
+  getWalletsByIds: (walletIds: IndexableType[]) => Promise<WalletDS[]>;
   addWallet: (wallet: Wallet) => Promise<IndexableType>;
   updateWallet: (wallet: Wallet) => Promise<IndexableType>;
   deleteWallet: (walletId: string) => Promise<void>;
