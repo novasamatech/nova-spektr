@@ -163,7 +163,10 @@ const QrReader = ({ size = 300, cameraId, className, onCameraList, onResult, onP
         const isSimpleQr = handleSimpleQr(result.getText());
         if (isSimpleQr) return;
 
-        const frame = createFrame(result.getResultMetadata().get(FRAME_KEY) as Uint8Array[]);
+        const resultMetadata = result.getResultMetadata().get(FRAME_KEY) as Uint8Array[];
+        if (resultMetadata.length > 1) return;
+
+        const frame = createFrame(resultMetadata);
 
         const stringPayload = JSON.stringify(frame.data.payload);
         const isPacketExist = packets.current.get(stringPayload);
