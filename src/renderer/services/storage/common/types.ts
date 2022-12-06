@@ -4,7 +4,7 @@ import { Balance } from '@renderer/domain/balance';
 import { Connection, ConnectionType } from '@renderer/domain/connection';
 import { Contact } from '@renderer/domain/contact';
 import { ChainId, PublicKey } from '@renderer/domain/shared-kernel';
-import { MultisigWallet, Wallet } from '@renderer/domain/wallet';
+import { Wallet } from '@renderer/domain/wallet';
 import { Transaction } from '@renderer/domain/transaction';
 
 // =====================================================
@@ -59,7 +59,6 @@ export type ConnectionDS = WithID & Connection;
 export type BalanceDS = Balance;
 
 export type WalletDS = WithID & Wallet;
-export type MultisigWalletDS = Wallet & MultisigWallet;
 
 export type ContactDS = WithID & Contact;
 export type TransactionDS = WithID & Transaction;

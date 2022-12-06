@@ -11,6 +11,11 @@ export const enum CryptoType {
   ETHEREUM,
 }
 
+export const enum ChainClass {
+  SUBSTRATE,
+  ETHEREUM,
+}
+
 export const enum CryptoTypeString {
   SR25519 = 'SR25519',
   ED25519 = 'ED25519',
@@ -23,4 +28,15 @@ export const enum ErrorType {
   VALIDATE = 'validate',
   PATTERN = 'pattern',
   MAX_LENGTH = 'maxLength',
+}
+
+export const enum WalletType {
+  WATCH_ONLY,
+  SINGLE_PARITY_SIGNER,
+  MULTISHARD_PARITY_SIGNER,
+}
+
+export const enum AccountType {
+  WATCH_ONLY,
+  PARITY_SIGNER,
 }
