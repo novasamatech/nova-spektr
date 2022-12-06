@@ -1,6 +1,6 @@
 import { IndexableType } from 'dexie';
 
-import { ChainId, CryptoType, PublicKey, ChainClass, AccountType } from './shared-kernel';
+import { ChainId, CryptoType, PublicKey, ChainClass, SigningType } from './shared-kernel';
 
 export type Account = {
   walletId: IndexableType;
@@ -8,10 +8,11 @@ export type Account = {
   name?: string;
   publicKey: PublicKey;
   accountId: string;
-  signingType: AccountType;
+  signingType: SigningType;
   cryptoType: CryptoType;
   chainClass: ChainClass;
   chainId?: ChainId;
+  // TODO: rename this to something as replacer for root account
   isMain?: boolean;
-  extras?: Record<string, any>;
+  signingExtras?: Record<string, any>;
 };

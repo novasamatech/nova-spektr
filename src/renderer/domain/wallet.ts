@@ -23,7 +23,7 @@ export function createAccount({
   chainId,
   walletId,
   signingType,
-  extras,
+  signingExtras,
 }: Omit<Account, 'publicKey'>): Account {
   return {
     publicKey: toPublicKey(accountId),
@@ -36,6 +36,6 @@ export function createAccount({
     chainId,
     signingType,
     isMain: false,
-    extras,
+    signingExtras,
   } as Account;
 }

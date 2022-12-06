@@ -36,7 +36,7 @@ export const enum WalletType {
   MULTISHARD_PARITY_SIGNER,
 }
 
-export const enum AccountType {
+export const enum SigningType {
   WATCH_ONLY,
   PARITY_SIGNER,
 }
