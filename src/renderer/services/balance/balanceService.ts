@@ -284,8 +284,8 @@ export const useBalance = (): IBalanceService => {
   };
 
   return {
-    getBalances,
     getBalance,
+    getBalances,
     getLiveBalance,
     getLiveNetworkBalances,
     subscribeBalances,

@@ -1,32 +1,44 @@
 import { ApiPromise } from '@polkadot/api';
-import { render, screen } from '@testing-library/react';
+import { act, render, screen } from '@testing-library/react';
 
+import { Balance } from '@renderer/components/ui';
 import { Asset } from '@renderer/domain/asset';
 import { Transaction } from '@renderer/domain/transaction';
 import Fee from './Fee';
 
+jest.mock('@renderer/components/ui');
+
 jest.mock('@renderer/services/transaction/transactionService', () => ({
   useTransaction: jest.fn().mockReturnValue({
-    getTransactionFee: jest.fn(),
+    getTransactionFee: jest.fn().mockImplementation((value: any) => value.args.value),
   }),
 }));
 
-describe('Fee', () => {
-  // TODO: fix test
-  test('should render component', () => {
-    const api = {} as ApiPromise;
-    const asset = { symbol: 'DOT', precision: 10 } as Asset;
-    const tx = {
-      type: 'transfer',
-      chainId: '0x123',
-      address: '111',
-      args: { value: 100, dest: '222' },
-    } as Transaction;
+describe('components/Fee', () => {
+  const asset = { symbol: 'DOT', precision: 10 } as Asset;
+  const tx = {
+    type: 'transfer',
+    chainId: '0x123',
+    address: '111',
+    args: { value: '21031239', dest: '5GmedEVixRJoE8TjMePLqz7DnnQG1d5517sXdiAvAF2t7EYW' },
+  } as Transaction;
 
-    // @ts-ignore
-    render(<Fee api={api} asset={asset} accountId="123" addressPrefix={0} transaction={tx} />);
+  beforeAll(() => {
+    (Balance as jest.Mock).mockImplementation(({ value }: any) => <span>{value}</span>);
+  });
 
-    const logo = screen.getByTestId('logo-img');
-    expect(logo).toBeInTheDocument();
+  afterEach(() => {
+    jest.clearAllMocks();
+  });
+
+  test('should render component', async () => {
+    await act(async () => {
+      render(<Fee api={{} as ApiPromise} asset={asset} transaction={tx} />);
+    });
+
+    const amount = screen.getByText(tx.args.value);
+    const ticker = screen.getByText(asset.symbol);
+    expect(amount).toBeInTheDocument();
+    expect(ticker).toBeInTheDocument();
   });
 });

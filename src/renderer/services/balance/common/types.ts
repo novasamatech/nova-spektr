@@ -1,6 +1,6 @@
 import { ChainId, PublicKey } from '@renderer/domain/shared-kernel';
-import { BalanceDS } from '@renderer/services/storage/common/types';
 import { ExtendedChain } from '@renderer/services/network/common/types';
+import { BalanceDS } from '@renderer/services/storage/common/types';
 
 export type FormattedBalance = {
   value: string;

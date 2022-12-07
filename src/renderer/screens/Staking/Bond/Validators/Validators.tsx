@@ -120,7 +120,7 @@ const Validators = ({ api, chainId, asset, onResult }: Props) => {
         </ul>
       </div>
       {selectedValidators.length > 0 && (
-        <div className="absolute bottom-0 py-2.5 w-full bg-white/75 backdrop-blur-[2px]">
+        <div className="absolute bottom-0 py-2.5 w-full bg-white/75 backdrop-blur-0.5">
           <Button
             className="mx-auto w-[232px]"
             variant="fill"

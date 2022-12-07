@@ -1,7 +1,8 @@
 import { u8aToHex } from '@polkadot/util';
 import { decodeAddress, encodeAddress } from '@polkadot/util-crypto';
 
-import { PublicKey } from '@renderer/domain/shared-kernel';
+import { Asset, AssetType, OrmlExtras, StatemineExtras } from '@renderer/domain/asset';
+import { HexString, PublicKey } from '@renderer/domain/shared-kernel';
 import { PUBLIC_KEY_LENGTH, SS58_DEFAULT_PREFIX } from './constants';
 
 export const formatAddress = (address = '', prefix = SS58_DEFAULT_PREFIX): string => {
@@ -16,7 +17,7 @@ export const formatAddress = (address = '', prefix = SS58_DEFAULT_PREFIX): strin
  * @return {string | undefined}
  */
 export const toPublicKey = (address: string): PublicKey | undefined => {
-  if (!address) return;
+  if (!address) return undefined;
 
   try {
     return u8aToHex(decodeAddress(address));
@@ -45,6 +46,22 @@ export const pasteAddressHandler = (handler: (value: string) => void) => async (
   } catch (error) {
     console.warn(error);
   }
+};
+
+/**
+ * Get asset id based on it's type
+ * @param asset the asset to get id from
+ */
+export const getAssetId = (asset: Asset): string => {
+  if (asset.type === AssetType.STATEMINE) {
+    return (asset.typeExtras as StatemineExtras).assetId;
+  }
+
+  if (asset.type === AssetType.ORML) {
+    return (asset.typeExtras as OrmlExtras).currencyIdScale;
+  }
+
+  return asset.assetId.toString() as HexString;
 };
 
 export const validateAddress = (address: string): boolean => Boolean(toPublicKey(address));

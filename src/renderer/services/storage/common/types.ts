@@ -17,6 +17,7 @@ export interface IStorage {
 
 export interface IBalanceStorage {
   getBalance: (publicKey: PublicKey, chainId: ChainId, assetId: string) => Promise<BalanceDS | undefined>;
+  getChainBalance: (publicKey: PublicKey, chainId: ChainId, assetId: string) => Promise<BalanceDS[]>;
   getNetworkBalances: (publicKeys: PublicKey[], chainId: ChainId) => Promise<BalanceDS[]>;
   getBalances: (publicKey: PublicKey) => Promise<BalanceDS[]>;
   updateBalance: (balance: Balance) => Promise<void>;

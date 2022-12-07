@@ -7,13 +7,13 @@ import { Asset } from '@renderer/domain/asset';
 type Props = {
   value: string;
   name: string;
-  balance: string;
   asset: Asset;
+  balance?: string | [string, string];
   invalid?: boolean;
   onChange?: (...event: any[]) => void;
 };
 
-const Amount = ({ value, name, balance, asset, invalid, onChange }: Props) => {
+const Amount = ({ value, name, asset, balance, invalid, onChange }: Props) => {
   const { t } = useI18n();
 
   return (
@@ -23,7 +23,15 @@ const Amount = ({ value, name, balance, asset, invalid, onChange }: Props) => {
           <p>{t('transfer.amountLabel')}</p>
           <div className="flex gap-x-1">
             <p className="font-normal">{t('transfer.transferable')}:</p>
-            <Balance className="text-neutral font-semibold" value={balance} precision={asset.precision} />
+            {Array.isArray(balance) ? (
+              <div className="flex gap-x-1">
+                <Balance className="text-neutral font-semibold" value={balance[0]} precision={asset.precision} />
+                <span>-</span>
+                <Balance className="text-neutral font-semibold" value={balance[1]} precision={asset.precision} />
+              </div>
+            ) : (
+              balance && <Balance className="text-neutral font-semibold" value={balance} precision={asset.precision} />
+            )}
             <p className="text-neutral">{asset.symbol}</p>
           </div>
         </div>

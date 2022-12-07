@@ -9,6 +9,10 @@ export const useBalanceStorage = (db: Table<BalanceDS>): IBalanceStorage => ({
     return db.where({ publicKey, chainId, assetId }).first();
   },
 
+  getChainBalance: (publicKey: PublicKey, chainId: ChainId, assetId: string): Promise<BalanceDS[]> => {
+    return db.where({ publicKey, chainId, assetId }).toArray();
+  },
+
   getBalances: (publicKey: PublicKey): Promise<BalanceDS[]> => {
     return db.where({ publicKey }).toArray();
   },

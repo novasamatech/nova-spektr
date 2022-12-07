@@ -19,10 +19,10 @@ const Balance = ({ value, precision, className }: Props) => {
   });
 
   return (
-    <span className={cn(className)}>
+    <p className={cn(className)}>
       {balanceValue}
       {suffix}
-    </span>
+    </p>
   );
 };
 

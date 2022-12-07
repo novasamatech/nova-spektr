@@ -1,9 +1,10 @@
 /* eslint-disable i18next/no-literal-string */
+import cn from 'classnames';
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 
 import wallets from '@renderer/components/layout/PrimaryLayout/Wallets/Wallets';
-import { Address, ButtonBack, Dropdown, Icon, Identicon, Input } from '@renderer/components/ui';
+import { Address, Button, ButtonBack, Dropdown, Icon, Identicon, Input } from '@renderer/components/ui';
 import { Option, ResultOption } from '@renderer/components/ui/Dropdowns/common/types';
 import { useI18n } from '@renderer/context/I18nContext';
 import { useNetworkContext } from '@renderer/context/NetworkContext';
@@ -24,6 +25,8 @@ const Overview = () => {
   const { connections } = useNetworkContext();
   const { sortChains, getChainsData } = useChains();
   const { getActiveWallets } = useWallet();
+
+  const [selectedAccs, setSelectedAccs] = useState<string[]>([]);
 
   const [query, setQuery] = useState('');
   const [activeNetwork, setActiveNetwork] = useState<ResultNetwork>();
@@ -87,16 +90,16 @@ const Overview = () => {
 
     const isParentWallet = wallet.parentWalletId === undefined;
     if (isParentWallet) {
-      return acc.concat({ id: wallet.id, name: wallet.name, accountId: wallet.mainAccounts[0]?.accountId });
+      return acc.concat({ id: wallet.id!, name: wallet.name, accountId: wallet.mainAccounts[0]?.accountId });
     }
 
     const isRelevantDerived = wallet.chainAccounts[0]?.chainId === activeNetwork?.value.chainId;
     if (isRelevantDerived) {
-      acc.push({ id: wallet.id, name: wallet.name, accountId: wallet.chainAccounts[0]?.accountId });
+      acc.push({ id: wallet.id!, name: wallet.name, accountId: wallet.chainAccounts[0]?.accountId });
     }
 
     return acc;
-  }, [] as { id?: string; name: string; accountId: AccountID }[]);
+  }, [] as { id: string; name: string; accountId: AccountID }[]);
 
   const nominators = async (account: AccountID) => {
     if (!api) return;
@@ -152,7 +155,12 @@ const Overview = () => {
           <ul className="flex gap-5 flex-wrap mt-5">
             {formattedWallets?.map((wallet) => (
               <li key={wallet.accountId}>
-                <div className="relative w-[200px] rounded-2lg bg-white shadow-element">
+                <div
+                  className={cn(
+                    'relative w-[200px] rounded-2lg bg-white shadow-element',
+                    selectedAccs.includes(wallet.id) && 'shadow-fuchsia-800',
+                  )}
+                >
                   <div className="absolute flex gap-x-2.5 w-full p-2.5 rounded-2lg bg-primary text-white">
                     <Identicon theme="polkadot" address={wallet.accountId} size={46} />
                     <p className="text-lg">{wallet.name}</p>
@@ -188,6 +196,13 @@ const Overview = () => {
                           ))}
                         </>
                       )}
+                      <Button
+                        variant="outline"
+                        pallet="secondary"
+                        onClick={() => setSelectedAccs((prev) => [...prev, wallet.id])}
+                      >
+                        Select account
+                      </Button>
                       <button
                         className="text-sm bg-shade-10 border-2 border-shade-20 px-1"
                         onClick={() => nominators(wallet.accountId)}
@@ -198,12 +213,6 @@ const Overview = () => {
                         <Link className="bg-error rounded-lg py-1 px-2 text-white" to={Paths.UNBOND}>
                           Unbond
                         </Link>
-                        <Link
-                          className="bg-primary rounded-lg py-1 px-2 text-white"
-                          to={createLink('STAKING_START', { chainId })}
-                        >
-                          Bond
-                        </Link>
                       </div>
                     </div>
                   ) : (
@@ -212,10 +221,17 @@ const Overview = () => {
                       <Link
                         className="bg-primary rounded-lg mt-2 py-1 px-2 text-white"
                         to={createLink('STAKING_START', { chainId })}
-                        state={{ ids: [25, 27] }}
+                        state={{ ids: selectedAccs }}
                       >
                         Bond
                       </Link>
+                      <Button
+                        variant="outline"
+                        pallet="secondary"
+                        onClick={() => setSelectedAccs((prev) => [...prev, wallet.id])}
+                      >
+                        Select account
+                      </Button>
                     </div>
                   )}
                 </div>

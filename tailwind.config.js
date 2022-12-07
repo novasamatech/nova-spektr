@@ -45,6 +45,7 @@ module.exports = {
         'max-full': 'max-content 1fr',
       },
       spacing: {
+        0.5: '0.125rem',
         1.25: '0.3125rem',
         2.5: '0.625rem',
         3.5: '0.875rem',

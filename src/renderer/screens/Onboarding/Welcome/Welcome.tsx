@@ -56,7 +56,7 @@ const Welcome = () => {
           style={{ background: `white url(${LedgerBg}) no-repeat -20px 0px` }}
           className="flex flex-col items-center gap-y-5 rounded-2lg p-5 shadow-surface text-center relative"
         >
-          <div className="absolute inset-0 bg-white/50 backdrop-blur-[2px] rounded-2lg" />
+          <div className="absolute inset-0 bg-white/50 backdrop-blur-0.5 rounded-2lg" />
           <img src={LedgerImg} alt={t('welcome.ledgerImageAlt')} width={150} height={50} />
           <p className="text-neutral-variant text-sm">{t('welcome.addLedgerLabel')}</p>
           <ButtonLink to={Paths.LEDGER} className="mt-10" variant="outline" pallet="shade" weight="lg" disabled>

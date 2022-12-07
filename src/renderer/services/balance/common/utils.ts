@@ -2,16 +2,9 @@ import { BN, BN_TEN } from '@polkadot/util';
 import { encodeAddress } from '@polkadot/util-crypto';
 import BigNumber from 'bignumber.js';
 
-import { Asset, AssetType, OrmlExtras, StatemineExtras } from '@renderer/domain/asset';
 import { Balance } from '@renderer/domain/balance';
 import { PublicKey } from '@renderer/domain/shared-kernel';
-import {
-  Decimal,
-  DEFAULT,
-  SS58_DEFAULT_PREFIX,
-  Suffix,
-  ZERO_BALANCE,
-} from '@renderer/services/balance/common/constants';
+import { Decimal, SS58_DEFAULT_PREFIX, Suffix, ZERO_BALANCE } from '@renderer/services/balance/common/constants';
 import { FormattedBalance } from './types';
 
 export const toAddress = (publicKey: PublicKey, prefix = SS58_DEFAULT_PREFIX): string => {
@@ -37,16 +30,6 @@ export const formatAmount = (amount: string, precision: number): string => {
   }
 
   return new BN(amount.replace(/\D/g, '')).mul(BN_TEN.pow(bnPrecision)).toString();
-};
-
-export const getAssetId = (asset: Asset): string | number => {
-  const assetId = {
-    [AssetType.ORML]: () => (asset.typeExtras as OrmlExtras).currencyIdScale,
-    [AssetType.STATEMINE]: () => (asset.typeExtras as StatemineExtras).assetId,
-    [DEFAULT]: () => asset.assetId,
-  };
-
-  return assetId[asset.type || DEFAULT]();
 };
 
 export const formatBalance = (balance = '0', precision = 0): FormattedBalance => {

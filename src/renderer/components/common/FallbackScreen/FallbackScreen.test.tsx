@@ -9,7 +9,7 @@ jest.mock('@renderer/context/I18nContext', () => ({
   }),
 }));
 
-describe('FallbackScreen', () => {
+describe('components/FallbackScreen', () => {
   test('should render component', () => {
     render(<FallbackScreen />, { wrapper: MemoryRouter });
 

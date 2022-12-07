@@ -9,7 +9,7 @@ jest.mock('@renderer/context/I18nContext', () => ({
   }),
 }));
 
-describe('ui/Explorers', () => {
+describe('components/Explorers', () => {
   test('should render component', async () => {
     render(
       <Explorers

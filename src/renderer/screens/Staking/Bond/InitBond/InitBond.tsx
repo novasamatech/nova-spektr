@@ -1,39 +1,59 @@
 /* eslint-disable i18next/no-literal-string */
 import { ApiPromise } from '@polkadot/api';
+import { BN } from '@polkadot/util';
 import { ReactNode, useEffect, useState } from 'react';
 import { Controller, SubmitHandler, useForm } from 'react-hook-form';
 
+import { Fee } from '@renderer/components/common';
+import { Transaction, TransactionType } from '@renderer/domain/transaction';
+import { useTransaction } from '@renderer/services/transaction/transactionService';
 import Amount from '@renderer/components/common/Amount/Amount';
 import { Button, Dropdown, Icon, Identicon, InputHint, RadioGroup, Select } from '@renderer/components/ui';
 import { Option as DropdownOption } from '@renderer/components/ui/Dropdowns/common/types';
 import { Option as RadioOption, ResultOption } from '@renderer/components/ui/RadioGroup/common/types';
 import { useI18n } from '@renderer/context/I18nContext';
-import { Asset } from '@renderer/domain/asset';
+import { Asset, AssetType } from '@renderer/domain/asset';
 import { AccountID, ChainId } from '@renderer/domain/shared-kernel';
 import { WalletType } from '@renderer/domain/wallet';
 import { useBalance } from '@renderer/services/balance/balanceService';
-import { WalletDS } from '@renderer/services/storage';
+import { formatAmount, transferable } from '@renderer/services/balance/common/utils';
+import { BalanceDS, WalletDS } from '@renderer/services/storage';
 import { useWallet } from '@renderer/services/wallet/walletService';
+import { getAssetId, toPublicKey, validateAddress } from '@renderer/utils/address';
 
 const PAYOUT_URL = 'https://wiki.polkadot.network/docs/learn-simple-payouts';
+
+const getTransactionType = (assetType: AssetType | undefined): TransactionType => {
+  if (assetType === AssetType.STATEMINE) {
+    return TransactionType.ASSET_TRANSFER;
+  }
+
+  if (assetType === AssetType.ORML) {
+    return TransactionType.ORML_TRANSFER;
+  }
+
+  return TransactionType.TRANSFER;
+};
 
 const enum RewardsDestination {
   RESTAKE,
   TRANSFERABLE,
 }
 
-const getDropdownPayload = (wallet: WalletDS): DropdownOption<AccountID> => {
+const getDropdownPayload = (wallet: WalletDS, asset: Asset): DropdownOption<AccountID> => {
   const address = wallet.mainAccounts[0]?.accountId || wallet.chainAccounts[0]?.accountId;
+  const element = (
+    <>
+      <Identicon address={address} size={34} background={false} noCopy />
+      <p className="text-left text-neutral text-lg font-semibold leading-5">{wallet.name}</p>
+      {/*<Balance value={} precision={} />*/}
+    </>
+  );
 
   return {
     id: address,
     value: address,
-    element: (
-      <>
-        <Identicon address={address} size={34} background={false} noCopy />
-        <p className="text-left text-neutral text-lg font-semibold leading-5">{wallet.name}</p>
-      </>
-    ),
+    element,
   };
 };
 
@@ -53,13 +73,19 @@ type Props = {
 
 const InitBond = ({ walletsIds, api, chainId, asset, onResult }: Props) => {
   const { t } = useI18n();
-  // @ts-ignore
   const { getBalance } = useBalance();
   const { getWallets, getWalletsByIds } = useWallet();
+  const { getTransactionFee } = useTransaction();
 
-  // const [balances, setBalances] = useState<string[]>([]);
+  const [fee, setFee] = useState('');
+  const [balances, setBalances] = useState<[string, string]>();
+  const [transaction, setTransaction] = useState<Transaction>();
 
-  const [wallets, setWallets] = useState<DropdownOption<AccountID>[]>([]);
+  // @ts-ignore
+  const [stakeWallets, setStakeWallets] = useState<DropdownOption<AccountID>[]>([]);
+
+  // @ts-ignore
+  const [wallets, setWallets] = useState<WalletDS[]>([]);
   const [activeWallets, setActiveWallets] = useState<ResultOption<AccountID>[]>([]);
 
   const [activeRadio, setActiveRadio] = useState<ResultOption<RewardsDestination>>();
@@ -67,45 +93,112 @@ const InitBond = ({ walletsIds, api, chainId, asset, onResult }: Props) => {
   const [payoutWallets, setPayoutWallets] = useState<DropdownOption<AccountID>[]>([]);
   const [activePayoutWallet, setActivePayoutWallet] = useState<ResultOption<AccountID>>();
 
-  // useEffect(() => {
-  //   if (!api || asset) return;
-  //
-  //   (async () => {
-  //     const balance = await getBalance(toPublicKey(currentAddress) || '0x', asset.assetId.toString());
-  //
-  //     setBalance(balance ? transferable(balance) : '0');
-  //   })();
-  // }, [api]);
+  const {
+    handleSubmit,
+    control,
+    watch,
+    // formState: { isValid },
+  } = useForm<BondForm>({
+    mode: 'onChange',
+    defaultValues: { amount: '', destination: '' },
+  });
 
+  const amount = watch('amount');
+
+  const setupBalances = async (wallets: WalletDS[], chainId: ChainId, asset: Asset) => {
+    const requestBalances = wallets.reduce((acc, wallet) => {
+      if (!wallet.mainAccounts[0] && wallet.chainAccounts[0]?.chainId !== chainId) return acc;
+
+      const publicKey = toPublicKey(wallet.mainAccounts[0]?.accountId || wallet.chainAccounts[0]?.accountId);
+      if (!publicKey) return acc;
+
+      return acc.concat(getBalance(publicKey, chainId, getAssetId(asset)));
+    }, [] as Promise<BalanceDS | undefined>[]);
+
+    // @ts-ignore
+    const allBalances = (await Promise.all(requestBalances)).filter(Boolean).map(transferable);
+    const minMaxBalances = allBalances.reduce(
+      (acc, balance) => {
+        if (!balance) return acc;
+
+        // @ts-ignore
+        const value = transferable(balance);
+
+        acc[0] = new BN(value).lt(new BN(acc[0])) ? value : acc[0];
+        acc[1] = new BN(value).gt(new BN(acc[1])) ? value : acc[1];
+
+        return acc;
+      },
+      // @ts-ignore
+      [0, 0] as [string, string],
+    );
+    setBalances(minMaxBalances);
+  };
+
+  // set wallets selector
   useEffect(() => {
+    if (!api || !chainId || !asset) return;
+
     (async () => {
       const wallets = await getWalletsByIds(walletsIds);
-      const formattedWallets = wallets.map(getDropdownPayload);
 
-      setWallets(formattedWallets);
+      setupBalances(wallets, chainId, asset);
     })();
-  }, []);
+  }, [api, chainId, asset]);
+
+  // useEffect(() => {
+  //   (async () => {
+  //     const wallets = await getWalletsByIds(walletsIds);
+  //     setWallets(wallets);
+  //
+  //     const formattedWallets = wallets.map(getDropdownPayload);
+  //
+  //     setStakeWallets(formattedWallets);
+  //     setActiveWallets(formattedWallets.map(({ id, value }) => ({ id, value })));
+  //   })();
+  // }, []);
+
+  // set payout dropdown
+
+  // set TX
+
+  // set TX fee
 
   useEffect(() => {
     (async () => {
       const wallets = await getWallets({ type: WalletType.PARITY });
 
       const formattedWallets = wallets
-        .filter((wallet) => wallet.mainAccounts[0] || wallet.chainAccounts[0]?.chainId !== chainId)
+        .filter((wallet) => wallet.mainAccounts[0] || wallet.chainAccounts[0]?.chainId === chainId)
+        // @ts-ignore
         .map(getDropdownPayload);
 
       setPayoutWallets(formattedWallets);
     })();
   }, []);
 
-  const {
-    handleSubmit,
-    control,
-    // formState: { isValid },
-  } = useForm<BondForm>({
-    mode: 'onChange',
-    defaultValues: { amount: '', destination: '' },
-  });
+  useEffect(() => {
+    if (!chainId || !asset || !balances) return;
+
+    setTransaction({
+      chainId,
+      type: getTransactionType(asset.type),
+      address: activeWallets[0].value,
+      args: {
+        value: formatAmount(amount, asset.precision),
+        dest: activeWallets[0].value,
+        asset: getAssetId(asset),
+      },
+    } as Transaction);
+  }, [balances, amount, asset]);
+
+  useEffect(() => {
+    (async () => {
+      if (!api || !amount || !validateAddress(transaction?.args.dest) || !transaction) return;
+
+      setFee(await getTransactionFee(transaction, api));
+    })();
+  }, [amount]);
 
   if (!asset) {
     return <div>LOADING</div>;
@@ -138,18 +231,27 @@ const InitBond = ({ walletsIds, api, chainId, asset, onResult }: Props) => {
     ];
   };
 
-  const onChangeDestination = (option: ResultOption) => {
-    setActiveRadio(option);
+  const validateBalanceForFee = (amount: string): boolean => {
+    if (!balances) return false;
+    const currentFee = fee || '0';
+
+    return new BN(currentFee).add(new BN(formatAmount(amount, asset.precision))).lte(new BN(balances[1]));
+  };
+
+  const validateBalance = (amount: string) => {
+    if (!balances) return false;
+
+    return new BN(formatAmount(amount, asset.precision)).lte(new BN(balances[1]));
   };
 
   return (
-    <div className="w-[600px] flex flex-col items-center m-auto rounded-2lg bg-shade-2 p-5 ">
+    <div className="w-[600px] flex flex-col items-center mx-auto rounded-2lg bg-shade-2 p-5 ">
       <div className="w-full p-5 rounded-2lg bg-white shadow-surface">
         <Select
           placeholder="Select accounts"
           summary="Multiple Accounts"
           activeIds={activeWallets.map((w) => w.id)}
-          options={wallets}
+          options={stakeWallets}
           onChange={setActiveWallets}
         />
       </div>
@@ -165,8 +267,8 @@ const InitBond = ({ walletsIds, api, chainId, asset, onResult }: Props) => {
             required: true,
             validate: {
               notZero: (v) => Number(v) > 0,
-              // insufficientBalance: validateBalance,
-              // insufficientBalanceForFee: validateBalanceForFee,
+              insufficientBalance: validateBalance,
+              insufficientBalanceForFee: validateBalanceForFee,
             },
           }}
           render={({ field: { onChange, value }, fieldState: { error } }) => (
@@ -174,13 +276,22 @@ const InitBond = ({ walletsIds, api, chainId, asset, onResult }: Props) => {
               <Amount
                 value={value}
                 name="amount"
-                balance={'1'}
+                balance={balances}
                 asset={asset}
                 invalid={Boolean(error)}
                 onChange={onChange}
               />
+              <InputHint active={error?.type === 'insufficientBalance'} variant="error">
+                {t('transfer.notEnoughBalanceError')}
+              </InputHint>
+              <InputHint active={error?.type === 'insufficientBalanceForFee'} variant="error">
+                {t('transfer.notEnoughBalanceForFeeError')}
+              </InputHint>
               <InputHint active={error?.type === 'required'} variant="error">
-                REQUIRED
+                {t('transfer.requiredAmountError')}
+              </InputHint>
+              <InputHint active={error?.type === 'notZero'} variant="error">
+                {t('transfer.requiredAmountError')}
               </InputHint>
             </>
           )}
@@ -203,7 +314,7 @@ const InitBond = ({ walletsIds, api, chainId, asset, onResult }: Props) => {
             options={getDestinations()}
             className="col-span-2"
             optionClass="p-2.5 rounded-2lg bg-shade-2 mt-2.5"
-            onChange={onChangeDestination}
+            onChange={setActiveRadio}
           />
         </div>
         {activeRadio?.value === RewardsDestination.TRANSFERABLE && (
@@ -227,15 +338,7 @@ const InitBond = ({ walletsIds, api, chainId, asset, onResult }: Props) => {
         <div className="flex justify-between items-center uppercase text-neutral-variant text-2xs">
           <p>{t('transfer.networkFee')}</p>
 
-          <p>0.34 DOT</p>
-          {/*<Fee*/}
-          {/*  className="text-neutral font-semibold"*/}
-          {/*  api={connection.api}*/}
-          {/*  accountId={accountId}*/}
-          {/*  asset={asset}*/}
-          {/*  addressPrefix={connection.addressPrefix}*/}
-          {/*  transaction={transaction}*/}
-          {/*/>*/}
+          <Fee className="text-neutral font-semibold" api={api} asset={asset} transaction={transaction} />
         </div>
       </form>
       {/*<Button type="submit" form="initBondForm" variant="fill" pallet="primary" weight="lg" disabled={!isValid}>*/}

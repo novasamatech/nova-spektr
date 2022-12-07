@@ -336,7 +336,7 @@ const StepThree = ({ qrData, onNextStep }: Props) => {
                             >
                               <div className="flex-1 flex items-center">
                                 <div className="relative w-[14px] h-[5px] ml-5 mr-4 middle-tree">
-                                  <div className="bg-shade-30 absolute w-[9px] h-[1px] top-[2px] left-[1px]"></div>
+                                  <div className="bg-shade-30 absolute w-[9px] h-[1px] top-0.5 left-[1px]"></div>
                                   <div className="border-shade-30 absolute rounded-full border w-[5px] h-[5px] box-border top-0 right-0"></div>
                                 </div>
                                 <Input

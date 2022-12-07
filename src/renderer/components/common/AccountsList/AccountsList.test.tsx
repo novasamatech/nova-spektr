@@ -10,7 +10,7 @@ jest.mock('@renderer/context/I18nContext', () => ({
   }),
 }));
 
-describe('AccountsList', () => {
+describe('components/AccountsList', () => {
   test('should render component', () => {
     const chains = [
       {

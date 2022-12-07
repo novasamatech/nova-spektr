@@ -102,7 +102,7 @@ const Dropdown = ({
                   value={{ id, value }}
                   className={({ active, selected }) =>
                     cn(
-                      'flex items-center cursor-pointer select-none px-2.5 rounded-2lg mb-[2px] last:mb-0',
+                      'flex items-center cursor-pointer select-none px-2.5 rounded-2lg mb-0.5 last:mb-0',
                       (active || selected) && 'bg-shade-5',
                       style.option,
                     )

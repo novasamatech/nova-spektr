@@ -1,20 +1,20 @@
+import { BN } from '@polkadot/util';
 import { useEffect, useState } from 'react';
 import { Controller, SubmitHandler, useForm } from 'react-hook-form';
 import { Trans } from 'react-i18next';
-import { BN } from '@polkadot/util';
 
 import Amount from '@renderer/components/common/Amount/Amount';
+import { Fee } from '@renderer/components/common';
 import { Button, Icon, Identicon, Input, InputHint } from '@renderer/components/ui';
 import { useI18n } from '@renderer/context/I18nContext';
-import { Asset, AssetType, OrmlExtras, StatemineExtras } from '@renderer/domain/asset';
+import { Asset, AssetType } from '@renderer/domain/asset';
 import { Transaction, TransactionType } from '@renderer/domain/transaction';
 import { Wallet } from '@renderer/domain/wallet';
 import { useBalance } from '@renderer/services/balance/balanceService';
 import { formatAmount, transferable } from '@renderer/services/balance/common/utils';
 import { ExtendedChain } from '@renderer/services/network/common/types';
 import { useTransaction } from '@renderer/services/transaction/transactionService';
-import { formatAddress, toPublicKey, validateAddress } from '@renderer/utils/address';
-// import Fee from '../../../components/common/Fee/Fee';
+import { formatAddress, getAssetId, toPublicKey, validateAddress } from '@renderer/utils/address';
 import SelectedAddress from './SelectedAddress';
 
 type TransferForm = {
@@ -39,18 +39,6 @@ const getTransactionType = (assetType: AssetType | undefined): TransactionType =
   }
 
   return TransactionType.TRANSFER;
-};
-
-const getAssetId = (asset: Asset): string => {
-  if (asset.type === AssetType.STATEMINE) {
-    return (asset.typeExtras as StatemineExtras).assetId;
-  }
-
-  if (asset.type === AssetType.ORML) {
-    return (asset.typeExtras as OrmlExtras).currencyIdScale;
-  }
-
-  return asset.assetId.toString();
 };
 
 const Transfer = ({ onCreateTransaction, wallet, asset, connection }: Props) => {
@@ -125,14 +113,14 @@ const Transfer = ({ onCreateTransaction, wallet, asset, connection }: Props) => 
     trigger('amount');
   }, [fee]);
 
-  const validateBalanceForFee = async (amount: string) => {
+  const validateBalanceForFee = (amount: string): boolean => {
     if (!balance) return false;
     const currentFee = fee || '0';
 
     return new BN(currentFee).add(new BN(formatAmount(amount, asset.precision))).lte(new BN(balance));
   };
 
-  const validateBalance = async (amount: string) => {
+  const validateBalance = (amount: string): boolean => {
     if (!balance) return false;
 
     return new BN(formatAmount(amount, asset.precision)).lte(new BN(balance));
@@ -214,14 +202,7 @@ const Transfer = ({ onCreateTransaction, wallet, asset, connection }: Props) => 
           <div className="flex justify-between items-center uppercase text-neutral-variant text-2xs">
             <p>{t('transfer.networkFee')}</p>
 
-            {/*<Fee*/}
-            {/*  className="text-neutral font-semibold"*/}
-            {/*  api={connection.api}*/}
-            {/*  accountId={accountId}*/}
-            {/*  asset={asset}*/}
-            {/*  addressPrefix={connection.addressPrefix}*/}
-            {/*  transaction={transaction}*/}
-            {/*/>*/}
+            <Fee className="text-neutral font-semibold" api={connection.api} asset={asset} transaction={transaction} />
           </div>
         </form>
       </div>

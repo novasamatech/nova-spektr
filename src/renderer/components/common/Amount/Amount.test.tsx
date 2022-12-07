@@ -9,7 +9,7 @@ jest.mock('@renderer/context/I18nContext', () => ({
   }),
 }));
 
-describe('Amount', () => {
+describe('components/Amount', () => {
   const balance = '20500000000';
   const asset = {
     assetId: 0,
