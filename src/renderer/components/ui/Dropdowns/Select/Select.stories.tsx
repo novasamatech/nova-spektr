@@ -25,7 +25,7 @@ const data = [
 ];
 
 const options = data.map((d, index) => ({
-  id: index,
+  id: index.toString(),
   value: d.value,
   element: (
     <div className="flex items-center gap-x-2.5">
@@ -40,9 +40,9 @@ Medium.args = {
   placeholder: 'Select options',
   summary: 'Summary',
   options: [
-    { id: 0, value: 'test_1', element: 'test_1' },
-    { id: 1, value: 'test_2', element: 'test_2' },
-    { id: 2, value: 'test_3', element: 'test_3' },
+    { id: '0', value: 'test_1', element: 'test_1' },
+    { id: '1', value: 'test_2', element: 'test_2' },
+    { id: '2', value: 'test_3', element: 'test_3' },
   ],
 };
 

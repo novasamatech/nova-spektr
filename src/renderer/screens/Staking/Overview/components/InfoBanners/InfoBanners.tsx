@@ -7,7 +7,7 @@ type Props = {
 const InfoBanners = ({ test }: Props) => {
   const { t } = useI18n();
 
-  return <div>{t('staking.overview.filterButton')}</div>;
+  return <div>{t('staking.overview.aboutStakingLabel')}</div>;
 };
 
 export default InfoBanners;

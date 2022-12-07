@@ -1,7 +1,7 @@
-/* eslint-disable i18next/no-literal-string */
 import { useEffect, useState } from 'react';
 import { Trans } from 'react-i18next';
 
+import { useSettingsStorage } from '@renderer/services/settings/settingsStorage';
 import { AboutStaking, Filter, InfoBanners, StakingList } from './components';
 import { Balance, Dropdown, Icon, Input } from '@renderer/components/ui';
 import { Option, ResultOption } from '@renderer/components/ui/Dropdowns/common/types';
@@ -13,52 +13,49 @@ import { useChains } from '@renderer/services/network/chainsService';
 import { useStaking } from '@renderer/services/staking/stakingService';
 import { useWallet } from '@renderer/services/wallet/walletService';
 
-type ResultNetwork = ResultOption<{ chainId: ChainId; asset: Asset }>;
-type DropdownNetwork = Option<{ chainId: ChainId; asset: Asset }>;
-
 const Overview = () => {
   const { t } = useI18n();
   const { connections } = useNetworkContext();
-  const { sortChains, getChainsData } = useChains();
   const { getActiveWallets } = useWallet();
+  const { sortChains, getChainsData } = useChains();
+  const { subscribeActiveEra, subscribeLedger } = useStaking();
+  const { setStakingNetwork, getStakingNetwork } = useSettingsStorage();
 
   const [query, setQuery] = useState('');
-  const [activeNetwork, setActiveNetwork] = useState<ResultNetwork>();
-  const [stakingNetworks, setStakingNetworks] = useState<DropdownNetwork[]>([]);
+  const [activeNetwork, setActiveNetwork] = useState<ResultOption<Asset>>();
+  const [stakingNetworks, setStakingNetworks] = useState<Option<Asset>[]>([]);
 
-  const chainId = activeNetwork?.value.chainId || ('' as ChainId);
+  const chainId = (activeNetwork?.id || '') as ChainId;
   const api = connections[chainId]?.api;
-
-  const { subscribeActiveEra, subscribeLedger } = useStaking();
 
   const activeWallets = getActiveWallets();
 
   useEffect(() => {
-    const setupAvailableNetworks = async () => {
+    (async () => {
       const chainsData = await getChainsData();
-      const relaychains = chainsData.reduce((acc, { chainId, name, icon, assets }) => {
-        const asset = assets.find((asset) => asset.staking === StakingType.RELAYCHAIN);
+
+      const relaychains = sortChains(chainsData).reduce((acc, chain) => {
+        const asset = chain.assets.find((asset) => asset.staking === StakingType.RELAYCHAIN);
         if (!asset) return acc;
 
-        return acc.concat([{ chainId, icon, name, asset }]);
-      }, [] as { chainId: ChainId; icon: string; name: string; asset: Asset }[]);
+        return acc.concat({
+          id: chain.chainId,
+          value: asset,
+          element: (
+            <>
+              <img src={chain.icon} alt="" width={20} height={20} />
+              {chain.name}
+            </>
+          ),
+        });
+      }, [] as Option<Asset>[]);
 
-      const sortGenesisHashes = sortChains(relaychains).map(({ chainId, name, icon, asset }) => ({
-        id: chainId,
-        value: { chainId, asset },
-        element: (
-          <>
-            <img src={icon} alt={`${name} icon`} width={20} height={20} />
-            {name}
-          </>
-        ),
-      }));
+      const prevChainId = getStakingNetwork();
+      const prevChain = relaychains.find((chain) => chain.id === prevChainId);
 
-      setStakingNetworks(sortGenesisHashes);
-      setActiveNetwork({ id: sortGenesisHashes[0].id, value: sortGenesisHashes[0].value });
-    };
-
-    setupAvailableNetworks();
+      setStakingNetworks(relaychains);
+      setActiveNetwork(prevChain || { id: relaychains[0].id, value: relaychains[0].value });
+    })();
   }, []);
 
   useEffect(() => {
@@ -89,7 +86,7 @@ const Overview = () => {
       return acc.concat({ name: wallet.name, accountId: wallet.mainAccounts[0]?.accountId });
     }
 
-    const isRelevantDerived = wallet.chainAccounts[0]?.chainId === activeNetwork?.value.chainId;
+    const isRelevantDerived = wallet.chainAccounts[0]?.chainId === activeNetwork?.id;
     if (isRelevantDerived) {
       acc.push({ name: wallet.name, accountId: wallet.chainAccounts[0]?.accountId });
     }
@@ -104,14 +101,17 @@ const Overview = () => {
       <div className="w-[900px] p-5 mx-auto bg-shade-2 rounded-2lg">
         <div className="flex items-center">
           <p className="text-xl text-neutral mr-5">
-            <Trans t={t} i18nKey="staking.overview.stakingAssetLabel" values={{ asset: 'DOT' }} />
+            <Trans t={t} i18nKey="staking.overview.stakingAssetLabel" values={{ asset: activeNetwork?.value.symbol }} />
           </p>
           <Dropdown
             className="w-40"
             placeholder={t('staking.startStaking.selectNetworkLabel')}
             activeId={activeNetwork?.id}
             options={stakingNetworks}
-            onChange={setActiveNetwork}
+            onChange={(option) => {
+              setStakingNetwork(option.id as ChainId);
+              setActiveNetwork(option);
+            }}
           />
           <div className="grid grid-flow-row grid-cols-2 gap-x-12.5 ml-auto text-right">
             <p className="uppercase text-shade-40 font-semibold text-xs">{t('staking.overview.totalRewardsLabel')}</p>
@@ -120,18 +120,18 @@ const Overview = () => {
               className="font-semibold text-2xl text-neutral"
               value="103437564986527"
               precision={10}
-              symbol="DOT"
+              symbol={activeNetwork?.value.symbol}
             />
             <Balance
               className="font-semibold text-2xl text-neutral-variant"
               value="103437564986527"
               precision={10}
-              symbol="DOT"
+              symbol={activeNetwork?.value.symbol}
             />
           </div>
         </div>
 
-        <AboutStaking />
+        <AboutStaking asset={activeNetwork?.value} />
         <InfoBanners />
 
         <div className="flex items-center justify-between">
