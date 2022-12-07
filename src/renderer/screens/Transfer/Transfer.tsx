@@ -9,7 +9,7 @@ import { Button, ButtonBack, Icon } from '@renderer/components/ui';
 import { useI18n } from '@renderer/context/I18nContext';
 import { useNetworkContext } from '@renderer/context/NetworkContext';
 import { useWallet } from '@renderer/services/wallet/walletService';
-import { Asset } from '@renderer/domain/asset';
+import { Asset, AssetType, OrmlExtras, StatemineExtras } from '@renderer/domain/asset';
 import { formatAddress, toPublicKey, validateAddress } from '@renderer/utils/address';
 import { useTransaction } from '@renderer/services/transaction/transactionService';
 import { Transaction, TransactionType } from '@renderer/domain/transaction';
@@ -33,7 +33,13 @@ const enum Steps {
   SIGNING,
   EXECUTING,
 }
+
 const DEFAULT_QR_LIFETIME = 64;
+
+const TransferType: Record<AssetType, TransactionType> = {
+  [AssetType.ORML]: TransactionType.ORML_TRANSFER,
+  [AssetType.STATEMINE]: TransactionType.ASSET_TRANSFER,
+};
 
 const Transfer = () => {
   const { t } = useI18n();
@@ -73,14 +79,18 @@ const Transfer = () => {
   const addTransaction = ({ address, amount }: { address: string; amount: string }) => {
     if (!currentConnection || !currentAddress || !currentAsset || !amount) return;
 
+    const type = currentAsset.type ? TransferType[currentAsset.type] : TransactionType.TRANSFER;
+
     setTransaction({
       address: currentAddress,
-      type: TransactionType.TRANSFER,
+      type,
       chainId: currentConnection.chainId,
       args: {
         dest: formatAddress(address, currentConnection.addressPrefix),
         value: formatAmount(amount, currentAsset.precision),
-        asset: currentAsset,
+        asset:
+          (currentAsset.typeExtras as StatemineExtras)?.assetId ||
+          (currentAsset.typeExtras as OrmlExtras)?.currencyIdScale,
       },
     });
 
@@ -98,6 +108,7 @@ const Transfer = () => {
   }, [countdown]);
 
   const setupTransaction = async () => {
+    setTxPayload(undefined);
     if (!currentConnection?.api || !transaction || !currentAddress) return;
 
     const { payload, unsigned } = await createPayload(transaction, currentConnection.api);

@@ -60,7 +60,9 @@ export const useTransaction = (): ITransactionService => {
       );
     },
     [TransactionType.ORML_TRANSFER]: (transaction, info, options) => {
-      return ormlMethods.tokens.transfer(
+      console.log('transaction.args', transaction.args);
+
+      return ormlMethods.currencies.transfer(
         {
           dest: transaction.args.dest,
           amount: transaction.args.value,

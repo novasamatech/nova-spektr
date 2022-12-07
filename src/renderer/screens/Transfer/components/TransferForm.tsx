@@ -61,6 +61,7 @@ const Transfer = ({ onCreateTransaction, wallet, asset, connection }: Props) => 
   const { getTransactionFee } = useTransaction();
 
   const [balance, setBalance] = useState('');
+  const [nativeTokenBalance, setNativeTokenBalance] = useState<string>();
   const [fee, setFee] = useState('');
   const [transaction, setTransaction] = useState<Transaction>();
 
@@ -71,11 +72,15 @@ const Transfer = ({ onCreateTransaction, wallet, asset, connection }: Props) => 
 
   useEffect(() => {
     (async () => {
-      const balance = await getBalance(
-        toPublicKey(currentAddress) || '0x',
-        connection.chainId,
-        asset.assetId.toString(),
-      );
+      const publicKey = toPublicKey(currentAddress) || '0x';
+      setNativeTokenBalance(undefined);
+      if (asset.assetId !== 0) {
+        const nativeTokenBalance = await getBalance(publicKey, connection.chainId, '0');
+
+        setNativeTokenBalance(nativeTokenBalance ? transferable(nativeTokenBalance) : '0');
+      }
+
+      const balance = await getBalance(publicKey, connection.chainId, asset.assetId.toString());
 
       setBalance(balance ? transferable(balance) : '0');
     })();
@@ -131,6 +136,10 @@ const Transfer = ({ onCreateTransaction, wallet, asset, connection }: Props) => 
   const validateBalanceForFee = async (amount: string) => {
     if (!balance) return false;
     const currentFee = fee || '0';
+
+    if (nativeTokenBalance) {
+      return new BN(currentFee).lte(new BN(nativeTokenBalance));
+    }
 
     return new BN(currentFee).add(new BN(formatAmount(amount, asset.precision))).lte(new BN(balance));
   };

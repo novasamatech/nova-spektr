@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react';
 
 import { ExtendedChain } from '@renderer/services/network/common/types';
-import { validateAddress } from '@renderer/utils/address';
 import { useTransaction } from '@renderer/services/transaction/transactionService';
 import { Transaction } from '@renderer/domain/transaction';
 import { Balance } from '@renderer/components/ui';
@@ -19,11 +18,9 @@ const Fee = ({ connection, transaction, className }: Props) => {
 
   const defaultAsset = connection?.assets[0];
 
-  const isValidTransaction = transaction?.args.value > 0 && validateAddress(transaction?.args.dest);
-
   useEffect(() => {
     (async () => {
-      if (!transaction?.address || !connection?.api || !isValidTransaction) {
+      if (!transaction?.address || !connection?.api) {
         setTransactionFee('0');
         setIsLoading(false);
 
@@ -32,9 +29,14 @@ const Fee = ({ connection, transaction, className }: Props) => {
 
       setIsLoading(true);
 
-      const fee = await getTransactionFee(transaction, connection.api);
+      try {
+        const fee = await getTransactionFee(transaction, connection.api);
 
-      setTransactionFee(fee);
+        setTransactionFee(fee);
+      } catch (error) {
+        setTransactionFee('0');
+      }
+
       setIsLoading(false);
     })();
   }, [transaction?.args, transaction?.address]);
