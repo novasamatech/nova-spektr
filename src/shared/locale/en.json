@@ -228,11 +228,16 @@
       "validatorsSubtitle": "Validators"
     },
     "overview": {
+      "aboutStakingLabel": "About { asset } staking",
+      "filterButton": "Filters",
       "noActiveWalletsDescription": "Please select a wallet for staking",
       "noActiveWalletsLabel": "No wallet selected",
       "noResultsDescription": "Please try another filter parameters",
       "noResultsLabel": "No staking found",
-      "searchPlaceholder": "Search by account name"
+      "searchPlaceholder": "Search by account name",
+      "stakingAssetLabel": "Staking <strong>{ asset }</strong> on",
+      "totalRewardsLabel": "Total rewards",
+      "totalStakedLabel": "Total staked"
     },
     "title": "Staking",
     "unbond": {

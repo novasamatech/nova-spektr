@@ -5,6 +5,7 @@ import { BN, BN_THOUSAND } from '@polkadot/util';
 import cn from 'classnames';
 
 import { QrTxGenerator } from '@renderer/components/common';
+import { TransferForm, TransferDetails, SelectedAddress, Message } from './components';
 import { Button, ButtonBack, Icon } from '@renderer/components/ui';
 import { useI18n } from '@renderer/context/I18nContext';
 import { useNetworkContext } from '@renderer/context/NetworkContext';
@@ -19,10 +20,6 @@ import ParitySignerSignatureReader from '../Signing/ParitySignerSignatureReader/
 import { ChainId, HexString } from '@renderer/domain/shared-kernel';
 import { formatAmount, transferable } from '@renderer/services/balance/common/utils';
 import { useChains } from '@renderer/services/network/chainsService';
-import TransferForm from './components/TransferForm';
-import TransferDetails from './components/TransferDetails';
-import SelectedAddress from './components/SelectedAddress';
-import Message from './components/Message';
 import { ValidationErrors } from './common/constants';
 import { useBalance } from '@renderer/services/balance/balanceService';
 

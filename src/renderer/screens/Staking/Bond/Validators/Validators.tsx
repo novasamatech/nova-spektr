@@ -105,10 +105,10 @@ const Validators = ({ api, chainId, asset, onResult }: Props) => {
               </Checkbox>
               <div className="pl-3 w-[125px] text-sm font-semibold text-success text-right">{apy}%</div>
               <div className="pl-3 w-[125px] text-xs font-semibold text-right">
-                <BalanceValue value={ownStake || '0'} precision={asset.precision} /> {asset.symbol}
+                <BalanceValue value={ownStake || '0'} precision={asset.precision} symbol={asset.symbol} />
               </div>
               <div className="pl-3 w-[125px] text-xs font-semibold text-right">
-                <BalanceValue value={totalStake || '0'} precision={asset.precision} /> {asset.symbol}
+                <BalanceValue value={totalStake || '0'} precision={asset.precision} symbol={asset.symbol} />
               </div>
               <div className="ml-3">
                 <button className="px-1" type="button" onClick={toggleInfo}>

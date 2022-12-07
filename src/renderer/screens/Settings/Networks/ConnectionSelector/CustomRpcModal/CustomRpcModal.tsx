@@ -164,21 +164,19 @@ const CustomRpcModal = ({ chainId, network, node, existingUrls, isOpen, onClose 
               />
             )}
           />
-          {!errors.name && (
-            <InputHint type="hint" className="px-2.5">
-              {t('networkManagement.customRpc.nameHint')}
-            </InputHint>
-          )}
-          {errors.name?.type === 'maxLength' && (
-            <InputHint type="error" className="px-2.5">
-              {t('networkManagement.customRpc.maxLengthNameError')}
-            </InputHint>
-          )}
-          {['minLength', 'required'].includes(errors.name?.type || '') && (
-            <InputHint type="error" className="px-2.5">
-              {t('networkManagement.customRpc.minLengthNameError')}
-            </InputHint>
-          )}
+          <InputHint active={!errors.name} variant="hint" className="px-2.5">
+            {t('networkManagement.customRpc.nameHint')}
+          </InputHint>
+          <InputHint active={errors.name?.type === 'maxLength'} variant="error" className="px-2.5">
+            {t('networkManagement.customRpc.maxLengthNameError')}
+          </InputHint>
+          <InputHint
+            active={['minLength', 'required'].includes(errors.name?.type || '')}
+            variant="error"
+            className="px-2.5"
+          >
+            {t('networkManagement.customRpc.minLengthNameError')}
+          </InputHint>
         </div>
 
         <div className="flex flex-col gap-y-2.5">
@@ -213,46 +211,42 @@ const CustomRpcModal = ({ chainId, network, node, existingUrls, isOpen, onClose 
               />
             )}
           />
-          {formState === FormState.INIT && !errors.url && !isExistingUrl && (
-            <InputHint type="hint" className="px-2.5">
-              {t('networkManagement.customRpc.addressHint')}
-            </InputHint>
-          )}
-          {formState === FormState.INIT && !errors.url && isExistingUrl && (
-            <InputHint type="error" className="px-2.5">
-              {t('networkManagement.customRpc.addressUrlExist')}
-            </InputHint>
-          )}
-          {errors.url?.type === 'required' && (
-            <InputHint type="error" className="px-2.5">
-              {t('networkManagement.customRpc.addressEmpty')}
-            </InputHint>
-          )}
-          {formState === FormState.INIT && errors.url?.type === 'validate' && (
-            <InputHint type="error" className="px-2.5">
-              {t('networkManagement.customRpc.addressInvalidUrl')}
-            </InputHint>
-          )}
-          {formState === FormState.LOADING && (
-            <InputHint type="alert" className="px-2.5">
-              {t('networkManagement.customRpc.addressPending')}
-            </InputHint>
-          )}
-          {formState === FormState.VALID && (
-            <InputHint type="success" className="px-2.5">
-              {t('networkManagement.customRpc.addressConnected')}
-            </InputHint>
-          )}
-          {formState === FormState.WRONG_NETWORK && (
-            <InputHint type="error" className="px-2.5">
-              {t('networkManagement.customRpc.addressWrongNetwork', { networkName: network.name })}
-            </InputHint>
-          )}
-          {formState === FormState.INVALID && (
-            <InputHint type="error" className="px-2.5">
-              {t('networkManagement.customRpc.addressNoConnect')}
-            </InputHint>
-          )}
+          <InputHint
+            active={formState === FormState.INIT && !errors.url && !isExistingUrl}
+            variant="hint"
+            className="px-2.5"
+          >
+            {t('networkManagement.customRpc.addressHint')}
+          </InputHint>
+          <InputHint
+            active={formState === FormState.INIT && !errors.url && isExistingUrl}
+            variant="error"
+            className="px-2.5"
+          >
+            {t('networkManagement.customRpc.addressUrlExist')}
+          </InputHint>
+          <InputHint active={errors.url?.type === 'required'} variant="error" className="px-2.5">
+            {t('networkManagement.customRpc.addressEmpty')}
+          </InputHint>
+          <InputHint
+            active={formState === FormState.INIT && errors.url?.type === 'validate'}
+            variant="error"
+            className="px-2.5"
+          >
+            {t('networkManagement.customRpc.addressInvalidUrl')}
+          </InputHint>
+          <InputHint active={formState === FormState.LOADING} variant="alert" className="px-2.5">
+            {t('networkManagement.customRpc.addressPending')}
+          </InputHint>
+          <InputHint active={formState === FormState.VALID} variant="success" className="px-2.5">
+            {t('networkManagement.customRpc.addressConnected')}
+          </InputHint>
+          <InputHint active={formState === FormState.WRONG_NETWORK} variant="error" className="px-2.5">
+            {t('networkManagement.customRpc.addressWrongNetwork', { networkName: network.name })}
+          </InputHint>
+          <InputHint active={formState === FormState.INVALID} variant="error" className="px-2.5">
+            {t('networkManagement.customRpc.addressNoConnect')}
+          </InputHint>
         </div>
 
         {[FormState.INIT, FormState.INVALID, FormState.WRONG_NETWORK].includes(formState) && (

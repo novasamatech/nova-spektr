@@ -6,18 +6,25 @@ import { useI18n } from '@renderer/context/I18nContext';
 interface Props {
   value: string;
   precision: number;
+  symbol?: string;
   className?: string;
 }
 
-const Balance = ({ value, precision, className }: Props) => {
+const Balance = ({ value, precision, symbol, className }: Props) => {
   const { t } = useI18n();
   const { value: formattedValue, decimalPlaces, suffix } = formatBalance(value, precision);
 
+  const balanceValue = t('assetBalance.number', {
+    value: formattedValue,
+    maximumFractionDigits: decimalPlaces,
+  });
+
   return (
-    <span className={cn(className)}>{`${t('assetBalance.number', {
-      value: formattedValue,
-      maximumFractionDigits: decimalPlaces,
-    })}${suffix}`}</span>
+    <p className={cn(className)}>
+      {balanceValue}
+      {suffix}
+      {symbol && <span className="ml-1.5">{symbol}</span>}
+    </p>
   );
 };
 

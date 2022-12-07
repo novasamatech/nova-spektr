@@ -228,11 +228,16 @@
       "validatorsSubtitle": "Валидаторы"
     },
     "overview": {
+      "aboutStakingLabel": "О стейкинге { asset } токенов",
+      "filterButton": "Фильтры",
       "noActiveWalletsDescription": "Пожалуйста, выберите кошелек для просмотра стейкинга",
       "noActiveWalletsLabel": "Нет выбранных кошельков",
       "noResultsDescription": "Пожалуйста, попробуйте другие параметры фильтрации",
       "noResultsLabel": "Сттейкинги не найдены",
-      "searchPlaceholder": "Искать по имени кошелька"
+      "searchPlaceholder": "Искать по имени кошелька",
+      "stakingAssetLabel": "Стейкинг <strong>{ asset }</strong> на",
+      "totalRewardsLabel": "Общая награда",
+      "totalStakedLabel": "Общий стейк"
     },
     "title": "Стейкинг",
     "unbond": {
