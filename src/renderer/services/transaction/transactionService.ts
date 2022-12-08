@@ -2,13 +2,11 @@ import { ApiPromise } from '@polkadot/api';
 import { hexToU8a } from '@polkadot/util';
 import {
   construct,
-  getRegistry,
   methods,
-  GetRegistryOpts,
   BaseTxInfo,
   OptionsWithMeta,
   UnsignedTransaction,
-  decode,
+  TypeRegistry,
 } from '@substrate/txwrapper-polkadot';
 import { methods as ormlMethods } from '@substrate/txwrapper-orml';
 import { SubmittableExtrinsic } from '@polkadot/api/types';
@@ -21,15 +19,9 @@ import { Transaction, TransactionType } from '@renderer/domain/transaction';
 export const useTransaction = (): ITransactionService => {
   const createRegistry = async (api: ApiPromise) => {
     const metadataRpc = await api.rpc.state.getMetadata();
-    const { specVersion, specName } = await api.rpc.state.getRuntimeVersion();
 
     return {
-      registry: getRegistry({
-        chainName: specName.toString() as GetRegistryOpts['specName'],
-        specName: specName.toString() as GetRegistryOpts['specName'],
-        specVersion: specVersion.toNumber(),
-        metadataRpc: metadataRpc.toHex(),
-      }),
+      registry: api.registry as TypeRegistry,
       metadataRpc: metadataRpc.toHex(),
     };
   };
@@ -60,7 +52,7 @@ export const useTransaction = (): ITransactionService => {
       );
     },
     [TransactionType.ORML_TRANSFER]: (transaction, info, options) => {
-      return ormlMethods.tokens.transfer(
+      return ormlMethods.currencies.transfer(
         {
           dest: transaction.args.dest,
           amount: transaction.args.value,
@@ -105,12 +97,9 @@ export const useTransaction = (): ITransactionService => {
     signature: HexString,
     api: ApiPromise,
   ): Promise<string> => {
-    const { registry, metadataRpc } = await createRegistry(api);
+    const { metadataRpc, registry } = await createRegistry(api);
 
-    return construct.signedTx(unsigned, signature, {
-      metadataRpc,
-      registry,
-    });
+    return construct.signedTx(unsigned, signature, { registry, metadataRpc });
   };
 
   const getTransactionFee = async (transaction: Transaction, api: ApiPromise): Promise<string> => {
@@ -122,73 +111,79 @@ export const useTransaction = (): ITransactionService => {
 
   const submitAndWatchExtrinsic = async (
     tx: string,
+    unsigned: UnsignedTransaction,
     api: ApiPromise,
     callback: (executed: boolean, params: any) => void,
   ) => {
     let extrinsicCalls = 0;
 
-    const { registry, metadataRpc } = await createRegistry(api);
-    const txInfo = decode(tx, {
-      metadataRpc,
-      registry,
-    });
+    const callIndex = api.createType('Call', unsigned.method).callIndex;
+    const { method, section } = api.registry.findMetaCall(callIndex);
 
-    api.rpc.author.submitAndWatchExtrinsic(tx, async (result) => {
-      if (!result.isInBlock || extrinsicCalls > 1) return;
+    api.rpc.author
+      .submitAndWatchExtrinsic(tx, async (result) => {
+        if (!result.isInBlock || extrinsicCalls > 1) return;
 
-      const signedBlock = await api.rpc.chain.getBlock();
-      const apiAt = await api.at(signedBlock.block.header.hash);
-      const allRecords = await apiAt.query.system.events();
+        const signedBlock = await api.rpc.chain.getBlock();
+        const apiAt = await api.at(signedBlock.block.header.hash);
+        const allRecords = await apiAt.query.system.events();
 
-      let actualTxHash = result.inner;
-      let isFinalApprove = false;
-      let isSuccessExtrinsic = false;
+        let actualTxHash = result.inner;
+        let isFinalApprove = false;
+        let isSuccessExtrinsic = false;
 
-      // information for each contained extrinsic
-      signedBlock.block.extrinsics.forEach(({ method: { method, section }, signer, hash }, index) => {
-        if (signer.toString() !== txInfo.address || method !== txInfo.method.name || section !== txInfo.method.pallet) {
-          return;
-        }
-
-        allRecords.forEach(({ phase, event }) => {
-          if (!phase.isApplyExtrinsic || !phase.asApplyExtrinsic.eq(index)) return;
-
-          if (api.events.multisig.MultisigExecuted.is(event)) {
-            isFinalApprove = true;
+        // information for each contained extrinsic
+        signedBlock.block.extrinsics.forEach(({ method: extrinsicMethod, signer, hash }, index) => {
+          if (
+            signer.toString() !== unsigned.address ||
+            method !== extrinsicMethod.method ||
+            section !== extrinsicMethod.section
+          ) {
+            return;
           }
 
-          if (api.events.system.ExtrinsicSuccess.is(event)) {
-            actualTxHash = hash;
-            isSuccessExtrinsic = true;
-            extrinsicCalls += 1;
-          }
+          allRecords.forEach(({ phase, event }) => {
+            if (!phase.isApplyExtrinsic || !phase.asApplyExtrinsic.eq(index)) return;
 
-          if (api.events.system.ExtrinsicFailed.is(event)) {
-            const [dispatchError] = event.data;
-            let errorInfo = dispatchError.toString();
-
-            if (dispatchError.isModule) {
-              const decoded = api.registry.findMetaError(dispatchError.asModule);
-
-              errorInfo = decoded.name
-                .split(/(?=[A-Z])/)
-                .map((w) => w.toLowerCase())
-                .join(' ');
+            if (api.events.multisig.MultisigExecuted.is(event)) {
+              isFinalApprove = true;
             }
 
-            callback(false, errorInfo);
-          }
-        });
-      });
+            if (api.events.system.ExtrinsicSuccess.is(event)) {
+              actualTxHash = hash;
+              isSuccessExtrinsic = true;
+              extrinsicCalls += 1;
+            }
 
-      if (extrinsicCalls === 1) {
-        callback(true, {
-          extrinsicHash: actualTxHash.toHex(),
-          isFinalApprove,
-          isSuccessExtrinsic,
+            if (api.events.system.ExtrinsicFailed.is(event)) {
+              const [dispatchError] = event.data;
+              let errorInfo = dispatchError.toString();
+
+              if (dispatchError.isModule) {
+                const decoded = api.registry.findMetaError(dispatchError.asModule);
+
+                errorInfo = decoded.name
+                  .split(/(?=[A-Z])/)
+                  .map((w) => w.toLowerCase())
+                  .join(' ');
+              }
+
+              callback(false, errorInfo);
+            }
+          });
         });
-      }
-    });
+
+        if (extrinsicCalls === 1) {
+          callback(true, {
+            extrinsicHash: actualTxHash.toHex(),
+            isFinalApprove,
+            isSuccessExtrinsic,
+          });
+        }
+      })
+      .catch((error) => {
+        callback(false, (error as Error).message || 'Error');
+      });
   };
 
   return {
