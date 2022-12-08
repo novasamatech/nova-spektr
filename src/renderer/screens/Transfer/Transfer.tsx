@@ -55,6 +55,7 @@ const Transfer = () => {
   const [transaction, setTransaction] = useState<Transaction>();
   const [countdown, setCountdown] = useState<number>(DEFAULT_QR_LIFETIME);
   const [isSuccessMessageOpen, setIsSuccessMessageOpen] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
   const [validationError, setValidationError] = useState<ValidationErrors>();
 
   const [_, setBalance] = useState('');
@@ -146,13 +147,17 @@ const Transfer = () => {
 
     if (!currentConnection?.api || !amount || !validateAddress(address) || !currentAsset) return false;
 
-    const currentBalance = await getBalance(
-      toPublicKey(currentAddress) || '0x',
-      currentConnection.chainId,
-      currentAsset.assetId.toString(),
-    );
+    const publicKey = toPublicKey(currentAddress) || '0x';
+    const currentBalance = await getBalance(publicKey, currentConnection.chainId, currentAsset.assetId.toString());
+
+    let nativeTokenBalance;
+
+    if (currentAsset.assetId !== 0) {
+      nativeTokenBalance = await getBalance(publicKey, currentConnection.chainId, '0');
+    }
 
     const transferableBalance = currentBalance ? transferable(currentBalance) : '0';
+    const transferableNativeTokenBalance = nativeTokenBalance ? transferable(nativeTokenBalance) : null;
 
     const fee = await getTransactionFee(transaction, currentConnection.api);
 
@@ -160,7 +165,13 @@ const Transfer = () => {
       setValidationError(ValidationErrors.INSUFFICIENT_BALANCE);
 
       return false;
-    } else if (new BN(fee).add(new BN(amount)).gt(new BN(transferableBalance))) {
+    }
+
+    if (
+      transferableNativeTokenBalance
+        ? new BN(fee).gt(new BN(transferableNativeTokenBalance))
+        : new BN(fee).add(new BN(amount)).gt(new BN(transferableBalance))
+    ) {
       setValidationError(ValidationErrors.INSUFFICIENT_BALANCE_FOR_FEE);
 
       return false;
@@ -175,10 +186,14 @@ const Transfer = () => {
     const extrinsic = await getSignedExtrinsic(unsigned, signature, currentConnection.api);
     setCurrentStep(Steps.EXECUTING);
 
-    submitAndWatchExtrinsic(extrinsic, currentConnection.api, (executed) => {
+    submitAndWatchExtrinsic(extrinsic, unsigned, currentConnection.api, (executed, params) => {
       if (executed) {
         setIsSuccessMessageOpen(true);
+
+        return;
       }
+
+      setErrorMessage(params);
     });
   };
 
@@ -281,7 +296,7 @@ const Transfer = () => {
                     <Icon as="img" name="globe" /> {t('signing.metadataPortalLink')}
                   </a>
                 </div>
-                {countdown > 0 ? (
+                {txPayload && countdown > 0 ? (
                   <Button
                     className="w-fit m-auto"
                     variant="fill"
@@ -351,7 +366,7 @@ const Transfer = () => {
               asset={currentAsset}
             />
 
-            {!isSuccessMessageOpen && (
+            {(!isSuccessMessageOpen || Boolean(errorMessage)) && (
               <div className="mt-8 text-neutral-variant font-semibold flex items-center gap-3 w-fit m-auto">
                 <Icon className="animate-spin" name="loader" size={15} />
                 {t('transfer.executing')}
@@ -371,6 +386,19 @@ const Transfer = () => {
         <div className="flex uppercase items-center gap-2.5">
           <Icon name="checkmarkCutout" size={20} className="text-success" />
           {t('transfer.successMessage')}
+        </div>
+      </Message>
+
+      <Message
+        isOpen={Boolean(errorMessage)}
+        onClose={() => {
+          setErrorMessage('');
+          navigate(-1);
+        }}
+      >
+        <div className="flex uppercase items-center gap-2.5">
+          <Icon name="warnCutout" size={20} className="text-error" />
+          {errorMessage}
         </div>
       </Message>
     </div>
