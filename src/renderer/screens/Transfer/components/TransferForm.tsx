@@ -29,7 +29,7 @@ type Props = {
   connection: ExtendedChain;
 };
 
-const getTransactionType = (assetType: AssetType | undefined): TransactionType => {
+const getTransactionType = (assetType?: AssetType): TransactionType => {
   if (assetType === AssetType.STATEMINE) {
     return TransactionType.ASSET_TRANSFER;
   }
@@ -194,7 +194,13 @@ const Transfer = ({ onCreateTransaction, wallet, asset, connection }: Props) => 
             }}
             render={({ field: { onChange, value }, fieldState: { error } }) => (
               <>
-                <Amount value={value} name="amount" asset={asset} balance={balance} onChange={onChange} />
+                <Amount
+                  value={value}
+                  placeholder={t('transfer.amountPlaceholder')}
+                  asset={asset}
+                  balance={balance}
+                  onChange={onChange}
+                />
                 <InputHint active={error?.type === 'insufficientBalance'} variant="error">
                   {t('transfer.notEnoughBalanceError')}
                 </InputHint>

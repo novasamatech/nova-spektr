@@ -50,11 +50,11 @@ const Overview = () => {
         });
       }, [] as Option<Asset>[]);
 
-      const prevChainId = getStakingNetwork();
-      const prevChain = relaychains.find((chain) => chain.id === prevChainId);
+      const settingsChainId = getStakingNetwork();
+      const settingsChain = relaychains.find((chain) => chain.id === settingsChainId);
 
       setStakingNetworks(relaychains);
-      setActiveNetwork(prevChain || { id: relaychains[0].id, value: relaychains[0].value });
+      setActiveNetwork(settingsChain || { id: relaychains[0].id, value: relaychains[0].value });
     })();
   }, []);
 

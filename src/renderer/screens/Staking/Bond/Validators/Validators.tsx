@@ -3,7 +3,7 @@ import { ApiPromise } from '@polkadot/api';
 import cn from 'classnames';
 import { useEffect, useState } from 'react';
 
-import { Address, Balance as BalanceValue, BaseModal, Button, Checkbox, Icon, Input } from '@renderer/components/ui';
+import { Address, Balance, BaseModal, Button, Checkbox, Icon, Input } from '@renderer/components/ui';
 import { useI18n } from '@renderer/context/I18nContext';
 import { Asset } from '@renderer/domain/asset';
 import { AccountID, ChainId } from '@renderer/domain/shared-kernel';
@@ -105,10 +105,10 @@ const Validators = ({ api, chainId, asset, onResult }: Props) => {
               </Checkbox>
               <div className="pl-3 w-[125px] text-sm font-semibold text-success text-right">{apy}%</div>
               <div className="pl-3 w-[125px] text-xs font-semibold text-right">
-                <BalanceValue value={ownStake || '0'} precision={asset.precision} symbol={asset.symbol} />
+                <Balance value={ownStake || '0'} precision={asset.precision} symbol={asset.symbol} />
               </div>
               <div className="pl-3 w-[125px] text-xs font-semibold text-right">
-                <BalanceValue value={totalStake || '0'} precision={asset.precision} symbol={asset.symbol} />
+                <Balance value={totalStake || '0'} precision={asset.precision} symbol={asset.symbol} />
               </div>
               <div className="ml-3">
                 <button className="px-1" type="button" onClick={toggleInfo}>

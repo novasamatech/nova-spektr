@@ -31,6 +31,12 @@
     "omniLogoAlt": "Логотип Omni Enterprise",
     "reloadButton": "Перезагрузить"
   },
+  "general": {
+    "input": {
+      "amountLabel": "Сумма",
+      "transferableLabel": "Доступно"
+    }
+  },
   "history": {
     "title": "История операций"
   },
@@ -248,7 +254,7 @@
     }
   },
   "transfer": {
-    "amountLabel": "Сумма",
+    "amountPlaceholder": "Amount",
     "continueButton": "Продолжить",
     "editOperationButton": "Edit operation",
     "executing": "Подтверждение транзакции",
@@ -262,8 +268,7 @@
     "requiredRecipientError": "Please, enter recipient address",
     "startSigningButton": "Подписать с помощью Parity Signer",
     "successMessage": "transaction submitted!",
-    "title": "Переводы",
-    "transferable": "Доступно"
+    "title": "Переводы"
   },
   "transferDetails": {
     "fromNetwork": "Из сети",

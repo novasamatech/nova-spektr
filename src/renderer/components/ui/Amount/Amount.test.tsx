@@ -22,10 +22,10 @@ describe('components/Amount', () => {
   test('should render component', () => {
     const value = '15.22';
 
-    render(<Amount name="amount" value={value} asset={asset} balance={balance} onChange={() => {}} />);
+    render(<Amount placeholder="Enter amount" value={value} asset={asset} balance={balance} onChange={() => {}} />);
 
-    const amountLabel = screen.getByText('transfer.amountLabel');
-    const transferableLabel = screen.getByText(/transfer.transferable/);
+    const amountLabel = screen.getByText('general.input.amountLabel');
+    const transferableLabel = screen.getByText(/general.input.transferableLabel/);
     const assetLabels = screen.getAllByText(asset.symbol);
     const transferableValue = screen.getByText(/2.05/);
     const amountValue = screen.getByDisplayValue(value);
@@ -37,10 +37,10 @@ describe('components/Amount', () => {
   });
 
   test('should render placeholder', () => {
-    render(<Amount name="amount" value="" asset={asset} balance={balance} onChange={() => {}} />);
+    render(<Amount placeholder="Enter amount" value="" asset={asset} balance={balance} onChange={() => {}} />);
 
     const amountValue = screen.getByDisplayValue('');
-    const placeholder = screen.getByPlaceholderText('transfer.amountLabel');
+    const placeholder = screen.getByPlaceholderText('Enter amount');
     expect(amountValue).toBeInTheDocument();
     expect(placeholder).toBeInTheDocument();
   });
