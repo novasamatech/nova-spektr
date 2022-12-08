@@ -11,7 +11,7 @@ type AddressStyle = 'small' | 'normal' | 'large';
 const Styles: Record<AddressStyle, string> = {
   small: 'text-2xs text-neutral-variant font-normal',
   normal: 'text-xs leading-4 text-neutral-variant font-normal',
-  large: 'text-sm text-gray-500',
+  large: 'text-base text-neutral',
 };
 
 interface Props extends HTMLAttributes<HTMLSpanElement> {

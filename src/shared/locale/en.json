@@ -252,6 +252,7 @@
     "networkFee": "Network fee",
     "notEnoughBalanceError": "Not enough funds to transfer specific amount",
     "notEnoughBalanceForFeeError": "Insufficient balance to pay network fee",
+    "pasteButton": "Paste",
     "recipientLabel": "Recipient",
     "requiredAmountError": "Please, enter amount",
     "requiredRecipientError": "Please, enter recipient address",
