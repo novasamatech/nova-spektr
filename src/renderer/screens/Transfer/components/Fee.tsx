@@ -47,7 +47,7 @@ const Fee = ({ connection, transaction, className }: Props) => {
 
   return (
     <span className={className}>
-      <Balance value={transactionFee} precision={defaultAsset.precision} /> {defaultAsset.symbol}
+      <Balance value={transactionFee} precision={defaultAsset.precision} symbol={defaultAsset.symbol} />
     </span>
   );
 };

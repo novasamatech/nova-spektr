@@ -3,7 +3,8 @@ import Checkbox from './Checkbox/Checkbox';
 import Switch from './Switch/Switch';
 import Icon from './Icon/Icon';
 import Identicon from './Identicon/Identicon';
-import Input from './Input/Input';
+import Input from './Inputs/Input/Input';
+import AmountInput from './Inputs/AmountInput/AmountInput';
 import InputHint from './InputHint/InputHint';
 import Button from './Buttons/Button/Button';
 import ButtonLink from './Buttons/ButtonLink/ButtonLink';
@@ -25,6 +26,7 @@ export {
   Icon,
   Identicon,
   Input,
+  AmountInput,
   InputHint,
   Button,
   ButtonLink,
