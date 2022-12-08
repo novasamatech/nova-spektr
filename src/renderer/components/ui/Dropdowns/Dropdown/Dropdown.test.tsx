@@ -4,8 +4,8 @@ import Dropdown from './Dropdown';
 
 describe('ui/Dropdown', () => {
   const options = [
-    { id: 0, element: 'label_0', value: '0' },
-    { id: 1, element: 'label_1', value: '1' },
+    { id: '0', element: 'label_0', value: '0' },
+    { id: '1', element: 'label_1', value: '1' },
   ];
   const defaultProps = {
     activeId: undefined,

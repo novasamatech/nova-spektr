@@ -31,6 +31,12 @@
     "omniLogoAlt": "Omni Enterprise logo",
     "reloadButton": "Reload"
   },
+  "general": {
+    "input": {
+      "amountLabel": "Amount",
+      "transferableLabel": "Transferable"
+    }
+  },
   "history": {
     "title": "History"
   },
@@ -228,11 +234,16 @@
       "validatorsSubtitle": "Validators"
     },
     "overview": {
+      "aboutStakingLabel": "About { asset } staking",
+      "filterButton": "Filters",
       "noActiveWalletsDescription": "Please select a wallet for staking",
       "noActiveWalletsLabel": "No wallet selected",
       "noResultsDescription": "Please try another filter parameters",
       "noResultsLabel": "No staking found",
-      "searchPlaceholder": "Search by account name"
+      "searchPlaceholder": "Search by account name",
+      "stakingAssetLabel": "Staking <strong>{ asset }</strong> on",
+      "totalRewardsLabel": "Total rewards",
+      "totalStakedLabel": "Total staked"
     },
     "title": "Staking",
     "unbond": {
@@ -243,7 +254,7 @@
     }
   },
   "transfer": {
-    "amountLabel": "Amount",
+    "amountPlaceholder": "Сумма",
     "continueButton": "Continue",
     "editOperationButton": "Edit operation",
     "executing": "Submitting operation",
@@ -258,8 +269,7 @@
     "requiredRecipientError": "Please, enter recipient address",
     "startSigningButton": "Sign with Parity Signer",
     "successMessage": "transaction submitted!",
-    "title": "Transfer",
-    "transferable": "Transferable"
+    "title": "Transfer"
   },
   "transferDetails": {
     "fromNetwork": "From network",

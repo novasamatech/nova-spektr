@@ -79,7 +79,6 @@ describe('screen/Balances/Balances', () => {
     render(<Balances />, { wrapper: MemoryRouter });
 
     const noResults = screen.getByText('balances.emptyStateLabel');
-
     expect(noResults).toBeInTheDocument();
   });
 });

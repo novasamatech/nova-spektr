@@ -15,3 +15,10 @@ Primary.args = {
   value: '10000000000000000000',
   precision: 10,
 };
+
+export const WithSymbol = Template.bind({});
+WithSymbol.args = {
+  value: '10000000000000000000',
+  precision: 10,
+  symbol: 'KSM',
+};
