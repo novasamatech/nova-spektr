@@ -246,7 +246,7 @@
     "amountLabel": "Amount",
     "continueButton": "Continue",
     "editOperationButton": "Edit operation",
-    "executing": "Confirming transaction",
+    "executing": "Submitting operation",
     "formTitle": "Send <strong>{ asset }</strong> on <strong>{ network }</strong>",
     "incorrectRecipientError": "Please, enter correct recipient address",
     "networkFee": "Network fee",
