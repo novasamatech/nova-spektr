@@ -83,7 +83,7 @@ const Dropdown = ({
                   open ? 'text-primary' : 'text-neutral-variant',
                 )}
               >
-                <Icon name="dropdown" size={style.arrows} />
+                <Icon name="down" size={style.arrows} />
               </span>
               {suffix}
             </div>

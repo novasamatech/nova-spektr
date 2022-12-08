@@ -5,6 +5,7 @@ import { BN, BN_THOUSAND } from '@polkadot/util';
 import cn from 'classnames';
 
 import { QrTxGenerator } from '@renderer/components/common';
+import { TransferForm, TransferDetails, SelectedAddress, Message } from './components';
 import { Button, ButtonBack, Icon } from '@renderer/components/ui';
 import { useI18n } from '@renderer/context/I18nContext';
 import { useNetworkContext } from '@renderer/context/NetworkContext';
@@ -19,10 +20,6 @@ import ParitySignerSignatureReader from '../Signing/ParitySignerSignatureReader/
 import { ChainId, HexString } from '@renderer/domain/shared-kernel';
 import { formatAmount, transferable } from '@renderer/services/balance/common/utils';
 import { useChains } from '@renderer/services/network/chainsService';
-import TransferForm from './components/TransferForm';
-import TransferDetails from './components/TransferDetails';
-import SelectedAddress from './components/SelectedAddress';
-import Message from './components/Message';
 import { ValidationErrors } from './common/constants';
 import { useBalance } from '@renderer/services/balance/balanceService';
 
@@ -146,7 +143,7 @@ const Transfer = () => {
     })();
   }, [currentAddress, currentConnection?.chainId, currentAsset?.assetId]);
 
-  const validateTransaction = async () => {
+  const validateTransaction = async (): Promise<boolean> => {
     const amount = transaction?.args.value;
     const address = transaction?.args.dest;
 
@@ -172,17 +169,15 @@ const Transfer = () => {
       return false;
     }
 
-    if (
-      transferableNativeTokenBalance
-        ? new BN(fee).gt(new BN(transferableNativeTokenBalance))
-        : new BN(fee).add(new BN(amount)).gt(new BN(transferableBalance))
-    ) {
-      setValidationError(ValidationErrors.INSUFFICIENT_BALANCE_FOR_FEE);
+    const notEnoughForFee = transferableNativeTokenBalance
+      ? new BN(fee).gt(new BN(transferableNativeTokenBalance))
+      : new BN(fee).add(new BN(amount)).gt(new BN(transferableBalance));
 
-      return false;
+    if (notEnoughForFee) {
+      setValidationError(ValidationErrors.INSUFFICIENT_BALANCE_FOR_FEE);
     }
 
-    return true;
+    return !notEnoughForFee;
   };
 
   const sendSignedTransaction = async (signature: HexString) => {

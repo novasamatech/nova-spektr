@@ -99,10 +99,7 @@ export const useTransaction = (): ITransactionService => {
   ): Promise<string> => {
     const { metadataRpc, registry } = await createRegistry(api);
 
-    return construct.signedTx(unsigned, signature, {
-      registry,
-      metadataRpc,
-    });
+    return construct.signedTx(unsigned, signature, { registry, metadataRpc });
   };
 
   const getTransactionFee = async (transaction: Transaction, api: ApiPromise): Promise<string> => {

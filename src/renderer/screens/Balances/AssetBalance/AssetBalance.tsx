@@ -22,8 +22,8 @@ type Props = {
 };
 
 const AssetBalance = ({ asset, chainId, balance, canMakeActions, onReceiveClick }: Props) => {
-  const [isExpanded, toggleExpanded] = useToggle();
   const { t } = useI18n();
+  const [isExpanded, toggleExpanded] = useToggle();
 
   const onReceive = (event: MouseEvent<HTMLButtonElement>) => {
     event.stopPropagation();
@@ -70,11 +70,9 @@ const AssetBalance = ({ asset, chainId, balance, canMakeActions, onReceiveClick 
           </div>
           <div className={cn('font-semibold')} data-testid="balance">
             {balance?.free ? (
-              <>
-                <BalanceValue value={total(balance)} precision={asset.precision} /> {asset.symbol}
-              </>
+              <BalanceValue value={total(balance)} precision={asset.precision} symbol={asset.symbol} />
             ) : (
-              <Shimmering width="200px" height="20px" />
+              <Shimmering width={200} height={20} />
             )}
           </div>
           {canMakeActions && (
@@ -112,11 +110,9 @@ const AssetBalance = ({ asset, chainId, balance, canMakeActions, onReceiveClick 
               <div className="text-neutral text-sm font-semibold">{t('assetBalance.transferable')}</div>
               <div className="text-neutral-variant text-xs font-bold" data-testid="transferable">
                 {balance?.free ? (
-                  <>
-                    <BalanceValue value={transferable(balance)} precision={asset.precision} /> {asset.symbol}
-                  </>
+                  <BalanceValue value={transferable(balance)} precision={asset.precision} symbol={asset.symbol} />
                 ) : (
-                  <Shimmering width="200px" height="20px" />
+                  <Shimmering width={200} height={20} />
                 )}
               </div>
             </div>
@@ -124,11 +120,9 @@ const AssetBalance = ({ asset, chainId, balance, canMakeActions, onReceiveClick 
               <div className="text-neutral text-sm font-semibold">{t('assetBalance.locked')}</div>
               <div className="text-neutral-variant text-xs font-bold">
                 {balance?.frozen ? (
-                  <>
-                    <BalanceValue value={balance.frozen} precision={asset.precision} /> {asset.symbol}
-                  </>
+                  <BalanceValue value={balance.frozen} precision={asset.precision} symbol={asset.symbol} />
                 ) : (
-                  <Shimmering width="200px" height="20px" />
+                  <Shimmering width={200} height={20} />
                 )}
               </div>
             </div>
@@ -136,11 +130,9 @@ const AssetBalance = ({ asset, chainId, balance, canMakeActions, onReceiveClick 
               <div className="text-neutral text-sm font-semibold">{t('assetBalance.reserved')}</div>
               <div className="text-neutral-variant text-xs font-bold">
                 {balance?.reserved ? (
-                  <>
-                    <BalanceValue value={balance.reserved} precision={asset.precision} /> {asset.symbol}
-                  </>
+                  <BalanceValue value={balance.reserved} precision={asset.precision} symbol={asset.symbol} />
                 ) : (
-                  <Shimmering width="200px" height="20px" />
+                  <Shimmering width={200} height={20} />
                 )}
               </div>
             </div>

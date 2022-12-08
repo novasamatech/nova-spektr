@@ -2,7 +2,7 @@ import { render, screen } from '@testing-library/react';
 
 import Input from './Input';
 
-describe('Input', () => {
+describe('ui/Inputs/Input', () => {
   test('should render component', () => {
     render(<Input value="test input" onChange={() => {}} />);
 

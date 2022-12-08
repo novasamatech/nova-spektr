@@ -1,22 +1,20 @@
+import { BN } from '@polkadot/util';
 import { useEffect, useState } from 'react';
 import { Controller, SubmitHandler, useForm } from 'react-hook-form';
-import cn from 'classnames';
 import { Trans } from 'react-i18next';
-import { BN } from '@polkadot/util';
 
-import { Balance, Button, Icon, Identicon, Input } from '@renderer/components/ui';
+import { Button, AmountInput, Icon, Identicon, Input, InputHint } from '@renderer/components/ui';
 import { useI18n } from '@renderer/context/I18nContext';
 import { Asset, AssetType, OrmlExtras, StatemineExtras } from '@renderer/domain/asset';
-import { formatAddress, pasteAddressHandler, toPublicKey, validateAddress } from '@renderer/utils/address';
-import { Wallet } from '@renderer/domain/wallet';
-import { ExtendedChain } from '@renderer/services/network/common/types';
-import SelectedAddress from './SelectedAddress';
-import Fee from './Fee';
 import { Transaction, TransactionType } from '@renderer/domain/transaction';
+import { Wallet } from '@renderer/domain/wallet';
 import { useBalance } from '@renderer/services/balance/balanceService';
 import { formatAmount, transferable } from '@renderer/services/balance/common/utils';
+import { ExtendedChain } from '@renderer/services/network/common/types';
 import { useTransaction } from '@renderer/services/transaction/transactionService';
-import ErrorMessage from './ErrorMessage';
+import { formatAddress, pasteAddressHandler, toPublicKey, validateAddress } from '@renderer/utils/address';
+import Fee from './Fee';
+import SelectedAddress from './SelectedAddress';
 
 type FormData = {
   address: string;
@@ -30,7 +28,7 @@ type Props = {
   connection: ExtendedChain;
 };
 
-const getTransactionType = (assetType: AssetType | undefined): TransactionType => {
+const getTransactionType = (assetType?: AssetType): TransactionType => {
   if (assetType === AssetType.STATEMINE) {
     return TransactionType.ASSET_TRANSFER;
   }
@@ -193,12 +191,12 @@ const TransferForm = ({ onCreateTransaction, wallet, asset, connection }: Props)
                   placeholder={t('transfer.recipientLabel')}
                   onChange={onChange}
                 />
-                <ErrorMessage error={error} type="validate">
+                <InputHint active={error?.type === 'validate'} variant="error">
                   {t('transfer.incorrectRecipientError')}
-                </ErrorMessage>
-                <ErrorMessage error={error} type="required">
+                </InputHint>
+                <InputHint active={error?.type === 'required'} variant="error">
                   {t('transfer.requiredRecipientError')}
-                </ErrorMessage>
+                </InputHint>
               </>
             )}
           />
@@ -216,51 +214,25 @@ const TransferForm = ({ onCreateTransaction, wallet, asset, connection }: Props)
             }}
             render={({ field: { onChange, value }, fieldState: { error } }) => (
               <>
-                <Input
-                  prefixElement={
-                    <div className="flex items-center gap-1">
-                      <div
-                        className={cn(
-                          'relative flex items-center justify-center  border rounded-full w-6 h-6 box-border',
-                          'border-shade-30 bg-shade-70',
-                        )}
-                      >
-                        <img src={asset.icon} alt="" width={26} height={26} />
-                      </div>
-                      <p className="text-lg">{asset.symbol}</p>
-                    </div>
-                  }
-                  label={
-                    <div className="flex justify-between">
-                      <div>{t('transfer.amountLabel')}</div>
-                      <div>
-                        <span className="font-normal">{t('transfer.transferable')}:</span>{' '}
-                        <Balance className="text-neutral font-semibold" value={balance} precision={asset.precision} />{' '}
-                        {asset.symbol}
-                      </div>
-                    </div>
-                  }
-                  invalid={Boolean(error)}
+                <AmountInput
                   value={value}
-                  type="number"
-                  name="amount"
-                  className="w-full text-xl font-semibold text-right"
-                  placeholder={t('transfer.amountLabel')}
+                  placeholder={t('transfer.amountPlaceholder')}
+                  asset={asset}
+                  balance={balance}
                   onChange={onChange}
                 />
-
-                <ErrorMessage error={error} type="insufficientBalance">
+                <InputHint active={error?.type === 'insufficientBalance'} variant="error">
                   {t('transfer.notEnoughBalanceError')}
-                </ErrorMessage>
-                <ErrorMessage error={error} type="insufficientBalanceForFee">
+                </InputHint>
+                <InputHint active={error?.type === 'insufficientBalanceForFee'} variant="error">
                   {t('transfer.notEnoughBalanceForFeeError')}
-                </ErrorMessage>
-                <ErrorMessage error={error} type="required">
+                </InputHint>
+                <InputHint active={error?.type === 'required'} variant="error">
                   {t('transfer.requiredAmountError')}
-                </ErrorMessage>
-                <ErrorMessage error={error} type="notZero">
+                </InputHint>
+                <InputHint active={error?.type === 'notZero'} variant="error">
                   {t('transfer.requiredAmountError')}
-                </ErrorMessage>
+                </InputHint>
               </>
             )}
           />

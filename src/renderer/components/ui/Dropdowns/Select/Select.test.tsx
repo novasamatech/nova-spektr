@@ -4,9 +4,9 @@ import Select from './Select';
 
 describe('ui/Select', () => {
   const options = [
-    { id: 0, value: 'test_1', element: 'el_test_1' },
-    { id: 1, value: 'test_2', element: 'el_test_2' },
-    { id: 2, value: 'test_3', element: 'el_test_3' },
+    { id: '0', value: 'test_1', element: 'el_test_1' },
+    { id: '1', value: 'test_2', element: 'el_test_2' },
+    { id: '2', value: 'test_3', element: 'el_test_3' },
   ];
 
   const defaultProps = {

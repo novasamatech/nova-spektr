@@ -25,13 +25,13 @@ const data = [
 ];
 
 const options = data.map((d, index) => ({
-  id: index,
+  id: index.toString(),
   value: d.value,
   element: d.value,
 }));
 
 const customOptions = data.map((d, index) => ({
-  id: index,
+  id: index.toString(),
   value: d.value,
   element: (
     <div className="flex items-center gap-x-2.5">
