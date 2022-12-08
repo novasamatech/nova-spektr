@@ -7,7 +7,7 @@ import { BN } from '@polkadot/util';
 import { Balance, Button, Icon, Identicon, Input } from '@renderer/components/ui';
 import { useI18n } from '@renderer/context/I18nContext';
 import { Asset, AssetType, OrmlExtras, StatemineExtras } from '@renderer/domain/asset';
-import { formatAddress, toPublicKey, validateAddress } from '@renderer/utils/address';
+import { formatAddress, pasteAddressHandler, toPublicKey, validateAddress } from '@renderer/utils/address';
 import { ExtendedChain } from '@renderer/services/network/common/types';
 import SelectedAddress from './SelectedAddress';
 import Fee from './Fee';
@@ -61,6 +61,7 @@ const Transfer = ({ onCreateTransaction, account, asset, connection }: Props) =>
   const { getTransactionFee } = useTransaction();
 
   const [balance, setBalance] = useState('');
+  const [nativeTokenBalance, setNativeTokenBalance] = useState<string>();
   const [fee, setFee] = useState('');
   const [transaction, setTransaction] = useState<Transaction>();
 
@@ -68,11 +69,15 @@ const Transfer = ({ onCreateTransaction, account, asset, connection }: Props) =>
 
   useEffect(() => {
     (async () => {
-      const balance = await getBalance(
-        toPublicKey(currentAddress) || '0x',
-        connection.chainId,
-        asset.assetId.toString(),
-      );
+      const publicKey = toPublicKey(currentAddress) || '0x';
+      setNativeTokenBalance(undefined);
+      if (asset.assetId !== 0) {
+        const nativeTokenBalance = await getBalance(publicKey, connection.chainId, '0');
+
+        setNativeTokenBalance(nativeTokenBalance ? transferable(nativeTokenBalance) : '0');
+      }
+
+      const balance = await getBalance(publicKey, connection.chainId, asset.assetId.toString());
 
       setBalance(balance ? transferable(balance) : '0');
     })();
@@ -83,6 +88,7 @@ const Transfer = ({ onCreateTransaction, account, asset, connection }: Props) =>
     control,
     watch,
     trigger,
+    resetField,
     formState: { isValid },
   } = useForm<TransferForm>({
     mode: 'onChange',
@@ -129,6 +135,10 @@ const Transfer = ({ onCreateTransaction, account, asset, connection }: Props) =>
     if (!balance) return false;
     const currentFee = fee || '0';
 
+    if (nativeTokenBalance) {
+      return new BN(currentFee).lte(new BN(nativeTokenBalance));
+    }
+
     return new BN(currentFee).add(new BN(formatAmount(amount, asset.precision))).lte(new BN(balance));
   };
 
@@ -160,6 +170,17 @@ const Transfer = ({ onCreateTransaction, account, asset, connection }: Props) =>
                 <Input
                   prefixElement={
                     value && !error ? <Identicon address={value} background={false} /> : <Icon name="emptyIdenticon" />
+                  }
+                  suffixElement={
+                    value ? (
+                      <button className="text-neutral" type="button" onClick={() => resetField('address')}>
+                        <Icon name="clearOutline" />
+                      </button>
+                    ) : (
+                      <Button variant="outline" pallet="primary" onClick={pasteAddressHandler(onChange)}>
+                        {t('transfer.pasteButton')}
+                      </Button>
+                    )
                   }
                   invalid={Boolean(error)}
                   value={value}
