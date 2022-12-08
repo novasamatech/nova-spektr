@@ -18,13 +18,13 @@ import { formatAmount, transferable } from '@renderer/services/balance/common/ut
 import { useTransaction } from '@renderer/services/transaction/transactionService';
 import ErrorMessage from './ErrorMessage';
 
-type TransferForm = {
+type FormData = {
   address: string;
   amount: string;
 };
 
 type Props = {
-  onCreateTransaction: (data: TransferForm) => void;
+  onCreateTransaction: (data: FormData) => void;
   wallet: Wallet;
   asset: Asset;
   connection: ExtendedChain;
@@ -54,7 +54,7 @@ const getAssetId = (asset: Asset): string => {
   return asset.assetId.toString();
 };
 
-const Transfer = ({ onCreateTransaction, wallet, asset, connection }: Props) => {
+const TransferForm = ({ onCreateTransaction, wallet, asset, connection }: Props) => {
   const { t } = useI18n();
 
   const { getBalance } = useBalance();
@@ -93,7 +93,7 @@ const Transfer = ({ onCreateTransaction, wallet, asset, connection }: Props) => 
     trigger,
     resetField,
     formState: { isValid },
-  } = useForm<TransferForm>({
+  } = useForm<FormData>({
     mode: 'onChange',
     defaultValues: { amount: '', address: '' },
   });
@@ -101,7 +101,7 @@ const Transfer = ({ onCreateTransaction, wallet, asset, connection }: Props) => 
   const address = watch('address');
   const amount = watch('amount');
 
-  const addTransaction: SubmitHandler<TransferForm> = async ({ address, amount }) => {
+  const addTransaction: SubmitHandler<FormData> = async ({ address, amount }) => {
     if (!currentAddress || !amount) return;
 
     onCreateTransaction({ address, amount });
@@ -288,4 +288,4 @@ const Transfer = ({ onCreateTransaction, wallet, asset, connection }: Props) => 
   );
 };
 
-export default Transfer;
+export default TransferForm;

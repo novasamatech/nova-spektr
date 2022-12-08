@@ -68,11 +68,16 @@ const Transfer = () => {
     (wallet) => wallet.mainAccounts[0] || wallet.chainAccounts[0].chainId === chainId,
   );
   const currentConnection = chainId ? connections[chainId as ChainId] : undefined;
-  const currentAsset = assetId && currentConnection ? (currentConnection.assets[Number(assetId)] as Asset) : undefined;
+  const currentAsset =
+    assetId && currentConnection
+      ? (currentConnection.assets.find((a) => a.assetId === Number(assetId)) as Asset)
+      : undefined;
+
   const currentAddress = formatAddress(
     currentWallet?.mainAccounts[0].accountId || currentWallet?.chainAccounts[0].accountId || '',
     currentConnection?.addressPrefix,
   );
+
   const { getExpectedBlockTime } = useChains();
 
   const expectedBlockTime = currentConnection?.api ? getExpectedBlockTime(currentConnection?.api) : undefined;

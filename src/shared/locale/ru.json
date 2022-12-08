@@ -246,7 +246,7 @@
     "amountLabel": "Сумма",
     "continueButton": "Продолжить",
     "editOperationButton": "Edit operation",
-    "executing": "Подтверждение транзакции",
+    "executing": "Выполнение транзакции",
     "formTitle": "Отправить <strong>{ asset }</strong> в сети <strong>{ network }</strong>",
     "incorrectRecipientError": "Please, enter correct recipient address",
     "networkFee": "Комиссия сети",
