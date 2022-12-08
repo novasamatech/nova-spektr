@@ -1,4 +1,4 @@
-import { WellKnownChain } from '@polkadot/rpc-provider/substrate-connect';
+import { WellKnownChain } from '@substrate/connect';
 
 import { ChainId } from '@renderer/domain/shared-kernel';
 import { Chains } from './common/constants';

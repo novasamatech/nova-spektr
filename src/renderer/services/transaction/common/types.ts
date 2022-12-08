@@ -17,6 +17,11 @@ export type ITransactionService = {
     payload: Uint8Array;
   }>;
   getSignedExtrinsic: (unsigned: UnsignedTransaction, signature: HexString, api: ApiPromise) => Promise<string>;
-  submitAndWatchExtrinsic: (tx: string, api: ApiPromise, callback: (executed: boolean, params: any) => void) => void;
+  submitAndWatchExtrinsic: (
+    tx: string,
+    unsigned: UnsignedTransaction,
+    api: ApiPromise,
+    callback: (executed: boolean, params: any) => void,
+  ) => void;
   getTransactionFee: (transaction: Transaction, api: ApiPromise) => Promise<string>;
 };
