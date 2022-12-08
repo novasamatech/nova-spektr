@@ -3,8 +3,7 @@ import { useEffect, useState } from 'react';
 import { Controller, SubmitHandler, useForm } from 'react-hook-form';
 import { Trans } from 'react-i18next';
 
-import { Button, Icon, Identicon, Input, InputHint } from '@renderer/components/ui';
-import Amount from '@renderer/components/ui/Amount/Amount';
+import { Button, AmountInput, Icon, Identicon, Input, InputHint } from '@renderer/components/ui';
 import { useI18n } from '@renderer/context/I18nContext';
 import { Asset, AssetType, OrmlExtras, StatemineExtras } from '@renderer/domain/asset';
 import { Transaction, TransactionType } from '@renderer/domain/transaction';
@@ -215,7 +214,7 @@ const Transfer = ({ onCreateTransaction, wallet, asset, connection }: Props) => 
             }}
             render={({ field: { onChange, value }, fieldState: { error } }) => (
               <>
-                <Amount
+                <AmountInput
                   value={value}
                   placeholder={t('transfer.amountPlaceholder')}
                   asset={asset}

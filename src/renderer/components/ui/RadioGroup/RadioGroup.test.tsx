@@ -2,7 +2,7 @@ import { act, render, screen } from '@testing-library/react';
 
 import RadioGroup from './RadioGroup';
 
-describe('RadioGroup', () => {
+describe('ui/RadioGroup', () => {
   const options = [
     { id: 1, value: 1, element: <span>Test 1</span> },
     { id: 2, value: 2, element: <span>Test 2</span> },

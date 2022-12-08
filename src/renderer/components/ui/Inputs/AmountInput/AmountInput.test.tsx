@@ -1,7 +1,7 @@
 import { render, screen } from '@testing-library/react';
 
 import { Asset } from '@renderer/domain/asset';
-import Amount from './Amount';
+import AmountInput from './AmountInput';
 
 jest.mock('@renderer/context/I18nContext', () => ({
   useI18n: jest.fn().mockReturnValue({
@@ -9,7 +9,7 @@ jest.mock('@renderer/context/I18nContext', () => ({
   }),
 }));
 
-describe('components/Amount', () => {
+describe('ui/Inputs/AmountInput', () => {
   const balance = '20500000000';
   const asset = {
     assetId: 0,
@@ -22,7 +22,9 @@ describe('components/Amount', () => {
   test('should render component', () => {
     const value = '15.22';
 
-    render(<Amount placeholder="Enter amount" value={value} asset={asset} balance={balance} onChange={() => {}} />);
+    render(
+      <AmountInput placeholder="Enter amount" value={value} asset={asset} balance={balance} onChange={() => {}} />,
+    );
 
     const amountLabel = screen.getByText('general.input.amountLabel');
     const transferableLabel = screen.getByText(/general.input.transferableLabel/);
@@ -37,7 +39,7 @@ describe('components/Amount', () => {
   });
 
   test('should render placeholder', () => {
-    render(<Amount placeholder="Enter amount" value="" asset={asset} balance={balance} onChange={() => {}} />);
+    render(<AmountInput placeholder="Enter amount" value="" asset={asset} balance={balance} onChange={() => {}} />);
 
     const amountValue = screen.getByDisplayValue('');
     const placeholder = screen.getByPlaceholderText('Enter amount');

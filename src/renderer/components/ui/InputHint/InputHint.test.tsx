@@ -2,7 +2,7 @@ import { render, screen } from '@testing-library/react';
 
 import InputHint from './InputHint';
 
-describe('InputHint', () => {
+describe('ui/InputHint', () => {
   test('should render component', () => {
     render(
       <InputHint active variant="hint">

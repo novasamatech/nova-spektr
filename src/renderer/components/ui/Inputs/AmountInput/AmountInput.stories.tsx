@@ -2,11 +2,11 @@ import { ComponentMeta, ComponentStory } from '@storybook/react';
 
 import I18Provider from '@renderer/context/I18nContext';
 import { Asset } from '@renderer/domain/asset';
-import Amount from './Amount';
+import AmountInput from './AmountInput';
 
 export default {
-  title: 'Amount',
-  component: Amount,
+  title: 'AmountInput',
+  component: AmountInput,
   parameters: { actions: { argTypesRegex: '^on.*' } },
   decorators: [
     (Story) => (
@@ -15,9 +15,9 @@ export default {
       </I18Provider>
     ),
   ],
-} as ComponentMeta<typeof Amount>;
+} as ComponentMeta<typeof AmountInput>;
 
-const Template: ComponentStory<typeof Amount> = (args) => <Amount {...args} />;
+const Template: ComponentStory<typeof AmountInput> = (args) => <AmountInput {...args} />;
 
 const asset = {
   assetId: 0,

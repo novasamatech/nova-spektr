@@ -13,7 +13,7 @@ type Props = {
   onChange?: (...event: any[]) => void;
 };
 
-const Amount = ({ value, asset, balance, placeholder, invalid, onChange }: Props) => {
+const AmountInput = ({ value, asset, balance, placeholder, invalid, onChange }: Props) => {
   const { t } = useI18n();
 
   const label = (
@@ -69,4 +69,4 @@ const Amount = ({ value, asset, balance, placeholder, invalid, onChange }: Props
   );
 };
 
-export default Amount;
+export default AmountInput;
