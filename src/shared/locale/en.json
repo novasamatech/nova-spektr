@@ -254,7 +254,7 @@
     }
   },
   "transfer": {
-    "amountPlaceholder": "Сумма",
+    "amountPlaceholder": "Amount",
     "continueButton": "Continue",
     "editOperationButton": "Edit operation",
     "executing": "Submitting operation",

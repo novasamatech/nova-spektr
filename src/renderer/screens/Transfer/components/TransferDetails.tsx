@@ -1,4 +1,4 @@
-import { Explorers } from '@renderer/components/common';
+import { Explorers, Fee } from '@renderer/components/common';
 import { Address, Balance, Icon } from '@renderer/components/ui';
 import { useI18n } from '@renderer/context/I18nContext';
 import { Asset } from '@renderer/domain/asset';
@@ -6,13 +6,12 @@ import { formatAddress } from '@renderer/utils/address';
 import { Transaction } from '@renderer/domain/transaction';
 import { Wallet } from '@renderer/domain/wallet';
 import { ExtendedChain } from '@renderer/services/network/common/types';
-import Fee from './Fee';
 
 type Props = {
   transaction: Transaction;
   wallet: Wallet;
   asset: Asset;
-  connection: ExtendedChain;
+  connection?: ExtendedChain;
 };
 
 const Transfer = ({ transaction, wallet, asset, connection }: Props) => {
@@ -57,7 +56,11 @@ const Transfer = ({ transaction, wallet, asset, connection }: Props) => {
               {currentAddress && connection && (
                 <>
                   <Address type="short" address={currentAddress} addressStyle="large" size={18} />
-                  <Explorers chain={connection} address={currentAddress} />
+                  <Explorers
+                    explorers={connection.explorers}
+                    addressPrefix={connection.addressPrefix}
+                    address={currentAddress}
+                  />
                 </>
               )}
             </div>
@@ -68,7 +71,7 @@ const Transfer = ({ transaction, wallet, asset, connection }: Props) => {
             <div className="text-sm text-neutral-variant ">{t('transferDetails.networkFee')}</div>
             <div className="flex gap-1 items-center">
               <div className="flex gap-1 items-center font-semibold">
-                <Fee connection={connection} transaction={transaction} />
+                <Fee api={connection?.api} asset={asset} transaction={transaction} />
               </div>
             </div>
           </div>
@@ -77,7 +80,11 @@ const Transfer = ({ transaction, wallet, asset, connection }: Props) => {
             <div className="flex gap-1 items-center">
               <div className="flex gap-1 items-center font-semibold">
                 <Address type="short" address={dest} addressStyle="large" size={18} />
-                <Explorers chain={connection} address={currentAddress} />
+                <Explorers
+                  explorers={connection?.explorers}
+                  addressPrefix={connection?.addressPrefix}
+                  address={currentAddress}
+                />
               </div>
             </div>
           </div>

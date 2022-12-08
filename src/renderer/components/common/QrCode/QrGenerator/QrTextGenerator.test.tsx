@@ -2,7 +2,7 @@ import { render } from '@testing-library/react';
 
 import QrTextGenerator from './QrTextGenerator';
 
-describe('QrTextGenerator', () => {
+describe('components/common/QrTextGenerator', () => {
   test('should render text qr', () => {
     const { container } = render(<QrTextGenerator payload="my_payload" size={200} />);
 
