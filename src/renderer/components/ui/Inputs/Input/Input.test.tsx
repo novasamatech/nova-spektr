@@ -1,4 +1,5 @@
 import { render, screen } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 
 import Input from './Input';
 
@@ -8,5 +9,16 @@ describe('ui/Inputs/Input', () => {
 
     const input = screen.getByDisplayValue('test input');
     expect(input).toBeInTheDocument();
+  });
+
+  test('should call onChange', async () => {
+    const user = userEvent.setup();
+    const spyChange = jest.fn();
+    render(<Input onChange={(event) => spyChange(event.target.value)} />);
+
+    const input = screen.getByRole('textbox');
+    await user.type(input, 'x');
+
+    expect(spyChange).toBeCalledWith('x');
   });
 });

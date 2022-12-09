@@ -1,27 +1,28 @@
-import { useNavigate, useParams } from 'react-router-dom';
-import { useEffect, useState } from 'react';
-import { UnsignedTransaction } from '@substrate/txwrapper-polkadot';
 import { BN, BN_THOUSAND } from '@polkadot/util';
+import { UnsignedTransaction } from '@substrate/txwrapper-polkadot';
 import cn from 'classnames';
+import { useEffect, useState } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
 
 import { QrTxGenerator } from '@renderer/components/common';
-import { TransferForm, TransferDetails, SelectedAddress, Message } from './components';
 import { Button, ButtonBack, Icon } from '@renderer/components/ui';
 import { useI18n } from '@renderer/context/I18nContext';
 import { useNetworkContext } from '@renderer/context/NetworkContext';
 import { Asset, AssetType, OrmlExtras, StatemineExtras } from '@renderer/domain/asset';
-import { formatAddress, toPublicKey, validateAddress } from '@renderer/utils/address';
-import { useTransaction } from '@renderer/services/transaction/transactionService';
+import { ChainId, HexString } from '@renderer/domain/shared-kernel';
 import { Transaction, TransactionType } from '@renderer/domain/transaction';
+import { useBalance } from '@renderer/services/balance/balanceService';
+import { formatAmount, transferable } from '@renderer/services/balance/common/utils';
+import { useChains } from '@renderer/services/network/chainsService';
+import { useTransaction } from '@renderer/services/transaction/transactionService';
+import { useWallet } from '@renderer/services/wallet/walletService';
+import { formatAddress, toPublicKey, validateAddress } from '@renderer/utils/address';
 import { getMetadataPortalUrl, TROUBLESHOOTING_URL } from '../Signing/common/consts';
 import { secondsToMinutes } from '../Signing/common/utils';
 import ParitySignerSignatureReader from '../Signing/ParitySignerSignatureReader/ParitySignerSignatureReader';
-import { ChainId, HexString } from '@renderer/domain/shared-kernel';
-import { formatAmount, transferable } from '@renderer/services/balance/common/utils';
-import { useChains } from '@renderer/services/network/chainsService';
 import { ValidationErrors } from './common/constants';
-import { useBalance } from '@renderer/services/balance/balanceService';
 import { useAccount } from '@renderer/services/account/accountService';
+import { Message, SelectedAddress, TransferDetails, TransferForm } from './components';
 
 const enum Steps {
   CREATING,
@@ -40,11 +41,14 @@ const TransferType: Record<AssetType, TransactionType> = {
 
 const Transfer = () => {
   const { t } = useI18n();
-  const { chainId, assetId } = useParams<{ chainId: string; assetId: string }>();
+  const { chainId, assetId } = useParams<Record<'chainId' | 'assetId', string>>();
 
+  const navigate = useNavigate();
+  const { getBalance } = useBalance();
+  const { createPayload, getSignedExtrinsic, submitAndWatchExtrinsic, getTransactionFee } = useTransaction();
   const { connections } = useNetworkContext();
   const { getActiveAccounts } = useAccount();
-  const navigate = useNavigate();
+  const { getExpectedBlockTime } = useChains();
 
   const [currentStep, setCurrentStep] = useState(Steps.CREATING);
   const [txPayload, setTxPayload] = useState<Uint8Array>();
@@ -57,11 +61,9 @@ const Transfer = () => {
 
   const [_, setBalance] = useState('');
 
-  const { getBalance } = useBalance();
-  const { createPayload, getSignedExtrinsic, submitAndWatchExtrinsic, getTransactionFee } = useTransaction();
-
   const activeAccounts = getActiveAccounts();
   const currentAccount = activeAccounts?.find((account) => !account.rootId || account.chainId === chainId);
+
   const currentConnection = chainId ? connections[chainId as ChainId] : undefined;
   const currentAsset =
     assetId && currentConnection
@@ -70,11 +72,9 @@ const Transfer = () => {
 
   const currentAddress = formatAddress(currentAccount?.accountId || '', currentConnection?.addressPrefix);
 
-  const { getExpectedBlockTime } = useChains();
-
   const expectedBlockTime = currentConnection?.api ? getExpectedBlockTime(currentConnection?.api) : undefined;
 
-  const addTransaction = ({ address, amount }: { address: string; amount: string }) => {
+  const addTransaction = ({ address, amount }: Record<'address' | 'amount', string>) => {
     if (!currentConnection || !currentAddress || !currentAsset || !amount) return;
 
     const type = currentAsset.type ? TransferType[currentAsset.type] : TransactionType.TRANSFER;

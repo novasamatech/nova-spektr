@@ -1,11 +1,10 @@
-import { Explorers } from '@renderer/components/common';
+import { Explorers, Fee } from '@renderer/components/common';
 import { Address, Balance, Icon } from '@renderer/components/ui';
 import { useI18n } from '@renderer/context/I18nContext';
 import { Asset } from '@renderer/domain/asset';
 import { formatAddress } from '@renderer/utils/address';
 import { Transaction } from '@renderer/domain/transaction';
 import { ExtendedChain } from '@renderer/services/network/common/types';
-import Fee from './Fee';
 import { Account } from '@renderer/domain/account';
 
 type Props = {
@@ -18,11 +17,9 @@ type Props = {
 const Transfer = ({ transaction, account, asset, connection }: Props) => {
   const { t } = useI18n();
 
-  const currentAddress = formatAddress(account?.accountId || '', connection?.addressPrefix);
+  const { value, dest } = transaction.args;
 
-  const {
-    args: { value, dest },
-  } = transaction;
+  const currentAddress = formatAddress(account?.accountId || '', connection?.addressPrefix);
 
   return (
     <div className="w-[500px] rounded-2xl bg-shade-2 p-5 flex flex-col items-center m-auto gap-2.5">
@@ -37,8 +34,8 @@ const Transfer = ({ transaction, account, asset, connection }: Props) => {
           <div className="flex justify-between px-5 py-3">
             <div className="text-sm text-neutral-variant ">{t('transferDetails.fromNetwork')}</div>
             <div className="flex gap-1 items-center font-semibold">
-              <img src={connection?.icon} alt="" width={16} height={16} />
-              {connection?.name}
+              <img src={connection.icon} alt="" width={16} height={16} />
+              {connection.name}
             </div>
           </div>
           <div className="flex justify-between px-5 py-3">
@@ -54,7 +51,11 @@ const Transfer = ({ transaction, account, asset, connection }: Props) => {
               {currentAddress && connection && (
                 <>
                   <Address type="short" address={currentAddress} addressStyle="large" size={18} />
-                  <Explorers chain={connection} address={currentAddress} />
+                  <Explorers
+                    explorers={connection.explorers}
+                    addressPrefix={connection.addressPrefix}
+                    address={currentAddress}
+                  />
                 </>
               )}
             </div>
@@ -65,7 +66,7 @@ const Transfer = ({ transaction, account, asset, connection }: Props) => {
             <div className="text-sm text-neutral-variant ">{t('transferDetails.networkFee')}</div>
             <div className="flex gap-1 items-center">
               <div className="flex gap-1 items-center font-semibold">
-                <Fee connection={connection} transaction={transaction} />
+                <Fee api={connection.api} asset={connection.assets[0]} transaction={transaction} />
               </div>
             </div>
           </div>
@@ -74,7 +75,11 @@ const Transfer = ({ transaction, account, asset, connection }: Props) => {
             <div className="flex gap-1 items-center">
               <div className="flex gap-1 items-center font-semibold">
                 <Address type="short" address={dest} addressStyle="large" size={18} />
-                <Explorers chain={connection} address={currentAddress} />
+                <Explorers
+                  explorers={connection.explorers}
+                  addressPrefix={connection.addressPrefix}
+                  address={currentAddress}
+                />
               </div>
             </div>
           </div>

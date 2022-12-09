@@ -304,87 +304,87 @@ const StepThree = ({ qrData, onNextStep }: Props) => {
                 </div>
                 {Object.entries(account.derivedKeys).length > 0 && (
                   <div className="flex flex-col gap-2.5">
-                    {Object.entries(account.derivedKeys).map(([chainId, derivedKeys]) => (
-                      <div key={chainId} className="flex flex-col gap-2.5">
-                        <div className="flex items-center mt-2.5">
-                          <div className="rounded-full border border-shade-30 w-[5px] h-[5px] box-border ml-4.5 mr-4 start-tree relative"></div>
-                          <div className="flex items-center text-neutral-variant uppercase font-bold text-2xs">
-                            {t('onboarding.paritySigner.derivedLabel')}
-                            <img
-                              className="inline-block mx-1"
-                              width="14px"
-                              height="14px"
-                              alt={chainsObject[chainId].name}
-                              src={chainsObject[chainId].icon}
-                            />
-                            {chainsObject[chainId].name}
+                    {Object.entries(account.derivedKeys).map(([chainId, derivedKeys]) => {
+                      const { name, icon, explorers, addressPrefix } = chainsObject[chainId];
+
+                      return (
+                        <div key={chainId} className="flex flex-col gap-2.5">
+                          <div className="flex items-center mt-2.5">
+                            <div className="rounded-full border border-shade-30 w-[5px] h-[5px] box-border ml-4.5 mr-4 start-tree relative"></div>
+                            <div className="flex items-center text-neutral-variant uppercase font-bold text-2xs">
+                              {t('onboarding.paritySigner.derivedLabel')}
+                              <img className="inline-block mx-1" width={14} height={14} alt={name} src={icon} />
+                              {name}
+                            </div>
                           </div>
-                        </div>
-                        {derivedKeys.map(({ address }, derivedKeyIndex) => (
-                          <div
-                            key={getAccountId(accountIndex, chainId, derivedKeyIndex)}
-                            className="tree-wrapper flex gap-4"
-                          >
-                            <div className="flex-1 flex items-center">
-                              <div className="relative w-[14px] h-[5px] ml-5 mr-4 middle-tree">
-                                <div className="bg-shade-30 absolute w-[9px] h-[1px] top-[2px] left-[1px]"></div>
-                                <div className="border-shade-30 absolute rounded-full border w-[5px] h-[5px] box-border top-0 right-0"></div>
+                          {derivedKeys.map(({ address }, derivedKeyIndex) => (
+                            <div
+                              key={getAccountId(accountIndex, chainId, derivedKeyIndex)}
+                              className="tree-wrapper flex gap-4"
+                            >
+                              <div className="flex-1 flex items-center">
+                                <div className="relative w-[14px] h-[5px] ml-5 mr-4 middle-tree">
+                                  <div className="bg-shade-30 absolute w-[9px] h-[1px] top-[2px] left-[1px]"></div>
+                                  <div className="border-shade-30 absolute rounded-full border w-[5px] h-[5px] box-border top-0 right-0"></div>
+                                </div>
+                                <Input
+                                  disabled
+                                  disabledStyle={inactiveAccounts[getAccountId(accountIndex, chainId, derivedKeyIndex)]}
+                                  placeholder={t('onboarding.paritySigner.accountAddressPlaceholder')}
+                                  value={getShortAddress(address, 10)}
+                                  wrapperClass="flex flex-1 items-center"
+                                  prefixElement={<Identicon size={20} address={address} background={false} />}
+                                  suffixElement={
+                                    <Explorers explorers={explorers} addressPrefix={addressPrefix} address={address} />
+                                  }
+                                />
                               </div>
-                              <Input
-                                disabled
-                                disabledStyle={inactiveAccounts[getAccountId(accountIndex, chainId, derivedKeyIndex)]}
-                                placeholder={t('onboarding.paritySigner.accountAddressPlaceholder')}
-                                value={getShortAddress(address, 10)}
-                                wrapperClass="flex flex-1 items-center"
-                                prefixElement={<Identicon size={20} address={address} background={false} />}
-                                suffixElement={<Explorers chain={chainsObject[chainId]} address={address} />}
-                              />
+                              <div className="flex flex-1 items-center">
+                                <Input
+                                  className="text-primary"
+                                  disabled={inactiveAccounts[getAccountId(accountIndex, chainId, derivedKeyIndex)]}
+                                  disabledStyle={inactiveAccounts[getAccountId(accountIndex, chainId, derivedKeyIndex)]}
+                                  wrapperClass="flex flex-1 items-center"
+                                  placeholder={t('onboarding.walletNamePlaceholder')}
+                                  value={walletNames[getAccountId(accountIndex, chainId, derivedKeyIndex)] || ''}
+                                  suffixElement={
+                                    walletNames[getAccountId(accountIndex, chainId, derivedKeyIndex)] && (
+                                      <Button
+                                        variant="text"
+                                        pallet="dark"
+                                        weight="xs"
+                                        onClick={() => updateWalletName('', accountIndex, chainId, derivedKeyIndex)}
+                                      >
+                                        <Icon name="clearOutline" size={20} />
+                                      </Button>
+                                    )
+                                  }
+                                  onChange={(e) =>
+                                    updateWalletName(e.target.value, accountIndex, chainId, derivedKeyIndex)
+                                  }
+                                />
+                                <Button
+                                  className="ml-4 px-0"
+                                  variant="text"
+                                  pallet={
+                                    inactiveAccounts[getAccountId(accountIndex, chainId, derivedKeyIndex)]
+                                      ? 'dark'
+                                      : 'error'
+                                  }
+                                  onClick={() => toggleWallet(accountIndex, chainId, derivedKeyIndex)}
+                                >
+                                  {inactiveAccounts[getAccountId(accountIndex, chainId, derivedKeyIndex)] ? (
+                                    <Icon name="removeCutout" />
+                                  ) : (
+                                    <Icon name="removeLine" />
+                                  )}
+                                </Button>
+                              </div>
                             </div>
-                            <div className="flex flex-1 items-center">
-                              <Input
-                                className="text-primary"
-                                disabled={inactiveAccounts[getAccountId(accountIndex, chainId, derivedKeyIndex)]}
-                                disabledStyle={inactiveAccounts[getAccountId(accountIndex, chainId, derivedKeyIndex)]}
-                                wrapperClass="flex flex-1 items-center"
-                                placeholder={t('onboarding.walletNamePlaceholder')}
-                                value={walletNames[getAccountId(accountIndex, chainId, derivedKeyIndex)] || ''}
-                                suffixElement={
-                                  walletNames[getAccountId(accountIndex, chainId, derivedKeyIndex)] && (
-                                    <Button
-                                      variant="text"
-                                      pallet="dark"
-                                      weight="xs"
-                                      onClick={() => updateWalletName('', accountIndex, chainId, derivedKeyIndex)}
-                                    >
-                                      <Icon name="clearOutline" size={20} />
-                                    </Button>
-                                  )
-                                }
-                                onChange={(e) =>
-                                  updateWalletName(e.target.value, accountIndex, chainId, derivedKeyIndex)
-                                }
-                              />
-                              <Button
-                                className="ml-4 px-0"
-                                variant="text"
-                                pallet={
-                                  inactiveAccounts[getAccountId(accountIndex, chainId, derivedKeyIndex)]
-                                    ? 'dark'
-                                    : 'error'
-                                }
-                                onClick={() => toggleWallet(accountIndex, chainId, derivedKeyIndex)}
-                              >
-                                {inactiveAccounts[getAccountId(accountIndex, chainId, derivedKeyIndex)] ? (
-                                  <Icon name="removeCutout" />
-                                ) : (
-                                  <Icon name="removeLine" />
-                                )}
-                              </Button>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    ))}
+                          ))}
+                        </div>
+                      );
+                    })}
                   </div>
                 )}
               </div>

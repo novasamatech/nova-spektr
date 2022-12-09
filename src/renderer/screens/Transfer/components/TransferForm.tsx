@@ -4,12 +4,12 @@ import { Controller, SubmitHandler, useForm } from 'react-hook-form';
 import { Trans } from 'react-i18next';
 
 import { Button, AmountInput, Icon, Identicon, Input, InputHint } from '@renderer/components/ui';
+import { Fee } from '@renderer/components/common';
 import { useI18n } from '@renderer/context/I18nContext';
 import { Asset, AssetType, OrmlExtras, StatemineExtras } from '@renderer/domain/asset';
 import { formatAddress, pasteAddressHandler, toPublicKey, validateAddress } from '@renderer/utils/address';
 import { ExtendedChain } from '@renderer/services/network/common/types';
 import SelectedAddress from './SelectedAddress';
-import Fee from './Fee';
 import { Transaction, TransactionType } from '@renderer/domain/transaction';
 import { useBalance } from '@renderer/services/balance/balanceService';
 import { formatAmount, transferable } from '@renderer/services/balance/common/utils';
@@ -237,7 +237,12 @@ const TransferForm = ({ onCreateTransaction, account, asset, connection }: Props
           <div className="flex justify-between items-center uppercase text-neutral-variant text-2xs">
             <div>{t('transfer.networkFee')}</div>
 
-            <Fee className="text-neutral font-semibold" connection={connection} transaction={transaction} />
+            <Fee
+              className="text-neutral font-semibold"
+              api={connection.api}
+              asset={connection.assets[0]}
+              transaction={transaction}
+            />
           </div>
         </form>
       </div>

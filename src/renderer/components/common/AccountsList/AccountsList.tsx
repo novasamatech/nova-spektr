@@ -49,7 +49,11 @@ const AccountsList = ({ publicKey, chains, className, limit }: Props) => {
               <Address className="w-full" address={encodeAddress(publicKey, addressPrefix)} />
             </div>
             <div className="relative flex-none">
-              <Explorers chain={chain} address={encodeAddress(publicKey, addressPrefix)} />
+              <Explorers
+                explorers={chain.explorers}
+                addressPrefix={chain.addressPrefix}
+                address={encodeAddress(publicKey, addressPrefix)}
+              />
             </div>
           </li>
         );
