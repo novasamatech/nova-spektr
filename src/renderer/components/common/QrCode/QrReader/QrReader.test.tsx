@@ -27,7 +27,7 @@ jest.mock('@renderer/context/I18nContext', () => ({
   }),
 }));
 
-describe('common/QrCode/QrReader', () => {
+describe('components/common/QrCode/QrReader', () => {
   const mockUserMedia = () => {
     const mediaValue = {
       getUserMedia: jest.fn().mockResolvedValue({

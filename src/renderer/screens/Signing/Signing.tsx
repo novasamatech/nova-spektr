@@ -93,7 +93,11 @@ const Signing = () => {
                   <Address type="short" address={currentAddress} addressStyle="small" />
                 </div>
               </div>
-              <Explorers chain={currentConnection} address={currentAddress} />
+              <Explorers
+                explorers={currentConnection.explorers}
+                addressPrefix={currentConnection.addressPrefix}
+                address={currentAddress}
+              />
             </div>
           </div>
         )}

@@ -2,7 +2,7 @@ import { render } from '@testing-library/react';
 
 import QrTxGenerator from './QrTxGenerator';
 
-describe('QrTxGenerator', () => {
+describe('components/common/QrTxGenerator', () => {
   test('should render transaction qr', () => {
     const { container } = render(
       <QrTxGenerator

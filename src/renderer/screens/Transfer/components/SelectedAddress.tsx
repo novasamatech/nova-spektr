@@ -25,7 +25,7 @@ const SelectedAddress = ({ wallet, connection }: Props) => {
             <Address className="leading-4" type="short" address={currentAddress} addressStyle="normal" size={14} />
           </div>
         </div>
-        <Explorers chain={connection} address={currentAddress} />
+        <Explorers explorers={connection.explorers} addressPrefix={connection.addressPrefix} address={currentAddress} />
       </div>
     </div>
   );

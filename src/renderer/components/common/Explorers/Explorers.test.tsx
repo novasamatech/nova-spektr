@@ -9,42 +9,27 @@ jest.mock('@renderer/context/I18nContext', () => ({
   }),
 }));
 
-describe('ui/Explorers', () => {
+describe('components/common/Explorers', () => {
   test('should render component', async () => {
-    render(
-      <Explorers
-        address={TEST_ADDRESS}
-        chain={{
-          name: 'My test chain',
-          chainId: '0x123',
-          addressPrefix: 0,
-          assets: [],
-          nodes: [],
-          icon: 'test_icon.svg',
-          explorers: [
-            {
-              name: 'Subscan',
-              extrinsic: 'https://polkadot.subscan.io/extrinsic/{hash}',
-              account: 'https://polkadot.subscan.io/account/{address}',
-            },
-            {
-              name: 'Polkascan',
-              extrinsic: 'https://polkadot.subscan.io/extrinsic/{hash}',
-              account: 'https://polkadot.subscan.io/account/{address}',
-            },
-          ],
-        }}
-      />,
-    );
+    const explorers = [
+      {
+        name: 'Subscan',
+        extrinsic: 'https://polkadot.subscan.io/extrinsic/{hash}',
+        account: 'https://polkadot.subscan.io/account/{address}',
+      },
+      {
+        name: 'Polkascan',
+        extrinsic: 'https://polkadot.subscan.io/extrinsic/{hash}',
+        account: 'https://polkadot.subscan.io/account/{address}',
+      },
+    ];
+
+    render(<Explorers address={TEST_ADDRESS} addressPrefix={0} explorers={explorers} />);
 
     const button = screen.getByRole('button');
-
-    await act(async () => {
-      button.click();
-    });
+    await act(async () => button.click());
 
     const menuItems = screen.getAllByRole('menuitem');
-
-    expect(menuItems).toHaveLength(2);
+    expect(menuItems).toHaveLength(explorers.length);
   });
 });
