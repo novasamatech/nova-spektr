@@ -240,7 +240,12 @@ const TransferForm = ({ onCreateTransaction, wallet, asset, connection }: Props)
           <div className="flex justify-between items-center uppercase text-neutral-variant text-2xs">
             <div>{t('transfer.networkFee')}</div>
 
-            <Fee className="text-neutral font-semibold" api={connection.api} asset={asset} transaction={transaction} />
+            <Fee
+              className="text-neutral font-semibold"
+              api={connection.api}
+              asset={connection.assets[0]}
+              transaction={transaction}
+            />
           </div>
         </form>
       </div>

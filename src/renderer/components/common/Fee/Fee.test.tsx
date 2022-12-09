@@ -1,5 +1,5 @@
 import { ApiPromise } from '@polkadot/api';
-import { act, render, screen } from '@testing-library/react';
+import { act, render, screen, waitFor } from '@testing-library/react';
 
 import { Balance } from '@renderer/components/ui';
 import { Asset } from '@renderer/domain/asset';
@@ -42,7 +42,7 @@ describe('components/common/Fee', () => {
     expect(value).toBeInTheDocument();
   });
 
-  test('should render loading state', async () => {
+  test('should render loading while getting value', async () => {
     const asset = { symbol: 'DOT', precision: 10 } as Asset;
     const tx = { address: '0x123', args: {} } as Transaction;
 
@@ -60,5 +60,10 @@ describe('components/common/Fee', () => {
 
     const loader = screen.getByTestId('fee-loader');
     expect(loader).toBeInTheDocument();
+
+    waitFor(() => {
+      const value = screen.getByText('12');
+      expect(value).toBeInTheDocument();
+    });
   });
 });
