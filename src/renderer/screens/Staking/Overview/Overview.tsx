@@ -1,17 +1,19 @@
 import { useEffect, useState } from 'react';
 import { Trans } from 'react-i18next';
 
-import { useSettingsStorage } from '@renderer/services/settings/settingsStorage';
-import { AboutStaking, Filter, InfoBanners, StakingList } from './components';
-import { Balance, Dropdown, Icon, Input } from '@renderer/components/ui';
+import { Balance, ButtonLink, Dropdown, Icon, Input } from '@renderer/components/ui';
 import { Option, ResultOption } from '@renderer/components/ui/Dropdowns/common/types';
 import { useI18n } from '@renderer/context/I18nContext';
 import { useNetworkContext } from '@renderer/context/NetworkContext';
 import { Asset, StakingType } from '@renderer/domain/asset';
+import { ConnectionStatus, ConnectionType } from '@renderer/domain/connection';
 import { AccountID, ChainId } from '@renderer/domain/shared-kernel';
+import Paths from '@renderer/routes/paths';
 import { useChains } from '@renderer/services/network/chainsService';
+import { useSettingsStorage } from '@renderer/services/settings/settingsStorage';
 import { useStaking } from '@renderer/services/staking/stakingService';
 import { useWallet } from '@renderer/services/wallet/walletService';
+import { AboutStaking, Filter, InfoBanners, StakingList } from './components';
 
 const Overview = () => {
   const { t } = useI18n();
@@ -22,13 +24,41 @@ const Overview = () => {
   const { setStakingNetwork, getStakingNetwork } = useSettingsStorage();
 
   const [query, setQuery] = useState('');
+  const [isNetworkActive, setIsNetworkActive] = useState(true);
   const [activeNetwork, setActiveNetwork] = useState<ResultOption<Asset>>();
   const [stakingNetworks, setStakingNetworks] = useState<Option<Asset>[]>([]);
 
+  const activeWallets = getActiveWallets();
+
   const chainId = (activeNetwork?.id || '') as ChainId;
   const api = connections[chainId]?.api;
+  const connection = connections[chainId]?.connection;
 
-  const activeWallets = getActiveWallets();
+  useEffect(() => {
+    if (!connection) return;
+
+    const isNotDisabled = connection.connectionType !== ConnectionType.DISABLED;
+    const isNotError = connection.connectionStatus !== ConnectionStatus.ERROR;
+
+    setIsNetworkActive(isNotDisabled && isNotError);
+  }, [connection, isNetworkActive]);
+
+  useEffect(() => {
+    if (!chainId || !api?.isConnected) return;
+
+    (async () => {
+      await subscribeActiveEra(chainId, api);
+    })();
+  }, [api]);
+
+  useEffect(() => {
+    if (!chainId || !api?.isConnected || !activeWallets) return;
+
+    (async () => {
+      const accounts = activeWallets.map((wallet) => (wallet.mainAccounts[0] || wallet.chainAccounts[0])?.accountId);
+      await subscribeLedger(chainId, api, accounts);
+    })();
+  }, [activeWallets, api]);
 
   useEffect(() => {
     (async () => {
@@ -57,23 +87,6 @@ const Overview = () => {
       setActiveNetwork(settingsChain || { id: relaychains[0].id, value: relaychains[0].value });
     })();
   }, []);
-
-  useEffect(() => {
-    if (!chainId || !api?.isConnected) return;
-
-    (async () => {
-      await subscribeActiveEra(chainId, api);
-    })();
-  }, [api]);
-
-  useEffect(() => {
-    if (!chainId || !api?.isConnected || !activeWallets) return;
-
-    (async () => {
-      const accounts = activeWallets.map((wallet) => (wallet.mainAccounts[0] || wallet.chainAccounts[0])?.accountId);
-      await subscribeLedger(chainId, api, accounts);
-    })();
-  }, [activeWallets, api]);
 
   // TODO: Continue during StakingList task
   // @ts-ignore
@@ -131,21 +144,36 @@ const Overview = () => {
           </div>
         </div>
 
-        <AboutStaking asset={activeNetwork?.value} />
-        <InfoBanners />
+        {isNetworkActive ? (
+          <>
+            <AboutStaking asset={activeNetwork?.value} />
+            <InfoBanners />
 
-        <div className="flex items-center justify-between">
-          <Input
-            wrapperClass="!bg-shade-5 w-[300px]"
-            placeholder={t('staking.overview.searchPlaceholder')}
-            prefixElement={<Icon name="search" className="w-5 h-5" />}
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-          />
-          <Filter />
-        </div>
+            <div className="flex items-center justify-between">
+              <Input
+                wrapperClass="!bg-shade-5 w-[300px]"
+                placeholder={t('staking.overview.searchPlaceholder')}
+                prefixElement={<Icon name="search" className="w-5 h-5" />}
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+              />
+              <Filter />
+            </div>
 
-        <StakingList />
+            <StakingList />
+          </>
+        ) : (
+          <div className="flex flex-col items-center justify-center mt-10 mb-5">
+            <Icon as="img" name="noResults" size={380} />
+            <p className="text-neutral text-3xl font-bold">{t('staking.overview.networkDisabledLabel')}</p>
+            <p className="text-neutral-variant text-base font-normal">
+              {t('staking.overview.networkDisabledDescription')}
+            </p>
+            <ButtonLink className="mt-5" to={Paths.NETWORK} variant="fill" pallet="primary" weight="lg">
+              {t('staking.overview.networkSettingsLink')}
+            </ButtonLink>
+          </div>
+        )}
       </div>
     </div>
   );
