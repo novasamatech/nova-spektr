@@ -236,6 +236,9 @@
     "overview": {
       "aboutStakingLabel": "О стейкинге { asset } токенов",
       "filterButton": "Фильтры",
+      "networkDisabledDescription": "Пожалуйста, пройдите в настройки сети и проверьте соединение",
+      "networkDisabledLabel": "Сеть неактивна",
+      "networkSettingsLink": "Настройки сети",
       "noActiveWalletsDescription": "Пожалуйста, выберите кошелек для просмотра стейкинга",
       "noActiveWalletsLabel": "Нет выбранных кошельков",
       "noResultsDescription": "Пожалуйста, попробуйте другие параметры фильтрации",

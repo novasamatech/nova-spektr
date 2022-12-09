@@ -236,6 +236,9 @@
     "overview": {
       "aboutStakingLabel": "About { asset } staking",
       "filterButton": "Filters",
+      "networkDisabledDescription": "Please, to go the network settings and check the connection",
+      "networkDisabledLabel": "Network is inactive",
+      "networkSettingsLink": "Network settings",
       "noActiveWalletsDescription": "Please select a wallet for staking",
       "noActiveWalletsLabel": "No wallet selected",
       "noResultsDescription": "Please try another filter parameters",

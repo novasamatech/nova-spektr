@@ -7,12 +7,12 @@ import { useRef, useState } from 'react';
 import { Chain, RpcNode } from '@renderer/domain/chain';
 import { Connection, ConnectionStatus, ConnectionType } from '@renderer/domain/connection';
 import { ChainId } from '@renderer/domain/shared-kernel';
+import { isKusama } from '@renderer/services/network/common/utils';
 import storage from '@renderer/services/storage';
 import { useChainSpec } from './chainSpecService';
 import { useChains } from './chainsService';
 import { AUTO_BALANCE_TIMEOUT, MAX_ATTEMPTS, PROGRESSION_BASE } from './common/constants';
 import { ConnectionsMap, ConnectProps, INetworkService, RpcValidation } from './common/types';
-import { isKusama } from '@renderer/services/network/common/utils';
 
 export const useNetwork = (unsubscribe?: (chainId: ChainId) => Promise<void>): INetworkService => {
   const chains = useRef<Record<ChainId, Chain>>({});
@@ -108,6 +108,7 @@ export const useNetwork = (unsubscribe?: (chainId: ChainId) => Promise<void>): I
         acc.push({
           ...connectionData[chainId],
           activeNode: updatedActiveNode(chainId, connectionData[chainId], nodes[0]),
+          connectionStatus: ConnectionStatus.NONE,
         });
       } else {
         const connectionType =
