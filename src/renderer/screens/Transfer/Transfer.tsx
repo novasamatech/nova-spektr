@@ -15,7 +15,6 @@ import { useBalance } from '@renderer/services/balance/balanceService';
 import { formatAmount, transferable } from '@renderer/services/balance/common/utils';
 import { useChains } from '@renderer/services/network/chainsService';
 import { useTransaction } from '@renderer/services/transaction/transactionService';
-import { useWallet } from '@renderer/services/wallet/walletService';
 import { formatAddress, toPublicKey, validateAddress } from '@renderer/utils/address';
 import { getMetadataPortalUrl, TROUBLESHOOTING_URL } from '../Signing/common/consts';
 import { secondsToMinutes } from '../Signing/common/utils';
@@ -63,13 +62,11 @@ const Transfer = () => {
 
   const activeAccounts = getActiveAccounts();
   const currentAccount = activeAccounts?.find((account) => !account.rootId || account.chainId === chainId);
-
   const currentConnection = chainId ? connections[chainId as ChainId] : undefined;
   const currentAsset =
     assetId && currentConnection
       ? (currentConnection.assets.find((a) => a.assetId === Number(assetId)) as Asset)
       : undefined;
-
   const currentAddress = formatAddress(currentAccount?.accountId || '', currentConnection?.addressPrefix);
 
   const expectedBlockTime = currentConnection?.api ? getExpectedBlockTime(currentConnection?.api) : undefined;
