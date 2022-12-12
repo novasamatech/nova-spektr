@@ -1,7 +1,7 @@
 import { toPublicKey } from '@renderer/utils/address';
 import { IndexableType } from 'dexie';
 
-import { ChainId, CryptoType, PublicKey, ChainClass, SigningType } from './shared-kernel';
+import { ChainId, CryptoType, PublicKey, ChainType, SigningType } from './shared-kernel';
 
 export type Account = {
   walletId?: IndexableType;
@@ -11,7 +11,7 @@ export type Account = {
   accountId?: string;
   signingType: SigningType;
   cryptoType?: CryptoType;
-  chainClass: ChainClass;
+  chainType: ChainType;
   chainId?: ChainId;
   // TODO: rename this to something as replacer for root account
   isMain: boolean;
@@ -27,12 +27,12 @@ export function createAccount({
   walletId,
   signingType,
   signingExtras,
-}: Omit<Account, 'publicKey' | 'cryptoType' | 'chainClass' | 'isMain' | 'isActive'>): Account {
+}: Omit<Account, 'publicKey' | 'cryptoType' | 'chainType' | 'isMain' | 'isActive'>): Account {
   return {
     publicKey: toPublicKey(accountId),
     accountId,
     cryptoType: CryptoType.SR25519,
-    chainClass: ChainClass.SUBSTRATE,
+    chainType: ChainType.SUBSTRATE,
     rootId,
     walletId,
     name,

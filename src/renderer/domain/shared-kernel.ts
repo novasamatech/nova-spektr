@@ -11,7 +11,7 @@ export const enum CryptoType {
   ETHEREUM,
 }
 
-export const enum ChainClass {
+export const enum ChainType {
   SUBSTRATE,
   ETHEREUM,
 }
