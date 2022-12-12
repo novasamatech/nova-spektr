@@ -28,12 +28,13 @@ jest.mock('@renderer/context/NetworkContext', () => ({
   })),
 }));
 
-jest.mock('@renderer/services/wallet/walletService', () => ({
-  useWallet: jest.fn().mockReturnValue({
-    getActiveWallets: () => [
+jest.mock('@renderer/services/account/accountService', () => ({
+  useAccount: jest.fn().mockReturnValue({
+    getActiveAccounts: () => [
       {
         name: 'Test Wallet',
-        mainAccounts: [{ accountId: TEST_ADDRESS, publicKey: TEST_PUBLIC_KEY }],
+        accountId: TEST_ADDRESS,
+        publicKey: TEST_PUBLIC_KEY,
       },
     ],
   }),

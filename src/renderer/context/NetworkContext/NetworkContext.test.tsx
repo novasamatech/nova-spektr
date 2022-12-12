@@ -20,9 +20,9 @@ jest.mock('@renderer/services/balance/balanceService', () => ({
   }),
 }));
 
-jest.mock('@renderer/services/wallet/walletService', () => ({
-  useWallet: jest.fn().mockReturnValue({
-    getActiveWallets: jest.fn(),
+jest.mock('@renderer/services/account/accountService', () => ({
+  useAccount: jest.fn().mockReturnValue({
+    getActiveAccounts: jest.fn(),
   }),
 }));
 
@@ -34,12 +34,13 @@ jest.mock('@renderer/services/subscription/subscriptionService', () => ({
   }),
 }));
 
-jest.mock('@renderer/services/wallet/walletService', () => ({
-  useWallet: jest.fn().mockReturnValue({
-    getActiveWallets: () => [
+jest.mock('@renderer/services/account/accountService', () => ({
+  useAccount: jest.fn().mockReturnValue({
+    getActiveAccounts: () => [
       {
         name: 'Test Wallet',
-        mainAccounts: [{ accountId: TEST_ADDRESS, publicKey: TEST_PUBLIC_KEY }],
+        accountId: TEST_ADDRESS,
+        publicKey: TEST_PUBLIC_KEY,
       },
     ],
   }),

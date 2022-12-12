@@ -6,8 +6,8 @@ import { ChainId, PublicKey } from '@renderer/domain/shared-kernel';
 import { useBalance } from '@renderer/services/balance/balanceService';
 import { ConnectProps, ExtendedChain, RpcValidation } from '@renderer/services/network/common/types';
 import { useNetwork } from '@renderer/services/network/networkService';
-import { useWallet } from '@renderer/services/wallet/walletService';
 import { useSubscription } from '@renderer/services/subscription/subscriptionService';
+import { useAccount } from '@renderer/services/account/accountService';
 
 type NetworkContextProps = {
   connections: Record<ChainId, ExtendedChain>;
@@ -25,8 +25,8 @@ export const NetworkProvider = ({ children }: PropsWithChildren) => {
   const { subscribe, hasSubscription, unsubscribe } = useSubscription<ChainId>();
   const { connections, setupConnections, connectToNetwork, connectWithAutoBalance, ...rest } = useNetwork(unsubscribe);
   const { subscribeBalances, subscribeLockBalances } = useBalance();
-  const { getActiveWallets } = useWallet();
-  const activeWallets = getActiveWallets();
+  const { getActiveAccounts } = useAccount();
+  const activeAccounts = getActiveAccounts();
 
   const [connectionsReady, setConnectionReady] = useState(false);
 
@@ -78,12 +78,15 @@ export const NetworkProvider = ({ children }: PropsWithChildren) => {
 
   useEffect(() => {
     const publicKeys =
-      activeWallets?.map((wallet) => wallet?.mainAccounts[0]?.publicKey || wallet?.chainAccounts[0]?.publicKey) || [];
+      activeAccounts?.reduce(
+        (acc, account) => (account.publicKey ? [...acc, account.publicKey] : acc),
+        [] as PublicKey[],
+      ) || [];
 
     Object.values(connections).forEach((chain) => {
       subscribeBalanceChanges(chain, publicKeys);
     });
-  }, [connections, activeWallets?.length]);
+  }, [connections, activeAccounts?.length]);
 
   return (
     <NetworkContext.Provider value={{ connections, connectToNetwork, connectWithAutoBalance, ...rest }}>

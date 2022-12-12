@@ -8,7 +8,6 @@ import { Balance, Button, Icon, Identicon, Input } from '@renderer/components/ui
 import { useI18n } from '@renderer/context/I18nContext';
 import { Asset, AssetType, OrmlExtras, StatemineExtras } from '@renderer/domain/asset';
 import { formatAddress, toPublicKey, validateAddress } from '@renderer/utils/address';
-import { Wallet } from '@renderer/domain/wallet';
 import { ExtendedChain } from '@renderer/services/network/common/types';
 import SelectedAddress from './SelectedAddress';
 import Fee from './Fee';
@@ -17,6 +16,7 @@ import { useBalance } from '@renderer/services/balance/balanceService';
 import { formatAmount, transferable } from '@renderer/services/balance/common/utils';
 import { useTransaction } from '@renderer/services/transaction/transactionService';
 import ErrorMessage from './ErrorMessage';
+import { Account } from '@renderer/domain/account';
 
 type TransferForm = {
   address: string;
@@ -25,7 +25,7 @@ type TransferForm = {
 
 type Props = {
   onCreateTransaction: (data: TransferForm) => void;
-  wallet: Wallet;
+  account: Account;
   asset: Asset;
   connection: ExtendedChain;
 };
@@ -54,7 +54,7 @@ const getAssetId = (asset: Asset): string => {
   return asset.assetId.toString();
 };
 
-const Transfer = ({ onCreateTransaction, wallet, asset, connection }: Props) => {
+const Transfer = ({ onCreateTransaction, account, asset, connection }: Props) => {
   const { t } = useI18n();
 
   const { getBalance } = useBalance();
@@ -64,10 +64,7 @@ const Transfer = ({ onCreateTransaction, wallet, asset, connection }: Props) => 
   const [fee, setFee] = useState('');
   const [transaction, setTransaction] = useState<Transaction>();
 
-  const currentAddress = formatAddress(
-    wallet.mainAccounts[0].accountId || wallet.chainAccounts[0].accountId || '',
-    connection.addressPrefix,
-  );
+  const currentAddress = formatAddress(account.accountId || '', connection.addressPrefix);
 
   useEffect(() => {
     (async () => {
@@ -144,7 +141,7 @@ const Transfer = ({ onCreateTransaction, wallet, asset, connection }: Props) => 
   return (
     <div>
       <div className="w-[500px] rounded-2xl bg-shade-2 p-5 flex flex-col items-center m-auto gap-2.5">
-        {connection && wallet && <SelectedAddress wallet={wallet} connection={connection} />}
+        {connection && account && <SelectedAddress account={account} connection={connection} />}
 
         <form
           id="transferForm"

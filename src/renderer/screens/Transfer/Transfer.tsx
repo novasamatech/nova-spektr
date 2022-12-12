@@ -8,7 +8,6 @@ import { QrTxGenerator } from '@renderer/components/common';
 import { Button, ButtonBack, Icon } from '@renderer/components/ui';
 import { useI18n } from '@renderer/context/I18nContext';
 import { useNetworkContext } from '@renderer/context/NetworkContext';
-import { useWallet } from '@renderer/services/wallet/walletService';
 import { Asset } from '@renderer/domain/asset';
 import { formatAddress, toPublicKey, validateAddress } from '@renderer/utils/address';
 import { useTransaction } from '@renderer/services/transaction/transactionService';
@@ -25,6 +24,7 @@ import SelectedAddress from './components/SelectedAddress';
 import Message from './components/Message';
 import { ValidationErrors } from './common/constants';
 import { useBalance } from '@renderer/services/balance/balanceService';
+import { useAccount } from '@renderer/services/account/accountService';
 
 const enum Steps {
   CREATING,
@@ -40,7 +40,7 @@ const Transfer = () => {
   const { chainId, assetId } = useParams<{ chainId: string; assetId: string }>();
 
   const { connections } = useNetworkContext();
-  const { getActiveWallets } = useWallet();
+  const { getActiveAccounts } = useAccount();
   const navigate = useNavigate();
 
   const [currentStep, setCurrentStep] = useState(Steps.CREATING);
@@ -56,16 +56,11 @@ const Transfer = () => {
   const { getBalance } = useBalance();
   const { createPayload, getSignedExtrinsic, submitAndWatchExtrinsic, getTransactionFee } = useTransaction();
 
-  const activeWallets = getActiveWallets();
-  const currentWallet = activeWallets?.find(
-    (wallet) => wallet.mainAccounts[0] || wallet.chainAccounts[0].chainId === chainId,
-  );
+  const activeAccounts = getActiveAccounts();
+  const currentAccount = activeAccounts?.find((account) => !account.rootId || account.chainId === chainId);
   const currentConnection = chainId ? connections[chainId as ChainId] : undefined;
   const currentAsset = assetId && currentConnection ? (currentConnection.assets[Number(assetId)] as Asset) : undefined;
-  const currentAddress = formatAddress(
-    currentWallet?.mainAccounts[0].accountId || currentWallet?.chainAccounts[0].accountId || '',
-    currentConnection?.addressPrefix,
-  );
+  const currentAddress = formatAddress(currentAccount?.accountId || '', currentConnection?.addressPrefix);
   const { getExpectedBlockTime } = useChains();
 
   const expectedBlockTime = currentConnection?.api ? getExpectedBlockTime(currentConnection?.api) : undefined;
@@ -180,7 +175,7 @@ const Transfer = () => {
   };
 
   // TS doesn't work with Boolean type
-  const readyToCreate = !!(currentWallet && currentAsset && currentAddress && currentConnection);
+  const readyToCreate = !!(currentAccount && currentAsset && currentAddress && currentConnection);
   const readyToConfirm = !!(readyToCreate && transaction);
 
   const editOperation = () => {
@@ -200,7 +195,7 @@ const Transfer = () => {
       <div>
         {currentStep === Steps.CREATING && readyToCreate && (
           <TransferForm
-            wallet={currentWallet}
+            account={currentAccount}
             asset={currentAsset}
             connection={currentConnection}
             onCreateTransaction={addTransaction}
@@ -210,7 +205,7 @@ const Transfer = () => {
         {currentStep === Steps.CONFIRMATION && readyToConfirm && (
           <>
             <TransferDetails
-              wallet={currentWallet}
+              account={currentAccount}
               transaction={transaction}
               asset={currentAsset}
               connection={currentConnection}
@@ -223,8 +218,8 @@ const Transfer = () => {
 
         {[Steps.SCANNING, Steps.SIGNING].includes(currentStep) && currentConnection && (
           <div className="w-[500px] rounded-2xl bg-shade-2 p-5 flex flex-col items-center m-auto gap-2.5 overflow-auto">
-            {currentWallet && currentConnection && (
-              <SelectedAddress wallet={currentWallet} connection={currentConnection} />
+            {currentAccount && currentConnection && (
+              <SelectedAddress account={currentAccount} connection={currentConnection} />
             )}
 
             {currentStep === Steps.SCANNING && (
@@ -334,7 +329,7 @@ const Transfer = () => {
         {currentStep === Steps.EXECUTING && readyToConfirm && (
           <>
             <TransferDetails
-              wallet={currentWallet}
+              account={currentAccount}
               connection={currentConnection}
               transaction={transaction}
               asset={currentAsset}

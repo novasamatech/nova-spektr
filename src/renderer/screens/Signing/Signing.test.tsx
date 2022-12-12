@@ -1,7 +1,7 @@
 import { act, render, screen } from '@testing-library/react';
 
 import { ConnectionType } from '@renderer/domain/connection';
-import { TEST_PUBLIC_KEY } from '@renderer/services/balance/common/constants';
+import { TEST_ADDRESS, TEST_PUBLIC_KEY } from '@renderer/services/balance/common/constants';
 import Signing from './Signing';
 
 jest.mock('./ParitySignerSignatureReader/ParitySignerSignatureReader', () => () => 'scan-signature');
@@ -29,12 +29,13 @@ jest.mock('@renderer/context/NetworkContext', () => ({
   })),
 }));
 
-jest.mock('@renderer/services/wallet/walletService', () => ({
-  useWallet: jest.fn().mockReturnValue({
-    getActiveWallets: () => [
+jest.mock('@renderer/services/account/accountService', () => ({
+  useAccount: jest.fn().mockReturnValue({
+    getActiveAccounts: () => [
       {
         name: 'Test Wallet',
-        mainAccounts: [{ accountId: '1ChFWeNRLarAPRCTM3bfJmncJbSAbSS9yqjueWz7jX7iTVZ', publicKey: TEST_PUBLIC_KEY }],
+        accountId: TEST_ADDRESS,
+        publicKey: TEST_PUBLIC_KEY,
       },
     ],
   }),
