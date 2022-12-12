@@ -11,8 +11,10 @@ import { formatAddress, pasteAddressHandler, toPublicKey, validateAddress } from
 import { ExtendedChain } from '@renderer/services/network/common/types';
 import SelectedAddress from './SelectedAddress';
 import { Transaction, TransactionType } from '@renderer/domain/transaction';
+import { Wallet } from '@renderer/domain/wallet';
 import { useBalance } from '@renderer/services/balance/balanceService';
 import { formatAmount, transferable } from '@renderer/services/balance/common/utils';
+import { ExtendedChain } from '@renderer/services/network/common/types';
 import { useTransaction } from '@renderer/services/transaction/transactionService';
 import { Account } from '@renderer/domain/account';
 

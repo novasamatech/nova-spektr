@@ -37,6 +37,7 @@ const Overview = () => {
   useEffect(() => {
     if (!connection) return;
 
+
     const isNotDisabled = connection.connectionType !== ConnectionType.DISABLED;
     const isNotError = connection.connectionStatus !== ConnectionStatus.ERROR;
 
