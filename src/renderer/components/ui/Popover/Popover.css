@@ -1,0 +1,21 @@
+.arrow::before {
+  content: '';
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  border-style: solid;
+  border-width: 6px 6px 0;
+  border-color: theme('colors.shade.10') transparent;
+}
+
+.arrow::after {
+  content: '';
+  position: absolute;
+  bottom: -5px;
+  left: 50%;
+  transform: translateX(-50%);
+  border-style: solid;
+  border-width: 7px 7px 0;
+  border-color: white transparent;
+}
