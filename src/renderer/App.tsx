@@ -10,34 +10,34 @@ import I18Provider from '@renderer/context/I18nContext';
 import NetworkProvider from '@renderer/context/NetworkContext';
 import createApolloClient from '@renderer/graphql';
 import Paths from '@renderer/routes/paths';
-import { useWallet } from '@renderer/services/wallet/walletService';
 import routesConfig from './routes';
+import { useAccount } from './services/account/accountService';
 
 const App = () => {
   const navigate = useNavigate();
   const appRoutes = useRoutes(routesConfig);
-  const { getWallets } = useWallet();
+  const { getAccounts } = useAccount();
 
-  const [isWalletsLoading, setIsWalletsLoading] = useState(true);
+  const [isAccountsLoading, setIsAccountsLoading] = useState(true);
 
   useEffect(() => {
-    const fetchWallets = async () => {
-      const wallets = await getWallets();
-      setIsWalletsLoading(false);
+    const fetchAccounts = async () => {
+      const accounts = await getAccounts();
+      setIsAccountsLoading(false);
 
-      if (wallets.length === 0) {
+      if (accounts.length === 0) {
         navigate(Paths.ONBOARDING, { replace: true });
       }
     };
 
-    fetchWallets();
+    fetchAccounts();
   }, []);
 
   // const onAutoLoginFail = (errorMsg: string) => {
   //   console.warn(errorMsg);
   // };
 
-  if (isWalletsLoading) {
+  if (isAccountsLoading) {
     return <SplashScreen />;
   }
 

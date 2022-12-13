@@ -4,57 +4,57 @@ import { forwardRef, useState } from 'react';
 import { Address, Button, Checkbox, Icon, Input } from '@renderer/components/ui';
 import { IconNames } from '@renderer/components/ui/Icon/data';
 import { useI18n } from '@renderer/context/I18nContext';
-import { WalletType } from '@renderer/domain/wallet';
 import useToggle from '@renderer/hooks/useToggle';
-import { WalletDS } from '@renderer/services/storage';
-import { useWallet } from '@renderer/services/wallet/walletService';
+import { AccountDS } from '@renderer/services/storage';
+import { useAccount } from '@renderer/services/account/accountService';
+import { SigningType } from '@renderer/domain/shared-kernel';
 
 type Props = {
   className?: string;
 };
 
-const WalletTypeImages: Record<WalletType, IconNames> = {
-  [WalletType.WATCH_ONLY]: 'watchOnlyBackground',
-  [WalletType.PARITY]: 'paritySignerBackground',
+const SigningTypeImages: Record<SigningType, IconNames> = {
+  [SigningType.WATCH_ONLY]: 'watchOnlyBackground',
+  [SigningType.PARITY_SIGNER]: 'paritySignerBackground',
 };
 
-const WalletTypeLabels = {
-  [WalletType.WATCH_ONLY]: 'wallets.watchOnlyLabel',
-  [WalletType.PARITY]: 'wallets.paritySignerLabel',
+const SigningTypeLabels = {
+  [SigningType.WATCH_ONLY]: 'wallets.watchOnlyLabel',
+  [SigningType.PARITY_SIGNER]: 'wallets.paritySignerLabel',
 };
 
 const Wallets = forwardRef<HTMLDivElement, Props>(({ className }, ref) => {
   const { t } = useI18n();
-  const { getLiveWallets, toggleActiveWallet } = useWallet();
-  const [isParitySignerOpen, toggleParitySigner] = useToggle(false);
-  const [isWatchOnlyOpen, toggleWatchOnly] = useToggle(false);
+  const { getLiveAccounts, toggleActiveAccount } = useAccount();
+  const [isParitySignerOpen, toggleParitySigner] = useToggle(true);
+  const [isWatchOnlyOpen, toggleWatchOnly] = useToggle(true);
 
   const [query, setQuery] = useState('');
 
-  const paritySignerWallets = getLiveWallets({ type: WalletType.PARITY });
-  const watchOnlyWallets = getLiveWallets({ type: WalletType.WATCH_ONLY });
+  const paritySignerAccounts = getLiveAccounts({ signingType: SigningType.PARITY_SIGNER });
+  const watchOnlyAccountss = getLiveAccounts({ signingType: SigningType.WATCH_ONLY });
 
-  const searchWallet = (wallets: WalletDS[] = [], query: string = '') => {
-    return wallets.filter((wallet) => {
-      return wallet.name.toLowerCase().includes(query.toLowerCase());
+  const searchAccount = (accounts: AccountDS[] = [], query: string = '') => {
+    return accounts.filter((account) => {
+      return account.name.toLowerCase().includes(query.toLowerCase()) || (account.accountId || '').includes(query);
     });
   };
 
-  const searchedParitySignerWallets = searchWallet(paritySignerWallets, query);
-  const searchedWatchOnlyWallets = searchWallet(watchOnlyWallets, query);
+  const searchedParitySignerAccountss = searchAccount(paritySignerAccounts, query);
+  const searchedWatchOnlyAccounts = searchAccount(watchOnlyAccountss, query);
 
-  const walletGroups = [
+  const accountGroups = [
     {
-      label: WalletTypeLabels[WalletType.PARITY],
-      icon: WalletTypeImages[WalletType.PARITY],
-      wallets: searchedParitySignerWallets,
+      label: SigningTypeLabels[SigningType.PARITY_SIGNER],
+      icon: SigningTypeImages[SigningType.PARITY_SIGNER],
+      accounts: searchedParitySignerAccountss,
       shown: isParitySignerOpen,
       toggle: toggleParitySigner,
     },
     {
-      label: WalletTypeLabels[WalletType.WATCH_ONLY],
-      icon: WalletTypeImages[WalletType.WATCH_ONLY],
-      wallets: searchedWatchOnlyWallets,
+      label: SigningTypeLabels[SigningType.WATCH_ONLY],
+      icon: SigningTypeImages[SigningType.WATCH_ONLY],
+      accounts: searchedWatchOnlyAccounts,
       shown: isWatchOnlyOpen,
       toggle: toggleWatchOnly,
     },
@@ -70,7 +70,7 @@ const Wallets = forwardRef<HTMLDivElement, Props>(({ className }, ref) => {
         onChange={(e) => setQuery(e.target.value)}
       />
 
-      {walletGroups.map(({ label, icon, wallets, shown, toggle }) => (
+      {accountGroups.map(({ label, icon, accounts, shown, toggle }) => (
         <div
           key={label}
           className="border border-shade-5 shadow-surface rounded-2lg bg-white font-semibold text-xs divide-y"
@@ -84,22 +84,18 @@ const Wallets = forwardRef<HTMLDivElement, Props>(({ className }, ref) => {
               <Icon name={shown ? 'up' : 'down'} />
             </Button>
           </div>
-          {shown && wallets.length > 0 && (
+          {shown && accounts.length > 0 && (
             <ul>
-              {wallets?.map((wallet) => (
-                <li key={wallet.id} className="flex cursor-pointer hover:bg-shade-10 items-center px-2.5 py-1">
+              {accounts?.map((account) => (
+                <li key={account.id} className="flex cursor-pointer hover:bg-shade-10 items-center px-2.5 py-1">
                   <Checkbox
                     className="w-full h-full"
-                    checked={wallet.isActive}
-                    onChange={() => toggleActiveWallet(wallet.id || '')}
+                    checked={account.isActive}
+                    onChange={() => toggleActiveAccount(account.id || '')}
                   >
                     <div className="ml-2.5 overflow-hidden">
-                      <div className="text-neutral text-sm text-semibold leading-4 truncate">{wallet.name}</div>
-                      <Address
-                        type="short"
-                        addressStyle="small"
-                        address={(wallet.mainAccounts[0] || wallet.chainAccounts[0]).accountId}
-                      />
+                      <div className="text-neutral text-sm text-semibold leading-4 truncate">{account.name}</div>
+                      <Address type="short" addressStyle="small" address={account.accountId || ''} />
                     </div>
                   </Checkbox>
                 </li>

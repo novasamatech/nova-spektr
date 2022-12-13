@@ -6,27 +6,27 @@ import Paths from '@renderer/routes/paths';
 import { Icon, Identicon } from '@renderer/components/ui';
 // import { useMatrix } from '@renderer/context/MatrixContext';
 import { useI18n } from '@renderer/context/I18nContext';
-import { useWallet } from '@renderer/services/wallet/walletService';
-import { WalletType } from '@renderer/domain/wallet';
 import Wallets from '../Wallets/Wallets';
 import useClickOutside from '@renderer/hooks/useClickOutside';
 import './Navigation.css';
-import { WalletDS } from '@renderer/services/storage';
+import { AccountDS } from '@renderer/services/storage';
+import { SigningType } from '@renderer/domain/shared-kernel';
+import { useAccount } from '@renderer/services/account/accountService';
 
-type CardType = WalletType | 'multiple' | 'none';
+type CardType = SigningType | 'multiple' | 'none';
 
 const CardStyle: Record<CardType, string> = {
-  [WalletType.WATCH_ONLY]: 'bg-alert border-[3px] border-alert',
-  [WalletType.PARITY]: 'bg-primary border-[3px] border-primary',
+  [SigningType.WATCH_ONLY]: 'bg-alert border-[3px] border-alert',
+  [SigningType.PARITY_SIGNER]: 'bg-primary border-[3px] border-primary',
   multiple: 'bg-shade-40 multiple-card',
   none: 'bg-shade-40 border-[3px] border-shade-40',
 };
 
-const getCardType = (wallets?: WalletDS[]): CardType => {
-  if (!wallets || !wallets.length) return 'none';
-  if (wallets.length > 1) return 'multiple';
+const getCardType = (accounts?: AccountDS[]): CardType => {
+  if (!accounts || !accounts.length) return 'none';
+  if (accounts.length > 1) return 'multiple';
 
-  return wallets[0].type;
+  return accounts[0].signingType;
 };
 
 const NavItems = [
@@ -44,9 +44,9 @@ const Navigation = () => {
   const walletsRef = useRef<HTMLDivElement>(null);
   const showWalletsRef = useRef<HTMLButtonElement>(null);
   const { LocaleComponent, t } = useI18n();
-  const { getActiveWallets } = useWallet();
-  const activeWallets = getActiveWallets();
-  const walletType = getCardType(activeWallets);
+  const { getActiveAccounts } = useAccount();
+  const activeAccounts = getActiveAccounts();
+  const cardType = getCardType(activeAccounts);
 
   // const navigate = useNavigate();
   // const { matrix, setIsLoggedIn } = useMatrix();
@@ -71,21 +71,20 @@ const Navigation = () => {
   //   }
   // };
 
-  const currentWallet = activeWallets?.length ? activeWallets[0] : undefined;
-  const currentAccount = currentWallet?.mainAccounts[0] || currentWallet?.chainAccounts[0];
+  const currentAccount = activeAccounts?.length ? activeAccounts[0] : undefined;
 
-  const walletName =
-    walletType === 'multiple'
+  const accountName =
+    cardType === 'multiple'
       ? t('navigation.multipleWalletsLabel')
-      : currentWallet?.name || t('navigation.unknownWalletLabel');
+      : currentAccount?.name || t('navigation.unknownWalletLabel');
 
   return (
     <>
       <aside className="relative flex gap-y-5 flex-col w-[300px] bg-shade-5 p-5 z-30">
-        <div className={cn('rounded-xl text-white p-4', CardStyle[walletType])}>
+        <div className={cn('rounded-xl text-white p-4', CardStyle[cardType])}>
           <div className="flex gap-x-2.5">
             <div className="relative">
-              {walletType === WalletType.PARITY && (
+              {cardType === SigningType.PARITY_SIGNER && (
                 <>
                   <Identicon theme="polkadot" address={currentAccount?.accountId || ''} size={46} />
 
@@ -94,7 +93,7 @@ const Navigation = () => {
                   </div>
                 </>
               )}
-              {walletType === WalletType.WATCH_ONLY && (
+              {cardType === SigningType.WATCH_ONLY && (
                 <>
                   <Identicon theme="polkadot" address={currentAccount?.accountId || ''} size={46} />
 
@@ -103,7 +102,7 @@ const Navigation = () => {
                   </div>
                 </>
               )}
-              {walletType === 'multiple' && (
+              {cardType === 'multiple' && (
                 <div className="relative flex justify-center items-center w-[46px] h-[46px]">
                   <div className="rounded-full w-8 h-8 bg-white flex justify-center items-center z-10">
                     <Icon name="emptyIdenticon" size={16} />
@@ -114,7 +113,7 @@ const Navigation = () => {
                   <div className="bg-shade-30 rounded-full w-5 h-5 absolute bottom-0"></div>
                 </div>
               )}
-              {walletType === 'none' && (
+              {cardType === 'none' && (
                 <div className="bg-white flex justify-center items-center w-[46px] h-[46px] rounded-full">
                   <Icon name="emptyIdenticon" size={30} />
                 </div>
@@ -126,11 +125,12 @@ const Navigation = () => {
               className="flex justify-between flex-1 truncate"
               onClick={() => setIsWalletsOpen((value) => !value)}
             >
-              <span className="text-xl leading-6 mr-1 text-left truncate">{walletName}</span>
+              <span className="text-xl leading-6 mr-1 text-left truncate">{accountName}</span>
               <Icon name="right" size={40} className="shrink-0" />
             </button>
           </div>
         </div>
+
         <nav className="flex-1 overflow-y-auto scrollbar">
           <ul className="pr-2.5">
             {NavItems.map(({ icon, title, link }) => (

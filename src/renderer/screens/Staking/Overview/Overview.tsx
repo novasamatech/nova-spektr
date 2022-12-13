@@ -12,13 +12,13 @@ import Paths from '@renderer/routes/paths';
 import { useChains } from '@renderer/services/network/chainsService';
 import { useSettingsStorage } from '@renderer/services/settings/settingsStorage';
 import { useStaking } from '@renderer/services/staking/stakingService';
-import { useWallet } from '@renderer/services/wallet/walletService';
+import { useAccount } from '@renderer/services/account/accountService';
 import { AboutStaking, Filter, InfoBanners, StakingList } from './components';
 
 const Overview = () => {
   const { t } = useI18n();
   const { connections } = useNetworkContext();
-  const { getActiveWallets } = useWallet();
+  const { getActiveAccounts } = useAccount();
   const { sortChains, getChainsData } = useChains();
   const { subscribeActiveEra, subscribeLedger } = useStaking();
   const { setStakingNetwork, getStakingNetwork } = useSettingsStorage();
@@ -28,7 +28,7 @@ const Overview = () => {
   const [activeNetwork, setActiveNetwork] = useState<ResultOption<Asset>>();
   const [stakingNetworks, setStakingNetworks] = useState<Option<Asset>[]>([]);
 
-  const activeWallets = getActiveWallets();
+  const activeAccounts = getActiveAccounts();
 
   const chainId = (activeNetwork?.id || '') as ChainId;
   const api = connections[chainId]?.api;
@@ -52,20 +52,11 @@ const Overview = () => {
   }, [api]);
 
   useEffect(() => {
-    if (!chainId || !api?.isConnected || !activeWallets) return;
-
-    (async () => {
-      const accounts = activeWallets.map((wallet) => (wallet.mainAccounts[0] || wallet.chainAccounts[0])?.accountId);
-      await subscribeLedger(chainId, api, accounts);
-    })();
-  }, [activeWallets, api]);
-
-  useEffect(() => {
     (async () => {
       const chainsData = await getChainsData();
 
       const relaychains = sortChains(chainsData).reduce((acc, chain) => {
-        const asset = chain.assets.find((asset) => asset.staking === StakingType.RELAYCHAIN);
+        const asset = chain.assets.find((asset) => asset.staking === StakingType.RELAYCHAIN) as Asset;
         if (!asset) return acc;
 
         return acc.concat({
@@ -88,20 +79,41 @@ const Overview = () => {
     })();
   }, []);
 
+  useEffect(() => {
+    if (!chainId || !api?.isConnected) return;
+
+    (async () => {
+      await subscribeActiveEra(chainId, api);
+    })();
+  }, [api]);
+
+  useEffect(() => {
+    if (!chainId || !api?.isConnected || !activeAccounts) return;
+
+    (async () => {
+      const accounts = activeAccounts.reduce(
+        (acc, account) => (account.accountId ? [...acc, account.accountId] : acc),
+        [] as string[],
+      );
+      await subscribeLedger(chainId, api, accounts);
+    })();
+  }, [activeAccounts, api]);
+
   // TODO: Continue during StakingList task
   // @ts-ignore
-  const formattedWallets = (activeWallets || [])?.reduce((acc, wallet) => {
+  const formattedWallets = (activeAccounts || [])?.reduce((acc, account) => {
     // TODO: maybe add staking here
-    if (!wallet.name.toLowerCase().includes(query.toLowerCase())) return acc;
+    if (!account.name.toLowerCase().includes(query.toLowerCase())) return acc;
 
-    const isParentWallet = wallet.parentWalletId === undefined;
-    if (isParentWallet) {
-      return acc.concat({ name: wallet.name, accountId: wallet.mainAccounts[0]?.accountId });
+    const isRootWallet = account.rootId === undefined;
+    if (isRootWallet && account.accountId) {
+      return acc.concat({ name: account.name, accountId: account.accountId });
     }
 
-    const isRelevantDerived = wallet.chainAccounts[0]?.chainId === activeNetwork?.id;
-    if (isRelevantDerived) {
-      acc.push({ name: wallet.name, accountId: wallet.chainAccounts[0]?.accountId });
+    const isRelevantDerived = account.chainId === activeNetwork?.id;
+
+    if (isRelevantDerived && account.accountId) {
+      acc.push({ name: account.name, accountId: account.accountId });
     }
 
     return acc;

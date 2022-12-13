@@ -1,17 +1,18 @@
 import { render, screen } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 
-import { useWallet } from '@renderer/services/wallet/walletService';
 import Balances from './Balances';
 import { TEST_ADDRESS, TEST_PUBLIC_KEY } from '@renderer/services/balance/common/constants';
 import { ConnectionType } from '@renderer/domain/connection';
+import { useAccount } from '@renderer/services/account/accountService';
 
-jest.mock('@renderer/services/wallet/walletService', () => ({
-  useWallet: jest.fn().mockReturnValue({
-    getActiveWallets: () => [
+jest.mock('@renderer/services/account/accountService', () => ({
+  useAccount: jest.fn().mockReturnValue({
+    getActiveAccounts: () => [
       {
         name: 'Test Wallet',
-        mainAccounts: [{ accountId: '1ChFWeNRLarAPRCTM3bfJmncJbSAbSS9yqjueWz7jX7iTVZ', publicKey: TEST_PUBLIC_KEY }],
+        accountId: TEST_ADDRESS,
+        publicKey: TEST_PUBLIC_KEY,
       },
     ],
   }),
@@ -65,11 +66,12 @@ describe('screen/Balances/Balances', () => {
   });
 
   test('should render empty state', () => {
-    (useWallet as jest.Mock).mockReturnValue({
-      getActiveWallets: () => [
+    (useAccount as jest.Mock).mockReturnValue({
+      getActiveAccounts: () => [
         {
           name: 'Test Wallet',
-          mainAccounts: [{ accountId: TEST_ADDRESS, publicKey: TEST_PUBLIC_KEY }],
+          accountId: TEST_ADDRESS,
+          publicKey: TEST_PUBLIC_KEY,
         },
       ],
     });

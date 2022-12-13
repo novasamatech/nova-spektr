@@ -4,8 +4,8 @@ import { Asset } from '@renderer/domain/asset';
 import { Chain } from '@renderer/domain/chain';
 import { TEST_ADDRESS, TEST_PUBLIC_KEY } from '@renderer/services/balance/common/constants';
 import chains from '@renderer/services/network/common/chains/chains.json';
-import { useWallet } from '@renderer/services/wallet/walletService';
 import ReceiveModal from './ReceiveModal';
+import { useAccount } from '@renderer/services/account/accountService';
 
 window.IntersectionObserver = jest.fn().mockImplementation(() => ({
   observe: jest.fn(),
@@ -18,12 +18,13 @@ jest.mock('@renderer/context/I18nContext', () => ({
   }),
 }));
 
-jest.mock('@renderer/services/wallet/walletService', () => ({
-  useWallet: jest.fn().mockReturnValue({
-    getActiveWallets: () => [
+jest.mock('@renderer/services/account/accountService', () => ({
+  useAccount: jest.fn().mockReturnValue({
+    getActiveAccounts: () => [
       {
         name: 'Test Wallet',
-        mainAccounts: [{ accountId: TEST_ADDRESS, publicKey: TEST_PUBLIC_KEY }],
+        accountId: TEST_ADDRESS,
+        publicKey: TEST_PUBLIC_KEY,
       },
     ],
   }),
@@ -73,15 +74,17 @@ describe('screens/Balances/ReceiveModal', () => {
   });
 
   test('should render select wallet component', () => {
-    (useWallet as jest.Mock).mockImplementation(() => ({
-      getActiveWallets: () => [
+    (useAccount as jest.Mock).mockImplementation(() => ({
+      getActiveAccounts: () => [
         {
           name: 'Test Wallet 1',
-          mainAccounts: [{ accountId: TEST_ADDRESS, publicKey: TEST_PUBLIC_KEY }],
+          accountId: TEST_ADDRESS,
+          publicKey: TEST_PUBLIC_KEY,
         },
         {
           name: 'Test Wallet 2',
-          mainAccounts: [{ accountId: TEST_ADDRESS, publicKey: TEST_PUBLIC_KEY }],
+          accountId: TEST_ADDRESS,
+          publicKey: TEST_PUBLIC_KEY,
         },
       ],
     }));
