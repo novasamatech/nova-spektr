@@ -18,6 +18,7 @@ import Dropdown from './Dropdowns/Dropdown/Dropdown';
 import RadioGroup from './RadioGroup/RadioGroup';
 import Select from './Dropdowns/Select/Select';
 import Balance from './Balance/Balance';
+import Popover from './Popover/Popover';
 
 export {
   Address,
@@ -40,4 +41,5 @@ export {
   Select,
   Carousel,
   Balance,
+  Popover,
 };
