@@ -2,14 +2,15 @@ import { act, render, screen } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 
 import Onboarding from './Onboarding';
-import { useWallet } from '@renderer/services/wallet/walletService';
+import { useAccount } from '@renderer/services/account/accountService';
 
 jest.mock('react-router-dom', () => ({
   useNavigate: jest.fn(),
   Outlet: () => 'outlet',
 }));
-jest.mock('@renderer/services/wallet/walletService', () => ({
-  useWallet: jest.fn(),
+
+jest.mock('@renderer/services/account/accountService', () => ({
+  useAccount: jest.fn(),
 }));
 
 jest.mock('@renderer/context/I18nContext', () => ({
@@ -20,8 +21,8 @@ jest.mock('@renderer/context/I18nContext', () => ({
 
 describe('Onboarding', () => {
   test('should render component', async () => {
-    (useWallet as jest.Mock).mockImplementation(() => ({
-      addWallets: jest.fn(),
+    (useAccount as jest.Mock).mockImplementation(() => ({
+      addAccounts: jest.fn(),
     }));
 
     await act(async () => {

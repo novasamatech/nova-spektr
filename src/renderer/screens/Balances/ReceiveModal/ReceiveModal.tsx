@@ -8,12 +8,10 @@ import { Option, ResultOption } from '@renderer/components/ui/Dropdowns/common/t
 import { useI18n } from '@renderer/context/I18nContext';
 import { Asset } from '@renderer/domain/asset';
 import { Chain } from '@renderer/domain/chain';
-import { AccountID, ChainId } from '@renderer/domain/shared-kernel';
-import { WalletType } from '@renderer/domain/wallet';
+import { SigningType } from '@renderer/domain/shared-kernel';
 import { toAddress } from '@renderer/services/balance/common/utils';
-import { WalletDS } from '@renderer/services/storage';
-import { useWallet } from '@renderer/services/wallet/walletService';
 import { copyToClipboard } from '@renderer/utils/strings';
+import { useAccount } from '@renderer/services/account/accountService';
 
 export type ReceivePayload = {
   chain: Chain;
@@ -26,59 +24,47 @@ type Props = {
   onClose: () => void;
 };
 
-const getAddress = (wallet: WalletDS, chainId: ChainId): AccountID | undefined => {
-  const mainAccounts = wallet.mainAccounts?.[0];
-  const chainAccounts = wallet.chainAccounts?.[0];
-
-  if (mainAccounts) {
-    return mainAccounts.accountId;
-  }
-
-  if (chainAccounts?.chainId === chainId) {
-    return chainAccounts.accountId;
-  }
-};
-
 const ReceiveModal = ({ data, isOpen, onClose }: Props) => {
   const { t } = useI18n();
-  const { getActiveWallets } = useWallet();
+  const { getActiveAccounts } = useAccount();
 
   const [activeAccount, setActiveAccount] = useState<ResultOption<number>>();
   const [accounts, setAccounts] = useState<Option<number>[]>([]);
 
-  const activeWallets = getActiveWallets() || [];
+  const activeAccounts = getActiveAccounts() || [];
 
   useEffect(() => {
     const accounts =
-      activeWallets.reduce((acc, wallet, index) => {
-        const address = getAddress(wallet, data?.chain.chainId || '0x');
+      activeAccounts.reduce((acc, account, index) => {
+        if (account.chainId !== undefined && account.chainId !== data?.chain.chainId) return acc;
+        const address = toAddress(account.publicKey || '0x00', data?.chain.addressPrefix);
 
-        if (!address) return acc;
+        const accountType =
+          account.signingType === SigningType.PARITY_SIGNER ? 'paritySignerBackground' : 'watchOnlyBackground';
 
-        const walletType = wallet.type === WalletType.PARITY ? 'paritySignerBackground' : 'watchOnlyBackground';
-        const walletOption = {
+        const accountOption = {
           id: address,
           value: index,
           element: (
             <div className="grid grid-rows-2 grid-flow-col gap-x-2.5">
-              <Icon className="row-span-2 self-center" name={walletType} size={34} />
-              <p className="text-left text-neutral text-lg font-semibold leading-5">{wallet.name}</p>
+              <Icon className="row-span-2 self-center" name={accountType} size={34} />
+              <p className="text-left text-neutral text-lg font-semibold leading-5">{account.name}</p>
               <Address type="short" address={address} noCopy />
             </div>
           ),
         };
 
-        return acc.concat(walletOption);
+        return acc.concat(accountOption);
       }, [] as Option[]) || [];
 
     if (accounts.length === 0) return;
 
     setAccounts(accounts);
     setActiveAccount({ id: accounts[0].id, value: accounts[0].value });
-  }, [activeWallets.length]);
+  }, [activeAccounts.length, data?.chain.chainId]);
 
-  const wallet = activeAccount ? activeWallets[activeAccount.value as number] : undefined;
-  const publicKey = wallet?.mainAccounts?.[0]?.publicKey || wallet?.chainAccounts?.[0]?.publicKey || '0x00';
+  const account = activeAccount ? activeAccounts[activeAccount.value as number] : undefined;
+  const publicKey = account?.publicKey || '0x00';
   const address = toAddress(publicKey, data?.chain.addressPrefix);
 
   //eslint-disable-next-line i18next/no-literal-string
@@ -101,7 +87,7 @@ const ReceiveModal = ({ data, isOpen, onClose }: Props) => {
           <span className="ml-1">{data?.chain.name}</span>
         </div>
 
-        {activeWallets && activeWallets.length > 1 && (
+        {activeAccounts && activeAccounts.length > 1 && (
           <Dropdown
             weight="lg"
             placeholder={t('receive.selectWalletPlaceholder')}

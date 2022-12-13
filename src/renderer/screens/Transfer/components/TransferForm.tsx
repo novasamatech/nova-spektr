@@ -7,14 +7,14 @@ import { Button, AmountInput, Icon, Identicon, Input, InputHint } from '@rendere
 import { Fee } from '@renderer/components/common';
 import { useI18n } from '@renderer/context/I18nContext';
 import { Asset, AssetType, OrmlExtras, StatemineExtras } from '@renderer/domain/asset';
+import { formatAddress, pasteAddressHandler, toPublicKey, validateAddress } from '@renderer/utils/address';
+import { ExtendedChain } from '@renderer/services/network/common/types';
+import SelectedAddress from './SelectedAddress';
 import { Transaction, TransactionType } from '@renderer/domain/transaction';
-import { Wallet } from '@renderer/domain/wallet';
 import { useBalance } from '@renderer/services/balance/balanceService';
 import { formatAmount, transferable } from '@renderer/services/balance/common/utils';
-import { ExtendedChain } from '@renderer/services/network/common/types';
 import { useTransaction } from '@renderer/services/transaction/transactionService';
-import { formatAddress, pasteAddressHandler, toPublicKey, validateAddress } from '@renderer/utils/address';
-import SelectedAddress from './SelectedAddress';
+import { Account } from '@renderer/domain/account';
 
 type FormData = {
   address: string;
@@ -23,7 +23,7 @@ type FormData = {
 
 type Props = {
   onCreateTransaction: (data: FormData) => void;
-  wallet: Wallet;
+  account: Account;
   asset: Asset;
   connection: ExtendedChain;
 };
@@ -52,7 +52,7 @@ const getAssetId = (asset: Asset): string => {
   return asset.assetId.toString();
 };
 
-const TransferForm = ({ onCreateTransaction, wallet, asset, connection }: Props) => {
+const TransferForm = ({ onCreateTransaction, account, asset, connection }: Props) => {
   const { t } = useI18n();
 
   const { getBalance } = useBalance();
@@ -63,10 +63,7 @@ const TransferForm = ({ onCreateTransaction, wallet, asset, connection }: Props)
   const [fee, setFee] = useState('');
   const [transaction, setTransaction] = useState<Transaction>();
 
-  const currentAddress = formatAddress(
-    wallet.mainAccounts[0].accountId || wallet.chainAccounts[0].accountId || '',
-    connection.addressPrefix,
-  );
+  const currentAddress = formatAddress(account.accountId || '', connection.addressPrefix);
 
   useEffect(() => {
     (async () => {
@@ -152,7 +149,7 @@ const TransferForm = ({ onCreateTransaction, wallet, asset, connection }: Props)
   return (
     <div>
       <div className="w-[500px] rounded-2xl bg-shade-2 p-5 flex flex-col items-center m-auto gap-2.5">
-        {connection && wallet && <SelectedAddress wallet={wallet} connection={connection} />}
+        {connection && account && <SelectedAddress account={account} connection={connection} />}
 
         <form
           id="transferForm"

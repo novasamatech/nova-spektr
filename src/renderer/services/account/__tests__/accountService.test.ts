@@ -1,0 +1,43 @@
+import storage from '@renderer/services/storage';
+import { useAccount } from '@renderer/services/account/accountService';
+
+jest.mock('@renderer/services/storage', () => jest.fn());
+
+jest.mock('dexie-react-hooks', () => ({
+  useLiveQuery: (handler: () => any) => handler(),
+}));
+
+describe('service/accountService', () => {
+  test('should get all active accounts', async () => {
+    const accountsDb = [
+      { name: 'test_1', isActive: true },
+      { name: 'test_2', isActive: false },
+    ];
+
+    storage.connectTo = jest.fn().mockReturnValue({
+      getAccounts: jest.fn().mockResolvedValue(accountsDb),
+    });
+
+    const { getActiveAccounts } = useAccount();
+    const accounts = await getActiveAccounts();
+
+    expect(accounts).toHaveLength(1);
+    expect(accounts?.[0]).toEqual(accountsDb[0]);
+  });
+
+  test('should set new active account', async () => {
+    const accountsDb = [{ name: 'test_1', isActive: false }];
+
+    storage.connectTo = jest.fn().mockReturnValue({
+      getAccount: jest.fn().mockResolvedValue(accountsDb[0]),
+      updateAccount: jest.fn().mockImplementation(() => {
+        accountsDb[0].isActive = true;
+      }),
+    });
+
+    const { toggleActiveAccount } = useAccount();
+    await toggleActiveAccount('wallet_id');
+
+    expect(accountsDb[0].isActive).toEqual(true);
+  });
+});

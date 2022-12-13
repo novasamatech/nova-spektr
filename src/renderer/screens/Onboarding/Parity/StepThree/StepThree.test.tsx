@@ -13,10 +13,10 @@ jest.mock('@renderer/context/I18nContext', () => ({
   }),
 }));
 
-jest.mock('@renderer/services/wallet/walletService', () => ({
-  useWallet: jest.fn().mockReturnValue({
-    addWallet: jest.fn(),
-    toggleActiveWallet: jest.fn(),
+jest.mock('@renderer/services/account/accountService', () => ({
+  useAccount: jest.fn().mockReturnValue({
+    addAccount: jest.fn(),
+    toggleActiveAccount: jest.fn(),
   }),
 }));
 

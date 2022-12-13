@@ -3,11 +3,11 @@ import { useState } from 'react';
 import { SeedInfo } from '@renderer/components/common/QrCode/QrReader/common/types';
 import { ButtonBack, Stepper } from '@renderer/components/ui';
 import { useI18n } from '@renderer/context/I18nContext';
-import { WalletType } from '@renderer/domain/wallet';
 import FinalStep from '@renderer/screens/Onboarding/FinalStep/FinalStep';
 import StepOne from './StepOne/StepOne';
 import StepThree from './StepThree/StepThree';
 import StepTwo from './StepTwo/StepTwo';
+import { SigningType } from '@renderer/domain/shared-kernel';
 
 const enum Step {
   PREPARE,
@@ -52,7 +52,7 @@ const Parity = () => {
             onPrevStep={() => setActiveStep(Step.SCAN)}
           />
         )}
-        {activeStep === Step.FINAL && <FinalStep walletType={WalletType.PARITY} />}
+        {activeStep === Step.FINAL && <FinalStep signingType={SigningType.PARITY_SIGNER} />}
       </section>
     </div>
   );
