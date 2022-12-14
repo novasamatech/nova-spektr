@@ -28,6 +28,8 @@ jobs:
 
       - name: Update package.json version
         uses: jossef/action-set-json-field@v2
+        env:
+          GIT_TAG_NAME: 1.0.0
         with:
           file: package.json
           field: version
