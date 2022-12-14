@@ -14,4 +14,6 @@ export const isTestnet = (chainOptions?: ChainOptions[]): boolean => {
   return Boolean(chainOptions?.includes('testnet'));
 };
 
-export const isLightClient = (chain: ExtendedChain) => chain.connection.connectionType === ConnectionType.LIGHT_CLIENT;
+export const isLightClient = (chain: ExtendedChain): boolean => {
+  return chain.connection.connectionType === ConnectionType.LIGHT_CLIENT;
+};

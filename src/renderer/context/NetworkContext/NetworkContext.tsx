@@ -26,6 +26,7 @@ export const NetworkProvider = ({ children }: PropsWithChildren) => {
   const { connections, setupConnections, connectToNetwork, connectWithAutoBalance, ...rest } = useNetwork(unsubscribe);
   const { subscribeBalances, subscribeLockBalances } = useBalance();
   const { getActiveWallets } = useWallet();
+
   const activeWallets = getActiveWallets();
 
   const [connectionsReady, setConnectionReady] = useState(false);

@@ -6,7 +6,7 @@ type Props = {
 };
 
 const Shimmering = ({ width, height }: Props) => {
-  return <div className="h-full w-full rounded-lg shimmer" style={{ width: `${width}px`, height: `${height}px` }} />;
+  return <div className="h-full w-full rounded-md shimmer" style={{ width: `${width}px`, height: `${height}px` }} />;
 };
 
 export default Shimmering;

@@ -14,10 +14,15 @@ import {
 } from '@renderer/services/balance/common/constants';
 import { FormattedBalance } from './types';
 
-export const toAddress = (publicKey: PublicKey, prefix = SS58_DEFAULT_PREFIX): string => {
+/**
+ * Generate new address based on public key and address prefix
+ * @param publicKey account's public key
+ * @param addressPrefix address prefix of needed chain
+ */
+export const toAddress = (publicKey: PublicKey, addressPrefix = SS58_DEFAULT_PREFIX): string => {
   if (!publicKey) return '';
 
-  return encodeAddress(publicKey, prefix);
+  return encodeAddress(publicKey, addressPrefix);
 };
 
 export const formatAmount = (amount: string, precision: number): string => {

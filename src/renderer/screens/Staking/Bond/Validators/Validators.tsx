@@ -9,7 +9,7 @@ import { Asset } from '@renderer/domain/asset';
 import { AccountID, ChainId } from '@renderer/domain/shared-kernel';
 import useToggle from '@renderer/hooks/useToggle';
 import { Validator } from '@renderer/services/staking/common/types';
-import { useStaking } from '@renderer/services/staking/stakingService';
+import { useStakingData } from '@renderer/services/staking/stakingDataService';
 
 type Props = {
   api?: ApiPromise;
@@ -21,7 +21,7 @@ type Props = {
 const Validators = ({ api, chainId, asset, onResult }: Props) => {
   const { t } = useI18n();
   const [isInfoOpen, toggleInfo] = useToggle();
-  const { validators, getMaxValidators, getValidators, subscribeActiveEra } = useStaking();
+  const { validators, getMaxValidators, getValidators, subscribeActiveEra } = useStakingData();
 
   const [query, setQuery] = useState('');
   const [maxValidators, setMaxValidators] = useState<number>();

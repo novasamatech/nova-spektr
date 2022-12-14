@@ -18,7 +18,9 @@ const CHAINS: Record<string, any> = {
 };
 
 export function useChains(): IChainService {
-  const getChainsData = (): Promise<Chain[]> => Promise.resolve(CHAINS[process.env.CHAINS_FILE || 'dev']);
+  const getChainsData = (): Promise<Chain[]> => {
+    return Promise.resolve(CHAINS[process.env.CHAINS_FILE || 'dev']);
+  };
 
   const sortChains = <T extends ChainLike>(chains: T[]): T[] => {
     let polkadot;
@@ -37,24 +39,27 @@ export function useChains(): IChainService {
   };
 
   const getExpectedBlockTime = (api: ApiPromise): BN => {
-    return bnMin(
-      ONE_DAY,
-      // Babe, e.g. Relay chains (Substrate defaults)
-      api.consts.babe?.expectedBlockTime ||
-        // POW, eg. Kulupu
-        api.consts.difficulty?.targetBlockTime ||
-        // Subspace
-        api.consts.subspace?.expectedBlockTime ||
-        // Check against threshold to determine value validity
-        (api.consts.timestamp?.minimumPeriod.gte(THRESHOLD)
-          ? // Default minimum period config
-            api.consts.timestamp.minimumPeriod.mul(BN_TWO)
-          : api.query.parachainSystem
-          ? // default guess for a parachain
-            DEFAULT_TIME.mul(BN_TWO)
-          : // default guess for others
-            DEFAULT_TIME),
-    );
+    const substrateBlockTime = api.consts.babe?.expectedBlockTime;
+    const proofOfWorkBlockTime = api.consts.difficulty?.targetBlockTime;
+    const subspaceBlockTime = api.consts.subspace?.expectedBlockTime;
+
+    const blockTime = substrateBlockTime || proofOfWorkBlockTime || subspaceBlockTime;
+    if (blockTime) {
+      return bnMin(ONE_DAY, blockTime);
+    }
+
+    const thresholdCheck = api.consts.timestamp?.minimumPeriod.gte(THRESHOLD);
+    if (thresholdCheck) {
+      return bnMin(ONE_DAY, api.consts.timestamp.minimumPeriod.mul(BN_TWO));
+    }
+
+    // default guess for a parachain
+    if (api.query.parachainSystem) {
+      return bnMin(ONE_DAY, DEFAULT_TIME.mul(BN_TWO));
+    }
+
+    // default guess for others
+    return bnMin(ONE_DAY, DEFAULT_TIME);
   };
 
   return {

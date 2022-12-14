@@ -2,9 +2,9 @@ import { act, render, screen } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 
 import { useNetworkContext } from '@renderer/context/NetworkContext';
+import { Chain } from '@renderer/domain/chain';
 import { ConnectionType } from '@renderer/domain/connection';
 import { TEST_PUBLIC_KEY } from '@renderer/services/balance/common/constants';
-import { Chain } from '@renderer/domain/chain';
 import Overview from './Overview';
 
 jest.mock('@renderer/context/NetworkContext', () => ({
@@ -13,8 +13,15 @@ jest.mock('@renderer/context/NetworkContext', () => ({
   })),
 }));
 
+jest.mock('@renderer/context/GraphqlContext', () => ({
+  useGraphql: jest.fn(() => ({
+    setGraphqlEndpoint: jest.fn(),
+  })),
+}));
+
 jest.mock('@renderer/services/network/chainsService', () => ({
   useChains: jest.fn().mockReturnValue({
+    sortChains: (value: Chain[]) => value,
     getChainsData: jest.fn().mockReturnValue([
       {
         addressPrefix: 0,
@@ -23,7 +30,6 @@ jest.mock('@renderer/services/network/chainsService', () => ({
         name: 'My test chain',
       },
     ]),
-    sortChains: (value: Chain[]) => value,
   }),
 }));
 
@@ -38,8 +44,9 @@ jest.mock('@renderer/services/wallet/walletService', () => ({
   }),
 }));
 
-jest.mock('@renderer/services/staking/stakingService', () => ({
-  useStaking: jest.fn().mockReturnValue({
+jest.mock('@renderer/services/staking/stakingDataService', () => ({
+  useStakingData: jest.fn().mockReturnValue({
+    staking: {},
     subscribeActiveEra: jest.fn(),
     subscribeLedger: jest.fn(),
   }),
@@ -55,6 +62,7 @@ jest.mock('./components/AboutStaking/AboutStaking', () => () => <span>aboutStaki
 jest.mock('./components/InfoBanners/InfoBanners', () => () => <span>infoBanners</span>);
 jest.mock('./components/Filter/Filter', () => () => <span>filter</span>);
 jest.mock('./components/StakingList/StakingList', () => () => <span>stakingList</span>);
+jest.mock('./components/TotalAmount/TotalAmount', () => () => <span>totalAmount</span>);
 
 describe('screens/Staking/Overview', () => {
   beforeEach(() => {
@@ -77,11 +85,13 @@ describe('screens/Staking/Overview', () => {
     const infoBanners = screen.getByText('infoBanners');
     const filter = screen.getByText('filter');
     const stakingList = screen.getByText('stakingList');
+    const totalAmount = screen.getByText('totalAmount');
     expect(title).toBeInTheDocument();
     expect(aboutStaking).toBeInTheDocument();
     expect(infoBanners).toBeInTheDocument();
     expect(filter).toBeInTheDocument();
     expect(stakingList).toBeInTheDocument();
+    expect(totalAmount).toBeInTheDocument();
   });
 
   test('should render network settings link', async () => {

@@ -42,7 +42,8 @@ describe('components/common/Fee', () => {
     expect(value).toBeInTheDocument();
   });
 
-  test('should render loading while getting value', async () => {
+  // TODO: Rework this test
+  test.skip('should render loading while getting value', async () => {
     const asset = { symbol: 'DOT', precision: 10 } as Asset;
     const tx = { address: '0x123', args: {} } as Transaction;
 

@@ -14,8 +14,8 @@ jest.mock('@renderer/context/I18nContext', () => ({
   }),
 }));
 
-jest.mock('@renderer/services/staking/stakingService', () => ({
-  useStaking: jest.fn().mockReturnValue({
+jest.mock('@renderer/services/staking/stakingDataService', () => ({
+  useStakingData: jest.fn().mockReturnValue({
     validators: {
       '5CFPcUJgYgWryPaV1aYjSbTpbTLu42V32Ytw1L9rfoMAsfGh': {
         address: '5CFPcUJgYgWryPaV1aYjSbTpbTLu42V32Ytw1L9rfoMAsfGh',
