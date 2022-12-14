@@ -3,7 +3,7 @@ name: Create new tag
 on:
   push:
     branches:
-      - "main"
+      - 'main'
   workflow_dispatch:
     inputs:
       component:
@@ -48,10 +48,9 @@ jobs:
         with:
           commit-path: package.json
           commit-message: Bump version in package.json
-          branch-name: update-package-file
+          branch-name: rc/${{ steps.bump.outputs.major }}.${{ steps.bump.outputs.minor }}.${{ steps.bump.outputs.patch }}
+          destination_branch: main
           github-token: ${{ secrets.GITHUB_TOKEN }}
-
-
 
   create_new_tag:
     if: ${{ github.event_name == 'pull_request' }}
