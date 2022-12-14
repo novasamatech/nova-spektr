@@ -78,7 +78,7 @@ const Navigation = () => {
   const accountName =
     cardType === 'multiple'
       ? t('navigation.multipleWalletsLabel')
-      : currentAccount.name || t('navigation.unknownWalletLabel');
+      : currentAccount?.name || t('navigation.unknownWalletLabel');
 
   return (
     <>
@@ -88,7 +88,7 @@ const Navigation = () => {
             <div className="relative">
               {cardType === SigningType.PARITY_SIGNER && (
                 <>
-                  <Identicon theme="polkadot" address={currentAccount.accountId || ''} size={46} />
+                  <Identicon theme="polkadot" address={currentAccount?.accountId || ''} size={46} />
 
                   <div className="absolute box-border right-0 bottom-0 bg-shade-70 w-5 h-5 flex justify-center items-center rounded-full border border-primary border-solid">
                     <Icon name="paritySigner" size={12} />
@@ -97,7 +97,7 @@ const Navigation = () => {
               )}
               {cardType === SigningType.WATCH_ONLY && (
                 <>
-                  <Identicon theme="polkadot" address={currentAccount.accountId || ''} size={46} />
+                  <Identicon theme="polkadot" address={currentAccount?.accountId || ''} size={46} />
 
                   <div className="absolute box-border right-0 bottom-0 bg-shade-70 w-5 h-5 flex justify-center items-center rounded-full border border-alert border-solid">
                     <Icon name="watchOnly" size={12} />

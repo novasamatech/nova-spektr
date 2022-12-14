@@ -19,7 +19,7 @@ describe('service/accountService', () => {
     });
 
     const { getActiveAccounts } = useAccount();
-    const accounts = await getActiveAccounts();
+    const accounts = getActiveAccounts();
 
     expect(accounts).toHaveLength(1);
     expect(accounts?.[0]).toEqual(accountsDb[0]);

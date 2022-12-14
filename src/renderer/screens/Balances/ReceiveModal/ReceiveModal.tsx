@@ -86,7 +86,7 @@ const ReceiveModal = ({ data, isOpen, onClose }: Props) => {
           <span className="ml-1">{data?.chain.name}</span>
         </div>
 
-        {activeAccounts && activeAccounts.length > 1 && (
+        {activeAccounts.length > 1 && (
           <Dropdown
             weight="lg"
             placeholder={t('receive.selectWalletPlaceholder')}
