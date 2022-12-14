@@ -6,14 +6,13 @@ import { useNetworkContext } from '@renderer/context/NetworkContext';
 import { Asset } from '@renderer/domain/asset';
 import { Chain } from '@renderer/domain/chain';
 import { ConnectionType } from '@renderer/domain/connection';
-import { PublicKey } from '@renderer/domain/shared-kernel';
-import { WalletType } from '@renderer/domain/wallet';
+import { PublicKey, SigningType } from '@renderer/domain/shared-kernel';
 import useToggle from '@renderer/hooks/useToggle';
 import { useChains } from '@renderer/services/network/chainsService';
 import { useSettingsStorage } from '@renderer/services/settings/settingsStorage';
-import { useWallet } from '@renderer/services/wallet/walletService';
 import NetworkBalances from '../NetworkBalances/NetworkBalances';
 import ReceiveModal, { ReceivePayload } from '../ReceiveModal/ReceiveModal';
+import { useAccount } from '@renderer/services/account/accountService';
 
 const Balances = () => {
   const { t } = useI18n();
@@ -25,9 +24,9 @@ const Balances = () => {
   const [isReceiveOpen, toggleReceive] = useToggle();
 
   const { connections } = useNetworkContext();
-  const { getActiveWallets } = useWallet();
+  const { getActiveAccounts } = useAccount();
   const { sortChains } = useChains();
-  const activeWallets = getActiveWallets();
+  const activeAccounts = getActiveAccounts();
 
   const { setHideZeroBalance, getHideZeroBalance } = useSettingsStorage();
   const [hideZeroBalance, setHideZeroBalanceState] = useState(getHideZeroBalance());
@@ -38,18 +37,19 @@ const Balances = () => {
   };
 
   useEffect(() => {
-    if (!activeWallets || activeWallets.length === 0) {
+    if (activeAccounts.length === 0) {
       setPublicKeys([]);
 
       return;
     }
 
-    const activePublicKeys = activeWallets.map(
-      (wallet) => (wallet.mainAccounts[0] || wallet.chainAccounts[0]).publicKey,
+    const activePublicKeys = activeAccounts.reduce(
+      (acc, account) => (account.publicKey ? [...acc, account.publicKey] : acc),
+      [] as PublicKey[],
     );
 
     setPublicKeys(activePublicKeys);
-  }, [activeWallets?.length]);
+  }, [activeAccounts.length]);
 
   const sortedChains = sortChains(
     Object.values(connections).filter((c) => c.connection.connectionType !== ConnectionType.DISABLED),
@@ -59,7 +59,7 @@ const Balances = () => {
     chain.assets.some((a) => a.symbol.toLowerCase() === query.toLowerCase()),
   );
 
-  const canMakeActions = activeWallets?.some((wallet) => wallet.type === WalletType.PARITY) || false;
+  const canMakeActions = activeAccounts.some((account) => account.signingType === SigningType.PARITY_SIGNER) || false;
 
   const onReceive = (chain: Chain) => (asset: Asset) => {
     setReceiveData({ chain, asset });

@@ -34,8 +34,12 @@ export const useBalance = (): IBalanceService => {
     return useLiveQuery(() => getBalance(publicKey, chainId, assetId), [publicKey, chainId, assetId]);
   };
 
-  const getLiveNetworkBalances = (publicKeys: PublicKey[], chainId: ChainId): BalanceDS[] | undefined => {
-    return useLiveQuery(() => getNetworkBalances(publicKeys, chainId), [publicKeys.length, chainId]);
+  const getLiveNetworkBalances = (publicKeys: PublicKey[], chainId: ChainId): BalanceDS[] => {
+    const query = () => {
+      return getNetworkBalances(publicKeys, chainId);
+    };
+
+    return useLiveQuery(query, [publicKeys.length, chainId], []);
   };
 
   const runValidation = async (

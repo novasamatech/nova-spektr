@@ -2,7 +2,6 @@ import { useEffect, useState } from 'react';
 
 import { useNetworkContext } from '@renderer/context/NetworkContext';
 import { useChains } from '@renderer/services/network/chainsService';
-import { useWallet } from '@renderer/services/wallet/walletService';
 import { ConnectionType } from '@renderer/domain/connection';
 import { useI18n } from '@renderer/context/I18nContext';
 import { Address, Button, Icon } from '@renderer/components/ui';
@@ -12,6 +11,7 @@ import { useTransaction } from '@renderer/services/transaction/transactionServic
 import { TransactionType } from '@renderer/domain/transaction';
 import { secondsToMinutes } from './common/utils';
 import { getMetadataPortalUrl, TROUBLESHOOTING_URL } from './common/consts';
+import { useAccount } from '@renderer/services/account/accountService';
 
 const enum Steps {
   SCANNING = 0,
@@ -24,10 +24,11 @@ const Signing = () => {
   const { t } = useI18n();
 
   const { connections } = useNetworkContext();
-  const { getActiveWallets } = useWallet();
+  const { getActiveAccounts } = useAccount();
   const { sortChains } = useChains();
   const { createPayload } = useTransaction();
-  const activeWallets = getActiveWallets();
+
+  const activeAccounts = getActiveAccounts();
 
   const [txPayload, setTxPayload] = useState<Uint8Array>();
   const [countdown, setCountdown] = useState<number>(DEFAULT_QR_LIFETIME);
@@ -47,8 +48,8 @@ const Signing = () => {
     Object.values(connections).filter((c) => c.connection.connectionType !== ConnectionType.DISABLED),
   );
 
-  const currentWallet = activeWallets?.[0];
-  const currentAddress = currentWallet?.mainAccounts[0].accountId || currentWallet?.chainAccounts[0].accountId;
+  const currentAccount = activeAccounts[0];
+  const currentAddress = currentAccount?.accountId;
   const currentConnection = sortedChains[0];
 
   const setupTransaction = async () => {
@@ -83,13 +84,13 @@ const Signing = () => {
       <h1 className="font-semibold text-2xl text-neutral mb-9">{t('signing.title')}</h1>
 
       <div className="w-[500px] rounded-2xl bg-shade-2 p-5 flex flex-col items-center m-auto gap-2.5 overflow-auto">
-        {currentWallet && currentConnection && currentAddress && (
+        {currentAccount && currentConnection && currentAddress && (
           <div className="bg-white shadow-surface p-5 rounded-2xl w-full">
             <div className="flex items-center justify-between h-15">
               <div className="flex gap-2.5">
                 <Icon name="paritySignerBackground" size={32} />
                 <div>
-                  <div className="font-bold text-lg text-neutral">{currentWallet.name}</div>
+                  <p className="font-bold text-lg text-neutral">{currentAccount.name}</p>
                   <Address type="short" address={currentAddress} addressStyle="small" />
                 </div>
               </div>

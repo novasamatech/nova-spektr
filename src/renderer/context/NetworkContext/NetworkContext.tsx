@@ -6,8 +6,8 @@ import { ChainId, PublicKey } from '@renderer/domain/shared-kernel';
 import { useBalance } from '@renderer/services/balance/balanceService';
 import { ConnectProps, ExtendedChain, RpcValidation } from '@renderer/services/network/common/types';
 import { useNetwork } from '@renderer/services/network/networkService';
-import { useWallet } from '@renderer/services/wallet/walletService';
 import { useSubscription } from '@renderer/services/subscription/subscriptionService';
+import { useAccount } from '@renderer/services/account/accountService';
 
 type NetworkContextProps = {
   connections: Record<ChainId, ExtendedChain>;
@@ -22,12 +22,12 @@ type NetworkContextProps = {
 const NetworkContext = createContext<NetworkContextProps>({} as NetworkContextProps);
 
 export const NetworkProvider = ({ children }: PropsWithChildren) => {
+  const { getActiveAccounts } = useAccount();
   const { subscribe, hasSubscription, unsubscribe } = useSubscription<ChainId>();
   const { connections, setupConnections, connectToNetwork, connectWithAutoBalance, ...rest } = useNetwork(unsubscribe);
   const { subscribeBalances, subscribeLockBalances } = useBalance();
-  const { getActiveWallets } = useWallet();
 
-  const activeWallets = getActiveWallets();
+  const activeAccounts = getActiveAccounts();
 
   const [connectionsReady, setConnectionReady] = useState(false);
 
@@ -78,13 +78,14 @@ export const NetworkProvider = ({ children }: PropsWithChildren) => {
   };
 
   useEffect(() => {
-    const publicKeys =
-      activeWallets?.map((wallet) => wallet?.mainAccounts[0]?.publicKey || wallet?.chainAccounts[0]?.publicKey) || [];
+    const publicKeys = activeAccounts.reduce<PublicKey[]>((acc, account) => {
+      return account.publicKey ? [...acc, account.publicKey] : acc;
+    }, []);
 
     Object.values(connections).forEach((chain) => {
       subscribeBalanceChanges(chain, publicKeys);
     });
-  }, [connections, activeWallets?.length]);
+  }, [connections, activeAccounts.length]);
 
   return (
     <NetworkContext.Provider value={{ connections, connectToNetwork, connectWithAutoBalance, ...rest }}>

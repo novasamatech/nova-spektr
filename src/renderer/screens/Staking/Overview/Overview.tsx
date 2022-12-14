@@ -14,7 +14,7 @@ import TotalAmount from '@renderer/screens/Staking/Overview/components/TotalAmou
 import { useChains } from '@renderer/services/network/chainsService';
 import { useSettingsStorage } from '@renderer/services/settings/settingsStorage';
 import { useStakingData } from '@renderer/services/staking/stakingDataService';
-import { useWallet } from '@renderer/services/wallet/walletService';
+import { useAccount } from '@renderer/services/account/accountService';
 import { AboutStaking, Filter, InfoBanners, StakingList } from './components';
 
 type NetworkOption = { asset: Asset; addressPrefix: number };
@@ -23,7 +23,7 @@ const Overview = () => {
   const { t } = useI18n();
   const { setGraphqlEndpoint } = useGraphql();
   const { connections } = useNetworkContext();
-  const { getActiveWallets } = useWallet();
+  const { getActiveAccounts } = useAccount();
   const { sortChains, getChainsData } = useChains();
   const { staking, subscribeActiveEra, subscribeLedger } = useStakingData();
   const { setStakingNetwork, getStakingNetwork } = useSettingsStorage();
@@ -33,12 +33,14 @@ const Overview = () => {
   const [activeNetwork, setActiveNetwork] = useState<ResultOption<NetworkOption>>();
   const [stakingNetworks, setStakingNetworks] = useState<Option<NetworkOption>[]>([]);
 
-  const activeWallets = getActiveWallets();
+  const activeAccounts = getActiveAccounts();
 
   const chainId = (activeNetwork?.id || '') as ChainId;
   const api = connections[chainId]?.api;
   const connection = connections[chainId]?.connection;
-  const accounts = activeWallets?.map((wallet) => (wallet.mainAccounts[0] || wallet.chainAccounts[0])?.accountId) || [];
+  const accounts = activeAccounts.reduce<AccountID[]>((acc, account) => {
+    return account.accountId ? acc.concat(account.accountId) : acc;
+  }, []);
 
   useEffect(() => {
     if (!connection) return;
@@ -63,7 +65,7 @@ const Overview = () => {
       const chainsData = await getChainsData();
 
       const relaychains = sortChains(chainsData).reduce<Option<NetworkOption>[]>((acc, chain) => {
-        const asset = chain.assets.find((asset) => asset.staking === StakingType.RELAYCHAIN);
+        const asset = chain.assets.find((asset) => asset.staking === StakingType.RELAYCHAIN) as Asset;
         if (!asset) return acc;
 
         return acc.concat({
@@ -87,24 +89,45 @@ const Overview = () => {
     })();
   }, []);
 
+  useEffect(() => {
+    if (!chainId || !api?.isConnected) return;
+
+    (async () => {
+      await subscribeActiveEra(chainId, api);
+    })();
+  }, [api]);
+
+  useEffect(() => {
+    if (!chainId || !api?.isConnected) return;
+
+    (async () => {
+      const accounts = activeAccounts.reduce(
+        (acc, account) => (account.accountId ? [...acc, account.accountId] : acc),
+        [] as string[],
+      );
+      await subscribeLedger(chainId, api, accounts);
+    })();
+  }, [activeAccounts, api]);
+
   // TODO: Continue during StakingList task
   // @ts-ignore
-  const formattedWallets = (activeWallets || [])?.reduce((acc, wallet) => {
+  const formattedWallets = activeAccounts.reduce<{ name: string; accountId: AccountID }[]>((acc, account) => {
     // TODO: maybe add staking here
-    if (!wallet.name.toLowerCase().includes(query.toLowerCase())) return acc;
+    if (!account.name.toLowerCase().includes(query.toLowerCase())) return acc;
 
-    const isParentWallet = wallet.parentWalletId === undefined;
-    if (isParentWallet) {
-      return acc.concat({ name: wallet.name, accountId: wallet.mainAccounts[0]?.accountId });
+    const isRootWallet = account.rootId === undefined;
+    if (isRootWallet && account.accountId) {
+      return acc.concat({ name: account.name, accountId: account.accountId });
     }
 
-    const isRelevantDerived = wallet.chainAccounts[0]?.chainId === activeNetwork?.id;
-    if (isRelevantDerived) {
-      acc.push({ name: wallet.name, accountId: wallet.chainAccounts[0]?.accountId });
+    const isRelevantDerived = account.chainId === activeNetwork?.id;
+
+    if (isRelevantDerived && account.accountId) {
+      acc.push({ name: account.name, accountId: account.accountId });
     }
 
     return acc;
-  }, [] as { name: string; accountId: AccountID }[]);
+  }, []);
 
   const totalStakes = Object.values(staking).reduce<string[]>((acc, stake) => {
     return acc.concat(stake?.total || '0');

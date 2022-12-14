@@ -4,25 +4,22 @@ import { useI18n } from '@renderer/context/I18nContext';
 import { Asset } from '@renderer/domain/asset';
 import { formatAddress } from '@renderer/utils/address';
 import { Transaction } from '@renderer/domain/transaction';
-import { Wallet } from '@renderer/domain/wallet';
 import { ExtendedChain } from '@renderer/services/network/common/types';
+import { Account } from '@renderer/domain/account';
 
 type Props = {
   transaction: Transaction;
-  wallet: Wallet;
+  account: Account;
   asset: Asset;
   connection: ExtendedChain;
 };
 
-const Transfer = ({ transaction, wallet, asset, connection }: Props) => {
+const Transfer = ({ transaction, account, asset, connection }: Props) => {
   const { t } = useI18n();
 
   const { value, dest } = transaction.args;
 
-  const currentAddress = formatAddress(
-    wallet?.mainAccounts[0].accountId || wallet?.chainAccounts[0].accountId || '',
-    connection.addressPrefix,
-  );
+  const currentAddress = formatAddress(account.accountId || '', connection.addressPrefix);
 
   return (
     <div className="w-[500px] rounded-2xl bg-shade-2 p-5 flex flex-col items-center m-auto gap-2.5">
@@ -45,7 +42,7 @@ const Transfer = ({ transaction, wallet, asset, connection }: Props) => {
             <div className="text-sm text-neutral-variant ">{t('transferDetails.wallet')}</div>
             <div className="flex gap-1 items-center font-semibold">
               <Icon name="paritySignerBackground" size={16} />
-              {wallet.name}
+              {account.name}
             </div>
           </div>
           <div className="flex justify-between px-5 py-3">

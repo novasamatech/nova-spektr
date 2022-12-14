@@ -5,12 +5,12 @@ import { Controller, SubmitHandler, useForm } from 'react-hook-form';
 import { AccountsList } from '@renderer/components/common';
 import { BaseModal, Button, ButtonBack, Icon, Identicon, Input } from '@renderer/components/ui';
 import { useI18n } from '@renderer/context/I18nContext';
+import { createAccount } from '@renderer/domain/account';
 import { Chain } from '@renderer/domain/chain';
-import { ErrorType, PublicKey } from '@renderer/domain/shared-kernel';
-import { createMainAccount, createSimpleWallet, WalletType } from '@renderer/domain/wallet';
+import { ErrorType, PublicKey, SigningType } from '@renderer/domain/shared-kernel';
 import useToggle from '@renderer/hooks/useToggle';
+import { useAccount } from '@renderer/services/account/accountService';
 import { useChains } from '@renderer/services/network/chainsService';
-import { useWallet } from '@renderer/services/wallet/walletService';
 import { pasteAddressHandler, toPublicKey } from '@renderer/utils/address';
 import FinalStep from '../FinalStep/FinalStep';
 
@@ -36,7 +36,7 @@ const WatchOnly = () => {
   });
 
   const { getChainsData, sortChains } = useChains();
-  const { addWallet, toggleActiveWallet } = useWallet();
+  const { addAccount, toggleActiveAccount } = useAccount();
   const [isModalOpen, toggleModal] = useToggle();
 
   const [chains, setChains] = useState<Chain[]>([]);
@@ -59,28 +59,22 @@ const WatchOnly = () => {
   const handleCreateWallet: SubmitHandler<WalletForm> = async ({ walletName, address }) => {
     if (!publicKey || publicKey.length === 0) return;
 
-    const newWallet = createSimpleWallet({
+    const newAccount = createAccount({
       name: walletName.trim(),
-      type: WalletType.WATCH_ONLY,
-      mainAccounts: [
-        createMainAccount({
-          accountId: address,
-          publicKey,
-        }),
-      ],
-      chainAccounts: [],
+      signingType: SigningType.WATCH_ONLY,
+      accountId: address,
     });
 
-    const walletId = await addWallet(newWallet);
+    const accountId = await addAccount(newAccount);
 
-    await toggleActiveWallet(walletId);
+    await toggleActiveAccount(accountId);
     setIsCompleted(true);
   };
 
   const validateAddress = (a: string) => Boolean(toPublicKey(a));
 
   if (isCompleted) {
-    return <FinalStep walletType={WalletType.WATCH_ONLY} />;
+    return <FinalStep signingType={SigningType.WATCH_ONLY} />;
   }
 
   const errorButtonText =
