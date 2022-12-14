@@ -5,6 +5,8 @@ on:
       - 'v*' # Push events to matching v*, i.e. v1.0, v20.15.10
   pull_request:
 
+env:
+  CSC_FOR_PULL_REQUEST: true
 
 jobs:
   release-build:
@@ -14,7 +16,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [macos-latest, ubuntu-latest, windows-latest]
+        os: [macos-latest]
 
     steps:
       - name: Checkout
