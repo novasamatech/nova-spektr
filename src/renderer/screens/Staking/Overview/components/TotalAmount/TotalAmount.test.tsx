@@ -48,14 +48,18 @@ describe('screens/Staking/Overview/TotalAmount', () => {
   });
 
   test('should render total values', () => {
+    const accounts = [TEST_ADDRESS, '5GmedEVixRJoE8TjMePLqz7DnnQG1d5517sXdiAvAF2t7EYW'];
     (useStakingRewards as jest.Mock).mockReturnValue({
-      rewards: { [TEST_ADDRESS]: '360854699511' },
       isLoading: false,
+      rewards: {
+        [accounts[0]]: '360854699511',
+        [accounts[1]]: '519204699511',
+      },
     });
-    render(<TotalAmount totalStakes={['201494854699000']} accounts={[TEST_ADDRESS]} asset={asset} />);
+    render(<TotalAmount totalStakes={['201494854699000', '401494854699000']} accounts={accounts} asset={asset} />);
 
-    const rewards = screen.getByText(/0.36085/);
-    const staking = screen.getByText(/201.49/);
+    const rewards = screen.getByText(/0.88005/);
+    const staking = screen.getByText(/602.98/);
     expect(rewards).toBeInTheDocument();
     expect(staking).toBeInTheDocument();
   });
