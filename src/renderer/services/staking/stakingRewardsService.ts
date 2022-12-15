@@ -8,7 +8,7 @@ import { IStakingRewardsService, RewardsMap } from '@renderer/services/staking/c
 import { toPublicKey } from '@renderer/utils/address';
 
 export const useStakingRewards = (accounts: AccountID[], addressPrefix: number): IStakingRewardsService => {
-  const accountsWithPrefix = (accounts: AccountID[], addressPrefix: number): AccountID[] => {
+  const getAccountsWithPrefix = (accounts: AccountID[], addressPrefix: number): AccountID[] => {
     return accounts.reduce((acc, account) => {
       const publicKey = toPublicKey(account);
 
@@ -18,7 +18,7 @@ export const useStakingRewards = (accounts: AccountID[], addressPrefix: number):
 
   const { data, loading } = useQuery<RewardsQuery>(GET_TOTAL_REWARDS, {
     variables: {
-      addresses: accounts.length === 0 ? [''] : accountsWithPrefix(accounts, addressPrefix),
+      addresses: accounts.length === 0 ? [''] : getAccountsWithPrefix(accounts, addressPrefix),
     },
   });
 
