@@ -226,9 +226,6 @@
     "title": "Signing",
     "troubleshootingLink": "I have an error in Parity Signer"
   },
-  "splash": {
-    "title": "Omni Enterprise"
-  },
   "staking": {
     "bond": {
       "confirmBondSubtitle": "Потверждение",
