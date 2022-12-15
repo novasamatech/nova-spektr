@@ -14,6 +14,7 @@ export interface IStakingDataService {
   getValidators: (chainId: ChainId, api: ApiPromise) => Promise<void>;
   getMaxValidators: (api: ApiPromise) => number;
   getNominators: (api: ApiPromise, account: AccountID) => Promise<string[]>;
+  getMinNominatorBond: (api: ApiPromise) => Promise<string>;
 }
 
 // =====================================================
