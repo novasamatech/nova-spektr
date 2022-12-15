@@ -15,7 +15,7 @@ jest.mock('@renderer/context/NetworkContext', () => ({
 
 jest.mock('@renderer/context/GraphqlContext', () => ({
   useGraphql: jest.fn(() => ({
-    setGraphqlEndpoint: jest.fn(),
+    changeClient: jest.fn(),
   })),
 }));
 

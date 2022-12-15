@@ -139,9 +139,7 @@ describe('context/NetworkContext/useNetworkContext', () => {
   });
 
   test('should have defined functions', () => {
-    const wrapper = ({ children }: any) => <NetworkProvider>{children}</NetworkProvider>;
-
-    const { result } = renderHook(() => useNetworkContext(), { wrapper });
+    const { result } = renderHook(() => useNetworkContext(), { wrapper: NetworkProvider });
     const { connections, connectToNetwork, addRpcNode, removeRpcNode, validateRpcNode } = result.current;
 
     waitFor(() => {
