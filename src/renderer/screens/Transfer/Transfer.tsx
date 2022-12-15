@@ -57,11 +57,11 @@ const Transfer = () => {
   const [isSuccessMessageOpen, setIsSuccessMessageOpen] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
   const [validationError, setValidationError] = useState<ValidationErrors>();
-
   const [_, setBalance] = useState('');
 
   const activeAccounts = getActiveAccounts();
-  const currentAccount = activeAccounts?.find((account) => !account.rootId || account.chainId === chainId);
+
+  const currentAccount = activeAccounts.find((account) => !account.rootId || account.chainId === chainId);
   const currentConnection = chainId ? connections[chainId as ChainId] : undefined;
   const currentAsset =
     assetId && currentConnection

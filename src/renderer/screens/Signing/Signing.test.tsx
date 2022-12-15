@@ -15,8 +15,8 @@ jest.mock('@renderer/context/I18nContext', () => ({
 jest.mock('@renderer/context/NetworkContext', () => ({
   useNetworkContext: jest.fn(() => ({
     connections: {
-      '0x0000000000000000000000000000000000000000': {
-        chainId: '1',
+      '0x123': {
+        chainId: '0x123',
         assets: [
           { assetId: '1', symbol: '1' },
           { assetId: '2', symbol: '2' },

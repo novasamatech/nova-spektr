@@ -18,7 +18,7 @@ const SelectedAddress = ({ account, connection }: Props) => {
         <div className="flex gap-2.5 items-center">
           <Icon name="paritySignerBackground" size={34} />
           <div className="flex flex-col">
-            <div className="font-bold text-lg leading-5 text-neutral">{account.name}</div>
+            <p className="font-bold text-lg leading-5 text-neutral">{account.name}</p>
             <Address className="leading-4" type="short" address={currentAddress} addressStyle="normal" size={14} />
           </div>
         </div>

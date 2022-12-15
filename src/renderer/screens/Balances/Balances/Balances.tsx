@@ -37,7 +37,7 @@ const Balances = () => {
   };
 
   useEffect(() => {
-    if (!activeAccounts || activeAccounts.length === 0) {
+    if (activeAccounts.length === 0) {
       setPublicKeys([]);
 
       return;
@@ -49,7 +49,7 @@ const Balances = () => {
     );
 
     setPublicKeys(activePublicKeys);
-  }, [activeAccounts?.length]);
+  }, [activeAccounts.length]);
 
   const sortedChains = sortChains(
     Object.values(connections).filter((c) => c.connection.connectionType !== ConnectionType.DISABLED),
@@ -59,7 +59,7 @@ const Balances = () => {
     chain.assets.some((a) => a.symbol.toLowerCase() === query.toLowerCase()),
   );
 
-  const canMakeActions = activeAccounts?.some((account) => account.signingType === SigningType.PARITY_SIGNER) || false;
+  const canMakeActions = activeAccounts.some((account) => account.signingType === SigningType.PARITY_SIGNER) || false;
 
   const onReceive = (chain: Chain) => (asset: Asset) => {
     setReceiveData({ chain, asset });

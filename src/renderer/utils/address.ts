@@ -21,7 +21,7 @@ export const toPublicKey = (address?: string): PublicKey | undefined => {
   try {
     return u8aToHex(decodeAddress(address));
   } catch (e) {
-    return;
+    return undefined;
   }
 };
 

@@ -3,7 +3,7 @@ import { IndexableType } from 'dexie';
 import { Balance } from '@renderer/domain/balance';
 import { Connection, ConnectionType } from '@renderer/domain/connection';
 import { Contact } from '@renderer/domain/contact';
-import { ChainId, PublicKey } from '@renderer/domain/shared-kernel';
+import { AccountID, ChainId, PublicKey } from '@renderer/domain/shared-kernel';
 import { Wallet } from '@renderer/domain/wallet';
 import { Transaction } from '@renderer/domain/transaction';
 import { Account } from '@renderer/domain/account';
@@ -44,9 +44,9 @@ export interface IWalletStorage {
 export interface IAccountStorage {
   getAccount: (accountId: IndexableType) => Promise<AccountDS | undefined>;
   getAccounts: (where?: Record<string, any>) => Promise<AccountDS[]>;
-  addAccount: (wallet: Account) => Promise<IndexableType>;
-  updateAccount: (wallet: Account) => Promise<IndexableType>;
-  deleteAccount: (walletId: string) => Promise<void>;
+  addAccount: (account: Account) => Promise<IndexableType>;
+  updateAccount: (account: Account) => Promise<IndexableType>;
+  deleteAccount: (accountId: AccountID) => Promise<void>;
 }
 
 // =====================================================

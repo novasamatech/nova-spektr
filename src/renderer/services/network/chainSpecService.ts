@@ -9,8 +9,17 @@ const KnownChains: Record<ChainId, WellKnownChain> = {
   [Chains.KUSAMA]: WellKnownChain.ksmcc3,
 };
 
-export const useChainSpec = (): IChainSpecService => ({
-  getLightClientChains: (): ChainId[] => Object.keys(KnownChains) as ChainId[],
+export const useChainSpec = (): IChainSpecService => {
+  const getLightClientChains = (): ChainId[] => {
+    return Object.keys(KnownChains) as ChainId[];
+  };
 
-  getKnownChain: (chainId: ChainId): WellKnownChain | undefined => KnownChains[chainId],
-});
+  const getKnownChain = (chainId: ChainId): WellKnownChain | undefined => {
+    return KnownChains[chainId];
+  };
+
+  return {
+    getLightClientChains,
+    getKnownChain,
+  };
+};

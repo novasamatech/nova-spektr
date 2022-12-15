@@ -1,38 +1,46 @@
 import { useEffect, useState } from 'react';
 import { Trans } from 'react-i18next';
 
-import { Balance, ButtonLink, Dropdown, Icon, Input } from '@renderer/components/ui';
+import { ButtonLink, Dropdown, Icon, Input } from '@renderer/components/ui';
 import { Option, ResultOption } from '@renderer/components/ui/Dropdowns/common/types';
+import { useGraphql } from '@renderer/context/GraphqlContext';
 import { useI18n } from '@renderer/context/I18nContext';
 import { useNetworkContext } from '@renderer/context/NetworkContext';
 import { Asset, StakingType } from '@renderer/domain/asset';
 import { ConnectionStatus, ConnectionType } from '@renderer/domain/connection';
 import { AccountID, ChainId } from '@renderer/domain/shared-kernel';
 import Paths from '@renderer/routes/paths';
+import TotalAmount from '@renderer/screens/Staking/Overview/components/TotalAmount/TotalAmount';
 import { useChains } from '@renderer/services/network/chainsService';
 import { useSettingsStorage } from '@renderer/services/settings/settingsStorage';
-import { useStaking } from '@renderer/services/staking/stakingService';
+import { useStakingData } from '@renderer/services/staking/stakingDataService';
 import { useAccount } from '@renderer/services/account/accountService';
 import { AboutStaking, Filter, InfoBanners, StakingList } from './components';
 
+type NetworkOption = { asset: Asset; addressPrefix: number };
+
 const Overview = () => {
   const { t } = useI18n();
+  const { changeClient } = useGraphql();
   const { connections } = useNetworkContext();
   const { getActiveAccounts } = useAccount();
   const { sortChains, getChainsData } = useChains();
-  const { subscribeActiveEra, subscribeLedger } = useStaking();
+  const { staking, subscribeActiveEra, subscribeLedger } = useStakingData();
   const { setStakingNetwork, getStakingNetwork } = useSettingsStorage();
 
   const [query, setQuery] = useState('');
   const [isNetworkActive, setIsNetworkActive] = useState(true);
-  const [activeNetwork, setActiveNetwork] = useState<ResultOption<Asset>>();
-  const [stakingNetworks, setStakingNetworks] = useState<Option<Asset>[]>([]);
+  const [activeNetwork, setActiveNetwork] = useState<ResultOption<NetworkOption>>();
+  const [stakingNetworks, setStakingNetworks] = useState<Option<NetworkOption>[]>([]);
 
   const activeAccounts = getActiveAccounts();
 
   const chainId = (activeNetwork?.id || '') as ChainId;
   const api = connections[chainId]?.api;
   const connection = connections[chainId]?.connection;
+  const accounts = activeAccounts.reduce<AccountID[]>((acc, account) => {
+    return account.accountId ? acc.concat(account.accountId) : acc;
+  }, []);
 
   useEffect(() => {
     if (!connection) return;
@@ -44,24 +52,25 @@ const Overview = () => {
   }, [connection, isNetworkActive]);
 
   useEffect(() => {
-    if (!chainId || !api?.isConnected) return;
+    if (!chainId || !api?.isConnected || accounts.length === 0) return;
 
     (async () => {
       await subscribeActiveEra(chainId, api);
+      await subscribeLedger(chainId, api, accounts);
     })();
-  }, [api]);
+  }, [api, accounts.length]);
 
   useEffect(() => {
     (async () => {
       const chainsData = await getChainsData();
 
-      const relaychains = sortChains(chainsData).reduce((acc, chain) => {
+      const relaychains = sortChains(chainsData).reduce<Option<NetworkOption>[]>((acc, chain) => {
         const asset = chain.assets.find((asset) => asset.staking === StakingType.RELAYCHAIN) as Asset;
         if (!asset) return acc;
 
         return acc.concat({
           id: chain.chainId,
-          value: asset,
+          value: { asset, addressPrefix: chain.addressPrefix },
           element: (
             <>
               <img src={chain.icon} alt="" width={20} height={20} />
@@ -69,13 +78,14 @@ const Overview = () => {
             </>
           ),
         });
-      }, [] as Option<Asset>[]);
+      }, []);
 
       const settingsChainId = getStakingNetwork();
       const settingsChain = relaychains.find((chain) => chain.id === settingsChainId);
 
       setStakingNetworks(relaychains);
       setActiveNetwork(settingsChain || { id: relaychains[0].id, value: relaychains[0].value });
+      changeClient(settingsChainId || relaychains[0].id);
     })();
   }, []);
 
@@ -88,7 +98,7 @@ const Overview = () => {
   }, [api]);
 
   useEffect(() => {
-    if (!chainId || !api?.isConnected || !activeAccounts) return;
+    if (!chainId || !api?.isConnected) return;
 
     (async () => {
       const accounts = activeAccounts.reduce(
@@ -101,7 +111,7 @@ const Overview = () => {
 
   // TODO: Continue during StakingList task
   // @ts-ignore
-  const formattedWallets = (activeAccounts || [])?.reduce((acc, account) => {
+  const formattedWallets = activeAccounts.reduce<{ name: string; accountId: AccountID }[]>((acc, account) => {
     // TODO: maybe add staking here
     if (!account.name.toLowerCase().includes(query.toLowerCase())) return acc;
 
@@ -117,7 +127,11 @@ const Overview = () => {
     }
 
     return acc;
-  }, [] as { name: string; accountId: AccountID }[]);
+  }, []);
+
+  const totalStakes = Object.values(staking).reduce<string[]>((acc, stake) => {
+    return acc.concat(stake?.total || '0');
+  }, []);
 
   return (
     <div className="h-full flex flex-col">
@@ -126,7 +140,11 @@ const Overview = () => {
       <div className="w-[900px] p-5 mx-auto bg-shade-2 rounded-2lg">
         <div className="flex items-center">
           <p className="text-xl text-neutral mr-5">
-            <Trans t={t} i18nKey="staking.overview.stakingAssetLabel" values={{ asset: activeNetwork?.value.symbol }} />
+            <Trans
+              t={t}
+              i18nKey="staking.overview.stakingAssetLabel"
+              values={{ asset: activeNetwork?.value.asset.symbol }}
+            />
           </p>
           <Dropdown
             className="w-40"
@@ -135,30 +153,21 @@ const Overview = () => {
             options={stakingNetworks}
             onChange={(option) => {
               setStakingNetwork(option.id as ChainId);
+              changeClient(option.id as ChainId);
               setActiveNetwork(option);
             }}
           />
-          <div className="grid grid-flow-row grid-cols-2 gap-x-12.5 ml-auto text-right">
-            <p className="uppercase text-shade-40 font-semibold text-xs">{t('staking.overview.totalRewardsLabel')}</p>
-            <p className="uppercase text-shade-40 font-semibold text-xs">{t('staking.overview.totalStakedLabel')}</p>
-            <Balance
-              className="font-semibold text-2xl text-neutral"
-              value="103437564986527"
-              precision={10}
-              symbol={activeNetwork?.value.symbol}
-            />
-            <Balance
-              className="font-semibold text-2xl text-neutral-variant"
-              value="103437564986527"
-              precision={10}
-              symbol={activeNetwork?.value.symbol}
-            />
-          </div>
+          <TotalAmount
+            totalStakes={totalStakes}
+            asset={activeNetwork?.value.asset}
+            accounts={accounts}
+            addressPrefix={activeNetwork?.value.addressPrefix}
+          />
         </div>
 
         {isNetworkActive ? (
           <>
-            <AboutStaking asset={activeNetwork?.value} />
+            <AboutStaking asset={activeNetwork?.value.asset} />
             <InfoBanners />
 
             <div className="flex items-center justify-between">

@@ -27,6 +27,7 @@ const Signing = () => {
   const { getActiveAccounts } = useAccount();
   const { sortChains } = useChains();
   const { createPayload } = useTransaction();
+
   const activeAccounts = getActiveAccounts();
 
   const [txPayload, setTxPayload] = useState<Uint8Array>();
@@ -47,7 +48,7 @@ const Signing = () => {
     Object.values(connections).filter((c) => c.connection.connectionType !== ConnectionType.DISABLED),
   );
 
-  const currentAccount = activeAccounts?.[0];
+  const currentAccount = activeAccounts[0];
   const currentAddress = currentAccount?.accountId;
   const currentConnection = sortedChains[0];
 
@@ -89,7 +90,7 @@ const Signing = () => {
               <div className="flex gap-2.5">
                 <Icon name="paritySignerBackground" size={32} />
                 <div>
-                  <div className="font-bold text-lg text-neutral">{currentAccount.name}</div>
+                  <p className="font-bold text-lg text-neutral">{currentAccount.name}</p>
                   <Address type="short" address={currentAddress} addressStyle="small" />
                 </div>
               </div>
