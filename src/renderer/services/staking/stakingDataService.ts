@@ -284,6 +284,16 @@ export const useStakingData = (): IStakingDataService => {
     }
   };
 
+  const getMinNominatorBond = async (api: ApiPromise): Promise<string> => {
+    try {
+      return (await api.query.staking.minNominatorBond()).toString();
+    } catch (error) {
+      console.warn(error);
+
+      return '0';
+    }
+  };
+
   return {
     staking,
     validators,
@@ -292,5 +302,6 @@ export const useStakingData = (): IStakingDataService => {
     getValidators,
     getMaxValidators,
     getNominators,
+    getMinNominatorBond,
   };
 };
