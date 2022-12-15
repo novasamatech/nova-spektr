@@ -12,6 +12,10 @@ inputs:
     description: 'Name for creating branch'
     required: true
     default: 'update'
+  destination_branch:
+    description: 'Name for destination branch'
+    required: false
+    default: 'dev'
   github-token:
     description: 'Token for making operations with GitHub'
     required: true
@@ -41,7 +45,7 @@ runs:
       name: pull-request
       with:
         source_branch: '${{ inputs.branch-name }}-${{github.run_number}}'
-        destination_branch: 'dev'
+        destination_branch: ${{ inputs.destination_branch }}
         pr_title: ${{ inputs.commit-message }}
         pr_body: |
           That pull-request was generated automatically 🤖
