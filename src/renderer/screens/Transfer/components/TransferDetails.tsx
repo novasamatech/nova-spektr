@@ -19,7 +19,7 @@ const Transfer = ({ transaction, account, asset, connection }: Props) => {
 
   const { value, dest } = transaction.args;
 
-  const currentAddress = formatAddress(account?.accountId || '', connection?.addressPrefix);
+  const currentAddress = formatAddress(account.accountId || '', connection.addressPrefix);
 
   return (
     <div className="w-[500px] rounded-2xl bg-shade-2 p-5 flex flex-col items-center m-auto gap-2.5">

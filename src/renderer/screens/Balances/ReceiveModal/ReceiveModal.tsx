@@ -31,31 +31,30 @@ const ReceiveModal = ({ data, isOpen, onClose }: Props) => {
   const [activeAccount, setActiveAccount] = useState<ResultOption<number>>();
   const [accounts, setAccounts] = useState<Option<number>[]>([]);
 
-  const activeAccounts = getActiveAccounts() || [];
+  const activeAccounts = getActiveAccounts();
 
   useEffect(() => {
-    const accounts =
-      activeAccounts.reduce((acc, account, index) => {
-        if (account.chainId !== undefined && account.chainId !== data?.chain.chainId) return acc;
-        const address = toAddress(account.publicKey || '0x00', data?.chain.addressPrefix);
+    const accounts = activeAccounts.reduce<Option[]>((acc, account, index) => {
+      if (account.chainId !== undefined && account.chainId !== data?.chain.chainId) return acc;
+      const address = toAddress(account.publicKey || '0x00', data?.chain.addressPrefix);
 
-        const accountType =
-          account.signingType === SigningType.PARITY_SIGNER ? 'paritySignerBackground' : 'watchOnlyBackground';
+      const accountType =
+        account.signingType === SigningType.PARITY_SIGNER ? 'paritySignerBackground' : 'watchOnlyBackground';
 
-        const accountOption = {
-          id: address,
-          value: index,
-          element: (
-            <div className="grid grid-rows-2 grid-flow-col gap-x-2.5">
-              <Icon className="row-span-2 self-center" name={accountType} size={34} />
-              <p className="text-left text-neutral text-lg font-semibold leading-5">{account.name}</p>
-              <Address type="short" address={address} noCopy />
-            </div>
-          ),
-        };
+      const accountOption = {
+        id: address,
+        value: index,
+        element: (
+          <div className="grid grid-rows-2 grid-flow-col gap-x-2.5">
+            <Icon className="row-span-2 self-center" name={accountType} size={34} />
+            <p className="text-left text-neutral text-lg font-semibold leading-5">{account.name}</p>
+            <Address type="short" address={address} noCopy />
+          </div>
+        ),
+      };
 
-        return acc.concat(accountOption);
-      }, [] as Option[]) || [];
+      return acc.concat(accountOption);
+    }, []);
 
     if (accounts.length === 0) return;
 
@@ -63,7 +62,7 @@ const ReceiveModal = ({ data, isOpen, onClose }: Props) => {
     setActiveAccount({ id: accounts[0].id, value: accounts[0].value });
   }, [activeAccounts.length, data?.chain.chainId]);
 
-  const account = activeAccount ? activeAccounts[activeAccount.value as number] : undefined;
+  const account = activeAccount ? activeAccounts[activeAccount.value] : undefined;
   const publicKey = account?.publicKey || '0x00';
   const address = toAddress(publicKey, data?.chain.addressPrefix);
 
@@ -87,7 +86,7 @@ const ReceiveModal = ({ data, isOpen, onClose }: Props) => {
           <span className="ml-1">{data?.chain.name}</span>
         </div>
 
-        {activeAccounts && activeAccounts.length > 1 && (
+        {activeAccounts.length > 1 && (
           <Dropdown
             weight="lg"
             placeholder={t('receive.selectWalletPlaceholder')}

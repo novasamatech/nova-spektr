@@ -2,16 +2,16 @@ import cn from 'classnames';
 import { useRef, useState } from 'react';
 import { NavLink } from 'react-router-dom';
 
-import Paths from '@renderer/routes/paths';
-import { Icon, Identicon } from '@renderer/components/ui';
 // import { useMatrix } from '@renderer/context/MatrixContext';
+import { Icon, Identicon } from '@renderer/components/ui';
 import { useI18n } from '@renderer/context/I18nContext';
-import Wallets from '../Wallets/Wallets';
-import useClickOutside from '@renderer/hooks/useClickOutside';
-import './Navigation.css';
-import { AccountDS } from '@renderer/services/storage';
 import { SigningType } from '@renderer/domain/shared-kernel';
+import useClickOutside from '@renderer/hooks/useClickOutside';
+import Paths from '@renderer/routes/paths';
 import { useAccount } from '@renderer/services/account/accountService';
+import { AccountDS } from '@renderer/services/storage';
+import Wallets from '../Wallets/Wallets';
+import './Navigation.css';
 
 type CardType = SigningType | 'multiple' | 'none';
 
@@ -22,8 +22,8 @@ const CardStyle: Record<CardType, string> = {
   none: 'bg-shade-40 border-[3px] border-shade-40',
 };
 
-const getCardType = (accounts?: AccountDS[]): CardType => {
-  if (!accounts || !accounts.length) return 'none';
+const getCardType = (accounts: AccountDS[]): CardType => {
+  if (accounts.length === 0) return 'none';
   if (accounts.length > 1) return 'multiple';
 
   return accounts[0].signingType;
@@ -43,8 +43,10 @@ const NavItems = [
 const Navigation = () => {
   const walletsRef = useRef<HTMLDivElement>(null);
   const showWalletsRef = useRef<HTMLButtonElement>(null);
+
   const { LocaleComponent, t } = useI18n();
   const { getActiveAccounts } = useAccount();
+
   const activeAccounts = getActiveAccounts();
   const cardType = getCardType(activeAccounts);
 
@@ -71,7 +73,7 @@ const Navigation = () => {
   //   }
   // };
 
-  const currentAccount = activeAccounts?.length ? activeAccounts[0] : undefined;
+  const currentAccount = activeAccounts[0];
 
   const accountName =
     cardType === 'multiple'

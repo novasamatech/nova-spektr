@@ -12,6 +12,7 @@ import { ChainId } from '@renderer/domain/shared-kernel';
 
 export interface IChainService {
   getChainsData: () => Promise<Chain[]>;
+  getStakingChainsData: () => Promise<Chain[]>;
   sortChains: <T extends ChainLike>(chains: T[]) => T[];
   getExpectedBlockTime: (api: ApiPromise) => BN;
 }

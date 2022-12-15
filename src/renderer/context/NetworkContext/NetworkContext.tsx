@@ -22,10 +22,11 @@ type NetworkContextProps = {
 const NetworkContext = createContext<NetworkContextProps>({} as NetworkContextProps);
 
 export const NetworkProvider = ({ children }: PropsWithChildren) => {
+  const { getActiveAccounts } = useAccount();
   const { subscribe, hasSubscription, unsubscribe } = useSubscription<ChainId>();
   const { connections, setupConnections, connectToNetwork, connectWithAutoBalance, ...rest } = useNetwork(unsubscribe);
   const { subscribeBalances, subscribeLockBalances } = useBalance();
-  const { getActiveAccounts } = useAccount();
+
   const activeAccounts = getActiveAccounts();
 
   const [connectionsReady, setConnectionReady] = useState(false);
@@ -77,16 +78,14 @@ export const NetworkProvider = ({ children }: PropsWithChildren) => {
   };
 
   useEffect(() => {
-    const publicKeys =
-      activeAccounts?.reduce(
-        (acc, account) => (account.publicKey ? [...acc, account.publicKey] : acc),
-        [] as PublicKey[],
-      ) || [];
+    const publicKeys = activeAccounts.reduce<PublicKey[]>((acc, account) => {
+      return account.publicKey ? [...acc, account.publicKey] : acc;
+    }, []);
 
     Object.values(connections).forEach((chain) => {
       subscribeBalanceChanges(chain, publicKeys);
     });
-  }, [connections, activeAccounts?.length]);
+  }, [connections, activeAccounts.length]);
 
   return (
     <NetworkContext.Provider value={{ connections, connectToNetwork, connectWithAutoBalance, ...rest }}>

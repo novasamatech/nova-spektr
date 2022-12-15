@@ -5,14 +5,14 @@ import { Controller, SubmitHandler, useForm } from 'react-hook-form';
 import { AccountsList } from '@renderer/components/common';
 import { BaseModal, Button, ButtonBack, Icon, Identicon, Input } from '@renderer/components/ui';
 import { useI18n } from '@renderer/context/I18nContext';
+import { createAccount } from '@renderer/domain/account';
 import { Chain } from '@renderer/domain/chain';
 import { ErrorType, PublicKey, SigningType } from '@renderer/domain/shared-kernel';
 import useToggle from '@renderer/hooks/useToggle';
+import { useAccount } from '@renderer/services/account/accountService';
 import { useChains } from '@renderer/services/network/chainsService';
 import { pasteAddressHandler, toPublicKey } from '@renderer/utils/address';
 import FinalStep from '../FinalStep/FinalStep';
-import { useAccount } from '@renderer/services/account/accountService';
-import { createAccount } from '@renderer/domain/account';
 
 type WalletForm = {
   walletName: string;
@@ -65,9 +65,9 @@ const WatchOnly = () => {
       accountId: address,
     });
 
-    const walletId = await addAccount(newAccount);
+    const accountId = await addAccount(newAccount);
 
-    await toggleActiveAccount(walletId);
+    await toggleActiveAccount(accountId);
     setIsCompleted(true);
   };
 

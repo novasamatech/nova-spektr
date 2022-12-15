@@ -10,7 +10,7 @@ export type Chain = {
   explorers?: Explorer[];
   icon: string;
   addressPrefix: number;
-  externalApi?: Record<ApiType, ExternalApi | ExternalApi[]>;
+  externalApi?: Record<ExternalType, ExternalValue>;
   options?: ChainOptions[];
 };
 
@@ -28,10 +28,10 @@ export type Explorer = {
   event?: string;
 };
 
-export type ExternalApi = {
+export type ExternalValue = {
   type: HistoryType;
   url: string;
 };
 
-export type ApiType = 'history';
-export type HistoryType = 'subquery';
+type ExternalType = 'history' | 'staking' | 'crowdloans';
+type HistoryType = 'subquery' | 'github';

@@ -9,17 +9,17 @@ import { AccountsList, Explorers } from '@renderer/components/common';
 import { AddressInfo, SeedInfo, SimpleSeedInfo } from '@renderer/components/common/QrCode/QrReader/common/types';
 import { BaseModal, Button, Icon, Identicon, Input } from '@renderer/components/ui';
 import { useI18n } from '@renderer/context/I18nContext';
+import { Account, createAccount } from '@renderer/domain/account';
 import { Chain } from '@renderer/domain/chain';
 import { ChainId, HexString, PublicKey, SigningType } from '@renderer/domain/shared-kernel';
 import useToggle from '@renderer/hooks/useToggle';
 import ScanMoreModal from '@renderer/screens/Onboarding/Parity/ScanMoreModal/ScanMoreModal';
+import { useAccount } from '@renderer/services/account/accountService';
 import { toAddress } from '@renderer/services/balance/common/utils';
 import { useChains } from '@renderer/services/network/chainsService';
 import { toPublicKey } from '@renderer/utils/address';
 import { getShortAddress } from '@renderer/utils/strings';
-import { useAccount } from '@renderer/services/account/accountService';
 import './StepThree.css';
-import { Account, createAccount } from '@renderer/domain/account';
 
 type Props = {
   qrData: SeedInfo[];

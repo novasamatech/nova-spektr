@@ -11,8 +11,8 @@ export const useWallet = (): IWalletService => {
   }
   const { getWallet, getWallets, addWallet, updateWallet, deleteWallet } = walletStorage;
 
-  const getLiveWallets = (where?: Record<string, any>) =>
-    useLiveQuery((): Promise<WalletDS[]> => {
+  const getLiveWallets = (where?: Record<string, any>): WalletDS[] => {
+    const query = () => {
       try {
         return getWallets(where);
       } catch (error) {
@@ -20,7 +20,10 @@ export const useWallet = (): IWalletService => {
 
         return Promise.resolve([]);
       }
-    });
+    };
+
+    return useLiveQuery(query, [], []);
+  };
 
   return {
     getWallet,

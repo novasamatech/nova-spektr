@@ -3,10 +3,10 @@ import { ApiPromise } from '@polkadot/api';
 import { AccountID, ChainId } from '@renderer/domain/shared-kernel';
 
 // =====================================================
-// ============ IStakingService interface ==============
+// ============ IStakingDataService interface ==============
 // =====================================================
 
-export interface IStakingService {
+export interface IStakingDataService {
   staking: StakingMap;
   validators: ValidatorMap;
   subscribeActiveEra: (chainId: ChainId, api: ApiPromise) => Promise<void>;
@@ -14,6 +14,13 @@ export interface IStakingService {
   getValidators: (chainId: ChainId, api: ApiPromise) => Promise<void>;
   getMaxValidators: (api: ApiPromise) => number;
   getNominators: (api: ApiPromise, account: AccountID) => Promise<string[]>;
+}
+
+// =====================================================
+// ============ IStakingTxService interface ============
+// =====================================================
+
+export interface IStakingTxService {
   bondAndNominate: (
     api: ApiPromise,
     address: AccountID,
@@ -23,15 +30,18 @@ export interface IStakingService {
   ) => Promise<string>;
   bondExtra: (api: ApiPromise, address: AccountID, value: string) => Promise<string>;
 
-  // bondExtra: () => Promise<void>;
   // unbond: () => Promise<void>;
   // rebond: () => Promise<void>;
   // withdrawUnbonded: () => Promise<void>;
-  // getValidators: () => Promise<void>;
-  // getValidatorsPrefs: () => Promise<void>;
-  // getIdentities: () => Promise<void>;
-  // getMaxValidators: () => Promise<void>;
-  // getRewards: () => Promise<void>;
+}
+
+// =====================================================
+// ============ IRewardsService interface ==============
+// =====================================================
+
+export interface IStakingRewardsService {
+  rewards: RewardsMap;
+  isLoading: boolean;
 }
 
 // =====================================================
@@ -40,6 +50,7 @@ export interface IStakingService {
 
 export type StakingMap = Record<AccountID, Staking | undefined>;
 export type ValidatorMap = Record<AccountID, Validator>;
+export type RewardsMap = Record<AccountID, string>;
 
 export type Staking = {
   accountId: AccountID;

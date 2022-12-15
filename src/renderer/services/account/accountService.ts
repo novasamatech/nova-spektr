@@ -12,29 +12,35 @@ export const useAccount = (): IAccountService => {
   }
   const { getAccount, getAccounts, addAccount, updateAccount, deleteAccount } = accountStorage;
 
-  const getLiveAccounts = (where?: Record<string, any>) =>
-    useLiveQuery((): Promise<AccountDS[]> => {
+  const getLiveAccounts = (where?: Record<string, any>): AccountDS[] => {
+    const query = () => {
       try {
         return getAccounts(where);
       } catch (error) {
-        console.warn('Error trying to get active wallet');
+        console.warn('Error trying to get accounts');
 
         return Promise.resolve([]);
       }
-    });
+    };
 
-  const getActiveAccounts = () =>
-    useLiveQuery(async (): Promise<AccountDS[]> => {
+    return useLiveQuery(query, [], []);
+  };
+
+  const getActiveAccounts = (): AccountDS[] => {
+    const query = async () => {
       try {
         const accounts = await getAccounts();
 
         return accounts.filter((account) => account.isActive);
       } catch (error) {
-        console.warn('Error trying to get active wallet');
+        console.warn('Error trying to get active accounts');
 
-        return [];
+        return Promise.resolve([]);
       }
-    });
+    };
+
+    return useLiveQuery(query, [], []);
+  };
 
   // TODO: in future implement setWalletInactive
   const toggleActiveAccount = async (accountId: IndexableType): Promise<void> => {

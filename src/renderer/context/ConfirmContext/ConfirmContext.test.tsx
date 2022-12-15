@@ -10,7 +10,7 @@ window.IntersectionObserver = jest.fn().mockImplementation(() => ({
   disconnect: jest.fn(),
 }));
 
-describe('context/MatrixContext', () => {
+describe('context/ConfirmContext', () => {
   afterEach(() => {
     jest.clearAllMocks();
   });
@@ -20,7 +20,8 @@ describe('context/MatrixContext', () => {
 
     render(<ConfirmDialogProvider>children</ConfirmDialogProvider>);
 
-    expect(screen.getByText('children')).toBeInTheDocument();
+    const children = screen.getByText('children');
+    expect(children).toBeInTheDocument();
   });
 });
 
@@ -31,19 +32,17 @@ describe('context/ConfirmContext/useConfirmContext', () => {
 
   test('should have defined functions', () => {
     (useToggle as jest.Mock).mockReturnValue([false, () => {}]);
-    const wrapper = ({ children }: any) => <ConfirmDialogProvider>{children}</ConfirmDialogProvider>;
 
-    const { result } = renderHook(() => useConfirmContext(), { wrapper });
-    const { confirm } = result.current;
-    expect(confirm).toBeDefined();
+    const { result } = renderHook(() => useConfirmContext(), { wrapper: ConfirmDialogProvider });
+
+    expect(result.current).toBeDefined();
   });
 
   test('should close dialog', async () => {
     const spyToggle = jest.fn();
     (useToggle as jest.Mock).mockReturnValue([true, spyToggle]);
 
-    const wrapper = ({ children }: any) => <ConfirmDialogProvider>{children}</ConfirmDialogProvider>;
-    const { result } = renderHook(() => useConfirmContext(), { wrapper });
+    const { result } = renderHook(() => useConfirmContext(), { wrapper: ConfirmDialogProvider });
 
     act(() => {
       result.current.confirm({
@@ -54,7 +53,7 @@ describe('context/ConfirmContext/useConfirmContext', () => {
       });
     });
 
-    const button = await screen.findByRole('button', { name: 'cancel' });
+    const button = screen.getByRole('button', { name: 'cancel' });
     button.click();
 
     expect(spyToggle).toBeCalledTimes(2);

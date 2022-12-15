@@ -1,14 +1,14 @@
 import { IndexableType } from 'dexie';
 
 import { toPublicKey } from '@renderer/utils/address';
-import { ChainId, CryptoType, PublicKey, ChainType, SigningType } from './shared-kernel';
+import { ChainId, CryptoType, PublicKey, ChainType, SigningType, AccountID } from './shared-kernel';
 
 export type Account = {
   walletId?: IndexableType;
   rootId?: IndexableType;
   name: string;
   publicKey?: PublicKey;
-  accountId?: string;
+  accountId?: AccountID;
   signingType: SigningType;
   cryptoType?: CryptoType;
   chainType: ChainType;
