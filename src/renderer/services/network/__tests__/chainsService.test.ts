@@ -7,11 +7,12 @@ import { Chain } from '@renderer/domain/chain';
 
 describe('service/chainsService', () => {
   test('should init', () => {
-    const { sortChains, getChainsData, getExpectedBlockTime } = useChains();
+    const { sortChains, getChainsData, getExpectedBlockTime, getStakingChainsData } = useChains();
 
     expect(sortChains).toBeDefined();
     expect(getChainsData).toBeDefined();
     expect(getExpectedBlockTime).toBeDefined();
+    expect(getStakingChainsData).toBeDefined();
   });
 
   test('should sort data', () => {

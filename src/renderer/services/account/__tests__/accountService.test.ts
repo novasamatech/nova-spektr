@@ -1,3 +1,5 @@
+import { waitFor } from '@testing-library/react';
+
 import storage from '@renderer/services/storage';
 import { useAccount } from '@renderer/services/account/accountService';
 
@@ -8,7 +10,7 @@ jest.mock('dexie-react-hooks', () => ({
 }));
 
 describe('service/accountService', () => {
-  test('should get all active accounts', async () => {
+  test('should get all active accounts', () => {
     const accountsDb = [
       { name: 'test_1', isActive: true },
       { name: 'test_2', isActive: false },
@@ -21,8 +23,10 @@ describe('service/accountService', () => {
     const { getActiveAccounts } = useAccount();
     const accounts = getActiveAccounts();
 
-    expect(accounts).toHaveLength(1);
-    expect(accounts?.[0]).toEqual(accountsDb[0]);
+    waitFor(() => {
+      expect(accounts).toHaveLength(1);
+      expect(accounts[0]).toEqual(accountsDb[0]);
+    });
   });
 
   test('should set new active account', async () => {

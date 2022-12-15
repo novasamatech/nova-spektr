@@ -21,7 +21,7 @@ type NetworkOption = { asset: Asset; addressPrefix: number };
 
 const Overview = () => {
   const { t } = useI18n();
-  const { setGraphqlEndpoint } = useGraphql();
+  const { changeClient } = useGraphql();
   const { connections } = useNetworkContext();
   const { getActiveAccounts } = useAccount();
   const { sortChains, getChainsData } = useChains();
@@ -85,7 +85,7 @@ const Overview = () => {
 
       setStakingNetworks(relaychains);
       setActiveNetwork(settingsChain || { id: relaychains[0].id, value: relaychains[0].value });
-      setGraphqlEndpoint(settingsChainId || relaychains[0].id);
+      changeClient(settingsChainId || relaychains[0].id);
     })();
   }, []);
 
@@ -153,7 +153,7 @@ const Overview = () => {
             options={stakingNetworks}
             onChange={(option) => {
               setStakingNetwork(option.id as ChainId);
-              setGraphqlEndpoint(option.id as ChainId);
+              changeClient(option.id as ChainId);
               setActiveNetwork(option);
             }}
           />

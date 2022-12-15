@@ -143,6 +143,7 @@ describe('context/NetworkContext/useNetworkContext', () => {
 
     const { result } = renderHook(() => useNetworkContext(), { wrapper });
     const { connections, connectToNetwork, addRpcNode, removeRpcNode, validateRpcNode } = result.current;
+
     waitFor(() => {
       expect(connections).toBeDefined();
       expect(connectToNetwork).toBeDefined();

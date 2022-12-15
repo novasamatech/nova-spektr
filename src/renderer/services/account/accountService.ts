@@ -17,7 +17,7 @@ export const useAccount = (): IAccountService => {
       try {
         return getAccounts(where);
       } catch (error) {
-        console.warn('Error trying to get active wallet');
+        console.warn('Error trying to get accounts');
 
         return Promise.resolve([]);
       }
@@ -33,9 +33,9 @@ export const useAccount = (): IAccountService => {
 
         return accounts.filter((account) => account.isActive);
       } catch (error) {
-        console.warn('Error trying to get active wallet');
+        console.warn('Error trying to get active accounts');
 
-        return [];
+        return Promise.resolve([]);
       }
     };
 
