@@ -52,7 +52,7 @@ describe('screens/Onboard/Parity/StepThree', () => {
     ];
 
     await act(async () => {
-      render(<StepThree qrData={data} onNextStep={() => {}} onPrevStep={() => {}} />);
+      render(<StepThree qrData={data} onNextStep={() => {}} />);
     });
 
     const inputs = screen.getAllByRole('textbox');

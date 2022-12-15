@@ -79,10 +79,10 @@ const WatchOnly = () => {
 
   const errorButtonText =
     (errors.address && errors.walletName) || Object.values(errors).length === 0
-      ? 'Type address and name'
+      ? t('onboarding.watchonly.addressAndNameRequiredError')
       : errors.address
-      ? 'Type or paste an address'
-      : errors.walletName && 'Type a wallet name';
+      ? t('onboarding.watchonly.addressRequiredError')
+      : errors.walletName && t('onboarding.watchonly.nameRequiredError');
 
   return (
     <>

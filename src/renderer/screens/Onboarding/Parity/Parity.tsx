@@ -6,8 +6,9 @@ import { useI18n } from '@renderer/context/I18nContext';
 import { SigningType } from '@renderer/domain/shared-kernel';
 import FinalStep from '@renderer/screens/Onboarding/FinalStep/FinalStep';
 import StepOne from './StepOne/StepOne';
-import StepThree from './StepThree/StepThree';
 import StepTwo from './StepTwo/StepTwo';
+import StepThree from './StepThree/StepThree';
+import StepThreeSingle from './StepThreeSingle/StepThreeSingle';
 
 const enum Step {
   PREPARE,
@@ -46,11 +47,13 @@ const Parity = () => {
         {activeStep === Step.PREPARE && <StepOne onNextStep={() => setActiveStep(Step.SCAN)} />}
         {activeStep === Step.SCAN && <StepTwo onNextStep={onReceiveQr} />}
         {activeStep === Step.CHECK && qrPayload && (
-          <StepThree
-            qrData={qrPayload}
-            onNextStep={() => setActiveStep(Step.FINAL)}
-            onPrevStep={() => setActiveStep(Step.SCAN)}
-          />
+          <>
+            {qrPayload.length > 1 ? (
+              <StepThree qrData={qrPayload} onNextStep={() => setActiveStep(Step.FINAL)} />
+            ) : (
+              <StepThreeSingle qrData={qrPayload} onNextStep={() => setActiveStep(Step.FINAL)} />
+            )}
+          </>
         )}
         {activeStep === Step.FINAL && <FinalStep signingType={SigningType.PARITY_SIGNER} />}
       </section>
