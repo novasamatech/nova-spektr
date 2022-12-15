@@ -6,6 +6,7 @@ import Parity from './Parity';
 jest.mock('./StepOne/StepOne', () => () => 'step_1');
 jest.mock('./StepTwo/StepTwo', () => () => 'step_2');
 jest.mock('./StepThree/StepThree', () => () => 'step_3');
+jest.mock('./StepThreeSingle/StepThreeSingle', () => () => 'step_3_single');
 
 jest.mock('@renderer/context/I18nContext', () => ({
   useI18n: jest.fn().mockReturnValue({
