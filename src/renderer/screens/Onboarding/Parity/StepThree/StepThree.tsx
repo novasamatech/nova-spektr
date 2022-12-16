@@ -11,7 +11,7 @@ import { BaseModal, Button, Icon, Identicon, Input } from '@renderer/components/
 import { useI18n } from '@renderer/context/I18nContext';
 import { Account, createAccount } from '@renderer/domain/account';
 import { Chain } from '@renderer/domain/chain';
-import { ChainId, HexString, PublicKey, SigningType } from '@renderer/domain/shared-kernel';
+import { ChainId, HexString, PublicKey, SigningType, WalletType } from '@renderer/domain/shared-kernel';
 import useToggle from '@renderer/hooks/useToggle';
 import ScanMoreModal from '@renderer/screens/Onboarding/Parity/ScanMoreModal/ScanMoreModal';
 import { useAccount } from '@renderer/services/account/accountService';
@@ -20,11 +20,12 @@ import { useChains } from '@renderer/services/network/chainsService';
 import { toPublicKey } from '@renderer/utils/address';
 import { getShortAddress } from '@renderer/utils/strings';
 import './StepThree.css';
+import { useWallet } from '@renderer/services/wallet/walletService';
+import { createWallet } from '@renderer/domain/wallet';
 
 type Props = {
   qrData: SeedInfo[];
   onNextStep: () => void;
-  onPrevStep: () => void;
 };
 
 const StepThree = ({ qrData, onNextStep }: Props) => {
@@ -34,15 +35,17 @@ const StepThree = ({ qrData, onNextStep }: Props) => {
   const [isAccountsModalOpen, toggleAccountsModal] = useToggle();
   const [isQrModalOpen, toggleQrModal] = useToggle();
   const { addAccount, toggleActiveAccount } = useAccount();
+  const { addWallet } = useWallet();
 
   const [chains, setChains] = useState<Chain[]>([]);
   const [chainsObject, setChainsObject] = useState<Record<string, Chain>>({});
 
   const [inactiveAccounts, setInactiveAccounts] = useState<Record<string, boolean>>({});
-  const [walletNames, setWalletNames] = useState<Record<string, string>>({});
+  const [accountNames, setAccountNames] = useState<Record<string, string>>({});
 
   const [currentPublicKey, setCurrentPublicKey] = useState<PublicKey>();
   const [accounts, setAccounts] = useState<SimpleSeedInfo[]>([]);
+  const [walletName, setWalletName] = useState('');
 
   useEffect(() => {
     (async () => {
@@ -51,7 +54,7 @@ const StepThree = ({ qrData, onNextStep }: Props) => {
       setChainsObject(keyBy(chains, 'chainId'));
 
       const names = qrData.reduce((acc, data, index) => ({ ...acc, [getAccountId(index)]: data.name }), {});
-      setWalletNames(names);
+      setAccountNames(names);
       setAccounts(qrData.map(formatAccount));
     })();
   }, []);
@@ -88,10 +91,10 @@ const StepThree = ({ qrData, onNextStep }: Props) => {
       },
     );
 
-    const newLastIndex = parseInt(Object.keys(walletNames).pop()?.split('-')[0] || '0') + 1;
+    const newLastIndex = parseInt(Object.keys(accountNames).pop()?.split('-')[0] || '0') + 1;
     const namesMap = newNames.reduce((_, name, index) => ({ [getAccountId(index + newLastIndex)]: name }), {});
 
-    setWalletNames({ ...walletNames, ...namesMap });
+    setAccountNames({ ...accountNames, ...namesMap });
     setAccounts(oldAccs.concat(newAccs));
   };
 
@@ -112,15 +115,15 @@ const StepThree = ({ qrData, onNextStep }: Props) => {
   const getAccountId = (accountIndex: number, chainId?: string, derivedKeyIndex?: number): string =>
     `${accountIndex}${chainId ? `-${chainId}` : ''}${derivedKeyIndex !== undefined ? `-${derivedKeyIndex}` : ''}`;
 
-  const updateWalletName = (name: string, accountIndex: number, chainId?: string, derivedKeyIndex?: number) => {
-    setWalletNames((prev) => {
+  const updateAccountName = (name: string, accountIndex: number, chainId?: string, derivedKeyIndex?: number) => {
+    setAccountNames((prev) => {
       const accountId = getAccountId(accountIndex, chainId, derivedKeyIndex);
 
       return { ...prev, [accountId]: name };
     });
   };
 
-  const toggleWallet = (accountIndex: number, chainId?: string, derivedKeyIndex?: number) => {
+  const toggleAccount = (accountIndex: number, chainId?: string, derivedKeyIndex?: number) => {
     const accountId = getAccountId(accountIndex, chainId, derivedKeyIndex);
 
     setInactiveAccounts((prev) => {
@@ -136,15 +139,16 @@ const StepThree = ({ qrData, onNextStep }: Props) => {
     return [...acc, getAccountId(accountIndex), ...derivedKeysIds.flat()];
   }, [] as string[]);
 
-  const activeWalletsHaveName = walletIds.every((walletId) => inactiveAccounts[walletId] || walletNames[walletId]);
+  const activeWalletsHaveName = walletIds.every((walletId) => inactiveAccounts[walletId] || accountNames[walletId]);
 
-  const saveRootAccount = async (address: string, accountIndex: number) => {
+  const saveRootAccount = async (address: string, accountIndex: number, walletId: IndexableType) => {
     const rootAccountId = getAccountId(accountIndex);
 
     const account = createAccount({
-      name: walletNames[rootAccountId],
+      name: accountNames[rootAccountId],
       signingType: SigningType.PARITY_SIGNER,
       accountId: address,
+      walletId,
     });
 
     const mainAccountId = await addAccount(account);
@@ -159,6 +163,7 @@ const StepThree = ({ qrData, onNextStep }: Props) => {
     chainId: ChainId,
     accountIndex: number,
     rootAccountId: IndexableType,
+    walletId: IndexableType,
   ): Account[] => {
     return derivedKeys.reduce((acc, derivedKey, index) => {
       const accountId = getAccountId(accountIndex, chainId, index);
@@ -168,11 +173,12 @@ const StepThree = ({ qrData, onNextStep }: Props) => {
       return [
         ...acc,
         createAccount({
-          name: walletNames[accountId],
+          name: accountNames[accountId],
           signingType: SigningType.PARITY_SIGNER,
           rootId: rootAccountId,
           accountId: derivedKey.address,
           chainId: chainId as ChainId,
+          walletId,
         }),
       ];
     }, [] as Account[]);
@@ -181,11 +187,19 @@ const StepThree = ({ qrData, onNextStep }: Props) => {
   const createWallets = async (event: FormEvent) => {
     event.preventDefault();
 
+    let walletId: IndexableType;
+
+    try {
+      walletId = await addWallet(createWallet({ name: walletName, type: WalletType.MULTISHARD_PARITY_SIGNER }));
+    } catch (e) {
+      console.warn('Error saving main account', e);
+    }
+
     const promises = accounts.map(async ({ address, derivedKeys }, accountIndex) => {
       let rootAccountId: IndexableType;
 
       try {
-        rootAccountId = await saveRootAccount(address, accountIndex);
+        rootAccountId = await saveRootAccount(address, accountIndex, walletId);
       } catch (e) {
         console.warn('Error saving main account', e);
       }
@@ -194,7 +208,7 @@ const StepThree = ({ qrData, onNextStep }: Props) => {
         .map((chainId) => {
           const chainDerivedKeys = derivedKeys[chainId as HexString];
 
-          return createDerivedAccounts(chainDerivedKeys, chainId as ChainId, accountIndex, rootAccountId);
+          return createDerivedAccounts(chainDerivedKeys, chainId as ChainId, accountIndex, rootAccountId, walletId);
         })
         .flat();
 
@@ -210,16 +224,46 @@ const StepThree = ({ qrData, onNextStep }: Props) => {
     onNextStep();
   };
 
+  const fillAccountNames = () => {
+    accounts.forEach((account, accountIndex) => {
+      Object.entries(account.derivedKeys).forEach(([chainId, derivedKeys]) => {
+        const { name: chainName } = chainsObject[chainId];
+
+        derivedKeys.forEach((_, derivedKeyIndex) => {
+          const accountId = getAccountId(accountIndex, chainId, derivedKeyIndex);
+          const rootAccountId = getAccountId(accountIndex);
+          if (accountNames[accountId]) return;
+
+          const accountName = `${accountNames[rootAccountId]}//${chainName.toLowerCase()}//${derivedKeyIndex + 1}`;
+          updateAccountName(accountName, accountIndex, chainId, derivedKeyIndex);
+        });
+      });
+    });
+  };
+
   return (
     <div className="flex h-full flex-col gap-10 justify-center items-center pt-7.5">
       <div className="flex flex-col items-center bg-slate-50 rounded-2lg w-full p-5">
-        <h2 className="text-xl font-semibold text-neutral mb-5">{t('onboarding.paritySigner.choseWalletNameLabel')}</h2>
-        <form
-          id="stepForm"
-          className="w-full max-h-[370px] overflow-auto p-4 bg-white shadow-surface rounded-2lg mb-10"
-          onSubmit={createWallets}
-        >
-          <div className="flex flex-col gap-2.5">
+        <form id="stepForm" className="w-full max-h-[370px] overflow-auto mb-10" onSubmit={createWallets}>
+          <div className="grid grid-cols-2 items-center gap-2.5 p-4 bg-white shadow-surface rounded-2lg mb-4">
+            <div>
+              <div className="text-neutral font-semibold">{t('onboarding.paritySigner.walletNameLabel')}</div>
+              <div className="uppercase text-neutral-variant text-2xs">
+                {t('onboarding.paritySigner.walletNameDescription')}
+              </div>
+            </div>
+            <div>
+              <Input
+                placeholder={t('onboarding.paritySigner.walletNamePlaceholder')}
+                value={walletName}
+                onChange={(e) => setWalletName(e.target.value)}
+              />
+            </div>
+          </div>
+
+          <div className="flex flex-col gap-2.5 p-4 bg-white shadow-surface rounded-2lg">
+            <div className="text-sm text-neutral-variant mb-5">{t('onboarding.paritySigner.choseWalletNameLabel')}</div>
+
             {accounts.map((account, accountIndex) => (
               <div key={getAccountId(accountIndex)}>
                 <div className="flex w-full gap-4">
@@ -268,21 +312,21 @@ const StepThree = ({ qrData, onNextStep }: Props) => {
                       disabled={inactiveAccounts[getAccountId(accountIndex)]}
                       disabledStyle={inactiveAccounts[getAccountId(accountIndex)]}
                       wrapperClass="flex flex-1 items-center"
-                      placeholder={t('onboarding.walletNamePlaceholder')}
-                      value={walletNames[getAccountId(accountIndex)] || ''}
+                      placeholder={t('onboarding.paritySigner.accountNamePlaceholder')}
+                      value={accountNames[getAccountId(accountIndex)] || ''}
                       suffixElement={
-                        walletNames[getAccountId(accountIndex)] && (
+                        accountNames[getAccountId(accountIndex)] && (
                           <Button
                             variant="text"
                             pallet="dark"
                             weight="xs"
-                            onClick={() => updateWalletName('', accountIndex)}
+                            onClick={() => updateAccountName('', accountIndex)}
                           >
                             <Icon name="clearOutline" size={20} />
                           </Button>
                         )
                       }
-                      onChange={(e) => updateWalletName(e.target.value, accountIndex)}
+                      onChange={(e) => updateAccountName(e.target.value, accountIndex)}
                     />
 
                     {accounts.length > 1 ||
@@ -291,7 +335,7 @@ const StepThree = ({ qrData, onNextStep }: Props) => {
                           variant="text"
                           pallet={inactiveAccounts[getAccountId(accountIndex)] ? 'dark' : 'error'}
                           className="ml-4 px-0"
-                          onClick={() => toggleWallet(accountIndex)}
+                          onClick={() => toggleAccount(accountIndex)}
                         >
                           {inactiveAccounts[getAccountId(accountIndex)] ? (
                             <Icon name="removeCutout" />
@@ -345,22 +389,22 @@ const StepThree = ({ qrData, onNextStep }: Props) => {
                                   disabled={inactiveAccounts[getAccountId(accountIndex, chainId, derivedKeyIndex)]}
                                   disabledStyle={inactiveAccounts[getAccountId(accountIndex, chainId, derivedKeyIndex)]}
                                   wrapperClass="flex flex-1 items-center"
-                                  placeholder={t('onboarding.walletNamePlaceholder')}
-                                  value={walletNames[getAccountId(accountIndex, chainId, derivedKeyIndex)] || ''}
+                                  placeholder={t('onboarding.paritySigner.accountNamePlaceholder')}
+                                  value={accountNames[getAccountId(accountIndex, chainId, derivedKeyIndex)] || ''}
                                   suffixElement={
-                                    walletNames[getAccountId(accountIndex, chainId, derivedKeyIndex)] && (
+                                    accountNames[getAccountId(accountIndex, chainId, derivedKeyIndex)] && (
                                       <Button
                                         variant="text"
                                         pallet="dark"
                                         weight="xs"
-                                        onClick={() => updateWalletName('', accountIndex, chainId, derivedKeyIndex)}
+                                        onClick={() => updateAccountName('', accountIndex, chainId, derivedKeyIndex)}
                                       >
                                         <Icon name="clearOutline" size={20} />
                                       </Button>
                                     )
                                   }
                                   onChange={(e) =>
-                                    updateWalletName(e.target.value, accountIndex, chainId, derivedKeyIndex)
+                                    updateAccountName(e.target.value, accountIndex, chainId, derivedKeyIndex)
                                   }
                                 />
                                 <Button
@@ -371,7 +415,7 @@ const StepThree = ({ qrData, onNextStep }: Props) => {
                                       ? 'dark'
                                       : 'error'
                                   }
-                                  onClick={() => toggleWallet(accountIndex, chainId, derivedKeyIndex)}
+                                  onClick={() => toggleAccount(accountIndex, chainId, derivedKeyIndex)}
                                 >
                                   {inactiveAccounts[getAccountId(accountIndex, chainId, derivedKeyIndex)] ? (
                                     <Icon name="removeCutout" />
@@ -389,25 +433,32 @@ const StepThree = ({ qrData, onNextStep }: Props) => {
                 )}
               </div>
             ))}
-          </div>
 
-          <Button variant="text" pallet="primary" className="m-auto mt-2.5" onClick={toggleQrModal}>
-            <Icon name="addLine" alt={t('onboarding.paritySigner.addAccount')} />
-          </Button>
+            <Button variant="text" pallet="primary" className="m-auto mt-2.5" onClick={toggleQrModal}>
+              <Icon name="addLine" alt={t('onboarding.paritySigner.addAccount')} />
+            </Button>
+          </div>
         </form>
 
-        <Button
-          form="stepForm"
-          type="submit"
-          weight="lg"
-          variant="fill"
-          pallet="primary"
-          disabled={!activeWalletsHaveName}
-        >
-          {activeWalletsHaveName
-            ? t('onboarding.confirmAccountsListButton')
-            : t('onboarding.paritySigner.typeNameButton')}
-        </Button>
+        {!activeWalletsHaveName ? (
+          <Button key="fillNames" weight="lg" variant="fill" pallet="primary" onClick={fillAccountNames}>
+            {t('onboarding.paritySigner.autoFillAccountsListButton')}
+          </Button>
+        ) : (
+          <Button
+            key="submitForm"
+            form="stepForm"
+            type="submit"
+            weight="lg"
+            variant="fill"
+            pallet="primary"
+            disabled={!activeWalletsHaveName || !walletName}
+          >
+            {activeWalletsHaveName && walletName
+              ? t('onboarding.paritySigner.saveWalletButton')
+              : t('onboarding.paritySigner.typeNameButton')}
+          </Button>
+        )}
       </div>
 
       <BaseModal
