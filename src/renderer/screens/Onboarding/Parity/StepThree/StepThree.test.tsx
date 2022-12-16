@@ -20,6 +20,12 @@ jest.mock('@renderer/services/account/accountService', () => ({
   }),
 }));
 
+jest.mock('@renderer/services/wallet/walletService', () => ({
+  useWallet: jest.fn().mockReturnValue({
+    addWallet: jest.fn(),
+  }),
+}));
+
 jest.mock('@renderer/services/network/chainsService', () => ({
   useChains: jest.fn().mockReturnValue({
     getChainsData: jest.fn().mockReturnValue([
@@ -52,10 +58,10 @@ describe('screens/Onboard/Parity/StepThree', () => {
     ];
 
     await act(async () => {
-      render(<StepThree qrData={data} onNextStep={() => {}} onPrevStep={() => {}} />);
+      render(<StepThree qrData={data} onNextStep={() => {}} />);
     });
 
     const inputs = screen.getAllByRole('textbox');
-    expect(inputs.length).toBe(4);
+    expect(inputs.length).toBe(5);
   });
 });
