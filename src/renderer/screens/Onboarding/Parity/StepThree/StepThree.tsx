@@ -225,21 +225,17 @@ const StepThree = ({ qrData, onNextStep }: Props) => {
   };
 
   const fillAccountNames = () => {
-    accounts.map((account, accountIndex) => {
+    accounts.forEach((account, accountIndex) => {
       Object.entries(account.derivedKeys).forEach(([chainId, derivedKeys]) => {
-        const { name } = chainsObject[chainId];
+        const { name: chainName } = chainsObject[chainId];
 
         derivedKeys.forEach((_, derivedKeyIndex) => {
           const accountId = getAccountId(accountIndex, chainId, derivedKeyIndex);
           const rootAccountId = getAccountId(accountIndex);
           if (accountNames[accountId]) return;
 
-          updateAccountName(
-            `${accountNames[rootAccountId]}//${name.toLowerCase()}//${derivedKeyIndex + 1}`,
-            accountIndex,
-            chainId,
-            derivedKeyIndex,
-          );
+          const accountName = `${accountNames[rootAccountId]}//${chainName.toLowerCase()}//${derivedKeyIndex + 1}`;
+          updateAccountName(accountName, accountIndex, chainId, derivedKeyIndex);
         });
       });
     });
@@ -445,12 +441,12 @@ const StepThree = ({ qrData, onNextStep }: Props) => {
         </form>
 
         {!activeWalletsHaveName ? (
-          <Button key="1" weight="lg" variant="fill" pallet="primary" onClick={fillAccountNames}>
+          <Button key="fillNames" weight="lg" variant="fill" pallet="primary" onClick={fillAccountNames}>
             {t('onboarding.paritySigner.autoFillAccountsListButton')}
           </Button>
         ) : (
           <Button
-            key="2"
+            key="submitForm"
             form="stepForm"
             type="submit"
             weight="lg"
