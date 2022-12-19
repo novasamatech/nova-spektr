@@ -30,6 +30,7 @@ jobs:
         uses: ./.github/workflows/make-pull-request
         with:
           commit-path: src/renderer/services/network/common/*.json
-          commit-message: Update chains.json file
+          commit-message: "ci: chains.json file"
+          pr-title: "Update chains.json file"
           branch-name: update-chains-file
           github-token: ${{ secrets.GITHUB_TOKEN }}
