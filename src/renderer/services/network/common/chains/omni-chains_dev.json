@@ -5143,7 +5143,7 @@
         "precision": 18,
         "priceId": "myriad-social",
         "icon": "https://raw.githubusercontent.com/nova-wallet/nova-utils/master/icons/tokens/white/MYRIA.svg",
-        "name": "Should be included in assetsNameMap"
+        "name": "Myriad"
       }
     ],
     "nodes": [
@@ -5211,7 +5211,7 @@
         "precision": 9,
         "priceId": "xxcoin",
         "icon": "https://raw.githubusercontent.com/nova-wallet/nova-utils/master/icons/tokens/white/XX.svg",
-        "name": "Should be included in assetsNameMap"
+        "name": "XX network"
       }
     ],
     "nodes": [
