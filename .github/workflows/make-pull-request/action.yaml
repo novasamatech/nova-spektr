@@ -16,6 +16,9 @@ inputs:
     description: 'Name for destination branch'
     required: false
     default: 'dev'
+  pr-title:
+    description: 'Title for pull request'
+    required: true
   github-token:
     description: 'Token for making operations with GitHub'
     required: true
@@ -46,7 +49,7 @@ runs:
       with:
         source_branch: '${{ inputs.branch-name }}-${{github.run_number}}'
         destination_branch: ${{ inputs.destination_branch }}
-        pr_title: ${{ inputs.commit-message }}
+        pr_title: ${{ inputs.pr-title }}
         pr_body: |
           That pull-request was generated automatically 🤖
         pr_reviewer: "stepanLav,pgolovkin,tuul-wq,Asmadek"

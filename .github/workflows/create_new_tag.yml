@@ -47,9 +47,10 @@ jobs:
         uses: ./.github/workflows/make-pull-request
         with:
           commit-path: package.json
-          commit-message: Release candidate - ${{ steps.bump.outputs.major }}.${{ steps.bump.outputs.minor }}.${{ steps.bump.outputs.patch }}
+          commit-message: 'ci: version in package.json'
           branch-name: rc/${{ steps.bump.outputs.major }}.${{ steps.bump.outputs.minor }}.${{ steps.bump.outputs.patch }}
           destination_branch: main
+          pr-title: Release candidate - ${{ steps.bump.outputs.major }}.${{ steps.bump.outputs.minor }}.${{ steps.bump.outputs.patch }}
           github-token: ${{ secrets.GITHUB_TOKEN }}
 
   create_new_tag:
