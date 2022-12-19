@@ -11,8 +11,6 @@
         "icon": "https://raw.githubusercontent.com/nova-wallet/nova-utils/master/icons/chains/white/Polkadot.svg",
         "staking": "relaychain",
         "buyProviders": {
-          "ramp": {},
-          "moonpay": {},
           "transak": {
             "network": "MAINNET"
           },
@@ -95,7 +93,6 @@
         "icon": "https://raw.githubusercontent.com/nova-wallet/nova-utils/master/icons/chains/white/Kusama.svg",
         "staking": "relaychain",
         "buyProviders": {
-          "ramp": {},
           "transak": {
             "network": "MAINNET"
           },
@@ -164,7 +161,7 @@
         "url": "https://kusama.polkassembly.io/v1/graphql"
       }
     },
-    "options": ["crowdloans", "governance-v1"]
+    "options": ["crowdloans", "governance", "governance-v1"]
   },
   {
     "chainId": "0xe143f23803ac50e8f6f8e62695d1ce9e4e1d68aa36c1cd2cfd15340213f3423e",
@@ -1948,10 +1945,6 @@
     ],
     "nodes": [
       {
-        "url": "wss://quartz.api.onfinality.io/public-ws",
-        "name": "OnFinality node"
-      },
-      {
         "url": "wss://quartz.unique.network",
         "name": "Unique node"
       },
@@ -1962,6 +1955,10 @@
       {
         "url": "wss://us-ws-quartz.unique.network",
         "name": "Unique US node"
+      },
+      {
+        "url": "wss://asia-ws-quartz.unique.network",
+        "name": "Unique Asia node"
       }
     ],
     "types": {
@@ -2845,12 +2842,12 @@
     ],
     "nodes": [
       {
-        "url": "wss://encointer.api.onfinality.io/public-ws",
-        "name": "OnFinality node"
-      },
-      {
         "url": "wss://api.kusama.encointer.org",
         "name": "Encointer association node"
+      },
+      {
+        "url": "wss://encointer.api.onfinality.io/public-ws",
+        "name": "OnFinality node"
       }
     ],
     "explorers": [
@@ -4084,6 +4081,7 @@
         "assetId": 0,
         "symbol": "UNQ",
         "precision": 18,
+        "priceId": "unique-network",
         "icon": "https://raw.githubusercontent.com/nova-wallet/nova-utils/master/icons/chains/white/Unique.svg",
         "name": "UNIQUE"
       }
@@ -5103,7 +5101,7 @@
     "addressPrefix": 32
   },
   {
-    "chainId": "0xdebc82d28e63857f236a6d1ab981a35e2401e1a5834656667747f39303d52e07",
+    "chainId": "0xde06348a2bb1ca0b6ad293af89b08cc9e916d7753065c784d77c8d27a31af299",
     "name": "Governance1 Novasama Testnet",
     "assets": [
       {
@@ -5111,6 +5109,7 @@
         "symbol": "Unit",
         "precision": 10,
         "icon": "https://raw.githubusercontent.com/nova-wallet/nova-utils/master/icons/tokens/white/GOV2.svg",
+        "staking": "relaychain",
         "name": "Test token"
       }
     ],
@@ -5120,6 +5119,12 @@
         "name": "Development node"
       }
     ],
+    "externalApi": {
+      "staking": {
+        "type": "subquery",
+        "url": "https://api.subquery.network/sq/nova-wallet/nova-wallet-polkadot"
+      }
+    },
     "types": {
       "url": "https://raw.githubusercontent.com/nova-wallet/nova-utils/master/chains/v2/types/polkadot.json",
       "overridesCommon": true
@@ -5138,7 +5143,7 @@
         "precision": 18,
         "priceId": "myriad-social",
         "icon": "https://raw.githubusercontent.com/nova-wallet/nova-utils/master/icons/tokens/white/MYRIA.svg",
-        "name": "Myriad Social"
+        "name": "Should be included in assetsNameMap"
       }
     ],
     "nodes": [
@@ -5195,5 +5200,49 @@
     },
     "icon": "https://raw.githubusercontent.com/nova-wallet/nova-utils/master/icons/chains/gradient/Fusotao.svg",
     "addressPrefix": 42
+  },
+  {
+    "chainId": "0x50dd5d206917bf10502c68fb4d18a59fc8aa31586f4e8856b493e43544aa82aa",
+    "name": "XX network",
+    "assets": [
+      {
+        "assetId": 0,
+        "symbol": "XX",
+        "precision": 9,
+        "priceId": "xxcoin",
+        "icon": "https://raw.githubusercontent.com/nova-wallet/nova-utils/master/icons/tokens/white/XX.svg",
+        "name": "Should be included in assetsNameMap"
+      }
+    ],
+    "nodes": [
+      {
+        "url": "wss://rpc.xx.network",
+        "name": "xx Foundation node"
+      },
+      {
+        "url": "wss://xxnetwork-rpc.dwellir.com",
+        "name": "Dwellir node"
+      }
+    ],
+    "explorers": [
+      {
+        "name": "XX explorer",
+        "extrinsic": "https://explorer.xx.network/extrinsics/{hash}",
+        "account": "https://explorer.xx.network/accounts/{address}",
+        "event": null
+      },
+      {
+        "name": "Polkastats",
+        "extrinsic": "https://xx.polkastats.io/extrinsic/{hash}",
+        "account": "https://xx.polkastats.io/account/{address}",
+        "event": null
+      }
+    ],
+    "types": {
+      "url": "https://raw.githubusercontent.com/nova-wallet/nova-utils/master/chains/v2/types/xx_network.json",
+      "overridesCommon": true
+    },
+    "icon": "https://raw.githubusercontent.com/nova-wallet/nova-utils/master/icons/chains/gradient/XX_network.svg",
+    "addressPrefix": 55
   }
 ]
