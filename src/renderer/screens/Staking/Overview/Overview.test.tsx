@@ -37,11 +37,17 @@ jest.mock('@renderer/services/account/accountService', () => ({
   useAccount: jest.fn().mockReturnValue({
     getActiveAccounts: () => [
       {
-        name: 'Test Wallet',
+        name: 'Test account',
         accountId: TEST_ADDRESS,
         publicKey: TEST_PUBLIC_KEY,
       },
     ],
+  }),
+}));
+
+jest.mock('@renderer/services/wallet/walletService', () => ({
+  useWallet: jest.fn().mockReturnValue({
+    getLiveWallets: jest.fn(),
   }),
 }));
 
@@ -62,7 +68,7 @@ jest.mock('@renderer/context/I18nContext', () => ({
 jest.mock('./components/AboutStaking/AboutStaking', () => () => <span>aboutStaking</span>);
 jest.mock('./components/InfoBanners/InfoBanners', () => () => <span>infoBanners</span>);
 jest.mock('./components/Filter/Filter', () => () => <span>filter</span>);
-jest.mock('./components/StakingList/StakingList', () => () => <span>stakingList</span>);
+jest.mock('./components/List/StakingList/StakingList', () => () => <span>stakingList</span>);
 jest.mock('./components/TotalAmount/TotalAmount', () => () => <span>totalAmount</span>);
 
 describe('screens/Staking/Overview', () => {

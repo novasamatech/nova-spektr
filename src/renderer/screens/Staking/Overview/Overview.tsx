@@ -11,10 +11,11 @@ import { ConnectionStatus, ConnectionType } from '@renderer/domain/connection';
 import { AccountID, ChainId } from '@renderer/domain/shared-kernel';
 import Paths from '@renderer/routes/paths';
 import TotalAmount from '@renderer/screens/Staking/Overview/components/TotalAmount/TotalAmount';
+import { useAccount } from '@renderer/services/account/accountService';
 import { useChains } from '@renderer/services/network/chainsService';
 import { useSettingsStorage } from '@renderer/services/settings/settingsStorage';
 import { useStakingData } from '@renderer/services/staking/stakingDataService';
-import { useAccount } from '@renderer/services/account/accountService';
+import { useWallet } from '@renderer/services/wallet/walletService';
 import { AboutStaking, Filter, InfoBanners, StakingList } from './components';
 
 type NetworkOption = { asset: Asset; addressPrefix: number };
@@ -24,6 +25,7 @@ const Overview = () => {
   const { changeClient } = useGraphql();
   const { connections } = useNetworkContext();
   const { getActiveAccounts } = useAccount();
+  const { getLiveWallets } = useWallet();
   const { sortChains, getChainsData } = useChains();
   const { staking, subscribeActiveEra, subscribeLedger } = useStakingData();
   const { setStakingNetwork, getStakingNetwork } = useSettingsStorage();
@@ -33,13 +35,20 @@ const Overview = () => {
   const [activeNetwork, setActiveNetwork] = useState<ResultOption<NetworkOption>>();
   const [stakingNetworks, setStakingNetworks] = useState<Option<NetworkOption>[]>([]);
 
-  const activeAccounts = getActiveAccounts();
-
   const chainId = (activeNetwork?.id || '') as ChainId;
   const api = connections[chainId]?.api;
   const connection = connections[chainId]?.connection;
-  const accounts = activeAccounts.reduce<AccountID[]>((acc, account) => {
+  const explorers = connections[chainId]?.explorers;
+
+  const activeWallets = getLiveWallets();
+  const activeAccounts = getActiveAccounts().filter((account) => !account.chainId || account.chainId === chainId);
+
+  const accountAddresses = activeAccounts.reduce<AccountID[]>((acc, account) => {
     return account.accountId ? acc.concat(account.accountId) : acc;
+  }, []);
+
+  const totalStakes = Object.values(staking).reduce<string[]>((acc, stake) => {
+    return acc.concat(stake?.total || '0');
   }, []);
 
   useEffect(() => {
@@ -52,13 +61,13 @@ const Overview = () => {
   }, [connection, isNetworkActive]);
 
   useEffect(() => {
-    if (!chainId || !api?.isConnected || accounts.length === 0) return;
+    if (!chainId || !api?.isConnected || accountAddresses.length === 0) return;
 
     (async () => {
       await subscribeActiveEra(chainId, api);
-      await subscribeLedger(chainId, api, accounts);
+      await subscribeLedger(chainId, api, accountAddresses);
     })();
-  }, [api, accounts.length]);
+  }, [api, accountAddresses.length]);
 
   useEffect(() => {
     (async () => {
@@ -89,50 +98,6 @@ const Overview = () => {
     })();
   }, []);
 
-  useEffect(() => {
-    if (!chainId || !api?.isConnected) return;
-
-    (async () => {
-      await subscribeActiveEra(chainId, api);
-    })();
-  }, [api]);
-
-  useEffect(() => {
-    if (!chainId || !api?.isConnected) return;
-
-    (async () => {
-      const accounts = activeAccounts.reduce(
-        (acc, account) => (account.accountId ? [...acc, account.accountId] : acc),
-        [] as string[],
-      );
-      await subscribeLedger(chainId, api, accounts);
-    })();
-  }, [activeAccounts, api]);
-
-  // TODO: Continue during StakingList task
-  // @ts-ignore
-  const formattedWallets = activeAccounts.reduce<{ name: string; accountId: AccountID }[]>((acc, account) => {
-    // TODO: maybe add staking here
-    if (!account.name.toLowerCase().includes(query.toLowerCase())) return acc;
-
-    const isRootWallet = account.rootId === undefined;
-    if (isRootWallet && account.accountId) {
-      return acc.concat({ name: account.name, accountId: account.accountId });
-    }
-
-    const isRelevantDerived = account.chainId === activeNetwork?.id;
-
-    if (isRelevantDerived && account.accountId) {
-      acc.push({ name: account.name, accountId: account.accountId });
-    }
-
-    return acc;
-  }, []);
-
-  const totalStakes = Object.values(staking).reduce<string[]>((acc, stake) => {
-    return acc.concat(stake?.total || '0');
-  }, []);
-
   return (
     <div className="h-full flex flex-col">
       <h1 className="font-semibold text-2xl text-neutral mb-9">{t('staking.title')}</h1>
@@ -160,7 +125,7 @@ const Overview = () => {
           <TotalAmount
             totalStakes={totalStakes}
             asset={activeNetwork?.value.asset}
-            accounts={accounts}
+            accounts={accountAddresses}
             addressPrefix={activeNetwork?.value.addressPrefix}
           />
         </div>
@@ -181,7 +146,14 @@ const Overview = () => {
               <Filter />
             </div>
 
-            <StakingList />
+            <StakingList
+              staking={staking}
+              wallets={activeWallets}
+              accounts={activeAccounts}
+              asset={activeNetwork?.value.asset}
+              addressPrefix={activeNetwork?.value.addressPrefix}
+              explorers={explorers}
+            />
           </>
         ) : (
           <div className="flex flex-col items-center justify-center mt-10 mb-5">

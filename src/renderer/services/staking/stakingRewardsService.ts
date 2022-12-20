@@ -7,27 +7,35 @@ import { toAddress } from '@renderer/services/balance/common/utils';
 import { IStakingRewardsService, RewardsMap } from '@renderer/services/staking/common/types';
 import { toPublicKey } from '@renderer/utils/address';
 
-export const useStakingRewards = (accounts: AccountID[], addressPrefix: number): IStakingRewardsService => {
-  const getAccountsWithPrefix = (accounts: AccountID[], addressPrefix: number): AccountID[] => {
-    return accounts.reduce((acc, account) => {
-      const publicKey = toPublicKey(account);
+const getAccountsWithPrefix = (accounts: AccountID[], addressPrefix?: number): AccountID[] => {
+  return accounts.reduce((acc, account) => {
+    const publicKey = toPublicKey(account);
 
-      return !publicKey ? acc : acc.concat(toAddress(publicKey, addressPrefix));
-    }, [] as AccountID[]);
-  };
+    return !publicKey ? acc : acc.concat(toAddress(publicKey, addressPrefix));
+  }, [] as AccountID[]);
+};
+
+export const useStakingRewards = (accounts: AccountID[], addressPrefix?: number): IStakingRewardsService => {
+  const accountsWithPrefix = getAccountsWithPrefix(accounts, addressPrefix);
 
   const { data, loading } = useQuery<RewardsQuery>(GET_TOTAL_REWARDS, {
     variables: {
-      addresses: accounts.length === 0 ? [''] : getAccountsWithPrefix(accounts, addressPrefix),
+      addresses: accounts.length > 0 ? accountsWithPrefix : [''],
     },
   });
 
-  const rewards = data?.accumulatedRewards.nodes.reduce<RewardsMap>((acc, node) => {
-    return { ...acc, [node.id]: node.amount };
+  const accountsMap = accounts.reduce<RewardsMap>((acc, account) => {
+    return { ...acc, [account]: '0' };
   }, {});
 
+  const rewards = data?.accumulatedRewards.nodes.reduce<RewardsMap>((acc, node) => {
+    const originalAddress = accounts[accountsWithPrefix.indexOf(node.id)];
+
+    return { ...acc, [originalAddress]: node.amount };
+  }, accountsMap);
+
   return {
-    rewards: rewards || {},
+    rewards: rewards || accountsMap,
     isLoading: loading,
   };
 };

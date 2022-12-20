@@ -1,12 +1,19 @@
-import './shimmering.css';
+import cn from 'classnames';
+
+import './Shimmering.css';
 
 type Props = {
   width?: number;
   height?: number;
+  circle?: boolean;
+  className?: string;
 };
 
-const Shimmering = ({ width, height }: Props) => {
-  return <div className="h-full w-full rounded-md shimmer" style={{ width: `${width}px`, height: `${height}px` }} />;
-};
+const Shimmering = ({ width, height, circle, className }: Props) => (
+  <div
+    className={cn('h-full w-full shimmer', circle ? 'rounded-full' : 'rounded-[4px]', className)}
+    style={{ width: `${width}px`, height: `${height}px` }}
+  />
+);
 
 export default Shimmering;
