@@ -19,7 +19,13 @@ module.exports = {
 
   mac: {
     icon: `${FOLDERS.RESOURCES}/icons/icon.png`,
-    category: 'public.app-category.utilities',
+    category: 'public.app-category.finance',
+    entitlements: './entitlements.mac.plist',
+    extendInfo: {
+      NSCameraUsageDescription: 'This app requires camera access to import accounts and sign operations.',
+    },
+    darkModeSupport: false,
+    hardenedRuntime: true,
     target: {
       target: 'default',
       // arch: ['arm64'],
@@ -33,7 +39,7 @@ module.exports = {
 
   linux: {
     icon: `${FOLDERS.RESOURCES}/icons/icon.png`,
-    category: 'Utilities',
+    category: 'Finance',
     target: ['AppImage'],
   },
 
@@ -47,4 +53,5 @@ module.exports = {
     owner: 'nova-wallet',
     // repo: 'omni-enterprise',
   },
+  afterSign: 'electron-builder-notarize',
 };

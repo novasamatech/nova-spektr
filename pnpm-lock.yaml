@@ -64,6 +64,7 @@ specifiers:
   dexie-react-hooks: ^1.1.1
   electron: 19.1.8
   electron-builder: ^23.6.0
+  electron-builder-notarize: ^1.5.0
   electron-devtools-installer: ^3.2.0
   electron-react-devtools: ^0.5.3
   eslint: ^8.19.0
@@ -135,12 +136,12 @@ dependencies:
   '@headlessui/react': 1.7.4_biqbaboplfbrettd7655fr4n2y
   '@matrix-org/olm': '@gitlab.matrix.org/api/v4/projects/27/packages/npm/@matrix-org/olm/-/@matrix-org/olm-3.2.12.tgz'
   '@polkadot/api': 9.10.1
-  '@polkadot/keyring': 10.2.1_tuwv7skjgqd6bfwjexdepfj6eu
-  '@polkadot/react-identicon': 2.9.14_trmtsnubtg55ex54kumgfrnsqe
+  '@polkadot/keyring': 10.2.1
+  '@polkadot/react-identicon': 2.9.14_biqbaboplfbrettd7655fr4n2y
   '@polkadot/rpc-provider': 9.10.1
   '@polkadot/types': 9.10.1
   '@polkadot/util': 10.2.1
-  '@polkadot/util-crypto': 10.2.1_@polkadot+util@10.2.1
+  '@polkadot/util-crypto': 10.2.1
   '@substrate/connect': 0.7.17
   '@substrate/txwrapper-orml': 3.2.2
   '@substrate/txwrapper-polkadot': 3.2.2
@@ -167,7 +168,7 @@ dependencies:
   react-router-dom: 6.4.4_biqbaboplfbrettd7655fr4n2y
   stream-browserify: 3.0.0
   swiper: 8.4.5
-  tailwindcss: 3.2.4_v776zzvn44o7tpgzieipaairwm
+  tailwindcss: 3.2.4_ts-node@10.9.1
   units-css: 0.4.0
 
 devDependencies:
@@ -182,7 +183,7 @@ devDependencies:
   '@storybook/addon-postcss': 2.0.0_webpack@5.75.0
   '@storybook/builder-webpack5': 6.5.14_3p3oep6htn2fdpszvewhj7l2pe
   '@storybook/manager-webpack5': 6.5.14_3p3oep6htn2fdpszvewhj7l2pe
-  '@storybook/react': 6.5.14_zjpgejfo6xtsjp6dpgdoelqmey
+  '@storybook/react': 6.5.14_viwzwlrkx4rbjr7xhelfmjwbte
   '@svgr/webpack': 6.5.1
   '@swc/cli': 0.1.57_@swc+core@1.3.21
   '@swc/core': 1.3.21
@@ -190,7 +191,7 @@ devDependencies:
   '@swc/jest': 0.2.23_@swc+core@1.3.21
   '@testing-library/jest-dom': 5.16.5
   '@testing-library/react': 13.4.0_biqbaboplfbrettd7655fr4n2y
-  '@testing-library/user-event': 14.4.3_aaq3sbffpfe3jnxzm2zngsddei
+  '@testing-library/user-event': 14.4.3
   '@types/jest': 28.1.8
   '@types/lodash': 4.14.191
   '@types/node': 18.11.11
@@ -212,6 +213,7 @@ devDependencies:
   css-minimizer-webpack-plugin: 4.2.2_webpack@5.75.0
   electron: 19.1.8
   electron-builder: 23.6.0
+  electron-builder-notarize: 1.5.0_electron-builder@23.6.0
   electron-devtools-installer: 3.2.0
   electron-react-devtools: 0.5.3
   eslint: 8.29.0
@@ -233,7 +235,7 @@ devDependencies:
   jest: 29.3.1_k7quxe733nexnlgzi4yxvxoplq
   jest-environment-jsdom: 29.3.1
   jest-junit: 15.0.0
-  jest-runner-groups: 2.2.0_qrt5due4lpwhtnujr3g74bqrki
+  jest-runner-groups: 2.2.0
   lint-staged: 13.1.0
   matrix-js-sdk: 19.7.0
   mini-css-extract-plugin: 2.7.2_webpack@5.75.0
@@ -2825,7 +2827,7 @@ packages:
       '@polkadot/types': 9.10.1
       '@polkadot/types-codec': 9.10.1
       '@polkadot/util': 10.2.1
-      '@polkadot/util-crypto': 10.2.1_@polkadot+util@10.2.1
+      '@polkadot/util-crypto': 10.2.1
       rxjs: 7.6.0
     transitivePeerDependencies:
       - bufferutil
@@ -2845,7 +2847,7 @@ packages:
       '@polkadot/types': 9.3.3
       '@polkadot/types-codec': 9.3.3
       '@polkadot/util': 10.2.1
-      '@polkadot/util-crypto': 10.2.1_@polkadot+util@10.2.1
+      '@polkadot/util-crypto': 10.2.1
       rxjs: 7.6.0
     transitivePeerDependencies:
       - bufferutil
@@ -2861,7 +2863,7 @@ packages:
       '@polkadot/api-augment': 9.10.1
       '@polkadot/api-base': 9.10.1
       '@polkadot/api-derive': 9.10.1
-      '@polkadot/keyring': 10.2.1_tuwv7skjgqd6bfwjexdepfj6eu
+      '@polkadot/keyring': 10.2.1
       '@polkadot/rpc-augment': 9.10.1
       '@polkadot/rpc-core': 9.10.1
       '@polkadot/rpc-provider': 9.10.1
@@ -2871,7 +2873,7 @@ packages:
       '@polkadot/types-create': 9.10.1
       '@polkadot/types-known': 9.10.1
       '@polkadot/util': 10.2.1
-      '@polkadot/util-crypto': 10.2.1_@polkadot+util@10.2.1
+      '@polkadot/util-crypto': 10.2.1
       eventemitter3: 4.0.7
       rxjs: 7.6.0
     transitivePeerDependencies:
@@ -2888,7 +2890,7 @@ packages:
       '@polkadot/api-augment': 9.3.3
       '@polkadot/api-base': 9.3.3
       '@polkadot/api-derive': 9.3.3
-      '@polkadot/keyring': 10.2.1_tuwv7skjgqd6bfwjexdepfj6eu
+      '@polkadot/keyring': 10.2.1
       '@polkadot/rpc-augment': 9.3.3
       '@polkadot/rpc-core': 9.3.3
       '@polkadot/rpc-provider': 9.3.3
@@ -2898,7 +2900,7 @@ packages:
       '@polkadot/types-create': 9.3.3
       '@polkadot/types-known': 9.3.3
       '@polkadot/util': 10.2.1
-      '@polkadot/util-crypto': 10.2.1_@polkadot+util@10.2.1
+      '@polkadot/util-crypto': 10.2.1
       eventemitter3: 4.0.7
       rxjs: 7.6.0
     transitivePeerDependencies:
@@ -2907,16 +2909,13 @@ packages:
       - utf-8-validate
     dev: false
 
-  /@polkadot/keyring/10.2.1_tuwv7skjgqd6bfwjexdepfj6eu:
+  /@polkadot/keyring/10.2.1:
     resolution: {integrity: sha512-84/zzxDZANQ4AfsCT1vrjX3I23/mj9WUWl1F7q9ruK6UBFyGsl46Y3ABOopFHij9UXhppndhB65IeDnqoOKqxQ==}
     engines: {node: '>=14.0.0'}
-    peerDependencies:
-      '@polkadot/util': 10.2.1
-      '@polkadot/util-crypto': 10.2.1
     dependencies:
       '@babel/runtime': 7.20.6
       '@polkadot/util': 10.2.1
-      '@polkadot/util-crypto': 10.2.1_@polkadot+util@10.2.1
+      '@polkadot/util-crypto': 10.2.1
     dev: false
 
   /@polkadot/networks/10.2.1:
@@ -2928,33 +2927,26 @@ packages:
       '@substrate/ss58-registry': 1.35.0
     dev: false
 
-  /@polkadot/react-identicon/2.9.14_trmtsnubtg55ex54kumgfrnsqe:
+  /@polkadot/react-identicon/2.9.14_biqbaboplfbrettd7655fr4n2y:
     resolution: {integrity: sha512-5kjZYtBqqa8ZAniqg/82eU5iJ3aiQz5rDZjbJLHF1RUNtyb2RccaRH+n5A3005EbFUHBUiM8Ez144hwVH8PFFQ==}
     peerDependencies:
-      '@polkadot/keyring': '*'
-      '@polkadot/util': '*'
-      '@polkadot/util-crypto': '*'
       react: '*'
       react-dom: '*'
       react-is: '*'
-      styled-components: '*'
     dependencies:
       '@babel/runtime': 7.20.6
-      '@polkadot/keyring': 10.2.1_tuwv7skjgqd6bfwjexdepfj6eu
-      '@polkadot/ui-settings': 2.9.14_sef3rwaqyscli5ofexi7jrxoba
+      '@polkadot/keyring': 10.2.1
+      '@polkadot/ui-settings': 2.9.14
       '@polkadot/ui-shared': 2.9.14_tuwv7skjgqd6bfwjexdepfj6eu
       '@polkadot/util': 10.2.1
-      '@polkadot/util-crypto': 10.2.1_@polkadot+util@10.2.1
+      '@polkadot/util-crypto': 10.2.1
       color: 3.2.1
       ethereum-blockies-base64: 1.0.2
       jdenticon: 3.1.1
       react: 18.2.0
       react-copy-to-clipboard: 5.1.0_react@18.2.0
       react-dom: 18.2.0_react@18.2.0
-      react-is: 18.2.0
-      styled-components: 5.3.6_7i5myeigehqah43i5u7wbekgba
-    transitivePeerDependencies:
-      - '@polkadot/networks'
+      styled-components: 5.3.6_biqbaboplfbrettd7655fr4n2y
     dev: false
 
   /@polkadot/rpc-augment/9.10.1:
@@ -3024,11 +3016,11 @@ packages:
     engines: {node: '>=14.0.0'}
     dependencies:
       '@babel/runtime': 7.20.6
-      '@polkadot/keyring': 10.2.1_tuwv7skjgqd6bfwjexdepfj6eu
+      '@polkadot/keyring': 10.2.1
       '@polkadot/types': 9.10.1
       '@polkadot/types-support': 9.10.1
       '@polkadot/util': 10.2.1
-      '@polkadot/util-crypto': 10.2.1_@polkadot+util@10.2.1
+      '@polkadot/util-crypto': 10.2.1
       '@polkadot/x-fetch': 10.2.1
       '@polkadot/x-global': 10.2.1
       '@polkadot/x-ws': 10.2.1
@@ -3047,11 +3039,11 @@ packages:
     engines: {node: '>=14.0.0'}
     dependencies:
       '@babel/runtime': 7.20.6
-      '@polkadot/keyring': 10.2.1_tuwv7skjgqd6bfwjexdepfj6eu
+      '@polkadot/keyring': 10.2.1
       '@polkadot/types': 9.3.3
       '@polkadot/types-support': 9.3.3
       '@polkadot/util': 10.2.1
-      '@polkadot/util-crypto': 10.2.1_@polkadot+util@10.2.1
+      '@polkadot/util-crypto': 10.2.1
       '@polkadot/x-fetch': 10.2.1
       '@polkadot/x-global': 10.2.1
       '@polkadot/x-ws': 10.2.1
@@ -3166,12 +3158,12 @@ packages:
     engines: {node: '>=14.0.0'}
     dependencies:
       '@babel/runtime': 7.20.6
-      '@polkadot/keyring': 10.2.1_tuwv7skjgqd6bfwjexdepfj6eu
+      '@polkadot/keyring': 10.2.1
       '@polkadot/types-augment': 9.10.1
       '@polkadot/types-codec': 9.10.1
       '@polkadot/types-create': 9.10.1
       '@polkadot/util': 10.2.1
-      '@polkadot/util-crypto': 10.2.1_@polkadot+util@10.2.1
+      '@polkadot/util-crypto': 10.2.1
       rxjs: 7.6.0
     dev: false
 
@@ -3180,20 +3172,17 @@ packages:
     engines: {node: '>=14.0.0'}
     dependencies:
       '@babel/runtime': 7.20.6
-      '@polkadot/keyring': 10.2.1_tuwv7skjgqd6bfwjexdepfj6eu
+      '@polkadot/keyring': 10.2.1
       '@polkadot/types-augment': 9.3.3
       '@polkadot/types-codec': 9.3.3
       '@polkadot/types-create': 9.3.3
       '@polkadot/util': 10.2.1
-      '@polkadot/util-crypto': 10.2.1_@polkadot+util@10.2.1
+      '@polkadot/util-crypto': 10.2.1
       rxjs: 7.6.0
     dev: false
 
-  /@polkadot/ui-settings/2.9.14_sef3rwaqyscli5ofexi7jrxoba:
+  /@polkadot/ui-settings/2.9.14:
     resolution: {integrity: sha512-uXKNVYEbREO3Qx3JN8AuUsNMu/mfTrBVC8zQ9YGIW6pdZ/g45uYA9hlLGqJvOh6PQqq7YtH/Ck7fenpt2Cz0qA==}
-    peerDependencies:
-      '@polkadot/networks': '*'
-      '@polkadot/util': '*'
     dependencies:
       '@babel/runtime': 7.20.6
       '@polkadot/networks': 10.2.1
@@ -3210,15 +3199,13 @@ packages:
     dependencies:
       '@babel/runtime': 7.20.6
       '@polkadot/util': 10.2.1
-      '@polkadot/util-crypto': 10.2.1_@polkadot+util@10.2.1
+      '@polkadot/util-crypto': 10.2.1
       color: 3.2.1
     dev: false
 
-  /@polkadot/util-crypto/10.2.1_@polkadot+util@10.2.1:
+  /@polkadot/util-crypto/10.2.1:
     resolution: {integrity: sha512-UH1J4oD92gkLXMfVTLee3Y2vYadNyp1lmS4P2nZwQ0SOzGZ4rN7khD2CrB1cXS9WPq196Zb5oZdGLnPYnXHtjw==}
     engines: {node: '>=14.0.0'}
-    peerDependencies:
-      '@polkadot/util': 10.2.1
     dependencies:
       '@babel/runtime': 7.20.6
       '@noble/hashes': 1.1.3
@@ -4612,7 +4599,7 @@ packages:
       - supports-color
     dev: true
 
-  /@storybook/react/6.5.14_zjpgejfo6xtsjp6dpgdoelqmey:
+  /@storybook/react/6.5.14_viwzwlrkx4rbjr7xhelfmjwbte:
     resolution: {integrity: sha512-SL0P5czN3g/IZAYw8ur9I/O8MPZI7Lyd46Pw+B1f7+Ou8eLmhqa8Uc8+3fU6v7ohtUDwsBiTsg3TAfTVEPog4A==}
     engines: {node: '>=10.13.0'}
     hasBin: true
@@ -4677,7 +4664,6 @@ packages:
       react-refresh: 0.11.0
       read-pkg-up: 7.0.1
       regenerator-runtime: 0.13.11
-      require-from-string: 2.0.2
       ts-dedent: 2.2.0
       typescript: 4.9.3
       util-deprecate: 1.0.2
@@ -5265,13 +5251,11 @@ packages:
       react-dom: 18.2.0_react@18.2.0
     dev: true
 
-  /@testing-library/user-event/14.4.3_aaq3sbffpfe3jnxzm2zngsddei:
+  /@testing-library/user-event/14.4.3:
     resolution: {integrity: sha512-kCUc5MEwaEMakkO5x7aoD+DLi02ehmEM2QCGWvNqAS1dV/fAvORWEjnjsEIvml59M7Y5kCkWN6fCCyPOe8OL6Q==}
     engines: {node: '>=12', npm: '>=6'}
     peerDependencies:
       '@testing-library/dom': '>=7.21.4'
-    dependencies:
-      '@testing-library/dom': 8.19.0
     dev: true
 
   /@tootallnate/once/2.0.0:
@@ -6343,10 +6327,8 @@ packages:
       ajv: 6.12.6
     dev: true
 
-  /ajv-formats/2.1.1_ajv@8.11.2:
+  /ajv-formats/2.1.1:
     resolution: {integrity: sha512-Wx0Kx52hxE7C18hkMEggYlEifqWZtYaRgouJor+WMdPnQyEK13vgEWyVNup7SoeeoLMsr4kf5h6dOW11I15MUA==}
-    peerDependencies:
-      ajv: ^8.0.0
     peerDependenciesMeta:
       ajv:
         optional: true
@@ -6492,10 +6474,10 @@ packages:
     resolution: {integrity: sha512-dQYDuqm/rmy8GSCE6Xl/3ShJg6Ab4bZJMT8KaTKGzT436gl1DN4REP3FCWfXoh75qGTJ+u+WsdnnpO9Jl8nyMA==}
     engines: {node: '>=14.0.0'}
     dependencies:
-      7zip-bin: 5.1.1
       '@develar/schema-utils': 2.6.5
       '@electron/universal': 1.2.1
       '@malept/flatpak-bundler': 0.4.0
+      7zip-bin: 5.1.1
       async-exit-hook: 2.0.1
       bluebird-lst: 1.0.9
       builder-util: 23.6.0
@@ -7006,7 +6988,7 @@ packages:
       babel-plugin-syntax-jsx: 6.18.0
       lodash: 4.17.21
       picomatch: 2.3.1
-      styled-components: 5.3.6_7i5myeigehqah43i5u7wbekgba
+      styled-components: 5.3.6_biqbaboplfbrettd7655fr4n2y
     dev: false
 
   /babel-plugin-syntax-jsx/6.18.0:
@@ -7409,9 +7391,9 @@ packages:
   /builder-util/23.6.0:
     resolution: {integrity: sha512-QiQHweYsh8o+U/KNCZFSvISRnvRctb8m/2rB2I1JdByzvNKxPeFLlHFRPQRXab6aYeXc18j9LpsDLJ3sGQmWTQ==}
     dependencies:
-      7zip-bin: 5.1.1
       '@types/debug': 4.1.7
       '@types/fs-extra': 9.0.13
+      7zip-bin: 5.1.1
       app-builder-bin: 4.0.0
       bluebird-lst: 1.0.9
       builder-util-runtime: 9.1.1
@@ -8131,8 +8113,8 @@ packages:
     engines: {node: '>=10'}
     hasBin: true
     dependencies:
-      JSONStream: 1.3.5
       is-text-path: 1.0.1
+      JSONStream: 1.3.5
       lodash: 4.17.21
       meow: 8.1.2
       split2: 3.2.2
@@ -9181,6 +9163,21 @@ packages:
       jake: 10.8.5
     dev: true
 
+  /electron-builder-notarize/1.5.0_electron-builder@23.6.0:
+    resolution: {integrity: sha512-kbVCnZX3pCKTXiPhyoMjCZYSQnwS04QmlTM2NB2D/2LCsab5UJA0Me9ZqDT3W35ENPglf1WYDKT+tx9i+xuaPA==}
+    engines: {node: '>=8'}
+    peerDependencies:
+      electron-builder: '>= 20.44.4'
+    dependencies:
+      dotenv: 8.6.0
+      electron-builder: 23.6.0
+      electron-notarize: 1.2.2
+      js-yaml: 3.14.1
+      read-pkg-up: 7.0.1
+    transitivePeerDependencies:
+      - supports-color
+    dev: true
+
   /electron-builder/23.6.0:
     resolution: {integrity: sha512-y8D4zO+HXGCNxFBV/JlyhFnoQ0Y0K7/sFH+XwIbj47pqaW8S6PGYQbjoObolKBR1ddQFPt4rwp4CnwMJrW3HAw==}
     engines: {node: '>=14.0.0'}
@@ -9209,6 +9206,17 @@ packages:
       semver: 7.3.8
       tslib: 2.4.1
       unzip-crx-3: 0.2.0
+    dev: true
+
+  /electron-notarize/1.2.2:
+    resolution: {integrity: sha512-ZStVWYcWI7g87/PgjPJSIIhwQXOaw4/XeXU+pWqMMktSLHaGMLHdyPPN7Cmao7+Cr7fYufA16npdtMndYciHNw==}
+    engines: {node: '>= 10.0.0'}
+    deprecated: Please use @electron/notarize moving forward.  There is no API change, just a package name change
+    dependencies:
+      debug: 4.3.4
+      fs-extra: 9.1.0
+    transitivePeerDependencies:
+      - supports-color
     dev: true
 
   /electron-osx-sign/0.6.0:
@@ -12492,15 +12500,12 @@ packages:
       slash: 3.0.0
     dev: true
 
-  /jest-runner-groups/2.2.0_qrt5due4lpwhtnujr3g74bqrki:
+  /jest-runner-groups/2.2.0:
     resolution: {integrity: sha512-Sp/B9ZX0CDAKa9dIkgH0sGyl2eDuScV4SVvOxqhBMxqWpsNAkmol/C58aTFmPWZj+C0ZTW1r1BSu66MTCN+voA==}
     engines: {node: '>= 10.14.2'}
     peerDependencies:
       jest-docblock: '>= 24'
       jest-runner: '>= 24'
-    dependencies:
-      jest-docblock: 29.2.0
-      jest-runner: 29.3.1
     dev: true
 
   /jest-runner/29.3.1:
@@ -15639,6 +15644,7 @@ packages:
 
   /react-is/18.2.0:
     resolution: {integrity: sha512-xWGDIW6x921xtzPkhiULtthJHoJvBbF3q26fzloPCK0hsvxtPVelvftw3zjbHWSkR2km9Z+4uxbDDK/6Zw9B8w==}
+    dev: true
 
   /react-merge-refs/1.1.0:
     resolution: {integrity: sha512-alTKsjEL0dKH/ru1Iyn7vliS2QRcBp9zZPGoWxUOvRGWPUYgjo+V01is7p04It6KhgrzhJGnIj9GgX8W4bZoCQ==}
@@ -16297,7 +16303,7 @@ packages:
     dependencies:
       '@types/json-schema': 7.0.11
       ajv: 8.11.2
-      ajv-formats: 2.1.1_ajv@8.11.2
+      ajv-formats: 2.1.1
       ajv-keywords: 5.1.0_ajv@8.11.2
     dev: true
 
@@ -17094,7 +17100,7 @@ packages:
       inline-style-parser: 0.1.1
     dev: true
 
-  /styled-components/5.3.6_7i5myeigehqah43i5u7wbekgba:
+  /styled-components/5.3.6_biqbaboplfbrettd7655fr4n2y:
     resolution: {integrity: sha512-hGTZquGAaTqhGWldX7hhfzjnIYBZ0IXQXkCYdvF1Sq3DsUaLx6+NTHC5Jj1ooM2F68sBiVz3lvhfwQs/S3l6qg==}
     engines: {node: '>=10'}
     requiresBuild: true
@@ -17113,7 +17119,6 @@ packages:
       hoist-non-react-statics: 3.3.2
       react: 18.2.0
       react-dom: 18.2.0_react@18.2.0
-      react-is: 18.2.0
       shallowequal: 1.1.0
       supports-color: 5.5.0
     dev: false
@@ -17229,12 +17234,10 @@ packages:
     resolution: {integrity: sha512-qImOD23aDfnIDNqlG1NOehdB9IYsn1V9oByPjKY1nakv2MQYCEMyX033/q+aEtYCpmYK1cv2+NTmlH+ra6GA5A==}
     dev: true
 
-  /tailwindcss/3.2.4_v776zzvn44o7tpgzieipaairwm:
+  /tailwindcss/3.2.4_ts-node@10.9.1:
     resolution: {integrity: sha512-AhwtHCKMtR71JgeYDaswmZXhPcW9iuI9Sp2LvZPo9upDZ7231ZJ7eA9RaURbhpXGVlrjX4cFNlB4ieTetEb7hQ==}
     engines: {node: '>=12.13.0'}
     hasBin: true
-    peerDependencies:
-      postcss: ^8.0.9
     dependencies:
       arg: 5.0.2
       chokidar: 3.5.3
