@@ -3,12 +3,15 @@ const { writeFile, readFile } = require('fs/promises');
 
 const CONFIG_PATH = 'src/renderer/services/network/common/chains';
 
-function updateDevChainsFile(devConfig, updatedConfig) {
-  return devConfig.reduce((acc, chain) => {
-    const updatedChain = updatedConfig.find((item) => item.chainId === chain.chainId);
-    acc.push(updatedChain);
+function getUpdatedDevChains(oldConfig, newConfig) {
+  const newConfigMap = newConfig.reduce((acc, config) => {
+    return { ...acc, [config.chainId]: config };
+  }, {});
 
-    return acc;
+  return oldConfig.reduce((acc, { chainId }) => {
+    const updatedChain = newConfigMap[chainId];
+
+    return updatedChain ? acc.concat(updatedChain) : acc;
   }, []);
 }
 
@@ -33,7 +36,7 @@ async function readFileFromLocal(filePath) {
 async function updateDevChainsJson() {
   const devChainsConfig = await readFileFromLocal(CONFIG_PATH + '/chains.json');
   const updatedChainsConfig = await readFileFromLocal(CONFIG_PATH + '/omni-chains_dev.json');
-  const modifiedData = await updateDevChainsFile(devChainsConfig, updatedChainsConfig);
+  const modifiedData = getUpdatedDevChains(devChainsConfig, updatedChainsConfig);
   await saveNewFile(modifiedData, 'chains.json');
   console.log('chains.json was successfuly updated');
 }
