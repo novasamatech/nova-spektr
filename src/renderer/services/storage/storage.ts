@@ -15,7 +15,7 @@ class DexieStorage extends Dexie {
 
   constructor() {
     super('omni'); // TODO: naming is not final
-    this.version(5).stores({
+    this.version(7).stores({
       connections: '++id,chainId,type',
       balances: '[publicKey+chainId+assetId],[publicKey+chainId]',
       wallets: '++id,isActive,type',

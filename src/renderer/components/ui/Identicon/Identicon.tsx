@@ -10,11 +10,11 @@ type Props = {
   address: string;
   size?: number;
   background?: boolean;
-  noCopy?: boolean;
+  canCopy?: boolean;
   className?: string;
 };
 
-const Identicon = ({ theme = 'polkadot', address, size = 24, background = true, noCopy, className }: Props) => {
+const Identicon = ({ theme = 'polkadot', address, size = 24, background = true, canCopy = true, className }: Props) => {
   const wrapperRef = useRef<HTMLDivElement>(null);
 
   useLayoutEffect(() => {
@@ -36,7 +36,7 @@ const Identicon = ({ theme = 'polkadot', address, size = 24, background = true, 
     />
   );
 
-  if (noCopy) {
+  if (!canCopy) {
     return (
       <div
         ref={wrapperRef}

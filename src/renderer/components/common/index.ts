@@ -8,6 +8,7 @@ import QrTxGenerator from './QrCode/QrGenerator/QrTxGenerator';
 import Explorers from './Explorers/Explorers';
 import Badge from './Badge/Badge';
 import Fee from './Fee/Fee';
+import Expandable from './Expandable/Expandable';
 
 export {
   AccountsList,
@@ -20,4 +21,5 @@ export {
   Explorers,
   Badge,
   Fee,
+  Expandable,
 };

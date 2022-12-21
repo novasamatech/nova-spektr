@@ -20,7 +20,7 @@ const Explorers = ({ explorers, addressPrefix, address }: Props) => {
   return (
     <div className="relative">
       <Menu>
-        <Menu.Button className={'hover:bg-primary hover:text-white px-1 rounded-2xl'}>
+        <Menu.Button className={'hover:bg-primary hover:text-white px-1 w-5 h-5 rounded-full'}>
           {t('accountList.menuButton')}
         </Menu.Button>
         <Menu.Items
