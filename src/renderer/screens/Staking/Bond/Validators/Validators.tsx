@@ -94,7 +94,7 @@ const Validators = ({ api, chainId, asset, onResult }: Props) => {
                     </p>
                   )}
                   <Address
-                    noCopy
+                    canCopy={false}
                     address={address || ''}
                     type="short"
                     addressStyle={identity ? 'small' : 'normal'}

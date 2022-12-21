@@ -26,29 +26,39 @@ export const useWalletsStructure = (accountQuery: Partial<AccountDS>, query: str
   const wallets = getLiveWallets();
   const paritySignerAccounts = getLiveAccounts(accountQuery);
 
+  const getChainData = (chainId: ChainId, accounts: AccountDS[], rootAccount: AccountDS) => {
+    const chainAccounts = accounts.filter((a) => a.rootId === rootAccount.id && a.name.includes(query));
+
+    return {
+      ...chainsObject[chainId as ChainId],
+      isActive: chainAccounts.every((a) => a.isActive),
+      accounts: chainAccounts,
+    };
+  };
+
+  const getRootAccounts = (accounts: AccountDS[]) => {
+    const groupedRoots = groupBy(accounts, ({ chainId }) => chainId);
+
+    const rootAccounts = accounts
+      .filter((a) => !a.rootId)
+      .map((rootAccount) => ({
+        ...rootAccount,
+        chains: Object.entries(groupedRoots)
+          .map(([chainId, accounts]) => getChainData(chainId as ChainId, accounts, rootAccount))
+          .filter((a) => a.accounts.length > 0),
+      }))
+      .filter((a) => a.name.includes(query) || a.chains.length > 0);
+
+    return rootAccounts;
+  };
+
   const walletStructure = wallets.map((wallet) => {
     const accounts = paritySignerAccounts.filter((account) => account.walletId === wallet.id);
-    const rootAccounts = accounts.filter((a) => !a.rootId && a.name.includes(query));
-
-    const groupedRoots = groupBy(accounts, ({ chainId }) => chainId);
 
     return {
       ...wallet,
       isActive: accounts.every((a) => a.isActive),
-      rootAccounts: rootAccounts.map((account) => ({
-        ...account,
-        chains: Object.entries(groupedRoots)
-          .map(([chainId, accounts]) => {
-            const chainAccounts = accounts.filter((a) => a.rootId === account.id && a.name.includes(query));
-
-            return {
-              ...chainsObject[chainId as ChainId],
-              isActive: chainAccounts.every((a) => a.isActive),
-              accounts: chainAccounts,
-            };
-          })
-          .filter((a) => a.accounts.length > 0),
-      })),
+      rootAccounts: getRootAccounts(accounts),
     };
   });
 

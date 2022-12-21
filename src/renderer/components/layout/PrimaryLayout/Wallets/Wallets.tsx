@@ -1,13 +1,14 @@
 import cn from 'classnames';
 import { forwardRef, useState } from 'react';
 
-import { Address, Checkbox, Expandable, Icon, Identicon, Input } from '@renderer/components/ui';
+import { Address, Checkbox, Icon, Identicon, Input } from '@renderer/components/ui';
 import { useI18n } from '@renderer/context/I18nContext';
 import { AccountDS } from '@renderer/services/storage';
 import { useAccount } from '@renderer/services/account/accountService';
 import { SigningType, WalletType } from '@renderer/domain/shared-kernel';
 import { useWalletsStructure } from './useWalletStructure';
 import { ChainWithAccounts, RootAccount, WalletStructure } from './types';
+import { Expandable } from '@renderer/components/common';
 
 type Props = {
   className?: string;
@@ -55,7 +56,9 @@ const Wallets = forwardRef<HTMLDivElement, Props>(({ className }, ref) => {
 
   const selectChain = (chain: ChainWithAccounts, checked: boolean) => {
     chain.accounts.forEach((account) => {
-      checked !== account.isActive && toggleActiveAccount(account.id || '');
+      if (checked === account.isActive) return;
+
+      toggleActiveAccount(account.id || '');
     });
   };
 
@@ -92,8 +95,8 @@ const Wallets = forwardRef<HTMLDivElement, Props>(({ className }, ref) => {
 
           {accounts.length > 0 && (
             <ul className="bg-white m-0.5 rounded-2lg">
-              {accounts.map((account, index) => (
-                <li key={index}>
+              {accounts.map((account) => (
+                <li key={account.name}>
                   <ul>
                     {(account as WalletStructure).rootAccounts ? (
                       <Expandable
@@ -117,9 +120,9 @@ const Wallets = forwardRef<HTMLDivElement, Props>(({ className }, ref) => {
                           {(account as WalletStructure).rootAccounts.map((rootAccount) => (
                             <Expandable
                               itemClassName="px-2 hover:bg-shade-10"
-                              key={(account as AccountDS).id}
+                              key={rootAccount.id}
                               item={
-                                <li className="h-10 w-full" key={rootAccount.id}>
+                                <li className="h-10 w-full">
                                   <Checkbox
                                     className="w-full h-full"
                                     checked={rootAccount.isActive}
@@ -145,9 +148,9 @@ const Wallets = forwardRef<HTMLDivElement, Props>(({ className }, ref) => {
                                 {rootAccount.chains.map((chain) => (
                                   <Expandable
                                     itemClassName="px-2 hover:bg-shade-10"
-                                    key={(account as AccountDS).id}
+                                    key={chain.chainId}
                                     item={
-                                      <li className="h-10 w-full" key={chain.chainId}>
+                                      <li className="h-10 w-full">
                                         <Checkbox
                                           className="w-full h-full"
                                           checked={chain.isActive}
@@ -208,8 +211,8 @@ const Wallets = forwardRef<HTMLDivElement, Props>(({ className }, ref) => {
                                               <Address
                                                 type="short"
                                                 address={chainAccount.accountId || ''}
-                                                noCopy
-                                                noIcon
+                                                canCopy={false}
+                                                showIcon={false}
                                               />
                                             </div>
                                           </Checkbox>
