@@ -108,14 +108,14 @@ export const useStakingData = (): IStakingDataService => {
   const getValidators = async (chainId: ChainId, api: ApiPromise): Promise<void> => {
     const [totalStake, commission] = await Promise.all([setValidatorsStake(api), setValidatorsPrefs(api)]);
 
-    const { addresses, apyPayload } = Object.entries(totalStake).reduce(
+    const { addresses, apyPayload } = Object.entries(totalStake).reduce<Record<string, any[]>>(
       (acc, [address, totalStake]) => {
         acc.addresses.push(address);
         acc.apyPayload.push({ address, totalStake, commission: commission[address] });
 
         return acc;
       },
-      { addresses: [], apyPayload: [] } as Record<string, any[]>,
+      { addresses: [], apyPayload: [] },
     );
 
     await Promise.all([setIdentities(api, addresses), calculateValidatorsApy(api, apyPayload)]);
@@ -201,7 +201,7 @@ export const useStakingData = (): IStakingDataService => {
   const getSubIdentities = async (api: ApiPromise, addresses: AccountID[]): Promise<SubIdentity[]> => {
     const subIdentities = await api.query.identity.superOf.multi(addresses);
 
-    return subIdentities.reduce((acc, identity, index) => {
+    return subIdentities.reduce<SubIdentity[]>((acc, identity, index) => {
       const payload = { sub: addresses[index], parent: addresses[index], subName: '' };
       if (!identity.isNone) {
         const [address, rawData] = identity.unwrap();
@@ -210,7 +210,7 @@ export const useStakingData = (): IStakingDataService => {
       }
 
       return acc.concat(payload);
-    }, [] as SubIdentity[]);
+    }, []);
   };
 
   const getParentIdentities = async (
@@ -221,7 +221,7 @@ export const useStakingData = (): IStakingDataService => {
 
     const parentIdentities = await api.query.identity.identityOf.multi(identityAddresses);
 
-    return parentIdentities.reduce((acc, identity, index) => {
+    return parentIdentities.reduce<Record<AccountID, Identity>>((acc, identity, index) => {
       if (identity.isNone) return acc;
 
       const { parent, sub, subName } = subIdentities[index];
@@ -241,7 +241,7 @@ export const useStakingData = (): IStakingDataService => {
       };
 
       return { ...acc, [sub]: payload };
-    }, {} as Record<AccountID, Identity>);
+    }, {});
   };
 
   const calculateValidatorsApy = async (api: ApiPromise, validators: Validator[]) => {

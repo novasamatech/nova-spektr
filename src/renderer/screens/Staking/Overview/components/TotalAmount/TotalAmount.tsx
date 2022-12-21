@@ -6,7 +6,6 @@ import { useI18n } from '@renderer/context/I18nContext';
 import { Asset } from '@renderer/domain/asset';
 import { AccountID } from '@renderer/domain/shared-kernel';
 import { useStakingRewards } from '@renderer/services/staking/stakingRewardsService';
-import { SS58_DEFAULT_PREFIX } from '@renderer/utils/constants';
 
 const getTotal = (values: string[]): BN => {
   return values.reduce((acc, value) => acc.add(new BN(value || 0)), BN_ZERO);
@@ -21,8 +20,7 @@ type Props = {
 
 const TotalAmount = ({ totalStakes, asset, accounts, addressPrefix }: Props) => {
   const { t } = useI18n();
-  const { rewards, isLoading } = useStakingRewards(accounts, addressPrefix || SS58_DEFAULT_PREFIX);
-
+  const { rewards, isLoading } = useStakingRewards(accounts, addressPrefix);
   const totalInfo = [
     {
       isLoading: isLoading,

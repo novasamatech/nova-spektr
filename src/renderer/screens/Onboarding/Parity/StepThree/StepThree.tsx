@@ -99,7 +99,7 @@ const StepThree = ({ qrData, onNextStep }: Props) => {
   };
 
   const groupDerivedKeys = (derivedKeys: AddressInfo[]): Record<HexString, AddressInfo[]> => {
-    return derivedKeys.reduce((acc, key) => {
+    return derivedKeys.reduce<Record<HexString, AddressInfo[]>>((acc, key) => {
       const genesisHash = u8aToHex(key.genesisHash);
 
       if (acc[genesisHash]) {
@@ -109,7 +109,7 @@ const StepThree = ({ qrData, onNextStep }: Props) => {
       }
 
       return acc;
-    }, {} as Record<HexString, AddressInfo[]>);
+    }, {});
   };
 
   const getAccountId = (accountIndex: number, chainId?: string, derivedKeyIndex?: number): string =>
@@ -131,13 +131,13 @@ const StepThree = ({ qrData, onNextStep }: Props) => {
     });
   };
 
-  const walletIds = accounts.reduce((acc, { derivedKeys }, accountIndex) => {
+  const walletIds = accounts.reduce<string[]>((acc, { derivedKeys }, accountIndex) => {
     const derivedKeysIds = Object.keys(derivedKeys).map((chainId) =>
       derivedKeys[chainId as HexString].map((_, index) => getAccountId(accountIndex, chainId, index)),
     );
 
     return [...acc, getAccountId(accountIndex), ...derivedKeysIds.flat()];
-  }, [] as string[]);
+  }, []);
 
   const activeWalletsHaveName = walletIds.every((walletId) => inactiveAccounts[walletId] || accountNames[walletId]);
 
@@ -165,7 +165,7 @@ const StepThree = ({ qrData, onNextStep }: Props) => {
     rootAccountId: IndexableType,
     walletId: IndexableType,
   ): Account[] => {
-    return derivedKeys.reduce((acc, derivedKey, index) => {
+    return derivedKeys.reduce<Account[]>((acc, derivedKey, index) => {
       const accountId = getAccountId(accountIndex, chainId, index);
 
       if (inactiveAccounts[accountId]) return acc;
@@ -181,7 +181,7 @@ const StepThree = ({ qrData, onNextStep }: Props) => {
           walletId,
         }),
       ];
-    }, [] as Account[]);
+    }, []);
   };
 
   const createWallets = async (event: FormEvent) => {

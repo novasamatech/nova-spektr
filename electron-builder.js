@@ -22,7 +22,6 @@ module.exports = {
     category: 'public.app-category.utilities',
     target: {
       target: 'default',
-      // arch: ['arm64'],
       arch: ['arm64', 'x64'],
     },
   },

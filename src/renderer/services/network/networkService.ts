@@ -103,7 +103,7 @@ export const useNetwork = (unsubscribe?: (chainId: ChainId) => Promise<void>): I
       return activeNode;
     };
 
-    return Object.values(chains.current).reduce((acc, { chainId, nodes }) => {
+    return Object.values(chains.current).reduce<Connection[]>((acc, { chainId, nodes }) => {
       if (connectionData[chainId]) {
         acc.push({
           ...connectionData[chainId],
@@ -127,21 +127,21 @@ export const useNetwork = (unsubscribe?: (chainId: ChainId) => Promise<void>): I
       }
 
       return acc;
-    }, [] as Connection[]);
+    }, []);
   };
 
   const getExtendConnections = async (): Promise<ConnectionsMap> => {
     const currentConnections = await getConnections();
     const connectionData = keyBy(currentConnections, 'chainId');
 
-    return Object.values(chains.current).reduce((acc, chain) => {
+    return Object.values(chains.current).reduce<ConnectionsMap>((acc, chain) => {
       acc[chain.chainId] = {
         ...chains.current[chain.chainId],
         connection: connectionData[chain.chainId],
       };
 
       return acc;
-    }, {} as ConnectionsMap);
+    }, {});
   };
 
   const createSubstrateProvider = (chainId: ChainId): ProviderInterface | undefined => {
