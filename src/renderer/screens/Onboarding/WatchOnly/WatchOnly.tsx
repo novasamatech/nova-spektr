@@ -29,10 +29,7 @@ const WatchOnly = () => {
     formState: { errors, isValid },
   } = useForm<WalletForm>({
     mode: 'onChange',
-    defaultValues: {
-      walletName: '',
-      address: '',
-    },
+    defaultValues: { walletName: '', address: '' },
   });
 
   const { getChainsData, sortChains } = useChains();
