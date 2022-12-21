@@ -1,5 +1,5 @@
 import cn from 'classnames';
-import { PropsWithChildren } from 'react';
+import { ChangeEvent, PropsWithChildren } from 'react';
 import './styles.css';
 
 type Props = {
@@ -9,7 +9,7 @@ type Props = {
   disabled?: boolean;
   readOnly?: boolean;
   className?: string;
-  onChange?: () => void;
+  onChange?: (event: ChangeEvent<HTMLInputElement>) => void;
 };
 
 const Checkbox = ({
