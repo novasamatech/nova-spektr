@@ -295,6 +295,7 @@
     "wallet": "Wallet"
   },
   "wallets": {
+    "multishardWalletsLabel": "Multishard",
     "paritySignerLabel": "Parity Signer",
     "searchPlaceholder": "Search for a wallet",
     "watchOnlyLabel": "Watch-only"

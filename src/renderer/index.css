@@ -76,3 +76,38 @@
   background-color: hsl(0, 0%, 72%);
   border-radius: 20px;
 }
+
+:root {
+  --tree-width: 1px;
+  --tree-bg-color: rgba(0, 0, 0, 0.3);
+}
+
+.start-tree:after {
+  content: '';
+  position: absolute;
+  background: var(--tree-bg-color);
+  top: 4px;
+  left: 1px;
+  width: var(--tree-width);
+  height: 20px;
+}
+
+.middle-tree:before {
+  content: '';
+  position: absolute;
+  background: var(--tree-bg-color);
+  bottom: 2px;
+  left: 0;
+  width: var(--tree-width);
+  height: 100px;
+}
+
+.tree-wrapper:not(:last-of-type) .middle-tree:after {
+  content: '';
+  position: absolute;
+  background: var(--tree-bg-color);
+  top: 3px;
+  left: 0;
+  width: var(--tree-width);
+  height: 31px;
+}
