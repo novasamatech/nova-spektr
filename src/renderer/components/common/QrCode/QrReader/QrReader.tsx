@@ -140,8 +140,17 @@ const QrReader = ({ size = 300, cameraId, className, onCameraList, onResult, onP
     collected.add(blockNumber);
     onProgress?.({ decoded: collected.size, total });
 
-    for (const [_, packet] of packets.current) {
-      const fountainResult = raptorDecoder.decode(packet);
+    for (const [key, packet] of packets.current) {
+      let fountainResult;
+
+      try {
+        fountainResult = raptorDecoder.decode(packet);
+      } catch (error) {
+        packets.current.delete(key);
+
+        break;
+      }
+
       if (!fountainResult) continue;
 
       const result = EXPORT_ADDRESS.decode(fountainResult.slice(3));

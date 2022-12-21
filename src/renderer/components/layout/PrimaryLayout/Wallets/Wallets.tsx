@@ -102,15 +102,18 @@ const Wallets = forwardRef<HTMLDivElement, Props>(({ className }, ref) => {
                       <Expandable
                         itemClassName="px-2 hover:bg-shade-10"
                         key={(account as AccountDS).id}
+                        alwaysActive={query.length > 0}
                         item={
                           <li className="h-10 w-full">
                             <Checkbox
                               className="w-full h-full"
-                              checked={(account as AccountDS).isActive}
                               onChange={(e) => selectWallet(account as WalletStructure, e.target.checked)}
                             >
                               <div className="flex gap-x-1 overflow-hidden">
                                 <p className="text-neutral text-sm text-semibold truncate">{account.name}</p>
+                                <div className="ml-1 flex items-center justify-center bg-shade-20 w-4 h-4 rounded">
+                                  {(account as WalletStructure).amount}
+                                </div>
                               </div>
                             </Checkbox>
                           </li>
@@ -121,6 +124,7 @@ const Wallets = forwardRef<HTMLDivElement, Props>(({ className }, ref) => {
                             <Expandable
                               itemClassName="px-2 hover:bg-shade-10"
                               key={rootAccount.id}
+                              alwaysActive={query.length > 0}
                               item={
                                 <li className="h-10 w-full">
                                   <Checkbox
@@ -137,7 +141,7 @@ const Wallets = forwardRef<HTMLDivElement, Props>(({ className }, ref) => {
 
                                       <p className="text-neutral text-sm text-semibold truncate">{rootAccount.name}</p>
                                       <div className="ml-1 flex items-center justify-center bg-shade-20 w-4 h-4 rounded">
-                                        {rootAccount.chains.length}
+                                        {rootAccount.amount}
                                       </div>
                                     </div>
                                   </Checkbox>
@@ -149,6 +153,7 @@ const Wallets = forwardRef<HTMLDivElement, Props>(({ className }, ref) => {
                                   <Expandable
                                     itemClassName="px-2 hover:bg-shade-10"
                                     key={chain.chainId}
+                                    alwaysActive={query.length > 0}
                                     item={
                                       <li className="h-10 w-full">
                                         <Checkbox
