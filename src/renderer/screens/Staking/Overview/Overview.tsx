@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Trans } from 'react-i18next';
 
-import { ButtonLink, Dropdown, Icon, Input } from '@renderer/components/ui';
+import { Dropdown, Icon, Input } from '@renderer/components/ui';
 import { Option, ResultOption } from '@renderer/components/ui/Dropdowns/common/types';
 import { useGraphql } from '@renderer/context/GraphqlContext';
 import { useI18n } from '@renderer/context/I18nContext';
@@ -9,14 +9,13 @@ import { useNetworkContext } from '@renderer/context/NetworkContext';
 import { Asset, StakingType } from '@renderer/domain/asset';
 import { ConnectionStatus, ConnectionType } from '@renderer/domain/connection';
 import { AccountID, ChainId } from '@renderer/domain/shared-kernel';
-import Paths from '@renderer/routes/paths';
 import TotalAmount from '@renderer/screens/Staking/Overview/components/TotalAmount/TotalAmount';
 import { useAccount } from '@renderer/services/account/accountService';
 import { useChains } from '@renderer/services/network/chainsService';
 import { useSettingsStorage } from '@renderer/services/settings/settingsStorage';
 import { useStakingData } from '@renderer/services/staking/stakingDataService';
 import { useWallet } from '@renderer/services/wallet/walletService';
-import { AboutStaking, Filter, InfoBanners, StakingList } from './components';
+import { AboutStaking, Filter, InactiveChain, InfoBanners, NoAccounts, StakingList } from './components';
 
 type NetworkOption = { asset: Asset; addressPrefix: number };
 
@@ -122,15 +121,17 @@ const Overview = () => {
               setActiveNetwork(option);
             }}
           />
-          <TotalAmount
-            totalStakes={totalStakes}
-            asset={activeNetwork?.value.asset}
-            accounts={accountAddresses}
-            addressPrefix={activeNetwork?.value.addressPrefix}
-          />
+          {isNetworkActive && activeAccounts.length > 0 && (
+            <TotalAmount
+              totalStakes={totalStakes}
+              asset={activeNetwork?.value.asset}
+              accounts={accountAddresses}
+              addressPrefix={activeNetwork?.value.addressPrefix}
+            />
+          )}
         </div>
 
-        {isNetworkActive ? (
+        {isNetworkActive && activeAccounts.length > 0 && (
           <>
             <AboutStaking asset={activeNetwork?.value.asset} />
             <InfoBanners />
@@ -155,18 +156,9 @@ const Overview = () => {
               explorers={explorers}
             />
           </>
-        ) : (
-          <div className="flex flex-col items-center justify-center mt-10 mb-5">
-            <Icon as="img" name="noResults" size={380} />
-            <p className="text-neutral text-3xl font-bold">{t('staking.overview.networkDisabledLabel')}</p>
-            <p className="text-neutral-variant text-base font-normal">
-              {t('staking.overview.networkDisabledDescription')}
-            </p>
-            <ButtonLink className="mt-5" to={Paths.NETWORK} variant="fill" pallet="primary" weight="lg">
-              {t('staking.overview.networkSettingsLink')}
-            </ButtonLink>
-          </div>
         )}
+        {isNetworkActive && !activeAccounts.length && <NoAccounts chainName={connections[chainId]?.name} />}
+        {!isNetworkActive && <InactiveChain />}
       </div>
     </div>
   );
