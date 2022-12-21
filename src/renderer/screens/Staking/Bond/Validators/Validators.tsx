@@ -53,10 +53,9 @@ const Validators = ({ api, chainId, asset, onResult }: Props) => {
     setMyValidators((prev) => ({ ...prev, [address]: !myValidators[address] }));
   };
 
-  const selectedValidators = Object.entries(myValidators).reduce(
-    (acc, [address, isSelected]) => (isSelected ? acc.concat(validators[address]) : acc),
-    [] as Validator[],
-  );
+  const selectedValidators = Object.entries(myValidators).reduce<Validator[]>((acc, [address, isSelected]) => {
+    return isSelected ? acc.concat(validators[address]) : acc;
+  }, []);
 
   return (
     <>

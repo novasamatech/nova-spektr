@@ -49,7 +49,7 @@ const ScanMoreModal = ({ isOpen, accounts, onResult, onClose }: Props) => {
   }, [isOpen]);
 
   const allRootAndDerivedKeys = (): RootAndDerived => {
-    return accounts.reduce(
+    return accounts.reduce<RootAndDerived>(
       (acc, account) => {
         acc.allRoot.push(toPublicKey(account.address) as PublicKey);
 
@@ -61,7 +61,7 @@ const ScanMoreModal = ({ isOpen, accounts, onResult, onClose }: Props) => {
 
         return acc;
       },
-      { allRoot: [], allDerived: [] } as RootAndDerived,
+      { allRoot: [], allDerived: [] },
     );
   };
 
@@ -79,7 +79,7 @@ const ScanMoreModal = ({ isOpen, accounts, onResult, onClose }: Props) => {
   };
 
   const groupRootAccounts = (newAccounts: SeedInfo[], allRoot: HexString[]): GroupedAccounts => {
-    return newAccounts.reduce(
+    return newAccounts.reduce<GroupedAccounts>(
       (acc, newAccount) => {
         const addressHex = u8aToHex(newAccount.multiSigner?.public);
         const rootAccountIndex = allRoot.findIndex((key) => key === addressHex);
@@ -120,7 +120,7 @@ const ScanMoreModal = ({ isOpen, accounts, onResult, onClose }: Props) => {
           newAccs: acc.newAccs.concat({ ...newAccount, derivedKeys: partialDerives }),
         };
       },
-      { oldAccs: [], newAccs: [] } as GroupedAccounts,
+      { oldAccs: [], newAccs: [] },
     );
   };
 

@@ -19,10 +19,10 @@ import { FormattedBalance } from './types';
  * @param publicKey account's public key
  * @param addressPrefix address prefix of needed chain
  */
-export const toAddress = (publicKey: PublicKey, addressPrefix = SS58_DEFAULT_PREFIX): string => {
+export const toAddress = (publicKey: PublicKey, addressPrefix?: number): string => {
   if (!publicKey) return '';
 
-  return encodeAddress(publicKey, addressPrefix);
+  return encodeAddress(publicKey, addressPrefix ?? SS58_DEFAULT_PREFIX);
 };
 
 export const formatAmount = (amount: string, precision: number): string => {

@@ -44,13 +44,13 @@ const Selector = ({ networkItem }: Props) => {
 
   const isDisabled = connectionType === ConnectionType.DISABLED;
   const combinedNodes = nodes.concat(connection.customNodes || []);
-  const existingUrls = combinedNodes.reduce((acc, node) => {
+  const existingUrls = combinedNodes.reduce<string[]>((acc, node) => {
     if (!nodeToEdit || nodeToEdit.url !== node.url) {
       acc.push(node.url);
     }
 
     return acc;
-  }, [] as string[]);
+  }, []);
 
   const isCustomNode = (url: string) => {
     return connection.customNodes?.some((node) => node.url === url);

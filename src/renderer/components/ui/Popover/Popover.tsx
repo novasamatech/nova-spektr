@@ -3,13 +3,13 @@ import { Fragment, PropsWithChildren, ReactNode, useState } from 'react';
 
 import './Popover.css';
 
-type Props = {
+export interface PopoverProps {
   titleIcon?: ReactNode;
   titleText: string;
   content: string;
-};
+}
 
-const Popover = ({ titleIcon, titleText, content, children }: PropsWithChildren<Props>) => {
+const Popover = ({ titleIcon, titleText, content, children }: PropsWithChildren<PopoverProps>) => {
   const [isOpen, setIsOpen] = useState(false);
 
   return (
@@ -25,7 +25,7 @@ const Popover = ({ titleIcon, titleText, content, children }: PropsWithChildren<
         leaveTo="opacity-0 translate-y-1"
       >
         <Popup.Panel
-          className="absolute left-1/2 -translate-x-1/2 w-[275px] rounded-2lg bg-white
+          className="absolute z-20 left-1/2 -translate-x-1/2 w-[275px] rounded-2lg bg-white
          border border-shade-10 shadow-surface bottom-[calc(100%+15px)]"
         >
           <div className="relative flex flex-col gap-y-1 p-4 arrow">

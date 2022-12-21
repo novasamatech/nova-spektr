@@ -55,12 +55,12 @@ const NetworkBalances = ({
   const balances = getLiveNetworkBalances(publicKeys, chain.chainId);
 
   const balancesObject =
-    balances?.reduce((acc, balance) => {
+    balances?.reduce<Record<string, Balance>>((acc, balance) => {
       return {
         ...acc,
         [balance.assetId]: sumBalances(balance, acc[balance.assetId]),
       };
-    }, {} as Record<string, Balance>) || {};
+    }, {}) || {};
 
   const filteredAssets = chain.assets.filter((asset) => {
     if (query) {

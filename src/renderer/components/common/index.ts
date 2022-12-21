@@ -6,6 +6,7 @@ import QrSignatureReader from './QrCode/QrReader/QrSignatureReader';
 import QrTextGenerator from './QrCode/QrGenerator/QrTextGenerator';
 import QrTxGenerator from './QrCode/QrGenerator/QrTxGenerator';
 import Explorers from './Explorers/Explorers';
+import Badge from './Badge/Badge';
 import Fee from './Fee/Fee';
 
 export {
@@ -17,5 +18,6 @@ export {
   QrTextGenerator,
   QrTxGenerator,
   Explorers,
+  Badge,
   Fee,
 };

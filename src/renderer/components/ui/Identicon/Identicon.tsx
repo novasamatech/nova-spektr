@@ -11,9 +11,10 @@ type Props = {
   size?: number;
   background?: boolean;
   noCopy?: boolean;
+  className?: string;
 };
 
-const Identicon = ({ theme = 'polkadot', address, size = 24, background = true, noCopy }: Props) => {
+const Identicon = ({ theme = 'polkadot', address, size = 24, background = true, noCopy, className }: Props) => {
   const wrapperRef = useRef<HTMLDivElement>(null);
 
   useLayoutEffect(() => {
@@ -39,7 +40,7 @@ const Identicon = ({ theme = 'polkadot', address, size = 24, background = true, 
     return (
       <div
         ref={wrapperRef}
-        className={cn('flex justify-center items-center rounded-full', background && 'bg-white')}
+        className={cn('flex justify-center items-center rounded-full', background && 'bg-white', className)}
         style={{ width: size, height: size }}
         data-testid={`identicon-${address}`}
       >
@@ -49,7 +50,7 @@ const Identicon = ({ theme = 'polkadot', address, size = 24, background = true, 
   }
 
   return (
-    <div ref={wrapperRef}>
+    <div ref={wrapperRef} className={className}>
       <button
         type="button"
         className={cn('flex justify-center items-center rounded-full cursor-copy', background && 'bg-white')}
