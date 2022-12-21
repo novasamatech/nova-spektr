@@ -50,7 +50,7 @@ async function buildFullChainsJSON() {
     const novaChainsConfig = await getDataViaHttp(NOVA_CONFIG_URL, chain);
     const modifiedData = await getTransformedData(novaChainsConfig);
     await saveNewFile(modifiedData, 'omni-' + chain);
-    console.log('Was successfuly generated for ', chain);
+    console.log('Was successfuly generated for omni-' + chain);
   });
 }
 
