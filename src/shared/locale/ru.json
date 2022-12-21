@@ -298,6 +298,7 @@
     "wallet": "Кошелёк"
   },
   "wallets": {
+    "multishardWalletsLabel": "Multishard",
     "paritySignerLabel": "Parity Signer",
     "searchPlaceholder": "Поиск кошелька",
     "watchOnlyLabel": "Watch-only"

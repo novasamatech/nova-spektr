@@ -48,7 +48,7 @@ const ReceiveModal = ({ data, isOpen, onClose }: Props) => {
           <div className="grid grid-rows-2 grid-flow-col gap-x-2.5">
             <Icon className="row-span-2 self-center" name={accountType} size={34} />
             <p className="text-left text-neutral text-lg font-semibold leading-5">{account.name}</p>
-            <Address type="short" address={address} noCopy />
+            <Address type="short" address={address} canCopy={false} />
           </div>
         ),
       };
