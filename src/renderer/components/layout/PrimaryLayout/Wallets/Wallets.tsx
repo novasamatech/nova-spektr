@@ -25,7 +25,7 @@ const Wallets = forwardRef<HTMLDivElement, Props>(({ className }, ref) => {
 
   const [query, setQuery] = useState('');
 
-  const wallets = useWalletsStructure({ signingType: SigningType.PARITY_SIGNER });
+  const wallets = useWalletsStructure({ signingType: SigningType.PARITY_SIGNER }, query);
   const watchOnlyAccounts = getLiveAccounts({ signingType: SigningType.WATCH_ONLY });
   const paritySignerAccounts = getLiveAccounts({ signingType: SigningType.PARITY_SIGNER, walletId: null });
 
