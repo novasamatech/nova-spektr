@@ -12,7 +12,7 @@ type Props = {
 const Shimmering = ({ width, height, circle, className }: Props) => (
   <div
     className={cn('h-full w-full shimmer', circle ? 'rounded-full' : 'rounded-[4px]', className)}
-    style={{ width: `${width}px`, height: `${height}px` }}
+    style={{ width: `${width}px`, height: `${circle ? width : height}px` }}
   />
 );
 

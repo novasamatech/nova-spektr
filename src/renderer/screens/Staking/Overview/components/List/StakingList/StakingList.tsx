@@ -67,20 +67,20 @@ const StakingList = ({ staking, asset, accounts, wallets, explorers, addressPref
   }, {});
 
   const getTotalStakeInfo = Object.entries(staking).reduce<AccountStakeInfo[]>((acc, [address, stake]) => {
-    const accMatch = accountData[address];
-    if (!accMatch) return acc;
+    const accountMatch = accountData[address];
+    if (!accountMatch) return acc;
 
-    let walletName = accMatch.walletId ? walletNames[accMatch.walletId.toString()] : '';
-    if (accMatch.rootId) {
+    let walletName = accountMatch.walletId ? walletNames[accountMatch.walletId.toString()] : '';
+    if (accountMatch.rootId) {
       //eslint-disable-next-line i18next/no-literal-string
-      walletName += `- ${rootNames[accMatch.rootId.toString()]}`;
+      walletName += `- ${rootNames[accountMatch.rootId.toString()]}`;
     }
 
     return acc.concat({
       address,
       walletName,
-      signingType: accMatch.signingType,
-      accountName: accMatch.name,
+      signingType: accountMatch.signingType,
+      accountName: accountMatch.name,
       isSelected: selectedAccounts.includes(address),
       totalStake: stake?.total || '0',
       totalReward: isLoading ? undefined : rewards[address],

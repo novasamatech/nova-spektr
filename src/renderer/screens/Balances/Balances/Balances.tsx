@@ -43,10 +43,9 @@ const Balances = () => {
       return;
     }
 
-    const activePublicKeys = activeAccounts.reduce(
-      (acc, account) => (account.publicKey ? [...acc, account.publicKey] : acc),
-      [] as PublicKey[],
-    );
+    const activePublicKeys = activeAccounts.reduce<PublicKey[]>((acc, account) => {
+      return account.publicKey ? [...acc, account.publicKey] : acc;
+    }, []);
 
     setPublicKeys(activePublicKeys);
   }, [activeAccounts.length]);

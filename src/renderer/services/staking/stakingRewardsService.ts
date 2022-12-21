@@ -8,11 +8,11 @@ import { IStakingRewardsService, RewardsMap } from '@renderer/services/staking/c
 import { toPublicKey } from '@renderer/utils/address';
 
 const getAccountsWithPrefix = (accounts: AccountID[], addressPrefix?: number): AccountID[] => {
-  return accounts.reduce((acc, account) => {
+  return accounts.reduce<AccountID[]>((acc, account) => {
     const publicKey = toPublicKey(account);
 
-    return !publicKey ? acc : acc.concat(toAddress(publicKey, addressPrefix));
-  }, [] as AccountID[]);
+    return publicKey ? acc.concat(toAddress(publicKey, addressPrefix)) : acc;
+  }, []);
 };
 
 export const useStakingRewards = (accounts: AccountID[], addressPrefix?: number): IStakingRewardsService => {

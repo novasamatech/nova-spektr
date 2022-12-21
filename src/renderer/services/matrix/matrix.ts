@@ -435,7 +435,7 @@ export class Matrix implements ISecureMessenger {
       throw this.createError(MatrixError.JOINED_ROOMS, error);
     }
 
-    const timeline = rooms.reduce((acc, roomId) => {
+    const timeline = rooms.reduce<MatrixEvent[]>((acc, roomId) => {
       const room = this.matrixClient.getRoom(roomId);
       if (!room || !this.isOmniRoom(room.name)) return acc;
 
@@ -449,7 +449,7 @@ export class Matrix implements ISecureMessenger {
       }
 
       return acc;
-    }, [] as MatrixEvent[]);
+    }, []);
 
     try {
       await Promise.all(timeline.map(this.markAsRead));
@@ -710,11 +710,11 @@ export class Matrix implements ISecureMessenger {
       signatories.filter((s) => !s.isInviter && s.matrixAddress !== inviterAddress).map((s) => s.matrixAddress),
     );
 
-    const inviteRequests = noDuplicates.reduce((acc, matrixAddress) => {
+    const inviteRequests = noDuplicates.reduce<Promise<unknown>[]>((acc, matrixAddress) => {
       acc.push(this.matrixClient.invite(roomId, matrixAddress));
 
       return acc;
-    }, [] as Promise<unknown>[]);
+    }, []);
 
     try {
       await Promise.all(inviteRequests);
@@ -732,13 +732,13 @@ export class Matrix implements ISecureMessenger {
   private async verifyDevices(members: string[]): Promise<void | never> {
     const memberKeys = await this.matrixClient.downloadKeys(members);
 
-    const verifyRequests = members.reduce((acc, userId) => {
+    const verifyRequests = members.reduce<Promise<void>[]>((acc, userId) => {
       Object.keys(memberKeys[userId]).forEach((deviceId) => {
         acc.push(this.matrixClient.setDeviceVerified(userId, deviceId));
       });
 
       return acc;
-    }, [] as Promise<void>[]);
+    }, []);
 
     try {
       await Promise.all(verifyRequests);
