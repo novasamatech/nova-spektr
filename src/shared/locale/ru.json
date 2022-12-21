@@ -252,6 +252,8 @@
       "networkDisabledDescription": "Пожалуйста, пройдите в настройки сети и проверьте соединение",
       "networkDisabledLabel": "Сеть неактивна",
       "networkSettingsLink": "Настройки сети",
+      "noAccountsDescription": "Для продолжения стейкинга выберите аккаунты в сети <strong>{ chainName }</strong>",
+      "noAccountsLabel": "Не выбран ни один аккаунт",
       "noActiveWalletsDescription": "Пожалуйста, выберите кошелек для просмотра стейкинга",
       "noActiveWalletsLabel": "Нет выбранных кошельков",
       "noResultsDescription": "Пожалуйста, попробуйте другие параметры фильтрации",
