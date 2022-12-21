@@ -247,6 +247,7 @@
     },
     "overview": {
       "aboutStakingLabel": "О стейкинге { asset } токенов",
+      "accountTableHeader": "Аккаунты",
       "filterButton": "Фильтры",
       "networkDisabledDescription": "Пожалуйста, пройдите в настройки сети и проверьте соединение",
       "networkDisabledLabel": "Сеть неактивна",
@@ -255,7 +256,9 @@
       "noActiveWalletsLabel": "Нет выбранных кошельков",
       "noResultsDescription": "Пожалуйста, попробуйте другие параметры фильтрации",
       "noResultsLabel": "Сттейкинги не найдены",
+      "rewardsTableHeader": "Общая награда",
       "searchPlaceholder": "Искать по имени кошелька",
+      "stakeTableHeader": "Стейк",
       "stakingAssetLabel": "Стейкинг <strong>{ asset }</strong> на",
       "totalRewardsLabel": "Общая награда",
       "totalStakedLabel": "Общий стейк"
