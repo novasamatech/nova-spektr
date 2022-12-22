@@ -2,7 +2,7 @@ import { act, render, screen } from '@testing-library/react';
 
 import Select from './Select';
 
-describe('ui/Select', () => {
+describe('ui/Dropdowns/Select', () => {
   const options = [
     { id: '0', value: 'test_1', element: 'el_test_1' },
     { id: '1', value: 'test_2', element: 'el_test_2' },

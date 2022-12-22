@@ -18,8 +18,8 @@ const Explorers = ({ explorers, addressPrefix, address }: Props) => {
   const { t } = useI18n();
 
   return (
-    <div className="relative">
-      <Menu>
+    <Menu>
+      <div className="relative">
         <Menu.Button className={'hover:bg-primary hover:text-white px-1 w-5 h-5 rounded-full'}>
           {t('accountList.menuButton')}
         </Menu.Button>
@@ -50,8 +50,8 @@ const Explorers = ({ explorers, addressPrefix, address }: Props) => {
             );
           })}
         </Menu.Items>
-      </Menu>
-    </div>
+      </div>
+    </Menu>
   );
 };
 
