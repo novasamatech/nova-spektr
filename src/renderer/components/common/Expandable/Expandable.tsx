@@ -8,8 +8,8 @@ import { Button, Icon } from '@renderer/components/ui';
 type Props = {
   item: ReactNode;
   defaultActive?: boolean;
-  itemClassName?: string;
-  className?: string;
+  itemClass?: string;
+  wrapperClass?: string;
   alwaysActive?: boolean;
 };
 
@@ -17,15 +17,15 @@ const Expandable = ({
   item,
   defaultActive = true,
   alwaysActive = false,
-  className,
-  itemClassName,
+  wrapperClass,
+  itemClass,
   children,
 }: PropsWithChildren<Props>) => {
   const [isActive, toggleIsActive] = useToggle(defaultActive);
 
   return (
-    <div className={cn(className)}>
-      <div className={cn('flex justify-between items-center', itemClassName)}>
+    <div className={cn(wrapperClass)}>
+      <div className={cn('flex justify-between items-center', itemClass)}>
         {item}
         <Button
           pallet="shade"
@@ -38,8 +38,8 @@ const Expandable = ({
       </div>
 
       <Transition
-        show={isActive || alwaysActive}
         as={Fragment}
+        show={isActive || alwaysActive}
         enter="transition ease-out duration-200"
         enterFrom="opacity-0 translate-y-0"
         enterTo="opacity-100 translate-y-1"
