@@ -6,17 +6,24 @@ export default {
   title: 'Switch',
   component: Switch,
   parameters: { actions: { argTypesRegex: '^on.*' } },
+  decorators: [
+    (Story) => (
+      <div className="w-max">
+        <Story />
+      </div>
+    ),
+  ],
 } as ComponentMeta<typeof Switch>;
 
 const Template: ComponentStory<typeof Switch> = (args) => <Switch {...args} />;
 
 export const Primary = Template.bind({});
 Primary.args = {
-  label: 'Switch label',
+  children: 'Switch label',
 };
 
 export const Disabled = Template.bind({});
 Disabled.args = {
-  label: 'Switch label',
+  children: 'Switch label',
   disabled: true,
 };

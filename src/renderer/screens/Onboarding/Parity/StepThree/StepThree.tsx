@@ -277,8 +277,8 @@ const StepThree = ({ qrData, onNextStep }: Props) => {
                       prefixElement={<Identicon size={20} address={account.address} background={false} />}
                       suffixElement={
                         <Menu>
-                          <Menu.Button className={'hover:bg-primary hover:text-white px-1 rounded-2xl'}>
-                            {t('accountList.menuButton')}
+                          <Menu.Button className="flex items-center hover:bg-primary hover:text-white px-1 rounded-2xl">
+                            <Icon name="options" size={20} />
                           </Menu.Button>
                           <Menu.Items
                             className={
