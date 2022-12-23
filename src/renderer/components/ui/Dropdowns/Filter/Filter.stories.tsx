@@ -31,3 +31,10 @@ Primary.args = {
   position: 'right',
   options,
 };
+
+export const WithoutText = Template.bind({});
+WithoutText.args = {
+  activeIds: [options[1].id, options[3].id],
+  position: 'right',
+  options,
+};

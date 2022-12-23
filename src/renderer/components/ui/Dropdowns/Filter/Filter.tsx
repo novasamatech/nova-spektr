@@ -7,7 +7,7 @@ import { Option, ResultOption } from '../common/types';
 
 type Props = {
   activeIds: Option['id'][];
-  placeholder: string;
+  placeholder?: string;
   className?: string;
   position?: 'left' | 'right';
   options: Option[];
