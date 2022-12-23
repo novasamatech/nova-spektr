@@ -115,13 +115,3 @@ export type SubIdentity = {
 };
 
 export type ApyValidator = Pick<Validator, 'address' | 'totalStake' | 'commission'>;
-
-export type EraSubscriptionResult = {
-  unsub: Promise<() => void>;
-  era?: number;
-};
-
-export type LedgerSubscriptionResult = {
-  unsub: Promise<() => void>;
-  staking?: StakingMap;
-};
