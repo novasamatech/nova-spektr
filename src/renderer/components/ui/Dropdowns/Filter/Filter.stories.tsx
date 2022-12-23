@@ -28,5 +28,6 @@ export const Primary = Template.bind({});
 Primary.args = {
   activeIds: [options[1].id, options[3].id],
   placeholder: 'Filter',
+  position: 'right',
   options,
 };

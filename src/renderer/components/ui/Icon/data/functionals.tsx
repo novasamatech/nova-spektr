@@ -22,6 +22,7 @@ import AddLineImg, { ReactComponent as AddLineSvg } from '@images/functionals/ad
 import ClearOutlineImg, { ReactComponent as ClearOutlineSvg } from '@images/functionals/clear-outline.svg';
 import EditOutlineImg, { ReactComponent as EditOutlineSvg } from '@images/functionals/edit-outline.svg';
 import DeleteOutlineImg, { ReactComponent as DeleteOutlineSvg } from '@images/functionals/delete-outline.svg';
+import OptionsImg, { ReactComponent as OptionsSvg } from '@images/functionals/options.svg';
 
 const FunctionalImages = {
   copy: { svg: CopySvg, img: CopyImg },
@@ -48,6 +49,7 @@ const FunctionalImages = {
   clearOutline: { svg: ClearOutlineSvg, img: ClearOutlineImg },
   editOutline: { svg: EditOutlineSvg, img: EditOutlineImg },
   deleteOutline: { svg: DeleteOutlineSvg, img: DeleteOutlineImg },
+  options: { svg: OptionsSvg, img: OptionsImg },
 } as const;
 
 export type Functional = keyof typeof FunctionalImages;

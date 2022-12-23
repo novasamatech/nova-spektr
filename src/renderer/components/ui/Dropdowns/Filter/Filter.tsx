@@ -9,17 +9,18 @@ type Props = {
   activeIds: Option['id'][];
   placeholder: string;
   className?: string;
+  position?: 'left' | 'right';
   options: Option[];
   onChange: (data: ResultOption[]) => void;
 };
 
-const Filter = ({ activeIds, placeholder, options, className, onChange }: Props) => {
+const Filter = ({ activeIds, placeholder, position = 'right', options, className, onChange }: Props) => {
   const activeOptions = options.filter((option) => activeIds.includes(option.id));
 
   return (
     <Listbox multiple by="id" value={activeOptions} onChange={onChange}>
       {({ open }) => (
-        <div className={cn('relative', className)}>
+        <div className={cn('relative flex', position === 'right' && 'justify-end', className)}>
           <Listbox.Button
             className={cn(
               'group w-max px-2.5 h-10 rounded-2lg border transition',
