@@ -1,8 +1,8 @@
 import { act, render, screen } from '@testing-library/react';
 
-import Select from './Select';
+import Filter from './Filter';
 
-describe('ui/Dropdowns/Select', () => {
+describe('ui/Dropdowns/Filter', () => {
   const options = [
     { id: '0', value: 'test_1', element: 'el_test_1' },
     { id: '1', value: 'test_2', element: 'el_test_2' },
@@ -12,23 +12,22 @@ describe('ui/Dropdowns/Select', () => {
   const defaultProps = {
     activeIds: [],
     options,
-    summary: 'Total',
-    placeholder: 'Select option',
+    placeholder: 'Filters',
     onChange: () => {},
   };
 
   test('should render component', () => {
-    render(<Select {...defaultProps} />);
+    render(<Filter {...defaultProps} />);
 
     const button = screen.getByRole('button');
-    const placeholder = screen.getByText('Select option');
+    const placeholder = screen.getByText('Filters');
     expect(button).toBeInTheDocument();
     expect(placeholder).toBeInTheDocument();
   });
 
   test('should call onChange', async () => {
     const spyChange = jest.fn();
-    render(<Select {...defaultProps} onChange={spyChange} />);
+    render(<Filter {...defaultProps} onChange={spyChange} />);
 
     const button = screen.getByRole('button');
     await act(() => button.click());
@@ -42,25 +41,13 @@ describe('ui/Dropdowns/Select', () => {
     expect(spyChange).toBeCalledWith([{ id: options[1].id, value: options[1].value }]);
   });
 
-  test('should render summary options', () => {
-    render(<Select {...defaultProps} activeIds={[options[1].id]} />);
-
-    const summary = screen.getByRole('button');
-    expect(summary).toHaveTextContent(/1Total/);
-  });
-
-  test('should render selected options', async () => {
-    const { rerender } = render(<Select {...defaultProps} />);
+  test('should render list', async () => {
+    render(<Filter {...defaultProps} />);
 
     const button = screen.getByRole('button');
     await act(() => button.click());
 
-    let selectedOption = screen.queryByRole('checkbox', { checked: true });
-    expect(selectedOption).not.toBeInTheDocument();
-
-    rerender(<Select {...defaultProps} activeIds={[options[1].id]} />);
-
-    selectedOption = screen.getByRole('checkbox', { checked: true });
-    expect(selectedOption).toBeInTheDocument();
+    const selectedOptions = screen.getAllByRole('option');
+    expect(selectedOptions).toHaveLength(3);
   });
 });

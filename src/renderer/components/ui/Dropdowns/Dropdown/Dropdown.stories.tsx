@@ -9,7 +9,7 @@ export default {
   parameters: { actions: { argTypesRegex: '^on.*' } },
   decorators: [
     (Story) => (
-      <div className="mt-28">
+      <div className="mt-28 w-[280px]">
         <Story />
       </div>
     ),

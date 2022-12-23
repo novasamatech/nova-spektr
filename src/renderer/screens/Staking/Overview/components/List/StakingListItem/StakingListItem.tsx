@@ -1,4 +1,4 @@
-import { Badge, Explorers } from '@renderer/components/common';
+import { Explorers } from '@renderer/components/common';
 import { Balance, Checkbox, Identicon } from '@renderer/components/ui';
 import Shimmering from '@renderer/components/ui/Shimmering/Shimmering';
 import { Asset } from '@renderer/domain/asset';
@@ -48,12 +48,12 @@ const StakingListItem = ({ stakeInfo, asset, addressPrefix, explorers, onChecked
         </div>
       </Checkbox>
       {/* TODO: show proper badges */}
-      <div className="flex gap-x-2.5 ml-5">
-        <Badge pallet="error" titleText="popover title" content="popover content">
-          {/* eslint-disable-next-line i18next/no-literal-string */}
-          <span className="text-neutral text-sm">badge</span>
-        </Badge>
-      </div>
+      {/*<div className="flex gap-x-2.5 ml-5">*/}
+      {/*  <Badge pallet="error" titleText="popover title" content="popover content">*/}
+      {/*    /!* eslint-disable-next-line i18next/no-literal-string *!/*/}
+      {/*    <span className="text-neutral text-sm">badge</span>*/}
+      {/*  </Badge>*/}
+      {/*</div>*/}
       <div className="ml-auto pl-3 w-[150px] text-xs font-semibold text-right">
         {stakeInfo.totalReward === undefined || !asset ? (
           <Shimmering width={140} height={14} />

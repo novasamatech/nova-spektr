@@ -1,8 +1,4 @@
 {
-  "accountList": {
-    "explorerButton": "View on { name }",
-    "menuButton": "•••"
-  },
   "addressBook": {
     "title": "Address Book"
   },
@@ -32,6 +28,9 @@
     "reloadButton": "Reload"
   },
   "general": {
+    "explorers": {
+      "explorerButton": "View on { name }"
+    },
     "input": {
       "amountLabel": "Amount",
       "transferableLabel": "Transferable"

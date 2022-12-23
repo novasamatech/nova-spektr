@@ -1,4 +1,4 @@
-import { RadioGroup as RadioSet } from '@headlessui/react';
+import { RadioGroup as HeadlessRadioGroup } from '@headlessui/react';
 import cn from 'classnames';
 import { Fragment } from 'react';
 
@@ -18,9 +18,9 @@ const RadioGroup = ({ name, activeId, options, optionClass, className, onChange 
   const activeOption = options.find((option) => option.id === activeId);
 
   return (
-    <RadioSet by="id" className={className} name={name} value={activeOption} onChange={onChange}>
+    <HeadlessRadioGroup by="id" className={className} name={name} value={activeOption} onChange={onChange}>
       {options.map(({ id, value, element }) => (
-        <RadioSet.Option key={id} value={{ id, value }} as={Fragment}>
+        <HeadlessRadioGroup.Option key={id} value={{ id, value }} as={Fragment}>
           {({ checked, disabled }) => (
             <div className={cn('flex items-center gap-x-2.5 cursor-pointer', optionClass)}>
               <span
@@ -33,9 +33,9 @@ const RadioGroup = ({ name, activeId, options, optionClass, className, onChange 
               {element}
             </div>
           )}
-        </RadioSet.Option>
+        </HeadlessRadioGroup.Option>
       ))}
-    </RadioSet>
+    </HeadlessRadioGroup>
   );
 };
 

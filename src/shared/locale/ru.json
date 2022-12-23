@@ -1,8 +1,4 @@
 {
-  "accountList": {
-    "explorerButton": "Открыть в { name }",
-    "menuButton": "•••"
-  },
   "addressBook": {
     "title": "Адресная книга"
   },
@@ -32,6 +28,9 @@
     "reloadButton": "Перезагрузить"
   },
   "general": {
+    "explorers": {
+      "explorerButton": "Открыть в { name }"
+    },
     "input": {
       "amountLabel": "Сумма",
       "transferableLabel": "Доступно"

@@ -100,7 +100,7 @@ const Wallets = forwardRef<HTMLDivElement, Props>(({ className }, ref) => {
                   <ul>
                     {(account as WalletStructure).rootAccounts ? (
                       <Expandable
-                        itemClassName="px-2 hover:bg-shade-10"
+                        itemClass="px-2 hover:bg-shade-10"
                         key={(account as AccountDS).id}
                         alwaysActive={query.length > 0}
                         item={
@@ -122,7 +122,7 @@ const Wallets = forwardRef<HTMLDivElement, Props>(({ className }, ref) => {
                         <ul>
                           {(account as WalletStructure).rootAccounts.map((rootAccount) => (
                             <Expandable
-                              itemClassName="px-2 hover:bg-shade-10"
+                              itemClass="px-2 hover:bg-shade-10"
                               key={rootAccount.id}
                               alwaysActive={query.length > 0}
                               item={
@@ -151,7 +151,7 @@ const Wallets = forwardRef<HTMLDivElement, Props>(({ className }, ref) => {
                               <ul>
                                 {rootAccount.chains.map((chain) => (
                                   <Expandable
-                                    itemClassName="px-2 hover:bg-shade-10"
+                                    itemClass="px-2 hover:bg-shade-10"
                                     key={chain.chainId}
                                     alwaysActive={query.length > 0}
                                     item={

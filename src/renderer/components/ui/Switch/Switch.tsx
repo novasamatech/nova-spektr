@@ -1,41 +1,39 @@
 import { Switch as HeadlessSwitch } from '@headlessui/react';
 import cn from 'classnames';
-import noop from 'lodash/noop';
+import { PropsWithChildren } from 'react';
 
 interface Props {
-  label?: string;
   checked?: boolean;
+  defaultChecked?: boolean;
   disabled?: boolean;
   className?: string;
   onChange?: (checked: boolean) => void;
 }
 
-const Switch = ({ label, checked = false, disabled, className, onChange = noop }: Props) => {
-  return (
-    <HeadlessSwitch.Group>
-      <div className="flex items-center">
-        {label && <HeadlessSwitch.Label className="mr-4">{label}</HeadlessSwitch.Label>}
-        <HeadlessSwitch
-          disabled={disabled}
-          checked={checked}
+const Switch = ({ checked, defaultChecked, disabled, className, onChange, children }: PropsWithChildren<Props>) => (
+  <HeadlessSwitch.Group>
+    <div className={cn('flex gap-x-2.5 items-center justify-between', className)}>
+      {children && <HeadlessSwitch.Label className="cursor-pointer">{children}</HeadlessSwitch.Label>}
+      <HeadlessSwitch
+        disabled={disabled}
+        checked={checked}
+        defaultChecked={defaultChecked}
+        className={cn(
+          checked || defaultChecked ? 'bg-primary' : 'bg-shade-30',
+          disabled && 'opacity-50',
+          'relative inline-flex h-[22px] w-[38px] items-center rounded-full transform transition',
+        )}
+        onChange={onChange}
+      >
+        <span
           className={cn(
-            className,
-            checked ? 'bg-primary' : 'bg-shade-30',
-            disabled && 'opacity-50',
-            'relative inline-flex h-[22px] w-[38px] items-center rounded-full transition-colors focus:outline-none',
+            'inline-block h-4 w-4 rounded-full bg-white transition shadow-element',
+            checked || defaultChecked ? 'translate-x-[19px]' : 'translate-x-[3px]',
           )}
-          onChange={onChange}
-        >
-          <span
-            className={cn(
-              checked ? 'translate-x-[19px]' : 'translate-x-[3px]',
-              'inline-block h-4 w-4 transform rounded-full bg-white transition-transform',
-            )}
-          />
-        </HeadlessSwitch>
-      </div>
-    </HeadlessSwitch.Group>
-  );
-};
+        />
+      </HeadlessSwitch>
+    </div>
+  </HeadlessSwitch.Group>
+);
 
 export default Switch;
