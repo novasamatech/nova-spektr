@@ -99,7 +99,7 @@
   bottom: 2px;
   left: 0;
   width: var(--tree-width);
-  height: 100px;
+  height: 19px;
 }
 
 .tree-wrapper:not(:last-of-type) .middle-tree:after {

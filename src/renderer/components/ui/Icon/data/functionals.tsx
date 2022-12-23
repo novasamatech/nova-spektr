@@ -1,5 +1,6 @@
 import CopyImg, { ReactComponent as CopySvg } from '@images/functionals/copy.svg';
 import QrImg, { ReactComponent as QrSvg } from '@images/functionals/qr.svg';
+import QrLineImg, { ReactComponent as QrLineSvg } from '@images/functionals/qr-line.svg';
 import QrSimpleImg, { ReactComponent as QrSimpleSvg } from '@images/functionals/qr-simple.svg';
 import QrCutoutImg, { ReactComponent as QrCutoutSvg } from '@images/functionals/qr-cutout.svg';
 import CloseCutoutImg, { ReactComponent as CloseCutoutSvg } from '@images/functionals/close-cutout.svg';
@@ -27,6 +28,7 @@ import OptionsImg, { ReactComponent as OptionsSvg } from '@images/functionals/op
 const FunctionalImages = {
   copy: { svg: CopySvg, img: CopyImg },
   qr: { svg: QrSvg, img: QrImg },
+  qrLine: { svg: QrLineSvg, img: QrLineImg },
   qrSimple: { svg: QrSimpleSvg, img: QrSimpleImg },
   qrCutout: { svg: QrCutoutSvg, img: QrCutoutImg },
   closeCutout: { svg: CloseCutoutSvg, img: CloseCutoutImg },
