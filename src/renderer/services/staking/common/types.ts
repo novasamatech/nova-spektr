@@ -7,11 +7,15 @@ import { AccountID, ChainId } from '@renderer/domain/shared-kernel';
 // =====================================================
 
 export interface IStakingDataService {
-  staking: StakingMap;
   validators: ValidatorMap;
-  subscribeActiveEra: (chainId: ChainId, api: ApiPromise) => Promise<void>;
-  subscribeLedger: (chainId: ChainId, api: ApiPromise, accounts: AccountID[]) => Promise<void>;
-  getValidators: (chainId: ChainId, api: ApiPromise) => Promise<void>;
+  subscribeActiveEra: (chainId: ChainId, api: ApiPromise, callback: (era: number) => void) => Promise<() => void>;
+  subscribeStaking: (
+    chainId: ChainId,
+    api: ApiPromise,
+    accounts: AccountID[],
+    callback: (staking: StakingMap) => void,
+  ) => Promise<() => void>;
+  getValidators: (chainId: ChainId, api: ApiPromise, era: number) => Promise<void>;
   getMaxValidators: (api: ApiPromise) => number;
   getNominators: (api: ApiPromise, account: AccountID) => Promise<string[]>;
   getMinNominatorBond: (api: ApiPromise) => Promise<string>;
@@ -111,3 +115,13 @@ export type SubIdentity = {
 };
 
 export type ApyValidator = Pick<Validator, 'address' | 'totalStake' | 'commission'>;
+
+export type EraSubscriptionResult = {
+  unsub: Promise<() => void>;
+  era?: number;
+};
+
+export type LedgerSubscriptionResult = {
+  unsub: Promise<() => void>;
+  staking?: StakingMap;
+};

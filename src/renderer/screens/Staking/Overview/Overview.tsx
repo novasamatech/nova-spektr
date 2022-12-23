@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Trans } from 'react-i18next';
 
+import { StakingMap } from '@renderer/services/staking/common/types';
 import { Dropdown, Icon, Input } from '@renderer/components/ui';
 import { Option, ResultOption } from '@renderer/components/ui/Dropdowns/common/types';
 import { useGraphql } from '@renderer/context/GraphqlContext';
@@ -26,8 +27,11 @@ const Overview = () => {
   const { getActiveAccounts } = useAccount();
   const { getLiveWallets } = useWallet();
   const { sortChains, getChainsData } = useChains();
-  const { staking, subscribeActiveEra, subscribeLedger } = useStakingData();
+  const { subscribeActiveEra, subscribeStaking } = useStakingData();
   const { setStakingNetwork, getStakingNetwork } = useSettingsStorage();
+
+  const [_, setEra] = useState<number>(0);
+  const [staking, setStaking] = useState<StakingMap>({});
 
   const [query, setQuery] = useState('');
   const [isNetworkActive, setIsNetworkActive] = useState(true);
@@ -62,10 +66,18 @@ const Overview = () => {
   useEffect(() => {
     if (!chainId || !api?.isConnected || accountAddresses.length === 0) return;
 
+    let unsubEra: () => void | undefined;
+    let unsubStaking: () => void | undefined;
+
     (async () => {
-      await subscribeActiveEra(chainId, api);
-      await subscribeLedger(chainId, api, accountAddresses);
+      unsubEra = await subscribeActiveEra(chainId, api, setEra);
+      unsubStaking = await subscribeStaking(chainId, api, accountAddresses, setStaking);
     })();
+
+    return () => {
+      unsubEra?.();
+      unsubStaking?.();
+    };
   }, [api, accountAddresses.length]);
 
   useEffect(() => {
@@ -97,6 +109,13 @@ const Overview = () => {
     })();
   }, []);
 
+  const onNetworkChange = (option: ResultOption<NetworkOption>) => {
+    setStakingNetwork(option.id as ChainId);
+    changeClient(option.id as ChainId);
+    setActiveNetwork(option);
+    setStaking({});
+  };
+
   return (
     <div className="h-full flex flex-col">
       <h1 className="font-semibold text-2xl text-neutral mb-9">{t('staking.title')}</h1>
@@ -115,11 +134,7 @@ const Overview = () => {
             placeholder={t('staking.startStaking.selectNetworkLabel')}
             activeId={activeNetwork?.id}
             options={stakingNetworks}
-            onChange={(option) => {
-              setStakingNetwork(option.id as ChainId);
-              changeClient(option.id as ChainId);
-              setActiveNetwork(option);
-            }}
+            onChange={onNetworkChange}
           />
           {isNetworkActive && activeAccounts.length > 0 && (
             <TotalAmount
