@@ -1,82 +1,87 @@
 import { ApiPromise } from '@polkadot/api';
 import { u8aToString } from '@polkadot/util';
-import { useRef, useState } from 'react';
+import { useState } from 'react';
 
 import { AccountID, ChainId } from '@renderer/domain/shared-kernel';
 import { getValidatorsApy } from '@renderer/services/staking/apyCalculator';
-import { useSubscription } from '@renderer/services/subscription/subscriptionService';
 import {
   Identity,
   IStakingDataService,
   Staking,
-  StakingMap,
   SubIdentity,
   Validator,
   ValidatorMap,
+  StakingMap,
 } from './common/types';
 
+// TODO: divide into Validator service & Staking service (maybe even Era service)
 export const useStakingData = (): IStakingDataService => {
-  const eraSubscription = useSubscription<ChainId>();
-  const ledgerSubscription = useSubscription<ChainId>();
-
-  const era = useRef<number>();
-  const [staking, setStaking] = useState<StakingMap>({});
   const [validators, setValidators] = useState<ValidatorMap>({});
 
-  const subscribeActiveEra = async (chainId: ChainId, api: ApiPromise): Promise<void> => {
-    await ledgerSubscription.unsubscribeAll();
-    await listenToActiveEra(chainId, api);
-  };
-
-  const listenToActiveEra = async (chainId: ChainId, api: ApiPromise): Promise<void> => {
-    return new Promise((resolve, reject) => {
-      const unsubscribe = api.query.staking.activeEra((data: any) => {
-        try {
-          const unwrappedData = data.unwrap();
-          era.current = unwrappedData.get('index').toNumber();
-          resolve();
-        } catch (error) {
-          console.warn(error);
-          reject();
-        }
-      });
-
-      eraSubscription.subscribe(chainId, unsubscribe);
+  const subscribeActiveEra = (
+    chainId: ChainId,
+    api: ApiPromise,
+    callback: (era?: number) => void,
+  ): Promise<() => void> => {
+    return api.query.staking.activeEra((data: any) => {
+      try {
+        const unwrappedData = data.unwrap();
+        callback(unwrappedData.get('index').toNumber());
+      } catch (error) {
+        console.warn(error);
+        callback(undefined);
+      }
     });
   };
 
-  const subscribeLedger = async (chainId: ChainId, api: ApiPromise, newAccounts: AccountID[]): Promise<void> => {
-    const apiHasChanged = Object.keys(staking).length === newAccounts.length;
-    if (apiHasChanged) {
-      setStaking({});
-    }
-
-    await ledgerSubscription.unsubscribeAll();
-    await listenToLedger(chainId, api, newAccounts);
-  };
-
-  const listenToLedger = async (chainId: ChainId, api: ApiPromise, accounts: AccountID[]): Promise<void> => {
+  const subscribeStaking = async (
+    chainId: ChainId,
+    api: ApiPromise,
+    accounts: AccountID[],
+    callback: (staking: StakingMap) => void,
+  ): Promise<() => void> => {
     const controllers = await getControllers(api, accounts);
 
-    const unsubscribe = api.query.staking.ledger.multi(controllers, async (data) => {
-      let isControllerChanged = false;
+    return listenToLedger(chainId, api, controllers, accounts, callback);
+  };
 
-      const newStaking = data.map((ledger, index) => {
-        const accountId = accounts[index];
+  const getControllers = async (api: ApiPromise, accounts: AccountID[]): Promise<AccountID[]> => {
+    try {
+      const controllers = await api.query.staking.bonded.multi(accounts);
 
-        if (ledger.isNone) {
-          const isSameChain = Boolean(staking[accountId]?.chainId === chainId);
-          isControllerChanged ||= isSameChain;
+      return controllers.map((controller, index) =>
+        controller.isNone ? accounts[index] : controller.unwrap().toString(),
+      );
+    } catch (error) {
+      console.warn(error);
 
-          return isSameChain ? staking[accountId] : { [accountId]: undefined };
-        }
+      return [];
+    }
+  };
 
-        try {
+  const listenToLedger = async (
+    chainId: ChainId,
+    api: ApiPromise,
+    controllers: AccountID[],
+    accounts: AccountID[],
+    callback: (data: StakingMap) => void,
+  ): Promise<() => void> => {
+    return api.query.staking.ledger.multi(controllers, (data) => {
+      try {
+        const staking = data.reduce<StakingMap>((acc, ledger, index) => {
+          const accountId = accounts[index];
+
+          if (ledger.isNone) {
+            return { ...acc, [accountId]: undefined };
+          }
+
           const { active, stash, total, unlocking } = ledger.unwrap();
+
           const formattedUnlocking = unlocking.toArray().map((unlock) => ({
             value: unlock.value.toString(),
             era: unlock.era.toString(),
           }));
+
           const payload: Staking = {
             accountId,
             chainId,
@@ -87,26 +92,19 @@ export const useStakingData = (): IStakingDataService => {
             unlocking: formattedUnlocking,
           };
 
-          return { [accountId]: payload };
-        } catch (error) {
-          console.warn(error);
+          return { ...acc, [accountId]: payload };
+        }, {});
 
-          return { [accountId]: undefined };
-        }
-      });
-      setStaking(Object.assign({}, ...newStaking));
-
-      if (isControllerChanged) {
-        await ledgerSubscription.unsubscribeAll();
-        await listenToLedger(chainId, api, accounts);
+        callback(staking);
+      } catch (error) {
+        console.warn(error);
+        callback({});
       }
     });
-
-    ledgerSubscription.subscribe(chainId, unsubscribe);
   };
 
-  const getValidators = async (chainId: ChainId, api: ApiPromise): Promise<void> => {
-    const [totalStake, commission] = await Promise.all([setValidatorsStake(api), setValidatorsPrefs(api)]);
+  const getValidators = async (chainId: ChainId, api: ApiPromise, era: number): Promise<void> => {
+    const [totalStake, commission] = await Promise.all([setValidatorsStake(api, era), setValidatorsPrefs(api, era)]);
 
     const { addresses, apyPayload } = Object.entries(totalStake).reduce<Record<string, any[]>>(
       (acc, [address, totalStake]) => {
@@ -121,10 +119,8 @@ export const useStakingData = (): IStakingDataService => {
     await Promise.all([setIdentities(api, addresses), calculateValidatorsApy(api, apyPayload)]);
   };
 
-  const setValidatorsStake = async (api: ApiPromise): Promise<Record<AccountID, string>> => {
-    if (!era.current) throw new Error('No ActiveEra');
-
-    const data = await api.query.staking.erasStakersClipped.entries(era.current);
+  const setValidatorsStake = async (api: ApiPromise, era: number): Promise<Record<AccountID, string>> => {
+    const data = await api.query.staking.erasStakersClipped.entries(era);
 
     const { full, short } = data.reduce(
       (acc, [storageKey, type]) => {
@@ -151,10 +147,8 @@ export const useStakingData = (): IStakingDataService => {
     return short;
   };
 
-  const setValidatorsPrefs = async (api: ApiPromise): Promise<Record<AccountID, number>> => {
-    if (!era.current) throw new Error('No ApiPromise or ActiveEra');
-
-    const data = await api.query.staking.erasValidatorPrefs.entries(era.current);
+  const setValidatorsPrefs = async (api: ApiPromise, era: number): Promise<Record<AccountID, number>> => {
+    const data = await api.query.staking.erasValidatorPrefs.entries(era);
 
     const { full, short } = data.reduce(
       (acc, [storageKey, type]) => {
@@ -270,20 +264,6 @@ export const useStakingData = (): IStakingDataService => {
     }
   };
 
-  const getControllers = async (api: ApiPromise, accounts: AccountID[]): Promise<AccountID[]> => {
-    try {
-      const controllers = await api.query.staking.bonded.multi(accounts);
-
-      return controllers.map((controller, index) =>
-        controller.isNone ? accounts[index] : controller.unwrap().toString(),
-      );
-    } catch (error) {
-      console.warn(error);
-
-      return [];
-    }
-  };
-
   const getMinNominatorBond = async (api: ApiPromise): Promise<string> => {
     try {
       return (await api.query.staking.minNominatorBond()).toString();
@@ -295,10 +275,9 @@ export const useStakingData = (): IStakingDataService => {
   };
 
   return {
-    staking,
     validators,
     subscribeActiveEra,
-    subscribeLedger,
+    subscribeStaking,
     getValidators,
     getMaxValidators,
     getNominators,
