@@ -8,13 +8,15 @@ import { useI18n } from '@renderer/context/I18nContext';
 import { useNetworkContext } from '@renderer/context/NetworkContext';
 import { Asset, StakingType } from '@renderer/domain/asset';
 import { ConnectionStatus, ConnectionType } from '@renderer/domain/connection';
-import { AccountID, ChainId } from '@renderer/domain/shared-kernel';
+import { AccountID, ChainId, SigningType } from '@renderer/domain/shared-kernel';
+import { AccountStakeInfo } from '@renderer/screens/Staking/Overview/components/List/common/types';
 import TotalAmount from '@renderer/screens/Staking/Overview/components/TotalAmount/TotalAmount';
 import { useAccount } from '@renderer/services/account/accountService';
 import { useChains } from '@renderer/services/network/chainsService';
 import { useSettingsStorage } from '@renderer/services/settings/settingsStorage';
 import { StakingMap } from '@renderer/services/staking/common/types';
 import { useStakingData } from '@renderer/services/staking/stakingDataService';
+import { useStakingRewards } from '@renderer/services/staking/stakingRewardsService';
 import { useWallet } from '@renderer/services/wallet/walletService';
 import { InactiveChain, NoAccounts, StakingList } from './components';
 
@@ -34,6 +36,7 @@ const Overview = () => {
   const [staking, setStaking] = useState<StakingMap>({});
 
   const [query, setQuery] = useState('');
+  const [selectedAccounts, setSelectedAccounts] = useState<AccountID[]>([]);
   const [isNetworkActive, setIsNetworkActive] = useState(true);
   const [activeNetwork, setActiveNetwork] = useState<ResultOption<NetworkOption>>();
   const [stakingNetworks, setStakingNetworks] = useState<Option<NetworkOption>[]>([]);
@@ -113,8 +116,86 @@ const Overview = () => {
     setStakingNetwork(option.id as ChainId);
     changeClient(option.id as ChainId);
     setActiveNetwork(option);
+    setSelectedAccounts([]);
     setStaking({});
   };
+
+  const onSelectAllAccounts = () => {
+    if (allAccountsSelected) {
+      setSelectedAccounts([]);
+    } else {
+      setSelectedAccounts(paritySignerAccs);
+    }
+  };
+
+  const onSelectAccount = (address: AccountID) => {
+    if (selectedAccounts.includes(address)) {
+      setSelectedAccounts((prev) => prev.filter((accountId) => accountId !== address));
+    } else {
+      setSelectedAccounts((prev) => prev.concat(address));
+    }
+  };
+
+  const { watchOnlyAccs, paritySignerAccs } = activeAccounts.reduce<Record<string, AccountID[]>>(
+    (acc, account) => {
+      if (!account.accountId) return acc;
+
+      if (account.signingType === SigningType.WATCH_ONLY) {
+        acc.watchOnlyAccs.push(account.accountId);
+      } else {
+        acc.paritySignerAccs.push(account.accountId);
+      }
+
+      return acc;
+    },
+    { watchOnlyAccs: [], paritySignerAccs: [] },
+  );
+
+  const { rewards, isLoading } = useStakingRewards(
+    watchOnlyAccs.concat(paritySignerAccs),
+    activeNetwork?.value.addressPrefix,
+  );
+
+  const walletNames = activeWallets.reduce<Record<string, string>>((acc, wallet) => {
+    return wallet.id ? { ...acc, [wallet.id]: wallet.name } : acc;
+  }, {});
+
+  const rootNames = activeAccounts.reduce<Record<AccountID, string>>((acc, account) => {
+    const isChainOrWatchOnly = account.rootId || account.signingType === SigningType.WATCH_ONLY;
+    if (!account.id || isChainOrWatchOnly) return acc;
+
+    return { ...acc, [account.id.toString()]: account.name };
+  }, {});
+
+  const matchFilter = (query: string, args: string[]): boolean => {
+    return args.reduce((acc, word) => acc.concat(word.toLowerCase()), '').includes(query.toLowerCase());
+  };
+
+  const stakingList = activeAccounts.reduce<AccountStakeInfo[]>((acc, account) => {
+    if (!account.accountId) return acc;
+
+    let walletName = account.walletId ? walletNames[account.walletId.toString()] : '';
+    if (account.rootId) {
+      //eslint-disable-next-line i18next/no-literal-string
+      walletName += `- ${rootNames[account.rootId.toString()]}`;
+    }
+
+    if (!query || matchFilter(query, [walletName, account.name, account.accountId])) {
+      return acc.concat({
+        walletName,
+        address: account.accountId,
+        signingType: account.signingType,
+        accountName: account.name,
+        isSelected: selectedAccounts.includes(account.accountId),
+        totalStake: staking[account.accountId]?.total || '0',
+        totalReward: isLoading ? undefined : rewards[account.accountId],
+      });
+    }
+
+    return acc;
+  }, []);
+
+  const allAccountsSelected = selectedAccounts.length === activeAccounts.length && activeAccounts.length !== 0;
 
   return (
     <div className="h-full flex flex-col">
@@ -164,12 +245,13 @@ const Overview = () => {
             </div>
 
             <StakingList
-              staking={staking}
-              wallets={activeWallets}
-              accounts={activeAccounts}
+              allAccountsSelected={allAccountsSelected}
+              staking={stakingList}
               asset={activeNetwork?.value.asset}
               addressPrefix={activeNetwork?.value.addressPrefix}
               explorers={explorers}
+              onSelect={onSelectAccount}
+              onSelectAll={onSelectAllAccounts}
             />
           </>
         )}

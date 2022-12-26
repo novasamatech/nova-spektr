@@ -1,19 +1,10 @@
 import { render, screen } from '@testing-library/react';
 
-import { StakingMap } from '@renderer/services/staking/common/types';
-import { AccountDS, WalletDS } from '@renderer/services/storage';
 import { Asset } from '@renderer/domain/asset';
-import { TEST_ADDRESS } from '@renderer/services/balance/common/constants';
+import { SigningType } from '@renderer/domain/shared-kernel';
 import StakingList from './StakingList';
 
 jest.mock('../StakingListItem/StakingListItem', () => () => 'stakingListItem');
-
-jest.mock('@renderer/services/staking/stakingRewardsService', () => ({
-  useStakingRewards: jest.fn().mockReturnValue({
-    rewards: {},
-    isLoading: false,
-  }),
-}));
 
 jest.mock('@renderer/context/I18nContext', () => ({
   useI18n: jest.fn().mockReturnValue({
@@ -23,11 +14,22 @@ jest.mock('@renderer/context/I18nContext', () => ({
 
 describe('screens/Staking/Overview/StakingList', () => {
   test('should create component', () => {
-    const accounts = [{ accountId: TEST_ADDRESS }] as unknown as AccountDS[];
     const asset = { symbol: 'DOT', precision: 10 } as Asset;
-    const staking = { [TEST_ADDRESS]: { accountId: TEST_ADDRESS } } as unknown as StakingMap;
+    const staking = [
+      {
+        accountName: 'test_ROOT',
+        address: '133khBTmxKsWJ6kyybChNadTHyy1kDmpStWNCiEiSdDMAZwS',
+        isSelected: false,
+        signingType: SigningType.PARITY_SIGNER,
+        totalReward: undefined,
+        totalStake: '5757762883235',
+        walletName: 'Secure_Wallet',
+      },
+    ];
 
-    render(<StakingList accounts={accounts} wallets={[] as WalletDS[]} staking={staking} asset={asset} />);
+    render(
+      <StakingList allAccountsSelected staking={staking} asset={asset} onSelect={() => {}} onSelectAll={() => {}} />,
+    );
 
     const account = screen.getByText('staking.overview.accountTableHeader');
     const rewards = screen.getByText('staking.overview.rewardsTableHeader');

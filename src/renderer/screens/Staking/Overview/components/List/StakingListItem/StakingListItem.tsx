@@ -12,10 +12,10 @@ type Props = {
   addressPrefix?: number;
   explorers?: Explorer[];
   // isLoading?: boolean;
-  onChecked?: () => void;
+  onSelect: () => void;
 };
 
-const StakingListItem = ({ stakeInfo, asset, addressPrefix, explorers, onChecked }: Props) => {
+const StakingListItem = ({ stakeInfo, asset, addressPrefix, explorers, onSelect }: Props) => {
   // TODO: let it stay for a while, full shimmering row
   //   return (
   //     <div className="flex items-center pl-4 pr-2 h-12.5 border-b border-shade-5 text-neutral">
@@ -39,7 +39,7 @@ const StakingListItem = ({ stakeInfo, asset, addressPrefix, explorers, onChecked
         className="h-full"
         disabled={stakeInfo.signingType === SigningType.WATCH_ONLY}
         checked={stakeInfo.isSelected}
-        onChange={onChecked}
+        onChange={onSelect}
       >
         <div className="grid grid-flow-col gap-x-1">
           <Identicon className="row-span-2 self-center" address={stakeInfo.address} background={false} />

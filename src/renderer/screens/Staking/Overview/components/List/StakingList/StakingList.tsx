@@ -1,111 +1,44 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 
 import { Checkbox, Icon } from '@renderer/components/ui';
 import { useI18n } from '@renderer/context/I18nContext';
 import { Asset } from '@renderer/domain/asset';
 import { Explorer } from '@renderer/domain/chain';
-import { AccountID, SigningType } from '@renderer/domain/shared-kernel';
-import { StakingMap } from '@renderer/services/staking/common/types';
-import { useStakingRewards } from '@renderer/services/staking/stakingRewardsService';
-import { AccountDS, WalletDS } from '@renderer/services/storage';
+import { AccountID } from '@renderer/domain/shared-kernel';
 import { AccountStakeInfo } from '../common/types';
 import StakingListItem from '../StakingListItem/StakingListItem';
 
 type Props = {
-  staking: StakingMap;
-  wallets: WalletDS[];
-  accounts: AccountDS[];
+  staking: AccountStakeInfo[];
   asset?: Asset;
+  allAccountsSelected: boolean;
   explorers?: Explorer[];
   addressPrefix?: number;
+  onSelect: (address: AccountID) => void;
+  onSelectAll: () => void;
 };
 
-const StakingList = ({ staking, asset, accounts, wallets, explorers, addressPrefix }: Props) => {
+const StakingList = ({
+  staking,
+  allAccountsSelected,
+  asset,
+  explorers,
+  addressPrefix,
+  onSelect,
+  onSelectAll,
+}: Props) => {
   const { t } = useI18n();
 
   const [sortType, setSortType] = useState<'ASC' | 'DESC'>('DESC');
-  const [selectedAccounts, setSelectedAccounts] = useState<AccountID[]>([]);
-
-  useEffect(() => {
-    if (!asset) return;
-
-    setSelectedAccounts([]);
-  }, [asset]);
-
-  const { watchOnlyAccs, paritySignerAccs } = accounts.reduce<Record<string, AccountID[]>>(
-    (acc, account) => {
-      if (!account.accountId) return acc;
-
-      if (account.signingType === SigningType.WATCH_ONLY) {
-        acc.watchOnlyAccs.push(account.accountId);
-      } else {
-        acc.paritySignerAccs.push(account.accountId);
-      }
-
-      return acc;
-    },
-    { watchOnlyAccs: [], paritySignerAccs: [] },
-  );
-
-  const { rewards, isLoading } = useStakingRewards(watchOnlyAccs.concat(paritySignerAccs), addressPrefix);
-
-  const isAllAccountsSelected = accounts.length > 0 && selectedAccounts.length === paritySignerAccs.length;
-
-  const walletNames = wallets.reduce<Record<string, string>>((acc, wallet) => {
-    return wallet.id ? { ...acc, [wallet.id]: wallet.name } : acc;
-  }, {});
-
-  const rootNames = accounts.reduce<Record<AccountID, string>>((acc, account) => {
-    const isChainOrWatchOnly = account.rootId || account.signingType === SigningType.WATCH_ONLY;
-    if (!account.id || isChainOrWatchOnly) return acc;
-
-    return { ...acc, [account.id.toString()]: account.name };
-  }, {});
-
-  const getTotalStakeInfo = accounts.reduce<AccountStakeInfo[]>((acc, account) => {
-    if (!account.accountId) return acc;
-
-    let walletName = account.walletId ? walletNames[account.walletId.toString()] : '';
-    if (account.rootId) {
-      //eslint-disable-next-line i18next/no-literal-string
-      walletName += `- ${rootNames[account.rootId.toString()]}`;
-    }
-
-    return acc.concat({
-      walletName,
-      address: account.accountId,
-      signingType: account.signingType,
-      accountName: account.name,
-      isSelected: selectedAccounts.includes(account.accountId),
-      totalStake: staking[account.accountId]?.total || '0',
-      totalReward: isLoading ? undefined : rewards[account.accountId],
-    });
-  }, []);
-
-  const toggleAllAccounts = () => {
-    if (isAllAccountsSelected) {
-      setSelectedAccounts([]);
-    } else {
-      setSelectedAccounts(paritySignerAccs);
-    }
-  };
 
   const setListSorting = () => {
     setSortType((prev) => (prev === 'DESC' ? 'ASC' : 'DESC'));
   };
 
-  const toggleAccount = (address: AccountID) => {
-    if (selectedAccounts.includes(address)) {
-      setSelectedAccounts((prev) => prev.filter((accountId) => accountId !== address));
-    } else {
-      setSelectedAccounts((prev) => prev.concat(address));
-    }
-  };
-
   return (
     <div className="w-full bg-white rounded-2lg mt-5">
       <div className="flex items-center py-2 pl-4 pr-11 border-b border-shade-5 sticky top-0 z-10 bg-white">
-        <Checkbox checked={isAllAccountsSelected} onChange={toggleAllAccounts} />
+        <Checkbox checked={allAccountsSelected} onChange={onSelectAll} />
         <p className="text-2xs font-bold uppercase text-neutral-variant ml-2.5 mr-auto">
           {t('staking.overview.accountTableHeader')}
         </p>
@@ -120,14 +53,14 @@ const StakingList = ({ staking, asset, accounts, wallets, explorers, addressPref
         </div>
       </div>
       <ul>
-        {getTotalStakeInfo.map((stake) => (
+        {staking.map((stake) => (
           <li key={stake.address}>
             <StakingListItem
               stakeInfo={stake}
               asset={asset}
               addressPrefix={addressPrefix}
               explorers={explorers}
-              onChecked={() => toggleAccount(stake.address)}
+              onSelect={() => onSelect(stake.address)}
             />
           </li>
         ))}
