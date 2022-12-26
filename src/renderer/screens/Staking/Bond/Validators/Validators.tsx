@@ -23,7 +23,7 @@ const Validators = ({ api, chainId, asset, onResult }: Props) => {
   const [isInfoOpen, toggleInfo] = useToggle();
   const { validators, getMaxValidators, getValidators, subscribeActiveEra } = useStakingData();
 
-  const [era, setEra] = useState<number>(0);
+  const [era, setEra] = useState<number>();
 
   const [query, setQuery] = useState('');
   const [maxValidators, setMaxValidators] = useState<number>();

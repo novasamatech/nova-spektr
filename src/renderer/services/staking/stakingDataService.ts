@@ -21,7 +21,7 @@ export const useStakingData = (): IStakingDataService => {
   const subscribeActiveEra = (
     chainId: ChainId,
     api: ApiPromise,
-    callback: (era: number) => void,
+    callback: (era?: number) => void,
   ): Promise<() => void> => {
     return api.query.staking.activeEra((data: any) => {
       try {
@@ -29,7 +29,7 @@ export const useStakingData = (): IStakingDataService => {
         callback(unwrappedData.get('index').toNumber());
       } catch (error) {
         console.warn(error);
-        callback(0);
+        callback(undefined);
       }
     });
   };

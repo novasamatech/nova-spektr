@@ -8,7 +8,7 @@ import { AccountID, ChainId } from '@renderer/domain/shared-kernel';
 
 export interface IStakingDataService {
   validators: ValidatorMap;
-  subscribeActiveEra: (chainId: ChainId, api: ApiPromise, callback: (era: number) => void) => Promise<() => void>;
+  subscribeActiveEra: (chainId: ChainId, api: ApiPromise, callback: (era?: number) => void) => Promise<() => void>;
   subscribeStaking: (
     chainId: ChainId,
     api: ApiPromise,

@@ -30,7 +30,7 @@ const Overview = () => {
   const { subscribeActiveEra, subscribeStaking } = useStakingData();
   const { setStakingNetwork, getStakingNetwork } = useSettingsStorage();
 
-  const [_, setEra] = useState<number>(0);
+  const [_, setEra] = useState<number>();
   const [staking, setStaking] = useState<StakingMap>({});
 
   const [query, setQuery] = useState('');
