@@ -23,6 +23,8 @@ const Validators = ({ api, chainId, asset, onResult }: Props) => {
   const [isInfoOpen, toggleInfo] = useToggle();
   const { validators, getMaxValidators, getValidators, subscribeActiveEra } = useStakingData();
 
+  const [era, setEra] = useState<number>();
+
   const [query, setQuery] = useState('');
   const [maxValidators, setMaxValidators] = useState<number>();
   const [myValidators, setMyValidators] = useState<Record<AccountID, boolean>>({});
@@ -38,12 +40,25 @@ const Validators = ({ api, chainId, asset, onResult }: Props) => {
   useEffect(() => {
     if (!chainId || !api?.isConnected) return;
 
+    let unsubEra: () => void | undefined;
+
     (async () => {
-      await subscribeActiveEra(chainId, api);
-      await getValidators(chainId, api);
+      unsubEra = await subscribeActiveEra(chainId, api, setEra);
+    })();
+
+    return () => {
+      unsubEra?.();
+    };
+  }, [api]);
+
+  useEffect(() => {
+    if (!chainId || !api?.isConnected || !era) return;
+
+    (async () => {
+      await getValidators(chainId, api, era);
     })();
     setMaxValidators(getMaxValidators(api));
-  }, [api]);
+  }, [era, api]);
 
   if (!api || !chainId || !asset || !maxValidators || validatorList.length === 0) {
     return <div>LOADING</div>;
