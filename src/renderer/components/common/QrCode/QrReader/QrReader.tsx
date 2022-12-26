@@ -138,6 +138,7 @@ const QrReader = ({ size = 300, cameraId, className, onCameraList, onResult, onP
     if (collected.has(blockNumber)) return;
 
     collected.add(blockNumber);
+    console.log(collected, blockNumber, newSize);
     onProgress?.({ decoded: collected.size, total });
 
     for (const [key, packet] of packets.current) {
@@ -146,6 +147,7 @@ const QrReader = ({ size = 300, cameraId, className, onCameraList, onResult, onP
       try {
         fountainResult = raptorDecoder.decode(packet);
       } catch (error) {
+        collected.delete(key);
         packets.current.delete(key);
 
         break;

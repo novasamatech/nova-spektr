@@ -72,7 +72,10 @@ const ParitySignerQrReader = ({ size = 300, className, onResult }: Props) => {
   const onScanResult = (qrPayload: SeedInfo[]) => {
     try {
       qrPayload.forEach((qr) => {
-        encodeAddress(qr.multiSigner?.public || '');
+        if (qr.multiSigner) {
+          encodeAddress(qr.multiSigner.public);
+        }
+
         if (qr.derivedKeys.length === 0) return;
 
         qr.derivedKeys.forEach(({ address }) =>

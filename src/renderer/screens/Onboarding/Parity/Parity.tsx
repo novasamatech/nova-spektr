@@ -34,6 +34,8 @@ const Parity = () => {
     { title: t('onboarding.paritySigner.step2') },
   ];
 
+  const isOldQrCode = qrPayload?.length === 1 && qrPayload[0].derivedKeys.length === 0 && qrPayload[0].name === '';
+
   return (
     <div className="flex flex-col h-full">
       {activeStep !== Step.FINAL && (
@@ -48,10 +50,10 @@ const Parity = () => {
         {activeStep === Step.SCAN && <StepTwo onNextStep={onReceiveQr} />}
         {activeStep === Step.CHECK && qrPayload && (
           <>
-            {qrPayload.length > 1 ? (
-              <StepThree qrData={qrPayload} onNextStep={() => setActiveStep(Step.FINAL)} />
-            ) : (
+            {isOldQrCode ? (
               <StepThreeSingle qrData={qrPayload} onNextStep={() => setActiveStep(Step.FINAL)} />
+            ) : (
+              <StepThree qrData={qrPayload} onNextStep={() => setActiveStep(Step.FINAL)} />
             )}
           </>
         )}

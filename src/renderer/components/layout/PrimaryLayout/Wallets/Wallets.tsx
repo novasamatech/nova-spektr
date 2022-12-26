@@ -1,14 +1,15 @@
 import cn from 'classnames';
 import { forwardRef, useState } from 'react';
 
-import { Address, Checkbox, Icon, Identicon, Input } from '@renderer/components/ui';
+import { Address, ButtonLink, Checkbox, Icon, Identicon, Input } from '@renderer/components/ui';
 import { useI18n } from '@renderer/context/I18nContext';
 import { AccountDS } from '@renderer/services/storage';
 import { useAccount } from '@renderer/services/account/accountService';
 import { SigningType, WalletType } from '@renderer/domain/shared-kernel';
 import { useWalletsStructure } from './useWalletStructure';
 import { ChainWithAccounts, RootAccount, WalletStructure } from './types';
-import { Expandable } from '@renderer/components/common';
+import { Expandable, Explorers } from '@renderer/components/common';
+import Paths from '@renderer/routes/paths';
 
 type Props = {
   className?: string;
@@ -28,7 +29,7 @@ const Wallets = forwardRef<HTMLDivElement, Props>(({ className }, ref) => {
 
   const wallets = useWalletsStructure({ signingType: SigningType.PARITY_SIGNER }, query);
   const watchOnlyAccounts = getLiveAccounts({ signingType: SigningType.WATCH_ONLY });
-  const paritySignerAccounts = getLiveAccounts({ signingType: SigningType.PARITY_SIGNER, walletId: null });
+  const paritySignerAccounts = getLiveAccounts({ signingType: SigningType.PARITY_SIGNER });
 
   const searchAccount = (accounts: AccountDS[] = [], query: string = '') => {
     return accounts.filter((account) => {
@@ -36,7 +37,10 @@ const Wallets = forwardRef<HTMLDivElement, Props>(({ className }, ref) => {
     });
   };
 
-  const searchedParitySignerAccountss = searchAccount(paritySignerAccounts, query);
+  const searchedParitySignerAccounts = searchAccount(
+    paritySignerAccounts.filter((a) => !a.walletId),
+    query,
+  );
   const searchedWatchOnlyAccounts = searchAccount(watchOnlyAccounts, query);
 
   const accountGroups = [
@@ -46,7 +50,7 @@ const Wallets = forwardRef<HTMLDivElement, Props>(({ className }, ref) => {
     },
     {
       label: GroupLabels[SigningType.PARITY_SIGNER],
-      accounts: searchedParitySignerAccountss,
+      accounts: searchedParitySignerAccounts,
     },
     {
       label: GroupLabels[SigningType.WATCH_ONLY],
@@ -86,188 +90,240 @@ const Wallets = forwardRef<HTMLDivElement, Props>(({ className }, ref) => {
         onChange={(e) => setQuery(e.target.value)}
       />
 
-      {accountGroups.map(({ label, accounts }) => (
-        <div key={label} className="border shadow-surface rounded-2lg bg-shade-10 font-semibold text-2xs">
-          <div className="flex items-center uppercase text-neutral-variant p-2.5">
-            {t(label)}
-            <div className="ml-1 flex items-center justify-center bg-shade-20 w-4 h-4 rounded">{accounts.length}</div>
-          </div>
+      <div className="flex-1 flex flex-col overflow-auto gap-2.5">
+        {accountGroups.map(({ label, accounts }) => (
+          <div key={label} className="border shadow-surface rounded-2lg bg-shade-10 font-semibold text-2xs">
+            <div className="flex items-center uppercase text-neutral-variant p-2.5">
+              {t(label)}
+              <div className="ml-1 flex items-center justify-center bg-shade-20 w-4 h-4 rounded">{accounts.length}</div>
+            </div>
 
-          {accounts.length > 0 && (
-            <ul className="bg-white m-0.5 rounded-2lg">
-              {accounts.map((account) => (
-                <li key={account.name}>
-                  <ul>
-                    {(account as WalletStructure).rootAccounts ? (
-                      <Expandable
-                        itemClass="px-2 hover:bg-shade-10"
-                        key={(account as AccountDS).id}
-                        alwaysActive={query.length > 0}
-                        item={
-                          <li className="h-10 w-full">
-                            <Checkbox
-                              className="w-full h-full"
-                              onChange={(e) => selectWallet(account as WalletStructure, e.target.checked)}
-                            >
-                              <div className="flex gap-x-1 overflow-hidden">
-                                <p className="text-neutral text-sm text-semibold truncate">{account.name}</p>
-                                <div className="ml-1 flex items-center justify-center bg-shade-20 w-4 h-4 rounded">
-                                  {(account as WalletStructure).amount}
+            {accounts.length > 0 && (
+              <ul className="bg-white m-0.5 rounded-2lg">
+                {accounts.map((account) => (
+                  <li key={account.name}>
+                    <ul>
+                      {(account as WalletStructure).rootAccounts ? (
+                        <Expandable
+                          itemClass="px-2 hover:bg-shade-10"
+                          key={(account as AccountDS).id}
+                          alwaysActive={query.length > 0}
+                          item={
+                            <li className="h-10 w-full">
+                              <Checkbox
+                                className="w-full h-full"
+                                onChange={(e) => selectWallet(account as WalletStructure, e.target.checked)}
+                              >
+                                <div className="flex items-center gap-x-1 overflow-hidden">
+                                  <p className="text-neutral text-sm text-semibold truncate">{account.name}</p>
+                                  <div className="ml-1 flex items-center justify-center bg-shade-20 w-4 h-4 rounded">
+                                    {(account as WalletStructure).amount}
+                                  </div>
                                 </div>
-                              </div>
-                            </Checkbox>
-                          </li>
-                        }
-                      >
-                        <ul>
-                          {(account as WalletStructure).rootAccounts.map((rootAccount) => (
-                            <Expandable
-                              itemClass="px-2 hover:bg-shade-10"
-                              key={rootAccount.id}
-                              alwaysActive={query.length > 0}
-                              item={
-                                <li className="h-10 w-full">
-                                  <Checkbox
-                                    className="w-full h-full"
-                                    checked={rootAccount.isActive}
-                                    onChange={(e) => selectRootAccount(rootAccount, e.target.checked)}
-                                  >
-                                    <div className="flex gap-x-1 items-center overflow-hidden">
-                                      <Identicon
-                                        address={rootAccount.accountId || ''}
-                                        theme={'polkadot'}
-                                        background={false}
-                                      />
+                              </Checkbox>
+                            </li>
+                          }
+                        >
+                          {/* Root accounts */}
+                          <ul className="bg-shade-2">
+                            {(account as WalletStructure).rootAccounts.map((rootAccount) => (
+                              <Expandable
+                                itemClass="px-2 hover:bg-shade-10"
+                                key={rootAccount.id}
+                                alwaysActive={query.length > 0}
+                                item={
+                                  <li className="h-10 w-full">
+                                    <Checkbox
+                                      className="w-full h-full"
+                                      checked={rootAccount.isActive}
+                                      onChange={(e) => selectRootAccount(rootAccount, e.target.checked)}
+                                    >
+                                      <div className="flex gap-x-1 items-center overflow-hidden">
+                                        <div className="relative">
+                                          {rootAccount.accountId ? (
+                                            <Identicon
+                                              address={rootAccount.accountId}
+                                              theme={'polkadot'}
+                                              background={false}
+                                              size={24}
+                                            />
+                                          ) : (
+                                            <Icon name="emptyIdenticon" />
+                                          )}
 
-                                      <p className="text-neutral text-sm text-semibold truncate">{rootAccount.name}</p>
-                                      <div className="ml-1 flex items-center justify-center bg-shade-20 w-4 h-4 rounded">
-                                        {rootAccount.amount}
+                                          <Icon
+                                            className="absolute bottom-0 right-0"
+                                            name="paritySignerBackground"
+                                            size={14}
+                                          />
+                                        </div>
+
+                                        <p className="text-neutral-variant text-sm text-semibold truncate">
+                                          {rootAccount.name}
+                                        </p>
+                                        <div className="ml-1 flex items-center justify-center bg-shade-20 w-4 h-4 rounded">
+                                          {rootAccount.amount}
+                                        </div>
                                       </div>
-                                    </div>
-                                  </Checkbox>
-                                </li>
-                              }
-                            >
-                              <ul>
-                                {rootAccount.chains.map((chain) => (
-                                  <Expandable
-                                    itemClass="px-2 hover:bg-shade-10"
-                                    key={chain.chainId}
-                                    alwaysActive={query.length > 0}
-                                    item={
-                                      <li className="h-10 w-full">
-                                        <Checkbox
-                                          className="w-full h-full"
-                                          checked={chain.isActive}
-                                          onChange={(e) => selectChain(chain, e.target.checked)}
-                                        >
-                                          <div className="flex items-center gap-x-1 overflow-hidden h-full">
-                                            <div className="rounded-full border border-shade-30 w-[5px] h-[5px] box-border start-tree relative"></div>
-                                            <div className="flex items-center uppercase text-neutral-variant">
-                                              <img
-                                                className="inline-block mx-1"
-                                                width={14}
-                                                height={14}
-                                                alt={chain.name}
-                                                src={chain.icon}
-                                              />
-
-                                              {chain.name}
-                                              <div className="ml-1 flex items-center justify-center bg-shade-20 w-4 h-4 rounded">
-                                                {chain.accounts.length}
-                                              </div>
-                                            </div>
-                                          </div>
-                                        </Checkbox>
-                                      </li>
-                                    }
-                                  >
-                                    <ul>
-                                      {chain.accounts.map((chainAccount) => (
-                                        <li className="h-10 px-2 hover:bg-shade-10 tree-wrapper" key={chainAccount.id}>
+                                    </Checkbox>
+                                  </li>
+                                }
+                              >
+                                <ul className="bg-shade-5">
+                                  {/* Chains */}
+                                  {rootAccount.chains.map((chain) => (
+                                    <Expandable
+                                      itemClass="px-2 hover:bg-shade-10"
+                                      key={chain.chainId}
+                                      alwaysActive={query.length > 0}
+                                      item={
+                                        <li className="h-10 w-full">
                                           <Checkbox
                                             className="w-full h-full"
-                                            checked={chainAccount.isActive}
-                                            onChange={() => toggleActiveAccount(chainAccount.id || '')}
+                                            checked={chain.isActive}
+                                            onChange={(e) => selectChain(chain, e.target.checked)}
                                           >
-                                            <div className="grid grid-rows-2 grid-flow-col gap-x-1 overflow-hidden">
-                                              <div className="row-span-2 self-center relative w-[14px] h-[5px] ml-0.5 middle-tree">
-                                                <div className="bg-shade-30 absolute w-[9px] h-[1px] top-[2px] left-[1px]"></div>
-                                                <div className="border-shade-30 absolute rounded-full border w-[5px] h-[5px] box-border top-0 right-0"></div>
-                                              </div>
-
-                                              <div className="row-span-2 self-center relative">
-                                                <Identicon
-                                                  address={chainAccount.accountId || ''}
-                                                  theme={'polkadot'}
-                                                  background={false}
+                                            <div className="flex items-center gap-x-1 overflow-hidden h-full">
+                                              <div className="rounded-full border border-shade-30 w-[5px] h-[5px] box-border start-tree relative"></div>
+                                              <div className="flex items-center uppercase text-shade-40">
+                                                <img
+                                                  className="inline-block mx-1"
+                                                  width={14}
+                                                  height={14}
+                                                  alt={chain.name}
+                                                  src={chain.icon}
                                                 />
-                                                <Icon
-                                                  className="absolute bottom-0 right-0"
-                                                  name="paritySignerBackground"
-                                                  size={14}
-                                                />
+
+                                                {chain.name}
+                                                <div className="ml-1 flex items-center justify-center bg-shade-20 w-4 h-4 rounded">
+                                                  {chain.accounts.length}
+                                                </div>
                                               </div>
-
-                                              <p className="text-neutral text-sm text-semibold truncate">
-                                                {chainAccount.name}
-                                              </p>
-
-                                              <Address
-                                                type="short"
-                                                address={chainAccount.accountId || ''}
-                                                canCopy={false}
-                                                showIcon={false}
-                                              />
                                             </div>
                                           </Checkbox>
                                         </li>
-                                      ))}
-                                    </ul>
-                                  </Expandable>
-                                ))}
-                              </ul>
-                            </Expandable>
-                          ))}
-                        </ul>
-                      </Expandable>
-                    ) : (
-                      <li className="h-10 px-2 hover:bg-shade-10" key={(account as AccountDS).id}>
-                        <Checkbox
-                          className="w-full h-full"
-                          checked={(account as AccountDS).isActive}
-                          onChange={() => toggleActiveAccount((account as AccountDS).id || '')}
-                        >
-                          <div className="flex gap-x-1 overflow-hidden">
-                            <div className="row-span-2 self-center relative">
-                              <Identicon
-                                address={(account as AccountDS).accountId || ''}
-                                theme={'polkadot'}
-                                background={false}
-                              />
-                              <Icon
-                                className="absolute bottom-0 right-0"
-                                name={
-                                  (account as AccountDS).signingType === SigningType.PARITY_SIGNER
-                                    ? 'paritySignerBackground'
-                                    : 'watchOnlyBackground'
-                                }
-                                size={14}
-                              />
-                            </div>
+                                      }
+                                    >
+                                      <ul>
+                                        {/* Chain accounts */}
+                                        {chain.accounts.map((chainAccount) => (
+                                          <li
+                                            className="h-10 px-2 hover:bg-shade-10 tree-wrapper"
+                                            key={chainAccount.id}
+                                          >
+                                            <Checkbox
+                                              className="w-full h-full"
+                                              checked={chainAccount.isActive}
+                                              onChange={() => toggleActiveAccount(chainAccount.id || '')}
+                                            >
+                                              <div className="flex flex-1 justify-between gap-x-1 items-center">
+                                                <div className="grid grid-rows-2 grid-flow-col gap-x-1 overflow-hidden">
+                                                  <div className="row-span-2 self-center relative w-[14px] h-[5px] ml-0.5 middle-tree">
+                                                    <div className="bg-shade-30 absolute w-[9px] h-[1px] top-[2px] left-[1px]"></div>
+                                                    <div className="border-shade-30 absolute rounded-full border w-[5px] h-[5px] box-border top-0 right-0"></div>
+                                                  </div>
 
-                            <p className="text-neutral text-sm text-semibold truncate">{account.name}</p>
-                          </div>
-                        </Checkbox>
-                      </li>
-                    )}
-                  </ul>
-                </li>
-              ))}
-            </ul>
-          )}
-        </div>
-      ))}
+                                                  <div className="row-span-2 self-center relative">
+                                                    <Identicon
+                                                      address={chainAccount.accountId || ''}
+                                                      theme={'polkadot'}
+                                                      background={false}
+                                                    />
+
+                                                    <Icon
+                                                      className="absolute bottom-0 right-0"
+                                                      name="paritySignerBackground"
+                                                      size={14}
+                                                    />
+                                                  </div>
+
+                                                  <p className="text-neutral-variant text-sm text-semibold truncate">
+                                                    {chainAccount.name}
+                                                  </p>
+
+                                                  <Address
+                                                    type="short"
+                                                    address={chainAccount.accountId || ''}
+                                                    canCopy={false}
+                                                    showIcon={false}
+                                                  />
+                                                </div>
+
+                                                <Explorers
+                                                  explorers={chain.explorers}
+                                                  address={chainAccount.accountId || ''}
+                                                />
+                                              </div>
+                                            </Checkbox>
+                                          </li>
+                                        ))}
+                                      </ul>
+                                    </Expandable>
+                                  ))}
+                                </ul>
+                              </Expandable>
+                            ))}
+                          </ul>
+                        </Expandable>
+                      ) : (
+                        <li className="h-10 px-2 hover:bg-shade-10" key={(account as AccountDS).id}>
+                          <Checkbox
+                            className="w-full h-full"
+                            checked={(account as AccountDS).isActive}
+                            onChange={() => toggleActiveAccount((account as AccountDS).id || '')}
+                          >
+                            <div className="flex gap-x-1 overflow-hidden">
+                              <div className="row-span-2 self-center relative">
+                                <Identicon
+                                  address={(account as AccountDS).accountId || ''}
+                                  theme={'polkadot'}
+                                  background={false}
+                                />
+                                <Icon
+                                  className="absolute bottom-0 right-0"
+                                  name={
+                                    (account as AccountDS).signingType === SigningType.PARITY_SIGNER
+                                      ? 'paritySignerBackground'
+                                      : 'watchOnlyBackground'
+                                  }
+                                  size={14}
+                                />
+                              </div>
+
+                              <p className="text-neutral text-sm text-semibold truncate">{account.name}</p>
+                            </div>
+                          </Checkbox>
+                        </li>
+                      )}
+                    </ul>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+        ))}
+      </div>
+
+      <div className="bottom-0 w-full border-t border-shade-10 flex flex-col gap-y-1 -mx-2.5 px-2.5">
+        <ButtonLink
+          to={Paths.WATCH_ONLY}
+          className="w-fit"
+          prefixElement={<Icon name="addLine" size={16} />}
+          pallet="primary"
+          variant="text"
+        >
+          {t('wallets.addWatchOnlyButton')}
+        </ButtonLink>
+        <ButtonLink
+          to={Paths.PARITY}
+          className="w-fit"
+          prefixElement={<Icon name="qrLine" size={16} />}
+          pallet="primary"
+          variant="text"
+        >
+          {t('wallets.addByParitySignerButton')}
+        </ButtonLink>
+      </div>
     </div>
   );
 });
