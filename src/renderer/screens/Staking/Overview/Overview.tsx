@@ -13,9 +13,10 @@ import TotalAmount from '@renderer/screens/Staking/Overview/components/TotalAmou
 import { useAccount } from '@renderer/services/account/accountService';
 import { useChains } from '@renderer/services/network/chainsService';
 import { useSettingsStorage } from '@renderer/services/settings/settingsStorage';
+import { StakingMap } from '@renderer/services/staking/common/types';
 import { useStakingData } from '@renderer/services/staking/stakingDataService';
 import { useWallet } from '@renderer/services/wallet/walletService';
-import { AboutStaking, Filter, InactiveChain, InfoBanners, NoAccounts, StakingList } from './components';
+import { InactiveChain, NoAccounts, StakingList } from './components';
 
 type NetworkOption = { asset: Asset; addressPrefix: number };
 
@@ -26,8 +27,11 @@ const Overview = () => {
   const { getActiveAccounts } = useAccount();
   const { getLiveWallets } = useWallet();
   const { sortChains, getChainsData } = useChains();
-  const { staking, subscribeActiveEra, subscribeLedger } = useStakingData();
+  const { subscribeActiveEra, subscribeStaking } = useStakingData();
   const { setStakingNetwork, getStakingNetwork } = useSettingsStorage();
+
+  const [_, setEra] = useState<number>();
+  const [staking, setStaking] = useState<StakingMap>({});
 
   const [query, setQuery] = useState('');
   const [isNetworkActive, setIsNetworkActive] = useState(true);
@@ -62,10 +66,18 @@ const Overview = () => {
   useEffect(() => {
     if (!chainId || !api?.isConnected || accountAddresses.length === 0) return;
 
+    let unsubEra: () => void | undefined;
+    let unsubStaking: () => void | undefined;
+
     (async () => {
-      await subscribeActiveEra(chainId, api);
-      await subscribeLedger(chainId, api, accountAddresses);
+      unsubEra = await subscribeActiveEra(chainId, api, setEra);
+      unsubStaking = await subscribeStaking(chainId, api, accountAddresses, setStaking);
     })();
+
+    return () => {
+      unsubEra?.();
+      unsubStaking?.();
+    };
   }, [api, accountAddresses.length]);
 
   useEffect(() => {
@@ -97,12 +109,19 @@ const Overview = () => {
     })();
   }, []);
 
+  const onNetworkChange = (option: ResultOption<NetworkOption>) => {
+    setStakingNetwork(option.id as ChainId);
+    changeClient(option.id as ChainId);
+    setActiveNetwork(option);
+    setStaking({});
+  };
+
   return (
     <div className="h-full flex flex-col">
       <h1 className="font-semibold text-2xl text-neutral mb-9">{t('staking.title')}</h1>
 
       <div className="w-[900px] p-5 mx-auto bg-shade-2 rounded-2lg">
-        <div className="flex items-center">
+        <div className="flex items-center mb-5">
           <p className="text-xl text-neutral mr-5">
             <Trans
               t={t}
@@ -115,11 +134,7 @@ const Overview = () => {
             placeholder={t('staking.startStaking.selectNetworkLabel')}
             activeId={activeNetwork?.id}
             options={stakingNetworks}
-            onChange={(option) => {
-              setStakingNetwork(option.id as ChainId);
-              changeClient(option.id as ChainId);
-              setActiveNetwork(option);
-            }}
+            onChange={onNetworkChange}
           />
           {isNetworkActive && activeAccounts.length > 0 && (
             <TotalAmount
@@ -133,8 +148,9 @@ const Overview = () => {
 
         {isNetworkActive && activeAccounts.length > 0 && (
           <>
-            <AboutStaking asset={activeNetwork?.value.asset} />
-            <InfoBanners />
+            {/* TODO: not in current sprint */}
+            {/*<AboutStaking asset={activeNetwork?.value.asset} />*/}
+            {/*<InfoBanners />*/}
 
             <div className="flex items-center justify-between">
               <Input
@@ -144,7 +160,7 @@ const Overview = () => {
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
               />
-              <Filter />
+              {/*<Filter />*/}
             </div>
 
             <StakingList

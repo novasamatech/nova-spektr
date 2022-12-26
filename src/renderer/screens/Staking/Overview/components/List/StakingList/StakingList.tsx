@@ -51,10 +51,6 @@ const StakingList = ({ staking, asset, accounts, wallets, explorers, addressPref
 
   const isAllAccountsSelected = accounts.length > 0 && selectedAccounts.length === paritySignerAccs.length;
 
-  const accountData = accounts.reduce<Record<AccountID, AccountDS>>((acc, account) => {
-    return account.accountId ? { ...acc, [account.accountId]: account } : acc;
-  }, {});
-
   const walletNames = wallets.reduce<Record<string, string>>((acc, wallet) => {
     return wallet.id ? { ...acc, [wallet.id]: wallet.name } : acc;
   }, {});
@@ -66,24 +62,23 @@ const StakingList = ({ staking, asset, accounts, wallets, explorers, addressPref
     return { ...acc, [account.id.toString()]: account.name };
   }, {});
 
-  const getTotalStakeInfo = Object.entries(staking).reduce<AccountStakeInfo[]>((acc, [address, stake]) => {
-    const accountMatch = accountData[address];
-    if (!accountMatch) return acc;
+  const getTotalStakeInfo = accounts.reduce<AccountStakeInfo[]>((acc, account) => {
+    if (!account.accountId) return acc;
 
-    let walletName = accountMatch.walletId ? walletNames[accountMatch.walletId.toString()] : '';
-    if (accountMatch.rootId) {
+    let walletName = account.walletId ? walletNames[account.walletId.toString()] : '';
+    if (account.rootId) {
       //eslint-disable-next-line i18next/no-literal-string
-      walletName += `- ${rootNames[accountMatch.rootId.toString()]}`;
+      walletName += `- ${rootNames[account.rootId.toString()]}`;
     }
 
     return acc.concat({
-      address,
       walletName,
-      signingType: accountMatch.signingType,
-      accountName: accountMatch.name,
-      isSelected: selectedAccounts.includes(address),
-      totalStake: stake?.total || '0',
-      totalReward: isLoading ? undefined : rewards[address],
+      address: account.accountId,
+      signingType: account.signingType,
+      accountName: account.name,
+      isSelected: selectedAccounts.includes(account.accountId),
+      totalStake: staking[account.accountId]?.total || '0',
+      totalReward: isLoading ? undefined : rewards[account.accountId],
     });
   }, []);
 

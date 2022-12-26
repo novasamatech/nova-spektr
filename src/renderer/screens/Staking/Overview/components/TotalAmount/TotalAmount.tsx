@@ -21,6 +21,7 @@ type Props = {
 const TotalAmount = ({ totalStakes, asset, accounts, addressPrefix }: Props) => {
   const { t } = useI18n();
   const { rewards, isLoading } = useStakingRewards(accounts, addressPrefix);
+
   const totalInfo = [
     {
       isLoading: isLoading,

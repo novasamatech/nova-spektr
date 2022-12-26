@@ -26,7 +26,7 @@ jest.mock('@renderer/services/staking/stakingDataService', () => ({
     },
     getMaxValidators: jest.fn().mockReturnValue(6),
     getValidators: jest.fn(),
-    subscribeActiveEra: jest.fn(),
+    subscribeActiveEra: jest.fn().mockImplementation((chain: any, api: any, eraCallback: any) => eraCallback(1)),
   }),
 }));
 
