@@ -79,7 +79,9 @@ const Balances = () => {
             onChange={(e) => setQuery(e.target.value)}
           />
           <div className="text-sm text-neutral font-semibold flex gap-2.5">
-            {t('balances.hideZeroBalancesLabel')} <Switch checked={hideZeroBalance} onChange={updateHideZeroBalance} />
+            <Switch checked={hideZeroBalance} onChange={updateHideZeroBalance}>
+              {t('balances.hideZeroBalancesLabel')}
+            </Switch>
           </div>
         </div>
 

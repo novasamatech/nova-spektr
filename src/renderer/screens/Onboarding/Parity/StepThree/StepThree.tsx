@@ -61,7 +61,7 @@ const StepThree = ({ qrData, onNextStep }: Props) => {
 
   const formatAccount = (newAccount: SeedInfo): SimpleSeedInfo => {
     return {
-      address: toAddress(u8aToHex(newAccount.multiSigner?.public), 0),
+      address: newAccount.multiSigner ? toAddress(u8aToHex(newAccount.multiSigner?.public), 0) : '',
       derivedKeys: groupDerivedKeys(newAccount.derivedKeys),
     };
   };
@@ -142,20 +142,20 @@ const StepThree = ({ qrData, onNextStep }: Props) => {
   const activeWalletsHaveName = walletIds.every((walletId) => inactiveAccounts[walletId] || accountNames[walletId]);
 
   const saveRootAccount = async (address: string, accountIndex: number, walletId: IndexableType) => {
-    const rootAccountId = getAccountId(accountIndex);
+    const rootAccountNameId = getAccountId(accountIndex);
 
-    const account = createAccount({
-      name: accountNames[rootAccountId],
+    const rootAccount = createAccount({
+      name: accountNames[rootAccountNameId],
       signingType: SigningType.PARITY_SIGNER,
       accountId: address,
       walletId,
     });
 
-    const mainAccountId = await addAccount(account);
+    const rootAccountId = await addAccount(rootAccount);
 
-    toggleActiveAccount(mainAccountId);
+    toggleActiveAccount(rootAccountId);
 
-    return mainAccountId;
+    return rootAccountId;
   };
 
   const createDerivedAccounts = (
@@ -266,47 +266,49 @@ const StepThree = ({ qrData, onNextStep }: Props) => {
 
             {accounts.map((account, accountIndex) => (
               <div key={getAccountId(accountIndex)}>
-                <div className="flex w-full gap-4">
-                  <div className="flex-1">
-                    <Input
-                      disabled
-                      disabledStyle={inactiveAccounts[getAccountId(accountIndex)]}
-                      placeholder={t('onboarding.paritySigner.accountAddressPlaceholder')}
-                      value={getShortAddress(account.address, 10)}
-                      wrapperClass={cn('flex items-center')}
-                      prefixElement={<Identicon size={20} address={account.address} background={false} />}
-                      suffixElement={
-                        <Menu>
-                          <Menu.Button className={'hover:bg-primary hover:text-white px-1 rounded-2xl'}>
-                            {t('accountList.menuButton')}
-                          </Menu.Button>
-                          <Menu.Items
-                            className={
-                              'bg-white z-10 absolute right-0 top-0 rounded-2lg shadow-surface w-max border-2 border-shade-5 p-2.5'
-                            }
-                          >
-                            <Menu.Item key={1}>
-                              {({ active }) => (
-                                <Button
-                                  variant="text"
-                                  pallet="dark"
-                                  className={cn('font-normal text-neutral', active && 'bg-primary text-white')}
-                                  prefixElement={<Icon as="img" name="checkmark" />}
-                                  onClick={() => {
-                                    setCurrentPublicKey(toPublicKey(account.address));
-                                    toggleAccountsModal();
-                                  }}
-                                >
-                                  {t('onboarding.paritySigner.checkAddress')}
-                                </Button>
-                              )}
-                            </Menu.Item>
-                          </Menu.Items>
-                        </Menu>
-                      }
-                    />
-                  </div>
-                  <div className="flex flex-1 items-center">
+                <div className="grid grid-cols-2 w-full gap-4">
+                  {account.address && (
+                    <div className="col-span-1">
+                      <Input
+                        disabled
+                        disabledStyle={inactiveAccounts[getAccountId(accountIndex)]}
+                        placeholder={t('onboarding.paritySigner.accountAddressPlaceholder')}
+                        value={getShortAddress(account.address, 10)}
+                        wrapperClass={cn('flex items-center')}
+                        prefixElement={<Identicon size={20} address={account.address} background={false} />}
+                        suffixElement={
+                          <Menu>
+                            <Menu.Button className="flex items-center hover:bg-primary hover:text-white px-1 rounded-2xl">
+                              <Icon name="options" size={20} />
+                            </Menu.Button>
+                            <Menu.Items
+                              className={
+                                'bg-white z-10 absolute right-0 top-0 rounded-2lg shadow-surface w-max border-2 border-shade-5 p-2.5'
+                              }
+                            >
+                              <Menu.Item key={1}>
+                                {({ active }) => (
+                                  <Button
+                                    variant="text"
+                                    pallet="dark"
+                                    className={cn('font-normal text-neutral', active && 'bg-primary text-white')}
+                                    prefixElement={<Icon as="img" name="checkmark" />}
+                                    onClick={() => {
+                                      setCurrentPublicKey(toPublicKey(account.address));
+                                      toggleAccountsModal();
+                                    }}
+                                  >
+                                    {t('onboarding.paritySigner.checkAddress')}
+                                  </Button>
+                                )}
+                              </Menu.Item>
+                            </Menu.Items>
+                          </Menu>
+                        }
+                      />
+                    </div>
+                  )}
+                  <div className="col-span-1 flex flex-1 items-center">
                     <Input
                       className="text-primary"
                       disabled={inactiveAccounts[getAccountId(accountIndex)]}

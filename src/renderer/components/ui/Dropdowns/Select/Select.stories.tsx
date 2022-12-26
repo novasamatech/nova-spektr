@@ -9,7 +9,7 @@ export default {
   parameters: { actions: { argTypesRegex: '^on.*' } },
   decorators: [
     (Story) => (
-      <div className="mt-28">
+      <div className="mt-28 w-[280px]">
         <Story />
       </div>
     ),
@@ -59,6 +59,6 @@ export const PreSelected = Template.bind({});
 PreSelected.args = {
   placeholder: 'Select options',
   summary: 'Summary',
-  activeIds: [options[0].id, options[2].id],
+  activeIds: [options[1].id, options[2].id],
   options,
 };

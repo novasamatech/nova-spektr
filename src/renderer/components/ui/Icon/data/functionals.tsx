@@ -1,5 +1,6 @@
 import CopyImg, { ReactComponent as CopySvg } from '@images/functionals/copy.svg';
 import QrImg, { ReactComponent as QrSvg } from '@images/functionals/qr.svg';
+import QrLineImg, { ReactComponent as QrLineSvg } from '@images/functionals/qr-line.svg';
 import QrSimpleImg, { ReactComponent as QrSimpleSvg } from '@images/functionals/qr-simple.svg';
 import QrCutoutImg, { ReactComponent as QrCutoutSvg } from '@images/functionals/qr-cutout.svg';
 import CloseCutoutImg, { ReactComponent as CloseCutoutSvg } from '@images/functionals/close-cutout.svg';
@@ -22,10 +23,12 @@ import AddLineImg, { ReactComponent as AddLineSvg } from '@images/functionals/ad
 import ClearOutlineImg, { ReactComponent as ClearOutlineSvg } from '@images/functionals/clear-outline.svg';
 import EditOutlineImg, { ReactComponent as EditOutlineSvg } from '@images/functionals/edit-outline.svg';
 import DeleteOutlineImg, { ReactComponent as DeleteOutlineSvg } from '@images/functionals/delete-outline.svg';
+import OptionsImg, { ReactComponent as OptionsSvg } from '@images/functionals/options.svg';
 
 const FunctionalImages = {
   copy: { svg: CopySvg, img: CopyImg },
   qr: { svg: QrSvg, img: QrImg },
+  qrLine: { svg: QrLineSvg, img: QrLineImg },
   qrSimple: { svg: QrSimpleSvg, img: QrSimpleImg },
   qrCutout: { svg: QrCutoutSvg, img: QrCutoutImg },
   closeCutout: { svg: CloseCutoutSvg, img: CloseCutoutImg },
@@ -48,6 +51,7 @@ const FunctionalImages = {
   clearOutline: { svg: ClearOutlineSvg, img: ClearOutlineImg },
   editOutline: { svg: EditOutlineSvg, img: EditOutlineImg },
   deleteOutline: { svg: DeleteOutlineSvg, img: DeleteOutlineImg },
+  options: { svg: OptionsSvg, img: OptionsImg },
 } as const;
 
 export type Functional = keyof typeof FunctionalImages;

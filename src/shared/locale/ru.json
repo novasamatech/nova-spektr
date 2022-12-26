@@ -1,8 +1,4 @@
 {
-  "accountList": {
-    "explorerButton": "Открыть в { name }",
-    "menuButton": "•••"
-  },
   "addressBook": {
     "title": "Адресная книга"
   },
@@ -32,6 +28,9 @@
     "reloadButton": "Перезагрузить"
   },
   "general": {
+    "explorers": {
+      "explorerButton": "Открыть в { name }"
+    },
     "input": {
       "amountLabel": "Сумма",
       "transferableLabel": "Доступно"
@@ -300,6 +299,8 @@
     "wallet": "Кошелёк"
   },
   "wallets": {
+    "addByParitySignerButton": "Добавить кошелёк из Parity Signer",
+    "addWatchOnlyButton": "Добавить Watch-Only кошелёк",
     "multishardWalletsLabel": "Multishard",
     "paritySignerLabel": "Parity Signer",
     "searchPlaceholder": "Поиск кошелька",

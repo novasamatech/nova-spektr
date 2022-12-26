@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Trans } from 'react-i18next';
 
-import { StakingMap } from '@renderer/services/staking/common/types';
 import { Dropdown, Icon, Input } from '@renderer/components/ui';
 import { Option, ResultOption } from '@renderer/components/ui/Dropdowns/common/types';
 import { useGraphql } from '@renderer/context/GraphqlContext';
@@ -14,9 +13,10 @@ import TotalAmount from '@renderer/screens/Staking/Overview/components/TotalAmou
 import { useAccount } from '@renderer/services/account/accountService';
 import { useChains } from '@renderer/services/network/chainsService';
 import { useSettingsStorage } from '@renderer/services/settings/settingsStorage';
+import { StakingMap } from '@renderer/services/staking/common/types';
 import { useStakingData } from '@renderer/services/staking/stakingDataService';
 import { useWallet } from '@renderer/services/wallet/walletService';
-import { AboutStaking, Filter, InactiveChain, InfoBanners, NoAccounts, StakingList } from './components';
+import { InactiveChain, NoAccounts, StakingList } from './components';
 
 type NetworkOption = { asset: Asset; addressPrefix: number };
 
@@ -121,7 +121,7 @@ const Overview = () => {
       <h1 className="font-semibold text-2xl text-neutral mb-9">{t('staking.title')}</h1>
 
       <div className="w-[900px] p-5 mx-auto bg-shade-2 rounded-2lg">
-        <div className="flex items-center">
+        <div className="flex items-center mb-5">
           <p className="text-xl text-neutral mr-5">
             <Trans
               t={t}
@@ -148,8 +148,9 @@ const Overview = () => {
 
         {isNetworkActive && activeAccounts.length > 0 && (
           <>
-            <AboutStaking asset={activeNetwork?.value.asset} />
-            <InfoBanners />
+            {/* TODO: not in current sprint */}
+            {/*<AboutStaking asset={activeNetwork?.value.asset} />*/}
+            {/*<InfoBanners />*/}
 
             <div className="flex items-center justify-between">
               <Input
@@ -159,7 +160,7 @@ const Overview = () => {
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
               />
-              <Filter />
+              {/*<Filter />*/}
             </div>
 
             <StakingList
