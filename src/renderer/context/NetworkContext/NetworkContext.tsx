@@ -78,11 +78,13 @@ export const NetworkProvider = ({ children }: PropsWithChildren) => {
   };
 
   useEffect(() => {
-    const publicKeys = activeAccounts.reduce<PublicKey[]>((acc, account) => {
-      return account.publicKey ? [...acc, account.publicKey] : acc;
-    }, []);
-
     Object.values(connections).forEach((chain) => {
+      const publicKeys = activeAccounts.reduce<PublicKey[]>((acc, account) => {
+        return account.publicKey && (!account.rootId || account.chainId === chain.chainId)
+          ? [...acc, account.publicKey]
+          : acc;
+      }, []);
+
       subscribeBalanceChanges(chain, publicKeys);
     });
   }, [connections, activeAccounts.length]);
