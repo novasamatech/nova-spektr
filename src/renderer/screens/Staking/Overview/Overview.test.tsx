@@ -88,14 +88,10 @@ describe('screens/Staking/Overview', () => {
     });
 
     const title = screen.getByText('staking.title');
-    const aboutStaking = screen.getByText('aboutStaking');
-    const infoBanners = screen.getByText('infoBanners');
     const filter = screen.getByText('filter');
     const stakingList = screen.getByText('stakingList');
     const totalAmount = screen.getByText('totalAmount');
     expect(title).toBeInTheDocument();
-    expect(aboutStaking).toBeInTheDocument();
-    expect(infoBanners).toBeInTheDocument();
     expect(filter).toBeInTheDocument();
     expect(stakingList).toBeInTheDocument();
     expect(totalAmount).toBeInTheDocument();
