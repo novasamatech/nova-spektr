@@ -138,7 +138,6 @@ const QrReader = ({ size = 300, cameraId, className, onCameraList, onResult, onP
     if (collected.has(blockNumber)) return;
 
     collected.add(blockNumber);
-    console.log(collected, blockNumber, newSize);
     onProgress?.({ decoded: collected.size, total });
 
     for (const [key, packet] of packets.current) {
