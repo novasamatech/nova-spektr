@@ -17,6 +17,7 @@ export type Account = {
   isMain: boolean;
   signingExtras?: Record<string, any>;
   isActive: boolean;
+  derivationPath?: string;
 };
 
 export function createAccount({
@@ -27,6 +28,7 @@ export function createAccount({
   walletId,
   signingType,
   signingExtras,
+  derivationPath,
 }: Omit<Account, 'publicKey' | 'cryptoType' | 'chainType' | 'isMain' | 'isActive'>): Account {
   return {
     publicKey: toPublicKey(accountId),
@@ -41,5 +43,6 @@ export function createAccount({
     isMain: false,
     signingExtras,
     isActive: false,
+    derivationPath,
   } as Account;
 }

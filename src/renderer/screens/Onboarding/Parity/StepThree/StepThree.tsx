@@ -179,6 +179,7 @@ const StepThree = ({ qrData, onNextStep }: Props) => {
           accountId: derivedKey.address,
           chainId: chainId as ChainId,
           walletId,
+          derivationPath: derivedKey.derivationPath,
         }),
       ];
     }, []);

@@ -5,14 +5,14 @@ import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 
 import { QrTxGenerator } from '@renderer/components/common';
-import { Button, ButtonBack, Icon } from '@renderer/components/ui';
+import { Address, Button, ButtonBack, Dropdown, Icon } from '@renderer/components/ui';
 import { useI18n } from '@renderer/context/I18nContext';
 import { useNetworkContext } from '@renderer/context/NetworkContext';
 import { Asset, AssetType, OrmlExtras, StatemineExtras } from '@renderer/domain/asset';
-import { ChainId, HexString } from '@renderer/domain/shared-kernel';
+import { ChainId, HexString, SigningType } from '@renderer/domain/shared-kernel';
 import { Transaction, TransactionType } from '@renderer/domain/transaction';
 import { useBalance } from '@renderer/services/balance/balanceService';
-import { formatAmount, transferable } from '@renderer/services/balance/common/utils';
+import { formatAmount, toAddress, transferable } from '@renderer/services/balance/common/utils';
 import { useChains } from '@renderer/services/network/chainsService';
 import { useTransaction } from '@renderer/services/transaction/transactionService';
 import { formatAddress, toPublicKey, validateAddress } from '@renderer/utils/address';
@@ -22,6 +22,8 @@ import ParitySignerSignatureReader from '../Signing/ParitySignerSignatureReader/
 import { ValidationErrors } from './common/constants';
 import { useAccount } from '@renderer/services/account/accountService';
 import { Message, SelectedAddress, TransferDetails, TransferForm } from './components';
+import { AccountDS } from '@renderer/services/storage';
+import { Option, ResultOption } from '@renderer/components/ui/Dropdowns/common/types';
 
 const enum Steps {
   CREATING,
@@ -59,9 +61,17 @@ const Transfer = () => {
   const [validationError, setValidationError] = useState<ValidationErrors>();
   const [_, setBalance] = useState('');
 
-  const activeAccounts = getActiveAccounts();
+  const activeAccounts = getActiveAccounts().filter((account) => !account.rootId || account.chainId === chainId);
+  const [currentAccount, setCurrentAccount] = useState<AccountDS>();
 
-  const currentAccount = activeAccounts.find((account) => !account.rootId || account.chainId === chainId);
+  useEffect(() => {
+    if (activeAccounts.length > 0 && !currentAccount) {
+      setCurrentAccount(activeAccounts[0]);
+    }
+  }, [activeAccounts.length]);
+
+  const [activeAccountsOptions, setActiveAccountsOptions] = useState<Option<number>[]>([]);
+
   const currentConnection = chainId ? connections[chainId as ChainId] : undefined;
   const currentAsset =
     assetId && currentConnection
@@ -197,6 +207,38 @@ const Transfer = () => {
     }
   };
 
+  useEffect(() => {
+    const accounts = activeAccounts.reduce<Option[]>((acc, account, index) => {
+      if (account.chainId !== undefined && account.chainId !== currentConnection?.chainId) return acc;
+      const address = toAddress(account.publicKey || '0x00', currentConnection?.addressPrefix);
+
+      const accountType =
+        account.signingType === SigningType.PARITY_SIGNER ? 'paritySignerBackground' : 'watchOnlyBackground';
+
+      const accountOption = {
+        id: address,
+        value: index,
+        element: (
+          <div className="grid grid-rows-2 grid-flow-col gap-x-2.5">
+            <Icon className="row-span-2 self-center" name={accountType} size={34} />
+            <p className="text-left text-neutral text-lg font-semibold leading-5">{account.name}</p>
+            <Address type="short" address={address} canCopy={false} />
+          </div>
+        ),
+      };
+
+      return acc.concat(accountOption);
+    }, []);
+
+    if (accounts.length === 0) return;
+
+    setActiveAccountsOptions(accounts);
+  }, [activeAccounts.length, currentConnection?.chainId]);
+
+  const setActiveAccount = (account: ResultOption<number>) => {
+    setCurrentAccount(activeAccounts[account.value]);
+  };
+
   // TS doesn't work with Boolean type
   const readyToCreate = !!(currentAccount && currentAsset && currentAddress && currentConnection);
   const readyToConfirm = !!(readyToCreate && transaction);
@@ -217,14 +259,28 @@ const Transfer = () => {
 
       <div>
         {currentStep === Steps.CREATING && readyToCreate && (
-          <TransferForm
-            account={currentAccount}
-            asset={currentAsset}
-            connection={currentConnection}
-            onCreateTransaction={addTransaction}
-          />
+          <div className="w-[500px] rounded-2xl bg-shade-2 p-5 flex flex-col items-center m-auto gap-2.5">
+            {activeAccountsOptions.length > 1 ? (
+              <div className="w-full mb-2.5 p-5 bg-white">
+                <Dropdown
+                  weight="lg"
+                  placeholder={t('receive.selectWalletPlaceholder')}
+                  activeId={currentAccount?.accountId}
+                  options={activeAccountsOptions}
+                  onChange={setActiveAccount}
+                />
+              </div>
+            ) : (
+              <SelectedAddress account={currentAccount} connection={currentConnection} />
+            )}
+            <TransferForm
+              account={currentAccount}
+              asset={currentAsset}
+              connection={currentConnection}
+              onCreateTransaction={addTransaction}
+            />
+          </div>
         )}
-
         {currentStep === Steps.CONFIRMATION && readyToConfirm && (
           <>
             <TransferDetails
@@ -238,7 +294,6 @@ const Transfer = () => {
             </Button>
           </>
         )}
-
         {[Steps.SCANNING, Steps.SIGNING].includes(currentStep) && currentConnection && (
           <div className="w-[500px] rounded-2xl bg-shade-2 p-5 flex flex-col items-center m-auto gap-2.5 overflow-auto">
             {currentAccount && currentConnection && (
@@ -348,7 +403,6 @@ const Transfer = () => {
             )}
           </div>
         )}
-
         {currentStep === Steps.EXECUTING && readyToConfirm && (
           <>
             <TransferDetails

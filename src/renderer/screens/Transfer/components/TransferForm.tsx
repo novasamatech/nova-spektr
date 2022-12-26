@@ -9,7 +9,6 @@ import { useI18n } from '@renderer/context/I18nContext';
 import { Asset, AssetType, OrmlExtras, StatemineExtras } from '@renderer/domain/asset';
 import { formatAddress, pasteAddressHandler, toPublicKey, validateAddress } from '@renderer/utils/address';
 import { ExtendedChain } from '@renderer/services/network/common/types';
-import SelectedAddress from './SelectedAddress';
 import { Transaction, TransactionType } from '@renderer/domain/transaction';
 import { useBalance } from '@renderer/services/balance/balanceService';
 import { formatAmount, transferable } from '@renderer/services/balance/common/utils';
@@ -69,6 +68,7 @@ const TransferForm = ({ onCreateTransaction, account, asset, connection }: Props
     (async () => {
       const publicKey = toPublicKey(currentAddress) || '0x';
       setNativeTokenBalance(undefined);
+
       if (asset.assetId !== 0) {
         const nativeTokenBalance = await getBalance(publicKey, connection.chainId, '0');
 
@@ -147,105 +147,101 @@ const TransferForm = ({ onCreateTransaction, account, asset, connection }: Props
   };
 
   return (
-    <div>
-      <div className="w-[500px] rounded-2xl bg-shade-2 p-5 flex flex-col items-center m-auto gap-2.5">
-        {connection && account && <SelectedAddress account={account} connection={connection} />}
+    <>
+      <form
+        id="transferForm"
+        className="flex flex-col gap-5 bg-white shadow-surface p-5 rounded-2xl w-full"
+        onSubmit={handleSubmit(addTransaction)}
+      >
+        <p>
+          <Trans t={t} i18nKey="transfer.formTitle" values={{ asset: asset.symbol, network: connection.name }} />
+        </p>
+        <Controller
+          name="address"
+          control={control}
+          rules={{ required: true, validate: validateAddress }}
+          render={({ field: { onChange, value }, fieldState: { error } }) => (
+            <>
+              <Input
+                prefixElement={
+                  value && !error ? <Identicon address={value} background={false} /> : <Icon name="emptyIdenticon" />
+                }
+                suffixElement={
+                  value ? (
+                    <button className="text-neutral" type="button" onClick={() => resetField('address')}>
+                      <Icon name="clearOutline" />
+                    </button>
+                  ) : (
+                    <Button variant="outline" pallet="primary" onClick={pasteAddressHandler(onChange)}>
+                      {t('transfer.pasteButton')}
+                    </Button>
+                  )
+                }
+                invalid={Boolean(error)}
+                value={value}
+                name="address"
+                className="w-full"
+                label={t('transfer.recipientLabel')}
+                placeholder={t('transfer.recipientLabel')}
+                onChange={onChange}
+              />
+              <InputHint active={error?.type === 'validate'} variant="error">
+                {t('transfer.incorrectRecipientError')}
+              </InputHint>
+              <InputHint active={error?.type === 'required'} variant="error">
+                {t('transfer.requiredRecipientError')}
+              </InputHint>
+            </>
+          )}
+        />
 
-        <form
-          id="transferForm"
-          className="flex flex-col gap-5 bg-white shadow-surface p-5 rounded-2xl w-full"
-          onSubmit={handleSubmit(addTransaction)}
-        >
-          <p>
-            <Trans t={t} i18nKey="transfer.formTitle" values={{ asset: asset.symbol, network: connection.name }} />
-          </p>
-          <Controller
-            name="address"
-            control={control}
-            rules={{ required: true, validate: validateAddress }}
-            render={({ field: { onChange, value }, fieldState: { error } }) => (
-              <>
-                <Input
-                  prefixElement={
-                    value && !error ? <Identicon address={value} background={false} /> : <Icon name="emptyIdenticon" />
-                  }
-                  suffixElement={
-                    value ? (
-                      <button className="text-neutral" type="button" onClick={() => resetField('address')}>
-                        <Icon name="clearOutline" />
-                      </button>
-                    ) : (
-                      <Button variant="outline" pallet="primary" onClick={pasteAddressHandler(onChange)}>
-                        {t('transfer.pasteButton')}
-                      </Button>
-                    )
-                  }
-                  invalid={Boolean(error)}
-                  value={value}
-                  name="address"
-                  className="w-full"
-                  label={t('transfer.recipientLabel')}
-                  placeholder={t('transfer.recipientLabel')}
-                  onChange={onChange}
-                />
-                <InputHint active={error?.type === 'validate'} variant="error">
-                  {t('transfer.incorrectRecipientError')}
-                </InputHint>
-                <InputHint active={error?.type === 'required'} variant="error">
-                  {t('transfer.requiredRecipientError')}
-                </InputHint>
-              </>
-            )}
+        <Controller
+          name="amount"
+          control={control}
+          rules={{
+            required: true,
+            validate: {
+              notZero: (v) => Number(v) > 0,
+              insufficientBalance: validateBalance,
+              insufficientBalanceForFee: validateBalanceForFee,
+            },
+          }}
+          render={({ field: { onChange, value }, fieldState: { error } }) => (
+            <>
+              <AmountInput
+                value={value}
+                placeholder={t('transfer.amountPlaceholder')}
+                asset={asset}
+                balance={balance}
+                onChange={onChange}
+              />
+              <InputHint active={error?.type === 'insufficientBalance'} variant="error">
+                {t('transfer.notEnoughBalanceError')}
+              </InputHint>
+              <InputHint active={error?.type === 'insufficientBalanceForFee'} variant="error">
+                {t('transfer.notEnoughBalanceForFeeError')}
+              </InputHint>
+              <InputHint active={error?.type === 'required'} variant="error">
+                {t('transfer.requiredAmountError')}
+              </InputHint>
+              <InputHint active={error?.type === 'notZero'} variant="error">
+                {t('transfer.requiredAmountError')}
+              </InputHint>
+            </>
+          )}
+        />
+
+        <div className="flex justify-between items-center uppercase text-neutral-variant text-2xs">
+          <div>{t('transfer.networkFee')}</div>
+
+          <Fee
+            className="text-neutral font-semibold"
+            api={connection.api}
+            asset={connection.assets[0]}
+            transaction={transaction}
           />
-
-          <Controller
-            name="amount"
-            control={control}
-            rules={{
-              required: true,
-              validate: {
-                notZero: (v) => Number(v) > 0,
-                insufficientBalance: validateBalance,
-                insufficientBalanceForFee: validateBalanceForFee,
-              },
-            }}
-            render={({ field: { onChange, value }, fieldState: { error } }) => (
-              <>
-                <AmountInput
-                  value={value}
-                  placeholder={t('transfer.amountPlaceholder')}
-                  asset={asset}
-                  balance={balance}
-                  onChange={onChange}
-                />
-                <InputHint active={error?.type === 'insufficientBalance'} variant="error">
-                  {t('transfer.notEnoughBalanceError')}
-                </InputHint>
-                <InputHint active={error?.type === 'insufficientBalanceForFee'} variant="error">
-                  {t('transfer.notEnoughBalanceForFeeError')}
-                </InputHint>
-                <InputHint active={error?.type === 'required'} variant="error">
-                  {t('transfer.requiredAmountError')}
-                </InputHint>
-                <InputHint active={error?.type === 'notZero'} variant="error">
-                  {t('transfer.requiredAmountError')}
-                </InputHint>
-              </>
-            )}
-          />
-
-          <div className="flex justify-between items-center uppercase text-neutral-variant text-2xs">
-            <div>{t('transfer.networkFee')}</div>
-
-            <Fee
-              className="text-neutral font-semibold"
-              api={connection.api}
-              asset={connection.assets[0]}
-              transaction={transaction}
-            />
-          </div>
-        </form>
-      </div>
+        </div>
+      </form>
 
       <Button
         disabled={!isValid}
@@ -258,7 +254,7 @@ const TransferForm = ({ onCreateTransaction, account, asset, connection }: Props
       >
         {t('transfer.continueButton')}
       </Button>
-    </div>
+    </>
   );
 };
 
