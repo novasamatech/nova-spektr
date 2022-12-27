@@ -42,7 +42,7 @@ export function createAccount({
     signingType,
     isMain: false,
     signingExtras,
-    isActive: false,
+    isActive: true,
     derivationPath,
   } as Account;
 }

@@ -34,7 +34,7 @@ const StepThree = ({ qrData, onNextStep }: Props) => {
   const { getChainsData, sortChains } = useChains();
   const [isAccountsModalOpen, toggleAccountsModal] = useToggle();
   const [isQrModalOpen, toggleQrModal] = useToggle();
-  const { addAccount, toggleActiveAccount } = useAccount();
+  const { addAccount } = useAccount();
   const { addWallet } = useWallet();
 
   const [chains, setChains] = useState<Chain[]>([]);
@@ -152,8 +152,6 @@ const StepThree = ({ qrData, onNextStep }: Props) => {
     });
 
     const rootAccountId = await addAccount(rootAccount);
-
-    toggleActiveAccount(rootAccountId);
 
     return rootAccountId;
   };
