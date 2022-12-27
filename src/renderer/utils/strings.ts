@@ -30,6 +30,7 @@ export const validateSignerFormat = (value: string): boolean => {
 /**
  * Copies string value to clipboard
  * @param text value to copy
+ * @return {Promise}
  */
 export const copyToClipboard = async (text = ''): Promise<void> => {
   try {
@@ -37,4 +38,14 @@ export const copyToClipboard = async (text = ''): Promise<void> => {
   } catch (error) {
     console.warn('Clipboard is not supported');
   }
+};
+
+/**
+ * Check does arguments contain query string
+ * @param query string value
+ * @param args values to be checked
+ * @return {Boolean}
+ */
+export const isStringsMatchQuery = (query: string, args: string[]): boolean => {
+  return args.reduce((acc, word) => acc.concat(word.toLowerCase()), '').includes(query.toLowerCase());
 };

@@ -18,13 +18,13 @@ describe('screens/Staking/Overview/StakingListItem', () => {
     signingType: SigningType.PARITY_SIGNER,
     accountName: 'Account name',
     walletName: 'Wallet name - Root name',
-    isSelected: false,
+    accountIsSelected: false,
     totalReward: '100',
     totalStake: '200',
   };
 
   test('should render component', () => {
-    render(<StakingListItem stakeInfo={stakeInfo} asset={asset} addressPrefix={0} onChecked={() => {}} />);
+    render(<StakingListItem stakeInfo={stakeInfo} asset={asset} addressPrefix={0} onSelect={() => {}} />);
 
     const accountName = screen.getByText(stakeInfo.accountName);
     const subName = screen.getByText(stakeInfo.walletName);
@@ -35,7 +35,7 @@ describe('screens/Staking/Overview/StakingListItem', () => {
   });
 
   test('should render loading state', () => {
-    render(<StakingListItem stakeInfo={stakeInfo} onChecked={() => {}} />);
+    render(<StakingListItem stakeInfo={stakeInfo} onSelect={() => {}} />);
 
     const amounts = screen.queryByText('assetBalance.number');
     expect(amounts).not.toBeInTheDocument();

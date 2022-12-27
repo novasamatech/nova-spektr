@@ -247,6 +247,8 @@
     "overview": {
       "aboutStakingLabel": "About { asset } staking",
       "accountTableHeader": "Accounts",
+      "emptyFilterDescription": "Try another filter parameters",
+      "emptyFilterLabel": "No results",
       "filterButton": "Filters",
       "networkDisabledDescription": "Please, to go the network settings and check the connection",
       "networkDisabledLabel": "Network is inactive",

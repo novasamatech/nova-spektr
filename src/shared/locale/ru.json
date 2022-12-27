@@ -247,6 +247,8 @@
     "overview": {
       "aboutStakingLabel": "О стейкинге { asset } токенов",
       "accountTableHeader": "Аккаунты",
+      "emptyFilterDescription": "Попробуйте другие параметры фильтра",
+      "emptyFilterLabel": "Результаты не найдены",
       "filterButton": "Фильтры",
       "networkDisabledDescription": "Пожалуйста, пройдите в настройки сети и проверьте соединение",
       "networkDisabledLabel": "Сеть неактивна",
