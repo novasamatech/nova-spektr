@@ -47,7 +47,7 @@ jest.mock('@renderer/services/account/accountService', () => ({
 
 jest.mock('@renderer/services/wallet/walletService', () => ({
   useWallet: jest.fn().mockReturnValue({
-    getLiveWallets: jest.fn(),
+    getLiveWallets: jest.fn().mockReturnValue([]),
   }),
 }));
 
@@ -62,6 +62,13 @@ jest.mock('@renderer/services/staking/stakingDataService', () => ({
 jest.mock('@renderer/context/I18nContext', () => ({
   useI18n: jest.fn().mockReturnValue({
     t: (key: string) => key,
+  }),
+}));
+
+jest.mock('@renderer/services/staking/stakingRewardsService', () => ({
+  useStakingRewards: jest.fn().mockReturnValue({
+    rewards: {},
+    isLoading: false,
   }),
 }));
 
