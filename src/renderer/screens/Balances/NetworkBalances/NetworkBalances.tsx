@@ -24,15 +24,23 @@ type Props = {
   onReceiveClick?: (asset: Asset) => void;
 };
 
+const sumValues = (firstValue?: string, secondValue?: string): string => {
+  if (firstValue && secondValue) {
+    return new BN(firstValue).add(new BN(secondValue)).toString();
+  }
+
+  return '';
+};
+
 const sumBalances = (firstBalance: Balance, secondBalance?: Balance): Balance => {
   if (!secondBalance) return firstBalance;
 
   return {
     ...firstBalance,
     verified: firstBalance.verified && secondBalance.verified,
-    free: new BN(firstBalance.free || 0).add(new BN(secondBalance.free || 0)).toString(),
-    reserved: new BN(firstBalance.reserved || 0).add(new BN(secondBalance.reserved || 0)).toString(),
-    frozen: new BN(firstBalance.frozen || 0).add(new BN(secondBalance.frozen || 0)).toString(),
+    free: sumValues(firstBalance.free, secondBalance.free),
+    reserved: sumValues(firstBalance.reserved, secondBalance.reserved),
+    frozen: sumValues(firstBalance.frozen, secondBalance.frozen),
     locked: (firstBalance.locked || []).concat(secondBalance.locked || []),
   };
 };
