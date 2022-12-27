@@ -19,7 +19,7 @@ describe('screens/Staking/Overview/StakingList', () => {
       {
         accountName: 'test_ROOT',
         address: '133khBTmxKsWJ6kyybChNadTHyy1kDmpStWNCiEiSdDMAZwS',
-        isSelected: false,
+        accountIsSelected: false,
         signingType: SigningType.PARITY_SIGNER,
         totalReward: undefined,
         totalStake: '5757762883235',

@@ -9,7 +9,6 @@ import { useNetworkContext } from '@renderer/context/NetworkContext';
 import { Asset, StakingType } from '@renderer/domain/asset';
 import { ConnectionStatus, ConnectionType } from '@renderer/domain/connection';
 import { AccountID, ChainId, SigningType } from '@renderer/domain/shared-kernel';
-import { AccountStakeInfo } from '@renderer/screens/Staking/Overview/components/List/common/types';
 import TotalAmount from '@renderer/screens/Staking/Overview/components/TotalAmount/TotalAmount';
 import { useAccount } from '@renderer/services/account/accountService';
 import { useChains } from '@renderer/services/network/chainsService';
@@ -18,7 +17,9 @@ import { StakingMap } from '@renderer/services/staking/common/types';
 import { useStakingData } from '@renderer/services/staking/stakingDataService';
 import { useStakingRewards } from '@renderer/services/staking/stakingRewardsService';
 import { useWallet } from '@renderer/services/wallet/walletService';
-import { InactiveChain, NoAccounts, StakingList } from './components';
+import { isStringsMatchQuery } from '@renderer/utils/strings';
+import { EmptyFilter, InactiveChain, NoAccounts, StakingList } from './components';
+import { AccountStakeInfo } from './components/List/StakingListItem/StakingListItem';
 
 type NetworkOption = { asset: Asset; addressPrefix: number };
 
@@ -37,7 +38,7 @@ const Overview = () => {
 
   const [query, setQuery] = useState('');
   const [selectedAccounts, setSelectedAccounts] = useState<AccountID[]>([]);
-  const [isNetworkActive, setIsNetworkActive] = useState(true);
+  const [networkIsActive, setNetworkIsActive] = useState(true);
   const [activeNetwork, setActiveNetwork] = useState<ResultOption<NetworkOption>>();
   const [stakingNetworks, setStakingNetworks] = useState<Option<NetworkOption>[]>([]);
 
@@ -63,8 +64,8 @@ const Overview = () => {
     const isNotDisabled = connection.connectionType !== ConnectionType.DISABLED;
     const isNotError = connection.connectionStatus !== ConnectionStatus.ERROR;
 
-    setIsNetworkActive(isNotDisabled && isNotError);
-  }, [connection, isNetworkActive]);
+    setNetworkIsActive(isNotDisabled && isNotError);
+  }, [connection, networkIsActive]);
 
   useEffect(() => {
     if (!chainId || !api?.isConnected || accountAddresses.length === 0) return;
@@ -118,6 +119,7 @@ const Overview = () => {
     setActiveNetwork(option);
     setSelectedAccounts([]);
     setStaking({});
+    setQuery('');
   };
 
   const onSelectAllAccounts = () => {
@@ -161,15 +163,11 @@ const Overview = () => {
   }, {});
 
   const rootNames = activeAccounts.reduce<Record<AccountID, string>>((acc, account) => {
-    const isChainOrWatchOnly = account.rootId || account.signingType === SigningType.WATCH_ONLY;
-    if (!account.id || isChainOrWatchOnly) return acc;
+    const chainOrWatchOnlyAccount = account.rootId || account.signingType === SigningType.WATCH_ONLY;
+    if (!account.id || chainOrWatchOnlyAccount) return acc;
 
     return { ...acc, [account.id.toString()]: account.name };
   }, {});
-
-  const matchFilter = (query: string, args: string[]): boolean => {
-    return args.reduce((acc, word) => acc.concat(word.toLowerCase()), '').includes(query.toLowerCase());
-  };
 
   const stakingList = activeAccounts.reduce<AccountStakeInfo[]>((acc, account) => {
     if (!account.accountId) return acc;
@@ -180,13 +178,13 @@ const Overview = () => {
       walletName += `- ${rootNames[account.rootId.toString()]}`;
     }
 
-    if (!query || matchFilter(query, [walletName, account.name, account.accountId])) {
+    if (!query || isStringsMatchQuery(query, [walletName, account.name, account.accountId])) {
       return acc.concat({
         walletName,
         address: account.accountId,
         signingType: account.signingType,
         accountName: account.name,
-        isSelected: selectedAccounts.includes(account.accountId),
+        accountIsSelected: selectedAccounts.includes(account.accountId),
         totalStake: staking[account.accountId]?.total || '0',
         totalReward: isLoading ? undefined : rewards[account.accountId],
       });
@@ -217,7 +215,7 @@ const Overview = () => {
             options={stakingNetworks}
             onChange={onNetworkChange}
           />
-          {isNetworkActive && activeAccounts.length > 0 && (
+          {networkIsActive && activeAccounts.length > 0 && (
             <TotalAmount
               totalStakes={totalStakes}
               asset={activeNetwork?.value.asset}
@@ -227,7 +225,7 @@ const Overview = () => {
           )}
         </div>
 
-        {isNetworkActive && activeAccounts.length > 0 && (
+        {networkIsActive && activeAccounts.length > 0 && (
           <>
             {/* TODO: not in current sprint */}
             {/*<AboutStaking asset={activeNetwork?.value.asset} />*/}
@@ -244,19 +242,23 @@ const Overview = () => {
               {/*<Filter />*/}
             </div>
 
-            <StakingList
-              allAccountsSelected={allAccountsSelected}
-              staking={stakingList}
-              asset={activeNetwork?.value.asset}
-              addressPrefix={activeNetwork?.value.addressPrefix}
-              explorers={explorers}
-              onSelect={onSelectAccount}
-              onSelectAll={onSelectAllAccounts}
-            />
+            {query && stakingList.length === 0 ? (
+              <EmptyFilter />
+            ) : (
+              <StakingList
+                allAccountsSelected={allAccountsSelected}
+                staking={stakingList}
+                asset={activeNetwork?.value.asset}
+                addressPrefix={activeNetwork?.value.addressPrefix}
+                explorers={explorers}
+                onSelect={onSelectAccount}
+                onSelectAll={onSelectAllAccounts}
+              />
+            )}
           </>
         )}
-        {isNetworkActive && !activeAccounts.length && <NoAccounts chainName={connections[chainId]?.name} />}
-        {!isNetworkActive && <InactiveChain />}
+        {networkIsActive && !activeAccounts.length && <NoAccounts chainName={connections[chainId]?.name} />}
+        {!networkIsActive && <InactiveChain />}
       </div>
     </div>
   );
