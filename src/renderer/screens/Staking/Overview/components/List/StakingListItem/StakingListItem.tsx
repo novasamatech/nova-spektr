@@ -3,8 +3,17 @@ import { Balance, Checkbox, Identicon } from '@renderer/components/ui';
 import Shimmering from '@renderer/components/ui/Shimmering/Shimmering';
 import { Asset } from '@renderer/domain/asset';
 import { Explorer } from '@renderer/domain/chain';
-import { SigningType } from '@renderer/domain/shared-kernel';
-import { AccountStakeInfo } from '../common/types';
+import { AccountID, SigningType } from '@renderer/domain/shared-kernel';
+
+export type AccountStakeInfo = {
+  address: AccountID;
+  signingType: SigningType;
+  accountName: string;
+  walletName?: string;
+  accountIsSelected: boolean;
+  totalReward?: string;
+  totalStake?: string;
+};
 
 type Props = {
   stakeInfo: AccountStakeInfo;
@@ -38,7 +47,7 @@ const StakingListItem = ({ stakeInfo, asset, addressPrefix, explorers, onSelect 
       <Checkbox
         className="h-full"
         disabled={stakeInfo.signingType === SigningType.WATCH_ONLY}
-        checked={stakeInfo.isSelected}
+        checked={stakeInfo.accountIsSelected}
         onChange={onSelect}
       >
         <div className="grid grid-flow-col gap-x-1">

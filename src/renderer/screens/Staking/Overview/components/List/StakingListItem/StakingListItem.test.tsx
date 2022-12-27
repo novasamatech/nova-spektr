@@ -18,7 +18,7 @@ describe('screens/Staking/Overview/StakingListItem', () => {
     signingType: SigningType.PARITY_SIGNER,
     accountName: 'Account name',
     walletName: 'Wallet name - Root name',
-    isSelected: false,
+    accountIsSelected: false,
     totalReward: '100',
     totalStake: '200',
   };

@@ -5,8 +5,7 @@ import { useI18n } from '@renderer/context/I18nContext';
 import { Asset } from '@renderer/domain/asset';
 import { Explorer } from '@renderer/domain/chain';
 import { AccountID } from '@renderer/domain/shared-kernel';
-import { AccountStakeInfo } from '../common/types';
-import StakingListItem from '../StakingListItem/StakingListItem';
+import StakingListItem, { AccountStakeInfo } from '../StakingListItem/StakingListItem';
 
 type Props = {
   staking: AccountStakeInfo[];
