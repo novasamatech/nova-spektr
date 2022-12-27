@@ -29,17 +29,17 @@ export const NetworkProvider = ({ children }: PropsWithChildren) => {
 
   const activeAccounts = getActiveAccounts();
 
-  const [connectionsReady, setConnectionReady] = useState(false);
+  const [everyConnectionIsReady, setEveryConnectionIsReady] = useState(false);
 
   useEffect(() => {
     (async () => {
       await setupConnections();
-      setConnectionReady(true);
+      setEveryConnectionIsReady(true);
     })();
   }, []);
 
   useEffect(() => {
-    if (!connectionsReady) return;
+    if (!everyConnectionIsReady) return;
 
     const startNetworks = async () => {
       const requestConnections = Object.values(connections).map(({ connection }) => {
@@ -66,15 +66,19 @@ export const NetworkProvider = ({ children }: PropsWithChildren) => {
       const requests = Object.values(connections).map((connection) => connection.disconnect || (() => {}));
       Promise.allSettled(requests).catch((error) => console.warn('Disconnect all error ==> ', error));
     };
-  }, [connectionsReady]);
+  }, [everyConnectionIsReady]);
 
   const subscribeBalanceChanges = async (chain: ExtendedChain, publicKeys: PublicKey[]) => {
-    if (!hasSubscription(chain.chainId) && chain.api?.isConnected && publicKeys.length) {
-      const relaychain = chain.parentId && connections[chain.parentId];
+    if (!chain.api?.isConnected || !publicKeys.length) return;
 
-      subscribe(chain.chainId, subscribeBalances(chain, relaychain, publicKeys));
-      subscribe(chain.chainId, subscribeLockBalances(chain, publicKeys));
+    if (hasSubscription(chain.chainId)) {
+      unsubscribe(chain.chainId);
     }
+
+    const relaychain = chain.parentId && connections[chain.parentId];
+
+    subscribe(chain.chainId, subscribeBalances(chain, relaychain, publicKeys));
+    subscribe(chain.chainId, subscribeLockBalances(chain, publicKeys));
   };
 
   useEffect(() => {

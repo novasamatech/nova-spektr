@@ -114,7 +114,7 @@ const Wallets = forwardRef<HTMLDivElement, Props>(({ className }, ref) => {
                                 className="w-full h-full"
                                 onChange={(e) => selectWallet(account as WalletStructure, e.target.checked)}
                               >
-                                <div className="flex items-center gap-x-1 overflow-hidden">
+                                <div className="flex flex-1 items-center gap-x-1 overflow-hidden">
                                   <p className="text-neutral text-sm text-semibold truncate">{account.name}</p>
                                   <div className="ml-1 flex items-center justify-center bg-shade-20 w-4 h-4 rounded">
                                     {(account as WalletStructure).amount}
@@ -138,7 +138,7 @@ const Wallets = forwardRef<HTMLDivElement, Props>(({ className }, ref) => {
                                       checked={rootAccount.isActive}
                                       onChange={(e) => selectRootAccount(rootAccount, e.target.checked)}
                                     >
-                                      <div className="flex gap-x-1 items-center overflow-hidden">
+                                      <div className="flex flex-1 gap-x-1 items-center overflow-hidden">
                                         <div className="relative">
                                           {rootAccount.accountId ? (
                                             <Identicon
@@ -183,7 +183,7 @@ const Wallets = forwardRef<HTMLDivElement, Props>(({ className }, ref) => {
                                             checked={chain.isActive}
                                             onChange={(e) => selectChain(chain, e.target.checked)}
                                           >
-                                            <div className="flex items-center gap-x-1 overflow-hidden h-full">
+                                            <div className="flex flex-1 items-center gap-x-1 overflow-hidden h-full">
                                               <div className="rounded-full border border-shade-30 w-[5px] h-[5px] box-border start-tree relative"></div>
                                               <div className="flex items-center uppercase text-shade-40">
                                                 <img
@@ -272,7 +272,7 @@ const Wallets = forwardRef<HTMLDivElement, Props>(({ className }, ref) => {
                             checked={(account as AccountDS).isActive}
                             onChange={() => toggleActiveAccount((account as AccountDS).id || '')}
                           >
-                            <div className="flex gap-x-1 overflow-hidden">
+                            <div className="flex flex-1 gap-x-1 overflow-hidden">
                               <div className="row-span-2 self-center relative">
                                 <Identicon
                                   address={(account as AccountDS).accountId || ''}
