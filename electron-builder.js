@@ -1,10 +1,8 @@
 const { APP_CONFIG } = require('./app.config');
 
-const { NAME, AUTHOR, TITLE, FOLDERS } = APP_CONFIG;
+const { APP_ID, AUTHOR, TITLE, FOLDERS } = APP_CONFIG;
 
 const CURRENT_YEAR = new Date().getFullYear();
-const AUTHOR_IN_KEBAB_CASE = AUTHOR.name.replace(/\s+/g, '-');
-const APP_ID = `com.${AUTHOR_IN_KEBAB_CASE}.${NAME}`.toLowerCase();
 
 module.exports = {
   appId: APP_ID,
@@ -13,18 +11,23 @@ module.exports = {
 
   directories: {
     app: FOLDERS.DEV_BUILD,
-    buildResources: 'resources',
     output: FOLDERS.PROD_BUILD,
   },
 
   mac: {
+    category: 'public.app-category.finance',
+    hardenedRuntime: true,
     icon: `${FOLDERS.RESOURCES}/icons/icon.png`,
-    category: 'public.app-category.utilities',
+    entitlements: `${FOLDERS.RESOURCES}/entitlements/entitlements.mac.plist`,
+    extendInfo: {
+      NSCameraUsageDescription: 'This app requires camera access to import accounts and sign operations',
+    },
     target: {
       target: 'default',
-      arch: ['arm64', 'x64'],
+      arch: ['x64', 'arm64'],
     },
   },
+  afterSign: 'scripts/notarize.js',
 
   dmg: {
     icon: false,
@@ -32,7 +35,7 @@ module.exports = {
 
   linux: {
     icon: `${FOLDERS.RESOURCES}/icons/icon.png`,
-    category: 'Utilities',
+    category: 'Finance',
     target: ['AppImage'],
   },
 
