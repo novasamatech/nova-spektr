@@ -112,6 +112,7 @@ const Wallets = forwardRef<HTMLDivElement, Props>(({ className }, ref) => {
                             <li className="h-10 w-full">
                               <Checkbox
                                 className="w-full h-full"
+                                checked={(account as WalletStructure).isActive}
                                 onChange={(e) => selectWallet(account as WalletStructure, e.target.checked)}
                               >
                                 <div className="flex flex-1 items-center gap-x-1 overflow-hidden">
