@@ -13,9 +13,10 @@ import TotalAmount from '@renderer/screens/Staking/Overview/components/TotalAmou
 import { useAccount } from '@renderer/services/account/accountService';
 import { useChains } from '@renderer/services/network/chainsService';
 import { useSettingsStorage } from '@renderer/services/settings/settingsStorage';
-import { StakingMap } from '@renderer/services/staking/common/types';
+import { StakingMap, ValidatorMap } from '@renderer/services/staking/common/types';
 import { useStakingData } from '@renderer/services/staking/stakingDataService';
 import { useStakingRewards } from '@renderer/services/staking/stakingRewardsService';
+import { useValidators } from '@renderer/services/staking/validatorsService';
 import { useWallet } from '@renderer/services/wallet/walletService';
 import { isStringsMatchQuery } from '@renderer/utils/strings';
 import { EmptyFilter, InactiveChain, NoAccounts, StakingList } from './components';
@@ -31,10 +32,12 @@ const Overview = () => {
   const { getLiveWallets } = useWallet();
   const { sortChains, getChainsData } = useChains();
   const { subscribeActiveEra, subscribeStaking } = useStakingData();
+  const { getValidators } = useValidators();
   const { setStakingNetwork, getStakingNetwork } = useSettingsStorage();
 
-  const [_, setEra] = useState<number>();
+  const [era, setEra] = useState<number>();
   const [staking, setStaking] = useState<StakingMap>({});
+  const [_, setValidators] = useState<ValidatorMap>({});
 
   const [query, setQuery] = useState('');
   const [selectedAccounts, setSelectedAccounts] = useState<AccountID[]>([]);
@@ -68,7 +71,7 @@ const Overview = () => {
   }, [connection, networkIsActive]);
 
   useEffect(() => {
-    if (!chainId || !api?.isConnected || accountAddresses.length === 0) return;
+    if (!api?.isConnected || accountAddresses.length === 0) return;
 
     let unsubEra: () => void | undefined;
     let unsubStaking: () => void | undefined;
@@ -83,6 +86,15 @@ const Overview = () => {
       unsubStaking?.();
     };
   }, [api, accountAddresses.length]);
+
+  useEffect(() => {
+    if (!api?.isConnected || !era) return;
+
+    (async () => {
+      const validators = await getValidators(chainId, api, era);
+      setValidators(validators);
+    })();
+  }, [api, era]);
 
   useEffect(() => {
     (async () => {

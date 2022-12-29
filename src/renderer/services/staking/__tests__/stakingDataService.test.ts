@@ -8,11 +8,7 @@ describe('services/staking/stakingDataService', () => {
       result: { current },
     } = renderHook(() => useStakingData());
 
-    expect(current.validators).toBeDefined();
     expect(current.subscribeActiveEra).toBeDefined();
     expect(current.subscribeStaking).toBeDefined();
-    expect(current.getValidators).toBeDefined();
-    expect(current.getMaxValidators).toBeDefined();
-    expect(current.getNominators).toBeDefined();
   });
 });

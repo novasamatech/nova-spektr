@@ -7,7 +7,6 @@ import { AccountID, ChainId } from '@renderer/domain/shared-kernel';
 // =====================================================
 
 export interface IStakingDataService {
-  validators: ValidatorMap;
   subscribeActiveEra: (chainId: ChainId, api: ApiPromise, callback: (era?: number) => void) => Promise<() => void>;
   subscribeStaking: (
     chainId: ChainId,
@@ -15,9 +14,6 @@ export interface IStakingDataService {
     accounts: AccountID[],
     callback: (staking: StakingMap) => void,
   ) => Promise<() => void>;
-  getValidators: (chainId: ChainId, api: ApiPromise, era: number) => Promise<void>;
-  getMaxValidators: (api: ApiPromise) => number;
-  getNominators: (api: ApiPromise, account: AccountID) => Promise<string[]>;
   getMinNominatorBond: (api: ApiPromise) => Promise<string>;
 }
 
@@ -47,6 +43,16 @@ export interface IStakingTxService {
 export interface IStakingRewardsService {
   rewards: RewardsMap;
   isLoading: boolean;
+}
+
+// =====================================================
+// ============ IStakingDataService interface ==============
+// =====================================================
+
+export interface IValidatorsService {
+  getValidators: (chainId: ChainId, api: ApiPromise, era: number) => Promise<ValidatorMap>;
+  getMaxValidators: (api: ApiPromise) => number;
+  getNominators: (api: ApiPromise, account: AccountID) => Promise<string[]>;
 }
 
 // =====================================================
