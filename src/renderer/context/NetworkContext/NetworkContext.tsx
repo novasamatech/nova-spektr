@@ -27,7 +27,7 @@ export const NetworkProvider = ({ children }: PropsWithChildren) => {
   const { subscribe, hasSubscription, unsubscribeAll } = networkSubscriptions;
   const { connections, setupConnections, connectToNetwork, connectWithAutoBalance, ...rest } =
     useNetwork(networkSubscriptions);
-  const { subscribeBalances } = useBalance();
+  const { subscribeBalances, subscribeLockBalances } = useBalance();
 
   const activeAccounts = getActiveAccounts();
 
@@ -77,12 +77,12 @@ export const NetworkProvider = ({ children }: PropsWithChildren) => {
       const relaychain = chain.parentId && connections[chain.parentId];
 
       subscribe(chain.chainId, subscribeBalances(chain, relaychain, publicKeys));
+      subscribe(chain.chainId, subscribeLockBalances(chain, publicKeys));
     }
   };
 
   useEffect(() => {
     if (!everyConnectionIsReady) return;
-    console.log('connectionsChanged');
 
     (async () => {
       if (activeAccounts.length === 0) {

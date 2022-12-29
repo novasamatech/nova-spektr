@@ -125,7 +125,6 @@ export const validate = async (
     }
 
     const isValid = await validateWithBlockNumber(relaychainApi, parachainApi, blockNumber, key, value.toU8a());
-    console.log('isValid', isValid, parachainApi.genesisHash.toHex());
 
     return isValid;
   } catch (error) {
