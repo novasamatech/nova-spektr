@@ -4,22 +4,6 @@ import { AccountID, ChainId } from '@renderer/domain/shared-kernel';
 import { IStakingDataService, Staking, StakingMap } from './common/types';
 
 export const useStakingData = (): IStakingDataService => {
-  const subscribeActiveEra = (
-    chainId: ChainId,
-    api: ApiPromise,
-    callback: (era?: number) => void,
-  ): Promise<() => void> => {
-    return api.query.staking.activeEra((data: any) => {
-      try {
-        const unwrappedData = data.unwrap();
-        callback(unwrappedData.get('index').toNumber());
-      } catch (error) {
-        console.warn(error);
-        callback(undefined);
-      }
-    });
-  };
-
   const subscribeStaking = async (
     chainId: ChainId,
     api: ApiPromise,
@@ -100,7 +84,6 @@ export const useStakingData = (): IStakingDataService => {
   };
 
   return {
-    subscribeActiveEra,
     subscribeStaking,
     getMinNominatorBond,
   };

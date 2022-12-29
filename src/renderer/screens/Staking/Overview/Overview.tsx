@@ -31,8 +31,8 @@ const Overview = () => {
   const { getActiveAccounts } = useAccount();
   const { getLiveWallets } = useWallet();
   const { sortChains, getChainsData } = useChains();
-  const { subscribeActiveEra, subscribeStaking } = useStakingData();
-  const { getValidators } = useValidators();
+  const { subscribeStaking } = useStakingData();
+  const { getValidators, subscribeActiveEra } = useValidators();
   const { setStakingNetwork, getStakingNetwork } = useSettingsStorage();
 
   const [era, setEra] = useState<number>();

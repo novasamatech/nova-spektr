@@ -3,14 +3,13 @@ import { ApiPromise } from '@polkadot/api';
 import cn from 'classnames';
 import { useEffect, useState } from 'react';
 
-import { useValidators } from '@renderer/services/staking/validatorsService';
 import { Address, Balance, BaseModal, Button, Checkbox, Icon, Input } from '@renderer/components/ui';
 import { useI18n } from '@renderer/context/I18nContext';
 import { Asset } from '@renderer/domain/asset';
 import { AccountID, ChainId } from '@renderer/domain/shared-kernel';
 import useToggle from '@renderer/hooks/useToggle';
 import { Validator, ValidatorMap } from '@renderer/services/staking/common/types';
-import { useStakingData } from '@renderer/services/staking/stakingDataService';
+import { useValidators } from '@renderer/services/staking/validatorsService';
 
 type Props = {
   api?: ApiPromise;
@@ -22,8 +21,7 @@ type Props = {
 const Validators = ({ api, chainId, asset, onResult }: Props) => {
   const { t } = useI18n();
   const [isInfoOpen, toggleInfo] = useToggle();
-  const { subscribeActiveEra } = useStakingData();
-  const { getMaxValidators, getValidators } = useValidators();
+  const { subscribeActiveEra, getMaxValidators, getValidators } = useValidators();
 
   const [era, setEra] = useState<number>();
   const [validators, setValidators] = useState<ValidatorMap>({});

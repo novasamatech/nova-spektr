@@ -7,6 +7,22 @@ import { AccountID, ChainId } from '@renderer/domain/shared-kernel';
 import { Identity, SubIdentity, Validator, ValidatorMap, IValidatorsService } from './common/types';
 
 export const useValidators = (): IValidatorsService => {
+  const subscribeActiveEra = (
+    chainId: ChainId,
+    api: ApiPromise,
+    callback: (era?: number) => void,
+  ): Promise<() => void> => {
+    return api.query.staking.activeEra((data: any) => {
+      try {
+        const unwrappedData = data.unwrap();
+        callback(unwrappedData.get('index').toNumber());
+      } catch (error) {
+        console.warn(error);
+        callback(undefined);
+      }
+    });
+  };
+
   const getValidators = async (chainId: ChainId, api: ApiPromise, era: number): Promise<ValidatorMap> => {
     const [stake, prefs] = await Promise.all([getValidatorsStake(api, era), getValidatorsPrefs(api, era)]);
 
@@ -132,6 +148,7 @@ export const useValidators = (): IValidatorsService => {
   };
 
   return {
+    subscribeActiveEra,
     getValidators,
     getMaxValidators,
     getNominators,

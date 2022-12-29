@@ -7,7 +7,6 @@ import { AccountID, ChainId } from '@renderer/domain/shared-kernel';
 // =====================================================
 
 export interface IStakingDataService {
-  subscribeActiveEra: (chainId: ChainId, api: ApiPromise, callback: (era?: number) => void) => Promise<() => void>;
   subscribeStaking: (
     chainId: ChainId,
     api: ApiPromise,
@@ -50,6 +49,7 @@ export interface IStakingRewardsService {
 // =====================================================
 
 export interface IValidatorsService {
+  subscribeActiveEra: (chainId: ChainId, api: ApiPromise, callback: (era?: number) => void) => Promise<() => void>;
   getValidators: (chainId: ChainId, api: ApiPromise, era: number) => Promise<ValidatorMap>;
   getMaxValidators: (api: ApiPromise) => number;
   getNominators: (api: ApiPromise, account: AccountID) => Promise<string[]>;
