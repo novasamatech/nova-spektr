@@ -15,7 +15,7 @@ export const enum TestChains {
   WESTMINT = '0x67f9723393ef76214df0118c34bbbd3dbebc8ed46a10973a8c969d48fe7598c9',
 }
 
-export const AUTO_BALANCE_TIMEOUT = 200;
+export const AUTO_BALANCE_TIMEOUT = 1000;
 export const MAX_ATTEMPTS = 3;
 export const PROGRESSION_BASE = 2;
 

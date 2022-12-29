@@ -6,7 +6,7 @@ import { useNetworkContext } from '@renderer/context/NetworkContext';
 import { Asset } from '@renderer/domain/asset';
 import { Chain } from '@renderer/domain/chain';
 import { ConnectionType } from '@renderer/domain/connection';
-import { PublicKey, SigningType } from '@renderer/domain/shared-kernel';
+import { ChainId, PublicKey, SigningType } from '@renderer/domain/shared-kernel';
 import useToggle from '@renderer/hooks/useToggle';
 import { useChains } from '@renderer/services/network/chainsService';
 import { useSettingsStorage } from '@renderer/services/settings/settingsStorage';
@@ -19,6 +19,7 @@ const Balances = () => {
 
   const [query, setQuery] = useState('');
   const [publicKeys, setPublicKeys] = useState<PublicKey[]>([]);
+  const [usedChains, setUsedChains] = useState<Record<ChainId, boolean>>({});
   const [receiveData, setReceiveData] = useState<ReceivePayload>();
 
   const [isReceiveOpen, toggleReceive] = useToggle();
@@ -47,11 +48,20 @@ const Balances = () => {
       return account.publicKey ? [...acc, account.publicKey] : acc;
     }, []);
 
+    const usedChains = activeAccounts.reduce<Record<ChainId, boolean>>((acc, account) => {
+      return account.chainId ? { ...acc, [account.chainId]: true } : acc;
+    }, {});
+
     setPublicKeys(activePublicKeys);
+    setUsedChains(usedChains);
   }, [activeAccounts.length]);
 
+  const hasRootAccount = activeAccounts.some((account) => !account.rootId);
+
   const sortedChains = sortChains(
-    Object.values(connections).filter((c) => c.connection.connectionType !== ConnectionType.DISABLED),
+    Object.values(connections).filter(
+      (c) => c.connection.connectionType !== ConnectionType.DISABLED && (hasRootAccount || usedChains[c.chainId]),
+    ),
   );
 
   const searchSymbolOnly = sortedChains.some((chain) =>

@@ -4,4 +4,4 @@ import { AccountDS } from '@renderer/services/storage';
 
 export type ChainWithAccounts = Chain & { isActive: boolean; accounts: AccountDS[] };
 export type RootAccount = AccountDS & { chains: ChainWithAccounts[]; amount: number };
-export type WalletStructure = Wallet & { rootAccounts: RootAccount[]; amount: number };
+export type WalletStructure = Wallet & { rootAccounts: RootAccount[]; isActive: boolean; amount: number };

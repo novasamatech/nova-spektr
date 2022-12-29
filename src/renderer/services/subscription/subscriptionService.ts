@@ -1,11 +1,11 @@
 import { useRef } from 'react';
 
-import { ISubscriptionService, SubsType } from './common/types';
+import { ISubscriptionService, SubsType, UnsubscribeType } from './common/types';
 
 export const useSubscription = <T extends string>(): ISubscriptionService<T> => {
   const subscriptions = useRef<SubsType<T>>({} as SubsType<T>);
 
-  const subscribe = (key: T, unsubscribe: Promise<any>): void => {
+  const subscribe = (key: T, unsubscribe: UnsubscribeType): void => {
     subscriptions.current[key]
       ? subscriptions.current[key].push(unsubscribe)
       : (subscriptions.current[key] = [unsubscribe]);
@@ -13,7 +13,17 @@ export const useSubscription = <T extends string>(): ISubscriptionService<T> => 
 
   const unsubscribe = async (key: T): Promise<void> => {
     if (!subscriptions.current[key]) return;
-    await Promise.all(subscriptions.current[key]);
+    const promises = subscriptions.current[key].reduce<Promise<any>[]>((acc, fn) => {
+      if (fn instanceof Promise) {
+        acc.push(fn);
+      } else {
+        fn();
+      }
+
+      return acc;
+    }, []);
+
+    await Promise.all(promises);
 
     const { [key]: _, ...newSubscriptions } = subscriptions.current;
     subscriptions.current = newSubscriptions as SubsType<T>;

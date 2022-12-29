@@ -12,7 +12,10 @@ export interface IBalanceService {
   getBalance: (publicKey: PublicKey, chainId: ChainId, assetId: string) => Promise<BalanceDS | undefined>;
   getLiveBalance: (publicKey: PublicKey, chainId: ChainId, assetId: string) => BalanceDS | undefined;
   getLiveNetworkBalances: (publicKeys: PublicKey[], chainId: ChainId) => BalanceDS[];
-  getBalances: (publicKey: PublicKey) => Promise<BalanceDS[]>;
+  getNetworkBalances: (publicKeys: PublicKey[], chainId: ChainId) => Promise<BalanceDS[]>;
+  getBalances: (publicKeys: PublicKey[]) => Promise<BalanceDS[]>;
+  getAllBalances: () => Promise<BalanceDS[]>;
+  getLiveBalances: (publicKeys: PublicKey[]) => BalanceDS[];
   subscribeBalances: (
     chain: ExtendedChain,
     parachain: ExtendedChain | undefined,
