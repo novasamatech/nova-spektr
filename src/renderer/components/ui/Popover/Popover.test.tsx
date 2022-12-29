@@ -30,12 +30,12 @@ describe('ui/Popover', () => {
     let title = screen.queryByText('title');
     expect(title).not.toBeInTheDocument();
 
-    await user.hover(text);
+    await act(async () => user.hover(text));
 
     title = screen.getByText('title');
     expect(title).toBeInTheDocument();
 
-    await user.unhover(text);
+    await act(async () => user.unhover(text));
 
     title = screen.queryByText('title');
     expect(title).not.toBeInTheDocument();
