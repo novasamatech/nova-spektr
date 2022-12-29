@@ -82,8 +82,6 @@ export const NetworkProvider = ({ children }: PropsWithChildren) => {
   };
 
   useEffect(() => {
-    if (!everyConnectionIsReady) return;
-
     (async () => {
       if (activeAccounts.length === 0) {
         await unsubscribeAll();
