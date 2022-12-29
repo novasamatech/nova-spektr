@@ -66,8 +66,14 @@ const getProof = async (api: ApiPromise, storageKey: string, hash: string): Prom
 export const verify = (proof: Uint8Array[] | undefined, root: Uint8Array, key: string, value: Uint8Array): boolean => {
   if (!proof) return false;
 
-  const rootNode = buildTrie(proof, root);
-  const proofValue = get(rootNode, hexToU8a(key));
+  let proofValue;
+
+  try {
+    const rootNode = buildTrie(proof, root);
+    proofValue = get(rootNode, hexToU8a(key));
+  } catch (error) {
+    console.warn(error);
+  }
 
   if (!proofValue) {
     return value.every((byte) => byte === 0);
@@ -118,7 +124,10 @@ export const validate = async (
       blockNumber = block.block.header.number.unwrap();
     }
 
-    return validateWithBlockNumber(relaychainApi, parachainApi, blockNumber, key, value.toU8a());
+    const isValid = await validateWithBlockNumber(relaychainApi, parachainApi, blockNumber, key, value.toU8a());
+    console.log('isValid', isValid, parachainApi.genesisHash.toHex());
+
+    return isValid;
   } catch (error) {
     console.warn(error);
 

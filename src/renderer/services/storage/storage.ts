@@ -36,6 +36,7 @@ class StorageFactory implements IStorage {
 
   constructor() {
     this.dexieDB = new DexieStorage();
+    this.dexieDB.open();
   }
 
   public connectTo<T extends keyof DataStorage>(name: T): DataStorage[T] | undefined {

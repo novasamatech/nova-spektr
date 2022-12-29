@@ -14,6 +14,7 @@ import storage, { BalanceDS } from '../storage';
 import { IBalanceService } from './common/types';
 import { toAddress } from './common/utils';
 import { VERIFY_TIMEOUT } from './common/constants';
+import { useSubscription } from '@renderer/services/subscription/subscriptionService';
 
 export const useBalance = (): IBalanceService => {
   const balanceStorage = storage.connectTo('balances');
@@ -22,7 +23,9 @@ export const useBalance = (): IBalanceService => {
     throw new Error('=== 🔴 Balances storage in not defined 🔴 ===');
   }
 
-  const { updateBalance, getBalances, getBalance, getNetworkBalances } = balanceStorage;
+  const validationSubscriptionService = useSubscription<ChainId>();
+
+  const { updateBalance, getBalances, getAllBalances, getBalance, getNetworkBalances } = balanceStorage;
 
   const handleValidation = (balance: Balance, isValid: boolean) => {
     if (!isValid) {
@@ -42,6 +45,14 @@ export const useBalance = (): IBalanceService => {
     return useLiveQuery(query, [publicKeys.length, chainId], []);
   };
 
+  const getLiveBalances = (publicKeys: PublicKey[]): BalanceDS[] => {
+    const query = () => {
+      return getBalances(publicKeys);
+    };
+
+    return useLiveQuery(query, [publicKeys.length], []);
+  };
+
   const runValidation = async (
     relaychainApi: ApiPromise,
     parachainApi: ApiPromise,
@@ -50,24 +61,25 @@ export const useBalance = (): IBalanceService => {
     onValid?: () => void,
     onInvalid?: () => void,
   ) => {
-    let isValid = false;
-
-    try {
-      isValid = await validate(relaychainApi, parachainApi, storageKey, data);
-    } catch (error) {
-      console.warn(error);
-    }
+    const isValid = await validate(relaychainApi, parachainApi, storageKey, data);
 
     if (isValid) {
       onValid?.();
     } else {
       onInvalid?.();
 
-      if (relaychainApi.isConnected && parachainApi.isConnected) {
-        setTimeout(() => {
+      const chainId = parachainApi.genesisHash.toHex();
+      await validationSubscriptionService.unsubscribe(chainId);
+
+      const timeoutId = setTimeout(async () => {
+        if (relaychainApi.isConnected && parachainApi.isConnected) {
           runValidation(relaychainApi, parachainApi, storageKey, data, onValid, onInvalid);
-        }, VERIFY_TIMEOUT);
-      }
+        }
+      }, VERIFY_TIMEOUT);
+
+      validationSubscriptionService.subscribe(chainId, () => {
+        clearTimeout(timeoutId);
+      });
     }
   };
 
@@ -271,7 +283,7 @@ export const useBalance = (): IBalanceService => {
     relaychain: ExtendedChain | undefined,
     publicKeys: PublicKey[],
   ): Promise<any> => {
-    const unsubscribe = chain.assets?.map((asset) => {
+    const unsubscribeBalances = chain.assets?.map((asset) => {
       if (!asset.type) {
         return subscribeBalancesChange(publicKeys, chain, relaychain, asset);
       }
@@ -285,7 +297,7 @@ export const useBalance = (): IBalanceService => {
       }
     });
 
-    return Promise.all(unsubscribe.flat());
+    return Promise.all([...unsubscribeBalances, () => validationSubscriptionService.unsubscribe(chain.chainId)]);
   };
 
   const subscribeLockBalances = (chain: ExtendedChain, publicKeys: PublicKey[]): Promise<any> => {
@@ -303,9 +315,12 @@ export const useBalance = (): IBalanceService => {
   };
 
   return {
+    getAllBalances,
     getBalances,
     getBalance,
     getLiveBalance,
+    getLiveBalances,
+    getNetworkBalances,
     getLiveNetworkBalances,
     subscribeBalances,
     subscribeLockBalances,

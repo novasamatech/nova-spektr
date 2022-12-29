@@ -91,6 +91,7 @@ const Selector = ({ networkItem }: Props) => {
   const disableNetwork = async () => {
     try {
       await disconnect?.(false);
+      console.log('Networkdisabled');
     } catch (error) {
       console.warn(error);
     }

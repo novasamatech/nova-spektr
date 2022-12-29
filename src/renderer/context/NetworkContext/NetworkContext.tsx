@@ -1,7 +1,7 @@
 import { createContext, PropsWithChildren, useContext, useEffect, useState } from 'react';
 
 import { RpcNode } from '@renderer/domain/chain';
-import { ConnectionType } from '@renderer/domain/connection';
+import { ConnectionStatus, ConnectionType } from '@renderer/domain/connection';
 import { ChainId, PublicKey } from '@renderer/domain/shared-kernel';
 import { useBalance } from '@renderer/services/balance/balanceService';
 import { ConnectProps, ExtendedChain, RpcValidation } from '@renderer/services/network/common/types';
@@ -23,9 +23,11 @@ const NetworkContext = createContext<NetworkContextProps>({} as NetworkContextPr
 
 export const NetworkProvider = ({ children }: PropsWithChildren) => {
   const { getActiveAccounts } = useAccount();
-  const { subscribe, hasSubscription, unsubscribe } = useSubscription<ChainId>();
-  const { connections, setupConnections, connectToNetwork, connectWithAutoBalance, ...rest } = useNetwork(unsubscribe);
-  const { subscribeBalances, subscribeLockBalances } = useBalance();
+  const networkSubscriptions = useSubscription<ChainId>();
+  const { subscribe, hasSubscription, unsubscribeAll } = networkSubscriptions;
+  const { connections, setupConnections, connectToNetwork, connectWithAutoBalance, ...rest } =
+    useNetwork(networkSubscriptions);
+  const { subscribeBalances } = useBalance();
 
   const activeAccounts = getActiveAccounts();
 
@@ -71,27 +73,38 @@ export const NetworkProvider = ({ children }: PropsWithChildren) => {
   const subscribeBalanceChanges = async (chain: ExtendedChain, publicKeys: PublicKey[]) => {
     if (!chain.api?.isConnected || !publicKeys.length) return;
 
-    if (hasSubscription(chain.chainId)) {
-      unsubscribe(chain.chainId);
+    if (!hasSubscription(chain.chainId)) {
+      const relaychain = chain.parentId && connections[chain.parentId];
+
+      subscribe(chain.chainId, subscribeBalances(chain, relaychain, publicKeys));
     }
-
-    const relaychain = chain.parentId && connections[chain.parentId];
-
-    subscribe(chain.chainId, subscribeBalances(chain, relaychain, publicKeys));
-    subscribe(chain.chainId, subscribeLockBalances(chain, publicKeys));
   };
 
   useEffect(() => {
-    Object.values(connections).forEach((chain) => {
-      const publicKeys = activeAccounts.reduce<PublicKey[]>((acc, account) => {
-        return account.publicKey && (!account.rootId || account.chainId === chain.chainId)
-          ? [...acc, account.publicKey]
-          : acc;
-      }, []);
+    if (!everyConnectionIsReady) return;
+    console.log('connectionsChanged');
 
-      subscribeBalanceChanges(chain, publicKeys);
-    });
-  }, [connections, activeAccounts.length]);
+    (async () => {
+      if (activeAccounts.length === 0) {
+        await unsubscribeAll();
+
+        return;
+      }
+
+      Object.values(connections).forEach((chain) => {
+        const publicKeys = activeAccounts.reduce<PublicKey[]>((acc, account) => {
+          return account.publicKey && (!account.rootId || account.chainId === chain.chainId)
+            ? [...acc, account.publicKey]
+            : acc;
+        }, []);
+
+        subscribeBalanceChanges(chain, publicKeys);
+      });
+    })();
+  }, [
+    Object.values(connections).filter((c) => c.connection.connectionStatus === ConnectionStatus.CONNECTED).length,
+    activeAccounts.length,
+  ]);
 
   return (
     <NetworkContext.Provider value={{ connections, connectToNetwork, connectWithAutoBalance, ...rest }}>

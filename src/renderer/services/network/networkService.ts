@@ -13,8 +13,9 @@ import { useChainSpec } from './chainSpecService';
 import { useChains } from './chainsService';
 import { AUTO_BALANCE_TIMEOUT, MAX_ATTEMPTS, PROGRESSION_BASE } from './common/constants';
 import { ConnectionsMap, ConnectProps, INetworkService, RpcValidation } from './common/types';
+import { ISubscriptionService } from '../subscription/common/types';
 
-export const useNetwork = (unsubscribe?: (chainId: ChainId) => Promise<void>): INetworkService => {
+export const useNetwork = (networkSubscription?: ISubscriptionService<ChainId>): INetworkService => {
   const chains = useRef<Record<ChainId, Chain>>({});
   const [connections, setConnections] = useState<ConnectionsMap>({});
 
@@ -55,9 +56,10 @@ export const useNetwork = (unsubscribe?: (chainId: ChainId) => Promise<void>): I
   };
 
   const disconnectFromNetwork =
-    (chainId: ChainId, provider?: ProviderInterface, api?: ApiPromise) =>
+    (chainId: ChainId, provider?: ProviderInterface, api?: ApiPromise, timeoutId?: any) =>
     async (switchNetwork: boolean): Promise<void> => {
-      await unsubscribe?.(chainId);
+      await networkSubscription?.unsubscribe(chainId);
+      if (timeoutId) clearTimeout(timeoutId);
 
       try {
         await api?.disconnect();
@@ -209,6 +211,10 @@ export const useNetwork = (unsubscribe?: (chainId: ChainId) => Promise<void>): I
     const currentTimeout = AUTO_BALANCE_TIMEOUT * (PROGRESSION_BASE ^ attempt % MAX_ATTEMPTS);
 
     const timeoutId = setTimeout(() => {
+      const currentConnection = connections[chainId];
+
+      if (currentConnection.connection.connectionType === ConnectionType.DISABLED) return;
+
       const nodes = [...connections[chainId].nodes, ...(connections[chainId].connection.customNodes || [])];
 
       const node = nodes[Math.floor(attempt / MAX_ATTEMPTS) % nodes.length];
@@ -218,7 +224,7 @@ export const useNetwork = (unsubscribe?: (chainId: ChainId) => Promise<void>): I
   };
 
   const connectToNetwork = async (props: ConnectProps): Promise<void> => {
-    const { chainId, type, node } = props;
+    const { chainId, type, node, timeoutId } = props;
     const connection = connections[chainId];
     if (!connection || type === ConnectionType.DISABLED) return;
 
@@ -243,19 +249,18 @@ export const useNetwork = (unsubscribe?: (chainId: ChainId) => Promise<void>): I
       ...currentConnections,
       [connection.chainId]: {
         ...currentConnections[chainId],
-        disconnect: disconnectFromNetwork(chainId, provider.instance),
+        disconnect: disconnectFromNetwork(chainId, provider.instance, undefined, timeoutId),
       },
     }));
 
     let autoBalanceStarted = false;
-    const onAutoBalanceError = () => {
+    const onAutoBalanceError = async () => {
       const { attempt, timeoutId } = props;
       if (autoBalanceStarted || type !== ConnectionType.AUTO_BALANCE) return;
       autoBalanceStarted = true;
 
-      clearTimeout(timeoutId);
-      disconnectFromNetwork(chainId, provider.instance)(true);
-      connectWithAutoBalance(chainId, attempt! + 1);
+      await disconnectFromNetwork(chainId, provider.instance, undefined, timeoutId)(true);
+      await connectWithAutoBalance(chainId, attempt! + 1);
     };
 
     if (provider.instance) {
