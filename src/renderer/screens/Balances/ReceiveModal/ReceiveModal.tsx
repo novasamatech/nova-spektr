@@ -29,20 +29,26 @@ const ReceiveModal = ({ data, isOpen, onClose }: Props) => {
   const { getActiveAccounts } = useAccount();
 
   const [activeAccount, setActiveAccount] = useState<ResultOption<number>>();
-  const [accounts, setAccounts] = useState<Option<number>[]>([]);
+  const [activeAccountsOptions, setActiveAccountsOptions] = useState<Option<number>[]>([]);
 
   const activeAccounts = getActiveAccounts();
 
   useEffect(() => {
     const accounts = activeAccounts.reduce<Option[]>((acc, account, index) => {
-      if (account.chainId !== undefined && account.chainId !== data?.chain.chainId) return acc;
+      if (
+        (account.chainId !== undefined && account.chainId !== data?.chain.chainId) ||
+        account.signingType === SigningType.WATCH_ONLY
+      ) {
+        return acc;
+      }
+
       const address = toAddress(account.publicKey || '0x00', data?.chain.addressPrefix);
 
       const accountType =
         account.signingType === SigningType.PARITY_SIGNER ? 'paritySignerBackground' : 'watchOnlyBackground';
 
       const accountOption = {
-        id: address,
+        id: index.toString(),
         value: index,
         element: (
           <div className="grid grid-rows-2 grid-flow-col gap-x-2.5">
@@ -58,7 +64,7 @@ const ReceiveModal = ({ data, isOpen, onClose }: Props) => {
 
     if (accounts.length === 0) return;
 
-    setAccounts(accounts);
+    setActiveAccountsOptions(accounts);
     setActiveAccount({ id: accounts[0].id, value: accounts[0].value });
   }, [activeAccounts.length, data?.chain.chainId]);
 
@@ -92,7 +98,7 @@ const ReceiveModal = ({ data, isOpen, onClose }: Props) => {
             placeholder={t('receive.selectWalletPlaceholder')}
             className="w-full mb-2.5"
             activeId={activeAccount?.id}
-            options={accounts}
+            options={activeAccountsOptions}
             onChange={setActiveAccount}
           />
         )}
