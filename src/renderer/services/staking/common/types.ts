@@ -86,8 +86,8 @@ export type Validator = {
   totalStake: string;
   commission: number;
   blocked: boolean;
-  isOversubscribed: boolean;
-  isSlashed: boolean;
+  oversubscribed: boolean;
+  slashed: boolean;
   apy: number;
   identity?: Identity;
 };
