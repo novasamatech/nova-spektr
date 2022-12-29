@@ -33,7 +33,7 @@ const WatchOnly = () => {
   });
 
   const { getChainsData, sortChains } = useChains();
-  const { addAccount, toggleActiveAccount } = useAccount();
+  const { addAccount } = useAccount();
   const [isModalOpen, toggleModal] = useToggle();
 
   const [chains, setChains] = useState<Chain[]>([]);
@@ -62,9 +62,7 @@ const WatchOnly = () => {
       accountId: address,
     });
 
-    const accountId = await addAccount(newAccount);
-
-    await toggleActiveAccount(accountId);
+    await addAccount(newAccount);
     setIsCompleted(true);
   };
 
