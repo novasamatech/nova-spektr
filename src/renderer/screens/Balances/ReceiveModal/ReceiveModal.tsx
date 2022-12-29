@@ -35,14 +35,21 @@ const ReceiveModal = ({ data, isOpen, onClose }: Props) => {
 
   useEffect(() => {
     const accounts = activeAccounts.reduce<Option[]>((acc, account, index) => {
-      if (account.chainId !== undefined && account.chainId !== data?.chain.chainId) return acc;
+      if (
+        account.chainId !== undefined &&
+        account.chainId !== data?.chain.chainId &&
+        account.signingType !== SigningType.WATCH_ONLY
+      ) {
+        return acc;
+      }
+
       const address = toAddress(account.publicKey || '0x00', data?.chain.addressPrefix);
 
       const accountType =
         account.signingType === SigningType.PARITY_SIGNER ? 'paritySignerBackground' : 'watchOnlyBackground';
 
       const accountOption = {
-        id: address,
+        id: toAddress(account.publicKey || '0x00', data?.chain.addressPrefix),
         value: index,
         element: (
           <div className="grid grid-rows-2 grid-flow-col gap-x-2.5">
