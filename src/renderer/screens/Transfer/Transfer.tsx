@@ -22,7 +22,6 @@ import ParitySignerSignatureReader from '../Signing/ParitySignerSignatureReader/
 import { ValidationErrors } from './common/constants';
 import { useAccount } from '@renderer/services/account/accountService';
 import { Message, SelectedAddress, TransferDetails, TransferForm } from './components';
-import { AccountDS } from '@renderer/services/storage';
 import { Option, ResultOption } from '@renderer/components/ui/Dropdowns/common/types';
 
 const enum Steps {
@@ -62,21 +61,53 @@ const Transfer = () => {
   const [_, setBalance] = useState('');
 
   const activeAccounts = getActiveAccounts().filter((account) => !account.rootId || account.chainId === chainId);
-  const [currentAccount, setCurrentAccount] = useState<AccountDS>();
-
-  useEffect(() => {
-    if (activeAccounts.length > 0 && !currentAccount) {
-      setCurrentAccount(activeAccounts[0]);
-    }
-  }, [activeAccounts.length]);
 
   const [activeAccountsOptions, setActiveAccountsOptions] = useState<Option<number>[]>([]);
+  const [activeAccount, setActiveAccount] = useState<ResultOption<number>>();
 
   const currentConnection = chainId ? connections[chainId as ChainId] : undefined;
   const currentAsset =
     assetId && currentConnection
       ? (currentConnection.assets.find((a) => a.assetId === Number(assetId)) as Asset)
       : undefined;
+
+  useEffect(() => {
+    const accounts = activeAccounts.reduce<Option[]>((acc, account, index) => {
+      if (
+        (account.chainId !== undefined && account.chainId !== currentConnection?.chainId) ||
+        account.signingType === SigningType.WATCH_ONLY
+      ) {
+        return acc;
+      }
+
+      const address = toAddress(account.publicKey || '0x00', currentConnection?.addressPrefix);
+
+      const accountType =
+        account.signingType === SigningType.PARITY_SIGNER ? 'paritySignerBackground' : 'watchOnlyBackground';
+
+      const accountOption = {
+        id: address,
+        value: index,
+        element: (
+          <div className="grid grid-rows-2 grid-flow-col gap-x-2.5">
+            <Icon className="row-span-2 self-center" name={accountType} size={34} />
+            <p className="text-left text-neutral text-lg font-semibold leading-5">{account.name}</p>
+            <Address type="short" address={address} canCopy={false} />
+          </div>
+        ),
+      };
+
+      return acc.concat(accountOption);
+    }, []);
+
+    if (accounts.length === 0) return;
+
+    setActiveAccountsOptions(accounts);
+    setActiveAccount({ id: accounts[0].id, value: accounts[0].value });
+  }, [activeAccounts.length, currentConnection?.chainId]);
+
+  const currentAccount = activeAccount ? activeAccounts[activeAccount.value] : undefined;
+
   const currentAddress = formatAddress(currentAccount?.accountId || '', currentConnection?.addressPrefix);
 
   const expectedBlockTime = currentConnection?.api ? getExpectedBlockTime(currentConnection?.api) : undefined;
@@ -207,38 +238,6 @@ const Transfer = () => {
     }
   };
 
-  useEffect(() => {
-    const accounts = activeAccounts.reduce<Option[]>((acc, account, index) => {
-      if (account.chainId !== undefined && account.chainId !== currentConnection?.chainId) return acc;
-      const address = toAddress(account.publicKey || '0x00', currentConnection?.addressPrefix);
-
-      const accountType =
-        account.signingType === SigningType.PARITY_SIGNER ? 'paritySignerBackground' : 'watchOnlyBackground';
-
-      const accountOption = {
-        id: address,
-        value: index,
-        element: (
-          <div className="grid grid-rows-2 grid-flow-col gap-x-2.5">
-            <Icon className="row-span-2 self-center" name={accountType} size={34} />
-            <p className="text-left text-neutral text-lg font-semibold leading-5">{account.name}</p>
-            <Address type="short" address={address} canCopy={false} />
-          </div>
-        ),
-      };
-
-      return acc.concat(accountOption);
-    }, []);
-
-    if (accounts.length === 0) return;
-
-    setActiveAccountsOptions(accounts);
-  }, [activeAccounts.length, currentConnection?.chainId]);
-
-  const setActiveAccount = (account: ResultOption<number>) => {
-    setCurrentAccount(activeAccounts[account.value]);
-  };
-
   // TS doesn't work with Boolean type
   const readyToCreate = !!(currentAccount && currentAsset && currentAddress && currentConnection);
   const readyToConfirm = !!(readyToCreate && transaction);
@@ -265,7 +264,7 @@ const Transfer = () => {
                 <Dropdown
                   weight="lg"
                   placeholder={t('receive.selectWalletPlaceholder')}
-                  activeId={currentAccount?.accountId}
+                  activeId={activeAccount?.id}
                   options={activeAccountsOptions}
                   onChange={setActiveAccount}
                 />
