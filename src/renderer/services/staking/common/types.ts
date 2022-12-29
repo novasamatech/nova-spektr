@@ -3,7 +3,7 @@ import { ApiPromise } from '@polkadot/api';
 import { AccountID, ChainId } from '@renderer/domain/shared-kernel';
 
 // =====================================================
-// ============ IStakingDataService interface ==============
+// ========== IStakingDataService interface ============
 // =====================================================
 
 export interface IStakingDataService {
@@ -46,7 +46,7 @@ export interface IStakingRewardsService {
 }
 
 // =====================================================
-// ============ IStakingDataService interface ==============
+// ========== IValidatorsService interface =============
 // =====================================================
 
 export interface IValidatorsService {
