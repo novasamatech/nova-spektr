@@ -1,5 +1,7 @@
 const { name: NAME, author: AUTHOR, version: VERSION, description: DESCRIPTION } = require('./package.json');
 
+const AUTHOR_IN_KEBAB_CASE = AUTHOR.name.replace(/\s+/g, '-');
+
 exports.APP_CONFIG = {
   NAME,
   AUTHOR,
@@ -7,6 +9,7 @@ exports.APP_CONFIG = {
   DESCRIPTION,
 
   TITLE: 'Omni Enterprise',
+  APP_ID: `com.${AUTHOR_IN_KEBAB_CASE}.${NAME}`.toLowerCase(),
 
   MAIN: {
     WINDOW: {
