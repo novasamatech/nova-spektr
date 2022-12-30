@@ -29,7 +29,7 @@ const sumValues = (firstValue?: string, secondValue?: string): string => {
     return new BN(firstValue).add(new BN(secondValue)).toString();
   }
 
-  return '';
+  return '0';
 };
 
 const sumBalances = (firstBalance: Balance, secondBalance?: Balance): Balance => {
