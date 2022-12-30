@@ -8,6 +8,7 @@ import { ConnectProps, ExtendedChain, RpcValidation } from '@renderer/services/n
 import { useNetwork } from '@renderer/services/network/networkService';
 import { useSubscription } from '@renderer/services/subscription/subscriptionService';
 import { useAccount } from '@renderer/services/account/accountService';
+import { usePrevious } from '@renderer/hooks/usePreviouse';
 
 type NetworkContextProps = {
   connections: Record<ChainId, ExtendedChain>;
@@ -24,7 +25,7 @@ const NetworkContext = createContext<NetworkContextProps>({} as NetworkContextPr
 export const NetworkProvider = ({ children }: PropsWithChildren) => {
   const { getActiveAccounts } = useAccount();
   const networkSubscriptions = useSubscription<ChainId>();
-  const { subscribe, hasSubscription, unsubscribeAll } = networkSubscriptions;
+  const { subscribe, unsubscribe, hasSubscription, unsubscribeAll } = networkSubscriptions;
   const { connections, setupConnections, connectToNetwork, connectWithAutoBalance, ...rest } =
     useNetwork(networkSubscriptions);
   const { subscribeBalances, subscribeLockBalances } = useBalance();
@@ -74,12 +75,26 @@ export const NetworkProvider = ({ children }: PropsWithChildren) => {
     if (!chain.api?.isConnected || !publicKeys.length) return;
 
     if (!hasSubscription(chain.chainId)) {
-      const relaychain = chain.parentId && connections[chain.parentId];
-
-      subscribe(chain.chainId, subscribeBalances(chain, relaychain, publicKeys));
-      subscribe(chain.chainId, subscribeLockBalances(chain, publicKeys));
+      unsubscribe(chain.chainId);
     }
+
+    const relaychain = chain.parentId && connections[chain.parentId];
+
+    subscribe(chain.chainId, subscribeBalances(chain, relaychain, publicKeys));
+    subscribe(chain.chainId, subscribeLockBalances(chain, publicKeys));
   };
+
+  const connectedConnections = Object.values(connections).filter(
+    (c) => c.connection.connectionStatus === ConnectionStatus.CONNECTED,
+  );
+
+  const previousConnectedConnections = usePrevious(connectedConnections);
+  const previousAccounts = usePrevious(activeAccounts);
+
+  const getPublicKeys = (chainId: ChainId) =>
+    activeAccounts.reduce<PublicKey[]>((acc, account) => {
+      return account.publicKey && (!account.rootId || account.chainId === chainId) ? [...acc, account.publicKey] : acc;
+    }, []);
 
   useEffect(() => {
     (async () => {
@@ -89,20 +104,28 @@ export const NetworkProvider = ({ children }: PropsWithChildren) => {
         return;
       }
 
-      Object.values(connections).forEach((chain) => {
-        const publicKeys = activeAccounts.reduce<PublicKey[]>((acc, account) => {
-          return account.publicKey && (!account.rootId || account.chainId === chain.chainId)
-            ? [...acc, account.publicKey]
-            : acc;
-        }, []);
+      if (previousAccounts?.length !== activeAccounts.length) {
+        connectedConnections.forEach((chain) => {
+          const publicKeys = getPublicKeys(chain.chainId);
+          subscribeBalanceChanges(chain, publicKeys);
+        });
+      }
 
+      // subscribe to new connections
+      const newConnections = connectedConnections.filter((c) => !previousConnectedConnections?.includes(c));
+
+      newConnections.forEach((chain) => {
+        const publicKeys = getPublicKeys(chain.chainId);
         subscribeBalanceChanges(chain, publicKeys);
       });
+
+      // unsubscribe from removed connections
+      const removedConnections = previousConnectedConnections?.filter((c) => !connectedConnections.includes(c));
+      removedConnections?.forEach((chain) => {
+        unsubscribe(chain.chainId);
+      });
     })();
-  }, [
-    Object.values(connections).filter((c) => c.connection.connectionStatus === ConnectionStatus.CONNECTED).length,
-    activeAccounts.length,
-  ]);
+  }, [connectedConnections.length, activeAccounts.length]);
 
   return (
     <NetworkContext.Provider value={{ connections, connectToNetwork, connectWithAutoBalance, ...rest }}>
