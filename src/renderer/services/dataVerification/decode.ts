@@ -203,6 +203,7 @@ const loadProof = (proofHashToNode: Record<string, Node>, branch: Node | undefin
     }
   });
 };
+
 /**
  * Get decoded trie root from proof encoded nodes
  * @param proofEncodedNodes - proof encoded nodes from parachain

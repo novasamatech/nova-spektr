@@ -31,4 +31,10 @@ export const useBalanceStorage = (db: Table<BalanceDS>): IBalanceStorage => ({
       await db.update([balance.publicKey, balance.chainId, balance.assetId], balance);
     }
   },
+
+  setBalanceIsValid: ({ publicKey, chainId, assetId }: Balance, verified: boolean): Promise<number> => {
+    return db.update([publicKey, chainId, assetId], {
+      verified,
+    });
+  },
 });
