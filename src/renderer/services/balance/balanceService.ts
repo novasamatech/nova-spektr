@@ -3,9 +3,10 @@ import { AccountInfo, BalanceLock } from '@polkadot/types/interfaces';
 import { BN } from '@polkadot/util';
 import { ApiPromise } from '@polkadot/api';
 import { Codec } from '@polkadot/types/types';
+import { Option } from '@polkadot/types';
+import { PalletAssetsAssetAccount } from '@polkadot/types/lookup';
 
 import { Asset, AssetType, OrmlExtras, StatemineExtras } from '@renderer/domain/asset';
-import { Balance } from '@renderer/domain/balance';
 import { ChainId, PublicKey } from '@renderer/domain/shared-kernel';
 import { ExtendedChain } from '@renderer/services/network/common/types';
 import { isLightClient } from '@renderer/services/network/common/utils';
@@ -25,13 +26,8 @@ export const useBalance = (): IBalanceService => {
 
   const validationSubscriptionService = useSubscription<ChainId>();
 
-  const { updateBalance, getBalances, getAllBalances, getBalance, getNetworkBalances } = balanceStorage;
-
-  const handleValidation = (balance: Balance, isValid: boolean) => {
-    if (!isValid) {
-      updateBalance({ ...balance, verified: false });
-    }
-  };
+  const { updateBalance, getBalances, getAllBalances, getBalance, getNetworkBalances, setBalanceIsValid } =
+    balanceStorage;
 
   const getLiveBalance = (publicKey: PublicKey, chainId: ChainId, assetId: string): BalanceDS | undefined => {
     return useLiveQuery(() => getBalance(publicKey, chainId, assetId), [publicKey, chainId, assetId]);
@@ -61,21 +57,30 @@ export const useBalance = (): IBalanceService => {
     onValid?: () => void,
     onInvalid?: () => void,
   ) => {
-    const isValid = await validate(relaychainApi, parachainApi, storageKey, data);
+    const chainId = parachainApi.genesisHash.toHex();
 
-    if (isValid) {
-      onValid?.();
+    if (relaychainApi.isConnected && parachainApi.isConnected) {
+      const isValid = await validate(relaychainApi, parachainApi, storageKey, data);
+
+      if (isValid) {
+        await onValid?.();
+      } else {
+        const timeoutId = setTimeout(
+          () => runValidation(relaychainApi, parachainApi, storageKey, data, onValid, onInvalid),
+          VERIFY_TIMEOUT,
+        );
+
+        validationSubscriptionService.subscribe(chainId, () => {
+          clearTimeout(timeoutId);
+        });
+
+        await onInvalid?.();
+      }
     } else {
-      onInvalid?.();
-
-      const chainId = parachainApi.genesisHash.toHex();
-      await validationSubscriptionService.unsubscribe(chainId);
-
-      const timeoutId = setTimeout(async () => {
-        if (relaychainApi.isConnected && parachainApi.isConnected) {
-          runValidation(relaychainApi, parachainApi, storageKey, data, onValid, onInvalid);
-        }
-      }, VERIFY_TIMEOUT);
+      const timeoutId = setTimeout(
+        () => runValidation(relaychainApi, parachainApi, storageKey, data, onValid, onInvalid),
+        VERIFY_TIMEOUT,
+      );
 
       validationSubscriptionService.subscribe(chainId, () => {
         clearTimeout(timeoutId);
@@ -95,7 +100,7 @@ export const useBalance = (): IBalanceService => {
     const addresses = publicKeys.map((pk) => toAddress(pk, chain.addressPrefix));
 
     return api.query.system.account.multi(addresses, (data: AccountInfo[]) => {
-      data.forEach((accountInfo, i) => {
+      data.forEach(async (accountInfo, i) => {
         const miscFrozen = new BN(accountInfo.data.miscFrozen);
         const feeFrozen = new BN(accountInfo.data.feeFrozen);
 
@@ -109,7 +114,7 @@ export const useBalance = (): IBalanceService => {
           reserved: accountInfo.data.reserved.toString(),
         };
 
-        updateBalance(balance);
+        await updateBalance(balance);
 
         if (relaychain?.api && isLightClient(relaychain)) {
           const storageKey = api.query.system.account.key(addresses[i]);
@@ -118,8 +123,8 @@ export const useBalance = (): IBalanceService => {
             api,
             storageKey,
             accountInfo,
-            () => handleValidation(balance, true),
-            () => handleValidation(balance, false),
+            () => setBalanceIsValid(balance, true),
+            () => setBalanceIsValid(balance, false),
           );
         }
       });
@@ -141,7 +146,7 @@ export const useBalance = (): IBalanceService => {
     return api.query.assets.account.multi(
       addresses.map((a) => [statemineAssetId, a]),
       (data: any[]) => {
-        data.forEach((accountInfo, i) => {
+        data.forEach(async (accountInfo: Option<PalletAssetsAssetAccount>, i) => {
           try {
             const free = accountInfo.isNone ? '0' : accountInfo.unwrap().balance.toString();
             const balance = {
@@ -154,7 +159,7 @@ export const useBalance = (): IBalanceService => {
               reserved: (0).toString(),
             };
 
-            updateBalance(balance);
+            await updateBalance(balance);
 
             if (relaychain?.api && isLightClient(relaychain)) {
               const storageKey = api.query.assets.account.key(statemineAssetId, addresses[i]);
@@ -163,8 +168,8 @@ export const useBalance = (): IBalanceService => {
                 api,
                 storageKey,
                 accountInfo,
-                () => handleValidation(balance, true),
-                () => handleValidation(balance, false),
+                () => setBalanceIsValid(balance, true),
+                () => setBalanceIsValid(balance, false),
               );
             }
           } catch (e) {
@@ -192,7 +197,7 @@ export const useBalance = (): IBalanceService => {
     return method.multi(
       addresses.map((a) => [a, ormlAssetId]),
       (data: any[]) => {
-        data.forEach((accountInfo, i) => {
+        data.forEach(async (accountInfo: any, i) => {
           const { free, reserved, frozen } = accountInfo;
           const balance = {
             publicKey: publicKeys[i],
@@ -204,7 +209,7 @@ export const useBalance = (): IBalanceService => {
             reserved: reserved.toString(),
           };
 
-          updateBalance(balance);
+          await updateBalance(balance);
 
           if (relaychain?.api && isLightClient(relaychain)) {
             const storageKey = method.key(addresses[i], ormlAssetId);
@@ -213,8 +218,8 @@ export const useBalance = (): IBalanceService => {
               api,
               storageKey,
               accountInfo,
-              () => handleValidation(balance, true),
-              () => handleValidation(balance, false),
+              () => setBalanceIsValid(balance, true),
+              () => setBalanceIsValid(balance, false),
             );
           }
         });
@@ -229,7 +234,7 @@ export const useBalance = (): IBalanceService => {
     const addresses = publicKeys.map((pk) => toAddress(pk, chain.addressPrefix));
 
     return api.query.balances.locks.multi(addresses, (balanceLocks: any[]) => {
-      balanceLocks.forEach((balanceLock, i) => {
+      balanceLocks.forEach(async (balanceLock, i) => {
         const balance = {
           publicKey: publicKeys[i],
           chainId: chain.chainId,
@@ -242,7 +247,7 @@ export const useBalance = (): IBalanceService => {
           ],
         };
 
-        updateBalance(balance);
+        await updateBalance(balance);
       });
     });
   };
@@ -259,7 +264,7 @@ export const useBalance = (): IBalanceService => {
     return method.multi(
       addresses.map((a) => [a, ormlAssetId]),
       (balanceLocks: any[]) => {
-        balanceLocks.forEach((balanceLock, i) => {
+        balanceLocks.forEach(async (balanceLock, i) => {
           const balance = {
             publicKey: publicKeys[i],
             chainId: chain.chainId,
@@ -272,7 +277,7 @@ export const useBalance = (): IBalanceService => {
             ],
           };
 
-          updateBalance(balance);
+          await updateBalance(balance);
         });
       },
     );
