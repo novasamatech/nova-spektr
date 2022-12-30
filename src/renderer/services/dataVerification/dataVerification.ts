@@ -89,24 +89,19 @@ const validateWithBlockNumber = async (
   key: string,
   value: Uint8Array,
 ): Promise<boolean> => {
-  try {
-    const parachainId = await getParachainId(parachainApi);
-    const header = await getHeader(relaychainApi, parachainId);
-    const decodedHeader: Header = parachainApi.registry.createType('Header', header.toString()) as unknown as Header;
+  const parachainId = await getParachainId(parachainApi);
+  const header = await getHeader(relaychainApi, parachainId);
 
-    if (decodedHeader.number.toBn().lte(blockNumber.toBn())) return false;
+  const decodedHeader: Header = parachainApi.registry.createType('Header', header.toString()) as unknown as Header;
 
-    const parachainStateRoot = decodedHeader.stateRoot;
-    const parachainBlockHash = await getBlockHash(parachainApi, decodedHeader);
+  if (decodedHeader.number.toBn().lte(blockNumber.toBn())) return false;
 
-    const proof = await getProof(parachainApi, key, parachainBlockHash);
+  const parachainStateRoot = decodedHeader.stateRoot;
+  const parachainBlockHash = await getBlockHash(parachainApi, decodedHeader);
 
-    return verify(proof, parachainStateRoot, key, value);
-  } catch (error) {
-    console.warn(error);
+  const proof = await getProof(parachainApi, key, parachainBlockHash);
 
-    return false;
-  }
+  return verify(proof, parachainStateRoot, key, value);
 };
 
 export const validate = async (
@@ -115,21 +110,13 @@ export const validate = async (
   key: string,
   value: Codec,
 ): Promise<boolean> => {
-  try {
-    const blockHash = value.createdAtHash;
-    const block = await parachainApi.rpc.chain.getBlock(blockHash);
-    let blockNumber: BlockNumber = 0 as unknown as u32;
+  const blockHash = value.createdAtHash;
+  const block = await parachainApi.rpc.chain.getBlock(blockHash);
+  let blockNumber: BlockNumber = 0 as unknown as u32;
 
-    if (!block.block.header.number.isEmpty) {
-      blockNumber = block.block.header.number.unwrap();
-    }
-
-    const isValid = await validateWithBlockNumber(relaychainApi, parachainApi, blockNumber, key, value.toU8a());
-
-    return isValid;
-  } catch (error) {
-    console.warn(error);
-
-    return false;
+  if (!block.block.header.number.isEmpty) {
+    blockNumber = block.block.header.number.unwrap();
   }
+
+  return await validateWithBlockNumber(relaychainApi, parachainApi, blockNumber, key, value.toU8a());
 };
