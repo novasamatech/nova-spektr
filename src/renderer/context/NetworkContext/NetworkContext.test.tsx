@@ -1,6 +1,6 @@
 import { act, render, renderHook, screen, waitFor } from '@testing-library/react';
 
-import { ConnectionType } from '@renderer/domain/connection';
+import { ConnectionStatus, ConnectionType } from '@renderer/domain/connection';
 import { useBalance } from '@renderer/services/balance/balanceService';
 import { useNetwork } from '@renderer/services/network/networkService';
 import { NetworkProvider, useNetworkContext } from './NetworkContext';
@@ -112,7 +112,11 @@ describe('context/NetworkContext', () => {
   test('should start balance subscription', async () => {
     const spySubscribeBalances = jest.fn();
     const spySubscribeLockBalances = jest.fn();
-    const connection = { chainId: '0x123', connectionType: ConnectionType.RPC_NODE };
+    const connection = {
+      chainId: '0x123',
+      connectionType: ConnectionType.RPC_NODE,
+      connectionStatus: ConnectionStatus.CONNECTED,
+    };
 
     (useNetwork as jest.Mock).mockImplementation(() => ({
       connections: { [connection.chainId]: { api: { isConnected: true }, connection } },
