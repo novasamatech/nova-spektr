@@ -68,7 +68,12 @@ const Balances = () => {
     chain.assets.some((a) => a.symbol.toLowerCase() === query.toLowerCase()),
   );
 
-  const canMakeActions = activeAccounts.some((account) => account.signingType === SigningType.PARITY_SIGNER) || false;
+  const checkCanMakeActions = (chainId: ChainId) => {
+    return activeAccounts.some(
+      (account) =>
+        account.signingType === SigningType.PARITY_SIGNER && (!account.rootId || account.chainId === chainId),
+    );
+  };
 
   const onReceive = (chain: Chain) => (asset: Asset) => {
     setReceiveData({ chain, asset });
@@ -105,7 +110,7 @@ const Balances = () => {
                 query={query?.toLowerCase() || ''}
                 chain={chain}
                 publicKeys={publicKeys}
-                canMakeActions={canMakeActions}
+                canMakeActions={checkCanMakeActions(chain.chainId)}
                 onReceiveClick={onReceive(chain)}
               />
             ))}
