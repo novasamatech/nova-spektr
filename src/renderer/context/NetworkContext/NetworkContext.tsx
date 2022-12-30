@@ -91,6 +91,11 @@ export const NetworkProvider = ({ children }: PropsWithChildren) => {
   const previousConnectedConnections = usePrevious(connectedConnections);
   const previousAccounts = usePrevious(activeAccounts);
 
+  const getPublicKeys = (chainId: ChainId) =>
+    activeAccounts.reduce<PublicKey[]>((acc, account) => {
+      return account.publicKey && (!account.rootId || account.chainId === chainId) ? [...acc, account.publicKey] : acc;
+    }, []);
+
   useEffect(() => {
     (async () => {
       if (activeAccounts.length === 0) {
@@ -101,31 +106,21 @@ export const NetworkProvider = ({ children }: PropsWithChildren) => {
 
       if (previousAccounts?.length !== activeAccounts.length) {
         connectedConnections.forEach((chain) => {
-          const publicKeys = activeAccounts.reduce<PublicKey[]>((acc, account) => {
-            return account.publicKey && (!account.rootId || account.chainId === chain.chainId)
-              ? [...acc, account.publicKey]
-              : acc;
-          }, []);
-
+          const publicKeys = getPublicKeys(chain.chainId);
           subscribeBalanceChanges(chain, publicKeys);
         });
       }
 
       // subscribe to new connections
       const newConnections = connectedConnections.filter((c) => !previousConnectedConnections?.includes(c));
-      const removedConnections = previousConnectedConnections?.filter((c) => !connectedConnections.includes(c));
 
       newConnections.forEach((chain) => {
-        const publicKeys = activeAccounts.reduce<PublicKey[]>((acc, account) => {
-          return account.publicKey && (!account.rootId || account.chainId === chain.chainId)
-            ? [...acc, account.publicKey]
-            : acc;
-        }, []);
-
+        const publicKeys = getPublicKeys(chain.chainId);
         subscribeBalanceChanges(chain, publicKeys);
       });
 
       // unsubscribe from removed connections
+      const removedConnections = previousConnectedConnections?.filter((c) => !connectedConnections.includes(c));
       removedConnections?.forEach((chain) => {
         unsubscribe(chain.chainId);
       });
