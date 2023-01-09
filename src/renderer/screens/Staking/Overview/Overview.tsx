@@ -131,6 +131,7 @@ const Overview = () => {
     setActiveNetwork(option);
     setSelectedAccounts([]);
     setStaking({});
+    setValidators({});
     setQuery('');
   };
 
