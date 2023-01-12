@@ -209,8 +209,6 @@ const Overview = () => {
 
   const allAccountsSelected = selectedAccounts.length === activeAccounts.length && activeAccounts.length !== 0;
 
-  console.log(validators);
-
   return (
     <div className="h-full flex flex-col">
       <h1 className="font-semibold text-2xl text-neutral mb-9">{t('staking.title')}</h1>

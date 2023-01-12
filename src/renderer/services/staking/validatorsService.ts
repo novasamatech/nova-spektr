@@ -30,14 +30,11 @@ export const useValidators = (): IValidatorsService => {
 
     const mergedValidators = merge(stake, prefs);
 
-    const [identity, apy, slashes, avgApy] = await Promise.all([
+    const [identity, apy, slashes] = await Promise.all([
       getIdentities(api, Object.keys(mergedValidators)),
       getApy(api, Object.values(mergedValidators)),
       getSlashingSpans(api, Object.keys(stake), era),
-      getAvgValidatorsApy(api, Object.values(mergedValidators)),
     ]);
-
-    console.log('avgRewardPercent', avgApy);
 
     return merge(mergedValidators, apy, identity, slashes);
   };
