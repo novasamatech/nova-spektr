@@ -12,4 +12,6 @@ export type Validator = {
   slashed: boolean;
   apy: number;
   identity?: Identity;
+  avgApy: number;
+  nominators: string[];
 };

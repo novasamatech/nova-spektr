@@ -5,7 +5,7 @@ import merge from 'lodash/merge';
 import { Identity, SubIdentity } from '@renderer/domain/identity';
 import { AccountID, ChainId, EraIndex } from '@renderer/domain/shared-kernel';
 import { Validator } from '@renderer/domain/validator';
-import { getValidatorsApy } from './apyCalculator';
+import { getValidatorsApy, getAvgValidatorsApy } from './apyCalculator';
 import { IValidatorsService, ValidatorMap } from './common/types';
 
 export const useValidators = (): IValidatorsService => {
@@ -30,11 +30,14 @@ export const useValidators = (): IValidatorsService => {
 
     const mergedValidators = merge(stake, prefs);
 
-    const [apy, identity, slashes] = await Promise.all([
+    const [identity, apy, slashes, avgApy] = await Promise.all([
       getIdentities(api, Object.keys(mergedValidators)),
       getApy(api, Object.values(mergedValidators)),
       getSlashingSpans(api, Object.keys(stake), era),
+      getAvgValidatorsApy(api, Object.values(mergedValidators)),
     ]);
+
+    console.log('avgRewardPercent', avgApy);
 
     return merge(mergedValidators, apy, identity, slashes);
   };
@@ -47,7 +50,9 @@ export const useValidators = (): IValidatorsService => {
       const address = storageKey.args[1].toString();
       const totalStake = type.total.toString();
       const oversubscribed = type.others.length >= maxNominatorRewarded;
-      const payload = { totalStake, address, oversubscribed, ownStake: type.own.toString() };
+      const nominators = type.others.map((n) => n.who.toString());
+
+      const payload = { totalStake, address, oversubscribed, ownStake: type.own.toString(), nominators };
 
       return { ...acc, [address]: payload };
     }, {});
@@ -126,9 +131,10 @@ export const useValidators = (): IValidatorsService => {
 
   const getApy = async (api: ApiPromise, validators: Validator[]): Promise<Record<AccountID, { apy: number }>> => {
     const apy = await getValidatorsApy(api, validators);
+    const avgApy = await getAvgValidatorsApy(api, validators);
 
     return Object.entries(apy).reduce((acc, [address, apy]) => {
-      return { ...acc, [address]: { apy } };
+      return { ...acc, [address]: { apy, avgApy } };
     }, {});
   };
 

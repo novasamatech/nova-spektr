@@ -19,7 +19,7 @@ import { useStakingRewards } from '@renderer/services/staking/stakingRewardsServ
 import { useValidators } from '@renderer/services/staking/validatorsService';
 import { useWallet } from '@renderer/services/wallet/walletService';
 import { isStringsMatchQuery } from '@renderer/utils/strings';
-import { EmptyFilter, InactiveChain, NoAccounts, StakingList } from './components';
+import { AboutStaking, EmptyFilter, InactiveChain, NoAccounts, StakingList } from './components';
 import { AccountStakeInfo } from './components/List/StakingListItem/StakingListItem';
 
 type NetworkOption = { asset: Asset; addressPrefix: number };
@@ -37,7 +37,7 @@ const Overview = () => {
 
   const [era, setEra] = useState<number>();
   const [staking, setStaking] = useState<StakingMap>({});
-  const [_, setValidators] = useState<ValidatorMap>({});
+  const [validators, setValidators] = useState<ValidatorMap>({});
 
   const [query, setQuery] = useState('');
   const [selectedAccounts, setSelectedAccounts] = useState<AccountID[]>([]);
@@ -92,6 +92,7 @@ const Overview = () => {
 
     (async () => {
       const validators = await getValidators(chainId, api, era);
+
       setValidators(validators);
     })();
   }, [api, era]);
@@ -208,6 +209,8 @@ const Overview = () => {
 
   const allAccountsSelected = selectedAccounts.length === activeAccounts.length && activeAccounts.length !== 0;
 
+  console.log(validators);
+
   return (
     <div className="h-full flex flex-col">
       <h1 className="font-semibold text-2xl text-neutral mb-9">{t('staking.title')}</h1>
@@ -240,8 +243,14 @@ const Overview = () => {
 
         {networkIsActive && activeAccounts.length > 0 && (
           <>
+            <AboutStaking
+              className="mb-5"
+              validators={Object.values(validators)}
+              api={api}
+              asset={activeNetwork?.value.asset}
+            />
+
             {/* TODO: not in current sprint */}
-            {/*<AboutStaking asset={activeNetwork?.value.asset} />*/}
             {/*<InfoBanners />*/}
 
             <div className="flex items-center justify-between">

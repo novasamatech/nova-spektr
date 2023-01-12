@@ -16,6 +16,9 @@ export interface IStakingDataService {
     callback: (staking: StakingMap) => void,
   ) => Promise<() => void>;
   getMinNominatorBond: (api: ApiPromise) => Promise<string>;
+  getUnbondingPeriod: (api: ApiPromise) => string;
+  getCurrentEra: (api: ApiPromise) => Promise<string>;
+  getTotalStaked: (api: ApiPromise) => Promise<string>;
 }
 
 // =====================================================

@@ -84,8 +84,47 @@ export const useStakingData = (): IStakingDataService => {
     }
   };
 
+  const getUnbondingPeriod = (api: ApiPromise): string => {
+    try {
+      const unbondingDuration = api.consts.staking.bondingDuration.toNumber();
+      const eraDuration = api.consts.babe.epochDuration.toNumber();
+      const blockTime = api.consts.babe.expectedBlockTime.toNumber();
+
+      return ((unbondingDuration * eraDuration * blockTime) / 24 / 60 / 1000 / 10).toString();
+    } catch (error) {
+      console.warn(error);
+
+      return '0';
+    }
+  };
+
+  const getCurrentEra = async (api: ApiPromise): Promise<string> => {
+    try {
+      return (await api.query.staking.currentEra()).toString();
+    } catch (error) {
+      console.warn(error);
+
+      return '0';
+    }
+  };
+
+  const getTotalStaked = async (api: ApiPromise): Promise<string> => {
+    try {
+      const currentEra = await getCurrentEra(api);
+
+      return (await api.query.staking.erasTotalStake(currentEra)).toString();
+    } catch (error) {
+      console.warn(error);
+
+      return '0';
+    }
+  };
+
   return {
     subscribeStaking,
     getMinNominatorBond,
+    getUnbondingPeriod,
+    getCurrentEra,
+    getTotalStaked,
   };
 };
