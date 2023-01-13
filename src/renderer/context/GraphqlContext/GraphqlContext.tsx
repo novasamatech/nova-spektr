@@ -49,7 +49,7 @@ export const GraphqlProvider = ({ children }: PropsWithChildren) => {
       const chainsData = await getStakingChainsData();
 
       chainUrls.current = chainsData.reduce((acc, chain) => {
-        return { ...acc, [chain.chainId]: chain.externalApi?.staking.url };
+        return { ...acc, [chain.chainId]: chain.externalApi?.staking.find((api) => api.type == 'subquery')?.url };
       }, {});
 
       changeClient(getStakingNetwork());
