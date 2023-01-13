@@ -9,6 +9,8 @@ import { useNetworkContext } from '@renderer/context/NetworkContext';
 import { Asset, StakingType } from '@renderer/domain/asset';
 import { ConnectionStatus, ConnectionType } from '@renderer/domain/connection';
 import { AccountID, ChainId, SigningType } from '@renderer/domain/shared-kernel';
+import { Validator } from '@renderer/domain/validator';
+import useToggle from '@renderer/hooks/useToggle';
 import TotalAmount from '@renderer/screens/Staking/Overview/components/TotalAmount/TotalAmount';
 import { useAccount } from '@renderer/services/account/accountService';
 import { useChains } from '@renderer/services/network/chainsService';
@@ -20,24 +22,28 @@ import { useValidators } from '@renderer/services/staking/validatorsService';
 import { useWallet } from '@renderer/services/wallet/walletService';
 import { isStringsMatchQuery } from '@renderer/utils/strings';
 import { EmptyFilter, InactiveChain, NoAccounts, StakingList } from './components';
-import { AccountStakeInfo } from './components/List/StakingListItem/StakingListItem';
+import StakingListItem, { AccountStakeInfo } from './components/List/StakingListItem/StakingListItem';
+import MyNominatorsModal from './components/MyNominatorsModal/MyNominatorsModal';
 
 type NetworkOption = { asset: Asset; addressPrefix: number };
 
 const Overview = () => {
   const { t } = useI18n();
+  const [isNominatorsOpen, toggleNominators] = useToggle();
+
   const { changeClient } = useGraphql();
   const { connections } = useNetworkContext();
   const { getActiveAccounts } = useAccount();
   const { getLiveWallets } = useWallet();
   const { sortChains, getChainsData } = useChains();
   const { subscribeStaking } = useStakingData();
-  const { getValidators, subscribeActiveEra } = useValidators();
+  const { getValidators, subscribeActiveEra, getNominators } = useValidators();
   const { setStakingNetwork, getStakingNetwork } = useSettingsStorage();
 
   const [era, setEra] = useState<number>();
   const [staking, setStaking] = useState<StakingMap>({});
-  const [_, setValidators] = useState<ValidatorMap>({});
+  const [validators, setValidators] = useState<ValidatorMap>({});
+  const [nominators, setNominators] = useState<Validator[][]>([]);
 
   const [query, setQuery] = useState('');
   const [selectedAccounts, setSelectedAccounts] = useState<AccountID[]>([]);
@@ -143,12 +149,33 @@ const Overview = () => {
     }
   };
 
-  const onSelectAccount = (address: AccountID) => {
+  const selectAccount = (address: AccountID) => {
     if (selectedAccounts.includes(address)) {
       setSelectedAccounts((prev) => prev.filter((accountId) => accountId !== address));
     } else {
       setSelectedAccounts((prev) => prev.concat(address));
     }
+  };
+
+  const setupNominators = async (stash?: AccountID) => {
+    if (!api || !stash) return;
+
+    const nominators = await getNominators(api, stash);
+
+    const { elected, notElected } = nominators.reduce<Record<string, any[]>>(
+      (acc, nominator) => {
+        if (validators[nominator]) {
+          acc.elected.push(validators[nominator]);
+        } else {
+          acc.notElected.push({ address: nominator });
+        }
+
+        return acc;
+      },
+      { elected: [], notElected: [] },
+    );
+    setNominators([elected, notElected]);
+    toggleNominators();
   };
 
   const { watchOnlyAccs, paritySignerAccs } = activeAccounts.reduce<Record<string, AccountID[]>>(
@@ -195,6 +222,7 @@ const Overview = () => {
       return acc.concat({
         walletName,
         address: account.accountId,
+        stash: staking[account.accountId]?.stash,
         signingType: account.signingType,
         accountName: account.name,
         accountIsSelected: selectedAccounts.includes(account.accountId),
@@ -209,71 +237,85 @@ const Overview = () => {
   const allAccountsSelected = selectedAccounts.length === activeAccounts.length && activeAccounts.length !== 0;
 
   return (
-    <div className="h-full flex flex-col">
-      <h1 className="font-semibold text-2xl text-neutral mb-9">{t('staking.title')}</h1>
+    <>
+      <div className="h-full flex flex-col">
+        <h1 className="font-semibold text-2xl text-neutral mb-9">{t('staking.title')}</h1>
 
-      <div className="w-[900px] p-5 mx-auto bg-shade-2 rounded-2lg">
-        <div className="flex items-center mb-5">
-          <p className="text-xl text-neutral mr-5">
-            <Trans
-              t={t}
-              i18nKey="staking.overview.stakingAssetLabel"
-              values={{ asset: activeNetwork?.value.asset.symbol }}
-            />
-          </p>
-          <Dropdown
-            className="w-40"
-            placeholder={t('staking.startStaking.selectNetworkLabel')}
-            activeId={activeNetwork?.id}
-            options={stakingNetworks}
-            onChange={onNetworkChange}
-          />
-          {networkIsActive && activeAccounts.length > 0 && (
-            <TotalAmount
-              totalStakes={totalStakes}
-              asset={activeNetwork?.value.asset}
-              accounts={accountAddresses}
-              addressPrefix={activeNetwork?.value.addressPrefix}
-            />
-          )}
-        </div>
-
-        {networkIsActive && activeAccounts.length > 0 && (
-          <>
-            {/* TODO: not in current sprint */}
-            {/*<AboutStaking asset={activeNetwork?.value.asset} />*/}
-            {/*<InfoBanners />*/}
-
-            <div className="flex items-center justify-between">
-              <Input
-                wrapperClass="!bg-shade-5 w-[300px]"
-                placeholder={t('staking.overview.searchPlaceholder')}
-                prefixElement={<Icon name="search" className="w-5 h-5" />}
-                value={query}
-                onChange={(e) => setQuery(e.target.value)}
+        <div className="w-[900px] p-5 mx-auto bg-shade-2 rounded-2lg">
+          <div className="flex items-center mb-5">
+            <p className="text-xl text-neutral mr-5">
+              <Trans
+                t={t}
+                i18nKey="staking.overview.stakingAssetLabel"
+                values={{ asset: activeNetwork?.value.asset.symbol }}
               />
-              {/*<Filter />*/}
-            </div>
-
-            {query && stakingList.length === 0 ? (
-              <EmptyFilter />
-            ) : (
-              <StakingList
-                allAccountsSelected={allAccountsSelected}
-                staking={stakingList}
+            </p>
+            <Dropdown
+              className="w-40"
+              placeholder={t('staking.startStaking.selectNetworkLabel')}
+              activeId={activeNetwork?.id}
+              options={stakingNetworks}
+              onChange={onNetworkChange}
+            />
+            {networkIsActive && activeAccounts.length > 0 && (
+              <TotalAmount
+                totalStakes={totalStakes}
                 asset={activeNetwork?.value.asset}
+                accounts={accountAddresses}
                 addressPrefix={activeNetwork?.value.addressPrefix}
-                explorers={explorers}
-                onSelect={onSelectAccount}
-                onSelectAll={onSelectAllAccounts}
               />
             )}
-          </>
-        )}
-        {networkIsActive && !activeAccounts.length && <NoAccounts chainName={connections[chainId]?.name} />}
-        {!networkIsActive && <InactiveChain />}
+          </div>
+
+          {networkIsActive && activeAccounts.length > 0 && (
+            <>
+              {/* TODO: not in current sprint */}
+              {/*<AboutStaking asset={activeNetwork?.value.asset} />*/}
+              {/*<InfoBanners />*/}
+
+              <div className="flex items-center justify-between">
+                <Input
+                  wrapperClass="!bg-shade-5 w-[300px]"
+                  placeholder={t('staking.overview.searchPlaceholder')}
+                  prefixElement={<Icon name="search" className="w-5 h-5" />}
+                  value={query}
+                  onChange={(e) => setQuery(e.target.value)}
+                />
+                {/*<Filter />*/}
+              </div>
+
+              {query && stakingList.length === 0 ? (
+                <EmptyFilter />
+              ) : (
+                <StakingList allSelected={allAccountsSelected} onSelectAll={onSelectAllAccounts}>
+                  {stakingList.map((stake) => (
+                    <StakingListItem
+                      key={stake.address}
+                      stakeInfo={stake}
+                      asset={activeNetwork?.value.asset}
+                      addressPrefix={activeNetwork?.value.addressPrefix}
+                      explorers={explorers}
+                      onSelect={() => selectAccount(stake.address)}
+                      onOpenValidators={() => setupNominators(stake.stash)}
+                    />
+                  ))}
+                </StakingList>
+              )}
+            </>
+          )}
+          {networkIsActive && !activeAccounts.length && <NoAccounts chainName={connections[chainId]?.name} />}
+          {!networkIsActive && <InactiveChain />}
+        </div>
       </div>
-    </div>
+
+      <MyNominatorsModal
+        isOpen={isNominatorsOpen}
+        nominators={nominators}
+        explorers={explorers}
+        asset={activeNetwork?.value.asset}
+        onClose={toggleNominators}
+      />
+    </>
   );
 };
 

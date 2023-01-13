@@ -54,7 +54,7 @@ export interface IValidatorsService {
   subscribeActiveEra: (chainId: ChainId, api: ApiPromise, callback: (era?: EraIndex) => void) => Promise<() => void>;
   getValidators: (chainId: ChainId, api: ApiPromise, era: EraIndex) => Promise<ValidatorMap>;
   getMaxValidators: (api: ApiPromise) => number;
-  getNominators: (api: ApiPromise, account: AccountID) => Promise<string[]>;
+  getNominators: (api: ApiPromise, account: AccountID) => Promise<AccountID[]>;
 }
 
 // =====================================================

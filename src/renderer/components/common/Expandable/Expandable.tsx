@@ -24,7 +24,7 @@ const Expandable = ({
   const [isActive, toggleIsActive] = useToggle(defaultActive);
 
   return (
-    <div className={cn(wrapperClass)}>
+    <div className={wrapperClass}>
       <div className={cn('flex justify-between items-center', itemClass)}>
         {item}
         <Button

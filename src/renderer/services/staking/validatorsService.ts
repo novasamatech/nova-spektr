@@ -132,7 +132,7 @@ export const useValidators = (): IValidatorsService => {
     }, {});
   };
 
-  const getNominators = async (api: ApiPromise, account: AccountID): Promise<string[]> => {
+  const getNominators = async (api: ApiPromise, account: AccountID): Promise<AccountID[]> => {
     try {
       const data = await api.query.staking.nominators(account);
       if (data.isNone) return [];

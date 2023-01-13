@@ -19,9 +19,9 @@ import { toAddress } from '@renderer/services/balance/common/utils';
 import { useChains } from '@renderer/services/network/chainsService';
 import { toPublicKey } from '@renderer/utils/address';
 import { getShortAddress } from '@renderer/utils/strings';
-import './StepThree.css';
 import { useWallet } from '@renderer/services/wallet/walletService';
 import { createWallet } from '@renderer/domain/wallet';
+import './StepThree.css';
 
 type Props = {
   qrData: SeedInfo[];
@@ -151,9 +151,7 @@ const StepThree = ({ qrData, onNextStep }: Props) => {
       walletId,
     });
 
-    const rootAccountId = await addAccount(rootAccount);
-
-    return rootAccountId;
+    return addAccount(rootAccount);
   };
 
   const createDerivedAccounts = (

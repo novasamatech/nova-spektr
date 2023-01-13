@@ -24,7 +24,16 @@ describe('screens/Staking/Overview/StakingListItem', () => {
   };
 
   test('should render component', () => {
-    render(<StakingListItem stakeInfo={stakeInfo} asset={asset} addressPrefix={0} onSelect={() => {}} />);
+    render(
+      <StakingListItem
+        stakeInfo={stakeInfo}
+        asset={asset}
+        addressPrefix={0}
+        explorers={[]}
+        onOpenValidators={() => {}}
+        onSelect={() => {}}
+      />,
+    );
 
     const accountName = screen.getByText(stakeInfo.accountName);
     const subName = screen.getByText(stakeInfo.walletName);
@@ -35,7 +44,7 @@ describe('screens/Staking/Overview/StakingListItem', () => {
   });
 
   test('should render loading state', () => {
-    render(<StakingListItem stakeInfo={stakeInfo} onSelect={() => {}} />);
+    render(<StakingListItem stakeInfo={stakeInfo} onSelect={() => {}} onOpenValidators={() => {}} />);
 
     const amounts = screen.queryByText('assetBalance.number');
     expect(amounts).not.toBeInTheDocument();

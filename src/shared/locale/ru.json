@@ -248,6 +248,7 @@
     "overview": {
       "aboutStakingLabel": "О стейкинге { asset } токенов",
       "accountTableHeader": "Аккаунты",
+      "electedTitle": "Выбранные",
       "emptyFilterDescription": "Попробуйте другие параметры фильтра",
       "emptyFilterLabel": "Результаты не найдены",
       "filterButton": "Фильтры",
@@ -260,13 +261,19 @@
       "noActiveWalletsLabel": "Нет выбранных кошельков",
       "noResultsDescription": "Пожалуйста, попробуйте другие параметры фильтрации",
       "noResultsLabel": "Сттейкинги не найдены",
+      "nominatorsColumnOne": "Валидаторы",
+      "nominatorsColumnThree": "Вклад",
+      "nominatorsColumnTwo": "Награды (APY)",
+      "notElectedDescription": "Валидаторы с недостаточным стейком пока не избраны",
+      "notElectedTitle": "Не избранные",
       "rewardsTableHeader": "Общая награда",
       "searchPlaceholder": "Искать по имени кошелька",
       "stakeTableHeader": "Стейк",
       "stakingAssetLabel": "Стейкинг <strong>{ asset }</strong> на",
       "totalRewardsLabel": "Общая награда",
       "totalStakedLabel": "Общий стейк",
-      "viewValidatorsOption": "Валидаторы"
+      "viewValidatorsOption": "Валидаторы",
+      "yourValidatorsTitle": "Мои валидаторы"
     },
     "title": "Стейкинг",
     "unbond": {

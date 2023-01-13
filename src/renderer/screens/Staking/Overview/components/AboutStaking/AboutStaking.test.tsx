@@ -10,7 +10,7 @@ jest.mock('@renderer/context/I18nContext', () => ({
   }),
 }));
 
-describe('pages/Staking/Overview/AboutStaking', () => {
+describe('screens/Staking/Overview/AboutStaking', () => {
   test('should create component', () => {
     render(<AboutStaking />);
 

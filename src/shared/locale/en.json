@@ -248,6 +248,7 @@
     "overview": {
       "aboutStakingLabel": "About { asset } staking",
       "accountTableHeader": "Accounts",
+      "electedTitle": "Elected",
       "emptyFilterDescription": "Try another filter parameters",
       "emptyFilterLabel": "No results",
       "filterButton": "Filters",
@@ -260,20 +261,26 @@
       "noActiveWalletsLabel": "No wallet selected",
       "noResultsDescription": "Please try another filter parameters",
       "noResultsLabel": "No staking found",
+      "nominatorsColumnOne": "Validators",
+      "nominatorsColumnThree": "Nominated",
+      "nominatorsColumnTwo": "Rewards (APY)",
+      "notElectedDescription": "Validators without enough stake to be elected",
+      "notElectedTitle": "Not Elected",
       "rewardsTableHeader": "Total rewards",
       "searchPlaceholder": "Search by account name",
       "stakeTableHeader": "Staked",
       "stakingAssetLabel": "Staking <strong>{ asset }</strong> on",
       "totalRewardsLabel": "Total rewards",
       "totalStakedLabel": "Total staked",
-      "viewValidatorsOption": "View validators"
+      "viewValidatorsOption": "View validators",
+      "yourValidatorsTitle": "Your validators"
     },
     "title": "Staking",
     "unbond": {
       "subtitle": "Unbond"
     },
     "validators": {
-      "subtitle": "Валидаторы"
+      "subtitle": "Validators"
     }
   },
   "transfer": {
