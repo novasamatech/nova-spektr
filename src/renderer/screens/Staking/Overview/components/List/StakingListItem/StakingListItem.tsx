@@ -28,7 +28,6 @@ type Props = {
 
 const StakingListItem = ({ stakeInfo, asset, addressPrefix, explorers, onSelect, onOpenValidators }: Props) => {
   const { t } = useI18n();
-
   // TODO: let it stay for a while, full shimmering row
   //   return (
   //     <div className="flex items-center pl-4 pr-2 h-12.5 border-b border-shade-5 text-neutral">

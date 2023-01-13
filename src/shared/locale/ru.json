@@ -239,16 +239,40 @@
     "troubleshootingLink": "I have an error in Parity Signer"
   },
   "staking": {
+    "about": {
+      "aboutStakingTitle": "About { asset } staking",
+      "activeNominatorsLabel": "Active nominators",
+      "averageApyLabel": "Average APY",
+      "earningsTitle": "Estimated <strong>{ asset }</strong> earnings with restake",
+      "maximumApyLabel": "Maximum APY",
+      "minimumStakeLabel": "Minimum stake",
+      "monthlyEarningLabel": "Monthly",
+      "stakingPeriodLabel": "Staking period",
+      "totalStakedLabel": "Total staked",
+      "unlimitedLabel": "Unlimited",
+      "unstakingPeriodLabel": "Unstaking period",
+      "unstakingPeriodValue": "{ period } days",
+      "yearlyEarningLabel": "Yearly"
+    },
     "bond": {
       "confirmBondSubtitle": "Потверждение",
       "initBondSubtitle": "Начало Стейкинга",
       "selectNetworkLabel": "Выберите сеть",
       "validatorsSubtitle": "Валидаторы"
     },
+    "nominators": {
+      "electedTitle": "Выбранные",
+      "nominated": "Вклад",
+      "notAssigned": "Нет вклада",
+      "notElectedDescription": "Валидаторы с недостаточным стейком пока не избраны",
+      "notElectedTitle": "Не избранные",
+      "rewards": "Награды (APY)",
+      "validators": "Валидаторы",
+      "yourValidatorsTitle": "Мои валидаторы"
+    },
     "overview": {
       "aboutStakingLabel": "О стейкинге { asset } токенов",
       "accountTableHeader": "Аккаунты",
-      "electedTitle": "Выбранные",
       "emptyFilterDescription": "Попробуйте другие параметры фильтра",
       "emptyFilterLabel": "Результаты не найдены",
       "filterButton": "Фильтры",
@@ -261,19 +285,13 @@
       "noActiveWalletsLabel": "Нет выбранных кошельков",
       "noResultsDescription": "Пожалуйста, попробуйте другие параметры фильтрации",
       "noResultsLabel": "Сттейкинги не найдены",
-      "nominatorsColumnOne": "Валидаторы",
-      "nominatorsColumnThree": "Вклад",
-      "nominatorsColumnTwo": "Награды (APY)",
-      "notElectedDescription": "Валидаторы с недостаточным стейком пока не избраны",
-      "notElectedTitle": "Не избранные",
       "rewardsTableHeader": "Общая награда",
       "searchPlaceholder": "Искать по имени кошелька",
       "stakeTableHeader": "Стейк",
       "stakingAssetLabel": "Стейкинг <strong>{ asset }</strong> на",
       "totalRewardsLabel": "Общая награда",
       "totalStakedLabel": "Общий стейк",
-      "viewValidatorsOption": "Валидаторы",
-      "yourValidatorsTitle": "Мои валидаторы"
+      "viewValidatorsOption": "Валидаторы"
     },
     "title": "Стейкинг",
     "unbond": {

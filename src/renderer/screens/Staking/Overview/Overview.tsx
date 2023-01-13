@@ -1,3 +1,4 @@
+import { BN, BN_ZERO } from '@polkadot/util';
 import { useEffect, useState } from 'react';
 import { Trans } from 'react-i18next';
 
@@ -9,21 +10,21 @@ import { useNetworkContext } from '@renderer/context/NetworkContext';
 import { Asset, StakingType } from '@renderer/domain/asset';
 import { ConnectionStatus, ConnectionType } from '@renderer/domain/connection';
 import { AccountID, ChainId, SigningType } from '@renderer/domain/shared-kernel';
-import { Validator } from '@renderer/domain/validator';
 import useToggle from '@renderer/hooks/useToggle';
 import TotalAmount from '@renderer/screens/Staking/Overview/components/TotalAmount/TotalAmount';
 import { useAccount } from '@renderer/services/account/accountService';
 import { useChains } from '@renderer/services/network/chainsService';
 import { useSettingsStorage } from '@renderer/services/settings/settingsStorage';
 import { StakingMap, ValidatorMap } from '@renderer/services/staking/common/types';
+import { useEra } from '@renderer/services/staking/eraService';
 import { useStakingData } from '@renderer/services/staking/stakingDataService';
 import { useStakingRewards } from '@renderer/services/staking/stakingRewardsService';
 import { useValidators } from '@renderer/services/staking/validatorsService';
 import { useWallet } from '@renderer/services/wallet/walletService';
 import { isStringsMatchQuery } from '@renderer/utils/strings';
-import { EmptyFilter, InactiveChain, NoAccounts, StakingList } from './components';
+import { AboutStaking, EmptyFilter, InactiveChain, NoAccounts, StakingList } from './components';
 import StakingListItem, { AccountStakeInfo } from './components/List/StakingListItem/StakingListItem';
-import MyNominatorsModal from './components/MyNominatorsModal/MyNominatorsModal';
+import MyNominatorsModal, { Nominator } from './components/MyNominatorsModal/MyNominatorsModal';
 
 type NetworkOption = { asset: Asset; addressPrefix: number };
 
@@ -37,13 +38,14 @@ const Overview = () => {
   const { getLiveWallets } = useWallet();
   const { sortChains, getChainsData } = useChains();
   const { subscribeStaking } = useStakingData();
-  const { getValidators, subscribeActiveEra, getNominators } = useValidators();
+  const { getValidators, getNominators } = useValidators();
+  const { subscribeActiveEra } = useEra();
   const { setStakingNetwork, getStakingNetwork } = useSettingsStorage();
 
   const [era, setEra] = useState<number>();
   const [staking, setStaking] = useState<StakingMap>({});
   const [validators, setValidators] = useState<ValidatorMap>({});
-  const [nominators, setNominators] = useState<Validator[][]>([]);
+  const [nominators, setNominators] = useState<Nominator[][]>([]);
 
   const [query, setQuery] = useState('');
   const [selectedAccounts, setSelectedAccounts] = useState<AccountID[]>([]);
@@ -83,7 +85,7 @@ const Overview = () => {
     let unsubStaking: () => void | undefined;
 
     (async () => {
-      unsubEra = await subscribeActiveEra(chainId, api, setEra);
+      unsubEra = await subscribeActiveEra(api, setEra);
       unsubStaking = await subscribeStaking(chainId, api, accountAddresses, setStaking);
     })();
 
@@ -98,6 +100,7 @@ const Overview = () => {
 
     (async () => {
       const validators = await getValidators(chainId, api, era);
+
       setValidators(validators);
     })();
   }, [api, era]);
@@ -164,11 +167,29 @@ const Overview = () => {
 
     const { elected, notElected } = nominators.reduce<Record<string, any[]>>(
       (acc, nominator) => {
-        if (validators[nominator]) {
-          acc.elected.push(validators[nominator]);
-        } else {
-          acc.notElected.push({ address: nominator });
+        const validator = validators[nominator];
+        if (!validator) {
+          return {
+            elected: acc.elected,
+            notElected: acc.notElected.concat({ address: nominator }),
+          };
         }
+
+        const { identity, apy } = validator;
+        const fullIdentity = identity?.subName
+          ? `${identity.parent.name}/${identity.subName}`
+          : identity?.parent.name || '';
+
+        const nominated = validator.nominators.reduce((acc, data) => {
+          return data.who === stash ? acc.add(new BN(data.value)) : acc;
+        }, BN_ZERO);
+
+        acc.elected.push({
+          apy,
+          address: nominator,
+          identity: fullIdentity,
+          nominated: nominated.toString(),
+        });
 
         return acc;
       },
@@ -269,8 +290,14 @@ const Overview = () => {
 
           {networkIsActive && activeAccounts.length > 0 && (
             <>
-              {/* TODO: not in current sprint */}
-              {/*<AboutStaking asset={activeNetwork?.value.asset} />*/}
+              <AboutStaking
+                className="mb-5"
+                validators={Object.values(validators)}
+                api={api}
+                era={era}
+                asset={activeNetwork?.value.asset}
+              />
+
               {/*<InfoBanners />*/}
 
               <div className="flex items-center justify-between">

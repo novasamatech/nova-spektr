@@ -61,6 +61,11 @@ jest.mock('@renderer/services/staking/stakingDataService', () => ({
 jest.mock('@renderer/services/staking/validatorsService', () => ({
   useValidators: jest.fn().mockReturnValue({
     getValidators: jest.fn(),
+  }),
+}));
+
+jest.mock('@renderer/services/staking/eraService', () => ({
+  useEra: jest.fn().mockReturnValue({
     subscribeActiveEra: jest.fn(),
   }),
 }));
@@ -83,6 +88,7 @@ jest.mock('./components/InfoBanners/InfoBanners', () => () => <span>infoBanners<
 jest.mock('./components/Filter/Filter', () => () => <span>filter</span>);
 jest.mock('./components/List/StakingList/StakingList', () => () => <span>stakingList</span>);
 jest.mock('./components/TotalAmount/TotalAmount', () => () => <span>totalAmount</span>);
+jest.mock('./components/MyNominatorsModal/MyNominatorsModal', () => () => <span>nominatorsModal</span>);
 
 describe('screens/Staking/Overview', () => {
   beforeEach(() => {
@@ -103,9 +109,11 @@ describe('screens/Staking/Overview', () => {
     const title = screen.getByText('staking.title');
     const stakingList = screen.getByText('stakingList');
     const totalAmount = screen.getByText('totalAmount');
+    const nominatorsModal = screen.getByText('nominatorsModal');
     expect(title).toBeInTheDocument();
     expect(stakingList).toBeInTheDocument();
     expect(totalAmount).toBeInTheDocument();
+    expect(nominatorsModal).toBeInTheDocument();
   });
 
   test('should render network settings link', async () => {

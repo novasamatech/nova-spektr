@@ -12,4 +12,11 @@ export type Validator = {
   slashed: boolean;
   apy: number;
   identity?: Identity;
+  avgApy: number;
+  nominators: Nominator[];
+};
+
+type Nominator = {
+  who: AccountID;
+  value: string;
 };

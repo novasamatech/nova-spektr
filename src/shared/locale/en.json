@@ -239,16 +239,40 @@
     "troubleshootingLink": "I have an error in Parity Signer"
   },
   "staking": {
+    "about": {
+      "aboutStakingTitle": "About { asset } staking",
+      "activeNominatorsLabel": "Active nominators",
+      "averageApyLabel": "Average APY",
+      "earningsTitle": "Estimated <strong>{ asset }</strong> earnings with restake",
+      "maximumApyLabel": "Maximum APY",
+      "minimumStakeLabel": "Minimum stake",
+      "monthlyEarningLabel": "Monthly",
+      "stakingPeriodLabel": "Staking period",
+      "totalStakedLabel": "Total staked",
+      "unlimitedLabel": "Unlimited",
+      "unstakingPeriodLabel": "Unstaking period",
+      "unstakingPeriodValue": "{ period } days",
+      "yearlyEarningLabel": "Yearly"
+    },
     "bond": {
       "confirmBondSubtitle": "Confirm",
       "initBondSubtitle": "Start Staking",
       "selectNetworkLabel": "Select network",
       "validatorsSubtitle": "Validators"
     },
+    "nominators": {
+      "electedTitle": "Elected",
+      "nominated": "Nominated",
+      "notAssigned": "Not assigned",
+      "notElectedDescription": "Validators without enough stake to be elected",
+      "notElectedTitle": "Not Elected",
+      "rewards": "Rewards (APY)",
+      "validators": "Validators",
+      "yourValidatorsTitle": "Your validators"
+    },
     "overview": {
       "aboutStakingLabel": "About { asset } staking",
       "accountTableHeader": "Accounts",
-      "electedTitle": "Elected",
       "emptyFilterDescription": "Try another filter parameters",
       "emptyFilterLabel": "No results",
       "filterButton": "Filters",
@@ -261,19 +285,13 @@
       "noActiveWalletsLabel": "No wallet selected",
       "noResultsDescription": "Please try another filter parameters",
       "noResultsLabel": "No staking found",
-      "nominatorsColumnOne": "Validators",
-      "nominatorsColumnThree": "Nominated",
-      "nominatorsColumnTwo": "Rewards (APY)",
-      "notElectedDescription": "Validators without enough stake to be elected",
-      "notElectedTitle": "Not Elected",
       "rewardsTableHeader": "Total rewards",
       "searchPlaceholder": "Search by account name",
       "stakeTableHeader": "Staked",
       "stakingAssetLabel": "Staking <strong>{ asset }</strong> on",
       "totalRewardsLabel": "Total rewards",
       "totalStakedLabel": "Total staked",
-      "viewValidatorsOption": "View validators",
-      "yourValidatorsTitle": "Your validators"
+      "viewValidatorsOption": "View validators"
     },
     "title": "Staking",
     "unbond": {

@@ -11,12 +11,14 @@ type Props = {
   itemClass?: string;
   wrapperClass?: string;
   alwaysActive?: boolean;
+  full?: boolean;
 };
 
 const Expandable = ({
   item,
   defaultActive = true,
-  alwaysActive = false,
+  alwaysActive,
+  full,
   wrapperClass,
   itemClass,
   children,
@@ -25,17 +27,29 @@ const Expandable = ({
 
   return (
     <div className={wrapperClass}>
-      <div className={cn('flex justify-between items-center', itemClass)}>
-        {item}
+      {full ? (
         <Button
           pallet="shade"
           variant="text"
-          className="max-h-5 px-0"
+          className={cn('w-full px-0', itemClass)}
+          suffixElement={<Icon name={isActive || alwaysActive ? 'down' : 'up'} size={20} />}
           onClick={() => !alwaysActive && toggleIsActive()}
         >
-          <Icon name={isActive || alwaysActive ? 'down' : 'up'} size={20} />
+          {item}
         </Button>
-      </div>
+      ) : (
+        <div className={cn('flex justify-between items-center', itemClass)}>
+          {item}
+          <Button
+            pallet="shade"
+            variant="text"
+            className="max-h-5 px-0"
+            onClick={() => !alwaysActive && toggleIsActive()}
+          >
+            <Icon name={isActive || alwaysActive ? 'down' : 'up'} size={20} />
+          </Button>
+        </div>
+      )}
 
       <Transition
         as={Fragment}
