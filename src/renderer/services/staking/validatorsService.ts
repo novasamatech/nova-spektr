@@ -9,28 +9,12 @@ import { getValidatorsApy } from './apyCalculator';
 import { IValidatorsService, ValidatorMap } from './common/types';
 
 export const useValidators = (): IValidatorsService => {
-  const subscribeActiveEra = (
-    chainId: ChainId,
-    api: ApiPromise,
-    callback: (era?: EraIndex) => void,
-  ): Promise<() => void> => {
-    return api.query.staking.activeEra((data: any) => {
-      try {
-        const unwrappedData = data.unwrap();
-        callback(unwrappedData.get('index').toNumber());
-      } catch (error) {
-        console.warn(error);
-        callback(undefined);
-      }
-    });
-  };
-
   const getValidators = async (chainId: ChainId, api: ApiPromise, era: EraIndex): Promise<ValidatorMap> => {
     const [stake, prefs] = await Promise.all([getValidatorsStake(api, era), getValidatorsPrefs(api, era)]);
 
     const mergedValidators = merge(stake, prefs);
 
-    const [apy, identity, slashes] = await Promise.all([
+    const [identity, apy, slashes] = await Promise.all([
       getIdentities(api, Object.keys(mergedValidators)),
       getApy(api, Object.values(mergedValidators)),
       getSlashingSpans(api, Object.keys(stake), era),
@@ -47,7 +31,9 @@ export const useValidators = (): IValidatorsService => {
       const address = storageKey.args[1].toString();
       const totalStake = type.total.toString();
       const oversubscribed = type.others.length >= maxNominatorRewarded;
-      const payload = { totalStake, address, oversubscribed, ownStake: type.own.toString() };
+      const nominators = type.others.map((n) => n.who.toString());
+
+      const payload = { totalStake, address, oversubscribed, ownStake: type.own.toString(), nominators };
 
       return { ...acc, [address]: payload };
     }, {});
@@ -174,7 +160,6 @@ export const useValidators = (): IValidatorsService => {
   };
 
   return {
-    subscribeActiveEra,
     getValidators,
     getMaxValidators,
     getNominators,
