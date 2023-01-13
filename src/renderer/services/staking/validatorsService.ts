@@ -5,26 +5,10 @@ import merge from 'lodash/merge';
 import { Identity, SubIdentity } from '@renderer/domain/identity';
 import { AccountID, ChainId, EraIndex } from '@renderer/domain/shared-kernel';
 import { Validator } from '@renderer/domain/validator';
-import { getValidatorsApy, getAvgValidatorsApy } from './apyCalculator';
+import { getValidatorsApy } from './apyCalculator';
 import { IValidatorsService, ValidatorMap } from './common/types';
 
 export const useValidators = (): IValidatorsService => {
-  const subscribeActiveEra = (
-    chainId: ChainId,
-    api: ApiPromise,
-    callback: (era?: EraIndex) => void,
-  ): Promise<() => void> => {
-    return api.query.staking.activeEra((data: any) => {
-      try {
-        const unwrappedData = data.unwrap();
-        callback(unwrappedData.get('index').toNumber());
-      } catch (error) {
-        console.warn(error);
-        callback(undefined);
-      }
-    });
-  };
-
   const getValidators = async (chainId: ChainId, api: ApiPromise, era: EraIndex): Promise<ValidatorMap> => {
     const [stake, prefs] = await Promise.all([getValidatorsStake(api, era), getValidatorsPrefs(api, era)]);
 
@@ -128,10 +112,9 @@ export const useValidators = (): IValidatorsService => {
 
   const getApy = async (api: ApiPromise, validators: Validator[]): Promise<Record<AccountID, { apy: number }>> => {
     const apy = await getValidatorsApy(api, validators);
-    const avgApy = await getAvgValidatorsApy(api, validators);
 
     return Object.entries(apy).reduce((acc, [address, apy]) => {
-      return { ...acc, [address]: { apy, avgApy } };
+      return { ...acc, [address]: { apy } };
     }, {});
   };
 
@@ -177,7 +160,6 @@ export const useValidators = (): IValidatorsService => {
   };
 
   return {
-    subscribeActiveEra,
     getValidators,
     getMaxValidators,
     getNominators,

@@ -21,6 +21,7 @@ import { useWallet } from '@renderer/services/wallet/walletService';
 import { isStringsMatchQuery } from '@renderer/utils/strings';
 import { AboutStaking, EmptyFilter, InactiveChain, NoAccounts, StakingList } from './components';
 import { AccountStakeInfo } from './components/List/StakingListItem/StakingListItem';
+import { useEra } from '@renderer/services/staking/eraService';
 
 type NetworkOption = { asset: Asset; addressPrefix: number };
 
@@ -32,7 +33,8 @@ const Overview = () => {
   const { getLiveWallets } = useWallet();
   const { sortChains, getChainsData } = useChains();
   const { subscribeStaking } = useStakingData();
-  const { getValidators, subscribeActiveEra } = useValidators();
+  const { getValidators } = useValidators();
+  const { subscribeActiveEra } = useEra();
   const { setStakingNetwork, getStakingNetwork } = useSettingsStorage();
 
   const [era, setEra] = useState<number>();
@@ -77,7 +79,7 @@ const Overview = () => {
     let unsubStaking: () => void | undefined;
 
     (async () => {
-      unsubEra = await subscribeActiveEra(chainId, api, setEra);
+      unsubEra = await subscribeActiveEra(api, setEra);
       unsubStaking = await subscribeStaking(chainId, api, accountAddresses, setStaking);
     })();
 
@@ -245,6 +247,7 @@ const Overview = () => {
               className="mb-5"
               validators={Object.values(validators)}
               api={api}
+              era={era}
               asset={activeNetwork?.value.asset}
             />
 

@@ -1,6 +1,6 @@
 import { ApiPromise } from '@polkadot/api';
 
-import { AccountID, ChainId } from '@renderer/domain/shared-kernel';
+import { AccountID, ChainId, EraIndex } from '@renderer/domain/shared-kernel';
 import { Stake } from '@renderer/domain/stake';
 import { IStakingDataService, StakingMap } from './common/types';
 
@@ -98,21 +98,9 @@ export const useStakingData = (): IStakingDataService => {
     }
   };
 
-  const getCurrentEra = async (api: ApiPromise): Promise<string> => {
+  const getTotalStaked = async (api: ApiPromise, era: EraIndex): Promise<string> => {
     try {
-      return (await api.query.staking.currentEra()).toString();
-    } catch (error) {
-      console.warn(error);
-
-      return '0';
-    }
-  };
-
-  const getTotalStaked = async (api: ApiPromise): Promise<string> => {
-    try {
-      const currentEra = await getCurrentEra(api);
-
-      return (await api.query.staking.erasTotalStake(currentEra)).toString();
+      return (await api.query.staking.erasTotalStake(era)).toString();
     } catch (error) {
       console.warn(error);
 
@@ -124,7 +112,6 @@ export const useStakingData = (): IStakingDataService => {
     subscribeStaking,
     getMinNominatorBond,
     getUnbondingPeriod,
-    getCurrentEra,
     getTotalStaked,
   };
 };

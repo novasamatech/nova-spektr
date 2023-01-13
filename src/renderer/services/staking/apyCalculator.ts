@@ -56,7 +56,7 @@ const calculateValidatorApy = (
   return +pureApy.multipliedBy(100).toFixed(2);
 };
 
-const getMedianCommission = (validators: ApyValidator[]) => {
+const getMedianCommission = (validators: ApyValidator[]): number => {
   const profitable = validators
     .map((validator) => validator.commission)
     .filter((commission) => commission && commission < 100)
@@ -94,7 +94,10 @@ export const getValidatorsApy = async (
  * @param api ApiPromise to make RPC calls
  * @return {Promise}
  */
-export const getAvgValidatorsApy = async (api: ApiPromise, validators: ApyValidator[]): Promise<number> => {
+export const getAvgApy = async (api: ApiPromise, validators: ApyValidator[]): Promise<string> => {
+  if (validators.length === 0) {
+    return '';
+  }
   const totalIssuance = await getTotalIssuance(api);
   const stake = validators.reduce((acc, { totalStake }) => {
     return acc.plus(new BigNumber(totalStake));
@@ -103,7 +106,7 @@ export const getAvgValidatorsApy = async (api: ApiPromise, validators: ApyValida
   const avgRewardPercent = getAvgRewardPercent(stake, totalIssuance);
   const median = getMedianCommission(validators);
 
-  return avgRewardPercent * (1 - median / 100);
+  return (avgRewardPercent * (1 - median / 100) * 100).toFixed(2);
 };
 
 // TODO: another APY calculation
