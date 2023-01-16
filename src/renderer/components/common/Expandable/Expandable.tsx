@@ -17,8 +17,8 @@ type Props = {
 const Expandable = ({
   item,
   defaultActive = true,
-  alwaysActive,
-  full,
+  alwaysActive = false,
+  full = false,
   wrapperClass,
   itemClass,
   children,

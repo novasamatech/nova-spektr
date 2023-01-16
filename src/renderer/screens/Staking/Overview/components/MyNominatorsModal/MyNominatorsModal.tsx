@@ -14,17 +14,16 @@ export type Nominator = {
 };
 
 type Props = {
-  nominators: Nominator[][];
+  elected: Nominator[];
+  notElected: Nominator[];
   asset?: Asset;
   explorers?: Explorer[];
   isOpen: boolean;
   onClose: () => void;
 };
 
-const MyNominatorsModal = ({ nominators, asset, explorers, isOpen, onClose }: Props) => {
+const MyNominatorsModal = ({ elected, notElected, asset, explorers, isOpen, onClose }: Props) => {
   const { t } = useI18n();
-
-  const [elected, notElected] = nominators;
 
   return (
     <BaseModal

@@ -45,7 +45,7 @@ const Overview = () => {
   const [era, setEra] = useState<number>();
   const [staking, setStaking] = useState<StakingMap>({});
   const [validators, setValidators] = useState<ValidatorMap>({});
-  const [nominators, setNominators] = useState<Nominator[][]>([]);
+  const [nominators, setNominators] = useState<Nominator[][]>([[], []]);
 
   const [query, setQuery] = useState('');
   const [selectedAccounts, setSelectedAccounts] = useState<AccountID[]>([]);
@@ -337,7 +337,8 @@ const Overview = () => {
 
       <MyNominatorsModal
         isOpen={isNominatorsOpen}
-        nominators={nominators}
+        elected={nominators[0]}
+        notElected={nominators[1]}
         explorers={explorers}
         asset={activeNetwork?.value.asset}
         onClose={toggleNominators}
