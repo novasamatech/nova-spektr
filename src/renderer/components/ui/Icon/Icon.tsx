@@ -9,17 +9,27 @@ type Props = {
 };
 
 const Icon = ({ as = 'svg', name, size = 24, className, alt = '' }: Props) => {
-  const IconComponent = AllIcons[name][as];
+  let iconType = as;
+  let IconComponent = AllIcons[name][as];
 
   if (!IconComponent) {
-    throw new Error('Icons not found or unknown icon type');
+    console.warn(`Icon "${name}" doesn't have "${as}" type`);
+
+    iconType = as === 'svg' ? 'img' : 'svg';
+    IconComponent = AllIcons[name][iconType];
+
+    if (!IconComponent) {
+      console.warn(`Icon "${name}" doesn't exist`);
+
+      return <div style={{ width: size, height: size, borderRadius: 10, backgroundColor: 'lightgrey' }} />;
+    }
   }
 
-  if (as === 'svg') {
+  if (iconType === 'svg') {
     return <IconComponent className={className} width={size} height={size} role="img" data-testid={`${name}-svg`} />;
   }
 
-  if (as === 'img') {
+  if (iconType === 'img') {
     return (
       <img
         className={className}
