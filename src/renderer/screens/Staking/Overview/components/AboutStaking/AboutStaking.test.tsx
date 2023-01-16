@@ -4,13 +4,22 @@ import AboutStaking from './AboutStaking';
 
 jest.mock('react-i18next', () => ({ Trans: (props: any) => props.i18nKey }));
 
+jest.mock('@renderer/components/common', () => ({
+  Expandable: ({ item, children }: any) => (
+    <>
+      {item}
+      {children}
+    </>
+  ),
+}));
+
 jest.mock('@renderer/context/I18nContext', () => ({
   useI18n: jest.fn().mockReturnValue({
     t: (key: string) => key,
   }),
 }));
 
-describe('pages/Staking/Overview/AboutStaking', () => {
+describe('screens/Staking/Overview/AboutStaking', () => {
   test('should create component', () => {
     render(<AboutStaking validators={[]} />);
 
