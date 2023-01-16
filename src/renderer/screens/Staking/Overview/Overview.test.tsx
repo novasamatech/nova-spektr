@@ -88,7 +88,7 @@ jest.mock('./components/InfoBanners/InfoBanners', () => () => <span>infoBanners<
 jest.mock('./components/Filter/Filter', () => () => <span>filter</span>);
 jest.mock('./components/List/StakingList/StakingList', () => () => <span>stakingList</span>);
 jest.mock('./components/TotalAmount/TotalAmount', () => () => <span>totalAmount</span>);
-jest.mock('./components/MyNominatorsModal/MyNominatorsModal', () => () => <span>nominatorsModal</span>);
+jest.mock('./components/NominatorsModal/NominatorsModal', () => () => <span>nominatorsModal</span>);
 
 describe('screens/Staking/Overview', () => {
   beforeEach(() => {

@@ -22,7 +22,7 @@ type Props = {
   onClose: () => void;
 };
 
-const MyNominatorsModal = ({ elected, notElected, asset, explorers, isOpen, onClose }: Props) => {
+const NominatorsModal = ({ elected, notElected, asset, explorers, isOpen, onClose }: Props) => {
   const { t } = useI18n();
 
   return (
@@ -139,4 +139,4 @@ const MyNominatorsModal = ({ elected, notElected, asset, explorers, isOpen, onCl
   );
 };
 
-export default MyNominatorsModal;
+export default NominatorsModal;

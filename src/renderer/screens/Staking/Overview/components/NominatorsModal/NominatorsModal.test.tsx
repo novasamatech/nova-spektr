@@ -1,6 +1,6 @@
 import { render, screen } from '@testing-library/react';
 
-import MyNominatorsModal, { Nominator } from './MyNominatorsModal';
+import NominatorsModal, { Nominator } from './NominatorsModal';
 import { Balance, BaseModal } from '@renderer/components/ui';
 
 jest.mock('@renderer/components/ui');
@@ -11,7 +11,7 @@ jest.mock('@renderer/context/I18nContext', () => ({
   }),
 }));
 
-describe('screens/Staking/Overview/MyNominatorsModal', () => {
+describe('screens/Staking/Overview/NominatorsModal', () => {
   const elected = [
     {
       apy: '17.11',
@@ -36,7 +36,7 @@ describe('screens/Staking/Overview/MyNominatorsModal', () => {
   });
 
   test('should render component', () => {
-    render(<MyNominatorsModal isOpen elected={elected} notElected={notElected} onClose={() => {}} />);
+    render(<NominatorsModal isOpen elected={elected} notElected={notElected} onClose={() => {}} />);
 
     const blockOne = screen.getByText('staking.nominators.electedTitle');
     const blockTwo = screen.getByText('staking.nominators.notElectedTitle');
@@ -45,7 +45,7 @@ describe('screens/Staking/Overview/MyNominatorsModal', () => {
   });
 
   test('should render elected data', () => {
-    render(<MyNominatorsModal isOpen elected={elected} notElected={[]} onClose={() => {}} />);
+    render(<NominatorsModal isOpen elected={elected} notElected={[]} onClose={() => {}} />);
 
     const items = screen.getByRole('listitem');
     const identity = screen.getByText(elected[0].identity);
@@ -58,7 +58,7 @@ describe('screens/Staking/Overview/MyNominatorsModal', () => {
   });
 
   test('should render not elected data', () => {
-    render(<MyNominatorsModal isOpen elected={[]} notElected={notElected} onClose={() => {}} />);
+    render(<NominatorsModal isOpen elected={[]} notElected={notElected} onClose={() => {}} />);
 
     const items = screen.getByRole('listitem');
     const address = screen.getByText(new RegExp(notElected[0].address.slice(0, 10)));

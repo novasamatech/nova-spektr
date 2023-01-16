@@ -24,13 +24,13 @@ import { useWallet } from '@renderer/services/wallet/walletService';
 import { isStringsMatchQuery } from '@renderer/utils/strings';
 import { AboutStaking, EmptyFilter, InactiveChain, NoAccounts, StakingList } from './components';
 import StakingListItem, { AccountStakeInfo } from './components/List/StakingListItem/StakingListItem';
-import MyNominatorsModal, { Nominator } from './components/MyNominatorsModal/MyNominatorsModal';
+import NominatorsModal, { Nominator } from './components/NominatorsModal/NominatorsModal';
 
 type NetworkOption = { asset: Asset; addressPrefix: number };
 
 const Overview = () => {
   const { t } = useI18n();
-  const [isNominatorsOpen, toggleNominators] = useToggle();
+  const [isNominatorsModalOpen, toggleNominatorsModal] = useToggle();
 
   const { changeClient } = useGraphql();
   const { connections } = useNetworkContext();
@@ -45,7 +45,7 @@ const Overview = () => {
   const [era, setEra] = useState<number>();
   const [staking, setStaking] = useState<StakingMap>({});
   const [validators, setValidators] = useState<ValidatorMap>({});
-  const [nominators, setNominators] = useState<Nominator[][]>([[], []]);
+  const [nominators, setNominators] = useState<Record<string, Nominator[]>>({ elected: [], notElected: [] });
 
   const [query, setQuery] = useState('');
   const [selectedAccounts, setSelectedAccounts] = useState<AccountID[]>([]);
@@ -165,7 +165,7 @@ const Overview = () => {
 
     const nominators = await getNominators(api, stash);
 
-    const { elected, notElected } = nominators.reduce<Record<string, any[]>>(
+    const preparedNominators = nominators.reduce<Record<string, any[]>>(
       (acc, nominator) => {
         const validator = validators[nominator];
         if (!validator) {
@@ -195,8 +195,8 @@ const Overview = () => {
       },
       { elected: [], notElected: [] },
     );
-    setNominators([elected, notElected]);
-    toggleNominators();
+    setNominators(preparedNominators);
+    toggleNominatorsModal();
   };
 
   const { watchOnlyAccs, paritySignerAccs } = activeAccounts.reduce<Record<string, AccountID[]>>(
@@ -335,13 +335,13 @@ const Overview = () => {
         </div>
       </div>
 
-      <MyNominatorsModal
-        isOpen={isNominatorsOpen}
-        elected={nominators[0]}
-        notElected={nominators[1]}
+      <NominatorsModal
+        isOpen={isNominatorsModalOpen}
+        elected={nominators.elected}
+        notElected={nominators.notElected}
         explorers={explorers}
         asset={activeNetwork?.value.asset}
-        onClose={toggleNominators}
+        onClose={toggleNominatorsModal}
       />
     </>
   );
