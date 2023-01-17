@@ -33,7 +33,7 @@ export type MultiSigner = {
 
 export type SeedInfo = {
   name: string;
-  multiSigner: MultiSigner | undefined;
+  multiSigner: MultiSigner;
   derivedKeys: AddressInfo[];
 };
 

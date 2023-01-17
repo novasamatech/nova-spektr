@@ -25,7 +25,7 @@ const ADDRESS_INFO: Codec<AddressInfo> = object(
 
 const SEED_INFO: Codec<SeedInfo> = object(
   ['name', str],
-  ['multiSigner', option(MULTI_SIGNER)],
+  ['multiSigner', MULTI_SIGNER],
   ['derivedKeys', array(ADDRESS_INFO)],
 );
 
