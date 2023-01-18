@@ -1,6 +1,6 @@
 import { ApolloClient, ApolloProvider, from, HttpLink, InMemoryCache, NormalizedCacheObject } from '@apollo/client';
 import { onError } from '@apollo/client/link/error';
-import { createContext, PropsWithChildren, useContext, useEffect, useRef, useState } from 'react';
+import { createContext, PropsWithChildren, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
 
 import { ChainId } from '@renderer/domain/shared-kernel';
 import { useChains } from '@renderer/services/network/chainsService';
@@ -33,7 +33,7 @@ export const GraphqlProvider = ({ children }: PropsWithChildren) => {
   const chainUrls = useRef<Record<ChainId, string>>({});
   const [apolloClient, setApolloClient] = useState<ApolloClient<NormalizedCacheObject>>();
 
-  const changeClient = (chainId: ChainId) => {
+  const changeClient = useCallback((chainId: ChainId) => {
     const httpLink = new HttpLink({ uri: chainUrls.current[chainId] });
 
     const client = new ApolloClient({
@@ -42,26 +42,36 @@ export const GraphqlProvider = ({ children }: PropsWithChildren) => {
     });
 
     setApolloClient(client);
-  };
+  }, []);
 
   useEffect(() => {
     (async () => {
       const chainsData = await getStakingChainsData();
 
       chainUrls.current = chainsData.reduce((acc, chain) => {
-        return { ...acc, [chain.chainId]: chain.externalApi?.staking.url };
+        const subqueryMatch = chain.externalApi?.staking.find((api) => api.type === 'subquery');
+
+        if (subqueryMatch) {
+          return { ...acc, [chain.chainId]: subqueryMatch.url };
+        }
+
+        console.warn(`${chain.name} doesn't contain Subquery URL`);
+
+        return acc;
       }, {});
 
       changeClient(getStakingNetwork());
     })();
   }, []);
 
+  const value = useMemo(() => ({ changeClient }), [changeClient]);
+
   if (!apolloClient) {
     return null;
   }
 
   return (
-    <GraphqlContext.Provider value={{ changeClient }}>
+    <GraphqlContext.Provider value={value}>
       <ApolloProvider client={apolloClient}>{children}</ApolloProvider>
     </GraphqlContext.Provider>
   );

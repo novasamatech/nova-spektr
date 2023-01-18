@@ -89,7 +89,7 @@ module.exports = {
           exclude: ['data-testid', 'className'],
         },
         callees: {
-          exclude: ['Error', 'log'],
+          exclude: ['Error', 'log', 'warn'],
         },
         words: {
           exclude: ['[0-9!-/:-@[-`{-~]+', '[A-Z_-]+'],
