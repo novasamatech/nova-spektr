@@ -92,6 +92,7 @@ export const getValidatorsApy = async (
 /**
  * Get average APY
  * @param api ApiPromise to make RPC calls
+ * @param validators array of calculated APYs'
  * @return {Promise}
  */
 export const getAvgApy = async (api: ApiPromise, validators: ApyValidator[]): Promise<string> => {
