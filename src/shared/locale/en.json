@@ -239,6 +239,21 @@
     "troubleshootingLink": "I have an error in Parity Signer"
   },
   "staking": {
+    "about": {
+      "aboutStakingTitle": "About { asset } staking",
+      "activeNominatorsLabel": "Active nominators",
+      "averageApyLabel": "Average APY",
+      "earningsTitle": "Estimated <strong>{ asset }</strong> earnings with restake",
+      "maximumApyLabel": "Maximum APY",
+      "minimumStakeLabel": "Minimum stake",
+      "monthlyEarningLabel": "Monthly",
+      "stakingPeriodLabel": "Staking period",
+      "totalStakedLabel": "Total staked",
+      "unlimitedLabel": "Unlimited",
+      "unstakingPeriodLabel": "Unstaking period",
+      "unstakingPeriodValue": "{ period } days",
+      "yearlyEarningLabel": "Yearly"
+    },
     "bond": {
       "confirmBondSubtitle": "Confirm",
       "initBondSubtitle": "Start Staking",
