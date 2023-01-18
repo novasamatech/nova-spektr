@@ -1,7 +1,5 @@
-import cn from 'classnames';
-
-import { formatBalance } from '@renderer/services/balance/common/utils';
 import { useI18n } from '@renderer/context/I18nContext';
+import { formatBalance } from '@renderer/services/balance/common/utils';
 
 interface Props {
   value: string;
@@ -20,7 +18,7 @@ const Balance = ({ value, precision, symbol, className }: Props) => {
   });
 
   return (
-    <p className={cn(className)}>
+    <p className={className}>
       {balanceValue}
       {suffix}
       {symbol && <span className="ml-1">{symbol}</span>}

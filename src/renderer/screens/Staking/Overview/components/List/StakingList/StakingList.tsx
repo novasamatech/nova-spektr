@@ -1,31 +1,14 @@
-import { useState } from 'react';
+import { PropsWithChildren, useState } from 'react';
 
 import { Checkbox, Icon } from '@renderer/components/ui';
 import { useI18n } from '@renderer/context/I18nContext';
-import { Asset } from '@renderer/domain/asset';
-import { Explorer } from '@renderer/domain/chain';
-import { AccountID } from '@renderer/domain/shared-kernel';
-import StakingListItem, { AccountStakeInfo } from '../StakingListItem/StakingListItem';
 
 type Props = {
-  staking: AccountStakeInfo[];
-  asset?: Asset;
-  allAccountsSelected: boolean;
-  explorers?: Explorer[];
-  addressPrefix?: number;
-  onSelect: (address: AccountID) => void;
+  allSelected: boolean;
   onSelectAll: () => void;
 };
 
-const StakingList = ({
-  staking,
-  allAccountsSelected,
-  asset,
-  explorers,
-  addressPrefix,
-  onSelect,
-  onSelectAll,
-}: Props) => {
+const StakingList = ({ allSelected, onSelectAll, children }: PropsWithChildren<Props>) => {
   const { t } = useI18n();
 
   const [sortType, setSortType] = useState<'ASC' | 'DESC'>('DESC');
@@ -37,7 +20,7 @@ const StakingList = ({
   return (
     <div className="w-full bg-white rounded-2lg mt-5">
       <div className="flex items-center py-2 pl-4 pr-11 border-b border-shade-5 sticky top-0 z-10 bg-white">
-        <Checkbox checked={allAccountsSelected} onChange={onSelectAll} />
+        <Checkbox checked={allSelected} onChange={onSelectAll} />
         <p className="text-2xs font-bold uppercase text-neutral-variant ml-2.5 mr-auto">
           {t('staking.overview.accountTableHeader')}
         </p>
@@ -51,19 +34,7 @@ const StakingList = ({
           </button>
         </div>
       </div>
-      <ul>
-        {staking.map((stake) => (
-          <li key={stake.address}>
-            <StakingListItem
-              stakeInfo={stake}
-              asset={asset}
-              addressPrefix={addressPrefix}
-              explorers={explorers}
-              onSelect={() => onSelect(stake.address)}
-            />
-          </li>
-        ))}
-      </ul>
+      <ul>{children}</ul>
     </div>
   );
 };
