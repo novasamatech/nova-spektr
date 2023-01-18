@@ -1,17 +1,17 @@
-import { useEffect, useState } from 'react';
 import { ApiPromise } from '@polkadot/api';
-import { Trans } from 'react-i18next';
 import cn from 'classnames';
+import { useEffect, useMemo, useState } from 'react';
+import { Trans } from 'react-i18next';
 
-import { useI18n } from '@renderer/context/I18nContext';
-import { Asset } from '@renderer/domain/asset';
 import { Expandable } from '@renderer/components/common';
 import { Balance, Icon } from '@renderer/components/ui';
-import { useStakingData } from '@renderer/services/staking/stakingDataService';
-import { Validator } from '@renderer/domain/validator';
 import Shimmering from '@renderer/components/ui/Shimmering/Shimmering';
+import { useI18n } from '@renderer/context/I18nContext';
+import { Asset } from '@renderer/domain/asset';
+import { AccountID, EraIndex } from '@renderer/domain/shared-kernel';
+import { Validator } from '@renderer/domain/validator';
 import { getAvgApy } from '@renderer/services/staking/apyCalculator';
-import { EraIndex } from '@renderer/domain/shared-kernel';
+import { useStakingData } from '@renderer/services/staking/stakingDataService';
 
 type Props = {
   asset?: Asset;
@@ -73,16 +73,22 @@ const AboutStaking = ({ asset, api, validators, era, className }: Props) => {
 
   const maximumApy = validators.reduce((acc, validator) => (acc > validator.apy ? acc : validator.apy), 0);
 
-  const activeNominatorsAmount = new Set(
-    validators.reduce<string[]>((acc, validator) => [...acc, ...validator.nominators], []),
-  ).size;
+  const activeNominatorsAmount = useMemo(() => {
+    const nominatorsAddresses = validators.reduce<AccountID[]>((acc, { nominators }) => {
+      const addresses = nominators.map((nominator) => nominator.who);
+
+      return acc.concat(addresses);
+    }, []);
+
+    return new Set(nominatorsAddresses).size;
+  }, [validators.length]);
 
   return (
     <Expandable
+      full
       defaultActive={false}
       itemClass="font-semibold text-neutral-variant"
       wrapperClass={cn('w-full shadow-surface p-4 rounded-2lg', className)}
-      full
       item={
         <div className="flex items-center gap-2.5">
           <Icon name="staking" />
@@ -96,10 +102,7 @@ const AboutStaking = ({ asset, api, validators, era, className }: Props) => {
             {t('staking.about.totalStakedLabel')}
             <div className="flex font-semibold">
               {totalStaked ? (
-                <>
-                  <Balance value={totalStaked} precision={asset?.precision || 0} />
-                  &nbsp;{asset?.symbol}
-                </>
+                <Balance value={totalStaked} precision={asset?.precision || 0} symbol={asset?.symbol} />
               ) : (
                 <Shimmering width={100} height={20} />
               )}
@@ -107,12 +110,9 @@ const AboutStaking = ({ asset, api, validators, era, className }: Props) => {
           </div>
           <div className="flex justify-between items-center h-10">
             {t('staking.about.minimumStakeLabel')}
-            <div className=" flex font-semibold">
+            <div className="flex font-semibold">
               {minimumStake ? (
-                <>
-                  <Balance value={minimumStake} precision={asset?.precision || 0} />
-                  &nbsp;{asset?.symbol}
-                </>
+                <Balance value={minimumStake} precision={asset?.precision || 0} symbol={asset?.symbol} />
               ) : (
                 <Shimmering width={100} height={20} />
               )}
@@ -121,9 +121,7 @@ const AboutStaking = ({ asset, api, validators, era, className }: Props) => {
           <div className="flex justify-between items-center h-10">
             {t('staking.about.activeNominatorsLabel')}
 
-            <div className="font-semibold">
-              {activeNominatorsAmount ? activeNominatorsAmount : <Shimmering width={100} height={20} />}
-            </div>
+            <div className="font-semibold">{activeNominatorsAmount || <Shimmering width={100} height={20} />}</div>
           </div>
           <div className="flex justify-between items-center h-10">
             {t('staking.about.stakingPeriodLabel')}

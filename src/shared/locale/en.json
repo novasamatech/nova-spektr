@@ -260,6 +260,16 @@
       "selectNetworkLabel": "Select network",
       "validatorsSubtitle": "Validators"
     },
+    "nominators": {
+      "electedTitle": "Elected",
+      "nominated": "Nominated",
+      "notAssigned": "Not assigned",
+      "notElectedDescription": "Validators without enough stake to be elected",
+      "notElectedTitle": "Not Elected",
+      "rewards": "Rewards (APY)",
+      "validators": "Validators",
+      "yourValidatorsTitle": "Your validators"
+    },
     "overview": {
       "aboutStakingLabel": "About { asset } staking",
       "accountTableHeader": "Accounts",
@@ -288,7 +298,7 @@
       "subtitle": "Unbond"
     },
     "validators": {
-      "subtitle": "Валидаторы"
+      "subtitle": "Validators"
     }
   },
   "transfer": {

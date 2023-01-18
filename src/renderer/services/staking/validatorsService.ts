@@ -24,16 +24,16 @@ export const useValidators = (): IValidatorsService => {
   };
 
   const getValidatorsStake = async (api: ApiPromise, era: EraIndex): Promise<ValidatorMap> => {
-    const data = await api.query.staking.erasStakersClipped.entries(era);
+    const data = await api.query.staking.erasStakers.entries(era);
     const maxNominatorRewarded = getMaxNominatorRewarded(api);
 
     return data.reduce((acc, [storageKey, type]) => {
       const address = storageKey.args[1].toString();
       const totalStake = type.total.toString();
       const oversubscribed = type.others.length >= maxNominatorRewarded;
-      const nominators = type.others.map((n) => n.who.toString());
+      const nominators = type.others.map((n) => ({ who: n.who.toString(), value: n.value.toString() }));
 
-      const payload = { totalStake, address, oversubscribed, ownStake: type.own.toString(), nominators };
+      const payload = { totalStake, address, oversubscribed, nominators, ownStake: type.own.toString() };
 
       return { ...acc, [address]: payload };
     }, {});
@@ -118,7 +118,7 @@ export const useValidators = (): IValidatorsService => {
     }, {});
   };
 
-  const getNominators = async (api: ApiPromise, account: AccountID): Promise<string[]> => {
+  const getNominators = async (api: ApiPromise, account: AccountID): Promise<AccountID[]> => {
     try {
       const data = await api.query.staking.nominators(account);
       if (data.isNone) return [];

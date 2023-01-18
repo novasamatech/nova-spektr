@@ -26,7 +26,7 @@ const Expandable = ({
   const [isActive, toggleIsActive] = useToggle(defaultActive);
 
   return (
-    <div className={cn(wrapperClass)}>
+    <div className={wrapperClass}>
       {full ? (
         <Button
           pallet="shade"

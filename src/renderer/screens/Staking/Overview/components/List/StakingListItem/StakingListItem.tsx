@@ -8,6 +8,7 @@ import { AccountID, SigningType } from '@renderer/domain/shared-kernel';
 
 export type AccountStakeInfo = {
   address: AccountID;
+  stash?: AccountID;
   signingType: SigningType;
   accountName: string;
   walletName?: string;
@@ -21,13 +22,12 @@ type Props = {
   asset?: Asset;
   addressPrefix?: number;
   explorers?: Explorer[];
-  // isLoading?: boolean;
   onSelect: () => void;
+  onOpenValidators: () => void;
 };
 
-const StakingListItem = ({ stakeInfo, asset, addressPrefix, explorers, onSelect }: Props) => {
+const StakingListItem = ({ stakeInfo, asset, addressPrefix, explorers, onSelect, onOpenValidators }: Props) => {
   const { t } = useI18n();
-
   // TODO: let it stay for a while, full shimmering row
   //   return (
   //     <div className="flex items-center pl-4 pr-2 h-12.5 border-b border-shade-5 text-neutral">
@@ -45,13 +45,17 @@ const StakingListItem = ({ stakeInfo, asset, addressPrefix, explorers, onSelect 
   //     </div>
   //   );
 
-  // TODO: implement open validators
-  const openValidators = () => {
-    console.log('openValidators');
-  };
+  const validatorsContent = stakeInfo.stash && (
+    <div className="flex gap-x-2.5">
+      <Icon name="network" size={20} />
+      <button type="button" onClick={onOpenValidators}>
+        {t('staking.overview.viewValidatorsOption')}
+      </button>
+    </div>
+  );
 
   return (
-    <div className="flex items-center pl-4 pr-2 h-12.5 border-b border-shade-5 text-neutral">
+    <li className="flex items-center pl-4 pr-2 h-12.5 border-b border-shade-5 text-neutral">
       <Checkbox
         className="h-full"
         disabled={stakeInfo.signingType === SigningType.WATCH_ONLY}
@@ -85,22 +89,14 @@ const StakingListItem = ({ stakeInfo, asset, addressPrefix, explorers, onSelect 
           <Balance value={stakeInfo.totalStake} precision={asset.precision} symbol={asset.symbol} />
         )}
       </div>
-      <div className="ml-3">
-        <Explorers
-          header={
-            <div className="flex gap-x-2.5">
-              <Icon name="network" size={20} />
-              <button type="button" onClick={openValidators}>
-                {t('staking.overview.viewValidatorsOption')}
-              </button>
-            </div>
-          }
-          explorers={explorers}
-          address={stakeInfo.address}
-          addressPrefix={addressPrefix}
-        />
-      </div>
-    </div>
+      <Explorers
+        className="ml-3"
+        header={validatorsContent}
+        explorers={explorers}
+        address={stakeInfo.address}
+        addressPrefix={addressPrefix}
+      />
+    </li>
   );
 };
 

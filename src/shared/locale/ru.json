@@ -260,6 +260,16 @@
       "selectNetworkLabel": "Выберите сеть",
       "validatorsSubtitle": "Валидаторы"
     },
+    "nominators": {
+      "electedTitle": "Выбранные",
+      "nominated": "Вклад",
+      "notAssigned": "Нет вклада",
+      "notElectedDescription": "Валидаторы с недостаточным стейком пока не избраны",
+      "notElectedTitle": "Не избранные",
+      "rewards": "Награды (APY)",
+      "validators": "Валидаторы",
+      "yourValidatorsTitle": "Мои валидаторы"
+    },
     "overview": {
       "aboutStakingLabel": "О стейкинге { asset } токенов",
       "accountTableHeader": "Аккаунты",
