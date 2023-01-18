@@ -1,6 +1,7 @@
 import { Menu } from '@headlessui/react';
 import { encodeAddress } from '@polkadot/util-crypto';
 import cn from 'classnames';
+import { ReactNode } from 'react';
 
 import { Icon } from '@renderer/components/ui';
 import { useI18n } from '@renderer/context/I18nContext';
@@ -12,10 +13,11 @@ type Props = {
   explorers?: Explorer[];
   addressPrefix?: number;
   address: string;
+  header?: ReactNode;
   className?: string;
 };
 
-const Explorers = ({ explorers, addressPrefix, address, className }: Props) => {
+const Explorers = ({ explorers, addressPrefix, address, header, className }: Props) => {
   const { t } = useI18n();
 
   return (
@@ -31,6 +33,25 @@ const Explorers = ({ explorers, addressPrefix, address, className }: Props) => {
               'shadow-surface w-max border-2 border-shade-5 p-2.5',
             )}
           >
+            {header && (
+              <>
+                <Menu.Item>
+                  {({ active }) => (
+                    <div
+                      className={cn(
+                        'rounded-2lg flex items-center gap-1 p-2.5 font-normal select-none cursor-pointer',
+                        active ? 'bg-primary text-white' : 'bg-white text-neutral',
+                      )}
+                    >
+                      {header}
+                    </div>
+                  )}
+                </Menu.Item>
+                <div className="p-2.5 text-neutral-variant text-2xs uppercase font-semibold">
+                  {t('general.explorers.explorerTitle')}
+                </div>
+              </>
+            )}
             {explorers?.map(({ name, account }) => {
               if (!account) return null;
 
@@ -39,14 +60,15 @@ const Explorers = ({ explorers, addressPrefix, address, className }: Props) => {
                   {({ active }) => (
                     <a
                       className={cn(
-                        'rounded-2lg flex items-center gap-1 p-2.5 font-normal select-none',
+                        'rounded-2lg flex items-center gap-x-2.5 p-2.5 font-normal select-none transition',
                         active ? 'bg-primary text-white' : 'bg-white text-neutral',
                       )}
                       href={account.replace('{address}', encodeAddress(toPublicKey(address) || '', addressPrefix))}
                       rel="noopener noreferrer"
                       target="_blank"
                     >
-                      <Icon as="img" name={ExplorerIcons[name]} /> {t('general.explorers.explorerButton', { name })}
+                      <Icon as="img" name={ExplorerIcons[name]} size={20} />
+                      {t('general.explorers.explorerButton', { name })}
                     </a>
                   )}
                 </Menu.Item>
