@@ -2,9 +2,9 @@ export type Asset = {
   name: string;
   assetId: number;
   symbol: string;
-  staking: StakingType;
+  staking?: StakingType;
   precision: number;
-  priceId: string;
+  priceId?: string;
   icon: string;
   type?: AssetType;
   typeExtras?: StatemineExtras | OrmlExtras;
