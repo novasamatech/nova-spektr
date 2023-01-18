@@ -29,8 +29,12 @@
         "name": "Pinknode node"
       },
       {
-        "url": "wss://polkadot.public.curie.radiumblock.io/ws",
-        "name": "Radium block node"
+        "url": "wss://polkadot-rpc.dwellir.com",
+        "name": "Dwellir node"
+      },
+      {
+        "url": "wss://rpc.polkadot.io",
+        "name": "Parity node"
       },
       {
         "url": "wss://1rpc.io/dot",
@@ -53,6 +57,11 @@
       {
         "name": "Sub.ID",
         "account": "https://sub.id/{address}"
+      },
+      {
+        "name": "Polkaholic",
+        "account": "https://polkaholic.io/account/{address}",
+        "extrinsic": "https://polkaholic.io/tx/{hash}"
       }
     ],
     "icon": "https://raw.githubusercontent.com/nova-wallet/nova-utils/master/icons/chains/gradient/Polkadot.svg",
@@ -62,22 +71,30 @@
       "overridesCommon": true
     },
     "externalApi": {
-      "staking": {
-        "type": "subquery",
-        "url": "https://api.subquery.network/sq/nova-wallet/nova-wallet-polkadot"
-      },
-      "history": {
-        "type": "subquery",
-        "url": "https://api.subquery.network/sq/nova-wallet/nova-wallet-polkadot"
-      },
-      "crowdloans": {
-        "type": "github",
-        "url": "https://raw.githubusercontent.com/nova-wallet/nova-utils/master/crowdloan/polkadot-dev.json"
-      },
-      "governance": {
-        "type": "polkassembly",
-        "url": "https://polkadot.polkassembly.io/v1/graphql"
-      }
+      "staking": [
+        {
+          "type": "subquery",
+          "url": "https://api.subquery.network/sq/nova-wallet/nova-wallet-polkadot"
+        }
+      ],
+      "history": [
+        {
+          "type": "subquery",
+          "url": "https://api.subquery.network/sq/nova-wallet/nova-wallet-polkadot"
+        }
+      ],
+      "crowdloans": [
+        {
+          "type": "github",
+          "url": "https://raw.githubusercontent.com/nova-wallet/nova-utils/master/crowdloan/polkadot-dev.json"
+        }
+      ],
+      "governance": [
+        {
+          "type": "polkassembly",
+          "url": "https://polkadot.polkassembly.io/v1/graphql"
+        }
+      ]
     },
     "options": ["crowdloans", "governance-v1"]
   },
@@ -107,12 +124,16 @@
         "name": "OnFinality node"
       },
       {
-        "url": "wss://kusama.public.curie.radiumblock.xyz/ws",
-        "name": "Radium block node"
-      },
-      {
         "url": "wss://public-rpc.pinknode.io/kusama",
         "name": "Pinknode node"
+      },
+      {
+        "url": "wss://kusama-rpc.dwellir.com",
+        "name": "Dwellir node"
+      },
+      {
+        "url": "wss://kusama.public.curie.radiumblock.co/ws",
+        "name": "Radium node"
       },
       {
         "url": "wss://kusama-rpc.polkadot.io",
@@ -135,6 +156,11 @@
       {
         "name": "Sub.ID",
         "account": "https://sub.id/{address}"
+      },
+      {
+        "name": "Polkaholic",
+        "account": "https://polkaholic.io/account/{address}",
+        "extrinsic": "https://polkaholic.io/tx/{hash}"
       }
     ],
     "icon": "https://raw.githubusercontent.com/nova-wallet/nova-utils/master/icons/chains/gradient/Kusama.svg",
@@ -144,22 +170,36 @@
       "overridesCommon": true
     },
     "externalApi": {
-      "staking": {
-        "type": "subquery",
-        "url": "https://api.subquery.network/sq/nova-wallet/nova-wallet-kusama"
-      },
-      "history": {
-        "type": "subquery",
-        "url": "https://api.subquery.network/sq/nova-wallet/nova-wallet-kusama"
-      },
-      "crowdloans": {
-        "type": "github",
-        "url": "https://raw.githubusercontent.com/nova-wallet/nova-utils/master/crowdloan/kusama.json"
-      },
-      "governance": {
-        "type": "polkassembly",
-        "url": "https://kusama.polkassembly.io/v1/graphql"
-      }
+      "staking": [
+        {
+          "type": "subquery",
+          "url": "https://api.subquery.network/sq/nova-wallet/nova-wallet-kusama"
+        }
+      ],
+      "history": [
+        {
+          "type": "subquery",
+          "url": "https://api.subquery.network/sq/nova-wallet/nova-wallet-kusama"
+        }
+      ],
+      "crowdloans": [
+        {
+          "type": "github",
+          "url": "https://raw.githubusercontent.com/nova-wallet/nova-utils/master/crowdloan/kusama.json"
+        }
+      ],
+      "governance": [
+        {
+          "type": "polkassembly",
+          "url": "https://kusama.polkassembly.io/v1/graphql"
+        }
+      ],
+      "governance-delegations": [
+        {
+          "type": "subquery",
+          "url": "https://api.subquery.network/sq/nova-wallet/nova-wallet-kusama-governance"
+        }
+      ]
     },
     "options": ["crowdloans", "governance", "governance-v1"]
   },
@@ -209,22 +249,33 @@
       "overridesCommon": true
     },
     "externalApi": {
-      "staking": {
-        "type": "subquery",
-        "url": "https://api.subquery.network/sq/nova-wallet/nova-wallet-westend"
-      },
-      "history": {
-        "type": "subquery",
-        "url": "https://api.subquery.network/sq/nova-wallet/nova-wallet-westend"
-      },
-      "crowdloans": {
-        "type": "github",
-        "url": "https://raw.githubusercontent.com/nova-wallet/nova-utils/master/crowdloan/westend.json"
-      },
-      "governance": {
-        "type": "polkassembly",
-        "url": "https://polkassembly-hasura.herokuapp.com/v1/graphql"
-      }
+      "staking": [
+        {
+          "type": "subquery",
+          "url": "https://api.subquery.network/sq/nova-wallet/nova-wallet-westend"
+        }
+      ],
+      "history": [
+        {
+          "type": "subquery",
+          "url": "https://api.subquery.network/sq/nova-wallet/nova-wallet-westend"
+        }
+      ],
+      "crowdloans": [
+        {
+          "type": "github",
+          "url": "https://raw.githubusercontent.com/nova-wallet/nova-utils/master/crowdloan/westend.json"
+        }
+      ],
+      "governance": [
+        {
+          "type": "polkassembly",
+          "url": "https://polkassembly-hasura.herokuapp.com/v1/graphql",
+          "parameters": {
+            "network": "westend"
+          }
+        }
+      ]
     },
     "options": ["testnet", "crowdloans"]
   },
@@ -390,6 +441,11 @@
       {
         "name": "Sub.ID",
         "account": "https://sub.id/{address}"
+      },
+      {
+        "name": "Polkaholic",
+        "account": "https://polkaholic.io/account/{address}",
+        "extrinsic": "https://polkaholic.io/tx/{hash}"
       }
     ],
     "types": {
@@ -397,10 +453,12 @@
       "overridesCommon": true
     },
     "externalApi": {
-      "history": {
-        "type": "subquery",
-        "url": "https://api.subquery.network/sq/nova-wallet/nova-wallet-statemine"
-      }
+      "history": [
+        {
+          "type": "subquery",
+          "url": "https://api.subquery.network/sq/nova-wallet/nova-wallet-statemine"
+        }
+      ]
     },
     "icon": "https://raw.githubusercontent.com/nova-wallet/nova-utils/master/icons/chains/gradient/Statemine.svg",
     "addressPrefix": 2
@@ -482,6 +540,7 @@
         "assetId": 5,
         "symbol": "LKSM",
         "precision": 12,
+        "priceId": "liquid-ksm",
         "type": "orml",
         "icon": "https://raw.githubusercontent.com/nova-wallet/nova-utils/master/icons/tokens/white/LKSM.svg",
         "typeExtras": {
@@ -824,17 +883,29 @@
       {
         "name": "Sub.ID",
         "account": "https://sub.id/{address}"
+      },
+      {
+        "name": "Polkaholic",
+        "account": "https://polkaholic.io/account/{address}",
+        "extrinsic": "https://polkaholic.io/tx/{hash}"
       }
     ],
     "externalApi": {
-      "history": {
-        "type": "subquery",
-        "url": "https://api.subquery.network/sq/nova-wallet/nova-wallet-karura"
-      },
-      "governance": {
-        "type": "polkassembly",
-        "url": "https://polkassembly-hasura.herokuapp.com/v1/graphql"
-      }
+      "history": [
+        {
+          "type": "subquery",
+          "url": "https://api.subquery.network/sq/nova-wallet/nova-wallet-karura"
+        }
+      ],
+      "governance": [
+        {
+          "type": "polkassembly",
+          "url": "https://polkassembly-hasura.herokuapp.com/v1/graphql",
+          "parameters": {
+            "network": "karura"
+          }
+        }
+      ]
     },
     "icon": "https://raw.githubusercontent.com/nova-wallet/nova-utils/master/icons/chains/gradient/Karura.svg",
     "addressPrefix": 8,
@@ -867,7 +938,7 @@
     ],
     "nodes": [
       {
-        "url": "wss://rpc.pinknode.io/alphanet/explorer",
+        "url": "wss://public-rpc.pinknode.io/alphanet",
         "name": "Pinknode"
       },
       {
@@ -912,6 +983,126 @@
           }
         },
         "name": "Shiden"
+      },
+      {
+        "assetId": 1,
+        "symbol": "PHA",
+        "precision": 12,
+        "type": "statemine",
+        "priceId": "pha",
+        "icon": "https://raw.githubusercontent.com/nova-wallet/nova-utils/master/icons/chains/white/Phala.svg",
+        "typeExtras": {
+          "assetId": "18446744073709551623"
+        },
+        "name": "Phala"
+      },
+      {
+        "assetId": 2,
+        "symbol": "LKSM",
+        "precision": 12,
+        "priceId": "liquid-ksm",
+        "type": "statemine",
+        "icon": "https://raw.githubusercontent.com/nova-wallet/nova-utils/master/icons/tokens/white/LKSM.svg",
+        "typeExtras": {
+          "assetId": "18446744073709551619"
+        },
+        "name": "Liquid KSM"
+      },
+      {
+        "assetId": 3,
+        "symbol": "MOVR",
+        "precision": 18,
+        "type": "statemine",
+        "priceId": "moonriver",
+        "icon": "https://raw.githubusercontent.com/nova-wallet/nova-utils/master/icons/chains/white/Moonriver.svg",
+        "typeExtras": {
+          "assetId": "18446744073709551620"
+        },
+        "name": "Moonriver"
+      },
+      {
+        "assetId": 4,
+        "symbol": "kBTC",
+        "precision": 8,
+        "type": "statemine",
+        "priceId": "bitcoin",
+        "icon": "https://raw.githubusercontent.com/nova-wallet/nova-utils/master/icons/tokens/white/KBTC.svg",
+        "typeExtras": {
+          "assetId": "18446744073709551621"
+        },
+        "name": "KINT Bitcoin"
+      },
+      {
+        "assetId": 5,
+        "symbol": "KINT",
+        "precision": 12,
+        "type": "statemine",
+        "priceId": "kintsugi",
+        "icon": "https://raw.githubusercontent.com/nova-wallet/nova-utils/master/icons/chains/white/Kintsugi.svg",
+        "typeExtras": {
+          "assetId": "18446744073709551622"
+        },
+        "name": "Kintsugi"
+      },
+      {
+        "assetId": 6,
+        "symbol": "KSM",
+        "precision": 12,
+        "type": "statemine",
+        "priceId": "kusama",
+        "icon": "https://raw.githubusercontent.com/nova-wallet/nova-utils/master/icons/chains/white/Kusama.svg",
+        "typeExtras": {
+          "assetId": "340282366920938463463374607431768211455"
+        },
+        "name": "Kusama"
+      },
+      {
+        "assetId": 7,
+        "symbol": "aUSD",
+        "precision": 12,
+        "type": "statemine",
+        "priceId": "acala-dollar",
+        "icon": "https://raw.githubusercontent.com/nova-wallet/nova-utils/master/icons/tokens/white/AUSD.svg",
+        "typeExtras": {
+          "assetId": "18446744073709551616"
+        },
+        "name": "Acala USD"
+      },
+      {
+        "assetId": 8,
+        "symbol": "CSM",
+        "precision": 12,
+        "type": "statemine",
+        "priceId": "crust-storage-market",
+        "icon": "https://raw.githubusercontent.com/nova-wallet/nova-utils/master/icons/chains/white/CrustShadow.svg",
+        "typeExtras": {
+          "assetId": "18446744073709551624"
+        },
+        "name": "Crust Shadow"
+      },
+      {
+        "assetId": 9,
+        "symbol": "KAR",
+        "precision": 12,
+        "type": "statemine",
+        "priceId": "karura",
+        "icon": "https://raw.githubusercontent.com/nova-wallet/nova-utils/master/icons/chains/white/Karura.svg",
+        "typeExtras": {
+          "assetId": "18446744073709551618"
+        },
+        "name": "Karura"
+      },
+      {
+        "assetId": 10,
+        "symbol": "USDT",
+        "precision": 6,
+        "type": "statemine",
+        "priceId": "tether",
+        "icon": "https://raw.githubusercontent.com/nova-wallet/nova-utils/master/icons/tokens/white/USDT.svg",
+        "typeExtras": {
+          "assetId": "4294969280"
+        },
+        "name": "USD Tether"
       }
     ],
     "nodes": [
@@ -942,6 +1133,11 @@
       {
         "name": "Sub.ID",
         "account": "https://sub.id/{address}"
+      },
+      {
+        "name": "Polkaholic",
+        "account": "https://polkaholic.io/account/{address}",
+        "extrinsic": "https://polkaholic.io/tx/{hash}"
       }
     ],
     "icon": "https://raw.githubusercontent.com/nova-wallet/nova-utils/master/icons/chains/gradient/Shiden.svg",
@@ -951,14 +1147,21 @@
       "overridesCommon": true
     },
     "externalApi": {
-      "history": {
-        "type": "subquery",
-        "url": "https://api.subquery.network/sq/nova-wallet/nova-wallet-shiden"
-      },
-      "governance": {
-        "type": "polkassembly",
-        "url": "https://polkassembly-hasura.herokuapp.com/v1/graphql"
-      }
+      "history": [
+        {
+          "type": "subquery",
+          "url": "https://api.subquery.network/sq/nova-wallet/nova-wallet-shiden"
+        }
+      ],
+      "governance": [
+        {
+          "type": "polkassembly",
+          "url": "https://polkassembly-hasura.herokuapp.com/v1/graphql",
+          "parameters": {
+            "network": "shiden"
+          }
+        }
+      ]
     }
   },
   {
@@ -1152,17 +1355,26 @@
       {
         "name": "Sub.ID",
         "account": "https://sub.id/{address}"
+      },
+      {
+        "name": "Polkaholic",
+        "account": "https://polkaholic.io/account/{address}",
+        "extrinsic": "https://polkaholic.io/tx/{hash}"
       }
     ],
     "externalApi": {
-      "history": {
-        "type": "subquery",
-        "url": "https://api.subquery.network/sq/nova-wallet/nova-wallet-bifrost"
-      },
-      "staking": {
-        "type": "subquery",
-        "url": "https://api.subquery.network/sq/nova-wallet/nova-wallet-bifrost"
-      }
+      "history": [
+        {
+          "type": "subquery",
+          "url": "https://api.subquery.network/sq/nova-wallet/nova-wallet-bifrost"
+        }
+      ],
+      "staking": [
+        {
+          "type": "subquery",
+          "url": "https://api.subquery.network/sq/nova-wallet/nova-wallet-bifrost"
+        }
+      ]
     },
     "icon": "https://raw.githubusercontent.com/nova-wallet/nova-utils/master/icons/chains/gradient/Bifrost_Kusama.svg",
     "addressPrefix": 6,
@@ -1217,16 +1429,57 @@
           "transfersEnabled": true
         },
         "name": "Kusama"
+      },
+      {
+        "assetId": 3,
+        "symbol": "LKSM",
+        "precision": 12,
+        "priceId": "liquid-ksm",
+        "type": "orml",
+        "icon": "https://raw.githubusercontent.com/nova-wallet/nova-utils/master/icons/tokens/white/LKSM.svg",
+        "typeExtras": {
+          "currencyIdScale": "0x0102000000",
+          "currencyIdType": "interbtc_primitives.CurrencyId",
+          "existentialDeposit": "0",
+          "transfersEnabled": true
+        },
+        "name": "Liquid KSM"
+      },
+      {
+        "assetId": 4,
+        "symbol": "USDT",
+        "precision": 6,
+        "priceId": "tether",
+        "type": "orml",
+        "icon": "https://raw.githubusercontent.com/nova-wallet/nova-utils/master/icons/tokens/white/USDT.svg",
+        "typeExtras": {
+          "currencyIdScale": "0x0103000000",
+          "currencyIdType": "interbtc_primitives.CurrencyId",
+          "existentialDeposit": "0",
+          "transfersEnabled": true
+        },
+        "name": "USD Tether"
+      },
+      {
+        "assetId": 5,
+        "symbol": "aUSD",
+        "precision": 12,
+        "priceId": "acala-dollar",
+        "type": "orml",
+        "icon": "https://raw.githubusercontent.com/nova-wallet/nova-utils/master/icons/tokens/white/AUSD.svg",
+        "typeExtras": {
+          "currencyIdScale": "0x0101000000",
+          "currencyIdType": "interbtc_primitives.CurrencyId",
+          "existentialDeposit": "0",
+          "transfersEnabled": true
+        },
+        "name": "Acala USD"
       }
     ],
     "nodes": [
       {
         "url": "wss://api-kusama.interlay.io/parachain",
         "name": "Kintsugi Labs"
-      },
-      {
-        "url": "wss://kintsugi-rpc.dwellir.com",
-        "name": "Dwellir node"
       }
     ],
     "explorers": [
@@ -1239,6 +1492,11 @@
       {
         "name": "Sub.ID",
         "account": "https://sub.id/{address}"
+      },
+      {
+        "name": "Polkaholic",
+        "account": "https://polkaholic.io/account/{address}",
+        "extrinsic": "https://polkaholic.io/tx/{hash}"
       }
     ],
     "types": {
@@ -1246,10 +1504,12 @@
       "overridesCommon": true
     },
     "externalApi": {
-      "history": {
-        "type": "subquery",
-        "url": "https://api.subquery.network/sq/nova-wallet/nova-wallet-kintsugi"
-      }
+      "history": [
+        {
+          "type": "subquery",
+          "url": "https://api.subquery.network/sq/nova-wallet/nova-wallet-kintsugi"
+        }
+      ]
     },
     "icon": "https://raw.githubusercontent.com/nova-wallet/nova-utils/master/icons/chains/gradient/Kintsugi.svg",
     "addressPrefix": 2092
@@ -1270,16 +1530,16 @@
     ],
     "nodes": [
       {
-        "url": "wss://edgeware.api.onfinality.io/public-ws",
-        "name": "OnFinality node"
-      },
-      {
         "url": "wss://edgeware-rpc.dwellir.com",
         "name": "Dwellir node"
       },
       {
         "url": "wss://edgeware.jelliedowl.net",
         "name": "JelliedOwl node"
+      },
+      {
+        "url": "wss://mainnet2.edgewa.re",
+        "name": "Edgeware node"
       }
     ],
     "types": {
@@ -1299,14 +1559,18 @@
       }
     ],
     "externalApi": {
-      "history": {
-        "type": "subquery",
-        "url": "https://api.subquery.network/sq/nova-wallet/nova-edgeware__bm92Y"
-      },
-      "staking": {
-        "type": "subquery",
-        "url": "https://api.subquery.network/sq/nova-wallet/nova-edgeware__bm92Y"
-      }
+      "history": [
+        {
+          "type": "subquery",
+          "url": "https://api.subquery.network/sq/nova-wallet/nova-edgeware__bm92Y"
+        }
+      ],
+      "staking": [
+        {
+          "type": "subquery",
+          "url": "https://api.subquery.network/sq/nova-wallet/nova-edgeware__bm92Y"
+        }
+      ]
     },
     "icon": "https://raw.githubusercontent.com/nova-wallet/nova-utils/master/icons/chains/gradient/Edgeware.svg",
     "addressPrefix": 7
@@ -1351,6 +1615,7 @@
         "assetId": 3,
         "symbol": "LKSM",
         "precision": 12,
+        "priceId": "liquid-ksm",
         "type": "statemine",
         "icon": "https://raw.githubusercontent.com/nova-wallet/nova-utils/master/icons/tokens/white/LKSM.svg",
         "typeExtras": {
@@ -1416,6 +1681,18 @@
           "assetId": "123"
         },
         "name": "Genshiro"
+      },
+      {
+        "assetId": 9,
+        "symbol": "USDT",
+        "precision": 6,
+        "priceId": "tether",
+        "type": "statemine",
+        "icon": "https://raw.githubusercontent.com/nova-wallet/nova-utils/master/icons/tokens/white/USDT.svg",
+        "typeExtras": {
+          "assetId": "102"
+        },
+        "name": "USD Tether"
       }
     ],
     "nodes": [
@@ -1442,13 +1719,20 @@
         "extrinsic": "https://parallel-heiko.subscan.io/extrinsic/{hash}",
         "account": "https://parallel-heiko.subscan.io/account/{address}",
         "event": null
+      },
+      {
+        "name": "Polkaholic",
+        "account": "https://polkaholic.io/account/{address}",
+        "extrinsic": "https://polkaholic.io/tx/{hash}"
       }
     ],
     "externalApi": {
-      "history": {
-        "type": "subquery",
-        "url": "https://api.subquery.network/sq/nova-wallet/nova-wallet-parallel-heiko"
-      }
+      "history": [
+        {
+          "type": "subquery",
+          "url": "https://api.subquery.network/sq/nova-wallet/nova-wallet-parallel-heiko"
+        }
+      ]
     },
     "icon": "https://raw.githubusercontent.com/nova-wallet/nova-utils/master/icons/chains/gradient/ParallelHeiko.svg",
     "addressPrefix": 110,
@@ -1532,6 +1816,11 @@
       {
         "name": "Sub.ID",
         "account": "https://sub.id/{address}"
+      },
+      {
+        "name": "Polkaholic",
+        "account": "https://polkaholic.io/account/{address}",
+        "extrinsic": "https://polkaholic.io/tx/{hash}"
       }
     ],
     "types": {
@@ -1539,14 +1828,21 @@
       "overridesCommon": true
     },
     "externalApi": {
-      "history": {
-        "type": "subquery",
-        "url": "https://api.subquery.network/sq/nova-wallet/nova-wallet-basilisk"
-      },
-      "governance": {
-        "type": "polkassembly",
-        "url": "https://polkassembly-hasura.herokuapp.com/v1/graphql"
-      }
+      "history": [
+        {
+          "type": "subquery",
+          "url": "https://api.subquery.network/sq/nova-wallet/nova-wallet-basilisk"
+        }
+      ],
+      "governance": [
+        {
+          "type": "polkassembly",
+          "url": "https://polkassembly-hasura.herokuapp.com/v1/graphql",
+          "parameters": {
+            "network": "basilisk"
+          }
+        }
+      ]
     },
     "icon": "https://raw.githubusercontent.com/nova-wallet/nova-utils/master/icons/chains/gradient/Basilisk.svg",
     "addressPrefix": 10041,
@@ -1574,10 +1870,6 @@
       {
         "url": "wss://altair.api.onfinality.io/public-ws",
         "name": "OnFinality node"
-      },
-      {
-        "url": "wss://altair-rpc.dwellir.com",
-        "name": "Dwellir node"
       }
     ],
     "types": {
@@ -1594,17 +1886,29 @@
       {
         "name": "Sub.ID",
         "account": "https://sub.id/{address}"
+      },
+      {
+        "name": "Polkaholic",
+        "account": "https://polkaholic.io/account/{address}",
+        "extrinsic": "https://polkaholic.io/tx/{hash}"
       }
     ],
     "externalApi": {
-      "history": {
-        "type": "subquery",
-        "url": "https://api.subquery.network/sq/nova-wallet/nova-wallet-altair"
-      },
-      "governance": {
-        "type": "polkassembly",
-        "url": "https://polkassembly-hasura.herokuapp.com/v1/graphql"
-      }
+      "history": [
+        {
+          "type": "subquery",
+          "url": "https://api.subquery.network/sq/nova-wallet/nova-wallet-altair"
+        }
+      ],
+      "governance": [
+        {
+          "type": "polkassembly",
+          "url": "https://polkassembly-hasura.herokuapp.com/v1/graphql",
+          "parameters": {
+            "network": "altair"
+          }
+        }
+      ]
     },
     "icon": "https://raw.githubusercontent.com/nova-wallet/nova-utils/master/icons/chains/gradient/Altair.svg",
     "addressPrefix": 136,
@@ -1766,6 +2070,11 @@
       {
         "name": "Sub.ID",
         "account": "https://sub.id/{address}"
+      },
+      {
+        "name": "Polkaholic",
+        "account": "https://polkaholic.io/account/{address}",
+        "extrinsic": "https://polkaholic.io/tx/{hash}"
       }
     ],
     "types": {
@@ -1773,18 +2082,24 @@
       "overridesCommon": true
     },
     "externalApi": {
-      "history": {
-        "type": "subquery",
-        "url": "https://api.subquery.network/sq/nova-wallet/nova-wallet-khala"
-      },
-      "governance": {
-        "type": "polkassembly",
-        "url": "https://polkassembly-hasura.herokuapp.com/v1/graphql"
-      }
+      "history": [
+        {
+          "type": "subquery",
+          "url": "https://api.subquery.network/sq/nova-wallet/nova-wallet-khala"
+        }
+      ],
+      "governance": [
+        {
+          "type": "polkassembly",
+          "url": "https://polkassembly-hasura.herokuapp.com/v1/graphql",
+          "parameters": {
+            "network": "khala"
+          }
+        }
+      ]
     },
     "icon": "https://raw.githubusercontent.com/nova-wallet/nova-utils/master/icons/chains/gradient/Khala.svg",
-    "addressPrefix": 30,
-    "options": ["governance-v1"]
+    "addressPrefix": 30
   },
   {
     "chainId": "0x411f057b9107718c9624d6aa4a3f23c1653898297f3d4d529d9bb6511a39dd21",
@@ -1820,6 +2135,11 @@
       {
         "name": "Sub.ID",
         "account": "https://sub.id/{address}"
+      },
+      {
+        "name": "Polkaholic",
+        "account": "https://polkaholic.io/account/{address}",
+        "extrinsic": "https://polkaholic.io/tx/{hash}"
       }
     ],
     "types": {
@@ -1827,14 +2147,18 @@
       "overridesCommon": true
     },
     "externalApi": {
-      "history": {
-        "type": "subquery",
-        "url": "https://api.subquery.network/sq/nova-wallet/nova-wallet-kilt"
-      },
-      "governance": {
-        "type": "polkassembly",
-        "url": "https://kilt-hasura.herokuapp.com/v1/graphql"
-      }
+      "history": [
+        {
+          "type": "subquery",
+          "url": "https://api.subquery.network/sq/nova-wallet/nova-wallet-kilt"
+        }
+      ],
+      "governance": [
+        {
+          "type": "polkassembly",
+          "url": "https://kilt-hasura.herokuapp.com/v1/graphql"
+        }
+      ]
     },
     "icon": "https://raw.githubusercontent.com/nova-wallet/nova-utils/master/icons/chains/gradient/KILT_Spiritnet.svg",
     "addressPrefix": 38,
@@ -1905,6 +2229,11 @@
       {
         "name": "Sub.ID",
         "account": "https://sub.id/{address}"
+      },
+      {
+        "name": "Polkaholic",
+        "account": "https://polkaholic.io/account/{address}",
+        "extrinsic": "https://polkaholic.io/tx/{hash}"
       }
     ],
     "types": {
@@ -1912,18 +2241,27 @@
       "overridesCommon": true
     },
     "externalApi": {
-      "history": {
-        "type": "subquery",
-        "url": "https://api.subquery.network/sq/nova-wallet/nova-wallet-calamari"
-      },
-      "staking": {
-        "type": "subquery",
-        "url": "https://api.subquery.network/sq/nova-wallet/nova-wallet-calamari"
-      },
-      "governance": {
-        "type": "polkassembly",
-        "url": "https://polkassembly-hasura.herokuapp.com/v1/graphql"
-      }
+      "history": [
+        {
+          "type": "subquery",
+          "url": "https://api.subquery.network/sq/nova-wallet/nova-wallet-calamari"
+        }
+      ],
+      "staking": [
+        {
+          "type": "subquery",
+          "url": "https://api.subquery.network/sq/nova-wallet/nova-wallet-calamari"
+        }
+      ],
+      "governance": [
+        {
+          "type": "polkassembly",
+          "url": "https://polkassembly-hasura.herokuapp.com/v1/graphql",
+          "parameters": {
+            "network": "calamari"
+          }
+        }
+      ]
     },
     "icon": "https://raw.githubusercontent.com/nova-wallet/nova-utils/master/icons/chains/gradient/Calamari.svg",
     "addressPrefix": 78,
@@ -1975,13 +2313,20 @@
       {
         "name": "Sub.ID",
         "account": "https://sub.id/{address}"
+      },
+      {
+        "name": "Polkaholic",
+        "account": "https://polkaholic.io/account/{address}",
+        "extrinsic": "https://polkaholic.io/tx/{hash}"
       }
     ],
     "externalApi": {
-      "history": {
-        "type": "subquery",
-        "url": "https://api.subquery.network/sq/nova-wallet/nova-wallet-quartz"
-      }
+      "history": [
+        {
+          "type": "subquery",
+          "url": "https://api.subquery.network/sq/nova-wallet/nova-wallet-quartz"
+        }
+      ]
     },
     "icon": "https://raw.githubusercontent.com/nova-wallet/nova-utils/master/icons/chains/gradient/Quartz.svg",
     "addressPrefix": 255
@@ -2026,6 +2371,11 @@
         "extrinsic": "https://pioneer.subscan.io/extrinsic/{hash}",
         "account": "https://pioneer.subscan.io/account/{address}",
         "event": null
+      },
+      {
+        "name": "Polkaholic",
+        "account": "https://polkaholic.io/account/{address}",
+        "extrinsic": "https://polkaholic.io/tx/{hash}"
       }
     ],
     "types": {
@@ -2033,10 +2383,12 @@
       "overridesCommon": true
     },
     "externalApi": {
-      "history": {
-        "type": "subquery",
-        "url": "https://api.subquery.network/sq/nova-wallet/nova-wallet-bit-country"
-      }
+      "history": [
+        {
+          "type": "subquery",
+          "url": "https://api.subquery.network/sq/nova-wallet/nova-wallet-bit-country"
+        }
+      ]
     },
     "icon": "https://raw.githubusercontent.com/nova-wallet/nova-utils/master/icons/chains/gradient/Bit.Country_Pioneer.svg",
     "addressPrefix": 268,
@@ -2231,6 +2583,21 @@
           "transfersEnabled": true
         },
         "name": "Interlay Bitcoin"
+      },
+      {
+        "assetId": 13,
+        "symbol": "DAI",
+        "precision": 18,
+        "type": "orml",
+        "priceId": "dai",
+        "icon": "https://raw.githubusercontent.com/nova-wallet/nova-utils/master/icons/tokens/white/DAI.svg",
+        "typeExtras": {
+          "currencyIdScale": "0x0254a37a01cd75b616d63e0ab665bffdb0143c52ae",
+          "currencyIdType": "acala_primitives.currency.CurrencyId",
+          "existentialDeposit": "10000000000000000",
+          "transfersEnabled": true
+        },
+        "name": "Should be included in assetsNameMap"
       }
     ],
     "nodes": [
@@ -2269,6 +2636,11 @@
       {
         "name": "Sub.ID",
         "account": "https://sub.id/{address}"
+      },
+      {
+        "name": "Polkaholic",
+        "account": "https://polkaholic.io/account/{address}",
+        "extrinsic": "https://polkaholic.io/tx/{hash}"
       }
     ],
     "types": {
@@ -2276,14 +2648,21 @@
       "overridesCommon": true
     },
     "externalApi": {
-      "history": {
-        "type": "subquery",
-        "url": "https://api.subquery.network/sq/nova-wallet/nova-wallet-acala"
-      },
-      "governance": {
-        "type": "polkassembly",
-        "url": "https://polkassembly-hasura.herokuapp.com/v1/graphql"
-      }
+      "history": [
+        {
+          "type": "subquery",
+          "url": "https://api.subquery.network/sq/nova-wallet/nova-wallet-acala"
+        }
+      ],
+      "governance": [
+        {
+          "type": "polkassembly",
+          "url": "https://polkassembly-hasura.herokuapp.com/v1/graphql",
+          "parameters": {
+            "network": "acala"
+          }
+        }
+      ]
     },
     "icon": "https://raw.githubusercontent.com/nova-wallet/nova-utils/master/icons/chains/gradient/Acala.svg",
     "addressPrefix": 10,
@@ -2366,6 +2745,102 @@
           "assetId": "340282366920938463463374607431768211455"
         },
         "name": "Polkadot"
+      },
+      {
+        "assetId": 2,
+        "symbol": "GLMR",
+        "precision": 18,
+        "type": "statemine",
+        "priceId": "moonbeam",
+        "icon": "https://raw.githubusercontent.com/nova-wallet/nova-utils/master/icons/chains/white/Moonbeam.svg",
+        "typeExtras": {
+          "assetId": "18446744073709551619"
+        },
+        "name": "Moonbeam"
+      },
+      {
+        "assetId": 3,
+        "symbol": "iBTC",
+        "precision": 8,
+        "type": "statemine",
+        "priceId": "bitcoin",
+        "icon": "https://raw.githubusercontent.com/nova-wallet/nova-utils/master/icons/tokens/white/interBTC.svg",
+        "typeExtras": {
+          "assetId": "18446744073709551620"
+        },
+        "name": "Interlay Bitcoin"
+      },
+      {
+        "assetId": 4,
+        "symbol": "INTR",
+        "precision": 10,
+        "type": "statemine",
+        "priceId": "interlay",
+        "icon": "https://raw.githubusercontent.com/nova-wallet/nova-utils/master/icons/chains/white/Interlay.svg",
+        "typeExtras": {
+          "assetId": "18446744073709551621"
+        },
+        "name": "Interlay"
+      },
+      {
+        "assetId": 5,
+        "symbol": "PHA",
+        "precision": 12,
+        "type": "statemine",
+        "priceId": "pha",
+        "icon": "https://raw.githubusercontent.com/nova-wallet/nova-utils/master/icons/chains/white/Phala.svg",
+        "typeExtras": {
+          "assetId": "18446744073709551622"
+        },
+        "name": "Phala"
+      },
+      {
+        "assetId": 6,
+        "symbol": "ACA",
+        "precision": 12,
+        "type": "statemine",
+        "priceId": "acala",
+        "icon": "https://raw.githubusercontent.com/nova-wallet/nova-utils/master/icons/chains/white/Acala.svg",
+        "typeExtras": {
+          "assetId": "18446744073709551616"
+        },
+        "name": "Acala"
+      },
+      {
+        "assetId": 7,
+        "symbol": "LDOT",
+        "precision": 10,
+        "type": "statemine",
+        "priceId": "liquid-staking-dot",
+        "icon": "https://raw.githubusercontent.com/nova-wallet/nova-utils/master/icons/tokens/white/LDOT.svg",
+        "typeExtras": {
+          "assetId": "18446744073709551618"
+        },
+        "name": "Liquid DOT"
+      },
+      {
+        "assetId": 8,
+        "symbol": "aUSD",
+        "precision": 12,
+        "type": "statemine",
+        "priceId": "acala-dollar",
+        "icon": "https://raw.githubusercontent.com/nova-wallet/nova-utils/master/icons/tokens/white/AUSD.svg",
+        "typeExtras": {
+          "assetId": "18446744073709551617"
+        },
+        "name": "Acala USD"
+      },
+      {
+        "assetId": 9,
+        "symbol": "USDT",
+        "precision": 6,
+        "type": "statemine",
+        "priceId": "tether",
+        "icon": "https://raw.githubusercontent.com/nova-wallet/nova-utils/master/icons/tokens/white/USDT.svg",
+        "typeExtras": {
+          "assetId": "4294969280"
+        },
+        "name": "USD Tether"
       }
     ],
     "nodes": [
@@ -2392,6 +2867,11 @@
       {
         "name": "Sub.ID",
         "account": "https://sub.id/{address}"
+      },
+      {
+        "name": "Polkaholic",
+        "account": "https://polkaholic.io/account/{address}",
+        "extrinsic": "https://polkaholic.io/tx/{hash}"
       }
     ],
     "types": {
@@ -2399,14 +2879,21 @@
       "overridesCommon": true
     },
     "externalApi": {
-      "history": {
-        "type": "subquery",
-        "url": "https://api.subquery.network/sq/nova-wallet/nova-wallet-astar"
-      },
-      "governance": {
-        "type": "polkassembly",
-        "url": "https://polkassembly-hasura.herokuapp.com/v1/graphql"
-      }
+      "history": [
+        {
+          "type": "subquery",
+          "url": "https://api.subquery.network/sq/nova-wallet/nova-wallet-astar"
+        }
+      ],
+      "governance": [
+        {
+          "type": "polkassembly",
+          "url": "https://polkassembly-hasura.herokuapp.com/v1/graphql",
+          "parameters": {
+            "network": "astar"
+          }
+        }
+      ]
     },
     "icon": "https://raw.githubusercontent.com/nova-wallet/nova-utils/master/icons/chains/gradient/Astar.svg",
     "addressPrefix": 5,
@@ -2630,10 +3117,6 @@
       {
         "url": "wss://rpc.parallel.fi",
         "name": "Parallel node"
-      },
-      {
-        "url": "wss://parallel.api.onfinality.io/public-ws",
-        "name": "OnFinality node"
       }
     ],
     "explorers": [
@@ -2646,6 +3129,11 @@
       {
         "name": "Sub.ID",
         "account": "https://sub.id/{address}"
+      },
+      {
+        "name": "Polkaholic",
+        "account": "https://polkaholic.io/account/{address}",
+        "extrinsic": "https://polkaholic.io/tx/{hash}"
       }
     ],
     "types": {
@@ -2653,14 +3141,21 @@
       "overridesCommon": true
     },
     "externalApi": {
-      "history": {
-        "type": "subquery",
-        "url": "https://api.subquery.network/sq/nova-wallet/nova-wallet-parallel"
-      },
-      "governance": {
-        "type": "polkassembly",
-        "url": "https://polkassembly-hasura.herokuapp.com/v1/graphql"
-      }
+      "history": [
+        {
+          "type": "subquery",
+          "url": "https://api.subquery.network/sq/nova-wallet/nova-wallet-parallel"
+        }
+      ],
+      "governance": [
+        {
+          "type": "polkassembly",
+          "url": "https://polkassembly-hasura.herokuapp.com/v1/graphql",
+          "parameters": {
+            "network": "parallel"
+          }
+        }
+      ]
     },
     "icon": "https://raw.githubusercontent.com/nova-wallet/nova-utils/master/icons/chains/gradient/Parallel.svg",
     "addressPrefix": 172,
@@ -2684,10 +3179,6 @@
       {
         "url": "wss://rpc-para.clover.finance",
         "name": "Clover node"
-      },
-      {
-        "url": "wss://clover.api.onfinality.io/public-ws",
-        "name": "OnFinality node"
       }
     ],
     "explorers": [
@@ -2696,6 +3187,11 @@
         "extrinsic": "https://clv.subscan.io/extrinsic/{hash}",
         "account": "https://clv.subscan.io/account/{address}",
         "event": null
+      },
+      {
+        "name": "Polkaholic",
+        "account": "https://polkaholic.io/account/{address}",
+        "extrinsic": "https://polkaholic.io/tx/{hash}"
       }
     ],
     "types": {
@@ -2703,10 +3199,12 @@
       "overridesCommon": true
     },
     "externalApi": {
-      "history": {
-        "type": "subquery",
-        "url": "https://api.subquery.network/sq/nova-wallet/nova-wallet-clover"
-      }
+      "history": [
+        {
+          "type": "subquery",
+          "url": "https://api.subquery.network/sq/nova-wallet/nova-wallet-clover"
+        }
+      ]
     },
     "icon": "https://raw.githubusercontent.com/nova-wallet/nova-utils/master/icons/chains/gradient/CLV_Parachain.svg",
     "addressPrefix": 128
@@ -2757,6 +3255,11 @@
         "account": "https://statemint.statescan.io/account/{address}",
         "extrinsic": "https://statemint.statescan.io/extrinsic/{hash}",
         "event": "https://statemint.statescan.io/event/{event}"
+      },
+      {
+        "name": "Polkaholic",
+        "account": "https://polkaholic.io/account/{address}",
+        "extrinsic": "https://polkaholic.io/tx/{hash}"
       }
     ],
     "types": {
@@ -2764,10 +3267,12 @@
       "overridesCommon": true
     },
     "externalApi": {
-      "history": {
-        "type": "subquery",
-        "url": "https://api.subquery.network/sq/nova-wallet/nova-wallet-statemint"
-      }
+      "history": [
+        {
+          "type": "subquery",
+          "url": "https://api.subquery.network/sq/nova-wallet/nova-wallet-statemint"
+        }
+      ]
     },
     "icon": "https://raw.githubusercontent.com/nova-wallet/nova-utils/master/icons/chains/gradient/Statemint.svg",
     "addressPrefix": 0
@@ -2806,6 +3311,11 @@
       {
         "name": "Sub.ID",
         "account": "https://sub.id/{address}"
+      },
+      {
+        "name": "Polkaholic",
+        "account": "https://polkaholic.io/account/{address}",
+        "extrinsic": "https://polkaholic.io/tx/{hash}"
       }
     ],
     "types": {
@@ -2813,14 +3323,21 @@
       "overridesCommon": true
     },
     "externalApi": {
-      "history": {
-        "type": "subquery",
-        "url": "https://api.subquery.network/sq/nova-wallet/nova-wallet-robonomics"
-      },
-      "governance": {
-        "type": "polkassembly",
-        "url": "https://polkassembly-hasura.herokuapp.com/v1/graphql"
-      }
+      "history": [
+        {
+          "type": "subquery",
+          "url": "https://api.subquery.network/sq/nova-wallet/nova-wallet-robonomics"
+        }
+      ],
+      "governance": [
+        {
+          "type": "polkassembly",
+          "url": "https://polkassembly-hasura.herokuapp.com/v1/graphql",
+          "parameters": {
+            "network": "robonomics"
+          }
+        }
+      ]
     },
     "icon": "https://raw.githubusercontent.com/nova-wallet/nova-utils/master/icons/chains/gradient/Robonomics.svg",
     "addressPrefix": 32,
@@ -2856,6 +3373,11 @@
         "extrinsic": "https://encointer.subscan.io/extrinsic/{hash}",
         "account": "https://encointer.subscan.io/account/{address}",
         "event": null
+      },
+      {
+        "name": "Polkaholic",
+        "account": "https://polkaholic.io/account/{address}",
+        "extrinsic": "https://polkaholic.io/tx/{hash}"
       }
     ],
     "types": {
@@ -2863,10 +3385,12 @@
       "overridesCommon": true
     },
     "externalApi": {
-      "history": {
-        "type": "subquery",
-        "url": "https://api.subquery.network/sq/nova-wallet/nova-wallet-encointer"
-      }
+      "history": [
+        {
+          "type": "subquery",
+          "url": "https://api.subquery.network/sq/nova-wallet/nova-wallet-encointer"
+        }
+      ]
     },
     "icon": "https://raw.githubusercontent.com/nova-wallet/nova-utils/master/icons/chains/gradient/Encointer.svg",
     "addressPrefix": 2
@@ -2900,6 +3424,11 @@
         "extrinsic": "https://picasso.subscan.io/extrinsic/{hash}",
         "account": "https://picasso.subscan.io/account/{address}",
         "event": null
+      },
+      {
+        "name": "Polkaholic",
+        "account": "https://polkaholic.io/account/{address}",
+        "extrinsic": "https://polkaholic.io/tx/{hash}"
       }
     ],
     "types": {
@@ -2907,10 +3436,12 @@
       "overridesCommon": true
     },
     "externalApi": {
-      "history": {
-        "type": "subquery",
-        "url": "https://api.subquery.network/sq/nova-wallet/nova-wallet-picasso"
-      }
+      "history": [
+        {
+          "type": "subquery",
+          "url": "https://api.subquery.network/sq/nova-wallet/nova-wallet-picasso"
+        }
+      ]
     },
     "icon": "https://raw.githubusercontent.com/nova-wallet/nova-utils/master/icons/chains/gradient/Picasso.svg",
     "addressPrefix": 49,
@@ -2955,17 +3486,26 @@
       {
         "name": "Sub.ID",
         "account": "https://sub.id/{address}"
+      },
+      {
+        "name": "Polkaholic",
+        "account": "https://polkaholic.io/account/{address}",
+        "extrinsic": "https://polkaholic.io/tx/{hash}"
       }
     ],
     "externalApi": {
-      "history": {
-        "type": "subquery",
-        "url": "https://api.subquery.network/sq/nova-wallet/nova-wallet-zeitgeist"
-      },
-      "staking": {
-        "type": "subquery",
-        "url": "https://api.subquery.network/sq/nova-wallet/nova-wallet-zeitgeist"
-      }
+      "history": [
+        {
+          "type": "subquery",
+          "url": "https://api.subquery.network/sq/nova-wallet/nova-wallet-zeitgeist"
+        }
+      ],
+      "staking": [
+        {
+          "type": "subquery",
+          "url": "https://api.subquery.network/sq/nova-wallet/nova-wallet-zeitgeist"
+        }
+      ]
     },
     "icon": "https://raw.githubusercontent.com/nova-wallet/nova-utils/master/icons/chains/gradient/Zeitgeist.svg",
     "addressPrefix": 73,
@@ -2990,15 +3530,24 @@
         "name": "DICO FOUNDATION node"
       }
     ],
+    "explorers": [
+      {
+        "name": "Polkaholic",
+        "account": "https://polkaholic.io/account/{address}",
+        "extrinsic": "https://polkaholic.io/tx/{hash}"
+      }
+    ],
     "types": {
       "url": "https://raw.githubusercontent.com/nova-wallet/nova-utils/master/chains/v2/types/kico.json",
       "overridesCommon": true
     },
     "externalApi": {
-      "history": {
-        "type": "subquery",
-        "url": "https://api.subquery.network/sq/nova-wallet/nova-wallet-kico"
-      }
+      "history": [
+        {
+          "type": "subquery",
+          "url": "https://api.subquery.network/sq/nova-wallet/nova-wallet-kico"
+        }
+      ]
     },
     "icon": "https://raw.githubusercontent.com/nova-wallet/nova-utils/master/icons/chains/gradient/KICO.svg",
     "addressPrefix": 42
@@ -3033,6 +3582,11 @@
       {
         "name": "Sub.ID",
         "account": "https://sub.id/{address}"
+      },
+      {
+        "name": "Polkaholic",
+        "account": "https://polkaholic.io/account/{address}",
+        "extrinsic": "https://polkaholic.io/tx/{hash}"
       }
     ],
     "types": {
@@ -3040,10 +3594,12 @@
       "overridesCommon": true
     },
     "externalApi": {
-      "history": {
-        "type": "subquery",
-        "url": "https://api.subquery.network/sq/nova-wallet/nova-wallet-litmus"
-      }
+      "history": [
+        {
+          "type": "subquery",
+          "url": "https://api.subquery.network/sq/nova-wallet/nova-wallet-litmus"
+        }
+      ]
     },
     "icon": "https://raw.githubusercontent.com/nova-wallet/nova-utils/master/icons/chains/gradient/Litmus.svg",
     "addressPrefix": 131,
@@ -3079,6 +3635,11 @@
       {
         "name": "Sub.ID",
         "account": "https://sub.id/{address}"
+      },
+      {
+        "name": "Polkaholic",
+        "account": "https://polkaholic.io/account/{address}",
+        "extrinsic": "https://polkaholic.io/tx/{hash}"
       }
     ],
     "types": {
@@ -3086,10 +3647,12 @@
       "overridesCommon": true
     },
     "externalApi": {
-      "history": {
-        "type": "subquery",
-        "url": "https://api.subquery.network/sq/nova-wallet/nova-wallet-crab"
-      }
+      "history": [
+        {
+          "type": "subquery",
+          "url": "https://api.subquery.network/sq/nova-wallet/nova-wallet-crab"
+        }
+      ]
     },
     "icon": "https://raw.githubusercontent.com/nova-wallet/nova-utils/master/icons/chains/gradient/Crab.svg",
     "addressPrefix": 42
@@ -3121,6 +3684,11 @@
       {
         "name": "Sub.ID",
         "account": "https://sub.id/{address}"
+      },
+      {
+        "name": "Polkaholic",
+        "account": "https://polkaholic.io/account/{address}",
+        "extrinsic": "https://polkaholic.io/tx/{hash}"
       }
     ],
     "types": {
@@ -3128,10 +3696,12 @@
       "overridesCommon": true
     },
     "externalApi": {
-      "history": {
-        "type": "subquery",
-        "url": "https://api.subquery.network/sq/nova-wallet/nova-wallet-subsocial"
-      }
+      "history": [
+        {
+          "type": "subquery",
+          "url": "https://api.subquery.network/sq/nova-wallet/nova-wallet-subsocial"
+        }
+      ]
     },
     "icon": "https://raw.githubusercontent.com/nova-wallet/nova-utils/master/icons/chains/gradient/Subsocial_Parachain.svg",
     "addressPrefix": 28
@@ -3152,7 +3722,7 @@
     ],
     "nodes": [
       {
-        "url": "wss://rpc-sha-subscan.crust.network",
+        "url": "wss://rpc2-shadow.crust.network/",
         "name": "Crust node"
       },
       {
@@ -3166,6 +3736,11 @@
         "extrinsic": "https://shadow.subscan.io/extrinsic/{hash}",
         "account": "https://shadow.subscan.io/account/{address}",
         "event": null
+      },
+      {
+        "name": "Polkaholic",
+        "account": "https://polkaholic.io/account/{address}",
+        "extrinsic": "https://polkaholic.io/tx/{hash}"
       }
     ],
     "types": {
@@ -3173,14 +3748,21 @@
       "overridesCommon": true
     },
     "externalApi": {
-      "history": {
-        "type": "subquery",
-        "url": "https://api.subquery.network/sq/nova-wallet/nova-wallet-shadow"
-      },
-      "governance": {
-        "type": "polkassembly",
-        "url": "https://polkassembly-hasura.herokuapp.com/v1/graphql"
-      }
+      "history": [
+        {
+          "type": "subquery",
+          "url": "https://api.subquery.network/sq/nova-wallet/nova-wallet-shadow"
+        }
+      ],
+      "governance": [
+        {
+          "type": "polkassembly",
+          "url": "https://polkassembly-hasura.herokuapp.com/v1/graphql",
+          "parameters": {
+            "network": "crustshadow"
+          }
+        }
+      ]
     },
     "icon": "https://raw.githubusercontent.com/nova-wallet/nova-utils/master/icons/chains/gradient/Crust_Shadow.svg",
     "addressPrefix": 66,
@@ -3208,10 +3790,6 @@
       {
         "url": "wss://kusama.api.integritee.network",
         "name": "Integritee node"
-      },
-      {
-        "url": "wss://integritee-ksm-rpc.dwellir.com",
-        "name": "Dwellir node"
       }
     ],
     "explorers": [
@@ -3224,6 +3802,11 @@
       {
         "name": "Sub.ID",
         "account": "https://sub.id/{address}"
+      },
+      {
+        "name": "Polkaholic",
+        "account": "https://polkaholic.io/account/{address}",
+        "extrinsic": "https://polkaholic.io/tx/{hash}"
       }
     ],
     "types": {
@@ -3231,10 +3814,12 @@
       "overridesCommon": true
     },
     "externalApi": {
-      "history": {
-        "type": "subquery",
-        "url": "https://api.subquery.network/sq/nova-wallet/nova-wallet-integritee"
-      }
+      "history": [
+        {
+          "type": "subquery",
+          "url": "https://api.subquery.network/sq/nova-wallet/nova-wallet-integritee"
+        }
+      ]
     },
     "icon": "https://raw.githubusercontent.com/nova-wallet/nova-utils/master/icons/chains/gradient/Integritee.svg",
     "addressPrefix": 13
@@ -3257,10 +3842,6 @@
       {
         "url": "wss://fullnode.parachain.centrifuge.io",
         "name": "Centrifuge node"
-      },
-      {
-        "url": "wss://centrifuge-rpc.dwellir.com",
-        "name": "Dwellir node"
       }
     ],
     "explorers": [
@@ -3273,6 +3854,11 @@
       {
         "name": "Sub.ID",
         "account": "https://sub.id/{address}"
+      },
+      {
+        "name": "Polkaholic",
+        "account": "https://polkaholic.io/account/{address}",
+        "extrinsic": "https://polkaholic.io/tx/{hash}"
       }
     ],
     "types": {
@@ -3280,10 +3866,12 @@
       "overridesCommon": true
     },
     "externalApi": {
-      "history": {
-        "type": "subquery",
-        "url": "https://api.subquery.network/sq/nova-wallet/nova-wallet-centrifuge"
-      }
+      "history": [
+        {
+          "type": "subquery",
+          "url": "https://api.subquery.network/sq/nova-wallet/nova-wallet-centrifuge"
+        }
+      ]
     },
     "icon": "https://raw.githubusercontent.com/nova-wallet/nova-utils/master/icons/chains/gradient/Centrifuge.svg",
     "addressPrefix": 36,
@@ -3319,6 +3907,11 @@
         "extrinsic": "https://efinity.subscan.io/extrinsic/{hash}",
         "account": "https://efinity.subscan.io/account/{address}",
         "event": null
+      },
+      {
+        "name": "Polkaholic",
+        "account": "https://polkaholic.io/account/{address}",
+        "extrinsic": "https://polkaholic.io/tx/{hash}"
       }
     ],
     "types": {
@@ -3326,10 +3919,12 @@
       "overridesCommon": true
     },
     "externalApi": {
-      "history": {
-        "type": "subquery",
-        "url": "https://api.subquery.network/sq/nova-wallet/nova-wallet-efinity"
-      }
+      "history": [
+        {
+          "type": "subquery",
+          "url": "https://api.subquery.network/sq/nova-wallet/nova-wallet-efinity"
+        }
+      ]
     },
     "icon": "https://raw.githubusercontent.com/nova-wallet/nova-utils/master/icons/chains/gradient/Efinity.svg",
     "addressPrefix": 1110,
@@ -3346,6 +3941,36 @@
         "precision": 12,
         "icon": "https://raw.githubusercontent.com/nova-wallet/nova-utils/master/icons/chains/white/HydraDX.svg",
         "name": "HydraDX"
+      },
+      {
+        "assetId": 1,
+        "symbol": "DOT",
+        "precision": 10,
+        "priceId": "polkadot",
+        "icon": "https://raw.githubusercontent.com/nova-wallet/nova-utils/master/icons/chains/white/Polkadot.svg",
+        "type": "orml",
+        "typeExtras": {
+          "currencyIdScale": "0x05000000",
+          "currencyIdType": "u32",
+          "existentialDeposit": "17540000",
+          "transfersEnabled": true
+        },
+        "name": "Polkadot"
+      },
+      {
+        "assetId": 2,
+        "symbol": "DAI",
+        "precision": 18,
+        "priceId": "dai",
+        "type": "orml",
+        "icon": "https://raw.githubusercontent.com/nova-wallet/nova-utils/master/icons/tokens/white/DAI.svg",
+        "typeExtras": {
+          "currencyIdScale": "0x02000000",
+          "currencyIdType": "u32",
+          "existentialDeposit": "10000000000000000",
+          "transfersEnabled": true
+        },
+        "name": "Should be included in assetsNameMap"
       }
     ],
     "nodes": [
@@ -3364,6 +3989,11 @@
         "extrinsic": "https://hydradx.subscan.io/extrinsic/{hash}",
         "account": "https://hydradx.subscan.io/account/{address}",
         "event": null
+      },
+      {
+        "name": "Polkaholic",
+        "account": "https://polkaholic.io/account/{address}",
+        "extrinsic": "https://polkaholic.io/tx/{hash}"
       }
     ],
     "types": {
@@ -3371,14 +4001,21 @@
       "overridesCommon": true
     },
     "externalApi": {
-      "history": {
-        "type": "subquery",
-        "url": "https://api.subquery.network/sq/nova-wallet/nova-wallet-hydra"
-      },
-      "governance": {
-        "type": "polkassembly",
-        "url": "https://polkassembly-hasura.herokuapp.com/v1/graphql"
-      }
+      "history": [
+        {
+          "type": "subquery",
+          "url": "https://api.subquery.network/sq/nova-wallet/nova-wallet-hydra"
+        }
+      ],
+      "governance": [
+        {
+          "type": "polkassembly",
+          "url": "https://polkassembly-hasura.herokuapp.com/v1/graphql",
+          "parameters": {
+            "network": "hydradx"
+          }
+        }
+      ]
     },
     "icon": "https://raw.githubusercontent.com/nova-wallet/nova-utils/master/icons/chains/gradient/HydraDX.svg",
     "addressPrefix": 63,
@@ -3478,6 +4115,36 @@
           "transfersEnabled": true
         },
         "name": "Kusama"
+      },
+      {
+        "assetId": 6,
+        "symbol": "LDOT",
+        "precision": 10,
+        "priceId": "liquid-staking-dot",
+        "icon": "https://raw.githubusercontent.com/nova-wallet/nova-utils/master/icons/tokens/white/LDOT.svg",
+        "type": "orml",
+        "typeExtras": {
+          "currencyIdScale": "0x0101000000",
+          "currencyIdType": "interbtc_primitives.CurrencyId",
+          "existentialDeposit": "0",
+          "transfersEnabled": true
+        },
+        "name": "Liquid DOT"
+      },
+      {
+        "assetId": 7,
+        "symbol": "USDT",
+        "precision": 6,
+        "priceId": "tether",
+        "icon": "https://raw.githubusercontent.com/nova-wallet/nova-utils/master/icons/tokens/white/USDT.svg",
+        "type": "orml",
+        "typeExtras": {
+          "currencyIdScale": "0x0102000000",
+          "currencyIdType": "interbtc_primitives.CurrencyId",
+          "existentialDeposit": "0",
+          "transfersEnabled": true
+        },
+        "name": "USD Tether"
       }
     ],
     "nodes": [
@@ -3496,6 +4163,11 @@
         "extrinsic": "https://interlay.subscan.io/extrinsic/{hash}",
         "account": "https://interlay.subscan.io/account/{address}",
         "event": null
+      },
+      {
+        "name": "Polkaholic",
+        "account": "https://polkaholic.io/account/{address}",
+        "extrinsic": "https://polkaholic.io/tx/{hash}"
       }
     ],
     "types": {
@@ -3503,10 +4175,12 @@
       "overridesCommon": true
     },
     "externalApi": {
-      "history": {
-        "type": "subquery",
-        "url": "https://api.subquery.network/sq/nova-wallet/nova-wallet-interlay"
-      }
+      "history": [
+        {
+          "type": "subquery",
+          "url": "https://api.subquery.network/sq/nova-wallet/nova-wallet-interlay"
+        }
+      ]
     },
     "icon": "https://raw.githubusercontent.com/nova-wallet/nova-utils/master/icons/chains/gradient/Interlay.svg",
     "addressPrefix": 2032
@@ -3545,6 +4219,11 @@
       {
         "name": "Sub.ID",
         "account": "https://sub.id/{address}"
+      },
+      {
+        "name": "Polkaholic",
+        "account": "https://polkaholic.io/account/{address}",
+        "extrinsic": "https://polkaholic.io/tx/{hash}"
       }
     ],
     "types": {
@@ -3552,10 +4231,12 @@
       "overridesCommon": true
     },
     "externalApi": {
-      "history": {
-        "type": "subquery",
-        "url": "https://api.subquery.network/sq/nova-wallet/nova-wallet-nodle"
-      }
+      "history": [
+        {
+          "type": "subquery",
+          "url": "https://api.subquery.network/sq/nova-wallet/nova-wallet-nodle"
+        }
+      ]
     },
     "icon": "https://raw.githubusercontent.com/nova-wallet/nova-utils/master/icons/chains/gradient/Nodle.svg",
     "addressPrefix": 37
@@ -3612,6 +4293,11 @@
         "extrinsic": "https://phala.subscan.io/extrinsic/{hash}",
         "account": "https://phala.subscan.io/account/{address}",
         "event": null
+      },
+      {
+        "name": "Polkaholic",
+        "account": "https://polkaholic.io/account/{address}",
+        "extrinsic": "https://polkaholic.io/tx/{hash}"
       }
     ],
     "types": {
@@ -3619,10 +4305,12 @@
       "overridesCommon": true
     },
     "externalApi": {
-      "history": {
-        "type": "subquery",
-        "url": "https://api.subquery.network/sq/nova-wallet/nova-wallet-phala"
-      }
+      "history": [
+        {
+          "type": "subquery",
+          "url": "https://api.subquery.network/sq/nova-wallet/nova-wallet-phala"
+        }
+      ]
     },
     "icon": "https://raw.githubusercontent.com/nova-wallet/nova-utils/master/icons/chains/gradient/Phala.svg",
     "addressPrefix": 30,
@@ -3690,6 +4378,7 @@
         "assetId": 4,
         "symbol": "LKSM",
         "precision": 12,
+        "priceId": "liquid-ksm",
         "type": "orml",
         "icon": "https://raw.githubusercontent.com/nova-wallet/nova-utils/master/icons/tokens/white/LKSM.svg",
         "typeExtras": {
@@ -3764,21 +4453,35 @@
         "extrinsic": "https://turing.subscan.io/extrinsic/{hash}",
         "account": "https://turing.subscan.io/account/{address}",
         "event": null
+      },
+      {
+        "name": "Polkaholic",
+        "account": "https://polkaholic.io/account/{address}",
+        "extrinsic": "https://polkaholic.io/tx/{hash}"
       }
     ],
     "externalApi": {
-      "history": {
-        "type": "subquery",
-        "url": "https://api.subquery.network/sq/nova-wallet/nova-wallet-turing"
-      },
-      "staking": {
-        "type": "subquery",
-        "url": "https://api.subquery.network/sq/nova-wallet/nova-wallet-turing"
-      },
-      "governance": {
-        "type": "polkassembly",
-        "url": "https://polkassembly-hasura.herokuapp.com/v1/graphql"
-      }
+      "history": [
+        {
+          "type": "subquery",
+          "url": "https://api.subquery.network/sq/nova-wallet/nova-wallet-turing"
+        }
+      ],
+      "staking": [
+        {
+          "type": "subquery",
+          "url": "https://api.subquery.network/sq/nova-wallet/nova-wallet-turing"
+        }
+      ],
+      "governance": [
+        {
+          "type": "polkassembly",
+          "url": "https://polkassembly-hasura.herokuapp.com/v1/graphql",
+          "parameters": {
+            "network": "turing"
+          }
+        }
+      ]
     },
     "icon": "https://raw.githubusercontent.com/nova-wallet/nova-utils/master/icons/chains/gradient/Turing.svg",
     "addressPrefix": 51,
@@ -3817,14 +4520,18 @@
       "overridesCommon": true
     },
     "externalApi": {
-      "history": {
-        "type": "subquery",
-        "url": "https://api.subquery.network/sq/nova-wallet/nova-wallet-aleph-zero"
-      },
-      "staking": {
-        "type": "subquery",
-        "url": "https://api.subquery.network/sq/nova-wallet/nova-wallet-aleph-zero"
-      }
+      "history": [
+        {
+          "type": "subquery",
+          "url": "https://api.subquery.network/sq/nova-wallet/nova-wallet-aleph-zero"
+        }
+      ],
+      "staking": [
+        {
+          "type": "subquery",
+          "url": "https://api.subquery.network/sq/nova-wallet/nova-wallet-aleph-zero"
+        }
+      ]
     },
     "icon": "https://raw.githubusercontent.com/nova-wallet/nova-utils/master/icons/chains/gradient/AlephZero.svg",
     "addressPrefix": 42
@@ -3854,6 +4561,11 @@
         "extrinsic": "https://composable.subscan.io/extrinsic/{hash}",
         "account": "https://composable.subscan.io/account/{address}",
         "event": null
+      },
+      {
+        "name": "Polkaholic",
+        "account": "https://polkaholic.io/account/{address}",
+        "extrinsic": "https://polkaholic.io/tx/{hash}"
       }
     ],
     "types": {
@@ -3861,14 +4573,21 @@
       "overridesCommon": true
     },
     "externalApi": {
-      "history": {
-        "type": "subquery",
-        "url": "https://api.subquery.network/sq/nova-wallet/nova-wallet-composable"
-      },
-      "governance": {
-        "type": "polkassembly",
-        "url": "https://polkassembly-hasura.herokuapp.com/v1/graphql"
-      }
+      "history": [
+        {
+          "type": "subquery",
+          "url": "https://api.subquery.network/sq/nova-wallet/nova-wallet-composable"
+        }
+      ],
+      "governance": [
+        {
+          "type": "polkassembly",
+          "url": "https://polkassembly-hasura.herokuapp.com/v1/graphql",
+          "parameters": {
+            "network": "composable"
+          }
+        }
+      ]
     },
     "icon": "https://raw.githubusercontent.com/nova-wallet/nova-utils/master/icons/chains/gradient/Composable.png",
     "addressPrefix": 49,
@@ -3876,7 +4595,7 @@
   },
   {
     "chainId": "0x3920bcb4960a1eef5580cd5367ff3f430eef052774f78468852f7b9cb39f8a3c",
-    "name": "Polkadex Solochain",
+    "name": "Polkadex",
     "assets": [
       {
         "assetId": 0,
@@ -3915,18 +4634,27 @@
       "overridesCommon": true
     },
     "externalApi": {
-      "staking": {
-        "type": "subquery",
-        "url": "https://api.subquery.network/sq/nova-wallet/nova-wallet-polkadex"
-      },
-      "history": {
-        "type": "subquery",
-        "url": "https://api.subquery.network/sq/nova-wallet/nova-wallet-polkadex"
-      },
-      "governance": {
-        "type": "polkassembly",
-        "url": "https://polkassembly-hasura.herokuapp.com/v1/graphql"
-      }
+      "staking": [
+        {
+          "type": "subquery",
+          "url": "https://api.subquery.network/sq/nova-wallet/nova-wallet-polkadex"
+        }
+      ],
+      "history": [
+        {
+          "type": "subquery",
+          "url": "https://api.subquery.network/sq/nova-wallet/nova-wallet-polkadex"
+        }
+      ],
+      "governance": [
+        {
+          "type": "polkassembly",
+          "url": "https://polkassembly-hasura.herokuapp.com/v1/graphql",
+          "parameters": {
+            "network": "polkadex"
+          }
+        }
+      ]
     },
     "icon": "https://raw.githubusercontent.com/nova-wallet/nova-utils/master/icons/chains/gradient/Polkadex.svg",
     "addressPrefix": 88,
@@ -3951,15 +4679,24 @@
         "name": "TraceLabs node"
       }
     ],
+    "explorers": [
+      {
+        "name": "Polkaholic",
+        "account": "https://polkaholic.io/account/{address}",
+        "extrinsic": "https://polkaholic.io/tx/{hash}"
+      }
+    ],
     "types": {
       "url": "https://raw.githubusercontent.com/nova-wallet/nova-utils/master/chains/v2/types/origintrail.json",
       "overridesCommon": true
     },
     "externalApi": {
-      "history": {
-        "type": "subquery",
-        "url": "https://api.subquery.network/sq/nova-wallet/nova-wallet-origin-trail"
-      }
+      "history": [
+        {
+          "type": "subquery",
+          "url": "https://api.subquery.network/sq/nova-wallet/nova-wallet-origin-trail"
+        }
+      ]
     },
     "icon": "https://raw.githubusercontent.com/nova-wallet/nova-utils/master/icons/chains/gradient/OriginTrail.svg",
     "addressPrefix": 101
@@ -4020,6 +4757,11 @@
         "extrinsic": "https://bifrost.subscan.io/extrinsic/{hash}",
         "account": "https://bifrost.subscan.io/account/{address}",
         "event": null
+      },
+      {
+        "name": "Polkaholic",
+        "account": "https://polkaholic.io/account/{address}",
+        "extrinsic": "https://polkaholic.io/tx/{hash}"
       }
     ],
     "types": {
@@ -4027,10 +4769,12 @@
       "overridesCommon": true
     },
     "externalApi": {
-      "history": {
-        "type": "subquery",
-        "url": "https://api.subquery.network/sq/nova-wallet/nova-wallet-bifrost-polkadot"
-      }
+      "history": [
+        {
+          "type": "subquery",
+          "url": "https://api.subquery.network/sq/nova-wallet/nova-wallet-bifrost-polkadot"
+        }
+      ]
     },
     "icon": "https://raw.githubusercontent.com/nova-wallet/nova-utils/master/icons/chains/gradient/Bifrost_Polkadot.svg",
     "addressPrefix": 6
@@ -4059,15 +4803,24 @@
         "name": "Dwellir node"
       }
     ],
+    "explorers": [
+      {
+        "name": "Polkaholic",
+        "account": "https://polkaholic.io/account/{address}",
+        "extrinsic": "https://polkaholic.io/tx/{hash}"
+      }
+    ],
     "types": {
       "url": "https://raw.githubusercontent.com/nova-wallet/nova-utils/master/chains/v2/types/litentry.json",
       "overridesCommon": true
     },
     "externalApi": {
-      "history": {
-        "type": "subquery",
-        "url": "https://api.subquery.network/sq/nova-wallet/nova-wallet-litentry"
-      }
+      "history": [
+        {
+          "type": "subquery",
+          "url": "https://api.subquery.network/sq/nova-wallet/nova-wallet-litentry"
+        }
+      ]
     },
     "icon": "https://raw.githubusercontent.com/nova-wallet/nova-utils/master/icons/chains/gradient/Litentry.svg",
     "addressPrefix": 31
@@ -4106,6 +4859,11 @@
         "extrinsic": "https://unique.subscan.io/extrinsic/{hash}",
         "account": "https://unique.subscan.io/account/{address}",
         "event": null
+      },
+      {
+        "name": "Polkaholic",
+        "account": "https://polkaholic.io/account/{address}",
+        "extrinsic": "https://polkaholic.io/tx/{hash}"
       }
     ],
     "types": {
@@ -4113,10 +4871,12 @@
       "overridesCommon": true
     },
     "externalApi": {
-      "history": {
-        "type": "subquery",
-        "url": "https://api.subquery.network/sq/nova-wallet/nova-wallet-unique"
-      }
+      "history": [
+        {
+          "type": "subquery",
+          "url": "https://api.subquery.network/sq/nova-wallet/nova-wallet-unique"
+        }
+      ]
     },
     "icon": "https://raw.githubusercontent.com/nova-wallet/nova-utils/master/icons/chains/gradient/Unique.svg",
     "addressPrefix": 7391
@@ -4141,15 +4901,24 @@
         "name": "Dora node"
       }
     ],
+    "explorers": [
+      {
+        "name": "Polkaholic",
+        "account": "https://polkaholic.io/account/{address}",
+        "extrinsic": "https://polkaholic.io/tx/{hash}"
+      }
+    ],
     "types": {
       "url": "https://raw.githubusercontent.com/nova-wallet/nova-utils/master/chains/v2/types/dorafactory.json",
       "overridesCommon": true
     },
     "externalApi": {
-      "history": {
-        "type": "subquery",
-        "url": "https://api.subquery.network/sq/nova-wallet/nova-wallet-dora"
-      }
+      "history": [
+        {
+          "type": "subquery",
+          "url": "https://api.subquery.network/sq/nova-wallet/nova-wallet-dora"
+        }
+      ]
     },
     "icon": "https://raw.githubusercontent.com/nova-wallet/nova-utils/master/icons/chains/gradient/DoraFactory.svg",
     "addressPrefix": 128
@@ -4220,6 +4989,11 @@
         "extrinsic": "https://mangatax.subscan.io/extrinsic/{hash}",
         "account": "https://mangatax.subscan.io/account/{address}",
         "event": null
+      },
+      {
+        "name": "Polkaholic",
+        "account": "https://polkaholic.io/account/{address}",
+        "extrinsic": "https://polkaholic.io/tx/{hash}"
       }
     ],
     "types": {
@@ -4347,14 +5121,23 @@
       "overridesCommon": true
     },
     "externalApi": {
-      "history": {
-        "type": "subquery",
-        "url": "https://api.subquery.network/sq/nova-wallet/nova-wallet-pichiu"
-      }
+      "history": [
+        {
+          "type": "subquery",
+          "url": "https://api.subquery.network/sq/nova-wallet/nova-wallet-pichiu"
+        }
+      ]
     },
     "icon": "https://raw.githubusercontent.com/nova-wallet/nova-utils/master/icons/chains/gradient/Pichiu.svg",
     "addressPrefix": 42,
-    "options": ["governance-v1"]
+    "options": ["governance-v1"],
+    "explorers": [
+      {
+        "name": "Polkaholic",
+        "account": "https://polkaholic.io/account/{address}",
+        "extrinsic": "https://polkaholic.io/tx/{hash}"
+      }
+    ]
   },
   {
     "chainId": "0xfeb426ca713f0f46c96465b8f039890370cf6bfd687c9076ea2843f58a6ae8a7",
@@ -4375,15 +5158,24 @@
         "name": "JelliedOwl node"
       }
     ],
+    "explorers": [
+      {
+        "name": "Polkaholic",
+        "account": "https://polkaholic.io/account/{address}",
+        "extrinsic": "https://polkaholic.io/tx/{hash}"
+      }
+    ],
     "types": {
       "url": "https://raw.githubusercontent.com/nova-wallet/nova-utils/master/chains/v2/types/kabocha.json",
       "overridesCommon": true
     },
     "externalApi": {
-      "history": {
-        "type": "subquery",
-        "url": "https://api.subquery.network/sq/nova-wallet/nova-wallet-kabocha"
-      }
+      "history": [
+        {
+          "type": "subquery",
+          "url": "https://api.subquery.network/sq/nova-wallet/nova-wallet-kabocha"
+        }
+      ]
     },
     "icon": "https://raw.githubusercontent.com/nova-wallet/nova-utils/master/icons/chains/gradient/Kabocha.svg",
     "addressPrefix": 27
@@ -4414,6 +5206,11 @@
         "extrinsic": "https://datahighway.subscan.io/extrinsic/{hash}",
         "account": "https://datahighway.subscan.io/account/{address}",
         "event": null
+      },
+      {
+        "name": "Polkaholic",
+        "account": "https://polkaholic.io/account/{address}",
+        "extrinsic": "https://polkaholic.io/tx/{hash}"
       }
     ],
     "types": {
@@ -4421,14 +5218,21 @@
       "overridesCommon": true
     },
     "externalApi": {
-      "history": {
-        "type": "subquery",
-        "url": "https://api.subquery.network/sq/nova-wallet/nova-wallet-tanganika"
-      },
-      "governance": {
-        "type": "polkassembly",
-        "url": "https://polkassembly-hasura.herokuapp.com/v1/graphql"
-      }
+      "history": [
+        {
+          "type": "subquery",
+          "url": "https://api.subquery.network/sq/nova-wallet/nova-wallet-tanganika"
+        }
+      ],
+      "governance": [
+        {
+          "type": "polkassembly",
+          "url": "https://polkassembly-hasura.herokuapp.com/v1/graphql",
+          "parameters": {
+            "network": "tanganika"
+          }
+        }
+      ]
     },
     "icon": "https://raw.githubusercontent.com/nova-wallet/nova-utils/master/icons/chains/gradient/Tanganika_DataHighway.svg",
     "addressPrefix": 33,
@@ -4457,15 +5261,24 @@
         "name": "Dwellir node"
       }
     ],
+    "explorers": [
+      {
+        "name": "Polkaholic",
+        "account": "https://polkaholic.io/account/{address}",
+        "extrinsic": "https://polkaholic.io/tx/{hash}"
+      }
+    ],
     "types": {
       "url": "https://raw.githubusercontent.com/nova-wallet/nova-utils/master/chains/v2/types/bajun.json",
       "overridesCommon": true
     },
     "externalApi": {
-      "history": {
-        "type": "subquery",
-        "url": "https://api.subquery.network/sq/nova-wallet/nova-wallet-bajun"
-      }
+      "history": [
+        {
+          "type": "subquery",
+          "url": "https://api.subquery.network/sq/nova-wallet/nova-wallet-bajun"
+        }
+      ]
     },
     "icon": "https://raw.githubusercontent.com/nova-wallet/nova-utils/master/icons/chains/gradient/Bajun.svg",
     "addressPrefix": 1337
@@ -4489,15 +5302,24 @@
         "name": "Imbue node"
       }
     ],
+    "explorers": [
+      {
+        "name": "Polkaholic",
+        "account": "https://polkaholic.io/account/{address}",
+        "extrinsic": "https://polkaholic.io/tx/{hash}"
+      }
+    ],
     "types": {
       "url": "https://raw.githubusercontent.com/nova-wallet/nova-utils/master/chains/v2/types/imbue.json",
       "overridesCommon": true
     },
     "externalApi": {
-      "history": {
-        "type": "subquery",
-        "url": "https://api.subquery.network/sq/nova-wallet/nova-wallet-imbue"
-      }
+      "history": [
+        {
+          "type": "subquery",
+          "url": "https://api.subquery.network/sq/nova-wallet/nova-wallet-imbue"
+        }
+      ]
     },
     "icon": "https://raw.githubusercontent.com/nova-wallet/nova-utils/master/icons/chains/gradient/Imbue.svg",
     "addressPrefix": 42
@@ -4570,12 +5392,15 @@
     ],
     "nodes": [
       {
-        "url": "wss://tinker.invarch.network",
-        "name": "InvArch node"
-      },
-      {
         "url": "wss://invarch-tinkernet.api.onfinality.io/public-ws",
         "name": "OnFinality node"
+      }
+    ],
+    "explorers": [
+      {
+        "name": "Polkaholic",
+        "account": "https://polkaholic.io/account/{address}",
+        "extrinsic": "https://polkaholic.io/tx/{hash}"
       }
     ],
     "types": {
@@ -4583,10 +5408,12 @@
       "overridesCommon": true
     },
     "externalApi": {
-      "history": {
-        "type": "subquery",
-        "url": "https://api.subquery.network/sq/nova-wallet/nova-wallet-tinkernet"
-      }
+      "history": [
+        {
+          "type": "subquery",
+          "url": "https://api.subquery.network/sq/nova-wallet/nova-wallet-tinkernet"
+        }
+      ]
     },
     "icon": "https://raw.githubusercontent.com/nova-wallet/nova-utils/master/icons/chains/gradient/Tinkernet.svg",
     "addressPrefix": 117
@@ -4642,12 +5469,15 @@
         "name": "TerraBioDao node"
       },
       {
-        "url": "wss://kusama.gmordie.com",
-        "name": "GMorDieDAO node"
-      },
-      {
         "url": "wss://leemo.gmordie.com",
         "name": "Leemo node"
+      }
+    ],
+    "explorers": [
+      {
+        "name": "Polkaholic",
+        "account": "https://polkaholic.io/account/{address}",
+        "extrinsic": "https://polkaholic.io/tx/{hash}"
       }
     ],
     "types": {
@@ -4655,10 +5485,12 @@
       "overridesCommon": true
     },
     "externalApi": {
-      "history": {
-        "type": "subquery",
-        "url": "https://api.subquery.network/sq/nova-wallet/nova-wallet-gm-network"
-      }
+      "history": [
+        {
+          "type": "subquery",
+          "url": "https://api.subquery.network/sq/nova-wallet/nova-wallet-gm-network"
+        }
+      ]
     },
     "icon": "https://raw.githubusercontent.com/nova-wallet/nova-utils/master/icons/chains/gradient/GM.svg",
     "addressPrefix": 7013
@@ -4683,10 +5515,21 @@
       }
     ],
     "externalApi": {
-      "governance": {
-        "type": "polkassembly",
-        "url": "https://polkassembly-hasura.herokuapp.com/v1/graphql"
-      }
+      "history": [
+        {
+          "type": "subquery",
+          "url": "https://api.subquery.network/sq/nova-wallet/nova-wallet-amplitude"
+        }
+      ],
+      "governance": [
+        {
+          "type": "polkassembly",
+          "url": "https://polkassembly-hasura.herokuapp.com/v1/graphql",
+          "parameters": {
+            "network": "amplitude"
+          }
+        }
+      ]
     },
     "types": {
       "url": "https://raw.githubusercontent.com/nova-wallet/nova-utils/master/chains/v2/types/amplitude.json",
@@ -4725,14 +5568,18 @@
       }
     ],
     "externalApi": {
-      "staking": {
-        "type": "subquery",
-        "url": "https://api.subquery.network/sq/nova-wallet/nova-wallet-ternoa"
-      },
-      "history": {
-        "type": "subquery",
-        "url": "https://api.subquery.network/sq/nova-wallet/nova-wallet-ternoa"
-      }
+      "staking": [
+        {
+          "type": "subquery",
+          "url": "https://api.subquery.network/sq/nova-wallet/nova-wallet-ternoa"
+        }
+      ],
+      "history": [
+        {
+          "type": "subquery",
+          "url": "https://api.subquery.network/sq/nova-wallet/nova-wallet-ternoa"
+        }
+      ]
     },
     "types": {
       "url": "https://raw.githubusercontent.com/nova-wallet/nova-utils/master/chains/v2/types/ternoa.json",
@@ -4858,15 +5705,29 @@
         "name": "Kylin node"
       }
     ],
-    "externalApi": {
-      "history": {
-        "type": "subquery",
-        "url": "https://api.subquery.network/sq/nova-wallet/nova-wallet-kylin"
-      },
-      "governance": {
-        "type": "polkassembly",
-        "url": "https://polkassembly-hasura.herokuapp.com/v1/graphql"
+    "explorers": [
+      {
+        "name": "Polkaholic",
+        "account": "https://polkaholic.io/account/{address}",
+        "extrinsic": "https://polkaholic.io/tx/{hash}"
       }
+    ],
+    "externalApi": {
+      "history": [
+        {
+          "type": "subquery",
+          "url": "https://api.subquery.network/sq/nova-wallet/nova-wallet-kylin"
+        }
+      ],
+      "governance": [
+        {
+          "type": "polkassembly",
+          "url": "https://polkassembly-hasura.herokuapp.com/v1/graphql",
+          "parameters": {
+            "network": "kylin"
+          }
+        }
+      ]
     },
     "types": {
       "url": "https://raw.githubusercontent.com/nova-wallet/nova-utils/master/chains/v2/types/kylin.json",
@@ -4905,13 +5766,20 @@
         "extrinsic": "https://darwinia-parachain.subscan.io/extrinsic/{hash}",
         "account": "https://darwinia-parachain.subscan.io/{address}",
         "event": null
+      },
+      {
+        "name": "Polkaholic",
+        "account": "https://polkaholic.io/account/{address}",
+        "extrinsic": "https://polkaholic.io/tx/{hash}"
       }
     ],
     "externalApi": {
-      "history": {
-        "type": "subquery",
-        "url": "https://api.subquery.network/sq/nova-wallet/nova-wallet-darwinia"
-      }
+      "history": [
+        {
+          "type": "subquery",
+          "url": "https://api.subquery.network/sq/nova-wallet/nova-wallet-darwinia"
+        }
+      ]
     },
     "types": {
       "url": "https://raw.githubusercontent.com/nova-wallet/nova-utils/master/chains/v2/types/darwinia.json",
@@ -4939,11 +5807,20 @@
         "name": "Totem node"
       }
     ],
-    "externalApi": {
-      "history": {
-        "type": "subquery",
-        "url": "https://api.subquery.network/sq/nova-wallet/nova-wallet-kapex"
+    "explorers": [
+      {
+        "name": "Polkaholic",
+        "account": "https://polkaholic.io/account/{address}",
+        "extrinsic": "https://polkaholic.io/tx/{hash}"
       }
+    ],
+    "externalApi": {
+      "history": [
+        {
+          "type": "subquery",
+          "url": "https://api.subquery.network/sq/nova-wallet/nova-wallet-kapex"
+        }
+      ]
     },
     "types": {
       "url": "https://raw.githubusercontent.com/nova-wallet/nova-utils/master/chains/v2/types/kapex.json",
@@ -5038,6 +5915,11 @@
         "extrinsic": "https://snow.subscan.io/extrinsic/{hash}",
         "account": "https://snow.subscan.io/account/{address}",
         "event": null
+      },
+      {
+        "name": "Polkaholic",
+        "account": "https://polkaholic.io/account/{address}",
+        "extrinsic": "https://polkaholic.io/tx/{hash}"
       }
     ],
     "types": {
@@ -5093,6 +5975,21 @@
         "name": "Airalab node"
       }
     ],
+    "explorers": [
+      {
+        "name": "Polkaholic",
+        "account": "https://polkaholic.io/account/{address}",
+        "extrinsic": "https://polkaholic.io/tx/{hash}"
+      }
+    ],
+    "externalApi": {
+      "history": [
+        {
+          "type": "subquery",
+          "url": "https://api.subquery.network/sq/nova-wallet/nova-wallet-dao-ipci"
+        }
+      ]
+    },
     "types": {
       "url": "https://raw.githubusercontent.com/nova-wallet/nova-utils/master/chains/v2/types/dao_ipci.json",
       "overridesCommon": true
@@ -5120,10 +6017,12 @@
       }
     ],
     "externalApi": {
-      "staking": {
-        "type": "subquery",
-        "url": "https://api.subquery.network/sq/nova-wallet/nova-wallet-polkadot"
-      }
+      "staking": [
+        {
+          "type": "subquery",
+          "url": "https://api.subquery.network/sq/nova-wallet/nova-wallet-polkadot"
+        }
+      ]
     },
     "types": {
       "url": "https://raw.githubusercontent.com/nova-wallet/nova-utils/master/chains/v2/types/polkadot.json",
@@ -5238,6 +6137,14 @@
         "event": null
       }
     ],
+    "externalApi": {
+      "history": [
+        {
+          "type": "subquery",
+          "url": "https://api.subquery.network/sq/nova-wallet/nova-wallet-xx-network"
+        }
+      ]
+    },
     "types": {
       "url": "https://raw.githubusercontent.com/nova-wallet/nova-utils/master/chains/v2/types/xx_network.json",
       "overridesCommon": true

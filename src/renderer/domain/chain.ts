@@ -10,7 +10,7 @@ export type Chain = {
   explorers?: Explorer[];
   icon: string;
   addressPrefix: number;
-  externalApi?: Record<ExternalType, ExternalValue>;
+  externalApi?: Record<ExternalType, ExternalValue[]>;
   options?: ChainOptions[];
 };
 
