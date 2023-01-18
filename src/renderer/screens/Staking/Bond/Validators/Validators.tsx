@@ -8,7 +8,8 @@ import { useI18n } from '@renderer/context/I18nContext';
 import { Asset } from '@renderer/domain/asset';
 import { AccountID, ChainId } from '@renderer/domain/shared-kernel';
 import useToggle from '@renderer/hooks/useToggle';
-import { Validator, ValidatorMap } from '@renderer/services/staking/common/types';
+import { ValidatorMap } from '@renderer/services/staking/common/types';
+import { Validator } from '@renderer/domain/validator';
 import { useValidators } from '@renderer/services/staking/validatorsService';
 
 type Props = {
