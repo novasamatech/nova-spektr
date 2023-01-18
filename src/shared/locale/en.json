@@ -29,7 +29,8 @@
   },
   "general": {
     "explorers": {
-      "explorerButton": "View on { name }"
+      "explorerButton": "View on { name }",
+      "explorerTitle": "Explorers"
     },
     "input": {
       "amountLabel": "Amount",
@@ -264,7 +265,8 @@
       "stakeTableHeader": "Staked",
       "stakingAssetLabel": "Staking <strong>{ asset }</strong> on",
       "totalRewardsLabel": "Total rewards",
-      "totalStakedLabel": "Total staked"
+      "totalStakedLabel": "Total staked",
+      "viewValidatorsOption": "View validators"
     },
     "title": "Staking",
     "unbond": {

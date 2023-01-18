@@ -1,6 +1,7 @@
 import { Explorers } from '@renderer/components/common';
-import { Balance, Checkbox, Identicon } from '@renderer/components/ui';
+import { Balance, Checkbox, Icon, Identicon } from '@renderer/components/ui';
 import Shimmering from '@renderer/components/ui/Shimmering/Shimmering';
+import { useI18n } from '@renderer/context/I18nContext';
 import { Asset } from '@renderer/domain/asset';
 import { Explorer } from '@renderer/domain/chain';
 import { AccountID, SigningType } from '@renderer/domain/shared-kernel';
@@ -25,6 +26,8 @@ type Props = {
 };
 
 const StakingListItem = ({ stakeInfo, asset, addressPrefix, explorers, onSelect }: Props) => {
+  const { t } = useI18n();
+
   // TODO: let it stay for a while, full shimmering row
   //   return (
   //     <div className="flex items-center pl-4 pr-2 h-12.5 border-b border-shade-5 text-neutral">
@@ -41,6 +44,11 @@ const StakingListItem = ({ stakeInfo, asset, addressPrefix, explorers, onSelect 
   //       <div className="text-shade-10 w-5 ml-4">•••</div>
   //     </div>
   //   );
+
+  // TODO: implement open validators
+  const openValidators = () => {
+    console.log('openValidators');
+  };
 
   return (
     <div className="flex items-center pl-4 pr-2 h-12.5 border-b border-shade-5 text-neutral">
@@ -78,7 +86,19 @@ const StakingListItem = ({ stakeInfo, asset, addressPrefix, explorers, onSelect 
         )}
       </div>
       <div className="ml-3">
-        <Explorers explorers={explorers} address={stakeInfo.address} addressPrefix={addressPrefix} />
+        <Explorers
+          header={
+            <div className="flex gap-x-2.5">
+              <Icon name="network" size={20} />
+              <button type="button" onClick={openValidators}>
+                {t('staking.overview.viewValidatorsOption')}
+              </button>
+            </div>
+          }
+          explorers={explorers}
+          address={stakeInfo.address}
+          addressPrefix={addressPrefix}
+        />
       </div>
     </div>
   );
