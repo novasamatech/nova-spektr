@@ -29,7 +29,8 @@
   },
   "general": {
     "explorers": {
-      "explorerButton": "Открыть в { name }"
+      "explorerButton": "Открыть в { name }",
+      "explorerTitle": "Explorers"
     },
     "input": {
       "amountLabel": "Сумма",
@@ -264,7 +265,8 @@
       "stakeTableHeader": "Стейк",
       "stakingAssetLabel": "Стейкинг <strong>{ asset }</strong> на",
       "totalRewardsLabel": "Общая награда",
-      "totalStakedLabel": "Общий стейк"
+      "totalStakedLabel": "Общий стейк",
+      "viewValidatorsOption": "Валидаторы"
     },
     "title": "Стейкинг",
     "unbond": {
