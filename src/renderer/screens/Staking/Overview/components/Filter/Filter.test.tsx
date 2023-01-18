@@ -6,7 +6,7 @@ jest.mock('@renderer/context/I18nContext', () => ({
     t: (key: string) => key,
   }),
 }));
-describe('pages/Staking/Overview/Filter', () => {
+describe('screens/Staking/Overview/Filter', () => {
   test('should create component', () => {
     render(<Filter />);
 

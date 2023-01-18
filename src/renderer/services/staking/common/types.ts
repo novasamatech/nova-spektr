@@ -55,7 +55,7 @@ export interface IStakingRewardsService {
 export interface IValidatorsService {
   getValidators: (chainId: ChainId, api: ApiPromise, era: EraIndex) => Promise<ValidatorMap>;
   getMaxValidators: (api: ApiPromise) => number;
-  getNominators: (api: ApiPromise, account: AccountID) => Promise<string[]>;
+  getNominators: (api: ApiPromise, account: AccountID) => Promise<AccountID[]>;
 }
 
 // =====================================================
