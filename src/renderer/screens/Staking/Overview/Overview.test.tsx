@@ -54,8 +54,14 @@ jest.mock('@renderer/services/wallet/walletService', () => ({
 jest.mock('@renderer/services/staking/stakingDataService', () => ({
   useStakingData: jest.fn().mockReturnValue({
     staking: {},
-    subscribeActiveEra: jest.fn(),
     subscribeLedger: jest.fn(),
+  }),
+}));
+
+jest.mock('@renderer/services/staking/validatorsService', () => ({
+  useValidators: jest.fn().mockReturnValue({
+    getValidators: jest.fn(),
+    subscribeActiveEra: jest.fn(),
   }),
 }));
 

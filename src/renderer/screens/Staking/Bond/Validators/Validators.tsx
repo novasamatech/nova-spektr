@@ -8,8 +8,8 @@ import { useI18n } from '@renderer/context/I18nContext';
 import { Asset } from '@renderer/domain/asset';
 import { AccountID, ChainId } from '@renderer/domain/shared-kernel';
 import useToggle from '@renderer/hooks/useToggle';
-import { Validator } from '@renderer/services/staking/common/types';
-import { useStakingData } from '@renderer/services/staking/stakingDataService';
+import { Validator, ValidatorMap } from '@renderer/services/staking/common/types';
+import { useValidators } from '@renderer/services/staking/validatorsService';
 
 type Props = {
   api?: ApiPromise;
@@ -21,9 +21,10 @@ type Props = {
 const Validators = ({ api, chainId, asset, onResult }: Props) => {
   const { t } = useI18n();
   const [isInfoOpen, toggleInfo] = useToggle();
-  const { validators, getMaxValidators, getValidators, subscribeActiveEra } = useStakingData();
+  const { subscribeActiveEra, getMaxValidators, getValidators } = useValidators();
 
   const [era, setEra] = useState<number>();
+  const [validators, setValidators] = useState<ValidatorMap>({});
 
   const [query, setQuery] = useState('');
   const [maxValidators, setMaxValidators] = useState<number>();
@@ -55,10 +56,11 @@ const Validators = ({ api, chainId, asset, onResult }: Props) => {
     if (!chainId || !api?.isConnected || !era) return;
 
     (async () => {
-      await getValidators(chainId, api, era);
+      const validators = await getValidators(chainId, api, era);
+      setValidators(validators);
+      setMaxValidators(getMaxValidators(api));
     })();
-    setMaxValidators(getMaxValidators(api));
-  }, [era, api]);
+  }, [api, era]);
 
   if (!api || !chainId || !asset || !maxValidators || validatorList.length === 0) {
     return <div>LOADING</div>;
