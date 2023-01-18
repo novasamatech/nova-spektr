@@ -11,6 +11,7 @@ import useToggle from '@renderer/hooks/useToggle';
 import { ValidatorMap } from '@renderer/services/staking/common/types';
 import { Validator } from '@renderer/domain/validator';
 import { useValidators } from '@renderer/services/staking/validatorsService';
+import { useEra } from '@renderer/services/staking/eraService';
 
 type Props = {
   api?: ApiPromise;
@@ -22,7 +23,8 @@ type Props = {
 const Validators = ({ api, chainId, asset, onResult }: Props) => {
   const { t } = useI18n();
   const [isInfoOpen, toggleInfo] = useToggle();
-  const { subscribeActiveEra, getMaxValidators, getValidators } = useValidators();
+  const { getMaxValidators, getValidators } = useValidators();
+  const { subscribeActiveEra } = useEra();
 
   const [era, setEra] = useState<number>();
   const [validators, setValidators] = useState<ValidatorMap>({});
@@ -45,7 +47,7 @@ const Validators = ({ api, chainId, asset, onResult }: Props) => {
     let unsubEra: () => void | undefined;
 
     (async () => {
-      unsubEra = await subscribeActiveEra(chainId, api, setEra);
+      unsubEra = await subscribeActiveEra(api, setEra);
     })();
 
     return () => {

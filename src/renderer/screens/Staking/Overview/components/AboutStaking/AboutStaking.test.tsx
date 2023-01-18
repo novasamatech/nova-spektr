@@ -12,9 +12,9 @@ jest.mock('@renderer/context/I18nContext', () => ({
 
 describe('pages/Staking/Overview/AboutStaking', () => {
   test('should create component', () => {
-    render(<AboutStaking />);
+    render(<AboutStaking validators={[]} />);
 
-    const text = screen.getByText('staking.overview.aboutStakingLabel');
+    const text = screen.getByText('staking.about.aboutStakingTitle');
     expect(text).toBeInTheDocument();
   });
 });

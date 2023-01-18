@@ -16,7 +16,6 @@ jest.mock('@renderer/context/I18nContext', () => ({
 
 jest.mock('@renderer/services/staking/validatorsService', () => ({
   useValidators: jest.fn().mockReturnValue({
-    subscribeActiveEra: jest.fn().mockImplementation((chain: any, api: any, eraCallback: any) => eraCallback(1)),
     getMaxValidators: jest.fn().mockReturnValue(6),
     getValidators: jest.fn(() => ({
       '5CFPcUJgYgWryPaV1aYjSbTpbTLu42V32Ytw1L9rfoMAsfGh': {
@@ -26,6 +25,12 @@ jest.mock('@renderer/services/staking/validatorsService', () => ({
         totalStake: '23728297476615343',
       },
     })),
+  }),
+}));
+
+jest.mock('@renderer/services/staking/eraService', () => ({
+  useEra: jest.fn().mockReturnValue({
+    subscribeActiveEra: jest.fn().mockImplementation((api: any, eraCallback: any) => eraCallback(1)),
   }),
 }));
 
