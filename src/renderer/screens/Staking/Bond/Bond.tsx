@@ -10,7 +10,7 @@ import Paths from '@renderer/routes/paths';
 import ConfirmBond from '@renderer/screens/Staking/Bond/ConfirmBond/ConfirmBond';
 import InitBond from '@renderer/screens/Staking/Bond/InitBond/InitBond';
 import Validators from '@renderer/screens/Staking/Bond/Validators/Validators';
-import { Validator } from '@renderer/services/staking/common/types';
+import { Validator } from '@renderer/domain/validator';
 
 const enum Step {
   InitBond,

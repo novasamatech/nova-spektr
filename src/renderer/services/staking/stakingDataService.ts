@@ -1,7 +1,8 @@
 import { ApiPromise } from '@polkadot/api';
 
 import { AccountID, ChainId } from '@renderer/domain/shared-kernel';
-import { IStakingDataService, Staking, StakingMap } from './common/types';
+import { Stake } from '@renderer/domain/stake';
+import { IStakingDataService, StakingMap } from './common/types';
 
 export const useStakingData = (): IStakingDataService => {
   const subscribeStaking = async (
@@ -52,7 +53,7 @@ export const useStakingData = (): IStakingDataService => {
             era: unlock.era.toString(),
           }));
 
-          const payload: Staking = {
+          const payload: Stake = {
             accountId,
             chainId,
             controller: controllers[index] || stash.toHuman(),
