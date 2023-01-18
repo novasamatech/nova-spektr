@@ -2,15 +2,17 @@ import { ApiPromise } from '@polkadot/api';
 import { u8aToString } from '@polkadot/util';
 import merge from 'lodash/merge';
 
+import { Identity, SubIdentity } from '@renderer/domain/identity';
+import { AccountID, ChainId, EraIndex } from '@renderer/domain/shared-kernel';
+import { Validator } from '@renderer/domain/validator';
 import { getValidatorsApy } from './apyCalculator';
-import { AccountID, ChainId } from '@renderer/domain/shared-kernel';
-import { Identity, SubIdentity, Validator, ValidatorMap, IValidatorsService } from './common/types';
+import { IValidatorsService, ValidatorMap } from './common/types';
 
 export const useValidators = (): IValidatorsService => {
   const subscribeActiveEra = (
     chainId: ChainId,
     api: ApiPromise,
-    callback: (era?: number) => void,
+    callback: (era?: EraIndex) => void,
   ): Promise<() => void> => {
     return api.query.staking.activeEra((data: any) => {
       try {
@@ -23,20 +25,21 @@ export const useValidators = (): IValidatorsService => {
     });
   };
 
-  const getValidators = async (chainId: ChainId, api: ApiPromise, era: number): Promise<ValidatorMap> => {
+  const getValidators = async (chainId: ChainId, api: ApiPromise, era: EraIndex): Promise<ValidatorMap> => {
     const [stake, prefs] = await Promise.all([getValidatorsStake(api, era), getValidatorsPrefs(api, era)]);
 
     const mergedValidators = merge(stake, prefs);
 
-    const [apy, identity] = await Promise.all([
+    const [apy, identity, slashes] = await Promise.all([
       getIdentities(api, Object.keys(mergedValidators)),
       getApy(api, Object.values(mergedValidators)),
+      getSlashingSpans(api, Object.keys(stake), era),
     ]);
 
-    return merge(mergedValidators, apy, identity);
+    return merge(mergedValidators, apy, identity, slashes);
   };
 
-  const getValidatorsStake = async (api: ApiPromise, era: number): Promise<ValidatorMap> => {
+  const getValidatorsStake = async (api: ApiPromise, era: EraIndex): Promise<ValidatorMap> => {
     const data = await api.query.staking.erasStakersClipped.entries(era);
     const maxNominatorRewarded = getMaxNominatorRewarded(api);
 
@@ -50,7 +53,7 @@ export const useValidators = (): IValidatorsService => {
     }, {});
   };
 
-  const getValidatorsPrefs = async (api: ApiPromise, era: number): Promise<ValidatorMap> => {
+  const getValidatorsPrefs = async (api: ApiPromise, era: EraIndex): Promise<ValidatorMap> => {
     const data = await api.query.staking.erasValidatorPrefs.entries(era);
 
     return data.reduce((acc, [storageKey, type]) => {
@@ -145,6 +148,29 @@ export const useValidators = (): IValidatorsService => {
 
   const getMaxNominatorRewarded = (api: ApiPromise): number => {
     return api.consts.staking.maxNominatorRewardedPerValidator.toNumber();
+  };
+
+  const getSlashDeferDuration = (api: ApiPromise): number => {
+    return api.consts.staking.slashDeferDuration.toNumber();
+  };
+
+  const getSlashingSpans = async (
+    api: ApiPromise,
+    addresses: AccountID[],
+    era: EraIndex,
+  ): Promise<Record<AccountID, { slashed: boolean }>> => {
+    const slashDeferDuration = getSlashDeferDuration(api);
+    const slashingSpans = await api.query.staking.slashingSpans.multi(addresses);
+
+    return slashingSpans.reduce((acc, span, index) => {
+      let validatorIsSlashed = false;
+      if (!span.isNone) {
+        const { lastNonzeroSlash } = span.unwrap();
+        validatorIsSlashed = era - lastNonzeroSlash.toNumber() < slashDeferDuration;
+      }
+
+      return { ...acc, [addresses[index]]: { slashed: validatorIsSlashed } };
+    }, {});
   };
 
   return {
