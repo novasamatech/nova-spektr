@@ -16,6 +16,8 @@ export interface IStakingDataService {
     callback: (staking: StakingMap) => void,
   ) => Promise<() => void>;
   getMinNominatorBond: (api: ApiPromise) => Promise<string>;
+  getUnbondingPeriod: (api: ApiPromise) => string;
+  getTotalStaked: (api: ApiPromise, era: EraIndex) => Promise<string>;
 }
 
 // =====================================================
@@ -51,10 +53,17 @@ export interface IStakingRewardsService {
 // =====================================================
 
 export interface IValidatorsService {
-  subscribeActiveEra: (chainId: ChainId, api: ApiPromise, callback: (era?: EraIndex) => void) => Promise<() => void>;
   getValidators: (chainId: ChainId, api: ApiPromise, era: EraIndex) => Promise<ValidatorMap>;
   getMaxValidators: (api: ApiPromise) => number;
   getNominators: (api: ApiPromise, account: AccountID) => Promise<string[]>;
+}
+
+// =====================================================
+// ========== IValidatorsService interface =============
+// =====================================================
+
+export interface IEraService {
+  subscribeActiveEra: (api: ApiPromise, callback: (era?: EraIndex) => void) => Promise<() => void>;
 }
 
 // =====================================================

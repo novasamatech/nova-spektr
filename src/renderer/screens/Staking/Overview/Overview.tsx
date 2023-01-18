@@ -19,8 +19,9 @@ import { useStakingRewards } from '@renderer/services/staking/stakingRewardsServ
 import { useValidators } from '@renderer/services/staking/validatorsService';
 import { useWallet } from '@renderer/services/wallet/walletService';
 import { isStringsMatchQuery } from '@renderer/utils/strings';
-import { EmptyFilter, InactiveChain, NoAccounts, StakingList } from './components';
+import { AboutStaking, EmptyFilter, InactiveChain, NoAccounts, StakingList } from './components';
 import { AccountStakeInfo } from './components/List/StakingListItem/StakingListItem';
+import { useEra } from '@renderer/services/staking/eraService';
 
 type NetworkOption = { asset: Asset; addressPrefix: number };
 
@@ -32,12 +33,13 @@ const Overview = () => {
   const { getLiveWallets } = useWallet();
   const { sortChains, getChainsData } = useChains();
   const { subscribeStaking } = useStakingData();
-  const { getValidators, subscribeActiveEra } = useValidators();
+  const { getValidators } = useValidators();
+  const { subscribeActiveEra } = useEra();
   const { setStakingNetwork, getStakingNetwork } = useSettingsStorage();
 
   const [era, setEra] = useState<number>();
   const [staking, setStaking] = useState<StakingMap>({});
-  const [_, setValidators] = useState<ValidatorMap>({});
+  const [validators, setValidators] = useState<ValidatorMap>({});
 
   const [query, setQuery] = useState('');
   const [selectedAccounts, setSelectedAccounts] = useState<AccountID[]>([]);
@@ -77,7 +79,7 @@ const Overview = () => {
     let unsubStaking: () => void | undefined;
 
     (async () => {
-      unsubEra = await subscribeActiveEra(chainId, api, setEra);
+      unsubEra = await subscribeActiveEra(api, setEra);
       unsubStaking = await subscribeStaking(chainId, api, accountAddresses, setStaking);
     })();
 
@@ -92,6 +94,7 @@ const Overview = () => {
 
     (async () => {
       const validators = await getValidators(chainId, api, era);
+
       setValidators(validators);
     })();
   }, [api, era]);
@@ -240,8 +243,15 @@ const Overview = () => {
 
         {networkIsActive && activeAccounts.length > 0 && (
           <>
+            <AboutStaking
+              className="mb-5"
+              validators={Object.values(validators)}
+              api={api}
+              era={era}
+              asset={activeNetwork?.value.asset}
+            />
+
             {/* TODO: not in current sprint */}
-            {/*<AboutStaking asset={activeNetwork?.value.asset} />*/}
             {/*<InfoBanners />*/}
 
             <div className="flex items-center justify-between">
