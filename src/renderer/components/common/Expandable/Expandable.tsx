@@ -31,7 +31,7 @@ const Expandable = ({
         <Button
           pallet="shade"
           variant="text"
-          className={cn('w-full px-0', itemClass)}
+          className={cn('w-full', itemClass)}
           suffixElement={<Icon name={isActive || alwaysActive ? 'down' : 'up'} size={20} />}
           onClick={() => !alwaysActive && toggleIsActive()}
         >
