@@ -82,6 +82,8 @@ const Transfer = () => {
 
       const address = toAddress(account.publicKey || '0x00', currentConnection?.addressPrefix);
 
+      if (acc.some((a) => a.id === address)) return acc;
+
       const accountType =
         account.signingType === SigningType.PARITY_SIGNER ? 'paritySignerBackground' : 'watchOnlyBackground';
 
