@@ -1,12 +1,17 @@
 import { createContext, useContext } from 'react';
 
-import { SortConfig, Source } from './common/types';
+import { Alignment, SortConfig, Source, IndexKey } from './common/types';
 
 type TableContextProps = {
   dataSource: Source[];
-  sorting: SortConfig;
-  addNewSorting: (column: string) => void;
-  updateSorting: (column: string) => void;
+  sortConfig: SortConfig;
+  selectedKeys?: IndexKey[];
+  allRowsSelected: boolean;
+  addSortingConfig: (dataKey: string, align: Alignment) => void;
+  updateSortingOrder: (column: string) => void;
+  excludeKey: (key: IndexKey) => void;
+  selectAll: () => void;
+  selectRow: (key: IndexKey) => void;
 };
 
 export const TableContext = createContext<TableContextProps>({} as TableContextProps);

@@ -1,70 +1,118 @@
-import { orderBy } from 'lodash';
+import cn from 'classnames';
 import { PropsWithChildren, useCallback, useMemo, useState } from 'react';
 
-import { SortConfig, SortType, Source } from './common/types';
-import { TableBody, TableCell, TableColumn, TableHeader, TableRow } from './TableComponents';
+import { Alignment, SortConfig, SortType, Source, IndexKey } from './common/types';
+import { getActiveSorting, getSortedData } from './common/utils';
+import { TableBody, TableCell, TableColumn, TableHeader, TableRow } from './TableParts';
 import { TableContext } from './TableContext';
 
 type Props = {
   dataSource: Source[];
+  className?: string;
+  selectedKeys?: IndexKey[];
+  actionColumn?: boolean;
+  onSelect?: (keys: IndexKey[]) => void;
 };
 
-const getSortedData = (dataSource: Source[], sorting: SortConfig): Source[] => {
-  const sortField = Object.values(sorting).find((sort) => sort.type !== SortType.NONE);
+// TODO: think about nice TS support
+// type TableComposition = {
+//   Header: Parameters<typeof TableHeader>;
+//   Column: Parameters<typeof TableColumn>;
+//   Body: Parameters<typeof TableBody>;
+//   Row: Parameters<typeof TableRow>;
+//   Cell: Parameters<typeof TableCell>;
+// };
 
-  if (!dataSource.length || !sortField || sortField.type === SortType.NONE) {
-    return dataSource;
-  }
+const Table = ({ dataSource, className, selectedKeys, onSelect, children }: PropsWithChildren<Props>) => {
+  const [sortConfig, setSortConfig] = useState<SortConfig>({});
+  const [excludedKeys, setExcludedKeys] = useState<IndexKey[]>([]);
 
-  return orderBy(dataSource, [sortField.dataKey], [sortField.type]);
-};
+  const allRowsSelected = dataSource.length - excludedKeys.length === selectedKeys?.length;
 
-const getActiveSorting = (column: string, config: SortConfig): SortConfig => {
-  return Object.entries(config).reduce<SortConfig>((acc, [key, value]) => {
-    const payload = { ...value, type: SortType.NONE };
+  const addSortingConfig = useCallback(
+    (dataKey: string, align: Alignment) => {
+      const payload = {
+        dataKey,
+        align,
+        active: false,
+        type: SortType.DESC,
+      };
 
-    if (key === column) {
-      payload.type = value.type === SortType.DESC ? SortType.ASC : SortType.DESC;
-    }
-
-    return { ...acc, [key]: payload };
-  }, {});
-};
-
-const Table = ({ dataSource, children }: PropsWithChildren<Props>) => {
-  const [sorting, setSorting] = useState<SortConfig>({});
-
-  const addNewSorting = useCallback(
-    (dataKey: string) => {
-      const payload = { dataKey, type: SortType.NONE };
-
-      setSorting((prev) => ({ ...prev, [dataKey]: payload }));
+      setSortConfig((prev) => ({ ...prev, [dataKey]: payload }));
     },
-    [setSorting],
+    [setSortConfig],
   );
 
-  const updateSorting = useCallback(
+  const updateSortingOrder = useCallback(
     (column: string) => {
-      if (!sorting || !sorting[column]) {
+      if (sortConfig[column]) {
+        setSortConfig((prev) => getActiveSorting(column, prev));
+      } else {
         console.warn(`${column} is absent`);
-
-        return;
       }
-
-      setSorting((prev) => getActiveSorting(column, prev));
     },
-    [sorting, setSorting],
+    [sortConfig, setSortConfig],
   );
 
-  const value = useMemo(() => {
-    const sortedData = getSortedData(dataSource, sorting);
+  const excludeKey = useCallback(
+    (key: IndexKey) => {
+      setExcludedKeys((prev) => prev.concat(key));
+    },
+    [setExcludedKeys],
+  );
 
-    return { dataSource: sortedData, sorting, addNewSorting, updateSorting };
-  }, [dataSource, sorting, addNewSorting, updateSorting]);
+  const selectAll = useCallback(() => {
+    if (!selectedKeys || !onSelect) return;
+
+    if (allRowsSelected) {
+      onSelect?.([]);
+    } else {
+      const allSelectedKeys = dataSource.reduce<IndexKey[]>((acc, source) => {
+        if (!excludedKeys.includes(source.key)) {
+          acc.push(source.key);
+        }
+
+        return acc;
+      }, []);
+
+      onSelect(allSelectedKeys);
+    }
+  }, [dataSource, excludedKeys, allRowsSelected, onSelect]);
+
+  const selectRow = useCallback(
+    (key: IndexKey) => {
+      if (!selectedKeys || !onSelect) return;
+
+      if (selectedKeys.includes(key)) {
+        onSelect(selectedKeys.filter((k) => k !== key));
+      } else {
+        onSelect(selectedKeys.concat(key));
+      }
+    },
+    [selectedKeys, onSelect],
+  );
+
+  const sortedData = useMemo(() => {
+    return getSortedData(dataSource, sortConfig);
+  }, [dataSource, sortConfig]);
+
+  const value = {
+    dataSource: sortedData,
+    sortConfig,
+    selectedKeys,
+    allRowsSelected,
+    addSortingConfig,
+    updateSortingOrder,
+    excludeKey,
+    selectAll,
+    selectRow,
+  };
 
   return (
     <TableContext.Provider value={value}>
-      <table>{children}</table>
+      <table className={cn('w-full bg-white rounded-2lg overflow-hidden table-auto shadow-surface', className)}>
+        {children}
+      </table>
     </TableContext.Provider>
   );
 };

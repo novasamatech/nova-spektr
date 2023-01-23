@@ -8,7 +8,7 @@ export default {
   parameters: { actions: { argTypesRegex: '^on.*' } },
   decorators: [
     (Story) => (
-      <div className="w-max">
+      <div className="max-w-[800px]">
         <Story />
       </div>
     ),
@@ -17,7 +17,40 @@ export default {
 
 const Template: ComponentStory<typeof Table> = (args) => <Table {...args} />;
 
+const dataSource = [
+  { key: '1', name: 'Mike', age: 32, address: '20 Downing Street' },
+  { key: '2', name: 'John', age: 42, address: '10 Downing Street' },
+];
+
 export const Primary = Template.bind({});
 Primary.args = {
-  children: 'Table label',
+  dataSource,
+  selectedKeys: ['1'],
+  onSelect: (x) => console.log(x),
+  children: (
+    <>
+      <Table.Header>
+        <Table.Column dataKey="name" align="left">
+          Name
+        </Table.Column>
+        <Table.Column dataKey="age" width={200}>
+          Age
+        </Table.Column>
+        <Table.Column dataKey="address" width={200}>
+          Address
+        </Table.Column>
+        <Table.Column width={50} />
+      </Table.Header>
+      <Table.Body>
+        {(source) => (
+          <Table.Row key={source.key}>
+            <Table.Cell>{source.name}</Table.Cell>
+            <Table.Cell>{source.age}</Table.Cell>
+            <Table.Cell>{source.address}</Table.Cell>
+            <Table.Cell>•••</Table.Cell>
+          </Table.Row>
+        )}
+      </Table.Body>
+    </>
+  ),
 };
