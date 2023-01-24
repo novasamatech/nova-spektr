@@ -1,16 +1,15 @@
 import cn from 'classnames';
 import { PropsWithChildren, useCallback, useMemo, useState } from 'react';
 
-import { Alignment, SortConfig, SortType, Source, IndexKey } from './common/types';
+import { Alignment, SortConfig, SortType, IndexedValue, IndexKey } from './common/types';
 import { getActiveSorting, getSortedData } from './common/utils';
 import { TableBody, TableCell, TableColumn, TableHeader, TableRow } from './TableParts';
 import { TableContext } from './TableContext';
 
-type Props = {
-  dataSource: Source[];
+type Props<T extends IndexedValue> = {
+  dataSource: T[];
   className?: string;
   selectedKeys?: IndexKey[];
-  actionColumn?: boolean;
   onSelect?: (keys: IndexKey[]) => void;
 };
 
@@ -23,17 +22,24 @@ type Props = {
 //   Cell: Parameters<typeof TableCell>;
 // };
 
-const Table = ({ dataSource, className, selectedKeys, onSelect, children }: PropsWithChildren<Props>) => {
+const Table = <T extends IndexedValue>({
+  dataSource,
+  className,
+  selectedKeys,
+  onSelect,
+  children,
+}: PropsWithChildren<Props<T>>) => {
   const [sortConfig, setSortConfig] = useState<SortConfig>({});
   const [excludedKeys, setExcludedKeys] = useState<IndexKey[]>([]);
 
   const allRowsSelected = dataSource.length - excludedKeys.length === selectedKeys?.length;
 
   const addSortingConfig = useCallback(
-    (dataKey: string, align: Alignment) => {
+    (dataKey: string, align: Alignment, sort: boolean) => {
       const payload = {
         dataKey,
         align,
+        sort,
         active: false,
         type: SortType.DESC,
       };
@@ -110,9 +116,7 @@ const Table = ({ dataSource, className, selectedKeys, onSelect, children }: Prop
 
   return (
     <TableContext.Provider value={value}>
-      <table className={cn('w-full bg-white rounded-2lg overflow-hidden table-auto shadow-surface', className)}>
-        {children}
-      </table>
+      <table className={cn('w-full bg-white rounded-2lg table-auto shadow-surface', className)}>{children}</table>
     </TableContext.Provider>
   );
 };

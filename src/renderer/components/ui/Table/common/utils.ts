@@ -1,6 +1,6 @@
 import { orderBy } from 'lodash';
 
-import { SortConfig, SortType, Source } from './types';
+import { SortConfig, SortType, IndexedValue } from './types';
 
 /**
  * Get sorted data based on current config
@@ -8,7 +8,7 @@ import { SortConfig, SortType, Source } from './types';
  * @param config columns' config with sorting params
  * @return {Array}
  */
-export const getSortedData = (dataSource: Source[], config: SortConfig): Source[] => {
+export const getSortedData = <T extends IndexedValue>(dataSource: T[], config: SortConfig): T[] => {
   const activeSorting = Object.values(config).find((sort) => sort.active);
 
   if (!dataSource.length || !activeSorting) {
@@ -32,7 +32,8 @@ export const getActiveSorting = (column: string, config: SortConfig): SortConfig
       payload.active = true;
       payload.type = value.type === SortType.DESC ? SortType.ASC : SortType.DESC;
     }
+    acc[key] = payload;
 
-    return { ...acc, [key]: payload };
+    return acc;
   }, {});
 };

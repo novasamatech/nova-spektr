@@ -17,7 +17,13 @@ export default {
 
 const Template: ComponentStory<typeof Table> = (args) => <Table {...args} />;
 
-const dataSource = [
+type Struct = {
+  key: string;
+  name: string;
+  age: number;
+  address: string;
+};
+const dataSource: Struct[] = [
   { key: '1', name: 'Mike', age: 32, address: '20 Downing Street' },
   { key: '2', name: 'John', age: 42, address: '10 Downing Street' },
 ];
@@ -39,9 +45,9 @@ Primary.args = {
         <Table.Column dataKey="address" width={200}>
           Address
         </Table.Column>
-        <Table.Column width={50} />
+        <Table.Column dataKey="actions" width={50} />
       </Table.Header>
-      <Table.Body>
+      <Table.Body<Struct>>
         {(source) => (
           <Table.Row key={source.key}>
             <Table.Cell>{source.name}</Table.Cell>

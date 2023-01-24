@@ -22,8 +22,8 @@ import { useStakingRewards } from '@renderer/services/staking/stakingRewardsServ
 import { useValidators } from '@renderer/services/staking/validatorsService';
 import { useWallet } from '@renderer/services/wallet/walletService';
 import { isStringsMatchQuery } from '@renderer/utils/strings';
-import { AboutStaking, EmptyFilter, InactiveChain, NoAccounts, StakingList } from './components';
-import StakingListItem, { AccountStakeInfo } from './components/List/StakingListItem/StakingListItem';
+import { AboutStaking, EmptyFilter, InactiveChain, NoAccounts, StakingTable } from './components';
+import { AccountStakeInfo } from './components/StakingTable/StakingTable';
 import NominatorsModal, { Nominator } from './components/NominatorsModal/NominatorsModal';
 
 type NetworkOption = { asset: Asset; addressPrefix: number };
@@ -52,6 +52,7 @@ const Overview = () => {
   const [networkIsActive, setNetworkIsActive] = useState(true);
   const [activeNetwork, setActiveNetwork] = useState<ResultOption<NetworkOption>>();
   const [stakingNetworks, setStakingNetworks] = useState<Option<NetworkOption>[]>([]);
+  const [selectedStakes, setSelectedStakes] = useState<AccountID[]>([]);
 
   const chainId = (activeNetwork?.id || '') as ChainId;
   const api = connections[chainId]?.api;
@@ -144,22 +145,6 @@ const Overview = () => {
     setQuery('');
   };
 
-  const onSelectAllAccounts = () => {
-    if (allAccountsSelected) {
-      setSelectedAccounts([]);
-    } else {
-      setSelectedAccounts(paritySignerAccs);
-    }
-  };
-
-  const selectAccount = (address: AccountID) => {
-    if (selectedAccounts.includes(address)) {
-      setSelectedAccounts((prev) => prev.filter((accountId) => accountId !== address));
-    } else {
-      setSelectedAccounts((prev) => prev.concat(address));
-    }
-  };
-
   const setupNominators = async (stash?: AccountID) => {
     if (!api || !stash) return;
 
@@ -230,7 +215,7 @@ const Overview = () => {
     return { ...acc, [account.id.toString()]: account.name };
   }, {});
 
-  const stakingList = activeAccounts.reduce<AccountStakeInfo[]>((acc, account) => {
+  const stakingInfo = activeAccounts.reduce<AccountStakeInfo[]>((acc, account) => {
     if (!account.accountId) return acc;
 
     let walletName = account.walletId ? walletNames[account.walletId.toString()] : '';
@@ -240,8 +225,9 @@ const Overview = () => {
     }
 
     if (!query || isStringsMatchQuery(query, [walletName, account.name, account.accountId])) {
-      return acc.concat({
+      acc.push({
         walletName,
+        key: account.accountId,
         address: account.accountId,
         stash: staking[account.accountId]?.stash,
         signingType: account.signingType,
@@ -254,8 +240,6 @@ const Overview = () => {
 
     return acc;
   }, []);
-
-  const allAccountsSelected = selectedAccounts.length === activeAccounts.length && activeAccounts.length !== 0;
 
   return (
     <>
@@ -311,22 +295,18 @@ const Overview = () => {
                 {/*<Filter />*/}
               </div>
 
-              {query && stakingList.length === 0 ? (
+              {query && stakingInfo.length === 0 ? (
                 <EmptyFilter />
               ) : (
-                <StakingList allSelected={allAccountsSelected} onSelectAll={onSelectAllAccounts}>
-                  {stakingList.map((stake) => (
-                    <StakingListItem
-                      key={stake.address}
-                      stakeInfo={stake}
-                      asset={activeNetwork?.value.asset}
-                      addressPrefix={activeNetwork?.value.addressPrefix}
-                      explorers={explorers}
-                      onSelect={() => selectAccount(stake.address)}
-                      onOpenValidators={() => setupNominators(stake.stash)}
-                    />
-                  ))}
-                </StakingList>
+                <StakingTable
+                  stakeInfo={stakingInfo}
+                  selectedStakes={selectedStakes}
+                  addressPrefix={activeNetwork?.value.addressPrefix}
+                  asset={activeNetwork?.value.asset}
+                  explorers={explorers}
+                  openValidators={setupNominators}
+                  selectStaking={setSelectedStakes}
+                />
               )}
             </>
           )}

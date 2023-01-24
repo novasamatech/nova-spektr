@@ -1,8 +1,7 @@
-export type IndexKey = string | number;
+export type IndexKey = string;
 
-export type Source = {
+export type IndexedValue = {
   key: IndexKey;
-  [key: string]: string | number;
 };
 
 export const enum SortType {
@@ -19,5 +18,6 @@ export type SortConfig = Record<
     active: boolean;
     type: SortType;
     align: 'left' | 'right';
+    sort: boolean;
   }
 >;
