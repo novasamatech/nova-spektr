@@ -28,6 +28,8 @@ jobs:
 
       - name: Get tag name
         uses: olegtarasov/get-tag@v2.1 # Put version in GIT_TAG_NAME environment variable
+        with:
+          tagRegex: "^.(.*)$"
 
       - name: Update package.json version
         uses: jossef/action-set-json-field@v2

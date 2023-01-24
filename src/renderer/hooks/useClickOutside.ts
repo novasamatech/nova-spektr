@@ -3,7 +3,7 @@ import { useEffect, RefObject } from 'react';
 function useClickOutside(refs: RefObject<HTMLElement>[], callback: () => void): void {
   useEffect(() => {
     const listener = (event: Event) => {
-      const refIsClicked = refs.some((ref) => {
+      const refIsClicked = refs.every((ref) => {
         return ref.current && !ref.current.contains(event.target as Node);
       });
 
