@@ -86,7 +86,7 @@ jest.mock('@renderer/services/staking/stakingRewardsService', () => ({
 jest.mock('./components/AboutStaking/AboutStaking', () => () => <span>aboutStaking</span>);
 jest.mock('./components/InfoBanners/InfoBanners', () => () => <span>infoBanners</span>);
 jest.mock('./components/Filter/Filter', () => () => <span>filter</span>);
-jest.mock('./components/List/StakingList/StakingList', () => () => <span>stakingList</span>);
+jest.mock('./components/StakingTable/StakingTable', () => () => <span>stakingTable</span>);
 jest.mock('./components/TotalAmount/TotalAmount', () => () => <span>totalAmount</span>);
 jest.mock('./components/NominatorsModal/NominatorsModal', () => () => <span>nominatorsModal</span>);
 
@@ -107,11 +107,11 @@ describe('screens/Staking/Overview', () => {
     });
 
     const title = screen.getByText('staking.title');
-    const stakingList = screen.getByText('stakingList');
+    const stakingTable = screen.getByText('stakingTable');
     const totalAmount = screen.getByText('totalAmount');
     const nominatorsModal = screen.getByText('nominatorsModal');
     expect(title).toBeInTheDocument();
-    expect(stakingList).toBeInTheDocument();
+    expect(stakingTable).toBeInTheDocument();
     expect(totalAmount).toBeInTheDocument();
     expect(nominatorsModal).toBeInTheDocument();
   });
