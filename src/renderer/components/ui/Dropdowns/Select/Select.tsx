@@ -15,6 +15,7 @@ type Props = {
   variant?: Variant;
   suffix?: ReactNode;
   weight?: keyof typeof SelectClass;
+  position?: 'left' | 'right';
   onChange: (data: ResultOption[]) => void;
 };
 
@@ -27,6 +28,7 @@ const Select = ({
   options,
   variant = 'down',
   weight = 'md',
+  position = 'right',
   onChange,
 }: Props) => {
   const weightStyle = SelectClass[weight];
@@ -99,7 +101,7 @@ const Select = ({
                   }
                 >
                   {({ selected }) => (
-                    <Checkbox readOnly checked={selected} position="left" className="w-full pointer-events-none">
+                    <Checkbox readOnly checked={selected} position={position} className="w-full pointer-events-none">
                       <div className="w-full">{element}</div>
                     </Checkbox>
                   )}

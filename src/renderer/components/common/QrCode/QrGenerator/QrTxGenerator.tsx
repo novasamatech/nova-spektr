@@ -1,6 +1,6 @@
 import useGenerator from './common/useGenerator';
 import { Command, DEFAULT_FRAME_DELAY } from './common/constants';
-import { createSignPayload } from './common/utils';
+import { createSubstrateSignPayload } from './common/utils';
 import { ChainId } from '@renderer/domain/shared-kernel';
 
 type Props = {
@@ -24,7 +24,7 @@ export const QrTxGenerator = ({
   bgColor = 'none',
   delay = DEFAULT_FRAME_DELAY,
 }: Props) => {
-  const signPayload = createSignPayload(address, cmd, payload, genesisHash);
+  const signPayload = createSubstrateSignPayload(address, cmd, payload, genesisHash);
 
   const image = useGenerator(signPayload, skipEncoding, delay, bgColor);
 
