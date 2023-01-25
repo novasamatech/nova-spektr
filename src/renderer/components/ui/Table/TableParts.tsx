@@ -2,7 +2,7 @@ import cn from 'classnames';
 import { Children, cloneElement, PropsWithChildren, ReactElement, ReactNode, useEffect } from 'react';
 
 import { Checkbox, Icon } from '@renderer/components/ui';
-import { Alignment, SortType, AnyRecord, IndexKey } from './common/types';
+import { Alignment, AnyRecord, IndexKey, SortType } from './common/types';
 import { useTableContext } from './TableContext';
 
 export const TableHeader = ({ children }: PropsWithChildren) => {
@@ -27,14 +27,16 @@ export const TableHeader = ({ children }: PropsWithChildren) => {
 export type ColumnProps = {
   dataKey: string;
   align?: Alignment;
-  sort?: boolean;
+  sortable?: boolean;
+  defaultSort?: 'asc' | 'desc';
   width?: number;
   classname?: string;
 };
 export const TableColumn = ({
   dataKey,
   align = 'right',
-  sort = false,
+  sortable = false,
+  defaultSort,
   width,
   classname,
   children,
@@ -42,10 +44,10 @@ export const TableColumn = ({
   const { sortConfig, addSortingConfig, updateSortingOrder } = useTableContext();
 
   useEffect(() => {
-    addSortingConfig(dataKey, align, sort);
+    addSortingConfig({ dataKey, align, sortable, sortType: defaultSort as SortType });
   }, []);
 
-  if (!sort) {
+  if (!sortable) {
     return (
       <th
         className={cn('px-1 first:pl-4 first:rounded-tl-2lg last:pr-4 last:rounded-tr-2lg', classname)}
@@ -58,7 +60,8 @@ export const TableColumn = ({
     );
   }
 
-  const image = sortConfig[dataKey]?.type === SortType.DESC ? 'down' : 'up';
+  const sortIcon = [SortType.DESC, SortType.NONE].includes(sortConfig[dataKey]?.sortType) ? 'down' : 'up';
+  const columnIsSorted = sortConfig[dataKey]?.sortType !== SortType.NONE;
 
   return (
     <th
@@ -68,7 +71,7 @@ export const TableColumn = ({
       <div className={cn('w-max text-neutral-variant', align === 'left' ? 'mr-auto' : 'ml-auto')}>
         <button className="flex items-center gap-x-2.5" type="button" onClick={() => updateSortingOrder(dataKey)}>
           <div className="text-2xs font-bold uppercase">{children}</div>
-          <Icon name={image} size={18} />
+          <Icon className={cn(!columnIsSorted && 'opacity-50')} name={sortIcon} size={18} />
         </button>
       </div>
     </th>

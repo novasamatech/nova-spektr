@@ -47,7 +47,7 @@ const StakingTable = ({
         <Table.Column dataKey="totalReward" width={150}>
           {t('staking.overview.rewardsTableHeader')}
         </Table.Column>
-        <Table.Column dataKey="totalStake" width={150} sort>
+        <Table.Column dataKey="totalStake" width={150} sortable defaultSort="desc">
           {t('staking.overview.stakeTableHeader')}
         </Table.Column>
         <Table.Column dataKey="actions" width={50} />

@@ -26,8 +26,8 @@ import { useValidators } from '@renderer/services/staking/validatorsService';
 import { useWallet } from '@renderer/services/wallet/walletService';
 import { isStringsMatchQuery } from '@renderer/utils/strings';
 import { AboutStaking, EmptyFilter, InactiveChain, NoAccounts, StakingTable } from './components';
-import NominatorsModal, { Nominator } from './components/NominatorsModal/NominatorsModal';
 import { AccountStakeInfo } from './components/StakingTable/StakingTable';
+import NominatorsModal, { Nominator } from './components/NominatorsModal/NominatorsModal';
 
 type NetworkOption = { asset: Asset; addressPrefix: number };
 
@@ -146,6 +146,7 @@ const Overview = () => {
     setSelectedAccounts([]);
     setStaking({});
     setValidators({});
+    setSelectedStakes([]);
     setQuery('');
   };
 

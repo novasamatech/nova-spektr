@@ -95,7 +95,7 @@ const Validators = ({ api, chainId, asset, onResult }: Props) => {
             {t('staking.validators.validatorsTableHeader')}
             <span className="ml-1 px-1.25 py-1 rounded-md bg-shade-2 text-shade-40">{validatorList.length}</span>
           </Table.Column>
-          <Table.Column dataKey="rewards" width={130} sort>
+          <Table.Column dataKey="rewards" width={130} sortable>
             {t('staking.validators.rewardsTableHeader')}
           </Table.Column>
           <Table.Column dataKey="ownStake" width={150}>

@@ -1,6 +1,6 @@
 import { Context, createContext, useContext } from 'react';
 
-import { Alignment, IndexKey, SortConfig, AnyRecord } from './common/types';
+import { AnyRecord, ColumnConfig, IndexKey, SortConfig } from './common/types';
 
 type TableContextProps<T extends AnyRecord> = {
   by: IndexKey;
@@ -8,7 +8,7 @@ type TableContextProps<T extends AnyRecord> = {
   sortConfig: SortConfig;
   selectedKeys?: IndexKey[];
   allRowsSelected: boolean;
-  addSortingConfig: (dataKey: string, align: Alignment, sort: boolean) => void;
+  addSortingConfig: (params: ColumnConfig) => void;
   updateSortingOrder: (column: string) => void;
   excludeKey: (key: IndexKey) => void;
   selectAll: () => void;

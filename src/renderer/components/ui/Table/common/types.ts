@@ -7,17 +7,16 @@ export type AnyRecord = {
 export const enum SortType {
   ASC = 'asc',
   DESC = 'desc',
+  NONE = 'none',
 }
 
 export type Alignment = 'left' | 'right';
 
-export type SortConfig = Record<
-  string,
-  {
-    dataKey: string;
-    active: boolean;
-    type: SortType;
-    align: 'left' | 'right';
-    sort: boolean;
-  }
->;
+export type ColumnConfig = {
+  dataKey: string;
+  align: 'left' | 'right';
+  sortType: SortType;
+  sortable: boolean;
+};
+
+export type SortConfig = Record<string, ColumnConfig>;

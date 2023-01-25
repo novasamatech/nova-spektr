@@ -1,8 +1,8 @@
 import cn from 'classnames';
 import { PropsWithChildren, useCallback, useMemo, useState } from 'react';
 
-import { Alignment, SortConfig, SortType, AnyRecord, IndexKey } from './common/types';
-import { getActiveSorting, getSortedData } from './common/utils';
+import { SortConfig, SortType, AnyRecord, IndexKey, ColumnConfig } from './common/types';
+import { getUpdatedConfig, getSortedData } from './common/utils';
 import { TableBody, TableCell, TableColumn, TableHeader, TableRow } from './TableParts';
 import { TableContext } from './TableContext';
 
@@ -37,13 +37,12 @@ const Table = <T extends AnyRecord>({
   const allRowsSelected = dataSource.length - excludedKeys.length === selectedKeys?.length;
 
   const addSortingConfig = useCallback(
-    (dataKey: string, align: Alignment, sort: boolean) => {
+    ({ dataKey, align, sortable, sortType }: ColumnConfig) => {
       const payload = {
         dataKey,
         align,
-        sort,
-        active: false,
-        type: SortType.DESC,
+        sortable,
+        sortType: sortType || SortType.NONE,
       };
 
       setSortConfig((prev) => ({ ...prev, [dataKey]: payload }));
@@ -54,7 +53,7 @@ const Table = <T extends AnyRecord>({
   const updateSortingOrder = useCallback(
     (column: string) => {
       if (sortConfig[column]) {
-        setSortConfig((prev) => getActiveSorting(column, prev));
+        setSortConfig((prev) => getUpdatedConfig(column, prev));
       } else {
         console.warn(`${column} is absent`);
       }
@@ -106,6 +105,7 @@ const Table = <T extends AnyRecord>({
 
   const value = {
     by,
+    dataSource: sortedData,
     sortConfig,
     selectedKeys,
     allRowsSelected,
@@ -114,7 +114,6 @@ const Table = <T extends AnyRecord>({
     excludeKey,
     selectAll,
     selectRow,
-    dataSource: sortedData,
   };
 
   return (
