@@ -81,13 +81,14 @@ const Transfer = () => {
       }
 
       const address = toAddress(account.publicKey || '0x00', currentConnection?.addressPrefix);
-
-      if (acc.some((a) => a.id === address)) return acc;
+      if (acc.some((a) => a.id === address)) {
+        return acc;
+      }
 
       const accountType =
         account.signingType === SigningType.PARITY_SIGNER ? 'paritySignerBackground' : 'watchOnlyBackground';
 
-      const accountOption = {
+      acc.push({
         id: address,
         value: index,
         element: (
@@ -97,9 +98,9 @@ const Transfer = () => {
             <Address type="short" address={address} canCopy={false} />
           </div>
         ),
-      };
+      });
 
-      return acc.concat(accountOption);
+      return acc;
     }, []);
 
     if (accounts.length === 0) return;
