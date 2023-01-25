@@ -88,7 +88,7 @@ const AboutStaking = ({ asset, api, validators, era, className }: Props) => {
       full
       defaultActive={false}
       itemClass="font-semibold text-neutral-variant"
-      wrapperClass={cn('w-full shadow-surface p-4 rounded-2lg', className)}
+      wrapperClass={cn('w-full shadow-surface p-4 rounded-2lg bg-white', className)}
       item={
         <div className="flex items-center gap-2.5">
           <Icon name="staking" />

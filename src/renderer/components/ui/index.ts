@@ -20,6 +20,7 @@ import Select from './Dropdowns/Select/Select';
 import Balance from './Balance/Balance';
 import Popover from './Popover/Popover';
 import Filter from './Dropdowns/Filter/Filter';
+import Table from './Table/Table';
 
 export {
   Address,
@@ -44,4 +45,5 @@ export {
   Balance,
   Popover,
   Filter,
+  Table,
 };

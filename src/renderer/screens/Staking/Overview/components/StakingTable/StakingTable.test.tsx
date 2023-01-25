@@ -1,6 +1,6 @@
 import { render, screen } from '@testing-library/react';
 
-import StakingList from './StakingList';
+import StakingTable from './StakingTable';
 
 jest.mock('@renderer/context/I18nContext', () => ({
   useI18n: jest.fn().mockReturnValue({
@@ -8,21 +8,15 @@ jest.mock('@renderer/context/I18nContext', () => ({
   }),
 }));
 
-describe('screens/Staking/Overview/StakingList', () => {
+describe('screens/Staking/Overview/StakingTable', () => {
   test('should create component', () => {
-    render(
-      <StakingList allSelected onSelectAll={() => {}}>
-        children
-      </StakingList>,
-    );
+    render(<StakingTable stakeInfo={[]} selectedStakes={[]} openValidators={() => {}} selectStaking={() => {}} />);
 
     const account = screen.getByText('staking.overview.accountTableHeader');
     const rewards = screen.getByText('staking.overview.rewardsTableHeader');
     const stake = screen.getByText('staking.overview.stakeTableHeader');
-    const child = screen.getByText('children');
     expect(account).toBeInTheDocument();
     expect(rewards).toBeInTheDocument();
     expect(stake).toBeInTheDocument();
-    expect(child).toBeInTheDocument();
   });
 });
