@@ -22,7 +22,7 @@ const QrMultiframeGenerator = ({
 }: Props) => {
   const image = useGenerator(payload, skipEncoding, delay, bgColor, encoder);
 
-  if (!payload || !image) {
+  if (!payload || !image || !encoder) {
     return null;
   }
 

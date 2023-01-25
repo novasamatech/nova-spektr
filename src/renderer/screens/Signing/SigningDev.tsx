@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { u8aConcat } from '@polkadot/util';
-import init, { Encoder } from 'raptorq';
 import { UnsignedTransaction } from '@substrate/txwrapper-polkadot';
+import init, { Encoder } from 'raptorq';
 
 import { useNetworkContext } from '@renderer/context/NetworkContext';
 import { useChains } from '@renderer/services/network/chainsService';
@@ -22,6 +22,8 @@ import { Command } from '@renderer/components/common/QrCode/QrGenerator/common/c
 import QrMultiframeGenerator from '@renderer/components/common/QrCode/QrGenerator/QrMultiframeTxGenerator';
 import MultiframeSignatureReader from './MultiframeSignatureReader/MultiframeSignatureReader';
 import { HexString, SigningType } from '@renderer/domain/shared-kernel';
+import { toAddress } from '@renderer/services/balance/common/utils';
+import Progress from './Progress';
 
 const enum Steps {
   SCANNING = 0,
@@ -38,6 +40,7 @@ const Signing = () => {
   const { getActiveAccounts } = useAccount();
   const { sortChains } = useChains();
   const { createPayload, submitAndWatchExtrinsic, getSignedExtrinsic } = useTransaction();
+  const [encoder, setEncoder] = useState<Encoder>();
 
   const [progress, setProgress] = useState<number>(0);
   const [failedTxs, setFailedTxs] = useState<number[]>([]);
@@ -48,8 +51,6 @@ const Signing = () => {
   const [countdown, setCountdown] = useState<number>(DEFAULT_QR_LIFETIME);
   const [currentStep, setCurrentStep] = useState<Steps>(Steps.SCANNING);
 
-  // const [scannedData, setScannedData] = useState<Uint8Array>();
-  const [encoder, setEncoder] = useState<Encoder>();
   const [rawTransactions, setRawTransactions] = useState<any[]>([]);
   const [bulkTransactions, setBulkTransactions] = useState<Uint8Array>();
   const [unsignedTransactions, setUnsignedTransactions] = useState<UnsignedTransaction[]>([]);
@@ -76,46 +77,45 @@ const Signing = () => {
     const api = currentConnection?.api;
     if (!api) return;
 
-    const transactions = await Promise.all(
-      activeAccounts.map(async (account, index) => {
-        const transactionData = {
-          address: account.accountId || '',
-          type: TransactionType.TRANSFER,
-          chainId: currentConnection.chainId,
-          args: {
-            dest: activeAccounts[activeAccounts.length - 1 - index].accountId || '',
-            value: '1',
-          },
-        };
+    const transactionPromises = activeAccounts.map(async (account, index) => {
+      const sourceAddress = toAddress(account.publicKey || '0x', currentConnection.addressPrefix);
+      const destAddress = toAddress(
+        activeAccounts[activeAccounts.length - 1 - index].publicKey || '0x',
+        currentConnection.addressPrefix,
+      );
 
-        const { payload, unsigned } = await createPayload(transactionData, api);
+      const transactionData = {
+        address: sourceAddress,
+        type: TransactionType.TRANSFER,
+        chainId: currentConnection.chainId,
+        args: {
+          dest: destAddress,
+          value: '100',
+        },
+      };
 
-        return {
-          signPayload: createSignPayload(
-            account.accountId || '',
-            Command.Transaction,
-            payload,
-            currentConnection.chainId,
-          ),
-          unsigned,
-          transactionData,
-        };
-      }),
-    );
+      const { payload, unsigned } = await createPayload(transactionData, api);
+
+      return {
+        signPayload: createSignPayload(sourceAddress, Command.Transaction, payload, currentConnection.chainId),
+        unsigned,
+        transactionData,
+      };
+    });
+    const transactions = await Promise.all(transactionPromises);
+
+    if (!transactions.length) return;
 
     let transactionsEncoded = u8aConcat(
       TRANSACTION_BULK.encode({ TransactionBulk: 'V1', payload: transactions.map((t) => t.signPayload) }),
     );
     let bulk = createMultipleSignPayload(transactionsEncoded);
     setBulkTransactions(bulk);
-
     setUnsignedTransactions(transactions.map((t) => t.unsigned));
     setRawTransactions(transactions.map((t) => t.transactionData));
 
-    init().then(() => {
-      let encoder = Encoder.with_defaults(bulk, 128);
-      setEncoder(encoder);
-    });
+    await init();
+    setEncoder(Encoder.with_defaults(bulk, 128));
   };
 
   useEffect(() => {
@@ -124,7 +124,7 @@ const Signing = () => {
 
   useEffect(() => {
     setupTransactions();
-  }, [currentConnection]);
+  }, [currentConnection, activeAccounts.length]);
 
   const validateTransaction = (transaction: any) => {
     return true;
@@ -173,7 +173,7 @@ const Signing = () => {
                     <QrMultiframeGenerator payload={bulkTransactions} size={200} encoder={encoder} />
                   </div>
 
-                  {countdown && (
+                  {countdown > 0 && (
                     <div className="flex items-center uppercase font-normal text-xs gap-1.25">
                       {t('signing.qrCountdownTitle')}
                       <div className="rounded-md bg-success text-white py-0.5 px-1.5">
@@ -245,10 +245,7 @@ const Signing = () => {
         )}
 
         {currentStep === Steps.EXECUTING && (
-          <div className="mt-8 text-neutral-variant font-semibold flex items-center gap-3 w-fit m-auto">
-            <Icon className="animate-spin" name="loader" size={15} />
-            {t('transfer.executing')} {progress + failedTxs.length}/{unsignedTransactions.length}
-          </div>
+          <Progress progress={progress + failedTxs.length} max={unsignedTransactions.length} />
         )}
       </div>
     </div>

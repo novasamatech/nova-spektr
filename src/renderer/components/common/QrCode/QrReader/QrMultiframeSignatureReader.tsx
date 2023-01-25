@@ -10,6 +10,7 @@ import { QR_READER_ERRORS } from './common/errors';
 import { DecodeCallback, ErrorObject, Progress, QrError, VideoInput } from './common/types';
 import RaptorFrame from './RaptorFrame';
 import { HexString } from '@renderer/domain/shared-kernel';
+import { CRYPTO_SR25519 } from '../QrGenerator/common/constants';
 
 const enum Status {
   'FIRST_FRAME',
@@ -57,7 +58,7 @@ const QrMultiframeSignatureReader = ({
   };
 
   const makeResultPayload = <T extends Uint8Array[]>(data?: T): HexString[] => {
-    return (data || []).map((s) => u8aToHex(s));
+    return (data || []).map((s) => u8aToHex(new Uint8Array([...CRYPTO_SR25519, ...s])));
   };
 
   const getVideoInputs = async (): Promise<number> => {

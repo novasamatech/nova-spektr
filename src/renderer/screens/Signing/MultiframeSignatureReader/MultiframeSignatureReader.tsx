@@ -258,7 +258,7 @@ const MultiframeSignatureReader = ({ size = 300, className, onResult, countdown,
             <div className="flex m-auto items-center justify-center uppercase font-normal text-xs gap-1.25">
               {t('signing.qrCountdownTitle')}
               <div className={cn('rounded-md text-white py-0.5 px-1.5', countdown > 60 ? 'bg-success' : 'bg-alert')}>
-                {secondsToMinutes(countdown || 0)}
+                {secondsToMinutes(countdown)}
               </div>
             </div>
           ) : (
