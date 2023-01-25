@@ -1,7 +1,7 @@
 export type IndexKey = string;
 
-export type IndexedValue = {
-  key: IndexKey;
+export type AnyRecord = {
+  [key: string]: any;
 };
 
 export const enum SortType {

@@ -2,7 +2,7 @@ import cn from 'classnames';
 import { Children, cloneElement, PropsWithChildren, ReactElement, ReactNode, useEffect } from 'react';
 
 import { Checkbox, Icon } from '@renderer/components/ui';
-import { Alignment, SortType, IndexedValue, IndexKey } from './common/types';
+import { Alignment, SortType, AnyRecord, IndexKey } from './common/types';
 import { useTableContext } from './TableContext';
 
 export const TableHeader = ({ children }: PropsWithChildren) => {
@@ -75,18 +75,18 @@ export const TableColumn = ({
   );
 };
 
-type BodyProps<T extends IndexedValue> = {
+type BodyProps<T extends AnyRecord> = {
   children: (data: T) => ReactNode;
 };
-export const TableBody = <T extends IndexedValue>({ children }: BodyProps<T>) => {
-  const { dataSource } = useTableContext<T>();
+export const TableBody = <T extends AnyRecord>({ children }: BodyProps<T>) => {
+  const { by, dataSource } = useTableContext<T>();
 
   return (
     <tbody>
       {dataSource.map((source) => {
         const item = children(source) as ReactElement<PropsWithChildren<_RowProps>>;
 
-        return cloneElement(item, { dataKey: source.key });
+        return cloneElement(item, { dataKey: source[by] });
       })}
     </tbody>
   );
@@ -131,14 +131,18 @@ export const TableRow = ({ selectable = true, children, ...props }: PropsWithChi
   );
 };
 
+type CellProps = {
+  className?: string;
+};
 type _CellProps = {
   align: Alignment;
 };
-export const TableCell = ({ children, ...props }: PropsWithChildren) => {
+export const TableCell = ({ className, children, ...props }: PropsWithChildren<CellProps>) => {
+  // eslint-disable-next-line react/prop-types
   const { align } = props as _CellProps;
 
   return (
-    <td className="px-1 first:pl-4 last:pr-4">
+    <td className={cn('px-1 first:pl-4 last:pr-4', className)}>
       <div className={cn('w-max', align === 'left' ? 'mr-auto' : 'ml-auto')}>{children}</div>
     </td>
   );

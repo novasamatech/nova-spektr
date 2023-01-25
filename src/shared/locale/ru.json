@@ -298,7 +298,18 @@
       "subtitle": "Отвязать токены"
     },
     "validators": {
-      "subtitle": "Валидаторы"
+      "continueButton": "Продолжить с выбранными: {selected}  (макс. { max })",
+      "filterButton": "Фильтр",
+      "filterByIdentity": "Имеют identity",
+      "filterNotOversubscribed": "Не перегружены",
+      "filterNotSlashed": "Не порезаны",
+      "ownStakeTableHeader": "Собственный стейк",
+      "rewardsTableHeader": "Награды (APY)",
+      "searchPlaceholder": "Искать по адресу или имени",
+      "selectValidatorButton": "Выберите валидаторов...",
+      "subtitle": "Валидаторы",
+      "totalStakeTableHeader": "Общий стейк",
+      "validatorsTableHeader": "Валидаторы"
     }
   },
   "transfer": {

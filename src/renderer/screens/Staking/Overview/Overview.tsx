@@ -1,6 +1,8 @@
+/* eslint-disable i18next/no-literal-string */
 import { BN, BN_ZERO } from '@polkadot/util';
 import { useEffect, useState } from 'react';
 import { Trans } from 'react-i18next';
+import { useNavigate } from 'react-router-dom';
 
 import { Dropdown, Icon, Input } from '@renderer/components/ui';
 import { Option, ResultOption } from '@renderer/components/ui/Dropdowns/common/types';
@@ -11,6 +13,7 @@ import { Asset, StakingType } from '@renderer/domain/asset';
 import { ConnectionStatus, ConnectionType } from '@renderer/domain/connection';
 import { AccountID, ChainId, SigningType } from '@renderer/domain/shared-kernel';
 import useToggle from '@renderer/hooks/useToggle';
+import { createLink } from '@renderer/routes/utils';
 import TotalAmount from '@renderer/screens/Staking/Overview/components/TotalAmount/TotalAmount';
 import { useAccount } from '@renderer/services/account/accountService';
 import { useChains } from '@renderer/services/network/chainsService';
@@ -23,8 +26,8 @@ import { useValidators } from '@renderer/services/staking/validatorsService';
 import { useWallet } from '@renderer/services/wallet/walletService';
 import { isStringsMatchQuery } from '@renderer/utils/strings';
 import { AboutStaking, EmptyFilter, InactiveChain, NoAccounts, StakingTable } from './components';
-import { AccountStakeInfo } from './components/StakingTable/StakingTable';
 import NominatorsModal, { Nominator } from './components/NominatorsModal/NominatorsModal';
+import { AccountStakeInfo } from './components/StakingTable/StakingTable';
 
 type NetworkOption = { asset: Asset; addressPrefix: number };
 
@@ -32,6 +35,7 @@ const Overview = () => {
   const { t } = useI18n();
   const [isNominatorsModalOpen, toggleNominatorsModal] = useToggle();
 
+  const navigate = useNavigate();
   const { changeClient } = useGraphql();
   const { connections } = useNetworkContext();
   const { getActiveAccounts } = useAccount();
@@ -227,7 +231,6 @@ const Overview = () => {
     if (!query || isStringsMatchQuery(query, [walletName, account.name, account.accountId])) {
       acc.push({
         walletName,
-        key: account.accountId,
         address: account.accountId,
         stash: staking[account.accountId]?.stash,
         signingType: account.signingType,
@@ -314,6 +317,15 @@ const Overview = () => {
           {!networkIsActive && <InactiveChain />}
         </div>
       </div>
+
+      <button
+        type="button"
+        onClick={() => {
+          navigate(createLink('BOND', { chainId }));
+        }}
+      >
+        GO
+      </button>
 
       <NominatorsModal
         isOpen={isNominatorsModalOpen}

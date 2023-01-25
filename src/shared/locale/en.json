@@ -298,7 +298,18 @@
       "subtitle": "Unbond"
     },
     "validators": {
-      "subtitle": "Validators"
+      "continueButton": "Continue with selected: {selected}  (max { max })",
+      "filterButton": "Filter",
+      "filterByIdentity": "Having on-chain identity",
+      "filterNotOversubscribed": "Not oversubscribed",
+      "filterNotSlashed": "Not slashed",
+      "ownStakeTableHeader": "Own stake",
+      "rewardsTableHeader": "Rewards (APY)",
+      "searchPlaceholder": "Search by address or name",
+      "selectValidatorButton": "Select at least one validator...",
+      "subtitle": "Validators",
+      "totalStakeTableHeader": "Total stake",
+      "validatorsTableHeader": "Validators"
     }
   },
   "transfer": {

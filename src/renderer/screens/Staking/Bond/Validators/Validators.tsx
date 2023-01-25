@@ -1,17 +1,17 @@
 /* eslint-disable i18next/no-literal-string */
 import { ApiPromise } from '@polkadot/api';
-import cn from 'classnames';
 import { useEffect, useState } from 'react';
 
-import { Address, Balance, BaseModal, Button, Checkbox, Icon, Input } from '@renderer/components/ui';
+import { Address, Balance, BaseModal, Button, Filter, Icon, Input, Table } from '@renderer/components/ui';
 import { useI18n } from '@renderer/context/I18nContext';
 import { Asset } from '@renderer/domain/asset';
 import { AccountID, ChainId } from '@renderer/domain/shared-kernel';
+import { Validator } from '@renderer/domain/validator';
 import useToggle from '@renderer/hooks/useToggle';
 import { ValidatorMap } from '@renderer/services/staking/common/types';
-import { Validator } from '@renderer/domain/validator';
-import { useValidators } from '@renderer/services/staking/validatorsService';
 import { useEra } from '@renderer/services/staking/eraService';
+import { useValidators } from '@renderer/services/staking/validatorsService';
+import { getComposedIdentity } from '@renderer/utils/strings';
 
 type Props = {
   api?: ApiPromise;
@@ -31,21 +31,12 @@ const Validators = ({ api, chainId, asset, onResult }: Props) => {
 
   const [query, setQuery] = useState('');
   const [maxValidators, setMaxValidators] = useState<number>();
-  const [myValidators, setMyValidators] = useState<Record<AccountID, boolean>>({});
-
-  const validatorList = Object.values(validators).filter((validator) => {
-    const addressMatch = validator.address?.toLowerCase().includes(query.toLowerCase());
-    const identityMatch = validator.identity?.subName.toLowerCase().includes(query.toLowerCase());
-    const subIdentityMatch = validator.identity?.parent.name.toLowerCase().includes(query.toLowerCase());
-
-    return addressMatch || identityMatch || subIdentityMatch;
-  });
+  const [selectedValidators, setSelectedValidators] = useState<AccountID[]>([]);
 
   useEffect(() => {
     if (!chainId || !api?.isConnected) return;
 
     let unsubEra: () => void | undefined;
-
     (async () => {
       unsubEra = await subscribeActiveEra(api, setEra);
     })();
@@ -65,53 +56,62 @@ const Validators = ({ api, chainId, asset, onResult }: Props) => {
     })();
   }, [api, era]);
 
-  if (!api || !chainId || !asset || !maxValidators || validatorList.length === 0) {
+  if (!api || !chainId || !asset || !maxValidators) {
     return <div>LOADING</div>;
   }
 
-  const selectValidator = (address: AccountID) => {
-    setMyValidators((prev) => ({ ...prev, [address]: !myValidators[address] }));
-  };
+  const validatorList = Object.values(validators).filter((validator) => {
+    // TODO: add filter
 
-  const selectedValidators = Object.entries(myValidators).reduce<Validator[]>((acc, [address, isSelected]) => {
-    return isSelected ? acc.concat(validators[address]) : acc;
-  }, []);
+    const addressMatch = validator.address?.toLowerCase().includes(query.toLowerCase());
+    const identityMatch = validator.identity?.subName.toLowerCase().includes(query.toLowerCase());
+    const subIdentityMatch = validator.identity?.parent.name.toLowerCase().includes(query.toLowerCase());
+
+    return addressMatch || identityMatch || subIdentityMatch;
+  });
 
   return (
     <>
-      <div className="flex gap-x-5">
+      <div className="flex justify-between">
         <Input
           wrapperClass="!bg-shade-5 w-[300px]"
-          placeholder={t('staking.overview.searchPlaceholder')}
+          placeholder={t('staking.validators.searchPlaceholder')}
           prefixElement={<Icon name="search" className="w-5 h-5" />}
           value={query}
           onChange={(e) => setQuery(e.target.value)}
         />
+        <Filter placeholder={t('staking.validators.filterButton')} activeIds={[]} options={[]} onChange={() => {}} />
       </div>
 
-      <div className="w-full bg-white rounded-2lg mt-5 pb-14 overflow-y-auto">
-        <div className="flex py-2 pl-4 pr-11 border-b border-shade-5 sticky top-0 z-10 bg-white">
-          <p className="text-2xs font-bold uppercase text-neutral-variant mr-auto">
-            Validators <span className="px-1.25 py-1 rounded-md bg-shade-2 text-shade-40">{validatorList.length}</span>
-          </p>
-          <p className="pl-3 w-[125px] text-2xs font-bold uppercase text-neutral-variant text-right">Rewards (APY)</p>
-          <p className="pl-3 w-[125px] text-2xs font-bold uppercase text-neutral-variant text-right">Own stake</p>
-          <p className="pl-3 w-[125px] text-2xs font-bold uppercase text-neutral-variant text-right">Total stake</p>
-        </div>
-        <ul>
-          {validatorList.map(({ address, ownStake, totalStake, apy, identity }) => (
-            <li key={address} className="flex items-center pl-4 pr-2 h-12.5 border-b border-shade-5 text-neutral">
-              <Checkbox
-                className="mr-auto h-full"
-                checked={myValidators[address]}
-                onChange={() => selectValidator(address)}
-              >
+      <Table
+        by="address"
+        className="mt-5"
+        dataSource={validatorList}
+        selectedKeys={selectedValidators}
+        onSelect={setSelectedValidators}
+      >
+        <Table.Header>
+          <Table.Column dataKey="address" align="left">
+            {t('staking.validators.validatorsTableHeader')}
+            <span className="ml-1 px-1.25 py-1 rounded-md bg-shade-2 text-shade-40">{validatorList.length}</span>
+          </Table.Column>
+          <Table.Column dataKey="rewards" width={130} sort>
+            {t('staking.validators.rewardsTableHeader')}
+          </Table.Column>
+          <Table.Column dataKey="ownStake" width={150}>
+            {t('staking.validators.ownStakeTableHeader')}
+          </Table.Column>
+          <Table.Column dataKey="totalStake" width={150}>
+            {t('staking.validators.totalStakeTableHeader')}
+          </Table.Column>
+          <Table.Column dataKey="actions" width={50} />
+        </Table.Header>
+        <Table.Body<Validator>>
+          {({ address, identity, apy, ownStake, totalStake }) => (
+            <Table.Row key={address}>
+              <Table.Cell>
                 <div className="flex flex-col justify-center ml-2.5">
-                  {identity && (
-                    <p className={cn('text-sm font-semibold', myValidators[address] && 'text-primary')}>
-                      {identity.subName ? `${identity.parent.name}/${identity.subName}` : identity.parent.name}
-                    </p>
-                  )}
+                  {identity && <p className="text-sm font-semibold">{getComposedIdentity(identity)}</p>}
                   <Address
                     canCopy={false}
                     address={address || ''}
@@ -121,23 +121,25 @@ const Validators = ({ api, chainId, asset, onResult }: Props) => {
                     symbols={16}
                   />
                 </div>
-              </Checkbox>
-              <div className="pl-3 w-[125px] text-sm font-semibold text-success text-right">{apy}%</div>
-              <div className="pl-3 w-[125px] text-xs font-semibold text-right">
+                {/*TODO: add slashed / oversubscribed*/}
+              </Table.Cell>
+              <Table.Cell className="text-sm font-semibold text-success">{apy}%</Table.Cell>
+              <Table.Cell className="text-sm font-semibold">
                 <Balance value={ownStake || '0'} precision={asset.precision} symbol={asset.symbol} />
-              </div>
-              <div className="pl-3 w-[125px] text-xs font-semibold text-right">
+              </Table.Cell>
+              <Table.Cell className="text-sm font-semibold">
                 <Balance value={totalStake || '0'} precision={asset.precision} symbol={asset.symbol} />
-              </div>
-              <div className="ml-3">
+              </Table.Cell>
+              <Table.Cell>
                 <button className="px-1" type="button" onClick={toggleInfo}>
                   •••
                 </button>
-              </div>
-            </li>
-          ))}
-        </ul>
-      </div>
+              </Table.Cell>
+            </Table.Row>
+          )}
+        </Table.Body>
+      </Table>
+
       {selectedValidators.length > 0 && (
         <div className="absolute bottom-0 py-2.5 w-full bg-white/75 backdrop-blur-[2px]">
           <Button
@@ -146,7 +148,7 @@ const Validators = ({ api, chainId, asset, onResult }: Props) => {
             pallet="primary"
             weight="lg"
             disabled={selectedValidators.length !== maxValidators}
-            onClick={() => onResult(selectedValidators)}
+            // onClick={() => onResult(selectedValidators)}
           >
             {selectedValidators.length !== maxValidators
               ? `Validators ${selectedValidators.length} / ${maxValidators}`
@@ -154,6 +156,7 @@ const Validators = ({ api, chainId, asset, onResult }: Props) => {
           </Button>
         </div>
       )}
+
       <BaseModal isOpen={isInfoOpen} onClose={toggleInfo}>
         Validator&apos;s info
       </BaseModal>

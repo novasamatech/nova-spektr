@@ -1,6 +1,6 @@
 import { orderBy } from 'lodash';
 
-import { SortConfig, SortType, IndexedValue } from './types';
+import { SortConfig, SortType, AnyRecord } from './types';
 
 /**
  * Get sorted data based on current config
@@ -8,7 +8,7 @@ import { SortConfig, SortType, IndexedValue } from './types';
  * @param config columns' config with sorting params
  * @return {Array}
  */
-export const getSortedData = <T extends IndexedValue>(dataSource: T[], config: SortConfig): T[] => {
+export const getSortedData = <T extends AnyRecord>(dataSource: T[], config: SortConfig): T[] => {
   const activeSorting = Object.values(config).find((sort) => sort.active);
 
   if (!dataSource.length || !activeSorting) {
