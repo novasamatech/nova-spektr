@@ -6,7 +6,6 @@ import { NavLink } from 'react-router-dom';
 import { Icon, Identicon } from '@renderer/components/ui';
 import { useI18n } from '@renderer/context/I18nContext';
 import { SigningType } from '@renderer/domain/shared-kernel';
-import useClickOutside from '@renderer/hooks/useClickOutside';
 import Paths from '@renderer/routes/paths';
 import { useAccount } from '@renderer/services/account/accountService';
 import { AccountDS } from '@renderer/services/storage';
@@ -55,10 +54,6 @@ const Navigation = () => {
 
   // const [isProcessing, setIsProcessing] = useState(false);
   const [isWalletsOpen, setIsWalletsOpen] = useState(false);
-
-  useClickOutside([walletsRef, showWalletsRef], () => {
-    setIsWalletsOpen(false);
-  });
 
   // const onLogout = async () => {
   //   setIsProcessing(true);
@@ -179,8 +174,8 @@ const Navigation = () => {
       <Wallets
         ref={walletsRef}
         className={cn(
-          'ease-in-out transition-all transform duration-200 absolute z-20 w-[350px] left-0 top-0 overflow-y-auto',
-          isWalletsOpen ? 'translate-x-[300px] opacity-100 visible' : 'translate-x-0 opacity-0 invisible',
+          'ease-in-out transition-all transform duration-200 z-20 overflow-y-auto',
+          isWalletsOpen ? 'w-[350px] opacity-100 visible' : 'w-0 translate-x-0 opacity-0 invisible',
         )}
       />
     </>
