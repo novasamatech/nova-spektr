@@ -7,7 +7,6 @@ import { Explorer } from '@renderer/domain/chain';
 import { AccountID, SigningType } from '@renderer/domain/shared-kernel';
 
 export type AccountStakeInfo = {
-  key: AccountID;
   address: AccountID;
   stash?: AccountID;
   signingType: SigningType;
@@ -40,22 +39,22 @@ const StakingTable = ({
   const { t } = useI18n();
 
   return (
-    <Table className="mt-5" dataSource={stakeInfo} selectedKeys={selectedStakes} onSelect={selectStaking}>
+    <Table className="mt-5" by="address" dataSource={stakeInfo} selectedKeys={selectedStakes} onSelect={selectStaking}>
       <Table.Header>
         <Table.Column dataKey="accountName" align="left">
           {t('staking.overview.accountTableHeader')}
         </Table.Column>
-        <Table.Column dataKey="totalReward" width={150}>
+        <Table.Column dataKey="totalReward" width={150} sortable>
           {t('staking.overview.rewardsTableHeader')}
         </Table.Column>
-        <Table.Column dataKey="totalStake" width={150} sort>
+        <Table.Column dataKey="totalStake" width={150} sortable defaultSort="desc">
           {t('staking.overview.stakeTableHeader')}
         </Table.Column>
         <Table.Column dataKey="actions" width={50} />
       </Table.Header>
       <Table.Body<AccountStakeInfo>>
         {(stake) => (
-          <Table.Row key={stake.key} selectable={stake.signingType !== SigningType.WATCH_ONLY}>
+          <Table.Row key={stake.address} selectable={stake.signingType !== SigningType.WATCH_ONLY}>
             <Table.Cell>
               <div className="grid grid-flow-col gap-x-1">
                 <Identicon className="row-span-2 self-center" address={stake.address} background={false} />

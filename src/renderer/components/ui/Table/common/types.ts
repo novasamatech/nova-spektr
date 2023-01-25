@@ -1,23 +1,22 @@
 export type IndexKey = string;
 
-export type IndexedValue = {
-  key: IndexKey;
+export type AnyRecord = {
+  [key: string]: any;
 };
 
 export const enum SortType {
   ASC = 'asc',
   DESC = 'desc',
+  NONE = 'none',
 }
 
 export type Alignment = 'left' | 'right';
 
-export type SortConfig = Record<
-  string,
-  {
-    dataKey: string;
-    active: boolean;
-    type: SortType;
-    align: 'left' | 'right';
-    sort: boolean;
-  }
->;
+export type ColumnConfig = {
+  dataKey: string;
+  align: 'left' | 'right';
+  sortType: SortType;
+  sortable: boolean;
+};
+
+export type SortConfig = Record<string, ColumnConfig>;

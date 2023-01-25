@@ -18,18 +18,18 @@ export default {
 const Template: ComponentStory<typeof Table> = (args) => <Table {...args} />;
 
 type Struct = {
-  key: string;
   name: string;
   age: number;
   address: string;
 };
 const dataSource: Struct[] = [
-  { key: '1', name: 'Mike', age: 32, address: '20 Downing Street' },
-  { key: '2', name: 'John', age: 42, address: '10 Downing Street' },
+  { name: 'Mike', age: 32, address: '20 Downing Street' },
+  { name: 'John', age: 42, address: '10 Downing Street' },
 ];
 
 export const Primary = Template.bind({});
 Primary.args = {
+  by: 'name',
   dataSource,
   selectedKeys: ['1'],
   onSelect: (x) => console.log(x),
@@ -49,7 +49,7 @@ Primary.args = {
       </Table.Header>
       <Table.Body<Struct>>
         {(source) => (
-          <Table.Row key={source.key}>
+          <Table.Row key={source.name}>
             <Table.Cell>{source.name}</Table.Cell>
             <Table.Cell>{source.age}</Table.Cell>
             <Table.Cell>{source.address}</Table.Cell>

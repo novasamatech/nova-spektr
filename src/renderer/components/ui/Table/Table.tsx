@@ -1,12 +1,13 @@
 import cn from 'classnames';
 import { PropsWithChildren, useCallback, useMemo, useState } from 'react';
 
-import { Alignment, SortConfig, SortType, IndexedValue, IndexKey } from './common/types';
-import { getActiveSorting, getSortedData } from './common/utils';
+import { SortConfig, SortType, AnyRecord, IndexKey, ColumnConfig } from './common/types';
+import { getUpdatedConfig, getSortedData } from './common/utils';
 import { TableBody, TableCell, TableColumn, TableHeader, TableRow } from './TableParts';
 import { TableContext } from './TableContext';
 
-type Props<T extends IndexedValue> = {
+type Props<T extends AnyRecord> = {
+  by: IndexKey;
   dataSource: T[];
   className?: string;
   selectedKeys?: IndexKey[];
@@ -22,7 +23,8 @@ type Props<T extends IndexedValue> = {
 //   Cell: Parameters<typeof TableCell>;
 // };
 
-const Table = <T extends IndexedValue>({
+const Table = <T extends AnyRecord>({
+  by,
   dataSource,
   className,
   selectedKeys,
@@ -35,13 +37,12 @@ const Table = <T extends IndexedValue>({
   const allRowsSelected = dataSource.length - excludedKeys.length === selectedKeys?.length;
 
   const addSortingConfig = useCallback(
-    (dataKey: string, align: Alignment, sort: boolean) => {
+    ({ dataKey, align, sortable, sortType }: ColumnConfig) => {
       const payload = {
         dataKey,
         align,
-        sort,
-        active: false,
-        type: SortType.DESC,
+        sortable,
+        sortType: sortType || SortType.NONE,
       };
 
       setSortConfig((prev) => ({ ...prev, [dataKey]: payload }));
@@ -52,7 +53,7 @@ const Table = <T extends IndexedValue>({
   const updateSortingOrder = useCallback(
     (column: string) => {
       if (sortConfig[column]) {
-        setSortConfig((prev) => getActiveSorting(column, prev));
+        setSortConfig((prev) => getUpdatedConfig(column, prev));
       } else {
         console.warn(`${column} is absent`);
       }
@@ -74,8 +75,8 @@ const Table = <T extends IndexedValue>({
       onSelect?.([]);
     } else {
       const allSelectedKeys = dataSource.reduce<IndexKey[]>((acc, source) => {
-        if (!excludedKeys.includes(source.key)) {
-          acc.push(source.key);
+        if (!excludedKeys.includes(source[by])) {
+          acc.push(source[by]);
         }
 
         return acc;
@@ -103,6 +104,7 @@ const Table = <T extends IndexedValue>({
   }, [dataSource, sortConfig]);
 
   const value = {
+    by,
     dataSource: sortedData,
     sortConfig,
     selectedKeys,

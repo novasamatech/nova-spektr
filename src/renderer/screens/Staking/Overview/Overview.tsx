@@ -142,6 +142,7 @@ const Overview = () => {
     setSelectedAccounts([]);
     setStaking({});
     setValidators({});
+    setSelectedStakes([]);
     setQuery('');
   };
 
@@ -227,7 +228,6 @@ const Overview = () => {
     if (!query || isStringsMatchQuery(query, [walletName, account.name, account.accountId])) {
       acc.push({
         walletName,
-        key: account.accountId,
         address: account.accountId,
         stash: staking[account.accountId]?.stash,
         signingType: account.signingType,
