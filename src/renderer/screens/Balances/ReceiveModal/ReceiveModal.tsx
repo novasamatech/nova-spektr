@@ -81,7 +81,7 @@ const ReceiveModal = ({ data, isOpen, onClose }: Props) => {
 
   return (
     <BaseModal closeButton title={t('receive.title')} isOpen={isOpen} onClose={onClose}>
-      <div className="flex flex-col items-center max-w-[500px]">
+      <div className="flex flex-col items-center max-w-[550px]">
         <div className="flex mt-4 mb-6 text-neutral font-semibold">
           <div className="flex items-center justify-center bg-shade-70 border border-shade-20 rounded-full w-6 h-6">
             <img src={data?.asset.icon} alt="" width={16} height={16} />

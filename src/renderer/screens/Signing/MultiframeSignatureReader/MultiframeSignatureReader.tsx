@@ -1,13 +1,14 @@
 import cn from 'classnames';
 import { useState } from 'react';
 
-import { QrSignatureReader } from '@renderer/components/common';
 import { ErrorObject, QrError, VideoInput } from '@renderer/components/common/QrCode/QrReader/common/types';
 import { Button, Dropdown, Icon } from '@renderer/components/ui';
 import { Option, ResultOption } from '@renderer/components/ui/Dropdowns/common/types';
 import { useI18n } from '@renderer/context/I18nContext';
 import { secondsToMinutes } from '../common/utils';
 import { ValidationErrors } from '@renderer/screens/Transfer/common/constants';
+import QrMultiframeSignatureReader from '@renderer/components/common/QrCode/QrReader/QrMultiframeSignatureReader';
+import { HexString } from '@renderer/domain/shared-kernel';
 
 const enum CameraState {
   ACTIVE,
@@ -25,12 +26,12 @@ const RESULT_DELAY = 250;
 type Props = {
   size?: number;
   className?: string;
-  onResult: (payload: string) => void;
+  onResult: (payload: HexString[]) => void;
   countdown?: number;
   validationError?: ValidationErrors;
 };
 
-const ParitySignerSignatureReader = ({ size = 300, className, onResult, countdown, validationError }: Props) => {
+const MultiframeSignatureReader = ({ size = 300, className, onResult, countdown, validationError }: Props) => {
   const { t } = useI18n();
 
   const [cameraState, setCameraState] = useState<CameraState>(CameraState.LOADING);
@@ -67,7 +68,7 @@ const ParitySignerSignatureReader = ({ size = 300, className, onResult, countdow
     setCameraState(CameraState.LOADING);
   };
 
-  const onScanResult = (qrPayload: string) => {
+  const onScanResult = (signatures: HexString[]) => {
     if (countdown === 0) {
       setIsScanComplete(true);
       setCameraState(CameraState.EXPIRED_ERROR);
@@ -77,7 +78,7 @@ const ParitySignerSignatureReader = ({ size = 300, className, onResult, countdow
 
     try {
       setIsScanComplete(true);
-      setTimeout(() => onResult(qrPayload), RESULT_DELAY);
+      setTimeout(() => onResult(signatures), RESULT_DELAY);
     } catch (error) {
       setCameraState(CameraState.INVALID_ERROR);
       setActiveCamera(undefined);
@@ -226,7 +227,7 @@ const ParitySignerSignatureReader = ({ size = 300, className, onResult, countdow
       )}
 
       <div className={cn('relative bg-shade-40', isCameraPending && 'hidden', className)}>
-        <QrSignatureReader
+        <QrMultiframeSignatureReader
           size={size}
           className={className}
           cameraId={activeCamera?.value}
@@ -274,4 +275,4 @@ const ParitySignerSignatureReader = ({ size = 300, className, onResult, countdow
   );
 };
 
-export default ParitySignerSignatureReader;
+export default MultiframeSignatureReader;

@@ -1,6 +1,6 @@
 import { stringToU8a, u8aToHex } from '@polkadot/util';
 
-import { createFrames, createSignPayload, encodeNumber, getSvgString } from './utils';
+import { createFrames, createSignPayload, encodeNumber, getSvgString, createSubstrateSignPayload } from './utils';
 
 describe('QrCode/QrGenerator/utils', () => {
   test('should encodes 1 correctly', () => {
@@ -23,7 +23,6 @@ describe('QrCode/QrGenerator/utils', () => {
       ),
     ).toEqual(
       '0x' + // prefix
-        '53' + // substrate
         '01' + // sr25519
         '03' + // sign tx
         'f4cd755672a8f9542ca9da4fbf2182e79135d94304002e6a09ffc96fef6e6c4c' + // publickey
@@ -35,7 +34,7 @@ describe('QrCode/QrGenerator/utils', () => {
   test('should encodes frames properly', () => {
     expect(
       createFrames(
-        createSignPayload(
+        createSubstrateSignPayload(
           '5HbgaJEuVN5qGbkhgtuDQANivSWwHXWsC2erP1SQUXgciTVq',
           0,
           '0x12345678',

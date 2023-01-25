@@ -22,7 +22,7 @@ const Transfer = ({ transaction, account, asset, connection }: Props) => {
   const currentAddress = formatAddress(account.accountId || '', connection.addressPrefix);
 
   return (
-    <div className="w-[500px] rounded-2xl bg-shade-2 p-5 flex flex-col items-center m-auto gap-2.5">
+    <div className="w-[550px] rounded-2xl bg-shade-2 p-5 flex flex-col items-center m-auto gap-2.5">
       <div className="bg-white shadow-surface p-5 rounded-2xl w-full">
         <div className="font-semibold text-xl text-neutral mb-5 m-auto w-fit">{t('transferDetails.title')}</div>
         {/* eslint-disable-next-line i18next/no-literal-string */}
