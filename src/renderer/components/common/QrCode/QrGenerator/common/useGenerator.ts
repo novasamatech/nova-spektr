@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { objectSpread } from '@polkadot/util';
 import { xxhashAsHex } from '@polkadot/util-crypto';
+import { Encoder } from 'raptorq';
 
 import { TIMER_INC } from './constants';
 import { createFrames, getSvgString } from './utils';
@@ -17,7 +18,13 @@ type TimerState = {
   timerId: number | null;
 };
 
-const useGenerator = (payload: Uint8Array, skipEncoding: boolean, delay: number, bgColor: string): string | null => {
+const useGenerator = (
+  payload: Uint8Array,
+  skipEncoding: boolean,
+  delay: number,
+  bgColor: string,
+  encoder?: Encoder,
+): string | null => {
   const timerRef = useRef<TimerState>({ timerDelay: delay, timerId: null });
 
   const [{ image }, setFrameState] = useState<FrameState>({
@@ -73,7 +80,7 @@ const useGenerator = (payload: Uint8Array, skipEncoding: boolean, delay: number,
         return state;
       }
 
-      const frames: Uint8Array[] = skipEncoding ? [payload] : createFrames(payload);
+      const frames: Uint8Array[] = skipEncoding ? [payload] : createFrames(payload, encoder);
 
       return {
         frames,

@@ -308,6 +308,10 @@
     "executing": "Выполнение транзакции",
     "formTitle": "Отправить <strong>{ asset }</strong> в сети <strong>{ network }</strong>",
     "incorrectRecipientError": "Пожалуйста, введите корректный адрес получателя",
+    "multiple": {
+      "executing": "Выполнение операций",
+      "transactions": "Транзакции"
+    },
     "networkFee": "Комиссия сети",
     "notEnoughBalanceError": "Недостаточно средств для указанной суммы",
     "notEnoughBalanceForFeeError": "Недостаточно средств для оплаты комиссии",
