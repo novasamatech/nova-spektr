@@ -1,6 +1,7 @@
 import cn from 'classnames';
 import { Children, cloneElement, PropsWithChildren, ReactElement, ReactNode, useEffect } from 'react';
 
+import { HeightClass } from '@renderer/components/ui/Table/common/constants';
 import { Checkbox, Icon } from '@renderer/components/ui';
 import { Alignment, AnyRecord, IndexKey, SortType } from './common/types';
 import { useTableContext } from './TableContext';
@@ -96,12 +97,13 @@ export const TableBody = <T extends AnyRecord>({ children }: BodyProps<T>) => {
 };
 
 type RowProps = {
+  height?: keyof typeof HeightClass;
   selectable?: boolean;
 };
 type _RowProps = {
   dataKey: IndexKey;
 };
-export const TableRow = ({ selectable = true, children, ...props }: PropsWithChildren<RowProps>) => {
+export const TableRow = ({ height = 'md', selectable = true, children, ...props }: PropsWithChildren<RowProps>) => {
   const { sortConfig, selectedKeys, selectRow, excludeKey } = useTableContext();
 
   // eslint-disable-next-line react/prop-types
@@ -115,7 +117,7 @@ export const TableRow = ({ selectable = true, children, ...props }: PropsWithChi
   }, []);
 
   return (
-    <tr className="h-10 border-b border-shade-5 last:border-b-0">
+    <tr className={cn('border-b border-shade-5 last:border-b-0', HeightClass[height])}>
       {selectedKeys && (
         <td className="pr-1 pl-4 w-5">
           <Checkbox
@@ -134,14 +136,18 @@ export const TableRow = ({ selectable = true, children, ...props }: PropsWithChi
   );
 };
 
+type CellProps = {
+  className?: string;
+};
 type _CellProps = {
   align: Alignment;
 };
-export const TableCell = ({ children, ...props }: PropsWithChildren) => {
+export const TableCell = ({ className, children, ...props }: PropsWithChildren<CellProps>) => {
+  // eslint-disable-next-line react/prop-types
   const { align } = props as _CellProps;
 
   return (
-    <td className="px-1 first:pl-4 last:pr-4">
+    <td className={cn('px-1 first:pl-4 last:pr-4', className)}>
       <div className={cn('w-max', align === 'left' ? 'mr-auto' : 'ml-auto')}>{children}</div>
     </td>
   );
