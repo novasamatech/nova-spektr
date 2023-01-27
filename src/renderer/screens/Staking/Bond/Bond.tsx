@@ -24,7 +24,7 @@ const Bond = () => {
   const { connections } = useNetworkContext();
   const params = useParams<{ chainId: ChainId }>();
 
-  const [activeStep, setActiveStep] = useState<Step>(Step.Validators);
+  const [activeStep, setActiveStep] = useState<Step>(Step.InitBond);
   const [_, setValidators] = useState<ValidatorMap>({});
 
   const chainId = params.chainId || ('' as ChainId);
@@ -44,18 +44,16 @@ const Bond = () => {
 
   const onBondResult = () => {
     // TODO: save bond value and selected wallets
-    console.log(123);
+    setActiveStep(Step.Validators);
   };
 
   const onSelectValidators = (validators: ValidatorMap) => {
-    console.log(validators);
     setValidators(validators);
     setActiveStep(Step.ConfirmBond);
   };
 
   const onConfirmResult = () => {
     // TODO: init bond and nominate call
-    console.log(123);
   };
 
   const headerTitle: Record<Step, string> = {
