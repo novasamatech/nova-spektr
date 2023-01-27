@@ -86,7 +86,7 @@ const Balances = () => {
         <h1 className="font-semibold text-2xl text-neutral mt-5 px-5">{t('balances.title')}</h1>
 
         <div className="overflow-y-scroll">
-          <div className="flex flex-col gap-y-5 w-[900px] p-5 mb-28 mx-auto bg-shade-2 rounded-2lg">
+          <section className="flex flex-col gap-y-5 w-[900px] p-5 mb-28 mx-auto bg-shade-2 rounded-2lg">
             <div className="flex justify-between items-center mb-5">
               <Input
                 wrapperClass="!bg-shade-5 w-[300px]"
@@ -124,7 +124,7 @@ const Balances = () => {
                 </div>
               </ul>
             )}
-          </div>
+          </section>
         </div>
       </div>
 
