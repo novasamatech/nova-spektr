@@ -31,7 +31,7 @@ export const useTransaction = (): ITransactionService => {
     (args: Record<string, any>, info: BaseTxInfo, options: OptionsWithMeta) => UnsignedTransaction
   > = {
     [TransactionType.TRANSFER]: (transaction, info, options) => {
-      return methods.balances.transferKeepAlive(
+      return methods.balances.transfer(
         {
           dest: transaction.args.dest,
           value: transaction.args.value,

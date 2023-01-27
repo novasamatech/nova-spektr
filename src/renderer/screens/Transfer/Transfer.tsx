@@ -334,7 +334,7 @@ const Transfer = () => {
                 </div>
                 <div className="flex flex-col items-center gap-y-1 text-xs font-semibold text-primary">
                   <a className="flex items-center" href={TROUBLESHOOTING_URL} rel="noopener noreferrer" target="_blank">
-                    <Icon className="mr-1" as="img" name="globe" size={18} /> {t('signing.troubleshootingLink')}
+                    <Icon className="mr-1" name="globe" size={18} /> {t('signing.troubleshootingLink')}
                   </a>
                   <a
                     className="flex items-center"
@@ -342,7 +342,7 @@ const Transfer = () => {
                     rel="noopener noreferrer"
                     target="_blank"
                   >
-                    <Icon className="mr-1" as="img" name="globe" size={18} /> {t('signing.metadataPortalLink')}
+                    <Icon className="mr-1" name="globe" size={18} /> {t('signing.metadataPortalLink')}
                   </a>
                 </div>
                 {txPayload && countdown > 0 ? (
