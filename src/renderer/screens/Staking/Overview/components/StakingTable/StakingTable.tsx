@@ -39,7 +39,7 @@ const StakingTable = ({
   const { t } = useI18n();
 
   return (
-    <Table className="mt-5" by="address" dataSource={stakeInfo} selectedKeys={selectedStakes} onSelect={selectStaking}>
+    <Table className="my-5" by="address" dataSource={stakeInfo} selectedKeys={selectedStakes} onSelect={selectStaking}>
       <Table.Header>
         <Table.Column dataKey="accountName" align="left">
           {t('staking.overview.accountTableHeader')}

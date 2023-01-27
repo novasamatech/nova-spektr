@@ -298,15 +298,21 @@
       "subtitle": "Отвязать токены"
     },
     "validators": {
+      "blockedPopoverSubtitle": "Номинаторы больше не принимаются",
+      "blockedPopoverTitle": "Заблокирован",
       "continueButton": "Продолжить с выбранными: {selected}  (макс. { max })",
       "filterButton": "Фильтр",
       "filterByIdentity": "Имеют identity",
       "filterNotOversubscribed": "Не перегружены",
       "filterNotSlashed": "Не порезаны",
+      "oversubPopoverSubtitle": "Валидатор перегружен номинаторами",
+      "oversubPopoverTitle": "Перегрузка",
       "ownStakeTableHeader": "Собственный стейк",
       "rewardsTableHeader": "Награды (APY)",
       "searchPlaceholder": "Искать по адресу или имени",
       "selectValidatorButton": "Выберите валидаторов...",
+      "slashedPopoverSubtitle": "Недавно валидатор был порезан",
+      "slashedPopoverTitle": "Порезан",
       "subtitle": "Валидаторы",
       "totalStakeTableHeader": "Общий стейк",
       "validatorsTableHeader": "Валидаторы"
