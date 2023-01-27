@@ -39,12 +39,12 @@ const StakingTable = ({
   const { t } = useI18n();
 
   return (
-    <Table className="mt-5" by="address" dataSource={stakeInfo} selectedKeys={selectedStakes} onSelect={selectStaking}>
+    <Table className="my-5" by="address" dataSource={stakeInfo} selectedKeys={selectedStakes} onSelect={selectStaking}>
       <Table.Header>
         <Table.Column dataKey="accountName" align="left">
           {t('staking.overview.accountTableHeader')}
         </Table.Column>
-        <Table.Column dataKey="totalReward" width={150} sortable>
+        <Table.Column dataKey="totalReward" width={150}>
           {t('staking.overview.rewardsTableHeader')}
         </Table.Column>
         <Table.Column dataKey="totalStake" width={150} sortable defaultSort="desc">

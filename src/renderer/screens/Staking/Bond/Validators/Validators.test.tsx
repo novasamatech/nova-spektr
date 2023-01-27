@@ -2,11 +2,8 @@ import { ApiPromise } from '@polkadot/api';
 import { act, render, screen } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 
-import { Address, Balance, Checkbox } from '@renderer/components/ui';
 import { Asset } from '@renderer/domain/asset';
 import Validators from './Validators';
-
-jest.mock('@renderer/components/ui');
 
 jest.mock('@renderer/context/I18nContext', () => ({
   useI18n: jest.fn().mockReturnValue({
@@ -23,6 +20,10 @@ jest.mock('@renderer/services/staking/validatorsService', () => ({
         apy: 50.87,
         ownStake: '23611437564986527',
         totalStake: '23728297476615343',
+        identity: {
+          subName: 'subName',
+          parent: { name: 'parent' },
+        },
       },
     })),
   }),
@@ -35,12 +36,6 @@ jest.mock('@renderer/services/staking/eraService', () => ({
 }));
 
 describe('screens/Bond/Validators', () => {
-  beforeAll(() => {
-    (Checkbox as jest.Mock).mockImplementation(({ children }: any) => <span>{children}</span>);
-    (Address as jest.Mock).mockImplementation(({ address }: any) => <span>{address}</span>);
-    (Balance as jest.Mock).mockImplementation(({ value }: any) => <span>{value}</span>);
-  });
-
   afterEach(() => {
     jest.clearAllMocks();
   });
@@ -58,22 +53,24 @@ describe('screens/Bond/Validators', () => {
       render(<Validators api={api} chainId="0x123" asset={asset} onResult={() => {}} />);
     });
 
-    const validators = screen.getByRole('listitem');
-    const address = screen.getByText('5CFPcUJgYgWryPaV1aYjSbTpbTLu42V32Ytw1L9rfoMAsfGh');
-    const apy = screen.getByText('50.87%');
-    const ownStake = screen.getByText('23611437564986527');
-    const totalStake = screen.getByText('23728297476615343');
-    expect(validators).toBeInTheDocument();
-    expect(address).toBeInTheDocument();
-    expect(apy).toBeInTheDocument();
-    expect(ownStake).toBeInTheDocument();
-    expect(totalStake).toBeInTheDocument();
+    const table = screen.getByRole('table');
+    const identity = screen.getByText('parent/subName');
+    const stakes = screen.getAllByText('assetBalance.number');
+    const continueButton = screen.getByRole('button', { name: 'staking.validators.selectValidatorButton' });
+    expect(table).toBeInTheDocument();
+    expect(identity).toBeInTheDocument();
+    expect(stakes).toHaveLength(2);
+    expect(continueButton).toBeInTheDocument();
   });
 
   test('should render loading', () => {
     render(<Validators onResult={() => {}} />, { wrapper: MemoryRouter });
 
-    const title = screen.getByText('LOADING');
-    expect(title).toBeInTheDocument();
+    const table = screen.getByRole('table');
+    const rows = screen.getAllByRole('row');
+    const continueButton = screen.queryByRole('button', { name: 'staking.validators.selectValidatorButton' });
+    expect(table).toBeInTheDocument();
+    expect(rows).toHaveLength(11);
+    expect(continueButton).not.toBeInTheDocument();
   });
 });

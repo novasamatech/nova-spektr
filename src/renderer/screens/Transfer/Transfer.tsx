@@ -251,19 +251,19 @@ const Transfer = () => {
   };
 
   return (
-    <div className="h-full pb-5 overflow-auto">
-      <div className="flex items-center gap-x-2.5 mb-9">
+    <div className="h-full flex flex-col gap-y-9">
+      <div className="flex items-center gap-x-2.5 mt-5 px-5">
         <ButtonBack onCustomReturn={handleBackButton} />
         <p className="font-semibold text-2xl text-neutral-variant">{t('balances.title')}</p>
         <p className="font-semibold text-2xl text-neutral">/</p>
         <h1 className="font-semibold text-2xl text-neutral">{t('transfer.title')}</h1>
       </div>
 
-      <div>
+      <div className="overflow-y-auto">
         {currentStep === Steps.CREATING && readyToCreate && (
           <div className="w-[500px] rounded-2xl bg-shade-2 p-5 flex flex-col items-center m-auto gap-2.5">
             {activeAccountsOptions.length > 1 ? (
-              <div className="w-full mb-2.5 p-5 bg-white">
+              <div className="w-full mb-2.5 p-5 bg-white rounded-2lg shadow-surface">
                 <Dropdown
                   weight="lg"
                   placeholder={t('receive.selectWalletPlaceholder')}
@@ -332,9 +332,9 @@ const Transfer = () => {
                     </div>
                   )}
                 </div>
-                <div className="flex flex-col items-center text-xs font-semibold text-primary">
+                <div className="flex flex-col items-center gap-y-1 text-xs font-semibold text-primary">
                   <a className="flex items-center" href={TROUBLESHOOTING_URL} rel="noopener noreferrer" target="_blank">
-                    <Icon as="img" name="globe" /> {t('signing.troubleshootingLink')}
+                    <Icon className="mr-1" name="globe" size={18} /> {t('signing.troubleshootingLink')}
                   </a>
                   <a
                     className="flex items-center"
@@ -342,7 +342,7 @@ const Transfer = () => {
                     rel="noopener noreferrer"
                     target="_blank"
                   >
-                    <Icon as="img" name="globe" /> {t('signing.metadataPortalLink')}
+                    <Icon className="mr-1" name="globe" size={18} /> {t('signing.metadataPortalLink')}
                   </a>
                 </div>
                 {txPayload && countdown > 0 ? (

@@ -1,4 +1,4 @@
-.shimmer {
+.spektr-shimmer {
   background: linear-gradient(
     90deg,
     rgba(203, 203, 203) 0%,
@@ -8,10 +8,10 @@
     rgba(203, 203, 203) 100%
   );
   background-size: 1400px 100%;
-  animation: shimmer 2.2s linear infinite forwards;
+  animation: spektr-slide 2.2s linear infinite forwards;
 }
 
-@keyframes shimmer {
+@keyframes spektr-slide {
   from {
     background-position: -1400px 0;
   }

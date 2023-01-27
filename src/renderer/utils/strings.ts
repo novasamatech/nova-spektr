@@ -1,3 +1,5 @@
+import { Identity } from '@renderer/domain/identity';
+
 /**
  * Get short address representation
  * `5DXYNRXmNmFLFxxUjMXSzKh3vqHRDfDGGbY3BnSdQcta1SkX --> 5DXYNR...ta1SkX`
@@ -48,4 +50,15 @@ export const copyToClipboard = async (text = ''): Promise<void> => {
  */
 export const isStringsMatchQuery = (query: string, args: string[]): boolean => {
   return args.reduce((acc, word) => acc.concat(word.toLowerCase()), '').includes(query.toLowerCase());
+};
+
+/**
+ * Get full identity or just part of it
+ * @param identity validator's identity
+ * @return {String}
+ */
+export const getComposedIdentity = (identity?: Identity): string => {
+  if (!identity) return '';
+
+  return identity.subName ? `${identity.parent.name}/${identity.subName}` : identity.parent.name;
 };
