@@ -32,7 +32,7 @@ const Overview = () => {
 
   return (
     <div className="h-full flex flex-col gap-y-9">
-      <h1 className="font-semibold text-2xl text-neutral">{t('settings.title')}</h1>
+      <h1 className="font-semibold text-2xl text-neutral mt-5 px-5">{t('settings.title')}</h1>
 
       <section className="flex flex-col items-center mx-auto w-full max-w-[740px] p-5 rounded-2lg bg-shade-2">
         <ul className="flex flex-col gap-y-2.5 w-full" data-testid="settings">

@@ -10,7 +10,7 @@ import Paths from '@renderer/routes/paths';
 import ConfirmBond from '@renderer/screens/Staking/Bond/ConfirmBond/ConfirmBond';
 import InitBond from '@renderer/screens/Staking/Bond/InitBond/InitBond';
 import Validators from '@renderer/screens/Staking/Bond/Validators/Validators';
-import { Validator } from '@renderer/domain/validator';
+import { ValidatorMap } from '@renderer/services/staking/common/types';
 
 const enum Step {
   InitBond,
@@ -22,13 +22,16 @@ const Bond = () => {
   const { t } = useI18n();
   const navigate = useNavigate();
   const { connections } = useNetworkContext();
-  const { chainId } = useParams<{ chainId: ChainId }>();
+  const params = useParams<{ chainId: ChainId }>();
 
-  const [activeStep, setActiveStep] = useState<Step>(Step.Validators);
-  const [_, setValidators] = useState<Validator[]>([]);
+  const [activeStep, setActiveStep] = useState<Step>(Step.InitBond);
+  const [_, setValidators] = useState<ValidatorMap>({});
 
-  const api = chainId && connections[chainId]?.api;
-  const asset = chainId && connections[chainId]?.assets.find((asset) => asset.staking === StakingType.RELAYCHAIN);
+  const chainId = params.chainId || ('' as ChainId);
+  const api = connections[chainId]?.api;
+  const explorers = connections[chainId]?.explorers;
+  const addressPrefix = connections[chainId]?.addressPrefix;
+  const asset = connections[chainId]?.assets.find((asset) => asset.staking === StakingType.RELAYCHAIN);
 
   const goToPrevStep = () => {
     if (activeStep === Step.InitBond) {
@@ -41,17 +44,16 @@ const Bond = () => {
 
   const onBondResult = () => {
     // TODO: save bond value and selected wallets
-    console.log(123);
+    setActiveStep(Step.Validators);
   };
 
-  const onSelectValidators = (validators: Validator[]) => {
+  const onSelectValidators = (validators: ValidatorMap) => {
     setValidators(validators);
     setActiveStep(Step.ConfirmBond);
   };
 
   const onConfirmResult = () => {
     // TODO: init bond and nominate call
-    console.log(123);
   };
 
   const headerTitle: Record<Step, string> = {
@@ -62,7 +64,7 @@ const Bond = () => {
 
   return (
     <div className="flex flex-col h-full relative">
-      <div className="flex items-center gap-x-2.5 mb-9">
+      <div className="flex items-center gap-x-2.5 mb-9 mt-5 px-5">
         <ButtonBack onCustomReturn={goToPrevStep} />
         <p className="font-semibold text-2xl text-neutral-variant">{t('staking.title')}</p>
         <p className="font-semibold text-2xl text-neutral">/</p>
@@ -71,7 +73,14 @@ const Bond = () => {
 
       {activeStep === Step.InitBond && <InitBond api={api} chainId={chainId} onResult={onBondResult} />}
       {activeStep === Step.Validators && (
-        <Validators api={api} chainId={chainId} asset={asset} onResult={onSelectValidators} />
+        <Validators
+          api={api}
+          chainId={chainId}
+          asset={asset}
+          explorers={explorers}
+          addressPrefix={addressPrefix}
+          onResult={onSelectValidators}
+        />
       )}
       {activeStep === Step.ConfirmBond && <ConfirmBond api={api} chainId={chainId} onResult={onConfirmResult} />}
     </div>

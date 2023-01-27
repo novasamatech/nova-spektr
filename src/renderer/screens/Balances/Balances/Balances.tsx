@@ -82,46 +82,50 @@ const Balances = () => {
 
   return (
     <>
-      <div className="h-full flex flex-col">
-        <h1 className="font-semibold text-2xl text-neutral mb-9">{t('balances.title')}</h1>
+      <div className="h-full flex flex-col gap-y-9">
+        <h1 className="font-semibold text-2xl text-neutral mt-5 px-5">{t('balances.title')}</h1>
 
-        <div className="flex justify-between items-center mb-5">
-          <Input
-            className="w-[300px]"
-            prefixElement={<Icon name="search" className="w-5 h-5" />}
-            value={query}
-            placeholder={t('balances.searchPlaceholder')}
-            onChange={(e) => setQuery(e.target.value)}
-          />
-          <div className="text-sm text-neutral font-semibold flex gap-2.5">
-            <Switch checked={hideZeroBalance} onChange={updateHideZeroBalance}>
-              {t('balances.hideZeroBalancesLabel')}
-            </Switch>
-          </div>
-        </div>
-
-        {publicKeys.length > 0 && (
-          <ul className="flex-1 overflow-y-auto">
-            {sortedChains.map((chain) => (
-              <NetworkBalances
-                key={chain.chainId}
-                hideZeroBalance={hideZeroBalance}
-                searchSymbolOnly={searchSymbolOnly}
-                query={query?.toLowerCase() || ''}
-                chain={chain}
-                publicKeys={publicKeys}
-                canMakeActions={checkCanMakeActions(chain.chainId)}
-                onReceiveClick={onReceive(chain)}
+        <div className="overflow-y-scroll">
+          <section className="flex flex-col gap-y-5 w-[900px] p-5 mb-28 mx-auto bg-shade-2 rounded-2lg">
+            <div className="flex justify-between items-center mb-5">
+              <Input
+                wrapperClass="!bg-shade-5 w-[300px]"
+                prefixElement={<Icon name="search" className="w-5 h-5" />}
+                value={query}
+                placeholder={t('balances.searchPlaceholder')}
+                onChange={(e) => setQuery(e.target.value)}
               />
-            ))}
-
-            <div className="hidden only:flex w-full h-full flex-col items-center justify-center">
-              <Icon name="noResults" size={380} />
-              <p className="text-neutral text-3xl font-bold">{t('balances.emptyStateLabel')}</p>
-              <p className="text-neutral-variant text-base font-normal">{t('balances.emptyStateDescription')}</p>
+              <div className="text-sm text-neutral font-semibold flex gap-2.5">
+                <Switch checked={hideZeroBalance} onChange={updateHideZeroBalance}>
+                  {t('balances.hideZeroBalancesLabel')}
+                </Switch>
+              </div>
             </div>
-          </ul>
-        )}
+
+            {publicKeys.length > 0 && (
+              <ul className="flex-1">
+                {sortedChains.map((chain) => (
+                  <NetworkBalances
+                    key={chain.chainId}
+                    hideZeroBalance={hideZeroBalance}
+                    searchSymbolOnly={searchSymbolOnly}
+                    query={query?.toLowerCase() || ''}
+                    chain={chain}
+                    publicKeys={publicKeys}
+                    canMakeActions={checkCanMakeActions(chain.chainId)}
+                    onReceiveClick={onReceive(chain)}
+                  />
+                ))}
+
+                <div className="hidden only:flex w-full h-full flex-col items-center justify-center">
+                  <Icon name="noResults" size={380} />
+                  <p className="text-neutral text-3xl font-bold">{t('balances.emptyStateLabel')}</p>
+                  <p className="text-neutral-variant text-base font-normal">{t('balances.emptyStateDescription')}</p>
+                </div>
+              </ul>
+            )}
+          </section>
+        </div>
       </div>
 
       <ReceiveModal data={receiveData} isOpen={isReceiveOpen} onClose={toggleReceive} />

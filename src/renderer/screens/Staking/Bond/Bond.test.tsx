@@ -1,4 +1,4 @@
-import { render } from '@testing-library/react';
+import { render, screen, act } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 
 import { ConnectionStatus } from '@renderer/domain/connection';
@@ -24,8 +24,48 @@ jest.mock('@renderer/context/NetworkContext', () => ({
   })),
 }));
 
+const mockButton = (text: string, callback: () => void) => (
+  <button type="button" onClick={callback}>
+    {text}
+  </button>
+);
+
+jest.mock('./InitBond/InitBond', () => ({ onResult }: any) => {
+  return mockButton('init', onResult);
+});
+jest.mock('./Validators/Validators', () => ({ onResult }: any) => {
+  return mockButton('validators', onResult);
+});
+jest.mock('./ConfirmBond/ConfirmBond', () => ({ onResult }: any) => {
+  return mockButton('confirm', onResult);
+});
+
 describe('screens/Bond/ConfirmBond', () => {
   test('should render component', () => {
     render(<Bond />, { wrapper: MemoryRouter });
+
+    const title = screen.getByText('staking.title');
+    const subTitle = screen.getByText('staking.bond.initBondSubtitle');
+    const initBond = screen.getByText('init');
+    expect(title).toBeInTheDocument();
+    expect(subTitle).toBeInTheDocument();
+    expect(initBond).toBeInTheDocument();
+  });
+
+  test('should change bond process state', async () => {
+    render(<Bond />, { wrapper: MemoryRouter });
+
+    const initBond = screen.getByRole('button', { name: 'init' });
+    await act(async () => initBond.click());
+
+    const validatorsBond = screen.getByRole('button', { name: 'validators' });
+    expect(validatorsBond).toBeInTheDocument();
+    expect(initBond).not.toBeInTheDocument();
+
+    await act(async () => validatorsBond.click());
+
+    const confirmBond = screen.getByRole('button', { name: 'confirm' });
+    expect(validatorsBond).not.toBeInTheDocument();
+    expect(confirmBond).toBeInTheDocument();
   });
 });
