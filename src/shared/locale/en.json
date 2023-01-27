@@ -298,7 +298,24 @@
       "subtitle": "Unbond"
     },
     "validators": {
-      "subtitle": "Validators"
+      "blockedPopoverSubtitle": "Nominators no longer accepted",
+      "blockedPopoverTitle": "Blocked",
+      "continueButton": "Continue with selected: {selected}  (max { max })",
+      "filterButton": "Filter",
+      "filterByIdentity": "Having on-chain identity",
+      "filterNotOversubscribed": "Not oversubscribed",
+      "filterNotSlashed": "Not slashed",
+      "oversubPopoverSubtitle": "Validator is oversubscribed",
+      "oversubPopoverTitle": "Oversubscribed",
+      "ownStakeTableHeader": "Own stake",
+      "rewardsTableHeader": "Rewards (APY)",
+      "searchPlaceholder": "Search by address or name",
+      "selectValidatorButton": "Select at least one validator...",
+      "slashedPopoverSubtitle": "Validator has been slashed recently",
+      "slashedPopoverTitle": "Slashed",
+      "subtitle": "Validators",
+      "totalStakeTableHeader": "Total stake",
+      "validatorsTableHeader": "Validators"
     }
   },
   "transfer": {

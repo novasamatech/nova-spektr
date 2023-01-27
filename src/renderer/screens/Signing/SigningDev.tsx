@@ -156,97 +156,99 @@ const Signing = () => {
   };
 
   return (
-    <div className="h-full flex flex-col">
-      <h1 className="font-semibold text-2xl text-neutral mb-9">{t('signing.title')}</h1>
+    <div className="h-full flex flex-col gap-y-9">
+      <h1 className="font-semibold text-2xl text-neutral mt-5 px-5">{t('signing.title')}</h1>
 
-      <div className="w-[550px] rounded-2xl bg-shade-2 p-5 flex flex-col items-center m-auto gap-2.5 overflow-auto">
-        {currentStep === Steps.SCANNING && (
-          <div className="flex flex-col gap-2.5 w-full">
-            <div className="bg-white p-5 shadow-surface rounded-2xl flex flex-col items-center gap-5 w-full">
-              <div className="text-neutral-variant text-base font-semibold">
-                {t('Send some WND between selected accounts')}
+      <div className="overflow-y-auto">
+        <section className="w-[550px] rounded-2xl bg-shade-2 p-5 flex flex-col items-center m-auto gap-2.5">
+          {currentStep === Steps.SCANNING && (
+            <div className="flex flex-col gap-2.5 w-full">
+              <div className="bg-white p-5 shadow-surface rounded-2xl flex flex-col items-center gap-5 w-full">
+                <div className="text-neutral-variant text-base font-semibold">
+                  {t('Send some WND between selected accounts')}
+                </div>
+
+                {bulkTransactions?.length && encoder ? (
+                  <>
+                    <div className="w-[220px] h-[220px]">
+                      <QrMultiframeGenerator payload={bulkTransactions} size={200} encoder={encoder} />
+                    </div>
+
+                    {countdown > 0 && (
+                      <div className="flex items-center uppercase font-normal text-xs gap-1.25">
+                        {t('signing.qrCountdownTitle')}
+                        <div className="rounded-md bg-success text-white py-0.5 px-1.5">
+                          {secondsToMinutes(countdown)}
+                        </div>
+                      </div>
+                    )}
+                  </>
+                ) : (
+                  <div className="w-[220px] h-[220px] rounded-2lg bg-shade-20 animate-pulse" />
+                )}
               </div>
 
-              {bulkTransactions?.length && encoder ? (
-                <>
-                  <div className="w-[220px] h-[220px]">
-                    <QrMultiframeGenerator payload={bulkTransactions} size={200} encoder={encoder} />
-                  </div>
-
-                  {countdown > 0 && (
-                    <div className="flex items-center uppercase font-normal text-xs gap-1.25">
-                      {t('signing.qrCountdownTitle')}
-                      <div className="rounded-md bg-success text-white py-0.5 px-1.5">
-                        {secondsToMinutes(countdown)}
-                      </div>
-                    </div>
-                  )}
-                </>
-              ) : (
-                <div className="w-[220px] h-[220px] rounded-2lg bg-shade-20 animate-pulse" />
-              )}
-            </div>
-
-            <div className="flex flex-col items-center text-xs font-semibold text-primary">
-              <a className="flex items-center" href={TROUBLESHOOTING_URL} rel="noopener noreferrer" target="_blank">
-                <Icon as="img" name="globe" /> {t('signing.troubleshootingLink')}
-              </a>
-              {currentConnection && (
-                <a
-                  className="flex items-center"
-                  href={getMetadataPortalUrl(currentConnection.chainId)}
-                  rel="noopener noreferrer"
-                  target="_blank"
-                >
-                  <Icon as="img" name="globe" /> {t('signing.metadataPortalLink')}
+              <div className="flex flex-col gap-y-1 items-center text-xs font-semibold text-primary">
+                <a className="flex items-center" href={TROUBLESHOOTING_URL} rel="noopener noreferrer" target="_blank">
+                  <Icon className="mr-1" name="globe" size={18} /> {t('signing.troubleshootingLink')}
                 </a>
-              )}
-            </div>
+                {currentConnection && (
+                  <a
+                    className="flex items-center"
+                    href={getMetadataPortalUrl(currentConnection.chainId)}
+                    rel="noopener noreferrer"
+                    target="_blank"
+                  >
+                    <Icon className="mr-1" name="globe" size={18} /> {t('signing.metadataPortalLink')}
+                  </a>
+                )}
+              </div>
 
-            <Button
-              className="w-fit m-auto"
-              variant="fill"
-              pallet="primary"
-              weight="lg"
-              onClick={() => setCurrentStep(Steps.SIGNING)}
-            >
-              {t('signing.continueButton')}
-            </Button>
-          </div>
-        )}
-
-        {currentStep === Steps.SIGNING && (
-          <div className="bg-white shadow-surface rounded-2xl flex flex-col items-center gap-5 w-full">
-            <div className="my-4 text-neutral-variant text-base font-semibold">{t('signing.scanSignatureTitle')}</div>
-
-            <div className="h-[460px]">
-              <MultiframeSignatureReader
-                className="w-full rounded-2lg"
-                countdown={countdown}
-                size={460}
-                onResult={(signatures) => {
-                  sign(signatures);
-                }}
-              />
-            </div>
-            {countdown === 0 && (
               <Button
+                className="w-fit m-auto"
                 variant="fill"
                 pallet="primary"
                 weight="lg"
-                onClick={() => {
-                  setCurrentStep(Steps.SCANNING);
-                }}
+                onClick={() => setCurrentStep(Steps.SIGNING)}
               >
-                {t('signing.generateNewQrButton')}
+                {t('signing.continueButton')}
               </Button>
-            )}
-          </div>
-        )}
+            </div>
+          )}
 
-        {currentStep === Steps.EXECUTING && (
-          <Progress progress={progress + failedTxs.length} max={unsignedTransactions.length} />
-        )}
+          {currentStep === Steps.SIGNING && (
+            <div className="bg-white shadow-surface rounded-2xl flex flex-col items-center gap-5 w-full">
+              <div className="my-4 text-neutral-variant text-base font-semibold">{t('signing.scanSignatureTitle')}</div>
+
+              <div className="h-[460px]">
+                <MultiframeSignatureReader
+                  className="w-full rounded-2lg"
+                  countdown={countdown}
+                  size={460}
+                  onResult={(signatures) => {
+                    sign(signatures);
+                  }}
+                />
+              </div>
+              {countdown === 0 && (
+                <Button
+                  variant="fill"
+                  pallet="primary"
+                  weight="lg"
+                  onClick={() => {
+                    setCurrentStep(Steps.SCANNING);
+                  }}
+                >
+                  {t('signing.generateNewQrButton')}
+                </Button>
+              )}
+            </div>
+          )}
+
+          {currentStep === Steps.EXECUTING && (
+            <Progress progress={progress + failedTxs.length} max={unsignedTransactions.length} />
+          )}
+        </section>
       </div>
     </div>
   );

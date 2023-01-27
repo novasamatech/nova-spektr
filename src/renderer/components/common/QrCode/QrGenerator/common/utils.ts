@@ -51,18 +51,16 @@ export const createMultipleSignPayload = (transactions: Uint8Array): Uint8Array 
 export const createFrames = (input: Uint8Array, encoder?: Encoder): Uint8Array[] => {
   if (encoder) {
     // raptorq encoder https://paritytech.github.io/parity-signer/development/UOS.html#raptorq-multipart-payload
-    let res = encoder.encode_with_packet_size(Math.trunc(input.length / 128));
-
-    return res;
+    return encoder.encode_with_packet_size(Math.trunc(input.length / 128));
   }
 
   // legacy encoder https://paritytech.github.io/parity-signer/development/UOS.html#legacy-multipart-payload
+  let index = 0;
   const frames = [];
-  let idx = 0;
-  while (idx < input.length) {
-    frames.push(input.subarray(idx, idx + FRAME_SIZE));
+  while (index < input.length) {
+    frames.push(input.subarray(index, index + FRAME_SIZE));
 
-    idx += FRAME_SIZE;
+    index += FRAME_SIZE;
   }
 
   return frames.map(
