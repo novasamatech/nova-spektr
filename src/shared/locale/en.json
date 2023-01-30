@@ -285,6 +285,8 @@
       "noActiveWalletsLabel": "No wallet selected",
       "noResultsDescription": "Please try another filter parameters",
       "noResultsLabel": "No staking found",
+      "noValidatorsDescription": "This account has not nominated any validators yet",
+      "noValidatorsLabel": "No validators nominated",
       "rewardsTableHeader": "Total rewards",
       "searchPlaceholder": "Search by account name",
       "stakeTableHeader": "Staked",

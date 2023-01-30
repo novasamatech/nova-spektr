@@ -285,6 +285,8 @@
       "noActiveWalletsLabel": "Нет выбранных кошельков",
       "noResultsDescription": "Пожалуйста, попробуйте другие параметры фильтрации",
       "noResultsLabel": "Сттейкинги не найдены",
+      "noValidatorsDescription": "Аккаунт еще не номинировал валидаторов",
+      "noValidatorsLabel": "Валидаторы не наминированы",
       "rewardsTableHeader": "Общая награда",
       "searchPlaceholder": "Искать по имени кошелька",
       "stakeTableHeader": "Стейк",
