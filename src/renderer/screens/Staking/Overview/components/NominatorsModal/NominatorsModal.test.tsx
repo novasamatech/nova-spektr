@@ -65,6 +65,15 @@ describe('screens/Staking/Overview/NominatorsModal', () => {
     expect(items).toBeInTheDocument();
     expect(address).toBeInTheDocument();
   });
+
+  test('should render no results', () => {
+    render(<NominatorsModal isOpen elected={[]} notElected={[]} onClose={() => {}} />);
+
+    const label = screen.getByText('staking.overview.noValidatorsLabel');
+    const description = screen.getByText('staking.overview.noValidatorsDescription');
+    expect(label).toBeInTheDocument();
+    expect(description).toBeInTheDocument();
+  });
 });
 
 export {};
