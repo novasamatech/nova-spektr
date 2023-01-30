@@ -1,8 +1,7 @@
 import cn from 'classnames';
 import { KeyboardEvent, MouseEvent } from 'react';
 
-import { Balance as BalanceValue, Button, ButtonLink, Icon } from '@renderer/components/ui';
-import Shimmering from '@renderer/components/ui/Shimmering/Shimmering';
+import { Balance as BalanceValue, Button, ButtonLink, Icon, Shimmering } from '@renderer/components/ui';
 import { useI18n } from '@renderer/context/I18nContext';
 import { Asset } from '@renderer/domain/asset';
 import { Balance } from '@renderer/domain/balance';

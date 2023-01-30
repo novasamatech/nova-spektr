@@ -1,6 +1,5 @@
 import { Explorers } from '@renderer/components/common';
-import { Balance, Icon, Identicon, Table } from '@renderer/components/ui';
-import Shimmering from '@renderer/components/ui/Shimmering/Shimmering';
+import { Balance, Icon, Identicon, Table, Shimmering } from '@renderer/components/ui';
 import { useI18n } from '@renderer/context/I18nContext';
 import { Asset } from '@renderer/domain/asset';
 import { Explorer } from '@renderer/domain/chain';

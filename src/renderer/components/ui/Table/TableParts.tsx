@@ -6,11 +6,14 @@ import { Checkbox, Icon } from '@renderer/components/ui';
 import { Alignment, AnyRecord, IndexKey, SortType } from './common/types';
 import { useTableContext } from './TableContext';
 
-export const TableHeader = ({ children }: PropsWithChildren) => {
+type HeaderProps = {
+  className?: string;
+};
+export const TableHeader = ({ className, children }: PropsWithChildren<HeaderProps>) => {
   const { allRowsSelected, selectedKeys, selectAll } = useTableContext();
 
   return (
-    <thead className="bg-white border-b border-shade-5">
+    <thead className={cn('bg-white border-b border-shade-5', className)}>
       {selectedKeys ? (
         <tr className="h-10">
           <th className="pl-4 pr-1 w-5 rounded-tl-2lg">

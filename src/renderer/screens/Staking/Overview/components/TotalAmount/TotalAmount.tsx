@@ -1,7 +1,6 @@
 import { BN, BN_ZERO } from '@polkadot/util';
 
-import { Balance } from '@renderer/components/ui';
-import Shimmering from '@renderer/components/ui/Shimmering/Shimmering';
+import { Balance, Shimmering } from '@renderer/components/ui';
 import { useI18n } from '@renderer/context/I18nContext';
 import { Asset } from '@renderer/domain/asset';
 import { AccountID } from '@renderer/domain/shared-kernel';

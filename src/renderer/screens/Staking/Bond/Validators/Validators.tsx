@@ -2,20 +2,15 @@ import { ApiPromise } from '@polkadot/api';
 import cn from 'classnames';
 import { useEffect, useState } from 'react';
 
-import { Explorers } from '@renderer/components/common';
-import { Balance, Button, Icon, Identicon, Input, Popover, Table } from '@renderer/components/ui';
-import Shimmering from '@renderer/components/ui/Shimmering/Shimmering';
+import { ValidatorsTable } from '@renderer/components/common';
+import { Button, Icon, Input } from '@renderer/components/ui';
 import { useI18n } from '@renderer/context/I18nContext';
 import { Asset } from '@renderer/domain/asset';
 import { Explorer } from '@renderer/domain/chain';
 import { AccountID, ChainId } from '@renderer/domain/shared-kernel';
-import { Validator } from '@renderer/domain/validator';
 import { ValidatorMap } from '@renderer/services/staking/common/types';
 import { useEra } from '@renderer/services/staking/eraService';
 import { useValidators } from '@renderer/services/staking/validatorsService';
-import { getComposedIdentity, getShortAddress } from '@renderer/utils/strings';
-
-const VALIDATORS_SKELETON = Array.from({ length: 10 }, (_, index) => ({ address: index.toString() }));
 
 type Props = {
   api?: ApiPromise;
@@ -79,7 +74,7 @@ const Validators = ({ api, chainId, asset, explorers, addressPrefix, onResult }:
     onResult(finalValidators);
   };
 
-  const validatorsLoading = !api || !chainId || !maxValidators || !asset;
+  const validatorsLoading = !api || !chainId || !maxValidators;
   const validatorsAreSelected = selectedValidators.length > 0;
   const nextStepDisabled = selectedValidators.length === 0 || selectedValidators.length > maxValidators;
 
@@ -103,109 +98,15 @@ const Validators = ({ api, chainId, asset, explorers, addressPrefix, onResult }:
           {/*/>*/}
         </div>
 
-        <Table
-          by="address"
-          dataSource={validatorsLoading ? VALIDATORS_SKELETON : validatorList}
-          selectedKeys={selectedValidators}
-          onSelect={validatorsLoading ? undefined : setSelectedValidators}
-        >
-          <Table.Header>
-            <Table.Column dataKey="address" align="left">
-              <div className="flex items-center gap-x-1">
-                {t('staking.validators.validatorsTableHeader')}
-                {validatorsLoading ? (
-                  <Shimmering width={20} height={10} />
-                ) : (
-                  <span className="px-1.25 py-1 rounded-md bg-shade-2 text-shade-40">{validatorList.length}</span>
-                )}
-              </div>
-            </Table.Column>
-            <Table.Column dataKey="ownStake" width={150}>
-              {t('staking.validators.ownStakeTableHeader')}
-            </Table.Column>
-            <Table.Column dataKey="totalStake" width={150} sortable>
-              {t('staking.validators.totalStakeTableHeader')}
-            </Table.Column>
-            <Table.Column dataKey="actions" width={50} />
-          </Table.Header>
-          <Table.Body<Validator>>
-            {({ address, identity, ownStake, totalStake, oversubscribed, slashed, blocked }) => (
-              <Table.Row key={address} height="lg" selectable={!blocked}>
-                <Table.Cell>
-                  {validatorsLoading ? (
-                    <div className="flex items-center gap-x-1.5">
-                      <Shimmering circle width={24} height={24} />
-                      <Shimmering width={250} height={20} />
-                    </div>
-                  ) : (
-                    <div className="flex items-center gap-x-1.5">
-                      <Identicon address={address} background={false} />
-                      {identity ? (
-                        <span className="text-sm font-semibold text-neutral">{getComposedIdentity(identity)}</span>
-                      ) : (
-                        <span className="text-sm font-semibold text-neutral-variant">
-                          {getShortAddress(address, 11)}
-                        </span>
-                      )}
-                      {(oversubscribed || slashed || blocked) && (
-                        <div className="ml-1.5">
-                          {oversubscribed && (
-                            <Popover
-                              titleIcon={<Icon className="text-alert" name="warnCutout" size={16} />}
-                              titleText={t('staking.validators.oversubPopoverTitle')}
-                              content={t('staking.validators.oversubPopoverSubtitle')}
-                            >
-                              <Icon className="text-alert" name="warnCutout" size={16} />
-                            </Popover>
-                          )}
-                          {slashed && (
-                            <Popover
-                              titleIcon={<Icon className="text-error" name="disableCutout" size={16} />}
-                              titleText={t('staking.validators.slashedPopoverTitle')}
-                              content={t('staking.validators.slashedPopoverSubtitle')}
-                            >
-                              <Icon className="text-error" name="disableCutout" size={16} />
-                            </Popover>
-                          )}
-                          {blocked && (
-                            <Popover
-                              titleIcon={<Icon className="text-shade-40" name="removeCutout" size={16} />}
-                              titleText={t('staking.validators.blockedPopoverTitle')}
-                              content={t('staking.validators.blockedPopoverSubtitle')}
-                            >
-                              <Icon className="text-shade-40" name="removeCutout" size={16} />
-                            </Popover>
-                          )}
-                        </div>
-                      )}
-                    </div>
-                  )}
-                </Table.Cell>
-                <Table.Cell className="text-sm font-semibold">
-                  {validatorsLoading ? (
-                    <Shimmering width={130} height={20} />
-                  ) : (
-                    <Balance value={ownStake || '0'} precision={asset.precision} symbol={asset.symbol} />
-                  )}
-                </Table.Cell>
-                <Table.Cell className="text-sm font-semibold">
-                  {validatorsLoading ? (
-                    <Shimmering width={130} height={20} />
-                  ) : (
-                    <Balance value={totalStake || '0'} precision={asset.precision} symbol={asset.symbol} />
-                  )}
-                </Table.Cell>
-                <Table.Cell>
-                  {validatorsLoading ? (
-                    <Shimmering width={40} height={20} />
-                  ) : (
-                    <Explorers address={address} explorers={explorers} addressPrefix={addressPrefix} />
-                  )}
-                </Table.Cell>
-              </Table.Row>
-            )}
-          </Table.Body>
-        </Table>
+        <ValidatorsTable
+          showHeader={false}
+          dataIsLoading={validatorsLoading}
+          validators={validatorList}
+          asset={asset}
+          explorers={explorers}
+          addressPrefix={addressPrefix}
+          onSelect={setSelectedValidators}
+        />
 
         {!validatorsLoading && (
           <div
