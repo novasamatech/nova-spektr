@@ -12,7 +12,7 @@ jest.mock('@renderer/context/I18nContext', () => ({
 }));
 
 describe('components/common/ValidatorsTable', () => {
-  const validators: Validator[] = [
+  const validators = [
     {
       chainId: '0x123',
       oversubscribed: true,
@@ -21,20 +21,14 @@ describe('components/common/ValidatorsTable', () => {
       commission: 10,
       address: TEST_ADDRESS,
       apy: 50.87,
-      avgApy: 49,
-      nominators: [],
       ownStake: '23611437564986527',
       totalStake: '23728297476615343',
       identity: {
         subName: 'subName',
-        email: 'email',
-        riot: 'riot',
-        twitter: 'twitter',
-        website: 'website',
         parent: { name: 'parent', address: '0x123' },
       },
     },
-  ];
+  ] as unknown as Validator[];
 
   const asset = {
     assetId: 0,
