@@ -1,4 +1,4 @@
-import { Fragment, PropsWithChildren, ReactNode } from 'react';
+import { PropsWithChildren, ReactNode } from 'react';
 import cn from 'classnames';
 import { Transition } from '@headlessui/react';
 
@@ -52,7 +52,7 @@ const Expandable = ({
       )}
 
       <Transition
-        as={Fragment}
+        as="div"
         show={isActive || alwaysActive}
         enter="transition ease-out duration-200"
         enterFrom="opacity-0 translate-y-0"

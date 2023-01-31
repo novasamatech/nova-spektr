@@ -22,7 +22,7 @@ export const TableHeader = ({ className, children }: PropsWithChildren<HeaderPro
           {children}
         </tr>
       ) : (
-        <tr className="h-10">{children}</tr>
+        <tr className="h-7.5">{children}</tr>
       )}
     </thead>
   );
@@ -100,13 +100,20 @@ export const TableBody = <T extends AnyRecord>({ children }: BodyProps<T>) => {
 };
 
 type RowProps = {
+  className?: string;
   height?: keyof typeof HeightClass;
   selectable?: boolean;
 };
 type _RowProps = {
   dataKey: IndexKey;
 };
-export const TableRow = ({ height = 'md', selectable = true, children, ...props }: PropsWithChildren<RowProps>) => {
+export const TableRow = ({
+  className,
+  height = 'md',
+  selectable = true,
+  children,
+  ...props
+}: PropsWithChildren<RowProps>) => {
   const { sortConfig, selectedKeys, selectRow, excludeKey } = useTableContext();
 
   // eslint-disable-next-line react/prop-types
@@ -120,7 +127,7 @@ export const TableRow = ({ height = 'md', selectable = true, children, ...props 
   }, []);
 
   return (
-    <tr className={cn('border-b border-shade-5 last:border-b-0', HeightClass[height])}>
+    <tr className={cn('border-b border-shade-5 last:border-b-0', HeightClass[height], className)}>
       {selectedKeys && (
         <td className="pr-1 pl-4 w-5">
           <Checkbox
@@ -132,6 +139,7 @@ export const TableRow = ({ height = 'md', selectable = true, children, ...props 
       )}
       {Children.map(children, (child, index) => {
         const item = child as ReactElement<PropsWithChildren<_CellProps>>;
+        if (!item) return null;
 
         return cloneElement(item, { align: alignments[index] });
       })}

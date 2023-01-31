@@ -118,17 +118,28 @@ export const useValidators = (): IValidatorsService => {
     }, {});
   };
 
-  const getNominators = async (api: ApiPromise, account: AccountID): Promise<AccountID[]> => {
+  const getNominators = async (api: ApiPromise, account: AccountID): Promise<ValidatorMap> => {
     try {
       const data = await api.query.staking.nominators(account);
-      if (data.isNone) return [];
-      const unwrappedData = data.unwrap();
+      if (data.isNone) return {};
 
-      return unwrappedData.targets.toArray().map((nominator) => nominator.toString());
+      const nominators = data
+        .unwrap()
+        .targets.toArray()
+        .reduce<ValidatorMap>((acc, nominator) => {
+          const address = nominator.toString();
+          acc[address] = { address } as Validator;
+
+          return acc;
+        }, {});
+
+      const identities = await getIdentities(api, Object.keys(nominators));
+
+      return merge(nominators, identities);
     } catch (error) {
       console.warn(error);
 
-      return [];
+      return {};
     }
   };
 

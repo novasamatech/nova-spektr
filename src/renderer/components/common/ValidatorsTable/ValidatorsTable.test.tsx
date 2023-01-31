@@ -11,7 +11,7 @@ jest.mock('@renderer/context/I18nContext', () => ({
   }),
 }));
 
-describe('screens/Bond/Validators', () => {
+describe('components/common/ValidatorsTable', () => {
   const validators: Validator[] = [
     {
       chainId: '0x123',
@@ -48,7 +48,7 @@ describe('screens/Bond/Validators', () => {
   });
 
   test('should render component', async () => {
-    render(<ValidatorsTable validators={validators} asset={asset} />);
+    render(<ValidatorsTable validators={validators} columns={['ownStake', 'totalStake']} asset={asset} />);
 
     const table = screen.getByRole('table');
     const identity = screen.getByText('parent/subName');
@@ -63,9 +63,17 @@ describe('screens/Bond/Validators', () => {
 
     const table = screen.getByRole('table');
     const rows = screen.getAllByRole('row');
-    const continueButton = screen.queryByRole('button', { name: 'staking.validators.selectValidatorButton' });
     expect(table).toBeInTheDocument();
     expect(rows).toHaveLength(11);
-    expect(continueButton).not.toBeInTheDocument();
+  });
+
+  test('should render without header', () => {
+    render(<ValidatorsTable validators={validators} showHeader={false} />);
+
+    const table = screen.getByRole('table');
+    const groups = screen.getAllByRole('rowgroup');
+    expect(table).toBeInTheDocument();
+    expect(groups).toHaveLength(2);
+    expect(groups[0]).toHaveClass('hidden');
   });
 });

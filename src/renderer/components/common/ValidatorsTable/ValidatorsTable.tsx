@@ -1,3 +1,4 @@
+import { BN, BN_ZERO } from '@polkadot/util';
 import cn from 'classnames';
 import { useState } from 'react';
 
@@ -12,28 +13,53 @@ import { getComposedIdentity, getShortAddress } from '@renderer/utils/strings';
 
 const VALIDATORS_SKELETON = Array.from({ length: 10 }, (_, index) => ({ address: index.toString() }));
 
+type ValidatorWithNominated = Validator & { nominated: string };
+type AvailableColumns = ('apy' | 'ownStake' | 'totalStake' | 'nominated')[];
+
 type Props = {
+  stash?: AccountID;
   validators: Validator[];
+  columns?: AvailableColumns;
+  amountBadge?: boolean;
   dataIsLoading?: boolean;
   showHeader?: boolean;
   asset?: Asset;
   explorers?: Explorer[];
   addressPrefix?: number;
+  className?: string;
   onSelect?: (selected: AccountID[]) => void;
 };
 
 const ValidatorsTable = ({
+  stash,
   validators,
+  columns = [],
+  amountBadge = true,
   dataIsLoading,
   showHeader = true,
   asset,
   explorers,
   addressPrefix,
+  className,
   onSelect,
 }: Props) => {
   const { t } = useI18n();
 
   const [selectedValidators, setSelectedValidators] = useState<AccountID[]>([]);
+
+  const getValidators = (): Validator[] => {
+    if (!stash || !columns.includes('nominated')) {
+      return validators;
+    }
+
+    return validators.map((validator) => {
+      const nominated = validator.nominators.reduce((acc, data) => {
+        return data.who === stash ? acc.add(new BN(data.value)) : acc;
+      }, BN_ZERO);
+
+      return { ...validator, nominated: nominated.toString() };
+    });
+  };
 
   const selectValidator = (selected: AccountID[]) => {
     setSelectedValidators(selected);
@@ -41,36 +67,48 @@ const ValidatorsTable = ({
   };
 
   const isLoading = dataIsLoading || !asset;
+  const canSelect = showHeader && onSelect;
 
   return (
     <Table
       by="address"
-      dataSource={isLoading ? VALIDATORS_SKELETON : validators}
-      selectedKeys={showHeader ? selectedValidators : undefined}
-      onSelect={isLoading || !showHeader ? undefined : selectValidator}
+      className={className}
+      dataSource={isLoading ? VALIDATORS_SKELETON : getValidators()}
+      selectedKeys={canSelect ? selectedValidators : undefined}
+      onSelect={selectValidator}
     >
       <Table.Header className={cn(!showHeader && 'hidden')}>
         <Table.Column dataKey="address" align="left">
           <div className="flex items-center gap-x-1">
             {t('staking.validators.validatorsTableHeader')}
-            {isLoading ? (
-              <Shimmering width={20} height={10} />
-            ) : (
-              <span className="px-1.25 py-1 rounded-md bg-shade-2 text-shade-40">{validators.length}</span>
-            )}
+            {amountBadge &&
+              (isLoading ? (
+                <Shimmering width={20} height={10} />
+              ) : (
+                <span className="px-1.25 py-1 rounded-md bg-shade-2 text-shade-40">{validators.length}</span>
+              ))}
           </div>
         </Table.Column>
-        <Table.Column dataKey="ownStake" width={150}>
-          {t('staking.validators.ownStakeTableHeader')}
-        </Table.Column>
-        <Table.Column dataKey="totalStake" width={150} sortable>
-          {t('staking.validators.totalStakeTableHeader')}
-        </Table.Column>
+        {columns.includes('ownStake') && (
+          <Table.Column dataKey="ownStake" width={150}>
+            {t('staking.validators.ownStakeTableHeader')}
+          </Table.Column>
+        )}
+        {columns.includes('totalStake') && (
+          <Table.Column dataKey="totalStake" width={150} sortable>
+            {t('staking.validators.totalStakeTableHeader')}
+          </Table.Column>
+        )}
+        {columns.includes('nominated') && (
+          <Table.Column dataKey="nominated" width={150}>
+            {t('staking.validators.nominatedTableHeader')}
+          </Table.Column>
+        )}
         <Table.Column dataKey="actions" width={50} />
       </Table.Header>
-      <Table.Body<Validator>>
-        {({ address, identity, ownStake, totalStake, oversubscribed, slashed, blocked }) => (
-          <Table.Row key={address} height="lg" selectable={!blocked && showHeader}>
+      <Table.Body<ValidatorWithNominated>>
+        {({ address, identity, ownStake, totalStake, oversubscribed, slashed, blocked, nominated }) => (
+          <Table.Row key={address} className="bg-shade-1" height="lg" selectable={!blocked && showHeader}>
             <Table.Cell>
               {isLoading ? (
                 <div className="flex items-center gap-x-1.5">
@@ -119,20 +157,43 @@ const ValidatorsTable = ({
                 </div>
               )}
             </Table.Cell>
-            <Table.Cell className="text-sm font-semibold">
-              {isLoading || !asset ? (
-                <Shimmering width={130} height={20} />
-              ) : (
-                <Balance value={ownStake || '0'} precision={asset.precision} symbol={asset.symbol} />
-              )}
-            </Table.Cell>
-            <Table.Cell className="text-sm font-semibold">
-              {isLoading || !asset ? (
-                <Shimmering width={130} height={20} />
-              ) : (
-                <Balance value={totalStake || '0'} precision={asset.precision} symbol={asset.symbol} />
-              )}
-            </Table.Cell>
+            {columns.includes('ownStake') && (
+              <Table.Cell className="text-sm font-semibold">
+                {isLoading || !asset ? (
+                  <Shimmering width={130} height={20} />
+                ) : (
+                  <Balance value={ownStake || '0'} precision={asset.precision} symbol={asset.symbol} />
+                )}
+              </Table.Cell>
+            )}
+            {columns.includes('totalStake') && (
+              <Table.Cell className="text-sm font-semibold">
+                {isLoading || !asset ? (
+                  <Shimmering width={130} height={20} />
+                ) : (
+                  <Balance value={totalStake || '0'} precision={asset.precision} symbol={asset.symbol} />
+                )}
+              </Table.Cell>
+            )}
+            {columns.includes('nominated') && (
+              <Table.Cell>
+                {isLoading ? (
+                  <Shimmering width={40} height={20} />
+                ) : (
+                  <>
+                    <Balance
+                      className="font-semibold "
+                      value={nominated}
+                      precision={asset.precision || 0}
+                      symbol={asset.symbol}
+                    />
+                    {nominated === '0' && (
+                      <p className="text-2xs text-neutral-variant">{t('staking.nominators.notAssigned')}</p>
+                    )}
+                  </>
+                )}
+              </Table.Cell>
+            )}
             <Table.Cell>
               {isLoading ? (
                 <Shimmering width={40} height={20} />

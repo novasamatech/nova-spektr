@@ -99,7 +99,7 @@ const Validators = ({ api, chainId, asset, explorers, addressPrefix, onResult }:
         </div>
 
         <ValidatorsTable
-          showHeader={false}
+          className="shadow-surface"
           dataIsLoading={validatorsLoading}
           validators={validatorList}
           asset={asset}

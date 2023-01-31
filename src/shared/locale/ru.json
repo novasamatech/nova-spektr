@@ -305,6 +305,7 @@
       "filterByIdentity": "Имеют identity",
       "filterNotOversubscribed": "Не перегружены",
       "filterNotSlashed": "Не урезаны",
+      "nominatedTableHeader": "Номинировано",
       "oversubPopoverSubtitle": "Валидатор перегружен номинаторами",
       "oversubPopoverTitle": "Перегрузка",
       "ownStakeTableHeader": "Собственный стейк",
