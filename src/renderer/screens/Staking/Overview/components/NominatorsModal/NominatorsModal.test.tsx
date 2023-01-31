@@ -73,4 +73,13 @@ describe('screens/Staking/Overview/NominatorsModal', () => {
     expect(blocks).toBeInTheDocument();
     expect(electedBlock).toBeInTheDocument();
   });
+
+  test('should render no results', () => {
+    render(<NominatorsModal isOpen stash="0x555" validators={elected} nominators={{}} onClose={() => {}} />);
+
+    const label = screen.getByText('staking.overview.noValidatorsLabel');
+    const description = screen.getByText('staking.overview.noValidatorsDescription');
+    expect(label).toBeInTheDocument();
+    expect(description).toBeInTheDocument();
+  });
 });
