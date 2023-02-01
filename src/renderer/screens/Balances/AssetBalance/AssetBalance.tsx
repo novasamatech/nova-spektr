@@ -6,9 +6,9 @@ import { useI18n } from '@renderer/context/I18nContext';
 import { Asset } from '@renderer/domain/asset';
 import { Balance } from '@renderer/domain/balance';
 import { ChainId } from '@renderer/domain/shared-kernel';
-import useToggle from '@renderer/shared/hooks/useToggle';
+import { useToggle } from '@renderer/shared/hooks';
 import { createLink } from '@renderer/routes/utils';
-import { total, transferable } from '@renderer/services/balance/common/utils';
+import { totalAmount, transferableAmount } from '@renderer/services/balance/common/utils';
 import { KeyboardKey } from '@renderer/utils/constants';
 import './AssetBalance.css';
 
@@ -69,7 +69,7 @@ const AssetBalance = ({ asset, chainId, balance, canMakeActions, onReceiveClick 
           </div>
           <div className={cn('font-semibold')} data-testid="balance">
             {balance?.free ? (
-              <BalanceValue value={total(balance)} precision={asset.precision} symbol={asset.symbol} />
+              <BalanceValue value={totalAmount(balance)} precision={asset.precision} symbol={asset.symbol} />
             ) : (
               <Shimmering width={200} height={20} />
             )}
@@ -109,7 +109,7 @@ const AssetBalance = ({ asset, chainId, balance, canMakeActions, onReceiveClick 
               <div className="text-neutral text-sm font-semibold">{t('assetBalance.transferable')}</div>
               <div className="text-neutral-variant text-xs font-bold" data-testid="transferable">
                 {balance?.free ? (
-                  <BalanceValue value={transferable(balance)} precision={asset.precision} symbol={asset.symbol} />
+                  <BalanceValue value={transferableAmount(balance)} precision={asset.precision} symbol={asset.symbol} />
                 ) : (
                   <Shimmering width={200} height={20} />
                 )}

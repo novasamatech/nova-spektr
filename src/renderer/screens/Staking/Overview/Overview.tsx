@@ -9,7 +9,6 @@ import { useNetworkContext } from '@renderer/context/NetworkContext';
 import { Asset, StakingType } from '@renderer/domain/asset';
 import { ConnectionStatus, ConnectionType } from '@renderer/domain/connection';
 import { AccountID, ChainId, SigningType } from '@renderer/domain/shared-kernel';
-import useToggle from '@renderer/shared/hooks/useToggle';
 import TotalAmount from '@renderer/screens/Staking/Overview/components/TotalAmount/TotalAmount';
 import { useAccount } from '@renderer/services/account/accountService';
 import { useChains } from '@renderer/services/network/chainsService';
@@ -20,10 +19,11 @@ import { useStakingData } from '@renderer/services/staking/stakingDataService';
 import { useStakingRewards } from '@renderer/services/staking/stakingRewardsService';
 import { useValidators } from '@renderer/services/staking/validatorsService';
 import { useWallet } from '@renderer/services/wallet/walletService';
+import { useToggle } from '@renderer/shared/hooks';
 import { isStringsMatchQuery } from '@renderer/utils/strings';
 import { AboutStaking, EmptyFilter, InactiveChain, NoAccounts, StakingTable } from './components';
-import { AccountStakeInfo } from './components/StakingTable/StakingTable';
 import NominatorsModal from './components/NominatorsModal/NominatorsModal';
+import { AccountStakeInfo } from './components/StakingTable/StakingTable';
 
 type NetworkOption = { asset: Asset; addressPrefix: number };
 

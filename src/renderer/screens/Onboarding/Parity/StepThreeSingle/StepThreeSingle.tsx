@@ -8,7 +8,7 @@ import { BaseModal, Button, Identicon, Input, InputHint } from '@renderer/compon
 import { useI18n } from '@renderer/context/I18nContext';
 import { Chain } from '@renderer/domain/chain';
 import { ErrorType, SigningType } from '@renderer/domain/shared-kernel';
-import useToggle from '@renderer/shared/hooks/useToggle';
+import { useToggle } from '@renderer/shared/hooks';
 import { useChains } from '@renderer/services/network/chainsService';
 import { useAccount } from '@renderer/services/account/accountService';
 import { createAccount } from '@renderer/domain/account';

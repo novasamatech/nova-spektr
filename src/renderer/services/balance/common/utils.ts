@@ -88,35 +88,37 @@ export const formatBalance = (balance = '0', precision = 0): FormattedBalance =>
   };
 };
 
-export const total = ({ free, reserved }: Balance): string => new BN(free || 0).add(new BN(reserved || 0)).toString();
+export const totalAmount = ({ free = '0', reserved = '0' }: Balance): string => {
+  return new BN(free).add(new BN(reserved)).toString();
+};
 
-export const locked = ({ locked }: Balance): string => {
-  const bnLocks = (locked || []).map((lock) => new BN(lock.amount));
+export const lockedAmount = ({ locked = [] }: Balance): string => {
+  const bnLocks = locked.map((lock) => new BN(lock.amount));
   const bnFrozen = bnLocks?.reduce((acc, bnLock) => acc.add(bnLock), new BN(0));
 
   return bnFrozen.toString();
 };
 
-export const staked = ({ locked }: Balance): string => {
-  const bnLocks = (locked || []).find((lock) => lock.type === LockTypes.STAKING);
+export const stakedAmount = ({ locked = [] }: Balance): string => {
+  const bnLocks = locked.find((lock) => lock.type === LockTypes.STAKING);
 
   if (!bnLocks) return ZERO_BALANCE;
 
   return bnLocks.amount;
 };
 
-export const transferable = (balance: Balance): string => {
-  const bnFree = new BN(balance?.free || 0);
-  const bnFrozen = new BN(balance?.frozen || 0);
+export const transferableAmount = ({ free = '0', frozen = '0' }: Balance): string => {
+  const bnFree = new BN(free);
+  const bnFrozen = new BN(frozen);
 
   return bnFree.gt(bnFrozen) ? bnFree.sub(bnFrozen).toString() : ZERO_BALANCE;
 };
 
-export const stakeable = (balance: Balance): string => {
+export const stakeableAmount = (balance: Balance): string => {
   if (!balance) return ZERO_BALANCE;
 
-  const bnFree = new BN(balance?.free || 0);
-  const bnStaked = new BN(staked(balance));
+  const bnFree = new BN(balance.free || 0);
+  const bnStaked = new BN(stakedAmount(balance));
 
   return bnFree.sub(bnStaked).toString();
 };
