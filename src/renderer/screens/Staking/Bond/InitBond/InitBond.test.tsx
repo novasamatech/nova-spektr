@@ -1,7 +1,7 @@
-import { ApiPromise } from '@polkadot/api';
 import { render, screen } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 
+import { TEST_PUBLIC_KEY } from '@renderer/services/balance/common/constants';
 import InitBond from './InitBond';
 
 jest.mock('@renderer/context/I18nContext', () => ({
@@ -10,16 +10,42 @@ jest.mock('@renderer/context/I18nContext', () => ({
   }),
 }));
 
+jest.mock('@renderer/services/account/accountService', () => ({
+  useAccount: jest.fn().mockReturnValue({
+    getLiveAccounts: () => [
+      {
+        name: 'Test Wallet',
+        accountId: '1ChFWeNRLarAPRCTM3bfJmncJbSAbSS9yqjueWz7jX7iTVZ',
+        publicKey: TEST_PUBLIC_KEY,
+      },
+    ],
+  }),
+}));
+
+jest.mock('@renderer/services/balance/balanceService', () => ({
+  useBalance: jest.fn().mockReturnValue({
+    getBalance: jest.fn().mockReturnValue({
+      assetId: 1,
+      chainId: '0x123',
+      publicKey: TEST_PUBLIC_KEY,
+      free: '10',
+      frozen: [{ type: 'test', amount: '1' }],
+    }),
+    getLiveAssetBalances: jest.fn().mockReturnValue([
+      {
+        assetId: 1,
+        chainId: '0x123',
+        publicKey: TEST_PUBLIC_KEY,
+        free: '10',
+        frozen: [{ type: 'test', amount: '1' }],
+      },
+    ]),
+  }),
+}));
+
 describe('screens/Bond/InitBond', () => {
-  test('should render component', () => {
-    render(<InitBond api={{} as ApiPromise} chainId="0x123" onResult={() => {}} />, { wrapper: MemoryRouter });
-
-    const title = screen.getByText('START BOND');
-    expect(title).toBeInTheDocument();
-  });
-
   test('should render loading', () => {
-    render(<InitBond onResult={() => {}} />, { wrapper: MemoryRouter });
+    render(<InitBond accountIds={[]} onResult={() => {}} />, { wrapper: MemoryRouter });
 
     const loading = screen.getByText('LOADING');
     expect(loading).toBeInTheDocument();

@@ -11,6 +11,7 @@ import ConfirmBond from '@renderer/screens/Staking/Bond/ConfirmBond/ConfirmBond'
 import InitBond from '@renderer/screens/Staking/Bond/InitBond/InitBond';
 import Validators from '@renderer/screens/Staking/Bond/Validators/Validators';
 import { ValidatorMap } from '@renderer/services/staking/common/types';
+import { useAccount } from '@renderer/services/account/accountService';
 
 const enum Step {
   InitBond,
@@ -26,6 +27,9 @@ const Bond = () => {
 
   const [activeStep, setActiveStep] = useState<Step>(Step.InitBond);
   const [_, setValidators] = useState<ValidatorMap>({});
+
+  const { getActiveAccounts } = useAccount();
+  const activeAccounts = getActiveAccounts();
 
   const chainId = params.chainId || ('' as ChainId);
   const api = connections[chainId]?.api;
@@ -71,7 +75,15 @@ const Bond = () => {
         <h1 className="font-semibold text-2xl text-neutral">{headerTitle[activeStep]}</h1>
       </div>
 
-      {activeStep === Step.InitBond && <InitBond api={api} chainId={chainId} onResult={onBondResult} />}
+      {activeStep === Step.InitBond && (
+        <InitBond
+          accountIds={activeAccounts.map((a) => a.accountId || '')}
+          asset={asset}
+          api={api}
+          chainId={chainId}
+          onResult={onBondResult}
+        />
+      )}
       {activeStep === Step.Validators && (
         <Validators
           api={api}

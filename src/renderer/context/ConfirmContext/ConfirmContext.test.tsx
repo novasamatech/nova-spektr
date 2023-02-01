@@ -1,9 +1,9 @@
 import { act, render, renderHook, screen } from '@testing-library/react';
 
-import useToggle from '@renderer/hooks/useToggle';
+import useToggle from '@renderer/shared/hooks/useToggle';
 import { ConfirmDialogProvider, useConfirmContext } from './ConfirmContext';
 
-jest.mock('@renderer/hooks/useToggle');
+jest.mock('@renderer/shared/hooks/useToggle');
 
 window.IntersectionObserver = jest.fn().mockImplementation(() => ({
   observe: jest.fn(),

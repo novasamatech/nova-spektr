@@ -255,9 +255,19 @@
       "yearlyEarningLabel": "Yearly"
     },
     "bond": {
+      "aboutRewards": "About rewards",
+      "amountPlaceholder": "Input amount",
       "confirmBondSubtitle": "Confirm",
       "initBondSubtitle": "Start Staking",
+      "payoutAccountLabel": "Payout account",
+      "payoutAccountPlaceholder": "Select a payout account",
+      "restakeRewards": "Restake rewards",
+      "rewardsDestinationDescription": "Approximate amounts are calculated yearly",
+      "rewardsDestinationTitle": "Rewards destination",
       "selectNetworkLabel": "Select network",
+      "selectStakeAccountLabel": "Select accounts",
+      "selectStakeAccountSummary": "Multiple accounts",
+      "transferableRewards": "Transferable rewards",
       "validatorsSubtitle": "Validators"
     },
     "nominators": {
