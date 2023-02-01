@@ -1,9 +1,11 @@
 import { ApiPromise } from '@polkadot/api';
 import { act, render, screen } from '@testing-library/react';
-import { MemoryRouter } from 'react-router-dom';
 
+import { ValidatorsTable } from '@renderer/components/common';
 import { Asset } from '@renderer/domain/asset';
 import Validators from './Validators';
+
+jest.mock('@renderer/components/common');
 
 jest.mock('@renderer/context/I18nContext', () => ({
   useI18n: jest.fn().mockReturnValue({
@@ -14,18 +16,7 @@ jest.mock('@renderer/context/I18nContext', () => ({
 jest.mock('@renderer/services/staking/validatorsService', () => ({
   useValidators: jest.fn().mockReturnValue({
     getMaxValidators: jest.fn().mockReturnValue(6),
-    getValidators: jest.fn(() => ({
-      '5CFPcUJgYgWryPaV1aYjSbTpbTLu42V32Ytw1L9rfoMAsfGh': {
-        address: '5CFPcUJgYgWryPaV1aYjSbTpbTLu42V32Ytw1L9rfoMAsfGh',
-        apy: 50.87,
-        ownStake: '23611437564986527',
-        totalStake: '23728297476615343',
-        identity: {
-          subName: 'subName',
-          parent: { name: 'parent' },
-        },
-      },
-    })),
+    getValidators: jest.fn().mockReturnValue({}),
   }),
 }));
 
@@ -36,6 +27,10 @@ jest.mock('@renderer/services/staking/eraService', () => ({
 }));
 
 describe('screens/Bond/Validators', () => {
+  beforeEach(() => {
+    (ValidatorsTable as jest.Mock).mockImplementation(() => 'validatorsTable');
+  });
+
   afterEach(() => {
     jest.clearAllMocks();
   });
@@ -53,24 +48,9 @@ describe('screens/Bond/Validators', () => {
       render(<Validators api={api} chainId="0x123" asset={asset} onResult={() => {}} />);
     });
 
-    const table = screen.getByRole('table');
-    const identity = screen.getByText('parent/subName');
-    const stakes = screen.getAllByText('assetBalance.number');
+    const table = screen.getByText('validatorsTable');
     const continueButton = screen.getByRole('button', { name: 'staking.validators.selectValidatorButton' });
     expect(table).toBeInTheDocument();
-    expect(identity).toBeInTheDocument();
-    expect(stakes).toHaveLength(2);
     expect(continueButton).toBeInTheDocument();
-  });
-
-  test('should render loading', () => {
-    render(<Validators onResult={() => {}} />, { wrapper: MemoryRouter });
-
-    const table = screen.getByRole('table');
-    const rows = screen.getAllByRole('row');
-    const continueButton = screen.queryByRole('button', { name: 'staking.validators.selectValidatorButton' });
-    expect(table).toBeInTheDocument();
-    expect(rows).toHaveLength(11);
-    expect(continueButton).not.toBeInTheDocument();
   });
 });

@@ -8,7 +8,7 @@ import { Chain } from '@renderer/domain/chain';
 import { PublicKey } from '@renderer/domain/shared-kernel';
 import { useBalance } from '@renderer/services/balance/balanceService';
 import { ZERO_BALANCE } from '@renderer/services/balance/common/constants';
-import { total } from '@renderer/services/balance/common/utils';
+import { totalAmount } from '@renderer/services/balance/common/utils';
 import { ExtendedChain } from '@renderer/services/network/common/types';
 import AssetBalance from '../AssetBalance/AssetBalance';
 import { useI18n } from '@renderer/context/I18nContext';
@@ -79,7 +79,9 @@ const NetworkBalances = ({
 
     const balance = balancesObject[asset.assetId];
 
-    return !hideZeroBalance || !balance || balance.verified !== true || (balance && total(balance) !== ZERO_BALANCE);
+    return (
+      !hideZeroBalance || !balance || balance.verified !== true || (balance && totalAmount(balance) !== ZERO_BALANCE)
+    );
   });
 
   if (filteredAssets.length === 0) {
