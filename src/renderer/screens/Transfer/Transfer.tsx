@@ -12,7 +12,7 @@ import { Asset, AssetType, OrmlExtras, StatemineExtras } from '@renderer/domain/
 import { ChainId, HexString, SigningType } from '@renderer/domain/shared-kernel';
 import { Transaction, TransactionType } from '@renderer/domain/transaction';
 import { useBalance } from '@renderer/services/balance/balanceService';
-import { formatAmount, toAddress, transferable } from '@renderer/services/balance/common/utils';
+import { formatAmount, toAddress, transferableAmount } from '@renderer/services/balance/common/utils';
 import { useChains } from '@renderer/services/network/chainsService';
 import { useTransaction } from '@renderer/services/transaction/transactionService';
 import { formatAddress, toPublicKey, validateAddress } from '@renderer/utils/address';
@@ -175,7 +175,7 @@ const Transfer = () => {
         currentAsset.assetId.toString(),
       );
 
-      setBalance(balance ? transferable(balance) : '0');
+      setBalance(balance ? transferableAmount(balance) : '0');
     })();
   }, [currentAddress, currentConnection?.chainId, currentAsset?.assetId]);
 
@@ -194,8 +194,8 @@ const Transfer = () => {
       nativeTokenBalance = await getBalance(publicKey, currentConnection.chainId, '0');
     }
 
-    const transferableBalance = currentBalance ? transferable(currentBalance) : '0';
-    const transferableNativeTokenBalance = nativeTokenBalance ? transferable(nativeTokenBalance) : null;
+    const transferableBalance = currentBalance ? transferableAmount(currentBalance) : '0';
+    const transferableNativeTokenBalance = nativeTokenBalance ? transferableAmount(nativeTokenBalance) : null;
 
     const fee = await getTransactionFee(transaction, currentConnection.api);
 

@@ -317,6 +317,7 @@
       "filterByIdentity": "Having on-chain identity",
       "filterNotOversubscribed": "Not oversubscribed",
       "filterNotSlashed": "Not slashed",
+      "nominatedTableHeader": "Nominated",
       "oversubPopoverSubtitle": "Validator is oversubscribed",
       "oversubPopoverTitle": "Oversubscribed",
       "ownStakeTableHeader": "Own stake",

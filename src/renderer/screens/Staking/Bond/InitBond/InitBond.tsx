@@ -25,7 +25,7 @@ import { useI18n } from '@renderer/context/I18nContext';
 import { Asset } from '@renderer/domain/asset';
 import { AccountID, ChainId, SigningType } from '@renderer/domain/shared-kernel';
 import { useBalance } from '@renderer/services/balance/balanceService';
-import { formatAmount, stakeable, transferable } from '@renderer/services/balance/common/utils';
+import { formatAmount, stakeableAmount, transferableAmount } from '@renderer/services/balance/common/utils';
 import { AccountDS, BalanceDS } from '@renderer/services/storage';
 import { validateAddress } from '@renderer/utils/address';
 import { useAccount } from '@renderer/services/account/accountService';
@@ -38,7 +38,7 @@ const enum RewardsDestination {
 }
 
 const validateBalanceForFee = (balance: BalanceDS | string, fee: string, amount: string, asset: Asset): boolean => {
-  const transferableBalance = typeof balance === 'string' ? balance : transferable(balance);
+  const transferableBalance = typeof balance === 'string' ? balance : transferableAmount(balance);
 
   const amountWithFee = new BN(formatAmount(amount, asset.precision)).add(new BN(fee)).toString();
 
@@ -46,7 +46,7 @@ const validateBalanceForFee = (balance: BalanceDS | string, fee: string, amount:
 };
 
 const validateBalance = (balance: BalanceDS | string, amount: string, asset: Asset): boolean => {
-  const stakeableBalance = typeof balance === 'string' ? balance : stakeable(balance);
+  const stakeableBalance = typeof balance === 'string' ? balance : stakeableAmount(balance);
 
   return new BN(formatAmount(amount, asset.precision)).lte(new BN(stakeableBalance));
 };
@@ -59,13 +59,10 @@ const getDropdownPayload = (
   amount?: string,
 ): DropdownOption<AccountID> => {
   const address = account.accountId || '';
-
-  let isAvailable = true;
   const balanceExists = balance && asset && fee && amount;
 
-  if (balanceExists) {
-    isAvailable = validateBalanceForFee(balance, fee, amount, asset) && validateBalance(balance, amount, asset);
-  }
+  const balanceIsAvailable =
+    !balanceExists || (validateBalanceForFee(balance, fee, amount, asset) && validateBalance(balance, amount, asset));
 
   const element = (
     <div className="flex justify-between items-center gap-x-2.5">
@@ -73,19 +70,17 @@ const getDropdownPayload = (
         <Identicon address={address} size={34} background={false} canCopy={false} />
         <p className="text-left text-neutral text-lg font-semibold">{account.name}</p>
       </div>
-      {balanceExists ? (
+      {balanceExists && (
         <div className="flex items-center gap-x-1">
-          {!isAvailable && <Icon size={12} className="text-error" name="warnCutout" />}
+          {!balanceIsAvailable && <Icon size={12} className="text-error" name="warnCutout" />}
 
           <Balance
-            className={cn(!isAvailable && 'text-error')}
-            value={stakeable(balance)}
+            className={cn(!balanceIsAvailable && 'text-error')}
+            value={stakeableAmount(balance)}
             precision={asset.precision}
             symbol={asset.symbol}
           />
         </div>
-      ) : (
-        <></>
       )}
     </div>
   );
@@ -113,35 +108,29 @@ type Props = {
 const InitBond = ({ accountIds, api, chainId, asset, onResult }: Props) => {
   const { t } = useI18n();
   const { getLiveAssetBalances } = useBalance();
-
   const { getLiveAccounts } = useAccount();
   const { getTransactionFee } = useTransaction();
 
   const accounts = getLiveAccounts({ signingType: SigningType.PARITY_SIGNER });
 
-  const selectedAccounts = accounts.filter(
-    (a) => (!a.chainId || a.chainId === chainId) && accountIds.includes(a.accountId || ''),
-  );
-
   const [fee, setFee] = useState('');
-
   const [balanceRange, setBalanceRange] = useState<[string, string]>();
-
   const [transactions, setTransactions] = useState<Transaction[]>([]);
-
   const [stakeAccounts, setStakeAccounts] = useState<DropdownOption<AccountID>[]>([]);
   const [activeAccounts, setActiveAccounts] = useState<ResultOption<AccountID>[]>([]);
-
   const [activeRadio, setActiveRadio] = useState<ResultOption<RewardsDestination>>();
-
   const [payoutAccounts, setPayoutAccounts] = useState<DropdownOption<AccountID>[]>([]);
   const [activePayoutAccount, setActivePayoutAccount] = useState<ResultOption<AccountID>>();
+
+  const selectedAccounts = accounts.filter(
+    (account) => (!account.chainId || account.chainId === chainId) && accountIds.includes(account.accountId || ''),
+  );
 
   const balances = getLiveAssetBalances(
     // @ts-ignore
     selectedAccounts.map((a) => a.publicKey).filter(Boolean),
     chainId || '0x',
-    `${asset?.assetId}`,
+    asset?.assetId?.toString() || '',
   );
 
   const {
@@ -156,11 +145,11 @@ const InitBond = ({ accountIds, api, chainId, asset, onResult }: Props) => {
 
   const amount = watch('amount');
 
-  // set balances
+  // Set balances
   useEffect(() => {
     if (!api || !chainId || !asset) return;
 
-    const stakeableBalance = balances.map(stakeable);
+    const stakeableBalance = balances.map(stakeableAmount);
 
     const minMaxBalances = stakeableBalance.reduce<[string, string]>(
       (acc, balance) => {
@@ -181,83 +170,72 @@ const InitBond = ({ accountIds, api, chainId, asset, onResult }: Props) => {
   useEffect(() => {
     if (!asset) return;
 
-    (async () => {
-      const formattedAccounts = selectedAccounts.map((a) => {
-        const matchBalance = balances.find((b) => b.publicKey === a.publicKey) as BalanceDS;
+    const formattedAccounts = selectedAccounts.map((a) => {
+      const matchBalance = balances.find((b) => b.publicKey === a.publicKey);
 
-        return getDropdownPayload(a, matchBalance, asset, fee, amount);
-      });
+      return getDropdownPayload(a, matchBalance, asset, fee, amount);
+    });
 
-      setStakeAccounts(formattedAccounts);
-      setActiveAccounts(formattedAccounts);
-    })();
+    setStakeAccounts(formattedAccounts);
+    setActiveAccounts(formattedAccounts);
   }, [asset, accountIds.length, amount, fee, balances.length]);
 
   // Init payout wallets
   useEffect(() => {
     if (!chainId) return;
 
-    (async () => {
-      const payoutAccounts = accounts
-        .filter((account) => !account.chainId || account.chainId === chainId)
-        // @ts-ignore
-        .map(getDropdownPayload);
+    const payoutAccounts = accounts
+      .filter((account) => !account.chainId || account.chainId === chainId)
+      .map((account) => getDropdownPayload(account));
 
-      setPayoutAccounts(payoutAccounts);
-    })();
+    setPayoutAccounts(payoutAccounts);
   }, [accounts.length]);
 
-  // const checkBalance = (balance: Balance, amount: string, asset: Asset, fee: string) => {
-  //   const stakeableBalance = stakeable(balance);
-  //   const transferableBalance = transferable(balance);
-
-  //   return new BN(stakeableBalance).lt(new BN(total));
-  // };
-
+  // Setup transactions
   useEffect(() => {
     if (!chainId || !asset || !balanceRange) return;
 
-    setTransactions(
-      activeAccounts.map((a) => {
-        return {
-          chainId,
-          type: TransactionType.BATCH_ALL,
-          address: a.value,
-          args: {
-            transactions: [
-              {
-                chainId,
-                type: TransactionType.BOND,
-                address: a.value,
-                args: {
-                  value: formatAmount(amount, asset.precision),
-                  controller: a.value,
-                  payee:
-                    activeRadio?.value === RewardsDestination.TRANSFERABLE && activePayoutAccount?.value
-                      ? { Account: activePayoutAccount.value }
-                      : 'Staked',
-                },
-              } as Transaction,
-              {
-                chainId,
-                type: TransactionType.NOMINATE,
-                address: a.value,
-                args: {
-                  targets: Array(16).fill(a.value),
-                },
-              } as Transaction,
-            ],
-          },
-        } as Transaction;
-      }),
-    );
+    const transferableDestination =
+      activeRadio?.value === RewardsDestination.TRANSFERABLE && activePayoutAccount?.value;
+
+    const newTransactions = activeAccounts.map(({ value }) => {
+      const bondTx = {
+        chainId,
+        type: TransactionType.BOND,
+        address: value,
+        args: {
+          value: formatAmount(amount, asset.precision),
+          controller: value,
+          payee: transferableDestination ? { Account: activePayoutAccount.value } : 'Staked',
+        },
+      };
+
+      const nominateTx = {
+        chainId,
+        type: TransactionType.NOMINATE,
+        address: value,
+        args: {
+          targets: Array(16).fill(value),
+        },
+      };
+
+      return {
+        chainId,
+        type: TransactionType.BATCH_ALL,
+        address: value,
+        args: { transactions: [bondTx, nominateTx] },
+      };
+    });
+
+    setTransactions(newTransactions);
   }, [balanceRange, amount, asset, activeRadio, activePayoutAccount]);
 
   useEffect(() => {
-    (async () => {
-      if (!api || !amount || !validateAddress(transactions?.[0]?.args.dest) || !transactions.length) return;
+    if (!api || !amount || !validateAddress(transactions?.[0]?.args.dest) || !transactions.length) return;
 
-      setFee(await getTransactionFee(transactions[0], api));
+    (async () => {
+      const transactionFee = await getTransactionFee(transactions[0], api);
+      setFee(transactionFee);
     })();
   }, [amount]);
 
@@ -268,17 +246,6 @@ const InitBond = ({ accountIds, api, chainId, asset, onResult }: Props) => {
   const initBond: SubmitHandler<BondForm> = ({ amount, destination }) => {
     onResult();
   };
-
-  // const validateBalanceForFee = (amount: string): boolean => {
-  //   if (!transferableBalanceRange) return false;
-  //   const currentFee = fee || '0';
-
-  //   return new BN(currentFee).lte(new BN(transferableBalanceRange[0]));
-  // };
-
-  // const validateBalance = (amount: string, stakeableBalance: string) => {
-  //   return new BN(formatAmount(amount, asset.precision)).lte(new BN(stakeableBalance));
-  // };
 
   const getDestinations = (): RadioOption<number>[] => {
     const createElement = (label: string): ReactNode => (

@@ -7,7 +7,7 @@ import { Asset } from '@renderer/domain/asset';
 import { Chain } from '@renderer/domain/chain';
 import { ConnectionType } from '@renderer/domain/connection';
 import { ChainId, PublicKey, SigningType } from '@renderer/domain/shared-kernel';
-import useToggle from '@renderer/shared/hooks/useToggle';
+import { useToggle } from '@renderer/shared/hooks';
 import { useChains } from '@renderer/services/network/chainsService';
 import { useSettingsStorage } from '@renderer/services/settings/settingsStorage';
 import NetworkBalances from '../NetworkBalances/NetworkBalances';

@@ -118,7 +118,7 @@ const Table = <T extends AnyRecord>({
 
   return (
     <TableContext.Provider value={value}>
-      <table className={cn('w-full bg-white rounded-2lg table-auto shadow-surface', className)}>{children}</table>
+      <table className={cn('w-full bg-white rounded-2lg table-auto', className)}>{children}</table>
     </TableContext.Provider>
   );
 };
