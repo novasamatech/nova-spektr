@@ -6,7 +6,7 @@ import { useI18n } from '@renderer/context/I18nContext';
 import { Asset } from '@renderer/domain/asset';
 import { Balance } from '@renderer/domain/balance';
 import { ChainId } from '@renderer/domain/shared-kernel';
-import useToggle from '@renderer/hooks/useToggle';
+import useToggle from '@renderer/shared/hooks/useToggle';
 import { createLink } from '@renderer/routes/utils';
 import { total, transferable } from '@renderer/services/balance/common/utils';
 import { KeyboardKey } from '@renderer/utils/constants';

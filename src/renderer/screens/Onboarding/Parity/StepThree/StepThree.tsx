@@ -12,7 +12,7 @@ import { useI18n } from '@renderer/context/I18nContext';
 import { Account, createAccount } from '@renderer/domain/account';
 import { Chain } from '@renderer/domain/chain';
 import { ChainId, HexString, PublicKey, SigningType, WalletType } from '@renderer/domain/shared-kernel';
-import useToggle from '@renderer/hooks/useToggle';
+import useToggle from '@renderer/shared/hooks/useToggle';
 import ScanMoreModal from '@renderer/screens/Onboarding/Parity/ScanMoreModal/ScanMoreModal';
 import { useAccount } from '@renderer/services/account/accountService';
 import { toAddress } from '@renderer/services/balance/common/utils';

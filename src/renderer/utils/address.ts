@@ -1,6 +1,7 @@
 import { u8aToHex } from '@polkadot/util';
 import { decodeAddress, encodeAddress } from '@polkadot/util-crypto';
 
+import { Asset, AssetType, OrmlExtras, StatemineExtras } from '@renderer/domain/asset';
 import { PublicKey } from '@renderer/domain/shared-kernel';
 import { PUBLIC_KEY_LENGTH, SS58_DEFAULT_PREFIX } from './constants';
 
@@ -48,3 +49,15 @@ export const pasteAddressHandler = (handler: (value: string) => void) => async (
 };
 
 export const validateAddress = (address: string): boolean => Boolean(toPublicKey(address));
+
+export const getAssetId = (asset: Asset): string => {
+  if (asset.type === AssetType.STATEMINE) {
+    return (asset.typeExtras as StatemineExtras).assetId;
+  }
+
+  if (asset.type === AssetType.ORML) {
+    return (asset.typeExtras as OrmlExtras).currencyIdScale;
+  }
+
+  return asset.assetId.toString();
+};

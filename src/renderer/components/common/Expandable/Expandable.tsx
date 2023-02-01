@@ -2,7 +2,7 @@ import { PropsWithChildren, ReactNode } from 'react';
 import cn from 'classnames';
 import { Transition } from '@headlessui/react';
 
-import useToggle from '@renderer/hooks/useToggle';
+import useToggle from '@renderer/shared/hooks/useToggle';
 import { Button, Icon } from '@renderer/components/ui';
 
 type Props = {
