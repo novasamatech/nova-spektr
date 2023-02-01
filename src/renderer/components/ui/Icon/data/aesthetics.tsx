@@ -9,6 +9,7 @@ import ShieldImg, { ReactComponent as ShieldSvg } from '@images/aesthetics/shiel
 import GlobeImg, { ReactComponent as GlobeSvg } from '@images/aesthetics/globe.svg';
 import SortImg, { ReactComponent as SortSvg } from '@images/aesthetics/sort.svg';
 import ClockImg, { ReactComponent as ClockSvg } from '@images/aesthetics/clock.svg';
+import InfoImg, { ReactComponent as InfoSvg } from '@images/aesthetics/info.svg';
 
 const AestheticImages = {
   loader: { svg: LoaderSvg, img: LoaderImg },
@@ -22,6 +23,7 @@ const AestheticImages = {
   globe: { svg: GlobeSvg, img: GlobeImg },
   sort: { svg: SortSvg, img: SortImg },
   clock: { svg: ClockSvg, img: ClockImg },
+  info: { svg: InfoSvg, img: InfoImg },
 } as const;
 
 export type Aesthetic = keyof typeof AestheticImages;

@@ -3,6 +3,7 @@ import { MemoryRouter } from 'react-router-dom';
 
 import { ConnectionStatus } from '@renderer/domain/connection';
 import Bond from './Bond';
+import { TEST_PUBLIC_KEY } from '@renderer/services/balance/common/constants';
 
 jest.mock('@renderer/context/I18nContext', () => ({
   useI18n: jest.fn().mockReturnValue({
@@ -22,6 +23,30 @@ jest.mock('@renderer/context/NetworkContext', () => ({
       },
     },
   })),
+}));
+
+jest.mock('@renderer/services/account/accountService', () => ({
+  useAccount: jest.fn().mockReturnValue({
+    getActiveAccounts: () => [
+      {
+        name: 'Test Wallet',
+        accountId: '1ChFWeNRLarAPRCTM3bfJmncJbSAbSS9yqjueWz7jX7iTVZ',
+        publicKey: TEST_PUBLIC_KEY,
+      },
+    ],
+  }),
+}));
+
+jest.mock('@renderer/services/balance/balanceService', () => ({
+  useBalance: jest.fn().mockReturnValue({
+    getBalance: jest.fn().mockReturnValue({
+      assetId: 1,
+      chainId: '0x123',
+      publicKey: TEST_PUBLIC_KEY,
+      free: '10',
+      frozen: [{ type: 'test', amount: '1' }],
+    }),
+  }),
 }));
 
 const mockButton = (text: string, callback: () => void) => (
