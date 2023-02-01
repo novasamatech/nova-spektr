@@ -4,7 +4,13 @@ import BigNumber from 'bignumber.js';
 
 import { Balance } from '@renderer/domain/balance';
 import { PublicKey } from '@renderer/domain/shared-kernel';
-import { Decimal, SS58_DEFAULT_PREFIX, Suffix, ZERO_BALANCE } from '@renderer/services/balance/common/constants';
+import {
+  Decimal,
+  LockTypes,
+  SS58_DEFAULT_PREFIX,
+  Suffix,
+  ZERO_BALANCE,
+} from '@renderer/services/balance/common/constants';
 import { FormattedBalance } from './types';
 
 /**
@@ -92,7 +98,7 @@ export const locked = ({ locked }: Balance): string => {
 };
 
 export const staked = ({ locked }: Balance): string => {
-  const bnLocks = (locked || []).find((lock) => lock.type === '0x7374616b696e6720');
+  const bnLocks = (locked || []).find((lock) => lock.type === LockTypes.STAKING);
 
   if (!bnLocks) return ZERO_BALANCE;
 

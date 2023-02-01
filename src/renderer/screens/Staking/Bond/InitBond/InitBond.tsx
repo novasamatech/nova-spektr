@@ -37,26 +37,16 @@ const enum RewardsDestination {
   TRANSFERABLE,
 }
 
-const validateBalanceForFee = (balance: BalanceDS | string, fee: string): boolean => {
-  let transferableBalance: string;
+const validateBalanceForFee = (balance: BalanceDS | string, fee: string, amount: string, asset: Asset): boolean => {
+  const transferableBalance = typeof balance === 'string' ? balance : transferable(balance);
 
-  if (typeof balance === 'string') {
-    transferableBalance = balance;
-  } else {
-    transferableBalance = transferable(balance);
-  }
+  const amountWithFee = new BN(formatAmount(amount, asset.precision)).add(new BN(fee)).toString();
 
-  return new BN(fee).lte(new BN(transferableBalance));
+  return new BN(fee).lte(new BN(transferableBalance)) && validateBalance(balance, amountWithFee, asset);
 };
 
-const validateBalance = (balance: BalanceDS | string, amount: string, asset: Asset) => {
-  let stakeableBalance: string;
-
-  if (typeof balance === 'string') {
-    stakeableBalance = balance;
-  } else {
-    stakeableBalance = stakeable(balance);
-  }
+const validateBalance = (balance: BalanceDS | string, amount: string, asset: Asset): boolean => {
+  const stakeableBalance = typeof balance === 'string' ? balance : stakeable(balance);
 
   return new BN(formatAmount(amount, asset.precision)).lte(new BN(stakeableBalance));
 };
@@ -71,38 +61,35 @@ const getDropdownPayload = (
   const address = account.accountId || '';
 
   let isAvailable = true;
+  const balanceExists = balance && asset;
 
-  if (balance && asset) {
-    isAvailable = validateBalanceForFee(balance, fee) && validateBalance(balance, amount, asset);
+  if (balanceExists) {
+    isAvailable = validateBalanceForFee(balance, fee, amount, asset) && validateBalance(balance, amount, asset);
   }
 
   const stakeableBalance = stakeable(balance);
 
-  console.log('stakeableBalance', stakeableBalance);
-
   const element = (
-    <>
-      <div className="flex justify-between items-center gap-x-2.5">
-        <div className="flex items-center">
-          <Identicon address={address} size={34} background={false} canCopy={false} />
-          <p className="text-left text-neutral text-lg font-semibold">{account.name}</p>
-        </div>
-        {balance && asset ? (
-          <div className="flex items-center gap-x-1">
-            {!isAvailable && <Icon size={12} className="text-error" name="warnCutout" />}
-
-            <Balance
-              className={cn(!isAvailable && 'text-error')}
-              value={stakeableBalance}
-              precision={asset.precision}
-              symbol={asset.symbol}
-            />
-          </div>
-        ) : (
-          <></>
-        )}
+    <div className="flex justify-between items-center gap-x-2.5">
+      <div className="flex items-center">
+        <Identicon address={address} size={34} background={false} canCopy={false} />
+        <p className="text-left text-neutral text-lg font-semibold">{account.name}</p>
       </div>
-    </>
+      {balanceExists ? (
+        <div className="flex items-center gap-x-1">
+          {!isAvailable && <Icon size={12} className="text-error" name="warnCutout" />}
+
+          <Balance
+            className={cn(!isAvailable && 'text-error')}
+            value={stakeableBalance}
+            precision={asset.precision}
+            symbol={asset.symbol}
+          />
+        </div>
+      ) : (
+        <></>
+      )}
+    </div>
   );
 
   return {
@@ -163,7 +150,7 @@ const InitBond = ({ accountIds, api, chainId, asset, onResult }: Props) => {
     handleSubmit,
     control,
     watch,
-    // formState: { isValid },
+    formState: { isValid },
   } = useForm<BondForm>({
     mode: 'onChange',
     defaultValues: { amount: '', destination: '' },
@@ -175,46 +162,21 @@ const InitBond = ({ accountIds, api, chainId, asset, onResult }: Props) => {
   useEffect(() => {
     if (!api || !chainId || !asset) return;
 
-    (async () => {
-      const stakeableBalance = balances.map(stakeable);
+    const stakeableBalance = balances.map(stakeable);
 
-      const minMaxBalances = stakeableBalance.reduce(
-        (acc, balance) => {
-          if (!balance) return acc;
+    const minMaxBalances = stakeableBalance.reduce<[string, string]>(
+      (acc, balance) => {
+        if (!balance) return acc;
 
-          acc[0] = new BN(balance).lt(new BN(acc[0])) ? balance : acc[0];
-          acc[1] = new BN(balance).gt(new BN(acc[1])) ? balance : acc[1];
+        acc[0] = new BN(balance).lt(new BN(acc[0])) ? balance : acc[0];
+        acc[1] = new BN(balance).gt(new BN(acc[1])) ? balance : acc[1];
 
-          return acc;
-        },
-        [stakeableBalance[0], stakeableBalance[0]] as [string, string],
-      );
+        return acc;
+      },
+      [stakeableBalance[0], stakeableBalance[0]],
+    );
 
-      setBalanceRange(minMaxBalances);
-    })();
-  }, [api, chainId, asset, activeAccounts.length]);
-
-  // set balances
-  useEffect(() => {
-    if (!api || !chainId || !asset) return;
-
-    (async () => {
-      const transferableBalance = balances.map(transferable);
-
-      const minMaxBalances = transferableBalance.reduce(
-        (acc, balance) => {
-          if (!balance) return acc;
-
-          acc[0] = new BN(balance).lt(new BN(acc[0])) ? balance : acc[0];
-          acc[1] = new BN(balance).gt(new BN(acc[1])) ? balance : acc[1];
-
-          return acc;
-        },
-        [transferableBalance[0], transferableBalance[0]] as [string, string],
-      );
-
-      setBalanceRange(minMaxBalances);
-    })();
+    setBalanceRange(minMaxBalances);
   }, [api, chainId, asset, activeAccounts.length]);
 
   // Init stake wallets
@@ -222,11 +184,11 @@ const InitBond = ({ accountIds, api, chainId, asset, onResult }: Props) => {
     if (!asset) return;
 
     (async () => {
-      const formattedAccounts = selectedAccounts
-        // @ts-ignore
-        .map((a) =>
-          getDropdownPayload(a, balances.find((b) => b.publicKey === a.publicKey) as BalanceDS, asset, fee, amount),
-        );
+      const formattedAccounts = selectedAccounts.map((a) => {
+        const matchBalance = balances.find((b) => b.publicKey === a.publicKey) as BalanceDS;
+
+        return getDropdownPayload(a, matchBalance, asset, fee, amount);
+      });
 
       setStakeAccounts(formattedAccounts);
       setActiveAccounts(formattedAccounts);
@@ -241,7 +203,7 @@ const InitBond = ({ accountIds, api, chainId, asset, onResult }: Props) => {
       const payoutAccounts = accounts
         .filter((account) => !account.chainId || account.chainId === chainId)
         // @ts-ignore
-        .map((a) => getDropdownPayload(a));
+        .map(getDropdownPayload);
 
       setPayoutAccounts(payoutAccounts);
     })();
@@ -440,8 +402,8 @@ const InitBond = ({ accountIds, api, chainId, asset, onResult }: Props) => {
           <Fee className="text-neutral font-semibold" api={api} asset={asset} transaction={transactions[0]} />
         </div>
       </form>
-      {/*<Button type="submit" form="initBondForm" variant="fill" pallet="primary" weight="lg" disabled={!isValid}>*/}
-      <Button type="submit" form="initBondForm" variant="fill" pallet="primary" weight="lg">
+
+      <Button type="submit" form="initBondForm" variant="fill" pallet="primary" weight="lg" disabled={!isValid}>
         Continue
       </Button>
     </div>
