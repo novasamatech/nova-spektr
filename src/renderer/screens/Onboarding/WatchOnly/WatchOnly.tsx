@@ -8,7 +8,7 @@ import { useI18n } from '@renderer/context/I18nContext';
 import { createAccount } from '@renderer/domain/account';
 import { Chain } from '@renderer/domain/chain';
 import { ErrorType, PublicKey, SigningType } from '@renderer/domain/shared-kernel';
-import useToggle from '@renderer/hooks/useToggle';
+import useToggle from '@renderer/shared/hooks/useToggle';
 import { useAccount } from '@renderer/services/account/accountService';
 import { useChains } from '@renderer/services/network/chainsService';
 import { pasteAddressHandler, toPublicKey } from '@renderer/utils/address';

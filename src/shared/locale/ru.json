@@ -255,9 +255,19 @@
       "yearlyEarningLabel": "Yearly"
     },
     "bond": {
+      "aboutRewards": "О наградах",
+      "amountPlaceholder": "Введите сумму",
       "confirmBondSubtitle": "Потверждение",
       "initBondSubtitle": "Начало Стейкинга",
+      "payoutAccountLabel": "Аккаунт для выплаты наград",
+      "payoutAccountPlaceholder": "Выберите аккаунт для выплаты наград",
+      "restakeRewards": "Вложить награды",
+      "rewardsDestinationDescription": "Approximate amounts are calculated yearly",
+      "rewardsDestinationTitle": "Выплата наград",
       "selectNetworkLabel": "Выберите сеть",
+      "selectStakeAccountLabel": "Выберите аккаунты",
+      "selectStakeAccountSummary": "Несколько аккаунтов",
+      "transferableRewards": "Вывести награды",
       "validatorsSubtitle": "Валидаторы"
     },
     "nominators": {

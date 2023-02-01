@@ -26,8 +26,15 @@ export const useBalance = (): IBalanceService => {
 
   const validationSubscriptionService = useSubscription<ChainId>();
 
-  const { updateBalance, getBalances, getAllBalances, getBalance, getNetworkBalances, setBalanceIsValid } =
-    balanceStorage;
+  const {
+    updateBalance,
+    getBalances,
+    getAllBalances,
+    getBalance,
+    getNetworkBalances,
+    getAssetBalances,
+    setBalanceIsValid,
+  } = balanceStorage;
 
   const getLiveBalance = (publicKey: PublicKey, chainId: ChainId, assetId: string): BalanceDS | undefined => {
     return useLiveQuery(() => getBalance(publicKey, chainId, assetId), [publicKey, chainId, assetId]);
@@ -39,6 +46,14 @@ export const useBalance = (): IBalanceService => {
     };
 
     return useLiveQuery(query, [publicKeys.length, chainId], []);
+  };
+
+  const getLiveAssetBalances = (publicKeys: PublicKey[], chainId: ChainId, assetId: string): BalanceDS[] => {
+    const query = () => {
+      return getAssetBalances(publicKeys, chainId, assetId);
+    };
+
+    return useLiveQuery(query, [publicKeys.length, chainId, assetId], []);
   };
 
   const getLiveBalances = (publicKeys: PublicKey[]): BalanceDS[] => {
@@ -323,6 +338,8 @@ export const useBalance = (): IBalanceService => {
     getAllBalances,
     getBalances,
     getBalance,
+    getLiveAssetBalances,
+    getAssetBalances,
     getLiveBalance,
     getLiveBalances,
     getNetworkBalances,

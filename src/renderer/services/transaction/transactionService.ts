@@ -62,6 +62,35 @@ export const useTransaction = (): ITransactionService => {
         options,
       );
     },
+    [TransactionType.BOND]: (transaction, info, options) => {
+      return methods.staking.bond(
+        {
+          controller: transaction.args.controller,
+          value: transaction.args.value,
+          payee: transaction.args.payee,
+        },
+        info,
+        options,
+      );
+    },
+    [TransactionType.NOMINATE]: (transaction, info, options) => {
+      return methods.staking.nominate(
+        {
+          targets: transaction.args.targets,
+        },
+        info,
+        options,
+      );
+    },
+    [TransactionType.BATCH_ALL]: (transaction, info, options) => {
+      return methods.utility.batchAll(
+        {
+          calls: transaction.args.calls,
+        },
+        info,
+        options,
+      );
+    },
   };
 
   const getExtrinsic: Record<
@@ -72,6 +101,13 @@ export const useTransaction = (): ITransactionService => {
     [TransactionType.ASSET_TRANSFER]: ({ dest, value, asset }, api) =>
       api.tx.assets.transferKeepAlive(asset, dest, value),
     [TransactionType.ORML_TRANSFER]: ({ dest, value, asset }, api) => api.tx.currencies.transfer(dest, asset, value),
+    [TransactionType.BOND]: ({ controller, value, payee }, api) => api.tx.staking.bond(controller, value, payee),
+    [TransactionType.NOMINATE]: ({ targets }, api) => api.tx.staking.nominate(targets),
+    [TransactionType.BATCH_ALL]: ({ transactions }, api) => {
+      const calls = transactions.map((t: Transaction) => getExtrinsic[t.type](t.args, api).method);
+
+      return api.tx.utility.batch(calls);
+    },
   };
 
   const createPayload = async (

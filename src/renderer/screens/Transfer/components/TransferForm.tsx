@@ -6,8 +6,8 @@ import { Trans } from 'react-i18next';
 import { Button, AmountInput, Icon, Identicon, Input, InputHint } from '@renderer/components/ui';
 import { Fee } from '@renderer/components/common';
 import { useI18n } from '@renderer/context/I18nContext';
-import { Asset, AssetType, OrmlExtras, StatemineExtras } from '@renderer/domain/asset';
-import { formatAddress, pasteAddressHandler, toPublicKey, validateAddress } from '@renderer/utils/address';
+import { Asset, AssetType } from '@renderer/domain/asset';
+import { formatAddress, getAssetId, pasteAddressHandler, toPublicKey, validateAddress } from '@renderer/utils/address';
 import { ExtendedChain } from '@renderer/services/network/common/types';
 import { Transaction, TransactionType } from '@renderer/domain/transaction';
 import { useBalance } from '@renderer/services/balance/balanceService';
@@ -37,18 +37,6 @@ const getTransactionType = (assetType?: AssetType): TransactionType => {
   }
 
   return TransactionType.TRANSFER;
-};
-
-const getAssetId = (asset: Asset): string => {
-  if (asset.type === AssetType.STATEMINE) {
-    return (asset.typeExtras as StatemineExtras).assetId;
-  }
-
-  if (asset.type === AssetType.ORML) {
-    return (asset.typeExtras as OrmlExtras).currencyIdScale;
-  }
-
-  return asset.assetId.toString();
 };
 
 const TransferForm = ({ onCreateTransaction, account, asset, connection }: Props) => {
@@ -209,6 +197,7 @@ const TransferForm = ({ onCreateTransaction, account, asset, connection }: Props
           render={({ field: { onChange, value }, fieldState: { error } }) => (
             <>
               <AmountInput
+                name="amount"
                 value={value}
                 placeholder={t('transfer.amountPlaceholder')}
                 asset={asset}

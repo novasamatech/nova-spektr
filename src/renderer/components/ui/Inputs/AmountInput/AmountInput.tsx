@@ -5,6 +5,7 @@ import { useI18n } from '@renderer/context/I18nContext';
 import { Asset } from '@renderer/domain/asset';
 
 type Props = {
+  name?: string;
   value: string;
   placeholder: string;
   asset: Asset;
@@ -13,7 +14,7 @@ type Props = {
   onChange?: (...event: any[]) => void;
 };
 
-const AmountInput = ({ value, asset, balance, placeholder, invalid, onChange }: Props) => {
+const AmountInput = ({ name, value, asset, balance, placeholder, invalid, onChange }: Props) => {
   const { t } = useI18n();
 
   const label = (
@@ -57,6 +58,7 @@ const AmountInput = ({ value, asset, balance, placeholder, invalid, onChange }: 
 
   return (
     <Input
+      name={name}
       label={label}
       prefixElement={prefixElement}
       type="text"
