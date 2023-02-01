@@ -53,21 +53,19 @@ const validateBalance = (balance: BalanceDS | string, amount: string, asset: Ass
 
 const getDropdownPayload = (
   account: AccountDS,
-  balance: BalanceDS,
-  asset: Asset,
-  fee: string,
-  amount: string,
+  balance?: BalanceDS,
+  asset?: Asset,
+  fee?: string,
+  amount?: string,
 ): DropdownOption<AccountID> => {
   const address = account.accountId || '';
 
   let isAvailable = true;
-  const balanceExists = balance && asset;
+  const balanceExists = balance && asset && fee && amount;
 
   if (balanceExists) {
     isAvailable = validateBalanceForFee(balance, fee, amount, asset) && validateBalance(balance, amount, asset);
   }
-
-  const stakeableBalance = stakeable(balance);
 
   const element = (
     <div className="flex justify-between items-center gap-x-2.5">
@@ -81,7 +79,7 @@ const getDropdownPayload = (
 
           <Balance
             className={cn(!isAvailable && 'text-error')}
-            value={stakeableBalance}
+            value={stakeable(balance)}
             precision={asset.precision}
             symbol={asset.symbol}
           />
