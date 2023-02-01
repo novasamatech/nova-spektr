@@ -1,6 +1,5 @@
 import { Explorers } from '@renderer/components/common';
-import { Balance, Icon, Identicon, Table } from '@renderer/components/ui';
-import Shimmering from '@renderer/components/ui/Shimmering/Shimmering';
+import { Balance, Icon, Identicon, Table, Shimmering } from '@renderer/components/ui';
 import { useI18n } from '@renderer/context/I18nContext';
 import { Asset } from '@renderer/domain/asset';
 import { Explorer } from '@renderer/domain/chain';
@@ -39,7 +38,13 @@ const StakingTable = ({
   const { t } = useI18n();
 
   return (
-    <Table className="my-5" by="address" dataSource={stakeInfo} selectedKeys={selectedStakes} onSelect={selectStaking}>
+    <Table
+      className="my-5 shadow-surface"
+      by="address"
+      dataSource={stakeInfo}
+      selectedKeys={selectedStakes}
+      onSelect={selectStaking}
+    >
       <Table.Header>
         <Table.Column dataKey="accountName" align="left">
           {t('staking.overview.accountTableHeader')}
@@ -54,7 +59,11 @@ const StakingTable = ({
       </Table.Header>
       <Table.Body<AccountStakeInfo>>
         {(stake) => (
-          <Table.Row key={stake.address} selectable={stake.signingType !== SigningType.WATCH_ONLY}>
+          <Table.Row
+            className="bg-shade-1"
+            key={stake.address}
+            selectable={stake.signingType !== SigningType.WATCH_ONLY}
+          >
             <Table.Cell>
               <div className="grid grid-flow-col gap-x-1">
                 <Identicon className="row-span-2 self-center" address={stake.address} background={false} />

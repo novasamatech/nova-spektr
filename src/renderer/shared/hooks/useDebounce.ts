@@ -1,6 +1,12 @@
 import { useEffect, useState } from 'react';
 
-function useDebounce<T = any>(value: T, delay = 300): T {
+/**
+ * The debounced value will only reflect the latest value
+ * @param value arbitrary value
+ * @param delay time to pause before action
+ * @return {Any}
+ */
+function useDebounce<T>(value: T, delay = 300): T {
   const [debouncedValue, setDebouncedValue] = useState<T>(value);
 
   useEffect(() => {

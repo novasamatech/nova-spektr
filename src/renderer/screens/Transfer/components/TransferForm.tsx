@@ -11,7 +11,7 @@ import { formatAddress, getAssetId, pasteAddressHandler, toPublicKey, validateAd
 import { ExtendedChain } from '@renderer/services/network/common/types';
 import { Transaction, TransactionType } from '@renderer/domain/transaction';
 import { useBalance } from '@renderer/services/balance/balanceService';
-import { formatAmount, transferable } from '@renderer/services/balance/common/utils';
+import { formatAmount, transferableAmount } from '@renderer/services/balance/common/utils';
 import { useTransaction } from '@renderer/services/transaction/transactionService';
 import { Account } from '@renderer/domain/account';
 
@@ -60,12 +60,12 @@ const TransferForm = ({ onCreateTransaction, account, asset, connection }: Props
       if (asset.assetId !== 0) {
         const nativeTokenBalance = await getBalance(publicKey, connection.chainId, '0');
 
-        setNativeTokenBalance(nativeTokenBalance ? transferable(nativeTokenBalance) : '0');
+        setNativeTokenBalance(nativeTokenBalance ? transferableAmount(nativeTokenBalance) : '0');
       }
 
       const balance = await getBalance(publicKey, connection.chainId, asset.assetId.toString());
 
-      setBalance(balance ? transferable(balance) : '0');
+      setBalance(balance ? transferableAmount(balance) : '0');
     })();
   }, [currentAddress, connection.chainId, asset.assetId]);
 

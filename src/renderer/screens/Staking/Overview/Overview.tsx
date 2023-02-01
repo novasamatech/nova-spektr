@@ -1,4 +1,3 @@
-import { BN, BN_ZERO } from '@polkadot/util';
 import { useEffect, useState } from 'react';
 import { Trans } from 'react-i18next';
 
@@ -10,7 +9,6 @@ import { useNetworkContext } from '@renderer/context/NetworkContext';
 import { Asset, StakingType } from '@renderer/domain/asset';
 import { ConnectionStatus, ConnectionType } from '@renderer/domain/connection';
 import { AccountID, ChainId, SigningType } from '@renderer/domain/shared-kernel';
-import useToggle from '@renderer/shared/hooks/useToggle';
 import TotalAmount from '@renderer/screens/Staking/Overview/components/TotalAmount/TotalAmount';
 import { useAccount } from '@renderer/services/account/accountService';
 import { useChains } from '@renderer/services/network/chainsService';
@@ -21,10 +19,11 @@ import { useStakingData } from '@renderer/services/staking/stakingDataService';
 import { useStakingRewards } from '@renderer/services/staking/stakingRewardsService';
 import { useValidators } from '@renderer/services/staking/validatorsService';
 import { useWallet } from '@renderer/services/wallet/walletService';
+import { useToggle } from '@renderer/shared/hooks';
 import { isStringsMatchQuery } from '@renderer/utils/strings';
 import { AboutStaking, EmptyFilter, InactiveChain, NoAccounts, StakingTable } from './components';
+import NominatorsModal from './components/NominatorsModal/NominatorsModal';
 import { AccountStakeInfo } from './components/StakingTable/StakingTable';
-import NominatorsModal, { Nominator } from './components/NominatorsModal/NominatorsModal';
 
 type NetworkOption = { asset: Asset; addressPrefix: number };
 
@@ -45,7 +44,7 @@ const Overview = () => {
   const [era, setEra] = useState<number>();
   const [staking, setStaking] = useState<StakingMap>({});
   const [validators, setValidators] = useState<ValidatorMap>({});
-  const [nominators, setNominators] = useState<Record<string, Nominator[]>>({ elected: [], notElected: [] });
+  const [nominators, setNominators] = useState<ValidatorMap>({});
 
   const [query, setQuery] = useState('');
   const [selectedAccounts, setSelectedAccounts] = useState<AccountID[]>([]);
@@ -53,6 +52,7 @@ const Overview = () => {
   const [activeNetwork, setActiveNetwork] = useState<ResultOption<NetworkOption>>();
   const [stakingNetworks, setStakingNetworks] = useState<Option<NetworkOption>[]>([]);
   const [selectedStakes, setSelectedStakes] = useState<AccountID[]>([]);
+  const [selectedStash, setSelectedStash] = useState<AccountID>('');
 
   const chainId = (activeNetwork?.id || '') as ChainId;
   const api = connections[chainId]?.api;
@@ -151,37 +151,8 @@ const Overview = () => {
 
     const nominators = await getNominators(api, stash);
 
-    const preparedNominators = nominators.reduce<Record<string, any[]>>(
-      (acc, nominator) => {
-        const validator = validators[nominator];
-        if (!validator) {
-          return {
-            elected: acc.elected,
-            notElected: acc.notElected.concat({ address: nominator }),
-          };
-        }
-
-        const { identity, apy } = validator;
-        const fullIdentity = identity?.subName
-          ? `${identity.parent.name}/${identity.subName}`
-          : identity?.parent.name || '';
-
-        const nominated = validator.nominators.reduce((acc, data) => {
-          return data.who === stash ? acc.add(new BN(data.value)) : acc;
-        }, BN_ZERO);
-
-        acc.elected.push({
-          apy,
-          address: nominator,
-          identity: fullIdentity,
-          nominated: nominated.toString(),
-        });
-
-        return acc;
-      },
-      { elected: [], notElected: [] },
-    );
-    setNominators(preparedNominators);
+    setSelectedStash(stash);
+    setNominators(nominators);
     toggleNominatorsModal();
   };
 
@@ -319,8 +290,9 @@ const Overview = () => {
 
       <NominatorsModal
         isOpen={isNominatorsModalOpen}
-        elected={nominators.elected}
-        notElected={nominators.notElected}
+        stash={selectedStash}
+        validators={validators}
+        nominators={nominators}
         explorers={explorers}
         asset={activeNetwork?.value.asset}
         onClose={toggleNominatorsModal}
