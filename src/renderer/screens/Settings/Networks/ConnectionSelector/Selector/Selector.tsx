@@ -9,7 +9,7 @@ import { useI18n } from '@renderer/context/I18nContext';
 import { useNetworkContext } from '@renderer/context/NetworkContext';
 import { RpcNode } from '@renderer/domain/chain';
 import { ConnectionType } from '@renderer/domain/connection';
-import useToggle from '@renderer/shared/hooks/useToggle';
+import { useToggle } from '@renderer/shared/hooks';
 import CustomRpcModal from '@renderer/screens/Settings/Networks/ConnectionSelector/CustomRpcModal/CustomRpcModal';
 import { ExtendedChain } from '@renderer/services/network/common/types';
 

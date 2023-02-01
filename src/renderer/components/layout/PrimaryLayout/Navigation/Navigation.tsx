@@ -6,7 +6,7 @@ import { NavLink } from 'react-router-dom';
 import { Icon, Identicon } from '@renderer/components/ui';
 import { useI18n } from '@renderer/context/I18nContext';
 import { SigningType } from '@renderer/domain/shared-kernel';
-import useClickOutside from '@renderer/shared/hooks/useClickOutside';
+import { useClickOutside } from '@renderer/shared/hooks';
 import Paths from '@renderer/routes/paths';
 import { useAccount } from '@renderer/services/account/accountService';
 import { AccountDS } from '@renderer/services/storage';
