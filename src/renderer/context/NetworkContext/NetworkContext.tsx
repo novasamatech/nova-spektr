@@ -8,7 +8,7 @@ import { ConnectProps, ExtendedChain, RpcValidation } from '@renderer/services/n
 import { useNetwork } from '@renderer/services/network/networkService';
 import { useSubscription } from '@renderer/services/subscription/subscriptionService';
 import { useAccount } from '@renderer/services/account/accountService';
-import { usePrevious } from '@renderer/hooks/usePreviouse';
+import usePrevious from '@renderer/shared/hooks/usePrevious';
 
 type NetworkContextProps = {
   connections: Record<ChainId, ExtendedChain>;

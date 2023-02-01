@@ -2,7 +2,7 @@ import { act, render, renderHook, screen } from '@testing-library/react';
 
 import { GraphqlProvider, useGraphql } from './GraphqlContext';
 
-jest.mock('@renderer/hooks/useToggle');
+jest.mock('@renderer/shared/hooks/useToggle');
 
 jest.mock('@renderer/services/network/chainsService', () => ({
   useChains: jest.fn().mockReturnValue({
