@@ -11,10 +11,20 @@ import { AccountID } from '@renderer/domain/shared-kernel';
 import { Validator } from '@renderer/domain/validator';
 import { getComposedIdentity, getShortAddress } from '@renderer/utils/strings';
 
+type ValidatorWithNomination = Validator & { nominated: string };
+type AvailableColumns = ('apy' | 'ownStake' | 'totalStake' | 'nominated')[];
+
 const VALIDATORS_SKELETON = Array.from({ length: 10 }, (_, index) => ({ address: index.toString() }));
 
-type ValidatorWithNominated = Validator & { nominated: string };
-type AvailableColumns = ('apy' | 'ownStake' | 'totalStake' | 'nominated')[];
+const getValidatorsWithNomination = (stash: AccountID, validators: Validator[]): ValidatorWithNomination[] => {
+  return validators.map((validator) => {
+    const nominated = validator.nominators.reduce((acc, data) => {
+      return data.who === stash ? acc.add(new BN(data.value)) : acc;
+    }, BN_ZERO);
+
+    return { ...validator, nominated: nominated.toString() };
+  });
+};
 
 type Props = {
   stash?: AccountID;
@@ -47,19 +57,8 @@ const ValidatorsTable = ({
 
   const [selectedValidators, setSelectedValidators] = useState<AccountID[]>([]);
 
-  const getValidators = (): Validator[] => {
-    if (!stash || !columns.includes('nominated')) {
-      return validators;
-    }
-
-    return validators.map((validator) => {
-      const nominated = validator.nominators.reduce((acc, data) => {
-        return data.who === stash ? acc.add(new BN(data.value)) : acc;
-      }, BN_ZERO);
-
-      return { ...validator, nominated: nominated.toString() };
-    });
-  };
+  const includeNomination = !stash || !columns.includes('nominated');
+  const extendedValidators = includeNomination ? validators : getValidatorsWithNomination(stash, validators);
 
   const selectValidator = (selected: AccountID[]) => {
     setSelectedValidators(selected);
@@ -73,7 +72,7 @@ const ValidatorsTable = ({
     <Table
       by="address"
       className={className}
-      dataSource={isLoading ? VALIDATORS_SKELETON : getValidators()}
+      dataSource={isLoading ? VALIDATORS_SKELETON : extendedValidators}
       selectedKeys={canSelect ? selectedValidators : undefined}
       onSelect={selectValidator}
     >
@@ -106,7 +105,7 @@ const ValidatorsTable = ({
         )}
         <Table.Column dataKey="actions" width={50} />
       </Table.Header>
-      <Table.Body<ValidatorWithNominated>>
+      <Table.Body<ValidatorWithNomination>>
         {({ address, identity, ownStake, totalStake, oversubscribed, slashed, blocked, nominated }) => (
           <Table.Row key={address} className="bg-shade-1" height="lg" selectable={!blocked && showHeader}>
             <Table.Cell>
