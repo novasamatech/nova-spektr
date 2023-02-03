@@ -3,16 +3,16 @@ import cn from 'classnames';
 import { Icon } from '@renderer/components/ui';
 import { useI18n } from '@renderer/context/I18nContext';
 import { Stake } from '@renderer/domain/stake';
-import Paths from '@renderer/routes/paths';
+import Paths, { PathValue } from '@renderer/routes/paths';
 
 const STAKE_ACTIONS = {
-  startStaking: { icon: 'startStaking', title: 'staking.actions.startStakingLabel', path: Paths.STAKING },
-  stakeMore: { icon: 'startStaking', title: 'staking.actions.stakeMoreLabel', path: Paths.STAKING },
-  unstake: { icon: 'stakeMore', title: 'staking.actions.unstakeLabel', path: Paths.STAKING },
-  returnToStake: { icon: 'unstake', title: 'staking.actions.returnToStakeLabel', path: Paths.STAKING },
-  redeem: { icon: 'returnToStake', title: 'staking.actions.redeemLabel', path: Paths.STAKING },
-  setValidators: { icon: 'redeem', title: 'staking.actions.setValidatorsLabel', path: Paths.STAKING },
-  destination: { icon: 'destination', title: 'staking.actions.destinationLabel', path: Paths.STAKING },
+  startStaking: { icon: 'startStaking', title: 'staking.actions.startStakingLabel', path: Paths.BOND },
+  stakeMore: { icon: 'startStaking', title: 'staking.actions.stakeMoreLabel', path: Paths.BOND },
+  unstake: { icon: 'stakeMore', title: 'staking.actions.unstakeLabel', path: Paths.BOND },
+  returnToStake: { icon: 'unstake', title: 'staking.actions.returnToStakeLabel', path: Paths.BOND },
+  redeem: { icon: 'returnToStake', title: 'staking.actions.redeemLabel', path: Paths.BOND },
+  setValidators: { icon: 'redeem', title: 'staking.actions.setValidatorsLabel', path: Paths.BOND },
+  destination: { icon: 'destination', title: 'staking.actions.destinationLabel', path: Paths.BOND },
 } as const;
 
 type StakeAction = keyof typeof STAKE_ACTIONS;
@@ -20,7 +20,7 @@ type StakeAction = keyof typeof STAKE_ACTIONS;
 type Props = {
   stakes: Stake[];
   className?: string;
-  onNavigate: (path: string) => void;
+  onNavigate: (path: PathValue) => void;
 };
 
 const StakingActions = ({ stakes, className, onNavigate }: Props) => {

@@ -1,12 +1,23 @@
-import Paths from './paths';
+import { PathValue } from './paths';
 
 /**
  * Create router link with url parameters
- * @param path: key of existing Paths
- * @param params: values to be inserted inside url
+ * @param path key of existing Paths
+ * @param params values to be inserted inside url
  * @return {String}
  */
-export const createLink = (path: keyof typeof Paths, params: Record<string, string | number>): string =>
-  Object.entries(params).reduce((acc, [key, value]) => {
+type Param = Record<string, string | number>;
+type Query = Record<string, (string | number)[]>;
+export const createLink = (path: PathValue, params: Param, query: Query = {}): string => {
+  const urlWithParams = Object.entries(params).reduce<string>((acc, [key, value]) => {
     return acc.replace(new RegExp(`:${key}`), value.toString());
-  }, Paths[path]);
+  }, path);
+
+  const queryParts = Object.entries(query).reduce<string[]>((acc, [key, value]) => {
+    acc.push(`${key}=${value.join(',')}`);
+
+    return acc;
+  }, []);
+
+  return Object.keys(query).length > 0 ? `${urlWithParams}?${queryParts.join('&')}` : urlWithParams;
+};

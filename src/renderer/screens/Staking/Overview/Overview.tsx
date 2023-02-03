@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Trans } from 'react-i18next';
+import { useNavigate } from 'react-router-dom';
 
 import { StakingActions } from '@renderer/components/common';
 import { Dropdown, Icon, Input } from '@renderer/components/ui';
@@ -11,6 +12,8 @@ import { Asset, StakingType } from '@renderer/domain/asset';
 import { ConnectionStatus, ConnectionType } from '@renderer/domain/connection';
 import { AccountID, ChainId, SigningType } from '@renderer/domain/shared-kernel';
 import { Stake } from '@renderer/domain/stake';
+import { PathValue } from '@renderer/routes/paths';
+import { createLink } from '@renderer/routes/utils';
 import TotalAmount from '@renderer/screens/Staking/Overview/components/TotalAmount/TotalAmount';
 import { useAccount } from '@renderer/services/account/accountService';
 import { useChains } from '@renderer/services/network/chainsService';
@@ -31,6 +34,7 @@ type NetworkOption = { asset: Asset; addressPrefix: number };
 
 const Overview = () => {
   const { t } = useI18n();
+  const navigate = useNavigate();
   const [isNominatorsModalOpen, toggleNominatorsModal] = useToggle();
 
   const { changeClient } = useGraphql();
@@ -224,6 +228,18 @@ const Overview = () => {
     return acc;
   }, []);
 
+  const navigateToStake = (path: PathValue) => {
+    const activeAccountIds = activeAccounts.reduce<string[]>((acc, { id, accountId }) => {
+      if (id && accountId && selectedAccounts.includes(accountId)) {
+        acc.push(id);
+      }
+
+      return acc;
+    }, []);
+
+    navigate(createLink(path, { chainId }, { id: activeAccountIds }));
+  };
+
   return (
     <>
       <div className="h-full flex flex-col gap-y-9 relative">
@@ -302,7 +318,7 @@ const Overview = () => {
         <StakingActions
           className="absolute bottom-4 left-1/2 -translate-x-1/2"
           stakes={selectedStakes}
-          onNavigate={console.log}
+          onNavigate={navigateToStake}
         />
       </div>
 
