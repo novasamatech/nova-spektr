@@ -246,7 +246,7 @@ const Overview = () => {
         <h1 className="font-semibold text-2xl text-neutral mt-5 px-5">{t('staking.title')}</h1>
 
         <div className="overflow-y-auto">
-          <section className="w-[900px] p-5 mx-auto bg-shade-2 rounded-2lg">
+          <section className="w-[900px] p-5 mx-auto bg-shade-2 rounded-2lg mb-36 last:mb-0">
             <div className="flex items-center mb-5">
               <p className="text-xl text-neutral mr-5">
                 <Trans
@@ -313,13 +313,13 @@ const Overview = () => {
             {networkIsActive && !activeAccounts.length && <NoAccounts chainName={connections[chainId]?.name} />}
             {!networkIsActive && <InactiveChain />}
           </section>
-        </div>
 
-        <StakingActions
-          className="absolute bottom-4 left-1/2 -translate-x-1/2"
-          stakes={selectedStakes}
-          onNavigate={navigateToStake}
-        />
+          <StakingActions
+            className="absolute bottom-4 left-1/2 -translate-x-1/2"
+            stakes={selectedStakes}
+            onNavigate={navigateToStake}
+          />
+        </div>
       </div>
 
       <NominatorsModal
