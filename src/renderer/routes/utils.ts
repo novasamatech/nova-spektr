@@ -1,9 +1,10 @@
 import { PathValue } from './paths';
 
 /**
- * Create router link with url parameters
+ * Create router link with url parameters and query string
  * @param path key of existing Paths
- * @param params values to be inserted inside url
+ * @param params url params
+ * @param query url query params
  * @return {String}
  */
 type Param = Record<string, string | number>;
