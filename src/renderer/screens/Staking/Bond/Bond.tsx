@@ -19,6 +19,12 @@ const enum Step {
   ConfirmBond,
 }
 
+const HEADER_TITLE: Record<Step, string> = {
+  [Step.InitBond]: 'staking.bond.initBondSubtitle',
+  [Step.Validators]: 'staking.bond.validatorsSubtitle',
+  [Step.ConfirmBond]: 'staking.bond.confirmBondSubtitle',
+};
+
 const Bond = () => {
   const { t } = useI18n();
   const navigate = useNavigate();
@@ -60,19 +66,13 @@ const Bond = () => {
     // TODO: init bond and nominate call
   };
 
-  const headerTitle: Record<Step, string> = {
-    [Step.InitBond]: t('staking.bond.initBondSubtitle'),
-    [Step.Validators]: t('staking.bond.validatorsSubtitle'),
-    [Step.ConfirmBond]: t('staking.bond.confirmBondSubtitle'),
-  };
-
   return (
     <div className="flex flex-col h-full relative">
       <div className="flex items-center gap-x-2.5 mb-9 mt-5 px-5">
         <ButtonBack onCustomReturn={goToPrevStep} />
         <p className="font-semibold text-2xl text-neutral-variant">{t('staking.title')}</p>
         <p className="font-semibold text-2xl text-neutral">/</p>
-        <h1 className="font-semibold text-2xl text-neutral">{headerTitle[activeStep]}</h1>
+        <h1 className="font-semibold text-2xl text-neutral">{t(HEADER_TITLE[activeStep])}</h1>
       </div>
 
       {activeStep === Step.InitBond && (

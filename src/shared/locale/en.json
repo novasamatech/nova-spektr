@@ -254,6 +254,15 @@
       "unstakingPeriodValue": "{ period } days",
       "yearlyEarningLabel": "Yearly"
     },
+    "actions": {
+      "destinationLabel": "Reward destination",
+      "redeemLabel": "Redeem",
+      "returnToStakeLabel": "Return to stake",
+      "setValidatorsLabel": "Set validators",
+      "stakeMoreLabel": "Stake more",
+      "startStakingLabel": "Start staking",
+      "unstakeLabel": "Unstake"
+    },
     "bond": {
       "aboutRewards": "About rewards",
       "amountPlaceholder": "Input amount",

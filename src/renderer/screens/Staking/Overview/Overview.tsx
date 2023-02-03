@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Trans } from 'react-i18next';
 
+import { StakingActions } from '@renderer/components/common';
 import { Dropdown, Icon, Input } from '@renderer/components/ui';
 import { Option, ResultOption } from '@renderer/components/ui/Dropdowns/common/types';
 import { useGraphql } from '@renderer/context/GraphqlContext';
@@ -9,6 +10,7 @@ import { useNetworkContext } from '@renderer/context/NetworkContext';
 import { Asset, StakingType } from '@renderer/domain/asset';
 import { ConnectionStatus, ConnectionType } from '@renderer/domain/connection';
 import { AccountID, ChainId, SigningType } from '@renderer/domain/shared-kernel';
+import { Stake } from '@renderer/domain/stake';
 import TotalAmount from '@renderer/screens/Staking/Overview/components/TotalAmount/TotalAmount';
 import { useAccount } from '@renderer/services/account/accountService';
 import { useChains } from '@renderer/services/network/chainsService';
@@ -47,11 +49,10 @@ const Overview = () => {
   const [nominators, setNominators] = useState<ValidatorMap>({});
 
   const [query, setQuery] = useState('');
-  const [selectedAccounts, setSelectedAccounts] = useState<AccountID[]>([]);
   const [networkIsActive, setNetworkIsActive] = useState(true);
   const [activeNetwork, setActiveNetwork] = useState<ResultOption<NetworkOption>>();
   const [stakingNetworks, setStakingNetworks] = useState<Option<NetworkOption>[]>([]);
-  const [selectedStakes, setSelectedStakes] = useState<AccountID[]>([]);
+  const [selectedAccounts, setSelectedAccounts] = useState<AccountID[]>([]);
   const [selectedStash, setSelectedStash] = useState<AccountID>('');
 
   const chainId = (activeNetwork?.id || '') as ChainId;
@@ -142,7 +143,6 @@ const Overview = () => {
     setSelectedAccounts([]);
     setStaking({});
     setValidators({});
-    setSelectedStakes([]);
     setQuery('');
   };
 
@@ -212,9 +212,21 @@ const Overview = () => {
     return acc;
   }, []);
 
+  const selectedStakes = Object.entries(staking).reduce<Stake[]>((acc, [address, stake]) => {
+    if (!selectedAccounts.includes(address)) return acc;
+
+    if (stake) {
+      acc.push(stake);
+    } else {
+      acc.push({ accountId: address } as Stake);
+    }
+
+    return acc;
+  }, []);
+
   return (
     <>
-      <div className="h-full flex flex-col gap-y-9">
+      <div className="h-full flex flex-col gap-y-9 relative">
         <h1 className="font-semibold text-2xl text-neutral mt-5 px-5">{t('staking.title')}</h1>
 
         <div className="overflow-y-auto">
@@ -272,12 +284,12 @@ const Overview = () => {
                 ) : (
                   <StakingTable
                     stakeInfo={stakingInfo}
-                    selectedStakes={selectedStakes}
+                    selectedStakes={selectedAccounts}
                     addressPrefix={activeNetwork?.value.addressPrefix}
                     asset={activeNetwork?.value.asset}
                     explorers={explorers}
                     openValidators={setupNominators}
-                    selectStaking={setSelectedStakes}
+                    selectStaking={setSelectedAccounts}
                   />
                 )}
               </>
@@ -286,6 +298,12 @@ const Overview = () => {
             {!networkIsActive && <InactiveChain />}
           </section>
         </div>
+
+        <StakingActions
+          className="absolute bottom-4 left-1/2 -translate-x-1/2"
+          stakes={selectedStakes}
+          onNavigate={console.log}
+        />
       </div>
 
       <NominatorsModal
