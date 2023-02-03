@@ -22,6 +22,7 @@ import Popover from './Popover/Popover';
 import Filter from './Dropdowns/Filter/Filter';
 import Table from './Table/Table';
 import Shimmering from './Shimmering/Shimmering';
+import Combobox from './Dropdowns/Combobox/Combobox';
 
 export {
   Address,
@@ -48,4 +49,5 @@ export {
   Filter,
   Table,
   Shimmering,
+  Combobox,
 };

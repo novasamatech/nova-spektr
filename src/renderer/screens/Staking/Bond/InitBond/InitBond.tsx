@@ -12,12 +12,12 @@ import {
   AmountInput,
   Balance,
   Button,
-  Dropdown,
   Icon,
   Identicon,
   InputHint,
   RadioGroup,
   Select,
+  Combobox,
 } from '@renderer/components/ui';
 import { Option as DropdownOption } from '@renderer/components/ui/Dropdowns/common/types';
 import { RadioOption, ResultOption } from '@renderer/components/ui/RadioGroup/common/types';
@@ -120,7 +120,6 @@ const InitBond = ({ accountIds, api, chainId, asset, onResult }: Props) => {
   const [activeAccounts, setActiveAccounts] = useState<ResultOption<AccountID>[]>([]);
   const [activeRadio, setActiveRadio] = useState<ResultOption<RewardsDestination>>();
   const [payoutAccounts, setPayoutAccounts] = useState<DropdownOption<AccountID>[]>([]);
-  const [activePayoutAccount, setActivePayoutAccount] = useState<ResultOption<AccountID>>();
 
   const selectedAccounts = accounts.filter(
     (account) => (!account.chainId || account.chainId === chainId) && accountIds.includes(account.accountId || ''),
@@ -144,6 +143,7 @@ const InitBond = ({ accountIds, api, chainId, asset, onResult }: Props) => {
   });
 
   const amount = watch('amount');
+  const destination = watch('destination');
 
   // Set balances
   useEffect(() => {
@@ -195,8 +195,7 @@ const InitBond = ({ accountIds, api, chainId, asset, onResult }: Props) => {
   useEffect(() => {
     if (!chainId || !asset || !balanceRange) return;
 
-    const transferableDestination =
-      activeRadio?.value === RewardsDestination.TRANSFERABLE && activePayoutAccount?.value;
+    const transferableDestination = activeRadio?.value === RewardsDestination.TRANSFERABLE && destination;
 
     const newTransactions = activeAccounts.map(({ value }) => {
       const bondTx = {
@@ -206,7 +205,7 @@ const InitBond = ({ accountIds, api, chainId, asset, onResult }: Props) => {
         args: {
           value: formatAmount(amount, asset.precision),
           controller: value,
-          payee: transferableDestination ? { Account: activePayoutAccount.value } : 'Staked',
+          payee: transferableDestination ? { Account: destination } : 'Staked',
         },
       };
 
@@ -228,7 +227,7 @@ const InitBond = ({ accountIds, api, chainId, asset, onResult }: Props) => {
     });
 
     setTransactions(newTransactions);
-  }, [balanceRange, amount, asset, activeRadio, activePayoutAccount]);
+  }, [balanceRange, amount, asset, activeRadio, destination]);
 
   useEffect(() => {
     if (!api || !amount || !validateAddress(transactions?.[0]?.args.dest) || !transactions.length) return;
@@ -347,16 +346,20 @@ const InitBond = ({ accountIds, api, chainId, asset, onResult }: Props) => {
             name="destination"
             control={control}
             render={({ field: { onChange } }) => (
-              <Dropdown
+              <Combobox
                 variant="up"
                 label={t('staking.bond.payoutAccountLabel')}
                 placeholder={t('staking.bond.payoutAccountPlaceholder')}
-                activeId={activePayoutAccount?.id.toString() || ''}
                 options={payoutAccounts}
-                onChange={(option) => {
-                  setActivePayoutAccount(option);
-                  onChange(option.value);
-                }}
+                suffixElement={
+                  destination && (
+                    <Button variant="text" pallet="dark" weight="xs" onClick={() => onChange(undefined)}>
+                      <Icon name="clearOutline" size={20} />
+                    </Button>
+                  )
+                }
+                prefixElement={<Identicon address={destination} size={24} background={false} canCopy={false} />}
+                onChange={(option) => onChange(option.value)}
               />
             )}
           />
