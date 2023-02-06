@@ -2,7 +2,7 @@ import { Explorers, Fee } from '@renderer/components/common';
 import { Address, Balance, Icon } from '@renderer/components/ui';
 import { useI18n } from '@renderer/context/I18nContext';
 import { Asset } from '@renderer/domain/asset';
-import { formatAddress } from '@renderer/shared/hooks/utils/address';
+import { formatAddress } from '@renderer/shared/utils/address';
 import { Transaction } from '@renderer/domain/transaction';
 import { ExtendedChain } from '@renderer/services/network/common/types';
 import { Account } from '@renderer/domain/account';

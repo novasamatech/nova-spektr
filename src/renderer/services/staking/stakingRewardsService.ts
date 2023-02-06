@@ -5,7 +5,7 @@ import { GET_TOTAL_REWARDS } from '@renderer/graphql/queries/stakingRewards';
 import { RewardsQuery } from '@renderer/graphql/types/stakingRewards';
 import { toAddress } from '@renderer/services/balance/common/utils';
 import { IStakingRewardsService, RewardsMap } from '@renderer/services/staking/common/types';
-import { toPublicKey } from '@renderer/shared/hooks/utils/address';
+import { toPublicKey } from '@renderer/shared/utils/address';
 
 const getAccountsWithPrefix = (accounts: AccountID[], addressPrefix?: number): AccountID[] => {
   return accounts.reduce<AccountID[]>((acc, account) => {

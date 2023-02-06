@@ -3,7 +3,7 @@ import { IconTheme } from '@polkadot/react-identicon/types';
 import cn from 'classnames';
 import { useLayoutEffect, useRef } from 'react';
 
-import { copyToClipboard } from '@renderer/shared/hooks/utils/strings';
+import { copyToClipboard } from '@renderer/shared/utils/strings';
 import { Icon } from '..';
 
 type Props = {

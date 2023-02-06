@@ -17,8 +17,8 @@ import ScanMoreModal from '@renderer/screens/Onboarding/Parity/ScanMoreModal/Sca
 import { useAccount } from '@renderer/services/account/accountService';
 import { toAddress } from '@renderer/services/balance/common/utils';
 import { useChains } from '@renderer/services/network/chainsService';
-import { toPublicKey } from '@renderer/shared/hooks/utils/address';
-import { getShortAddress } from '@renderer/shared/hooks/utils/strings';
+import { toPublicKey } from '@renderer/shared/utils/address';
+import { getShortAddress } from '@renderer/shared/utils/strings';
 import { useWallet } from '@renderer/services/wallet/walletService';
 import { createWallet } from '@renderer/domain/wallet';
 import './StepThree.css';

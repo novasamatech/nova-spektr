@@ -27,7 +27,7 @@ import { useBalance } from '@renderer/services/balance/balanceService';
 import { formatAmount, stakeableAmount, transferableAmount } from '@renderer/services/balance/common/utils';
 import { AccountDS, BalanceDS } from '@renderer/services/storage';
 import { useTransaction } from '@renderer/services/transaction/transactionService';
-import { validateAddress } from '@renderer/shared/hooks/utils/address';
+import { validateAddress } from '@renderer/shared/utils/address';
 
 const PAYOUT_URL = 'https://wiki.polkadot.network/docs/learn-simple-payouts';
 

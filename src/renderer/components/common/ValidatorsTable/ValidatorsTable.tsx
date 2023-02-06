@@ -9,7 +9,7 @@ import { Asset } from '@renderer/domain/asset';
 import { Explorer } from '@renderer/domain/chain';
 import { AccountID } from '@renderer/domain/shared-kernel';
 import { Validator } from '@renderer/domain/validator';
-import { getComposedIdentity, getShortAddress } from '@renderer/shared/hooks/utils/strings';
+import { getComposedIdentity, getShortAddress } from '@renderer/shared/utils/strings';
 
 type ValidatorWithNomination = Validator & { nominated: string };
 type AvailableColumns = ('apy' | 'ownStake' | 'totalStake' | 'nominated')[];

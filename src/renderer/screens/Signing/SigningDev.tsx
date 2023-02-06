@@ -23,7 +23,7 @@ import MultiframeSignatureReader from './MultiframeSignatureReader/MultiframeSig
 import { HexString, SigningType } from '@renderer/domain/shared-kernel';
 import { toAddress } from '@renderer/services/balance/common/utils';
 import Progress from './Progress';
-import { secondsToMinutes } from '@renderer/shared/hooks/utils/time';
+import { secondsToMinutes } from '@renderer/shared/utils/time';
 
 const enum Steps {
   SCANNING = 0,

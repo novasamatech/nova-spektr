@@ -2,12 +2,7 @@
 import cn from 'classnames';
 
 import { useI18n } from '@renderer/context/I18nContext';
-import {
-  secondsToDuration,
-  getDurationFormat,
-  getDurationParams,
-  DurationFormat,
-} from '@renderer/shared/hooks/utils/time';
+import { secondsToDuration, getDurationFormat, getDurationParams, DurationFormat } from '@renderer/shared/utils/time';
 
 interface Props {
   seconds: string;

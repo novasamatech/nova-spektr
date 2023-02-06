@@ -8,7 +8,7 @@ import { useI18n } from '@renderer/context/I18nContext';
 import { ValidationErrors } from '@renderer/screens/Transfer/common/constants';
 import QrMultiframeSignatureReader from '@renderer/components/common/QrCode/QrReader/QrMultiframeSignatureReader';
 import { HexString } from '@renderer/domain/shared-kernel';
-import { secondsToMinutes } from '@renderer/shared/hooks/utils/time';
+import { secondsToMinutes } from '@renderer/shared/utils/time';
 
 const enum CameraState {
   ACTIVE,

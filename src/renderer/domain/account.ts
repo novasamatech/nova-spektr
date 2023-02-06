@@ -1,6 +1,6 @@
 import { IndexableType } from 'dexie';
 
-import { toPublicKey } from '@renderer/shared/hooks/utils/address';
+import { toPublicKey } from '@renderer/shared/utils/address';
 import { ChainId, CryptoType, PublicKey, ChainType, SigningType, AccountID } from './shared-kernel';
 
 export type Account = {

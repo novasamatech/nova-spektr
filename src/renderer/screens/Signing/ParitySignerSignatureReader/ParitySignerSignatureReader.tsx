@@ -7,7 +7,7 @@ import { Button, Dropdown, Icon } from '@renderer/components/ui';
 import { Option, ResultOption } from '@renderer/components/ui/Dropdowns/common/types';
 import { useI18n } from '@renderer/context/I18nContext';
 import { ValidationErrors } from '@renderer/screens/Transfer/common/constants';
-import { secondsToMinutes } from '@renderer/shared/hooks/utils/time';
+import { secondsToMinutes } from '@renderer/shared/utils/time';
 
 const enum CameraState {
   ACTIVE,
