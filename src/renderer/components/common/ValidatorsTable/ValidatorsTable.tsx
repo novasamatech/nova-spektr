@@ -9,6 +9,7 @@ import { Asset } from '@renderer/domain/asset';
 import { Explorer } from '@renderer/domain/chain';
 import { AccountID } from '@renderer/domain/shared-kernel';
 import { Validator } from '@renderer/domain/validator';
+import { bigNumberSorter } from '@renderer/shared/utils/bignumber';
 import { getComposedIdentity, getShortAddress } from '@renderer/shared/utils/strings';
 
 type ValidatorWithNomination = Validator & { nominated: string };
@@ -95,7 +96,11 @@ const ValidatorsTable = ({
           </Table.Column>
         )}
         {columns.includes('totalStake') && (
-          <Table.Column dataKey="totalStake" width={150} sortable>
+          <Table.Column
+            dataKey="totalStake"
+            width={150}
+            sortable={(a, b) => bigNumberSorter(a.totalStake, b.totalStake)}
+          >
             {t('staking.validators.totalStakeTableHeader')}
           </Table.Column>
         )}
@@ -124,7 +129,7 @@ const ValidatorsTable = ({
                     <span className="text-sm font-semibold text-neutral-variant">{getShortAddress(address, 11)}</span>
                   )}
                   {(oversubscribed || slashed || blocked) && (
-                    <div className="ml-1.5">
+                    <div className="flex items-center gap-x-2.5 ml-1.5">
                       {oversubscribed && (
                         <Popover
                           titleIcon={<Icon className="text-alert" name="warnCutout" size={16} />}

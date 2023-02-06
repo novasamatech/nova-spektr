@@ -16,6 +16,8 @@ const createBigNumber = (value: BnArgument): BN => {
  * @return {Number}
  */
 export const bigNumberSorter = (first: BnArgument, second: BnArgument): number => {
+  if (!first || !second) return 0;
+
   const firstBN = createBigNumber(first);
   const secondBN = createBigNumber(second);
 
