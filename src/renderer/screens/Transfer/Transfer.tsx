@@ -15,14 +15,14 @@ import { useBalance } from '@renderer/services/balance/balanceService';
 import { formatAmount, toAddress, transferableAmount } from '@renderer/services/balance/common/utils';
 import { useChains } from '@renderer/services/network/chainsService';
 import { useTransaction } from '@renderer/services/transaction/transactionService';
-import { formatAddress, toPublicKey, validateAddress } from '@renderer/utils/address';
+import { formatAddress, toPublicKey, validateAddress } from '@renderer/shared/hooks/utils/address';
 import { getMetadataPortalUrl, TROUBLESHOOTING_URL } from '../Signing/common/consts';
-import { secondsToMinutes } from '../Signing/common/utils';
 import ParitySignerSignatureReader from '../Signing/ParitySignerSignatureReader/ParitySignerSignatureReader';
 import { ValidationErrors } from './common/constants';
 import { useAccount } from '@renderer/services/account/accountService';
 import { Message, SelectedAddress, TransferDetails, TransferForm } from './components';
 import { Option, ResultOption } from '@renderer/components/ui/Dropdowns/common/types';
+import { secondsToMinutes } from '@renderer/shared/hooks/utils/time';
 
 const enum Steps {
   CREATING,

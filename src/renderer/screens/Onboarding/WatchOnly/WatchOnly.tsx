@@ -11,7 +11,7 @@ import { ErrorType, PublicKey, SigningType } from '@renderer/domain/shared-kerne
 import { useToggle } from '@renderer/shared/hooks';
 import { useAccount } from '@renderer/services/account/accountService';
 import { useChains } from '@renderer/services/network/chainsService';
-import { pasteAddressHandler, toPublicKey } from '@renderer/utils/address';
+import { pasteAddressHandler, toPublicKey } from '@renderer/shared/hooks/utils/address';
 import FinalStep from '../FinalStep/FinalStep';
 
 type WalletForm = {

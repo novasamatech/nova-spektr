@@ -1,17 +1,17 @@
 /* eslint-disable i18next/no-literal-string */
-import { HTMLAttributes } from 'react';
 import cn from 'classnames';
 
+import { useI18n } from '@renderer/context/I18nContext';
 import {
+  secondsToDuration,
   getDurationFormat,
   getDurationParams,
-  secondsToDuration,
   DurationFormat,
-} from '@renderer/screens/Signing/common/utils';
-import { useI18n } from '@renderer/context/I18nContext';
+} from '@renderer/shared/hooks/utils/time';
 
-interface Props extends HTMLAttributes<HTMLSpanElement> {
+interface Props {
   seconds: string;
+  className?: string;
 }
 
 const Duration = ({ seconds, className }: Props) => {

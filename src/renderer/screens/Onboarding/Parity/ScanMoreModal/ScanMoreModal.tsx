@@ -7,8 +7,8 @@ import { BaseModal, Button, Icon, Identicon } from '@renderer/components/ui';
 import { useI18n } from '@renderer/context/I18nContext';
 import { AccountID, PublicKey } from '@renderer/domain/shared-kernel';
 import { toAddress } from '@renderer/services/balance/common/utils';
-import { toPublicKey } from '@renderer/utils/address';
-import { getShortAddress } from '@renderer/utils/strings';
+import { toPublicKey } from '@renderer/shared/hooks/utils/address';
+import { getShortAddress } from '@renderer/shared/hooks/utils/strings';
 import ParitySignerQrReader from '../ParitySignerQrReader/ParitySignerQrReader';
 
 const enum CameraState {

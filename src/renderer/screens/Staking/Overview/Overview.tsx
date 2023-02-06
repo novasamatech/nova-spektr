@@ -20,7 +20,7 @@ import { useStakingRewards } from '@renderer/services/staking/stakingRewardsServ
 import { useValidators } from '@renderer/services/staking/validatorsService';
 import { useWallet } from '@renderer/services/wallet/walletService';
 import { useToggle } from '@renderer/shared/hooks';
-import { isStringsMatchQuery } from '@renderer/utils/strings';
+import { isStringsMatchQuery } from '@renderer/shared/hooks/utils/strings';
 import { AboutStaking, EmptyFilter, InactiveChain, NoAccounts, StakingTable } from './components';
 import NominatorsModal from './components/NominatorsModal/NominatorsModal';
 import { AccountStakeInfo } from './components/StakingTable/StakingTable';

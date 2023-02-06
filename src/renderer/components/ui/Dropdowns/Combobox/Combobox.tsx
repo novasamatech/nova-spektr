@@ -1,6 +1,6 @@
+import { Fragment, ReactNode, useState } from 'react';
 import { Transition, Combobox as HeadlessCombobox } from '@headlessui/react';
 import cn from 'classnames';
-import { Fragment, ReactNode, useEffect, useState } from 'react';
 
 import { Input } from '@renderer/components/ui';
 import { ViewClass, DropdownClass } from '../common/constants';
@@ -36,12 +36,6 @@ const Combobox = ({
 
   const [query, setQuery] = useState('');
 
-  const onChangeHandler = (data: ResultOption) => {
-    onChange(data);
-  };
-
-  useEffect(() => {}, [query]);
-
   const filteredOptions = query
     ? options.filter(
         (option) =>
@@ -51,7 +45,7 @@ const Combobox = ({
     : options;
 
   return (
-    <HeadlessCombobox by="value" value={value} onChange={onChangeHandler}>
+    <HeadlessCombobox by="value" value={value} onChange={onChange}>
       <div className={cn('relative', className)}>
         <HeadlessCombobox.Input
           as={Input}

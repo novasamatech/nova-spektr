@@ -11,7 +11,7 @@ import {
 import { methods as ormlMethods } from '@substrate/txwrapper-orml';
 import { SubmittableExtrinsic } from '@polkadot/api/types';
 
-import { createTxMetadata } from '@renderer/utils/substrate';
+import { createTxMetadata } from '@renderer/shared/hooks/utils/substrate';
 import { ITransactionService } from './common/types';
 import { HexString } from '@renderer/domain/shared-kernel';
 import { Transaction, TransactionType } from '@renderer/domain/transaction';

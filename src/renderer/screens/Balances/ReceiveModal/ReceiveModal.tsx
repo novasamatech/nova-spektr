@@ -10,7 +10,7 @@ import { Asset } from '@renderer/domain/asset';
 import { Chain } from '@renderer/domain/chain';
 import { SigningType } from '@renderer/domain/shared-kernel';
 import { toAddress } from '@renderer/services/balance/common/utils';
-import { copyToClipboard } from '@renderer/utils/strings';
+import { copyToClipboard } from '@renderer/shared/hooks/utils/strings';
 import { useAccount } from '@renderer/services/account/accountService';
 
 export type ReceivePayload = {

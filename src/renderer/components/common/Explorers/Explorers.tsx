@@ -6,7 +6,7 @@ import { ReactNode } from 'react';
 import { Icon } from '@renderer/components/ui';
 import { useI18n } from '@renderer/context/I18nContext';
 import { Explorer } from '@renderer/domain/chain';
-import { toPublicKey } from '@renderer/utils/address';
+import { toPublicKey } from '@renderer/shared/hooks/utils/address';
 import { ExplorerIcons } from './common/constants';
 
 type Props = {

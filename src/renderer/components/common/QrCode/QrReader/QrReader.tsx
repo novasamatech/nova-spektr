@@ -4,7 +4,7 @@ import cn from 'classnames';
 import init, { Decoder, EncodingPacket } from 'raptorq';
 import { useEffect, useRef } from 'react';
 
-import { validateSignerFormat } from '@renderer/utils/strings';
+import { validateSignerFormat } from '@renderer/shared/hooks/utils/strings';
 import { CryptoTypeString } from '@renderer/domain/shared-kernel';
 import { useI18n } from '@renderer/context/I18nContext';
 import { ErrorFields, EXPORT_ADDRESS, FRAME_KEY } from './common/constants';

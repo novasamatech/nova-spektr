@@ -4,7 +4,7 @@ import { encodeAddress } from '@polkadot/util-crypto';
 import { Chain } from '@renderer/domain/chain';
 import { Address } from '@renderer/components/ui';
 import { PublicKey } from '@renderer/domain/shared-kernel';
-import { isCorrectPublicKey } from '@renderer/utils/address';
+import { isCorrectPublicKey } from '@renderer/shared/hooks/utils/address';
 import Explorers from '../Explorers/Explorers';
 
 type Props = {

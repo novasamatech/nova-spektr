@@ -1,8 +1,10 @@
+export const addLeadingZero = (value: number): string => (value < 10 ? `0${value}` : `${value}`);
+
 export const secondsToMinutes = (seconds: number): string => {
   const minutes = Math.floor(seconds / 60);
-  const remainingSeconds = seconds % 60;
+  const remainingSeconds = addLeadingZero(seconds % 60);
 
-  return `${minutes}:${remainingSeconds < 10 ? '0' : ''}${remainingSeconds}`;
+  return `${minutes}:${remainingSeconds}`;
 };
 
 export type Duration = {
@@ -12,7 +14,13 @@ export type Duration = {
   seconds: string;
 };
 
-export const addLeadingZero = (value: number): string => (value < 10 ? `0${value}` : `${value}`);
+export const enum DurationFormat {
+  DAYS = 'days',
+  DAYS_HOURS = 'daysHours',
+  HOURS = 'hours',
+  HOURS_MINUTES_SECONDS = 'hoursMinutesSeconds',
+  MINUTES_SECONDS = 'minutesSeconds',
+}
 
 export const secondsToDuration = (seconds: number): Duration => {
   const days = Math.floor(seconds / (3600 * 24));
@@ -27,14 +35,6 @@ export const secondsToDuration = (seconds: number): Duration => {
     seconds: addLeadingZero(remainingSeconds),
   };
 };
-
-export const enum DurationFormat {
-  DAYS = 'days',
-  DAYS_HOURS = 'daysHours',
-  HOURS = 'hours',
-  HOURS_MINUTES_SECONDS = 'hoursMinutesSeconds',
-  MINUTES_SECONDS = 'minutesSeconds',
-}
 
 export const getDurationFormat = ({ days, hours }: Duration): DurationFormat => {
   if (days && hours) {

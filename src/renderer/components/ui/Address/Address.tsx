@@ -3,7 +3,7 @@ import cn from 'classnames';
 
 import Truncate from '../Truncate/Truncate';
 import { Identicon } from '@renderer/components/ui';
-import { getShortAddress } from '@renderer/utils/strings';
+import { getShortAddress } from '@renderer/shared/hooks/utils/strings';
 
 type AddressType = 'full' | 'short' | 'adaptive';
 type AddressStyle = 'small' | 'normal' | 'large';

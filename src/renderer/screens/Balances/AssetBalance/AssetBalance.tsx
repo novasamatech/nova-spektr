@@ -9,7 +9,7 @@ import { ChainId } from '@renderer/domain/shared-kernel';
 import { useToggle } from '@renderer/shared/hooks';
 import { createLink } from '@renderer/routes/utils';
 import { totalAmount, transferableAmount } from '@renderer/services/balance/common/utils';
-import { KeyboardKey } from '@renderer/utils/constants';
+import { KeyboardKey } from '@renderer/shared/hooks/utils/constants';
 import './AssetBalance.css';
 
 type Props = {

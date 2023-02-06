@@ -6,8 +6,8 @@ import { ErrorObject, QrError, VideoInput } from '@renderer/components/common/Qr
 import { Button, Dropdown, Icon } from '@renderer/components/ui';
 import { Option, ResultOption } from '@renderer/components/ui/Dropdowns/common/types';
 import { useI18n } from '@renderer/context/I18nContext';
-import { secondsToMinutes } from '../common/utils';
 import { ValidationErrors } from '@renderer/screens/Transfer/common/constants';
+import { secondsToMinutes } from '@renderer/shared/hooks/utils/time';
 
 const enum CameraState {
   ACTIVE,
