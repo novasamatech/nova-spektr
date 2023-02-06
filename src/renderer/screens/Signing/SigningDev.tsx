@@ -10,7 +10,6 @@ import { useI18n } from '@renderer/context/I18nContext';
 import { Button, Icon } from '@renderer/components/ui';
 import { useTransaction } from '@renderer/services/transaction/transactionService';
 import { TransactionType } from '@renderer/domain/transaction';
-import { secondsToMinutes } from './common/utils';
 import { getMetadataPortalUrl, TROUBLESHOOTING_URL } from './common/consts';
 import { useAccount } from '@renderer/services/account/accountService';
 import {
@@ -24,6 +23,7 @@ import MultiframeSignatureReader from './MultiframeSignatureReader/MultiframeSig
 import { HexString, SigningType } from '@renderer/domain/shared-kernel';
 import { toAddress } from '@renderer/services/balance/common/utils';
 import Progress from './Progress';
+import { secondsToMinutes } from '@renderer/shared/utils/time';
 
 const enum Steps {
   SCANNING = 0,
