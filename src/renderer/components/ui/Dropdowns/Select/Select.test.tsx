@@ -46,7 +46,7 @@ describe('ui/Dropdowns/Select', () => {
     render(<Select {...defaultProps} activeIds={[options[1].id]} />);
 
     const summary = screen.getByRole('button');
-    expect(summary).toHaveTextContent(/1Total/);
+    expect(summary).toHaveTextContent('el_test_2');
   });
 
   test('should render selected options', async () => {

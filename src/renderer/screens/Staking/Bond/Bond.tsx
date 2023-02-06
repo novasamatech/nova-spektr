@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 
 import { ButtonBack } from '@renderer/components/ui';
 import { useI18n } from '@renderer/context/I18nContext';
@@ -11,7 +11,6 @@ import ConfirmBond from '@renderer/screens/Staking/Bond/ConfirmBond/ConfirmBond'
 import InitBond from '@renderer/screens/Staking/Bond/InitBond/InitBond';
 import Validators from '@renderer/screens/Staking/Bond/Validators/Validators';
 import { ValidatorMap } from '@renderer/services/staking/common/types';
-import { useAccount } from '@renderer/services/account/accountService';
 
 const enum Step {
   InitBond,
@@ -19,18 +18,23 @@ const enum Step {
   ConfirmBond,
 }
 
+const HEADER_TITLE: Record<Step, string> = {
+  [Step.InitBond]: 'staking.bond.initBondSubtitle',
+  [Step.Validators]: 'staking.bond.validatorsSubtitle',
+  [Step.ConfirmBond]: 'staking.bond.confirmBondSubtitle',
+};
+
 const Bond = () => {
   const { t } = useI18n();
   const navigate = useNavigate();
   const { connections } = useNetworkContext();
   const params = useParams<{ chainId: ChainId }>();
+  const [searchParams] = useSearchParams();
 
-  const [activeStep, setActiveStep] = useState<Step>(Step.InitBond);
   const [_, setValidators] = useState<ValidatorMap>({});
+  const [activeStep, setActiveStep] = useState<Step>(Step.InitBond);
 
-  const { getActiveAccounts } = useAccount();
-  const activeAccounts = getActiveAccounts();
-
+  const accountIds = searchParams.get('id')?.split(',') || [];
   const chainId = params.chainId || ('' as ChainId);
   const api = connections[chainId]?.api;
   const explorers = connections[chainId]?.explorers;
@@ -60,29 +64,17 @@ const Bond = () => {
     // TODO: init bond and nominate call
   };
 
-  const headerTitle: Record<Step, string> = {
-    [Step.InitBond]: t('staking.bond.initBondSubtitle'),
-    [Step.Validators]: t('staking.bond.validatorsSubtitle'),
-    [Step.ConfirmBond]: t('staking.bond.confirmBondSubtitle'),
-  };
-
   return (
     <div className="flex flex-col h-full relative">
       <div className="flex items-center gap-x-2.5 mb-9 mt-5 px-5">
         <ButtonBack onCustomReturn={goToPrevStep} />
         <p className="font-semibold text-2xl text-neutral-variant">{t('staking.title')}</p>
         <p className="font-semibold text-2xl text-neutral">/</p>
-        <h1 className="font-semibold text-2xl text-neutral">{headerTitle[activeStep]}</h1>
+        <h1 className="font-semibold text-2xl text-neutral">{t(HEADER_TITLE[activeStep])}</h1>
       </div>
 
       {activeStep === Step.InitBond && (
-        <InitBond
-          accountIds={activeAccounts.map((a) => a.accountId || '')}
-          asset={asset}
-          api={api}
-          chainId={chainId}
-          onResult={onBondResult}
-        />
+        <InitBond accountIds={accountIds} asset={asset} api={api} chainId={chainId} onResult={onBondResult} />
       )}
       {activeStep === Step.Validators && (
         <Validators

@@ -103,7 +103,7 @@ describe('screens/Staking/Overview', () => {
 
   test('should render component', async () => {
     await act(async () => {
-      render(<Overview />);
+      render(<Overview />, { wrapper: MemoryRouter });
     });
 
     const title = screen.getByText('staking.title');

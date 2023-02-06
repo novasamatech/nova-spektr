@@ -8,6 +8,7 @@ import ExplorerImages, { Explorer } from './explorer';
 import AestheticImages, { Aesthetic } from './aesthetics';
 import ArrowImages, { Arrow } from './arrow';
 import WalletTypeImages, { WalletType } from './walletType';
+import StakingImages, { Staking } from './staking';
 
 const AllIcons = {
   ...CurrencyImages,
@@ -20,6 +21,7 @@ const AllIcons = {
   ...AestheticImages,
   ...ArrowImages,
   ...WalletTypeImages,
+  ...StakingImages,
 };
 
 export type IconNames =
@@ -32,6 +34,7 @@ export type IconNames =
   | Explorer
   | Aesthetic
   | Arrow
+  | Staking
   | WalletType;
 
 export default AllIcons;

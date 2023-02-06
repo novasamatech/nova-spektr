@@ -26,7 +26,7 @@ const RadioGroup = ({ name, activeId, options, optionClass, className, onChange 
               <span
                 className={cn(
                   'relative w-6 h-6 rounded-full border-2',
-                  checked ? 'border-primary radio' : 'border-shade-30',
+                  checked ? 'border-primary spektr-radio' : 'border-shade-30',
                   disabled && 'opacity-60',
                 )}
               />
