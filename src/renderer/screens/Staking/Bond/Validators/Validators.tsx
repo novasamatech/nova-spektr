@@ -102,6 +102,7 @@ const Validators = ({ api, chainId, asset, explorers, addressPrefix, onResult }:
           className="shadow-surface"
           dataIsLoading={validatorsLoading}
           validators={validatorList}
+          columns={['ownStake', 'totalStake']}
           asset={asset}
           explorers={explorers}
           addressPrefix={addressPrefix}

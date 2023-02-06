@@ -71,6 +71,7 @@ const ValidatorsTable = ({
   return (
     <Table
       by="address"
+      loading={isLoading}
       className={className}
       dataSource={isLoading ? VALIDATORS_SKELETON : extendedValidators}
       selectedKeys={canSelect ? selectedValidators : undefined}
