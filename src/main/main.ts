@@ -10,8 +10,8 @@ const { MAIN, TITLE } = APP_CONFIG;
 export async function MainWindow() {
   const window = createWindow({
     title: TITLE,
-    width: MAIN.WINDOW.WIDTH,
-    height: MAIN.WINDOW.HEIGHT,
+    minWidth: MAIN.WINDOW.WIDTH,
+    minHeight: MAIN.WINDOW.HEIGHT,
     show: false,
     center: true,
     autoHideMenuBar: true,
@@ -20,6 +20,8 @@ export async function MainWindow() {
       preload: join(__dirname, 'bridge.js'),
     },
   });
+
+  window.maximize();
 
   ENVIRONMENT.IS_DEV && window.webContents.openDevTools({ mode: 'bottom' });
 
@@ -37,6 +39,7 @@ export async function MainWindow() {
     if (!window) {
       throw new Error('"MainWindow" is not defined');
     }
+
     window.show();
   });
 

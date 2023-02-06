@@ -1,6 +1,6 @@
 import { Explorers } from '@renderer/components/common';
 import { Address, Icon } from '@renderer/components/ui';
-import { formatAddress } from '@renderer/utils/address';
+import { formatAddress } from '@renderer/shared/utils/address';
 import { ExtendedChain } from '@renderer/services/network/common/types';
 import { Account } from '@renderer/domain/account';
 

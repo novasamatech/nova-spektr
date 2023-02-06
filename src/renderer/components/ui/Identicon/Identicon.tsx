@@ -3,11 +3,12 @@ import { IconTheme } from '@polkadot/react-identicon/types';
 import cn from 'classnames';
 import { useLayoutEffect, useRef } from 'react';
 
-import { copyToClipboard } from '@renderer/utils/strings';
+import { copyToClipboard } from '@renderer/shared/utils/strings';
+import { Icon } from '..';
 
 type Props = {
   theme?: IconTheme;
-  address: string;
+  address?: string;
   size?: number;
   background?: boolean;
   canCopy?: boolean;
@@ -27,16 +28,18 @@ const Identicon = ({ theme = 'polkadot', address, size = 24, background = true, 
     await copyToClipboard(address);
   };
 
-  const icon = (
+  const icon = address ? (
     <PolkadotIdenticon
       theme={theme}
       value={address}
       size={background ? size * 0.75 : size}
       className="pointer-events-none"
     />
+  ) : (
+    <Icon name="emptyIdenticon" size={size} />
   );
 
-  if (!canCopy) {
+  if (!canCopy || !address) {
     return (
       <div
         ref={wrapperRef}
