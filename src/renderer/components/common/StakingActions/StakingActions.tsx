@@ -7,11 +7,11 @@ import Paths, { PathValue } from '@renderer/routes/paths';
 
 const STAKE_ACTIONS = {
   startStaking: { icon: 'startStaking', title: 'staking.actions.startStakingLabel', path: Paths.BOND },
-  stakeMore: { icon: 'startStaking', title: 'staking.actions.stakeMoreLabel', path: Paths.BOND },
-  unstake: { icon: 'stakeMore', title: 'staking.actions.unstakeLabel', path: Paths.BOND },
-  returnToStake: { icon: 'unstake', title: 'staking.actions.returnToStakeLabel', path: Paths.BOND },
-  redeem: { icon: 'returnToStake', title: 'staking.actions.redeemLabel', path: Paths.BOND },
-  setValidators: { icon: 'redeem', title: 'staking.actions.setValidatorsLabel', path: Paths.BOND },
+  stakeMore: { icon: 'stakeMore', title: 'staking.actions.stakeMoreLabel', path: Paths.BOND },
+  unstake: { icon: 'unstake', title: 'staking.actions.unstakeLabel', path: Paths.BOND },
+  returnToStake: { icon: 'returnToStake', title: 'staking.actions.returnToStakeLabel', path: Paths.BOND },
+  redeem: { icon: 'redeem', title: 'staking.actions.redeemLabel', path: Paths.BOND },
+  setValidators: { icon: 'setValidators', title: 'staking.actions.setValidatorsLabel', path: Paths.BOND },
   destination: { icon: 'destination', title: 'staking.actions.destinationLabel', path: Paths.BOND },
 } as const;
 
