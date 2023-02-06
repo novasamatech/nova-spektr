@@ -56,7 +56,8 @@ const Select = ({
               {activeOptions.length === 0 && (
                 <p className={cn(weightStyle.placeholder, open ? 'text-primary' : 'text-shade-30')}>{placeholder}</p>
               )}
-              {activeOptions.length > 0 && (
+              {activeOptions.length === 1 && activeOptions[0].element}
+              {activeOptions.length > 1 && (
                 <div className="flex gap-x-2.5 items-center">
                   <p
                     className={cn(

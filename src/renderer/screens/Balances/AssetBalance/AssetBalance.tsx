@@ -1,6 +1,7 @@
 import cn from 'classnames';
 import { KeyboardEvent, MouseEvent } from 'react';
 
+import Paths from '@renderer/routes/paths';
 import { Balance as BalanceValue, Button, ButtonLink, Icon, Shimmering } from '@renderer/components/ui';
 import { useI18n } from '@renderer/context/I18nContext';
 import { Asset } from '@renderer/domain/asset';
@@ -77,7 +78,7 @@ const AssetBalance = ({ asset, chainId, balance, canMakeActions, onReceiveClick 
           {canMakeActions && (
             <div className="flex gap-x-2 ml-4">
               <ButtonLink
-                to={createLink('TRANSFER', { chainId, assetId: asset.assetId })}
+                to={createLink(Paths.TRANSFER, { chainId, assetId: asset.assetId })}
                 className={cn(
                   '!px-2 group-hover:opacity-100 focus:opacity-100',
                   isExpanded ? 'opacity-100' : 'opacity-40',
