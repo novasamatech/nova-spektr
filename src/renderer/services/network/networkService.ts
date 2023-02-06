@@ -7,7 +7,7 @@ import { useRef, useState } from 'react';
 import { Chain, RpcNode } from '@renderer/domain/chain';
 import { Connection, ConnectionStatus, ConnectionType } from '@renderer/domain/connection';
 import { ChainId } from '@renderer/domain/shared-kernel';
-import { isKusama } from '@renderer/services/network/common/utils';
+//import { isKusama } from '@renderer/services/network/common/utils';
 import storage from '@renderer/services/storage';
 import { useChainSpec } from './chainSpecService';
 import { useChains } from './chainsService';
@@ -113,10 +113,13 @@ export const useNetwork = (networkSubscription?: ISubscriptionService<ChainId>):
           connectionStatus: ConnectionStatus.NONE,
         });
       } else {
-        const connectionType =
-          getKnownChain(chainId) && !isKusama(chains.current[chainId].name)
-            ? ConnectionType.LIGHT_CLIENT
-            : ConnectionType.AUTO_BALANCE;
+        const connectionType = ConnectionType.AUTO_BALANCE;
+
+        // TODO uncomment when fix light client problems
+        // const connectionType = ConnectionType.AUTO_BALANCE;
+        //   getKnownChain(chainId) && !isKusama(chains.current[chainId].name)
+        //     ? ConnectionType.LIGHT_CLIENT
+        //     : ConnectionType.AUTO_BALANCE;
         const activeNode = connectionType === ConnectionType.AUTO_BALANCE ? nodes[0] : undefined;
 
         acc.push({
