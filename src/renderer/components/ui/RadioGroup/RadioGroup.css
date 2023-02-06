@@ -1,4 +1,4 @@
-.radio::after {
+.spektr-radio::after {
   content: '';
   position: absolute;
   width: 15px;
