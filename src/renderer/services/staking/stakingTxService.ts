@@ -3,7 +3,7 @@ import { construct, methods } from '@substrate/txwrapper-polkadot';
 
 import { AccountID } from '@renderer/domain/shared-kernel';
 import { IStakingTxService, Payee } from '@renderer/services/staking/common/types';
-import { createTxMetadata } from '@renderer/utils/substrate';
+import { createTxMetadata } from '@renderer/shared/utils/substrate';
 
 export const useStakingTx = (): IStakingTxService => {
   const bondAndNominate = async (

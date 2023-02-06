@@ -40,7 +40,7 @@ export const useStakingData = (): IStakingDataService => {
     return api.query.staking.ledger.multi(controllers, (data) => {
       try {
         const staking = data.reduce<StakingMap>((acc, ledger, index) => {
-          const accountId = accounts[index];
+          const accountId = accounts[index] as AccountID;
 
           if (ledger.isNone) {
             return { ...acc, [accountId]: undefined };
@@ -87,10 +87,11 @@ export const useStakingData = (): IStakingDataService => {
   const getUnbondingPeriod = (api: ApiPromise): string => {
     try {
       const unbondingDuration = api.consts.staking.bondingDuration.toNumber();
-      const eraDuration = api.consts.babe.epochDuration.toNumber();
+      const sessionsPerEra = api.consts.staking.sessionsPerEra.toNumber();
+      const sessionDuration = api.consts.babe.epochDuration.toNumber();
       const blockTime = api.consts.babe.expectedBlockTime.toNumber();
 
-      return ((unbondingDuration * eraDuration * blockTime) / 24 / 60 / 1000 / 10).toString();
+      return ((unbondingDuration * sessionsPerEra * sessionDuration * blockTime) / 1000).toString();
     } catch (error) {
       console.warn(error);
 

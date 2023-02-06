@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { Trans } from 'react-i18next';
 
 import { Expandable } from '@renderer/components/common';
-import { Balance, Icon, Shimmering } from '@renderer/components/ui';
+import { Balance, Duration, Icon, Shimmering } from '@renderer/components/ui';
 import { useI18n } from '@renderer/context/I18nContext';
 import { Asset } from '@renderer/domain/asset';
 import { AccountID, EraIndex } from '@renderer/domain/shared-kernel';
@@ -131,11 +131,7 @@ const AboutStaking = ({ asset, api, validators, era, className }: Props) => {
           <div className="flex justify-between items-center h-10">
             {t('staking.about.unstakingPeriodLabel')}
             <div className="font-semibold">
-              {unstakingPeriod ? (
-                <Trans t={t} i18nKey="staking.about.unstakingPeriodValue" values={{ period: unstakingPeriod }} />
-              ) : (
-                <Shimmering width={100} height={20} />
-              )}
+              {unstakingPeriod ? <Duration seconds={unstakingPeriod} /> : <Shimmering width={100} height={20} />}
             </div>
           </div>
         </div>
