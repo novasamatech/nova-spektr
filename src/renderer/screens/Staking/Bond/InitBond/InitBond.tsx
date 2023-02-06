@@ -1,13 +1,10 @@
-/* eslint-disable i18next/no-literal-string */
 import { ApiPromise } from '@polkadot/api';
 import { BN } from '@polkadot/util';
+import cn from 'classnames';
 import { ReactNode, useEffect, useState } from 'react';
 import { Controller, SubmitHandler, useForm } from 'react-hook-form';
-import cn from 'classnames';
 
 import { Fee } from '@renderer/components/common';
-import { Transaction, TransactionType } from '@renderer/domain/transaction';
-import { useTransaction } from '@renderer/services/transaction/transactionService';
 import {
   AmountInput,
   Balance,
@@ -24,11 +21,13 @@ import { RadioOption, ResultOption } from '@renderer/components/ui/RadioGroup/co
 import { useI18n } from '@renderer/context/I18nContext';
 import { Asset } from '@renderer/domain/asset';
 import { AccountID, ChainId, SigningType } from '@renderer/domain/shared-kernel';
+import { Transaction, TransactionType } from '@renderer/domain/transaction';
+import { useAccount } from '@renderer/services/account/accountService';
 import { useBalance } from '@renderer/services/balance/balanceService';
 import { formatAmount, stakeableAmount, transferableAmount } from '@renderer/services/balance/common/utils';
 import { AccountDS, BalanceDS } from '@renderer/services/storage';
+import { useTransaction } from '@renderer/services/transaction/transactionService';
 import { validateAddress } from '@renderer/shared/hooks/utils/address';
-import { useAccount } from '@renderer/services/account/accountService';
 
 const PAYOUT_URL = 'https://wiki.polkadot.network/docs/learn-simple-payouts';
 
@@ -39,7 +38,6 @@ const enum RewardsDestination {
 
 const validateBalanceForFee = (balance: BalanceDS | string, fee: string, amount: string, asset: Asset): boolean => {
   const transferableBalance = typeof balance === 'string' ? balance : transferableAmount(balance);
-
   const amountWithFee = new BN(formatAmount(amount, asset.precision)).add(new BN(fee)).toString();
 
   return new BN(fee).lte(new BN(transferableBalance)) && validateBalance(balance, amountWithFee, asset);
@@ -66,8 +64,8 @@ const getDropdownPayload = (
 
   const element = (
     <div className="flex justify-between items-center gap-x-2.5">
-      <div className="flex items-center">
-        <Identicon address={address} size={34} background={false} canCopy={false} />
+      <div className="flex gap-x-[5px] items-center">
+        <Identicon address={address} size={30} background={false} canCopy={false} />
         <p className="text-left text-neutral text-lg font-semibold">{account.name}</p>
       </div>
       {balanceExists && (
@@ -121,9 +119,9 @@ const InitBond = ({ accountIds, api, chainId, asset, onResult }: Props) => {
   const [activeRadio, setActiveRadio] = useState<ResultOption<RewardsDestination>>();
   const [payoutAccounts, setPayoutAccounts] = useState<DropdownOption<AccountID>[]>([]);
 
-  const selectedAccounts = accounts.filter(
-    (account) => (!account.chainId || account.chainId === chainId) && accountIds.includes(account.accountId || ''),
-  );
+  const selectedAccounts = accounts.filter((account) => {
+    return account.id && accountIds.includes(account.id.toString());
+  });
 
   const balances = getLiveAssetBalances(
     // @ts-ignore
@@ -271,6 +269,7 @@ const InitBond = ({ accountIds, api, chainId, asset, onResult }: Props) => {
     <div className="w-[600px] flex flex-col items-center mx-auto rounded-2lg bg-shade-2 p-5 ">
       <div className="w-full p-5 rounded-2lg bg-white shadow-surface">
         <Select
+          weight="lg"
           placeholder={t('staking.bond.selectStakeAccountLabel')}
           summary={t('staking.bond.selectStakeAccountSummary')}
           activeIds={activeAccounts.map((w) => w.id.toString())}
@@ -292,7 +291,6 @@ const InitBond = ({ accountIds, api, chainId, asset, onResult }: Props) => {
             validate: {
               notZero: (v) => Number(v) > 0,
               insufficientBalance: (amount) => validateBalance(balanceRange?.[0] || '0', amount, asset),
-              // insufficientBalanceForFee: validateBalanceForFee,
             },
           }}
           render={({ field: { onChange, value }, fieldState: { error } }) => (
@@ -372,7 +370,7 @@ const InitBond = ({ accountIds, api, chainId, asset, onResult }: Props) => {
       </form>
 
       <Button type="submit" form="initBondForm" variant="fill" pallet="primary" weight="lg" disabled={!isValid}>
-        Continue
+        {t('staking.bond.continueButton')}
       </Button>
     </div>
   );

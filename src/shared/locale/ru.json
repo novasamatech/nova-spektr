@@ -254,10 +254,20 @@
       "unstakingPeriodValue": "{ period } days",
       "yearlyEarningLabel": "Yearly"
     },
+    "actions": {
+      "destinationLabel": "Адрес наград",
+      "redeemLabel": "Награда",
+      "returnToStakeLabel": "Вернуть в стейк",
+      "setValidatorsLabel": "Назнанить валидаторов",
+      "stakeMoreLabel": "Увеличить стейк",
+      "startStakingLabel": "Начать стейкинг",
+      "unstakeLabel": "Отменить стейк"
+    },
     "bond": {
       "aboutRewards": "О наградах",
       "amountPlaceholder": "Введите сумму",
       "confirmBondSubtitle": "Потверждение",
+      "continueButton": "Продолжить",
       "initBondSubtitle": "Начало Стейкинга",
       "payoutAccountLabel": "Аккаунт для выплаты наград",
       "payoutAccountPlaceholder": "Выберите аккаунт для выплаты наград",
