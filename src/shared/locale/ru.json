@@ -341,6 +341,13 @@
       "validatorsTableHeader": "Валидаторы"
     }
   },
+  "time": {
+    "days_one": "{ count } день",
+    "days_other": "{ count } дней",
+    "hours_one": "{ count } час",
+    "hours_other": "{ count } часов",
+    "minutesSeconds": "{ minutes }:{ seconds }"
+  },
   "transfer": {
     "amountPlaceholder": "Сумма",
     "continueButton": "Продолжить",
