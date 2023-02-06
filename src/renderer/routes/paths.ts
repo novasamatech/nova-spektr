@@ -30,6 +30,6 @@ const Paths = {
   CAMERA_DEV: '/camera-dev',
 } as const;
 
-export type PathValue = typeof Paths[keyof typeof Paths];
+export type PathValue = (typeof Paths)[keyof typeof Paths];
 
 export default Paths;
