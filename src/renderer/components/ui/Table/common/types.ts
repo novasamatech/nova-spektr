@@ -16,7 +16,7 @@ export type ColumnConfig = {
   dataKey: string;
   align: 'left' | 'right';
   sortType: SortType;
-  sortable: boolean;
+  sortable: boolean | ((a: any, b: any) => number);
 };
 
 export type SortConfig = Record<string, ColumnConfig>;

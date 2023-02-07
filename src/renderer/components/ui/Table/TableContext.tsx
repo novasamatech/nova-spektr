@@ -5,6 +5,7 @@ import { AnyRecord, ColumnConfig, IndexKey, SortConfig } from './common/types';
 type TableContextProps<T extends AnyRecord> = {
   by: IndexKey;
   dataSource: T[];
+  loading?: boolean;
   sortConfig: SortConfig;
   selectedKeys?: IndexKey[];
   allRowsSelected: boolean;

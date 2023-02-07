@@ -4,6 +4,7 @@ import { useI18n } from '@renderer/context/I18nContext';
 import { Asset } from '@renderer/domain/asset';
 import { Explorer } from '@renderer/domain/chain';
 import { AccountID, SigningType } from '@renderer/domain/shared-kernel';
+import { bigNumberSorter } from '@renderer/shared/utils/bignumber';
 
 export type AccountStakeInfo = {
   address: AccountID;
@@ -52,7 +53,12 @@ const StakingTable = ({
         <Table.Column dataKey="totalReward" width={150}>
           {t('staking.overview.rewardsTableHeader')}
         </Table.Column>
-        <Table.Column dataKey="totalStake" width={150} sortable defaultSort="desc">
+        <Table.Column
+          dataKey="totalStake"
+          width={150}
+          defaultSort="desc"
+          sortable={(a, b) => bigNumberSorter(a.totalStake, b.totalStake)}
+        >
           {t('staking.overview.stakeTableHeader')}
         </Table.Column>
         <Table.Column dataKey="actions" width={50} />
