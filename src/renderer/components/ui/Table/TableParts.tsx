@@ -10,14 +10,14 @@ type HeaderProps = {
   className?: string;
 };
 export const TableHeader = ({ className, children }: PropsWithChildren<HeaderProps>) => {
-  const { allRowsSelected, selectedKeys, selectAll } = useTableContext();
+  const { allRowsSelected, selectedKeys, loading, selectAll } = useTableContext();
 
   return (
     <thead className={cn('bg-white border-b border-shade-5', className)}>
       {selectedKeys ? (
         <tr className="h-10">
           <th className="pl-4 pr-1 w-5 rounded-tl-2lg">
-            <Checkbox checked={allRowsSelected} onChange={selectAll} />
+            <Checkbox disabled={loading} checked={allRowsSelected} onChange={selectAll} />
           </th>
           {children}
         </tr>
@@ -31,7 +31,7 @@ export const TableHeader = ({ className, children }: PropsWithChildren<HeaderPro
 export type ColumnProps = {
   dataKey: string;
   align?: Alignment;
-  sortable?: boolean;
+  sortable?: boolean | ((a: any, b: any) => number);
   defaultSort?: 'asc' | 'desc';
   width?: number;
   classname?: string;
@@ -114,7 +114,7 @@ export const TableRow = ({
   children,
   ...props
 }: PropsWithChildren<RowProps>) => {
-  const { sortConfig, selectedKeys, selectRow, excludeKey } = useTableContext();
+  const { sortConfig, selectedKeys, loading, selectRow, excludeKey } = useTableContext();
 
   // eslint-disable-next-line react/prop-types
   const { dataKey } = props as _RowProps;
@@ -132,7 +132,7 @@ export const TableRow = ({
         <td className="pr-1 pl-4 w-5">
           <Checkbox
             checked={selectedKeys?.includes(dataKey)}
-            disabled={!selectable}
+            disabled={!selectable || loading}
             onChange={() => selectRow(dataKey)}
           />
         </td>
