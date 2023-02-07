@@ -9,6 +9,7 @@ import { TableContext } from './TableContext';
 type Props<T extends AnyRecord> = {
   by: IndexKey;
   dataSource: T[];
+  loading?: boolean;
   className?: string;
   selectedKeys?: IndexKey[];
   onSelect?: (keys: IndexKey[]) => void;
@@ -26,6 +27,7 @@ type Props<T extends AnyRecord> = {
 const Table = <T extends AnyRecord>({
   by,
   dataSource,
+  loading,
   className,
   selectedKeys,
   onSelect,
@@ -106,6 +108,7 @@ const Table = <T extends AnyRecord>({
   const value = {
     by,
     dataSource: sortedData,
+    loading,
     sortConfig,
     selectedKeys,
     allRowsSelected,
