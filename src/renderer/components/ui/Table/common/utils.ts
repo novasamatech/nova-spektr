@@ -15,6 +15,12 @@ export const getSortedData = <T extends AnyRecord>(dataSource: T[], config: Sort
     return dataSource;
   }
 
+  if (typeof activeSorting.sortable === 'function') {
+    const sortedData = dataSource.slice().sort(activeSorting.sortable);
+
+    return activeSorting.sortType === SortType.ASC ? sortedData : sortedData.reverse();
+  }
+
   return orderBy(dataSource, [activeSorting.dataKey], [activeSorting.sortType]);
 };
 
