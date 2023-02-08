@@ -25,12 +25,19 @@ export const useEra = (): IEraService => {
 
     const activeEra = (await api.query.staking.activeEra()).unwrap().index;
 
-    const eraStartSessionIndex = await (await api.query.staking.erasStartSessionIndex(activeEra)).unwrap().toNumber();
-
-    const currentSessionIndex = (await api.query.session.currentIndex()).toNumber();
-
-    const currentSlot = (await api.query.babe.currentSlot()).toNumber();
-    const genesisSlot = (await api.query.babe.genesisSlot()).toNumber();
+    const { eraStartSessionIndex, currentSessionIndex, currentSlot, genesisSlot } = await Promise.all([
+      api.query.staking.erasStartSessionIndex(activeEra),
+      api.query.session.currentIndex(),
+      api.query.babe.currentSlot(),
+      api.query.babe.genesisSlot(),
+    ]).then(([eraStartSessionIndex, currentSessionIndex, currentSlot, genesisSlot]) => {
+      return {
+        eraStartSessionIndex: eraStartSessionIndex.unwrap().toNumber(),
+        currentSessionIndex: currentSessionIndex.toNumber(),
+        currentSlot: currentSlot.toNumber(),
+        genesisSlot: genesisSlot.toNumber(),
+      };
+    });
 
     const sessionStartSlot = currentSessionIndex * sessionLength + genesisSlot;
     const sessionProgress = currentSlot - sessionStartSlot;

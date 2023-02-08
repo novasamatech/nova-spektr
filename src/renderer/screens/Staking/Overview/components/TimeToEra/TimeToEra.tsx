@@ -1,4 +1,3 @@
-import cn from 'classnames';
 import { ApiPromise } from '@polkadot/api';
 import { useEffect, useState } from 'react';
 
@@ -40,7 +39,7 @@ const TimeToEra = ({ api, era, className }: Props) => {
     return <Shimmering width={40} height={10} />;
   }
 
-  return <Duration seconds={seconds.toString()} className={cn(className)} />;
+  return <Duration seconds={seconds.toString()} className={className} />;
 };
 
 export default TimeToEra;
