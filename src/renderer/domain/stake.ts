@@ -10,7 +10,7 @@ export type Stake = {
   unlocking: Unlocking[];
 };
 
-type Unlocking = {
+export type Unlocking = {
   value: string;
   era: string;
 };
