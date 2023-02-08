@@ -1,6 +1,4 @@
 /* eslint-disable i18next/no-literal-string */
-import cn from 'classnames';
-
 import { useI18n } from '@renderer/context/I18nContext';
 import { secondsToDuration, getDurationFormat, getDurationParams, DurationFormat } from '@renderer/shared/utils/time';
 
@@ -18,14 +16,14 @@ const Duration = ({ seconds, className }: Props) => {
 
   if (i18nKey === DurationFormat.DAYS_HOURS) {
     return (
-      <span className={cn(className)}>
+      <span className={className}>
         {t(`time.${DurationFormat.DAYS}`, getDurationParams(duration, DurationFormat.DAYS))}{' '}
         {t(`time.${DurationFormat.HOURS}`, getDurationParams(duration, DurationFormat.HOURS))}
       </span>
     );
   }
 
-  return <span className={cn(className)}>{t(`time.${i18nKey}`, durationParams)}</span>;
+  return <span className={className}>{t(`time.${i18nKey}`, durationParams)}</span>;
 };
 
 export default Duration;

@@ -291,6 +291,8 @@ const InitBond = ({ accountIds, api, chainId, asset, onResult }: Props) => {
             validate: {
               notZero: (v) => Number(v) > 0,
               insufficientBalance: (amount) => validateBalance(balanceRange?.[0] || '0', amount, asset),
+              insufficientBalanceForFee: (amount) =>
+                validateBalanceForFee(balanceRange?.[0] || '0', fee, amount, asset),
             },
           }}
           render={({ field: { onChange, value }, fieldState: { error } }) => (
@@ -305,16 +307,16 @@ const InitBond = ({ accountIds, api, chainId, asset, onResult }: Props) => {
                 onChange={onChange}
               />
               <InputHint active={error?.type === 'insufficientBalance'} variant="error">
-                {t('transfer.notEnoughBalanceError')}
+                {t('staking.notEnoughBalanceError')}
               </InputHint>
               <InputHint active={error?.type === 'insufficientBalanceForFee'} variant="error">
-                {t('transfer.notEnoughBalanceForFeeError')}
+                {t('staking.notEnoughBalanceForFeeError')}
               </InputHint>
               <InputHint active={error?.type === 'required'} variant="error">
-                {t('transfer.requiredAmountError')}
+                {t('staking.requiredAmountError')}
               </InputHint>
               <InputHint active={error?.type === 'notZero'} variant="error">
-                {t('transfer.requiredAmountError')}
+                {t('staking.requiredAmountError')}
               </InputHint>
             </>
           )}
