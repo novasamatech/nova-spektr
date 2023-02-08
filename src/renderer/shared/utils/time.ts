@@ -46,7 +46,7 @@ export const getDurationFormat = ({ days, hours }: Duration): DurationFormat => 
   }
 
   if (hours) {
-    return DurationFormat.HOURS;
+    return DurationFormat.HOURS_MINUTES_SECONDS;
   }
 
   return DurationFormat.MINUTES_SECONDS;
