@@ -210,6 +210,7 @@ const Overview = () => {
         accountIsSelected: selectedAccounts.includes(account.accountId),
         totalStake: staking[account.accountId]?.total || '0',
         totalReward: isLoading ? undefined : rewards[account.accountId],
+        unlocking: staking[account.accountId]?.unlocking,
       });
     }
 
@@ -306,6 +307,8 @@ const Overview = () => {
                     explorers={explorers}
                     openValidators={setupNominators}
                     selectStaking={setSelectedAccounts}
+                    currentEra={era}
+                    api={api}
                   />
                 )}
               </>

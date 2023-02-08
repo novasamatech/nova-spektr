@@ -64,6 +64,7 @@ export interface IValidatorsService {
 
 export interface IEraService {
   subscribeActiveEra: (api: ApiPromise, callback: (era?: EraIndex) => void) => Promise<() => void>;
+  getTimeToEra: (api: ApiPromise, era?: EraIndex) => Promise<number>;
 }
 
 // =====================================================
