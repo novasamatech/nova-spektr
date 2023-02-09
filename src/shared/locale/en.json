@@ -263,9 +263,14 @@
       "startStakingLabel": "Start staking",
       "unstakeLabel": "Unstake"
     },
+    "badges": {
+      "unstakeDescription": "Your tokens are being unstaked at the moment",
+      "unstakeTitle": "Unstaking"
+    },
     "bond": {
       "aboutRewards": "About rewards",
       "amountPlaceholder": "Input amount",
+      "availableBalancePlaceholder": "Available",
       "confirmBondSubtitle": "Confirm",
       "continueButton": "Continue",
       "initBondSubtitle": "Start Staking",

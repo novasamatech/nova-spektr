@@ -263,9 +263,14 @@
       "startStakingLabel": "Начать стейкинг",
       "unstakeLabel": "Отменить стейк"
     },
+    "badges": {
+      "unstakeDescription": "Ваши токены сейчас выводятся из стейка",
+      "unstakeTitle": "Вывод из стейка"
+    },
     "bond": {
       "aboutRewards": "О наградах",
       "amountPlaceholder": "Введите сумму",
+      "availableBalancePlaceholder": "Доступно",
       "confirmBondSubtitle": "Потверждение",
       "continueButton": "Продолжить",
       "initBondSubtitle": "Начало Стейкинга",

@@ -27,7 +27,6 @@ import { useBalance } from '@renderer/services/balance/balanceService';
 import { formatAmount, stakeableAmount, transferableAmount } from '@renderer/services/balance/common/utils';
 import { AccountDS, BalanceDS } from '@renderer/services/storage';
 import { useTransaction } from '@renderer/services/transaction/transactionService';
-import { validateAddress } from '@renderer/shared/utils/address';
 
 const PAYOUT_URL = 'https://wiki.polkadot.network/docs/learn-simple-payouts';
 
@@ -35,18 +34,22 @@ const enum RewardsDestination {
   RESTAKE,
   TRANSFERABLE,
 }
+const validateBalance = (balance: BalanceDS | string, amount: string, asset: Asset, fee?: string): boolean => {
+  const stakeableBalance = typeof balance === 'string' ? balance : stakeableAmount(balance);
+
+  const formatedAmount = new BN(formatAmount(amount, asset.precision));
+
+  if (fee) {
+    formatedAmount.add(new BN(fee)).toString();
+  }
+
+  return formatedAmount.lte(new BN(stakeableBalance));
+};
 
 const validateBalanceForFee = (balance: BalanceDS | string, fee: string, amount: string, asset: Asset): boolean => {
   const transferableBalance = typeof balance === 'string' ? balance : transferableAmount(balance);
-  const amountWithFee = new BN(formatAmount(amount, asset.precision)).add(new BN(fee)).toString();
 
-  return new BN(fee).lte(new BN(transferableBalance)) && validateBalance(balance, amountWithFee, asset);
-};
-
-const validateBalance = (balance: BalanceDS | string, amount: string, asset: Asset): boolean => {
-  const stakeableBalance = typeof balance === 'string' ? balance : stakeableAmount(balance);
-
-  return new BN(formatAmount(amount, asset.precision)).lte(new BN(stakeableBalance));
+  return new BN(fee).lte(new BN(transferableBalance)) && validateBalance(balance, amount, asset, fee);
 };
 
 const getDropdownPayload = (
@@ -57,6 +60,7 @@ const getDropdownPayload = (
   amount?: string,
 ): DropdownOption<AccountID> => {
   const address = account.accountId || '';
+  const publicKey = account.publicKey || '';
   const balanceExists = balance && asset && fee && amount;
 
   const balanceIsAvailable =
@@ -84,7 +88,7 @@ const getDropdownPayload = (
   );
 
   return {
-    id: address,
+    id: publicKey,
     value: address,
     element,
   };
@@ -112,7 +116,7 @@ const InitBond = ({ accountIds, api, chainId, asset, onResult }: Props) => {
   const accounts = getLiveAccounts({ signingType: SigningType.PARITY_SIGNER });
 
   const [fee, setFee] = useState('');
-  const [balanceRange, setBalanceRange] = useState<[string, string]>();
+  const [balanceRange, setBalanceRange] = useState<[string, string]>(['0', '0']);
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [stakeAccounts, setStakeAccounts] = useState<DropdownOption<AccountID>[]>([]);
   const [activeAccounts, setActiveAccounts] = useState<ResultOption<AccountID>[]>([]);
@@ -145,9 +149,15 @@ const InitBond = ({ accountIds, api, chainId, asset, onResult }: Props) => {
 
   // Set balances
   useEffect(() => {
-    if (!api || !chainId || !asset) return;
+    if (!api || !chainId || !asset || !activeAccounts.length) {
+      setBalanceRange(['0', '0']);
 
-    const stakeableBalance = balances.map(stakeableAmount);
+      return;
+    }
+
+    const stakeableBalance = balances
+      .filter((b) => activeAccounts.find((a) => a.id === b.publicKey))
+      .map(stakeableAmount);
 
     const minMaxBalances = stakeableBalance.reduce<[string, string]>(
       (acc, balance) => {
@@ -162,7 +172,7 @@ const InitBond = ({ accountIds, api, chainId, asset, onResult }: Props) => {
     );
 
     setBalanceRange(minMaxBalances);
-  }, [api, chainId, asset, activeAccounts.length]);
+  }, [api, chainId, asset, balances, activeAccounts.length]);
 
   // Init stake wallets
   useEffect(() => {
@@ -228,10 +238,11 @@ const InitBond = ({ accountIds, api, chainId, asset, onResult }: Props) => {
   }, [balanceRange, amount, asset, activeRadio, destination]);
 
   useEffect(() => {
-    if (!api || !amount || !validateAddress(transactions?.[0]?.args.dest) || !transactions.length) return;
+    if (!api || !amount || !transactions.length) return;
 
     (async () => {
       const transactionFee = await getTransactionFee(transactions[0], api);
+
       setFee(transactionFee);
     })();
   }, [amount]);
@@ -299,9 +310,10 @@ const InitBond = ({ accountIds, api, chainId, asset, onResult }: Props) => {
             <>
               <AmountInput
                 placeholder={t('staking.bond.amountPlaceholder')}
+                balancePlaceholder={t('staking.bond.availableBalancePlaceholder')}
                 value={value}
                 name="amount"
-                balance={balanceRange}
+                balance={balanceRange[0] === balanceRange[1] ? balanceRange[0] : balanceRange}
                 asset={asset}
                 invalid={Boolean(error)}
                 onChange={onChange}
@@ -366,7 +378,7 @@ const InitBond = ({ accountIds, api, chainId, asset, onResult }: Props) => {
         )}
         <div className="flex justify-between items-center uppercase text-neutral-variant text-2xs">
           <p>{t('transfer.networkFee')}</p>
-          {fee}
+
           <Fee className="text-neutral font-semibold" api={api} asset={asset} transaction={transactions[0]} />
         </div>
       </form>
