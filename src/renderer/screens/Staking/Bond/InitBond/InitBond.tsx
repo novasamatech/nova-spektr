@@ -1,7 +1,7 @@
 import { ApiPromise } from '@polkadot/api';
 import { BN } from '@polkadot/util';
 import cn from 'classnames';
-import { ReactNode, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Controller, SubmitHandler, useForm } from 'react-hook-form';
 
 import { Fee } from '@renderer/components/common';
@@ -20,7 +20,7 @@ import { Option as DropdownOption } from '@renderer/components/ui/Dropdowns/comm
 import { RadioOption, ResultOption } from '@renderer/components/ui/RadioGroup/common/types';
 import { useI18n } from '@renderer/context/I18nContext';
 import { Asset } from '@renderer/domain/asset';
-import { AccountID, ChainId, SigningType } from '@renderer/domain/shared-kernel';
+import { AccountID, ChainId, PublicKey, SigningType } from '@renderer/domain/shared-kernel';
 import { Transaction, TransactionType } from '@renderer/domain/transaction';
 import { useAccount } from '@renderer/services/account/accountService';
 import { useBalance } from '@renderer/services/balance/balanceService';
@@ -95,12 +95,18 @@ type BondForm = {
   destination: AccountID;
 };
 
+export type BondResult = {
+  amount: string;
+  accounts: AccountDS[];
+  destination: AccountID;
+};
+
 type Props = {
-  accountIds: string[];
   api?: ApiPromise;
-  chainId?: ChainId;
-  asset?: Asset;
-  onResult: () => void;
+  chainId: ChainId;
+  accountIds: string[];
+  asset: Asset;
+  onResult: (data: BondResult) => void;
 };
 
 const InitBond = ({ accountIds, api, chainId, asset, onResult }: Props) => {
@@ -114,21 +120,27 @@ const InitBond = ({ accountIds, api, chainId, asset, onResult }: Props) => {
   const [fee, setFee] = useState('');
   const [balanceRange, setBalanceRange] = useState<[string, string]>();
   const [transactions, setTransactions] = useState<Transaction[]>([]);
+
   const [stakeAccounts, setStakeAccounts] = useState<DropdownOption<AccountID>[]>([]);
   const [activeAccounts, setActiveAccounts] = useState<ResultOption<AccountID>[]>([]);
-  const [activeRadio, setActiveRadio] = useState<ResultOption<RewardsDestination>>();
+
+  const [destinations, setDestinations] = useState<RadioOption<number>[]>([]);
+  const [activeDestination, setActiveDestination] = useState<ResultOption<RewardsDestination>>();
   const [payoutAccounts, setPayoutAccounts] = useState<DropdownOption<AccountID>[]>([]);
 
   const selectedAccounts = accounts.filter((account) => {
     return account.id && accountIds.includes(account.id.toString());
   });
 
-  const balances = getLiveAssetBalances(
-    // @ts-ignore
-    selectedAccounts.map((a) => a.publicKey).filter(Boolean),
-    chainId || '0x',
-    asset?.assetId?.toString() || '',
-  );
+  const publicKeys = selectedAccounts.reduce<PublicKey[]>((acc, account) => {
+    if (account.publicKey) {
+      acc.push(account.publicKey);
+    }
+
+    return acc;
+  }, []);
+
+  const balances = getLiveAssetBalances(publicKeys, chainId, asset.assetId.toString());
 
   const {
     handleSubmit,
@@ -145,7 +157,7 @@ const InitBond = ({ accountIds, api, chainId, asset, onResult }: Props) => {
 
   // Set balances
   useEffect(() => {
-    if (!api || !chainId || !asset) return;
+    if (!api) return;
 
     const stakeableBalance = balances.map(stakeableAmount);
 
@@ -164,10 +176,28 @@ const InitBond = ({ accountIds, api, chainId, asset, onResult }: Props) => {
     setBalanceRange(minMaxBalances);
   }, [api, chainId, asset, activeAccounts.length]);
 
-  // Init stake wallets
+  // Init destinations
   useEffect(() => {
-    if (!asset) return;
+    const options = [
+      { value: RewardsDestination.RESTAKE, element: t('staking.bond.restakeRewards') },
+      { value: RewardsDestination.TRANSFERABLE, element: t('staking.bond.transferableRewards') },
+    ];
 
+    const formattedDestinations = options.map((dest, index) => ({
+      id: index.toString(),
+      value: dest.value,
+      element: (
+        <div className="grid grid-cols-2 items-center flex-1">
+          <p className="text-neutral text-lg leading-5 font-semibold">{dest.element}</p>
+        </div>
+      ),
+    }));
+
+    setDestinations(formattedDestinations);
+  }, []);
+
+  // Init stake accounts
+  useEffect(() => {
     const formattedAccounts = selectedAccounts.map((a) => {
       const matchBalance = balances.find((b) => b.publicKey === a.publicKey);
 
@@ -176,24 +206,26 @@ const InitBond = ({ accountIds, api, chainId, asset, onResult }: Props) => {
 
     setStakeAccounts(formattedAccounts);
     setActiveAccounts(formattedAccounts);
-  }, [asset, accountIds.length, amount, fee, balances.length]);
+  }, [accountIds.length, amount, fee, balances.length]);
 
   // Init payout wallets
   useEffect(() => {
-    if (!chainId) return;
+    const payoutAccounts = accounts.reduce<DropdownOption<AccountID>[]>((acc, account) => {
+      if (!account.chainId || account.chainId === chainId) {
+        acc.push(getDropdownPayload(account));
+      }
 
-    const payoutAccounts = accounts
-      .filter((account) => !account.chainId || account.chainId === chainId)
-      .map((account) => getDropdownPayload(account));
+      return acc;
+    }, []);
 
     setPayoutAccounts(payoutAccounts);
   }, [accounts.length]);
 
   // Setup transactions
   useEffect(() => {
-    if (!chainId || !asset || !balanceRange) return;
+    if (!balanceRange) return;
 
-    const transferableDestination = activeRadio?.value === RewardsDestination.TRANSFERABLE && destination;
+    const transferableDestination = activeDestination?.value === RewardsDestination.TRANSFERABLE && destination;
 
     const newTransactions = activeAccounts.map(({ value }) => {
       const bondTx = {
@@ -225,7 +257,7 @@ const InitBond = ({ accountIds, api, chainId, asset, onResult }: Props) => {
     });
 
     setTransactions(newTransactions);
-  }, [balanceRange, amount, asset, activeRadio, destination]);
+  }, [balanceRange, amount, activeDestination, destination]);
 
   useEffect(() => {
     if (!api || !amount || !validateAddress(transactions?.[0]?.args.dest) || !transactions.length) return;
@@ -240,29 +272,19 @@ const InitBond = ({ accountIds, api, chainId, asset, onResult }: Props) => {
     return <div>LOADING</div>;
   }
 
-  const initBond: SubmitHandler<BondForm> = ({ amount, destination }) => {
-    onResult();
-  };
-
-  const getDestinations = (): RadioOption<number>[] => {
-    const createElement = (label: string): ReactNode => (
-      <div className="grid grid-cols-2 items-center flex-1">
-        <p className="text-neutral text-lg leading-5 font-semibold">{label}</p>
-      </div>
+  const submitBond: SubmitHandler<BondForm> = ({ amount, destination }) => {
+    const selectedAddresses = stakeAccounts.map((stake) => stake.value);
+    const accounts = selectedAccounts.filter(
+      (account) => account.accountId && selectedAddresses.includes(account.accountId),
     );
 
-    return [
-      {
-        id: '1',
-        value: RewardsDestination.RESTAKE,
-        element: createElement(t('staking.bond.restakeRewards')),
-      },
-      {
-        id: '2',
-        value: RewardsDestination.TRANSFERABLE,
-        element: createElement(t('staking.bond.transferableRewards')),
-      },
-    ];
+    const transferableDestination = activeDestination?.value === RewardsDestination.RESTAKE ? '' : destination;
+
+    onResult({
+      amount,
+      destination: transferableDestination,
+      accounts: accounts,
+    });
   };
 
   return (
@@ -281,7 +303,7 @@ const InitBond = ({ accountIds, api, chainId, asset, onResult }: Props) => {
       <form
         id="initBondForm"
         className="flex flex-col gap-y-5 p-5 w-full rounded-2lg bg-white mt-2.5 mb-5 shadow-surface"
-        onSubmit={handleSubmit(initBond)}
+        onSubmit={handleSubmit(submitBond)}
       >
         <Controller
           name="amount"
@@ -332,14 +354,14 @@ const InitBond = ({ accountIds, api, chainId, asset, onResult }: Props) => {
             <span className="underline text-xs">{t('staking.bond.aboutRewards')}</span>
           </a>
           <RadioGroup
-            activeId={activeRadio?.id}
-            options={getDestinations()}
+            activeId={activeDestination?.id}
+            options={destinations}
             className="col-span-2"
             optionClass="p-2.5 rounded-2lg bg-shade-2 mt-2.5"
-            onChange={setActiveRadio}
+            onChange={setActiveDestination}
           />
         </div>
-        {activeRadio?.value === RewardsDestination.TRANSFERABLE && (
+        {activeDestination?.value === RewardsDestination.TRANSFERABLE && (
           <Controller
             name="destination"
             control={control}
