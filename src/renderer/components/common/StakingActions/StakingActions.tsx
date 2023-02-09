@@ -1,10 +1,19 @@
+import { useState } from 'react';
 import cn from 'classnames';
+import { Trans } from 'react-i18next';
 
-import { Icon } from '@renderer/components/ui';
+import { BaseModal, Button, Icon } from '@renderer/components/ui';
 import { useI18n } from '@renderer/context/I18nContext';
 import { Stake } from '@renderer/domain/stake';
 import Paths, { PathValue } from '@renderer/routes/paths';
+import { useToggle } from '@renderer/shared/hooks';
+import { toPublicKey } from '@renderer/shared/utils/address';
+import { AccountID } from '@renderer/domain/shared-kernel';
 
+enum AccountTypes {
+  STASH = 'stash',
+  CONTROLLER = 'controller',
+}
 const STAKE_ACTIONS = {
   startStaking: { icon: 'startStaking', title: 'staking.actions.startStakingLabel', path: Paths.BOND },
   stakeMore: { icon: 'stakeMore', title: 'staking.actions.stakeMoreLabel', path: Paths.BOND },
@@ -17,14 +26,29 @@ const STAKE_ACTIONS = {
 
 type StakeAction = keyof typeof STAKE_ACTIONS;
 
+const StashActions: Array<StakeAction> = ['stakeMore'];
+const ControllerActions: Array<StakeAction> = [
+  'startStaking',
+  'unstake',
+  'returnToStake',
+  'redeem',
+  'setValidators',
+  'destination',
+];
+
 type Props = {
   stakes: Stake[];
+  selectedAccounts?: string[];
   className?: string;
-  onNavigate: (path: PathValue) => void;
+  onNavigate: (path: PathValue, accounts?: AccountID[]) => void;
 };
 
 const StakingActions = ({ stakes, className, onNavigate }: Props) => {
   const { t } = useI18n();
+
+  const [isDialogOpen, toggleIsDialogOpen] = useToggle(false);
+  const [actionType, setActionType] = useState<StakeAction | null>(null);
+  const [warningMessage, setWarningMessage] = useState<string>('');
 
   const actionsSummary = stakes.reduce<Record<StakeAction, number>>(
     (acc, stake) => {
@@ -60,12 +84,63 @@ const StakingActions = ({ stakes, className, onNavigate }: Props) => {
     return null;
   }
 
+  const hasIncorrectAccounts = (action: StakeAction): AccountTypes | null => {
+    console.log(action, stakes);
+    if (StashActions.includes(action)) return stakes.every(isStash) ? null : AccountTypes.STASH;
+    if (ControllerActions.includes(action)) return stakes.every(isController) ? null : AccountTypes.CONTROLLER;
+
+    return null;
+  };
+
+  const isController = (stake: Stake) =>
+    !stake.controller || toPublicKey(stake.accountId) === toPublicKey(stake.controller);
+  const isStash = (stake: Stake) => !stake.stash || toPublicKey(stake.accountId) === toPublicKey(stake.stash);
+
+  const getAccounts = (accountType: AccountTypes): Stake[] => {
+    if (accountType === AccountTypes.STASH) return stakes.filter(isStash);
+    if (accountType === AccountTypes.CONTROLLER) return stakes.filter(isController);
+
+    return stakes;
+  };
+
+  const onClickAction = (action: StakeAction) => {
+    const { path } = STAKE_ACTIONS[action];
+    const accountType = hasIncorrectAccounts(action);
+    console.log(accountType);
+
+    if (accountType) {
+      setActionType(action);
+      setWarningMessage(t(accountType === AccountTypes.STASH ? 'staking.warning.stash' : 'staking.warning.controller'));
+
+      toggleIsDialogOpen();
+    } else {
+      onNavigate(path);
+    }
+  };
+
+  const onDeselectIncorrectAccounts = (action: StakeAction | null) => {
+    if (!action) return;
+
+    const accountType = hasIncorrectAccounts(actionType!);
+
+    if (accountType) {
+      const accounts = getAccounts(accountType);
+
+      onNavigate(
+        STAKE_ACTIONS[action].path,
+        accounts.map((account) => account.accountId),
+      );
+    } else {
+      onNavigate(STAKE_ACTIONS[action].path);
+    }
+  };
+
   return (
     <div className={cn('shadow-surface bg-white rounded-2lg border-2 border-shade-10', className)}>
       <ul className="flex gap-x-1 p-2.5">
         {Object.entries(actionsSummary).map(([key, value]) => {
           if (stakes.length !== value) return null;
-          const { icon, title, path } = STAKE_ACTIONS[key as StakeAction];
+          const { icon, title } = STAKE_ACTIONS[key as StakeAction];
 
           return (
             <li key={key} className="font-semibold text-sm text-primary w-[105px]">
@@ -75,7 +150,7 @@ const StakingActions = ({ stakes, className, onNavigate }: Props) => {
                   'hover:bg-shade-10 focus:bg-shade-10',
                 )}
                 type="button"
-                onClick={() => onNavigate(path)}
+                onClick={() => onClickAction(key as StakeAction)}
               >
                 <Icon name={icon} size={30} />
                 {t(title)}
@@ -84,6 +159,39 @@ const StakingActions = ({ stakes, className, onNavigate }: Props) => {
           );
         })}
       </ul>
+
+      <BaseModal
+        contentClass="px-5 pb-4 max-w-xl"
+        isOpen={isDialogOpen}
+        title={
+          <div className="flex items-center gap-2.5">
+            {actionType && (
+              <>
+                <Icon name={STAKE_ACTIONS[actionType].icon} />
+                <span>{t(STAKE_ACTIONS[actionType].title)}</span>
+              </>
+            )}
+          </div>
+        }
+        onClose={toggleIsDialogOpen}
+      >
+        <Trans t={t} i18nKey={warningMessage} />
+
+        <div className="flex items-center gap-2.5 mt-5">
+          <Button
+            className="flex-1"
+            variant="fill"
+            pallet="primary"
+            weight="lg"
+            onClick={() => onDeselectIncorrectAccounts(actionType)}
+          >
+            {t('staking.warning.yesButton')}
+          </Button>
+          <Button className="flex-1" variant="outline" pallet="primary" weight="lg" onClick={toggleIsDialogOpen}>
+            {t('staking.warning.noButton')}
+          </Button>
+        </div>
+      </BaseModal>
     </div>
   );
 };
