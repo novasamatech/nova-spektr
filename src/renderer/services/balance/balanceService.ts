@@ -1,10 +1,9 @@
 import { useLiveQuery } from 'dexie-react-hooks';
-import { AccountInfo, BalanceLock } from '@polkadot/types/interfaces';
+import { BalanceLock } from '@polkadot/types/interfaces';
 import { BN } from '@polkadot/util';
 import { ApiPromise } from '@polkadot/api';
 import { Codec } from '@polkadot/types/types';
 import { Option } from '@polkadot/types';
-import { PalletAssetsAssetAccount } from '@polkadot/types/lookup';
 
 import { Asset, AssetType, OrmlExtras, StatemineExtras } from '@renderer/domain/asset';
 import { ChainId, PublicKey } from '@renderer/domain/shared-kernel';
@@ -114,7 +113,7 @@ export const useBalance = (): IBalanceService => {
 
     const addresses = publicKeys.map((pk) => toAddress(pk, chain.addressPrefix));
 
-    return api.query.system.account.multi(addresses, (data: AccountInfo[]) => {
+    return api.query.system.account.multi(addresses, (data: any[]) => {
       data.forEach(async (accountInfo, i) => {
         const miscFrozen = new BN(accountInfo.data.miscFrozen);
         const feeFrozen = new BN(accountInfo.data.feeFrozen);
@@ -161,7 +160,7 @@ export const useBalance = (): IBalanceService => {
     return api.query.assets.account.multi(
       addresses.map((a) => [statemineAssetId, a]),
       (data: any[]) => {
-        data.forEach(async (accountInfo: Option<PalletAssetsAssetAccount>, i) => {
+        data.forEach(async (accountInfo: Option<any>, i) => {
           try {
             const free = accountInfo.isNone ? '0' : accountInfo.unwrap().balance.toString();
             const balance = {
