@@ -347,6 +347,12 @@
       "subtitle": "Validators",
       "totalStakeTableHeader": "Total stake",
       "validatorsTableHeader": "Validators"
+    },
+    "warning": {
+      "controller": "This operation works with <strong>Controller</strong> accounts only. Would you like to deselect <strong>Stash</strong> accounts to continue?",
+      "noButton": "No",
+      "stash": "This operation works with <strong>Stash</strong> accounts only. Would you like to deselect <strong>Controller</strong> accounts to continue?",
+      "yesButton": "Yes"
     }
   },
   "time": {

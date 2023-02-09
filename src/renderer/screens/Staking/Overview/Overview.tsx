@@ -229,9 +229,9 @@ const Overview = () => {
     return acc;
   }, []);
 
-  const navigateToStake = (path: PathValue) => {
+  const navigateToStake = (path: PathValue, accounts?: AccountID[]) => {
     const activeAccountIds = activeAccounts.reduce<string[]>((acc, { id, accountId }) => {
-      if (id && accountId && selectedAccounts.includes(accountId)) {
+      if (id && accountId && selectedAccounts.includes(accountId) && (accounts ? accounts.includes(accountId) : true)) {
         acc.push(id);
       }
 
