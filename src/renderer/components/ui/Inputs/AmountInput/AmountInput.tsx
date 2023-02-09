@@ -9,19 +9,20 @@ type Props = {
   value: string;
   placeholder: string;
   asset: Asset;
+  balancePlaceholder?: string;
   balance?: string | [string, string];
   invalid?: boolean;
   onChange?: (...event: any[]) => void;
 };
 
-const AmountInput = ({ name, value, asset, balance, placeholder, invalid, onChange }: Props) => {
+const AmountInput = ({ name, value, asset, balancePlaceholder, balance, placeholder, invalid, onChange }: Props) => {
   const { t } = useI18n();
 
   const label = (
     <div className="flex justify-between">
       <p>{t('general.input.amountLabel')}</p>
       <div className="flex gap-x-1">
-        <p className="font-normal">{t('general.input.transferableLabel')}:</p>
+        <p className="font-normal">{balancePlaceholder || t('general.input.transferableLabel')}:</p>
         {Array.isArray(balance) ? (
           <div className="flex gap-x-1">
             <Balance className="text-neutral font-semibold" value={balance[0]} precision={asset.precision} />
