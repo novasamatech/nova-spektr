@@ -263,9 +263,14 @@
       "startStakingLabel": "Начать стейкинг",
       "unstakeLabel": "Отменить стейк"
     },
+    "badges": {
+      "unstakeDescription": "Ваши токены сейчас выводятся из стейка",
+      "unstakeTitle": "Вывод из стейка"
+    },
     "bond": {
       "aboutRewards": "О наградах",
       "amountPlaceholder": "Введите сумму",
+      "availableBalancePlaceholder": "Доступно",
       "confirmBondSubtitle": "Потверждение",
       "continueButton": "Продолжить",
       "goToStakingButton": "Обратно к Стейкингу",
@@ -311,6 +316,8 @@
       "validators": "Валидаторы",
       "yourValidatorsTitle": "Мои валидаторы"
     },
+    "notEnoughBalanceError": "Недостаточно средств для выполнения операции",
+    "notEnoughBalanceForFeeError": "Недостаточно средств для оплаты комиссии",
     "overview": {
       "aboutStakingLabel": "О стейкинге { asset } токенов",
       "accountTableHeader": "Аккаунты",
@@ -336,6 +343,7 @@
       "totalStakedLabel": "Общий стейк",
       "viewValidatorsOption": "Валидаторы"
     },
+    "requiredAmountError": "Пожалуйста, введите сумму",
     "title": "Стейкинг",
     "unbond": {
       "subtitle": "Отвязать токены"
@@ -365,6 +373,7 @@
   "time": {
     "days_one": "{ count } день",
     "days_other": "{ count } дней",
+    "hoursMinutesSeconds": "{ hours }:{ minutes }:{ seconds }",
     "hours_one": "{ count } час",
     "hours_other": "{ count } часов",
     "minutesSeconds": "{ minutes }:{ seconds }"

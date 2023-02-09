@@ -263,9 +263,14 @@
       "startStakingLabel": "Start staking",
       "unstakeLabel": "Unstake"
     },
+    "badges": {
+      "unstakeDescription": "Your tokens are being unstaked at the moment",
+      "unstakeTitle": "Unstaking"
+    },
     "bond": {
       "aboutRewards": "About rewards",
       "amountPlaceholder": "Input amount",
+      "availableBalancePlaceholder": "Available",
       "confirmBondSubtitle": "Confirm",
       "continueButton": "Continue",
       "goToStakingButton": "Back to Staking",
@@ -311,6 +316,8 @@
       "validators": "Validators",
       "yourValidatorsTitle": "Your validators"
     },
+    "notEnoughBalanceError": "Not enough funds to stake specific amount",
+    "notEnoughBalanceForFeeError": "Insufficient balance to pay network fee",
     "overview": {
       "aboutStakingLabel": "About { asset } staking",
       "accountTableHeader": "Accounts",
@@ -336,6 +343,7 @@
       "totalStakedLabel": "Total staked",
       "viewValidatorsOption": "View validators"
     },
+    "requiredAmountError": "Please, enter amount",
     "title": "Staking",
     "unbond": {
       "subtitle": "Unbond"
@@ -365,6 +373,7 @@
   "time": {
     "days_one": "{ count } day",
     "days_other": "{ count } days",
+    "hoursMinutesSeconds": "{ hours }:{ minutes }:{ seconds }",
     "hours_one": "{ count } hour",
     "hours_other": "{ count } hours",
     "minutesSeconds": "{ minutes }:{ seconds }"

@@ -27,7 +27,6 @@ import { useBalance } from '@renderer/services/balance/balanceService';
 import { formatAmount, stakeableAmount, transferableAmount } from '@renderer/services/balance/common/utils';
 import { AccountDS, BalanceDS } from '@renderer/services/storage';
 import { useTransaction } from '@renderer/services/transaction/transactionService';
-import { validateAddress } from '@renderer/shared/utils/address';
 
 const PAYOUT_URL = 'https://wiki.polkadot.network/docs/learn-simple-payouts';
 
@@ -35,18 +34,22 @@ const enum RewardsDestination {
   RESTAKE,
   TRANSFERABLE,
 }
+const validateBalance = (balance: BalanceDS | string, amount: string, asset: Asset, fee?: string): boolean => {
+  const stakeableBalance = typeof balance === 'string' ? balance : stakeableAmount(balance);
+
+  let formatedAmount = new BN(formatAmount(amount, asset.precision));
+
+  if (fee) {
+    formatedAmount = formatedAmount.add(new BN(fee));
+  }
+
+  return formatedAmount.lte(new BN(stakeableBalance));
+};
 
 const validateBalanceForFee = (balance: BalanceDS | string, fee: string, amount: string, asset: Asset): boolean => {
   const transferableBalance = typeof balance === 'string' ? balance : transferableAmount(balance);
-  const amountWithFee = new BN(formatAmount(amount, asset.precision)).add(new BN(fee)).toString();
 
-  return new BN(fee).lte(new BN(transferableBalance)) && validateBalance(balance, amountWithFee, asset);
-};
-
-const validateBalance = (balance: BalanceDS | string, amount: string, asset: Asset): boolean => {
-  const stakeableBalance = typeof balance === 'string' ? balance : stakeableAmount(balance);
-
-  return new BN(formatAmount(amount, asset.precision)).lte(new BN(stakeableBalance));
+  return new BN(fee).lte(new BN(transferableBalance)) && validateBalance(balance, amount, asset, fee);
 };
 
 const getDropdownPayload = (
@@ -57,6 +60,7 @@ const getDropdownPayload = (
   amount?: string,
 ): DropdownOption<AccountID> => {
   const address = account.accountId || '';
+  const publicKey = account.publicKey || '';
   const balanceExists = balance && asset && fee && amount;
 
   const balanceIsAvailable =
@@ -84,7 +88,7 @@ const getDropdownPayload = (
   );
 
   return {
-    id: address,
+    id: publicKey,
     value: address,
     element,
   };
@@ -118,7 +122,7 @@ const InitBond = ({ accountIds, api, chainId, asset, onResult }: Props) => {
   const accounts = getLiveAccounts({ signingType: SigningType.PARITY_SIGNER });
 
   const [fee, setFee] = useState('');
-  const [balanceRange, setBalanceRange] = useState<[string, string]>();
+  const [balanceRange, setBalanceRange] = useState<[string, string]>(['0', '0']);
   const [transactions, setTransactions] = useState<Transaction[]>([]);
 
   const [stakeAccounts, setStakeAccounts] = useState<DropdownOption<AccountID>[]>([]);
@@ -157,9 +161,15 @@ const InitBond = ({ accountIds, api, chainId, asset, onResult }: Props) => {
 
   // Set balances
   useEffect(() => {
-    if (!api) return;
+    if (!api || !activeAccounts.length) {
+      setBalanceRange(['0', '0']);
 
-    const stakeableBalance = balances.map(stakeableAmount);
+      return;
+    }
+
+    const stakeableBalance = balances
+      .filter((b) => activeAccounts.find((a) => a.id === b.publicKey))
+      .map(stakeableAmount);
 
     const minMaxBalances = stakeableBalance.reduce<[string, string]>(
       (acc, balance) => {
@@ -174,7 +184,7 @@ const InitBond = ({ accountIds, api, chainId, asset, onResult }: Props) => {
     );
 
     setBalanceRange(minMaxBalances);
-  }, [api, chainId, asset, activeAccounts.length]);
+  }, [api, chainId, asset, balances, activeAccounts.length]);
 
   // Init destinations
   useEffect(() => {
@@ -260,10 +270,11 @@ const InitBond = ({ accountIds, api, chainId, asset, onResult }: Props) => {
   }, [balanceRange, amount, activeDestination, destination]);
 
   useEffect(() => {
-    if (!api || !amount || !validateAddress(transactions?.[0]?.args.dest) || !transactions.length) return;
+    if (!api || !amount || !transactions.length) return;
 
     (async () => {
       const transactionFee = await getTransactionFee(transactions[0], api);
+
       setFee(transactionFee);
     })();
   }, [amount]);
@@ -313,30 +324,33 @@ const InitBond = ({ accountIds, api, chainId, asset, onResult }: Props) => {
             validate: {
               notZero: (v) => Number(v) > 0,
               insufficientBalance: (amount) => validateBalance(balanceRange?.[0] || '0', amount, asset),
+              insufficientBalanceForFee: (amount) =>
+                validateBalanceForFee(balanceRange?.[0] || '0', fee, amount, asset),
             },
           }}
           render={({ field: { onChange, value }, fieldState: { error } }) => (
             <>
               <AmountInput
                 placeholder={t('staking.bond.amountPlaceholder')}
+                balancePlaceholder={t('staking.bond.availableBalancePlaceholder')}
                 value={value}
                 name="amount"
-                balance={balanceRange}
+                balance={balanceRange[0] === balanceRange[1] ? balanceRange[0] : balanceRange}
                 asset={asset}
                 invalid={Boolean(error)}
                 onChange={onChange}
               />
               <InputHint active={error?.type === 'insufficientBalance'} variant="error">
-                {t('transfer.notEnoughBalanceError')}
+                {t('staking.notEnoughBalanceError')}
               </InputHint>
               <InputHint active={error?.type === 'insufficientBalanceForFee'} variant="error">
-                {t('transfer.notEnoughBalanceForFeeError')}
+                {t('staking.notEnoughBalanceForFeeError')}
               </InputHint>
               <InputHint active={error?.type === 'required'} variant="error">
-                {t('transfer.requiredAmountError')}
+                {t('staking.requiredAmountError')}
               </InputHint>
               <InputHint active={error?.type === 'notZero'} variant="error">
-                {t('transfer.requiredAmountError')}
+                {t('staking.requiredAmountError')}
               </InputHint>
             </>
           )}
@@ -386,7 +400,7 @@ const InitBond = ({ accountIds, api, chainId, asset, onResult }: Props) => {
         )}
         <div className="flex justify-between items-center uppercase text-neutral-variant text-2xs">
           <p>{t('transfer.networkFee')}</p>
-          {fee}
+
           <Fee className="text-neutral font-semibold" api={api} asset={asset} transaction={transactions[0]} />
         </div>
       </form>

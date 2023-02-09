@@ -1,10 +1,20 @@
+import { ApiPromise } from '@polkadot/api';
+
 import { Explorers } from '@renderer/components/common';
-import { Balance, Icon, Identicon, Table, Shimmering } from '@renderer/components/ui';
+import { Balance, Icon, Identicon, Table, Shimmering, Popover } from '@renderer/components/ui';
 import { useI18n } from '@renderer/context/I18nContext';
 import { Asset } from '@renderer/domain/asset';
 import { Explorer } from '@renderer/domain/chain';
 import { AccountID, SigningType } from '@renderer/domain/shared-kernel';
 import { bigNumberSorter } from '@renderer/shared/utils/bignumber';
+import { Unlocking } from '@renderer/domain/stake';
+import TimeToEra from '../TimeToEra/TimeToEra';
+
+const getNextUnstaking = (unlocking: Unlocking[], currentEra?: number): Unlocking | undefined => {
+  if (!currentEra) return undefined;
+
+  return unlocking.find((u) => Number(u.era) > currentEra);
+};
 
 export type AccountStakeInfo = {
   address: AccountID;
@@ -15,6 +25,7 @@ export type AccountStakeInfo = {
   accountIsSelected: boolean;
   totalReward?: string;
   totalStake?: string;
+  unlocking?: Unlocking[];
 };
 
 type Props = {
@@ -23,6 +34,8 @@ type Props = {
   asset?: Asset;
   explorers?: Explorer[];
   addressPrefix?: number;
+  currentEra?: number;
+  api?: ApiPromise;
   openValidators: (stash?: AccountID) => void;
   selectStaking: (keys: string[]) => void;
 };
@@ -33,6 +46,8 @@ const StakingTable = ({
   asset,
   explorers,
   addressPrefix,
+  currentEra,
+  api,
   openValidators,
   selectStaking,
 }: Props) => {
@@ -75,6 +90,26 @@ const StakingTable = ({
                 <Identicon className="row-span-2 self-center" address={stake.address} background={false} />
                 <p className="text-neutral text-sm font-semibold">{stake.accountName}</p>
                 {stake.walletName && <p className="text-neutral-variant text-2xs">{stake.walletName}</p>}
+
+                {stake.unlocking &&
+                  stake.unlocking.length > 0 &&
+                  getNextUnstaking(stake.unlocking, Number(currentEra)) && (
+                    <div className="row-span-2 self-center">
+                      <Popover
+                        titleIcon={<Icon name="unstake" size={14} />}
+                        titleText={t('staking.badges.unstakeTitle')}
+                        content={t('staking.badges.unstakeDescription')}
+                      >
+                        <div className="flex gap-1 items-center rounded-2lg bg-primary-variant text-on-primary-variant text-2xs px-2 py-0.5">
+                          <Icon name="unstake" size={14} />
+                          <TimeToEra
+                            api={api}
+                            era={Number(getNextUnstaking(stake.unlocking, Number(currentEra))?.era)}
+                          />
+                        </div>
+                      </Popover>
+                    </div>
+                  )}
               </div>
             </Table.Cell>
             <Table.Cell>
