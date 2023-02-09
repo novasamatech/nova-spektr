@@ -1,8 +1,8 @@
 import { ApiPromise } from '@polkadot/api';
-import { u8aToHex, hexToU8a } from '@polkadot/util';
-import { BlockNumber, Header } from '@polkadot/types/interfaces';
-import { u32, Bytes, Vec } from '@polkadot/types';
+import { u8aToHex, hexToU8a, BN } from '@polkadot/util';
+import { Header } from '@polkadot/types/interfaces';
 import { Codec } from '@polkadot/types/types';
+import { Bytes, u32, Vec } from '@polkadot/types';
 
 import { buildTrie } from './decode';
 import { get } from './retreive';
@@ -46,7 +46,7 @@ const getProof = async (api: ApiPromise, storageKey: string, hash: string): Prom
   try {
     const readProof = await api.rpc.state.getReadProof([storageKey], hash);
 
-    return readProof.proof;
+    return readProof.proof as unknown as Vec<Bytes>;
   } catch (error) {
     console.warn(error);
 
@@ -85,7 +85,7 @@ export const verify = (proof: Uint8Array[] | undefined, root: Uint8Array, key: s
 const validateWithBlockNumber = async (
   relaychainApi: ApiPromise,
   parachainApi: ApiPromise,
-  blockNumber: BlockNumber,
+  blockNumber: BN,
   key: string,
   value: Uint8Array,
 ): Promise<boolean> => {
@@ -94,7 +94,7 @@ const validateWithBlockNumber = async (
 
   const decodedHeader: Header = parachainApi.registry.createType('Header', header.toString()) as unknown as Header;
 
-  if (decodedHeader.number.toBn().lte(blockNumber.toBn())) return false;
+  if (decodedHeader.number.toBn().lte(blockNumber)) return false;
 
   const parachainStateRoot = decodedHeader.stateRoot;
   const parachainBlockHash = await getBlockHash(parachainApi, decodedHeader);
@@ -112,10 +112,10 @@ export const validate = async (
 ): Promise<boolean> => {
   const blockHash = value.createdAtHash;
   const block = await parachainApi.rpc.chain.getBlock(blockHash);
-  let blockNumber: BlockNumber = 0 as unknown as u32;
+  let blockNumber = new BN(0);
 
   if (!block.block.header.number.isEmpty) {
-    blockNumber = block.block.header.number.unwrap();
+    blockNumber = block.block.header.number.unwrap().toBn();
   }
 
   return await validateWithBlockNumber(relaychainApi, parachainApi, blockNumber, key, value.toU8a());
