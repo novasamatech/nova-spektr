@@ -285,6 +285,7 @@
       "transferableRewards": "Вывести награды",
       "validatorsSubtitle": "Валидаторы"
     },
+    "networkFee": "Network fee / account",
     "nominators": {
       "electedTitle": "Выбранные",
       "nominated": "Вклад",

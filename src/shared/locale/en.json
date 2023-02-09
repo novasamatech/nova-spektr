@@ -285,6 +285,7 @@
       "transferableRewards": "Transferable rewards",
       "validatorsSubtitle": "Validators"
     },
+    "networkFee": "Network fee / account",
     "nominators": {
       "electedTitle": "Elected",
       "nominated": "Nominated",

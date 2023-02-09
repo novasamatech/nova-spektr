@@ -175,7 +175,7 @@ const StakingActions = ({ stakes, className, onNavigate }: Props) => {
         }
         onClose={toggleIsDialogOpen}
       >
-        {<Trans t={t} i18nKey={warningMessage} />}
+        <Trans t={t} i18nKey={warningMessage} />
 
         <div className="flex items-center gap-2.5 mt-5">
           <Button
