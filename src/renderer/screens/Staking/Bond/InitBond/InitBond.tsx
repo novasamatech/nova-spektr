@@ -37,10 +37,10 @@ const enum RewardsDestination {
 const validateBalance = (balance: BalanceDS | string, amount: string, asset: Asset, fee?: string): boolean => {
   const stakeableBalance = typeof balance === 'string' ? balance : stakeableAmount(balance);
 
-  const formatedAmount = new BN(formatAmount(amount, asset.precision));
+  let formatedAmount = new BN(formatAmount(amount, asset.precision));
 
   if (fee) {
-    formatedAmount.add(new BN(fee)).toString();
+    formatedAmount = formatedAmount.add(new BN(fee));
   }
 
   return formatedAmount.lte(new BN(stakeableBalance));
