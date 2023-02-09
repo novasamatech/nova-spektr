@@ -5247,6 +5247,7 @@
         "assetId": 0,
         "symbol": "BAJU",
         "precision": 12,
+        "priceId": "ajuna-network",
         "icon": "https://raw.githubusercontent.com/nova-wallet/nova-utils/master/icons/chains/white/Bajun.svg",
         "name": "Bajun"
       }
