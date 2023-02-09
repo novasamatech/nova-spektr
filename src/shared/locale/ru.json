@@ -285,6 +285,7 @@
       "transferableRewards": "Вывести награды",
       "validatorsSubtitle": "Валидаторы"
     },
+    "networkFee": "Network fee / account",
     "nominators": {
       "electedTitle": "Выбранные",
       "nominated": "Вклад",
@@ -347,6 +348,12 @@
       "subtitle": "Валидаторы",
       "totalStakeTableHeader": "Общий стейк",
       "validatorsTableHeader": "Валидаторы"
+    },
+    "warning": {
+      "controller": "Данная операция работает только на <strong>Controller</strong> аккаунтах. Отключить все <strong>Stash</strong> аккаунты чтобы продолжить?",
+      "noButton": "Нет",
+      "stash": "Данная операция работает только на <strong>Stash</strong> аккаунтах. Отключить все <strong>Controller</strong> аккаунты чтобы продолжить?",
+      "yesButton": "Да"
     }
   },
   "time": {
