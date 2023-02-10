@@ -36,7 +36,7 @@ const AccountsModal = ({ isOpen, accounts, amount, asset, explorers, addressPref
           {({ accountId, name }) => (
             <Table.Row key={accountId} className="bg-shade-1" height="lg">
               <Table.Cell>
-                <div className="grid grid-flow-col gap-x-1">
+                <div className="flex items-center gap-x-1.5">
                   <Identicon className="row-span-2 self-center" address={accountId} background={false} />
                   <p className="text-neutral text-sm font-semibold">{name}</p> {/* TODO: add full account name */}
                 </div>

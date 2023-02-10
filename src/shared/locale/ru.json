@@ -289,6 +289,7 @@
       "validatorsSubtitle": "Валидаторы"
     },
     "confirmation": {
+      "account": "Аккаунт",
       "accounts": "Аккаунты",
       "accountsTitle": "Выбранные аккаунты",
       "hintFour": "После разблокировки не забудбте забрать токены",

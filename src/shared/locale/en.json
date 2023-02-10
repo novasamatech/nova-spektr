@@ -289,6 +289,7 @@
       "validatorsSubtitle": "Validators"
     },
     "confirmation": {
+      "account": "Account",
       "accounts": "Accounts",
       "accountsTitle": "Selected accounts",
       "hintFour": "After unstaking period don’t forget to redeem your tokens",
@@ -300,7 +301,7 @@
       "queueButton": "Add to operation queue",
       "restakeRewards": "Restake rewards",
       "rewardsDestination": "Rewards destination",
-      "selectValidators": "Select validators",
+      "selectValidators": "Selected validators",
       "signButton": "Sign with Parity Signer",
       "totalAmount": "Total amount",
       "totalNetworkFee": "Total network fee",

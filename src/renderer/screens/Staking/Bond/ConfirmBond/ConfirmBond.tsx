@@ -3,7 +3,7 @@ import { BN } from '@polkadot/util';
 import cn from 'classnames';
 import { useEffect, useState } from 'react';
 
-import { Fee } from '@renderer/components/common';
+import { Fee, AddressOnPlate } from '@renderer/components/common';
 import { Transaction, TransactionType } from '@renderer/domain/transaction';
 import { formatAmount } from '@renderer/services/balance/common/utils';
 import { Balance, Block, Button, HintList, Icon } from '@renderer/components/ui';
@@ -115,7 +115,13 @@ const ConfirmBond = ({
             </div>
 
             {singleAccount ? (
-              <div>{accounts[0].accountId}</div>
+              <AddressOnPlate
+                title={t('staking.confirmation.account')}
+                address={accounts[0].accountId || ''}
+                name={accounts[0].name}
+                addressPrefix={addressPrefix}
+                explorers={explorers}
+              />
             ) : (
               <button
                 type="button"
@@ -177,15 +183,13 @@ const ConfirmBond = ({
             </button>
 
             {destination ? (
-              // TODO: make bigger
-              <div className="flex items-center justify-between h-10 px-[15px] rounded-2lg bg-shade-2">
-                <p className="text-sm text-neutral-variant">{t('staking.confirmation.rewardsDestination')}</p>
-                <div className="flex items-center gap-x-2.5">
-                  <p className="text-base font-semibold text-neutral">
-                    {t('staking.confirmation.transferableRewards')}
-                  </p>
-                </div>
-              </div>
+              <AddressOnPlate
+                title={t('staking.confirmation.rewardsDestination')}
+                suffix={t('staking.confirmation.transferableRewards')}
+                address={destination}
+                addressPrefix={addressPrefix}
+                explorers={explorers}
+              />
             ) : (
               <div className="flex items-center justify-between h-10 px-[15px] rounded-2lg bg-shade-2">
                 <p className="text-sm text-neutral-variant">{t('staking.confirmation.rewardsDestination')}</p>
