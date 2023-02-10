@@ -101,7 +101,7 @@ type BondForm = {
 };
 
 export type BondResult = {
-  amount: string;
+  stake: string;
   accounts: AccountDS[];
   destination: AccountID;
 };
@@ -291,7 +291,7 @@ const InitBond = ({ accountIds, api, chainId, asset, onResult }: Props) => {
     const transferableDestination = activeDestination?.value === RewardsDestination.RESTAKE ? '' : destination;
 
     onResult({
-      amount,
+      stake: formatAmount(amount, asset.precision),
       destination: transferableDestination,
       accounts: accounts,
     });

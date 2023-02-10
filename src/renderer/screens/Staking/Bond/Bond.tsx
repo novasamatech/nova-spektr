@@ -12,7 +12,6 @@ import Paths from '@renderer/routes/paths';
 import ConfirmBond from '@renderer/screens/Staking/Bond/ConfirmBond/ConfirmBond';
 import InitBond, { BondResult } from '@renderer/screens/Staking/Bond/InitBond/InitBond';
 import Validators from '@renderer/screens/Staking/Bond/Validators/Validators';
-import { formatAmount } from '@renderer/services/balance/common/utils';
 import { ValidatorMap } from '@renderer/services/staking/common/types';
 import { AccountDS } from '@renderer/services/storage';
 import Scanning from './Scanning/Scanning';
@@ -74,7 +73,7 @@ const Bond = () => {
     if (!asset) return;
 
     setAccounts(data.accounts);
-    setStakeAmount(formatAmount(data.amount, asset.precision));
+    setStakeAmount(data.stake);
     setDestination(data.destination);
     setActiveStep(Step.VALIDATORS);
   };

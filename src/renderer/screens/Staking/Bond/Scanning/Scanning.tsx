@@ -44,6 +44,7 @@ const Scanning = ({ chainId, api, accounts, addressPrefix, transactions, onResul
   const setupTransactions = async () => {
     if (!api) return;
 
+    console.log('transactions - ', transactions);
     const transactionPromises = accounts.map((account, index) => {
       const address = formatAddress(account.accountId, addressPrefix);
 
@@ -59,7 +60,6 @@ const Scanning = ({ chainId, api, accounts, addressPrefix, transactions, onResul
     });
 
     const txRequests = await Promise.all(transactionPromises);
-    console.log('txRequests - ', txRequests);
 
     if (txRequests.length === 0) return;
 

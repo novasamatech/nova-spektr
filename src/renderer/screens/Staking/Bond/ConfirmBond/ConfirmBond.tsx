@@ -3,14 +3,13 @@ import { BN } from '@polkadot/util';
 import cn from 'classnames';
 import { useEffect, useState } from 'react';
 
-import { Fee, AddressOnPlate } from '@renderer/components/common';
-import { Transaction, TransactionType } from '@renderer/domain/transaction';
-import { formatAmount } from '@renderer/services/balance/common/utils';
+import { AddressOnPlate, Fee } from '@renderer/components/common';
 import { Balance, Block, Button, HintList, Icon } from '@renderer/components/ui';
 import { useI18n } from '@renderer/context/I18nContext';
 import { Asset } from '@renderer/domain/asset';
 import { Explorer } from '@renderer/domain/chain';
 import { AccountID, ChainId } from '@renderer/domain/shared-kernel';
+import { Transaction, TransactionType } from '@renderer/domain/transaction';
 import { Validator } from '@renderer/domain/validator';
 import { AccountDS } from '@renderer/services/storage';
 import { useToggle } from '@renderer/shared/hooks';
@@ -50,30 +49,29 @@ const ConfirmBond = ({
 
   useEffect(() => {
     const newTransactions = accounts.map(({ accountId = '' }) => {
+      const commonPayload = { chainId, address: accountId };
+
       const bondTx = {
-        chainId,
+        ...commonPayload,
         type: TransactionType.BOND,
-        address: accountId,
         args: {
-          value: formatAmount(stake, asset.precision),
+          value: stake,
           controller: accountId,
           payee: destination ? { Account: destination } : 'Staked',
         },
       };
 
       const nominateTx = {
-        chainId,
+        ...commonPayload,
         type: TransactionType.NOMINATE,
-        address: accountId,
         args: {
           targets: validators.map((validator) => validator.address),
         },
       };
 
       return {
-        chainId,
+        ...commonPayload,
         type: TransactionType.BATCH_ALL,
-        address: accountId,
         args: { transactions: [bondTx, nominateTx] },
       };
     });
