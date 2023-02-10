@@ -398,7 +398,7 @@ const InitBond = ({ accountIds, api, chainId, asset, onResult }: Props) => {
           />
         )}
         <div className="flex justify-between items-center uppercase text-neutral-variant text-2xs">
-          <p>{t('transfer.networkFee')}</p>
+          <p>{t('staking.networkFee')}</p>
           <Fee className="text-neutral font-semibold" api={api} asset={asset} transaction={transactions[0]} />
         </div>
       </form>

@@ -21,7 +21,7 @@ export const useTransaction = (): ITransactionService => {
     const metadataRpc = await api.rpc.state.getMetadata();
 
     return {
-      registry: api.registry as TypeRegistry,
+      registry: api.registry as unknown as TypeRegistry,
       metadataRpc: metadataRpc.toHex(),
     };
   };

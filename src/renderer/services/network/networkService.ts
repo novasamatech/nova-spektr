@@ -1,5 +1,5 @@
-import { ApiPromise, WsProvider } from '@polkadot/api';
-import { ScProvider } from '@polkadot/rpc-provider/substrate-connect';
+import { ApiPromise, WsProvider, ScProvider } from '@polkadot/api';
+import * as Sc from '@substrate/connect';
 import { ProviderInterface } from '@polkadot/rpc-provider/types';
 import keyBy from 'lodash/keyBy';
 import { useRef, useState } from 'react';
@@ -153,8 +153,7 @@ export const useNetwork = (networkSubscription?: ISubscriptionService<ChainId>):
     const knownChainId = getKnownChain(chainId);
 
     if (knownChainId) {
-      // @ts-ignore
-      return new ScProvider(knownChainId);
+      return new ScProvider(Sc, knownChainId);
     } else {
       throw new Error('Parachains do not support Substrate Connect yet');
     }

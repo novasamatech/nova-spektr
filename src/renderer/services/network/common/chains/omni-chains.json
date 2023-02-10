@@ -1324,10 +1324,18 @@
           "type": "subquery",
           "url": "https://api.subquery.network/sq/nova-wallet/nova-wallet-basilisk"
         }
-      ]
+      ],
+      "governance": {
+        "type": "polkassembly",
+        "url": "https://polkassembly-hasura.herokuapp.com/v1/graphql",
+        "parameters": {
+          "network": "basilisk"
+        }
+      }
     },
     "icon": "https://raw.githubusercontent.com/nova-wallet/nova-utils/master/icons/chains/gradient/Basilisk.svg",
-    "addressPrefix": 10041
+    "addressPrefix": 10041,
+    "options": ["governance-v1"]
   },
   {
     "chainId": "0xaa3876c1dc8a1afcc2e9a685a49ff7704cfd36ad8c90bf2702b9d1b00cc40011",
@@ -1795,10 +1803,15 @@
           "type": "subquery",
           "url": "https://api.subquery.network/sq/nova-wallet/nova-wallet-kilt"
         }
-      ]
+      ],
+      "governance": {
+        "type": "polkassembly",
+        "url": "https://kilt-hasura.herokuapp.com/v1/graphql"
+      }
     },
     "icon": "https://raw.githubusercontent.com/nova-wallet/nova-utils/master/icons/chains/gradient/KILT_Spiritnet.svg",
-    "addressPrefix": 38
+    "addressPrefix": 38,
+    "options": ["governance-v1"]
   },
   {
     "chainId": "0x4ac80c99289841dd946ef92765bf659a307d39189b3ce374a92b5f0415ee17a1",
@@ -2823,10 +2836,18 @@
           "type": "subquery",
           "url": "https://api.subquery.network/sq/nova-wallet/nova-wallet-robonomics"
         }
-      ]
+      ],
+      "governance": {
+        "type": "polkassembly",
+        "url": "https://polkassembly-hasura.herokuapp.com/v1/graphql",
+        "parameters": {
+          "network": "robonomics"
+        }
+      }
     },
     "icon": "https://raw.githubusercontent.com/nova-wallet/nova-utils/master/icons/chains/gradient/Robonomics.svg",
-    "addressPrefix": 32
+    "addressPrefix": 32,
+    "options": ["governance-v1"]
   },
   {
     "chainId": "0x7dd99936c1e9e6d1ce7d90eb6f33bea8393b4bf87677d675aa63c9cb3e8c5b5b",
@@ -3606,10 +3627,20 @@
           "type": "subquery",
           "url": "https://api.subquery.network/sq/nova-wallet/nova-wallet-hydra"
         }
+      ],
+      "governance": [
+        {
+          "type": "polkassembly",
+          "url": "https://polkassembly-hasura.herokuapp.com/v1/graphql",
+          "parameters": {
+            "network": "hydradx"
+          }
+        }
       ]
     },
     "icon": "https://raw.githubusercontent.com/nova-wallet/nova-utils/master/icons/chains/gradient/HydraDX.svg",
-    "addressPrefix": 63
+    "addressPrefix": 63,
+    "options": ["governance-v1"]
   },
   {
     "chainId": "0xbf88efe70e9e0e916416e8bed61f2b45717f517d7f3523e33c7b001e5ffcbc72",
@@ -4679,6 +4710,7 @@
         "assetId": 0,
         "symbol": "BAJU",
         "precision": 12,
+        "priceId": "ajuna-network",
         "icon": "https://raw.githubusercontent.com/nova-wallet/nova-utils/master/icons/chains/white/Bajun.svg",
         "name": "Bajun"
       }
