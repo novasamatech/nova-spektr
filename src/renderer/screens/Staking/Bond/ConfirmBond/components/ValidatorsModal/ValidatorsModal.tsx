@@ -14,9 +14,14 @@ type Props = {
 };
 
 const ValidatorsModal = ({ isOpen, validators, asset, explorers, addressPrefix, onClose }: Props) => (
-  <BaseModal closeButton title="Your validators" isOpen={isOpen} onClose={onClose}>
+  <BaseModal
+    closeButton
+    contentClass="w-[470px] mt-7 pb-5 px-5"
+    title="Your validators"
+    isOpen={isOpen}
+    onClose={onClose}
+  >
     <ValidatorsTable
-      className="w-[470px] mt-7"
       showHeader={false}
       validators={validators}
       asset={asset}

@@ -9,12 +9,12 @@ import {
   AmountInput,
   Balance,
   Button,
+  Combobox,
   Icon,
   Identicon,
   InputHint,
   RadioGroup,
   Select,
-  Combobox,
 } from '@renderer/components/ui';
 import { Option as DropdownOption } from '@renderer/components/ui/Dropdowns/common/types';
 import { RadioOption, ResultOption } from '@renderer/components/ui/RadioGroup/common/types';
@@ -25,6 +25,7 @@ import { Transaction, TransactionType } from '@renderer/domain/transaction';
 import { useAccount } from '@renderer/services/account/accountService';
 import { useBalance } from '@renderer/services/balance/balanceService';
 import { formatAmount, stakeableAmount, transferableAmount } from '@renderer/services/balance/common/utils';
+import { useValidators } from '@renderer/services/staking/validatorsService';
 import { AccountDS, BalanceDS } from '@renderer/services/storage';
 import { useTransaction } from '@renderer/services/transaction/transactionService';
 
@@ -118,6 +119,7 @@ const InitBond = ({ accountIds, api, chainId, asset, onResult }: Props) => {
   const { getLiveAssetBalances } = useBalance();
   const { getLiveAccounts } = useAccount();
   const { getTransactionFee } = useTransaction();
+  const { getMaxValidators } = useValidators();
 
   const accounts = getLiveAccounts({ signingType: SigningType.PARITY_SIGNER });
 
@@ -184,7 +186,7 @@ const InitBond = ({ accountIds, api, chainId, asset, onResult }: Props) => {
     );
 
     setBalanceRange(minMaxBalances);
-  }, [api, chainId, asset, balances, activeAccounts.length]);
+  }, [api, balances, activeAccounts.length]);
 
   // Init destinations
   useEffect(() => {
@@ -233,8 +235,9 @@ const InitBond = ({ accountIds, api, chainId, asset, onResult }: Props) => {
 
   // Setup transactions
   useEffect(() => {
-    if (!balanceRange) return;
+    if (!api || !balanceRange) return;
 
+    const maxValidators = getMaxValidators(api);
     const transferableDestination = activeDestination?.value === RewardsDestination.TRANSFERABLE && destination;
 
     const newTransactions = activeAccounts.map(({ value }) => {
@@ -254,7 +257,7 @@ const InitBond = ({ accountIds, api, chainId, asset, onResult }: Props) => {
         type: TransactionType.NOMINATE,
         address: value,
         args: {
-          targets: Array(16).fill(value),
+          targets: Array(maxValidators).fill(value),
         },
       };
 
@@ -277,11 +280,7 @@ const InitBond = ({ accountIds, api, chainId, asset, onResult }: Props) => {
 
       setFee(transactionFee);
     })();
-  }, [amount]);
-
-  if (!asset) {
-    return <div>LOADING</div>;
-  }
+  }, [api, amount, transactions]);
 
   const submitBond: SubmitHandler<BondForm> = ({ amount, destination }) => {
     const selectedAddresses = stakeAccounts.map((stake) => stake.value);
@@ -400,7 +399,6 @@ const InitBond = ({ accountIds, api, chainId, asset, onResult }: Props) => {
         )}
         <div className="flex justify-between items-center uppercase text-neutral-variant text-2xs">
           <p>{t('transfer.networkFee')}</p>
-
           <Fee className="text-neutral font-semibold" api={api} asset={asset} transaction={transactions[0]} />
         </div>
       </form>

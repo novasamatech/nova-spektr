@@ -7,13 +7,13 @@ import { useRef, useState } from 'react';
 import { Chain, RpcNode } from '@renderer/domain/chain';
 import { Connection, ConnectionStatus, ConnectionType } from '@renderer/domain/connection';
 import { ChainId } from '@renderer/domain/shared-kernel';
-//import { isKusama } from '@renderer/services/network/common/utils';
 import storage from '@renderer/services/storage';
+import { ISubscriptionService } from '../subscription/common/types';
 import { useChainSpec } from './chainSpecService';
 import { useChains } from './chainsService';
 import { AUTO_BALANCE_TIMEOUT, MAX_ATTEMPTS, PROGRESSION_BASE } from './common/constants';
 import { ConnectionsMap, ConnectProps, INetworkService, RpcValidation } from './common/types';
-import { ISubscriptionService } from '../subscription/common/types';
+//import { isKusama } from '@renderer/services/network/common/utils';
 
 export const useNetwork = (networkSubscription?: ISubscriptionService<ChainId>): INetworkService => {
   const chains = useRef<Record<ChainId, Chain>>({});
@@ -153,6 +153,7 @@ export const useNetwork = (networkSubscription?: ISubscriptionService<ChainId>):
     const knownChainId = getKnownChain(chainId);
 
     if (knownChainId) {
+      // @ts-ignore
       return new ScProvider(knownChainId);
     } else {
       throw new Error('Parachains do not support Substrate Connect yet');

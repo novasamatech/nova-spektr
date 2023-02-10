@@ -9,7 +9,7 @@ import { ConnectionType } from '@renderer/domain/connection';
 import { useI18n } from '@renderer/context/I18nContext';
 import { Button, Icon } from '@renderer/components/ui';
 import { useTransaction } from '@renderer/services/transaction/transactionService';
-import { TransactionType } from '@renderer/domain/transaction';
+import { Transaction, TransactionType } from '@renderer/domain/transaction';
 import { getMetadataPortalUrl, TROUBLESHOOTING_URL } from './common/consts';
 import { useAccount } from '@renderer/services/account/accountService';
 import {
@@ -51,7 +51,7 @@ const Signing = () => {
   const [countdown, setCountdown] = useState<number>(DEFAULT_QR_LIFETIME);
   const [currentStep, setCurrentStep] = useState<Steps>(Steps.SCANNING);
 
-  const [rawTransactions, setRawTransactions] = useState<any[]>([]);
+  const [rawTransactions, setRawTransactions] = useState<Transaction[]>([]);
   const [bulkTransactions, setBulkTransactions] = useState<Uint8Array>();
   const [unsignedTransactions, setUnsignedTransactions] = useState<UnsignedTransaction[]>([]);
 

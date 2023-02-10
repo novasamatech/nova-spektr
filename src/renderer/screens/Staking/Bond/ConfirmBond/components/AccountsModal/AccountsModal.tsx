@@ -19,8 +19,14 @@ const AccountsModal = ({ isOpen, accounts, amount, asset, explorers, addressPref
   const { t } = useI18n();
 
   return (
-    <BaseModal closeButton title={t('staking.confirmation.accountsTitle')} isOpen={isOpen} onClose={onClose}>
-      <Table by="address" dataSource={accounts} className="w-[470px] mt-7">
+    <BaseModal
+      closeButton
+      contentClass="w-[470px] mt-7 pb-5 px-5"
+      title={t('staking.confirmation.accountsTitle')}
+      isOpen={isOpen}
+      onClose={onClose}
+    >
+      <Table by="address" dataSource={accounts}>
         <Table.Header hidden>
           <Table.Column dataKey="name" align="left" />
           <Table.Column dataKey="amount" width={200} />

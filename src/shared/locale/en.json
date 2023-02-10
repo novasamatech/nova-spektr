@@ -231,7 +231,7 @@
     "generateNewQrButton": "Generate new QR code",
     "metadataPortalLink": "Update metadata in Parity Signer",
     "qrCountdownTitle": "QR code is valid for",
-    "scanQrTitle": "Scan the operation QR code with Parity Signer.",
+    "scanQrTitle": "Scan the operation QR code with Parity Signer",
     "scanSignatureTitle": "Scan QR code from Parity Signer",
     "signatureExpiredDescription": "For security reasons generated operations valid for only 5 mins. Please generate new QR code and sign it with Parity Signer",
     "signatureExpiredLabel": "QR Code has expired",

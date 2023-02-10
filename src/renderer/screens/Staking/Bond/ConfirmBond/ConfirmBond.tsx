@@ -1,7 +1,11 @@
 import { ApiPromise } from '@polkadot/api';
 import { BN } from '@polkadot/util';
 import cn from 'classnames';
+import { useEffect, useState } from 'react';
 
+import { Fee } from '@renderer/components/common';
+import { Transaction, TransactionType } from '@renderer/domain/transaction';
+import { formatAmount } from '@renderer/services/balance/common/utils';
 import { Balance, Block, Button, HintList, Icon } from '@renderer/components/ui';
 import { useI18n } from '@renderer/context/I18nContext';
 import { Asset } from '@renderer/domain/asset';
@@ -23,7 +27,7 @@ type Props = {
   asset: Asset;
   explorers?: Explorer[];
   addressPrefix: number;
-  onResult: () => void;
+  onResult: (transactions: Transaction[]) => void;
 };
 
 const ConfirmBond = ({
@@ -39,17 +43,47 @@ const ConfirmBond = ({
   onResult,
 }: Props) => {
   const { t } = useI18n();
-
   const [isAccountsOpen, toggleAccounts] = useToggle();
   const [isValidatorsOpen, toggleValidators] = useToggle();
+
+  const [transactions, setTransactions] = useState<Transaction[]>([]);
+
+  useEffect(() => {
+    const newTransactions = accounts.map(({ accountId = '' }) => {
+      const bondTx = {
+        chainId,
+        type: TransactionType.BOND,
+        address: accountId,
+        args: {
+          value: formatAmount(stake, asset.precision),
+          controller: accountId,
+          payee: destination ? { Account: destination } : 'Staked',
+        },
+      };
+
+      const nominateTx = {
+        chainId,
+        type: TransactionType.NOMINATE,
+        address: accountId,
+        args: {
+          targets: validators.map((validator) => validator.address),
+        },
+      };
+
+      return {
+        chainId,
+        type: TransactionType.BATCH_ALL,
+        address: accountId,
+        args: { transactions: [bondTx, nominateTx] },
+      };
+    });
+
+    setTransactions(newTransactions);
+  }, []);
 
   if (!api) {
     return null;
   }
-
-  const signWithSigner = () => {};
-
-  const addToQueue = () => {};
 
   const totalStake = new BN(stake).muln(accounts.length);
   const singleAccount = accounts.length === 1;
@@ -99,19 +133,30 @@ const ConfirmBond = ({
               </button>
             )}
 
-            <div className="flex flex-col py-2.5 px-[15px] rounded-2lg bg-shade-2">
-              <div className="flex items-center justify-between">
+            <div className="flex flex-col px-[15px] rounded-2lg bg-shade-2">
+              <div className="flex items-center justify-between h-10">
                 {singleAccount ? (
                   <p className="text-sm text-neutral-variant">{t('staking.confirmation.networkFee')}</p>
                 ) : (
                   <p className="text-sm text-neutral-variant">{t('staking.confirmation.networkFeePerAccount')}</p>
                 )}
-                <p className="text-base font-semibold text-neutral">123</p>
+                <Fee
+                  className="text-base font-semibold text-neutral"
+                  api={api}
+                  asset={asset}
+                  transaction={transactions[0]}
+                />
               </div>
               {!singleAccount && (
-                <div className="flex items-center justify-between border-t border-shade-10 pt-1 mt-1">
+                <div className="flex items-center justify-between h-10 border-t border-shade-10">
                   <p className="text-sm text-neutral-variant">{t('staking.confirmation.totalNetworkFee')}</p>
-                  <p className="text-base font-semibold text-neutral">123</p>
+                  <Fee
+                    className="text-base font-semibold text-neutral"
+                    api={api}
+                    repeat={accounts.length}
+                    asset={asset}
+                    transaction={transactions[0]}
+                  />
                 </div>
               )}
             </div>
@@ -164,19 +209,21 @@ const ConfirmBond = ({
               pallet="primary"
               weight="lg"
               suffixElement={<Icon name="qrLine" size={20} />}
-              onClick={signWithSigner}
+              onClick={() => onResult(transactions)}
             >
               {t('staking.confirmation.signButton')}
             </Button>
-            <Button
-              variant="outline"
-              pallet="primary"
-              weight="lg"
-              suffixElement={<Icon name="addLine" size={20} />}
-              onClick={addToQueue}
-            >
-              {t('staking.confirmation.queueButton')}
-            </Button>
+
+            {/* TODO: implement in future */}
+            {/*<Button*/}
+            {/*  variant="outline"*/}
+            {/*  pallet="primary"*/}
+            {/*  weight="lg"*/}
+            {/*  suffixElement={<Icon name="addLine" size={20} />}*/}
+            {/*  onClick={addToQueue}*/}
+            {/*>*/}
+            {/*  {t('staking.confirmation.queueButton')}*/}
+            {/*</Button>*/}
           </div>
         </section>
       </div>

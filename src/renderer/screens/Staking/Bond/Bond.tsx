@@ -1,3 +1,4 @@
+import { UnsignedTransaction } from '@substrate/txwrapper-polkadot';
 import { useState } from 'react';
 import { Navigate, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 
@@ -6,6 +7,7 @@ import { useI18n } from '@renderer/context/I18nContext';
 import { useNetworkContext } from '@renderer/context/NetworkContext';
 import { StakingType } from '@renderer/domain/asset';
 import { AccountID, ChainId } from '@renderer/domain/shared-kernel';
+import { Transaction } from '@renderer/domain/transaction';
 import Paths from '@renderer/routes/paths';
 import ConfirmBond from '@renderer/screens/Staking/Bond/ConfirmBond/ConfirmBond';
 import InitBond, { BondResult } from '@renderer/screens/Staking/Bond/InitBond/InitBond';
@@ -13,17 +15,25 @@ import Validators from '@renderer/screens/Staking/Bond/Validators/Validators';
 import { formatAmount } from '@renderer/services/balance/common/utils';
 import { ValidatorMap } from '@renderer/services/staking/common/types';
 import { AccountDS } from '@renderer/services/storage';
+import Scanning from './Scanning/Scanning';
+import Signing from './Signing/Signing';
 
 const enum Step {
-  InitBond,
-  Validators,
-  ConfirmBond,
+  INIT,
+  VALIDATORS,
+  CONFIRMATION,
+  SCANNING,
+  SIGNING,
+  EXECUTING,
 }
 
 const HEADER_TITLE: Record<Step, string> = {
-  [Step.InitBond]: 'staking.bond.initBondSubtitle',
-  [Step.Validators]: 'staking.bond.validatorsSubtitle',
-  [Step.ConfirmBond]: 'staking.bond.confirmBondSubtitle',
+  [Step.INIT]: 'staking.bond.initBondSubtitle',
+  [Step.VALIDATORS]: 'staking.bond.validatorsSubtitle',
+  [Step.CONFIRMATION]: 'staking.bond.confirmBondSubtitle',
+  [Step.SCANNING]: 'staking.bond.confirmBondSubtitle',
+  [Step.SIGNING]: 'staking.bond.confirmBondSubtitle',
+  [Step.EXECUTING]: 'staking.bond.confirmBondSubtitle',
 };
 
 const Bond = () => {
@@ -33,12 +43,13 @@ const Bond = () => {
   const [searchParams] = useSearchParams();
   const params = useParams<{ chainId: ChainId }>();
 
-  const [activeStep, setActiveStep] = useState<Step>(Step.InitBond);
-  // const [activeStep, setActiveStep] = useState<Step>(Step.Validators);
+  const [activeStep, setActiveStep] = useState<Step>(Step.INIT);
   const [validators, setValidators] = useState<ValidatorMap>({});
   const [accounts, setAccounts] = useState<AccountDS[]>([]);
   const [stakeAmount, setStakeAmount] = useState<string>('');
   const [destination, setDestination] = useState<AccountID>('');
+  const [transactions, setTransactions] = useState<Transaction[]>([]);
+  const [unsignedTransactions, setUnsignedTransactions] = useState<UnsignedTransaction[]>([]);
 
   const chainId = params.chainId || ('' as ChainId);
   const accountIds = searchParams.get('id')?.split(',') || [];
@@ -51,7 +62,7 @@ const Bond = () => {
   const asset = assets.find((asset) => asset.staking === StakingType.RELAYCHAIN);
 
   const goToPrevStep = () => {
-    if (activeStep === Step.InitBond) {
+    if (activeStep === Step.INIT) {
       navigate(Paths.STAKING);
     } else {
       // TODO: reset data
@@ -65,31 +76,64 @@ const Bond = () => {
     setAccounts(data.accounts);
     setStakeAmount(formatAmount(data.amount, asset.precision));
     setDestination(data.destination);
-    setActiveStep(Step.Validators);
+    setActiveStep(Step.VALIDATORS);
   };
 
   const onSelectValidators = (validators: ValidatorMap) => {
     setValidators(validators);
-    setActiveStep(Step.ConfirmBond);
+    setActiveStep(Step.CONFIRMATION);
   };
 
-  const onConfirmResult = () => {
-    // TODO: init bond and nominate call
+  const onConfirmResult = (transactions: Transaction[]) => {
+    setTransactions(transactions);
+    setActiveStep(Step.SCANNING);
   };
+
+  const onScanResult = (unsigned: UnsignedTransaction[]) => {
+    setUnsignedTransactions(unsigned);
+    setActiveStep(Step.SIGNING);
+  };
+
+  const onSignResult = () => {
+    console.log('FINISH 🚀');
+  };
+
+  const headerContent = (
+    <div className="flex items-center gap-x-2.5 mb-9 mt-5 px-5">
+      <ButtonBack onCustomReturn={goToPrevStep} />
+      <p className="font-semibold text-2xl text-neutral-variant">{t('staking.title')}</p>
+      <p className="font-semibold text-2xl text-neutral">/</p>
+      <h1 className="font-semibold text-2xl text-neutral">{t(HEADER_TITLE[activeStep])}</h1>
+    </div>
+  );
+
+  if (!asset) {
+    return (
+      <div className="flex flex-col h-full relative">
+        {headerContent}
+
+        <div className="flex w-full h-full flex-col items-center justify-center">
+          <Icon name="noResults" size={380} />
+          <p className="text-neutral text-3xl font-bold">{t('staking.bond.noStakingAssetLabel')}</p>
+          <p className="text-neutral-variant text-base font-normal">
+            {t('staking.bond.noStakingAssetDescription', { chainName: name })}
+          </p>
+          <ButtonLink className="mt-5" to={Paths.STAKING} variant="fill" pallet="primary" weight="lg">
+            {t('staking.bond.goToStakingButton')}
+          </ButtonLink>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col h-full relative">
-      <div className="flex items-center gap-x-2.5 mb-9 mt-5 px-5">
-        <ButtonBack onCustomReturn={goToPrevStep} />
-        <p className="font-semibold text-2xl text-neutral-variant">{t('staking.title')}</p>
-        <p className="font-semibold text-2xl text-neutral">/</p>
-        <h1 className="font-semibold text-2xl text-neutral">{t(HEADER_TITLE[activeStep])}</h1>
-      </div>
+      {headerContent}
 
-      {asset && activeStep === Step.InitBond && (
+      {activeStep === Step.INIT && (
         <InitBond api={api} chainId={chainId} accountIds={accountIds} asset={asset} onResult={onBondResult} />
       )}
-      {asset && activeStep === Step.Validators && (
+      {activeStep === Step.VALIDATORS && (
         <Validators
           api={api}
           chainId={chainId}
@@ -99,7 +143,7 @@ const Bond = () => {
           onResult={onSelectValidators}
         />
       )}
-      {asset && activeStep === Step.ConfirmBond && (
+      {activeStep === Step.CONFIRMATION && (
         <ConfirmBond
           api={api}
           chainId={chainId}
@@ -113,18 +157,18 @@ const Bond = () => {
           onResult={onConfirmResult}
         />
       )}
-
-      {!asset && (
-        <div className="flex w-full h-full flex-col items-center justify-center">
-          <Icon name="noResults" size={380} />
-          <p className="text-neutral text-3xl font-bold">{t('staking.bond.noStakingAssetLabel')}</p>
-          <p className="text-neutral-variant text-base font-normal">
-            {t('staking.bond.noStakingAssetDescription', { chainName: name })}
-          </p>
-          <ButtonLink className="mt-5" to={Paths.STAKING} variant="fill" pallet="primary" weight="lg">
-            {t('staking.bond.goToStakingButton')}
-          </ButtonLink>
-        </div>
+      {activeStep === Step.SCANNING && (
+        <Scanning
+          api={api}
+          chainId={chainId}
+          accounts={accounts}
+          transactions={transactions}
+          addressPrefix={addressPrefix}
+          onResult={onScanResult}
+        />
+      )}
+      {activeStep === Step.SIGNING && (
+        <Signing api={api} unsignedTransactions={unsignedTransactions} onResult={onSignResult} />
       )}
     </div>
   );
