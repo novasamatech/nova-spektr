@@ -275,6 +275,7 @@
       "continueButton": "Продолжить",
       "goToStakingButton": "Обратно к Стейкингу",
       "initBondSubtitle": "Начало Стейкинга",
+      "networkFee": "Комиссия сети",
       "noStakingAssetDescription": "Для { chainName } ассет для стейкинга не найден",
       "noStakingAssetLabel": "Ассет не найден",
       "payoutAccountLabel": "Аккаунт для выплаты наград",
@@ -305,7 +306,8 @@
       "signButton": "Подписать в Parity Signer",
       "totalAmount": "Общая сумма",
       "totalNetworkFee": "Общая комиссия сети",
-      "transferableRewards": "Вывести награды"
+      "transferableRewards": "Вывести награды",
+      "yourValidators": "Ваши валидаторы"
     },
     "nominators": {
       "electedTitle": "Выбранные",

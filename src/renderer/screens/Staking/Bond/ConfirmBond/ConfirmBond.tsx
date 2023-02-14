@@ -116,7 +116,9 @@ const ConfirmBond = ({
               <AddressOnPlate
                 title={t('staking.confirmation.account')}
                 address={accounts[0].accountId || ''}
+                signType={accounts[0].signingType}
                 name={accounts[0].name}
+                subName={'dcsadasd asdasd'}
                 addressPrefix={addressPrefix}
                 explorers={explorers}
               />

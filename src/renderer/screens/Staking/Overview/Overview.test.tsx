@@ -4,7 +4,7 @@ import { MemoryRouter } from 'react-router-dom';
 import { useNetworkContext } from '@renderer/context/NetworkContext';
 import { Chain } from '@renderer/domain/chain';
 import { ConnectionType } from '@renderer/domain/connection';
-import { TEST_ADDRESS, TEST_PUBLIC_KEY } from '@renderer/services/balance/common/constants';
+import { TEST_ADDRESS, TEST_PUBLIC_KEY } from '@renderer/shared/utils/constants';
 import Overview from './Overview';
 
 jest.mock('@renderer/context/NetworkContext', () => ({

@@ -6,6 +6,7 @@ import { Controller, SubmitHandler, useForm } from 'react-hook-form';
 
 import { Fee } from '@renderer/components/common';
 import {
+  Address,
   AmountInput,
   Balance,
   Button,
@@ -70,8 +71,7 @@ const getDropdownPayload = (
   const element = (
     <div className="flex justify-between items-center gap-x-2.5">
       <div className="flex gap-x-[5px] items-center">
-        <Identicon address={address} size={30} background={false} canCopy={false} />
-        <p className="text-left text-neutral text-lg font-semibold">{account.name}</p>
+        <Address address={address} name={account.name} signType={account.signingType} size={30} canCopy={false} />
       </div>
       {balanceExists && (
         <div className="flex items-center gap-x-1">
@@ -398,7 +398,7 @@ const InitBond = ({ accountIds, api, chainId, asset, onResult }: Props) => {
           />
         )}
         <div className="flex justify-between items-center uppercase text-neutral-variant text-2xs">
-          <p>{t('staking.networkFee')}</p>
+          <p>{t('staking.bond.networkFee')}</p>
           <Fee className="text-neutral font-semibold" api={api} asset={asset} transaction={transactions[0]} />
         </div>
       </form>

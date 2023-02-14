@@ -275,6 +275,7 @@
       "continueButton": "Continue",
       "goToStakingButton": "Back to Staking",
       "initBondSubtitle": "Start Staking",
+      "networkFee": "Network fee",
       "noStakingAssetDescription": "No staking asset was found for { chainName }",
       "noStakingAssetLabel": "No staking asset",
       "payoutAccountLabel": "Payout account",
@@ -305,7 +306,8 @@
       "signButton": "Sign with Parity Signer",
       "totalAmount": "Total amount",
       "totalNetworkFee": "Total network fee",
-      "transferableRewards": "Transferable rewards"
+      "transferableRewards": "Transferable rewards",
+      "yourValidators": "Your validators"
     },
     "nominators": {
       "electedTitle": "Elected",

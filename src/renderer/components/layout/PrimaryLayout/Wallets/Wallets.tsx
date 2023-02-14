@@ -1,6 +1,7 @@
 import cn from 'classnames';
 import { forwardRef, useState } from 'react';
 
+import { getShortAddress } from '@renderer/shared/utils/strings';
 import { Address, ButtonLink, Checkbox, Icon, Identicon, Input } from '@renderer/components/ui';
 import { useI18n } from '@renderer/context/I18nContext';
 import { AccountDS } from '@renderer/services/storage';
@@ -146,21 +147,10 @@ const Wallets = forwardRef<HTMLDivElement, Props>(({ className }, ref) => {
 
                                       <div className="flex flex-1 gap-x-1 items-center overflow-hidden">
                                         <div className="relative">
-                                          {rootAccount.accountId ? (
-                                            <Identicon
-                                              address={rootAccount.accountId}
-                                              theme={'polkadot'}
-                                              background={false}
-                                              size={24}
-                                            />
-                                          ) : (
-                                            <Icon name="emptyIdenticon" />
-                                          )}
-
-                                          <Icon
-                                            className="absolute bottom-0 right-0 pointer-events-none"
-                                            name="paritySignerBackground"
-                                            size={14}
+                                          <Identicon
+                                            address={rootAccount.accountId}
+                                            signType={rootAccount.signingType}
+                                            background={false}
                                           />
                                         </div>
 
@@ -220,36 +210,20 @@ const Wallets = forwardRef<HTMLDivElement, Props>(({ className }, ref) => {
                                                 onChange={() => toggleActiveAccount(chainAccount.id || '')}
                                               />
 
-                                              <div className="flex flex-1 ml-1.5 justify-between gap-x-1 items-center">
-                                                <div className="grid grid-rows-2 grid-flow-col gap-x-1 overflow-hidden">
+                                              <div className="flex flex-1 ml-1.5 justify-between gap-x-1 items-center h-full">
+                                                <div className="grid grid-rows-2 grid-flow-col gap-x-1 h-full overflow-hidden">
                                                   <div className="row-span-2 self-center relative w-[14px] h-[5px] ml-0.5 middle-tree">
                                                     <div className="bg-shade-30 absolute w-[9px] h-[1px] top-[2px] left-[1px]"></div>
                                                     <div className="border-shade-30 absolute rounded-full border w-[5px] h-[5px] box-border top-0 right-0"></div>
                                                   </div>
 
-                                                  <div className="row-span-2 self-center relative">
-                                                    <Identicon
-                                                      address={chainAccount.accountId || ''}
-                                                      theme={'polkadot'}
-                                                      background={false}
-                                                    />
-
-                                                    <Icon
-                                                      className="absolute bottom-0 right-0 pointer-events-none"
-                                                      name="paritySignerBackground"
-                                                      size={14}
-                                                    />
-                                                  </div>
-
-                                                  <p className="text-neutral-variant text-sm text-semibold truncate">
-                                                    {chainAccount.name}
-                                                  </p>
-
                                                   <Address
-                                                    type="short"
+                                                    className="row-span-2 self-center"
                                                     address={chainAccount.accountId || ''}
-                                                    canCopy={false}
-                                                    showIcon={false}
+                                                    signType={chainAccount.signingType}
+                                                    name={chainAccount.name}
+                                                    subName={getShortAddress(chainAccount.accountId || '', 8)}
+                                                    size={24}
                                                   />
                                                 </div>
 
@@ -277,24 +251,12 @@ const Wallets = forwardRef<HTMLDivElement, Props>(({ className }, ref) => {
                             />
 
                             <div className="flex flex-1 gap-x-1 overflow-hidden">
-                              <div className="row-span-2 self-center relative">
-                                <Identicon
-                                  address={(account as AccountDS).accountId || ''}
-                                  theme={'polkadot'}
-                                  background={false}
-                                />
-                                <Icon
-                                  className="absolute bottom-0 right-0 pointer-events-none"
-                                  name={
-                                    (account as AccountDS).signingType === SigningType.PARITY_SIGNER
-                                      ? 'paritySignerBackground'
-                                      : 'watchOnlyBackground'
-                                  }
-                                  size={14}
-                                />
-                              </div>
-
-                              <p className="text-neutral text-sm text-semibold truncate">{account.name}</p>
+                              <Address
+                                address={(account as AccountDS).accountId || ''}
+                                signType={(account as AccountDS).signingType}
+                                name={account.name}
+                                size={24}
+                              />
                             </div>
                           </li>
                         )}

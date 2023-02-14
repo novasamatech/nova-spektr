@@ -1,7 +1,10 @@
 import { ApiPromise } from '@polkadot/api';
-import { render, screen } from '@testing-library/react';
+import { act, render, screen } from '@testing-library/react';
 
 import { Asset } from '@renderer/domain/asset';
+import { SigningType } from '@renderer/domain/shared-kernel';
+import { AccountDS } from '@renderer/services/storage';
+import { TEST_ADDRESS } from '@renderer/shared/utils/constants';
 import ConfirmBond from './ConfirmBond';
 
 jest.mock('@renderer/context/I18nContext', () => ({
@@ -12,23 +15,47 @@ jest.mock('@renderer/context/I18nContext', () => ({
 
 describe('screens/Bond/ConfirmBond', () => {
   const asset = { symbol: 'DOT', precision: 10 } as Asset;
+  const accounts = [
+    {
+      accountId: TEST_ADDRESS,
+      name: 'address_1',
+      signingType: SigningType.WATCH_ONLY,
+    },
+    {
+      accountId: TEST_ADDRESS,
+      name: 'address_2',
+      signingType: SigningType.PARITY_SIGNER,
+    },
+  ] as AccountDS[];
 
-  test('should render component', () => {
-    render(
-      <ConfirmBond
-        api={{} as ApiPromise}
-        accounts={[]}
-        destination="0x1"
-        stake="123"
-        chainId="0x123"
-        validators={[]}
-        addressPrefix={10}
-        asset={asset}
-        onResult={() => {}}
-      />,
-    );
+  test('should render component', async () => {
+    await act(async () => {
+      render(
+        <ConfirmBond
+          api={{} as ApiPromise}
+          accounts={accounts}
+          destination={TEST_ADDRESS}
+          stake="123"
+          chainId="0x91b171bb158e2d3848fa23a9f1c25182fb8e20313b2c1eb49219da7a70ce90c3"
+          validators={[]}
+          addressPrefix={0}
+          asset={asset}
+          onResult={() => {}}
+        />,
+      );
+    });
 
-    const title = screen.getByText('FINISH CONFIRM');
-    expect(title).toBeInTheDocument();
+    const totalBalance = screen.getByText('staking.confirmation.totalAmount');
+    const accs = screen.getByText('staking.confirmation.accounts');
+    const fee = screen.getByText('staking.confirmation.networkFeePerAccount');
+    const totalFee = screen.getByText('staking.confirmation.totalNetworkFee');
+    const validators = screen.getByText('staking.confirmation.selectValidators');
+    const signButton = screen.getByText('staking.confirmation.signButton');
+    expect(totalBalance).toBeInTheDocument();
+    expect(accs).toBeInTheDocument();
+    expect(fee).toBeInTheDocument();
+    expect(totalFee).toBeInTheDocument();
+    expect(validators).toBeInTheDocument();
+    expect(signButton).toBeInTheDocument();
   });
 });
