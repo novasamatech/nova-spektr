@@ -35,9 +35,6 @@ const Signing = ({ api, unsignedTransactions, onResult }: Props) => {
 
   const sign = async (signatures: HexString[]) => {
     if (!api) return;
-    console.log('signatures - ', signatures);
-
-    // setCurrentStep(Steps.EXECUTING);
 
     const unsignedRequests = unsignedTransactions.map((unsigned, index) => {
       return (async () => {
@@ -57,6 +54,8 @@ const Signing = ({ api, unsignedTransactions, onResult }: Props) => {
 
             if (failedTxs.length) {
               console.info('There are failed transactions: ', failedTxs.join(', '));
+            } else {
+              onResult();
             }
           }
         });

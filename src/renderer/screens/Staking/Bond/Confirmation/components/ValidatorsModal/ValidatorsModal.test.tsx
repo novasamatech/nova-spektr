@@ -15,7 +15,7 @@ window.IntersectionObserver = jest.fn().mockImplementation(() => ({
   disconnect: jest.fn(),
 }));
 
-describe('screens/Bond/ConfirmBond/ValidatorsModal', () => {
+describe('screens/Bond/Confirmation/ValidatorsModal', () => {
   const defaultProps = {
     isOpen: true,
     amount: '1000000000000',

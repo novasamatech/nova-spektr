@@ -5,7 +5,7 @@ import { Asset } from '@renderer/domain/asset';
 import { SigningType } from '@renderer/domain/shared-kernel';
 import { AccountDS } from '@renderer/services/storage';
 import { TEST_ADDRESS } from '@renderer/shared/utils/constants';
-import ConfirmBond from './ConfirmBond';
+import Confirmation from './Confirmation';
 
 jest.mock('@renderer/context/I18nContext', () => ({
   useI18n: jest.fn().mockReturnValue({
@@ -13,7 +13,7 @@ jest.mock('@renderer/context/I18nContext', () => ({
   }),
 }));
 
-describe('screens/Bond/ConfirmBond', () => {
+describe('screens/Bond/Confirmation', () => {
   const asset = { symbol: 'DOT', precision: 10 } as Asset;
   const accounts = [
     {
@@ -31,7 +31,7 @@ describe('screens/Bond/ConfirmBond', () => {
   test('should render component', async () => {
     await act(async () => {
       render(
-        <ConfirmBond
+        <Confirmation
           api={{} as ApiPromise}
           accounts={accounts}
           destination={TEST_ADDRESS}

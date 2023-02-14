@@ -70,17 +70,17 @@ const mockButton = (text: string, callback: () => void) => (
   </button>
 );
 
-jest.mock('./InitBond/InitBond', () => ({ onResult }: any) => {
+jest.mock('./InitOperation/InitOperation', () => ({ onResult }: any) => {
   return mockButton('init', onResult);
 });
 jest.mock('./Validators/Validators', () => ({ onResult }: any) => {
   return mockButton('validators', onResult);
 });
-jest.mock('./ConfirmBond/ConfirmBond', () => ({ onResult }: any) => {
+jest.mock('./Confirmation/Confirmation', () => ({ onResult }: any) => {
   return mockButton('confirm', onResult);
 });
 
-describe('screens/Bond/ConfirmBond', () => {
+describe('screens/Bond/Confirmation', () => {
   test('should render component', () => {
     render(<Bond />, { wrapper: MemoryRouter });
 

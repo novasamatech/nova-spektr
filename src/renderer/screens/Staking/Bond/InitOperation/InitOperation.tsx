@@ -114,7 +114,7 @@ type Props = {
   onResult: (data: BondResult) => void;
 };
 
-const InitBond = ({ accountIds, api, chainId, asset, onResult }: Props) => {
+const InitOperation = ({ accountIds, api, chainId, asset, onResult }: Props) => {
   const { t } = useI18n();
   const { getLiveAssetBalances } = useBalance();
   const { getLiveAccounts } = useAccount();
@@ -283,7 +283,7 @@ const InitBond = ({ accountIds, api, chainId, asset, onResult }: Props) => {
   }, [api, amount, transactions]);
 
   const submitBond: SubmitHandler<BondForm> = ({ amount, destination }) => {
-    const selectedAddresses = stakeAccounts.map((stake) => stake.value);
+    const selectedAddresses = activeAccounts.map((stake) => stake.value);
     const accounts = selectedAccounts.filter(
       (account) => account.accountId && selectedAddresses.includes(account.accountId),
     );
@@ -410,4 +410,4 @@ const InitBond = ({ accountIds, api, chainId, asset, onResult }: Props) => {
   );
 };
 
-export default InitBond;
+export default InitOperation;

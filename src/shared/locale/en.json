@@ -283,9 +283,11 @@
       "restakeRewards": "Restake rewards",
       "rewardsDestinationDescription": "Approximate amounts are calculated yearly",
       "rewardsDestinationTitle": "Rewards destination",
+      "scanSubtitle": "Scanning",
       "selectNetworkLabel": "Select network",
       "selectStakeAccountLabel": "Select accounts",
       "selectStakeAccountSummary": "Multiple accounts",
+      "signSubtitle": "Signing",
       "transferableRewards": "Transferable rewards",
       "validatorsSubtitle": "Validators"
     },

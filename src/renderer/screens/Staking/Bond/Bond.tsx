@@ -9,8 +9,8 @@ import { StakingType } from '@renderer/domain/asset';
 import { AccountID, ChainId } from '@renderer/domain/shared-kernel';
 import { Transaction } from '@renderer/domain/transaction';
 import Paths from '@renderer/routes/paths';
-import ConfirmBond from '@renderer/screens/Staking/Bond/ConfirmBond/ConfirmBond';
-import InitBond, { BondResult } from '@renderer/screens/Staking/Bond/InitBond/InitBond';
+import Confirmation from '@renderer/screens/Staking/Bond/Confirmation/Confirmation';
+import InitOperation, { BondResult } from '@renderer/screens/Staking/Bond/InitOperation/InitOperation';
 import Validators from '@renderer/screens/Staking/Bond/Validators/Validators';
 import { ValidatorMap } from '@renderer/services/staking/common/types';
 import { AccountDS } from '@renderer/services/storage';
@@ -23,16 +23,14 @@ const enum Step {
   CONFIRMATION,
   SCANNING,
   SIGNING,
-  EXECUTING,
 }
 
 const HEADER_TITLE: Record<Step, string> = {
   [Step.INIT]: 'staking.bond.initBondSubtitle',
   [Step.VALIDATORS]: 'staking.bond.validatorsSubtitle',
   [Step.CONFIRMATION]: 'staking.bond.confirmBondSubtitle',
-  [Step.SCANNING]: 'staking.bond.confirmBondSubtitle',
-  [Step.SIGNING]: 'staking.bond.confirmBondSubtitle',
-  [Step.EXECUTING]: 'staking.bond.confirmBondSubtitle',
+  [Step.SCANNING]: 'staking.bond.scanSubtitle',
+  [Step.SIGNING]: 'staking.bond.signSubtitle',
 };
 
 const Bond = () => {
@@ -94,7 +92,7 @@ const Bond = () => {
   };
 
   const onSignResult = () => {
-    console.log('FINISH 🚀');
+    navigate(Paths.STAKING, { replace: true });
   };
 
   const headerContent = (
@@ -130,7 +128,7 @@ const Bond = () => {
       {headerContent}
 
       {activeStep === Step.INIT && (
-        <InitBond api={api} chainId={chainId} accountIds={accountIds} asset={asset} onResult={onBondResult} />
+        <InitOperation api={api} chainId={chainId} accountIds={accountIds} asset={asset} onResult={onBondResult} />
       )}
       {activeStep === Step.VALIDATORS && (
         <Validators
@@ -143,7 +141,7 @@ const Bond = () => {
         />
       )}
       {activeStep === Step.CONFIRMATION && (
-        <ConfirmBond
+        <Confirmation
           api={api}
           chainId={chainId}
           validators={Object.values(validators)}

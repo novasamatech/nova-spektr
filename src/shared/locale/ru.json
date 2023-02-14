@@ -283,9 +283,11 @@
       "restakeRewards": "Вложить награды",
       "rewardsDestinationDescription": "Approximate amounts are calculated yearly",
       "rewardsDestinationTitle": "Выплата наград",
+      "scanSubtitle": "Сканирвоание",
       "selectNetworkLabel": "Выберите сеть",
       "selectStakeAccountLabel": "Выберите аккаунты",
       "selectStakeAccountSummary": "Несколько аккаунтов",
+      "signSubtitle": "Подписание",
       "transferableRewards": "Вывести награды",
       "validatorsSubtitle": "Валидаторы"
     },

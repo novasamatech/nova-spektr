@@ -29,7 +29,7 @@ type Props = {
   onResult: (transactions: Transaction[]) => void;
 };
 
-const ConfirmBond = ({
+const Confirmation = ({
   api,
   chainId,
   validators,
@@ -253,4 +253,4 @@ const ConfirmBond = ({
   );
 };
 
-export default ConfirmBond;
+export default Confirmation;
