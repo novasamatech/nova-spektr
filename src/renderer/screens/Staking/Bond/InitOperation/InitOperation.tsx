@@ -22,6 +22,7 @@ import { RadioOption, ResultOption } from '@renderer/components/ui/RadioGroup/co
 import { useI18n } from '@renderer/context/I18nContext';
 import { Asset } from '@renderer/domain/asset';
 import { AccountID, ChainId, PublicKey, SigningType } from '@renderer/domain/shared-kernel';
+import { RewardsDestination } from '@renderer/domain/stake';
 import { Transaction, TransactionType } from '@renderer/domain/transaction';
 import { useAccount } from '@renderer/services/account/accountService';
 import { useBalance } from '@renderer/services/balance/balanceService';
@@ -32,10 +33,6 @@ import { useTransaction } from '@renderer/services/transaction/transactionServic
 
 const PAYOUT_URL = 'https://wiki.polkadot.network/docs/learn-simple-payouts';
 
-const enum RewardsDestination {
-  RESTAKE,
-  TRANSFERABLE,
-}
 const validateBalance = (balance: BalanceDS | string, amount: string, asset: Asset, fee?: string): boolean => {
   const stakeableBalance = typeof balance === 'string' ? balance : stakeableAmount(balance);
 

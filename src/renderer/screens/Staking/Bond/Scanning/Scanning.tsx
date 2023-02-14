@@ -44,7 +44,6 @@ const Scanning = ({ chainId, api, accounts, addressPrefix, transactions, onResul
   const setupTransactions = async () => {
     if (!api) return;
 
-    console.log('transactions - ', transactions);
     const transactionPromises = accounts.map((account, index) => {
       const address = formatAddress(account.accountId, addressPrefix);
 
