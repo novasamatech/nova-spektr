@@ -22,6 +22,7 @@ jest.mock('@renderer/context/NetworkContext', () => ({
     connections: {
       '0x123': {
         name: 'Westend',
+        api: { isConnected: true },
         assets: [
           {
             assetId: 0,

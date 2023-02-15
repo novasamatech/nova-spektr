@@ -104,14 +104,14 @@ export type BondResult = {
 };
 
 type Props = {
-  api?: ApiPromise;
+  api: ApiPromise;
   chainId: ChainId;
   accountIds: string[];
   asset: Asset;
   onResult: (data: BondResult) => void;
 };
 
-const InitOperation = ({ accountIds, api, chainId, asset, onResult }: Props) => {
+const InitOperation = ({ api, chainId, accountIds, asset, onResult }: Props) => {
   const { t } = useI18n();
   const { getLiveAssetBalances } = useBalance();
   const { getLiveAccounts } = useAccount();
@@ -160,7 +160,7 @@ const InitOperation = ({ accountIds, api, chainId, asset, onResult }: Props) => 
 
   // Set balances
   useEffect(() => {
-    if (!api || !activeAccounts.length) {
+    if (!activeAccounts.length) {
       setBalanceRange(['0', '0']);
 
       return;
@@ -183,7 +183,7 @@ const InitOperation = ({ accountIds, api, chainId, asset, onResult }: Props) => 
     );
 
     setBalanceRange(minMaxBalances);
-  }, [api, balances, activeAccounts.length]);
+  }, [balances, activeAccounts.length]);
 
   // Init destinations
   useEffect(() => {
@@ -232,7 +232,7 @@ const InitOperation = ({ accountIds, api, chainId, asset, onResult }: Props) => 
 
   // Setup transactions
   useEffect(() => {
-    if (!api || !balanceRange) return;
+    if (!balanceRange) return;
 
     const maxValidators = getMaxValidators(api);
     const transferableDestination = activeDestination?.value === RewardsDestination.TRANSFERABLE && destination;
@@ -270,14 +270,14 @@ const InitOperation = ({ accountIds, api, chainId, asset, onResult }: Props) => 
   }, [balanceRange, amount, activeDestination, destination]);
 
   useEffect(() => {
-    if (!api || !amount || !transactions.length) return;
+    if (!amount || !transactions.length) return;
 
     (async () => {
       const transactionFee = await getTransactionFee(transactions[0], api);
 
       setFee(transactionFee);
     })();
-  }, [api, amount, transactions]);
+  }, [amount, transactions]);
 
   const submitBond: SubmitHandler<BondForm> = ({ amount, destination }) => {
     const selectedAddresses = activeAccounts.map((stake) => stake.value);

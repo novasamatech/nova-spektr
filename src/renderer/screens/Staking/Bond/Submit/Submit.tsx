@@ -1,20 +1,24 @@
 import { ApiPromise } from '@polkadot/api';
+import { UnsignedTransaction } from '@substrate/txwrapper-polkadot';
 import { useEffect, useState } from 'react';
 
-import { Button, HintList, Icon } from '@renderer/components/ui';
+import { useConfirmContext } from '@renderer/context/ConfirmContext';
+import { useTransaction } from '@renderer/services/transaction/transactionService';
+import { HintList, Icon, ProgressBadge } from '@renderer/components/ui';
 import { useI18n } from '@renderer/context/I18nContext';
 import { Asset } from '@renderer/domain/asset';
 import { Explorer } from '@renderer/domain/chain';
-import { AccountID, ChainId } from '@renderer/domain/shared-kernel';
+import { AccountID, ChainId, HexString } from '@renderer/domain/shared-kernel';
 import { RewardsDestination } from '@renderer/domain/stake';
 import { Transaction, TransactionType } from '@renderer/domain/transaction';
 import { Validator } from '@renderer/domain/validator';
+import TransactionInfo from '@renderer/screens/Staking/Bond/components/TransactionInfo/TransactionInfo';
 import { AccountDS } from '@renderer/services/storage';
-import TransactionInfo from '../components/TransactionInfo/TransactionInfo';
 
 type Props = {
   api: ApiPromise;
   chainId: ChainId;
+  unsignedTransactions: UnsignedTransaction[];
   validators: Validator[];
   accounts: AccountDS[];
   stake: string;
@@ -22,12 +26,13 @@ type Props = {
   asset: Asset;
   explorers?: Explorer[];
   addressPrefix: number;
-  onResult: (transactions: Transaction[]) => void;
+  signatures: HexString[];
 };
 
-const Confirmation = ({
+const Submit = ({
   api,
   chainId,
+  unsignedTransactions,
   validators,
   accounts,
   stake,
@@ -35,11 +40,15 @@ const Confirmation = ({
   asset,
   explorers,
   addressPrefix,
-  onResult,
+  signatures,
 }: Props) => {
   const { t } = useI18n();
+  const { confirm } = useConfirmContext();
+  const { submitAndWatchExtrinsic, getSignedExtrinsic } = useTransaction();
 
   const [transactions, setTransactions] = useState<Transaction[]>([]);
+  const [progress, setProgress] = useState(0);
+  const [failedTxs, setFailedTxs] = useState<number[]>([]);
 
   useEffect(() => {
     const newTransactions = accounts.map(({ accountId = '' }) => {
@@ -73,6 +82,47 @@ const Confirmation = ({
     setTransactions(newTransactions);
   }, []);
 
+  const confirmFailedTx = (): Promise<boolean> => {
+    return confirm({
+      title: t('staking.confirmation.errorModalTitle'),
+      message: t('staking.confirmation.errorModalSubtitle', { number: failedTxs.length }),
+      confirmText: t('staking.confirmation.errorModalEditButton'),
+      cancelText: t('staking.confirmation.errorModalDiscardButton'),
+    });
+  };
+
+  const submitExtrinsic = async (signatures: HexString[]) => {
+    const unsignedRequests = unsignedTransactions.map((unsigned, index) => {
+      return (async () => {
+        const extrinsic = await getSignedExtrinsic(unsigned, signatures[index], api);
+
+        submitAndWatchExtrinsic(extrinsic, unsigned, api, (executed) => {
+          if (executed) {
+            setProgress((p) => p + 1);
+          } else {
+            setFailedTxs((f) => f.concat(index));
+          }
+        });
+      })();
+    });
+
+    await Promise.all(unsignedRequests);
+
+    if (failedTxs.length > 0) {
+      console.warn('Failed tx - ', failedTxs.join(', '));
+      const proceed = await confirmFailedTx();
+
+      if (!proceed) {
+        // TODO: implement Edit flow
+        console.log('Go to EDIT');
+      }
+    }
+  };
+
+  useEffect(() => {
+    submitExtrinsic(signatures);
+  }, []);
+
   const destPayload = destination
     ? { type: RewardsDestination.TRANSFERABLE, address: destination }
     : { type: RewardsDestination.RESTAKE };
@@ -96,30 +146,15 @@ const Confirmation = ({
         <HintList.Item>{t('staking.confirmation.hintFour')}</HintList.Item>
       </HintList>
 
-      <div className="flex flex-col items-center gap-y-2.5">
-        <Button
-          variant="fill"
-          pallet="primary"
-          weight="lg"
-          suffixElement={<Icon name="qrLine" size={20} />}
-          onClick={() => onResult(transactions)}
-        >
-          {t('staking.confirmation.signButton')}
-        </Button>
-
-        {/* TODO: implement in future */}
-        {/*<Button*/}
-        {/*  variant="outline"*/}
-        {/*  pallet="primary"*/}
-        {/*  weight="lg"*/}
-        {/*  suffixElement={<Icon name="addLine" size={20} />}*/}
-        {/*  onClick={addToQueue}*/}
-        {/*>*/}
-        {/*  {t('staking.confirmation.queueButton')}*/}
-        {/*</Button>*/}
+      <div className="flex justify-center items-center gap-x-2.5 mb-2.5">
+        <Icon className="text-neutral-variant animate-spin" name="loader" size={20} />
+        <p className="text-neutral-variant font-semibold">{t('staking.confirmation.submittingOperation')}</p>
       </div>
+      <ProgressBadge className="mx-auto" progress={progress + failedTxs.length} total={signatures.length}>
+        {t('staking.confirmation.transactionProgress')}
+      </ProgressBadge>
     </TransactionInfo>
   );
 };
 
-export default Confirmation;
+export default Submit;

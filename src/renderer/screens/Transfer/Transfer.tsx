@@ -53,7 +53,7 @@ const Transfer = () => {
   const [txPayload, setTxPayload] = useState<Uint8Array>();
   const [unsigned, setUnsigned] = useState<UnsignedTransaction>();
   const [transaction, setTransaction] = useState<Transaction>();
-  const [countdown, setCountdown] = useState<number>(DEFAULT_QR_LIFETIME);
+  const [countdown, setCountdown] = useState(DEFAULT_QR_LIFETIME);
   const [isSuccessMessageOpen, setIsSuccessMessageOpen] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
   const [validationError, setValidationError] = useState<ValidationErrors>();

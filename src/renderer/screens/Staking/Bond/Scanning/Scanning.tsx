@@ -24,15 +24,15 @@ import { DEFAULT_QR_LIFETIME } from '@renderer/shared/utils/constants';
 import { secondsToMinutes } from '@renderer/shared/utils/time';
 
 type Props = {
+  api: ApiPromise;
   chainId: ChainId;
-  api?: ApiPromise;
   accounts: AccountDS[];
   addressPrefix: number;
   transactions: Transaction[];
   onResult: (unsigned: UnsignedTransaction[]) => void;
 };
 
-const Scanning = ({ chainId, api, accounts, addressPrefix, transactions, onResult }: Props) => {
+const Scanning = ({ api, chainId, accounts, addressPrefix, transactions, onResult }: Props) => {
   const { t } = useI18n();
   const { createPayload } = useTransaction();
 
@@ -42,8 +42,6 @@ const Scanning = ({ chainId, api, accounts, addressPrefix, transactions, onResul
   const [unsignedTransactions, setUnsignedTransactions] = useState<UnsignedTransaction[]>([]);
 
   const setupTransactions = async () => {
-    if (!api) return;
-
     const transactionPromises = accounts.map((account, index) => {
       const address = formatAddress(account.accountId, addressPrefix);
 
@@ -76,7 +74,7 @@ const Scanning = ({ chainId, api, accounts, addressPrefix, transactions, onResul
 
   useEffect(() => {
     setupTransactions();
-  }, [api]);
+  }, []);
 
   useEffect(() => {
     if (countdown > 0) {

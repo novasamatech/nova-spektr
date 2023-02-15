@@ -6,7 +6,7 @@ import { ButtonBack, ButtonLink, Icon } from '@renderer/components/ui';
 import { useI18n } from '@renderer/context/I18nContext';
 import { useNetworkContext } from '@renderer/context/NetworkContext';
 import { StakingType } from '@renderer/domain/asset';
-import { AccountID, ChainId } from '@renderer/domain/shared-kernel';
+import { AccountID, ChainId, HexString } from '@renderer/domain/shared-kernel';
 import { Transaction } from '@renderer/domain/transaction';
 import Paths from '@renderer/routes/paths';
 import Confirmation from '@renderer/screens/Staking/Bond/Confirmation/Confirmation';
@@ -16,6 +16,7 @@ import { ValidatorMap } from '@renderer/services/staking/common/types';
 import { AccountDS } from '@renderer/services/storage';
 import Scanning from './Scanning/Scanning';
 import Signing from './Signing/Signing';
+import Submit from './Submit/Submit';
 
 const enum Step {
   INIT,
@@ -23,6 +24,7 @@ const enum Step {
   CONFIRMATION,
   SCANNING,
   SIGNING,
+  SUBMIT,
 }
 
 const HEADER_TITLE: Record<Step, string> = {
@@ -31,6 +33,7 @@ const HEADER_TITLE: Record<Step, string> = {
   [Step.CONFIRMATION]: 'staking.bond.confirmBondSubtitle',
   [Step.SCANNING]: 'staking.bond.scanSubtitle',
   [Step.SIGNING]: 'staking.bond.signSubtitle',
+  [Step.SUBMIT]: 'staking.bond.submitSubtitle',
 };
 
 const Bond = () => {
@@ -47,6 +50,7 @@ const Bond = () => {
   const [destination, setDestination] = useState<AccountID>('');
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [unsignedTransactions, setUnsignedTransactions] = useState<UnsignedTransaction[]>([]);
+  const [signatures, setSignatures] = useState<HexString[]>([]);
 
   const chainId = params.chainId || ('' as ChainId);
   const accountIds = searchParams.get('id')?.split(',') || [];
@@ -57,6 +61,11 @@ const Bond = () => {
 
   const { api, explorers, addressPrefix, assets, name } = connections[chainId];
   const asset = assets.find((asset) => asset.staking === StakingType.RELAYCHAIN);
+
+  if (!api || !api.isConnected) {
+    // TODO: show skeleton until we connect to network's api
+    return null;
+  }
 
   const goToPrevStep = () => {
     if (activeStep === Step.INIT) {
@@ -91,8 +100,13 @@ const Bond = () => {
     setActiveStep(Step.SIGNING);
   };
 
-  const onSignResult = () => {
-    navigate(Paths.STAKING, { replace: true });
+  const onBackToScan = () => {
+    setActiveStep(Step.SCANNING);
+  };
+
+  const onSignResult = (signatures: HexString[]) => {
+    setSignatures(signatures);
+    setActiveStep(Step.SUBMIT);
   };
 
   const headerContent = (
@@ -140,7 +154,7 @@ const Bond = () => {
           onResult={onSelectValidators}
         />
       )}
-      {activeStep === Step.CONFIRMATION && (
+      {[Step.CONFIRMATION, Step.SUBMIT].includes(activeStep) && (
         <Confirmation
           api={api}
           chainId={chainId}
@@ -164,8 +178,21 @@ const Bond = () => {
           onResult={onScanResult}
         />
       )}
-      {activeStep === Step.SIGNING && (
-        <Signing api={api} unsignedTransactions={unsignedTransactions} onResult={onSignResult} />
+      {activeStep === Step.SIGNING && <Signing onResult={onSignResult} onGoBack={onBackToScan} />}
+      {activeStep === Step.SUBMIT && (
+        <Submit
+          api={api}
+          chainId={chainId}
+          signatures={signatures}
+          unsignedTransactions={unsignedTransactions}
+          validators={Object.values(validators)}
+          accounts={accounts}
+          stake={stakeAmount}
+          destination={destination}
+          asset={asset}
+          explorers={explorers}
+          addressPrefix={addressPrefix}
+        />
       )}
     </div>
   );
