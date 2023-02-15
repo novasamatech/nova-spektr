@@ -14,8 +14,8 @@ import { useValidators } from '@renderer/services/staking/validatorsService';
 
 type Props = {
   api?: ApiPromise;
-  chainId?: ChainId;
-  asset?: Asset;
+  chainId: ChainId;
+  asset: Asset;
   explorers?: Explorer[];
   addressPrefix?: number;
   onResult: (validators: ValidatorMap) => void;
@@ -74,7 +74,7 @@ const Validators = ({ api, chainId, asset, explorers, addressPrefix, onResult }:
     onResult(finalValidators);
   };
 
-  const validatorsLoading = !api || !chainId || !maxValidators;
+  const validatorsLoading = !api || !maxValidators;
   const validatorsAreSelected = selectedValidators.length > 0;
   const nextStepDisabled = selectedValidators.length === 0 || selectedValidators.length > maxValidators;
 

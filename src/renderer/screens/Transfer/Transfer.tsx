@@ -5,24 +5,25 @@ import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 
 import { QrTxGenerator } from '@renderer/components/common';
-import { Address, Button, ButtonBack, Dropdown, Icon } from '@renderer/components/ui';
+import { Address, Block, Button, ButtonBack, Dropdown, Icon } from '@renderer/components/ui';
+import { Option, ResultOption } from '@renderer/components/ui/Dropdowns/common/types';
 import { useI18n } from '@renderer/context/I18nContext';
 import { useNetworkContext } from '@renderer/context/NetworkContext';
 import { Asset, AssetType, OrmlExtras, StatemineExtras } from '@renderer/domain/asset';
 import { ChainId, HexString, SigningType } from '@renderer/domain/shared-kernel';
 import { Transaction, TransactionType } from '@renderer/domain/transaction';
+import { useAccount } from '@renderer/services/account/accountService';
 import { useBalance } from '@renderer/services/balance/balanceService';
 import { formatAmount, toAddress, transferableAmount } from '@renderer/services/balance/common/utils';
 import { useChains } from '@renderer/services/network/chainsService';
 import { useTransaction } from '@renderer/services/transaction/transactionService';
 import { formatAddress, toPublicKey, validateAddress } from '@renderer/shared/utils/address';
+import { DEFAULT_QR_LIFETIME } from '@renderer/shared/utils/constants';
+import { secondsToMinutes } from '@renderer/shared/utils/time';
 import { getMetadataPortalUrl, TROUBLESHOOTING_URL } from '../Signing/common/consts';
 import ParitySignerSignatureReader from '../Signing/ParitySignerSignatureReader/ParitySignerSignatureReader';
 import { ValidationErrors } from './common/constants';
-import { useAccount } from '@renderer/services/account/accountService';
 import { Message, SelectedAddress, TransferDetails, TransferForm } from './components';
-import { Option, ResultOption } from '@renderer/components/ui/Dropdowns/common/types';
-import { secondsToMinutes } from '@renderer/shared/utils/time';
 
 const enum Steps {
   CREATING,
@@ -31,8 +32,6 @@ const enum Steps {
   SIGNING,
   EXECUTING,
 }
-
-const DEFAULT_QR_LIFETIME = 64;
 
 const TransferType: Record<AssetType, TransactionType> = {
   [AssetType.ORML]: TransactionType.ORML_TRANSFER,
@@ -261,7 +260,7 @@ const Transfer = () => {
 
       <div className="overflow-y-auto">
         {currentStep === Steps.CREATING && readyToCreate && (
-          <div className="w-[500px] rounded-2xl bg-shade-2 p-5 flex flex-col items-center m-auto gap-2.5">
+          <div className="w-[500px] rounded-2lg bg-shade-2 p-5 flex flex-col items-center m-auto gap-2.5">
             {activeAccountsOptions.length > 1 ? (
               <div className="w-full mb-2.5 p-5 bg-white rounded-2lg shadow-surface">
                 <Dropdown
@@ -303,8 +302,8 @@ const Transfer = () => {
             )}
 
             {currentStep === Steps.SCANNING && (
-              <div className="flex flex-col gap-2.5 w-full">
-                <div className="bg-white p-5 shadow-surface rounded-2xl flex flex-col items-center gap-5 w-full">
+              <div className="flex flex-col w-full">
+                <Block className="flex flex-col items-center gap-y-2.5">
                   <div className="text-neutral-variant text-base font-semibold">{t('signing.scanQrTitle')}</div>
                   {txPayload && currentAddress ? (
                     <div className="w-[220px] h-[220px]">
@@ -331,8 +330,8 @@ const Transfer = () => {
                       </div>
                     </div>
                   )}
-                </div>
-                <div className="flex flex-col items-center gap-y-1 text-xs font-semibold text-primary">
+                </Block>
+                <div className="flex flex-col items-center gap-y-1 text-xs font-semibold text-primary mt-2.5 mb-5">
                   <a className="flex items-center" href={TROUBLESHOOTING_URL} rel="noopener noreferrer" target="_blank">
                     <Icon className="mr-1" name="globe" size={18} /> {t('signing.troubleshootingLink')}
                   </a>
@@ -347,7 +346,7 @@ const Transfer = () => {
                 </div>
                 {txPayload && countdown > 0 ? (
                   <Button
-                    className="w-fit m-auto"
+                    className="w-max mx-auto"
                     variant="fill"
                     pallet="primary"
                     weight="lg"
@@ -356,7 +355,7 @@ const Transfer = () => {
                     {t('signing.continueButton')}
                   </Button>
                 ) : (
-                  <Button variant="fill" pallet="primary" weight="lg" onClick={() => setupTransaction()}>
+                  <Button variant="fill" pallet="primary" weight="lg" onClick={setupTransaction}>
                     {t('signing.generateNewQrButton')}
                   </Button>
                 )}
@@ -376,9 +375,7 @@ const Transfer = () => {
                       countdown={countdown}
                       size={460}
                       validationError={validationError}
-                      onResult={(signature) => {
-                        sendSignedTransaction(signature as HexString);
-                      }}
+                      onResult={(signature) => sendSignedTransaction(signature as HexString)}
                     />
                   </div>
                 </div>

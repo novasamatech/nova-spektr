@@ -4,7 +4,7 @@ import { ConnectionStatus, ConnectionType } from '@renderer/domain/connection';
 import { useBalance } from '@renderer/services/balance/balanceService';
 import { useNetwork } from '@renderer/services/network/networkService';
 import { NetworkProvider, useNetworkContext } from './NetworkContext';
-import { TEST_ADDRESS, TEST_PUBLIC_KEY } from '@renderer/services/balance/common/constants';
+import { TEST_ADDRESS, TEST_PUBLIC_KEY } from '@renderer/shared/utils/constants';
 
 jest.mock('@renderer/services/network/networkService', () => ({
   useNetwork: jest.fn().mockReturnValue({

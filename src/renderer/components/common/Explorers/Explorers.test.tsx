@@ -1,7 +1,7 @@
 import { act, render, screen } from '@testing-library/react';
 
 import Explorers from './Explorers';
-import { TEST_ADDRESS } from '@renderer/services/balance/common/constants';
+import { TEST_ADDRESS } from '@renderer/shared/utils/constants';
 
 jest.mock('@renderer/context/I18nContext', () => ({
   useI18n: jest.fn().mockReturnValue({

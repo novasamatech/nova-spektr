@@ -1,7 +1,7 @@
 import { act, render, screen } from '@testing-library/react';
 
+import { TEST_PUBLIC_KEY } from '@renderer/shared/utils/constants';
 import { Chain } from '@renderer/domain/chain';
-import { TEST_PUBLIC_KEY } from '@renderer/services/balance/common/constants';
 import AccountsList from './AccountsList';
 
 jest.mock('@renderer/context/I18nContext', () => ({
