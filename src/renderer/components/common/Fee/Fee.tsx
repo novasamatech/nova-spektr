@@ -1,4 +1,5 @@
 import { ApiPromise } from '@polkadot/api';
+import { BN } from '@polkadot/util';
 import React, { useEffect, useState } from 'react';
 
 import { Balance } from '@renderer/components/ui';
@@ -8,12 +9,13 @@ import { useTransaction } from '@renderer/services/transaction/transactionServic
 
 type Props = {
   api?: ApiPromise;
+  repeat?: number;
   asset: Asset;
   transaction?: Transaction;
   className?: string;
 };
 
-const Fee = ({ api, asset, transaction, className }: Props) => {
+const Fee = ({ api, repeat = 1, asset, transaction, className }: Props) => {
   const { getTransactionFee } = useTransaction();
 
   const [isLoading, setIsLoading] = useState(false);
@@ -46,9 +48,11 @@ const Fee = ({ api, asset, transaction, className }: Props) => {
     return <div className="animate-pulse bg-shade-20 rounded-lg w-20 h-2.5" data-testid="fee-loader" />;
   }
 
+  const totalFee = new BN(transactionFee).muln(repeat).toString();
+
   return (
     <div className={className}>
-      <Balance value={transactionFee} precision={asset.precision} symbol={asset.symbol} />
+      <Balance value={totalFee} precision={asset.precision} symbol={asset.symbol} />
     </div>
   );
 };

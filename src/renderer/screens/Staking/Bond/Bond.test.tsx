@@ -1,9 +1,9 @@
-import { render, screen, act } from '@testing-library/react';
+import { act, render, screen } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 
 import { ConnectionStatus } from '@renderer/domain/connection';
+import { TEST_PUBLIC_KEY } from '@renderer/shared/utils/constants';
 import Bond from './Bond';
-import { TEST_PUBLIC_KEY } from '@renderer/services/balance/common/constants';
 
 jest.mock('@renderer/context/I18nContext', () => ({
   useI18n: jest.fn().mockReturnValue({
@@ -11,13 +11,28 @@ jest.mock('@renderer/context/I18nContext', () => ({
   }),
 }));
 
+jest.mock('react-router-dom', () => ({
+  useSearchParams: jest.fn().mockReturnValue([new URLSearchParams('id=1,2,3')]),
+  useParams: jest.fn().mockReturnValue({ chainId: '0x123' }),
+  useNavigate: jest.fn(),
+}));
+
 jest.mock('@renderer/context/NetworkContext', () => ({
   useNetworkContext: jest.fn(() => ({
     connections: {
-      '0xe143f23803ac50e8f6f8e62695d1ce9e4e1d68aa36c1cd2cfd15340213f3423e': {
+      '0x123': {
         name: 'Westend',
+        assets: [
+          {
+            assetId: 0,
+            symbol: 'WND',
+            precision: 10,
+            staking: 'relaychain',
+            name: 'Westend',
+          },
+        ],
         connection: {
-          chainId: '0xe143f23803ac50e8f6f8e62695d1ce9e4e1d68aa36c1cd2cfd15340213f3423e',
+          chainId: '0x123',
           connectionStatus: ConnectionStatus.CONNECTED,
         },
       },
@@ -55,17 +70,17 @@ const mockButton = (text: string, callback: () => void) => (
   </button>
 );
 
-jest.mock('./InitBond/InitBond', () => ({ onResult }: any) => {
+jest.mock('./InitOperation/InitOperation', () => ({ onResult }: any) => {
   return mockButton('init', onResult);
 });
 jest.mock('./Validators/Validators', () => ({ onResult }: any) => {
   return mockButton('validators', onResult);
 });
-jest.mock('./ConfirmBond/ConfirmBond', () => ({ onResult }: any) => {
+jest.mock('./Confirmation/Confirmation', () => ({ onResult }: any) => {
   return mockButton('confirm', onResult);
 });
 
-describe('screens/Bond/ConfirmBond', () => {
+describe('screens/Bond/Confirmation', () => {
   test('should render component', () => {
     render(<Bond />, { wrapper: MemoryRouter });
 

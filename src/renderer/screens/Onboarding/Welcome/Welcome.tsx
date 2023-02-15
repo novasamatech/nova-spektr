@@ -15,7 +15,7 @@ const Welcome = () => {
     <div className="flex flex-col h-full">
       <h1 className="flex flex-col text-center mt-7">
         <span className="text-4xl text-neutral">{t('welcome.welcomeToLabel')}</span>
-        <span className="font-bold text-[44px] text-primary">{t('welcome.omniEnterpriseLabel')}</span>
+        <span className="font-bold text-4.5xl text-primary">{t('welcome.omniEnterpriseLabel')}</span>
       </h1>
 
       <ul className="flex items-center gap-x-9 m-auto p-5 bg-shade-2 rounded-2lg">

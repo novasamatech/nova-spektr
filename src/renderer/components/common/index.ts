@@ -1,4 +1,5 @@
 import AccountsList from './AccountsList/AccountsList';
+import AddressOnPlate from './AddressOnPlate/AddressOnPlate';
 import FallbackScreen from './FallbackScreen/FallbackScreen';
 import SplashScreen from './SplashScreen/SplashScreen';
 import QrReader from './QrCode/QrReader/QrReader';
@@ -14,6 +15,7 @@ import Fee from './Fee/Fee';
 
 export {
   AccountsList,
+  AddressOnPlate,
   FallbackScreen,
   SplashScreen,
   QrReader,

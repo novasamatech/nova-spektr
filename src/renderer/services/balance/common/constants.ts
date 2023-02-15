@@ -13,9 +13,6 @@ export const enum Decimal {
   BIG_NUMBER = 2,
 }
 
-export const TEST_PUBLIC_KEY = '0x08eb319467ea54784cd9edfbd03bbcc53f7a021ed8d9ed2ca97b6ae46b3f6014';
-export const TEST_ADDRESS = '1ChFWeNRLarAPRCTM3bfJmncJbSAbSS9yqjueWz7jX7iTVZ';
-
 export const VERIFY_TIMEOUT = 5000;
 
 export const enum LockTypes {

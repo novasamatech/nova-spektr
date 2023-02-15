@@ -5,7 +5,7 @@ import { SeedInfo } from '@renderer/components/common/QrCode/QrReader/common/typ
 import { CryptoTypeString } from '@renderer/domain/shared-kernel';
 import StepThree from './StepThree';
 import { Chain } from '@renderer/domain/chain';
-import { TEST_ADDRESS } from '@renderer/services/balance/common/constants';
+import { TEST_ADDRESS } from '@renderer/shared/utils/constants';
 
 jest.mock('@renderer/context/I18nContext', () => ({
   useI18n: jest.fn().mockReturnValue({

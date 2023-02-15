@@ -2,7 +2,7 @@ import { render, screen } from '@testing-library/react';
 
 import { Asset } from '@renderer/domain/asset';
 import { Chain } from '@renderer/domain/chain';
-import { TEST_ADDRESS, TEST_PUBLIC_KEY } from '@renderer/services/balance/common/constants';
+import { TEST_ADDRESS, TEST_PUBLIC_KEY } from '@renderer/shared/utils/constants';
 import chains from '@renderer/services/network/common/chains/chains.json';
 import ReceiveModal from './ReceiveModal';
 import { useAccount } from '@renderer/services/account/accountService';

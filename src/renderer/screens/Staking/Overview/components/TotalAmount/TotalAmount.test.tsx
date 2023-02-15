@@ -1,7 +1,7 @@
 import { render, screen } from '@testing-library/react';
 
 import { Asset } from '@renderer/domain/asset';
-import { TEST_ADDRESS } from '@renderer/services/balance/common/constants';
+import { TEST_ADDRESS } from '@renderer/shared/utils/constants';
 import { useStakingRewards } from '@renderer/services/staking/stakingRewardsService';
 import TotalAmount from './TotalAmount';
 
