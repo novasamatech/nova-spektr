@@ -1,4 +1,4 @@
-import { TEST_PUBLIC_KEY } from '@renderer/services/balance/common/constants';
+import { TEST_PUBLIC_KEY } from '@renderer/shared/utils/constants';
 import { formatBalance, toAddress } from '../common/utils';
 
 describe('services/balance/utils', () => {

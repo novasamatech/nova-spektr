@@ -7,22 +7,23 @@ import { Alignment, AnyRecord, IndexKey, SortType } from './common/types';
 import { useTableContext } from './TableContext';
 
 type HeaderProps = {
+  hidden?: boolean;
   className?: string;
 };
-export const TableHeader = ({ className, children }: PropsWithChildren<HeaderProps>) => {
+export const TableHeader = ({ hidden, className, children }: PropsWithChildren<HeaderProps>) => {
   const { allRowsSelected, selectedKeys, loading, selectAll } = useTableContext();
 
   return (
-    <thead className={cn('bg-white border-b border-shade-5', className)}>
+    <thead className={cn(!hidden && 'bg-white border-b border-shade-5', className)}>
       {selectedKeys ? (
-        <tr className="h-10">
+        <tr className={cn(hidden ? 'h-0' : 'h-10')}>
           <th className="pl-4 pr-1 w-5 rounded-tl-2lg">
             <Checkbox disabled={loading} checked={allRowsSelected} onChange={selectAll} />
           </th>
           {children}
         </tr>
       ) : (
-        <tr className="h-7.5">{children}</tr>
+        <tr className={cn(hidden ? 'h-0' : 'h-7.5')}>{children}</tr>
       )}
     </thead>
   );
