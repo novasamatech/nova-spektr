@@ -288,6 +288,7 @@
       "selectStakeAccountLabel": "Выберите аккаунты",
       "selectStakeAccountSummary": "Несколько аккаунтов",
       "signSubtitle": "Подписание",
+      "submitSubtitle": "Подтверждение",
       "transferableRewards": "Вывести награды",
       "validatorsSubtitle": "Валидаторы"
     },
@@ -310,7 +311,6 @@
       "rewardsDestination": "Выплата наград",
       "selectValidators": "Выбранные валидаторы",
       "signButton": "Подписать в Parity Signer",
-      "submitSubtitle": "Подтверждение",
       "submittingOperation": "Подтверждение операции",
       "totalAmount": "Общая сумма",
       "totalNetworkFee": "Общая комиссия сети",

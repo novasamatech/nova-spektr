@@ -288,6 +288,7 @@
       "selectStakeAccountLabel": "Select accounts",
       "selectStakeAccountSummary": "Multiple accounts",
       "signSubtitle": "Signing",
+      "submitSubtitle": "Submitting",
       "transferableRewards": "Transferable rewards",
       "validatorsSubtitle": "Validators"
     },
@@ -310,7 +311,6 @@
       "rewardsDestination": "Rewards destination",
       "selectValidators": "Selected validators",
       "signButton": "Sign with Parity Signer",
-      "submitSubtitle": "Submitting",
       "submittingOperation": "Submitting operation",
       "totalAmount": "Total amount",
       "totalNetworkFee": "Total network fee",

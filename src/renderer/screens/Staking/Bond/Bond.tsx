@@ -154,7 +154,7 @@ const Bond = () => {
           onResult={onSelectValidators}
         />
       )}
-      {[Step.CONFIRMATION, Step.SUBMIT].includes(activeStep) && (
+      {activeStep === Step.CONFIRMATION && (
         <Confirmation
           api={api}
           chainId={chainId}

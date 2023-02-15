@@ -105,7 +105,6 @@ const StakingActions = ({ stakes, className, onNavigate }: Props) => {
   const onClickAction = (action: StakeAction) => {
     const { path } = STAKE_ACTIONS[action];
     const accountType = hasIncorrectAccounts(action);
-    console.log(accountType);
 
     if (accountType) {
       setActionType(action);

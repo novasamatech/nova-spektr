@@ -48,7 +48,7 @@ const Submit = ({
 
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [progress, setProgress] = useState(0);
-  const [failedTxs, setFailedTxs] = useState<number[]>([]);
+  const [failedTxs, setFailedTxs] = useState<number[]>([1, 2]);
 
   useEffect(() => {
     const newTransactions = accounts.map(({ accountId = '' }) => {
@@ -84,8 +84,8 @@ const Submit = ({
 
   const confirmFailedTx = (): Promise<boolean> => {
     return confirm({
-      title: t('staking.confirmation.errorModalTitle'),
-      message: t('staking.confirmation.errorModalSubtitle', { number: failedTxs.length }),
+      title: t('staking.confirmation.errorModalTitle', { number: failedTxs.length }),
+      message: t('staking.confirmation.errorModalSubtitle'),
       confirmText: t('staking.confirmation.errorModalEditButton'),
       cancelText: t('staking.confirmation.errorModalDiscardButton'),
     });
@@ -108,14 +108,13 @@ const Submit = ({
 
     await Promise.all(unsignedRequests);
 
-    if (failedTxs.length > 0) {
-      console.warn('Failed tx - ', failedTxs.join(', '));
-      const proceed = await confirmFailedTx();
+    if (failedTxs.length === 0) return;
 
-      if (!proceed) {
-        // TODO: implement Edit flow
-        console.log('Go to EDIT');
-      }
+    console.warn('Failed tx - ', failedTxs.join(', '));
+    const proceed = await confirmFailedTx();
+
+    if (proceed) {
+      // TODO: implement Edit flow
     }
   };
 
