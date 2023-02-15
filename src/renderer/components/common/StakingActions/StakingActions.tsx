@@ -85,7 +85,6 @@ const StakingActions = ({ stakes, className, onNavigate }: Props) => {
   }
 
   const hasIncorrectAccounts = (action: StakeAction): AccountTypes | null => {
-    console.log(action, stakes);
     if (StashActions.includes(action)) return stakes.every(isStash) ? null : AccountTypes.STASH;
     if (ControllerActions.includes(action)) return stakes.every(isController) ? null : AccountTypes.CONTROLLER;
 

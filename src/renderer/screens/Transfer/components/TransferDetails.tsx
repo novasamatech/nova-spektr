@@ -26,7 +26,7 @@ const Transfer = ({ transaction, account, asset, connection }: Props) => {
       <div className="bg-white shadow-surface p-5 rounded-2xl w-full">
         <div className="font-semibold text-xl text-neutral mb-5 m-auto w-fit">{t('transferDetails.title')}</div>
         {/* eslint-disable-next-line i18next/no-literal-string */}
-        <div className="font-bold text-[44px] text-neutral m-auto w-fit">
+        <div className="font-bold text-4.5xl text-neutral m-auto w-fit">
           -<Balance className="inline-block" value={value} precision={asset.precision} symbol={asset.symbol} />
         </div>
 

@@ -5,7 +5,7 @@ import { Asset, AssetType, OrmlExtras, StatemineExtras } from '@renderer/domain/
 import { PublicKey } from '@renderer/domain/shared-kernel';
 import { PUBLIC_KEY_LENGTH, SS58_DEFAULT_PREFIX } from './constants';
 
-export const formatAddress = (address: string, prefix = SS58_DEFAULT_PREFIX): string => {
+export const formatAddress = (address?: string, prefix = SS58_DEFAULT_PREFIX): string => {
   if (!address) return '';
 
   return encodeAddress(decodeAddress(address), prefix) || address;

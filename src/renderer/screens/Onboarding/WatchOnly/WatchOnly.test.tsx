@@ -2,7 +2,7 @@ import { act, render, screen } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 
 import WatchOnly from './WatchOnly';
-import { TEST_ADDRESS, TEST_PUBLIC_KEY } from '@renderer/services/balance/common/constants';
+import { TEST_ADDRESS, TEST_PUBLIC_KEY } from '@renderer/shared/utils/constants';
 import { Chain } from '@renderer/domain/chain';
 
 jest.mock('@renderer/services/account/accountService', () => ({

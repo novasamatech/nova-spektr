@@ -3,7 +3,7 @@ import { MemoryRouter } from 'react-router-dom';
 
 import Navigation from './Navigation';
 import { useMatrix } from '@renderer/context/MatrixContext';
-import { TEST_PUBLIC_KEY } from '@renderer/services/balance/common/constants';
+import { TEST_PUBLIC_KEY } from '@renderer/shared/utils/constants';
 
 jest.mock('@renderer/context/MatrixContext', () => ({
   useMatrix: jest.fn(),

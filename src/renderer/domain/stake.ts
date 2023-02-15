@@ -14,3 +14,8 @@ export type Unlocking = {
   value: string;
   era: string;
 };
+
+export const enum RewardsDestination {
+  RESTAKE,
+  TRANSFERABLE,
+}

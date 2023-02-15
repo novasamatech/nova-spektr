@@ -1,7 +1,7 @@
 import { render, screen } from '@testing-library/react';
 
 import { Stake } from '@renderer/domain/stake';
-import { TEST_ADDRESS } from '@renderer/services/balance/common/constants';
+import { TEST_ADDRESS } from '@renderer/shared/utils/constants';
 import StakingActions from './StakingActions';
 
 jest.mock('@renderer/context/I18nContext', () => ({

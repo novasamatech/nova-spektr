@@ -2,7 +2,7 @@ import { render, screen } from '@testing-library/react';
 
 import { Asset } from '@renderer/domain/asset';
 import { Validator } from '@renderer/domain/validator';
-import { TEST_ADDRESS } from '@renderer/services/balance/common/constants';
+import { TEST_ADDRESS } from '@renderer/shared/utils/constants';
 import ValidatorsTable from './ValidatorsTable';
 
 jest.mock('@renderer/context/I18nContext', () => ({
@@ -66,8 +66,9 @@ describe('components/common/ValidatorsTable', () => {
 
     const table = screen.getByRole('table');
     const groups = screen.getAllByRole('rowgroup');
+    const thead = groups[0].querySelector('tr');
     expect(table).toBeInTheDocument();
     expect(groups).toHaveLength(2);
-    expect(groups[0]).toHaveClass('hidden');
+    expect(thead).toHaveClass('h-0');
   });
 });

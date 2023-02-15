@@ -1,5 +1,4 @@
 import { BN, BN_ZERO } from '@polkadot/util';
-import cn from 'classnames';
 import { useState } from 'react';
 
 import { Explorers } from '@renderer/components/common';
@@ -78,17 +77,19 @@ const ValidatorsTable = ({
       selectedKeys={canSelect ? selectedValidators : undefined}
       onSelect={selectValidator}
     >
-      <Table.Header className={cn(!showHeader && 'hidden')}>
+      <Table.Header hidden={!showHeader}>
         <Table.Column dataKey="address" align="left">
-          <div className="flex items-center gap-x-1">
-            {t('staking.validators.validatorsTableHeader')}
-            {amountBadge &&
-              (isLoading ? (
-                <Shimmering width={20} height={10} />
-              ) : (
-                <span className="px-1.25 py-1 rounded-md bg-shade-2 text-shade-40">{validators.length}</span>
-              ))}
-          </div>
+          {showHeader && (
+            <div className="flex items-center gap-x-1">
+              {t('staking.validators.validatorsTableHeader')}
+              {amountBadge &&
+                (isLoading ? (
+                  <Shimmering width={20} height={10} />
+                ) : (
+                  <span className="px-1.25 py-1 rounded-md bg-shade-2 text-shade-40">{validators.length}</span>
+                ))}
+            </div>
+          )}
         </Table.Column>
         {columns.includes('ownStake') && (
           <Table.Column dataKey="ownStake" width={150}>

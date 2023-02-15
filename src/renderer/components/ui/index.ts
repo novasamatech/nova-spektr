@@ -4,6 +4,7 @@ import Switch from './Switch/Switch';
 import Icon from './Icon/Icon';
 import Identicon from './Identicon/Identicon';
 import Input from './Inputs/Input/Input';
+import Block from './Block/Block';
 import AmountInput from './Inputs/AmountInput/AmountInput';
 import InputHint from './InputHint/InputHint';
 import Button from './Buttons/Button/Button';
@@ -16,6 +17,7 @@ import LanguageSwitcher from './LanguageSwitcher/LanguageSwitcher';
 import Carousel from './Carousel/Carousel';
 import Dropdown from './Dropdowns/Dropdown/Dropdown';
 import RadioGroup from './RadioGroup/RadioGroup';
+import HintList from './HintList/HintList';
 import Select from './Dropdowns/Select/Select';
 import Balance from './Balance/Balance';
 import Popover from './Popover/Popover';
@@ -32,6 +34,7 @@ export {
   Icon,
   Identicon,
   Input,
+  Block,
   AmountInput,
   InputHint,
   Button,
@@ -43,6 +46,7 @@ export {
   LanguageSwitcher,
   Dropdown,
   RadioGroup,
+  HintList,
   Select,
   Carousel,
   Balance,

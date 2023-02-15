@@ -1,20 +1,20 @@
 import { ApiPromise } from '@polkadot/api';
+import { SubmittableExtrinsic } from '@polkadot/api/types';
 import { hexToU8a } from '@polkadot/util';
+import { methods as ormlMethods } from '@substrate/txwrapper-orml';
 import {
+  BaseTxInfo,
   construct,
   methods,
-  BaseTxInfo,
   OptionsWithMeta,
-  UnsignedTransaction,
   TypeRegistry,
+  UnsignedTransaction,
 } from '@substrate/txwrapper-polkadot';
-import { methods as ormlMethods } from '@substrate/txwrapper-orml';
-import { SubmittableExtrinsic } from '@polkadot/api/types';
 
-import { createTxMetadata } from '@renderer/shared/utils/substrate';
-import { ITransactionService } from './common/types';
 import { HexString } from '@renderer/domain/shared-kernel';
 import { Transaction, TransactionType } from '@renderer/domain/transaction';
+import { createTxMetadata } from '@renderer/shared/utils/substrate';
+import { ITransactionService } from './common/types';
 
 export const useTransaction = (): ITransactionService => {
   const createRegistry = async (api: ApiPromise) => {
@@ -28,7 +28,7 @@ export const useTransaction = (): ITransactionService => {
 
   const getUnsignedTransaction: Record<
     TransactionType,
-    (args: Record<string, any>, info: BaseTxInfo, options: OptionsWithMeta) => UnsignedTransaction
+    (args: Transaction, info: BaseTxInfo, options: OptionsWithMeta) => UnsignedTransaction
   > = {
     [TransactionType.TRANSFER]: (transaction, info, options) => {
       return methods.balances.transfer(
@@ -83,9 +83,13 @@ export const useTransaction = (): ITransactionService => {
       );
     },
     [TransactionType.BATCH_ALL]: (transaction, info, options) => {
+      const txMethods = transaction.args.transactions.map(
+        (tx: Transaction) => getUnsignedTransaction[tx.type](tx, info, options).method,
+      );
+
       return methods.utility.batchAll(
         {
-          calls: transaction.args.calls,
+          calls: txMethods,
         },
         info,
         options,
