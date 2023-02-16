@@ -14,10 +14,11 @@ enum AccountTypes {
   STASH = 'stash',
   CONTROLLER = 'controller',
 }
+
 const STAKE_ACTIONS = {
   startStaking: { icon: 'startStaking', title: 'staking.actions.startStakingLabel', path: Paths.BOND },
   stakeMore: { icon: 'stakeMore', title: 'staking.actions.stakeMoreLabel', path: Paths.BOND },
-  unstake: { icon: 'unstake', title: 'staking.actions.unstakeLabel', path: Paths.BOND },
+  unstake: { icon: 'unstake', title: 'staking.actions.unstakeLabel', path: Paths.UNSTAKE },
   returnToStake: { icon: 'returnToStake', title: 'staking.actions.returnToStakeLabel', path: Paths.BOND },
   redeem: { icon: 'redeem', title: 'staking.actions.redeemLabel', path: Paths.BOND },
   setValidators: { icon: 'setValidators', title: 'staking.actions.setValidatorsLabel', path: Paths.BOND },
@@ -105,7 +106,6 @@ const StakingActions = ({ stakes, className, onNavigate }: Props) => {
   const onClickAction = (action: StakeAction) => {
     const { path } = STAKE_ACTIONS[action];
     const accountType = hasIncorrectAccounts(action);
-    console.log(accountType);
 
     if (accountType) {
       setActionType(action);
@@ -119,6 +119,7 @@ const StakingActions = ({ stakes, className, onNavigate }: Props) => {
 
   const onDeselectIncorrectAccounts = (action: StakeAction | null) => {
     if (!action) return;
+    toggleIsDialogOpen();
 
     const accountType = hasIncorrectAccounts(actionType!);
 
@@ -186,6 +187,7 @@ const StakingActions = ({ stakes, className, onNavigate }: Props) => {
           >
             {t('staking.warning.yesButton')}
           </Button>
+
           <Button className="flex-1" variant="outline" pallet="primary" weight="lg" onClick={toggleIsDialogOpen}>
             {t('staking.warning.noButton')}
           </Button>
