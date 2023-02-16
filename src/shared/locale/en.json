@@ -274,12 +274,16 @@
       "confirmBondSubtitle": "Confirm",
       "continueButton": "Continue",
       "goToStakingButton": "Back to Staking",
+      "incorrectAddressError": "Incorrect address",
       "initBondSubtitle": "Start Staking",
       "networkFee": "Network fee",
+      "networkFee_one": "Network fee",
+      "networkFee_other": "Network fee / Account",
       "noStakingAssetDescription": "No staking asset was found for { chainName }",
       "noStakingAssetLabel": "No staking asset",
       "payoutAccountLabel": "Payout account",
       "payoutAccountPlaceholder": "Select a payout account",
+      "requiredAddressError": "Payout account is required",
       "restakeRewards": "Restake rewards",
       "rewardsDestinationDescription": "Approximate amounts are calculated yearly",
       "rewardsDestinationTitle": "Rewards destination",
@@ -352,6 +356,18 @@
     "title": "Staking",
     "unbond": {
       "subtitle": "Unbond"
+    },
+    "unstake": {
+      "amountPlaceholder": "Input amount",
+      "confirmUnstakeSubtitle": "Confirmation",
+      "durationDescription": "To unstake tokens you will have to wait for the ustaking period",
+      "initUnstakeSubtitle": "Unstake",
+      "networkFee_one": "Network fee",
+      "networkFee_other": "Network fee / Account",
+      "noRewardsDescription": "During unstaking period tokens produce no rewards",
+      "redeemDescription": "After unstaking period don’t forget to redeem your tokens",
+      "stakedPlaceholder": "Staked",
+      "transferable": "Transferable"
     },
     "validators": {
       "blockedPopoverSubtitle": "Nominators no longer accepted",

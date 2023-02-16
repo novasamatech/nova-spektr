@@ -19,7 +19,7 @@ import ValidatorsModal from '../ValidatorsModal/ValidatorsModal';
 
 type Props = {
   api: ApiPromise;
-  validators: Validator[];
+  validators?: Validator[];
   accounts: AccountDS[];
   stake: string;
   destination?: {
@@ -50,7 +50,7 @@ const TransactionInfo = ({
 
   const totalStake = new BN(stake).muln(accounts.length);
   const singleAccount = accounts.length === 1;
-  const validatorsExist = validators.length > 0;
+  const validatorsExist = validators && validators.length > 0;
 
   return (
     <>
@@ -182,14 +182,16 @@ const TransactionInfo = ({
         addressPrefix={addressPrefix}
         onClose={toggleAccounts}
       />
-      <ValidatorsModal
-        isOpen={isValidatorsOpen}
-        validators={validators}
-        asset={asset}
-        explorers={explorers}
-        addressPrefix={addressPrefix}
-        onClose={toggleValidators}
-      />
+      {validatorsExist && (
+        <ValidatorsModal
+          isOpen={isValidatorsOpen}
+          validators={validators}
+          asset={asset}
+          explorers={explorers}
+          addressPrefix={addressPrefix}
+          onClose={toggleValidators}
+        />
+      )}
     </>
   );
 };
