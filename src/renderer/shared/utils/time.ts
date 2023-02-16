@@ -36,13 +36,17 @@ export const secondsToDuration = (seconds: number): Duration => {
   };
 };
 
-export const getDurationFormat = ({ days, hours }: Duration): DurationFormat => {
+export const getDurationFormat = ({ days, hours, minutes, seconds }: Duration): DurationFormat => {
   if (days && hours) {
     return DurationFormat.DAYS_HOURS;
   }
 
   if (days) {
     return DurationFormat.DAYS;
+  }
+
+  if (hours && minutes === '00' && seconds === '00') {
+    return DurationFormat.HOURS;
   }
 
   if (hours) {

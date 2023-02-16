@@ -73,6 +73,15 @@ export const useTransaction = (): ITransactionService => {
         options,
       );
     },
+    [TransactionType.UNSTAKE]: (transaction, info, options) => {
+      return methods.staking.unbond(
+        {
+          value: transaction.args.value,
+        },
+        info,
+        options,
+      );
+    },
     [TransactionType.NOMINATE]: (transaction, info, options) => {
       return methods.staking.nominate(
         {
@@ -106,6 +115,7 @@ export const useTransaction = (): ITransactionService => {
       api.tx.assets.transferKeepAlive(asset, dest, value),
     [TransactionType.ORML_TRANSFER]: ({ dest, value, asset }, api) => api.tx.currencies.transfer(dest, asset, value),
     [TransactionType.BOND]: ({ controller, value, payee }, api) => api.tx.staking.bond(controller, value, payee),
+    [TransactionType.UNSTAKE]: ({ value }, api) => api.tx.staking.unbond(value),
     [TransactionType.NOMINATE]: ({ targets }, api) => api.tx.staking.nominate(targets),
     [TransactionType.BATCH_ALL]: ({ transactions }, api) => {
       const calls = transactions.map((t: Transaction) => getExtrinsic[t.type](t.args, api).method);

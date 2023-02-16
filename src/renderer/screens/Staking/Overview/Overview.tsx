@@ -230,8 +230,14 @@ const Overview = () => {
   }, []);
 
   const navigateToStake = (path: PathValue, accounts?: AccountID[]) => {
+    if (accounts) {
+      setSelectedAccounts(accounts);
+
+      return;
+    }
+
     const activeAccountIds = activeAccounts.reduce<string[]>((acc, { id, accountId }) => {
-      if (id && accountId && selectedAccounts.includes(accountId) && (accounts ? accounts.includes(accountId) : true)) {
+      if (id && accountId && selectedAccounts.includes(accountId)) {
         acc.push(id);
       }
 

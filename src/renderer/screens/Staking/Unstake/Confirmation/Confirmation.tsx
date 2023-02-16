@@ -5,70 +5,36 @@ import { Button, HintList, Icon } from '@renderer/components/ui';
 import { useI18n } from '@renderer/context/I18nContext';
 import { Asset } from '@renderer/domain/asset';
 import { Explorer } from '@renderer/domain/chain';
-import { AccountID, ChainId } from '@renderer/domain/shared-kernel';
-import { RewardsDestination } from '@renderer/domain/stake';
+import { ChainId } from '@renderer/domain/shared-kernel';
 import { Transaction, TransactionType } from '@renderer/domain/transaction';
-import { Validator } from '@renderer/domain/validator';
 import { AccountDS } from '@renderer/services/storage';
 import TransactionInfo from '../../components/TransactionInfo/TransactionInfo';
 
 type Props = {
   api?: ApiPromise;
   chainId: ChainId;
-  validators: Validator[];
   accounts: AccountDS[];
-  stake: string;
-  destination: AccountID;
+  unstake: string;
   asset: Asset;
   explorers?: Explorer[];
   addressPrefix: number;
   onResult: (transactions: Transaction[]) => void;
 };
 
-const Confirmation = ({
-  api,
-  chainId,
-  validators,
-  accounts,
-  stake,
-  destination,
-  asset,
-  explorers,
-  addressPrefix,
-  onResult,
-}: Props) => {
+const Confirmation = ({ api, chainId, accounts, unstake, asset, explorers, addressPrefix, onResult }: Props) => {
   const { t } = useI18n();
 
   const [transactions, setTransactions] = useState<Transaction[]>([]);
 
   useEffect(() => {
-    const newTransactions = accounts.map(({ accountId = '' }) => {
-      const commonPayload = { chainId, address: accountId };
-
-      const bondTx = {
-        ...commonPayload,
-        type: TransactionType.BOND,
-        args: {
-          value: stake,
-          controller: accountId,
-          payee: destination ? { Account: destination } : 'Staked',
-        },
-      };
-
-      const nominateTx = {
-        ...commonPayload,
-        type: TransactionType.NOMINATE,
-        args: {
-          targets: validators.map((validator) => validator.address),
-        },
-      };
-
-      return {
-        ...commonPayload,
-        type: TransactionType.BATCH_ALL,
-        args: { transactions: [bondTx, nominateTx] },
-      };
-    });
+    const newTransactions = accounts.map(({ accountId = '' }) => ({
+      chainId,
+      address: accountId,
+      type: TransactionType.UNSTAKE,
+      args: {
+        value: unstake,
+      },
+    }));
 
     setTransactions(newTransactions);
   }, []);
@@ -77,17 +43,11 @@ const Confirmation = ({
     return null;
   }
 
-  const destPayload = destination
-    ? { type: RewardsDestination.TRANSFERABLE, address: destination }
-    : { type: RewardsDestination.RESTAKE };
-
   return (
     <TransactionInfo
       api={api}
-      validators={validators}
       accounts={accounts}
-      stake={stake}
-      destination={destPayload}
+      stake={unstake}
       asset={asset}
       explorers={explorers}
       addressPrefix={addressPrefix}
