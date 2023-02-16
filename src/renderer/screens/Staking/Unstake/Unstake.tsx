@@ -32,7 +32,7 @@ const HEADER_TITLE: Record<Step, string> = {
   [Step.SIGNING]: 'staking.bond.signSubtitle',
 };
 
-const Bond = () => {
+const Unstake = () => {
   const { t } = useI18n();
   const navigate = useNavigate();
   const { connections } = useNetworkContext();
@@ -188,4 +188,4 @@ const Bond = () => {
   );
 };
 
-export default Bond;
+export default Unstake;

@@ -79,15 +79,14 @@ export function reactToText(node: React.ReactNode, resolvers?: ResolverMap): str
   }
 
   const [nodeType, nodeProps] = isValidElement(node) ? [node.type, node.props] : [null, null];
-  // check if custom resolver is available
+
   if (nodeType && resolvers?.has(nodeType)) {
     const resolver = resolvers.get(nodeType)!;
 
     return resolver(nodeProps);
   }
 
-  // Because ReactNode includes {} in its union we need to jump through a few hoops.
-  const props: { children?: React.ReactNode } = (node as any).props ? (node as any).props : {};
+  const props: { children?: React.ReactNode } = (node as any).props || {};
 
   if (!props || !props.children) {
     return '';
