@@ -219,6 +219,11 @@ export const useTransaction = (): ITransactionService => {
             isFinalApprove,
             isSuccessExtrinsic,
           });
+        } else {
+          callback(false, {
+            extrinsicHash: actualTxHash.toHex(),
+            isSuccessExtrinsic,
+          });
         }
       })
       .catch((error) => {

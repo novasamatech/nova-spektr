@@ -178,7 +178,9 @@ const Bond = () => {
           onResult={onScanResult}
         />
       )}
-      {activeStep === Step.SIGNING && <Signing onResult={onSignResult} onGoBack={onBackToScan} />}
+      {activeStep === Step.SIGNING && (
+        <Signing multiQr={transactions.length > 1} onResult={onSignResult} onGoBack={onBackToScan} />
+      )}
       {activeStep === Step.SUBMIT && (
         <Submit
           api={api}

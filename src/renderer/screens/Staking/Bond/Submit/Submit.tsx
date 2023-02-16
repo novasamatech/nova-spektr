@@ -48,7 +48,13 @@ const Submit = ({
 
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [progress, setProgress] = useState(0);
-  const [failedTxs, setFailedTxs] = useState<number[]>([1, 2]);
+  const [failedTxs, setFailedTxs] = useState<number[]>([]);
+
+  const submitFinished = unsignedTransactions.length === progress;
+
+  const destPayload = destination
+    ? { type: RewardsDestination.TRANSFERABLE, address: destination }
+    : { type: RewardsDestination.RESTAKE };
 
   useEffect(() => {
     const newTransactions = accounts.map(({ accountId = '' }) => {
@@ -97,9 +103,8 @@ const Submit = ({
         const extrinsic = await getSignedExtrinsic(unsigned, signatures[index], api);
 
         submitAndWatchExtrinsic(extrinsic, unsigned, api, (executed) => {
-          if (executed) {
-            setProgress((p) => p + 1);
-          } else {
+          setProgress((p) => p + 1);
+          if (!executed) {
             setFailedTxs((f) => f.concat(index));
           }
         });
@@ -107,24 +112,21 @@ const Submit = ({
     });
 
     await Promise.all(unsignedRequests);
-
-    if (failedTxs.length === 0) return;
-
-    console.warn('Failed tx - ', failedTxs.join(', '));
-    const proceed = await confirmFailedTx();
-
-    if (proceed) {
-      // TODO: implement Edit flow
-    }
   };
 
   useEffect(() => {
     submitExtrinsic(signatures);
   }, []);
 
-  const destPayload = destination
-    ? { type: RewardsDestination.TRANSFERABLE, address: destination }
-    : { type: RewardsDestination.RESTAKE };
+  useEffect(() => {
+    if (!submitFinished || failedTxs.length === 0) return;
+
+    confirmFailedTx().then((proceed) => {
+      if (!proceed) return;
+
+      // TODO: implement Edit flow
+    });
+  }, [submitFinished, failedTxs.length]);
 
   return (
     <TransactionInfo
@@ -145,11 +147,13 @@ const Submit = ({
         <HintList.Item>{t('staking.confirmation.hintFour')}</HintList.Item>
       </HintList>
 
-      <div className="flex justify-center items-center gap-x-2.5 mb-2.5">
-        <Icon className="text-neutral-variant animate-spin" name="loader" size={20} />
-        <p className="text-neutral-variant font-semibold">{t('staking.confirmation.submittingOperation')}</p>
-      </div>
-      <ProgressBadge className="mx-auto" progress={progress + failedTxs.length} total={signatures.length}>
+      {!submitFinished && (
+        <div className="flex justify-center items-center gap-x-2.5 mb-2.5">
+          <Icon className="text-neutral-variant animate-spin" name="loader" size={20} />
+          <p className="text-neutral-variant font-semibold">{t('staking.confirmation.submittingOperation')}</p>
+        </div>
+      )}
+      <ProgressBadge className="mx-auto" progress={progress} total={signatures.length}>
         {t('staking.confirmation.transactionProgress')}
       </ProgressBadge>
     </TransactionInfo>
