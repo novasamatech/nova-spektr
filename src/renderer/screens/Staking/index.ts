@@ -1,5 +1,5 @@
 import Overview from './Overview/Overview';
 import Bond from './Bond/Bond';
-import Unbond from './Unbond/Unbond';
+import Unstake from './Unstake/Unstake';
 
-export default { Overview, Bond, Unbond };
+export default { Overview, Bond, Unstake };

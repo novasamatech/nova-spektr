@@ -17,6 +17,7 @@ type Props = {
   prefixElement?: ReactNode;
   variant?: Variant;
   weight?: keyof typeof DropdownClass;
+  invalid?: boolean;
   onChange: (data: ResultOption) => void;
 };
 
@@ -30,6 +31,7 @@ const Combobox = ({
   prefixElement,
   variant = 'down',
   weight = 'md',
+  invalid,
   onChange,
 }: Props) => {
   const style = DropdownClass[weight];
@@ -51,6 +53,7 @@ const Combobox = ({
           as={Input}
           placeholder={placeholder}
           label={label}
+          invalid={invalid}
           // @ts-ignore
           displayValue={(option) => option.value}
           prefixElement={prefixElement}

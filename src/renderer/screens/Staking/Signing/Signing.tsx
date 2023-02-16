@@ -1,6 +1,7 @@
 import { ApiPromise } from '@polkadot/api';
 import { UnsignedTransaction } from '@substrate/txwrapper-polkadot';
 import { useEffect, useState } from 'react';
+import { BN, BN_THOUSAND } from '@polkadot/util';
 
 import { Block, Button } from '@renderer/components/ui';
 import { useI18n } from '@renderer/context/I18nContext';
@@ -8,20 +9,25 @@ import { HexString } from '@renderer/domain/shared-kernel';
 import MultiframeSignatureReader from '@renderer/screens/Signing/MultiframeSignatureReader/MultiframeSignatureReader';
 import { useTransaction } from '@renderer/services/transaction/transactionService';
 import { DEFAULT_QR_LIFETIME } from '@renderer/shared/utils/constants';
+import { useChains } from '@renderer/services/network/chainsService';
 
 type Props = {
   api?: ApiPromise;
   unsignedTransactions: UnsignedTransaction[];
   onResult: () => void;
+  onGoBack?: () => void;
 };
 
-const Signing = ({ api, unsignedTransactions, onResult }: Props) => {
+const Signing = ({ api, unsignedTransactions, onResult, onGoBack }: Props) => {
   const { t } = useI18n();
   const { submitAndWatchExtrinsic, getSignedExtrinsic } = useTransaction();
+  const { getExpectedBlockTime } = useChains();
 
   const [progress, setProgress] = useState(0);
   const [failedTxs, setFailedTxs] = useState<number[]>([]);
   const [countdown, setCountdown] = useState(DEFAULT_QR_LIFETIME);
+
+  const expectedBlockTime = api ? getExpectedBlockTime(api) : undefined;
 
   useEffect(() => {
     if (countdown > 0) {
@@ -32,6 +38,10 @@ const Signing = ({ api, unsignedTransactions, onResult }: Props) => {
       };
     }
   }, [countdown]);
+
+  useEffect(() => {
+    setCountdown(expectedBlockTime?.mul(new BN(DEFAULT_QR_LIFETIME)).div(BN_THOUSAND).toNumber() || 0);
+  }, [unsignedTransactions.length]);
 
   const sign = async (signatures: HexString[]) => {
     if (!api) return;
@@ -81,7 +91,7 @@ const Signing = ({ api, unsignedTransactions, onResult }: Props) => {
         </Block>
 
         {countdown === 0 && (
-          <Button variant="fill" pallet="primary" weight="lg" onClick={() => console.log('GO BACK')}>
+          <Button variant="fill" pallet="primary" weight="lg" onClick={onGoBack}>
             {t('signing.generateNewQrButton')}
           </Button>
         )}

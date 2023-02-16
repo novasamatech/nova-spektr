@@ -3,6 +3,7 @@ import { BN } from '@polkadot/util';
 import cn from 'classnames';
 import { useEffect, useState } from 'react';
 import { Controller, SubmitHandler, useForm } from 'react-hook-form';
+import { isAddress } from '@polkadot/util-crypto';
 
 import { Fee } from '@renderer/components/common';
 import {
@@ -30,6 +31,8 @@ import { formatAmount, stakeableAmount, transferableAmount } from '@renderer/ser
 import { useValidators } from '@renderer/services/staking/validatorsService';
 import { AccountDS, BalanceDS } from '@renderer/services/storage';
 import { useTransaction } from '@renderer/services/transaction/transactionService';
+import { Wallet } from '@renderer/domain/wallet';
+import { useWallet } from '@renderer/services/wallet/walletService';
 
 const PAYOUT_URL = 'https://wiki.polkadot.network/docs/learn-simple-payouts';
 
@@ -53,6 +56,7 @@ const validateBalanceForFee = (balance: BalanceDS | string, fee: string, amount:
 
 const getDropdownPayload = (
   account: AccountDS,
+  wallet?: Wallet,
   balance?: BalanceDS,
   asset?: Asset,
   fee?: string,
@@ -68,7 +72,14 @@ const getDropdownPayload = (
   const element = (
     <div className="flex justify-between items-center gap-x-2.5">
       <div className="flex gap-x-[5px] items-center">
-        <Address address={address} name={account.name} signType={account.signingType} size={30} canCopy={false} />
+        <Address
+          address={address}
+          name={account.name}
+          subName={wallet?.name}
+          signType={account.signingType}
+          size={30}
+          canCopy={false}
+        />
       </div>
       {balanceExists && (
         <div className="flex items-center gap-x-1">
@@ -115,12 +126,16 @@ const InitOperation = ({ accountIds, api, chainId, asset, onResult }: Props) => 
   const { t } = useI18n();
   const { getLiveAssetBalances } = useBalance();
   const { getLiveAccounts } = useAccount();
+  const { getLiveWallets } = useWallet();
   const { getTransactionFee } = useTransaction();
   const { getMaxValidators } = useValidators();
 
   const accounts = getLiveAccounts({ signingType: SigningType.PARITY_SIGNER });
+  const wallets = getLiveWallets();
+  const walletsMap = new Map(wallets.map((wallet) => [(wallet.id || '').toString(), wallet]));
 
   const [fee, setFee] = useState('');
+
   const [balanceRange, setBalanceRange] = useState<[string, string]>(['0', '0']);
   const [transactions, setTransactions] = useState<Transaction[]>([]);
 
@@ -129,7 +144,10 @@ const InitOperation = ({ accountIds, api, chainId, asset, onResult }: Props) => 
 
   const [destinations, setDestinations] = useState<RadioOption<number>[]>([]);
   const [activeDestination, setActiveDestination] = useState<ResultOption<RewardsDestination>>();
+
   const [payoutAccounts, setPayoutAccounts] = useState<DropdownOption<AccountID>[]>([]);
+  const [activeBalances, setActiveBalances] = useState<BalanceDS[]>([]);
+  const [balancesMap, setBalancesMap] = useState<Map<string, BalanceDS>>(new Map());
 
   const selectedAccounts = accounts.filter((account) => {
     return account.id && accountIds.includes(account.id.toString());
@@ -149,6 +167,8 @@ const InitOperation = ({ accountIds, api, chainId, asset, onResult }: Props) => 
     handleSubmit,
     control,
     watch,
+    unregister,
+    register,
     formState: { isValid },
   } = useForm<BondForm>({
     mode: 'onChange',
@@ -158,17 +178,20 @@ const InitOperation = ({ accountIds, api, chainId, asset, onResult }: Props) => 
   const amount = watch('amount');
   const destination = watch('destination');
 
-  // Set balances
   useEffect(() => {
-    if (!api || !activeAccounts.length) {
+    setBalancesMap(new Map(balances.map((balance) => [balance.publicKey, balance])));
+    setActiveBalances(activeAccounts.map((a) => balancesMap.get(a.id as PublicKey)) as BalanceDS[]);
+  }, [activeAccounts.length, balances]);
+
+  // Set balance range
+  useEffect(() => {
+    if (!activeBalances.length) {
       setBalanceRange(['0', '0']);
 
       return;
     }
 
-    const stakeableBalance = balances
-      .filter((b) => activeAccounts.find((a) => a.id === b.publicKey))
-      .map(stakeableAmount);
+    const stakeableBalance = activeBalances.map(stakeableAmount);
 
     const minMaxBalances = stakeableBalance.reduce<[string, string]>(
       (acc, balance) => {
@@ -183,7 +206,7 @@ const InitOperation = ({ accountIds, api, chainId, asset, onResult }: Props) => 
     );
 
     setBalanceRange(minMaxBalances);
-  }, [api, balances, activeAccounts.length]);
+  }, [activeBalances.length]);
 
   // Init destinations
   useEffect(() => {
@@ -207,21 +230,23 @@ const InitOperation = ({ accountIds, api, chainId, asset, onResult }: Props) => 
 
   // Init stake accounts
   useEffect(() => {
-    const formattedAccounts = selectedAccounts.map((a) => {
-      const matchBalance = balances.find((b) => b.publicKey === a.publicKey);
+    const formattedAccounts = selectedAccounts.map((account) => {
+      const matchBalance = balancesMap.get(account.publicKey || '0x');
+      const wallet = account.walletId ? walletsMap.get(account.walletId.toString()) : undefined;
 
-      return getDropdownPayload(a, matchBalance, asset, fee, amount);
+      return getDropdownPayload(account, wallet, matchBalance, asset, fee, amount);
     });
 
     setStakeAccounts(formattedAccounts);
-    setActiveAccounts(formattedAccounts);
-  }, [accountIds.length, amount, fee, balances.length]);
+  }, [accountIds.length, amount, fee, balancesMap]);
 
   // Init payout wallets
   useEffect(() => {
     const payoutAccounts = accounts.reduce<DropdownOption<AccountID>[]>((acc, account) => {
       if (!account.chainId || account.chainId === chainId) {
-        acc.push(getDropdownPayload(account));
+        const wallet = account.walletId ? walletsMap.get(account.walletId.toString()) : undefined;
+
+        acc.push(getDropdownPayload(account, wallet));
       }
 
       return acc;
@@ -232,7 +257,7 @@ const InitOperation = ({ accountIds, api, chainId, asset, onResult }: Props) => 
 
   // Setup transactions
   useEffect(() => {
-    if (!api || !balanceRange) return;
+    if (!api || !chainId || !asset) return;
 
     const maxValidators = getMaxValidators(api);
     const transferableDestination = activeDestination?.value === RewardsDestination.TRANSFERABLE && destination;
@@ -267,7 +292,7 @@ const InitOperation = ({ accountIds, api, chainId, asset, onResult }: Props) => 
     });
 
     setTransactions(newTransactions);
-  }, [balanceRange, amount, activeDestination, destination]);
+  }, [amount, amount, activeDestination, destination]);
 
   useEffect(() => {
     if (!api || !amount || !transactions.length) return;
@@ -278,6 +303,15 @@ const InitOperation = ({ accountIds, api, chainId, asset, onResult }: Props) => 
       setFee(transactionFee);
     })();
   }, [api, amount, transactions]);
+
+  // unregister destination field if active radio is restake
+  useEffect(() => {
+    if (activeDestination?.value === RewardsDestination.RESTAKE) {
+      unregister('destination');
+    } else {
+      register('destination');
+    }
+  }, [activeDestination?.value]);
 
   const submitBond: SubmitHandler<BondForm> = ({ amount, destination }) => {
     const selectedAddresses = activeAccounts.map((stake) => stake.value);
@@ -301,7 +335,7 @@ const InitOperation = ({ accountIds, api, chainId, asset, onResult }: Props) => 
           weight="lg"
           placeholder={t('staking.bond.selectStakeAccountLabel')}
           summary={t('staking.bond.selectStakeAccountSummary')}
-          activeIds={activeAccounts.map((w) => w.id.toString())}
+          activeIds={activeAccounts.map((a) => a.id.toString())}
           options={stakeAccounts}
           onChange={setActiveAccounts}
         />
@@ -319,9 +353,9 @@ const InitOperation = ({ accountIds, api, chainId, asset, onResult }: Props) => 
             required: true,
             validate: {
               notZero: (v) => Number(v) > 0,
-              insufficientBalance: (amount) => validateBalance(balanceRange?.[0] || '0', amount, asset),
+              insufficientBalance: (amount) => activeBalances.every((b) => validateBalance(b, amount, asset)),
               insufficientBalanceForFee: (amount) =>
-                validateBalanceForFee(balanceRange?.[0] || '0', fee, amount, asset),
+                activeBalances.every((b) => validateBalanceForFee(b, fee, amount, asset)),
             },
           }}
           render={({ field: { onChange, value }, fieldState: { error } }) => (
@@ -375,27 +409,44 @@ const InitOperation = ({ accountIds, api, chainId, asset, onResult }: Props) => 
           <Controller
             name="destination"
             control={control}
-            render={({ field: { onChange } }) => (
-              <Combobox
-                variant="up"
-                label={t('staking.bond.payoutAccountLabel')}
-                placeholder={t('staking.bond.payoutAccountPlaceholder')}
-                options={payoutAccounts}
-                suffixElement={
-                  destination && (
-                    <Button variant="text" pallet="dark" weight="xs" onClick={() => onChange(undefined)}>
-                      <Icon name="clearOutline" size={20} />
-                    </Button>
-                  )
-                }
-                prefixElement={<Identicon address={destination} size={24} background={false} canCopy={false} />}
-                onChange={(option) => onChange(option.value)}
-              />
+            rules={{
+              required: true,
+              validate: {
+                isAddress: (v) => isAddress(v),
+              },
+            }}
+            render={({ field: { onChange }, fieldState: { error } }) => (
+              <>
+                <Combobox
+                  variant="up"
+                  label={t('staking.bond.payoutAccountLabel')}
+                  placeholder={t('staking.bond.payoutAccountPlaceholder')}
+                  options={payoutAccounts}
+                  invalid={Boolean(error)}
+                  suffixElement={
+                    destination && (
+                      <Button variant="text" pallet="dark" weight="xs" onClick={() => onChange(undefined)}>
+                        <Icon name="clearOutline" size={20} />
+                      </Button>
+                    )
+                  }
+                  prefixElement={<Identicon address={destination} size={24} background={false} canCopy={false} />}
+                  onChange={(option) => onChange(option.value)}
+                />
+                <InputHint active={error?.type === 'isAddress'} variant="error">
+                  {t('staking.bond.incorrectAddressError')}
+                </InputHint>
+                <InputHint active={error?.type === 'required'} variant="error">
+                  {t('staking.bond.requiredAddressError')}
+                </InputHint>
+              </>
             )}
           />
         )}
+
         <div className="flex justify-between items-center uppercase text-neutral-variant text-2xs">
-          <p>{t('staking.bond.networkFee')}</p>
+          <p>{t('staking.bond.networkFee', { count: activeAccounts.length })}</p>
+
           <Fee className="text-neutral font-semibold" api={api} asset={asset} transaction={transactions[0]} />
         </div>
       </form>
