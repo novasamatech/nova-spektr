@@ -1,5 +1,8 @@
+import { ApiPromise } from '@polkadot/api';
+import { BN, BN_THOUSAND } from '@polkadot/util';
 import { useEffect, useState } from 'react';
 
+import { useChains } from '@renderer/services/network/chainsService';
 import ParitySignerSignatureReader from '@renderer/screens/Signing/ParitySignerSignatureReader/ParitySignerSignatureReader';
 import { Block, Button } from '@renderer/components/ui';
 import { useI18n } from '@renderer/context/I18nContext';
@@ -8,14 +11,23 @@ import MultiframeSignatureReader from '@renderer/screens/Signing/MultiframeSigna
 import { DEFAULT_QR_LIFETIME } from '@renderer/shared/utils/constants';
 
 type Props = {
+  api: ApiPromise;
   multiQr: boolean;
   onResult: (signatures: HexString[]) => void;
   onGoBack: () => void;
 };
 
-const Signing = ({ multiQr, onResult, onGoBack }: Props) => {
+const Signing = ({ api, multiQr, onResult, onGoBack }: Props) => {
   const { t } = useI18n();
+  const { getExpectedBlockTime } = useChains();
+
   const [countdown, setCountdown] = useState(DEFAULT_QR_LIFETIME);
+
+  useEffect(() => {
+    const expectedBlockTime = getExpectedBlockTime(api);
+
+    setCountdown(expectedBlockTime.mul(new BN(DEFAULT_QR_LIFETIME)).div(BN_THOUSAND).toNumber() || 0);
+  }, []);
 
   useEffect(() => {
     if (countdown > 0) {

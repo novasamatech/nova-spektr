@@ -10,7 +10,8 @@ import { RewardsDestination } from '@renderer/domain/stake';
 import { Transaction, TransactionType } from '@renderer/domain/transaction';
 import { Validator } from '@renderer/domain/validator';
 import { AccountDS } from '@renderer/services/storage';
-import TransactionInfo from '../components/TransactionInfo/TransactionInfo';
+import { formatAddress } from '@renderer/shared/utils/address';
+import TransactionInfo from '../../components/TransactionInfo/TransactionInfo';
 
 type Props = {
   api: ApiPromise;
@@ -43,14 +44,15 @@ const Confirmation = ({
 
   useEffect(() => {
     const newTransactions = accounts.map(({ accountId = '' }) => {
-      const commonPayload = { chainId, address: accountId };
+      const address = formatAddress(accountId, addressPrefix);
+      const commonPayload = { chainId, address };
 
       const bondTx = {
         ...commonPayload,
         type: TransactionType.BOND,
         args: {
           value: stake,
-          controller: accountId,
+          controller: address,
           payee: destination ? { Account: destination } : 'Staked',
         },
       };

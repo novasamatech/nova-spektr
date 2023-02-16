@@ -13,7 +13,6 @@ import { useChainSpec } from './chainSpecService';
 import { useChains } from './chainsService';
 import { AUTO_BALANCE_TIMEOUT, MAX_ATTEMPTS, PROGRESSION_BASE } from './common/constants';
 import { ConnectionsMap, ConnectProps, INetworkService, RpcValidation } from './common/types';
-//import { isKusama } from '@renderer/services/network/common/utils';
 
 export const useNetwork = (networkSubscription?: ISubscriptionService<ChainId>): INetworkService => {
   const chains = useRef<Record<ChainId, Chain>>({});

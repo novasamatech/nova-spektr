@@ -14,7 +14,7 @@ jest.mock('@renderer/context/I18nContext', () => ({
 }));
 
 jest.mock(
-  '../components/TransactionInfo/TransactionInfo',
+  '../../components/TransactionInfo/TransactionInfo',
   () =>
     ({ children }: any) =>
       children,

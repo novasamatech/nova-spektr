@@ -274,12 +274,16 @@
       "confirmBondSubtitle": "Потверждение",
       "continueButton": "Продолжить",
       "goToStakingButton": "Обратно к Стейкингу",
+      "incorrectAddressError": "Неправильный адрес",
       "initBondSubtitle": "Начало Стейкинга",
       "networkFee": "Комиссия сети",
+      "networkFee_one": "Комиссия сети",
+      "networkFee_other": "Комиссия сети / Аккаунт",
       "noStakingAssetDescription": "Для { chainName } ассет для стейкинга не найден",
       "noStakingAssetLabel": "Ассет не найден",
       "payoutAccountLabel": "Аккаунт для выплаты наград",
       "payoutAccountPlaceholder": "Выберите аккаунт для выплаты наград",
+      "requiredAddressError": "Аккаунт для выплат обязателен",
       "restakeRewards": "Вложить награды",
       "rewardsDestinationDescription": "Approximate amounts are calculated yearly",
       "rewardsDestinationTitle": "Выплата наград",
@@ -359,6 +363,18 @@
     "title": "Стейкинг",
     "unbond": {
       "subtitle": "Отвязать токены"
+    },
+    "unstake": {
+      "amountPlaceholder": "Введите сумму",
+      "confirmUnstakeSubtitle": "Подтверждение",
+      "durationDescription": "To unstake tokens you will have to wait for the ustaking period",
+      "initUnstakeSubtitle": "Вывод из стейка",
+      "networkFee_one": "Комиссия сети",
+      "networkFee_other": "Комиссия сети / Аккаунт",
+      "noRewardsDescription": "During unstaking period tokens produce no rewards",
+      "redeemDescription": "После периода вывода из стейкинга не забудьте redeem ваши токены",
+      "stakedPlaceholder": "В стейке",
+      "transferable": "Доступно"
     },
     "validators": {
       "blockedPopoverSubtitle": "Номинаторы больше не принимаются",

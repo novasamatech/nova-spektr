@@ -8,16 +8,16 @@ import { HintList, Icon, ProgressBadge } from '@renderer/components/ui';
 import { useI18n } from '@renderer/context/I18nContext';
 import { Asset } from '@renderer/domain/asset';
 import { Explorer } from '@renderer/domain/chain';
-import { AccountID, ChainId, HexString } from '@renderer/domain/shared-kernel';
+import { AccountID, HexString } from '@renderer/domain/shared-kernel';
 import { RewardsDestination } from '@renderer/domain/stake';
-import { Transaction, TransactionType } from '@renderer/domain/transaction';
+import { Transaction } from '@renderer/domain/transaction';
 import { Validator } from '@renderer/domain/validator';
-import TransactionInfo from '@renderer/screens/Staking/Bond/components/TransactionInfo/TransactionInfo';
+import TransactionInfo from '../../components/TransactionInfo/TransactionInfo';
 import { AccountDS } from '@renderer/services/storage';
 
 type Props = {
   api: ApiPromise;
-  chainId: ChainId;
+  transactions: Transaction[];
   unsignedTransactions: UnsignedTransaction[];
   validators: Validator[];
   accounts: AccountDS[];
@@ -31,7 +31,7 @@ type Props = {
 
 const Submit = ({
   api,
-  chainId,
+  transactions,
   unsignedTransactions,
   validators,
   accounts,
@@ -46,7 +46,6 @@ const Submit = ({
   const { confirm } = useConfirmContext();
   const { submitAndWatchExtrinsic, getSignedExtrinsic } = useTransaction();
 
-  const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [progress, setProgress] = useState(0);
   const [failedTxs, setFailedTxs] = useState<number[]>([]);
 
@@ -55,38 +54,6 @@ const Submit = ({
   const destPayload = destination
     ? { type: RewardsDestination.TRANSFERABLE, address: destination }
     : { type: RewardsDestination.RESTAKE };
-
-  useEffect(() => {
-    const newTransactions = accounts.map(({ accountId = '' }) => {
-      const commonPayload = { chainId, address: accountId };
-
-      const bondTx = {
-        ...commonPayload,
-        type: TransactionType.BOND,
-        args: {
-          value: stake,
-          controller: accountId,
-          payee: destination ? { Account: destination } : 'Staked',
-        },
-      };
-
-      const nominateTx = {
-        ...commonPayload,
-        type: TransactionType.NOMINATE,
-        args: {
-          targets: validators.map((validator) => validator.address),
-        },
-      };
-
-      return {
-        ...commonPayload,
-        type: TransactionType.BATCH_ALL,
-        args: { transactions: [bondTx, nominateTx] },
-      };
-    });
-
-    setTransactions(newTransactions);
-  }, []);
 
   const confirmFailedTx = (): Promise<boolean> => {
     return confirm({
@@ -97,21 +64,21 @@ const Submit = ({
     });
   };
 
-  const submitExtrinsic = async (signatures: HexString[]) => {
-    const unsignedRequests = unsignedTransactions.map((unsigned, index) => {
-      return (async () => {
-        const extrinsic = await getSignedExtrinsic(unsigned, signatures[index], api);
-
-        submitAndWatchExtrinsic(extrinsic, unsigned, api, (executed) => {
-          setProgress((p) => p + 1);
-          if (!executed) {
-            setFailedTxs((f) => f.concat(index));
-          }
-        });
-      })();
+  const submitExtrinsic = async (signatures: HexString[]): Promise<void> => {
+    const extrinsicRequests = unsignedTransactions.map((unsigned, index) => {
+      return getSignedExtrinsic(unsigned, signatures[index], api);
     });
 
-    await Promise.all(unsignedRequests);
+    const allExtrinsic = await Promise.all(extrinsicRequests);
+
+    allExtrinsic.forEach((extrinsic, index) => {
+      submitAndWatchExtrinsic(extrinsic, unsignedTransactions[index], api, (executed) => {
+        setProgress((p) => p + 1);
+        if (!executed) {
+          setFailedTxs((f) => f.concat(index));
+        }
+      });
+    });
   };
 
   useEffect(() => {

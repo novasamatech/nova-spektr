@@ -9,13 +9,13 @@ import { StakingType } from '@renderer/domain/asset';
 import { AccountID, ChainId, HexString } from '@renderer/domain/shared-kernel';
 import { Transaction } from '@renderer/domain/transaction';
 import Paths from '@renderer/routes/paths';
-import Confirmation from '@renderer/screens/Staking/Bond/Confirmation/Confirmation';
-import InitOperation, { BondResult } from '@renderer/screens/Staking/Bond/InitOperation/InitOperation';
-import Validators from '@renderer/screens/Staking/Bond/Validators/Validators';
+import Confirmation from './Confirmation/Confirmation';
+import InitOperation, { BondResult } from './InitOperation/InitOperation';
 import { ValidatorMap } from '@renderer/services/staking/common/types';
 import { AccountDS } from '@renderer/services/storage';
-import Scanning from './Scanning/Scanning';
-import Signing from './Signing/Signing';
+import Scanning from '../components/Scanning/Scanning';
+import Signing from '../components/Signing/Signing';
+import Validators from '../components/Validators/Validators';
 import Submit from './Submit/Submit';
 
 const enum Step {
@@ -179,12 +179,12 @@ const Bond = () => {
         />
       )}
       {activeStep === Step.SIGNING && (
-        <Signing multiQr={transactions.length > 1} onResult={onSignResult} onGoBack={onBackToScan} />
+        <Signing api={api} multiQr={transactions.length > 1} onResult={onSignResult} onGoBack={onBackToScan} />
       )}
       {activeStep === Step.SUBMIT && (
         <Submit
           api={api}
-          chainId={chainId}
+          transactions={transactions}
           signatures={signatures}
           unsignedTransactions={unsignedTransactions}
           validators={Object.values(validators)}

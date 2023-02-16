@@ -74,7 +74,7 @@ const mockButton = (text: string, callback: () => void) => (
 jest.mock('./InitOperation/InitOperation', () => ({ onResult }: any) => {
   return mockButton('init', onResult);
 });
-jest.mock('./Validators/Validators', () => ({ onResult }: any) => {
+jest.mock('../components/Validators/Validators', () => ({ onResult }: any) => {
   return mockButton('validators', onResult);
 });
 jest.mock('./Confirmation/Confirmation', () => ({ onResult }: any) => {
