@@ -1,5 +1,5 @@
 import { ApiPromise } from '@polkadot/api';
-import { u8aConcat } from '@polkadot/util';
+import { BN, BN_THOUSAND, u8aConcat } from '@polkadot/util';
 import { UnsignedTransaction } from '@substrate/txwrapper-polkadot';
 import cn from 'classnames';
 import init, { Encoder } from 'raptorq';
@@ -22,6 +22,7 @@ import { useTransaction } from '@renderer/services/transaction/transactionServic
 import { formatAddress } from '@renderer/shared/utils/address';
 import { DEFAULT_QR_LIFETIME } from '@renderer/shared/utils/constants';
 import { secondsToMinutes } from '@renderer/shared/utils/time';
+import { useChains } from '@renderer/services/network/chainsService';
 
 type Props = {
   chainId: ChainId;
@@ -35,11 +36,18 @@ type Props = {
 const Scanning = ({ chainId, api, accounts, addressPrefix, transactions, onResult }: Props) => {
   const { t } = useI18n();
   const { createPayload } = useTransaction();
+  const { getExpectedBlockTime } = useChains();
 
   const [countdown, setCountdown] = useState(DEFAULT_QR_LIFETIME);
   const [encoder, setEncoder] = useState<Encoder>();
   const [bulkTransactions, setBulkTransactions] = useState<Uint8Array>();
   const [unsignedTransactions, setUnsignedTransactions] = useState<UnsignedTransaction[]>([]);
+
+  const expectedBlockTime = api ? getExpectedBlockTime(api) : undefined;
+
+  useEffect(() => {
+    setCountdown(expectedBlockTime?.mul(new BN(DEFAULT_QR_LIFETIME)).div(BN_THOUSAND).toNumber() || 0);
+  }, [unsignedTransactions.length]);
 
   const setupTransactions = async () => {
     if (!api) return;
