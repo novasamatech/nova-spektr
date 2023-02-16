@@ -360,12 +360,12 @@
     "unstake": {
       "amountPlaceholder": "Введите сумму",
       "confirmUnstakeSubtitle": "Подтверждение",
-      "durationDescription": "To unstake tokens you will have to wait for the ustaking period ({ duration })",
+      "durationDescription": "To unstake tokens you will have to wait for the ustaking period",
       "initUnstakeSubtitle": "Вывод из стейка",
       "networkFee_one": "Комиссия сети",
       "networkFee_other": "Комиссия сети / Аккаунт",
       "noRewardsDescription": "During unstaking period tokens produce no rewards",
-      "redeemDescription": "After unstaking period don’t forget to redeem your tokens",
+      "redeemDescription": "После периода вывода из стейкинга не забудьте redeem ваши токены",
       "stakedPlaceholder": "В стейке",
       "transferable": "Доступно"
     },

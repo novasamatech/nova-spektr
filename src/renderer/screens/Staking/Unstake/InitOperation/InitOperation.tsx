@@ -19,6 +19,7 @@ import { AccountDS, BalanceDS } from '@renderer/services/storage';
 import { useTransaction } from '@renderer/services/transaction/transactionService';
 import { StakingMap } from '@renderer/services/staking/common/types';
 import { Stake } from '@renderer/domain/stake';
+import { UnstakingDuration } from '../../Overview/components';
 
 const validateBalance = (stake: Stake | string, amount: string, asset: Asset): boolean => {
   const stakeableBalance = typeof stake === 'string' ? stake : stake.active;
@@ -334,8 +335,13 @@ const InitOperation = ({ accountIds, staking, api, chainId, asset, onResult }: P
         </div>
 
         <HintList>
-          {/* TODO: add correct duration */}
-          <HintList.Item>{t('staking.unstake.durationDescription', { duration: 1 })}</HintList.Item>
+          {api && (
+            <HintList.Item>
+              {/* eslint-disable i18next/no-literal-string */}
+              {t('staking.unstake.durationDescription')}
+              &nbsp; (<UnstakingDuration api={api} />){/* eslint-enable i18next/no-literal-string */}
+            </HintList.Item>
+          )}
           <HintList.Item>{t('staking.unstake.noRewardsDescription')}</HintList.Item>
           <HintList.Item>{t('staking.unstake.redeemDescription')}</HintList.Item>
         </HintList>

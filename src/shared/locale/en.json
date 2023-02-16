@@ -360,7 +360,7 @@
     "unstake": {
       "amountPlaceholder": "Input amount",
       "confirmUnstakeSubtitle": "Confirmation",
-      "durationDescription": "To unstake tokens you will have to wait for the ustaking period ({ duration })",
+      "durationDescription": "To unstake tokens you will have to wait for the ustaking period",
       "initUnstakeSubtitle": "Unstake",
       "networkFee_one": "Network fee",
       "networkFee_other": "Network fee / Account",
