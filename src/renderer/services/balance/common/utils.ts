@@ -108,9 +108,7 @@ export const stakedAmount = ({ locked = [] }: Balance): string => {
 };
 
 export const transferableAmount = (balance?: Balance): string => {
-  if (!balance) {
-    return '0';
-  }
+  if (!balance) return '0';
 
   const { free = '0', frozen = '0' } = balance;
   const bnFree = new BN(free);

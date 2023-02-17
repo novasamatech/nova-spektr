@@ -225,9 +225,7 @@ const Signing = () => {
                   className="w-full rounded-2lg"
                   countdown={countdown}
                   size={460}
-                  onResult={(signatures) => {
-                    sign(signatures);
-                  }}
+                  onResult={sign}
                 />
               </div>
               {countdown === 0 && (

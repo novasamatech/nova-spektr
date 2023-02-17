@@ -5,6 +5,7 @@ import cn from 'classnames';
 import init, { Encoder } from 'raptorq';
 import { useEffect, useState } from 'react';
 
+import { useChains } from '@renderer/services/network/chainsService';
 import { Command } from '@renderer/components/common/QrCode/QrGenerator/common/constants';
 import {
   createMultipleSignPayload,
@@ -22,18 +23,17 @@ import { useTransaction } from '@renderer/services/transaction/transactionServic
 import { formatAddress } from '@renderer/shared/utils/address';
 import { DEFAULT_QR_LIFETIME } from '@renderer/shared/utils/constants';
 import { secondsToMinutes } from '@renderer/shared/utils/time';
-import { useChains } from '@renderer/services/network/chainsService';
 
 type Props = {
+  api: ApiPromise;
   chainId: ChainId;
-  api?: ApiPromise;
   accounts: AccountDS[];
   addressPrefix: number;
   transactions: Transaction[];
   onResult: (unsigned: UnsignedTransaction[]) => void;
 };
 
-const Scanning = ({ chainId, api, accounts, addressPrefix, transactions, onResult }: Props) => {
+const Scanning = ({ api, chainId, accounts, addressPrefix, transactions, onResult }: Props) => {
   const { t } = useI18n();
   const { createPayload } = useTransaction();
   const { getExpectedBlockTime } = useChains();
@@ -43,15 +43,7 @@ const Scanning = ({ chainId, api, accounts, addressPrefix, transactions, onResul
   const [bulkTransactions, setBulkTransactions] = useState<Uint8Array>();
   const [unsignedTransactions, setUnsignedTransactions] = useState<UnsignedTransaction[]>([]);
 
-  const expectedBlockTime = api ? getExpectedBlockTime(api) : undefined;
-
-  useEffect(() => {
-    setCountdown(expectedBlockTime?.mul(new BN(DEFAULT_QR_LIFETIME)).div(BN_THOUSAND).toNumber() || 0);
-  }, [unsignedTransactions.length]);
-
   const setupTransactions = async () => {
-    if (!api) return;
-
     const transactionPromises = accounts.map((account, index) => {
       const address = formatAddress(account.accountId, addressPrefix);
 
@@ -84,7 +76,13 @@ const Scanning = ({ chainId, api, accounts, addressPrefix, transactions, onResul
 
   useEffect(() => {
     setupTransactions();
-  }, [api]);
+  }, []);
+
+  useEffect(() => {
+    const expectedBlockTime = getExpectedBlockTime(api);
+
+    setCountdown(expectedBlockTime.mul(new BN(DEFAULT_QR_LIFETIME)).div(BN_THOUSAND).toNumber() || 0);
+  }, [bulkTransactions]);
 
   useEffect(() => {
     if (countdown > 0) {
@@ -103,13 +101,12 @@ const Scanning = ({ chainId, api, accounts, addressPrefix, transactions, onResul
       <section className="flex flex-col items-center mx-auto w-[500px] rounded-2lg bg-shade-2 p-5">
         <Block className="flex flex-col items-center gap-y-2.5">
           <div className="text-neutral-variant text-base font-semibold">{t('signing.scanQrTitle')}</div>
-          {bulkTxExist && encoder ? (
+          {!bulkTransactions && <div className="w-[220px] h-[220px] rounded-2lg bg-shade-20 animate-pulse" />}
+
+          {bulkTxExist && encoder && (
             <div className="w-[220px] h-[220px]">
               <QrMultiframeGenerator payload={bulkTransactions} size={200} encoder={encoder} />
-              {/*<QrTxGenerator cmd={0} payload={txPayload} address={currentAddress} genesisHash={chainId} />*/}
             </div>
-          ) : (
-            <div className="w-[220px] h-[220px] rounded-2lg bg-shade-20 animate-pulse" />
           )}
           {bulkTxExist && (
             <div className="flex items-center uppercase font-normal text-xs gap-1.25">
