@@ -6,7 +6,7 @@ import { useState } from 'react';
 import { QrReader } from '@renderer/components/common';
 import { ErrorObject, QrError, SeedInfo, VideoInput } from '@renderer/components/common/QrCode/QrReader/common/types';
 import { Button, Dropdown, Icon } from '@renderer/components/ui';
-import { Option, ResultOption } from '@renderer/components/ui/Dropdowns/common/types';
+import { DropdownOption, DropdownResult } from '@renderer/components/ui/Dropdowns/common/types';
 import { useI18n } from '@renderer/context/I18nContext';
 
 const enum CameraState {
@@ -31,8 +31,8 @@ const ParitySignerQrReader = ({ size = 300, className, onResult }: Props) => {
   const { t } = useI18n();
 
   const [cameraState, setCameraState] = useState<CameraState>(CameraState.LOADING);
-  const [activeCamera, setActiveCamera] = useState<ResultOption<string>>();
-  const [availableCameras, setAvailableCameras] = useState<Option<string>[]>([]);
+  const [activeCamera, setActiveCamera] = useState<DropdownResult<string>>();
+  const [availableCameras, setAvailableCameras] = useState<DropdownOption<string>[]>([]);
 
   const [isScanComplete, setIsScanComplete] = useState(false);
   const [{ decoded, total }, setProgress] = useState({ decoded: 0, total: 0 });

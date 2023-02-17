@@ -6,7 +6,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 
 import { QrTxGenerator } from '@renderer/components/common';
 import { Address, Block, Button, ButtonBack, Dropdown, Icon } from '@renderer/components/ui';
-import { Option, ResultOption } from '@renderer/components/ui/Dropdowns/common/types';
+import { DropdownOption, DropdownResult } from '@renderer/components/ui/Dropdowns/common/types';
 import { useI18n } from '@renderer/context/I18nContext';
 import { useNetworkContext } from '@renderer/context/NetworkContext';
 import { Asset, AssetType, OrmlExtras, StatemineExtras } from '@renderer/domain/asset';
@@ -53,7 +53,7 @@ const Transfer = () => {
   const [txPayload, setTxPayload] = useState<Uint8Array>();
   const [unsigned, setUnsigned] = useState<UnsignedTransaction>();
   const [transaction, setTransaction] = useState<Transaction>();
-  const [countdown, setCountdown] = useState<number>(DEFAULT_QR_LIFETIME);
+  const [countdown, setCountdown] = useState(DEFAULT_QR_LIFETIME);
   const [isSuccessMessageOpen, setIsSuccessMessageOpen] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
   const [validationError, setValidationError] = useState<ValidationErrors>();
@@ -61,8 +61,8 @@ const Transfer = () => {
 
   const activeAccounts = getActiveAccounts().filter((account) => !account.rootId || account.chainId === chainId);
 
-  const [activeAccountsOptions, setActiveAccountsOptions] = useState<Option<number>[]>([]);
-  const [activeAccount, setActiveAccount] = useState<ResultOption<number>>();
+  const [activeAccountsOptions, setActiveAccountsOptions] = useState<DropdownOption<number>[]>([]);
+  const [activeAccount, setActiveAccount] = useState<DropdownResult<number>>();
 
   const currentConnection = chainId ? connections[chainId as ChainId] : undefined;
   const currentAsset =
@@ -71,7 +71,7 @@ const Transfer = () => {
       : undefined;
 
   useEffect(() => {
-    const accounts = activeAccounts.reduce<Option[]>((acc, account, index) => {
+    const accounts = activeAccounts.reduce<DropdownOption[]>((acc, account, index) => {
       if (
         (account.chainId !== undefined && account.chainId !== currentConnection?.chainId) ||
         account.signingType === SigningType.WATCH_ONLY

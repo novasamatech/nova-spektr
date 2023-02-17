@@ -26,6 +26,7 @@ import Table from './Table/Table';
 import Shimmering from './Shimmering/Shimmering';
 import Combobox from './Dropdowns/Combobox/Combobox';
 import Duration from './Duration/Duration';
+import ProgressBadge from './ProgressBadge/ProgressBadge';
 
 export {
   Address,
@@ -56,4 +57,5 @@ export {
   Shimmering,
   Combobox,
   Duration,
+  ProgressBadge,
 };

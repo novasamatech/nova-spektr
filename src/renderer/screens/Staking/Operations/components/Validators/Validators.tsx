@@ -13,7 +13,7 @@ import { useEra } from '@renderer/services/staking/eraService';
 import { useValidators } from '@renderer/services/staking/validatorsService';
 
 type Props = {
-  api?: ApiPromise;
+  api: ApiPromise;
   chainId: ChainId;
   asset: Asset;
   explorers?: Explorer[];
@@ -34,8 +34,6 @@ const Validators = ({ api, chainId, asset, explorers, addressPrefix, onResult }:
   const [selectedValidators, setSelectedValidators] = useState<AccountID[]>([]);
 
   useEffect(() => {
-    if (!chainId || !api?.isConnected) return;
-
     let unsubEra: () => void | undefined;
     (async () => {
       unsubEra = await subscribeActiveEra(api, setEra);
@@ -44,17 +42,17 @@ const Validators = ({ api, chainId, asset, explorers, addressPrefix, onResult }:
     return () => {
       unsubEra?.();
     };
-  }, [api]);
+  }, []);
 
   useEffect(() => {
-    if (!chainId || !api?.isConnected || !era) return;
+    if (!era) return;
 
     (async () => {
       const validators = await getValidators(chainId, api, era);
       setValidators(validators);
       setMaxValidators(getMaxValidators(api));
     })();
-  }, [api, era]);
+  }, [era]);
 
   const validatorList = Object.values(validators).filter((validator) => {
     const addressMatch = validator.address?.toLowerCase().includes(query.toLowerCase());
@@ -74,7 +72,7 @@ const Validators = ({ api, chainId, asset, explorers, addressPrefix, onResult }:
     onResult(finalValidators);
   };
 
-  const validatorsLoading = !api || !maxValidators;
+  const validatorsLoading = !maxValidators;
   const validatorsAreSelected = selectedValidators.length > 0;
   const nextStepDisabled = selectedValidators.length === 0 || selectedValidators.length > maxValidators;
 

@@ -1,6 +1,7 @@
-import { render, screen } from '@testing-library/react';
-import { MemoryRouter } from 'react-router-dom';
+import { ApiPromise } from '@polkadot/api';
+import { act, render, screen } from '@testing-library/react';
 
+import { Asset } from '@renderer/domain/asset';
 import { TEST_PUBLIC_KEY } from '@renderer/shared/utils/constants';
 import InitOperation from './InitOperation';
 
@@ -50,10 +51,16 @@ jest.mock('@renderer/services/balance/balanceService', () => ({
 }));
 
 describe('screens/Unstake/InitUnstake', () => {
-  test('should render loading', () => {
-    render(<InitOperation accountIds={[]} onResult={() => {}} />, { wrapper: MemoryRouter });
+  const asset = { assetId: 1, symbol: 'DOT', precision: 10 } as Asset;
 
-    const loading = screen.getByText('LOADING');
-    expect(loading).toBeInTheDocument();
+  test('should render loading', async () => {
+    await act(async () => {
+      render(
+        <InitOperation api={{} as ApiPromise} chainId="0x123" accountIds={['1']} asset={asset} onResult={() => {}} />,
+      );
+    });
+
+    const button = screen.getByText('staking.bond.continueButton');
+    expect(button).toBeInTheDocument();
   });
 });

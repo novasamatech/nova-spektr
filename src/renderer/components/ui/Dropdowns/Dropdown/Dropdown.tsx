@@ -4,18 +4,18 @@ import { Fragment, ReactNode } from 'react';
 
 import { Icon } from '@renderer/components/ui';
 import { ViewClass, DropdownClass } from '../common/constants';
-import { Option, ResultOption, Variant } from '../common/types';
+import { DropdownOption, DropdownResult, Variant } from '../common/types';
 
 type Props = {
   className?: string;
   placeholder: string;
   label?: string;
-  activeId?: Option['id'];
-  options: Option[];
+  activeId?: DropdownOption['id'];
+  options: DropdownOption[];
   suffix?: ReactNode;
   variant?: Variant;
   weight?: keyof typeof DropdownClass;
-  onChange: (data: ResultOption) => void;
+  onChange: (data: DropdownResult) => void;
 };
 
 const Dropdown = ({
