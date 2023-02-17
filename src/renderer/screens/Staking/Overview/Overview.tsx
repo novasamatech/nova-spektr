@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 
 import { StakingActions } from '@renderer/components/common';
 import { Dropdown, Icon, Input } from '@renderer/components/ui';
-import { Option, ResultOption } from '@renderer/components/ui/Dropdowns/common/types';
+import { DropdownOption, DropdownResult } from '@renderer/components/ui/Dropdowns/common/types';
 import { useGraphql } from '@renderer/context/GraphqlContext';
 import { useI18n } from '@renderer/context/I18nContext';
 import { useNetworkContext } from '@renderer/context/NetworkContext';
@@ -54,8 +54,8 @@ const Overview = () => {
 
   const [query, setQuery] = useState('');
   const [networkIsActive, setNetworkIsActive] = useState(true);
-  const [activeNetwork, setActiveNetwork] = useState<ResultOption<NetworkOption>>();
-  const [stakingNetworks, setStakingNetworks] = useState<Option<NetworkOption>[]>([]);
+  const [activeNetwork, setActiveNetwork] = useState<DropdownResult<NetworkOption>>();
+  const [stakingNetworks, setStakingNetworks] = useState<DropdownOption<NetworkOption>[]>([]);
   const [selectedAccounts, setSelectedAccounts] = useState<AccountID[]>([]);
   const [selectedStash, setSelectedStash] = useState<AccountID>('');
 
@@ -115,7 +115,7 @@ const Overview = () => {
     (async () => {
       const chainsData = await getChainsData();
 
-      const relaychains = sortChains(chainsData).reduce<Option<NetworkOption>[]>((acc, chain) => {
+      const relaychains = sortChains(chainsData).reduce<DropdownOption<NetworkOption>[]>((acc, chain) => {
         const asset = chain.assets.find((asset) => asset.staking === StakingType.RELAYCHAIN) as Asset;
         if (!asset) return acc;
 
@@ -140,7 +140,7 @@ const Overview = () => {
     })();
   }, []);
 
-  const onNetworkChange = (option: ResultOption<NetworkOption>) => {
+  const onNetworkChange = (option: DropdownResult<NetworkOption>) => {
     setStakingNetwork(option.id as ChainId);
     changeClient(option.id as ChainId);
     setActiveNetwork(option);
@@ -236,9 +236,9 @@ const Overview = () => {
       return;
     }
 
-    const activeAccountIds = activeAccounts.reduce<string[]>((acc, { id, accountId }) => {
-      if (id && accountId && selectedAccounts.includes(accountId)) {
-        acc.push(id);
+    const activeAccountIds = activeAccounts.reduce<string[]>((acc, account) => {
+      if (account.id && account.accountId && selectedAccounts.includes(account.accountId)) {
+        acc.push(account.id.toString());
       }
 
       return acc;

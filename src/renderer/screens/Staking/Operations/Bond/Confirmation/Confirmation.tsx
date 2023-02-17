@@ -92,10 +92,10 @@ const Confirmation = ({
       transactions={transactions}
     >
       <HintList className="mt-2.5 mb-5 px-[15px]">
-        <HintList.Item>{t('staking.confirmation.hintOne')}</HintList.Item>
-        <HintList.Item>{t('staking.confirmation.hintTwo')}</HintList.Item>
-        <HintList.Item>{t('staking.confirmation.hintThree')}</HintList.Item>
-        <HintList.Item>{t('staking.confirmation.hintFour')}</HintList.Item>
+        <HintList.Item>{t('staking.confirmation.hintRewards')}</HintList.Item>
+        <HintList.Item>{t('staking.confirmation.hintUnstakePeriod')}</HintList.Item>
+        <HintList.Item>{t('staking.confirmation.hintNoRewards')}</HintList.Item>
+        <HintList.Item>{t('staking.confirmation.hintRedeem')}</HintList.Item>
       </HintList>
 
       <div className="flex flex-col items-center gap-y-2.5">

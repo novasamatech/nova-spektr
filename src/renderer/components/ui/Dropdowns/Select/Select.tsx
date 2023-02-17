@@ -4,19 +4,19 @@ import { Fragment, ReactNode } from 'react';
 
 import { Checkbox, Icon } from '@renderer/components/ui';
 import { ViewClass, SelectClass } from '../common/constants';
-import { ResultOption, Option, Variant } from '../common/types';
+import { DropdownResult, DropdownOption, Variant } from '../common/types';
 
 type Props = {
   summary: ReactNode;
   className?: string;
   placeholder?: string;
-  activeIds: Option['id'][];
-  options: Option[];
+  activeIds: DropdownOption['id'][];
+  options: DropdownOption[];
   variant?: Variant;
   suffix?: ReactNode;
   weight?: keyof typeof SelectClass;
   position?: 'left' | 'right';
-  onChange: (data: ResultOption[]) => void;
+  onChange: (data: DropdownResult[]) => void;
 };
 
 const Select = ({
@@ -41,7 +41,8 @@ const Select = ({
         <div className={cn('relative', className)}>
           <Listbox.Button
             className={cn(
-              'group relative flex items-center gap-x-2.5 w-full rounded-2lg border bg-white px-2.5 transition',
+              'group relative flex justify-between items-center gap-x-2.5 w-full',
+              'rounded-2lg border bg-white px-2.5 transition',
               'hover:text-primary hover:border-primary focus:text-primary focus:border-primary',
               weightStyle.height,
               open && 'border-primary',
@@ -49,12 +50,14 @@ const Select = ({
           >
             <div
               className={cn(
-                'mr-auto group-hover:text-primary group-focus:text-primary transition',
+                'flex-1 group-hover:text-primary group-focus:text-primary transition',
                 open && 'border-primary',
               )}
             >
               {activeOptions.length === 0 && (
-                <p className={cn(weightStyle.placeholder, open ? 'text-primary' : 'text-shade-30')}>{placeholder}</p>
+                <p className={cn('text-left', weightStyle.placeholder, open ? 'text-primary' : 'text-shade-30')}>
+                  {placeholder}
+                </p>
               )}
               {activeOptions.length === 1 && activeOptions[0].element}
               {activeOptions.length > 1 && (

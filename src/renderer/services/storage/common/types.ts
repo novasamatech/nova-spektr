@@ -64,7 +64,7 @@ export type DataStorage = {
 };
 
 type WithID = {
-  id?: string;
+  id?: string | number;
 };
 
 export type ConnectionDS = WithID & Connection;
