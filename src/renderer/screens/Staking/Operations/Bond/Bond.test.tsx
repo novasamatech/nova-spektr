@@ -22,6 +22,7 @@ jest.mock('@renderer/context/NetworkContext', () => ({
     connections: {
       '0x123': {
         name: 'Westend',
+        api: { isConnected: true },
         assets: [
           {
             assetId: 0,
@@ -73,7 +74,7 @@ const mockButton = (text: string, callback: () => void) => (
 jest.mock('./InitOperation/InitOperation', () => ({ onResult }: any) => {
   return mockButton('init', onResult);
 });
-jest.mock('./Validators/Validators', () => ({ onResult }: any) => {
+jest.mock('../components/Validators/Validators', () => ({ onResult }: any) => {
   return mockButton('validators', onResult);
 });
 jest.mock('./Confirmation/Confirmation', () => ({ onResult }: any) => {

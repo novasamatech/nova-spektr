@@ -4,21 +4,21 @@ import cn from 'classnames';
 
 import { Input } from '@renderer/components/ui';
 import { ViewClass, DropdownClass } from '../common/constants';
-import { Option, ResultOption, Variant } from '../common/types';
+import { DropdownOption, DropdownResult, Variant } from '../common/types';
 
 type Props = {
   className?: string;
   placeholder: string;
   label?: ReactNode;
-  value?: Option['value'];
-  options: Option[];
+  value?: DropdownOption['value'];
+  options: DropdownOption[];
   filterBy?: string;
   suffixElement?: ReactNode;
   prefixElement?: ReactNode;
   variant?: Variant;
   weight?: keyof typeof DropdownClass;
   invalid?: boolean;
-  onChange: (data: ResultOption) => void;
+  onChange: (data: DropdownResult) => void;
 };
 
 const Combobox = ({

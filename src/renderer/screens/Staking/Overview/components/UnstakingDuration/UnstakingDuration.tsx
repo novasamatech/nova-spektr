@@ -6,9 +6,10 @@ import { useStakingData } from '@renderer/services/staking/stakingDataService';
 
 type Props = {
   api?: ApiPromise;
+  className?: string;
 };
 
-const UnstakingDuration = ({ api }: Props) => {
+const UnstakingDuration = ({ api, className }: Props) => {
   const { getUnbondingPeriod } = useStakingData();
 
   const [unstakingPeriod, setUnstakingPeriod] = useState('');
@@ -23,7 +24,7 @@ const UnstakingDuration = ({ api }: Props) => {
     };
   }, [api]);
 
-  return <Duration seconds={unstakingPeriod} />;
+  return <Duration className={className} seconds={unstakingPeriod} />;
 };
 
 export default UnstakingDuration;

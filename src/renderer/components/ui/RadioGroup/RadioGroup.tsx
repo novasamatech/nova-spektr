@@ -2,7 +2,7 @@ import cn from 'classnames';
 import { Fragment } from 'react';
 import { RadioGroup as HeadlessRadioGroup } from '@headlessui/react';
 
-import { RadioOption, ResultOption } from './common/types';
+import { RadioOption, RadioResult } from './common/types';
 import './RadioGroup.css';
 
 type Props = {
@@ -11,7 +11,7 @@ type Props = {
   options: RadioOption[];
   optionClass?: string;
   className?: string;
-  onChange: (data: ResultOption) => void;
+  onChange: (data: RadioResult) => void;
 };
 
 const RadioGroup = ({ name, activeId, options, optionClass, className, onChange }: Props) => {

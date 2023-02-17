@@ -18,8 +18,8 @@ import {
   RadioGroup,
   Select,
 } from '@renderer/components/ui';
-import { Option as DropdownOption } from '@renderer/components/ui/Dropdowns/common/types';
-import { RadioOption, ResultOption } from '@renderer/components/ui/RadioGroup/common/types';
+import { DropdownOption, DropdownResult } from '@renderer/components/ui/Dropdowns/common/types';
+import { RadioOption, RadioResult } from '@renderer/components/ui/RadioGroup/common/types';
 import { useI18n } from '@renderer/context/I18nContext';
 import { Asset } from '@renderer/domain/asset';
 import { AccountID, ChainId, PublicKey, SigningType } from '@renderer/domain/shared-kernel';
@@ -115,14 +115,14 @@ export type BondResult = {
 };
 
 type Props = {
-  api?: ApiPromise;
+  api: ApiPromise;
   chainId: ChainId;
   accountIds: string[];
   asset: Asset;
   onResult: (data: BondResult) => void;
 };
 
-const InitOperation = ({ accountIds, api, chainId, asset, onResult }: Props) => {
+const InitOperation = ({ api, chainId, accountIds, asset, onResult }: Props) => {
   const { t } = useI18n();
   const { getLiveAssetBalances } = useBalance();
   const { getLiveAccounts } = useAccount();
@@ -130,7 +130,7 @@ const InitOperation = ({ accountIds, api, chainId, asset, onResult }: Props) => 
   const { getTransactionFee } = useTransaction();
   const { getMaxValidators } = useValidators();
 
-  const accounts = getLiveAccounts({ signingType: SigningType.PARITY_SIGNER });
+  const dbAccounts = getLiveAccounts({ signingType: SigningType.PARITY_SIGNER });
   const wallets = getLiveWallets();
   const walletsMap = new Map(wallets.map((wallet) => [(wallet.id || '').toString(), wallet]));
 
@@ -140,20 +140,20 @@ const InitOperation = ({ accountIds, api, chainId, asset, onResult }: Props) => 
   const [transactions, setTransactions] = useState<Transaction[]>([]);
 
   const [stakeAccounts, setStakeAccounts] = useState<DropdownOption<AccountID>[]>([]);
-  const [activeAccounts, setActiveAccounts] = useState<ResultOption<AccountID>[]>([]);
+  const [activeStakeAccounts, setActiveStakeAccounts] = useState<DropdownResult<AccountID>[]>([]);
 
   const [destinations, setDestinations] = useState<RadioOption<number>[]>([]);
-  const [activeDestination, setActiveDestination] = useState<ResultOption<RewardsDestination>>();
+  const [activeDestination, setActiveDestination] = useState<RadioResult<RewardsDestination>>();
 
   const [payoutAccounts, setPayoutAccounts] = useState<DropdownOption<AccountID>[]>([]);
   const [activeBalances, setActiveBalances] = useState<BalanceDS[]>([]);
   const [balancesMap, setBalancesMap] = useState<Map<string, BalanceDS>>(new Map());
 
-  const selectedAccounts = accounts.filter((account) => {
+  const availableStakeAccounts = dbAccounts.filter((account) => {
     return account.id && accountIds.includes(account.id.toString());
   });
 
-  const publicKeys = selectedAccounts.reduce<PublicKey[]>((acc, account) => {
+  const publicKeys = availableStakeAccounts.reduce<PublicKey[]>((acc, account) => {
     if (account.publicKey) {
       acc.push(account.publicKey);
     }
@@ -179,9 +179,12 @@ const InitOperation = ({ accountIds, api, chainId, asset, onResult }: Props) => 
   const destination = watch('destination');
 
   useEffect(() => {
-    setBalancesMap(new Map(balances.map((balance) => [balance.publicKey, balance])));
-    setActiveBalances(activeAccounts.map((a) => balancesMap.get(a.id as PublicKey)) as BalanceDS[]);
-  }, [activeAccounts.length, balances]);
+    const newBalancesMap = new Map(balances.map((balance) => [balance.publicKey, balance]));
+    const newActiveBalances = activeStakeAccounts.map((a) => newBalancesMap.get(a.id as PublicKey)) as BalanceDS[];
+
+    setBalancesMap(newBalancesMap);
+    setActiveBalances(newActiveBalances);
+  }, [activeStakeAccounts.length, balances]);
 
   // Set balance range
   useEffect(() => {
@@ -230,7 +233,7 @@ const InitOperation = ({ accountIds, api, chainId, asset, onResult }: Props) => 
 
   // Init stake accounts
   useEffect(() => {
-    const formattedAccounts = selectedAccounts.map((account) => {
+    const formattedAccounts = availableStakeAccounts.map((account) => {
       const matchBalance = balancesMap.get(account.publicKey || '0x');
       const wallet = account.walletId ? walletsMap.get(account.walletId.toString()) : undefined;
 
@@ -240,9 +243,17 @@ const InitOperation = ({ accountIds, api, chainId, asset, onResult }: Props) => 
     setStakeAccounts(formattedAccounts);
   }, [accountIds.length, amount, fee, balancesMap]);
 
+  // Init active stake accounts
+  useEffect(() => {
+    if (stakeAccounts.length === 0) return;
+
+    const activeAccounts = stakeAccounts.map(({ id, value }) => ({ id, value }));
+    setActiveStakeAccounts(activeAccounts);
+  }, [stakeAccounts.length]);
+
   // Init payout wallets
   useEffect(() => {
-    const payoutAccounts = accounts.reduce<DropdownOption<AccountID>[]>((acc, account) => {
+    const payoutAccounts = dbAccounts.reduce<DropdownOption<AccountID>[]>((acc, account) => {
       if (!account.chainId || account.chainId === chainId) {
         const wallet = account.walletId ? walletsMap.get(account.walletId.toString()) : undefined;
 
@@ -253,16 +264,14 @@ const InitOperation = ({ accountIds, api, chainId, asset, onResult }: Props) => 
     }, []);
 
     setPayoutAccounts(payoutAccounts);
-  }, [accounts.length]);
+  }, [dbAccounts.length]);
 
   // Setup transactions
   useEffect(() => {
-    if (!api || !chainId || !asset) return;
-
     const maxValidators = getMaxValidators(api);
     const transferableDestination = activeDestination?.value === RewardsDestination.TRANSFERABLE && destination;
 
-    const newTransactions = activeAccounts.map(({ value }) => {
+    const newTransactions = activeStakeAccounts.map(({ value }) => {
       const bondTx = {
         chainId,
         type: TransactionType.BOND,
@@ -292,16 +301,12 @@ const InitOperation = ({ accountIds, api, chainId, asset, onResult }: Props) => 
     });
 
     setTransactions(newTransactions);
-  }, [amount, amount, activeDestination, destination]);
+  }, [amount, activeDestination, destination]);
 
   useEffect(() => {
-    if (!api || !amount || !transactions.length) return;
+    if (!amount || !transactions.length) return;
 
-    (async () => {
-      const transactionFee = await getTransactionFee(transactions[0], api);
-
-      setFee(transactionFee);
-    })();
+    getTransactionFee(transactions[0], api).then(setFee);
   }, [api, amount, transactions]);
 
   // unregister destination field if active radio is restake
@@ -314,8 +319,8 @@ const InitOperation = ({ accountIds, api, chainId, asset, onResult }: Props) => 
   }, [activeDestination?.value]);
 
   const submitBond: SubmitHandler<BondForm> = ({ amount, destination }) => {
-    const selectedAddresses = activeAccounts.map((stake) => stake.value);
-    const accounts = selectedAccounts.filter(
+    const selectedAddresses = activeStakeAccounts.map((stake) => stake.value);
+    const accounts = availableStakeAccounts.filter(
       (account) => account.accountId && selectedAddresses.includes(account.accountId),
     );
 
@@ -335,9 +340,9 @@ const InitOperation = ({ accountIds, api, chainId, asset, onResult }: Props) => 
           weight="lg"
           placeholder={t('staking.bond.selectStakeAccountLabel')}
           summary={t('staking.bond.selectStakeAccountSummary')}
-          activeIds={activeAccounts.map((a) => a.id.toString())}
+          activeIds={activeStakeAccounts.map((acc) => acc.id)}
           options={stakeAccounts}
-          onChange={setActiveAccounts}
+          onChange={setActiveStakeAccounts}
         />
       </div>
 
@@ -445,7 +450,7 @@ const InitOperation = ({ accountIds, api, chainId, asset, onResult }: Props) => 
         )}
 
         <div className="flex justify-between items-center uppercase text-neutral-variant text-2xs">
-          <p>{t('staking.bond.networkFee', { count: activeAccounts.length })}</p>
+          <p>{t('staking.bond.networkFee', { count: activeStakeAccounts.length })}</p>
 
           <Fee className="text-neutral font-semibold" api={api} asset={asset} transaction={transactions[0]} />
         </div>

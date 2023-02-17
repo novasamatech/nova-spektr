@@ -1,55 +1,56 @@
 import { UnsignedTransaction } from '@substrate/txwrapper-polkadot';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { Navigate, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 
 import { ButtonBack, ButtonLink, Icon } from '@renderer/components/ui';
 import { useI18n } from '@renderer/context/I18nContext';
 import { useNetworkContext } from '@renderer/context/NetworkContext';
 import { StakingType } from '@renderer/domain/asset';
-import { AccountID, ChainId, SigningType } from '@renderer/domain/shared-kernel';
+import { AccountID, ChainId, HexString } from '@renderer/domain/shared-kernel';
 import { Transaction } from '@renderer/domain/transaction';
 import Paths from '@renderer/routes/paths';
-import Confirmation from '@renderer/screens/Staking/Unstake/Confirmation/Confirmation';
-import InitOperation, { UnstakeResult } from '@renderer/screens/Staking/Unstake/InitOperation/InitOperation';
-import Scanning from '../Scanning/Scanning';
-import Signing from '../Signing/Signing';
-import { StakingMap } from '@renderer/services/staking/common/types';
-import { useStakingData } from '@renderer/services/staking/stakingDataService';
-import { useAccount } from '@renderer/services/account/accountService';
+import Confirmation from './Confirmation/Confirmation';
+import InitOperation, { BondResult } from './InitOperation/InitOperation';
+import { ValidatorMap } from '@renderer/services/staking/common/types';
 import { AccountDS } from '@renderer/services/storage';
+import Scanning from '../components/Scanning/Scanning';
+import Signing from '../components/Signing/Signing';
+import Validators from '../components/Validators/Validators';
+import Submit from './Submit/Submit';
 
 const enum Step {
   INIT,
+  VALIDATORS,
   CONFIRMATION,
   SCANNING,
   SIGNING,
+  SUBMIT,
 }
 
 const HEADER_TITLE: Record<Step, string> = {
-  [Step.INIT]: 'staking.unstake.initUnstakeSubtitle',
-  [Step.CONFIRMATION]: 'staking.unstake.confirmUnstakeSubtitle',
+  [Step.INIT]: 'staking.bond.initBondSubtitle',
+  [Step.VALIDATORS]: 'staking.bond.validatorsSubtitle',
+  [Step.CONFIRMATION]: 'staking.bond.confirmBondSubtitle',
   [Step.SCANNING]: 'staking.bond.scanSubtitle',
   [Step.SIGNING]: 'staking.bond.signSubtitle',
+  [Step.SUBMIT]: 'staking.bond.submitSubtitle',
 };
 
-const Unstake = () => {
+const Bond = () => {
   const { t } = useI18n();
   const navigate = useNavigate();
   const { connections } = useNetworkContext();
-  const { subscribeStaking } = useStakingData();
-  const { getLiveAccounts } = useAccount();
-  const accounts = getLiveAccounts({ signingType: SigningType.PARITY_SIGNER });
-
   const [searchParams] = useSearchParams();
   const params = useParams<{ chainId: ChainId }>();
 
   const [activeStep, setActiveStep] = useState<Step>(Step.INIT);
-
-  const [unstakeAmount, setUnstakeAmount] = useState<string>('');
+  const [validators, setValidators] = useState<ValidatorMap>({});
+  const [accounts, setAccounts] = useState<AccountDS[]>([]);
+  const [stakeAmount, setStakeAmount] = useState<string>('');
+  const [destination, setDestination] = useState<AccountID>('');
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [unsignedTransactions, setUnsignedTransactions] = useState<UnsignedTransaction[]>([]);
-  const [staking, setStaking] = useState<StakingMap>({});
-  const [selectedAccounts, setSelectedAccounts] = useState<AccountDS[]>([]);
+  const [signatures, setSignatures] = useState<HexString[]>([]);
 
   const chainId = params.chainId || ('' as ChainId);
   const accountIds = searchParams.get('id')?.split(',') || [];
@@ -61,25 +62,10 @@ const Unstake = () => {
   const { api, explorers, addressPrefix, assets, name } = connections[chainId];
   const asset = assets.find((asset) => asset.staking === StakingType.RELAYCHAIN);
 
-  useEffect(() => {
-    if (!api?.isConnected || accountIds.length === 0) return;
-
-    let unsubStaking: () => void | undefined;
-
-    const selectedAccounts = accounts.reduce<AccountID[]>((acc, account) => {
-      const accountExists = account.id && accountIds.includes(account.id.toString());
-
-      return accountExists ? [...acc, account.accountId as AccountID] : acc;
-    }, []);
-
-    (async () => {
-      unsubStaking = await subscribeStaking(chainId, api, selectedAccounts, setStaking);
-    })();
-
-    return () => {
-      unsubStaking?.();
-    };
-  }, [api, accounts.length, accountIds.length]);
+  if (!api || !api.isConnected) {
+    // TODO: show skeleton until we connect to network's api
+    return null;
+  }
 
   const goToPrevStep = () => {
     if (activeStep === Step.INIT) {
@@ -90,11 +76,17 @@ const Unstake = () => {
     }
   };
 
-  const onUnstakeResult = (data: UnstakeResult) => {
+  const onBondResult = (data: BondResult) => {
     if (!asset) return;
 
-    setSelectedAccounts(data.accounts);
-    setUnstakeAmount(data.amount);
+    setAccounts(data.accounts);
+    setStakeAmount(data.stake);
+    setDestination(data.destination);
+    setActiveStep(Step.VALIDATORS);
+  };
+
+  const onSelectValidators = (validators: ValidatorMap) => {
+    setValidators(validators);
     setActiveStep(Step.CONFIRMATION);
   };
 
@@ -108,8 +100,13 @@ const Unstake = () => {
     setActiveStep(Step.SIGNING);
   };
 
-  const onSignResult = () => {
-    navigate(Paths.STAKING, { replace: true });
+  const onBackToScan = () => {
+    setActiveStep(Step.SCANNING);
+  };
+
+  const onSignResult = (signatures: HexString[]) => {
+    setSignatures(signatures);
+    setActiveStep(Step.SUBMIT);
   };
 
   const headerContent = (
@@ -145,21 +142,26 @@ const Unstake = () => {
       {headerContent}
 
       {activeStep === Step.INIT && (
-        <InitOperation
-          staking={staking}
+        <InitOperation api={api} chainId={chainId} accountIds={accountIds} asset={asset} onResult={onBondResult} />
+      )}
+      {activeStep === Step.VALIDATORS && (
+        <Validators
           api={api}
           chainId={chainId}
-          accountIds={accountIds}
           asset={asset}
-          onResult={onUnstakeResult}
+          explorers={explorers}
+          addressPrefix={addressPrefix}
+          onResult={onSelectValidators}
         />
       )}
       {activeStep === Step.CONFIRMATION && (
         <Confirmation
           api={api}
           chainId={chainId}
-          accounts={selectedAccounts}
-          unstake={unstakeAmount}
+          validators={Object.values(validators)}
+          accounts={accounts}
+          stake={stakeAmount}
+          destination={destination}
           asset={asset}
           explorers={explorers}
           addressPrefix={addressPrefix}
@@ -170,22 +172,32 @@ const Unstake = () => {
         <Scanning
           api={api}
           chainId={chainId}
-          accounts={selectedAccounts}
+          accounts={accounts}
           transactions={transactions}
           addressPrefix={addressPrefix}
           onResult={onScanResult}
         />
       )}
       {activeStep === Step.SIGNING && (
-        <Signing
+        <Signing api={api} multiQr={transactions.length > 1} onResult={onSignResult} onGoBack={onBackToScan} />
+      )}
+      {activeStep === Step.SUBMIT && (
+        <Submit
           api={api}
+          transactions={transactions}
+          signatures={signatures}
           unsignedTransactions={unsignedTransactions}
-          onResult={onSignResult}
-          onGoBack={() => setActiveStep(Step.SCANNING)}
+          validators={Object.values(validators)}
+          accounts={accounts}
+          stake={stakeAmount}
+          destination={destination}
+          asset={asset}
+          explorers={explorers}
+          addressPrefix={addressPrefix}
         />
       )}
     </div>
   );
 };
 
-export default Unstake;
+export default Bond;

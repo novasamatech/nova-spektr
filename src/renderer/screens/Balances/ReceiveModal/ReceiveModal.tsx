@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { QrTextGenerator } from '@renderer/components/common';
 import { ExplorerIcons } from '@renderer/components/common/Explorers/common/constants';
 import { Address, BaseModal, Button, Dropdown, Icon } from '@renderer/components/ui';
-import { Option, ResultOption } from '@renderer/components/ui/Dropdowns/common/types';
+import { DropdownOption, DropdownResult } from '@renderer/components/ui/Dropdowns/common/types';
 import { useI18n } from '@renderer/context/I18nContext';
 import { Asset } from '@renderer/domain/asset';
 import { Chain } from '@renderer/domain/chain';
@@ -28,13 +28,13 @@ const ReceiveModal = ({ data, isOpen, onClose }: Props) => {
   const { t } = useI18n();
   const { getActiveAccounts } = useAccount();
 
-  const [activeAccount, setActiveAccount] = useState<ResultOption<number>>();
-  const [activeAccountsOptions, setActiveAccountsOptions] = useState<Option<number>[]>([]);
+  const [activeAccount, setActiveAccount] = useState<DropdownResult<number>>();
+  const [activeAccountsOptions, setActiveAccountsOptions] = useState<DropdownOption<number>[]>([]);
 
   const activeAccounts = getActiveAccounts();
 
   useEffect(() => {
-    const accounts = activeAccounts.reduce<Option[]>((acc, account, index) => {
+    const accounts = activeAccounts.reduce<DropdownOption[]>((acc, account, index) => {
       if (
         (account.chainId !== undefined && account.chainId !== data?.chain.chainId) ||
         account.signingType === SigningType.WATCH_ONLY
