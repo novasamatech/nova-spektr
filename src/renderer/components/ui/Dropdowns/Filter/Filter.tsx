@@ -3,15 +3,15 @@ import cn from 'classnames';
 import { Fragment } from 'react';
 
 import { Icon, Switch } from '@renderer/components/ui';
-import { Option, ResultOption } from '../common/types';
+import { DropdownOption, DropdownResult } from '../common/types';
 
 type Props = {
-  activeIds: Option['id'][];
+  activeIds: DropdownOption['id'][];
   placeholder?: string;
   className?: string;
   position?: 'left' | 'right';
-  options: Option[];
-  onChange: (data: ResultOption[]) => void;
+  options: DropdownOption[];
+  onChange: (data: DropdownResult[]) => void;
 };
 
 const Filter = ({ activeIds, placeholder, position = 'right', options, className, onChange }: Props) => {

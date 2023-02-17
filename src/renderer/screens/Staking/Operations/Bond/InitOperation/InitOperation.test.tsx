@@ -1,4 +1,5 @@
-import { render, screen } from '@testing-library/react';
+import { ApiPromise } from '@polkadot/api';
+import { act, render, screen } from '@testing-library/react';
 
 import { Asset } from '@renderer/domain/asset';
 import { TEST_PUBLIC_KEY } from '@renderer/shared/utils/constants';
@@ -29,6 +30,12 @@ jest.mock('@renderer/services/account/accountService', () => ({
   }),
 }));
 
+jest.mock('@renderer/services/staking/validatorsService', () => ({
+  useValidators: jest.fn().mockReturnValue({
+    getMaxValidators: () => 4,
+  }),
+}));
+
 jest.mock('@renderer/services/balance/balanceService', () => ({
   useBalance: jest.fn().mockReturnValue({
     getBalance: jest.fn().mockReturnValue({
@@ -53,13 +60,16 @@ jest.mock('@renderer/services/balance/balanceService', () => ({
 describe('screens/Bond/InitOperation', () => {
   const asset = { assetId: 1, symbol: 'DOT', precision: 10 } as Asset;
 
-  test('should render component', () => {
-    render(<InitOperation chainId="0x123" accountIds={['1']} asset={asset} onResult={() => {}} />);
+  test('should render component', async () => {
+    await act(async () => {
+      render(
+        <InitOperation api={{} as ApiPromise} chainId="0x123" accountIds={['1']} asset={asset} onResult={() => {}} />,
+      );
+    });
 
     const input = screen.getByPlaceholderText('staking.bond.amountPlaceholder');
     const destination = screen.getByText('staking.bond.rewardsDestinationTitle');
     const button = screen.getByText('staking.bond.continueButton');
-
     expect(input).toBeInTheDocument();
     expect(destination).toBeInTheDocument();
     expect(button).toBeInTheDocument();

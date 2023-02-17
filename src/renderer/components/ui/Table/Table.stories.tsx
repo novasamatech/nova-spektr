@@ -32,7 +32,7 @@ Primary.args = {
   by: 'name',
   dataSource,
   selectedKeys: ['1'],
-  onSelect: (x) => console.log(x),
+  onSelect: console.log,
   children: (
     <>
       <Table.Header>

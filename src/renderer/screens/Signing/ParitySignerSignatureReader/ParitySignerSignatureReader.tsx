@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { QrSignatureReader } from '@renderer/components/common';
 import { ErrorObject, QrError, VideoInput } from '@renderer/components/common/QrCode/QrReader/common/types';
 import { Button, Dropdown, Icon } from '@renderer/components/ui';
-import { Option, ResultOption } from '@renderer/components/ui/Dropdowns/common/types';
+import { DropdownOption, DropdownResult } from '@renderer/components/ui/Dropdowns/common/types';
 import { useI18n } from '@renderer/context/I18nContext';
 import { ValidationErrors } from '@renderer/screens/Transfer/common/constants';
 import { secondsToMinutes } from '@renderer/shared/utils/time';
@@ -34,8 +34,8 @@ const ParitySignerSignatureReader = ({ size = 300, className, onResult, countdow
   const { t } = useI18n();
 
   const [cameraState, setCameraState] = useState<CameraState>(CameraState.LOADING);
-  const [activeCamera, setActiveCamera] = useState<ResultOption<string>>();
-  const [availableCameras, setAvailableCameras] = useState<Option<string>[]>([]);
+  const [activeCamera, setActiveCamera] = useState<DropdownResult<string>>();
+  const [availableCameras, setAvailableCameras] = useState<DropdownOption<string>[]>([]);
 
   const [isScanComplete, setIsScanComplete] = useState(false);
 
