@@ -16,6 +16,7 @@ const Paths = {
   STAKING: '/staking',
   BOND: '/staking/bond/:chainId',
   UNSTAKE: '/staking/unstake/:chainId',
+  VALIDATORS: '/staking/validators/:chainId',
 
   // Navigation
   ADDRESS_BOOK: '/address-book',

@@ -300,6 +300,7 @@
       "account": "Аккаунт",
       "accounts": "Аккаунты",
       "accountsTitle": "Выбранные аккаунты",
+      "changeValidatorsTitle": "Смена валидаторов",
       "errorModalDiscardButton": "Пропустить",
       "errorModalEditButton": "Редактировать",
       "errorModalSubtitle": "Вы можете отредактировать или пропустить эти транзакции",
@@ -308,12 +309,14 @@
       "hintRedeem": "После разблокировки не забудбте забрать токены",
       "hintRewards": "Токены в стейке генерируют награды каждую эру (6 часов)",
       "hintUnstakePeriod": "Для вывода токенов нужно дождаться разблокировки (7 days)",
+      "hintValidators": "Изменения валидаторов вступят в силу со следующей эры",
       "networkFee": "Комиссия сети",
       "networkFeePerAccount": "Комиссия сети / аккаунт",
       "queueButton": "добавить в очередь",
       "restakeRewards": "Вложить награды",
       "rewardsDestination": "Выплата наград",
       "selectValidators": "Выбранные валидаторы",
+      "setValidatorsTitle": "Выбор валидаторов",
       "signButton": "Подписать в Parity Signer",
       "submittingOperation": "Подтверждение операции",
       "totalAmount": "Общая сумма",
@@ -398,9 +401,9 @@
       "validatorsTableHeader": "Валидаторы"
     },
     "warning": {
-      "controller": "Данная операция работает только на <strong>Controller</strong> аккаунтах. Отключить все <strong>Stash</strong> аккаунты чтобы продолжить?",
+      "controller": "Данная операция работает только на <strong>Controller</strong> аккаунтах.<br />Отключить все <strong>Stash</strong> аккаунты чтобы продолжить?",
       "noButton": "Нет",
-      "stash": "Данная операция работает только на <strong>Stash</strong> аккаунтах. Отключить все <strong>Controller</strong> аккаунты чтобы продолжить?",
+      "stash": "Данная операция работает только на <strong>Stash</strong> аккаунтах.<br />Отключить все <strong>Controller</strong> аккаунты чтобы продолжить?",
       "yesButton": "Да"
     }
   },

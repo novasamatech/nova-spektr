@@ -19,9 +19,10 @@ import ValidatorsModal from '../ValidatorsModal/ValidatorsModal';
 
 type Props = {
   api: ApiPromise;
+  title?: string;
   validators?: Validator[];
   accounts: AccountDS[];
-  stake: string;
+  stake?: string;
   destination?: {
     address?: AccountID;
     type: RewardsDestination;
@@ -34,9 +35,10 @@ type Props = {
 
 const TransactionInfo = ({
   api,
+  title,
   validators,
   accounts,
-  stake,
+  stake = '0',
   destination,
   asset,
   explorers,
@@ -48,7 +50,6 @@ const TransactionInfo = ({
   const [isAccountsOpen, toggleAccounts] = useToggle();
   const [isValidatorsOpen, toggleValidators] = useToggle();
 
-  const totalStake = new BN(stake).muln(accounts.length);
   const singleAccount = accounts.length === 1;
   const validatorsExist = validators && validators.length > 0;
 
@@ -57,26 +58,30 @@ const TransactionInfo = ({
       <div className="overflow-y-auto">
         <section className="w-[500px] p-5 mx-auto bg-shade-2 rounded-2lg">
           <Block className="flex flex-col gap-y-5">
-            <div className="flex flex-col items-center">
-              {singleAccount ? (
+            {title && <h2 className="text-center text-neutral font-semibold text-xl">{title}</h2>}
+
+            {!title && singleAccount && (
+              <div className="flex flex-col items-center mt-6 mb-9 ">
                 <Balance
-                  className="mt-6 mb-9 text-4.5xl font-bold"
+                  className="text-4.5xl font-bold"
                   value={stake}
                   precision={asset.precision}
                   symbol={asset.symbol}
                 />
-              ) : (
-                <>
-                  <h2 className="text-neutral font-semibold text-xl">{t('staking.confirmation.totalAmount')}</h2>
-                  <Balance
-                    className="mt-6 mb-9 text-4.5xl font-bold"
-                    value={totalStake.toString()}
-                    precision={asset.precision}
-                    symbol={asset.symbol}
-                  />
-                </>
-              )}
-            </div>
+              </div>
+            )}
+
+            {!title && !singleAccount && (
+              <div className="flex flex-col items-center gap-y-6 mb-9">
+                <h2 className="text-neutral font-semibold text-xl">{t('staking.confirmation.totalAmount')}</h2>
+                <Balance
+                  className="text-4.5xl font-bold"
+                  value={new BN(stake).muln(accounts.length).toString()}
+                  precision={asset.precision}
+                  symbol={asset.symbol}
+                />
+              </div>
+            )}
 
             {singleAccount ? (
               <AddressOnPlate
