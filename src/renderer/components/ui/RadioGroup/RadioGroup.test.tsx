@@ -27,7 +27,7 @@ describe('ui/RadioGroup', () => {
     const item = screen.getByRole('radio', { checked: false });
     await act(async () => item.click());
 
-    expect(spyChange).toBeCalledWith({ id: options[1].value, value: options[1].value });
+    expect(spyChange).toBeCalledWith({ id: options[1].id, value: options[1].value });
   });
 
   test('should change active value', async () => {
