@@ -13,15 +13,14 @@ import { AccountID, ChainId, PublicKey, SigningType } from '@renderer/domain/sha
 import { Transaction, TransactionType } from '@renderer/domain/transaction';
 import { useAccount } from '@renderer/services/account/accountService';
 import { useBalance } from '@renderer/services/balance/balanceService';
-import { formatAmount, transferableAmount } from '@renderer/services/balance/common/utils';
+import { formatAmount, transferableAmount, unlockingAmount } from '@renderer/services/balance/common/utils';
 import { AccountDS, BalanceDS } from '@renderer/services/storage';
 import { useTransaction } from '@renderer/services/transaction/transactionService';
 import { StakingMap } from '@renderer/services/staking/common/types';
 import { Stake } from '@renderer/domain/stake';
-import { UnstakingDuration } from '../../../Overview/components';
 
 const validateBalance = (stake: Stake | string, amount: string, asset: Asset): boolean => {
-  const unstakeableBalance = typeof stake === 'string' ? stake : stake.active;
+  const unstakeableBalance = typeof stake === 'string' ? stake : unlockingAmount(stake.unlocking);
 
   let formatedAmount = new BN(formatAmount(amount, asset.precision));
 
@@ -150,6 +149,7 @@ const InitOperation = ({ api, staking, chainId, accountIds, asset, onResult }: P
     }
 
     const staked = activeUnstakeAccounts.map((a) => staking?.[a.value]?.active || '0');
+    console.log(staked);
 
     const minMaxBalances = staked.reduce<[string, string]>(
       (acc, balance) => {
@@ -180,7 +180,7 @@ const InitOperation = ({ api, staking, chainId, accountIds, asset, onResult }: P
     );
 
     setTransferableRange(minMaxTransferable);
-  }, [balancesMap, activeUnstakeAccounts.length]);
+  }, [balances, activeUnstakeAccounts.length, staking]);
 
   useEffect(() => {
     const newBalancesMap = new Map(balances.map((balance) => [balance.publicKey, balance]));
@@ -217,7 +217,7 @@ const InitOperation = ({ api, staking, chainId, accountIds, asset, onResult }: P
     const newTransactions = activeUnstakeAccounts.map(({ value }) => {
       return {
         chainId,
-        type: TransactionType.UNSTAKE,
+        type: TransactionType.RESTAKE,
         address: value,
         args: {
           value: formatAmount(amount, asset.precision),
@@ -292,7 +292,7 @@ const InitOperation = ({ api, staking, chainId, accountIds, asset, onResult }: P
             <>
               <AmountInput
                 placeholder={t('staking.unstake.amountPlaceholder')}
-                balancePlaceholder={t('staking.unstake.stakedPlaceholder')}
+                balancePlaceholder={t('staking.restake.unstakingPlaceholder')}
                 value={value}
                 name="amount"
                 balance={stakedRange[0] === stakedRange[1] ? stakedRange[0] : stakedRange}
@@ -301,7 +301,7 @@ const InitOperation = ({ api, staking, chainId, accountIds, asset, onResult }: P
                 onChange={onChange}
               />
               <InputHint active={error?.type === 'insufficientBalance'} variant="error">
-                {t('staking.notEnoughStakedError')}
+                {t('staking.notEnoughUnlockingError')}
               </InputHint>
               <InputHint active={error?.type === 'insufficientBalanceForFee'} variant="error">
                 {t('staking.notEnoughBalanceForFeeError')}
@@ -331,13 +331,7 @@ const InitOperation = ({ api, staking, chainId, accountIds, asset, onResult }: P
         </div>
 
         <HintList>
-          <HintList.Item>
-            {t('staking.unstake.durationHint')} {'('}
-            <UnstakingDuration className="ml-1" api={api} />
-            {')'}
-          </HintList.Item>
-          <HintList.Item>{t('staking.unstake.noRewardsHint')}</HintList.Item>
-          <HintList.Item>{t('staking.unstake.redeemHint')}</HintList.Item>
+          <HintList.Item>{t('staking.restake.eraHint')}</HintList.Item>
         </HintList>
       </form>
 
