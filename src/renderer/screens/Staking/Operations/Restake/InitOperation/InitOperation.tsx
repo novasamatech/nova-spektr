@@ -20,7 +20,7 @@ import { StakingMap } from '@renderer/services/staking/common/types';
 import { Stake } from '@renderer/domain/stake';
 
 const validateBalance = (stake: Stake | string, amount: string, asset: Asset): boolean => {
-  const unstakeableBalance = typeof stake === 'string' ? stake : unlockingAmount(stake);
+  const unstakeableBalance = typeof stake === 'string' ? stake : unlockingAmount(stake.unlocking);
 
   let formatedAmount = new BN(formatAmount(amount, asset.precision));
 
