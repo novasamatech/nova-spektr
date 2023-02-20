@@ -28,14 +28,14 @@ const enum Step {
 }
 
 const HEADER_TITLE: Record<Step, string> = {
-  [Step.INIT]: 'staking.unstake.initUnstakeSubtitle',
-  [Step.CONFIRMATION]: 'staking.unstake.confirmUnstakeSubtitle',
+  [Step.INIT]: 'staking.stakeMore.initStakeMoreSubtitle',
+  [Step.CONFIRMATION]: 'staking.stakeMore.confirmStakeMoreSubtitle',
   [Step.SCANNING]: 'staking.bond.scanSubtitle',
   [Step.SIGNING]: 'staking.bond.signSubtitle',
-  [Step.SUBMIT]: 'staking.bond.signSubtitle',
+  [Step.SUBMIT]: 'staking.bond.submitSubtitle',
 };
 
-const Unstake = () => {
+const StakeMore = () => {
   const { t } = useI18n();
   const navigate = useNavigate();
   const { connections } = useNetworkContext();
@@ -48,7 +48,7 @@ const Unstake = () => {
 
   const [activeStep, setActiveStep] = useState<Step>(Step.INIT);
 
-  const [unstakeAmount, setUnstakeAmount] = useState<string>('');
+  const [additionalAmount, setAdditionalAmount] = useState<string>('');
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [unsignedTransactions, setUnsignedTransactions] = useState<UnsignedTransaction[]>([]);
   const [staking, setStaking] = useState<StakingMap>({});
@@ -103,7 +103,7 @@ const Unstake = () => {
     if (!asset) return;
 
     setSelectedAccounts(data.accounts);
-    setUnstakeAmount(data.amount);
+    setAdditionalAmount(data.amount);
     setActiveStep(Step.CONFIRMATION);
   };
 
@@ -169,7 +169,7 @@ const Unstake = () => {
           api={api}
           chainId={chainId}
           accounts={selectedAccounts}
-          unstake={unstakeAmount}
+          amount={additionalAmount}
           asset={asset}
           explorers={explorers}
           addressPrefix={addressPrefix}
@@ -201,7 +201,7 @@ const Unstake = () => {
           signatures={signatures}
           unsignedTransactions={unsignedTransactions}
           accounts={selectedAccounts}
-          amount={unstakeAmount}
+          amount={additionalAmount}
           asset={asset}
           explorers={explorers}
           addressPrefix={addressPrefix}
@@ -211,4 +211,4 @@ const Unstake = () => {
   );
 };
 
-export default Unstake;
+export default StakeMore;

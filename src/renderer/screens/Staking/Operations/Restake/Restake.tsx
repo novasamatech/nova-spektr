@@ -28,14 +28,14 @@ const enum Step {
 }
 
 const HEADER_TITLE: Record<Step, string> = {
-  [Step.INIT]: 'staking.unstake.initUnstakeSubtitle',
-  [Step.CONFIRMATION]: 'staking.unstake.confirmUnstakeSubtitle',
+  [Step.INIT]: 'staking.restake.initRestakeSubtitle',
+  [Step.CONFIRMATION]: 'staking.restake.confirmRestakeSubtitle',
   [Step.SCANNING]: 'staking.bond.scanSubtitle',
   [Step.SIGNING]: 'staking.bond.signSubtitle',
-  [Step.SUBMIT]: 'staking.bond.signSubtitle',
+  [Step.SUBMIT]: 'staking.bond.submitSubtitle',
 };
 
-const Unstake = () => {
+const Restake = () => {
   const { t } = useI18n();
   const navigate = useNavigate();
   const { connections } = useNetworkContext();
@@ -48,7 +48,7 @@ const Unstake = () => {
 
   const [activeStep, setActiveStep] = useState<Step>(Step.INIT);
 
-  const [unstakeAmount, setUnstakeAmount] = useState<string>('');
+  const [restakeAmount, setRestakeAmount] = useState<string>('');
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [unsignedTransactions, setUnsignedTransactions] = useState<UnsignedTransaction[]>([]);
   const [staking, setStaking] = useState<StakingMap>({});
@@ -103,7 +103,7 @@ const Unstake = () => {
     if (!asset) return;
 
     setSelectedAccounts(data.accounts);
-    setUnstakeAmount(data.amount);
+    setRestakeAmount(data.amount);
     setActiveStep(Step.CONFIRMATION);
   };
 
@@ -126,6 +126,12 @@ const Unstake = () => {
     <div className="flex items-center gap-x-2.5 mb-9 mt-5 px-5">
       <ButtonBack onCustomReturn={goToPrevStep} />
       <p className="font-semibold text-2xl text-neutral-variant">{t('staking.title')}</p>
+      {activeStep !== Step.INIT && (
+        <>
+          <p className="font-semibold text-2xl text-neutral-variant">/</p>
+          <p className="font-semibold text-2xl text-neutral-variant">{t(HEADER_TITLE[Step.INIT])}</p>
+        </>
+      )}
       <p className="font-semibold text-2xl text-neutral">/</p>
       <h1 className="font-semibold text-2xl text-neutral">{t(HEADER_TITLE[activeStep])}</h1>
     </div>
@@ -169,7 +175,7 @@ const Unstake = () => {
           api={api}
           chainId={chainId}
           accounts={selectedAccounts}
-          unstake={unstakeAmount}
+          amount={restakeAmount}
           asset={asset}
           explorers={explorers}
           addressPrefix={addressPrefix}
@@ -201,7 +207,7 @@ const Unstake = () => {
           signatures={signatures}
           unsignedTransactions={unsignedTransactions}
           accounts={selectedAccounts}
-          amount={unstakeAmount}
+          amount={restakeAmount}
           asset={asset}
           explorers={explorers}
           addressPrefix={addressPrefix}
@@ -211,4 +217,4 @@ const Unstake = () => {
   );
 };
 
-export default Unstake;
+export default Restake;
