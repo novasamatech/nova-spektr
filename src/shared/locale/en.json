@@ -338,6 +338,8 @@
     },
     "notEnoughBalanceError": "Not enough funds to stake specific amount",
     "notEnoughBalanceForFeeError": "Insufficient balance to pay network fee",
+    "notEnoughStakedError": "Not enough staked to unstake specific amount",
+    "notEnoughUnlockingError": "Not enough unlocking to return specific amount",
     "overview": {
       "aboutStakingLabel": "About { asset } staking",
       "accountTableHeader": "Accounts",
@@ -363,17 +365,35 @@
       "totalStakedLabel": "Total staked",
       "viewValidatorsOption": "View validators"
     },
+    "redeem": {
+      "availablePlaceholder": "Available",
+      "initRedeemSubtitle": "Redeem"
+    },
     "requiredAmountError": "Please, enter amount",
+    "restake": {
+      "amountPlaceholder": "Input amount",
+      "confirmRestakeSubtitle": "Confirmation",
+      "eraHint": "Returned tokens will be counted from the next era",
+      "initRestakeSubtitle": "Restake",
+      "transferable": "Transferable",
+      "unstakingPlaceholder": "Unstaking"
+    },
+    "stakeMore": {
+      "availablePlaceholder": "Available",
+      "confirmStakeMoreSubtitle": "Confirmation",
+      "eraHint": "You will get increased rewards starting from the next era",
+      "initStakeMoreSubtitle": "Stake more"
+    },
     "title": "Staking",
     "unstake": {
       "amountPlaceholder": "Input amount",
       "confirmUnstakeSubtitle": "Confirmation",
-      "durationDescription": "To unstake tokens you will have to wait for the ustaking period",
+      "durationHint": "To unstake tokens you will have to wait for the ustaking period",
       "initUnstakeSubtitle": "Unstake",
       "networkFee_one": "Network fee",
       "networkFee_other": "Network fee / Account",
-      "noRewardsDescription": "During unstaking period tokens produce no rewards",
-      "redeemDescription": "After unstaking period don’t forget to redeem your tokens",
+      "noRewardsHint": "During unstaking period tokens produce no rewards",
+      "redeemHint": "After unstaking period don’t forget to redeem your tokens",
       "stakedPlaceholder": "Staked",
       "transferable": "Transferable"
     },

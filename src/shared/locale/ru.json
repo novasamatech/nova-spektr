@@ -338,6 +338,8 @@
     },
     "notEnoughBalanceError": "Недостаточно средств для выполнения операции",
     "notEnoughBalanceForFeeError": "Недостаточно средств для оплаты комиссии",
+    "notEnoughStakedError": "Not enough staked to unstake specific amount",
+    "notEnoughUnlockingError": "Not enough unlocking to return specific amount",
     "overview": {
       "aboutStakingLabel": "О стейкинге { asset } токенов",
       "accountTableHeader": "Аккаунты",
@@ -363,17 +365,35 @@
       "totalStakedLabel": "Общий стейк",
       "viewValidatorsOption": "Валидаторы"
     },
+    "redeem": {
+      "availablePlaceholder": "Доступно",
+      "initRedeemSubtitle": "Вывести"
+    },
     "requiredAmountError": "Пожалуйста, введите сумму",
+    "restake": {
+      "amountPlaceholder": "Введите сумму",
+      "confirmRestakeSubtitle": "Подтверждение",
+      "eraHint": "Возвращённые токены начнут учитываться начиная со следующей эры",
+      "initRestakeSubtitle": "Вернуть в стейк",
+      "transferable": "Доступно",
+      "unstakingPlaceholder": "Выводится из стейка"
+    },
+    "stakeMore": {
+      "availablePlaceholder": "Доступно",
+      "confirmStakeMoreSubtitle": "Подтверждение",
+      "eraHint": "Вы будете получать увеличенную награду начиная со следующей эры",
+      "initStakeMoreSubtitle": "Застейкать ещё"
+    },
     "title": "Стейкинг",
     "unstake": {
       "amountPlaceholder": "Введите сумму",
       "confirmUnstakeSubtitle": "Подтверждение",
-      "durationDescription": "To unstake tokens you will have to wait for the ustaking period",
+      "durationHint": "To unstake tokens you will have to wait for the ustaking period",
       "initUnstakeSubtitle": "Вывод из стейка",
       "networkFee_one": "Комиссия сети",
       "networkFee_other": "Комиссия сети / Аккаунт",
-      "noRewardsDescription": "During unstaking period tokens produce no rewards",
-      "redeemDescription": "После периода вывода из стейкинга не забудьте redeem ваши токены",
+      "noRewardsHint": "During unstaking period tokens produce no rewards",
+      "redeemHint": "После периода вывода из стейкинга не забудьте redeem ваши токены",
       "stakedPlaceholder": "В стейке",
       "transferable": "Доступно"
     },
