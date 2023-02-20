@@ -9,20 +9,19 @@ import { ChainId } from '@renderer/domain/shared-kernel';
 import { Transaction, TransactionType } from '@renderer/domain/transaction';
 import { AccountDS } from '@renderer/services/storage';
 import TransactionInfo from '../../components/TransactionInfo/TransactionInfo';
-import { UnstakingDuration } from '@renderer/screens/Staking/Overview/components';
 
 type Props = {
   api?: ApiPromise;
   chainId: ChainId;
   accounts: AccountDS[];
-  unstake: string;
+  amount: string;
   asset: Asset;
   explorers?: Explorer[];
   addressPrefix: number;
   onResult: (transactions: Transaction[]) => void;
 };
 
-const Confirmation = ({ api, chainId, accounts, unstake, asset, explorers, addressPrefix, onResult }: Props) => {
+const Confirmation = ({ api, chainId, accounts, amount, asset, explorers, addressPrefix, onResult }: Props) => {
   const { t } = useI18n();
 
   const [transactions, setTransactions] = useState<Transaction[]>([]);
@@ -31,9 +30,9 @@ const Confirmation = ({ api, chainId, accounts, unstake, asset, explorers, addre
     const newTransactions = accounts.map(({ accountId = '' }) => ({
       chainId,
       address: accountId,
-      type: TransactionType.UNSTAKE,
+      type: TransactionType.RESTAKE,
       args: {
-        value: unstake,
+        value: amount,
       },
     }));
 
@@ -48,20 +47,14 @@ const Confirmation = ({ api, chainId, accounts, unstake, asset, explorers, addre
     <TransactionInfo
       api={api}
       accounts={accounts}
-      stake={unstake}
+      stake={amount}
       asset={asset}
       explorers={explorers}
       addressPrefix={addressPrefix}
       transactions={transactions}
     >
       <HintList className="mt-2.5 mb-5 px-[15px]">
-        <HintList.Item>
-          {t('staking.unstake.durationHint')} {'('}
-          <UnstakingDuration className="ml-1" api={api} />
-          {')'}
-        </HintList.Item>
-        <HintList.Item>{t('staking.unstake.noRewardsHint')}</HintList.Item>
-        <HintList.Item>{t('staking.unstake.redeemHint')}</HintList.Item>
+        <HintList.Item>{t('staking.restake.eraHint')}</HintList.Item>
       </HintList>
 
       <div className="flex flex-col items-center gap-y-2.5">
