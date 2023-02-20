@@ -12,6 +12,7 @@ import {
   ZERO_BALANCE,
 } from '@renderer/services/balance/common/constants';
 import { FormattedBalance } from './types';
+import { Stake } from '@renderer/domain/stake';
 
 /**
  * Generate new address based on public key and address prefix
@@ -124,4 +125,18 @@ export const stakeableAmount = (balance: Balance): string => {
   const bnStaked = new BN(stakedAmount(balance));
 
   return bnFree.sub(bnStaked).toString();
+};
+
+export const unlockingAmount = (stake: Stake): string => {
+  if (!stake || stake.unlocking.length === 0) return ZERO_BALANCE;
+
+  return stake.unlocking.reduce((acc, s) => acc.add(new BN(s.value)), new BN(ZERO_BALANCE)).toString();
+};
+
+export const redeemableAmount = (stake: Stake, currentEra: number): string => {
+  if (!stake || stake.unlocking.length === 0) return ZERO_BALANCE;
+
+  return stake.unlocking
+    .reduce((acc, s) => (currentEra >= Number(s.era) ? acc.add(new BN(s.value)) : acc), new BN(ZERO_BALANCE))
+    .toString();
 };

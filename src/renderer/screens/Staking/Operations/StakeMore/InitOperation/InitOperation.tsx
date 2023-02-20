@@ -13,15 +13,19 @@ import { AccountID, ChainId, PublicKey, SigningType } from '@renderer/domain/sha
 import { Transaction, TransactionType } from '@renderer/domain/transaction';
 import { useAccount } from '@renderer/services/account/accountService';
 import { useBalance } from '@renderer/services/balance/balanceService';
-import { formatAmount, transferableAmount } from '@renderer/services/balance/common/utils';
+import {
+  formatAmount,
+  stakeableAmount,
+  transferableAmount,
+  unlockingAmount,
+} from '@renderer/services/balance/common/utils';
 import { AccountDS, BalanceDS } from '@renderer/services/storage';
 import { useTransaction } from '@renderer/services/transaction/transactionService';
 import { StakingMap } from '@renderer/services/staking/common/types';
 import { Stake } from '@renderer/domain/stake';
-import { UnstakingDuration } from '../../../Overview/components';
 
 const validateBalance = (stake: Stake | string, amount: string, asset: Asset): boolean => {
-  const unstakeableBalance = typeof stake === 'string' ? stake : stake.active;
+  const unstakeableBalance = typeof stake === 'string' ? stake : unlockingAmount(stake);
 
   let formatedAmount = new BN(formatAmount(amount, asset.precision));
 
@@ -105,14 +109,12 @@ const InitOperation = ({ api, staking, chainId, accountIds, asset, onResult }: P
 
   const [fee, setFee] = useState('');
   const [stakedRange, setStakedRange] = useState<[string, string]>(['0', '0']);
-  const [transferableRange, setTransferableRange] = useState<[string, string]>(['0', '0']);
   const [transactions, setTransactions] = useState<Transaction[]>([]);
 
   const [unstakeAccounts, setUnstakeAccounts] = useState<DropdownOption<AccountID>[]>([]);
   const [activeUnstakeAccounts, setActiveUnstakeAccounts] = useState<DropdownResult<AccountID>[]>([]);
 
   const [activeBalances, setActiveBalances] = useState<BalanceDS[]>([]);
-  const [balancesMap, setBalancesMap] = useState<Map<string, BalanceDS>>(new Map());
 
   const availableUnstakeAccounts = dbAccounts.filter((account) => {
     return account.id && accountIds.includes(account.id.toString());
@@ -142,16 +144,14 @@ const InitOperation = ({ api, staking, chainId, accountIds, asset, onResult }: P
 
   // Set balances
   useEffect(() => {
-    if (!activeUnstakeAccounts.length || !staking) {
+    if (!activeBalances.length || !staking) {
       setStakedRange(['0', '0']);
-      setTransferableRange(['0', '0']);
 
       return;
     }
+    const stakeableBalance = activeBalances.map(stakeableAmount);
 
-    const staked = activeUnstakeAccounts.map((a) => staking?.[a.value]?.active || '0');
-
-    const minMaxBalances = staked.reduce<[string, string]>(
+    const minMaxBalances = stakeableBalance.reduce<[string, string]>(
       (acc, balance) => {
         if (!balance) return acc;
 
@@ -160,33 +160,16 @@ const InitOperation = ({ api, staking, chainId, accountIds, asset, onResult }: P
 
         return acc;
       },
-      [staked[0], staked[0]],
+      [stakeableBalance[0], stakeableBalance[0]],
     );
 
     setStakedRange(minMaxBalances);
-
-    const transferable = activeUnstakeAccounts.map((a) => transferableAmount(balancesMap.get(a.id as PublicKey)));
-
-    const minMaxTransferable = transferable.reduce<[string, string]>(
-      (acc, balance) => {
-        if (!balance) return acc;
-
-        acc[0] = new BN(balance).lt(new BN(acc[0])) ? balance : acc[0];
-        acc[1] = new BN(balance).gt(new BN(acc[1])) ? balance : acc[1];
-
-        return acc;
-      },
-      [transferable?.[0], transferable?.[0]],
-    );
-
-    setTransferableRange(minMaxTransferable);
-  }, [balancesMap, activeUnstakeAccounts.length]);
+  }, [activeBalances.length]);
 
   useEffect(() => {
     const newBalancesMap = new Map(balances.map((balance) => [balance.publicKey, balance]));
     const newActiveBalances = activeUnstakeAccounts.map((a) => newBalancesMap.get(a.id as PublicKey)) as BalanceDS[];
 
-    setBalancesMap(newBalancesMap);
     setActiveBalances(newActiveBalances);
   }, [activeUnstakeAccounts.length, balances]);
 
@@ -217,10 +200,10 @@ const InitOperation = ({ api, staking, chainId, accountIds, asset, onResult }: P
     const newTransactions = activeUnstakeAccounts.map(({ value }) => {
       return {
         chainId,
-        type: TransactionType.UNSTAKE,
+        type: TransactionType.STAKE_MORE,
         address: value,
         args: {
-          value: formatAmount(amount, asset.precision),
+          maxAdditional: formatAmount(amount, asset.precision),
         },
       };
     });
@@ -247,17 +230,6 @@ const InitOperation = ({ api, staking, chainId, accountIds, asset, onResult }: P
     });
   };
 
-  const transferable =
-    transferableRange[0] === transferableRange[1] ? (
-      <Balance value={transferableRange[0]} precision={asset.precision} />
-    ) : (
-      <>
-        {/* eslint-disable-next-line i18next/no-literal-string */}
-        <Balance value={transferableRange[0]} precision={asset.precision} /> -
-        <Balance value={transferableRange[1]} precision={asset.precision} />
-      </>
-    );
-
   return (
     <div className="w-[600px] flex flex-col items-center mx-auto rounded-2lg bg-shade-2 p-5 ">
       <div className="w-full p-5 rounded-2lg bg-white shadow-surface">
@@ -272,7 +244,7 @@ const InitOperation = ({ api, staking, chainId, accountIds, asset, onResult }: P
       </div>
 
       <form
-        id="initUnstakeForm"
+        id="initStakeMoreForm"
         className="flex flex-col gap-y-5 p-5 w-full rounded-2lg bg-white mt-2.5 mb-5 shadow-surface"
         onSubmit={handleSubmit(submitUnstake)}
       >
@@ -292,7 +264,7 @@ const InitOperation = ({ api, staking, chainId, accountIds, asset, onResult }: P
             <>
               <AmountInput
                 placeholder={t('staking.unstake.amountPlaceholder')}
-                balancePlaceholder={t('staking.unstake.stakedPlaceholder')}
+                balancePlaceholder={t('staking.stakeMore.availablePlaceholder')}
                 value={value}
                 name="amount"
                 balance={stakedRange[0] === stakedRange[1] ? stakedRange[0] : stakedRange}
@@ -301,7 +273,7 @@ const InitOperation = ({ api, staking, chainId, accountIds, asset, onResult }: P
                 onChange={onChange}
               />
               <InputHint active={error?.type === 'insufficientBalance'} variant="error">
-                {t('staking.notEnoughStakedError')}
+                {t('staking.notEnoughBalanceError')}
               </InputHint>
               <InputHint active={error?.type === 'insufficientBalanceForFee'} variant="error">
                 {t('staking.notEnoughBalanceForFeeError')}
@@ -317,31 +289,17 @@ const InitOperation = ({ api, staking, chainId, accountIds, asset, onResult }: P
         />
 
         <div className="flex justify-between items-center uppercase text-neutral-variant text-2xs">
-          <p>{t('staking.unstake.transferable')}</p>
-
-          <div className="flex text-neutral font-semibold">
-            {transferable}&nbsp;{asset.symbol}
-          </div>
-        </div>
-
-        <div className="flex justify-between items-center uppercase text-neutral-variant text-2xs">
           <p>{t('staking.unstake.networkFee', { count: activeUnstakeAccounts.length })}</p>
 
           <Fee className="text-neutral font-semibold" api={api} asset={asset} transaction={transactions[0]} />
         </div>
 
         <HintList>
-          <HintList.Item>
-            {t('staking.unstake.durationHint')} {'('}
-            <UnstakingDuration className="ml-1" api={api} />
-            {')'}
-          </HintList.Item>
-          <HintList.Item>{t('staking.unstake.noRewardsHint')}</HintList.Item>
-          <HintList.Item>{t('staking.unstake.redeemHint')}</HintList.Item>
+          <HintList.Item>{t('staking.stakeMore.eraHint')}</HintList.Item>
         </HintList>
       </form>
 
-      <Button type="submit" form="initUnstakeForm" variant="fill" pallet="primary" weight="lg" disabled={!isValid}>
+      <Button type="submit" form="initStakeMoreForm" variant="fill" pallet="primary" weight="lg" disabled={!isValid}>
         {t('staking.bond.continueButton')}
       </Button>
     </div>
