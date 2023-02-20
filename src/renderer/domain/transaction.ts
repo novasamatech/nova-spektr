@@ -8,6 +8,7 @@ export const enum TransactionType {
   UNSTAKE = 'unbond',
   NOMINATE = 'nominate',
   BATCH_ALL = 'batchAll',
+  DESTINATION = 'payee',
 }
 
 export type Transaction = {

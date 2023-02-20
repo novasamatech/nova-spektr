@@ -20,7 +20,7 @@ jest.mock(
       children,
 );
 
-describe('screens/Bond/Confirmation', () => {
+describe('screens/Staking/Unstake/Confirmation', () => {
   const asset = { symbol: 'DOT', precision: 10 } as Asset;
   const accounts = [
     {

@@ -91,6 +91,15 @@ export const useTransaction = (): ITransactionService => {
         options,
       );
     },
+    [TransactionType.DESTINATION]: (transaction, info, options) => {
+      return methods.staking.setPayee(
+        {
+          payee: transaction.args.payee,
+        },
+        info,
+        options,
+      );
+    },
     [TransactionType.BATCH_ALL]: (transaction, info, options) => {
       const txMethods = transaction.args.transactions.map(
         (tx: Transaction) => getUnsignedTransaction[tx.type](tx, info, options).method,
@@ -117,6 +126,7 @@ export const useTransaction = (): ITransactionService => {
     [TransactionType.BOND]: ({ controller, value, payee }, api) => api.tx.staking.bond(controller, value, payee),
     [TransactionType.UNSTAKE]: ({ value }, api) => api.tx.staking.unbond(value),
     [TransactionType.NOMINATE]: ({ targets }, api) => api.tx.staking.nominate(targets),
+    [TransactionType.DESTINATION]: ({ targets }, api) => api.tx.staking.setPayee(targets),
     [TransactionType.BATCH_ALL]: ({ transactions }, api) => {
       const calls = transactions.map((t: Transaction) => getExtrinsic[t.type](t.args, api).method);
 

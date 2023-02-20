@@ -45,6 +45,7 @@ const routesConfig: RouteObject[] = [
           { index: true, element: <Screens.Staking.Overview /> },
           { path: Paths.BOND, element: <Screens.Staking.Bond /> },
           { path: Paths.UNSTAKE, element: <Screens.Staking.Unstake /> },
+          { path: Paths.DESTINATION, element: <Screens.Staking.Destination /> },
         ],
       },
     ],

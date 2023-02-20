@@ -14,7 +14,7 @@ jest.mock('@renderer/context/I18nContext', () => ({
   }),
 }));
 
-describe('screens/Bond/components/TransactionInfo', () => {
+describe('screens/Staking/components/TransactionInfo', () => {
   const asset = { symbol: 'DOT', precision: 10 } as Asset;
   const destPayload = { address: TEST_ADDRESS, type: RewardsDestination.TRANSFERABLE };
   const accounts = [
