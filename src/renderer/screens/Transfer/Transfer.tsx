@@ -5,7 +5,7 @@ import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 
 import { QrTxGenerator } from '@renderer/components/common';
-import { Address, Block, Button, ButtonBack, Dropdown, Icon } from '@renderer/components/ui';
+import { Address, Block, Button, ButtonBack, Dropdown, Icon, Plate } from '@renderer/components/ui';
 import { DropdownOption, DropdownResult } from '@renderer/components/ui/Dropdowns/common/types';
 import { useI18n } from '@renderer/context/I18nContext';
 import { useNetworkContext } from '@renderer/context/NetworkContext';
@@ -252,10 +252,11 @@ const Transfer = () => {
   return (
     <div className="h-full flex flex-col gap-y-9">
       <div className="flex items-center gap-x-2.5 mt-5 px-5">
-        <ButtonBack onCustomReturn={handleBackButton} />
-        <p className="font-semibold text-2xl text-neutral-variant">{t('balances.title')}</p>
-        <p className="font-semibold text-2xl text-neutral">/</p>
-        <h1 className="font-semibold text-2xl text-neutral">{t('transfer.title')}</h1>
+        <ButtonBack onCustomReturn={handleBackButton}>
+          <p className="font-semibold text-2xl text-neutral-variant">{t('balances.title')}</p>
+          <p className="font-semibold text-2xl text-neutral">/</p>
+          <h1 className="font-semibold text-2xl text-neutral">{t('transfer.title')}</h1>
+        </ButtonBack>
       </div>
 
       <div className="overflow-y-auto">
@@ -296,7 +297,7 @@ const Transfer = () => {
           </>
         )}
         {[Steps.SCANNING, Steps.SIGNING].includes(currentStep) && currentConnection && (
-          <div className="w-[500px] rounded-2xl bg-shade-2 p-5 flex flex-col items-center m-auto gap-2.5 overflow-auto">
+          <Plate as="section" className="w-[500px] flex flex-col items-center m-auto gap-2.5 overflow-auto">
             {currentAccount && currentConnection && (
               <SelectedAddress account={currentAccount} connection={currentConnection} />
             )}
@@ -400,7 +401,7 @@ const Transfer = () => {
                 )}
               </>
             )}
-          </div>
+          </Plate>
         )}
         {currentStep === Steps.EXECUTING && readyToConfirm && (
           <>

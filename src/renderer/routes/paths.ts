@@ -10,7 +10,7 @@ const Paths = {
   // Settings
   SETTINGS: '/settings',
   NETWORK: '/settings/network',
-  CREDENTIALS: '/settings/credentials',
+  MATRIX: '/settings/matrix',
 
   // Staking
   STAKING: '/staking',

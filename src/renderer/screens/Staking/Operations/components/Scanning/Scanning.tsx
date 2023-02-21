@@ -13,7 +13,7 @@ import {
 } from '@renderer/components/common/QrCode/QrGenerator/common/utils';
 import QrMultiframeGenerator from '@renderer/components/common/QrCode/QrGenerator/QrMultiframeTxGenerator';
 import { TRANSACTION_BULK } from '@renderer/components/common/QrCode/QrReader/common/constants';
-import { Block, Button, Icon } from '@renderer/components/ui';
+import { Block, Button, Icon, Plate } from '@renderer/components/ui';
 import { useI18n } from '@renderer/context/I18nContext';
 import { ChainId } from '@renderer/domain/shared-kernel';
 import { Transaction } from '@renderer/domain/transaction';
@@ -98,7 +98,7 @@ const Scanning = ({ api, chainId, accounts, addressPrefix, transactions, onResul
 
   return (
     <div className="overflow-y-auto">
-      <section className="flex flex-col items-center mx-auto w-[500px] rounded-2lg bg-shade-2 p-5">
+      <Plate as="section" className="flex flex-col items-center mx-auto w-[500px]">
         <Block className="flex flex-col items-center gap-y-2.5">
           <div className="text-neutral-variant text-base font-semibold">{t('signing.scanQrTitle')}</div>
           {!bulkTransactions && <div className="w-[220px] h-[220px] rounded-2lg bg-shade-20 animate-pulse" />}
@@ -151,7 +151,7 @@ const Scanning = ({ api, chainId, accounts, addressPrefix, transactions, onResul
             {t('signing.generateNewQrButton')}
           </Button>
         )}
-      </section>
+      </Plate>
     </div>
   );
 };

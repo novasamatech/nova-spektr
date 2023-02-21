@@ -59,10 +59,11 @@ const Networks = () => {
   return (
     <div className="h-full flex flex-col gap-y-9">
       <div className="flex items-center gap-x-2.5 mt-5 px-5">
-        <ButtonBack />
-        <p className="font-semibold text-2xl text-neutral-variant">{t('settings.title')}</p>
-        <p className="font-semibold text-2xl text-neutral">/</p>
-        <h1 className="font-semibold text-2xl text-neutral">{t('networkManagement.subTitle')}</h1>
+        <ButtonBack>
+          <p className="font-semibold text-2xl text-neutral-variant">{t('settings.title')}</p>
+          <p className="font-semibold text-2xl text-neutral">/</p>
+          <h1 className="font-semibold text-2xl text-neutral">{t('networkManagement.subTitle')}</h1>
+        </ButtonBack>
       </div>
 
       <div className="overflow-y-auto">

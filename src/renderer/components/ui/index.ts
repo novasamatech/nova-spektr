@@ -5,6 +5,7 @@ import Icon from './Icon/Icon';
 import Identicon from './Identicon/Identicon';
 import Input from './Inputs/Input/Input';
 import Block from './Block/Block';
+import Plate from './Plate/Plate';
 import AmountInput from './Inputs/AmountInput/AmountInput';
 import InputHint from './InputHint/InputHint';
 import Button from './Buttons/Button/Button';
@@ -36,6 +37,7 @@ export {
   Identicon,
   Input,
   Block,
+  Plate,
   AmountInput,
   InputHint,
   Button,

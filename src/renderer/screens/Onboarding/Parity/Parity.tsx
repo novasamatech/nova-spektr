@@ -40,8 +40,9 @@ const Parity = () => {
     <div className="flex flex-col h-full">
       {activeStep !== Step.FINAL && (
         <div className="flex items-center gap-x-2.5">
-          <ButtonBack />
-          <h1 className="text-neutral">{t('onboarding.paritySigner.addByParitySignerLabel')}</h1>
+          <ButtonBack>
+            <h1 className="text-neutral">{t('onboarding.paritySigner.addByParitySignerLabel')}</h1>
+          </ButtonBack>
         </div>
       )}
       <section className="flex flex-col gap-y-16 h-max max-w-[1000px] w-full m-auto">

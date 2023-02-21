@@ -124,16 +124,17 @@ const Restake = () => {
 
   const headerContent = (
     <div className="flex items-center gap-x-2.5 mb-9 mt-5 px-5">
-      <ButtonBack onCustomReturn={goToPrevStep} />
-      <p className="font-semibold text-2xl text-neutral-variant">{t('staking.title')}</p>
-      {activeStep !== Step.INIT && (
-        <>
-          <p className="font-semibold text-2xl text-neutral-variant">/</p>
-          <p className="font-semibold text-2xl text-neutral-variant">{t(HEADER_TITLE[Step.INIT])}</p>
-        </>
-      )}
-      <p className="font-semibold text-2xl text-neutral">/</p>
-      <h1 className="font-semibold text-2xl text-neutral">{t(HEADER_TITLE[activeStep])}</h1>
+      <ButtonBack onCustomReturn={goToPrevStep}>
+        <p className="font-semibold text-2xl text-neutral-variant">{t('staking.title')}</p>
+        {activeStep !== Step.INIT && (
+          <>
+            <p className="font-semibold text-2xl text-neutral-variant">/</p>
+            <p className="font-semibold text-2xl text-neutral-variant">{t(HEADER_TITLE[Step.INIT])}</p>
+          </>
+        )}
+        <p className="font-semibold text-2xl text-neutral">/</p>
+        <h1 className="font-semibold text-2xl text-neutral">{t(HEADER_TITLE[activeStep])}</h1>
+      </ButtonBack>
     </div>
   );
 

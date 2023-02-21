@@ -218,12 +218,17 @@
     "title": "Receive"
   },
   "settings": {
-    "getInTouchLabel": "Get in touch for more information",
-    "languageLabel": "Language",
-    "matrixDetailsLabel": "Manage Omni Matrix Protocol credentials",
-    "matrixLabel": "Matrix Credentials",
-    "networkDetailsLabel": "Manage network connection",
-    "networkLabel": "Network",
+    "matrix": {
+      "subTitle": "Matrix Credentials"
+    },
+    "overview": {
+      "getInTouchLabel": "Get in touch for more information!",
+      "languageLabel": "Language",
+      "matrixDetailsLabel": "Manage Omni Matrix Protocol credentials",
+      "matrixLabel": "Matrix Credentials",
+      "networkDetailsLabel": "Manage network connection",
+      "networkLabel": "Network"
+    },
     "title": "Settings"
   },
   "signing": {

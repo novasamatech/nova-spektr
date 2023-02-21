@@ -21,4 +21,5 @@ const Template: ComponentStory<typeof ButtonBack> = (args) => <ButtonBack {...ar
 export const Primary = Template.bind({});
 Primary.args = {
   path: 'test_path',
+  children: <p>Back home</p>,
 };

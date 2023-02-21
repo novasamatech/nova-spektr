@@ -82,8 +82,9 @@ const WatchOnly = () => {
   return (
     <>
       <div className="flex items-center gap-x-2.5">
-        <ButtonBack />
-        <h1 className="text-neutral">{t('onboarding.watchonly.addWatchOnlyLabel')}</h1>
+        <ButtonBack>
+          <h1 className="text-neutral">{t('onboarding.watchonly.addWatchOnlyLabel')}</h1>
+        </ButtonBack>
       </div>
       <form
         className="flex h-full flex-col gap-10 justify-center items-center"

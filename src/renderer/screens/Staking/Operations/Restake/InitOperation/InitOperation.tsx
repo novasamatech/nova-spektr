@@ -5,7 +5,17 @@ import { useEffect, useState } from 'react';
 import { Controller, SubmitHandler, useForm } from 'react-hook-form';
 
 import { Fee } from '@renderer/components/common';
-import { AmountInput, Balance, Button, HintList, Icon, Identicon, InputHint, Select } from '@renderer/components/ui';
+import {
+  AmountInput,
+  Balance,
+  Button,
+  HintList,
+  Icon,
+  Identicon,
+  InputHint,
+  Plate,
+  Select,
+} from '@renderer/components/ui';
 import { DropdownOption, DropdownResult } from '@renderer/components/ui/Dropdowns/common/types';
 import { useI18n } from '@renderer/context/I18nContext';
 import { Asset } from '@renderer/domain/asset';
@@ -259,7 +269,7 @@ const InitOperation = ({ api, staking, chainId, accountIds, asset, onResult }: P
     );
 
   return (
-    <div className="w-[600px] flex flex-col items-center mx-auto rounded-2lg bg-shade-2 p-5 ">
+    <Plate as="section" className="w-[600px] flex flex-col items-center mx-auto">
       <div className="w-full p-5 rounded-2lg bg-white shadow-surface">
         <Select
           weight="lg"
@@ -338,7 +348,7 @@ const InitOperation = ({ api, staking, chainId, accountIds, asset, onResult }: P
       <Button type="submit" form="initUnstakeForm" variant="fill" pallet="primary" weight="lg" disabled={!isValid}>
         {t('staking.bond.continueButton')}
       </Button>
-    </div>
+    </Plate>
   );
 };
 

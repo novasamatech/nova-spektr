@@ -1,5 +1,5 @@
 import Overview from './Overview/Overview';
 import Networks from './Networks/Networks/Networks';
-import Credentials from './Credentials/Credentials';
+import Matrix from './Matrix/Matrix';
 
-export default { Overview, Networks, Credentials };
+export default { Overview, Networks, Matrix };

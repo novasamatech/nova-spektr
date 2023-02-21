@@ -15,6 +15,7 @@ import {
   Icon,
   Identicon,
   InputHint,
+  Plate,
   RadioGroup,
   Select,
 } from '@renderer/components/ui';
@@ -334,7 +335,7 @@ const InitOperation = ({ api, chainId, accountIds, asset, onResult }: Props) => 
   };
 
   return (
-    <div className="w-[600px] flex flex-col items-center mx-auto rounded-2lg bg-shade-2 p-5 ">
+    <Plate as="section" className="w-[600px] flex flex-col items-center mx-auto">
       <div className="w-full p-5 rounded-2lg bg-white shadow-surface">
         <Select
           weight="lg"
@@ -459,7 +460,7 @@ const InitOperation = ({ api, chainId, accountIds, asset, onResult }: Props) => 
       <Button type="submit" form="initBondForm" variant="fill" pallet="primary" weight="lg" disabled={!isValid}>
         {t('staking.bond.continueButton')}
       </Button>
-    </div>
+    </Plate>
   );
 };
 
