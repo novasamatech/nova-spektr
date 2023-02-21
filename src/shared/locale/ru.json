@@ -312,6 +312,7 @@
       "networkFeePerAccount": "Комиссия сети / аккаунт",
       "queueButton": "добавить в очередь",
       "restakeRewards": "Вложить награды",
+      "rewardDestinationTitle": "Выплата наград",
       "rewardsDestination": "Выплата наград",
       "selectValidators": "Выбранные валидаторы",
       "signButton": "Подписать в Parity Signer",
@@ -321,6 +322,9 @@
       "transactionProgress": "Транзакции",
       "transferableRewards": "Вывести награды",
       "yourValidators": "Ваши валидаторы"
+    },
+    "destination": {
+      "initDestinationSubtitle": "Выплата наград"
     },
     "nominators": {
       "electedTitle": "Выбранные",
@@ -381,9 +385,6 @@
       "initStakeMoreSubtitle": "Застейкать ещё"
     },
     "title": "Стейкинг",
-    "unbond": {
-      "subtitle": "Отвязать токены"
-    },
     "unstake": {
       "amountPlaceholder": "Введите сумму",
       "confirmUnstakeSubtitle": "Подтверждение",

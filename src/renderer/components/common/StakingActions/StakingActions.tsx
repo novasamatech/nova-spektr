@@ -22,7 +22,7 @@ const STAKE_ACTIONS = {
   returnToStake: { icon: 'returnToStake', title: 'staking.actions.returnToStakeLabel', path: Paths.RESTAKE },
   redeem: { icon: 'redeem', title: 'staking.actions.redeemLabel', path: Paths.REDEEM },
   setValidators: { icon: 'setValidators', title: 'staking.actions.setValidatorsLabel', path: Paths.BOND },
-  destination: { icon: 'destination', title: 'staking.actions.destinationLabel', path: Paths.BOND },
+  destination: { icon: 'destination', title: 'staking.actions.destinationLabel', path: Paths.DESTINATION },
 } as const;
 
 type StakeAction = keyof typeof STAKE_ACTIONS;
