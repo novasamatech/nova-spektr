@@ -27,6 +27,7 @@ import Table from './Table/Table';
 import Shimmering from './Shimmering/Shimmering';
 import Combobox from './Dropdowns/Combobox/Combobox';
 import Duration from './Duration/Duration';
+import InfoLink from './InfoLink/InfoLink';
 import ProgressBadge from './ProgressBadge/ProgressBadge';
 
 export {
@@ -58,6 +59,7 @@ export {
   Table,
   Shimmering,
   Combobox,
+  InfoLink,
   Duration,
   ProgressBadge,
 };

@@ -13,7 +13,7 @@ import {
 } from '@renderer/components/common/QrCode/QrGenerator/common/utils';
 import QrMultiframeGenerator from '@renderer/components/common/QrCode/QrGenerator/QrMultiframeTxGenerator';
 import { TRANSACTION_BULK } from '@renderer/components/common/QrCode/QrReader/common/constants';
-import { Block, Button, Icon, Plate } from '@renderer/components/ui';
+import { Block, Button, InfoLink, Plate } from '@renderer/components/ui';
 import { useI18n } from '@renderer/context/I18nContext';
 import { ChainId } from '@renderer/domain/shared-kernel';
 import { Transaction } from '@renderer/domain/transaction';
@@ -123,17 +123,8 @@ const Scanning = ({ api, chainId, accounts, addressPrefix, transactions, onResul
           )}
         </Block>
         <div className="flex flex-col items-center gap-y-1 text-xs font-semibold text-primary mt-2.5 mb-5">
-          <a className="flex items-center" href={TROUBLESHOOTING_URL} rel="noopener noreferrer" target="_blank">
-            <Icon className="mr-1" name="globe" size={18} /> {t('signing.troubleshootingLink')}
-          </a>
-          <a
-            className="flex items-center"
-            href={getMetadataPortalUrl(chainId)}
-            rel="noopener noreferrer"
-            target="_blank"
-          >
-            <Icon className="mr-1" name="globe" size={18} /> {t('signing.metadataPortalLink')}
-          </a>
+          <InfoLink url={TROUBLESHOOTING_URL}>{t('signing.troubleshootingLink')}</InfoLink>
+          <InfoLink url={getMetadataPortalUrl(chainId)}>{t('signing.metadataPortalLink')}</InfoLink>
         </div>
 
         {bulkTxExist && countdown > 0 ? (

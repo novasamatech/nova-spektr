@@ -5,7 +5,7 @@ import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 
 import { QrTxGenerator } from '@renderer/components/common';
-import { Address, Block, Button, ButtonBack, Dropdown, Icon, Plate } from '@renderer/components/ui';
+import { Address, Block, Button, ButtonBack, Dropdown, Icon, InfoLink, Plate } from '@renderer/components/ui';
 import { DropdownOption, DropdownResult } from '@renderer/components/ui/Dropdowns/common/types';
 import { useI18n } from '@renderer/context/I18nContext';
 import { useNetworkContext } from '@renderer/context/NetworkContext';
@@ -333,17 +333,10 @@ const Transfer = () => {
                   )}
                 </Block>
                 <div className="flex flex-col items-center gap-y-1 text-xs font-semibold text-primary mt-2.5 mb-5">
-                  <a className="flex items-center" href={TROUBLESHOOTING_URL} rel="noopener noreferrer" target="_blank">
-                    <Icon className="mr-1" name="globe" size={18} /> {t('signing.troubleshootingLink')}
-                  </a>
-                  <a
-                    className="flex items-center"
-                    href={getMetadataPortalUrl(currentConnection.chainId)}
-                    rel="noopener noreferrer"
-                    target="_blank"
-                  >
-                    <Icon className="mr-1" name="globe" size={18} /> {t('signing.metadataPortalLink')}
-                  </a>
+                  <InfoLink url={TROUBLESHOOTING_URL}>{t('signing.troubleshootingLink')}</InfoLink>
+                  <InfoLink url={getMetadataPortalUrl(currentConnection.chainId)}>
+                    {t('signing.metadataPortalLink')}
+                  </InfoLink>
                 </div>
                 {txPayload && countdown > 0 ? (
                   <Button

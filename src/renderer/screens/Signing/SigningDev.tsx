@@ -7,7 +7,7 @@ import { useNetworkContext } from '@renderer/context/NetworkContext';
 import { useChains } from '@renderer/services/network/chainsService';
 import { ConnectionType } from '@renderer/domain/connection';
 import { useI18n } from '@renderer/context/I18nContext';
-import { Button, Icon, Plate } from '@renderer/components/ui';
+import { Button, Plate, InfoLink } from '@renderer/components/ui';
 import { useTransaction } from '@renderer/services/transaction/transactionService';
 import { Transaction, TransactionType } from '@renderer/domain/transaction';
 import { getMetadataPortalUrl, TROUBLESHOOTING_URL } from './common/consts';
@@ -189,18 +189,11 @@ const Signing = () => {
               </div>
 
               <div className="flex flex-col gap-y-1 items-center text-xs font-semibold text-primary">
-                <a className="flex items-center" href={TROUBLESHOOTING_URL} rel="noopener noreferrer" target="_blank">
-                  <Icon className="mr-1" name="globe" size={18} /> {t('signing.troubleshootingLink')}
-                </a>
+                <InfoLink url={TROUBLESHOOTING_URL}>{t('signing.troubleshootingLink')}</InfoLink>
                 {currentConnection && (
-                  <a
-                    className="flex items-center"
-                    href={getMetadataPortalUrl(currentConnection.chainId)}
-                    rel="noopener noreferrer"
-                    target="_blank"
-                  >
-                    <Icon className="mr-1" name="globe" size={18} /> {t('signing.metadataPortalLink')}
-                  </a>
+                  <InfoLink url={getMetadataPortalUrl(currentConnection.chainId)}>
+                    {t('signing.metadataPortalLink')}
+                  </InfoLink>
                 )}
               </div>
 
