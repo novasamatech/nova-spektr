@@ -312,6 +312,7 @@
       "networkFeePerAccount": "Network fee / account",
       "queueButton": "Add to operation queue",
       "restakeRewards": "Restake rewards",
+      "rewardDestinationTitle": "Reward destination",
       "rewardsDestination": "Rewards destination",
       "selectValidators": "Selected validators",
       "signButton": "Sign with Parity Signer",
@@ -321,6 +322,9 @@
       "transactionProgress": "Transactions",
       "transferableRewards": "Transferable rewards",
       "yourValidators": "Your validators"
+    },
+    "destination": {
+      "initDestinationSubtitle": "Reward destination"
     },
     "nominators": {
       "electedTitle": "Elected",
@@ -381,9 +385,6 @@
       "initStakeMoreSubtitle": "Stake more"
     },
     "title": "Staking",
-    "unbond": {
-      "subtitle": "Unbond"
-    },
     "unstake": {
       "amountPlaceholder": "Input amount",
       "confirmUnstakeSubtitle": "Confirmation",

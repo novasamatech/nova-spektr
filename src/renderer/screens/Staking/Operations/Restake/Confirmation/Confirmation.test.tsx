@@ -51,18 +51,6 @@ describe('screens/Bond/Confirmation', () => {
     });
 
     const signButton = screen.getByText('staking.confirmation.signButton');
-
-    // const totalBalance = screen.getByText('staking.confirmation.totalAmount');
-    // const accs = screen.getByText('staking.confirmation.accounts');
-    // const fee = screen.getByText('staking.confirmation.networkFeePerAccount');
-    // const totalFee = screen.getByText('staking.confirmation.totalNetworkFee');
-    // const validators = screen.getByText('staking.confirmation.selectValidators');
-    // expect(totalBalance).toBeInTheDocument();
-    // expect(accs).toBeInTheDocument();
-    // expect(fee).toBeInTheDocument();
-    // expect(totalFee).toBeInTheDocument();
-    // expect(validators).toBeInTheDocument();
-
     expect(signButton).toBeInTheDocument();
   });
 });

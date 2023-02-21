@@ -8,7 +8,7 @@ import { AccountDS } from '@renderer/services/storage';
 type Props = {
   isOpen: boolean;
   accounts: AccountDS[];
-  amount: string;
+  amount?: string;
   asset: Asset;
   explorers?: Explorer[];
   addressPrefix?: number;
@@ -30,7 +30,7 @@ const AccountsModal = ({ isOpen, accounts, amount, asset, explorers, addressPref
         <Table by="address" dataSource={accounts}>
           <Table.Header hidden>
             <Table.Column dataKey="name" align="left" />
-            <Table.Column dataKey="amount" width={200} />
+            {amount && <Table.Column dataKey="amount" width={200} />}
             <Table.Column dataKey="actions" width={50} />
           </Table.Header>
           <Table.Body<Required<AccountDS>>>
@@ -41,14 +41,16 @@ const AccountsModal = ({ isOpen, accounts, amount, asset, explorers, addressPref
                     <Address address={accountId} name={name} signType={signingType} size={30} canCopy={false} />
                   </div>
                 </Table.Cell>
-                <Table.Cell>
-                  <Balance
-                    className="font-semibold text-xs"
-                    value={amount}
-                    precision={asset.precision}
-                    symbol={asset.symbol}
-                  />
-                </Table.Cell>
+                {amount && (
+                  <Table.Cell>
+                    <Balance
+                      className="font-semibold text-xs"
+                      value={amount}
+                      precision={asset.precision}
+                      symbol={asset.symbol}
+                    />
+                  </Table.Cell>
+                )}
                 <Table.Cell>
                   <Explorers address={accountId} explorers={explorers} addressPrefix={addressPrefix} />
                 </Table.Cell>
