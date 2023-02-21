@@ -57,7 +57,7 @@ jest.mock('@renderer/services/balance/balanceService', () => ({
   }),
 }));
 
-describe('screens/Staking/Bond/InitOperation', () => {
+describe('screens/Destination/InitOperation', () => {
   const asset = { assetId: 1, symbol: 'DOT', precision: 10 } as Asset;
 
   test('should render component', async () => {
@@ -67,10 +67,8 @@ describe('screens/Staking/Bond/InitOperation', () => {
       );
     });
 
-    const input = screen.getByPlaceholderText('staking.bond.amountPlaceholder');
     const destination = screen.getByText('staking.bond.rewardsDestinationTitle');
     const button = screen.getByText('staking.bond.continueButton');
-    expect(input).toBeInTheDocument();
     expect(destination).toBeInTheDocument();
     expect(button).toBeInTheDocument();
   });

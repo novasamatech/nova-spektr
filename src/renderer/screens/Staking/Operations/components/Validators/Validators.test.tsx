@@ -26,7 +26,7 @@ jest.mock('@renderer/services/staking/eraService', () => ({
   }),
 }));
 
-describe('screens/Bond/Validators', () => {
+describe('screens/Staking/components/Validators', () => {
   beforeEach(() => {
     (ValidatorsTable as jest.Mock).mockImplementation(() => 'validatorsTable');
   });

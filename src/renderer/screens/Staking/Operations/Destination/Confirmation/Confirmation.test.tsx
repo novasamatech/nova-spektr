@@ -20,7 +20,7 @@ jest.mock(
       children,
 );
 
-describe('screens/Bond/Confirmation', () => {
+describe('screens/Destination/Confirmation', () => {
   const asset = { symbol: 'DOT', precision: 10 } as Asset;
   const accounts = [
     {
@@ -41,7 +41,7 @@ describe('screens/Bond/Confirmation', () => {
         <Confirmation
           api={{} as ApiPromise}
           accounts={accounts}
-          amount="123"
+          destination={TEST_ADDRESS}
           chainId="0x91b171bb158e2d3848fa23a9f1c25182fb8e20313b2c1eb49219da7a70ce90c3"
           addressPrefix={0}
           asset={asset}
