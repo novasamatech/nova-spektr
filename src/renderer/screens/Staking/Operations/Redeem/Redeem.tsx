@@ -105,7 +105,7 @@ const Unstake = () => {
     const totalRedeem = selectedAccounts.reduce((acc, account) => {
       const stake = account.accountId && staking[account.accountId];
 
-      return stake ? acc.add(new BN(redeemableAmount(stake, era))) : acc;
+      return stake ? acc.add(new BN(redeemableAmount(stake.unlocking, era))) : acc;
     }, new BN(0));
 
     setRedeemAmount(totalRedeem.toString());

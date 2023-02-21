@@ -26,46 +26,31 @@ import { RewardsDestination } from '@renderer/domain/stake';
 import { Transaction, TransactionType } from '@renderer/domain/transaction';
 import { useAccount } from '@renderer/services/account/accountService';
 import { useBalance } from '@renderer/services/balance/balanceService';
-import { formatAmount, stakeableAmount, transferableAmount } from '@renderer/services/balance/common/utils';
+import { transferableAmount } from '@renderer/services/balance/common/utils';
 import { AccountDS, BalanceDS } from '@renderer/services/storage';
 import { useTransaction } from '@renderer/services/transaction/transactionService';
-import { Wallet } from '@renderer/domain/wallet';
 import { useWallet } from '@renderer/services/wallet/walletService';
 
 const PAYOUT_URL = 'https://wiki.polkadot.network/docs/learn-simple-payouts';
 
-const validateBalance = (balance: BalanceDS | string, amount: string, asset: Asset, fee?: string): boolean => {
-  const stakeableBalance = typeof balance === 'string' ? balance : stakeableAmount(balance);
-
-  let formatedAmount = new BN(formatAmount(amount, asset.precision));
-
-  if (fee) {
-    formatedAmount = formatedAmount.add(new BN(fee));
-  }
-
-  return formatedAmount.lte(new BN(stakeableBalance));
-};
-
-const validateBalanceForFee = (balance: BalanceDS | string, fee: string, amount: string, asset: Asset): boolean => {
+const validateBalanceForFee = (balance: BalanceDS | string, fee: string): boolean => {
   const transferableBalance = typeof balance === 'string' ? balance : transferableAmount(balance);
 
-  return new BN(fee).lte(new BN(transferableBalance)) && validateBalance(balance, amount, asset, fee);
+  return new BN(fee).lte(new BN(transferableBalance));
 };
 
 const getDropdownPayload = (
   account: AccountDS,
-  wallet?: Wallet,
-  balance?: BalanceDS,
+  walletName?: string,
   asset?: Asset,
+  balance?: BalanceDS,
   fee?: string,
-  amount?: string,
 ): DropdownOption<AccountID> => {
   const address = account.accountId || '';
   const publicKey = account.publicKey || '';
-  const balanceExists = balance && asset && fee && amount;
+  const balanceExists = balance && asset && fee;
 
-  const balanceIsAvailable =
-    !balanceExists || (validateBalanceForFee(balance, fee, amount, asset) && validateBalance(balance, amount, asset));
+  const balanceIsAvailable = !balanceExists || validateBalanceForFee(balance, fee);
 
   const element = (
     <div className="flex justify-between items-center gap-x-2.5">
@@ -73,7 +58,7 @@ const getDropdownPayload = (
         <Address
           address={address}
           name={account.name}
-          subName={wallet?.name}
+          subName={walletName}
           signType={account.signingType}
           size={30}
           canCopy={false}
@@ -85,7 +70,7 @@ const getDropdownPayload = (
 
           <Balance
             className={cn(!balanceIsAvailable && 'text-error')}
-            value={stakeableAmount(balance)}
+            value={transferableAmount(balance)}
             precision={asset.precision}
             symbol={asset.symbol}
           />
@@ -101,7 +86,7 @@ const getDropdownPayload = (
   };
 };
 
-type BondForm = {
+type DestinationForm = {
   destination: AccountID;
 };
 
@@ -156,7 +141,7 @@ const InitOperation = ({ api, chainId, accountIds, asset, onResult }: Props) => 
 
   const balances = getLiveAssetBalances(publicKeys, chainId, asset.assetId.toString());
 
-  const { handleSubmit, control, watch, unregister, register } = useForm<BondForm>({
+  const { handleSubmit, control, watch, unregister, register } = useForm<DestinationForm>({
     mode: 'onChange',
     defaultValues: { destination: '' },
   });
@@ -198,7 +183,7 @@ const InitOperation = ({ api, chainId, accountIds, asset, onResult }: Props) => 
       const matchBalance = balancesMap.get(account.publicKey || '0x');
       const wallet = account.walletId ? walletsMap.get(account.walletId.toString()) : undefined;
 
-      return getDropdownPayload(account, wallet, matchBalance, asset, fee);
+      return getDropdownPayload(account, wallet?.name, asset, matchBalance, fee);
     });
 
     setDestAccounts(formattedAccounts);
@@ -218,7 +203,7 @@ const InitOperation = ({ api, chainId, accountIds, asset, onResult }: Props) => 
       if (!account.chainId || account.chainId === chainId) {
         const wallet = account.walletId ? walletsMap.get(account.walletId.toString()) : undefined;
 
-        acc.push(getDropdownPayload(account, wallet));
+        acc.push(getDropdownPayload(account, wallet?.name));
       }
 
       return acc;
@@ -261,7 +246,7 @@ const InitOperation = ({ api, chainId, accountIds, asset, onResult }: Props) => 
     }
   }, [activeDestination?.value]);
 
-  const submitBond: SubmitHandler<BondForm> = ({ destination }) => {
+  const submitDestination: SubmitHandler<DestinationForm> = ({ destination }) => {
     const selectedAddresses = activeDestAccounts.map((stake) => stake.value);
     const accounts = availableStakeAccounts.filter(
       (account) => account.accountId && selectedAddresses.includes(account.accountId),
@@ -289,9 +274,9 @@ const InitOperation = ({ api, chainId, accountIds, asset, onResult }: Props) => 
       </div>
 
       <form
-        id="initBondForm"
+        id="initDestForm"
         className="flex flex-col gap-y-5 p-5 w-full rounded-2lg bg-white mt-2.5 mb-5 shadow-surface"
-        onSubmit={handleSubmit(submitBond)}
+        onSubmit={handleSubmit(submitDestination)}
       >
         <div className="grid grid-cols-2">
           <p className="text-neutral text-xs uppercase font-bold">{t('staking.bond.rewardsDestinationTitle')}</p>
@@ -358,7 +343,7 @@ const InitOperation = ({ api, chainId, accountIds, asset, onResult }: Props) => 
         </div>
       </form>
 
-      <Button type="submit" form="initBondForm" variant="fill" pallet="primary" weight="lg" disabled={!isValid}>
+      <Button type="submit" form="initDestForm" variant="fill" pallet="primary" weight="lg" disabled={!isValid}>
         {t('staking.bond.continueButton')}
       </Button>
     </div>
