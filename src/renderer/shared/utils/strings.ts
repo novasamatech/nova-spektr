@@ -94,3 +94,9 @@ export function reactToText(node: React.ReactNode, resolvers?: ResolverMap): str
 
   return reactToText(props.children, resolvers);
 }
+
+export const includes = (value?: string, searchString?: string): boolean => {
+  if (!value || !searchString) return false;
+
+  return value.toLowerCase().includes(searchString.toLowerCase());
+};
