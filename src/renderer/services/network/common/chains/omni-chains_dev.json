@@ -25,10 +25,6 @@
         "name": "OnFinality node"
       },
       {
-        "url": "wss://public-rpc.pinknode.io/polkadot",
-        "name": "Pinknode node"
-      },
-      {
         "url": "wss://polkadot-rpc.dwellir.com",
         "name": "Dwellir node"
       },
@@ -120,14 +116,6 @@
     ],
     "nodes": [
       {
-        "url": "wss://kusama.api.onfinality.io/public-ws",
-        "name": "OnFinality node"
-      },
-      {
-        "url": "wss://public-rpc.pinknode.io/kusama",
-        "name": "Pinknode node"
-      },
-      {
         "url": "wss://kusama-rpc.dwellir.com",
         "name": "Dwellir node"
       },
@@ -138,6 +126,10 @@
       {
         "url": "wss://kusama-rpc.polkadot.io",
         "name": "Parity node"
+      },
+      {
+        "url": "wss://kusama.api.onfinality.io/public-ws",
+        "name": "OnFinality node"
       }
     ],
     "explorers": [
@@ -228,10 +220,6 @@
       {
         "url": "wss://westend-rpc.dwellir.com",
         "name": "Dwellir node"
-      },
-      {
-        "url": "wss://rpc.pinknode.io/westend/explorer",
-        "name": "Pinknode node"
       }
     ],
     "explorers": [
@@ -938,10 +926,6 @@
     ],
     "nodes": [
       {
-        "url": "wss://public-rpc.pinknode.io/alphanet",
-        "name": "Pinknode"
-      },
-      {
         "url": "wss://moonbeam-alpha.api.onfinality.io/public-ws",
         "name": "OnFinality node"
       },
@@ -1113,10 +1097,6 @@
       {
         "url": "wss://shiden.api.onfinality.io/public-ws",
         "name": "OnFinality node"
-      },
-      {
-        "url": "wss://rpc.pinknode.io/shiden/explorer",
-        "name": "Pinknode node"
       },
       {
         "url": "wss://shiden-rpc.dwellir.com",
@@ -1794,6 +1774,21 @@
           "transfersEnabled": true
         },
         "name": "Tinkernet"
+      },
+      {
+        "assetId": 4,
+        "symbol": "USDT",
+        "precision": 6,
+        "type": "orml",
+        "priceId": "tether",
+        "icon": "https://raw.githubusercontent.com/nova-wallet/nova-utils/master/icons/tokens/white/USDT.svg",
+        "typeExtras": {
+          "currencyIdScale": "0x0e000000",
+          "currencyIdType": "u32",
+          "existentialDeposit": "10000",
+          "transfersEnabled": true
+        },
+        "name": "USD Tether"
       }
     ],
     "nodes": [
@@ -2597,7 +2592,7 @@
           "existentialDeposit": "10000000000000000",
           "transfersEnabled": true
         },
-        "name": "Should be included in assetsNameMap"
+        "name": "DAI"
       }
     ],
     "nodes": [
@@ -3939,6 +3934,7 @@
         "assetId": 0,
         "symbol": "HDX",
         "precision": 12,
+        "priceId": "hydradx",
         "icon": "https://raw.githubusercontent.com/nova-wallet/nova-utils/master/icons/chains/white/HydraDX.svg",
         "name": "HydraDX"
       },
@@ -3970,7 +3966,51 @@
           "existentialDeposit": "10000000000000000",
           "transfersEnabled": true
         },
-        "name": "Should be included in assetsNameMap"
+        "name": "DAI"
+      },
+      {
+        "assetId": 3,
+        "symbol": "LRNA",
+        "precision": 12,
+        "type": "orml",
+        "icon": "https://raw.githubusercontent.com/nova-wallet/nova-utils/master/icons/tokens/white/LRNA.svg",
+        "typeExtras": {
+          "currencyIdScale": "0x01000000",
+          "currencyIdType": "u32",
+          "existentialDeposit": "400000000",
+          "transfersEnabled": true
+        },
+        "name": "LRNA"
+      },
+      {
+        "assetId": 4,
+        "symbol": "WETH-worm",
+        "precision": 18,
+        "priceId": "ethereum-wormhole",
+        "type": "orml",
+        "icon": "https://raw.githubusercontent.com/nova-wallet/nova-utils/master/icons/tokens/white/WETH-worm.svg",
+        "typeExtras": {
+          "currencyIdScale": "0x04000000",
+          "currencyIdType": "u32",
+          "existentialDeposit": "7000000000000",
+          "transfersEnabled": true
+        },
+        "name": "Ethereum wormhol"
+      },
+      {
+        "assetId": 5,
+        "symbol": "WBTC-worm",
+        "precision": 8,
+        "priceId": "wrapped-bitcoin",
+        "type": "orml",
+        "icon": "https://raw.githubusercontent.com/nova-wallet/nova-utils/master/icons/tokens/white/WBTC.svg",
+        "typeExtras": {
+          "currencyIdScale": "0x03000000",
+          "currencyIdType": "u32",
+          "existentialDeposit": "44",
+          "transfersEnabled": true
+        },
+        "name": "Wrapped BTC"
       }
     ],
     "nodes": [
@@ -4609,10 +4649,6 @@
     ],
     "nodes": [
       {
-        "url": "wss://polkadex.api.onfinality.io/public-ws",
-        "name": "OnFinality node"
-      },
-      {
         "url": "wss://mainnet.polkadex.trade",
         "name": "Polkadex team node"
       }
@@ -5110,10 +5146,6 @@
       {
         "url": "wss://kusama.kylin-node.co.uk",
         "name": "Kylin node"
-      },
-      {
-        "url": "wss://pichiu.api.onfinality.io/public-ws",
-        "name": "OnFinality node"
       }
     ],
     "types": {
@@ -5932,7 +5964,7 @@
     "options": ["governance-v1"]
   },
   {
-    "chainId": "0xf179a15464514e00fe355a66b2bdafa490c4e232eed60f036bc46302b5d898eb",
+    "chainId": "0xb587be787d4b0209a3105469f0cbfa34eeb834e49d949e841898b2243825d765",
     "name": "Governance2 Novasama Testnet",
     "assets": [
       {
@@ -5950,11 +5982,19 @@
       }
     ],
     "types": {
-      "url": "https://raw.githubusercontent.com/nova-wallet/nova-utils/master/chains/v2/types/governance2_testnet.json",
+      "url": "https://raw.githubusercontent.com/nova-wallet/nova-utils/master/chains/v2/types/novasama_gov2_testnet.json",
       "overridesCommon": true
     },
+    "externalApi": {
+      "governance-delegations": [
+        {
+          "type": "subquery",
+          "url": "https://api.subquery.network/sq/nova-wallet/nova-wallet-gov-test"
+        }
+      ]
+    },
     "icon": "https://raw.githubusercontent.com/nova-wallet/nova-utils/master/icons/chains/gradient/Governance2_Testnet.svg",
-    "addressPrefix": 42,
+    "addressPrefix": 2,
     "options": ["testnet", "governance"]
   },
   {
@@ -6077,7 +6117,7 @@
         "precision": 18,
         "priceId": "fusotao",
         "icon": "https://raw.githubusercontent.com/nova-wallet/nova-utils/master/icons/tokens/white/TAO.svg",
-        "name": "Should be included in assetsNameMap"
+        "name": "Fusotao token"
       }
     ],
     "nodes": [
@@ -6120,8 +6160,8 @@
         "name": "xx Foundation node"
       },
       {
-        "url": "wss://xxnetwork-rpc.dwellir.com",
-        "name": "Dwellir node"
+        "url": "wss://xx.api.onfinality.io/public-ws",
+        "name": "OnFinality node"
       }
     ],
     "explorers": [
@@ -6152,5 +6192,39 @@
     },
     "icon": "https://raw.githubusercontent.com/nova-wallet/nova-utils/master/icons/chains/gradient/XX_network.svg",
     "addressPrefix": 55
+  },
+  {
+    "chainId": "0x5d3c298622d5634ed019bf61ea4b71655030015bde9beb0d6a24743714462c86",
+    "parentId": "0x91b171bb158e2d3848fa23a9f1c25182fb8e20313b2c1eb49219da7a70ce90c3",
+    "name": "Pendulum",
+    "assets": [
+      {
+        "assetId": 0,
+        "symbol": "PEN",
+        "precision": 12,
+        "icon": "https://raw.githubusercontent.com/nova-wallet/nova-utils/master/icons/tokens/white/PEN.svg",
+        "name": "Pendulum token"
+      }
+    ],
+    "nodes": [
+      {
+        "url": "wss://rpc-pendulum.prd.pendulumchain.tech",
+        "name": "Pendulum node"
+      }
+    ],
+    "externalApi": {
+      "history": [
+        {
+          "type": "subquery",
+          "url": "https://api.subquery.network/sq/nova-wallet/nova-wallet-pendulum"
+        }
+      ]
+    },
+    "types": {
+      "url": "https://raw.githubusercontent.com/nova-wallet/nova-utils/master/chains/v2/types/pendulum.json",
+      "overridesCommon": true
+    },
+    "icon": "https://raw.githubusercontent.com/nova-wallet/nova-utils/master/icons/chains/gradient/Pendulum.svg",
+    "addressPrefix": 56
   }
 ]
