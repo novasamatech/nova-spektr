@@ -1128,7 +1128,7 @@
           "existentialDeposit": "10000000000000000",
           "transfersEnabled": true
         },
-        "name": "Should be included in assetsNameMap"
+        "name": "DAI"
       }
     ],
     "nodes": [

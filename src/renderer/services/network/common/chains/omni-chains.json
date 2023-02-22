@@ -3632,7 +3632,7 @@
           "existentialDeposit": "10000000000000000",
           "transfersEnabled": true
         },
-        "name": "Should be included in assetsNameMap"
+        "name": "DAI"
       },
       {
         "assetId": 3,
@@ -3646,7 +3646,7 @@
           "existentialDeposit": "400000000",
           "transfersEnabled": true
         },
-        "name": "Should be included in assetsNameMap"
+        "name": "LRNA"
       },
       {
         "assetId": 4,
@@ -3661,7 +3661,7 @@
           "existentialDeposit": "7000000000000",
           "transfersEnabled": true
         },
-        "name": "Should be included in assetsNameMap"
+        "name": "Ethereum wormhol"
       },
       {
         "assetId": 5,
@@ -3676,7 +3676,7 @@
           "existentialDeposit": "44",
           "transfersEnabled": true
         },
-        "name": "Should be included in assetsNameMap"
+        "name": "Wrapped BTC"
       }
     ],
     "nodes": [
@@ -5411,7 +5411,7 @@
         "symbol": "PEN",
         "precision": 12,
         "icon": "https://raw.githubusercontent.com/nova-wallet/nova-utils/master/icons/tokens/white/PEN.svg",
-        "name": "Should be included in assetsNameMap"
+        "name": "Pendulum token"
       }
     ],
     "nodes": [
