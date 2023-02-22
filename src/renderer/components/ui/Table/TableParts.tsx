@@ -151,9 +151,11 @@ export const TableRow = ({
 type CellProps = {
   className?: string;
 };
+
 type _CellProps = {
   align: Alignment;
 };
+
 export const TableCell = ({ className, children, ...props }: PropsWithChildren<CellProps>) => {
   // eslint-disable-next-line react/prop-types
   const { align } = props as _CellProps;
