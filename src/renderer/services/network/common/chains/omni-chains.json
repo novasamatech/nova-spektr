@@ -25,10 +25,6 @@
         "name": "OnFinality node"
       },
       {
-        "url": "wss://public-rpc.pinknode.io/polkadot",
-        "name": "Pinknode node"
-      },
-      {
         "url": "wss://polkadot-rpc.dwellir.com",
         "name": "Dwellir node"
       },
@@ -120,14 +116,6 @@
     ],
     "nodes": [
       {
-        "url": "wss://kusama.api.onfinality.io/public-ws",
-        "name": "OnFinality node"
-      },
-      {
-        "url": "wss://public-rpc.pinknode.io/kusama",
-        "name": "Pinknode node"
-      },
-      {
         "url": "wss://kusama-rpc.dwellir.com",
         "name": "Dwellir node"
       },
@@ -138,6 +126,10 @@
       {
         "url": "wss://kusama-rpc.polkadot.io",
         "name": "Parity node"
+      },
+      {
+        "url": "wss://kusama.api.onfinality.io/public-ws",
+        "name": "OnFinality node"
       }
     ],
     "explorers": [
@@ -222,10 +214,6 @@
       {
         "url": "wss://westend-rpc.dwellir.com",
         "name": "Dwellir node"
-      },
-      {
-        "url": "wss://rpc.pinknode.io/westend/explorer",
-        "name": "Pinknode node"
       }
     ],
     "explorers": [
@@ -353,7 +341,7 @@
       },
       {
         "url": "wss://statemine-rpc.dwellir.com",
-        "name": "Patract node"
+        "name": "Dwellir node"
       },
       {
         "url": "wss://statemine-rpc.polkadot.io",
@@ -985,8 +973,8 @@
         "name": "OnFinality node"
       },
       {
-        "url": "wss://rpc.pinknode.io/shiden/explorer",
-        "name": "Pinknode node"
+        "url": "wss://shiden-rpc.dwellir.com",
+        "name": "Dwellir node"
       }
     ],
     "explorers": [
@@ -1285,6 +1273,21 @@
           "transfersEnabled": true
         },
         "name": "Tinkernet"
+      },
+      {
+        "assetId": 4,
+        "symbol": "USDT",
+        "precision": 6,
+        "type": "orml",
+        "priceId": "tether",
+        "icon": "https://raw.githubusercontent.com/nova-wallet/nova-utils/master/icons/tokens/white/USDT.svg",
+        "typeExtras": {
+          "currencyIdScale": "0x0e000000",
+          "currencyIdType": "u32",
+          "existentialDeposit": "10000",
+          "transfersEnabled": true
+        },
+        "name": "USD Tether"
       }
     ],
     "nodes": [
@@ -1325,13 +1328,15 @@
           "url": "https://api.subquery.network/sq/nova-wallet/nova-wallet-basilisk"
         }
       ],
-      "governance": {
-        "type": "polkassembly",
-        "url": "https://polkassembly-hasura.herokuapp.com/v1/graphql",
-        "parameters": {
-          "network": "basilisk"
+      "governance": [
+        {
+          "type": "polkassembly",
+          "url": "https://polkassembly-hasura.herokuapp.com/v1/graphql",
+          "parameters": {
+            "network": "basilisk"
+          }
         }
-      }
+      ]
     },
     "icon": "https://raw.githubusercontent.com/nova-wallet/nova-utils/master/icons/chains/gradient/Basilisk.svg",
     "addressPrefix": 10041,
@@ -1521,6 +1526,10 @@
       {
         "url": "wss://parallel-heiko.api.onfinality.io/public-ws",
         "name": "OnFinality node"
+      },
+      {
+        "url": "wss://heiko-rpc.dwellir.com",
+        "name": "Dwellir node"
       }
     ],
     "types": {
@@ -1678,7 +1687,7 @@
         "type": "statemine",
         "icon": "https://raw.githubusercontent.com/nova-wallet/nova-utils/master/icons/chains/white/Basilisk.svg",
         "typeExtras": {
-          "assetId": "5"
+          "assetId": "9"
         },
         "name": "Basilisk"
       },
@@ -1704,6 +1713,29 @@
           "assetId": "7"
         },
         "name": "Parallel Heiko"
+      },
+      {
+        "assetId": 9,
+        "symbol": "KMA",
+        "precision": 12,
+        "priceId": "calamari-network",
+        "type": "statemine",
+        "icon": "https://raw.githubusercontent.com/nova-wallet/nova-utils/master/icons/chains/white/Calamari.svg",
+        "typeExtras": {
+          "assetId": "8"
+        },
+        "name": "Calamari Network"
+      },
+      {
+        "assetId": 10,
+        "symbol": "TUR",
+        "precision": 10,
+        "type": "statemine",
+        "icon": "https://raw.githubusercontent.com/nova-wallet/nova-utils/master/icons/chains/white/Turing.svg",
+        "typeExtras": {
+          "assetId": "10"
+        },
+        "name": "Turing"
       }
     ],
     "nodes": [
@@ -2382,6 +2414,10 @@
       {
         "url": "wss://astar.api.onfinality.io/public-ws",
         "name": "OnFinality node"
+      },
+      {
+        "url": "wss://astar-rpc.dwellir.com",
+        "name": "Dwellir node"
       }
     ],
     "explorers": [
@@ -2450,7 +2486,7 @@
         "precision": 10,
         "priceId": "polkadot",
         "type": "statemine",
-        "icon": "https://raw.githubusercontent.com/nova-wallet/nova-utils/master/icons/chains/white/Polkadot.svg",
+        "icon": "https://raw.githubusercontent.com/nova-wallet/nova-utils/master/icons/tokens/white/sDOT.svg",
         "typeExtras": {
           "assetId": "1001"
         },
@@ -3052,6 +3088,10 @@
       {
         "url": "wss://picasso-rpc.composable.finance",
         "name": "Composable node"
+      },
+      {
+        "url": "wss://picasso-rpc.dwellir.com",
+        "name": "Dwellir node"
       }
     ],
     "explorers": [
@@ -3560,6 +3600,7 @@
         "assetId": 0,
         "symbol": "HDX",
         "precision": 12,
+        "priceId": "hydradx",
         "icon": "https://raw.githubusercontent.com/nova-wallet/nova-utils/master/icons/chains/white/HydraDX.svg",
         "name": "HydraDX"
       },
@@ -3589,6 +3630,50 @@
           "currencyIdScale": "0x02000000",
           "currencyIdType": "u32",
           "existentialDeposit": "10000000000000000",
+          "transfersEnabled": true
+        },
+        "name": "Should be included in assetsNameMap"
+      },
+      {
+        "assetId": 3,
+        "symbol": "LRNA",
+        "precision": 12,
+        "type": "orml",
+        "icon": "https://raw.githubusercontent.com/nova-wallet/nova-utils/master/icons/tokens/white/LRNA.svg",
+        "typeExtras": {
+          "currencyIdScale": "0x01000000",
+          "currencyIdType": "u32",
+          "existentialDeposit": "400000000",
+          "transfersEnabled": true
+        },
+        "name": "Should be included in assetsNameMap"
+      },
+      {
+        "assetId": 4,
+        "symbol": "WETH-worm",
+        "precision": 18,
+        "priceId": "ethereum-wormhole",
+        "type": "orml",
+        "icon": "https://raw.githubusercontent.com/nova-wallet/nova-utils/master/icons/tokens/white/WETH-worm.svg",
+        "typeExtras": {
+          "currencyIdScale": "0x04000000",
+          "currencyIdType": "u32",
+          "existentialDeposit": "7000000000000",
+          "transfersEnabled": true
+        },
+        "name": "Should be included in assetsNameMap"
+      },
+      {
+        "assetId": 5,
+        "symbol": "WBTC-worm",
+        "precision": 8,
+        "priceId": "wrapped-bitcoin",
+        "type": "orml",
+        "icon": "https://raw.githubusercontent.com/nova-wallet/nova-utils/master/icons/tokens/white/WBTC.svg",
+        "typeExtras": {
+          "currencyIdScale": "0x03000000",
+          "currencyIdType": "u32",
+          "existentialDeposit": "44",
           "transfersEnabled": true
         },
         "name": "Should be included in assetsNameMap"
@@ -4169,7 +4254,7 @@
   },
   {
     "chainId": "0x3920bcb4960a1eef5580cd5367ff3f430eef052774f78468852f7b9cb39f8a3c",
-    "name": "Polkadex Solochain",
+    "name": "Polkadex",
     "assets": [
       {
         "assetId": 0,
@@ -4182,10 +4267,6 @@
       }
     ],
     "nodes": [
-      {
-        "url": "wss://polkadex.api.onfinality.io/public-ws",
-        "name": "OnFinality node"
-      },
       {
         "url": "wss://mainnet.polkadex.trade",
         "name": "Polkadex team node"
@@ -4584,10 +4665,6 @@
       {
         "url": "wss://kusama.kylin-node.co.uk",
         "name": "Kylin node"
-      },
-      {
-        "url": "wss://pichiu.api.onfinality.io/public-ws",
-        "name": "OnFinality node"
       }
     ],
     "explorers": [
@@ -4925,6 +5002,14 @@
         "name": "PendulumChain node"
       }
     ],
+    "externalApi": {
+      "history": [
+        {
+          "type": "subquery",
+          "url": "https://api.subquery.network/sq/nova-wallet/nova-wallet-amplitude"
+        }
+      ]
+    },
     "types": {
       "url": "https://raw.githubusercontent.com/nova-wallet/nova-utils/master/chains/v2/types/amplitude.json",
       "overridesCommon": true
@@ -5215,6 +5300,14 @@
         "extrinsic": "https://polkaholic.io/tx/{hash}"
       }
     ],
+    "externalApi": {
+      "history": [
+        {
+          "type": "subquery",
+          "url": "https://api.subquery.network/sq/nova-wallet/nova-wallet-dao-ipci"
+        }
+      ]
+    },
     "types": {
       "url": "https://raw.githubusercontent.com/nova-wallet/nova-utils/master/chains/v2/types/dao_ipci.json",
       "overridesCommon": true
@@ -5275,8 +5368,8 @@
         "name": "xx Foundation node"
       },
       {
-        "url": "wss://xxnetwork-rpc.dwellir.com",
-        "name": "Dwellir node"
+        "url": "wss://xx.api.onfinality.io/public-ws",
+        "name": "OnFinality node"
       }
     ],
     "explorers": [
@@ -5293,11 +5386,45 @@
         "event": null
       }
     ],
+    "externalApi": {
+      "history": [
+        {
+          "type": "subquery",
+          "url": "https://api.subquery.network/sq/nova-wallet/nova-wallet-xx-network"
+        }
+      ]
+    },
     "types": {
       "url": "https://raw.githubusercontent.com/nova-wallet/nova-utils/master/chains/v2/types/xx_network.json",
       "overridesCommon": true
     },
     "icon": "https://raw.githubusercontent.com/nova-wallet/nova-utils/master/icons/chains/gradient/XX_network.svg",
     "addressPrefix": 55
+  },
+  {
+    "chainId": "0x5d3c298622d5634ed019bf61ea4b71655030015bde9beb0d6a24743714462c86",
+    "parentId": "0x91b171bb158e2d3848fa23a9f1c25182fb8e20313b2c1eb49219da7a70ce90c3",
+    "name": "Pendulum",
+    "assets": [
+      {
+        "assetId": 0,
+        "symbol": "PEN",
+        "precision": 12,
+        "icon": "https://raw.githubusercontent.com/nova-wallet/nova-utils/master/icons/tokens/white/PEN.svg",
+        "name": "Should be included in assetsNameMap"
+      }
+    ],
+    "nodes": [
+      {
+        "url": "wss://rpc-pendulum.prd.pendulumchain.tech",
+        "name": "Pendulum node"
+      }
+    ],
+    "types": {
+      "url": "https://raw.githubusercontent.com/nova-wallet/nova-utils/master/chains/v2/types/pendulum.json",
+      "overridesCommon": true
+    },
+    "icon": "https://raw.githubusercontent.com/nova-wallet/nova-utils/master/icons/chains/gradient/Pendulum.svg",
+    "addressPrefix": 56
   }
 ]
