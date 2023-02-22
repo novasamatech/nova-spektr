@@ -162,7 +162,11 @@ const TransferForm = ({ onCreateTransaction, account, asset, connection }: Props
                 }
                 suffixElement={
                   value ? (
-                    <button className="text-neutral" type="button" onClick={() => resetField('address')}>
+                    <button
+                      className="text-neutral"
+                      type="button"
+                      onClick={() => resetField('address', { defaultValue: '' })}
+                    >
                       <Icon name="clearOutline" />
                     </button>
                   ) : (
