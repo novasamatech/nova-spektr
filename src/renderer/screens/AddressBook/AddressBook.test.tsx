@@ -8,6 +8,12 @@ jest.mock('@renderer/context/I18nContext', () => ({
   }),
 }));
 
+jest.mock('@renderer/services/contact/contactService', () => ({
+  useContact: jest.fn().mockReturnValue({
+    getLiveContacts: jest.fn().mockReturnValue([]),
+  }),
+}));
+
 describe('screen/AddressBook', () => {
   test('should render component', () => {
     render(<AddressBook />);

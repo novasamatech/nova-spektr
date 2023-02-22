@@ -1,10 +1,8 @@
-import { Account } from './account';
+import { AccountID, PublicKey } from './shared-kernel';
 
 export type Contact = {
-  name?: string;
-  mainAccounts: Account[];
-  messengerUserId: string;
-
-  // may be used in future
-  // chainAccounts: ChainAccount[];
+  name: string;
+  accountId: AccountID;
+  publicKey: PublicKey;
+  matrixId?: string;
 };

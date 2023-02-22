@@ -14,7 +14,7 @@ export type Alignment = 'left' | 'right';
 
 export type ColumnConfig = {
   dataKey: string;
-  align: 'left' | 'right';
+  align: Alignment;
   sortType: SortType;
   sortable: boolean | ((a: any, b: any) => number);
 };

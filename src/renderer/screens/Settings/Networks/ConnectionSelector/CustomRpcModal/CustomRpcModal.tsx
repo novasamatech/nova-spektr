@@ -197,7 +197,7 @@ const CustomRpcModal = ({ chainId, network, node, existingUrls, isOpen, onClose 
                       className={cn(formState === FormState.LOADING ? 'text-shade-40' : 'text-neutral')}
                       type="button"
                       disabled={formState === FormState.LOADING}
-                      onClick={() => resetField('url')}
+                      onClick={() => resetField('url', { defaultValue: '' })}
                     >
                       <Icon name="clearOutline" />
                     </button>

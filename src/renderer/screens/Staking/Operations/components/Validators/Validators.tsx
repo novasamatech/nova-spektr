@@ -11,6 +11,7 @@ import { AccountID, ChainId } from '@renderer/domain/shared-kernel';
 import { ValidatorMap } from '@renderer/services/staking/common/types';
 import { useEra } from '@renderer/services/staking/eraService';
 import { useValidators } from '@renderer/services/staking/validatorsService';
+import { includes } from '@renderer/shared/utils/strings';
 
 type Props = {
   api: ApiPromise;
@@ -55,9 +56,9 @@ const Validators = ({ api, chainId, asset, explorers, addressPrefix, onResult }:
   }, [era]);
 
   const validatorList = Object.values(validators).filter((validator) => {
-    const addressMatch = validator.address?.toLowerCase().includes(query.toLowerCase());
-    const identityMatch = validator.identity?.subName.toLowerCase().includes(query.toLowerCase());
-    const subIdentityMatch = validator.identity?.parent.name.toLowerCase().includes(query.toLowerCase());
+    const addressMatch = includes(validator.address, query);
+    const identityMatch = includes(validator.identity?.subName, query);
+    const subIdentityMatch = includes(validator.identity?.parent.name, query);
 
     return addressMatch || identityMatch || subIdentityMatch;
   });
