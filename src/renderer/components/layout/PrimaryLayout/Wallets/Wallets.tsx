@@ -1,7 +1,7 @@
 import cn from 'classnames';
 import { forwardRef, useState } from 'react';
 
-import { getShortAddress } from '@renderer/shared/utils/strings';
+import { getShortAddress, includes } from '@renderer/shared/utils/strings';
 import { Address, ButtonLink, Checkbox, Icon, Identicon, Input } from '@renderer/components/ui';
 import { useI18n } from '@renderer/context/I18nContext';
 import { AccountDS } from '@renderer/services/storage';
@@ -34,7 +34,7 @@ const Wallets = forwardRef<HTMLDivElement, Props>(({ className }, ref) => {
 
   const searchAccount = (accounts: AccountDS[] = [], query: string = '') => {
     return accounts.filter((account) => {
-      return account.name.toLowerCase().includes(query.toLowerCase()) || (account.accountId || '').includes(query);
+      return includes(account.name, query) || includes(account.accountId, query);
     });
   };
 

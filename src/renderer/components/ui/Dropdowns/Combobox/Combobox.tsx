@@ -5,6 +5,7 @@ import cn from 'classnames';
 import { Input } from '@renderer/components/ui';
 import { ViewClass, DropdownClass } from '../common/constants';
 import { DropdownOption, DropdownResult, Variant } from '../common/types';
+import { includes } from '@renderer/shared/utils/strings';
 
 type Props = {
   className?: string;
@@ -39,11 +40,7 @@ const Combobox = ({
   const [query, setQuery] = useState('');
 
   const filteredOptions = query
-    ? options.filter(
-        (option) =>
-          option.value.toLowerCase().includes(query.toLowerCase()) ||
-          JSON.stringify(option.element).toLowerCase().includes(query.toLowerCase()),
-      )
+    ? options.filter((option) => includes(option.value, query) || includes(JSON.stringify(option.element), query))
     : options;
 
   return (
