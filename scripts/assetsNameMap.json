@@ -104,5 +104,11 @@
   "ICZ": "Snow token",
   "MITO": "DAO IPCI",
   "MYRIA": "Myriad",
-  "XX": "XX network"
+  "XX": "XX network",
+  "DAI": "DAI",
+  "LRNA": "LRNA",
+  "WETH-worm": "Ethereum wormhol",
+  "WBTC-worm": "Wrapped BTC",
+  "TAO": "Fusotao token",
+  "PEN": "Pendulum token"
 }
