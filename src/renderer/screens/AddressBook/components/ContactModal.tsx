@@ -30,7 +30,7 @@ const getButtonText = (errors: FieldErrors<ContactForm>, isEdit: boolean): strin
     return 'addressBook.addContact.typeAddressButton';
   }
 
-  if (errors.accountId) {
+  if (errors.name) {
     return 'addressBook.addContact.typeNameButton';
   }
 

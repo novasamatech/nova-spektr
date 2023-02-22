@@ -6,6 +6,7 @@ import { ContactDS } from '@renderer/services/storage';
 import { useToggle } from '@renderer/shared/hooks';
 import ContactModal from './ContactModal';
 import EmptySearch from './EmptyState/EmptySearch';
+import { includes } from '@renderer/shared/utils/strings';
 
 type Props = {
   query?: string;
@@ -19,13 +20,9 @@ const ContactList = ({ contacts, query }: Props) => {
   const [filteredContacts, setFilteredContacts] = useState<ContactDS[]>([]);
 
   useEffect(() => {
-    setFilteredContacts(
-      contacts.filter(
-        (c) =>
-          c.name.toLowerCase().includes(query?.toLowerCase() || '') ||
-          c.accountId.toLowerCase().includes(query?.toLowerCase() || ''),
-      ),
-    );
+    const filtered = contacts.filter((c) => includes(c.name, query) || includes(c.accountId, query));
+
+    setFilteredContacts(filtered);
   }, [query, contacts.length]);
 
   const [currentContact, setCurrentContact] = useState<ContactDS>();
@@ -52,9 +49,7 @@ const ContactList = ({ contacts, query }: Props) => {
           {(contact) => (
             <Table.Row key={contact.id} className="bg-shade-1" height="lg">
               <Table.Cell>
-                <div className="flex items-center gap-x-1">
-                  <Address size={28} address={contact.accountId} name={contact.name} subName={contact.accountId} />
-                </div>
+                <Address size={28} address={contact.accountId} name={contact.name} subName={contact.accountId} />
               </Table.Cell>
               <Table.Cell>
                 <div className="text-xs text-neutral-variant">{contact.matrixId}</div>
