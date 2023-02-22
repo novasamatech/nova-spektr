@@ -8,15 +8,16 @@ jest.mock('@renderer/context/I18nContext', () => ({
   }),
 }));
 
-describe('screens/AddressBook/components/EmptyState/EmptySearch.tsx', () => {
+describe('screens/AddressBook/components/EmptyState/EmptyContacts.tsx', () => {
   test('should render component', () => {
     const onAddContactSpy = jest.fn();
 
     render(<EmptyContacts onAddContact={onAddContactSpy} />);
 
-    const label = screen.getByText('addressBook.contactList.emptySearchLabel');
-    const description = screen.getByText('addressBook.contactList.emptySearchDescription');
+    const label = screen.getByText('addressBook.contactList.noContactsLabel');
+    const button = screen.getByText('addressBook.contactList.noContactsButton');
+
     expect(label).toBeInTheDocument();
-    expect(description).toBeInTheDocument();
+    expect(button).toBeInTheDocument();
   });
 });
