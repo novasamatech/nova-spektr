@@ -7,7 +7,6 @@ import { useChains } from '@renderer/services/network/chainsService';
 import { ExtendedChain } from '@renderer/services/network/common/types';
 import NetworkList from '../NetworkList/NetworkList';
 import { useI18n } from '@renderer/context/I18nContext';
-import { includes } from '@renderer/shared/utils/strings';
 
 const Networks = () => {
   const { t } = useI18n();
@@ -18,7 +17,7 @@ const Networks = () => {
 
   const { disabledNetworks, activeNetworksGroup } = Object.values(connections).reduce(
     (acc, c) => {
-      if (!includes(c.name, query)) return acc;
+      if (!c.name.toLowerCase().includes(query.toLowerCase())) return acc;
 
       const {
         disabledNetworks,
