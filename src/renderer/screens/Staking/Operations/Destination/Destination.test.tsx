@@ -85,7 +85,7 @@ jest.mock('../components/Signing/Signing', () => ({ onResult }: any) => {
 });
 jest.mock('./Submit/Submit', () => () => 'finish');
 
-describe('screens/Staking/Destination/Confirmation', () => {
+describe('screens/Staking/Destination', () => {
   test('should render component', () => {
     render(<Destination />, { wrapper: MemoryRouter });
 
@@ -97,7 +97,7 @@ describe('screens/Staking/Destination/Confirmation', () => {
     expect(next).toBeInTheDocument();
   });
 
-  test('should change bond process state', async () => {
+  test('should change process state', async () => {
     render(<Destination />, { wrapper: MemoryRouter });
 
     let nextButton = screen.getByRole('button', { name: 'to confirm' });

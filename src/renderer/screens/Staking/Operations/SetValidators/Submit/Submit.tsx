@@ -98,7 +98,7 @@ const Submit = ({
       transactions={transactions}
     >
       <HintList className="mt-2.5 mb-5 px-[15px]">
-        <HintList.Item>{t('staking.confirmation.hintValidators')}</HintList.Item>
+        <HintList.Item>{t('staking.confirmation.hintNewValidators')}</HintList.Item>
       </HintList>
 
       {!submitFinished && (

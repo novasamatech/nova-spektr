@@ -43,7 +43,7 @@ jest.mock('@renderer/context/NetworkContext', () => ({
 
 jest.mock('@renderer/services/account/accountService', () => ({
   useAccount: jest.fn().mockReturnValue({
-    getActiveAccounts: () => [
+    getLiveAccounts: () => [
       {
         name: 'Test Wallet',
         accountId: '1ChFWeNRLarAPRCTM3bfJmncJbSAbSS9yqjueWz7jX7iTVZ',
@@ -71,42 +71,48 @@ const mockButton = (text: string, callback: () => void) => (
   </button>
 );
 
-jest.mock('./InitOperation/InitOperation', () => ({ onResult }: any) => {
-  return mockButton('init', onResult);
-});
 jest.mock('../components/Validators/Validators', () => ({ onResult }: any) => {
-  return mockButton('validators', onResult);
+  return mockButton('to confirm', onResult);
 });
 jest.mock('./Confirmation/Confirmation', () => ({ onResult }: any) => {
-  return mockButton('confirm', onResult);
+  return mockButton('to scan', onResult);
 });
+jest.mock('../components/Scanning/Scanning', () => ({ onResult }: any) => {
+  return mockButton('to sign', onResult);
+});
+jest.mock('../components/Signing/Signing', () => ({ onResult }: any) => {
+  return mockButton('to submit', onResult);
+});
+jest.mock('./Submit/Submit', () => () => 'finish');
 
-describe('screens/Bond/Confirmation', () => {
+describe('screens/Staking/SetValidators', () => {
   test('should render component', () => {
     render(<SetValidators />, { wrapper: MemoryRouter });
 
     const title = screen.getByText('staking.title');
-    const subTitle = screen.getByText('staking.bond.initBondSubtitle');
-    const initBond = screen.getByText('init');
+    const subTitle = screen.getByText('staking.bond.validatorsSubtitle');
+    const next = screen.getByText('to confirm');
     expect(title).toBeInTheDocument();
     expect(subTitle).toBeInTheDocument();
-    expect(initBond).toBeInTheDocument();
+    expect(next).toBeInTheDocument();
   });
 
-  test('should change bond process state', async () => {
+  test('should change process state', async () => {
     render(<SetValidators />, { wrapper: MemoryRouter });
 
-    const initBond = screen.getByRole('button', { name: 'init' });
-    await act(async () => initBond.click());
+    let nextButton = screen.getByRole('button', { name: 'to confirm' });
+    await act(async () => nextButton.click());
 
-    const validatorsBond = screen.getByRole('button', { name: 'validators' });
-    expect(validatorsBond).toBeInTheDocument();
-    expect(initBond).not.toBeInTheDocument();
+    nextButton = screen.getByRole('button', { name: 'to scan' });
+    await act(async () => nextButton.click());
 
-    await act(async () => validatorsBond.click());
+    nextButton = screen.getByRole('button', { name: 'to sign' });
+    await act(async () => nextButton.click());
 
-    const confirmBond = screen.getByRole('button', { name: 'confirm' });
-    expect(validatorsBond).not.toBeInTheDocument();
-    expect(confirmBond).toBeInTheDocument();
+    nextButton = screen.getByRole('button', { name: 'to submit' });
+    await act(async () => nextButton.click());
+
+    const finish = screen.getByText('finish');
+    expect(finish).toBeInTheDocument();
   });
 });
