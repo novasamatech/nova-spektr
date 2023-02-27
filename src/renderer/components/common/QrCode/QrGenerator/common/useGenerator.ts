@@ -47,7 +47,10 @@ const useGenerator = (
         // when we overflow, skip to the first and slightly increase the delay between frames
         if (frameIdx === state.frames.length) {
           frameIdx = 0;
-          timerRef.current.timerDelay = timerRef.current.timerDelay + TIMER_INC;
+
+          if (timerRef.current.timerDelay < 250) {
+            timerRef.current.timerDelay += TIMER_INC;
+          }
         }
 
         // only encode the frames on demand, not above as part of the state derivation
@@ -68,9 +71,10 @@ const useGenerator = (
     return () => {
       if (timerRef.current.timerId) {
         clearTimeout(timerRef.current.timerId);
+        timerRef.current = { timerDelay: delay, timerId: null };
       }
     };
-  }, []);
+  }, [payload]);
 
   useEffect(() => {
     setFrameState((state): FrameState => {
