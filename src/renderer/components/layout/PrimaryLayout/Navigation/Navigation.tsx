@@ -18,6 +18,7 @@ type CardType = SigningType | 'multiple' | 'none';
 const CardStyle: Record<CardType, string> = {
   [SigningType.WATCH_ONLY]: 'bg-alert border-[3px] border-alert',
   [SigningType.PARITY_SIGNER]: 'bg-primary border-[3px] border-primary',
+  [SigningType.MULTISIG]: 'bg-tertiary-variant border-[3px] border-tertiary-variant',
   multiple: 'bg-shade-40 multiple-card',
   none: 'bg-shade-40 border-[3px] border-shade-40',
 };
