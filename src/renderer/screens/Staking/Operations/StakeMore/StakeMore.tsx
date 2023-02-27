@@ -1,22 +1,19 @@
 import { UnsignedTransaction } from '@substrate/txwrapper-polkadot';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { Navigate, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 
 import { ButtonBack, ButtonLink, Icon } from '@renderer/components/ui';
 import { useI18n } from '@renderer/context/I18nContext';
 import { useNetworkContext } from '@renderer/context/NetworkContext';
 import { StakingType } from '@renderer/domain/asset';
-import { AccountID, ChainId, HexString, SigningType } from '@renderer/domain/shared-kernel';
+import { ChainId, HexString } from '@renderer/domain/shared-kernel';
 import { Transaction } from '@renderer/domain/transaction';
 import Paths from '@renderer/routes/paths';
-import { useAccount } from '@renderer/services/account/accountService';
-import { StakingMap } from '@renderer/services/staking/common/types';
-import { useStakingData } from '@renderer/services/staking/stakingDataService';
 import { AccountDS } from '@renderer/services/storage';
 import Scanning from '../components/Scanning/Scanning';
 import Signing from '../components/Signing/Signing';
 import Confirmation from './Confirmation/Confirmation';
-import InitOperation, { UnstakeResult } from './InitOperation/InitOperation';
+import InitOperation, { StakeMoreResult } from './InitOperation/InitOperation';
 import Submit from './Submit/Submit';
 
 const enum Step {
@@ -39,9 +36,6 @@ const StakeMore = () => {
   const { t } = useI18n();
   const navigate = useNavigate();
   const { connections } = useNetworkContext();
-  const { subscribeStaking } = useStakingData();
-  const { getLiveAccounts } = useAccount();
-  const accounts = getLiveAccounts({ signingType: SigningType.PARITY_SIGNER });
 
   const [searchParams] = useSearchParams();
   const params = useParams<{ chainId: ChainId }>();
@@ -51,7 +45,6 @@ const StakeMore = () => {
   const [additionalAmount, setAdditionalAmount] = useState<string>('');
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [unsignedTransactions, setUnsignedTransactions] = useState<UnsignedTransaction[]>([]);
-  const [staking, setStaking] = useState<StakingMap>({});
   const [selectedAccounts, setSelectedAccounts] = useState<AccountDS[]>([]);
   const [signatures, setSignatures] = useState<HexString[]>([]);
 
@@ -64,26 +57,6 @@ const StakeMore = () => {
 
   const { api, explorers, addressPrefix, assets, name } = connections[chainId];
   const asset = assets.find((asset) => asset.staking === StakingType.RELAYCHAIN);
-
-  useEffect(() => {
-    if (!api?.isConnected || accountIds.length === 0) return;
-
-    let unsubStaking: () => void | undefined;
-
-    const selectedAccounts = accounts.reduce<AccountID[]>((acc, account) => {
-      const accountExists = account.id && accountIds.includes(account.id.toString());
-
-      return accountExists ? [...acc, account.accountId as AccountID] : acc;
-    }, []);
-
-    (async () => {
-      unsubStaking = await subscribeStaking(chainId, api, selectedAccounts, setStaking);
-    })();
-
-    return () => {
-      unsubStaking?.();
-    };
-  }, [api, accounts.length, accountIds.length]);
 
   if (!api?.isConnected) {
     // TODO: show skeleton until we connect to network's api
@@ -99,7 +72,7 @@ const StakeMore = () => {
     }
   };
 
-  const onUnstakeResult = (data: UnstakeResult) => {
+  const onUnstakeResult = (data: StakeMoreResult) => {
     if (!asset) return;
 
     setSelectedAccounts(data.accounts);
@@ -155,14 +128,7 @@ const StakeMore = () => {
       {headerContent}
 
       {activeStep === Step.INIT && (
-        <InitOperation
-          api={api}
-          chainId={chainId}
-          staking={staking}
-          accountIds={accountIds}
-          asset={asset}
-          onResult={onUnstakeResult}
-        />
+        <InitOperation api={api} chainId={chainId} accountIds={accountIds} asset={asset} onResult={onUnstakeResult} />
       )}
       {activeStep === Step.CONFIRMATION && (
         <Confirmation
