@@ -43,10 +43,10 @@ const getDropdownPayload = (
 ): DropdownOption<AccountID> => {
   const address = account.accountId || '';
   const publicKey = account.publicKey || '';
-  const balanceExists = balance && stake && asset && fee && amount;
+  const balanceExists = balance && stake && asset;
 
   const balanceIsAvailable =
-    !balanceExists || (validateBalanceForFee(balance, fee) && validateBalance(stake, amount, asset));
+    !balanceExists || !amount || (fee && validateBalanceForFee(balance, fee) && validateBalance(stake, amount, asset));
 
   const element = (
     <div className="flex justify-between items-center gap-x-2.5">
@@ -60,7 +60,7 @@ const getDropdownPayload = (
 
           <Balance
             className={cn(!balanceIsAvailable && 'text-error')}
-            value={stake.active}
+            value={unlockingAmount(stake.unlocking)}
             precision={asset.precision}
             symbol={asset.symbol}
           />
@@ -148,8 +148,7 @@ const InitOperation = ({ api, staking, chainId, accountIds, asset, onResult }: P
       return;
     }
 
-    const staked = activeUnstakeAccounts.map((a) => staking?.[a.value]?.active || '0');
-    console.log(staked);
+    const staked = activeUnstakeAccounts.map((a) => unlockingAmount(staking?.[a.value]?.unlocking));
 
     const minMaxBalances = staked.reduce<[string, string]>(
       (acc, balance) => {
@@ -200,7 +199,7 @@ const InitOperation = ({ api, staking, chainId, accountIds, asset, onResult }: P
     });
 
     setUnstakeAccounts(formattedAccounts);
-  }, [accountIds.length, amount, fee, balances.length]);
+  }, [accountIds.length, activeBalances, staking, amount, fee, balances.length]);
 
   // Init active unstake accounts
   useEffect(() => {
