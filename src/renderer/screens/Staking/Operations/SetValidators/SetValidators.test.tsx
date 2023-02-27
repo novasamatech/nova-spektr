@@ -3,7 +3,7 @@ import { MemoryRouter } from 'react-router-dom';
 
 import { ConnectionStatus } from '@renderer/domain/connection';
 import { TEST_PUBLIC_KEY } from '@renderer/shared/utils/constants';
-import Destination from './Destination';
+import SetValidators from './SetValidators';
 
 jest.mock('@renderer/context/I18nContext', () => ({
   useI18n: jest.fn().mockReturnValue({
@@ -43,7 +43,7 @@ jest.mock('@renderer/context/NetworkContext', () => ({
 
 jest.mock('@renderer/services/account/accountService', () => ({
   useAccount: jest.fn().mockReturnValue({
-    getActiveAccounts: () => [
+    getLiveAccounts: () => [
       {
         name: 'Test Wallet',
         accountId: '1ChFWeNRLarAPRCTM3bfJmncJbSAbSS9yqjueWz7jX7iTVZ',
@@ -71,7 +71,7 @@ const mockButton = (text: string, callback: () => void) => (
   </button>
 );
 
-jest.mock('./InitOperation/InitOperation', () => ({ onResult }: any) => {
+jest.mock('../components/Validators/Validators', () => ({ onResult }: any) => {
   return mockButton('to confirm', onResult);
 });
 jest.mock('./Confirmation/Confirmation', () => ({ onResult }: any) => {
@@ -85,12 +85,12 @@ jest.mock('../components/Signing/Signing', () => ({ onResult }: any) => {
 });
 jest.mock('./Submit/Submit', () => () => 'finish');
 
-describe('screens/Staking/Destination', () => {
+describe('screens/Staking/SetValidators', () => {
   test('should render component', () => {
-    render(<Destination />, { wrapper: MemoryRouter });
+    render(<SetValidators />, { wrapper: MemoryRouter });
 
     const title = screen.getByText('staking.title');
-    const subTitle = screen.getByText('staking.destination.initDestinationSubtitle');
+    const subTitle = screen.getByText('staking.bond.validatorsSubtitle');
     const next = screen.getByText('to confirm');
     expect(title).toBeInTheDocument();
     expect(subTitle).toBeInTheDocument();
@@ -98,7 +98,7 @@ describe('screens/Staking/Destination', () => {
   });
 
   test('should change process state', async () => {
-    render(<Destination />, { wrapper: MemoryRouter });
+    render(<SetValidators />, { wrapper: MemoryRouter });
 
     let nextButton = screen.getByRole('button', { name: 'to confirm' });
     await act(async () => nextButton.click());

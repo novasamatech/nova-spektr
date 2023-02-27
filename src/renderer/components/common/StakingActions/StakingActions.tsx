@@ -10,7 +10,7 @@ import { useToggle } from '@renderer/shared/hooks';
 import { toPublicKey } from '@renderer/shared/utils/address';
 import { AccountID } from '@renderer/domain/shared-kernel';
 
-enum AccountTypes {
+const enum AccountTypes {
   STASH = 'stash',
   CONTROLLER = 'controller',
 }
@@ -21,7 +21,7 @@ const STAKE_ACTIONS = {
   unstake: { icon: 'unstake', title: 'staking.actions.unstakeLabel', path: Paths.UNSTAKE },
   returnToStake: { icon: 'returnToStake', title: 'staking.actions.returnToStakeLabel', path: Paths.RESTAKE },
   redeem: { icon: 'redeem', title: 'staking.actions.redeemLabel', path: Paths.REDEEM },
-  setValidators: { icon: 'setValidators', title: 'staking.actions.setValidatorsLabel', path: Paths.BOND },
+  setValidators: { icon: 'setValidators', title: 'staking.actions.setValidatorsLabel', path: Paths.VALIDATORS },
   destination: { icon: 'destination', title: 'staking.actions.destinationLabel', path: Paths.DESTINATION },
 } as const;
 
@@ -85,16 +85,20 @@ const StakingActions = ({ stakes, className, onNavigate }: Props) => {
     return null;
   }
 
+  const isController = (stake: Stake): boolean => {
+    return !stake.controller || toPublicKey(stake.accountId) === toPublicKey(stake.controller);
+  };
+
+  const isStash = (stake: Stake): boolean => {
+    return !stake.stash || toPublicKey(stake.accountId) === toPublicKey(stake.stash);
+  };
+
   const hasIncorrectAccounts = (action: StakeAction): AccountTypes | null => {
     if (StashActions.includes(action)) return stakes.every(isStash) ? null : AccountTypes.STASH;
     if (ControllerActions.includes(action)) return stakes.every(isController) ? null : AccountTypes.CONTROLLER;
 
     return null;
   };
-
-  const isController = (stake: Stake) =>
-    !stake.controller || toPublicKey(stake.accountId) === toPublicKey(stake.controller);
-  const isStash = (stake: Stake) => !stake.stash || toPublicKey(stake.accountId) === toPublicKey(stake.stash);
 
   const getAccounts = (accountType: AccountTypes): Stake[] => {
     if (accountType === AccountTypes.STASH) return stakes.filter(isStash);
@@ -161,21 +165,23 @@ const StakingActions = ({ stakes, className, onNavigate }: Props) => {
       </ul>
 
       <BaseModal
-        contentClass="px-5 pb-4 max-w-xl"
+        contentClass="px-5 py-5 w-[490px]"
         isOpen={isDialogOpen}
         title={
           <div className="flex items-center gap-2.5">
             {actionType && (
               <>
                 <Icon name={STAKE_ACTIONS[actionType].icon} />
-                <span>{t(STAKE_ACTIONS[actionType].title)}</span>
+                <p>{t(STAKE_ACTIONS[actionType].title)}</p>
               </>
             )}
           </div>
         }
         onClose={toggleIsDialogOpen}
       >
-        <Trans t={t} i18nKey={warningMessage} />
+        <p className="text-neutral-variant">
+          <Trans t={t} i18nKey={warningMessage} />
+        </p>
 
         <div className="flex items-center gap-2.5 mt-5">
           <Button
