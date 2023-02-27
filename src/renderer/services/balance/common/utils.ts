@@ -118,7 +118,7 @@ export const transferableAmount = (balance?: Balance): string => {
   return bnFree.gt(bnFrozen) ? bnFree.sub(bnFrozen).toString() : ZERO_BALANCE;
 };
 
-export const stakeableAmount = (balance: Balance): string => {
+export const stakeableAmount = (balance?: Balance): string => {
   if (!balance) return ZERO_BALANCE;
 
   const bnFree = new BN(balance.free || 0);
@@ -127,8 +127,8 @@ export const stakeableAmount = (balance: Balance): string => {
   return bnFree.sub(bnStaked).toString();
 };
 
-export const unlockingAmount = (unlocking: Unlocking[]): string => {
-  if (unlocking.length === 0) return ZERO_BALANCE;
+export const unlockingAmount = (unlocking?: Unlocking[]): string => {
+  if (!unlocking || unlocking.length === 0) return ZERO_BALANCE;
 
   return unlocking.reduce((acc, s) => acc.add(new BN(s.value)), BN_ZERO).toString();
 };
