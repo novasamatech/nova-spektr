@@ -499,6 +499,7 @@
     "addByParitySignerButton": "Добавить кошелёк из Parity Signer",
     "addWatchOnlyButton": "Добавить Watch-Only кошелёк",
     "multishardWalletsLabel": "Multishard",
+    "multisigLabel": "Multisig",
     "paritySignerLabel": "Parity Signer",
     "searchPlaceholder": "Поиск кошелька",
     "watchOnlyLabel": "Watch-only"
