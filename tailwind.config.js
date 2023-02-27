@@ -20,6 +20,7 @@ module.exports = {
         secondary: '#A7DB57',
         'secondary-variant': '#E9F6D5',
         tertiary: '#262E42',
+        'tertiary-variant': '#262E42',
         neutral: '#333333',
         'neutral-variant': '#666666',
         success: '#55BA4C',

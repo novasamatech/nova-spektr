@@ -37,7 +37,7 @@ const Confirmation = ({ api, chainId, accounts, amount, asset, explorers, addres
     }));
 
     setTransactions(newTransactions);
-  }, []);
+  }, [accounts.length]);
 
   if (!api) {
     return null;
