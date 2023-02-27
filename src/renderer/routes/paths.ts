@@ -20,6 +20,7 @@ const Paths = {
   RESTAKE: '/staking/restake/:chainId',
   REDEEM: '/staking/redeem/:chainId',
   STAKE_MORE: '/staking/stake-more/:chainId',
+  VALIDATORS: '/staking/validators/:chainId',
 
   // Navigation
   ADDRESS_BOOK: '/address-book',

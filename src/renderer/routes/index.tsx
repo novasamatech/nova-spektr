@@ -49,6 +49,7 @@ const routesConfig: RouteObject[] = [
           { path: Paths.STAKE_MORE, element: <Screens.Staking.StakeMore /> },
           { path: Paths.REDEEM, element: <Screens.Staking.Redeem /> },
           { path: Paths.DESTINATION, element: <Screens.Staking.Destination /> },
+          { path: Paths.VALIDATORS, element: <Screens.Staking.SetValidators /> },
         ],
       },
     ],
