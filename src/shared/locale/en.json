@@ -332,10 +332,12 @@
       "account": "Account",
       "accounts": "Accounts",
       "accountsTitle": "Selected accounts",
+      "changeValidatorsTitle": "Change validators",
       "errorModalDiscardButton": "Discard",
       "errorModalEditButton": "Edit",
       "errorModalSubtitle": "You can either edit or discard these transactions",
       "errorModalTitle": "Error submitting { number } transactions",
+      "hintNewValidators": "Your validators will change in the next era",
       "hintNoRewards": "During unstaking period tokens produce no rewards",
       "hintRedeem": "After unstaking period don’t forget to redeem your tokens",
       "hintRewards": "Tokens in stake produce rewards each era (6 hours)",
@@ -347,6 +349,7 @@
       "rewardDestinationTitle": "Rewards destination",
       "rewardsDestination": "Rewards destination",
       "selectValidators": "Selected validators",
+      "setValidatorsTitle": "Set validators",
       "signButton": "Sign with Parity Signer",
       "submittingOperation": "Submitting operation",
       "totalAmount": "Total amount",
@@ -451,9 +454,9 @@
       "validatorsTableHeader": "Validators"
     },
     "warning": {
-      "controller": "This operation works with <strong>Controller</strong> accounts only. Would you like to deselect <strong>Stash</strong> accounts to continue?",
+      "controller": "This operation works with <strong>Controller</strong> accounts only.<br />Would you like to deselect <strong>Stash</strong> accounts to continue?",
       "noButton": "No",
-      "stash": "This operation works with <strong>Stash</strong> accounts only. Would you like to deselect <strong>Controller</strong> accounts to continue?",
+      "stash": "This operation works with <strong>Stash</strong> accounts only.<br />Would you like to deselect <strong>Controller</strong> accounts to continue?",
       "yesButton": "Yes"
     }
   },
