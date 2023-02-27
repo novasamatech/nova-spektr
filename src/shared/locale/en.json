@@ -287,7 +287,7 @@
       "yearlyEarningLabel": "Yearly"
     },
     "actions": {
-      "destinationLabel": "Reward destination",
+      "destinationLabel": "Rewards destination",
       "redeemLabel": "Redeem",
       "returnToStakeLabel": "Return to stake",
       "setValidatorsLabel": "Set validators",
@@ -344,7 +344,7 @@
       "networkFeePerAccount": "Network fee / account",
       "queueButton": "Add to operation queue",
       "restakeRewards": "Restake rewards",
-      "rewardDestinationTitle": "Reward destination",
+      "rewardDestinationTitle": "Rewards destination",
       "rewardsDestination": "Rewards destination",
       "selectValidators": "Selected validators",
       "signButton": "Sign with Parity Signer",
@@ -356,7 +356,7 @@
       "yourValidators": "Your validators"
     },
     "destination": {
-      "initDestinationSubtitle": "Reward destination"
+      "initDestinationSubtitle": "Rewards destination"
     },
     "nominators": {
       "electedTitle": "Elected",
