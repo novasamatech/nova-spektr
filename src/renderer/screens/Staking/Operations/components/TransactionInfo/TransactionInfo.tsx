@@ -60,7 +60,7 @@ const TransactionInfo = ({
           <Block className="flex flex-col gap-y-5">
             {title && <h2 className="text-center text-neutral font-semibold text-xl">{title}</h2>}
 
-            {!title && singleAccount && (
+            {!title && singleAccount && stake && (
               <div className="flex flex-col items-center mt-6 mb-9 ">
                 <Balance
                   className="text-4.5xl font-bold"
@@ -71,7 +71,7 @@ const TransactionInfo = ({
               </div>
             )}
 
-            {!title && !singleAccount && (
+            {!title && !singleAccount && stake && (
               <div className="flex flex-col items-center gap-y-6 mb-9">
                 <h2 className="text-neutral font-semibold text-xl">{t('staking.confirmation.totalAmount')}</h2>
                 <Balance

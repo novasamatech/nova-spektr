@@ -1,7 +1,7 @@
 import cn from 'classnames';
 import { forwardRef, useState } from 'react';
 
-import { getShortAddress } from '@renderer/shared/utils/strings';
+import { getShortAddress, includes } from '@renderer/shared/utils/strings';
 import { Address, ButtonLink, Checkbox, Icon, Identicon, Input } from '@renderer/components/ui';
 import { useI18n } from '@renderer/context/I18nContext';
 import { AccountDS } from '@renderer/services/storage';
@@ -19,6 +19,7 @@ type Props = {
 const GroupLabels = {
   [SigningType.WATCH_ONLY]: 'wallets.watchOnlyLabel',
   [SigningType.PARITY_SIGNER]: 'wallets.paritySignerLabel',
+  [SigningType.MULTISIG]: 'wallets.multisigLabel',
   [WalletType.MULTISHARD_PARITY_SIGNER]: 'wallets.multishardWalletsLabel',
 };
 
@@ -31,10 +32,11 @@ const Wallets = forwardRef<HTMLDivElement, Props>(({ className }, ref) => {
   const wallets = useWalletsStructure({ signingType: SigningType.PARITY_SIGNER }, query);
   const watchOnlyAccounts = getLiveAccounts({ signingType: SigningType.WATCH_ONLY });
   const paritySignerAccounts = getLiveAccounts({ signingType: SigningType.PARITY_SIGNER });
+  const multisigAccounts = getLiveAccounts({ signingType: SigningType.MULTISIG });
 
   const searchAccount = (accounts: AccountDS[] = [], query: string = '') => {
     return accounts.filter((account) => {
-      return account.name.toLowerCase().includes(query.toLowerCase()) || (account.accountId || '').includes(query);
+      return includes(account.name, query) || includes(account.accountId, query);
     });
   };
 
@@ -43,8 +45,13 @@ const Wallets = forwardRef<HTMLDivElement, Props>(({ className }, ref) => {
     query,
   );
   const searchedWatchOnlyAccounts = searchAccount(watchOnlyAccounts, query);
+  const searchedMultisigAccounts = searchAccount(multisigAccounts, query);
 
   const accountGroups = [
+    {
+      label: GroupLabels[SigningType.MULTISIG],
+      accounts: searchedMultisigAccounts,
+    },
     {
       label: GroupLabels[WalletType.MULTISHARD_PARITY_SIGNER],
       accounts: wallets,

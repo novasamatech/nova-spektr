@@ -1,5 +1,37 @@
 {
   "addressBook": {
+    "addContact": {
+      "accountIdIncorrectError": "Incrorrect account address",
+      "accountIdLabel": "адрес контакта",
+      "accountIdPlaceholder": "Enter or paste an address",
+      "accountIdRequiredError": "Account address is required",
+      "addContactButton": "Add contact",
+      "matrixIdError": "Incrorrect matrix id",
+      "matrixIdLabel": "matrix id (optional)",
+      "matrixIdPlaceholder": "Enter or paste Matrix ID, ie: @bob:matrix.org",
+      "nameLabel": "Name",
+      "namePlaceholder": "Enter a name",
+      "nameRequiredError": "Name is required",
+      "title": "Добавить контакт",
+      "typeAddressAndNameButton": "Type a name and address",
+      "typeAddressButton": "Type the address",
+      "typeNameButton": "Type a name"
+    },
+    "addContactButton": "Добавить контакт",
+    "contactList": {
+      "emptySearchDescription": "Try to search for another name",
+      "emptySearchLabel": "No contact with entered name were found",
+      "matrixIdColumnTitle": "Matrix ID",
+      "nameColumnTitle": "Name",
+      "noContactsButton": "Add your first contact",
+      "noContactsLabel": "Your address book is empty"
+    },
+    "editContact": {
+      "editWarning": "please note: by changing the address, multisig account will not be changed.",
+      "saveContactButton": "Save contact",
+      "title": "Edit contact"
+    },
+    "searchPlaceholder": "Введите имя или адрес...",
     "title": "Адресная книга"
   },
   "assetBalance": {
@@ -314,6 +346,7 @@
       "networkFeePerAccount": "Комиссия сети / аккаунт",
       "queueButton": "добавить в очередь",
       "restakeRewards": "Вложить награды",
+      "rewardDestinationTitle": "Выплата наград",
       "rewardsDestination": "Выплата наград",
       "selectValidators": "Выбранные валидаторы",
       "setValidatorsTitle": "Выбор валидаторов",
@@ -324,6 +357,9 @@
       "transactionProgress": "Транзакции",
       "transferableRewards": "Вывести награды",
       "yourValidators": "Ваши валидаторы"
+    },
+    "destination": {
+      "initDestinationSubtitle": "Выплата наград"
     },
     "nominators": {
       "electedTitle": "Выбранные",
@@ -337,6 +373,8 @@
     },
     "notEnoughBalanceError": "Недостаточно средств для выполнения операции",
     "notEnoughBalanceForFeeError": "Недостаточно средств для оплаты комиссии",
+    "notEnoughStakedError": "Not enough staked to unstake specific amount",
+    "notEnoughUnlockingError": "Not enough unlocking to return specific amount",
     "overview": {
       "aboutStakingLabel": "О стейкинге { asset } токенов",
       "accountTableHeader": "Аккаунты",
@@ -362,20 +400,35 @@
       "totalStakedLabel": "Общий стейк",
       "viewValidatorsOption": "Валидаторы"
     },
-    "requiredAmountError": "Пожалуйста, введите сумму",
-    "title": "Стейкинг",
-    "unbond": {
-      "subtitle": "Отвязать токены"
+    "redeem": {
+      "availablePlaceholder": "Доступно",
+      "initRedeemSubtitle": "Вывести"
     },
+    "requiredAmountError": "Пожалуйста, введите сумму",
+    "restake": {
+      "amountPlaceholder": "Введите сумму",
+      "confirmRestakeSubtitle": "Подтверждение",
+      "eraHint": "Возвращённые токены начнут учитываться начиная со следующей эры",
+      "initRestakeSubtitle": "Вернуть в стейк",
+      "transferable": "Доступно",
+      "unstakingPlaceholder": "Выводится из стейка"
+    },
+    "stakeMore": {
+      "availablePlaceholder": "Доступно",
+      "confirmStakeMoreSubtitle": "Подтверждение",
+      "eraHint": "Вы будете получать увеличенную награду начиная со следующей эры",
+      "initStakeMoreSubtitle": "Застейкать ещё"
+    },
+    "title": "Стейкинг",
     "unstake": {
       "amountPlaceholder": "Введите сумму",
       "confirmUnstakeSubtitle": "Подтверждение",
-      "durationDescription": "To unstake tokens you will have to wait for the ustaking period",
+      "durationHint": "To unstake tokens you will have to wait for the ustaking period",
       "initUnstakeSubtitle": "Вывод из стейка",
       "networkFee_one": "Комиссия сети",
       "networkFee_other": "Комиссия сети / Аккаунт",
-      "noRewardsDescription": "During unstaking period tokens produce no rewards",
-      "redeemDescription": "После периода вывода из стейкинга не забудьте redeem ваши токены",
+      "noRewardsHint": "During unstaking period tokens produce no rewards",
+      "redeemHint": "После периода вывода из стейкинга не забудьте redeem ваши токены",
       "stakedPlaceholder": "В стейке",
       "transferable": "Доступно"
     },
@@ -449,6 +502,7 @@
     "addByParitySignerButton": "Добавить кошелёк из Parity Signer",
     "addWatchOnlyButton": "Добавить Watch-Only кошелёк",
     "multishardWalletsLabel": "Multishard",
+    "multisigLabel": "Multisig",
     "paritySignerLabel": "Parity Signer",
     "searchPlaceholder": "Поиск кошелька",
     "watchOnlyLabel": "Watch-only"

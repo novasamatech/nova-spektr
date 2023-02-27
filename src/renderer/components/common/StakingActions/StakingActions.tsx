@@ -17,12 +17,12 @@ const enum AccountTypes {
 
 const STAKE_ACTIONS = {
   startStaking: { icon: 'startStaking', title: 'staking.actions.startStakingLabel', path: Paths.BOND },
-  stakeMore: { icon: 'stakeMore', title: 'staking.actions.stakeMoreLabel', path: Paths.BOND },
+  stakeMore: { icon: 'stakeMore', title: 'staking.actions.stakeMoreLabel', path: Paths.STAKE_MORE },
   unstake: { icon: 'unstake', title: 'staking.actions.unstakeLabel', path: Paths.UNSTAKE },
-  returnToStake: { icon: 'returnToStake', title: 'staking.actions.returnToStakeLabel', path: Paths.BOND },
-  redeem: { icon: 'redeem', title: 'staking.actions.redeemLabel', path: Paths.BOND },
+  returnToStake: { icon: 'returnToStake', title: 'staking.actions.returnToStakeLabel', path: Paths.RESTAKE },
+  redeem: { icon: 'redeem', title: 'staking.actions.redeemLabel', path: Paths.REDEEM },
   setValidators: { icon: 'setValidators', title: 'staking.actions.setValidatorsLabel', path: Paths.VALIDATORS },
-  destination: { icon: 'destination', title: 'staking.actions.destinationLabel', path: Paths.BOND },
+  destination: { icon: 'destination', title: 'staking.actions.destinationLabel', path: Paths.DESTINATION },
 } as const;
 
 type StakeAction = keyof typeof STAKE_ACTIONS;

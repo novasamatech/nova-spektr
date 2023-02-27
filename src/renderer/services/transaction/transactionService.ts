@@ -15,6 +15,7 @@ import { HexString } from '@renderer/domain/shared-kernel';
 import { Transaction, TransactionType } from '@renderer/domain/transaction';
 import { createTxMetadata } from '@renderer/shared/utils/substrate';
 import { ITransactionService } from './common/types';
+import { toPublicKey } from '@renderer/shared/utils/address';
 
 export const useTransaction = (): ITransactionService => {
   const createRegistry = async (api: ApiPromise) => {
@@ -82,10 +83,46 @@ export const useTransaction = (): ITransactionService => {
         options,
       );
     },
+    [TransactionType.STAKE_MORE]: (transaction, info, options) => {
+      return methods.staking.bondExtra(
+        {
+          maxAdditional: transaction.args.maxAdditional,
+        },
+        info,
+        options,
+      );
+    },
+    [TransactionType.RESTAKE]: (transaction, info, options) => {
+      return methods.staking.rebond(
+        {
+          value: transaction.args.value,
+        },
+        info,
+        options,
+      );
+    },
+    [TransactionType.REDEEM]: (transaction, info, options) => {
+      return methods.staking.withdrawUnbonded(
+        {
+          numSlashingSpans: transaction.args.numSlashingSpans,
+        },
+        info,
+        options,
+      );
+    },
     [TransactionType.NOMINATE]: (transaction, info, options) => {
       return methods.staking.nominate(
         {
           targets: transaction.args.targets,
+        },
+        info,
+        options,
+      );
+    },
+    [TransactionType.DESTINATION]: (transaction, info, options) => {
+      return methods.staking.setPayee(
+        {
+          payee: transaction.args.payee,
         },
         info,
         options,
@@ -116,7 +153,11 @@ export const useTransaction = (): ITransactionService => {
     [TransactionType.ORML_TRANSFER]: ({ dest, value, asset }, api) => api.tx.currencies.transfer(dest, asset, value),
     [TransactionType.BOND]: ({ controller, value, payee }, api) => api.tx.staking.bond(controller, value, payee),
     [TransactionType.UNSTAKE]: ({ value }, api) => api.tx.staking.unbond(value),
+    [TransactionType.STAKE_MORE]: ({ maxAdditional }, api) => api.tx.staking.bondExtra(maxAdditional),
+    [TransactionType.RESTAKE]: ({ value }, api) => api.tx.staking.rebond(value),
+    [TransactionType.REDEEM]: ({ numSlashingSpans }, api) => api.tx.staking.withdrawUnbonded(numSlashingSpans),
     [TransactionType.NOMINATE]: ({ targets }, api) => api.tx.staking.nominate(targets),
+    [TransactionType.DESTINATION]: ({ targets }, api) => api.tx.staking.setPayee(targets),
     [TransactionType.BATCH_ALL]: ({ transactions }, api) => {
       const calls = transactions.map((t: Transaction) => getExtrinsic[t.type](t.args, api).method);
 
@@ -185,7 +226,7 @@ export const useTransaction = (): ITransactionService => {
         // information for each contained extrinsic
         signedBlock.block.extrinsics.forEach(({ method: extrinsicMethod, signer, hash }, index) => {
           if (
-            signer.toString() !== unsigned.address ||
+            toPublicKey(signer.toString()) !== toPublicKey(unsigned.address) ||
             method !== extrinsicMethod.method ||
             section !== extrinsicMethod.section
           ) {

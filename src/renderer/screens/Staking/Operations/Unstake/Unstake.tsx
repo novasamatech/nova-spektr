@@ -6,7 +6,7 @@ import { ButtonBack, ButtonLink, Icon } from '@renderer/components/ui';
 import { useI18n } from '@renderer/context/I18nContext';
 import { useNetworkContext } from '@renderer/context/NetworkContext';
 import { StakingType } from '@renderer/domain/asset';
-import { AccountID, ChainId, SigningType } from '@renderer/domain/shared-kernel';
+import { AccountID, ChainId, HexString, SigningType } from '@renderer/domain/shared-kernel';
 import { Transaction } from '@renderer/domain/transaction';
 import Paths from '@renderer/routes/paths';
 import { useAccount } from '@renderer/services/account/accountService';
@@ -17,12 +17,14 @@ import Scanning from '../components/Scanning/Scanning';
 import Signing from '../components/Signing/Signing';
 import Confirmation from './Confirmation/Confirmation';
 import InitOperation, { UnstakeResult } from './InitOperation/InitOperation';
+import Submit from './Submit/Submit';
 
 const enum Step {
   INIT,
   CONFIRMATION,
   SCANNING,
   SIGNING,
+  SUBMIT,
 }
 
 const HEADER_TITLE: Record<Step, string> = {
@@ -30,6 +32,7 @@ const HEADER_TITLE: Record<Step, string> = {
   [Step.CONFIRMATION]: 'staking.unstake.confirmUnstakeSubtitle',
   [Step.SCANNING]: 'staking.bond.scanSubtitle',
   [Step.SIGNING]: 'staking.bond.signSubtitle',
+  [Step.SUBMIT]: 'staking.bond.signSubtitle',
 };
 
 const Unstake = () => {
@@ -47,9 +50,10 @@ const Unstake = () => {
 
   const [unstakeAmount, setUnstakeAmount] = useState<string>('');
   const [transactions, setTransactions] = useState<Transaction[]>([]);
-  const [_, setUnsignedTransactions] = useState<UnsignedTransaction[]>([]);
+  const [unsignedTransactions, setUnsignedTransactions] = useState<UnsignedTransaction[]>([]);
   const [staking, setStaking] = useState<StakingMap>({});
   const [selectedAccounts, setSelectedAccounts] = useState<AccountDS[]>([]);
+  const [signatures, setSignatures] = useState<HexString[]>([]);
 
   const chainId = params.chainId || ('' as ChainId);
   const accountIds = searchParams.get('id')?.split(',') || [];
@@ -113,8 +117,9 @@ const Unstake = () => {
     setActiveStep(Step.SIGNING);
   };
 
-  const onSignResult = () => {
-    navigate(Paths.STAKING, { replace: true });
+  const onSignResult = (signatures: HexString[]) => {
+    setSignatures(signatures);
+    setActiveStep(Step.SUBMIT);
   };
 
   const headerContent = (
@@ -189,22 +194,19 @@ const Unstake = () => {
           onGoBack={() => setActiveStep(Step.SCANNING)}
         />
       )}
-      {/* TODO: add submit step */}
-      {/*{activeStep === Step.SUBMIT && (*/}
-      {/*  <Submit*/}
-      {/*    api={api}*/}
-      {/*    chainId={chainId}*/}
-      {/*    signatures={signatures}*/}
-      {/*    unsignedTransactions={unsignedTransactions}*/}
-      {/*    validators={Object.values(validators)}*/}
-      {/*    accounts={accounts}*/}
-      {/*    stake={stakeAmount}*/}
-      {/*    destination={destination}*/}
-      {/*    asset={asset}*/}
-      {/*    explorers={explorers}*/}
-      {/*    addressPrefix={addressPrefix}*/}
-      {/*  />*/}
-      {/*)}*/}
+      {activeStep === Step.SUBMIT && (
+        <Submit
+          api={api}
+          transactions={transactions}
+          signatures={signatures}
+          unsignedTransactions={unsignedTransactions}
+          accounts={selectedAccounts}
+          amount={unstakeAmount}
+          asset={asset}
+          explorers={explorers}
+          addressPrefix={addressPrefix}
+        />
+      )}
     </div>
   );
 };

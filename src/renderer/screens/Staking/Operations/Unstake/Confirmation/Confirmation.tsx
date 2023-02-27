@@ -9,6 +9,7 @@ import { ChainId } from '@renderer/domain/shared-kernel';
 import { Transaction, TransactionType } from '@renderer/domain/transaction';
 import { AccountDS } from '@renderer/services/storage';
 import TransactionInfo from '../../components/TransactionInfo/TransactionInfo';
+import { UnstakingDuration } from '@renderer/screens/Staking/Overview/components';
 
 type Props = {
   api?: ApiPromise;
@@ -54,10 +55,13 @@ const Confirmation = ({ api, chainId, accounts, unstake, asset, explorers, addre
       transactions={transactions}
     >
       <HintList className="mt-2.5 mb-5 px-[15px]">
-        <HintList.Item>{t('staking.confirmation.hintRewards')}</HintList.Item>
-        <HintList.Item>{t('staking.confirmation.hintUnstakePeriod')}</HintList.Item>
-        <HintList.Item>{t('staking.confirmation.hintNoRewards')}</HintList.Item>
-        <HintList.Item>{t('staking.confirmation.hintRedeem')}</HintList.Item>
+        <HintList.Item>
+          {t('staking.unstake.durationHint')} {'('}
+          <UnstakingDuration className="ml-1" api={api} />
+          {')'}
+        </HintList.Item>
+        <HintList.Item>{t('staking.unstake.noRewardsHint')}</HintList.Item>
+        <HintList.Item>{t('staking.unstake.redeemHint')}</HintList.Item>
       </HintList>
 
       <div className="flex flex-col items-center gap-y-2.5">

@@ -81,7 +81,7 @@ jest.mock('./Confirmation/Confirmation', () => ({ onResult }: any) => {
   return mockButton('confirm', onResult);
 });
 
-describe('screens/Bond/Confirmation', () => {
+describe('screens/Staking/Bond/Confirmation', () => {
   test('should render component', () => {
     render(<Bond />, { wrapper: MemoryRouter });
 

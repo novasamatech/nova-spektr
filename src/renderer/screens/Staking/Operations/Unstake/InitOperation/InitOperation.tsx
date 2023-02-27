@@ -21,11 +21,11 @@ import { Stake } from '@renderer/domain/stake';
 import { UnstakingDuration } from '../../../Overview/components';
 
 const validateBalance = (stake: Stake | string, amount: string, asset: Asset): boolean => {
-  const stakeableBalance = typeof stake === 'string' ? stake : stake.active;
+  const unstakeableBalance = typeof stake === 'string' ? stake : stake.active;
 
   let formatedAmount = new BN(formatAmount(amount, asset.precision));
 
-  return formatedAmount.lte(new BN(stakeableBalance));
+  return formatedAmount.lte(new BN(unstakeableBalance));
 };
 
 const validateBalanceForFee = (balance: BalanceDS | string, fee: string): boolean => {
@@ -180,7 +180,7 @@ const InitOperation = ({ api, staking, chainId, accountIds, asset, onResult }: P
     );
 
     setTransferableRange(minMaxTransferable);
-  }, [balances, activeUnstakeAccounts.length]);
+  }, [balancesMap, activeUnstakeAccounts.length]);
 
   useEffect(() => {
     const newBalancesMap = new Map(balances.map((balance) => [balance.publicKey, balance]));
@@ -301,7 +301,7 @@ const InitOperation = ({ api, staking, chainId, accountIds, asset, onResult }: P
                 onChange={onChange}
               />
               <InputHint active={error?.type === 'insufficientBalance'} variant="error">
-                {t('staking.notEnoughBalanceError')}
+                {t('staking.notEnoughStakedError')}
               </InputHint>
               <InputHint active={error?.type === 'insufficientBalanceForFee'} variant="error">
                 {t('staking.notEnoughBalanceForFeeError')}
@@ -332,13 +332,12 @@ const InitOperation = ({ api, staking, chainId, accountIds, asset, onResult }: P
 
         <HintList>
           <HintList.Item>
-            {t('staking.unstake.durationDescription')}
-            {'('}
+            {t('staking.unstake.durationHint')} {'('}
             <UnstakingDuration className="ml-1" api={api} />
             {')'}
           </HintList.Item>
-          <HintList.Item>{t('staking.unstake.noRewardsDescription')}</HintList.Item>
-          <HintList.Item>{t('staking.unstake.redeemDescription')}</HintList.Item>
+          <HintList.Item>{t('staking.unstake.noRewardsHint')}</HintList.Item>
+          <HintList.Item>{t('staking.unstake.redeemHint')}</HintList.Item>
         </HintList>
       </form>
 

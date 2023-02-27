@@ -1,5 +1,37 @@
 {
   "addressBook": {
+    "addContact": {
+      "accountIdIncorrectError": "Incrorrect account address",
+      "accountIdLabel": "account Address",
+      "accountIdPlaceholder": "Enter or paste an address",
+      "accountIdRequiredError": "Account address is required",
+      "addContactButton": "Add contact",
+      "matrixIdError": "Incrorrect matrix id",
+      "matrixIdLabel": "matrix id (optional)",
+      "matrixIdPlaceholder": "Enter or paste Matrix ID, ie: @bob:matrix.org",
+      "nameLabel": "Name",
+      "namePlaceholder": "Enter a name",
+      "nameRequiredError": "Name is required",
+      "title": "Add contact",
+      "typeAddressAndNameButton": "Type a name and address",
+      "typeAddressButton": "Type the address",
+      "typeNameButton": "Type a name"
+    },
+    "addContactButton": "Add contact",
+    "contactList": {
+      "emptySearchDescription": "Try to search for another name",
+      "emptySearchLabel": "No contact with entered name were found",
+      "matrixIdColumnTitle": "Matrix ID",
+      "nameColumnTitle": "Name",
+      "noContactsButton": "Add your first contact",
+      "noContactsLabel": "Your address book is empty"
+    },
+    "editContact": {
+      "editWarning": "please note: by changing the address, multisig account will not be changed.",
+      "saveContactButton": "Save contact",
+      "title": "Edit contact"
+    },
+    "searchPlaceholder": "Enter name or address...",
     "title": "Address Book"
   },
   "assetBalance": {
@@ -314,6 +346,7 @@
       "networkFeePerAccount": "Network fee / account",
       "queueButton": "Add to operation queue",
       "restakeRewards": "Restake rewards",
+      "rewardDestinationTitle": "Reward destination",
       "rewardsDestination": "Rewards destination",
       "selectValidators": "Selected validators",
       "setValidatorsTitle": "Set validators",
@@ -324,6 +357,9 @@
       "transactionProgress": "Transactions",
       "transferableRewards": "Transferable rewards",
       "yourValidators": "Your validators"
+    },
+    "destination": {
+      "initDestinationSubtitle": "Reward destination"
     },
     "nominators": {
       "electedTitle": "Elected",
@@ -337,6 +373,8 @@
     },
     "notEnoughBalanceError": "Not enough funds to stake specific amount",
     "notEnoughBalanceForFeeError": "Insufficient balance to pay network fee",
+    "notEnoughStakedError": "Not enough staked to unstake specific amount",
+    "notEnoughUnlockingError": "Not enough unlocking to return specific amount",
     "overview": {
       "aboutStakingLabel": "About { asset } staking",
       "accountTableHeader": "Accounts",
@@ -362,20 +400,35 @@
       "totalStakedLabel": "Total staked",
       "viewValidatorsOption": "View validators"
     },
-    "requiredAmountError": "Please, enter amount",
-    "title": "Staking",
-    "unbond": {
-      "subtitle": "Unbond"
+    "redeem": {
+      "availablePlaceholder": "Available",
+      "initRedeemSubtitle": "Redeem"
     },
+    "requiredAmountError": "Please, enter amount",
+    "restake": {
+      "amountPlaceholder": "Input amount",
+      "confirmRestakeSubtitle": "Confirmation",
+      "eraHint": "Returned tokens will be counted from the next era",
+      "initRestakeSubtitle": "Restake",
+      "transferable": "Transferable",
+      "unstakingPlaceholder": "Unstaking"
+    },
+    "stakeMore": {
+      "availablePlaceholder": "Available",
+      "confirmStakeMoreSubtitle": "Confirmation",
+      "eraHint": "You will get increased rewards starting from the next era",
+      "initStakeMoreSubtitle": "Stake more"
+    },
+    "title": "Staking",
     "unstake": {
       "amountPlaceholder": "Input amount",
       "confirmUnstakeSubtitle": "Confirmation",
-      "durationDescription": "To unstake tokens you will have to wait for the ustaking period",
+      "durationHint": "To unstake tokens you will have to wait for the ustaking period",
       "initUnstakeSubtitle": "Unstake",
       "networkFee_one": "Network fee",
       "networkFee_other": "Network fee / Account",
-      "noRewardsDescription": "During unstaking period tokens produce no rewards",
-      "redeemDescription": "After unstaking period don’t forget to redeem your tokens",
+      "noRewardsHint": "During unstaking period tokens produce no rewards",
+      "redeemHint": "After unstaking period don’t forget to redeem your tokens",
       "stakedPlaceholder": "Staked",
       "transferable": "Transferable"
     },
@@ -449,6 +502,7 @@
     "addByParitySignerButton": "Add wallet by Parity Signer",
     "addWatchOnlyButton": "Add Watch-Only wallet",
     "multishardWalletsLabel": "Multishard",
+    "multisigLabel": "Multisig",
     "paritySignerLabel": "Parity Signer",
     "searchPlaceholder": "Search for a wallet",
     "watchOnlyLabel": "Watch-only"

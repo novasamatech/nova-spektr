@@ -57,7 +57,7 @@ jest.mock('@renderer/services/balance/balanceService', () => ({
   }),
 }));
 
-describe('screens/Bond/InitOperation', () => {
+describe('screens/Staking/Bond/InitOperation', () => {
   const asset = { assetId: 1, symbol: 'DOT', precision: 10 } as Asset;
 
   test('should render component', async () => {

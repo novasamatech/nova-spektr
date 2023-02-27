@@ -5,9 +5,13 @@ export const enum TransactionType {
   ORML_TRANSFER = 'ormlTransfer',
   ASSET_TRANSFER = 'assetTransfer',
   BOND = 'bond',
+  STAKE_MORE = 'bondExtra',
   UNSTAKE = 'unbond',
+  RESTAKE = 'rebond',
+  REDEEM = 'withdrawUnbonded',
   NOMINATE = 'nominate',
   BATCH_ALL = 'batchAll',
+  DESTINATION = 'payee',
 }
 
 export type Transaction = {

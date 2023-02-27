@@ -13,6 +13,7 @@ import { ExtendedChain } from '@renderer/services/network/common/types';
 import AssetBalance from '../AssetBalance/AssetBalance';
 import { useI18n } from '@renderer/context/I18nContext';
 import { Balance } from '@renderer/domain/balance';
+import { includes } from '@renderer/shared/utils/strings';
 
 type Props = {
   hideZeroBalance?: boolean;
@@ -72,9 +73,10 @@ const NetworkBalances = ({
 
   const filteredAssets = chain.assets.filter((asset) => {
     if (query) {
-      const hasMatch = (name: string) => name.toLowerCase().includes(query);
-
-      return hasMatch(asset.symbol) || (!searchSymbolOnly && (hasMatch(chain.name) || hasMatch(asset.name)));
+      return (
+        includes(asset.symbol, query) ||
+        (!searchSymbolOnly && (includes(chain.name, query) || includes(asset.name, query)))
+      );
     }
 
     const balance = balancesObject[asset.assetId];

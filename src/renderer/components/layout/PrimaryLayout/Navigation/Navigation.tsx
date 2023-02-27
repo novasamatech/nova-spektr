@@ -18,6 +18,7 @@ type CardType = SigningType | 'multiple' | 'none';
 const CardStyle: Record<CardType, string> = {
   [SigningType.WATCH_ONLY]: 'bg-alert border-[3px] border-alert',
   [SigningType.PARITY_SIGNER]: 'bg-primary border-[3px] border-primary',
+  [SigningType.MULTISIG]: 'bg-tertiary-variant border-[3px] border-tertiary-variant',
   multiple: 'bg-shade-40 multiple-card',
   none: 'bg-shade-40 border-[3px] border-shade-40',
 };
@@ -32,12 +33,12 @@ const getCardType = (accounts: AccountDS[]): CardType => {
 const NavItems = [
   { icon: <Icon name="balance" />, title: 'navigation.balancesLabel', link: Paths.BALANCES },
   { icon: <Icon name="staking" />, title: 'navigation.stakingLabel', link: Paths.STAKING },
+  { icon: <Icon name="book" />, title: 'navigation.addressBookLabel', link: Paths.ADDRESS_BOOK },
   // { icon: <Icon name="history" />, title: 'navigation.historyLabel', link: Paths.HISTORY },
   // { icon: <Icon name="operations" />, title: 'navigation.mstOperationLabel', link: Paths.MULTISIG },
-  // { icon: <Icon name="book" />, title: 'navigation.addressBookLabel', link: Paths.ADDRESS_BOOK },
   // { icon: <Icon name="btc" />, title: 'navigation.chatDEVLabel', link: Paths.CHAT_DEV },
   // { icon: <Icon name="eth" />, title: 'navigation.cameraDEVLabel', link: Paths.CAMERA_DEV },
-  { icon: <Icon name="history" />, title: 'navigation.signingDEVLabel', link: Paths.SIGNING },
+  // { icon: <Icon name="history" />, title: 'navigation.signingDEVLabel', link: Paths.SIGNING },
 ];
 
 const Navigation = () => {
