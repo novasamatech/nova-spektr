@@ -38,7 +38,7 @@ const TransactionInfo = ({
   title,
   validators,
   accounts,
-  stake = '0',
+  stake,
   destination,
   asset,
   explorers,
