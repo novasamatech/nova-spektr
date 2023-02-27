@@ -10,6 +10,7 @@ import Icon from '../Icon/Icon';
 const BADGES: Record<SigningType, (size?: number) => ReactNode> = {
   [SigningType.WATCH_ONLY]: (size?: number) => <Icon as="img" name="watchOnlyBackground" size={size} />,
   [SigningType.PARITY_SIGNER]: (size?: number) => <Icon as="img" name="paritySignerBackground" size={size} />,
+  [SigningType.MULTISIG]: (size?: number) => <Icon as="img" name="multisignature" size={size} />,
 };
 
 type Props = {

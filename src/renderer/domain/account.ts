@@ -1,7 +1,10 @@
 import { IndexableType } from 'dexie';
+import { createKeyMulti, encodeAddress } from '@polkadot/util-crypto';
 
 import { toPublicKey } from '@renderer/shared/utils/address';
 import { ChainId, CryptoType, PublicKey, ChainType, SigningType, AccountID } from './shared-kernel';
+import { Contact } from './contact';
+import { SS58_DEFAULT_PREFIX } from '@renderer/shared/utils/constants';
 
 export type Account = {
   walletId?: IndexableType;
@@ -45,4 +48,40 @@ export function createAccount({
     isActive: true,
     derivationPath,
   } as Account;
+}
+
+export type MultisigAccount = Account & {
+  signatories: Contact[];
+  threshold: number;
+  matrixRoomId: string;
+  creator: AccountID;
+};
+
+export function createMultisigAccount({
+  name,
+  signatories,
+  threshold,
+  matrixRoomId,
+  creator,
+}: Pick<MultisigAccount, 'name' | 'signatories' | 'threshold' | 'matrixRoomId' | 'creator'>): MultisigAccount {
+  const multisigKey = createKeyMulti(
+    signatories.map((s) => s.accountId),
+    threshold,
+  );
+  const multisigAddress = encodeAddress(multisigKey, SS58_DEFAULT_PREFIX);
+
+  return {
+    publicKey: toPublicKey(multisigAddress),
+    accountId: multisigAddress,
+    cryptoType: CryptoType.SR25519,
+    chainType: ChainType.SUBSTRATE,
+    name,
+    signatories,
+    threshold,
+    matrixRoomId,
+    signingType: SigningType.MULTISIG,
+    creator,
+    isMain: false,
+    isActive: true,
+  } as MultisigAccount;
 }
