@@ -38,7 +38,7 @@ const AccountsModal = ({ isOpen, accounts, amount, asset, explorers, addressPref
               <Table.Row key={accountId} className="bg-shade-1" height="lg">
                 <Table.Cell>
                   <div className="flex items-center gap-x-1.5">
-                    <Address address={accountId} name={name} signType={signingType} size={30} canCopy={false} />
+                    <Address address={accountId} name={name} signType={signingType} size={30} />
                   </div>
                 </Table.Cell>
                 {amount && (
