@@ -73,7 +73,10 @@ const NetworkBalances = ({
 
   const filteredAssets = chain.assets.filter((asset) => {
     if (query) {
-      return includes(asset.symbol) || (!searchSymbolOnly && (includes(chain.name) || includes(asset.name)));
+      return (
+        includes(asset.symbol, query) ||
+        (!searchSymbolOnly && (includes(chain.name, query) || includes(asset.name, query)))
+      );
     }
 
     const balance = balancesObject[asset.assetId];
