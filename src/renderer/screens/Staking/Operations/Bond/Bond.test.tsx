@@ -2,7 +2,6 @@ import { act, render, screen } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 
 import { ConnectionStatus } from '@renderer/domain/connection';
-import { TEST_PUBLIC_KEY } from '@renderer/shared/utils/constants';
 import Bond from './Bond';
 
 jest.mock('@renderer/context/I18nContext', () => ({
@@ -41,30 +40,6 @@ jest.mock('@renderer/context/NetworkContext', () => ({
   })),
 }));
 
-jest.mock('@renderer/services/account/accountService', () => ({
-  useAccount: jest.fn().mockReturnValue({
-    getActiveAccounts: () => [
-      {
-        name: 'Test Wallet',
-        accountId: '1ChFWeNRLarAPRCTM3bfJmncJbSAbSS9yqjueWz7jX7iTVZ',
-        publicKey: TEST_PUBLIC_KEY,
-      },
-    ],
-  }),
-}));
-
-jest.mock('@renderer/services/balance/balanceService', () => ({
-  useBalance: jest.fn().mockReturnValue({
-    getBalance: jest.fn().mockReturnValue({
-      assetId: 1,
-      chainId: '0x123',
-      publicKey: TEST_PUBLIC_KEY,
-      free: '10',
-      frozen: [{ type: 'test', amount: '1' }],
-    }),
-  }),
-}));
-
 const mockButton = (text: string, callback: () => void) => (
   <button type="button" onClick={callback}>
     {text}
@@ -72,21 +47,18 @@ const mockButton = (text: string, callback: () => void) => (
 );
 
 jest.mock('./InitOperation/InitOperation', () => ({ onResult }: any) => {
-  return mockButton('to validators', onResult);
+  const payload = { accounts: [], validators: [] };
+
+  return mockButton('to validators', () => onResult(payload));
 });
-jest.mock('../components/Validators/Validators', () => ({ onResult }: any) => {
-  return mockButton('to confirm', onResult);
-});
-jest.mock('./Confirmation/Confirmation', () => ({ onResult }: any) => {
-  return mockButton('to scan', onResult);
-});
-jest.mock('../components/Scanning/Scanning', () => ({ onResult }: any) => {
-  return mockButton('to sign', onResult);
-});
-jest.mock('../components/Signing/Signing', () => ({ onResult }: any) => {
-  return mockButton('to submit', onResult);
-});
-jest.mock('./Submit/Submit', () => () => 'finish');
+
+jest.mock('../components/index', () => ({
+  Validators: ({ onResult }: any) => mockButton('to confirm', onResult),
+  Confirmation: ({ onResult }: any) => mockButton('to scan', onResult),
+  Scanning: ({ onResult }: any) => mockButton('to sign', onResult),
+  Signing: ({ onResult }: any) => mockButton('to submit', onResult),
+  Submit: () => 'finish',
+}));
 
 describe('screens/Staking/Bond', () => {
   test('should render component', () => {

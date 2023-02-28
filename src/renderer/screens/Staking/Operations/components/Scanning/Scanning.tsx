@@ -33,7 +33,7 @@ type Props = {
   onResult: (unsigned: UnsignedTransaction[]) => void;
 };
 
-const Scanning = ({ api, chainId, accounts, addressPrefix, transactions, onResult }: Props) => {
+export const Scanning = ({ api, chainId, accounts, addressPrefix, transactions, onResult }: Props) => {
   const { t } = useI18n();
   const { createPayload } = useTransaction();
   const { getExpectedBlockTime } = useChains();
@@ -155,5 +155,3 @@ const Scanning = ({ api, chainId, accounts, addressPrefix, transactions, onResul
     </div>
   );
 };
-
-export default Scanning;

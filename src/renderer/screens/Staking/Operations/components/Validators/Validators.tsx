@@ -22,7 +22,7 @@ type Props = {
   onResult: (validators: ValidatorMap) => void;
 };
 
-const Validators = ({ api, chainId, asset, explorers, addressPrefix, onResult }: Props) => {
+export const Validators = ({ api, chainId, asset, explorers, addressPrefix, onResult }: Props) => {
   const { t } = useI18n();
   const { getMaxValidators, getValidators } = useValidators();
   const { subscribeActiveEra } = useEra();
@@ -132,5 +132,3 @@ const Validators = ({ api, chainId, asset, explorers, addressPrefix, onResult }:
     </div>
   );
 };
-
-export default Validators;

@@ -1,68 +1,50 @@
-import { ApiPromise } from '@polkadot/api';
 import { UnsignedTransaction } from '@substrate/txwrapper-polkadot';
-import { useEffect, useState } from 'react';
+import { PropsWithChildren, useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 
+import { Icon, ProgressBadge } from '@renderer/components/ui';
 import { useConfirmContext } from '@renderer/context/ConfirmContext';
-import { useTransaction } from '@renderer/services/transaction/transactionService';
-import { HintList, Icon, ProgressBadge } from '@renderer/components/ui';
 import { useI18n } from '@renderer/context/I18nContext';
-import { Asset } from '@renderer/domain/asset';
-import { Explorer } from '@renderer/domain/chain';
 import { HexString } from '@renderer/domain/shared-kernel';
-import { Transaction } from '@renderer/domain/transaction';
-import TransactionInfo from '../../components/TransactionInfo/TransactionInfo';
-import { AccountDS } from '@renderer/services/storage';
+import Paths from '@renderer/routes/paths';
+import { useTransaction } from '@renderer/services/transaction/transactionService';
+import TransactionInfo, { InfoProps } from '../TransactionInfo/TransactionInfo';
 
-type Props = {
-  api: ApiPromise;
-  transactions: Transaction[];
-  unsignedTransactions: UnsignedTransaction[];
-  accounts: AccountDS[];
-  amount: string;
-  asset: Asset;
-  explorers?: Explorer[];
-  addressPrefix: number;
+interface Props extends InfoProps {
+  unsignedTx: UnsignedTransaction[];
   signatures: HexString[];
-};
+}
 
-const Submit = ({
-  api,
-  transactions,
-  unsignedTransactions,
-  accounts,
-  amount,
-  asset,
-  explorers,
-  addressPrefix,
-  signatures,
-}: Props) => {
+export const Submit = ({ unsignedTx, signatures, children, ...props }: PropsWithChildren<Props>) => {
   const { t } = useI18n();
   const { confirm } = useConfirmContext();
   const { submitAndWatchExtrinsic, getSignedExtrinsic } = useTransaction();
+  const navigate = useNavigate();
 
   const [progress, setProgress] = useState(0);
   const [failedTxs, setFailedTxs] = useState<number[]>([]);
 
-  const submitFinished = unsignedTransactions.length === progress;
+  const submitFinished = unsignedTx.length === progress;
 
   const confirmFailedTx = (): Promise<boolean> => {
     return confirm({
       title: t('staking.confirmation.errorModalTitle', { number: failedTxs.length }),
       message: t('staking.confirmation.errorModalSubtitle'),
-      confirmText: t('staking.confirmation.errorModalEditButton'),
       cancelText: t('staking.confirmation.errorModalDiscardButton'),
+      // TODO: implement Edit flow
+      // confirmText: t('staking.confirmation.errorModalEditButton'),
     });
   };
 
   const submitExtrinsic = async (signatures: HexString[]): Promise<void> => {
-    const extrinsicRequests = unsignedTransactions.map((unsigned, index) => {
-      return getSignedExtrinsic(unsigned, signatures[index], api);
+    const extrinsicRequests = unsignedTx.map((unsigned, index) => {
+      return getSignedExtrinsic(unsigned, signatures[index], props.api);
     });
 
     const allExtrinsic = await Promise.all(extrinsicRequests);
 
     allExtrinsic.forEach((extrinsic, index) => {
-      submitAndWatchExtrinsic(extrinsic, unsignedTransactions[index], api, (executed) => {
+      submitAndWatchExtrinsic(extrinsic, unsignedTx[index], props.api, (executed) => {
         setProgress((p) => p + 1);
         if (!executed) {
           setFailedTxs((f) => f.concat(index));
@@ -79,25 +61,17 @@ const Submit = ({
     if (!submitFinished || failedTxs.length === 0) return;
 
     confirmFailedTx().then((proceed) => {
-      if (!proceed) return;
+      if (!proceed) {
+        navigate(Paths.STAKING, { replace: true });
+      }
 
       // TODO: implement Edit flow
     });
   }, [submitFinished]);
 
   return (
-    <TransactionInfo
-      api={api}
-      accounts={accounts}
-      stake={amount}
-      asset={asset}
-      explorers={explorers}
-      addressPrefix={addressPrefix}
-      transactions={transactions}
-    >
-      <HintList className="mt-2.5 mb-5 px-[15px]">
-        <HintList.Item>{t('staking.stakeMore.eraHint')}</HintList.Item>
-      </HintList>
+    <TransactionInfo {...props}>
+      {children}
 
       {!submitFinished && (
         <div className="flex justify-center items-center gap-x-2.5 mb-2.5">
@@ -111,5 +85,3 @@ const Submit = ({
     </TransactionInfo>
   );
 };
-
-export default Submit;
