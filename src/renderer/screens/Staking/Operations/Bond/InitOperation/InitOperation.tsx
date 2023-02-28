@@ -64,10 +64,12 @@ const getDropdownPayload = (
 ): DropdownOption<AccountID> => {
   const address = account.accountId || '';
   const publicKey = account.publicKey || '';
-  const balanceExists = balance && asset && fee && amount;
+  const balanceExists = balance && asset;
 
   const balanceIsAvailable =
-    !balanceExists || (validateBalanceForFee(balance, fee, amount, asset) && validateBalance(balance, amount, asset));
+    !balanceExists ||
+    !amount ||
+    (fee && validateBalanceForFee(balance, fee, amount, asset) && validateBalance(balance, amount, asset));
 
   const element = (
     <div className="flex justify-between items-center gap-x-2.5">
@@ -167,6 +169,7 @@ const InitOperation = ({ api, chainId, accountIds, asset, onResult }: Props) => 
     handleSubmit,
     control,
     watch,
+    trigger,
     unregister,
     register,
     formState: { isValid },
@@ -185,6 +188,10 @@ const InitOperation = ({ api, chainId, accountIds, asset, onResult }: Props) => 
     setBalancesMap(newBalancesMap);
     setActiveBalances(newActiveBalances);
   }, [activeStakeAccounts.length, balances]);
+
+  useEffect(() => {
+    trigger('amount');
+  }, [activeBalances]);
 
   // Set balance range
   useEffect(() => {
@@ -229,6 +236,7 @@ const InitOperation = ({ api, chainId, accountIds, asset, onResult }: Props) => 
     }));
 
     setDestinations(formattedDestinations);
+    setActiveDestination(formattedDestinations[0]);
   }, []);
 
   // Init stake accounts
@@ -241,7 +249,7 @@ const InitOperation = ({ api, chainId, accountIds, asset, onResult }: Props) => 
     });
 
     setStakeAccounts(formattedAccounts);
-  }, [accountIds.length, amount, fee, balancesMap]);
+  }, [accountIds.length, activeBalances, amount, fee, balancesMap]);
 
   // Init active stake accounts
   useEffect(() => {
