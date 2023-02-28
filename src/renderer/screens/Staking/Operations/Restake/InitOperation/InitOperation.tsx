@@ -131,6 +131,7 @@ const InitOperation = ({ api, staking, chainId, accountIds, asset, onResult }: P
     handleSubmit,
     control,
     watch,
+    trigger,
     formState: { isValid },
   } = useForm<UnstakeForm>({
     mode: 'onChange',
@@ -189,6 +190,10 @@ const InitOperation = ({ api, staking, chainId, accountIds, asset, onResult }: P
     setActiveBalances(newActiveBalances);
   }, [activeUnstakeAccounts.length, balances]);
 
+  useEffect(() => {
+    trigger('amount');
+  }, [activeBalances]);
+
   // Init accounts
   useEffect(() => {
     const formattedAccounts = availableUnstakeAccounts.map((a) => {
@@ -199,7 +204,7 @@ const InitOperation = ({ api, staking, chainId, accountIds, asset, onResult }: P
     });
 
     setUnstakeAccounts(formattedAccounts);
-  }, [accountIds.length, activeBalances, staking, amount, fee, balances.length]);
+  }, [accountIds.length, activeBalances, staking, amount, fee, balancesMap]);
 
   // Init active unstake accounts
   useEffect(() => {
