@@ -131,6 +131,7 @@ const InitOperation = ({ api, chainId, accountIds, asset, onResult }: Props) => 
     handleSubmit,
     control,
     watch,
+    trigger,
     formState: { isValid },
   } = useForm<StakeMoreForm>({
     mode: 'onChange',
@@ -169,6 +170,10 @@ const InitOperation = ({ api, chainId, accountIds, asset, onResult }: Props) => 
 
     setActiveBalances(newActiveBalances);
   }, [activeUnstakeAccounts.length, balances]);
+
+  useEffect(() => {
+    trigger('amount');
+  }, [activeBalances]);
 
   // Init accounts
   useEffect(() => {
