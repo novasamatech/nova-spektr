@@ -53,6 +53,7 @@ const Unstake = () => {
   const [unsignedTransactions, setUnsignedTransactions] = useState<UnsignedTransaction[]>([]);
   const [staking, setStaking] = useState<StakingMap>({});
   const [selectedAccounts, setSelectedAccounts] = useState<AccountWithAmount[]>([]);
+  const [finalAccounts, setFinalAccounts] = useState<AccountWithAmount[]>([]);
   const [signatures, setSignatures] = useState<HexString[]>([]);
 
   const chainId = params.chainId || ('' as ChainId);
@@ -125,6 +126,7 @@ const Unstake = () => {
 
   const onSignResult = (signatures: HexString[]) => {
     setSignatures(signatures);
+    setFinalAccounts(selectedAccounts);
     setActiveStep(Step.SUBMIT);
   };
 
@@ -195,7 +197,7 @@ const Unstake = () => {
           transactions={transactions}
           signatures={signatures}
           unsignedTransactions={unsignedTransactions}
-          accounts={selectedAccounts}
+          accounts={finalAccounts}
           asset={asset}
           explorers={explorers}
           addressPrefix={addressPrefix}

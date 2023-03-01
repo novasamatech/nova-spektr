@@ -93,12 +93,12 @@ const Submit = ({
       transactions={transactions}
     >
       {!submitFinished && (
-        <div className="flex justify-center items-center gap-x-2.5 mt-2.5 mb-2.5">
+        <div className="flex justify-center items-center gap-x-2.5 mt-2.5">
           <Icon className="text-neutral-variant animate-spin" name="loader" size={20} />
           <p className="text-neutral-variant font-semibold">{t('staking.confirmation.submittingOperation')}</p>
         </div>
       )}
-      <ProgressBadge className="mx-auto" progress={progress} total={signatures.length}>
+      <ProgressBadge className="mx-auto mt-2.5" progress={progress} total={signatures.length}>
         {t('staking.confirmation.transactionProgress')}
       </ProgressBadge>
     </TransactionInfo>
