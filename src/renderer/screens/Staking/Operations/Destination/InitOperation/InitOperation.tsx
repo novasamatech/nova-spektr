@@ -175,6 +175,7 @@ const InitOperation = ({ api, chainId, accountIds, asset, onResult }: Props) => 
     }));
 
     setDestinations(formattedDestinations);
+    setActiveDestination(formattedDestinations[0]);
   }, []);
 
   // Init stake accounts
@@ -290,10 +291,10 @@ const InitOperation = ({ api, chainId, accountIds, asset, onResult }: Props) => 
             <span className="underline text-xs">{t('staking.bond.aboutRewards')}</span>
           </a>
           <RadioGroup
-            activeId={activeDestination?.id}
-            options={destinations}
             className="col-span-2"
             optionClass="p-2.5 rounded-2lg bg-shade-2 mt-2.5"
+            activeId={activeDestination?.id}
+            options={destinations}
             onChange={setActiveDestination}
           />
         </div>
