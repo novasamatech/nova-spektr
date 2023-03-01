@@ -16,13 +16,14 @@ import { AccountDS } from '@renderer/services/storage';
 import { useToggle } from '@renderer/shared/hooks';
 import AccountsModal from '../AccountsModal/AccountsModal';
 import ValidatorsModal from '../ValidatorsModal/ValidatorsModal';
+import { AccountWithAmount } from '../../Redeem/types';
 
 type Props = {
   api: ApiPromise;
   title?: string;
   validators?: Validator[];
-  accounts: AccountDS[];
-  stake?: string;
+  accounts: (AccountDS | AccountWithAmount)[];
+  amount?: string;
   destination?: {
     address?: AccountID;
     type: RewardsDestination;
@@ -38,7 +39,7 @@ const TransactionInfo = ({
   title,
   validators,
   accounts,
-  stake,
+  amount,
   destination,
   asset,
   explorers,
@@ -52,6 +53,13 @@ const TransactionInfo = ({
 
   const singleAccount = accounts.length === 1;
   const validatorsExist = validators && validators.length > 0;
+  const hasAmount = (accounts as AccountWithAmount[]).some((a) => a.amount !== undefined);
+
+  const calculatedAmount = hasAmount
+    ? accounts.reduce<BN>((acc, a) => acc.add(new BN((a as AccountWithAmount).amount || 0)), new BN(0)).toString()
+    : (amount && new BN(amount).muln(accounts.length).toString()) || '0';
+
+  console.log(accounts, calculatedAmount, hasAmount);
 
   return (
     <>
@@ -60,28 +68,18 @@ const TransactionInfo = ({
           <Block className="flex flex-col gap-y-5">
             {title && <h2 className="text-center text-neutral font-semibold text-xl">{title}</h2>}
 
-            {!title && singleAccount && stake && (
-              <div className="flex flex-col items-center mt-6 mb-9 ">
-                <Balance
-                  className="text-4.5xl font-bold"
-                  value={stake}
-                  precision={asset.precision}
-                  symbol={asset.symbol}
-                />
-              </div>
-            )}
-
-            {!title && !singleAccount && stake && (
-              <div className="flex flex-col items-center gap-y-6 mb-9">
+            <div className="flex flex-col items-center gap-y-6 mb-9">
+              {!title && !singleAccount && (
                 <h2 className="text-neutral font-semibold text-xl">{t('staking.confirmation.totalAmount')}</h2>
-                <Balance
-                  className="text-4.5xl font-bold"
-                  value={new BN(stake).muln(accounts.length).toString()}
-                  precision={asset.precision}
-                  symbol={asset.symbol}
-                />
-              </div>
-            )}
+              )}
+
+              <Balance
+                className="text-4.5xl font-bold"
+                value={calculatedAmount}
+                precision={asset.precision}
+                symbol={asset.symbol}
+              />
+            </div>
 
             {singleAccount ? (
               <AddressOnPlate
@@ -181,7 +179,6 @@ const TransactionInfo = ({
       <AccountsModal
         isOpen={isAccountsOpen}
         accounts={accounts}
-        amount={stake}
         asset={asset}
         explorers={explorers}
         addressPrefix={addressPrefix}

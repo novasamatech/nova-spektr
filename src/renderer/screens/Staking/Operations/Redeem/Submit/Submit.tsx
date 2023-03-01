@@ -18,7 +18,6 @@ type Props = {
   transactions: Transaction[];
   unsignedTransactions: UnsignedTransaction[];
   accounts: AccountDS[];
-  amount: string;
   asset: Asset;
   explorers?: Explorer[];
   addressPrefix: number;
@@ -30,7 +29,6 @@ const Submit = ({
   transactions,
   unsignedTransactions,
   accounts,
-  amount,
   asset,
   explorers,
   addressPrefix,
@@ -89,7 +87,6 @@ const Submit = ({
     <TransactionInfo
       api={api}
       accounts={accounts}
-      stake={amount}
       asset={asset}
       explorers={explorers}
       addressPrefix={addressPrefix}

@@ -1,7 +1,6 @@
 import { UnsignedTransaction } from '@substrate/txwrapper-polkadot';
 import { useEffect, useState } from 'react';
 import { Navigate, useNavigate, useParams, useSearchParams } from 'react-router-dom';
-import { BN } from '@polkadot/util';
 
 import { ButtonBack, ButtonLink, Icon } from '@renderer/components/ui';
 import { useI18n } from '@renderer/context/I18nContext';
@@ -13,13 +12,13 @@ import Paths from '@renderer/routes/paths';
 import { useAccount } from '@renderer/services/account/accountService';
 import { StakingMap } from '@renderer/services/staking/common/types';
 import { useStakingData } from '@renderer/services/staking/stakingDataService';
-import { AccountDS } from '@renderer/services/storage';
 import Scanning from '../components/Scanning/Scanning';
 import Signing from '../components/Signing/Signing';
 import Confirmation from './Confirmation/Confirmation';
 import Submit from './Submit/Submit';
 import { redeemableAmount } from '@renderer/services/balance/common/utils';
 import { useEra } from '@renderer/services/staking/eraService';
+import { AccountWithAmount } from './types';
 
 const enum Step {
   CONFIRMATION,
@@ -50,11 +49,10 @@ const Unstake = () => {
   const [activeStep, setActiveStep] = useState<Step>(Step.CONFIRMATION);
 
   const [era, setEra] = useState<number>();
-  const [redeemAmount, setRedeemAmount] = useState<string>('');
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [unsignedTransactions, setUnsignedTransactions] = useState<UnsignedTransaction[]>([]);
   const [staking, setStaking] = useState<StakingMap>({});
-  const [selectedAccounts, setSelectedAccounts] = useState<AccountDS[]>([]);
+  const [selectedAccounts, setSelectedAccounts] = useState<AccountWithAmount[]>([]);
   const [signatures, setSignatures] = useState<HexString[]>([]);
 
   const chainId = params.chainId || ('' as ChainId);
@@ -68,14 +66,16 @@ const Unstake = () => {
   const asset = assets.find((asset) => asset.staking === StakingType.RELAYCHAIN);
 
   useEffect(() => {
-    const selectedAccounts = dbAccounts.reduce<AccountDS[]>((acc, account) => {
+    const selectedAccounts = dbAccounts.reduce<AccountWithAmount[]>((acc, account) => {
       const accountExists = account.id && accountIds.includes(account.id.toString());
+      const stake = account.accountId && staking[account.accountId];
+      const redeemable = stake && era && redeemableAmount(stake.unlocking, era);
 
-      return accountExists ? [...acc, account] : acc;
+      return accountExists ? [...acc, { ...account, amount: redeemable } as AccountWithAmount] : acc;
     }, []);
 
     setSelectedAccounts(selectedAccounts);
-  }, [dbAccounts.length]);
+  }, [dbAccounts.length, staking]);
 
   useEffect(() => {
     if (!api?.isConnected || accountIds.length === 0) return;
@@ -98,18 +98,6 @@ const Unstake = () => {
       unsubStaking?.();
     };
   }, [api, selectedAccounts.length, accountIds.length]);
-
-  useEffect(() => {
-    if (!era || !staking) return;
-
-    const totalRedeem = selectedAccounts.reduce((acc, account) => {
-      const stake = account.accountId && staking[account.accountId];
-
-      return stake ? acc.add(new BN(redeemableAmount(stake.unlocking, era))) : acc;
-    }, new BN(0));
-
-    setRedeemAmount(totalRedeem.toString());
-  }, [staking, era]);
 
   if (!api?.isConnected) {
     // TODO: show skeleton until we connect to network's api
@@ -177,7 +165,6 @@ const Unstake = () => {
           api={api}
           chainId={chainId}
           accounts={selectedAccounts}
-          amount={redeemAmount}
           asset={asset}
           explorers={explorers}
           addressPrefix={addressPrefix}
@@ -209,7 +196,6 @@ const Unstake = () => {
           signatures={signatures}
           unsignedTransactions={unsignedTransactions}
           accounts={selectedAccounts}
-          amount={redeemAmount}
           asset={asset}
           explorers={explorers}
           addressPrefix={addressPrefix}

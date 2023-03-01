@@ -48,7 +48,7 @@ const Confirmation = ({ api, chainId, accounts, unstake, asset, explorers, addre
     <TransactionInfo
       api={api}
       accounts={accounts}
-      stake={unstake}
+      amount={unstake}
       asset={asset}
       explorers={explorers}
       addressPrefix={addressPrefix}

@@ -7,21 +7,20 @@ import { Asset } from '@renderer/domain/asset';
 import { Explorer } from '@renderer/domain/chain';
 import { ChainId } from '@renderer/domain/shared-kernel';
 import { Transaction, TransactionType } from '@renderer/domain/transaction';
-import { AccountDS } from '@renderer/services/storage';
 import TransactionInfo from '../../components/TransactionInfo/TransactionInfo';
+import { AccountWithAmount } from '../types';
 
 type Props = {
   api?: ApiPromise;
   chainId: ChainId;
-  accounts: AccountDS[];
-  amount: string;
+  accounts: AccountWithAmount[];
   asset: Asset;
   explorers?: Explorer[];
   addressPrefix: number;
   onResult: (transactions: Transaction[]) => void;
 };
 
-const Confirmation = ({ api, chainId, accounts, amount, asset, explorers, addressPrefix, onResult }: Props) => {
+const Confirmation = ({ api, chainId, accounts, asset, explorers, addressPrefix, onResult }: Props) => {
   const { t } = useI18n();
 
   const [transactions, setTransactions] = useState<Transaction[]>([]);
@@ -47,7 +46,6 @@ const Confirmation = ({ api, chainId, accounts, amount, asset, explorers, addres
     <TransactionInfo
       api={api}
       accounts={accounts}
-      stake={amount}
       asset={asset}
       explorers={explorers}
       addressPrefix={addressPrefix}
