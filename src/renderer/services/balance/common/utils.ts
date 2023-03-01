@@ -127,13 +127,13 @@ export const stakeableAmount = (balance?: Balance): string => {
   return bnFree.sub(bnStaked).toString();
 };
 
-export const unlockingAmount = (unlocking?: Unlocking[]): string => {
-  if (!unlocking || unlocking.length === 0) return ZERO_BALANCE;
+export const unlockingAmount = (unlocking: Unlocking[] = []): string => {
+  if (unlocking.length === 0) return ZERO_BALANCE;
 
   return unlocking.reduce((acc, s) => acc.add(new BN(s.value)), BN_ZERO).toString();
 };
 
-export const redeemableAmount = (unlocking: Unlocking[], currentEra: number): string => {
+export const redeemableAmount = (unlocking: Unlocking[] = [], currentEra: number): string => {
   if (unlocking.length === 0) return ZERO_BALANCE;
 
   return unlocking

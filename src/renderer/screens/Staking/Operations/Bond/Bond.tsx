@@ -169,6 +169,7 @@ const Bond = () => {
   };
 
   const explorersProps = { explorers, addressPrefix, asset };
+  const bondValues = new Array(accounts.length).fill(stakeAmount);
 
   const hints = (
     <HintList className="px-[15px]">
@@ -194,7 +195,7 @@ const Bond = () => {
           api={api}
           validators={Object.values(validators)}
           accounts={accounts}
-          amount={stakeAmount}
+          amounts={bondValues}
           destination={destination}
           transaction={transactions[0]}
           onResult={() => setActiveStep(Step.SCANNING)}
@@ -225,7 +226,7 @@ const Bond = () => {
           unsignedTx={unsignedTransactions}
           validators={Object.values(validators)}
           accounts={accounts}
-          amount={stakeAmount}
+          amounts={bondValues}
           destination={destination}
           {...explorersProps}
         >

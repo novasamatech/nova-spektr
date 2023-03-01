@@ -84,15 +84,15 @@ export const TableColumn = ({
 };
 
 type BodyProps<T extends AnyRecord> = {
-  children: (data: T) => ReactNode;
+  children: (data: T & { rowIndex: number }) => ReactNode;
 };
 export const TableBody = <T extends AnyRecord>({ children }: BodyProps<T>) => {
   const { by, dataSource } = useTableContext<T>();
 
   return (
     <tbody>
-      {dataSource.map((source) => {
-        const item = children(source) as ReactElement<PropsWithChildren<_RowProps>>;
+      {dataSource.map((source, index) => {
+        const item = children({ rowIndex: index, ...source }) as ReactElement<PropsWithChildren<_RowProps>>;
 
         return cloneElement(item, { dataKey: source[by] });
       })}

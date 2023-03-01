@@ -45,7 +45,7 @@ const Address = ({
   const addressToShow = type === 'short' ? getShortAddress(address, symbols) : address;
 
   const nameContent = (name || subName) && (
-    <div className="flex flex-col">
+    <div className="flex flex-col items-start">
       <p className="text-neutral text-sm font-semibold leading-4">{name}</p>
       {subName && <p className="text-neutral-variant text-2xs">{subName}</p>}
     </div>
