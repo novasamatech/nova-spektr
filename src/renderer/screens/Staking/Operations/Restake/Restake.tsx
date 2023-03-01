@@ -156,6 +156,7 @@ const Restake = () => {
   };
 
   const explorersProps = { explorers, addressPrefix, asset };
+  const restakeValues = Array.from({ length: accounts.length }, (_) => restakeAmount);
 
   const hints = (
     <HintList className="px-[15px]">
@@ -181,7 +182,7 @@ const Restake = () => {
         <Confirmation
           api={api}
           accounts={accounts}
-          amount={restakeAmount}
+          amounts={restakeValues}
           transaction={transactions[0]}
           onResult={() => setActiveStep(Step.SCANNING)}
           onAddToQueue={noop}
@@ -215,7 +216,7 @@ const Restake = () => {
           signatures={signatures}
           unsignedTx={unsignedTransactions}
           accounts={accounts}
-          amount={restakeAmount}
+          amounts={restakeValues}
           {...explorersProps}
         >
           {hints}

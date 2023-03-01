@@ -124,6 +124,7 @@ const StakeMore = () => {
   };
 
   const explorersProps = { explorers, addressPrefix, asset };
+  const stakeMoreValues = Array.from({ length: accounts.length }, (_) => stakeMoreAmount);
 
   const hints = (
     <HintList className="px-[15px]">
@@ -143,7 +144,7 @@ const StakeMore = () => {
           api={api}
           accounts={accounts}
           transaction={transactions[0]}
-          amount={stakeMoreAmount}
+          amounts={stakeMoreValues}
           onResult={() => setActiveStep(Step.SCANNING)}
           onAddToQueue={noop}
           {...explorersProps}
@@ -176,7 +177,7 @@ const StakeMore = () => {
           signatures={signatures}
           unsignedTx={unsignedTransactions}
           accounts={accounts}
-          amount={stakeMoreAmount}
+          amounts={stakeMoreValues}
           {...explorersProps}
         >
           {hints}

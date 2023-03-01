@@ -2,7 +2,6 @@ import { UnsignedTransaction } from '@substrate/txwrapper-polkadot';
 import noop from 'lodash/noop';
 import { useEffect, useState } from 'react';
 import { Navigate, useNavigate, useParams, useSearchParams } from 'react-router-dom';
-import { BN } from '@polkadot/util';
 
 import { ButtonBack, ButtonLink, Icon } from '@renderer/components/ui';
 import { useI18n } from '@renderer/context/I18nContext';
@@ -47,7 +46,7 @@ const Unstake = () => {
 
   const [activeStep, setActiveStep] = useState<Step>(Step.CONFIRMATION);
   const [era, setEra] = useState<number>();
-  const [redeemAmount, setRedeemAmount] = useState<string>('');
+  const [redeemAmounts, setRedeemAmounts] = useState<string[]>([]);
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [unsignedTransactions, setUnsignedTransactions] = useState<UnsignedTransaction[]>([]);
   const [staking, setStaking] = useState<StakingMap>({});
@@ -105,13 +104,15 @@ const Unstake = () => {
   useEffect(() => {
     if (!era || !staking) return;
 
-    const totalRedeem = accounts.reduce((acc, account) => {
-      const stake = account.accountId && staking[account.accountId];
+    const totalRedeem = accounts.reduce<string[]>((acc, { accountId }) => {
+      if (!accountId) return acc;
 
-      return stake ? acc.add(new BN(redeemableAmount(stake.unlocking, era))) : acc;
-    }, new BN(0));
+      const redeemable = redeemableAmount(staking[accountId]?.unlocking, era);
 
-    setRedeemAmount(totalRedeem.toString());
+      return [...acc, redeemable];
+    }, []);
+
+    setRedeemAmounts(totalRedeem);
   }, [staking, era]);
 
   if (!api?.isConnected) {
@@ -176,7 +177,7 @@ const Unstake = () => {
         <Confirmation
           api={api}
           accounts={accounts}
-          amount={redeemAmount}
+          amounts={redeemAmounts}
           transaction={transactions[0]}
           onResult={() => setActiveStep(Step.SCANNING)}
           onAddToQueue={noop}
@@ -208,7 +209,7 @@ const Unstake = () => {
           signatures={signatures}
           unsignedTx={unsignedTransactions}
           accounts={accounts}
-          amount={redeemAmount}
+          amounts={redeemAmounts}
           {...explorersProps}
         />
       )}

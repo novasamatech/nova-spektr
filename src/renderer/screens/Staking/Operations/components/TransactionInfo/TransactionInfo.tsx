@@ -1,5 +1,5 @@
 import { ApiPromise } from '@polkadot/api';
-import { BN } from '@polkadot/util';
+import { BN_ZERO, BN } from '@polkadot/util';
 import cn from 'classnames';
 import { PropsWithChildren } from 'react';
 
@@ -27,7 +27,7 @@ export interface InfoProps {
   title?: string;
   validators?: Validator[];
   accounts: AccountDS[];
-  amount?: string;
+  amounts?: string[];
   destination?: Destination;
   asset: Asset;
   explorers?: Explorer[];
@@ -40,7 +40,7 @@ const TransactionInfo = ({
   title,
   validators,
   accounts,
-  amount,
+  amounts = [],
   destination,
   asset,
   explorers,
@@ -54,31 +54,23 @@ const TransactionInfo = ({
 
   const singleAccount = accounts.length === 1;
   const validatorsExist = validators && validators.length > 0;
+  const totalAmount = amounts.reduce((acc, amount) => acc.add(new BN(amount)), BN_ZERO).toString();
 
   return (
     <>
       <div className="overflow-y-auto">
         <section className="w-[500px] p-5 mx-auto bg-shade-2 rounded-2lg">
           <Block className="flex flex-col gap-y-5">
-            {title && <h2 className="text-center text-neutral font-semibold text-xl">{title}</h2>}
-
-            {!title && singleAccount && amount && (
-              <div className="flex flex-col items-center mt-6 mb-9 ">
+            {title ? (
+              <h2 className="text-center text-neutral font-semibold text-xl">{title}</h2>
+            ) : (
+              <div className="flex flex-col items-center mt-6 mb-9">
+                {!singleAccount && (
+                  <h2 className="text-neutral font-semibold text-xl">{t('staking.confirmation.totalAmount')}</h2>
+                )}
                 <Balance
                   className="text-4.5xl font-bold"
-                  value={amount}
-                  precision={asset.precision}
-                  symbol={asset.symbol}
-                />
-              </div>
-            )}
-
-            {!title && !singleAccount && amount && (
-              <div className="flex flex-col items-center gap-y-6 mb-9">
-                <h2 className="text-neutral font-semibold text-xl">{t('staking.confirmation.totalAmount')}</h2>
-                <Balance
-                  className="text-4.5xl font-bold"
-                  value={new BN(amount).muln(accounts.length).toString()}
+                  value={totalAmount}
                   precision={asset.precision}
                   symbol={asset.symbol}
                 />
@@ -91,7 +83,6 @@ const TransactionInfo = ({
                 address={accounts[0].accountId || ''}
                 signType={accounts[0].signingType}
                 name={accounts[0].name}
-                subName={'dcsadasd asdasd'}
                 addressPrefix={addressPrefix}
                 explorers={explorers}
               />
@@ -183,7 +174,7 @@ const TransactionInfo = ({
       <AccountsModal
         isOpen={isAccountsOpen}
         accounts={accounts}
-        amount={amount}
+        amounts={amounts}
         asset={asset}
         explorers={explorers}
         addressPrefix={addressPrefix}
