@@ -45,8 +45,8 @@ const getDropdownPayload = (
   const publicKey = account.publicKey || '';
   const balanceExists = balance && stake && asset;
 
-  const balanceIsAvailable =
-    !balanceExists || !amount || (fee && validateBalanceForFee(balance, fee) && validateBalance(stake, amount, asset));
+  const balanceIsIncorrect =
+    balanceExists && amount && fee && !validateBalanceForFee(balance, fee) && !validateBalance(stake, amount, asset);
 
   const element = (
     <div className="flex justify-between items-center gap-x-2.5">
@@ -56,10 +56,10 @@ const getDropdownPayload = (
       </div>
       {balanceExists && (
         <div className="flex items-center gap-x-1">
-          {!balanceIsAvailable && <Icon size={12} className="text-error" name="warnCutout" />}
+          {balanceIsIncorrect && <Icon size={12} className="text-error" name="warnCutout" />}
 
           <Balance
-            className={cn(!balanceIsAvailable && 'text-error')}
+            className={cn(balanceIsIncorrect && 'text-error')}
             value={unlockingAmount(stake.unlocking)}
             precision={asset.precision}
             symbol={asset.symbol}
@@ -191,7 +191,7 @@ const InitOperation = ({ api, staking, chainId, accountIds, asset, onResult }: P
   }, [activeUnstakeAccounts.length, balances]);
 
   useEffect(() => {
-    trigger('amount');
+    amount && trigger('amount');
   }, [activeBalances]);
 
   // Init accounts
