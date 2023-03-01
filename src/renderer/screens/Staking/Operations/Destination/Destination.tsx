@@ -1,20 +1,20 @@
 import { UnsignedTransaction } from '@substrate/txwrapper-polkadot';
+import noop from 'lodash/noop';
 import { useState } from 'react';
 import { Navigate, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 
+import { formatAddress } from '@renderer/shared/utils/address';
+import { RewardsDestination } from '@renderer/domain/stake';
 import { ButtonBack, ButtonLink, Icon } from '@renderer/components/ui';
 import { useI18n } from '@renderer/context/I18nContext';
 import { useNetworkContext } from '@renderer/context/NetworkContext';
 import { StakingType } from '@renderer/domain/asset';
 import { AccountID, ChainId, HexString } from '@renderer/domain/shared-kernel';
-import { Transaction } from '@renderer/domain/transaction';
+import { Transaction, TransactionType } from '@renderer/domain/transaction';
+import { Confirmation, Scanning, Signing, Submit } from '../components';
 import Paths from '@renderer/routes/paths';
 import { AccountDS } from '@renderer/services/storage';
-import Scanning from '../components/Scanning/Scanning';
-import Signing from '../components/Signing/Signing';
-import Confirmation from './Confirmation/Confirmation';
 import InitOperation, { DestinationResult } from './InitOperation/InitOperation';
-import Submit from './Submit/Submit';
 
 const enum Step {
   INIT,
@@ -23,6 +23,11 @@ const enum Step {
   SIGNING,
   SUBMIT,
 }
+
+type DestinationType = {
+  address?: AccountID;
+  type: RewardsDestination;
+};
 
 const HEADER_TITLE: Record<Step, string> = {
   [Step.INIT]: 'staking.destination.initDestinationSubtitle',
@@ -41,7 +46,7 @@ const Destination = () => {
 
   const [activeStep, setActiveStep] = useState<Step>(Step.INIT);
   const [accounts, setAccounts] = useState<AccountDS[]>([]);
-  const [destination, setDestination] = useState<AccountID>('');
+  const [destination, setDestination] = useState<DestinationType>();
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [unsignedTransactions, setUnsignedTransactions] = useState<UnsignedTransaction[]>([]);
   const [signatures, setSignatures] = useState<HexString[]>([]);
@@ -56,7 +61,7 @@ const Destination = () => {
   const { api, explorers, addressPrefix, assets, name } = connections[chainId];
   const asset = assets.find((asset) => asset.staking === StakingType.RELAYCHAIN);
 
-  if (!api || !api.isConnected) {
+  if (!api?.isConnected) {
     // TODO: show skeleton until we connect to network's api
     return null;
   }
@@ -98,15 +103,24 @@ const Destination = () => {
     );
   }
 
-  const onDestinationResult = (data: DestinationResult) => {
-    setAccounts(data.accounts);
-    setDestination(data.destination);
-    setActiveStep(Step.CONFIRMATION);
-  };
+  const onDestinationResult = ({ accounts, destination }: DestinationResult) => {
+    const destPayload = destination
+      ? { type: RewardsDestination.TRANSFERABLE, address: destination }
+      : { type: RewardsDestination.RESTAKE };
 
-  const onConfirmResult = (transactions: Transaction[]) => {
+    const transactions = accounts.map(({ accountId = '' }) => ({
+      chainId,
+      address: formatAddress(accountId, addressPrefix),
+      type: TransactionType.DESTINATION,
+      args: {
+        payee: destination ? { Account: destination } : 'Staked',
+      },
+    }));
+
     setTransactions(transactions);
-    setActiveStep(Step.SCANNING);
+    setAccounts(accounts);
+    setDestination(destPayload);
+    setActiveStep(Step.CONFIRMATION);
   };
 
   const onScanResult = (unsigned: UnsignedTransaction[]) => {
@@ -138,14 +152,16 @@ const Destination = () => {
       )}
       {activeStep === Step.CONFIRMATION && (
         <Confirmation
+          title={t('staking.confirmation.rewardDestinationTitle')}
           api={api}
-          chainId={chainId}
           accounts={accounts}
           destination={destination}
+          transaction={transactions[0]}
           asset={asset}
           explorers={explorers}
           addressPrefix={addressPrefix}
-          onResult={onConfirmResult}
+          onResult={() => setActiveStep(Step.SCANNING)}
+          onAddToQueue={noop}
         />
       )}
       {activeStep === Step.SCANNING && (
@@ -163,10 +179,11 @@ const Destination = () => {
       )}
       {activeStep === Step.SUBMIT && (
         <Submit
+          title={t('staking.confirmation.rewardDestinationTitle')}
           api={api}
-          transactions={transactions}
+          transaction={transactions[0]}
           signatures={signatures}
-          unsignedTransactions={unsignedTransactions}
+          unsignedTx={unsignedTransactions}
           accounts={accounts}
           destination={destination}
           asset={asset}
