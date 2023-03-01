@@ -50,7 +50,7 @@ const getDropdownPayload = (
   const publicKey = account.publicKey || '';
   const balanceExists = balance && asset && fee;
 
-  const balanceIsAvailable = !balanceExists || validateBalanceForFee(balance, fee);
+  const balanceIsIncorrect = balanceExists && !validateBalanceForFee(balance, fee);
 
   const element = (
     <div className="flex justify-between items-center gap-x-2.5">
@@ -66,10 +66,10 @@ const getDropdownPayload = (
       </div>
       {balanceExists && (
         <div className="flex items-center gap-x-1">
-          {!balanceIsAvailable && <Icon size={12} className="text-error" name="warnCutout" />}
+          {balanceIsIncorrect && <Icon size={12} className="text-error" name="warnCutout" />}
 
           <Balance
-            className={cn(!balanceIsAvailable && 'text-error')}
+            className={cn(balanceIsIncorrect && 'text-error')}
             value={transferableAmount(balance)}
             precision={asset.precision}
             symbol={asset.symbol}
