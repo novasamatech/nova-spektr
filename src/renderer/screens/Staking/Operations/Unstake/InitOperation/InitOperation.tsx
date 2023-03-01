@@ -44,10 +44,10 @@ const getDropdownPayload = (
 ): DropdownOption<AccountID> => {
   const address = account.accountId || '';
   const publicKey = account.publicKey || '';
-  const balanceExists = balance && stake && asset && fee && amount;
+  const balanceExists = balance && stake && asset;
 
   const balanceIsAvailable =
-    !balanceExists || (validateBalanceForFee(balance, fee) && validateBalance(stake, amount, asset));
+    !balanceExists || !amount || (fee && validateBalanceForFee(balance, fee) && validateBalance(stake, amount, asset));
 
   const element = (
     <div className="flex justify-between items-center gap-x-2.5">
@@ -132,6 +132,7 @@ const InitOperation = ({ api, staking, chainId, accountIds, asset, onResult }: P
     handleSubmit,
     control,
     watch,
+    trigger,
     formState: { isValid },
   } = useForm<UnstakeForm>({
     mode: 'onChange',
@@ -180,7 +181,7 @@ const InitOperation = ({ api, staking, chainId, accountIds, asset, onResult }: P
     );
 
     setTransferableRange(minMaxTransferable);
-  }, [balancesMap, activeUnstakeAccounts.length]);
+  }, [balancesMap, staking, activeUnstakeAccounts.length]);
 
   useEffect(() => {
     const newBalancesMap = new Map(balances.map((balance) => [balance.publicKey, balance]));
@@ -189,6 +190,10 @@ const InitOperation = ({ api, staking, chainId, accountIds, asset, onResult }: P
     setBalancesMap(newBalancesMap);
     setActiveBalances(newActiveBalances);
   }, [activeUnstakeAccounts.length, balances]);
+
+  useEffect(() => {
+    trigger('amount');
+  }, [activeBalances]);
 
   // Init accounts
   useEffect(() => {
@@ -200,7 +205,7 @@ const InitOperation = ({ api, staking, chainId, accountIds, asset, onResult }: P
     });
 
     setUnstakeAccounts(formattedAccounts);
-  }, [accountIds.length, amount, fee, balances.length]);
+  }, [accountIds.length, activeBalances, staking, amount, fee, balances.length]);
 
   // Init active unstake accounts
   useEffect(() => {
