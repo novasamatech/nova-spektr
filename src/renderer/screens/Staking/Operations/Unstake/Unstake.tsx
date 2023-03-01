@@ -17,6 +17,7 @@ import { useStakingData } from '@renderer/services/staking/stakingDataService';
 import { AccountDS } from '@renderer/services/storage';
 import InitOperation, { UnstakeResult } from './InitOperation/InitOperation';
 import { Confirmation, Scanning, Signing, Submit } from '../components';
+import { formatAddress } from '@renderer/shared/utils/address';
 
 const enum Step {
   INIT,
@@ -40,7 +41,7 @@ const Unstake = () => {
   const { connections } = useNetworkContext();
   const { subscribeStaking } = useStakingData();
   const { getLiveAccounts } = useAccount();
-  const accounts = getLiveAccounts({ signingType: SigningType.PARITY_SIGNER });
+  const dbAccounts = getLiveAccounts({ signingType: SigningType.PARITY_SIGNER });
 
   const [searchParams] = useSearchParams();
   const params = useParams<{ chainId: ChainId }>();
@@ -51,7 +52,7 @@ const Unstake = () => {
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [unsignedTransactions, setUnsignedTransactions] = useState<UnsignedTransaction[]>([]);
   const [staking, setStaking] = useState<StakingMap>({});
-  const [selectedAccounts, setSelectedAccounts] = useState<AccountDS[]>([]);
+  const [accounts, setAccounts] = useState<AccountDS[]>([]);
   const [signatures, setSignatures] = useState<HexString[]>([]);
 
   const chainId = params.chainId || ('' as ChainId);
@@ -69,7 +70,7 @@ const Unstake = () => {
 
     let unsubStaking: () => void | undefined;
 
-    const selectedAccounts = accounts.reduce<AccountID[]>((acc, account) => {
+    const selectedAccounts = dbAccounts.reduce<AccountID[]>((acc, account) => {
       const accountExists = account.id && accountIds.includes(account.id.toString());
 
       return accountExists ? [...acc, account.accountId as AccountID] : acc;
@@ -82,7 +83,7 @@ const Unstake = () => {
     return () => {
       unsubStaking?.();
     };
-  }, [api, accounts.length, accountIds.length]);
+  }, [api, dbAccounts.length, accountIds.length]);
 
   if (!api?.isConnected) {
     // TODO: show skeleton until we connect to network's api
@@ -127,15 +128,33 @@ const Unstake = () => {
   }
 
   const onUnstakeResult = ({ accounts, amount }: UnstakeResult) => {
-    const transactions = accounts.map(({ accountId = '' }) => ({
-      chainId,
-      address: accountId,
-      type: TransactionType.UNSTAKE,
-      args: { value: amount },
-    }));
+    const transactions = accounts.map(({ accountId = '' }) => {
+      const address = formatAddress(accountId, addressPrefix);
+      const commonPayload = { chainId, address };
+
+      const unstakeTx = {
+        ...commonPayload,
+        type: TransactionType.UNSTAKE,
+        args: { value: amount },
+      };
+
+      if (staking[accountId]?.active === amount) return unstakeTx;
+
+      const chillTx = {
+        ...commonPayload,
+        type: TransactionType.CHILL,
+        args: {},
+      };
+
+      return {
+        ...commonPayload,
+        type: TransactionType.BATCH_ALL,
+        args: { transactions: [chillTx, unstakeTx] },
+      };
+    });
 
     setTransactions(transactions);
-    setSelectedAccounts(accounts);
+    setAccounts(accounts);
     setUnstakeAmount(amount);
     setActiveStep(Step.CONFIRMATION);
   };
@@ -151,6 +170,7 @@ const Unstake = () => {
   };
 
   const explorersProps = { explorers, addressPrefix, asset };
+  const unstakeValues = new Array(accounts.length).fill(unstakeAmount);
 
   const hints = (
     <HintList className="px-[15px]">
@@ -181,9 +201,9 @@ const Unstake = () => {
       {activeStep === Step.CONFIRMATION && (
         <Confirmation
           api={api}
-          accounts={selectedAccounts}
+          accounts={accounts}
           transaction={transactions[0]}
-          amount={unstakeAmount}
+          amounts={unstakeValues}
           onResult={() => setActiveStep(Step.SCANNING)}
           onAddToQueue={noop}
           {...explorersProps}
@@ -195,7 +215,7 @@ const Unstake = () => {
         <Scanning
           api={api}
           chainId={chainId}
-          accounts={selectedAccounts}
+          accounts={accounts}
           transactions={transactions}
           addressPrefix={addressPrefix}
           onResult={onScanResult}
@@ -215,8 +235,8 @@ const Unstake = () => {
           transaction={transactions[0]}
           signatures={signatures}
           unsignedTx={unsignedTransactions}
-          accounts={selectedAccounts}
-          amount={unstakeAmount}
+          accounts={accounts}
+          amounts={unstakeValues}
           {...explorersProps}
         >
           {hints}
