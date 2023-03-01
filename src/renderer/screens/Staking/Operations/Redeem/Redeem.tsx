@@ -47,6 +47,7 @@ const Unstake = () => {
   const [activeStep, setActiveStep] = useState<Step>(Step.CONFIRMATION);
   const [era, setEra] = useState<number>();
   const [redeemAmounts, setRedeemAmounts] = useState<string[]>([]);
+  const [isConfirmed, setIsConfirmed] = useState(false);
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [unsignedTransactions, setUnsignedTransactions] = useState<UnsignedTransaction[]>([]);
   const [staking, setStaking] = useState<StakingMap>({});
@@ -102,7 +103,7 @@ const Unstake = () => {
   }, [api, accounts.length, accountIds.length]);
 
   useEffect(() => {
-    if (!era || !staking) return;
+    if (isConfirmed || !era || !staking) return;
 
     const redeemAmounts = accounts.reduce<string[]>((acc, { accountId }) => {
       if (!accountId) return acc;
@@ -113,7 +114,7 @@ const Unstake = () => {
     }, []);
 
     setRedeemAmounts(redeemAmounts);
-  }, [staking, era]);
+  }, [staking, era, isConfirmed]);
 
   if (!api?.isConnected) {
     // TODO: show skeleton until we connect to network's api
@@ -157,6 +158,11 @@ const Unstake = () => {
     );
   }
 
+  const onConfirmResult = () => {
+    setIsConfirmed(true);
+    setActiveStep(Step.SCANNING);
+  };
+
   const onScanResult = (unsigned: UnsignedTransaction[]) => {
     setUnsignedTransactions(unsigned);
     setActiveStep(Step.SIGNING);
@@ -179,7 +185,7 @@ const Unstake = () => {
           accounts={accounts}
           amounts={redeemAmounts}
           transaction={transactions[0]}
-          onResult={() => setActiveStep(Step.SCANNING)}
+          onResult={onConfirmResult}
           onAddToQueue={noop}
           {...explorersProps}
         />
