@@ -335,7 +335,7 @@
       "changeValidatorsTitle": "Change validators",
       "errorModalDiscardButton": "Discard",
       "errorModalEditButton": "Edit",
-      "errorModalSubtitle": "You can either edit or discard these transactions",
+      "errorModalSubtitle": "You can discard these transactions",
       "errorModalTitle": "Error submitting { number } transactions",
       "hintNewValidators": "Your validators will change in the next era",
       "hintNoRewards": "During unstaking period tokens produce no rewards",
