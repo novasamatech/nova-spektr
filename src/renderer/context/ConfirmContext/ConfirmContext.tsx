@@ -6,8 +6,8 @@ import { useToggle } from '@renderer/shared/hooks';
 export type ConfirmDialogProps = {
   title: string;
   message: ReactNode;
-  confirmText: string;
-  cancelText: string;
+  confirmText?: string;
+  cancelText?: string;
 };
 
 type ConfirmContextProps = {
