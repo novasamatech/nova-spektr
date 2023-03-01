@@ -48,7 +48,7 @@ const AccountsModal = ({ isOpen, accounts, amount, asset, explorers, addressPref
                   <Table.Cell>
                     <Balance
                       className="font-semibold text-xs"
-                      value={accountAmount}
+                      value={accountAmount || amount || '0'}
                       precision={asset.precision}
                       symbol={asset.symbol}
                     />

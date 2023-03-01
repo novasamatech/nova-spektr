@@ -10,10 +10,13 @@ import { Transaction, TransactionType } from '@renderer/domain/transaction';
 import { AccountDS } from '@renderer/services/storage';
 import TransactionInfo from '../../components/TransactionInfo/TransactionInfo';
 import { UnstakingDuration } from '@renderer/screens/Staking/Overview/components';
+import { formatAddress } from '@renderer/shared/utils/address';
+import { StakingMap } from '@renderer/services/staking/common/types';
 
 type Props = {
   api?: ApiPromise;
   chainId: ChainId;
+  staking: StakingMap;
   accounts: AccountDS[];
   unstake: string;
   asset: Asset;
@@ -22,20 +25,50 @@ type Props = {
   onResult: (transactions: Transaction[]) => void;
 };
 
-const Confirmation = ({ api, chainId, accounts, unstake, asset, explorers, addressPrefix, onResult }: Props) => {
+const Confirmation = ({
+  api,
+  chainId,
+  accounts,
+  unstake,
+  staking,
+  asset,
+  explorers,
+  addressPrefix,
+  onResult,
+}: Props) => {
   const { t } = useI18n();
 
   const [transactions, setTransactions] = useState<Transaction[]>([]);
 
   useEffect(() => {
-    const newTransactions = accounts.map(({ accountId = '' }) => ({
-      chainId,
-      address: accountId,
-      type: TransactionType.UNSTAKE,
-      args: {
-        value: unstake,
-      },
-    }));
+    const newTransactions = accounts.map(({ accountId = '' }) => {
+      const address = formatAddress(accountId, addressPrefix);
+      const commonPayload = { chainId, address };
+
+      const chillTx = {
+        ...commonPayload,
+        type: TransactionType.CHILL,
+        args: {},
+      };
+
+      const unstakeTx = {
+        ...commonPayload,
+        type: TransactionType.UNSTAKE,
+        args: {
+          value: unstake,
+        },
+      };
+
+      const isFullUnstake = staking[accountId]?.active === unstake;
+
+      return isFullUnstake
+        ? {
+            ...commonPayload,
+            type: TransactionType.BATCH_ALL,
+            args: { transactions: [chillTx, unstakeTx] },
+          }
+        : unstakeTx;
+    });
 
     setTransactions(newTransactions);
   }, []);

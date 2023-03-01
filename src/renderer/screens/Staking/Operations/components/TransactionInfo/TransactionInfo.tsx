@@ -59,8 +59,6 @@ const TransactionInfo = ({
     ? accounts.reduce<BN>((acc, a) => acc.add(new BN((a as AccountWithAmount).amount || 0)), new BN(0)).toString()
     : (amount && new BN(amount).muln(accounts.length).toString()) || '0';
 
-  console.log(accounts, calculatedAmount, hasAmount);
-
   return (
     <>
       <div className="overflow-y-auto">
@@ -180,6 +178,7 @@ const TransactionInfo = ({
         isOpen={isAccountsOpen}
         accounts={accounts}
         asset={asset}
+        amount={amount}
         explorers={explorers}
         addressPrefix={addressPrefix}
         onClose={toggleAccounts}

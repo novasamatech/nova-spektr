@@ -170,6 +170,7 @@ const Unstake = () => {
           chainId={chainId}
           accounts={selectedAccounts}
           unstake={unstakeAmount}
+          staking={staking}
           asset={asset}
           explorers={explorers}
           addressPrefix={addressPrefix}
