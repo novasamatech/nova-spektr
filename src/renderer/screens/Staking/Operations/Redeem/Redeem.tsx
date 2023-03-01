@@ -56,7 +56,6 @@ const Unstake = () => {
 
   const chainId = params.chainId || ('' as ChainId);
   const accountIds = searchParams.get('id')?.split(',') || [];
-  3;
 
   if (!chainId || accountIds.length === 0) {
     return <Navigate replace to={Paths.STAKING} />;

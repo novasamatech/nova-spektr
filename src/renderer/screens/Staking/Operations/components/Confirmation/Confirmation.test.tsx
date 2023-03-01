@@ -37,9 +37,9 @@ describe('screens/Staking/components/Confirmation', () => {
     render(<Confirmation {...defaultProps} />);
 
     const signButton = screen.getByText('staking.confirmation.signButton');
-    const queueButton = screen.getByText('staking.confirmation.queueButton');
+    // const queueButton = screen.getByText('staking.confirmation.queueButton');
     expect(signButton).toBeInTheDocument();
-    expect(queueButton).toBeInTheDocument();
+    // expect(queueButton).toBeInTheDocument();
   });
 
   test('should call onResult', () => {
@@ -51,12 +51,13 @@ describe('screens/Staking/components/Confirmation', () => {
     expect(spyResult).toBeCalled();
   });
 
-  test('should call onAddToQueue', () => {
-    render(<Confirmation {...defaultProps} />);
-
-    const addToQueue = screen.getByText('staking.confirmation.queueButton');
-    addToQueue.click();
-
-    expect(spyAddToQueue).toBeCalled();
-  });
+  // TODO: uncomment after adding Queue
+  // test('should call onAddToQueue', () => {
+  //   render(<Confirmation {...defaultProps} />);
+  //
+  //   const addToQueue = screen.getByText('staking.confirmation.queueButton');
+  //   addToQueue.click();
+  //
+  //   expect(spyAddToQueue).toBeCalled();
+  // });
 });

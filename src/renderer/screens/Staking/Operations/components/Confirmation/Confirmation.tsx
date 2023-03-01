@@ -28,17 +28,17 @@ export const Confirmation = ({ children, onResult, onAddToQueue, ...props }: Pro
             {t('staking.confirmation.signButton')}
           </Button>
 
-          {/* TODO: implement in future */}
-          <Button
-            className="hidden"
-            variant="outline"
-            pallet="primary"
-            weight="lg"
-            suffixElement={<Icon name="addLine" size={20} />}
-            onClick={onAddToQueue}
-          >
-            {t('staking.confirmation.queueButton')}
-          </Button>
+          {/* TODO: uncomment after adding Queue */}
+          {/*<Button*/}
+          {/*  className="hidden"*/}
+          {/*  variant="outline"*/}
+          {/*  pallet="primary"*/}
+          {/*  weight="lg"*/}
+          {/*  suffixElement={<Icon name="addLine" size={20} />}*/}
+          {/*  onClick={onAddToQueue}*/}
+          {/*>*/}
+          {/*  {t('staking.confirmation.queueButton')}*/}
+          {/*</Button>*/}
         </div>
       </div>
     </TransactionInfo>
