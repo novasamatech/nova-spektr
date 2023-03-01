@@ -17,6 +17,12 @@ jest.mock('@renderer/services/wallet/walletService', () => ({
   }),
 }));
 
+jest.mock('@renderer/services/transaction/transactionService', () => ({
+  useTransaction: jest.fn().mockReturnValue({
+    getTransactionFee: jest.fn().mockResolvedValue('1'),
+  }),
+}));
+
 jest.mock('@renderer/services/account/accountService', () => ({
   useAccount: jest.fn().mockReturnValue({
     getLiveAccounts: () => [
