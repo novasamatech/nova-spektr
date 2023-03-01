@@ -2,7 +2,6 @@ import { UnsignedTransaction } from '@substrate/txwrapper-polkadot';
 import noop from 'lodash/noop';
 import { useEffect, useState } from 'react';
 import { Navigate, useNavigate, useParams, useSearchParams } from 'react-router-dom';
-import { BN } from '@polkadot/util';
 
 import { ButtonBack, ButtonLink, Icon } from '@renderer/components/ui';
 import { useI18n } from '@renderer/context/I18nContext';
@@ -47,7 +46,8 @@ const Unstake = () => {
 
   const [activeStep, setActiveStep] = useState<Step>(Step.CONFIRMATION);
   const [era, setEra] = useState<number>();
-  const [redeemAmount, setRedeemAmount] = useState<string>('');
+  const [redeemAmounts, setRedeemAmounts] = useState<string[]>([]);
+  const [isConfirmed, setIsConfirmed] = useState(false);
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [unsignedTransactions, setUnsignedTransactions] = useState<UnsignedTransaction[]>([]);
   const [staking, setStaking] = useState<StakingMap>({});
@@ -103,16 +103,18 @@ const Unstake = () => {
   }, [api, accounts.length, accountIds.length]);
 
   useEffect(() => {
-    if (!era || !staking) return;
+    if (isConfirmed || !era || !staking) return;
 
-    const totalRedeem = accounts.reduce((acc, account) => {
-      const stake = account.accountId && staking[account.accountId];
+    const redeemAmounts = accounts.reduce<string[]>((acc, { accountId }) => {
+      if (!accountId) return acc;
 
-      return stake ? acc.add(new BN(redeemableAmount(stake.unlocking, era))) : acc;
-    }, new BN(0));
+      const redeemable = redeemableAmount(staking[accountId]?.unlocking, era);
 
-    setRedeemAmount(totalRedeem.toString());
-  }, [staking, era]);
+      return [...acc, redeemable];
+    }, []);
+
+    setRedeemAmounts(redeemAmounts);
+  }, [staking, era, isConfirmed]);
 
   if (!api?.isConnected) {
     // TODO: show skeleton until we connect to network's api
@@ -156,6 +158,11 @@ const Unstake = () => {
     );
   }
 
+  const onConfirmResult = () => {
+    setIsConfirmed(true);
+    setActiveStep(Step.SCANNING);
+  };
+
   const onScanResult = (unsigned: UnsignedTransaction[]) => {
     setUnsignedTransactions(unsigned);
     setActiveStep(Step.SIGNING);
@@ -176,9 +183,9 @@ const Unstake = () => {
         <Confirmation
           api={api}
           accounts={accounts}
-          amount={redeemAmount}
+          amounts={redeemAmounts}
           transaction={transactions[0]}
-          onResult={() => setActiveStep(Step.SCANNING)}
+          onResult={onConfirmResult}
           onAddToQueue={noop}
           {...explorersProps}
         />
@@ -208,7 +215,7 @@ const Unstake = () => {
           signatures={signatures}
           unsignedTx={unsignedTransactions}
           accounts={accounts}
-          amount={redeemAmount}
+          amounts={redeemAmounts}
           {...explorersProps}
         />
       )}
