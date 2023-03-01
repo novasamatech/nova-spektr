@@ -152,6 +152,7 @@ const Destination = () => {
       )}
       {activeStep === Step.CONFIRMATION && (
         <Confirmation
+          title={t('staking.confirmation.rewardDestinationTitle')}
           api={api}
           accounts={accounts}
           destination={destination}
@@ -178,6 +179,7 @@ const Destination = () => {
       )}
       {activeStep === Step.SUBMIT && (
         <Submit
+          title={t('staking.confirmation.rewardDestinationTitle')}
           api={api}
           transaction={transactions[0]}
           signatures={signatures}

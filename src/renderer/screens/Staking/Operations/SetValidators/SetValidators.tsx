@@ -158,6 +158,7 @@ const SetValidators = () => {
       )}
       {activeStep === Step.CONFIRMATION && (
         <Confirmation
+          title={t('staking.confirmation.setValidatorsTitle')}
           api={api}
           validators={Object.values(validators)}
           transaction={transactions[0]}
@@ -184,6 +185,7 @@ const SetValidators = () => {
       )}
       {activeStep === Step.SUBMIT && (
         <Submit
+          title={t('staking.confirmation.setValidatorsTitle')}
           api={api}
           transaction={transactions[0]}
           signatures={signatures}
