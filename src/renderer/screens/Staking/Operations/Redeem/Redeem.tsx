@@ -104,7 +104,7 @@ const Unstake = () => {
   useEffect(() => {
     if (!era || !staking) return;
 
-    const totalRedeem = accounts.reduce<string[]>((acc, { accountId }) => {
+    const redeemAmounts = accounts.reduce<string[]>((acc, { accountId }) => {
       if (!accountId) return acc;
 
       const redeemable = redeemableAmount(staking[accountId]?.unlocking, era);
@@ -112,7 +112,7 @@ const Unstake = () => {
       return [...acc, redeemable];
     }, []);
 
-    setRedeemAmounts(totalRedeem);
+    setRedeemAmounts(redeemAmounts);
   }, [staking, era]);
 
   if (!api?.isConnected) {

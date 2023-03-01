@@ -169,7 +169,7 @@ const Bond = () => {
   };
 
   const explorersProps = { explorers, addressPrefix, asset };
-  const bondValues = Array.from({ length: accounts.length }, (_) => stakeAmount);
+  const bondValues = new Array(accounts.length).fill(stakeAmount);
 
   const hints = (
     <HintList className="px-[15px]">

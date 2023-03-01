@@ -156,7 +156,7 @@ const Restake = () => {
   };
 
   const explorersProps = { explorers, addressPrefix, asset };
-  const restakeValues = Array.from({ length: accounts.length }, (_) => restakeAmount);
+  const restakeValues = new Array(accounts.length).fill(restakeAmount);
 
   const hints = (
     <HintList className="px-[15px]">

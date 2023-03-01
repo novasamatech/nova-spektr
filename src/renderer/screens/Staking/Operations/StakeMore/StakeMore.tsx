@@ -124,7 +124,7 @@ const StakeMore = () => {
   };
 
   const explorersProps = { explorers, addressPrefix, asset };
-  const stakeMoreValues = Array.from({ length: accounts.length }, (_) => stakeMoreAmount);
+  const stakeMoreValues = new Array(accounts.length).fill(stakeMoreAmount);
 
   const hints = (
     <HintList className="px-[15px]">

@@ -170,7 +170,7 @@ const Unstake = () => {
   };
 
   const explorersProps = { explorers, addressPrefix, asset };
-  const unstakeValues = Array.from({ length: accounts.length }, (_) => unstakeAmount);
+  const unstakeValues = new Array(accounts.length).fill(unstakeAmount);
 
   const hints = (
     <HintList className="px-[15px]">
