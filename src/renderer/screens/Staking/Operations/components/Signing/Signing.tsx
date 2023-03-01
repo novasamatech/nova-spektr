@@ -4,20 +4,20 @@ import { useEffect, useState } from 'react';
 
 import { useChains } from '@renderer/services/network/chainsService';
 import ParitySignerSignatureReader from '@renderer/screens/Signing/ParitySignerSignatureReader/ParitySignerSignatureReader';
+import MultiframeSignatureReader from '@renderer/screens/Signing/MultiframeSignatureReader/MultiframeSignatureReader';
 import { Block, Button } from '@renderer/components/ui';
 import { useI18n } from '@renderer/context/I18nContext';
 import { HexString } from '@renderer/domain/shared-kernel';
-import MultiframeSignatureReader from '@renderer/screens/Signing/MultiframeSignatureReader/MultiframeSignatureReader';
 import { DEFAULT_QR_LIFETIME } from '@renderer/shared/utils/constants';
 
 type Props = {
   api: ApiPromise;
   multiQr: boolean;
-  onResult: (signatures: HexString[]) => void;
   onGoBack: () => void;
+  onResult: (signatures: HexString[]) => void;
 };
 
-const Signing = ({ api, multiQr, onResult, onGoBack }: Props) => {
+export const Signing = ({ api, multiQr, onResult, onGoBack }: Props) => {
   const { t } = useI18n();
   const { getExpectedBlockTime } = useChains();
 
@@ -39,8 +39,6 @@ const Signing = ({ api, multiQr, onResult, onGoBack }: Props) => {
     }
   }, [countdown]);
 
-  const QrReader = multiQr ? MultiframeSignatureReader : ParitySignerSignatureReader;
-
   const handleResult = (data: string | string[]) => {
     if (Array.isArray(data)) {
       onResult(data as HexString[]);
@@ -48,6 +46,8 @@ const Signing = ({ api, multiQr, onResult, onGoBack }: Props) => {
       onResult([data as HexString]);
     }
   };
+
+  const QrReader = multiQr ? MultiframeSignatureReader : ParitySignerSignatureReader;
 
   return (
     <div className="overflow-y-auto">
@@ -68,5 +68,3 @@ const Signing = ({ api, multiQr, onResult, onGoBack }: Props) => {
     </div>
   );
 };
-
-export default Signing;

@@ -16,21 +16,25 @@ type Props = {
 const ConfirmModal = ({
   isOpen,
   children,
+  contentClass,
+  confirmText,
+  cancelText,
   onClose,
   onConfirm,
-  contentClass,
-  confirmText = 'Confirm',
-  cancelText = 'Cancel',
 }: PropsWithChildren<Props>) => (
   <BaseModal isOpen={isOpen} contentClass={cn('p-5', contentClass)} onClose={onClose}>
     {children}
-    <div className="grid grid-cols-2 gap-x-3">
-      <Button variant="fill" pallet="primary" onClick={() => onClose()}>
-        {cancelText}
-      </Button>
-      <Button variant="outline" pallet="error" onClick={() => onConfirm()}>
-        {confirmText}
-      </Button>
+    <div className="flex gap-x-3">
+      {cancelText && (
+        <Button className="flex-1" variant="fill" pallet="primary" onClick={onClose}>
+          {cancelText}
+        </Button>
+      )}
+      {confirmText && (
+        <Button className="flex-1" variant="outline" pallet="error" onClick={onConfirm}>
+          {confirmText}
+        </Button>
+      )}
     </div>
   </BaseModal>
 );
