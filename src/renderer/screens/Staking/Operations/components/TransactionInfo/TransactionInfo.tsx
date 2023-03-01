@@ -17,35 +17,37 @@ import { useToggle } from '@renderer/shared/hooks';
 import AccountsModal from '../AccountsModal/AccountsModal';
 import ValidatorsModal from '../ValidatorsModal/ValidatorsModal';
 
-type Props = {
+type Destination = {
+  address?: AccountID;
+  type: RewardsDestination;
+};
+
+export interface InfoProps {
   api: ApiPromise;
   title?: string;
   validators?: Validator[];
   accounts: AccountDS[];
-  stake?: string;
-  destination?: {
-    address?: AccountID;
-    type: RewardsDestination;
-  };
+  amount?: string;
+  destination?: Destination;
   asset: Asset;
   explorers?: Explorer[];
   addressPrefix: number;
-  transactions: Transaction[];
-};
+  transaction: Transaction;
+}
 
 const TransactionInfo = ({
   api,
   title,
   validators,
   accounts,
-  stake,
+  amount,
   destination,
   asset,
   explorers,
   addressPrefix,
-  transactions,
+  transaction,
   children,
-}: PropsWithChildren<Props>) => {
+}: PropsWithChildren<InfoProps>) => {
   const { t } = useI18n();
   const [isAccountsOpen, toggleAccounts] = useToggle();
   const [isValidatorsOpen, toggleValidators] = useToggle();
@@ -60,23 +62,23 @@ const TransactionInfo = ({
           <Block className="flex flex-col gap-y-5">
             {title && <h2 className="text-center text-neutral font-semibold text-xl">{title}</h2>}
 
-            {!title && singleAccount && stake && (
+            {!title && singleAccount && amount && (
               <div className="flex flex-col items-center mt-6 mb-9 ">
                 <Balance
                   className="text-4.5xl font-bold"
-                  value={stake}
+                  value={amount}
                   precision={asset.precision}
                   symbol={asset.symbol}
                 />
               </div>
             )}
 
-            {!title && !singleAccount && stake && (
+            {!title && !singleAccount && amount && (
               <div className="flex flex-col items-center gap-y-6 mb-9">
                 <h2 className="text-neutral font-semibold text-xl">{t('staking.confirmation.totalAmount')}</h2>
                 <Balance
                   className="text-4.5xl font-bold"
-                  value={new BN(stake).muln(accounts.length).toString()}
+                  value={new BN(amount).muln(accounts.length).toString()}
                   precision={asset.precision}
                   symbol={asset.symbol}
                 />
@@ -121,7 +123,7 @@ const TransactionInfo = ({
                   className="text-base font-semibold text-neutral"
                   api={api}
                   asset={asset}
-                  transaction={transactions[0]}
+                  transaction={transaction}
                 />
               </div>
               {!singleAccount && (
@@ -132,7 +134,7 @@ const TransactionInfo = ({
                     api={api}
                     repeat={accounts.length}
                     asset={asset}
-                    transaction={transactions[0]}
+                    transaction={transaction}
                   />
                 </div>
               )}
@@ -181,7 +183,7 @@ const TransactionInfo = ({
       <AccountsModal
         isOpen={isAccountsOpen}
         accounts={accounts}
-        amount={stake}
+        amount={amount}
         asset={asset}
         explorers={explorers}
         addressPrefix={addressPrefix}

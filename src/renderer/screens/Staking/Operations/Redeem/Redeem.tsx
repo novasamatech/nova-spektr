@@ -1,4 +1,5 @@
 import { UnsignedTransaction } from '@substrate/txwrapper-polkadot';
+import noop from 'lodash/noop';
 import { useEffect, useState } from 'react';
 import { Navigate, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { BN } from '@polkadot/util';
@@ -8,18 +9,15 @@ import { useI18n } from '@renderer/context/I18nContext';
 import { useNetworkContext } from '@renderer/context/NetworkContext';
 import { StakingType } from '@renderer/domain/asset';
 import { AccountID, ChainId, HexString, SigningType } from '@renderer/domain/shared-kernel';
-import { Transaction } from '@renderer/domain/transaction';
+import { Transaction, TransactionType } from '@renderer/domain/transaction';
 import Paths from '@renderer/routes/paths';
 import { useAccount } from '@renderer/services/account/accountService';
 import { StakingMap } from '@renderer/services/staking/common/types';
 import { useStakingData } from '@renderer/services/staking/stakingDataService';
 import { AccountDS } from '@renderer/services/storage';
-import Scanning from '../components/Scanning/Scanning';
-import Signing from '../components/Signing/Signing';
-import Confirmation from './Confirmation/Confirmation';
-import Submit from './Submit/Submit';
 import { redeemableAmount } from '@renderer/services/balance/common/utils';
 import { useEra } from '@renderer/services/staking/eraService';
+import { Confirmation, Scanning, Signing, Submit } from '../components';
 
 const enum Step {
   CONFIRMATION,
@@ -41,20 +39,19 @@ const Unstake = () => {
   const { connections } = useNetworkContext();
   const { subscribeStaking } = useStakingData();
   const { getLiveAccounts } = useAccount();
-  const dbAccounts = getLiveAccounts({ signingType: SigningType.PARITY_SIGNER });
   const { subscribeActiveEra } = useEra();
-
   const [searchParams] = useSearchParams();
   const params = useParams<{ chainId: ChainId }>();
 
-  const [activeStep, setActiveStep] = useState<Step>(Step.CONFIRMATION);
+  const dbAccounts = getLiveAccounts({ signingType: SigningType.PARITY_SIGNER });
 
+  const [activeStep, setActiveStep] = useState<Step>(Step.CONFIRMATION);
   const [era, setEra] = useState<number>();
   const [redeemAmount, setRedeemAmount] = useState<string>('');
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [unsignedTransactions, setUnsignedTransactions] = useState<UnsignedTransaction[]>([]);
   const [staking, setStaking] = useState<StakingMap>({});
-  const [selectedAccounts, setSelectedAccounts] = useState<AccountDS[]>([]);
+  const [accounts, setAccounts] = useState<AccountDS[]>([]);
   const [signatures, setSignatures] = useState<HexString[]>([]);
 
   const chainId = params.chainId || ('' as ChainId);
@@ -74,8 +71,19 @@ const Unstake = () => {
       return accountExists ? [...acc, account] : acc;
     }, []);
 
-    setSelectedAccounts(selectedAccounts);
+    setAccounts(selectedAccounts);
   }, [dbAccounts.length]);
+
+  useEffect(() => {
+    const transactions = accounts.map(({ accountId = '' }) => ({
+      chainId,
+      address: accountId,
+      type: TransactionType.REDEEM,
+      args: { numSlashingSpans: 1 },
+    }));
+
+    setTransactions(transactions);
+  }, [accounts.length]);
 
   useEffect(() => {
     if (!api?.isConnected || accountIds.length === 0) return;
@@ -85,24 +93,19 @@ const Unstake = () => {
 
     (async () => {
       unsubEra = await subscribeActiveEra(api, setEra);
-      unsubStaking = await subscribeStaking(
-        chainId,
-        api,
-        selectedAccounts.map((a) => a.accountId) as AccountID[],
-        setStaking,
-      );
+      unsubStaking = await subscribeStaking(chainId, api, accounts.map((a) => a.accountId) as AccountID[], setStaking);
     })();
 
     return () => {
       unsubEra?.();
       unsubStaking?.();
     };
-  }, [api, selectedAccounts.length, accountIds.length]);
+  }, [api, accounts.length, accountIds.length]);
 
   useEffect(() => {
     if (!era || !staking) return;
 
-    const totalRedeem = selectedAccounts.reduce((acc, account) => {
+    const totalRedeem = accounts.reduce((acc, account) => {
       const stake = account.accountId && staking[account.accountId];
 
       return stake ? acc.add(new BN(redeemableAmount(stake.unlocking, era))) : acc;
@@ -123,21 +126,6 @@ const Unstake = () => {
       // TODO: reset data
       setActiveStep((prev) => prev - 1);
     }
-  };
-
-  const onConfirmResult = (transactions: Transaction[]) => {
-    setTransactions(transactions);
-    setActiveStep(Step.SCANNING);
-  };
-
-  const onScanResult = (unsigned: UnsignedTransaction[]) => {
-    setUnsignedTransactions(unsigned);
-    setActiveStep(Step.SIGNING);
-  };
-
-  const onSignResult = (signatures: HexString[]) => {
-    setSignatures(signatures);
-    setActiveStep(Step.SUBMIT);
   };
 
   const headerContent = (
@@ -168,6 +156,18 @@ const Unstake = () => {
     );
   }
 
+  const onScanResult = (unsigned: UnsignedTransaction[]) => {
+    setUnsignedTransactions(unsigned);
+    setActiveStep(Step.SIGNING);
+  };
+
+  const onSignResult = (signatures: HexString[]) => {
+    setSignatures(signatures);
+    setActiveStep(Step.SUBMIT);
+  };
+
+  const explorersProps = { explorers, addressPrefix, asset };
+
   return (
     <div className="flex flex-col h-full relative">
       {headerContent}
@@ -175,20 +175,19 @@ const Unstake = () => {
       {activeStep === Step.CONFIRMATION && (
         <Confirmation
           api={api}
-          chainId={chainId}
-          accounts={selectedAccounts}
+          accounts={accounts}
           amount={redeemAmount}
-          asset={asset}
-          explorers={explorers}
-          addressPrefix={addressPrefix}
-          onResult={onConfirmResult}
+          transaction={transactions[0]}
+          onResult={() => setActiveStep(Step.SCANNING)}
+          onAddToQueue={noop}
+          {...explorersProps}
         />
       )}
       {activeStep === Step.SCANNING && (
         <Scanning
           api={api}
           chainId={chainId}
-          accounts={selectedAccounts}
+          accounts={accounts}
           transactions={transactions}
           addressPrefix={addressPrefix}
           onResult={onScanResult}
@@ -205,14 +204,12 @@ const Unstake = () => {
       {activeStep === Step.SUBMIT && (
         <Submit
           api={api}
-          transactions={transactions}
+          transaction={transactions[0]}
           signatures={signatures}
-          unsignedTransactions={unsignedTransactions}
-          accounts={selectedAccounts}
+          unsignedTx={unsignedTransactions}
+          accounts={accounts}
           amount={redeemAmount}
-          asset={asset}
-          explorers={explorers}
-          addressPrefix={addressPrefix}
+          {...explorersProps}
         />
       )}
     </div>
