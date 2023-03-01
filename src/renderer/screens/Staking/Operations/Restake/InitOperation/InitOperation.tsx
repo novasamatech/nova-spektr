@@ -46,7 +46,7 @@ const getDropdownPayload = (
   const balanceExists = balance && stake && asset;
 
   const balanceIsIncorrect =
-    balanceExists && amount && fee && !(validateBalanceForFee(balance, fee) || validateBalance(stake, amount, asset));
+    balanceExists && amount && fee && !validateBalanceForFee(balance, fee) && !validateBalance(stake, amount, asset);
 
   const element = (
     <div className="flex justify-between items-center gap-x-2.5">

@@ -30,6 +30,7 @@ const validateBalance = (stake: Stake | string, amount: string, asset: Asset): b
 
 const validateBalanceForFee = (balance: BalanceDS | string, fee: string): boolean => {
   const transferableBalance = typeof balance === 'string' ? balance : transferableAmount(balance);
+  console.log('balance', transferableBalance, fee);
 
   return new BN(fee).lte(new BN(transferableBalance));
 };
@@ -47,7 +48,7 @@ const getDropdownPayload = (
   const balanceExists = balance && stake && asset;
 
   const balanceIsIncorrect =
-    balanceExists && amount && fee && !(validateBalanceForFee(balance, fee) || validateBalance(stake, amount, asset));
+    balanceExists && amount && fee && !validateBalance(stake, amount, asset) && !validateBalanceForFee(balance, fee);
 
   const element = (
     <div className="flex justify-between items-center gap-x-2.5">
@@ -317,18 +318,25 @@ const InitOperation = ({ api, staking, chainId, accountIds, asset, onResult }: P
               <InputHint active={error?.type === 'notZero'} variant="error">
                 {t('staking.requiredAmountError')}
               </InputHint>
+
+              <div className="flex justify-between items-center uppercase text-neutral-variant text-2xs">
+                <p>{t('staking.unstake.transferable')}</p>
+
+                <div
+                  className={cn(
+                    'flex font-semibold',
+                    error?.type === 'insufficientBalanceForFee' ? 'text-error' : 'text-neutral',
+                  )}
+                >
+                  {error?.type === 'insufficientBalanceForFee' && (
+                    <Icon size={12} className="text-error mr-1" name="warnCutout" />
+                  )}
+                  {transferable}&nbsp;{asset.symbol}
+                </div>
+              </div>
             </>
           )}
         />
-
-        <div className="flex justify-between items-center uppercase text-neutral-variant text-2xs">
-          <p>{t('staking.unstake.transferable')}</p>
-
-          <div className="flex text-neutral font-semibold">
-            {transferable}&nbsp;{asset.symbol}
-          </div>
-        </div>
-
         <div className="flex justify-between items-center uppercase text-neutral-variant text-2xs">
           <p>{t('staking.unstake.networkFee', { count: activeUnstakeAccounts.length })}</p>
 
