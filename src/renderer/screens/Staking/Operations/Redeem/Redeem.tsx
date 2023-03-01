@@ -76,6 +76,17 @@ const Unstake = () => {
   }, [dbAccounts.length]);
 
   useEffect(() => {
+    const transactions = accounts.map(({ accountId = '' }) => ({
+      chainId,
+      address: accountId,
+      type: TransactionType.REDEEM,
+      args: { numSlashingSpans: 1 },
+    }));
+
+    setTransactions(transactions);
+  }, [accounts.length]);
+
+  useEffect(() => {
     if (!api?.isConnected || accountIds.length === 0) return;
 
     let unsubEra: () => void | undefined;
@@ -146,18 +157,6 @@ const Unstake = () => {
     );
   }
 
-  const onConfirmResult = () => {
-    const transactions = accounts.map(({ accountId = '' }) => ({
-      chainId,
-      address: accountId,
-      type: TransactionType.REDEEM,
-      args: { numSlashingSpans: 1 },
-    }));
-
-    setTransactions(transactions);
-    setActiveStep(Step.SCANNING);
-  };
-
   const onScanResult = (unsigned: UnsignedTransaction[]) => {
     setUnsignedTransactions(unsigned);
     setActiveStep(Step.SIGNING);
@@ -180,7 +179,7 @@ const Unstake = () => {
           accounts={accounts}
           amount={redeemAmount}
           transaction={transactions[0]}
-          onResult={onConfirmResult}
+          onResult={() => setActiveStep(Step.SCANNING)}
           onAddToQueue={noop}
           {...explorersProps}
         />

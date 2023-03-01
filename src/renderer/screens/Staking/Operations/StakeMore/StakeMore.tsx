@@ -97,24 +97,20 @@ const StakeMore = () => {
     );
   }
 
-  const onUnstakeResult = (data: StakeMoreResult) => {
-    setAccounts(data.accounts);
-    setStakeMoreAmount(data.amount);
-    setActiveStep(Step.CONFIRMATION);
-  };
-
-  const onConfirmResult = () => {
+  const onUnstakeResult = ({ accounts, amount }: StakeMoreResult) => {
     const transactions = accounts.map(({ accountId = '' }) => ({
       chainId,
       address: accountId,
       type: TransactionType.STAKE_MORE,
       args: {
-        maxAdditional: stakeMoreAmount,
+        maxAdditional: amount,
       },
     }));
 
     setTransactions(transactions);
-    setActiveStep(Step.SCANNING);
+    setAccounts(accounts);
+    setStakeMoreAmount(amount);
+    setActiveStep(Step.CONFIRMATION);
   };
 
   const onScanResult = (unsigned: UnsignedTransaction[]) => {
@@ -130,7 +126,7 @@ const StakeMore = () => {
   const explorersProps = { explorers, addressPrefix, asset };
 
   const hints = (
-    <HintList className="mt-2.5 mb-5 px-[15px]">
+    <HintList className="px-[15px]">
       <HintList.Item>{t('staking.stakeMore.eraHint')}</HintList.Item>
     </HintList>
   );
@@ -148,7 +144,7 @@ const StakeMore = () => {
           accounts={accounts}
           transaction={transactions[0]}
           amount={stakeMoreAmount}
-          onResult={onConfirmResult}
+          onResult={() => setActiveStep(Step.SCANNING)}
           onAddToQueue={noop}
           {...explorersProps}
         >

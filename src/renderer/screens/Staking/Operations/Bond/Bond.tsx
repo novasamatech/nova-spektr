@@ -108,23 +108,11 @@ const Bond = () => {
     );
   }
 
-  const onInitResult = (data: BondResult) => {
-    const destPayload = data.destination
-      ? { type: RewardsDestination.TRANSFERABLE, address: data.destination }
+  const onInitResult = ({ accounts, destination, stake }: BondResult) => {
+    const destPayload = destination
+      ? { type: RewardsDestination.TRANSFERABLE, address: destination }
       : { type: RewardsDestination.RESTAKE };
 
-    setDestination(destPayload);
-    setAccounts(data.accounts);
-    setStakeAmount(data.stake);
-    setActiveStep(Step.VALIDATORS);
-  };
-
-  const onSelectValidators = (validators: ValidatorMap) => {
-    setValidators(validators);
-    setActiveStep(Step.CONFIRMATION);
-  };
-
-  const onConfirmResult = () => {
     const transactions = accounts.map(({ accountId = '' }) => {
       const address = formatAddress(accountId, addressPrefix);
       const commonPayload = { chainId, address };
@@ -155,7 +143,15 @@ const Bond = () => {
     });
 
     setTransactions(transactions);
-    setActiveStep(Step.SCANNING);
+    setDestination(destPayload);
+    setAccounts(accounts);
+    setStakeAmount(stake);
+    setActiveStep(Step.VALIDATORS);
+  };
+
+  const onSelectValidators = (validators: ValidatorMap) => {
+    setValidators(validators);
+    setActiveStep(Step.CONFIRMATION);
   };
 
   const onScanResult = (unsigned: UnsignedTransaction[]) => {
@@ -175,7 +171,7 @@ const Bond = () => {
   const explorersProps = { explorers, addressPrefix, asset };
 
   const hints = (
-    <HintList className="mt-2.5 mb-5 px-[15px]">
+    <HintList className="px-[15px]">
       <HintList.Item>{t('staking.confirmation.hintRewards')}</HintList.Item>
       <HintList.Item>{t('staking.confirmation.hintUnstakePeriod')}</HintList.Item>
       <HintList.Item>{t('staking.confirmation.hintNoRewards')}</HintList.Item>
@@ -201,7 +197,7 @@ const Bond = () => {
           amount={stakeAmount}
           destination={destination}
           transaction={transactions[0]}
-          onResult={onConfirmResult}
+          onResult={() => setActiveStep(Step.SCANNING)}
           onAddToQueue={noop}
           {...explorersProps}
         >

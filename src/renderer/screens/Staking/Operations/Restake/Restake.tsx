@@ -131,22 +131,18 @@ const Restake = () => {
     );
   }
 
-  const onUnstakeResult = (data: UnstakeResult) => {
-    setAccounts(data.accounts);
-    setRestakeAmount(data.amount);
-    setActiveStep(Step.CONFIRMATION);
-  };
-
-  const onConfirmResult = () => {
-    const transactions = dbAccounts.map(({ accountId = '' }) => ({
+  const onUnstakeResult = ({ accounts, amount }: UnstakeResult) => {
+    const transactions = accounts.map(({ accountId = '' }) => ({
       chainId,
       address: accountId,
       type: TransactionType.RESTAKE,
-      args: { value: staking },
+      args: { value: amount },
     }));
 
     setTransactions(transactions);
-    setActiveStep(Step.SCANNING);
+    setAccounts(accounts);
+    setRestakeAmount(amount);
+    setActiveStep(Step.CONFIRMATION);
   };
 
   const onScanResult = (unsigned: UnsignedTransaction[]) => {
@@ -162,7 +158,7 @@ const Restake = () => {
   const explorersProps = { explorers, addressPrefix, asset };
 
   const hints = (
-    <HintList className="mt-2.5 mb-5 px-[15px]">
+    <HintList className="px-[15px]">
       <HintList.Item>{t('staking.restake.eraHint')}</HintList.Item>
     </HintList>
   );
@@ -187,7 +183,7 @@ const Restake = () => {
           accounts={accounts}
           amount={restakeAmount}
           transaction={transactions[0]}
-          onResult={onConfirmResult}
+          onResult={() => setActiveStep(Step.SCANNING)}
           onAddToQueue={noop}
           {...explorersProps}
         >

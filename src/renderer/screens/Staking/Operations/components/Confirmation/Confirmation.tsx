@@ -14,30 +14,32 @@ export const Confirmation = ({ children, onResult, onAddToQueue, ...props }: Pro
 
   return (
     <TransactionInfo {...props}>
-      {children}
+      <div className="flex flex-col gap-y-4 mt-4">
+        {children}
 
-      <div className="flex flex-col items-center gap-y-2.5">
-        <Button
-          variant="fill"
-          pallet="primary"
-          weight="lg"
-          suffixElement={<Icon name="qrLine" size={20} />}
-          onClick={onResult}
-        >
-          {t('staking.confirmation.signButton')}
-        </Button>
+        <div className="flex flex-col items-center gap-y-2.5">
+          <Button
+            variant="fill"
+            pallet="primary"
+            weight="lg"
+            suffixElement={<Icon name="qrLine" size={20} />}
+            onClick={onResult}
+          >
+            {t('staking.confirmation.signButton')}
+          </Button>
 
-        {/* TODO: implement in future */}
-        <Button
-          className="hidden"
-          variant="outline"
-          pallet="primary"
-          weight="lg"
-          suffixElement={<Icon name="addLine" size={20} />}
-          onClick={onAddToQueue}
-        >
-          {t('staking.confirmation.queueButton')}
-        </Button>
+          {/* TODO: implement in future */}
+          <Button
+            className="hidden"
+            variant="outline"
+            pallet="primary"
+            weight="lg"
+            suffixElement={<Icon name="addLine" size={20} />}
+            onClick={onAddToQueue}
+          >
+            {t('staking.confirmation.queueButton')}
+          </Button>
+        </div>
       </div>
     </TransactionInfo>
   );

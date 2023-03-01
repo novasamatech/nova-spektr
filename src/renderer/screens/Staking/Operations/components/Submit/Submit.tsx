@@ -71,17 +71,21 @@ export const Submit = ({ unsignedTx, signatures, children, ...props }: PropsWith
 
   return (
     <TransactionInfo {...props}>
-      {children}
+      <div className="flex flex-col gap-y-4 mt-4">
+        {children}
 
-      {!submitFinished && (
-        <div className="flex justify-center items-center gap-x-2.5 mb-2.5">
-          <Icon className="text-neutral-variant animate-spin" name="loader" size={20} />
-          <p className="text-neutral-variant font-semibold">{t('staking.confirmation.submittingOperation')}</p>
+        <div className="flex flex-col items-center gap-y-2.5">
+          {!submitFinished && (
+            <div className="flex items-center gap-x-2.5">
+              <Icon className="text-neutral-variant animate-spin" name="loader" size={20} />
+              <p className="text-neutral-variant font-semibold">{t('staking.confirmation.submittingOperation')}</p>
+            </div>
+          )}
+          <ProgressBadge progress={progress} total={signatures.length}>
+            {t('staking.confirmation.transactionProgress')}
+          </ProgressBadge>
         </div>
-      )}
-      <ProgressBadge className="mx-auto" progress={progress} total={signatures.length}>
-        {t('staking.confirmation.transactionProgress')}
-      </ProgressBadge>
+      </div>
     </TransactionInfo>
   );
 };

@@ -103,17 +103,11 @@ const Destination = () => {
     );
   }
 
-  const onDestinationResult = (data: DestinationResult) => {
-    const destPayload = data.destination
-      ? { type: RewardsDestination.TRANSFERABLE, address: data.destination }
+  const onDestinationResult = ({ accounts, destination }: DestinationResult) => {
+    const destPayload = destination
+      ? { type: RewardsDestination.TRANSFERABLE, address: destination }
       : { type: RewardsDestination.RESTAKE };
 
-    setAccounts(data.accounts);
-    setDestination(destPayload);
-    setActiveStep(Step.CONFIRMATION);
-  };
-
-  const onConfirmResult = () => {
     const transactions = accounts.map(({ accountId = '' }) => ({
       chainId,
       address: formatAddress(accountId, addressPrefix),
@@ -124,7 +118,9 @@ const Destination = () => {
     }));
 
     setTransactions(transactions);
-    setActiveStep(Step.SCANNING);
+    setAccounts(accounts);
+    setDestination(destPayload);
+    setActiveStep(Step.CONFIRMATION);
   };
 
   const onScanResult = (unsigned: UnsignedTransaction[]) => {
@@ -163,7 +159,7 @@ const Destination = () => {
           asset={asset}
           explorers={explorers}
           addressPrefix={addressPrefix}
-          onResult={onConfirmResult}
+          onResult={() => setActiveStep(Step.SCANNING)}
           onAddToQueue={noop}
         />
       )}

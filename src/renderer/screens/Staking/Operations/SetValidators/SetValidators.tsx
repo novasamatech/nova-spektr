@@ -104,11 +104,6 @@ const SetValidators = () => {
   }
 
   const onSelectValidators = (validators: ValidatorMap) => {
-    setValidators(validators);
-    setActiveStep(Step.CONFIRMATION);
-  };
-
-  const onConfirmResult = () => {
     const transactions = availableAccounts.map(({ accountId = '' }) => {
       return {
         chainId,
@@ -121,7 +116,8 @@ const SetValidators = () => {
     });
 
     setTransactions(transactions);
-    setActiveStep(Step.SCANNING);
+    setValidators(validators);
+    setActiveStep(Step.CONFIRMATION);
   };
 
   const onScanResult = (unsigned: UnsignedTransaction[]) => {
@@ -141,7 +137,7 @@ const SetValidators = () => {
   const explorersProps = { explorers, addressPrefix, asset };
 
   const hints = (
-    <HintList className="mt-2.5 mb-5 px-[15px]">
+    <HintList className="px-[15px]">
       <HintList.Item>{t('staking.confirmation.hintNewValidators')}</HintList.Item>
     </HintList>
   );
@@ -166,7 +162,7 @@ const SetValidators = () => {
           validators={Object.values(validators)}
           transaction={transactions[0]}
           accounts={availableAccounts}
-          onResult={onConfirmResult}
+          onResult={() => setActiveStep(Step.SCANNING)}
           onAddToQueue={noop}
           {...explorersProps}
         >

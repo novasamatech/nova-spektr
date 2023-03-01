@@ -126,22 +126,18 @@ const Unstake = () => {
     );
   }
 
-  const onUnstakeResult = (data: UnstakeResult) => {
-    setSelectedAccounts(data.accounts);
-    setUnstakeAmount(data.amount);
-    setActiveStep(Step.CONFIRMATION);
-  };
-
-  const onConfirmResult = () => {
+  const onUnstakeResult = ({ accounts, amount }: UnstakeResult) => {
     const transactions = accounts.map(({ accountId = '' }) => ({
       chainId,
       address: accountId,
       type: TransactionType.UNSTAKE,
-      args: { value: unstakeAmount },
+      args: { value: amount },
     }));
 
     setTransactions(transactions);
-    setActiveStep(Step.SCANNING);
+    setSelectedAccounts(accounts);
+    setUnstakeAmount(amount);
+    setActiveStep(Step.CONFIRMATION);
   };
 
   const onScanResult = (unsigned: UnsignedTransaction[]) => {
@@ -157,16 +153,14 @@ const Unstake = () => {
   const explorersProps = { explorers, addressPrefix, asset };
 
   const hints = (
-    <HintList className="mt-2.5 mb-5 px-[15px]">
-      <HintList>
-        <HintList.Item>
-          {t('staking.unstake.durationHint')} {'('}
-          <UnstakingDuration className="ml-1" api={api} />
-          {')'}
-        </HintList.Item>
-        <HintList.Item>{t('staking.unstake.noRewardsHint')}</HintList.Item>
-        <HintList.Item>{t('staking.unstake.redeemHint')}</HintList.Item>
-      </HintList>
+    <HintList className="px-[15px]">
+      <HintList.Item>
+        {t('staking.unstake.durationHint')} {'('}
+        <UnstakingDuration className="ml-1" api={api} />
+        {')'}
+      </HintList.Item>
+      <HintList.Item>{t('staking.unstake.noRewardsHint')}</HintList.Item>
+      <HintList.Item>{t('staking.unstake.redeemHint')}</HintList.Item>
     </HintList>
   );
 
@@ -190,7 +184,7 @@ const Unstake = () => {
           accounts={selectedAccounts}
           transaction={transactions[0]}
           amount={unstakeAmount}
-          onResult={onConfirmResult}
+          onResult={() => setActiveStep(Step.SCANNING)}
           onAddToQueue={noop}
           {...explorersProps}
         >
