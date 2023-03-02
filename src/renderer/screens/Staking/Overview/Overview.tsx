@@ -65,7 +65,11 @@ const Overview = () => {
   const explorers = connections[chainId]?.explorers;
 
   const activeWallets = getLiveWallets();
-  const activeAccounts = getActiveAccounts().filter((account) => !account.chainId || account.chainId === chainId);
+  const activeAccounts = getActiveAccounts().filter(({ rootId, derivationPath, chainId: accChainId }) => {
+    const derivationIsCorrect = accChainId === chainId && rootId && derivationPath;
+
+    return !rootId || derivationIsCorrect;
+  });
 
   const accountAddresses = activeAccounts.reduce<AccountID[]>((acc, account) => {
     return account.accountId ? acc.concat(account.accountId) : acc;
