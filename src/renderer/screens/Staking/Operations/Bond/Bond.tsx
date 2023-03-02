@@ -113,6 +113,13 @@ const Bond = () => {
       ? { type: RewardsDestination.TRANSFERABLE, address: destination }
       : { type: RewardsDestination.RESTAKE };
 
+    setDestination(destPayload);
+    setAccounts(accounts);
+    setStakeAmount(stake);
+    setActiveStep(Step.VALIDATORS);
+  };
+
+  const onSelectValidators = (validators: ValidatorMap) => {
     const transactions = accounts.map(({ accountId = '' }) => {
       const address = formatAddress(accountId, addressPrefix);
       const commonPayload = { chainId, address };
@@ -121,9 +128,9 @@ const Bond = () => {
         ...commonPayload,
         type: TransactionType.BOND,
         args: {
-          value: stake,
+          value: stakeAmount,
           controller: address,
-          payee: destination ? { Account: destination } : 'Staked',
+          payee: destination?.type === RewardsDestination.TRANSFERABLE ? { Account: destination.address } : 'Staked',
         },
       };
 
@@ -143,13 +150,6 @@ const Bond = () => {
     });
 
     setTransactions(transactions);
-    setDestination(destPayload);
-    setAccounts(accounts);
-    setStakeAmount(stake);
-    setActiveStep(Step.VALIDATORS);
-  };
-
-  const onSelectValidators = (validators: ValidatorMap) => {
     setValidators(validators);
     setActiveStep(Step.CONFIRMATION);
   };
