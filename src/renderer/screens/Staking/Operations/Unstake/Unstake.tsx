@@ -88,15 +88,9 @@ const Unstake = () => {
   }, [api, dbAccounts.length, accountIds.length]);
 
   useEffect(() => {
-    (async () => {
-      if (!api) return;
+    if (!api) return;
 
-      setMinimumStake(await getMinNominatorBond(api));
-    })();
-
-    return () => {
-      setMinimumStake('');
-    };
+    getMinNominatorBond(api).then(setMinimumStake);
   }, [api]);
 
   if (!api?.isConnected) {
