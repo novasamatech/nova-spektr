@@ -128,7 +128,7 @@ const Bond = () => {
         ...commonPayload,
         type: TransactionType.BOND,
         args: {
-          value: stakeAmount,
+          value: stake,
           controller: address,
           payee: destination?.type === RewardsDestination.TRANSFERABLE ? { Account: destination.address } : 'Staked',
         },
