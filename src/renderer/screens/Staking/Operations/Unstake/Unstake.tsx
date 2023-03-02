@@ -2,6 +2,7 @@ import { UnsignedTransaction } from '@substrate/txwrapper-polkadot';
 import noop from 'lodash/noop';
 import { useEffect, useState } from 'react';
 import { Navigate, useNavigate, useParams, useSearchParams } from 'react-router-dom';
+import { BN } from '@polkadot/util';
 
 import { UnstakingDuration } from '@renderer/screens/Staking/Overview/components';
 import { ButtonBack, ButtonLink, HintList, Icon } from '@renderer/components/ui';
@@ -39,7 +40,7 @@ const Unstake = () => {
   const { t } = useI18n();
   const navigate = useNavigate();
   const { connections } = useNetworkContext();
-  const { subscribeStaking } = useStakingData();
+  const { subscribeStaking, getMinNominatorBond } = useStakingData();
   const { getLiveAccounts } = useAccount();
   const dbAccounts = getLiveAccounts({ signingType: SigningType.PARITY_SIGNER });
 
@@ -54,6 +55,7 @@ const Unstake = () => {
   const [staking, setStaking] = useState<StakingMap>({});
   const [accounts, setAccounts] = useState<AccountDS[]>([]);
   const [signatures, setSignatures] = useState<HexString[]>([]);
+  const [minimumStake, setMinimumStake] = useState('0');
 
   const chainId = params.chainId || ('' as ChainId);
   const accountIds = searchParams.get('id')?.split(',') || [];
@@ -84,6 +86,18 @@ const Unstake = () => {
       unsubStaking?.();
     };
   }, [api, dbAccounts.length, accountIds.length]);
+
+  useEffect(() => {
+    (async () => {
+      if (!api) return;
+
+      setMinimumStake(await getMinNominatorBond(api));
+    })();
+
+    return () => {
+      setMinimumStake('');
+    };
+  }, [api]);
 
   if (!api?.isConnected) {
     // TODO: show skeleton until we connect to network's api
@@ -138,7 +152,9 @@ const Unstake = () => {
         args: { value: amount },
       };
 
-      if (staking[accountId]?.active === amount) return unstakeTx;
+      const leftAmount = new BN(staking[accountId]?.active || 0).sub(new BN(amount));
+
+      if (leftAmount.gt(new BN(minimumStake))) return unstakeTx;
 
       const chillTx = {
         ...commonPayload,

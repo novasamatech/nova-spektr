@@ -30,7 +30,6 @@ const validateBalance = (stake: Stake | string, amount: string, asset: Asset): b
 
 const validateBalanceForFee = (balance: BalanceDS | string, fee: string): boolean => {
   const transferableBalance = typeof balance === 'string' ? balance : transferableAmount(balance);
-  console.log('balance', transferableBalance, fee);
 
   return new BN(fee).lte(new BN(transferableBalance));
 };
