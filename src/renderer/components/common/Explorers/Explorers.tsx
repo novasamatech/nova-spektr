@@ -7,7 +7,7 @@ import { Icon } from '@renderer/components/ui';
 import { useI18n } from '@renderer/context/I18nContext';
 import { Explorer } from '@renderer/domain/chain';
 import { toPublicKey } from '@renderer/shared/utils/address';
-import { ExplorerIcons } from './common/constants';
+import { DefaultExplorer, ExplorerIcons } from './common/constants';
 
 type Props = {
   explorers?: Explorer[];
@@ -67,7 +67,7 @@ const Explorers = ({ explorers, addressPrefix, address, header, className }: Pro
                       rel="noopener noreferrer"
                       target="_blank"
                     >
-                      <Icon as="img" name={ExplorerIcons[name]} size={20} />
+                      <Icon as="img" name={ExplorerIcons[name] || ExplorerIcons[DefaultExplorer]} size={20} />
                       {t('general.explorers.explorerButton', { name })}
                     </a>
                   )}
