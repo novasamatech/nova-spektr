@@ -80,7 +80,7 @@ type UnstakeForm = {
   amount: string;
 };
 
-export type UnstakeResult = {
+export type RestakeResult = {
   accounts: AccountDS[];
   amount: string;
 };
@@ -90,8 +90,8 @@ type Props = {
   chainId: ChainId;
   accountIds: string[];
   asset: Asset;
-  staking?: StakingMap;
-  onResult: (unstake: UnstakeResult) => void;
+  staking: StakingMap;
+  onResult: (unstake: RestakeResult) => void;
 };
 
 const InitOperation = ({ api, staking, chainId, accountIds, asset, onResult }: Props) => {
@@ -151,9 +151,9 @@ const InitOperation = ({ api, staking, chainId, accountIds, asset, onResult }: P
 
   // Set staked range
   useEffect(() => {
-    if (!staking) return;
+    if (!Object.keys(staking).length) return;
 
-    const staked = activeUnstakeAccounts.map((a) => unlockingAmount(staking?.[a.value]?.unlocking));
+    const staked = activeUnstakeAccounts.map((a) => unlockingAmount(staking[a.value]?.unlocking));
     const minMaxBalances = staked.reduce<[string, string]>(
       (acc, balance) => {
         if (!balance) return acc;
@@ -197,7 +197,7 @@ const InitOperation = ({ api, staking, chainId, accountIds, asset, onResult }: P
   useEffect(() => {
     const formattedAccounts = totalAccounts.map((account) => {
       const matchBalance = balancesMap.get(account.publicKey || '0x');
-      const stake = staking?.[account.accountId || ''];
+      const stake = staking[account.accountId || ''];
 
       return getDropdownPayload(account, matchBalance, stake, asset, fee, amount);
     });
@@ -285,7 +285,7 @@ const InitOperation = ({ api, staking, chainId, accountIds, asset, onResult }: P
             validate: {
               notZero: (v) => Number(v) > 0,
               insufficientBalance: (amount) =>
-                activeUnstakeAccounts.every((a) => validateBalance(staking?.[a.value] || '0', amount, asset)),
+                activeUnstakeAccounts.every((a) => validateBalance(staking[a.value] || '0', amount, asset)),
               insufficientBalanceForFee: () => activeBalances.every((b) => validateBalanceForFee(b, fee)),
             },
           }}

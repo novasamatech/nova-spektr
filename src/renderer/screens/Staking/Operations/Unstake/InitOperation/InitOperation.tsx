@@ -91,7 +91,7 @@ type Props = {
   chainId: ChainId;
   accountIds: string[];
   asset: Asset;
-  staking?: StakingMap;
+  staking: StakingMap;
   onResult: (unstake: UnstakeResult) => void;
 };
 
@@ -152,9 +152,9 @@ const InitOperation = ({ api, staking, chainId, accountIds, asset, onResult }: P
 
   // Set staked range
   useEffect(() => {
-    if (!staking) return;
+    if (!Object.keys(staking).length) return;
 
-    const staked = activeUnstakeAccounts.map((a) => staking?.[a.value]?.active || '0');
+    const staked = activeUnstakeAccounts.map((a) => staking[a.value]?.active || '0');
     const minMaxBalances = staked.reduce<[string, string]>(
       (acc, balance) => {
         if (!balance) return acc;
@@ -198,7 +198,7 @@ const InitOperation = ({ api, staking, chainId, accountIds, asset, onResult }: P
   useEffect(() => {
     const formattedAccounts = totalAccounts.map((account) => {
       const matchBalance = balancesMap.get(account.publicKey || '0x');
-      const stake = staking?.[account.accountId || ''];
+      const stake = staking[account.accountId || ''];
 
       return getDropdownPayload(account, matchBalance, stake, asset, fee, amount);
     });
@@ -254,8 +254,8 @@ const InitOperation = ({ api, staking, chainId, accountIds, asset, onResult }: P
       <Balance value={transferableRange[0]} precision={asset.precision} />
     ) : (
       <>
-        {/* eslint-disable-next-line i18next/no-literal-string */}
-        <Balance value={transferableRange[0]} precision={asset.precision} /> -
+        <Balance value={transferableRange[0]} precision={asset.precision} />
+        {' - '}
         <Balance value={transferableRange[1]} precision={asset.precision} />
       </>
     );
@@ -286,7 +286,7 @@ const InitOperation = ({ api, staking, chainId, accountIds, asset, onResult }: P
             validate: {
               notZero: (v) => Number(v) > 0,
               insufficientBalance: (amount) =>
-                activeUnstakeAccounts.every((a) => validateBalance(staking?.[a.value] || '0', amount, asset)),
+                activeUnstakeAccounts.every((a) => validateBalance(staking[a.value] || '0', amount, asset)),
               insufficientBalanceForFee: () => activeBalances.every((b) => validateBalanceForFee(b, fee)),
             },
           }}

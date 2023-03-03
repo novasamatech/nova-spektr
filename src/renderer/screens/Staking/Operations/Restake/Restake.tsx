@@ -15,7 +15,7 @@ import { useChains } from '@renderer/services/network/chainsService';
 import { StakingMap } from '@renderer/services/staking/common/types';
 import { useStakingData } from '@renderer/services/staking/stakingDataService';
 import { AccountDS } from '@renderer/services/storage';
-import InitOperation, { UnstakeResult } from './InitOperation/InitOperation';
+import InitOperation, { RestakeResult } from './InitOperation/InitOperation';
 import { Confirmation, Scanning, Signing, Submit, ChainLoader } from '../components';
 
 const enum Step {
@@ -136,7 +136,7 @@ const Restake = () => {
     );
   }
 
-  const onUnstakeResult = ({ accounts, amount }: UnstakeResult) => {
+  const onUnstakeResult = ({ accounts, amount }: RestakeResult) => {
     const transactions = accounts.map(({ accountId = '' }) => ({
       chainId,
       address: accountId,
