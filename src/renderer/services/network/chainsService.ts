@@ -24,7 +24,7 @@ export function useChains(): IChainService {
     return Promise.resolve(CHAINS[process.env.CHAINS_FILE || 'dev']);
   };
 
-  const getChainsById = (chainId: ChainId): Promise<Chain | undefined> => {
+  const getChainById = (chainId: ChainId): Promise<Chain | undefined> => {
     const chainsData: Chain[] = CHAINS[process.env.CHAINS_FILE || 'dev'];
     const chainMatch = chainsData.find((chain) => chain.chainId === chainId);
 
@@ -86,7 +86,7 @@ export function useChains(): IChainService {
 
   return {
     getChainsData,
-    getChainsById,
+    getChainById,
     getStakingChainsData,
     sortChains,
     getExpectedBlockTime,

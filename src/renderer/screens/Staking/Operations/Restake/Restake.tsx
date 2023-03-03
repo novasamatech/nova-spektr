@@ -40,7 +40,7 @@ const Restake = () => {
   const { connections } = useNetworkContext();
   const { subscribeStaking } = useStakingData();
   const { getLiveAccounts } = useAccount();
-  const { getChainsById } = useChains();
+  const { getChainById } = useChains();
   const [searchParams] = useSearchParams();
   const params = useParams<{ chainId: ChainId }>();
 
@@ -86,7 +86,7 @@ const Restake = () => {
   }, [api, dbAccounts.length, accountIds.length]);
 
   useEffect(() => {
-    getChainsById(chainId).then((chain) => setChainName(chain?.name || ''));
+    getChainById(chainId).then((chain) => setChainName(chain?.name || ''));
   }, []);
 
   if (!api?.isConnected) {
@@ -136,7 +136,7 @@ const Restake = () => {
     );
   }
 
-  const onUnstakeResult = ({ accounts, amount }: RestakeResult) => {
+  const onRestakeResult = ({ accounts, amount }: RestakeResult) => {
     const transactions = accounts.map(({ accountId = '' }) => ({
       chainId,
       address: accountId,
@@ -180,7 +180,7 @@ const Restake = () => {
           staking={staking}
           accountIds={accountIds}
           asset={asset}
-          onResult={onUnstakeResult}
+          onResult={onRestakeResult}
         />
       )}
       {activeStep === Step.CONFIRMATION && (

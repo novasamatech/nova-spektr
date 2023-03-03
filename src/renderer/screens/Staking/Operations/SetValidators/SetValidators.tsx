@@ -36,7 +36,7 @@ const SetValidators = () => {
   const { t } = useI18n();
   const navigate = useNavigate();
   const { getLiveAccounts } = useAccount();
-  const { getChainsById } = useChains();
+  const { getChainById } = useChains();
   const { connections } = useNetworkContext();
   const [searchParams] = useSearchParams();
   const params = useParams<{ chainId: ChainId }>();
@@ -65,7 +65,7 @@ const SetValidators = () => {
   const asset = assets.find((asset) => asset.staking === StakingType.RELAYCHAIN);
 
   useEffect(() => {
-    getChainsById(chainId).then((chain) => setChainName(chain?.name || ''));
+    getChainById(chainId).then((chain) => setChainName(chain?.name || ''));
   }, []);
 
   if (!api?.isConnected) {

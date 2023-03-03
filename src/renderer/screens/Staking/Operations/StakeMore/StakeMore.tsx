@@ -35,7 +35,7 @@ const StakeMore = () => {
   const { t } = useI18n();
   const navigate = useNavigate();
   const { connections } = useNetworkContext();
-  const { getChainsById } = useChains();
+  const { getChainById } = useChains();
   const [searchParams] = useSearchParams();
   const params = useParams<{ chainId: ChainId }>();
 
@@ -58,7 +58,7 @@ const StakeMore = () => {
   const asset = assets.find((asset) => asset.staking === StakingType.RELAYCHAIN);
 
   useEffect(() => {
-    getChainsById(chainId).then((chain) => setChainName(chain?.name || ''));
+    getChainById(chainId).then((chain) => setChainName(chain?.name || ''));
   }, []);
 
   if (!api?.isConnected) {
@@ -102,7 +102,7 @@ const StakeMore = () => {
     );
   }
 
-  const onUnstakeResult = ({ accounts, amount }: StakeMoreResult) => {
+  const onStakeMoreResult = ({ accounts, amount }: StakeMoreResult) => {
     const transactions = accounts.map(({ accountId = '' }) => ({
       chainId,
       address: accountId,
@@ -140,7 +140,7 @@ const StakeMore = () => {
       {headerContent}
 
       {activeStep === Step.INIT && (
-        <InitOperation api={api} chainId={chainId} accountIds={accountIds} asset={asset} onResult={onUnstakeResult} />
+        <InitOperation api={api} chainId={chainId} accountIds={accountIds} asset={asset} onResult={onStakeMoreResult} />
       )}
       {activeStep === Step.CONFIRMATION && (
         <Confirmation

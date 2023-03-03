@@ -45,7 +45,7 @@ const Bond = () => {
   const { t } = useI18n();
   const navigate = useNavigate();
   const { connections } = useNetworkContext();
-  const { getChainsById } = useChains();
+  const { getChainById } = useChains();
   const [searchParams] = useSearchParams();
   const params = useParams<{ chainId: ChainId }>();
 
@@ -70,7 +70,7 @@ const Bond = () => {
   const asset = assets.find((asset) => asset.staking === StakingType.RELAYCHAIN);
 
   useEffect(() => {
-    getChainsById(chainId).then((chain) => setChainName(chain?.name || ''));
+    getChainById(chainId).then((chain) => setChainName(chain?.name || ''));
   }, []);
 
   if (!api?.isConnected) {

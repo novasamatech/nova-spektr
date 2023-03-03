@@ -40,7 +40,7 @@ const Unstake = () => {
   const { subscribeStaking } = useStakingData();
   const { getLiveAccounts } = useAccount();
   const { subscribeActiveEra } = useEra();
-  const { getChainsById } = useChains();
+  const { getChainById } = useChains();
   const [searchParams] = useSearchParams();
   const params = useParams<{ chainId: ChainId }>();
 
@@ -120,7 +120,7 @@ const Unstake = () => {
   }, [staking, era, isConfirmed]);
 
   useEffect(() => {
-    getChainsById(chainId).then((chain) => setChainName(chain?.name || ''));
+    getChainById(chainId).then((chain) => setChainName(chain?.name || ''));
   }, []);
 
   if (!api?.isConnected) {

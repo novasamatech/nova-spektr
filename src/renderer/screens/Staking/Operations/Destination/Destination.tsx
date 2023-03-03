@@ -43,7 +43,7 @@ const Destination = () => {
   const navigate = useNavigate();
   const { connections } = useNetworkContext();
   const [searchParams] = useSearchParams();
-  const { getChainsById } = useChains();
+  const { getChainById } = useChains();
   const params = useParams<{ chainId: ChainId }>();
 
   const [activeStep, setActiveStep] = useState<Step>(Step.INIT);
@@ -65,7 +65,7 @@ const Destination = () => {
   const asset = assets.find((asset) => asset.staking === StakingType.RELAYCHAIN);
 
   useEffect(() => {
-    getChainsById(chainId).then((chain) => setChainName(chain?.name || ''));
+    getChainById(chainId).then((chain) => setChainName(chain?.name || ''));
   }, []);
 
   if (!api?.isConnected) {

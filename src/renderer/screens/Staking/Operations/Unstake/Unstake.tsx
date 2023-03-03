@@ -41,7 +41,7 @@ const Unstake = () => {
   const { t } = useI18n();
   const navigate = useNavigate();
   const { connections } = useNetworkContext();
-  const { getChainsById } = useChains();
+  const { getChainById } = useChains();
   const { subscribeStaking, getMinNominatorBond } = useStakingData();
   const { getLiveAccounts } = useAccount();
   const dbAccounts = getLiveAccounts({ signingType: SigningType.PARITY_SIGNER });
@@ -96,7 +96,7 @@ const Unstake = () => {
   }, [api]);
 
   useEffect(() => {
-    getChainsById(chainId).then((chain) => setChainName(chain?.name || ''));
+    getChainById(chainId).then((chain) => setChainName(chain?.name || ''));
   }, []);
 
   if (!api?.isConnected) {
