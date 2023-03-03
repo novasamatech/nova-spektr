@@ -13,10 +13,11 @@ import Paths from '@renderer/routes/paths';
 import { useAccount } from '@renderer/services/account/accountService';
 import { StakingMap } from '@renderer/services/staking/common/types';
 import { useStakingData } from '@renderer/services/staking/stakingDataService';
+import { useChains } from '@renderer/services/network/chainsService';
 import { AccountDS } from '@renderer/services/storage';
 import { redeemableAmount } from '@renderer/services/balance/common/utils';
 import { useEra } from '@renderer/services/staking/eraService';
-import { Confirmation, Scanning, Signing, Submit } from '../components';
+import { Confirmation, Scanning, Signing, Submit, ChainLoader } from '../components';
 
 const enum Step {
   CONFIRMATION,
@@ -39,12 +40,14 @@ const Unstake = () => {
   const { subscribeStaking } = useStakingData();
   const { getLiveAccounts } = useAccount();
   const { subscribeActiveEra } = useEra();
+  const { getChainsById } = useChains();
   const [searchParams] = useSearchParams();
   const params = useParams<{ chainId: ChainId }>();
 
   const dbAccounts = getLiveAccounts({ signingType: SigningType.PARITY_SIGNER });
 
   const [activeStep, setActiveStep] = useState<Step>(Step.CONFIRMATION);
+  const [chainName, setChainName] = useState('...');
   const [era, setEra] = useState<number>();
   const [redeemAmounts, setRedeemAmounts] = useState<string[]>([]);
   const [isConfirmed, setIsConfirmed] = useState(false);
@@ -116,9 +119,12 @@ const Unstake = () => {
     setRedeemAmounts(redeemAmounts);
   }, [staking, era, isConfirmed]);
 
+  useEffect(() => {
+    getChainsById(chainId).then((chain) => setChainName(chain?.name || ''));
+  }, []);
+
   if (!api?.isConnected) {
-    // TODO: show skeleton until we connect to network's api
-    return null;
+    return <ChainLoader chainName={chainName} />;
   }
 
   const goToPrevStep = () => {

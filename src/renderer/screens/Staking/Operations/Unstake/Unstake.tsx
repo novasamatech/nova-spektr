@@ -13,11 +13,12 @@ import { AccountID, ChainId, HexString, SigningType } from '@renderer/domain/sha
 import { Transaction, TransactionType } from '@renderer/domain/transaction';
 import Paths from '@renderer/routes/paths';
 import { useAccount } from '@renderer/services/account/accountService';
+import { useChains } from '@renderer/services/network/chainsService';
 import { StakingMap } from '@renderer/services/staking/common/types';
 import { useStakingData } from '@renderer/services/staking/stakingDataService';
 import { AccountDS } from '@renderer/services/storage';
 import InitOperation, { UnstakeResult } from './InitOperation/InitOperation';
-import { Confirmation, Scanning, Signing, Submit } from '../components';
+import { Confirmation, Scanning, Signing, Submit, ChainLoader } from '../components';
 import { formatAddress } from '@renderer/shared/utils/address';
 
 const enum Step {
@@ -40,6 +41,7 @@ const Unstake = () => {
   const { t } = useI18n();
   const navigate = useNavigate();
   const { connections } = useNetworkContext();
+  const { getChainsById } = useChains();
   const { subscribeStaking, getMinNominatorBond } = useStakingData();
   const { getLiveAccounts } = useAccount();
   const dbAccounts = getLiveAccounts({ signingType: SigningType.PARITY_SIGNER });
@@ -48,7 +50,7 @@ const Unstake = () => {
   const params = useParams<{ chainId: ChainId }>();
 
   const [activeStep, setActiveStep] = useState<Step>(Step.INIT);
-
+  const [chainName, setChainName] = useState('...');
   const [unstakeAmount, setUnstakeAmount] = useState<string>('');
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [unsignedTransactions, setUnsignedTransactions] = useState<UnsignedTransaction[]>([]);
@@ -93,9 +95,12 @@ const Unstake = () => {
     getMinNominatorBond(api).then(setMinimumStake);
   }, [api]);
 
+  useEffect(() => {
+    getChainsById(chainId).then((chain) => setChainName(chain?.name || ''));
+  }, []);
+
   if (!api?.isConnected) {
-    // TODO: show skeleton until we connect to network's api
-    return null;
+    return <ChainLoader chainName={chainName} />;
   }
 
   const goToPrevStep = () => {

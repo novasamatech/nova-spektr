@@ -11,11 +11,12 @@ import { AccountID, ChainId, HexString, SigningType } from '@renderer/domain/sha
 import { Transaction, TransactionType } from '@renderer/domain/transaction';
 import Paths from '@renderer/routes/paths';
 import { useAccount } from '@renderer/services/account/accountService';
+import { useChains } from '@renderer/services/network/chainsService';
 import { StakingMap } from '@renderer/services/staking/common/types';
 import { useStakingData } from '@renderer/services/staking/stakingDataService';
 import { AccountDS } from '@renderer/services/storage';
 import InitOperation, { UnstakeResult } from './InitOperation/InitOperation';
-import { Confirmation, Scanning, Signing, Submit } from '../components';
+import { Confirmation, Scanning, Signing, Submit, ChainLoader } from '../components';
 
 const enum Step {
   INIT,
@@ -39,13 +40,14 @@ const Restake = () => {
   const { connections } = useNetworkContext();
   const { subscribeStaking } = useStakingData();
   const { getLiveAccounts } = useAccount();
+  const { getChainsById } = useChains();
   const [searchParams] = useSearchParams();
   const params = useParams<{ chainId: ChainId }>();
 
   const dbAccounts = getLiveAccounts({ signingType: SigningType.PARITY_SIGNER });
 
   const [activeStep, setActiveStep] = useState<Step>(Step.INIT);
-
+  const [chainName, setChainName] = useState('...');
   const [restakeAmount, setRestakeAmount] = useState<string>('');
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [unsignedTransactions, setUnsignedTransactions] = useState<UnsignedTransaction[]>([]);
@@ -83,9 +85,12 @@ const Restake = () => {
     };
   }, [api, dbAccounts.length, accountIds.length]);
 
+  useEffect(() => {
+    getChainsById(chainId).then((chain) => setChainName(chain?.name || ''));
+  }, []);
+
   if (!api?.isConnected) {
-    // TODO: show skeleton until we connect to network's api
-    return null;
+    return <ChainLoader chainName={chainName} />;
   }
 
   const goToPrevStep = () => {

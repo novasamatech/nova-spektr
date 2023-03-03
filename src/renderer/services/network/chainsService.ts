@@ -11,6 +11,7 @@ import chainsOmniDev from './common/chains/omni-chains_dev.json';
 import { DEFAULT_TIME, ONE_DAY, THRESHOLD } from './common/constants';
 import { ChainLike, IChainService } from './common/types';
 import { isKusama, isPolkadot, isTestnet } from './common/utils';
+import { ChainId } from '@renderer/domain/shared-kernel';
 
 const CHAINS: Record<string, any> = {
   dev: chainsDev,
@@ -21,6 +22,13 @@ const CHAINS: Record<string, any> = {
 export function useChains(): IChainService {
   const getChainsData = (): Promise<Chain[]> => {
     return Promise.resolve(CHAINS[process.env.CHAINS_FILE || 'dev']);
+  };
+
+  const getChainsById = (chainId: ChainId): Promise<Chain | undefined> => {
+    const chainsData: Chain[] = CHAINS[process.env.CHAINS_FILE || 'dev'];
+    const chainMatch = chainsData.find((chain) => chain.chainId === chainId);
+
+    return Promise.resolve(chainMatch);
   };
 
   const getStakingChainsData = (): Promise<Chain[]> => {
@@ -78,6 +86,7 @@ export function useChains(): IChainService {
 
   return {
     getChainsData,
+    getChainsById,
     getStakingChainsData,
     sortChains,
     getExpectedBlockTime,
