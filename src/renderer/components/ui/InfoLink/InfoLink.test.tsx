@@ -9,4 +9,15 @@ describe('screen/Settings/InfoLink', () => {
     const children = screen.getByRole('link', { name: 'globe.svg My link' });
     expect(children).toBeInTheDocument();
   });
+
+  test('should render without icon', () => {
+    render(
+      <InfoLink url="https://test.com" showIcon={false}>
+        My link
+      </InfoLink>,
+    );
+
+    const children = screen.getByRole('link', { name: 'My link' });
+    expect(children).toBeInTheDocument();
+  });
 });

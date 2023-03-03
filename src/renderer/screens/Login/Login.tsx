@@ -16,7 +16,7 @@ type LoginForm = {
 
 const Login = () => {
   const navigate = useNavigate();
-  const { matrix, setIsLoggedIn } = useMatrix();
+  const { matrix } = useMatrix();
 
   const [isProcessing, setIsProcessing] = useState(false);
   const [isLoginFailed, setIsLoginFailed] = useState(false);
@@ -41,7 +41,6 @@ const Login = () => {
     try {
       await matrix.setHomeserver(homeserver);
       await matrix.loginWithCreds(username, password);
-      setIsLoggedIn(true);
       navigate(Paths.BALANCES);
     } catch (error) {
       console.warn(error);

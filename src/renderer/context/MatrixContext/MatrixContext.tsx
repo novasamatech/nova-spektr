@@ -5,7 +5,7 @@ import Matrix, { ErrorObject, InvitePayload, ISecureMessenger, MSTPayload } from
 type MatrixContextProps = {
   matrix: ISecureMessenger;
   notifications: Notification[];
-  setIsLoggedIn: (flag: boolean) => void;
+  isLoggedIn: boolean;
 };
 
 const MatrixContext = createContext<MatrixContextProps>({} as MatrixContextProps);
@@ -69,9 +69,7 @@ export const MatrixProvider = ({ onAutoLoginFail, children }: PropsWithChildren<
     });
   }, [isLoggedIn]);
 
-  return (
-    <MatrixContext.Provider value={{ matrix, setIsLoggedIn, notifications: [] }}>{children}</MatrixContext.Provider>
-  );
+  return <MatrixContext.Provider value={{ matrix, isLoggedIn, notifications: [] }}>{children}</MatrixContext.Provider>;
 };
 
 export const useMatrix = () => useContext<MatrixContextProps>(MatrixContext);

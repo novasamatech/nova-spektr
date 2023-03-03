@@ -11,6 +11,7 @@ import SortImg, { ReactComponent as SortSvg } from '@images/aesthetics/sort.svg'
 import ClockImg, { ReactComponent as ClockSvg } from '@images/aesthetics/clock.svg';
 import InfoImg, { ReactComponent as InfoSvg } from '@images/aesthetics/info.svg';
 import ChatImg, { ReactComponent as ChatSvg } from '@images/aesthetics/chat.svg';
+import BellImg, { ReactComponent as BellSvg } from '@images/aesthetics/bell.svg';
 
 const AestheticImages = {
   loader: { svg: LoaderSvg, img: LoaderImg },
@@ -26,6 +27,7 @@ const AestheticImages = {
   clock: { svg: ClockSvg, img: ClockImg },
   info: { svg: InfoSvg, img: InfoImg },
   chat: { svg: ChatSvg, img: ChatImg },
+  bell: { svg: BellSvg, img: BellImg },
 } as const;
 
 export type Aesthetic = keyof typeof AestheticImages;

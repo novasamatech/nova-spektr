@@ -219,7 +219,27 @@
   },
   "settings": {
     "matrix": {
-      "subTitle": "Matrix Credentials"
+      "formSubtitle": "Sign in with your Matrix ID and password",
+      "formTitle": "Matrix credentials",
+      "homeserverLabel": "Matrix server",
+      "homeserverPlaceholder": "matrix.org",
+      "infoMatrixDescription": "<matrix>Matrix</matrix> is an open source, secure, decentralised, real-time communication standard. The <smp>Spektr Matrix Protocol</smp> extension is built on Matrix and uses Matrix for:",
+      "infoMatrixDescriptionOne": "Exchanging multisig account information amongst signatories.",
+      "infoMatrixDescriptionTwo": "Exchanging multisig transaction events: initiation, signing, final signing, cancelling.",
+      "infoMatrixEncryption": "Matrix provides state-of-the-art end-to-end-encryption. This ensures that only the intended recipients can ever decrypt your messages.",
+      "infoSpektrDescription": "Nova Spektr uses Matrix to share multisig account information and multisig transaction information (including call data) with other signatories. Signing in to Matrix is the easiest way to share this information with your fellow signatories, as all the necessary information will be automatically shared.",
+      "infoWhatIsMatrixTitle": "What is Matrix?",
+      "infoWhyMatrixTitle": "Why do I need to sign in with Matrix?",
+      "loginSeparator": "Or",
+      "passwordLabel": "Password",
+      "passwordPlaceholder": "enter password",
+      "privacyFooter": "By signing in you consent to the <terms>terms of use</terms> and <privacy>privacy policy</privacy>",
+      "privacyTitle": "Nova Spektr does not store your Matrix password",
+      "registerLink": "Don’t have an account?<register>Register</register>",
+      "signInButton": "Sign in",
+      "subTitle": "Matrix Credentials",
+      "usernameLabel": "Username",
+      "usernamePlaceholder": "@spektr"
     },
     "overview": {
       "getInTouchLabel": "Get in touch for more information!",

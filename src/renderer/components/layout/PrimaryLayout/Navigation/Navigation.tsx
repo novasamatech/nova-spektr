@@ -50,28 +50,11 @@ const Navigation = () => {
   const activeAccounts = getActiveAccounts();
   const cardType = getCardType(activeAccounts);
 
-  // const navigate = useNavigate();
-  // const { matrix, setIsLoggedIn } = useMatrix();
-
-  // const [isProcessing, setIsProcessing] = useState(false);
   const [isWalletsOpen, setIsWalletsOpen] = useState(false);
 
   useClickOutside([walletsRef, showWalletsRef], () => {
     setIsWalletsOpen(false);
   });
-
-  // const onLogout = async () => {
-  //   setIsProcessing(true);
-  //
-  //   try {
-  //     await matrix.logout();
-  //     setIsLoggedIn(false);
-  //     navigate(Paths.LOGIN);
-  //   } catch (error) {
-  //     console.warn(error);
-  //     setIsProcessing(false);
-  //   }
-  // };
 
   const currentAccount = activeAccounts[0];
 
