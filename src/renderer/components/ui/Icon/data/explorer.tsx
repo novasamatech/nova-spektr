@@ -4,7 +4,7 @@ import SubIdImg, { ReactComponent as SubIdSvg } from '@images/explorers/subid.sv
 import SubscanImg, { ReactComponent as SubscanSvg } from '@images/explorers/subscan.svg';
 import StatescanImg, { ReactComponent as StatescanSvg } from '@images/explorers/statescan.svg';
 import PolkaholicImg from '@images/explorers/polkaholic.webp';
-import TernoaImg from '@images/explorers/ternoa.png';
+import TernoaImg, { ReactComponent as TernoaSvg } from '@images/explorers/ternoa.svg';
 
 const ExplorerImages = {
   defaultExplorer: { svg: DefaultSvg, img: DefaultImg },
@@ -13,7 +13,7 @@ const ExplorerImages = {
   subscan: { svg: SubscanSvg, img: SubscanImg },
   statescan: { svg: StatescanSvg, img: StatescanImg },
   polkaholic: { svg: null, img: PolkaholicImg },
-  ternoa: { svg: null, img: TernoaImg },
+  ternoa: { svg: TernoaSvg, img: TernoaImg },
 } as const;
 
 export type Explorer = keyof typeof ExplorerImages;
