@@ -361,6 +361,7 @@
     "destination": {
       "initDestinationSubtitle": "Rewards destination"
     },
+    "loadingMessage": "Connecting to { chainName }",
     "nominators": {
       "electedTitle": "Elected",
       "nominated": "Nominated",

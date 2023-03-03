@@ -1,6 +1,6 @@
 import { UnsignedTransaction } from '@substrate/txwrapper-polkadot';
 import noop from 'lodash/noop';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Navigate, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 
 import { formatAddress } from '@renderer/shared/utils/address';
@@ -8,6 +8,7 @@ import { RewardsDestination } from '@renderer/domain/stake';
 import { ButtonBack, ButtonLink, HintList, Icon } from '@renderer/components/ui';
 import { useI18n } from '@renderer/context/I18nContext';
 import { useNetworkContext } from '@renderer/context/NetworkContext';
+import { useChains } from '@renderer/services/network/chainsService';
 import { StakingType } from '@renderer/domain/asset';
 import { AccountID, ChainId, HexString } from '@renderer/domain/shared-kernel';
 import { Transaction, TransactionType } from '@renderer/domain/transaction';
@@ -15,7 +16,7 @@ import Paths from '@renderer/routes/paths';
 import InitOperation, { BondResult } from './InitOperation/InitOperation';
 import { ValidatorMap } from '@renderer/services/staking/common/types';
 import { AccountDS } from '@renderer/services/storage';
-import { Validators, Confirmation, Scanning, Signing, Submit } from '../components';
+import { Validators, Confirmation, Scanning, Signing, Submit, ChainLoader } from '../components';
 
 const enum Step {
   INIT,
@@ -44,10 +45,12 @@ const Bond = () => {
   const { t } = useI18n();
   const navigate = useNavigate();
   const { connections } = useNetworkContext();
+  const { getChainById } = useChains();
   const [searchParams] = useSearchParams();
   const params = useParams<{ chainId: ChainId }>();
 
   const [activeStep, setActiveStep] = useState<Step>(Step.INIT);
+  const [chainName, setChainName] = useState('...');
   const [validators, setValidators] = useState<ValidatorMap>({});
   const [accounts, setAccounts] = useState<AccountDS[]>([]);
   const [stakeAmount, setStakeAmount] = useState<string>('');
@@ -66,9 +69,12 @@ const Bond = () => {
   const { api, explorers, addressPrefix, assets, name } = connections[chainId];
   const asset = assets.find((asset) => asset.staking === StakingType.RELAYCHAIN);
 
+  useEffect(() => {
+    getChainById(chainId).then((chain) => setChainName(chain?.name || ''));
+  }, []);
+
   if (!api?.isConnected) {
-    // TODO: show skeleton until we connect to network's api
-    return null;
+    return <ChainLoader chainName={chainName} />;
   }
 
   const goToPrevStep = () => {
@@ -137,9 +143,7 @@ const Bond = () => {
       const nominateTx = {
         ...commonPayload,
         type: TransactionType.NOMINATE,
-        args: {
-          targets: Object.keys(validators).map((address) => address),
-        },
+        args: { targets: Object.keys(validators).map((address) => address) },
       };
 
       return {

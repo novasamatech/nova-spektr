@@ -1,11 +1,12 @@
 import { UnsignedTransaction } from '@substrate/txwrapper-polkadot';
 import noop from 'lodash/noop';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Navigate, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 
 import { ButtonBack, ButtonLink, HintList, Icon } from '@renderer/components/ui';
 import { useI18n } from '@renderer/context/I18nContext';
 import { useNetworkContext } from '@renderer/context/NetworkContext';
+import { useChains } from '@renderer/services/network/chainsService';
 import { StakingType } from '@renderer/domain/asset';
 import { ChainId, HexString, SigningType } from '@renderer/domain/shared-kernel';
 import { Transaction, TransactionType } from '@renderer/domain/transaction';
@@ -13,7 +14,7 @@ import Paths from '@renderer/routes/paths';
 import { useAccount } from '@renderer/services/account/accountService';
 import { ValidatorMap } from '@renderer/services/staking/common/types';
 import { formatAddress } from '@renderer/shared/utils/address';
-import { Confirmation, Scanning, Signing, Submit, Validators } from '../components';
+import { Confirmation, Scanning, Signing, Submit, Validators, ChainLoader } from '../components';
 
 const enum Step {
   INIT,
@@ -35,6 +36,7 @@ const SetValidators = () => {
   const { t } = useI18n();
   const navigate = useNavigate();
   const { getLiveAccounts } = useAccount();
+  const { getChainById } = useChains();
   const { connections } = useNetworkContext();
   const [searchParams] = useSearchParams();
   const params = useParams<{ chainId: ChainId }>();
@@ -42,6 +44,7 @@ const SetValidators = () => {
   const dbAccounts = getLiveAccounts({ signingType: SigningType.PARITY_SIGNER });
 
   const [activeStep, setActiveStep] = useState<Step>(Step.INIT);
+  const [chainName, setChainName] = useState('...');
   const [validators, setValidators] = useState<ValidatorMap>({});
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [unsignedTransactions, setUnsignedTransactions] = useState<UnsignedTransaction[]>([]);
@@ -54,16 +57,19 @@ const SetValidators = () => {
     return <Navigate replace to={Paths.STAKING} />;
   }
 
-  const availableAccounts = dbAccounts.filter((account) => {
+  const totalAccounts = dbAccounts.filter((account) => {
     return account.id && accountIds.includes(account.id.toString());
   });
 
   const { api, explorers, addressPrefix, assets, name } = connections[chainId];
   const asset = assets.find((asset) => asset.staking === StakingType.RELAYCHAIN);
 
+  useEffect(() => {
+    getChainById(chainId).then((chain) => setChainName(chain?.name || ''));
+  }, []);
+
   if (!api?.isConnected) {
-    // TODO: show skeleton until we connect to network's api
-    return null;
+    return <ChainLoader chainName={chainName} />;
   }
 
   const goToPrevStep = () => {
@@ -104,14 +110,12 @@ const SetValidators = () => {
   }
 
   const onSelectValidators = (validators: ValidatorMap) => {
-    const transactions = availableAccounts.map(({ accountId = '' }) => {
+    const transactions = totalAccounts.map(({ accountId = '' }) => {
       return {
         chainId,
         address: formatAddress(accountId, addressPrefix),
         type: TransactionType.NOMINATE,
-        args: {
-          targets: Object.keys(validators).map((address) => address),
-        },
+        args: { targets: Object.keys(validators).map((address) => address) },
       };
     });
 
@@ -162,7 +166,7 @@ const SetValidators = () => {
           api={api}
           validators={Object.values(validators)}
           transaction={transactions[0]}
-          accounts={availableAccounts}
+          accounts={totalAccounts}
           onResult={() => setActiveStep(Step.SCANNING)}
           onAddToQueue={noop}
           {...explorersProps}
@@ -174,7 +178,7 @@ const SetValidators = () => {
         <Scanning
           api={api}
           chainId={chainId}
-          accounts={availableAccounts}
+          accounts={totalAccounts}
           transactions={transactions}
           addressPrefix={addressPrefix}
           onResult={onScanResult}
@@ -191,7 +195,7 @@ const SetValidators = () => {
           signatures={signatures}
           unsignedTx={unsignedTransactions}
           validators={Object.values(validators)}
-          accounts={availableAccounts}
+          accounts={totalAccounts}
           {...explorersProps}
         >
           {hints}
