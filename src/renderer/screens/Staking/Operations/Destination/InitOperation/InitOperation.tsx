@@ -4,6 +4,7 @@ import cn from 'classnames';
 import { useEffect, useState } from 'react';
 import { Controller, SubmitHandler, useForm } from 'react-hook-form';
 import { isAddress } from '@polkadot/util-crypto';
+import { TFunction } from 'react-i18next';
 
 import { Fee } from '@renderer/components/common';
 import {
@@ -86,6 +87,23 @@ const getDropdownPayload = (
   };
 };
 
+const getDestinations = (t: TFunction): RadioOption<RewardsDestination>[] => {
+  const options = [
+    { value: RewardsDestination.RESTAKE, element: t('staking.bond.restakeRewards') },
+    { value: RewardsDestination.TRANSFERABLE, element: t('staking.bond.transferableRewards') },
+  ];
+
+  return options.map((dest, index) => ({
+    id: index.toString(),
+    value: dest.value,
+    element: (
+      <div className="grid grid-cols-2 items-center flex-1">
+        <p className="text-neutral text-lg leading-5 font-semibold">{dest.element}</p>
+      </div>
+    ),
+  }));
+};
+
 type DestinationForm = {
   destination: AccountID;
 };
@@ -110,6 +128,7 @@ const InitOperation = ({ api, chainId, accountIds, asset, onResult }: Props) => 
   const { getLiveWallets } = useWallet();
   const { getTransactionFee } = useTransaction();
 
+  const destinations = getDestinations(t);
   const dbAccounts = getLiveAccounts({ signingType: SigningType.PARITY_SIGNER });
   const wallets = getLiveWallets();
   const walletsMap = new Map(wallets.map((wallet) => [(wallet.id || '').toString(), wallet]));
@@ -120,18 +139,16 @@ const InitOperation = ({ api, chainId, accountIds, asset, onResult }: Props) => 
 
   const [destAccounts, setDestAccounts] = useState<DropdownOption<AccountID>[]>([]);
   const [activeDestAccounts, setActiveDestAccounts] = useState<DropdownResult<AccountID>[]>([]);
-
-  const [destinations, setDestinations] = useState<RadioOption<number>[]>([]);
-  const [activeDestination, setActiveDestination] = useState<RadioResult<RewardsDestination>>();
+  const [activeDestination, setActiveDestination] = useState<RadioResult<RewardsDestination>>(destinations[0]);
 
   const [payoutAccounts, setPayoutAccounts] = useState<DropdownOption<AccountID>[]>([]);
   const [balancesMap, setBalancesMap] = useState<Map<string, BalanceDS>>(new Map());
 
-  const availableStakeAccounts = dbAccounts.filter((account) => {
+  const totalAccounts = dbAccounts.filter((account) => {
     return account.id && accountIds.includes(account.id.toString());
   });
 
-  const publicKeys = availableStakeAccounts.reduce<PublicKey[]>((acc, account) => {
+  const publicKeys = totalAccounts.reduce<PublicKey[]>((acc, account) => {
     if (account.publicKey) {
       acc.push(account.publicKey);
     }
@@ -157,30 +174,9 @@ const InitOperation = ({ api, chainId, accountIds, asset, onResult }: Props) => 
     setBalancesMap(newBalancesMap);
   }, [activeDestAccounts.length, balances]);
 
-  // Init destinations
-  useEffect(() => {
-    const options = [
-      { value: RewardsDestination.RESTAKE, element: t('staking.bond.restakeRewards') },
-      { value: RewardsDestination.TRANSFERABLE, element: t('staking.bond.transferableRewards') },
-    ];
-
-    const formattedDestinations = options.map((dest, index) => ({
-      id: index.toString(),
-      value: dest.value,
-      element: (
-        <div className="grid grid-cols-2 items-center flex-1">
-          <p className="text-neutral text-lg leading-5 font-semibold">{dest.element}</p>
-        </div>
-      ),
-    }));
-
-    setDestinations(formattedDestinations);
-    setActiveDestination(formattedDestinations[0]);
-  }, []);
-
   // Init stake accounts
   useEffect(() => {
-    const formattedAccounts = availableStakeAccounts.map((account) => {
+    const formattedAccounts = totalAccounts.map((account) => {
       const matchBalance = balancesMap.get(account.publicKey || '0x');
       const wallet = account.walletId ? walletsMap.get(account.walletId.toString()) : undefined;
 
@@ -188,7 +184,7 @@ const InitOperation = ({ api, chainId, accountIds, asset, onResult }: Props) => 
     });
 
     setDestAccounts(formattedAccounts);
-  }, [accountIds.length, fee, balancesMap]);
+  }, [totalAccounts.length, fee, balancesMap]);
 
   // Init active stake accounts
   useEffect(() => {
@@ -222,15 +218,12 @@ const InitOperation = ({ api, chainId, accountIds, asset, onResult }: Props) => 
         chainId,
         address: value,
         type: TransactionType.DESTINATION,
-        args: {
-          // controller: address,
-          payee: transferableDestination ? { Account: destination } : 'Staked',
-        },
+        args: { payee: transferableDestination ? { Account: destination } : 'Staked' },
       };
     });
 
     setTransactions(newTransactions);
-  }, [activeDestination, destination]);
+  }, [activeDestAccounts.length, activeDestination]);
 
   useEffect(() => {
     if (!transactions.length) return;
@@ -249,7 +242,7 @@ const InitOperation = ({ api, chainId, accountIds, asset, onResult }: Props) => 
 
   const submitDestination: SubmitHandler<DestinationForm> = ({ destination }) => {
     const selectedAddresses = activeDestAccounts.map((stake) => stake.value);
-    const accounts = availableStakeAccounts.filter(
+    const accounts = totalAccounts.filter(
       (account) => account.accountId && selectedAddresses.includes(account.accountId),
     );
 

@@ -361,6 +361,7 @@
     "destination": {
       "initDestinationSubtitle": "Выплата наград"
     },
+    "loadingMessage": "Подключаемся к { chainName }",
     "nominators": {
       "electedTitle": "Выбранные",
       "nominated": "Вклад",
