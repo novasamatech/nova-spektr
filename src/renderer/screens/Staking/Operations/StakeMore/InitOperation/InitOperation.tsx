@@ -114,12 +114,13 @@ const InitOperation = ({ api, chainId, accountIds, asset, onResult }: Props) => 
   const [activeUnstakeAccounts, setActiveUnstakeAccounts] = useState<DropdownResult<AccountID>[]>([]);
 
   const [activeBalances, setActiveBalances] = useState<BalanceDS[]>([]);
+  const [balancesMap, setBalancesMap] = useState<Map<string, BalanceDS>>(new Map());
 
-  const availableUnstakeAccounts = dbAccounts.filter((account) => {
+  const totalAccounts = dbAccounts.filter((account) => {
     return account.id && accountIds.includes(account.id.toString());
   });
 
-  const publicKeys = availableUnstakeAccounts.reduce<PublicKey[]>((acc, account) => {
+  const publicKeys = totalAccounts.reduce<PublicKey[]>((acc, account) => {
     if (account.publicKey) {
       acc.push(account.publicKey);
     }
@@ -144,13 +145,9 @@ const InitOperation = ({ api, chainId, accountIds, asset, onResult }: Props) => 
 
   // Set balances
   useEffect(() => {
-    if (!activeBalances.length) {
-      setStakedRange(['0', '0']);
+    if (!activeBalances.length) return;
 
-      return;
-    }
     const stakeableBalance = activeBalances.map(stakeableAmount);
-
     const minMaxBalances = stakeableBalance.reduce<[string, string]>(
       (acc, balance) => {
         if (!balance) return acc;
@@ -164,12 +161,13 @@ const InitOperation = ({ api, chainId, accountIds, asset, onResult }: Props) => 
     );
 
     setStakedRange(minMaxBalances);
-  }, [activeBalances.length]);
+  }, [activeBalances]);
 
   useEffect(() => {
     const newBalancesMap = new Map(balances.map((balance) => [balance.publicKey, balance]));
     const newActiveBalances = activeUnstakeAccounts.map((a) => newBalancesMap.get(a.id as PublicKey)) as BalanceDS[];
 
+    setBalancesMap(newBalancesMap);
     setActiveBalances(newActiveBalances);
   }, [activeUnstakeAccounts.length, balances]);
 
@@ -179,14 +177,14 @@ const InitOperation = ({ api, chainId, accountIds, asset, onResult }: Props) => 
 
   // Init accounts
   useEffect(() => {
-    const formattedAccounts = availableUnstakeAccounts.map((a) => {
-      const matchBalance = balances.find((b) => b.publicKey === a.publicKey);
+    const formattedAccounts = totalAccounts.map((account) => {
+      const matchBalance = balancesMap.get(account.publicKey || '0x');
 
-      return getDropdownPayload(a, matchBalance, asset, fee, amount);
+      return getDropdownPayload(account, matchBalance, asset, fee, amount);
     });
 
     setUnstakeAccounts(formattedAccounts);
-  }, [accountIds.length, activeBalances, amount, fee, balances.length]);
+  }, [totalAccounts.length, amount, fee, balancesMap]);
 
   // Init active unstake accounts
   useEffect(() => {
@@ -205,9 +203,7 @@ const InitOperation = ({ api, chainId, accountIds, asset, onResult }: Props) => 
         chainId,
         type: TransactionType.STAKE_MORE,
         address: value,
-        args: {
-          maxAdditional: formatAmount(amount, asset.precision),
-        },
+        args: { maxAdditional: formatAmount(amount, asset.precision) },
       };
     });
 
@@ -223,7 +219,7 @@ const InitOperation = ({ api, chainId, accountIds, asset, onResult }: Props) => 
   const submitStakeMore: SubmitHandler<StakeMoreForm> = ({ amount }) => {
     const selectedAddresses = activeUnstakeAccounts.map((stake) => stake.id);
 
-    const accounts = availableUnstakeAccounts.filter(
+    const accounts = totalAccounts.filter(
       (account) => account.publicKey && selectedAddresses.includes(account.publicKey),
     );
 

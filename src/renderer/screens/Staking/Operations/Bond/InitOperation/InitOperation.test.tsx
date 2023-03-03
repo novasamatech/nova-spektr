@@ -1,9 +1,11 @@
 import { ApiPromise } from '@polkadot/api';
 import { act, render, screen } from '@testing-library/react';
+import noop from 'lodash/noop';
 
 import { Asset } from '@renderer/domain/asset';
 import { TEST_PUBLIC_KEY } from '@renderer/shared/utils/constants';
 import InitOperation from './InitOperation';
+import { ChainId } from '@renderer/domain/shared-kernel';
 
 jest.mock('@renderer/context/I18nContext', () => ({
   useI18n: jest.fn().mockReturnValue({
@@ -51,13 +53,17 @@ jest.mock('@renderer/services/balance/balanceService', () => ({
 }));
 
 describe('screens/Staking/Bond/InitOperation', () => {
-  const asset = { assetId: 1, symbol: 'DOT', precision: 10 } as Asset;
+  const defaultProps = {
+    api: {} as ApiPromise,
+    chainId: '0x123' as ChainId,
+    accountIds: ['1'],
+    asset: { assetId: 1, symbol: 'DOT', precision: 10 } as Asset,
+    onResult: noop,
+  };
 
   test('should render component', async () => {
     await act(async () => {
-      render(
-        <InitOperation api={{} as ApiPromise} chainId="0x123" accountIds={['1']} asset={asset} onResult={() => {}} />,
-      );
+      render(<InitOperation {...defaultProps} />);
     });
 
     const input = screen.getByPlaceholderText('staking.bond.amountPlaceholder');

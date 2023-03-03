@@ -1,6 +1,6 @@
 import { UnsignedTransaction } from '@substrate/txwrapper-polkadot';
 import noop from 'lodash/noop';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Navigate, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 
 import { formatAddress } from '@renderer/shared/utils/address';
@@ -8,10 +8,11 @@ import { RewardsDestination } from '@renderer/domain/stake';
 import { ButtonBack, ButtonLink, Icon } from '@renderer/components/ui';
 import { useI18n } from '@renderer/context/I18nContext';
 import { useNetworkContext } from '@renderer/context/NetworkContext';
+import { useChains } from '@renderer/services/network/chainsService';
 import { StakingType } from '@renderer/domain/asset';
 import { AccountID, ChainId, HexString } from '@renderer/domain/shared-kernel';
 import { Transaction, TransactionType } from '@renderer/domain/transaction';
-import { Confirmation, Scanning, Signing, Submit } from '../components';
+import { Confirmation, Scanning, Signing, Submit, ChainLoader } from '../components';
 import Paths from '@renderer/routes/paths';
 import { AccountDS } from '@renderer/services/storage';
 import InitOperation, { DestinationResult } from './InitOperation/InitOperation';
@@ -42,9 +43,11 @@ const Destination = () => {
   const navigate = useNavigate();
   const { connections } = useNetworkContext();
   const [searchParams] = useSearchParams();
+  const { getChainById } = useChains();
   const params = useParams<{ chainId: ChainId }>();
 
   const [activeStep, setActiveStep] = useState<Step>(Step.INIT);
+  const [chainName, setChainName] = useState('...');
   const [accounts, setAccounts] = useState<AccountDS[]>([]);
   const [destination, setDestination] = useState<DestinationType>();
   const [transactions, setTransactions] = useState<Transaction[]>([]);
@@ -61,9 +64,12 @@ const Destination = () => {
   const { api, explorers, addressPrefix, assets, name } = connections[chainId];
   const asset = assets.find((asset) => asset.staking === StakingType.RELAYCHAIN);
 
+  useEffect(() => {
+    getChainById(chainId).then((chain) => setChainName(chain?.name || ''));
+  }, []);
+
   if (!api?.isConnected) {
-    // TODO: show skeleton until we connect to network's api
-    return null;
+    return <ChainLoader chainName={chainName} />;
   }
 
   const goToPrevStep = () => {
@@ -112,9 +118,7 @@ const Destination = () => {
       chainId,
       address: formatAddress(accountId, addressPrefix),
       type: TransactionType.DESTINATION,
-      args: {
-        payee: destination ? { Account: destination } : 'Staked',
-      },
+      args: { payee: destination ? { Account: destination } : 'Staked' },
     }));
 
     setTransactions(transactions);

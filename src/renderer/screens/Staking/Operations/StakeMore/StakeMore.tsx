@@ -1,18 +1,19 @@
 import { UnsignedTransaction } from '@substrate/txwrapper-polkadot';
 import noop from 'lodash/noop';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Navigate, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 
 import { ButtonBack, ButtonLink, HintList, Icon } from '@renderer/components/ui';
 import { useI18n } from '@renderer/context/I18nContext';
 import { useNetworkContext } from '@renderer/context/NetworkContext';
+import { useChains } from '@renderer/services/network/chainsService';
 import { StakingType } from '@renderer/domain/asset';
 import { ChainId, HexString } from '@renderer/domain/shared-kernel';
 import { Transaction, TransactionType } from '@renderer/domain/transaction';
 import Paths from '@renderer/routes/paths';
 import { AccountDS } from '@renderer/services/storage';
 import InitOperation, { StakeMoreResult } from './InitOperation/InitOperation';
-import { Confirmation, Scanning, Signing, Submit } from '../components';
+import { Confirmation, Scanning, Signing, Submit, ChainLoader } from '../components';
 
 const enum Step {
   INIT,
@@ -34,11 +35,12 @@ const StakeMore = () => {
   const { t } = useI18n();
   const navigate = useNavigate();
   const { connections } = useNetworkContext();
+  const { getChainById } = useChains();
   const [searchParams] = useSearchParams();
   const params = useParams<{ chainId: ChainId }>();
 
   const [activeStep, setActiveStep] = useState<Step>(Step.INIT);
-
+  const [chainName, setChainName] = useState('...');
   const [stakeMoreAmount, setStakeMoreAmount] = useState<string>('');
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [unsignedTransactions, setUnsignedTransactions] = useState<UnsignedTransaction[]>([]);
@@ -55,9 +57,12 @@ const StakeMore = () => {
   const { api, explorers, addressPrefix, assets, name } = connections[chainId];
   const asset = assets.find((asset) => asset.staking === StakingType.RELAYCHAIN);
 
+  useEffect(() => {
+    getChainById(chainId).then((chain) => setChainName(chain?.name || ''));
+  }, []);
+
   if (!api?.isConnected) {
-    // TODO: show skeleton until we connect to network's api
-    return null;
+    return <ChainLoader chainName={chainName} />;
   }
 
   const goToPrevStep = () => {
@@ -97,14 +102,12 @@ const StakeMore = () => {
     );
   }
 
-  const onUnstakeResult = ({ accounts, amount }: StakeMoreResult) => {
+  const onStakeMoreResult = ({ accounts, amount }: StakeMoreResult) => {
     const transactions = accounts.map(({ accountId = '' }) => ({
       chainId,
       address: accountId,
       type: TransactionType.STAKE_MORE,
-      args: {
-        maxAdditional: amount,
-      },
+      args: { maxAdditional: amount },
     }));
 
     setTransactions(transactions);
@@ -137,7 +140,7 @@ const StakeMore = () => {
       {headerContent}
 
       {activeStep === Step.INIT && (
-        <InitOperation api={api} chainId={chainId} accountIds={accountIds} asset={asset} onResult={onUnstakeResult} />
+        <InitOperation api={api} chainId={chainId} accountIds={accountIds} asset={asset} onResult={onStakeMoreResult} />
       )}
       {activeStep === Step.CONFIRMATION && (
         <Confirmation
