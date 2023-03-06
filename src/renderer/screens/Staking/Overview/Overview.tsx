@@ -29,6 +29,7 @@ import { isStringsMatchQuery } from '@renderer/shared/utils/strings';
 import { AboutStaking, EmptyFilter, InactiveChain, NoAccounts, StakingTable } from './components';
 import NominatorsModal from './components/NominatorsModal/NominatorsModal';
 import { AccountStakeInfo } from './components/StakingTable/StakingTable';
+import { toAddress } from '@renderer/services/balance/common/utils';
 
 type NetworkOption = { asset: Asset; addressPrefix: number };
 
@@ -61,6 +62,7 @@ const Overview = () => {
 
   const chainId = (activeNetwork?.id || '') as ChainId;
   const api = connections[chainId]?.api;
+  const addressPrefix = connections[chainId]?.addressPrefix;
   const connection = connections[chainId]?.connection;
   const explorers = connections[chainId]?.explorers;
 
@@ -197,6 +199,7 @@ const Overview = () => {
 
   const stakingInfo = activeAccounts.reduce<AccountStakeInfo[]>((acc, account) => {
     if (!account.accountId) return acc;
+    const address = toAddress(account.publicKey, addressPrefix);
 
     let walletName = account.walletId ? walletNames[account.walletId.toString()] : '';
     if (account.rootId) {
@@ -204,10 +207,10 @@ const Overview = () => {
       walletName += `- ${rootNames[account.rootId.toString()]}`;
     }
 
-    if (!query || isStringsMatchQuery(query, [walletName, account.name, account.accountId])) {
+    if (!query || isStringsMatchQuery(query, [walletName, account.name, address])) {
       acc.push({
         walletName,
-        address: account.accountId,
+        address,
         stash: staking[account.accountId]?.stash,
         signingType: account.signingType,
         accountName: account.name,
