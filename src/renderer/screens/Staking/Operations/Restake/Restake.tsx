@@ -17,6 +17,7 @@ import { useStakingData } from '@renderer/services/staking/stakingDataService';
 import { AccountDS } from '@renderer/services/storage';
 import InitOperation, { RestakeResult } from './InitOperation/InitOperation';
 import { Confirmation, Scanning, Signing, Submit, ChainLoader } from '../components';
+import { useCountdown } from '../hooks/useCountdown';
 
 const enum Step {
   INIT,
@@ -92,6 +93,8 @@ const Restake = () => {
   if (!api?.isConnected) {
     return <ChainLoader chainName={chainName} />;
   }
+
+  const [countdown, resetCountdown] = useCountdown(api);
 
   const goToPrevStep = () => {
     if (activeStep === Step.INIT) {
@@ -203,12 +206,14 @@ const Restake = () => {
           accounts={accounts}
           transactions={transactions}
           addressPrefix={addressPrefix}
+          countdown={countdown}
+          onResetCountdown={resetCountdown}
           onResult={onScanResult}
         />
       )}
       {activeStep === Step.SIGNING && (
         <Signing
-          api={api}
+          countdown={countdown}
           multiQr={transactions.length > 1}
           onResult={onSignResult}
           onGoBack={() => setActiveStep(Step.SCANNING)}
