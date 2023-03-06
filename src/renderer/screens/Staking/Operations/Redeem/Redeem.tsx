@@ -2,6 +2,7 @@ import { UnsignedTransaction } from '@substrate/txwrapper-polkadot';
 import noop from 'lodash/noop';
 import { useEffect, useState } from 'react';
 import { Navigate, useNavigate, useParams, useSearchParams } from 'react-router-dom';
+import { BN, BN_THOUSAND } from '@polkadot/util';
 
 import { ButtonBack, ButtonLink, Icon } from '@renderer/components/ui';
 import { useI18n } from '@renderer/context/I18nContext';
@@ -18,6 +19,7 @@ import { AccountDS } from '@renderer/services/storage';
 import { redeemableAmount } from '@renderer/services/balance/common/utils';
 import { useEra } from '@renderer/services/staking/eraService';
 import { Confirmation, Scanning, Signing, Submit, ChainLoader } from '../components';
+import { DEFAULT_QR_LIFETIME } from '@renderer/shared/utils/constants';
 
 const enum Step {
   CONFIRMATION,
@@ -40,7 +42,7 @@ const Unstake = () => {
   const { subscribeStaking } = useStakingData();
   const { getLiveAccounts } = useAccount();
   const { subscribeActiveEra } = useEra();
-  const { getChainById } = useChains();
+  const { getChainById, getExpectedBlockTime } = useChains();
   const [searchParams] = useSearchParams();
   const params = useParams<{ chainId: ChainId }>();
 
@@ -56,6 +58,7 @@ const Unstake = () => {
   const [staking, setStaking] = useState<StakingMap>({});
   const [accounts, setAccounts] = useState<AccountDS[]>([]);
   const [signatures, setSignatures] = useState<HexString[]>([]);
+  const [countdown, setCountdown] = useState(DEFAULT_QR_LIFETIME);
 
   const chainId = params.chainId || ('' as ChainId);
   const accountIds = searchParams.get('id')?.split(',') || [];
@@ -126,6 +129,22 @@ const Unstake = () => {
   if (!api?.isConnected) {
     return <ChainLoader chainName={chainName} />;
   }
+
+  const resetCountdown = () => {
+    const expectedBlockTime = getExpectedBlockTime(api);
+
+    setCountdown(expectedBlockTime.mul(new BN(DEFAULT_QR_LIFETIME)).div(BN_THOUSAND).toNumber() || 0);
+  };
+
+  useEffect(() => {
+    if (countdown > 0) {
+      const timer = setTimeout(() => setCountdown(countdown - 1), 1000);
+
+      return () => {
+        clearTimeout(timer);
+      };
+    }
+  }, [countdown]);
 
   const goToPrevStep = () => {
     if (activeStep === Step.CONFIRMATION) {
@@ -203,12 +222,14 @@ const Unstake = () => {
           accounts={accounts}
           transactions={transactions}
           addressPrefix={addressPrefix}
+          countdown={countdown}
+          onResetCountdown={resetCountdown}
           onResult={onScanResult}
         />
       )}
       {activeStep === Step.SIGNING && (
         <Signing
-          api={api}
+          countdown={countdown}
           multiQr={transactions.length > 1}
           onResult={onSignResult}
           onGoBack={() => setActiveStep(Step.SCANNING)}

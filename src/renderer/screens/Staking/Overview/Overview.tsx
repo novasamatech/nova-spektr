@@ -67,11 +67,13 @@ const Overview = () => {
   const explorers = connections[chainId]?.explorers;
 
   const activeWallets = getLiveWallets();
-  const activeAccounts = getActiveAccounts().filter(({ rootId, derivationPath, chainId: accChainId }) => {
-    const derivationIsCorrect = accChainId === chainId && rootId && derivationPath;
+  const activeAccounts = getActiveAccounts()
+    .filter(({ rootId, derivationPath, chainId: accChainId }) => {
+      const derivationIsCorrect = accChainId === chainId && rootId && derivationPath;
 
-    return !rootId || derivationIsCorrect;
-  });
+      return !rootId || derivationIsCorrect;
+    })
+    .map((a) => ({ ...a, accountId: toAddress(a.publicKey, addressPrefix) }));
 
   const accountAddresses = activeAccounts.reduce<AccountID[]>((acc, account) => {
     return account.accountId ? acc.concat(account.accountId) : acc;
@@ -198,8 +200,8 @@ const Overview = () => {
   }, {});
 
   const stakingInfo = activeAccounts.reduce<AccountStakeInfo[]>((acc, account) => {
-    if (!account.accountId) return acc;
-    const address = toAddress(account.publicKey, addressPrefix);
+    const address = account.accountId;
+    if (!address) return acc;
 
     let walletName = account.walletId ? walletNames[account.walletId.toString()] : '';
     if (account.rootId) {
@@ -211,13 +213,13 @@ const Overview = () => {
       acc.push({
         walletName,
         address,
-        stash: staking[account.accountId]?.stash,
+        stash: staking[address]?.stash,
         signingType: account.signingType,
         accountName: account.name,
-        accountIsSelected: selectedAccounts.includes(account.accountId),
-        totalStake: staking[account.accountId]?.total || '0',
-        totalReward: isLoading ? undefined : rewards[account.accountId],
-        unlocking: staking[account.accountId]?.unlocking,
+        accountIsSelected: selectedAccounts.includes(address),
+        totalStake: staking[address]?.total || '0',
+        totalReward: isLoading ? undefined : rewards[address],
+        unlocking: staking[address]?.unlocking,
       });
     }
 

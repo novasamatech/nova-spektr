@@ -1,11 +1,10 @@
 import { ApiPromise } from '@polkadot/api';
-import { BN, BN_THOUSAND, u8aConcat } from '@polkadot/util';
+import { u8aConcat } from '@polkadot/util';
 import { UnsignedTransaction } from '@substrate/txwrapper-polkadot';
 import cn from 'classnames';
 import init, { Encoder } from 'raptorq';
 import { useEffect, useState } from 'react';
 
-import { useChains } from '@renderer/services/network/chainsService';
 import { Command } from '@renderer/components/common/QrCode/QrGenerator/common/constants';
 import {
   createMultipleSignPayload,
@@ -21,7 +20,6 @@ import { getMetadataPortalUrl, TROUBLESHOOTING_URL } from '@renderer/screens/Sig
 import { AccountDS } from '@renderer/services/storage';
 import { useTransaction } from '@renderer/services/transaction/transactionService';
 import { formatAddress } from '@renderer/shared/utils/address';
-import { DEFAULT_QR_LIFETIME } from '@renderer/shared/utils/constants';
 import { secondsToMinutes } from '@renderer/shared/utils/time';
 
 type Props = {
@@ -30,15 +28,24 @@ type Props = {
   accounts: AccountDS[];
   addressPrefix: number;
   transactions: Transaction[];
+  countdown?: number;
+  onResetCountdown?: () => void;
   onResult: (unsigned: UnsignedTransaction[]) => void;
 };
 
-export const Scanning = ({ api, chainId, accounts, addressPrefix, transactions, onResult }: Props) => {
+export const Scanning = ({
+  api,
+  chainId,
+  accounts,
+  addressPrefix,
+  transactions,
+  countdown = 0,
+  onResetCountdown,
+  onResult,
+}: Props) => {
   const { t } = useI18n();
   const { createPayload } = useTransaction();
-  const { getExpectedBlockTime } = useChains();
 
-  const [countdown, setCountdown] = useState(DEFAULT_QR_LIFETIME);
   const [encoder, setEncoder] = useState<Encoder>();
   const [bulkTransactions, setBulkTransactions] = useState<Uint8Array>();
   const [unsignedTransactions, setUnsignedTransactions] = useState<UnsignedTransaction[]>([]);
@@ -78,21 +85,7 @@ export const Scanning = ({ api, chainId, accounts, addressPrefix, transactions, 
     setupTransactions();
   }, []);
 
-  useEffect(() => {
-    const expectedBlockTime = getExpectedBlockTime(api);
-
-    setCountdown(expectedBlockTime.mul(new BN(DEFAULT_QR_LIFETIME)).div(BN_THOUSAND).toNumber() || 0);
-  }, [bulkTransactions]);
-
-  useEffect(() => {
-    if (countdown > 0) {
-      const timer = setTimeout(() => setCountdown(countdown - 1), 1000);
-
-      return () => {
-        clearTimeout(timer);
-      };
-    }
-  }, [countdown]);
+  useEffect(() => onResetCountdown?.(), [bulkTransactions]);
 
   const bulkTxExist = bulkTransactions && bulkTransactions.length > 0;
 
