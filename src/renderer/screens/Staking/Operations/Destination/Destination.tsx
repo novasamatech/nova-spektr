@@ -2,7 +2,6 @@ import { UnsignedTransaction } from '@substrate/txwrapper-polkadot';
 import noop from 'lodash/noop';
 import { useState, useEffect } from 'react';
 import { Navigate, useNavigate, useParams, useSearchParams } from 'react-router-dom';
-import { BN, BN_THOUSAND } from '@polkadot/util';
 
 import { formatAddress } from '@renderer/shared/utils/address';
 import { RewardsDestination } from '@renderer/domain/stake';
@@ -17,7 +16,7 @@ import { Confirmation, Scanning, Signing, Submit, ChainLoader } from '../compone
 import Paths from '@renderer/routes/paths';
 import { AccountDS } from '@renderer/services/storage';
 import InitOperation, { DestinationResult } from './InitOperation/InitOperation';
-import { DEFAULT_QR_LIFETIME } from '@renderer/shared/utils/constants';
+import { useCountdown } from '../hooks/useCountdown';
 
 const enum Step {
   INIT,
@@ -45,7 +44,7 @@ const Destination = () => {
   const navigate = useNavigate();
   const { connections } = useNetworkContext();
   const [searchParams] = useSearchParams();
-  const { getChainById, getExpectedBlockTime } = useChains();
+  const { getChainById } = useChains();
   const params = useParams<{ chainId: ChainId }>();
 
   const [activeStep, setActiveStep] = useState<Step>(Step.INIT);
@@ -55,7 +54,6 @@ const Destination = () => {
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [unsignedTransactions, setUnsignedTransactions] = useState<UnsignedTransaction[]>([]);
   const [signatures, setSignatures] = useState<HexString[]>([]);
-  const [countdown, setCountdown] = useState(DEFAULT_QR_LIFETIME);
 
   const chainId = params.chainId || ('' as ChainId);
   const accountIds = searchParams.get('id')?.split(',') || [];
@@ -75,21 +73,7 @@ const Destination = () => {
     return <ChainLoader chainName={chainName} />;
   }
 
-  const resetCountdown = () => {
-    const expectedBlockTime = getExpectedBlockTime(api);
-
-    setCountdown(expectedBlockTime.mul(new BN(DEFAULT_QR_LIFETIME)).div(BN_THOUSAND).toNumber() || 0);
-  };
-
-  useEffect(() => {
-    if (countdown > 0) {
-      const timer = setTimeout(() => setCountdown(countdown - 1), 1000);
-
-      return () => {
-        clearTimeout(timer);
-      };
-    }
-  }, [countdown]);
+  const [countdown, resetCountdown] = useCountdown(api);
 
   const goToPrevStep = () => {
     if (activeStep === Step.INIT) {

@@ -2,7 +2,7 @@ import { UnsignedTransaction } from '@substrate/txwrapper-polkadot';
 import noop from 'lodash/noop';
 import { useEffect, useState } from 'react';
 import { Navigate, useNavigate, useParams, useSearchParams } from 'react-router-dom';
-import { BN, BN_THOUSAND } from '@polkadot/util';
+import { BN } from '@polkadot/util';
 
 import { UnstakingDuration } from '@renderer/screens/Staking/Overview/components';
 import { ButtonBack, ButtonLink, HintList, Icon } from '@renderer/components/ui';
@@ -20,7 +20,7 @@ import { AccountDS } from '@renderer/services/storage';
 import InitOperation, { UnstakeResult } from './InitOperation/InitOperation';
 import { Confirmation, Scanning, Signing, Submit, ChainLoader } from '../components';
 import { formatAddress } from '@renderer/shared/utils/address';
-import { DEFAULT_QR_LIFETIME } from '@renderer/shared/utils/constants';
+import { useCountdown } from '../hooks/useCountdown';
 
 const enum Step {
   INIT,
@@ -42,7 +42,7 @@ const Unstake = () => {
   const { t } = useI18n();
   const navigate = useNavigate();
   const { connections } = useNetworkContext();
-  const { getChainById, getExpectedBlockTime } = useChains();
+  const { getChainById } = useChains();
   const { subscribeStaking, getMinNominatorBond } = useStakingData();
   const { getLiveAccounts } = useAccount();
   const dbAccounts = getLiveAccounts({ signingType: SigningType.PARITY_SIGNER });
@@ -59,7 +59,6 @@ const Unstake = () => {
   const [accounts, setAccounts] = useState<AccountDS[]>([]);
   const [signatures, setSignatures] = useState<HexString[]>([]);
   const [minimumStake, setMinimumStake] = useState('0');
-  const [countdown, setCountdown] = useState(DEFAULT_QR_LIFETIME);
 
   const chainId = params.chainId || ('' as ChainId);
   const accountIds = searchParams.get('id')?.split(',') || [];
@@ -105,21 +104,7 @@ const Unstake = () => {
     return <ChainLoader chainName={chainName} />;
   }
 
-  const resetCountdown = () => {
-    const expectedBlockTime = getExpectedBlockTime(api);
-
-    setCountdown(expectedBlockTime.mul(new BN(DEFAULT_QR_LIFETIME)).div(BN_THOUSAND).toNumber() || 0);
-  };
-
-  useEffect(() => {
-    if (countdown > 0) {
-      const timer = setTimeout(() => setCountdown(countdown - 1), 1000);
-
-      return () => {
-        clearTimeout(timer);
-      };
-    }
-  }, [countdown]);
+  const [countdown, resetCountdown] = useCountdown(api);
 
   const goToPrevStep = () => {
     if (activeStep === Step.INIT) {
