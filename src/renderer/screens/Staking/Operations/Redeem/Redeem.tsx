@@ -18,6 +18,7 @@ import { AccountDS } from '@renderer/services/storage';
 import { redeemableAmount } from '@renderer/services/balance/common/utils';
 import { useEra } from '@renderer/services/staking/eraService';
 import { Confirmation, Scanning, Signing, Submit, ChainLoader } from '../components';
+import { useCountdown } from '../hooks/useCountdown';
 
 const enum Step {
   CONFIRMATION,
@@ -127,6 +128,8 @@ const Unstake = () => {
     return <ChainLoader chainName={chainName} />;
   }
 
+  const [countdown, resetCountdown] = useCountdown(api);
+
   const goToPrevStep = () => {
     if (activeStep === Step.CONFIRMATION) {
       navigate(Paths.STAKING);
@@ -203,12 +206,14 @@ const Unstake = () => {
           accounts={accounts}
           transactions={transactions}
           addressPrefix={addressPrefix}
+          countdown={countdown}
+          onResetCountdown={resetCountdown}
           onResult={onScanResult}
         />
       )}
       {activeStep === Step.SIGNING && (
         <Signing
-          api={api}
+          countdown={countdown}
           multiQr={transactions.length > 1}
           onResult={onSignResult}
           onGoBack={() => setActiveStep(Step.SCANNING)}

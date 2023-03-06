@@ -17,6 +17,7 @@ import InitOperation, { BondResult } from './InitOperation/InitOperation';
 import { ValidatorMap } from '@renderer/services/staking/common/types';
 import { AccountDS } from '@renderer/services/storage';
 import { Validators, Confirmation, Scanning, Signing, Submit, ChainLoader } from '../components';
+import { useCountdown } from '../hooks/useCountdown';
 
 const enum Step {
   INIT,
@@ -76,6 +77,8 @@ const Bond = () => {
   if (!api?.isConnected) {
     return <ChainLoader chainName={chainName} />;
   }
+
+  const [countdown, resetCountdown] = useCountdown(api);
 
   const goToPrevStep = () => {
     if (activeStep === Step.INIT) {
@@ -216,11 +219,18 @@ const Bond = () => {
           accounts={accounts}
           transactions={transactions}
           addressPrefix={addressPrefix}
+          countdown={countdown}
+          onResetCountdown={resetCountdown}
           onResult={onScanResult}
         />
       )}
       {activeStep === Step.SIGNING && (
-        <Signing api={api} multiQr={transactions.length > 1} onResult={onSignResult} onGoBack={onBackToScan} />
+        <Signing
+          countdown={countdown}
+          multiQr={transactions.length > 1}
+          onResult={onSignResult}
+          onGoBack={onBackToScan}
+        />
       )}
       {activeStep === Step.SUBMIT && (
         <Submit

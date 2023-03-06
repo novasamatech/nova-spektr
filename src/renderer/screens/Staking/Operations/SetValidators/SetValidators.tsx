@@ -15,6 +15,7 @@ import { useAccount } from '@renderer/services/account/accountService';
 import { ValidatorMap } from '@renderer/services/staking/common/types';
 import { formatAddress } from '@renderer/shared/utils/address';
 import { Confirmation, Scanning, Signing, Submit, Validators, ChainLoader } from '../components';
+import { useCountdown } from '../hooks/useCountdown';
 
 const enum Step {
   INIT,
@@ -71,6 +72,8 @@ const SetValidators = () => {
   if (!api?.isConnected) {
     return <ChainLoader chainName={chainName} />;
   }
+
+  const [countdown, resetCountdown] = useCountdown(api);
 
   const goToPrevStep = () => {
     if (activeStep === Step.INIT) {
@@ -181,11 +184,18 @@ const SetValidators = () => {
           accounts={totalAccounts}
           transactions={transactions}
           addressPrefix={addressPrefix}
+          countdown={countdown}
+          onResetCountdown={resetCountdown}
           onResult={onScanResult}
         />
       )}
       {activeStep === Step.SIGNING && (
-        <Signing api={api} multiQr={transactions.length > 1} onResult={onSignResult} onGoBack={onBackToScan} />
+        <Signing
+          countdown={countdown}
+          multiQr={transactions.length > 1}
+          onResult={onSignResult}
+          onGoBack={onBackToScan}
+        />
       )}
       {activeStep === Step.SUBMIT && (
         <Submit

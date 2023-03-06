@@ -16,6 +16,7 @@ import { Confirmation, Scanning, Signing, Submit, ChainLoader } from '../compone
 import Paths from '@renderer/routes/paths';
 import { AccountDS } from '@renderer/services/storage';
 import InitOperation, { DestinationResult } from './InitOperation/InitOperation';
+import { useCountdown } from '../hooks/useCountdown';
 
 const enum Step {
   INIT,
@@ -71,6 +72,8 @@ const Destination = () => {
   if (!api?.isConnected) {
     return <ChainLoader chainName={chainName} />;
   }
+
+  const [countdown, resetCountdown] = useCountdown(api);
 
   const goToPrevStep = () => {
     if (activeStep === Step.INIT) {
@@ -175,11 +178,18 @@ const Destination = () => {
           accounts={accounts}
           transactions={transactions}
           addressPrefix={addressPrefix}
+          countdown={countdown}
+          onResetCountdown={resetCountdown}
           onResult={onScanResult}
         />
       )}
       {activeStep === Step.SIGNING && (
-        <Signing api={api} multiQr={transactions.length > 1} onResult={onSignResult} onGoBack={onBackToScan} />
+        <Signing
+          countdown={countdown}
+          multiQr={transactions.length > 1}
+          onResult={onSignResult}
+          onGoBack={onBackToScan}
+        />
       )}
       {activeStep === Step.SUBMIT && (
         <Submit
