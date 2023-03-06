@@ -29,7 +29,7 @@ type Props = {
   addressPrefix: number;
   transactions: Transaction[];
   countdown?: number;
-  onResetCountdown?: () => void;
+  onResetCountdown: () => void;
   onResult: (unsigned: UnsignedTransaction[]) => void;
 };
 
@@ -85,7 +85,7 @@ export const Scanning = ({
     setupTransactions();
   }, []);
 
-  useEffect(() => onResetCountdown?.(), [bulkTransactions]);
+  useEffect(() => onResetCountdown(), [bulkTransactions]);
 
   const bulkTxExist = bulkTransactions && bulkTransactions.length > 0;
 
