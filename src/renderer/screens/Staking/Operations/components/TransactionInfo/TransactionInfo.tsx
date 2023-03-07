@@ -58,7 +58,7 @@ const TransactionInfo = ({
 
   return (
     <>
-      <div className="overflow-y-auto">
+      <div className="overflow-y-auto flex-1">
         <section className="w-[500px] p-5 mx-auto bg-shade-2 rounded-2lg">
           <Block className="flex flex-col gap-y-5">
             {title ? (
