@@ -49,7 +49,7 @@ const Explorers = ({ explorers, addressPrefix, address, header, className }: Pro
                   {({ active }) => (
                     <div
                       className={cn(
-                        'rounded-2lg flex items-center gap-1 p-2.5 font-normal select-none cursor-pointer',
+                        'rounded-2lg flex items-center gap-1 p-2.5 text-sm font-normal select-none cursor-pointer',
                         active ? 'bg-primary text-white' : 'bg-white text-neutral',
                       )}
                     >
@@ -70,7 +70,7 @@ const Explorers = ({ explorers, addressPrefix, address, header, className }: Pro
                   {({ active }) => (
                     <a
                       className={cn(
-                        'rounded-2lg flex items-center gap-x-2.5 p-2.5 font-normal select-none transition',
+                        'rounded-2lg flex items-center gap-x-2.5 p-2.5 text-sm font-normal select-none transition',
                         active ? 'bg-primary text-white' : 'bg-white text-neutral',
                       )}
                       href={account.replace('{address}', encodeAddress(toPublicKey(address) || '', addressPrefix))}
