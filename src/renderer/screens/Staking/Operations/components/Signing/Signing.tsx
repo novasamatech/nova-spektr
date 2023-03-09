@@ -25,7 +25,7 @@ export const Signing = ({ multiQr, countdown, onResult, onGoBack }: Props) => {
   const QrReader = multiQr ? MultiframeSignatureReader : ParitySignerSignatureReader;
 
   return (
-    <div className="overflow-y-auto">
+    <div className="overflow-y-auto flex-1">
       <section className="flex flex-col items-center gap-y-5 mx-auto w-[500px] rounded-2lg bg-shade-2 p-5">
         <Block className="flex flex-col items-center gap-y-2.5">
           <div className="text-neutral-variant text-base font-semibold">{t('signing.scanQrTitle')}</div>

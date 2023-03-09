@@ -90,7 +90,7 @@ export const Scanning = ({
   const bulkTxExist = bulkTransactions && bulkTransactions.length > 0;
 
   return (
-    <div className="overflow-y-auto">
+    <div className="overflow-y-auto flex-1">
       <section className="flex flex-col items-center mx-auto w-[500px] rounded-2lg bg-shade-2 p-5">
         <Block className="flex flex-col items-center gap-y-2.5">
           <div className="text-neutral-variant text-base font-semibold">{t('signing.scanQrTitle')}</div>
