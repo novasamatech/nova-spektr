@@ -15,6 +15,7 @@ import { useAccount } from '@renderer/services/account/accountService';
 import { ValidatorMap } from '@renderer/services/staking/common/types';
 import { formatAddress } from '@renderer/shared/utils/address';
 import { Confirmation, Scanning, Signing, Submit, Validators, ChainLoader } from '../components';
+import { useCountdown } from '../hooks/useCountdown';
 
 const enum Step {
   INIT,
@@ -64,6 +65,8 @@ const SetValidators = () => {
   const { api, explorers, addressPrefix, assets, name } = connections[chainId];
   const asset = assets.find((asset) => asset.staking === StakingType.RELAYCHAIN);
 
+  const [countdown, resetCountdown] = useCountdown(api);
+
   useEffect(() => {
     getChainById(chainId).then((chain) => setChainName(chain?.name || ''));
   }, []);
@@ -101,6 +104,7 @@ const SetValidators = () => {
           <p className="text-neutral-variant text-base font-normal">
             {t('staking.bond.noStakingAssetDescription', { chainName: name })}
           </p>
+
           <ButtonLink className="mt-5" to={Paths.STAKING} variant="fill" pallet="primary" weight="lg">
             {t('staking.bond.goToStakingButton')}
           </ButtonLink>
@@ -181,11 +185,18 @@ const SetValidators = () => {
           accounts={totalAccounts}
           transactions={transactions}
           addressPrefix={addressPrefix}
+          countdown={countdown}
+          onResetCountdown={resetCountdown}
           onResult={onScanResult}
         />
       )}
       {activeStep === Step.SIGNING && (
-        <Signing api={api} multiQr={transactions.length > 1} onResult={onSignResult} onGoBack={onBackToScan} />
+        <Signing
+          countdown={countdown}
+          multiQr={transactions.length > 1}
+          onResult={onSignResult}
+          onGoBack={onBackToScan}
+        />
       )}
       {activeStep === Step.SUBMIT && (
         <Submit
