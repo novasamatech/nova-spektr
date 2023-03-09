@@ -28,7 +28,9 @@ export const useWalletsStructure = (accountQuery: Partial<AccountDS>, query: str
   const paritySignerAccounts = getLiveAccounts(accountQuery);
 
   const getChainData = (chainId: ChainId, accounts: AccountDS[], rootAccount: AccountDS): ChainWithAccounts => {
-    const chainAccounts = accounts.filter((a) => a.rootId === rootAccount.id && includes(a.name, query));
+    const chainAccounts = accounts.filter(
+      (a) => a.rootId === rootAccount.id && (includes(a.name, query) || includes(a.accountId, query)),
+    );
 
     return {
       ...chainsObject[chainId as ChainId],
