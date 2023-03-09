@@ -1,7 +1,7 @@
 import { Menu } from '@headlessui/react';
 import { encodeAddress } from '@polkadot/util-crypto';
 import cn from 'classnames';
-import { ReactNode } from 'react';
+import { ReactNode, useRef } from 'react';
 
 import { Icon } from '@renderer/components/ui';
 import { useI18n } from '@renderer/context/I18nContext';
@@ -20,14 +20,28 @@ type Props = {
 const Explorers = ({ explorers, addressPrefix, address, header, className }: Props) => {
   const { t } = useI18n();
 
+  const explorersRef = useRef<HTMLDivElement>(null);
+
+  const scrollToMenu = () => {
+    if (explorersRef.current) {
+      explorersRef.current.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    } else {
+      setTimeout(scrollToMenu, 0);
+    }
+  };
+
   return (
     <Menu>
       {({ open }) => (
         <div className={cn('relative', open && 'z-10', className)}>
-          <Menu.Button className="flex items-center w-5 h-5 rounded-full hover:bg-primary hover:text-white transition">
+          <Menu.Button
+            className="flex items-center w-5 h-5 rounded-full hover:bg-primary hover:text-white transition"
+            onClick={scrollToMenu}
+          >
             <Icon name="options" size={20} />
           </Menu.Button>
           <Menu.Items
+            ref={explorersRef}
             className={cn(
               'bg-white z-10 absolute right-0 top-0 rounded-2lg',
               'shadow-surface w-max border-2 border-shade-5 p-2.5',
