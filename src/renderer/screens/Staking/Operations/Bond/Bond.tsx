@@ -17,6 +17,7 @@ import InitOperation, { BondResult } from './InitOperation/InitOperation';
 import { ValidatorMap } from '@renderer/services/staking/common/types';
 import { AccountDS } from '@renderer/services/storage';
 import { Validators, Confirmation, Scanning, Signing, Submit, ChainLoader } from '../components';
+import { useCountdown } from '../hooks/useCountdown';
 
 const enum Step {
   INIT,
@@ -68,6 +69,7 @@ const Bond = () => {
 
   const { api, explorers, addressPrefix, assets, name } = connections[chainId];
   const asset = assets.find((asset) => asset.staking === StakingType.RELAYCHAIN);
+  const [countdown, resetCountdown] = useCountdown(api);
 
   useEffect(() => {
     getChainById(chainId).then((chain) => setChainName(chain?.name || ''));
@@ -216,11 +218,18 @@ const Bond = () => {
           accounts={accounts}
           transactions={transactions}
           addressPrefix={addressPrefix}
+          countdown={countdown}
+          onResetCountdown={resetCountdown}
           onResult={onScanResult}
         />
       )}
       {activeStep === Step.SIGNING && (
-        <Signing api={api} multiQr={transactions.length > 1} onResult={onSignResult} onGoBack={onBackToScan} />
+        <Signing
+          countdown={countdown}
+          multiQr={transactions.length > 1}
+          onResult={onSignResult}
+          onGoBack={onBackToScan}
+        />
       )}
       {activeStep === Step.SUBMIT && (
         <Submit

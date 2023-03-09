@@ -18,6 +18,7 @@ import { AccountDS } from '@renderer/services/storage';
 import { redeemableAmount } from '@renderer/services/balance/common/utils';
 import { useEra } from '@renderer/services/staking/eraService';
 import { Confirmation, Scanning, Signing, Submit, ChainLoader } from '../components';
+import { useCountdown } from '../hooks/useCountdown';
 
 const enum Step {
   CONFIRMATION,
@@ -66,6 +67,8 @@ const Unstake = () => {
 
   const { api, explorers, addressPrefix, assets, name } = connections[chainId];
   const asset = assets.find((asset) => asset.staking === StakingType.RELAYCHAIN);
+
+  const [countdown, resetCountdown] = useCountdown(api);
 
   useEffect(() => {
     const selectedAccounts = dbAccounts.reduce<AccountDS[]>((acc, account) => {
@@ -203,12 +206,14 @@ const Unstake = () => {
           accounts={accounts}
           transactions={transactions}
           addressPrefix={addressPrefix}
+          countdown={countdown}
+          onResetCountdown={resetCountdown}
           onResult={onScanResult}
         />
       )}
       {activeStep === Step.SIGNING && (
         <Signing
-          api={api}
+          countdown={countdown}
           multiQr={transactions.length > 1}
           onResult={onSignResult}
           onGoBack={() => setActiveStep(Step.SCANNING)}

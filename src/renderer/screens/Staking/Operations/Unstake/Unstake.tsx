@@ -20,6 +20,7 @@ import { AccountDS } from '@renderer/services/storage';
 import InitOperation, { UnstakeResult } from './InitOperation/InitOperation';
 import { Confirmation, Scanning, Signing, Submit, ChainLoader } from '../components';
 import { formatAddress } from '@renderer/shared/utils/address';
+import { useCountdown } from '../hooks/useCountdown';
 
 const enum Step {
   INIT,
@@ -68,6 +69,8 @@ const Unstake = () => {
 
   const { api, explorers, addressPrefix, assets, name } = connections[chainId];
   const asset = assets.find((asset) => asset.staking === StakingType.RELAYCHAIN);
+
+  const [countdown, resetCountdown] = useCountdown(api);
 
   useEffect(() => {
     if (!api?.isConnected || accountIds.length === 0) return;
@@ -233,12 +236,14 @@ const Unstake = () => {
           accounts={accounts}
           transactions={transactions}
           addressPrefix={addressPrefix}
+          countdown={countdown}
+          onResetCountdown={resetCountdown}
           onResult={onScanResult}
         />
       )}
       {activeStep === Step.SIGNING && (
         <Signing
-          api={api}
+          countdown={countdown}
           multiQr={transactions.length > 1}
           onResult={onSignResult}
           onGoBack={() => setActiveStep(Step.SCANNING)}
