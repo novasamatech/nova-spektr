@@ -9,7 +9,6 @@ import Verification from './Verification/Verification';
 
 const Matrix = () => {
   const { t } = useI18n();
-
   const { isLoggedIn } = useMatrix();
 
   return (

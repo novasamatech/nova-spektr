@@ -219,6 +219,8 @@
   },
   "settings": {
     "matrix": {
+      "badCredentialsError": "Wrong username or password, please try again",
+      "badServerError": "Server is not a correct matrix server",
       "formSubtitle": "Sign in with your Matrix ID and password",
       "formTitle": "Matrix credentials",
       "homeserverLabel": "Matrix server",
@@ -230,16 +232,21 @@
       "infoSpektrDescription": "Nova Spektr uses Matrix to share multisig account information and multisig transaction information (including call data) with other signatories. Signing in to Matrix is the easiest way to share this information with your fellow signatories, as all the necessary information will be automatically shared.",
       "infoWhatIsMatrixTitle": "What is Matrix?",
       "infoWhyMatrixTitle": "Why do I need to sign in with Matrix?",
+      "loginNotAvailable": "Login with credentials is not available for<br /><strong>{ homeserver }</strong>",
       "loginSeparator": "Or",
       "passwordLabel": "Password",
       "passwordPlaceholder": "enter password",
+      "passwordRequiredError": "Password is required",
       "privacyFooter": "By signing in you consent to the <terms>terms of use</terms> and <privacy>privacy policy</privacy>",
       "privacyTitle": "Nova Spektr does not store your Matrix password",
       "registerLink": "Don’t have an account?<register>Register</register>",
       "signInButton": "Sign in",
+      "signOutButton": "Sign out",
       "subTitle": "Matrix Credentials",
+      "usernameError": "Invalid username",
       "usernameLabel": "Username",
-      "usernamePlaceholder": "@spektr"
+      "usernamePlaceholder": "spektr",
+      "usernameRequiredError": "Username is required"
     },
     "overview": {
       "getInTouchLabel": "Get in touch for more information!",

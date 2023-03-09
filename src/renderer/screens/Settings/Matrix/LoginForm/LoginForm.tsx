@@ -1,16 +1,20 @@
 import { Controller, SubmitHandler, useForm } from 'react-hook-form';
 import { Trans } from 'react-i18next';
+import { useState, ChangeEvent } from 'react';
 
 import { useMatrix } from '@renderer/context/MatrixContext';
-import { Block, Button, Dropdown, InfoLink, Input } from '@renderer/components/ui';
+import { Block, Button, InfoLink, Input, Icon, Combobox, InputHint } from '@renderer/components/ui';
 import { useI18n } from '@renderer/context/I18nContext';
+import { DropdownResult } from '@renderer/components/ui/Dropdowns/common/types';
+import { MATRIX_USERNAME_REGEX, WELL_KNOWN_SERVERS } from '@renderer/services/matrix';
 
-const HOME_SERVERS = [
-  { id: '0', value: 'matrix.org', element: 'matrix.org' },
-  { id: '1', value: 'matrix.parity.io', element: 'matrix.parity.io' },
-  { id: '2', value: 'matrix.web3.foundation', element: 'matrix.web3.foundation' },
-];
+const HOME_SERVERS = WELL_KNOWN_SERVERS.map((server) => ({
+  id: server.domain,
+  value: server.domain,
+  element: server.domain,
+}));
 
+// TODO: might come form loginFlows method
 // const REGISTER_LINKS: { icon: IconNames; url: string }[] = [
 //   { icon: 'apple', url: 'https://link_1.com' },
 //   { icon: 'google', url: 'https://link_2.com' },
@@ -30,25 +34,76 @@ const LoginForm = () => {
 
   const { matrix } = useMatrix();
 
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [inProgress, setInProgress] = useState(false);
+  const [loginFailed, setLoginFailed] = useState(false);
+  const [loginFlow, setLoginFlow] = useState(true);
+  const [homeserverFailed, setHomeserverFailed] = useState(false);
+
   const {
     handleSubmit,
     control,
-    formState: { isValid },
+    clearErrors,
+    reset,
+    watch,
+    formState: { isValid, errors },
   } = useForm<MatrixForm>({
     mode: 'onChange',
     defaultValues: { homeserver: '', username: '', password: '' },
   });
 
-  const submitMatrixLogin: SubmitHandler<MatrixForm> = async ({ username, password }) => {
-    // TODO: handle homeserver in other function
-    // matrix.setHomeserver(homeserver);
-    try {
-      await matrix.loginWithCreds(username, password);
-    } catch (error) {
-      console.warn(error);
-    }
+  const homeserver = watch('homeserver');
+
+  const validateUsername = (value: string): boolean => {
+    return MATRIX_USERNAME_REGEX.test(value);
   };
 
+  const changeInputValue = (onChange: (value: string) => void) => (event: ChangeEvent<HTMLInputElement>) => {
+    if (loginFailed) {
+      setLoginFailed(false);
+      clearErrors();
+    }
+    onChange(event.target.value);
+  };
+
+  const changeHomeserver = (onChange: (value: string) => void) => async (option: DropdownResult<string>) => {
+    setHomeserverFailed(false);
+    setInProgress(true);
+    try {
+      await matrix.setHomeserver(option.value);
+      const flows = await matrix.loginFlows();
+      const loginIsAvailable = flows.includes('password');
+
+      if (!loginIsAvailable) {
+        reset();
+      }
+      clearErrors();
+      setLoginFailed(false);
+      setLoginFlow(loginIsAvailable);
+      onChange(option.value);
+    } catch (error) {
+      console.warn(error);
+      setHomeserverFailed(true);
+    }
+    setInProgress(false);
+  };
+
+  const submitMatrixLogin: SubmitHandler<MatrixForm> = async ({ username, password }) => {
+    if (inProgress) return;
+
+    setInProgress(true);
+    setLoginFailed(false);
+    try {
+      await matrix.loginWithCreds(username, password);
+      setIsLoggedIn(true);
+    } catch (error) {
+      console.warn(error);
+      setLoginFailed(true);
+    }
+    setInProgress(false);
+  };
+
+  const submitState = !isLoggedIn && !inProgress;
   const register = <InfoLink url="https://app.element.io/#/register" showIcon={false} />;
 
   return (
@@ -61,62 +116,111 @@ const LoginForm = () => {
           name="homeserver"
           control={control}
           rules={{ required: true }}
-          render={({ field: { value, onChange } }) => (
-            <Dropdown
-              label={t('settings.matrix.homeserverLabel')}
-              placeholder={t('settings.matrix.homeserverPlaceholder')}
-              options={HOME_SERVERS}
-              onChange={onChange}
-            />
-          )}
-        />
-        <Controller
-          name="username"
-          control={control}
-          rules={{ required: true }}
-          render={({ field: { value, onChange } }) => (
-            <Input
-              className="w-full"
-              label={t('settings.matrix.usernameLabel')}
-              placeholder={t('settings.matrix.usernamePlaceholder')}
-              // disabled={isProcessing}
-              // invalid={isLoginFailed}
-              value={value}
-              onChange={onChange}
-            />
+          render={({ field: { onChange } }) => (
+            <>
+              <Combobox
+                label={t('settings.matrix.homeserverLabel')}
+                placeholder={t('settings.matrix.homeserverPlaceholder')}
+                invalid={homeserverFailed}
+                disabled={!submitState || inProgress}
+                options={HOME_SERVERS}
+                onChange={changeHomeserver(onChange)}
+              />
+              <InputHint active={homeserverFailed} variant="error">
+                {t('settings.matrix.badServerError')}
+              </InputHint>
+            </>
           )}
         />
 
-        <Controller
-          name="password"
-          control={control}
-          rules={{ required: true }}
-          render={({ field: { value, onChange } }) => (
-            <Input
-              className="w-full"
-              type="password"
-              label={t('settings.matrix.passwordLabel')}
-              placeholder={t('settings.matrix.passwordPlaceholder')}
-              // disabled={isProcessing}
-              // invalid={isLoginFailed}
-              value={value}
-              onChange={onChange}
+        {loginFlow ? (
+          <>
+            <Controller
+              name="username"
+              control={control}
+              rules={{ required: true, validate: validateUsername }}
+              render={({ field: { value, onChange }, fieldState: { error } }) => (
+                <>
+                  <Input
+                    className="w-full"
+                    label={t('settings.matrix.usernameLabel')}
+                    placeholder={t('settings.matrix.usernamePlaceholder')}
+                    disabled={!submitState}
+                    invalid={loginFailed || Boolean(errors.username)}
+                    value={value}
+                    onChange={changeInputValue(onChange)}
+                  />
+                  <InputHint active={error?.type === 'validate'} variant="error">
+                    {t('settings.matrix.usernameError')}
+                  </InputHint>
+                  <InputHint active={error?.type === 'required'} variant="error">
+                    {t('settings.matrix.usernameRequiredError')}
+                  </InputHint>
+                </>
+              )}
             />
-          )}
-        />
-        <div className="flex justify-between items-end">
-          <div className="flex items-center gap-x-1">
-            <p className="flex gap-x-1 text-neutral-variant text-xs">
-              <Trans t={t} i18nKey="settings.matrix.registerLink" components={{ register }} />
-            </p>
-          </div>
-          <Button type="submit" variant="fill" pallet="primary" weight="lg" disabled={!isValid}>
-            {t('settings.matrix.signInButton')}
-          </Button>
-        </div>
+            <Controller
+              name="password"
+              control={control}
+              rules={{ required: true }}
+              render={({ field: { value, onChange }, fieldState: { error } }) => (
+                <>
+                  <Input
+                    className="w-full"
+                    type="password"
+                    label={t('settings.matrix.passwordLabel')}
+                    placeholder={t('settings.matrix.passwordPlaceholder')}
+                    disabled={!submitState}
+                    invalid={loginFailed || Boolean(errors.password)}
+                    value={value}
+                    onChange={changeInputValue(onChange)}
+                  />
+                  <InputHint active={loginFailed} variant="error">
+                    {t('settings.matrix.badCredentialsError')}
+                  </InputHint>
+                  <InputHint active={error?.type === 'required'} variant="error">
+                    {t('settings.matrix.passwordRequiredError')}
+                  </InputHint>
+                </>
+              )}
+            />
+            <div className="flex justify-between items-end">
+              <div className="flex items-center gap-x-1">
+                <p className="flex gap-x-1 text-neutral-variant text-xs">
+                  <Trans t={t} i18nKey="settings.matrix.registerLink" components={{ register }} />
+                </p>
+              </div>
+              {submitState && (
+                <Button
+                  type="submit"
+                  weight="lg"
+                  variant="fill"
+                  pallet="primary"
+                  disabled={!isValid || homeserverFailed}
+                >
+                  {t('settings.matrix.signInButton')}
+                </Button>
+              )}
+              {inProgress && (
+                <div className="flex items-center justify-center h-10 w-20 border border-shade-40 rounded-2lg">
+                  <Icon className="text-shade-40 animate-spin" name="loader" size={20} />
+                </div>
+              )}
+              {isLoggedIn && (
+                <div className="flex items-center justify-center h-10 w-20 border border-secondary rounded-2lg">
+                  <Icon className="text-secondary" name="checkmark" size={20} />
+                </div>
+              )}
+            </div>
+          </>
+        ) : (
+          <p className="text-center text-shade-40 text-sm py-4">
+            <Trans t={t} i18nKey="settings.matrix.loginNotAvailable" values={{ homeserver }} />
+          </p>
+        )}
       </form>
 
-      {/* TODO: in future show only for matrix.org */}
+      {/* TODO: in future show for SSO Login_Flows */}
       {/*<div className="flex flex-col items-center gap-y-4 mt-5 pt-2.5 border-t border-shade-10">*/}
       {/*  <p className="text-shade-20 font-bold text-2xs uppercase">{t('settings.matrix.loginSeparator')}</p>*/}
       {/*  <ul className="flex justify-center items-center gap-x-5">*/}

@@ -1,6 +1,4 @@
 const Paths = {
-  LOGIN: '/login',
-
   // Onboarding
   ONBOARDING: '/onboarding',
   WATCH_ONLY: '/onboarding/watch-only',

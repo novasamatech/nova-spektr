@@ -6,7 +6,7 @@ import { FallbackScreen, SplashScreen } from '@renderer/components/common';
 import ConfirmDialogProvider from '@renderer/context/ConfirmContext';
 import GraphqlContext from '@renderer/context/GraphqlContext';
 import I18Provider from '@renderer/context/I18nContext';
-// import MatrixProvider from '@renderer/context/MatrixContext';
+import MatrixProvider from '@renderer/context/MatrixContext';
 import NetworkProvider from '@renderer/context/NetworkContext';
 import Paths from '@renderer/routes/paths';
 import routesConfig from './routes';
@@ -35,20 +35,18 @@ const App = () => {
     })();
   }, []);
 
-  // const onAutoLoginFail = (errorMsg: string) => {
-  //   console.warn(errorMsg);
-  // };
-
   const content = showSplashScreen || isAccountsLoading ? <SplashScreen /> : appRoutes;
 
   return (
     <ErrorBoundary FallbackComponent={FallbackScreen} onError={console.error}>
       <NetworkProvider>
-        <I18Provider>
-          <ConfirmDialogProvider>
-            <GraphqlContext>{content}</GraphqlContext>
-          </ConfirmDialogProvider>
-        </I18Provider>
+        <MatrixProvider>
+          <I18Provider>
+            <ConfirmDialogProvider>
+              <GraphqlContext>{content}</GraphqlContext>
+            </ConfirmDialogProvider>
+          </I18Provider>
+        </MatrixProvider>
       </NetworkProvider>
     </ErrorBoundary>
   );

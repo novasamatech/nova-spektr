@@ -12,7 +12,7 @@ describe('screens/Settings/Matrix/Credentials', () => {
   test('should render component', () => {
     render(<Credentials />);
 
-    const title = screen.getByText('credentials');
+    const title = screen.getByText('settings.matrix.formTitle');
     expect(title).toBeInTheDocument();
   });
 });
