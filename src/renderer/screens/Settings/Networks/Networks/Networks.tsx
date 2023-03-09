@@ -66,7 +66,7 @@ const Networks = () => {
         <h1 className="font-semibold text-2xl text-neutral">{t('networkManagement.subTitle')}</h1>
       </div>
 
-      <div className="overflow-y-auto">
+      <div className="overflow-y-auto flex-1">
         <section className="flex flex-col gap-y-5 mx-auto mb-5 w-full max-w-[740px] p-5 rounded-2lg bg-shade-2">
           <Input
             wrapperClass="!bg-shade-5 w-[300px]"

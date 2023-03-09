@@ -43,14 +43,13 @@ const getDropdownPayload = (
 ): DropdownOption<AccountID> => {
   const address = account.accountId || '';
   const publicKey = account.publicKey || '';
-  const balanceExists = balance && asset;
+  const balanceExists = !!(balance && asset);
 
   const balanceIsIncorrect =
     balanceExists &&
     amount &&
     fee &&
-    !validateBalanceForFee(balance, fee, amount, asset) &&
-    !validateBalance(balance, amount, asset);
+    !(validateBalanceForFee(balance, fee, amount, asset) && validateBalance(balance, amount, asset));
 
   const element = (
     <div className="flex justify-between items-center gap-x-2.5">
@@ -255,7 +254,7 @@ const InitOperation = ({ api, chainId, accountIds, asset, onResult }: Props) => 
             validate: {
               notZero: (v) => Number(v) > 0,
               insufficientBalance: (amount) => activeBalances.every((b) => validateBalance(b || '0', amount, asset)),
-              insufficientBalanceForFee: () =>
+              insufficientBalanceForFee: (amount) =>
                 activeBalances.every((b) => validateBalanceForFee(b, fee, amount, asset)),
             },
           }}
@@ -271,6 +270,7 @@ const InitOperation = ({ api, chainId, accountIds, asset, onResult }: Props) => 
                 invalid={Boolean(error)}
                 onChange={onChange}
               />
+
               <InputHint active={error?.type === 'insufficientBalance'} variant="error">
                 {t('staking.notEnoughBalanceError')}
               </InputHint>

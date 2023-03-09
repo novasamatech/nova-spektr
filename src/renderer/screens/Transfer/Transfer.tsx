@@ -258,7 +258,7 @@ const Transfer = () => {
         <h1 className="font-semibold text-2xl text-neutral">{t('transfer.title')}</h1>
       </div>
 
-      <div className="overflow-y-auto">
+      <div className="overflow-y-auto flex-1">
         {currentStep === Steps.CREATING && readyToCreate && (
           <div className="w-[500px] rounded-2lg bg-shade-2 p-5 flex flex-col items-center m-auto gap-2.5">
             {activeAccountsOptions.length > 1 ? (

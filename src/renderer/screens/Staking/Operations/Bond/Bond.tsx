@@ -69,6 +69,7 @@ const Bond = () => {
 
   const { api, explorers, addressPrefix, assets, name } = connections[chainId];
   const asset = assets.find((asset) => asset.staking === StakingType.RELAYCHAIN);
+  const [countdown, resetCountdown] = useCountdown(api);
 
   useEffect(() => {
     getChainById(chainId).then((chain) => setChainName(chain?.name || ''));
@@ -77,8 +78,6 @@ const Bond = () => {
   if (!api?.isConnected) {
     return <ChainLoader chainName={chainName} />;
   }
-
-  const [countdown, resetCountdown] = useCountdown(api);
 
   const goToPrevStep = () => {
     if (activeStep === Step.INIT) {

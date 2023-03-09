@@ -70,6 +70,8 @@ const Unstake = () => {
   const { api, explorers, addressPrefix, assets, name } = connections[chainId];
   const asset = assets.find((asset) => asset.staking === StakingType.RELAYCHAIN);
 
+  const [countdown, resetCountdown] = useCountdown(api);
+
   useEffect(() => {
     if (!api?.isConnected || accountIds.length === 0) return;
 
@@ -103,8 +105,6 @@ const Unstake = () => {
   if (!api?.isConnected) {
     return <ChainLoader chainName={chainName} />;
   }
-
-  const [countdown, resetCountdown] = useCountdown(api);
 
   const goToPrevStep = () => {
     if (activeStep === Step.INIT) {

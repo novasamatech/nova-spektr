@@ -261,7 +261,7 @@ const Overview = () => {
       <div className="h-full flex flex-col gap-y-9 relative">
         <h1 className="font-semibold text-2xl text-neutral mt-5 px-5">{t('staking.title')}</h1>
 
-        <div className="overflow-y-auto">
+        <div className="overflow-y-auto flex-1">
           <section className="w-[900px] p-5 mx-auto bg-shade-2 rounded-2lg mb-36 last:mb-0">
             <div className="flex items-center mb-5">
               <p className="text-xl text-neutral mr-5">

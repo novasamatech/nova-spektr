@@ -65,6 +65,8 @@ const SetValidators = () => {
   const { api, explorers, addressPrefix, assets, name } = connections[chainId];
   const asset = assets.find((asset) => asset.staking === StakingType.RELAYCHAIN);
 
+  const [countdown, resetCountdown] = useCountdown(api);
+
   useEffect(() => {
     getChainById(chainId).then((chain) => setChainName(chain?.name || ''));
   }, []);
@@ -72,8 +74,6 @@ const SetValidators = () => {
   if (!api?.isConnected) {
     return <ChainLoader chainName={chainName} />;
   }
-
-  const [countdown, resetCountdown] = useCountdown(api);
 
   const goToPrevStep = () => {
     if (activeStep === Step.INIT) {
@@ -104,6 +104,7 @@ const SetValidators = () => {
           <p className="text-neutral-variant text-base font-normal">
             {t('staking.bond.noStakingAssetDescription', { chainName: name })}
           </p>
+
           <ButtonLink className="mt-5" to={Paths.STAKING} variant="fill" pallet="primary" weight="lg">
             {t('staking.bond.goToStakingButton')}
           </ButtonLink>
