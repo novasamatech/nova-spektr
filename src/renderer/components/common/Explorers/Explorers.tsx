@@ -23,11 +23,7 @@ const Explorers = ({ explorers, addressPrefix, address, header, className }: Pro
   const explorersRef = useRef<HTMLDivElement>(null);
 
   const scrollToMenu = () => {
-    if (explorersRef.current) {
-      explorersRef.current.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-    } else {
-      setTimeout(scrollToMenu, 0);
-    }
+    setTimeout(() => explorersRef.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest' }));
   };
 
   return (
