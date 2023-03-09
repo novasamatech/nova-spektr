@@ -34,7 +34,10 @@ const Parity = () => {
     { title: t('onboarding.paritySigner.step2') },
   ];
 
-  const isPlainQr = qrPayload?.length === 1 && qrPayload[0].derivedKeys.length === 0 && qrPayload[0].name === '';
+  const isPlainQr =
+    qrPayload?.length === 1 &&
+    ((qrPayload[0].derivedKeys.length === 0 && qrPayload[0].name === '') ||
+      qrPayload[0].derivedKeys.every((d) => !d.derivationPath));
 
   return (
     <div className="flex flex-col h-full">
