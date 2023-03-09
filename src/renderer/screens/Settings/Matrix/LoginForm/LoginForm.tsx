@@ -44,7 +44,7 @@ const LoginForm = () => {
     handleSubmit,
     control,
     clearErrors,
-    reset,
+    resetField,
     watch,
     formState: { isValid, errors },
   } = useForm<MatrixForm>({
@@ -69,13 +69,15 @@ const LoginForm = () => {
   const changeHomeserver = (onChange: (value: string) => void) => async (option: DropdownResult<string>) => {
     setHomeserverFailed(false);
     setInProgress(true);
+
     try {
       await matrix.setHomeserver(option.value);
       const flows = await matrix.loginFlows();
       const loginIsAvailable = flows.includes('password');
 
       if (!loginIsAvailable) {
-        reset();
+        resetField('username');
+        resetField('password');
       }
       clearErrors();
       setLoginFailed(false);
@@ -85,6 +87,7 @@ const LoginForm = () => {
       console.warn(error);
       setHomeserverFailed(true);
     }
+
     setInProgress(false);
   };
 
