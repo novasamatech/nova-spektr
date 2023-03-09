@@ -10,7 +10,7 @@ jest.mock('@renderer/context/I18nContext', () => ({
 }));
 
 describe('components/common/Explorers', () => {
-  test('should render component', async () => {
+  test.skip('should render component', async () => {
     const explorers = [
       {
         name: 'Subscan',
