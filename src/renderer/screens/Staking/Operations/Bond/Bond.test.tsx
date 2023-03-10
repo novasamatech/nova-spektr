@@ -2,7 +2,6 @@ import { act, render, screen } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 
 import { ConnectionStatus } from '@renderer/domain/connection';
-import { TEST_PUBLIC_KEY } from '@renderer/shared/utils/constants';
 import Bond from './Bond';
 
 jest.mock('@renderer/context/I18nContext', () => ({
@@ -41,30 +40,6 @@ jest.mock('@renderer/context/NetworkContext', () => ({
   })),
 }));
 
-jest.mock('@renderer/services/account/accountService', () => ({
-  useAccount: jest.fn().mockReturnValue({
-    getActiveAccounts: () => [
-      {
-        name: 'Test Wallet',
-        accountId: '1ChFWeNRLarAPRCTM3bfJmncJbSAbSS9yqjueWz7jX7iTVZ',
-        publicKey: TEST_PUBLIC_KEY,
-      },
-    ],
-  }),
-}));
-
-jest.mock('@renderer/services/balance/balanceService', () => ({
-  useBalance: jest.fn().mockReturnValue({
-    getBalance: jest.fn().mockReturnValue({
-      assetId: 1,
-      chainId: '0x123',
-      publicKey: TEST_PUBLIC_KEY,
-      free: '10',
-      frozen: [{ type: 'test', amount: '1' }],
-    }),
-  }),
-}));
-
 const mockButton = (text: string, callback: () => void) => (
   <button type="button" onClick={callback}>
     {text}
@@ -72,41 +47,50 @@ const mockButton = (text: string, callback: () => void) => (
 );
 
 jest.mock('./InitOperation/InitOperation', () => ({ onResult }: any) => {
-  return mockButton('init', onResult);
-});
-jest.mock('../components/Validators/Validators', () => ({ onResult }: any) => {
-  return mockButton('validators', onResult);
-});
-jest.mock('./Confirmation/Confirmation', () => ({ onResult }: any) => {
-  return mockButton('confirm', onResult);
+  const payload = { accounts: [], validators: [] };
+
+  return mockButton('to validators', () => onResult(payload));
 });
 
-describe('screens/Bond/Confirmation', () => {
+jest.mock('../components/index', () => ({
+  Validators: ({ onResult }: any) => mockButton('to confirm', onResult),
+  Confirmation: ({ onResult }: any) => mockButton('to scan', onResult),
+  Scanning: ({ onResult }: any) => mockButton('to sign', onResult),
+  Signing: ({ onResult }: any) => mockButton('to submit', onResult),
+  Submit: () => 'finish',
+}));
+
+describe('screens/Staking/Bond', () => {
   test('should render component', () => {
     render(<Bond />, { wrapper: MemoryRouter });
 
     const title = screen.getByText('staking.title');
     const subTitle = screen.getByText('staking.bond.initBondSubtitle');
-    const initBond = screen.getByText('init');
+    const next = screen.getByText('to validators');
     expect(title).toBeInTheDocument();
     expect(subTitle).toBeInTheDocument();
-    expect(initBond).toBeInTheDocument();
+    expect(next).toBeInTheDocument();
   });
 
-  test('should change bond process state', async () => {
+  test('should change process state', async () => {
     render(<Bond />, { wrapper: MemoryRouter });
 
-    const initBond = screen.getByRole('button', { name: 'init' });
-    await act(async () => initBond.click());
+    let nextButton = screen.getByRole('button', { name: 'to validators' });
+    await act(async () => nextButton.click());
 
-    const validatorsBond = screen.getByRole('button', { name: 'validators' });
-    expect(validatorsBond).toBeInTheDocument();
-    expect(initBond).not.toBeInTheDocument();
+    nextButton = screen.getByRole('button', { name: 'to confirm' });
+    await act(async () => nextButton.click());
 
-    await act(async () => validatorsBond.click());
+    nextButton = screen.getByRole('button', { name: 'to scan' });
+    await act(async () => nextButton.click());
 
-    const confirmBond = screen.getByRole('button', { name: 'confirm' });
-    expect(validatorsBond).not.toBeInTheDocument();
-    expect(confirmBond).toBeInTheDocument();
+    nextButton = screen.getByRole('button', { name: 'to sign' });
+    await act(async () => nextButton.click());
+
+    nextButton = screen.getByRole('button', { name: 'to submit' });
+    await act(async () => nextButton.click());
+
+    const finish = screen.getByText('finish');
+    expect(finish).toBeInTheDocument();
   });
 });

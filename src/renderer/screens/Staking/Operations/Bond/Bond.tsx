@@ -1,22 +1,23 @@
 import { UnsignedTransaction } from '@substrate/txwrapper-polkadot';
-import { useState } from 'react';
+import noop from 'lodash/noop';
+import { useState, useEffect } from 'react';
 import { Navigate, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 
-import { ButtonBack, ButtonLink, Icon } from '@renderer/components/ui';
+import { formatAddress } from '@renderer/shared/utils/address';
+import { RewardsDestination } from '@renderer/domain/stake';
+import { ButtonBack, ButtonLink, HintList, Icon } from '@renderer/components/ui';
 import { useI18n } from '@renderer/context/I18nContext';
 import { useNetworkContext } from '@renderer/context/NetworkContext';
+import { useChains } from '@renderer/services/network/chainsService';
 import { StakingType } from '@renderer/domain/asset';
 import { AccountID, ChainId, HexString } from '@renderer/domain/shared-kernel';
-import { Transaction } from '@renderer/domain/transaction';
+import { Transaction, TransactionType } from '@renderer/domain/transaction';
 import Paths from '@renderer/routes/paths';
-import Confirmation from './Confirmation/Confirmation';
 import InitOperation, { BondResult } from './InitOperation/InitOperation';
 import { ValidatorMap } from '@renderer/services/staking/common/types';
 import { AccountDS } from '@renderer/services/storage';
-import Scanning from '../components/Scanning/Scanning';
-import Signing from '../components/Signing/Signing';
-import Validators from '../components/Validators/Validators';
-import Submit from './Submit/Submit';
+import { Validators, Confirmation, Scanning, Signing, Submit, ChainLoader } from '../components';
+import { useCountdown } from '../hooks/useCountdown';
 
 const enum Step {
   INIT,
@@ -26,6 +27,11 @@ const enum Step {
   SIGNING,
   SUBMIT,
 }
+
+type Destination = {
+  address?: AccountID;
+  type: RewardsDestination;
+};
 
 const HEADER_TITLE: Record<Step, string> = {
   [Step.INIT]: 'staking.bond.initBondSubtitle',
@@ -40,14 +46,16 @@ const Bond = () => {
   const { t } = useI18n();
   const navigate = useNavigate();
   const { connections } = useNetworkContext();
+  const { getChainById } = useChains();
   const [searchParams] = useSearchParams();
   const params = useParams<{ chainId: ChainId }>();
 
   const [activeStep, setActiveStep] = useState<Step>(Step.INIT);
+  const [chainName, setChainName] = useState('...');
   const [validators, setValidators] = useState<ValidatorMap>({});
   const [accounts, setAccounts] = useState<AccountDS[]>([]);
   const [stakeAmount, setStakeAmount] = useState<string>('');
-  const [destination, setDestination] = useState<AccountID>('');
+  const [destination, setDestination] = useState<Destination>();
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [unsignedTransactions, setUnsignedTransactions] = useState<UnsignedTransaction[]>([]);
   const [signatures, setSignatures] = useState<HexString[]>([]);
@@ -61,10 +69,14 @@ const Bond = () => {
 
   const { api, explorers, addressPrefix, assets, name } = connections[chainId];
   const asset = assets.find((asset) => asset.staking === StakingType.RELAYCHAIN);
+  const [countdown, resetCountdown] = useCountdown(api);
 
-  if (!api || !api.isConnected) {
-    // TODO: show skeleton until we connect to network's api
-    return null;
+  useEffect(() => {
+    getChainById(chainId).then((chain) => setChainName(chain?.name || ''));
+  }, []);
+
+  if (!api?.isConnected) {
+    return <ChainLoader chainName={chainName} />;
   }
 
   const goToPrevStep = () => {
@@ -74,39 +86,6 @@ const Bond = () => {
       // TODO: reset data
       setActiveStep((prev) => prev - 1);
     }
-  };
-
-  const onBondResult = (data: BondResult) => {
-    if (!asset) return;
-
-    setAccounts(data.accounts);
-    setStakeAmount(data.stake);
-    setDestination(data.destination);
-    setActiveStep(Step.VALIDATORS);
-  };
-
-  const onSelectValidators = (validators: ValidatorMap) => {
-    setValidators(validators);
-    setActiveStep(Step.CONFIRMATION);
-  };
-
-  const onConfirmResult = (transactions: Transaction[]) => {
-    setTransactions(transactions);
-    setActiveStep(Step.SCANNING);
-  };
-
-  const onScanResult = (unsigned: UnsignedTransaction[]) => {
-    setUnsignedTransactions(unsigned);
-    setActiveStep(Step.SIGNING);
-  };
-
-  const onBackToScan = () => {
-    setActiveStep(Step.SCANNING);
-  };
-
-  const onSignResult = (signatures: HexString[]) => {
-    setSignatures(signatures);
-    setActiveStep(Step.SUBMIT);
   };
 
   const headerContent = (
@@ -138,36 +117,100 @@ const Bond = () => {
     );
   }
 
+  const onInitResult = ({ accounts, destination, stake }: BondResult) => {
+    const destPayload = destination
+      ? { type: RewardsDestination.TRANSFERABLE, address: destination }
+      : { type: RewardsDestination.RESTAKE };
+
+    setDestination(destPayload);
+    setAccounts(accounts);
+    setStakeAmount(stake);
+    setActiveStep(Step.VALIDATORS);
+  };
+
+  const onSelectValidators = (validators: ValidatorMap) => {
+    const transactions = accounts.map(({ accountId = '' }) => {
+      const address = formatAddress(accountId, addressPrefix);
+      const commonPayload = { chainId, address };
+
+      const bondTx = {
+        ...commonPayload,
+        type: TransactionType.BOND,
+        args: {
+          value: stakeAmount,
+          controller: address,
+          payee: destination?.type === RewardsDestination.TRANSFERABLE ? { Account: destination.address } : 'Staked',
+        },
+      };
+
+      const nominateTx = {
+        ...commonPayload,
+        type: TransactionType.NOMINATE,
+        args: { targets: Object.keys(validators).map((address) => address) },
+      };
+
+      return {
+        ...commonPayload,
+        type: TransactionType.BATCH_ALL,
+        args: { transactions: [bondTx, nominateTx] },
+      };
+    });
+
+    setTransactions(transactions);
+    setValidators(validators);
+    setActiveStep(Step.CONFIRMATION);
+  };
+
+  const onScanResult = (unsigned: UnsignedTransaction[]) => {
+    setUnsignedTransactions(unsigned);
+    setActiveStep(Step.SIGNING);
+  };
+
+  const onBackToScan = () => {
+    setActiveStep(Step.SCANNING);
+  };
+
+  const onSignResult = (signatures: HexString[]) => {
+    setSignatures(signatures);
+    setActiveStep(Step.SUBMIT);
+  };
+
+  const explorersProps = { explorers, addressPrefix, asset };
+  const bondValues = new Array(accounts.length).fill(stakeAmount);
+
+  const hints = (
+    <HintList className="px-[15px]">
+      <HintList.Item>{t('staking.confirmation.hintRewards')}</HintList.Item>
+      <HintList.Item>{t('staking.confirmation.hintUnstakePeriod')}</HintList.Item>
+      <HintList.Item>{t('staking.confirmation.hintNoRewards')}</HintList.Item>
+      <HintList.Item>{t('staking.confirmation.hintRedeem')}</HintList.Item>
+    </HintList>
+  );
+
   return (
     <div className="flex flex-col h-full relative">
       {headerContent}
 
       {activeStep === Step.INIT && (
-        <InitOperation api={api} chainId={chainId} accountIds={accountIds} asset={asset} onResult={onBondResult} />
+        <InitOperation api={api} chainId={chainId} accountIds={accountIds} asset={asset} onResult={onInitResult} />
       )}
       {activeStep === Step.VALIDATORS && (
-        <Validators
-          api={api}
-          chainId={chainId}
-          asset={asset}
-          explorers={explorers}
-          addressPrefix={addressPrefix}
-          onResult={onSelectValidators}
-        />
+        <Validators api={api} chainId={chainId} onResult={onSelectValidators} {...explorersProps} />
       )}
       {activeStep === Step.CONFIRMATION && (
         <Confirmation
           api={api}
-          chainId={chainId}
           validators={Object.values(validators)}
           accounts={accounts}
-          stake={stakeAmount}
+          amounts={bondValues}
           destination={destination}
-          asset={asset}
-          explorers={explorers}
-          addressPrefix={addressPrefix}
-          onResult={onConfirmResult}
-        />
+          transaction={transactions[0]}
+          onResult={() => setActiveStep(Step.SCANNING)}
+          onAddToQueue={noop}
+          {...explorersProps}
+        >
+          {hints}
+        </Confirmation>
       )}
       {activeStep === Step.SCANNING && (
         <Scanning
@@ -176,26 +219,33 @@ const Bond = () => {
           accounts={accounts}
           transactions={transactions}
           addressPrefix={addressPrefix}
+          countdown={countdown}
+          onResetCountdown={resetCountdown}
           onResult={onScanResult}
         />
       )}
       {activeStep === Step.SIGNING && (
-        <Signing api={api} multiQr={transactions.length > 1} onResult={onSignResult} onGoBack={onBackToScan} />
+        <Signing
+          countdown={countdown}
+          multiQr={transactions.length > 1}
+          onResult={onSignResult}
+          onGoBack={onBackToScan}
+        />
       )}
       {activeStep === Step.SUBMIT && (
         <Submit
           api={api}
-          transactions={transactions}
+          transaction={transactions[0]}
           signatures={signatures}
-          unsignedTransactions={unsignedTransactions}
+          unsignedTx={unsignedTransactions}
           validators={Object.values(validators)}
           accounts={accounts}
-          stake={stakeAmount}
+          amounts={bondValues}
           destination={destination}
-          asset={asset}
-          explorers={explorers}
-          addressPrefix={addressPrefix}
-        />
+          {...explorersProps}
+        >
+          {hints}
+        </Submit>
       )}
     </div>
   );

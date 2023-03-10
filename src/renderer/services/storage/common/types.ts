@@ -6,7 +6,7 @@ import { Contact } from '@renderer/domain/contact';
 import { AccountID, ChainId, PublicKey } from '@renderer/domain/shared-kernel';
 import { Wallet } from '@renderer/domain/wallet';
 import { Transaction } from '@renderer/domain/transaction';
-import { Account } from '@renderer/domain/account';
+import { Account, MultisigAccount } from '@renderer/domain/account';
 
 // =====================================================
 // ================ Storage interface ==================
@@ -52,6 +52,14 @@ export interface IAccountStorage {
   deleteAccount: (accountId: AccountID) => Promise<void>;
 }
 
+export interface IContactStorage {
+  getContact: (contactId: IndexableType) => Promise<Contact | undefined>;
+  getContacts: (where?: Record<string, any>) => Promise<Contact[]>;
+  addContact: (contact: Contact) => Promise<IndexableType>;
+  updateContact: (contact: Contact) => Promise<IndexableType>;
+  deleteContact: (contactId: IndexableType) => Promise<void>;
+}
+
 // =====================================================
 // ================== Storage Schemes ==================
 // =====================================================
@@ -61,6 +69,7 @@ export type DataStorage = {
   connections: IConnectionStorage;
   wallets: IWalletStorage;
   accounts: IAccountStorage;
+  contacts: IContactStorage;
 };
 
 type WithID = {
@@ -70,9 +79,7 @@ type WithID = {
 export type ConnectionDS = WithID & Connection;
 
 export type BalanceDS = Balance;
-
 export type WalletDS = WithID & Wallet;
-export type AccountDS = WithID & Account;
-
+export type AccountDS = WithID & (Account | MultisigAccount);
 export type ContactDS = WithID & Contact;
 export type TransactionDS = WithID & Transaction;

@@ -7,6 +7,7 @@ import { useChains } from '@renderer/services/network/chainsService';
 import { ExtendedChain } from '@renderer/services/network/common/types';
 import NetworkList from '../NetworkList/NetworkList';
 import { useI18n } from '@renderer/context/I18nContext';
+import { includes } from '@renderer/shared/utils/strings';
 
 const Networks = () => {
   const { t } = useI18n();
@@ -17,7 +18,7 @@ const Networks = () => {
 
   const { disabledNetworks, activeNetworksGroup } = Object.values(connections).reduce(
     (acc, c) => {
-      if (!c.name.toLowerCase().includes(query.toLowerCase())) return acc;
+      if (!includes(c.name, query)) return acc;
 
       const {
         disabledNetworks,
@@ -66,7 +67,7 @@ const Networks = () => {
         </ButtonBack>
       </div>
 
-      <div className="overflow-y-auto">
+      <div className="overflow-y-auto flex-1">
         <section className="flex flex-col gap-y-5 mx-auto mb-5 w-full max-w-[740px] p-5 rounded-2lg bg-shade-2">
           <Input
             wrapperClass="!bg-shade-5 w-[300px]"

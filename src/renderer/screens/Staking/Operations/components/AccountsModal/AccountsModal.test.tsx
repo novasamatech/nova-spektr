@@ -16,10 +16,10 @@ window.IntersectionObserver = jest.fn().mockImplementation(() => ({
   disconnect: jest.fn(),
 }));
 
-describe('screens/Bond/components/AccountsModal', () => {
+describe('screens/Staking/components/AccountsModal', () => {
   const defaultProps = {
     isOpen: true,
-    amount: '1000000000000',
+    amounts: ['1000000000000', '2000000000000', '3000000000000'],
     asset: { symbol: 'DOT', precision: 10 } as Asset,
     accounts: [
       {

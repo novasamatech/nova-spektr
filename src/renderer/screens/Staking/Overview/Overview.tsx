@@ -29,6 +29,7 @@ import { isStringsMatchQuery } from '@renderer/shared/utils/strings';
 import { AboutStaking, EmptyFilter, InactiveChain, NoAccounts, StakingTable } from './components';
 import NominatorsModal from './components/NominatorsModal/NominatorsModal';
 import { AccountStakeInfo } from './components/StakingTable/StakingTable';
+import { toAddress } from '@renderer/services/balance/common/utils';
 
 type NetworkOption = { asset: Asset; addressPrefix: number };
 
@@ -61,11 +62,18 @@ const Overview = () => {
 
   const chainId = (activeNetwork?.id || '') as ChainId;
   const api = connections[chainId]?.api;
+  const addressPrefix = connections[chainId]?.addressPrefix;
   const connection = connections[chainId]?.connection;
   const explorers = connections[chainId]?.explorers;
 
   const activeWallets = getLiveWallets();
-  const activeAccounts = getActiveAccounts().filter((account) => !account.chainId || account.chainId === chainId);
+  const activeAccounts = getActiveAccounts()
+    .filter(({ rootId, derivationPath, chainId: accChainId }) => {
+      const derivationIsCorrect = accChainId === chainId && rootId && derivationPath;
+
+      return !rootId || derivationIsCorrect;
+    })
+    .map((a) => ({ ...a, accountId: toAddress(a.publicKey, addressPrefix) }));
 
   const accountAddresses = activeAccounts.reduce<AccountID[]>((acc, account) => {
     return account.accountId ? acc.concat(account.accountId) : acc;
@@ -192,7 +200,8 @@ const Overview = () => {
   }, {});
 
   const stakingInfo = activeAccounts.reduce<AccountStakeInfo[]>((acc, account) => {
-    if (!account.accountId) return acc;
+    const address = account.accountId;
+    if (!address) return acc;
 
     let walletName = account.walletId ? walletNames[account.walletId.toString()] : '';
     if (account.rootId) {
@@ -200,17 +209,17 @@ const Overview = () => {
       walletName += `- ${rootNames[account.rootId.toString()]}`;
     }
 
-    if (!query || isStringsMatchQuery(query, [walletName, account.name, account.accountId])) {
+    if (!query || isStringsMatchQuery(query, [walletName, account.name, address])) {
       acc.push({
         walletName,
-        address: account.accountId,
-        stash: staking[account.accountId]?.stash,
+        address,
+        stash: staking[address]?.stash,
         signingType: account.signingType,
         accountName: account.name,
-        accountIsSelected: selectedAccounts.includes(account.accountId),
-        totalStake: staking[account.accountId]?.total || '0',
-        totalReward: isLoading ? undefined : rewards[account.accountId],
-        unlocking: staking[account.accountId]?.unlocking,
+        accountIsSelected: selectedAccounts.includes(address),
+        totalStake: staking[address]?.total || '0',
+        totalReward: isLoading ? undefined : rewards[address],
+        unlocking: staking[address]?.unlocking,
       });
     }
 
@@ -252,7 +261,7 @@ const Overview = () => {
       <div className="h-full flex flex-col gap-y-9 relative">
         <h1 className="font-semibold text-2xl text-neutral mt-5 px-5">{t('staking.title')}</h1>
 
-        <div className="overflow-y-auto">
+        <div className="overflow-y-auto flex-1">
           <section className="w-[900px] p-5 mx-auto bg-shade-2 rounded-2lg mb-36 last:mb-0">
             <div className="flex items-center mb-5">
               <p className="text-xl text-neutral mr-5">

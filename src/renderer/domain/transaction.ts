@@ -11,6 +11,8 @@ export const enum TransactionType {
   REDEEM = 'withdrawUnbonded',
   NOMINATE = 'nominate',
   BATCH_ALL = 'batchAll',
+  DESTINATION = 'payee',
+  CHILL = 'chill',
 }
 
 export type Transaction = {

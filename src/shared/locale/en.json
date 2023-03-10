@@ -1,5 +1,37 @@
 {
   "addressBook": {
+    "addContact": {
+      "accountIdIncorrectError": "Incrorrect account address",
+      "accountIdLabel": "account Address",
+      "accountIdPlaceholder": "Enter or paste an address",
+      "accountIdRequiredError": "Account address is required",
+      "addContactButton": "Add contact",
+      "matrixIdError": "Incrorrect matrix id",
+      "matrixIdLabel": "matrix id (optional)",
+      "matrixIdPlaceholder": "Enter or paste Matrix ID, ie: @bob:matrix.org",
+      "nameLabel": "Name",
+      "namePlaceholder": "Enter a name",
+      "nameRequiredError": "Name is required",
+      "title": "Add contact",
+      "typeAddressAndNameButton": "Type a name and address",
+      "typeAddressButton": "Type the address",
+      "typeNameButton": "Type a name"
+    },
+    "addContactButton": "Add contact",
+    "contactList": {
+      "emptySearchDescription": "Try to search for another name",
+      "emptySearchLabel": "No contact with entered name were found",
+      "matrixIdColumnTitle": "Matrix ID",
+      "nameColumnTitle": "Name",
+      "noContactsButton": "Add your first contact",
+      "noContactsLabel": "Your address book is empty"
+    },
+    "editContact": {
+      "editWarning": "please note: by changing the address, multisig account will not be changed.",
+      "saveContactButton": "Save contact",
+      "title": "Edit contact"
+    },
+    "searchPlaceholder": "Enter name or address...",
     "title": "Address Book"
   },
   "assetBalance": {
@@ -287,7 +319,7 @@
       "yearlyEarningLabel": "Yearly"
     },
     "actions": {
-      "destinationLabel": "Reward destination",
+      "destinationLabel": "Rewards destination",
       "redeemLabel": "Redeem",
       "returnToStakeLabel": "Return to stake",
       "setValidatorsLabel": "Set validators",
@@ -303,7 +335,7 @@
       "aboutRewards": "About rewards",
       "amountPlaceholder": "Input amount",
       "availableBalancePlaceholder": "Available",
-      "confirmBondSubtitle": "Confirm",
+      "confirmBondSubtitle": "Confirmation",
       "continueButton": "Continue",
       "goToStakingButton": "Back to Staking",
       "incorrectAddressError": "Incorrect address",
@@ -332,10 +364,12 @@
       "account": "Account",
       "accounts": "Accounts",
       "accountsTitle": "Selected accounts",
+      "changeValidatorsTitle": "Change validators",
       "errorModalDiscardButton": "Discard",
       "errorModalEditButton": "Edit",
-      "errorModalSubtitle": "You can either edit or discard these transactions",
+      "errorModalSubtitle": "You can discard these transactions",
       "errorModalTitle": "Error submitting { number } transactions",
+      "hintNewValidators": "Your validators will change in the next era",
       "hintNoRewards": "During unstaking period tokens produce no rewards",
       "hintRedeem": "After unstaking period don’t forget to redeem your tokens",
       "hintRewards": "Tokens in stake produce rewards each era (6 hours)",
@@ -344,8 +378,10 @@
       "networkFeePerAccount": "Network fee / account",
       "queueButton": "Add to operation queue",
       "restakeRewards": "Restake rewards",
+      "rewardDestinationTitle": "Rewards destination",
       "rewardsDestination": "Rewards destination",
       "selectValidators": "Selected validators",
+      "setValidatorsTitle": "Set validators",
       "signButton": "Sign with Parity Signer",
       "submittingOperation": "Submitting operation",
       "totalAmount": "Total amount",
@@ -354,6 +390,10 @@
       "transferableRewards": "Transferable rewards",
       "yourValidators": "Your validators"
     },
+    "destination": {
+      "initDestinationSubtitle": "Rewards destination"
+    },
+    "loadingMessage": "Connecting to { chainName }",
     "nominators": {
       "electedTitle": "Elected",
       "nominated": "Nominated",
@@ -413,9 +453,6 @@
       "initStakeMoreSubtitle": "Stake more"
     },
     "title": "Staking",
-    "unbond": {
-      "subtitle": "Unbond"
-    },
     "unstake": {
       "amountPlaceholder": "Input amount",
       "confirmUnstakeSubtitle": "Confirmation",
@@ -450,9 +487,9 @@
       "validatorsTableHeader": "Validators"
     },
     "warning": {
-      "controller": "This operation works with <strong>Controller</strong> accounts only. Would you like to deselect <strong>Stash</strong> accounts to continue?",
+      "controller": "This operation works with <strong>Controller</strong> accounts only.<br />Would you like to deselect <strong>Stash</strong> accounts to continue?",
       "noButton": "No",
-      "stash": "This operation works with <strong>Stash</strong> accounts only. Would you like to deselect <strong>Controller</strong> accounts to continue?",
+      "stash": "This operation works with <strong>Stash</strong> accounts only.<br />Would you like to deselect <strong>Controller</strong> accounts to continue?",
       "yesButton": "Yes"
     }
   },
@@ -498,6 +535,7 @@
     "addByParitySignerButton": "Add wallet by Parity Signer",
     "addWatchOnlyButton": "Add Watch-Only wallet",
     "multishardWalletsLabel": "Multishard",
+    "multisigLabel": "Multisig",
     "paritySignerLabel": "Parity Signer",
     "searchPlaceholder": "Search for a wallet",
     "watchOnlyLabel": "Watch-only"

@@ -1,5 +1,5 @@
 import { ApiPromise } from '@polkadot/api';
-import { BN } from '@polkadot/util';
+import { BN_ZERO, BN } from '@polkadot/util';
 import cn from 'classnames';
 import { PropsWithChildren } from 'react';
 
@@ -17,66 +17,65 @@ import { useToggle } from '@renderer/shared/hooks';
 import AccountsModal from '../AccountsModal/AccountsModal';
 import ValidatorsModal from '../ValidatorsModal/ValidatorsModal';
 
-type Props = {
+type Destination = {
+  address?: AccountID;
+  type: RewardsDestination;
+};
+
+export interface InfoProps {
   api: ApiPromise;
+  title?: string;
   validators?: Validator[];
   accounts: AccountDS[];
-  stake: string;
-  destination?: {
-    address?: AccountID;
-    type: RewardsDestination;
-  };
+  amounts?: string[];
+  destination?: Destination;
   asset: Asset;
   explorers?: Explorer[];
   addressPrefix: number;
-  transactions: Transaction[];
-};
+  transaction: Transaction;
+}
 
 const TransactionInfo = ({
   api,
+  title,
   validators,
   accounts,
-  stake,
+  amounts = [],
   destination,
   asset,
   explorers,
   addressPrefix,
-  transactions,
+  transaction,
   children,
-}: PropsWithChildren<Props>) => {
+}: PropsWithChildren<InfoProps>) => {
   const { t } = useI18n();
   const [isAccountsOpen, toggleAccounts] = useToggle();
   const [isValidatorsOpen, toggleValidators] = useToggle();
 
-  const totalStake = new BN(stake).muln(accounts.length);
   const singleAccount = accounts.length === 1;
   const validatorsExist = validators && validators.length > 0;
+  const totalAmount = amounts.reduce((acc, amount) => acc.add(new BN(amount)), BN_ZERO).toString();
 
   return (
     <>
-      <div className="overflow-y-auto">
+      <div className="overflow-y-auto flex-1">
         <section className="w-[500px] p-5 mx-auto bg-shade-2 rounded-2lg">
           <Block className="flex flex-col gap-y-5">
-            <div className="flex flex-col items-center">
-              {singleAccount ? (
+            {title ? (
+              <h2 className="text-center text-neutral font-semibold text-xl">{title}</h2>
+            ) : (
+              <div className="flex flex-col items-center mt-6 mb-9">
+                {!singleAccount && (
+                  <h2 className="text-neutral font-semibold text-xl">{t('staking.confirmation.totalAmount')}</h2>
+                )}
                 <Balance
-                  className="mt-6 mb-9 text-4.5xl font-bold"
-                  value={stake}
+                  className="text-4.5xl font-bold"
+                  value={totalAmount}
                   precision={asset.precision}
                   symbol={asset.symbol}
                 />
-              ) : (
-                <>
-                  <h2 className="text-neutral font-semibold text-xl">{t('staking.confirmation.totalAmount')}</h2>
-                  <Balance
-                    className="mt-6 mb-9 text-4.5xl font-bold"
-                    value={totalStake.toString()}
-                    precision={asset.precision}
-                    symbol={asset.symbol}
-                  />
-                </>
-              )}
-            </div>
+              </div>
+            )}
 
             {singleAccount ? (
               <AddressOnPlate
@@ -84,7 +83,6 @@ const TransactionInfo = ({
                 address={accounts[0].accountId || ''}
                 signType={accounts[0].signingType}
                 name={accounts[0].name}
-                subName={'dcsadasd asdasd'}
                 addressPrefix={addressPrefix}
                 explorers={explorers}
               />
@@ -116,7 +114,7 @@ const TransactionInfo = ({
                   className="text-base font-semibold text-neutral"
                   api={api}
                   asset={asset}
-                  transaction={transactions[0]}
+                  transaction={transaction}
                 />
               </div>
               {!singleAccount && (
@@ -127,7 +125,7 @@ const TransactionInfo = ({
                     api={api}
                     repeat={accounts.length}
                     asset={asset}
-                    transaction={transactions[0]}
+                    transaction={transaction}
                   />
                 </div>
               )}
@@ -176,7 +174,7 @@ const TransactionInfo = ({
       <AccountsModal
         isOpen={isAccountsOpen}
         accounts={accounts}
-        amount={stake}
+        amounts={amounts}
         asset={asset}
         explorers={explorers}
         addressPrefix={addressPrefix}

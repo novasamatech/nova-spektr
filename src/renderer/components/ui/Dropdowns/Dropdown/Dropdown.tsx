@@ -36,7 +36,7 @@ const Dropdown = ({
   const activeOption = options.find((option) => option.id === activeId);
 
   return (
-    <Listbox by="id" value={activeOption} disabled={disabled} onChange={onChange}>
+    <Listbox by="id" value={activeOption || {}} disabled={disabled} onChange={onChange}>
       {({ open, disabled }) => (
         <div className={cn('relative', className)}>
           <Listbox.Button

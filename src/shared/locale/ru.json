@@ -1,5 +1,37 @@
 {
   "addressBook": {
+    "addContact": {
+      "accountIdIncorrectError": "Incrorrect account address",
+      "accountIdLabel": "адрес контакта",
+      "accountIdPlaceholder": "Enter or paste an address",
+      "accountIdRequiredError": "Account address is required",
+      "addContactButton": "Add contact",
+      "matrixIdError": "Incrorrect matrix id",
+      "matrixIdLabel": "matrix id (optional)",
+      "matrixIdPlaceholder": "Enter or paste Matrix ID, ie: @bob:matrix.org",
+      "nameLabel": "Name",
+      "namePlaceholder": "Enter a name",
+      "nameRequiredError": "Name is required",
+      "title": "Добавить контакт",
+      "typeAddressAndNameButton": "Type a name and address",
+      "typeAddressButton": "Type the address",
+      "typeNameButton": "Type a name"
+    },
+    "addContactButton": "Добавить контакт",
+    "contactList": {
+      "emptySearchDescription": "Try to search for another name",
+      "emptySearchLabel": "No contact with entered name were found",
+      "matrixIdColumnTitle": "Matrix ID",
+      "nameColumnTitle": "Name",
+      "noContactsButton": "Add your first contact",
+      "noContactsLabel": "Your address book is empty"
+    },
+    "editContact": {
+      "editWarning": "please note: by changing the address, multisig account will not be changed.",
+      "saveContactButton": "Save contact",
+      "title": "Edit contact"
+    },
+    "searchPlaceholder": "Введите имя или адрес...",
     "title": "Адресная книга"
   },
   "assetBalance": {
@@ -332,10 +364,12 @@
       "account": "Аккаунт",
       "accounts": "Аккаунты",
       "accountsTitle": "Выбранные аккаунты",
+      "changeValidatorsTitle": "Смена валидаторов",
       "errorModalDiscardButton": "Пропустить",
       "errorModalEditButton": "Редактировать",
-      "errorModalSubtitle": "Вы можете отредактировать или пропустить эти транзакции",
+      "errorModalSubtitle": "Вы можете пропустить эти транзакции",
       "errorModalTitle": "Ошибка при отправке { number } транзакций",
+      "hintNewValidators": "Изменения валидаторов вступят в силу со следующей эры",
       "hintNoRewards": "Во время разблокировки токены не генерируют награды",
       "hintRedeem": "После разблокировки не забудбте забрать токены",
       "hintRewards": "Токены в стейке генерируют награды каждую эру (6 часов)",
@@ -344,8 +378,10 @@
       "networkFeePerAccount": "Комиссия сети / аккаунт",
       "queueButton": "добавить в очередь",
       "restakeRewards": "Вложить награды",
+      "rewardDestinationTitle": "Выплата наград",
       "rewardsDestination": "Выплата наград",
       "selectValidators": "Выбранные валидаторы",
+      "setValidatorsTitle": "Выбор валидаторов",
       "signButton": "Подписать в Parity Signer",
       "submittingOperation": "Подтверждение операции",
       "totalAmount": "Общая сумма",
@@ -354,6 +390,10 @@
       "transferableRewards": "Вывести награды",
       "yourValidators": "Ваши валидаторы"
     },
+    "destination": {
+      "initDestinationSubtitle": "Выплата наград"
+    },
+    "loadingMessage": "Подключаемся к { chainName }",
     "nominators": {
       "electedTitle": "Выбранные",
       "nominated": "Вклад",
@@ -413,9 +453,6 @@
       "initStakeMoreSubtitle": "Застейкать ещё"
     },
     "title": "Стейкинг",
-    "unbond": {
-      "subtitle": "Отвязать токены"
-    },
     "unstake": {
       "amountPlaceholder": "Введите сумму",
       "confirmUnstakeSubtitle": "Подтверждение",
@@ -450,9 +487,9 @@
       "validatorsTableHeader": "Валидаторы"
     },
     "warning": {
-      "controller": "Данная операция работает только на <strong>Controller</strong> аккаунтах. Отключить все <strong>Stash</strong> аккаунты чтобы продолжить?",
+      "controller": "Данная операция работает только на <strong>Controller</strong> аккаунтах.<br />Отключить все <strong>Stash</strong> аккаунты чтобы продолжить?",
       "noButton": "Нет",
-      "stash": "Данная операция работает только на <strong>Stash</strong> аккаунтах. Отключить все <strong>Controller</strong> аккаунты чтобы продолжить?",
+      "stash": "Данная операция работает только на <strong>Stash</strong> аккаунтах.<br />Отключить все <strong>Controller</strong> аккаунты чтобы продолжить?",
       "yesButton": "Да"
     }
   },
@@ -498,6 +535,7 @@
     "addByParitySignerButton": "Добавить кошелёк из Parity Signer",
     "addWatchOnlyButton": "Добавить Watch-Only кошелёк",
     "multishardWalletsLabel": "Multishard",
+    "multisigLabel": "Multisig",
     "paritySignerLabel": "Parity Signer",
     "searchPlaceholder": "Поиск кошелька",
     "watchOnlyLabel": "Watch-only"

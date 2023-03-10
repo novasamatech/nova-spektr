@@ -36,7 +36,7 @@ const StepThreeSingle = ({ qrData, onNextStep }: Props) => {
   } = useForm<AccountForm>({
     mode: 'onChange',
     defaultValues: {
-      name: '',
+      name: qrData[0].name || '',
     },
   });
 

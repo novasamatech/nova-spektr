@@ -159,7 +159,7 @@ const Signing = () => {
     <div className="h-full flex flex-col gap-y-9">
       <h1 className="font-semibold text-2xl text-neutral mt-5 px-5">{t('signing.title')}</h1>
 
-      <div className="overflow-y-auto">
+      <div className="overflow-y-auto flex-1">
         <Plate as="section" className="w-[550px] flex flex-col items-center m-auto gap-2.5">
           {currentStep === Steps.SCANNING && (
             <div className="flex flex-col gap-2.5 w-full">

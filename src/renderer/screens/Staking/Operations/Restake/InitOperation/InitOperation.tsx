@@ -53,10 +53,10 @@ const getDropdownPayload = (
 ): DropdownOption<AccountID> => {
   const address = account.accountId || '';
   const publicKey = account.publicKey || '';
-  const balanceExists = balance && stake && asset && fee && amount;
+  const balanceExists = balance && stake && asset;
 
-  const balanceIsAvailable =
-    !balanceExists || (validateBalanceForFee(balance, fee) && validateBalance(stake, amount, asset));
+  const balanceIsIncorrect =
+    balanceExists && amount && fee && !(validateBalanceForFee(balance, fee) && validateBalance(stake, amount, asset));
 
   const element = (
     <div className="flex justify-between items-center gap-x-2.5">
@@ -66,11 +66,11 @@ const getDropdownPayload = (
       </div>
       {balanceExists && (
         <div className="flex items-center gap-x-1">
-          {!balanceIsAvailable && <Icon size={12} className="text-error" name="warnCutout" />}
+          {balanceIsIncorrect && <Icon size={12} className="text-error" name="warnCutout" />}
 
           <Balance
-            className={cn(!balanceIsAvailable && 'text-error')}
-            value={stake.active}
+            className={cn(balanceIsIncorrect && 'text-error')}
+            value={unlockingAmount(stake.unlocking)}
             precision={asset.precision}
             symbol={asset.symbol}
           />
@@ -90,7 +90,7 @@ type UnstakeForm = {
   amount: string;
 };
 
-export type UnstakeResult = {
+export type RestakeResult = {
   accounts: AccountDS[];
   amount: string;
 };
@@ -100,8 +100,8 @@ type Props = {
   chainId: ChainId;
   accountIds: string[];
   asset: Asset;
-  staking?: StakingMap;
-  onResult: (unstake: UnstakeResult) => void;
+  staking: StakingMap;
+  onResult: (unstake: RestakeResult) => void;
 };
 
 const InitOperation = ({ api, staking, chainId, accountIds, asset, onResult }: Props) => {
@@ -123,11 +123,11 @@ const InitOperation = ({ api, staking, chainId, accountIds, asset, onResult }: P
   const [activeBalances, setActiveBalances] = useState<BalanceDS[]>([]);
   const [balancesMap, setBalancesMap] = useState<Map<string, BalanceDS>>(new Map());
 
-  const availableUnstakeAccounts = dbAccounts.filter((account) => {
+  const totalAccounts = dbAccounts.filter((account) => {
     return account.id && accountIds.includes(account.id.toString());
   });
 
-  const publicKeys = availableUnstakeAccounts.reduce<PublicKey[]>((acc, account) => {
+  const publicKeys = totalAccounts.reduce<PublicKey[]>((acc, account) => {
     if (account.publicKey) {
       acc.push(account.publicKey);
     }
@@ -141,6 +141,7 @@ const InitOperation = ({ api, staking, chainId, accountIds, asset, onResult }: P
     handleSubmit,
     control,
     watch,
+    trigger,
     formState: { isValid },
   } = useForm<UnstakeForm>({
     mode: 'onChange',
@@ -149,18 +150,20 @@ const InitOperation = ({ api, staking, chainId, accountIds, asset, onResult }: P
 
   const amount = watch('amount');
 
-  // Set balances
+  // Set balance map
   useEffect(() => {
-    if (!activeUnstakeAccounts.length || !staking) {
-      setStakedRange(['0', '0']);
-      setTransferableRange(['0', '0']);
+    const newBalancesMap = new Map(balances.map((balance) => [balance.publicKey, balance]));
+    const newActiveBalances = activeUnstakeAccounts.map((a) => newBalancesMap.get(a.id as PublicKey)) as BalanceDS[];
 
-      return;
-    }
+    setBalancesMap(newBalancesMap);
+    setActiveBalances(newActiveBalances);
+  }, [activeUnstakeAccounts.length, balances]);
 
-    const staked = activeUnstakeAccounts.map((a) => staking?.[a.value]?.active || '0');
-    console.log(staked);
+  // Set staked range
+  useEffect(() => {
+    if (!Object.keys(staking).length) return;
 
+    const staked = activeUnstakeAccounts.map((a) => unlockingAmount(staking[a.value]?.unlocking));
     const minMaxBalances = staked.reduce<[string, string]>(
       (acc, balance) => {
         if (!balance) return acc;
@@ -174,9 +177,13 @@ const InitOperation = ({ api, staking, chainId, accountIds, asset, onResult }: P
     );
 
     setStakedRange(minMaxBalances);
+  }, [activeUnstakeAccounts.length, staking]);
+
+  // Set transferable range
+  useEffect(() => {
+    if (!activeUnstakeAccounts.length) return;
 
     const transferable = activeUnstakeAccounts.map((a) => transferableAmount(balancesMap.get(a.id as PublicKey)));
-
     const minMaxTransferable = transferable.reduce<[string, string]>(
       (acc, balance) => {
         if (!balance) return acc;
@@ -190,27 +197,23 @@ const InitOperation = ({ api, staking, chainId, accountIds, asset, onResult }: P
     );
 
     setTransferableRange(minMaxTransferable);
-  }, [balances, activeUnstakeAccounts.length, staking]);
+  }, [activeUnstakeAccounts.length, balancesMap]);
 
   useEffect(() => {
-    const newBalancesMap = new Map(balances.map((balance) => [balance.publicKey, balance]));
-    const newActiveBalances = activeUnstakeAccounts.map((a) => newBalancesMap.get(a.id as PublicKey)) as BalanceDS[];
-
-    setBalancesMap(newBalancesMap);
-    setActiveBalances(newActiveBalances);
-  }, [activeUnstakeAccounts.length, balances]);
+    amount && trigger('amount');
+  }, [activeBalances]);
 
   // Init accounts
   useEffect(() => {
-    const formattedAccounts = availableUnstakeAccounts.map((a) => {
-      const matchBalance = balances.find((b) => b.publicKey === a.publicKey);
-      const stake = staking?.[a.accountId || ''];
+    const formattedAccounts = totalAccounts.map((account) => {
+      const matchBalance = balancesMap.get(account.publicKey || '0x');
+      const stake = staking[account.accountId || ''];
 
-      return getDropdownPayload(a, matchBalance, stake, asset, fee, amount);
+      return getDropdownPayload(account, matchBalance, stake, asset, fee, amount);
     });
 
     setUnstakeAccounts(formattedAccounts);
-  }, [accountIds.length, amount, fee, balances.length]);
+  }, [totalAccounts.length, amount, fee, balancesMap]);
 
   // Init active unstake accounts
   useEffect(() => {
@@ -229,9 +232,7 @@ const InitOperation = ({ api, staking, chainId, accountIds, asset, onResult }: P
         chainId,
         type: TransactionType.RESTAKE,
         address: value,
-        args: {
-          value: formatAmount(amount, asset.precision),
-        },
+        args: { value: formatAmount(amount, asset.precision) },
       };
     });
 
@@ -247,7 +248,7 @@ const InitOperation = ({ api, staking, chainId, accountIds, asset, onResult }: P
   const submitUnstake: SubmitHandler<UnstakeForm> = ({ amount }) => {
     const selectedAddresses = activeUnstakeAccounts.map((stake) => stake.id);
 
-    const accounts = availableUnstakeAccounts.filter(
+    const accounts = totalAccounts.filter(
       (account) => account.publicKey && selectedAddresses.includes(account.publicKey),
     );
 
@@ -294,7 +295,7 @@ const InitOperation = ({ api, staking, chainId, accountIds, asset, onResult }: P
             validate: {
               notZero: (v) => Number(v) > 0,
               insufficientBalance: (amount) =>
-                activeUnstakeAccounts.every((a) => validateBalance(staking?.[a.value] || '0', amount, asset)),
+                activeUnstakeAccounts.every((a) => validateBalance(staking[a.value] || '0', amount, asset)),
               insufficientBalanceForFee: () => activeBalances.every((b) => validateBalanceForFee(b, fee)),
             },
           }}

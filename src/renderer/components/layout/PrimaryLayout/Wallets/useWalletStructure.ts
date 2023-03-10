@@ -8,10 +8,7 @@ import { ChainWithAccounts, RootAccount, WalletStructure } from './types';
 import { ChainId } from '@renderer/domain/shared-kernel';
 import { useChains } from '@renderer/services/network/chainsService';
 import { Chain } from '@renderer/domain/chain';
-
-const searchString = (string: string, query: string) => {
-  return string.toLowerCase().includes(query.toLowerCase());
-};
+import { includes } from '@renderer/shared/utils/strings';
 
 export const useWalletsStructure = (accountQuery: Partial<AccountDS>, query: string): WalletStructure[] => {
   const { getLiveAccounts } = useAccount();
@@ -31,7 +28,9 @@ export const useWalletsStructure = (accountQuery: Partial<AccountDS>, query: str
   const paritySignerAccounts = getLiveAccounts(accountQuery);
 
   const getChainData = (chainId: ChainId, accounts: AccountDS[], rootAccount: AccountDS): ChainWithAccounts => {
-    const chainAccounts = accounts.filter((a) => a.rootId === rootAccount.id && searchString(a.name, query));
+    const chainAccounts = accounts.filter(
+      (a) => a.rootId === rootAccount.id && (includes(a.name, query) || includes(a.accountId, query)),
+    );
 
     return {
       ...chainsObject[chainId as ChainId],
@@ -56,7 +55,7 @@ export const useWalletsStructure = (accountQuery: Partial<AccountDS>, query: str
           chains,
         };
       })
-      .filter((a) => searchString(a.name, query) || a.chains.length > 0);
+      .filter((a) => includes(a.name, query) || a.chains.length > 0);
 
     return rootAccounts;
   };
@@ -73,7 +72,7 @@ export const useWalletsStructure = (accountQuery: Partial<AccountDS>, query: str
         rootAccounts,
       };
     })
-    .filter((a) => searchString(a.name, query) || a.rootAccounts.length > 0);
+    .filter((a) => includes(a.name, query) || a.rootAccounts.length > 0);
 
   return walletStructure;
 };

@@ -3,7 +3,7 @@ import { act, render, screen } from '@testing-library/react';
 
 import { ValidatorsTable } from '@renderer/components/common';
 import { Asset } from '@renderer/domain/asset';
-import Validators from './Validators';
+import { Validators } from './Validators';
 
 jest.mock('@renderer/components/common');
 
@@ -26,7 +26,7 @@ jest.mock('@renderer/services/staking/eraService', () => ({
   }),
 }));
 
-describe('screens/Bond/Validators', () => {
+describe('screens/Staking/components/Validators', () => {
   beforeEach(() => {
     (ValidatorsTable as jest.Mock).mockImplementation(() => 'validatorsTable');
   });

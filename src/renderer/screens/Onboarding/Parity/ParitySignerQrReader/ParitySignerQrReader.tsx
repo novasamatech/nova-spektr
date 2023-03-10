@@ -187,6 +187,7 @@ const ParitySignerQrReader = ({ size = 300, className, onResult }: Props) => {
           </div>
           <div className="mb-5 w-[242px]">
             <Dropdown
+              variant="up"
               placeholder={t('onboarding.paritySigner.selectCameraLabel')}
               activeId={activeCamera?.id}
               options={availableCameras}

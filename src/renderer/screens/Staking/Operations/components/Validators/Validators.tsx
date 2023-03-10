@@ -11,6 +11,7 @@ import { AccountID, ChainId } from '@renderer/domain/shared-kernel';
 import { ValidatorMap } from '@renderer/services/staking/common/types';
 import { useEra } from '@renderer/services/staking/eraService';
 import { useValidators } from '@renderer/services/staking/validatorsService';
+import { includes } from '@renderer/shared/utils/strings';
 
 type Props = {
   api: ApiPromise;
@@ -21,7 +22,7 @@ type Props = {
   onResult: (validators: ValidatorMap) => void;
 };
 
-const Validators = ({ api, chainId, asset, explorers, addressPrefix, onResult }: Props) => {
+export const Validators = ({ api, chainId, asset, explorers, addressPrefix, onResult }: Props) => {
   const { t } = useI18n();
   const { getMaxValidators, getValidators } = useValidators();
   const { subscribeActiveEra } = useEra();
@@ -55,9 +56,9 @@ const Validators = ({ api, chainId, asset, explorers, addressPrefix, onResult }:
   }, [era]);
 
   const validatorList = Object.values(validators).filter((validator) => {
-    const addressMatch = validator.address?.toLowerCase().includes(query.toLowerCase());
-    const identityMatch = validator.identity?.subName.toLowerCase().includes(query.toLowerCase());
-    const subIdentityMatch = validator.identity?.parent.name.toLowerCase().includes(query.toLowerCase());
+    const addressMatch = includes(validator.address, query);
+    const identityMatch = includes(validator.identity?.subName, query);
+    const subIdentityMatch = includes(validator.identity?.parent.name, query);
 
     return addressMatch || identityMatch || subIdentityMatch;
   });
@@ -131,5 +132,3 @@ const Validators = ({ api, chainId, asset, explorers, addressPrefix, onResult }:
     </div>
   );
 };
-
-export default Validators;
