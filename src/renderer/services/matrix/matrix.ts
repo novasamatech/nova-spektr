@@ -207,14 +207,16 @@ export class Matrix implements ISecureMessenger {
 
     try {
       const mx = this.matrixClient;
-      const defaultSSKey = mx.getAccountData('m.secret_storage.default_key')?.getContent().key;
-      const sSKeyInfo = mx.getAccountData(`m.secret_storage.key.${defaultSSKey}`)?.getContent<ISecretStorageKeyInfo>();
-      if (!sSKeyInfo) return false;
+      const defaultStorageKey = mx.getAccountData('m.secret_storage.default_key')?.getContent().key;
+      const storageKeyInfo = mx
+        .getAccountData(`m.secret_storage.key.${defaultStorageKey}`)
+        ?.getContent<ISecretStorageKeyInfo>();
+      if (!storageKeyInfo) return false;
 
       const privateKey = mx.keyBackupKeyFromRecoveryKey(securityKey);
-      const isCorrect = await mx.checkSecretStorageKey(privateKey, sSKeyInfo);
+      const isCorrect = await mx.checkSecretStorageKey(privateKey, storageKeyInfo);
       if (isCorrect) {
-        this.secretStorage.storePrivateKey(defaultSSKey, privateKey);
+        this.secretStorage.storePrivateKey(defaultStorageKey, privateKey);
         await mx.checkOwnCrossSigningTrust();
       }
 
@@ -269,15 +271,17 @@ export class Matrix implements ISecureMessenger {
     try {
       const mx = this.matrixClient;
 
-      const defaultSSKey = mx.getAccountData('m.secret_storage.default_key')?.getContent().key;
-      const sSKeyInfo = mx.getAccountData(`m.secret_storage.key.${defaultSSKey}`)?.getContent<ISecretStorageKeyInfo>();
-      if (!sSKeyInfo) return false;
+      const defaultStorageKey = mx.getAccountData('m.secret_storage.default_key')?.getContent().key;
+      const storageKeyInfo = mx
+        .getAccountData(`m.secret_storage.key.${defaultStorageKey}`)
+        ?.getContent<ISecretStorageKeyInfo>();
+      if (!storageKeyInfo) return false;
 
-      const { salt, iterations } = sSKeyInfo.passphrase || {};
+      const { salt, iterations } = storageKeyInfo.passphrase || {};
       const privateKey = await deriveKey(securityPhrase, salt, iterations);
-      const isCorrect = await mx.checkSecretStorageKey(privateKey, sSKeyInfo);
+      const isCorrect = await mx.checkSecretStorageKey(privateKey, storageKeyInfo);
       if (isCorrect) {
-        this.secretStorage.storePrivateKey(defaultSSKey, privateKey);
+        this.secretStorage.storePrivateKey(defaultStorageKey, privateKey);
         await mx.checkOwnCrossSigningTrust();
       }
 

@@ -3,6 +3,7 @@ import { Trans } from 'react-i18next';
 import { Icon, InfoLink } from '@renderer/components/ui';
 import { useI18n } from '@renderer/context/I18nContext';
 
+// TODO: use real links in future
 const TERMS_AND_CONDITIONS = 'https://link_1.com';
 const PRIVACY_POLICY = 'https://link_2.com';
 

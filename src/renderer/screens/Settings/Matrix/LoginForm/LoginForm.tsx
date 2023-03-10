@@ -36,9 +36,9 @@ const LoginForm = () => {
 
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [inProgress, setInProgress] = useState(false);
-  const [loginFailed, setLoginFailed] = useState(false);
-  const [loginFlow, setLoginFlow] = useState(true);
-  const [homeserverFailed, setHomeserverFailed] = useState(false);
+  const [credentialsFlow, setCredentialsFlow] = useState(true);
+  const [invalidHomeserver, setInvalidHomeserver] = useState(false);
+  const [invalidLogin, setInvalidLogin] = useState(false);
 
   const {
     handleSubmit,
@@ -58,50 +58,66 @@ const LoginForm = () => {
     return MATRIX_USERNAME_REGEX.test(value);
   };
 
-  const changeInputValue = (onChange: (value: string) => void) => (event: ChangeEvent<HTMLInputElement>) => {
-    if (loginFailed) {
-      setLoginFailed(false);
-      clearErrors();
-    }
-    onChange(event.target.value);
+  const changeInputValue = (onChange: (value: string) => void) => {
+    return (event: ChangeEvent<HTMLInputElement>) => {
+      onChange(event.target.value);
+
+      if (invalidLogin) {
+        setInvalidLogin(false);
+        clearErrors();
+      }
+    };
   };
 
-  const changeHomeserver = (onChange: (value: string) => void) => async (option: DropdownResult<string>) => {
-    setHomeserverFailed(false);
-    setInProgress(true);
-
-    try {
-      await matrix.setHomeserver(option.value);
-      const flows = await matrix.loginFlows();
-      const loginIsAvailable = flows.includes('password');
-
-      if (!loginIsAvailable) {
-        resetField('username');
-        resetField('password');
-      }
-      clearErrors();
-      setLoginFailed(false);
-      setLoginFlow(loginIsAvailable);
+  const changeHomeserver = (onChange: (server: string) => void) => {
+    return async (option: DropdownResult<string>) => {
       onChange(option.value);
-    } catch (error) {
-      console.warn(error);
-      setHomeserverFailed(true);
-    }
 
-    setInProgress(false);
+      setInProgress(true);
+      try {
+        await updateHomeserver(option.value);
+        await checkLoginFlow();
+      } catch (error) {
+        console.warn(error);
+      }
+      setInProgress(false);
+    };
+  };
+
+  const updateHomeserver = async (server: string) => {
+    setInvalidHomeserver(false);
+    try {
+      await matrix.setHomeserver(server);
+    } catch (error) {
+      setInvalidHomeserver(true);
+      throw error;
+    }
+  };
+
+  const checkLoginFlow = async () => {
+    const flows = await matrix.loginFlows();
+    const loginIsAvailable = flows.includes('password');
+
+    if (!loginIsAvailable) {
+      resetField('username');
+      resetField('password');
+    }
+    clearErrors();
+    setInvalidLogin(false);
+    setCredentialsFlow(loginIsAvailable);
   };
 
   const submitMatrixLogin: SubmitHandler<MatrixForm> = async ({ username, password }) => {
     if (inProgress) return;
 
     setInProgress(true);
-    setLoginFailed(false);
+    setInvalidLogin(false);
     try {
       await matrix.loginWithCreds(username, password);
       setIsLoggedIn(true);
     } catch (error) {
       console.warn(error);
-      setLoginFailed(true);
+      setInvalidLogin(true);
     }
     setInProgress(false);
   };
@@ -124,19 +140,19 @@ const LoginForm = () => {
               <Combobox
                 label={t('settings.matrix.homeserverLabel')}
                 placeholder={t('settings.matrix.homeserverPlaceholder')}
-                invalid={homeserverFailed}
+                invalid={invalidHomeserver}
                 disabled={!submitState || inProgress}
                 options={HOME_SERVERS}
                 onChange={changeHomeserver(onChange)}
               />
-              <InputHint active={homeserverFailed} variant="error">
+              <InputHint active={invalidHomeserver} variant="error">
                 {t('settings.matrix.badServerError')}
               </InputHint>
             </>
           )}
         />
 
-        {loginFlow ? (
+        {credentialsFlow ? (
           <>
             <Controller
               name="username"
@@ -149,7 +165,7 @@ const LoginForm = () => {
                     label={t('settings.matrix.usernameLabel')}
                     placeholder={t('settings.matrix.usernamePlaceholder')}
                     disabled={!submitState}
-                    invalid={loginFailed || Boolean(errors.username)}
+                    invalid={invalidLogin || Boolean(errors.username)}
                     value={value}
                     onChange={changeInputValue(onChange)}
                   />
@@ -174,11 +190,11 @@ const LoginForm = () => {
                     label={t('settings.matrix.passwordLabel')}
                     placeholder={t('settings.matrix.passwordPlaceholder')}
                     disabled={!submitState}
-                    invalid={loginFailed || Boolean(errors.password)}
+                    invalid={invalidLogin || Boolean(errors.password)}
                     value={value}
                     onChange={changeInputValue(onChange)}
                   />
-                  <InputHint active={loginFailed} variant="error">
+                  <InputHint active={invalidLogin} variant="error">
                     {t('settings.matrix.badCredentialsError')}
                   </InputHint>
                   <InputHint active={error?.type === 'required'} variant="error">
@@ -199,7 +215,7 @@ const LoginForm = () => {
                   weight="lg"
                   variant="fill"
                   pallet="primary"
-                  disabled={!isValid || homeserverFailed}
+                  disabled={!isValid || invalidHomeserver}
                 >
                   {t('settings.matrix.signInButton')}
                 </Button>
