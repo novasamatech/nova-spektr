@@ -7,7 +7,7 @@ import { useNetworkContext } from '@renderer/context/NetworkContext';
 import { useChains } from '@renderer/services/network/chainsService';
 import { ConnectionType } from '@renderer/domain/connection';
 import { useI18n } from '@renderer/context/I18nContext';
-import { Button, Icon } from '@renderer/components/ui';
+import { Button, Plate, InfoLink } from '@renderer/components/ui';
 import { useTransaction } from '@renderer/services/transaction/transactionService';
 import { Transaction, TransactionType } from '@renderer/domain/transaction';
 import { getMetadataPortalUrl, TROUBLESHOOTING_URL } from './common/consts';
@@ -160,7 +160,7 @@ const Signing = () => {
       <h1 className="font-semibold text-2xl text-neutral mt-5 px-5">{t('signing.title')}</h1>
 
       <div className="overflow-y-auto flex-1">
-        <section className="w-[550px] rounded-2xl bg-shade-2 p-5 flex flex-col items-center m-auto gap-2.5">
+        <Plate as="section" className="w-[550px] flex flex-col items-center m-auto gap-2.5">
           {currentStep === Steps.SCANNING && (
             <div className="flex flex-col gap-2.5 w-full">
               <div className="bg-white p-5 shadow-surface rounded-2xl flex flex-col items-center gap-5 w-full">
@@ -189,18 +189,11 @@ const Signing = () => {
               </div>
 
               <div className="flex flex-col gap-y-1 items-center text-xs font-semibold text-primary">
-                <a className="flex items-center" href={TROUBLESHOOTING_URL} rel="noopener noreferrer" target="_blank">
-                  <Icon className="mr-1" name="globe" size={18} /> {t('signing.troubleshootingLink')}
-                </a>
+                <InfoLink url={TROUBLESHOOTING_URL}>{t('signing.troubleshootingLink')}</InfoLink>
                 {currentConnection && (
-                  <a
-                    className="flex items-center"
-                    href={getMetadataPortalUrl(currentConnection.chainId)}
-                    rel="noopener noreferrer"
-                    target="_blank"
-                  >
-                    <Icon className="mr-1" name="globe" size={18} /> {t('signing.metadataPortalLink')}
-                  </a>
+                  <InfoLink url={getMetadataPortalUrl(currentConnection.chainId)}>
+                    {t('signing.metadataPortalLink')}
+                  </InfoLink>
                 )}
               </div>
 
@@ -246,7 +239,7 @@ const Signing = () => {
           {currentStep === Steps.EXECUTING && (
             <Progress progress={progress + failedTxs.length} max={unsignedTransactions.length} />
           )}
-        </section>
+        </Plate>
       </div>
     </div>
   );

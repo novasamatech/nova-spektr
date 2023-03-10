@@ -5,7 +5,7 @@ import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 
 import { QrTxGenerator } from '@renderer/components/common';
-import { Address, Block, Button, ButtonBack, Dropdown, Icon } from '@renderer/components/ui';
+import { Address, Block, Button, ButtonBack, Dropdown, Icon, InfoLink, Plate } from '@renderer/components/ui';
 import { DropdownOption, DropdownResult } from '@renderer/components/ui/Dropdowns/common/types';
 import { useI18n } from '@renderer/context/I18nContext';
 import { useNetworkContext } from '@renderer/context/NetworkContext';
@@ -252,10 +252,11 @@ const Transfer = () => {
   return (
     <div className="h-full flex flex-col gap-y-9">
       <div className="flex items-center gap-x-2.5 mt-5 px-5">
-        <ButtonBack onCustomReturn={handleBackButton} />
-        <p className="font-semibold text-2xl text-neutral-variant">{t('balances.title')}</p>
-        <p className="font-semibold text-2xl text-neutral">/</p>
-        <h1 className="font-semibold text-2xl text-neutral">{t('transfer.title')}</h1>
+        <ButtonBack onCustomReturn={handleBackButton}>
+          <p className="font-semibold text-2xl text-neutral-variant">{t('balances.title')}</p>
+          <p className="font-semibold text-2xl text-neutral">/</p>
+          <h1 className="font-semibold text-2xl text-neutral">{t('transfer.title')}</h1>
+        </ButtonBack>
       </div>
 
       <div className="overflow-y-auto flex-1">
@@ -296,7 +297,7 @@ const Transfer = () => {
           </>
         )}
         {[Steps.SCANNING, Steps.SIGNING].includes(currentStep) && currentConnection && (
-          <div className="w-[500px] rounded-2xl bg-shade-2 p-5 flex flex-col items-center m-auto gap-2.5 overflow-auto">
+          <Plate as="section" className="w-[500px] flex flex-col items-center m-auto gap-2.5 overflow-auto">
             {currentAccount && currentConnection && (
               <SelectedAddress account={currentAccount} connection={currentConnection} />
             )}
@@ -332,17 +333,10 @@ const Transfer = () => {
                   )}
                 </Block>
                 <div className="flex flex-col items-center gap-y-1 text-xs font-semibold text-primary mt-2.5 mb-5">
-                  <a className="flex items-center" href={TROUBLESHOOTING_URL} rel="noopener noreferrer" target="_blank">
-                    <Icon className="mr-1" name="globe" size={18} /> {t('signing.troubleshootingLink')}
-                  </a>
-                  <a
-                    className="flex items-center"
-                    href={getMetadataPortalUrl(currentConnection.chainId)}
-                    rel="noopener noreferrer"
-                    target="_blank"
-                  >
-                    <Icon className="mr-1" name="globe" size={18} /> {t('signing.metadataPortalLink')}
-                  </a>
+                  <InfoLink url={TROUBLESHOOTING_URL}>{t('signing.troubleshootingLink')}</InfoLink>
+                  <InfoLink url={getMetadataPortalUrl(currentConnection.chainId)}>
+                    {t('signing.metadataPortalLink')}
+                  </InfoLink>
                 </div>
                 {txPayload && countdown > 0 ? (
                   <Button
@@ -400,7 +394,7 @@ const Transfer = () => {
                 )}
               </>
             )}
-          </div>
+          </Plate>
         )}
         {currentStep === Steps.EXECUTING && readyToConfirm && (
           <>

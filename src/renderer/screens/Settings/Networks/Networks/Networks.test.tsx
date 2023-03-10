@@ -26,7 +26,7 @@ jest.mock('@renderer/context/NetworkContext', () => ({
   })),
 }));
 
-describe('screen/Overview/Networks', () => {
+describe('screen/Settings/Networks', () => {
   test('should render component', () => {
     render(<Networks />, { wrapper: MemoryRouter });
 

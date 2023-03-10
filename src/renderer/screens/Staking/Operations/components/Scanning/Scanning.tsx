@@ -12,7 +12,7 @@ import {
 } from '@renderer/components/common/QrCode/QrGenerator/common/utils';
 import QrMultiframeGenerator from '@renderer/components/common/QrCode/QrGenerator/QrMultiframeTxGenerator';
 import { TRANSACTION_BULK } from '@renderer/components/common/QrCode/QrReader/common/constants';
-import { Block, Button, Icon } from '@renderer/components/ui';
+import { Block, Button, InfoLink, Plate } from '@renderer/components/ui';
 import { useI18n } from '@renderer/context/I18nContext';
 import { ChainId } from '@renderer/domain/shared-kernel';
 import { Transaction } from '@renderer/domain/transaction';
@@ -85,13 +85,13 @@ export const Scanning = ({
     setupTransactions();
   }, []);
 
-  useEffect(() => onResetCountdown(), [bulkTransactions]);
+  useEffect(onResetCountdown, [bulkTransactions]);
 
   const bulkTxExist = bulkTransactions && bulkTransactions.length > 0;
 
   return (
     <div className="overflow-y-auto flex-1">
-      <section className="flex flex-col items-center mx-auto w-[500px] rounded-2lg bg-shade-2 p-5">
+      <Plate as="section" className="flex flex-col items-center mx-auto w-[500px]">
         <Block className="flex flex-col items-center gap-y-2.5">
           <div className="text-neutral-variant text-base font-semibold">{t('signing.scanQrTitle')}</div>
           {!bulkTransactions && <div className="w-[220px] h-[220px] rounded-2lg bg-shade-20 animate-pulse" />}
@@ -116,17 +116,8 @@ export const Scanning = ({
           )}
         </Block>
         <div className="flex flex-col items-center gap-y-1 text-xs font-semibold text-primary mt-2.5 mb-5">
-          <a className="flex items-center" href={TROUBLESHOOTING_URL} rel="noopener noreferrer" target="_blank">
-            <Icon className="mr-1" name="globe" size={18} /> {t('signing.troubleshootingLink')}
-          </a>
-          <a
-            className="flex items-center"
-            href={getMetadataPortalUrl(chainId)}
-            rel="noopener noreferrer"
-            target="_blank"
-          >
-            <Icon className="mr-1" name="globe" size={18} /> {t('signing.metadataPortalLink')}
-          </a>
+          <InfoLink url={TROUBLESHOOTING_URL}>{t('signing.troubleshootingLink')}</InfoLink>
+          <InfoLink url={getMetadataPortalUrl(chainId)}>{t('signing.metadataPortalLink')}</InfoLink>
         </div>
 
         {bulkTxExist && countdown > 0 ? (
@@ -144,7 +135,7 @@ export const Scanning = ({
             {t('signing.generateNewQrButton')}
           </Button>
         )}
-      </section>
+      </Plate>
     </div>
   );
 };

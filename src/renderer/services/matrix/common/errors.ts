@@ -57,6 +57,10 @@ const MATRIX_ERRORS: Record<MatrixError, ErrorObject> = {
     code: MatrixError.LOGIN_CREDS,
     message: 'Login with credentials failed',
   },
+  [MatrixError.LOGIN_FLOWS]: {
+    code: MatrixError.LOGIN_FLOWS,
+    message: 'Failed getting available login methods',
+  },
   [MatrixError.LOGIN_CACHE]: {
     code: MatrixError.LOGIN_CACHE,
     message: 'Login from cache failed',

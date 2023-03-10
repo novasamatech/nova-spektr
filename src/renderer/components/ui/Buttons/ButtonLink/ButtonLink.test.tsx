@@ -12,7 +12,7 @@ describe('ui/Buttons/ButtonLink', () => {
   });
 
   test('should navigate on click', () => {
-    window.history.pushState({}, 'Init page', '/init_page');
+    window.history.pushState({}, '', '/init_page');
 
     render(
       <BrowserRouter>

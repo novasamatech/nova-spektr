@@ -2,7 +2,7 @@ import cn from 'classnames';
 import { InputHTMLAttributes, ReactNode, forwardRef } from 'react';
 
 export interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
-  weight?: 'md' | 'lg';
+  // weight?: 'md' | 'lg';
   label?: ReactNode;
   invalid?: boolean;
   wrapperClass?: string;
@@ -16,7 +16,7 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
     {
       id,
       type = 'text',
-      weight = 'lg',
+      // weight = 'lg',
       label = '',
       required,
       placeholder,
@@ -45,11 +45,11 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
     >
       {prefixElement}
       {label && (
-        <div className="absolute top-2.5 font-bold text-neutral-variant uppercase text-xs w-full pr-5">{label}</div>
+        <div className="absolute top-2.5 font-bold text-neutral-variant uppercase text-2xs w-full pr-5">{label}</div>
       )}
       <input
         className={cn(
-          'rounded-sm leading-5 bg-transparent flex-1 focus:outline-none focus:text-primary',
+          'rounded-sm leading-5 bg-transparent flex-1 placeholder-shade-30 focus:outline-none focus:text-primary',
           disabledStyle ? 'text-shade-40' : value && !invalid && 'text-neutral',
           invalid && 'text-error',
           label && 'py-1 my-4',

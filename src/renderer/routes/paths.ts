@@ -1,6 +1,4 @@
 const Paths = {
-  LOGIN: '/login',
-
   // Onboarding
   ONBOARDING: '/onboarding',
   WATCH_ONLY: '/onboarding/watch-only',
@@ -10,7 +8,7 @@ const Paths = {
   // Settings
   SETTINGS: '/settings',
   NETWORK: '/settings/network',
-  CREDENTIALS: '/settings/credentials',
+  MATRIX: '/settings/matrix',
 
   // Staking
   STAKING: '/staking',

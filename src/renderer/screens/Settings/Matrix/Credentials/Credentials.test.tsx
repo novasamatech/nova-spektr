@@ -1,5 +1,4 @@
 import { render, screen } from '@testing-library/react';
-import { MemoryRouter } from 'react-router-dom';
 
 import Credentials from './Credentials';
 
@@ -9,11 +8,11 @@ jest.mock('@renderer/context/I18nContext', () => ({
   }),
 }));
 
-describe('screen/Overview/Credentials', () => {
+describe('screens/Settings/Matrix/Credentials', () => {
   test('should render component', () => {
-    render(<Credentials />, { wrapper: MemoryRouter });
+    render(<Credentials />);
 
-    const text = screen.getByText('matrixCredentials.subTitle');
-    expect(text).toBeInTheDocument();
+    const title = screen.getByText('settings.matrix.formTitle');
+    expect(title).toBeInTheDocument();
   });
 });
