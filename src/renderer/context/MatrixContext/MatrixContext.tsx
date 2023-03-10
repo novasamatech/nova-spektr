@@ -1,47 +1,28 @@
-import { createContext, PropsWithChildren, useContext, useEffect, useRef, useState } from 'react';
+import { PropsWithChildren, createContext, useContext, useEffect, useRef, useState } from 'react';
 
-import Matrix, { ErrorObject, InvitePayload, ISecureMessenger, MSTPayload } from '@renderer/services/matrix';
+import Matrix, { InvitePayload, ISecureMessenger, MSTPayload } from '@renderer/services/matrix';
 
 type MatrixContextProps = {
   matrix: ISecureMessenger;
-  notifications: Notification[];
-  setIsLoggedIn: (flag: boolean) => void;
+  isLoggedIn: boolean;
 };
 
 const MatrixContext = createContext<MatrixContextProps>({} as MatrixContextProps);
 
-type Props = {
-  onAutoLoginFail: (errorMsg: string) => void;
-};
-
-export const MatrixProvider = ({ onAutoLoginFail, children }: PropsWithChildren<Props>) => {
+export const MatrixProvider = ({ children }: PropsWithChildren) => {
   const { current: matrix } = useRef<ISecureMessenger>(new Matrix());
 
   const [isLoggedIn, setIsLoggedIn] = useState(false);
 
-  useEffect(() => {
-    const initMatrix = async () => {
-      try {
-        await matrix.init();
-        await matrix.loginFromCache();
-        setIsLoggedIn(true);
-      } catch (error) {
-        onAutoLoginFail((error as ErrorObject).message);
-      }
-    };
-
-    initMatrix();
-
-    return () => {
-      matrix.stopClient();
-    };
-  }, []);
-
   const onSyncProgress = () => {
+    if (!isLoggedIn) {
+      setIsLoggedIn(true);
+    }
+
     console.log('💛 ===> onSyncProgress');
   };
 
-  const onSyncEnd = async () => {
+  const onSyncEnd = () => {
     console.log('💛 ===> onSyncEnd');
   };
 
@@ -49,29 +30,37 @@ export const MatrixProvider = ({ onAutoLoginFail, children }: PropsWithChildren<
     console.log('💛 ===> onMessage - ', value);
   };
 
-  const onInvite = async ({ eventId, ...rest }: InvitePayload) => {
+  const onInvite = ({ eventId, ...rest }: InvitePayload) => {
     console.log('💛 ===> onMessage - ', eventId, rest);
   };
 
-  const onMstEvent = async (eventData: MSTPayload) => {
+  const onMstEvent = (eventData: MSTPayload) => {
     console.log('💛 ===> onMessage - ', eventData);
   };
 
-  useEffect(() => {
-    if (!isLoggedIn) return;
+  const onOnLogout = () => {
+    console.log('🛑 ===> onOnLogout');
+    setIsLoggedIn(false);
+  };
 
+  useEffect(() => {
     matrix.setupSubscribers({
       onSyncProgress,
       onSyncEnd,
       onMessage,
       onInvite,
       onMstEvent,
+      onOnLogout,
     });
-  }, [isLoggedIn]);
 
-  return (
-    <MatrixContext.Provider value={{ matrix, setIsLoggedIn, notifications: [] }}>{children}</MatrixContext.Provider>
-  );
+    matrix.loginFromCache().catch(console.warn);
+
+    return () => {
+      matrix.stopClient();
+    };
+  }, []);
+
+  return <MatrixContext.Provider value={{ matrix, isLoggedIn }}>{children}</MatrixContext.Provider>;
 };
 
 export const useMatrix = () => useContext<MatrixContextProps>(MatrixContext);

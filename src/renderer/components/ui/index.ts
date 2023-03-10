@@ -5,6 +5,7 @@ import Icon from './Icon/Icon';
 import Identicon from './Identicon/Identicon';
 import Input from './Inputs/Input/Input';
 import Block from './Block/Block';
+import Plate from './Plate/Plate';
 import AmountInput from './Inputs/AmountInput/AmountInput';
 import InputHint from './InputHint/InputHint';
 import Button from './Buttons/Button/Button';
@@ -26,6 +27,7 @@ import Table from './Table/Table';
 import Shimmering from './Shimmering/Shimmering';
 import Combobox from './Dropdowns/Combobox/Combobox';
 import Duration from './Duration/Duration';
+import InfoLink from './InfoLink/InfoLink';
 import ProgressBadge from './ProgressBadge/ProgressBadge';
 
 export {
@@ -36,6 +38,7 @@ export {
   Identicon,
   Input,
   Block,
+  Plate,
   AmountInput,
   InputHint,
   Button,
@@ -56,6 +59,7 @@ export {
   Table,
   Shimmering,
   Combobox,
+  InfoLink,
   Duration,
   ProgressBadge,
 };

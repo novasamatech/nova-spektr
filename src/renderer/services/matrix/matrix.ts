@@ -1,6 +1,4 @@
 import Olm from '@matrix-org/olm';
-// @ts-ignore
-import olmWasmPath from '@matrix-org/olm/olm.wasm';
 import uniq from 'lodash/uniq';
 import {
   ClientEvent,
@@ -17,13 +15,21 @@ import {
   RoomEvent,
   RoomMemberEvent,
   Visibility,
+  AutoDiscovery,
 } from 'matrix-js-sdk';
 import { ISecretStorageKeyInfo } from 'matrix-js-sdk/lib/crypto/api';
 import { deriveKey } from 'matrix-js-sdk/lib/crypto/key_passphrase';
 import { IStore } from 'matrix-js-sdk/lib/store';
 import { SyncState } from 'matrix-js-sdk/lib/sync';
+import { logger } from 'matrix-js-sdk/lib/logger';
 
-import { BASE_MATRIX_URL, KEY_FILE_MAX_SIZE, MST_EVENTS, ROOM_CRYPTO_CONFIG } from './common/constants';
+import {
+  BASE_MATRIX_URL,
+  KEY_FILE_MAX_SIZE,
+  MST_EVENTS,
+  ROOM_CRYPTO_CONFIG,
+  WELL_KNOWN_SERVERS,
+} from './common/constants';
 import MATRIX_ERRORS from './common/errors';
 import {
   Callbacks,
@@ -41,28 +47,28 @@ import {
   OmniMstEvent,
   RoomParams,
   Signatory,
+  LoginFlow,
 } from './common/types';
 import CredentialStorage from './credentialStorage';
 import SecretStorage from './secretStorage';
 
+global.Olm = Olm;
+logger.disableAll();
+
 export class Matrix implements ISecureMessenger {
-  private baseUrl: string;
   private matrixClient: MatrixClient;
   private activeRoomId: string;
   private isClientSynced: boolean;
-  private isEncryptionActive: boolean;
   private subscribeHandlers?: Callbacks;
   private credentialStorage: ICredentialStorage;
   private secretStorage: ISecretStorage;
 
   constructor() {
-    this.baseUrl = '';
     this.activeRoomId = '';
     this.isClientSynced = false;
-    this.isEncryptionActive = false;
     this.credentialStorage = new CredentialStorage();
     this.secretStorage = new SecretStorage();
-    this.matrixClient = createClient(BASE_MATRIX_URL);
+    this.matrixClient = createClient({ baseUrl: BASE_MATRIX_URL });
   }
 
   // =====================================================
@@ -70,43 +76,58 @@ export class Matrix implements ISecureMessenger {
   // =====================================================
 
   /**
-   * Initialize Matrix protocol with encryption
-   * @return {Promise}
+   * Set homeserver with new base url
+   * @param domain homeserver domain
    * @throws {ErrorObject}
    */
-  async init(): Promise<void | never> {
-    if (this.isEncryptionActive) {
-      throw this.createError(MatrixError.ENCRYPTION_STARTED);
+  async setHomeserver(domain: string): Promise<void | never> {
+    const wellKnown = WELL_KNOWN_SERVERS.find((server) => server.domain === domain);
+
+    if (wellKnown) {
+      try {
+        const config = { 'm.homeserver': { base_url: wellKnown.url } };
+        await AutoDiscovery.fromDiscoveryConfig(config);
+        this.createTempClient(wellKnown.url);
+
+        return;
+      } catch (error) {
+        throw this.createError(MatrixError.WRONG_HOMESERVER, error);
+      }
     }
 
+    let discoveryResult;
     try {
-      await Olm.init({ locateFile: () => olmWasmPath });
-      this.isEncryptionActive = true;
-      console.info('=== 🟢 Olm started 🟢 ===');
-    } catch (error) {
-      throw this.createError(MatrixError.OLM_FAILED, error);
-    }
-  }
-
-  /**
-   * Set homeserver and update base url
-   * @param url homeserver url
-   * @throws {ErrorObject}
-   */
-  async setHomeserver(url: string): Promise<void | never> {
-    const normalizedUrl = url.replace(/^http(s)?:\/\//, '');
-    let response;
-
-    try {
-      response = await fetch(`https://${normalizedUrl}/_matrix/client/versions`);
+      discoveryResult = await AutoDiscovery.findClientConfig(domain);
     } catch (error) {
       throw this.createError(MatrixError.WRONG_HOMESERVER, error);
     }
 
-    if (response?.status !== 200) {
-      this.createError(MatrixError.WRONG_HOMESERVER);
+    if (discoveryResult['m.homeserver']?.error || !discoveryResult['m.homeserver']?.base_url) {
+      throw this.createError(MatrixError.WRONG_HOMESERVER);
     }
-    this.setBaseUrl(`https://${normalizedUrl}`);
+
+    this.createTempClient(discoveryResult['m.homeserver'].base_url);
+  }
+
+  // HINT: redirect to external login form (example: "saml" for mozilla.com)
+  // async function startSsoLogin(baseUrl, type, idpId) {
+  //   const client = createTemporaryClient(baseUrl);
+  //   window.location.href = client.getSsoLoginUrl(window.location.href, type, idpId);
+  // }
+
+  /**
+   * Get available login flows
+   * @throws {ErrorObject}
+   */
+  async loginFlows(): Promise<LoginFlow[] | never> {
+    try {
+      const { flows } = await this.matrixClient.loginFlows();
+
+      // TODO: return more data in future
+      return flows.map((flow) => flow.type.replace('m.login.', '')) as LoginFlow[];
+    } catch (error) {
+      throw this.createError(MatrixError.LOGIN_FLOWS, error);
+    }
   }
 
   /**
@@ -124,10 +145,6 @@ export class Matrix implements ISecureMessenger {
    * @throws {ErrorObject}
    */
   async loginWithCreds(login: string, password: string): Promise<void | never> {
-    if (!this.isEncryptionActive) {
-      throw this.createError(MatrixError.ENCRYPTION_NOT_STARTED);
-    }
-
     try {
       await this.initClientWithCreds(login, password);
       await this.matrixClient.initCrypto();
@@ -146,9 +163,6 @@ export class Matrix implements ISecureMessenger {
    * @throws {ErrorObject}
    */
   async loginFromCache(): Promise<void | never> {
-    if (!this.isEncryptionActive) {
-      throw this.createError(MatrixError.ENCRYPTION_NOT_STARTED);
-    }
     if (this.credentialStorage.getSkipLogin().skip) return;
 
     try {
@@ -193,12 +207,16 @@ export class Matrix implements ISecureMessenger {
 
     try {
       const mx = this.matrixClient;
-      const defaultSSKey = mx.getAccountData('m.secret_storage.default_key').getContent().key;
-      const sSKeyInfo = mx.getAccountData(`m.secret_storage.key.${defaultSSKey}`).getContent<ISecretStorageKeyInfo>();
+      const defaultStorageKey = mx.getAccountData('m.secret_storage.default_key')?.getContent().key;
+      const storageKeyInfo = mx
+        .getAccountData(`m.secret_storage.key.${defaultStorageKey}`)
+        ?.getContent<ISecretStorageKeyInfo>();
+      if (!storageKeyInfo) return false;
+
       const privateKey = mx.keyBackupKeyFromRecoveryKey(securityKey);
-      const isCorrect = await mx.checkSecretStorageKey(privateKey, sSKeyInfo);
+      const isCorrect = await mx.checkSecretStorageKey(privateKey, storageKeyInfo);
       if (isCorrect) {
-        this.secretStorage.storePrivateKey(defaultSSKey, privateKey);
+        this.secretStorage.storePrivateKey(defaultStorageKey, privateKey);
         await mx.checkOwnCrossSigningTrust();
       }
 
@@ -253,13 +271,17 @@ export class Matrix implements ISecureMessenger {
     try {
       const mx = this.matrixClient;
 
-      const defaultSSKey = mx.getAccountData('m.secret_storage.default_key').getContent().key;
-      const sSKeyInfo = mx.getAccountData(`m.secret_storage.key.${defaultSSKey}`).getContent<ISecretStorageKeyInfo>();
-      const { salt, iterations } = sSKeyInfo.passphrase || {};
+      const defaultStorageKey = mx.getAccountData('m.secret_storage.default_key')?.getContent().key;
+      const storageKeyInfo = mx
+        .getAccountData(`m.secret_storage.key.${defaultStorageKey}`)
+        ?.getContent<ISecretStorageKeyInfo>();
+      if (!storageKeyInfo) return false;
+
+      const { salt, iterations } = storageKeyInfo.passphrase || {};
       const privateKey = await deriveKey(securityPhrase, salt, iterations);
-      const isCorrect = await mx.checkSecretStorageKey(privateKey, sSKeyInfo);
+      const isCorrect = await mx.checkSecretStorageKey(privateKey, storageKeyInfo);
       if (isCorrect) {
-        this.secretStorage.storePrivateKey(defaultSSKey, privateKey);
+        this.secretStorage.storePrivateKey(defaultStorageKey, privateKey);
         await mx.checkOwnCrossSigningTrust();
       }
 
@@ -274,7 +296,7 @@ export class Matrix implements ISecureMessenger {
    */
   stopClient(): void {
     this.matrixClient.stopClient();
-    this.clearSubscribers();
+    this.matrixClient.removeAllListeners();
   }
 
   /**
@@ -295,6 +317,7 @@ export class Matrix implements ISecureMessenger {
       this.stopClient();
       await this.matrixClient.logout();
       await this.matrixClient.clearStores();
+      this.subscribeHandlers?.onOnLogout();
       this.credentialStorage.clear();
     } catch (error) {
       throw this.createError(MatrixError.LOGOUT, error);
@@ -501,14 +524,6 @@ export class Matrix implements ISecureMessenger {
   }
 
   /**
-   * Clear subscription
-   */
-  clearSubscribers(): void {
-    this.matrixClient.removeAllListeners();
-    this.subscribeHandlers = undefined as unknown as Callbacks;
-  }
-
-  /**
    * Check does User already exist
    * @param userId matrix identifier
    * @return {Promise}
@@ -635,7 +650,7 @@ export class Matrix implements ISecureMessenger {
    * Get device session key
    * @return {String}
    */
-  get sessionKey(): string {
+  get sessionKey(): string | null {
     return this.matrixClient.getDeviceEd25519Key();
   }
 
@@ -648,8 +663,10 @@ export class Matrix implements ISecureMessenger {
 
     const mx = this.matrixClient;
     const crossSignInfo = mx.getStoredCrossSigningForUser(this.userId);
-    const deviceInfo = mx.getStoredDevice(this.userId, mx.getDeviceId());
+    const deviceId = mx.getDeviceId();
+    if (!deviceId || !crossSignInfo) return false;
 
+    const deviceInfo = mx.getStoredDevice(this.userId, deviceId);
     if (!deviceInfo) return false;
 
     const deviceTrust = crossSignInfo.checkDeviceTrust(crossSignInfo, deviceInfo, false, true);
@@ -766,7 +783,7 @@ export class Matrix implements ISecureMessenger {
       });
 
       this.matrixClient = await this.createMatrixClient({
-        baseUrl: this.baseUrl,
+        baseUrl: this.matrixClient.baseUrl,
         userId: userLoginResult.user_id,
         accessToken: userLoginResult.access_token,
         deviceId: credentials?.deviceId || userLoginResult.device_id,
@@ -783,7 +800,7 @@ export class Matrix implements ISecureMessenger {
           userId: userLoginResult.user_id,
           accessToken: userLoginResult.access_token,
           deviceId: userLoginResult.device_id,
-          baseUrl: this.baseUrl,
+          baseUrl: this.matrixClient.baseUrl,
           isLastLogin: true,
         });
       }
@@ -1008,7 +1025,7 @@ export class Matrix implements ISecureMessenger {
     const topicEvent = room
       .getLiveTimeline()
       .getState(Direction.Forward)
-      .events.get(EventType.RoomTopic)
+      ?.events.get(EventType.RoomTopic)
       ?.get(strippedStateKey)?.event;
 
     return topicEvent?.content?.omni_extras;
@@ -1056,10 +1073,10 @@ export class Matrix implements ISecureMessenger {
   }
 
   /**
-   * Set base url
+   * Create temp client with specific baseUrl
    * @param url homeserver url
    */
-  private setBaseUrl(url: string) {
-    this.baseUrl = url;
+  private createTempClient(url: string) {
+    this.matrixClient = createClient({ baseUrl: url });
   }
 }

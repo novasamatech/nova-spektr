@@ -7,7 +7,6 @@ import Paths from './paths';
 // React router v6 hint:
 // https://github.com/remix-run/react-router/blob/main/docs/upgrading/v5.md#use-useroutes-instead-of-react-router-config
 const routesConfig: RouteObject[] = [
-  { path: Paths.LOGIN, element: <Screens.Login /> },
   {
     path: Paths.ONBOARDING,
     element: <Layouts.Onboarding />,
@@ -36,7 +35,7 @@ const routesConfig: RouteObject[] = [
         children: [
           { index: true, element: <Screens.Settings.Overview /> },
           { path: Paths.NETWORK, element: <Screens.Settings.Networks /> },
-          { path: Paths.CREDENTIALS, element: <Screens.Settings.Credentials /> },
+          { path: Paths.MATRIX, element: <Screens.Settings.Matrix /> },
         ],
       },
       {

@@ -9,6 +9,7 @@ import AestheticImages, { Aesthetic } from './aesthetics';
 import ArrowImages, { Arrow } from './arrow';
 import WalletTypeImages, { WalletType } from './walletType';
 import StakingImages, { Staking } from './staking';
+import SocialImages, { Social } from './social';
 
 const AllIcons = {
   ...CurrencyImages,
@@ -22,6 +23,7 @@ const AllIcons = {
   ...ArrowImages,
   ...WalletTypeImages,
   ...StakingImages,
+  ...SocialImages,
 };
 
 export type IconNames =
@@ -35,6 +37,7 @@ export type IconNames =
   | Aesthetic
   | Arrow
   | Staking
+  | Social
   | WalletType;
 
 export default AllIcons;

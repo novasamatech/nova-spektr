@@ -8,8 +8,8 @@ import { HexString } from '@renderer/domain/shared-kernel';
 
 export interface ISecureMessenger {
   // Init
-  init: () => Promise<void | never>;
-  setHomeserver: (url: string) => Promise<void | never>;
+  setHomeserver: (domain: string) => Promise<void | never>;
+  loginFlows: () => Promise<LoginFlow[] | never>;
   skipLogin: (value: boolean) => void;
   loginWithCreds: (login: string, password: string) => Promise<void | never>;
   loginFromCache: () => Promise<void | never>;
@@ -30,7 +30,6 @@ export interface ISecureMessenger {
   sendMessage: (message: string) => void;
   markAsRead: (event: MatrixEvent) => Promise<void | never>;
   setupSubscribers: (handlers: Callbacks) => void;
-  clearSubscribers: () => void;
   // checkUserExists: (userId: string) => Promise<boolean>;
 
   // Verification
@@ -141,6 +140,8 @@ export type OmniExtras = {
   };
 };
 
+export type LoginFlow = 'password' | 'sso' | 'cas';
+
 // =====================================================
 // ============== MST Events / Callbacks ===============
 // =====================================================
@@ -189,6 +190,7 @@ type GeneralCallbacks = {
   onInvite: (data: InvitePayload) => void;
   // TODO: change message type in future
   onMessage: (message: string) => void;
+  onOnLogout: () => void;
 };
 
 export type MSTCallbacks = {
@@ -214,6 +216,7 @@ export const enum MatrixError {
   PHRASE_VERIFICATION,
   LOGOUT,
   LOGIN_CREDS,
+  LOGIN_FLOWS,
   LOGIN_CACHE,
   INIT_WITH_CREDENTIALS,
   NO_CREDS_IN_DB,

@@ -13,6 +13,7 @@ type Props = {
   label?: ReactNode;
   value?: DropdownOption['value'];
   options: DropdownOption[];
+  disabled?: boolean;
   filterBy?: string;
   suffixElement?: ReactNode;
   prefixElement?: ReactNode;
@@ -28,6 +29,7 @@ const Combobox = ({
   label,
   value,
   options,
+  disabled,
   suffixElement,
   prefixElement,
   variant = 'down',
@@ -44,7 +46,7 @@ const Combobox = ({
     : options;
 
   return (
-    <HeadlessCombobox by="value" value={value} onChange={onChange}>
+    <HeadlessCombobox by="value" value={value} disabled={disabled} onChange={onChange}>
       <div className={cn('relative', className)}>
         <HeadlessCombobox.Input
           as={Input}
