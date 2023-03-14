@@ -275,6 +275,7 @@
       "signInButton": "Sign in",
       "signOutButton": "Sign out",
       "subTitle": "Matrix Credentials",
+      "userIdLabel": "you are signed in as:",
       "usernameError": "Invalid username",
       "usernameLabel": "Username",
       "usernamePlaceholder": "spektr",
