@@ -1,6 +1,6 @@
 import { EventType, MatrixEvent, Room } from 'matrix-js-sdk';
 
-import { HexString } from '@renderer/domain/shared-kernel';
+import { HexString, PublicKey } from '@renderer/domain/shared-kernel';
 import { Signatory } from '@renderer/domain/signatory';
 
 // =====================================================
@@ -116,7 +116,7 @@ export type RoomParams = {
   roomId: string;
   accountName: string;
   accountId: string;
-  inviterPublicKey: string;
+  inviterPublicKey: PublicKey;
   threshold: number;
   signatories: Signatory[];
 };
