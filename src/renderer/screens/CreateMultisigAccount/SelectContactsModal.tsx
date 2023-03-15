@@ -56,8 +56,6 @@ const SelectContactsModal = ({ signatories, isOpen, onClose, onSelect }: Props) 
     );
   }, [accounts.length, contacts.length, signatories.length]);
 
-  console.log('query', query);
-
   const searchedContactList = contactList.filter(
     (c) => includes(c.accountId, query) || includes(c.matrixId, query) || includes(c.name, query),
   );
