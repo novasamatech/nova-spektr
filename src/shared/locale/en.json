@@ -51,6 +51,21 @@
   "basemodal": {
     "closeButton": "Close modal window"
   },
+  "createMultisigAccount": {
+    "addContactsButton": "Add selected",
+    "addSignatoryButton": "Add signatory",
+    "backButton": "Back",
+    "continueButton": "Continue",
+    "errorMessage": "Something went wrong",
+    "nameDescription": "Give a name for your multisig account",
+    "nameLabel": "Account",
+    "namePlaceholder": "Nova Spektr",
+    "searchContactPlaceholder": "Search for an account or contact...",
+    "signatoriesDescription": "Add signatories for your multisig account",
+    "signatoriesLabel": "Signatories",
+    "successMessage": "Multisig account created successfully",
+    "title": "Create multisig account"
+  },
   "dropdown": {
     "chooseOptionLabel": "Choose an option"
   },
@@ -534,6 +549,7 @@
   },
   "wallets": {
     "addByParitySignerButton": "Add wallet by Parity Signer",
+    "addMultisigWalletButton": "Add multisig wallet",
     "addWatchOnlyButton": "Add Watch-Only wallet",
     "multishardWalletsLabel": "Multishard",
     "multisigLabel": "Multisig",

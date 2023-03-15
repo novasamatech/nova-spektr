@@ -51,6 +51,21 @@
   "basemodal": {
     "closeButton": "Закрыть окно"
   },
+  "createMultisigAccount": {
+    "addContactsButton": "Добавить выбранные",
+    "addSignatoryButton": "Добавить подписанта",
+    "backButton": "Назад",
+    "continueButton": "Продолжить",
+    "errorMessage": "Что-то пошло не так",
+    "nameDescription": "Назовите ваш multisig аккаунт",
+    "nameLabel": "Аккаунт",
+    "namePlaceholder": "Nova Spektr",
+    "searchContactPlaceholder": "Поиск аккаунта или контакта...",
+    "signatoriesDescription": "Добавьте подписантов в ваш multisig аккаунт",
+    "signatoriesLabel": "Подписанты",
+    "successMessage": "Multisig аккаунт успешно создан ",
+    "title": "Создать multisig аккаунт"
+  },
   "dropdown": {
     "chooseOptionLabel": "Choose an option"
   },
@@ -534,6 +549,7 @@
   },
   "wallets": {
     "addByParitySignerButton": "Добавить кошелёк из Parity Signer",
+    "addMultisigWalletButton": "Добавить multisig кошелёк",
     "addWatchOnlyButton": "Добавить Watch-Only кошелёк",
     "multishardWalletsLabel": "Multishard",
     "multisigLabel": "Multisig",
