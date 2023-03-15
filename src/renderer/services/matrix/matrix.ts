@@ -52,6 +52,7 @@ import CredentialStorage from './credentialStorage';
 import SecretStorage from './secretStorage';
 import { nonNullable } from '@renderer/shared/utils/functions';
 import { Signatory } from '@renderer/domain/signatory';
+import { PublicKey } from '@renderer/domain/shared-kernel';
 
 global.Olm = Olm;
 logger.disableAll();
@@ -720,15 +721,15 @@ export class Matrix implements ISecureMessenger {
   private async inviteSignatories(
     roomId: string,
     signatories: Signatory[],
-    invitorPublicKey: string,
+    inviterPublicKey: PublicKey,
   ): Promise<void | never> {
-    const invitorMatrixId = signatories.find((s) => s.publicKey === invitorPublicKey);
+    const inviterMatrixId = signatories.find((s) => s.publicKey === inviterPublicKey);
 
     const noDuplicates = uniq(
-      signatories
-        .filter((s) => s.matrixId !== invitorMatrixId?.matrixId)
-        .map((s) => s.matrixId)
-        .filter(nonNullable),
+      signatories.reduce<string[]>(
+        (acc, s) => (s.matrixId && s.matrixId !== inviterMatrixId?.matrixId ? [...acc, s.matrixId] : acc),
+        [],
+      ),
     );
 
     const inviteRequests = noDuplicates.reduce<Promise<unknown>[]>((acc, matrixId) => {

@@ -64,22 +64,22 @@ const CreateMultisigAccount = () => {
   useEffect(() => cancelRoomCreation(), []);
 
   const startRoomCreation = async (mstAccountAddress: string): Promise<PublicKey | undefined> => {
-    const invitor = signatories.find((a) => a.matrixId === matrix.userId);
+    const inviter = signatories.find((a) => a.matrixId === matrix.userId);
 
     // Create room only if I'm a signatory
-    if (!invitor || !invitor.publicKey) return;
+    if (!inviter || !inviter.publicKey) return;
 
     const newRoomId = await matrix.startRoomCreation(mstAccountAddress);
 
     roomId.current = newRoomId;
 
-    return invitor.publicKey;
+    return inviter.publicKey;
   };
 
-  const finishRoomCreation = async (mstAccount: MultisigAccount, invitor: PublicKey) => {
+  const finishRoomCreation = async (mstAccount: MultisigAccount, inviter: PublicKey) => {
     const roomParams: RoomParams = {
       roomId: roomId.current || '',
-      inviterPublicKey: invitor || '',
+      inviterPublicKey: inviter || '',
       accountName: mstAccount.name || '',
       accountId: mstAccount.accountId || '',
       signatories,
@@ -103,12 +103,12 @@ const CreateMultisigAccount = () => {
 
       if (!multisigAccount.accountId) return;
 
-      const invitor = await startRoomCreation(multisigAccount.accountId);
+      const inviter = await startRoomCreation(multisigAccount.accountId);
       multisigAccount.matrixRoomId = roomId.current || '';
 
-      if (!invitor) return;
+      if (!inviter) return;
 
-      await finishRoomCreation(multisigAccount, invitor);
+      await finishRoomCreation(multisigAccount, inviter);
       addAccount(multisigAccount);
 
       toggleSuccessMessage();
@@ -134,7 +134,13 @@ const CreateMultisigAccount = () => {
           })
       : [];
 
-  const multisigAccountId = threshold && signatories && getMultisigAddress(signatories, threshold.value);
+  const multisigAccountId =
+    threshold &&
+    signatories &&
+    getMultisigAddress(
+      signatories.map((s) => s.accountId),
+      threshold.value,
+    );
 
   const hasOwnSignatory = signatories.some((s) => accounts.find((a) => a.publicKey === s.publicKey));
   const hasTwoSignatories = signatories.length > 1;
