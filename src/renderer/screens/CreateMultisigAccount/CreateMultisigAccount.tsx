@@ -45,7 +45,7 @@ const CreateMultisigAccount = () => {
     mode: 'onChange',
     defaultValues: {
       name: '',
-      threshold: { id: '0', value: 0 },
+      threshold: { id: '2', value: 2 },
     },
   });
 
