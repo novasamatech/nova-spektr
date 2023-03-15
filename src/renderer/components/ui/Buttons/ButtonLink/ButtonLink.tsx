@@ -37,7 +37,7 @@ const ButtonLink = ({
   const content = (
     <>
       {prefixElement && <div data-testid="prefix">{prefixElement}</div>}
-      <div className={cn(prefixElement && 'ml-auto', suffixElement && 'ml-0 mr-auto')}>{children}</div>
+      <div className={cn((prefixElement || suffixElement) && 'ml-0 mr-auto')}>{children}</div>
       {suffixElement && <div data-testid="suffix">{suffixElement}</div>}
     </>
   );

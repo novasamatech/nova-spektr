@@ -19,6 +19,12 @@ export const ViewClass: Record<`${Variant}_${Pallet}`, string> = {
   outline_shade: 'text-shade-40 border-shade-20',
   outline_alert: 'text-alert border-alert',
   outline_dark: 'text-neutral border-neutral',
+  dashed_primary: 'text-primary border-current',
+  dashed_secondary: 'text-secondary border-dashed border-current',
+  dashed_error: 'text-error border-dashed border-current',
+  dashed_shade: 'text-shade-40 border-dashed border-shade-20',
+  dashed_alert: 'text-alert border-dashed border-alert',
+  dashed_dark: 'text-neutral border-dashed border-neutral',
 };
 
 export const WeightClass = {

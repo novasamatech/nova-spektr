@@ -8,6 +8,7 @@ type Props = {
   checked?: boolean;
   disabled?: boolean;
   readOnly?: boolean;
+  value?: any;
   className?: string;
   onChange?: (event: ChangeEvent<HTMLInputElement>) => void;
 };
@@ -18,6 +19,7 @@ const Checkbox = ({
   position = 'right',
   disabled,
   readOnly,
+  value,
   className,
   children,
   onChange,
@@ -34,6 +36,7 @@ const Checkbox = ({
         disabled={disabled}
         readOnly={readOnly}
         checked={checked}
+        value={value}
         className={cn(
           'relative appearance-none w-5 h-5 text-primary bg-white',
           'rounded-md border-shade-30 border-2 checked:bg-primary checked:border-0',

@@ -5,6 +5,7 @@ import { toPublicKey } from '@renderer/shared/utils/address';
 import { ChainId, CryptoType, PublicKey, ChainType, SigningType, AccountID } from './shared-kernel';
 import { Contact } from './contact';
 import { SS58_DEFAULT_PREFIX } from '@renderer/shared/utils/constants';
+import { Signatory } from './signatory';
 
 export type Account = {
   walletId?: IndexableType;
@@ -57,6 +58,15 @@ export type MultisigAccount = Account & {
   creator: AccountID;
 };
 
+export function getMultisigAddress(signatories: Signatory[], threshold: number): AccountID {
+  const multisigKey = createKeyMulti(
+    signatories.map((s) => s.accountId),
+    threshold,
+  );
+
+  return encodeAddress(multisigKey, SS58_DEFAULT_PREFIX);
+}
+
 export function createMultisigAccount({
   name,
   signatories,
@@ -64,11 +74,7 @@ export function createMultisigAccount({
   matrixRoomId,
   creator,
 }: Pick<MultisigAccount, 'name' | 'signatories' | 'threshold' | 'matrixRoomId' | 'creator'>): MultisigAccount {
-  const multisigKey = createKeyMulti(
-    signatories.map((s) => s.accountId),
-    threshold,
-  );
-  const multisigAddress = encodeAddress(multisigKey, SS58_DEFAULT_PREFIX);
+  const multisigAddress = getMultisigAddress(signatories, threshold);
 
   return {
     publicKey: toPublicKey(multisigAddress),
