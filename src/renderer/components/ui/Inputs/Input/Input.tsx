@@ -1,35 +1,37 @@
 import cn from 'classnames';
-import { InputHTMLAttributes, ReactNode, forwardRef } from 'react';
+import { ReactNode, forwardRef, ChangeEventHandler } from 'react';
 
-export interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
-  // weight?: 'md' | 'lg';
+type Props = {
+  id?: string;
   label?: ReactNode;
+  type?: 'text' | 'password';
+  required?: boolean;
+  placeholder?: string;
+  name?: string;
+  disabled?: boolean;
+  disabledStyle?: boolean;
+  className?: string;
+  value?: string;
   invalid?: boolean;
   wrapperClass?: string;
-  disabledStyle?: boolean;
   prefixElement?: ReactNode;
   suffixElement?: ReactNode;
-}
+  onChange?: ChangeEventHandler<HTMLInputElement> | undefined;
+};
 
-const Input = forwardRef<HTMLInputElement, InputProps>(
+const Input = forwardRef<HTMLInputElement, Props>(
   (
     {
-      id,
       type = 'text',
-      // weight = 'lg',
       label = '',
-      required,
-      placeholder,
-      name,
-      disabled,
       disabledStyle,
       className,
       wrapperClass,
-      value,
       invalid = false,
       prefixElement,
       suffixElement,
       onChange,
+      ...props
     },
     ref,
   ) => (
@@ -50,22 +52,17 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
       <input
         className={cn(
           'rounded-sm leading-5 bg-transparent flex-1 placeholder-shade-30 focus:outline-none focus:text-primary',
-          disabledStyle ? 'text-shade-40' : value && !invalid && 'text-neutral',
+          disabledStyle ? 'text-shade-40' : props.value && !invalid && 'text-neutral',
           invalid && 'text-error',
           label && 'py-1 my-4',
           prefixElement && 'ml-2',
           suffixElement && 'mr-2',
           className,
         )}
-        required={required}
-        id={id}
         ref={ref}
-        disabled={disabled}
-        value={value}
         type={type}
-        name={name}
-        placeholder={placeholder}
         onChange={onChange}
+        {...props}
       />
       {suffixElement}
     </label>

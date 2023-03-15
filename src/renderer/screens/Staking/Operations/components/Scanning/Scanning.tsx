@@ -92,7 +92,7 @@ export const Scanning = ({
   return (
     <div className="overflow-y-auto flex-1">
       <Plate as="section" className="flex flex-col items-center mx-auto w-[500px]">
-        <Block className="flex flex-col items-center gap-y-2.5">
+        <Block className="flex flex-col items-center gap-y-2.5 p-5">
           <div className="text-neutral-variant text-base font-semibold">{t('signing.scanQrTitle')}</div>
           {!bulkTransactions && <div className="w-[220px] h-[220px] rounded-2lg bg-shade-20 animate-pulse" />}
 

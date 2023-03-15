@@ -203,7 +203,7 @@ const CustomRpcModal = ({ chainId, network, node, existingUrls, isOpen, onClose 
                     </button>
                   ) : (
                     <Button variant="outline" pallet="primary" onClick={pasteAddressHandler(onChange)}>
-                      {t('networkManagement.customRpc.pasteButton')}
+                      {t('general.button.pasteButton')}
                     </Button>
                   )
                 }

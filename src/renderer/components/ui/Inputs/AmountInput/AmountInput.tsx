@@ -62,7 +62,6 @@ const AmountInput = ({ name, value, asset, balancePlaceholder, balance, placehol
       name={name}
       label={label}
       prefixElement={prefixElement}
-      type="text"
       className="w-full text-xl font-semibold text-right"
       placeholder={placeholder}
       invalid={invalid}
