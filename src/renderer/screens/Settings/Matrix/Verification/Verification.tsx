@@ -38,9 +38,15 @@ const getInputPlaceholders = (t: TFunction, method: VerifyMethods): string => {
   return placeholders[method];
 };
 
-const verifyByKey = (method: VerifyMethods): Boolean => method === VerifyMethods.SECRET_KEY;
-const verifyByPhrase = (method: VerifyMethods): Boolean => method === VerifyMethods.PASS_PHRASE;
-const verifyByFile = (method: VerifyMethods): Boolean => method === VerifyMethods.FILE;
+const getErrorMessage = (t: TFunction, method: VerifyMethods): string => {
+  const errors = {
+    [VerifyMethods.SECRET_KEY]: t('settings.matrix.secretKeyError'),
+    [VerifyMethods.PASS_PHRASE]: t('settings.matrix.passphraseError'),
+    [VerifyMethods.FILE]: t('settings.matrix.fileError'),
+  };
+
+  return errors[method];
+};
 
 const Verification = () => {
   const { t } = useI18n();
@@ -136,7 +142,7 @@ const Verification = () => {
               options={verifyOptions}
               onChange={changeVerifyMethod}
             />
-            {verifyByFile(verifyMethod.value) ? (
+            {verifyMethod.value === VerifyMethods.FILE ? (
               <Controller
                 name="secretFile"
                 control={control}
@@ -187,9 +193,7 @@ const Verification = () => {
           </div>
 
           <InputHint variant="error" active={verifyFailed}>
-            {verifyByKey(verifyMethod.value) && t('settings.matrix.secretKeyError')}
-            {verifyByPhrase(verifyMethod.value) && t('settings.matrix.passphraseError')}
-            {verifyByFile(verifyMethod.value) && t('settings.matrix.fileError')}
+            {getErrorMessage(t, verifyMethod.value)}
           </InputHint>
 
           <Button

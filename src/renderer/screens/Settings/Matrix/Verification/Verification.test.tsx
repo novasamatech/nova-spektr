@@ -19,17 +19,35 @@ jest.mock('@renderer/context/MatrixContext', () => ({
     matrix: {
       isVerified: false,
       verifyWithKey: jest.fn().mockReturnValue(false),
+      verifyWithFile: jest.fn().mockReturnValue(true),
     },
   }),
 }));
 
 describe('screens/Settings/Matrix/Verification', () => {
-  const submitForm = async () => {
+  const submitFormWithString = async () => {
     const user = userEvent.setup({ delay: null });
     render(<Verification />);
 
     const input = screen.getByRole('textbox');
-    await act(() => user.type(input, 'my secret key'));
+    await act(() => user.type(input, 'my secret value'));
+
+    const submit = screen.getByRole('button', { name: 'settings.matrix.verifyDeviceButton' });
+    await act(() => submit.click());
+  };
+
+  const submitFormWithFile = async () => {
+    const user = userEvent.setup();
+    render(<Verification />);
+
+    const dropdown = screen.getByText('settings.matrix.verifyWithKey');
+    await act(() => dropdown.click());
+    const fileOption = screen.getByText('settings.matrix.uploadFile');
+    await act(() => fileOption.click());
+
+    const file = new File(['hello'], 'hello.txt', { type: 'text/plain' });
+    const input = screen.getByTestId('file-input');
+    await act(() => user.upload(input, file));
 
     const submit = screen.getByRole('button', { name: 'settings.matrix.verifyDeviceButton' });
     await act(() => submit.click());
@@ -49,20 +67,29 @@ describe('screens/Settings/Matrix/Verification', () => {
   });
 
   test('should secretKey submit fail with error', async () => {
-    await submitForm();
+    await submitFormWithString();
 
     const errorHint = screen.getByText('settings.matrix.secretKeyError');
     expect(errorHint).toBeInTheDocument();
   });
 
-  test('should become verified after submit', async () => {
+  test('should become verified by file', async () => {
+    await submitFormWithFile();
+
+    const verified = screen.getByText('settings.matrix.statusVerified');
+    const errorHint = screen.queryByText('settings.matrix.fileError');
+    expect(verified).toBeInTheDocument();
+    expect(errorHint).not.toBeInTheDocument();
+  });
+
+  test('should become verified by secret key', async () => {
     (useMatrix as jest.Mock).mockReturnValue({
       matrix: {
         isVerified: false,
         verifyWithKey: jest.fn().mockReturnValue(true),
       },
     });
-    await submitForm();
+    await submitFormWithString();
 
     const verified = screen.getByText('settings.matrix.statusVerified');
     const errorHint = screen.queryByText('settings.matrix.secretKeyError');

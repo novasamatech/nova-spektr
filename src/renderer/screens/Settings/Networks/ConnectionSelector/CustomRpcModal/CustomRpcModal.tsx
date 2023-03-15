@@ -1,5 +1,5 @@
 import cn from 'classnames';
-import { ChangeEvent, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Controller, SubmitHandler, useForm } from 'react-hook-form';
 
 import { BaseModal, Button, Icon, Input, InputHint } from '@renderer/components/ui';
@@ -125,12 +125,14 @@ const CustomRpcModal = ({ chainId, network, node, existingUrls, isOpen, onClose 
     }
   };
 
-  const onAddressChange = (handler: (value: string) => void) => (event: ChangeEvent<HTMLInputElement>) => {
-    handler(event.target.value);
+  const onAddressChange = (onChange: (value: string) => void) => {
+    return (value: string) => {
+      onChange(value);
 
-    if ([FormState.VALID, FormState.INVALID, FormState.WRONG_NETWORK].includes(formState)) {
-      setFormState(FormState.INIT);
-    }
+      if ([FormState.VALID, FormState.INVALID, FormState.WRONG_NETWORK].includes(formState)) {
+        setFormState(FormState.INIT);
+      }
+    };
   };
 
   return (
