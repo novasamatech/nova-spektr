@@ -12,7 +12,7 @@ import { useMatrix } from '@renderer/context/MatrixContext';
 import { RoomParams } from '@renderer/services/matrix';
 import SelectContactsModal from './SelectContactsModal';
 import Settings from '../Settings';
-import { Message } from '../Transfer/components';
+import { Message } from '@renderer/shared/components';
 import { DropdownResult } from '@renderer/components/ui/Dropdowns/common/types';
 import { PublicKey } from '@renderer/domain/shared-kernel';
 
@@ -45,7 +45,7 @@ const CreateMultisigAccount = () => {
     mode: 'onChange',
     defaultValues: {
       name: '',
-      threshold: { id: '2', value: 2 },
+      threshold: { id: '0', value: 0 },
     },
   });
 
