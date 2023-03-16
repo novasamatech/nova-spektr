@@ -30,7 +30,7 @@ const AddressBook = () => {
                   wrapperClass="bg-shade-5"
                   placeholder={t('addressBook.searchPlaceholder')}
                   prefixElement={<Icon name="search" />}
-                  onChange={(e) => setQuery(e.target.value)}
+                  onChange={setQuery}
                 />
                 <Button
                   variant="text"

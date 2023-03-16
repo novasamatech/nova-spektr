@@ -7,7 +7,7 @@ type Props = {
   url: string;
   showIcon?: boolean;
 };
-const InfoLink = ({ url, showIcon, children }: PropsWithChildren<Props>) => (
+const InfoLink = ({ url, showIcon = true, children }: PropsWithChildren<Props>) => (
   <a
     className={cn('w-max outline-offset-4', showIcon && 'flex items-center gap-x-1')}
     href={url}
