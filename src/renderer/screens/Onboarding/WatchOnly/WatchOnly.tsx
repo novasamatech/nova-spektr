@@ -143,7 +143,7 @@ const WatchOnly = () => {
                   }
                   suffixElement={
                     <Button variant="outline" pallet="primary" onClick={pasteAddressHandler(onChange)}>
-                      {t('onboarding.pasteButton')}
+                      {t('general.button.pasteButton')}
                     </Button>
                   }
                   onChange={onChange}

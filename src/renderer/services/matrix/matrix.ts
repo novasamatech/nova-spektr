@@ -250,7 +250,7 @@ export class Matrix implements ISecureMessenger {
     }
 
     // test it's within the base58 alphabet
-    if (!/^[123456789A-Za-z\s]+$/.test(securityKey)) {
+    if (!/^[1-9A-Za-z\s]+$/.test(securityKey)) {
       throw this.createError(MatrixError.VERIFY_FILE_BAD_CONTENT);
     }
 

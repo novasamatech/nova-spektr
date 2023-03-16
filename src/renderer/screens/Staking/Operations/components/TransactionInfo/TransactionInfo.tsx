@@ -60,7 +60,7 @@ const TransactionInfo = ({
     <>
       <div className="overflow-y-auto flex-1">
         <section className="w-[500px] p-5 mx-auto bg-shade-2 rounded-2lg">
-          <Block className="flex flex-col gap-y-5">
+          <Block className="flex flex-col gap-y-5 p-5">
             {title ? (
               <h2 className="text-center text-neutral font-semibold text-xl">{title}</h2>
             ) : (

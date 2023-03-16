@@ -75,6 +75,10 @@
     "reloadButton": "Перезагрузить"
   },
   "general": {
+    "button": {
+      "pasteButton": "Вставить",
+      "uploadButton": "Загрузить"
+    },
     "explorers": {
       "explorerButton": "Открыть в { name }",
       "explorerTitle": "Explorers"
@@ -82,6 +86,9 @@
     "input": {
       "amountLabel": "Сумма",
       "transferableLabel": "Доступно"
+    },
+    "title": {
+      "appName": "Nova Spektr"
     }
   },
   "history": {
@@ -268,6 +275,7 @@
     "matrix": {
       "badCredentialsError": "Wrong username or password, please try again",
       "badServerError": "Server is not a correct matrix server",
+      "fileError": "File does not contain a valid verification key, please upload another one",
       "formSubtitle": "Sign in with your Matrix ID and password",
       "formTitle": "Matrix credentials",
       "homeserverLabel": "Matrix server",
@@ -281,20 +289,33 @@
       "infoWhyMatrixTitle": "Why do I need to sign in with Matrix?",
       "loginNotAvailable": "Login with credentials is not available for<br /><strong>{ homeserver }</strong>",
       "loginSeparator": "Or",
+      "passphraseError": "Invalid passphrase, please try another one",
+      "passphrasePlaceholder": "Paste your passphrase",
       "passwordLabel": "Password",
       "passwordPlaceholder": "enter password",
       "passwordRequiredError": "Password is required",
       "privacyFooter": "By signing in you consent to the <terms>terms of use</terms> and <privacy>privacy policy</privacy>",
       "privacyTitle": "Nova Spektr does not store your Matrix password",
       "registerLink": "Don’t have an account?<register>Register</register>",
+      "secretFilePlaceholder": "Select file to upload",
+      "secretKeyError": "Invalid key, please try another one",
+      "secretKeyPlaceholder": "Paste your verification key",
       "signInButton": "Sign in",
       "signOutButton": "Sign out",
+      "statusNotVerified": "Not verified",
+      "statusVerified": "Verified",
       "subTitle": "Matrix Credentials",
+      "uploadFile": "Upload file",
+      "usePassphrase": "Use passphrase",
       "userIdLabel": "you are signed in as:",
       "usernameError": "Invalid username",
       "usernameLabel": "Username",
       "usernamePlaceholder": "spektr",
-      "usernameRequiredError": "Username is required"
+      "usernameRequiredError": "Username is required",
+      "verificationSubtitle": "Verify your device for secure connection",
+      "verificationTitle": "Device verification",
+      "verifyDeviceButton": "Verify your device",
+      "verifyWithKey": "Verify with key"
     },
     "overview": {
       "getInTouchLabel": "На связи!",

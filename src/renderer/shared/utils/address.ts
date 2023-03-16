@@ -14,7 +14,7 @@ export const formatAddress = (address?: string, prefix = SS58_DEFAULT_PREFIX): s
 /**
  * Get public key of the address
  * @param address account's address
- * @return {string | undefined}
+ * @return {String | undefined}
  */
 export const toPublicKey = (address?: string): PublicKey | undefined => {
   if (!address) return;

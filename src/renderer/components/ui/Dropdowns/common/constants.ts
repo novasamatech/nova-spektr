@@ -26,7 +26,6 @@ export const DropdownClass = {
     text: 'text-sm',
     label: {
       height: 'h-[82px]',
-      content: 'h-12.5',
       text: 'text-2xs',
     },
   },
@@ -35,7 +34,6 @@ export const DropdownClass = {
     text: 'text-lg',
     label: {
       height: 'h-[94px]',
-      content: 'h-15',
       text: 'text-xs',
     },
   },
