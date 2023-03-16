@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { ChangeEvent, useEffect, useState } from 'react';
 import { Controller, SubmitHandler, useForm } from 'react-hook-form';
 
 import { BaseModal, Button, Checkbox, Identicon, Input } from '@renderer/components/ui';
@@ -38,22 +38,28 @@ const SelectContactsModal = ({ signatories, isOpen, onClose, onSelect }: Props) 
   const [contactList, setContactList] = useState<SignatoryWithId[]>([]);
 
   useEffect(() => {
-    setContactList(
-      [
-        ...accounts.map((a) => ({
-          accountId: a.accountId || '',
-          name: a.name || a.accountId || '',
-          publicKey: a.publicKey || '0x',
-          matrixId: matrix.userId || '',
-        })),
-        ...contacts.filter((c) => c.matrixId),
-      ]
-        .filter((a) => signatories.every((s) => a.publicKey !== s.publicKey))
-        .map((c, id) => ({
-          ...c,
-          id,
-        })),
+    const usedPublicKeys = signatories.map((s) => s.publicKey);
+
+    const addressBookContacts = contacts.filter((c) => c.matrixId);
+    const walletContacts = accounts.map((a) => ({
+      accountId: a.accountId || '',
+      name: a.name || a.accountId || '',
+      publicKey: a.publicKey || '0x',
+      matrixId: matrix.userId,
+    }));
+
+    const mergedContacts = [...addressBookContacts, ...walletContacts].reduce<SignatoryWithId[]>(
+      (acc, contact, index) => {
+        if (!usedPublicKeys.includes(contact.publicKey)) {
+          acc.push({ ...contact, id: index });
+        }
+
+        return acc;
+      },
+      [],
     );
+
+    setContactList(mergedContacts);
   }, [accounts.length, contacts.length, signatories.length]);
 
   const searchedContactList = contactList.filter(
@@ -84,8 +90,22 @@ const SelectContactsModal = ({ signatories, isOpen, onClose, onSelect }: Props) 
     const selectedContacts = contacts.map((c) => contactList[c]);
 
     onSelect(selectedContacts);
-    resetAll();
     onClose();
+    resetAll();
+  };
+
+  const onSelectContact = (
+    event: ChangeEvent<HTMLInputElement>,
+    onChange: (value: number[]) => void,
+    value: number[],
+  ) => {
+    const selectedContact = Number(event.target.value);
+
+    if (event.target.checked) {
+      onChange([...value, selectedContact]);
+    } else {
+      onChange(value.filter((v) => v !== selectedContact));
+    }
   };
 
   return (
@@ -94,7 +114,7 @@ const SelectContactsModal = ({ signatories, isOpen, onClose, onSelect }: Props) 
         placeholder={t('createMultisigAccount.searchContactPlaceholder')}
         className="w-full h-8"
         value={query}
-        onChange={(e) => setQuery(e.target.value)}
+        onChange={setQuery}
       />
 
       <form
@@ -109,16 +129,7 @@ const SelectContactsModal = ({ signatories, isOpen, onClose, onSelect }: Props) 
               control={control}
               rules={{ required: true }}
               render={({ field: { onChange, value } }) => (
-                <Checkbox
-                  value={id}
-                  onChange={(event) => {
-                    if (event.target.checked) {
-                      onChange([...value, event.target.value]);
-                    } else {
-                      onChange(value.filter((v) => v.toString() !== event.target.value));
-                    }
-                  }}
-                >
+                <Checkbox value={id} onChange={(event) => onSelectContact(event, onChange, value)}>
                   <Identicon className="row-span-2 self-center" address={accountId} background={false} />
                   <p className="text-neutral text-sm font-semibold">{name}</p>
                   {/* {contact.walletName && <p className="text-neutral-variant text-2xs">{stake.walletName}</p>} */}
