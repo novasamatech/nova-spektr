@@ -1,6 +1,7 @@
 import { EventType, MatrixEvent, Room } from 'matrix-js-sdk';
 
-import { HexString } from '@renderer/domain/shared-kernel';
+import { HexString, PublicKey } from '@renderer/domain/shared-kernel';
+import { Signatory } from '@renderer/domain/signatory';
 
 // =====================================================
 // ============ ISecureMessenger interface =============
@@ -109,20 +110,13 @@ export const enum Membership {
   LEAVE = 'leave',
 }
 
-export type Signatory = {
-  matrixAddress: string;
-  accountId: string;
-  isInviter?: boolean;
-};
-
-export type RoomSignature = Record<'roomId' | 'sign', string>;
+export type RoomSignature = string;
 
 export type RoomParams = {
   roomId: string;
-  signature: string;
   accountName: string;
-  mstAccountAddress: string;
-  inviterPublicKey: string;
+  accountId: string;
+  inviterPublicKey: PublicKey;
   threshold: number;
   signatories: Signatory[];
 };
@@ -133,10 +127,6 @@ export type OmniExtras = {
     threshold: number;
     signatories: string[];
     address: string;
-  };
-  invite: {
-    signature: string;
-    public_key: string;
   };
 };
 

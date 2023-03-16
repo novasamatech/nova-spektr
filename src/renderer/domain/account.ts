@@ -57,6 +57,12 @@ export type MultisigAccount = Account & {
   creator: AccountID;
 };
 
+export function getMultisigAddress(accoundIds: AccountID[], threshold: number): AccountID {
+  const multisigKey = createKeyMulti(accoundIds, threshold);
+
+  return encodeAddress(multisigKey, SS58_DEFAULT_PREFIX);
+}
+
 export function createMultisigAccount({
   name,
   signatories,
@@ -64,11 +70,10 @@ export function createMultisigAccount({
   matrixRoomId,
   creator,
 }: Pick<MultisigAccount, 'name' | 'signatories' | 'threshold' | 'matrixRoomId' | 'creator'>): MultisigAccount {
-  const multisigKey = createKeyMulti(
+  const multisigAddress = getMultisigAddress(
     signatories.map((s) => s.accountId),
     threshold,
   );
-  const multisigAddress = encodeAddress(multisigKey, SS58_DEFAULT_PREFIX);
 
   return {
     publicKey: toPublicKey(multisigAddress),

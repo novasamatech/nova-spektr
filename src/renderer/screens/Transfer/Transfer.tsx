@@ -23,7 +23,8 @@ import { secondsToMinutes } from '@renderer/shared/utils/time';
 import { getMetadataPortalUrl, TROUBLESHOOTING_URL } from '../Signing/common/consts';
 import ParitySignerSignatureReader from '../Signing/ParitySignerSignatureReader/ParitySignerSignatureReader';
 import { ValidationErrors } from './common/constants';
-import { Message, SelectedAddress, TransferDetails, TransferForm } from './components';
+import { SelectedAddress, TransferDetails, TransferForm } from './components';
+import { Message } from '@renderer/shared/components';
 
 const enum Steps {
   CREATING,

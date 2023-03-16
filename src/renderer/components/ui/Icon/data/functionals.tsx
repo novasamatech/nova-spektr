@@ -12,6 +12,7 @@ import DisableCutoutImg, { ReactComponent as DisableCutoutSvg } from '@images/fu
 import DisableImg, { ReactComponent as DisableSvg } from '@images/functionals/disable.svg';
 import RemoveCutoutImg, { ReactComponent as RemoveCutoutSvg } from '@images/functionals/remove-cutout.svg';
 import RemoveLineImg, { ReactComponent as RemoveLineSvg } from '@images/functionals/remove-line.svg';
+import RemoveImg, { ReactComponent as RemoveSvg } from '@images/functionals/remove.svg';
 import EmptyIdenticonImg, { ReactComponent as EmptyIdenticonSvg } from '@images/functionals/empty-identicon.svg';
 import SearchImg, { ReactComponent as SearchSvg } from '@images/functionals/search.svg';
 import NetworkDuotoneImg, { ReactComponent as NetworkDuotoneSvg } from '@images/functionals/network-duotone.svg';
@@ -24,6 +25,7 @@ import ClearOutlineImg, { ReactComponent as ClearOutlineSvg } from '@images/func
 import EditOutlineImg, { ReactComponent as EditOutlineSvg } from '@images/functionals/edit-outline.svg';
 import DeleteOutlineImg, { ReactComponent as DeleteOutlineSvg } from '@images/functionals/delete-outline.svg';
 import OptionsImg, { ReactComponent as OptionsSvg } from '@images/functionals/options.svg';
+import MultisigOutlineImg, { ReactComponent as MultisigOutlineSvg } from '@images/functionals/multisig-outline.svg';
 
 const FunctionalImages = {
   copy: { svg: CopySvg, img: CopyImg },
@@ -40,6 +42,7 @@ const FunctionalImages = {
   disable: { svg: DisableSvg, img: DisableImg },
   removeCutout: { svg: RemoveCutoutSvg, img: RemoveCutoutImg },
   removeLine: { svg: RemoveLineSvg, img: RemoveLineImg },
+  remove: { svg: RemoveSvg, img: RemoveImg },
   emptyIdenticon: { svg: EmptyIdenticonSvg, img: EmptyIdenticonImg },
   search: { svg: SearchSvg, img: SearchImg },
   networkDuotone: { svg: NetworkDuotoneSvg, img: NetworkDuotoneImg },
@@ -52,6 +55,7 @@ const FunctionalImages = {
   editOutline: { svg: EditOutlineSvg, img: EditOutlineImg },
   deleteOutline: { svg: DeleteOutlineSvg, img: DeleteOutlineImg },
   options: { svg: OptionsSvg, img: OptionsImg },
+  multisigOutline: { svg: MultisigOutlineSvg, img: MultisigOutlineImg },
 } as const;
 
 export type Functional = keyof typeof FunctionalImages;

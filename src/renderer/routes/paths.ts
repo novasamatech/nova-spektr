@@ -28,6 +28,8 @@ const Paths = {
   TRANSFER: '/transfer/:chainId/:assetId',
   SIGNING: '/signing',
 
+  CREATE_MULTISIG_ACCOUNT: '/create-multisig-account',
+
   // DEV
   CHAT_DEV: '/chat-dev',
   CAMERA_DEV: '/camera-dev',
