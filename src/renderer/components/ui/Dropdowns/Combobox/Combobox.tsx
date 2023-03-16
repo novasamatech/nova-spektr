@@ -57,7 +57,8 @@ const Combobox = ({
           displayValue={(option) => option.value}
           prefixElement={prefixElement}
           suffixElement={suffixElement}
-          onChange={(event) => setQuery(event.target.value)}
+          // @ts-ignore onChange doesn't respect custom <Input /> onChange type
+          onChange={setQuery}
         />
 
         <Transition as={Fragment} leave="transition" leaveFrom="opacity-100" leaveTo="opacity-0">

@@ -6,8 +6,10 @@ describe('screen/Settings/InfoLink', () => {
   test('should render component', () => {
     render(<InfoLink url="https://test.com">My link</InfoLink>);
 
-    const children = screen.getByRole('link', { name: 'My link' });
+    const children = screen.getByRole('link', { name: 'globe.svg My link' });
+    const icon = screen.queryByRole('img');
     expect(children).toBeInTheDocument();
+    expect(icon).toBeInTheDocument();
   });
 
   test('should render without icon', () => {
@@ -18,6 +20,8 @@ describe('screen/Settings/InfoLink', () => {
     );
 
     const children = screen.getByRole('link', { name: 'My link' });
+    const icon = screen.queryByRole('img');
     expect(children).toBeInTheDocument();
+    expect(icon).not.toBeInTheDocument();
   });
 });

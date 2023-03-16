@@ -95,7 +95,7 @@ const Wallets = forwardRef<HTMLDivElement, Props>(({ className }, ref) => {
         prefixElement={<Icon name="search" className="w-5 h-5" />}
         placeholder={t('wallets.searchPlaceholder')}
         value={query}
-        onChange={(e) => setQuery(e.target.value)}
+        onChange={setQuery}
       />
 
       <div className="flex-1 flex flex-col overflow-auto gap-2.5">

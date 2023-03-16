@@ -53,7 +53,7 @@ const Dropdown = ({
               </p>
             )}
 
-            <div className={cn('flex items-center gap-x-2.5 w-full', style.label.content)}>
+            <div className="flex items-center gap-x-2.5 w-full">
               {activeOption &&
                 (typeof activeOption.element === 'string' ? (
                   <p

@@ -5,8 +5,8 @@ type Props = {
   className?: string;
 };
 
-const Block = ({ className, children }: PropsWithChildren<Props>) => (
-  <div className={cn('w-full p-5 rounded-2lg bg-white shadow-surface', className)}>{children}</div>
+const Block = ({ className = 'p-5', children }: PropsWithChildren<Props>) => (
+  <div className={cn('w-full rounded-2lg bg-white shadow-surface', className)}>{children}</div>
 );
 
 export default Block;

@@ -306,7 +306,7 @@ const Overview = () => {
                     placeholder={t('staking.overview.searchPlaceholder')}
                     prefixElement={<Icon name="search" className="w-5 h-5" />}
                     value={query}
-                    onChange={(e) => setQuery(e.target.value)}
+                    onChange={setQuery}
                   />
                   {/*<Filter />*/}
                 </div>

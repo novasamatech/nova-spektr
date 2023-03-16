@@ -304,7 +304,7 @@ const Transfer = () => {
 
             {currentStep === Steps.SCANNING && (
               <div className="flex flex-col w-full">
-                <Block className="flex flex-col items-center gap-y-2.5">
+                <Block className="flex flex-col items-center gap-y-2.5 p-5">
                   <div className="text-neutral-variant text-base font-semibold">{t('signing.scanQrTitle')}</div>
                   {txPayload && currentAddress ? (
                     <div className="w-[220px] h-[220px]">
