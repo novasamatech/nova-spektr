@@ -253,7 +253,7 @@ const StepThree = ({ qrData, onNextStep }: Props) => {
               <Input
                 placeholder={t('onboarding.paritySigner.walletNamePlaceholder')}
                 value={walletName}
-                onChange={(e) => setWalletName(e.target.value)}
+                onChange={setWalletName}
               />
             </div>
           </div>
@@ -325,7 +325,7 @@ const StepThree = ({ qrData, onNextStep }: Props) => {
                           </Button>
                         )
                       }
-                      onChange={(e) => updateAccountName(e.target.value, accountIndex)}
+                      onChange={(name) => updateAccountName(name, accountIndex)}
                     />
 
                     {accounts.length > 1 ||
@@ -402,9 +402,7 @@ const StepThree = ({ qrData, onNextStep }: Props) => {
                                       </Button>
                                     )
                                   }
-                                  onChange={(e) =>
-                                    updateAccountName(e.target.value, accountIndex, chainId, derivedKeyIndex)
-                                  }
+                                  onChange={(name) => updateAccountName(name, accountIndex, chainId, derivedKeyIndex)}
                                 />
                                 <Button
                                   className="ml-4 px-0"

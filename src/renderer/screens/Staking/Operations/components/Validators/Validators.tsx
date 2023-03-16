@@ -86,7 +86,7 @@ export const Validators = ({ api, chainId, asset, explorers, addressPrefix, onRe
             placeholder={t('staking.validators.searchPlaceholder')}
             prefixElement={<Icon name="search" className="w-5 h-5" />}
             value={query}
-            onChange={(e) => setQuery(e.target.value)}
+            onChange={setQuery}
           />
           {/* TODO: implement in future */}
           {/*<Filter*/}

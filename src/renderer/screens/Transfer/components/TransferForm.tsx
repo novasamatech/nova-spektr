@@ -171,7 +171,7 @@ const TransferForm = ({ onCreateTransaction, account, asset, connection }: Props
                     </button>
                   ) : (
                     <Button variant="outline" pallet="primary" onClick={pasteAddressHandler(onChange)}>
-                      {t('transfer.pasteButton')}
+                      {t('general.button.pasteButton')}
                     </Button>
                   )
                 }

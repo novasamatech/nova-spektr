@@ -27,7 +27,7 @@ export const Signing = ({ multiQr, countdown, onResult, onGoBack }: Props) => {
   return (
     <div className="overflow-y-auto flex-1">
       <Plate as="section" className="flex flex-col items-center gap-y-5 mx-auto w-[500px]">
-        <Block className="flex flex-col items-center gap-y-2.5">
+        <Block className="flex flex-col items-center gap-y-2.5 p-5">
           <div className="text-neutral-variant text-base font-semibold">{t('signing.scanQrTitle')}</div>
           <div className="h-[460px]">
             <QrReader className="w-full rounded-2lg" countdown={countdown} size={460} onResult={handleResult} />

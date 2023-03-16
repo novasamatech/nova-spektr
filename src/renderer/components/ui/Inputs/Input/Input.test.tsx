@@ -14,7 +14,7 @@ describe('ui/Inputs/Input', () => {
   test('should call onChange', async () => {
     const user = userEvent.setup();
     const spyChange = jest.fn();
-    render(<Input onChange={(event) => spyChange(event.target.value)} />);
+    render(<Input onChange={spyChange} />);
 
     const input = screen.getByRole('textbox');
     await user.type(input, 'x');

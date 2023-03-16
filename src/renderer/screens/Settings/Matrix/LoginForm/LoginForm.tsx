@@ -1,6 +1,6 @@
 import { Controller, SubmitHandler, useForm } from 'react-hook-form';
 import { Trans } from 'react-i18next';
-import { useState, ChangeEvent } from 'react';
+import { useState } from 'react';
 
 import { useMatrix } from '@renderer/context/MatrixContext';
 import { Block, Button, InfoLink, Input, Icon, Combobox, InputHint } from '@renderer/components/ui';
@@ -59,8 +59,8 @@ const LoginForm = () => {
   };
 
   const changeInputValue = (onChange: (value: string) => void) => {
-    return (event: ChangeEvent<HTMLInputElement>) => {
-      onChange(event.target.value);
+    return (value: string) => {
+      onChange(value);
 
       if (invalidLogin) {
         setInvalidLogin(false);

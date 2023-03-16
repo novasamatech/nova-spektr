@@ -10,14 +10,14 @@ describe('ui/Combobox/Combobox', () => {
   const defaultProps = {
     activeId: undefined,
     placeholder: 'Select option',
-    onChange: () => {},
     options,
+    onChange: () => {},
   };
 
   test('should render component', () => {
     render(<Combobox {...defaultProps} />);
 
-    const input = screen.getByRole('textbox');
+    const input = screen.getByRole('combobox');
     expect(input).toBeInTheDocument();
   });
 });

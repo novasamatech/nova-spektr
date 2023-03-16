@@ -168,7 +168,7 @@ const ContactModal = ({ isOpen, onToggle, contact }: Props) => {
                     </button>
                   ) : (
                     <Button variant="outline" pallet="primary" onClick={pasteAddressHandler(onChange)}>
-                      {t('transfer.pasteButton')}
+                      {t('general.button.pasteButton')}
                     </Button>
                   )
                 }
