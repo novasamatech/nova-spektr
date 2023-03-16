@@ -46,11 +46,13 @@ import {
   OmniExtras,
   OmniMstEvent,
   RoomParams,
-  Signatory,
   LoginFlow,
 } from './common/types';
 import CredentialStorage from './credentialStorage';
 import SecretStorage from './secretStorage';
+import { nonNullable } from '@renderer/shared/utils/functions';
+import { Signatory } from '@renderer/domain/signatory';
+import { PublicKey } from '@renderer/domain/shared-kernel';
 
 global.Olm = Olm;
 logger.disableAll();
@@ -124,7 +126,7 @@ export class Matrix implements ISecureMessenger {
       const { flows } = await this.matrixClient.loginFlows();
 
       // TODO: return more data in future
-      return flows.map((flow) => flow.type.replace('m.login.', '')) as LoginFlow[];
+      return flows.map((flow: any) => flow.type.replace('m.login.', '')) as LoginFlow[];
     } catch (error) {
       throw this.createError(MatrixError.LOGIN_FLOWS, error);
     }
@@ -330,7 +332,7 @@ export class Matrix implements ISecureMessenger {
    * @return {Promise}
    * @throws {ErrorObject}
    */
-  async startRoomCreation(mstAccountAddress: string): Promise<Record<'roomId' | 'sign', string> | never> {
+  async startRoomCreation(mstAccountAddress: string): Promise<string | never> {
     this.checkClientLoggedIn();
 
     try {
@@ -340,7 +342,7 @@ export class Matrix implements ISecureMessenger {
         preset: Preset.TrustedPrivateChat,
       });
 
-      return { roomId, sign: `${mstAccountAddress}${roomId}` };
+      return roomId;
     } catch (error) {
       throw this.createError(MatrixError.START_ROOM, error);
     }
@@ -357,9 +359,9 @@ export class Matrix implements ISecureMessenger {
 
     try {
       await this.initStateEvents(params);
-      await this.inviteSignatories(params.roomId, params.signatories);
+      await this.inviteSignatories(params.roomId, params.signatories, params.inviterPublicKey);
 
-      const members = params.signatories.map((signatory) => signatory.matrixAddress);
+      const members = params.signatories.map((signatory) => signatory.matrixId).filter(nonNullable);
       await this.verifyDevices(members);
     } catch (error) {
       throw this.createError(MatrixError.FINISH_ROOM, error);
@@ -697,15 +699,11 @@ export class Matrix implements ISecureMessenger {
           accountName: params.accountName,
           threshold: params.threshold,
           signatories: params.signatories.map((signatory) => signatory.accountId),
-          address: params.mstAccountAddress,
-        },
-        invite: {
-          signature: params.signature,
-          public_key: params.inviterPublicKey,
+          address: params.accountId,
         },
       };
       await this.matrixClient.sendStateEvent(params.roomId, 'm.room.topic', {
-        topic: `Room for communications for ${params.mstAccountAddress} MST account`,
+        topic: `Room for communications for ${params.accountId} MST account`,
         omni_extras: omniExtras,
       });
     } catch (error) {
@@ -720,15 +718,22 @@ export class Matrix implements ISecureMessenger {
    * @return {Promise}
    * @throws {ErrorObject}
    */
-  private async inviteSignatories(roomId: string, signatories: Signatory[]): Promise<void | never> {
-    const inviterAddress = signatories.find((s) => s.isInviter)?.matrixAddress;
+  private async inviteSignatories(
+    roomId: string,
+    signatories: Signatory[],
+    inviterPublicKey: PublicKey,
+  ): Promise<void | never> {
+    const inviterMatrixId = signatories.find((s) => s.publicKey === inviterPublicKey);
 
     const noDuplicates = uniq(
-      signatories.filter((s) => !s.isInviter && s.matrixAddress !== inviterAddress).map((s) => s.matrixAddress),
+      signatories.reduce<string[]>(
+        (acc, s) => (s.matrixId && s.matrixId !== inviterMatrixId?.matrixId ? [...acc, s.matrixId] : acc),
+        [],
+      ),
     );
 
-    const inviteRequests = noDuplicates.reduce<Promise<unknown>[]>((acc, matrixAddress) => {
-      acc.push(this.matrixClient.invite(roomId, matrixAddress));
+    const inviteRequests = noDuplicates.reduce<Promise<unknown>[]>((acc, matrixId) => {
+      acc.push(this.matrixClient.invite(roomId, matrixId));
 
       return acc;
     }, []);

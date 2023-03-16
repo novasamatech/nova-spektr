@@ -1,27 +1,24 @@
-import { Fragment, ReactNode, useState } from 'react';
+import { ComponentPropsWithoutRef, Fragment, ReactNode, useState } from 'react';
 import { Transition, Combobox as HeadlessCombobox } from '@headlessui/react';
 import cn from 'classnames';
 
 import { Input } from '@renderer/components/ui';
 import { ViewClass, DropdownClass } from '../common/constants';
-import { DropdownOption, DropdownResult, Variant } from '../common/types';
+import { DropdownOption, DropdownResult, HTMLComboboxProps, Variant } from '../common/types';
 import { includes } from '@renderer/shared/utils/strings';
 
-type Props = {
-  className?: string;
-  placeholder: string;
+interface Props extends Pick<ComponentPropsWithoutRef<'input'>, HTMLComboboxProps> {
   label?: ReactNode;
-  value?: DropdownOption['value'];
+  invalid?: boolean;
   options: DropdownOption[];
-  disabled?: boolean;
+  value?: DropdownOption['value'];
   filterBy?: string;
   suffixElement?: ReactNode;
   prefixElement?: ReactNode;
   variant?: Variant;
   weight?: keyof typeof DropdownClass;
-  invalid?: boolean;
   onChange: (data: DropdownResult) => void;
-};
+}
 
 const Combobox = ({
   className,
@@ -36,6 +33,7 @@ const Combobox = ({
   weight = 'md',
   invalid,
   onChange,
+  ...props
 }: Props) => {
   const style = DropdownClass[weight];
 
@@ -59,6 +57,7 @@ const Combobox = ({
           suffixElement={suffixElement}
           // @ts-ignore onChange doesn't respect custom <Input /> onChange type
           onChange={setQuery}
+          {...props}
         />
 
         <Transition as={Fragment} leave="transition" leaveFrom="opacity-100" leaveTo="opacity-0">

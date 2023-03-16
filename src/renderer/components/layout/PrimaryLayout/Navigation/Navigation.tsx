@@ -33,7 +33,7 @@ const getCardType = (accounts: AccountDS[]): CardType => {
 const NavItems = [
   { icon: <Icon name="balance" />, title: 'navigation.balancesLabel', link: Paths.BALANCES },
   { icon: <Icon name="staking" />, title: 'navigation.stakingLabel', link: Paths.STAKING },
-  // { icon: <Icon name="book" />, title: 'navigation.addressBookLabel', link: Paths.ADDRESS_BOOK },
+  { icon: <Icon name="book" />, title: 'navigation.addressBookLabel', link: Paths.ADDRESS_BOOK },
   // { icon: <Icon name="history" />, title: 'navigation.historyLabel', link: Paths.HISTORY },
   // { icon: <Icon name="operations" />, title: 'navigation.mstOperationLabel', link: Paths.MULTISIG },
   // { icon: <Icon name="btc" />, title: 'navigation.chatDEVLabel', link: Paths.CHAT_DEV },

@@ -295,6 +295,15 @@ const Wallets = forwardRef<HTMLDivElement, Props>(({ className }, ref) => {
         >
           {t('wallets.addByParitySignerButton')}
         </ButtonLink>
+        <ButtonLink
+          to={Paths.CREATE_MULTISIG_ACCOUNT}
+          className="w-full"
+          prefixElement={<Icon name="multisigOutline" size={16} />}
+          pallet="primary"
+          variant="fill"
+        >
+          {t('wallets.addMultisigWalletButton')}
+        </ButtonLink>
       </div>
     </div>
   );
