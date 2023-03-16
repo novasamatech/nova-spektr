@@ -13,12 +13,26 @@ import { RoomParams } from '@renderer/services/matrix';
 import SelectContactsModal from './SelectContactsModal';
 import Settings from '../Settings';
 import { Message } from '@renderer/shared/components';
-import { DropdownResult } from '@renderer/components/ui/Dropdowns/common/types';
+import { DropdownOption, DropdownResult } from '@renderer/components/ui/Dropdowns/common/types';
 import { PublicKey } from '@renderer/domain/shared-kernel';
 
 type MultisigAccountForm = {
   name: string;
   threshold: DropdownResult<number>;
+};
+
+const getThresholdOptions = (optionsAmount: number): DropdownOption<string>[] => {
+  if (optionsAmount === 0) return [];
+
+  return Array.from({ length: optionsAmount }, (_, i) => {
+    const index = (i + 2).toString();
+
+    return {
+      id: index,
+      element: index,
+      value: index,
+    };
+  });
 };
 
 const CreateMultisigAccount = () => {
@@ -119,20 +133,7 @@ const CreateMultisigAccount = () => {
     setIsLoading(false);
   };
 
-  const thresholdOptions =
-    signatories.length > 0
-      ? Array(signatories.length - 1)
-          .fill(null)
-          .map((_, i) => {
-            const index = (i + 2).toString();
-
-            return {
-              id: index,
-              element: index,
-              value: index,
-            };
-          })
-      : [];
+  const thresholdOptions = getThresholdOptions(signatories.length - 1);
 
   const multisigAccountId =
     threshold &&
