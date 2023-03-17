@@ -53,6 +53,7 @@ import SecretStorage from './secretStorage';
 import { nonNullable } from '@renderer/shared/utils/functions';
 import { Signatory } from '@renderer/domain/signatory';
 import { PublicKey } from '@renderer/domain/shared-kernel';
+import { getShortAddress } from '@renderer/shared/utils/strings';
 
 global.Olm = Olm;
 logger.disableAll();
@@ -328,43 +329,27 @@ export class Matrix implements ISecureMessenger {
 
   /**
    * Start room creation process for new MST account
-   * @param mstAccountAddress room configuration
-   * @return {Promise}
-   * @throws {ErrorObject}
-   */
-  async startRoomCreation(mstAccountAddress: string): Promise<string | never> {
-    this.checkClientLoggedIn();
-
-    try {
-      const { room_id: roomId } = await this.matrixClient.createRoom({
-        name: `OMNI MST | ${mstAccountAddress}`,
-        visibility: Visibility.Private,
-        preset: Preset.TrustedPrivateChat,
-      });
-
-      return roomId;
-    } catch (error) {
-      throw this.createError(MatrixError.START_ROOM, error);
-    }
-  }
-
-  /**
-   * Finish room creation process for new MST account
    * @param params room configuration
    * @return {Promise}
    * @throws {ErrorObject}
    */
-  async finishRoomCreation(params: RoomParams): Promise<void | never> {
+  async createRoom(params: RoomParams): Promise<void | never> {
     this.checkClientLoggedIn();
 
     try {
-      await this.initStateEvents(params);
-      await this.inviteSignatories(params.roomId, params.signatories, params.inviterPublicKey);
+      const { room_id: roomId } = await this.matrixClient.createRoom({
+        name: `Nova Spektr MST | ${getShortAddress(params.accountId)}`,
+        visibility: Visibility.Private,
+        preset: Preset.TrustedPrivateChat,
+      });
+
+      await this.initStateEvents(roomId, params);
+      await this.inviteSignatories(roomId, params.signatories, params.inviterPublicKey);
 
       const members = params.signatories.map((signatory) => signatory.matrixId).filter(nonNullable);
       await this.verifyDevices(members);
     } catch (error) {
-      throw this.createError(MatrixError.FINISH_ROOM, error);
+      throw this.createError(MatrixError.CREATE_ROOM, error);
     }
   }
 
@@ -382,16 +367,6 @@ export class Matrix implements ISecureMessenger {
     } catch (error) {
       throw this.createError(MatrixError.LEAVE_ROOM, error);
     }
-  }
-
-  /**
-   * Cancel room creation and leave the room
-   * @param roomId room's identifier
-   * @return {Promise}
-   * @throws {ErrorObject}
-   */
-  async cancelRoomCreation(roomId: string): Promise<void | never> {
-    await this.leaveRoom(roomId);
   }
 
   /**
@@ -682,13 +657,14 @@ export class Matrix implements ISecureMessenger {
 
   /**
    * Send encryption and topic events
+   * @param roomId Matrix room ID
    * @param params room parameters
    * @return {Promise}
    * @throws {ErrorObject}
    */
-  private async initStateEvents(params: RoomParams): Promise<void | never> {
+  private async initStateEvents(roomId: string, params: RoomParams): Promise<void | never> {
     try {
-      await this.matrixClient.sendStateEvent(params.roomId, 'm.room.encryption', ROOM_CRYPTO_CONFIG);
+      await this.matrixClient.sendStateEvent(roomId, 'm.room.encryption', ROOM_CRYPTO_CONFIG);
     } catch (error) {
       throw this.createError(MatrixError.ROOM_ENCRYPTION, error);
     }
@@ -702,8 +678,8 @@ export class Matrix implements ISecureMessenger {
           address: params.accountId,
         },
       };
-      await this.matrixClient.sendStateEvent(params.roomId, 'm.room.topic', {
-        topic: `Room for communications for ${params.accountId} MST account`,
+      await this.matrixClient.sendStateEvent(roomId, 'm.room.topic', {
+        topic: `Room for communications for ${getShortAddress(params.accountId)} MST account`,
         omni_extras: omniExtras,
       });
     } catch (error) {
@@ -713,8 +689,9 @@ export class Matrix implements ISecureMessenger {
 
   /**
    * Invite signatories to Matrix room
-   * @param roomId Matrix room Id
+   * @param roomId Matrix room ID
    * @param signatories list of signatories' data
+   * @param inviterPublicKey public key of inviter account
    * @return {Promise}
    * @throws {ErrorObject}
    */
@@ -725,14 +702,17 @@ export class Matrix implements ISecureMessenger {
   ): Promise<void | never> {
     const inviterMatrixId = signatories.find((s) => s.publicKey === inviterPublicKey);
 
-    const noDuplicates = uniq(
-      signatories.reduce<string[]>(
-        (acc, s) => (s.matrixId && s.matrixId !== inviterMatrixId?.matrixId ? [...acc, s.matrixId] : acc),
-        [],
-      ),
+    const uniqueSignatories = uniq(
+      signatories.reduce<string[]>((acc, s) => {
+        if (s.matrixId && s.matrixId !== inviterMatrixId?.matrixId) {
+          acc.push(s.matrixId);
+        }
+
+        return acc;
+      }, []),
     );
 
-    const inviteRequests = noDuplicates.reduce<Promise<unknown>[]>((acc, matrixId) => {
+    const inviteRequests = uniqueSignatories.reduce<Promise<unknown>[]>((acc, matrixId) => {
       acc.push(this.matrixClient.invite(roomId, matrixId));
 
       return acc;
