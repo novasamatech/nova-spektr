@@ -109,48 +109,51 @@ const SelectContactsModal = ({ signatories, isOpen, onClose, onSelect }: Props) 
   };
 
   return (
-    <BaseModal contentClass="mx-2.5 my-4 w-[486px]" isOpen={isOpen} onClose={onClose}>
-      <Input
-        placeholder={t('createMultisigAccount.searchContactPlaceholder')}
-        className="w-full h-8"
-        value={query}
-        onChange={setQuery}
-      />
-
+    <BaseModal contentClass="w-[486px]" isOpen={isOpen} onClose={onClose}>
       <form
         id="selectContactsForm"
-        className="max-h-[300px] mt-2.5 overflow-y-auto"
+        className="max-h-[300px] mx-2.5 my-4 overflow-y-auto"
         onSubmit={handleSubmit(onSelectContacts)}
       >
-        {searchedContactList.map(({ accountId, name, id }) => (
-          <div key={id} className="grid grid-flow-col gap-x-1 items-center rounded-2lg h-10 p-2.5 hover:bg-shade-5">
-            <Controller
-              name="contacts"
-              control={control}
-              rules={{ required: true }}
-              render={({ field: { onChange, value } }) => (
-                <Checkbox value={id} onChange={(event) => onSelectContact(event, onChange, value)}>
-                  <Identicon className="row-span-2 self-center" address={accountId} background={false} />
-                  <p className="text-neutral text-sm font-semibold">{name}</p>
-                  {/* {contact.walletName && <p className="text-neutral-variant text-2xs">{stake.walletName}</p>} */}
-                </Checkbox>
-              )}
-            />
-          </div>
-        ))}
+        <Input
+          placeholder={t('createMultisigAccount.searchContactPlaceholder')}
+          className="w-full h-8"
+          value={query}
+          onChange={setQuery}
+        />
+        <ul className="mt-4">
+          {searchedContactList.map(({ accountId, name, id }) => (
+            <li key={id} className="grid grid-flow-col gap-x-1 items-center rounded-2lg h-10 p-2.5 hover:bg-shade-5">
+              <Controller
+                name="contacts"
+                control={control}
+                rules={{ required: true }}
+                render={({ field: { onChange, value } }) => (
+                  <Checkbox value={id} onChange={(event) => onSelectContact(event, onChange, value)}>
+                    <Identicon className="row-span-2 self-center" address={accountId} background={false} />
+                    <p className="text-neutral text-sm font-semibold">{name}</p>
+                    {/* {contact.walletName && <p className="text-neutral-variant text-2xs">{stake.walletName}</p>} */}
+                  </Checkbox>
+                )}
+              />
+            </li>
+          ))}
+        </ul>
       </form>
 
-      <Button
-        type="submit"
-        form="selectContactsForm"
-        className="my-5 mx-auto"
-        weight="lg"
-        disabled={!isValid}
-        pallet="primary"
-        variant="fill"
-      >
-        {t('createMultisigAccount.addContactsButton')} {selectedContacts.length > 0 && `(${selectedContacts.length})`}
-      </Button>
+      <div className="bg-shade-1 py-5">
+        <Button
+          type="submit"
+          form="selectContactsForm"
+          className="mx-auto"
+          weight="lg"
+          disabled={!isValid}
+          pallet="primary"
+          variant="fill"
+        >
+          {t('createMultisigAccount.addContactsButton')} {selectedContacts.length > 0 && `(${selectedContacts.length})`}
+        </Button>
+      </div>
     </BaseModal>
   );
 };

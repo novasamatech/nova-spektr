@@ -57,8 +57,8 @@ export type MultisigAccount = Account & {
   creator: AccountID;
 };
 
-export function getMultisigAddress(accoundIds: AccountID[], threshold: number): AccountID {
-  const multisigKey = createKeyMulti(accoundIds, threshold);
+export function getMultisigAddress(accountIds: AccountID[], threshold: number): AccountID {
+  const multisigKey = createKeyMulti(accountIds, threshold);
 
   return encodeAddress(multisigKey, SS58_DEFAULT_PREFIX);
 }

@@ -226,8 +226,8 @@ const LoginForm = () => {
                 </div>
               )}
               {isLoggedIn && (
-                <div className="flex items-center justify-center h-10 w-20 border border-secondary rounded-2lg">
-                  <Icon className="text-secondary" name="checkmark" size={20} />
+                <div className="flex items-center justify-center h-10 w-20 border border-success rounded-2lg">
+                  <Icon className="text-success" name="checkmark" size={20} />
                 </div>
               )}
             </div>
@@ -246,7 +246,7 @@ const LoginForm = () => {
       {/*    {REGISTER_LINKS.map(({ icon, url }) => (*/}
       {/*      <li key={url}>*/}
       {/*        <a href={url} rel="noopener noreferrer" target="_blank">*/}
-      {/*          <Icon name={icon} size={24} />*/}
+      {/*          <Icon name={icon} />*/}
       {/*        </a>*/}
       {/*      </li>*/}
       {/*    ))}*/}
