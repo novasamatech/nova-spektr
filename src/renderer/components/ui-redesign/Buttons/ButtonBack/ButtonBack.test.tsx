@@ -15,7 +15,7 @@ describe('ui/Buttons/ButtonBack', () => {
   test('should render component', () => {
     render(<ButtonBack>Back home</ButtonBack>, { wrapper: MemoryRouter });
 
-    const children = screen.getByText('Back home');
+    const children = screen.getByRole('button');
     expect(children).toBeInTheDocument();
   });
 
