@@ -372,7 +372,7 @@ export class Matrix implements ISecureMessenger {
    */
   listOfSpektrRooms(type: Membership.INVITE | Membership.JOIN): Room[] {
     return this.matrixClient.getRooms().filter((room) => {
-      return this.isNovaSpektrRoom(room.name) && room.getMyMembership() === type;
+      return this.isSpektrRoom(room.name) && room.getMyMembership() === type;
     });
   }
 
@@ -391,7 +391,7 @@ export class Matrix implements ISecureMessenger {
 
     const timeline = rooms.reduce<MatrixEvent[]>((acc, roomId) => {
       const room = this.matrixClient.getRoom(roomId);
-      if (!room || !this.isNovaSpektrRoom(room.name)) return acc;
+      if (!room || !this.isSpektrRoom(room.name)) return acc;
 
       const roomTimeline = room
         .getLiveTimeline()
@@ -757,7 +757,7 @@ export class Matrix implements ISecureMessenger {
       try {
         // getRoomSummary loads room into client, otherwise room will be NULL
         const roomSummary = await this.matrixClient.getRoomSummary(roomId);
-        const roomIsValid = this.isNovaSpektrRoom(roomSummary.name);
+        const roomIsValid = this.isSpektrRoom(roomSummary.name);
         const room = this.matrixClient.getRoom(roomId);
         const topic = this.getSpektrTopic(room);
         const userHasJoined = room?.getMyMembership() === Membership.JOIN;
@@ -796,7 +796,7 @@ export class Matrix implements ISecureMessenger {
       if (!roomId) return;
 
       const room = this.matrixClient.getRoom(roomId);
-      if (!room || !this.isNovaSpektrRoom(room.name)) return;
+      if (!room || !this.isSpektrRoom(room.name)) return;
 
       handler();
     });
@@ -809,7 +809,7 @@ export class Matrix implements ISecureMessenger {
     this.matrixClient.on(RoomEvent.LocalEchoUpdated, (event, room) => {
       if (event.getSender() !== this.userId || event.status !== 'sent') return;
 
-      if (!this.isSpektrMstEvent(event) || !this.isNovaSpektrRoom(room.name)) return;
+      if (!this.isSpektrMstEvent(event) || !this.isSpektrRoom(room.name)) return;
 
       this.eventCallbacks.onMstEvent(this.createEventPayload<MSTPayload>(event));
     });
@@ -871,7 +871,7 @@ export class Matrix implements ISecureMessenger {
    * @param roomName name of the room
    * @return {Boolean}
    */
-  private isNovaSpektrRoom(roomName?: string): boolean {
+  private isSpektrRoom(roomName?: string): boolean {
     if (!roomName) return false;
 
     return /^Nova Spektr MST \| [a-zA-Z\d.]+$/.test(roomName);
