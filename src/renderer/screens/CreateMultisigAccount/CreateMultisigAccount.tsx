@@ -1,54 +1,47 @@
-import { useEffect, useRef, useState } from 'react';
+import { useState } from 'react';
 import { Controller, SubmitHandler, useForm } from 'react-hook-form';
 import { useNavigate } from 'react-router-dom';
 
 import { Address, Block, Button, ButtonBack, Dropdown, Icon, Input, Plate } from '@renderer/components/ui';
+import { createMultisigAccount, getMultisigAddress } from '@renderer/domain/account';
 import { useI18n } from '@renderer/context/I18nContext';
-import { createMultisigAccount, getMultisigAddress, MultisigAccount } from '@renderer/domain/account';
 import { Signatory } from '@renderer/domain/signatory';
 import { useToggle } from '@renderer/shared/hooks';
 import { useAccount } from '@renderer/services/account/accountService';
 import { useMatrix } from '@renderer/context/MatrixContext';
-import { RoomParams } from '@renderer/services/matrix';
-import SelectContactsModal from './SelectContactsModal';
-import Settings from '../Settings';
 import { Message } from '@renderer/shared/components';
 import { DropdownOption, DropdownResult } from '@renderer/components/ui/Dropdowns/common/types';
-import { PublicKey } from '@renderer/domain/shared-kernel';
+import SelectContactsModal from './SelectContactsModal';
+import Settings from '../Settings';
 
 type MultisigAccountForm = {
   name: string;
   threshold: DropdownResult<number>;
 };
 
-const getThresholdOptions = (optionsAmount: number): DropdownOption<string>[] => {
+const getThresholdOptions = (optionsAmount: number): DropdownOption<number>[] => {
   if (optionsAmount === 0) return [];
 
-  return Array.from({ length: optionsAmount }, (_, i) => {
-    const index = (i + 2).toString();
-
-    return {
-      id: index,
-      element: index,
-      value: index,
-    };
-  });
+  return Array.from({ length: optionsAmount }, (_, index) => ({
+    id: index.toString(),
+    element: index + 2,
+    value: index + 2,
+  }));
 };
 
 const CreateMultisigAccount = () => {
   const { t } = useI18n();
   const navigate = useNavigate();
-
-  const [signatories, setSignatories] = useState<Signatory[]>([]);
-  const [isSuccessMessageOpen, toggleSuccessMessage] = useToggle(false);
-  const [isLoading, setIsLoading] = useState(false);
-  const [errorMessage, setErrorMessage] = useState('');
-  const [isAddSignatoryModalOpen, toggleAddSignatoryModal] = useToggle(false);
-  const roomId = useRef<string>();
-
+  const { matrix, isLoggedIn } = useMatrix();
   const { getLiveAccounts, addAccount } = useAccount();
   const accounts = getLiveAccounts();
-  const { matrix, isLoggedIn } = useMatrix();
+
+  const [isSuccessMessageOpen, toggleSuccessMessage] = useToggle(false);
+  const [isAddSignatoryModalOpen, toggleAddSignatoryModal] = useToggle(false);
+  const [inProgress, toggleInProgress] = useToggle(false);
+
+  const [signatories, setSignatories] = useState<Signatory[]>([]);
+  const [errorMessage, setErrorMessage] = useState('');
 
   const {
     control,
@@ -66,71 +59,39 @@ const CreateMultisigAccount = () => {
   const threshold = watch('threshold');
 
   const removeSignatory = (id: number) => {
-    setSignatories((s) => s.filter((_, i) => i !== id));
-  };
-
-  const cancelRoomCreation = () => {
-    if (!roomId.current) return;
-
-    matrix.cancelRoomCreation(roomId.current);
-  };
-
-  useEffect(() => cancelRoomCreation(), []);
-
-  const startRoomCreation = async (mstAccountAddress: string): Promise<PublicKey | undefined> => {
-    const inviter = signatories.find((a) => a.matrixId === matrix.userId);
-
-    // Create room only if I'm a signatory
-    if (!inviter || !inviter.publicKey) return;
-
-    const newRoomId = await matrix.startRoomCreation(mstAccountAddress);
-
-    roomId.current = newRoomId;
-
-    return inviter.publicKey;
-  };
-
-  const finishRoomCreation = async (mstAccount: MultisigAccount, inviter: PublicKey) => {
-    const roomParams: RoomParams = {
-      roomId: roomId.current || '',
-      inviterPublicKey: inviter || '',
-      accountName: mstAccount.name || '',
-      accountId: mstAccount.accountId || '',
-      signatories,
-      threshold: mstAccount.threshold || 0,
-    };
-
-    await matrix.finishRoomCreation(roomParams);
+    setSignatories((s) => s.filter((_, index) => index !== id));
   };
 
   const onCreateAccount: SubmitHandler<MultisigAccountForm> = async ({ name, threshold }) => {
-    setIsLoading(true);
+    toggleInProgress();
+
+    const inviter = signatories.find((s) => s.matrixId === matrix.userId);
+    const mstAccount = createMultisigAccount({
+      name,
+      signatories,
+      threshold: threshold.value,
+      creator: '',
+      matrixRoomId: '',
+    });
+
+    if (!mstAccount.accountId || !inviter) return;
 
     try {
-      const multisigAccount = createMultisigAccount({
-        name,
+      await matrix.createRoom({
+        inviterPublicKey: inviter.publicKey,
+        accountName: mstAccount.name,
+        accountId: mstAccount.accountId,
+        threshold: mstAccount.threshold,
         signatories,
-        threshold: threshold.value,
-        creator: '',
-        matrixRoomId: '',
       });
-
-      if (!multisigAccount.accountId) return;
-
-      const inviter = await startRoomCreation(multisigAccount.accountId);
-      multisigAccount.matrixRoomId = roomId.current || '';
-
-      if (!inviter) return;
-
-      await finishRoomCreation(multisigAccount, inviter);
-      addAccount(multisigAccount);
+      await addAccount(mstAccount);
 
       toggleSuccessMessage();
     } catch (error: any) {
       setErrorMessage(error?.message || t('createMultisigAccount.errorMessage'));
     }
 
-    setIsLoading(false);
+    toggleInProgress();
   };
 
   const thresholdOptions = getThresholdOptions(signatories.length - 1);
@@ -144,8 +105,8 @@ const CreateMultisigAccount = () => {
     );
 
   const hasOwnSignatory = signatories.some((s) => accounts.find((a) => a.publicKey === s.publicKey));
-  const hasTwoSignatories = signatories.length > 1;
   const accountAlreadyExists = accounts.find((a) => a.accountId === multisigAccountId);
+  const hasTwoSignatories = signatories.length > 1;
 
   const signatoriesAreValid = hasOwnSignatory && hasTwoSignatories && !accountAlreadyExists;
 
@@ -171,7 +132,7 @@ const CreateMultisigAccount = () => {
 
       <div className="overflow-y-auto flex-1">
         <Plate as="section" className="mx-auto w-[800px]">
-          <Block className="flex flex-col gap-y-2.5">
+          <Block className="flex flex-col gap-y-2.5 p-5">
             <form id="multisigForm" className="flex flex-col my-3 gap-20" onSubmit={handleSubmit(onCreateAccount)}>
               <div className="flex items-center justify-between">
                 <div className="flex-1">
@@ -189,7 +150,7 @@ const CreateMultisigAccount = () => {
                         placeholder={t('createMultisigAccount.namePlaceholder')}
                         invalid={!!error}
                         value={value}
-                        disabled={isLoading}
+                        disabled={inProgress}
                         onChange={onChange}
                       />
                     )}
@@ -203,15 +164,15 @@ const CreateMultisigAccount = () => {
                   <p className="text-neutral-variant">{t('createMultisigAccount.signatoriesDescription')}</p>
                 </div>
 
-                <div className="flex flex-wrap gap-1">
+                <ul className="flex flex-wrap gap-1">
                   {signatories.map((s, i) => (
-                    <div key={s.accountId} className="flex pr-0 pl-2 bg-shade-5 h-10 items-center rounded-2lg w-fit">
-                      <Address address={s.accountId} name={s.name} />
+                    <li key={s.accountId} className="flex pl-2 bg-shade-5 h-10 items-center rounded-2lg w-fit">
+                      <Address address={s.accountId} name={s.name} size={24} />
 
                       <Button variant="text" pallet="error" onClick={() => removeSignatory(i)}>
-                        <Icon className="rotate-45" size={24} name="add" />
+                        <Icon className="rotate-45" name="add" />
                       </Button>
-                    </div>
+                    </li>
                   ))}
 
                   <Button
@@ -221,12 +182,12 @@ const CreateMultisigAccount = () => {
                     suffixElement={<Icon name="add" />}
                     pallet="shade"
                     variant="dashed"
-                    disabled={isLoading}
+                    disabled={inProgress}
                     onClick={toggleAddSignatoryModal}
                   >
                     {t('createMultisigAccount.addSignatoryButton')}
                   </Button>
-                </div>
+                </ul>
               </div>
 
               <div className="flex items-center justify-between">
@@ -239,12 +200,12 @@ const CreateMultisigAccount = () => {
                   name="threshold"
                   control={control}
                   rules={{ required: true }}
-                  render={({ field: { value, onChange }, fieldState: { error } }) => (
+                  render={({ field: { value, onChange } }) => (
                     <Dropdown
                       variant="up"
                       placeholder=""
                       activeId={value.value.toString()}
-                      disabled={signatories.length < 2 || isLoading}
+                      disabled={signatories.length < 2 || inProgress}
                       options={thresholdOptions}
                       className="w-20"
                       onChange={onChange}
@@ -259,7 +220,7 @@ const CreateMultisigAccount = () => {
               {t('createMultisigAccount.backButton')}
             </Button>
 
-            {isLoading ? (
+            {inProgress ? (
               <div className="flex items-center justify-center h-10 w-20 border border-shade-40 rounded-2lg">
                 <Icon className="text-shade-40 animate-spin" name="loader" size={20} />
               </div>

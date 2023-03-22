@@ -69,13 +69,9 @@ const MATRIX_ERRORS: Record<MatrixError, ErrorObject> = {
     code: MatrixError.NO_CREDS_IN_DB,
     message: 'No credentials in DataBase',
   },
-  [MatrixError.START_ROOM]: {
-    code: MatrixError.START_ROOM,
-    message: 'Start room creation failed',
-  },
-  [MatrixError.FINISH_ROOM]: {
-    code: MatrixError.FINISH_ROOM,
-    message: 'Finish room creation failed',
+  [MatrixError.CREATE_ROOM]: {
+    code: MatrixError.CREATE_ROOM,
+    message: 'Room creation failed',
   },
   [MatrixError.LEAVE_ROOM]: {
     code: MatrixError.LEAVE_ROOM,

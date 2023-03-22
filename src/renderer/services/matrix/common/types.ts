@@ -1,6 +1,6 @@
 import { EventType, MatrixEvent, Room } from 'matrix-js-sdk';
 
-import { HexString, PublicKey } from '@renderer/domain/shared-kernel';
+import { HexString, PublicKey, AccountID } from '@renderer/domain/shared-kernel';
 import { Signatory } from '@renderer/domain/signatory';
 
 // =====================================================
@@ -19,9 +19,7 @@ export interface ISecureMessenger {
   stopClient: () => void;
 
   // Actions
-  startRoomCreation: (mstAccountAddress: string) => Promise<RoomSignature | never>;
-  finishRoomCreation: (params: RoomParams) => Promise<void | never>;
-  cancelRoomCreation: (roomId: string) => Promise<void | never>;
+  createRoom: (params: RoomParams) => Promise<void | never>;
   joinRoom: (roomId: string) => Promise<void | never>;
   leaveRoom: (roomId: string) => Promise<void | never>;
   invite: (roomId: string, signatoryId: string) => Promise<void | never>;
@@ -110,12 +108,9 @@ export const enum Membership {
   LEAVE = 'leave',
 }
 
-export type RoomSignature = string;
-
 export type RoomParams = {
-  roomId: string;
   accountName: string;
-  accountId: string;
+  accountId: AccountID;
   inviterPublicKey: PublicKey;
   threshold: number;
   signatories: Signatory[];
@@ -210,8 +205,7 @@ export const enum MatrixError {
   LOGIN_CACHE,
   INIT_WITH_CREDENTIALS,
   NO_CREDS_IN_DB,
-  START_ROOM,
-  FINISH_ROOM,
+  CREATE_ROOM,
   LEAVE_ROOM,
   JOIN_ROOM,
   INVITE_IN_ROOM,

@@ -57,11 +57,11 @@
     "backButton": "Back",
     "continueButton": "Continue",
     "errorMessage": "Something went wrong",
-    "nameDescription": "Give a name for your multisig account",
+    "nameDescription": "Give a name to your multisig account",
     "nameLabel": "Account",
     "namePlaceholder": "Nova Spektr",
     "searchContactPlaceholder": "Search for an account or contact...",
-    "signatoriesDescription": "Add signatories for your multisig account",
+    "signatoriesDescription": "Add signatories to your multisig account",
     "signatoriesLabel": "Signatories",
     "successMessage": "Multisig account created successfully",
     "title": "Create multisig account"
