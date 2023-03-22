@@ -17,6 +17,7 @@ module.exports = {
         primary: '#567CDC',
         'primary-variant': '#D5DEF6',
         'on-primary-variant': '#1A367F',
+        primaryNew: '#2463EB',
         secondary: '#A7DB57',
         'secondary-variant': '#E9F6D5',
         tertiary: '#262E42',
@@ -27,6 +28,7 @@ module.exports = {
         alert: '#FFBF1A',
         error: '#C05941',
         'error-variant': '#EBD0CA',
+        'gray-border': 'rgba(0, 0, 0, 0.08)',
         shade: {
           1: '#FCFCFC',
           2: '#F9F9F9',
