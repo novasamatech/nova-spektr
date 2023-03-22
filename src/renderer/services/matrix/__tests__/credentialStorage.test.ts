@@ -22,9 +22,7 @@ describe('service/matrix/credentialStorage', () => {
 
   test('should init with default values', () => {
     const creds = storage.getCredentials('userId', 'value');
-    const skip = storage.getSkipLogin();
-    expect(creds).toEqual(undefined);
-    expect(skip).toEqual({ skip: false });
+    expect(creds).toBeUndefined();
   });
 
   test('should save new item', () => {
@@ -40,18 +38,10 @@ describe('service/matrix/credentialStorage', () => {
     expect(item?.username).toEqual('new name');
   });
 
-  test('should set and get skip value', () => {
-    storage.saveSkipLogin({ skip: true });
-    const item = storage.getSkipLogin();
-    expect(item.skip).toEqual(true);
-  });
-
   test('should clear the storage', () => {
     storage.saveCredentials(credentials);
-    storage.saveSkipLogin({ skip: true });
     storage.clear();
 
     expect(localStorage.getItem('matrix_credentials')).toBeNull();
-    expect(localStorage.getItem('matrix_skip')).toBeNull();
   });
 });

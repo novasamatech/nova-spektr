@@ -16,11 +16,11 @@ type Props = {
   className?: string;
 };
 
-const GroupLabels = {
+const GROUP_LABELS = {
+  [SigningType.MULTISIG]: 'wallets.multisigLabel',
+  [WalletType.MULTISHARD_PARITY_SIGNER]: 'wallets.multishardLabel',
   [SigningType.WATCH_ONLY]: 'wallets.watchOnlyLabel',
   [SigningType.PARITY_SIGNER]: 'wallets.paritySignerLabel',
-  [SigningType.MULTISIG]: 'wallets.multisigLabel',
-  [WalletType.MULTISHARD_PARITY_SIGNER]: 'wallets.multishardWalletsLabel',
 };
 
 const Wallets = forwardRef<HTMLDivElement, Props>(({ className }, ref) => {
@@ -49,19 +49,19 @@ const Wallets = forwardRef<HTMLDivElement, Props>(({ className }, ref) => {
 
   const accountGroups = [
     {
-      label: GroupLabels[SigningType.MULTISIG],
+      label: GROUP_LABELS[SigningType.MULTISIG],
       accounts: searchedMultisigAccounts,
     },
     {
-      label: GroupLabels[WalletType.MULTISHARD_PARITY_SIGNER],
+      label: GROUP_LABELS[WalletType.MULTISHARD_PARITY_SIGNER],
       accounts: wallets,
     },
     {
-      label: GroupLabels[SigningType.PARITY_SIGNER],
+      label: GROUP_LABELS[SigningType.PARITY_SIGNER],
       accounts: searchedParitySignerAccounts,
     },
     {
-      label: GroupLabels[SigningType.WATCH_ONLY],
+      label: GROUP_LABELS[SigningType.WATCH_ONLY],
       accounts: searchedWatchOnlyAccounts,
     },
   ];
