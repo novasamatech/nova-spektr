@@ -13,4 +13,5 @@ export interface IAccountService {
   addAccount: (account: Account) => Promise<IndexableType>;
   updateAccount: (account: Account) => Promise<IndexableType>;
   deleteAccount: (accountId: AccountID) => Promise<void>;
+  getMultisigAccounts: () => AccountDS[];
 }
