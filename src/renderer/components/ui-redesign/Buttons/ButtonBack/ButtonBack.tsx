@@ -24,7 +24,7 @@ const ButtonBack = ({ path, onCustomReturn }: PropsWithChildren<Props>) => {
   return (
     <button
       type="button"
-      className="group flex items-center gap-x-2.5 p-1 border rounded border-gray-border"
+      className="group flex items-center gap-x-2.5 p-1 border rounded border-gray-border shadow-icon-button"
       onClick={onClick}
     >
       <Icon size={16} className="text-shade" name="arrowLeft" />
