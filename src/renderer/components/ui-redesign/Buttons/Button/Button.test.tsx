@@ -5,7 +5,7 @@ import Button from './Button';
 describe('ui/Buttons/Button', () => {
   test('should render component', () => {
     render(
-      <Button variant="fill" pallet="primaryNew">
+      <Button variant="fill" pallet="primary">
         Hello button
       </Button>,
     );
@@ -16,7 +16,7 @@ describe('ui/Buttons/Button', () => {
 
   test('should render prefix', () => {
     render(
-      <Button variant="fill" pallet="primaryNew" prefixElement="Prefix">
+      <Button variant="fill" pallet="primary" prefixElement="Prefix">
         Hello button
       </Button>,
     );
@@ -27,7 +27,7 @@ describe('ui/Buttons/Button', () => {
 
   test('should render suffix', () => {
     render(
-      <Button variant="fill" pallet="primaryNew" suffixElement="Suffix">
+      <Button variant="fill" pallet="primary" suffixElement="Suffix">
         Hello button
       </Button>,
     );
@@ -39,7 +39,7 @@ describe('ui/Buttons/Button', () => {
   test('should call onClick', () => {
     const spyClick = jest.fn();
     render(
-      <Button variant="fill" pallet="primaryNew" onClick={spyClick}>
+      <Button variant="fill" pallet="primary" onClick={spyClick}>
         Hello button
       </Button>,
     );
