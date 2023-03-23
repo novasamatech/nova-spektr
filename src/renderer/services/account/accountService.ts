@@ -43,14 +43,16 @@ export const useAccount = (): IAccountService => {
     return useLiveQuery(query, [], []);
   };
 
-  const getMultisigAccounts = (): AccountDS[] => {
+  const getActiveMultisigAccounts = (): AccountDS[] => {
     const query = async () => {
       try {
         const accounts = await getAccounts();
 
-        return accounts.filter((account) => account.isActive && (account as MultisigAccount).creator !== undefined);
+        return accounts.filter(
+          (account) => account.isActive && (account as MultisigAccount).inviterPublicKey !== undefined,
+        );
       } catch (error) {
-        console.warn('Error trying to get active accounts');
+        console.warn('Error trying to get active multisig accounts');
 
         return Promise.resolve([]);
       }
@@ -81,7 +83,7 @@ export const useAccount = (): IAccountService => {
     getAccounts,
     getLiveAccounts,
     getActiveAccounts,
-    getMultisigAccounts,
+    getActiveMultisigAccounts,
     toggleActiveAccount,
     addAccount,
     updateAccount,

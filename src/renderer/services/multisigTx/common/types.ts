@@ -9,11 +9,11 @@ import { MultisigTransaction } from '@renderer/domain/transaction';
 
 export interface IMultisigTxService {
   subscribeMultisigAccount: (api: ApiPromise, account: MultisigAccount) => () => void;
-  getTx: (txId: IndexableType) => Promise<MultisigTransactionDS | undefined>;
-  getTxs: (where?: Record<string, any>) => Promise<MultisigTransactionDS[]>;
-  addTx: (tx: MultisigTransaction) => Promise<IndexableType>;
-  updateTx: (tx: MultisigTransactionDS) => Promise<IndexableType>;
-  deleteTx: (txId: IndexableType) => Promise<void>;
+  getMultisigTx: (txId: IndexableType) => Promise<MultisigTransactionDS | undefined>;
+  getMultisigTxs: (where?: Record<string, any>) => Promise<MultisigTransactionDS[]>;
+  addMultisigTx: (tx: MultisigTransaction) => Promise<IndexableType>;
+  updateMultisigTx: (tx: MultisigTransactionDS) => Promise<IndexableType>;
+  deleteMultisigTx: (txId: IndexableType) => Promise<void>;
 }
 
 export type PendingMultisigTransaction = {

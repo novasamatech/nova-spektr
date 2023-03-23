@@ -60,12 +60,12 @@ export interface IContactStorage {
   deleteContact: (contactId: IndexableType) => Promise<void>;
 }
 
-export interface ITransactionStorage {
-  getTx: (txId: IndexableType) => Promise<MultisigTransactionDS | undefined>;
-  getTxs: (where?: Record<string, any>) => Promise<MultisigTransactionDS[]>;
-  addTx: (tx: MultisigTransaction) => Promise<IndexableType>;
-  updateTx: (tx: MultisigTransactionDS) => Promise<IndexableType>;
-  deleteTx: (txId: IndexableType) => Promise<void>;
+export interface IMultisigTransactionStorage {
+  getMultisigTx: (txId: IndexableType) => Promise<MultisigTransactionDS | undefined>;
+  getMultisigTxs: (where?: Record<string, any>) => Promise<MultisigTransactionDS[]>;
+  addMultisigTx: (tx: MultisigTransaction) => Promise<IndexableType>;
+  updateMultisigTx: (tx: MultisigTransactionDS) => Promise<IndexableType>;
+  deleteMultisigTx: (txId: IndexableType) => Promise<void>;
 }
 
 // =====================================================
@@ -78,7 +78,7 @@ export type DataStorage = {
   wallets: IWalletStorage;
   accounts: IAccountStorage;
   contacts: IContactStorage;
-  multisigTransactions: ITransactionStorage;
+  multisigTransactions: IMultisigTransactionStorage;
 };
 
 type WithID = {

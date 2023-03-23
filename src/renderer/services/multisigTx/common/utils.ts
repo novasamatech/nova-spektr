@@ -1,15 +1,15 @@
 import { ApiPromise } from '@polkadot/api';
 
 import { MultisigAccount } from '@renderer/domain/account';
-import { ChainId } from '@renderer/domain/shared-kernel';
+import { AccountID, ChainId } from '@renderer/domain/shared-kernel';
 import { Signatory } from '@renderer/domain/signatory';
 import { MultisigEvent, MultisigTransaction } from '@renderer/domain/transaction';
-import { toAddress } from '../balance/common/utils';
-import { PendingMultisigTransaction } from './common/types';
+import { formatAddress } from '@renderer/shared/utils/address';
+import { PendingMultisigTransaction } from './types';
 
 export const getPendingMultisigTxs = async (
   api: ApiPromise,
-  address: string,
+  address: AccountID,
 ): Promise<PendingMultisigTransaction[]> => {
   const multisigs = await api.query.multisig.multisigs.entries(address);
 
@@ -31,13 +31,6 @@ export const getPendingMultisigTxs = async (
     }, []);
 };
 
-export const isSameTransaction = (
-  transaction: MultisigTransaction,
-  multisigTransaction: PendingMultisigTransaction,
-) => {
-  return multisigTransaction.callHash.toString() === transaction.callHash?.toString();
-};
-
 export const updateTransactionPayload = (
   transaction: MultisigTransaction,
   pendingTransaction: PendingMultisigTransaction,
@@ -46,19 +39,19 @@ export const updateTransactionPayload = (
   const { events } = transaction;
 
   const newApprovals = pendingTransaction.params.approvals.reduce<MultisigEvent[]>((acc, a) => {
-    if (events.find((e) => e.status === 'SIGNED' && e.signatory.publicKey === a.toHex())) return acc;
-
-    return [
-      ...acc,
-      {
+    const hasApprovalEvent = events.find((e) => e.status === 'SIGNED' && e.signatory.publicKey === a.toHex());
+    if (!hasApprovalEvent) {
+      acc.push({
         status: 'SIGNED',
         signatory: signatories.find((s) => s.publicKey === a.toHex()) || {
-          name: toAddress(a.toHex()),
+          name: formatAddress(a.toHex()),
           publicKey: a.toHex(),
-          accountId: toAddress(a.toHex()),
+          accountId: formatAddress(a.toHex()),
         },
-      },
-    ];
+      });
+    }
+
+    return acc;
   }, []);
 
   return {
@@ -84,9 +77,9 @@ export const createTransactionPayload = (
   const events: MultisigEvent[] = approvals.map((a) => ({
     status: 'SIGNED',
     signatory: account.signatories.find((s) => s.accountId === a.toHuman()) || {
-      name: toAddress(a.toHex()),
+      name: formatAddress(a.toHex()),
       publicKey: a.toHex(),
-      accountId: toAddress(a.toHex()),
+      accountId: formatAddress(a.toHex()),
     },
   }));
 
@@ -103,24 +96,3 @@ export const createTransactionPayload = (
     events,
   };
 };
-
-// export const updateTimepointFromBlockchain = async (transaction: Transaction, connection: Connection) => {
-//   if (!transaction || !connection) return;
-
-//   const multisigTransaction = await connection.api.query.multisig.multisigs(
-//     getAddressFromWallet(transaction.wallet, connection.network),
-//     transaction.data.callHash as string,
-//   );
-//   if (multisigTransaction.isNone) return;
-
-//   const pendingTransaction = multisigTransaction.unwrap();
-
-//   if (!pendingTransaction) return;
-
-//   db.transactions.put({
-//     ...transaction,
-//     blockHeight: pendingTransaction.when.height.toNumber(),
-//     blockHash: pendingTransaction.when.hash.toHex(),
-//     extrinsicIndex: pendingTransaction.when.index.toNumber(),
-//   });
-// };

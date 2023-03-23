@@ -1,14 +1,14 @@
 import { IndexableType, Table } from 'dexie';
 
 import { MultisigTransaction } from '@renderer/domain/transaction';
-import { MultisigTransactionDS, ITransactionStorage } from './common/types';
+import { MultisigTransactionDS, IMultisigTransactionStorage } from './common/types';
 
-export const useTransactionStorage = (db: Table<MultisigTransactionDS>): ITransactionStorage => ({
-  getTx: (txId: IndexableType): Promise<MultisigTransactionDS | undefined> => {
+export const useTransactionStorage = (db: Table<MultisigTransactionDS>): IMultisigTransactionStorage => ({
+  getMultisigTx: (txId: IndexableType): Promise<MultisigTransactionDS | undefined> => {
     return db.get(txId);
   },
 
-  getTxs: (where?: Record<string, any>): Promise<MultisigTransactionDS[]> => {
+  getMultisigTxs: (where?: Record<string, any>): Promise<MultisigTransactionDS[]> => {
     if (where) {
       return db.where(where).toArray();
     }
@@ -16,15 +16,15 @@ export const useTransactionStorage = (db: Table<MultisigTransactionDS>): ITransa
     return db.toArray();
   },
 
-  addTx: (tx: MultisigTransaction): Promise<IndexableType> => {
+  addMultisigTx: (tx: MultisigTransaction): Promise<IndexableType> => {
     return db.add(tx);
   },
 
-  updateTx: (tx: MultisigTransactionDS): Promise<IndexableType> => {
+  updateMultisigTx: (tx: MultisigTransactionDS): Promise<IndexableType> => {
     return db.put(tx);
   },
 
-  deleteTx: (txId: IndexableType): Promise<void> => {
+  deleteMultisigTx: (txId: IndexableType): Promise<void> => {
     return db.delete(txId);
   },
 });

@@ -5,19 +5,19 @@ import { MiltisigTransactionFinalStatus } from '@renderer/domain/transaction';
 import storage from '../storage';
 import { QUERY_INTERVAL } from './common/consts';
 import { IMultisigTxService } from './common/types';
-import { createTransactionPayload, getPendingMultisigTxs, updateTransactionPayload } from './multisigTxUtils';
+import { createTransactionPayload, getPendingMultisigTxs, updateTransactionPayload } from './common/utils';
 
 export const useMultisigTx = (): IMultisigTxService => {
   const transactionStorage = storage.connectTo('multisigTransactions');
 
   if (!transactionStorage) {
-    throw new Error('=== 🔴 Contact storage in not defined 🔴 ===');
+    throw new Error('=== 🔴 MultisigTransactions storage in not defined 🔴 ===');
   }
-  const { getTx, getTxs, addTx, updateTx, deleteTx } = transactionStorage;
+  const { getMultisigTx, getMultisigTxs, addMultisigTx, updateMultisigTx, deleteMultisigTx } = transactionStorage;
 
   const subscribeMultisigAccount = (api: ApiPromise, account: MultisigAccount): (() => void) => {
     const intervalId = setInterval(async () => {
-      const transactions = await getTxs({ publicKey: account.publicKey });
+      const transactions = await getMultisigTxs({ publicKey: account.publicKey });
       const pendingTxs = await getPendingMultisigTxs(api, account.accountId as string);
 
       pendingTxs.forEach((pendingTx) => {
@@ -30,19 +30,18 @@ export const useMultisigTx = (): IMultisigTxService => {
             t.status === 'SIGNING',
         );
 
-        if (!oldTx) {
-          addTx(createTransactionPayload(pendingTx, api.genesisHash.toHex(), account));
-
-          return;
+        if (oldTx) {
+          updateMultisigTx(updateTransactionPayload(oldTx, pendingTx, account.signatories));
+        } else {
+          addMultisigTx(createTransactionPayload(pendingTx, api.genesisHash.toHex(), account));
         }
-
-        updateTx(updateTransactionPayload(oldTx, pendingTx, account.signatories));
       });
 
       transactions.forEach((tx) => {
         const hasTransaction = pendingTxs.find((t) => t.callHash.toHex() === tx.callHash);
+        const isDifferentChain = tx.chainId !== api.genesisHash.toHex();
 
-        if (hasTransaction || tx.chainId !== api.genesisHash.toHex()) return;
+        if (hasTransaction || isDifferentChain) return;
 
         // FIXME: Second condigion is for already signed tx
         const hasPendingFinalApproval = tx.events.some((e) => e.status === 'PENDING_SIGNED');
@@ -54,7 +53,7 @@ export const useMultisigTx = (): IMultisigTxService => {
           ? MiltisigTransactionFinalStatus.CANCELLED
           : MiltisigTransactionFinalStatus.ESTABLISHED;
 
-        updateTx({
+        updateMultisigTx({
           ...tx,
           status,
         });
@@ -66,10 +65,10 @@ export const useMultisigTx = (): IMultisigTxService => {
 
   return {
     subscribeMultisigAccount,
-    getTx,
-    getTxs,
-    addTx,
-    updateTx,
-    deleteTx,
+    getMultisigTx,
+    getMultisigTxs,
+    addMultisigTx,
+    updateMultisigTx,
+    deleteMultisigTx,
   };
 };

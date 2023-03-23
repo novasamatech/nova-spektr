@@ -12,9 +12,9 @@ import { isLightClient } from '@renderer/services/network/common/utils';
 import { validate } from '../dataVerification/dataVerification';
 import storage, { BalanceDS } from '../storage';
 import { IBalanceService } from './common/types';
-import { toAddress } from './common/utils';
 import { VERIFY_TIMEOUT } from './common/constants';
 import { useSubscription } from '@renderer/services/subscription/subscriptionService';
+import { formatAddress } from '@renderer/shared/utils/address';
 
 export const useBalance = (): IBalanceService => {
   const balanceStorage = storage.connectTo('balances');
@@ -111,7 +111,7 @@ export const useBalance = (): IBalanceService => {
     const api = chain.api;
     if (!api) return;
 
-    const addresses = publicKeys.map((pk) => toAddress(pk, chain.addressPrefix));
+    const addresses = publicKeys.map((pk) => formatAddress(pk, chain.addressPrefix));
 
     return api.query.system.account.multi(addresses, (data: any[]) => {
       data.forEach(async (accountInfo, i) => {
@@ -155,7 +155,7 @@ export const useBalance = (): IBalanceService => {
     const api = chain.api;
     if (!api) return;
 
-    const addresses = publicKeys.map((pk) => toAddress(pk, chain.addressPrefix));
+    const addresses = publicKeys.map((pk) => formatAddress(pk, chain.addressPrefix));
 
     return api.query.assets.account.multi(
       addresses.map((a) => [statemineAssetId, a]),
@@ -204,7 +204,7 @@ export const useBalance = (): IBalanceService => {
     const api = chain.api;
     if (!api) return;
 
-    const addresses = publicKeys.map((pk) => toAddress(pk, chain.addressPrefix));
+    const addresses = publicKeys.map((pk) => formatAddress(pk, chain.addressPrefix));
 
     const method = api.query.tokens ? api.query.tokens.accounts : api.query.currencies.accounts;
 
@@ -245,7 +245,7 @@ export const useBalance = (): IBalanceService => {
     const api = chain.api;
     if (!api) return;
 
-    const addresses = publicKeys.map((pk) => toAddress(pk, chain.addressPrefix));
+    const addresses = publicKeys.map((pk) => formatAddress(pk, chain.addressPrefix));
 
     return api.query.balances.locks.multi(addresses, (balanceLocks: any[]) => {
       balanceLocks.forEach(async (balanceLock, i) => {
@@ -271,7 +271,7 @@ export const useBalance = (): IBalanceService => {
     const api = chain.api;
     if (!api) return;
 
-    const addresses = publicKeys.map((pk) => toAddress(pk, chain.addressPrefix));
+    const addresses = publicKeys.map((pk) => formatAddress(pk, chain.addressPrefix));
 
     const method = api.query.tokens ? api.query.tokens.locks : api.query.currencies.locks;
 
