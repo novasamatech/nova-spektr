@@ -14,7 +14,7 @@ const Template: ComponentStory<typeof Button> = (args) => <Button {...args} />;
 export const Primary = Template.bind({});
 Primary.args = {
   variant: 'fill',
-  pallet: 'primaryNew',
+  pallet: 'primary',
   children: 'Hello button',
   className: 'w-[200px]',
   disabled: false,
@@ -23,7 +23,7 @@ Primary.args = {
 export const Prefix = Template.bind({});
 Prefix.args = {
   variant: 'fill',
-  pallet: 'primaryNew',
+  pallet: 'primary',
   children: 'Hello button',
   className: 'w-[200px]',
   disabled: false,
@@ -33,17 +33,17 @@ Prefix.args = {
 export const PrefixText = Template.bind({});
 PrefixText.args = {
   variant: 'text',
-  pallet: 'primaryNew',
+  pallet: 'primary',
   children: 'Hello button',
   className: 'w-[200px]',
   disabled: false,
-  prefixElement: <Icon name="balance" className="text-primaryNew" size={16} />,
+  prefixElement: <Icon name="balance" className="text-redesign-primary" size={16} />,
 };
 
 export const Suffix = Template.bind({});
 Suffix.args = {
   variant: 'fill',
-  pallet: 'primaryNew',
+  pallet: 'primary',
   children: 'Hello button',
   className: 'w-[200px]',
   disabled: false,
@@ -53,7 +53,7 @@ Suffix.args = {
 export const Both = Template.bind({});
 Both.args = {
   variant: 'fill',
-  pallet: 'primaryNew',
+  pallet: 'primary',
   children: 'Hello button',
   className: 'w-[200px]',
   disabled: false,
@@ -64,7 +64,7 @@ Both.args = {
 export const OnlyIcon = Template.bind({});
 OnlyIcon.args = {
   variant: 'fill',
-  pallet: 'primaryNew',
-  children: <Icon name="balance" className="text-primaryNew" size={16} />,
+  pallet: 'primary',
+  children: <Icon name="balance" className="text-redesign-primary" size={16} />,
   disabled: false,
 };
