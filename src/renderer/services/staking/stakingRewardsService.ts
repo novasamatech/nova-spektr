@@ -3,15 +3,14 @@ import { useQuery } from '@apollo/client';
 import { AccountID } from '@renderer/domain/shared-kernel';
 import { GET_TOTAL_REWARDS } from '@renderer/graphql/queries/stakingRewards';
 import { RewardsQuery } from '@renderer/graphql/types/stakingRewards';
-import { toAddress } from '@renderer/services/balance/common/utils';
 import { IStakingRewardsService, RewardsMap } from '@renderer/services/staking/common/types';
-import { toPublicKey } from '@renderer/shared/utils/address';
+import { formatAddress, toPublicKey } from '@renderer/shared/utils/address';
 
 const getAccountsWithPrefix = (accounts: AccountID[], addressPrefix?: number): AccountID[] => {
   return accounts.reduce<AccountID[]>((acc, account) => {
     const publicKey = toPublicKey(account);
 
-    return publicKey ? acc.concat(toAddress(publicKey, addressPrefix)) : acc;
+    return publicKey ? acc.concat(formatAddress(publicKey, addressPrefix)) : acc;
   }, []);
 };
 

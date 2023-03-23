@@ -1,29 +1,10 @@
 import { BN, BN_TEN, BN_ZERO } from '@polkadot/util';
-import { encodeAddress } from '@polkadot/util-crypto';
 import BigNumber from 'bignumber.js';
 
 import { Balance } from '@renderer/domain/balance';
-import { PublicKey } from '@renderer/domain/shared-kernel';
 import { Unlocking } from '@renderer/domain/stake';
-import {
-  Decimal,
-  LockTypes,
-  SS58_DEFAULT_PREFIX,
-  Suffix,
-  ZERO_BALANCE,
-} from '@renderer/services/balance/common/constants';
+import { Decimal, LockTypes, Suffix, ZERO_BALANCE } from '@renderer/services/balance/common/constants';
 import { FormattedBalance } from './types';
-
-/**
- * Generate new address based on public key and address prefix
- * @param publicKey account's public key
- * @param addressPrefix address prefix of needed chain
- */
-export const toAddress = (publicKey?: PublicKey, addressPrefix?: number): string => {
-  if (!publicKey) return '';
-
-  return encodeAddress(publicKey, addressPrefix ?? SS58_DEFAULT_PREFIX);
-};
 
 export const formatAmount = (amount: string, precision: number): string => {
   if (!amount) return ZERO_BALANCE;
