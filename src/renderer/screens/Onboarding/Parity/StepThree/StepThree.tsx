@@ -15,9 +15,8 @@ import { ChainId, HexString, PublicKey, SigningType, WalletType } from '@rendere
 import { useToggle } from '@renderer/shared/hooks';
 import ScanMoreModal from '@renderer/screens/Onboarding/Parity/ScanMoreModal/ScanMoreModal';
 import { useAccount } from '@renderer/services/account/accountService';
-import { toAddress } from '@renderer/services/balance/common/utils';
 import { useChains } from '@renderer/services/network/chainsService';
-import { toPublicKey } from '@renderer/shared/utils/address';
+import { formatAddress, toPublicKey } from '@renderer/shared/utils/address';
 import { getShortAddress } from '@renderer/shared/utils/strings';
 import { useWallet } from '@renderer/services/wallet/walletService';
 import { createWallet } from '@renderer/domain/wallet';
@@ -61,7 +60,7 @@ const StepThree = ({ qrData, onNextStep }: Props) => {
 
   const formatAccount = (newAccount: SeedInfo): SimpleSeedInfo => {
     return {
-      address: newAccount.multiSigner ? toAddress(u8aToHex(newAccount.multiSigner?.public), 0) : '',
+      address: newAccount.multiSigner ? formatAddress(u8aToHex(newAccount.multiSigner?.public), 0) : '',
       derivedKeys: groupDerivedKeys(newAccount.derivedKeys),
     };
   };

@@ -13,7 +13,7 @@ import { useChains } from '@renderer/services/network/chainsService';
 import { useAccount } from '@renderer/services/account/accountService';
 import { createAccount } from '@renderer/domain/account';
 import { SeedInfo } from '@renderer/components/common/QrCode/QrReader/common/types';
-import { toAddress } from '@renderer/services/balance/common/utils';
+import { formatAddress } from '@renderer/shared/utils/address';
 
 type AccountForm = {
   name: string;
@@ -27,7 +27,7 @@ type Props = {
 const StepThreeSingle = ({ qrData, onNextStep }: Props) => {
   const { t } = useI18n();
   const publicKey = u8aToHex(qrData[0].multiSigner?.public);
-  const address = toAddress(publicKey, 0);
+  const address = formatAddress(publicKey, 0);
 
   const {
     handleSubmit,

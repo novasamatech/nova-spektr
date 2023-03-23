@@ -14,7 +14,7 @@ import { ChainId, HexString, SigningType } from '@renderer/domain/shared-kernel'
 import { Transaction, TransactionType } from '@renderer/domain/transaction';
 import { useAccount } from '@renderer/services/account/accountService';
 import { useBalance } from '@renderer/services/balance/balanceService';
-import { formatAmount, toAddress, transferableAmount } from '@renderer/services/balance/common/utils';
+import { formatAmount, transferableAmount } from '@renderer/services/balance/common/utils';
 import { useChains } from '@renderer/services/network/chainsService';
 import { useTransaction } from '@renderer/services/transaction/transactionService';
 import { formatAddress, toPublicKey, validateAddress } from '@renderer/shared/utils/address';
@@ -80,7 +80,7 @@ const Transfer = () => {
         return acc;
       }
 
-      const address = toAddress(account.publicKey || '0x00', currentConnection?.addressPrefix);
+      const address = formatAddress(account.publicKey || '0x00', currentConnection?.addressPrefix);
       if (acc.some((a) => a.id === address)) {
         return acc;
       }

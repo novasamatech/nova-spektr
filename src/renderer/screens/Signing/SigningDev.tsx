@@ -21,9 +21,9 @@ import { Command } from '@renderer/components/common/QrCode/QrGenerator/common/c
 import QrMultiframeGenerator from '@renderer/components/common/QrCode/QrGenerator/QrMultiframeTxGenerator';
 import MultiframeSignatureReader from './MultiframeSignatureReader/MultiframeSignatureReader';
 import { HexString, SigningType } from '@renderer/domain/shared-kernel';
-import { toAddress } from '@renderer/services/balance/common/utils';
 import Progress from './Progress';
 import { secondsToMinutes } from '@renderer/shared/utils/time';
+import { formatAddress } from '@renderer/shared/utils/address';
 
 const enum Steps {
   SCANNING = 0,
@@ -78,8 +78,8 @@ const Signing = () => {
     if (!api) return;
 
     const transactionPromises = activeAccounts.map(async (account, index) => {
-      const sourceAddress = toAddress(account.publicKey || '0x', currentConnection.addressPrefix);
-      const destAddress = toAddress(
+      const sourceAddress = formatAddress(account.publicKey || '0x', currentConnection.addressPrefix);
+      const destAddress = formatAddress(
         activeAccounts[activeAccounts.length - 1 - index].publicKey || '0x',
         currentConnection.addressPrefix,
       );

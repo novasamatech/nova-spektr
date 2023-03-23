@@ -6,7 +6,7 @@ import {
   ConnectionDS,
   DataStorage,
   IStorage,
-  TransactionDS,
+  MultisigTransactionDS,
   AccountDS,
   ContactDS,
 } from './common/types';
@@ -15,23 +15,24 @@ import { useConnectionStorage } from './connectionStorage';
 import { useWalletStorage } from './walletStorage';
 import { useAccountStorage } from './accountStorage';
 import { useContactStorage } from './contactStorage';
+import { useTransactionStorage } from './transactionStorage';
 
 class DexieStorage extends Dexie {
   connections: Table<ConnectionDS>;
   balances: Table<BalanceDS>;
   wallets: Table<WalletDS>;
   accounts: Table<AccountDS>;
-  transactions: Table<TransactionDS>;
+  multisigTransactions: Table<MultisigTransactionDS>;
   contacts: Table<ContactDS>;
 
   constructor() {
     super('omni'); // TODO: naming is not final
-    this.version(8).stores({
+    this.version(11).stores({
       connections: '++id,chainId,type',
       balances: '[publicKey+chainId+assetId],[publicKey+chainId]',
       wallets: '++id,isActive,type',
       accounts: '++id,isActive,walletId,rootId,signingType',
-      transactions: '++id,type',
+      multisigTransactions: '++id,[publicKey+status],[publicKey+callHash],publicKey,status,callHash',
       contacts: '++id,name,accountId,matrixId',
     });
 
@@ -39,7 +40,7 @@ class DexieStorage extends Dexie {
     this.balances = this.table('balances');
     this.wallets = this.table('wallets');
     this.accounts = this.table('accounts');
-    this.transactions = this.table('transactions');
+    this.multisigTransactions = this.table('multisigTransactions');
     this.contacts = this.table('contacts');
   }
 }
@@ -63,6 +64,8 @@ class StorageFactory implements IStorage {
         return useAccountStorage(this.dexieDB.accounts) as DataStorage[T];
       case 'contacts':
         return useContactStorage(this.dexieDB.contacts) as DataStorage[T];
+      case 'multisigTransactions':
+        return useTransactionStorage(this.dexieDB.multisigTransactions) as DataStorage[T];
       default:
         return undefined;
     }

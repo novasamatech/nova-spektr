@@ -11,6 +11,7 @@ import NetworkProvider from '@renderer/context/NetworkContext';
 import Paths from '@renderer/routes/paths';
 import routesConfig from './routes';
 import { useAccount } from './services/account/accountService';
+import { MultisigChainProvider } from './context/MultisigChainContext/MultisigChainContext';
 
 const SPLASH_SCREEN_DELAY = Math.random() * 300 + 200; // 300ms - 500ms
 
@@ -42,9 +43,11 @@ const App = () => {
       <NetworkProvider>
         <MatrixProvider>
           <I18Provider>
-            <ConfirmDialogProvider>
-              <GraphqlContext>{content}</GraphqlContext>
-            </ConfirmDialogProvider>
+            <MultisigChainProvider>
+              <ConfirmDialogProvider>
+                <GraphqlContext>{content}</GraphqlContext>
+              </ConfirmDialogProvider>
+            </MultisigChainProvider>
           </I18Provider>
         </MatrixProvider>
       </NetworkProvider>
