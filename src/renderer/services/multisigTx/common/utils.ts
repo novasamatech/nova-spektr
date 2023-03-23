@@ -37,6 +37,9 @@ export const updateTransactionPayload = (
   signatories: Signatory[],
 ): MultisigTransaction => {
   const { events } = transaction;
+  const {
+    params: { when, deposit, depositor },
+  } = pendingTransaction;
 
   const newApprovals = pendingTransaction.params.approvals.reduce<MultisigEvent[]>((acc, a) => {
     const hasApprovalEvent = events.find((e) => e.status === 'SIGNED' && e.signatory.publicKey === a.toHex());
@@ -56,10 +59,10 @@ export const updateTransactionPayload = (
 
   return {
     ...transaction,
-    blockCreated: pendingTransaction.params.when.height.toNumber(),
-    indexCreated: pendingTransaction.params.when.index.toNumber(),
-    deposit: pendingTransaction.params.deposit.toString(),
-    depositor: pendingTransaction.params.depositor.toHex(),
+    blockCreated: when.height.toNumber(),
+    indexCreated: when.index.toNumber(),
+    deposit: deposit.toString(),
+    depositor: depositor.toHex(),
     events: [...events, ...newApprovals],
   };
 };
