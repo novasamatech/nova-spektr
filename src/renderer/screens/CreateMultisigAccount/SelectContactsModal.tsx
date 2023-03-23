@@ -8,6 +8,7 @@ import { useAccount } from '@renderer/services/account/accountService';
 import { useContact } from '@renderer/services/contact/contactService';
 import { useMatrix } from '@renderer/context/MatrixContext';
 import { includes } from '@renderer/shared/utils/strings';
+import { SigningType } from '@renderer/domain/shared-kernel';
 
 type ContactsForm = {
   contacts: number[];
@@ -26,31 +27,31 @@ type SignatoryWithId = Signatory & {
 
 const SelectContactsModal = ({ signatories, isOpen, onClose, onSelect }: Props) => {
   const { t } = useI18n();
-
-  const [query, setQuery] = useState('');
-
+  const { matrix } = useMatrix();
   const { getLiveAccounts } = useAccount();
   const { getLiveContacts } = useContact();
   const accounts = getLiveAccounts();
   const contacts = getLiveContacts();
-  const { matrix } = useMatrix();
 
+  const [query, setQuery] = useState('');
   const [contactList, setContactList] = useState<SignatoryWithId[]>([]);
 
   useEffect(() => {
-    const usedPublicKeys = signatories.map((s) => s.publicKey);
+    const publicKeys = signatories.map((s) => s.publicKey);
 
     const addressBookContacts = contacts.filter((c) => c.matrixId);
-    const walletContacts = accounts.map((a) => ({
-      accountId: a.accountId || '',
-      name: a.name || a.accountId || '',
-      publicKey: a.publicKey || '0x',
-      matrixId: matrix.userId,
-    }));
+    const walletContacts = accounts
+      .filter((a) => a.signingType !== SigningType.WATCH_ONLY)
+      .map((a) => ({
+        accountId: a.accountId || '',
+        name: a.name || a.accountId || '',
+        publicKey: a.publicKey || '0x',
+        matrixId: matrix.userId,
+      }));
 
     const mergedContacts = [...addressBookContacts, ...walletContacts].reduce<SignatoryWithId[]>(
       (acc, contact, index) => {
-        if (!usedPublicKeys.includes(contact.publicKey)) {
+        if (!publicKeys.includes(contact.publicKey)) {
           acc.push({ ...contact, id: index });
         }
 

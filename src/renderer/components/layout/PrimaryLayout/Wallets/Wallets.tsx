@@ -17,10 +17,10 @@ type Props = {
 };
 
 const GroupLabels = {
+  [SigningType.MULTISIG]: 'wallets.multisigLabel',
+  [WalletType.MULTISHARD_PARITY_SIGNER]: 'wallets.multishardLabel',
   [SigningType.WATCH_ONLY]: 'wallets.watchOnlyLabel',
   [SigningType.PARITY_SIGNER]: 'wallets.paritySignerLabel',
-  [SigningType.MULTISIG]: 'wallets.multisigLabel',
-  [WalletType.MULTISHARD_PARITY_SIGNER]: 'wallets.multishardWalletsLabel',
 };
 
 const Wallets = forwardRef<HTMLDivElement, Props>(({ className }, ref) => {

@@ -11,7 +11,7 @@ export interface IAccountService {
   getLiveAccounts: (where?: Record<string, any>) => AccountDS[];
   toggleActiveAccount: (accountId: IndexableType) => Promise<void>;
   addAccount: (account: Account) => Promise<IndexableType>;
-  updateAccount: (account: Account) => Promise<IndexableType>;
+  updateAccount: <T extends Account>(account: T) => Promise<IndexableType>;
   deleteAccount: (accountId: AccountID) => Promise<void>;
   getMultisigAccounts: () => AccountDS[];
 }
