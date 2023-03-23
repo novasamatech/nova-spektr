@@ -165,7 +165,7 @@ export const useNetwork = (networkSubscription?: ISubscriptionService<ChainId>):
 
   const subscribeConnected = (chainId: ChainId, provider: ProviderInterface, type: ConnectionType, node?: RpcNode) => {
     const handler = async () => {
-      console.log('🟢 connected ==> ', chainId);
+      console.info('🟢 connected ==> ', chainId);
 
       const api = await ApiPromise.create({ provider, throwOnConnect: true, throwOnUnknown: true });
       if (!api) await provider.disconnect();
@@ -187,7 +187,7 @@ export const useNetwork = (networkSubscription?: ISubscriptionService<ChainId>):
 
   const subscribeDisconnected = (chainId: ChainId, provider: ProviderInterface) => {
     const handler = async () => {
-      console.log('🔶 disconnected ==> ', chainId);
+      console.info('🔶 disconnected ==> ', chainId);
     };
 
     provider.on('disconnected', handler);
@@ -195,7 +195,7 @@ export const useNetwork = (networkSubscription?: ISubscriptionService<ChainId>):
 
   const subscribeError = (chainId: ChainId, provider: ProviderInterface, onError?: () => void) => {
     const handler = () => {
-      console.log('🔴 error ==> ', chainId);
+      console.info('🔴 error ==> ', chainId);
 
       updateConnectionState(chainId, {
         connectionStatus: ConnectionStatus.ERROR,

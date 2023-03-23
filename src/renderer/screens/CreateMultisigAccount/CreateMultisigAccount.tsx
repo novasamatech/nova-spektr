@@ -52,7 +52,7 @@ const CreateMultisigAccount = () => {
     mode: 'onChange',
     defaultValues: {
       name: '',
-      threshold: { id: '2', value: 2 },
+      threshold: { id: '0', value: 2 },
     },
   });
 
@@ -66,15 +66,17 @@ const CreateMultisigAccount = () => {
     toggleInProgress();
 
     const inviter = signatories.find((s) => s.matrixId === matrix.userId);
+    if (!inviter) return;
+
     const mstAccount = createMultisigAccount({
       name,
       signatories,
       threshold: threshold.value,
-      creator: '',
+      inviterPublicKey: inviter.publicKey,
       matrixRoomId: '',
     });
 
-    if (!mstAccount.accountId || !inviter) return;
+    if (!mstAccount.accountId) return;
 
     try {
       await matrix.createRoom({
@@ -82,7 +84,7 @@ const CreateMultisigAccount = () => {
         accountName: mstAccount.name,
         accountId: mstAccount.accountId,
         threshold: mstAccount.threshold,
-        signatories,
+        signatories: signatories.map(({ accountId, matrixId }) => ({ accountId, matrixId })),
       });
       await addAccount(mstAccount);
 
@@ -204,10 +206,10 @@ const CreateMultisigAccount = () => {
                     <Dropdown
                       variant="up"
                       placeholder=""
+                      className="w-20"
                       activeId={value.value.toString()}
                       disabled={signatories.length < 2 || inProgress}
                       options={thresholdOptions}
-                      className="w-20"
                       onChange={onChange}
                     />
                   )}

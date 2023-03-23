@@ -31,13 +31,13 @@ export const enum ErrorType {
 }
 
 export const enum WalletType {
-  WATCH_ONLY,
-  SINGLE_PARITY_SIGNER,
-  MULTISHARD_PARITY_SIGNER,
+  WATCH_ONLY = 'wallet_wo',
+  SINGLE_PARITY_SIGNER = 'wallet_sps',
+  MULTISHARD_PARITY_SIGNER = 'wallet_mps',
 }
 
 export const enum SigningType {
-  WATCH_ONLY,
-  PARITY_SIGNER,
-  MULTISIG,
+  WATCH_ONLY = 'signing_wo',
+  PARITY_SIGNER = 'signing_ps',
+  MULTISIG = 'signing_ms',
 }
