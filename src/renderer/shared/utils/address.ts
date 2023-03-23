@@ -2,10 +2,10 @@ import { u8aToHex } from '@polkadot/util';
 import { decodeAddress, encodeAddress } from '@polkadot/util-crypto';
 
 import { Asset, AssetType, OrmlExtras, StatemineExtras } from '@renderer/domain/asset';
-import { PublicKey } from '@renderer/domain/shared-kernel';
+import { PublicKey, AccountID } from '@renderer/domain/shared-kernel';
 import { PUBLIC_KEY_LENGTH, SS58_DEFAULT_PREFIX } from './constants';
 
-export const formatAddress = (address?: string, prefix = SS58_DEFAULT_PREFIX): string => {
+export const formatAddress = (address?: AccountID | PublicKey, prefix = SS58_DEFAULT_PREFIX): string => {
   if (!address) return '';
 
   return encodeAddress(decodeAddress(address), prefix) || address;
@@ -39,16 +39,20 @@ export const isCorrectPublicKey = (publicKey: PublicKey): boolean => {
  * @param handler input's onChange function
  * @return {Function}
  */
-export const pasteAddressHandler = (handler: (value: string) => void) => async () => {
-  try {
-    const text = await navigator.clipboard.readText();
-    handler(text.trim());
-  } catch (error) {
-    console.warn(error);
-  }
+export const pasteAddressHandler = (handler: (value: string) => void) => {
+  return async () => {
+    try {
+      const text = await navigator.clipboard.readText();
+      handler(text.trim());
+    } catch (error) {
+      console.warn(error);
+    }
+  };
 };
 
-export const validateAddress = (address: string): boolean => Boolean(toPublicKey(address));
+export const validateAddress = (address: string): boolean => {
+  return Boolean(toPublicKey(address));
+};
 
 export const getAssetId = (asset: Asset): string => {
   if (asset.type === AssetType.STATEMINE) {

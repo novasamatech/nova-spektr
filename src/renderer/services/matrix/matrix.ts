@@ -1,5 +1,4 @@
 import Olm from '@matrix-org/olm';
-import uniq from 'lodash/uniq';
 import {
   ClientEvent,
   createClient,
@@ -16,12 +15,14 @@ import {
   RoomMemberEvent,
   Visibility,
   AutoDiscovery,
+  AuthType,
 } from 'matrix-js-sdk';
 import { ISecretStorageKeyInfo } from 'matrix-js-sdk/lib/crypto/api';
 import { deriveKey } from 'matrix-js-sdk/lib/crypto/key_passphrase';
 import { IStore } from 'matrix-js-sdk/lib/store';
 import { SyncState } from 'matrix-js-sdk/lib/sync';
 import { logger } from 'matrix-js-sdk/lib/logger';
+import noop from 'lodash/noop';
 
 import {
   BASE_MATRIX_URL,
@@ -43,16 +44,14 @@ import {
   Membership,
   MstParams,
   MSTPayload,
-  OmniExtras,
-  OmniMstEvent,
+  SpektrExtras,
+  SpektrMstEvent,
   RoomParams,
   LoginFlow,
 } from './common/types';
 import CredentialStorage from './credentialStorage';
 import SecretStorage from './secretStorage';
 import { nonNullable } from '@renderer/shared/utils/functions';
-import { Signatory } from '@renderer/domain/signatory';
-import { PublicKey } from '@renderer/domain/shared-kernel';
 import { getShortAddress } from '@renderer/shared/utils/strings';
 
 global.Olm = Olm;
@@ -60,15 +59,19 @@ logger.disableAll();
 
 export class Matrix implements ISecureMessenger {
   private matrixClient: MatrixClient;
-  private activeRoomId: string;
-  private isClientSynced: boolean;
-  private subscribeHandlers?: Callbacks;
+  private eventCallbacks: Callbacks;
   private credentialStorage: ICredentialStorage;
   private secretStorage: ISecretStorage;
 
   constructor() {
-    this.activeRoomId = '';
-    this.isClientSynced = false;
+    this.eventCallbacks = {
+      onSyncEnd: noop,
+      onSyncProgress: noop,
+      onInvite: noop,
+      onMessage: noop,
+      onLogout: noop,
+      onMstEvent: noop,
+    };
     this.credentialStorage = new CredentialStorage();
     this.secretStorage = new SecretStorage();
     this.matrixClient = createClient({ baseUrl: BASE_MATRIX_URL });
@@ -81,9 +84,8 @@ export class Matrix implements ISecureMessenger {
   /**
    * Set homeserver with new base url
    * @param domain homeserver domain
-   * @throws {ErrorObject}
    */
-  async setHomeserver(domain: string): Promise<void | never> {
+  async setHomeserver(domain: string): Promise<void> {
     const wellKnown = WELL_KNOWN_SERVERS.find((server) => server.domain === domain);
 
     if (wellKnown) {
@@ -120,9 +122,8 @@ export class Matrix implements ISecureMessenger {
 
   /**
    * Get available login flows
-   * @throws {ErrorObject}
    */
-  async loginFlows(): Promise<LoginFlow[] | never> {
+  async loginFlows(): Promise<LoginFlow[]> {
     try {
       const { flows } = await this.matrixClient.loginFlows();
 
@@ -134,27 +135,18 @@ export class Matrix implements ISecureMessenger {
   }
 
   /**
-   * Save skip flag to the storage
-   */
-  skipLogin(value: boolean): void {
-    this.credentialStorage.saveSkipLogin({ skip: value });
-  }
-
-  /**
-   * Login user to Matrix
+   * Login user to Matrix with credentials
    * @param login login value
    * @param password password value
    * @return {Promise}
-   * @throws {ErrorObject}
    */
-  async loginWithCreds(login: string, password: string): Promise<void | never> {
+  async loginWithCreds(login: string, password: string): Promise<void> {
     try {
       await this.initClientWithCreds(login, password);
       await this.matrixClient.initCrypto();
       await this.matrixClient.startClient({ lazyLoadMembers: true });
       this.matrixClient.setGlobalErrorOnUnknownDevices(false);
       this.subscribeToEvents();
-      this.skipLogin(false);
     } catch (error) {
       throw this.createError(MatrixError.LOGIN_CREDS, error);
     }
@@ -163,18 +155,14 @@ export class Matrix implements ISecureMessenger {
   /**
    * Login user to Matrix with cached credentials
    * @return {Promise}
-   * @throws {ErrorObject}
    */
-  async loginFromCache(): Promise<void | never> {
-    if (this.credentialStorage.getSkipLogin().skip) return;
-
+  async loginFromCache(): Promise<void> {
     try {
       await this.initClientFromCache();
       await this.matrixClient.initCrypto();
       await this.matrixClient.startClient({ lazyLoadMembers: true });
       this.matrixClient.setGlobalErrorOnUnknownDevices(false);
       this.subscribeToEvents();
-      this.skipLogin(false);
     } catch (error) {
       throw this.createError(MatrixError.LOGIN_CACHE, error);
     }
@@ -185,11 +173,10 @@ export class Matrix implements ISecureMessenger {
    * @param login login value
    * @param password password value
    * @return {Promise}
-   * @throws {ErrorObject}
    */
-  // async registration(login: string, password: string): Promise<void | never> {
+  // async registration(login: string, password: string): Promise<void> {
   //   try {
-  //     const auth = { type: 'm.login.omni_matrix_protocol' };
+  //     const auth = { type: 'm.login.spektr_matrix_protocol' };
   //     const data = await this.matrixClient.register(login, password, null, auth, {
   //       email: false,
   //     });
@@ -203,11 +190,8 @@ export class Matrix implements ISecureMessenger {
    * Verify user with Cross signing security key
    * @param securityKey secret user's key
    * @return {Promise}
-   * @throws {ErrorObject}
    */
-  async verifyWithKey(securityKey: string): Promise<boolean | never> {
-    this.checkClientLoggedIn();
-
+  async verifyWithKey(securityKey: string): Promise<boolean> {
     try {
       const mx = this.matrixClient;
       const defaultStorageKey = mx.getAccountData('m.secret_storage.default_key')?.getContent().key;
@@ -233,11 +217,8 @@ export class Matrix implements ISecureMessenger {
    * Verify user with Cross signing security file
    * @param securityFile secret user's file
    * @return {Promise}
-   * @throws {ErrorObject}
    */
-  async verifyWithFile(securityFile: File): Promise<boolean | never> {
-    this.checkClientLoggedIn();
-
+  async verifyWithFile(securityFile: File): Promise<boolean> {
     if (securityFile.size > KEY_FILE_MAX_SIZE) {
       throw this.createError(MatrixError.VERIFY_FILE_MAX_SIZE);
     }
@@ -266,11 +247,8 @@ export class Matrix implements ISecureMessenger {
    * Verify user with Cross signing security phrase
    * @param securityPhrase secret user's phrase
    * @return {Promise}
-   * @throws {ErrorObject}
    */
-  async verifyWithPhrase(securityPhrase: string): Promise<boolean | never> {
-    this.checkClientLoggedIn();
-
+  async verifyWithPhrase(securityPhrase: string): Promise<boolean> {
     try {
       const mx = this.matrixClient;
 
@@ -297,7 +275,7 @@ export class Matrix implements ISecureMessenger {
   /**
    * Stop the client and remove handlers
    */
-  stopClient(): void {
+  stopClient() {
     this.matrixClient.stopClient();
     this.matrixClient.removeAllListeners();
   }
@@ -305,11 +283,8 @@ export class Matrix implements ISecureMessenger {
   /**
    * Logout user from Matrix and clean storages
    * @return {Promise}
-   * @throws {ErrorObject}
    */
-  async logout(): Promise<void | never> {
-    this.checkClientLoggedIn();
-
+  async logout(): Promise<void> {
     const credentials = this.credentialStorage.getCredentials('userId', this.userId);
     if (!credentials) {
       throw this.createError(MatrixError.LOGOUT);
@@ -320,7 +295,7 @@ export class Matrix implements ISecureMessenger {
       this.stopClient();
       await this.matrixClient.logout();
       await this.matrixClient.clearStores();
-      this.subscribeHandlers?.onOnLogout();
+      this.eventCallbacks.onLogout();
       this.credentialStorage.clear();
     } catch (error) {
       throw this.createError(MatrixError.LOGOUT, error);
@@ -328,14 +303,11 @@ export class Matrix implements ISecureMessenger {
   }
 
   /**
-   * Start room creation process for new MST account
+   * Create new room for MST account
    * @param params room configuration
    * @return {Promise}
-   * @throws {ErrorObject}
    */
-  async createRoom(params: RoomParams): Promise<void | never> {
-    this.checkClientLoggedIn();
-
+  async createRoom(params: RoomParams): Promise<void> {
     try {
       const { room_id: roomId } = await this.matrixClient.createRoom({
         name: `Nova Spektr MST | ${getShortAddress(params.accountId)}`,
@@ -343,11 +315,11 @@ export class Matrix implements ISecureMessenger {
         preset: Preset.TrustedPrivateChat,
       });
 
-      await this.initStateEvents(roomId, params);
-      await this.inviteSignatories(roomId, params.signatories, params.inviterPublicKey);
+      const matrixIds = params.signatories.map((s) => s.matrixId).filter(nonNullable);
 
-      const members = params.signatories.map((signatory) => signatory.matrixId).filter(nonNullable);
-      await this.verifyDevices(members);
+      await this.initStateEvents(roomId, params);
+      await this.inviteSignatories(roomId, matrixIds);
+      await this.verifyDevices(matrixIds);
     } catch (error) {
       throw this.createError(MatrixError.CREATE_ROOM, error);
     }
@@ -357,11 +329,8 @@ export class Matrix implements ISecureMessenger {
    * Leave MST room
    * @param roomId room's identifier
    * @return {Promise}
-   * @throws {ErrorObject}
    */
-  async leaveRoom(roomId: string): Promise<void | never> {
-    this.checkClientLoggedIn();
-
+  async leaveRoom(roomId: string): Promise<void> {
     try {
       await this.matrixClient.leave(roomId);
     } catch (error) {
@@ -373,11 +342,8 @@ export class Matrix implements ISecureMessenger {
    * Join existing MST room, skips if already joined
    * @param roomId room's identifier
    * @return {Promise}
-   * @throws {ErrorObject}
    */
-  async joinRoom(roomId: string): Promise<void | never> {
-    this.checkClientLoggedIn();
-
+  async joinRoom(roomId: string): Promise<void> {
     try {
       await this.matrixClient.joinRoom(roomId);
     } catch (error) {
@@ -390,11 +356,8 @@ export class Matrix implements ISecureMessenger {
    * @param roomId room's identifier
    * @param signatoryId signatory's identifier
    * @return {Promise}
-   * @throws {ErrorObject}
    */
-  async invite(roomId: string, signatoryId: string): Promise<void | never> {
-    this.checkClientLoggedIn();
-
+  async invite(roomId: string, signatoryId: string): Promise<void> {
     try {
       await this.matrixClient.invite(roomId, signatoryId);
     } catch (error) {
@@ -403,30 +366,21 @@ export class Matrix implements ISecureMessenger {
   }
 
   /**
-   * List of available OMNI rooms
+   * List of available Nova Spektr rooms
    * @param type which rooms to get Invite/Join
    * @return {Array}
    */
-  listOfOmniRooms(type: Membership.INVITE | Membership.JOIN): Room[] {
-    this.checkClientLoggedIn();
-
-    return this.matrixClient.getRooms().filter((room) => this.isOmniRoom(room.name) && room.getMyMembership() === type);
-  }
-
-  /**
-   * Set active room id
-   * @param roomId room's identifier
-   */
-  setActiveRoom(roomId: string): void {
-    this.activeRoomId = roomId;
+  listOfSpektrRooms(type: Membership.INVITE | Membership.JOIN): Room[] {
+    return this.matrixClient.getRooms().filter((room) => {
+      return this.isSpektrRoom(room.name) && room.getMyMembership() === type;
+    });
   }
 
   /**
    * Get live timeline events for all rooms
    * @return {Array}
-   * @throws {ErrorObject}
    */
-  async readTimeline(): Promise<MSTPayload[] | never> {
+  async readTimeline(): Promise<MSTPayload[]> {
     let rooms;
     try {
       const data = await this.matrixClient.getJoinedRooms();
@@ -437,12 +391,12 @@ export class Matrix implements ISecureMessenger {
 
     const timeline = rooms.reduce<MatrixEvent[]>((acc, roomId) => {
       const room = this.matrixClient.getRoom(roomId);
-      if (!room || !this.isOmniRoom(room.name)) return acc;
+      if (!room || !this.isSpektrRoom(room.name)) return acc;
 
       const roomTimeline = room
         .getLiveTimeline()
         .getEvents()
-        .filter((event) => this.isMstEvent(event) && event.getSender() !== this.userId);
+        .filter((event) => this.isSpektrMstEvent(event) && event.getSender() !== this.userId);
 
       if (roomTimeline.length > 0) {
         acc.push(...roomTimeline);
@@ -462,15 +416,13 @@ export class Matrix implements ISecureMessenger {
 
   /**
    * Send message to active room
+   * @param roomId room's identifier
    * @param message sending message
    * @return {Promise}
    */
-  async sendMessage(message: string): Promise<void> {
-    this.checkClientLoggedIn();
-    this.checkInsideRoom();
-
+  async sendMessage(roomId: string, message: string): Promise<void> {
     try {
-      await this.matrixClient.sendTextMessage(this.activeRoomId, message);
+      await this.matrixClient.sendTextMessage(roomId, message);
     } catch (error) {
       throw this.createError(MatrixError.MESSAGE, error);
     }
@@ -481,9 +433,7 @@ export class Matrix implements ISecureMessenger {
    * @param event Matrix event that must be marked as read
    * @return {Promise}
    */
-  async markAsRead(event: MatrixEvent): Promise<void | never> {
-    this.checkClientLoggedIn();
-
+  async markAsRead(event: MatrixEvent): Promise<void> {
     try {
       await this.matrixClient.sendReadReceipt(event);
     } catch (error) {
@@ -492,21 +442,19 @@ export class Matrix implements ISecureMessenger {
   }
 
   /**
-   * Setup subscription
+   * Set callbacks for Matrix events
    * @param handlers aggregated callback handlers
    */
-  setupSubscribers(handlers: Callbacks): void {
-    // TODO: add possibility to add more than one handler for one event
-    this.subscribeHandlers = handlers;
+  setEventCallbacks(handlers: Callbacks) {
+    this.eventCallbacks = handlers;
   }
 
   /**
    * Check does User already exist
    * @param userId matrix identifier
    * @return {Promise}
-   * @throws {ErrorObject}
    */
-  // async checkUserExists(userId: string): Promise<boolean | never> {
+  // async checkUserExists(userId: string): Promise<boolean> {
   //   if (!this.matrixClient) {
   //     throw this.createError('Client is not active');
   //   }
@@ -526,16 +474,13 @@ export class Matrix implements ISecureMessenger {
   /**
    * Send MST_INIT state event to the room
    * Initialize multi-sig transaction
+   * @param roomId room's identifier
    * @param params MST parameters
    * @return {Promise}
-   * @throws {ErrorObject}
    */
-  async mstInitiate(params: MstParams): Promise<void | never> {
-    this.checkClientLoggedIn();
-    this.checkInsideRoom();
-
+  async mstInitiate(roomId: string, params: MstParams): Promise<void> {
     try {
-      await this.matrixClient.sendEvent(this.activeRoomId, OmniMstEvent.INIT, params);
+      await this.matrixClient.sendEvent(roomId, SpektrMstEvent.INIT, params);
     } catch (error) {
       throw this.createError(MatrixError.MST_INIT, error);
     }
@@ -544,16 +489,13 @@ export class Matrix implements ISecureMessenger {
   /**
    * Send MST_APPROVE state event to the room
    * Approve multi-sig transaction
+   * @param roomId room's identifier
    * @param params MST parameters
    * @return {Promise}
-   * @throws {ErrorObject}
    */
-  async mstApprove(params: MstParams): Promise<void | never> {
-    this.checkClientLoggedIn();
-    this.checkInsideRoom();
-
+  async mstApprove(roomId: string, params: MstParams): Promise<void> {
     try {
-      await this.matrixClient.sendEvent(this.activeRoomId, OmniMstEvent.APPROVE, params);
+      await this.matrixClient.sendEvent(roomId, SpektrMstEvent.APPROVE, params);
     } catch (error) {
       throw this.createError(MatrixError.MST_APPROVE, error);
     }
@@ -562,16 +504,13 @@ export class Matrix implements ISecureMessenger {
   /**
    * Send MST_FINAL_APPROVE state event to the room
    * Final approve for multi-sig transaction
+   * @param roomId room's identifier
    * @param params MST parameters
    * @return {Promise}
-   * @throws {ErrorObject}
    */
-  async mstFinalApprove(params: MstParams): Promise<void | never> {
-    this.checkClientLoggedIn();
-    this.checkInsideRoom();
-
+  async mstFinalApprove(roomId: string, params: MstParams): Promise<void> {
     try {
-      await this.matrixClient.sendEvent(this.activeRoomId, OmniMstEvent.FINAL_APPROVE, params);
+      await this.matrixClient.sendEvent(roomId, SpektrMstEvent.FINAL_APPROVE, params);
     } catch (error) {
       throw this.createError(MatrixError.MST_FINAL_APPROVE, error);
     }
@@ -580,16 +519,13 @@ export class Matrix implements ISecureMessenger {
   /**
    * Send MST_CANCEL state event to the room
    * Cancel multi-sig transaction
+   * @param roomId room's identifier
    * @param params MST parameters
    * @return {Promise}
-   * @throws {ErrorObject}
    */
-  async mstCancel(params: MstParams): Promise<void | never> {
-    this.checkClientLoggedIn();
-    this.checkInsideRoom();
-
+  async mstCancel(roomId: string, params: MstParams): Promise<void> {
     try {
-      await this.matrixClient.sendEvent(this.activeRoomId, OmniMstEvent.CANCEL, params);
+      await this.matrixClient.sendEvent(roomId, SpektrMstEvent.CANCEL, params);
     } catch (error) {
       throw this.createError(MatrixError.MST_CANCEL, error);
     }
@@ -601,42 +537,34 @@ export class Matrix implements ISecureMessenger {
 
   /**
    * Get matrix userId
-   * @return {String}
+   * @return {String | null}
    */
-  get userId(): string {
-    return this.matrixClient.getUserId() || '';
+  get userId(): string | undefined {
+    return this.matrixClient.getUserId() || undefined;
   }
 
   /**
    * Is Matrix user logged in
    * @return {Boolean}
    */
-  get isLoggedIn(): boolean {
-    return Boolean(this.matrixClient.isLoggedIn());
-  }
-
-  /**
-   * Is Matrix client synced
-   * @return {Boolean}
-   */
-  get isSynced(): boolean {
-    return this.isLoggedIn && this.isClientSynced;
+  get userIsLoggedIn(): boolean {
+    return this.matrixClient.isLoggedIn();
   }
 
   /**
    * Get device session key
-   * @return {String}
+   * @return {String | null}
    */
-  get sessionKey(): string | null {
-    return this.matrixClient.getDeviceEd25519Key();
+  get sessionKey(): string | undefined {
+    return this.matrixClient.getDeviceEd25519Key() || undefined;
   }
 
   /**
    * Get current device cross sign verification status
    * @return {Boolean}
    */
-  get isVerified(): boolean {
-    this.checkClientLoggedIn();
+  get userIsVerified(): boolean {
+    if (!this.userId) return false;
 
     const mx = this.matrixClient;
     const crossSignInfo = mx.getStoredCrossSigningForUser(this.userId);
@@ -660,27 +588,27 @@ export class Matrix implements ISecureMessenger {
    * @param roomId Matrix room ID
    * @param params room parameters
    * @return {Promise}
-   * @throws {ErrorObject}
    */
-  private async initStateEvents(roomId: string, params: RoomParams): Promise<void | never> {
+  private async initStateEvents(roomId: string, params: RoomParams): Promise<void> {
     try {
-      await this.matrixClient.sendStateEvent(roomId, 'm.room.encryption', ROOM_CRYPTO_CONFIG);
+      await this.matrixClient.sendStateEvent(roomId, EventType.RoomEncryption, ROOM_CRYPTO_CONFIG);
     } catch (error) {
       throw this.createError(MatrixError.ROOM_ENCRYPTION, error);
     }
 
     try {
-      const omniExtras = {
+      const payload: SpektrExtras = {
         mst_account: {
           accountName: params.accountName,
           threshold: params.threshold,
-          signatories: params.signatories.map((signatory) => signatory.accountId),
+          signatories: params.signatories.map((s) => s.accountId),
           address: params.accountId,
+          inviterPublicKey: params.inviterPublicKey,
         },
       };
       await this.matrixClient.sendStateEvent(roomId, 'm.room.topic', {
         topic: `Room for communications for ${getShortAddress(params.accountId)} MST account`,
-        omni_extras: omniExtras,
+        spektr_extras: payload,
       });
     } catch (error) {
       throw this.createError(MatrixError.ROOM_TOPIC, error);
@@ -690,35 +618,16 @@ export class Matrix implements ISecureMessenger {
   /**
    * Invite signatories to Matrix room
    * @param roomId Matrix room ID
-   * @param signatories list of signatories' data
-   * @param inviterPublicKey public key of inviter account
+   * @param matrixIds list of signatories' matrix ids
    * @return {Promise}
-   * @throws {ErrorObject}
    */
-  private async inviteSignatories(
-    roomId: string,
-    signatories: Signatory[],
-    inviterPublicKey: PublicKey,
-  ): Promise<void | never> {
-    const inviterMatrixId = signatories.find((s) => s.publicKey === inviterPublicKey);
-
-    const uniqueSignatories = uniq(
-      signatories.reduce<string[]>((acc, s) => {
-        if (s.matrixId && s.matrixId !== inviterMatrixId?.matrixId) {
-          acc.push(s.matrixId);
-        }
-
-        return acc;
-      }, []),
-    );
-
-    const inviteRequests = uniqueSignatories.reduce<Promise<unknown>[]>((acc, matrixId) => {
-      acc.push(this.matrixClient.invite(roomId, matrixId));
-
-      return acc;
-    }, []);
-
+  private async inviteSignatories(roomId: string, matrixIds: string[]): Promise<void> {
     try {
+      const uniqueInvites = new Set(matrixIds.filter((matrixId) => matrixId !== this.userId));
+      const inviteRequests = Array.from(uniqueInvites).map((matrixId) => {
+        return this.matrixClient.invite(roomId, matrixId);
+      });
+
       await Promise.all(inviteRequests);
     } catch (error) {
       throw this.createError(MatrixError.INVITE_USERS, error);
@@ -727,23 +636,20 @@ export class Matrix implements ISecureMessenger {
 
   /**
    * Verify Matrix devices
-   * @param members array of Matrix ids
+   * @param matrixIds array of Matrix ids
    * @return {Promise}
-   * @throws {ErrorObject}
    */
-  private async verifyDevices(members: string[]): Promise<void | never> {
-    const memberKeys = await this.matrixClient.downloadKeys(members);
+  private async verifyDevices(matrixIds: string[]): Promise<void> {
+    try {
+      const memberKeys = await this.matrixClient.downloadKeys(matrixIds);
 
-    const verifyRequests = members.reduce<Promise<void>[]>((acc, userId) => {
-      Object.keys(memberKeys[userId]).forEach((deviceId) => {
-        acc.push(this.matrixClient.setDeviceVerified(userId, deviceId));
+      const verifyRequests = matrixIds.map((matrixId) => {
+        const keys = Object.keys(memberKeys[matrixId]);
+
+        return keys.map((deviceId) => this.matrixClient.setDeviceVerified(matrixId, deviceId));
       });
 
-      return acc;
-    }, []);
-
-    try {
-      await Promise.all(verifyRequests);
+      await Promise.all(verifyRequests.flat());
     } catch (error) {
       throw this.createError(MatrixError.MEMBERS_VERIFICATION, error);
     }
@@ -754,13 +660,12 @@ export class Matrix implements ISecureMessenger {
    * @param username user's login
    * @param password user's password
    * @return {Promise}
-   * @throws {ErrorObject}
    */
-  private async initClientWithCreds(username: string, password: string): Promise<void | never> {
+  private async initClientWithCreds(username: string, password: string): Promise<void> {
     try {
       const credentials = this.credentialStorage.getCredentials('username', username);
 
-      const userLoginResult = await this.matrixClient.login('m.login.password', {
+      const userLoginResult = await this.matrixClient.login(AuthType.Password, {
         ...(credentials?.deviceId && { device_id: credentials.deviceId }),
         initial_device_display_name: process.env.PRODUCT_NAME,
         identifier: { type: 'm.id.user', user: username },
@@ -797,9 +702,8 @@ export class Matrix implements ISecureMessenger {
   /**
    * Initiate Matrix client from storage (cache)
    * @return {Promise}
-   * @throws {ErrorObject}
    */
-  private async initClientFromCache(): Promise<void | never> {
+  private async initClientFromCache(): Promise<void> {
     const credentials = this.credentialStorage.getCredentials('isLastLogin', true);
 
     if (!credentials) {
@@ -815,9 +719,9 @@ export class Matrix implements ISecureMessenger {
   }
 
   /**
-   * Activate event handlers for subscription callbacks
+   * Subscribe to Matrix events
    */
-  private subscribeToEvents(): void {
+  private subscribeToEvents() {
     this.handleSyncEvent();
     this.handleInviteEvent();
     this.handleDecryptedEvents();
@@ -830,50 +734,45 @@ export class Matrix implements ISecureMessenger {
   private handleSyncEvent() {
     this.matrixClient.on(ClientEvent.Sync, (state) => {
       if (state === SyncState.Syncing) {
-        this.subscribeHandlers?.onSyncProgress();
+        this.eventCallbacks.onSyncProgress();
       }
       if (state === SyncState.Prepared) {
-        console.info('=== 🔶 Sync prepared');
-        this.isClientSynced = true;
-        this.subscribeHandlers?.onSyncEnd();
+        this.eventCallbacks.onSyncEnd();
       }
     });
   }
 
   /**
    * Handle invite event
-   * @throws {ErrorObject}
    */
-  private handleInviteEvent(): void {
+  private handleInviteEvent() {
     this.matrixClient.on(RoomMemberEvent.Membership, async (event, member) => {
-      if (event.getSender() === this.userId) return;
-
       const roomId = event.getRoomId();
-      const isValidUser = member.userId === this.userId && member.membership === Membership.INVITE;
+      const userIsSender = event.getSender() === this.userId;
+      const userIsNotMember = member.userId !== this.userId;
+      const eventIsNotInvite = member.membership !== Membership.INVITE;
 
-      if (!isValidUser || !roomId) return;
+      if (!roomId || userIsSender || userIsNotMember || eventIsNotInvite) return;
 
       try {
+        // getRoomSummary loads room into client, otherwise room will be NULL
         const roomSummary = await this.matrixClient.getRoomSummary(roomId);
-        if (!this.isOmniRoom(roomSummary.name)) return;
-
+        const roomIsValid = this.isSpektrRoom(roomSummary.name);
         const room = this.matrixClient.getRoom(roomId);
-        if (!room) return;
+        const topic = this.getSpektrTopic(room);
+        const userHasJoined = room?.getMyMembership() === Membership.JOIN;
+        if (!roomIsValid || !room || !topic || userHasJoined) return;
 
-        this.subscribeHandlers?.onInvite(
-          this.createEventPayload<InvitePayload>(event, {
-            content: this.getOmniTopic(room),
-            roomName: room.name,
-          }),
-        );
+        console.info('🔸 Invite event - ', event.getSender(), member.membership, roomId);
+
+        const payload = this.createEventPayload<InvitePayload>(event, {
+          content: topic,
+          roomName: room.name,
+        });
+        this.eventCallbacks.onInvite(payload);
       } catch (error) {
-        console.info('The person who invited you has already left');
-
-        try {
-          await this.leaveRoom(roomId);
-        } catch (leaveMsg) {
-          console.info(leaveMsg);
-        }
+        console.info(`Room doesn't exist (inviter has left) - reject invite`);
+        await this.leaveRoom(roomId);
       }
     });
   }
@@ -881,23 +780,23 @@ export class Matrix implements ISecureMessenger {
   /**
    * Handle decrypted events (MST and messages)
    */
-  private handleDecryptedEvents(): void {
+  private handleDecryptedEvents() {
     this.matrixClient.on(MatrixEventEvent.Decrypted, async (event) => {
       let handler: any = () => {};
-      if (this.isMstEvent(event)) {
+      if (this.isSpektrMstEvent(event)) {
         const payload = this.createEventPayload<MSTPayload>(event);
-        handler = this.subscribeHandlers?.onMstEvent.bind(this, payload);
+        handler = this.eventCallbacks.onMstEvent.bind(this, payload);
       }
       if (event.getType() === EventType.RoomMessage) {
         const payload = event.getContent().body;
-        handler = this.subscribeHandlers?.onMessage.bind(this, payload);
+        handler = this.eventCallbacks.onMessage.bind(this, payload);
       }
 
       const roomId = event.getRoomId();
       if (!roomId) return;
 
       const room = this.matrixClient.getRoom(roomId);
-      if (!room || !this.isOmniRoom(room.name)) return;
+      if (!room || !this.isSpektrRoom(room.name)) return;
 
       handler();
     });
@@ -906,13 +805,13 @@ export class Matrix implements ISecureMessenger {
   /**
    * Handle echo events (init, approve, final, cancel)
    */
-  private handleSelfCustomEvents(): void {
+  private handleSelfCustomEvents() {
     this.matrixClient.on(RoomEvent.LocalEchoUpdated, (event, room) => {
       if (event.getSender() !== this.userId || event.status !== 'sent') return;
 
-      if (!this.isMstEvent(event) || !this.isOmniRoom(room.name)) return;
+      if (!this.isSpektrMstEvent(event) || !this.isSpektrRoom(room.name)) return;
 
-      this.subscribeHandlers?.onMstEvent(this.createEventPayload<MSTPayload>(event));
+      this.eventCallbacks.onMstEvent(this.createEventPayload<MSTPayload>(event));
     });
   }
 
@@ -926,7 +825,7 @@ export class Matrix implements ISecureMessenger {
    * @param origin original error object
    * @return {ErrorObject}
    */
-  private createError(error: MatrixError, origin?: unknown | never | MatrixError): ErrorObject {
+  private createError(error: MatrixError, origin?: unknown | MatrixError): ErrorObject {
     if (!origin) return MATRIX_ERRORS[error];
 
     if (origin instanceof Error) {
@@ -943,27 +842,7 @@ export class Matrix implements ISecureMessenger {
   }
 
   /**
-   * Verify that user is logged in
-   * @throws {ErrorObject}
-   */
-  private checkClientLoggedIn(): void | never {
-    if (!this.matrixClient.isLoggedIn()) {
-      throw this.createError(MatrixError.NOT_LOGGED_IN);
-    }
-  }
-
-  /**
-   * Verify that user is inside room
-   * @throws {ErrorObject}
-   */
-  private checkInsideRoom(): void | never {
-    if (!this.activeRoomId) {
-      throw this.createError(MatrixError.OUTSIDE_ROOM);
-    }
-  }
-
-  /**
-   * Create Invite or MST notification payload from Matrix Event
+   * Create notification payload from Matrix Event
    * @param event matrix event object
    * @param params content and roomName
    * @return {Object}
@@ -971,7 +850,7 @@ export class Matrix implements ISecureMessenger {
   private createEventPayload<T extends MSTPayload | InvitePayload>(
     event: MatrixEvent,
     params?: {
-      content: OmniExtras;
+      content: SpektrExtras;
       roomName: string;
     },
   ): T {
@@ -988,22 +867,24 @@ export class Matrix implements ISecureMessenger {
   }
 
   /**
-   * Check room name to be an Omni room
+   * Check room name to be a Spektr room
    * @param roomName name of the room
    * @return {Boolean}
    */
-  private isOmniRoom(roomName?: string): boolean {
+  private isSpektrRoom(roomName?: string): boolean {
     if (!roomName) return false;
 
-    return /^OMNI MST \| [a-zA-Z\d]+$/.test(roomName);
+    return /^Nova Spektr MST \| [a-zA-Z\d.]+$/.test(roomName);
   }
 
   /**
-   * Retrieve omni_extras from room's topic event
+   * Retrieve spektr_extras from room's topic event
    * @param room the room itself
    * @return {Object}
    */
-  private getOmniTopic(room: Room): OmniExtras {
+  private getSpektrTopic(room: Room | null): SpektrExtras | undefined {
+    if (!room) return;
+
     // on invite user only sees stripped state, which has '' as state key for all events
     const strippedStateKey = '';
 
@@ -1013,18 +894,15 @@ export class Matrix implements ISecureMessenger {
       ?.events.get(EventType.RoomTopic)
       ?.get(strippedStateKey)?.event;
 
-    return topicEvent?.content?.omni_extras;
+    return topicEvent?.content?.spektr_extras;
   }
 
   /**
    * Create Matrix client
    * @param credentials user credentials for Matrix
    * @return {Promise}
-   * @throws {ErrorObject}
    */
-  private async createMatrixClient(
-    credentials: Omit<Credential, 'username' | 'isLastLogin'>,
-  ): Promise<MatrixClient | never> {
+  private async createMatrixClient(credentials: Omit<Credential, 'username' | 'isLastLogin'>): Promise<MatrixClient> {
     try {
       const indexedDBStore = new IndexedDBStore({
         indexedDB: window.indexedDB,
@@ -1049,16 +927,16 @@ export class Matrix implements ISecureMessenger {
   }
 
   /**
-   * Check Mst Event
+   * Check MST Event
    * @param event Matrix event
    * @return {Boolean}
    */
-  private isMstEvent(event: MatrixEvent): boolean {
-    return MST_EVENTS.includes(event.getType() as OmniMstEvent);
+  private isSpektrMstEvent(event: MatrixEvent): boolean {
+    return MST_EVENTS.includes(event.getType() as SpektrMstEvent);
   }
 
   /**
-   * Create temp client with specific baseUrl
+   * Create temporary client with specific baseUrl
    * @param url homeserver url
    */
   private createTempClient(url: string) {

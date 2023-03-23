@@ -6,7 +6,7 @@
  */
 export const getOperatingSystem = (): string => {
   // @ts-ignore
-  const platform = window.navigator.userAgentData.platform;
+  const platform = window.navigator.userAgentData?.platform;
 
   if (platform) return platform;
 

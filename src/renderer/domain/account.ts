@@ -54,7 +54,7 @@ export type MultisigAccount = Account & {
   signatories: Contact[];
   threshold: number;
   matrixRoomId: string;
-  creator: AccountID;
+  inviterPublicKey: PublicKey;
 };
 
 export function getMultisigAddress(accountIds: AccountID[], threshold: number): AccountID {
@@ -68,8 +68,8 @@ export function createMultisigAccount({
   signatories,
   threshold,
   matrixRoomId,
-  creator,
-}: Pick<MultisigAccount, 'name' | 'signatories' | 'threshold' | 'matrixRoomId' | 'creator'>): MultisigAccount {
+  inviterPublicKey,
+}: Pick<MultisigAccount, 'name' | 'signatories' | 'threshold' | 'matrixRoomId' | 'inviterPublicKey'>): MultisigAccount {
   const multisigAddress = getMultisigAddress(
     signatories.map((s) => s.accountId),
     threshold,
@@ -85,7 +85,7 @@ export function createMultisigAccount({
     threshold,
     matrixRoomId,
     signingType: SigningType.MULTISIG,
-    creator,
+    inviterPublicKey,
     isMain: false,
     isActive: true,
   } as MultisigAccount;

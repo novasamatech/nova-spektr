@@ -1,19 +1,13 @@
-import { ICredentialStorage, Credential, SkipLogin } from './common/types';
+import { ICredentialStorage, Credential } from './common/types';
 
 class CredentialStorage implements ICredentialStorage {
   private credsKey = 'matrix_credentials';
-  private skipKey = 'matrix_skip_login';
 
   constructor() {
     const credStorage = this.getCredentialsStorage();
-    const skipStorage = this.getSkipStorage();
 
     if (!credStorage) {
       localStorage.setItem(this.credsKey, JSON.stringify([]));
-    }
-
-    if (!skipStorage) {
-      localStorage.setItem(this.skipKey, JSON.stringify({ skip: false }));
     }
   }
 
@@ -60,27 +54,10 @@ class CredentialStorage implements ICredentialStorage {
   }
 
   /**
-   * Set flag about skip login
-   * @param data skip data
-   */
-  public saveSkipLogin(data: SkipLogin): void {
-    localStorage.setItem(this.skipKey, JSON.stringify(data));
-  }
-
-  /**
-   * Get skip login data from the storage
-   * @return {Object}
-   */
-  public getSkipLogin(): SkipLogin {
-    return this.getSkipStorage();
-  }
-
-  /**
    * Clear matrix storage
    */
   public clear() {
     localStorage.removeItem(this.credsKey);
-    localStorage.removeItem(this.skipKey);
   }
 
   /**
@@ -96,22 +73,6 @@ class CredentialStorage implements ICredentialStorage {
       console.error('🔶 Matrix credentials storage error - ', error);
 
       return [];
-    }
-  }
-
-  /**
-   *  Get skip login storage
-   *  @return {Object}
-   */
-  private getSkipStorage(): Record<'skip', boolean> {
-    const storage = localStorage.getItem(this.skipKey);
-
-    try {
-      return storage ? JSON.parse(storage) : { skip: false };
-    } catch (error) {
-      console.error('🔶 Matrix skip login storage error - ', error);
-
-      return { skip: false };
     }
   }
 }

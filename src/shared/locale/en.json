@@ -572,7 +572,7 @@
     "addByParitySignerButton": "Add wallet by Parity Signer",
     "addMultisigWalletButton": "Add multisig wallet",
     "addWatchOnlyButton": "Add Watch-Only wallet",
-    "multishardWalletsLabel": "Multishard",
+    "multishardLabel": "Multishard",
     "multisigLabel": "Multisig",
     "paritySignerLabel": "Parity Signer",
     "searchPlaceholder": "Search for a wallet",

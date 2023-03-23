@@ -48,7 +48,7 @@ export interface IAccountStorage {
   getAccount: (accountId: IndexableType) => Promise<AccountDS | undefined>;
   getAccounts: (where?: Record<string, any>) => Promise<AccountDS[]>;
   addAccount: (account: Account) => Promise<IndexableType>;
-  updateAccount: (account: Account) => Promise<IndexableType>;
+  updateAccount: <T extends Account>(account: T) => Promise<IndexableType>;
   deleteAccount: (accountId: AccountID) => Promise<void>;
 }
 

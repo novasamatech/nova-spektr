@@ -17,7 +17,7 @@ jest.mock('@renderer/shared/utils/browser', () => ({
 jest.mock('@renderer/context/MatrixContext', () => ({
   useMatrix: jest.fn().mockReturnValue({
     matrix: {
-      isVerified: false,
+      userIsVerified: false,
       verifyWithKey: jest.fn().mockReturnValue(false),
       verifyWithFile: jest.fn().mockReturnValue(true),
     },
@@ -85,7 +85,7 @@ describe('screens/Settings/Matrix/Verification', () => {
   test('should become verified by secret key', async () => {
     (useMatrix as jest.Mock).mockReturnValue({
       matrix: {
-        isVerified: false,
+        userIsVerified: false,
         verifyWithKey: jest.fn().mockReturnValue(true),
       },
     });
@@ -99,7 +99,7 @@ describe('screens/Settings/Matrix/Verification', () => {
 
   test('should be verified from the start', async () => {
     (useMatrix as jest.Mock).mockReturnValue({
-      matrix: { isVerified: true },
+      matrix: { userIsVerified: true },
     });
     await act(async () => {
       render(<Verification />);

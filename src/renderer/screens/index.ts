@@ -1,7 +1,6 @@
 import AddressBook from './AddressBook/AddressBook';
 import MultisigOperations from './MultisigOperations/MultisigOperations';
 import Settings from './Settings';
-import ChatDev from './ChatDev/ChatDev';
 import CameraDev from './CameraDev/CameraDev';
 import Onboarding from './Onboarding';
 import History from './History/History';
@@ -19,7 +18,6 @@ export default {
   History,
   Onboarding,
   Staking,
-  ChatDev,
   CameraDev,
   Signing,
   Transfer,
