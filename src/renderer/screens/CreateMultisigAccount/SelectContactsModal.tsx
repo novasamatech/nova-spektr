@@ -109,6 +109,10 @@ const SelectContactsModal = ({ signatories, isOpen, onClose, onSelect }: Props) 
     }
   };
 
+  const isAccountSelected = (index: number) => {
+    return selectedContacts.some((i) => index !== i && contactList[i].publicKey === contactList[index].publicKey);
+  };
+
   return (
     <BaseModal contentClass="w-[486px]" isOpen={isOpen} onClose={onClose}>
       <form
@@ -130,7 +134,11 @@ const SelectContactsModal = ({ signatories, isOpen, onClose, onSelect }: Props) 
                 control={control}
                 rules={{ required: true }}
                 render={({ field: { onChange, value } }) => (
-                  <Checkbox value={id} onChange={(event) => onSelectContact(event, onChange, value)}>
+                  <Checkbox
+                    value={id}
+                    disabled={isAccountSelected(id)}
+                    onChange={(event) => onSelectContact(event, onChange, value)}
+                  >
                     <Identicon className="row-span-2 self-center" address={accountId} background={false} />
                     <p className="text-neutral text-sm font-semibold">{name}</p>
                     {/* {contact.walletName && <p className="text-neutral-variant text-2xs">{stake.walletName}</p>} */}

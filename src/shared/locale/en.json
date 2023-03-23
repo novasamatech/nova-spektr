@@ -64,6 +64,8 @@
     "signatoriesDescription": "Add signatories to your multisig account",
     "signatoriesLabel": "Signatories",
     "successMessage": "Multisig account created successfully",
+    "thresholdDescription": "Set the threshold of signatories required to sign a transaction.",
+    "thresholdName": "Threshold",
     "title": "Create multisig account"
   },
   "dropdown": {
@@ -570,7 +572,7 @@
   },
   "wallets": {
     "addByParitySignerButton": "Add wallet by Parity Signer",
-    "addMultisigWalletButton": "Add multisig wallet",
+    "addMultisigWalletButton": "Create Multisig wallet",
     "addWatchOnlyButton": "Add Watch-Only wallet",
     "multishardLabel": "Multishard",
     "multisigLabel": "Multisig",
