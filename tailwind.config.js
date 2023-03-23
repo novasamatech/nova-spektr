@@ -12,6 +12,7 @@ module.exports = {
         surface: '0 0 15px rgba(0, 0, 0, 0.05)',
         element: '0 0 5px rgba(0, 0, 0, 0.15)',
         component: '0 0 50px rgba(0, 0, 0, 0.1)',
+        'icon-button': '0px 2px 2px rgba(0, 0, 0, 0.04), inset 0px -0.5px 0px rgba(8, 9, 14, 0.16)',
       },
       colors: {
         primary: '#567CDC',
@@ -41,6 +42,10 @@ module.exports = {
           80: '#333333',
           90: '#191919',
           100: '#000000',
+        },
+        redesign: {
+          primary: '#2463EB',
+          'gray-border': 'rgba(0, 0, 0, 0.08)',
         },
       },
       spacing: {
