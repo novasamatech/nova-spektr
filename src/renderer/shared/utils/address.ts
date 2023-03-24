@@ -21,7 +21,7 @@ export const toPublicKey = (address?: string): PublicKey | undefined => {
 
   try {
     return u8aToHex(decodeAddress(address));
-  } catch (e) {
+  } catch {
     return undefined;
   }
 };
@@ -50,7 +50,7 @@ export const pasteAddressHandler = (handler: (value: string) => void) => {
   };
 };
 
-export const validateAddress = (address: string): boolean => {
+export const validateAddress = (address?: string): boolean => {
   return Boolean(toPublicKey(address));
 };
 

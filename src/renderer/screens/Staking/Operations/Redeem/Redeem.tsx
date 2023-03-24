@@ -20,18 +20,18 @@ import { useEra } from '@renderer/services/staking/eraService';
 import { Confirmation, Scanning, Signing, Submit, ChainLoader } from '../components';
 import { useCountdown } from '../hooks/useCountdown';
 
-const enum Step {
+const enum Steps {
   CONFIRMATION,
   SCANNING,
   SIGNING,
   SUBMIT,
 }
 
-const HEADER_TITLE: Record<Step, string> = {
-  [Step.CONFIRMATION]: 'staking.redeem.initRedeemSubtitle',
-  [Step.SCANNING]: 'staking.bond.scanSubtitle',
-  [Step.SIGNING]: 'staking.bond.signSubtitle',
-  [Step.SUBMIT]: 'staking.bond.submitSubtitle',
+const HeaderTitles: Record<Steps, string> = {
+  [Steps.CONFIRMATION]: 'staking.redeem.initRedeemSubtitle',
+  [Steps.SCANNING]: 'staking.bond.scanSubtitle',
+  [Steps.SIGNING]: 'staking.bond.signSubtitle',
+  [Steps.SUBMIT]: 'staking.bond.submitSubtitle',
 };
 
 const Unstake = () => {
@@ -47,7 +47,7 @@ const Unstake = () => {
 
   const dbAccounts = getLiveAccounts({ signingType: SigningType.PARITY_SIGNER });
 
-  const [activeStep, setActiveStep] = useState<Step>(Step.CONFIRMATION);
+  const [activeStep, setActiveStep] = useState<Steps>(Steps.CONFIRMATION);
   const [chainName, setChainName] = useState('...');
   const [era, setEra] = useState<number>();
   const [redeemAmounts, setRedeemAmounts] = useState<string[]>([]);
@@ -131,7 +131,7 @@ const Unstake = () => {
   }
 
   const goToPrevStep = () => {
-    if (activeStep === Step.CONFIRMATION) {
+    if (activeStep === Steps.CONFIRMATION) {
       navigate(Paths.STAKING);
     } else {
       // TODO: reset data
@@ -144,7 +144,7 @@ const Unstake = () => {
       <ButtonBack onCustomReturn={goToPrevStep}>
         <p className="font-semibold text-2xl text-neutral-variant">{t('staking.title')}</p>
         <p className="font-semibold text-2xl text-neutral">/</p>
-        <h1 className="font-semibold text-2xl text-neutral">{t(HEADER_TITLE[activeStep])}</h1>
+        <h1 className="font-semibold text-2xl text-neutral">{t(HeaderTitles[activeStep])}</h1>
       </ButtonBack>
     </div>
   );
@@ -170,17 +170,17 @@ const Unstake = () => {
 
   const onConfirmResult = () => {
     setIsConfirmed(true);
-    setActiveStep(Step.SCANNING);
+    setActiveStep(Steps.SCANNING);
   };
 
   const onScanResult = (unsigned: UnsignedTransaction[]) => {
     setUnsignedTransactions(unsigned);
-    setActiveStep(Step.SIGNING);
+    setActiveStep(Steps.SIGNING);
   };
 
   const onSignResult = (signatures: HexString[]) => {
     setSignatures(signatures);
-    setActiveStep(Step.SUBMIT);
+    setActiveStep(Steps.SUBMIT);
   };
 
   const explorersProps = { explorers, addressPrefix, asset };
@@ -189,7 +189,7 @@ const Unstake = () => {
     <div className="flex flex-col h-full relative">
       {headerContent}
 
-      {activeStep === Step.CONFIRMATION && (
+      {activeStep === Steps.CONFIRMATION && (
         <Confirmation
           api={api}
           accounts={accounts}
@@ -200,7 +200,7 @@ const Unstake = () => {
           {...explorersProps}
         />
       )}
-      {activeStep === Step.SCANNING && (
+      {activeStep === Steps.SCANNING && (
         <Scanning
           api={api}
           chainId={chainId}
@@ -212,15 +212,15 @@ const Unstake = () => {
           onResult={onScanResult}
         />
       )}
-      {activeStep === Step.SIGNING && (
+      {activeStep === Steps.SIGNING && (
         <Signing
           countdown={countdown}
           multiQr={transactions.length > 1}
           onResult={onSignResult}
-          onGoBack={() => setActiveStep(Step.SCANNING)}
+          onGoBack={() => setActiveStep(Steps.SCANNING)}
         />
       )}
-      {activeStep === Step.SUBMIT && (
+      {activeStep === Steps.SUBMIT && (
         <Submit
           api={api}
           transaction={transactions[0]}

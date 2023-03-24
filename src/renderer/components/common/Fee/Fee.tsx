@@ -6,49 +6,47 @@ import { Balance } from '@renderer/components/ui';
 import { Asset } from '@renderer/domain/asset';
 import { Transaction } from '@renderer/domain/transaction';
 import { useTransaction } from '@renderer/services/transaction/transactionService';
+import { useToggle } from '@renderer/shared/hooks';
 
 type Props = {
-  api?: ApiPromise;
-  repeat?: number;
+  api: ApiPromise;
+  multiply?: number;
   asset: Asset;
   transaction?: Transaction;
   className?: string;
+  onFeeChange?: (fee: string) => void;
 };
 
-const Fee = ({ api, repeat = 1, asset, transaction, className }: Props) => {
+const Fee = ({ api, multiply = 1, asset, transaction, className, onFeeChange }: Props) => {
   const { getTransactionFee } = useTransaction();
+  const [isLoading, toggleLoading] = useToggle();
 
-  const [isLoading, setIsLoading] = useState(false);
-  const [transactionFee, setTransactionFee] = useState('');
+  const [fee, setFee] = useState('');
+
+  const updateFee = (fee: string) => {
+    setFee(fee);
+    onFeeChange?.(fee);
+  };
 
   useEffect(() => {
-    (async () => {
-      if (!transaction?.address || !api) {
-        setTransactionFee('0');
-        setIsLoading(false);
+    toggleLoading();
 
-        return;
-      }
-
-      setIsLoading(true);
-
-      try {
-        const fee = await getTransactionFee(transaction, api);
-
-        setTransactionFee(fee);
-      } catch (error) {
-        setTransactionFee('0');
-      }
-
-      setIsLoading(false);
-    })();
-  }, [transaction?.args, transaction?.address]);
+    if (!transaction?.address) {
+      updateFee('0');
+      toggleLoading();
+    } else {
+      getTransactionFee(transaction, api)
+        .then(updateFee)
+        .catch(() => updateFee('0'))
+        .finally(toggleLoading);
+    }
+  }, [transaction]);
 
   if (isLoading) {
     return <div className="animate-pulse bg-shade-20 rounded-lg w-20 h-2.5" data-testid="fee-loader" />;
   }
 
-  const totalFee = new BN(transactionFee).muln(repeat).toString();
+  const totalFee = new BN(fee).muln(multiply).toString();
 
   return (
     <div className={className}>

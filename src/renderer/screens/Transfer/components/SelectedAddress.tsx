@@ -10,13 +10,13 @@ type Props = {
 };
 
 const SelectedAddress = ({ account, connection }: Props) => {
-  const currentAddress = formatAddress(account.accountId || '', connection.addressPrefix);
+  const currentAddress = formatAddress(account.accountId, connection.addressPrefix);
 
   return (
     <div className="bg-white shadow-surface p-5 rounded-2xl w-full">
       <div className="flex items-center justify-between h-15 bg-shade-2 p-2.5 rounded-2lg">
         <div className="flex gap-2.5 items-center">
-          <Icon name="paritySignerBackground" size={34} />
+          <Icon name="paritySignerBg" size={34} />
           <div className="flex flex-col">
             <p className="font-bold text-lg leading-5 text-neutral">{account.name}</p>
             <Address className="leading-4" type="short" address={currentAddress} addressStyle="normal" size={14} />

@@ -19,7 +19,7 @@ import InitOperation, { RestakeResult } from './InitOperation/InitOperation';
 import { Confirmation, Scanning, Signing, Submit, ChainLoader } from '../components';
 import { useCountdown } from '../hooks/useCountdown';
 
-const enum Step {
+const enum Steps {
   INIT,
   CONFIRMATION,
   SCANNING,
@@ -27,12 +27,12 @@ const enum Step {
   SUBMIT,
 }
 
-const HEADER_TITLE: Record<Step, string> = {
-  [Step.INIT]: 'staking.restake.initRestakeSubtitle',
-  [Step.CONFIRMATION]: 'staking.restake.confirmRestakeSubtitle',
-  [Step.SCANNING]: 'staking.bond.scanSubtitle',
-  [Step.SIGNING]: 'staking.bond.signSubtitle',
-  [Step.SUBMIT]: 'staking.bond.submitSubtitle',
+const HeaderTitles: Record<Steps, string> = {
+  [Steps.INIT]: 'staking.restake.initRestakeSubtitle',
+  [Steps.CONFIRMATION]: 'staking.restake.confirmRestakeSubtitle',
+  [Steps.SCANNING]: 'staking.bond.scanSubtitle',
+  [Steps.SIGNING]: 'staking.bond.signSubtitle',
+  [Steps.SUBMIT]: 'staking.bond.submitSubtitle',
 };
 
 const Restake = () => {
@@ -47,7 +47,7 @@ const Restake = () => {
 
   const dbAccounts = getLiveAccounts({ signingType: SigningType.PARITY_SIGNER });
 
-  const [activeStep, setActiveStep] = useState<Step>(Step.INIT);
+  const [activeStep, setActiveStep] = useState<Steps>(Steps.INIT);
   const [chainName, setChainName] = useState('...');
   const [restakeAmount, setRestakeAmount] = useState<string>('');
   const [transactions, setTransactions] = useState<Transaction[]>([]);
@@ -97,7 +97,7 @@ const Restake = () => {
   const [countdown, resetCountdown] = useCountdown(api);
 
   const goToPrevStep = () => {
-    if (activeStep === Step.INIT) {
+    if (activeStep === Steps.INIT) {
       navigate(Paths.STAKING);
     } else {
       // TODO: reset data
@@ -109,14 +109,14 @@ const Restake = () => {
     <div className="flex items-center gap-x-2.5 mb-9 mt-5 px-5">
       <ButtonBack onCustomReturn={goToPrevStep}>
         <p className="font-semibold text-2xl text-neutral-variant">{t('staking.title')}</p>
-        {activeStep !== Step.INIT && (
+        {activeStep !== Steps.INIT && (
           <>
             <p className="font-semibold text-2xl text-neutral-variant">/</p>
-            <p className="font-semibold text-2xl text-neutral-variant">{t(HEADER_TITLE[Step.INIT])}</p>
+            <p className="font-semibold text-2xl text-neutral-variant">{t(HeaderTitles[Steps.INIT])}</p>
           </>
         )}
         <p className="font-semibold text-2xl text-neutral">/</p>
-        <h1 className="font-semibold text-2xl text-neutral">{t(HEADER_TITLE[activeStep])}</h1>
+        <h1 className="font-semibold text-2xl text-neutral">{t(HeaderTitles[activeStep])}</h1>
       </ButtonBack>
     </div>
   );
@@ -151,17 +151,17 @@ const Restake = () => {
     setTransactions(transactions);
     setAccounts(accounts);
     setRestakeAmount(amount);
-    setActiveStep(Step.CONFIRMATION);
+    setActiveStep(Steps.CONFIRMATION);
   };
 
   const onScanResult = (unsigned: UnsignedTransaction[]) => {
     setUnsignedTransactions(unsigned);
-    setActiveStep(Step.SIGNING);
+    setActiveStep(Steps.SIGNING);
   };
 
   const onSignResult = (signatures: HexString[]) => {
     setSignatures(signatures);
-    setActiveStep(Step.SUBMIT);
+    setActiveStep(Steps.SUBMIT);
   };
 
   const explorersProps = { explorers, addressPrefix, asset };
@@ -177,7 +177,7 @@ const Restake = () => {
     <div className="flex flex-col h-full relative">
       {headerContent}
 
-      {activeStep === Step.INIT && (
+      {activeStep === Steps.INIT && (
         <InitOperation
           api={api}
           chainId={chainId}
@@ -187,20 +187,20 @@ const Restake = () => {
           onResult={onRestakeResult}
         />
       )}
-      {activeStep === Step.CONFIRMATION && (
+      {activeStep === Steps.CONFIRMATION && (
         <Confirmation
           api={api}
           accounts={accounts}
           amounts={restakeValues}
           transaction={transactions[0]}
-          onResult={() => setActiveStep(Step.SCANNING)}
+          onResult={() => setActiveStep(Steps.SCANNING)}
           onAddToQueue={noop}
           {...explorersProps}
         >
           {hints}
         </Confirmation>
       )}
-      {activeStep === Step.SCANNING && (
+      {activeStep === Steps.SCANNING && (
         <Scanning
           api={api}
           chainId={chainId}
@@ -212,15 +212,15 @@ const Restake = () => {
           onResult={onScanResult}
         />
       )}
-      {activeStep === Step.SIGNING && (
+      {activeStep === Steps.SIGNING && (
         <Signing
           countdown={countdown}
           multiQr={transactions.length > 1}
           onResult={onSignResult}
-          onGoBack={() => setActiveStep(Step.SCANNING)}
+          onGoBack={() => setActiveStep(Steps.SCANNING)}
         />
       )}
-      {activeStep === Step.SUBMIT && (
+      {activeStep === Steps.SUBMIT && (
         <Submit
           api={api}
           transaction={transactions[0]}

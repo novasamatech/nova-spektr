@@ -20,9 +20,9 @@ import { useTransaction } from '@renderer/services/transaction/transactionServic
 import { formatAddress, toPublicKey, validateAddress } from '@renderer/shared/utils/address';
 import { DEFAULT_QR_LIFETIME } from '@renderer/shared/utils/constants';
 import { secondsToMinutes } from '@renderer/shared/utils/time';
+import { ValidationErrors } from '@renderer/shared/utils/validation';
 import { getMetadataPortalUrl, TROUBLESHOOTING_URL } from '../Signing/common/consts';
 import ParitySignerSignatureReader from '../Signing/ParitySignerSignatureReader/ParitySignerSignatureReader';
-import { ValidationErrors } from './common/constants';
 import { SelectedAddress, TransferDetails, TransferForm } from './components';
 import { Message } from '@renderer/shared/components';
 
@@ -85,8 +85,7 @@ const Transfer = () => {
         return acc;
       }
 
-      const accountType =
-        account.signingType === SigningType.PARITY_SIGNER ? 'paritySignerBackground' : 'watchOnlyBackground';
+      const accountType = account.signingType === SigningType.PARITY_SIGNER ? 'paritySignerBg' : 'watchOnlyBg';
 
       acc.push({
         id: address,

@@ -3,7 +3,7 @@ import { createKeyMulti, encodeAddress } from '@polkadot/util-crypto';
 
 import { toPublicKey } from '@renderer/shared/utils/address';
 import { ChainId, CryptoType, PublicKey, ChainType, SigningType, AccountID } from './shared-kernel';
-import { Contact } from './contact';
+import { Signatory } from '@renderer/domain/signatory';
 import { SS58_DEFAULT_PREFIX } from '@renderer/shared/utils/constants';
 
 export type Account = {
@@ -51,7 +51,7 @@ export function createAccount({
 }
 
 export type MultisigAccount = Account & {
-  signatories: Contact[];
+  signatories: Signatory[];
   threshold: number;
   matrixRoomId: string;
   inviterPublicKey: PublicKey;

@@ -7,7 +7,7 @@ import History from './History/History';
 import Balances from './Balances';
 import Staking from './Staking';
 import Signing from './Signing/SigningDev';
-import Transfer from './Transfer/Transfer';
+import Transfer from './Transfer_NEW/Transfer';
 import CreateMultisigAccount from './CreateMultisigAccount/CreateMultisigAccount';
 
 export default {

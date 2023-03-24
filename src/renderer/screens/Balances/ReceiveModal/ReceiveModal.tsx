@@ -44,8 +44,7 @@ const ReceiveModal = ({ data, isOpen, onClose }: Props) => {
 
       const address = toAddress(account.publicKey || '0x00', data?.chain.addressPrefix);
 
-      const accountType =
-        account.signingType === SigningType.PARITY_SIGNER ? 'paritySignerBackground' : 'watchOnlyBackground';
+      const accountType = account.signingType === SigningType.PARITY_SIGNER ? 'paritySignerBg' : 'watchOnlyBg';
 
       const accountOption = {
         id: index.toString(),

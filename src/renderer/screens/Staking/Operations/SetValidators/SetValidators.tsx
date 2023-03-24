@@ -17,7 +17,7 @@ import { formatAddress } from '@renderer/shared/utils/address';
 import { Confirmation, Scanning, Signing, Submit, Validators, ChainLoader } from '../components';
 import { useCountdown } from '../hooks/useCountdown';
 
-const enum Step {
+const enum Steps {
   INIT,
   CONFIRMATION,
   SCANNING,
@@ -25,12 +25,12 @@ const enum Step {
   SUBMIT,
 }
 
-const HEADER_TITLE: Record<Step, string> = {
-  [Step.INIT]: 'staking.bond.validatorsSubtitle',
-  [Step.CONFIRMATION]: 'staking.bond.confirmBondSubtitle',
-  [Step.SCANNING]: 'staking.bond.scanSubtitle',
-  [Step.SIGNING]: 'staking.bond.signSubtitle',
-  [Step.SUBMIT]: 'staking.bond.submitSubtitle',
+const HeaderTitles: Record<Steps, string> = {
+  [Steps.INIT]: 'staking.bond.validatorsSubtitle',
+  [Steps.CONFIRMATION]: 'staking.bond.confirmBondSubtitle',
+  [Steps.SCANNING]: 'staking.bond.scanSubtitle',
+  [Steps.SIGNING]: 'staking.bond.signSubtitle',
+  [Steps.SUBMIT]: 'staking.bond.submitSubtitle',
 };
 
 const SetValidators = () => {
@@ -44,7 +44,7 @@ const SetValidators = () => {
 
   const dbAccounts = getLiveAccounts({ signingType: SigningType.PARITY_SIGNER });
 
-  const [activeStep, setActiveStep] = useState<Step>(Step.INIT);
+  const [activeStep, setActiveStep] = useState<Steps>(Steps.INIT);
   const [chainName, setChainName] = useState('...');
   const [validators, setValidators] = useState<ValidatorMap>({});
   const [transactions, setTransactions] = useState<Transaction[]>([]);
@@ -76,7 +76,7 @@ const SetValidators = () => {
   }
 
   const goToPrevStep = () => {
-    if (activeStep === Step.INIT) {
+    if (activeStep === Steps.INIT) {
       navigate(Paths.STAKING);
     } else {
       // TODO: reset data
@@ -89,7 +89,7 @@ const SetValidators = () => {
       <ButtonBack onCustomReturn={goToPrevStep} />
       <p className="font-semibold text-2xl text-neutral-variant">{t('staking.title')}</p>
       <p className="font-semibold text-2xl text-neutral">/</p>
-      <h1 className="font-semibold text-2xl text-neutral">{t(HEADER_TITLE[activeStep])}</h1>
+      <h1 className="font-semibold text-2xl text-neutral">{t(HeaderTitles[activeStep])}</h1>
     </div>
   );
 
@@ -125,21 +125,21 @@ const SetValidators = () => {
 
     setTransactions(transactions);
     setValidators(validators);
-    setActiveStep(Step.CONFIRMATION);
+    setActiveStep(Steps.CONFIRMATION);
   };
 
   const onScanResult = (unsigned: UnsignedTransaction[]) => {
     setUnsignedTransactions(unsigned);
-    setActiveStep(Step.SIGNING);
+    setActiveStep(Steps.SIGNING);
   };
 
   const onBackToScan = () => {
-    setActiveStep(Step.SCANNING);
+    setActiveStep(Steps.SCANNING);
   };
 
   const onSignResult = (signatures: HexString[]) => {
     setSignatures(signatures);
-    setActiveStep(Step.SUBMIT);
+    setActiveStep(Steps.SUBMIT);
   };
 
   const explorersProps = { explorers, addressPrefix, asset };
@@ -154,7 +154,7 @@ const SetValidators = () => {
     <div className="flex flex-col h-full relative">
       {headerContent}
 
-      {activeStep === Step.INIT && (
+      {activeStep === Steps.INIT && (
         <Validators
           api={api}
           chainId={chainId}
@@ -164,21 +164,21 @@ const SetValidators = () => {
           onResult={onSelectValidators}
         />
       )}
-      {activeStep === Step.CONFIRMATION && (
+      {activeStep === Steps.CONFIRMATION && (
         <Confirmation
           title={t('staking.confirmation.setValidatorsTitle')}
           api={api}
           validators={Object.values(validators)}
           transaction={transactions[0]}
           accounts={totalAccounts}
-          onResult={() => setActiveStep(Step.SCANNING)}
+          onResult={() => setActiveStep(Steps.SCANNING)}
           onAddToQueue={noop}
           {...explorersProps}
         >
           {hints}
         </Confirmation>
       )}
-      {activeStep === Step.SCANNING && (
+      {activeStep === Steps.SCANNING && (
         <Scanning
           api={api}
           chainId={chainId}
@@ -190,7 +190,7 @@ const SetValidators = () => {
           onResult={onScanResult}
         />
       )}
-      {activeStep === Step.SIGNING && (
+      {activeStep === Steps.SIGNING && (
         <Signing
           countdown={countdown}
           multiQr={transactions.length > 1}
@@ -198,7 +198,7 @@ const SetValidators = () => {
           onGoBack={onBackToScan}
         />
       )}
-      {activeStep === Step.SUBMIT && (
+      {activeStep === Steps.SUBMIT && (
         <Submit
           title={t('staking.confirmation.setValidatorsTitle')}
           api={api}
