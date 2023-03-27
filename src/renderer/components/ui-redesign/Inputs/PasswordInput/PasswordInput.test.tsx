@@ -1,4 +1,5 @@
 import { render, screen } from '@testing-library/react';
+
 import PasswordInput from './PasswordInput';
 
 describe('ui/Inputs/PasswordInput', () => {
