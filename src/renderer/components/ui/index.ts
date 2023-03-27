@@ -4,6 +4,7 @@ import Switch from './Switch/Switch';
 import Icon from './Icon/Icon';
 import Identicon from './Identicon/Identicon';
 import Input from './Inputs/Input/Input';
+import InputArea from './Inputs/InputArea/InputArea';
 import Block from './Block/Block';
 import Plate from './Plate/Plate';
 import AmountInput from './Inputs/AmountInput/AmountInput';
@@ -37,6 +38,7 @@ export {
   Icon,
   Identicon,
   Input,
+  InputArea,
   Block,
   Plate,
   AmountInput,
