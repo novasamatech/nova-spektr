@@ -14,6 +14,7 @@ import Paths from '@renderer/routes/paths';
 
 type Props = {
   className?: string;
+  onUrlChange: () => void;
 };
 
 const GroupLabels = {
@@ -23,7 +24,7 @@ const GroupLabels = {
   [SigningType.PARITY_SIGNER]: 'wallets.paritySignerLabel',
 };
 
-const Wallets = forwardRef<HTMLDivElement, Props>(({ className }, ref) => {
+const Wallets = forwardRef<HTMLDivElement, Props>(({ className, onUrlChange }, ref) => {
   const { t } = useI18n();
   const { getLiveAccounts, toggleActiveAccount } = useAccount();
 
@@ -301,6 +302,7 @@ const Wallets = forwardRef<HTMLDivElement, Props>(({ className }, ref) => {
           prefixElement={<Icon name="multisigOutline" size={16} />}
           pallet="primary"
           variant="fill"
+          callback={onUrlChange}
         >
           {t('wallets.addMultisigWalletButton')}
         </ButtonLink>

@@ -14,11 +14,7 @@ describe('ui/Buttons/ButtonLink', () => {
   test('should navigate on click', () => {
     window.history.pushState({}, '', '/init_page');
 
-    render(
-      <BrowserRouter>
-        <ButtonLink to="test_page" pallet="primary" variant="outline" />
-      </BrowserRouter>,
-    );
+    render(<ButtonLink to="test_page" pallet="primary" variant="outline" />, { wrapper: BrowserRouter });
 
     expect(window.location.href).toEqual('http://localhost/init_page');
 
@@ -41,5 +37,17 @@ describe('ui/Buttons/ButtonLink', () => {
 
     const disabledContainer = screen.getByText('Disabled');
     expect(disabledContainer).toBeInTheDocument();
+  });
+
+  test('should call callback on page transition', async () => {
+    const spyCallback = jest.fn();
+    render(<ButtonLink to="test_page" pallet="primary" variant="outline" callback={spyCallback} />, {
+      wrapper: MemoryRouter,
+    });
+
+    const buttonLink = screen.getByRole('link');
+    await act(() => buttonLink.click());
+
+    expect(spyCallback).toBeCalled();
   });
 });
