@@ -21,7 +21,7 @@ const Operations = () => {
     return events.filter((e) => e.status === 'SIGNED').length;
   };
 
-  const groupedTxs = groupBy(txs, (tx) => new Date(tx.dateCreated || 0).toLocaleDateString());
+  const groupedTxs = groupBy(txs.reverse(), (tx) => new Date(tx.dateCreated || 0).toLocaleDateString());
 
   return (
     <div className="h-full flex flex-col gap-y-9 relative">
@@ -31,7 +31,7 @@ const Operations = () => {
 
       <div className="overflow-y-auto flex-1">
         <Plate as="section" className="mx-auto w-[800px]">
-          <h2>{t('operations.subTitle')}</h2>
+          <h2 className="text-lg font-bold mb-4">{t('operations.subTitle')}</h2>
           {txs.length ? (
             Object.entries(groupedTxs).map(([date, txs]) => (
               <>
