@@ -9,9 +9,9 @@ import { useI18n } from '@renderer/context/I18nContext';
 import { Asset } from '@renderer/domain/asset';
 import { Chain } from '@renderer/domain/chain';
 import { SigningType } from '@renderer/domain/shared-kernel';
-import { toAddress } from '@renderer/services/balance/common/utils';
 import { copyToClipboard } from '@renderer/shared/utils/strings';
 import { useAccount } from '@renderer/services/account/accountService';
+import { formatAddress } from '@renderer/shared/utils/address';
 
 export type ReceivePayload = {
   chain: Chain;
@@ -42,7 +42,7 @@ const ReceiveModal = ({ data, isOpen, onClose }: Props) => {
         return acc;
       }
 
-      const address = toAddress(account.publicKey || '0x00', data?.chain.addressPrefix);
+      const address = formatAddress(account.publicKey || '0x00', data?.chain.addressPrefix);
 
       const accountType = account.signingType === SigningType.PARITY_SIGNER ? 'paritySignerBg' : 'watchOnlyBg';
 
@@ -69,7 +69,7 @@ const ReceiveModal = ({ data, isOpen, onClose }: Props) => {
 
   const account = activeAccount ? activeAccounts[activeAccount.value] : undefined;
   const publicKey = account?.publicKey || '0x00';
-  const address = toAddress(publicKey, data?.chain.addressPrefix);
+  const address = formatAddress(publicKey, data?.chain.addressPrefix);
 
   //eslint-disable-next-line i18next/no-literal-string
   const qrCodePayload = `substrate:${address}:${publicKey}`;

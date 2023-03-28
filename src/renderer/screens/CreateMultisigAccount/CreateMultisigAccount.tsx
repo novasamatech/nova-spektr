@@ -194,8 +194,8 @@ const CreateMultisigAccount = () => {
 
               <div className="flex items-center justify-between">
                 <div className="flex-1">
-                  <p className="text-xl font-semibold text-neutral">{t('createMultisigAccount.nameLabel')}</p>
-                  <p className="text-neutral-variant">{t('createMultisigAccount.nameDescription')}</p>
+                  <p className="text-xl font-semibold text-neutral">{t('createMultisigAccount.thresholdName')}</p>
+                  <p className="text-neutral-variant">{t('createMultisigAccount.thresholdDescription')}</p>
                 </div>
 
                 <Controller
@@ -205,9 +205,9 @@ const CreateMultisigAccount = () => {
                   render={({ field: { value, onChange } }) => (
                     <Dropdown
                       variant="up"
-                      placeholder=""
+                      placeholder="2"
                       className="w-20"
-                      activeId={value.value.toString()}
+                      activeId={value.id.toString()}
                       disabled={signatories.length < 2 || inProgress}
                       options={thresholdOptions}
                       onChange={onChange}

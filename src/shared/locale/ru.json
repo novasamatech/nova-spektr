@@ -64,6 +64,8 @@
     "signatoriesDescription": "Добавьте подписантов в ваш multisig аккаунт",
     "signatoriesLabel": "Подписанты",
     "successMessage": "Multisig аккаунт успешно создан ",
+    "thresholdDescription": "Установите количество подписей трубуемых для выполнения транзакции",
+    "thresholdName": "Порог",
     "title": "Создать multisig аккаунт"
   },
   "dropdown": {

@@ -29,8 +29,7 @@ import { isStringsMatchQuery } from '@renderer/shared/utils/strings';
 import { AboutStaking, EmptyFilter, InactiveChain, NoAccounts, StakingTable } from './components';
 import NominatorsModal from './components/NominatorsModal/NominatorsModal';
 import { AccountStakeInfo } from './components/StakingTable/StakingTable';
-import { toAddress } from '@renderer/services/balance/common/utils';
-import { getRelaychainAsset } from '@renderer/shared/utils/address';
+import { formatAddress, getRelaychainAsset } from '@renderer/shared/utils/address';
 
 type NetworkOption = { asset: Asset; addressPrefix: number };
 
@@ -74,7 +73,7 @@ const Overview = () => {
 
       return !rootId || derivationIsCorrect;
     })
-    .map((a) => ({ ...a, accountId: toAddress(a.publicKey, addressPrefix) }));
+    .map((a) => ({ ...a, accountId: formatAddress(a.publicKey, addressPrefix) }));
 
   const accountAddresses = activeAccounts.reduce<AccountID[]>((acc, account) => {
     return account.accountId ? acc.concat(account.accountId) : acc;

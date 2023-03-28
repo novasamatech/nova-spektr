@@ -6,8 +6,7 @@ import { SeedInfo, SimpleSeedInfo } from '@renderer/components/common/QrCode/QrR
 import { BaseModal, Button, Icon, Identicon } from '@renderer/components/ui';
 import { useI18n } from '@renderer/context/I18nContext';
 import { AccountID, PublicKey } from '@renderer/domain/shared-kernel';
-import { toAddress } from '@renderer/services/balance/common/utils';
-import { toPublicKey } from '@renderer/shared/utils/address';
+import { formatAddress, toPublicKey } from '@renderer/shared/utils/address';
 import { getShortAddress } from '@renderer/shared/utils/strings';
 import ParitySignerQrReader from '../ParitySignerQrReader/ParitySignerQrReader';
 
@@ -147,11 +146,11 @@ const ScanMoreModal = ({ isOpen, accounts, onResult, onClose }: Props) => {
       }
     } else if (oldAccs.length > 1 || oldAccs[0].derivedKeys.length > 0) {
       setCameraState(CameraState.NO_NEW_ACCOUNTS);
-      const oldAddresses = oldAccs.map(({ multiSigner }) => toAddress(u8aToHex(multiSigner?.public), 0));
+      const oldAddresses = oldAccs.map(({ multiSigner }) => formatAddress(u8aToHex(multiSigner?.public), 0));
       setExistingAccounts(oldAddresses);
     } else {
       setCameraState(CameraState.ACCOUNT_EXISTS);
-      setExistingAccounts([toAddress(u8aToHex(oldAccs[0].multiSigner?.public), 0)]);
+      setExistingAccounts([formatAddress(u8aToHex(oldAccs[0].multiSigner?.public), 0)]);
     }
   };
 

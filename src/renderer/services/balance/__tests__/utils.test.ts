@@ -1,5 +1,6 @@
+import { formatAddress } from '@renderer/shared/utils/address';
 import { TEST_PUBLIC_KEY } from '@renderer/shared/utils/constants';
-import { formatBalance, toAddress } from '../common/utils';
+import { formatBalance } from '../common/utils';
 
 describe('services/balance/utils', () => {
   describe('formatBalance', () => {
@@ -46,12 +47,12 @@ describe('services/balance/utils', () => {
 
   describe('formatBalance', () => {
     test('should convert address to Polkadot', () => {
-      const address = toAddress(TEST_PUBLIC_KEY, 0);
+      const address = formatAddress(TEST_PUBLIC_KEY, 0);
       expect(address).toEqual('1ChFWeNRLarAPRCTM3bfJmncJbSAbSS9yqjueWz7jX7iTVZ');
     });
 
     test('should convert address to Substrate', () => {
-      const address = toAddress(TEST_PUBLIC_KEY);
+      const address = formatAddress(TEST_PUBLIC_KEY);
       expect(address).toEqual('5CGQ7BPJZZKNirQgVhzbX9wdkgbnUHtJ5V7FkMXdZeVbXyr9');
     });
   });

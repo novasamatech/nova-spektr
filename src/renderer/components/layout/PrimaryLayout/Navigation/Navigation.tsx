@@ -165,6 +165,7 @@ const Navigation = () => {
           'ease-in-out transition-all transform duration-200 absolute z-20 w-[350px] left-0 top-0 overflow-y-auto',
           isWalletsOpen ? 'translate-x-[300px] opacity-100 visible' : 'translate-x-0 opacity-0 invisible',
         )}
+        onUrlChange={() => setIsWalletsOpen(false)}
       />
     </>
   );
