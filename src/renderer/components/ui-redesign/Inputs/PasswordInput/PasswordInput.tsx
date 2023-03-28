@@ -8,8 +8,8 @@ import { useToggle } from '@renderer/shared/hooks';
 type Props = Omit<InputProps, 'type' | 'suffixElement'>;
 
 const PasswordInput = forwardRef<HTMLInputElement, Props>(({ ...props }, ref) => {
-  const [isHidden, toggleVisibility] = useToggle(true);
   const { t } = useI18n();
+  const [isHidden, toggleVisibility] = useToggle(true);
 
   return (
     <Input
