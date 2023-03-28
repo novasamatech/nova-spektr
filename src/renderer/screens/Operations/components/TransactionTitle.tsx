@@ -68,13 +68,13 @@ const TransactionTitle = ({ transaction, description }: Props) => {
   const transactionTitle = getTransactionTitle(transaction);
 
   return (
-    <div className="flex gap-2">
+    <div className="flex gap-2 ">
       <div className="row-span-2 self-center">
         <Icon className="rounded-full border-solid border bg-shade-2 border-shade-5" name={iconName} />
       </div>
       <div>
         <div className="text-black text-base">{t(transactionTitle)}</div>
-        {description && <div className="text-shade-50 text-base">{description} </div>}
+        {description && <div className="text-shade-50 text-base truncate">{description} </div>}
       </div>
     </div>
   );
