@@ -7,7 +7,7 @@ export type FontWeight = 'regular' | 'semibold' | 'bold';
 export type Align = 'left' | 'right' | 'center';
 
 interface Props {
-  tag: Tags;
+  as: Tags;
   fontWeight: FontWeight;
   align: Align;
   className: string;
