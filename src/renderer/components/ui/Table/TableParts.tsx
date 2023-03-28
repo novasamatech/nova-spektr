@@ -39,7 +39,7 @@ export type ColumnProps = {
 };
 export const TableColumn = ({
   dataKey,
-  align = 'right',
+  align = 'left',
   sortable = false,
   defaultSort,
   width,

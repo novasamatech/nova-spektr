@@ -93,9 +93,6 @@
       "appName": "Nova Spektr"
     }
   },
-  "history": {
-    "title": "История операций"
-  },
   "matrixCredentials": {
     "subTitle": "Реквизиты Matrix"
   },
@@ -256,6 +253,23 @@
       "yourAccountsLoadingLabel": "Your accounts will be showing up here"
     },
     "yourAccountsLabel": "Ваши аккаунты"
+  },
+  "operations": {
+    "noOperationsDescription": "Нет ожидающих операций с мультиподписью",
+    "signing": "Подписи ({ signed } из { signatories })",
+    "subTitle": "Ваши операции",
+    "title": "Операции",
+    "titles": {
+      "destination": "Установить кошелёк получения награды",
+      "nominate": "Номинирование",
+      "redeem": "Запрать",
+      "restake": "Рестейк",
+      "stakeMore": "Стейкать ещё",
+      "startStaking": "Старт стейкинга",
+      "transfer": "Перевод",
+      "unknown": "Неизвестная операция",
+      "unstake": "Вывод из стейкинга"
+    }
   },
   "qrReader": {
     "parsingLabel": "Обработка данных",
