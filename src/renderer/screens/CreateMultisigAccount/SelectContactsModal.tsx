@@ -49,16 +49,13 @@ const SelectContactsModal = ({ signatories, isOpen, onClose, onSelect }: Props) 
         matrixId: matrix.userId,
       }));
 
-    const mergedContacts = [...addressBookContacts, ...walletContacts].reduce<SignatoryWithId[]>(
-      (acc, contact, index) => {
-        if (!publicKeys.includes(contact.publicKey)) {
-          acc.push({ ...contact, id: index });
-        }
+    const mergedContacts = [...addressBookContacts, ...walletContacts].reduce<SignatoryWithId[]>((acc, contact) => {
+      if (!publicKeys.includes(contact.publicKey)) {
+        acc.push({ ...contact, id: acc.length });
+      }
 
-        return acc;
-      },
-      [],
-    );
+      return acc;
+    }, []);
 
     setContactList(mergedContacts);
   }, [accounts.length, contacts.length, signatories.length]);
