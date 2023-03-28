@@ -12,6 +12,7 @@ import { useAccount } from '@renderer/services/account/accountService';
 import { AccountDS } from '@renderer/services/storage';
 import Wallets from '../Wallets/Wallets';
 import './Navigation.css';
+import { useMultisigTx } from '@renderer/services/multisigTx/multisigTxService';
 
 type CardType = SigningType | 'multiple' | 'none';
 
@@ -30,18 +31,6 @@ const getCardType = (accounts: AccountDS[]): CardType => {
   return accounts[0].signingType;
 };
 
-const NavItems = [
-  { icon: <Icon name="balance" />, title: 'navigation.balancesLabel', link: Paths.BALANCES },
-  { icon: <Icon name="staking" />, title: 'navigation.stakingLabel', link: Paths.STAKING },
-  { icon: <Icon name="book" />, title: 'navigation.addressBookLabel', link: Paths.ADDRESS_BOOK },
-  { icon: <Icon name="operations" />, title: 'navigation.mstOperationLabel', link: Paths.OPERATIONS },
-
-  // { icon: <Icon name="history" />, title: 'navigation.historyLabel', link: Paths.HISTORY },
-  // { icon: <Icon name="btc" />, title: 'navigation.chatDEVLabel', link: Paths.CHAT_DEV },
-  // { icon: <Icon name="eth" />, title: 'navigation.cameraDEVLabel', link: Paths.CAMERA_DEV },
-  // { icon: <Icon name="history" />, title: 'navigation.signingDEVLabel', link: Paths.SIGNING },
-];
-
 const Navigation = () => {
   const walletsRef = useRef<HTMLDivElement>(null);
   const showWalletsRef = useRef<HTMLButtonElement>(null);
@@ -53,6 +42,26 @@ const Navigation = () => {
   const cardType = getCardType(activeAccounts);
 
   const [isWalletsOpen, setIsWalletsOpen] = useState(false);
+
+  const { getLiveMultisigTxs } = useMultisigTx();
+  const txs = getLiveMultisigTxs({ status: 'SIGNING' });
+
+  const NavItems = [
+    { icon: <Icon name="balance" />, title: 'navigation.balancesLabel', link: Paths.BALANCES },
+    { icon: <Icon name="staking" />, title: 'navigation.stakingLabel', link: Paths.STAKING },
+    { icon: <Icon name="book" />, title: 'navigation.addressBookLabel', link: Paths.ADDRESS_BOOK },
+    {
+      icon: <Icon name="operations" />,
+      title: 'navigation.mstOperationLabel',
+      link: Paths.OPERATIONS,
+      badge: txs.length,
+    },
+
+    // { icon: <Icon name="history" />, title: 'navigation.historyLabel', link: Paths.HISTORY },
+    // { icon: <Icon name="btc" />, title: 'navigation.chatDEVLabel', link: Paths.CHAT_DEV },
+    // { icon: <Icon name="eth" />, title: 'navigation.cameraDEVLabel', link: Paths.CAMERA_DEV },
+    // { icon: <Icon name="history" />, title: 'navigation.signingDEVLabel', link: Paths.SIGNING },
+  ];
 
   useClickOutside([walletsRef, showWalletsRef], () => {
     setIsWalletsOpen(false);
@@ -120,7 +129,7 @@ const Navigation = () => {
 
         <nav className="flex-1 overflow-y-auto scrollbar">
           <ul className="pr-2.5">
-            {NavItems.map(({ icon, title, link }) => (
+            {NavItems.map(({ icon, title, link, badge }) => (
               <li key={title} className="cursor-pointer select-none rounded-lg hover:bg-black/5 text-gray-500">
                 <NavLink
                   to={link}
@@ -130,6 +139,7 @@ const Navigation = () => {
                 >
                   {icon}
                   <span className="font-semibold text-sm ml-3">{t(title)}</span>
+                  {badge && <div className="ml-auto text-shade-50">{badge}</div>}
                 </NavLink>
               </li>
             ))}
