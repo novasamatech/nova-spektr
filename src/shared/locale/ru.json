@@ -556,7 +556,7 @@
     "recipientLabel": "Получатель",
     "requiredAmountError": "Пожалуйста, введите сумму",
     "requiredRecipientError": "Пожалуйста, введите адрес получателя",
-    "startSigningButton": "Подписать с помощью Parity Signer",
+    "startSigningButton": "Подписать в Parity Signer",
     "successMessage": "Транзакция отправлена!",
     "title": "Переводы"
   },

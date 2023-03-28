@@ -4,9 +4,9 @@ import { useEffect, useState } from 'react';
 import { Navigate, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 
 import { ButtonBack, ButtonLink, Icon } from '@renderer/components/ui';
+import { ChainLoader } from '@renderer/components/common';
 import { useI18n } from '@renderer/context/I18nContext';
 import { useNetworkContext } from '@renderer/context/NetworkContext';
-import { StakingType } from '@renderer/domain/asset';
 import { AccountID, ChainId, HexString, SigningType } from '@renderer/domain/shared-kernel';
 import { Transaction, TransactionType } from '@renderer/domain/transaction';
 import Paths from '@renderer/routes/paths';
@@ -17,8 +17,9 @@ import { useChains } from '@renderer/services/network/chainsService';
 import { AccountDS } from '@renderer/services/storage';
 import { redeemableAmount } from '@renderer/services/balance/common/utils';
 import { useEra } from '@renderer/services/staking/eraService';
-import { Confirmation, Scanning, Signing, Submit, ChainLoader } from '../components';
+import { Confirmation, Scanning, Signing, Submit } from '../components';
 import { useCountdown } from '../hooks/useCountdown';
+import { getRelaychainAsset } from '@renderer/shared/utils/address';
 
 const enum Steps {
   CONFIRMATION,
@@ -66,7 +67,7 @@ const Unstake = () => {
   }
 
   const { api, explorers, addressPrefix, assets, name } = connections[chainId];
-  const asset = assets.find((asset) => asset.staking === StakingType.RELAYCHAIN);
+  const asset = getRelaychainAsset(assets);
 
   const [countdown, resetCountdown] = useCountdown(api);
 

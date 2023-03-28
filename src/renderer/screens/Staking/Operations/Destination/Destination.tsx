@@ -3,16 +3,16 @@ import noop from 'lodash/noop';
 import { useState, useEffect } from 'react';
 import { Navigate, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 
-import { formatAddress } from '@renderer/shared/utils/address';
+import { formatAddress, getRelaychainAsset } from '@renderer/shared/utils/address';
 import { RewardsDestination } from '@renderer/domain/stake';
+import { ChainLoader } from '@renderer/components/common';
 import { ButtonBack, ButtonLink, Icon } from '@renderer/components/ui';
 import { useI18n } from '@renderer/context/I18nContext';
 import { useNetworkContext } from '@renderer/context/NetworkContext';
 import { useChains } from '@renderer/services/network/chainsService';
-import { StakingType } from '@renderer/domain/asset';
 import { AccountID, ChainId, HexString } from '@renderer/domain/shared-kernel';
 import { Transaction, TransactionType } from '@renderer/domain/transaction';
-import { Confirmation, Scanning, Signing, Submit, ChainLoader } from '../components';
+import { Confirmation, Scanning, Signing, Submit } from '../components';
 import Paths from '@renderer/routes/paths';
 import { AccountDS } from '@renderer/services/storage';
 import InitOperation, { DestinationResult } from './InitOperation/InitOperation';
@@ -63,7 +63,7 @@ const Destination = () => {
   }
 
   const { api, explorers, addressPrefix, assets, name } = connections[chainId];
-  const asset = assets.find((asset) => asset.staking === StakingType.RELAYCHAIN);
+  const asset = getRelaychainAsset(assets);
 
   useEffect(() => {
     getChainById(chainId).then((chain) => setChainName(chain?.name || ''));

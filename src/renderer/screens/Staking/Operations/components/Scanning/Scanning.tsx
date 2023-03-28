@@ -106,8 +106,8 @@ export const Scanning = ({
               {t('signing.qrCountdownTitle')}
               <div
                 className={cn(
-                  'rounded-md text-white py-0.5 px-1.5',
-                  countdown > 60 ? 'bg-success' : countdown > 0 ? 'bg-alert' : 'bg-error',
+                  'w-10 rounded-md text-white py-0.5 text-center',
+                  countdown === 0 ? 'bg-error' : countdown >= 60 ? 'bg-success' : 'bg-alert',
                 )}
               >
                 {secondsToMinutes(countdown)}

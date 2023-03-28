@@ -5,7 +5,7 @@ type Props = {
   chainName: string;
 };
 
-export const ChainLoader = ({ chainName }: Props) => {
+const ChainLoader = ({ chainName }: Props) => {
   const { t } = useI18n();
 
   return (
@@ -17,3 +17,5 @@ export const ChainLoader = ({ chainName }: Props) => {
     </div>
   );
 };
+
+export default ChainLoader;

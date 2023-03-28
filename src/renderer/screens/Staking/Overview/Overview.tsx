@@ -8,7 +8,7 @@ import { DropdownOption, DropdownResult } from '@renderer/components/ui/Dropdown
 import { useGraphql } from '@renderer/context/GraphqlContext';
 import { useI18n } from '@renderer/context/I18nContext';
 import { useNetworkContext } from '@renderer/context/NetworkContext';
-import { Asset, StakingType } from '@renderer/domain/asset';
+import { Asset } from '@renderer/domain/asset';
 import { ConnectionStatus, ConnectionType } from '@renderer/domain/connection';
 import { AccountID, ChainId, SigningType } from '@renderer/domain/shared-kernel';
 import { Stake } from '@renderer/domain/stake';
@@ -30,6 +30,7 @@ import { AboutStaking, EmptyFilter, InactiveChain, NoAccounts, StakingTable } fr
 import NominatorsModal from './components/NominatorsModal/NominatorsModal';
 import { AccountStakeInfo } from './components/StakingTable/StakingTable';
 import { toAddress } from '@renderer/services/balance/common/utils';
+import { getRelaychainAsset } from '@renderer/shared/utils/address';
 
 type NetworkOption = { asset: Asset; addressPrefix: number };
 
@@ -124,7 +125,7 @@ const Overview = () => {
       const chainsData = await getChainsData();
 
       const relaychains = sortChains(chainsData).reduce<DropdownOption<NetworkOption>[]>((acc, chain) => {
-        const asset = chain.assets.find((asset) => asset.staking === StakingType.RELAYCHAIN) as Asset;
+        const asset = getRelaychainAsset(chain.assets);
         if (!asset) return acc;
 
         return acc.concat({

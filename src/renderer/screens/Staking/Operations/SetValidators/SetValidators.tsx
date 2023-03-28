@@ -4,17 +4,17 @@ import { useState, useEffect } from 'react';
 import { Navigate, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 
 import { ButtonBack, ButtonLink, HintList, Icon } from '@renderer/components/ui';
+import { ChainLoader } from '@renderer/components/common';
 import { useI18n } from '@renderer/context/I18nContext';
 import { useNetworkContext } from '@renderer/context/NetworkContext';
 import { useChains } from '@renderer/services/network/chainsService';
-import { StakingType } from '@renderer/domain/asset';
 import { ChainId, HexString, SigningType } from '@renderer/domain/shared-kernel';
 import { Transaction, TransactionType } from '@renderer/domain/transaction';
 import Paths from '@renderer/routes/paths';
 import { useAccount } from '@renderer/services/account/accountService';
 import { ValidatorMap } from '@renderer/services/staking/common/types';
-import { formatAddress } from '@renderer/shared/utils/address';
-import { Confirmation, Scanning, Signing, Submit, Validators, ChainLoader } from '../components';
+import { formatAddress, getRelaychainAsset } from '@renderer/shared/utils/address';
+import { Confirmation, Scanning, Signing, Submit, Validators } from '../components';
 import { useCountdown } from '../hooks/useCountdown';
 
 const enum Steps {
@@ -63,7 +63,7 @@ const SetValidators = () => {
   });
 
   const { api, explorers, addressPrefix, assets, name } = connections[chainId];
-  const asset = assets.find((asset) => asset.staking === StakingType.RELAYCHAIN);
+  const asset = getRelaychainAsset(assets);
 
   const [countdown, resetCountdown] = useCountdown(api);
 

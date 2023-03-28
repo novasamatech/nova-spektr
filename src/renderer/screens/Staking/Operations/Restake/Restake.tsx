@@ -4,9 +4,9 @@ import { useEffect, useState } from 'react';
 import { Navigate, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 
 import { ButtonBack, ButtonLink, HintList, Icon } from '@renderer/components/ui';
+import { ChainLoader } from '@renderer/components/common';
 import { useI18n } from '@renderer/context/I18nContext';
 import { useNetworkContext } from '@renderer/context/NetworkContext';
-import { StakingType } from '@renderer/domain/asset';
 import { AccountID, ChainId, HexString, SigningType } from '@renderer/domain/shared-kernel';
 import { Transaction, TransactionType } from '@renderer/domain/transaction';
 import Paths from '@renderer/routes/paths';
@@ -16,8 +16,9 @@ import { StakingMap } from '@renderer/services/staking/common/types';
 import { useStakingData } from '@renderer/services/staking/stakingDataService';
 import { AccountDS } from '@renderer/services/storage';
 import InitOperation, { RestakeResult } from './InitOperation/InitOperation';
-import { Confirmation, Scanning, Signing, Submit, ChainLoader } from '../components';
+import { Confirmation, Scanning, Signing, Submit } from '../components';
 import { useCountdown } from '../hooks/useCountdown';
+import { getRelaychainAsset } from '@renderer/shared/utils/address';
 
 const enum Steps {
   INIT,
@@ -64,7 +65,7 @@ const Restake = () => {
   }
 
   const { api, explorers, addressPrefix, assets, name } = connections[chainId];
-  const asset = assets.find((asset) => asset.staking === StakingType.RELAYCHAIN);
+  const asset = getRelaychainAsset(assets);
 
   useEffect(() => {
     if (!api?.isConnected || accountIds.length === 0) return;
