@@ -3,7 +3,7 @@ import { ApiPromise } from '@polkadot/api';
 import { MultisigAccount } from '@renderer/domain/account';
 import { AccountID, ChainId } from '@renderer/domain/shared-kernel';
 import { Signatory } from '@renderer/domain/signatory';
-import { MultisigEvent, MultisigTransaction } from '@renderer/domain/transaction';
+import { MultisigEvent, MultisigTransaction, MiltisigTxInitStatus } from '@renderer/domain/transaction';
 import { formatAddress } from '@renderer/shared/utils/address';
 import { PendingMultisigTransaction } from './types';
 
@@ -90,7 +90,7 @@ export const createTransactionPayload = (
     blockCreated: when.height.toNumber(),
     indexCreated: pendingTransaction.params.when.index.toNumber(),
     chainId: chainId,
-    status: 'SIGNING',
+    status: MiltisigTxInitStatus.SIGNING,
     callHash: callHash.toHex(),
     signatories: account.signatories,
     deposit: deposit.toString(),

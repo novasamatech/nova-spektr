@@ -543,6 +543,7 @@
   "transfer": {
     "amountPlaceholder": "Amount",
     "continueButton": "Continue",
+    "descriptionLengthError": "Description can be { maxLength } symbols long",
     "editOperationButton": "Edit operation",
     "executing": "Submitting operation",
     "formTitle": "Send <strong>{ asset }</strong> on <strong>{ network }</strong>",
@@ -551,6 +552,7 @@
       "executing": "Submitting operations",
       "transactions": "Transactions"
     },
+    "networkDeposit": "Deposit",
     "networkFee": "Network fee",
     "notEnoughBalanceError": "Not enough funds to transfer specific amount",
     "notEnoughBalanceForFeeError": "Insufficient balance to pay network fee",

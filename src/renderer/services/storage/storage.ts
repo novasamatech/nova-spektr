@@ -27,12 +27,13 @@ class DexieStorage extends Dexie {
 
   constructor() {
     super('omni'); // TODO: naming is not final
-    this.version(11).stores({
+    this.version(12).stores({
       connections: '++id,chainId,type',
       balances: '[publicKey+chainId+assetId],[publicKey+chainId]',
       wallets: '++id,isActive,type',
       accounts: '++id,isActive,walletId,rootId,signingType',
-      multisigTransactions: '++id,[publicKey+status],[publicKey+callHash],publicKey,status,callHash',
+      multisigTransactions:
+        '++id,[publicKey+status],[publicKey+callHash],[callHash+status+chainId],publicKey,status,callHash',
       contacts: '++id,name,accountId,matrixId',
     });
 

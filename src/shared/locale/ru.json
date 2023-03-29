@@ -543,6 +543,7 @@
   "transfer": {
     "amountPlaceholder": "Сумма",
     "continueButton": "Продолжить",
+    "descriptionLengthError": "Описание может быть { maxLength } символов в длину",
     "editOperationButton": "Редактировать операцию",
     "executing": "Выполнение транзакции",
     "formTitle": "Отправить <strong>{ asset }</strong> в сети <strong>{ network }</strong>",
@@ -551,6 +552,7 @@
       "executing": "Выполнение операций",
       "transactions": "Транзакции"
     },
+    "networkDeposit": "Депозит",
     "networkFee": "Комиссия сети",
     "notEnoughBalanceError": "Недостаточно средств для указанной суммы",
     "notEnoughBalanceForFeeError": "Недостаточно средств для оплаты комиссии",

@@ -14,6 +14,7 @@ import { AccountDS } from '@renderer/services/storage';
 import { IconNames } from '@renderer/components/ui/Icon/data';
 import { TransferForm } from '../TransferForm/TransferForm';
 import { ActiveAddress } from '@renderer/screens/Transfer/components';
+import { Account, MultisigAccount } from '@renderer/domain/account';
 
 const Badges: Record<SigningType, IconNames> = {
   [SigningType.WATCH_ONLY]: 'watchOnlyBg',
@@ -25,8 +26,8 @@ const getAccountsOptions = (
   chainId: ChainId,
   accounts: AccountDS[],
   addressPrefix: number,
-): DropdownOption<string>[] => {
-  return accounts.reduce<DropdownOption<string>[]>((acc, account) => {
+): DropdownOption<Account | MultisigAccount>[] => {
+  return accounts.reduce<DropdownOption<Account | MultisigAccount>[]>((acc, account) => {
     const address = formatAddress(account.accountId, addressPrefix);
 
     const notWatchOnly = account.signingType !== SigningType.WATCH_ONLY;
@@ -42,7 +43,7 @@ const getAccountsOptions = (
         </div>
       );
 
-      acc.push({ id: address, value: account.name, element });
+      acc.push({ id: address, value: account, element });
     }
 
     return acc;
@@ -77,8 +78,8 @@ export const InitOperation = ({
 
   const accounts = getActiveAccounts();
 
-  const [activeAccount, setActiveAccount] = useState<DropdownResult<string>>();
-  const [accountsOptions, setAccountsOptions] = useState<DropdownOption<string>[]>([]);
+  const [activeAccount, setActiveAccount] = useState<DropdownResult<Account | MultisigAccount>>();
+  const [accountsOptions, setAccountsOptions] = useState<DropdownOption<Account | MultisigAccount>[]>([]);
 
   useEffect(() => {
     const options = getAccountsOptions(chainId, accounts, addressPrefix);
@@ -87,19 +88,20 @@ export const InitOperation = ({
 
     setAccountsOptions(options);
     setActiveAccount({ id: options[0].id, value: options[0].value });
-    onAccountChange(options[0].value);
+    onAccountChange(options[0].value.name);
   }, [accounts.length]);
 
-  const changeAccount = (account: DropdownResult<string>) => {
-    onAccountChange(account.value);
+  const changeAccount = (account: DropdownResult<Account | MultisigAccount>) => {
+    onAccountChange(account.value.name);
     setActiveAccount(account);
   };
 
   const accountAddress = activeAccount?.id || '';
-  const accountName = activeAccount?.value || '';
+  const accountName = activeAccount?.value.name || '';
+  const threshold = (activeAccount?.value as MultisigAccount)?.threshold || 0;
 
   return (
-    <Plate as="section" className="w-[500px] flex flex-col items-center mx-auto gap-y-5">
+    <Plate as="section" className="w-[500px] flex flex-col items-center mx-auto gap-y-2.5">
       <Block>
         {accountsOptions.length > 1 ? (
           <Dropdown
@@ -124,6 +126,7 @@ export const InitOperation = ({
         chainId={chainId}
         network={network}
         address={accountAddress}
+        threshold={threshold}
         asset={asset}
         nativeToken={nativeToken}
         addressPrefix={addressPrefix}

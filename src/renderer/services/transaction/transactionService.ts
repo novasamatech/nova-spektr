@@ -14,7 +14,7 @@ import {
 import { HexString } from '@renderer/domain/shared-kernel';
 import { Transaction, TransactionType } from '@renderer/domain/transaction';
 import { createTxMetadata } from '@renderer/shared/utils/substrate';
-import { ITransactionService } from './common/types';
+import { ITransactionService, HashData } from './common/types';
 import { toPublicKey } from '@renderer/shared/utils/address';
 
 export const useTransaction = (): ITransactionService => {
@@ -197,11 +197,27 @@ export const useTransaction = (): ITransactionService => {
     return construct.signedTx(unsigned, signature, { registry, metadataRpc });
   };
 
+  const getTransactionHash = (transaction: Transaction, api: ApiPromise): HashData => {
+    const extrinsic = getExtrinsic[transaction.type](transaction.args, api);
+
+    return {
+      callData: extrinsic.method.toHex(),
+      callHash: extrinsic.method.hash.toHex(),
+    };
+  };
+
   const getTransactionFee = async (transaction: Transaction, api: ApiPromise): Promise<string> => {
     const extrinsic = getExtrinsic[transaction.type](transaction.args, api);
     const { partialFee } = await extrinsic.paymentInfo(transaction.address);
 
     return partialFee.toString();
+  };
+
+  const getTransactionDeposit = (threshold: number, api: ApiPromise): string => {
+    const { depositFactor, depositBase } = api.consts.multisig;
+    const deposit = depositFactor.muln(threshold).add(depositBase);
+
+    return deposit.toString();
   };
 
   const submitAndWatchExtrinsic = async (
@@ -286,5 +302,7 @@ export const useTransaction = (): ITransactionService => {
     getSignedExtrinsic,
     submitAndWatchExtrinsic,
     getTransactionFee,
+    getTransactionDeposit,
+    getTransactionHash,
   };
 };

@@ -62,7 +62,7 @@ export const Scanning = ({
   const address = transaction.address;
 
   return (
-    <Plate as="section" className="w-[500px] flex flex-col items-center mx-auto gap-y-5">
+    <Plate as="section" className="w-[500px] flex flex-col items-center mx-auto gap-y-2.5">
       <Block>
         <ActiveAddress
           address={address}

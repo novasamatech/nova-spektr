@@ -24,14 +24,18 @@ export type SigningStatus =
   | 'ERROR_SIGNED'
   | 'ERROR_CANCELLED';
 
-export enum MiltisigTransactionFinalStatus {
+export enum MiltisigTxInitStatus {
+  SIGNING = 'SIGNING',
+}
+
+export enum MiltisigTxFinalStatus {
   ESTABLISHED = 'ESTABLISHED',
   CANCELLED = 'CANCELLED',
   SUCCESS = 'SUCCESS',
   ERROR = 'ERROR',
 }
 
-export type MultisigTransactionStatus = 'SIGNING' | MiltisigTransactionFinalStatus;
+export type MultisigTxStatus = MiltisigTxInitStatus | MiltisigTxFinalStatus;
 
 export type Transaction = {
   type: TransactionType;
@@ -43,7 +47,7 @@ export type Transaction = {
 export type MultisigEvent = {
   status: SigningStatus;
   signatory: Signatory;
-  multisigOutcome?: MultisigTransactionStatus;
+  multisigOutcome?: MultisigTxStatus;
   extrinsicHash?: HexString;
   eventBlock?: number;
   eventIndex?: number;
@@ -55,7 +59,7 @@ export type MultisigTransaction = {
   chainId: ChainId;
   callHash: HexString;
   events: MultisigEvent[];
-  status: MultisigTransactionStatus;
+  status: MultisigTxStatus;
   signatories: Signatory[];
   deposit: string;
   depositor: PublicKey;

@@ -3,7 +3,7 @@ import { Controller, SubmitHandler, useForm } from 'react-hook-form';
 import { useNavigate } from 'react-router-dom';
 
 import { Address, Block, Button, ButtonBack, Dropdown, Icon, Input, Plate } from '@renderer/components/ui';
-import { createMultisigAccount, getMultisigAddress } from '@renderer/domain/account';
+import { createMultisigAccount, getMultisigAddress, MultisigAccount } from '@renderer/domain/account';
 import { useI18n } from '@renderer/context/I18nContext';
 import { Signatory } from '@renderer/domain/signatory';
 import { useToggle } from '@renderer/shared/hooks';
@@ -79,14 +79,14 @@ const CreateMultisigAccount = () => {
     if (!mstAccount.accountId) return;
 
     try {
-      await matrix.createRoom({
+      const matrixRoomId = await matrix.createRoom({
         inviterPublicKey: inviter.publicKey,
         accountName: mstAccount.name,
         accountId: mstAccount.accountId,
         threshold: mstAccount.threshold,
         signatories: signatories.map(({ accountId, matrixId }) => ({ accountId, matrixId })),
       });
-      await addAccount(mstAccount);
+      await addAccount<MultisigAccount>({ ...mstAccount, matrixRoomId });
 
       toggleSuccessMessage();
     } catch (error: any) {

@@ -1,7 +1,7 @@
 import { ApiPromise } from '@polkadot/api';
 
 import { MultisigAccount } from '@renderer/domain/account';
-import { MiltisigTransactionFinalStatus } from '@renderer/domain/transaction';
+import { MiltisigTxFinalStatus, MiltisigTxInitStatus } from '@renderer/domain/transaction';
 import storage from '../storage';
 import { QUERY_INTERVAL } from './common/consts';
 import { IMultisigTxService } from './common/types';
@@ -27,7 +27,7 @@ export const useMultisigTx = (): IMultisigTxService => {
             t.blockCreated === pendingTx.params.when.height.toNumber() &&
             t.indexCreated === pendingTx.params.when.index.toNumber() &&
             t.chainId === api.genesisHash.toHex() &&
-            t.status === 'SIGNING',
+            t.status === MiltisigTxInitStatus.SIGNING,
         );
 
         if (oldTx) {
@@ -48,10 +48,10 @@ export const useMultisigTx = (): IMultisigTxService => {
         const hasPendingCancelled = tx.events.some((e) => e.status === 'PENDING_CANCELLED' || e.status === 'CANCELLED');
 
         const status = hasPendingFinalApproval
-          ? MiltisigTransactionFinalStatus.SUCCESS
+          ? MiltisigTxFinalStatus.SUCCESS
           : hasPendingCancelled
-          ? MiltisigTransactionFinalStatus.CANCELLED
-          : MiltisigTransactionFinalStatus.ESTABLISHED;
+          ? MiltisigTxFinalStatus.CANCELLED
+          : MiltisigTxFinalStatus.ESTABLISHED;
 
         updateMultisigTx({
           ...tx,
