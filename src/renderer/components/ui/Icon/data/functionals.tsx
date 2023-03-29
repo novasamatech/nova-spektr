@@ -26,6 +26,8 @@ import EditOutlineImg, { ReactComponent as EditOutlineSvg } from '@images/functi
 import DeleteOutlineImg, { ReactComponent as DeleteOutlineSvg } from '@images/functionals/delete-outline.svg';
 import OptionsImg, { ReactComponent as OptionsSvg } from '@images/functionals/options.svg';
 import MultisigOutlineImg, { ReactComponent as MultisigOutlineSvg } from '@images/functionals/multisig-outline.svg';
+import EyeSlashedImg, { ReactComponent as EyeSlashedSvg } from '@images/functionals/eye-slashed.svg';
+import EyeImg, { ReactComponent as EyeSvg } from '@images/functionals/eye.svg';
 
 const FunctionalImages = {
   copy: { svg: CopySvg, img: CopyImg },
@@ -56,6 +58,8 @@ const FunctionalImages = {
   deleteOutline: { svg: DeleteOutlineSvg, img: DeleteOutlineImg },
   options: { svg: OptionsSvg, img: OptionsImg },
   multisigOutline: { svg: MultisigOutlineSvg, img: MultisigOutlineImg },
+  eyeSlashed: { svg: EyeSlashedSvg, img: EyeSlashedImg },
+  eye: { svg: EyeSvg, img: EyeImg },
 } as const;
 
 export type Functional = keyof typeof FunctionalImages;

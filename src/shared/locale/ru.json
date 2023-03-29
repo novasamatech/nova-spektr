@@ -296,6 +296,7 @@
       "passwordLabel": "Password",
       "passwordPlaceholder": "enter password",
       "passwordRequiredError": "Password is required",
+      "passwordVisibilityButton": "Show password",
       "privacyFooter": "By signing in you consent to the <terms>terms of use</terms> and <privacy>privacy policy</privacy>",
       "privacyTitle": "Nova Spektr does not store your Matrix password",
       "registerLink": "Don’t have an account?<register>Register</register>",
