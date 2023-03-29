@@ -63,5 +63,6 @@ export type MultisigTransaction = {
   cancelDescription?: string;
   blockCreated?: number;
   indexCreated?: number;
+  dateCreated?: number;
   transaction?: Transaction;
 };
