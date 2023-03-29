@@ -22,7 +22,7 @@ const Paths = {
 
   // Navigation
   ADDRESS_BOOK: '/address-book',
-  HISTORY: '/history',
+  OPERATIONS: '/operations',
   MULTISIG: '/multisig',
   BALANCES: '/balances',
   TRANSFER: '/transfer/:chainId/:assetId',

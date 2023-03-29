@@ -11,6 +11,7 @@ export interface IMultisigTxService {
   subscribeMultisigAccount: (api: ApiPromise, account: MultisigAccount) => () => void;
   getMultisigTx: (txId: IndexableType) => Promise<MultisigTransactionDS | undefined>;
   getMultisigTxs: (where?: Record<string, any>) => Promise<MultisigTransactionDS[]>;
+  getLiveMultisigTxs: (where?: Record<string, any>) => MultisigTransactionDS[];
   addMultisigTx: (tx: MultisigTransaction) => Promise<IndexableType>;
   updateMultisigTx: (tx: MultisigTransactionDS) => Promise<IndexableType>;
   deleteMultisigTx: (txId: IndexableType) => Promise<void>;
