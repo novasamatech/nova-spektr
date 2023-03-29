@@ -50,26 +50,4 @@ describe('ui/Popover', () => {
     content = screen.queryByText('content');
     expect(content).not.toBeInTheDocument();
   });
-
-  test('should toggle popover on click', async () => {
-    render(
-      <Popover shownOnClick content="content">
-        Hover me
-      </Popover>,
-    );
-
-    const text = screen.getByText('Hover me');
-    let content = screen.queryByText('content');
-    expect(content).not.toBeInTheDocument();
-
-    await act(async () => text.click());
-
-    content = screen.getByText('content');
-    expect(content).toBeInTheDocument();
-
-    await act(async () => text.click());
-
-    content = screen.queryByText('content');
-    expect(content).not.toBeInTheDocument();
-  });
 });

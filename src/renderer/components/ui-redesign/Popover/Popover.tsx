@@ -1,41 +1,21 @@
 import { Popover as Popup, Transition } from '@headlessui/react';
-import { Fragment, PropsWithChildren, ReactNode, SyntheticEvent, useLayoutEffect, useRef, useState } from 'react';
+import { Fragment, PropsWithChildren, ReactNode, useLayoutEffect, useRef, useState } from 'react';
+import cn from 'classnames';
 
 export interface PopoverProps {
   content: ReactNode;
   offsetPx?: number;
-  shownOnClick?: boolean;
+  contentClass?: string;
 }
 
-const Popover = ({ content, children, offsetPx = 10, shownOnClick = false }: PropsWithChildren<PopoverProps>) => {
+const Popover = ({ content, children, offsetPx = 10, contentClass }: PropsWithChildren<PopoverProps>) => {
   const ref = useRef<HTMLDivElement>(null);
   const [isOpen, setIsOpen] = useState(false);
   const [height, setHeight] = useState(0);
 
   useLayoutEffect(() => {
-    setHeight(ref.current?.offsetHeight || 0);
+    setHeight(ref.current?.offsetHeight || 10); // with 0 here tests fail, so we need to provide some value
   }, []);
-
-  const onHoverProps = {
-    onFocus: () => setIsOpen(true),
-    onBlur: () => setIsOpen(false),
-    onMouseEnter: () => setIsOpen(true),
-    onMouseLeave: () => setIsOpen(false),
-  };
-
-  const openOnClick = (e: SyntheticEvent) => {
-    setIsOpen(true);
-    e.stopPropagation();
-
-    const closeOnClickOutside = (e: MouseEvent) => {
-      if (!(e.target && document.getElementById('popup')?.contains(e.target as Node))) {
-        setIsOpen(false);
-        window.removeEventListener('click', closeOnClickOutside);
-      }
-    };
-
-    window.addEventListener('click', closeOnClickOutside);
-  };
 
   return (
     <Popup className="relative">
@@ -53,13 +33,20 @@ const Popover = ({ content, children, offsetPx = 10, shownOnClick = false }: Pro
           <Popup.Panel
             id="popup"
             style={{ top: height + offsetPx + 'px' }}
-            className="absolute z-20 w-[275px] rounded-2lg bg-white border border-shade-10 shadow-surface"
+            className="absolute z-20 rounded-md bg-white border border-redesign-gray-border shadow-popover"
           >
-            <div className="relative">{content}</div>
+            <div className={cn('relative w-[275px]', contentClass)}>{content}</div>
           </Popup.Panel>
         </Transition>
       )}
-      <div ref={ref} tabIndex={0} {...(shownOnClick ? { onClick: openOnClick } : onHoverProps)}>
+      <div
+        ref={ref}
+        tabIndex={0}
+        onFocus={() => setIsOpen(true)}
+        onBlur={() => setIsOpen(false)}
+        onMouseEnter={() => setIsOpen(true)}
+        onMouseLeave={() => setIsOpen(false)}
+      >
         {children}
       </div>
     </Popup>

@@ -13,6 +13,7 @@ module.exports = {
         element: '0 0 5px rgba(0, 0, 0, 0.15)',
         component: '0 0 50px rgba(0, 0, 0, 0.1)',
         'icon-button': '0px 2px 2px rgba(0, 0, 0, 0.04), inset 0px -0.5px 0px rgba(8, 9, 14, 0.16)',
+        popover: '0px 0px 12px rgba(0, 0, 0, 0.16), 0px 0px 6px rgba(0, 0, 0, 0.08), 0px 2px 4px rgba(0, 0, 0, 0.04)',
       },
       colors: {
         primary: '#567CDC',
