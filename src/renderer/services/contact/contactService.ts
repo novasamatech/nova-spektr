@@ -16,7 +16,7 @@ export const useContact = (): IContactService => {
       try {
         return getContacts(where);
       } catch (error) {
-        console.warn('Error trying to get active wallet');
+        console.warn('Error trying to get contacts');
 
         return Promise.resolve([]);
       }

@@ -29,7 +29,8 @@ import { isStringsMatchQuery } from '@renderer/shared/utils/strings';
 import { AboutStaking, EmptyFilter, InactiveChain, NoAccounts, StakingTable } from './components';
 import NominatorsModal from './components/NominatorsModal/NominatorsModal';
 import { AccountStakeInfo } from './components/StakingTable/StakingTable';
-import { formatAddress, getRelaychainAsset } from '@renderer/shared/utils/address';
+import { formatAddress } from '@renderer/shared/utils/address';
+import { getRelaychainAsset } from '@renderer/shared/utils/assets';
 
 type NetworkOption = { asset: Asset; addressPrefix: number };
 

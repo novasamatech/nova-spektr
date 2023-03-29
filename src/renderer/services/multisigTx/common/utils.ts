@@ -71,6 +71,8 @@ export const createTransactionPayload = (
   pendingTransaction: PendingMultisigTransaction,
   chainId: ChainId,
   account: MultisigAccount,
+  currentBlock: number,
+  blockTime: number,
 ): MultisigTransaction => {
   const {
     callHash,
@@ -86,9 +88,12 @@ export const createTransactionPayload = (
     },
   }));
 
+  const dateCreated = Date.now() - (currentBlock - when.height.toNumber()) * blockTime;
+
   return {
     blockCreated: when.height.toNumber(),
     indexCreated: pendingTransaction.params.when.index.toNumber(),
+    dateCreated,
     chainId: chainId,
     status: MiltisigTxInitStatus.SIGNING,
     callHash: callHash.toHex(),

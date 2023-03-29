@@ -4,13 +4,8 @@ import { Controller, useForm } from 'react-hook-form';
 import { Trans } from 'react-i18next';
 import { ApiPromise } from '@polkadot/api';
 
-import {
-  getAssetId,
-  pasteAddressHandler,
-  toPublicKey,
-  isAddressValid,
-  formatAddress,
-} from '@renderer/shared/utils/address';
+import { pasteAddressHandler, toPublicKey, isAddressValid, formatAddress } from '@renderer/shared/utils/address';
+import { getAssetId } from '@renderer/shared/utils/assets';
 import { Button, AmountInput, Icon, Identicon, Input, InputHint, Block, InputArea } from '@renderer/components/ui';
 import { useI18n } from '@renderer/context/I18nContext';
 import { Asset, AssetType } from '@renderer/domain/asset';

@@ -13,7 +13,8 @@ import { Transaction, TransactionType } from '@renderer/domain/transaction';
 import Paths from '@renderer/routes/paths';
 import { useAccount } from '@renderer/services/account/accountService';
 import { ValidatorMap } from '@renderer/services/staking/common/types';
-import { formatAddress, getRelaychainAsset } from '@renderer/shared/utils/address';
+import { formatAddress } from '@renderer/shared/utils/address';
+import { getRelaychainAsset } from '@renderer/shared/utils/assets';
 import { Confirmation, Scanning, Signing, Submit, Validators } from '../components';
 import { useCountdown } from '../hooks/useCountdown';
 

@@ -11,7 +11,7 @@ import { useNetworkContext } from '@renderer/context/NetworkContext';
 import { InitOperation, Confirmation, Scanning, Signing, Submit } from './components';
 import { useChains } from '@renderer/services/network/chainsService';
 import { Transaction } from '@renderer/domain/transaction';
-import { getAssetById } from '@renderer/shared/utils/address';
+import { getAssetById } from '@renderer/shared/utils/assets';
 import { useCountdown } from '@renderer/screens/Staking/Operations/hooks/useCountdown';
 
 const enum Steps {
@@ -43,7 +43,7 @@ const Transfer = () => {
   }
 
   const { api, assets, addressPrefix, explorers, name: network, icon } = connections[chainId];
-  const asset = getAssetById(assets, assetId);
+  const asset = getAssetById(assetId, assets);
   const [countdown, resetCountdown] = useCountdown(api);
 
   useEffect(() => {

@@ -10,6 +10,7 @@ const Paths = {
   HISTORY: '/history',
   MULTISIG: '/multisig',
   BALANCES: '/balances',
+  OPERATIONS: '/operations',
   SIGNING: '/signing',
 
   // Settings

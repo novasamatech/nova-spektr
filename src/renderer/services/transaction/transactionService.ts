@@ -10,12 +10,16 @@ import {
   TypeRegistry,
   UnsignedTransaction,
 } from '@substrate/txwrapper-polkadot';
+import { Call } from '@polkadot/types/interfaces';
 
-import { HexString } from '@renderer/domain/shared-kernel';
+import { AccountID, CallData, HexString } from '@renderer/domain/shared-kernel';
 import { Transaction, TransactionType } from '@renderer/domain/transaction';
 import { createTxMetadata } from '@renderer/shared/utils/substrate';
 import { ITransactionService, HashData } from './common/types';
 import { toPublicKey } from '@renderer/shared/utils/address';
+import { formatBalance } from '../balance/common/utils';
+import { getAssetById } from '@renderer/shared/utils/assets';
+import { Asset } from '@renderer/domain/asset';
 
 export const useTransaction = (): ITransactionService => {
   const createRegistry = async (api: ApiPromise) => {
@@ -297,6 +301,64 @@ export const useTransaction = (): ITransactionService => {
       });
   };
 
+  // TODO: will be refactored with next tasks
+  const decodeCallData = (api: ApiPromise, accountId: AccountID, assets: Asset[], callData: CallData): Transaction => {
+    const transaction: Transaction = {
+      type: TransactionType.TRANSFER,
+      address: accountId,
+      chainId: api.genesisHash.toHex(),
+      args: {},
+    };
+    let extrinsicCall: Call;
+    let decoded: SubmittableExtrinsic<'promise'> | null = null;
+
+    try {
+      // cater for an extrinsic input...
+      decoded = api.tx(callData);
+      extrinsicCall = api.createType('Call', decoded.method);
+    } catch (e) {
+      extrinsicCall = api.createType('Call', callData);
+    }
+
+    const { method, section } = api.registry.findMetaCall(extrinsicCall.callIndex);
+    const extrinsicFn = api.tx[section][method];
+    const extrinsic = extrinsicFn(...extrinsicCall.args);
+
+    if (!decoded) {
+      decoded = extrinsic;
+    }
+
+    if (method === 'transfer' && section === 'balances') {
+      transaction.type = TransactionType.TRANSFER;
+      transaction.args.dest = decoded.args[0].toString();
+      transaction.args.value = formatBalance(decoded.args[1].toString(), assets[0].precision || 0);
+    }
+
+    if (method === 'transfer' && section === 'assets') {
+      transaction.type = TransactionType.ASSET_TRANSFER;
+
+      transaction.args.assetId = decoded.args[0].toString();
+
+      const asset = getAssetById(transaction.args.assetId, assets);
+
+      transaction.args.dest = decoded.args[1].toString();
+      transaction.args.value = formatBalance(decoded.args[2].toString(), asset?.precision || 0);
+    }
+
+    if (method === 'transfer' && section === 'currencies') {
+      transaction.type = TransactionType.ORML_TRANSFER;
+
+      transaction.args.assetId = decoded.args[1].toHex();
+
+      const asset = getAssetById(transaction.args.assetId, assets);
+
+      transaction.args.dest = decoded.args[0].toString();
+      transaction.args.value = formatBalance(decoded.args[2].toString(), asset?.precision || 0);
+    }
+
+    return transaction;
+  };
+
   return {
     createPayload,
     getSignedExtrinsic,
@@ -304,5 +366,6 @@ export const useTransaction = (): ITransactionService => {
     getTransactionFee,
     getTransactionDeposit,
     getTransactionHash,
+    decodeCallData,
   };
 };

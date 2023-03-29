@@ -23,6 +23,12 @@ jest.mock('@renderer/services/account/accountService', () => ({
   }),
 }));
 
+jest.mock('@renderer/services/multisigTx/multisigTxService', () => ({
+  useMultisigTx: jest.fn().mockReturnValue({
+    getLiveMultisigTxs: () => [],
+  }),
+}));
+
 jest.mock('../Wallets/Wallets', () => () => 'wallets-mock');
 
 describe('layout/PrimaryLayout/Navigation', () => {

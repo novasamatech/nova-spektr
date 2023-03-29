@@ -11,7 +11,7 @@ import { DEFAULT_TIME, ONE_DAY, THRESHOLD } from './common/constants';
 import { ChainLike, IChainService } from './common/types';
 import { isKusama, isPolkadot, isTestnet } from './common/utils';
 import { ChainId } from '@renderer/domain/shared-kernel';
-import { getRelaychainAsset } from '@renderer/shared/utils/address';
+import { getRelaychainAsset } from '@renderer/shared/utils/assets';
 
 const CHAINS: Record<string, any> = {
   dev: chainsDev,

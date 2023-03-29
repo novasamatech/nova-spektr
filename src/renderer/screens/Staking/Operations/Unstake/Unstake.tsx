@@ -19,7 +19,8 @@ import { useStakingData } from '@renderer/services/staking/stakingDataService';
 import { AccountDS } from '@renderer/services/storage';
 import InitOperation, { UnstakeResult } from './InitOperation/InitOperation';
 import { Confirmation, Scanning, Signing, Submit } from '../components';
-import { formatAddress, getRelaychainAsset } from '@renderer/shared/utils/address';
+import { formatAddress } from '@renderer/shared/utils/address';
+import { getRelaychainAsset } from '@renderer/shared/utils/assets';
 import { useCountdown } from '../hooks/useCountdown';
 
 const enum Steps {

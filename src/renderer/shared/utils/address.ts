@@ -1,7 +1,6 @@
 import { u8aToHex } from '@polkadot/util';
 import { decodeAddress, encodeAddress } from '@polkadot/util-crypto';
 
-import { Asset, AssetType, OrmlExtras, StatemineExtras, StakingType } from '@renderer/domain/asset';
 import { PublicKey, AccountID } from '@renderer/domain/shared-kernel';
 import { PUBLIC_KEY_LENGTH, SS58_DEFAULT_PREFIX } from './constants';
 
@@ -68,39 +67,4 @@ export const pasteAddressHandler = (handler: (value: string) => void) => {
  */
 export const isAddressValid = (address?: string): boolean => {
   return Boolean(toPublicKey(address));
-};
-
-/**
- * Get ID of the asset by type
- * @param asset network asset
- * @return {String}
- */
-export const getAssetId = (asset: Asset): string => {
-  if (asset.type === AssetType.STATEMINE) {
-    return (asset.typeExtras as StatemineExtras).assetId;
-  }
-  if (asset.type === AssetType.ORML) {
-    return (asset.typeExtras as OrmlExtras).currencyIdScale;
-  }
-
-  return asset.assetId.toString();
-};
-
-/**
- * Get asset by ID
- * @param assets network assets
- * @param id identifier to be searched
- * @return {Asset | undefined}
- */
-export const getAssetById = (assets: Asset[], id: string): Asset | undefined => {
-  return assets.find((asset) => asset.assetId.toString() === id);
-};
-
-/**
- * Get Relaychain asset
- * @param assets network assets
- * @return {Asset | undefined}
- */
-export const getRelaychainAsset = (assets: Asset[]): Asset | undefined => {
-  return assets.find((asset) => asset.staking === StakingType.RELAYCHAIN);
 };

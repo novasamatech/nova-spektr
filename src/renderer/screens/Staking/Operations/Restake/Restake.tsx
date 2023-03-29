@@ -18,7 +18,7 @@ import { AccountDS } from '@renderer/services/storage';
 import InitOperation, { RestakeResult } from './InitOperation/InitOperation';
 import { Confirmation, Scanning, Signing, Submit } from '../components';
 import { useCountdown } from '../hooks/useCountdown';
-import { getRelaychainAsset } from '@renderer/shared/utils/address';
+import { getRelaychainAsset } from '@renderer/shared/utils/assets';
 
 const enum Steps {
   INIT,

@@ -3,7 +3,8 @@ import noop from 'lodash/noop';
 import { useState, useEffect } from 'react';
 import { Navigate, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 
-import { formatAddress, getRelaychainAsset } from '@renderer/shared/utils/address';
+import { formatAddress } from '@renderer/shared/utils/address';
+import { getRelaychainAsset } from '@renderer/shared/utils/assets';
 import { RewardsDestination } from '@renderer/domain/stake';
 import { ChainLoader } from '@renderer/components/common';
 import { ButtonBack, ButtonLink, Icon } from '@renderer/components/ui';
