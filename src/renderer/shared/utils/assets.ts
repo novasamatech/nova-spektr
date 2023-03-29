@@ -1,14 +1,15 @@
 import { Asset, AssetType, OrmlExtras, StatemineExtras } from '@renderer/domain/asset';
-import { DEFAULT } from '@shared/constants/common';
 
 export const getAssetId = (asset: Asset): string => {
-  const assetId = {
-    [AssetType.ORML]: () => (asset.typeExtras as OrmlExtras).currencyIdScale,
-    [AssetType.STATEMINE]: () => (asset.typeExtras as StatemineExtras).assetId,
-    [DEFAULT]: () => asset.assetId.toString(),
-  };
+  if (asset.type === AssetType.STATEMINE) {
+    return (asset.typeExtras as StatemineExtras).assetId;
+  }
 
-  return assetId[asset.type || DEFAULT]();
+  if (asset.type === AssetType.ORML) {
+    return (asset.typeExtras as OrmlExtras).currencyIdScale;
+  }
+
+  return asset.assetId.toString();
 };
 
 export const getAssetById = (assets: Asset[], id?: string): Asset | undefined =>
