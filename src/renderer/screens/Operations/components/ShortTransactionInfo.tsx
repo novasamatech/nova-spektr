@@ -18,7 +18,7 @@ type TransactionProps = {
 };
 
 const TransactionInfo = ({ transaction, asset }: TransactionProps) => {
-  if (!asset) return <></>;
+  if (!asset) return null;
 
   return (
     <div className="flex gap-2">
@@ -32,7 +32,7 @@ const TransactionInfo = ({ transaction, asset }: TransactionProps) => {
 };
 
 const StakeMore = ({ transaction, asset }: TransactionProps) => {
-  if (!asset) return <></>;
+  if (!asset) return null;
 
   return (
     <div className="flex gap-2">
@@ -65,14 +65,14 @@ const ShortTransactionInfo = ({ transaction }: Props) => {
     [TransactionType.STAKE_MORE]: <StakeMore transaction={transaction} asset={asset} />,
     [TransactionType.RESTAKE]: <TransactionInfo transaction={transaction} asset={asset} />,
     [TransactionType.UNSTAKE]: <TransactionInfo transaction={transaction} asset={asset} />,
-    [TransactionType.REDEEM]: <></>,
-    [TransactionType.NOMINATE]: <></>,
-    [TransactionType.DESTINATION]: <></>,
+    [TransactionType.REDEEM]: null,
+    [TransactionType.NOMINATE]: null,
+    [TransactionType.DESTINATION]: null,
 
     // Technical
-    [TransactionType.CHILL]: <></>,
-    [TransactionType.BATCH_ALL]: <></>,
-    [DEFAULT]: <></>,
+    [TransactionType.CHILL]: null,
+    [TransactionType.BATCH_ALL]: null,
+    [DEFAULT]: null,
   };
 
   return <>{Transactions[getTransactionType(transaction) || DEFAULT]}</>;

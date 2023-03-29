@@ -13,7 +13,7 @@ const Chain = ({ chainId }: Props) => {
   const [chain, setChain] = useState<ChainType>();
 
   useEffect(() => {
-    getChainById(chainId).then((chain) => setChain(chain));
+    getChainById(chainId).then(setChain);
   }, []);
 
   return (

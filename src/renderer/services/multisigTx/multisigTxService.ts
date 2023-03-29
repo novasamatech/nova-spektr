@@ -83,7 +83,7 @@ export const useMultisigTx = (): IMultisigTxService => {
       try {
         return getMultisigTxs(where);
       } catch (error) {
-        console.warn('Error trying to get active wallet');
+        console.warn('Error trying to get multisig transactions');
 
         return Promise.resolve([]);
       }

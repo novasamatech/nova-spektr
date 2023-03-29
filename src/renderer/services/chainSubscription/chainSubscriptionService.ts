@@ -9,7 +9,7 @@ export const useChainSubscription = (): IChainSubscriptionService => {
     return api.query.system.events((events) => {
       events.forEach(({ event }) => {
         const isDataMatched = params.data.every(
-          (param, index) => !param || (param || '').toString() === (event.data[index] || '').toString(),
+          (param, index) => !param || param.toString() === (event.data[index] || '').toString(),
         );
 
         if (
