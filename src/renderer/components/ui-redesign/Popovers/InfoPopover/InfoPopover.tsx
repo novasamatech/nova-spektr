@@ -45,7 +45,7 @@ const InfoPopover = ({ data, className, children, offsetPx = 7 }: PropsWithChild
                         key={i}
                         // typescript says there's no classname but that's a lie. Need to check out Menu.Item code
                         // @ts-ignore
-                        className="rounded-xs text-shade-100 ui-active:bg-redesign-primary ui-active:text-white h-8 w-full text-center"
+                        className="rounded-xs text-shade-100 ui-active:bg-redesign-primary ui-active:text-white h-8 w-full"
                       >
                         {item}
                       </Menu.Item>
