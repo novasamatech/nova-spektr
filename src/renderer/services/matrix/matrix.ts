@@ -307,7 +307,7 @@ export class Matrix implements ISecureMessenger {
    * @param params room configuration
    * @return {Promise}
    */
-  async createRoom(params: RoomParams): Promise<void> {
+  async createRoom(params: RoomParams): Promise<string> {
     try {
       const { room_id: roomId } = await this.matrixClient.createRoom({
         name: `Nova Spektr MST | ${getShortAddress(params.accountId)}`,
@@ -320,6 +320,8 @@ export class Matrix implements ISecureMessenger {
       await this.initStateEvents(roomId, params);
       await this.inviteSignatories(roomId, matrixIds);
       await this.verifyDevices(matrixIds);
+
+      return roomId;
     } catch (error) {
       throw this.createError(MatrixError.CREATE_ROOM, error);
     }

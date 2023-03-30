@@ -17,7 +17,7 @@ export interface ISecureMessenger {
   stopClient: () => void;
 
   // Actions
-  createRoom: (params: RoomParams) => Promise<void>;
+  createRoom: (params: RoomParams) => Promise<string>;
   joinRoom: (roomId: string) => Promise<void>;
   leaveRoom: (roomId: string) => Promise<void>;
   invite: (roomId: string, signatoryId: string) => Promise<void>;

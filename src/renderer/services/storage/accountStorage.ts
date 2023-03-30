@@ -17,7 +17,7 @@ export const useAccountStorage = (db: Table<AccountDS>): IAccountStorage => ({
     return db.toArray();
   },
 
-  addAccount: (account: Account): Promise<IndexableType> => {
+  addAccount: <T extends Account>(account: T): Promise<IndexableType> => {
     return db.add(account);
   },
 

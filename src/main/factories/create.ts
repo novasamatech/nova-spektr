@@ -13,7 +13,7 @@ export function createWindow(settings: BrowserWindowConstructorOptions) {
 
   window.on('closed', window.destroy);
   session.defaultSession.webRequest.onBeforeSendHeaders((details, callback) => {
-    details.requestHeaders['User-Agent'] = 'Omni Enterprise';
+    details.requestHeaders['User-Agent'] = 'Nova Spektr';
     delete details.requestHeaders['Origin'];
     callback({ requestHeaders: details.requestHeaders });
   });

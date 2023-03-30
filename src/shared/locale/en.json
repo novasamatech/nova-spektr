@@ -93,9 +93,6 @@
       "appName": "Nova Spektr"
     }
   },
-  "history": {
-    "title": "History"
-  },
   "matrixCredentials": {
     "subTitle": "Matrix Credentials"
   },
@@ -257,6 +254,23 @@
     },
     "yourAccountsLabel": "Here are your accounts"
   },
+  "operations": {
+    "noOperationsDescription": "There are no operations pending multisig operations",
+    "signing": "Signing ({ signed } of { signatories })",
+    "subTitle": "Your operations",
+    "title": "Operations",
+    "titles": {
+      "destination": "Set reward destination",
+      "nominate": "Nominate",
+      "redeem": "Redeem",
+      "restake": "Restake",
+      "stakeMore": "Stake More",
+      "startStaking": "Start Staking",
+      "transfer": "Transfer",
+      "unknown": "Unknown Operation",
+      "unstake": "Unstake"
+    }
+  },
   "qrReader": {
     "parsingLabel": "Parsing data",
     "parsingSubLabel": "Please hold still...",
@@ -296,6 +310,7 @@
       "passwordLabel": "Password",
       "passwordPlaceholder": "enter password",
       "passwordRequiredError": "Password is required",
+      "passwordVisibilityButton": "Show password",
       "privacyFooter": "By signing in you consent to the <terms>terms of use</terms> and <privacy>privacy policy</privacy>",
       "privacyTitle": "Nova Spektr does not store your Matrix password",
       "registerLink": "Don’t have an account?<register>Register</register>",

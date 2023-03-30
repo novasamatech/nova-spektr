@@ -7,19 +7,14 @@ import { Button, AmountInput, Icon, Identicon, Input, InputHint } from '@rendere
 import { Fee } from '@renderer/components/common';
 import { useI18n } from '@renderer/context/I18nContext';
 import { Asset, AssetType } from '@renderer/domain/asset';
-import {
-  formatAddress,
-  getAssetId,
-  pasteAddressHandler,
-  toPublicKey,
-  validateAddress,
-} from '@renderer/shared/utils/address';
+import { formatAddress, pasteAddressHandler, toPublicKey, validateAddress } from '@renderer/shared/utils/address';
 import { ExtendedChain } from '@renderer/services/network/common/types';
 import { Transaction, TransactionType } from '@renderer/domain/transaction';
 import { useBalance } from '@renderer/services/balance/balanceService';
 import { formatAmount, transferableAmount } from '@renderer/services/balance/common/utils';
 import { useTransaction } from '@renderer/services/transaction/transactionService';
 import { Account } from '@renderer/domain/account';
+import { getAssetId } from '@renderer/shared/utils/assets';
 
 type FormData = {
   address: string;

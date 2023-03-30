@@ -93,9 +93,6 @@
       "appName": "Nova Spektr"
     }
   },
-  "history": {
-    "title": "История операций"
-  },
   "matrixCredentials": {
     "subTitle": "Реквизиты Matrix"
   },
@@ -257,6 +254,23 @@
     },
     "yourAccountsLabel": "Ваши аккаунты"
   },
+  "operations": {
+    "noOperationsDescription": "Нет ожидающих операций с мультиподписью",
+    "signing": "Подписи ({ signed } из { signatories })",
+    "subTitle": "Ваши операции",
+    "title": "Операции",
+    "titles": {
+      "destination": "Установить кошелёк получения награды",
+      "nominate": "Номинирование",
+      "redeem": "Забрать",
+      "restake": "Рестейк",
+      "stakeMore": "Стейкать ещё",
+      "startStaking": "Старт стейкинга",
+      "transfer": "Перевод",
+      "unknown": "Неизвестная операция",
+      "unstake": "Вывод из стейкинга"
+    }
+  },
   "qrReader": {
     "parsingLabel": "Обработка данных",
     "parsingSubLabel": "Пожалуйста, держите устройство ровно...",
@@ -296,6 +310,7 @@
       "passwordLabel": "Password",
       "passwordPlaceholder": "enter password",
       "passwordRequiredError": "Password is required",
+      "passwordVisibilityButton": "Show password",
       "privacyFooter": "By signing in you consent to the <terms>terms of use</terms> and <privacy>privacy policy</privacy>",
       "privacyTitle": "Nova Spektr does not store your Matrix password",
       "registerLink": "Don’t have an account?<register>Register</register>",
