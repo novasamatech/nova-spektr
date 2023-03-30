@@ -19,6 +19,16 @@ const Popover = ({ content, children, offsetPx = 10, contentClass }: PropsWithCh
 
   return (
     <Popup className="relative">
+      <div
+        ref={ref}
+        tabIndex={0}
+        onFocus={() => setIsOpen(true)}
+        onBlur={() => setIsOpen(false)}
+        onMouseEnter={() => setIsOpen(true)}
+        onMouseLeave={() => setIsOpen(false)}
+      >
+        {children}
+      </div>
       {height && (
         <Transition
           show={isOpen}
@@ -32,23 +42,13 @@ const Popover = ({ content, children, offsetPx = 10, contentClass }: PropsWithCh
         >
           <Popup.Panel
             id="popup"
-            style={{ top: height + offsetPx + 'px' }}
+            style={{ top: '100%', marginTop: offsetPx + 'px' }}
             className="absolute z-20 rounded-md bg-white border border-redesign-gray-border shadow-popover"
           >
             <div className={cn('relative w-[275px]', contentClass)}>{content}</div>
           </Popup.Panel>
         </Transition>
       )}
-      <div
-        ref={ref}
-        tabIndex={0}
-        onFocus={() => setIsOpen(true)}
-        onBlur={() => setIsOpen(false)}
-        onMouseEnter={() => setIsOpen(true)}
-        onMouseLeave={() => setIsOpen(false)}
-      >
-        {children}
-      </div>
     </Popup>
   );
 };
