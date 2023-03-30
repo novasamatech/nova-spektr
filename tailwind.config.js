@@ -14,6 +14,7 @@ module.exports = {
         component: '0 0 50px rgba(0, 0, 0, 0.1)',
         'icon-button': '0px 2px 2px rgba(0, 0, 0, 0.04), inset 0px -0.5px 0px rgba(8, 9, 14, 0.16)',
         popover: '0px 0px 12px rgba(0, 0, 0, 0.16), 0px 0px 6px rgba(0, 0, 0, 0.08), 0px 2px 4px rgba(0, 0, 0, 0.04)',
+        'active-input': '0px 0px 0px 2px rgba(36, 99, 235, 0.16)',
       },
       colors: {
         primary: '#567CDC',
@@ -47,6 +48,8 @@ module.exports = {
         redesign: {
           primary: '#2463EB',
           'gray-border': 'rgba(0, 0, 0, 0.08)',
+          'secondary-bg': '#FAFAFA',
+          'icon-gray': 'rgba(0, 0, 0, 0.32)',
         },
       },
       spacing: {
@@ -67,6 +70,8 @@ module.exports = {
       fontSize: {
         '2xs': ['0.625rem', '0.75rem'],
         '4.5xl': ['2.75rem', '3rem'],
+        body: ['0.8125rem', '1.125rem'],
+        callout: ['0.75rem', '1rem'],
       },
       borderRadius: {
         '2lg': '10px',
