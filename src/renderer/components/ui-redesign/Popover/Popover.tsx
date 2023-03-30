@@ -1,5 +1,5 @@
 import { Popover as Popup, Transition } from '@headlessui/react';
-import { Fragment, PropsWithChildren, ReactNode, useLayoutEffect, useRef, useState } from 'react';
+import { Fragment, PropsWithChildren, ReactNode, useRef, useState } from 'react';
 import cn from 'classnames';
 
 export interface PopoverProps {
@@ -11,11 +11,6 @@ export interface PopoverProps {
 const Popover = ({ content, children, offsetPx = 10, contentClass }: PropsWithChildren<PopoverProps>) => {
   const ref = useRef<HTMLDivElement>(null);
   const [isOpen, setIsOpen] = useState(false);
-  const [height, setHeight] = useState(0);
-
-  useLayoutEffect(() => {
-    setHeight(ref.current?.offsetHeight || 10); // with 0 here tests fail, so we need to provide some value
-  }, []);
 
   return (
     <Popup className="relative">
@@ -29,26 +24,24 @@ const Popover = ({ content, children, offsetPx = 10, contentClass }: PropsWithCh
       >
         {children}
       </div>
-      {height && (
-        <Transition
-          show={isOpen}
-          as={Fragment}
-          enter="transition ease-out duration-200"
-          enterFrom="opacity-0 translate-y-1"
-          enterTo="opacity-100 translate-y-0"
-          leave="transition ease-in duration-150"
-          leaveFrom="opacity-100 translate-y-0"
-          leaveTo="opacity-0 translate-y-1"
+      <Transition
+        show={isOpen}
+        as={Fragment}
+        enter="transition ease-out duration-200"
+        enterFrom="opacity-0 translate-y-1"
+        enterTo="opacity-100 translate-y-0"
+        leave="transition ease-in duration-150"
+        leaveFrom="opacity-100 translate-y-0"
+        leaveTo="opacity-0 translate-y-1"
+      >
+        <Popup.Panel
+          id="popup"
+          style={{ top: '100%', marginTop: offsetPx + 'px' }}
+          className="absolute z-20 rounded-md bg-white border border-redesign-gray-border shadow-popover"
         >
-          <Popup.Panel
-            id="popup"
-            style={{ top: '100%', marginTop: offsetPx + 'px' }}
-            className="absolute z-20 rounded-md bg-white border border-redesign-gray-border shadow-popover"
-          >
-            <div className={cn('relative w-[275px]', contentClass)}>{content}</div>
-          </Popup.Panel>
-        </Transition>
-      )}
+          <div className={cn('relative w-[275px]', contentClass)}>{content}</div>
+        </Popup.Panel>
+      </Transition>
     </Popup>
   );
 };
