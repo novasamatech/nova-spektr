@@ -15,9 +15,7 @@ import ShortTransactionInfo from './components/ShortTransactionInfo';
 import TransactionTitle from './components/TransactionTitle';
 import EmptyOperations from './components/EmptyState/EmptyOperations';
 import { useToggle } from '@renderer/shared/hooks';
-import { useTransaction } from '@renderer/services/transaction/transactionService';
 import { CallData, ChainId, SigningType } from '@renderer/domain/shared-kernel';
-import { formatAddress } from '@renderer/shared/utils/address';
 import { useNetworkContext } from '@renderer/context/NetworkContext';
 import { useAccount } from '@renderer/services/account/accountService';
 import { nonNullable } from '@renderer/shared/utils/functions';
@@ -42,9 +40,8 @@ const Operations = () => {
   const [callData, setCallData] = useState<string>();
   const [isValidCallData, setIsValidCallData] = useState<boolean>(false);
 
-  const { getLiveAccountMultisigTxs, updateMultisigTx } = useMultisigTx();
+  const { getLiveAccountMultisigTxs, updateCallData } = useMultisigTx();
   const { connections } = useNetworkContext();
-  const { decodeCallData } = useTransaction();
   const { getActiveAccounts } = useAccount();
 
   const accounts = getActiveAccounts({ signingType: SigningType.MULTISIG });
@@ -71,19 +68,9 @@ const Operations = () => {
 
     const api = connection.api;
 
-    if (!api || !currentTx) return;
+    if (!api || !currentTx || !isValidCallData) return;
 
-    const transaction = decodeCallData(
-      api,
-      formatAddress(currentTx?.publicKey, connection.addressPrefix),
-      (callData as CallData) || '0x',
-    );
-
-    await updateMultisigTx({
-      ...currentTx,
-      callData: (callData as CallData) || '0x',
-      transaction,
-    });
+    updateCallData(api, currentTx, callData as CallData);
 
     toggleCallDataModal();
     setCallData('');

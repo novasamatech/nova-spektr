@@ -8,7 +8,9 @@ import { QUERY_INTERVAL } from './common/consts';
 import { IMultisigTxService } from './common/types';
 import { createTransactionPayload, getPendingMultisigTxs, updateTransactionPayload } from './common/utils';
 import { useChains } from '../network/chainsService';
-import { PublicKey } from '@renderer/domain/shared-kernel';
+import { useTransaction } from '../transaction/transactionService';
+import { CallData, PublicKey } from '@renderer/domain/shared-kernel';
+import { formatAddress } from '@renderer/shared/utils/address';
 
 export const useMultisigTx = (): IMultisigTxService => {
   const transactionStorage = storage.connectTo('multisigTransactions');
@@ -18,7 +20,8 @@ export const useMultisigTx = (): IMultisigTxService => {
   }
   const { getMultisigTx, getMultisigTxs, getAccountMultisigTxs, addMultisigTx, updateMultisigTx, deleteMultisigTx } =
     transactionStorage;
-  const { getExpectedBlockTime } = useChains();
+  const { getExpectedBlockTime, getChainById } = useChains();
+  const { decodeCallData } = useTransaction();
 
   const subscribeMultisigAccount = (api: ApiPromise, account: MultisigAccount): (() => void) => {
     const intervalId = setInterval(async () => {
@@ -108,6 +111,22 @@ export const useMultisigTx = (): IMultisigTxService => {
     return useLiveQuery(query, [publicKeys.length], []);
   };
 
+  const updateCallData = async (api: ApiPromise, tx: MultisigTransactionDS, callData: CallData) => {
+    const chain = await getChainById(tx.chainId);
+
+    const transaction = decodeCallData(
+      api,
+      formatAddress(tx?.publicKey, chain?.addressPrefix),
+      (callData as CallData) || '0x',
+    );
+
+    await updateMultisigTx({
+      ...tx,
+      callData: (callData as CallData) || '0x',
+      transaction,
+    });
+  };
+
   return {
     subscribeMultisigAccount,
     getMultisigTx,
@@ -118,5 +137,6 @@ export const useMultisigTx = (): IMultisigTxService => {
     addMultisigTx,
     updateMultisigTx,
     deleteMultisigTx,
+    updateCallData,
   };
 };
