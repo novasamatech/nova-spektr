@@ -255,12 +255,13 @@
     "yourAccountsLabel": "Ваши аккаунты"
   },
   "operations": {
-    "addCallDataButton": "Add call data",
+    "addCallDataButton": "Добавить call data",
     "callData": {
-      "continueButton": "Continue",
-      "inputHint": "Visible only for you and signers",
+      "continueButton": "Продолжить",
+      "errorMessage": "Неверная call data",
+      "inputHint": "Доступно только вам и подписантам",
       "inputPlaceholder": "0x00...",
-      "title": "Enter call data"
+      "title": "Введите call data"
     },
     "noOperationsDescription": "Нет ожидающих операций с мультиподписью",
     "signing": "Подписи ({ signed } из { threshold })",

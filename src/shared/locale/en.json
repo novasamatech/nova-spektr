@@ -258,6 +258,7 @@
     "addCallDataButton": "Add call data",
     "callData": {
       "continueButton": "Continue",
+      "errorMessage": "Incorrect call data",
       "inputHint": "Visible only for you and signers",
       "inputPlaceholder": "0x00...",
       "title": "Enter call data"

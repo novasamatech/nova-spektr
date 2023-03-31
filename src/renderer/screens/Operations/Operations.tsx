@@ -2,7 +2,8 @@ import { groupBy } from 'lodash';
 import { format } from 'date-fns';
 import { useEffect, useState } from 'react';
 import { IndexableType } from 'dexie';
-import { isHex } from '@polkadot/util';
+import { hexToU8a, isHex } from '@polkadot/util';
+import { blake2AsHex } from '@polkadot/util-crypto';
 
 import { BaseModal, Block, Button, InputArea, InputHint, Plate, Table } from '@renderer/components/ui';
 import { useI18n } from '@renderer/context/I18nContext';
@@ -88,14 +89,8 @@ const Operations = () => {
     setCallData('');
   };
 
-  // const checkCallHash = () => {
-  //   if (!currentTx) return false;
-
-  //   return currentTx?.callHash === hash
-  // }
-
   useEffect(() => {
-    setIsValidCallData(isHex(callData));
+    setIsValidCallData(isHex(callData) && currentTx?.callHash === blake2AsHex(hexToU8a(callData)));
   }, [callData]);
 
   return (
@@ -170,7 +165,11 @@ const Operations = () => {
                       invalid={!isValidCallData}
                       onChange={setCallData}
                     />
-                    <InputHint className="mb-4" active variant="hint">
+                    <InputHint className="mb-4" active={!isValidCallData} variant="error">
+                      {t('operations.callData.errorMessage')}
+                    </InputHint>
+
+                    <InputHint className="mb-4" active={isValidCallData} variant="hint">
                       {t('operations.callData.inputHint')}
                     </InputHint>
 
