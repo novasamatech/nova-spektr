@@ -101,6 +101,15 @@ const Navigation = () => {
                   </div>
                 </>
               )}
+              {cardType === SigningType.MULTISIG && (
+                <>
+                  <Identicon theme="polkadot" address={currentAccount?.accountId || ''} size={46} />
+
+                  <div className="absolute right-0 bottom-0 bg-shade-70 w-5 h-5 flex justify-center items-center rounded-full">
+                    <Icon name="multisignature" size={20} />
+                  </div>
+                </>
+              )}
               {cardType === 'multiple' && (
                 <div className="relative flex justify-center items-center w-[46px] h-[46px]">
                   <div className="rounded-full w-8 h-8 bg-white flex justify-center items-center z-10">
