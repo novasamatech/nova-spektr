@@ -71,7 +71,7 @@ const ShortTransactionInfo = ({ transaction }: Props) => {
 
     // Technical
     [TransactionType.CHILL]: null,
-    [TransactionType.BATCH_ALL]: null,
+    [TransactionType.BATCH_ALL]: <ShortTransactionInfo transaction={transaction.args?.calls?.[0]} />,
     [DEFAULT]: null,
   };
 

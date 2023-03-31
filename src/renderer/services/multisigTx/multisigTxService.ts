@@ -8,6 +8,7 @@ import { QUERY_INTERVAL } from './common/consts';
 import { IMultisigTxService } from './common/types';
 import { createTransactionPayload, getPendingMultisigTxs, updateTransactionPayload } from './common/utils';
 import { useChains } from '../network/chainsService';
+import { PublicKey } from '@renderer/domain/shared-kernel';
 
 export const useMultisigTx = (): IMultisigTxService => {
   const transactionStorage = storage.connectTo('multisigTransactions');
@@ -15,7 +16,8 @@ export const useMultisigTx = (): IMultisigTxService => {
   if (!transactionStorage) {
     throw new Error('=== 🔴 MultisigTransactions storage in not defined 🔴 ===');
   }
-  const { getMultisigTx, getMultisigTxs, addMultisigTx, updateMultisigTx, deleteMultisigTx } = transactionStorage;
+  const { getMultisigTx, getMultisigTxs, getAccountMultisigTxs, addMultisigTx, updateMultisigTx, deleteMultisigTx } =
+    transactionStorage;
   const { getExpectedBlockTime } = useChains();
 
   const subscribeMultisigAccount = (api: ApiPromise, account: MultisigAccount): (() => void) => {
@@ -89,14 +91,30 @@ export const useMultisigTx = (): IMultisigTxService => {
       }
     };
 
-    return useLiveQuery(query, [], []);
+    return useLiveQuery(query, [where], []);
+  };
+
+  const getLiveAccountMultisigTxs = (publicKeys: PublicKey[]): MultisigTransactionDS[] => {
+    const query = () => {
+      try {
+        return getAccountMultisigTxs(publicKeys);
+      } catch (error) {
+        console.warn('Error trying to get multisig transactions');
+
+        return Promise.resolve([]);
+      }
+    };
+
+    return useLiveQuery(query, [publicKeys.length], []);
   };
 
   return {
     subscribeMultisigAccount,
     getMultisigTx,
     getMultisigTxs,
+    getAccountMultisigTxs,
     getLiveMultisigTxs,
+    getLiveAccountMultisigTxs,
     addMultisigTx,
     updateMultisigTx,
     deleteMultisigTx,
