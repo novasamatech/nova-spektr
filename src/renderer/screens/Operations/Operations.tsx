@@ -60,6 +60,7 @@ const Operations = () => {
 
   const showCallDataModal = (id: IndexableType | undefined) => {
     setCurrentTx(txs.find((t) => t.id === id));
+    setCallData('');
     toggleCallDataModal();
   };
 
@@ -73,7 +74,6 @@ const Operations = () => {
     updateCallData(api, currentTx, callData as CallData);
 
     toggleCallDataModal();
-    setCallData('');
   };
 
   useEffect(() => {
