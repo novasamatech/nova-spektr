@@ -51,6 +51,7 @@ export function createAccount({
 }
 
 export type MultisigAccount = Account & {
+  accountId: AccountID;
   signatories: Signatory[];
   threshold: Threshold;
   matrixRoomId: string;
@@ -89,4 +90,13 @@ export function createMultisigAccount({
     isMain: false,
     isActive: true,
   } as MultisigAccount;
+}
+
+export function isMultisig(account?: Account | MultisigAccount): account is MultisigAccount {
+  if (!account) return false;
+
+  const hasSignatories = 'signatories' in (account as MultisigAccount);
+  const hasThreshold = 'threshold' in (account as MultisigAccount);
+
+  return hasSignatories && hasThreshold;
 }

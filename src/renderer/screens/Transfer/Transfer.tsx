@@ -30,7 +30,8 @@ const Transfer = () => {
   const { connections } = useNetworkContext();
 
   const [activeStep, setActiveStep] = useState<Steps>(Steps.INIT);
-  const [transaction, setTransaction] = useState<Transaction>({} as Transaction);
+  const [transferTx, setTransferTx] = useState<Transaction>({} as Transaction);
+  const [multisigTx, setMultisigTx] = useState<Transaction>();
   const [chainName, setChainName] = useState('...');
   const [accountName, setAccountName] = useState<string>('');
   const [unsignedTx, setUnsignedTx] = useState<UnsignedTransaction>({} as UnsignedTransaction);
@@ -42,17 +43,19 @@ const Transfer = () => {
     return <Navigate replace to={Paths.BALANCES} />;
   }
 
-  const { api, assets, addressPrefix, explorers, name: network, icon } = connections[chainId];
-  const asset = getAssetById(assetId, assets);
-  const [countdown, resetCountdown] = useCountdown(api);
-
   useEffect(() => {
     getChainById(chainId).then((chain) => setChainName(chain?.name || ''));
   }, []);
 
-  if (!api?.isConnected) {
+  const connection = connections[chainId];
+  const [countdown, resetCountdown] = useCountdown(connection?.api);
+
+  if (!connection?.api?.isConnected) {
     return <ChainLoader chainName={chainName} />;
   }
+
+  const { api, assets, addressPrefix, explorers, name: network, icon } = connection;
+  const asset = getAssetById(assetId, assets);
 
   const goToPrevStep = () => {
     if (activeStep === Steps.INIT) {
@@ -92,8 +95,11 @@ const Transfer = () => {
     );
   }
 
-  const onInitResult = (transaction: Transaction) => {
-    setTransaction(transaction);
+  const onInitResult = (transferTx: Transaction, multisigTx?: Transaction) => {
+    setTransferTx(transferTx);
+    if (multisigTx) {
+      setMultisigTx(multisigTx);
+    }
     setActiveStep(Steps.CONFIRMATION);
   };
 
@@ -123,78 +129,70 @@ const Transfer = () => {
     setActiveStep(Steps.INIT);
   };
 
+  const commonProps = { api, explorers, addressPrefix };
+
   return (
     <div className="flex flex-col h-full relative">
       {headerContent}
 
       {activeStep === Steps.INIT && (
         <InitOperation
-          api={api}
           chainId={chainId}
           asset={asset}
           nativeToken={assets[0]}
           network={chainName}
-          explorers={explorers}
-          addressPrefix={addressPrefix}
           onResult={onInitResult}
           onAccountChange={onAccountChange}
+          {...commonProps}
         />
       )}
       {activeStep === Steps.CONFIRMATION && (
         <Confirmation
-          api={api}
           asset={asset}
           nativeToken={assets[0]}
-          transaction={transaction}
-          explorers={explorers}
-          addressPrefix={addressPrefix}
+          transaction={transferTx}
           accountName={accountName}
           icon={icon}
           network={network}
           onResult={onConfirmResult}
+          {...commonProps}
         />
       )}
       {activeStep === Steps.SCANNING && (
         <Scanning
-          api={api}
           chainId={chainId}
           accountName={accountName}
-          transaction={transaction}
+          transaction={multisigTx || transferTx}
           countdown={countdown}
-          explorers={explorers}
-          addressPrefix={addressPrefix}
           onResetCountdown={resetCountdown}
           onResult={onScanResult}
+          {...commonProps}
         />
       )}
       {activeStep === Steps.SIGNING && (
         <Signing
-          api={api}
           chainId={chainId}
-          transaction={transaction}
+          transaction={multisigTx || transferTx}
           accountName={accountName}
           assetId={assetId}
           countdown={countdown}
-          explorers={explorers}
-          addressPrefix={addressPrefix}
           onGoBack={onBackToScan}
           onStartOver={onStartOver}
           onResult={onSignResult}
+          {...commonProps}
         />
       )}
       {activeStep === Steps.SUBMIT && (
         <Submit
-          api={api}
           asset={asset}
           nativeToken={assets[0]}
-          transaction={transaction}
-          explorers={explorers}
-          addressPrefix={addressPrefix}
+          transaction={multisigTx || transferTx}
           accountName={accountName}
           icon={icon}
           network={network}
           signature={signature}
           unsignedTx={unsignedTx}
+          {...commonProps}
         />
       )}
     </div>

@@ -56,9 +56,11 @@ const ShortTransactionInfo = ({ transaction }: Props) => {
   const asset = getAssetById(transaction.args.assetId, assets);
 
   const Transactions: Record<TransactionType | typeof DEFAULT, ReactNode> = {
+    // Transfer
     [TransactionType.ASSET_TRANSFER]: <TransactionInfo transaction={transaction} asset={asset} />,
     [TransactionType.ORML_TRANSFER]: <TransactionInfo transaction={transaction} asset={asset} />,
     [TransactionType.TRANSFER]: <TransactionInfo transaction={transaction} asset={asset} />,
+    [TransactionType.MULTISIG_TRANSFER]: <TransactionInfo transaction={transaction} asset={asset} />,
 
     // Staking
     [TransactionType.BOND]: <TransactionInfo transaction={transaction} asset={asset} />,

@@ -21,7 +21,7 @@ export const formatAddress = (address?: AccountID | PublicKey, prefix = SS58_DEF
  * @param address account's address
  * @return {PublicKey | undefined}
  */
-export const toPublicKey = (address?: string): PublicKey | undefined => {
+export const toPublicKey = (address?: AccountID): PublicKey | undefined => {
   if (!address) return;
 
   try {
@@ -65,6 +65,6 @@ export const pasteAddressHandler = (handler: (value: string) => void) => {
  * @param address account's address
  * @return {Boolean}
  */
-export const isAddressValid = (address?: string): boolean => {
+export const isAddressValid = (address?: AccountID): boolean => {
   return Boolean(toPublicKey(address));
 };

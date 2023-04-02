@@ -10,11 +10,10 @@ import { formatAddress } from '@renderer/shared/utils/address';
 import { Explorer } from '@renderer/domain/chain';
 import { Asset } from '@renderer/domain/asset';
 import { Transaction } from '@renderer/domain/transaction';
-import { AccountDS } from '@renderer/services/storage';
 import { IconNames } from '@renderer/components/ui/Icon/data';
 import { TransferForm } from '../TransferForm/TransferForm';
 import { ActiveAddress } from '@renderer/screens/Transfer/components';
-import { Account, MultisigAccount } from '@renderer/domain/account';
+import { Account, MultisigAccount, isMultisig } from '@renderer/domain/account';
 
 const Badges: Record<SigningType, IconNames> = {
   [SigningType.WATCH_ONLY]: 'watchOnlyBg',
@@ -22,12 +21,12 @@ const Badges: Record<SigningType, IconNames> = {
   [SigningType.MULTISIG]: 'multisigBg',
 };
 
-const getAccountsOptions = (
+const getAccountsOptions = <T extends Account>(
   chainId: ChainId,
-  accounts: AccountDS[],
+  accounts: T[],
   addressPrefix: number,
-): DropdownOption<Account | MultisigAccount>[] => {
-  return accounts.reduce<DropdownOption<Account | MultisigAccount>[]>((acc, account) => {
+): DropdownOption<T>[] => {
+  return accounts.reduce<DropdownOption<T>[]>((acc, account) => {
     const address = formatAddress(account.accountId, addressPrefix);
 
     const notWatchOnly = account.signingType !== SigningType.WATCH_ONLY;
@@ -58,8 +57,8 @@ type Props = {
   nativeToken: Asset;
   explorers?: Explorer[];
   addressPrefix: number;
-  onResult: (transaction: Transaction) => void;
   onAccountChange: (name: string) => void;
+  onResult: (transferTx: Transaction, multisigTx?: Transaction) => void;
 };
 
 export const InitOperation = ({
@@ -80,6 +79,8 @@ export const InitOperation = ({
 
   const [activeAccount, setActiveAccount] = useState<DropdownResult<Account | MultisigAccount>>();
   const [accountsOptions, setAccountsOptions] = useState<DropdownOption<Account | MultisigAccount>[]>([]);
+  const [activeSignatory, setActiveSignatory] = useState<DropdownResult<MultisigAccount>>();
+  const [signatoryOptions, setSignatoryOptions] = useState<DropdownOption<MultisigAccount>[]>([]);
 
   useEffect(() => {
     const options = getAccountsOptions(chainId, accounts, addressPrefix);
@@ -91,6 +92,23 @@ export const InitOperation = ({
     onAccountChange(options[0].value.name);
   }, [accounts.length]);
 
+  useEffect(() => {
+    if (!activeAccount || !isMultisig(activeAccount.value)) {
+      setActiveSignatory(undefined);
+      setSignatoryOptions([]);
+    } else {
+      const signatories = activeAccount.value.signatories.map((s) => s.publicKey);
+      const signers = accounts.filter((a) => a.publicKey && signatories.includes(a.publicKey)) as MultisigAccount[];
+
+      const options = getAccountsOptions<MultisigAccount>(chainId, signers, addressPrefix);
+
+      if (options.length === 0) return;
+
+      setSignatoryOptions(options);
+      setActiveSignatory({ id: options[0].id, value: options[0].value });
+    }
+  }, [activeAccount]);
+
   const changeAccount = (account: DropdownResult<Account | MultisigAccount>) => {
     onAccountChange(account.value.name);
     setActiveAccount(account);
@@ -98,11 +116,12 @@ export const InitOperation = ({
 
   const accountAddress = activeAccount?.id || '';
   const accountName = activeAccount?.value.name || '';
-  const threshold = (activeAccount?.value as MultisigAccount)?.threshold || 0;
+  const signerAddress = activeSignatory?.id || '';
+  const signerName = activeSignatory?.value.name || '';
 
   return (
     <Plate as="section" className="w-[500px] flex flex-col items-center mx-auto gap-y-2.5">
-      <Block>
+      <Block className="flex flex-col gap-y-2 p-5">
         {accountsOptions.length > 1 ? (
           <Dropdown
             weight="lg"
@@ -119,14 +138,32 @@ export const InitOperation = ({
             addressPrefix={addressPrefix}
           />
         )}
+
+        {isMultisig(activeAccount?.value) &&
+          (signatoryOptions.length > 1 ? (
+            <Dropdown
+              weight="lg"
+              placeholder="Select signer"
+              activeId={activeSignatory?.id}
+              options={signatoryOptions}
+              onChange={setActiveSignatory}
+            />
+          ) : (
+            <ActiveAddress
+              address={signerAddress}
+              accountName={signerName}
+              explorers={explorers}
+              addressPrefix={addressPrefix}
+            />
+          ))}
       </Block>
 
       <TransferForm
         api={api}
         chainId={chainId}
         network={network}
-        address={accountAddress}
-        threshold={threshold}
+        account={activeAccount?.value}
+        signer={signerAddress}
         asset={asset}
         nativeToken={nativeToken}
         addressPrefix={addressPrefix}

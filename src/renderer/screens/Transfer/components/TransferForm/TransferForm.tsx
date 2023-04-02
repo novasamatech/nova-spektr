@@ -5,21 +5,23 @@ import { Trans } from 'react-i18next';
 import { ApiPromise } from '@polkadot/api';
 
 import { pasteAddressHandler, toPublicKey, isAddressValid, formatAddress } from '@renderer/shared/utils/address';
-import { getAssetId } from '@renderer/shared/utils/assets';
 import { Button, AmountInput, Icon, Identicon, Input, InputHint, Block, InputArea } from '@renderer/components/ui';
 import { useI18n } from '@renderer/context/I18nContext';
 import { Asset, AssetType } from '@renderer/domain/asset';
-import { Transaction, TransactionType, MiltisigTxInitStatus } from '@renderer/domain/transaction';
+import { Transaction, MiltisigTxInitStatus, TransactionType } from '@renderer/domain/transaction';
 import { useBalance } from '@renderer/services/balance/balanceService';
 import { formatAmount, transferableAmount } from '@renderer/services/balance/common/utils';
-import { AccountID, ChainId, Threshold } from '@renderer/domain/shared-kernel';
+import { AccountID, ChainId } from '@renderer/domain/shared-kernel';
 import { Fee } from '@renderer/components/common';
 import Deposit from '@renderer/components/common/Deposit/Deposit';
 import { useTransaction } from '@renderer/services/transaction/transactionService';
 import { useMultisigTx } from '@renderer/services/multisigTx/multisigTxService';
+import { getAssetId } from '@renderer/shared/utils/assets';
+import { MultisigAccount, Account, isMultisig } from '@renderer/domain/account';
 
 type TransferFormData = {
   amount: string;
+  signatory: AccountID;
   destination: AccountID;
   description: string;
 };
@@ -28,20 +30,20 @@ type Props = {
   api: ApiPromise;
   chainId: ChainId;
   network: string;
-  address?: AccountID;
-  threshold: Threshold;
+  account?: Account | MultisigAccount;
+  signer?: AccountID;
   asset: Asset;
   nativeToken: Asset;
   addressPrefix: number;
-  onSubmit: (transaction: Transaction) => void;
+  onSubmit: (transferTx: Transaction, multisigTx?: Transaction) => void;
 };
 
 export const TransferForm = ({
   api,
   chainId,
   network,
-  address,
-  threshold,
+  account,
+  signer,
   asset,
   nativeToken,
   addressPrefix,
@@ -56,7 +58,9 @@ export const TransferForm = ({
   const [deposit, _] = useState('');
   const [balance, setBalance] = useState('');
   const [nativeTokenBalance, setNativeTokenBalance] = useState<string>();
-  const [transaction, setTransaction] = useState<Transaction>();
+  const [transferTx, setTransferTx] = useState<Transaction>();
+  const [multisigTx, setMultisigTx] = useState<Transaction>();
+  const [multisigTxExist, setMultisigTxExist] = useState(false);
 
   const {
     handleSubmit,
@@ -67,14 +71,16 @@ export const TransferForm = ({
     formState: { isValid },
   } = useForm<TransferFormData>({
     mode: 'onChange',
-    defaultValues: { amount: '', destination: '', description: '' },
+    defaultValues: { amount: '', destination: '', signatory: '', description: '' },
   });
 
   const amount = watch('amount');
   const destination = watch('destination');
 
   useEffect(() => {
-    const publicKey = toPublicKey(address) || '0x0';
+    if (!account) return;
+
+    const publicKey = toPublicKey(account.accountId) || '0x0';
 
     if (asset.assetId !== 0) {
       getBalance(publicKey, chainId, '0').then((balance) => {
@@ -85,31 +91,65 @@ export const TransferForm = ({
     getBalance(publicKey, chainId, asset.assetId.toString()).then((balance) => {
       setBalance(balance ? transferableAmount(balance) : '0');
     });
-  }, [address]);
+  }, [account]);
 
   useEffect(() => {
-    let txPayload: Transaction | undefined = undefined;
+    if (!account?.accountId || !amount || !isAddressValid(destination)) return;
 
-    if (address && amount && isAddressValid(destination)) {
-      const TransferType: Record<AssetType, TransactionType> = {
-        [AssetType.ORML]: TransactionType.ORML_TRANSFER,
-        [AssetType.STATEMINE]: TransactionType.ASSET_TRANSFER,
-      };
+    const transferPayload = getTransferTx(account.accountId);
 
-      txPayload = {
-        chainId,
-        address,
-        type: asset.type ? TransferType[asset.type] : TransactionType.TRANSFER,
-        args: {
-          dest: formatAddress(destination, addressPrefix),
-          value: formatAmount(amount, asset.precision),
-          asset: getAssetId(asset),
-        },
-      };
+    if (isMultisig(account) && signer) {
+      setMultisigTx(getMultisigTx(account, signer, transferPayload));
     }
 
-    setTransaction(txPayload);
-  }, [address, destination, amount]);
+    setTransferTx(transferPayload);
+  }, [account, destination, amount]);
+
+  const getTransferTx = (address: AccountID): Transaction => {
+    const TransferType: Record<AssetType, TransactionType> = {
+      [AssetType.ORML]: TransactionType.ORML_TRANSFER,
+      [AssetType.STATEMINE]: TransactionType.ASSET_TRANSFER,
+    };
+
+    return {
+      chainId,
+      address,
+      type: asset.type ? TransferType[asset.type] : TransactionType.TRANSFER,
+      args: {
+        dest: formatAddress(destination, addressPrefix),
+        value: formatAmount(amount, asset.precision),
+        asset: getAssetId(asset),
+      },
+    };
+  };
+
+  const getMultisigTx = (account: MultisigAccount, signer: AccountID, transaction: Transaction): Transaction => {
+    const { callData, callHash } = getTransactionHash(transaction, api);
+
+    // TODO: toPublicKey instead of address?
+    const otherSignatories = account.signatories.reduce<AccountID[]>((acc, s) => {
+      const signerAddress = formatAddress(signer, addressPrefix);
+      const signatoryAddress = formatAddress(s.accountId, addressPrefix);
+      if (signerAddress !== signatoryAddress) {
+        acc.push(signatoryAddress);
+      }
+
+      return acc;
+    }, []);
+
+    return {
+      chainId,
+      address: signer,
+      type: TransactionType.MULTISIG_TRANSFER,
+      args: {
+        threshold: account.threshold,
+        otherSignatories,
+        maybeTimepoint: null,
+        callData,
+        callHash,
+      },
+    };
+  };
 
   const validateBalance = (amount: string): boolean => {
     if (!balance) return false;
@@ -146,14 +186,20 @@ export const TransferForm = ({
   };
 
   const submitTransaction = async () => {
-    if (!transaction) return;
+    if (!transferTx) return;
 
-    // TODO: check existing MST operation
-    const { callHash } = getTransactionHash(transaction, api);
+    if (!multisigTx) {
+      onSubmit(transferTx);
+    }
+
+    const { callHash } = getTransactionHash(transferTx, api);
     const multisigTxs = await getMultisigTxs({ chainId, callHash, status: MiltisigTxInitStatus.SIGNING });
-    console.log(multisigTxs);
 
-    onSubmit(transaction);
+    if (multisigTxs.length !== 0) {
+      setMultisigTxExist(true);
+    } else {
+      onSubmit(transferTx, multisigTx);
+    }
   };
 
   return (
@@ -247,17 +293,17 @@ export const TransferForm = ({
             className="text-neutral justify-self-end text-2xs font-semibold"
             api={api}
             asset={nativeToken}
-            transaction={transaction}
+            transaction={transferTx}
             onFeeChange={updateFee}
           />
-          {threshold >= 1 && (
+          {isMultisig(account) && (
             <>
               <p className="uppercase text-neutral-variant text-2xs">{t('transfer.networkDeposit')}</p>
               <Deposit
                 className="text-neutral justify-self-end text-2xs font-semibold"
                 api={api}
                 asset={nativeToken}
-                threshold={threshold}
+                threshold={account.threshold}
                 onDepositChange={() => {}}
               />
             </>
@@ -269,24 +315,30 @@ export const TransferForm = ({
         <Controller
           name="description"
           control={control}
-          rules={{ maxLength: 120 }}
+          rules={{ required: true, maxLength: 120 }}
           render={({ field: { onChange, value }, fieldState: { error } }) => (
             <div className="flex flex-col gap-y-2.5">
               <InputArea
                 className="w-full"
-                label="Operation name (optional)"
-                placeholder="Choose an operation name"
+                label={t('transfer.descriptionLabel')}
+                placeholder={t('transfer.descriptionPlaceholder')}
                 invalid={Boolean(error)}
                 rows={2}
                 value={value}
                 onChange={onChange}
               />
+              <InputHint active={error?.type === 'required'} variant="error">
+                {t('transfer.requiredDescriptionError')}
+              </InputHint>
               <InputHint active={error?.type === 'maxLength'} variant="error">
                 <Trans t={t} i18nKey="transfer.descriptionLengthError" values={{ maxLength: 120 }} />
               </InputHint>
             </div>
           )}
         />
+        <InputHint className="mt-2.5" active={multisigTxExist} variant="error">
+          {t('transfer.multisigTransactionExist')}
+        </InputHint>
       </Block>
 
       <Button

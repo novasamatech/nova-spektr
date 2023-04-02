@@ -558,7 +558,9 @@
   "transfer": {
     "amountPlaceholder": "Amount",
     "continueButton": "Continue",
+    "descriptionLabel": "Operation name",
     "descriptionLengthError": "Description can be { maxLength } symbols long",
+    "descriptionPlaceholder": "Choose an operation name",
     "editOperationButton": "Edit operation",
     "executing": "Submitting operation",
     "formTitle": "Send <strong>{ asset }</strong> on <strong>{ network }</strong>",
@@ -567,6 +569,7 @@
       "executing": "Submitting operations",
       "transactions": "Transactions"
     },
+    "multisigTransactionExist": "Multisig transaction already exists",
     "networkDeposit": "Deposit",
     "networkFee": "Network fee",
     "notEnoughBalanceError": "Not enough funds to transfer specific amount",
@@ -574,6 +577,7 @@
     "pasteButton": "Paste",
     "recipientLabel": "Recipient",
     "requiredAmountError": "Please, enter amount",
+    "requiredDescriptionError": "Description is required",
     "requiredRecipientError": "Please, enter recipient address",
     "startSigningButton": "Sign with Parity Signer",
     "successMessage": "transaction submitted!",

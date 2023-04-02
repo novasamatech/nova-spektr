@@ -20,6 +20,7 @@ import { toPublicKey } from '@renderer/shared/utils/address';
 import { formatBalance } from '../balance/common/utils';
 import { getAssetById } from '@renderer/shared/utils/assets';
 import { Asset } from '@renderer/domain/asset';
+import { MAX_WEIGHT } from '@renderer/services/transaction/common/constants';
 
 export const useTransaction = (): ITransactionService => {
   const createRegistry = async (api: ApiPromise) => {
@@ -62,6 +63,20 @@ export const useTransaction = (): ITransactionService => {
           dest: transaction.args.dest,
           amount: transaction.args.value,
           currencyId: transaction.args.asset,
+        },
+        info,
+        options,
+      );
+    },
+    [TransactionType.MULTISIG_TRANSFER]: (transaction, info, options) => {
+      return methods.multisig.asMulti(
+        {
+          threshold: transaction.args.threshold,
+          otherSignatories: transaction.args.otherSignatories,
+          maybeTimepoint: transaction.args.maybeTimepoint,
+          maxWeight: MAX_WEIGHT,
+          call: transaction.args.callData,
+          callHash: transaction.args.callHash,
         },
         info,
         options,
@@ -158,6 +173,8 @@ export const useTransaction = (): ITransactionService => {
     [TransactionType.ASSET_TRANSFER]: ({ dest, value, asset }, api) =>
       api.tx.assets.transferKeepAlive(asset, dest, value),
     [TransactionType.ORML_TRANSFER]: ({ dest, value, asset }, api) => api.tx.currencies.transfer(dest, asset, value),
+    [TransactionType.MULTISIG_TRANSFER]: ({ threshold, otherSignatories, maybeTimepoint, call, maxWeight }, api) =>
+      api.tx.multisig.asMulti(threshold, otherSignatories, maybeTimepoint, call, maxWeight),
     [TransactionType.BOND]: ({ controller, value, payee }, api) => api.tx.staking.bond(controller, value, payee),
     [TransactionType.UNSTAKE]: ({ value }, api) => api.tx.staking.unbond(value),
     [TransactionType.STAKE_MORE]: ({ maxAdditional }, api) => api.tx.staking.bondExtra(maxAdditional),

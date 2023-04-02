@@ -5,6 +5,7 @@ export const enum TransactionType {
   TRANSFER = 'transfer',
   ORML_TRANSFER = 'ormlTransfer',
   ASSET_TRANSFER = 'assetTransfer',
+  MULTISIG_TRANSFER = 'multisig_transfer',
   BOND = 'bond',
   STAKE_MORE = 'bondExtra',
   UNSTAKE = 'unbond',

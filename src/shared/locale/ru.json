@@ -558,7 +558,9 @@
   "transfer": {
     "amountPlaceholder": "Сумма",
     "continueButton": "Продолжить",
+    "descriptionLabel": "Название операции",
     "descriptionLengthError": "Описание может быть { maxLength } символов в длину",
+    "descriptionPlaceholder": "Задайте название операции",
     "editOperationButton": "Редактировать операцию",
     "executing": "Выполнение транзакции",
     "formTitle": "Отправить <strong>{ asset }</strong> в сети <strong>{ network }</strong>",
@@ -567,6 +569,7 @@
       "executing": "Выполнение операций",
       "transactions": "Транзакции"
     },
+    "multisigTransactionExist": "Мультисиг транзакция уже существует",
     "networkDeposit": "Депозит",
     "networkFee": "Комиссия сети",
     "notEnoughBalanceError": "Недостаточно средств для указанной суммы",
@@ -574,6 +577,7 @@
     "pasteButton": "Вставить",
     "recipientLabel": "Получатель",
     "requiredAmountError": "Пожалуйста, введите сумму",
+    "requiredDescriptionError": "Пожалуйста, заполните описание транзакции",
     "requiredRecipientError": "Пожалуйста, введите адрес получателя",
     "startSigningButton": "Подписать в Parity Signer",
     "successMessage": "Транзакция отправлена!",
