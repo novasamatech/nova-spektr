@@ -17,9 +17,6 @@ import { Transaction, TransactionType } from '@renderer/domain/transaction';
 import { createTxMetadata } from '@renderer/shared/utils/substrate';
 import { ITransactionService } from './common/types';
 import { toPublicKey } from '@renderer/shared/utils/address';
-import { formatBalance } from '../balance/common/utils';
-import { getAssetById } from '@renderer/shared/utils/assets';
-import { Asset } from '@renderer/domain/asset';
 
 export const useTransaction = (): ITransactionService => {
   const createRegistry = async (api: ApiPromise) => {
@@ -286,7 +283,7 @@ export const useTransaction = (): ITransactionService => {
   };
 
   // TODO: will be refactored with next tasks
-  const decodeCallData = (api: ApiPromise, accountId: AccountID, assets: Asset[], callData: CallData): Transaction => {
+  const decodeCallData = (api: ApiPromise, accountId: AccountID, callData: CallData): Transaction => {
     const transaction: Transaction = {
       type: TransactionType.TRANSFER,
       address: accountId,
@@ -312,32 +309,78 @@ export const useTransaction = (): ITransactionService => {
       decoded = extrinsic;
     }
 
+    if (method === 'transferKeepAlive' && section === 'balances') {
+      transaction.type = TransactionType.TRANSFER;
+      transaction.args.dest = decoded.args[0].toString();
+      transaction.args.value = decoded.args[1].toString();
+    }
+
+    if (method === 'transferKeepAlive' && section === 'assets') {
+      transaction.type = TransactionType.ASSET_TRANSFER;
+
+      transaction.args.assetId = decoded.args[0].toString();
+      transaction.args.dest = decoded.args[1].toString();
+      transaction.args.value = decoded.args[2].toString();
+    }
     if (method === 'transfer' && section === 'balances') {
       transaction.type = TransactionType.TRANSFER;
       transaction.args.dest = decoded.args[0].toString();
-      transaction.args.value = formatBalance(decoded.args[1].toString(), assets[0].precision || 0);
+      transaction.args.value = decoded.args[1].toString();
     }
 
     if (method === 'transfer' && section === 'assets') {
       transaction.type = TransactionType.ASSET_TRANSFER;
 
       transaction.args.assetId = decoded.args[0].toString();
-
-      const asset = getAssetById(assets || [], transaction.args.assetId);
-
       transaction.args.dest = decoded.args[1].toString();
-      transaction.args.value = formatBalance(decoded.args[2].toString(), asset?.precision || 0);
+      transaction.args.value = decoded.args[2].toString();
     }
 
     if (method === 'transfer' && section === 'currencies') {
       transaction.type = TransactionType.ORML_TRANSFER;
 
-      transaction.args.assetId = decoded.args[1].toHex();
-
-      const asset = getAssetById(assets || [], transaction.args.assetId);
-
       transaction.args.dest = decoded.args[0].toString();
-      transaction.args.value = formatBalance(decoded.args[2].toString(), asset?.precision || 0);
+      transaction.args.assetId = decoded.args[1].toHex();
+      transaction.args.value = decoded.args[2].toString();
+    }
+
+    if (method === 'batchAll' && section === 'utility') {
+      transaction.type = TransactionType.BATCH_ALL;
+
+      const batchCall = api.createType('Vec<Call>', decoded.args[0].toHex());
+
+      transaction.args.calls = batchCall.map((call) => decodeCallData(api, accountId, call.toHex()));
+    }
+
+    if (method === 'bond' && section === 'staking') {
+      transaction.type = TransactionType.BOND;
+      transaction.args.controller = decoded.args[0];
+      transaction.args.value = decoded.args[1];
+      transaction.args.payee = decoded.args[2];
+    }
+
+    if (method === 'unbond' && section === 'staking') {
+      transaction.type = TransactionType.UNSTAKE;
+      transaction.args.value = decoded.args[0];
+    }
+
+    if (method === 'rebond' && section === 'staking') {
+      transaction.type = TransactionType.RESTAKE;
+      transaction.args.value = decoded.args[0];
+    }
+
+    if (method === 'withdrawUnbonded' && section === 'staking') {
+      transaction.type = TransactionType.REDEEM;
+    }
+
+    if (method === 'nominate' && section === 'staking') {
+      transaction.type = TransactionType.NOMINATE;
+      transaction.args.targets = decoded.args[0];
+    }
+
+    if (method === 'bondExtra' && section === 'staking') {
+      transaction.type = TransactionType.STAKE_MORE;
+      transaction.args.maxAdditional = decoded.args[0];
     }
 
     return transaction;

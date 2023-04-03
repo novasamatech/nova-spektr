@@ -255,8 +255,23 @@
     "yourAccountsLabel": "Ваши аккаунты"
   },
   "operations": {
+    "addCallDataButton": "Добавить call data",
+    "callData": {
+      "continueButton": "Продолжить",
+      "errorMessage": "Неверная call data",
+      "inputHint": "Доступно только вам и подписантам",
+      "inputPlaceholder": "0x00...",
+      "title": "Введите call data"
+    },
     "noOperationsDescription": "Нет ожидающих операций с мультиподписью",
-    "signing": "Подписи ({ signed } из { signatories })",
+    "signing": "Подписи ({ signed } из { threshold })",
+    "status": {
+      "cancelled": "Cancelled",
+      "error": "Error",
+      "esteblished": "Esteblished",
+      "signing": "Signing",
+      "success": "Success"
+    },
     "subTitle": "Ваши операции",
     "title": "Операции",
     "titles": {
