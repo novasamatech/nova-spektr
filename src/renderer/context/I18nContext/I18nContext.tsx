@@ -1,6 +1,8 @@
 import { createContext, FC, PropsWithChildren, useContext } from 'react';
 import type { TFunction } from 'react-i18next';
 import { useTranslation } from 'react-i18next';
+import { Locale } from 'date-fns';
+import { enGB } from 'date-fns/locale';
 
 import { LanguageSwitcher } from '@renderer/components/ui';
 import { LanguageItem, SupportedLocale } from '@renderer/services/translation/common/types';
@@ -16,6 +18,7 @@ type Props = {
 type I18nContextProps = {
   t: TFunction<'translation'>;
   locale: SupportedLocale;
+  dateLocale: Locale;
   locales: LanguageItem[];
   changeLocale: (locale: SupportedLocale) => Promise<void>;
   LocaleComponent: FC<Props>;
@@ -47,10 +50,15 @@ export const I18Provider = ({ children }: PropsWithChildren<{}>) => {
     />
   );
 
+  const locale = getLocale();
+  const locales = getLocales();
+  const dateLocale = locales.find((l) => l.value === locale)?.dateLocale || enGB;
+
   const value: I18nContextProps = {
     t,
-    locale: getLocale(),
-    locales: getLocales(),
+    locale,
+    locales,
+    dateLocale,
     changeLocale: onLocaleChange,
     LocaleComponent,
   };

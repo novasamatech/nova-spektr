@@ -1,3 +1,5 @@
+import { enGB, ru } from 'date-fns/locale';
+
 import { LanguageItem, SupportedLocale } from './types';
 import enLocale from '@shared/locale/en.json';
 import ruLocale from '@shared/locale/ru.json';
@@ -9,11 +11,13 @@ export const LanguageOptions: LanguageItem[] = [
     value: 'en',
     label: 'English',
     shortLabel: 'EN',
+    dateLocale: enGB,
   },
   {
     value: 'ru',
     label: 'Russian',
     shortLabel: 'RU',
+    dateLocale: ru,
   },
 ];
 

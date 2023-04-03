@@ -13,6 +13,7 @@ import { AccountDS } from '@renderer/services/storage';
 import Wallets from '../Wallets/Wallets';
 import './Navigation.css';
 import { useMultisigTx } from '@renderer/services/multisigTx/multisigTxService';
+import { nonNullable } from '@renderer/shared/utils/functions';
 
 type CardType = SigningType | 'multiple' | 'none';
 
@@ -43,8 +44,10 @@ const Navigation = () => {
 
   const [isWalletsOpen, setIsWalletsOpen] = useState(false);
 
-  const { getLiveMultisigTxs } = useMultisigTx();
-  const txs = getLiveMultisigTxs({ status: 'SIGNING' });
+  const { getLiveAccountMultisigTxs } = useMultisigTx();
+  const txs = getLiveAccountMultisigTxs(activeAccounts.map((a) => a.publicKey).filter(nonNullable)).filter(
+    (tx) => tx.status === 'SIGNING',
+  );
 
   const NavItems = [
     { icon: <Icon name="balance" />, title: 'navigation.balancesLabel', link: Paths.BALANCES },
@@ -98,6 +101,15 @@ const Navigation = () => {
                   </div>
                 </>
               )}
+              {cardType === SigningType.MULTISIG && (
+                <>
+                  <Identicon theme="polkadot" address={currentAccount?.accountId || ''} size={46} />
+
+                  <div className="absolute right-0 bottom-0 bg-shade-70 w-5 h-5 flex justify-center items-center rounded-full">
+                    <Icon name="multisignature" size={20} />
+                  </div>
+                </>
+              )}
               {cardType === 'multiple' && (
                 <div className="relative flex justify-center items-center w-[46px] h-[46px]">
                   <div className="rounded-full w-8 h-8 bg-white flex justify-center items-center z-10">
@@ -139,7 +151,7 @@ const Navigation = () => {
                 >
                   {icon}
                   <span className="font-semibold text-sm ml-3">{t(title)}</span>
-                  {badge && <div className="ml-auto text-shade-50">{badge}</div>}
+                  {!!badge && <div className="ml-auto text-shade-50">{badge}</div>}
                 </NavLink>
               </li>
             ))}

@@ -66,6 +66,7 @@
     "buffer": "^6.0.3",
     "classnames": "^2.3.1",
     "crypto-browserify": "^3.12.0",
+    "date-fns": "^2.29.3",
     "dexie": "^3.2.2",
     "dexie-react-hooks": "^1.1.1",
     "graphql": "^16.6.0",
