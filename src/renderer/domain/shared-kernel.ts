@@ -1,6 +1,6 @@
 export type HexString = `0x${string}`;
 export type AccountID = string;
-export type CallData = string;
+export type CallData = HexString;
 export type PublicKey = HexString;
 export type ChainId = HexString;
 export type EraIndex = number;

@@ -1,7 +1,6 @@
 import { ReactNode, useEffect, useState } from 'react';
 
 import { Transaction, TransactionType } from '@renderer/domain/transaction';
-import { getTransactionType } from '../common/utils';
 import { DEFAULT } from '@shared/constants/common';
 import { useChains } from '@renderer/services/network/chainsService';
 import { Asset } from '@renderer/domain/asset';
@@ -71,11 +70,11 @@ const ShortTransactionInfo = ({ transaction }: Props) => {
 
     // Technical
     [TransactionType.CHILL]: null,
-    [TransactionType.BATCH_ALL]: null,
+    [TransactionType.BATCH_ALL]: <ShortTransactionInfo transaction={transaction.args?.calls?.[0]} />,
     [DEFAULT]: null,
   };
 
-  return <>{Transactions[getTransactionType(transaction) || DEFAULT]}</>;
+  return <>{Transactions[transaction.type || DEFAULT]}</>;
 };
 
 export default ShortTransactionInfo;
