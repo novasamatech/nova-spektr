@@ -1,11 +1,9 @@
 import { groupBy } from 'lodash';
 import { format } from 'date-fns';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { IndexableType } from 'dexie';
-import { hexToU8a, isHex } from '@polkadot/util';
-import { blake2AsHex } from '@polkadot/util-crypto';
 
-import { BaseModal, Block, Button, InputArea, InputHint, Plate, Table } from '@renderer/components/ui';
+import { Block, Button, Plate, Table } from '@renderer/components/ui';
 import { useI18n } from '@renderer/context/I18nContext';
 import { MiltisigTransactionFinalStatus, MultisigEvent, MultisigTransactionStatus } from '@renderer/domain/transaction';
 import { useMultisigTx } from '@renderer/services/multisigTx/multisigTxService';
@@ -20,6 +18,7 @@ import { useNetworkContext } from '@renderer/context/NetworkContext';
 import { useAccount } from '@renderer/services/account/accountService';
 import { nonNullable } from '@renderer/shared/utils/functions';
 import { MultisigAccount } from '@renderer/domain/account';
+import CallDataModal from './components/CallDataModal';
 
 const sortByDate = ([dateA]: [string, MultisigTransactionDS[]], [dateB]: [string, MultisigTransactionDS[]]) =>
   new Date(dateA) < new Date(dateB) ? 1 : -1;
@@ -37,8 +36,6 @@ const Operations = () => {
 
   const [isCallDataModalOpen, toggleCallDataModal] = useToggle(false);
   const [currentTx, setCurrentTx] = useState<MultisigTransactionDS>();
-  const [callData, setCallData] = useState<string>();
-  const [isValidCallData, setIsValidCallData] = useState<boolean>(false);
 
   const { getLiveAccountMultisigTxs, updateCallData } = useMultisigTx();
   const { connections } = useNetworkContext();
@@ -60,25 +57,18 @@ const Operations = () => {
 
   const showCallDataModal = (id: IndexableType | undefined) => {
     setCurrentTx(txs.find((t) => t.id === id));
-    setCallData('');
     toggleCallDataModal();
   };
 
-  const initCallData = async () => {
+  const setupCallData = async (callData: CallData) => {
     const connection = connections[currentTx?.chainId as ChainId];
 
     const api = connection.api;
 
-    if (!api || !currentTx || !isValidCallData) return;
+    if (!api || !currentTx) return;
 
     updateCallData(api, currentTx, callData as CallData);
-
-    toggleCallDataModal();
   };
-
-  useEffect(() => {
-    setIsValidCallData(isHex(callData) && currentTx?.callHash === blake2AsHex(hexToU8a(callData)));
-  }, [callData]);
 
   return (
     <div className="h-full flex flex-col gap-y-9 relative">
@@ -138,38 +128,12 @@ const Operations = () => {
                     </Table>
                   </Block>
 
-                  <BaseModal
+                  <CallDataModal
                     isOpen={isCallDataModalOpen}
-                    title={t('operations.callData.title')}
-                    closeButton
-                    contentClass="px-5 pb-4 w-[400px]"
+                    tx={currentTx}
+                    onSubmit={setupCallData}
                     onClose={toggleCallDataModal}
-                  >
-                    <InputArea
-                      wrapperClass="my-2"
-                      placeholder={t('operations.callData.inputPlaceholder')}
-                      value={callData}
-                      invalid={!isValidCallData}
-                      onChange={setCallData}
-                    />
-                    <InputHint className="mb-4" active={!isValidCallData} variant="error">
-                      {t('operations.callData.errorMessage')}
-                    </InputHint>
-
-                    <InputHint className="mb-4" active={isValidCallData} variant="hint">
-                      {t('operations.callData.inputHint')}
-                    </InputHint>
-
-                    <Button
-                      className="w-full"
-                      pallet="primary"
-                      variant="fill"
-                      disabled={!isValidCallData}
-                      onClick={initCallData}
-                    >
-                      {t('operations.callData.continueButton')}
-                    </Button>
-                  </BaseModal>
+                  />
                 </>
               ))
           ) : (

@@ -1,10 +1,6 @@
 import { IconNames } from '@renderer/components/ui/Icon/data';
 import { Transaction, TransactionType } from '@renderer/domain/transaction';
 
-export const getTransactionType = (transaction?: Transaction): TransactionType | undefined => {
-  return transaction?.type;
-};
-
 const TransactionTitles: Record<TransactionType, string> = {
   // Transfer
   [TransactionType.ASSET_TRANSFER]: 'operations.titles.transfer',
@@ -42,25 +38,21 @@ const TransactionIcons: Record<TransactionType, IconNames> = {
 };
 
 export const getTransactionTitle = (transaction?: Transaction): string => {
-  const transactionType = getTransactionType(transaction);
+  if (!transaction?.type) return 'operations.titles.unknown';
 
-  if (!transactionType) return 'operations.titles.unknown';
-
-  if (transactionType === TransactionType.BATCH_ALL) {
+  if (transaction.type === TransactionType.BATCH_ALL) {
     return getTransactionTitle(transaction?.args?.calls?.[0]);
   }
 
-  return TransactionTitles[transactionType];
+  return TransactionTitles[transaction.type];
 };
 
 export const getIconName = (transaction?: Transaction): IconNames => {
-  const transactionType = getTransactionType(transaction);
+  if (!transaction?.type) return 'question';
 
-  if (!transactionType) return 'question';
-
-  if (transactionType === TransactionType.BATCH_ALL) {
+  if (transaction.type === TransactionType.BATCH_ALL) {
     return getIconName(transaction?.args?.calls?.[0]);
   }
 
-  return TransactionIcons[transactionType];
+  return TransactionIcons[transaction.type];
 };
