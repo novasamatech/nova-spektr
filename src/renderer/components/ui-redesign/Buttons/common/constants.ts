@@ -4,7 +4,7 @@ import { Pallet, Variant } from './types';
 export const ViewClass: Record<`${Variant}_${Pallet}`, string> = {
   text_primary: 'text-redesign-primary border-transparent bg-transparent',
   fill_primary: 'text-white border-0 bg-redesign-primary disabled:bg-redesign-primary/[.48]',
-  outline_primary: 'text-redesign-primary border border-redesign-gray-border disabled:border-redesign-primary/[.48]',
+  outline_primary: 'text-redesign-primary border border-redesign-shade-8 disabled:border-redesign-primary/[.48]',
 };
 
 export const WeightClass = {
