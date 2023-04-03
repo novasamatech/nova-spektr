@@ -2,6 +2,7 @@ import { IndexableType, Table } from 'dexie';
 
 import { MultisigTransaction } from '@renderer/domain/transaction';
 import { MultisigTransactionDS, IMultisigTransactionStorage } from './common/types';
+import { PublicKey } from '@renderer/domain/shared-kernel';
 
 export const useTransactionStorage = (db: Table<MultisigTransactionDS>): IMultisigTransactionStorage => ({
   getMultisigTx: (txId: IndexableType): Promise<MultisigTransactionDS | undefined> => {
@@ -14,6 +15,10 @@ export const useTransactionStorage = (db: Table<MultisigTransactionDS>): IMultis
     }
 
     return db.toArray();
+  },
+
+  getAccountMultisigTxs: (publicKeys: PublicKey[]): Promise<MultisigTransactionDS[]> => {
+    return db.where('publicKey').anyOf(publicKeys).toArray();
   },
 
   addMultisigTx: (tx: MultisigTransaction): Promise<IndexableType> => {

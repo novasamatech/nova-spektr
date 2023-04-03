@@ -1,4 +1,5 @@
 import { act, render, screen } from '@testing-library/react';
+import { enGB, ru } from 'date-fns/locale';
 
 import { LanguageItem } from '@renderer/services/translation/common/types';
 import LanguageSwitcher from './LanguageSwitcher';
@@ -8,11 +9,13 @@ const languages: LanguageItem[] = [
     value: 'en',
     label: 'English',
     shortLabel: 'EN',
+    dateLocale: enGB,
   },
   {
     value: 'ru',
     label: 'Russian',
     shortLabel: 'RU',
+    dateLocale: ru,
   },
 ];
 

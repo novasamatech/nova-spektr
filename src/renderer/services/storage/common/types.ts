@@ -63,6 +63,7 @@ export interface IContactStorage {
 export interface IMultisigTransactionStorage {
   getMultisigTx: (txId: IndexableType) => Promise<MultisigTransactionDS | undefined>;
   getMultisigTxs: (where?: Record<string, any>) => Promise<MultisigTransactionDS[]>;
+  getAccountMultisigTxs: (publicKeys: PublicKey[]) => Promise<MultisigTransactionDS[]>;
   addMultisigTx: (tx: MultisigTransaction) => Promise<IndexableType>;
   updateMultisigTx: (tx: MultisigTransactionDS) => Promise<IndexableType>;
   deleteMultisigTx: (txId: IndexableType) => Promise<void>;
