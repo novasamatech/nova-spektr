@@ -47,9 +47,13 @@ module.exports = {
         },
         redesign: {
           primary: '#2463EB',
-          'gray-border': 'rgba(0, 0, 0, 0.08)',
           'secondary-bg': '#FAFAFA',
-          'icon-gray': 'rgba(0, 0, 0, 0.32)',
+          shade: {
+            8: 'rgba(0, 0, 0, 0.08)',
+            12: 'rgba(0, 0, 0, 0.12)',
+            32: 'rgba(0, 0, 0, 0.32)',
+            48: 'rgba(0, 0, 0, 0.48)',
+          },
         },
       },
       spacing: {
@@ -68,6 +72,7 @@ module.exports = {
         15: '3.75rem',
       },
       fontSize: {
+        '3xs': ['0.5625rem', '0.6875rem'], // rename to something according to our typography system
         '2xs': ['0.625rem', '0.75rem'],
         '4.5xl': ['2.75rem', '3rem'],
         body: ['0.8125rem', '1.125rem'],
@@ -81,5 +86,5 @@ module.exports = {
       },
     },
   },
-  plugins: [],
+  plugins: [require('@headlessui/tailwindcss')],
 };

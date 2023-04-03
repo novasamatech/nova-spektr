@@ -92,6 +92,7 @@
     "@commitlint/cli": "^17.3.0",
     "@commitlint/config-conventional": "^17.0.3",
     "@electron/notarize": "^1.2.3",
+    "@headlessui/tailwindcss": "^0.1.2",
     "@pmmmwh/react-refresh-webpack-plugin": "^0.5.7",
     "@storybook/addon-actions": "^6.5.9",
     "@storybook/addon-essentials": "^6.5.9",
