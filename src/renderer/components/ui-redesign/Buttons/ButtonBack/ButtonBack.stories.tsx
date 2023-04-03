@@ -4,7 +4,7 @@ import { ComponentMeta, ComponentStory } from '@storybook/react';
 import ButtonBack from './ButtonBack';
 
 export default {
-  title: 'ButtonBackRedesign',
+  title: 'Redesign/Button Back',
   component: ButtonBack,
   parameters: { actions: { argTypesRegex: '^on.*' } },
   decorators: [
