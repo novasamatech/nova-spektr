@@ -1,7 +1,7 @@
 import { ComponentMeta, ComponentStory } from '@storybook/react';
 
 import InfoPopover from './InfoPopover';
-import { popoverItems } from '@renderer/components/ui-redesign/Popovers/InfoPopover/mock.data';
+import { popoverItems } from '@renderer/components/ui-redesign/Popovers/InfoPopover/InfoPopover.test';
 
 export default {
   title: 'Info popover',

@@ -11,9 +11,14 @@ type Props = {
   offsetPx?: number;
 };
 
+interface MenuItem {
+  id: string;
+  value: string | React.ReactElement;
+}
+
 export interface InfoSection {
   title: string;
-  items: (string | React.ReactElement)[];
+  items: MenuItem[];
 }
 
 const InfoPopover = ({ data, className, children, offsetPx = 7 }: PropsWithChildren<Props>) => {
@@ -37,17 +42,15 @@ const InfoPopover = ({ data, className, children, offsetPx = 7 }: PropsWithChild
                 </TextBase>
 
                 <CalloutText key={i} className="text-3xs pb-4 flex flex-col last:p-0">
-                  {section.items.map((item, i) =>
-                    typeof item === 'string' ? (
-                      item
+                  {section.items.map(({ value, id }) =>
+                    typeof value === 'string' ? (
+                      value
                     ) : (
-                      <Menu.Item
-                        key={i}
-                        // typescript says there's no classname but that's a lie. Need to check out Menu.Item code
-                        // @ts-ignore
-                        className="rounded-xs text-shade-100 ui-active:bg-redesign-primary ui-active:text-white h-8 w-full"
-                      >
-                        {item}
+                      <Menu.Item key={id}>
+                        {/* // TODO check out why headless ui menu item type dont support className */}
+                        <div className="rounded-xs text-shade-100 ui-active:bg-redesign-primary ui-active:text-white h-8 w-full">
+                          {value}
+                        </div>
                       </Menu.Item>
                     ),
                   )}
