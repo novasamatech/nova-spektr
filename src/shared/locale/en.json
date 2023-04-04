@@ -255,8 +255,23 @@
     "yourAccountsLabel": "Here are your accounts"
   },
   "operations": {
+    "addCallDataButton": "Add call data",
+    "callData": {
+      "continueButton": "Continue",
+      "errorMessage": "Incorrect call data",
+      "inputHint": "Visible only for you and signers",
+      "inputPlaceholder": "0x00...",
+      "title": "Enter call data"
+    },
     "noOperationsDescription": "There are no operations pending multisig operations",
-    "signing": "Signing ({ signed } of { signatories })",
+    "signing": "Signing ({ signed } of { threshold })",
+    "status": {
+      "cancelled": "Cancelled",
+      "error": "Error",
+      "esteblished": "Esteblished",
+      "signing": "Signing",
+      "success": "Success"
+    },
     "subTitle": "Your operations",
     "title": "Operations",
     "titles": {

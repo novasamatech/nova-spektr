@@ -58,6 +58,7 @@ export const useNetwork = (networkSubscription?: ISubscriptionService<ChainId>):
     (chainId: ChainId, provider?: ProviderInterface, api?: ApiPromise, timeoutId?: any) =>
     async (switchNetwork: boolean): Promise<void> => {
       await networkSubscription?.unsubscribe(chainId);
+
       if (timeoutId) clearTimeout(timeoutId);
 
       try {

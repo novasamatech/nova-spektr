@@ -1,9 +1,8 @@
 import { ApiPromise } from '@polkadot/api';
 import { UnsignedTransaction } from '@substrate/txwrapper-polkadot';
 
-import { AccountID, HexString, CallData } from '@renderer/domain/shared-kernel';
+import { AccountID, CallData, HexString } from '@renderer/domain/shared-kernel';
 import { Transaction } from '@renderer/domain/transaction';
-import { Asset } from '@renderer/domain/asset';
 
 // =====================================================
 // =========== ITransactionService interface ===========
@@ -27,7 +26,7 @@ export type ITransactionService = {
   getTransactionFee: (transaction: Transaction, api: ApiPromise) => Promise<string>;
   getTransactionDeposit: (threshold: number, api: ApiPromise) => string;
   getTransactionHash: (transaction: Transaction, api: ApiPromise) => HashData;
-  decodeCallData: (api: ApiPromise, accountId: AccountID, assets: Asset[], callData: CallData) => Transaction;
+  decodeCallData: (api: ApiPromise, accountId: AccountID, callData: CallData) => Transaction;
 };
 
 // =====================================================

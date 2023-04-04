@@ -3,11 +3,6 @@ import noop from 'lodash/noop';
 
 import ConfirmModal from './ConfirmModal';
 
-window.IntersectionObserver = jest.fn().mockImplementation(() => ({
-  observe: jest.fn(),
-  disconnect: jest.fn(),
-}));
-
 describe('ui/Modals/ConfirmModal', () => {
   const defaultProps = {
     isOpen: true,

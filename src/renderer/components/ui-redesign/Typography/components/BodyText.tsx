@@ -1,10 +1,10 @@
 import cn from 'classnames';
 
 import { TypographyProps } from '@renderer/components/ui-redesign/Typography/common/types';
-import Text from '@renderer/components/ui-redesign/Typography/common/Text';
+import TextBase from '@renderer/components/ui-redesign/Typography/common/TextBase';
 
 const BodyText = ({ className, ...props }: TypographyProps) => (
-  <Text className={cn('text-body', className)} {...props} />
+  <TextBase className={cn('text-body', className)} {...props} />
 );
 
 export default BodyText;

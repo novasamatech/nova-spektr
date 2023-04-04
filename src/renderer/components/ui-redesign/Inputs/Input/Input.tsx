@@ -42,7 +42,7 @@ const Input = forwardRef<HTMLInputElement, Props>(
           <input
             id={id}
             className={cn(
-              'rounded text-body bg-redesign-secondary-bg flex-1 py-[7px] pl-2 focus:shadow-active-input focus:outline-none border border-redesign-gray-border focus:border-redesign-primary', // TODO add placeholder styles when ready
+              'rounded text-body bg-redesign-secondary-bg flex-1 py-[7px] pl-2 focus:shadow-active-input focus:outline-none border border-redesign-shade-8 focus:border-redesign-primary', // TODO add placeholder styles when ready
               className,
             )}
             ref={ref}
