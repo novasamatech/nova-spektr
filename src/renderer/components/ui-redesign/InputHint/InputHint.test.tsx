@@ -12,7 +12,7 @@ describe('ui/InputHint', () => {
 
     const hint = screen.getByText('test hint');
     expect(hint).toBeInTheDocument();
-    expect(hint).toHaveClass('text-shade-40');
+    expect(hint).toHaveClass('text-redesign-shade-48');
   });
 
   test('should not render component', () => {
