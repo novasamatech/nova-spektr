@@ -15,6 +15,7 @@ module.exports = {
         'icon-button': '0px 2px 2px rgba(0, 0, 0, 0.04), inset 0px -0.5px 0px rgba(8, 9, 14, 0.16)',
         popover: '0px 0px 12px rgba(0, 0, 0, 0.16), 0px 0px 6px rgba(0, 0, 0, 0.08), 0px 2px 4px rgba(0, 0, 0, 0.04)',
         'active-input': '0px 0px 0px 2px rgba(36, 99, 235, 0.16)',
+        tab: '0px 0px 2px rgba(0, 0, 0, 0.08), 0px 2px 4px rgba(0, 0, 0, 0.08)',
       },
       colors: {
         primary: '#567CDC',
@@ -49,6 +50,7 @@ module.exports = {
           primary: '#2463EB',
           'secondary-bg': '#FAFAFA',
           shade: {
+            5: 'rgba(0, 0, 0, 0.05)',
             8: 'rgba(0, 0, 0, 0.08)',
             12: 'rgba(0, 0, 0, 0.12)',
             32: 'rgba(0, 0, 0, 0.32)',
@@ -77,6 +79,7 @@ module.exports = {
         '4.5xl': ['2.75rem', '3rem'],
         body: ['0.8125rem', '1.125rem'],
         callout: ['0.75rem', '1rem'],
+        'small-title': ['0.5625rem', '0.75rem'],
       },
       borderRadius: {
         '2lg': '10px',
