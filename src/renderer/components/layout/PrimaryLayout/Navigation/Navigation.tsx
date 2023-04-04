@@ -105,8 +105,7 @@ const Navigation = () => {
                   <Identicon theme="polkadot" address={currentAccount?.accountId || ''} size={46} />
 
                   <div className="absolute right-0 bottom-0 bg-shade-70 w-5 h-5 flex justify-center items-center rounded-full">
-                    {/* @ts-ignore */}
-                    <Icon name="multisignature" size={20} />
+                    <Icon name="multisigBg" size={20} />
                   </div>
                 </>
               )}
@@ -157,11 +156,6 @@ const Navigation = () => {
             ))}
           </ul>
         </nav>
-        {/*{matrix.isLoggedIn && (*/}
-        {/*  <Button variant="outline" pallet="primary" disabled={isProcessing} onClick={onLogout}>*/}
-        {/*    {t('Logout')}*/}
-        {/*  </Button>*/}
-        {/*)}*/}
 
         <div>
           <NavLink
