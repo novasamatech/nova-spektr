@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 import { Balance, Icon, Address, Plate, Block } from '@renderer/components/ui';
-import { Explorers, Fee, Message } from '@renderer/components/common';
+import { Explorers, Fee, Message, Deposit } from '@renderer/components/common';
 import { Asset } from '@renderer/domain/asset';
 import { useI18n } from '@renderer/context/I18nContext';
 import { Transaction } from '@renderer/domain/transaction';
@@ -12,6 +12,8 @@ import { Explorer } from '@renderer/domain/chain';
 import { HexString } from '@renderer/domain/shared-kernel';
 import { useToggle } from '@renderer/shared/hooks';
 import { useTransaction } from '@renderer/services/transaction/transactionService';
+import { useMatrix } from '@renderer/context/MatrixContext';
+import { Account, MultisigAccount, isMultisig } from '@renderer/domain/account';
 
 type Props = {
   api: ApiPromise;
@@ -19,8 +21,10 @@ type Props = {
   nativeToken: Asset;
   icon: string;
   network: string;
-  accountName: string;
-  transaction: Transaction;
+  account?: Account | MultisigAccount;
+  description?: string;
+  transferTx: Transaction;
+  multisigTx?: Transaction;
   explorers?: Explorer[];
   addressPrefix: number;
   unsignedTx: UnsignedTransaction;
@@ -33,8 +37,10 @@ export const Submit = ({
   nativeToken,
   icon,
   network,
-  accountName,
-  transaction,
+  account,
+  description,
+  transferTx,
+  multisigTx,
   explorers,
   addressPrefix,
   unsignedTx,
@@ -42,26 +48,52 @@ export const Submit = ({
 }: Props) => {
   const { t } = useI18n();
   const navigate = useNavigate();
+  const { matrix } = useMatrix();
   const { submitAndWatchExtrinsic, getSignedExtrinsic } = useTransaction();
 
   const [inProgress, toggleInProgress] = useToggle(true);
   const [successMessage, toggleSuccessMessage] = useToggle();
   const [errorMessage, setErrorMessage] = useState('');
 
-  const address = transaction.address;
-  const destination = transaction.args.dest;
-  const balance = transaction.args.value;
+  const address = transferTx.address;
+  const destination = transferTx.args.dest;
+  const balance = transferTx.args.value;
+  const threshold = multisigTx?.args.threshold;
+  const accountType = isMultisig(account) ? 'multisigBg' : 'paritySignerBg';
 
   const submitExtrinsic = async (signature: HexString) => {
     const extrinsic = await getSignedExtrinsic(unsignedTx, signature, api);
-    submitAndWatchExtrinsic(extrinsic, unsignedTx, api, (executed, params) => {
+
+    submitAndWatchExtrinsic(extrinsic, unsignedTx, api, async (executed, params) => {
       if (executed) {
+        if (multisigTx && isMultisig(account)) {
+          await sendMstApproval(account.matrixRoomId, multisigTx, params);
+        }
+
         toggleSuccessMessage();
       } else {
-        setErrorMessage(params);
+        setErrorMessage(params as string);
       }
       toggleInProgress();
     });
+  };
+
+  const sendMstApproval = async (roomId: string, transaction: Transaction, params: any): Promise<void> => {
+    try {
+      await matrix.mstApprove(roomId, {
+        senderAddress: transaction.address,
+        chainId: transaction.chainId,
+        callHash: transaction.args.callHash,
+        callData: transaction.args.callData,
+        extrinsicHash: params.extrinsicHash,
+        extrinsicTimepoint: params.timepoint,
+        callTimepoint: params.timepoint,
+        error: false,
+        description,
+      });
+    } catch (error) {
+      console.warn(error);
+    }
   };
 
   useEffect(() => {
@@ -89,8 +121,8 @@ export const Submit = ({
             <div className="flex justify-between px-5 py-3">
               <div className="text-sm text-neutral-variant ">{t('transferDetails.wallet')}</div>
               <div className="flex gap-1 items-center font-semibold">
-                <Icon name="paritySignerBg" size={16} />
-                {accountName}
+                <Icon name={accountType} size={16} />
+                {account?.name}
               </div>
             </div>
             <div className="flex justify-between px-5 py-3">
@@ -106,10 +138,20 @@ export const Submit = ({
               <div className="text-sm text-neutral-variant ">{t('transferDetails.networkFee')}</div>
               <div className="flex gap-1 items-center">
                 <div className="flex gap-1 items-center font-semibold">
-                  <Fee api={api} asset={nativeToken} transaction={transaction} />
+                  <Fee api={api} asset={nativeToken} transaction={transferTx} />
                 </div>
               </div>
             </div>
+            {multisigTx && (
+              <div className="flex justify-between px-5 py-3">
+                <div className="text-sm text-neutral-variant ">{t('transferDetails.networkDeposit')}</div>
+                <div className="flex gap-1 items-center">
+                  <div className="flex gap-1 items-center font-semibold">
+                    <Deposit api={api} asset={nativeToken} threshold={threshold} />
+                  </div>
+                </div>
+              </div>
+            )}
             <div className="flex justify-between px-5 py-3">
               <div className="text-sm text-neutral-variant ">{t('transferDetails.recipient')}</div>
               <div className="flex gap-1 items-center">

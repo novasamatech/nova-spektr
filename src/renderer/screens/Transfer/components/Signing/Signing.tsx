@@ -15,12 +15,13 @@ import { useTransaction } from '@renderer/services/transaction/transactionServic
 import { Balance } from '@renderer/domain/balance';
 import { ActiveAddress } from '@renderer/screens/Transfer/components';
 import { Explorer } from '@renderer/domain/chain';
+import { Account, MultisigAccount, isMultisig } from '@renderer/domain/account';
 
 type Props = {
   api: ApiPromise;
   chainId: ChainId;
   transaction: Transaction;
-  accountName: string;
+  account: Account | MultisigAccount;
   assetId: string;
   countdown: number;
   explorers?: Explorer[];
@@ -34,7 +35,7 @@ export const Signing = ({
   api,
   chainId,
   transaction,
-  accountName,
+  account,
   assetId,
   countdown,
   explorers,
@@ -96,12 +97,15 @@ export const Signing = ({
     }
   };
 
+  const address = isMultisig(account) ? account.accountId : transaction.address;
+
   return (
     <Plate as="section" className="w-[500px] flex flex-col items-center mx-auto gap-y-2.5">
       <Block>
         <ActiveAddress
-          address={transaction.address}
-          accountName={accountName}
+          address={address}
+          accountName={account.name}
+          signingType={account.signingType}
           explorers={explorers}
           addressPrefix={addressPrefix}
         />

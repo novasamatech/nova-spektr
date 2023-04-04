@@ -6,6 +6,10 @@ export type CallHash = HexString;
 export type PublicKey = HexString;
 export type ChainId = HexString;
 export type EraIndex = number;
+export type NetworkTimepoint = {
+  height: number;
+  index: number;
+};
 
 export const enum CryptoType {
   SR25519,

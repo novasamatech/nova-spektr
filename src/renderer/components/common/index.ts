@@ -12,6 +12,7 @@ import ChainLoader from './ChainLoader/ChainLoader';
 import Explorers from './Explorers/Explorers';
 import Message from './Message/Message';
 import Expandable from './Expandable/Expandable';
+import Deposit from './Deposit/Deposit';
 import Badge from './Badge/Badge';
 import Fee from './Fee/Fee';
 
@@ -29,6 +30,7 @@ export {
   ChainLoader,
   Explorers,
   Expandable,
+  Deposit,
   Message,
   Badge,
   Fee,

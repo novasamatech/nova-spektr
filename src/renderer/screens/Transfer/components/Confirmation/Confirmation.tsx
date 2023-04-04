@@ -1,7 +1,7 @@
 import { ApiPromise } from '@polkadot/api';
 
 import { Button, Balance, Icon, Address, Plate, Block } from '@renderer/components/ui';
-import { Explorers, Fee } from '@renderer/components/common';
+import { Explorers, Fee, Deposit } from '@renderer/components/common';
 import { Asset } from '@renderer/domain/asset';
 import { useI18n } from '@renderer/context/I18nContext';
 import { Transaction } from '@renderer/domain/transaction';
@@ -14,7 +14,8 @@ type Props = {
   icon: string;
   network: string;
   accountName: string;
-  transaction: Transaction;
+  transferTx: Transaction;
+  multisigTx?: Transaction;
   explorers?: Explorer[];
   addressPrefix: number;
   onResult: () => void;
@@ -27,16 +28,19 @@ export const Confirmation = ({
   icon,
   network,
   accountName,
-  transaction,
+  multisigTx,
+  transferTx,
   explorers,
   addressPrefix,
   onResult,
 }: Props) => {
   const { t } = useI18n();
-
-  const address = transaction.address;
-  const destination = transaction.args.dest;
-  const balance = transaction.args.value;
+  console.log(multisigTx);
+  const address = transferTx.address;
+  const destination = transferTx.args.dest;
+  const balance = transferTx.args.value;
+  const threshold = multisigTx?.args.threshold;
+  const accountType = multisigTx ? 'multisigBg' : 'paritySignerBg';
 
   return (
     <Plate as="section" className="w-[500px] flex flex-col items-center mx-auto gap-2.5">
@@ -58,7 +62,7 @@ export const Confirmation = ({
           <div className="flex justify-between px-5 py-3">
             <div className="text-sm text-neutral-variant ">{t('transferDetails.wallet')}</div>
             <div className="flex gap-1 items-center font-semibold">
-              <Icon name="paritySignerBg" size={16} />
+              <Icon name={accountType} size={16} />
               {accountName}
             </div>
           </div>
@@ -75,10 +79,20 @@ export const Confirmation = ({
             <div className="text-sm text-neutral-variant ">{t('transferDetails.networkFee')}</div>
             <div className="flex gap-1 items-center">
               <div className="flex gap-1 items-center font-semibold">
-                <Fee api={api} asset={nativeToken} transaction={transaction} />
+                <Fee api={api} asset={nativeToken} transaction={transferTx} />
               </div>
             </div>
           </div>
+          {multisigTx && (
+            <div className="flex justify-between px-5 py-3">
+              <div className="text-sm text-neutral-variant ">{t('transferDetails.networkDeposit')}</div>
+              <div className="flex gap-1 items-center">
+                <div className="flex gap-1 items-center font-semibold">
+                  <Deposit api={api} asset={nativeToken} threshold={threshold} />
+                </div>
+              </div>
+            </div>
+          )}
           <div className="flex justify-between px-5 py-3">
             <div className="text-sm text-neutral-variant ">{t('transferDetails.recipient')}</div>
             <div className="flex gap-1 items-center">

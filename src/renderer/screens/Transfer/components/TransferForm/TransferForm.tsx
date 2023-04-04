@@ -1,19 +1,18 @@
 import { BN } from '@polkadot/util';
 import { useEffect, useState } from 'react';
-import { Controller, useForm } from 'react-hook-form';
+import { Controller, useForm, SubmitHandler } from 'react-hook-form';
 import { Trans } from 'react-i18next';
 import { ApiPromise } from '@polkadot/api';
 
 import { pasteAddressHandler, toPublicKey, isAddressValid, formatAddress } from '@renderer/shared/utils/address';
 import { Button, AmountInput, Icon, Identicon, Input, InputHint, Block, InputArea } from '@renderer/components/ui';
+import { Fee, Deposit } from '@renderer/components/common';
 import { useI18n } from '@renderer/context/I18nContext';
 import { Asset, AssetType } from '@renderer/domain/asset';
 import { Transaction, MiltisigTxInitStatus, TransactionType } from '@renderer/domain/transaction';
 import { useBalance } from '@renderer/services/balance/balanceService';
 import { formatAmount, transferableAmount } from '@renderer/services/balance/common/utils';
 import { AccountID, ChainId } from '@renderer/domain/shared-kernel';
-import { Fee } from '@renderer/components/common';
-import Deposit from '@renderer/components/common/Deposit/Deposit';
 import { useTransaction } from '@renderer/services/transaction/transactionService';
 import { useMultisigTx } from '@renderer/services/multisigTx/multisigTxService';
 import { getAssetId } from '@renderer/shared/utils/assets';
@@ -35,7 +34,7 @@ type Props = {
   asset: Asset;
   nativeToken: Asset;
   addressPrefix: number;
-  onSubmit: (transferTx: Transaction, multisigTx?: Transaction) => void;
+  onSubmit: (transferTx: Transaction, multisig?: { multisigTx: Transaction; description: string }) => void;
 };
 
 export const TransferForm = ({
@@ -55,7 +54,7 @@ export const TransferForm = ({
   const { getTransactionHash } = useTransaction();
 
   const [fee, setFee] = useState('');
-  const [deposit, _] = useState('');
+  const [deposit, setDeposit] = useState('');
   const [balance, setBalance] = useState('');
   const [nativeTokenBalance, setNativeTokenBalance] = useState<string>();
   const [transferTx, setTransferTx] = useState<Transaction>();
@@ -91,6 +90,12 @@ export const TransferForm = ({
     getBalance(publicKey, chainId, asset.assetId.toString()).then((balance) => {
       setBalance(balance ? transferableAmount(balance) : '0');
     });
+  }, [account]);
+
+  useEffect(() => {
+    if (!isMultisig(account)) {
+      setMultisigTx(undefined);
+    }
   }, [account]);
 
   useEffect(() => {
@@ -167,14 +172,17 @@ export const TransferForm = ({
     return new BN(fee).add(new BN(formatAmount(amount, asset.precision))).lte(new BN(balance));
   };
 
-  const validateBalanceForDeposit = (amount: string): boolean => {
+  const validateBalanceForFeeAndDeposit = (amount: string): boolean => {
     if (!balance) return false;
 
     if (nativeTokenBalance) {
-      return new BN(deposit).lte(new BN(nativeTokenBalance));
+      return new BN(deposit).add(new BN(fee)).lte(new BN(nativeTokenBalance));
     }
 
-    return new BN(deposit).add(new BN(formatAmount(amount, asset.precision))).lte(new BN(balance));
+    return new BN(deposit)
+      .add(new BN(fee))
+      .add(new BN(formatAmount(amount, asset.precision)))
+      .lte(new BN(balance));
   };
 
   const updateFee = async (fee: string) => {
@@ -185,11 +193,13 @@ export const TransferForm = ({
     }
   };
 
-  const submitTransaction = async () => {
+  const submitTransaction: SubmitHandler<TransferFormData> = async ({ description }) => {
     if (!transferTx) return;
 
     if (!multisigTx) {
       onSubmit(transferTx);
+
+      return;
     }
 
     const { callHash } = getTransactionHash(transferTx, api);
@@ -198,7 +208,7 @@ export const TransferForm = ({
     if (multisigTxs.length !== 0) {
       setMultisigTxExist(true);
     } else {
-      onSubmit(transferTx, multisigTx);
+      onSubmit(transferTx, { multisigTx, description });
     }
   };
 
@@ -259,7 +269,7 @@ export const TransferForm = ({
               notZero: (v) => Number(v) > 0,
               insufficientBalance: validateBalance,
               insufficientBalanceForFee: validateBalanceForFee,
-              insufficientBalanceForDeposit: validateBalanceForDeposit,
+              insufficientBalanceForDeposit: validateBalanceForFeeAndDeposit,
             },
           }}
           render={({ field: { onChange, value }, fieldState: { error } }) => (
@@ -277,6 +287,9 @@ export const TransferForm = ({
               <InputHint active={error?.type === 'insufficientBalanceForFee'} variant="error">
                 {t('transfer.notEnoughBalanceForFeeError')}
               </InputHint>
+              <InputHint active={error?.type === 'insufficientBalanceForDeposit'} variant="error">
+                {t('transfer.notEnoughBalanceForDepositError')}
+              </InputHint>
               <InputHint active={error?.type === 'required'} variant="error">
                 {t('transfer.requiredAmountError')}
               </InputHint>
@@ -287,7 +300,7 @@ export const TransferForm = ({
           )}
         />
 
-        <div className="grid grid-flow-row grid-cols-2 gap-y-5">
+        <div className="grid grid-flow-row grid-cols-2 items-center gap-y-5">
           <p className="uppercase text-neutral-variant text-2xs">{t('transfer.networkFee')}</p>
           <Fee
             className="text-neutral justify-self-end text-2xs font-semibold"
@@ -304,42 +317,44 @@ export const TransferForm = ({
                 api={api}
                 asset={nativeToken}
                 threshold={account.threshold}
-                onDepositChange={() => {}}
+                onDepositChange={setDeposit}
               />
             </>
           )}
         </div>
       </Block>
 
-      <Block>
-        <Controller
-          name="description"
-          control={control}
-          rules={{ required: true, maxLength: 120 }}
-          render={({ field: { onChange, value }, fieldState: { error } }) => (
-            <div className="flex flex-col gap-y-2.5">
-              <InputArea
-                className="w-full"
-                label={t('transfer.descriptionLabel')}
-                placeholder={t('transfer.descriptionPlaceholder')}
-                invalid={Boolean(error)}
-                rows={2}
-                value={value}
-                onChange={onChange}
-              />
-              <InputHint active={error?.type === 'required'} variant="error">
-                {t('transfer.requiredDescriptionError')}
-              </InputHint>
-              <InputHint active={error?.type === 'maxLength'} variant="error">
-                <Trans t={t} i18nKey="transfer.descriptionLengthError" values={{ maxLength: 120 }} />
-              </InputHint>
-            </div>
-          )}
-        />
-        <InputHint className="mt-2.5" active={multisigTxExist} variant="error">
-          {t('transfer.multisigTransactionExist')}
-        </InputHint>
-      </Block>
+      {isMultisig(account) && (
+        <Block>
+          <Controller
+            name="description"
+            control={control}
+            rules={{ required: true, maxLength: 120 }}
+            render={({ field: { onChange, value }, fieldState: { error } }) => (
+              <div className="flex flex-col gap-y-2.5">
+                <InputArea
+                  className="w-full"
+                  label={t('transfer.descriptionLabel')}
+                  placeholder={t('transfer.descriptionPlaceholder')}
+                  invalid={Boolean(error)}
+                  rows={2}
+                  value={value}
+                  onChange={onChange}
+                />
+                <InputHint active={error?.type === 'required'} variant="error">
+                  {t('transfer.requiredDescriptionError')}
+                </InputHint>
+                <InputHint active={error?.type === 'maxLength'} variant="error">
+                  <Trans t={t} i18nKey="transfer.descriptionLengthError" values={{ maxLength: 120 }} />
+                </InputHint>
+              </div>
+            )}
+          />
+          <InputHint className="mt-2.5" active={multisigTxExist} variant="error">
+            {t('transfer.multisigTransactionExist')}
+          </InputHint>
+        </Block>
+      )}
 
       <Button
         variant="fill"

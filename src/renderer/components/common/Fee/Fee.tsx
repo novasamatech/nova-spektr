@@ -1,6 +1,7 @@
 import { ApiPromise } from '@polkadot/api';
 import { BN } from '@polkadot/util';
 import React, { useEffect, useState } from 'react';
+import cn from 'classnames';
 
 import { Balance } from '@renderer/components/ui';
 import { Asset } from '@renderer/domain/asset';
@@ -43,7 +44,9 @@ const Fee = ({ api, multiply = 1, asset, transaction, className, onFeeChange }: 
   }, [transaction, api]);
 
   if (isLoading) {
-    return <div className="animate-pulse bg-shade-20 rounded-lg w-20 h-2.5" data-testid="fee-loader" />;
+    return (
+      <div className={cn('animate-pulse bg-shade-20 rounded-lg w-20 h-2.5', className)} data-testid="fee-loader" />
+    );
   }
 
   const totalFee = new BN(fee).muln(multiply).toString();

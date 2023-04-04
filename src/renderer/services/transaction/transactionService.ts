@@ -257,12 +257,14 @@ export const useTransaction = (): ITransactionService => {
         if (!result.isInBlock || extrinsicCalls > 1) return;
 
         const signedBlock = await api.rpc.chain.getBlock();
+        const blockHeight = signedBlock.block.header.number.toNumber();
         const apiAt = await api.at(signedBlock.block.header.hash);
         const allRecords = await apiAt.query.system.events();
 
         let actualTxHash = result.inner;
         let isFinalApprove = false;
         let isSuccessExtrinsic = false;
+        let extrinsicIndex = 0;
 
         // information for each contained extrinsic
         signedBlock.block.extrinsics.forEach(({ method: extrinsicMethod, signer, hash }, index) => {
@@ -282,6 +284,7 @@ export const useTransaction = (): ITransactionService => {
             }
 
             if (api.events.system.ExtrinsicSuccess.is(event)) {
+              extrinsicIndex = index;
               actualTxHash = hash;
               isSuccessExtrinsic = true;
               extrinsicCalls += 1;
@@ -307,6 +310,10 @@ export const useTransaction = (): ITransactionService => {
 
         if (extrinsicCalls === 1) {
           callback(true, {
+            timepoint: {
+              index: extrinsicIndex,
+              height: blockHeight,
+            },
             extrinsicHash: actualTxHash.toHex(),
             isFinalApprove,
             isSuccessExtrinsic,

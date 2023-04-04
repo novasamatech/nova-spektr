@@ -573,6 +573,7 @@
     "networkDeposit": "Deposit",
     "networkFee": "Network fee",
     "notEnoughBalanceError": "Not enough funds to transfer specific amount",
+    "notEnoughBalanceForDepositError": "Insufficient balance to pay deposit",
     "notEnoughBalanceForFeeError": "Insufficient balance to pay network fee",
     "pasteButton": "Paste",
     "recipientLabel": "Recipient",
@@ -585,6 +586,7 @@
   },
   "transferDetails": {
     "fromNetwork": "From network",
+    "networkDeposit": "Deposit",
     "networkFee": "Network fee",
     "recipient": "Recipient",
     "sender": "Sender",

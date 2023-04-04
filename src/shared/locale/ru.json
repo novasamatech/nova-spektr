@@ -573,6 +573,7 @@
     "networkDeposit": "Депозит",
     "networkFee": "Комиссия сети",
     "notEnoughBalanceError": "Недостаточно средств для указанной суммы",
+    "notEnoughBalanceForDepositError": "Недостаточно средств для оплаты депозита",
     "notEnoughBalanceForFeeError": "Недостаточно средств для оплаты комиссии",
     "pasteButton": "Вставить",
     "recipientLabel": "Получатель",
@@ -585,6 +586,7 @@
   },
   "transferDetails": {
     "fromNetwork": "Из сети",
+    "networkDeposit": "Допозит",
     "networkFee": "Комиссия сети",
     "recipient": "Получатель",
     "sender": "Отправитель",

@@ -13,6 +13,7 @@ import { useChains } from '@renderer/services/network/chainsService';
 import { Transaction } from '@renderer/domain/transaction';
 import { getAssetById } from '@renderer/shared/utils/assets';
 import { useCountdown } from '@renderer/screens/Staking/Operations/hooks/useCountdown';
+import { Account, MultisigAccount } from '@renderer/domain/account';
 
 const enum Steps {
   INIT,
@@ -30,10 +31,11 @@ const Transfer = () => {
   const { connections } = useNetworkContext();
 
   const [activeStep, setActiveStep] = useState<Steps>(Steps.INIT);
+  const [chainName, setChainName] = useState('...');
+  const [account, setAccount] = useState<Account | MultisigAccount>({} as Account);
+  const [description, setDescription] = useState('');
   const [transferTx, setTransferTx] = useState<Transaction>({} as Transaction);
   const [multisigTx, setMultisigTx] = useState<Transaction>();
-  const [chainName, setChainName] = useState('...');
-  const [accountName, setAccountName] = useState<string>('');
   const [unsignedTx, setUnsignedTx] = useState<UnsignedTransaction>({} as UnsignedTransaction);
   const [signature, setSignature] = useState<HexString>('0x0');
 
@@ -95,11 +97,10 @@ const Transfer = () => {
     );
   }
 
-  const onInitResult = (transferTx: Transaction, multisigTx?: Transaction) => {
+  const onInitResult = (transferTx: Transaction, multisig?: { multisigTx: Transaction; description: string }) => {
     setTransferTx(transferTx);
-    if (multisigTx) {
-      setMultisigTx(multisigTx);
-    }
+    setMultisigTx(multisig?.multisigTx || undefined);
+    setDescription(multisig?.description || '');
     setActiveStep(Steps.CONFIRMATION);
   };
 
@@ -121,8 +122,8 @@ const Transfer = () => {
     setActiveStep(Steps.SUBMIT);
   };
 
-  const onAccountChange = (name: string) => {
-    setAccountName(name);
+  const onAccountChange = (account: Account | MultisigAccount) => {
+    setAccount(account);
   };
 
   const onStartOver = () => {
@@ -150,8 +151,9 @@ const Transfer = () => {
         <Confirmation
           asset={asset}
           nativeToken={assets[0]}
-          transaction={transferTx}
-          accountName={accountName}
+          transferTx={transferTx}
+          multisigTx={multisigTx}
+          accountName={account.name}
           icon={icon}
           network={network}
           onResult={onConfirmResult}
@@ -161,7 +163,7 @@ const Transfer = () => {
       {activeStep === Steps.SCANNING && (
         <Scanning
           chainId={chainId}
-          accountName={accountName}
+          account={account}
           transaction={multisigTx || transferTx}
           countdown={countdown}
           onResetCountdown={resetCountdown}
@@ -173,7 +175,7 @@ const Transfer = () => {
         <Signing
           chainId={chainId}
           transaction={multisigTx || transferTx}
-          accountName={accountName}
+          account={account}
           assetId={assetId}
           countdown={countdown}
           onGoBack={onBackToScan}
@@ -186,8 +188,10 @@ const Transfer = () => {
         <Submit
           asset={asset}
           nativeToken={assets[0]}
-          transaction={multisigTx || transferTx}
-          accountName={accountName}
+          transferTx={transferTx}
+          account={account}
+          description={description}
+          multisigTx={multisigTx}
           icon={icon}
           network={network}
           signature={signature}

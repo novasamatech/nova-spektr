@@ -57,8 +57,8 @@ type Props = {
   nativeToken: Asset;
   explorers?: Explorer[];
   addressPrefix: number;
-  onAccountChange: (name: string) => void;
-  onResult: (transferTx: Transaction, multisigTx?: Transaction) => void;
+  onAccountChange: (account: Account | MultisigAccount) => void;
+  onResult: (transferTx: Transaction, multisig?: { multisigTx: Transaction; description: string }) => void;
 };
 
 export const InitOperation = ({
@@ -89,7 +89,7 @@ export const InitOperation = ({
 
     setAccountsOptions(options);
     setActiveAccount({ id: options[0].id, value: options[0].value });
-    onAccountChange(options[0].value.name);
+    onAccountChange(options[0].value);
   }, [accounts.length]);
 
   useEffect(() => {
@@ -110,7 +110,7 @@ export const InitOperation = ({
   }, [activeAccount]);
 
   const changeAccount = (account: DropdownResult<Account | MultisigAccount>) => {
-    onAccountChange(account.value.name);
+    onAccountChange(account.value);
     setActiveAccount(account);
   };
 
@@ -118,6 +118,7 @@ export const InitOperation = ({
   const accountName = activeAccount?.value.name || '';
   const signerAddress = activeSignatory?.id || '';
   const signerName = activeSignatory?.value.name || '';
+  const signingType = activeSignatory?.value.signingType || SigningType.PARITY_SIGNER;
 
   return (
     <Plate as="section" className="w-[500px] flex flex-col items-center mx-auto gap-y-2.5">
@@ -134,6 +135,7 @@ export const InitOperation = ({
           <ActiveAddress
             address={accountAddress}
             accountName={accountName}
+            signingType={signingType}
             explorers={explorers}
             addressPrefix={addressPrefix}
           />
@@ -152,6 +154,7 @@ export const InitOperation = ({
             <ActiveAddress
               address={signerAddress}
               accountName={signerName}
+              signingType={SigningType.PARITY_SIGNER}
               explorers={explorers}
               addressPrefix={addressPrefix}
             />

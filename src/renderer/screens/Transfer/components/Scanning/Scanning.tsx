@@ -13,12 +13,13 @@ import { useTransaction } from '@renderer/services/transaction/transactionServic
 import { ChainId } from '@renderer/domain/shared-kernel';
 import { ActiveAddress } from '@renderer/screens/Transfer/components';
 import { Explorer } from '@renderer/domain/chain';
+import { Account, MultisigAccount, isMultisig } from '@renderer/domain/account';
 
 type Props = {
   api: ApiPromise;
   chainId: ChainId;
   transaction: Transaction;
-  accountName: string;
+  account: Account | MultisigAccount;
   explorers?: Explorer[];
   addressPrefix: number;
   countdown: number;
@@ -30,7 +31,7 @@ export const Scanning = ({
   api,
   chainId,
   transaction,
-  accountName,
+  account,
   explorers,
   addressPrefix,
   countdown,
@@ -60,13 +61,15 @@ export const Scanning = ({
   useEffect(onResetCountdown, [txPayload]);
 
   const address = transaction.address;
+  const activeAddress = isMultisig(account) ? account.accountId : transaction.address;
 
   return (
     <Plate as="section" className="w-[500px] flex flex-col items-center mx-auto gap-y-2.5">
       <Block>
         <ActiveAddress
-          address={address}
-          accountName={accountName}
+          address={activeAddress}
+          accountName={account.name}
+          signingType={account.signingType}
           explorers={explorers}
           addressPrefix={addressPrefix}
         />
