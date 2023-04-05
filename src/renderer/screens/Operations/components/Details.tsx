@@ -7,6 +7,7 @@ import { copyToClipboard } from '@renderer/shared/utils/strings';
 import { useToggle } from '@renderer/shared/hooks';
 import { ExtendedChain } from '@renderer/services/network/common/types';
 import { Explorers } from '@renderer/components/common';
+import { getMultisigExtrinsicLink } from '../common/utils';
 
 type Props = {
   tx: MultisigTransactionDS & { rowIndex: number };
@@ -24,6 +25,8 @@ const Details = ({ tx, account, connection }: Props) => {
   const defaultAsset = connection?.assets[0];
 
   const depositorSignatory = account?.signatories.find((s) => s.publicKey === depositor);
+
+  const extrinsicLink = getMultisigExtrinsicLink(callHash, indexCreated, blockCreated, connection?.explorers);
 
   return (
     <>
@@ -122,8 +125,13 @@ const Details = ({ tx, account, connection }: Props) => {
             {indexCreated && blockCreated && (
               <li className="flex justify-between items-center">
                 <div className="text-shade-40">{t('operation.details.timePoint')}</div>
-                <div className="flex">
+                <div className="flex gap-1">
                   {blockCreated}-{indexCreated}
+                  {extrinsicLink && (
+                    <a href={extrinsicLink} target="_blank" rel="noopener noreferrer">
+                      <Icon className="text-shade-40" name="globe" />
+                    </a>
+                  )}
                 </div>
               </li>
             )}

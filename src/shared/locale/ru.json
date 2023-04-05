@@ -270,12 +270,13 @@
     },
     "detailsTitle": "Детали",
     "explorerLink": "View in explorer",
+    "logButton": "Лог",
     "signatoriesTitle": "Подписи",
     "signing": "Подписание ({ signed } из { threshold })",
     "status": {
       "cancelled": "Отменено",
       "error": "Ошибка",
-      "esteblished": "Завершено",
+      "established": "Завершено",
       "signing": "Подписание",
       "success": "Выполнено"
     }

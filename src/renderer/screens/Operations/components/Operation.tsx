@@ -18,12 +18,13 @@ import CallDataModal from './CallDataModal';
 import Details from './Details';
 import { Signatory } from '@renderer/domain/signatory';
 import { nonNullable } from '@renderer/shared/utils/functions';
+import { getMultisigExtrinsicLink } from '../common/utils';
 
 const StatusTitle: Record<MultisigTransactionStatus, string> = {
   SIGNING: 'operation.status.signing',
   [MiltisigTransactionFinalStatus.CANCELLED]: 'operation.status.cancelled',
   [MiltisigTransactionFinalStatus.ERROR]: 'operation.status.error',
-  [MiltisigTransactionFinalStatus.ESTABLISHED]: 'operation.status.esteblished',
+  [MiltisigTransactionFinalStatus.ESTABLISHED]: 'operation.status.established',
   [MiltisigTransactionFinalStatus.SUCCESS]: 'operation.status.success',
 };
 
@@ -71,6 +72,8 @@ const Operation = ({ tx, account }: Props) => {
     setSignatories([...new Set<Signatory>([...tempCancellation, ...tempApprovals, ...signatories])]);
   }, [signatories.length, approvals.length, cancellation.length]);
 
+  const extrinsicLink = getMultisigExtrinsicLink(tx.callHash, tx.indexCreated, tx.blockCreated, connection?.explorers);
+
   return (
     <>
       <Table.Row className="bg-white" height="lg">
@@ -105,7 +108,11 @@ const Operation = ({ tx, account }: Props) => {
                 {t('operation.explorerLink')}
               </ButtonLink> */}
 
-              {!callData && (
+              {callData ? (
+                <a href={extrinsicLink} className="text-primary" target="_blank" rel="noopener noreferrer">
+                  {t('operation.extrinsicLink')}
+                </a>
+              ) : (
                 <Button pallet="primary" variant="text" onClick={toggleCallDataModal}>
                   {t('operation.addCallDataButton')}
                 </Button>
@@ -118,7 +125,16 @@ const Operation = ({ tx, account }: Props) => {
         </Table.Cell>
         <Table.Cell className="align-top" cellAlign="width" colSpan={3}>
           <div className="p-4">
-            <div className="font-bold text-base mb-2">{t('operation.signatoriesTitle')}</div>
+            <div className="flex justify-between items-center mb-2">
+              <div className="font-bold text-base">{t('operation.signatoriesTitle')}</div>
+              <Button
+                pallet="primary"
+                variant="outline"
+                suffixElement={<div className="bg-primary text-white rounded-full px-2">{events.length}</div>}
+              >
+                {t('operation.logButton')}
+              </Button>
+            </div>
 
             <div className="flex flex-col gap-3">
               {signatoriesList.map(({ accountId, name, publicKey }) => (

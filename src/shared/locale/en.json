@@ -270,12 +270,13 @@
     },
     "detailsTitle": "Details",
     "explorerLink": "View in explorer",
+    "logButton": "Log",
     "signatoriesTitle": "Signatories",
     "signing": "Signing ({ signed } of { threshold })",
     "status": {
       "cancelled": "Cancelled",
       "error": "Error",
-      "esteblished": "Esteblished",
+      "established": "Established",
       "signing": "Signing",
       "success": "Success"
     }
