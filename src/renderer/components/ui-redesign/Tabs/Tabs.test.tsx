@@ -1,8 +1,13 @@
 import { screen, render } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 
-import Tabs from './Tabs';
-import { tabItems } from '@renderer/components/ui-redesign/Tabs/Tabs.stories';
+import Tabs, { TabItem } from './Tabs';
+
+const tabItems: TabItem[] = [
+  { id: '1', title: 'Tab 1 title', panel: <div>tab 1 content</div> },
+  { id: '2', title: 'Tab 2 title', panel: <div>tab 2 content</div> },
+  { id: '3', title: 'Tab 3 title', panel: <div>tab 3 content</div> },
+];
 
 describe('ui/Tabs', () => {
   test('should render component', () => {
