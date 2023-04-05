@@ -368,13 +368,12 @@ export class Matrix implements ISecureMessenger {
   }
 
   /**
-   * List of available Nova Spektr rooms
-   * @param type which rooms to get Invite/Join
+   * List of joined Nova Spektr rooms
    * @return {Array}
    */
-  listOfSpektrRooms(type: Membership.INVITE | Membership.JOIN): Room[] {
+  joinedRooms(): Room[] {
     return this.matrixClient.getRooms().filter((room) => {
-      return this.isSpektrRoom(room.name) && room.getMyMembership() === type;
+      return this.isSpektrRoom(room.name) && room.getMyMembership() === Membership.JOIN;
     });
   }
 
@@ -872,6 +871,7 @@ export class Matrix implements ISecureMessenger {
    * Check room name to be a Spektr room
    * @param roomName name of the room
    * @return {Boolean}
+   * @todo name could be changed, use something else
    */
   private isSpektrRoom(roomName?: string): boolean {
     if (!roomName) return false;

@@ -21,7 +21,7 @@ export interface ISecureMessenger {
   joinRoom: (roomId: string) => Promise<void>;
   leaveRoom: (roomId: string) => Promise<void>;
   invite: (roomId: string, signatoryId: string) => Promise<void>;
-  listOfSpektrRooms: (type: Membership.INVITE | Membership.JOIN) => Room[];
+  joinedRooms: () => Room[];
   readTimeline: () => Promise<MSTPayload[]>;
   sendMessage: (roomId: string, message: string) => void;
   markAsRead: (event: MatrixEvent) => Promise<void>;
