@@ -254,8 +254,33 @@
     },
     "yourAccountsLabel": "Ваши аккаунты"
   },
-  "operations": {
+  "operation": {
     "addCallDataButton": "Добавить call data",
+    "advanced": "Дополнительно",
+    "details": {
+      "callData": "Call Data",
+      "callHash": "Call Hash",
+      "controller": "Контроллер",
+      "deposit": "Multisig депозит",
+      "depositor": "Депозитор",
+      "payee": "Payee",
+      "recipient": "Получатель",
+      "sender": "Отправитель",
+      "timePoint": "Time Point"
+    },
+    "detailsTitle": "Детали",
+    "explorerLink": "View in explorer",
+    "signatoriesTitle": "Подписи",
+    "signing": "Подписание ({ signed } из { threshold })",
+    "status": {
+      "cancelled": "Отменено",
+      "error": "Ошибка",
+      "esteblished": "Завершено",
+      "signing": "Подписание",
+      "success": "Выполнено"
+    }
+  },
+  "operations": {
     "callData": {
       "continueButton": "Продолжить",
       "errorMessage": "Неверная call data",
@@ -264,14 +289,6 @@
       "title": "Введите call data"
     },
     "noOperationsDescription": "Нет ожидающих операций с мультиподписью",
-    "signing": "Подписи ({ signed } из { threshold })",
-    "status": {
-      "cancelled": "Cancelled",
-      "error": "Error",
-      "esteblished": "Esteblished",
-      "signing": "Signing",
-      "success": "Success"
-    },
     "subTitle": "Ваши операции",
     "title": "Операции",
     "titles": {

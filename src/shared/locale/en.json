@@ -254,8 +254,33 @@
     },
     "yourAccountsLabel": "Here are your accounts"
   },
-  "operations": {
+  "operation": {
     "addCallDataButton": "Add call data",
+    "advanced": "Advanced",
+    "details": {
+      "callData": "Call Data",
+      "callHash": "Call Hash",
+      "controller": "Controller",
+      "deposit": "Multisig deposit",
+      "depositor": "Depositor",
+      "payee": "Payee",
+      "recipient": "Recipient",
+      "sender": "Sender",
+      "timePoint": "Time Point"
+    },
+    "detailsTitle": "Details",
+    "explorerLink": "View in explorer",
+    "signatoriesTitle": "Signatories",
+    "signing": "Signing ({ signed } of { threshold })",
+    "status": {
+      "cancelled": "Cancelled",
+      "error": "Error",
+      "esteblished": "Esteblished",
+      "signing": "Signing",
+      "success": "Success"
+    }
+  },
+  "operations": {
     "callData": {
       "continueButton": "Continue",
       "errorMessage": "Incorrect call data",
@@ -264,14 +289,6 @@
       "title": "Enter call data"
     },
     "noOperationsDescription": "There are no operations pending multisig operations",
-    "signing": "Signing ({ signed } of { threshold })",
-    "status": {
-      "cancelled": "Cancelled",
-      "error": "Error",
-      "esteblished": "Esteblished",
-      "signing": "Signing",
-      "success": "Success"
-    },
     "subTitle": "Your operations",
     "title": "Operations",
     "titles": {

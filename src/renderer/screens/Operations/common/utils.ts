@@ -1,5 +1,6 @@
 import { IconNames } from '@renderer/components/ui/Icon/data';
 import { Transaction, TransactionType } from '@renderer/domain/transaction';
+import { MultisigTransactionDS } from '@renderer/services/storage';
 
 const TransactionTitles: Record<TransactionType, string> = {
   // Transfer
@@ -56,3 +57,6 @@ export const getIconName = (transaction?: Transaction): IconNames => {
 
   return TransactionIcons[transaction.type];
 };
+
+export const sortByDate = ([dateA]: [string, MultisigTransactionDS[]], [dateB]: [string, MultisigTransactionDS[]]) =>
+  new Date(dateA) < new Date(dateB) ? 1 : -1;
