@@ -2,7 +2,7 @@ import { Fragment, PropsWithChildren, ReactNode } from 'react';
 import { Dialog, Transition } from '@headlessui/react';
 import cn from 'classnames';
 
-import Title1Text from '@renderer/components/ui-redesign/Typography/components/Title1Text';
+import TitleText from '@renderer/components/ui-redesign/Typography/components/TitleText';
 import Icon from '@renderer/components/ui/Icon/Icon';
 import { useI18n } from '@renderer/context/I18nContext';
 
@@ -59,7 +59,7 @@ const BaseModal = ({
               <Dialog.Panel className="transform overflow-hidden rounded-lg bg-white text-left align-middle shadow-modal transition-all">
                 {title && (
                   <Dialog.Title as="header" className={cn('text-redesign-text-primary font-bold', headerClass)}>
-                    <Title1Text>{title}</Title1Text>
+                    <TitleText>{title}</TitleText>
                   </Dialog.Title>
                 )}
 

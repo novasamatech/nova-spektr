@@ -75,7 +75,7 @@ module.exports = {
         '4.5xl': ['2.75rem', '3rem'],
         body: ['0.8125rem', '1.125rem'],
         callout: ['0.75rem', '1rem'],
-        title1: ['1.375rem', '1.6875rem'],
+        title: ['1.375rem', '1.75rem'],
       },
       borderRadius: {
         '2lg': '10px',
