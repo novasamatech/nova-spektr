@@ -1,9 +1,8 @@
-import { render, screen } from '@testing-library/react';
-import { MemoryRouter, Route, Routes } from 'react-router-dom';
+import { render, screen, act } from '@testing-library/react';
+import { MemoryRouter } from 'react-router-dom';
 
-import { ConnectionType } from '@renderer/domain/connection';
 import Transfer from './Transfer';
-import { TEST_ADDRESS, TEST_PUBLIC_KEY } from '@renderer/shared/utils/constants';
+import { ConnectionStatus } from '@renderer/domain/connection';
 
 jest.mock('@renderer/context/I18nContext', () => ({
   useI18n: jest.fn().mockReturnValue({
@@ -11,58 +10,81 @@ jest.mock('@renderer/context/I18nContext', () => ({
   }),
 }));
 
+jest.mock('react-router-dom', () => ({
+  useParams: jest.fn().mockReturnValue({ chainId: '0x123', assetId: '0' }),
+  useNavigate: jest.fn(),
+}));
+
 jest.mock('@renderer/context/NetworkContext', () => ({
   useNetworkContext: jest.fn(() => ({
     connections: {
       '0x123': {
-        chainId: '0x123',
+        name: 'Westend',
+        api: { isConnected: true },
         assets: [
-          { assetId: '1', symbol: '1' },
-          { assetId: '2', symbol: '2' },
+          {
+            assetId: 0,
+            symbol: 'WND',
+            precision: 10,
+            staking: 'relaychain',
+            name: 'Westend',
+          },
         ],
         connection: {
-          connectionType: ConnectionType.RPC_NODE,
+          chainId: '0x123',
+          connectionStatus: ConnectionStatus.CONNECTED,
         },
       },
     },
   })),
 }));
 
-jest.mock('@renderer/services/account/accountService', () => ({
-  useAccount: jest.fn().mockReturnValue({
-    getActiveAccounts: () => [
-      {
-        name: 'Test Wallet',
-        accountId: TEST_ADDRESS,
-        publicKey: TEST_PUBLIC_KEY,
-      },
-    ],
-  }),
+const mockButton = (text: string, callback: () => void) => (
+  <button type="button" onClick={callback}>
+    {text}
+  </button>
+);
+
+jest.mock('./components/index', () => ({
+  InitOperation: ({ onResult }: any) => mockButton('to confirm', onResult),
+  Confirmation: ({ onResult }: any) => mockButton('to scan', onResult),
+  Scanning: ({ onResult }: any) => mockButton('to sign', onResult),
+  Signing: ({ onResult }: any) => mockButton('to submit', onResult),
+  Submit: () => 'finish',
 }));
 
-jest.mock('@renderer/services/balance/balanceService', () => ({
-  useBalance: jest.fn().mockReturnValue({
-    getBalance: jest.fn().mockReturnValue({
-      assetId: 1,
-      chainId: '0x123',
-      publicKey: '0x08eb319467ea54784cd9edfbd03bbcc53f7a021ed8d9ed2ca97b6ae46b3f6014',
-      free: '10',
-      frozen: [{ type: 'test', amount: '1' }],
-    }),
-  }),
-}));
+describe('screens/Transfer/Transfer', () => {
+  test('should render component', async () => {
+    await act(async () => {
+      render(<Transfer />, { wrapper: MemoryRouter });
+    });
 
-describe('Transfer', () => {
-  test('should render component', () => {
-    render(
-      <MemoryRouter initialEntries={['/transfer/0x123/1']}>
-        <Routes>
-          <Route path="/transfer/:chainId/:assetId" element={<Transfer />} />
-        </Routes>
-      </MemoryRouter>,
-    );
+    const title = screen.getByText('balances.title');
+    const subTitle = screen.getByText('transfer.title');
+    const next = screen.getByText('to confirm');
+    expect(title).toBeInTheDocument();
+    expect(subTitle).toBeInTheDocument();
+    expect(next).toBeInTheDocument();
+  });
 
-    const text = screen.getByText('transfer.title');
-    expect(text).toBeInTheDocument();
+  test('should change process state', async () => {
+    await act(async () => {
+      render(<Transfer />, { wrapper: MemoryRouter });
+    });
+
+    let nextButton = screen.getByRole('button', { name: 'to confirm' });
+    await act(async () => nextButton.click());
+
+    nextButton = screen.getByRole('button', { name: 'to scan' });
+    await act(async () => nextButton.click());
+
+    nextButton = screen.getByRole('button', { name: 'to sign' });
+    await act(async () => nextButton.click());
+
+    nextButton = screen.getByRole('button', { name: 'to submit' });
+    await act(async () => nextButton.click());
+
+    const finish = screen.getByText('finish');
+    expect(finish).toBeInTheDocument();
   });
 });

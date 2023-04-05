@@ -13,6 +13,7 @@ import { useSettingsStorage } from '@renderer/services/settings/settingsStorage'
 import NetworkBalances from '../NetworkBalances/NetworkBalances';
 import ReceiveModal, { ReceivePayload } from '../ReceiveModal/ReceiveModal';
 import { useAccount } from '@renderer/services/account/accountService';
+import { isMultisig } from '@renderer/domain/account';
 
 const Balances = () => {
   const { t } = useI18n();
@@ -59,9 +60,14 @@ const Balances = () => {
   const hasRootAccount = activeAccounts.some((account) => !account.rootId);
 
   const sortedChains = sortChains(
-    Object.values(connections).filter(
-      (c) => c.connection.connectionType !== ConnectionType.DISABLED && (hasRootAccount || usedChains[c.chainId]),
-    ),
+    Object.values(connections).filter((c) => {
+      const isDisabled = c.connection.connectionType !== ConnectionType.DISABLED;
+      const rootOrChain = hasRootAccount || usedChains[c.chainId];
+      const hasMultisigAccount = activeAccounts.some(isMultisig);
+      const hasMultiPallet = !hasMultisigAccount || Boolean(c.api?.tx.multisig);
+
+      return isDisabled && rootOrChain && hasMultiPallet;
+    }),
   );
 
   const searchSymbolOnly = sortedChains.some((chain) =>

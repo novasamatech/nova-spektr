@@ -25,7 +25,7 @@ import Progress from './Progress';
 import { secondsToMinutes } from '@renderer/shared/utils/time';
 import { formatAddress } from '@renderer/shared/utils/address';
 
-const enum Steps {
+const enum Step {
   SCANNING = 0,
   SIGNING = 1,
   EXECUTING = 2,
@@ -49,7 +49,7 @@ const Signing = () => {
   const activeAccounts = allActiveAccounts.filter((a) => a.signingType === SigningType.PARITY_SIGNER);
 
   const [countdown, setCountdown] = useState<number>(DEFAULT_QR_LIFETIME);
-  const [currentStep, setCurrentStep] = useState<Steps>(Steps.SCANNING);
+  const [currentStep, setCurrentStep] = useState<Step>(Step.SCANNING);
 
   const [rawTransactions, setRawTransactions] = useState<Transaction[]>([]);
   const [bulkTransactions, setBulkTransactions] = useState<Uint8Array>();
@@ -134,7 +134,7 @@ const Signing = () => {
     const api = currentConnection?.api;
     if (!api || !rawTransactions.some(validateTransaction)) return;
 
-    setCurrentStep(Steps.EXECUTING);
+    setCurrentStep(Step.EXECUTING);
 
     unsignedTransactions.forEach(async (unsigned, index) => {
       const extrinsic = await getSignedExtrinsic(unsigned, signatures[index], api);
@@ -161,7 +161,7 @@ const Signing = () => {
 
       <div className="overflow-y-auto flex-1">
         <Plate as="section" className="w-[550px] flex flex-col items-center m-auto gap-2.5">
-          {currentStep === Steps.SCANNING && (
+          {currentStep === Step.SCANNING && (
             <div className="flex flex-col gap-2.5 w-full">
               <div className="bg-white p-5 shadow-surface rounded-2xl flex flex-col items-center gap-5 w-full">
                 <div className="text-neutral-variant text-base font-semibold">
@@ -202,14 +202,14 @@ const Signing = () => {
                 variant="fill"
                 pallet="primary"
                 weight="lg"
-                onClick={() => setCurrentStep(Steps.SIGNING)}
+                onClick={() => setCurrentStep(Step.SIGNING)}
               >
                 {t('signing.continueButton')}
               </Button>
             </div>
           )}
 
-          {currentStep === Steps.SIGNING && (
+          {currentStep === Step.SIGNING && (
             <div className="bg-white shadow-surface rounded-2xl flex flex-col items-center gap-5 w-full">
               <div className="my-4 text-neutral-variant text-base font-semibold">{t('signing.scanSignatureTitle')}</div>
 
@@ -227,7 +227,7 @@ const Signing = () => {
                   pallet="primary"
                   weight="lg"
                   onClick={() => {
-                    setCurrentStep(Steps.SCANNING);
+                    setCurrentStep(Step.SCANNING);
                   }}
                 >
                   {t('signing.generateNewQrButton')}
@@ -236,7 +236,7 @@ const Signing = () => {
             </div>
           )}
 
-          {currentStep === Steps.EXECUTING && (
+          {currentStep === Step.EXECUTING && (
             <Progress progress={progress + failedTxs.length} max={unsignedTransactions.length} />
           )}
         </Plate>

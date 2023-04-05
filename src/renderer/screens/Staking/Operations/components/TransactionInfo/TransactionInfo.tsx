@@ -123,7 +123,7 @@ const TransactionInfo = ({
                   <Fee
                     className="text-base font-semibold text-neutral"
                     api={api}
-                    repeat={accounts.length}
+                    multiply={accounts.length}
                     asset={asset}
                     transaction={transaction}
                   />
