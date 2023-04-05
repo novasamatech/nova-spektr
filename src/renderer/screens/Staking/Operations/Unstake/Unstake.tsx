@@ -6,9 +6,9 @@ import { BN } from '@polkadot/util';
 
 import { UnstakingDuration } from '@renderer/screens/Staking/Overview/components';
 import { ButtonBack, ButtonLink, HintList, Icon } from '@renderer/components/ui';
+import { ChainLoader } from '@renderer/components/common';
 import { useI18n } from '@renderer/context/I18nContext';
 import { useNetworkContext } from '@renderer/context/NetworkContext';
-import { StakingType } from '@renderer/domain/asset';
 import { AccountID, ChainId, HexString, SigningType } from '@renderer/domain/shared-kernel';
 import { Transaction, TransactionType } from '@renderer/domain/transaction';
 import Paths from '@renderer/routes/paths';
@@ -18,8 +18,9 @@ import { StakingMap } from '@renderer/services/staking/common/types';
 import { useStakingData } from '@renderer/services/staking/stakingDataService';
 import { AccountDS } from '@renderer/services/storage';
 import InitOperation, { UnstakeResult } from './InitOperation/InitOperation';
-import { Confirmation, Scanning, Signing, Submit, ChainLoader } from '../components';
+import { Confirmation, Scanning, Signing, Submit } from '../components';
 import { formatAddress } from '@renderer/shared/utils/address';
+import { getRelaychainAsset } from '@renderer/shared/utils/assets';
 import { useCountdown } from '../hooks/useCountdown';
 
 const enum Step {
@@ -30,7 +31,7 @@ const enum Step {
   SUBMIT,
 }
 
-const HEADER_TITLE: Record<Step, string> = {
+const HeaderTitles: Record<Step, string> = {
   [Step.INIT]: 'staking.unstake.initUnstakeSubtitle',
   [Step.CONFIRMATION]: 'staking.unstake.confirmUnstakeSubtitle',
   [Step.SCANNING]: 'staking.bond.scanSubtitle',
@@ -68,7 +69,7 @@ const Unstake = () => {
   }
 
   const { api, explorers, addressPrefix, assets, name } = connections[chainId];
-  const asset = assets.find((asset) => asset.staking === StakingType.RELAYCHAIN);
+  const asset = getRelaychainAsset(assets);
 
   const [countdown, resetCountdown] = useCountdown(api);
 
@@ -120,7 +121,7 @@ const Unstake = () => {
       <ButtonBack onCustomReturn={goToPrevStep}>
         <p className="font-semibold text-2xl text-neutral-variant">{t('staking.title')}</p>
         <p className="font-semibold text-2xl text-neutral">/</p>
-        <h1 className="font-semibold text-2xl text-neutral">{t(HEADER_TITLE[activeStep])}</h1>
+        <h1 className="font-semibold text-2xl text-neutral">{t(HeaderTitles[activeStep])}</h1>
       </ButtonBack>
     </div>
   );

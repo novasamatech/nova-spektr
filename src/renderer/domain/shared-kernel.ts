@@ -1,9 +1,15 @@
 export type HexString = `0x${string}`;
 export type AccountID = string;
-export type CallData = string;
+export type Threshold = number;
+export type CallData = HexString;
+export type CallHash = HexString;
 export type PublicKey = HexString;
 export type ChainId = HexString;
 export type EraIndex = number;
+export type Timepoint = {
+  height: number;
+  index: number;
+};
 
 export const enum CryptoType {
   SR25519,

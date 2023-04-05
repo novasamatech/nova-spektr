@@ -4,9 +4,9 @@ import { useEffect, useState } from 'react';
 import { Navigate, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 
 import { ButtonBack, ButtonLink, HintList, Icon } from '@renderer/components/ui';
+import { ChainLoader } from '@renderer/components/common';
 import { useI18n } from '@renderer/context/I18nContext';
 import { useNetworkContext } from '@renderer/context/NetworkContext';
-import { StakingType } from '@renderer/domain/asset';
 import { AccountID, ChainId, HexString, SigningType } from '@renderer/domain/shared-kernel';
 import { Transaction, TransactionType } from '@renderer/domain/transaction';
 import Paths from '@renderer/routes/paths';
@@ -16,8 +16,9 @@ import { StakingMap } from '@renderer/services/staking/common/types';
 import { useStakingData } from '@renderer/services/staking/stakingDataService';
 import { AccountDS } from '@renderer/services/storage';
 import InitOperation, { RestakeResult } from './InitOperation/InitOperation';
-import { Confirmation, Scanning, Signing, Submit, ChainLoader } from '../components';
+import { Confirmation, Scanning, Signing, Submit } from '../components';
 import { useCountdown } from '../hooks/useCountdown';
+import { getRelaychainAsset } from '@renderer/shared/utils/assets';
 
 const enum Step {
   INIT,
@@ -27,7 +28,7 @@ const enum Step {
   SUBMIT,
 }
 
-const HEADER_TITLE: Record<Step, string> = {
+const HeaderTitles: Record<Step, string> = {
   [Step.INIT]: 'staking.restake.initRestakeSubtitle',
   [Step.CONFIRMATION]: 'staking.restake.confirmRestakeSubtitle',
   [Step.SCANNING]: 'staking.bond.scanSubtitle',
@@ -64,7 +65,7 @@ const Restake = () => {
   }
 
   const { api, explorers, addressPrefix, assets, name } = connections[chainId];
-  const asset = assets.find((asset) => asset.staking === StakingType.RELAYCHAIN);
+  const asset = getRelaychainAsset(assets);
 
   useEffect(() => {
     if (!api?.isConnected || accountIds.length === 0) return;
@@ -112,11 +113,11 @@ const Restake = () => {
         {activeStep !== Step.INIT && (
           <>
             <p className="font-semibold text-2xl text-neutral-variant">/</p>
-            <p className="font-semibold text-2xl text-neutral-variant">{t(HEADER_TITLE[Step.INIT])}</p>
+            <p className="font-semibold text-2xl text-neutral-variant">{t(HeaderTitles[Step.INIT])}</p>
           </>
         )}
         <p className="font-semibold text-2xl text-neutral">/</p>
-        <h1 className="font-semibold text-2xl text-neutral">{t(HEADER_TITLE[activeStep])}</h1>
+        <h1 className="font-semibold text-2xl text-neutral">{t(HeaderTitles[activeStep])}</h1>
       </ButtonBack>
     </div>
   );

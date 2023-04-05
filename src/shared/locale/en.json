@@ -255,8 +255,23 @@
     "yourAccountsLabel": "Here are your accounts"
   },
   "operations": {
+    "addCallDataButton": "Add call data",
+    "callData": {
+      "continueButton": "Continue",
+      "errorMessage": "Incorrect call data",
+      "inputHint": "Visible only for you and signers",
+      "inputPlaceholder": "0x00...",
+      "title": "Enter call data"
+    },
     "noOperationsDescription": "There are no operations pending multisig operations",
-    "signing": "Signing ({ signed } of { signatories })",
+    "signing": "Signing ({ signed } of { threshold })",
+    "status": {
+      "cancelled": "Cancelled",
+      "error": "Error",
+      "esteblished": "Esteblished",
+      "signing": "Signing",
+      "success": "Success"
+    },
     "subTitle": "Your operations",
     "title": "Operations",
     "titles": {
@@ -558,6 +573,9 @@
   "transfer": {
     "amountPlaceholder": "Amount",
     "continueButton": "Continue",
+    "descriptionLabel": "Operation name",
+    "descriptionLengthError": "Description can be { maxLength } symbols long",
+    "descriptionPlaceholder": "Choose an operation name",
     "editOperationButton": "Edit operation",
     "executing": "Submitting operation",
     "formTitle": "Send <strong>{ asset }</strong> on <strong>{ network }</strong>",
@@ -566,12 +584,16 @@
       "executing": "Submitting operations",
       "transactions": "Transactions"
     },
+    "multisigTransactionExist": "Multisig transaction already exists",
+    "networkDeposit": "Deposit",
     "networkFee": "Network fee",
     "notEnoughBalanceError": "Not enough funds to transfer specific amount",
+    "notEnoughBalanceForDepositError": "Insufficient balance to pay deposit",
     "notEnoughBalanceForFeeError": "Insufficient balance to pay network fee",
     "pasteButton": "Paste",
     "recipientLabel": "Recipient",
     "requiredAmountError": "Please, enter amount",
+    "requiredDescriptionError": "Description is required",
     "requiredRecipientError": "Please, enter recipient address",
     "startSigningButton": "Sign with Parity Signer",
     "successMessage": "transaction submitted!",
@@ -579,6 +601,7 @@
   },
   "transferDetails": {
     "fromNetwork": "From network",
+    "networkDeposit": "Deposit",
     "networkFee": "Network fee",
     "recipient": "Recipient",
     "sender": "Sender",

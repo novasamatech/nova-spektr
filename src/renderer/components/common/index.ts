@@ -8,8 +8,11 @@ import QrTextGenerator from './QrCode/QrGenerator/QrTextGenerator';
 import ValidatorsTable from './ValidatorsTable/ValidatorsTable';
 import StakingActions from './StakingActions/StakingActions';
 import QrTxGenerator from './QrCode/QrGenerator/QrTxGenerator';
+import ChainLoader from './ChainLoader/ChainLoader';
 import Explorers from './Explorers/Explorers';
+import Message from './Message/Message';
 import Expandable from './Expandable/Expandable';
+import Deposit from './Deposit/Deposit';
 import Badge from './Badge/Badge';
 import Fee from './Fee/Fee';
 
@@ -24,8 +27,11 @@ export {
   ValidatorsTable,
   StakingActions,
   QrTxGenerator,
+  ChainLoader,
   Explorers,
+  Expandable,
+  Deposit,
+  Message,
   Badge,
   Fee,
-  Expandable,
 };
