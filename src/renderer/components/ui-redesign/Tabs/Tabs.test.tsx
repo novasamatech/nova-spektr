@@ -14,21 +14,22 @@ describe('ui/Tabs', () => {
     render(<Tabs items={tabItems} />);
 
     const tabContent = screen.getByText('tab 1 content');
-    const tabTitle = screen.queryByText('Tab 1 title');
+    const tabTitle = screen.getByText('Tab 1 title');
     expect(tabTitle).toBeInTheDocument();
     expect(tabContent).toBeInTheDocument();
   });
 
   test('should change tabs via keyboard', async () => {
+    const user = userEvent.setup();
     render(<Tabs items={tabItems} />);
 
     const tab1Content = screen.queryByText('tab 1 content');
 
-    await userEvent.keyboard('[Tab][ArrowRight]');
+    await user.keyboard('[Tab][ArrowRight]');
 
     expect(tab1Content).not.toBeInTheDocument();
 
-    const tab2Content = screen.queryByText('tab 2 content');
+    const tab2Content = screen.getByText('tab 2 content');
     expect(tab2Content).toBeInTheDocument();
   });
 });
