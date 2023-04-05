@@ -2,13 +2,7 @@ import { Explorers } from '@renderer/components/common';
 import { Address, Icon } from '@renderer/components/ui';
 import { AccountID, SigningType } from '@renderer/domain/shared-kernel';
 import { Explorer } from '@renderer/domain/chain';
-import { IconNames } from '@renderer/components/ui/Icon/data';
-
-const Icons: Record<SigningType, IconNames> = {
-  [SigningType.PARITY_SIGNER]: 'paritySignerBg',
-  [SigningType.MULTISIG]: 'multisigBg',
-  [SigningType.WATCH_ONLY]: 'watchOnlyBg',
-};
+import { Icons } from '../../common/constants';
 
 type Props = {
   address: AccountID;

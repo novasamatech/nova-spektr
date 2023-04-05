@@ -7,7 +7,6 @@ import { Balance } from '@renderer/components/ui';
 import { Asset } from '@renderer/domain/asset';
 import { Transaction } from '@renderer/domain/transaction';
 import { useTransaction } from '@renderer/services/transaction/transactionService';
-import { useToggle } from '@renderer/shared/hooks';
 
 type Props = {
   api: ApiPromise;
@@ -21,8 +20,8 @@ type Props = {
 const Fee = ({ api, multiply = 1, asset, transaction, className, onFeeChange }: Props) => {
   const { getTransactionFee } = useTransaction();
 
-  const [isLoading, toggleLoading] = useToggle();
   const [fee, setFee] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
 
   const updateFee = (fee: string) => {
     setFee(fee);
@@ -30,16 +29,16 @@ const Fee = ({ api, multiply = 1, asset, transaction, className, onFeeChange }: 
   };
 
   useEffect(() => {
-    toggleLoading();
+    setIsLoading(true);
 
     if (!transaction?.address) {
       updateFee('0');
-      toggleLoading();
+      setIsLoading(false);
     } else {
       getTransactionFee(transaction, api)
         .then(updateFee)
         .catch(() => updateFee('0'))
-        .finally(toggleLoading);
+        .finally(() => setIsLoading(false));
     }
   }, [transaction, api]);
 

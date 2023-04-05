@@ -20,7 +20,7 @@ import { AccountDS } from '@renderer/services/storage';
 import { Validators, Confirmation, Scanning, Signing, Submit } from '../components';
 import { useCountdown } from '../hooks/useCountdown';
 
-const enum Steps {
+const enum Step {
   INIT,
   VALIDATORS,
   CONFIRMATION,
@@ -34,13 +34,13 @@ type Destination = {
   type: RewardsDestination;
 };
 
-const HeaderTitles: Record<Steps, string> = {
-  [Steps.INIT]: 'staking.bond.initBondSubtitle',
-  [Steps.VALIDATORS]: 'staking.bond.validatorsSubtitle',
-  [Steps.CONFIRMATION]: 'staking.bond.confirmBondSubtitle',
-  [Steps.SCANNING]: 'staking.bond.scanSubtitle',
-  [Steps.SIGNING]: 'staking.bond.signSubtitle',
-  [Steps.SUBMIT]: 'staking.bond.submitSubtitle',
+const HeaderTitles: Record<Step, string> = {
+  [Step.INIT]: 'staking.bond.initBondSubtitle',
+  [Step.VALIDATORS]: 'staking.bond.validatorsSubtitle',
+  [Step.CONFIRMATION]: 'staking.bond.confirmBondSubtitle',
+  [Step.SCANNING]: 'staking.bond.scanSubtitle',
+  [Step.SIGNING]: 'staking.bond.signSubtitle',
+  [Step.SUBMIT]: 'staking.bond.submitSubtitle',
 };
 
 const Bond = () => {
@@ -51,7 +51,7 @@ const Bond = () => {
   const [searchParams] = useSearchParams();
   const params = useParams<{ chainId: ChainId }>();
 
-  const [activeStep, setActiveStep] = useState<Steps>(Steps.INIT);
+  const [activeStep, setActiveStep] = useState<Step>(Step.INIT);
   const [chainName, setChainName] = useState('...');
   const [validators, setValidators] = useState<ValidatorMap>({});
   const [accounts, setAccounts] = useState<AccountDS[]>([]);
@@ -81,7 +81,7 @@ const Bond = () => {
   }
 
   const goToPrevStep = () => {
-    if (activeStep === Steps.INIT) {
+    if (activeStep === Step.INIT) {
       navigate(Paths.STAKING);
     } else {
       // TODO: reset data
@@ -126,7 +126,7 @@ const Bond = () => {
     setDestination(destPayload);
     setAccounts(accounts);
     setStakeAmount(stake);
-    setActiveStep(Steps.VALIDATORS);
+    setActiveStep(Step.VALIDATORS);
   };
 
   const onSelectValidators = (validators: ValidatorMap) => {
@@ -159,21 +159,21 @@ const Bond = () => {
 
     setTransactions(transactions);
     setValidators(validators);
-    setActiveStep(Steps.CONFIRMATION);
+    setActiveStep(Step.CONFIRMATION);
   };
 
   const onScanResult = (unsigned: UnsignedTransaction[]) => {
     setUnsignedTransactions(unsigned);
-    setActiveStep(Steps.SIGNING);
+    setActiveStep(Step.SIGNING);
   };
 
   const onBackToScan = () => {
-    setActiveStep(Steps.SCANNING);
+    setActiveStep(Step.SCANNING);
   };
 
   const onSignResult = (signatures: HexString[]) => {
     setSignatures(signatures);
-    setActiveStep(Steps.SUBMIT);
+    setActiveStep(Step.SUBMIT);
   };
 
   const explorersProps = { explorers, addressPrefix, asset };
@@ -192,13 +192,13 @@ const Bond = () => {
     <div className="flex flex-col h-full relative">
       {headerContent}
 
-      {activeStep === Steps.INIT && (
+      {activeStep === Step.INIT && (
         <InitOperation api={api} chainId={chainId} accountIds={accountIds} asset={asset} onResult={onInitResult} />
       )}
-      {activeStep === Steps.VALIDATORS && (
+      {activeStep === Step.VALIDATORS && (
         <Validators api={api} chainId={chainId} onResult={onSelectValidators} {...explorersProps} />
       )}
-      {activeStep === Steps.CONFIRMATION && (
+      {activeStep === Step.CONFIRMATION && (
         <Confirmation
           api={api}
           validators={Object.values(validators)}
@@ -206,14 +206,14 @@ const Bond = () => {
           amounts={bondValues}
           destination={destination}
           transaction={transactions[0]}
-          onResult={() => setActiveStep(Steps.SCANNING)}
+          onResult={() => setActiveStep(Step.SCANNING)}
           onAddToQueue={noop}
           {...explorersProps}
         >
           {hints}
         </Confirmation>
       )}
-      {activeStep === Steps.SCANNING && (
+      {activeStep === Step.SCANNING && (
         <Scanning
           api={api}
           chainId={chainId}
@@ -225,7 +225,7 @@ const Bond = () => {
           onResult={onScanResult}
         />
       )}
-      {activeStep === Steps.SIGNING && (
+      {activeStep === Step.SIGNING && (
         <Signing
           countdown={countdown}
           multiQr={transactions.length > 1}
@@ -233,7 +233,7 @@ const Bond = () => {
           onGoBack={onBackToScan}
         />
       )}
-      {activeStep === Steps.SUBMIT && (
+      {activeStep === Step.SUBMIT && (
         <Submit
           api={api}
           transaction={transactions[0]}

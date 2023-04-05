@@ -17,7 +17,7 @@ import { Confirmation, Scanning, Signing, Submit } from '../components';
 import { useCountdown } from '../hooks/useCountdown';
 import { getRelaychainAsset } from '@renderer/shared/utils/assets';
 
-const enum Steps {
+const enum Step {
   INIT,
   CONFIRMATION,
   SCANNING,
@@ -25,12 +25,12 @@ const enum Steps {
   SUBMIT,
 }
 
-const HeaderTitles: Record<Steps, string> = {
-  [Steps.INIT]: 'staking.stakeMore.initStakeMoreSubtitle',
-  [Steps.CONFIRMATION]: 'staking.stakeMore.confirmStakeMoreSubtitle',
-  [Steps.SCANNING]: 'staking.bond.scanSubtitle',
-  [Steps.SIGNING]: 'staking.bond.signSubtitle',
-  [Steps.SUBMIT]: 'staking.bond.submitSubtitle',
+const HeaderTitles: Record<Step, string> = {
+  [Step.INIT]: 'staking.stakeMore.initStakeMoreSubtitle',
+  [Step.CONFIRMATION]: 'staking.stakeMore.confirmStakeMoreSubtitle',
+  [Step.SCANNING]: 'staking.bond.scanSubtitle',
+  [Step.SIGNING]: 'staking.bond.signSubtitle',
+  [Step.SUBMIT]: 'staking.bond.submitSubtitle',
 };
 
 const StakeMore = () => {
@@ -41,7 +41,7 @@ const StakeMore = () => {
   const [searchParams] = useSearchParams();
   const params = useParams<{ chainId: ChainId }>();
 
-  const [activeStep, setActiveStep] = useState<Steps>(Steps.INIT);
+  const [activeStep, setActiveStep] = useState<Step>(Step.INIT);
   const [chainName, setChainName] = useState('...');
   const [stakeMoreAmount, setStakeMoreAmount] = useState<string>('');
   const [transactions, setTransactions] = useState<Transaction[]>([]);
@@ -70,7 +70,7 @@ const StakeMore = () => {
   const [countdown, resetCountdown] = useCountdown(api);
 
   const goToPrevStep = () => {
-    if (activeStep === Steps.INIT) {
+    if (activeStep === Step.INIT) {
       navigate(Paths.STAKING);
     } else {
       // TODO: reset data
@@ -118,17 +118,17 @@ const StakeMore = () => {
     setTransactions(transactions);
     setAccounts(accounts);
     setStakeMoreAmount(amount);
-    setActiveStep(Steps.CONFIRMATION);
+    setActiveStep(Step.CONFIRMATION);
   };
 
   const onScanResult = (unsigned: UnsignedTransaction[]) => {
     setUnsignedTransactions(unsigned);
-    setActiveStep(Steps.SIGNING);
+    setActiveStep(Step.SIGNING);
   };
 
   const onSignResult = (signatures: HexString[]) => {
     setSignatures(signatures);
-    setActiveStep(Steps.SUBMIT);
+    setActiveStep(Step.SUBMIT);
   };
 
   const explorersProps = { explorers, addressPrefix, asset };
@@ -144,23 +144,23 @@ const StakeMore = () => {
     <div className="flex flex-col h-full relative">
       {headerContent}
 
-      {activeStep === Steps.INIT && (
+      {activeStep === Step.INIT && (
         <InitOperation api={api} chainId={chainId} accountIds={accountIds} asset={asset} onResult={onStakeMoreResult} />
       )}
-      {activeStep === Steps.CONFIRMATION && (
+      {activeStep === Step.CONFIRMATION && (
         <Confirmation
           api={api}
           accounts={accounts}
           transaction={transactions[0]}
           amounts={stakeMoreValues}
-          onResult={() => setActiveStep(Steps.SCANNING)}
+          onResult={() => setActiveStep(Step.SCANNING)}
           onAddToQueue={noop}
           {...explorersProps}
         >
           {hints}
         </Confirmation>
       )}
-      {activeStep === Steps.SCANNING && (
+      {activeStep === Step.SCANNING && (
         <Scanning
           api={api}
           chainId={chainId}
@@ -172,15 +172,15 @@ const StakeMore = () => {
           onResult={onScanResult}
         />
       )}
-      {activeStep === Steps.SIGNING && (
+      {activeStep === Step.SIGNING && (
         <Signing
           countdown={countdown}
           multiQr={transactions.length > 1}
           onResult={onSignResult}
-          onGoBack={() => setActiveStep(Steps.SCANNING)}
+          onGoBack={() => setActiveStep(Step.SCANNING)}
         />
       )}
-      {activeStep === Steps.SUBMIT && (
+      {activeStep === Step.SUBMIT && (
         <Submit
           api={api}
           transaction={transactions[0]}

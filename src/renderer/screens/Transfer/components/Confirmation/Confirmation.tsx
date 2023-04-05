@@ -35,7 +35,7 @@ export const Confirmation = ({
   onResult,
 }: Props) => {
   const { t } = useI18n();
-  console.log(multisigTx);
+
   const address = transferTx.address;
   const destination = transferTx.args.dest;
   const balance = transferTx.args.value;

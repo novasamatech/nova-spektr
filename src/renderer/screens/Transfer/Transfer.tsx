@@ -15,7 +15,7 @@ import { getAssetById } from '@renderer/shared/utils/assets';
 import { useCountdown } from '@renderer/screens/Staking/Operations/hooks/useCountdown';
 import { Account, MultisigAccount } from '@renderer/domain/account';
 
-const enum Steps {
+const enum Step {
   INIT,
   CONFIRMATION,
   SCANNING,
@@ -30,7 +30,7 @@ const Transfer = () => {
   const { getChainById } = useChains();
   const { connections } = useNetworkContext();
 
-  const [activeStep, setActiveStep] = useState<Steps>(Steps.INIT);
+  const [activeStep, setActiveStep] = useState<Step>(Step.INIT);
   const [chainName, setChainName] = useState('...');
   const [account, setAccount] = useState<Account | MultisigAccount>({} as Account);
   const [description, setDescription] = useState('');
@@ -60,7 +60,7 @@ const Transfer = () => {
   const asset = getAssetById(assetId, assets);
 
   const goToPrevStep = () => {
-    if (activeStep === Steps.INIT) {
+    if (activeStep === Step.INIT) {
       navigate(Paths.BALANCES);
     } else {
       setActiveStep((prev) => prev - 1);
@@ -101,25 +101,25 @@ const Transfer = () => {
     setTransferTx(transferTx);
     setMultisigTx(multisig?.multisigTx || undefined);
     setDescription(multisig?.description || '');
-    setActiveStep(Steps.CONFIRMATION);
+    setActiveStep(Step.CONFIRMATION);
   };
 
   const onConfirmResult = () => {
-    setActiveStep(Steps.SCANNING);
+    setActiveStep(Step.SCANNING);
   };
 
   const onScanResult = (unsignedTx: UnsignedTransaction) => {
     setUnsignedTx(unsignedTx);
-    setActiveStep(Steps.SIGNING);
+    setActiveStep(Step.SIGNING);
   };
 
   const onBackToScan = () => {
-    setActiveStep(Steps.SCANNING);
+    setActiveStep(Step.SCANNING);
   };
 
   const onSignResult = (signature: HexString) => {
     setSignature(signature);
-    setActiveStep(Steps.SUBMIT);
+    setActiveStep(Step.SUBMIT);
   };
 
   const onAccountChange = (account: Account | MultisigAccount) => {
@@ -127,7 +127,7 @@ const Transfer = () => {
   };
 
   const onStartOver = () => {
-    setActiveStep(Steps.INIT);
+    setActiveStep(Step.INIT);
   };
 
   const commonProps = { api, explorers, addressPrefix };
@@ -136,7 +136,7 @@ const Transfer = () => {
     <div className="flex flex-col h-full relative">
       {headerContent}
 
-      {activeStep === Steps.INIT && (
+      {activeStep === Step.INIT && (
         <InitOperation
           chainId={chainId}
           asset={asset}
@@ -147,7 +147,7 @@ const Transfer = () => {
           {...commonProps}
         />
       )}
-      {activeStep === Steps.CONFIRMATION && (
+      {activeStep === Step.CONFIRMATION && (
         <Confirmation
           asset={asset}
           nativeToken={assets[0]}
@@ -160,7 +160,7 @@ const Transfer = () => {
           {...commonProps}
         />
       )}
-      {activeStep === Steps.SCANNING && (
+      {activeStep === Step.SCANNING && (
         <Scanning
           chainId={chainId}
           account={account}
@@ -171,7 +171,7 @@ const Transfer = () => {
           {...commonProps}
         />
       )}
-      {activeStep === Steps.SIGNING && (
+      {activeStep === Step.SIGNING && (
         <Signing
           chainId={chainId}
           transaction={multisigTx || transferTx}
@@ -184,7 +184,7 @@ const Transfer = () => {
           {...commonProps}
         />
       )}
-      {activeStep === Steps.SUBMIT && (
+      {activeStep === Step.SUBMIT && (
         <Submit
           asset={asset}
           nativeToken={assets[0]}

@@ -6,7 +6,7 @@ const TransactionTitles: Record<TransactionType, string> = {
   [TransactionType.ASSET_TRANSFER]: 'operations.titles.transfer',
   [TransactionType.ORML_TRANSFER]: 'operations.titles.transfer',
   [TransactionType.TRANSFER]: 'operations.titles.transfer',
-  [TransactionType.MULTISIG_TRANSFER]: 'operations.titles.transfer',
+  [TransactionType.MULTISIG_AS_MULTI]: 'operations.titles.transfer',
   // Staking
   [TransactionType.BOND]: 'operations.titles.startStaking',
   [TransactionType.NOMINATE]: 'operations.titles.nominate',
@@ -25,7 +25,7 @@ const TransactionIcons: Record<TransactionType, IconNames> = {
   [TransactionType.ASSET_TRANSFER]: 'staking',
   [TransactionType.ORML_TRANSFER]: 'staking',
   [TransactionType.TRANSFER]: 'staking',
-  [TransactionType.MULTISIG_TRANSFER]: 'staking',
+  [TransactionType.MULTISIG_AS_MULTI]: 'staking',
   // Staking
   [TransactionType.BOND]: 'staking',
   [TransactionType.NOMINATE]: 'staking',

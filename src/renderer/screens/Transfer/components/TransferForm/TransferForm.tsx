@@ -30,7 +30,7 @@ type Props = {
   chainId: ChainId;
   network: string;
   account?: Account | MultisigAccount;
-  signer?: AccountID;
+  signer?: Account;
   asset: Asset;
   nativeToken: Asset;
   addressPrefix: number;
@@ -55,8 +55,12 @@ export const TransferForm = ({
 
   const [fee, setFee] = useState('');
   const [deposit, setDeposit] = useState('');
-  const [balance, setBalance] = useState('');
-  const [nativeTokenBalance, setNativeTokenBalance] = useState<string>();
+
+  const [accountBalance, setAccountBalance] = useState('');
+  const [signerBalance, setSignerBalance] = useState('');
+  const [accountNativeTokenBalance, setAccountNativeTokenBalance] = useState<string>();
+  const [signerNativeTokenBalance, setSignerNativeTokenBalance] = useState<string>();
+
   const [transferTx, setTransferTx] = useState<Transaction>();
   const [multisigTx, setMultisigTx] = useState<Transaction>();
   const [multisigTxExist, setMultisigTxExist] = useState(false);
@@ -76,25 +80,40 @@ export const TransferForm = ({
   const amount = watch('amount');
   const destination = watch('destination');
 
-  useEffect(() => {
-    if (!account) return;
+  const setupBalances = (
+    accountId: AccountID,
+    callbackNativeToken: (balance: string) => void,
+    callbackBalance: (balance: string) => void,
+  ) => {
+    const publicKey = toPublicKey(accountId) || '0x0';
 
-    const publicKey = toPublicKey(account.accountId) || '0x0';
+    getBalance(publicKey, chainId, asset.assetId.toString()).then((balance) => {
+      callbackBalance(balance ? transferableAmount(balance) : '0');
+    });
 
     if (asset.assetId !== 0) {
       getBalance(publicKey, chainId, '0').then((balance) => {
-        setNativeTokenBalance(balance ? transferableAmount(balance) : '0');
+        callbackNativeToken(balance ? transferableAmount(balance) : '0');
       });
     }
+  };
 
-    getBalance(publicKey, chainId, asset.assetId.toString()).then((balance) => {
-      setBalance(balance ? transferableAmount(balance) : '0');
-    });
+  useEffect(() => {
+    if (!account?.accountId) return;
+
+    setupBalances(account.accountId, setAccountNativeTokenBalance, setAccountBalance);
   }, [account]);
+
+  useEffect(() => {
+    if (!signer?.accountId) return;
+
+    setupBalances(signer.accountId, setSignerNativeTokenBalance, setSignerBalance);
+  }, [signer]);
 
   useEffect(() => {
     if (!isMultisig(account)) {
       setMultisigTx(undefined);
+      setDeposit('0');
     }
   }, [account]);
 
@@ -103,8 +122,8 @@ export const TransferForm = ({
 
     const transferPayload = getTransferTx(account.accountId);
 
-    if (isMultisig(account) && signer) {
-      setMultisigTx(getMultisigTx(account, signer, transferPayload));
+    if (isMultisig(account) && signer?.accountId) {
+      setMultisigTx(getMultisigTx(account, signer.accountId, transferPayload));
     }
 
     setTransferTx(transferPayload);
@@ -144,7 +163,7 @@ export const TransferForm = ({
     return {
       chainId,
       address: signer,
-      type: TransactionType.MULTISIG_TRANSFER,
+      type: TransactionType.MULTISIG_AS_MULTI,
       args: {
         threshold: account.threshold,
         otherSignatories,
@@ -156,12 +175,15 @@ export const TransferForm = ({
   };
 
   const validateBalance = (amount: string): boolean => {
-    if (!balance) return false;
+    if (!accountBalance) return false;
 
-    return new BN(formatAmount(amount, asset.precision)).lte(new BN(balance));
+    return new BN(formatAmount(amount, asset.precision)).lte(new BN(accountBalance));
   };
 
   const validateBalanceForFee = (amount: string): boolean => {
+    const balance = isMultisig(account) ? signerBalance : accountBalance;
+    const nativeTokenBalance = isMultisig(account) ? signerNativeTokenBalance : accountNativeTokenBalance;
+
     if (!balance) return false;
 
     if (nativeTokenBalance) {
@@ -172,16 +194,17 @@ export const TransferForm = ({
   };
 
   const validateBalanceForFeeAndDeposit = (amount: string): boolean => {
-    if (!balance) return false;
+    if (!isMultisig(account)) return true;
+    if (!signerBalance) return false;
 
-    if (nativeTokenBalance) {
-      return new BN(deposit).add(new BN(fee)).lte(new BN(nativeTokenBalance));
+    if (signerNativeTokenBalance) {
+      return new BN(deposit).add(new BN(fee)).lte(new BN(signerNativeTokenBalance));
     }
 
     return new BN(deposit)
       .add(new BN(fee))
       .add(new BN(formatAmount(amount, asset.precision)))
-      .lte(new BN(balance));
+      .lte(new BN(signerBalance));
   };
 
   const updateFee = async (fee: string) => {
@@ -277,7 +300,7 @@ export const TransferForm = ({
                 value={value}
                 placeholder={t('transfer.amountPlaceholder')}
                 asset={asset}
-                balance={balance}
+                balance={accountBalance}
                 onChange={onChange}
               />
               <InputHint active={error?.type === 'insufficientBalance'} variant="error">

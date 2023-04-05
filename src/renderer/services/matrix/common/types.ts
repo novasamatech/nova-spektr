@@ -1,6 +1,6 @@
 import { EventType, MatrixEvent, Room } from 'matrix-js-sdk';
 
-import { HexString, PublicKey, AccountID, NetworkTimepoint } from '@renderer/domain/shared-kernel';
+import { HexString, PublicKey, AccountID, Timepoint } from '@renderer/domain/shared-kernel';
 
 // =====================================================
 // ============ ISecureMessenger interface =============
@@ -136,8 +136,8 @@ export type MstParams = {
   callData?: HexString;
   description?: string;
   extrinsicHash?: HexString;
-  extrinsicTimepoint: NetworkTimepoint;
-  callTimepoint: NetworkTimepoint;
+  extrinsicTimepoint: Timepoint;
+  callTimepoint: Timepoint;
   error: boolean;
 };
 

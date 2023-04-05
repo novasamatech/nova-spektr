@@ -25,7 +25,7 @@ export const getAssetId = (asset: Asset): string => {
 export const getAssetById = (id: string, assets?: Asset[]): Asset | undefined => {
   if (!assets || assets.length === 0) return undefined;
 
-  return assets.find((asset) => getAssetId(asset) === id);
+  return assets.find((asset) => getAssetId(asset) === id) || assets[0];
 };
 
 /**

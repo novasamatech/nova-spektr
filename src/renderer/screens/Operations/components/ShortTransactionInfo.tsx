@@ -59,7 +59,7 @@ const ShortTransactionInfo = ({ transaction }: Props) => {
     [TransactionType.ASSET_TRANSFER]: <TransactionInfo transaction={transaction} asset={asset} />,
     [TransactionType.ORML_TRANSFER]: <TransactionInfo transaction={transaction} asset={asset} />,
     [TransactionType.TRANSFER]: <TransactionInfo transaction={transaction} asset={asset} />,
-    [TransactionType.MULTISIG_TRANSFER]: <TransactionInfo transaction={transaction} asset={asset} />,
+    [TransactionType.MULTISIG_AS_MULTI]: <TransactionInfo transaction={transaction} asset={asset} />,
 
     // Staking
     [TransactionType.BOND]: <TransactionInfo transaction={transaction} asset={asset} />,

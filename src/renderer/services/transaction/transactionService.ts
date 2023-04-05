@@ -65,7 +65,7 @@ export const useTransaction = (): ITransactionService => {
         options,
       );
     },
-    [TransactionType.MULTISIG_TRANSFER]: (transaction, info, options) => {
+    [TransactionType.MULTISIG_AS_MULTI]: (transaction, info, options) => {
       return methods.multisig.asMulti(
         {
           threshold: transaction.args.threshold,
@@ -170,7 +170,7 @@ export const useTransaction = (): ITransactionService => {
     [TransactionType.ASSET_TRANSFER]: ({ dest, value, asset }, api) =>
       api.tx.assets.transferKeepAlive(asset, dest, value),
     [TransactionType.ORML_TRANSFER]: ({ dest, value, asset }, api) => api.tx.currencies.transfer(dest, asset, value),
-    [TransactionType.MULTISIG_TRANSFER]: ({ threshold, otherSignatories, maybeTimepoint, call, maxWeight }, api) =>
+    [TransactionType.MULTISIG_AS_MULTI]: ({ threshold, otherSignatories, maybeTimepoint, call, maxWeight }, api) =>
       api.tx.multisig.asMulti(threshold, otherSignatories, maybeTimepoint, call, maxWeight),
     [TransactionType.BOND]: ({ controller, value, payee }, api) => api.tx.staking.bond(controller, value, payee),
     [TransactionType.UNSTAKE]: ({ value }, api) => api.tx.staking.unbond(value),

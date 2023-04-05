@@ -259,7 +259,7 @@ const ParitySignerSignatureReader = ({ size = 300, className, onResult, countdow
               <div
                 className={cn(
                   'w-10 rounded-md text-white py-0.5 text-center',
-                  countdown === 0 ? 'bg-error' : countdown >= 60 ? 'bg-success' : 'bg-alert',
+                  (!countdown && 'bg-error') || (countdown >= 60 ? 'bg-success' : 'bg-alert'),
                 )}
               >
                 {secondsToMinutes(countdown)}

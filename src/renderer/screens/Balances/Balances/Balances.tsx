@@ -64,7 +64,7 @@ const Balances = () => {
       const isDisabled = c.connection.connectionType !== ConnectionType.DISABLED;
       const rootOrChain = hasRootAccount || usedChains[c.chainId];
       const hasMultisigAccount = activeAccounts.some(isMultisig);
-      const hasMultiPallet = hasMultisigAccount ? Boolean(c.api?.tx.multisig) : true;
+      const hasMultiPallet = !hasMultisigAccount || Boolean(c.api?.tx.multisig);
 
       return isDisabled && rootOrChain && hasMultiPallet;
     }),

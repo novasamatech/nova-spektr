@@ -10,7 +10,7 @@ import StepTwo from './StepTwo/StepTwo';
 import StepThree from './StepThree/StepThree';
 import StepThreeSingle from './StepThreeSingle/StepThreeSingle';
 
-const enum Steps {
+const enum Step {
   PREPARE,
   SCAN,
   CHECK,
@@ -20,12 +20,12 @@ const enum Steps {
 const Parity = () => {
   const { t } = useI18n();
 
-  const [activeStep, setActiveStep] = useState<Steps>(Steps.PREPARE);
+  const [activeStep, setActiveStep] = useState<Step>(Step.PREPARE);
   const [qrPayload, setQrPayload] = useState<SeedInfo[]>();
 
   const onReceiveQr = (payload: SeedInfo[]) => {
     setQrPayload(payload);
-    setActiveStep(Steps.CHECK);
+    setActiveStep(Step.CHECK);
   };
 
   const parityFlowSteps: Record<'title', string>[] = [
@@ -41,7 +41,7 @@ const Parity = () => {
 
   return (
     <div className="flex flex-col h-full">
-      {activeStep !== Steps.FINAL && (
+      {activeStep !== Step.FINAL && (
         <div className="flex items-center gap-x-2.5">
           <ButtonBack>
             <h1 className="text-neutral">{t('onboarding.paritySigner.addByParitySignerLabel')}</h1>
@@ -50,18 +50,18 @@ const Parity = () => {
       )}
       <section className="flex flex-col gap-y-16 h-max max-w-[1000px] w-full m-auto">
         <Stepper steps={parityFlowSteps} active={activeStep} />
-        {activeStep === Steps.PREPARE && <StepOne onNextStep={() => setActiveStep(Steps.SCAN)} />}
-        {activeStep === Steps.SCAN && <StepTwo onNextStep={onReceiveQr} />}
-        {activeStep === Steps.CHECK && qrPayload && (
+        {activeStep === Step.PREPARE && <StepOne onNextStep={() => setActiveStep(Step.SCAN)} />}
+        {activeStep === Step.SCAN && <StepTwo onNextStep={onReceiveQr} />}
+        {activeStep === Step.CHECK && qrPayload && (
           <>
             {isPlainQr ? (
-              <StepThreeSingle qrData={qrPayload} onNextStep={() => setActiveStep(Steps.FINAL)} />
+              <StepThreeSingle qrData={qrPayload} onNextStep={() => setActiveStep(Step.FINAL)} />
             ) : (
-              <StepThree qrData={qrPayload} onNextStep={() => setActiveStep(Steps.FINAL)} />
+              <StepThree qrData={qrPayload} onNextStep={() => setActiveStep(Step.FINAL)} />
             )}
           </>
         )}
-        {activeStep === Steps.FINAL && <FinalStep signingType={SigningType.PARITY_SIGNER} />}
+        {activeStep === Step.FINAL && <FinalStep signingType={SigningType.PARITY_SIGNER} />}
       </section>
     </div>
   );

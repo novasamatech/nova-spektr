@@ -6,7 +6,7 @@ export type CallHash = HexString;
 export type PublicKey = HexString;
 export type ChainId = HexString;
 export type EraIndex = number;
-export type NetworkTimepoint = {
+export type Timepoint = {
   height: number;
   index: number;
 };
