@@ -28,7 +28,7 @@ describe('ui/Tabs', () => {
 
     expect(tab1Content).not.toBeInTheDocument();
 
-    const tab2Content = screen.queryByText('tab 2 content');
+    const tab2Content = screen.getByText('tab 2 content');
     expect(tab2Content).toBeInTheDocument();
   });
 });
