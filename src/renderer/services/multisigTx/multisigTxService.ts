@@ -2,12 +2,15 @@ import { ApiPromise } from '@polkadot/api';
 import { useLiveQuery } from 'dexie-react-hooks';
 
 import { MultisigAccount } from '@renderer/domain/account';
-import { MiltisigTransactionFinalStatus } from '@renderer/domain/transaction';
+import { MiltisigTxFinalStatus, MiltisigTxInitStatus } from '@renderer/domain/transaction';
 import storage, { MultisigTransactionDS } from '../storage';
 import { QUERY_INTERVAL } from './common/consts';
 import { IMultisigTxService } from './common/types';
 import { createTransactionPayload, getPendingMultisigTxs, updateTransactionPayload } from './common/utils';
 import { useChains } from '../network/chainsService';
+import { useTransaction } from '../transaction/transactionService';
+import { CallData, PublicKey } from '@renderer/domain/shared-kernel';
+import { formatAddress } from '@renderer/shared/utils/address';
 
 export const useMultisigTx = (): IMultisigTxService => {
   const transactionStorage = storage.connectTo('multisigTransactions');
@@ -15,8 +18,10 @@ export const useMultisigTx = (): IMultisigTxService => {
   if (!transactionStorage) {
     throw new Error('=== 🔴 MultisigTransactions storage in not defined 🔴 ===');
   }
-  const { getMultisigTx, getMultisigTxs, addMultisigTx, updateMultisigTx, deleteMultisigTx } = transactionStorage;
-  const { getExpectedBlockTime } = useChains();
+  const { getMultisigTx, getMultisigTxs, getAccountMultisigTxs, addMultisigTx, updateMultisigTx, deleteMultisigTx } =
+    transactionStorage;
+  const { getExpectedBlockTime, getChainById } = useChains();
+  const { decodeCallData } = useTransaction();
 
   const subscribeMultisigAccount = (api: ApiPromise, account: MultisigAccount): (() => void) => {
     const intervalId = setInterval(async () => {
@@ -32,7 +37,7 @@ export const useMultisigTx = (): IMultisigTxService => {
             t.blockCreated === pendingTx.params.when.height.toNumber() &&
             t.indexCreated === pendingTx.params.when.index.toNumber() &&
             t.chainId === api.genesisHash.toHex() &&
-            t.status === 'SIGNING',
+            t.status === MiltisigTxInitStatus.SIGNING,
         );
 
         if (oldTx) {
@@ -63,10 +68,10 @@ export const useMultisigTx = (): IMultisigTxService => {
         const hasPendingCancelled = tx.events.some((e) => e.status === 'PENDING_CANCELLED' || e.status === 'CANCELLED');
 
         const status = hasPendingFinalApproval
-          ? MiltisigTransactionFinalStatus.SUCCESS
+          ? MiltisigTxFinalStatus.SUCCESS
           : hasPendingCancelled
-          ? MiltisigTransactionFinalStatus.CANCELLED
-          : MiltisigTransactionFinalStatus.ESTABLISHED;
+          ? MiltisigTxFinalStatus.CANCELLED
+          : MiltisigTxFinalStatus.ESTABLISHED;
 
         updateMultisigTx({
           ...tx,
@@ -89,16 +94,49 @@ export const useMultisigTx = (): IMultisigTxService => {
       }
     };
 
-    return useLiveQuery(query, [], []);
+    return useLiveQuery(query, [where], []);
+  };
+
+  const getLiveAccountMultisigTxs = (publicKeys: PublicKey[]): MultisigTransactionDS[] => {
+    const query = () => {
+      try {
+        return getAccountMultisigTxs(publicKeys);
+      } catch (error) {
+        console.warn('Error trying to get multisig transactions');
+
+        return Promise.resolve([]);
+      }
+    };
+
+    return useLiveQuery(query, [publicKeys.length], []);
+  };
+
+  const updateCallData = async (api: ApiPromise, tx: MultisigTransactionDS, callData: CallData) => {
+    const chain = await getChainById(tx.chainId);
+
+    const transaction = decodeCallData(
+      api,
+      formatAddress(tx?.publicKey, chain?.addressPrefix),
+      (callData as CallData) || '0x',
+    );
+
+    await updateMultisigTx({
+      ...tx,
+      callData: (callData as CallData) || '0x',
+      transaction,
+    });
   };
 
   return {
     subscribeMultisigAccount,
     getMultisigTx,
     getMultisigTxs,
+    getAccountMultisigTxs,
     getLiveMultisigTxs,
+    getLiveAccountMultisigTxs,
     addMultisigTx,
     updateMultisigTx,
     deleteMultisigTx,
+    updateCallData,
   };
 };

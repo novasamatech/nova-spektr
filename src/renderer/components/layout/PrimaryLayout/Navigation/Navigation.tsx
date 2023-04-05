@@ -13,6 +13,7 @@ import { AccountDS } from '@renderer/services/storage';
 import Wallets from '../Wallets/Wallets';
 import './Navigation.css';
 import { useMultisigTx } from '@renderer/services/multisigTx/multisigTxService';
+import { nonNullable } from '@renderer/shared/utils/functions';
 
 type CardType = SigningType | 'multiple' | 'none';
 
@@ -43,8 +44,10 @@ const Navigation = () => {
 
   const [isWalletsOpen, setIsWalletsOpen] = useState(false);
 
-  const { getLiveMultisigTxs } = useMultisigTx();
-  const txs = getLiveMultisigTxs({ status: 'SIGNING' });
+  const { getLiveAccountMultisigTxs } = useMultisigTx();
+  const txs = getLiveAccountMultisigTxs(activeAccounts.map((a) => a.publicKey).filter(nonNullable)).filter(
+    (tx) => tx.status === 'SIGNING',
+  );
 
   const NavItems = [
     { icon: <Icon name="balance" />, title: 'navigation.balancesLabel', link: Paths.BALANCES },
@@ -58,7 +61,6 @@ const Navigation = () => {
     },
 
     // { icon: <Icon name="history" />, title: 'navigation.historyLabel', link: Paths.HISTORY },
-    // { icon: <Icon name="btc" />, title: 'navigation.chatDEVLabel', link: Paths.CHAT_DEV },
     // { icon: <Icon name="eth" />, title: 'navigation.cameraDEVLabel', link: Paths.CAMERA_DEV },
     // { icon: <Icon name="history" />, title: 'navigation.signingDEVLabel', link: Paths.SIGNING },
   ];
@@ -95,6 +97,15 @@ const Navigation = () => {
 
                   <div className="absolute box-border right-0 bottom-0 bg-shade-70 w-5 h-5 flex justify-center items-center rounded-full border border-alert border-solid">
                     <Icon name="watchOnly" size={12} />
+                  </div>
+                </>
+              )}
+              {cardType === SigningType.MULTISIG && (
+                <>
+                  <Identicon theme="polkadot" address={currentAccount?.accountId || ''} size={46} />
+
+                  <div className="absolute right-0 bottom-0 bg-shade-70 w-5 h-5 flex justify-center items-center rounded-full">
+                    <Icon name="multisigBg" size={20} />
                   </div>
                 </>
               )}
@@ -139,17 +150,12 @@ const Navigation = () => {
                 >
                   {icon}
                   <span className="font-semibold text-sm ml-3">{t(title)}</span>
-                  {badge && <div className="ml-auto text-shade-50">{badge}</div>}
+                  {!!badge && <div className="ml-auto text-shade-50">{badge}</div>}
                 </NavLink>
               </li>
             ))}
           </ul>
         </nav>
-        {/*{matrix.isLoggedIn && (*/}
-        {/*  <Button variant="outline" pallet="primary" disabled={isProcessing} onClick={onLogout}>*/}
-        {/*    {t('Logout')}*/}
-        {/*  </Button>*/}
-        {/*)}*/}
 
         <div>
           <NavLink

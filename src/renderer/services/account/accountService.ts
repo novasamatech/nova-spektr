@@ -27,10 +27,10 @@ export const useAccount = (): IAccountService => {
     return useLiveQuery(query, [], []);
   };
 
-  const getActiveAccounts = (): AccountDS[] => {
+  const getActiveAccounts = (where?: Record<string, any>): AccountDS[] => {
     const query = async () => {
       try {
-        const accounts = await getAccounts();
+        const accounts = await getAccounts(where);
 
         return accounts.filter((account) => account.isActive);
       } catch (error) {

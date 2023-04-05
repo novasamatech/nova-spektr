@@ -42,7 +42,7 @@ const BaseModal = ({
           leaveFrom="opacity-100"
           leaveTo="opacity-0"
         >
-          <div className="fixed inset-0 bg-redesign-modal-backdrop" />
+          <div className="fixed inset-0 bg-redesign-shade-40" />
         </Transition.Child>
 
         <div className="fixed inset-0 overflow-y-auto">
@@ -58,7 +58,7 @@ const BaseModal = ({
             >
               <Dialog.Panel className="transform overflow-hidden rounded-lg bg-white text-left align-middle shadow-modal transition-all">
                 {title && (
-                  <Dialog.Title as="header" className={cn('text-redesign-text-primary font-bold', headerClass)}>
+                  <Dialog.Title as="header" className={cn('text-black font-bold', headerClass)}>
                     <TitleText>{title}</TitleText>
                   </Dialog.Title>
                 )}
@@ -67,7 +67,7 @@ const BaseModal = ({
                   <button
                     aria-label={t('basemodal.closeButton')}
                     type="button"
-                    className="text-redesign-icon-gray absolute top-4 right-4"
+                    className="text-redesign-shade-32 absolute top-4 right-4"
                     onClick={onClose}
                   >
                     <Icon name="close" size={24} />

@@ -1,10 +1,10 @@
 import cn from 'classnames';
 
+import TextBase from '@renderer/components/ui-redesign/Typography/common/TextBase';
 import { TypographyProps } from '@renderer/components/ui-redesign/Typography/common/types';
-import Text from '@renderer/components/ui-redesign/Typography/common/Text';
 
 const TitleText = ({ className, as = 'h2', ...props }: TypographyProps) => (
-  <Text className={cn('text-title', className)} as={as} {...props} />
+  <TextBase className={cn('text-title', className)} as={as} {...props} />
 );
 
 export default TitleText;

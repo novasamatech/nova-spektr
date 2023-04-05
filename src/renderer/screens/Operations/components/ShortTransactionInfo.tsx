@@ -1,7 +1,6 @@
 import { ReactNode, useEffect, useState } from 'react';
 
 import { Transaction, TransactionType } from '@renderer/domain/transaction';
-import { getTransactionType } from '../common/utils';
 import { DEFAULT } from '@shared/constants/common';
 import { useChains } from '@renderer/services/network/chainsService';
 import { Asset } from '@renderer/domain/asset';
@@ -53,12 +52,14 @@ const ShortTransactionInfo = ({ transaction }: Props) => {
     getChainById(transaction.chainId).then((chain) => setAssets(chain?.assets || []));
   }, []);
 
-  const asset = getAssetById(assets || [], transaction.args.assetId);
+  const asset = getAssetById(transaction.args.assetId, assets);
 
   const Transactions: Record<TransactionType | typeof DEFAULT, ReactNode> = {
+    // Transfer
     [TransactionType.ASSET_TRANSFER]: <TransactionInfo transaction={transaction} asset={asset} />,
     [TransactionType.ORML_TRANSFER]: <TransactionInfo transaction={transaction} asset={asset} />,
     [TransactionType.TRANSFER]: <TransactionInfo transaction={transaction} asset={asset} />,
+    [TransactionType.MULTISIG_AS_MULTI]: <TransactionInfo transaction={transaction} asset={asset} />,
 
     // Staking
     [TransactionType.BOND]: <TransactionInfo transaction={transaction} asset={asset} />,
@@ -70,12 +71,12 @@ const ShortTransactionInfo = ({ transaction }: Props) => {
     [TransactionType.DESTINATION]: null,
 
     // Technical
+    [TransactionType.BATCH_ALL]: <ShortTransactionInfo transaction={transaction.args?.calls?.[0]} />,
     [TransactionType.CHILL]: null,
-    [TransactionType.BATCH_ALL]: null,
     [DEFAULT]: null,
   };
 
-  return <>{Transactions[getTransactionType(transaction) || DEFAULT]}</>;
+  return <>{Transactions[transaction.type || DEFAULT]}</>;
 };
 
 export default ShortTransactionInfo;
