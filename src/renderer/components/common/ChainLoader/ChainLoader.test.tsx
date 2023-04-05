@@ -1,6 +1,6 @@
 import { render, screen } from '@testing-library/react';
 
-import { ChainLoader } from './ChainLoader';
+import ChainLoader from './ChainLoader';
 
 jest.mock('@renderer/context/I18nContext', () => ({
   useI18n: jest.fn().mockReturnValue({
