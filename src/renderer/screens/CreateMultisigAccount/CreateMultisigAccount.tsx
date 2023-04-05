@@ -9,7 +9,7 @@ import { Signatory } from '@renderer/domain/signatory';
 import { useToggle } from '@renderer/shared/hooks';
 import { useAccount } from '@renderer/services/account/accountService';
 import { useMatrix } from '@renderer/context/MatrixContext';
-import { Message } from '@renderer/shared/components';
+import { Message } from '@renderer/components/common';
 import { DropdownOption, DropdownResult } from '@renderer/components/ui/Dropdowns/common/types';
 import SelectContactsModal from './SelectContactsModal';
 import Settings from '../Settings';

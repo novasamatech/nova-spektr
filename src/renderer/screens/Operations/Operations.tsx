@@ -5,7 +5,7 @@ import { IndexableType } from 'dexie';
 
 import { Block, Button, Plate, Table } from '@renderer/components/ui';
 import { useI18n } from '@renderer/context/I18nContext';
-import { MiltisigTransactionFinalStatus, MultisigEvent, MultisigTransactionStatus } from '@renderer/domain/transaction';
+import { MultisigEvent, MultisigTxStatus, MiltisigTxFinalStatus } from '@renderer/domain/transaction';
 import { useMultisigTx } from '@renderer/services/multisigTx/multisigTxService';
 import { MultisigTransactionDS } from '@renderer/services/storage';
 import Chain from './components/Chain';
@@ -23,12 +23,12 @@ import CallDataModal from './components/CallDataModal';
 const sortByDate = ([dateA]: [string, MultisigTransactionDS[]], [dateB]: [string, MultisigTransactionDS[]]) =>
   new Date(dateA) < new Date(dateB) ? 1 : -1;
 
-const StatusTitle: Record<MultisigTransactionStatus, string> = {
+const StatusTitle: Record<MultisigTxStatus, string> = {
   SIGNING: 'operations.status.signing',
-  [MiltisigTransactionFinalStatus.CANCELLED]: 'operations.status.cancelled',
-  [MiltisigTransactionFinalStatus.ERROR]: 'operations.status.error',
-  [MiltisigTransactionFinalStatus.ESTABLISHED]: 'operations.status.esteblished',
-  [MiltisigTransactionFinalStatus.SUCCESS]: 'operations.status.success',
+  [MiltisigTxFinalStatus.CANCELLED]: 'operations.status.cancelled',
+  [MiltisigTxFinalStatus.ERROR]: 'operations.status.error',
+  [MiltisigTxFinalStatus.ESTABLISHED]: 'operations.status.esteblished',
+  [MiltisigTxFinalStatus.SUCCESS]: 'operations.status.success',
 };
 
 const Operations = () => {

@@ -15,8 +15,9 @@ import { Call } from '@polkadot/types/interfaces';
 import { AccountID, CallData, HexString } from '@renderer/domain/shared-kernel';
 import { Transaction, TransactionType } from '@renderer/domain/transaction';
 import { createTxMetadata } from '@renderer/shared/utils/substrate';
-import { ITransactionService } from './common/types';
+import { ITransactionService, HashData } from './common/types';
 import { toPublicKey } from '@renderer/shared/utils/address';
+import { MAX_WEIGHT } from '@renderer/services/transaction/common/constants';
 
 export const useTransaction = (): ITransactionService => {
   const createRegistry = async (api: ApiPromise) => {
@@ -59,6 +60,20 @@ export const useTransaction = (): ITransactionService => {
           dest: transaction.args.dest,
           amount: transaction.args.value,
           currencyId: transaction.args.asset,
+        },
+        info,
+        options,
+      );
+    },
+    [TransactionType.MULTISIG_AS_MULTI]: (transaction, info, options) => {
+      return methods.multisig.asMulti(
+        {
+          threshold: transaction.args.threshold,
+          otherSignatories: transaction.args.otherSignatories,
+          maybeTimepoint: transaction.args.maybeTimepoint,
+          maxWeight: MAX_WEIGHT,
+          call: transaction.args.callData,
+          callHash: transaction.args.callHash,
         },
         info,
         options,
@@ -155,6 +170,8 @@ export const useTransaction = (): ITransactionService => {
     [TransactionType.ASSET_TRANSFER]: ({ dest, value, asset }, api) =>
       api.tx.assets.transferKeepAlive(asset, dest, value),
     [TransactionType.ORML_TRANSFER]: ({ dest, value, asset }, api) => api.tx.currencies.transfer(dest, asset, value),
+    [TransactionType.MULTISIG_AS_MULTI]: ({ threshold, otherSignatories, maybeTimepoint, call, maxWeight }, api) =>
+      api.tx.multisig.asMulti(threshold, otherSignatories, maybeTimepoint, call, maxWeight),
     [TransactionType.BOND]: ({ controller, value, payee }, api) => api.tx.staking.bond(controller, value, payee),
     [TransactionType.UNSTAKE]: ({ value }, api) => api.tx.staking.unbond(value),
     [TransactionType.STAKE_MORE]: ({ maxAdditional }, api) => api.tx.staking.bondExtra(maxAdditional),
@@ -198,11 +215,27 @@ export const useTransaction = (): ITransactionService => {
     return construct.signedTx(unsigned, signature, { registry, metadataRpc });
   };
 
+  const getTransactionHash = (transaction: Transaction, api: ApiPromise): HashData => {
+    const extrinsic = getExtrinsic[transaction.type](transaction.args, api);
+
+    return {
+      callData: extrinsic.method.toHex(),
+      callHash: extrinsic.method.hash.toHex(),
+    };
+  };
+
   const getTransactionFee = async (transaction: Transaction, api: ApiPromise): Promise<string> => {
     const extrinsic = getExtrinsic[transaction.type](transaction.args, api);
     const { partialFee } = await extrinsic.paymentInfo(transaction.address);
 
     return partialFee.toString();
+  };
+
+  const getTransactionDeposit = (threshold: number, api: ApiPromise): string => {
+    const { depositFactor, depositBase } = api.consts.multisig;
+    const deposit = depositFactor.muln(threshold).add(depositBase);
+
+    return deposit.toString();
   };
 
   const submitAndWatchExtrinsic = async (
@@ -221,12 +254,14 @@ export const useTransaction = (): ITransactionService => {
         if (!result.isInBlock || extrinsicCalls > 1) return;
 
         const signedBlock = await api.rpc.chain.getBlock();
+        const blockHeight = signedBlock.block.header.number.toNumber();
         const apiAt = await api.at(signedBlock.block.header.hash);
         const allRecords = await apiAt.query.system.events();
 
         let actualTxHash = result.inner;
         let isFinalApprove = false;
         let isSuccessExtrinsic = false;
+        let extrinsicIndex = 0;
 
         // information for each contained extrinsic
         signedBlock.block.extrinsics.forEach(({ method: extrinsicMethod, signer, hash }, index) => {
@@ -246,6 +281,7 @@ export const useTransaction = (): ITransactionService => {
             }
 
             if (api.events.system.ExtrinsicSuccess.is(event)) {
+              extrinsicIndex = index;
               actualTxHash = hash;
               isSuccessExtrinsic = true;
               extrinsicCalls += 1;
@@ -271,6 +307,10 @@ export const useTransaction = (): ITransactionService => {
 
         if (extrinsicCalls === 1) {
           callback(true, {
+            timepoint: {
+              index: extrinsicIndex,
+              height: blockHeight,
+            },
             extrinsicHash: actualTxHash.toHex(),
             isFinalApprove,
             isSuccessExtrinsic,
@@ -391,6 +431,8 @@ export const useTransaction = (): ITransactionService => {
     getSignedExtrinsic,
     submitAndWatchExtrinsic,
     getTransactionFee,
+    getTransactionDeposit,
+    getTransactionHash,
     decodeCallData,
   };
 };

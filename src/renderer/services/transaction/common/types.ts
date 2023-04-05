@@ -24,5 +24,16 @@ export type ITransactionService = {
     callback: (executed: boolean, params: any) => void,
   ) => void;
   getTransactionFee: (transaction: Transaction, api: ApiPromise) => Promise<string>;
+  getTransactionDeposit: (threshold: number, api: ApiPromise) => string;
+  getTransactionHash: (transaction: Transaction, api: ApiPromise) => HashData;
   decodeCallData: (api: ApiPromise, accountId: AccountID, callData: CallData) => Transaction;
+};
+
+// =====================================================
+// ======================= General =====================
+// =====================================================
+
+export type HashData = {
+  callData: HexString;
+  callHash: HexString;
 };

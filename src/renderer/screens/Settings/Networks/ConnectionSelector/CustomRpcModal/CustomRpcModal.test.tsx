@@ -13,11 +13,6 @@ jest.mock('@renderer/context/NetworkContext', () => ({
   })),
 }));
 
-window.IntersectionObserver = jest.fn().mockImplementation(() => ({
-  observe: jest.fn(),
-  disconnect: jest.fn(),
-}));
-
 jest.mock('@renderer/context/I18nContext', () => ({
   useI18n: jest.fn().mockReturnValue({
     t: (key: string) => key,
