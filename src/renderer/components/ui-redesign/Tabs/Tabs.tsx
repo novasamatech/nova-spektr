@@ -13,10 +13,11 @@ interface Props {
   items: TabItem[];
   panelClassName?: string;
   tabClassName?: string;
+  onChange?: (index: number) => void;
 }
-const Tabs = ({ items, tabClassName, panelClassName = 'mt-4' }: Props) => {
+const Tabs = ({ items, tabClassName, panelClassName = 'mt-4', onChange }: Props) => {
   return (
-    <Tab.Group>
+    <Tab.Group onChange={onChange}>
       <Tab.List className="p-0.5 flex bg-redesign-shade-5 border-redesign-shade-8 rounded-[5px] gap-1">
         {items.map(({ id, title }) => (
           <Tab
