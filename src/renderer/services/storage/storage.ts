@@ -22,26 +22,27 @@ class DexieStorage extends Dexie {
   balances: Table<BalanceDS>;
   wallets: Table<WalletDS>;
   accounts: Table<AccountDS>;
-  multisigTransactions: Table<MultisigTransactionDS>;
   contacts: Table<ContactDS>;
+  multisigTransactions: Table<MultisigTransactionDS>;
 
   constructor() {
     super('omni'); // TODO: naming is not final
-    this.version(11).stores({
+    this.version(12).stores({
       connections: '++id,chainId,type',
       balances: '[publicKey+chainId+assetId],[publicKey+chainId]',
       wallets: '++id,isActive,type',
       accounts: '++id,isActive,walletId,rootId,signingType',
-      multisigTransactions: '++id,[publicKey+status],[publicKey+callHash],publicKey,status,callHash',
       contacts: '++id,name,accountId,matrixId',
+      multisigTransactions:
+        '++id,[publicKey+status],[publicKey+callHash],[callHash+status+chainId],publicKey,status,callHash',
     });
 
     this.connections = this.table('connections');
     this.balances = this.table('balances');
     this.wallets = this.table('wallets');
     this.accounts = this.table('accounts');
-    this.multisigTransactions = this.table('multisigTransactions');
     this.contacts = this.table('contacts');
+    this.multisigTransactions = this.table('multisigTransactions');
   }
 }
 

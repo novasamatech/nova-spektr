@@ -4,6 +4,12 @@ import { decodeAddress, encodeAddress } from '@polkadot/util-crypto';
 import { PublicKey, AccountID } from '@renderer/domain/shared-kernel';
 import { PUBLIC_KEY_LENGTH, SS58_DEFAULT_PREFIX } from './constants';
 
+/**
+ * Format address based on prefix
+ * @param address account's address
+ * @param prefix ss58 prefix
+ * @return {String}
+ */
 export const formatAddress = (address?: AccountID | PublicKey, prefix = SS58_DEFAULT_PREFIX): string => {
   if (!address) return '';
 
@@ -11,20 +17,25 @@ export const formatAddress = (address?: AccountID | PublicKey, prefix = SS58_DEF
 };
 
 /**
- * Get public key of the address
+ * Try to get public key of the address
  * @param address account's address
- * @return {String | undefined}
+ * @return {PublicKey | undefined}
  */
-export const toPublicKey = (address?: string): PublicKey | undefined => {
+export const toPublicKey = (address?: AccountID): PublicKey | undefined => {
   if (!address) return;
 
   try {
     return u8aToHex(decodeAddress(address));
-  } catch (e) {
+  } catch {
     return undefined;
   }
 };
 
+/**
+ * Check is public key correct
+ * @param publicKey public key to check
+ * @return {Boolean}
+ */
 export const isCorrectPublicKey = (publicKey: PublicKey): boolean => {
   if (!publicKey) return false;
 
@@ -49,6 +60,11 @@ export const pasteAddressHandler = (handler: (value: string) => void) => {
   };
 };
 
-export const validateAddress = (address: string): boolean => {
+/**
+ * Check is account's address valid
+ * @param address account's address
+ * @return {Boolean}
+ */
+export const isAddressValid = (address?: AccountID): boolean => {
   return Boolean(toPublicKey(address));
 };

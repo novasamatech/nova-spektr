@@ -17,6 +17,7 @@ const transaction = {
   args: {
     dest: TEST_ADDRESS,
     value: '100000000000',
+    assetId: '0',
   },
 } as Transaction;
 

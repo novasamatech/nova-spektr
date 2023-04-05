@@ -1,19 +1,15 @@
-import ParitySignerBackgroundImg, {
-  ReactComponent as ParitySignerBackgroundSvg,
-} from '@images/walletTypes/paritySignerBackground.svg';
-import WatchOnlyBackgroundImg, {
-  ReactComponent as WatchOnlyBackgroundSvg,
-} from '@images/walletTypes/watchOnlyBackground.svg';
+import ParitySignerBgImg, { ReactComponent as ParitySignerBgSvg } from '@images/walletTypes/paritySignerBg.svg';
+import WatchOnlyBgImg, { ReactComponent as WatchOnlyBgSvg } from '@images/walletTypes/watchOnlyBg.svg';
 import ParitySignerImg, { ReactComponent as ParitySignerSvg } from '@images/walletTypes/paritySigner.svg';
 import WatchOnlyImg, { ReactComponent as WatchOnlySvg } from '@images/walletTypes/watchOnly.svg';
-import MultisignatureImg, { ReactComponent as MultisignatureSvg } from '@images/walletTypes/multisignature.svg';
+import MultisigBgImg, { ReactComponent as MultisigBgSvg } from '@images/walletTypes/multisigBg.svg';
 
 const WalletTypeImages = {
   paritySigner: { svg: ParitySignerSvg, img: ParitySignerImg },
-  paritySignerBackground: { svg: ParitySignerBackgroundSvg, img: ParitySignerBackgroundImg },
+  paritySignerBg: { svg: ParitySignerBgSvg, img: ParitySignerBgImg },
   watchOnly: { svg: WatchOnlySvg, img: WatchOnlyImg },
-  watchOnlyBackground: { svg: WatchOnlyBackgroundSvg, img: WatchOnlyBackgroundImg },
-  multisignature: { svg: MultisignatureSvg, img: MultisignatureImg },
+  watchOnlyBg: { svg: WatchOnlyBgSvg, img: WatchOnlyBgImg },
+  multisigBg: { svg: MultisigBgSvg, img: MultisigBgImg },
 } as const;
 
 export type WalletType = keyof typeof WalletTypeImages;
