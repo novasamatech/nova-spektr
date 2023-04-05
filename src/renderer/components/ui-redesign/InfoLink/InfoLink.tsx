@@ -15,16 +15,14 @@ const InfoLink = ({ url, showIcon = true, children, iconName = 'info' }: PropsWi
     className={cn('w-max outline-offset-4 text-redesign-system-blue', showIcon && 'flex items-center gap-x-1')}
     fontWeight="semibold"
   >
-    <>
-      {url ? (
-        <a href={url} rel="noopener noreferrer" target="_blank" className="text-inherit">
-          {children}
-        </a>
-      ) : (
-        children
-      )}
-      {showIcon && <Icon name={iconName} size={14} />}
-    </>
+    {url ? (
+      <a href={url} rel="noopener noreferrer" target="_blank" className="text-inherit">
+        {children}
+      </a>
+    ) : (
+      children
+    )}
+    {showIcon && <Icon name={iconName} size={14} />}
   </CalloutText>
 );
 
