@@ -7,11 +7,6 @@ import chains from '@renderer/services/network/common/chains/chains.json';
 import ReceiveModal from './ReceiveModal';
 import { useAccount } from '@renderer/services/account/accountService';
 
-window.IntersectionObserver = jest.fn().mockImplementation(() => ({
-  observe: jest.fn(),
-  disconnect: jest.fn(),
-}));
-
 jest.mock('@renderer/context/I18nContext', () => ({
   useI18n: jest.fn().mockReturnValue({
     t: (key: string) => key,

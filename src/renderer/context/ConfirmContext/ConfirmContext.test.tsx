@@ -5,11 +5,6 @@ import { ConfirmDialogProvider, useConfirmContext } from './ConfirmContext';
 
 jest.mock('@renderer/shared/hooks');
 
-window.IntersectionObserver = jest.fn().mockImplementation(() => ({
-  observe: jest.fn(),
-  disconnect: jest.fn(),
-}));
-
 describe('context/ConfirmContext', () => {
   afterEach(() => {
     jest.clearAllMocks();

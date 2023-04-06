@@ -3,7 +3,6 @@ import { BN, BN_TWO, bnMin } from '@polkadot/util';
 import compact from 'lodash/compact';
 import sortBy from 'lodash/sortBy';
 
-import { StakingType } from '@renderer/domain/asset';
 import { Chain } from '@renderer/domain/chain';
 import chainsDev from './common/chains/chains.json';
 import chainsOmniProd from './common/chains/omni-chains.json';
@@ -12,6 +11,7 @@ import { DEFAULT_TIME, ONE_DAY, THRESHOLD } from './common/constants';
 import { ChainLike, IChainService } from './common/types';
 import { isKusama, isPolkadot, isTestnet } from './common/utils';
 import { ChainId } from '@renderer/domain/shared-kernel';
+import { getRelaychainAsset } from '@renderer/shared/utils/assets';
 
 const CHAINS: Record<string, any> = {
   dev: chainsDev,
@@ -35,10 +35,11 @@ export function useChains(): IChainService {
     const chainsData: Chain[] = CHAINS[process.env.CHAINS_FILE || 'dev'];
 
     const stakingChains = chainsData.reduce<Chain[]>((acc, chain) => {
-      const asset = chain.assets.find((asset) => asset.staking === StakingType.RELAYCHAIN);
-      if (!asset) return acc;
+      if (getRelaychainAsset(chain.assets)) {
+        acc.push(chain);
+      }
 
-      return acc.concat(chain);
+      return acc;
     }, []);
 
     return Promise.resolve(stakingChains);

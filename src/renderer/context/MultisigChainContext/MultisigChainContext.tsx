@@ -8,7 +8,7 @@ import { useNetworkContext } from '../NetworkContext';
 import { useMultisigTx } from '@renderer/services/multisigTx/multisigTxService';
 import { useAccount } from '@renderer/services/account/accountService';
 import { MultisigAccount } from '@renderer/domain/account';
-import { MiltisigTransactionFinalStatus, SigningStatus } from '@renderer/domain/transaction';
+import { MultisigTxFinalStatus, SigningStatus } from '@renderer/domain/transaction';
 import { Signatory } from '@renderer/domain/signatory';
 
 type MultisigChainContextProps = {};
@@ -28,7 +28,7 @@ export const MultisigChainProvider = ({ children }: PropsWithChildren) => {
     event: Event,
     pendingEventStatuses: SigningStatus[],
     resultEventStatus: SigningStatus,
-    resultTransactionStatus: MiltisigTransactionFinalStatus,
+    resultTransactionStatus: MultisigTxFinalStatus,
   ) => {
     const txs = await getMultisigTxs({
       publicKey: account.publicKey,
@@ -89,7 +89,7 @@ export const MultisigChainProvider = ({ children }: PropsWithChildren) => {
               event,
               ['PENDING_SIGNED', 'SIGNED'],
               'SIGNED',
-              MiltisigTransactionFinalStatus.SUCCESS,
+              MultisigTxFinalStatus.SUCCESS,
             );
           })();
         });
@@ -107,7 +107,7 @@ export const MultisigChainProvider = ({ children }: PropsWithChildren) => {
               event,
               ['PENDING_CANCELLED', 'CANCELLED'],
               'CANCELLED',
-              MiltisigTransactionFinalStatus.CANCELLED,
+              MultisigTxFinalStatus.CANCELLED,
             );
           })();
         });

@@ -1,6 +1,6 @@
 import { EventType, MatrixEvent, Room } from 'matrix-js-sdk';
 
-import { HexString, PublicKey, AccountID } from '@renderer/domain/shared-kernel';
+import { HexString, PublicKey, AccountID, Timepoint } from '@renderer/domain/shared-kernel';
 
 // =====================================================
 // ============ ISecureMessenger interface =============
@@ -34,10 +34,10 @@ export interface ISecureMessenger {
   verifyWithPhrase: (securityPhrase: string) => Promise<boolean>;
 
   // MST operations
-  mstInitiate: (roomId: string, params: MstParams) => void;
-  mstApprove: (roomId: string, params: MstParams) => void;
-  mstFinalApprove: (roomId: string, params: MstParams) => void;
-  mstCancel: (roomId: string, params: MstParams) => void;
+  mstInitiate: (roomId: string, params: MstParams) => Promise<void>;
+  mstApprove: (roomId: string, params: MstParams) => Promise<void>;
+  mstFinalApprove: (roomId: string, params: MstParams) => Promise<void>;
+  mstCancel: (roomId: string, params: MstParams) => Promise<void>;
 
   // Properties
   userId: string | undefined;
@@ -130,13 +130,15 @@ export enum SpektrMstEvent {
 }
 
 export type MstParams = {
-  salt: string;
   senderAddress: AccountID;
   chainId: HexString;
   callHash: HexString;
   callData?: HexString;
-  extrinsicHash?: HexString;
   description?: string;
+  extrinsicHash?: HexString;
+  extrinsicTimepoint: Timepoint;
+  callTimepoint: Timepoint;
+  error: boolean;
 };
 
 type EventPayload = {

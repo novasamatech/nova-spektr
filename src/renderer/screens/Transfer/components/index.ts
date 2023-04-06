@@ -1,5 +1,7 @@
-import SelectedAddress from './SelectedAddress';
-import TransferForm from './TransferForm';
-import TransferDetails from './TransferDetails';
-
-export { SelectedAddress, TransferForm, TransferDetails };
+export { InitOperation } from './InitOperation/InitOperation';
+export { Confirmation } from './Confirmation/Confirmation';
+export { Scanning } from './Scanning/Scanning';
+export { Signing } from './Signing/Signing';
+export { Submit } from './Submit/Submit';
+export { TransferForm } from './TransferForm/TransferForm';
+export { ActiveAddress } from './ActiveAddress/ActiveAddress';
