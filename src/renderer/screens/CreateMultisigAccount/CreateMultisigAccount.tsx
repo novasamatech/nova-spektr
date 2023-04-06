@@ -36,9 +36,9 @@ const CreateMultisigAccount = () => {
   const { getLiveAccounts, addAccount } = useAccount();
   const accounts = getLiveAccounts();
 
-  const [isSuccessMessageOpen, toggleSuccessMessage] = useToggle(false);
-  const [isAddSignatoryModalOpen, toggleAddSignatoryModal] = useToggle(false);
-  const [inProgress, toggleInProgress] = useToggle(false);
+  const [isSuccessMessageOpen, toggleSuccessMessage] = useToggle();
+  const [isAddSignatoryModalOpen, toggleAddSignatoryModal] = useToggle();
+  const [inProgress, toggleInProgress] = useToggle();
 
   const [signatories, setSignatories] = useState<Signatory[]>([]);
   const [errorMessage, setErrorMessage] = useState('');
