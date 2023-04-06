@@ -7,4 +7,6 @@ const TextBase = ({ as = 'p', fontWeight = 'regular', align = 'left', className,
   return createElement(as, { className: cn(`text-${align} font-${fontWeight}`, className) }, children);
 };
 
+export type TextBaseType = typeof TextBase;
+
 export default TextBase;

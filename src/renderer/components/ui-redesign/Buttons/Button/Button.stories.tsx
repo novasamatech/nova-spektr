@@ -4,7 +4,7 @@ import { Icon } from '@renderer/components/ui';
 import Button from './Button';
 
 export default {
-  title: 'Button Redesign',
+  title: 'Redesign/Button',
   component: Button,
   parameters: { actions: { argTypesRegex: '^on.*' } },
 } as ComponentMeta<typeof Button>;
