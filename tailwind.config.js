@@ -1,8 +1,10 @@
 const defaultTheme = require('tailwindcss/defaultTheme');
 
+const colors = require('./colors');
 module.exports = {
   mode: 'jit',
   content: ['./src/renderer/index.html', './src/renderer/**/*.{js,ts,tsx}'],
+  darkMode: 'class',
   theme: {
     extend: {
       fontFamily: {
@@ -15,7 +17,6 @@ module.exports = {
         'icon-button': '0px 2px 2px rgba(0, 0, 0, 0.04), inset 0px -0.5px 0px rgba(8, 9, 14, 0.16)',
         popover: '0px 0px 12px rgba(0, 0, 0, 0.16), 0px 0px 6px rgba(0, 0, 0, 0.08), 0px 2px 4px rgba(0, 0, 0, 0.04)',
         'active-input': '0px 0px 0px 2px rgba(36, 99, 235, 0.16)',
-        tab: '0px 0px 2px rgba(0, 0, 0, 0.08), 0px 2px 4px rgba(0, 0, 0, 0.08)',
         modal: '0px 2px 6px rgba(24, 24, 28, 0.06), 0px 32px 41px -23px rgba(24, 24, 28, 0.07)',
       },
       colors: {
@@ -50,18 +51,16 @@ module.exports = {
         redesign: {
           primary: '#2463EB',
           'secondary-bg': '#FAFAFA',
-          'system-blue': '#007AFF',
           'text-primary': '#000000',
           shade: {
-            5: 'rgba(0, 0, 0, 0.05)',
             8: 'rgba(0, 0, 0, 0.08)',
             12: 'rgba(0, 0, 0, 0.12)',
             32: 'rgba(0, 0, 0, 0.32)',
             40: 'rgba(0, 0, 0, 0.40)',
             48: 'rgba(0, 0, 0, 0.48)',
-            56: 'rgba(0, 0, 0, 0.56)',
           },
         },
+        ...colors,
       },
       spacing: {
         1.25: '0.3125rem',
@@ -84,7 +83,6 @@ module.exports = {
         '4.5xl': ['2.75rem', '3rem'],
         body: ['0.8125rem', '1.125rem'],
         callout: ['0.75rem', '1rem'],
-        'small-title': ['0.5625rem', '0.75rem'],
         title: ['1.375rem', '1.75rem'],
       },
       borderRadius: {
