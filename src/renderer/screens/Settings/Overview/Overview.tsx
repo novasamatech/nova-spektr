@@ -1,7 +1,6 @@
 import cn from 'classnames';
 import { Link } from 'react-router-dom';
 
-import { IconNames } from '@renderer/components/ui/Icon/data';
 import { Dropdown, Icon } from '@renderer/components/ui';
 import { DropdownOption, DropdownResult } from '@renderer/components/ui/Dropdowns/common/types';
 import { useI18n } from '@renderer/context/I18nContext';
@@ -11,17 +10,17 @@ import { SupportedLocale } from '@renderer/services/translation/common/types';
 const LINKS = [
   {
     path: Paths.NETWORK,
-    icon: 'network' as IconNames,
+    icon: 'network',
     title: 'settings.overview.networkLabel',
     subtitle: 'settings.overview.networkDetailsLabel',
   },
   {
     path: Paths.MATRIX,
-    icon: 'chat' as IconNames,
+    icon: 'chat',
     title: 'settings.overview.matrixLabel',
     subtitle: 'settings.overview.matrixDetailsLabel',
   },
-];
+] as const;
 
 const Overview = () => {
   const { t, locale, locales, changeLocale } = useI18n();

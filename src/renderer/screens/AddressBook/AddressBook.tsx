@@ -15,7 +15,7 @@ const AddressBook = () => {
   const { getLiveContacts } = useContact();
   const contacts = getLiveContacts();
 
-  const [isAddContactModalShown, toggleAddContactModal] = useToggle(false);
+  const [isAddContactModalShown, toggleAddContactModal] = useToggle();
 
   return (
     <div className="h-full flex flex-col gap-y-9 relative">

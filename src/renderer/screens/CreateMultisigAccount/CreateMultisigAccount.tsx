@@ -9,7 +9,7 @@ import { Signatory } from '@renderer/domain/signatory';
 import { useToggle } from '@renderer/shared/hooks';
 import { useAccount } from '@renderer/services/account/accountService';
 import { useMatrix } from '@renderer/context/MatrixContext';
-import { Message } from '@renderer/shared/components';
+import { Message } from '@renderer/components/common';
 import { DropdownOption, DropdownResult } from '@renderer/components/ui/Dropdowns/common/types';
 import SelectContactsModal from './SelectContactsModal';
 import Settings from '../Settings';
@@ -36,9 +36,9 @@ const CreateMultisigAccount = () => {
   const { getLiveAccounts, addAccount } = useAccount();
   const accounts = getLiveAccounts();
 
-  const [isSuccessMessageOpen, toggleSuccessMessage] = useToggle(false);
-  const [isAddSignatoryModalOpen, toggleAddSignatoryModal] = useToggle(false);
-  const [inProgress, toggleInProgress] = useToggle(false);
+  const [isSuccessMessageOpen, toggleSuccessMessage] = useToggle();
+  const [isAddSignatoryModalOpen, toggleAddSignatoryModal] = useToggle();
+  const [inProgress, toggleInProgress] = useToggle();
 
   const [signatories, setSignatories] = useState<Signatory[]>([]);
   const [errorMessage, setErrorMessage] = useState('');

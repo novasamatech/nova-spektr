@@ -1,11 +1,15 @@
 import { IconNames } from '@renderer/components/ui/Icon/data';
+import { Explorer } from '@renderer/domain/chain';
+import { HexString } from '@renderer/domain/shared-kernel';
 import { Transaction, TransactionType } from '@renderer/domain/transaction';
+import { MultisigTransactionDS } from '@renderer/services/storage';
 
 const TransactionTitles: Record<TransactionType, string> = {
   // Transfer
   [TransactionType.ASSET_TRANSFER]: 'operations.titles.transfer',
   [TransactionType.ORML_TRANSFER]: 'operations.titles.transfer',
   [TransactionType.TRANSFER]: 'operations.titles.transfer',
+  [TransactionType.MULTISIG_AS_MULTI]: 'operations.titles.transfer',
   // Staking
   [TransactionType.BOND]: 'operations.titles.startStaking',
   [TransactionType.NOMINATE]: 'operations.titles.nominate',
@@ -24,6 +28,7 @@ const TransactionIcons: Record<TransactionType, IconNames> = {
   [TransactionType.ASSET_TRANSFER]: 'staking',
   [TransactionType.ORML_TRANSFER]: 'staking',
   [TransactionType.TRANSFER]: 'staking',
+  [TransactionType.MULTISIG_AS_MULTI]: 'staking',
   // Staking
   [TransactionType.BOND]: 'staking',
   [TransactionType.NOMINATE]: 'staking',
@@ -55,4 +60,22 @@ export const getIconName = (transaction?: Transaction): IconNames => {
   }
 
   return TransactionIcons[transaction.type];
+};
+
+export const sortByDate = ([dateA]: [string, MultisigTransactionDS[]], [dateB]: [string, MultisigTransactionDS[]]) =>
+  new Date(dateA) < new Date(dateB) ? 1 : -1;
+
+export const getMultisigExtrinsicLink = (
+  callHash?: HexString,
+  indexCreated?: number,
+  blockCreated?: number,
+  explorers?: Explorer[],
+): string | undefined => {
+  if (!callHash || !indexCreated || !blockCreated || !explorers) return;
+
+  const multisigLink = explorers.find((e) => e.multisig);
+
+  if (!multisigLink?.multisig) return;
+
+  return multisigLink.multisig.replace('{index}', `${blockCreated}-${indexCreated}`).replace('{callHash}', callHash);
 };

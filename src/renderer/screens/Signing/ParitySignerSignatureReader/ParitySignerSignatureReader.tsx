@@ -6,7 +6,7 @@ import { ErrorObject, QrError, VideoInput } from '@renderer/components/common/Qr
 import { Button, Dropdown, Icon } from '@renderer/components/ui';
 import { DropdownOption, DropdownResult } from '@renderer/components/ui/Dropdowns/common/types';
 import { useI18n } from '@renderer/context/I18nContext';
-import { ValidationErrors } from '@renderer/screens/Transfer/common/constants';
+import { ValidationErrors } from '@renderer/shared/utils/validation';
 import { secondsToMinutes } from '@renderer/shared/utils/time';
 
 const enum CameraState {
@@ -25,9 +25,9 @@ const RESULT_DELAY = 250;
 type Props = {
   size?: number;
   className?: string;
-  onResult: (payload: string) => void;
   countdown?: number;
   validationError?: ValidationErrors;
+  onResult: (payload: string) => void;
 };
 
 const ParitySignerSignatureReader = ({ size = 300, className, onResult, countdown, validationError }: Props) => {
@@ -36,7 +36,6 @@ const ParitySignerSignatureReader = ({ size = 300, className, onResult, countdow
   const [cameraState, setCameraState] = useState<CameraState>(CameraState.LOADING);
   const [activeCamera, setActiveCamera] = useState<DropdownResult<string>>();
   const [availableCameras, setAvailableCameras] = useState<DropdownOption<string>[]>([]);
-
   const [isScanComplete, setIsScanComplete] = useState(false);
 
   const isCameraPending = [CameraState.LOADING, CameraState.SELECT].includes(cameraState);
@@ -257,7 +256,12 @@ const ParitySignerSignatureReader = ({ size = 300, className, onResult, countdow
           {countdown && countdown > 0 ? (
             <div className="flex m-auto items-center justify-center uppercase font-normal text-xs gap-1.25">
               {t('signing.qrCountdownTitle')}
-              <div className={cn('rounded-md text-white py-0.5 px-1.5', countdown > 60 ? 'bg-success' : 'bg-alert')}>
+              <div
+                className={cn(
+                  'w-10 rounded-md text-white py-0.5 text-center',
+                  (!countdown && 'bg-error') || (countdown >= 60 ? 'bg-success' : 'bg-alert'),
+                )}
+              >
                 {secondsToMinutes(countdown)}
               </div>
             </div>

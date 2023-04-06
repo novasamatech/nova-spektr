@@ -16,6 +16,7 @@ module.exports = {
         popover: '0px 0px 12px rgba(0, 0, 0, 0.16), 0px 0px 6px rgba(0, 0, 0, 0.08), 0px 2px 4px rgba(0, 0, 0, 0.04)',
         'active-input': '0px 0px 0px 2px rgba(36, 99, 235, 0.16)',
         tab: '0px 0px 2px rgba(0, 0, 0, 0.08), 0px 2px 4px rgba(0, 0, 0, 0.08)',
+        modal: '0px 2px 6px rgba(24, 24, 28, 0.06), 0px 32px 41px -23px rgba(24, 24, 28, 0.07)',
       },
       colors: {
         primary: '#567CDC',
@@ -49,11 +50,13 @@ module.exports = {
         redesign: {
           primary: '#2463EB',
           'secondary-bg': '#FAFAFA',
+          'text-primary': '#000000',
           shade: {
             5: 'rgba(0, 0, 0, 0.05)',
             8: 'rgba(0, 0, 0, 0.08)',
             12: 'rgba(0, 0, 0, 0.12)',
             32: 'rgba(0, 0, 0, 0.32)',
+            40: 'rgba(0, 0, 0, 0.40)',
             48: 'rgba(0, 0, 0, 0.48)',
           },
         },
@@ -80,6 +83,7 @@ module.exports = {
         body: ['0.8125rem', '1.125rem'],
         callout: ['0.75rem', '1rem'],
         'small-title': ['0.5625rem', '0.75rem'],
+        title: ['1.375rem', '1.75rem'],
       },
       borderRadius: {
         '2lg': '10px',
