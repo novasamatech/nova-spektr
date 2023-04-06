@@ -49,6 +49,7 @@ module.exports = {
         redesign: {
           primary: '#2463EB',
           'secondary-bg': '#FAFAFA',
+          'system-blue': '#007AFF',
           'text-primary': '#000000',
           shade: {
             8: 'rgba(0, 0, 0, 0.08)',
@@ -56,6 +57,7 @@ module.exports = {
             32: 'rgba(0, 0, 0, 0.32)',
             40: 'rgba(0, 0, 0, 0.40)',
             48: 'rgba(0, 0, 0, 0.48)',
+            56: 'rgba(0, 0, 0, 0.56)',
           },
         },
       },

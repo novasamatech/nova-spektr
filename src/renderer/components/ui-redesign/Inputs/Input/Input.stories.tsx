@@ -3,7 +3,7 @@ import { ComponentMeta, ComponentStory } from '@storybook/react';
 import Input from './Input';
 
 export default {
-  title: 'Input Redesign',
+  title: 'Redesign/Input',
   component: Input,
   parameters: { actions: { argTypesRegex: '^on.*' } },
 } as ComponentMeta<typeof Input>;
