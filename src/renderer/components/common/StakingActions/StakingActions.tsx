@@ -47,7 +47,7 @@ type Props = {
 const StakingActions = ({ stakes, className, onNavigate }: Props) => {
   const { t } = useI18n();
 
-  const [isDialogOpen, toggleIsDialogOpen] = useToggle(false);
+  const [isDialogOpen, toggleIsDialogOpen] = useToggle();
   const [actionType, setActionType] = useState<StakeAction | null>(null);
   const [warningMessage, setWarningMessage] = useState<string>('');
 

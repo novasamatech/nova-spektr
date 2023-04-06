@@ -26,6 +26,7 @@ export type Explorer = {
   extrinsic?: string;
   account?: string;
   event?: string;
+  multisig?: string;
 };
 
 export type ExternalValue = {

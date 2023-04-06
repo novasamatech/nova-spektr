@@ -25,18 +25,18 @@ export type SigningStatus =
   | 'ERROR_SIGNED'
   | 'ERROR_CANCELLED';
 
-export enum MiltisigTxInitStatus {
+export enum MultisigTxInitStatus {
   SIGNING = 'SIGNING',
 }
 
-export enum MiltisigTxFinalStatus {
+export enum MultisigTxFinalStatus {
   ESTABLISHED = 'ESTABLISHED',
   CANCELLED = 'CANCELLED',
   SUCCESS = 'SUCCESS',
   ERROR = 'ERROR',
 }
 
-export type MultisigTxStatus = MiltisigTxInitStatus | MiltisigTxFinalStatus;
+export type MultisigTxStatus = MultisigTxInitStatus | MultisigTxFinalStatus;
 
 export type Transaction = {
   type: TransactionType;
