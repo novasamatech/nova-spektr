@@ -21,6 +21,6 @@ describe('ui/Identicon', () => {
     const badge = screen.getByRole('img');
     expect(text).toBeInTheDocument();
     expect(badge).toBeInTheDocument();
-    expect(badge).toHaveAttribute('src', 'paritySignerBackground.svg');
+    expect(badge).toHaveAttribute('src', 'paritySignerBg.svg');
   });
 });

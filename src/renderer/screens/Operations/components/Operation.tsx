@@ -4,7 +4,12 @@ import { useEffect, useState } from 'react';
 
 import { Address, Button, Icon, Table } from '@renderer/components/ui';
 import { useI18n } from '@renderer/context/I18nContext';
-import { MiltisigTransactionFinalStatus, MultisigEvent, MultisigTransactionStatus } from '@renderer/domain/transaction';
+import {
+  MultisigTxFinalStatus,
+  MultisigTxInitStatus,
+  MultisigEvent,
+  MultisigTxStatus,
+} from '@renderer/domain/transaction';
 import { useMultisigTx } from '@renderer/services/multisigTx/multisigTxService';
 import { MultisigTransactionDS } from '@renderer/services/storage';
 import Chain from './Chain';
@@ -20,12 +25,12 @@ import { Signatory } from '@renderer/domain/signatory';
 import { nonNullable } from '@renderer/shared/utils/functions';
 import { getMultisigExtrinsicLink } from '../common/utils';
 
-const StatusTitle: Record<MultisigTransactionStatus, string> = {
-  SIGNING: 'operation.status.signing',
-  [MiltisigTransactionFinalStatus.CANCELLED]: 'operation.status.cancelled',
-  [MiltisigTransactionFinalStatus.ERROR]: 'operation.status.error',
-  [MiltisigTransactionFinalStatus.ESTABLISHED]: 'operation.status.established',
-  [MiltisigTransactionFinalStatus.SUCCESS]: 'operation.status.success',
+const StatusTitle: Record<MultisigTxStatus, string> = {
+  [MultisigTxInitStatus.SIGNING]: 'operation.status.signing',
+  [MultisigTxFinalStatus.CANCELLED]: 'operation.status.cancelled',
+  [MultisigTxFinalStatus.ERROR]: 'operation.status.error',
+  [MultisigTxFinalStatus.ESTABLISHED]: 'operation.status.established',
+  [MultisigTxFinalStatus.SUCCESS]: 'operation.status.success',
 };
 
 type Props = {
@@ -40,8 +45,8 @@ const Operation = ({ tx, account }: Props) => {
 
   const { updateCallData } = useMultisigTx();
   const { connections } = useNetworkContext();
-  const [isCallDataModalOpen, toggleCallDataModal] = useToggle(false);
-  const [isRowShown, toggleRow] = useToggle(false);
+  const [isCallDataModalOpen, toggleCallDataModal] = useToggle();
+  const [isRowShown, toggleRow] = useToggle();
   const [signatoriesList, setSignatories] = useState<Signatory[]>([]);
 
   const connection = connections[tx?.chainId as ChainId];

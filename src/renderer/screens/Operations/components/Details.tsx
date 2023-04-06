@@ -20,7 +20,7 @@ const Details = ({ tx, account, connection }: Props) => {
 
   const { t } = useI18n();
 
-  const [isAdvancedShown, toggleAdvanced] = useToggle(false);
+  const [isAdvancedShown, toggleAdvanced] = useToggle();
 
   const defaultAsset = connection?.assets[0];
 
@@ -116,9 +116,7 @@ const Details = ({ tx, account, connection }: Props) => {
             {deposit && defaultAsset && (
               <li className="flex justify-between items-center">
                 <div className="text-shade-40">{t('operation.details.deposit')}</div>
-                <div>
-                  <Balance value={deposit} precision={defaultAsset.precision} symbol={defaultAsset?.symbol} />
-                </div>
+                <Balance value={deposit} precision={defaultAsset.precision} symbol={defaultAsset?.symbol} />
               </li>
             )}
 
