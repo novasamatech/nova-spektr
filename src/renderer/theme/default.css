@@ -1,0 +1,57 @@
+body {
+  /* TEXT */
+  --text-primary: #363643;
+  --text-secondary: #79797d;
+  --text-tertiary: #a4a4ad;
+  --chip-text: #acacb5;
+  --input-text-placeholder: #acacb5;
+  --text-positive: #01a63e;
+  --text-negative: #f52163;
+  --tab-text-accent: #4649f6;
+  --action-text: #4649f6;
+  --action-text-default: rgba(70, 73, 246, 0.72);
+  --button-text: #fff;
+  --button-text-inactive: #a4a4ad;
+
+  /* ICON */
+  --icon-accent: #4649f6;
+  --icon-accent-default: rgba(70, 73, 246, 0.72);
+  --tab-icon-active: #363643;
+  --tab-icon-inactive: #79797d;
+  --icon-hover: #79797d;
+  --icon-default: #d2d2d9;
+  --chip-icon: #b8b8bd;
+
+  /* BUTTON */
+  --button-background-primary: #4649f6;
+
+  /* BORDER */
+  --token-container-border: rgba(69, 69, 137, 0.06);
+  --filter-border: rgba(69, 69, 137, 0.12);
+  --container-border: rgba(69, 69, 137, 0.06);
+
+  /* DIVIDER */
+  --divider: rgba(69, 69, 137, 0.06);
+
+  /* BACKGROUND */
+  --switch-background-active: #363643;
+  --switch-background-inactive: rgba(69, 69, 137, 0.12);
+  --knob-background: #363643;
+  --tab-selected-background: rgba(69, 69, 137, 0.06);
+  --left-navigation-menu-background: #ffffff;
+  --main-app-background: rgba(69, 69, 137, 0.04);
+  --token-container-background: #ffffff;
+  --input-background: rgba(69, 69, 137, 0.04);
+  --action-background-hover: rgba(69, 69, 137, 0.06);
+  --block-background-hover: rgba(69, 69, 137, 0.06);
+  --block-background: rgba(69, 69, 137, 0.04);
+  --extended-block-background: rgba(69, 69, 137, 0.03);
+  --negative-action-background: rgba(245, 33, 99, 0.06);
+  --dim-background: rgba(54, 54, 67, 0.4);
+  --qr-valid-background: #01a63e;
+
+  /* SHADOW */
+  --card-shadow: 0px 3px 4px rgba(69, 69, 137, 0.04), inset 0px -0.5px 0px rgba(69, 69, 137, 0.12);
+  --knob-shadow: 0px 2px 6px rgba(0, 0, 0, 0.16);
+  --input-active-shadow: 0px 0px 0px 2px rgba(36, 99, 235, 0.16);
+}
