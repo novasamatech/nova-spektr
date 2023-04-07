@@ -77,7 +77,7 @@ const Operation = ({ tx, account }: Props) => {
     setSignatories([...new Set<Signatory>([...tempCancellation, ...tempApprovals, ...signatories])]);
   }, [signatories.length, approvals.length, cancellation.length]);
 
-  const extrinsicLink = getMultisigExtrinsicLink(tx.callHash, tx.indexCreated, tx.blockCreated, connection?.explorers);
+  const explorerLink = getMultisigExtrinsicLink(tx.callHash, tx.indexCreated, tx.blockCreated, connection?.explorers);
 
   return (
     <>
@@ -109,13 +109,10 @@ const Operation = ({ tx, account }: Props) => {
           <div className="flex-1 p-4 w-full max-w-md">
             <div className="flex justify-between items-center mb-2">
               <div className="font-bold text-base">{t('operation.detailsTitle')}</div>
-              {/* <ButtonLink to={explorerLink} variant="text" pallet="primary">
-                {t('operation.explorerLink')}
-              </ButtonLink> */}
 
               {callData ? (
-                <a href={extrinsicLink} className="text-primary" target="_blank" rel="noopener noreferrer">
-                  {t('operation.extrinsicLink')}
+                <a href={explorerLink} className="text-primary" target="_blank" rel="noopener noreferrer">
+                  {t('operation.explorerLink')}
                 </a>
               ) : (
                 <Button pallet="primary" variant="text" onClick={toggleCallDataModal}>

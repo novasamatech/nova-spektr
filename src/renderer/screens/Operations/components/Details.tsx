@@ -37,7 +37,7 @@ const Details = ({ tx, account, connection, withAdvanced = true }: Props) => {
             <div className="text-shade-40">{t('operation.details.recipient')}</div>
             <div className="flex items-center gap-1">
               <Address address={transaction?.args.dest} />
-              <Explorers address={transaction.args.dest.AccountId || ''} explorers={connection?.explorers} />
+              <Explorers address={transaction.args.dest || ''} explorers={connection?.explorers} />
             </div>
           </li>
         )}
