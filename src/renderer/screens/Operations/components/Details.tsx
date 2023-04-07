@@ -13,9 +13,10 @@ type Props = {
   tx: MultisigTransactionDS & { rowIndex: number };
   account?: MultisigAccount;
   connection?: ExtendedChain;
+  withAdvanced?: boolean;
 };
 
-const Details = ({ tx, account, connection }: Props) => {
+const Details = ({ tx, account, connection, withAdvanced = true }: Props) => {
   const { indexCreated, blockCreated, deposit, depositor, callHash, callData, transaction } = tx;
 
   const { t } = useI18n();
@@ -36,7 +37,7 @@ const Details = ({ tx, account, connection }: Props) => {
             <div className="text-shade-40">{t('operation.details.recipient')}</div>
             <div className="flex items-center gap-1">
               <Address address={transaction?.args.dest} />
-              <Explorers address={transaction.args.payee.AccountId || ''} explorers={connection?.explorers} />
+              <Explorers address={transaction.args.dest.AccountId || ''} explorers={connection?.explorers} />
             </div>
           </li>
         )}
@@ -137,14 +138,16 @@ const Details = ({ tx, account, connection }: Props) => {
         )}
       </ul>
 
-      <Button
-        variant="text"
-        pallet="primary"
-        prefixElement={<Icon name={isAdvancedShown ? 'up' : 'down'} />}
-        onClick={toggleAdvanced}
-      >
-        {t('operation.advanced')}
-      </Button>
+      {withAdvanced && (
+        <Button
+          variant="text"
+          pallet="primary"
+          prefixElement={<Icon name={isAdvancedShown ? 'up' : 'down'} />}
+          onClick={toggleAdvanced}
+        >
+          {t('operation.advanced')}
+        </Button>
+      )}
     </>
   );
 };
