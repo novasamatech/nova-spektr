@@ -53,9 +53,6 @@ module.exports = {
           100: '#000000',
         },
         redesign: {
-          primary: '#2463EB',
-          'secondary-bg': '#FAFAFA',
-          'text-primary': '#000000',
           shade: {
             8: 'rgba(0, 0, 0, 0.08)',
             12: 'rgba(0, 0, 0, 0.12)',
