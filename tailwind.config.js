@@ -19,6 +19,9 @@ module.exports = {
         popover: '0px 0px 12px rgba(0, 0, 0, 0.16), 0px 0px 6px rgba(0, 0, 0, 0.08), 0px 2px 4px rgba(0, 0, 0, 0.04)',
         'active-input': '0px 0px 0px 2px rgba(36, 99, 235, 0.16)',
         modal: '0px 2px 6px rgba(24, 24, 28, 0.06), 0px 32px 41px -23px rgba(24, 24, 28, 0.07)',
+        'card-shadow': 'var(--card-shadow)',
+        'knob-shadow': 'var(--knob-shadow)',
+        'input-active-shadow': 'var(--input-active-shadow)',
       },
       colors: {
         primary: '#567CDC',
