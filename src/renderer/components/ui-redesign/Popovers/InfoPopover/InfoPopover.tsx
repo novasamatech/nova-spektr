@@ -31,7 +31,7 @@ const InfoPopover = ({ data, className, children, offsetPx = 7 }: PropsWithChild
             style={{ marginTop: offsetPx + 'px' }}
             className={cn(
               'bg-white z-10 absolute left-0 top-[100%] rounded-md',
-              'shadow-popover w-max p-3 min-w-[220px]',
+              'shadow-popover w-max p-3 min-w-[220px]', // TODO change shadow, text and bg color
               className,
             )}
           >
@@ -48,14 +48,14 @@ const InfoPopover = ({ data, className, children, offsetPx = 7 }: PropsWithChild
                     ) : (
                       <Menu.Item key={id}>
                         {/* // TODO check out why headless ui menu item type dont support className */}
-                        <div className="rounded-xs text-shade-100 ui-active:bg-redesign-primary ui-active:text-white h-8 w-full">
+                        <div className="rounded-xs text-shade-100 ui-active:bg-primary ui-active:text-white h-8 w-full">
                           {value}
                         </div>
                       </Menu.Item>
                     ),
                   )}
                 </CalloutText>
-                {i !== data.length - 1 && <hr className="border-redesign-shade-12 pb-3" />}
+                {i !== data.length - 1 && <hr className="border-divider pb-3" />}
               </div>
             ))}
           </Menu.Items>
