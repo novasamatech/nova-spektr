@@ -18,14 +18,44 @@ const ChatDev = () => {
   const handleLeaveRoom = (roomId: string) => {
     matrix.leaveRoom(roomId);
   };
-  const handleApprove = (roomId: string) => {
-    // matrix.mstApprove({
-    //   salt: '123',
-    //   callHash: '0xhash',
-    //   chainId: '0xchain',
-    //   senderAddress: '5GmedEVixRJoE8TjMePLqz7DnnQG1d5517sXdiAvAF2t7EYW',
-    // });
+
+  const handleApprove = async (roomId: string) => {
+    const approves = Array.from({ length: 3 }).map((_, index) => {
+      return (async () => {
+        await matrix.mstApprove(roomId, {
+          senderAddress: '15hwmZknpCaGffUFKHSLz8wNeQPuhvdD5cc1o1AGiL4QHoU7',
+          chainId: '0x1',
+          callHash: '0x2',
+          callData: '0x3',
+          extrinsicHash: '0x4',
+          extrinsicTimepoint: {
+            index: 2,
+            height: 15345319,
+          },
+          callTimepoint: {
+            index: 2,
+            height: 15345319,
+          },
+          error: false,
+          description: index.toString(),
+        });
+      })();
+    });
+
+    Promise.all(approves).then(() => console.log('=== Finish ==='));
   };
+
+  const handleUnread = async () => {
+    try {
+      await matrix.syncSpektrTimeline();
+    } catch (error) {
+      console.warn(error);
+    }
+  };
+
+  if (!isLoggedIn) {
+    return <div className="flex flex-col gap-y-5 m-10">Logging in ...</div>;
+  }
 
   return (
     <div className="flex flex-col gap-y-5 m-10">
@@ -45,6 +75,9 @@ const ChatDev = () => {
               </button>
               <button type="button" className="border p-1" onClick={() => handleApprove(room.roomId)}>
                 approve
+              </button>
+              <button type="button" className="border p-1" onClick={() => handleUnread()}>
+                get unread
               </button>
             </div>
           </li>

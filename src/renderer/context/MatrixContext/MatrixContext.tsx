@@ -29,8 +29,14 @@ export const MatrixProvider = ({ children }: PropsWithChildren) => {
     console.info('💛 ===> onSyncProgress');
   };
 
-  const onSyncEnd = () => {
+  const onSyncEnd = async () => {
     console.info('💛 ===> onSyncEnd');
+    // TODO: request all unread events
+    // try {
+    //   await matrix.syncSpektrTimeline();
+    // } catch (error) {
+    //   console.log(error);
+    // }
   };
 
   const onMessage = (value: any) => {
@@ -109,7 +115,7 @@ export const MatrixProvider = ({ children }: PropsWithChildren) => {
   };
 
   const onMstEvent = (eventData: MSTPayload) => {
-    console.info('💛 ===> onMessage - ', eventData);
+    console.info('💛 ===> onMstEvent - ', eventData.type, eventData.eventId, eventData.content.description);
   };
 
   const onLogout = () => {

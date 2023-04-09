@@ -34,6 +34,7 @@ const Paths = {
   CREATE_MULTISIG_ACCOUNT: '/create-multisig-account',
 
   // DEV
+  CHAT_DEV: '/chat-dev',
   CAMERA_DEV: '/camera-dev',
 } as const;
 

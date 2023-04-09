@@ -22,10 +22,10 @@ export interface ISecureMessenger {
   leaveRoom: (roomId: string) => Promise<void>;
   invite: (roomId: string, signatoryId: string) => Promise<void>;
   joinedRooms: () => Room[];
-  readTimeline: () => Promise<MSTPayload[]>;
-  sendMessage: (roomId: string, message: string) => void;
-  markAsRead: (event: MatrixEvent) => Promise<void>;
+  sendMessage: (roomId: string, message: string) => Promise<string>;
+  markAsRead: (readEventId: string, events: MatrixEvent[]) => Promise<void>;
   setEventCallbacks: (callbacks: Callbacks) => void;
+  syncSpektrTimeline: () => Promise<void>;
   // checkUserExists: (userId: string) => Promise<boolean>;
 
   // Verification
@@ -34,10 +34,10 @@ export interface ISecureMessenger {
   verifyWithPhrase: (securityPhrase: string) => Promise<boolean>;
 
   // MST operations
-  mstInitiate: (roomId: string, params: MstParams) => Promise<void>;
-  mstApprove: (roomId: string, params: MstParams) => Promise<void>;
-  mstFinalApprove: (roomId: string, params: MstParams) => Promise<void>;
-  mstCancel: (roomId: string, params: MstParams) => Promise<void>;
+  mstInitiate: (roomId: string, params: MultisigTxPayload) => Promise<void>;
+  mstApprove: (roomId: string, params: MultisigTxPayload) => Promise<void>;
+  mstFinalApprove: (roomId: string, params: MultisigTxPayload) => Promise<void>;
+  mstCancel: (roomId: string, params: MultisigTxPayload) => Promise<void>;
 
   // Properties
   userId: string | undefined;
@@ -123,13 +123,13 @@ export type LoginFlow = 'password' | 'sso' | 'cas';
 // =====================================================
 
 export enum SpektrMstEvent {
-  INIT = 'io.novafoundation.spektr.mst_initiated',
+  UPDATE = 'io.novafoundation.spektr.mst_updated',
   APPROVE = 'io.novafoundation.spektr.mst_approved',
   FINAL_APPROVE = 'io.novafoundation.spektr.mst_executed',
   CANCEL = 'io.novafoundation.spektr.mst_cancelled',
 }
 
-export type MstParams = {
+export type MultisigTxPayload = {
   senderAddress: AccountID;
   chainId: HexString;
   callHash: HexString;
@@ -156,7 +156,7 @@ export type InvitePayload = EventPayload & {
 };
 
 export type MSTPayload = EventPayload & {
-  content: MstParams;
+  content: MultisigTxPayload;
   type: SpektrMstEvent;
 };
 
@@ -214,11 +214,11 @@ export const enum MatrixError {
   OUTSIDE_ROOM,
   INVITE_USERS,
   MEMBERS_VERIFICATION,
-  READ_TIMELINE,
   CREATE_MATRIX_CLIENT,
   VERIFY_FILE_MAX_SIZE,
   READ_VERIFY_FILE,
   VERIFY_FILE_BAD_CONTENT,
+  TIMELINE_PAGINATION,
 }
 
 export type ErrorObject = {
