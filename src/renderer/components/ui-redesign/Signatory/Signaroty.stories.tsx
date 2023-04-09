@@ -1,6 +1,7 @@
 import { ComponentStory, ComponentMeta } from '@storybook/react';
 
 import Signatory from './Signatory';
+import { TEST_ADDRESS } from '@renderer/shared/utils/constants';
 
 export default {
   title: 'Redesign/Signatory',
@@ -12,6 +13,6 @@ const Template: ComponentStory<typeof Signatory> = (args) => <Signatory {...args
 
 export const Primary = Template.bind({});
 Primary.args = {
-  address: '5F3sa2TJAWMqDhXG6jhV4N8ko9SxwGy8TpaNS1repo5EYjQX',
+  address: TEST_ADDRESS,
   name: 'John Doe',
 };
