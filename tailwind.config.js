@@ -1,6 +1,7 @@
 const defaultTheme = require('tailwindcss/defaultTheme');
 
 const colors = require('./colors');
+
 module.exports = {
   mode: 'jit',
   content: ['./src/renderer/index.html', './src/renderer/**/*.{js,ts,tsx}'],

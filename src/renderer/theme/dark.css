@@ -1,3 +1,4 @@
-body.dark {
+:root.dark {
   /* dark theme colors here */
+  /* maybe check user system preference and apply dark mode automatically base on that  */
 }
