@@ -2,9 +2,9 @@ import { Pallet, Variant } from './types';
 
 // TODO add action state styles e.g. active, disabled
 export const ViewClass: Record<`${Variant}_${Pallet}`, string> = {
-  text_primary: 'text-redesign-primary border-transparent bg-transparent',
-  fill_primary: 'text-white border-0 bg-redesign-primary disabled:bg-redesign-primary/[.48]',
-  outline_primary: 'text-redesign-primary border border-redesign-shade-8 disabled:border-redesign-primary/[.48]',
+  text_primary: 'text-action-text-default hover:text-action-text border-transparent bg-transparent', // missing: disabled, active
+  fill_primary: 'text-button-text border-0 bg-button-background-primary', // missing: hover, disabled, active
+  outline_primary: 'text-action-text border border-filter-border', // missing: hover, disabled, active
 };
 
 export const WeightClass = {
