@@ -1,5 +1,6 @@
 import { Fragment, PropsWithChildren } from 'react';
 import { Dialog, Transition } from '@headlessui/react';
+import cn from 'classnames';
 
 import { Icon } from '@renderer/components/ui';
 import BodyText from '@renderer/components/ui-redesign/Typography/components/BodyText';
@@ -38,7 +39,7 @@ const OperationResult = ({
         <ModalTransition>
           {/* TODO: change bg color */}
           <Dialog.Panel className="w-[240px] max-w-md transform flex flex-col items-center justify-center rounded-lg bg-white px-4 py-5 align-middle shadow-card-shadow transition-all">
-            <Icon name={variantIcons[variant]} className="mb-2" />
+            <Icon name={variantIcons[variant]} className={cn('mb-2', variant === 'loading' && 'animate-spin')} />
             <Dialog.Title className="font-semibold mb-1.5">
               <BodyText>{title}</BodyText>
             </Dialog.Title>
