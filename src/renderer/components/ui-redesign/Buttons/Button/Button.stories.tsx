@@ -17,7 +17,7 @@ Primary.args = {
   pallet: 'primary',
   children: 'Hello button',
   className: 'w-[200px]',
-  disabled: false,
+  disabled: true,
 };
 
 export const Prefix = Template.bind({});

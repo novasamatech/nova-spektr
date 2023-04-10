@@ -12,7 +12,10 @@ type Props = {
 };
 const InfoLink = ({ url, showIcon = true, children, iconName = 'info' }: PropsWithChildren<Props>) => (
   <CalloutText
-    className={cn('w-max outline-offset-4 text-redesign-system-blue', showIcon && 'flex items-center gap-x-1')}
+    className={cn(
+      'w-max outline-offset-4 text-action-text-default hover:text-action-text',
+      showIcon && 'flex items-center gap-x-1',
+    )}
     fontWeight="semibold"
   >
     {url ? (
