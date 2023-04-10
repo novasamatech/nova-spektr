@@ -29,7 +29,7 @@ export const MatrixProvider = ({ children }: PropsWithChildren) => {
     console.info('💛 ===> onSyncProgress');
   };
 
-  const onSyncEnd = async () => {
+  const onSyncEnd = () => {
     console.info('💛 ===> onSyncEnd');
     // TODO: request all unread events
     // try {
@@ -115,7 +115,7 @@ export const MatrixProvider = ({ children }: PropsWithChildren) => {
   };
 
   const onMstEvent = (eventData: MSTPayload) => {
-    console.info('💛 ===> onMstEvent - ', eventData.type, eventData.eventId, eventData.content.description);
+    console.info('💛 ===> onMstEvent - ', eventData);
   };
 
   const onLogout = () => {

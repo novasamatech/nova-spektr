@@ -35,13 +35,13 @@ const InfoPopover = ({ data, className, children, offsetPx = 7 }: PropsWithChild
               className,
             )}
           >
-            {data.map((section, i) => (
-              <div key={i}>
+            {data.map((section, index) => (
+              <div key={index}>
                 <TextBase className="text-3xs text-redesign-shade-48 uppercase pb-2" key={section.title}>
                   {section.title}
                 </TextBase>
 
-                <CalloutText key={i} className="text-3xs pb-4 flex flex-col last:p-0">
+                <CalloutText key={index} className="text-3xs pb-4 flex flex-col last:p-0">
                   {section.items.map(({ value, id }) =>
                     typeof value === 'string' ? (
                       value
@@ -55,7 +55,7 @@ const InfoPopover = ({ data, className, children, offsetPx = 7 }: PropsWithChild
                     ),
                   )}
                 </CalloutText>
-                {i !== data.length - 1 && <hr className="border-redesign-shade-12 pb-3" />}
+                {index !== data.length - 1 && <hr className="border-redesign-shade-12 pb-3" />}
               </div>
             ))}
           </Menu.Items>
