@@ -30,6 +30,8 @@ import OptionsImg, { ReactComponent as OptionsSvg } from '@images/functionals/op
 import MultisigOutlineImg, { ReactComponent as MultisigOutlineSvg } from '@images/functionals/multisig-outline.svg';
 import EyeSlashedImg, { ReactComponent as EyeSlashedSvg } from '@images/functionals/eye-slashed.svg';
 import EyeImg, { ReactComponent as EyeSvg } from '@images/functionals/eye.svg';
+import StatusSuccessImg, { ReactComponent as StatusSuccessSvg } from '@images/functionals/status-success.svg';
+import StatusErrorImg, { ReactComponent as StatusErrorSvg } from '@images/functionals/status-error.svg';
 
 const FunctionalImages = {
   copy: { svg: CopySvg, img: CopyImg },
@@ -64,6 +66,8 @@ const FunctionalImages = {
   multisigOutline: { svg: MultisigOutlineSvg, img: MultisigOutlineImg },
   eyeSlashed: { svg: EyeSlashedSvg, img: EyeSlashedImg },
   eye: { svg: EyeSvg, img: EyeImg },
+  statusSuccess: { svg: StatusSuccessSvg, img: StatusSuccessImg },
+  statusError: { svg: StatusErrorSvg, img: StatusErrorImg },
 } as const;
 
 export type Functional = keyof typeof FunctionalImages;
