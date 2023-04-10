@@ -57,7 +57,7 @@ const OperationResult = ({
             {/* TODO: change bg color */}
             <Dialog.Panel className="w-[240px] max-w-md transform overflow-hidden flex flex-col items-center justify-center rounded-lg bg-white px-4 py-5 align-middle shadow-card-shadow transition-all">
               <Icon name={variantIcons[variant]} className="mb-2" />
-              <Dialog.Title className="font-medium mb-1.5">
+              <Dialog.Title className="font-semibold mb-1.5">
                 <BodyText>{title}</BodyText>
               </Dialog.Title>
               {description && (
