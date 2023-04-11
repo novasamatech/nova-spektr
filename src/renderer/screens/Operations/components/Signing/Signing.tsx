@@ -3,7 +3,7 @@ import { BN } from '@polkadot/util';
 import { ApiPromise } from '@polkadot/api';
 
 import { useI18n } from '@renderer/context/I18nContext';
-import { Plate, Block, Button } from '@renderer/components/ui';
+import { Button } from '@renderer/components/ui';
 import ParitySignerSignatureReader from '@renderer/screens/Signing/ParitySignerSignatureReader/ParitySignerSignatureReader';
 import { ValidationErrors } from '@renderer/shared/utils/validation';
 import { toPublicKey } from '@renderer/shared/utils/address';
@@ -100,29 +100,25 @@ export const Signing = ({
   const address = isMultisig(account) ? account.accountId : transaction.address;
 
   return (
-    <Plate as="section" className="w-[500px] flex flex-col items-center mx-auto gap-y-2.5">
-      <Block>
-        <ActiveAddress
-          address={address}
-          accountName={account.name}
-          signingType={account.signingType}
-          explorers={explorers}
-          addressPrefix={addressPrefix}
-        />
-      </Block>
+    <div className="py-2 flex flex-col items-center gap-y-2.5 w-full">
+      <ActiveAddress
+        address={address}
+        accountName={account.name}
+        signingType={account.signingType}
+        explorers={explorers}
+        addressPrefix={addressPrefix}
+      />
 
-      <Block className="flex flex-col items-center gap-y-2.5 p-5">
-        <div className="text-neutral-variant text-base font-semibold">{t('signing.scanSignatureTitle')}</div>
-        <div className="h-[460px]">
-          <ParitySignerSignatureReader
-            className="w-full rounded-2lg"
-            countdown={countdown}
-            size={460}
-            validationError={validationError}
-            onResult={handleResult}
-          />
-        </div>
-      </Block>
+      <div className="text-neutral-variant text-base font-semibold">{t('signing.scanSignatureTitle')}</div>
+      <div className="h-[460px]">
+        <ParitySignerSignatureReader
+          className="w-full rounded-2lg"
+          countdown={countdown}
+          size={460}
+          validationError={validationError}
+          onResult={handleResult}
+        />
+      </div>
 
       {countdown === 0 && (
         <Button variant="fill" pallet="primary" weight="lg" onClick={onGoBack}>
@@ -135,6 +131,6 @@ export const Signing = ({
           {t('transfer.editOperationButton')}
         </Button>
       )}
-    </Plate>
+    </div>
   );
 };

@@ -104,7 +104,7 @@ export const Scanning = ({
         <InfoLink url={getMetadataPortalUrl(chainId)}>{t('signing.metadataPortalLink')}</InfoLink>
       </div>
 
-      {unsignedTx && countdown > 0 && (
+      {unsignedTx && countdown <= 0 && (
         <Button className="w-max mx-auto" variant="fill" pallet="primary" weight="lg" onClick={setupTransaction}>
           {t('signing.generateNewQrButton')}
         </Button>

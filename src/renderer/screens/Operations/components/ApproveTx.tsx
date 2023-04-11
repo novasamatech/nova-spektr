@@ -40,7 +40,7 @@ const enum Step {
   SUBMIT,
 }
 
-const ApproveTxButton = ({ tx, account, connection }: Props) => {
+const ApproveTx = ({ tx, account, connection }: Props) => {
   const { t } = useI18n();
 
   const [isModalOpen, toggleModal] = useToggle(false);
@@ -129,7 +129,7 @@ const ApproveTxButton = ({ tx, account, connection }: Props) => {
   };
 
   const validateBalanceForFee = async (signAccount: AccountDS): Promise<boolean> => {
-    if (!connection.api || !tx.transaction || !signAccount.publicKey || !asset?.assetId) return false;
+    if (!connection.api || !tx.transaction || !signAccount.publicKey || !asset) return false;
 
     const fee = await getTransactionFee(tx.transaction, connection.api);
 
@@ -288,13 +288,13 @@ const ApproveTxButton = ({ tx, account, connection }: Props) => {
           <ul>
             {unsignedAccounts.map((a) => (
               <li
-                className="flex justify-between items-center hover:bg-shade-5 cursor-pointer"
-                key={a.publicKey}
+                className="flex justify-between items-center p-1 hover:bg-shade-5 cursor-pointer"
+                key={a.id}
                 onClick={() => handleAccountSelect(a)}
               >
                 <Address address={a.accountId || ''} name={a.name} />
 
-                <Icon name="right" />
+                <Icon className="text-shade-40" name="right" />
               </li>
             ))}
           </ul>
@@ -318,4 +318,4 @@ const ApproveTxButton = ({ tx, account, connection }: Props) => {
   );
 };
 
-export default ApproveTxButton;
+export default ApproveTx;

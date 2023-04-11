@@ -257,6 +257,7 @@
   "operation": {
     "addCallDataButton": "Add call data",
     "advanced": "Advanced",
+    "continueButton": "Continue",
     "details": {
       "callData": "Call Data",
       "callHash": "Call Hash",
@@ -273,7 +274,10 @@
     "feeErrorButton": "Close",
     "feeErrorMessage": "Insufficient funds to pay the network fee",
     "feeErrorTitle": "Error",
+    "goBackButton": "Go back",
     "logButton": "Log",
+    "networkFee": "Network fee",
+    "selectSignatory": "Select signatory",
     "selectSignatoryTitle": "Select signatory",
     "signButton": "Sign with Polkadot Vault",
     "signatoriesTitle": "Signatories",

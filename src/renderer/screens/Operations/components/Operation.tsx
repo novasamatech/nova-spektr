@@ -24,7 +24,7 @@ import Details from './Details';
 import { Signatory } from '@renderer/domain/signatory';
 import { nonNullable } from '@renderer/shared/utils/functions';
 import { getMultisigExtrinsicLink } from '../common/utils';
-import ApproveTxButton from './ApproveTxButton';
+import ApproveTxButton from './ApproveTx';
 
 const StatusTitle: Record<MultisigTxStatus, string> = {
   [MultisigTxInitStatus.SIGNING]: 'operation.status.signing',

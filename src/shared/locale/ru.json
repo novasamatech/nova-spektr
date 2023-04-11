@@ -257,6 +257,7 @@
   "operation": {
     "addCallDataButton": "Добавить call data",
     "advanced": "Дополнительно",
+    "continueButton": "Продолжить",
     "details": {
       "callData": "Call Data",
       "callHash": "Call Hash",
@@ -273,7 +274,10 @@
     "feeErrorButton": "Закрыть",
     "feeErrorMessage": "Недостаточно средств чтобы заплатить коммиссию сети",
     "feeErrorTitle": "Ошибка",
+    "goBackButton": "Вернуться",
     "logButton": "Лог",
+    "networkFee": "Network fee",
+    "selectSignatory": "Выберите подписанта",
     "selectSignatoryTitle": "Выберите подписанта",
     "signButton": "Подписать в Polkadot Vault",
     "signatoriesTitle": "Подписи",
