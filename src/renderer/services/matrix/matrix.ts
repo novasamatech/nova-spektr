@@ -373,7 +373,7 @@ export class Matrix implements ISecureMessenger {
    */
   joinedRooms(): Room[] {
     return this.matrixClient.getRooms().filter((room) => {
-      return this.isSpektrRoom(room.name) && room.getMyMembership() === Membership.JOIN;
+      return this.isSpektrRoom(room) && room.getMyMembership() === Membership.JOIN;
     });
   }
 
@@ -458,7 +458,7 @@ export class Matrix implements ISecureMessenger {
    * @param params MST parameters
    * @return {Promise}
    */
-  async mstInitiate(roomId: string, params: MultisigTxPayload): Promise<void> {
+  async mstUpdate(roomId: string, params: MultisigTxPayload): Promise<void> {
     try {
       await this.matrixClient.sendEvent(roomId, SpektrMstEvent.UPDATE, params);
     } catch (error) {
@@ -536,7 +536,7 @@ export class Matrix implements ISecureMessenger {
       (acc, room) => {
         const readUpEventId = room.getEventReadUpTo(this.userId || '');
 
-        if (!this.isSpektrRoom(room.name) || !readUpEventId) return acc;
+        if (!this.isSpektrRoom(room) || !readUpEventId) return acc;
 
         const timelineSet = room.getUnfilteredTimelineSet();
         const liveTimeline = timelineSet.getLiveTimeline();
@@ -791,9 +791,9 @@ export class Matrix implements ISecureMessenger {
 
       try {
         // getRoomSummary loads room into client, otherwise room will be NULL
-        const roomSummary = await this.matrixClient.getRoomSummary(roomId);
-        const roomIsValid = this.isSpektrRoom(roomSummary.name);
+        await this.matrixClient.getRoomSummary(roomId);
         const room = this.matrixClient.getRoom(roomId);
+        const roomIsValid = this.isSpektrRoom(room);
         const topic = this.getSpektrTopic(room);
         const userHasJoined = room?.getMyMembership() === Membership.JOIN;
         if (!roomIsValid || !room || !topic || userHasJoined) return;
@@ -820,7 +820,7 @@ export class Matrix implements ISecureMessenger {
       if (event.getSender() === this.userId) return;
 
       const room = this.matrixClient.getRoom(event.getRoomId());
-      if (!room || !this.isSpektrRoom(room.name)) return;
+      if (!this.isSpektrRoom(room)) return;
 
       if (this.isSpektrMstEvent(event)) {
         const payload = this.createEventPayload<MSTPayload>(event);
@@ -918,15 +918,17 @@ export class Matrix implements ISecureMessenger {
   }
 
   /**
-   * Check room name to be a Spektr room
-   * @param roomName name of the room
+   * Check room to be a Spektr room
+   * @param room matrix room
    * @return {Boolean}
-   * @todo name could be changed, use something else
    */
-  private isSpektrRoom(roomName?: string): boolean {
-    if (!roomName) return false;
+  private isSpektrRoom(room: Room | null): boolean {
+    if (!room) return false;
 
-    return /^Nova Spektr MST \| [a-zA-Z\d.]+$/.test(roomName);
+    const topicEvents = room.getLiveTimeline().getState(Direction.Forward)?.getStateEvents(EventType.RoomTopic);
+    if (!topicEvents?.length) return false;
+
+    return Boolean(topicEvents[0].getContent()['spektr_extras']);
   }
 
   /**

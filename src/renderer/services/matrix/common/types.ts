@@ -34,7 +34,7 @@ export interface ISecureMessenger {
   verifyWithPhrase: (securityPhrase: string) => Promise<boolean>;
 
   // MST operations
-  mstInitiate: (roomId: string, params: MultisigTxPayload) => Promise<void>;
+  mstUpdate: (roomId: string, params: MultisigTxPayload) => Promise<void>;
   mstApprove: (roomId: string, params: MultisigTxPayload) => Promise<void>;
   mstFinalApprove: (roomId: string, params: MultisigTxPayload) => Promise<void>;
   mstCancel: (roomId: string, params: MultisigTxPayload) => Promise<void>;
