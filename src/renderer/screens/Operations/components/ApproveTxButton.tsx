@@ -163,7 +163,9 @@ const ApproveTxButton = ({ tx, account, connection }: Props) => {
     }
   };
 
-  if (tx.status !== 'SIGNING' || unsignedAccounts.length === 0) return <></>;
+  const thresholdReached = tx.events.filter((e) => e.status === 'SIGNED').length >= account.threshold;
+
+  if (tx.status !== 'SIGNING' || unsignedAccounts.length === 0 || thresholdReached) return <></>;
 
   return (
     <>
