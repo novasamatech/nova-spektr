@@ -10,7 +10,7 @@ import {
   TypeRegistry,
   UnsignedTransaction,
 } from '@substrate/txwrapper-polkadot';
-import { Call } from '@polkadot/types/interfaces';
+import { Call, Weight } from '@polkadot/types/interfaces';
 
 import { AccountID, CallData, HexString } from '@renderer/domain/shared-kernel';
 import { Transaction, TransactionType } from '@renderer/domain/transaction';
@@ -71,8 +71,31 @@ export const useTransaction = (): ITransactionService => {
           threshold: transaction.args.threshold,
           otherSignatories: transaction.args.otherSignatories,
           maybeTimepoint: transaction.args.maybeTimepoint,
-          maxWeight: MAX_WEIGHT,
+          maxWeight: transaction.args.maxWeight || MAX_WEIGHT,
           call: transaction.args.callData,
+          callHash: transaction.args.callHash,
+        },
+        info,
+        options,
+      );
+    },
+    [TransactionType.MULTISIG_APPROVE_AS_MULTI]: (transaction, info, options) => {
+      return methods.multisig.approveAsMulti(
+        {
+          threshold: transaction.args.threshold,
+          otherSignatories: transaction.args.otherSignatories,
+          maybeTimepoint: transaction.args.maybeTimepoint,
+          maxWeight: transaction.args.maxWeight || MAX_WEIGHT,
+          callHash: transaction.args.callHash,
+        },
+        info,
+        options,
+      );
+    },
+    [TransactionType.MULTISIG_CANCEL_AS_MULTI]: (transaction, info, options) => {
+      return methods.multisig.cancelAsMulti(
+        {
+          timepoint: transaction.args.maybeTimepoint,
           callHash: transaction.args.callHash,
         },
         info,
@@ -172,6 +195,12 @@ export const useTransaction = (): ITransactionService => {
     [TransactionType.ORML_TRANSFER]: ({ dest, value, asset }, api) => api.tx.currencies.transfer(dest, asset, value),
     [TransactionType.MULTISIG_AS_MULTI]: ({ threshold, otherSignatories, maybeTimepoint, call, maxWeight }, api) =>
       api.tx.multisig.asMulti(threshold, otherSignatories, maybeTimepoint, call, maxWeight),
+    [TransactionType.MULTISIG_APPROVE_AS_MULTI]: (
+      { threshold, otherSignatories, maybeTimepoint, callHash, maxWeight },
+      api,
+    ) => api.tx.multisig.approveAsMulti(threshold, otherSignatories, maybeTimepoint, callHash, maxWeight),
+    [TransactionType.MULTISIG_CANCEL_AS_MULTI]: ({ threshold, otherSignatories, maybeTimepoint, callHash }, api) =>
+      api.tx.multisig.cancelAsMulti(threshold, otherSignatories, maybeTimepoint, callHash),
     [TransactionType.BOND]: ({ controller, value, payee }, api) => api.tx.staking.bond(controller, value, payee),
     [TransactionType.UNSTAKE]: ({ value }, api) => api.tx.staking.unbond(value),
     [TransactionType.STAKE_MORE]: ({ maxAdditional }, api) => api.tx.staking.bondExtra(maxAdditional),
@@ -181,6 +210,8 @@ export const useTransaction = (): ITransactionService => {
     [TransactionType.DESTINATION]: ({ targets }, api) => api.tx.staking.setPayee(targets),
     [TransactionType.CHILL]: (_, api) => api.tx.staking.chill(),
     [TransactionType.BATCH_ALL]: ({ transactions }, api) => {
+      console.log(transactions);
+
       const calls = transactions.map((t: Transaction) => getExtrinsic[t.type](t.args, api).method);
 
       return api.tx.utility.batch(calls);
@@ -229,6 +260,13 @@ export const useTransaction = (): ITransactionService => {
     const { partialFee } = await extrinsic.paymentInfo(transaction.address);
 
     return partialFee.toString();
+  };
+
+  const getTxWeight = async (transaction: Transaction, api: ApiPromise): Promise<Weight> => {
+    const extrinsic = getExtrinsic[transaction.type](transaction.args, api);
+    const { weight } = await extrinsic.paymentInfo(transaction.address);
+
+    return weight;
   };
 
   const getTransactionDeposit = (threshold: number, api: ApiPromise): string => {
@@ -431,6 +469,7 @@ export const useTransaction = (): ITransactionService => {
     getSignedExtrinsic,
     submitAndWatchExtrinsic,
     getTransactionFee,
+    getTxWeight,
     getTransactionDeposit,
     getTransactionHash,
     decodeCallData,

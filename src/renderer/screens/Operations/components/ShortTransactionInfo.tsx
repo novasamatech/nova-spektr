@@ -8,15 +8,15 @@ import { Balance } from '@renderer/components/ui';
 import { getAssetById } from '@renderer/shared/utils/assets';
 
 type Props = {
-  transaction: Transaction;
+  tx: Transaction;
 };
 
 type TransactionProps = {
-  transaction: Transaction;
+  tx: Transaction;
   asset?: Asset;
 };
 
-const TransactionInfo = ({ transaction, asset }: TransactionProps) => {
+const TransactionInfo = ({ tx, asset }: TransactionProps) => {
   if (!asset) return null;
 
   return (
@@ -25,12 +25,12 @@ const TransactionInfo = ({ transaction, asset }: TransactionProps) => {
         <img src={asset.icon} alt={asset.name} width={16} height={16} />
       </div>
 
-      <Balance value={transaction.args.value} symbol={asset.symbol} precision={asset.precision} />
+      <Balance value={tx.args.value} symbol={asset.symbol} precision={asset.precision} />
     </div>
   );
 };
 
-const StakeMore = ({ transaction, asset }: TransactionProps) => {
+const StakeMore = ({ tx, asset }: TransactionProps) => {
   if (!asset) return null;
 
   return (
@@ -39,44 +39,46 @@ const StakeMore = ({ transaction, asset }: TransactionProps) => {
         <img src={asset.icon} alt={asset.name} width={16} height={16} />
       </div>
 
-      <Balance value={transaction.args.maxAdditional} symbol={asset.symbol} precision={asset.precision} />
+      <Balance value={tx.args.maxAdditional} symbol={asset.symbol} precision={asset.precision} />
     </div>
   );
 };
 
-const ShortTransactionInfo = ({ transaction }: Props) => {
+const ShortTransactionInfo = ({ tx }: Props) => {
   const { getChainById } = useChains();
   const [assets, setAssets] = useState<Asset[]>([]);
 
   useEffect(() => {
-    getChainById(transaction.chainId).then((chain) => setAssets(chain?.assets || []));
+    getChainById(tx.chainId).then((chain) => setAssets(chain?.assets || []));
   }, []);
 
-  const asset = getAssetById(transaction.args.assetId, assets);
+  const asset = getAssetById(tx.args.assetId, assets);
 
   const Transactions: Record<TransactionType | typeof DEFAULT, ReactNode> = {
     // Transfer
-    [TransactionType.ASSET_TRANSFER]: <TransactionInfo transaction={transaction} asset={asset} />,
-    [TransactionType.ORML_TRANSFER]: <TransactionInfo transaction={transaction} asset={asset} />,
-    [TransactionType.TRANSFER]: <TransactionInfo transaction={transaction} asset={asset} />,
-    [TransactionType.MULTISIG_AS_MULTI]: <TransactionInfo transaction={transaction} asset={asset} />,
+    [TransactionType.ASSET_TRANSFER]: <TransactionInfo tx={tx} asset={asset} />,
+    [TransactionType.ORML_TRANSFER]: <TransactionInfo tx={tx} asset={asset} />,
+    [TransactionType.TRANSFER]: <TransactionInfo tx={tx} asset={asset} />,
+    [TransactionType.MULTISIG_AS_MULTI]: <TransactionInfo tx={tx} asset={asset} />,
 
     // Staking
-    [TransactionType.BOND]: <TransactionInfo transaction={transaction} asset={asset} />,
-    [TransactionType.STAKE_MORE]: <StakeMore transaction={transaction} asset={asset} />,
-    [TransactionType.RESTAKE]: <TransactionInfo transaction={transaction} asset={asset} />,
-    [TransactionType.UNSTAKE]: <TransactionInfo transaction={transaction} asset={asset} />,
+    [TransactionType.BOND]: <TransactionInfo tx={tx} asset={asset} />,
+    [TransactionType.STAKE_MORE]: <StakeMore tx={tx} asset={asset} />,
+    [TransactionType.RESTAKE]: <TransactionInfo tx={tx} asset={asset} />,
+    [TransactionType.UNSTAKE]: <TransactionInfo tx={tx} asset={asset} />,
     [TransactionType.REDEEM]: null,
     [TransactionType.NOMINATE]: null,
     [TransactionType.DESTINATION]: null,
 
     // Technical
-    [TransactionType.BATCH_ALL]: <ShortTransactionInfo transaction={transaction.args?.calls?.[0]} />,
+    [TransactionType.BATCH_ALL]: <ShortTransactionInfo tx={tx.args?.calls?.[0]} />,
     [TransactionType.CHILL]: null,
+    [TransactionType.MULTISIG_APPROVE_AS_MULTI]: null,
+    [TransactionType.MULTISIG_CANCEL_AS_MULTI]: null,
     [DEFAULT]: null,
   };
 
-  return <>{Transactions[transaction.type || DEFAULT]}</>;
+  return <>{Transactions[tx.type || DEFAULT]}</>;
 };
 
 export default ShortTransactionInfo;

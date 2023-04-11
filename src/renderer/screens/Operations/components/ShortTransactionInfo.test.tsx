@@ -24,7 +24,7 @@ const transaction = {
 describe('screen/Operations/components/ShortTransactionInfo', () => {
   test('should render component', async () => {
     await act(async () => {
-      render(<ShortTransactionInfo transaction={transaction} />);
+      render(<ShortTransactionInfo tx={transaction} />);
     });
 
     const symbol = screen.getByText('DOT');

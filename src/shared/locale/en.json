@@ -1,12 +1,12 @@
 {
   "addressBook": {
     "addContact": {
-      "accountIdIncorrectError": "Incrorrect account address",
+      "accountIdIncorrectError": "Incorrect account address",
       "accountIdLabel": "account Address",
       "accountIdPlaceholder": "Enter or paste an address",
       "accountIdRequiredError": "Account address is required",
       "addContactButton": "Add contact",
-      "matrixIdError": "Incrorrect matrix id",
+      "matrixIdError": "Incorrect matrix id",
       "matrixIdLabel": "matrix id (optional)",
       "matrixIdPlaceholder": "Enter or paste Matrix ID, ie: @bob:matrix.org",
       "nameLabel": "Name",
@@ -263,14 +263,19 @@
       "controller": "Controller",
       "deposit": "Multisig deposit",
       "depositor": "Depositor",
+      "multisigWallet": "Multisig wallet",
       "payee": "Payee",
       "recipient": "Recipient",
-      "sender": "Sender",
       "timePoint": "Time Point"
     },
     "detailsTitle": "Details",
     "explorerLink": "View in explorer",
+    "feeErrorButton": "Close",
+    "feeErrorMessage": "Insufficient funds to pay the network fee",
+    "feeErrorTitle": "Error",
     "logButton": "Log",
+    "selectSignatoryTitle": "Select signatory",
+    "signButton": "Sign with Polkadot Vault",
     "signatoriesTitle": "Signatories",
     "signing": "Signing ({ signed } of { threshold })",
     "status": {
