@@ -6,18 +6,11 @@ import { Icon } from '@renderer/components/ui';
 import BodyText from '@renderer/components/ui-redesign/Typography/components/BodyText';
 import CalloutText from '@renderer/components/ui-redesign/Typography/components/CalloutText';
 import { ModalBackdrop, ModalTransition } from '@renderer/components/ui-redesign/Modals/common';
-
-type Variant = 'success' | 'error' | 'loading';
-
-const variantIcons = {
-  success: 'statusSuccess',
-  error: 'statusError',
-  loading: 'loaderRedesign',
-} as const;
+import { OperationVariant, variantIcons, variantStyles } from './constants';
 
 type Props = {
   isOpen: boolean;
-  variant?: Variant;
+  variant?: OperationVariant;
   title: string;
   description?: string;
   onClose: () => void;
@@ -39,7 +32,7 @@ const OperationResult = ({
         <ModalTransition>
           {/* TODO: change bg color */}
           <Dialog.Panel className="w-[240px] max-w-md transform flex flex-col items-center justify-center rounded-lg bg-white px-4 py-5 align-middle shadow-card-shadow transition-all">
-            <Icon name={variantIcons[variant]} className={cn('mb-2', variant === 'loading' && 'animate-spin')} />
+            <Icon name={variantIcons[variant]} className={cn('mb-2', variantStyles[variant])} />
             <Dialog.Title className="font-semibold mb-1.5">
               <BodyText>{title}</BodyText>
             </Dialog.Title>
