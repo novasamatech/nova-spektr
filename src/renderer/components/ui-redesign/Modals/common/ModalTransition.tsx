@@ -14,5 +14,3 @@ export const ModalTransition = ({ children }: PropsWithChildren) => (
     {children}
   </Transition.Child>
 );
-
-// export default ModalTransition;

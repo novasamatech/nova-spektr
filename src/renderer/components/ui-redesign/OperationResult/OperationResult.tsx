@@ -17,19 +17,19 @@ const variantIcons = {
 
 type Props = {
   isOpen: boolean;
-  onClose: () => void;
   variant?: Variant;
   title: string;
   description?: string;
+  onClose: () => void;
 };
 
 const OperationResult = ({
   children,
   isOpen,
-  onClose,
   variant = 'success',
   title,
   description,
+  onClose,
 }: PropsWithChildren<Props>) => (
   <Transition appear show={isOpen} as={Fragment}>
     <Dialog as="div" className="relative z-30" onClose={onClose}>
