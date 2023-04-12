@@ -39,6 +39,9 @@ const Button = ({
       'flex items-center justify-center gap-x-2 font-medium select-none',
       SizeClass[size],
       ViewClass[`${variant}_${pallet}`],
+      // primary fill button has linear gradient bg for hover & active
+      // Can't use tailwind here cause bg- resolves into background-color it doesn't work with linear gradient
+      { 'active-styles': variant === 'fill' && pallet === 'primary' },
       className,
     )}
     onClick={onClick}
