@@ -6,6 +6,8 @@ export const enum TransactionType {
   ORML_TRANSFER = 'ormlTransfer',
   ASSET_TRANSFER = 'assetTransfer',
   MULTISIG_AS_MULTI = 'multisig_as_multi',
+  MULTISIG_APPROVE_AS_MULTI = 'multisig_approve_as_multi',
+  MULTISIG_CANCEL_AS_MULTI = 'cancel_as_multi',
   BOND = 'bond',
   STAKE_MORE = 'bondExtra',
   UNSTAKE = 'unbond',
@@ -47,7 +49,7 @@ export type Transaction = {
 
 export type MultisigEvent = {
   status: SigningStatus;
-  signatory: Signatory;
+  accountId: PublicKey;
   multisigOutcome?: MultisigTxStatus;
   extrinsicHash?: HexString;
   eventBlock?: number;

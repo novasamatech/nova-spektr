@@ -13,6 +13,7 @@ import InfoImg, { ReactComponent as InfoSvg } from '@images/aesthetics/info.svg'
 import ChatImg, { ReactComponent as ChatSvg } from '@images/aesthetics/chat.svg';
 import BellImg, { ReactComponent as BellSvg } from '@images/aesthetics/bell.svg';
 import QuestionImg, { ReactComponent as QuestionSvg } from '@images/aesthetics/question.svg';
+import LoaderRedesignImg, { ReactComponent as LoaderRedesignSvg } from '@images/aesthetics/loader-redesign.svg';
 
 const AestheticImages = {
   loader: { svg: LoaderSvg, img: LoaderImg },
@@ -30,6 +31,7 @@ const AestheticImages = {
   chat: { svg: ChatSvg, img: ChatImg },
   bell: { svg: BellSvg, img: BellImg },
   question: { svg: QuestionSvg, img: QuestionImg },
+  loaderRedesign: { svg: LoaderRedesignSvg, img: LoaderRedesignImg },
 } as const;
 
 export type Aesthetic = keyof typeof AestheticImages;
