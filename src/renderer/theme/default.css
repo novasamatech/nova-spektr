@@ -23,7 +23,14 @@
   --chip-icon: #b8b8bd;
 
   /* BUTTON */
+  /* primary */
   --button-background-primary: #4649f6;
+  --primary-button-background-hover: linear-gradient(0deg, rgba(0, 0, 0, 0.12), rgba(0, 0, 0, 0.12)), #4649f6;
+  --primary-button-background-active: linear-gradient(0deg, rgba(0, 0, 0, 0.24), rgba(0, 0, 0, 0.24)), #4649f6;
+  --primary-button-background-inactive: rgba(70, 73, 246, 0.48);
+  /* secondary */
+  --secondary-button-background-hover: rgba(69, 69, 137, 0.12);
+  --secondary-button-background-active: rgba(69, 69, 137, 0.16);
 
   /* BORDER */
   --token-container-border: rgba(69, 69, 137, 0.06);
