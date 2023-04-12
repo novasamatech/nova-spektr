@@ -11,6 +11,6 @@ export const ViewClass: Record<`${Variant}_${Pallet}`, string> = {
 };
 
 export const SizeClass = {
-  big: '',
-  small: '',
+  big: 'h-8 rounded-[34px] px-4 pb-2 pt-1.5 text-body',
+  small: 'h-6 rounded-[34px] px-3 py-1 text-footnote',
 };

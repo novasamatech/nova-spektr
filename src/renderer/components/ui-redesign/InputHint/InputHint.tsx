@@ -1,8 +1,8 @@
 import cn from 'classnames';
 
-import FootnoteText from '@renderer/components/ui-redesign/Typography/components/FootnoteText';
 import { TypographyProps } from '@renderer/components/ui-redesign/Typography/common/types';
 import { HintVariant, variantStyles } from '@renderer/components/ui-redesign/InputHint/contants';
+import { FootnoteText } from '../Typography';
 
 type Props = {
   active: boolean;
