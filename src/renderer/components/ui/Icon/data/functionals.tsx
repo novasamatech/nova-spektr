@@ -30,6 +30,12 @@ import OptionsImg, { ReactComponent as OptionsSvg } from '@images/functionals/op
 import MultisigOutlineImg, { ReactComponent as MultisigOutlineSvg } from '@images/functionals/multisig-outline.svg';
 import EyeSlashedImg, { ReactComponent as EyeSlashedSvg } from '@images/functionals/eye-slashed.svg';
 import EyeImg, { ReactComponent as EyeSvg } from '@images/functionals/eye.svg';
+import CheckLineRedesignImg, {
+  ReactComponent as CheckLineRedesignSvg,
+} from '@images/functionals/checkmark-line-redesign.svg';
+import CloseLineRedesignImg, {
+  ReactComponent as CloseLineRedesignSvg,
+} from '@images/functionals/close-line-redesign.svg';
 
 const FunctionalImages = {
   copy: { svg: CopySvg, img: CopyImg },
@@ -64,6 +70,8 @@ const FunctionalImages = {
   multisigOutline: { svg: MultisigOutlineSvg, img: MultisigOutlineImg },
   eyeSlashed: { svg: EyeSlashedSvg, img: EyeSlashedImg },
   eye: { svg: EyeSvg, img: EyeImg },
+  checkLineRedesign: { svg: CheckLineRedesignSvg, img: CheckLineRedesignImg },
+  closeLineRedesign: { svg: CloseLineRedesignSvg, img: CloseLineRedesignImg },
 } as const;
 
 export type Functional = keyof typeof FunctionalImages;

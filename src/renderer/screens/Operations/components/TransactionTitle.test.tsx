@@ -23,7 +23,7 @@ const transaction = {
 describe('screen/Operations/components/TransactionTitle', () => {
   test('should render component', async () => {
     await act(async () => {
-      render(<TransactionTitle transaction={transaction} />);
+      render(<TransactionTitle tx={transaction} />);
     });
 
     const title = screen.getByText('operations.titles.transfer');
