@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 
 import { Icon, Plate } from '@renderer/components/ui';
 import { useI18n } from '@renderer/context/I18nContext';
-import { Transaction } from '@renderer/domain/transaction';
+import { MultisigEvent, MultisigTxFinalStatus, Transaction } from '@renderer/domain/transaction';
 import { HexString } from '@renderer/domain/shared-kernel';
 import { useToggle } from '@renderer/shared/hooks';
 import { useTransaction } from '@renderer/services/transaction/transactionService';
@@ -12,6 +12,7 @@ import { useMatrix } from '@renderer/context/MatrixContext';
 import { Account, MultisigAccount } from '@renderer/domain/account';
 import { useMultisigTx } from '@renderer/services/multisigTx/multisigTxService';
 import { MultisigTransactionDS } from '@renderer/services/storage';
+import { ExtrinsicResultParams } from '@renderer/services/transaction/common/types';
 
 type Props = {
   api: ApiPromise;
@@ -39,22 +40,33 @@ export const Submit = ({ api, tx, multisigTx, account, multisigAccount, unsigned
 
     submitAndWatchExtrinsic(extrinsic, unsignedTx, api, async (executed, params) => {
       if (executed) {
+        const typedParams = params as ExtrinsicResultParams;
         if (multisigTx?.transaction && multisigAccount && account) {
-          await updateMultisigTx({
-            ...multisigTx,
-            events: [
-              ...multisigTx.events,
-              {
-                status: 'SIGNED',
-                extrinsicHash: params.extrinsicHash,
-                accountId: account.publicKey,
-                eventBlock: params.timepoint.height,
-                eventIndex: params.timepoint.index,
-              },
-            ],
-          } as MultisigTransactionDS);
+          const approveEvent = {
+            status: 'SIGNED',
+            extrinsicHash: typedParams.extrinsicHash,
+            accountId: account.publicKey,
+            eventBlock: typedParams.timepoint.height,
+            eventIndex: typedParams.timepoint.index,
+          } as MultisigEvent;
 
-          await sendMstApproval(multisigAccount.matrixRoomId, multisigTx, params);
+          const updatedTx = {
+            ...multisigTx,
+            events: [...multisigTx.events, approveEvent],
+          } as MultisigTransactionDS;
+
+          if (typedParams.isFinalApprove) {
+            const transactionStatus = typedParams.multisigError
+              ? MultisigTxFinalStatus.ERROR
+              : MultisigTxFinalStatus.EXECUTED;
+
+            updatedTx.status = transactionStatus;
+            approveEvent.multisigOutcome = transactionStatus;
+          }
+
+          await updateMultisigTx(updatedTx);
+
+          await sendMstApproval(multisigAccount.matrixRoomId, multisigTx, typedParams);
         }
 
         toggleSuccessMessage();
@@ -65,7 +77,11 @@ export const Submit = ({ api, tx, multisigTx, account, multisigAccount, unsigned
     });
   };
 
-  const sendMstApproval = async (roomId: string, multisigTx: MultisigTransactionDS, params: any): Promise<void> => {
+  const sendMstApproval = async (
+    roomId: string,
+    multisigTx: MultisigTransactionDS,
+    params: ExtrinsicResultParams,
+  ): Promise<void> => {
     try {
       const transaction = multisigTx.transaction;
       const action = params.isFinalApprove ? matrix.mstFinalApprove : matrix.mstApprove;
@@ -81,7 +97,7 @@ export const Submit = ({ api, tx, multisigTx, account, multisigAccount, unsigned
           height: multisigTx.blockCreated || params.timepoint.height,
           index: multisigTx.indexCreated || params.timepoint.index,
         },
-        error: false,
+        error: !!params.multisigError,
       });
     } catch (error) {
       console.warn(error);

@@ -287,8 +287,8 @@
       "cancelled": "Cancelled",
       "error": "Error",
       "established": "Established",
-      "signing": "Signing",
-      "success": "Success"
+      "executed": "Executed",
+      "signing": "Signing"
     }
   },
   "operations": {

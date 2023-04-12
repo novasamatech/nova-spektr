@@ -63,12 +63,12 @@ export const useMultisigTx = (): IMultisigTxService => {
 
         if (hasTransaction || isDifferentChain) return;
 
-        // FIXME: Second condigion is for already signed tx
+        // FIXME: Second condition is for already signed tx
         const hasPendingFinalApproval = tx.events.some((e) => e.status === 'PENDING_SIGNED');
         const hasPendingCancelled = tx.events.some((e) => e.status === 'PENDING_CANCELLED' || e.status === 'CANCELLED');
 
         const status = hasPendingFinalApproval
-          ? MultisigTxFinalStatus.SUCCESS
+          ? MultisigTxFinalStatus.EXECUTED
           : hasPendingCancelled
           ? MultisigTxFinalStatus.CANCELLED
           : MultisigTxFinalStatus.ESTABLISHED;

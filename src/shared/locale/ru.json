@@ -287,8 +287,8 @@
       "cancelled": "Отменено",
       "error": "Ошибка",
       "established": "Завершено",
-      "signing": "Подписание",
-      "success": "Выполнено"
+      "executed": "Выполнено",
+      "signing": "Подписание"
     }
   },
   "operations": {

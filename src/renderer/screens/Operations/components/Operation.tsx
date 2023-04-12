@@ -31,7 +31,7 @@ const StatusTitle: Record<MultisigTxStatus, string> = {
   [MultisigTxFinalStatus.CANCELLED]: 'operation.status.cancelled',
   [MultisigTxFinalStatus.ERROR]: 'operation.status.error',
   [MultisigTxFinalStatus.ESTABLISHED]: 'operation.status.established',
-  [MultisigTxFinalStatus.SUCCESS]: 'operation.status.success',
+  [MultisigTxFinalStatus.EXECUTED]: 'operation.status.executed',
 };
 
 type Props = {
