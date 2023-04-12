@@ -1,0 +1,6 @@
+.active-styles:hover {
+  background: var(--primary-button-background-hover);
+}
+.active-styles:active {
+  background: var(--primary-button-background-active);
+}
