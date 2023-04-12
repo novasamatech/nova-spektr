@@ -1,6 +1,9 @@
-import CalloutText from './components/CalloutText';
-import BodyText from './components/BodyText';
-import SmallTitle from './components/SmallTitle';
-import TitleText from './components/TitleText';
+import { BodyText } from './components/BodyText';
+import { FootnoteText } from './components/FootnoteText';
+import { TitleText } from './components/TitleText';
+import { SmallTitleText } from './components/SmallTitleText';
+import { CaptionText } from './components/CaptionText';
+import { HeadlineText } from './components/HeadlineText';
+import { LargeTitleText } from './components/LargeTitleText';
 
-export { CalloutText, BodyText, SmallTitle, TitleText };
+export { FootnoteText, BodyText, SmallTitleText, TitleText, CaptionText, LargeTitleText, HeadlineText };

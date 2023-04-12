@@ -2,7 +2,7 @@ import { Menu } from '@headlessui/react';
 import cn from 'classnames';
 import React, { PropsWithChildren } from 'react';
 
-import CalloutText from '@renderer/components/ui-redesign/Typography/components/CalloutText';
+import { FootnoteText } from '@renderer/components/ui-redesign';
 import TextBase from '@renderer/components/ui-redesign/Typography/common/TextBase';
 
 type Props = {
@@ -37,11 +37,12 @@ const InfoPopover = ({ data, className, children, offsetPx = 7 }: PropsWithChild
           >
             {data.map((section, i) => (
               <div key={i}>
+                {/* // TODO change text*/}
                 <TextBase className="text-3xs text-redesign-shade-48 uppercase pb-2" key={section.title}>
                   {section.title}
                 </TextBase>
 
-                <CalloutText key={i} className="text-3xs pb-4 flex flex-col last:p-0">
+                <FootnoteText key={i} className="text-3xs pb-4 flex flex-col last:p-0">
                   {section.items.map(({ value, id }) =>
                     typeof value === 'string' ? (
                       value
@@ -54,7 +55,7 @@ const InfoPopover = ({ data, className, children, offsetPx = 7 }: PropsWithChild
                       </Menu.Item>
                     ),
                   )}
-                </CalloutText>
+                </FootnoteText>
                 {i !== data.length - 1 && <hr className="border-divider pb-3" />}
               </div>
             ))}

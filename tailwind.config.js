@@ -91,7 +91,6 @@ module.exports = {
         headline: ['0.9375rem', '1.375rem'],
         body: ['0.8125rem', '1.125rem'],
         footnote: ['0.75rem', '1rem'],
-        callout: ['0.75rem', '1rem'],
       },
       borderRadius: {
         '2lg': '10px',

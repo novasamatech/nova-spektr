@@ -2,10 +2,10 @@ import { Fragment, PropsWithChildren, ReactNode } from 'react';
 import { Dialog, Transition } from '@headlessui/react';
 import cn from 'classnames';
 
-import TitleText from '@renderer/components/ui-redesign/Typography/components/TitleText';
 import Icon from '@renderer/components/ui/Icon/Icon';
 import { ModalBackdrop, ModalTransition } from '@renderer/components/ui-redesign/Modals/common';
 import { useI18n } from '@renderer/context/I18nContext';
+import { TitleText } from '../../Typography';
 
 type Props = {
   isOpen: boolean;

@@ -2,7 +2,7 @@ import cn from 'classnames';
 import { ReactNode, ComponentPropsWithoutRef, forwardRef, useId } from 'react';
 
 import { HTMLInputProps } from '../common/types';
-import CalloutText from '@renderer/components/ui-redesign/Typography/components/CalloutText';
+import FootnoteText from '@renderer/components/ui-redesign/Typography/components/FootnoteText';
 
 export interface Props extends Pick<ComponentPropsWithoutRef<'input'>, HTMLInputProps> {
   label?: ReactNode;
@@ -34,7 +34,7 @@ const Input = forwardRef<HTMLInputElement, Props>(
       <div className="flex flex-col">
         {label && (
           <label htmlFor={id} className="mb-2">
-            <CalloutText>{label}</CalloutText>
+            <FootnoteText>{label}</FootnoteText>
           </label>
         )}
 

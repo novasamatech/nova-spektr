@@ -2,8 +2,8 @@ import { PropsWithChildren } from 'react';
 import cn from 'classnames';
 
 import { Icon } from '@renderer/components/ui';
-import CalloutText from '@renderer/components/ui-redesign/Typography/components/CalloutText';
 import { IconNames } from '@renderer/components/ui/Icon/data';
+import { FootnoteText } from '../Typography';
 
 type Props = {
   url?: string;
@@ -11,7 +11,7 @@ type Props = {
   iconName?: IconNames;
 };
 const InfoLink = ({ url, showIcon = true, children, iconName = 'info' }: PropsWithChildren<Props>) => (
-  <CalloutText
+  <FootnoteText
     className={cn(
       'w-max outline-offset-4 text-action-text-default hover:text-action-text',
       showIcon && 'flex items-center gap-x-1',
@@ -26,7 +26,7 @@ const InfoLink = ({ url, showIcon = true, children, iconName = 'info' }: PropsWi
       children
     )}
     {showIcon && <Icon name={iconName} size={14} />}
-  </CalloutText>
+  </FootnoteText>
 );
 
 export default InfoLink;
