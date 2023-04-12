@@ -1,8 +1,8 @@
 import cn from 'classnames';
 import { ReactNode, ComponentPropsWithoutRef, forwardRef, useId } from 'react';
 
+import { FootnoteText } from '../../Typography';
 import { HTMLInputProps } from '../common/types';
-import FootnoteText from '@renderer/components/ui-redesign/Typography/components/FootnoteText';
 
 export interface Props extends Pick<ComponentPropsWithoutRef<'input'>, HTMLInputProps> {
   label?: ReactNode;

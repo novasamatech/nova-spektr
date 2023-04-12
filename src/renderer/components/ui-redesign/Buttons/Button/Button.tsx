@@ -36,7 +36,7 @@ const Button = ({
     form={form}
     disabled={disabled}
     className={cn(
-      'flex items-center justify-center gap-x-2.5 font-semibold select-none',
+      'flex items-center justify-center gap-x-2 font-medium select-none',
       SizeClass[size],
       ViewClass[`${variant}_${pallet}`],
       className,
