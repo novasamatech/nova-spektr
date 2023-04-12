@@ -257,6 +257,7 @@
   "operation": {
     "addCallDataButton": "Добавить call data",
     "advanced": "Дополнительно",
+    "approveButton": "Approve",
     "continueButton": "Продолжить",
     "details": {
       "callData": "Call Data",

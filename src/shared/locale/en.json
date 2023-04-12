@@ -257,6 +257,7 @@
   "operation": {
     "addCallDataButton": "Add call data",
     "advanced": "Advanced",
+    "approveButton": "Approve",
     "continueButton": "Continue",
     "details": {
       "callData": "Call Data",

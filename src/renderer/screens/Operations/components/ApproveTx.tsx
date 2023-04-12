@@ -164,14 +164,15 @@ const ApproveTx = ({ tx, account, connection }: Props) => {
   };
 
   const thresholdReached = tx.events.filter((e) => e.status === 'SIGNED').length >= account.threshold;
+  const readyForSign = tx.status === 'SIGNING' && unsignedAccounts.length > 0 && !thresholdReached;
 
-  if (tx.status !== 'SIGNING' || unsignedAccounts.length === 0 || thresholdReached) return <></>;
+  if (!readyForSign) return <></>;
 
   return (
     <>
       <div className="flex justify-between">
         <Button pallet="primary" variant="fill" onClick={toggleModal}>
-          {t('operation.signButton')}
+          {t('operation.approveButton')}
         </Button>
       </div>
 

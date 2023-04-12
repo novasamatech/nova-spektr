@@ -18,6 +18,7 @@ import { createTxMetadata } from '@renderer/shared/utils/substrate';
 import { ITransactionService, HashData } from './common/types';
 import { toPublicKey } from '@renderer/shared/utils/address';
 import { MAX_WEIGHT } from '@renderer/services/transaction/common/constants';
+import { decodeDispatchError } from './common/utils';
 
 export const useTransaction = (): ITransactionService => {
   const createRegistry = async (api: ApiPromise) => {
@@ -210,8 +211,6 @@ export const useTransaction = (): ITransactionService => {
     [TransactionType.DESTINATION]: ({ targets }, api) => api.tx.staking.setPayee(targets),
     [TransactionType.CHILL]: (_, api) => api.tx.staking.chill(),
     [TransactionType.BATCH_ALL]: ({ transactions }, api) => {
-      console.log(transactions);
-
       const calls = transactions.map((t: Transaction) => getExtrinsic[t.type](t.args, api).method);
 
       return api.tx.utility.batch(calls);
@@ -298,6 +297,7 @@ export const useTransaction = (): ITransactionService => {
 
         let actualTxHash = result.inner;
         let isFinalApprove = false;
+        let multisigError: string = '';
         let isSuccessExtrinsic = false;
         let extrinsicIndex = 0;
 
@@ -316,6 +316,7 @@ export const useTransaction = (): ITransactionService => {
 
             if (api.events.multisig.MultisigExecuted.is(event)) {
               isFinalApprove = true;
+              multisigError = event.data[4].isErr ? decodeDispatchError(event.data[4].asErr, api) : '';
             }
 
             if (api.events.system.ExtrinsicSuccess.is(event)) {
@@ -327,16 +328,8 @@ export const useTransaction = (): ITransactionService => {
 
             if (api.events.system.ExtrinsicFailed.is(event)) {
               const [dispatchError] = event.data;
-              let errorInfo = dispatchError.toString();
 
-              if (dispatchError.isModule) {
-                const decoded = api.registry.findMetaError(dispatchError.asModule);
-
-                errorInfo = decoded.name
-                  .split(/(?=[A-Z])/)
-                  .map((w) => w.toLowerCase())
-                  .join(' ');
-              }
+              const errorInfo = decodeDispatchError(dispatchError, api);
 
               callback(false, errorInfo);
             }
@@ -351,6 +344,7 @@ export const useTransaction = (): ITransactionService => {
             },
             extrinsicHash: actualTxHash.toHex(),
             isFinalApprove,
+            multisigError,
             isSuccessExtrinsic,
           });
         }
