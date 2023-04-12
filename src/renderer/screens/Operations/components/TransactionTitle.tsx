@@ -4,15 +4,15 @@ import { Transaction } from '@renderer/domain/transaction';
 import { getIconName, getTransactionTitle } from '../common/utils';
 
 type Props = {
-  transaction?: Transaction;
+  tx?: Transaction;
   description?: string;
 };
 
-const TransactionTitle = ({ transaction, description }: Props) => {
+const TransactionTitle = ({ tx, description }: Props) => {
   const { t } = useI18n();
 
-  const iconName = getIconName(transaction);
-  const transactionTitle = getTransactionTitle(transaction);
+  const iconName = getIconName(tx);
+  const transactionTitle = getTransactionTitle(tx);
 
   return (
     <div className="flex gap-2 ">

@@ -24,6 +24,7 @@ import Details from './Details';
 import { Signatory } from '@renderer/domain/signatory';
 import { nonNullable } from '@renderer/shared/utils/functions';
 import { getMultisigExtrinsicLink } from '../common/utils';
+import ApproveTxButton from './ApproveTx';
 
 const StatusTitle: Record<MultisigTxStatus, string> = {
   [MultisigTxInitStatus.SIGNING]: 'operation.status.signing',
@@ -65,13 +66,13 @@ const Operation = ({ tx, account }: Props) => {
     const tempCancellation = [];
 
     if (cancellation.length) {
-      const cancelSignatories = signatories.find((s) => s.publicKey === cancellation[0].signatory.publicKey);
+      const cancelSignatories = signatories.find((s) => s.publicKey === cancellation[0].accountId);
       cancelSignatories && tempCancellation.push(cancelSignatories);
     }
 
     const tempApprovals = approvals
       .sort((a: MultisigEvent, b: MultisigEvent) => (a.eventBlock || 0) - (b.eventBlock || 0))
-      .map((a) => signatories.find((s) => s.publicKey === a.signatory.publicKey))
+      .map((a) => signatories.find((s) => s.publicKey === a.accountId))
       .filter(nonNullable);
 
     setSignatories([...new Set<Signatory>([...tempCancellation, ...tempApprovals, ...signatories])]);
@@ -84,9 +85,9 @@ const Operation = ({ tx, account }: Props) => {
       <Table.Row className="bg-white" height="lg">
         <Table.Cell>{format(new Date(dateCreated || 0), 'p', { locale: dateLocale })}</Table.Cell>
         <Table.Cell>
-          <TransactionTitle transaction={transaction} description={description} />
+          <TransactionTitle tx={transaction} description={description} />
         </Table.Cell>
-        <Table.Cell>{transaction && <ShortTransactionInfo transaction={transaction} />}</Table.Cell>
+        <Table.Cell>{transaction && <ShortTransactionInfo tx={transaction} />}</Table.Cell>
         <Table.Cell>
           <Chain chainId={chainId} />
         </Table.Cell>
@@ -123,6 +124,8 @@ const Operation = ({ tx, account }: Props) => {
             {description && <div className="rounded bg-shade-5">{description}</div>}
 
             <Details tx={tx} account={account} connection={connection} />
+
+            {account && connection && <ApproveTxButton tx={tx} account={account} connection={connection} />}
           </div>
         </Table.Cell>
         <Table.Cell className="align-top" cellAlign="width" colSpan={3}>
@@ -142,10 +145,11 @@ const Operation = ({ tx, account }: Props) => {
               {signatoriesList.map(({ accountId, name, publicKey }) => (
                 <div className="flex justify-between" key={accountId}>
                   <Address size={20} address={accountId} name={name} canCopy />
-                  {events.find((e) => e.status === 'CANCELLED' && e.signatory.publicKey === publicKey) ? (
+
+                  {events.find((e) => e.status === 'CANCELLED' && e.accountId === publicKey) ? (
                     <Icon className="text-error rotate-45" name="addLine" />
                   ) : (
-                    events.find((e) => e.status === 'SIGNED' && e.signatory.publicKey === publicKey) && (
+                    events.find((e) => e.status === 'SIGNED' && e.accountId === publicKey) && (
                       <Icon className="text-success" name="checkmarkLine" />
                     )
                   )}

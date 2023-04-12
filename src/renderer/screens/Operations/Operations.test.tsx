@@ -50,6 +50,7 @@ jest.mock('./components/Chain', () => () => 'Chain');
 jest.mock('./components/ShortTransactionInfo', () => () => 'ShortTransactionInfo');
 jest.mock('./components/TransactionTitle', () => () => 'TransactionTitle');
 jest.mock('./components/EmptyState/EmptyOperations', () => () => 'EmptyState/EmptyOperations');
+jest.mock('./components/Operation', () => () => 'Operation');
 
 describe('screen/Operations', () => {
   test('should render component', () => {
