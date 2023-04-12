@@ -32,11 +32,21 @@ const Details = ({ tx, account, connection, withAdvanced = true }: Props) => {
   return (
     <>
       <ul>
+        {account && (
+          <li className="flex justify-between items-center">
+            <div className="text-shade-40">{t('operation.details.multisigWallet')}</div>
+            <div className="flex items-center gap-1">
+              <Address address={account.accountId || ''} name={account.name} canCopy />
+              <Explorers address={account.accountId || ''} explorers={connection?.explorers} />
+            </div>
+          </li>
+        )}
+
         {transaction?.args.dest && (
           <li className="flex justify-between items-center">
             <div className="text-shade-40">{t('operation.details.recipient')}</div>
             <div className="flex items-center gap-1">
-              <Address address={transaction?.args.dest} />
+              <Address type="short" address={transaction?.args.dest} />
               <Explorers address={transaction.args.dest || ''} explorers={connection?.explorers} />
             </div>
           </li>
@@ -70,16 +80,6 @@ const Details = ({ tx, account, connection, withAdvanced = true }: Props) => {
 
         {isAdvancedShown && (
           <>
-            {account && (
-              <li className="flex justify-between items-center">
-                <div className="text-shade-40">{t('operation.details.sender')}</div>
-                <div className="flex items-center gap-1">
-                  <Address address={account.accountId || ''} name={account.name} canCopy />
-                  <Explorers address={account.accountId || ''} explorers={connection?.explorers} />
-                </div>
-              </li>
-            )}
-
             {callHash && (
               <li className="flex justify-between items-center">
                 <div className="text-shade-40">{t('operation.details.callHash')}</div>

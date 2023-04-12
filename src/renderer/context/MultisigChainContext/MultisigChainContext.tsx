@@ -9,7 +9,6 @@ import { useMultisigTx } from '@renderer/services/multisigTx/multisigTxService';
 import { useAccount } from '@renderer/services/account/accountService';
 import { MultisigAccount } from '@renderer/domain/account';
 import { MultisigTxFinalStatus, SigningStatus } from '@renderer/domain/transaction';
-import { Signatory } from '@renderer/domain/signatory';
 
 type MultisigChainContextProps = {};
 
@@ -39,13 +38,11 @@ export const MultisigChainProvider = ({ children }: PropsWithChildren) => {
 
     if (!lastTx) return;
 
-    const signatory = lastTx.signatories.find(
-      (signatory) => signatory.publicKey === event.data[0].toHex(),
-    ) as Signatory;
+    const accountId = event.data[0].toHex();
 
     const newEvents = lastTx.events;
     const pendingEvent = newEvents.findIndex(
-      (event) => pendingEventStatuses.includes(event.status) && event.signatory.publicKey === signatory.publicKey,
+      (event) => pendingEventStatuses.includes(event.status) && event.accountId === accountId,
     );
 
     if (~pendingEvent) {
@@ -53,7 +50,7 @@ export const MultisigChainProvider = ({ children }: PropsWithChildren) => {
     } else {
       newEvents.push({
         status: resultEventStatus,
-        signatory,
+        accountId: event.data[0].toHex(),
         multisigOutcome: resultTransactionStatus,
       });
     }
