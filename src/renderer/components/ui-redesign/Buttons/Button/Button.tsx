@@ -2,7 +2,7 @@ import cn from 'classnames';
 import noop from 'lodash/noop';
 import { MouseEvent, PropsWithChildren, ReactNode } from 'react';
 
-import { ViewClass, WeightClass } from '../common/constants';
+import { ViewClass, SizeClass } from '../common/constants';
 import { Pallet, Variant } from '../common/types';
 
 type Props = {
@@ -11,7 +11,7 @@ type Props = {
   form?: string;
   variant: Variant;
   pallet: Pallet;
-  weight?: keyof typeof WeightClass;
+  size?: keyof typeof SizeClass;
   disabled?: boolean;
   prefixElement?: ReactNode;
   suffixElement?: ReactNode;
@@ -22,7 +22,7 @@ const Button = ({
   variant,
   pallet,
   type = 'button',
-  weight = 'md',
+  size = 'big',
   form,
   className,
   disabled,
@@ -37,7 +37,7 @@ const Button = ({
     disabled={disabled}
     className={cn(
       'flex items-center justify-center gap-x-2.5 font-semibold select-none',
-      WeightClass[weight],
+      SizeClass[size],
       ViewClass[`${variant}_${pallet}`],
       className,
     )}
