@@ -24,7 +24,7 @@ module.exports = {
 
   /* BUTTON */
   /* primary */
-  'button-background-primary': 'var(--button-background-primary)',
+  'primary-button-background-default': 'var(--primary-button-background-default)',
   'primary-button-background-hover': 'var(--primary-button-background-hover)',
   'primary-button-background-active': 'var(--primary-button-background-active)',
   'primary-button-background-inactive': 'var(--primary-button-background-inactive)',
