@@ -66,7 +66,7 @@ export const Submit = ({ api, tx, multisigTx, account, multisigAccount, unsigned
 
           await updateMultisigTx(updatedTx);
 
-          await sendMstApproval(multisigAccount.matrixRoomId, multisigTx, typedParams);
+          await sendMstApproval(multisigAccount.matrixRoomId, updatedTx, typedParams);
         }
 
         toggleSuccessMessage();
@@ -97,6 +97,7 @@ export const Submit = ({ api, tx, multisigTx, account, multisigAccount, unsigned
           height: multisigTx.blockCreated || params.timepoint.height,
           index: multisigTx.indexCreated || params.timepoint.index,
         },
+        callOutcome: params.isFinalApprove ? (multisigTx.status as MultisigTxFinalStatus) : undefined,
         error: !!params.multisigError,
       });
     } catch (error) {

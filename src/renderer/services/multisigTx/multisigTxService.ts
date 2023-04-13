@@ -71,7 +71,9 @@ export const useMultisigTx = (): IMultisigTxService => {
           ? MultisigTxFinalStatus.EXECUTED
           : hasPendingCancelled
           ? MultisigTxFinalStatus.CANCELLED
-          : MultisigTxFinalStatus.ESTABLISHED;
+          : tx.status === 'SIGNING'
+          ? MultisigTxFinalStatus.ESTABLISHED
+          : tx.status;
 
         updateMultisigTx({
           ...tx,

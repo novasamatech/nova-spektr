@@ -26,6 +26,8 @@ import { Fee } from '@renderer/components/common';
 import { useCountdown } from '@renderer/screens/Staking/Operations/hooks/useCountdown';
 import { useBalance } from '@renderer/services/balance/balanceService';
 import { transferableAmount } from '@renderer/services/balance/common/utils';
+import { MAX_WEIGHT } from '@renderer/services/transaction/common/constants';
+import { TEST_ADDRESS } from '@renderer/shared/utils/constants';
 
 type Props = {
   tx: MultisigTransactionDS & { rowIndex: number };
@@ -55,8 +57,10 @@ const ApproveTx = ({ tx, account, connection }: Props) => {
 
   const accounts = getLiveAccounts();
 
-  const unsignedAccounts = accounts.filter((a) =>
-    tx.events.find((e) => e.accountId === a.publicKey && e.status === 'SIGNED'),
+  const unsignedAccounts = accounts.filter(
+    (a) =>
+      account.signatories.find((s) => s.publicKey === a.publicKey) &&
+      !tx.events.find((e) => e.accountId === a.publicKey),
   );
 
   const [approveTx, setApproveTx] = useState<Transaction>();
@@ -83,10 +87,10 @@ const ApproveTx = ({ tx, account, connection }: Props) => {
   const [signAccount, setSignAccount] = useState<AccountDS>();
 
   useEffect(() => {
-    if (!signAccount) return;
+    const multisigTx = getMultisigTx(signAccount?.accountId || TEST_ADDRESS);
 
-    setApproveTx(getMultisigTx(signAccount.accountId || ''));
-  }, [tx, accounts.length]);
+    setApproveTx(multisigTx);
+  }, [tx, accounts.length, signAccount?.accountId, txWeight]);
 
   useEffect(() => {
     if (!tx.transaction || !connection.api) return;
@@ -113,11 +117,11 @@ const ApproveTx = ({ tx, account, connection }: Props) => {
     return {
       chainId,
       address: signer,
-      type: TransactionType.MULTISIG_AS_MULTI,
+      type: tx.callData ? TransactionType.MULTISIG_AS_MULTI : TransactionType.MULTISIG_APPROVE_AS_MULTI,
       args: {
         threshold: account.threshold,
         otherSignatories,
-        maxWeight: txWeight,
+        maxWeight: txWeight || MAX_WEIGHT,
         maybeTimepoint: {
           height: tx.blockCreated,
           index: tx.indexCreated,
@@ -129,9 +133,11 @@ const ApproveTx = ({ tx, account, connection }: Props) => {
   };
 
   const validateBalanceForFee = async (signAccount: AccountDS): Promise<boolean> => {
-    if (!connection.api || !tx.transaction || !signAccount.publicKey || !asset) return false;
+    if (!connection.api || !approveTx || !signAccount.publicKey || !asset) return false;
 
-    const fee = await getTransactionFee(tx.transaction, connection.api);
+    const fee = await getTransactionFee(approveTx, connection.api);
+
+    console.log(fee);
 
     const balance = await getBalance(signAccount.publicKey, connection.chainId, asset.assetId.toString());
 
@@ -163,10 +169,13 @@ const ApproveTx = ({ tx, account, connection }: Props) => {
     }
   };
 
-  const thresholdReached = tx.events.filter((e) => e.status === 'SIGNED').length >= account.threshold;
-  const readyForSign = tx.status === 'SIGNING' && unsignedAccounts.length > 0 && !thresholdReached;
+  const thresholdReached = tx.events.filter((e) => e.status === 'SIGNED').length === account.threshold - 1;
 
-  if (!readyForSign) return <></>;
+  const readyForSign = tx.status === 'SIGNING' && unsignedAccounts.length > 0;
+  const readyForNonFinalSign = readyForSign && !thresholdReached;
+  const readyForFinalSign = readyForSign && thresholdReached && !!tx.callData;
+
+  if (!(readyForFinalSign || readyForNonFinalSign)) return <></>;
 
   return (
     <>
@@ -188,7 +197,7 @@ const ApproveTx = ({ tx, account, connection }: Props) => {
         onClose={handleClose}
       >
         {activeStep === Step.CONFIRMATION && (
-          <div>
+          <div className="flex flex-col gap-2">
             <div className="flex justify-center">{tx.transaction && <ShortTransactionInfo tx={tx.transaction} />} </div>
 
             {tx.description && <div className="flex justify-center bg-shade-5 rounded-2lg">{tx.description}</div>}
@@ -198,12 +207,12 @@ const ApproveTx = ({ tx, account, connection }: Props) => {
             <div className="flex justify-between items-center">
               <div className="text-shade-40">{t('operation.networkFee')}</div>
               <div>
-                {connection.api && (
+                {connection.api && approveTx && (
                   <Fee
                     className="text-shade-40"
                     api={connection.api}
                     asset={connection.assets[0]}
-                    transaction={tx.transaction}
+                    transaction={approveTx}
                   />
                 )}
               </div>
@@ -305,7 +314,7 @@ const ApproveTx = ({ tx, account, connection }: Props) => {
           closeButton
           isOpen={isFeeModalOpen}
           title={t('operation.feeErrorTitle')}
-          contentClass="px-5 pb-4 w-[260px]"
+          contentClass="px-5 pb-4 w-[260px] flex flex-col items-center"
           onClose={toggleFeeModal}
         >
           <div>{t('operation.feeErrorMessage')}</div>
