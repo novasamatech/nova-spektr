@@ -24,7 +24,7 @@
 
   /* BUTTON */
   /* primary */
-  --button-background-primary: #4649f6;
+  --primary-button-background-default: #4649f6;
   --primary-button-background-hover: linear-gradient(0deg, rgba(0, 0, 0, 0.12), rgba(0, 0, 0, 0.12)), #4649f6;
   --primary-button-background-active: linear-gradient(0deg, rgba(0, 0, 0, 0.24), rgba(0, 0, 0, 0.24)), #4649f6;
   --primary-button-background-inactive: rgba(70, 73, 246, 0.48);
