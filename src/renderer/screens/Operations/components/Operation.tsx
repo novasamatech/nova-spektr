@@ -24,7 +24,9 @@ import Details from './Details';
 import { Signatory } from '@renderer/domain/signatory';
 import { nonNullable } from '@renderer/shared/utils/functions';
 import { getMultisigExtrinsicLink } from '../common/utils';
-import ApproveTxButton from './ApproveTx';
+import RejectTx from './RejectTx';
+import ApproveTx from './ApproveTx';
+// import { useMatrix } from '@renderer/context/MatrixContext';
 
 const StatusTitle: Record<MultisigTxStatus, string> = {
   [MultisigTxInitStatus.SIGNING]: 'operation.status.signing',
@@ -43,6 +45,7 @@ const Operation = ({ tx, account }: Props) => {
   const { dateCreated, callData, chainId, events, signatories, transaction, description, status } = tx;
 
   const { t, dateLocale } = useI18n();
+  // const { matrix } = useMatrix();
 
   const { updateCallData } = useMultisigTx();
   const { connections } = useNetworkContext();
@@ -60,6 +63,7 @@ const Operation = ({ tx, account }: Props) => {
     if (!api || !tx) return;
 
     updateCallData(api, tx, callData as CallData);
+    // matrix.mstUpdate()
   };
 
   useEffect(() => {
@@ -125,7 +129,10 @@ const Operation = ({ tx, account }: Props) => {
 
             <Details tx={tx} account={account} connection={connection} />
 
-            {account && connection && <ApproveTxButton tx={tx} account={account} connection={connection} />}
+            <div className="flex justify-between items-center">
+              {account && connection && <RejectTx tx={tx} account={account} connection={connection} />}
+              {account && connection && <ApproveTx tx={tx} account={account} connection={connection} />}
+            </div>
           </div>
         </Table.Cell>
         <Table.Cell className="align-top" cellAlign="width" colSpan={3}>

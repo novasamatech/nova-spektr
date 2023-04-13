@@ -98,6 +98,9 @@ export const useTransaction = (): ITransactionService => {
         {
           timepoint: transaction.args.maybeTimepoint,
           callHash: transaction.args.callHash,
+          threshold: transaction.args.threshold,
+          otherSignatories: transaction.args.otherSignatories,
+          maxWeight: transaction.args.maxWeight || MAX_WEIGHT,
         },
         info,
         options,

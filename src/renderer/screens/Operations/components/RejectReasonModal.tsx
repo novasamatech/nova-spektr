@@ -1,24 +1,19 @@
 import { Controller, SubmitHandler, useForm } from 'react-hook-form';
-import { hexToU8a, isHex } from '@polkadot/util';
-import { blake2AsHex } from '@polkadot/util-crypto';
 
 import { BaseModal, Button, InputArea, InputHint } from '@renderer/components/ui';
 import { useI18n } from '@renderer/context/I18nContext';
-import { MultisigTransactionDS } from '@renderer/services/storage';
-import { CallData } from '@renderer/domain/shared-kernel';
 
-type CallDataForm = {
-  callData: string;
+type RejectReasonForm = {
+  reason: string;
 };
 
 type Props = {
   isOpen: boolean;
-  tx?: MultisigTransactionDS;
   onClose: () => void;
-  onSubmit: (callData: CallData) => void;
+  onSubmit: (reason: string) => void;
 };
 
-const CallDataModal = ({ isOpen, tx, onClose, onSubmit }: Props) => {
+const RejectReasonModal = ({ isOpen, onClose, onSubmit }: Props) => {
   const { t } = useI18n();
 
   const {
@@ -26,66 +21,62 @@ const CallDataModal = ({ isOpen, tx, onClose, onSubmit }: Props) => {
     handleSubmit,
     reset,
     formState: { isValid },
-  } = useForm<CallDataForm>({
+  } = useForm<RejectReasonForm>({
     mode: 'onChange',
     defaultValues: {
-      callData: '',
+      reason: '',
     },
   });
-
-  const validateCallData = (callData: string): boolean => {
-    return isHex(callData) && tx?.callHash === blake2AsHex(hexToU8a(callData));
-  };
 
   const closeHandler = () => {
     reset();
     onClose();
   };
 
-  const submitHandler: SubmitHandler<CallDataForm> = async ({ callData }) => {
-    onSubmit(callData as CallData);
+  const submitHandler: SubmitHandler<RejectReasonForm> = async ({ reason }) => {
+    onSubmit(reason);
     closeHandler();
   };
 
   return (
     <BaseModal
       isOpen={isOpen}
-      title={t('operations.callData.title')}
+      title={t('operation.rejectReason.title')}
       closeButton
       contentClass="px-5 pb-4 w-[400px]"
       onClose={closeHandler}
     >
-      <form id="multisigForm" className="flex flex-col my-3 gap-2" onSubmit={handleSubmit(submitHandler)}>
+      <form id="rejectReasonForm" className="flex flex-col my-3 gap-2" onSubmit={handleSubmit(submitHandler)}>
         <Controller
-          name="callData"
+          name="reason"
           control={control}
-          rules={{ required: true, validate: validateCallData }}
+          rules={{ required: true }}
           render={({ field: { value, onChange }, fieldState: { error } }) => (
             <>
               <InputArea
                 wrapperClass="my-2"
-                placeholder={t('operations.callData.inputPlaceholder')}
+                placeholder={t('operation.rejectReason.placeholder')}
                 value={value}
                 invalid={!!error}
                 onChange={onChange}
               />
 
               <InputHint className="mb-4" active={!!error} variant="error">
-                {t('operations.callData.errorMessage')}
+                {t('operation.rejectReason.errorMessage')}
               </InputHint>
               <InputHint className="mb-4" active={!error} variant="hint">
-                {t('operations.callData.inputHint')}
+                {t('operations.rejectReason.inputHint')}
               </InputHint>
             </>
           )}
         />
 
         <Button className="w-full" pallet="primary" variant="fill" disabled={!isValid} type="submit">
-          {t('operations.callData.continueButton')}
+          {t('operations.rejectReason.continueButton')}
         </Button>
       </form>
     </BaseModal>
   );
 };
 
-export default CallDataModal;
+export default RejectReasonModal;
