@@ -133,10 +133,6 @@ const MATRIX_ERRORS: Record<MatrixError, ErrorObject> = {
     code: MatrixError.MEMBERS_VERIFICATION,
     message: 'Could not verify members devices in room',
   },
-  [MatrixError.READ_TIMELINE]: {
-    code: MatrixError.READ_TIMELINE,
-    message: 'Failed to read the timeline',
-  },
   [MatrixError.VERIFY_FILE_MAX_SIZE]: {
     code: MatrixError.VERIFY_FILE_MAX_SIZE,
     message: 'File exceeded max size limit',
@@ -148,6 +144,10 @@ const MATRIX_ERRORS: Record<MatrixError, ErrorObject> = {
   [MatrixError.VERIFY_FILE_BAD_CONTENT]: {
     code: MatrixError.VERIFY_FILE_BAD_CONTENT,
     message: 'Verification file has bad content',
+  },
+  [MatrixError.TIMELINE_PAGINATION]: {
+    code: MatrixError.TIMELINE_PAGINATION,
+    message: 'Paginating timeline failed',
   },
 };
 
