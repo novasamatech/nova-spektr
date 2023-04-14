@@ -77,7 +77,8 @@ const Balances = () => {
   const checkCanMakeActions = (chainId: ChainId) => {
     return activeAccounts.some(
       (account) =>
-        account.signingType === SigningType.PARITY_SIGNER && (!account.rootId || account.chainId === chainId),
+        [SigningType.PARITY_SIGNER, SigningType.MULTISIG].includes(account.signingType) &&
+        (!account.rootId || account.chainId === chainId),
     );
   };
 
