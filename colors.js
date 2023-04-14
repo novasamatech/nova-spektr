@@ -23,7 +23,14 @@ module.exports = {
   'chip-icon': 'var(--chip-icon)',
 
   /* BUTTON */
-  'button-background-primary': 'var(--button-background-primary)',
+  /* primary */
+  'primary-button-background-default': 'var(--primary-button-background-default)',
+  'primary-button-background-hover': 'var(--primary-button-background-hover)',
+  'primary-button-background-active': 'var(--primary-button-background-active)',
+  'primary-button-background-inactive': 'var(--primary-button-background-inactive)',
+  /* secondary */
+  'secondary-button-background-hover': 'var(--secondary-button-background-hover)',
+  'secondary-button-background-active': 'var(--secondary-button-background-active)',
 
   /* BORDER */
   'token-container-border': 'var(--token-container-border)',

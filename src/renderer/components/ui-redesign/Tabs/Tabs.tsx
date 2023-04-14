@@ -2,7 +2,7 @@ import { Tab } from '@headlessui/react';
 import { ReactNode } from 'react';
 import cn from 'classnames';
 
-import SmallTitle from '@renderer/components/ui-redesign/Typography/components/SmallTitle';
+import { SmallTitleText } from '../Typography';
 
 export interface TabItem {
   id: string;
@@ -27,9 +27,9 @@ const Tabs = ({ items, tabClassName, panelClassName = 'mt-4', onChange }: Props)
               tabClassName,
             )}
           >
-            <SmallTitle fontWeight="semibold" className="w-full" align="center">
+            <SmallTitleText fontWeight="semibold" className="w-full" align="center">
               {title}
-            </SmallTitle>
+            </SmallTitleText>
           </Tab>
         ))}
       </Tab.List>

@@ -1,8 +1,8 @@
 import cn from 'classnames';
 
-import CalloutText from '@renderer/components/ui-redesign/Typography/components/CalloutText';
 import { TypographyProps } from '@renderer/components/ui-redesign/Typography/common/types';
 import { HintVariant, variantStyles } from '@renderer/components/ui-redesign/InputHint/contants';
+import { FootnoteText } from '../Typography';
 
 type Props = {
   active: boolean;
@@ -13,9 +13,9 @@ const InputHint = ({ variant, active, className, children, ...props }: Props & T
   if (!active) return null;
 
   return (
-    <CalloutText className={cn(variantStyles[variant], className)} {...props}>
+    <FootnoteText className={cn(variantStyles[variant], className)} {...props}>
       {children}
-    </CalloutText>
+    </FootnoteText>
   );
 };
 
