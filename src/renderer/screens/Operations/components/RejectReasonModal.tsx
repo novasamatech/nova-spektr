@@ -65,14 +65,14 @@ const RejectReasonModal = ({ isOpen, onClose, onSubmit }: Props) => {
                 {t('operation.rejectReason.errorMessage')}
               </InputHint>
               <InputHint className="mb-4" active={!error} variant="hint">
-                {t('operations.rejectReason.inputHint')}
+                {t('operation.rejectReason.inputHint')}
               </InputHint>
             </>
           )}
         />
 
         <Button className="w-full" pallet="primary" variant="fill" disabled={!isValid} type="submit">
-          {t('operations.rejectReason.continueButton')}
+          {t('operation.rejectReason.continueButton')}
         </Button>
       </form>
     </BaseModal>
