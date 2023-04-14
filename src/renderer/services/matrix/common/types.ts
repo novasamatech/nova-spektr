@@ -1,6 +1,7 @@
 import { EventType, MatrixEvent, Room } from 'matrix-js-sdk';
 
 import { HexString, PublicKey, AccountID, Timepoint } from '@renderer/domain/shared-kernel';
+import { MultisigTxFinalStatus } from '@renderer/domain/transaction';
 
 // =====================================================
 // ============ ISecureMessenger interface =============
@@ -138,6 +139,7 @@ export type MultisigTxPayload = {
   extrinsicHash?: HexString;
   extrinsicTimepoint: Timepoint;
   callTimepoint: Timepoint;
+  callOutcome?: MultisigTxFinalStatus;
   error: boolean;
 };
 

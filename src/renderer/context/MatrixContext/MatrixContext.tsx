@@ -6,6 +6,7 @@ import { useAccount } from '@renderer/services/account/accountService';
 import { formatAddress, toPublicKey } from '@renderer/shared/utils/address';
 import { useContact } from '@renderer/services/contact/contactService';
 import { getShortAddress } from '@renderer/shared/utils/strings';
+import { AccountID } from '@renderer/domain/shared-kernel';
 
 type MatrixContextProps = {
   matrix: ISecureMessenger;
@@ -53,9 +54,11 @@ export const MatrixProvider = ({ children }: PropsWithChildren) => {
     if (!mstAccountIsValid) return;
 
     const accounts = await getAccounts();
+    const signatoryPublicKeys = signatories.map(toPublicKey);
     const mstAccount = accounts.find((a) => a.accountId === address) as MultisigAccount;
+    const signer = accounts.find((a) => signatoryPublicKeys.includes(toPublicKey(a.accountId)));
     if (mstAccount) {
-      await changeRoom(roomId, mstAccount, content);
+      await changeRoom(roomId, mstAccount, content, signer?.accountId);
     } else {
       await joinRoom(roomId, content);
     }
@@ -86,20 +89,28 @@ export const MatrixProvider = ({ children }: PropsWithChildren) => {
     await addAccount(mstAccount);
   };
 
-  const changeRoom = async (roomId: string, mstAccount: MultisigAccount, content: SpektrExtras) => {
+  const changeRoom = async (
+    roomId: string,
+    mstAccount: MultisigAccount,
+    content: SpektrExtras,
+    signerAddress?: AccountID,
+  ) => {
     const { accountName, inviterPublicKey } = content.mst_account;
-    const stayInRoom = formatAddress(mstAccount.accountId) > formatAddress(inviterPublicKey);
-    if (stayInRoom) return;
+    const stayInRoom = formatAddress(signerAddress) > formatAddress(inviterPublicKey);
 
     try {
-      await matrix.leaveRoom(mstAccount.matrixRoomId);
-      await matrix.joinRoom(roomId);
-      await updateAccount<MultisigAccount>({
-        ...mstAccount,
-        name: accountName,
-        matrixRoomId: roomId,
-        inviterPublicKey,
-      });
+      if (stayInRoom) {
+        await matrix.leaveRoom(roomId);
+      } else {
+        await matrix.leaveRoom(mstAccount.matrixRoomId);
+        await matrix.joinRoom(roomId);
+        await updateAccount<MultisigAccount>({
+          ...mstAccount,
+          name: accountName,
+          matrixRoomId: roomId,
+          inviterPublicKey,
+        });
+      }
     } catch (error) {
       console.warn(error);
     }

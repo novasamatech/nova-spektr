@@ -27,7 +27,7 @@ const ContactList = ({ contacts, query }: Props) => {
 
   const [currentContact, setCurrentContact] = useState<ContactDS>();
 
-  const [isEditModalShown, toggleEditModal] = useToggle(false);
+  const [isEditModalShown, toggleEditModal] = useToggle();
 
   if (filteredContacts.length === 0) {
     return <EmptySearch />;

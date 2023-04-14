@@ -2,9 +2,9 @@ import { ComponentMeta, ComponentStory } from '@storybook/react';
 
 import { Icon } from '@renderer/components/ui';
 import Button from './Button';
-
+import './style.css';
 export default {
-  title: 'Button Redesign',
+  title: 'Redesign/Button',
   component: Button,
   parameters: { actions: { argTypesRegex: '^on.*' } },
 } as ComponentMeta<typeof Button>;
@@ -16,8 +16,6 @@ Primary.args = {
   variant: 'fill',
   pallet: 'primary',
   children: 'Hello button',
-  className: 'w-[200px]',
-  disabled: false,
 };
 
 export const Prefix = Template.bind({});
@@ -25,7 +23,6 @@ Prefix.args = {
   variant: 'fill',
   pallet: 'primary',
   children: 'Hello button',
-  className: 'w-[200px]',
   disabled: false,
   prefixElement: <Icon name="balance" className="text-white" size={16} />,
 };
@@ -35,7 +32,6 @@ PrefixText.args = {
   variant: 'text',
   pallet: 'primary',
   children: 'Hello button',
-  className: 'w-[200px]',
   disabled: false,
   prefixElement: <Icon name="balance" className="text-redesign-primary" size={16} />,
 };

@@ -9,7 +9,7 @@ import { Button, AmountInput, Icon, Identicon, Input, InputHint, Block, InputAre
 import { Fee, Deposit } from '@renderer/components/common';
 import { useI18n } from '@renderer/context/I18nContext';
 import { Asset, AssetType } from '@renderer/domain/asset';
-import { Transaction, MiltisigTxInitStatus, TransactionType } from '@renderer/domain/transaction';
+import { Transaction, MultisigTxInitStatus, TransactionType } from '@renderer/domain/transaction';
 import { useBalance } from '@renderer/services/balance/balanceService';
 import { formatAmount, transferableAmount } from '@renderer/services/balance/common/utils';
 import { AccountID, ChainId } from '@renderer/domain/shared-kernel';
@@ -150,15 +150,17 @@ export const TransferForm = ({
   const getMultisigTx = (account: MultisigAccount, signer: AccountID, transaction: Transaction): Transaction => {
     const { callData, callHash } = getTransactionHash(transaction, api);
 
-    const otherSignatories = account.signatories.reduce<AccountID[]>((acc, s) => {
-      const signerAddress = formatAddress(signer, addressPrefix);
-      const signatoryAddress = formatAddress(s.accountId, addressPrefix);
-      if (signerAddress !== signatoryAddress) {
-        acc.push(signatoryAddress);
-      }
+    const otherSignatories = account.signatories
+      .reduce<AccountID[]>((acc, s) => {
+        const signerAddress = formatAddress(signer, addressPrefix);
+        const signatoryAddress = formatAddress(s.accountId, addressPrefix);
+        if (signerAddress !== signatoryAddress) {
+          acc.push(signatoryAddress);
+        }
 
-      return acc;
-    }, []);
+        return acc;
+      }, [])
+      .sort();
 
     return {
       chainId,
@@ -225,7 +227,7 @@ export const TransferForm = ({
     }
 
     const { callHash } = getTransactionHash(transferTx, api);
-    const multisigTxs = await getMultisigTxs({ chainId, callHash, status: MiltisigTxInitStatus.SIGNING });
+    const multisigTxs = await getMultisigTxs({ chainId, callHash, status: MultisigTxInitStatus.SIGNING });
 
     if (multisigTxs.length !== 0) {
       setMultisigTxExist(true);

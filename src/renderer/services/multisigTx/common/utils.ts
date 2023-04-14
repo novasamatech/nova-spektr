@@ -3,8 +3,7 @@ import { ApiPromise } from '@polkadot/api';
 import { MultisigAccount } from '@renderer/domain/account';
 import { AccountID, ChainId } from '@renderer/domain/shared-kernel';
 import { Signatory } from '@renderer/domain/signatory';
-import { MultisigEvent, MultisigTransaction, MiltisigTxInitStatus } from '@renderer/domain/transaction';
-import { formatAddress } from '@renderer/shared/utils/address';
+import { MultisigEvent, MultisigTransaction, MultisigTxInitStatus } from '@renderer/domain/transaction';
 import { PendingMultisigTransaction } from './types';
 
 export const getPendingMultisigTxs = async (
@@ -42,15 +41,12 @@ export const updateTransactionPayload = (
   } = pendingTransaction;
 
   const newApprovals = pendingTransaction.params.approvals.reduce<MultisigEvent[]>((acc, a) => {
-    const hasApprovalEvent = events.find((e) => e.status === 'SIGNED' && e.signatory.publicKey === a.toHex());
+    const hasApprovalEvent = events.find((e) => e.status === 'SIGNED' && e.accountId === a.toHex());
+
     if (!hasApprovalEvent) {
       acc.push({
         status: 'SIGNED',
-        signatory: signatories.find((s) => s.publicKey === a.toHex()) || {
-          name: formatAddress(a.toHex()),
-          publicKey: a.toHex(),
-          accountId: formatAddress(a.toHex()),
-        },
+        accountId: a.toHex(),
       });
     }
 
@@ -81,11 +77,7 @@ export const createTransactionPayload = (
 
   const events: MultisigEvent[] = approvals.map((a) => ({
     status: 'SIGNED',
-    signatory: account.signatories.find((s) => s.accountId === a.toHuman()) || {
-      name: formatAddress(a.toHex()),
-      publicKey: a.toHex(),
-      accountId: formatAddress(a.toHex()),
-    },
+    accountId: account.signatories.find((s) => s.accountId === a.toHuman())?.publicKey || a.toHex(),
   }));
 
   const dateCreated = Date.now() - (currentBlock - when.height.toNumber()) * blockTime;
@@ -95,7 +87,7 @@ export const createTransactionPayload = (
     indexCreated: pendingTransaction.params.when.index.toNumber(),
     dateCreated,
     chainId: chainId,
-    status: MiltisigTxInitStatus.SIGNING,
+    status: MultisigTxInitStatus.SIGNING,
     callHash: callHash.toHex(),
     signatories: account.signatories,
     deposit: deposit.toString(),

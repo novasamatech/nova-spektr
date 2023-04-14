@@ -7,6 +7,7 @@ import CloseCutoutImg, { ReactComponent as CloseCutoutSvg } from '@images/functi
 import CloseImg, { ReactComponent as CloseSvg } from '@images/functionals/close.svg';
 import CheckCutoutImg, { ReactComponent as CheckCutoutSvg } from '@images/functionals/checkmark-cutout.svg';
 import CheckImg, { ReactComponent as CheckSvg } from '@images/functionals/checkmark.svg';
+import CheckLineImg, { ReactComponent as CheckLineSvg } from '@images/functionals/checkmark-line.svg';
 import WarnCutoutImg, { ReactComponent as WarnCutoutSvg } from '@images/functionals/warning-cutout.svg';
 import DisableCutoutImg, { ReactComponent as DisableCutoutSvg } from '@images/functionals/disable-cutout.svg';
 import DisableImg, { ReactComponent as DisableSvg } from '@images/functionals/disable.svg';
@@ -21,6 +22,7 @@ import NetworkOffImg, { ReactComponent as NetworkOffSvg } from '@images/function
 import NetworkImg, { ReactComponent as NetworkSvg } from '@images/functionals/network.svg';
 import AddImg, { ReactComponent as AddSvg } from '@images/functionals/add.svg';
 import AddLineImg, { ReactComponent as AddLineSvg } from '@images/functionals/add-line.svg';
+import AddCutoutImg, { ReactComponent as AddCutoutSvg } from '@images/functionals/add-cutout.svg';
 import ClearOutlineImg, { ReactComponent as ClearOutlineSvg } from '@images/functionals/clear-outline.svg';
 import EditOutlineImg, { ReactComponent as EditOutlineSvg } from '@images/functionals/edit-outline.svg';
 import DeleteOutlineImg, { ReactComponent as DeleteOutlineSvg } from '@images/functionals/delete-outline.svg';
@@ -28,6 +30,12 @@ import OptionsImg, { ReactComponent as OptionsSvg } from '@images/functionals/op
 import MultisigOutlineImg, { ReactComponent as MultisigOutlineSvg } from '@images/functionals/multisig-outline.svg';
 import EyeSlashedImg, { ReactComponent as EyeSlashedSvg } from '@images/functionals/eye-slashed.svg';
 import EyeImg, { ReactComponent as EyeSvg } from '@images/functionals/eye.svg';
+import CheckLineRedesignImg, {
+  ReactComponent as CheckLineRedesignSvg,
+} from '@images/functionals/checkmark-line-redesign.svg';
+import CloseLineRedesignImg, {
+  ReactComponent as CloseLineRedesignSvg,
+} from '@images/functionals/close-line-redesign.svg';
 
 const FunctionalImages = {
   copy: { svg: CopySvg, img: CopyImg },
@@ -39,6 +47,7 @@ const FunctionalImages = {
   close: { svg: CloseSvg, img: CloseImg },
   checkmarkCutout: { svg: CheckCutoutSvg, img: CheckCutoutImg },
   checkmark: { svg: CheckSvg, img: CheckImg },
+  checkmarkLine: { svg: CheckLineSvg, img: CheckLineImg },
   warnCutout: { svg: WarnCutoutSvg, img: WarnCutoutImg },
   disableCutout: { svg: DisableCutoutSvg, img: DisableCutoutImg },
   disable: { svg: DisableSvg, img: DisableImg },
@@ -53,6 +62,7 @@ const FunctionalImages = {
   network: { svg: NetworkSvg, img: NetworkImg },
   add: { svg: AddSvg, img: AddImg },
   addLine: { svg: AddLineSvg, img: AddLineImg },
+  addCutout: { svg: AddCutoutSvg, img: AddCutoutImg },
   clearOutline: { svg: ClearOutlineSvg, img: ClearOutlineImg },
   editOutline: { svg: EditOutlineSvg, img: EditOutlineImg },
   deleteOutline: { svg: DeleteOutlineSvg, img: DeleteOutlineImg },
@@ -60,6 +70,8 @@ const FunctionalImages = {
   multisigOutline: { svg: MultisigOutlineSvg, img: MultisigOutlineImg },
   eyeSlashed: { svg: EyeSlashedSvg, img: EyeSlashedImg },
   eye: { svg: EyeSvg, img: EyeImg },
+  checkLineRedesign: { svg: CheckLineRedesignSvg, img: CheckLineRedesignImg },
+  closeLineRedesign: { svg: CloseLineRedesignSvg, img: CloseLineRedesignImg },
 } as const;
 
 export type Functional = keyof typeof FunctionalImages;

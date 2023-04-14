@@ -13,12 +13,12 @@ type CallDataForm = {
 
 type Props = {
   isOpen: boolean;
+  tx?: MultisigTransactionDS;
   onClose: () => void;
   onSubmit: (callData: CallData) => void;
-  tx?: MultisigTransactionDS;
 };
 
-const CallDataModal = ({ isOpen, onClose, onSubmit, tx }: Props) => {
+const CallDataModal = ({ isOpen, tx, onClose, onSubmit }: Props) => {
   const { t } = useI18n();
 
   const {
@@ -55,7 +55,7 @@ const CallDataModal = ({ isOpen, onClose, onSubmit, tx }: Props) => {
       contentClass="px-5 pb-4 w-[400px]"
       onClose={closeHandler}
     >
-      <form id="multisigForm" className="flex flex-col my-3 gap-20" onSubmit={handleSubmit(submitHandler)}>
+      <form id="multisigForm" className="flex flex-col my-3 gap-2" onSubmit={handleSubmit(submitHandler)}>
         <Controller
           name="callData"
           control={control}

@@ -2,7 +2,7 @@ import { ApiPromise } from '@polkadot/api';
 import { useLiveQuery } from 'dexie-react-hooks';
 
 import { MultisigAccount } from '@renderer/domain/account';
-import { MiltisigTxFinalStatus, MiltisigTxInitStatus } from '@renderer/domain/transaction';
+import { MultisigTxFinalStatus, MultisigTxInitStatus } from '@renderer/domain/transaction';
 import storage, { MultisigTransactionDS } from '../storage';
 import { QUERY_INTERVAL } from './common/consts';
 import { IMultisigTxService } from './common/types';
@@ -37,7 +37,7 @@ export const useMultisigTx = (): IMultisigTxService => {
             t.blockCreated === pendingTx.params.when.height.toNumber() &&
             t.indexCreated === pendingTx.params.when.index.toNumber() &&
             t.chainId === api.genesisHash.toHex() &&
-            t.status === MiltisigTxInitStatus.SIGNING,
+            t.status === MultisigTxInitStatus.SIGNING,
         );
 
         if (oldTx) {
@@ -63,15 +63,17 @@ export const useMultisigTx = (): IMultisigTxService => {
 
         if (hasTransaction || isDifferentChain) return;
 
-        // FIXME: Second condigion is for already signed tx
+        // FIXME: Second condition is for already signed tx
         const hasPendingFinalApproval = tx.events.some((e) => e.status === 'PENDING_SIGNED');
         const hasPendingCancelled = tx.events.some((e) => e.status === 'PENDING_CANCELLED' || e.status === 'CANCELLED');
 
         const status = hasPendingFinalApproval
-          ? MiltisigTxFinalStatus.SUCCESS
+          ? MultisigTxFinalStatus.EXECUTED
           : hasPendingCancelled
-          ? MiltisigTxFinalStatus.CANCELLED
-          : MiltisigTxFinalStatus.ESTABLISHED;
+          ? MultisigTxFinalStatus.CANCELLED
+          : tx.status === 'SIGNING'
+          ? MultisigTxFinalStatus.ESTABLISHED
+          : tx.status;
 
         updateMultisigTx({
           ...tx,

@@ -41,8 +41,8 @@
       {
         "name": "Subscan",
         "extrinsic": "https://polkadot.subscan.io/extrinsic/{hash}",
-        "account": "https://polkadot.subscan.io/account/{address}",
-        "event": null
+        "multisig": "https://polkadot.subscan.io/multisig_extrinsic/{index}?call_hash={callHash}",
+        "account": "https://polkadot.subscan.io/account/{address}"
       },
       {
         "name": "Polkascan",
@@ -137,6 +137,7 @@
         "name": "Subscan",
         "extrinsic": "https://kusama.subscan.io/extrinsic/{hash}",
         "account": "https://kusama.subscan.io/account/{address}",
+        "multisig": "https://kusama.subscan.io/multisig_extrinsic/{index}?call_hash={callHash}",
         "event": null
       },
       {
@@ -227,6 +228,7 @@
         "name": "Subscan",
         "extrinsic": "https://westend.subscan.io/extrinsic/{hash}",
         "account": "https://westend.subscan.io/account/{address}",
+        "multisig": "https://westend.subscan.io/multisig_extrinsic/{index}?call_hash={callHash}",
         "event": null
       }
     ],
@@ -444,6 +446,8 @@
         "name": "Subscan",
         "extrinsic": "https://statemine.subscan.io/extrinsic/{hash}",
         "account": "https://statemine.subscan.io/account/{address}",
+        "multisig": "https://statemine.subscan.io/multisig_extrinsic/{index}?call_hash={callHash}",
+
         "event": null
       },
       {
@@ -892,6 +896,7 @@
         "name": "Subscan",
         "extrinsic": "https://karura.subscan.io/extrinsic/{hash}",
         "account": "https://karura.subscan.io/account/{address}",
+        "multisig": "https://karura.subscan.io/multisig_extrinsic/{index}?call_hash={callHash}",
         "event": null
       },
       {
@@ -1162,6 +1167,7 @@
         "name": "Subscan",
         "extrinsic": "https://acala.subscan.io/extrinsic/{hash}",
         "account": "https://acala.subscan.io/account/{address}",
+        "multisig": "https://acala.subscan.io/multisig_extrinsic/{index}?call_hash={callHash}",
         "event": null
       },
       {

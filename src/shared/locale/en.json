@@ -1,12 +1,12 @@
 {
   "addressBook": {
     "addContact": {
-      "accountIdIncorrectError": "Incrorrect account address",
+      "accountIdIncorrectError": "Incorrect account address",
       "accountIdLabel": "account Address",
       "accountIdPlaceholder": "Enter or paste an address",
       "accountIdRequiredError": "Account address is required",
       "addContactButton": "Add contact",
-      "matrixIdError": "Incrorrect matrix id",
+      "matrixIdError": "Incorrect matrix id",
       "matrixIdLabel": "matrix id (optional)",
       "matrixIdPlaceholder": "Enter or paste Matrix ID, ie: @bob:matrix.org",
       "nameLabel": "Name",
@@ -254,8 +254,53 @@
     },
     "yourAccountsLabel": "Here are your accounts"
   },
-  "operations": {
+  "operation": {
     "addCallDataButton": "Add call data",
+    "advanced": "Advanced",
+    "approveButton": "Approve",
+    "cancelTitle": "Cancel ",
+    "continueButton": "Continue",
+    "details": {
+      "callData": "Call Data",
+      "callHash": "Call Hash",
+      "controller": "Controller",
+      "deposit": "Multisig deposit",
+      "depositor": "Depositor",
+      "multisigWallet": "Multisig wallet",
+      "payee": "Payee",
+      "recipient": "Recipient",
+      "timePoint": "Time Point"
+    },
+    "detailsTitle": "Details",
+    "explorerLink": "View in explorer",
+    "feeErrorButton": "Close",
+    "feeErrorMessage": "Insufficient funds to pay the network fee",
+    "feeErrorTitle": "Error",
+    "goBackButton": "Go back",
+    "logButton": "Log",
+    "networkFee": "Network fee",
+    "rejectButton": "Cancel",
+    "rejectReason": {
+      "continueButton": "Continue",
+      "errorMessage": "Reject reason is required",
+      "inputHint": "Visible only for you and signers",
+      "placeholder": "Reason...",
+      "title": "Set reject reason"
+    },
+    "selectSignatory": "Select signatory",
+    "selectSignatoryTitle": "Select signatory",
+    "signButton": "Sign with Polkadot Vault",
+    "signatoriesTitle": "Signatories",
+    "signing": "Signing ({ signed } of { threshold })",
+    "status": {
+      "cancelled": "Cancelled",
+      "error": "Error",
+      "established": "Established",
+      "executed": "Executed",
+      "signing": "Signing"
+    }
+  },
+  "operations": {
     "callData": {
       "continueButton": "Continue",
       "errorMessage": "Incorrect call data",
@@ -264,14 +309,6 @@
       "title": "Enter call data"
     },
     "noOperationsDescription": "There are no operations pending multisig operations",
-    "signing": "Signing ({ signed } of { threshold })",
-    "status": {
-      "cancelled": "Cancelled",
-      "error": "Error",
-      "esteblished": "Esteblished",
-      "signing": "Signing",
-      "success": "Success"
-    },
     "subTitle": "Your operations",
     "title": "Operations",
     "titles": {

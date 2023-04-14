@@ -10,7 +10,7 @@ export const enum SortType {
   NONE = 'none',
 }
 
-export type Alignment = 'left' | 'right';
+export type Alignment = 'left' | 'right' | 'center' | 'width';
 
 export type ColumnConfig = {
   dataKey: string;
