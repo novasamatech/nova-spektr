@@ -3,10 +3,9 @@ import { Dialog, Transition } from '@headlessui/react';
 import cn from 'classnames';
 
 import { Icon } from '@renderer/components/ui';
-import BodyText from '@renderer/components/ui-redesign/Typography/components/BodyText';
-import CalloutText from '@renderer/components/ui-redesign/Typography/components/CalloutText';
 import { ModalBackdrop, ModalTransition } from '@renderer/components/ui-redesign/Modals/common';
 import { OperationVariant, variantIcons, variantStyles } from './constants';
+import { BodyText, FootnoteText } from '@renderer/components/ui-redesign';
 
 type Props = {
   isOpen: boolean;
@@ -38,7 +37,7 @@ const OperationResult = ({
             </Dialog.Title>
             {description && (
               <Dialog.Description className="text-text-tertiary">
-                <CalloutText>{description}</CalloutText>
+                <FootnoteText>{description}</FootnoteText>
               </Dialog.Description>
             )}
             {children}

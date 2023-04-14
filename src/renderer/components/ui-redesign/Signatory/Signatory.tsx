@@ -1,6 +1,6 @@
 import { Identicon } from '@renderer/components/ui';
-import BodyText from '@renderer/components/ui-redesign/Typography/components/BodyText';
 import { getShortAddress } from '@renderer/shared/utils/strings';
+import { BodyText } from '../Typography';
 
 interface Props {
   address: string;
