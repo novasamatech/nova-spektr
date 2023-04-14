@@ -98,16 +98,18 @@ const RejectTx = ({ tx, account, connection }: Props) => {
   const getMultisigTx = (signer: AccountID): Transaction => {
     const chainId = tx.chainId;
 
-    const otherSignatories = account.signatories.reduce<AccountID[]>((acc, s) => {
-      const signerAddress = formatAddress(signer, connection?.addressPrefix);
-      const signatoryAddress = formatAddress(s.accountId, connection?.addressPrefix);
+    const otherSignatories = account.signatories
+      .reduce<AccountID[]>((acc, s) => {
+        const signerAddress = formatAddress(signer, connection?.addressPrefix);
+        const signatoryAddress = formatAddress(s.accountId, connection?.addressPrefix);
 
-      if (signerAddress !== signatoryAddress) {
-        acc.push(signatoryAddress);
-      }
+        if (signerAddress !== signatoryAddress) {
+          acc.push(signatoryAddress);
+        }
 
-      return acc;
-    }, []);
+        return acc;
+      }, [])
+      .sort();
 
     return {
       chainId,
