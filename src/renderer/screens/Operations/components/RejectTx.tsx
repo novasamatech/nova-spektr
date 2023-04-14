@@ -3,7 +3,7 @@ import { UnsignedTransaction } from '@substrate/txwrapper-polkadot';
 import { Weight } from '@polkadot/types/interfaces';
 import { BN } from '@polkadot/util';
 
-import { Address, BaseModal, Button, Icon } from '@renderer/components/ui';
+import { BaseModal, Button } from '@renderer/components/ui';
 import { useI18n } from '@renderer/context/I18nContext';
 import { AccountDS, MultisigTransactionDS } from '@renderer/services/storage';
 import { useToggle } from '@renderer/shared/hooks';
@@ -28,6 +28,7 @@ import { useBalance } from '@renderer/services/balance/balanceService';
 import { transferableAmount } from '@renderer/services/balance/common/utils';
 import { MAX_WEIGHT } from '@renderer/services/transaction/common/constants';
 import { TEST_ADDRESS } from '@renderer/shared/utils/constants';
+import RejectReasonModal from './RejectReasonModal';
 
 type Props = {
   tx: MultisigTransactionDS & { rowIndex: number };
@@ -42,13 +43,14 @@ const enum Step {
   SUBMIT,
 }
 
-const ApproveTx = ({ tx, account, connection }: Props) => {
+const RejectTx = ({ tx, account, connection }: Props) => {
   const { t } = useI18n();
 
   const [isModalOpen, toggleModal] = useToggle(false);
-  const [isSelectAccountModalOpen, toggleSelectAccountModal] = useToggle(false);
+  const [isRejectReasonModalOpen, toggleRejectReasonModal] = useToggle(false);
   const [isFeeModalOpen, toggleFeeModal] = useToggle(false);
   const [activeStep, setActiveStep] = useState(Step.CONFIRMATION);
+  const [rejectReason, setRejectReason] = useState('');
   const [countdown, resetCountdown] = useCountdown(connection.api);
 
   const { getBalance } = useBalance();
@@ -56,12 +58,7 @@ const ApproveTx = ({ tx, account, connection }: Props) => {
   const { getLiveAccounts } = useAccount();
 
   const accounts = getLiveAccounts();
-
-  const unsignedAccounts = accounts.filter(
-    (a) =>
-      account.signatories.find((s) => s.publicKey === a.publicKey) &&
-      !tx.events.find((e) => e.accountId === a.publicKey),
-  );
+  const signAccount = accounts.find((a) => a.publicKey === tx.depositor);
 
   const [approveTx, setApproveTx] = useState<Transaction>();
   const [signature, setSignature] = useState<HexString>();
@@ -83,8 +80,6 @@ const ApproveTx = ({ tx, account, connection }: Props) => {
     toggleModal();
     setActiveStep(Step.CONFIRMATION);
   };
-
-  const [signAccount, setSignAccount] = useState<AccountDS>();
 
   useEffect(() => {
     const multisigTx = getMultisigTx(signAccount?.accountId || TEST_ADDRESS);
@@ -119,7 +114,7 @@ const ApproveTx = ({ tx, account, connection }: Props) => {
     return {
       chainId,
       address: signer,
-      type: tx.callData ? TransactionType.MULTISIG_AS_MULTI : TransactionType.MULTISIG_APPROVE_AS_MULTI,
+      type: TransactionType.MULTISIG_CANCEL_AS_MULTI,
       args: {
         threshold: account.threshold,
         otherSignatories,
@@ -128,7 +123,6 @@ const ApproveTx = ({ tx, account, connection }: Props) => {
           height: tx.blockCreated,
           index: tx.indexCreated,
         } as Timepoint,
-        callData: tx.callData,
         callHash: tx.callHash,
       },
     };
@@ -148,42 +142,26 @@ const ApproveTx = ({ tx, account, connection }: Props) => {
     return new BN(fee).lte(new BN(transferableAmount(balance)));
   };
 
-  const handleAccountSelect = async (a: AccountDS) => {
-    setSignAccount(a);
+  const cancellable = tx.status === 'SIGNING' && signAccount;
 
-    const isValid = await validateBalanceForFee(a);
+  if (!cancellable) return <></>;
+
+  const handleRejectReason = async (reason: string) => {
+    const isValid = await validateBalanceForFee(signAccount);
 
     if (isValid) {
+      setRejectReason(reason);
       setActiveStep(Step.SCANNING);
     } else {
       toggleFeeModal();
     }
-
-    toggleSelectAccountModal();
   };
-
-  const selectAccount = () => {
-    if (unsignedAccounts.length === 1) {
-      setSignAccount(unsignedAccounts[0]);
-      setActiveStep(Step.SCANNING);
-    } else {
-      toggleSelectAccountModal();
-    }
-  };
-
-  const thresholdReached = tx.events.filter((e) => e.status === 'SIGNED').length === account.threshold - 1;
-
-  const readyForSign = tx.status === 'SIGNING' && unsignedAccounts.length > 0;
-  const readyForNonFinalSign = readyForSign && !thresholdReached;
-  const readyForFinalSign = readyForSign && thresholdReached && !!tx.callData;
-
-  if (!(readyForFinalSign || readyForNonFinalSign)) return <></>;
 
   return (
     <>
       <div className="flex justify-between">
-        <Button pallet="primary" variant="fill" onClick={toggleModal}>
-          {t('operation.approveButton')}
+        <Button pallet="error" variant="fill" onClick={toggleModal}>
+          {t('operation.rejectButton')}
         </Button>
       </div>
 
@@ -192,7 +170,7 @@ const ApproveTx = ({ tx, account, connection }: Props) => {
         closeButton
         title={
           <div className="flex items-center">
-            {t(transactionTitle)} {t('on')} <Chain chainId={tx.chainId} />
+            {t('operation.cancelTitle')} {t(transactionTitle)} {t('on')} <Chain chainId={tx.chainId} />
           </div>
         }
         contentClass="px-5 pb-4 h-3/4 w-[520px]"
@@ -221,7 +199,7 @@ const ApproveTx = ({ tx, account, connection }: Props) => {
             </div>
 
             <div className="flex justify-end">
-              <Button pallet="primary" variant="fill" onClick={selectAccount}>
+              <Button pallet="primary" variant="fill" onClick={toggleRejectReasonModal}>
                 {t('operation.signButton')}
               </Button>
             </div>
@@ -285,32 +263,17 @@ const ApproveTx = ({ tx, account, connection }: Props) => {
                 account={signAccount}
                 unsignedTx={unsignedTx}
                 signature={signature}
+                rejectReason={rejectReason}
               />
             )}
           </div>
         )}
 
-        <BaseModal
-          closeButton
-          isOpen={isSelectAccountModalOpen}
-          title={t('operation.selectSignatory')}
-          contentClass="px-5 pb-4 w-[520px]"
-          onClose={toggleSelectAccountModal}
-        >
-          <ul>
-            {unsignedAccounts.map((a) => (
-              <li
-                className="flex justify-between items-center p-1 hover:bg-shade-5 cursor-pointer"
-                key={a.id}
-                onClick={() => handleAccountSelect(a)}
-              >
-                <Address address={a.accountId || ''} name={a.name} />
-
-                <Icon className="text-shade-40" name="right" />
-              </li>
-            ))}
-          </ul>
-        </BaseModal>
+        <RejectReasonModal
+          isOpen={isRejectReasonModalOpen}
+          onClose={toggleRejectReasonModal}
+          onSubmit={handleRejectReason}
+        />
 
         <BaseModal
           closeButton
@@ -330,4 +293,4 @@ const ApproveTx = ({ tx, account, connection }: Props) => {
   );
 };
 
-export default ApproveTx;
+export default RejectTx;

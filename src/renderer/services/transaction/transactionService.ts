@@ -15,7 +15,7 @@ import { Call, Weight } from '@polkadot/types/interfaces';
 import { AccountID, CallData, HexString } from '@renderer/domain/shared-kernel';
 import { Transaction, TransactionType } from '@renderer/domain/transaction';
 import { createTxMetadata } from '@renderer/shared/utils/substrate';
-import { ITransactionService, HashData } from './common/types';
+import { ITransactionService, HashData, ExtrinsicResultParams } from './common/types';
 import { toPublicKey } from '@renderer/shared/utils/address';
 import { MAX_WEIGHT } from '@renderer/services/transaction/common/constants';
 import { decodeDispatchError } from './common/utils';
@@ -98,6 +98,9 @@ export const useTransaction = (): ITransactionService => {
         {
           timepoint: transaction.args.maybeTimepoint,
           callHash: transaction.args.callHash,
+          threshold: transaction.args.threshold,
+          otherSignatories: transaction.args.otherSignatories,
+          maxWeight: transaction.args.maxWeight || MAX_WEIGHT,
         },
         info,
         options,
@@ -279,7 +282,7 @@ export const useTransaction = (): ITransactionService => {
     tx: string,
     unsigned: UnsignedTransaction,
     api: ApiPromise,
-    callback: (executed: boolean, params: any) => void,
+    callback: (executed: boolean, params: ExtrinsicResultParams | string) => void,
   ) => {
     let extrinsicCalls = 0;
 
@@ -297,8 +300,7 @@ export const useTransaction = (): ITransactionService => {
 
         let actualTxHash = result.inner;
         let isFinalApprove = false;
-        let multisigError: string = '';
-        let isSuccessExtrinsic = false;
+        let multisigError = '';
         let extrinsicIndex = 0;
 
         // information for each contained extrinsic
@@ -322,7 +324,6 @@ export const useTransaction = (): ITransactionService => {
             if (api.events.system.ExtrinsicSuccess.is(event)) {
               extrinsicIndex = index;
               actualTxHash = hash;
-              isSuccessExtrinsic = true;
               extrinsicCalls += 1;
             }
 
@@ -345,7 +346,6 @@ export const useTransaction = (): ITransactionService => {
             extrinsicHash: actualTxHash.toHex(),
             isFinalApprove,
             multisigError,
-            isSuccessExtrinsic,
           });
         }
       })

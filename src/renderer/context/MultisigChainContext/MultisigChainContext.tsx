@@ -86,7 +86,7 @@ export const MultisigChainProvider = ({ children }: PropsWithChildren) => {
               event,
               ['PENDING_SIGNED', 'SIGNED'],
               'SIGNED',
-              MultisigTxFinalStatus.SUCCESS,
+              MultisigTxFinalStatus.EXECUTED,
             );
           })();
         });

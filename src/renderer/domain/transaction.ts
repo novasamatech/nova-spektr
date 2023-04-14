@@ -34,7 +34,7 @@ export enum MultisigTxInitStatus {
 export enum MultisigTxFinalStatus {
   ESTABLISHED = 'ESTABLISHED',
   CANCELLED = 'CANCELLED',
-  SUCCESS = 'SUCCESS',
+  EXECUTED = 'EXECUTED',
   ERROR = 'ERROR',
 }
 

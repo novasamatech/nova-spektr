@@ -77,14 +77,6 @@ export const Scanning = ({
 
       <div className="text-neutral-variant text-base font-semibold">{t('signing.scanQrTitle')}</div>
 
-      {txPayload ? (
-        <div className="w-[220px] h-[220px]">
-          <QrTxGenerator cmd={0} payload={txPayload} address={address} genesisHash={chainId} />
-        </div>
-      ) : (
-        <div className="w-[220px] h-[220px] rounded-2lg bg-shade-20 animate-pulse" />
-      )}
-
       {txPayload && (
         <div className="flex items-center uppercase font-normal text-xs gap-1.25">
           {t('signing.qrCountdownTitle')}
@@ -97,6 +89,14 @@ export const Scanning = ({
             {secondsToMinutes(countdown)}
           </div>
         </div>
+      )}
+
+      {txPayload ? (
+        <div className="w-[220px] h-[220px]">
+          <QrTxGenerator cmd={0} payload={txPayload} address={address} genesisHash={chainId} />
+        </div>
+      ) : (
+        <div className="w-[220px] h-[220px] rounded-2lg bg-shade-20 animate-pulse" />
       )}
 
       <div className="flex flex-col items-center gap-y-1 text-xs font-semibold text-primary mt-2.5 mb-5">

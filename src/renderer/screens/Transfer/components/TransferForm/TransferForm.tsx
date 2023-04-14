@@ -150,15 +150,17 @@ export const TransferForm = ({
   const getMultisigTx = (account: MultisigAccount, signer: AccountID, transaction: Transaction): Transaction => {
     const { callData, callHash } = getTransactionHash(transaction, api);
 
-    const otherSignatories = account.signatories.reduce<AccountID[]>((acc, s) => {
-      const signerAddress = formatAddress(signer, addressPrefix);
-      const signatoryAddress = formatAddress(s.accountId, addressPrefix);
-      if (signerAddress !== signatoryAddress) {
-        acc.push(signatoryAddress);
-      }
+    const otherSignatories = account.signatories
+      .reduce<AccountID[]>((acc, s) => {
+        const signerAddress = formatAddress(signer, addressPrefix);
+        const signatoryAddress = formatAddress(s.accountId, addressPrefix);
+        if (signerAddress !== signatoryAddress) {
+          acc.push(signatoryAddress);
+        }
 
-      return acc;
-    }, []);
+        return acc;
+      }, [])
+      .sort();
 
     return {
       chainId,
