@@ -60,7 +60,7 @@ const Select = ({
                 {placeholder}
               </FootnoteText>
             )}
-            <Icon name="down" className="text-icon-default" />
+            <Icon name="down" size={16} className="text-icon-default" />
           </Listbox.Button>
 
           <Transition as={Fragment} leave="transition ease-in duration-100" leaveFrom="opacity-100" leaveTo="opacity-0">
