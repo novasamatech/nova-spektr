@@ -65,7 +65,6 @@ export const Submit = ({
     const extrinsic = await getSignedExtrinsic(unsignedTx, signature, api);
 
     submitAndWatchExtrinsic(extrinsic, unsignedTx, api, async (executed, params) => {
-      // TODO: send MST event with error: true
       if (executed) {
         if (multisigTx && isMultisig(account)) {
           await sendMstApprove(account.matrixRoomId, multisigTx, params);

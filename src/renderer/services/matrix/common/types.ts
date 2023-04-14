@@ -42,9 +42,6 @@ export interface ISecureMessenger {
 
   // Multisig event checkers
   isUpdateEvent: (type: SpektrMultisigEvent, content: BaseMultisigPayload) => content is UpdatePayload;
-  isApproveEvent: (type: SpektrMultisigEvent, content: BaseMultisigPayload) => content is ApprovePayload;
-  isFinalApproveEvent: (type: SpektrMultisigEvent, content: BaseMultisigPayload) => content is FinalApprovePayload;
-  isCancelEvent: (type: SpektrMultisigEvent, content: BaseMultisigPayload) => content is CancelPayload;
 
   // Properties
   userId: string | undefined;

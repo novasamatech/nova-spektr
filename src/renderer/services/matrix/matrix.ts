@@ -579,18 +579,6 @@ export class Matrix implements ISecureMessenger {
     return type === SPEKTR_MULTISIG_EVENTS.UPDATE;
   }
 
-  isApproveEvent(type: SpektrMultisigEvent, content: BaseMultisigPayload): content is ApprovePayload {
-    return type === SPEKTR_MULTISIG_EVENTS.APPROVE;
-  }
-
-  isFinalApproveEvent(type: SpektrMultisigEvent, content: BaseMultisigPayload): content is FinalApprovePayload {
-    return type === SPEKTR_MULTISIG_EVENTS.FINAL_APPROVE;
-  }
-
-  isCancelEvent(type: SpektrMultisigEvent, content: BaseMultisigPayload): content is CancelPayload {
-    return type === SPEKTR_MULTISIG_EVENTS.CANCEL;
-  }
-
   // =====================================================
   // ====================== Getters ======================
   // =====================================================

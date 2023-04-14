@@ -1,10 +1,11 @@
 import { Controller, SubmitHandler, useForm } from 'react-hook-form';
+import { hexToU8a, isHex } from '@polkadot/util';
+import { blake2AsHex } from '@polkadot/util-crypto';
 
 import { BaseModal, Button, InputArea, InputHint } from '@renderer/components/ui';
 import { useI18n } from '@renderer/context/I18nContext';
 import { MultisigTransactionDS } from '@renderer/services/storage';
 import { CallData } from '@renderer/domain/shared-kernel';
-import { validateCallData } from '@renderer/shared/utils/substrate';
 
 type CallDataForm = {
   callData: string;
@@ -32,8 +33,8 @@ const CallDataModal = ({ isOpen, onClose, onSubmit, tx }: Props) => {
     },
   });
 
-  const validateCallDataValue = (callData: string): boolean => {
-    return validateCallData(callData, tx?.callHash || '0x0');
+  const validateCallData = (callData: string): boolean => {
+    return isHex(callData) && tx?.callHash === blake2AsHex(hexToU8a(callData));
   };
 
   const closeHandler = () => {
@@ -58,7 +59,7 @@ const CallDataModal = ({ isOpen, onClose, onSubmit, tx }: Props) => {
         <Controller
           name="callData"
           control={control}
-          rules={{ required: true, validate: validateCallDataValue }}
+          rules={{ required: true, validate: validateCallData }}
           render={({ field: { value, onChange }, fieldState: { error } }) => (
             <>
               <InputArea

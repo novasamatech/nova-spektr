@@ -14,7 +14,6 @@ jest.mock('@renderer/services/account/accountService', () => ({
 jest.mock('@renderer/services/multisigTx/multisigTxService', () => ({
   useMultisigTx: jest.fn().mockReturnValue({
     getMultisigTxs: jest.fn(),
-    addMultisigTx: jest.fn(),
     updateMultisigTx: jest.fn(),
   }),
 }));
