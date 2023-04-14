@@ -4,7 +4,7 @@ import { Identicon } from '@renderer/components/ui';
 import Select from './Select';
 
 export default {
-  title: 'Redesign/Dropdown',
+  title: 'Redesign/Select',
   component: Select,
   parameters: { actions: { argTypesRegex: '^on.*' } },
   decorators: [
