@@ -2,7 +2,6 @@ import { ApiPromise } from '@polkadot/api';
 
 import { MultisigAccount } from '@renderer/domain/account';
 import { AccountID, ChainId } from '@renderer/domain/shared-kernel';
-import { Signatory } from '@renderer/domain/signatory';
 import { MultisigEvent, MultisigTransaction, MultisigTxInitStatus } from '@renderer/domain/transaction';
 import { PendingMultisigTransaction } from './types';
 
@@ -27,7 +26,6 @@ export const getPendingMultisigTxs = async (
 export const updateTransactionPayload = (
   transaction: MultisigTransaction,
   pendingTransaction: PendingMultisigTransaction,
-  signatories: Signatory[],
 ): MultisigTransaction => {
   const { events } = transaction;
   const { when, deposit, depositor } = pendingTransaction.params;

@@ -41,7 +41,7 @@ export const useMultisigTx = (): IMultisigTxService => {
         );
 
         if (oldTx) {
-          updateMultisigTx(updateTransactionPayload(oldTx, pendingTx, account.signatories));
+          updateMultisigTx(updateTransactionPayload(oldTx, pendingTx));
         } else {
           const blockTime = getExpectedBlockTime(api);
 
