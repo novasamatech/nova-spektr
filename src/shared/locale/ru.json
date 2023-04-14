@@ -258,6 +258,7 @@
     "addCallDataButton": "Добавить call data",
     "advanced": "Дополнительно",
     "approveButton": "Approve",
+    "cancelTitle": "Отменить ",
     "continueButton": "Продолжить",
     "details": {
       "callData": "Call Data",
@@ -278,6 +279,14 @@
     "goBackButton": "Вернуться",
     "logButton": "Лог",
     "networkFee": "Network fee",
+    "rejectButton": "Отмена",
+    "rejectReason": {
+      "continueButton": "Продолжить",
+      "errorMessage": "Причина отмены обязательна",
+      "inputHint": "Доступно только вам и подписантам",
+      "placeholder": "Причина...",
+      "title": "Укажите причину отмены"
+    },
     "selectSignatory": "Выберите подписанта",
     "selectSignatoryTitle": "Выберите подписанта",
     "signButton": "Подписать в Polkadot Vault",
@@ -287,8 +296,8 @@
       "cancelled": "Отменено",
       "error": "Ошибка",
       "established": "Завершено",
-      "signing": "Подписание",
-      "success": "Выполнено"
+      "executed": "Выполнено",
+      "signing": "Подписание"
     }
   },
   "operations": {
