@@ -3,10 +3,10 @@ import { ReactNode, ComponentPropsWithoutRef, forwardRef, useId } from 'react';
 
 import { FootnoteText } from '../../Typography';
 import { HTMLInputProps } from '../common/types';
+import commonInputStyles from '@renderer/components/ui-redesign/Inputs/common/styles';
 
 export interface Props extends Pick<ComponentPropsWithoutRef<'input'>, HTMLInputProps> {
   label?: ReactNode;
-  disabledStyle?: boolean;
   invalid?: boolean;
   wrapperClass?: string;
   suffixElement?: ReactNode;
@@ -14,20 +14,7 @@ export interface Props extends Pick<ComponentPropsWithoutRef<'input'>, HTMLInput
 }
 
 const Input = forwardRef<HTMLInputElement, Props>(
-  (
-    {
-      type = 'text',
-      label = '',
-      disabledStyle,
-      className,
-      wrapperClass,
-      invalid = false,
-      suffixElement,
-      onChange,
-      ...props
-    },
-    ref,
-  ) => {
+  ({ type = 'text', label = '', className, wrapperClass, invalid = false, suffixElement, onChange, ...props }, ref) => {
     const id = useId();
 
     return (
@@ -42,8 +29,13 @@ const Input = forwardRef<HTMLInputElement, Props>(
           <input
             id={id}
             className={cn(
-              // TODO add placeholder and hover styles when ready and change border color name
-              'rounded text-text-primary text-body bg-main-app-background flex-1 py-[7px] pl-[8px] focus:shadow-input-active-shadow focus:outline-none border border-container-border focus:border-icon-accent',
+              commonInputStyles,
+              'focus-within:enabled:border-active-container-border',
+              invalid && 'border-filter-border-negative',
+              'hover:enabled:shadow-card-shadow',
+              'disabled:bg-input-background-disabled disabled:text-text-tertiary disabled:placeholder:text-text-tertiary',
+              'outline-0', // until custom outline is developed
+              'flex-1 border-filter-border',
               className,
             )}
             ref={ref}

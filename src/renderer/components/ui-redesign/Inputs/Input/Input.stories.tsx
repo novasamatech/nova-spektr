@@ -26,16 +26,16 @@ Label.args = {
   value: 'This is value',
 };
 
-// export const Invalid = Template.bind({});
-// Invalid.args = {
-//   label: 'With invalid',
-//   value: 'This is value',
-//   invalid: true,
-// };
-//
-// export const Disabled = Template.bind({});
-// Disabled.args = {
-//   label: 'With disabled label',
-//   value: 'This is value',
-//   disabled: true,
-// };
+export const Invalid = Template.bind({});
+Invalid.args = {
+  label: 'With invalid',
+  value: 'This is value',
+  invalid: true,
+};
+
+export const Disabled = Template.bind({});
+Disabled.args = {
+  label: 'With disabled label',
+  value: 'This is value',
+  disabled: true,
+};
