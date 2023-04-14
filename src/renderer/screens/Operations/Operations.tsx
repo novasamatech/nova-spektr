@@ -5,7 +5,7 @@ import { IndexableType } from 'dexie';
 
 import { Block, Button, Plate, Table } from '@renderer/components/ui';
 import { useI18n } from '@renderer/context/I18nContext';
-import { MultisigEvent, MultisigTxStatus, MiltisigTxFinalStatus } from '@renderer/domain/transaction';
+import { MultisigEvent, MultisigTxStatus, MultisigTxFinalStatus } from '@renderer/domain/transaction';
 import { useMultisigTx } from '@renderer/services/multisigTx/multisigTxService';
 import { MultisigTransactionDS } from '@renderer/services/storage';
 import Chain from './components/Chain';
@@ -25,10 +25,10 @@ const sortByDate = ([dateA]: [string, MultisigTransactionDS[]], [dateB]: [string
 
 const StatusTitle: Record<MultisigTxStatus, string> = {
   SIGNING: 'operations.status.signing',
-  [MiltisigTxFinalStatus.CANCELLED]: 'operations.status.cancelled',
-  [MiltisigTxFinalStatus.ERROR]: 'operations.status.error',
-  [MiltisigTxFinalStatus.ESTABLISHED]: 'operations.status.esteblished',
-  [MiltisigTxFinalStatus.SUCCESS]: 'operations.status.success',
+  [MultisigTxFinalStatus.CANCELLED]: 'operations.status.cancelled',
+  [MultisigTxFinalStatus.ERROR]: 'operations.status.error',
+  [MultisigTxFinalStatus.ESTABLISHED]: 'operations.status.esteblished',
+  [MultisigTxFinalStatus.SUCCESS]: 'operations.status.success',
 };
 
 const Operations = () => {
@@ -67,7 +67,7 @@ const Operations = () => {
 
     if (!api || !currentTx) return;
 
-    updateCallData(api, currentTx, callData as CallData);
+    updateCallData(api, currentTx, callData);
   };
 
   return (

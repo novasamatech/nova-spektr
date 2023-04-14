@@ -2,7 +2,7 @@ import { ApiPromise } from '@polkadot/api';
 import { useLiveQuery } from 'dexie-react-hooks';
 
 import { MultisigAccount } from '@renderer/domain/account';
-import { MiltisigTxFinalStatus, MiltisigTxInitStatus } from '@renderer/domain/transaction';
+import { MultisigTxFinalStatus, MultisigTxInitStatus, MultisigTransaction } from '@renderer/domain/transaction';
 import storage, { MultisigTransactionDS } from '../storage';
 import { QUERY_INTERVAL } from './common/consts';
 import { IMultisigTxService } from './common/types';
@@ -37,7 +37,7 @@ export const useMultisigTx = (): IMultisigTxService => {
             t.blockCreated === pendingTx.params.when.height.toNumber() &&
             t.indexCreated === pendingTx.params.when.index.toNumber() &&
             t.chainId === api.genesisHash.toHex() &&
-            t.status === MiltisigTxInitStatus.SIGNING,
+            t.status === MultisigTxInitStatus.SIGNING,
         );
 
         if (oldTx) {
@@ -63,27 +63,24 @@ export const useMultisigTx = (): IMultisigTxService => {
 
         if (hasTransaction || isDifferentChain) return;
 
-        // FIXME: Second condigion is for already signed tx
+        // FIXME: Second condition is for already signed tx
         const hasPendingFinalApproval = tx.events.some((e) => e.status === 'PENDING_SIGNED');
         const hasPendingCancelled = tx.events.some((e) => e.status === 'PENDING_CANCELLED' || e.status === 'CANCELLED');
 
         const status = hasPendingFinalApproval
-          ? MiltisigTxFinalStatus.SUCCESS
+          ? MultisigTxFinalStatus.SUCCESS
           : hasPendingCancelled
-          ? MiltisigTxFinalStatus.CANCELLED
-          : MiltisigTxFinalStatus.ESTABLISHED;
+          ? MultisigTxFinalStatus.CANCELLED
+          : MultisigTxFinalStatus.ESTABLISHED;
 
-        updateMultisigTx({
-          ...tx,
-          status,
-        });
+        updateMultisigTx({ ...tx, status });
       });
     }, QUERY_INTERVAL);
 
     return () => clearInterval(intervalId);
   };
 
-  const getLiveMultisigTxs = (where?: Record<string, any>): MultisigTransactionDS[] => {
+  const getLiveMultisigTxs = <T extends MultisigTransaction>(where?: Partial<T>): MultisigTransactionDS[] => {
     const query = () => {
       try {
         return getMultisigTxs(where);
@@ -114,17 +111,9 @@ export const useMultisigTx = (): IMultisigTxService => {
   const updateCallData = async (api: ApiPromise, tx: MultisigTransactionDS, callData: CallData) => {
     const chain = await getChainById(tx.chainId);
 
-    const transaction = decodeCallData(
-      api,
-      formatAddress(tx?.publicKey, chain?.addressPrefix),
-      (callData as CallData) || '0x',
-    );
+    const transaction = decodeCallData(api, formatAddress(tx?.publicKey, chain?.addressPrefix), callData);
 
-    await updateMultisigTx({
-      ...tx,
-      callData: (callData as CallData) || '0x',
-      transaction,
-    });
+    await updateMultisigTx({ ...tx, callData, transaction });
   };
 
   return {

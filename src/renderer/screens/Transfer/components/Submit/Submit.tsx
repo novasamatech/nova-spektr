@@ -65,9 +65,10 @@ export const Submit = ({
     const extrinsic = await getSignedExtrinsic(unsignedTx, signature, api);
 
     submitAndWatchExtrinsic(extrinsic, unsignedTx, api, async (executed, params) => {
+      // TODO: send MST event with error: true
       if (executed) {
         if (multisigTx && isMultisig(account)) {
-          await sendMstApproval(account.matrixRoomId, multisigTx, params);
+          await sendMstApprove(account.matrixRoomId, multisigTx, params);
         }
 
         toggleSuccessMessage();
@@ -78,9 +79,11 @@ export const Submit = ({
     });
   };
 
-  const sendMstApproval = async (roomId: string, transaction: Transaction, params: any): Promise<void> => {
+  const sendMstApprove = async (roomId: string, transaction: Transaction, params: any): Promise<void> => {
+    if (!matrix.userIsLoggedIn) return;
+
     try {
-      await matrix.mstApprove(roomId, {
+      await matrix.sendApprove(roomId, {
         senderAddress: transaction.address,
         chainId: transaction.chainId,
         callHash: transaction.args.callHash,

@@ -16,6 +16,7 @@ import {
   AutoDiscovery,
   AuthType,
   EventTimeline,
+  RoomEvent,
 } from 'matrix-js-sdk';
 import { ISecretStorageKeyInfo } from 'matrix-js-sdk/lib/crypto/api';
 import { deriveKey } from 'matrix-js-sdk/lib/crypto/key_passphrase';
@@ -27,9 +28,9 @@ import noop from 'lodash/noop';
 import {
   BASE_MATRIX_URL,
   KEY_FILE_MAX_SIZE,
-  MST_EVENTS,
   ROOM_CRYPTO_CONFIG,
   WELL_KNOWN_SERVERS,
+  SPEKTR_MULTISIG_EVENTS,
 } from './common/constants';
 import MATRIX_ERRORS from './common/errors';
 import {
@@ -42,12 +43,16 @@ import {
   ISecretStorage,
   ISecureMessenger,
   Membership,
-  MultisigTxPayload,
-  MSTPayload,
+  MultisigPayload,
   SpektrExtras,
-  SpektrMstEvent,
   RoomParams,
   LoginFlow,
+  UpdatePayload,
+  ApprovePayload,
+  FinalApprovePayload,
+  CancelPayload,
+  BaseMultisigPayload,
+  SpektrMultisigEvent,
 } from './common/types';
 import CredentialStorage from './credentialStorage';
 import SecretStorage from './secretStorage';
@@ -70,7 +75,7 @@ export class Matrix implements ISecureMessenger {
       onInvite: noop,
       onMessage: noop,
       onLogout: noop,
-      onMstEvent: noop,
+      onMultisigEvent: () => Promise.resolve(),
     };
     this.credentialStorage = new CredentialStorage();
     this.secretStorage = new SecretStorage();
@@ -452,17 +457,17 @@ export class Matrix implements ISecureMessenger {
   // }
 
   /**
-   * Send MST_INIT state event to the room
+   * Send MST_UPDATE state event to the room
    * Initialize multi-sig transaction
    * @param roomId room's identifier
    * @param params MST parameters
    * @return {Promise}
    */
-  async mstUpdate(roomId: string, params: MultisigTxPayload): Promise<void> {
+  async sendUpdate(roomId: string, params: UpdatePayload): Promise<void> {
     try {
-      await this.matrixClient.sendEvent(roomId, SpektrMstEvent.UPDATE, params);
+      await this.matrixClient.sendEvent(roomId, SPEKTR_MULTISIG_EVENTS.UPDATE, params);
     } catch (error) {
-      throw this.createError(MatrixError.MST_INIT, error);
+      throw this.createError(MatrixError.MST_UPDATE, error);
     }
   }
 
@@ -473,9 +478,9 @@ export class Matrix implements ISecureMessenger {
    * @param params MST parameters
    * @return {Promise}
    */
-  async mstApprove(roomId: string, params: MultisigTxPayload): Promise<void> {
+  async sendApprove(roomId: string, params: ApprovePayload): Promise<void> {
     try {
-      await this.matrixClient.sendEvent(roomId, SpektrMstEvent.APPROVE, params);
+      await this.matrixClient.sendEvent(roomId, SPEKTR_MULTISIG_EVENTS.APPROVE, params);
     } catch (error) {
       throw this.createError(MatrixError.MST_APPROVE, error);
     }
@@ -489,9 +494,9 @@ export class Matrix implements ISecureMessenger {
    * @param params MST parameters
    * @return {Promise}
    */
-  async mstApprove_NEW(roomId: string, thread: string, params: MultisigTxPayload): Promise<void> {
+  async mstApprove_NEW(roomId: string, thread: string, params: ApprovePayload): Promise<void> {
     try {
-      await this.matrixClient.sendEvent(roomId, thread, SpektrMstEvent.APPROVE, params);
+      await this.matrixClient.sendEvent(roomId, thread, SPEKTR_MULTISIG_EVENTS.APPROVE, params);
     } catch (error) {
       throw this.createError(MatrixError.MST_APPROVE, error);
     }
@@ -504,9 +509,9 @@ export class Matrix implements ISecureMessenger {
    * @param params MST parameters
    * @return {Promise}
    */
-  async mstFinalApprove(roomId: string, params: MultisigTxPayload): Promise<void> {
+  async sendFinalApprove(roomId: string, params: FinalApprovePayload): Promise<void> {
     try {
-      await this.matrixClient.sendEvent(roomId, SpektrMstEvent.FINAL_APPROVE, params);
+      await this.matrixClient.sendEvent(roomId, SPEKTR_MULTISIG_EVENTS.FINAL_APPROVE, params);
     } catch (error) {
       throw this.createError(MatrixError.MST_FINAL_APPROVE, error);
     }
@@ -519,9 +524,9 @@ export class Matrix implements ISecureMessenger {
    * @param params MST parameters
    * @return {Promise}
    */
-  async mstCancel(roomId: string, params: MultisigTxPayload): Promise<void> {
+  async sendCancel(roomId: string, params: CancelPayload): Promise<void> {
     try {
-      await this.matrixClient.sendEvent(roomId, SpektrMstEvent.CANCEL, params);
+      await this.matrixClient.sendEvent(roomId, SPEKTR_MULTISIG_EVENTS.CANCEL, params);
     } catch (error) {
       throw this.createError(MatrixError.MST_CANCEL, error);
     }
@@ -564,6 +569,26 @@ export class Matrix implements ISecureMessenger {
     } catch (error) {
       console.warn(error);
     }
+  }
+
+  // =====================================================
+  // ================= Public helpers ====================
+  // =====================================================
+
+  isUpdateEvent(type: SpektrMultisigEvent, content: BaseMultisigPayload): content is UpdatePayload {
+    return type === SPEKTR_MULTISIG_EVENTS.UPDATE;
+  }
+
+  isApproveEvent(type: SpektrMultisigEvent, content: BaseMultisigPayload): content is ApprovePayload {
+    return type === SPEKTR_MULTISIG_EVENTS.APPROVE;
+  }
+
+  isFinalApproveEvent(type: SpektrMultisigEvent, content: BaseMultisigPayload): content is FinalApprovePayload {
+    return type === SPEKTR_MULTISIG_EVENTS.FINAL_APPROVE;
+  }
+
+  isCancelEvent(type: SpektrMultisigEvent, content: BaseMultisigPayload): content is CancelPayload {
+    return type === SPEKTR_MULTISIG_EVENTS.CANCEL;
   }
 
   // =====================================================
@@ -760,7 +785,7 @@ export class Matrix implements ISecureMessenger {
     this.handleSyncEvent();
     this.handleInviteEvent();
     this.handleDecryptedEvents();
-    // this.handleSelfCustomEvents();
+    this.handleEchoEvents();
   }
 
   /**
@@ -793,10 +818,12 @@ export class Matrix implements ISecureMessenger {
         // getRoomSummary loads room into client, otherwise room will be NULL
         await this.matrixClient.getRoomSummary(roomId);
         const room = this.matrixClient.getRoom(roomId);
+        if (!room) return;
+
         const roomIsValid = this.isSpektrRoom(room);
         const topic = this.getSpektrTopic(room);
         const userHasJoined = room?.getMyMembership() === Membership.JOIN;
-        if (!roomIsValid || !room || !topic || userHasJoined) return;
+        if (!roomIsValid || !topic || userHasJoined) return;
 
         console.info('🔸 Invite event - ', event.getSender(), member.membership, roomId);
 
@@ -820,11 +847,13 @@ export class Matrix implements ISecureMessenger {
       if (event.getSender() === this.userId) return;
 
       const room = this.matrixClient.getRoom(event.getRoomId());
-      if (!this.isSpektrRoom(room)) return;
+      if (!room || !this.isSpektrRoom(room)) return;
 
-      if (this.isSpektrMstEvent(event)) {
-        const payload = this.createEventPayload<MSTPayload>(event);
-        this.eventCallbacks.onMstEvent(payload);
+      if (this.isSpektrMultisigEvent(event)) {
+        const payload = this.createEventPayload<MultisigPayload>(event);
+        this.eventCallbacks
+          .onMultisigEvent(payload, this.getSpektrTopic(room))
+          .catch((error) => console.warn('onMultisigEvent error - ', error));
       }
       if (event.getType() === EventType.RoomMessage) {
         const payload = event.getContent().body;
@@ -852,19 +881,19 @@ export class Matrix implements ISecureMessenger {
   }
 
   /**
-   * Handle echo events (init, approve, final, cancel)
-   * @description might be useful in future
-   * @link https://spec.matrix.org/v1.6/client-server-api/#local-echo
+   * All events are echoed at the client side
+   * Handle echo events (update, approve, final, cancel)
    */
-  // private handleSelfCustomEvents() {
-  //   this.matrixClient.on(RoomEvent.LocalEchoUpdated, (event, room) => {
-  //     if (event.getSender() !== this.userId || event.status !== 'sent') return;
-  //
-  //     if (!this.isSpektrMstEvent(event) || !this.isSpektrRoom(room.name)) return;
-  //
-  //     this.eventCallbacks.onMstEvent(this.createEventPayload<MSTPayload>(event));
-  //   });
-  // }
+  private handleEchoEvents() {
+    this.matrixClient.on(RoomEvent.LocalEchoUpdated, (event, room) => {
+      if (event.getSender() !== this.userId || event.status !== 'sent') return;
+
+      if (!this.isSpektrMultisigEvent(event) || !this.isSpektrRoom(room)) return;
+
+      const payload = this.createEventPayload<MultisigPayload>(event);
+      this.eventCallbacks.onMultisigEvent(payload, this.getSpektrTopic(room)).catch(console.warn);
+    });
+  }
 
   // =====================================================
   // ====================== Helpers ======================
@@ -898,7 +927,7 @@ export class Matrix implements ISecureMessenger {
    * @param params content and roomName
    * @return {Object}
    */
-  private createEventPayload<T extends MSTPayload | InvitePayload>(
+  private createEventPayload<T extends MultisigPayload | InvitePayload>(
     event: MatrixEvent,
     params?: {
       content: SpektrExtras;
@@ -936,9 +965,7 @@ export class Matrix implements ISecureMessenger {
    * @param room the room itself
    * @return {Object}
    */
-  private getSpektrTopic(room: Room | null): SpektrExtras | undefined {
-    if (!room) return;
-
+  private getSpektrTopic(room: Room): SpektrExtras {
     // on invite user only sees stripped state, which has '' as state key for all events
     const strippedStateKey = '';
 
@@ -985,8 +1012,8 @@ export class Matrix implements ISecureMessenger {
    * @param event Matrix event
    * @return {Boolean}
    */
-  private isSpektrMstEvent(event: MatrixEvent): boolean {
-    return MST_EVENTS.includes(event.getType() as SpektrMstEvent);
+  private isSpektrMultisigEvent(event: MatrixEvent): boolean {
+    return Object.values(SPEKTR_MULTISIG_EVENTS).includes(event.getType() as SpektrMultisigEvent);
   }
 
   /**
