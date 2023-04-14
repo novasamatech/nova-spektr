@@ -22,7 +22,7 @@ const Button = ({
   variant,
   pallet,
   type = 'button',
-  size = 'big',
+  size = 'md',
   form,
   className,
   disabled,
