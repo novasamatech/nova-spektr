@@ -13,6 +13,7 @@ type Props = {
   placeholder: string;
   label?: string;
   disabled?: boolean;
+  invalid?: boolean;
   selectedId?: DropdownOption['id'];
   options: DropdownOption[];
   position?: Position;
@@ -24,6 +25,7 @@ const Select = ({
   placeholder,
   label,
   disabled,
+  invalid,
   selectedId,
   options,
   onChange,
@@ -38,7 +40,8 @@ const Select = ({
           <Listbox.Button
             className={cn(
               open && 'border-active-container-border',
-              !open && 'border-filter-border',
+              !open && !invalid && 'border-filter-border',
+              invalid && 'border-filter-border-negative',
               'disabled:bg-input-background-disabled disabled:text-text-tertiary enabled:hover:shadow-card-shadow',
               commonInputStyles,
               'w-full flex items-center gap-x-2 justify-between pr-2',
