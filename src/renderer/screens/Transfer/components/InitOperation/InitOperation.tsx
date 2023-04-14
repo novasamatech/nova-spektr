@@ -66,8 +66,6 @@ export const InitOperation = ({
       const signatories = activeAccount.value.signatories.map((s) => s.publicKey);
       const signers = allAccounts.filter((a) => a.publicKey && signatories.includes(a.publicKey)) as MultisigAccount[];
 
-      console.log(signers);
-
       const options = getAccountsOptions<MultisigAccount>(chainId, signers, addressPrefix);
 
       if (options.length === 0) return;
@@ -75,7 +73,7 @@ export const InitOperation = ({
       setSignatoryOptions(options);
       setActiveSignatory({ id: options[0].id, value: options[0].value });
     }
-  }, [activeAccount]);
+  }, [activeAccount, allAccounts]);
 
   const changeAccount = (account: DropdownResult<Account | MultisigAccount>) => {
     onAccountChange(account.value);

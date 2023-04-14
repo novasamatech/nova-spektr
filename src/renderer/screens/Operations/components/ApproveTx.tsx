@@ -27,7 +27,6 @@ import { useCountdown } from '@renderer/screens/Staking/Operations/hooks/useCoun
 import { useBalance } from '@renderer/services/balance/balanceService';
 import { transferableAmount } from '@renderer/services/balance/common/utils';
 import { MAX_WEIGHT } from '@renderer/services/transaction/common/constants';
-import { TEST_ADDRESS } from '@renderer/shared/utils/constants';
 
 type Props = {
   tx: MultisigTransactionDS & { rowIndex: number };
@@ -87,7 +86,7 @@ const ApproveTx = ({ tx, account, connection }: Props) => {
   const [signAccount, setSignAccount] = useState<AccountDS>();
 
   useEffect(() => {
-    const multisigTx = getMultisigTx(signAccount?.accountId || TEST_ADDRESS);
+    const multisigTx = getMultisigTx(signAccount?.accountId || account.signatories[0].accountId);
 
     setApproveTx(multisigTx);
   }, [tx, accounts.length, signAccount?.accountId, txWeight]);
