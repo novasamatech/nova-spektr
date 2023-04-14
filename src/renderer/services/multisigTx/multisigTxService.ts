@@ -68,10 +68,12 @@ export const useMultisigTx = (): IMultisigTxService => {
         const hasPendingCancelled = tx.events.some((e) => e.status === 'PENDING_CANCELLED' || e.status === 'CANCELLED');
 
         const status = hasPendingFinalApproval
-          ? MultisigTxFinalStatus.SUCCESS
+          ? MultisigTxFinalStatus.EXECUTED
           : hasPendingCancelled
           ? MultisigTxFinalStatus.CANCELLED
-          : MultisigTxFinalStatus.ESTABLISHED;
+          : tx.status === 'SIGNING'
+          ? MultisigTxFinalStatus.ESTABLISHED
+          : tx.status;
 
         updateMultisigTx({ ...tx, status });
       });

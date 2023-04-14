@@ -1,7 +1,7 @@
 import { EventType, MatrixEvent, Room } from 'matrix-js-sdk';
 
 import { HexString, PublicKey, AccountID, Timepoint } from '@renderer/domain/shared-kernel';
-import { MultisigTxFinalStatus } from '@renderer/domain/transaction';
+import { MultisigTxStatus } from '@renderer/domain/transaction';
 
 // =====================================================
 // ============ ISecureMessenger interface =============
@@ -152,7 +152,7 @@ export interface ApprovePayload extends BaseMultisigPayload {
 }
 
 export interface FinalApprovePayload extends ApprovePayload {
-  callOutcome: MultisigTxFinalStatus;
+  callOutcome: MultisigTxStatus;
 }
 
 export interface CancelPayload extends ApprovePayload {}

@@ -1,8 +1,8 @@
 import cn from 'classnames';
 import { ReactNode, ComponentPropsWithoutRef, forwardRef, useId } from 'react';
 
+import { FootnoteText } from '../../Typography';
 import { HTMLInputProps } from '../common/types';
-import CalloutText from '@renderer/components/ui-redesign/Typography/components/CalloutText';
 
 export interface Props extends Pick<ComponentPropsWithoutRef<'input'>, HTMLInputProps> {
   label?: ReactNode;
@@ -34,7 +34,7 @@ const Input = forwardRef<HTMLInputElement, Props>(
       <div className="flex flex-col">
         {label && (
           <label htmlFor={id} className="mb-2">
-            <CalloutText>{label}</CalloutText>
+            <FootnoteText>{label}</FootnoteText>
           </label>
         )}
 
@@ -42,7 +42,8 @@ const Input = forwardRef<HTMLInputElement, Props>(
           <input
             id={id}
             className={cn(
-              'rounded text-body bg-redesign-secondary-bg flex-1 py-[7px] pl-2 focus:shadow-active-input focus:outline-none border border-redesign-shade-8 focus:border-redesign-primary', // TODO add placeholder styles when ready
+              // TODO add placeholder and hover styles when ready and change border color name
+              'rounded text-text-primary text-body bg-main-app-background flex-1 py-[7px] pl-[8px] focus:shadow-input-active-shadow focus:outline-none border border-container-border focus:border-icon-accent',
               className,
             )}
             ref={ref}

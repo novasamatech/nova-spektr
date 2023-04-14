@@ -75,9 +75,12 @@ export const MatrixProvider = ({ children }: PropsWithChildren) => {
     const mstAccountIsValid = address === getMultisigAddress(signatories, threshold);
     if (!mstAccountIsValid) return;
 
-    const multisigAccount = await getMultisigAccount(address);
-    if (multisigAccount) {
-      await changeRoom(roomId, multisigAccount, content);
+    const accounts = await getAccounts();
+    const signatoryPublicKeys = signatories.map(toPublicKey);
+    const mstAccount = accounts.find((a) => a.accountId === address) as MultisigAccount;
+    const signer = accounts.find((a) => signatoryPublicKeys.includes(toPublicKey(a.accountId)));
+    if (mstAccount) {
+      await changeRoom(roomId, mstAccount, content, signer?.accountId);
     } else {
       await joinRoom(roomId, content);
     }
@@ -108,20 +111,28 @@ export const MatrixProvider = ({ children }: PropsWithChildren) => {
     await addAccount(mstAccount);
   };
 
-  const changeRoom = async (roomId: string, mstAccount: MultisigAccount, extras: SpektrExtras) => {
+  const changeRoom = async (
+    roomId: string,
+    mstAccount: MultisigAccount,
+    extras: SpektrExtras,
+    signerAddress?: AccountID,
+  ) => {
     const { accountName, inviterPublicKey } = extras.mst_account;
-    const stayInRoom = formatAddress(mstAccount.accountId) > formatAddress(inviterPublicKey);
-    if (stayInRoom) return;
+    const stayInRoom = formatAddress(signerAddress) > formatAddress(inviterPublicKey);
 
     try {
-      await matrix.leaveRoom(mstAccount.matrixRoomId);
-      await matrix.joinRoom(roomId);
-      await updateAccount<MultisigAccount>({
-        ...mstAccount,
-        name: accountName,
-        matrixRoomId: roomId,
-        inviterPublicKey,
-      });
+      if (stayInRoom) {
+        await matrix.leaveRoom(roomId);
+      } else {
+        await matrix.leaveRoom(mstAccount.matrixRoomId);
+        await matrix.joinRoom(roomId);
+        await updateAccount<MultisigAccount>({
+          ...mstAccount,
+          name: accountName,
+          matrixRoomId: roomId,
+          inviterPublicKey,
+        });
+      }
     } catch (error) {
       console.warn(error);
     }
@@ -186,12 +197,7 @@ export const MatrixProvider = ({ children }: PropsWithChildren) => {
     return accounts.find((a) => a.accountId === address) as MultisigAccount;
   };
 
-  const createEvent = (
-    payload: ApprovePayload | FinalApprovePayload,
-    signatories: Signatory[],
-    eventStatus: SigningStatus,
-  ): MultisigEvent => {
-    const senderPublicKey = toPublicKey(payload.senderAddress);
+  const createEvent = (payload: ApprovePayload | FinalApprovePayload, eventStatus: SigningStatus): MultisigEvent => {
     const callOutcome = (payload as FinalApprovePayload).callOutcome;
 
     return {
@@ -199,11 +205,7 @@ export const MatrixProvider = ({ children }: PropsWithChildren) => {
       extrinsicHash: payload.extrinsicHash,
       eventBlock: payload.extrinsicTimepoint.height,
       eventIndex: payload.extrinsicTimepoint.index,
-      signatory: signatories.find((s) => s.publicKey === senderPublicKey) || {
-        name: formatAddress(senderPublicKey),
-        publicKey: senderPublicKey || '0x0',
-        accountId: formatAddress(senderPublicKey),
-      },
+      accountId: toPublicKey(payload.senderAddress) || '0x0',
       ...(callOutcome && { multisigOutcome: callOutcome }),
     };
   };
@@ -243,7 +245,7 @@ export const MatrixProvider = ({ children }: PropsWithChildren) => {
     tx?: MultisigTransaction,
   ): Promise<void> => {
     const eventStatus = payload.error ? 'ERROR_CANCELLED' : 'PENDING_CANCELLED';
-    const newEvent = createEvent(payload, signatories, eventStatus);
+    const newEvent = createEvent(payload, eventStatus);
 
     if (!tx) {
       await addMultisigTxToDB(payload, publicKey, signatories, newEvent, MultisigTxFinalStatus.CANCELLED);
@@ -251,7 +253,7 @@ export const MatrixProvider = ({ children }: PropsWithChildren) => {
       return;
     }
 
-    const senderEvent = tx.events.find((e) => e.signatory.publicKey === toPublicKey(payload.senderAddress));
+    const senderEvent = tx.events.find((e) => e.accountId === toPublicKey(payload.senderAddress));
 
     if (!senderEvent) {
       tx.events.push(newEvent);
@@ -274,14 +276,14 @@ export const MatrixProvider = ({ children }: PropsWithChildren) => {
     tx?: MultisigTransaction,
   ): Promise<void> => {
     const eventStatus = payload.error ? 'ERROR_SIGNED' : 'PENDING_SIGNED';
-    const newEvent = createEvent(payload, signatories, eventStatus);
+    const newEvent = createEvent(payload, eventStatus);
 
     if (!tx) {
       await addMultisigTxToDB(payload, publicKey, signatories, newEvent, MultisigTxInitStatus.SIGNING);
 
       return;
     }
-    const senderEvent = tx.events.find((e) => e.signatory.publicKey === toPublicKey(payload.senderAddress));
+    const senderEvent = tx.events.find((e) => e.accountId === toPublicKey(payload.senderAddress));
 
     if (!senderEvent) {
       tx.events.push(newEvent);
@@ -305,14 +307,14 @@ export const MatrixProvider = ({ children }: PropsWithChildren) => {
     tx?: MultisigTransaction,
   ): Promise<void> => {
     const eventStatus = payload.error ? 'ERROR_SIGNED' : 'PENDING_SIGNED';
-    const newEvent = createEvent(payload, signatories, eventStatus);
+    const newEvent = createEvent(payload, eventStatus);
 
     if (!tx) {
       await addMultisigTxToDB(payload, publicKey, signatories, newEvent, payload.callOutcome);
 
       return;
     }
-    const senderEvent = tx.events.find((e) => e.signatory.publicKey === toPublicKey(payload.senderAddress));
+    const senderEvent = tx.events.find((e) => e.accountId === toPublicKey(payload.senderAddress));
 
     if (!senderEvent) {
       tx.events.push(newEvent);

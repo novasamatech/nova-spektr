@@ -254,8 +254,53 @@
     },
     "yourAccountsLabel": "Ваши аккаунты"
   },
-  "operations": {
+  "operation": {
     "addCallDataButton": "Добавить call data",
+    "advanced": "Дополнительно",
+    "approveButton": "Approve",
+    "cancelTitle": "Отменить ",
+    "continueButton": "Продолжить",
+    "details": {
+      "callData": "Call Data",
+      "callHash": "Call Hash",
+      "controller": "Контроллер",
+      "deposit": "Multisig депозит",
+      "depositor": "Депозитор",
+      "multisigWallet": "Отправитель",
+      "payee": "Payee",
+      "recipient": "Получатель",
+      "timePoint": "Time Point"
+    },
+    "detailsTitle": "Детали",
+    "explorerLink": "Просмотреть в обозревателе",
+    "feeErrorButton": "Закрыть",
+    "feeErrorMessage": "Недостаточно средств чтобы заплатить коммиссию сети",
+    "feeErrorTitle": "Ошибка",
+    "goBackButton": "Вернуться",
+    "logButton": "Лог",
+    "networkFee": "Network fee",
+    "rejectButton": "Отмена",
+    "rejectReason": {
+      "continueButton": "Продолжить",
+      "errorMessage": "Причина отмены обязательна",
+      "inputHint": "Доступно только вам и подписантам",
+      "placeholder": "Причина...",
+      "title": "Укажите причину отмены"
+    },
+    "selectSignatory": "Выберите подписанта",
+    "selectSignatoryTitle": "Выберите подписанта",
+    "signButton": "Подписать в Polkadot Vault",
+    "signatoriesTitle": "Подписи",
+    "signing": "Подписание ({ signed } из { threshold })",
+    "status": {
+      "cancelled": "Отменено",
+      "error": "Ошибка",
+      "established": "Завершено",
+      "executed": "Выполнено",
+      "signing": "Подписание"
+    }
+  },
+  "operations": {
     "callData": {
       "continueButton": "Продолжить",
       "errorMessage": "Неверная call data",
@@ -264,14 +309,6 @@
       "title": "Введите call data"
     },
     "noOperationsDescription": "Нет ожидающих операций с мультиподписью",
-    "signing": "Подписи ({ signed } из { threshold })",
-    "status": {
-      "cancelled": "Cancelled",
-      "error": "Error",
-      "esteblished": "Esteblished",
-      "signing": "Signing",
-      "success": "Success"
-    },
     "subTitle": "Ваши операции",
     "title": "Операции",
     "titles": {

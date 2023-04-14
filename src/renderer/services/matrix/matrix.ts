@@ -883,6 +883,8 @@ export class Matrix implements ISecureMessenger {
   /**
    * All events are echoed at the client side
    * Handle echo events (update, approve, final, cancel)
+   * @description might be useful in future
+   * @link https://spec.matrix.org/v1.6/client-server-api/#local-echo
    */
   private handleEchoEvents() {
     this.matrixClient.on(RoomEvent.LocalEchoUpdated, (event, room) => {
