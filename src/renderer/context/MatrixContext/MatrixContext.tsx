@@ -32,6 +32,12 @@ export const MatrixProvider = ({ children }: PropsWithChildren) => {
 
   const onSyncEnd = () => {
     console.info('💛 ===> onSyncEnd');
+    // TODO: request all unread events
+    // try {
+    //   await matrix.syncSpektrTimeline();
+    // } catch (error) {
+    //   console.log(error);
+    // }
   };
 
   const onMessage = (value: any) => {
@@ -120,7 +126,7 @@ export const MatrixProvider = ({ children }: PropsWithChildren) => {
   };
 
   const onMstEvent = (eventData: MSTPayload) => {
-    console.info('💛 ===> onMessage - ', eventData);
+    console.info('💛 ===> onMstEvent - ', eventData);
   };
 
   const onLogout = () => {

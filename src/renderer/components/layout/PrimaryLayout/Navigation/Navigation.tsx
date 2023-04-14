@@ -2,7 +2,6 @@ import cn from 'classnames';
 import { useRef, useState } from 'react';
 import { NavLink } from 'react-router-dom';
 
-// import { useMatrix } from '@renderer/context/MatrixContext';
 import { Icon, Identicon } from '@renderer/components/ui';
 import { useI18n } from '@renderer/context/I18nContext';
 import { SigningType } from '@renderer/domain/shared-kernel';
@@ -11,9 +10,9 @@ import Paths from '@renderer/routes/paths';
 import { useAccount } from '@renderer/services/account/accountService';
 import { AccountDS } from '@renderer/services/storage';
 import Wallets from '../Wallets/Wallets';
-import './Navigation.css';
 import { useMultisigTx } from '@renderer/services/multisigTx/multisigTxService';
 import { nonNullable } from '@renderer/shared/utils/functions';
+import './Navigation.css';
 
 type CardType = SigningType | 'multiple' | 'none';
 
@@ -62,6 +61,7 @@ const Navigation = () => {
 
     // { icon: <Icon name="history" />, title: 'navigation.historyLabel', link: Paths.HISTORY },
     // { icon: <Icon name="eth" />, title: 'navigation.cameraDEVLabel', link: Paths.CAMERA_DEV },
+    // { icon: <Icon name="btc" />, title: 'navigation.chatDEVLabel', link: Paths.CHAT_DEV },
     // { icon: <Icon name="history" />, title: 'navigation.signingDEVLabel', link: Paths.SIGNING },
   ];
 

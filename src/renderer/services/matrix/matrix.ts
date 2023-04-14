@@ -11,11 +11,11 @@ import {
   MatrixEventEvent,
   Preset,
   Room,
-  RoomEvent,
   RoomMemberEvent,
   Visibility,
   AutoDiscovery,
   AuthType,
+  EventTimeline,
 } from 'matrix-js-sdk';
 import { ISecretStorageKeyInfo } from 'matrix-js-sdk/lib/crypto/api';
 import { deriveKey } from 'matrix-js-sdk/lib/crypto/key_passphrase';
@@ -42,7 +42,7 @@ import {
   ISecretStorage,
   ISecureMessenger,
   Membership,
-  MstParams,
+  MultisigTxPayload,
   MSTPayload,
   SpektrExtras,
   SpektrMstEvent,
@@ -368,52 +368,13 @@ export class Matrix implements ISecureMessenger {
   }
 
   /**
-   * List of available Nova Spektr rooms
-   * @param type which rooms to get Invite/Join
+   * List of joined Nova Spektr rooms
    * @return {Array}
    */
-  listOfSpektrRooms(type: Membership.INVITE | Membership.JOIN): Room[] {
+  joinedRooms(): Room[] {
     return this.matrixClient.getRooms().filter((room) => {
-      return this.isSpektrRoom(room.name) && room.getMyMembership() === type;
+      return this.isSpektrRoom(room) && room.getMyMembership() === Membership.JOIN;
     });
-  }
-
-  /**
-   * Get live timeline events for all rooms
-   * @return {Array}
-   */
-  async readTimeline(): Promise<MSTPayload[]> {
-    let rooms;
-    try {
-      const data = await this.matrixClient.getJoinedRooms();
-      rooms = data.joined_rooms || [];
-    } catch (error) {
-      throw this.createError(MatrixError.JOINED_ROOMS, error);
-    }
-
-    const timeline = rooms.reduce<MatrixEvent[]>((acc, roomId) => {
-      const room = this.matrixClient.getRoom(roomId);
-      if (!room || !this.isSpektrRoom(room.name)) return acc;
-
-      const roomTimeline = room
-        .getLiveTimeline()
-        .getEvents()
-        .filter((event) => this.isSpektrMstEvent(event) && event.getSender() !== this.userId);
-
-      if (roomTimeline.length > 0) {
-        acc.push(...roomTimeline);
-      }
-
-      return acc;
-    }, []);
-
-    try {
-      await Promise.all(timeline.map(this.markAsRead));
-    } catch (error) {
-      throw this.createError(MatrixError.READ_TIMELINE, error);
-    }
-
-    return timeline.map((event) => this.createEventPayload<MSTPayload>(event));
   }
 
   /**
@@ -422,22 +383,39 @@ export class Matrix implements ISecureMessenger {
    * @param message sending message
    * @return {Promise}
    */
-  async sendMessage(roomId: string, message: string): Promise<void> {
+  async sendMessage(roomId: string, message: string): Promise<string> {
     try {
-      await this.matrixClient.sendTextMessage(roomId, message);
+      const response = await this.matrixClient.sendTextMessage(roomId, message);
+
+      return response.event_id;
     } catch (error) {
       throw this.createError(MatrixError.MESSAGE, error);
     }
   }
 
   /**
-   * Mark event as read
-   * @param event Matrix event that must be marked as read
+   * Mark latest event as read
+   * @param readEventId identifier of the last read event
+   * @param events timeline events
    * @return {Promise}
    */
-  async markAsRead(event: MatrixEvent): Promise<void> {
+  async markAsRead(readEventId: string, events: MatrixEvent[]): Promise<void> {
+    if (events.length === 0) return;
+
+    let latestEvent = null;
+    for (let index = events.length - 1; index >= 0; index -= 1) {
+      const event = events[index];
+      if (event.getId() === readEventId) break;
+      if (events[index].isSending()) continue;
+
+      latestEvent = events[index];
+      break;
+    }
+
+    if (latestEvent === null) return;
+
     try {
-      await this.matrixClient.sendReadReceipt(event);
+      await this.matrixClient.sendReadReceipt(latestEvent);
     } catch (error) {
       throw this.createError(MatrixError.MARK_AS_READ, error);
     }
@@ -480,9 +458,9 @@ export class Matrix implements ISecureMessenger {
    * @param params MST parameters
    * @return {Promise}
    */
-  async mstInitiate(roomId: string, params: MstParams): Promise<void> {
+  async mstUpdate(roomId: string, params: MultisigTxPayload): Promise<void> {
     try {
-      await this.matrixClient.sendEvent(roomId, SpektrMstEvent.INIT, params);
+      await this.matrixClient.sendEvent(roomId, SpektrMstEvent.UPDATE, params);
     } catch (error) {
       throw this.createError(MatrixError.MST_INIT, error);
     }
@@ -495,9 +473,25 @@ export class Matrix implements ISecureMessenger {
    * @param params MST parameters
    * @return {Promise}
    */
-  async mstApprove(roomId: string, params: MstParams): Promise<void> {
+  async mstApprove(roomId: string, params: MultisigTxPayload): Promise<void> {
     try {
       await this.matrixClient.sendEvent(roomId, SpektrMstEvent.APPROVE, params);
+    } catch (error) {
+      throw this.createError(MatrixError.MST_APPROVE, error);
+    }
+  }
+
+  // TODO: experimental mstEvent for thread
+  /**
+   * Send MST_APPROVE event to thread
+   * @param roomId room's identifier
+   * @param thread root event id of the thread
+   * @param params MST parameters
+   * @return {Promise}
+   */
+  async mstApprove_NEW(roomId: string, thread: string, params: MultisigTxPayload): Promise<void> {
+    try {
+      await this.matrixClient.sendEvent(roomId, thread, SpektrMstEvent.APPROVE, params);
     } catch (error) {
       throw this.createError(MatrixError.MST_APPROVE, error);
     }
@@ -510,7 +504,7 @@ export class Matrix implements ISecureMessenger {
    * @param params MST parameters
    * @return {Promise}
    */
-  async mstFinalApprove(roomId: string, params: MstParams): Promise<void> {
+  async mstFinalApprove(roomId: string, params: MultisigTxPayload): Promise<void> {
     try {
       await this.matrixClient.sendEvent(roomId, SpektrMstEvent.FINAL_APPROVE, params);
     } catch (error) {
@@ -525,11 +519,50 @@ export class Matrix implements ISecureMessenger {
    * @param params MST parameters
    * @return {Promise}
    */
-  async mstCancel(roomId: string, params: MstParams): Promise<void> {
+  async mstCancel(roomId: string, params: MultisigTxPayload): Promise<void> {
     try {
       await this.matrixClient.sendEvent(roomId, SpektrMstEvent.CANCEL, params);
     } catch (error) {
       throw this.createError(MatrixError.MST_CANCEL, error);
+    }
+  }
+
+  /**
+   * Paginate timelines of all Nova Spektr rooms
+   * @return {Promise}
+   */
+  async syncSpektrTimeline(): Promise<void> {
+    const { read, load } = this.matrixClient.getRooms().reduce<Record<'read' | 'load', Promise<void>[]>>(
+      (acc, room) => {
+        const readUpEventId = room.getEventReadUpTo(this.userId || '');
+
+        if (!this.isSpektrRoom(room) || !readUpEventId) return acc;
+
+        const timelineSet = room.getUnfilteredTimelineSet();
+        const liveTimeline = timelineSet.getLiveTimeline();
+        const readUpEvent = timelineSet.findEventById(readUpEventId);
+
+        if (readUpEvent) {
+          acc.read.push(this.markAsRead(readUpEventId, liveTimeline.getEvents()));
+        } else {
+          acc.load.push(this.paginateTimeline(liveTimeline, true));
+        }
+
+        return acc;
+      },
+      { read: [], load: [] },
+    );
+
+    try {
+      if (read.length) {
+        await Promise.allSettled(read);
+      }
+      if (load.length) {
+        await Promise.allSettled(load);
+        await this.syncSpektrTimeline();
+      }
+    } catch (error) {
+      console.warn(error);
     }
   }
 
@@ -727,7 +760,7 @@ export class Matrix implements ISecureMessenger {
     this.handleSyncEvent();
     this.handleInviteEvent();
     this.handleDecryptedEvents();
-    this.handleSelfCustomEvents();
+    // this.handleSelfCustomEvents();
   }
 
   /**
@@ -758,9 +791,9 @@ export class Matrix implements ISecureMessenger {
 
       try {
         // getRoomSummary loads room into client, otherwise room will be NULL
-        const roomSummary = await this.matrixClient.getRoomSummary(roomId);
-        const roomIsValid = this.isSpektrRoom(roomSummary.name);
+        await this.matrixClient.getRoomSummary(roomId);
         const room = this.matrixClient.getRoom(roomId);
+        const roomIsValid = this.isSpektrRoom(room);
         const topic = this.getSpektrTopic(room);
         const userHasJoined = room?.getMyMembership() === Membership.JOIN;
         if (!roomIsValid || !room || !topic || userHasJoined) return;
@@ -783,39 +816,55 @@ export class Matrix implements ISecureMessenger {
    * Handle decrypted events (MST and messages)
    */
   private handleDecryptedEvents() {
-    this.matrixClient.on(MatrixEventEvent.Decrypted, async (event) => {
-      let handler: any = () => {};
+    this.matrixClient.on(MatrixEventEvent.Decrypted, (event) => {
+      if (event.getSender() === this.userId) return;
+
+      const room = this.matrixClient.getRoom(event.getRoomId());
+      if (!this.isSpektrRoom(room)) return;
+
       if (this.isSpektrMstEvent(event)) {
         const payload = this.createEventPayload<MSTPayload>(event);
-        handler = this.eventCallbacks.onMstEvent.bind(this, payload);
+        this.eventCallbacks.onMstEvent(payload);
       }
       if (event.getType() === EventType.RoomMessage) {
         const payload = event.getContent().body;
-        handler = this.eventCallbacks.onMessage.bind(this, payload);
+        this.eventCallbacks.onMessage(payload);
       }
-
-      const roomId = event.getRoomId();
-      if (!roomId) return;
-
-      const room = this.matrixClient.getRoom(roomId);
-      if (!room || !this.isSpektrRoom(room.name)) return;
-
-      handler();
     });
   }
 
   /**
-   * Handle echo events (init, approve, final, cancel)
+   * Paginate timeline backwards or forward
+   * @param timeline timeline to be traversed
+   * @param backwards flag of traversal direction
+   * @param limit how much records to retrieve
+   * @return {Promise}
    */
-  private handleSelfCustomEvents() {
-    this.matrixClient.on(RoomEvent.LocalEchoUpdated, (event, room) => {
-      if (event.getSender() !== this.userId || event.status !== 'sent') return;
+  private async paginateTimeline(timeline: EventTimeline, backwards: boolean, limit = 30): Promise<void> {
+    const token = timeline.getPaginationToken(backwards ? Direction.Backward : Direction.Forward);
+    if (!token) return;
 
-      if (!this.isSpektrMstEvent(event) || !this.isSpektrRoom(room.name)) return;
-
-      this.eventCallbacks.onMstEvent(this.createEventPayload<MSTPayload>(event));
-    });
+    try {
+      await this.matrixClient.paginateEventTimeline(timeline, { backwards, limit });
+    } catch (error) {
+      throw this.createError(MatrixError.TIMELINE_PAGINATION, error);
+    }
   }
+
+  /**
+   * Handle echo events (init, approve, final, cancel)
+   * @description might be useful in future
+   * @link https://spec.matrix.org/v1.6/client-server-api/#local-echo
+   */
+  // private handleSelfCustomEvents() {
+  //   this.matrixClient.on(RoomEvent.LocalEchoUpdated, (event, room) => {
+  //     if (event.getSender() !== this.userId || event.status !== 'sent') return;
+  //
+  //     if (!this.isSpektrMstEvent(event) || !this.isSpektrRoom(room.name)) return;
+  //
+  //     this.eventCallbacks.onMstEvent(this.createEventPayload<MSTPayload>(event));
+  //   });
+  // }
 
   // =====================================================
   // ====================== Helpers ======================
@@ -869,14 +918,17 @@ export class Matrix implements ISecureMessenger {
   }
 
   /**
-   * Check room name to be a Spektr room
-   * @param roomName name of the room
+   * Check room to be a Spektr room
+   * @param room matrix room
    * @return {Boolean}
    */
-  private isSpektrRoom(roomName?: string): boolean {
-    if (!roomName) return false;
+  private isSpektrRoom(room: Room | null): boolean {
+    if (!room) return false;
 
-    return /^Nova Spektr MST \| [a-zA-Z\d.]+$/.test(roomName);
+    const topicEvents = room.getLiveTimeline().getState(Direction.Forward)?.getStateEvents(EventType.RoomTopic);
+    if (!topicEvents?.length) return false;
+
+    return Boolean(topicEvents[0].getContent()['spektr_extras']);
   }
 
   /**
