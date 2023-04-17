@@ -10,37 +10,28 @@ import {
   SigningStatus,
   Transaction,
   TransactionType,
+  MultisigTransaction,
 } from '@renderer/domain/transaction';
 import { HexString } from '@renderer/domain/shared-kernel';
 import { useToggle } from '@renderer/shared/hooks';
 import { useTransaction } from '@renderer/services/transaction/transactionService';
 import { useMatrix } from '@renderer/context/MatrixContext';
-import { Account, MultisigAccount } from '@renderer/domain/account';
-import { useMultisigTx } from '@renderer/services/multisigTx/multisigTxService';
-import { MultisigTransactionDS } from '@renderer/services/storage';
+import { Account } from '@renderer/domain/account';
 import { ExtrinsicResultParams } from '@renderer/services/transaction/common/types';
+import { useMultisigTx } from '@renderer/services/multisigTx/multisigTxService';
 
 type Props = {
   api: ApiPromise;
   account?: Account;
   tx: Transaction;
-  multisigTx?: MultisigTransactionDS;
-  multisigAccount?: MultisigAccount;
+  multisigTx?: MultisigTransaction;
+  matrixRoomId: string;
   unsignedTx: UnsignedTransaction;
   signature: HexString;
   rejectReason?: string;
 };
 
-export const Submit = ({
-  api,
-  tx,
-  multisigTx,
-  account,
-  multisigAccount,
-  unsignedTx,
-  signature,
-  rejectReason,
-}: Props) => {
+export const Submit = ({ api, tx, multisigTx, account, matrixRoomId, unsignedTx, signature, rejectReason }: Props) => {
   const { t } = useI18n();
 
   const { matrix } = useMatrix();
@@ -54,25 +45,22 @@ export const Submit = ({
   const submitExtrinsic = async (signature: HexString) => {
     const extrinsic = await getSignedExtrinsic(unsignedTx, signature, api);
 
-    submitAndWatchExtrinsic(extrinsic, unsignedTx, api, async (executed, params) => {
+    submitAndWatchExtrinsic(extrinsic, unsignedTx, api, (executed, params) => {
       if (executed) {
         const typedParams = params as ExtrinsicResultParams;
-        if (multisigTx?.transaction && multisigAccount && account) {
+        if (multisigTx?.transaction && account?.publicKey) {
           const isReject = multisigTx?.transaction.type === TransactionType.MULTISIG_CANCEL_AS_MULTI;
           const eventStatus: SigningStatus = isReject ? 'CANCELLED' : 'SIGNED';
 
-          const event = {
+          const event: MultisigEvent = {
             status: eventStatus,
-            extrinsicHash: typedParams.extrinsicHash,
             accountId: account.publicKey,
+            extrinsicHash: typedParams.extrinsicHash,
             eventBlock: typedParams.timepoint.height,
             eventIndex: typedParams.timepoint.index,
-          } as MultisigEvent;
+          };
 
-          const updatedTx = {
-            ...multisigTx,
-            events: [...multisigTx.events, event],
-          } as MultisigTransactionDS;
+          const updatedTx: MultisigTransaction = { ...multisigTx, events: multisigTx.events.concat(event) };
 
           if (typedParams.isFinalApprove) {
             const transactionStatus = typedParams.multisigError
@@ -88,9 +76,11 @@ export const Submit = ({
             event.multisigOutcome = MultisigTxFinalStatus.CANCELLED;
           }
 
-          await updateMultisigTx(updatedTx);
-
-          await sendMstApproval(multisigAccount.matrixRoomId, updatedTx, typedParams, rejectReason);
+          if (matrix.userIsLoggedIn) {
+            sendMultisigEvent(updatedTx, typedParams, rejectReason);
+          } else {
+            updateMultisigTx(updatedTx);
+          }
         }
 
         toggleSuccessMessage();
@@ -101,38 +91,29 @@ export const Submit = ({
     });
   };
 
-  const sendMstApproval = async (
-    roomId: string,
-    multisigTx: MultisigTransactionDS,
-    params: ExtrinsicResultParams,
-    rejectReason?: string,
-  ): Promise<void> => {
-    try {
-      const transaction = multisigTx.transaction;
-      const action =
-        transaction?.type === TransactionType.MULTISIG_CANCEL_AS_MULTI
-          ? matrix.mstCancel
-          : params.isFinalApprove
-          ? matrix.mstFinalApprove
-          : matrix.mstApprove;
+  const sendMultisigEvent = (multisigTx: MultisigTransaction, params: ExtrinsicResultParams, rejectReason?: string) => {
+    if (!multisigTx.transaction) return;
 
-      if (!transaction) return;
+    const transaction = multisigTx.transaction;
+    const payload = {
+      senderAddress: tx.address,
+      chainId: transaction.chainId,
+      callHash: transaction.args.callHash,
+      extrinsicTimepoint: params.timepoint,
+      error: Boolean(params.multisigError),
+      description: rejectReason,
+      callTimepoint: {
+        height: multisigTx.blockCreated || params.timepoint.height,
+        index: multisigTx.indexCreated || params.timepoint.index,
+      },
+    };
 
-      await action(roomId, {
-        senderAddress: tx.address,
-        chainId: transaction.chainId,
-        callHash: transaction.args.callHash,
-        extrinsicTimepoint: params.timepoint,
-        callTimepoint: {
-          height: multisigTx.blockCreated || params.timepoint.height,
-          index: multisigTx.indexCreated || params.timepoint.index,
-        },
-        callOutcome: params.isFinalApprove ? (multisigTx.status as MultisigTxFinalStatus) : undefined,
-        error: !!params.multisigError,
-        description: rejectReason,
-      });
-    } catch (error) {
-      console.warn(error);
+    if (transaction.type === TransactionType.MULTISIG_CANCEL_AS_MULTI) {
+      matrix.sendCancel(matrixRoomId, payload).catch(console.warn);
+    } else if (params.isFinalApprove) {
+      matrix.sendFinalApprove(matrixRoomId, { ...payload, callOutcome: multisigTx.status }).catch(console.warn);
+    } else {
+      matrix.sendApprove(matrixRoomId, payload).catch(console.warn);
     }
   };
 

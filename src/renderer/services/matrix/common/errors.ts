@@ -97,9 +97,9 @@ const MATRIX_ERRORS: Record<MatrixError, ErrorObject> = {
     code: MatrixError.MARK_AS_READ,
     message: 'Mark as read failed',
   },
-  [MatrixError.MST_INIT]: {
-    code: MatrixError.MST_INIT,
-    message: 'Mst init failed',
+  [MatrixError.MST_UPDATE]: {
+    code: MatrixError.MST_UPDATE,
+    message: 'Mst update failed',
   },
   [MatrixError.MST_APPROVE]: {
     code: MatrixError.MST_APPROVE,

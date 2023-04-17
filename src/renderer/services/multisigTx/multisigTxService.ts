@@ -2,7 +2,7 @@ import { ApiPromise } from '@polkadot/api';
 import { useLiveQuery } from 'dexie-react-hooks';
 
 import { MultisigAccount } from '@renderer/domain/account';
-import { MultisigTxFinalStatus, MultisigTxInitStatus } from '@renderer/domain/transaction';
+import { MultisigTxFinalStatus, MultisigTxInitStatus, MultisigTransaction } from '@renderer/domain/transaction';
 import storage, { MultisigTransactionDS } from '../storage';
 import { QUERY_INTERVAL } from './common/consts';
 import { IMultisigTxService } from './common/types';
@@ -41,7 +41,7 @@ export const useMultisigTx = (): IMultisigTxService => {
         );
 
         if (oldTx) {
-          updateMultisigTx(updateTransactionPayload(oldTx, pendingTx, account.signatories));
+          updateMultisigTx(updateTransactionPayload(oldTx, pendingTx));
         } else {
           const blockTime = getExpectedBlockTime(api);
 
@@ -75,17 +75,14 @@ export const useMultisigTx = (): IMultisigTxService => {
           ? MultisigTxFinalStatus.ESTABLISHED
           : tx.status;
 
-        updateMultisigTx({
-          ...tx,
-          status,
-        });
+        updateMultisigTx({ ...tx, status });
       });
     }, QUERY_INTERVAL);
 
     return () => clearInterval(intervalId);
   };
 
-  const getLiveMultisigTxs = (where?: Record<string, any>): MultisigTransactionDS[] => {
+  const getLiveMultisigTxs = <T extends MultisigTransaction>(where?: Partial<T>): MultisigTransactionDS[] => {
     const query = () => {
       try {
         return getMultisigTxs(where);
@@ -116,17 +113,9 @@ export const useMultisigTx = (): IMultisigTxService => {
   const updateCallData = async (api: ApiPromise, tx: MultisigTransactionDS, callData: CallData) => {
     const chain = await getChainById(tx.chainId);
 
-    const transaction = decodeCallData(
-      api,
-      formatAddress(tx?.publicKey, chain?.addressPrefix),
-      (callData as CallData) || '0x',
-    );
+    const transaction = decodeCallData(api, formatAddress(tx?.publicKey, chain?.addressPrefix), callData);
 
-    await updateMultisigTx({
-      ...tx,
-      callData: (callData as CallData) || '0x',
-      transaction,
-    });
+    await updateMultisigTx({ ...tx, callData, transaction });
   };
 
   return {

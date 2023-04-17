@@ -1,9 +1,9 @@
-import { IndexableType } from 'dexie';
 import { useLiveQuery } from 'dexie-react-hooks';
+import { IndexableType } from 'dexie';
 
 import storage, { AccountDS } from '@renderer/services/storage';
 import { IAccountService } from './common/types';
-import { MultisigAccount } from '@renderer/domain/account';
+import { MultisigAccount, Account } from '@renderer/domain/account';
 
 export const useAccount = (): IAccountService => {
   const accountStorage = storage.connectTo('accounts');
@@ -13,7 +13,7 @@ export const useAccount = (): IAccountService => {
   }
   const { getAccount, getAccounts, addAccount, updateAccount, deleteAccount } = accountStorage;
 
-  const getLiveAccounts = (where?: Record<string, any>): AccountDS[] => {
+  const getLiveAccounts = <T extends Account>(where?: Partial<T>): AccountDS[] => {
     const query = () => {
       try {
         return getAccounts(where);
@@ -27,7 +27,7 @@ export const useAccount = (): IAccountService => {
     return useLiveQuery(query, [], []);
   };
 
-  const getActiveAccounts = (where?: Record<string, any>): AccountDS[] => {
+  const getActiveAccounts = <T extends Account>(where?: Partial<T>): AccountDS[] => {
     const query = async () => {
       try {
         const accounts = await getAccounts(where);

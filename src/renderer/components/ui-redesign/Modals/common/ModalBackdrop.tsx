@@ -1,7 +1,7 @@
 import { Transition } from '@headlessui/react';
-import { Fragment, PropsWithChildren } from 'react';
+import { Fragment } from 'react';
 
-export const ModalBackdrop = ({ children }: PropsWithChildren) => (
+export const ModalBackdrop = () => (
   <Transition.Child
     as={Fragment}
     enter="ease-out duration-300"

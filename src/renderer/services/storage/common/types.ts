@@ -38,7 +38,7 @@ export interface IConnectionStorage {
 
 export interface IWalletStorage {
   getWallet: (walletId: IndexableType) => Promise<WalletDS | undefined>;
-  getWallets: (where?: Record<string, any>) => Promise<WalletDS[]>;
+  getWallets: <T extends Wallet>(where?: Partial<T>) => Promise<WalletDS[]>;
   addWallet: (wallet: Wallet) => Promise<IndexableType>;
   updateWallet: (wallet: Wallet) => Promise<IndexableType>;
   deleteWallet: (walletId: string) => Promise<void>;
@@ -46,7 +46,7 @@ export interface IWalletStorage {
 
 export interface IAccountStorage {
   getAccount: (accountId: IndexableType) => Promise<AccountDS | undefined>;
-  getAccounts: (where?: Record<string, any>) => Promise<AccountDS[]>;
+  getAccounts: <T extends Account>(where?: Partial<T>) => Promise<AccountDS[]>;
   addAccount: <T extends Account>(account: T) => Promise<IndexableType>;
   updateAccount: <T extends Account>(account: T) => Promise<IndexableType>;
   deleteAccount: (accountId: AccountID) => Promise<void>;
@@ -54,7 +54,7 @@ export interface IAccountStorage {
 
 export interface IContactStorage {
   getContact: (contactId: IndexableType) => Promise<Contact | undefined>;
-  getContacts: (where?: Record<string, any>) => Promise<Contact[]>;
+  getContacts: <T extends Contact>(where?: Partial<T>) => Promise<Contact[]>;
   addContact: (contact: Contact) => Promise<IndexableType>;
   updateContact: (contact: Contact) => Promise<IndexableType>;
   deleteContact: (contactId: IndexableType) => Promise<void>;
@@ -62,7 +62,7 @@ export interface IContactStorage {
 
 export interface IMultisigTransactionStorage {
   getMultisigTx: (txId: IndexableType) => Promise<MultisigTransactionDS | undefined>;
-  getMultisigTxs: (where?: Record<string, any>) => Promise<MultisigTransactionDS[]>;
+  getMultisigTxs: <T extends MultisigTransaction>(where?: Partial<T>) => Promise<MultisigTransactionDS[]>;
   getAccountMultisigTxs: (publicKeys: PublicKey[]) => Promise<MultisigTransactionDS[]>;
   addMultisigTx: (tx: MultisigTransaction) => Promise<IndexableType>;
   updateMultisigTx: (tx: MultisigTransactionDS) => Promise<IndexableType>;

@@ -9,12 +9,8 @@ export const useAccountStorage = (db: Table<AccountDS>): IAccountStorage => ({
     return db.get(accountId);
   },
 
-  getAccounts: (where?: Record<string, any>): Promise<AccountDS[]> => {
-    if (where) {
-      return db.where(where).toArray();
-    }
-
-    return db.toArray();
+  getAccounts: <T extends Account>(where?: Partial<T>): Promise<AccountDS[]> => {
+    return where ? db.where(where).toArray() : db.toArray();
   },
 
   addAccount: <T extends Account>(account: T): Promise<IndexableType> => {
