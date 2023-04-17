@@ -1,6 +1,6 @@
 import { Listbox, Transition } from '@headlessui/react';
 import cn from 'classnames';
-import { Fragment } from 'react';
+import { Fragment, useId } from 'react';
 
 import { Icon } from '@renderer/components/ui';
 import { DropdownOption, DropdownResult, Position } from '../common/types';
@@ -32,12 +32,14 @@ const Select = ({
   position = 'down',
 }: Props) => {
   const selectedOption = options.find((option) => option.id === selectedId);
+  const id = useId();
 
   const selectElement = (
     <Listbox disabled={disabled} value={selectedOption || {}} onChange={onChange}>
       {({ open }) => (
         <div className={cn('relative', className)}>
           <Listbox.Button
+            id={id}
             className={cn(
               open && 'border-active-container-border',
               !open && !invalid && 'border-filter-border',
@@ -86,13 +88,17 @@ const Select = ({
     </Listbox>
   );
 
-  return label ? (
+  if (!label) {
+    return selectElement;
+  }
+
+  return (
     <div className="flex flex-col gap-2">
-      <FootnoteText>{label}</FootnoteText>
+      <FootnoteText as="label" className="cursor-pointer" htmlFor={id}>
+        {label}
+      </FootnoteText>
       {selectElement}
     </div>
-  ) : (
-    selectElement
   );
 };
 

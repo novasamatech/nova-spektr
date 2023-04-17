@@ -3,10 +3,17 @@ import cn from 'classnames';
 
 import { TypographyProps } from '@renderer/components/ui-redesign/Typography/common/types';
 
-const TextBase = ({ as = 'p', fontWeight = 'normal', align = 'left', className, children }: TypographyProps) => {
+const TextBase = ({
+  as = 'p',
+  fontWeight = 'normal',
+  align = 'left',
+  className,
+  children,
+  ...props
+}: TypographyProps) => {
   return createElement(
     as,
-    { className: cn('text-text-primary', `text-${align} font-${fontWeight}`, className) },
+    { className: cn('text-text-primary', `text-${align} font-${fontWeight}`, className), ...props },
     children,
   );
 };

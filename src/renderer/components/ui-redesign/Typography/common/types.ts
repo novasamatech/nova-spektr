@@ -1,6 +1,8 @@
-import { PropsWithChildren } from 'react';
+import React, { PropsWithChildren } from 'react';
 
-export type Tags = 'h1' | 'h2' | 'h3' | 'h4' | 'h5' | 'p' | 'span' | 'small' | 'em' | 'strong';
+type NativeLabelProps = React.DetailedHTMLProps<React.LabelHTMLAttributes<HTMLLabelElement>, HTMLLabelElement>;
+
+export type Tags = 'h1' | 'h2' | 'h3' | 'h4' | 'h5' | 'p' | 'span' | 'small' | 'em' | 'strong' | 'label';
 
 export type FontWeight = 'normal' | 'medium' | 'semibold' | 'bold';
 
@@ -13,4 +15,4 @@ interface Props {
   className: string;
 }
 
-export type TypographyProps = PropsWithChildren<Partial<Props>>;
+export type TypographyProps = PropsWithChildren<Partial<Props> & Pick<NativeLabelProps, 'htmlFor'>>;
