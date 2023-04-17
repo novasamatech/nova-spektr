@@ -27,6 +27,9 @@ export interface ISecureMessenger {
   markAsRead: (readEventId: string, events: MatrixEvent[]) => Promise<void>;
   setEventCallbacks: (callbacks: Callbacks) => void;
   syncSpektrTimeline: () => Promise<void>;
+
+  // Validators
+  validateUserName: (value: string) => boolean;
   // checkUserExists: (userId: string) => Promise<boolean>;
 
   // Verification
@@ -41,10 +44,10 @@ export interface ISecureMessenger {
   sendCancel: (roomId: string, params: CancelPayload) => Promise<void>;
 
   // Multisig event checkers
-  isUpdateEvent: (type: SpektrMultisigEvent, content: BaseMultisigPayload) => content is UpdatePayload;
-  isApproveEvent: (type: SpektrMultisigEvent, content: BaseMultisigPayload) => content is ApprovePayload;
-  isFinalApproveEvent: (type: SpektrMultisigEvent, content: BaseMultisigPayload) => content is FinalApprovePayload;
-  isCancelEvent: (type: SpektrMultisigEvent, content: BaseMultisigPayload) => content is CancelPayload;
+  isUpdateEvent: (type: SpektrMultisigEvent, content?: BaseMultisigPayload) => content is UpdatePayload;
+  isApproveEvent: (type: SpektrMultisigEvent, content?: BaseMultisigPayload) => content is ApprovePayload;
+  isFinalApproveEvent: (type: SpektrMultisigEvent, content?: BaseMultisigPayload) => content is FinalApprovePayload;
+  isCancelEvent: (type: SpektrMultisigEvent, content?: BaseMultisigPayload) => content is CancelPayload;
 
   // Properties
   userId: string | undefined;
@@ -130,11 +133,12 @@ export type LoginFlow = 'password' | 'sso' | 'cas';
 // ============== MST Events / Callbacks ===============
 // =====================================================
 
-export type SpektrMultisigEvent =
-  | 'io.novafoundation.spektr.mst_updated'
-  | 'io.novafoundation.spektr.mst_approved'
-  | 'io.novafoundation.spektr.mst_executed'
-  | 'io.novafoundation.spektr.mst_cancelled';
+export const enum SpektrMultisigEvent {
+  UPDATE = 'io.novafoundation.spektr.mst_updated',
+  APPROVE = 'io.novafoundation.spektr.mst_approved',
+  FINAL_APPROVE = 'io.novafoundation.spektr.mst_executed',
+  CANCEL = 'io.novafoundation.spektr.mst_cancelled',
+}
 
 export interface BaseMultisigPayload {
   chainId: HexString;

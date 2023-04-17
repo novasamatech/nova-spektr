@@ -74,13 +74,10 @@ const Balances = () => {
     chain.assets.some((a) => a.symbol.toLowerCase() === query.toLowerCase()),
   );
 
-  const checkCanMakeActions = () => {
-    return activeAccounts.some((account) => {
-      const hasMultisigAccount = account.signingType === SigningType.MULTISIG;
-      const hasParitySignerAccount = account.signingType === SigningType.PARITY_SIGNER;
-
-      return hasMultisigAccount || hasParitySignerAccount;
-    });
+  const checkCanMakeActions = (): boolean => {
+    return activeAccounts.some((account) =>
+      [SigningType.MULTISIG, SigningType.PARITY_SIGNER].includes(account.signingType),
+    );
   };
 
   const onReceive = (chain: Chain) => (asset: Asset) => {

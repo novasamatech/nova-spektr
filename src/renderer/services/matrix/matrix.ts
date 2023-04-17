@@ -19,6 +19,7 @@ import {
   RoomEvent,
 } from 'matrix-js-sdk';
 import { ISecretStorageKeyInfo } from 'matrix-js-sdk/lib/crypto/api';
+import { EventStatus } from 'matrix-js-sdk/src/models/event-status';
 import { deriveKey } from 'matrix-js-sdk/lib/crypto/key_passphrase';
 import { IStore } from 'matrix-js-sdk/lib/store';
 import { SyncState } from 'matrix-js-sdk/lib/sync';
@@ -30,7 +31,7 @@ import {
   KEY_FILE_MAX_SIZE,
   ROOM_CRYPTO_CONFIG,
   WELL_KNOWN_SERVERS,
-  SPEKTR_MULTISIG_EVENTS,
+  MATRIX_USERNAME_REGEX,
 } from './common/constants';
 import MATRIX_ERRORS from './common/errors';
 import {
@@ -465,7 +466,7 @@ export class Matrix implements ISecureMessenger {
    */
   async sendUpdate(roomId: string, params: UpdatePayload): Promise<void> {
     try {
-      await this.matrixClient.sendEvent(roomId, SPEKTR_MULTISIG_EVENTS.UPDATE, params);
+      await this.matrixClient.sendEvent(roomId, SpektrMultisigEvent.UPDATE, params);
     } catch (error) {
       throw this.createError(MatrixError.MST_UPDATE, error);
     }
@@ -480,7 +481,7 @@ export class Matrix implements ISecureMessenger {
    */
   async sendApprove(roomId: string, params: ApprovePayload): Promise<void> {
     try {
-      await this.matrixClient.sendEvent(roomId, SPEKTR_MULTISIG_EVENTS.APPROVE, params);
+      await this.matrixClient.sendEvent(roomId, SpektrMultisigEvent.APPROVE, params);
     } catch (error) {
       throw this.createError(MatrixError.MST_APPROVE, error);
     }
@@ -496,7 +497,7 @@ export class Matrix implements ISecureMessenger {
    */
   async mstApprove_NEW(roomId: string, thread: string, params: ApprovePayload): Promise<void> {
     try {
-      await this.matrixClient.sendEvent(roomId, thread, SPEKTR_MULTISIG_EVENTS.APPROVE, params);
+      await this.matrixClient.sendEvent(roomId, thread, SpektrMultisigEvent.APPROVE, params);
     } catch (error) {
       throw this.createError(MatrixError.MST_APPROVE, error);
     }
@@ -511,7 +512,7 @@ export class Matrix implements ISecureMessenger {
    */
   async sendFinalApprove(roomId: string, params: FinalApprovePayload): Promise<void> {
     try {
-      await this.matrixClient.sendEvent(roomId, SPEKTR_MULTISIG_EVENTS.FINAL_APPROVE, params);
+      await this.matrixClient.sendEvent(roomId, SpektrMultisigEvent.FINAL_APPROVE, params);
     } catch (error) {
       throw this.createError(MatrixError.MST_FINAL_APPROVE, error);
     }
@@ -526,7 +527,7 @@ export class Matrix implements ISecureMessenger {
    */
   async sendCancel(roomId: string, params: CancelPayload): Promise<void> {
     try {
-      await this.matrixClient.sendEvent(roomId, SPEKTR_MULTISIG_EVENTS.CANCEL, params);
+      await this.matrixClient.sendEvent(roomId, SpektrMultisigEvent.CANCEL, params);
     } catch (error) {
       throw this.createError(MatrixError.MST_CANCEL, error);
     }
@@ -575,20 +576,29 @@ export class Matrix implements ISecureMessenger {
   // ================= Public helpers ====================
   // =====================================================
 
-  isUpdateEvent(type: SpektrMultisigEvent, content: BaseMultisigPayload): content is UpdatePayload {
-    return type === SPEKTR_MULTISIG_EVENTS.UPDATE;
+  isUpdateEvent(type: SpektrMultisigEvent, content?: BaseMultisigPayload): content is UpdatePayload {
+    return type === SpektrMultisigEvent.UPDATE;
   }
 
-  isApproveEvent(type: SpektrMultisigEvent, content: BaseMultisigPayload): content is ApprovePayload {
-    return type === SPEKTR_MULTISIG_EVENTS.APPROVE;
+  isApproveEvent(type: SpektrMultisigEvent, content?: BaseMultisigPayload): content is ApprovePayload {
+    return type === SpektrMultisigEvent.APPROVE;
   }
 
-  isFinalApproveEvent(type: SpektrMultisigEvent, content: BaseMultisigPayload): content is FinalApprovePayload {
-    return type === SPEKTR_MULTISIG_EVENTS.FINAL_APPROVE;
+  isFinalApproveEvent(type: SpektrMultisigEvent, content?: BaseMultisigPayload): content is FinalApprovePayload {
+    return type === SpektrMultisigEvent.FINAL_APPROVE;
   }
 
-  isCancelEvent(type: SpektrMultisigEvent, content: BaseMultisigPayload): content is CancelPayload {
-    return type === SPEKTR_MULTISIG_EVENTS.CANCEL;
+  isCancelEvent(type: SpektrMultisigEvent, content?: BaseMultisigPayload): content is CancelPayload {
+    return type === SpektrMultisigEvent.CANCEL;
+  }
+
+  /**
+   * Validate user name
+   * @param value user name value
+   * @return {Boolean}
+   */
+  validateUserName(value: string): boolean {
+    return MATRIX_USERNAME_REGEX.test(value);
   }
 
   // =====================================================
@@ -888,7 +898,7 @@ export class Matrix implements ISecureMessenger {
    */
   private handleEchoEvents() {
     this.matrixClient.on(RoomEvent.LocalEchoUpdated, (event, room) => {
-      if (event.getSender() !== this.userId || event.status !== 'sent') return;
+      if (event.getSender() !== this.userId || event.status !== EventStatus.SENT) return;
 
       if (!this.isSpektrMultisigEvent(event) || !this.isSpektrRoom(room)) return;
 
@@ -1015,7 +1025,14 @@ export class Matrix implements ISecureMessenger {
    * @return {Boolean}
    */
   private isSpektrMultisigEvent(event: MatrixEvent): boolean {
-    return Object.values(SPEKTR_MULTISIG_EVENTS).includes(event.getType() as SpektrMultisigEvent);
+    const type = event.getType() as SpektrMultisigEvent;
+
+    return (
+      this.isUpdateEvent(type) ||
+      this.isApproveEvent(type) ||
+      this.isFinalApproveEvent(type) ||
+      this.isCancelEvent(type)
+    );
   }
 
   /**

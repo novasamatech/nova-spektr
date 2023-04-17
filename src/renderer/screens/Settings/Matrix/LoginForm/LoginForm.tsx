@@ -6,7 +6,7 @@ import { useMatrix } from '@renderer/context/MatrixContext';
 import { Block, Button, InfoLink, Input, Icon, Combobox, InputHint } from '@renderer/components/ui';
 import { useI18n } from '@renderer/context/I18nContext';
 import { DropdownResult } from '@renderer/components/ui/Dropdowns/common/types';
-import { MATRIX_USERNAME_REGEX, WELL_KNOWN_SERVERS } from '@renderer/services/matrix';
+import { WELL_KNOWN_SERVERS } from '@renderer/services/matrix';
 
 const HOME_SERVERS = WELL_KNOWN_SERVERS.map((server) => ({
   id: server.domain,
@@ -53,10 +53,6 @@ const LoginForm = () => {
   });
 
   const homeserver = watch('homeserver');
-
-  const validateUsername = (value: string): boolean => {
-    return MATRIX_USERNAME_REGEX.test(value);
-  };
 
   const changeInputValue = (onChange: (value: string) => void) => {
     return (value: string) => {
@@ -157,7 +153,7 @@ const LoginForm = () => {
             <Controller
               name="username"
               control={control}
-              rules={{ required: true, validate: validateUsername }}
+              rules={{ required: true, validate: matrix.validateUserName }}
               render={({ field: { value, onChange }, fieldState: { error } }) => (
                 <>
                   <Input

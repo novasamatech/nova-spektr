@@ -148,7 +148,7 @@ export const MatrixProvider = ({ children }: PropsWithChildren) => {
   };
 
   const onMultisigEvent = async ({ type, content }: MultisigPayload, extras: SpektrExtras) => {
-    console.log('🚀 === onMultisigEvent - ', type);
+    console.info('🚀 === onMultisigEvent - ', type);
 
     if (!validateMatrixEvent(content, extras)) return;
 
@@ -297,8 +297,7 @@ export const MatrixProvider = ({ children }: PropsWithChildren) => {
       }
     }
 
-    const txStatus = tx.status !== MultisigTxInitStatus.SIGNING ? tx.status : MultisigTxInitStatus.SIGNING;
-    await updateMultisigTx({ ...tx, status: txStatus });
+    await updateMultisigTx(tx);
   };
 
   const handleFinalApproveEvent = async (
