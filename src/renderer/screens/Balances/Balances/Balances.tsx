@@ -74,11 +74,9 @@ const Balances = () => {
     chain.assets.some((a) => a.symbol.toLowerCase() === query.toLowerCase()),
   );
 
-  const checkCanMakeActions = (chainId: ChainId) => {
-    return activeAccounts.some(
-      (account) =>
-        [SigningType.PARITY_SIGNER, SigningType.MULTISIG].includes(account.signingType) &&
-        (!account.rootId || account.chainId === chainId),
+  const checkCanMakeActions = (): boolean => {
+    return activeAccounts.some((account) =>
+      [SigningType.MULTISIG, SigningType.PARITY_SIGNER].includes(account.signingType),
     );
   };
 
@@ -116,10 +114,10 @@ const Balances = () => {
                     key={chain.chainId}
                     hideZeroBalance={hideZeroBalance}
                     searchSymbolOnly={searchSymbolOnly}
-                    query={query?.toLowerCase() || ''}
+                    query={query.toLowerCase()}
                     chain={chain}
                     publicKeys={publicKeys}
-                    canMakeActions={checkCanMakeActions(chain.chainId)}
+                    canMakeActions={checkCanMakeActions()}
                     onReceiveClick={onReceive(chain)}
                   />
                 ))}

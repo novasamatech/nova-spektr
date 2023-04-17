@@ -14,6 +14,7 @@ import { useToggle } from '@renderer/shared/hooks';
 import { useTransaction } from '@renderer/services/transaction/transactionService';
 import { useMatrix } from '@renderer/context/MatrixContext';
 import { Account, MultisigAccount, isMultisig } from '@renderer/domain/account';
+import { ExtrinsicResultParams } from '@renderer/services/transaction/common/types';
 
 type Props = {
   api: ApiPromise;
@@ -64,10 +65,12 @@ export const Submit = ({
   const submitExtrinsic = async (signature: HexString) => {
     const extrinsic = await getSignedExtrinsic(unsignedTx, signature, api);
 
-    submitAndWatchExtrinsic(extrinsic, unsignedTx, api, async (executed, params) => {
+    submitAndWatchExtrinsic(extrinsic, unsignedTx, api, (executed, params) => {
+      const typedParams = params as ExtrinsicResultParams;
+
       if (executed) {
-        if (multisigTx && isMultisig(account)) {
-          await sendMstApproval(account.matrixRoomId, multisigTx, params);
+        if (multisigTx && isMultisig(account) && matrix.userIsLoggedIn) {
+          sendMultisigEvent(account.matrixRoomId, multisigTx, typedParams);
         }
 
         toggleSuccessMessage();
@@ -78,9 +81,9 @@ export const Submit = ({
     });
   };
 
-  const sendMstApproval = async (roomId: string, transaction: Transaction, params: any): Promise<void> => {
-    try {
-      await matrix.mstApprove(roomId, {
+  const sendMultisigEvent = (roomId: string, transaction: Transaction, params: ExtrinsicResultParams) => {
+    matrix
+      .sendApprove(roomId, {
         senderAddress: transaction.address,
         chainId: transaction.chainId,
         callHash: transaction.args.callHash,
@@ -88,12 +91,10 @@ export const Submit = ({
         extrinsicHash: params.extrinsicHash,
         extrinsicTimepoint: params.timepoint,
         callTimepoint: params.timepoint,
-        error: false,
+        error: Boolean(params.multisigError),
         description,
-      });
-    } catch (error) {
-      console.warn(error);
-    }
+      })
+      .catch(console.warn);
   };
 
   useEffect(() => {

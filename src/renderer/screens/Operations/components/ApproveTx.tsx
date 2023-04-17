@@ -289,7 +289,7 @@ const ApproveTx = ({ tx, account, connection }: Props) => {
                 tx={approveTx}
                 api={connection.api}
                 multisigTx={tx}
-                multisigAccount={account}
+                matrixRoomId={account.matrixRoomId}
                 account={signAccount}
                 unsignedTx={unsignedTx}
                 signature={signature}

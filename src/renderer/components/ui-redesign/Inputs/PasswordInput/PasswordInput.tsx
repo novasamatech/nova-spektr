@@ -13,6 +13,7 @@ const PasswordInput = forwardRef<HTMLInputElement, Props>(({ ...props }, ref) =>
 
   return (
     <Input
+      ref={ref}
       type={isHidden ? 'password' : 'text'}
       label={t('settings.matrix.passwordLabel')}
       placeholder={t('settings.matrix.passwordPlaceholder')}

@@ -71,14 +71,12 @@ const Operation = ({ tx, account }: Props) => {
       height: tx.blockCreated || 0,
     };
 
-    matrix.mstInitiate(account?.matrixRoomId, {
-      senderAddress: tx.depositor,
+    matrix.sendUpdate(account?.matrixRoomId, {
+      senderAddress: tx.depositor || '0x00',
       chainId: tx.chainId,
       callHash: tx.callHash,
       callData: callData,
-      extrinsicTimepoint: timepoint,
       callTimepoint: timepoint,
-      error: false,
     });
   };
 

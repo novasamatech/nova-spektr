@@ -9,12 +9,8 @@ export const useTransactionStorage = (db: Table<MultisigTransactionDS>): IMultis
     return db.get(txId);
   },
 
-  getMultisigTxs: (where?: Record<string, any>): Promise<MultisigTransactionDS[]> => {
-    if (where) {
-      return db.where(where).toArray();
-    }
-
-    return db.toArray();
+  getMultisigTxs: <T extends MultisigTransaction>(where?: Partial<T>): Promise<MultisigTransactionDS[]> => {
+    return where ? db.where(where).toArray() : db.toArray();
   },
 
   getAccountMultisigTxs: (publicKeys: PublicKey[]): Promise<MultisigTransactionDS[]> => {

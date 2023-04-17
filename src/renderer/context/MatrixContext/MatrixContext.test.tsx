@@ -11,6 +11,14 @@ jest.mock('@renderer/services/account/accountService', () => ({
   }),
 }));
 
+jest.mock('@renderer/services/multisigTx/multisigTxService', () => ({
+  useMultisigTx: jest.fn().mockReturnValue({
+    getMultisigTxs: jest.fn(),
+    addMultisigTx: jest.fn(),
+    updateMultisigTx: jest.fn(),
+  }),
+}));
+
 jest.mock('@renderer/services/contact/contactService', () => ({
   useContact: jest.fn().mockReturnValue({
     getContacts: jest.fn().mockReturnValue([]),

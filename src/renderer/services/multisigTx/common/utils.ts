@@ -2,7 +2,6 @@ import { ApiPromise } from '@polkadot/api';
 
 import { MultisigAccount } from '@renderer/domain/account';
 import { AccountID, ChainId } from '@renderer/domain/shared-kernel';
-import { Signatory } from '@renderer/domain/signatory';
 import { MultisigEvent, MultisigTransaction, MultisigTxInitStatus } from '@renderer/domain/transaction';
 import { PendingMultisigTransaction } from './types';
 
@@ -20,25 +19,16 @@ export const getPendingMultisigTxs = async (
       const params = opt.unwrap();
       const [, callHash] = storage.args;
 
-      return [
-        ...result,
-        {
-          callHash,
-          params,
-        },
-      ];
+      return [...result, { callHash, params }];
     }, []);
 };
 
 export const updateTransactionPayload = (
   transaction: MultisigTransaction,
   pendingTransaction: PendingMultisigTransaction,
-  signatories: Signatory[],
 ): MultisigTransaction => {
   const { events } = transaction;
-  const {
-    params: { when, deposit, depositor },
-  } = pendingTransaction;
+  const { when, deposit, depositor } = pendingTransaction.params;
 
   const newApprovals = pendingTransaction.params.approvals.reduce<MultisigEvent[]>((acc, a) => {
     const hasApprovalEvent = events.find((e) => e.status === 'SIGNED' && e.accountId === a.toHex());
@@ -70,10 +60,7 @@ export const createTransactionPayload = (
   currentBlock: number,
   blockTime: number,
 ): MultisigTransaction => {
-  const {
-    callHash,
-    params: { when, approvals, deposit, depositor },
-  } = pendingTransaction;
+  const { when, approvals, deposit, depositor } = pendingTransaction.params;
 
   const events: MultisigEvent[] = approvals.map((a) => ({
     status: 'SIGNED',
@@ -83,16 +70,16 @@ export const createTransactionPayload = (
   const dateCreated = Date.now() - (currentBlock - when.height.toNumber()) * blockTime;
 
   return {
-    blockCreated: when.height.toNumber(),
-    indexCreated: pendingTransaction.params.when.index.toNumber(),
+    chainId,
+    events,
     dateCreated,
-    chainId: chainId,
+    blockCreated: when.height.toNumber(),
+    indexCreated: when.index.toNumber(),
     status: MultisigTxInitStatus.SIGNING,
-    callHash: callHash.toHex(),
+    callHash: pendingTransaction.callHash.toHex(),
     signatories: account.signatories,
     deposit: deposit.toString(),
     depositor: depositor.toHex(),
     publicKey: account.publicKey || '0x',
-    events,
   };
 };

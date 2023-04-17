@@ -7,7 +7,15 @@ import BaseModal from './Modals/BaseModal/BaseModal';
 import InfoPopover from './Popovers/InfoPopover/InfoPopover';
 import Popover from './Popovers/Popover/Popover';
 import InfoLink from './InfoLink/InfoLink';
-import { CalloutText, BodyText, SmallTitle, TitleText } from '@renderer/components/ui-redesign/Typography';
+import {
+  LargeTitleText,
+  TitleText,
+  SmallTitleText,
+  CaptionText,
+  HeadlineText,
+  BodyText,
+  FootnoteText,
+} from '@renderer/components/ui-redesign/Typography';
 
 export {
   Input,
@@ -19,8 +27,11 @@ export {
   InfoPopover,
   Popover,
   InfoLink,
-  CalloutText,
-  BodyText,
-  SmallTitle,
+  LargeTitleText,
   TitleText,
+  SmallTitleText,
+  CaptionText,
+  HeadlineText,
+  BodyText,
+  FootnoteText,
 };

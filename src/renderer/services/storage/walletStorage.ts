@@ -9,11 +9,7 @@ export const useWalletStorage = (db: Table<WalletDS>): IWalletStorage => ({
   },
 
   getWallets: (where: Record<string, any> | undefined): Promise<WalletDS[]> => {
-    if (where) {
-      return db.where(where).toArray();
-    }
-
-    return db.toArray();
+    return where ? db.where(where).toArray() : db.toArray();
   },
 
   addWallet: (wallet: Wallet): Promise<IndexableType> => {

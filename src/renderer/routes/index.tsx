@@ -29,6 +29,7 @@ const routesConfig: RouteObject[] = [
       { path: Paths.BALANCES, element: <Screens.Balances /> },
       { path: Paths.TRANSFER, element: <Screens.Transfer /> },
       { path: Paths.CAMERA_DEV, element: <Screens.CameraDev /> },
+      { path: Paths.CHAT_DEV, element: <Screens.ChatDev /> },
       {
         path: Paths.SETTINGS,
         children: [

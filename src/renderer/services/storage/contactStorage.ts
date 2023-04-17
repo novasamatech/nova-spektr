@@ -8,12 +8,8 @@ export const useContactStorage = (db: Table<ContactDS>): IContactStorage => ({
     return db.get(contactId);
   },
 
-  getContacts: (where?: Record<string, any>): Promise<ContactDS[]> => {
-    if (where) {
-      return db.where(where).toArray();
-    }
-
-    return db.toArray();
+  getContacts: <T extends Contact>(where?: Partial<T>): Promise<ContactDS[]> => {
+    return where ? db.where(where).toArray() : db.toArray();
   },
 
   addContact: (contact: Contact): Promise<IndexableType> => {

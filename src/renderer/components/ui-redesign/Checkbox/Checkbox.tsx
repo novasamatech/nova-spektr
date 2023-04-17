@@ -2,7 +2,7 @@ import cn from 'classnames';
 import { ChangeEvent, PropsWithChildren } from 'react';
 
 import './styles.css';
-import CalloutText from '@renderer/components/ui-redesign/Typography/components/CalloutText';
+import { FootnoteText } from '@renderer/components/ui-redesign';
 
 type Props = {
   defaultChecked?: boolean;
@@ -26,7 +26,7 @@ const Checkbox = ({
   children,
   onChange,
 }: PropsWithChildren<Props>) => {
-  const content = typeof children === 'string' ? <CalloutText>{children}</CalloutText> : children;
+  const content = typeof children === 'string' ? <FootnoteText>{children}</FootnoteText> : children;
 
   return (
     <label className={cn('flex items-center gap-x-2', !disabled && 'hover:cursor-pointer', className)}>
