@@ -9,7 +9,7 @@ import {
   HeadlineText,
   BodyText,
   FootnoteText,
-} from '@renderer/components/ui-redesign/Typography/index';
+} from '@renderer/components/ui-redesign';
 
 export default {
   title: 'Redesign/Typography',

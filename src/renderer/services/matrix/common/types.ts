@@ -1,7 +1,7 @@
 import { EventType, MatrixEvent, Room } from 'matrix-js-sdk';
 
 import { HexString, PublicKey, AccountID, Timepoint } from '@renderer/domain/shared-kernel';
-import { MultisigTxFinalStatus } from '@renderer/domain/transaction';
+import { MultisigTxStatus } from '@renderer/domain/transaction';
 
 // =====================================================
 // ============ ISecureMessenger interface =============
@@ -27,6 +27,9 @@ export interface ISecureMessenger {
   markAsRead: (readEventId: string, events: MatrixEvent[]) => Promise<void>;
   setEventCallbacks: (callbacks: Callbacks) => void;
   syncSpektrTimeline: () => Promise<void>;
+
+  // Validators
+  validateUserName: (value: string) => boolean;
   // checkUserExists: (userId: string) => Promise<boolean>;
 
   // Verification
@@ -34,15 +37,22 @@ export interface ISecureMessenger {
   verifyWithFile: (securityFile: File) => Promise<boolean>;
   verifyWithPhrase: (securityPhrase: string) => Promise<boolean>;
 
-  // MST operations
-  mstUpdate: (roomId: string, params: MultisigTxPayload) => Promise<void>;
-  mstApprove: (roomId: string, params: MultisigTxPayload) => Promise<void>;
-  mstFinalApprove: (roomId: string, params: MultisigTxPayload) => Promise<void>;
-  mstCancel: (roomId: string, params: MultisigTxPayload) => Promise<void>;
+  // Multisig operations
+  sendUpdate: (roomId: string, params: UpdatePayload) => Promise<void>;
+  sendApprove: (roomId: string, params: ApprovePayload) => Promise<void>;
+  sendFinalApprove: (roomId: string, params: FinalApprovePayload) => Promise<void>;
+  sendCancel: (roomId: string, params: CancelPayload) => Promise<void>;
+
+  // Multisig event checkers
+  isUpdateEvent: (type: SpektrMultisigEvent, content?: BaseMultisigPayload) => content is UpdatePayload;
+  isApproveEvent: (type: SpektrMultisigEvent, content?: BaseMultisigPayload) => content is ApprovePayload;
+  isFinalApproveEvent: (type: SpektrMultisigEvent, content?: BaseMultisigPayload) => content is FinalApprovePayload;
+  isCancelEvent: (type: SpektrMultisigEvent, content?: BaseMultisigPayload) => content is CancelPayload;
 
   // Properties
   userId: string | undefined;
   userIsVerified: boolean;
+  userIsLoggedIn: boolean;
   sessionKey: string | undefined;
 }
 
@@ -123,27 +133,37 @@ export type LoginFlow = 'password' | 'sso' | 'cas';
 // ============== MST Events / Callbacks ===============
 // =====================================================
 
-export enum SpektrMstEvent {
+export const enum SpektrMultisigEvent {
   UPDATE = 'io.novafoundation.spektr.mst_updated',
   APPROVE = 'io.novafoundation.spektr.mst_approved',
   FINAL_APPROVE = 'io.novafoundation.spektr.mst_executed',
   CANCEL = 'io.novafoundation.spektr.mst_cancelled',
 }
 
-export type MultisigTxPayload = {
-  senderAddress: AccountID;
+export interface BaseMultisigPayload {
   chainId: HexString;
   callHash: HexString;
   callData?: HexString;
+  senderAddress: AccountID;
   description?: string;
+  callTimepoint: Timepoint;
+}
+
+export interface ApprovePayload extends BaseMultisigPayload {
   extrinsicHash?: HexString;
   extrinsicTimepoint: Timepoint;
-  callTimepoint: Timepoint;
-  callOutcome?: MultisigTxFinalStatus;
   error: boolean;
-};
+}
 
-type EventPayload = {
+export interface FinalApprovePayload extends ApprovePayload {
+  callOutcome: MultisigTxStatus;
+}
+
+export interface CancelPayload extends ApprovePayload {}
+
+export interface UpdatePayload extends BaseMultisigPayload {}
+
+type MatrixEventPayload = {
   eventId: string;
   roomId: string;
   sender: string;
@@ -152,17 +172,15 @@ type EventPayload = {
   date: Date;
 };
 
-export type InvitePayload = EventPayload & {
+export type InvitePayload = MatrixEventPayload & {
   content: SpektrExtras;
   type: EventType.RoomMember;
 };
 
-export type MSTPayload = EventPayload & {
-  content: MultisigTxPayload;
-  type: SpektrMstEvent;
+export type MultisigPayload = MatrixEventPayload & {
+  content: ApprovePayload | FinalApprovePayload | CancelPayload | UpdatePayload;
+  type: SpektrMultisigEvent;
 };
-
-export type CombinedEventPayload = InvitePayload | MSTPayload;
 
 type GeneralCallbacks = {
   onSyncEnd: () => void;
@@ -173,11 +191,11 @@ type GeneralCallbacks = {
   onLogout: () => void;
 };
 
-export type MSTCallbacks = {
-  onMstEvent: (data: MSTPayload) => void;
+export type MultisigCallbacks = {
+  onMultisigEvent: (payload: MultisigPayload, extras: SpektrExtras) => Promise<void>;
 };
 
-export type Callbacks = GeneralCallbacks & MSTCallbacks;
+export type Callbacks = GeneralCallbacks & MultisigCallbacks;
 
 // =====================================================
 // ===================== Errors ========================
@@ -207,7 +225,7 @@ export const enum MatrixError {
   JOINED_ROOMS,
   MESSAGE,
   MARK_AS_READ,
-  MST_INIT,
+  MST_UPDATE,
   MST_APPROVE,
   MST_FINAL_APPROVE,
   MST_CANCEL,

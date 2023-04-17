@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react';
 import { Room } from 'matrix-js-sdk';
 
 import { useMatrix } from '@renderer/context/MatrixContext';
+import { MultisigTxFinalStatus } from '@renderer/domain/transaction';
 
 const ChatDev = () => {
   const { matrix, isLoggedIn } = useMatrix();
@@ -19,30 +20,82 @@ const ChatDev = () => {
     matrix.leaveRoom(roomId);
   };
 
-  const handleApprove = async (roomId: string) => {
-    const approves = Array.from({ length: 3 }).map((_, index) => {
+  const handleUpdate = async (roomId: string) => {
+    const updates = Array.from({ length: 1 }).map((_, index) => {
       return (async () => {
-        await matrix.mstApprove(roomId, {
+        await matrix.sendUpdate(roomId, {
           senderAddress: '15hwmZknpCaGffUFKHSLz8wNeQPuhvdD5cc1o1AGiL4QHoU7',
-          chainId: '0x1',
-          callHash: '0x2',
-          callData: '0x3',
-          extrinsicHash: '0x4',
-          extrinsicTimepoint: {
-            index: 2,
-            height: 15345319,
-          },
-          callTimepoint: {
-            index: 2,
-            height: 15345319,
-          },
-          error: false,
-          description: index.toString(),
+          callData: '0x040300d02b1de0e29d201d48f1a48fb0ead05bf292366ffe90efec9368bb2c7849de590700e8764817',
+          chainId: '0xChainId',
+          callHash: '0x1d634bf912020a74f9634118e43d65dee6030235a356613ff6c32a37b8783013',
+          description: 'Mst update',
+          callTimepoint: { index: 2, height: 10 },
         });
       })();
     });
 
-    Promise.all(approves).then(() => console.log('=== Finish ==='));
+    Promise.all(updates).then(() => console.log(`=== ♻️ ${updates.length} Update Sent ===`));
+  };
+
+  const handleApprove = async (roomId: string) => {
+    const approves = Array.from({ length: 1 }).map(() => {
+      return (async () => {
+        await matrix.sendApprove(roomId, {
+          senderAddress: '15hwmZknpCaGffUFKHSLz8wNeQPuhvdD5cc1o1AGiL4QHoU7',
+          // callData: '0x040300d02b1de0e29d201d48f1a48fb0ead05bf292366ffe90efec9368bb2c7849de590700e8764817',
+          chainId: '0xChainId',
+          callHash: '0x1d634bf912020a74f9634118e43d65dee6030235a356613ff6c32a37b8783013',
+          extrinsicHash: '0xExtrinsicHash',
+          extrinsicTimepoint: { index: 2, height: 10 },
+          callTimepoint: { index: 2, height: 10 },
+          description: 'Approve',
+          error: false,
+        });
+      })();
+    });
+
+    Promise.all(approves).then(() => console.log(`=== ✅ ${approves.length} Approves Sent ===`));
+  };
+
+  const handleFinalApprove = async (roomId: string) => {
+    const finals = Array.from({ length: 1 }).map((_, index) => {
+      return (async () => {
+        await matrix.sendFinalApprove(roomId, {
+          senderAddress: '15hwmZknpCaGffUFKHSLz8wNeQPuhvdD5cc1o1AGiL4QHoU7',
+          callData: '0x040300d02b1de0e29d201d48f1a48fb0ead05bf292366ffe90efec9368bb2c7849de590700e8764817',
+          chainId: '0xChainId',
+          callHash: '0x1d634bf912020a74f9634118e43d65dee6030235a356613ff6c32a37b8783013',
+          extrinsicHash: '0xExtrinsicHash',
+          extrinsicTimepoint: { index: 1, height: 20 },
+          callTimepoint: { index: 2, height: 10 },
+          callOutcome: MultisigTxFinalStatus.ESTABLISHED,
+          description: 'Final approve',
+          error: false,
+        });
+      })();
+    });
+
+    Promise.all(finals).then(() => console.log(`=== 🏁 ${finals.length} Final Approve Sent ===`));
+  };
+
+  const handleCancel = async (roomId: string) => {
+    const cancels = Array.from({ length: 1 }).map((_, index) => {
+      return (async () => {
+        await matrix.sendCancel(roomId, {
+          senderAddress: '15hwmZknpCaGffUFKHSLz8wNeQPuhvdD5cc1o1AGiL4QHoU7',
+          callData: '0x040300d02b1de0e29d201d48f1a48fb0ead05bf292366ffe90efec9368bb2c7849de590700e8764817',
+          chainId: '0xChainId',
+          callHash: '0x1d634bf912020a74f9634118e43d65dee6030235a356613ff6c32a37b8783013',
+          extrinsicHash: '0xExtrinsicHash',
+          extrinsicTimepoint: { index: 1, height: 30 },
+          callTimepoint: { index: 2, height: 10 },
+          description: 'Cancel',
+          error: false,
+        });
+      })();
+    });
+
+    Promise.all(cancels).then(() => console.log(`=== ✅ ${cancels.length} Approves Sent ===`));
   };
 
   const handleUnread = async () => {
@@ -73,11 +126,20 @@ const ChatDev = () => {
               <button type="button" className="border ml-1 p-1" onClick={() => handleLeaveRoom(room.roomId)}>
                 leave room
               </button>
+              <button type="button" className="border p-1" onClick={() => handleUnread()}>
+                get unread
+              </button>
+              <button type="button" className="border p-1" onClick={() => handleUpdate(room.roomId)}>
+                update
+              </button>
               <button type="button" className="border p-1" onClick={() => handleApprove(room.roomId)}>
                 approve
               </button>
-              <button type="button" className="border p-1" onClick={() => handleUnread()}>
-                get unread
+              <button type="button" className="border p-1" onClick={() => handleFinalApprove(room.roomId)}>
+                final_approve
+              </button>
+              <button type="button" className="border p-1" onClick={() => handleCancel(room.roomId)}>
+                cancel
               </button>
             </div>
           </li>

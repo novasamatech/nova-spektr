@@ -52,6 +52,7 @@ export function createAccount({
 
 export type MultisigAccount = Account & {
   accountId: AccountID;
+  publicKey: PublicKey;
   signatories: Signatory[];
   threshold: Threshold;
   matrixRoomId: string;

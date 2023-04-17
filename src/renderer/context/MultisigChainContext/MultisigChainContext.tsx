@@ -1,5 +1,4 @@
 import { createContext, PropsWithChildren, useContext, useEffect } from 'react';
-import { ApiPromise } from '@polkadot/api';
 import { UnsubscribePromise } from '@polkadot/api/types';
 import { Event } from '@polkadot/types/interfaces';
 
@@ -28,14 +27,13 @@ export const MultisigChainProvider = ({ children }: PropsWithChildren) => {
     pendingEventStatuses: SigningStatus[],
     resultEventStatus: SigningStatus,
     resultTransactionStatus: MultisigTxFinalStatus,
-  ) => {
+  ): Promise<void> => {
     const txs = await getMultisigTxs({
       publicKey: account.publicKey,
       callHash: event.data[3].toHex(),
     });
 
     const lastTx = txs[txs.length - 1];
-
     if (!lastTx) return;
 
     const accountId = event.data[0].toHex();
@@ -66,11 +64,11 @@ export const MultisigChainProvider = ({ children }: PropsWithChildren) => {
     const unsubscribeMultisigs: (() => void)[] = [];
     const unsubscribeEvents: UnsubscribePromise[] = [];
 
-    Object.values(connections).forEach((connection) => {
-      if (!connection.api || !connection.api.query.multisig) return;
+    Object.values(connections).forEach(({ api }) => {
+      if (!api?.query.multisig) return;
 
       accounts.forEach((account) => {
-        const unsubscribeMultisig = subscribeMultisigAccount(connection.api as ApiPromise, account as MultisigAccount);
+        const unsubscribeMultisig = subscribeMultisigAccount(api, account as MultisigAccount);
         unsubscribeMultisigs.push(unsubscribeMultisig);
 
         const successParams = {
@@ -78,17 +76,14 @@ export const MultisigChainProvider = ({ children }: PropsWithChildren) => {
           method: 'MultisigExecuted',
           data: [undefined, undefined, account.accountId],
         };
-
-        const unsubscribeSuccessEvent = subscribeEvents(connection.api as ApiPromise, successParams, (event: Event) => {
-          (async () => {
-            await eventCallback(
-              account as MultisigAccount,
-              event,
-              ['PENDING_SIGNED', 'SIGNED'],
-              'SIGNED',
-              MultisigTxFinalStatus.EXECUTED,
-            );
-          })();
+        const unsubscribeSuccessEvent = subscribeEvents(api, successParams, (event: Event) => {
+          eventCallback(
+            account as MultisigAccount,
+            event,
+            ['PENDING_SIGNED', 'SIGNED'],
+            'SIGNED',
+            MultisigTxFinalStatus.EXECUTED,
+          ).catch(console.warn);
         });
         unsubscribeEvents.push(unsubscribeSuccessEvent);
 
@@ -97,16 +92,14 @@ export const MultisigChainProvider = ({ children }: PropsWithChildren) => {
           method: 'MultisigCancelled',
           data: [undefined, undefined, account.accountId],
         };
-        const unsubscribeCancelEvent = subscribeEvents(connection.api as ApiPromise, cancelParams, (event: Event) => {
-          (async () => {
-            await eventCallback(
-              account as MultisigAccount,
-              event,
-              ['PENDING_CANCELLED', 'CANCELLED'],
-              'CANCELLED',
-              MultisigTxFinalStatus.CANCELLED,
-            );
-          })();
+        const unsubscribeCancelEvent = subscribeEvents(api, cancelParams, (event: Event) => {
+          eventCallback(
+            account as MultisigAccount,
+            event,
+            ['PENDING_CANCELLED', 'CANCELLED'],
+            'CANCELLED',
+            MultisigTxFinalStatus.CANCELLED,
+          ).catch(console.warn);
         });
 
         unsubscribeEvents.push(unsubscribeCancelEvent);

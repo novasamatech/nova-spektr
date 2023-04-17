@@ -1,7 +1,9 @@
 import { ApiPromise } from '@polkadot/api';
 import { BaseTxInfo, getRegistry, GetRegistryOpts, OptionsWithMeta, TypeRegistry } from '@substrate/txwrapper-polkadot';
+import { isHex, hexToU8a } from '@polkadot/util';
+import { blake2AsHex } from '@polkadot/util-crypto';
 
-import { AccountID } from '@renderer/domain/shared-kernel';
+import { AccountID, CallData, CallHash } from '@renderer/domain/shared-kernel';
 
 /**
  * Compose and return all the data needed for @substrate/txwrapper-polkadot signing
@@ -42,4 +44,17 @@ export const createTxMetadata = async (
   const options: OptionsWithMeta = { metadataRpc: metadataRpc.toHex(), registry };
 
   return { options, info, registry };
+};
+
+/**
+ * Check that callData correctly resembles callHash
+ * @param callHash callHash value
+ * @param callData callData value
+ * @return {Boolean}
+ */
+export const validateCallData = <T extends string = CallData, K extends string = CallHash>(
+  callData: T,
+  callHash: K,
+): boolean => {
+  return isHex(callData) && callHash === blake2AsHex(hexToU8a(callData));
 };
