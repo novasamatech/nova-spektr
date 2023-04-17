@@ -4,7 +4,7 @@ import { Fragment, useId } from 'react';
 
 import { Icon } from '@renderer/components/ui';
 import { DropdownOption, DropdownResult, Position } from '../common/types';
-import commonInputStyles from '@renderer/components/ui-redesign/Inputs/common/styles';
+import CommonInputStyles from '@renderer/components/ui-redesign/Inputs/common/styles';
 import { FootnoteText } from '@renderer/components/ui-redesign';
 import { ViewClass } from '@renderer/components/ui-redesign/Dropdowns/common/constants';
 
@@ -45,7 +45,7 @@ const Select = ({
               !open && !invalid && 'border-filter-border',
               invalid && 'border-filter-border-negative',
               'disabled:bg-input-background-disabled disabled:text-text-tertiary enabled:hover:shadow-card-shadow',
-              commonInputStyles,
+              CommonInputStyles,
               'w-full flex items-center gap-x-2 justify-between pr-2',
             )}
           >
