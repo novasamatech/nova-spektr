@@ -3,7 +3,7 @@ import { ReactNode, ComponentPropsWithoutRef, forwardRef, useId } from 'react';
 
 import { FootnoteText } from '../../Typography';
 import { HTMLInputProps } from '../common/types';
-import commonInputStyles from '@renderer/components/ui-redesign/Inputs/common/styles';
+import CommonInputStyles from '@renderer/components/ui-redesign/Inputs/common/styles';
 
 export interface Props extends Pick<ComponentPropsWithoutRef<'input'>, HTMLInputProps> {
   label?: ReactNode;
@@ -22,7 +22,7 @@ const Input = forwardRef<HTMLInputElement, Props>(
         <input
           id={id}
           className={cn(
-            commonInputStyles,
+            CommonInputStyles,
             'focus-within:enabled:border-active-container-border',
             invalid && 'border-filter-border-negative',
             'hover:enabled:shadow-card-shadow',
