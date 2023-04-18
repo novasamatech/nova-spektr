@@ -4,13 +4,13 @@ const axios = require('axios');
 
 const tokenNames = require('./assetsNameMap.json');
 
-const NOVA_CONFIG_VERSION = process.env.CHAINS_VERSION || 'v8';
+const NOVA_CONFIG_VERSION = process.env.CHAINS_VERSION || 'v10';
 const CONFIG_PATH = 'src/renderer/services/network/common/chains';
 const NOVA_CONFIG_URL = `https://raw.githubusercontent.com/nova-wallet/nova-utils/master/chains/${NOVA_CONFIG_VERSION}/`;
 
 const CHAINS_ENV = ['chains_dev.json', 'chains.json'];
 
-const DO_NOT_SUPPORT_CHAINS = ['Moonriver', 'Moonbeam'];
+const DO_NOT_SUPPORT_CHAINS = ['Moonriver', 'Moonbeam', 'Ethereum', 'Exosama', 'Polygon', 'Ethereum - Goerli'];
 
 async function getDataViaHttp(url, filePath) {
   try {
@@ -30,6 +30,17 @@ function getTransformedData(rawData) {
       chain.assets.forEach((asset) => {
         asset.name = tokenNames[asset.symbol] || 'Should be included in assetsNameMap';
       });
+
+      // Update Subscan explorer object
+      if (chain.explorers) {
+        const subscanExplorer = chain.explorers.find((explorer) => explorer.name === 'Subscan');
+        if (subscanExplorer) {
+          const accountParam = subscanExplorer.account;
+          const domain = accountParam.substring(0, accountParam.indexOf('{address}'));
+          subscanExplorer.multisig = `${domain}multisig_extrinsic/{index}?call_hash={callHash}`;
+        }
+      }
+
       acc.push(chain);
     }
 

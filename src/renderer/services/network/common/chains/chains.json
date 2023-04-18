@@ -21,16 +21,24 @@
     ],
     "nodes": [
       {
+        "url": "wss://rpc.polkadot.io",
+        "name": "Parity node"
+      },
+      {
         "url": "wss://polkadot.api.onfinality.io/public-ws",
         "name": "OnFinality node"
       },
       {
-        "url": "wss://polkadot-rpc.dwellir.com",
-        "name": "Dwellir node"
+        "url": "wss://rpc.dotters.network/polkadot",
+        "name": "Dotters Net node"
       },
       {
-        "url": "wss://rpc.polkadot.io",
-        "name": "Parity node"
+        "url": "wss://rpc.ibp.network/polkadot",
+        "name": "IBP network node"
+      },
+      {
+        "url": "wss://polkadot-rpc.dwellir.com",
+        "name": "Dwellir node"
       },
       {
         "url": "wss://1rpc.io/dot",
@@ -41,8 +49,9 @@
       {
         "name": "Subscan",
         "extrinsic": "https://polkadot.subscan.io/extrinsic/{hash}",
-        "multisig": "https://polkadot.subscan.io/multisig_extrinsic/{index}?call_hash={callHash}",
-        "account": "https://polkadot.subscan.io/account/{address}"
+        "account": "https://polkadot.subscan.io/account/{address}",
+        "event": null,
+        "multisig": "https://polkadot.subscan.io/account/multisig_extrinsic/{index}?call_hash={callHash}"
       },
       {
         "name": "Polkascan",
@@ -87,8 +96,8 @@
       ],
       "governance": [
         {
-          "type": "polkassembly",
-          "url": "https://polkadot.polkassembly.io/v1/graphql"
+          "type": "subsquare",
+          "url": "https://polkadot.subsquare.io/api"
         }
       ]
     },
@@ -116,8 +125,20 @@
     ],
     "nodes": [
       {
+        "url": "wss://rpc.ibp.network/kusama",
+        "name": "IBP network node"
+      },
+      {
+        "url": "wss://1rpc.io/ksm",
+        "name": "Automata 1RPC node"
+      },
+      {
         "url": "wss://kusama-rpc.dwellir.com",
         "name": "Dwellir node"
+      },
+      {
+        "url": "wss://rpc.dotters.network/kusama",
+        "name": "Dotters Net node"
       },
       {
         "url": "wss://kusama.public.curie.radiumblock.co/ws",
@@ -137,8 +158,8 @@
         "name": "Subscan",
         "extrinsic": "https://kusama.subscan.io/extrinsic/{hash}",
         "account": "https://kusama.subscan.io/account/{address}",
-        "multisig": "https://kusama.subscan.io/multisig_extrinsic/{index}?call_hash={callHash}",
-        "event": null
+        "event": null,
+        "multisig": "https://kusama.subscan.io/account/multisig_extrinsic/{index}?call_hash={callHash}"
       },
       {
         "name": "Polkascan",
@@ -183,14 +204,14 @@
       ],
       "governance": [
         {
-          "type": "polkassembly",
-          "url": "https://kusama.polkassembly.io/v1/graphql"
+          "type": "subsquare",
+          "url": "https://kusama.subsquare.io/api"
         }
       ],
       "governance-delegations": [
         {
           "type": "subquery",
-          "url": "https://api.subquery.network/sq/nova-wallet/nova-wallet-kusama-governance"
+          "url": "https://api.subquery.network/sq/nova-wallet/nova-wallet-kusama-governance2"
         }
       ]
     },
@@ -228,8 +249,8 @@
         "name": "Subscan",
         "extrinsic": "https://westend.subscan.io/extrinsic/{hash}",
         "account": "https://westend.subscan.io/account/{address}",
-        "multisig": "https://westend.subscan.io/multisig_extrinsic/{index}?call_hash={callHash}",
-        "event": null
+        "event": null,
+        "multisig": "https://westend.subscan.io/account/multisig_extrinsic/{index}?call_hash={callHash}"
       }
     ],
     "icon": "https://raw.githubusercontent.com/nova-wallet/nova-utils/master/icons/chains/gradient/Westend_Testnet.svg",
@@ -446,9 +467,8 @@
         "name": "Subscan",
         "extrinsic": "https://statemine.subscan.io/extrinsic/{hash}",
         "account": "https://statemine.subscan.io/account/{address}",
-        "multisig": "https://statemine.subscan.io/multisig_extrinsic/{index}?call_hash={callHash}",
-
-        "event": null
+        "event": null,
+        "multisig": "https://statemine.subscan.io/account/multisig_extrinsic/{index}?call_hash={callHash}"
       },
       {
         "name": "Statescan",
@@ -896,8 +916,8 @@
         "name": "Subscan",
         "extrinsic": "https://karura.subscan.io/extrinsic/{hash}",
         "account": "https://karura.subscan.io/account/{address}",
-        "multisig": "https://karura.subscan.io/multisig_extrinsic/{index}?call_hash={callHash}",
-        "event": null
+        "event": null,
+        "multisig": "https://karura.subscan.io/account/multisig_extrinsic/{index}?call_hash={callHash}"
       },
       {
         "name": "Sub.ID",
@@ -1095,6 +1115,7 @@
         "assetId": 11,
         "symbol": "EQ",
         "precision": 9,
+        "priceId": "equilibrium-token",
         "type": "orml",
         "icon": "https://raw.githubusercontent.com/nova-wallet/nova-utils/master/icons/chains/white/Equilibrium.svg",
         "typeExtras": {
@@ -1167,8 +1188,8 @@
         "name": "Subscan",
         "extrinsic": "https://acala.subscan.io/extrinsic/{hash}",
         "account": "https://acala.subscan.io/account/{address}",
-        "multisig": "https://acala.subscan.io/multisig_extrinsic/{index}?call_hash={callHash}",
-        "event": null
+        "event": null,
+        "multisig": "https://acala.subscan.io/account/multisig_extrinsic/{index}?call_hash={callHash}"
       },
       {
         "name": "Sub.ID",
