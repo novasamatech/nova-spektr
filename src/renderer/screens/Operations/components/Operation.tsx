@@ -62,9 +62,11 @@ const Operation = ({ tx, account }: Props) => {
 
     if (!api || !tx) return;
 
-    updateCallData(api, tx, callData as CallData);
+    if (!account?.matrixRoomId) {
+      updateCallData(api, tx, callData as CallData);
 
-    if (!account?.matrixRoomId) return;
+      return;
+    }
 
     const timepoint = {
       index: tx.indexCreated || 0,
