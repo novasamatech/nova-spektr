@@ -1443,7 +1443,7 @@
           "existentialDeposit": "0",
           "transfersEnabled": false
         },
-        "name": "Should be included in assetsNameMap"
+        "name": "LP token KSM-kBTC"
       },
       {
         "assetId": 7,
@@ -1457,7 +1457,7 @@
           "existentialDeposit": "0",
           "transfersEnabled": false
         },
-        "name": "Should be included in assetsNameMap"
+        "name": "LP token kBTC-USDT"
       },
       {
         "assetId": 8,
@@ -1471,7 +1471,7 @@
           "existentialDeposit": "0",
           "transfersEnabled": false
         },
-        "name": "Should be included in assetsNameMap"
+        "name": "LP token KSM-KINT"
       }
     ],
     "nodes": [
@@ -6373,7 +6373,7 @@
         "symbol": "AVT",
         "precision": 18,
         "icon": "https://raw.githubusercontent.com/nova-wallet/nova-utils/master/icons/tokens/white/AVT.svg",
-        "name": "Should be included in assetsNameMap"
+        "name": "Aventus"
       }
     ],
     "nodes": [
@@ -6409,7 +6409,7 @@
         "precision": 18,
         "priceId": "aventus",
         "icon": "https://raw.githubusercontent.com/nova-wallet/nova-utils/master/icons/tokens/white/AVT.svg",
-        "name": "Should be included in assetsNameMap"
+        "name": "Aventus"
       }
     ],
     "nodes": [
@@ -6444,7 +6444,7 @@
         "precision": 12,
         "priceId": "crust-network",
         "icon": "https://raw.githubusercontent.com/nova-wallet/nova-utils/master/icons/tokens/white/CRU.svg",
-        "name": "Should be included in assetsNameMap"
+        "name": "Crust"
       }
     ],
     "nodes": [
@@ -6556,7 +6556,7 @@
           "existentialDeposit": "0",
           "transfersEnabled": false
         },
-        "name": "Should be included in assetsNameMap"
+        "name": "LP token KSM-kBTC"
       },
       {
         "assetId": 7,
@@ -6570,7 +6570,7 @@
           "existentialDeposit": "0",
           "transfersEnabled": false
         },
-        "name": "Should be included in assetsNameMap"
+        "name": "LP token kBTC-USDT"
       },
       {
         "assetId": 8,
@@ -6584,7 +6584,7 @@
           "existentialDeposit": "0",
           "transfersEnabled": false
         },
-        "name": "Should be included in assetsNameMap"
+        "name": "LP token KSM-KINT"
       }
     ],
     "nodes": [
@@ -6611,7 +6611,7 @@
         "symbol": "HASH",
         "precision": 18,
         "icon": "https://raw.githubusercontent.com/nova-wallet/nova-utils/master/icons/tokens/white/HASH.svg",
-        "name": "Should be included in assetsNameMap"
+        "name": "Hashed"
       }
     ],
     "nodes": [
@@ -6666,7 +6666,7 @@
         "symbol": "P3D",
         "precision": 12,
         "icon": "https://raw.githubusercontent.com/nova-wallet/nova-utils/master/icons/tokens/white/P3D.svg",
-        "name": "Should be included in assetsNameMap"
+        "name": "3DPass"
       }
     ],
     "nodes": [
@@ -6700,7 +6700,7 @@
         "symbol": "AJUN",
         "precision": 12,
         "icon": "https://raw.githubusercontent.com/nova-wallet/nova-utils/master/icons/tokens/white/AJUN.svg",
-        "name": "Should be included in assetsNameMap"
+        "name": "Ajuna"
       }
     ],
     "nodes": [
