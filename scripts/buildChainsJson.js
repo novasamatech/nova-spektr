@@ -10,8 +10,6 @@ const NOVA_CONFIG_URL = `https://raw.githubusercontent.com/nova-wallet/nova-util
 
 const CHAINS_ENV = ['chains_dev.json', 'chains.json'];
 
-const DO_NOT_SUPPORT_CHAINS = ['Moonriver', 'Moonbeam', 'Ethereum', 'Exosama', 'Polygon', 'Ethereum - Goerli'];
-
 async function getDataViaHttp(url, filePath) {
   try {
     const response = await axios.get(url + filePath);
@@ -24,7 +22,7 @@ async function getDataViaHttp(url, filePath) {
 
 function getTransformedData(rawData) {
   return rawData.reduce((acc, chain) => {
-    if (!DO_NOT_SUPPORT_CHAINS.includes(chain.name)) {
+    if (!chain.options?.includes('ethereumBased')) {
       chain.chainId = `0x${chain.chainId}`;
       if (chain.parentId) chain.parentId = `0x${chain.parentId}`;
       chain.assets.forEach((asset) => {

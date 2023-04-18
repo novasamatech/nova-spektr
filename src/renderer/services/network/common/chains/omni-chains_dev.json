@@ -925,58 +925,6 @@
     "options": ["governance-v1"]
   },
   {
-    "chainId": "0x91bc6e169807aaa54802737e1c504b2577d4fafedd5a02c10293b1cd60e39527",
-    "parentId": "0xe1ea3ab1d46ba8f4898b6b4b9c54ffc05282d299f89e84bd0fd08067758c9443",
-    "name": "Moonbase Alpha",
-    "assets": [
-      {
-        "staking": "parachain",
-        "assetId": 0,
-        "symbol": "DEV",
-        "icon": "https://raw.githubusercontent.com/nova-wallet/nova-utils/master/icons/chains/white/Moonriver.svg",
-        "precision": 18,
-        "name": "Test token"
-      },
-      {
-        "assetId": 1,
-        "symbol": "xcUNIT",
-        "icon": "https://raw.githubusercontent.com/nova-wallet/nova-utils/master/icons/chains/white/Moonriver.svg",
-        "precision": 12,
-        "type": "statemine",
-        "typeExtras": {
-          "assetId": "42259045809535163221576417993425387648"
-        },
-        "name": "Test token"
-      }
-    ],
-    "nodes": [
-      {
-        "url": "wss://moonbeam-alpha.api.onfinality.io/public-ws",
-        "name": "OnFinality node"
-      },
-      {
-        "url": "wss://wss.testnet.moonbeam.network",
-        "name": "Moonbeam Network node"
-      }
-    ],
-    "explorers": [
-      {
-        "name": "Subscan",
-        "extrinsic": "https://moonbase.subscan.io/extrinsic/{hash}",
-        "account": "https://moonbase.subscan.io/account/{address}",
-        "event": null,
-        "multisig": "https://moonbase.subscan.io/multisig_extrinsic/{index}?call_hash={callHash}"
-      }
-    ],
-    "types": {
-      "url": "https://raw.githubusercontent.com/nova-wallet/nova-utils/master/chains/v2/types/moonbase.json",
-      "overridesCommon": true
-    },
-    "icon": "https://raw.githubusercontent.com/nova-wallet/nova-utils/master/icons/chains/gradient/Moonbase_Alpha_Testnet.svg",
-    "addressPrefix": 1287,
-    "options": ["ethereumBased", "testnet"]
-  },
-  {
     "chainId": "0xf1cf9022c7ebb34b162d5b5e34e705a5a740b2d0ecc1009fb89023e62a488108",
     "parentId": "0xb0a8d493285c2df73290dfb7e61f870f17b41801197a149ca93654499ea3dafe",
     "name": "Shiden",
