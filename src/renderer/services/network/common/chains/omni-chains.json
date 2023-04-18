@@ -51,7 +51,7 @@
         "extrinsic": "https://polkadot.subscan.io/extrinsic/{hash}",
         "account": "https://polkadot.subscan.io/account/{address}",
         "event": null,
-        "multisig": "https://polkadot.subscan.io/account/multisig_extrinsic/{index}?call_hash={callHash}"
+        "multisig": "https://polkadot.subscan.io/multisig_extrinsic/{index}?call_hash={callHash}"
       },
       {
         "name": "Polkascan",
@@ -159,7 +159,7 @@
         "extrinsic": "https://kusama.subscan.io/extrinsic/{hash}",
         "account": "https://kusama.subscan.io/account/{address}",
         "event": null,
-        "multisig": "https://kusama.subscan.io/account/multisig_extrinsic/{index}?call_hash={callHash}"
+        "multisig": "https://kusama.subscan.io/multisig_extrinsic/{index}?call_hash={callHash}"
       },
       {
         "name": "Polkascan",
@@ -250,7 +250,7 @@
         "extrinsic": "https://westend.subscan.io/extrinsic/{hash}",
         "account": "https://westend.subscan.io/account/{address}",
         "event": null,
-        "multisig": "https://westend.subscan.io/account/multisig_extrinsic/{index}?call_hash={callHash}"
+        "multisig": "https://westend.subscan.io/multisig_extrinsic/{index}?call_hash={callHash}"
       }
     ],
     "icon": "https://raw.githubusercontent.com/nova-wallet/nova-utils/master/icons/chains/gradient/Westend_Testnet.svg",
@@ -383,7 +383,7 @@
         "extrinsic": "https://statemine.subscan.io/extrinsic/{hash}",
         "account": "https://statemine.subscan.io/account/{address}",
         "event": null,
-        "multisig": "https://statemine.subscan.io/account/multisig_extrinsic/{index}?call_hash={callHash}"
+        "multisig": "https://statemine.subscan.io/multisig_extrinsic/{index}?call_hash={callHash}"
       },
       {
         "name": "Statescan",
@@ -832,7 +832,7 @@
         "extrinsic": "https://karura.subscan.io/extrinsic/{hash}",
         "account": "https://karura.subscan.io/account/{address}",
         "event": null,
-        "multisig": "https://karura.subscan.io/account/multisig_extrinsic/{index}?call_hash={callHash}"
+        "multisig": "https://karura.subscan.io/multisig_extrinsic/{index}?call_hash={callHash}"
       },
       {
         "name": "Sub.ID",
@@ -1014,7 +1014,7 @@
         "extrinsic": "https://shiden.subscan.io/extrinsic/{hash}",
         "account": "https://shiden.subscan.io/account/{address}",
         "event": null,
-        "multisig": "https://shiden.subscan.io/account/multisig_extrinsic/{index}?call_hash={callHash}"
+        "multisig": "https://shiden.subscan.io/multisig_extrinsic/{index}?call_hash={callHash}"
       },
       {
         "name": "Sub.ID",
@@ -1227,7 +1227,7 @@
         "extrinsic": "https://bifrost-kusama.subscan.io/extrinsic/{hash}",
         "account": "https://bifrost-kusama.subscan.io/account/{address}",
         "event": null,
-        "multisig": "https://bifrost-kusama.subscan.io/account/multisig_extrinsic/{index}?call_hash={callHash}"
+        "multisig": "https://bifrost-kusama.subscan.io/multisig_extrinsic/{index}?call_hash={callHash}"
       },
       {
         "name": "Sub.ID",
@@ -1354,7 +1354,7 @@
         "extrinsic": "https://basilisk.subscan.io/extrinsic/{hash}",
         "account": "https://basilisk.subscan.io/account/{address}",
         "event": null,
-        "multisig": "https://basilisk.subscan.io/account/multisig_extrinsic/{index}?call_hash={callHash}"
+        "multisig": "https://basilisk.subscan.io/multisig_extrinsic/{index}?call_hash={callHash}"
       },
       {
         "name": "Sub.ID",
@@ -1418,7 +1418,7 @@
         "extrinsic": "https://altair.subscan.io/extrinsic/{hash}",
         "account": "https://altair.subscan.io/account/{address}",
         "event": null,
-        "multisig": "https://altair.subscan.io/account/multisig_extrinsic/{index}?call_hash={callHash}"
+        "multisig": "https://altair.subscan.io/multisig_extrinsic/{index}?call_hash={callHash}"
       },
       {
         "name": "Sub.ID",
@@ -1581,7 +1581,7 @@
         "extrinsic": "https://parallel-heiko.subscan.io/extrinsic/{hash}",
         "account": "https://parallel-heiko.subscan.io/account/{address}",
         "event": null,
-        "multisig": "https://parallel-heiko.subscan.io/account/multisig_extrinsic/{index}?call_hash={callHash}"
+        "multisig": "https://parallel-heiko.subscan.io/multisig_extrinsic/{index}?call_hash={callHash}"
       },
       {
         "name": "Polkaholic",
@@ -1637,7 +1637,7 @@
         "extrinsic": "https://edgeware.subscan.io/extrinsic/{hash}",
         "account": "https://edgeware.subscan.io/account/{address}",
         "event": null,
-        "multisig": "https://edgeware.subscan.io/account/multisig_extrinsic/{index}?call_hash={callHash}"
+        "multisig": "https://edgeware.subscan.io/multisig_extrinsic/{index}?call_hash={callHash}"
       },
       {
         "name": "Sub.ID",
@@ -1799,7 +1799,7 @@
         "extrinsic": "https://khala.subscan.io/extrinsic/{hash}",
         "account": "https://khala.subscan.io/account/{address}",
         "event": null,
-        "multisig": "https://khala.subscan.io/account/multisig_extrinsic/{index}?call_hash={callHash}"
+        "multisig": "https://khala.subscan.io/multisig_extrinsic/{index}?call_hash={callHash}"
       },
       {
         "name": "Sub.ID",
@@ -1856,7 +1856,7 @@
         "extrinsic": "https://spiritnet.subscan.io/extrinsic/{hash}",
         "account": "https://spiritnet.subscan.io/account/{address}",
         "event": null,
-        "multisig": "https://spiritnet.subscan.io/account/multisig_extrinsic/{index}?call_hash={callHash}"
+        "multisig": "https://spiritnet.subscan.io/multisig_extrinsic/{index}?call_hash={callHash}"
       },
       {
         "name": "Sub.ID",
@@ -1917,7 +1917,7 @@
         "extrinsic": "https://calamari.subscan.io/extrinsic/{hash}",
         "account": "https://calamari.subscan.io/account/{address}",
         "event": null,
-        "multisig": "https://calamari.subscan.io/account/multisig_extrinsic/{index}?call_hash={callHash}"
+        "multisig": "https://calamari.subscan.io/multisig_extrinsic/{index}?call_hash={callHash}"
       },
       {
         "name": "Sub.ID",
@@ -1992,7 +1992,7 @@
         "extrinsic": "https://quartz.subscan.io/extrinsic/{hash}",
         "account": "https://quartz.subscan.io/account/{address}",
         "event": null,
-        "multisig": "https://quartz.subscan.io/account/multisig_extrinsic/{index}?call_hash={callHash}"
+        "multisig": "https://quartz.subscan.io/multisig_extrinsic/{index}?call_hash={callHash}"
       },
       {
         "name": "Sub.ID",
@@ -2055,7 +2055,7 @@
         "extrinsic": "https://pioneer.subscan.io/extrinsic/{hash}",
         "account": "https://pioneer.subscan.io/account/{address}",
         "event": null,
-        "multisig": "https://pioneer.subscan.io/account/multisig_extrinsic/{index}?call_hash={callHash}"
+        "multisig": "https://pioneer.subscan.io/multisig_extrinsic/{index}?call_hash={callHash}"
       },
       {
         "name": "Polkaholic",
@@ -2301,7 +2301,7 @@
         "extrinsic": "https://acala.subscan.io/extrinsic/{hash}",
         "account": "https://acala.subscan.io/account/{address}",
         "event": null,
-        "multisig": "https://acala.subscan.io/account/multisig_extrinsic/{index}?call_hash={callHash}"
+        "multisig": "https://acala.subscan.io/multisig_extrinsic/{index}?call_hash={callHash}"
       },
       {
         "name": "Sub.ID",
@@ -2475,7 +2475,7 @@
         "extrinsic": "https://astar.subscan.io/extrinsic/{hash}",
         "account": "https://astar.subscan.io/account/{address}",
         "event": null,
-        "multisig": "https://astar.subscan.io/account/multisig_extrinsic/{index}?call_hash={callHash}"
+        "multisig": "https://astar.subscan.io/multisig_extrinsic/{index}?call_hash={callHash}"
       },
       {
         "name": "Sub.ID",
@@ -2729,7 +2729,7 @@
         "extrinsic": "https://parallel.subscan.io/extrinsic/{hash}",
         "account": "https://parallel.subscan.io/account/{address}",
         "event": null,
-        "multisig": "https://parallel.subscan.io/account/multisig_extrinsic/{index}?call_hash={callHash}"
+        "multisig": "https://parallel.subscan.io/multisig_extrinsic/{index}?call_hash={callHash}"
       },
       {
         "name": "Sub.ID",
@@ -2782,7 +2782,7 @@
         "extrinsic": "https://clv.subscan.io/extrinsic/{hash}",
         "account": "https://clv.subscan.io/account/{address}",
         "event": null,
-        "multisig": "https://clv.subscan.io/account/multisig_extrinsic/{index}?call_hash={callHash}"
+        "multisig": "https://clv.subscan.io/multisig_extrinsic/{index}?call_hash={callHash}"
       },
       {
         "name": "Polkaholic",
@@ -2903,7 +2903,7 @@
         "extrinsic": "https://robonomics.subscan.io/extrinsic/{hash}",
         "account": "https://robonomics.subscan.io/account/{address}",
         "event": null,
-        "multisig": "https://robonomics.subscan.io/account/multisig_extrinsic/{index}?call_hash={callHash}"
+        "multisig": "https://robonomics.subscan.io/multisig_extrinsic/{index}?call_hash={callHash}"
       },
       {
         "name": "Sub.ID",
@@ -2970,7 +2970,7 @@
         "extrinsic": "https://encointer.subscan.io/extrinsic/{hash}",
         "account": "https://encointer.subscan.io/account/{address}",
         "event": null,
-        "multisig": "https://encointer.subscan.io/account/multisig_extrinsic/{index}?call_hash={callHash}"
+        "multisig": "https://encointer.subscan.io/multisig_extrinsic/{index}?call_hash={callHash}"
       },
       {
         "name": "Polkaholic",
@@ -3143,7 +3143,7 @@
         "extrinsic": "https://kintsugi.subscan.io/extrinsic/{hash}",
         "account": "https://kintsugi.subscan.io/account/{address}",
         "event": null,
-        "multisig": "https://kintsugi.subscan.io/account/multisig_extrinsic/{index}?call_hash={callHash}"
+        "multisig": "https://kintsugi.subscan.io/multisig_extrinsic/{index}?call_hash={callHash}"
       },
       {
         "name": "Sub.ID",
@@ -3199,7 +3199,7 @@
         "extrinsic": "https://picasso.subscan.io/extrinsic/{hash}",
         "account": "https://picasso.subscan.io/account/{address}",
         "event": null,
-        "multisig": "https://picasso.subscan.io/account/multisig_extrinsic/{index}?call_hash={callHash}"
+        "multisig": "https://picasso.subscan.io/multisig_extrinsic/{index}?call_hash={callHash}"
       },
       {
         "name": "Polkaholic",
@@ -3253,7 +3253,7 @@
         "extrinsic": "https://zeitgeist.subscan.io/extrinsic/{hash}",
         "account": "https://zeitgeist.subscan.io/account/{address}",
         "event": null,
-        "multisig": "https://zeitgeist.subscan.io/account/multisig_extrinsic/{index}?call_hash={callHash}"
+        "multisig": "https://zeitgeist.subscan.io/multisig_extrinsic/{index}?call_hash={callHash}"
       },
       {
         "name": "Sub.ID",
@@ -3312,7 +3312,7 @@
         "extrinsic": "https://litmus.subscan.io/extrinsic/{hash}",
         "account": "https://litmus.subscan.io/account/{address}",
         "event": null,
-        "multisig": "https://litmus.subscan.io/account/multisig_extrinsic/{index}?call_hash={callHash}"
+        "multisig": "https://litmus.subscan.io/multisig_extrinsic/{index}?call_hash={callHash}"
       },
       {
         "name": "Sub.ID",
@@ -3418,7 +3418,7 @@
         "extrinsic": "https://shadow.subscan.io/extrinsic/{hash}",
         "account": "https://shadow.subscan.io/account/{address}",
         "event": null,
-        "multisig": "https://shadow.subscan.io/account/multisig_extrinsic/{index}?call_hash={callHash}"
+        "multisig": "https://shadow.subscan.io/multisig_extrinsic/{index}?call_hash={callHash}"
       },
       {
         "name": "Polkaholic",
@@ -3471,7 +3471,7 @@
         "extrinsic": "https://integritee.subscan.io/extrinsic/{hash}",
         "account": "https://integritee.subscan.io/account/{address}",
         "event": null,
-        "multisig": "https://integritee.subscan.io/account/multisig_extrinsic/{index}?call_hash={callHash}"
+        "multisig": "https://integritee.subscan.io/multisig_extrinsic/{index}?call_hash={callHash}"
       },
       {
         "name": "Sub.ID",
@@ -3524,7 +3524,7 @@
         "extrinsic": "https://centrifuge-parachain.subscan.io/extrinsic/{hash}",
         "account": "https://centrifuge-parachain.subscan.io/account/{address}",
         "event": null,
-        "multisig": "https://centrifuge-parachain.subscan.io/account/multisig_extrinsic/{index}?call_hash={callHash}"
+        "multisig": "https://centrifuge-parachain.subscan.io/multisig_extrinsic/{index}?call_hash={callHash}"
       },
       {
         "name": "Sub.ID",
@@ -3588,7 +3588,7 @@
         "extrinsic": "https://efinity.subscan.io/extrinsic/{hash}",
         "account": "https://efinity.subscan.io/account/{address}",
         "event": null,
-        "multisig": "https://efinity.subscan.io/account/multisig_extrinsic/{index}?call_hash={callHash}"
+        "multisig": "https://efinity.subscan.io/multisig_extrinsic/{index}?call_hash={callHash}"
       },
       {
         "name": "Polkaholic",
@@ -3715,7 +3715,7 @@
         "extrinsic": "https://hydradx.subscan.io/extrinsic/{hash}",
         "account": "https://hydradx.subscan.io/account/{address}",
         "event": null,
-        "multisig": "https://hydradx.subscan.io/account/multisig_extrinsic/{index}?call_hash={callHash}"
+        "multisig": "https://hydradx.subscan.io/multisig_extrinsic/{index}?call_hash={callHash}"
       },
       {
         "name": "Polkaholic",
@@ -3887,7 +3887,7 @@
         "extrinsic": "https://interlay.subscan.io/extrinsic/{hash}",
         "account": "https://interlay.subscan.io/account/{address}",
         "event": null,
-        "multisig": "https://interlay.subscan.io/account/multisig_extrinsic/{index}?call_hash={callHash}"
+        "multisig": "https://interlay.subscan.io/multisig_extrinsic/{index}?call_hash={callHash}"
       },
       {
         "name": "Polkaholic",
@@ -3940,7 +3940,7 @@
         "extrinsic": "https://nodle.subscan.io/extrinsic/{hash}",
         "account": "https://nodle.subscan.io/account/{address}",
         "event": null,
-        "multisig": "https://nodle.subscan.io/account/multisig_extrinsic/{index}?call_hash={callHash}"
+        "multisig": "https://nodle.subscan.io/multisig_extrinsic/{index}?call_hash={callHash}"
       },
       {
         "name": "Sub.ID",
@@ -3993,7 +3993,7 @@
         "extrinsic": "https://phala.subscan.io/extrinsic/{hash}",
         "account": "https://phala.subscan.io/account/{address}",
         "event": null,
-        "multisig": "https://phala.subscan.io/account/multisig_extrinsic/{index}?call_hash={callHash}"
+        "multisig": "https://phala.subscan.io/multisig_extrinsic/{index}?call_hash={callHash}"
       },
       {
         "name": "Polkaholic",
@@ -4153,7 +4153,7 @@
         "extrinsic": "https://turing.subscan.io/extrinsic/{hash}",
         "account": "https://turing.subscan.io/account/{address}",
         "event": null,
-        "multisig": "https://turing.subscan.io/account/multisig_extrinsic/{index}?call_hash={callHash}"
+        "multisig": "https://turing.subscan.io/multisig_extrinsic/{index}?call_hash={callHash}"
       },
       {
         "name": "Polkaholic",
@@ -4204,7 +4204,7 @@
         "extrinsic": "https://alephzero.subscan.io/extrinsic/{hash}",
         "account": "https://alephzero.subscan.io/account/{address}",
         "event": null,
-        "multisig": "https://alephzero.subscan.io/account/multisig_extrinsic/{index}?call_hash={callHash}"
+        "multisig": "https://alephzero.subscan.io/multisig_extrinsic/{index}?call_hash={callHash}"
       }
     ],
     "types": {
@@ -4253,7 +4253,7 @@
         "extrinsic": "https://composable.subscan.io/extrinsic/{hash}",
         "account": "https://composable.subscan.io/account/{address}",
         "event": null,
-        "multisig": "https://composable.subscan.io/account/multisig_extrinsic/{index}?call_hash={callHash}"
+        "multisig": "https://composable.subscan.io/multisig_extrinsic/{index}?call_hash={callHash}"
       },
       {
         "name": "Polkaholic",
@@ -4302,7 +4302,7 @@
         "extrinsic": "https://polkadex.subscan.io/extrinsic/{hash}",
         "account": "https://polkadex.subscan.io/account/{address}",
         "event": null,
-        "multisig": "https://polkadex.subscan.io/account/multisig_extrinsic/{index}?call_hash={callHash}"
+        "multisig": "https://polkadex.subscan.io/multisig_extrinsic/{index}?call_hash={callHash}"
       },
       {
         "name": "Sub.ID",
@@ -4427,7 +4427,7 @@
         "extrinsic": "https://bifrost.subscan.io/extrinsic/{hash}",
         "account": "https://bifrost.subscan.io/account/{address}",
         "event": null,
-        "multisig": "https://bifrost.subscan.io/account/multisig_extrinsic/{index}?call_hash={callHash}"
+        "multisig": "https://bifrost.subscan.io/multisig_extrinsic/{index}?call_hash={callHash}"
       },
       {
         "name": "Polkaholic",
@@ -4530,7 +4530,7 @@
         "extrinsic": "https://unique.subscan.io/extrinsic/{hash}",
         "account": "https://unique.subscan.io/account/{address}",
         "event": null,
-        "multisig": "https://unique.subscan.io/account/multisig_extrinsic/{index}?call_hash={callHash}"
+        "multisig": "https://unique.subscan.io/multisig_extrinsic/{index}?call_hash={callHash}"
       },
       {
         "name": "Polkaholic",
@@ -4661,7 +4661,7 @@
         "extrinsic": "https://mangatax.subscan.io/extrinsic/{hash}",
         "account": "https://mangatax.subscan.io/account/{address}",
         "event": null,
-        "multisig": "https://mangatax.subscan.io/account/multisig_extrinsic/{index}?call_hash={callHash}"
+        "multisig": "https://mangatax.subscan.io/multisig_extrinsic/{index}?call_hash={callHash}"
       },
       {
         "name": "Polkaholic",
@@ -4784,7 +4784,7 @@
         "extrinsic": "https://datahighway.subscan.io/extrinsic/{hash}",
         "account": "https://datahighway.subscan.io/account/{address}",
         "event": null,
-        "multisig": "https://datahighway.subscan.io/account/multisig_extrinsic/{index}?call_hash={callHash}"
+        "multisig": "https://datahighway.subscan.io/multisig_extrinsic/{index}?call_hash={callHash}"
       },
       {
         "name": "Polkaholic",
@@ -5171,7 +5171,7 @@
         "extrinsic": "https://darwinia-parachain.subscan.io/extrinsic/{hash}",
         "account": "https://darwinia-parachain.subscan.io/{address}",
         "event": null,
-        "multisig": "https://darwinia-parachain.subscan.io/multisig_extrinsic/{index}?call_hash={callHash}"
+        "multisig": "multisig_extrinsic/{index}?call_hash={callHash}"
       },
       {
         "name": "Polkaholic",
@@ -5260,7 +5260,7 @@
         "extrinsic": "https://polymesh.subscan.io/extrinsic/{hash}",
         "account": "https://polymesh.subscan.io/account/{address}",
         "event": null,
-        "multisig": "https://polymesh.subscan.io/account/multisig_extrinsic/{index}?call_hash={callHash}"
+        "multisig": "https://polymesh.subscan.io/multisig_extrinsic/{index}?call_hash={callHash}"
       }
     ],
     "types": {
@@ -5295,7 +5295,7 @@
         "extrinsic": "https://snow.subscan.io/extrinsic/{hash}",
         "account": "https://snow.subscan.io/account/{address}",
         "event": null,
-        "multisig": "https://snow.subscan.io/account/multisig_extrinsic/{index}?call_hash={callHash}"
+        "multisig": "https://snow.subscan.io/multisig_extrinsic/{index}?call_hash={callHash}"
       },
       {
         "name": "Polkaholic",
@@ -5508,7 +5508,7 @@
         "extrinsic": "https://crust-parachain.subscan.io/extrinsic/{hash}",
         "account": "https://crust-parachain.subscan.io/account/{address}",
         "event": null,
-        "multisig": "https://crust-parachain.subscan.io/account/multisig_extrinsic/{index}?call_hash={callHash}"
+        "multisig": "https://crust-parachain.subscan.io/multisig_extrinsic/{index}?call_hash={callHash}"
       }
     ],
     "types": {

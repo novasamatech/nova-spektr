@@ -36,7 +36,7 @@ function getTransformedData(rawData) {
         const subscanExplorer = chain.explorers.find((explorer) => explorer.name === 'Subscan');
         if (subscanExplorer) {
           const accountParam = subscanExplorer.account;
-          const domain = accountParam.substring(0, accountParam.indexOf('{address}'));
+          const domain = accountParam.substring(0, accountParam.indexOf('account'));
           subscanExplorer.multisig = `${domain}multisig_extrinsic/{index}?call_hash={callHash}`;
         }
       }

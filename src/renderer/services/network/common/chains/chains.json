@@ -51,7 +51,7 @@
         "extrinsic": "https://polkadot.subscan.io/extrinsic/{hash}",
         "account": "https://polkadot.subscan.io/account/{address}",
         "event": null,
-        "multisig": "https://polkadot.subscan.io/account/multisig_extrinsic/{index}?call_hash={callHash}"
+        "multisig": "https://polkadot.subscan.io/multisig_extrinsic/{index}?call_hash={callHash}"
       },
       {
         "name": "Polkascan",
@@ -159,7 +159,7 @@
         "extrinsic": "https://kusama.subscan.io/extrinsic/{hash}",
         "account": "https://kusama.subscan.io/account/{address}",
         "event": null,
-        "multisig": "https://kusama.subscan.io/account/multisig_extrinsic/{index}?call_hash={callHash}"
+        "multisig": "https://kusama.subscan.io/multisig_extrinsic/{index}?call_hash={callHash}"
       },
       {
         "name": "Polkascan",
@@ -250,7 +250,7 @@
         "extrinsic": "https://westend.subscan.io/extrinsic/{hash}",
         "account": "https://westend.subscan.io/account/{address}",
         "event": null,
-        "multisig": "https://westend.subscan.io/account/multisig_extrinsic/{index}?call_hash={callHash}"
+        "multisig": "https://westend.subscan.io/multisig_extrinsic/{index}?call_hash={callHash}"
       }
     ],
     "icon": "https://raw.githubusercontent.com/nova-wallet/nova-utils/master/icons/chains/gradient/Westend_Testnet.svg",
@@ -468,7 +468,7 @@
         "extrinsic": "https://statemine.subscan.io/extrinsic/{hash}",
         "account": "https://statemine.subscan.io/account/{address}",
         "event": null,
-        "multisig": "https://statemine.subscan.io/account/multisig_extrinsic/{index}?call_hash={callHash}"
+        "multisig": "https://statemine.subscan.io/multisig_extrinsic/{index}?call_hash={callHash}"
       },
       {
         "name": "Statescan",
@@ -917,7 +917,7 @@
         "extrinsic": "https://karura.subscan.io/extrinsic/{hash}",
         "account": "https://karura.subscan.io/account/{address}",
         "event": null,
-        "multisig": "https://karura.subscan.io/account/multisig_extrinsic/{index}?call_hash={callHash}"
+        "multisig": "https://karura.subscan.io/multisig_extrinsic/{index}?call_hash={callHash}"
       },
       {
         "name": "Sub.ID",
@@ -1189,7 +1189,7 @@
         "extrinsic": "https://acala.subscan.io/extrinsic/{hash}",
         "account": "https://acala.subscan.io/account/{address}",
         "event": null,
-        "multisig": "https://acala.subscan.io/account/multisig_extrinsic/{index}?call_hash={callHash}"
+        "multisig": "https://acala.subscan.io/multisig_extrinsic/{index}?call_hash={callHash}"
       },
       {
         "name": "Sub.ID",
