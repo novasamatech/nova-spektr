@@ -5,7 +5,7 @@ import { Fragment, useId } from 'react';
 import { Icon } from '@renderer/components/ui';
 import { DropdownOption, DropdownResult, Position } from '../common/types';
 import CommonInputStyles from '@renderer/components/ui-redesign/Inputs/common/styles';
-import { FootnoteText } from '@renderer/components/ui-redesign';
+import { FootnoteText, LabelText } from '@renderer/components/ui-redesign';
 import { ViewClass } from '@renderer/components/ui-redesign/Dropdowns/common/constants';
 
 type Props = {
@@ -94,9 +94,9 @@ const Select = ({
 
   return (
     <div className="flex flex-col gap-2">
-      <FootnoteText as="label" className="cursor-pointer" htmlFor={id}>
+      <LabelText className="cursor-pointer" htmlFor={id}>
         {label}
-      </FootnoteText>
+      </LabelText>
       {selectElement}
     </div>
   );
