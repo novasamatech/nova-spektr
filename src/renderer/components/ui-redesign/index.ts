@@ -15,6 +15,7 @@ import {
   HeadlineText,
   BodyText,
   FootnoteText,
+  LabelText,
 } from '@renderer/components/ui-redesign/Typography';
 
 export {
@@ -34,4 +35,5 @@ export {
   HeadlineText,
   BodyText,
   FootnoteText,
+  LabelText,
 };
