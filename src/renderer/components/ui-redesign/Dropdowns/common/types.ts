@@ -12,3 +12,5 @@ export type DropdownResult<T extends any = any> = {
   id: string;
   value?: T;
 };
+
+export type HTMLComboboxProps = 'value' | 'type' | 'required' | 'disabled' | 'placeholder' | 'name' | 'className';
