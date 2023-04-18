@@ -5,5 +5,6 @@ import { SmallTitleText } from './components/SmallTitleText';
 import { CaptionText } from './components/CaptionText';
 import { HeadlineText } from './components/HeadlineText';
 import { LargeTitleText } from './components/LargeTitleText';
+import { LabelText } from './components/LabelText';
 
-export { FootnoteText, BodyText, SmallTitleText, TitleText, CaptionText, LargeTitleText, HeadlineText };
+export { FootnoteText, BodyText, SmallTitleText, TitleText, CaptionText, LargeTitleText, HeadlineText, LabelText };

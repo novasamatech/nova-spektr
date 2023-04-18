@@ -1,7 +1,7 @@
 import cn from 'classnames';
 import { ReactNode, ComponentPropsWithoutRef, forwardRef, useId } from 'react';
 
-import { FootnoteText } from '../../Typography';
+import { LabelText } from '../../Typography';
 import { HTMLInputProps } from '../common/types';
 import CommonInputStyles from '@renderer/components/ui-redesign/Inputs/common/styles';
 
@@ -45,10 +45,8 @@ const Input = forwardRef<HTMLInputElement, Props>(
     }
 
     return (
-      <div className="flex flex-col">
-        <FootnoteText as="label" htmlFor={id} className="mb-2">
-          {label}
-        </FootnoteText>
+      <div className="flex flex-col gap-2">
+        <LabelText htmlFor={id}>{label}</LabelText>
         {inputElement}
       </div>
     );
