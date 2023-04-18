@@ -19,7 +19,6 @@ import {
   RoomEvent,
 } from 'matrix-js-sdk';
 import { ISecretStorageKeyInfo } from 'matrix-js-sdk/lib/crypto/api';
-import { EventStatus } from 'matrix-js-sdk/src/models/event-status';
 import { deriveKey } from 'matrix-js-sdk/lib/crypto/key_passphrase';
 import { IStore } from 'matrix-js-sdk/lib/store';
 import { SyncState } from 'matrix-js-sdk/lib/sync';
@@ -898,7 +897,7 @@ export class Matrix implements ISecureMessenger {
    */
   private handleEchoEvents() {
     this.matrixClient.on(RoomEvent.LocalEchoUpdated, (event, room) => {
-      if (event.getSender() !== this.userId || event.status !== EventStatus.SENT) return;
+      if (event.getSender() !== this.userId || event.status !== 'sent') return;
 
       if (!this.isSpektrMultisigEvent(event) || !this.isSpektrRoom(room)) return;
 
