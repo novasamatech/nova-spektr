@@ -2,6 +2,7 @@ import { act, render, screen } from '@testing-library/react';
 
 import Matrix from '@renderer/services/matrix';
 import { MatrixProvider } from './MatrixContext';
+import { ConnectionType } from '@renderer/domain/connection';
 
 jest.mock('@renderer/services/matrix', () => jest.fn().mockReturnValue({}));
 
@@ -16,6 +17,7 @@ jest.mock('@renderer/services/multisigTx/multisigTxService', () => ({
     getMultisigTxs: jest.fn(),
     addMultisigTx: jest.fn(),
     updateMultisigTx: jest.fn(),
+    updateCallData: jest.fn(),
   }),
 }));
 
@@ -23,6 +25,20 @@ jest.mock('@renderer/services/contact/contactService', () => ({
   useContact: jest.fn().mockReturnValue({
     getContacts: jest.fn().mockReturnValue([]),
   }),
+}));
+
+jest.mock('@renderer/context/NetworkContext', () => ({
+  useNetworkContext: jest.fn(() => ({
+    connections: {
+      '0x0000000000000000000000000000000000000000': {
+        chainId: '1',
+        assets: [{ assetId: '1', symbol: '1' }],
+        connection: {
+          connectionType: ConnectionType.RPC_NODE,
+        },
+      },
+    },
+  })),
 }));
 
 describe('context/MatrixContext', () => {
