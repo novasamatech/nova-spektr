@@ -30,7 +30,8 @@ const Combobox = ({ className, value, options, disabled, position = 'down', onCh
         <HeadlessCombobox.Input
           as={Input}
           displayValue={(option: ComboboxOption) => option.value}
-          onChange={(e) => setQuery(e.target.value)}
+          // @ts-ignore onChange doesn't respect custom <Input /> onChange type
+          onChange={setQuery}
           {...inputProps}
         />
 
