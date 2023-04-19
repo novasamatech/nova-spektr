@@ -1,32 +1,47 @@
 import { PropsWithChildren } from 'react';
 import cn from 'classnames';
 
-import { Icon } from '@renderer/components/ui';
 import { IconNames } from '@renderer/components/ui/Icon/data';
-import { FootnoteText } from '../Typography';
+import { Icon } from '@renderer/components/ui';
 
-type Props = {
+interface BaseProps {
   url?: string;
   showIcon?: boolean;
   iconName?: IconNames;
+  className?: string;
+  fontClass?: string;
+}
+
+type ExternalLink = Required<Pick<BaseProps, 'url'>> & Omit<BaseProps, 'url'>;
+type PopoverLink = Required<Pick<BaseProps, 'showIcon'>> & Omit<BaseProps, 'showIcon'>;
+
+// This component intended to be used either as external link or icon + text for popover anchor,
+// so I tried to emphasize via types that either url or showIcon must be present
+
+const InfoLink = ({
+  url,
+  showIcon,
+  children,
+  iconName = 'info',
+  className,
+  fontClass = 'text-footnote',
+}: PropsWithChildren<ExternalLink | PopoverLink>) => {
+  return (
+    <a
+      href={url}
+      rel="noopener noreferrer"
+      target="_blank"
+      className={cn(
+        'text-action-text-default hover:text-action-text cursor-pointer',
+        fontClass,
+        showIcon && 'flex items-center gap-x-1',
+        className,
+      )}
+    >
+      {showIcon && <Icon name={iconName} size={14} />}
+      {children}
+    </a>
+  );
 };
-const InfoLink = ({ url, showIcon = true, children, iconName = 'info' }: PropsWithChildren<Props>) => (
-  <FootnoteText
-    className={cn(
-      'w-max outline-offset-4 text-action-text-default hover:text-action-text',
-      showIcon && 'flex items-center gap-x-1',
-    )}
-    fontWeight="semibold"
-  >
-    {url ? (
-      <a href={url} rel="noopener noreferrer" target="_blank" className="text-inherit">
-        {children}
-      </a>
-    ) : (
-      children
-    )}
-    {showIcon && <Icon name={iconName} size={14} />}
-  </FootnoteText>
-);
 
 export default InfoLink;

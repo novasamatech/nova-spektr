@@ -15,14 +15,17 @@ export const ExternalLink = Template.bind({});
 ExternalLink.args = {
   url: 'https://test.com',
   children: 'This is my link',
+  showIcon: true,
   iconName: 'globe',
 };
 
-export const PopoverLink = Template.bind({});
+const PopoverTemplate: ComponentStory<typeof InfoLink> = (args) => (
+  <Popover contentClass="text-text-primary p-2" content="something important">
+    <InfoLink {...args} />
+  </Popover>
+);
+export const PopoverLink = PopoverTemplate.bind({});
 PopoverLink.args = {
-  children: (
-    <Popover contentClass="text-redesign-shade-56 p-2" content="something important">
-      Opens popover oh hover
-    </Popover>
-  ),
+  showIcon: true,
+  children: 'opens popover on hover',
 };
