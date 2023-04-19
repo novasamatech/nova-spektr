@@ -11,6 +11,7 @@ import {
   UnsignedTransaction,
 } from '@substrate/txwrapper-polkadot';
 import { Call, Weight } from '@polkadot/types/interfaces';
+import { Type } from '@polkadot/types';
 
 import { AccountID, CallData, HexString } from '@renderer/domain/shared-kernel';
 import { Transaction, TransactionType } from '@renderer/domain/transaction';
@@ -19,7 +20,6 @@ import { ITransactionService, HashData, ExtrinsicResultParams } from './common/t
 import { toPublicKey } from '@renderer/shared/utils/address';
 import { MAX_WEIGHT } from '@renderer/services/transaction/common/constants';
 import { decodeDispatchError } from './common/utils';
-import { Type } from '@polkadot/types';
 
 export const useTransaction = (): ITransactionService => {
   const createRegistry = async (api: ApiPromise) => {
