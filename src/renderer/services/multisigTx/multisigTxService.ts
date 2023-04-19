@@ -43,6 +43,9 @@ export const useMultisigTx = (): IMultisigTxService => {
         if (oldTx) {
           updateMultisigTx(updateTransactionPayload(oldTx, pendingTx));
         } else {
+          const depositor = pendingTx.params.depositor.toHex();
+          if (!account.signatories.find((s) => s.publicKey == depositor)) return;
+
           const blockTime = getExpectedBlockTime(api);
 
           addMultisigTx(
@@ -113,7 +116,7 @@ export const useMultisigTx = (): IMultisigTxService => {
   const updateCallData = async (api: ApiPromise, tx: MultisigTransactionDS, callData: CallData) => {
     const chain = await getChainById(tx.chainId);
 
-    const transaction = decodeCallData(api, formatAddress(tx?.publicKey, chain?.addressPrefix), callData);
+    const transaction = decodeCallData(api, formatAddress(tx.publicKey, chain?.addressPrefix), callData);
 
     await updateMultisigTx({ ...tx, callData, transaction });
   };

@@ -269,7 +269,8 @@
       "multisigWallet": "Multisig wallet",
       "payee": "Payee",
       "recipient": "Recipient",
-      "timePoint": "Time Point"
+      "timePoint": "Time Point",
+      "validators": "Validators"
     },
     "detailsTitle": "Details",
     "explorerLink": "View in explorer",

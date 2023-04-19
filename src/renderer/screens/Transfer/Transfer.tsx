@@ -136,69 +136,71 @@ const Transfer = () => {
     <div className="flex flex-col h-full relative">
       {headerContent}
 
-      {activeStep === Step.INIT && (
-        <InitOperation
-          chainId={chainId}
-          asset={asset}
-          nativeToken={assets[0]}
-          network={chainName}
-          onResult={onInitResult}
-          onAccountChange={onAccountChange}
-          {...commonProps}
-        />
-      )}
-      {activeStep === Step.CONFIRMATION && (
-        <Confirmation
-          asset={asset}
-          nativeToken={assets[0]}
-          transferTx={transferTx}
-          multisigTx={multisigTx}
-          accountName={account.name}
-          icon={icon}
-          network={network}
-          onResult={onConfirmResult}
-          {...commonProps}
-        />
-      )}
-      {activeStep === Step.SCANNING && (
-        <Scanning
-          chainId={chainId}
-          account={account}
-          transaction={multisigTx || transferTx}
-          countdown={countdown}
-          onResetCountdown={resetCountdown}
-          onResult={onScanResult}
-          {...commonProps}
-        />
-      )}
-      {activeStep === Step.SIGNING && (
-        <Signing
-          chainId={chainId}
-          transaction={multisigTx || transferTx}
-          account={account}
-          assetId={assetId}
-          countdown={countdown}
-          onGoBack={onBackToScan}
-          onStartOver={onStartOver}
-          onResult={onSignResult}
-          {...commonProps}
-        />
-      )}
-      {activeStep === Step.SUBMIT && (
-        <Submit
-          asset={asset}
-          nativeToken={assets[0]}
-          transferTx={transferTx}
-          account={account}
-          description={description}
-          multisigTx={multisigTx}
-          icon={icon}
-          network={network}
-          signature={signature}
-          unsignedTx={unsignedTx}
-          {...commonProps}
-        />
-      )}
+      <div className="overflow-y-auto">
+        {activeStep === Step.INIT && (
+          <InitOperation
+            chainId={chainId}
+            asset={asset}
+            nativeToken={assets[0]}
+            network={chainName}
+            onResult={onInitResult}
+            onAccountChange={onAccountChange}
+            {...commonProps}
+          />
+        )}
+        {activeStep === Step.CONFIRMATION && (
+          <Confirmation
+            asset={asset}
+            nativeToken={assets[0]}
+            transferTx={transferTx}
+            multisigTx={multisigTx}
+            accountName={account.name}
+            icon={icon}
+            network={network}
+            onResult={onConfirmResult}
+            {...commonProps}
+          />
+        )}
+        {activeStep === Step.SCANNING && (
+          <Scanning
+            chainId={chainId}
+            account={account}
+            transaction={multisigTx || transferTx}
+            countdown={countdown}
+            onResetCountdown={resetCountdown}
+            onResult={onScanResult}
+            {...commonProps}
+          />
+        )}
+        {activeStep === Step.SIGNING && (
+          <Signing
+            chainId={chainId}
+            transaction={multisigTx || transferTx}
+            account={account}
+            assetId={assetId}
+            countdown={countdown}
+            onGoBack={onBackToScan}
+            onStartOver={onStartOver}
+            onResult={onSignResult}
+            {...commonProps}
+          />
+        )}
+        {activeStep === Step.SUBMIT && (
+          <Submit
+            asset={asset}
+            nativeToken={assets[0]}
+            transferTx={transferTx}
+            account={account}
+            description={description}
+            multisigTx={multisigTx}
+            icon={icon}
+            network={network}
+            signature={signature}
+            unsignedTx={unsignedTx}
+            {...commonProps}
+          />
+        )}
+      </div>
     </div>
   );
 };
