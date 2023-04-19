@@ -28,9 +28,7 @@ const InfoLink = ({
 }: PropsWithChildren<ExternalLink | PopoverLink>) => {
   return (
     <a
-      href={url}
-      rel="noopener noreferrer"
-      target="_blank"
+      {...(url ? { href: url, rel: 'noopener noreferrer', target: '_blank' } : {})}
       className={cn(
         'text-action-text-default hover:text-action-text cursor-pointer',
         fontClass,
