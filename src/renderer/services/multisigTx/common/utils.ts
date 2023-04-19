@@ -1,13 +1,13 @@
 import { ApiPromise } from '@polkadot/api';
 
 import { MultisigAccount } from '@renderer/domain/account';
-import { AccountID, ChainId } from '@renderer/domain/shared-kernel';
+import { Address, ChainID } from '@renderer/domain/shared-kernel';
 import { MultisigEvent, MultisigTransaction, MultisigTxInitStatus } from '@renderer/domain/transaction';
 import { PendingMultisigTransaction } from './types';
 
 export const getPendingMultisigTxs = async (
   api: ApiPromise,
-  address: AccountID,
+  address: Address,
 ): Promise<PendingMultisigTransaction[]> => {
   const multisigs = await api.query.multisig.multisigs.entries(address);
 
@@ -55,7 +55,7 @@ export const updateTransactionPayload = (
 
 export const createTransactionPayload = (
   pendingTransaction: PendingMultisigTransaction,
-  chainId: ChainId,
+  chainId: ChainID,
   account: MultisigAccount,
   currentBlock: number,
   blockTime: number,
@@ -64,7 +64,7 @@ export const createTransactionPayload = (
 
   const events: MultisigEvent[] = approvals.map((a) => ({
     status: 'SIGNED',
-    accountId: account.signatories.find((s) => s.accountId === a.toHuman())?.publicKey || a.toHex(),
+    accountId: account.signatories.find((s) => s.accountId === a.toHuman())?.accountId || a.toHex(),
   }));
 
   const dateCreated = Date.now() - (currentBlock - when.height.toNumber()) * blockTime;
@@ -80,6 +80,6 @@ export const createTransactionPayload = (
     signatories: account.signatories,
     deposit: deposit.toString(),
     depositor: depositor.toHex(),
-    publicKey: account.publicKey || '0x',
+    accountId: account.accountId || '0x',
   };
 };

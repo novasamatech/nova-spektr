@@ -1,14 +1,14 @@
-import Dexie, { Table } from 'dexie';
+import Dexie from 'dexie';
 
 import {
-  BalanceDS,
-  WalletDS,
-  ConnectionDS,
   DataStorage,
   IStorage,
-  MultisigTransactionDS,
-  AccountDS,
-  ContactDS,
+  TWallet,
+  TContact,
+  TBalance,
+  TConnection,
+  TAccount,
+  TMultisigTransaction,
 } from './common/types';
 import { useBalanceStorage } from './balanceStorage';
 import { useConnectionStorage } from './connectionStorage';
@@ -18,23 +18,23 @@ import { useContactStorage } from './contactStorage';
 import { useTransactionStorage } from './transactionStorage';
 
 class DexieStorage extends Dexie {
-  connections: Table<ConnectionDS>;
-  balances: Table<BalanceDS>;
-  wallets: Table<WalletDS>;
-  accounts: Table<AccountDS>;
-  contacts: Table<ContactDS>;
-  multisigTransactions: Table<MultisigTransactionDS>;
+  connections: TConnection;
+  balances: TBalance;
+  wallets: TWallet;
+  accounts: TAccount;
+  contacts: TContact;
+  multisigTransactions: TMultisigTransaction;
 
   constructor() {
-    super('omni'); // TODO: naming is not final
-    this.version(12).stores({
+    super('spektr');
+    this.version(13).stores({
       connections: '++id,chainId,type',
-      balances: '[publicKey+chainId+assetId],[publicKey+chainId]',
       wallets: '++id,isActive,type',
+      balances: '++id,[accountId+chainId+assetId],[accountId+chainId]',
       accounts: '++id,isActive,walletId,rootId,signingType',
       contacts: '++id,name,accountId,matrixId',
       multisigTransactions:
-        '++id,[publicKey+status],[publicKey+callHash],[callHash+status+chainId],publicKey,status,callHash',
+        '++id,[accountId+status],[accountId+callHash],[callHash+status+chainId],accountId,status,callHash',
     });
 
     this.connections = this.table('connections');
@@ -55,10 +55,10 @@ class StorageFactory implements IStorage {
 
   public connectTo<T extends keyof DataStorage>(name: T): DataStorage[T] | undefined {
     switch (name) {
-      case 'balances':
-        return useBalanceStorage(this.dexieDB.balances) as DataStorage[T];
       case 'connections':
         return useConnectionStorage(this.dexieDB.connections) as DataStorage[T];
+      case 'balances':
+        return useBalanceStorage(this.dexieDB.balances) as DataStorage[T];
       case 'wallets':
         return useWalletStorage(this.dexieDB.wallets) as DataStorage[T];
       case 'accounts':

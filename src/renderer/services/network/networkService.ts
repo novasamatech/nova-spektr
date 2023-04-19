@@ -6,7 +6,7 @@ import { useRef, useState } from 'react';
 
 import { Chain, RpcNode } from '@renderer/domain/chain';
 import { Connection, ConnectionStatus, ConnectionType } from '@renderer/domain/connection';
-import { ChainId } from '@renderer/domain/shared-kernel';
+import { ChainID } from '@renderer/domain/shared-kernel';
 import storage from '@renderer/services/storage';
 import { ISubscriptionService } from '../subscription/common/types';
 import { useChainSpec } from './chainSpecService';
@@ -14,8 +14,8 @@ import { useChains } from './chainsService';
 import { AUTO_BALANCE_TIMEOUT, MAX_ATTEMPTS, PROGRESSION_BASE } from './common/constants';
 import { ConnectionsMap, ConnectProps, INetworkService, RpcValidation } from './common/types';
 
-export const useNetwork = (networkSubscription?: ISubscriptionService<ChainId>): INetworkService => {
-  const chains = useRef<Record<ChainId, Chain>>({});
+export const useNetwork = (networkSubscription?: ISubscriptionService<ChainID>): INetworkService => {
+  const chains = useRef<Record<ChainID, Chain>>({});
   const [connections, setConnections] = useState<ConnectionsMap>({});
 
   const { getChainsData, sortChains } = useChains();
@@ -30,7 +30,7 @@ export const useNetwork = (networkSubscription?: ISubscriptionService<ChainId>):
   const { getConnections, addConnections, clearConnections, updateConnection } = connectionStorage;
 
   const updateConnectionState = (
-    chainId: ChainId,
+    chainId: ChainID,
     updates: Partial<Connection>,
     disconnect?: (switchNetwork: boolean) => Promise<void>,
     api?: ApiPromise,
@@ -55,7 +55,7 @@ export const useNetwork = (networkSubscription?: ISubscriptionService<ChainId>):
   };
 
   const disconnectFromNetwork =
-    (chainId: ChainId, provider?: ProviderInterface, api?: ApiPromise, timeoutId?: any) =>
+    (chainId: ChainID, provider?: ProviderInterface, api?: ApiPromise, timeoutId?: any) =>
     async (switchNetwork: boolean): Promise<void> => {
       await networkSubscription?.unsubscribe(chainId);
 
@@ -90,7 +90,7 @@ export const useNetwork = (networkSubscription?: ISubscriptionService<ChainId>):
     const connectionData = keyBy(currentConnections, 'chainId');
     const lightClientChains = getLightClientChains();
 
-    const updatedActiveNode = (chainId: ChainId, connection: Connection, defaultNode: RpcNode): RpcNode | undefined => {
+    const updatedActiveNode = (chainId: ChainID, connection: Connection, defaultNode: RpcNode): RpcNode | undefined => {
       const { activeNode, connectionType } = connection;
       if (!activeNode) return undefined;
 
@@ -149,7 +149,7 @@ export const useNetwork = (networkSubscription?: ISubscriptionService<ChainId>):
     }, {});
   };
 
-  const createSubstrateProvider = (chainId: ChainId): ProviderInterface | undefined => {
+  const createSubstrateProvider = (chainId: ChainID): ProviderInterface | undefined => {
     const knownChainId = getKnownChain(chainId);
 
     if (knownChainId) {
@@ -164,7 +164,7 @@ export const useNetwork = (networkSubscription?: ISubscriptionService<ChainId>):
     return new WsProvider(rpcUrl, 2000);
   };
 
-  const subscribeConnected = (chainId: ChainId, provider: ProviderInterface, type: ConnectionType, node?: RpcNode) => {
+  const subscribeConnected = (chainId: ChainID, provider: ProviderInterface, type: ConnectionType, node?: RpcNode) => {
     const handler = async () => {
       console.info('🟢 connected ==> ', chainId);
 
@@ -186,7 +186,7 @@ export const useNetwork = (networkSubscription?: ISubscriptionService<ChainId>):
     provider.on('connected', handler);
   };
 
-  const subscribeDisconnected = (chainId: ChainId, provider: ProviderInterface) => {
+  const subscribeDisconnected = (chainId: ChainID, provider: ProviderInterface) => {
     const handler = async () => {
       console.info('🔶 disconnected ==> ', chainId);
     };
@@ -194,7 +194,7 @@ export const useNetwork = (networkSubscription?: ISubscriptionService<ChainId>):
     provider.on('disconnected', handler);
   };
 
-  const subscribeError = (chainId: ChainId, provider: ProviderInterface, onError?: () => void) => {
+  const subscribeError = (chainId: ChainID, provider: ProviderInterface, onError?: () => void) => {
     const handler = () => {
       console.info('🔴 error ==> ', chainId);
 
@@ -208,7 +208,7 @@ export const useNetwork = (networkSubscription?: ISubscriptionService<ChainId>):
     provider.on('error', handler);
   };
 
-  const connectWithAutoBalance = async (chainId: ChainId, attempt = 0): Promise<void> => {
+  const connectWithAutoBalance = async (chainId: ChainID, attempt = 0): Promise<void> => {
     if (Number.isNaN(attempt)) attempt = 0;
 
     const currentTimeout = AUTO_BALANCE_TIMEOUT * (PROGRESSION_BASE ^ attempt % MAX_ATTEMPTS);
@@ -283,7 +283,7 @@ export const useNetwork = (networkSubscription?: ISubscriptionService<ChainId>):
     }
   };
 
-  const validateRpcNode = (genesisHash: ChainId, rpcUrl: string): Promise<RpcValidation> => {
+  const validateRpcNode = (genesisHash: ChainID, rpcUrl: string): Promise<RpcValidation> => {
     return new Promise((resolve) => {
       const provider = new WsProvider(rpcUrl);
 
@@ -312,7 +312,7 @@ export const useNetwork = (networkSubscription?: ISubscriptionService<ChainId>):
     });
   };
 
-  const addRpcNode = async (chainId: ChainId, rpcNode: RpcNode): Promise<void> => {
+  const addRpcNode = async (chainId: ChainID, rpcNode: RpcNode): Promise<void> => {
     const connection = connections[chainId];
     if (!connection) return;
 
@@ -321,7 +321,7 @@ export const useNetwork = (networkSubscription?: ISubscriptionService<ChainId>):
     });
   };
 
-  const updateRpcNode = async (chainId: ChainId, oldNode: RpcNode, newRpc: RpcNode): Promise<void> => {
+  const updateRpcNode = async (chainId: ChainID, oldNode: RpcNode, newRpc: RpcNode): Promise<void> => {
     const connection = connections[chainId];
     if (!connection) return;
 
@@ -334,7 +334,7 @@ export const useNetwork = (networkSubscription?: ISubscriptionService<ChainId>):
     });
   };
 
-  const removeRpcNode = async (chainId: ChainId, rpcNode: RpcNode): Promise<void> => {
+  const removeRpcNode = async (chainId: ChainID, rpcNode: RpcNode): Promise<void> => {
     const connection = connections[chainId];
     if (!connection) return;
 

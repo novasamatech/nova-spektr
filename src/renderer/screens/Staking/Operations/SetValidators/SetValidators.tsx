@@ -8,12 +8,12 @@ import { ChainLoader } from '@renderer/components/common';
 import { useI18n } from '@renderer/context/I18nContext';
 import { useNetworkContext } from '@renderer/context/NetworkContext';
 import { useChains } from '@renderer/services/network/chainsService';
-import { ChainId, HexString, SigningType } from '@renderer/domain/shared-kernel';
+import { ChainID, HexString, SigningType } from '@renderer/domain/shared-kernel';
 import { Transaction, TransactionType } from '@renderer/domain/transaction';
 import Paths from '@renderer/routes/paths';
 import { useAccount } from '@renderer/services/account/accountService';
 import { ValidatorMap } from '@renderer/services/staking/common/types';
-import { formatAddress } from '@renderer/shared/utils/address';
+import { toAddress } from '@renderer/shared/utils/address';
 import { getRelaychainAsset } from '@renderer/shared/utils/assets';
 import { Confirmation, Scanning, Signing, Submit, Validators } from '../components';
 import { useCountdown } from '../hooks/useCountdown';
@@ -41,7 +41,7 @@ const SetValidators = () => {
   const { getChainById } = useChains();
   const { connections } = useNetworkContext();
   const [searchParams] = useSearchParams();
-  const params = useParams<{ chainId: ChainId }>();
+  const params = useParams<{ chainId: ChainID }>();
 
   const dbAccounts = getLiveAccounts({ signingType: SigningType.PARITY_SIGNER });
 
@@ -52,7 +52,7 @@ const SetValidators = () => {
   const [unsignedTransactions, setUnsignedTransactions] = useState<UnsignedTransaction[]>([]);
   const [signatures, setSignatures] = useState<HexString[]>([]);
 
-  const chainId = params.chainId || ('' as ChainId);
+  const chainId = params.chainId || ('' as ChainID);
   const accountIds = searchParams.get('id')?.split(',') || [];
 
   if (!chainId || accountIds.length === 0) {
@@ -118,7 +118,7 @@ const SetValidators = () => {
     const transactions = totalAccounts.map(({ accountId = '' }) => {
       return {
         chainId,
-        address: formatAddress(accountId, addressPrefix),
+        address: toAddress(accountId, { prefix: addressPrefix }),
         type: TransactionType.NOMINATE,
         args: { targets: Object.keys(validators).map((address) => address) },
       };

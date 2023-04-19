@@ -1,8 +1,8 @@
-import { AccountID, PublicKey } from './shared-kernel';
+import { AccountID, Address } from './shared-kernel';
 
 export type Contact = {
   name: string;
+  address: Address;
   accountId: AccountID;
-  publicKey: PublicKey;
   matrixId?: string;
 };

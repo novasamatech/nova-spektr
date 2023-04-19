@@ -1,18 +1,18 @@
 import { Menu } from '@headlessui/react';
-import { encodeAddress } from '@polkadot/util-crypto';
 import cn from 'classnames';
 import { ReactNode, useRef } from 'react';
 
 import { Icon } from '@renderer/components/ui';
 import { useI18n } from '@renderer/context/I18nContext';
 import { Explorer } from '@renderer/domain/chain';
-import { toPublicKey } from '@renderer/shared/utils/address';
+import { toAddress } from '@renderer/shared/utils/address';
 import { DefaultExplorer, ExplorerIcons } from './common/constants';
+import { Address } from '@renderer/domain/shared-kernel';
 
 type Props = {
   explorers?: Explorer[];
   addressPrefix?: number;
-  address: string;
+  address: Address;
   header?: ReactNode;
   className?: string;
 };
@@ -73,7 +73,7 @@ const Explorers = ({ explorers, addressPrefix, address, header, className }: Pro
                         'rounded-2lg flex items-center gap-x-2.5 p-2.5 text-sm font-normal select-none transition',
                         active ? 'bg-primary text-white' : 'bg-white text-neutral',
                       )}
-                      href={account.replace('{address}', encodeAddress(toPublicKey(address) || '', addressPrefix))}
+                      href={account.replace('{address}', toAddress(address, { prefix: addressPrefix }))}
                       rel="noopener noreferrer"
                       target="_blank"
                     >

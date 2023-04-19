@@ -3,13 +3,13 @@ import { u8aToString } from '@polkadot/util';
 import merge from 'lodash/merge';
 
 import { Identity, SubIdentity } from '@renderer/domain/identity';
-import { AccountID, ChainId, EraIndex } from '@renderer/domain/shared-kernel';
+import { Address, ChainID, EraIndex } from '@renderer/domain/shared-kernel';
 import { Validator } from '@renderer/domain/validator';
 import { getValidatorsApy } from './apyCalculator';
 import { IValidatorsService, ValidatorMap } from './common/types';
 
 export const useValidators = (): IValidatorsService => {
-  const getValidators = async (chainId: ChainId, api: ApiPromise, era: EraIndex): Promise<ValidatorMap> => {
+  const getValidators = async (chainId: ChainID, api: ApiPromise, era: EraIndex): Promise<ValidatorMap> => {
     const [stake, prefs] = await Promise.all([getValidatorsStake(api, era), getValidatorsPrefs(api, era)]);
 
     const mergedValidators = merge(stake, prefs);
@@ -55,7 +55,7 @@ export const useValidators = (): IValidatorsService => {
     return api.consts.staking.maxNominations.toNumber();
   };
 
-  const getIdentities = async (api: ApiPromise, addresses: AccountID[]): Promise<Record<AccountID, Identity>> => {
+  const getIdentities = async (api: ApiPromise, addresses: Address[]): Promise<Record<Address, Identity>> => {
     const subIdentities = await getSubIdentities(api, addresses);
     const parentIdentities = await getParentIdentities(api, subIdentities);
 
@@ -64,7 +64,7 @@ export const useValidators = (): IValidatorsService => {
     }, {});
   };
 
-  const getSubIdentities = async (api: ApiPromise, addresses: AccountID[]): Promise<SubIdentity[]> => {
+  const getSubIdentities = async (api: ApiPromise, addresses: Address[]): Promise<SubIdentity[]> => {
     const subIdentities = await api.query.identity.superOf.multi(addresses);
 
     return subIdentities.reduce<SubIdentity[]>((acc, identity, index) => {
@@ -82,12 +82,12 @@ export const useValidators = (): IValidatorsService => {
   const getParentIdentities = async (
     api: ApiPromise,
     subIdentities: SubIdentity[],
-  ): Promise<Record<AccountID, Identity>> => {
+  ): Promise<Record<Address, Identity>> => {
     const identityAddresses = subIdentities.map((identity) => identity.parent);
 
     const parentIdentities = await api.query.identity.identityOf.multi(identityAddresses);
 
-    return parentIdentities.reduce<Record<AccountID, Identity>>((acc, identity, index) => {
+    return parentIdentities.reduce<Record<Address, Identity>>((acc, identity, index) => {
       if (identity.isNone) return acc;
 
       const { parent, sub, subName } = subIdentities[index];
@@ -110,7 +110,7 @@ export const useValidators = (): IValidatorsService => {
     }, {});
   };
 
-  const getApy = async (api: ApiPromise, validators: Validator[]): Promise<Record<AccountID, { apy: number }>> => {
+  const getApy = async (api: ApiPromise, validators: Validator[]): Promise<Record<Address, { apy: number }>> => {
     const apy = await getValidatorsApy(api, validators);
 
     return Object.entries(apy).reduce((acc, [address, apy]) => {
@@ -118,7 +118,7 @@ export const useValidators = (): IValidatorsService => {
     }, {});
   };
 
-  const getNominators = async (api: ApiPromise, account: AccountID): Promise<ValidatorMap> => {
+  const getNominators = async (api: ApiPromise, account: Address): Promise<ValidatorMap> => {
     try {
       const data = await api.query.staking.nominators(account);
       if (data.isNone) return {};
@@ -153,9 +153,9 @@ export const useValidators = (): IValidatorsService => {
 
   const getSlashingSpans = async (
     api: ApiPromise,
-    addresses: AccountID[],
+    addresses: Address[],
     era: EraIndex,
-  ): Promise<Record<AccountID, { slashed: boolean }>> => {
+  ): Promise<Record<Address, { slashed: boolean }>> => {
     const slashDeferDuration = getSlashDeferDuration(api);
     const slashingSpans = await api.query.staking.slashingSpans.multi(addresses);
 

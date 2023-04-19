@@ -2,22 +2,22 @@ import cn from 'classnames';
 import { encodeAddress } from '@polkadot/util-crypto';
 
 import { Chain } from '@renderer/domain/chain';
-import { Address } from '@renderer/components/ui';
-import { PublicKey } from '@renderer/domain/shared-kernel';
-import { isCorrectPublicKey } from '@renderer/shared/utils/address';
+import { ChainAddress } from '@renderer/components/ui';
+import { AccountID } from '@renderer/domain/shared-kernel';
+import { isCorrectAccountId } from '@renderer/shared/utils/address';
 import Explorers from '../Explorers/Explorers';
 
 type Props = {
-  publicKey?: PublicKey;
+  accountId?: AccountID;
   chains: Chain[];
   className?: string;
   limit?: number;
 };
 
-const AccountsList = ({ publicKey, chains, className, limit }: Props) => {
+const AccountsList = ({ accountId, chains, className, limit }: Props) => {
   const limitedChains = limit ? chains.slice(0, limit) : chains;
 
-  if (!publicKey || !isCorrectPublicKey(publicKey)) {
+  if (!accountId || !isCorrectAccountId(accountId)) {
     return (
       <div className="overflow-hidden divide-y divide-gray-200">
         {limitedChains.map(({ name }) => (
@@ -46,13 +46,13 @@ const AccountsList = ({ publicKey, chains, className, limit }: Props) => {
             <img width="36px" height="36px" alt={name} src={icon} />
             <div className="flex flex-col flex-1 overflow-hidden whitespace-nowrap">
               <div className="font-bold text-neutral text-base w-full leading-5">{name}</div>
-              <Address className="w-full" address={encodeAddress(publicKey, addressPrefix)} />
+              <ChainAddress className="w-full" address={encodeAddress(accountId, addressPrefix)} />
             </div>
 
             <Explorers
               explorers={chain.explorers}
               addressPrefix={chain.addressPrefix}
-              address={encodeAddress(publicKey, addressPrefix)}
+              address={encodeAddress(accountId, addressPrefix)}
             />
           </li>
         );

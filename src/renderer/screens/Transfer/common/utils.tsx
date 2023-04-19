@@ -1,17 +1,17 @@
 import { Account } from '@renderer/domain/account';
-import { ChainId, SigningType } from '@renderer/domain/shared-kernel';
+import { ChainID, SigningType } from '@renderer/domain/shared-kernel';
 import { DropdownOption } from '@renderer/components/ui/Dropdowns/common/types';
-import { formatAddress } from '@renderer/shared/utils/address';
-import { Icon, Address } from '@renderer/components/ui';
+import { toAddress } from '@renderer/shared/utils/address';
+import { Icon, ChainAddress } from '@renderer/components/ui';
 import { Badges } from './constants';
 
 export const getAccountsOptions = <T extends Account>(
-  chainId: ChainId,
+  chainId: ChainID,
   accounts: T[],
   addressPrefix: number,
 ): DropdownOption<T>[] => {
   return accounts.reduce<DropdownOption<T>[]>((acc, account) => {
-    const address = formatAddress(account.accountId, addressPrefix);
+    const address = toAddress(account.accountId, { prefix: addressPrefix });
 
     const isWatchOnly = account.signingType === SigningType.WATCH_ONLY;
     const isSameChain = !account.chainId || account.chainId === chainId;
@@ -22,7 +22,7 @@ export const getAccountsOptions = <T extends Account>(
         <div className="grid grid-rows-2 grid-flow-col gap-x-2.5">
           <Icon className="row-span-2 self-center" name={Badges[account.signingType]} size={34} />
           <p className="text-left text-neutral text-lg font-semibold leading-5">{account.name}</p>
-          <Address type="short" address={address} canCopy={false} />
+          <ChainAddress type="short" address={address} canCopy={false} />
         </div>
       );
 

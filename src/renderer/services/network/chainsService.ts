@@ -10,7 +10,7 @@ import chainsOmniDev from './common/chains/omni-chains_dev.json';
 import { DEFAULT_TIME, ONE_DAY, THRESHOLD } from './common/constants';
 import { ChainLike, IChainService } from './common/types';
 import { isKusama, isPolkadot, isTestnet } from './common/utils';
-import { ChainId } from '@renderer/domain/shared-kernel';
+import { ChainID } from '@renderer/domain/shared-kernel';
 import { getRelaychainAsset } from '@renderer/shared/utils/assets';
 
 const CHAINS: Record<string, any> = {
@@ -24,7 +24,7 @@ export function useChains(): IChainService {
     return Promise.resolve(CHAINS[process.env.CHAINS_FILE || 'dev']);
   };
 
-  const getChainById = (chainId: ChainId): Promise<Chain | undefined> => {
+  const getChainById = (chainId: ChainID): Promise<Chain | undefined> => {
     const chainsData: Chain[] = CHAINS[process.env.CHAINS_FILE || 'dev'];
     const chainMatch = chainsData.find((chain) => chain.chainId === chainId);
 

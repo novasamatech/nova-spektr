@@ -13,10 +13,10 @@ import Matrix, {
 } from '@renderer/services/matrix';
 import { MultisigAccount, getMultisigAddress, createMultisigAccount } from '@renderer/domain/account';
 import { useAccount } from '@renderer/services/account/accountService';
-import { formatAddress, toPublicKey } from '@renderer/shared/utils/address';
+import { toAddress } from '@renderer/shared/utils/address';
 import { useContact } from '@renderer/services/contact/contactService';
 import { getShortAddress } from '@renderer/shared/utils/strings';
-import { AccountID, PublicKey, SigningType } from '@renderer/domain/shared-kernel';
+import { Address, AccountID, SigningType } from '@renderer/domain/shared-kernel';
 import { validateCallData } from '@renderer/shared/utils/substrate';
 import { useMultisigTx } from '@renderer/services/multisigTx/multisigTxService';
 import {
@@ -54,12 +54,8 @@ export const MatrixProvider = ({ children }: PropsWithChildren) => {
 
   const onSyncEnd = () => {
     console.info('💛 ===> onSyncEnd');
-    // TODO: request all unread events
-    // try {
-    //   await matrix.syncSpektrTimeline();
-    // } catch (error) {
-    //   console.log(error);
-    // }
+
+    matrix.syncSpektrTimeline().catch(console.warn);
   };
 
   const onMessage = (value: any) => {
@@ -70,41 +66,44 @@ export const MatrixProvider = ({ children }: PropsWithChildren) => {
     console.info('💛 ===> onInvite');
 
     const { roomId, content } = payload;
-    const { address, threshold, signatories } = content.mst_account;
+    const { accountId, threshold, signatories } = content.mstAccount;
 
-    const mstAccountIsValid = address === getMultisigAddress(signatories, threshold);
+    const mstAccountIsValid = accountId === getMultisigAddress(signatories, threshold);
     if (!mstAccountIsValid) return;
 
     const accounts = await getAccounts();
-    const signatoryPublicKeys = signatories.map(toPublicKey);
-    const mstAccount = accounts.find((a) => a.accountId === address) as MultisigAccount;
-    const signer = accounts.find((a) => signatoryPublicKeys.includes(toPublicKey(a.accountId)));
-    if (mstAccount) {
-      await changeRoom(roomId, mstAccount, content, signer?.accountId);
-    } else {
+    const mstAccount = accounts.find((a) => a.accountId === accountId) as MultisigAccount;
+    const signer = accounts.find((a) => signatories.includes(a.accountId));
+
+    if (!mstAccount) {
       await joinRoom(roomId, content);
+    } else if (signer) {
+      await changeRoom(roomId, mstAccount, content, signer.accountId);
+    } else {
+      console.warn(`Signer for multisig account ${accountId} not found`);
     }
   };
 
   const createMstAccount = async (roomId: string, extras: SpektrExtras) => {
-    const { signatories, threshold, accountName, inviterPublicKey } = extras.mst_account;
+    const { signatories, threshold, accountName, creatorAccountId } = extras.mstAccount;
 
-    const contacts = await getContacts();
-    const mstSignatories = signatories.map((accountId) => {
-      const match = contacts.find((c) => c.publicKey === toPublicKey(accountId));
+    const contactsMap = (await getContacts()).reduce<Record<AccountID, string>>((acc, contact) => {
+      acc[contact.accountId] = contact.name;
 
-      return {
-        accountId,
-        name: match?.name || getShortAddress(accountId),
-        publicKey: toPublicKey(accountId) || '0x',
-      };
-    });
+      return acc;
+    }, {});
+
+    const mstSignatories = signatories.map((accountId) => ({
+      accountId,
+      name: contactsMap[accountId] || getShortAddress(accountId),
+      address: toAddress(accountId),
+    }));
 
     const mstAccount = createMultisigAccount({
+      threshold,
+      creatorAccountId,
       name: accountName,
       signatories: mstSignatories,
-      threshold,
-      inviterPublicKey,
       matrixRoomId: roomId,
     });
 
@@ -115,10 +114,10 @@ export const MatrixProvider = ({ children }: PropsWithChildren) => {
     roomId: string,
     mstAccount: MultisigAccount,
     extras: SpektrExtras,
-    signerAddress?: AccountID,
+    signerAccountId: AccountID,
   ) => {
-    const { accountName, inviterPublicKey } = extras.mst_account;
-    const stayInRoom = formatAddress(signerAddress) > formatAddress(inviterPublicKey);
+    const { accountName, creatorAccountId } = extras.mstAccount;
+    const stayInRoom = signerAccountId > creatorAccountId;
 
     try {
       if (stayInRoom) {
@@ -130,7 +129,7 @@ export const MatrixProvider = ({ children }: PropsWithChildren) => {
           ...mstAccount,
           name: accountName,
           matrixRoomId: roomId,
-          inviterPublicKey,
+          creatorAccountId,
         });
       }
     } catch (error) {
@@ -152,11 +151,11 @@ export const MatrixProvider = ({ children }: PropsWithChildren) => {
 
     if (!validateMatrixEvent(content, extras)) return;
 
-    const multisigAccount = await getMultisigAccount(extras.mst_account.address);
+    const multisigAccount = await getMultisigAccount(extras.mstAccount.accountId);
     if (!multisigAccount) return;
 
     const multisigTxs = await getMultisigTxs({
-      publicKey: multisigAccount.publicKey,
+      accountId: multisigAccount.accountId,
       chainId: content.chainId,
       callHash: content.callHash,
       blockCreated: content.callTimepoint.height,
@@ -180,18 +179,18 @@ export const MatrixProvider = ({ children }: PropsWithChildren) => {
   };
 
   const validateMatrixEvent = <T extends BaseMultisigPayload>(
-    { callData, callHash, senderAddress }: T,
+    { callData, callHash, senderAccountId }: T,
     extras: SpektrExtras,
   ): boolean => {
-    const { address, threshold, signatories } = extras.mst_account;
-    const senderIsSignatory = signatories.some((s) => toPublicKey(s) === toPublicKey(senderAddress));
-    const mstAccountIsValid = address === getMultisigAddress(signatories, threshold);
+    const { accountId, threshold, signatories } = extras.mstAccount;
+    const senderIsSignatory = signatories.some((accountId) => accountId === senderAccountId);
+    const mstAccountIsValid = accountId === getMultisigAddress(signatories, threshold);
     const callDataIsValid = !callData || validateCallData(callData, callHash);
 
     return senderIsSignatory && mstAccountIsValid && callDataIsValid;
   };
 
-  const getMultisigAccount = async (address: AccountID): Promise<MultisigAccount | undefined> => {
+  const getMultisigAccount = async (address: Address): Promise<MultisigAccount | undefined> => {
     const accounts = await getAccounts<MultisigAccount>({ signingType: SigningType.MULTISIG });
 
     return accounts.find((a) => a.accountId === address) as MultisigAccount;
@@ -205,14 +204,14 @@ export const MatrixProvider = ({ children }: PropsWithChildren) => {
       extrinsicHash: payload.extrinsicHash,
       eventBlock: payload.extrinsicTimepoint.height,
       eventIndex: payload.extrinsicTimepoint.index,
-      accountId: toPublicKey(payload.senderAddress) || '0x0',
+      accountId: payload.senderAccountId,
       ...(callOutcome && { multisigOutcome: callOutcome }),
     };
   };
 
   const addMultisigTxToDB = <T extends BaseMultisigPayload>(
     payload: T,
-    publicKey: PublicKey,
+    accountId: AccountID,
     signatories: Signatory[],
     event: MultisigEvent,
     txStatus: MultisigTxStatus,
@@ -220,7 +219,7 @@ export const MatrixProvider = ({ children }: PropsWithChildren) => {
     const descriptionField = txStatus === 'CANCELLED' ? 'cancelDescription' : 'description';
 
     return addMultisigTx({
-      publicKey,
+      accountId,
       signatories,
       callHash: payload.callHash,
       callData: payload.callData,
@@ -241,19 +240,19 @@ export const MatrixProvider = ({ children }: PropsWithChildren) => {
 
   const handleCancelEvent = async (
     payload: CancelPayload,
-    { publicKey, signatories }: MultisigAccount,
+    { accountId, signatories }: MultisigAccount,
     tx?: MultisigTransaction,
   ): Promise<void> => {
     const eventStatus = payload.error ? 'ERROR_CANCELLED' : 'PENDING_CANCELLED';
     const newEvent = createEvent(payload, eventStatus);
 
     if (!tx) {
-      await addMultisigTxToDB(payload, publicKey, signatories, newEvent, MultisigTxFinalStatus.CANCELLED);
+      await addMultisigTxToDB(payload, accountId, signatories, newEvent, MultisigTxFinalStatus.CANCELLED);
 
       return;
     }
 
-    const senderEvent = tx.events.find((e) => e.accountId === toPublicKey(payload.senderAddress));
+    const senderEvent = tx.events.find((e) => e.accountId === payload.senderAccountId);
 
     if (!senderEvent) {
       tx.events.push(newEvent);
@@ -272,18 +271,18 @@ export const MatrixProvider = ({ children }: PropsWithChildren) => {
 
   const handleApproveEvent = async (
     payload: ApprovePayload,
-    { publicKey, signatories }: MultisigAccount,
+    { accountId, signatories }: MultisigAccount,
     tx?: MultisigTransaction,
   ): Promise<void> => {
     const eventStatus = payload.error ? 'ERROR_SIGNED' : 'PENDING_SIGNED';
     const newEvent = createEvent(payload, eventStatus);
 
     if (!tx) {
-      await addMultisigTxToDB(payload, publicKey, signatories, newEvent, MultisigTxInitStatus.SIGNING);
+      await addMultisigTxToDB(payload, accountId, signatories, newEvent, MultisigTxInitStatus.SIGNING);
 
       return;
     }
-    const senderEvent = tx.events.find((e) => e.accountId === toPublicKey(payload.senderAddress));
+    const senderEvent = tx.events.find((e) => e.accountId === payload.senderAccountId);
 
     if (!senderEvent) {
       tx.events.push(newEvent);
@@ -302,18 +301,18 @@ export const MatrixProvider = ({ children }: PropsWithChildren) => {
 
   const handleFinalApproveEvent = async (
     payload: FinalApprovePayload,
-    { publicKey, signatories }: MultisigAccount,
+    { accountId, signatories }: MultisigAccount,
     tx?: MultisigTransaction,
   ): Promise<void> => {
     const eventStatus = payload.error ? 'ERROR_SIGNED' : 'PENDING_SIGNED';
     const newEvent = createEvent(payload, eventStatus);
 
     if (!tx) {
-      await addMultisigTxToDB(payload, publicKey, signatories, newEvent, payload.callOutcome);
+      await addMultisigTxToDB(payload, accountId, signatories, newEvent, payload.callOutcome);
 
       return;
     }
-    const senderEvent = tx.events.find((e) => e.accountId === toPublicKey(payload.senderAddress));
+    const senderEvent = tx.events.find((e) => e.accountId === payload.senderAccountId);
 
     if (!senderEvent) {
       tx.events.push(newEvent);

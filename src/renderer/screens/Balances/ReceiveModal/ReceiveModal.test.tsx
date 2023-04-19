@@ -2,7 +2,7 @@ import { render, screen } from '@testing-library/react';
 
 import { Asset } from '@renderer/domain/asset';
 import { Chain } from '@renderer/domain/chain';
-import { TEST_ADDRESS, TEST_PUBLIC_KEY } from '@renderer/shared/utils/constants';
+import { TEST_ACCOUNT_ID } from '@renderer/shared/utils/constants';
 import chains from '@renderer/services/network/common/chains/chains.json';
 import ReceiveModal from './ReceiveModal';
 import { useAccount } from '@renderer/services/account/accountService';
@@ -15,13 +15,7 @@ jest.mock('@renderer/context/I18nContext', () => ({
 
 jest.mock('@renderer/services/account/accountService', () => ({
   useAccount: jest.fn().mockReturnValue({
-    getActiveAccounts: () => [
-      {
-        name: 'Test Wallet',
-        accountId: TEST_ADDRESS,
-        publicKey: TEST_PUBLIC_KEY,
-      },
-    ],
+    getActiveAccounts: () => [{ name: 'Test Wallet', accountId: TEST_ACCOUNT_ID }],
   }),
 }));
 
@@ -71,16 +65,8 @@ describe('screens/Balances/ReceiveModal', () => {
   test('should render select wallet component', () => {
     (useAccount as jest.Mock).mockImplementation(() => ({
       getActiveAccounts: () => [
-        {
-          name: 'Test Wallet 1',
-          accountId: TEST_ADDRESS,
-          publicKey: TEST_PUBLIC_KEY,
-        },
-        {
-          name: 'Test Wallet 2',
-          accountId: TEST_ADDRESS,
-          publicKey: TEST_PUBLIC_KEY,
-        },
+        { name: 'Test Wallet 1', accountId: TEST_ACCOUNT_ID },
+        { name: 'Test Wallet 2', accountId: TEST_ACCOUNT_ID },
       ],
     }));
 

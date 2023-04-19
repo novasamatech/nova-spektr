@@ -3,7 +3,7 @@ import noop from 'lodash/noop';
 import { useState, useEffect } from 'react';
 import { Navigate, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 
-import { formatAddress } from '@renderer/shared/utils/address';
+import { toAddress } from '@renderer/shared/utils/address';
 import { getRelaychainAsset } from '@renderer/shared/utils/assets';
 import { RewardsDestination } from '@renderer/domain/stake';
 import { ChainLoader } from '@renderer/components/common';
@@ -11,7 +11,7 @@ import { ButtonBack, ButtonLink, Icon } from '@renderer/components/ui';
 import { useI18n } from '@renderer/context/I18nContext';
 import { useNetworkContext } from '@renderer/context/NetworkContext';
 import { useChains } from '@renderer/services/network/chainsService';
-import { AccountID, ChainId, HexString } from '@renderer/domain/shared-kernel';
+import { Address, ChainID, HexString } from '@renderer/domain/shared-kernel';
 import { Transaction, TransactionType } from '@renderer/domain/transaction';
 import { Confirmation, Scanning, Signing, Submit } from '../components';
 import Paths from '@renderer/routes/paths';
@@ -28,7 +28,7 @@ const enum Step {
 }
 
 type DestinationType = {
-  address?: AccountID;
+  address?: Address;
   type: RewardsDestination;
 };
 
@@ -46,7 +46,7 @@ const Destination = () => {
   const { connections } = useNetworkContext();
   const [searchParams] = useSearchParams();
   const { getChainById } = useChains();
-  const params = useParams<{ chainId: ChainId }>();
+  const params = useParams<{ chainId: ChainID }>();
 
   const [activeStep, setActiveStep] = useState<Step>(Step.INIT);
   const [chainName, setChainName] = useState('...');
@@ -56,7 +56,7 @@ const Destination = () => {
   const [unsignedTransactions, setUnsignedTransactions] = useState<UnsignedTransaction[]>([]);
   const [signatures, setSignatures] = useState<HexString[]>([]);
 
-  const chainId = params.chainId || ('' as ChainId);
+  const chainId = params.chainId || ('' as ChainID);
   const accountIds = searchParams.get('id')?.split(',') || [];
 
   if (!chainId || accountIds.length === 0) {
@@ -120,7 +120,7 @@ const Destination = () => {
 
     const transactions = accounts.map(({ accountId = '' }) => ({
       chainId,
-      address: formatAddress(accountId, addressPrefix),
+      address: toAddress(accountId, { prefix: addressPrefix }),
       type: TransactionType.DESTINATION,
       args: { payee: destination ? { Account: destination } : 'Staked' },
     }));
@@ -153,7 +153,7 @@ const Destination = () => {
         <InitOperation
           api={api}
           chainId={chainId}
-          accountIds={accountIds}
+          identifiers={accountIds}
           asset={asset}
           onResult={onDestinationResult}
         />

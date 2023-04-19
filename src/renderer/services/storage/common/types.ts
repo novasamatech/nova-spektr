@@ -1,9 +1,9 @@
-import { IndexableType } from 'dexie';
+import { Table } from 'dexie';
 
 import { Balance } from '@renderer/domain/balance';
 import { Connection, ConnectionType } from '@renderer/domain/connection';
 import { Contact } from '@renderer/domain/contact';
-import { AccountID, ChainId, PublicKey } from '@renderer/domain/shared-kernel';
+import { Address, ChainID, AccountID } from '@renderer/domain/shared-kernel';
 import { Wallet } from '@renderer/domain/wallet';
 import { MultisigTransaction } from '@renderer/domain/transaction';
 import { Account, MultisigAccount } from '@renderer/domain/account';
@@ -17,56 +17,56 @@ export interface IStorage {
 }
 
 export interface IBalanceStorage {
-  getBalance: (publicKey: PublicKey, chainId: ChainId, assetId: string) => Promise<BalanceDS | undefined>;
-  getNetworkBalances: (publicKeys: PublicKey[], chainId: ChainId) => Promise<BalanceDS[]>;
-  getAssetBalances: (publicKeys: PublicKey[], chainId: ChainId, assetId: string) => Promise<BalanceDS[]>;
-  getBalances: (publicKeys: PublicKey[]) => Promise<BalanceDS[]>;
+  getBalance: (accountId: AccountID, chainId: ChainID, assetId: string) => Promise<BalanceDS | undefined>;
+  getNetworkBalances: (accountIds: AccountID[], chainId: ChainID) => Promise<BalanceDS[]>;
+  getAssetBalances: (accountIds: AccountID[], chainId: ChainID, assetId: string) => Promise<BalanceDS[]>;
+  getBalances: (accountIds: AccountID[]) => Promise<BalanceDS[]>;
   getAllBalances: () => Promise<BalanceDS[]>;
   updateBalance: (balance: Balance) => Promise<void>;
   setBalanceIsValid: (balance: Balance, verified: boolean) => Promise<number>;
 }
 
 export interface IConnectionStorage {
-  getConnection: (chainId: ChainId) => Promise<ConnectionDS | undefined>;
+  getConnection: (chainId: ChainID) => Promise<ConnectionDS | undefined>;
   getConnections: () => Promise<ConnectionDS[]>;
-  addConnection: (connection: Connection) => Promise<IndexableType>;
-  addConnections: (connections: Connection[]) => Promise<IndexableType>;
-  updateConnection: (connection: Connection) => Promise<IndexableType>;
-  changeConnectionType: (connection: Connection, type: ConnectionType) => Promise<IndexableType>;
+  addConnection: (connection: Connection) => Promise<ID | ID[]>;
+  addConnections: (connections: Connection[]) => Promise<ID>;
+  updateConnection: (connection: Connection) => Promise<number>;
+  changeConnectionType: (connection: Connection, type: ConnectionType) => Promise<number>;
   clearConnections: () => Promise<void>;
 }
 
 export interface IWalletStorage {
-  getWallet: (walletId: IndexableType) => Promise<WalletDS | undefined>;
+  getWallet: (walletId: ID) => Promise<WalletDS | undefined>;
   getWallets: <T extends Wallet>(where?: Partial<T>) => Promise<WalletDS[]>;
-  addWallet: (wallet: Wallet) => Promise<IndexableType>;
-  updateWallet: (wallet: Wallet) => Promise<IndexableType>;
+  addWallet: (wallet: Wallet) => Promise<ID>;
+  updateWallet: (wallet: Wallet) => Promise<ID>;
   deleteWallet: (walletId: string) => Promise<void>;
 }
 
 export interface IAccountStorage {
-  getAccount: (accountId: IndexableType) => Promise<AccountDS | undefined>;
+  getAccount: (accountId: ID) => Promise<AccountDS | undefined>;
   getAccounts: <T extends Account>(where?: Partial<T>) => Promise<AccountDS[]>;
-  addAccount: <T extends Account>(account: T) => Promise<IndexableType>;
-  updateAccount: <T extends Account>(account: T) => Promise<IndexableType>;
-  deleteAccount: (accountId: AccountID) => Promise<void>;
+  addAccount: <T extends Account>(account: T) => Promise<ID>;
+  updateAccount: <T extends Account>(account: T) => Promise<ID>;
+  deleteAccount: (accountId: Address) => Promise<void>;
 }
 
 export interface IContactStorage {
-  getContact: (contactId: IndexableType) => Promise<Contact | undefined>;
+  getContact: (contactId: ID) => Promise<Contact | undefined>;
   getContacts: <T extends Contact>(where?: Partial<T>) => Promise<Contact[]>;
-  addContact: (contact: Contact) => Promise<IndexableType>;
-  updateContact: (contact: Contact) => Promise<IndexableType>;
-  deleteContact: (contactId: IndexableType) => Promise<void>;
+  addContact: (contact: Contact) => Promise<ID>;
+  updateContact: (contact: Contact) => Promise<ID>;
+  deleteContact: (contactId: ID) => Promise<void>;
 }
 
 export interface IMultisigTransactionStorage {
-  getMultisigTx: (txId: IndexableType) => Promise<MultisigTransactionDS | undefined>;
+  getMultisigTx: (txId: ID) => Promise<MultisigTransactionDS | undefined>;
   getMultisigTxs: <T extends MultisigTransaction>(where?: Partial<T>) => Promise<MultisigTransactionDS[]>;
-  getAccountMultisigTxs: (publicKeys: PublicKey[]) => Promise<MultisigTransactionDS[]>;
-  addMultisigTx: (tx: MultisigTransaction) => Promise<IndexableType>;
-  updateMultisigTx: (tx: MultisigTransactionDS) => Promise<IndexableType>;
-  deleteMultisigTx: (txId: IndexableType) => Promise<void>;
+  getAccountMultisigTxs: (accountIds: AccountID[]) => Promise<MultisigTransactionDS[]>;
+  addMultisigTx: (tx: MultisigTransaction) => Promise<ID>;
+  updateMultisigTx: (tx: MultisigTransactionDS) => Promise<ID>;
+  deleteMultisigTx: (txId: ID) => Promise<void>;
 }
 
 // =====================================================
@@ -82,14 +82,19 @@ export type DataStorage = {
   multisigTransactions: IMultisigTransactionStorage;
 };
 
-type WithID = {
-  id?: string | number;
-};
+export type ID = string;
+type WithID<T extends Object> = { id?: ID } & T;
 
-export type ConnectionDS = WithID & Connection;
+export type WalletDS = WithID<Wallet>;
+export type ContactDS = WithID<Contact>;
+export type BalanceDS = WithID<Balance>;
+export type ConnectionDS = WithID<Connection>;
+export type AccountDS = WithID<Account | MultisigAccount>;
+export type MultisigTransactionDS = WithID<MultisigTransaction>;
 
-export type BalanceDS = Balance;
-export type WalletDS = WithID & Wallet;
-export type AccountDS = WithID & (Account | MultisigAccount);
-export type ContactDS = WithID & Contact;
-export type MultisigTransactionDS = WithID & MultisigTransaction;
+export type TWallet = Table<Wallet, ID>;
+export type TContact = Table<Contact, ID>;
+export type TBalance = Table<Balance, ID | ID[]>;
+export type TConnection = Table<Connection, ID>;
+export type TAccount = Table<Account | MultisigAccount, ID>;
+export type TMultisigTransaction = Table<MultisigTransaction, ID>;

@@ -8,7 +8,7 @@ import { ChainLoader } from '@renderer/components/common';
 import { useI18n } from '@renderer/context/I18nContext';
 import { useNetworkContext } from '@renderer/context/NetworkContext';
 import { useChains } from '@renderer/services/network/chainsService';
-import { ChainId, HexString } from '@renderer/domain/shared-kernel';
+import { ChainID, HexString } from '@renderer/domain/shared-kernel';
 import { Transaction, TransactionType } from '@renderer/domain/transaction';
 import Paths from '@renderer/routes/paths';
 import { AccountDS } from '@renderer/services/storage';
@@ -39,7 +39,7 @@ const StakeMore = () => {
   const { connections } = useNetworkContext();
   const { getChainById } = useChains();
   const [searchParams] = useSearchParams();
-  const params = useParams<{ chainId: ChainId }>();
+  const params = useParams<{ chainId: ChainID }>();
 
   const [activeStep, setActiveStep] = useState<Step>(Step.INIT);
   const [chainName, setChainName] = useState('...');
@@ -49,7 +49,7 @@ const StakeMore = () => {
   const [accounts, setAccounts] = useState<AccountDS[]>([]);
   const [signatures, setSignatures] = useState<HexString[]>([]);
 
-  const chainId = params.chainId || ('' as ChainId);
+  const chainId = params.chainId || ('' as ChainID);
   const accountIds = searchParams.get('id')?.split(',') || [];
 
   if (!chainId || accountIds.length === 0) {
@@ -145,7 +145,13 @@ const StakeMore = () => {
       {headerContent}
 
       {activeStep === Step.INIT && (
-        <InitOperation api={api} chainId={chainId} accountIds={accountIds} asset={asset} onResult={onStakeMoreResult} />
+        <InitOperation
+          api={api}
+          chainId={chainId}
+          identifiers={accountIds}
+          asset={asset}
+          onResult={onStakeMoreResult}
+        />
       )}
       {activeStep === Step.CONFIRMATION && (
         <Confirmation

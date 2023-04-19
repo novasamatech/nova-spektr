@@ -7,7 +7,7 @@ import { ButtonBack, ButtonLink, Icon } from '@renderer/components/ui';
 import { ChainLoader } from '@renderer/components/common';
 import { useI18n } from '@renderer/context/I18nContext';
 import { useNetworkContext } from '@renderer/context/NetworkContext';
-import { AccountID, ChainId, HexString, SigningType } from '@renderer/domain/shared-kernel';
+import { Address, ChainID, HexString, SigningType } from '@renderer/domain/shared-kernel';
 import { Transaction, TransactionType } from '@renderer/domain/transaction';
 import Paths from '@renderer/routes/paths';
 import { useAccount } from '@renderer/services/account/accountService';
@@ -44,7 +44,7 @@ const Unstake = () => {
   const { subscribeActiveEra } = useEra();
   const { getChainById } = useChains();
   const [searchParams] = useSearchParams();
-  const params = useParams<{ chainId: ChainId }>();
+  const params = useParams<{ chainId: ChainID }>();
 
   const dbAccounts = getLiveAccounts({ signingType: SigningType.PARITY_SIGNER });
 
@@ -59,7 +59,7 @@ const Unstake = () => {
   const [accounts, setAccounts] = useState<AccountDS[]>([]);
   const [signatures, setSignatures] = useState<HexString[]>([]);
 
-  const chainId = params.chainId || ('' as ChainId);
+  const chainId = params.chainId || ('' as ChainID);
   const accountIds = searchParams.get('id')?.split(',') || [];
 
   if (!chainId || accountIds.length === 0) {
@@ -100,7 +100,7 @@ const Unstake = () => {
 
     (async () => {
       unsubEra = await subscribeActiveEra(api, setEra);
-      unsubStaking = await subscribeStaking(chainId, api, accounts.map((a) => a.accountId) as AccountID[], setStaking);
+      unsubStaking = await subscribeStaking(chainId, api, accounts.map((a) => a.accountId) as Address[], setStaking);
     })();
 
     return () => {

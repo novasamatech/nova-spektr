@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { Dropdown, Plate, Block } from '@renderer/components/ui';
 import { useI18n } from '@renderer/context/I18nContext';
 import { DropdownOption, DropdownResult } from '@renderer/components/ui/Dropdowns/common/types';
-import { SigningType, ChainId } from '@renderer/domain/shared-kernel';
+import { SigningType, ChainID } from '@renderer/domain/shared-kernel';
 import { useAccount } from '@renderer/services/account/accountService';
 import { Explorer } from '@renderer/domain/chain';
 import { Asset } from '@renderer/domain/asset';
@@ -16,7 +16,7 @@ import { getAccountsOptions } from '../../common/utils';
 
 type Props = {
   api: ApiPromise;
-  chainId: ChainId;
+  chainId: ChainID;
   network: string;
   asset: Asset;
   nativeToken: Asset;
@@ -62,8 +62,8 @@ export const InitOperation = ({
       setActiveSignatory(undefined);
       setSignatoryOptions([]);
     } else {
-      const signatories = activeAccount.value.signatories.map((s) => s.publicKey);
-      const signers = accounts.filter((a) => a.publicKey && signatories.includes(a.publicKey)) as MultisigAccount[];
+      const signatories = activeAccount.value.signatories.map((s) => s.accountId);
+      const signers = accounts.filter((a) => a.accountId && signatories.includes(a.accountId)) as MultisigAccount[];
 
       const options = getAccountsOptions<MultisigAccount>(chainId, signers, addressPrefix);
 

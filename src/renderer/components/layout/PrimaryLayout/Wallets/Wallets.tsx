@@ -2,7 +2,7 @@ import cn from 'classnames';
 import { forwardRef, useState } from 'react';
 
 import { getShortAddress, includes } from '@renderer/shared/utils/strings';
-import { Address, ButtonLink, Checkbox, Icon, Identicon, Input } from '@renderer/components/ui';
+import { ChainAddress, ButtonLink, Checkbox, Icon, Identicon, Input } from '@renderer/components/ui';
 import { useI18n } from '@renderer/context/I18nContext';
 import { AccountDS } from '@renderer/services/storage';
 import { useAccount } from '@renderer/services/account/accountService';
@@ -225,7 +225,7 @@ const Wallets = forwardRef<HTMLDivElement, Props>(({ className, onUrlChange }, r
                                                     <div className="border-shade-30 absolute rounded-full border w-[5px] h-[5px] box-border top-0 right-0"></div>
                                                   </div>
 
-                                                  <Address
+                                                  <ChainAddress
                                                     className="row-span-2 self-center"
                                                     address={chainAccount.accountId || ''}
                                                     signType={chainAccount.signingType}
@@ -259,7 +259,7 @@ const Wallets = forwardRef<HTMLDivElement, Props>(({ className, onUrlChange }, r
                             />
 
                             <div className="flex flex-1 gap-x-1 overflow-hidden">
-                              <Address
+                              <ChainAddress
                                 address={(account as AccountDS).accountId || ''}
                                 signType={(account as AccountDS).signingType}
                                 name={account.name}

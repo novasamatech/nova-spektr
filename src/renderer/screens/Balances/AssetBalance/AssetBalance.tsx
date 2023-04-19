@@ -6,7 +6,7 @@ import { Balance as BalanceValue, Button, ButtonLink, Icon, Shimmering } from '@
 import { useI18n } from '@renderer/context/I18nContext';
 import { Asset } from '@renderer/domain/asset';
 import { Balance } from '@renderer/domain/balance';
-import { ChainId } from '@renderer/domain/shared-kernel';
+import { ChainID } from '@renderer/domain/shared-kernel';
 import { useToggle } from '@renderer/shared/hooks';
 import { createLink } from '@renderer/routes/utils';
 import { totalAmount, transferableAmount } from '@renderer/services/balance/common/utils';
@@ -15,7 +15,7 @@ import './AssetBalance.css';
 
 type Props = {
   asset: Asset;
-  chainId: ChainId;
+  chainId: ChainID;
   balance?: Balance;
   canMakeActions?: boolean;
   onReceiveClick?: () => void;

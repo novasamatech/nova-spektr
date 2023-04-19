@@ -1,11 +1,11 @@
 import { Explorers } from '@renderer/components/common';
-import { Address, Icon } from '@renderer/components/ui';
-import { AccountID, SigningType } from '@renderer/domain/shared-kernel';
+import { ChainAddress, Icon } from '@renderer/components/ui';
+import { Address, SigningType } from '@renderer/domain/shared-kernel';
 import { Explorer } from '@renderer/domain/chain';
 import { Icons } from '../../common/constants';
 
 type Props = {
-  address: AccountID;
+  address: Address;
   accountName: string;
   signingType: SigningType;
   addressPrefix: number;
@@ -18,7 +18,7 @@ export const ActiveAddress = ({ address, accountName, signingType, explorers, ad
       <Icon name={Icons[signingType]} size={34} />
       <div className="flex flex-col">
         <p className="font-bold text-lg leading-5 text-neutral">{accountName}</p>
-        <Address className="leading-4" type="short" address={address} addressStyle="normal" size={14} />
+        <ChainAddress className="leading-4" type="short" address={address} addressStyle="normal" size={14} />
       </div>
     </div>
     <Explorers explorers={explorers} addressPrefix={addressPrefix} address={address} />

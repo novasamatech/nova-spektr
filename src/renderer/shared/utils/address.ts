@@ -1,47 +1,61 @@
 import { u8aToHex } from '@polkadot/util';
-import { decodeAddress, encodeAddress } from '@polkadot/util-crypto';
+import { decodeAddress, encodeAddress, isAddress } from '@polkadot/util-crypto';
 
-import { PublicKey, AccountID } from '@renderer/domain/shared-kernel';
+import { AccountID, Address } from '@renderer/domain/shared-kernel';
 import { PUBLIC_KEY_LENGTH, SS58_DEFAULT_PREFIX } from './constants';
 
 /**
- * Format address based on prefix
- * @param address account's address
- * @param prefix ss58 prefix
+ * Format address or accountId to size and prefix
+ * @param value account address or accountId
+ * @param params size and prefix (default is 42)
  * @return {String}
  */
-export const formatAddress = (address?: AccountID | PublicKey, prefix = SS58_DEFAULT_PREFIX): string => {
-  if (!address) return '';
+export const toAddress = (value: Address | AccountID, params?: { size?: number; prefix?: number }): string => {
+  const sizeValue = params?.size;
+  const prefixValue = params?.prefix ?? SS58_DEFAULT_PREFIX;
 
-  return encodeAddress(decodeAddress(address), prefix) || address;
+  const address = encodeAddress(decodeAddress(value), prefixValue);
+
+  if (sizeValue) {
+    return address.length < 13 ? address : `${address.slice(0, sizeValue)}...${address.slice(-1 * sizeValue)}`;
+  }
+
+  return address;
 };
 
 /**
- * Try to get public key of the address
+ * Check is account's address valid
  * @param address account's address
- * @return {PublicKey | undefined}
+ * @return {Boolean}
  */
-export const toPublicKey = (address?: AccountID): PublicKey | undefined => {
-  if (!address) return;
+export const validateAddress = (address?: Address | AccountID): boolean => {
+  return isAddress(address);
+};
 
+/**
+ * Try to get account id of the address
+ * @param address account's address
+ * @return {String}
+ */
+export const toAccountId = (address: Address): AccountID => {
   try {
     return u8aToHex(decodeAddress(address));
   } catch {
-    return undefined;
+    return '0x0';
   }
 };
 
 /**
  * Check is public key correct
- * @param publicKey public key to check
+ * @param accountId public key to check
  * @return {Boolean}
  */
-export const isCorrectPublicKey = (publicKey: PublicKey): boolean => {
-  if (!publicKey) return false;
+export const isCorrectAccountId = (accountId?: AccountID): boolean => {
+  if (!accountId) return false;
 
-  const publicKeyTrimmed = publicKey.replace(/^0x/, '');
+  const trimmedValue = accountId.replace(/^0x/, '');
 
-  return publicKeyTrimmed.length === PUBLIC_KEY_LENGTH && /^[0-9a-fA-F]+$/.test(publicKeyTrimmed);
+  return trimmedValue.length === PUBLIC_KEY_LENGTH && /^[0-9a-fA-F]+$/.test(trimmedValue);
 };
 
 /**
@@ -58,13 +72,4 @@ export const pasteAddressHandler = (handler: (value: string) => void) => {
       console.warn(error);
     }
   };
-};
-
-/**
- * Check is account's address valid
- * @param address account's address
- * @return {Boolean}
- */
-export const isAddressValid = (address?: AccountID): boolean => {
-  return Boolean(toPublicKey(address));
 };

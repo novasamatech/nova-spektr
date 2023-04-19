@@ -5,7 +5,7 @@ import { BN } from '@polkadot/util';
 import { Button, Icon } from '@renderer/components/ui';
 import { Asset } from '@renderer/domain/asset';
 import { Chain } from '@renderer/domain/chain';
-import { PublicKey } from '@renderer/domain/shared-kernel';
+import { AccountID } from '@renderer/domain/shared-kernel';
 import { useBalance } from '@renderer/services/balance/balanceService';
 import { ZERO_BALANCE } from '@renderer/services/balance/common/constants';
 import { totalAmount } from '@renderer/services/balance/common/utils';
@@ -20,7 +20,7 @@ type Props = {
   searchSymbolOnly?: boolean;
   query?: string;
   chain: Chain | ExtendedChain;
-  publicKeys: PublicKey[];
+  accountIds: AccountID[];
   canMakeActions?: boolean;
   onReceiveClick?: (asset: Asset) => void;
 };
@@ -50,7 +50,7 @@ const NetworkBalances = ({
   query,
   hideZeroBalance,
   chain,
-  publicKeys,
+  accountIds,
   searchSymbolOnly,
   canMakeActions,
   onReceiveClick,
@@ -61,7 +61,7 @@ const NetworkBalances = ({
 
   const { getLiveNetworkBalances } = useBalance();
 
-  const balances = getLiveNetworkBalances(publicKeys, chain.chainId);
+  const balances = getLiveNetworkBalances(accountIds, chain.chainId);
 
   const balancesObject =
     balances?.reduce<Record<string, Balance>>((acc, balance) => {

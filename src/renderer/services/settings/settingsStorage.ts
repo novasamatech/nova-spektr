@@ -1,4 +1,4 @@
-import { ChainId } from '@renderer/domain/shared-kernel';
+import { ChainID } from '@renderer/domain/shared-kernel';
 import { UserSettings, TRUE } from './common/constants';
 import { ISettingsStorage } from './common/types';
 
@@ -11,12 +11,12 @@ export const useSettingsStorage = (): ISettingsStorage => {
     return localStorage.getItem(UserSettings.HIDE_ZERO_BALANCE) === TRUE;
   };
 
-  const setStakingNetwork = (chainId: ChainId): void => {
+  const setStakingNetwork = (chainId: ChainID): void => {
     localStorage.setItem(UserSettings.STAKING_NETWORK, chainId);
   };
 
-  const getStakingNetwork = (): ChainId => {
-    return (localStorage.getItem(UserSettings.STAKING_NETWORK) as ChainId) || '';
+  const getStakingNetwork = (): ChainID => {
+    return (localStorage.getItem(UserSettings.STAKING_NETWORK) as ChainID) || '';
   };
 
   return {

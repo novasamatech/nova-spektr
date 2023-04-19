@@ -3,7 +3,7 @@ import { UnsignedTransaction } from '@substrate/txwrapper-polkadot';
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
-import { Balance, Icon, Address, Plate, Block } from '@renderer/components/ui';
+import { Balance, Icon, ChainAddress, Plate, Block } from '@renderer/components/ui';
 import { Explorers, Fee, Message, Deposit } from '@renderer/components/common';
 import { Asset } from '@renderer/domain/asset';
 import { useI18n } from '@renderer/context/I18nContext';
@@ -15,6 +15,7 @@ import { useTransaction } from '@renderer/services/transaction/transactionServic
 import { useMatrix } from '@renderer/context/MatrixContext';
 import { Account, MultisigAccount, isMultisig } from '@renderer/domain/account';
 import { ExtrinsicResultParams } from '@renderer/services/transaction/common/types';
+import { toAccountId } from '@renderer/shared/utils/address';
 
 type Props = {
   api: ApiPromise;
@@ -84,7 +85,7 @@ export const Submit = ({
   const sendMultisigEvent = (roomId: string, transaction: Transaction, params: ExtrinsicResultParams) => {
     matrix
       .sendApprove(roomId, {
-        senderAddress: transaction.address,
+        senderAccountId: toAccountId(transaction.address),
         chainId: transaction.chainId,
         callHash: transaction.args.callHash,
         callData: transaction.args.callData,
@@ -129,7 +130,7 @@ export const Submit = ({
             <div className="flex justify-between px-5 py-3">
               <div className="text-sm text-neutral-variant ">{t('transferDetails.sender')}</div>
               <div className="flex gap-1 items-center font-semibold">
-                <Address type="short" address={address} addressStyle="large" size={18} />
+                <ChainAddress type="short" address={address} addressStyle="large" size={18} />
                 <Explorers explorers={explorers} addressPrefix={addressPrefix} address={address} />
               </div>
             </div>
@@ -157,7 +158,7 @@ export const Submit = ({
               <div className="text-sm text-neutral-variant ">{t('transferDetails.recipient')}</div>
               <div className="flex gap-1 items-center">
                 <div className="flex gap-1 items-center font-semibold">
-                  <Address type="short" address={destination} addressStyle="large" size={18} />
+                  <ChainAddress type="short" address={destination} addressStyle="large" size={18} />
                   <Explorers explorers={explorers} addressPrefix={addressPrefix} address={address} />
                 </div>
               </div>

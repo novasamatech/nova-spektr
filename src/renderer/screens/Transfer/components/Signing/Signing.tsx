@@ -6,11 +6,11 @@ import { useI18n } from '@renderer/context/I18nContext';
 import { Plate, Block, Button } from '@renderer/components/ui';
 import ParitySignerSignatureReader from '@renderer/screens/Signing/ParitySignerSignatureReader/ParitySignerSignatureReader';
 import { ValidationErrors } from '@renderer/shared/utils/validation';
-import { toPublicKey } from '@renderer/shared/utils/address';
+import { toAccountId } from '@renderer/shared/utils/address';
 import { transferableAmount } from '@renderer/services/balance/common/utils';
 import { Transaction } from '@renderer/domain/transaction';
 import { useBalance } from '@renderer/services/balance/balanceService';
-import { ChainId, HexString } from '@renderer/domain/shared-kernel';
+import { ChainID, HexString } from '@renderer/domain/shared-kernel';
 import { useTransaction } from '@renderer/services/transaction/transactionService';
 import { Balance } from '@renderer/domain/balance';
 import { ActiveAddress } from '@renderer/screens/Transfer/components';
@@ -19,7 +19,7 @@ import { Account, MultisigAccount, isMultisig } from '@renderer/domain/account';
 
 type Props = {
   api: ApiPromise;
-  chainId: ChainId;
+  chainId: ChainID;
   transaction: Transaction;
   account: Account | MultisigAccount;
   assetId: string;
@@ -51,19 +51,13 @@ export const Signing = ({
   const [validationError, setValidationError] = useState<ValidationErrors>();
 
   const getTokenBalance = (): Promise<Balance | undefined> => {
-    const address = transaction.address;
-    const publicKey = toPublicKey(address) || '0x0';
-
-    return getBalance(publicKey, chainId, assetId.toString());
+    return getBalance(toAccountId(transaction.address), chainId, assetId.toString());
   };
 
   const getNativeTokenBalance = (): Promise<Balance | undefined> => {
     if (assetId === '0') return Promise.resolve(undefined);
 
-    const address = transaction.address;
-    const publicKey = toPublicKey(address) || '0x0';
-
-    return getBalance(publicKey, chainId, '0');
+    return getBalance(toAccountId(transaction.address), chainId, '0');
   };
 
   const validateBalance = async (): Promise<boolean> => {

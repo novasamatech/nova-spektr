@@ -5,7 +5,7 @@ import { useAccount } from '@renderer/services/account/accountService';
 import { AccountDS } from '@renderer/services/storage';
 import { useWallet } from '@renderer/services/wallet/walletService';
 import { ChainWithAccounts, RootAccount, WalletStructure } from './types';
-import { ChainId } from '@renderer/domain/shared-kernel';
+import { ChainID } from '@renderer/domain/shared-kernel';
 import { useChains } from '@renderer/services/network/chainsService';
 import { Chain } from '@renderer/domain/chain';
 import { includes } from '@renderer/shared/utils/strings';
@@ -27,13 +27,13 @@ export const useWalletsStructure = (accountQuery: Partial<AccountDS>, query: str
   const wallets = getLiveWallets();
   const paritySignerAccounts = getLiveAccounts(accountQuery);
 
-  const getChainData = (chainId: ChainId, accounts: AccountDS[], rootAccount: AccountDS): ChainWithAccounts => {
+  const getChainData = (chainId: ChainID, accounts: AccountDS[], rootAccount: AccountDS): ChainWithAccounts => {
     const chainAccounts = accounts.filter(
       (a) => a.rootId === rootAccount.id && (includes(a.name, query) || includes(a.accountId, query)),
     );
 
     return {
-      ...chainsObject[chainId as ChainId],
+      ...chainsObject[chainId as ChainID],
       isActive: chainAccounts.every((a) => a.isActive),
       accounts: chainAccounts,
     };
@@ -46,7 +46,7 @@ export const useWalletsStructure = (accountQuery: Partial<AccountDS>, query: str
       .filter((a) => !a.rootId)
       .map((rootAccount) => {
         const chains = Object.entries(groupedRoots)
-          .map(([chainId, accounts]) => getChainData(chainId as ChainId, accounts, rootAccount))
+          .map(([chainId, accounts]) => getChainData(chainId as ChainID, accounts, rootAccount))
           .filter((a) => a.accounts.length > 0);
 
         return {

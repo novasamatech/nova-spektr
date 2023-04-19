@@ -1,9 +1,9 @@
 import { Identity } from '@renderer/domain/identity';
-import { AccountID, ChainId } from '@renderer/domain/shared-kernel';
+import { Address, ChainID } from '@renderer/domain/shared-kernel';
 
 export type Validator = {
-  address: AccountID;
-  chainId: ChainId;
+  address: Address;
+  chainId: ChainID;
   ownStake: string;
   totalStake: string;
   commission: number;
@@ -17,6 +17,6 @@ export type Validator = {
 };
 
 type Nominator = {
-  who: AccountID;
+  who: Address;
   value: string;
 };

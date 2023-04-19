@@ -1,8 +1,8 @@
 import { RpcNode } from './chain';
-import { ChainId } from './shared-kernel';
+import { ChainID } from './shared-kernel';
 
 export type Connection = {
-  chainId: ChainId;
+  chainId: ChainID;
   canUseLightClient?: boolean;
   connectionType: ConnectionType;
   connectionStatus: ConnectionStatus;

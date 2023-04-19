@@ -3,7 +3,7 @@ import noop from 'lodash/noop';
 import { useState, useEffect } from 'react';
 import { Navigate, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 
-import { formatAddress } from '@renderer/shared/utils/address';
+import { toAddress } from '@renderer/shared/utils/address';
 import { getRelaychainAsset } from '@renderer/shared/utils/assets';
 import { RewardsDestination } from '@renderer/domain/stake';
 import { ButtonBack, ButtonLink, HintList, Icon } from '@renderer/components/ui';
@@ -11,7 +11,7 @@ import { ChainLoader } from '@renderer/components/common';
 import { useI18n } from '@renderer/context/I18nContext';
 import { useNetworkContext } from '@renderer/context/NetworkContext';
 import { useChains } from '@renderer/services/network/chainsService';
-import { AccountID, ChainId, HexString } from '@renderer/domain/shared-kernel';
+import { Address, ChainID, HexString } from '@renderer/domain/shared-kernel';
 import { Transaction, TransactionType } from '@renderer/domain/transaction';
 import Paths from '@renderer/routes/paths';
 import InitOperation, { BondResult } from './InitOperation/InitOperation';
@@ -30,7 +30,7 @@ const enum Step {
 }
 
 type Destination = {
-  address?: AccountID;
+  address?: Address;
   type: RewardsDestination;
 };
 
@@ -49,7 +49,7 @@ const Bond = () => {
   const { connections } = useNetworkContext();
   const { getChainById } = useChains();
   const [searchParams] = useSearchParams();
-  const params = useParams<{ chainId: ChainId }>();
+  const params = useParams<{ chainId: ChainID }>();
 
   const [activeStep, setActiveStep] = useState<Step>(Step.INIT);
   const [chainName, setChainName] = useState('...');
@@ -61,7 +61,7 @@ const Bond = () => {
   const [unsignedTransactions, setUnsignedTransactions] = useState<UnsignedTransaction[]>([]);
   const [signatures, setSignatures] = useState<HexString[]>([]);
 
-  const chainId = params.chainId || ('' as ChainId);
+  const chainId = params.chainId || ('' as ChainID);
   const accountIds = searchParams.get('id')?.split(',') || [];
 
   if (!chainId || accountIds.length === 0) {
@@ -131,7 +131,7 @@ const Bond = () => {
 
   const onSelectValidators = (validators: ValidatorMap) => {
     const transactions = accounts.map(({ accountId = '' }) => {
-      const address = formatAddress(accountId, addressPrefix);
+      const address = toAddress(accountId, { prefix: addressPrefix });
       const commonPayload = { chainId, address };
 
       const bondTx = {
@@ -193,7 +193,7 @@ const Bond = () => {
       {headerContent}
 
       {activeStep === Step.INIT && (
-        <InitOperation api={api} chainId={chainId} accountIds={accountIds} asset={asset} onResult={onInitResult} />
+        <InitOperation api={api} chainId={chainId} identifiers={accountIds} asset={asset} onResult={onInitResult} />
       )}
       {activeStep === Step.VALIDATORS && (
         <Validators api={api} chainId={chainId} onResult={onSelectValidators} {...explorersProps} />

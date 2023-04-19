@@ -7,7 +7,7 @@ import { ButtonBack, ButtonLink, HintList, Icon } from '@renderer/components/ui'
 import { ChainLoader } from '@renderer/components/common';
 import { useI18n } from '@renderer/context/I18nContext';
 import { useNetworkContext } from '@renderer/context/NetworkContext';
-import { AccountID, ChainId, HexString, SigningType } from '@renderer/domain/shared-kernel';
+import { Address, ChainID, HexString, SigningType } from '@renderer/domain/shared-kernel';
 import { Transaction, TransactionType } from '@renderer/domain/transaction';
 import Paths from '@renderer/routes/paths';
 import { useAccount } from '@renderer/services/account/accountService';
@@ -44,7 +44,7 @@ const Restake = () => {
   const { getLiveAccounts } = useAccount();
   const { getChainById } = useChains();
   const [searchParams] = useSearchParams();
-  const params = useParams<{ chainId: ChainId }>();
+  const params = useParams<{ chainId: ChainID }>();
 
   const dbAccounts = getLiveAccounts({ signingType: SigningType.PARITY_SIGNER });
 
@@ -57,7 +57,7 @@ const Restake = () => {
   const [accounts, setAccounts] = useState<AccountDS[]>([]);
   const [signatures, setSignatures] = useState<HexString[]>([]);
 
-  const chainId = params.chainId || ('' as ChainId);
+  const chainId = params.chainId || ('' as ChainID);
   const accountIds = searchParams.get('id')?.split(',') || [];
 
   if (!chainId || accountIds.length === 0) {
@@ -72,10 +72,10 @@ const Restake = () => {
 
     let unsubStaking: () => void | undefined;
 
-    const selectedAccounts = dbAccounts.reduce<AccountID[]>((acc, account) => {
+    const selectedAccounts = dbAccounts.reduce<Address[]>((acc, account) => {
       const accountExists = account.id && accountIds.includes(account.id.toString());
 
-      return accountExists ? [...acc, account.accountId as AccountID] : acc;
+      return accountExists ? [...acc, account.accountId as Address] : acc;
     }, []);
 
     (async () => {
@@ -183,7 +183,7 @@ const Restake = () => {
           api={api}
           chainId={chainId}
           staking={staking}
-          accountIds={accountIds}
+          identifiers={accountIds}
           asset={asset}
           onResult={onRestakeResult}
         />

@@ -25,7 +25,7 @@ describe('QrCode/QrGenerator/utils', () => {
       '0x' + // prefix
         '01' + // sr25519
         '03' + // sign tx
-        'f4cd755672a8f9542ca9da4fbf2182e79135d94304002e6a09ffc96fef6e6c4c' + // publickey
+        'f4cd755672a8f9542ca9da4fbf2182e79135d94304002e6a09ffc96fef6e6c4c' + // accountId
         '546869732069732074657374' + // This is test
         'b0a8d493285c2df73290dfb7e61f870f17b41801197a149ca93654499ea3dafe', // genesisHash
     );
@@ -47,7 +47,7 @@ describe('QrCode/QrGenerator/utils', () => {
         '0001' + // length
         '0000' + // index
         '530100' + // payload info, substrate + sr25519 + signtx
-        'f4cd755672a8f9542ca9da4fbf2182e79135d94304002e6a09ffc96fef6e6c4c' + // publicKey
+        'f4cd755672a8f9542ca9da4fbf2182e79135d94304002e6a09ffc96fef6e6c4c' + // accountId
         '12345678' + // data
         'b0a8d493285c2df73290dfb7e61f870f17b41801197a149ca93654499ea3dafe', // genesisHash
     ]);

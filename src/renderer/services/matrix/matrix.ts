@@ -19,7 +19,6 @@ import {
   RoomEvent,
 } from 'matrix-js-sdk';
 import { ISecretStorageKeyInfo } from 'matrix-js-sdk/lib/crypto/api';
-import { EventStatus } from 'matrix-js-sdk/src/models/event-status';
 import { deriveKey } from 'matrix-js-sdk/lib/crypto/key_passphrase';
 import { IStore } from 'matrix-js-sdk/lib/store';
 import { SyncState } from 'matrix-js-sdk/lib/sync';
@@ -31,7 +30,8 @@ import {
   KEY_FILE_MAX_SIZE,
   ROOM_CRYPTO_CONFIG,
   WELL_KNOWN_SERVERS,
-  MATRIX_USERNAME_REGEX,
+  MATRIX_SHORT_USERNAME_REGEX,
+  MATRIX_FULL_USERNAME_REGEX,
 } from './common/constants';
 import MATRIX_ERRORS from './common/errors';
 import {
@@ -593,12 +593,27 @@ export class Matrix implements ISecureMessenger {
   }
 
   /**
-   * Validate user name
+   * Validate short username without server prefix
+   * Example: my_name not @my_name:matrix.org
    * @param value user name value
    * @return {Boolean}
    */
-  validateUserName(value: string): boolean {
-    return MATRIX_USERNAME_REGEX.test(value);
+  validateShortUserName(value?: string): boolean {
+    if (!value) return false;
+
+    return MATRIX_SHORT_USERNAME_REGEX.test(value);
+  }
+
+  /**
+   * Validate full username with server prefix
+   * Example: @my_name:matrix.org
+   * @param value user name value
+   * @return {Boolean}
+   */
+  validateFullUserName(value?: string): boolean {
+    if (!value) return false;
+
+    return MATRIX_FULL_USERNAME_REGEX.test(value);
   }
 
   // =====================================================
@@ -668,12 +683,12 @@ export class Matrix implements ISecureMessenger {
 
     try {
       const payload: SpektrExtras = {
-        mst_account: {
+        mstAccount: {
           accountName: params.accountName,
           threshold: params.threshold,
           signatories: params.signatories.map((s) => s.accountId),
-          address: params.accountId,
-          inviterPublicKey: params.inviterPublicKey,
+          accountId: params.accountId,
+          creatorAccountId: params.creatorAccountId,
         },
       };
       await this.matrixClient.sendStateEvent(roomId, 'm.room.topic', {
@@ -898,7 +913,7 @@ export class Matrix implements ISecureMessenger {
    */
   private handleEchoEvents() {
     this.matrixClient.on(RoomEvent.LocalEchoUpdated, (event, room) => {
-      if (event.getSender() !== this.userId || event.status !== EventStatus.SENT) return;
+      if (event.getSender() !== this.userId || event.status !== 'sent') return;
 
       if (!this.isSpektrMultisigEvent(event) || !this.isSpektrRoom(room)) return;
 

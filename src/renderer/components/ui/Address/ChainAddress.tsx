@@ -28,7 +28,7 @@ type Props = {
   showIcon?: boolean;
 };
 
-const Address = ({
+const ChainAddress = ({
   address,
   className,
   symbols,
@@ -65,4 +65,4 @@ const Address = ({
   );
 };
 
-export default Address;
+export default ChainAddress;

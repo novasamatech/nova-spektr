@@ -1,4 +1,4 @@
-import { ChainId, PublicKey } from './shared-kernel';
+import { ChainID, AccountID } from './shared-kernel';
 
 export type BalanceLock = {
   type: string;
@@ -6,8 +6,8 @@ export type BalanceLock = {
 };
 
 export type Balance = {
-  chainId: ChainId;
-  publicKey: PublicKey;
+  chainId: ChainID;
+  accountId: AccountID;
   assetId: string;
   verified?: boolean;
   free?: string;

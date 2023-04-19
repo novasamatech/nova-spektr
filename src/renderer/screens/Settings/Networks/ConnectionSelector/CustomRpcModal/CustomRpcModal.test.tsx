@@ -3,7 +3,7 @@ import userEvent from '@testing-library/user-event';
 
 import { RpcValidation } from '@renderer/services/network/common/types';
 import { useNetworkContext } from '@renderer/context/NetworkContext';
-import { ChainId, HexString } from '@renderer/domain/shared-kernel';
+import { ChainID, HexString } from '@renderer/domain/shared-kernel';
 import CustomRpcModal from './CustomRpcModal';
 
 jest.mock('@renderer/context/NetworkContext', () => ({
@@ -28,7 +28,7 @@ describe('screen/Settings/Networks/ConnectionSelector/CustomRpcModal', () => {
     },
     node: undefined,
     isOpen: true,
-    chainId: '0x123' as ChainId,
+    chainId: '0x123' as ChainID,
     existingUrls: [],
     onClose: () => {},
   };

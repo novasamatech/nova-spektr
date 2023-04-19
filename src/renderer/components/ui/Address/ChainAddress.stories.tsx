@@ -1,14 +1,14 @@
 import { ComponentStory, ComponentMeta } from '@storybook/react';
 
-import Address from './Address';
+import ChainAddress from './ChainAddress';
 
 export default {
   title: 'Address',
-  component: Address,
+  component: ChainAddress,
   parameters: { actions: { argTypesRegex: '^on.*' } },
-} as ComponentMeta<typeof Address>;
+} as ComponentMeta<typeof ChainAddress>;
 
-const Template: ComponentStory<typeof Address> = (args) => <Address {...args} />;
+const Template: ComponentStory<typeof ChainAddress> = (args) => <ChainAddress {...args} />;
 
 export const Primary = Template.bind({});
 Primary.args = {

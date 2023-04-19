@@ -1,5 +1,5 @@
 import { ConnectionStatus, ConnectionType } from '@renderer/domain/connection';
-import { ChainId } from '@renderer/domain/shared-kernel';
+import { ChainID } from '@renderer/domain/shared-kernel';
 import { useConnectionStorage } from '@renderer/services/storage/connectionStorage';
 
 describe('service/storage/connectionStorage', () => {
@@ -90,7 +90,7 @@ describe('service/storage/connectionStorage', () => {
 
   test('should change connection type', async () => {
     const mockValue = {
-      chainId: '0x123' as ChainId,
+      chainId: '0x123' as ChainID,
       connectionType: ConnectionType.DISABLED,
       connectionStatus: ConnectionStatus.NONE,
     };
@@ -111,7 +111,7 @@ describe('service/storage/connectionStorage', () => {
   test('should clear connection storage', async () => {
     const mockValues = [
       {
-        chainId: '0x123' as ChainId,
+        chainId: '0x123' as ChainID,
         connectionType: ConnectionType.DISABLED,
         connectionStatus: ConnectionStatus.NONE,
       },

@@ -23,7 +23,7 @@ import MultiframeSignatureReader from './MultiframeSignatureReader/MultiframeSig
 import { HexString, SigningType } from '@renderer/domain/shared-kernel';
 import Progress from './Progress';
 import { secondsToMinutes } from '@renderer/shared/utils/time';
-import { formatAddress } from '@renderer/shared/utils/address';
+import { toAddress } from '@renderer/shared/utils/address';
 
 const enum Step {
   SCANNING = 0,
@@ -78,20 +78,16 @@ const Signing = () => {
     if (!api) return;
 
     const transactionPromises = activeAccounts.map(async (account, index) => {
-      const sourceAddress = formatAddress(account.publicKey || '0x', currentConnection.addressPrefix);
-      const destAddress = formatAddress(
-        activeAccounts[activeAccounts.length - 1 - index].publicKey || '0x',
-        currentConnection.addressPrefix,
-      );
+      const sourceAddress = toAddress(account.accountId || '0x', { prefix: currentConnection.addressPrefix });
+      const destAddress = toAddress(activeAccounts[activeAccounts.length - 1 - index].accountId || '0x', {
+        prefix: currentConnection.addressPrefix,
+      });
 
       const transactionData = {
         address: sourceAddress,
         type: TransactionType.TRANSFER,
         chainId: currentConnection.chainId,
-        args: {
-          dest: destAddress,
-          value: '100',
-        },
+        args: { dest: destAddress, value: '100' },
       };
 
       const { payload, unsigned } = await createPayload(transactionData, api);

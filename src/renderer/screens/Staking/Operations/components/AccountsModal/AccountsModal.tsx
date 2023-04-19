@@ -1,13 +1,13 @@
 import { Explorers } from '@renderer/components/common';
-import { Address, Balance, BaseModal, Table } from '@renderer/components/ui';
+import { ChainAddress, Balance, BaseModal, Table } from '@renderer/components/ui';
 import { useI18n } from '@renderer/context/I18nContext';
 import { Asset } from '@renderer/domain/asset';
 import { Explorer } from '@renderer/domain/chain';
-import { AccountDS } from '@renderer/services/storage';
+import { Account } from '@renderer/domain/account';
 
 type Props = {
   isOpen: boolean;
-  accounts: AccountDS[];
+  accounts: Account[];
   amounts?: string[];
   asset: Asset;
   explorers?: Explorer[];
@@ -35,12 +35,12 @@ const AccountsModal = ({ isOpen, accounts, amounts = [], asset, explorers, addre
             {amountExists && <Table.Column dataKey="amount" width={200} />}
             <Table.Column dataKey="actions" width={50} />
           </Table.Header>
-          <Table.Body<Required<AccountDS>>>
+          <Table.Body<Required<Account>>>
             {({ rowIndex, accountId, name, signingType }) => (
               <Table.Row key={accountId} className="bg-shade-1" height="lg">
                 <Table.Cell>
                   <div className="flex items-center gap-x-1.5">
-                    <Address address={accountId} name={name} signType={signingType} size={30} />
+                    <ChainAddress address={accountId} name={name} signType={signingType} size={30} />
                   </div>
                 </Table.Cell>
                 {amountExists && (

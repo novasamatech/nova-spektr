@@ -6,7 +6,7 @@ import { useNetworkContext } from '@renderer/context/NetworkContext';
 import { Asset } from '@renderer/domain/asset';
 import { Chain } from '@renderer/domain/chain';
 import { ConnectionType } from '@renderer/domain/connection';
-import { ChainId, PublicKey, SigningType } from '@renderer/domain/shared-kernel';
+import { ChainID, AccountID, SigningType } from '@renderer/domain/shared-kernel';
 import { useToggle } from '@renderer/shared/hooks';
 import { useChains } from '@renderer/services/network/chainsService';
 import { useSettingsStorage } from '@renderer/services/settings/settingsStorage';
@@ -19,8 +19,8 @@ const Balances = () => {
   const { t } = useI18n();
 
   const [query, setQuery] = useState('');
-  const [publicKeys, setPublicKeys] = useState<PublicKey[]>([]);
-  const [usedChains, setUsedChains] = useState<Record<ChainId, boolean>>({});
+  const [accountIds, setAccountIds] = useState<AccountID[]>([]);
+  const [usedChains, setUsedChains] = useState<Record<ChainID, boolean>>({});
   const [receiveData, setReceiveData] = useState<ReceivePayload>();
 
   const [isReceiveOpen, toggleReceive] = useToggle();
@@ -40,20 +40,20 @@ const Balances = () => {
 
   useEffect(() => {
     if (activeAccounts.length === 0) {
-      setPublicKeys([]);
+      setAccountIds([]);
 
       return;
     }
 
-    const activePublicKeys = activeAccounts.reduce<PublicKey[]>((acc, account) => {
-      return account.publicKey ? [...acc, account.publicKey] : acc;
+    const activeAccountIds = activeAccounts.reduce<AccountID[]>((acc, account) => {
+      return account.accountId ? [...acc, account.accountId] : acc;
     }, []);
 
-    const usedChains = activeAccounts.reduce<Record<ChainId, boolean>>((acc, account) => {
+    const usedChains = activeAccounts.reduce<Record<ChainID, boolean>>((acc, account) => {
       return account.chainId ? { ...acc, [account.chainId]: true } : acc;
     }, {});
 
-    setPublicKeys(activePublicKeys);
+    setAccountIds(activeAccountIds);
     setUsedChains(usedChains);
   }, [activeAccounts.length]);
 
@@ -107,7 +107,7 @@ const Balances = () => {
               </div>
             </div>
 
-            {publicKeys.length > 0 && (
+            {accountIds.length > 0 && (
               <ul className="flex-1">
                 {sortedChains.map((chain) => (
                   <NetworkBalances
@@ -116,7 +116,7 @@ const Balances = () => {
                     searchSymbolOnly={searchSymbolOnly}
                     query={query.toLowerCase()}
                     chain={chain}
-                    publicKeys={publicKeys}
+                    accountIds={accountIds}
                     canMakeActions={checkCanMakeActions()}
                     onReceiveClick={onReceive(chain)}
                   />

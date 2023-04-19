@@ -1,7 +1,7 @@
 import useGenerator from './common/useGenerator';
 import { Command, DEFAULT_FRAME_DELAY } from './common/constants';
 import { createSubstrateSignPayload } from './common/utils';
-import { ChainId } from '@renderer/domain/shared-kernel';
+import { ChainID } from '@renderer/domain/shared-kernel';
 
 type Props = {
   size?: number;
@@ -11,7 +11,7 @@ type Props = {
   address: string;
   cmd: Command;
   payload: Uint8Array | string;
-  genesisHash: Uint8Array | ChainId;
+  genesisHash: Uint8Array | ChainID;
 };
 
 export const QrTxGenerator = ({

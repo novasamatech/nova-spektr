@@ -8,7 +8,7 @@ import { Balance, Block, Icon } from '@renderer/components/ui';
 import { useI18n } from '@renderer/context/I18nContext';
 import { Asset } from '@renderer/domain/asset';
 import { Explorer } from '@renderer/domain/chain';
-import { AccountID } from '@renderer/domain/shared-kernel';
+import { Address } from '@renderer/domain/shared-kernel';
 import { RewardsDestination } from '@renderer/domain/stake';
 import { Transaction } from '@renderer/domain/transaction';
 import { Validator } from '@renderer/domain/validator';
@@ -18,7 +18,7 @@ import AccountsModal from '../AccountsModal/AccountsModal';
 import ValidatorsModal from '../ValidatorsModal/ValidatorsModal';
 
 type Destination = {
-  address?: AccountID;
+  address?: Address;
   type: RewardsDestination;
 };
 

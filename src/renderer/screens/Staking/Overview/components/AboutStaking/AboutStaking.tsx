@@ -7,7 +7,7 @@ import { Expandable } from '@renderer/components/common';
 import { Balance, Duration, Icon, Shimmering } from '@renderer/components/ui';
 import { useI18n } from '@renderer/context/I18nContext';
 import { Asset } from '@renderer/domain/asset';
-import { AccountID, EraIndex } from '@renderer/domain/shared-kernel';
+import { Address, EraIndex } from '@renderer/domain/shared-kernel';
 import { Validator } from '@renderer/domain/validator';
 import { getAvgApy } from '@renderer/services/staking/apyCalculator';
 import { useStakingData } from '@renderer/services/staking/stakingDataService';
@@ -73,7 +73,7 @@ const AboutStaking = ({ asset, api, validators, era, className }: Props) => {
   const maximumApy = validators.reduce((acc, validator) => (acc > validator.apy ? acc : validator.apy), 0);
 
   const activeNominatorsAmount = useMemo(() => {
-    const nominatorsAddresses = validators.reduce<AccountID[]>((acc, { nominators }) => {
+    const nominatorsAddresses = validators.reduce<Address[]>((acc, { nominators }) => {
       const addresses = nominators.map((nominator) => nominator.who);
 
       return acc.concat(addresses);

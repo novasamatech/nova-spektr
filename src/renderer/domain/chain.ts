@@ -1,8 +1,8 @@
 import { Asset } from './asset';
-import { ChainId, HexString } from './shared-kernel';
+import { ChainID, HexString } from './shared-kernel';
 
 export type Chain = {
-  chainId: ChainId;
+  chainId: ChainID;
   parentId?: HexString;
   name: string;
   assets: Asset[];

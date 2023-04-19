@@ -10,7 +10,7 @@ import { useI18n } from '@renderer/context/I18nContext';
 import { useNetworkContext } from '@renderer/context/NetworkContext';
 import { Asset } from '@renderer/domain/asset';
 import { ConnectionStatus, ConnectionType } from '@renderer/domain/connection';
-import { AccountID, ChainId, SigningType } from '@renderer/domain/shared-kernel';
+import { Address, ChainID, SigningType } from '@renderer/domain/shared-kernel';
 import { Stake } from '@renderer/domain/stake';
 import { PathValue } from '@renderer/routes/paths';
 import { createLink } from '@renderer/routes/utils';
@@ -29,7 +29,7 @@ import { isStringsMatchQuery } from '@renderer/shared/utils/strings';
 import { AboutStaking, EmptyFilter, InactiveChain, NoAccounts, StakingTable } from './components';
 import NominatorsModal from './components/NominatorsModal/NominatorsModal';
 import { AccountStakeInfo } from './components/StakingTable/StakingTable';
-import { formatAddress } from '@renderer/shared/utils/address';
+import { toAddress } from '@renderer/shared/utils/address';
 import { getRelaychainAsset } from '@renderer/shared/utils/assets';
 
 type NetworkOption = { asset: Asset; addressPrefix: number };
@@ -58,10 +58,10 @@ const Overview = () => {
   const [networkIsActive, setNetworkIsActive] = useState(true);
   const [activeNetwork, setActiveNetwork] = useState<DropdownResult<NetworkOption>>();
   const [stakingNetworks, setStakingNetworks] = useState<DropdownOption<NetworkOption>[]>([]);
-  const [selectedAccounts, setSelectedAccounts] = useState<AccountID[]>([]);
-  const [selectedStash, setSelectedStash] = useState<AccountID>('');
+  const [selectedAccounts, setSelectedAccounts] = useState<Address[]>([]);
+  const [selectedStash, setSelectedStash] = useState<Address>('');
 
-  const chainId = (activeNetwork?.id || '') as ChainId;
+  const chainId = (activeNetwork?.id || '') as ChainID;
   const api = connections[chainId]?.api;
   const addressPrefix = connections[chainId]?.addressPrefix;
   const connection = connections[chainId]?.connection;
@@ -74,9 +74,9 @@ const Overview = () => {
 
       return !rootId || derivationIsCorrect;
     })
-    .map((a) => ({ ...a, accountId: formatAddress(a.publicKey, addressPrefix) }));
+    .map((a) => ({ ...a, accountId: toAddress(a.accountId, { prefix: addressPrefix }) }));
 
-  const accountAddresses = activeAccounts.reduce<AccountID[]>((acc, account) => {
+  const accountAddresses = activeAccounts.reduce<Address[]>((acc, account) => {
     return account.accountId ? acc.concat(account.accountId) : acc;
   }, []);
 
@@ -150,8 +150,8 @@ const Overview = () => {
   }, []);
 
   const onNetworkChange = (option: DropdownResult<NetworkOption>) => {
-    setStakingNetwork(option.id as ChainId);
-    changeClient(option.id as ChainId);
+    setStakingNetwork(option.id as ChainID);
+    changeClient(option.id as ChainID);
     setActiveNetwork(option);
     setSelectedAccounts([]);
     setStaking({});
@@ -159,7 +159,7 @@ const Overview = () => {
     setQuery('');
   };
 
-  const setupNominators = async (stash?: AccountID) => {
+  const setupNominators = async (stash?: Address) => {
     if (!api || !stash) return;
 
     const nominators = await getNominators(api, stash);
@@ -169,7 +169,7 @@ const Overview = () => {
     toggleNominatorsModal();
   };
 
-  const { watchOnlyAccs, paritySignerAccs } = activeAccounts.reduce<Record<string, AccountID[]>>(
+  const { watchOnlyAccs, paritySignerAccs } = activeAccounts.reduce<Record<string, Address[]>>(
     (acc, account) => {
       if (!account.accountId) return acc;
 
@@ -193,7 +193,7 @@ const Overview = () => {
     return wallet.id ? { ...acc, [wallet.id]: wallet.name } : acc;
   }, {});
 
-  const rootNames = activeAccounts.reduce<Record<AccountID, string>>((acc, account) => {
+  const rootNames = activeAccounts.reduce<Record<Address, string>>((acc, account) => {
     const chainOrWatchOnlyAccount = account.rootId || account.signingType === SigningType.WATCH_ONLY;
     if (!account.id || chainOrWatchOnlyAccount) return acc;
 
@@ -233,13 +233,13 @@ const Overview = () => {
     if (stake) {
       acc.push(stake);
     } else {
-      acc.push({ accountId: address } as Stake);
+      acc.push({ address: address } as Stake);
     }
 
     return acc;
   }, []);
 
-  const navigateToStake = (path: PathValue, accounts?: AccountID[]) => {
+  const navigateToStake = (path: PathValue, accounts?: Address[]) => {
     if (accounts) {
       setSelectedAccounts(accounts);
 

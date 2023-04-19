@@ -1,10 +1,10 @@
 export type HexString = `0x${string}`;
-export type AccountID = string;
+export type Address = string;
+export type AccountID = HexString;
 export type Threshold = number;
 export type CallData = HexString;
 export type CallHash = HexString;
-export type PublicKey = HexString;
-export type ChainId = HexString;
+export type ChainID = HexString;
 export type EraIndex = number;
 export type Timepoint = {
   height: number;

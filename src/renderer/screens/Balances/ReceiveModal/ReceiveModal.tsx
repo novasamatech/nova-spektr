@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react';
 
 import { QrTextGenerator } from '@renderer/components/common';
 import { ExplorerIcons } from '@renderer/components/common/Explorers/common/constants';
-import { Address, BaseModal, Button, Dropdown, Icon } from '@renderer/components/ui';
+import { ChainAddress, BaseModal, Button, Dropdown, Icon } from '@renderer/components/ui';
 import { DropdownOption, DropdownResult } from '@renderer/components/ui/Dropdowns/common/types';
 import { useI18n } from '@renderer/context/I18nContext';
 import { Asset } from '@renderer/domain/asset';
@@ -11,7 +11,7 @@ import { Chain } from '@renderer/domain/chain';
 import { SigningType } from '@renderer/domain/shared-kernel';
 import { copyToClipboard } from '@renderer/shared/utils/strings';
 import { useAccount } from '@renderer/services/account/accountService';
-import { formatAddress } from '@renderer/shared/utils/address';
+import { toAddress } from '@renderer/shared/utils/address';
 
 export type ReceivePayload = {
   chain: Chain;
@@ -42,7 +42,7 @@ const ReceiveModal = ({ data, isOpen, onClose }: Props) => {
         return acc;
       }
 
-      const address = formatAddress(account.publicKey || '0x00', data?.chain.addressPrefix);
+      const address = toAddress(account.accountId || '0x00', { prefix: data?.chain.addressPrefix });
 
       const accountType = account.signingType === SigningType.PARITY_SIGNER ? 'paritySignerBg' : 'watchOnlyBg';
 
@@ -53,7 +53,7 @@ const ReceiveModal = ({ data, isOpen, onClose }: Props) => {
           <div className="grid grid-rows-2 grid-flow-col gap-x-2.5">
             <Icon className="row-span-2 self-center" name={accountType} size={34} />
             <p className="text-left text-neutral text-lg font-semibold leading-5">{account.name}</p>
-            <Address type="short" address={address} canCopy={false} />
+            <ChainAddress type="short" address={address} canCopy={false} />
           </div>
         ),
       };
@@ -68,11 +68,11 @@ const ReceiveModal = ({ data, isOpen, onClose }: Props) => {
   }, [activeAccounts.length, data?.chain.chainId]);
 
   const account = activeAccount ? activeAccounts[activeAccount.value] : undefined;
-  const publicKey = account?.publicKey || '0x00';
-  const address = formatAddress(publicKey, data?.chain.addressPrefix);
+  const accountId = account?.accountId || '0x00';
+  const address = toAddress(accountId, { prefix: data?.chain.addressPrefix });
 
   //eslint-disable-next-line i18next/no-literal-string
-  const qrCodePayload = `substrate:${address}:${publicKey}`;
+  const qrCodePayload = `substrate:${address}:${accountId}`;
 
   const onCopyAddress = async () => {
     await copyToClipboard(address);
@@ -112,7 +112,7 @@ const ReceiveModal = ({ data, isOpen, onClose }: Props) => {
               bgColor="#F1F1F1"
             />
 
-            <Address className="mb-2 text-sm text-neutral-variant" type="full" address={address} />
+            <ChainAddress className="mb-2 text-sm text-neutral-variant" type="full" address={address} />
 
             {(data?.chain.explorers || []).length > 0 && (
               <ul className="flex gap-x-3">
