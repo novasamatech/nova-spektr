@@ -26,7 +26,7 @@ import { nonNullable } from '@renderer/shared/utils/functions';
 import { getMultisigExtrinsicLink } from '../common/utils';
 import RejectTx from './RejectTx';
 import ApproveTx from './ApproveTx';
-// import { useMatrix } from '@renderer/context/MatrixContext';
+import { useMatrix } from '@renderer/context/MatrixContext';
 
 const StatusTitle: Record<MultisigTxStatus, string> = {
   [MultisigTxInitStatus.SIGNING]: 'operation.status.signing',
@@ -45,7 +45,7 @@ const Operation = ({ tx, account }: Props) => {
   const { dateCreated, callData, chainId, events, signatories, transaction, description, status } = tx;
 
   const { t, dateLocale } = useI18n();
-  // const { matrix } = useMatrix();
+  const { matrix } = useMatrix();
 
   const { updateCallData } = useMultisigTx();
   const { connections } = useNetworkContext();
@@ -62,8 +62,24 @@ const Operation = ({ tx, account }: Props) => {
 
     if (!api || !tx) return;
 
-    updateCallData(api, tx, callData as CallData);
-    // matrix.mstUpdate()
+    if (!account?.matrixRoomId) {
+      updateCallData(api, tx, callData as CallData);
+
+      return;
+    }
+
+    const timepoint = {
+      index: tx.indexCreated || 0,
+      height: tx.blockCreated || 0,
+    };
+
+    matrix.sendUpdate(account?.matrixRoomId, {
+      senderAddress: tx.depositor || '0x00',
+      chainId: tx.chainId,
+      callHash: tx.callHash,
+      callData: callData,
+      callTimepoint: timepoint,
+    });
   };
 
   useEffect(() => {

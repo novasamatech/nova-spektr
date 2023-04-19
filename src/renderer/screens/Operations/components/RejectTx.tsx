@@ -27,7 +27,6 @@ import { useCountdown } from '@renderer/screens/Staking/Operations/hooks/useCoun
 import { useBalance } from '@renderer/services/balance/balanceService';
 import { transferableAmount } from '@renderer/services/balance/common/utils';
 import { MAX_WEIGHT } from '@renderer/services/transaction/common/constants';
-import { TEST_ADDRESS } from '@renderer/shared/utils/constants';
 import RejectReasonModal from './RejectReasonModal';
 
 type Props = {
@@ -82,7 +81,7 @@ const RejectTx = ({ tx, account, connection }: Props) => {
   };
 
   useEffect(() => {
-    const multisigTx = getMultisigTx(signAccount?.accountId || TEST_ADDRESS);
+    const multisigTx = getMultisigTx(signAccount?.accountId || account.signatories[0].accountId);
 
     setApproveTx(multisigTx);
   }, [tx, accounts.length, signAccount?.accountId, txWeight]);
@@ -132,8 +131,6 @@ const RejectTx = ({ tx, account, connection }: Props) => {
     if (!connection.api || !approveTx || !signAccount.publicKey || !asset) return false;
 
     const fee = await getTransactionFee(approveTx, connection.api);
-
-    console.log(fee);
 
     const balance = await getBalance(signAccount.publicKey, connection.chainId, asset.assetId.toString());
 

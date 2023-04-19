@@ -50,6 +50,7 @@ const ApproveTx = ({ tx, account, connection }: Props) => {
   const [isFeeModalOpen, toggleFeeModal] = useToggle(false);
   const [activeStep, setActiveStep] = useState(Step.CONFIRMATION);
   const [countdown, resetCountdown] = useCountdown(connection.api);
+  const [signAccount, setSignAccount] = useState<AccountDS>();
 
   const { getBalance } = useBalance();
   const { getTransactionFee, getTxWeight } = useTransaction();
@@ -64,6 +65,7 @@ const ApproveTx = ({ tx, account, connection }: Props) => {
   );
 
   const [approveTx, setApproveTx] = useState<Transaction>();
+  const [feeTx, setFeeTx] = useState<Transaction>();
   const [signature, setSignature] = useState<HexString>();
   const [unsignedTx, setUnsignedTx] = useState<UnsignedTransaction>();
   const [txWeight, setTxWeight] = useState<Weight>();
@@ -84,12 +86,18 @@ const ApproveTx = ({ tx, account, connection }: Props) => {
     setActiveStep(Step.CONFIRMATION);
   };
 
-  const [signAccount, setSignAccount] = useState<AccountDS>();
-
   useEffect(() => {
-    const multisigTx = getMultisigTx(signAccount?.accountId || TEST_ADDRESS);
+    if (!signAccount?.accountId) return;
+
+    const multisigTx = getMultisigTx(signAccount?.accountId);
 
     setApproveTx(multisigTx);
+  }, [tx, accounts.length, signAccount?.accountId, txWeight]);
+
+  useEffect(() => {
+    const feeTx = getMultisigTx(TEST_ADDRESS);
+
+    setFeeTx(feeTx);
   }, [tx, accounts.length, signAccount?.accountId, txWeight]);
 
   useEffect(() => {
@@ -138,8 +146,6 @@ const ApproveTx = ({ tx, account, connection }: Props) => {
     if (!connection.api || !approveTx || !signAccount.publicKey || !asset) return false;
 
     const fee = await getTransactionFee(approveTx, connection.api);
-
-    console.log(fee);
 
     const balance = await getBalance(signAccount.publicKey, connection.chainId, asset.assetId.toString());
 
@@ -209,12 +215,12 @@ const ApproveTx = ({ tx, account, connection }: Props) => {
             <div className="flex justify-between items-center">
               <div className="text-shade-40">{t('operation.networkFee')}</div>
               <div>
-                {connection.api && approveTx && (
+                {connection.api && feeTx && (
                   <Fee
                     className="text-shade-40"
                     api={connection.api}
                     asset={connection.assets[0]}
-                    transaction={approveTx}
+                    transaction={feeTx}
                   />
                 )}
               </div>

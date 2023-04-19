@@ -38,9 +38,10 @@ export const InitOperation = ({
   onAccountChange,
 }: Props) => {
   const { t } = useI18n();
-  const { getActiveAccounts } = useAccount();
+  const { getLiveAccounts, getActiveAccounts } = useAccount();
 
   const accounts = getActiveAccounts();
+  const allAccounts = getLiveAccounts();
 
   const [activeAccount, setActiveAccount] = useState<DropdownResult<Account | MultisigAccount>>();
   const [accountsOptions, setAccountsOptions] = useState<DropdownOption<Account | MultisigAccount>[]>([]);
@@ -63,7 +64,7 @@ export const InitOperation = ({
       setSignatoryOptions([]);
     } else {
       const signatories = activeAccount.value.signatories.map((s) => s.publicKey);
-      const signers = accounts.filter((a) => a.publicKey && signatories.includes(a.publicKey)) as MultisigAccount[];
+      const signers = allAccounts.filter((a) => a.publicKey && signatories.includes(a.publicKey)) as MultisigAccount[];
 
       const options = getAccountsOptions<MultisigAccount>(chainId, signers, addressPrefix);
 
@@ -72,7 +73,7 @@ export const InitOperation = ({
       setSignatoryOptions(options);
       setActiveSignatory({ id: options[0].id, value: options[0].value });
     }
-  }, [activeAccount]);
+  }, [activeAccount, allAccounts]);
 
   const changeAccount = (account: DropdownResult<Account | MultisigAccount>) => {
     onAccountChange(account.value);
@@ -81,9 +82,9 @@ export const InitOperation = ({
 
   const accountAddress = activeAccount?.id || '';
   const accountName = activeAccount?.value.name || '';
+  const signingType = activeAccount?.value.signingType || SigningType.PARITY_SIGNER;
   const signerAddress = activeSignatory?.id || '';
   const signerName = activeSignatory?.value.name || '';
-  const signingType = activeSignatory?.value.signingType || SigningType.PARITY_SIGNER;
 
   return (
     <Plate as="section" className="w-[500px] flex flex-col items-center mx-auto gap-y-2.5">
