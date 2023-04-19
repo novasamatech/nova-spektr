@@ -19,6 +19,7 @@ import { ITransactionService, HashData, ExtrinsicResultParams } from './common/t
 import { toPublicKey } from '@renderer/shared/utils/address';
 import { MAX_WEIGHT } from '@renderer/services/transaction/common/constants';
 import { decodeDispatchError } from './common/utils';
+import { Type } from '@polkadot/types';
 
 export const useTransaction = (): ITransactionService => {
   const createRegistry = async (api: ApiPromise) => {
@@ -426,19 +427,25 @@ export const useTransaction = (): ITransactionService => {
 
     if (method === 'bond' && section === 'staking') {
       transaction.type = TransactionType.BOND;
-      transaction.args.controller = decoded.args[0];
-      transaction.args.value = decoded.args[1];
-      transaction.args.payee = decoded.args[2];
+      transaction.args.controller = decoded.args[0].toString();
+      transaction.args.value = decoded.args[1].toString();
+      let payee = decoded.args[2].toString();
+
+      try {
+        payee = JSON.parse(decoded.args[2].toString());
+      } catch (e) {}
+
+      transaction.args.payee = payee;
     }
 
     if (method === 'unbond' && section === 'staking') {
       transaction.type = TransactionType.UNSTAKE;
-      transaction.args.value = decoded.args[0];
+      transaction.args.value = decoded.args[0].toString();
     }
 
     if (method === 'rebond' && section === 'staking') {
       transaction.type = TransactionType.RESTAKE;
-      transaction.args.value = decoded.args[0];
+      transaction.args.value = decoded.args[0].toString();
     }
 
     if (method === 'withdrawUnbonded' && section === 'staking') {
@@ -447,12 +454,12 @@ export const useTransaction = (): ITransactionService => {
 
     if (method === 'nominate' && section === 'staking') {
       transaction.type = TransactionType.NOMINATE;
-      transaction.args.targets = decoded.args[0];
+      transaction.args.targets = (decoded.args[0] as any).map((a: Type) => a.toString());
     }
 
     if (method === 'bondExtra' && section === 'staking') {
       transaction.type = TransactionType.STAKE_MORE;
-      transaction.args.maxAdditional = decoded.args[0];
+      transaction.args.maxAdditional = decoded.args[0].toString();
     }
 
     return transaction;

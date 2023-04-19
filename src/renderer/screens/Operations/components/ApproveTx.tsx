@@ -147,8 +147,6 @@ const ApproveTx = ({ tx, account, connection }: Props) => {
 
     const fee = await getTransactionFee(approveTx, connection.api);
 
-    console.log(fee);
-
     const balance = await getBalance(signAccount.publicKey, connection.chainId, asset.assetId.toString());
 
     if (!balance) return false;

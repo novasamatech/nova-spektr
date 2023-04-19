@@ -113,7 +113,7 @@ export const useMultisigTx = (): IMultisigTxService => {
   const updateCallData = async (api: ApiPromise, tx: MultisigTransactionDS, callData: CallData) => {
     const chain = await getChainById(tx.chainId);
 
-    const transaction = decodeCallData(api, formatAddress(tx?.publicKey, chain?.addressPrefix), callData);
+    const transaction = decodeCallData(api, formatAddress(tx.publicKey, chain?.addressPrefix), callData);
 
     await updateMultisigTx({ ...tx, callData, transaction });
   };

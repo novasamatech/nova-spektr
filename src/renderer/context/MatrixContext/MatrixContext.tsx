@@ -28,7 +28,7 @@ import {
   MultisigTxStatus,
 } from '@renderer/domain/transaction';
 import { Signatory } from '@renderer/domain/signatory';
-import { useNetworkContext } from '../NetworkContext';
+import { useNetworkContext } from '@renderer/context/NetworkContext';
 
 type MatrixContextProps = {
   matrix: ISecureMessenger;
@@ -42,6 +42,13 @@ export const MatrixProvider = ({ children }: PropsWithChildren) => {
   const { getMultisigTxs, addMultisigTx, updateMultisigTx, updateCallData } = useMultisigTx();
   const { getAccounts, addAccount, updateAccount } = useAccount();
   const { connections } = useNetworkContext();
+
+  const connectionsRef = useRef(connections);
+
+  useEffect(() => {
+    // HOOK: correct connections for update multisig tx
+    connectionsRef.current = connections;
+  }, [connections]);
 
   const { current: matrix } = useRef<ISecureMessenger>(new Matrix());
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -239,7 +246,8 @@ export const MatrixProvider = ({ children }: PropsWithChildren) => {
   const handleUpdateEvent = async ({ callData }: UpdatePayload, tx: MultisigTransaction): Promise<void> => {
     if (!tx) return;
 
-    const api = connections[tx.chainId]?.api;
+    const api = connectionsRef.current[tx.chainId]?.api;
+
     if (!api || !callData || callData === tx.callData) return;
 
     await updateCallData(api, tx, callData);

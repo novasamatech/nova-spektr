@@ -269,7 +269,8 @@
       "multisigWallet": "Отправитель",
       "payee": "Payee",
       "recipient": "Получатель",
-      "timePoint": "Time Point"
+      "timePoint": "Time Point",
+      "validators": "Валидаторы"
     },
     "detailsTitle": "Детали",
     "explorerLink": "Просмотреть в обозревателе",
