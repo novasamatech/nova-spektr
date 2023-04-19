@@ -433,7 +433,9 @@ export const useTransaction = (): ITransactionService => {
 
       try {
         payee = JSON.parse(decoded.args[2].toString());
-      } catch (e) {}
+      } catch (e) {
+        console.warn(e);
+      }
 
       transaction.args.payee = payee;
     }
