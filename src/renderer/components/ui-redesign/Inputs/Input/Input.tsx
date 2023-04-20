@@ -9,16 +9,21 @@ export interface Props extends Pick<ComponentPropsWithoutRef<'input'>, HTMLInput
   label?: ReactNode;
   invalid?: boolean;
   wrapperClass?: string;
+  prefixElement?: ReactNode;
   suffixElement?: ReactNode;
   onChange?: (value: string) => void;
 }
 
 const Input = forwardRef<HTMLInputElement, Props>(
-  ({ type = 'text', label, className, wrapperClass, invalid, suffixElement, onChange, ...props }, ref) => {
+  (
+    { type = 'text', label, className, wrapperClass, invalid, prefixElement, suffixElement, onChange, ...props },
+    ref,
+  ) => {
     const id = useId();
 
     const inputElement = (
       <div className={cn('relative flex object-contain', wrapperClass)}>
+        {prefixElement}
         <input
           id={id}
           className={cn(
