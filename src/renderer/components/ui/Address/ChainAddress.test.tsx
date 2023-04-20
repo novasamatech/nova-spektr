@@ -1,21 +1,20 @@
 import { render, screen } from '@testing-library/react';
 
 import ChainAddress from './ChainAddress';
+import { TEST_ACCOUNT_ID, TEST_ADDRESS } from '@renderer/shared/utils/constants';
 
 describe('ui/Address', () => {
-  const address = '15UHvPeMjYLvMLqh6bWLxAP3MbqjjsMXFWToJKCijzGPM3p9';
-
   test('should render component', () => {
-    render(<ChainAddress address={address} />);
+    render(<ChainAddress accountId={TEST_ACCOUNT_ID} addressPrefix={0} />);
 
-    const addressValue = screen.getByText(address);
+    const addressValue = screen.getByText(TEST_ADDRESS);
     expect(addressValue).toBeInTheDocument();
   });
 
   test('should render short component', () => {
-    render(<ChainAddress type="short" address={address} />);
+    render(<ChainAddress type="short" accountId={TEST_ACCOUNT_ID} />);
 
-    const elipsis = screen.getByText('15UHvP...GPM3p9');
+    const elipsis = screen.getByText('5CGQ7B...VbXyr9');
     expect(elipsis).toBeInTheDocument();
   });
 });

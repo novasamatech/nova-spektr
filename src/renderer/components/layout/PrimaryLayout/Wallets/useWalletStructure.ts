@@ -13,19 +13,16 @@ import { includes } from '@renderer/shared/utils/strings';
 export const useWalletsStructure = (accountQuery: Partial<AccountDS>, query: string): WalletStructure[] => {
   const { getLiveAccounts } = useAccount();
   const { getLiveWallets } = useWallet();
-
   const { getChainsData } = useChains();
-  const [chainsObject, setChainsObject] = useState<Record<string, Chain>>({});
 
-  useEffect(() => {
-    (async () => {
-      const chains = await getChainsData();
-      setChainsObject(keyBy(chains, 'chainId'));
-    })();
-  }, []);
+  const [chainsObject, setChainsObject] = useState<Record<string, Chain>>({});
 
   const wallets = getLiveWallets();
   const paritySignerAccounts = getLiveAccounts(accountQuery);
+
+  useEffect(() => {
+    getChainsData().then((chains) => setChainsObject(keyBy(chains, 'chainId')));
+  }, []);
 
   const getChainData = (chainId: ChainID, accounts: AccountDS[], rootAccount: AccountDS): ChainWithAccounts => {
     const chainAccounts = accounts.filter(
@@ -42,7 +39,7 @@ export const useWalletsStructure = (accountQuery: Partial<AccountDS>, query: str
   const getRootAccounts = (accounts: AccountDS[]): RootAccount[] => {
     const groupedRoots = groupBy(accounts, ({ chainId }) => chainId);
 
-    const rootAccounts = accounts
+    return accounts
       .filter((a) => !a.rootId)
       .map((rootAccount) => {
         const chains = Object.entries(groupedRoots)
@@ -51,16 +48,14 @@ export const useWalletsStructure = (accountQuery: Partial<AccountDS>, query: str
 
         return {
           ...rootAccount,
-          amount: chains.reduce((acc, chain) => acc + chain.accounts.length, 1),
           chains,
+          amount: chains.reduce((acc, chain) => acc + chain.accounts.length, 1),
         };
       })
       .filter((a) => includes(a.name, query) || a.chains.length > 0);
-
-    return rootAccounts;
   };
 
-  const walletStructure = wallets
+  return wallets
     .map((wallet) => {
       const accounts = paritySignerAccounts.filter((account) => account.walletId === wallet.id);
       const rootAccounts = getRootAccounts(accounts);
@@ -73,6 +68,4 @@ export const useWalletsStructure = (accountQuery: Partial<AccountDS>, query: str
       };
     })
     .filter((a) => includes(a.name, query) || a.rootAccounts.length > 0);
-
-  return walletStructure;
 };

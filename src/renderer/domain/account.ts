@@ -1,9 +1,8 @@
-import { createKeyMulti, encodeAddress } from '@polkadot/util-crypto';
+import { createKeyMulti } from '@polkadot/util-crypto';
+import { u8aToHex } from '@polkadot/util';
 
-import { toAccountId } from '@renderer/shared/utils/address';
-import { ChainID, CryptoType, AccountID, ChainType, SigningType, Address, Threshold } from './shared-kernel';
+import { ChainID, CryptoType, AccountID, ChainType, SigningType, Threshold } from './shared-kernel';
 import { Signatory } from '@renderer/domain/signatory';
-import { SS58_DEFAULT_PREFIX } from '@renderer/shared/utils/constants';
 import { ID } from '@renderer/services/storage';
 
 export type Account = {
@@ -55,8 +54,8 @@ export type MultisigAccount = Account & {
   creatorAccountId: AccountID;
 };
 
-export function getMultisigAddress(addresses: AccountID[], threshold: Threshold): Address {
-  return encodeAddress(createKeyMulti(addresses, threshold), SS58_DEFAULT_PREFIX);
+export function getMultisigAccountId(addresses: AccountID[], threshold: Threshold): AccountID {
+  return u8aToHex(createKeyMulti(addresses, threshold));
 }
 
 export function createMultisigAccount({
@@ -66,13 +65,13 @@ export function createMultisigAccount({
   matrixRoomId,
   creatorAccountId,
 }: Pick<MultisigAccount, 'name' | 'signatories' | 'threshold' | 'matrixRoomId' | 'creatorAccountId'>): MultisigAccount {
-  const multisigAddress = getMultisigAddress(
+  const multisigAccountId = getMultisigAccountId(
     signatories.map((s) => s.accountId),
     threshold,
   );
 
   return {
-    accountId: toAccountId(multisigAddress),
+    accountId: multisigAccountId,
     cryptoType: CryptoType.SR25519,
     chainType: ChainType.SUBSTRATE,
     name,

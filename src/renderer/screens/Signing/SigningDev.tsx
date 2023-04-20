@@ -122,7 +122,7 @@ const Signing = () => {
     setupTransactions();
   }, [currentConnection, activeAccounts.length]);
 
-  const validateTransaction = (transaction: any) => {
+  const validateTransaction = () => {
     return true;
   };
 

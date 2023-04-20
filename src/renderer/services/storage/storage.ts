@@ -27,10 +27,10 @@ class DexieStorage extends Dexie {
 
   constructor() {
     super('spektr');
-    this.version(13).stores({
+    this.version(14).stores({
       connections: '++id,chainId,type',
       wallets: '++id,isActive,type',
-      balances: '++id,[accountId+chainId+assetId],[accountId+chainId]',
+      balances: '[accountId+chainId+assetId],[accountId+chainId]',
       accounts: '++id,isActive,walletId,rootId,signingType',
       contacts: '++id,name,accountId,matrixId',
       multisigTransactions:

@@ -1,5 +1,4 @@
 import cn from 'classnames';
-import { encodeAddress } from '@polkadot/util-crypto';
 
 import { Chain } from '@renderer/domain/chain';
 import { ChainAddress } from '@renderer/components/ui';
@@ -39,21 +38,17 @@ const AccountsList = ({ accountId, chains, className, limit }: Props) => {
   return (
     <ul className={cn('flex flex-col z-0 divide-y divide-gray-200 overflow-y-auto overflow-x-hidden', className)}>
       {limitedChains.map((chain) => {
-        const { name, icon, addressPrefix } = chain;
+        const { name, icon, addressPrefix, explorers } = chain;
 
         return (
           <li key={name} className="flex flex-row items-center gap-2.5 px-6 py-1.25">
             <img width="36px" height="36px" alt={name} src={icon} />
             <div className="flex flex-col flex-1 overflow-hidden whitespace-nowrap">
               <div className="font-bold text-neutral text-base w-full leading-5">{name}</div>
-              <ChainAddress className="w-full" address={encodeAddress(accountId, addressPrefix)} />
+              <ChainAddress className="w-full" accountId={accountId} addressPrefix={addressPrefix} />
             </div>
 
-            <Explorers
-              explorers={chain.explorers}
-              addressPrefix={chain.addressPrefix}
-              address={encodeAddress(accountId, addressPrefix)}
-            />
+            <Explorers address={accountId} addressPrefix={addressPrefix} explorers={explorers} />
           </li>
         );
       })}

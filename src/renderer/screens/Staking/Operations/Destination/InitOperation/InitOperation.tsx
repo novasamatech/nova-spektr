@@ -57,7 +57,7 @@ const getDropdownPayload = (
     <div className="flex justify-between items-center gap-x-2.5">
       <div className="flex gap-x-[5px] items-center">
         <ChainAddress
-          address={address}
+          accountId={address}
           name={account.name}
           subName={walletName}
           signType={account.signingType}

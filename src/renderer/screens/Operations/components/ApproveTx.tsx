@@ -303,7 +303,7 @@ const ApproveTx = ({ tx, account, connection }: Props) => {
                 key={a.id}
                 onClick={() => handleAccountSelect(a)}
               >
-                <ChainAddress address={a.accountId || ''} name={a.name} />
+                <ChainAddress accountId={a.accountId} name={a.name} />
 
                 <Icon className="text-shade-40" name="right" />
               </li>

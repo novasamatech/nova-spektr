@@ -135,14 +135,14 @@ export const Submit = ({ api, tx, multisigTx, account, matrixRoomId, unsignedTx,
         {successMessage && (
           <div className="flex uppercase items-center gap-2.5">
             <Icon name="checkmarkCutout" size={20} className="text-success" />
-            {t('transfer.successMessage')}
+            <p className="flex-1">{t('transfer.successMessage')}</p>
           </div>
         )}
 
         {errorMessage && (
           <div className="flex uppercase items-center gap-2.5">
             <Icon name="warnCutout" size={20} className="text-error" />
-            {errorMessage}
+            <p className="flex-1">{errorMessage}</p>
           </div>
         )}
       </Plate>

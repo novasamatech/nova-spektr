@@ -3,7 +3,7 @@ import { ChainID, SigningType } from '@renderer/domain/shared-kernel';
 import { DropdownOption } from '@renderer/components/ui/Dropdowns/common/types';
 import { toAddress } from '@renderer/shared/utils/address';
 import { Icon, ChainAddress } from '@renderer/components/ui';
-import { Badges } from './constants';
+import { SigningBadges } from '@renderer/shared/utils/constants';
 
 export const getAccountsOptions = <T extends Account>(
   chainId: ChainID,
@@ -20,7 +20,7 @@ export const getAccountsOptions = <T extends Account>(
     if (!isWatchOnly && isSameChain && isNewOption) {
       const element = (
         <div className="grid grid-rows-2 grid-flow-col gap-x-2.5">
-          <Icon className="row-span-2 self-center" name={Badges[account.signingType]} size={34} />
+          <Icon className="row-span-2 self-center" name={SigningBadges[account.signingType]} size={34} />
           <p className="text-left text-neutral text-lg font-semibold leading-5">{account.name}</p>
           <ChainAddress type="short" address={address} canCopy={false} />
         </div>

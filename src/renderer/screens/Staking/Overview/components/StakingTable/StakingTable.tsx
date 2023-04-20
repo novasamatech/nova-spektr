@@ -139,9 +139,9 @@ const StakingTable = ({
             <Table.Cell>
               <Explorers
                 className="ml-3"
-                explorers={explorers}
                 address={stake.address}
                 addressPrefix={addressPrefix}
+                explorers={explorers}
                 header={
                   stake.stash && (
                     <div className="flex gap-x-2.5">

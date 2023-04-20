@@ -204,7 +204,7 @@ const ValidatorsTable = ({
               {isLoading ? (
                 <Shimmering width={40} height={20} />
               ) : (
-                <Explorers address={address} explorers={explorers} addressPrefix={addressPrefix} />
+                <Explorers address={address} addressPrefix={addressPrefix} explorers={explorers} />
               )}
             </Table.Cell>
           </Table.Row>

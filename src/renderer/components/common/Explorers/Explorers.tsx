@@ -7,17 +7,17 @@ import { useI18n } from '@renderer/context/I18nContext';
 import { Explorer } from '@renderer/domain/chain';
 import { toAddress } from '@renderer/shared/utils/address';
 import { DefaultExplorer, ExplorerIcons } from './common/constants';
-import { Address } from '@renderer/domain/shared-kernel';
+import { AccountID, Address } from '@renderer/domain/shared-kernel';
 
 type Props = {
   explorers?: Explorer[];
+  address: Address | AccountID;
   addressPrefix?: number;
-  address: Address;
   header?: ReactNode;
   className?: string;
 };
 
-const Explorers = ({ explorers, addressPrefix, address, header, className }: Props) => {
+const Explorers = ({ explorers, address, addressPrefix, header, className }: Props) => {
   const { t } = useI18n();
 
   const explorersRef = useRef<HTMLDivElement>(null);

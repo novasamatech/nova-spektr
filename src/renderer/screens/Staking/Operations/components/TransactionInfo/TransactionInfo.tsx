@@ -16,6 +16,7 @@ import { AccountDS } from '@renderer/services/storage';
 import { useToggle } from '@renderer/shared/hooks';
 import AccountsModal from '../AccountsModal/AccountsModal';
 import ValidatorsModal from '../ValidatorsModal/ValidatorsModal';
+import { toAccountId } from '@renderer/shared/utils/address';
 
 type Destination = {
   address?: Address;
@@ -80,7 +81,7 @@ const TransactionInfo = ({
             {singleAccount ? (
               <AddressOnPlate
                 title={t('staking.confirmation.account')}
-                address={accounts[0].accountId || ''}
+                accountId={accounts[0].accountId || ''}
                 signType={accounts[0].signingType}
                 name={accounts[0].name}
                 addressPrefix={addressPrefix}
@@ -152,7 +153,7 @@ const TransactionInfo = ({
               <AddressOnPlate
                 title={t('staking.confirmation.rewardsDestination')}
                 suffix={t('staking.confirmation.transferableRewards')}
-                address={destination.address}
+                accountId={toAccountId(destination.address)}
                 addressPrefix={addressPrefix}
                 explorers={explorers}
               />

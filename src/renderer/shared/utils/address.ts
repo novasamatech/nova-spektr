@@ -10,11 +10,16 @@ import { PUBLIC_KEY_LENGTH, SS58_DEFAULT_PREFIX } from './constants';
  * @param params size and prefix (default is 42)
  * @return {String}
  */
-export const toAddress = (value: Address | AccountID, params?: { size?: number; prefix?: number }): string => {
+export const toAddress = (value: Address | AccountID, params?: { size?: number; prefix?: number }): Address => {
   const sizeValue = params?.size;
   const prefixValue = params?.prefix ?? SS58_DEFAULT_PREFIX;
 
-  const address = encodeAddress(decodeAddress(value), prefixValue);
+  let address = '';
+  try {
+    address = encodeAddress(decodeAddress(value), prefixValue);
+  } catch {
+    return address;
+  }
 
   if (sizeValue) {
     return address.length < 13 ? address : `${address.slice(0, sizeValue)}...${address.slice(-1 * sizeValue)}`;

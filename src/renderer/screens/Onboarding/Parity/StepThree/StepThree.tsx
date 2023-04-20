@@ -377,7 +377,7 @@ const StepThree = ({ qrData, onNextStep }: Props) => {
                                   wrapperClass="flex flex-1 items-center"
                                   prefixElement={<Identicon size={20} address={address} background={false} />}
                                   suffixElement={
-                                    <Explorers explorers={explorers} addressPrefix={addressPrefix} address={address} />
+                                    <Explorers address={address} addressPrefix={addressPrefix} explorers={explorers} />
                                   }
                                 />
                               </div>

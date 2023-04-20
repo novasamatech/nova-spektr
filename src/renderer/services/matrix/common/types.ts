@@ -37,8 +37,8 @@ export interface ISecureMessenger {
   syncSpektrTimeline: () => Promise<void>;
 
   // Validators
-  validateShortUserName: (value?: string) => boolean;
-  validateFullUserName: (value?: string) => boolean;
+  validateShortUserName: (value: string) => boolean;
+  validateFullUserName: (value: string) => boolean;
   // checkUserExists: (userId: string) => Promise<boolean>;
 
   // Verification

@@ -70,7 +70,7 @@ export const Confirmation = ({
             <div className="text-sm text-neutral-variant ">{t('transferDetails.sender')}</div>
             <div className="flex gap-1 items-center font-semibold">
               <ChainAddress type="short" address={address} addressStyle="large" size={18} />
-              <Explorers explorers={explorers} addressPrefix={addressPrefix} address={address} />
+              <Explorers address={address} addressPrefix={addressPrefix} explorers={explorers} />
             </div>
           </div>
         </div>
@@ -98,7 +98,7 @@ export const Confirmation = ({
             <div className="flex gap-1 items-center">
               <div className="flex gap-1 items-center font-semibold">
                 <ChainAddress type="short" address={destination} addressStyle="large" size={18} />
-                <Explorers explorers={explorers} addressPrefix={addressPrefix} address={address} />
+                <Explorers address={address} addressPrefix={addressPrefix} explorers={explorers} />
               </div>
             </div>
           </div>

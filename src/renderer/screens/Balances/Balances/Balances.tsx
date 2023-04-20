@@ -133,7 +133,7 @@ const Balances = () => {
         </div>
       </div>
 
-      <ReceiveModal data={receiveData} isOpen={isReceiveOpen} onClose={toggleReceive} />
+      {receiveData && <ReceiveModal data={receiveData} isOpen={isReceiveOpen} onClose={toggleReceive} />}
     </>
   );
 };

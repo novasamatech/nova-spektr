@@ -94,7 +94,7 @@ export type MultisigTransactionDS = WithID<MultisigTransaction>;
 
 export type TWallet = Table<Wallet, ID>;
 export type TContact = Table<Contact, ID>;
-export type TBalance = Table<Balance, ID | ID[]>;
+export type TBalance = Table<Balance, ID[]>;
 export type TConnection = Table<Connection, ID>;
 export type TAccount = Table<Account | MultisigAccount, ID>;
 export type TMultisigTransaction = Table<MultisigTransaction, ID>;

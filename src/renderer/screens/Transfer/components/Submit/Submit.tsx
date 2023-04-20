@@ -131,7 +131,7 @@ export const Submit = ({
               <div className="text-sm text-neutral-variant ">{t('transferDetails.sender')}</div>
               <div className="flex gap-1 items-center font-semibold">
                 <ChainAddress type="short" address={address} addressStyle="large" size={18} />
-                <Explorers explorers={explorers} addressPrefix={addressPrefix} address={address} />
+                <Explorers address={address} addressPrefix={addressPrefix} explorers={explorers} />
               </div>
             </div>
           </div>
@@ -159,7 +159,7 @@ export const Submit = ({
               <div className="flex gap-1 items-center">
                 <div className="flex gap-1 items-center font-semibold">
                   <ChainAddress type="short" address={destination} addressStyle="large" size={18} />
-                  <Explorers explorers={explorers} addressPrefix={addressPrefix} address={address} />
+                  <Explorers address={address} addressPrefix={addressPrefix} explorers={explorers} />
                 </div>
               </div>
             </div>
@@ -183,7 +183,7 @@ export const Submit = ({
       >
         <div className="flex uppercase items-center gap-2.5">
           <Icon name="checkmarkCutout" size={20} className="text-success" />
-          {t('transfer.successMessage')}
+          <p className="flex-1">{t('transfer.successMessage')}</p>
         </div>
       </Message>
 
@@ -196,7 +196,7 @@ export const Submit = ({
       >
         <div className="flex uppercase items-center gap-2.5">
           <Icon name="warnCutout" size={20} className="text-error" />
-          {errorMessage}
+          <p className="flex-1">{errorMessage}</p>
         </div>
       </Message>
     </>

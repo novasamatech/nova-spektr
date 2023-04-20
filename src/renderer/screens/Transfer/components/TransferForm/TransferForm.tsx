@@ -12,7 +12,7 @@ import { Asset, AssetType } from '@renderer/domain/asset';
 import { Transaction, MultisigTxInitStatus, TransactionType } from '@renderer/domain/transaction';
 import { useBalance } from '@renderer/services/balance/balanceService';
 import { formatAmount, transferableAmount } from '@renderer/services/balance/common/utils';
-import { Address, ChainID } from '@renderer/domain/shared-kernel';
+import { Address, ChainID, AccountID } from '@renderer/domain/shared-kernel';
 import { useTransaction } from '@renderer/services/transaction/transactionService';
 import { useMultisigTx } from '@renderer/services/multisigTx/multisigTxService';
 import { getAssetId } from '@renderer/shared/utils/assets';
@@ -99,13 +99,13 @@ export const TransferForm = ({
   };
 
   useEffect(() => {
-    if (!account?.accountId) return;
+    if (!account) return;
 
     setupBalances(account.accountId, setAccountNativeTokenBalance, setAccountBalance);
   }, [account]);
 
   useEffect(() => {
-    if (!signer?.accountId) return;
+    if (!signer) return;
 
     setupBalances(signer.accountId, setSignerNativeTokenBalance, setSignerBalance);
   }, [signer]);
@@ -118,18 +118,18 @@ export const TransferForm = ({
   }, [account]);
 
   useEffect(() => {
-    if (!account?.accountId || !amount || !validateAddress(destination)) return;
+    if (!account || !amount || !validateAddress(destination)) return;
 
     const transferPayload = getTransferTx(account.accountId);
 
-    if (isMultisig(account) && signer?.accountId) {
+    if (isMultisig(account) && signer) {
       setMultisigTx(getMultisigTx(account, signer.accountId, transferPayload));
     }
 
     setTransferTx(transferPayload);
   }, [account, destination, amount]);
 
-  const getTransferTx = (address: Address): Transaction => {
+  const getTransferTx = (accountId: AccountID): Transaction => {
     const TransferType: Record<AssetType, TransactionType> = {
       [AssetType.ORML]: TransactionType.ORML_TRANSFER,
       [AssetType.STATEMINE]: TransactionType.ASSET_TRANSFER,
@@ -137,7 +137,7 @@ export const TransferForm = ({
 
     return {
       chainId,
-      address,
+      address: toAddress(accountId, { prefix: addressPrefix }),
       type: asset.type ? TransferType[asset.type] : TransactionType.TRANSFER,
       args: {
         dest: toAddress(destination, { prefix: addressPrefix }),
@@ -147,28 +147,28 @@ export const TransferForm = ({
     };
   };
 
-  const getMultisigTx = (account: MultisigAccount, signer: Address, transaction: Transaction): Transaction => {
+  const getMultisigTx = (
+    account: MultisigAccount,
+    signerAccountId: AccountID,
+    transaction: Transaction,
+  ): Transaction => {
     const { callData, callHash } = getTransactionHash(transaction, api);
 
-    const otherSignatories = account.signatories
-      .reduce<Address[]>((acc, s) => {
-        const signerAddress = toAddress(signer, { prefix: addressPrefix });
-        const signatoryAddress = toAddress(s.accountId, { prefix: addressPrefix });
-        if (signerAddress !== signatoryAddress) {
-          acc.push(signatoryAddress);
-        }
+    const otherSignatories = account.signatories.reduce<Address[]>((acc, s) => {
+      if (s.accountId !== signerAccountId) {
+        acc.push(toAddress(s.accountId, { prefix: addressPrefix }));
+      }
 
-        return acc;
-      }, [])
-      .sort();
+      return acc;
+    }, []);
 
     return {
       chainId,
-      address: signer,
+      address: toAddress(signerAccountId, { prefix: addressPrefix }),
       type: TransactionType.MULTISIG_AS_MULTI,
       args: {
         threshold: account.threshold,
-        otherSignatories,
+        otherSignatories: otherSignatories.sort(),
         maybeTimepoint: null,
         callData,
         callHash,

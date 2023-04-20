@@ -1,12 +1,13 @@
 import { render, screen } from '@testing-library/react';
 
-import { TEST_ADDRESS } from '@renderer/shared/utils/constants';
+import { TEST_ACCOUNT_ID } from '@renderer/shared/utils/constants';
+import { AccountID } from '@renderer/domain/shared-kernel';
 import AddressOnPlate from './AddressOnPlate';
 
 describe('common/AddressOnPlate', () => {
   test('should render component', () => {
     const props = {
-      address: TEST_ADDRESS,
+      accountId: TEST_ACCOUNT_ID as AccountID,
       title: 'placeholder',
       name: 'My account',
       subName: 'My subname',

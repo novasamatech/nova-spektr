@@ -83,6 +83,10 @@ const ContactModal = ({ isOpen, onToggle, contact }: Props) => {
     onToggle();
   };
 
+  const validateMatrixLogin = (value?: string): boolean => {
+    return !value || matrix.validateFullUserName(value);
+  };
+
   return (
     <BaseModal
       title={t(isEdit ? 'addressBook.editContact.title' : 'addressBook.addContact.title')}
@@ -115,7 +119,7 @@ const ContactModal = ({ isOpen, onToggle, contact }: Props) => {
         <Controller
           name="matrixId"
           control={control}
-          rules={{ validate: matrix.validateFullUserName }}
+          rules={{ validate: validateMatrixLogin }}
           render={({ field: { value, onChange }, fieldState: { error } }) => (
             <>
               <Input

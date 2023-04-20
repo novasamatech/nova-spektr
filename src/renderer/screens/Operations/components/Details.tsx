@@ -22,9 +22,12 @@ const Details = ({ tx, account, connection, withAdvanced = true }: Props) => {
   const [isAdvancedShown, toggleAdvanced] = useToggle();
 
   const { indexCreated, blockCreated, deposit, depositor, callHash, callData, transaction } = tx;
+
   const defaultAsset = connection?.assets[0];
+  const addressPrefix = connection?.addressPrefix;
+  const explorers = connection?.explorers;
   const depositorSignatory = account?.signatories.find((s) => s.accountId === depositor);
-  const extrinsicLink = getMultisigExtrinsicLink(callHash, indexCreated, blockCreated, connection?.explorers);
+  const extrinsicLink = getMultisigExtrinsicLink(callHash, indexCreated, blockCreated, explorers);
 
   return (
     <>
@@ -33,8 +36,8 @@ const Details = ({ tx, account, connection, withAdvanced = true }: Props) => {
           <li className="flex justify-between items-center">
             <div className="text-shade-40">{t('operation.details.multisigWallet')}</div>
             <div className="flex items-center gap-1">
-              <ChainAddress address={account.accountId || ''} name={account.name} canCopy />
-              <Explorers address={account.accountId || ''} explorers={connection?.explorers} />
+              <ChainAddress accountId={account.accountId} addressPrefix={addressPrefix} name={account.name} canCopy />
+              <Explorers address={account.accountId} addressPrefix={addressPrefix} explorers={explorers} />
             </div>
           </li>
         )}
@@ -43,8 +46,8 @@ const Details = ({ tx, account, connection, withAdvanced = true }: Props) => {
           <li className="flex justify-between items-center">
             <div className="text-shade-40">{t('operation.details.recipient')}</div>
             <div className="flex items-center gap-1">
-              <ChainAddress type="short" address={transaction?.args.dest} />
-              <Explorers address={transaction.args.dest || ''} explorers={connection?.explorers} />
+              <ChainAddress type="short" address={transaction.args.dest} />
+              <Explorers address={transaction.args.dest} addressPrefix={addressPrefix} explorers={explorers} />
             </div>
           </li>
         )}
@@ -55,8 +58,12 @@ const Details = ({ tx, account, connection, withAdvanced = true }: Props) => {
             <div className="flex items-center gap-1">
               {transaction.args.payee.AccountId ? (
                 <>
-                  <ChainAddress address={transaction.args.payee.AccountId} />
-                  <Explorers address={transaction.args.payee.AccountId || ''} explorers={connection?.explorers} />
+                  <ChainAddress accountId={transaction.args.payee.AccountId} addressPrefix={addressPrefix} />
+                  <Explorers
+                    address={transaction.args.payee.AccountId || ''}
+                    addressPrefix={addressPrefix}
+                    explorers={explorers}
+                  />
                 </>
               ) : (
                 transaction.args.payee
@@ -70,7 +77,7 @@ const Details = ({ tx, account, connection, withAdvanced = true }: Props) => {
             <div className="text-shade-40">{t('operation.details.payee')}</div>
             <div className="flex items-center gap-1">
               <ChainAddress address={transaction.args.controller} />
-              <Explorers address={transaction.args.controller || ''} explorers={connection?.explorers} />
+              <Explorers address={transaction.args.controller} addressPrefix={addressPrefix} explorers={explorers} />
             </div>
           </li>
         )}
@@ -105,8 +112,12 @@ const Details = ({ tx, account, connection, withAdvanced = true }: Props) => {
               <li className="flex justify-between items-center">
                 <div className="text-shade-40">{t('operation.details.depositor')}</div>
                 <div className="flex gap-1">
-                  <ChainAddress address={depositorSignatory.accountId} name={depositorSignatory.name} canCopy />
-                  <Explorers address={depositorSignatory.accountId} explorers={connection?.explorers} />
+                  <ChainAddress address={depositorSignatory.address} name={depositorSignatory.name} canCopy />
+                  <Explorers
+                    address={depositorSignatory.accountId}
+                    addressPrefix={addressPrefix}
+                    explorers={explorers}
+                  />
                 </div>
               </li>
             )}

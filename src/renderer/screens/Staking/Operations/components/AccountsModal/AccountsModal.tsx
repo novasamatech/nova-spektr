@@ -40,7 +40,13 @@ const AccountsModal = ({ isOpen, accounts, amounts = [], asset, explorers, addre
               <Table.Row key={accountId} className="bg-shade-1" height="lg">
                 <Table.Cell>
                   <div className="flex items-center gap-x-1.5">
-                    <ChainAddress address={accountId} name={name} signType={signingType} size={30} />
+                    <ChainAddress
+                      accountId={accountId}
+                      addressPrefix={addressPrefix}
+                      name={name}
+                      signType={signingType}
+                      size={30}
+                    />
                   </div>
                 </Table.Cell>
                 {amountExists && (
@@ -54,7 +60,7 @@ const AccountsModal = ({ isOpen, accounts, amounts = [], asset, explorers, addre
                   </Table.Cell>
                 )}
                 <Table.Cell>
-                  <Explorers address={accountId} explorers={explorers} addressPrefix={addressPrefix} />
+                  <Explorers address={accountId} addressPrefix={addressPrefix} explorers={explorers} />
                 </Table.Cell>
               </Table.Row>
             )}

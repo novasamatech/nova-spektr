@@ -11,7 +11,7 @@ import Matrix, {
   CancelPayload,
   BaseMultisigPayload,
 } from '@renderer/services/matrix';
-import { MultisigAccount, getMultisigAddress, createMultisigAccount } from '@renderer/domain/account';
+import { MultisigAccount, getMultisigAccountId, createMultisigAccount } from '@renderer/domain/account';
 import { useAccount } from '@renderer/services/account/accountService';
 import { toAddress } from '@renderer/shared/utils/address';
 import { useContact } from '@renderer/services/contact/contactService';
@@ -68,7 +68,7 @@ export const MatrixProvider = ({ children }: PropsWithChildren) => {
     const { roomId, content } = payload;
     const { accountId, threshold, signatories } = content.mstAccount;
 
-    const mstAccountIsValid = accountId === getMultisigAddress(signatories, threshold);
+    const mstAccountIsValid = accountId === getMultisigAccountId(signatories, threshold);
     if (!mstAccountIsValid) return;
 
     const accounts = await getAccounts();
@@ -184,7 +184,7 @@ export const MatrixProvider = ({ children }: PropsWithChildren) => {
   ): boolean => {
     const { accountId, threshold, signatories } = extras.mstAccount;
     const senderIsSignatory = signatories.some((accountId) => accountId === senderAccountId);
-    const mstAccountIsValid = accountId === getMultisigAddress(signatories, threshold);
+    const mstAccountIsValid = accountId === getMultisigAccountId(signatories, threshold);
     const callDataIsValid = !callData || validateCallData(callData, callHash);
 
     return senderIsSignatory && mstAccountIsValid && callDataIsValid;

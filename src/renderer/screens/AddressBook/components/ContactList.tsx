@@ -47,7 +47,7 @@ const ContactList = ({ contacts, query }: Props) => {
           {(contact) => (
             <Table.Row key={contact.id} className="bg-shade-1" height="lg">
               <Table.Cell>
-                <ChainAddress size={28} address={contact.accountId} name={contact.name} subName={contact.accountId} />
+                <ChainAddress size={28} address={contact.address} name={contact.name} subName={contact.address} />
               </Table.Cell>
               <Table.Cell>
                 <div className="text-xs text-neutral-variant">{contact.matrixId}</div>

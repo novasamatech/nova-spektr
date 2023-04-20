@@ -1,6 +1,7 @@
 import { ComponentStory, ComponentMeta } from '@storybook/react';
 
 import ChainAddress from './ChainAddress';
+import { TEST_ACCOUNT_ID } from '@renderer/shared/utils/constants';
 
 export default {
   title: 'Address',
@@ -12,11 +13,11 @@ const Template: ComponentStory<typeof ChainAddress> = (args) => <ChainAddress {.
 
 export const Primary = Template.bind({});
 Primary.args = {
-  address: '5F3sa2TJAWMqDhXG6jhV4N8ko9SxwGy8TpaNS1repo5EYjQX',
+  accountId: TEST_ACCOUNT_ID,
 };
 
 export const Full = Template.bind({});
 Full.args = {
-  address: '5F3sa2TJAWMqDhXG6jhV4N8ko9SxwGy8TpaNS1repo5EYjQX',
+  accountId: TEST_ACCOUNT_ID,
   type: 'full',
 };
