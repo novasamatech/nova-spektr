@@ -3,8 +3,9 @@ import { ChangeEvent, PropsWithChildren } from 'react';
 
 import './styles.css';
 import { FootnoteText } from '@renderer/components/ui-redesign';
+import { FocusControl } from '@renderer/components/ui-redesign/Dropdowns/common/types';
 
-type Props = {
+interface Props extends FocusControl {
   defaultChecked?: boolean;
   position?: 'right' | 'left';
   checked?: boolean;
@@ -13,7 +14,7 @@ type Props = {
   value?: any;
   className?: string;
   onChange?: (event: ChangeEvent<HTMLInputElement>) => void;
-};
+}
 
 const Checkbox = ({
   checked,
@@ -25,6 +26,7 @@ const Checkbox = ({
   className,
   children,
   onChange,
+  tabIndex,
 }: PropsWithChildren<Props>) => {
   const content = typeof children === 'string' ? <FootnoteText>{children}</FootnoteText> : children;
 
@@ -47,6 +49,7 @@ const Checkbox = ({
           'disabled:text-filter-border disabled:bg-main-app-background disabled:checked:bg-main-app-background',
           !disabled && 'hover:cursor-pointer',
         )}
+        tabIndex={tabIndex}
         onChange={onChange}
       />
       {children && position === 'right' && content}
