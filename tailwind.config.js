@@ -91,7 +91,7 @@ module.exports = {
         caption: ['0.625rem', '0.75rem'],
         headline: ['0.9375rem', '1.375rem'],
         body: ['0.8125rem', '1.125rem'],
-        footnote: ['0.75rem', '1rem'],
+        footnote: ['0.75rem', '1.125rem'],
       },
       borderRadius: {
         '2lg': '10px',
