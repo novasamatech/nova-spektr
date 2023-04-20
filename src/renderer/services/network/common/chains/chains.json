@@ -1344,15 +1344,15 @@
     "addressPrefix": 28
   },
   {
-    "chainId": "0x03e9685133ff74308fc46ac457da098f00d7b0a61498d5cbd7763bf40559fa81",
-    "name": "Novasama Testnet",
+    "chainId": "0xf460fe68f5f34ced6b18d8e4612410e334c55521bf27714cdca654b63b685ae6",
+    "name": "Novasama Testnet - Kusama",
     "assets": [
       {
         "assetId": 0,
-        "symbol": "Unit",
-        "precision": 10,
-        "icon": "https://raw.githubusercontent.com/nova-wallet/nova-utils/master/icons/tokens/white/GOV2.svg",
-        "name": "Test token"
+        "symbol": "KSM",
+        "precision": 12,
+        "icon": "https://raw.githubusercontent.com/nova-wallet/nova-utils/master/icons/chains/white/Kusama.svg",
+        "name": "Kusama"
       }
     ],
     "nodes": [
@@ -1374,7 +1374,7 @@
       ]
     },
     "icon": "https://raw.githubusercontent.com/nova-wallet/nova-utils/master/icons/chains/gradient/Governance2_Testnet.svg",
-    "addressPrefix": 0,
+    "addressPrefix": 2,
     "options": ["testnet", "governance"]
   }
 ]
