@@ -6112,7 +6112,7 @@
       ]
     },
     "icon": "https://raw.githubusercontent.com/nova-wallet/nova-utils/master/icons/chains/gradient/Governance2_Testnet.svg",
-    "addressPrefix": 2,
+    "addressPrefix": 0,
     "options": ["testnet", "governance"]
   },
   {
