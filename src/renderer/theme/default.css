@@ -36,6 +36,8 @@
   --token-container-border: rgba(69, 69, 137, 0.06);
   --filter-border: rgba(69, 69, 137, 0.12);
   --container-border: rgba(69, 69, 137, 0.06);
+  --active-container-border: #4649f6;
+  --filter-border-negative: #f52163;
 
   /* DIVIDER */
   --divider: rgba(69, 69, 137, 0.06);
@@ -48,7 +50,8 @@
   --left-navigation-menu-background: #ffffff;
   --main-app-background: rgba(69, 69, 137, 0.04);
   --token-container-background: #ffffff;
-  --input-background: rgba(69, 69, 137, 0.04);
+  --input-background: #fff;
+  --input-background-disabled: rgba(69, 69, 137, 0.04);
   --action-background-hover: rgba(69, 69, 137, 0.06);
   --block-background-hover: rgba(69, 69, 137, 0.06);
   --block-background: rgba(69, 69, 137, 0.04);

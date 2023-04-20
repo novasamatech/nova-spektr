@@ -28,6 +28,7 @@ import {
   MultisigTxStatus,
 } from '@renderer/domain/transaction';
 import { Signatory } from '@renderer/domain/signatory';
+import { useNetworkContext } from '@renderer/context/NetworkContext';
 
 type MatrixContextProps = {
   matrix: ISecureMessenger;
@@ -38,8 +39,16 @@ const MatrixContext = createContext<MatrixContextProps>({} as MatrixContextProps
 
 export const MatrixProvider = ({ children }: PropsWithChildren) => {
   const { getContacts } = useContact();
-  const { getMultisigTxs, addMultisigTx, updateMultisigTx } = useMultisigTx();
+  const { getMultisigTxs, addMultisigTx, updateMultisigTx, updateCallData } = useMultisigTx();
   const { getAccounts, addAccount, updateAccount } = useAccount();
+  const { connections } = useNetworkContext();
+
+  const connectionsRef = useRef(connections);
+
+  useEffect(() => {
+    // HOOK: correct connections for update multisig tx
+    connectionsRef.current = connections;
+  }, [connections]);
 
   const { current: matrix } = useRef<ISecureMessenger>(new Matrix());
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -162,6 +171,7 @@ export const MatrixProvider = ({ children }: PropsWithChildren) => {
       indexCreated: content.callTimepoint.index,
     });
 
+    // TODO: check that really can be more than 1 task with same accountId, callHash and timepoint
     const lastTx = multisigTxs[multisigTxs.length - 1];
 
     if (matrix.isUpdateEvent(type, content)) {
@@ -232,10 +242,14 @@ export const MatrixProvider = ({ children }: PropsWithChildren) => {
     });
   };
 
-  const handleUpdateEvent = async (payload: UpdatePayload, tx: MultisigTransaction): Promise<void> => {
+  const handleUpdateEvent = async ({ callData }: UpdatePayload, tx: MultisigTransaction): Promise<void> => {
     if (!tx) return;
 
-    await updateMultisigTx({ ...tx, callData: payload.callData });
+    const api = connectionsRef.current[tx.chainId]?.api;
+
+    if (!api || !callData || callData === tx.callData) return;
+
+    await updateCallData(api, tx, callData);
   };
 
   const handleCancelEvent = async (

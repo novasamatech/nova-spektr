@@ -9,10 +9,10 @@ import {
   MultisigTxInitStatus,
   MultisigEvent,
   MultisigTxStatus,
+  MultisigTransaction,
 } from '@renderer/domain/transaction';
-import { useMultisigTx } from '@renderer/services/multisigTx/multisigTxService';
-import { MultisigTransactionDS } from '@renderer/services/storage';
 import Chain from './Chain';
+import { useMultisigTx } from '@renderer/services/multisigTx/multisigTxService';
 import ShortTransactionInfo from './ShortTransactionInfo';
 import TransactionTitle from './TransactionTitle';
 import { useToggle } from '@renderer/shared/hooks';
@@ -26,7 +26,7 @@ import { nonNullable } from '@renderer/shared/utils/functions';
 import { getMultisigExtrinsicLink } from '../common/utils';
 import RejectTx from './RejectTx';
 import ApproveTx from './ApproveTx';
-// import { useMatrix } from '@renderer/context/MatrixContext';
+import { useMatrix } from '@renderer/context/MatrixContext';
 
 const StatusTitle: Record<MultisigTxStatus, string> = {
   [MultisigTxInitStatus.SIGNING]: 'operation.status.signing',
@@ -37,16 +37,16 @@ const StatusTitle: Record<MultisigTxStatus, string> = {
 };
 
 type Props = {
-  tx: MultisigTransactionDS & { rowIndex: number };
+  tx: MultisigTransaction & { rowIndex: number };
   account?: MultisigAccount;
 };
 
 const Operation = ({ tx, account }: Props) => {
   const { t, dateLocale } = useI18n();
-  const { connections } = useNetworkContext();
-  const { updateCallData } = useMultisigTx();
+  const { matrix } = useMatrix();
 
-  // const { matrix } = useMatrix();
+  const { updateCallData } = useMultisigTx();
+  const { connections } = useNetworkContext();
 
   const [isRowShown, toggleRow] = useToggle();
   const [isCallDataModalOpen, toggleCallDataModal] = useToggle();
@@ -63,8 +63,22 @@ const Operation = ({ tx, account }: Props) => {
 
     if (!api || !tx) return;
 
-    updateCallData(api, tx, callData as CallData);
-    // matrix.mstUpdate()
+    if (!account?.matrixRoomId) {
+      updateCallData(api, tx, callData as CallData);
+
+      return;
+    }
+
+    matrix.sendUpdate(account?.matrixRoomId, {
+      senderAccountId: tx.depositor || '0x00',
+      chainId: tx.chainId,
+      callHash: tx.callHash,
+      callData: callData,
+      callTimepoint: {
+        index: tx.indexCreated || 0,
+        height: tx.blockCreated || 0,
+      },
+    });
   };
 
   useEffect(() => {

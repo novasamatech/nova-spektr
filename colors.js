@@ -36,6 +36,8 @@ module.exports = {
   'token-container-border': 'var(--token-container-border)',
   'filter-border': 'var(--filter-border)',
   'container-border': 'var(--container-border)',
+  'active-container-border': 'var(--active-container-border)',
+  'filter-border-negative': 'var(--filter-border-negative)',
 
   /* DIVIDER */
   divider: 'var(--divider)',
@@ -49,6 +51,7 @@ module.exports = {
   'main-app-background': 'var(--main-app-background)',
   'token-container-background': 'var(--token-container-background)',
   'input-background': 'var(--input-background)',
+  'input-background-disabled': 'var(--input-background-disabled)',
   'action-background-hover': 'var(--action-background-hover)',
   'block-background-hover': 'var(--block-background-hover)',
   'block-background': 'var(--block-background)',

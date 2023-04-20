@@ -34,7 +34,7 @@ class DexieStorage extends Dexie {
       accounts: '++id,isActive,walletId,rootId,signingType',
       contacts: '++id,name,accountId,matrixId',
       multisigTransactions:
-        '++id,[accountId+status],[accountId+callHash],[callHash+status+chainId],accountId,status,callHash',
+        '++id,[accountId+status],[accountId+callHash],[callHash+status+chainId],[accountId+chainId+callHash+blockCreated+indexCreated],accountId,status,callHash',
     });
 
     this.connections = this.table('connections');

@@ -43,6 +43,9 @@ export const useMultisigTx = (): IMultisigTxService => {
         if (oldTx) {
           updateMultisigTx(updateTransactionPayload(oldTx, pendingTx));
         } else {
+          const depositor = pendingTx.params.depositor.toHex();
+          if (!account.signatories.find((s) => s.accountId == depositor)) return;
+
           const blockTime = getExpectedBlockTime(api);
 
           addMultisigTx(

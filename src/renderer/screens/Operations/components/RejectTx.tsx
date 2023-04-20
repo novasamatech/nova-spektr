@@ -27,7 +27,6 @@ import { useCountdown } from '@renderer/screens/Staking/Operations/hooks/useCoun
 import { useBalance } from '@renderer/services/balance/balanceService';
 import { transferableAmount } from '@renderer/services/balance/common/utils';
 import { MAX_WEIGHT } from '@renderer/services/transaction/common/constants';
-import { TEST_ADDRESS } from '@renderer/shared/utils/constants';
 import RejectReasonModal from './RejectReasonModal';
 
 type Props = {
@@ -80,7 +79,7 @@ const RejectTx = ({ tx, account, connection }: Props) => {
   };
 
   useEffect(() => {
-    const multisigTx = getMultisigTx(signAccount?.accountId || TEST_ADDRESS);
+    const multisigTx = getMultisigTx(signAccount?.accountId || account.signatories[0].accountId);
 
     setApproveTx(multisigTx);
   }, [tx, accounts.length, signAccount?.accountId, txWeight]);
@@ -94,34 +93,30 @@ const RejectTx = ({ tx, account, connection }: Props) => {
   const asset = getAssetById(tx.transaction?.args.assetId, connection.assets);
 
   const getMultisigTx = (signer: Address): Transaction => {
-    const chainId = tx.chainId;
+    const otherSignatories = account.signatories.reduce<Address[]>((acc, s) => {
+      const signerAddress = toAddress(signer, { prefix: connection?.addressPrefix });
+      const signatoryAddress = toAddress(s.accountId, { prefix: connection?.addressPrefix });
 
-    const otherSignatories = account.signatories
-      .reduce<Address[]>((acc, s) => {
-        const signerAddress = toAddress(signer, { prefix: connection?.addressPrefix });
-        const signatoryAddress = toAddress(s.accountId, { prefix: connection?.addressPrefix });
+      if (signerAddress !== signatoryAddress) {
+        acc.push(signatoryAddress);
+      }
 
-        if (signerAddress !== signatoryAddress) {
-          acc.push(signatoryAddress);
-        }
-
-        return acc;
-      }, [])
-      .sort();
+      return acc;
+    }, []);
 
     return {
-      chainId,
+      chainId: tx.chainId,
       address: signer,
       type: TransactionType.MULTISIG_CANCEL_AS_MULTI,
       args: {
         threshold: account.threshold,
-        otherSignatories,
+        otherSignatories: otherSignatories.sort(),
         maxWeight: txWeight || MAX_WEIGHT,
+        callHash: tx.callHash,
         maybeTimepoint: {
           height: tx.blockCreated,
           index: tx.indexCreated,
         } as Timepoint,
-        callHash: tx.callHash,
       },
     };
   };

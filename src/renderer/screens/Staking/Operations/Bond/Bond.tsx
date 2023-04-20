@@ -192,62 +192,64 @@ const Bond = () => {
     <div className="flex flex-col h-full relative">
       {headerContent}
 
-      {activeStep === Step.INIT && (
-        <InitOperation api={api} chainId={chainId} identifiers={accountIds} asset={asset} onResult={onInitResult} />
-      )}
-      {activeStep === Step.VALIDATORS && (
-        <Validators api={api} chainId={chainId} onResult={onSelectValidators} {...explorersProps} />
-      )}
-      {activeStep === Step.CONFIRMATION && (
-        <Confirmation
-          api={api}
-          validators={Object.values(validators)}
-          accounts={accounts}
-          amounts={bondValues}
-          destination={destination}
-          transaction={transactions[0]}
-          onResult={() => setActiveStep(Step.SCANNING)}
-          onAddToQueue={noop}
-          {...explorersProps}
-        >
-          {hints}
-        </Confirmation>
-      )}
-      {activeStep === Step.SCANNING && (
-        <Scanning
-          api={api}
-          chainId={chainId}
-          accounts={accounts}
-          transactions={transactions}
-          addressPrefix={addressPrefix}
-          countdown={countdown}
-          onResetCountdown={resetCountdown}
-          onResult={onScanResult}
-        />
-      )}
-      {activeStep === Step.SIGNING && (
-        <Signing
-          countdown={countdown}
-          multiQr={transactions.length > 1}
-          onResult={onSignResult}
-          onGoBack={onBackToScan}
-        />
-      )}
-      {activeStep === Step.SUBMIT && (
-        <Submit
-          api={api}
-          transaction={transactions[0]}
-          signatures={signatures}
-          unsignedTx={unsignedTransactions}
-          validators={Object.values(validators)}
-          accounts={accounts}
-          amounts={bondValues}
-          destination={destination}
-          {...explorersProps}
-        >
-          {hints}
-        </Submit>
-      )}
+      <div className="overflow-y-auto">
+        {activeStep === Step.INIT && (
+          <InitOperation api={api} chainId={chainId} identifiers={accountIds} asset={asset} onResult={onInitResult} />
+        )}
+        {activeStep === Step.VALIDATORS && (
+          <Validators api={api} chainId={chainId} onResult={onSelectValidators} {...explorersProps} />
+        )}
+        {activeStep === Step.CONFIRMATION && (
+          <Confirmation
+            api={api}
+            validators={Object.values(validators)}
+            accounts={accounts}
+            amounts={bondValues}
+            destination={destination}
+            transaction={transactions[0]}
+            onResult={() => setActiveStep(Step.SCANNING)}
+            onAddToQueue={noop}
+            {...explorersProps}
+          >
+            {hints}
+          </Confirmation>
+        )}
+        {activeStep === Step.SCANNING && (
+          <Scanning
+            api={api}
+            chainId={chainId}
+            accounts={accounts}
+            transactions={transactions}
+            addressPrefix={addressPrefix}
+            countdown={countdown}
+            onResetCountdown={resetCountdown}
+            onResult={onScanResult}
+          />
+        )}
+        {activeStep === Step.SIGNING && (
+          <Signing
+            countdown={countdown}
+            multiQr={transactions.length > 1}
+            onResult={onSignResult}
+            onGoBack={onBackToScan}
+          />
+        )}
+        {activeStep === Step.SUBMIT && (
+          <Submit
+            api={api}
+            transaction={transactions[0]}
+            signatures={signatures}
+            unsignedTx={unsignedTransactions}
+            validators={Object.values(validators)}
+            accounts={accounts}
+            amounts={bondValues}
+            destination={destination}
+            {...explorersProps}
+          >
+            {hints}
+          </Submit>
+        )}
+      </div>
     </div>
   );
 };

@@ -43,7 +43,7 @@ const Operations = () => {
             Object.entries(groupedTxs)
               .sort(sortByDate)
               .map(([date, txs]) => (
-                <>
+                <div key={date}>
                   <div className="text-shade-30">{date}</div>
                   <Block className="p-1.5">
                     <Table by="id" dataSource={txs.sort((a, b) => (b.dateCreated || 0) - (a.dateCreated || 0))}>
@@ -61,7 +61,7 @@ const Operations = () => {
                       </Table.Body>
                     </Table>
                   </Block>
-                </>
+                </div>
               ))
           ) : (
             <EmptyOperations />

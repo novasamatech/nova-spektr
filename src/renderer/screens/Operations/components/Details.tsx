@@ -1,3 +1,5 @@
+import cn from 'classnames';
+
 import { useI18n } from '@renderer/context/I18nContext';
 import { MultisigTransactionDS } from '@renderer/services/storage';
 import { MultisigAccount } from '@renderer/domain/account';
@@ -8,6 +10,7 @@ import { useToggle } from '@renderer/shared/hooks';
 import { ExtendedChain } from '@renderer/services/network/common/types';
 import { Explorers } from '@renderer/components/common';
 import { getMultisigExtrinsicLink } from '../common/utils';
+import ValidatorsModal from '@renderer/screens/Staking/Operations/components/ValidatorsModal/ValidatorsModal';
 
 type Props = {
   tx: MultisigTransactionDS & { rowIndex: number };
@@ -20,6 +23,7 @@ const Details = ({ tx, account, connection, withAdvanced = true }: Props) => {
   const { t } = useI18n();
 
   const [isAdvancedShown, toggleAdvanced] = useToggle();
+  const [isValidatorsOpen, toggleValidators] = useToggle();
 
   const { indexCreated, blockCreated, deposit, depositor, callHash, callData, transaction } = tx;
 
@@ -56,13 +60,13 @@ const Details = ({ tx, account, connection, withAdvanced = true }: Props) => {
           <li className="flex justify-between items-center">
             <div className="text-shade-40">{t('operation.details.payee')}</div>
             <div className="flex items-center gap-1">
-              {transaction.args.payee.AccountId ? (
+              {transaction.args.payee.account ? (
                 <>
-                  <ChainAddress accountId={transaction.args.payee.AccountId} addressPrefix={addressPrefix} />
+                  <ChainAddress type="short" address={transaction.args.payee.account} />
                   <Explorers
-                    address={transaction.args.payee.AccountId || ''}
+                    address={transaction.args.payee.account}
                     addressPrefix={addressPrefix}
-                    explorers={explorers}
+                    explorers={connection?.explorers}
                   />
                 </>
               ) : (
@@ -74,11 +78,46 @@ const Details = ({ tx, account, connection, withAdvanced = true }: Props) => {
 
         {transaction?.args.controller && (
           <li className="flex justify-between items-center">
-            <div className="text-shade-40">{t('operation.details.payee')}</div>
+            <div className="text-shade-40">{t('operation.details.controller')}</div>
             <div className="flex items-center gap-1">
-              <ChainAddress address={transaction.args.controller} />
-              <Explorers address={transaction.args.controller} addressPrefix={addressPrefix} explorers={explorers} />
+              <ChainAddress type="short" address={transaction.args.controller} />
+              <Explorers address={transaction.args.controller} explorers={connection?.explorers} />
             </div>
+          </li>
+        )}
+
+        {transaction?.args.targets && defaultAsset && (
+          <li className="flex justify-between items-center">
+            <div className="text-shade-40">{t('operation.details.validators')}</div>
+            <div className="flex items-center gap-1">
+              <button
+                type="button"
+                className={cn(
+                  'flex gap-x-1 items-center justify-between h-10 px-[15px] rounded-2lg bg-shade-2',
+                  'transition hover:bg-shade-5 focus:bg-shade-5',
+                )}
+                onClick={toggleValidators}
+              >
+                <p className="text-sm text-neutral-variant">{t('staking.confirmation.selectValidators')}</p>
+                <div className="flex items-center gap-x-1">
+                  <p className="py-0.5 px-1 rounded-md bg-shade-30 text-white text-xs">
+                    {transaction.args.targets.length}
+                  </p>
+                  <Icon name="right" size={20} />
+                </div>
+              </button>
+            </div>
+
+            <ValidatorsModal
+              isOpen={isValidatorsOpen}
+              validators={transaction?.args.targets.map((address: string) => ({
+                address,
+              }))}
+              asset={defaultAsset}
+              explorers={connection?.explorers}
+              addressPrefix={connection?.addressPrefix}
+              onClose={toggleValidators}
+            />
           </li>
         )}
 
