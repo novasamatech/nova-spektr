@@ -14,3 +14,7 @@ export type DropdownResult<T extends any = any> = {
 };
 
 export type HTMLComboboxProps = 'value' | 'type' | 'required' | 'disabled' | 'placeholder' | 'name' | 'className';
+
+export interface FocusControl {
+  tabIndex?: number;
+}

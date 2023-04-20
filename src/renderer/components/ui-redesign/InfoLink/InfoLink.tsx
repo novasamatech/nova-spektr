@@ -3,8 +3,9 @@ import cn from 'classnames';
 
 import { IconNames } from '@renderer/components/ui/Icon/data';
 import { Icon } from '@renderer/components/ui';
+import { FocusControl } from '@renderer/components/ui-redesign/Dropdowns/common/types';
 
-interface BaseProps {
+interface BaseProps extends FocusControl {
   url?: string;
   showIcon?: boolean;
   iconName?: IconNames;
@@ -25,6 +26,7 @@ const InfoLink = ({
   iconName = 'info',
   className,
   fontClass = 'text-footnote',
+  tabIndex,
 }: PropsWithChildren<ExternalLink | PopoverLink>) => {
   return (
     <a
@@ -35,6 +37,7 @@ const InfoLink = ({
         showIcon && 'flex items-center gap-x-1',
         className,
       )}
+      tabIndex={tabIndex}
     >
       {showIcon && <Icon name={iconName} size={14} />}
       {children}

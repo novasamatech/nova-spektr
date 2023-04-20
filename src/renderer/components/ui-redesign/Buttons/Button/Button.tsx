@@ -4,8 +4,9 @@ import { MouseEvent, PropsWithChildren, ReactNode } from 'react';
 
 import { ViewClass, SizeClass } from '../common/constants';
 import { Pallet, Variant } from '../common/types';
+import { FocusControl } from '@renderer/components/ui-redesign/Dropdowns/common/types';
 
-type Props = {
+interface Props extends FocusControl {
   className?: string;
   type?: 'button' | 'submit';
   form?: string;
@@ -16,7 +17,7 @@ type Props = {
   prefixElement?: ReactNode;
   suffixElement?: ReactNode;
   onClick?: (event: MouseEvent<HTMLButtonElement>) => void;
-};
+}
 
 const Button = ({
   variant,
@@ -30,6 +31,7 @@ const Button = ({
   prefixElement,
   suffixElement,
   onClick = noop,
+  tabIndex,
 }: PropsWithChildren<Props>) => (
   <button
     type={type}
@@ -44,6 +46,7 @@ const Button = ({
       { 'active-styles': variant === 'fill' && pallet === 'primary' },
       className,
     )}
+    tabIndex={tabIndex}
     onClick={onClick}
   >
     {prefixElement && <div data-testid="prefix">{prefixElement}</div>}
