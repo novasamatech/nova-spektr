@@ -2240,7 +2240,7 @@
     ],
     "nodes": [
       {
-        "url": "wss://ws.calamari.systems/",
+        "url": "wss://calamari.systems",
         "name": "Manta network node"
       }
     ],
@@ -6082,13 +6082,13 @@
     "options": ["governance-v1"]
   },
   {
-    "chainId": "0xb587be787d4b0209a3105469f0cbfa34eeb834e49d949e841898b2243825d765",
-    "name": "Governance2 Novasama Testnet",
+    "chainId": "0x03e9685133ff74308fc46ac457da098f00d7b0a61498d5cbd7763bf40559fa81",
+    "name": "Novasama Testnet",
     "assets": [
       {
         "assetId": 0,
         "symbol": "Unit",
-        "precision": 12,
+        "precision": 10,
         "icon": "https://raw.githubusercontent.com/nova-wallet/nova-utils/master/icons/tokens/white/GOV2.svg",
         "name": "Test token"
       }
@@ -6155,41 +6155,6 @@
     },
     "icon": "https://raw.githubusercontent.com/nova-wallet/nova-utils/master/icons/chains/gradient/DAOIPCI.svg",
     "addressPrefix": 32
-  },
-  {
-    "chainId": "0xde06348a2bb1ca0b6ad293af89b08cc9e916d7753065c784d77c8d27a31af299",
-    "name": "Governance1 Novasama Testnet",
-    "assets": [
-      {
-        "assetId": 0,
-        "symbol": "Unit",
-        "precision": 10,
-        "icon": "https://raw.githubusercontent.com/nova-wallet/nova-utils/master/icons/tokens/white/GOV2.svg",
-        "staking": "relaychain",
-        "name": "Test token"
-      }
-    ],
-    "nodes": [
-      {
-        "url": "wss://novasama.uz/gov1",
-        "name": "Development node"
-      }
-    ],
-    "externalApi": {
-      "staking": [
-        {
-          "type": "subquery",
-          "url": "https://api.subquery.network/sq/nova-wallet/nova-wallet-polkadot"
-        }
-      ]
-    },
-    "types": {
-      "url": "https://raw.githubusercontent.com/nova-wallet/nova-utils/master/chains/v2/types/polkadot.json",
-      "overridesCommon": true
-    },
-    "icon": "https://raw.githubusercontent.com/nova-wallet/nova-utils/master/icons/chains/gradient/Governance2_Testnet.svg",
-    "addressPrefix": 0,
-    "options": ["testnet", "governance-v1"]
   },
   {
     "chainId": "0x74ed91fbc18497f011290f9119a2217908649170337b6414a2d44923ade07063",
