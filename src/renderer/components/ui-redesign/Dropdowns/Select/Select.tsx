@@ -68,7 +68,7 @@ const Select = ({
           <Transition as={Fragment} leave="transition ease-in duration-100" leaveFrom="opacity-100" leaveTo="opacity-0">
             <Listbox.Options className={cn(OptionsContainerStyle, position !== 'auto' && ViewClass[position])}>
               {options.map(({ id, value, element }) => (
-                <Listbox.Option key={id} className={OptionStyle} value={{ id, value }}>
+                <Listbox.Option key={id} className={OptionStyle} value={{ id, value: value || id }}>
                   {typeof element === 'string' ? <FootnoteText>{element}</FootnoteText> : element}
                 </Listbox.Option>
               ))}
