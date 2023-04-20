@@ -15,6 +15,7 @@ const Popover = ({ content, children, offsetPx = 10, contentClass }: PropsWithCh
   return (
     <Popup className="relative">
       <div
+        className="w-fit"
         ref={ref}
         tabIndex={0}
         onFocus={() => setIsOpen(true)}

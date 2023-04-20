@@ -16,7 +16,9 @@ import {
   BodyText,
   FootnoteText,
   LabelText,
-} from '@renderer/components/ui-redesign/Typography';
+} from './Typography';
+import Select from './Dropdowns/Select/Select';
+import Combobox from './Dropdowns/Combobox/Combobox';
 
 export {
   Input,
@@ -36,4 +38,6 @@ export {
   BodyText,
   FootnoteText,
   LabelText,
+  Select,
+  Combobox,
 };
