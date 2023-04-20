@@ -110,5 +110,13 @@
   "WETH-worm": "Ethereum wormhol",
   "WBTC-worm": "Wrapped BTC",
   "TAO": "Fusotao token",
-  "PEN": "Pendulum token"
+  "PEN": "Pendulum token",
+  "KSM-kBTC": "LP token KSM-kBTC",
+  "kBTC-USDT": "LP token kBTC-USDT",
+  "KSM-KINT": "LP token KSM-KINT",
+  "AVT": "Aventus",
+  "CRU": "Crust",
+  "HASH": "Hashed",
+  "P3D": "3DPass",
+  "AJUN": "Ajuna"
 }
