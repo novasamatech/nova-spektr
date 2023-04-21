@@ -3,9 +3,8 @@ import { ChangeEvent, PropsWithChildren } from 'react';
 
 import './styles.css';
 import { FootnoteText } from '@renderer/components/ui-redesign';
-import { FocusControl } from '@renderer/components/ui-redesign/Dropdowns/common/types';
 
-interface Props extends FocusControl {
+type Props = {
   defaultChecked?: boolean;
   position?: 'right' | 'left';
   checked?: boolean;
@@ -14,7 +13,8 @@ interface Props extends FocusControl {
   value?: any;
   className?: string;
   onChange?: (event: ChangeEvent<HTMLInputElement>) => void;
-}
+  tabIndex?: number;
+};
 
 const Checkbox = ({
   checked,

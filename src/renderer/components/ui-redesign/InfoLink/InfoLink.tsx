@@ -3,15 +3,15 @@ import cn from 'classnames';
 
 import { IconNames } from '@renderer/components/ui/Icon/data';
 import { Icon } from '@renderer/components/ui';
-import { FocusControl } from '@renderer/components/ui-redesign/Dropdowns/common/types';
 
-interface BaseProps extends FocusControl {
+type BaseProps = {
   url?: string;
   showIcon?: boolean;
   iconName?: IconNames;
   className?: string;
   fontClass?: string;
-}
+  tabIndex?: number;
+};
 
 type ExternalLink = Required<Pick<BaseProps, 'url'>> & Omit<BaseProps, 'url'>;
 type PopoverLink = Required<Pick<BaseProps, 'showIcon'>> & Omit<BaseProps, 'showIcon'>;

@@ -3,12 +3,12 @@ import cn from 'classnames';
 import { Fragment, useId } from 'react';
 
 import { Icon } from '@renderer/components/ui';
-import { DropdownOption, DropdownResult, FocusControl, Position } from '../common/types';
+import { DropdownOption, DropdownResult, Position } from '../common/types';
 import CommonInputStyles from '@renderer/components/ui-redesign/Inputs/common/styles';
 import { FootnoteText, LabelText } from '@renderer/components/ui-redesign';
 import { OptionsContainerStyle, OptionStyle, ViewClass } from '../common/constants';
 
-interface Props extends FocusControl {
+type Props = {
   className?: string;
   placeholder: string;
   label?: string;
@@ -17,8 +17,9 @@ interface Props extends FocusControl {
   selectedId?: DropdownOption['id'];
   options: DropdownOption[];
   position?: Position;
+  tabIndex?: number;
   onChange: (data: DropdownResult) => void;
-}
+};
 
 const Select = ({
   className,

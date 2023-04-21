@@ -2,11 +2,11 @@ import { Popover as Popup, Transition } from '@headlessui/react';
 import { Fragment, PropsWithChildren, ReactNode, useRef, useState } from 'react';
 import cn from 'classnames';
 
-export interface PopoverProps {
+export type PopoverProps = {
   content: ReactNode;
   offsetPx?: number;
   contentClass?: string;
-}
+};
 
 const Popover = ({ content, children, offsetPx = 10, contentClass }: PropsWithChildren<PopoverProps>) => {
   const ref = useRef<HTMLDivElement>(null);

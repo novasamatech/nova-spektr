@@ -2,12 +2,12 @@ import { PropsWithChildren } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 import Icon from '../../../ui/Icon/Icon';
-import { FocusControl } from '@renderer/components/ui-redesign/Dropdowns/common/types';
 
-interface Props extends FocusControl {
+type Props = {
   path?: string;
   onCustomReturn?: () => void;
-}
+  tabIndex?: number;
+};
 
 const ButtonBack = ({ path, onCustomReturn, tabIndex }: PropsWithChildren<Props>) => {
   const navigate = useNavigate();

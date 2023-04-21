@@ -9,12 +9,12 @@ export interface TabItem {
   title: ReactNode;
   panel: ReactNode;
 }
-interface Props {
+type Props = {
   items: TabItem[];
   panelClassName?: string;
   tabClassName?: string;
   onChange?: (index: number) => void;
-}
+};
 const Tabs = ({ items, tabClassName, panelClassName = 'mt-4', onChange }: Props) => {
   return (
     <Tab.Group onChange={onChange}>

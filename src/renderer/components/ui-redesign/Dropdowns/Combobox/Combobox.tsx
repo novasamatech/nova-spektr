@@ -10,12 +10,13 @@ import { FootnoteText, Input } from '@renderer/components/ui-redesign';
 
 type ComboboxOption = Required<DropdownOption>;
 
-interface Props extends Omit<InputProps, 'onChange'> {
+type Props = Omit<InputProps, 'onChange'> & {
   options: ComboboxOption[];
   value?: ComboboxOption['value'];
   position?: Position;
   onChange: (data: DropdownResult) => void;
-}
+  tabIndex?: number;
+};
 
 const Combobox = ({ className, value, options, disabled, position = 'down', onChange, ...inputProps }: Props) => {
   const [query, setQuery] = useState('');
