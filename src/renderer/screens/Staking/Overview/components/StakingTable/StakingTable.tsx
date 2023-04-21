@@ -5,7 +5,7 @@ import { Balance, Icon, Identicon, Table, Shimmering, Popover } from '@renderer/
 import { useI18n } from '@renderer/context/I18nContext';
 import { Asset } from '@renderer/domain/asset';
 import { Explorer } from '@renderer/domain/chain';
-import { AccountID, SigningType } from '@renderer/domain/shared-kernel';
+import { Address, SigningType } from '@renderer/domain/shared-kernel';
 import { bigNumberSorter } from '@renderer/shared/utils/bignumber';
 import { Unlocking } from '@renderer/domain/stake';
 import TimeToEra from '../TimeToEra/TimeToEra';
@@ -17,8 +17,8 @@ const getNextUnstaking = (unlocking: Unlocking[], currentEra?: number): Unlockin
 };
 
 export type AccountStakeInfo = {
-  address: AccountID;
-  stash?: AccountID;
+  address: Address;
+  stash?: Address;
   signingType: SigningType;
   accountName: string;
   walletName?: string;
@@ -30,13 +30,13 @@ export type AccountStakeInfo = {
 
 type Props = {
   stakeInfo: AccountStakeInfo[];
-  selectedStakes: AccountID[];
+  selectedStakes: Address[];
   asset?: Asset;
   explorers?: Explorer[];
   addressPrefix?: number;
   currentEra?: number;
   api?: ApiPromise;
-  openValidators: (stash?: AccountID) => void;
+  openValidators: (stash?: Address) => void;
   selectStaking: (keys: string[]) => void;
 };
 
@@ -139,9 +139,9 @@ const StakingTable = ({
             <Table.Cell>
               <Explorers
                 className="ml-3"
-                explorers={explorers}
                 address={stake.address}
                 addressPrefix={addressPrefix}
+                explorers={explorers}
                 header={
                   stake.stash && (
                     <div className="flex gap-x-2.5">

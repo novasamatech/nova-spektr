@@ -16,17 +16,17 @@ import { sortByDate } from './common/utils';
 const Operations = () => {
   const { t, dateLocale } = useI18n();
 
-  const { getLiveAccountMultisigTxs } = useMultisigTx();
   const { getActiveAccounts } = useAccount();
+  const { getLiveAccountMultisigTxs } = useMultisigTx();
 
   const accounts = getActiveAccounts({ signingType: SigningType.MULTISIG });
-  const accountsMap = new Map(accounts.map((account) => [account.publicKey, account as MultisigAccount]));
-  const publicKeys = accounts.map((a) => a.publicKey).filter(nonNullable);
+  const accountsMap = new Map(accounts.map((account) => [account.accountId, account as MultisigAccount]));
+  const accountIds = accounts.map((a) => a.accountId).filter(nonNullable);
 
-  const txs = getLiveAccountMultisigTxs(publicKeys);
+  const txs = getLiveAccountMultisigTxs(accountIds);
 
   const groupedTxs = groupBy(
-    txs.filter((tx) => accounts.find((a) => a.publicKey === tx.publicKey)),
+    txs.filter((tx) => accounts.find((a) => a.accountId === tx.accountId)),
     ({ dateCreated }) => format(new Date(dateCreated || 0), 'PP', { locale: dateLocale }),
   );
 
@@ -57,7 +57,7 @@ const Operations = () => {
                       </Table.Header>
 
                       <Table.Body<MultisigTransactionDS>>
-                        {(tx) => <Operation key={tx.id} tx={tx} account={accountsMap.get(tx.publicKey)} />}
+                        {(tx) => <Operation key={tx.id} tx={tx} account={accountsMap.get(tx.accountId)} />}
                       </Table.Body>
                     </Table>
                   </Block>

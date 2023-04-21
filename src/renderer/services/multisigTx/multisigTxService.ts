@@ -9,8 +9,8 @@ import { IMultisigTxService } from './common/types';
 import { createTransactionPayload, getPendingMultisigTxs, updateTransactionPayload } from './common/utils';
 import { useChains } from '../network/chainsService';
 import { useTransaction } from '../transaction/transactionService';
-import { CallData, PublicKey } from '@renderer/domain/shared-kernel';
-import { formatAddress } from '@renderer/shared/utils/address';
+import { CallData, AccountId } from '@renderer/domain/shared-kernel';
+import { toAddress } from '@renderer/shared/utils/address';
 
 export const useMultisigTx = (): IMultisigTxService => {
   const transactionStorage = storage.connectTo('multisigTransactions');
@@ -25,8 +25,8 @@ export const useMultisigTx = (): IMultisigTxService => {
 
   const subscribeMultisigAccount = (api: ApiPromise, account: MultisigAccount): (() => void) => {
     const intervalId = setInterval(async () => {
-      const transactions = await getMultisigTxs({ publicKey: account.publicKey });
-      const pendingTxs = await getPendingMultisigTxs(api, account.accountId as string);
+      const transactions = await getMultisigTxs({ accountId: account.accountId });
+      const pendingTxs = await getPendingMultisigTxs(api, account.accountId);
       const { block } = await api.rpc.chain.getBlock();
       const currentBlockNumber = block.header.number.toNumber();
 
@@ -44,7 +44,7 @@ export const useMultisigTx = (): IMultisigTxService => {
           updateMultisigTx(updateTransactionPayload(oldTx, pendingTx));
         } else {
           const depositor = pendingTx.params.depositor.toHex();
-          if (!account.signatories.find((s) => s.publicKey == depositor)) return;
+          if (!account.signatories.find((s) => s.accountId == depositor)) return;
 
           const blockTime = getExpectedBlockTime(api);
 
@@ -99,10 +99,10 @@ export const useMultisigTx = (): IMultisigTxService => {
     return useLiveQuery(query, [where], []);
   };
 
-  const getLiveAccountMultisigTxs = (publicKeys: PublicKey[]): MultisigTransactionDS[] => {
+  const getLiveAccountMultisigTxs = (accountIds: AccountId[]): MultisigTransactionDS[] => {
     const query = () => {
       try {
-        return getAccountMultisigTxs(publicKeys);
+        return getAccountMultisigTxs(accountIds);
       } catch (error) {
         console.warn('Error trying to get multisig transactions');
 
@@ -110,13 +110,13 @@ export const useMultisigTx = (): IMultisigTxService => {
       }
     };
 
-    return useLiveQuery(query, [publicKeys.length], []);
+    return useLiveQuery(query, [accountIds.length], []);
   };
 
-  const updateCallData = async (api: ApiPromise, tx: MultisigTransactionDS, callData: CallData) => {
+  const updateCallData = async (api: ApiPromise, tx: MultisigTransaction, callData: CallData) => {
     const chain = await getChainById(tx.chainId);
 
-    const transaction = decodeCallData(api, formatAddress(tx.publicKey, chain?.addressPrefix), callData);
+    const transaction = decodeCallData(api, toAddress(tx.accountId, { prefix: chain?.addressPrefix }), callData);
 
     await updateMultisigTx({ ...tx, callData, transaction });
   };

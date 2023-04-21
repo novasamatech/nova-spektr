@@ -3,7 +3,7 @@ import { BN, BN_ZERO } from '@polkadot/util';
 import { Balance, Shimmering } from '@renderer/components/ui';
 import { useI18n } from '@renderer/context/I18nContext';
 import { Asset } from '@renderer/domain/asset';
-import { AccountID } from '@renderer/domain/shared-kernel';
+import { Address } from '@renderer/domain/shared-kernel';
 import { useStakingRewards } from '@renderer/services/staking/stakingRewardsService';
 
 const getTotal = (values: string[]): BN => {
@@ -13,7 +13,7 @@ const getTotal = (values: string[]): BN => {
 type Props = {
   totalStakes: string[];
   asset?: Asset;
-  accounts: AccountID[];
+  accounts: Address[];
   addressPrefix?: number;
 };
 

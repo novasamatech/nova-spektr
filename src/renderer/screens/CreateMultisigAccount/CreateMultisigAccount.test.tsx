@@ -1,6 +1,6 @@
 import { render, screen } from '@testing-library/react';
 
-import { TEST_ADDRESS, TEST_PUBLIC_KEY } from '@renderer/shared/utils/constants';
+import { TEST_ACCOUNT_ID } from '@renderer/shared/utils/constants';
 import CreateMultisigAccount from './CreateMultisigAccount';
 
 jest.mock('@renderer/context/I18nContext', () => ({
@@ -11,13 +11,7 @@ jest.mock('@renderer/context/I18nContext', () => ({
 
 jest.mock('@renderer/services/account/accountService', () => ({
   useAccount: jest.fn().mockReturnValue({
-    getLiveAccounts: () => [
-      {
-        name: 'Test Wallet',
-        accountId: TEST_ADDRESS,
-        publicKey: TEST_PUBLIC_KEY,
-      },
-    ],
+    getLiveAccounts: () => [{ name: 'Test Wallet', accountId: TEST_ACCOUNT_ID }],
     addAccount: jest.fn(),
   }),
 }));

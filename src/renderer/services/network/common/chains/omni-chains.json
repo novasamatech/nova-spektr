@@ -1907,7 +1907,7 @@
     ],
     "nodes": [
       {
-        "url": "wss://ws.calamari.systems/",
+        "url": "wss://calamari.systems",
         "name": "Manta network node"
       }
     ],

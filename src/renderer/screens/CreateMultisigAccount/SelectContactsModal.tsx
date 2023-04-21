@@ -8,7 +8,11 @@ import { useAccount } from '@renderer/services/account/accountService';
 import { useContact } from '@renderer/services/contact/contactService';
 import { useMatrix } from '@renderer/context/MatrixContext';
 import { includes } from '@renderer/shared/utils/strings';
+import { Contact } from '@renderer/domain/contact';
+import { toAddress } from '@renderer/shared/utils/address';
 import { SigningType } from '@renderer/domain/shared-kernel';
+
+type ContactWithId = { id: number } & Contact;
 
 type ContactsForm = {
   contacts: number[];
@@ -21,48 +25,48 @@ type Props = {
   onSelect: (signatories: Signatory[]) => void;
 };
 
-type SignatoryWithId = Signatory & {
-  id: number;
-};
-
 const SelectContactsModal = ({ signatories, isOpen, onClose, onSelect }: Props) => {
   const { t } = useI18n();
   const { matrix } = useMatrix();
   const { getLiveAccounts } = useAccount();
   const { getLiveContacts } = useContact();
+
   const accounts = getLiveAccounts();
   const contacts = getLiveContacts();
 
   const [query, setQuery] = useState('');
-  const [contactList, setContactList] = useState<SignatoryWithId[]>([]);
+  const [contactList, setContactList] = useState<ContactWithId[]>([]);
 
   useEffect(() => {
-    const publicKeys = signatories.map((s) => s.publicKey);
+    const accountIds = signatories.map((s) => s.accountId);
 
     const addressBookContacts = contacts.filter((c) => c.matrixId);
     const walletContacts = accounts
       .filter((a) => a.signingType !== SigningType.WATCH_ONLY)
-      .map((a) => ({
-        accountId: a.accountId || '',
-        name: a.name || a.accountId || '',
-        publicKey: a.publicKey || '0x',
+      .map<Contact>((a) => ({
+        name: a.name || a.accountId,
+        address: toAddress(a.accountId),
+        accountId: a.accountId,
         matrixId: matrix.userId,
       }));
 
-    const mergedContacts = [...addressBookContacts, ...walletContacts].reduce<SignatoryWithId[]>((acc, contact) => {
-      if (!publicKeys.includes(contact.publicKey)) {
-        acc.push({ ...contact, id: acc.length });
-      }
+    const mergedContacts = [...addressBookContacts, ...walletContacts].reduce<(Contact & { id: number })[]>(
+      (acc, contact) => {
+        if (!accountIds.includes(contact.accountId)) {
+          acc.push({ ...contact, id: acc.length });
+        }
 
-      return acc;
-    }, []);
+        return acc;
+      },
+      [],
+    );
 
     setContactList(mergedContacts);
   }, [accounts.length, contacts.length, signatories.length]);
 
-  const searchedContactList = contactList.filter(
-    (c) => includes(c.accountId, query) || includes(c.matrixId, query) || includes(c.name, query),
-  );
+  const searchedContactList = contactList.filter((c) => {
+    return includes(c.address, query) || includes(c.matrixId, query) || includes(c.name, query);
+  });
 
   const {
     control,
@@ -72,9 +76,7 @@ const SelectContactsModal = ({ signatories, isOpen, onClose, onSelect }: Props) 
     formState: { isValid },
   } = useForm<ContactsForm>({
     mode: 'onChange',
-    defaultValues: {
-      contacts: [],
-    },
+    defaultValues: { contacts: [] },
   });
 
   const selectedContacts = watch('contacts');
@@ -94,20 +96,25 @@ const SelectContactsModal = ({ signatories, isOpen, onClose, onSelect }: Props) 
 
   const onSelectContact = (
     event: ChangeEvent<HTMLInputElement>,
-    onChange: (value: number[]) => void,
     value: number[],
+    onChange: (indexes: number[]) => void,
   ) => {
     const selectedContact = Number(event.target.value);
 
     if (event.target.checked) {
-      onChange([...value, selectedContact]);
+      onChange(value.concat(selectedContact));
     } else {
       onChange(value.filter((v) => v !== selectedContact));
     }
   };
 
-  const isAccountSelected = (index: number) => {
-    return selectedContacts.some((i) => index !== i && contactList[i].publicKey === contactList[index].publicKey);
+  const isAccountSelected = (accountIdx: number): boolean => {
+    return selectedContacts.some((index) => {
+      const isCurrentIndex = accountIdx === index;
+      const isSameContact = contactList[index].accountId === contactList[accountIdx].accountId;
+
+      return !isCurrentIndex && isSameContact;
+    });
   };
 
   return (
@@ -124,7 +131,7 @@ const SelectContactsModal = ({ signatories, isOpen, onClose, onSelect }: Props) 
           onChange={setQuery}
         />
         <ul className="mt-4">
-          {searchedContactList.map(({ accountId, name, id }) => (
+          {searchedContactList.map(({ id, accountId, name }) => (
             <li key={id} className="grid grid-flow-col gap-x-1 items-center rounded-2lg h-10 p-2.5 hover:bg-shade-5">
               <Controller
                 name="contacts"
@@ -134,7 +141,7 @@ const SelectContactsModal = ({ signatories, isOpen, onClose, onSelect }: Props) 
                   <Checkbox
                     value={id}
                     disabled={isAccountSelected(id)}
-                    onChange={(event) => onSelectContact(event, onChange, value)}
+                    onChange={(event) => onSelectContact(event, value, onChange)}
                   >
                     <Identicon className="row-span-2 self-center" address={accountId} background={false} />
                     <p className="text-neutral text-sm font-semibold">{name}</p>

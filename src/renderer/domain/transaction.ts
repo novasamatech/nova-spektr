@@ -1,4 +1,4 @@
-import { AccountID, ChainId, HexString, PublicKey } from './shared-kernel';
+import { Address, ChainId, HexString, AccountId, CallData, CallHash } from './shared-kernel';
 import { Signatory } from './signatory';
 
 export const enum TransactionType {
@@ -42,14 +42,14 @@ export type MultisigTxStatus = MultisigTxInitStatus | MultisigTxFinalStatus;
 
 export type Transaction = {
   type: TransactionType;
-  address: AccountID;
+  address: Address;
   chainId: ChainId;
   args: Record<string, any>;
 };
 
 export type MultisigEvent = {
   status: SigningStatus;
-  accountId: PublicKey;
+  accountId: AccountId;
   multisigOutcome?: MultisigTxStatus;
   extrinsicHash?: HexString;
   eventBlock?: number;
@@ -57,15 +57,15 @@ export type MultisigEvent = {
 };
 
 export type MultisigTransaction = {
-  callData?: HexString;
-  publicKey: PublicKey;
+  accountId: AccountId;
   chainId: ChainId;
-  callHash: HexString;
+  callData?: CallData;
+  callHash: CallHash;
   events: MultisigEvent[];
   status: MultisigTxStatus;
   signatories: Signatory[];
   deposit?: string;
-  depositor?: PublicKey;
+  depositor?: AccountId;
   description?: string;
   cancelDescription?: string;
   blockCreated?: number;

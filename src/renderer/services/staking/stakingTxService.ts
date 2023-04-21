@@ -1,17 +1,17 @@
 import { ApiPromise } from '@polkadot/api';
 import { construct, methods } from '@substrate/txwrapper-polkadot';
 
-import { AccountID } from '@renderer/domain/shared-kernel';
+import { Address } from '@renderer/domain/shared-kernel';
 import { IStakingTxService, Payee } from '@renderer/services/staking/common/types';
 import { createTxMetadata } from '@renderer/shared/utils/substrate';
 
 export const useStakingTx = (): IStakingTxService => {
   const bondAndNominate = async (
     api: ApiPromise,
-    address: AccountID,
+    address: Address,
     value: string,
     payee: Payee,
-    targets: AccountID[],
+    targets: Address[],
   ): Promise<string> => {
     const { registry, options, info } = await createTxMetadata(address, api);
 
@@ -27,7 +27,7 @@ export const useStakingTx = (): IStakingTxService => {
     return construct.signingPayload(unsignedBatch, { registry });
   };
 
-  const bondExtra = async (api: ApiPromise, address: AccountID, value: string): Promise<string> => {
+  const bondExtra = async (api: ApiPromise, address: Address, value: string): Promise<string> => {
     const { registry, options, info } = await createTxMetadata(address, api);
 
     const bondExtraPayload = { maxAdditional: value };

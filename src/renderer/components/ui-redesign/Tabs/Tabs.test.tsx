@@ -1,4 +1,4 @@
-import { screen, render } from '@testing-library/react';
+import { screen, render, act } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 
 import Tabs, { TabItem } from './Tabs';
@@ -25,7 +25,7 @@ describe('ui/Tabs', () => {
 
     const tab1Content = screen.queryByText('tab 1 content');
 
-    await user.keyboard('[Tab][ArrowRight]');
+    await act(() => user.keyboard('[Tab][ArrowRight]'));
 
     expect(tab1Content).not.toBeInTheDocument();
 

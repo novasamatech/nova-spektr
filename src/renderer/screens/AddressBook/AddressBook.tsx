@@ -10,12 +10,12 @@ import EmptyContacts from './components/EmptyState/EmptyContacts';
 
 const AddressBook = () => {
   const { t } = useI18n();
-  const [query, setQuery] = useState('');
-
   const { getLiveContacts } = useContact();
-  const contacts = getLiveContacts();
 
+  const [query, setQuery] = useState('');
   const [isAddContactModalShown, toggleAddContactModal] = useToggle();
+
+  const contacts = getLiveContacts();
 
   return (
     <div className="h-full flex flex-col gap-y-9 relative">

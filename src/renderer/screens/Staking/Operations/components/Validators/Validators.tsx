@@ -7,7 +7,7 @@ import { Button, Icon, Input } from '@renderer/components/ui';
 import { useI18n } from '@renderer/context/I18nContext';
 import { Asset } from '@renderer/domain/asset';
 import { Explorer } from '@renderer/domain/chain';
-import { AccountID, ChainId } from '@renderer/domain/shared-kernel';
+import { Address, ChainId } from '@renderer/domain/shared-kernel';
 import { ValidatorMap } from '@renderer/services/staking/common/types';
 import { useEra } from '@renderer/services/staking/eraService';
 import { useValidators } from '@renderer/services/staking/validatorsService';
@@ -32,7 +32,7 @@ export const Validators = ({ api, chainId, asset, explorers, addressPrefix, onRe
 
   const [query, setQuery] = useState('');
   const [maxValidators, setMaxValidators] = useState<number>(0);
-  const [selectedValidators, setSelectedValidators] = useState<AccountID[]>([]);
+  const [selectedValidators, setSelectedValidators] = useState<Address[]>([]);
 
   useEffect(() => {
     let unsubEra: () => void | undefined;

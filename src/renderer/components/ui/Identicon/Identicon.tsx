@@ -3,7 +3,7 @@ import { IconTheme } from '@polkadot/react-identicon/types';
 import cn from 'classnames';
 import { ReactNode, useLayoutEffect, useRef, memo } from 'react';
 
-import { SigningType } from '@renderer/domain/shared-kernel';
+import { SigningType, Address } from '@renderer/domain/shared-kernel';
 import { copyToClipboard } from '@renderer/shared/utils/strings';
 import Icon from '../Icon/Icon';
 
@@ -16,7 +16,7 @@ const Badges: Record<SigningType, (size?: number) => ReactNode> = {
 type Props = {
   theme?: IconTheme;
   signType?: SigningType;
-  address?: string;
+  address?: Address;
   size?: number;
   background?: boolean;
   canCopy?: boolean;

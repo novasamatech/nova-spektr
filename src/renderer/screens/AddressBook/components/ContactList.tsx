@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 
-import { Address, Button, Icon, Table } from '@renderer/components/ui';
+import { ChainAddress, Button, Icon, Table } from '@renderer/components/ui';
 import { useI18n } from '@renderer/context/I18nContext';
 import { ContactDS } from '@renderer/services/storage';
 import { useToggle } from '@renderer/shared/hooks';
@@ -17,6 +17,8 @@ type Props = {
 const ContactList = ({ contacts, query }: Props) => {
   const { t } = useI18n();
 
+  const [isEditModalShown, toggleEditModal] = useToggle();
+  const [currentContact, setCurrentContact] = useState<ContactDS>();
   const [filteredContacts, setFilteredContacts] = useState<ContactDS[]>([]);
 
   useEffect(() => {
@@ -24,10 +26,6 @@ const ContactList = ({ contacts, query }: Props) => {
 
     setFilteredContacts(filtered);
   }, [query, contacts.length]);
-
-  const [currentContact, setCurrentContact] = useState<ContactDS>();
-
-  const [isEditModalShown, toggleEditModal] = useToggle();
 
   if (filteredContacts.length === 0) {
     return <EmptySearch />;
@@ -49,7 +47,7 @@ const ContactList = ({ contacts, query }: Props) => {
           {(contact) => (
             <Table.Row key={contact.id} className="bg-shade-1" height="lg">
               <Table.Cell>
-                <Address size={28} address={contact.accountId} name={contact.name} subName={contact.accountId} />
+                <ChainAddress size={28} address={contact.address} name={contact.name} subName={contact.address} />
               </Table.Cell>
               <Table.Cell>
                 <div className="text-xs text-neutral-variant">{contact.matrixId}</div>

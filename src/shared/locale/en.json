@@ -309,7 +309,7 @@
       "inputPlaceholder": "0x00...",
       "title": "Enter call data"
     },
-    "noOperationsDescription": "There are no operations pending multisig operations",
+    "noOperationsDescription": "There are no pending multisig operations",
     "subTitle": "Your operations",
     "title": "Operations",
     "titles": {
