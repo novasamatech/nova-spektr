@@ -1,7 +1,7 @@
 import { ChangeEvent, useEffect, useState } from 'react';
 import { Controller, SubmitHandler, useForm } from 'react-hook-form';
 
-import { BaseModal, Button, Checkbox, Identicon, Input } from '@renderer/components/ui';
+import { BaseModal, Button, Checkbox, Input, ChainAddress } from '@renderer/components/ui';
 import { useI18n } from '@renderer/context/I18nContext';
 import { Signatory } from '@renderer/domain/signatory';
 import { useAccount } from '@renderer/services/account/accountService';
@@ -31,11 +31,11 @@ const SelectContactsModal = ({ signatories, isOpen, onClose, onSelect }: Props) 
   const { getLiveAccounts } = useAccount();
   const { getLiveContacts } = useContact();
 
-  const accounts = getLiveAccounts();
-  const contacts = getLiveContacts();
-
   const [query, setQuery] = useState('');
   const [contactList, setContactList] = useState<ContactWithId[]>([]);
+
+  const accounts = getLiveAccounts();
+  const contacts = getLiveContacts();
 
   useEffect(() => {
     const accountIds = signatories.map((s) => s.accountId);
@@ -130,28 +130,34 @@ const SelectContactsModal = ({ signatories, isOpen, onClose, onSelect }: Props) 
           value={query}
           onChange={setQuery}
         />
-        <ul className="mt-4">
-          {searchedContactList.map(({ id, accountId, name }) => (
-            <li key={id} className="grid grid-flow-col gap-x-1 items-center rounded-2lg h-10 p-2.5 hover:bg-shade-5">
-              <Controller
-                name="contacts"
-                control={control}
-                rules={{ required: true }}
-                render={({ field: { onChange, value } }) => (
-                  <Checkbox
-                    value={id}
-                    disabled={isAccountSelected(id)}
-                    onChange={(event) => onSelectContact(event, value, onChange)}
-                  >
-                    <Identicon className="row-span-2 self-center" address={accountId} background={false} />
-                    <p className="text-neutral text-sm font-semibold">{name}</p>
-                    {/* {contact.walletName && <p className="text-neutral-variant text-2xs">{stake.walletName}</p>} */}
-                  </Checkbox>
-                )}
-              />
-            </li>
-          ))}
-        </ul>
+
+        {searchedContactList.length > 0 ? (
+          <ul className="mt-4">
+            {searchedContactList.map(({ id, address, name }) => (
+              <li key={id} className="grid grid-flow-col gap-x-1 items-center rounded-2lg h-10 p-2.5 hover:bg-shade-5">
+                <Controller
+                  name="contacts"
+                  control={control}
+                  rules={{ required: true }}
+                  render={({ field: { onChange, value } }) => (
+                    <Checkbox
+                      value={id}
+                      disabled={isAccountSelected(id)}
+                      onChange={(event) => onSelectContact(event, value, onChange)}
+                    >
+                      <ChainAddress address={address} name={name} size={24} />
+                      {/* {contact.walletName && <p className="text-neutral-variant text-2xs">{stake.walletName}</p>} */}
+                    </Checkbox>
+                  )}
+                />
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <div className="my-10 mx-12">
+            <p className="text-center text-shade-30 font-semibold text-2xl">{t('createMultisigAccount.noWallets')}</p>
+          </div>
+        )}
       </form>
 
       <div className="bg-shade-1 py-5">
