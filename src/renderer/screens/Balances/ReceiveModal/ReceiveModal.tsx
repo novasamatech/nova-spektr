@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react';
 
 import { QrTextGenerator } from '@renderer/components/common';
 import { ExplorerIcons } from '@renderer/components/common/Explorers/common/constants';
-import { Address, BaseModal, Button, Dropdown, Icon } from '@renderer/components/ui';
+import { ChainAddress, BaseModal, Button, Dropdown, Icon } from '@renderer/components/ui';
 import { DropdownOption, DropdownResult } from '@renderer/components/ui/Dropdowns/common/types';
 import { useI18n } from '@renderer/context/I18nContext';
 import { Asset } from '@renderer/domain/asset';
@@ -11,7 +11,8 @@ import { Chain } from '@renderer/domain/chain';
 import { SigningType } from '@renderer/domain/shared-kernel';
 import { copyToClipboard } from '@renderer/shared/utils/strings';
 import { useAccount } from '@renderer/services/account/accountService';
-import { formatAddress } from '@renderer/shared/utils/address';
+import { toAddress } from '@renderer/shared/utils/address';
+import { SigningBadges } from '@renderer/shared/utils/constants';
 
 export type ReceivePayload = {
   chain: Chain;
@@ -19,7 +20,7 @@ export type ReceivePayload = {
 };
 
 type Props = {
-  data?: ReceivePayload;
+  data: ReceivePayload;
   isOpen: boolean;
   onClose: () => void;
 };
@@ -35,60 +36,52 @@ const ReceiveModal = ({ data, isOpen, onClose }: Props) => {
 
   useEffect(() => {
     const accounts = activeAccounts.reduce<DropdownOption[]>((acc, account, index) => {
-      if (
-        (account.chainId !== undefined && account.chainId !== data?.chain.chainId) ||
-        account.signingType === SigningType.WATCH_ONLY
-      ) {
-        return acc;
-      }
+      const isWatchOnly = account.signingType === SigningType.WATCH_ONLY;
+      const isWrongChain = account.chainId && account.chainId !== data.chain.chainId;
 
-      const address = formatAddress(account.publicKey || '0x00', data?.chain.addressPrefix);
+      if (isWatchOnly || isWrongChain) return acc;
 
-      const accountType = account.signingType === SigningType.PARITY_SIGNER ? 'paritySignerBg' : 'watchOnlyBg';
+      const element = (
+        <div className="grid grid-rows-2 grid-flow-col gap-x-2.5">
+          <Icon className="row-span-2 self-center" name={SigningBadges[account.signingType]} size={34} />
+          <p className="text-left text-neutral text-lg font-semibold leading-5">{account.name}</p>
+          <ChainAddress
+            type="short"
+            accountId={account.accountId}
+            addressPrefix={data.chain.addressPrefix}
+            canCopy={false}
+          />
+        </div>
+      );
 
-      const accountOption = {
-        id: index.toString(),
-        value: index,
-        element: (
-          <div className="grid grid-rows-2 grid-flow-col gap-x-2.5">
-            <Icon className="row-span-2 self-center" name={accountType} size={34} />
-            <p className="text-left text-neutral text-lg font-semibold leading-5">{account.name}</p>
-            <Address type="short" address={address} canCopy={false} />
-          </div>
-        ),
-      };
-
-      return acc.concat(accountOption);
+      return acc.concat({ id: index.toString(), value: index, element });
     }, []);
 
     if (accounts.length === 0) return;
 
     setActiveAccountsOptions(accounts);
     setActiveAccount({ id: accounts[0].id, value: accounts[0].value });
-  }, [activeAccounts.length, data?.chain.chainId]);
+  }, [activeAccounts.length, data.chain.chainId]);
 
   const account = activeAccount ? activeAccounts[activeAccount.value] : undefined;
-  const publicKey = account?.publicKey || '0x00';
-  const address = formatAddress(publicKey, data?.chain.addressPrefix);
+  const accountId = account?.accountId || '0x00';
+  const prefix = data.chain.addressPrefix;
+  const address = toAddress(accountId, { prefix });
 
   //eslint-disable-next-line i18next/no-literal-string
-  const qrCodePayload = `substrate:${address}:${publicKey}`;
-
-  const onCopyAddress = async () => {
-    await copyToClipboard(address);
-  };
+  const qrCodePayload = `substrate:${address}:${accountId}`;
 
   return (
     <BaseModal closeButton title={t('receive.title')} isOpen={isOpen} onClose={onClose}>
       <div className="flex flex-col items-center max-w-[550px]">
         <div className="flex mt-4 mb-6 text-neutral font-semibold">
           <div className="flex items-center justify-center bg-shade-70 border border-shade-20 rounded-full w-6 h-6">
-            <img src={data?.asset.icon} alt="" width={16} height={16} />
+            <img src={data.asset.icon} alt="" width={16} height={16} />
           </div>
-          <span className="ml-1 uppercase">{data?.asset.symbol}</span>
+          <span className="ml-1 uppercase">{data.asset.symbol}</span>
           <span className="mx-2.5 text-neutral-variant">{t('receive.on')}</span>
-          <img src={data?.chain.icon} alt="" width={24} height={24} />
-          <span className="ml-1">{data?.chain.name}</span>
+          <img src={data.chain.icon} alt="" width={24} height={24} />
+          <span className="ml-1">{data.chain.name}</span>
         </div>
 
         {activeAccounts.length > 1 && (
@@ -112,11 +105,16 @@ const ReceiveModal = ({ data, isOpen, onClose }: Props) => {
               bgColor="#F1F1F1"
             />
 
-            <Address className="mb-2 text-sm text-neutral-variant" type="full" address={address} />
+            <ChainAddress
+              className="mb-2 text-sm text-neutral-variant"
+              type="full"
+              accountId={accountId}
+              addressPrefix={prefix}
+            />
 
-            {(data?.chain.explorers || []).length > 0 && (
+            {(data.chain.explorers || []).length > 0 && (
               <ul className="flex gap-x-3">
-                {data?.chain.explorers?.map(({ name, account }) => (
+                {data.chain.explorers?.map(({ name, account }) => (
                   <li aria-label={t('receive.explorerLinkLabel', { name })} key={name}>
                     <a href={account?.replace('{address}', address)} rel="noopener noreferrer" target="_blank">
                       <Icon as="img" name={ExplorerIcons[name]} />
@@ -133,16 +131,16 @@ const ReceiveModal = ({ data, isOpen, onClose }: Props) => {
               {t('receive.sendOnlyLabel')}{' '}
               <span className="font-bold">
                 {/* eslint-disable-next-line i18next/no-literal-string */}
-                {data?.asset.symbol} ({data?.asset.name})
+                {data.asset.symbol} ({data.asset.name})
               </span>{' '}
               {t('receive.chainLabel1')}{' '}
-              <span className="font-bold">{t('receive.chainLabel2', { name: data?.chain.name })}</span>{' '}
+              <span className="font-bold">{t('receive.chainLabel2', { name: data.chain.name })}</span>{' '}
               {t('receive.chainLabel3')}
             </p>
           </div>
         </div>
 
-        <Button className="mt-5" variant="fill" pallet="primary" weight="lg" onClick={onCopyAddress}>
+        <Button className="mt-5" variant="fill" pallet="primary" weight="lg" onClick={() => copyToClipboard(address)}>
           {t('receive.copyAddressButton')}
         </Button>
       </div>

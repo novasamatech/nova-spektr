@@ -9,7 +9,7 @@ import { AmountInput, Balance, Button, HintList, Icon, Identicon, InputHint, Sel
 import { DropdownOption, DropdownResult } from '@renderer/components/ui/Dropdowns/common/types';
 import { useI18n } from '@renderer/context/I18nContext';
 import { Asset } from '@renderer/domain/asset';
-import { AccountID, ChainId, PublicKey } from '@renderer/domain/shared-kernel';
+import { Address, ChainId, AccountId } from '@renderer/domain/shared-kernel';
 import { Transaction, TransactionType } from '@renderer/domain/transaction';
 import { useAccount } from '@renderer/services/account/accountService';
 import { useBalance } from '@renderer/services/balance/balanceService';
@@ -40,9 +40,9 @@ const getDropdownPayload = (
   asset?: Asset,
   fee?: string,
   amount?: string,
-): DropdownOption<AccountID> => {
+): DropdownOption<Address> => {
   const address = account.accountId || '';
-  const publicKey = account.publicKey || '';
+  const accountId = account.accountId || '';
   const balanceExists = !!(balance && asset);
 
   const balanceIsIncorrect =
@@ -74,7 +74,7 @@ const getDropdownPayload = (
   );
 
   return {
-    id: publicKey,
+    id: accountId,
     value: address,
     element,
   };
@@ -92,12 +92,12 @@ export type StakeMoreResult = {
 type Props = {
   api: ApiPromise;
   chainId: ChainId;
-  accountIds: string[];
+  identifiers: string[];
   asset: Asset;
   onResult: (stakeMore: StakeMoreResult) => void;
 };
 
-const InitOperation = ({ api, chainId, accountIds, asset, onResult }: Props) => {
+const InitOperation = ({ api, chainId, identifiers, asset, onResult }: Props) => {
   const { t } = useI18n();
   const { getLiveAssetBalances } = useBalance();
   const { getLiveAccounts } = useAccount();
@@ -109,25 +109,25 @@ const InitOperation = ({ api, chainId, accountIds, asset, onResult }: Props) => 
   const [stakedRange, setStakedRange] = useState<[string, string]>(['0', '0']);
   const [transactions, setTransactions] = useState<Transaction[]>([]);
 
-  const [unstakeAccounts, setUnstakeAccounts] = useState<DropdownOption<AccountID>[]>([]);
-  const [activeUnstakeAccounts, setActiveUnstakeAccounts] = useState<DropdownResult<AccountID>[]>([]);
+  const [unstakeAccounts, setUnstakeAccounts] = useState<DropdownOption<Address>[]>([]);
+  const [activeUnstakeAccounts, setActiveUnstakeAccounts] = useState<DropdownResult<Address>[]>([]);
 
   const [activeBalances, setActiveBalances] = useState<BalanceDS[]>([]);
   const [balancesMap, setBalancesMap] = useState<Map<string, BalanceDS>>(new Map());
 
   const totalAccounts = dbAccounts.filter((account) => {
-    return account.id && accountIds.includes(account.id.toString());
+    return account.id && identifiers.includes(account.id.toString());
   });
 
-  const publicKeys = totalAccounts.reduce<PublicKey[]>((acc, account) => {
-    if (account.publicKey) {
-      acc.push(account.publicKey);
+  const accountIds = totalAccounts.reduce<AccountId[]>((acc, account) => {
+    if (account.accountId) {
+      acc.push(account.accountId);
     }
 
     return acc;
   }, []);
 
-  const balances = getLiveAssetBalances(publicKeys, chainId, asset.assetId.toString());
+  const balances = getLiveAssetBalances(accountIds, chainId, asset.assetId.toString());
 
   const {
     handleSubmit,
@@ -163,8 +163,8 @@ const InitOperation = ({ api, chainId, accountIds, asset, onResult }: Props) => 
   }, [activeBalances]);
 
   useEffect(() => {
-    const newBalancesMap = new Map(balances.map((balance) => [balance.publicKey, balance]));
-    const newActiveBalances = activeUnstakeAccounts.map((a) => newBalancesMap.get(a.id as PublicKey)) as BalanceDS[];
+    const newBalancesMap = new Map(balances.map((balance) => [balance.accountId, balance]));
+    const newActiveBalances = activeUnstakeAccounts.map((a) => newBalancesMap.get(a.id as AccountId)) as BalanceDS[];
 
     setBalancesMap(newBalancesMap);
     setActiveBalances(newActiveBalances);
@@ -177,7 +177,7 @@ const InitOperation = ({ api, chainId, accountIds, asset, onResult }: Props) => 
   // Init accounts
   useEffect(() => {
     const formattedAccounts = totalAccounts.map((account) => {
-      const matchBalance = balancesMap.get(account.publicKey || '0x');
+      const matchBalance = balancesMap.get(account.accountId || '0x');
 
       return getDropdownPayload(account, matchBalance, asset, fee, amount);
     });
@@ -219,7 +219,7 @@ const InitOperation = ({ api, chainId, accountIds, asset, onResult }: Props) => 
     const selectedAddresses = activeUnstakeAccounts.map((stake) => stake.id);
 
     const accounts = totalAccounts.filter(
-      (account) => account.publicKey && selectedAddresses.includes(account.publicKey),
+      (account) => account.accountId && selectedAddresses.includes(account.accountId),
     );
 
     onResult({

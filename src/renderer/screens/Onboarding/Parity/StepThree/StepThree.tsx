@@ -1,7 +1,6 @@
 import { Menu } from '@headlessui/react';
 import { u8aToHex } from '@polkadot/util';
 import cn from 'classnames';
-import { IndexableType } from 'dexie';
 import keyBy from 'lodash/keyBy';
 import { FormEvent, useEffect, useState } from 'react';
 
@@ -11,16 +10,16 @@ import { BaseModal, Button, Icon, Identicon, Input } from '@renderer/components/
 import { useI18n } from '@renderer/context/I18nContext';
 import { Account, createAccount } from '@renderer/domain/account';
 import { Chain } from '@renderer/domain/chain';
-import { ChainId, HexString, PublicKey, SigningType, WalletType } from '@renderer/domain/shared-kernel';
+import { ChainId, HexString, AccountId, SigningType, WalletType, Address } from '@renderer/domain/shared-kernel';
 import { useToggle } from '@renderer/shared/hooks';
 import ScanMoreModal from '@renderer/screens/Onboarding/Parity/ScanMoreModal/ScanMoreModal';
 import { useAccount } from '@renderer/services/account/accountService';
 import { useChains } from '@renderer/services/network/chainsService';
-import { formatAddress, toPublicKey } from '@renderer/shared/utils/address';
-import { getShortAddress } from '@renderer/shared/utils/strings';
+import { toShortAddress, toAddress, toAccountId } from '@renderer/shared/utils/address';
 import { useWallet } from '@renderer/services/wallet/walletService';
 import { createWallet } from '@renderer/domain/wallet';
 import './StepThree.css';
+import { ID } from '@renderer/services/storage';
 
 type Props = {
   qrData: SeedInfo[];
@@ -30,11 +29,11 @@ type Props = {
 const StepThree = ({ qrData, onNextStep }: Props) => {
   const { t } = useI18n();
 
-  const { getChainsData, sortChains } = useChains();
-  const [isAccountsModalOpen, toggleAccountsModal] = useToggle();
-  const [isQrModalOpen, toggleQrModal] = useToggle();
-  const { addAccount } = useAccount();
   const { addWallet } = useWallet();
+  const { addAccount } = useAccount();
+  const { getChainsData, sortChains } = useChains();
+  const [isQrModalOpen, toggleQrModal] = useToggle();
+  const [isAccountsModalOpen, toggleAccountsModal] = useToggle();
 
   const [chains, setChains] = useState<Chain[]>([]);
   const [chainsObject, setChainsObject] = useState<Record<string, Chain>>({});
@@ -42,25 +41,24 @@ const StepThree = ({ qrData, onNextStep }: Props) => {
   const [inactiveAccounts, setInactiveAccounts] = useState<Record<string, boolean>>({});
   const [accountNames, setAccountNames] = useState<Record<string, string>>({});
 
-  const [currentPublicKey, setCurrentPublicKey] = useState<PublicKey>();
+  const [currentAccountId, setCurrentAccountId] = useState<AccountId>();
   const [accounts, setAccounts] = useState<SimpleSeedInfo[]>([]);
   const [walletName, setWalletName] = useState('');
 
   useEffect(() => {
-    (async () => {
-      const chains = await getChainsData();
+    getChainsData().then((chains) => {
       setChains(sortChains(chains));
       setChainsObject(keyBy(chains, 'chainId'));
 
       const names = qrData.reduce((acc, data, index) => ({ ...acc, [getAccountId(index)]: data.name }), {});
       setAccountNames(names);
       setAccounts(qrData.map(formatAccount));
-    })();
+    });
   }, []);
 
   const formatAccount = (newAccount: SeedInfo): SimpleSeedInfo => {
     return {
-      address: newAccount.multiSigner ? formatAddress(u8aToHex(newAccount.multiSigner?.public), 0) : '',
+      address: newAccount.multiSigner ? toAddress(u8aToHex(newAccount.multiSigner?.public), { prefix: 0 }) : '',
       derivedKeys: groupDerivedKeys(newAccount.derivedKeys),
     };
   };
@@ -72,8 +70,9 @@ const StepThree = ({ qrData, onNextStep }: Props) => {
           acc.newAccs.push(formatAccount(current));
           acc.newNames.push(current.name);
         } else {
-          const address = u8aToHex(current.multiSigner?.public);
-          const rootAccountIndex = acc.oldAccs.findIndex((a) => toPublicKey(a.address) === address);
+          const addressHex = u8aToHex(current.multiSigner.public);
+          const rootAccountIndex = acc.oldAccs.findIndex((a) => toAccountId(a.address) === addressHex);
+
           if (rootAccountIndex >= 0) {
             acc.oldAccs[rootAccountIndex] = formatAccount(current);
           } else {
@@ -140,13 +139,13 @@ const StepThree = ({ qrData, onNextStep }: Props) => {
 
   const activeWalletsHaveName = walletIds.every((walletId) => inactiveAccounts[walletId] || accountNames[walletId]);
 
-  const saveRootAccount = async (address: string, accountIndex: number, walletId: IndexableType) => {
+  const saveRootAccount = async (address: Address, accountIndex: number, walletId: ID) => {
     const rootAccountNameId = getAccountId(accountIndex);
 
     const rootAccount = createAccount({
       name: accountNames[rootAccountNameId],
       signingType: SigningType.PARITY_SIGNER,
-      accountId: address,
+      accountId: toAccountId(address),
       walletId,
     });
 
@@ -157,8 +156,8 @@ const StepThree = ({ qrData, onNextStep }: Props) => {
     derivedKeys: AddressInfo[],
     chainId: ChainId,
     accountIndex: number,
-    rootAccountId: IndexableType,
-    walletId: IndexableType,
+    rootAccountId: ID,
+    walletId: ID,
   ): Account[] => {
     return derivedKeys.reduce<Account[]>((acc, derivedKey, index) => {
       const accountId = getAccountId(accountIndex, chainId, index);
@@ -171,10 +170,10 @@ const StepThree = ({ qrData, onNextStep }: Props) => {
           name: accountNames[accountId],
           signingType: SigningType.PARITY_SIGNER,
           rootId: rootAccountId,
-          accountId: derivedKey.address,
-          chainId: chainId as ChainId,
-          walletId,
+          accountId: toAccountId(derivedKey.address),
           derivationPath: derivedKey.derivationPath,
+          chainId,
+          walletId,
         }),
       ];
     }, []);
@@ -183,7 +182,7 @@ const StepThree = ({ qrData, onNextStep }: Props) => {
   const createWallets = async (event: FormEvent) => {
     event.preventDefault();
 
-    let walletId: IndexableType;
+    let walletId: ID;
 
     try {
       walletId = await addWallet(createWallet({ name: walletName, type: WalletType.MULTISHARD_PARITY_SIGNER }));
@@ -192,7 +191,7 @@ const StepThree = ({ qrData, onNextStep }: Props) => {
     }
 
     const promises = accounts.map(async ({ address, derivedKeys }, accountIndex) => {
-      let rootAccountId: IndexableType;
+      let rootAccountId: ID;
 
       try {
         rootAccountId = await saveRootAccount(address, accountIndex, walletId);
@@ -208,7 +207,7 @@ const StepThree = ({ qrData, onNextStep }: Props) => {
         })
         .flat();
 
-      return derivedAccounts.map((derivedAccount) => addAccount(derivedAccount));
+      return derivedAccounts.map(addAccount);
     });
 
     try {
@@ -269,7 +268,7 @@ const StepThree = ({ qrData, onNextStep }: Props) => {
                         disabled
                         disabledStyle={inactiveAccounts[getAccountId(accountIndex)]}
                         placeholder={t('onboarding.paritySigner.accountAddressPlaceholder')}
-                        value={getShortAddress(account.address, 10)}
+                        value={toShortAddress(account.address, 10)}
                         wrapperClass={cn('flex items-center')}
                         prefixElement={<Identicon size={20} address={account.address} background={false} />}
                         suffixElement={
@@ -290,7 +289,7 @@ const StepThree = ({ qrData, onNextStep }: Props) => {
                                     className={cn('font-normal text-neutral', active && 'bg-primary text-white')}
                                     prefixElement={<Icon as="img" name="checkmark" />}
                                     onClick={() => {
-                                      setCurrentPublicKey(toPublicKey(account.address));
+                                      setCurrentAccountId(toAccountId(account.address));
                                       toggleAccountsModal();
                                     }}
                                   >
@@ -373,11 +372,11 @@ const StepThree = ({ qrData, onNextStep }: Props) => {
                                   disabled
                                   disabledStyle={inactiveAccounts[getAccountId(accountIndex, chainId, derivedKeyIndex)]}
                                   placeholder={t('onboarding.paritySigner.accountAddressPlaceholder')}
-                                  value={getShortAddress(address, 10)}
+                                  value={toShortAddress(address, 10)}
                                   wrapperClass="flex flex-1 items-center"
                                   prefixElement={<Identicon size={20} address={address} background={false} />}
                                   suffixElement={
-                                    <Explorers explorers={explorers} addressPrefix={addressPrefix} address={address} />
+                                    <Explorers address={address} addressPrefix={addressPrefix} explorers={explorers} />
                                   }
                                 />
                               </div>
@@ -465,7 +464,7 @@ const StepThree = ({ qrData, onNextStep }: Props) => {
         isOpen={isAccountsModalOpen}
         onClose={toggleAccountsModal}
       >
-        <AccountsList className="pt-6 -mx-4" chains={chains} publicKey={currentPublicKey} />
+        <AccountsList className="pt-6 -mx-4" chains={chains} accountId={currentAccountId} />
       </BaseModal>
 
       <ScanMoreModal isOpen={isQrModalOpen} accounts={accounts} onResult={mergeNewAccounts} onClose={toggleQrModal} />

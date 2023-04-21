@@ -13,8 +13,8 @@ import Chain from './Chain';
 import { Signing } from './Signing/Signing';
 import { Scanning } from './Scanning/Scanning';
 import { Transaction, TransactionType } from '@renderer/domain/transaction';
-import { AccountID, HexString, Timepoint } from '@renderer/domain/shared-kernel';
-import { formatAddress } from '@renderer/shared/utils/address';
+import { Address, HexString, Timepoint } from '@renderer/domain/shared-kernel';
+import { toAddress } from '@renderer/shared/utils/address';
 import { getAssetById } from '@renderer/shared/utils/assets';
 import { useAccount } from '@renderer/services/account/accountService';
 import { getTransactionTitle } from '../common/utils';
@@ -44,26 +44,24 @@ const enum Step {
 
 const RejectTx = ({ tx, account, connection }: Props) => {
   const { t } = useI18n();
+  const { getBalance } = useBalance();
+  const { getLiveAccounts } = useAccount();
+  const { getTransactionFee, getTxWeight } = useTransaction();
 
   const [isModalOpen, toggleModal] = useToggle(false);
   const [isRejectReasonModalOpen, toggleRejectReasonModal] = useToggle(false);
   const [isFeeModalOpen, toggleFeeModal] = useToggle(false);
-  const [activeStep, setActiveStep] = useState(Step.CONFIRMATION);
-  const [rejectReason, setRejectReason] = useState('');
   const [countdown, resetCountdown] = useCountdown(connection.api);
 
-  const { getBalance } = useBalance();
-  const { getTransactionFee, getTxWeight } = useTransaction();
-  const { getLiveAccounts } = useAccount();
-
-  const accounts = getLiveAccounts();
-  const signAccount = accounts.find((a) => a.publicKey === tx.depositor);
-
+  const [activeStep, setActiveStep] = useState(Step.CONFIRMATION);
+  const [rejectReason, setRejectReason] = useState('');
   const [approveTx, setApproveTx] = useState<Transaction>();
   const [signature, setSignature] = useState<HexString>();
   const [unsignedTx, setUnsignedTx] = useState<UnsignedTransaction>();
   const [txWeight, setTxWeight] = useState<Weight>();
 
+  const accounts = getLiveAccounts();
+  const signAccount = accounts.find((a) => a.accountId === tx.depositor);
   const transactionTitle = getTransactionTitle(tx.transaction);
 
   const goBack = () => {
@@ -94,45 +92,40 @@ const RejectTx = ({ tx, account, connection }: Props) => {
 
   const asset = getAssetById(tx.transaction?.args.assetId, connection.assets);
 
-  const getMultisigTx = (signer: AccountID): Transaction => {
-    const chainId = tx.chainId;
+  const getMultisigTx = (signer: Address): Transaction => {
+    const otherSignatories = account.signatories.reduce<Address[]>((acc, s) => {
+      const signerAddress = toAddress(signer, { prefix: connection?.addressPrefix });
+      const signatoryAddress = toAddress(s.accountId, { prefix: connection?.addressPrefix });
 
-    const otherSignatories = account.signatories
-      .reduce<AccountID[]>((acc, s) => {
-        const signerAddress = formatAddress(signer, connection?.addressPrefix);
-        const signatoryAddress = formatAddress(s.accountId, connection?.addressPrefix);
+      if (signerAddress !== signatoryAddress) {
+        acc.push(signatoryAddress);
+      }
 
-        if (signerAddress !== signatoryAddress) {
-          acc.push(signatoryAddress);
-        }
-
-        return acc;
-      }, [])
-      .sort();
+      return acc;
+    }, []);
 
     return {
-      chainId,
+      chainId: tx.chainId,
       address: signer,
       type: TransactionType.MULTISIG_CANCEL_AS_MULTI,
       args: {
         threshold: account.threshold,
-        otherSignatories,
+        otherSignatories: otherSignatories.sort(),
         maxWeight: txWeight || MAX_WEIGHT,
+        callHash: tx.callHash,
         maybeTimepoint: {
           height: tx.blockCreated,
           index: tx.indexCreated,
         } as Timepoint,
-        callHash: tx.callHash,
       },
     };
   };
 
   const validateBalanceForFee = async (signAccount: AccountDS): Promise<boolean> => {
-    if (!connection.api || !approveTx || !signAccount.publicKey || !asset) return false;
+    if (!connection.api || !approveTx || !signAccount.accountId || !asset) return false;
 
     const fee = await getTransactionFee(approveTx, connection.api);
-
-    const balance = await getBalance(signAccount.publicKey, connection.chainId, asset.assetId.toString());
+    const balance = await getBalance(signAccount.accountId, connection.chainId, asset.assetId.toString());
 
     if (!balance) return false;
 

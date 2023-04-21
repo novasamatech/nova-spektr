@@ -28,7 +28,8 @@ jest.mock('@renderer/services/wallet/walletService', () => ({
 
 jest.mock('@renderer/services/network/chainsService', () => ({
   useChains: jest.fn().mockReturnValue({
-    getChainsData: jest.fn().mockReturnValue([
+    sortChains: jest.fn((value: Chain[]) => value),
+    getChainsData: jest.fn().mockResolvedValue([
       {
         addressPrefix: 0,
         assets: [],
@@ -36,7 +37,6 @@ jest.mock('@renderer/services/network/chainsService', () => ({
         name: 'My test chain',
       },
     ]),
-    sortChains: (value: Chain[]) => value,
   }),
 }));
 

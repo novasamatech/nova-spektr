@@ -4,6 +4,7 @@ import { HashRouter as Router } from 'react-router-dom';
 import App from './App';
 import './i18n';
 import './index.css';
+// import './theme/default.css';
 
 const container = document.getElementById('app');
 if (!container) {

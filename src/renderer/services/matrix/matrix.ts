@@ -30,7 +30,8 @@ import {
   KEY_FILE_MAX_SIZE,
   ROOM_CRYPTO_CONFIG,
   WELL_KNOWN_SERVERS,
-  MATRIX_USERNAME_REGEX,
+  MATRIX_SHORT_USERNAME_REGEX,
+  MATRIX_FULL_USERNAME_REGEX,
 } from './common/constants';
 import MATRIX_ERRORS from './common/errors';
 import {
@@ -57,7 +58,6 @@ import {
 import CredentialStorage from './credentialStorage';
 import SecretStorage from './secretStorage';
 import { nonNullable } from '@renderer/shared/utils/functions';
-import { getShortAddress } from '@renderer/shared/utils/strings';
 
 global.Olm = Olm;
 logger.disableAll();
@@ -315,7 +315,7 @@ export class Matrix implements ISecureMessenger {
   async createRoom(params: RoomParams): Promise<string> {
     try {
       const { room_id: roomId } = await this.matrixClient.createRoom({
-        name: `Nova Spektr MST | ${getShortAddress(params.accountId)}`,
+        name: `Nova Spektr MST | ${params.accountName}`,
         visibility: Visibility.Private,
         preset: Preset.TrustedPrivateChat,
       });
@@ -592,12 +592,23 @@ export class Matrix implements ISecureMessenger {
   }
 
   /**
-   * Validate user name
+   * Validate short username without server prefix
+   * Example: my_name not @my_name:matrix.org
    * @param value user name value
    * @return {Boolean}
    */
-  validateUserName(value: string): boolean {
-    return MATRIX_USERNAME_REGEX.test(value);
+  validateShortUserName(value: string): boolean {
+    return MATRIX_SHORT_USERNAME_REGEX.test(value);
+  }
+
+  /**
+   * Validate full username with server prefix
+   * Example: @my_name:matrix.org
+   * @param value user name value
+   * @return {Boolean}
+   */
+  validateFullUserName(value: string): boolean {
+    return MATRIX_FULL_USERNAME_REGEX.test(value);
   }
 
   // =====================================================
@@ -667,16 +678,16 @@ export class Matrix implements ISecureMessenger {
 
     try {
       const payload: SpektrExtras = {
-        mst_account: {
+        mstAccount: {
           accountName: params.accountName,
           threshold: params.threshold,
           signatories: params.signatories.map((s) => s.accountId),
-          address: params.accountId,
-          inviterPublicKey: params.inviterPublicKey,
+          accountId: params.accountId,
+          creatorAccountId: params.creatorAccountId,
         },
       };
       await this.matrixClient.sendStateEvent(roomId, 'm.room.topic', {
-        topic: `Room for communications for ${getShortAddress(params.accountId)} MST account`,
+        topic: `Room for Multisignatory account | ${params.accountName}`,
         spektr_extras: payload,
       });
     } catch (error) {

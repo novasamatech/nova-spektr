@@ -5,7 +5,7 @@ import AssetBalance from './AssetBalance';
 import { Chain } from '@renderer/domain/chain';
 import { Asset } from '@renderer/domain/asset';
 import chains from '@renderer/services/network/common/chains/chains.json';
-import { TEST_PUBLIC_KEY } from '@renderer/shared/utils/constants';
+import { TEST_ACCOUNT_ID } from '@renderer/shared/utils/constants';
 import { Balance } from '@renderer/domain/balance';
 
 jest.mock('@renderer/context/I18nContext', () => ({
@@ -23,7 +23,7 @@ const defaultProps = {
   balance: {
     assetId: testAsset.assetId.toString(),
     chainId: testChain.chainId,
-    publicKey: TEST_PUBLIC_KEY,
+    accountId: TEST_ACCOUNT_ID,
     free: '10',
     frozen: '2',
   } as Balance,
@@ -83,7 +83,7 @@ describe('screen/Balances/AssetBalance', () => {
         balance={{
           assetId: testAsset.assetId.toString(),
           chainId: testChain.chainId,
-          publicKey: TEST_PUBLIC_KEY,
+          accountId: TEST_ACCOUNT_ID,
           free: '10',
           frozen: '2',
           verified: false,

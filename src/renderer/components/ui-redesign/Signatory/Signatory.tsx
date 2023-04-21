@@ -1,5 +1,5 @@
 import { Identicon } from '@renderer/components/ui';
-import { getShortAddress } from '@renderer/shared/utils/strings';
+import { toShortAddress } from '@renderer/shared/utils/address';
 import { BodyText } from '../Typography';
 
 interface Props {
@@ -12,7 +12,7 @@ const Signatory = ({ address, name }: Props) => (
     <div className="flex flex-col gap-0.5">
       <BodyText fontWeight="medium">{name}</BodyText>
       {/* TODO add proper font name when available */}
-      <p className="leading-4 text-[11px] text-redesign-shade-48">{getShortAddress(address)}</p>
+      <p className="leading-4 text-[11px] text-redesign-shade-48">{toShortAddress(address)}</p>
     </div>
   </div>
 );

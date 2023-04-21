@@ -2,7 +2,7 @@ import { ApiPromise } from '@polkadot/api';
 import { UnsignedTransaction } from '@substrate/txwrapper-polkadot';
 import { Weight } from '@polkadot/types/interfaces';
 
-import { AccountID, CallData, HexString, Timepoint } from '@renderer/domain/shared-kernel';
+import { Address, CallData, HexString, Timepoint, Threshold } from '@renderer/domain/shared-kernel';
 import { Transaction } from '@renderer/domain/transaction';
 
 // =====================================================
@@ -26,9 +26,9 @@ export type ITransactionService = {
   ) => void;
   getTransactionFee: (transaction: Transaction, api: ApiPromise) => Promise<string>;
   getTxWeight: (transaction: Transaction, api: ApiPromise) => Promise<Weight>;
-  getTransactionDeposit: (threshold: number, api: ApiPromise) => string;
+  getTransactionDeposit: (threshold: Threshold, api: ApiPromise) => string;
   getTransactionHash: (transaction: Transaction, api: ApiPromise) => HashData;
-  decodeCallData: (api: ApiPromise, accountId: AccountID, callData: CallData) => Transaction;
+  decodeCallData: (api: ApiPromise, accountId: Address, callData: CallData) => Transaction;
 };
 
 // =====================================================

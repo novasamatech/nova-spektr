@@ -1,8 +1,8 @@
 import cn from 'classnames';
 
 import { Identicon } from '@renderer/components/ui';
-import { SigningType } from '@renderer/domain/shared-kernel';
-import { getShortAddress } from '@renderer/shared/utils/strings';
+import { SigningType, AccountId, Address } from '@renderer/domain/shared-kernel';
+import { toShortAddress, toAddress } from '@renderer/shared/utils/address';
 import Truncate from '../Truncate/Truncate';
 
 type AddressType = 'full' | 'short' | 'adaptive';
@@ -14,8 +14,16 @@ const Styles: Record<AddressStyle, string> = {
   large: 'text-base text-neutral',
 };
 
+type WithAccountId = {
+  accountId: AccountId;
+  addressPrefix?: number;
+};
+
+type WithAddress = {
+  address: Address;
+};
+
 type Props = {
-  address: string;
   className?: string;
   type?: AddressType;
   addressStyle?: AddressStyle;
@@ -26,10 +34,17 @@ type Props = {
   symbols?: number;
   canCopy?: boolean;
   showIcon?: boolean;
+} & (WithAccountId | WithAddress);
+
+const getAddress = (props: WithAccountId | WithAddress): Address => {
+  if ((props as WithAddress).address) return (props as WithAddress).address;
+
+  const { accountId, addressPrefix } = props as WithAccountId;
+
+  return toAddress(accountId, { prefix: addressPrefix });
 };
 
-const Address = ({
-  address,
+const ChainAddress = ({
   className,
   symbols,
   signType,
@@ -40,9 +55,11 @@ const Address = ({
   type = 'full',
   canCopy = true,
   showIcon = true,
+  ...props
 }: Props) => {
+  const currentAddress = getAddress(props);
   const typeIsAdaptive = type === 'adaptive';
-  const addressToShow = type === 'short' ? getShortAddress(address, symbols) : address;
+  const addressToShow = type === 'short' ? toShortAddress(currentAddress, symbols) : currentAddress;
 
   const nameContent = (name || subName) && (
     <div className="flex flex-col items-start">
@@ -59,10 +76,12 @@ const Address = ({
 
   return (
     <div className={cn('flex items-center gap-x-1', className)}>
-      {showIcon && <Identicon address={address} signType={signType} size={size} background={false} canCopy={canCopy} />}
+      {showIcon && (
+        <Identicon address={currentAddress} signType={signType} size={size} background={false} canCopy={canCopy} />
+      )}
       {nameContent || addressContent}
     </div>
   );
 };
 
-export default Address;
+export default ChainAddress;

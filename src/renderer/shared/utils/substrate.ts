@@ -3,7 +3,7 @@ import { BaseTxInfo, getRegistry, GetRegistryOpts, OptionsWithMeta, TypeRegistry
 import { isHex, hexToU8a } from '@polkadot/util';
 import { blake2AsHex } from '@polkadot/util-crypto';
 
-import { AccountID, CallData, CallHash } from '@renderer/domain/shared-kernel';
+import { Address, CallData, CallHash } from '@renderer/domain/shared-kernel';
 
 /**
  * Compose and return all the data needed for @substrate/txwrapper-polkadot signing
@@ -11,7 +11,7 @@ import { AccountID, CallData, CallHash } from '@renderer/domain/shared-kernel';
  * @param api polkadot connector
  */
 export const createTxMetadata = async (
-  accountId: AccountID,
+  accountId: Address,
   api: ApiPromise,
 ): Promise<{ registry: TypeRegistry; options: OptionsWithMeta; info: BaseTxInfo }> => {
   const { block } = await api.rpc.chain.getBlock();
