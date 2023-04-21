@@ -4,9 +4,8 @@ import { MouseEvent, PropsWithChildren, ReactNode } from 'react';
 
 import { ViewClass, SizeClass } from '../common/constants';
 import { Pallet, Variant } from '../common/types';
-import { FocusControl } from '@renderer/components/ui-redesign/Dropdowns/common/types';
 
-interface Props extends FocusControl {
+type Props = {
   className?: string;
   type?: 'button' | 'submit';
   form?: string;
@@ -17,7 +16,8 @@ interface Props extends FocusControl {
   prefixElement?: ReactNode;
   suffixElement?: ReactNode;
   onClick?: (event: MouseEvent<HTMLButtonElement>) => void;
-}
+  tabIndex?: number;
+};
 
 const Button = ({
   variant,
