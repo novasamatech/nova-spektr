@@ -31,6 +31,7 @@ const Explorers = ({ explorers, address, addressPrefix, header, className }: Pro
       {({ open }) => (
         <div className={cn('relative', open && 'z-10', className)}>
           <Menu.Button
+            data-testid={`explorers-${address}`}
             className="flex items-center w-5 h-5 rounded-full hover:bg-primary hover:text-white transition"
             onClick={scrollToMenu}
           >
