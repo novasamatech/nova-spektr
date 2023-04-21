@@ -17,6 +17,7 @@ import {
   FootnoteText,
   LabelText,
 } from '@renderer/components/ui-redesign/Typography';
+import PopoverLink from './PopoverLink/PopoverLink';
 
 export {
   Input,
@@ -36,4 +37,5 @@ export {
   BodyText,
   FootnoteText,
   LabelText,
+  PopoverLink,
 };
