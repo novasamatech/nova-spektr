@@ -1,7 +1,6 @@
 import { useLiveQuery } from 'dexie-react-hooks';
-import { IndexableType } from 'dexie';
 
-import storage, { AccountDS } from '@renderer/services/storage';
+import storage, { AccountDS, ID } from '@renderer/services/storage';
 import { IAccountService } from './common/types';
 import { MultisigAccount, Account } from '@renderer/domain/account';
 
@@ -9,7 +8,7 @@ export const useAccount = (): IAccountService => {
   const accountStorage = storage.connectTo('accounts');
 
   if (!accountStorage) {
-    throw new Error('=== 🔴 Wallet storage in not defined 🔴 ===');
+    throw new Error('=== 🔴 Account storage in not defined 🔴 ===');
   }
   const { getAccount, getAccounts, addAccount, updateAccount, deleteAccount } = accountStorage;
 
@@ -49,7 +48,7 @@ export const useAccount = (): IAccountService => {
         const accounts = await getAccounts();
 
         return accounts.filter(
-          (account) => account.isActive && (account as MultisigAccount).inviterPublicKey !== undefined,
+          (account) => account.isActive && (account as MultisigAccount).creatorAccountId !== undefined,
         );
       } catch (error) {
         console.warn('Error trying to get active multisig accounts');
@@ -62,7 +61,7 @@ export const useAccount = (): IAccountService => {
   };
 
   // TODO: in future implement setWalletInactive
-  const toggleActiveAccount = async (accountId: IndexableType): Promise<void> => {
+  const toggleActiveAccount = async (accountId: ID): Promise<void> => {
     try {
       const newActiveAccount = await getAccount(accountId);
       if (newActiveAccount) {

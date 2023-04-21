@@ -1,6 +1,6 @@
 import { act, render, screen } from '@testing-library/react';
 
-import { TEST_PUBLIC_KEY } from '@renderer/shared/utils/constants';
+import { TEST_ACCOUNT_ID } from '@renderer/shared/utils/constants';
 import { Chain } from '@renderer/domain/chain';
 import AccountsList from './AccountsList';
 
@@ -41,7 +41,7 @@ describe('components/common/AccountsList', () => {
   ] as Chain[];
 
   test('should render component', () => {
-    render(<AccountsList chains={chains} publicKey={TEST_PUBLIC_KEY} />);
+    render(<AccountsList chains={chains} accountId={TEST_ACCOUNT_ID} />);
 
     const chainTitle = screen.getByText('Polkadot');
     expect(chainTitle).toBeInTheDocument();

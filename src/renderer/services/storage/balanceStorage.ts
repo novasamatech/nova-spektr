@@ -1,33 +1,31 @@
-import { Table } from 'dexie';
-
 import { Balance } from '@renderer/domain/balance';
-import { ChainId, PublicKey } from '@renderer/domain/shared-kernel';
-import { BalanceDS, IBalanceStorage } from './common/types';
+import { ChainId, AccountId } from '@renderer/domain/shared-kernel';
+import { BalanceDS, IBalanceStorage, TBalance } from './common/types';
 
-export const useBalanceStorage = (db: Table<BalanceDS>): IBalanceStorage => ({
-  getBalance: (publicKey: PublicKey, chainId: ChainId, assetId: string): Promise<BalanceDS | undefined> => {
-    return db.where({ publicKey, chainId, assetId }).first();
+export const useBalanceStorage = (db: TBalance): IBalanceStorage => ({
+  getBalance: (accountId: AccountId, chainId: ChainId, assetId: string): Promise<BalanceDS | undefined> => {
+    return db.where({ accountId, chainId, assetId }).first();
   },
 
-  getBalances: (publicKeys: PublicKey[]): Promise<BalanceDS[]> => {
-    return db.where('publicKey').anyOf(publicKeys).toArray();
+  getBalances: (accountIds: AccountId[]): Promise<BalanceDS[]> => {
+    return db.where('accountId').anyOf(accountIds).toArray();
   },
 
   getAllBalances: (): Promise<BalanceDS[]> => {
     return db.toArray();
   },
 
-  getNetworkBalances: (publicKeys: PublicKey[], chainId: ChainId): Promise<BalanceDS[]> => {
+  getNetworkBalances: (accountIds: AccountId[], chainId: ChainId): Promise<BalanceDS[]> => {
     return db
-      .where(['publicKey', 'chainId'])
-      .anyOf(publicKeys.map((publicKey) => [publicKey, chainId]))
+      .where(['accountId', 'chainId'])
+      .anyOf(accountIds.map((accountId) => [accountId, chainId]))
       .toArray();
   },
 
-  getAssetBalances: (publicKeys: PublicKey[], chainId: ChainId, assetId: string): Promise<BalanceDS[]> => {
+  getAssetBalances: (accountIds: AccountId[], chainId: ChainId, assetId: string): Promise<BalanceDS[]> => {
     return db
-      .where(['publicKey', 'chainId', 'assetId'])
-      .anyOf(publicKeys.map((publicKey) => [publicKey, chainId, assetId]))
+      .where(['accountId', 'chainId', 'assetId'])
+      .anyOf(accountIds.map((accountId) => [accountId, chainId, assetId]))
       .toArray();
   },
 
@@ -35,13 +33,11 @@ export const useBalanceStorage = (db: Table<BalanceDS>): IBalanceStorage => ({
     try {
       await db.add(balance);
     } catch (e) {
-      await db.update([balance.publicKey, balance.chainId, balance.assetId], balance);
+      await db.update([balance.accountId, balance.chainId, balance.assetId], balance);
     }
   },
 
-  setBalanceIsValid: ({ publicKey, chainId, assetId }: Balance, verified: boolean): Promise<number> => {
-    return db.update([publicKey, chainId, assetId], {
-      verified,
-    });
+  setBalanceIsValid: ({ accountId, chainId, assetId }: Balance, verified: boolean): Promise<number> => {
+    return db.update([accountId, chainId, assetId], { verified });
   },
 });

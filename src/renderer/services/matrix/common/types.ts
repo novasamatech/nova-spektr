@@ -1,6 +1,14 @@
 import { EventType, MatrixEvent, Room } from 'matrix-js-sdk';
 
-import { HexString, PublicKey, AccountID, Timepoint } from '@renderer/domain/shared-kernel';
+import {
+  HexString,
+  AccountId,
+  Timepoint,
+  Threshold,
+  CallHash,
+  CallData,
+  ChainId,
+} from '@renderer/domain/shared-kernel';
 import { MultisigTxStatus } from '@renderer/domain/transaction';
 
 // =====================================================
@@ -29,7 +37,8 @@ export interface ISecureMessenger {
   syncSpektrTimeline: () => Promise<void>;
 
   // Validators
-  validateUserName: (value: string) => boolean;
+  validateShortUserName: (value: string) => boolean;
+  validateFullUserName: (value: string) => boolean;
   // checkUserExists: (userId: string) => Promise<boolean>;
 
   // Verification
@@ -108,22 +117,22 @@ export const enum Membership {
 
 export type RoomParams = {
   accountName: string;
-  accountId: AccountID;
-  inviterPublicKey: PublicKey;
-  threshold: number;
+  accountId: AccountId;
+  creatorAccountId: AccountId;
+  threshold: Threshold;
   signatories: {
-    accountId: AccountID;
+    accountId: AccountId;
     matrixId?: string;
   }[];
 };
 
 export type SpektrExtras = {
-  mst_account: {
+  mstAccount: {
     accountName: string;
-    threshold: number;
-    signatories: AccountID[];
-    address: AccountID;
-    inviterPublicKey: PublicKey;
+    threshold: Threshold;
+    signatories: AccountId[];
+    accountId: AccountId;
+    creatorAccountId: AccountId;
   };
 };
 
@@ -141,10 +150,10 @@ export const enum SpektrMultisigEvent {
 }
 
 export interface BaseMultisigPayload {
-  chainId: HexString;
-  callHash: HexString;
-  callData?: HexString;
-  senderAddress: AccountID;
+  chainId: ChainId;
+  callHash: CallHash;
+  callData?: CallData;
+  senderAccountId: AccountId;
   description?: string;
   callTimepoint: Timepoint;
 }

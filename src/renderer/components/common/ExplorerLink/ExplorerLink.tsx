@@ -1,7 +1,6 @@
 import cn from 'classnames';
-import { encodeAddress } from '@polkadot/util-crypto';
 
-import { toPublicKey } from '@renderer/shared/utils/address';
+import { toAddress } from '@renderer/shared/utils/address';
 import { Icon } from '@renderer/components/ui';
 import { DefaultExplorer, ExplorerIcons } from '@renderer/components/common/Explorers/common/constants';
 import { Explorer } from '@renderer/domain/chain';
@@ -22,7 +21,7 @@ const ExplorerLink = ({ explorer, address, addressPrefix }: Props) => {
   return (
     <a
       className={cn('rounded-2lg flex items-center gap-x-2 p-2 select-none transition')}
-      href={account.replace('{address}', encodeAddress(toPublicKey(address) || '', addressPrefix))}
+      href={account.replace('{address}', toAddress(address, { prefix: addressPrefix }))}
       rel="noopener noreferrer"
       target="_blank"
     >

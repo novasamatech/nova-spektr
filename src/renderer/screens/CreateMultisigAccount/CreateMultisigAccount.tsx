@@ -2,8 +2,8 @@ import { useState } from 'react';
 import { Controller, SubmitHandler, useForm } from 'react-hook-form';
 import { useNavigate } from 'react-router-dom';
 
-import { Address, Block, Button, ButtonBack, Dropdown, Icon, Input, Plate } from '@renderer/components/ui';
-import { createMultisigAccount, getMultisigAddress, MultisigAccount } from '@renderer/domain/account';
+import { ChainAddress, Block, Button, ButtonBack, Dropdown, Icon, Input, Plate } from '@renderer/components/ui';
+import { createMultisigAccount, getMultisigAccountId, MultisigAccount } from '@renderer/domain/account';
 import { useI18n } from '@renderer/context/I18nContext';
 import { Signatory } from '@renderer/domain/signatory';
 import { useToggle } from '@renderer/shared/hooks';
@@ -72,7 +72,7 @@ const CreateMultisigAccount = () => {
       name,
       signatories,
       threshold: threshold.value,
-      inviterPublicKey: inviter.publicKey,
+      creatorAccountId: inviter.accountId,
       matrixRoomId: '',
     });
 
@@ -80,7 +80,7 @@ const CreateMultisigAccount = () => {
 
     try {
       const matrixRoomId = await matrix.createRoom({
-        inviterPublicKey: inviter.publicKey,
+        creatorAccountId: inviter.accountId,
         accountName: mstAccount.name,
         accountId: mstAccount.accountId,
         threshold: mstAccount.threshold,
@@ -98,15 +98,12 @@ const CreateMultisigAccount = () => {
 
   const thresholdOptions = getThresholdOptions(signatories.length - 1);
 
-  const multisigAccountId =
-    threshold &&
-    signatories &&
-    getMultisigAddress(
-      signatories.map((s) => s.accountId),
-      threshold.value,
-    );
+  const multisigAccountId = getMultisigAccountId(
+    signatories.map((s) => s.accountId),
+    threshold.value,
+  );
 
-  const hasOwnSignatory = signatories.some((s) => accounts.find((a) => a.publicKey === s.publicKey));
+  const hasOwnSignatory = signatories.some((s) => accounts.find((a) => a.accountId === s.accountId));
   const accountAlreadyExists = accounts.find((a) => a.accountId === multisigAccountId);
   const hasTwoSignatories = signatories.length > 1;
 
@@ -167,11 +164,11 @@ const CreateMultisigAccount = () => {
                 </div>
 
                 <ul className="flex flex-wrap gap-1">
-                  {signatories.map((s, i) => (
-                    <li key={s.accountId} className="flex pl-2 bg-shade-5 h-10 items-center rounded-2lg w-fit">
-                      <Address address={s.accountId} name={s.name} size={24} />
+                  {signatories.map((signatory, index) => (
+                    <li key={signatory.accountId} className="flex pl-2 bg-shade-5 h-10 items-center rounded-2lg w-fit">
+                      <ChainAddress address={signatory.address} name={signatory.name} size={24} />
 
-                      <Button variant="text" pallet="error" onClick={() => removeSignatory(i)}>
+                      <Button variant="text" pallet="error" onClick={() => removeSignatory(index)}>
                         <Icon className="rotate-45" name="add" />
                       </Button>
                     </li>
@@ -258,14 +255,14 @@ const CreateMultisigAccount = () => {
       >
         <div className="flex uppercase items-center gap-2.5">
           <Icon name="checkmarkCutout" size={20} className="text-success" />
-          {t('createMultisigAccount.successMessage')}
+          <p className="flex-1">{t('createMultisigAccount.successMessage')}</p>
         </div>
       </Message>
 
       <Message isOpen={Boolean(errorMessage)} onClose={() => setErrorMessage('')}>
         <div className="flex uppercase items-center gap-2.5">
           <Icon name="warnCutout" size={20} className="text-error" />
-          {errorMessage}
+          <p className="flex-1">{errorMessage}</p>
         </div>
       </Message>
     </div>

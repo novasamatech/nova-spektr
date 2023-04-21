@@ -1,4 +1,4 @@
-import { AccountID } from '@renderer/domain/shared-kernel';
+import { Address } from '@renderer/domain/shared-kernel';
 
 export type Identity = {
   subName: string;
@@ -10,7 +10,7 @@ export type Identity = {
 };
 
 type ParentIdentity = {
-  address: AccountID;
+  address: Address;
   name: string;
   // judgements: Judgement[];
 };
@@ -21,7 +21,7 @@ type ParentIdentity = {
 // };
 
 export type SubIdentity = {
-  sub: AccountID;
-  parent: AccountID;
+  sub: Address;
+  parent: Address;
   subName: string;
 };

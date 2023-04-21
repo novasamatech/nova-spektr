@@ -1,7 +1,7 @@
 import { ComponentMeta, ComponentStory } from '@storybook/react';
 
 import { SigningType } from '@renderer/domain/shared-kernel';
-import { TEST_ADDRESS } from '@renderer/shared/utils/constants';
+import { TEST_ACCOUNT_ID } from '@renderer/shared/utils/constants';
 import AddressOnPlate from './AddressOnPlate';
 
 export default {
@@ -14,14 +14,14 @@ const Template: ComponentStory<typeof AddressOnPlate> = (args) => <AddressOnPlat
 
 export const Primary = Template.bind({});
 Primary.args = {
-  address: TEST_ADDRESS,
+  accountId: TEST_ACCOUNT_ID,
   name: 'My account',
   title: 'Plate title',
 };
 
 export const WithSignType = Template.bind({});
 WithSignType.args = {
-  address: TEST_ADDRESS,
+  accountId: TEST_ACCOUNT_ID,
   name: 'My account',
   subName: 'Wallet #1',
   title: 'Plate title',

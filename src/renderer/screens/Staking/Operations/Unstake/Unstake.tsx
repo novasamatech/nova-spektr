@@ -9,7 +9,7 @@ import { ButtonBack, ButtonLink, HintList, Icon } from '@renderer/components/ui'
 import { ChainLoader } from '@renderer/components/common';
 import { useI18n } from '@renderer/context/I18nContext';
 import { useNetworkContext } from '@renderer/context/NetworkContext';
-import { AccountID, ChainId, HexString, SigningType } from '@renderer/domain/shared-kernel';
+import { Address, ChainId, HexString, SigningType } from '@renderer/domain/shared-kernel';
 import { Transaction, TransactionType } from '@renderer/domain/transaction';
 import Paths from '@renderer/routes/paths';
 import { useAccount } from '@renderer/services/account/accountService';
@@ -19,7 +19,7 @@ import { useStakingData } from '@renderer/services/staking/stakingDataService';
 import { AccountDS } from '@renderer/services/storage';
 import InitOperation, { UnstakeResult } from './InitOperation/InitOperation';
 import { Confirmation, Scanning, Signing, Submit } from '../components';
-import { formatAddress } from '@renderer/shared/utils/address';
+import { toAddress } from '@renderer/shared/utils/address';
 import { getRelaychainAsset } from '@renderer/shared/utils/assets';
 import { useCountdown } from '../hooks/useCountdown';
 
@@ -78,10 +78,10 @@ const Unstake = () => {
 
     let unsubStaking: () => void | undefined;
 
-    const selectedAccounts = dbAccounts.reduce<AccountID[]>((acc, account) => {
+    const selectedAccounts = dbAccounts.reduce<Address[]>((acc, account) => {
       const accountExists = account.id && accountIds.includes(account.id.toString());
 
-      return accountExists ? [...acc, account.accountId as AccountID] : acc;
+      return accountExists ? [...acc, account.accountId as Address] : acc;
     }, []);
 
     (async () => {
@@ -147,7 +147,7 @@ const Unstake = () => {
 
   const onUnstakeResult = ({ accounts, amount }: UnstakeResult) => {
     const transactions = accounts.map(({ accountId = '' }) => {
-      const address = formatAddress(accountId, addressPrefix);
+      const address = toAddress(accountId, { prefix: addressPrefix });
       const commonPayload = { chainId, address };
 
       const unstakeTx = {
@@ -213,7 +213,7 @@ const Unstake = () => {
           api={api}
           chainId={chainId}
           staking={staking}
-          accountIds={accountIds}
+          identifiers={accountIds}
           asset={asset}
           onResult={onUnstakeResult}
         />

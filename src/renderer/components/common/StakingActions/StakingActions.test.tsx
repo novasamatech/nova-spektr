@@ -12,7 +12,7 @@ jest.mock('@renderer/context/I18nContext', () => ({
 
 describe('components/common/StakingActions', () => {
   test('should render component', () => {
-    const stakes = [{ accountId: TEST_ADDRESS }] as Stake[];
+    const stakes = [{ address: TEST_ADDRESS }] as Stake[];
     render(<StakingActions stakes={stakes} onNavigate={() => {}} />);
 
     const actions = screen.getByRole('button');

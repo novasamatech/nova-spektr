@@ -153,7 +153,7 @@ const LoginForm = () => {
             <Controller
               name="username"
               control={control}
-              rules={{ required: true, validate: matrix.validateUserName }}
+              rules={{ required: true, validate: matrix.validateShortUserName }}
               render={({ field: { value, onChange }, fieldState: { error } }) => (
                 <>
                   <Input

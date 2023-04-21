@@ -13,7 +13,7 @@ import { Transaction, TransactionType } from '@renderer/domain/transaction';
 import Paths from '@renderer/routes/paths';
 import { useAccount } from '@renderer/services/account/accountService';
 import { ValidatorMap } from '@renderer/services/staking/common/types';
-import { formatAddress } from '@renderer/shared/utils/address';
+import { toAddress } from '@renderer/shared/utils/address';
 import { getRelaychainAsset } from '@renderer/shared/utils/assets';
 import { Confirmation, Scanning, Signing, Submit, Validators } from '../components';
 import { useCountdown } from '../hooks/useCountdown';
@@ -118,7 +118,7 @@ const SetValidators = () => {
     const transactions = totalAccounts.map(({ accountId = '' }) => {
       return {
         chainId,
-        address: formatAddress(accountId, addressPrefix),
+        address: toAddress(accountId, { prefix: addressPrefix }),
         type: TransactionType.NOMINATE,
         args: { targets: Object.keys(validators).map((address) => address) },
       };

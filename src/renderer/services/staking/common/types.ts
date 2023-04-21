@@ -1,6 +1,6 @@
 import { ApiPromise } from '@polkadot/api';
 
-import { AccountID, ChainId, EraIndex } from '@renderer/domain/shared-kernel';
+import { Address, ChainId, EraIndex } from '@renderer/domain/shared-kernel';
 import { Stake } from '@renderer/domain/stake';
 import { Validator } from '@renderer/domain/validator';
 
@@ -12,7 +12,7 @@ export interface IStakingDataService {
   subscribeStaking: (
     chainId: ChainId,
     api: ApiPromise,
-    accounts: AccountID[],
+    accounts: Address[],
     callback: (staking: StakingMap) => void,
   ) => Promise<() => void>;
   getMinNominatorBond: (api: ApiPromise) => Promise<string>;
@@ -27,12 +27,12 @@ export interface IStakingDataService {
 export interface IStakingTxService {
   bondAndNominate: (
     api: ApiPromise,
-    address: AccountID,
+    address: Address,
     value: string,
     payee: Payee,
-    targets: AccountID[],
+    targets: Address[],
   ) => Promise<string>;
-  bondExtra: (api: ApiPromise, address: AccountID, value: string) => Promise<string>;
+  bondExtra: (api: ApiPromise, address: Address, value: string) => Promise<string>;
 
   // unbond: () => Promise<void>;
   // rebond: () => Promise<void>;
@@ -55,7 +55,7 @@ export interface IStakingRewardsService {
 export interface IValidatorsService {
   getValidators: (chainId: ChainId, api: ApiPromise, era: EraIndex) => Promise<ValidatorMap>;
   getMaxValidators: (api: ApiPromise) => number;
-  getNominators: (api: ApiPromise, account: AccountID) => Promise<ValidatorMap>;
+  getNominators: (api: ApiPromise, account: Address) => Promise<ValidatorMap>;
 }
 
 // =====================================================
@@ -71,9 +71,9 @@ export interface IEraService {
 // ======================= General =====================
 // =====================================================
 
-export type StakingMap = Record<AccountID, Stake | undefined>;
-export type ValidatorMap = Record<AccountID, Validator>;
-export type RewardsMap = Record<AccountID, string>;
+export type StakingMap = Record<Address, Stake | undefined>;
+export type ValidatorMap = Record<Address, Validator>;
+export type RewardsMap = Record<Address, string>;
 
 export type Payee = 'Stash' | 'Staked' | 'Controller' | { Account: string };
 export type ApyValidator = Pick<Validator, 'address' | 'totalStake' | 'commission'>;
