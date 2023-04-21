@@ -2,12 +2,12 @@ import { ApolloClient, ApolloProvider, from, HttpLink, InMemoryCache, Normalized
 import { onError } from '@apollo/client/link/error';
 import { createContext, PropsWithChildren, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
 
-import { ChainID } from '@renderer/domain/shared-kernel';
+import { ChainId } from '@renderer/domain/shared-kernel';
 import { useChains } from '@renderer/services/network/chainsService';
 import { useSettingsStorage } from '@renderer/services/settings/settingsStorage';
 
 type GraphqlContextProps = {
-  changeClient: (chainId: ChainID) => void;
+  changeClient: (chainId: ChainId) => void;
 };
 
 const GraphqlContext = createContext<GraphqlContextProps>({} as GraphqlContextProps);
@@ -30,10 +30,10 @@ export const GraphqlProvider = ({ children }: PropsWithChildren) => {
   const { getStakingChainsData } = useChains();
   const { getStakingNetwork } = useSettingsStorage();
 
-  const chainUrls = useRef<Record<ChainID, string>>({});
+  const chainUrls = useRef<Record<ChainId, string>>({});
   const [apolloClient, setApolloClient] = useState<ApolloClient<NormalizedCacheObject>>();
 
-  const changeClient = useCallback((chainId: ChainID) => {
+  const changeClient = useCallback((chainId: ChainId) => {
     const httpLink = new HttpLink({ uri: chainUrls.current[chainId] });
 
     const client = new ApolloClient({

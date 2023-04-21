@@ -1,20 +1,20 @@
 import { WellKnownChain } from '@substrate/connect';
 
-import { ChainID } from '@renderer/domain/shared-kernel';
+import { ChainId } from '@renderer/domain/shared-kernel';
 import { Chains } from './common/constants';
 import { IChainSpecService } from './common/types';
 
-const KnownChains: Record<ChainID, WellKnownChain> = {
+const KnownChains: Record<ChainId, WellKnownChain> = {
   [Chains.POLKADOT]: WellKnownChain.polkadot,
   [Chains.KUSAMA]: WellKnownChain.ksmcc3,
 };
 
 export const useChainSpec = (): IChainSpecService => {
-  const getLightClientChains = (): ChainID[] => {
-    return Object.keys(KnownChains) as ChainID[];
+  const getLightClientChains = (): ChainId[] => {
+    return Object.keys(KnownChains) as ChainId[];
   };
 
-  const getKnownChain = (chainId: ChainID): WellKnownChain | undefined => {
+  const getKnownChain = (chainId: ChainId): WellKnownChain | undefined => {
     return KnownChains[chainId];
   };
 

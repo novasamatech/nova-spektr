@@ -1,12 +1,12 @@
 import { Explorers } from '@renderer/components/common';
 import { ChainAddress, Icon } from '@renderer/components/ui';
-import { Address, SigningType, AccountID } from '@renderer/domain/shared-kernel';
+import { Address, SigningType, AccountId } from '@renderer/domain/shared-kernel';
 import { Explorer } from '@renderer/domain/chain';
 import { toAddress } from '@renderer/shared/utils/address';
 import { SigningBadges } from '@renderer/shared/utils/constants';
 
 type Props = {
-  address: Address | AccountID;
+  address: Address | AccountId;
   accountName: string;
   signingType: SigningType;
   addressPrefix: number;

@@ -1,13 +1,13 @@
 import { Balance } from '@renderer/domain/balance';
-import { ChainID, AccountID } from '@renderer/domain/shared-kernel';
+import { ChainId, AccountId } from '@renderer/domain/shared-kernel';
 import { BalanceDS, IBalanceStorage, TBalance } from './common/types';
 
 export const useBalanceStorage = (db: TBalance): IBalanceStorage => ({
-  getBalance: (accountId: AccountID, chainId: ChainID, assetId: string): Promise<BalanceDS | undefined> => {
+  getBalance: (accountId: AccountId, chainId: ChainId, assetId: string): Promise<BalanceDS | undefined> => {
     return db.where({ accountId, chainId, assetId }).first();
   },
 
-  getBalances: (accountIds: AccountID[]): Promise<BalanceDS[]> => {
+  getBalances: (accountIds: AccountId[]): Promise<BalanceDS[]> => {
     return db.where('accountId').anyOf(accountIds).toArray();
   },
 
@@ -15,14 +15,14 @@ export const useBalanceStorage = (db: TBalance): IBalanceStorage => ({
     return db.toArray();
   },
 
-  getNetworkBalances: (accountIds: AccountID[], chainId: ChainID): Promise<BalanceDS[]> => {
+  getNetworkBalances: (accountIds: AccountId[], chainId: ChainId): Promise<BalanceDS[]> => {
     return db
       .where(['accountId', 'chainId'])
       .anyOf(accountIds.map((accountId) => [accountId, chainId]))
       .toArray();
   },
 
-  getAssetBalances: (accountIds: AccountID[], chainId: ChainID, assetId: string): Promise<BalanceDS[]> => {
+  getAssetBalances: (accountIds: AccountId[], chainId: ChainId, assetId: string): Promise<BalanceDS[]> => {
     return db
       .where(['accountId', 'chainId', 'assetId'])
       .anyOf(accountIds.map((accountId) => [accountId, chainId, assetId]))

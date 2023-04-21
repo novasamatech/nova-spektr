@@ -1,10 +1,10 @@
 import Explorers from '../Explorers/Explorers';
 import { ChainAddress } from '@renderer/components/ui';
 import { Explorer } from '@renderer/domain/chain';
-import { SigningType, AccountID } from '@renderer/domain/shared-kernel';
+import { SigningType, AccountId } from '@renderer/domain/shared-kernel';
 
 type Props = {
-  accountId: AccountID;
+  accountId: AccountId;
   name?: string;
   subName?: string;
   signType?: SigningType;

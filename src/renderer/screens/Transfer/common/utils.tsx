@@ -1,12 +1,12 @@
 import { Account } from '@renderer/domain/account';
-import { ChainID, SigningType } from '@renderer/domain/shared-kernel';
+import { ChainId, SigningType } from '@renderer/domain/shared-kernel';
 import { DropdownOption } from '@renderer/components/ui/Dropdowns/common/types';
 import { toAddress } from '@renderer/shared/utils/address';
 import { Icon, ChainAddress } from '@renderer/components/ui';
 import { SigningBadges } from '@renderer/shared/utils/constants';
 
 export const getAccountsOptions = <T extends Account>(
-  chainId: ChainID,
+  chainId: ChainId,
   accounts: T[],
   addressPrefix: number,
 ): DropdownOption<T>[] => {

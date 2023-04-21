@@ -9,7 +9,7 @@ import { IMultisigTxService } from './common/types';
 import { createTransactionPayload, getPendingMultisigTxs, updateTransactionPayload } from './common/utils';
 import { useChains } from '../network/chainsService';
 import { useTransaction } from '../transaction/transactionService';
-import { CallData, AccountID } from '@renderer/domain/shared-kernel';
+import { CallData, AccountId } from '@renderer/domain/shared-kernel';
 import { toAddress } from '@renderer/shared/utils/address';
 
 export const useMultisigTx = (): IMultisigTxService => {
@@ -99,7 +99,7 @@ export const useMultisigTx = (): IMultisigTxService => {
     return useLiveQuery(query, [where], []);
   };
 
-  const getLiveAccountMultisigTxs = (accountIds: AccountID[]): MultisigTransactionDS[] => {
+  const getLiveAccountMultisigTxs = (accountIds: AccountId[]): MultisigTransactionDS[] => {
     const query = () => {
       try {
         return getAccountMultisigTxs(accountIds);

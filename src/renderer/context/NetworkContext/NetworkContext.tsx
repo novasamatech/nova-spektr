@@ -2,7 +2,7 @@ import { createContext, PropsWithChildren, useContext, useEffect, useState } fro
 
 import { RpcNode } from '@renderer/domain/chain';
 import { ConnectionStatus, ConnectionType } from '@renderer/domain/connection';
-import { ChainID, AccountID } from '@renderer/domain/shared-kernel';
+import { ChainId, AccountId } from '@renderer/domain/shared-kernel';
 import { useBalance } from '@renderer/services/balance/balanceService';
 import { ConnectProps, ExtendedChain, RpcValidation } from '@renderer/services/network/common/types';
 import { useNetwork } from '@renderer/services/network/networkService';
@@ -11,20 +11,20 @@ import { useAccount } from '@renderer/services/account/accountService';
 import { usePrevious } from '@renderer/shared/hooks';
 
 type NetworkContextProps = {
-  connections: Record<ChainID, ExtendedChain>;
-  addRpcNode: (chainId: ChainID, rpcNode: RpcNode) => Promise<void>;
-  updateRpcNode: (chainId: ChainID, oldNode: RpcNode, newNode: RpcNode) => Promise<void>;
-  removeRpcNode: (chainId: ChainID, rpcNode: RpcNode) => Promise<void>;
-  validateRpcNode: (genesisHash: ChainID, rpcUrl: string) => Promise<RpcValidation>;
+  connections: Record<ChainId, ExtendedChain>;
+  addRpcNode: (chainId: ChainId, rpcNode: RpcNode) => Promise<void>;
+  updateRpcNode: (chainId: ChainId, oldNode: RpcNode, newNode: RpcNode) => Promise<void>;
+  removeRpcNode: (chainId: ChainId, rpcNode: RpcNode) => Promise<void>;
+  validateRpcNode: (genesisHash: ChainId, rpcUrl: string) => Promise<RpcValidation>;
   connectToNetwork: (props: ConnectProps) => Promise<void>;
-  connectWithAutoBalance: (chainId: ChainID, attempt: number) => Promise<void>;
+  connectWithAutoBalance: (chainId: ChainId, attempt: number) => Promise<void>;
 };
 
 const NetworkContext = createContext<NetworkContextProps>({} as NetworkContextProps);
 
 export const NetworkProvider = ({ children }: PropsWithChildren) => {
   const { getActiveAccounts } = useAccount();
-  const networkSubscriptions = useSubscription<ChainID>();
+  const networkSubscriptions = useSubscription<ChainId>();
   const { subscribe, unsubscribe, hasSubscription, unsubscribeAll } = networkSubscriptions;
   const { connections, setupConnections, connectToNetwork, connectWithAutoBalance, ...rest } =
     useNetwork(networkSubscriptions);
@@ -71,7 +71,7 @@ export const NetworkProvider = ({ children }: PropsWithChildren) => {
     };
   }, [everyConnectionIsReady]);
 
-  const subscribeBalanceChanges = async (chain: ExtendedChain, accountIds: AccountID[]) => {
+  const subscribeBalanceChanges = async (chain: ExtendedChain, accountIds: AccountId[]) => {
     if (!chain.api?.isConnected || !accountIds.length) return;
 
     if (!hasSubscription(chain.chainId)) {
@@ -91,8 +91,8 @@ export const NetworkProvider = ({ children }: PropsWithChildren) => {
   const previousConnectedConnections = usePrevious(connectedConnections);
   const previousAccounts = usePrevious(activeAccounts);
 
-  const getAccountIds = (chainId: ChainID): AccountID[] => {
-    return activeAccounts.reduce<AccountID[]>((acc, account) => {
+  const getAccountIds = (chainId: ChainId): AccountId[] => {
+    return activeAccounts.reduce<AccountId[]>((acc, account) => {
       if (account.accountId && (!account.rootId || account.chainId === chainId)) {
         acc.push(account.accountId);
       }

@@ -229,7 +229,7 @@ const Wallets = forwardRef<HTMLDivElement, Props>(({ className, onUrlChange }, r
                                                     name={chainAccount.name}
                                                     size={24}
                                                     subName={toAddress(chainAccount.accountId, {
-                                                      size: 8,
+                                                      chunk: 8,
                                                       prefix: chain.addressPrefix,
                                                     })}
                                                   />

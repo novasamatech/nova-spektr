@@ -4,7 +4,7 @@ import { BN } from '@polkadot/util';
 
 import { Chain, RpcNode } from '@renderer/domain/chain';
 import { Connection, ConnectionType } from '@renderer/domain/connection';
-import { ChainID } from '@renderer/domain/shared-kernel';
+import { ChainId } from '@renderer/domain/shared-kernel';
 
 // =====================================================
 // ================ Service interface ==================
@@ -12,26 +12,26 @@ import { ChainID } from '@renderer/domain/shared-kernel';
 
 export interface IChainService {
   getChainsData: () => Promise<Chain[]>;
-  getChainById: (chainId: ChainID) => Promise<Chain | undefined>;
+  getChainById: (chainId: ChainId) => Promise<Chain | undefined>;
   getStakingChainsData: () => Promise<Chain[]>;
   sortChains: <T extends ChainLike>(chains: T[]) => T[];
   getExpectedBlockTime: (api: ApiPromise) => BN;
 }
 
 export interface IChainSpecService {
-  getLightClientChains: () => ChainID[];
-  getKnownChain: (chainId: ChainID) => string | undefined;
+  getLightClientChains: () => ChainId[];
+  getKnownChain: (chainId: ChainId) => string | undefined;
 }
 
 export interface INetworkService {
   connections: ConnectionsMap;
   setupConnections: () => Promise<void>;
-  addRpcNode: (chainId: ChainID, rpcNode: RpcNode) => Promise<void>;
-  updateRpcNode: (chainId: ChainID, oldNode: RpcNode, newNode: RpcNode) => Promise<void>;
-  removeRpcNode: (chainId: ChainID, rpcNode: RpcNode) => Promise<void>;
-  validateRpcNode: (genesisHash: ChainID, rpcUrl: string) => Promise<RpcValidation>;
+  addRpcNode: (chainId: ChainId, rpcNode: RpcNode) => Promise<void>;
+  updateRpcNode: (chainId: ChainId, oldNode: RpcNode, newNode: RpcNode) => Promise<void>;
+  removeRpcNode: (chainId: ChainId, rpcNode: RpcNode) => Promise<void>;
+  validateRpcNode: (genesisHash: ChainId, rpcUrl: string) => Promise<RpcValidation>;
   connectToNetwork: (props: ConnectProps) => Promise<void>;
-  connectWithAutoBalance: (chainId: ChainID, attempt: number) => Promise<void>;
+  connectWithAutoBalance: (chainId: ChainId, attempt: number) => Promise<void>;
 }
 
 // =====================================================
@@ -53,10 +53,10 @@ export type ExtendedChain = Chain & {
   disconnect?: (switchNetwork: boolean) => Promise<void>;
 };
 
-export type ConnectionsMap = Record<ChainID, ExtendedChain>;
+export type ConnectionsMap = Record<ChainId, ExtendedChain>;
 
 export type ConnectProps = {
-  chainId: ChainID;
+  chainId: ChainId;
   type: ConnectionType;
   node?: RpcNode;
   attempt?: number;

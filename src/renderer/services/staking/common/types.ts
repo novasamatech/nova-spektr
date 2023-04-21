@@ -1,6 +1,6 @@
 import { ApiPromise } from '@polkadot/api';
 
-import { Address, ChainID, EraIndex } from '@renderer/domain/shared-kernel';
+import { Address, ChainId, EraIndex } from '@renderer/domain/shared-kernel';
 import { Stake } from '@renderer/domain/stake';
 import { Validator } from '@renderer/domain/validator';
 
@@ -10,7 +10,7 @@ import { Validator } from '@renderer/domain/validator';
 
 export interface IStakingDataService {
   subscribeStaking: (
-    chainId: ChainID,
+    chainId: ChainId,
     api: ApiPromise,
     accounts: Address[],
     callback: (staking: StakingMap) => void,
@@ -53,7 +53,7 @@ export interface IStakingRewardsService {
 // =====================================================
 
 export interface IValidatorsService {
-  getValidators: (chainId: ChainID, api: ApiPromise, era: EraIndex) => Promise<ValidatorMap>;
+  getValidators: (chainId: ChainId, api: ApiPromise, era: EraIndex) => Promise<ValidatorMap>;
   getMaxValidators: (api: ApiPromise) => number;
   getNominators: (api: ApiPromise, account: Address) => Promise<ValidatorMap>;
 }

@@ -13,10 +13,9 @@ import Matrix, {
 } from '@renderer/services/matrix';
 import { MultisigAccount, getMultisigAccountId, createMultisigAccount } from '@renderer/domain/account';
 import { useAccount } from '@renderer/services/account/accountService';
-import { toAddress } from '@renderer/shared/utils/address';
+import { toShortAddress, toAddress } from '@renderer/shared/utils/address';
 import { useContact } from '@renderer/services/contact/contactService';
-import { getShortAddress } from '@renderer/shared/utils/strings';
-import { Address, AccountID, SigningType } from '@renderer/domain/shared-kernel';
+import { Address, AccountId, SigningType } from '@renderer/domain/shared-kernel';
 import { validateCallData } from '@renderer/shared/utils/substrate';
 import { useMultisigTx } from '@renderer/services/multisigTx/multisigTxService';
 import {
@@ -96,7 +95,7 @@ export const MatrixProvider = ({ children }: PropsWithChildren) => {
   const createMstAccount = async (roomId: string, extras: SpektrExtras) => {
     const { signatories, threshold, accountName, creatorAccountId } = extras.mstAccount;
 
-    const contactsMap = (await getContacts()).reduce<Record<AccountID, string>>((acc, contact) => {
+    const contactsMap = (await getContacts()).reduce<Record<AccountId, string>>((acc, contact) => {
       acc[contact.accountId] = contact.name;
 
       return acc;
@@ -104,7 +103,7 @@ export const MatrixProvider = ({ children }: PropsWithChildren) => {
 
     const mstSignatories = signatories.map((accountId) => ({
       accountId,
-      name: contactsMap[accountId] || getShortAddress(accountId),
+      name: contactsMap[accountId] || toShortAddress(accountId),
       address: toAddress(accountId),
     }));
 
@@ -123,7 +122,7 @@ export const MatrixProvider = ({ children }: PropsWithChildren) => {
     roomId: string,
     mstAccount: MultisigAccount,
     extras: SpektrExtras,
-    signerAccountId: AccountID,
+    signerAccountId: AccountId,
   ) => {
     const { accountName, creatorAccountId } = extras.mstAccount;
     const stayInRoom = signerAccountId > creatorAccountId;
@@ -221,7 +220,7 @@ export const MatrixProvider = ({ children }: PropsWithChildren) => {
 
   const addMultisigTxToDB = <T extends BaseMultisigPayload>(
     payload: T,
-    accountId: AccountID,
+    accountId: AccountId,
     signatories: Signatory[],
     event: MultisigEvent,
     txStatus: MultisigTxStatus,

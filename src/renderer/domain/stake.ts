@@ -1,8 +1,8 @@
-import { Address, ChainID } from '@renderer/domain/shared-kernel';
+import { Address, ChainId } from '@renderer/domain/shared-kernel';
 
 export type Stake = {
   address: Address;
-  chainId: ChainID;
+  chainId: ChainId;
   controller: Address;
   stash: Address;
   active: string;

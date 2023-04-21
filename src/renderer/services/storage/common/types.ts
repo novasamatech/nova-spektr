@@ -3,7 +3,7 @@ import { Table } from 'dexie';
 import { Balance } from '@renderer/domain/balance';
 import { Connection, ConnectionType } from '@renderer/domain/connection';
 import { Contact } from '@renderer/domain/contact';
-import { Address, ChainID, AccountID } from '@renderer/domain/shared-kernel';
+import { Address, ChainId, AccountId } from '@renderer/domain/shared-kernel';
 import { Wallet } from '@renderer/domain/wallet';
 import { MultisigTransaction } from '@renderer/domain/transaction';
 import { Account, MultisigAccount } from '@renderer/domain/account';
@@ -17,17 +17,17 @@ export interface IStorage {
 }
 
 export interface IBalanceStorage {
-  getBalance: (accountId: AccountID, chainId: ChainID, assetId: string) => Promise<BalanceDS | undefined>;
-  getNetworkBalances: (accountIds: AccountID[], chainId: ChainID) => Promise<BalanceDS[]>;
-  getAssetBalances: (accountIds: AccountID[], chainId: ChainID, assetId: string) => Promise<BalanceDS[]>;
-  getBalances: (accountIds: AccountID[]) => Promise<BalanceDS[]>;
+  getBalance: (accountId: AccountId, chainId: ChainId, assetId: string) => Promise<BalanceDS | undefined>;
+  getNetworkBalances: (accountIds: AccountId[], chainId: ChainId) => Promise<BalanceDS[]>;
+  getAssetBalances: (accountIds: AccountId[], chainId: ChainId, assetId: string) => Promise<BalanceDS[]>;
+  getBalances: (accountIds: AccountId[]) => Promise<BalanceDS[]>;
   getAllBalances: () => Promise<BalanceDS[]>;
   updateBalance: (balance: Balance) => Promise<void>;
   setBalanceIsValid: (balance: Balance, verified: boolean) => Promise<number>;
 }
 
 export interface IConnectionStorage {
-  getConnection: (chainId: ChainID) => Promise<ConnectionDS | undefined>;
+  getConnection: (chainId: ChainId) => Promise<ConnectionDS | undefined>;
   getConnections: () => Promise<ConnectionDS[]>;
   addConnection: (connection: Connection) => Promise<ID | ID[]>;
   addConnections: (connections: Connection[]) => Promise<ID>;
@@ -63,7 +63,7 @@ export interface IContactStorage {
 export interface IMultisigTransactionStorage {
   getMultisigTx: (txId: ID) => Promise<MultisigTransactionDS | undefined>;
   getMultisigTxs: <T extends MultisigTransaction>(where?: Partial<T>) => Promise<MultisigTransactionDS[]>;
-  getAccountMultisigTxs: (accountIds: AccountID[]) => Promise<MultisigTransactionDS[]>;
+  getAccountMultisigTxs: (accountIds: AccountId[]) => Promise<MultisigTransactionDS[]>;
   addMultisigTx: (tx: MultisigTransaction) => Promise<ID>;
   updateMultisigTx: (tx: MultisigTransactionDS) => Promise<ID>;
   deleteMultisigTx: (txId: ID) => Promise<void>;

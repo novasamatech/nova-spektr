@@ -7,11 +7,11 @@ import { useI18n } from '@renderer/context/I18nContext';
 import { Explorer } from '@renderer/domain/chain';
 import { toAddress } from '@renderer/shared/utils/address';
 import { DefaultExplorer, ExplorerIcons } from './common/constants';
-import { AccountID, Address } from '@renderer/domain/shared-kernel';
+import { AccountId, Address } from '@renderer/domain/shared-kernel';
 
 type Props = {
   explorers?: Explorer[];
-  address: Address | AccountID;
+  address: Address | AccountId;
   addressPrefix?: number;
   header?: ReactNode;
   className?: string;

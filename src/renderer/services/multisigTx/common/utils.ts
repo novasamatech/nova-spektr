@@ -1,7 +1,7 @@
 import { ApiPromise } from '@polkadot/api';
 
 import { MultisigAccount } from '@renderer/domain/account';
-import { Address, ChainID } from '@renderer/domain/shared-kernel';
+import { Address, ChainId } from '@renderer/domain/shared-kernel';
 import { MultisigEvent, MultisigTransaction, MultisigTxInitStatus } from '@renderer/domain/transaction';
 import { PendingMultisigTransaction } from './types';
 
@@ -55,7 +55,7 @@ export const updateTransactionPayload = (
 
 export const createTransactionPayload = (
   pendingTransaction: PendingMultisigTransaction,
-  chainId: ChainID,
+  chainId: ChainId,
   account: MultisigAccount,
   currentBlock: number,
   blockTime: number,

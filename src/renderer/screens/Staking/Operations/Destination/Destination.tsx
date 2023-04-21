@@ -11,7 +11,7 @@ import { ButtonBack, ButtonLink, Icon } from '@renderer/components/ui';
 import { useI18n } from '@renderer/context/I18nContext';
 import { useNetworkContext } from '@renderer/context/NetworkContext';
 import { useChains } from '@renderer/services/network/chainsService';
-import { Address, ChainID, HexString } from '@renderer/domain/shared-kernel';
+import { Address, ChainId, HexString } from '@renderer/domain/shared-kernel';
 import { Transaction, TransactionType } from '@renderer/domain/transaction';
 import { Confirmation, Scanning, Signing, Submit } from '../components';
 import Paths from '@renderer/routes/paths';
@@ -46,7 +46,7 @@ const Destination = () => {
   const { connections } = useNetworkContext();
   const [searchParams] = useSearchParams();
   const { getChainById } = useChains();
-  const params = useParams<{ chainId: ChainID }>();
+  const params = useParams<{ chainId: ChainId }>();
 
   const [activeStep, setActiveStep] = useState<Step>(Step.INIT);
   const [chainName, setChainName] = useState('...');
@@ -56,7 +56,7 @@ const Destination = () => {
   const [unsignedTransactions, setUnsignedTransactions] = useState<UnsignedTransaction[]>([]);
   const [signatures, setSignatures] = useState<HexString[]>([]);
 
-  const chainId = params.chainId || ('' as ChainID);
+  const chainId = params.chainId || ('' as ChainId);
   const accountIds = searchParams.get('id')?.split(',') || [];
 
   if (!chainId || accountIds.length === 0) {

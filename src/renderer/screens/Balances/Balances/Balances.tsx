@@ -6,7 +6,7 @@ import { useNetworkContext } from '@renderer/context/NetworkContext';
 import { Asset } from '@renderer/domain/asset';
 import { Chain } from '@renderer/domain/chain';
 import { ConnectionType } from '@renderer/domain/connection';
-import { ChainID, AccountID, SigningType } from '@renderer/domain/shared-kernel';
+import { ChainId, AccountId, SigningType } from '@renderer/domain/shared-kernel';
 import { useToggle } from '@renderer/shared/hooks';
 import { useChains } from '@renderer/services/network/chainsService';
 import { useSettingsStorage } from '@renderer/services/settings/settingsStorage';
@@ -19,8 +19,8 @@ const Balances = () => {
   const { t } = useI18n();
 
   const [query, setQuery] = useState('');
-  const [accountIds, setAccountIds] = useState<AccountID[]>([]);
-  const [usedChains, setUsedChains] = useState<Record<ChainID, boolean>>({});
+  const [accountIds, setAccountIds] = useState<AccountId[]>([]);
+  const [usedChains, setUsedChains] = useState<Record<ChainId, boolean>>({});
   const [receiveData, setReceiveData] = useState<ReceivePayload>();
 
   const [isReceiveOpen, toggleReceive] = useToggle();
@@ -45,11 +45,11 @@ const Balances = () => {
       return;
     }
 
-    const activeAccountIds = activeAccounts.reduce<AccountID[]>((acc, account) => {
+    const activeAccountIds = activeAccounts.reduce<AccountId[]>((acc, account) => {
       return account.accountId ? [...acc, account.accountId] : acc;
     }, []);
 
-    const usedChains = activeAccounts.reduce<Record<ChainID, boolean>>((acc, account) => {
+    const usedChains = activeAccounts.reduce<Record<ChainId, boolean>>((acc, account) => {
       return account.chainId ? { ...acc, [account.chainId]: true } : acc;
     }, {});
 

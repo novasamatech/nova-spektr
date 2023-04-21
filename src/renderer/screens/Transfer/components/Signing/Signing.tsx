@@ -10,7 +10,7 @@ import { toAccountId } from '@renderer/shared/utils/address';
 import { transferableAmount } from '@renderer/services/balance/common/utils';
 import { Transaction } from '@renderer/domain/transaction';
 import { useBalance } from '@renderer/services/balance/balanceService';
-import { ChainID, HexString } from '@renderer/domain/shared-kernel';
+import { ChainId, HexString } from '@renderer/domain/shared-kernel';
 import { useTransaction } from '@renderer/services/transaction/transactionService';
 import { Balance } from '@renderer/domain/balance';
 import { ActiveAddress } from '@renderer/screens/Transfer/components';
@@ -19,7 +19,7 @@ import { Account, MultisigAccount, isMultisig } from '@renderer/domain/account';
 
 type Props = {
   api: ApiPromise;
-  chainId: ChainID;
+  chainId: ChainId;
   transaction: Transaction;
   account: Account | MultisigAccount;
   assetId: string;

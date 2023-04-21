@@ -10,7 +10,7 @@ import { useI18n } from '@renderer/context/I18nContext';
 import { useNetworkContext } from '@renderer/context/NetworkContext';
 import { Asset } from '@renderer/domain/asset';
 import { ConnectionStatus, ConnectionType } from '@renderer/domain/connection';
-import { Address, ChainID, SigningType } from '@renderer/domain/shared-kernel';
+import { Address, ChainId, SigningType } from '@renderer/domain/shared-kernel';
 import { Stake } from '@renderer/domain/stake';
 import { PathValue } from '@renderer/routes/paths';
 import { createLink } from '@renderer/routes/utils';
@@ -61,7 +61,7 @@ const Overview = () => {
   const [selectedAccounts, setSelectedAccounts] = useState<Address[]>([]);
   const [selectedStash, setSelectedStash] = useState<Address>('');
 
-  const chainId = (activeNetwork?.id || '') as ChainID;
+  const chainId = (activeNetwork?.id || '') as ChainId;
   const api = connections[chainId]?.api;
   const addressPrefix = connections[chainId]?.addressPrefix;
   const connection = connections[chainId]?.connection;
@@ -150,8 +150,8 @@ const Overview = () => {
   }, []);
 
   const onNetworkChange = (option: DropdownResult<NetworkOption>) => {
-    setStakingNetwork(option.id as ChainID);
-    changeClient(option.id as ChainID);
+    setStakingNetwork(option.id as ChainId);
+    changeClient(option.id as ChainId);
     setActiveNetwork(option);
     setSelectedAccounts([]);
     setStaking({});

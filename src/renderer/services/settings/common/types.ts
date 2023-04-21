@@ -1,8 +1,8 @@
-import { ChainID } from '@renderer/domain/shared-kernel';
+import { ChainId } from '@renderer/domain/shared-kernel';
 
 export type ISettingsStorage = {
   setHideZeroBalance: (hideZeroBalance: boolean) => void;
   getHideZeroBalance: () => boolean;
-  setStakingNetwork: (chainId: ChainID) => void;
-  getStakingNetwork: () => ChainID;
+  setStakingNetwork: (chainId: ChainId) => void;
+  getStakingNetwork: () => ChainId;
 };

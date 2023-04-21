@@ -9,7 +9,7 @@ import { AmountInput, Balance, Button, HintList, Icon, Identicon, InputHint, Sel
 import { DropdownOption, DropdownResult } from '@renderer/components/ui/Dropdowns/common/types';
 import { useI18n } from '@renderer/context/I18nContext';
 import { Asset } from '@renderer/domain/asset';
-import { Address, ChainID, AccountID, SigningType } from '@renderer/domain/shared-kernel';
+import { Address, ChainId, AccountId, SigningType } from '@renderer/domain/shared-kernel';
 import { Transaction, TransactionType } from '@renderer/domain/transaction';
 import { useAccount } from '@renderer/services/account/accountService';
 import { useBalance } from '@renderer/services/balance/balanceService';
@@ -88,7 +88,7 @@ export type UnstakeResult = {
 
 type Props = {
   api: ApiPromise;
-  chainId: ChainID;
+  chainId: ChainId;
   identifiers: string[];
   asset: Asset;
   staking: StakingMap;
@@ -118,7 +118,7 @@ const InitOperation = ({ api, staking, chainId, identifiers, asset, onResult }: 
     return account.id && identifiers.includes(account.id.toString());
   });
 
-  const accountIds = totalAccounts.reduce<AccountID[]>((acc, account) => {
+  const accountIds = totalAccounts.reduce<AccountId[]>((acc, account) => {
     if (account.accountId) {
       acc.push(account.accountId);
     }
@@ -144,7 +144,7 @@ const InitOperation = ({ api, staking, chainId, identifiers, asset, onResult }: 
   // Set balance map
   useEffect(() => {
     const newBalancesMap = new Map(balances.map((balance) => [balance.accountId, balance]));
-    const newActiveBalances = activeUnstakeAccounts.map((a) => newBalancesMap.get(a.id as AccountID)) as BalanceDS[];
+    const newActiveBalances = activeUnstakeAccounts.map((a) => newBalancesMap.get(a.id as AccountId)) as BalanceDS[];
 
     setBalancesMap(newBalancesMap);
     setActiveBalances(newActiveBalances);
@@ -174,7 +174,7 @@ const InitOperation = ({ api, staking, chainId, identifiers, asset, onResult }: 
   useEffect(() => {
     if (!activeUnstakeAccounts.length) return;
 
-    const transferable = activeUnstakeAccounts.map((a) => transferableAmount(balancesMap.get(a.id as AccountID)));
+    const transferable = activeUnstakeAccounts.map((a) => transferableAmount(balancesMap.get(a.id as AccountId)));
     const minMaxTransferable = transferable.reduce<[string, string]>(
       (acc, balance) => {
         if (!balance) return acc;

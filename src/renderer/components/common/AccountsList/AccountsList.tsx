@@ -2,12 +2,12 @@ import cn from 'classnames';
 
 import { Chain } from '@renderer/domain/chain';
 import { ChainAddress } from '@renderer/components/ui';
-import { AccountID } from '@renderer/domain/shared-kernel';
+import { AccountId } from '@renderer/domain/shared-kernel';
 import { isCorrectAccountId } from '@renderer/shared/utils/address';
 import Explorers from '../Explorers/Explorers';
 
 type Props = {
-  accountId?: AccountID;
+  accountId?: AccountId;
   chains: Chain[];
   className?: string;
   limit?: number;

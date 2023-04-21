@@ -5,9 +5,8 @@ import { useState, useEffect } from 'react';
 import { SeedInfo, SimpleSeedInfo } from '@renderer/components/common/QrCode/QrReader/common/types';
 import { BaseModal, Button, Icon, Identicon } from '@renderer/components/ui';
 import { useI18n } from '@renderer/context/I18nContext';
-import { Address, AccountID } from '@renderer/domain/shared-kernel';
-import { toAddress, toAccountId } from '@renderer/shared/utils/address';
-import { getShortAddress } from '@renderer/shared/utils/strings';
+import { Address, AccountId } from '@renderer/domain/shared-kernel';
+import { toShortAddress, toAddress, toAccountId } from '@renderer/shared/utils/address';
 import ParitySignerQrReader from '../ParitySignerQrReader/ParitySignerQrReader';
 
 const enum CameraState {
@@ -18,8 +17,8 @@ const enum CameraState {
 }
 
 type RootAndDerived = {
-  allRoot: AccountID[];
-  allDerived: AccountID[];
+  allRoot: AccountId[];
+  allDerived: AccountId[];
 };
 
 type GroupedAccounts = {
@@ -170,7 +169,7 @@ const ScanMoreModal = ({ isOpen, accounts, onResult, onClose }: Props) => {
         <div className="flex flex-col justify-center items-center w-full h-full">
           <div className="flex flex-col items-center justify-center w-full h-full">
             <Identicon address={existingAccounts[0]} size={60} background={false} />
-            <p className="text-neutral font-semibold text-xl">{getShortAddress(existingAccounts[0], 16)}</p>
+            <p className="text-neutral font-semibold text-xl">{toShortAddress(existingAccounts[0], 16)}</p>
             <p className="text-neutral-variant text-sm">{t('onboarding.paritySigner.existingAccountDescription')}</p>
           </div>
           <Button

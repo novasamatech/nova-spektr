@@ -8,7 +8,7 @@ import { ChainLoader } from '@renderer/components/common';
 import { useI18n } from '@renderer/context/I18nContext';
 import { useNetworkContext } from '@renderer/context/NetworkContext';
 import { useChains } from '@renderer/services/network/chainsService';
-import { ChainID, HexString, SigningType } from '@renderer/domain/shared-kernel';
+import { ChainId, HexString, SigningType } from '@renderer/domain/shared-kernel';
 import { Transaction, TransactionType } from '@renderer/domain/transaction';
 import Paths from '@renderer/routes/paths';
 import { useAccount } from '@renderer/services/account/accountService';
@@ -41,7 +41,7 @@ const SetValidators = () => {
   const { getChainById } = useChains();
   const { connections } = useNetworkContext();
   const [searchParams] = useSearchParams();
-  const params = useParams<{ chainId: ChainID }>();
+  const params = useParams<{ chainId: ChainId }>();
 
   const dbAccounts = getLiveAccounts({ signingType: SigningType.PARITY_SIGNER });
 
@@ -52,7 +52,7 @@ const SetValidators = () => {
   const [unsignedTransactions, setUnsignedTransactions] = useState<UnsignedTransaction[]>([]);
   const [signatures, setSignatures] = useState<HexString[]>([]);
 
-  const chainId = params.chainId || ('' as ChainID);
+  const chainId = params.chainId || ('' as ChainId);
   const accountIds = searchParams.get('id')?.split(',') || [];
 
   if (!chainId || accountIds.length === 0) {

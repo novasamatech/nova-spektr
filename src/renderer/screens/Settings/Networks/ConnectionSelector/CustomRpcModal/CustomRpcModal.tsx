@@ -6,7 +6,7 @@ import { BaseModal, Button, Icon, Input, InputHint } from '@renderer/components/
 import { useI18n } from '@renderer/context/I18nContext';
 import { useNetworkContext } from '@renderer/context/NetworkContext';
 import { RpcNode } from '@renderer/domain/chain';
-import { ChainID, HexString } from '@renderer/domain/shared-kernel';
+import { ChainId, HexString } from '@renderer/domain/shared-kernel';
 import { RpcValidation } from '@renderer/services/network/common/types';
 import { pasteAddressHandler } from '@renderer/shared/utils/address';
 import { validateWsAddress } from '@renderer/shared/utils/strings';
@@ -27,7 +27,7 @@ const enum FormState {
 }
 
 type Props = {
-  chainId: ChainID;
+  chainId: ChainId;
   network: {
     name: string;
     icon: string;

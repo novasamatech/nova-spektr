@@ -9,7 +9,8 @@ import { Explorer } from '@renderer/domain/chain';
 import { Address } from '@renderer/domain/shared-kernel';
 import { Validator } from '@renderer/domain/validator';
 import { bigNumberSorter } from '@renderer/shared/utils/bignumber';
-import { getComposedIdentity, getShortAddress } from '@renderer/shared/utils/strings';
+import { getComposedIdentity } from '@renderer/shared/utils/strings';
+import { toShortAddress } from '@renderer/shared/utils/address';
 
 type ValidatorWithNomination = Validator & { nominated: string };
 type AvailableColumns = ('apy' | 'ownStake' | 'totalStake' | 'nominated')[];
@@ -127,7 +128,7 @@ const ValidatorsTable = ({
                   {identity ? (
                     <span className="text-sm font-semibold text-neutral">{getComposedIdentity(identity)}</span>
                   ) : (
-                    <span className="text-sm font-semibold text-neutral-variant">{getShortAddress(address, 11)}</span>
+                    <span className="text-sm font-semibold text-neutral-variant">{toShortAddress(address, 11)}</span>
                   )}
                   {(oversubscribed || slashed || blocked) && (
                     <div className="flex items-center gap-x-2.5 ml-1.5">

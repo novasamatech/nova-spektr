@@ -5,7 +5,7 @@ import { BN } from '@polkadot/util';
 import { Button, Icon } from '@renderer/components/ui';
 import { Asset } from '@renderer/domain/asset';
 import { Chain } from '@renderer/domain/chain';
-import { AccountID } from '@renderer/domain/shared-kernel';
+import { AccountId } from '@renderer/domain/shared-kernel';
 import { useBalance } from '@renderer/services/balance/balanceService';
 import { ZERO_BALANCE } from '@renderer/services/balance/common/constants';
 import { totalAmount } from '@renderer/services/balance/common/utils';
@@ -20,7 +20,7 @@ type Props = {
   searchSymbolOnly?: boolean;
   query?: string;
   chain: Chain | ExtendedChain;
-  accountIds: AccountID[];
+  accountIds: AccountId[];
   canMakeActions?: boolean;
   onReceiveClick?: (asset: Asset) => void;
 };

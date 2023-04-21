@@ -1,10 +1,9 @@
 import cn from 'classnames';
 
 import { Identicon } from '@renderer/components/ui';
-import { SigningType, AccountID, Address } from '@renderer/domain/shared-kernel';
-import { getShortAddress } from '@renderer/shared/utils/strings';
+import { SigningType, AccountId, Address } from '@renderer/domain/shared-kernel';
+import { toShortAddress, toAddress } from '@renderer/shared/utils/address';
 import Truncate from '../Truncate/Truncate';
-import { toAddress } from '@renderer/shared/utils/address';
 
 type AddressType = 'full' | 'short' | 'adaptive';
 type AddressStyle = 'small' | 'normal' | 'large';
@@ -16,7 +15,7 @@ const Styles: Record<AddressStyle, string> = {
 };
 
 type WithAccountId = {
-  accountId: AccountID;
+  accountId: AccountId;
   addressPrefix?: number;
 };
 
@@ -60,7 +59,7 @@ const ChainAddress = ({
 }: Props) => {
   const currentAddress = getAddress(props);
   const typeIsAdaptive = type === 'adaptive';
-  const addressToShow = type === 'short' ? getShortAddress(currentAddress, symbols) : currentAddress;
+  const addressToShow = type === 'short' ? toShortAddress(currentAddress, symbols) : currentAddress;
 
   const nameContent = (name || subName) && (
     <div className="flex flex-col items-start">

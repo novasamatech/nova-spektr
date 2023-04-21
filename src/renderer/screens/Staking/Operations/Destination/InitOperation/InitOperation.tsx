@@ -22,7 +22,7 @@ import { DropdownOption, DropdownResult } from '@renderer/components/ui/Dropdown
 import { RadioOption, RadioResult } from '@renderer/components/ui/RadioGroup/common/types';
 import { useI18n } from '@renderer/context/I18nContext';
 import { Asset } from '@renderer/domain/asset';
-import { Address, ChainID, AccountID, SigningType } from '@renderer/domain/shared-kernel';
+import { Address, ChainId, AccountId, SigningType } from '@renderer/domain/shared-kernel';
 import { RewardsDestination } from '@renderer/domain/stake';
 import { Transaction, TransactionType } from '@renderer/domain/transaction';
 import { useAccount } from '@renderer/services/account/accountService';
@@ -115,7 +115,7 @@ export type DestinationResult = {
 
 type Props = {
   api: ApiPromise;
-  chainId: ChainID;
+  chainId: ChainId;
   identifiers: string[];
   asset: Asset;
   onResult: (data: DestinationResult) => void;
@@ -148,7 +148,7 @@ const InitOperation = ({ api, chainId, identifiers, asset, onResult }: Props) =>
     return account.id && identifiers.includes(account.id.toString());
   });
 
-  const accountIds = totalAccounts.reduce<AccountID[]>((acc, account) => {
+  const accountIds = totalAccounts.reduce<AccountId[]>((acc, account) => {
     if (account.accountId) {
       acc.push(account.accountId);
     }

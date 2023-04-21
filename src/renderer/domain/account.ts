@@ -1,7 +1,7 @@
 import { createKeyMulti } from '@polkadot/util-crypto';
 import { u8aToHex } from '@polkadot/util';
 
-import { ChainID, CryptoType, AccountID, ChainType, SigningType, Threshold } from './shared-kernel';
+import { ChainId, CryptoType, AccountId, ChainType, SigningType, Threshold } from './shared-kernel';
 import { Signatory } from '@renderer/domain/signatory';
 import { ID } from '@renderer/services/storage';
 
@@ -9,11 +9,11 @@ export type Account = {
   walletId?: ID;
   rootId?: ID;
   name: string;
-  accountId: AccountID;
+  accountId: AccountId;
   signingType: SigningType;
   cryptoType: CryptoType;
   chainType: ChainType;
-  chainId?: ChainID;
+  chainId?: ChainId;
   // TODO: rename this to something as replacer for root account
   isMain: boolean;
   isActive: boolean;
@@ -51,10 +51,10 @@ export type MultisigAccount = Account & {
   signatories: Signatory[];
   threshold: Threshold;
   matrixRoomId: string;
-  creatorAccountId: AccountID;
+  creatorAccountId: AccountId;
 };
 
-export function getMultisigAccountId(addresses: AccountID[], threshold: Threshold): AccountID {
+export function getMultisigAccountId(addresses: AccountId[], threshold: Threshold): AccountId {
   return u8aToHex(createKeyMulti(addresses, threshold));
 }
 

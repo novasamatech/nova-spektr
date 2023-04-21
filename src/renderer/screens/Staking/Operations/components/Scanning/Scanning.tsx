@@ -14,7 +14,7 @@ import QrMultiframeGenerator from '@renderer/components/common/QrCode/QrGenerato
 import { TRANSACTION_BULK } from '@renderer/components/common/QrCode/QrReader/common/constants';
 import { Block, Button, InfoLink, Plate } from '@renderer/components/ui';
 import { useI18n } from '@renderer/context/I18nContext';
-import { ChainID } from '@renderer/domain/shared-kernel';
+import { ChainId } from '@renderer/domain/shared-kernel';
 import { Transaction } from '@renderer/domain/transaction';
 import { getMetadataPortalUrl, TROUBLESHOOTING_URL } from '@renderer/screens/Signing/common/consts';
 import { AccountDS } from '@renderer/services/storage';
@@ -24,7 +24,7 @@ import { secondsToMinutes } from '@renderer/shared/utils/time';
 
 type Props = {
   api: ApiPromise;
-  chainId: ChainID;
+  chainId: ChainId;
   accounts: AccountDS[];
   addressPrefix: number;
   transactions: Transaction[];

@@ -1,11 +1,11 @@
 import { useEffect, useState } from 'react';
 
-import { ChainID } from '@renderer/domain/shared-kernel';
+import { ChainId } from '@renderer/domain/shared-kernel';
 import { useChains } from '@renderer/services/network/chainsService';
 import { Chain as ChainType } from '@renderer/domain/chain';
 
 type Props = {
-  chainId: ChainID;
+  chainId: ChainId;
 };
 
 const Chain = ({ chainId }: Props) => {

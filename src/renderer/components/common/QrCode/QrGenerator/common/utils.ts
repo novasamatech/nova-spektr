@@ -3,7 +3,7 @@ import { decodeAddress } from '@polkadot/util-crypto';
 import qrcode from 'qrcode-generator';
 import { Encoder } from 'raptorq';
 
-import { ChainID } from '@renderer/domain/shared-kernel';
+import { ChainId } from '@renderer/domain/shared-kernel';
 import { Command, CRYPTO_SR25519, CRYPTO_STUB, FRAME_SIZE, SUBSTRATE_ID } from './constants';
 
 const MULTIPART = new Uint8Array([0]);
@@ -33,14 +33,14 @@ export const createSubstrateSignPayload = (
   address: string,
   cmd: number,
   payload: string | Uint8Array,
-  genesisHash: ChainID | Uint8Array,
+  genesisHash: ChainId | Uint8Array,
 ): Uint8Array => u8aConcat(SUBSTRATE_ID, createSignPayload(address, cmd, payload, genesisHash));
 
 export const createSignPayload = (
   address: string,
   cmd: number,
   payload: string | Uint8Array,
-  genesisHash: ChainID | Uint8Array,
+  genesisHash: ChainId | Uint8Array,
 ): Uint8Array =>
   u8aConcat(CRYPTO_SR25519, new Uint8Array([cmd]), decodeAddress(address), u8aToU8a(payload), u8aToU8a(genesisHash));
 

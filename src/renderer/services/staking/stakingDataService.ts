@@ -1,12 +1,12 @@
 import { ApiPromise } from '@polkadot/api';
 
-import { Address, ChainID, EraIndex } from '@renderer/domain/shared-kernel';
+import { Address, ChainId, EraIndex } from '@renderer/domain/shared-kernel';
 import { Stake } from '@renderer/domain/stake';
 import { IStakingDataService, StakingMap } from './common/types';
 
 export const useStakingData = (): IStakingDataService => {
   const subscribeStaking = async (
-    chainId: ChainID,
+    chainId: ChainId,
     api: ApiPromise,
     accounts: Address[],
     callback: (staking: StakingMap) => void,
@@ -31,7 +31,7 @@ export const useStakingData = (): IStakingDataService => {
   };
 
   const listenToLedger = async (
-    chainId: ChainID,
+    chainId: ChainId,
     api: ApiPromise,
     controllers: Address[],
     accounts: Address[],

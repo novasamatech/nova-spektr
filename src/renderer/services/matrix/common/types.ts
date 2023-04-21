@@ -2,12 +2,12 @@ import { EventType, MatrixEvent, Room } from 'matrix-js-sdk';
 
 import {
   HexString,
-  AccountID,
+  AccountId,
   Timepoint,
   Threshold,
   CallHash,
   CallData,
-  ChainID,
+  ChainId,
 } from '@renderer/domain/shared-kernel';
 import { MultisigTxStatus } from '@renderer/domain/transaction';
 
@@ -117,11 +117,11 @@ export const enum Membership {
 
 export type RoomParams = {
   accountName: string;
-  accountId: AccountID;
-  creatorAccountId: AccountID;
+  accountId: AccountId;
+  creatorAccountId: AccountId;
   threshold: Threshold;
   signatories: {
-    accountId: AccountID;
+    accountId: AccountId;
     matrixId?: string;
   }[];
 };
@@ -130,9 +130,9 @@ export type SpektrExtras = {
   mstAccount: {
     accountName: string;
     threshold: Threshold;
-    signatories: AccountID[];
-    accountId: AccountID;
-    creatorAccountId: AccountID;
+    signatories: AccountId[];
+    accountId: AccountId;
+    creatorAccountId: AccountId;
   };
 };
 
@@ -150,10 +150,10 @@ export const enum SpektrMultisigEvent {
 }
 
 export interface BaseMultisigPayload {
-  chainId: ChainID;
+  chainId: ChainId;
   callHash: CallHash;
   callData?: CallData;
-  senderAccountId: AccountID;
+  senderAccountId: AccountId;
   description?: string;
   callTimepoint: Timepoint;
 }

@@ -12,7 +12,7 @@ import { Asset, AssetType } from '@renderer/domain/asset';
 import { Transaction, MultisigTxInitStatus, TransactionType } from '@renderer/domain/transaction';
 import { useBalance } from '@renderer/services/balance/balanceService';
 import { formatAmount, transferableAmount } from '@renderer/services/balance/common/utils';
-import { Address, ChainID, AccountID } from '@renderer/domain/shared-kernel';
+import { Address, ChainId, AccountId } from '@renderer/domain/shared-kernel';
 import { useTransaction } from '@renderer/services/transaction/transactionService';
 import { useMultisigTx } from '@renderer/services/multisigTx/multisigTxService';
 import { getAssetId } from '@renderer/shared/utils/assets';
@@ -27,7 +27,7 @@ type TransferFormData = {
 
 type Props = {
   api: ApiPromise;
-  chainId: ChainID;
+  chainId: ChainId;
   network: string;
   account?: Account | MultisigAccount;
   signer?: Account;
@@ -129,7 +129,7 @@ export const TransferForm = ({
     setTransferTx(transferPayload);
   }, [account, destination, amount]);
 
-  const getTransferTx = (accountId: AccountID): Transaction => {
+  const getTransferTx = (accountId: AccountId): Transaction => {
     const TransferType: Record<AssetType, TransactionType> = {
       [AssetType.ORML]: TransactionType.ORML_TRANSFER,
       [AssetType.STATEMINE]: TransactionType.ASSET_TRANSFER,
@@ -149,7 +149,7 @@ export const TransferForm = ({
 
   const getMultisigTx = (
     account: MultisigAccount,
-    signerAccountId: AccountID,
+    signerAccountId: AccountId,
     transaction: Transaction,
   ): Transaction => {
     const { callData, callHash } = getTransactionHash(transaction, api);

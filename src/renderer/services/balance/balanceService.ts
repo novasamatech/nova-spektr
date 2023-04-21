@@ -6,7 +6,7 @@ import { Codec } from '@polkadot/types/types';
 import { Option } from '@polkadot/types';
 
 import { Asset, AssetType, OrmlExtras, StatemineExtras } from '@renderer/domain/asset';
-import { ChainID, AccountID } from '@renderer/domain/shared-kernel';
+import { ChainId, AccountId } from '@renderer/domain/shared-kernel';
 import { ExtendedChain } from '@renderer/services/network/common/types';
 import { isLightClient } from '@renderer/services/network/common/utils';
 import { validate } from '../dataVerification/dataVerification';
@@ -23,7 +23,7 @@ export const useBalance = (): IBalanceService => {
     throw new Error('=== 🔴 Balances storage in not defined 🔴 ===');
   }
 
-  const validationSubscriptionService = useSubscription<ChainID>();
+  const validationSubscriptionService = useSubscription<ChainId>();
 
   const {
     updateBalance,
@@ -35,11 +35,11 @@ export const useBalance = (): IBalanceService => {
     setBalanceIsValid,
   } = balanceStorage;
 
-  const getLiveBalance = (accountId: AccountID, chainId: ChainID, assetId: string): BalanceDS | undefined => {
+  const getLiveBalance = (accountId: AccountId, chainId: ChainId, assetId: string): BalanceDS | undefined => {
     return useLiveQuery(() => getBalance(accountId, chainId, assetId), [accountId, chainId, assetId]);
   };
 
-  const getLiveNetworkBalances = (accountIds: AccountID[], chainId: ChainID): BalanceDS[] => {
+  const getLiveNetworkBalances = (accountIds: AccountId[], chainId: ChainId): BalanceDS[] => {
     const query = () => {
       return getNetworkBalances(accountIds, chainId);
     };
@@ -47,7 +47,7 @@ export const useBalance = (): IBalanceService => {
     return useLiveQuery(query, [accountIds.length, chainId], []);
   };
 
-  const getLiveAssetBalances = (accountIds: AccountID[], chainId: ChainID, assetId: string): BalanceDS[] => {
+  const getLiveAssetBalances = (accountIds: AccountId[], chainId: ChainId, assetId: string): BalanceDS[] => {
     const query = () => {
       return getAssetBalances(accountIds, chainId, assetId);
     };
@@ -55,7 +55,7 @@ export const useBalance = (): IBalanceService => {
     return useLiveQuery(query, [accountIds.length, chainId, assetId], []);
   };
 
-  const getLiveBalances = (accountIds: AccountID[]): BalanceDS[] => {
+  const getLiveBalances = (accountIds: AccountId[]): BalanceDS[] => {
     const query = () => {
       return getBalances(accountIds);
     };
@@ -103,7 +103,7 @@ export const useBalance = (): IBalanceService => {
   };
 
   const subscribeBalancesChange = (
-    accountIds: AccountID[],
+    accountIds: AccountId[],
     chain: ExtendedChain,
     relaychain: ExtendedChain | undefined,
     asset: Asset,
@@ -146,7 +146,7 @@ export const useBalance = (): IBalanceService => {
   };
 
   const subscribeStatemineAssetsChange = (
-    accountIds: AccountID[],
+    accountIds: AccountId[],
     chain: ExtendedChain,
     relaychain: ExtendedChain | undefined,
     asset: Asset,
@@ -195,7 +195,7 @@ export const useBalance = (): IBalanceService => {
   };
 
   const subscribeOrmlAssetsChange = async (
-    accountIds: AccountID[],
+    accountIds: AccountId[],
     chain: ExtendedChain,
     relaychain: ExtendedChain | undefined,
     asset: Asset,
@@ -241,7 +241,7 @@ export const useBalance = (): IBalanceService => {
     );
   };
 
-  const subscribeLockBalanceChange = (accountIds: AccountID[], chain: ExtendedChain, asset: Asset) => {
+  const subscribeLockBalanceChange = (accountIds: AccountId[], chain: ExtendedChain, asset: Asset) => {
     const api = chain.api;
     if (!api) return;
 
@@ -266,7 +266,7 @@ export const useBalance = (): IBalanceService => {
     });
   };
 
-  const subscribeLockOrmlAssetChange = async (accountIds: AccountID[], chain: ExtendedChain, asset: Asset) => {
+  const subscribeLockOrmlAssetChange = async (accountIds: AccountId[], chain: ExtendedChain, asset: Asset) => {
     const ormlAssetId = (asset?.typeExtras as OrmlExtras).currencyIdScale;
     const api = chain.api;
     if (!api) return;
@@ -300,7 +300,7 @@ export const useBalance = (): IBalanceService => {
   const subscribeBalances = (
     chain: ExtendedChain,
     relaychain: ExtendedChain | undefined,
-    accountIds: AccountID[],
+    accountIds: AccountId[],
   ): Promise<any> => {
     const unsubscribeBalances = chain.assets?.map((asset) => {
       if (!asset.type) {
@@ -319,7 +319,7 @@ export const useBalance = (): IBalanceService => {
     return Promise.all([...unsubscribeBalances, () => validationSubscriptionService.unsubscribe(chain.chainId)]);
   };
 
-  const subscribeLockBalances = (chain: ExtendedChain, accountIds: AccountID[]): Promise<any> => {
+  const subscribeLockBalances = (chain: ExtendedChain, accountIds: AccountId[]): Promise<any> => {
     const unsubscribe = chain.assets?.map((asset) => {
       if (!asset.type) {
         return subscribeLockBalanceChange(accountIds, chain, asset);

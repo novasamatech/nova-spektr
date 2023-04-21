@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { Dropdown, Plate, Block } from '@renderer/components/ui';
 import { useI18n } from '@renderer/context/I18nContext';
 import { DropdownOption, DropdownResult } from '@renderer/components/ui/Dropdowns/common/types';
-import { SigningType, ChainID } from '@renderer/domain/shared-kernel';
+import { SigningType, ChainId } from '@renderer/domain/shared-kernel';
 import { useAccount } from '@renderer/services/account/accountService';
 import { Explorer } from '@renderer/domain/chain';
 import { Asset } from '@renderer/domain/asset';
@@ -16,7 +16,7 @@ import { getAccountsOptions } from '../../common/utils';
 
 type Props = {
   api: ApiPromise;
-  chainId: ChainID;
+  chainId: ChainId;
   network: string;
   asset: Asset;
   nativeToken: Asset;

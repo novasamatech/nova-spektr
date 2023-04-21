@@ -7,7 +7,7 @@ import { BaseModal, Button, ButtonBack, Icon, Identicon, Input } from '@renderer
 import { useI18n } from '@renderer/context/I18nContext';
 import { createAccount } from '@renderer/domain/account';
 import { Chain } from '@renderer/domain/chain';
-import { ErrorType, AccountID, SigningType } from '@renderer/domain/shared-kernel';
+import { ErrorType, AccountId, SigningType } from '@renderer/domain/shared-kernel';
 import { useToggle } from '@renderer/shared/hooks';
 import { useAccount } from '@renderer/services/account/accountService';
 import { useChains } from '@renderer/services/network/chainsService';
@@ -27,7 +27,7 @@ const WatchOnly = () => {
 
   const [isModalOpen, toggleModal] = useToggle();
   const [chains, setChains] = useState<Chain[]>([]);
-  const [accountId, setAccountId] = useState<AccountID>();
+  const [accountId, setAccountId] = useState<AccountId>();
   const [isCompleted, setIsCompleted] = useState(false);
 
   const {

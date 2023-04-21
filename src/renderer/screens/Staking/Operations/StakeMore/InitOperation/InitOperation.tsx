@@ -9,7 +9,7 @@ import { AmountInput, Balance, Button, HintList, Icon, Identicon, InputHint, Sel
 import { DropdownOption, DropdownResult } from '@renderer/components/ui/Dropdowns/common/types';
 import { useI18n } from '@renderer/context/I18nContext';
 import { Asset } from '@renderer/domain/asset';
-import { Address, ChainID, AccountID } from '@renderer/domain/shared-kernel';
+import { Address, ChainId, AccountId } from '@renderer/domain/shared-kernel';
 import { Transaction, TransactionType } from '@renderer/domain/transaction';
 import { useAccount } from '@renderer/services/account/accountService';
 import { useBalance } from '@renderer/services/balance/balanceService';
@@ -91,7 +91,7 @@ export type StakeMoreResult = {
 
 type Props = {
   api: ApiPromise;
-  chainId: ChainID;
+  chainId: ChainId;
   identifiers: string[];
   asset: Asset;
   onResult: (stakeMore: StakeMoreResult) => void;
@@ -119,7 +119,7 @@ const InitOperation = ({ api, chainId, identifiers, asset, onResult }: Props) =>
     return account.id && identifiers.includes(account.id.toString());
   });
 
-  const accountIds = totalAccounts.reduce<AccountID[]>((acc, account) => {
+  const accountIds = totalAccounts.reduce<AccountId[]>((acc, account) => {
     if (account.accountId) {
       acc.push(account.accountId);
     }
@@ -164,7 +164,7 @@ const InitOperation = ({ api, chainId, identifiers, asset, onResult }: Props) =>
 
   useEffect(() => {
     const newBalancesMap = new Map(balances.map((balance) => [balance.accountId, balance]));
-    const newActiveBalances = activeUnstakeAccounts.map((a) => newBalancesMap.get(a.id as AccountID)) as BalanceDS[];
+    const newActiveBalances = activeUnstakeAccounts.map((a) => newBalancesMap.get(a.id as AccountId)) as BalanceDS[];
 
     setBalancesMap(newBalancesMap);
     setActiveBalances(newActiveBalances);

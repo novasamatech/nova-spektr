@@ -1,6 +1,6 @@
 import { MultisigTransaction } from '@renderer/domain/transaction';
 import { MultisigTransactionDS, IMultisigTransactionStorage, TMultisigTransaction, ID } from './common/types';
-import { AccountID } from '@renderer/domain/shared-kernel';
+import { AccountId } from '@renderer/domain/shared-kernel';
 
 export const useTransactionStorage = (db: TMultisigTransaction): IMultisigTransactionStorage => ({
   getMultisigTx: (txId: ID): Promise<MultisigTransactionDS | undefined> => {
@@ -11,7 +11,7 @@ export const useTransactionStorage = (db: TMultisigTransaction): IMultisigTransa
     return where ? db.where(where).toArray() : db.toArray();
   },
 
-  getAccountMultisigTxs: (accountIds: AccountID[]): Promise<MultisigTransactionDS[]> => {
+  getAccountMultisigTxs: (accountIds: AccountId[]): Promise<MultisigTransactionDS[]> => {
     return db.where('accountId').anyOf(accountIds).toArray();
   },
 

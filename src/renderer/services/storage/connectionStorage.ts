@@ -1,9 +1,9 @@
 import { Connection, ConnectionType } from '@renderer/domain/connection';
-import { ChainID } from '@renderer/domain/shared-kernel';
+import { ChainId } from '@renderer/domain/shared-kernel';
 import { ConnectionDS, IConnectionStorage, TConnection, ID } from './common/types';
 
 export const useConnectionStorage = (db: TConnection): IConnectionStorage => ({
-  getConnection: (chainId: ChainID): Promise<ConnectionDS | undefined> => {
+  getConnection: (chainId: ChainId): Promise<ConnectionDS | undefined> => {
     return db.get({ chainId });
   },
 

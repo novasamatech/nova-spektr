@@ -6,7 +6,7 @@ import { useI18n } from '@renderer/context/I18nContext';
 import { ButtonBack, Icon, ButtonLink } from '@renderer/components/ui';
 import { ChainLoader } from '@renderer/components/common';
 import Paths from '@renderer/routes/paths';
-import { ChainID, HexString } from '@renderer/domain/shared-kernel';
+import { ChainId, HexString } from '@renderer/domain/shared-kernel';
 import { useNetworkContext } from '@renderer/context/NetworkContext';
 import { InitOperation, Confirmation, Scanning, Signing, Submit } from './components';
 import { useChains } from '@renderer/services/network/chainsService';
@@ -26,7 +26,7 @@ const enum Step {
 const Transfer = () => {
   const { t } = useI18n();
   const navigate = useNavigate();
-  const params = useParams<{ chainId: ChainID; assetId: string }>();
+  const params = useParams<{ chainId: ChainId; assetId: string }>();
   const { getChainById } = useChains();
   const { connections } = useNetworkContext();
 

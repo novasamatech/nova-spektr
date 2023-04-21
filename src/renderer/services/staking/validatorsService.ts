@@ -3,13 +3,13 @@ import { u8aToString } from '@polkadot/util';
 import merge from 'lodash/merge';
 
 import { Identity, SubIdentity } from '@renderer/domain/identity';
-import { Address, ChainID, EraIndex } from '@renderer/domain/shared-kernel';
+import { Address, ChainId, EraIndex } from '@renderer/domain/shared-kernel';
 import { Validator } from '@renderer/domain/validator';
 import { getValidatorsApy } from './apyCalculator';
 import { IValidatorsService, ValidatorMap } from './common/types';
 
 export const useValidators = (): IValidatorsService => {
-  const getValidators = async (chainId: ChainID, api: ApiPromise, era: EraIndex): Promise<ValidatorMap> => {
+  const getValidators = async (chainId: ChainId, api: ApiPromise, era: EraIndex): Promise<ValidatorMap> => {
     const [stake, prefs] = await Promise.all([getValidatorsStake(api, era), getValidatorsPrefs(api, era)]);
 
     const mergedValidators = merge(stake, prefs);

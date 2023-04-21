@@ -16,7 +16,7 @@ import { useMultisigTx } from '@renderer/services/multisigTx/multisigTxService';
 import ShortTransactionInfo from './ShortTransactionInfo';
 import TransactionTitle from './TransactionTitle';
 import { useToggle } from '@renderer/shared/hooks';
-import { CallData, ChainID } from '@renderer/domain/shared-kernel';
+import { CallData, ChainId } from '@renderer/domain/shared-kernel';
 import { useNetworkContext } from '@renderer/context/NetworkContext';
 import { MultisigAccount } from '@renderer/domain/account';
 import CallDataModal from './CallDataModal';
@@ -54,7 +54,7 @@ const Operation = ({ tx, account }: Props) => {
 
   const { dateCreated, callData, chainId, events, signatories, transaction, description, status } = tx;
 
-  const connection = connections[tx?.chainId as ChainID];
+  const connection = connections[tx?.chainId as ChainId];
   const approvals = events.filter((e) => e.status === 'SIGNED');
   const cancellation = events.filter((e) => e.status === 'CANCELLED');
 

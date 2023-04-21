@@ -7,7 +7,7 @@ import { Button, Icon, Input } from '@renderer/components/ui';
 import { useI18n } from '@renderer/context/I18nContext';
 import { Asset } from '@renderer/domain/asset';
 import { Explorer } from '@renderer/domain/chain';
-import { Address, ChainID } from '@renderer/domain/shared-kernel';
+import { Address, ChainId } from '@renderer/domain/shared-kernel';
 import { ValidatorMap } from '@renderer/services/staking/common/types';
 import { useEra } from '@renderer/services/staking/eraService';
 import { useValidators } from '@renderer/services/staking/validatorsService';
@@ -15,7 +15,7 @@ import { includes } from '@renderer/shared/utils/strings';
 
 type Props = {
   api: ApiPromise;
-  chainId: ChainID;
+  chainId: ChainId;
   asset: Asset;
   explorers?: Explorer[];
   addressPrefix?: number;

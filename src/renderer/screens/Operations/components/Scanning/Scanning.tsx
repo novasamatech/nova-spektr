@@ -10,14 +10,14 @@ import { TROUBLESHOOTING_URL, getMetadataPortalUrl } from '@renderer/screens/Sig
 import { useI18n } from '@renderer/context/I18nContext';
 import { Transaction } from '@renderer/domain/transaction';
 import { useTransaction } from '@renderer/services/transaction/transactionService';
-import { ChainID } from '@renderer/domain/shared-kernel';
+import { ChainId } from '@renderer/domain/shared-kernel';
 import { ActiveAddress } from '@renderer/screens/Transfer/components';
 import { Explorer } from '@renderer/domain/chain';
 import { Account, MultisigAccount, isMultisig } from '@renderer/domain/account';
 
 type Props = {
   api: ApiPromise;
-  chainId: ChainID;
+  chainId: ChainId;
   transaction: Transaction;
   account: Account | MultisigAccount;
   explorers?: Explorer[];

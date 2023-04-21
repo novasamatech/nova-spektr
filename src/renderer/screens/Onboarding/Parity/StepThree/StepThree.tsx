@@ -10,13 +10,12 @@ import { BaseModal, Button, Icon, Identicon, Input } from '@renderer/components/
 import { useI18n } from '@renderer/context/I18nContext';
 import { Account, createAccount } from '@renderer/domain/account';
 import { Chain } from '@renderer/domain/chain';
-import { ChainID, HexString, AccountID, SigningType, WalletType, Address } from '@renderer/domain/shared-kernel';
+import { ChainId, HexString, AccountId, SigningType, WalletType, Address } from '@renderer/domain/shared-kernel';
 import { useToggle } from '@renderer/shared/hooks';
 import ScanMoreModal from '@renderer/screens/Onboarding/Parity/ScanMoreModal/ScanMoreModal';
 import { useAccount } from '@renderer/services/account/accountService';
 import { useChains } from '@renderer/services/network/chainsService';
-import { toAddress, toAccountId } from '@renderer/shared/utils/address';
-import { getShortAddress } from '@renderer/shared/utils/strings';
+import { toShortAddress, toAddress, toAccountId } from '@renderer/shared/utils/address';
 import { useWallet } from '@renderer/services/wallet/walletService';
 import { createWallet } from '@renderer/domain/wallet';
 import './StepThree.css';
@@ -42,7 +41,7 @@ const StepThree = ({ qrData, onNextStep }: Props) => {
   const [inactiveAccounts, setInactiveAccounts] = useState<Record<string, boolean>>({});
   const [accountNames, setAccountNames] = useState<Record<string, string>>({});
 
-  const [currentAccountId, setCurrentAccountId] = useState<AccountID>();
+  const [currentAccountId, setCurrentAccountId] = useState<AccountId>();
   const [accounts, setAccounts] = useState<SimpleSeedInfo[]>([]);
   const [walletName, setWalletName] = useState('');
 
@@ -155,7 +154,7 @@ const StepThree = ({ qrData, onNextStep }: Props) => {
 
   const createDerivedAccounts = (
     derivedKeys: AddressInfo[],
-    chainId: ChainID,
+    chainId: ChainId,
     accountIndex: number,
     rootAccountId: ID,
     walletId: ID,
@@ -204,7 +203,7 @@ const StepThree = ({ qrData, onNextStep }: Props) => {
         .map((chainId) => {
           const chainDerivedKeys = derivedKeys[chainId as HexString];
 
-          return createDerivedAccounts(chainDerivedKeys, chainId as ChainID, accountIndex, rootAccountId, walletId);
+          return createDerivedAccounts(chainDerivedKeys, chainId as ChainId, accountIndex, rootAccountId, walletId);
         })
         .flat();
 
@@ -269,7 +268,7 @@ const StepThree = ({ qrData, onNextStep }: Props) => {
                         disabled
                         disabledStyle={inactiveAccounts[getAccountId(accountIndex)]}
                         placeholder={t('onboarding.paritySigner.accountAddressPlaceholder')}
-                        value={getShortAddress(account.address, 10)}
+                        value={toShortAddress(account.address, 10)}
                         wrapperClass={cn('flex items-center')}
                         prefixElement={<Identicon size={20} address={account.address} background={false} />}
                         suffixElement={
@@ -373,7 +372,7 @@ const StepThree = ({ qrData, onNextStep }: Props) => {
                                   disabled
                                   disabledStyle={inactiveAccounts[getAccountId(accountIndex, chainId, derivedKeyIndex)]}
                                   placeholder={t('onboarding.paritySigner.accountAddressPlaceholder')}
-                                  value={getShortAddress(address, 10)}
+                                  value={toShortAddress(address, 10)}
                                   wrapperClass="flex flex-1 items-center"
                                   prefixElement={<Identicon size={20} address={address} background={false} />}
                                   suffixElement={
