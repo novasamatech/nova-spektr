@@ -8,7 +8,7 @@ import { Balance, Block, Icon } from '@renderer/components/ui';
 import { useI18n } from '@renderer/context/I18nContext';
 import { Asset } from '@renderer/domain/asset';
 import { Explorer } from '@renderer/domain/chain';
-import { AccountID } from '@renderer/domain/shared-kernel';
+import { Address } from '@renderer/domain/shared-kernel';
 import { RewardsDestination } from '@renderer/domain/stake';
 import { Transaction } from '@renderer/domain/transaction';
 import { Validator } from '@renderer/domain/validator';
@@ -16,9 +16,10 @@ import { AccountDS } from '@renderer/services/storage';
 import { useToggle } from '@renderer/shared/hooks';
 import AccountsModal from '../AccountsModal/AccountsModal';
 import ValidatorsModal from '../ValidatorsModal/ValidatorsModal';
+import { toAccountId } from '@renderer/shared/utils/address';
 
 type Destination = {
-  address?: AccountID;
+  address?: Address;
   type: RewardsDestination;
 };
 
@@ -80,7 +81,7 @@ const TransactionInfo = ({
             {singleAccount ? (
               <AddressOnPlate
                 title={t('staking.confirmation.account')}
-                address={accounts[0].accountId || ''}
+                accountId={accounts[0].accountId || ''}
                 signType={accounts[0].signingType}
                 name={accounts[0].name}
                 addressPrefix={addressPrefix}
@@ -152,7 +153,7 @@ const TransactionInfo = ({
               <AddressOnPlate
                 title={t('staking.confirmation.rewardsDestination')}
                 suffix={t('staking.confirmation.transferableRewards')}
-                address={destination.address}
+                accountId={toAccountId(destination.address)}
                 addressPrefix={addressPrefix}
                 explorers={explorers}
               />

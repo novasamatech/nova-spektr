@@ -3,7 +3,7 @@ import cn from 'classnames';
 import { useI18n } from '@renderer/context/I18nContext';
 import { MultisigTransactionDS } from '@renderer/services/storage';
 import { MultisigAccount } from '@renderer/domain/account';
-import { Address, Balance, Button, Icon } from '@renderer/components/ui';
+import { ChainAddress, Balance, Button, Icon } from '@renderer/components/ui';
 import Truncate from '@renderer/components/ui/Truncate/Truncate';
 import { copyToClipboard } from '@renderer/shared/utils/strings';
 import { useToggle } from '@renderer/shared/hooks';
@@ -20,18 +20,18 @@ type Props = {
 };
 
 const Details = ({ tx, account, connection, withAdvanced = true }: Props) => {
-  const { indexCreated, blockCreated, deposit, depositor, callHash, callData, transaction } = tx;
-
   const { t } = useI18n();
 
   const [isAdvancedShown, toggleAdvanced] = useToggle();
   const [isValidatorsOpen, toggleValidators] = useToggle();
 
+  const { indexCreated, blockCreated, deposit, depositor, callHash, callData, transaction } = tx;
+
   const defaultAsset = connection?.assets[0];
-
-  const depositorSignatory = account?.signatories.find((s) => s.publicKey === depositor);
-
-  const extrinsicLink = getMultisigExtrinsicLink(callHash, indexCreated, blockCreated, connection?.explorers);
+  const addressPrefix = connection?.addressPrefix;
+  const explorers = connection?.explorers;
+  const depositorSignatory = account?.signatories.find((s) => s.accountId === depositor);
+  const extrinsicLink = getMultisigExtrinsicLink(callHash, indexCreated, blockCreated, explorers);
 
   return (
     <>
@@ -40,8 +40,8 @@ const Details = ({ tx, account, connection, withAdvanced = true }: Props) => {
           <li className="flex justify-between items-center">
             <div className="text-shade-40">{t('operation.details.multisigWallet')}</div>
             <div className="flex items-center gap-1">
-              <Address address={account.accountId || ''} name={account.name} canCopy />
-              <Explorers address={account.accountId || ''} explorers={connection?.explorers} />
+              <ChainAddress accountId={account.accountId} addressPrefix={addressPrefix} name={account.name} canCopy />
+              <Explorers address={account.accountId} addressPrefix={addressPrefix} explorers={explorers} />
             </div>
           </li>
         )}
@@ -50,8 +50,8 @@ const Details = ({ tx, account, connection, withAdvanced = true }: Props) => {
           <li className="flex justify-between items-center">
             <div className="text-shade-40">{t('operation.details.recipient')}</div>
             <div className="flex items-center gap-1">
-              <Address type="short" address={transaction?.args.dest} />
-              <Explorers address={transaction.args.dest || ''} explorers={connection?.explorers} />
+              <ChainAddress type="short" address={transaction.args.dest} />
+              <Explorers address={transaction.args.dest} addressPrefix={addressPrefix} explorers={explorers} />
             </div>
           </li>
         )}
@@ -62,8 +62,12 @@ const Details = ({ tx, account, connection, withAdvanced = true }: Props) => {
             <div className="flex items-center gap-1">
               {transaction.args.payee.account ? (
                 <>
-                  <Address type="short" address={transaction.args.payee.account} />
-                  <Explorers address={transaction.args.payee.account} explorers={connection?.explorers} />
+                  <ChainAddress type="short" address={transaction.args.payee.account} />
+                  <Explorers
+                    address={transaction.args.payee.account}
+                    addressPrefix={addressPrefix}
+                    explorers={connection?.explorers}
+                  />
                 </>
               ) : (
                 transaction.args.payee
@@ -76,7 +80,7 @@ const Details = ({ tx, account, connection, withAdvanced = true }: Props) => {
           <li className="flex justify-between items-center">
             <div className="text-shade-40">{t('operation.details.controller')}</div>
             <div className="flex items-center gap-1">
-              <Address type="short" address={transaction.args.controller} />
+              <ChainAddress type="short" address={transaction.args.controller} />
               <Explorers address={transaction.args.controller} explorers={connection?.explorers} />
             </div>
           </li>
@@ -147,8 +151,12 @@ const Details = ({ tx, account, connection, withAdvanced = true }: Props) => {
               <li className="flex justify-between items-center">
                 <div className="text-shade-40">{t('operation.details.depositor')}</div>
                 <div className="flex gap-1">
-                  <Address address={depositorSignatory.accountId} name={depositorSignatory.name} canCopy />
-                  <Explorers address={depositorSignatory.accountId} explorers={connection?.explorers} />
+                  <ChainAddress address={depositorSignatory.address} name={depositorSignatory.name} canCopy />
+                  <Explorers
+                    address={depositorSignatory.accountId}
+                    addressPrefix={addressPrefix}
+                    explorers={explorers}
+                  />
                 </div>
               </li>
             )}

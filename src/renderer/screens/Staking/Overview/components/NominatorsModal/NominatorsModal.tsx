@@ -3,12 +3,12 @@ import { BaseModal, Icon } from '@renderer/components/ui';
 import { useI18n } from '@renderer/context/I18nContext';
 import { Asset } from '@renderer/domain/asset';
 import { Explorer } from '@renderer/domain/chain';
-import { AccountID } from '@renderer/domain/shared-kernel';
+import { Address } from '@renderer/domain/shared-kernel';
 import { Validator } from '@renderer/domain/validator';
 import { ValidatorMap } from '@renderer/services/staking/common/types';
 
 type Props = {
-  stash: AccountID;
+  stash: Address;
   validators: ValidatorMap;
   nominators: ValidatorMap;
   asset?: Asset;

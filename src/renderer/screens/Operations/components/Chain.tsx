@@ -10,6 +10,7 @@ type Props = {
 
 const Chain = ({ chainId }: Props) => {
   const { getChainById } = useChains();
+
   const [chain, setChain] = useState<ChainType>();
 
   useEffect(() => {

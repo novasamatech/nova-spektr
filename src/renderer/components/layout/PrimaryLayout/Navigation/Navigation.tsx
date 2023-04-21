@@ -32,19 +32,19 @@ const getCardType = (accounts: AccountDS[]): CardType => {
 };
 
 const Navigation = () => {
+  const { LocaleComponent, t } = useI18n();
+  const { getActiveAccounts } = useAccount();
+  const { getLiveAccountMultisigTxs } = useMultisigTx();
+
   const walletsRef = useRef<HTMLDivElement>(null);
   const showWalletsRef = useRef<HTMLButtonElement>(null);
 
-  const { LocaleComponent, t } = useI18n();
-  const { getActiveAccounts } = useAccount();
+  const [isWalletsOpen, setIsWalletsOpen] = useState(false);
 
   const activeAccounts = getActiveAccounts();
   const cardType = getCardType(activeAccounts);
 
-  const [isWalletsOpen, setIsWalletsOpen] = useState(false);
-
-  const { getLiveAccountMultisigTxs } = useMultisigTx();
-  const txs = getLiveAccountMultisigTxs(activeAccounts.map((a) => a.publicKey).filter(nonNullable)).filter(
+  const txs = getLiveAccountMultisigTxs(activeAccounts.map((a) => a.accountId).filter(nonNullable)).filter(
     (tx) => tx.status === 'SIGNING',
   );
 

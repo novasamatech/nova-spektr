@@ -7,8 +7,8 @@ import { useI18n } from '@renderer/context/I18nContext';
 import { Stake } from '@renderer/domain/stake';
 import Paths, { PathValue } from '@renderer/routes/paths';
 import { useToggle } from '@renderer/shared/hooks';
-import { toPublicKey } from '@renderer/shared/utils/address';
-import { AccountID } from '@renderer/domain/shared-kernel';
+import { toAccountId } from '@renderer/shared/utils/address';
+import { Address } from '@renderer/domain/shared-kernel';
 
 const enum AccountTypes {
   STASH = 'stash',
@@ -41,7 +41,7 @@ type Props = {
   stakes: Stake[];
   selectedAccounts?: string[];
   className?: string;
-  onNavigate: (path: PathValue, accounts?: AccountID[]) => void;
+  onNavigate: (path: PathValue, accounts?: Address[]) => void;
 };
 
 const StakingActions = ({ stakes, className, onNavigate }: Props) => {
@@ -86,11 +86,11 @@ const StakingActions = ({ stakes, className, onNavigate }: Props) => {
   }
 
   const isController = (stake: Stake): boolean => {
-    return !stake.controller || toPublicKey(stake.accountId) === toPublicKey(stake.controller);
+    return !stake.controller || toAccountId(stake.address) === toAccountId(stake.controller);
   };
 
   const isStash = (stake: Stake): boolean => {
-    return !stake.stash || toPublicKey(stake.accountId) === toPublicKey(stake.stash);
+    return !stake.stash || toAccountId(stake.address) === toAccountId(stake.stash);
   };
 
   const hasIncorrectAccounts = (action: StakeAction): AccountTypes | null => {
@@ -132,7 +132,7 @@ const StakingActions = ({ stakes, className, onNavigate }: Props) => {
 
       onNavigate(
         STAKE_ACTIONS[action].path,
-        accounts.map((account) => account.accountId),
+        accounts.map((account) => account.address),
       );
     } else {
       onNavigate(STAKE_ACTIONS[action].path);

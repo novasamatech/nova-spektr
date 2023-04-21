@@ -1,6 +1,6 @@
 import { ApiPromise } from '@polkadot/api';
 
-import { Button, Balance, Icon, Address, Plate, Block } from '@renderer/components/ui';
+import { Button, Balance, Icon, ChainAddress, Plate, Block } from '@renderer/components/ui';
 import { Explorers, Fee, Deposit } from '@renderer/components/common';
 import { Asset } from '@renderer/domain/asset';
 import { useI18n } from '@renderer/context/I18nContext';
@@ -69,8 +69,8 @@ export const Confirmation = ({
           <div className="flex justify-between px-5 py-3">
             <div className="text-sm text-neutral-variant ">{t('transferDetails.sender')}</div>
             <div className="flex gap-1 items-center font-semibold">
-              <Address type="short" address={address} addressStyle="large" size={18} />
-              <Explorers explorers={explorers} addressPrefix={addressPrefix} address={address} />
+              <ChainAddress type="short" address={address} addressStyle="large" size={18} />
+              <Explorers address={address} addressPrefix={addressPrefix} explorers={explorers} />
             </div>
           </div>
         </div>
@@ -97,8 +97,8 @@ export const Confirmation = ({
             <div className="text-sm text-neutral-variant ">{t('transferDetails.recipient')}</div>
             <div className="flex gap-1 items-center">
               <div className="flex gap-1 items-center font-semibold">
-                <Address type="short" address={destination} addressStyle="large" size={18} />
-                <Explorers explorers={explorers} addressPrefix={addressPrefix} address={address} />
+                <ChainAddress type="short" address={destination} addressStyle="large" size={18} />
+                <Explorers address={address} addressPrefix={addressPrefix} explorers={explorers} />
               </div>
             </div>
           </div>

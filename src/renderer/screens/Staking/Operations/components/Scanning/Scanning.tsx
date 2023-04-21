@@ -19,7 +19,7 @@ import { Transaction } from '@renderer/domain/transaction';
 import { getMetadataPortalUrl, TROUBLESHOOTING_URL } from '@renderer/screens/Signing/common/consts';
 import { AccountDS } from '@renderer/services/storage';
 import { useTransaction } from '@renderer/services/transaction/transactionService';
-import { formatAddress } from '@renderer/shared/utils/address';
+import { toAddress } from '@renderer/shared/utils/address';
 import { secondsToMinutes } from '@renderer/shared/utils/time';
 
 type Props = {
@@ -52,7 +52,7 @@ export const Scanning = ({
 
   const setupTransactions = async () => {
     const transactionPromises = accounts.map((account, index) => {
-      const address = formatAddress(account.accountId, addressPrefix);
+      const address = toAddress(account.accountId, { prefix: addressPrefix });
 
       return (async () => {
         const { payload, unsigned } = await createPayload(transactions[index], api);
