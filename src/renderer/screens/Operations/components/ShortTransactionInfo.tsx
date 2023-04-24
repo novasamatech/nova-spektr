@@ -1,47 +1,14 @@
-import { ReactNode, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 
 import { Transaction, TransactionType } from '@renderer/domain/transaction';
 import { DEFAULT } from '@shared/constants/common';
 import { useChains } from '@renderer/services/network/chainsService';
 import { Asset } from '@renderer/domain/asset';
-import { Balance } from '@renderer/components/ui';
 import { getAssetById } from '@renderer/shared/utils/assets';
+import TokenBalance from '@renderer/components/common/TokenBalance/TokenBalance';
 
 type Props = {
   tx: Transaction;
-};
-
-type TransactionProps = {
-  tx: Transaction;
-  asset?: Asset;
-};
-
-const TransactionInfo = ({ tx, asset }: TransactionProps) => {
-  if (!asset) return null;
-
-  return (
-    <div className="flex gap-2">
-      <div className="flex items-center justify-center bg-shade-70 border border-shade-20 rounded-full w-6 h-6">
-        <img src={asset.icon} alt={asset.name} width={16} height={16} />
-      </div>
-
-      <Balance value={tx.args.value} symbol={asset.symbol} precision={asset.precision} />
-    </div>
-  );
-};
-
-const StakeMore = ({ tx, asset }: TransactionProps) => {
-  if (!asset) return null;
-
-  return (
-    <div className="flex gap-2">
-      <div className="flex items-center justify-center bg-shade-70 border border-shade-20 rounded-full w-6 h-6">
-        <img src={asset.icon} alt={asset.name} width={16} height={16} />
-      </div>
-
-      <Balance value={tx.args.maxAdditional} symbol={asset.symbol} precision={asset.precision} />
-    </div>
-  );
 };
 
 const ShortTransactionInfo = ({ tx }: Props) => {
@@ -54,31 +21,36 @@ const ShortTransactionInfo = ({ tx }: Props) => {
 
   const asset = getAssetById(tx.args.assetId, assets);
 
-  const Transactions: Record<TransactionType | typeof DEFAULT, ReactNode> = {
-    // Transfer
-    [TransactionType.ASSET_TRANSFER]: <TransactionInfo tx={tx} asset={asset} />,
-    [TransactionType.ORML_TRANSFER]: <TransactionInfo tx={tx} asset={asset} />,
-    [TransactionType.TRANSFER]: <TransactionInfo tx={tx} asset={asset} />,
-    [TransactionType.MULTISIG_AS_MULTI]: <TransactionInfo tx={tx} asset={asset} />,
+  const getInfoByTxType = () => {
+    const type = tx.type || DEFAULT;
 
-    // Staking
-    [TransactionType.BOND]: <TransactionInfo tx={tx} asset={asset} />,
-    [TransactionType.STAKE_MORE]: <StakeMore tx={tx} asset={asset} />,
-    [TransactionType.RESTAKE]: <TransactionInfo tx={tx} asset={asset} />,
-    [TransactionType.UNSTAKE]: <TransactionInfo tx={tx} asset={asset} />,
-    [TransactionType.REDEEM]: null,
-    [TransactionType.NOMINATE]: null,
-    [TransactionType.DESTINATION]: null,
+    if (asset) {
+      if (
+        [
+          TransactionType.ASSET_TRANSFER,
+          TransactionType.ORML_TRANSFER,
+          TransactionType.TRANSFER,
+          TransactionType.MULTISIG_AS_MULTI,
+          TransactionType.BOND,
+          TransactionType.RESTAKE,
+          TransactionType.UNSTAKE,
+        ].includes(type)
+      ) {
+        return <TokenBalance value={tx.args.value} asset={asset} />;
+      }
+      if (type === TransactionType.STAKE_MORE) {
+        return <TokenBalance value={tx.args.maxAdditional} asset={asset} />;
+      }
+    }
 
-    // Technical
-    [TransactionType.BATCH_ALL]: <ShortTransactionInfo tx={tx.args?.calls?.[0]} />,
-    [TransactionType.CHILL]: null,
-    [TransactionType.MULTISIG_APPROVE_AS_MULTI]: null,
-    [TransactionType.MULTISIG_CANCEL_AS_MULTI]: null,
-    [DEFAULT]: null,
+    if (type === TransactionType.BATCH_ALL) {
+      return <ShortTransactionInfo tx={tx.args?.calls?.[0]} />;
+    }
+
+    return null;
   };
 
-  return <>{Transactions[tx.type || DEFAULT]}</>;
+  return <>{getInfoByTxType()}</>;
 };
 
 export default ShortTransactionInfo;

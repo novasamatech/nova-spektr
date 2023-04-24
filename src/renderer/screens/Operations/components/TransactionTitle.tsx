@@ -2,6 +2,7 @@ import { Icon } from '@renderer/components/ui';
 import { useI18n } from '@renderer/context/I18nContext';
 import { Transaction } from '@renderer/domain/transaction';
 import { getIconName, getTransactionTitle } from '../common/utils';
+import { BodyText, FootnoteText } from '@renderer/components/ui-redesign';
 
 type Props = {
   tx?: Transaction;
@@ -15,13 +16,15 @@ const TransactionTitle = ({ tx, description }: Props) => {
   const transactionTitle = getTransactionTitle(tx);
 
   return (
-    <div className="flex gap-2 ">
-      <div className="row-span-2 self-center">
-        <Icon className="rounded-full border-solid border bg-shade-2 border-shade-5" name={iconName} />
-      </div>
-      <div>
-        <div className="text-black text-base">{t(transactionTitle)}</div>
-        {description && <div className="text-shade-50 text-base truncate">{description} </div>}
+    <div className="'flex inline-flex gap-2 items-center'">
+      <Icon
+        className="p-1.5 box-content rounded-full border border-token-container-border text-icon-default"
+        name={iconName}
+        size={16}
+      />
+      <div className="flex flex-col gap-0.5 justify-center">
+        <BodyText>{t(transactionTitle)}</BodyText>
+        {description && <FootnoteText className="text-text-tertiary truncate">{description} </FootnoteText>}
       </div>
     </div>
   );

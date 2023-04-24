@@ -5,14 +5,14 @@ import { BN } from '@polkadot/util';
 
 import { Address, BaseModal, Button, Icon } from '@renderer/components/ui';
 import { useI18n } from '@renderer/context/I18nContext';
-import { AccountDS, MultisigTransactionDS } from '@renderer/services/storage';
+import { AccountDS } from '@renderer/services/storage';
 import { useToggle } from '@renderer/shared/hooks';
 import { MultisigAccount } from '@renderer/domain/account';
 import { ExtendedChain } from '@renderer/services/network/common/types';
 import Chain from './Chain';
 import { Signing } from './Signing/Signing';
 import { Scanning } from './Scanning/Scanning';
-import { Transaction, TransactionType } from '@renderer/domain/transaction';
+import { MultisigTransaction, Transaction, TransactionType } from '@renderer/domain/transaction';
 import { AccountID, HexString, Timepoint } from '@renderer/domain/shared-kernel';
 import { formatAddress } from '@renderer/shared/utils/address';
 import { getAssetById } from '@renderer/shared/utils/assets';
@@ -30,7 +30,7 @@ import { MAX_WEIGHT } from '@renderer/services/transaction/common/constants';
 import { TEST_ADDRESS } from '@renderer/shared/utils/constants';
 
 type Props = {
-  tx: MultisigTransactionDS & { rowIndex: number };
+  tx: MultisigTransaction;
   account: MultisigAccount;
   connection: ExtendedChain;
 };
