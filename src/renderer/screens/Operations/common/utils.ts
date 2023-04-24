@@ -27,23 +27,23 @@ const TransactionTitles: Record<TransactionType, string> = {
 
 const TransactionIcons: Record<TransactionType, IconNames> = {
   // Transfer
-  [TransactionType.ASSET_TRANSFER]: 'staking',
-  [TransactionType.ORML_TRANSFER]: 'staking',
-  [TransactionType.TRANSFER]: 'staking',
-  [TransactionType.MULTISIG_AS_MULTI]: 'staking',
-  [TransactionType.MULTISIG_APPROVE_AS_MULTI]: 'staking',
-  [TransactionType.MULTISIG_CANCEL_AS_MULTI]: 'staking',
+  [TransactionType.ASSET_TRANSFER]: 'transferMst',
+  [TransactionType.ORML_TRANSFER]: 'transferMst',
+  [TransactionType.TRANSFER]: 'transferMst',
+  [TransactionType.MULTISIG_AS_MULTI]: 'transferMst',
+  [TransactionType.MULTISIG_APPROVE_AS_MULTI]: 'transferMst',
+  [TransactionType.MULTISIG_CANCEL_AS_MULTI]: 'transferMst',
   // Staking
-  [TransactionType.BOND]: 'staking',
-  [TransactionType.NOMINATE]: 'staking',
-  [TransactionType.STAKE_MORE]: 'staking',
-  [TransactionType.REDEEM]: 'staking',
-  [TransactionType.RESTAKE]: 'staking',
-  [TransactionType.DESTINATION]: 'staking',
-  [TransactionType.UNSTAKE]: 'staking',
+  [TransactionType.BOND]: 'stakingMst',
+  [TransactionType.NOMINATE]: 'stakingMst',
+  [TransactionType.STAKE_MORE]: 'stakingMst',
+  [TransactionType.REDEEM]: 'stakingMst',
+  [TransactionType.RESTAKE]: 'stakingMst',
+  [TransactionType.DESTINATION]: 'stakingMst',
+  [TransactionType.UNSTAKE]: 'stakingMst',
   // Technical
-  [TransactionType.CHILL]: 'question',
-  [TransactionType.BATCH_ALL]: 'question',
+  [TransactionType.CHILL]: 'unknownMst',
+  [TransactionType.BATCH_ALL]: 'unknownMst',
 };
 
 export const getTransactionTitle = (transaction?: Transaction): string => {

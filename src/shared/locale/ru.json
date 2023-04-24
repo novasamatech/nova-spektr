@@ -292,7 +292,7 @@
     "selectSignatoryTitle": "Выберите подписанта",
     "signButton": "Подписать в Polkadot Vault",
     "signatoriesTitle": "Подписи",
-    "signing": "Подписание ({ signed } из { threshold })",
+    "signing": "{ signed } из { threshold } подписали",
     "status": {
       "cancelled": "Отменено",
       "error": "Ошибка",

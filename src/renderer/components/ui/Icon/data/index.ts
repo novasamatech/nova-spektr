@@ -10,6 +10,7 @@ import ArrowImages, { Arrow } from './arrow';
 import WalletTypeImages, { WalletType } from './walletType';
 import StakingImages, { Staking } from './staking';
 import SocialImages, { Social } from './social';
+import MstImages, { Mst } from '@renderer/components/ui/Icon/data/mst';
 
 const AllIcons = {
   ...CurrencyImages,
@@ -24,6 +25,7 @@ const AllIcons = {
   ...WalletTypeImages,
   ...StakingImages,
   ...SocialImages,
+  ...MstImages,
 };
 
 export type IconNames =
@@ -38,6 +40,7 @@ export type IconNames =
   | Arrow
   | Staking
   | Social
-  | WalletType;
+  | WalletType
+  | Mst;
 
 export default AllIcons;

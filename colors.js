@@ -45,6 +45,7 @@ module.exports = {
   /* BACKGROUND */
   'switch-background-active': 'var(--switch-background-active)',
   'switch-background-inactive': 'var(--switch-background-inactive)',
+  'top-nav-bar-background': 'var(--top-nav-bar-background)',
   'knob-background': 'var(--knob-background)',
   'tab-selected-background': 'var(--tab-selected-background)',
   'left-navigation-menu-background': 'var(--left-navigation-menu-background)',
@@ -56,6 +57,7 @@ module.exports = {
   'block-background-hover': 'var(--block-background-hover)',
   'block-background': 'var(--block-background)',
   'extended-block-background': 'var(--extended-block-background)',
+  'block-background-default': 'var(--block-background-default)',
   'negative-action-background': 'var(--negative-action-background)',
   'dim-background': 'var(--dim-background)',
   'qr-valid-background': 'var(--qr-valid-background)',
