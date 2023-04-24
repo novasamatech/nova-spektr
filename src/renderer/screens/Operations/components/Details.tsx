@@ -32,7 +32,6 @@ const Details = ({ tx, account, connection, withAdvanced = true }: Props) => {
   const depositorSignatory = account?.signatories.find((s) => s.publicKey === depositor);
 
   const extrinsicLink = getMultisigExtrinsicLink(callHash, indexCreated, blockCreated, connection?.explorers);
-  console.log(transaction?.args);
 
   return (
     <>

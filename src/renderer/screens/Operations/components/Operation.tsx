@@ -7,7 +7,6 @@ import { useI18n } from '@renderer/context/I18nContext';
 import { MultisigEvent, MultisigTransaction } from '@renderer/domain/transaction';
 import { useMultisigTx } from '@renderer/services/multisigTx/multisigTxService';
 import Chain from './Chain';
-import ShortTransactionInfo from './ShortTransactionInfo';
 import TransactionTitle from './TransactionTitle';
 import { useToggle } from '@renderer/shared/hooks';
 import { CallData, ChainId } from '@renderer/domain/shared-kernel';
@@ -23,6 +22,7 @@ import ApproveTx from './ApproveTx';
 import { useMatrix } from '@renderer/context/MatrixContext';
 import OperationStatus from '@renderer/screens/Operations/components/OperationStatus';
 import { FootnoteText } from '@renderer/components/ui-redesign';
+import ShortTransactionInfoNew from '@renderer/screens/Operations/components/ShortTransactionInfoNew';
 
 type Props = {
   tx: MultisigTransaction;
@@ -94,14 +94,16 @@ const Operation = ({ tx, account }: Props) => {
       {/* col width % 9.7  24.7 24.7 17.6 17.6 5.4*/}
       <div className="flex w-full items-center h-[52px] pl-2.5 pr-2 ">
         <div className="w-[9.7%]">
-          <FootnoteText className="text-text-tertiary">
+          <FootnoteText className="text-text-tertiary pl-3.5">
             {format(new Date(dateCreated || 0), 'p', { locale: dateLocale })}
           </FootnoteText>
         </div>
         <div className="w-[24.7%]">
           <TransactionTitle tx={transaction} description={description} />
         </div>
-        <div className="w-[24.7%]">{transaction && <ShortTransactionInfo tx={transaction} />}</div>
+        <div className="w-[24.7%]">
+          <ShortTransactionInfoNew tx={tx} connection={connection} />
+        </div>
         <div className="w-[17.6%]">
           <Chain chainId={chainId} />
         </div>
