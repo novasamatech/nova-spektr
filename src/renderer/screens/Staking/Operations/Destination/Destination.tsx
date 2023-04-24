@@ -17,7 +17,7 @@ import { Confirmation, Scanning, Signing, Submit } from '../components';
 import Paths from '@renderer/routes/paths';
 import { AccountDS } from '@renderer/services/storage';
 import InitOperation, { DestinationResult } from './InitOperation/InitOperation';
-import { useCountdown } from '../hooks/useCountdown';
+import { useCountdown } from '@renderer/shared/hooks';
 
 const enum Step {
   INIT,

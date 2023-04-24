@@ -21,7 +21,7 @@ import InitOperation, { UnstakeResult } from './InitOperation/InitOperation';
 import { Confirmation, Scanning, Signing, Submit } from '../components';
 import { toAddress } from '@renderer/shared/utils/address';
 import { getRelaychainAsset } from '@renderer/shared/utils/assets';
-import { useCountdown } from '../hooks/useCountdown';
+import { useCountdown } from '@renderer/shared/hooks';
 
 const enum Step {
   INIT,

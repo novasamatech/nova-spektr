@@ -14,8 +14,8 @@ import Paths from '@renderer/routes/paths';
 import { AccountDS } from '@renderer/services/storage';
 import InitOperation, { StakeMoreResult } from './InitOperation/InitOperation';
 import { Confirmation, Scanning, Signing, Submit } from '../components';
-import { useCountdown } from '../hooks/useCountdown';
 import { getRelaychainAsset } from '@renderer/shared/utils/assets';
+import { useCountdown } from '@renderer/shared/hooks';
 
 const enum Step {
   INIT,

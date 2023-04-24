@@ -16,7 +16,7 @@ import { ValidatorMap } from '@renderer/services/staking/common/types';
 import { toAddress } from '@renderer/shared/utils/address';
 import { getRelaychainAsset } from '@renderer/shared/utils/assets';
 import { Confirmation, Scanning, Signing, Submit, Validators } from '../components';
-import { useCountdown } from '../hooks/useCountdown';
+import { useCountdown } from '@renderer/shared/hooks';
 
 const enum Step {
   INIT,
