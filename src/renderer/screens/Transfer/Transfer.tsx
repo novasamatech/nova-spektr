@@ -12,8 +12,8 @@ import { InitOperation, Confirmation, Scanning, Signing, Submit } from './compon
 import { useChains } from '@renderer/services/network/chainsService';
 import { Transaction } from '@renderer/domain/transaction';
 import { getAssetById } from '@renderer/shared/utils/assets';
-import { useCountdown } from '@renderer/screens/Staking/Operations/hooks/useCountdown';
 import { Account, MultisigAccount } from '@renderer/domain/account';
+import { useCountdown } from '@renderer/shared/hooks';
 
 const enum Step {
   INIT,

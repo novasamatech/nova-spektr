@@ -18,7 +18,7 @@ import InitOperation, { BondResult } from './InitOperation/InitOperation';
 import { ValidatorMap } from '@renderer/services/staking/common/types';
 import { AccountDS } from '@renderer/services/storage';
 import { Validators, Confirmation, Scanning, Signing, Submit } from '../components';
-import { useCountdown } from '../hooks/useCountdown';
+import { useCountdown } from '@renderer/shared/hooks';
 
 const enum Step {
   INIT,
