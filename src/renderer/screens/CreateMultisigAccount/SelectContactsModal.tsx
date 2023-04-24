@@ -31,13 +31,22 @@ const SelectContactsModal = ({ signatories, isOpen, onClose, onSelect }: Props) 
   const { getLiveAccounts } = useAccount();
   const { getLiveContacts } = useContact();
 
+  const [query, setQuery] = useState('');
+  const [contactList, setContactList] = useState<ContactWithId[]>([]);
+  const [hasValidAccounts, setHasValidAccounts] = useState(true);
+
   const accounts = getLiveAccounts();
   const contacts = getLiveContacts();
 
-  const [query, setQuery] = useState('');
-  const [contactList, setContactList] = useState<ContactWithId[]>([]);
-
   useEffect(() => {
+    const allWatchOnly = accounts.every((a) => a.signingType === SigningType.WATCH_ONLY);
+
+    if (accounts.length && allWatchOnly) {
+      setHasValidAccounts(false);
+
+      return;
+    }
+
     const accountIds = signatories.map((s) => s.accountId);
 
     const addressBookContacts = contacts.filter((c) => c.matrixId);
@@ -116,6 +125,16 @@ const SelectContactsModal = ({ signatories, isOpen, onClose, onSelect }: Props) 
       return !isCurrentIndex && isSameContact;
     });
   };
+
+  if (!hasValidAccounts) {
+    return (
+      <BaseModal contentClass="w-[486px]" isOpen={isOpen} onClose={onClose}>
+        <div className="my-10 mx-14">
+          <p className="text-center text-shade-30 font-semibold text-2xl">{t('createMultisigAccount.noWallets')}</p>
+        </div>
+      </BaseModal>
+    );
+  }
 
   return (
     <BaseModal contentClass="w-[486px]" isOpen={isOpen} onClose={onClose}>

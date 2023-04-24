@@ -60,6 +60,7 @@
     "nameDescription": "Give a name to your multisig account",
     "nameLabel": "Account",
     "namePlaceholder": "Nova Spektr",
+    "noWallets": "Looks like you don't have any non-watch only wallets",
     "searchContactPlaceholder": "Search for an account or contact...",
     "signatoriesDescription": "Add signatories to your multisig account",
     "signatoriesLabel": "Signatories",
