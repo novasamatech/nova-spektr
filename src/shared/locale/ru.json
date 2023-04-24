@@ -183,7 +183,7 @@
       "accountsExistTitle": "These <strong>accounts</strong> already exist!",
       "addAccount": "Добавить кошелёк",
       "addByParitySignerLabel": "Добавить Parity Signer кошелёк",
-      "addSingleParitySignerDescription1": "Here is your account scanned from Parity Signer",
+      "addSingleParitySignerDescription": "Ваши отсканированные аккаунты из Parity Signer",
       "autoFillAccountsListButton": "Autofill account names",
       "checkAddress": "Проверить адрес",
       "chooseCameraLabel": "Выберите камеру, чтобы продолжить",

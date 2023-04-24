@@ -75,7 +75,7 @@ const StepThreeSingle = ({ qrData, onNextStep }: Props) => {
       onSubmit={handleSubmit(handleCreateAccount)}
     >
       <h2 className="text-2xl leading-relaxed font-normal text-neutral-variant text-center">
-        {t('onboarding.paritySigner.addSingleParitySignerDescription1')}
+        {t('onboarding.paritySigner.addSingleParitySignerDescription')}
       </h2>
       <div className="flex gap-10">
         <div className="flex flex-col w-[480px] h-[310px] p-4 bg-white shadow-surface rounded-2lg">

@@ -183,7 +183,7 @@
       "accountsExistTitle": "These <strong>accounts</strong> already exist!",
       "addAccount": "Add new accounts",
       "addByParitySignerLabel": "Add wallet by Parity Signer",
-      "addSingleParitySignerDescription1": "Here is your account scanned from Parity Signer",
+      "addSingleParitySignerDescription": "Here is your account scanned from Parity Signer",
       "autoFillAccountsListButton": "Autofill account names",
       "checkAddress": "Check address",
       "chooseCameraLabel": "Please choose one to continue",
