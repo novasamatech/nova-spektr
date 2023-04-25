@@ -17,6 +17,7 @@ type Props = {
   selectedId?: DropdownOption['id'];
   options: DropdownOption[];
   position?: Position;
+  tabIndex?: number;
   onChange: (data: DropdownResult) => void;
 };
 
@@ -30,6 +31,7 @@ const Select = ({
   options,
   onChange,
   position = 'down',
+  tabIndex,
 }: Props) => {
   const selectedOption = options.find((option) => option.id === selectedId);
   const id = useId();
@@ -48,6 +50,7 @@ const Select = ({
               CommonInputStyles,
               'w-full flex items-center gap-x-2 justify-between pr-2',
             )}
+            tabIndex={tabIndex}
           >
             {selectedOption ? (
               typeof selectedOption.element === 'string' ? (

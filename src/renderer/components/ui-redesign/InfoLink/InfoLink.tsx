@@ -10,6 +10,7 @@ type Props = {
   iconName?: IconNames;
   className?: string;
   fontClass?: string;
+  tabIndex?: number;
 };
 
 const InfoLink = ({
@@ -19,11 +20,13 @@ const InfoLink = ({
   iconName = 'info',
   className,
   fontClass = 'text-footnote',
+  tabIndex,
 }: PropsWithChildren<Props>) => (
   <a
     href={url}
     rel="noopener noreferrer"
     target="_blank"
+    tabIndex={tabIndex}
     className={cn(
       'text-action-text-default hover:text-action-text cursor-pointer',
       fontClass,

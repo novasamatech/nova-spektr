@@ -2,10 +2,10 @@ import { Identicon } from '@renderer/components/ui';
 import { toShortAddress } from '@renderer/shared/utils/address';
 import { BodyText } from '../Typography';
 
-interface Props {
+type Props = {
   address: string;
   name: string;
-}
+};
 const Signatory = ({ address, name }: Props) => (
   <div className="flex flex-row gap-x-[9px] items-center">
     <Identicon background={false} size={20} address={address} />
