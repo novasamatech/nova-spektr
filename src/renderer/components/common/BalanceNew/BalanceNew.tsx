@@ -10,7 +10,7 @@ type Props = {
   showIcon?: boolean;
 };
 
-const TokenBalance = ({ value, asset, className, showIcon = true }: Props) => {
+const BalanceNew = ({ value, asset, className, showIcon = true }: Props) => {
   const { t } = useI18n();
   const { precision, symbol, icon } = asset;
   const { value: formattedValue, decimalPlaces, suffix } = formatBalance(value, precision);
@@ -32,10 +32,10 @@ const TokenBalance = ({ value, asset, className, showIcon = true }: Props) => {
 
   return (
     <div className="flex items-center gap-2">
-      <img src={icon} alt={symbol} width={28} height={28} className="bg-black" />
+      <img src={icon} alt={asset.name} width={28} height={28} className="bg-black" />
       {balance}
     </div>
   );
 };
 
-export default TokenBalance;
+export default BalanceNew;
