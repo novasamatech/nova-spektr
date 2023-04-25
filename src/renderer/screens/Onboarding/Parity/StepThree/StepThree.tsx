@@ -1,16 +1,15 @@
-import { Menu } from '@headlessui/react';
 import { u8aToHex } from '@polkadot/util';
 import cn from 'classnames';
 import keyBy from 'lodash/keyBy';
 import { FormEvent, useEffect, useState } from 'react';
 
-import { AccountsList, Explorers } from '@renderer/components/common';
+import { Explorers } from '@renderer/components/common';
 import { AddressInfo, SeedInfo, SimpleSeedInfo } from '@renderer/components/common/QrCode/QrReader/common/types';
-import { BaseModal, Button, Icon, Identicon, Input } from '@renderer/components/ui';
+import { Button, Icon, Identicon, Input } from '@renderer/components/ui';
 import { useI18n } from '@renderer/context/I18nContext';
 import { Account, createAccount } from '@renderer/domain/account';
-import { Chain } from '@renderer/domain/chain';
-import { ChainId, HexString, AccountId, SigningType, WalletType, Address } from '@renderer/domain/shared-kernel';
+import { Chain, Explorer } from '@renderer/domain/chain';
+import { ChainId, HexString, SigningType, WalletType, Address } from '@renderer/domain/shared-kernel';
 import { useToggle } from '@renderer/shared/hooks';
 import ScanMoreModal from '@renderer/screens/Onboarding/Parity/ScanMoreModal/ScanMoreModal';
 import { useAccount } from '@renderer/services/account/accountService';
@@ -20,6 +19,11 @@ import { useWallet } from '@renderer/services/wallet/walletService';
 import { createWallet } from '@renderer/domain/wallet';
 import './StepThree.css';
 import { ID } from '@renderer/services/storage';
+
+const RootExplorers: Explorer[] = [
+  { name: 'Subscan', account: 'https://subscan.io/account/{address}' },
+  { name: 'Sub.ID', account: 'https://sub.id/{address}' },
+];
 
 type Props = {
   qrData: SeedInfo[];
@@ -31,23 +35,19 @@ const StepThree = ({ qrData, onNextStep }: Props) => {
 
   const { addWallet } = useWallet();
   const { addAccount } = useAccount();
-  const { getChainsData, sortChains } = useChains();
+  const { getChainsData } = useChains();
   const [isQrModalOpen, toggleQrModal] = useToggle();
-  const [isAccountsModalOpen, toggleAccountsModal] = useToggle();
 
-  const [chains, setChains] = useState<Chain[]>([]);
   const [chainsObject, setChainsObject] = useState<Record<string, Chain>>({});
 
   const [inactiveAccounts, setInactiveAccounts] = useState<Record<string, boolean>>({});
   const [accountNames, setAccountNames] = useState<Record<string, string>>({});
 
-  const [currentAccountId, setCurrentAccountId] = useState<AccountId>();
   const [accounts, setAccounts] = useState<SimpleSeedInfo[]>([]);
   const [walletName, setWalletName] = useState('');
 
   useEffect(() => {
     getChainsData().then((chains) => {
-      setChains(sortChains(chains));
       setChainsObject(keyBy(chains, 'chainId'));
 
       const names = qrData.reduce((acc, data, index) => ({ ...acc, [getAccountId(index)]: data.name }), {});
@@ -259,82 +259,49 @@ const StepThree = ({ qrData, onNextStep }: Props) => {
           <div className="flex flex-col gap-2.5 p-4 bg-white shadow-surface rounded-2lg">
             <div className="text-sm text-neutral-variant mb-5">{t('onboarding.paritySigner.choseWalletNameLabel')}</div>
 
-            {accounts.map((account, accountIndex) => (
-              <div key={getAccountId(accountIndex)}>
+            {accounts.map((account, index) => (
+              <div key={getAccountId(index)}>
                 <div className="grid grid-cols-2 w-full gap-4">
                   {account.address && (
                     <div className="col-span-1">
                       <Input
                         disabled
-                        disabledStyle={inactiveAccounts[getAccountId(accountIndex)]}
+                        disabledStyle={inactiveAccounts[getAccountId(index)]}
                         placeholder={t('onboarding.paritySigner.accountAddressPlaceholder')}
-                        value={toShortAddress(account.address, 10)}
+                        value={toAddress(account.address, { chunk: 10 })}
                         wrapperClass={cn('flex items-center')}
-                        prefixElement={<Identicon size={20} address={account.address} background={false} />}
-                        suffixElement={
-                          <Menu>
-                            <Menu.Button className="flex items-center hover:bg-primary hover:text-white px-1 rounded-2xl">
-                              <Icon name="options" size={20} />
-                            </Menu.Button>
-                            <Menu.Items
-                              className={
-                                'bg-white z-10 absolute right-0 top-0 rounded-2lg shadow-surface w-max border-2 border-shade-5 p-2.5'
-                              }
-                            >
-                              <Menu.Item key={1}>
-                                {({ active }) => (
-                                  <Button
-                                    variant="text"
-                                    pallet="dark"
-                                    className={cn('font-normal text-neutral', active && 'bg-primary text-white')}
-                                    prefixElement={<Icon as="img" name="checkmark" />}
-                                    onClick={() => {
-                                      setCurrentAccountId(toAccountId(account.address));
-                                      toggleAccountsModal();
-                                    }}
-                                  >
-                                    {t('onboarding.paritySigner.checkAddress')}
-                                  </Button>
-                                )}
-                              </Menu.Item>
-                            </Menu.Items>
-                          </Menu>
-                        }
+                        prefixElement={<Identicon size={20} address={toAddress(account.address)} background={false} />}
+                        suffixElement={<Explorers address={account.address} explorers={RootExplorers} />}
                       />
                     </div>
                   )}
                   <div className="col-span-1 flex flex-1 items-center">
                     <Input
                       className="text-primary"
-                      disabled={inactiveAccounts[getAccountId(accountIndex)]}
-                      disabledStyle={inactiveAccounts[getAccountId(accountIndex)]}
+                      disabled={inactiveAccounts[getAccountId(index)]}
+                      disabledStyle={inactiveAccounts[getAccountId(index)]}
                       wrapperClass="flex flex-1 items-center"
                       placeholder={t('onboarding.paritySigner.accountNamePlaceholder')}
-                      value={accountNames[getAccountId(accountIndex)] || ''}
+                      value={accountNames[getAccountId(index)] || ''}
                       suffixElement={
-                        accountNames[getAccountId(accountIndex)] && (
-                          <Button
-                            variant="text"
-                            pallet="dark"
-                            weight="xs"
-                            onClick={() => updateAccountName('', accountIndex)}
-                          >
+                        accountNames[getAccountId(index)] && (
+                          <Button variant="text" pallet="dark" weight="xs" onClick={() => updateAccountName('', index)}>
                             <Icon name="clearOutline" size={20} />
                           </Button>
                         )
                       }
-                      onChange={(name) => updateAccountName(name, accountIndex)}
+                      onChange={(name) => updateAccountName(name, index)}
                     />
 
                     {accounts.length > 1 ||
                       (Object.values(account.derivedKeys).length > 0 && (
                         <Button
                           variant="text"
-                          pallet={inactiveAccounts[getAccountId(accountIndex)] ? 'dark' : 'error'}
+                          pallet={inactiveAccounts[getAccountId(index)] ? 'dark' : 'error'}
                           className="ml-4 px-0"
-                          onClick={() => toggleAccount(accountIndex)}
+                          onClick={() => toggleAccount(index)}
                         >
-                          {inactiveAccounts[getAccountId(accountIndex)] ? (
+                          {inactiveAccounts[getAccountId(index)] ? (
                             <Icon name="removeCutout" />
                           ) : (
                             <Icon name="removeLine" />
@@ -360,7 +327,7 @@ const StepThree = ({ qrData, onNextStep }: Props) => {
                           </div>
                           {derivedKeys.map(({ address }, derivedKeyIndex) => (
                             <div
-                              key={getAccountId(accountIndex, chainId, derivedKeyIndex)}
+                              key={getAccountId(index, chainId, derivedKeyIndex)}
                               className="tree-wrapper flex gap-4"
                             >
                               <div className="flex-1 flex items-center">
@@ -370,7 +337,7 @@ const StepThree = ({ qrData, onNextStep }: Props) => {
                                 </div>
                                 <Input
                                   disabled
-                                  disabledStyle={inactiveAccounts[getAccountId(accountIndex, chainId, derivedKeyIndex)]}
+                                  disabledStyle={inactiveAccounts[getAccountId(index, chainId, derivedKeyIndex)]}
                                   placeholder={t('onboarding.paritySigner.accountAddressPlaceholder')}
                                   value={toShortAddress(address, 10)}
                                   wrapperClass="flex flex-1 items-center"
@@ -383,36 +350,34 @@ const StepThree = ({ qrData, onNextStep }: Props) => {
                               <div className="flex flex-1 items-center">
                                 <Input
                                   className="text-primary"
-                                  disabled={inactiveAccounts[getAccountId(accountIndex, chainId, derivedKeyIndex)]}
-                                  disabledStyle={inactiveAccounts[getAccountId(accountIndex, chainId, derivedKeyIndex)]}
+                                  disabled={inactiveAccounts[getAccountId(index, chainId, derivedKeyIndex)]}
+                                  disabledStyle={inactiveAccounts[getAccountId(index, chainId, derivedKeyIndex)]}
                                   wrapperClass="flex flex-1 items-center"
                                   placeholder={t('onboarding.paritySigner.accountNamePlaceholder')}
-                                  value={accountNames[getAccountId(accountIndex, chainId, derivedKeyIndex)] || ''}
+                                  value={accountNames[getAccountId(index, chainId, derivedKeyIndex)] || ''}
                                   suffixElement={
-                                    accountNames[getAccountId(accountIndex, chainId, derivedKeyIndex)] && (
+                                    accountNames[getAccountId(index, chainId, derivedKeyIndex)] && (
                                       <Button
                                         variant="text"
                                         pallet="dark"
                                         weight="xs"
-                                        onClick={() => updateAccountName('', accountIndex, chainId, derivedKeyIndex)}
+                                        onClick={() => updateAccountName('', index, chainId, derivedKeyIndex)}
                                       >
                                         <Icon name="clearOutline" size={20} />
                                       </Button>
                                     )
                                   }
-                                  onChange={(name) => updateAccountName(name, accountIndex, chainId, derivedKeyIndex)}
+                                  onChange={(name) => updateAccountName(name, index, chainId, derivedKeyIndex)}
                                 />
                                 <Button
                                   className="ml-4 px-0"
                                   variant="text"
                                   pallet={
-                                    inactiveAccounts[getAccountId(accountIndex, chainId, derivedKeyIndex)]
-                                      ? 'dark'
-                                      : 'error'
+                                    inactiveAccounts[getAccountId(index, chainId, derivedKeyIndex)] ? 'dark' : 'error'
                                   }
-                                  onClick={() => toggleAccount(accountIndex, chainId, derivedKeyIndex)}
+                                  onClick={() => toggleAccount(index, chainId, derivedKeyIndex)}
                                 >
-                                  {inactiveAccounts[getAccountId(accountIndex, chainId, derivedKeyIndex)] ? (
+                                  {inactiveAccounts[getAccountId(index, chainId, derivedKeyIndex)] ? (
                                     <Icon name="removeCutout" />
                                   ) : (
                                     <Icon name="removeLine" />
@@ -455,17 +420,6 @@ const StepThree = ({ qrData, onNextStep }: Props) => {
           </Button>
         )}
       </div>
-
-      <BaseModal
-        closeButton
-        contentClass="px-4 pb-4 max-w-2xl"
-        title={t('onboarding.yourAccountsLabel')}
-        description={t('onboarding.readAccountsLabel')}
-        isOpen={isAccountsModalOpen}
-        onClose={toggleAccountsModal}
-      >
-        <AccountsList className="pt-6 -mx-4" chains={chains} accountId={currentAccountId} />
-      </BaseModal>
 
       <ScanMoreModal isOpen={isQrModalOpen} accounts={accounts} onResult={mergeNewAccounts} onClose={toggleQrModal} />
     </div>
