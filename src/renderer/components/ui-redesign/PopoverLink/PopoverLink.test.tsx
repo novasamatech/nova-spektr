@@ -1,25 +1,25 @@
 import { render, screen } from '@testing-library/react';
 
-import InfoLink from './InfoLink';
+import PopoverLink from './PopoverLink';
 
-describe('screen/Settings/InfoLink', () => {
+describe('screen/Settings/PopoverLink', () => {
   test('should render component', () => {
     render(
-      <InfoLink url="https://test.com" iconName="globe" showIcon>
+      <PopoverLink iconName="globe" showIcon>
         My link
-      </InfoLink>,
+      </PopoverLink>,
     );
 
-    const children = screen.getByRole('link');
+    const children = screen.getByText('My link');
     const icon = screen.queryByRole('img');
     expect(children).toBeInTheDocument();
     expect(icon).toBeInTheDocument();
   });
 
   test('should render without icon', () => {
-    render(<InfoLink url="https://test.com">My link</InfoLink>);
+    render(<PopoverLink>My link</PopoverLink>);
 
-    const children = screen.getByRole('link', { name: 'My link' });
+    const children = screen.getByText('My link');
     const icon = screen.queryByRole('img');
     expect(children).toBeInTheDocument();
     expect(icon).not.toBeInTheDocument();
