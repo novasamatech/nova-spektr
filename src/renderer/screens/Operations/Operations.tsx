@@ -1,23 +1,43 @@
+import { useState } from 'react';
 import { groupBy } from 'lodash';
 import { format } from 'date-fns';
 
-import { Block, Plate, Table } from '@renderer/components/ui';
+import { Block, Plate, Select, Table } from '@renderer/components/ui';
 import { useI18n } from '@renderer/context/I18nContext';
 import { useMultisigTx } from '@renderer/services/multisigTx/multisigTxService';
 import { MultisigTransactionDS } from '@renderer/services/storage';
 import EmptyOperations from './components/EmptyState/EmptyOperations';
-import { SigningType } from '@renderer/domain/shared-kernel';
+import { ChainId, SigningType } from '@renderer/domain/shared-kernel';
 import { useAccount } from '@renderer/services/account/accountService';
 import { nonNullable } from '@renderer/shared/utils/functions';
 import { MultisigAccount } from '@renderer/domain/account';
 import Operation from './components/Operation';
-import { sortByDate } from './common/utils';
+import { UNKNOWN_TYPE, getStatusOptions, getTransactionOptions, sortByDate, TransferTypes } from './common/utils';
+import { DropdownOption, DropdownResult } from '@renderer/components/ui/Dropdowns/common/types';
+import { MultisigTxStatus, TransactionType } from '@renderer/domain/transaction';
+import { useNetworkContext } from '@renderer/context/NetworkContext';
 
 const Operations = () => {
   const { t, dateLocale } = useI18n();
+  const { connections } = useNetworkContext();
+
+  const StatusOptions = getStatusOptions(t);
+  const TransactionOptions = getTransactionOptions(t);
+
+  const NetworkOptions = Object.values(connections).map((c) => ({
+    id: c.chainId,
+    value: c.chainId,
+    element: c.name,
+  }));
 
   const { getActiveAccounts } = useAccount();
   const { getLiveAccountMultisigTxs } = useMultisigTx();
+
+  const [activeNetworks, setActiveNetworks] = useState<DropdownResult<ChainId>[]>([]);
+  const [activeStatuses, setActiveStatuses] = useState<DropdownResult<MultisigTxStatus>[]>([]);
+  const [activeOperationTypes, setActiveOperationTypes] = useState<
+    DropdownResult<TransactionType | typeof UNKNOWN_TYPE>[]
+  >([]);
 
   const accounts = getActiveAccounts({ signingType: SigningType.MULTISIG });
   const accountsMap = new Map(accounts.map((account) => [account.accountId, account as MultisigAccount]));
@@ -25,9 +45,55 @@ const Operations = () => {
 
   const txs = getLiveAccountMultisigTxs(accountIds);
 
-  const groupedTxs = groupBy(
-    txs.filter((tx) => accounts.find((a) => a.accountId === tx.accountId)),
-    ({ dateCreated }) => format(new Date(dateCreated || 0), 'PP', { locale: dateLocale }),
+  const activeStatusesValues = activeStatuses.map((t) => t.value);
+  const activeNetworksValues = activeNetworks.map((t) => t.value);
+  const activeOperationTypesValues = activeOperationTypes.map((t) => t.value);
+
+  const filteredTxs = txs.filter(
+    (t) =>
+      (!activeStatuses.length || activeStatusesValues.includes(t.status)) &&
+      (!activeNetworks.length || activeNetworksValues.includes(t.chainId)) &&
+      (!activeOperationTypes.length ||
+        activeOperationTypesValues.includes(t.transaction?.type || UNKNOWN_TYPE) ||
+        (t.transaction &&
+          activeOperationTypesValues.includes(TransactionType.TRANSFER) &&
+          TransferTypes.includes(t.transaction?.type))),
+  );
+
+  const getTransactionTypeOption = (tx: MultisigTransactionDS) => {
+    const searchedType =
+      tx.transaction && TransferTypes.includes(tx.transaction?.type)
+        ? TransactionType.TRANSFER
+        : tx.transaction?.type
+        ? tx.transaction.type
+        : UNKNOWN_TYPE;
+
+    return TransactionOptions.find((s) => s.value === searchedType);
+  };
+
+  const { statusOptions, networkOptions, typeOptions } = filteredTxs.reduce(
+    (acc, tx) => {
+      const statusOption = StatusOptions.find((s) => s.value === tx.status);
+      const networkOption = NetworkOptions.find((s) => s.value === tx.chainId);
+      const typeOption = getTransactionTypeOption(tx);
+
+      const result = { ...acc };
+
+      if (statusOption) result.statusOptions.add(statusOption);
+      if (networkOption) result.networkOptions.add(networkOption);
+      if (typeOption) result.typeOptions.add(typeOption);
+
+      return result;
+    },
+    {
+      statusOptions: new Set<DropdownOption>(),
+      networkOptions: new Set<DropdownOption>(),
+      typeOptions: new Set<DropdownOption>(),
+    },
+  );
+
+  const groupedTxs = groupBy(filteredTxs, ({ dateCreated }) =>
+    format(new Date(dateCreated || 0), 'PP', { locale: dateLocale }),
   );
 
   return (
@@ -39,6 +105,34 @@ const Operations = () => {
       <div className="overflow-y-auto flex-1">
         <Plate as="section" className="mx-auto w-[800px]">
           <h2 className="text-lg font-bold mb-4">{t('operations.subTitle')}</h2>
+
+          <div className="flex gap-2 my-4">
+            <Select
+              className="w-[200px]"
+              placeholder={t('operations.filters.statusPlaceholder')}
+              summary={t('operations.filters.statusSummary')}
+              activeIds={activeStatuses.map(({ id }) => id)}
+              options={[...statusOptions]}
+              onChange={setActiveStatuses}
+            />
+            <Select
+              className="w-[200px]"
+              placeholder={t('operations.filters.networkPlaceholder')}
+              summary={t('operations.filters.networkSummary')}
+              activeIds={activeNetworks.map(({ id }) => id)}
+              options={[...networkOptions]}
+              onChange={setActiveNetworks}
+            />
+            <Select
+              className="w-[200px]"
+              placeholder={t('operations.filters.operationTypePlaceholder')}
+              summary={t('operations.filters.operationTypeSummary')}
+              activeIds={activeOperationTypes.map(({ id }) => id)}
+              options={[...typeOptions]}
+              onChange={setActiveOperationTypes}
+            />
+          </div>
+
           {txs.length ? (
             Object.entries(groupedTxs)
               .sort(sortByDate)

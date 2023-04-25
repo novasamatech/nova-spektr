@@ -310,6 +310,14 @@
       "inputPlaceholder": "0x00...",
       "title": "Введите call data"
     },
+    "filters": {
+      "networkPlaceholder": "Сеть",
+      "networkSummary": "Сети",
+      "operationTypePlaceholder": "Тип операции",
+      "operationTypeSummary": "Типы операции",
+      "statusPlaceholder": "Статус операции",
+      "statusSummary": "Статусы операции"
+    },
     "noOperationsDescription": "Нет ожидающих операций с мультиподписью",
     "subTitle": "Ваши операции",
     "title": "Операции",
