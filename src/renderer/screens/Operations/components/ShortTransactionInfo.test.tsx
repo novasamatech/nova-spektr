@@ -24,13 +24,19 @@ const transaction = {
 describe('screen/Operations/components/ShortTransactionInfo', () => {
   test('should render component', async () => {
     await act(async () => {
-      render(<ShortTransactionInfo tx={transaction} />);
+      render(
+        <div data-testid="123">
+          <ShortTransactionInfo tx={transaction} />
+        </div>,
+      );
     });
 
-    const symbol = screen.getByText('DOT');
-    expect(symbol).toBeInTheDocument();
+    const container = screen.getByTestId('123');
 
-    const value = screen.getByText('assetBalance.number');
-    expect(value).toBeInTheDocument();
+    const paragraph = container.querySelector('p');
+    console.log(paragraph);
+    expect(paragraph).toHaveTextContent('DOT');
+
+    expect(paragraph).toHaveTextContent('assetBalance.number');
   });
 });
