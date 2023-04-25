@@ -22,7 +22,7 @@ import ApproveTx from './ApproveTx';
 import { useMatrix } from '@renderer/context/MatrixContext';
 import OperationStatus from '@renderer/screens/Operations/components/OperationStatus';
 import { FootnoteText } from '@renderer/components/ui-redesign';
-import ShortTransactionInfoNew from '@renderer/screens/Operations/components/ShortTransactionInfoNew';
+import ShortTransactionInfo from './ShortTransactionInfo';
 
 type Props = {
   tx: MultisigTransaction;
@@ -101,9 +101,7 @@ const Operation = ({ tx, account }: Props) => {
         <div className="w-[24.7%]">
           <TransactionTitle tx={transaction} description={description} />
         </div>
-        <div className="w-[24.7%]">
-          <ShortTransactionInfoNew tx={tx} connection={connection} />
-        </div>
+        <div className="w-[24.7%]">{transaction && <ShortTransactionInfo tx={transaction} />}</div>
         <div className="w-[17.6%]">
           <Chain chainId={chainId} />
         </div>
