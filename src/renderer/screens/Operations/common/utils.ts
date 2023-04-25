@@ -1,3 +1,5 @@
+import { TFunction } from 'react-i18next';
+
 import { IconNames } from '@renderer/components/ui/Icon/data';
 import { Explorer } from '@renderer/domain/chain';
 import { HexString } from '@renderer/domain/shared-kernel';
@@ -8,7 +10,6 @@ import {
   TransactionType,
 } from '@renderer/domain/transaction';
 import { MultisigTransactionDS } from '@renderer/services/storage';
-import { TFunction } from 'react-i18next';
 
 export const UNKNOWN_TYPE = 'UNKNOWN_TYPE';
 export const TransferTypes = [TransactionType.TRANSFER, TransactionType.ASSET_TRANSFER, TransactionType.ORML_TRANSFER];
