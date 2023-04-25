@@ -6,10 +6,10 @@ import { FootnoteText } from '../Typography';
 
 type Props = {
   active: boolean;
-  variant: HintVariant;
+  variant?: HintVariant;
 };
 
-const InputHint = ({ variant, active, className, children, ...props }: Props & TypographyProps) => {
+const InputHint = ({ variant = 'hint', active, className, children, ...props }: Props & TypographyProps) => {
   if (!active) return null;
 
   return (

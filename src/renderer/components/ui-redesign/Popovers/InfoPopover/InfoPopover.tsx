@@ -11,15 +11,15 @@ type Props = {
   offsetPx?: number;
 };
 
-interface MenuItem {
+type MenuItem = {
   id: string;
   value: string | React.ReactElement;
-}
+};
 
-export interface InfoSection {
+export type InfoSection = {
   title: string;
   items: MenuItem[];
-}
+};
 
 const InfoPopover = ({ data, className, children, offsetPx = 7 }: PropsWithChildren<Props>) => {
   return (

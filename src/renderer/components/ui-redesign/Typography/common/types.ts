@@ -6,11 +6,11 @@ export type FontWeight = 'normal' | 'medium' | 'semibold' | 'bold';
 
 export type Align = 'left' | 'right' | 'center';
 
-interface Props {
+type Props = {
   as: Tags;
   fontWeight: FontWeight;
   align: Align;
   className: string;
-}
+};
 
 export type TypographyProps = PropsWithChildren<Partial<Props>>;
