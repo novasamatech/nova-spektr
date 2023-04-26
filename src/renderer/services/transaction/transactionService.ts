@@ -101,7 +101,6 @@ export const useTransaction = (): ITransactionService => {
           callHash: transaction.args.callHash,
           threshold: transaction.args.threshold,
           otherSignatories: transaction.args.otherSignatories,
-          maxWeight: transaction.args.maxWeight || MAX_WEIGHT,
         },
         info,
         options,
@@ -420,9 +419,9 @@ export const useTransaction = (): ITransactionService => {
     if (method === 'batchAll' && section === 'utility') {
       transaction.type = TransactionType.BATCH_ALL;
 
-      const batchCall = api.createType('Vec<Call>', decoded.args[0].toHex());
+      const calls = api.createType('Vec<Call>', decoded.args[0].toHex());
 
-      transaction.args.calls = batchCall.map((call) => decodeCallData(api, accountId, call.toHex()));
+      transaction.args.transactions = calls.map((call) => decodeCallData(api, accountId, call.toHex()));
     }
 
     if (method === 'bond' && section === 'staking') {

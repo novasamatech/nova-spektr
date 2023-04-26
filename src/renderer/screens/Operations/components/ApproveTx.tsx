@@ -26,7 +26,6 @@ import { Fee } from '@renderer/components/common';
 import { useCountdown } from '@renderer/screens/Staking/Operations/hooks/useCountdown';
 import { useBalance } from '@renderer/services/balance/balanceService';
 import { transferableAmount } from '@renderer/services/balance/common/utils';
-import { MAX_WEIGHT } from '@renderer/services/transaction/common/constants';
 import { TEST_ADDRESS } from '@renderer/shared/utils/constants';
 
 type Props = {
@@ -86,7 +85,7 @@ const ApproveTx = ({ tx, account, connection }: Props) => {
   };
 
   useEffect(() => {
-    if (!signAccount?.accountId) return;
+    if (!signAccount?.accountId || !txWeight) return;
 
     const multisigTx = getMultisigTx(signAccount?.accountId);
 
@@ -102,8 +101,10 @@ const ApproveTx = ({ tx, account, connection }: Props) => {
   useEffect(() => {
     if (!tx.transaction || !connection.api) return;
 
-    getTxWeight(tx.transaction, connection.api).then((txWeight) => setTxWeight(txWeight));
-  }, [tx, connection.api]);
+    getTxWeight(tx.transaction, connection.api).then((txWeight) => {
+      setTxWeight(txWeight);
+    });
+  }, [tx.transaction, connection.api]);
 
   const asset = getAssetById(tx.transaction?.args.assetId, connection.assets);
 
@@ -130,7 +131,7 @@ const ApproveTx = ({ tx, account, connection }: Props) => {
       args: {
         threshold: account.threshold,
         otherSignatories,
-        maxWeight: txWeight || MAX_WEIGHT,
+        maxWeight: txWeight,
         maybeTimepoint: {
           height: tx.blockCreated,
           index: tx.indexCreated,
@@ -142,9 +143,9 @@ const ApproveTx = ({ tx, account, connection }: Props) => {
   };
 
   const validateBalanceForFee = async (signAccount: AccountDS): Promise<boolean> => {
-    if (!connection.api || !approveTx || !signAccount.accountId || !asset) return false;
+    if (!connection.api || !feeTx || !signAccount.accountId || !asset) return false;
 
-    const fee = await getTransactionFee(approveTx, connection.api);
+    const fee = await getTransactionFee(feeTx, connection.api);
 
     const balance = await getBalance(signAccount.accountId, connection.chainId, asset.assetId.toString());
 
