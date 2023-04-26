@@ -27,13 +27,14 @@ const Operations = () => {
   );
 
   return (
-    <div className="h-full flex flex-col items-start relative">
+    <div className="h-full flex flex-col items-start relative bg-main-app-background">
       <header className="w-full px-6 py-4.5 bg-top-nav-bar-background border-b border-container-border pl-6">
         <h1 className="font-semibold text-2xl text-neutral"> {t('operations.title')}</h1>
       </header>
+
       <Filters onChangeFilters={setFilteredTxs} />
 
-      <div className="overflow-y-auto flex-1 mx-auto w-full bg-main-app-background pl-6 pt-4">
+      <div className="overflow-y-auto flex-1 mx-auto w-full pl-6 pt-4">
         {filteredTxs.length ? (
           Object.entries(groupedTxs)
             .sort(sortByDate)
