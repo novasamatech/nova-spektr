@@ -5,7 +5,7 @@ import { useEffect, useState } from 'react';
 import { Controller, SubmitHandler, useForm } from 'react-hook-form';
 
 import { Fee } from '@renderer/components/common';
-import { AmountInput, Balance, Button, HintList, Icon, Identicon, InputHint, Select } from '@renderer/components/ui';
+import { AmountInput, Balance, Button, HintList, Icon, InputHint, Select } from '@renderer/components/ui';
 import { DropdownOption, DropdownResult } from '@renderer/components/ui/Dropdowns/common/types';
 import { useI18n } from '@renderer/context/I18nContext';
 import { Asset } from '@renderer/domain/asset';
@@ -13,12 +13,13 @@ import { Address, ChainId, AccountId, SigningType } from '@renderer/domain/share
 import { Transaction, TransactionType } from '@renderer/domain/transaction';
 import { useAccount } from '@renderer/services/account/accountService';
 import { useBalance } from '@renderer/services/balance/balanceService';
-import { formatAmount, transferableAmount } from '@renderer/services/balance/common/utils';
+import { formatAmount, transferableAmount } from '@renderer/shared/utils/balance';
 import { AccountDS, BalanceDS } from '@renderer/services/storage';
 import { useTransaction } from '@renderer/services/transaction/transactionService';
 import { StakingMap } from '@renderer/services/staking/common/types';
 import { Stake } from '@renderer/domain/stake';
 import { UnstakingDuration } from '../../../Overview/components';
+import { getUnstakeAccountOption } from '../../common/utils';
 
 const validateBalance = (stake: Stake | string, amount: string, asset: Asset): boolean => {
   const unstakeableBalance = typeof stake === 'string' ? stake : stake.active;
@@ -34,49 +35,6 @@ const validateBalanceForFee = (balance: BalanceDS | string, fee: string): boolea
   return new BN(fee).lte(new BN(transferableBalance));
 };
 
-const getDropdownPayload = (
-  account: AccountDS,
-  balance?: BalanceDS,
-  stake?: Stake,
-  asset?: Asset,
-  fee?: string,
-  amount?: string,
-): DropdownOption<Address> => {
-  const address = account.accountId || '';
-  const accountId = account.accountId || '';
-  const balanceExists = balance && stake && asset;
-
-  const balanceIsIncorrect =
-    balanceExists && amount && fee && !(validateBalance(stake, amount, asset) && validateBalanceForFee(balance, fee));
-
-  const element = (
-    <div className="flex justify-between items-center gap-x-2.5">
-      <div className="flex gap-x-[5px] items-center">
-        <Identicon address={address} size={30} background={false} canCopy={false} />
-        <p className="text-left text-neutral text-lg font-semibold">{account.name}</p>
-      </div>
-      {balanceExists && (
-        <div className="flex items-center gap-x-1">
-          {balanceIsIncorrect && <Icon size={12} className="text-error" name="warnCutout" />}
-
-          <Balance
-            className={cn(balanceIsIncorrect && 'text-error')}
-            value={stake.active}
-            precision={asset.precision}
-            symbol={asset.symbol}
-          />
-        </div>
-      )}
-    </div>
-  );
-
-  return {
-    id: accountId,
-    value: address,
-    element,
-  };
-};
-
 type UnstakeForm = {
   amount: string;
 };
@@ -89,19 +47,20 @@ export type UnstakeResult = {
 type Props = {
   api: ApiPromise;
   chainId: ChainId;
+  addressPrefix: number;
   identifiers: string[];
   asset: Asset;
   staking: StakingMap;
   onResult: (unstake: UnstakeResult) => void;
 };
 
-const InitOperation = ({ api, staking, chainId, identifiers, asset, onResult }: Props) => {
+const InitOperation = ({ api, chainId, addressPrefix, staking, identifiers, asset, onResult }: Props) => {
   const { t } = useI18n();
   const { getLiveAssetBalances } = useBalance();
   const { getLiveAccounts } = useAccount();
   const { getTransactionFee } = useTransaction();
 
-  const dbAccounts = getLiveAccounts({ signingType: SigningType.PARITY_SIGNER });
+  const dbAccounts = getLiveAccounts();
 
   const [fee, setFee] = useState('');
   const [stakedRange, setStakedRange] = useState<[string, string]>(['0', '0']);
@@ -115,17 +74,15 @@ const InitOperation = ({ api, staking, chainId, identifiers, asset, onResult }: 
   const [balancesMap, setBalancesMap] = useState<Map<string, BalanceDS>>(new Map());
 
   const totalAccounts = dbAccounts.filter((account) => {
-    return account.id && identifiers.includes(account.id.toString());
+    if (!account.id) return false;
+
+    const correctSigningType = [SigningType.PARITY_SIGNER, SigningType.MULTISIG].includes(account.signingType);
+    const accountExistInDb = identifiers.includes(account.id.toString());
+
+    return correctSigningType && accountExistInDb;
   });
 
-  const accountIds = totalAccounts.reduce<AccountId[]>((acc, account) => {
-    if (account.accountId) {
-      acc.push(account.accountId);
-    }
-
-    return acc;
-  }, []);
-
+  const accountIds = totalAccounts.map((account) => account.accountId);
   const balances = getLiveAssetBalances(accountIds, chainId, asset.assetId.toString());
 
   const {
@@ -197,10 +154,10 @@ const InitOperation = ({ api, staking, chainId, identifiers, asset, onResult }: 
   // Init accounts
   useEffect(() => {
     const formattedAccounts = totalAccounts.map((account) => {
-      const matchBalance = balancesMap.get(account.accountId || '0x');
-      const stake = staking[account.accountId || ''];
+      const balance = balancesMap.get(account.accountId);
+      const stake = staking[account.accountId];
 
-      return getDropdownPayload(account, matchBalance, stake, asset, fee, amount);
+      return getUnstakeAccountOption(account, { balance, stake, asset, addressPrefix, fee, amount });
     });
 
     setUnstakeAccounts(formattedAccounts);

@@ -43,7 +43,7 @@ const SetValidators = () => {
   const [searchParams] = useSearchParams();
   const params = useParams<{ chainId: ChainId }>();
 
-  const dbAccounts = getLiveAccounts({ signingType: SigningType.PARITY_SIGNER });
+  const dbAccounts = getLiveAccounts();
 
   const [activeStep, setActiveStep] = useState<Step>(Step.INIT);
   const [chainName, setChainName] = useState('...');
@@ -53,14 +53,19 @@ const SetValidators = () => {
   const [signatures, setSignatures] = useState<HexString[]>([]);
 
   const chainId = params.chainId || ('' as ChainId);
-  const accountIds = searchParams.get('id')?.split(',') || [];
+  const identifiers = searchParams.get('id')?.split(',') || [];
 
-  if (!chainId || accountIds.length === 0) {
+  if (!chainId || identifiers.length === 0) {
     return <Navigate replace to={Paths.STAKING} />;
   }
 
   const totalAccounts = dbAccounts.filter((account) => {
-    return account.id && accountIds.includes(account.id.toString());
+    if (!account.id) return false;
+
+    const correctSigningType = [SigningType.PARITY_SIGNER, SigningType.MULTISIG].includes(account.signingType);
+    const accountExistInDb = identifiers.includes(account.id.toString());
+
+    return correctSigningType && accountExistInDb;
   });
 
   const { api, explorers, addressPrefix, assets, name } = connections[chainId];

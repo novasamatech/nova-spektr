@@ -194,7 +194,13 @@ const Bond = () => {
 
       <div className="overflow-y-auto">
         {activeStep === Step.INIT && (
-          <InitOperation api={api} chainId={chainId} identifiers={accountIds} asset={asset} onResult={onInitResult} />
+          <InitOperation
+            api={api}
+            chainId={chainId}
+            identifiers={accountIds}
+            onResult={onInitResult}
+            {...explorersProps}
+          />
         )}
         {activeStep === Step.VALIDATORS && (
           <Validators api={api} chainId={chainId} onResult={onSelectValidators} {...explorersProps} />

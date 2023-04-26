@@ -7,7 +7,7 @@ import { ButtonBack, ButtonLink, HintList, Icon } from '@renderer/components/ui'
 import { ChainLoader } from '@renderer/components/common';
 import { useI18n } from '@renderer/context/I18nContext';
 import { useNetworkContext } from '@renderer/context/NetworkContext';
-import { Address, ChainId, HexString, SigningType } from '@renderer/domain/shared-kernel';
+import { Address, ChainId, HexString } from '@renderer/domain/shared-kernel';
 import { Transaction, TransactionType } from '@renderer/domain/transaction';
 import Paths from '@renderer/routes/paths';
 import { useAccount } from '@renderer/services/account/accountService';
@@ -46,7 +46,7 @@ const Restake = () => {
   const [searchParams] = useSearchParams();
   const params = useParams<{ chainId: ChainId }>();
 
-  const dbAccounts = getLiveAccounts({ signingType: SigningType.PARITY_SIGNER });
+  const dbAccounts = getLiveAccounts();
 
   const [activeStep, setActiveStep] = useState<Step>(Step.INIT);
   const [chainName, setChainName] = useState('...');
@@ -182,6 +182,7 @@ const Restake = () => {
         <InitOperation
           api={api}
           chainId={chainId}
+          addressPrefix={addressPrefix}
           staking={staking}
           identifiers={accountIds}
           asset={asset}

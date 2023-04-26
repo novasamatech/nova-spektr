@@ -7,7 +7,7 @@ import { ButtonBack, ButtonLink, Icon } from '@renderer/components/ui';
 import { ChainLoader } from '@renderer/components/common';
 import { useI18n } from '@renderer/context/I18nContext';
 import { useNetworkContext } from '@renderer/context/NetworkContext';
-import { Address, ChainId, HexString, SigningType } from '@renderer/domain/shared-kernel';
+import { Address, ChainId, HexString } from '@renderer/domain/shared-kernel';
 import { Transaction, TransactionType } from '@renderer/domain/transaction';
 import Paths from '@renderer/routes/paths';
 import { useAccount } from '@renderer/services/account/accountService';
@@ -15,7 +15,7 @@ import { StakingMap } from '@renderer/services/staking/common/types';
 import { useStakingData } from '@renderer/services/staking/stakingDataService';
 import { useChains } from '@renderer/services/network/chainsService';
 import { AccountDS } from '@renderer/services/storage';
-import { redeemableAmount } from '@renderer/services/balance/common/utils';
+import { redeemableAmount } from '@renderer/shared/utils/balance';
 import { useEra } from '@renderer/services/staking/eraService';
 import { Confirmation, Scanning, Signing, Submit } from '../components';
 import { getRelaychainAsset } from '@renderer/shared/utils/assets';
@@ -46,7 +46,7 @@ const Unstake = () => {
   const [searchParams] = useSearchParams();
   const params = useParams<{ chainId: ChainId }>();
 
-  const dbAccounts = getLiveAccounts({ signingType: SigningType.PARITY_SIGNER });
+  const dbAccounts = getLiveAccounts();
 
   const [activeStep, setActiveStep] = useState<Step>(Step.CONFIRMATION);
   const [chainName, setChainName] = useState('...');

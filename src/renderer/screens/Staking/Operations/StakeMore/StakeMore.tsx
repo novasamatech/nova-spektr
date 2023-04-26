@@ -148,6 +148,7 @@ const StakeMore = () => {
         <InitOperation
           api={api}
           chainId={chainId}
+          addressPrefix={addressPrefix}
           identifiers={accountIds}
           asset={asset}
           onResult={onStakeMoreResult}

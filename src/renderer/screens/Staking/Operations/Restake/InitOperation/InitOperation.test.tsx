@@ -50,6 +50,7 @@ describe('screens/Staking/Restake/InitOperation', () => {
   const defaultProps = {
     api: {} as ApiPromise,
     chainId: '0x123' as ChainId,
+    addressPrefix: 0,
     staking: {},
     identifiers: ['1'],
     asset: { assetId: 1, symbol: 'DOT', precision: 10 } as Asset,
