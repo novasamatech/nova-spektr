@@ -4,7 +4,7 @@ import cn from 'classnames';
 
 import { Button, ChainAddress, Icon } from '@renderer/components/ui';
 import { useI18n } from '@renderer/context/I18nContext';
-import { MultisigEvent, MultisigTransaction } from '@renderer/domain/transaction';
+import { MultisigEvent } from '@renderer/domain/transaction';
 import { useMultisigTx } from '@renderer/services/multisigTx/multisigTxService';
 import Chain from './Chain';
 import TransactionTitle from './TransactionTitle';
@@ -23,17 +23,16 @@ import { useMatrix } from '@renderer/context/MatrixContext';
 import OperationStatus from '@renderer/screens/Operations/components/OperationStatus';
 import { FootnoteText } from '@renderer/components/ui-redesign';
 import ShortTransactionInfo from './ShortTransactionInfo';
+import { MultisigTransactionDS } from '@renderer/services/storage';
 
 type Props = {
-  tx: MultisigTransaction;
+  tx: MultisigTransactionDS;
   account?: MultisigAccount;
 };
 
 const Operation = ({ tx, account }: Props) => {
   const { t, dateLocale } = useI18n();
   const { matrix } = useMatrix();
-
-  console.log(tx);
 
   const { updateCallData } = useMultisigTx();
   const { connections } = useNetworkContext();
