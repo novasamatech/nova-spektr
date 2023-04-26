@@ -60,7 +60,7 @@ export const getTransactionTitle = (transaction?: Transaction): string => {
   if (!transaction?.type) return 'operations.titles.unknown';
 
   if (transaction.type === TransactionType.BATCH_ALL) {
-    return getTransactionTitle(transaction?.args?.calls?.[0]);
+    return getTransactionTitle(transaction?.args?.transactions?.[0]);
   }
 
   return TransactionTitles[transaction.type];
@@ -70,7 +70,7 @@ export const getIconName = (transaction?: Transaction): IconNames => {
   if (!transaction?.type) return 'question';
 
   if (transaction.type === TransactionType.BATCH_ALL) {
-    return getIconName(transaction?.args?.calls?.[0]);
+    return getIconName(transaction?.args?.transactions?.[0]);
   }
 
   return TransactionIcons[transaction.type];

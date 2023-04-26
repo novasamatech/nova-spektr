@@ -14,7 +14,7 @@ import { MultisigAccount } from '@renderer/domain/account';
 import Operation from './components/Operation';
 import { UNKNOWN_TYPE, getStatusOptions, getTransactionOptions, sortByDate, TransferTypes } from './common/utils';
 import { DropdownOption, DropdownResult } from '@renderer/components/ui/Dropdowns/common/types';
-import { MultisigTxStatus, TransactionType } from '@renderer/domain/transaction';
+import { MultisigTransaction, MultisigTxStatus, TransactionType } from '@renderer/domain/transaction';
 import { useNetworkContext } from '@renderer/context/NetworkContext';
 
 const Operations = () => {
@@ -49,26 +49,33 @@ const Operations = () => {
   const activeNetworksValues = activeNetworks.map((t) => t.value);
   const activeOperationTypesValues = activeOperationTypes.map((t) => t.value);
 
-  const filteredTxs = txs.filter(
-    (t) =>
-      (!activeStatuses.length || activeStatusesValues.includes(t.status)) &&
-      (!activeNetworks.length || activeNetworksValues.includes(t.chainId)) &&
-      (!activeOperationTypes.length ||
-        activeOperationTypesValues.includes(t.transaction?.type || UNKNOWN_TYPE) ||
-        (t.transaction &&
-          activeOperationTypesValues.includes(TransactionType.TRANSFER) &&
-          TransferTypes.includes(t.transaction?.type))),
-  );
+  const getFilterableType = (tx: MultisigTransaction): TransactionType | typeof UNKNOWN_TYPE => {
+    let filterableType: TransactionType | typeof UNKNOWN_TYPE = UNKNOWN_TYPE;
+
+    if (tx.transaction) {
+      if (TransferTypes.includes(tx.transaction.type)) {
+        filterableType = TransactionType.TRANSFER;
+      } else if (tx.transaction.type === TransactionType.BATCH_ALL) {
+        filterableType = tx.transaction.args?.transactions?.[0]?.type;
+      } else {
+        filterableType = tx.transaction?.type;
+      }
+    }
+
+    return filterableType;
+  };
+
+  const filterByStatuses = (t: MultisigTransaction) =>
+    !activeStatuses.length || activeStatusesValues.includes(t.status);
+  const filterByNetworks = (t: MultisigTransaction) =>
+    !activeNetworks.length || activeNetworksValues.includes(t.chainId);
+  const filterByTransactionTypes = (t: MultisigTransaction) =>
+    !activeOperationTypes.length || activeOperationTypesValues.includes(getFilterableType(t));
+
+  const filteredTxs = txs.filter((t) => filterByStatuses(t) && filterByNetworks(t) && filterByTransactionTypes(t));
 
   const getTransactionTypeOption = (tx: MultisigTransactionDS) => {
-    const searchedType =
-      tx.transaction && TransferTypes.includes(tx.transaction?.type)
-        ? TransactionType.TRANSFER
-        : tx.transaction?.type
-        ? tx.transaction.type
-        : UNKNOWN_TYPE;
-
-    return TransactionOptions.find((s) => s.value === searchedType);
+    return TransactionOptions.find((s) => s.value === getFilterableType(tx));
   };
 
   const { statusOptions, networkOptions, typeOptions } = filteredTxs.reduce(
@@ -77,13 +84,11 @@ const Operations = () => {
       const networkOption = NetworkOptions.find((s) => s.value === tx.chainId);
       const typeOption = getTransactionTypeOption(tx);
 
-      const result = { ...acc };
+      if (statusOption) acc.statusOptions.add(statusOption);
+      if (networkOption) acc.networkOptions.add(networkOption);
+      if (typeOption) acc.typeOptions.add(typeOption);
 
-      if (statusOption) result.statusOptions.add(statusOption);
-      if (networkOption) result.networkOptions.add(networkOption);
-      if (typeOption) result.typeOptions.add(typeOption);
-
-      return result;
+      return acc;
     },
     {
       statusOptions: new Set<DropdownOption>(),
