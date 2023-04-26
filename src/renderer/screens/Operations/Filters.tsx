@@ -103,7 +103,7 @@ const Filters = ({ onChangeFilters }: Props) => {
   );
 
   return (
-    <div className="flex gap-2 my-4">
+    <div className="flex gap-2 my-4 pl-6">
       <Select
         className="w-[200px]"
         placeholder={t('operations.filters.statusPlaceholder')}
