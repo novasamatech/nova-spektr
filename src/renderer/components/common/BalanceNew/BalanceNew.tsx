@@ -31,7 +31,7 @@ const BalanceNew = ({ value, asset, className, showIcon = true }: Props) => {
   }
 
   return (
-    <div className="flex items-center gap-2">
+    <div className="flex items-center gap-x-2">
       <img src={icon} alt={asset.name} width={28} height={28} className="bg-black" />
       {balance}
     </div>
