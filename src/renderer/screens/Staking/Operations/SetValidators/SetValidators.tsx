@@ -8,7 +8,7 @@ import { ChainLoader } from '@renderer/components/common';
 import { useI18n } from '@renderer/context/I18nContext';
 import { useNetworkContext } from '@renderer/context/NetworkContext';
 import { useChains } from '@renderer/services/network/chainsService';
-import { ChainId, HexString, SigningType } from '@renderer/domain/shared-kernel';
+import { ChainId, HexString } from '@renderer/domain/shared-kernel';
 import { Transaction, TransactionType } from '@renderer/domain/transaction';
 import Paths from '@renderer/routes/paths';
 import { useAccount } from '@renderer/services/account/accountService';
@@ -17,6 +17,7 @@ import { toAddress } from '@renderer/shared/utils/address';
 import { getRelaychainAsset } from '@renderer/shared/utils/assets';
 import { Confirmation, Scanning, Signing, Submit, Validators } from '../components';
 import { useCountdown } from '@renderer/shared/hooks';
+import { getTotalAccounts } from '@renderer/screens/Staking/Operations/common/utils';
 
 const enum Step {
   INIT,
@@ -59,14 +60,7 @@ const SetValidators = () => {
     return <Navigate replace to={Paths.STAKING} />;
   }
 
-  const totalAccounts = dbAccounts.filter((account) => {
-    if (!account.id) return false;
-
-    const correctSigningType = [SigningType.PARITY_SIGNER, SigningType.MULTISIG].includes(account.signingType);
-    const accountExistInDb = identifiers.includes(account.id.toString());
-
-    return correctSigningType && accountExistInDb;
-  });
+  const totalAccounts = getTotalAccounts(dbAccounts, identifiers);
 
   const { api, explorers, addressPrefix, assets, name } = connections[chainId];
   const asset = getRelaychainAsset(assets);
