@@ -21,6 +21,7 @@ module.exports = {
   'icon-hover': 'var(--icon-hover)',
   'icon-default': 'var(--icon-default)',
   'chip-icon': 'var(--chip-icon)',
+  'icon-button': 'var(--icon-button)',
 
   /* BUTTON */
   /* primary */
@@ -29,14 +30,17 @@ module.exports = {
   'primary-button-background-active': 'var(--primary-button-background-active)',
   'primary-button-background-inactive': 'var(--primary-button-background-inactive)',
   /* secondary */
+  'secondary-button-background': 'var(--secondary-button-background)',
   'secondary-button-background-hover': 'var(--secondary-button-background-hover)',
   'secondary-button-background-active': 'var(--secondary-button-background-active)',
+  'scroll-background-default': 'var(--scroll-background-default)',
 
   /* BORDER */
   'token-container-border': 'var(--token-container-border)',
   'filter-border': 'var(--filter-border)',
   'container-border': 'var(--container-border)',
   'active-container-border': 'var(--active-container-border)',
+  'focus-container-border': 'var(--focus-container-border)',
   'filter-border-negative': 'var(--filter-border-negative)',
 
   /* DIVIDER */
@@ -47,7 +51,8 @@ module.exports = {
   'switch-background-inactive': 'var(--switch-background-inactive)',
   'top-nav-bar-background': 'var(--top-nav-bar-background)',
   'knob-background': 'var(--knob-background)',
-  'tab-selected-background': 'var(--tab-selected-background)',
+  'block-background-default': 'var(--block-background-default)',
+  'tab-background': 'var(--tab-background)',
   'left-navigation-menu-background': 'var(--left-navigation-menu-background)',
   'main-app-background': 'var(--main-app-background)',
   'token-container-background': 'var(--token-container-background)',

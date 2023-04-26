@@ -8,7 +8,7 @@ import { TFunction } from 'react-i18next';
 
 import { Fee } from '@renderer/components/common';
 import {
-  Address,
+  ChainAddress,
   Balance,
   Button,
   Combobox,
@@ -22,7 +22,7 @@ import { DropdownOption, DropdownResult } from '@renderer/components/ui/Dropdown
 import { RadioOption, RadioResult } from '@renderer/components/ui/RadioGroup/common/types';
 import { useI18n } from '@renderer/context/I18nContext';
 import { Asset } from '@renderer/domain/asset';
-import { AccountID, ChainId, PublicKey, SigningType } from '@renderer/domain/shared-kernel';
+import { Address, ChainId, AccountId, SigningType } from '@renderer/domain/shared-kernel';
 import { RewardsDestination } from '@renderer/domain/stake';
 import { Transaction, TransactionType } from '@renderer/domain/transaction';
 import { useAccount } from '@renderer/services/account/accountService';
@@ -46,9 +46,9 @@ const getDropdownPayload = (
   asset?: Asset,
   balance?: BalanceDS,
   fee?: string,
-): DropdownOption<AccountID> => {
+): DropdownOption<Address> => {
   const address = account.accountId || '';
-  const publicKey = account.publicKey || '';
+  const accountId = account.accountId || '';
   const balanceExists = balance && asset && fee;
 
   const balanceIsIncorrect = balanceExists && !validateBalanceForFee(balance, fee);
@@ -56,8 +56,8 @@ const getDropdownPayload = (
   const element = (
     <div className="flex justify-between items-center gap-x-2.5">
       <div className="flex gap-x-[5px] items-center">
-        <Address
-          address={address}
+        <ChainAddress
+          accountId={address}
           name={account.name}
           subName={walletName}
           signType={account.signingType}
@@ -81,7 +81,7 @@ const getDropdownPayload = (
   );
 
   return {
-    id: publicKey,
+    id: accountId,
     value: address,
     element,
   };
@@ -105,23 +105,23 @@ const getDestinations = (t: TFunction): RadioOption<RewardsDestination>[] => {
 };
 
 type DestinationForm = {
-  destination: AccountID;
+  destination: Address;
 };
 
 export type DestinationResult = {
   accounts: AccountDS[];
-  destination: AccountID;
+  destination: Address;
 };
 
 type Props = {
   api: ApiPromise;
   chainId: ChainId;
-  accountIds: string[];
+  identifiers: string[];
   asset: Asset;
   onResult: (data: DestinationResult) => void;
 };
 
-const InitOperation = ({ api, chainId, accountIds, asset, onResult }: Props) => {
+const InitOperation = ({ api, chainId, identifiers, asset, onResult }: Props) => {
   const { t } = useI18n();
   const { getLiveAssetBalances } = useBalance();
   const { getLiveAccounts } = useAccount();
@@ -137,26 +137,26 @@ const InitOperation = ({ api, chainId, accountIds, asset, onResult }: Props) => 
 
   const [transactions, setTransactions] = useState<Transaction[]>([]);
 
-  const [destAccounts, setDestAccounts] = useState<DropdownOption<AccountID>[]>([]);
-  const [activeDestAccounts, setActiveDestAccounts] = useState<DropdownResult<AccountID>[]>([]);
+  const [destAccounts, setDestAccounts] = useState<DropdownOption<Address>[]>([]);
+  const [activeDestAccounts, setActiveDestAccounts] = useState<DropdownResult<Address>[]>([]);
   const [activeDestination, setActiveDestination] = useState<RadioResult<RewardsDestination>>(destinations[0]);
 
-  const [payoutAccounts, setPayoutAccounts] = useState<DropdownOption<AccountID>[]>([]);
+  const [payoutAccounts, setPayoutAccounts] = useState<DropdownOption<Address>[]>([]);
   const [balancesMap, setBalancesMap] = useState<Map<string, BalanceDS>>(new Map());
 
   const totalAccounts = dbAccounts.filter((account) => {
-    return account.id && accountIds.includes(account.id.toString());
+    return account.id && identifiers.includes(account.id.toString());
   });
 
-  const publicKeys = totalAccounts.reduce<PublicKey[]>((acc, account) => {
-    if (account.publicKey) {
-      acc.push(account.publicKey);
+  const accountIds = totalAccounts.reduce<AccountId[]>((acc, account) => {
+    if (account.accountId) {
+      acc.push(account.accountId);
     }
 
     return acc;
   }, []);
 
-  const balances = getLiveAssetBalances(publicKeys, chainId, asset.assetId.toString());
+  const balances = getLiveAssetBalances(accountIds, chainId, asset.assetId.toString());
 
   const { handleSubmit, control, watch, unregister, register } = useForm<DestinationForm>({
     mode: 'onChange',
@@ -169,7 +169,7 @@ const InitOperation = ({ api, chainId, accountIds, asset, onResult }: Props) => 
   const isValid = activeDestAccounts.length > 0 && ((isTransferable && destination) || isRestake);
 
   useEffect(() => {
-    const newBalancesMap = new Map(balances.map((balance) => [balance.publicKey, balance]));
+    const newBalancesMap = new Map(balances.map((balance) => [balance.accountId, balance]));
 
     setBalancesMap(newBalancesMap);
   }, [activeDestAccounts.length, balances]);
@@ -177,7 +177,7 @@ const InitOperation = ({ api, chainId, accountIds, asset, onResult }: Props) => 
   // Init stake accounts
   useEffect(() => {
     const formattedAccounts = totalAccounts.map((account) => {
-      const matchBalance = balancesMap.get(account.publicKey || '0x');
+      const matchBalance = balancesMap.get(account.accountId || '0x');
       const wallet = account.walletId ? walletsMap.get(account.walletId.toString()) : undefined;
 
       return getDropdownPayload(account, wallet?.name, asset, matchBalance, fee);
@@ -196,7 +196,7 @@ const InitOperation = ({ api, chainId, accountIds, asset, onResult }: Props) => 
 
   // Init payout wallets
   useEffect(() => {
-    const payoutAccounts = dbAccounts.reduce<DropdownOption<AccountID>[]>((acc, account) => {
+    const payoutAccounts = dbAccounts.reduce<DropdownOption<Address>[]>((acc, account) => {
       if (!account.chainId || account.chainId === chainId) {
         const wallet = account.walletId ? walletsMap.get(account.walletId.toString()) : undefined;
 

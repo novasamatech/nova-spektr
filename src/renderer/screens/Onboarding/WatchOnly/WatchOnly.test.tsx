@@ -2,31 +2,24 @@ import { act, render, screen } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 
 import WatchOnly from './WatchOnly';
-import { TEST_ADDRESS, TEST_PUBLIC_KEY } from '@renderer/shared/utils/constants';
 import { Chain } from '@renderer/domain/chain';
+
+jest.mock('@renderer/context/I18nContext', () => ({
+  useI18n: jest.fn().mockReturnValue({
+    t: (key: string) => key,
+  }),
+}));
 
 jest.mock('@renderer/services/account/accountService', () => ({
   useAccount: jest.fn().mockReturnValue({
-    getActiveAccounts: () => [
-      {
-        name: 'Test Wallet',
-        accountId: TEST_ADDRESS,
-        publicKey: TEST_PUBLIC_KEY,
-      },
-    ],
+    addAccount: jest.fn(),
   }),
 }));
 
 jest.mock('@renderer/services/network/chainsService', () => ({
   useChains: jest.fn().mockReturnValue({
-    getChainsData: jest.fn().mockReturnValue([]),
-    sortChains: (value: Chain[]) => value,
-  }),
-}));
-
-jest.mock('@renderer/context/I18nContext', () => ({
-  useI18n: jest.fn().mockReturnValue({
-    t: (key: string) => key,
+    getChainsData: jest.fn().mockResolvedValue([]),
+    sortChains: jest.fn((value: Chain[]) => value),
   }),
 }));
 

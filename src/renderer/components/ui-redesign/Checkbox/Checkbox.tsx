@@ -13,6 +13,7 @@ type Props = {
   value?: any;
   className?: string;
   onChange?: (event: ChangeEvent<HTMLInputElement>) => void;
+  tabIndex?: number;
 };
 
 const Checkbox = ({
@@ -25,6 +26,7 @@ const Checkbox = ({
   className,
   children,
   onChange,
+  tabIndex,
 }: PropsWithChildren<Props>) => {
   const content = typeof children === 'string' ? <FootnoteText>{children}</FootnoteText> : children;
 
@@ -47,6 +49,7 @@ const Checkbox = ({
           'disabled:text-filter-border disabled:bg-main-app-background disabled:checked:bg-main-app-background',
           !disabled && 'hover:cursor-pointer',
         )}
+        tabIndex={tabIndex}
         onChange={onChange}
       />
       {children && position === 'right' && content}

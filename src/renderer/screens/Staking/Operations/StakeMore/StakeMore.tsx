@@ -145,7 +145,13 @@ const StakeMore = () => {
       {headerContent}
 
       {activeStep === Step.INIT && (
-        <InitOperation api={api} chainId={chainId} accountIds={accountIds} asset={asset} onResult={onStakeMoreResult} />
+        <InitOperation
+          api={api}
+          chainId={chainId}
+          identifiers={accountIds}
+          asset={asset}
+          onResult={onStakeMoreResult}
+        />
       )}
       {activeStep === Step.CONFIRMATION && (
         <Confirmation

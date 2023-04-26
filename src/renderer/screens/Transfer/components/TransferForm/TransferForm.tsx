@@ -4,7 +4,7 @@ import { Controller, useForm, SubmitHandler } from 'react-hook-form';
 import { Trans } from 'react-i18next';
 import { ApiPromise } from '@polkadot/api';
 
-import { pasteAddressHandler, toPublicKey, isAddressValid, formatAddress } from '@renderer/shared/utils/address';
+import { pasteAddressHandler, toAccountId, validateAddress, toAddress } from '@renderer/shared/utils/address';
 import { Button, AmountInput, Icon, Identicon, Input, InputHint, Block, InputArea } from '@renderer/components/ui';
 import { Fee, Deposit } from '@renderer/components/common';
 import { useI18n } from '@renderer/context/I18nContext';
@@ -12,7 +12,7 @@ import { Asset, AssetType } from '@renderer/domain/asset';
 import { Transaction, MultisigTxInitStatus, TransactionType } from '@renderer/domain/transaction';
 import { useBalance } from '@renderer/services/balance/balanceService';
 import { formatAmount, transferableAmount } from '@renderer/services/balance/common/utils';
-import { AccountID, ChainId } from '@renderer/domain/shared-kernel';
+import { Address, ChainId, AccountId } from '@renderer/domain/shared-kernel';
 import { useTransaction } from '@renderer/services/transaction/transactionService';
 import { useMultisigTx } from '@renderer/services/multisigTx/multisigTxService';
 import { getAssetId } from '@renderer/shared/utils/assets';
@@ -20,8 +20,8 @@ import { MultisigAccount, Account, isMultisig } from '@renderer/domain/account';
 
 type TransferFormData = {
   amount: string;
-  signatory: AccountID;
-  destination: AccountID;
+  signatory: Address;
+  destination: Address;
   description: string;
 };
 
@@ -81,31 +81,31 @@ export const TransferForm = ({
   const destination = watch('destination');
 
   const setupBalances = (
-    accountId: AccountID,
+    address: Address,
     callbackNativeToken: (balance: string) => void,
     callbackBalance: (balance: string) => void,
   ) => {
-    const publicKey = toPublicKey(accountId) || '0x0';
+    const accountId = toAccountId(address);
 
-    getBalance(publicKey, chainId, asset.assetId.toString()).then((balance) => {
+    getBalance(accountId, chainId, asset.assetId.toString()).then((balance) => {
       callbackBalance(balance ? transferableAmount(balance) : '0');
     });
 
     if (asset.assetId !== 0) {
-      getBalance(publicKey, chainId, '0').then((balance) => {
+      getBalance(accountId, chainId, '0').then((balance) => {
         callbackNativeToken(balance ? transferableAmount(balance) : '0');
       });
     }
   };
 
   useEffect(() => {
-    if (!account?.accountId) return;
+    if (!account) return;
 
     setupBalances(account.accountId, setAccountNativeTokenBalance, setAccountBalance);
   }, [account]);
 
   useEffect(() => {
-    if (!signer?.accountId) return;
+    if (!signer) return;
 
     setupBalances(signer.accountId, setSignerNativeTokenBalance, setSignerBalance);
   }, [signer]);
@@ -118,18 +118,18 @@ export const TransferForm = ({
   }, [account]);
 
   useEffect(() => {
-    if (!account?.accountId || !amount || !isAddressValid(destination)) return;
+    if (!account || !amount || !validateAddress(destination)) return;
 
     const transferPayload = getTransferTx(account.accountId);
 
-    if (isMultisig(account) && signer?.accountId) {
+    if (isMultisig(account) && signer) {
       setMultisigTx(getMultisigTx(account, signer.accountId, transferPayload));
     }
 
     setTransferTx(transferPayload);
   }, [account, destination, amount]);
 
-  const getTransferTx = (address: AccountID): Transaction => {
+  const getTransferTx = (accountId: AccountId): Transaction => {
     const TransferType: Record<AssetType, TransactionType> = {
       [AssetType.ORML]: TransactionType.ORML_TRANSFER,
       [AssetType.STATEMINE]: TransactionType.ASSET_TRANSFER,
@@ -137,38 +137,38 @@ export const TransferForm = ({
 
     return {
       chainId,
-      address,
+      address: toAddress(accountId, { prefix: addressPrefix }),
       type: asset.type ? TransferType[asset.type] : TransactionType.TRANSFER,
       args: {
-        dest: formatAddress(destination, addressPrefix),
+        dest: toAddress(destination, { prefix: addressPrefix }),
         value: formatAmount(amount, asset.precision),
         asset: getAssetId(asset),
       },
     };
   };
 
-  const getMultisigTx = (account: MultisigAccount, signer: AccountID, transaction: Transaction): Transaction => {
+  const getMultisigTx = (
+    account: MultisigAccount,
+    signerAccountId: AccountId,
+    transaction: Transaction,
+  ): Transaction => {
     const { callData, callHash } = getTransactionHash(transaction, api);
 
-    const otherSignatories = account.signatories
-      .reduce<AccountID[]>((acc, s) => {
-        const signerAddress = formatAddress(signer, addressPrefix);
-        const signatoryAddress = formatAddress(s.accountId, addressPrefix);
-        if (signerAddress !== signatoryAddress) {
-          acc.push(signatoryAddress);
-        }
+    const otherSignatories = account.signatories.reduce<Address[]>((acc, s) => {
+      if (s.accountId !== signerAccountId) {
+        acc.push(toAddress(s.accountId, { prefix: addressPrefix }));
+      }
 
-        return acc;
-      }, [])
-      .sort();
+      return acc;
+    }, []);
 
     return {
       chainId,
-      address: signer,
+      address: toAddress(signerAccountId, { prefix: addressPrefix }),
       type: TransactionType.MULTISIG_AS_MULTI,
       args: {
         threshold: account.threshold,
-        otherSignatories,
+        otherSignatories: otherSignatories.sort(),
         maybeTimepoint: null,
         callData,
         callHash,
@@ -245,7 +245,7 @@ export const TransferForm = ({
         <Controller
           name="destination"
           control={control}
-          rules={{ required: true, validate: isAddressValid }}
+          rules={{ required: true, validate: validateAddress }}
           render={({ field: { onChange, value }, fieldState: { error } }) => (
             <div className="flex flex-col gap-y-2.5">
               <Input

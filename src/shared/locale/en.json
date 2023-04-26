@@ -60,6 +60,7 @@
     "nameDescription": "Give a name to your multisig account",
     "nameLabel": "Account",
     "namePlaceholder": "Nova Spektr",
+    "noWallets": "Looks like you don't have any non-watch only wallets",
     "searchContactPlaceholder": "Search for an account or contact...",
     "signatoriesDescription": "Add signatories to your multisig account",
     "signatoriesLabel": "Signatories",
@@ -182,7 +183,7 @@
       "accountsExistTitle": "These <strong>accounts</strong> already exist!",
       "addAccount": "Add new accounts",
       "addByParitySignerLabel": "Add wallet by Parity Signer",
-      "addSingleParitySignerDescription1": "Here is your account scanned from Parity Signer",
+      "addSingleParitySignerDescription": "Here is your account scanned from Parity Signer",
       "autoFillAccountsListButton": "Autofill account names",
       "checkAddress": "Check address",
       "chooseCameraLabel": "Please choose one to continue",
@@ -309,7 +310,15 @@
       "inputPlaceholder": "0x00...",
       "title": "Enter call data"
     },
-    "noOperationsDescription": "There are no operations pending multisig operations",
+    "filters": {
+      "networkPlaceholder": "Network",
+      "networkSummary": "Networks",
+      "operationTypePlaceholder": "Operation type",
+      "operationTypeSummary": "Operation types",
+      "statusPlaceholder": "Operation status",
+      "statusSummary": "Operation statuses"
+    },
+    "noOperationsDescription": "There are no pending multisig operations",
     "subTitle": "Your operations",
     "title": "Operations",
     "titles": {

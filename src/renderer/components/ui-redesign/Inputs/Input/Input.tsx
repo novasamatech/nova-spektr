@@ -5,20 +5,25 @@ import { LabelText } from '../../Typography';
 import { HTMLInputProps } from '../common/types';
 import CommonInputStyles from '@renderer/components/ui-redesign/Inputs/common/styles';
 
-export interface Props extends Pick<ComponentPropsWithoutRef<'input'>, HTMLInputProps> {
+export type Props = Pick<ComponentPropsWithoutRef<'input'>, HTMLInputProps> & {
   label?: ReactNode;
   invalid?: boolean;
   wrapperClass?: string;
+  prefixElement?: ReactNode;
   suffixElement?: ReactNode;
   onChange?: (value: string) => void;
-}
+};
 
 const Input = forwardRef<HTMLInputElement, Props>(
-  ({ type = 'text', label, className, wrapperClass, invalid, suffixElement, onChange, ...props }, ref) => {
+  (
+    { type = 'text', label, className, wrapperClass, invalid, prefixElement, suffixElement, onChange, ...props },
+    ref,
+  ) => {
     const id = useId();
 
     const inputElement = (
       <div className={cn('relative flex object-contain', wrapperClass)}>
+        {prefixElement}
         <input
           id={id}
           className={cn(

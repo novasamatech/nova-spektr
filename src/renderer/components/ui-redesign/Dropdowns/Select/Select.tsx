@@ -6,7 +6,7 @@ import { Icon } from '@renderer/components/ui';
 import { DropdownOption, DropdownResult, Position } from '../common/types';
 import CommonInputStyles from '@renderer/components/ui-redesign/Inputs/common/styles';
 import { FootnoteText, LabelText } from '@renderer/components/ui-redesign';
-import { ViewClass } from '@renderer/components/ui-redesign/Dropdowns/common/constants';
+import { OptionsContainerStyle, OptionStyle, ViewClass } from '../common/constants';
 
 type Props = {
   className?: string;
@@ -17,6 +17,7 @@ type Props = {
   selectedId?: DropdownOption['id'];
   options: DropdownOption[];
   position?: Position;
+  tabIndex?: number;
   onChange: (data: DropdownResult) => void;
 };
 
@@ -30,6 +31,7 @@ const Select = ({
   options,
   onChange,
   position = 'down',
+  tabIndex,
 }: Props) => {
   const selectedOption = options.find((option) => option.id === selectedId);
   const id = useId();
@@ -48,6 +50,7 @@ const Select = ({
               CommonInputStyles,
               'w-full flex items-center gap-x-2 justify-between pr-2',
             )}
+            tabIndex={tabIndex}
           >
             {selectedOption ? (
               typeof selectedOption.element === 'string' ? (
@@ -66,18 +69,9 @@ const Select = ({
           </Listbox.Button>
 
           <Transition as={Fragment} leave="transition ease-in duration-100" leaveFrom="opacity-100" leaveTo="opacity-0">
-            <Listbox.Options
-              className={cn(
-                'mt-1 absolute z-20 py-2 px-1 max-h-60 w-full overflow-auto border border-token-container-border rounded',
-                position !== 'auto' && ViewClass[position],
-              )}
-            >
+            <Listbox.Options className={cn(OptionsContainerStyle, position !== 'auto' && ViewClass[position])}>
               {options.map(({ id, value, element }) => (
-                <Listbox.Option
-                  key={id}
-                  className="py-2 px-3 hover:bg-action-background-hover rounded cursor-pointer"
-                  value={{ id, value }}
-                >
+                <Listbox.Option key={id} className={OptionStyle} value={{ id, value: value || id }}>
                   {typeof element === 'string' ? <FootnoteText>{element}</FootnoteText> : element}
                 </Listbox.Option>
               ))}

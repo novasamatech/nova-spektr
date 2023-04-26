@@ -1,47 +1,74 @@
 import { u8aToHex } from '@polkadot/util';
-import { decodeAddress, encodeAddress } from '@polkadot/util-crypto';
+import { decodeAddress, encodeAddress, isAddress } from '@polkadot/util-crypto';
 
-import { PublicKey, AccountID } from '@renderer/domain/shared-kernel';
+import { AccountId, Address } from '@renderer/domain/shared-kernel';
 import { PUBLIC_KEY_LENGTH, SS58_DEFAULT_PREFIX } from './constants';
 
 /**
- * Format address based on prefix
- * @param address account's address
- * @param prefix ss58 prefix
+ * Format address or accountId with prefix and chunk size
+ * Example: chunk = 6, would produce address like  1ChFWe...X7iTVZ
+ * @param value account address or accountId
+ * @param params chunk and prefix (default is 42)
  * @return {String}
  */
-export const formatAddress = (address?: AccountID | PublicKey, prefix = SS58_DEFAULT_PREFIX): string => {
-  if (!address) return '';
+export const toAddress = (value: Address | AccountId, params?: { chunk?: number; prefix?: number }): Address => {
+  const chunkValue = params?.chunk;
+  const prefixValue = params?.prefix ?? SS58_DEFAULT_PREFIX;
 
-  return encodeAddress(decodeAddress(address), prefix) || address;
+  let address = '';
+  try {
+    address = encodeAddress(decodeAddress(value), prefixValue);
+  } catch {
+    return address;
+  }
+
+  return chunkValue ? toShortAddress(address, chunkValue) : address;
 };
 
 /**
- * Try to get public key of the address
- * @param address account's address
- * @return {PublicKey | undefined}
+ * Get short address representation
+ * `5DXYNRXmNmFLFxxUjMXSzKh3vqHRDfDGGbY3BnSdQcta1SkX --> 5DXYNR...ta1SkX`
+ * @param address value to make short
+ * @param chunk how many letters should be visible from start/end
+ * @return {String}
  */
-export const toPublicKey = (address?: AccountID): PublicKey | undefined => {
-  if (!address) return;
+export const toShortAddress = (address: Address, chunk = 6): string => {
+  return address.length < 13 ? address : `${address.slice(0, chunk)}...${address.slice(-1 * chunk)}`;
+};
 
+/**
+ * Check is account's address valid
+ * @param address account's address
+ * @return {Boolean}
+ */
+export const validateAddress = (address?: Address | AccountId): boolean => {
+  return isAddress(address);
+};
+
+/**
+ * Try to get account id of the address
+ * @param address account's address
+ * @return {String}
+ */
+export const toAccountId = (address: Address): AccountId => {
   try {
     return u8aToHex(decodeAddress(address));
   } catch {
-    return undefined;
+    return '0x00';
   }
 };
 
 /**
  * Check is public key correct
- * @param publicKey public key to check
+ * @param accountId public key to check
  * @return {Boolean}
  */
-export const isCorrectPublicKey = (publicKey: PublicKey): boolean => {
-  if (!publicKey) return false;
+export const isCorrectAccountId = (accountId?: AccountId): boolean => {
+  if (!accountId) return false;
 
-  const publicKeyTrimmed = publicKey.replace(/^0x/, '');
+  const trimmedValue = accountId.replace(/^0x/, '');
 
-  return publicKeyTrimmed.length === PUBLIC_KEY_LENGTH && /^[0-9a-fA-F]+$/.test(publicKeyTrimmed);
+  return trimmedValue.length === PUBLIC_KEY_LENGTH && /^[0-9a-fA-F]+$/.test(trimmedValue);
 };
 
 /**
@@ -58,13 +85,4 @@ export const pasteAddressHandler = (handler: (value: string) => void) => {
       console.warn(error);
     }
   };
-};
-
-/**
- * Check is account's address valid
- * @param address account's address
- * @return {Boolean}
- */
-export const isAddressValid = (address?: AccountID): boolean => {
-  return Boolean(toPublicKey(address));
 };

@@ -74,7 +74,7 @@ In some cases there is no need to translate the text, so ESlint ignore rules sho
 or
 ```typescript
 //eslint-disable-next-line i18next/no-literal-string
-const qrCodePayload = `substrate:${address}:${wallet.publicKey}`;
+const qrCodePayload = `substrate:${address}:${wallet.accountId}`;
 ```
 
 ## Packaging for production

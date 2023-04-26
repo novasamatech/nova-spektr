@@ -47,7 +47,7 @@ const BaseModal = ({
             >
               {title && (
                 <Dialog.Title as="header" className={cn('text-black font-bold', headerClass)}>
-                  <TitleText>{title}</TitleText>
+                  <TitleText fontWeight="bold">{title}</TitleText>
                 </Dialog.Title>
               )}
 

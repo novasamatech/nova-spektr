@@ -29,7 +29,7 @@ export const MultisigChainProvider = ({ children }: PropsWithChildren) => {
     resultTransactionStatus: MultisigTxFinalStatus,
   ): Promise<void> => {
     const txs = await getMultisigTxs({
-      publicKey: account.publicKey,
+      accountId: account.accountId,
       callHash: event.data[3].toHex(),
     });
 

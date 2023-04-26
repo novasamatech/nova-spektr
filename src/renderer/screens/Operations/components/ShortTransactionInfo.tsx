@@ -55,7 +55,7 @@ const ShortTransactionInfo = ({ tx }: Props) => {
     [TransactionType.DESTINATION]: null,
 
     // Technical
-    [TransactionType.BATCH_ALL]: <ShortTransactionInfo tx={tx.args?.calls?.[0]} />,
+    [TransactionType.BATCH_ALL]: tx.args?.transactions?.[0] && <ShortTransactionInfo tx={tx.args?.transactions?.[0]} />,
     [TransactionType.CHILL]: null,
     [TransactionType.MULTISIG_APPROVE_AS_MULTI]: null,
     [TransactionType.MULTISIG_CANCEL_AS_MULTI]: null,
