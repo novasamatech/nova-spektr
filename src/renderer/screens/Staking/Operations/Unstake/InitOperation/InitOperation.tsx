@@ -1,15 +1,13 @@
 import { ApiPromise } from '@polkadot/api';
 import { BN } from '@polkadot/util';
-import cn from 'classnames';
 import { useEffect, useState } from 'react';
-import { Controller, SubmitHandler, useForm } from 'react-hook-form';
 
 import { Fee } from '@renderer/components/common';
-import { AmountInput, Balance, Button, HintList, Icon, InputHint, Select } from '@renderer/components/ui';
+import { Balance, Block, HintList, Plate, Select } from '@renderer/components/ui';
 import { DropdownOption, DropdownResult } from '@renderer/components/ui/Dropdowns/common/types';
 import { useI18n } from '@renderer/context/I18nContext';
 import { Asset } from '@renderer/domain/asset';
-import { Address, ChainId, AccountId, SigningType } from '@renderer/domain/shared-kernel';
+import { Address, ChainId, AccountId } from '@renderer/domain/shared-kernel';
 import { Transaction, TransactionType } from '@renderer/domain/transaction';
 import { useAccount } from '@renderer/services/account/accountService';
 import { useBalance } from '@renderer/services/balance/balanceService';
@@ -17,27 +15,11 @@ import { formatAmount, transferableAmount } from '@renderer/shared/utils/balance
 import { AccountDS, BalanceDS } from '@renderer/services/storage';
 import { useTransaction } from '@renderer/services/transaction/transactionService';
 import { StakingMap } from '@renderer/services/staking/common/types';
-import { Stake } from '@renderer/domain/stake';
 import { UnstakingDuration } from '../../../Overview/components';
-import { getUnstakeAccountOption } from '../../common/utils';
-
-const validateBalance = (stake: Stake | string, amount: string, asset: Asset): boolean => {
-  const unstakeableBalance = typeof stake === 'string' ? stake : stake.active;
-
-  let formatedAmount = new BN(formatAmount(amount, asset.precision));
-
-  return formatedAmount.lte(new BN(unstakeableBalance));
-};
-
-const validateBalanceForFee = (balance: BalanceDS | string, fee: string): boolean => {
-  const transferableBalance = typeof balance === 'string' ? balance : transferableAmount(balance);
-
-  return new BN(fee).lte(new BN(transferableBalance));
-};
-
-type UnstakeForm = {
-  amount: string;
-};
+import { getUnstakeAccountOption, getTotalAccounts, validateBalanceForFee, validateUnstake } from '../../common/utils';
+import { nonNullable } from '@renderer/shared/utils/functions';
+import { Balance as AccountBalance } from '@renderer/domain/balance';
+import { OperationForm } from '@renderer/screens/Staking/Operations/components';
 
 export type UnstakeResult = {
   accounts: AccountDS[];
@@ -63,6 +45,8 @@ const InitOperation = ({ api, chainId, addressPrefix, staking, identifiers, asse
   const dbAccounts = getLiveAccounts();
 
   const [fee, setFee] = useState('');
+  const [amount, setAmount] = useState('');
+
   const [stakedRange, setStakedRange] = useState<[string, string]>(['0', '0']);
   const [transferableRange, setTransferableRange] = useState<[string, string]>(['0', '0']);
   const [transactions, setTransactions] = useState<Transaction[]>([]);
@@ -71,43 +55,21 @@ const InitOperation = ({ api, chainId, addressPrefix, staking, identifiers, asse
   const [activeUnstakeAccounts, setActiveUnstakeAccounts] = useState<DropdownResult<Address>[]>([]);
 
   const [activeBalances, setActiveBalances] = useState<BalanceDS[]>([]);
-  const [balancesMap, setBalancesMap] = useState<Map<string, BalanceDS>>(new Map());
 
-  const totalAccounts = dbAccounts.filter((account) => {
-    if (!account.id) return false;
-
-    const correctSigningType = [SigningType.PARITY_SIGNER, SigningType.MULTISIG].includes(account.signingType);
-    const accountExistInDb = identifiers.includes(account.id.toString());
-
-    return correctSigningType && accountExistInDb;
-  });
+  const totalAccounts = getTotalAccounts(dbAccounts, identifiers);
 
   const accountIds = totalAccounts.map((account) => account.accountId);
   const balances = getLiveAssetBalances(accountIds, chainId, asset.assetId.toString());
 
-  const {
-    handleSubmit,
-    control,
-    watch,
-    trigger,
-    formState: { isValid },
-  } = useForm<UnstakeForm>({
-    mode: 'onChange',
-    defaultValues: { amount: '' },
-  });
-
-  const amount = watch('amount');
-
-  // Set balance map
   useEffect(() => {
-    const newBalancesMap = new Map(balances.map((balance) => [balance.accountId, balance]));
-    const newActiveBalances = activeUnstakeAccounts.map((a) => newBalancesMap.get(a.id as AccountId)) as BalanceDS[];
+    const balancesMap = new Map(balances.map((balance) => [balance.accountId, balance]));
+    const newActiveBalances = activeUnstakeAccounts
+      .map((a) => balancesMap.get(a.id as AccountId))
+      .filter(nonNullable) as AccountBalance[];
 
-    setBalancesMap(newBalancesMap);
     setActiveBalances(newActiveBalances);
   }, [activeUnstakeAccounts.length, balances]);
 
-  // Set staked range
   useEffect(() => {
     if (!Object.keys(staking).length) return;
 
@@ -131,6 +93,7 @@ const InitOperation = ({ api, chainId, addressPrefix, staking, identifiers, asse
   useEffect(() => {
     if (!activeUnstakeAccounts.length) return;
 
+    const balancesMap = new Map(balances.map((balance) => [balance.accountId, balance]));
     const transferable = activeUnstakeAccounts.map((a) => transferableAmount(balancesMap.get(a.id as AccountId)));
     const minMaxTransferable = transferable.reduce<[string, string]>(
       (acc, balance) => {
@@ -145,23 +108,18 @@ const InitOperation = ({ api, chainId, addressPrefix, staking, identifiers, asse
     );
 
     setTransferableRange(minMaxTransferable);
-  }, [activeUnstakeAccounts.length, balancesMap]);
+  }, [activeUnstakeAccounts.length, activeBalances]);
 
-  useEffect(() => {
-    amount && trigger('amount');
-  }, [activeBalances]);
-
-  // Init accounts
   useEffect(() => {
     const formattedAccounts = totalAccounts.map((account) => {
-      const balance = balancesMap.get(account.accountId);
+      const balance = activeBalances.find((b) => b.accountId === account.accountId);
       const stake = staking[account.accountId];
 
       return getUnstakeAccountOption(account, { balance, stake, asset, addressPrefix, fee, amount });
     });
 
     setUnstakeAccounts(formattedAccounts);
-  }, [totalAccounts.length, staking, amount, fee, balancesMap]);
+  }, [totalAccounts.length, staking, amount, fee, activeBalances]);
 
   // Init active unstake accounts
   useEffect(() => {
@@ -193,17 +151,22 @@ const InitOperation = ({ api, chainId, addressPrefix, staking, identifiers, asse
     getTransactionFee(transactions[0], api).then(setFee);
   }, [amount]);
 
-  const submitUnstake: SubmitHandler<UnstakeForm> = ({ amount }) => {
+  const submitUnstake = (data: { amount: string }) => {
     const selectedAddresses = activeUnstakeAccounts.map((stake) => stake.id);
-
-    const accounts = totalAccounts.filter(
-      (account) => account.accountId && selectedAddresses.includes(account.accountId),
-    );
+    const accounts = totalAccounts.filter((account) => selectedAddresses.includes(account.accountId));
 
     onResult({
-      amount: formatAmount(amount, asset.precision),
       accounts,
+      amount: formatAmount(data.amount, asset.precision),
     });
+  };
+
+  const validateBalance = (amount: string): boolean => {
+    return activeUnstakeAccounts.every((a) => validateUnstake(staking[a.value] || '0', amount, asset.precision));
+  };
+
+  const validateFee = (): boolean => {
+    return activeBalances.every((b) => validateBalanceForFee(b, fee));
   };
 
   const transferable =
@@ -218,8 +181,8 @@ const InitOperation = ({ api, chainId, addressPrefix, staking, identifiers, asse
     );
 
   return (
-    <div className="w-[600px] flex flex-col items-center mx-auto rounded-2lg bg-shade-2 p-5 ">
-      <div className="w-full p-5 rounded-2lg bg-white shadow-surface">
+    <Plate as="section" className="w-[600px] flex flex-col items-center mx-auto">
+      <Block className="p-5 mb-2.5">
         <Select
           weight="lg"
           placeholder={t('staking.bond.selectStakeAccountLabel')}
@@ -228,72 +191,38 @@ const InitOperation = ({ api, chainId, addressPrefix, staking, identifiers, asse
           options={unstakeAccounts}
           onChange={setActiveUnstakeAccounts}
         />
-      </div>
+      </Block>
 
-      <form
-        id="initUnstakeForm"
-        className="flex flex-col gap-y-5 p-5 w-full rounded-2lg bg-white mt-2.5 mb-5 shadow-surface"
-        onSubmit={handleSubmit(submitUnstake)}
+      <OperationForm
+        chainId={chainId}
+        addressPrefix={addressPrefix}
+        fields={['amount']}
+        asset={asset}
+        validateBalance={validateBalance}
+        validateFee={validateFee}
+        onSubmit={submitUnstake}
+        onFormChange={({ amount }) => {
+          setAmount(amount);
+        }}
       >
-        <Controller
-          name="amount"
-          control={control}
-          rules={{
-            required: true,
-            validate: {
-              notZero: (v) => Number(v) > 0,
-              insufficientBalance: (amount) =>
-                activeUnstakeAccounts.every((a) => validateBalance(staking[a.value] || '0', amount, asset)),
-              insufficientBalanceForFee: () => activeBalances.every((b) => validateBalanceForFee(b, fee)),
-            },
-          }}
-          render={({ field: { onChange, value }, fieldState: { error } }) => (
-            <>
-              <AmountInput
-                placeholder={t('staking.unstake.amountPlaceholder')}
-                balancePlaceholder={t('staking.unstake.stakedPlaceholder')}
-                value={value}
-                name="amount"
-                balance={stakedRange[0] === stakedRange[1] ? stakedRange[0] : stakedRange}
-                asset={asset}
-                invalid={Boolean(error)}
-                onChange={onChange}
-              />
-              <InputHint active={error?.type === 'insufficientBalance'} variant="error">
-                {t('staking.notEnoughStakedError')}
-              </InputHint>
-              <InputHint active={error?.type === 'insufficientBalanceForFee'} variant="error">
-                {t('staking.notEnoughBalanceForFeeError')}
-              </InputHint>
-              <InputHint active={error?.type === 'required'} variant="error">
-                {t('staking.requiredAmountError')}
-              </InputHint>
-              <InputHint active={error?.type === 'notZero'} variant="error">
-                {t('staking.requiredAmountError')}
-              </InputHint>
+        <div className="flex justify-between items-center uppercase text-neutral-variant text-2xs">
+          <p>{t('staking.unstake.transferable')}</p>
 
-              <div className="flex justify-between items-center uppercase text-neutral-variant text-2xs">
-                <p>{t('staking.unstake.transferable')}</p>
+          <div className="flex font-semibold">
+            {transferable}&nbsp;{asset.symbol}
+          </div>
+        </div>
 
-                <div
-                  className={cn(
-                    'flex font-semibold',
-                    error?.type === 'insufficientBalanceForFee' ? 'text-error' : 'text-neutral',
-                  )}
-                >
-                  {error?.type === 'insufficientBalanceForFee' && (
-                    <Icon size={12} className="text-error mr-1" name="warnCutout" />
-                  )}
-                  {transferable}&nbsp;{asset.symbol}
-                </div>
-              </div>
-            </>
-          )}
-        />
         <div className="flex justify-between items-center uppercase text-neutral-variant text-2xs">
           <p>{t('staking.unstake.networkFee', { count: activeUnstakeAccounts.length })}</p>
 
-          <Fee className="text-neutral font-semibold" api={api} asset={asset} transaction={transactions[0]} />
+          <Fee
+            className="text-neutral font-semibold"
+            api={api}
+            asset={asset}
+            transaction={transactions[0]}
+            onFeeChange={setFee}
+          />
         </div>
 
         <HintList>
@@ -305,12 +234,8 @@ const InitOperation = ({ api, chainId, addressPrefix, staking, identifiers, asse
           <HintList.Item>{t('staking.unstake.noRewardsHint')}</HintList.Item>
           <HintList.Item>{t('staking.unstake.redeemHint')}</HintList.Item>
         </HintList>
-      </form>
-
-      <Button type="submit" form="initUnstakeForm" variant="fill" pallet="primary" weight="lg" disabled={!isValid}>
-        {t('staking.bond.continueButton')}
-      </Button>
-    </div>
+      </OperationForm>
+    </Plate>
   );
 };
 

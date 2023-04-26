@@ -8,7 +8,7 @@ import { DropdownOption, DropdownResult } from '@renderer/components/ui/Dropdown
 import { useI18n } from '@renderer/context/I18nContext';
 import { Asset } from '@renderer/domain/asset';
 import { Balance as AccountBalance } from '@renderer/domain/balance';
-import { Address, ChainId, AccountId, SigningType } from '@renderer/domain/shared-kernel';
+import { Address, ChainId, AccountId } from '@renderer/domain/shared-kernel';
 import { Transaction, TransactionType } from '@renderer/domain/transaction';
 import { useAccount } from '@renderer/services/account/accountService';
 import { useBalance } from '@renderer/services/balance/balanceService';
@@ -18,7 +18,8 @@ import { useWallet } from '@renderer/services/wallet/walletService';
 import { Account } from '@renderer/domain/account';
 import { Explorer } from '@renderer/domain/chain';
 import { toAccountId } from '@renderer/shared/utils/address';
-import { getStakeAccountOption, validateBalanceForFee, validateStake } from '../../common/utils';
+import { nonNullable } from '@renderer/shared/utils/functions';
+import { getStakeAccountOption, validateBalanceForFee, validateStake, getTotalAccounts } from '../../common/utils';
 import { OperationForm } from '../../components';
 
 export type BondResult = {
@@ -58,29 +59,21 @@ const InitOperation = ({ api, chainId, identifiers, asset, explorers, addressPre
   const [stakeAccounts, setStakeAccounts] = useState<DropdownOption<Address>[]>([]);
   const [activeStakeAccounts, setActiveStakeAccounts] = useState<DropdownResult<Address>[]>([]);
 
+  const [activeBalances, setActiveBalances] = useState<AccountBalance[]>([]);
   // const [activeSignatory, setActiveSignatory] = useState<DropdownResult<MultisigAccount>>();
   // const [signatoryOptions, setSignatoryOptions] = useState<DropdownOption<MultisigAccount>[]>([]);
 
-  const [activeBalances, setActiveBalances] = useState<AccountBalance[]>([]);
-  const [balancesMap, setBalancesMap] = useState<Map<AccountId, AccountBalance>>(new Map());
-
-  const totalAccounts = dbAccounts.filter((account) => {
-    if (!account.id) return false;
-
-    const correctSigningType = [SigningType.PARITY_SIGNER, SigningType.MULTISIG].includes(account.signingType);
-    const accountExistInDb = identifiers.includes(account.id.toString());
-
-    return correctSigningType && accountExistInDb;
-  });
+  const totalAccounts = getTotalAccounts(dbAccounts, identifiers);
 
   const accountIds = totalAccounts.map((account) => account.accountId);
   const balances = getLiveAssetBalances(accountIds, chainId, asset.assetId.toString());
 
   useEffect(() => {
-    const newBalancesMap = new Map(balances.map((balance) => [balance.accountId, balance]));
-    const newActiveBalances = activeStakeAccounts.map((a) => newBalancesMap.get(a.id as AccountId)) as AccountBalance[];
+    const balancesMap = new Map(balances.map((balance) => [balance.accountId, balance]));
+    const newActiveBalances = activeStakeAccounts
+      .map((a) => balancesMap.get(a.id as AccountId))
+      .filter(nonNullable) as AccountBalance[];
 
-    setBalancesMap(newBalancesMap);
     setActiveBalances(newActiveBalances);
   }, [activeStakeAccounts.length, balances]);
 
@@ -123,7 +116,7 @@ const InitOperation = ({ api, chainId, identifiers, asset, explorers, addressPre
 
   useEffect(() => {
     const formattedAccounts = totalAccounts.map((account) => {
-      const balance = balancesMap.get(account.accountId);
+      const balance = activeBalances.find((b) => b.accountId === account.accountId);
       const wallet = account.walletId ? walletsMap.get(account.walletId.toString()) : undefined;
       const walletName = wallet?.name || '';
 
@@ -133,7 +126,7 @@ const InitOperation = ({ api, chainId, identifiers, asset, explorers, addressPre
     if (formattedAccounts.length === 0) return;
 
     setStakeAccounts(formattedAccounts);
-  }, [totalAccounts.length, amount, fee, balancesMap]);
+  }, [totalAccounts.length, amount, fee, activeBalances]);
 
   useEffect(() => {
     if (stakeAccounts.length === 0) return;
@@ -191,7 +184,10 @@ const InitOperation = ({ api, chainId, identifiers, asset, explorers, addressPre
   };
 
   const validateFee = (amount: string): boolean => {
-    return activeBalances.every((b) => validateBalanceForFee(b, fee));
+    const feeIsValid = activeBalances.every((b) => validateBalanceForFee(b, fee));
+    const balanceIsValid = activeBalances.every((b) => validateStake(b, amount, asset.precision, fee));
+
+    return feeIsValid && balanceIsValid;
   };
 
   return (
