@@ -91,28 +91,17 @@ const Operation = ({ tx, account }: Props) => {
   return (
     <li className="flex flex-col bg-block-background-default rounded">
       {/* MAIN ROW */}
-      {/* col width % 9.7  24.7 24.7 17.6 17.6 5.4*/}
-      <div className="flex w-full items-center h-[52px] pl-2.5 pr-2 ">
-        <div className="w-[9.7%]">
-          <FootnoteText className="text-text-tertiary pl-3.5">
-            {format(new Date(dateCreated || 0), 'p', { locale: dateLocale })}
-          </FootnoteText>
-        </div>
-        <div className="w-[24.7%]">
-          <TransactionTitle tx={transaction} description={description} />
-        </div>
-        <div className="w-[24.7%]">{transaction && <ShortTransactionInfo tx={transaction} />}</div>
-        <div className="w-[17.6%]">
-          <Chain chainId={chainId} />
-        </div>
-        <div className="w-[17.6%]">
-          <OperationStatus status={status} signed={approvals.length} threshold={account?.threshold || 0} />
-        </div>
-        <div className="w-[5.4%]">
-          <Button pallet="shade" variant="text" onClick={toggleRow}>
-            <Icon name={isRowShown ? 'up' : 'down'} />
-          </Button>
-        </div>
+      <div className="h-[52px] pl-2.5 pr-2 grid grid-cols-operation-card items-center justify-items-start">
+        <FootnoteText className="text-text-tertiary pl-3.5">
+          {format(new Date(dateCreated || 0), 'p', { locale: dateLocale })}
+        </FootnoteText>
+        <TransactionTitle tx={transaction} description={description} />
+        {(transaction && <ShortTransactionInfo tx={transaction} />) || <span />}
+        <Chain chainId={chainId} />
+        <OperationStatus status={status} signed={approvals.length} threshold={account?.threshold || 0} />
+        <Button pallet="shade" variant="text" onClick={toggleRow}>
+          <Icon name={isRowShown ? 'up' : 'down'} />
+        </Button>
       </div>
 
       {/* DETAILS */}
