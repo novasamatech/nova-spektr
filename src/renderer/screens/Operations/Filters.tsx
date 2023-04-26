@@ -16,7 +16,7 @@ type Props = {
   onChangeFilters: (filteredTxs: MultisigTransaction[]) => void;
 };
 
-const Operations = ({ onChangeFilters }: Props) => {
+const Filters = ({ onChangeFilters }: Props) => {
   const { t } = useI18n();
   const { connections } = useNetworkContext();
 
@@ -132,4 +132,4 @@ const Operations = ({ onChangeFilters }: Props) => {
   );
 };
 
-export default Operations;
+export default Filters;
