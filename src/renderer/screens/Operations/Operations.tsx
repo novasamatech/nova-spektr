@@ -10,8 +10,8 @@ import { MultisigAccount } from '@renderer/domain/account';
 import Operation from './components/Operation';
 import { sortByDate } from './common/utils';
 import { FootnoteText } from '@renderer/components/ui-redesign';
-import { MultisigTransaction } from '@renderer/domain/transaction';
 import Filters from './Filters';
+import { MultisigTransactionDS } from '@renderer/services/storage';
 
 const Operations = () => {
   const { t, dateLocale } = useI18n();
@@ -20,7 +20,7 @@ const Operations = () => {
   const accounts = getActiveAccounts({ signingType: SigningType.MULTISIG });
   const accountsMap = new Map(accounts.map((account) => [account.accountId, account as MultisigAccount]));
 
-  const [filteredTxs, setFilteredTxs] = useState<MultisigTransaction[]>([]);
+  const [filteredTxs, setFilteredTxs] = useState<MultisigTransactionDS[]>([]);
 
   const groupedTxs = groupBy(filteredTxs, ({ dateCreated }) =>
     format(new Date(dateCreated || 0), 'PP', { locale: dateLocale }),
