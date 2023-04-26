@@ -8,7 +8,7 @@ import { Chain } from '@renderer/domain/chain';
 import { AccountId } from '@renderer/domain/shared-kernel';
 import { useBalance } from '@renderer/services/balance/balanceService';
 import { ZERO_BALANCE } from '@renderer/services/balance/common/constants';
-import { totalAmount } from '@renderer/services/balance/common/utils';
+import { totalAmount } from '@renderer/shared/utils/balance';
 import { ExtendedChain } from '@renderer/services/network/common/types';
 import AssetBalance from '../AssetBalance/AssetBalance';
 import { useI18n } from '@renderer/context/I18nContext';

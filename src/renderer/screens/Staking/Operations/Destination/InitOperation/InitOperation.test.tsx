@@ -62,6 +62,7 @@ describe('screens/Staking/Destination/InitOperation', () => {
   const defaultProps = {
     api: {} as ApiPromise,
     chainId: '0x123' as ChainId,
+    addressPrefix: 0,
     identifiers: ['1'],
     asset: { assetId: 1, symbol: 'DOT', precision: 10 } as Asset,
     onResult: noop,

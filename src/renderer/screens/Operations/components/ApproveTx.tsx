@@ -24,7 +24,7 @@ import { useTransaction } from '@renderer/services/transaction/transactionServic
 import ShortTransactionInfo from './ShortTransactionInfo';
 import { Fee } from '@renderer/components/common';
 import { useBalance } from '@renderer/services/balance/balanceService';
-import { transferableAmount } from '@renderer/services/balance/common/utils';
+import { transferableAmount } from '@renderer/shared/utils/balance';
 import { MAX_WEIGHT } from '@renderer/services/transaction/common/constants';
 import { TEST_ADDRESS } from '@renderer/shared/utils/constants';
 

@@ -11,7 +11,7 @@ import { useI18n } from '@renderer/context/I18nContext';
 import { Asset, AssetType } from '@renderer/domain/asset';
 import { Transaction, MultisigTxInitStatus, TransactionType } from '@renderer/domain/transaction';
 import { useBalance } from '@renderer/services/balance/balanceService';
-import { formatAmount, transferableAmount } from '@renderer/services/balance/common/utils';
+import { formatAmount, transferableAmount } from '@renderer/shared/utils/balance';
 import { Address, ChainId, AccountId } from '@renderer/domain/shared-kernel';
 import { useTransaction } from '@renderer/services/transaction/transactionService';
 import { useMultisigTx } from '@renderer/services/multisigTx/multisigTxService';

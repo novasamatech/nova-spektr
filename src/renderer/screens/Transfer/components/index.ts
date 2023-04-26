@@ -4,4 +4,3 @@ export { Scanning } from './Scanning/Scanning';
 export { Signing } from './Signing/Signing';
 export { Submit } from './Submit/Submit';
 export { TransferForm } from './TransferForm/TransferForm';
-export { ActiveAddress } from './ActiveAddress/ActiveAddress';

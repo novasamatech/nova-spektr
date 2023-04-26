@@ -118,7 +118,7 @@ const Destination = () => {
       ? { type: RewardsDestination.TRANSFERABLE, address: destination }
       : { type: RewardsDestination.RESTAKE };
 
-    const transactions = accounts.map(({ accountId = '' }) => ({
+    const transactions = accounts.map(({ accountId }) => ({
       chainId,
       address: toAddress(accountId, { prefix: addressPrefix }),
       type: TransactionType.DESTINATION,
@@ -153,6 +153,7 @@ const Destination = () => {
         <InitOperation
           api={api}
           chainId={chainId}
+          addressPrefix={addressPrefix}
           identifiers={accountIds}
           asset={asset}
           onResult={onDestinationResult}

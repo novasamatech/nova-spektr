@@ -13,7 +13,7 @@ type Props = {
   explorers?: Explorer[];
 };
 
-export const ActiveAddress = ({ address, accountName, signingType, explorers, addressPrefix }: Props) => (
+const ActiveAddress = ({ address, accountName, signingType, explorers, addressPrefix }: Props) => (
   <div className="flex items-center justify-between h-15 bg-shade-2 p-2.5 rounded-2lg">
     <div className="flex gap-2.5 items-center">
       <Icon name={SigningBadges[signingType]} size={34} />
@@ -31,3 +31,5 @@ export const ActiveAddress = ({ address, accountName, signingType, explorers, ad
     <Explorers address={address} addressPrefix={addressPrefix} explorers={explorers} />
   </div>
 );
+
+export default ActiveAddress;

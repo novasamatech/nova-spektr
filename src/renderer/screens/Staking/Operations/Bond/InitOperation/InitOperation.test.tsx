@@ -58,6 +58,8 @@ describe('screens/Staking/Bond/InitOperation', () => {
     chainId: '0x123' as ChainId,
     identifiers: ['1'],
     asset: { assetId: 1, symbol: 'DOT', precision: 10 } as Asset,
+    addressPrefix: 0,
+    explorers: [],
     onResult: noop,
   };
 

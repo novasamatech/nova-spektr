@@ -7,15 +7,15 @@ import { Button } from '@renderer/components/ui';
 import ParitySignerSignatureReader from '@renderer/screens/Signing/ParitySignerSignatureReader/ParitySignerSignatureReader';
 import { ValidationErrors } from '@renderer/shared/utils/validation';
 import { toAccountId } from '@renderer/shared/utils/address';
-import { transferableAmount } from '@renderer/services/balance/common/utils';
+import { transferableAmount } from '@renderer/shared/utils/balance';
 import { Transaction } from '@renderer/domain/transaction';
 import { useBalance } from '@renderer/services/balance/balanceService';
 import { ChainId, HexString } from '@renderer/domain/shared-kernel';
 import { useTransaction } from '@renderer/services/transaction/transactionService';
 import { Balance } from '@renderer/domain/balance';
-import { ActiveAddress } from '@renderer/screens/Transfer/components';
 import { Explorer } from '@renderer/domain/chain';
 import { Account, MultisigAccount, isMultisig } from '@renderer/domain/account';
+import { ActiveAddress } from '@renderer/components/common';
 
 type Props = {
   api: ApiPromise;
