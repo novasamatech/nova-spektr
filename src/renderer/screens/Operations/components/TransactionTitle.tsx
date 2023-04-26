@@ -16,7 +16,7 @@ const TransactionTitle = ({ tx, description }: Props) => {
   const transactionTitle = getTransactionTitle(tx);
 
   return (
-    <div className="'flex inline-flex gap-2 items-center'">
+    <div className="inline-flex gap-x-2 items-center">
       <Icon
         className="p-1.5 box-content rounded-full border border-token-container-border text-icon-default"
         name={iconName}
