@@ -11,8 +11,8 @@ import { includes } from '@renderer/shared/utils/strings';
 
 const Networks = () => {
   const { t } = useI18n();
-  const { connections } = useNetworkContext();
   const { sortChains } = useChains();
+  const { connections } = useNetworkContext();
 
   const [query, setQuery] = useState('');
 

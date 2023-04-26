@@ -2,7 +2,7 @@ import { format } from 'date-fns';
 import { useEffect, useState } from 'react';
 import cn from 'classnames';
 
-import { Address, Button, Icon } from '@renderer/components/ui';
+import { Button, ChainAddress, Icon } from '@renderer/components/ui';
 import { useI18n } from '@renderer/context/I18nContext';
 import { MultisigEvent, MultisigTransaction } from '@renderer/domain/transaction';
 import { useMultisigTx } from '@renderer/services/multisigTx/multisigTxService';
@@ -30,16 +30,19 @@ type Props = {
 };
 
 const Operation = ({ tx, account }: Props) => {
-  const { dateCreated, callData, chainId, events, signatories, transaction, description, status } = tx;
-
   const { t, dateLocale } = useI18n();
   const { matrix } = useMatrix();
 
+  console.log(tx);
+
   const { updateCallData } = useMultisigTx();
   const { connections } = useNetworkContext();
-  const [isCallDataModalOpen, toggleCallDataModal] = useToggle();
+
   const [isRowShown, toggleRow] = useToggle();
+  const [isCallDataModalOpen, toggleCallDataModal] = useToggle();
   const [signatoriesList, setSignatories] = useState<Signatory[]>([]);
+
+  const { dateCreated, callData, chainId, events, signatories, transaction, description, status } = tx;
 
   const connection = connections[tx?.chainId as ChainId];
   const approvals = events.filter((e) => e.status === 'SIGNED');
@@ -56,17 +59,15 @@ const Operation = ({ tx, account }: Props) => {
       return;
     }
 
-    const timepoint = {
-      index: tx.indexCreated || 0,
-      height: tx.blockCreated || 0,
-    };
-
     matrix.sendUpdate(account?.matrixRoomId, {
-      senderAddress: tx.depositor || '0x00',
+      senderAccountId: tx.depositor || '0x00',
       chainId: tx.chainId,
       callHash: tx.callHash,
       callData: callData,
-      callTimepoint: timepoint,
+      callTimepoint: {
+        index: tx.indexCreated || 0,
+        height: tx.blockCreated || 0,
+      },
     });
   };
 
@@ -74,13 +75,13 @@ const Operation = ({ tx, account }: Props) => {
     const tempCancellation = [];
 
     if (cancellation.length) {
-      const cancelSignatories = signatories.find((s) => s.publicKey === cancellation[0].accountId);
+      const cancelSignatories = signatories.find((s) => s.accountId === cancellation[0].accountId);
       cancelSignatories && tempCancellation.push(cancelSignatories);
     }
 
     const tempApprovals = approvals
       .sort((a: MultisigEvent, b: MultisigEvent) => (a.eventBlock || 0) - (b.eventBlock || 0))
-      .map((a) => signatories.find((s) => s.publicKey === a.accountId))
+      .map((a) => signatories.find((s) => s.accountId === a.accountId))
       .filter(nonNullable);
 
     setSignatories([...new Set<Signatory>([...tempCancellation, ...tempApprovals, ...signatories])]);
@@ -145,14 +146,14 @@ const Operation = ({ tx, account }: Props) => {
             </div>
 
             <div className="flex flex-col gap-3">
-              {signatoriesList.map(({ accountId, name, publicKey }) => (
+              {signatoriesList.map(({ accountId, name }) => (
                 <div className="flex justify-between" key={accountId}>
-                  <Address size={20} address={accountId} name={name} canCopy />
+                  <ChainAddress size={20} accountId={accountId} name={name} canCopy />
 
-                  {events.find((e) => e.status === 'CANCELLED' && e.accountId === publicKey) ? (
+                  {events.find((e) => e.status === 'CANCELLED' && e.accountId === accountId) ? (
                     <Icon className="text-error rotate-45" name="addLine" />
                   ) : (
-                    events.find((e) => e.status === 'SIGNED' && e.accountId === publicKey) && (
+                    events.find((e) => e.status === 'SIGNED' && e.accountId === accountId) && (
                       <Icon className="text-success" name="checkmarkLine" />
                     )
                   )}

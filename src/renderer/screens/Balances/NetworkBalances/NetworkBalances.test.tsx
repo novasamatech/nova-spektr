@@ -2,7 +2,7 @@ import { act, render, screen } from '@testing-library/react';
 
 import NetworkBalances from './NetworkBalances';
 import { Chain } from '@renderer/domain/chain';
-import { TEST_PUBLIC_KEY } from '@renderer/shared/utils/constants';
+import { TEST_ACCOUNT_ID } from '@renderer/shared/utils/constants';
 import chains from '@renderer/services/network/common/chains/chains.json';
 
 const testChain = chains.find((chain) => chain.assets.length > 1) as Chain;
@@ -15,14 +15,14 @@ jest.mock('@renderer/services/balance/balanceService', () => ({
       {
         assetId: testAsset.assetId.toString(),
         chainId: testChain.chainId,
-        publicKey: TEST_PUBLIC_KEY,
+        accountId: TEST_ACCOUNT_ID,
         free: '10',
         frozen: [{ type: 'test', amount: '1' }],
       },
       {
         assetId: testAsset2.assetId.toString(),
         chainId: testChain.chainId,
-        publicKey: TEST_PUBLIC_KEY,
+        accountId: TEST_ACCOUNT_ID,
         free: '100',
         frozen: [{ type: 'test', amount: '1' }],
         verified: false,
@@ -41,21 +41,21 @@ jest.mock('../AssetBalance/AssetBalance', () => () => <div>AssetBalance</div>);
 
 describe('screen/Balances/NetworkBalances', () => {
   test('should render component', () => {
-    render(<NetworkBalances chain={testChain} publicKeys={[TEST_PUBLIC_KEY]} />);
+    render(<NetworkBalances chain={testChain} accountIds={[TEST_ACCOUNT_ID]} />);
 
     const text = screen.getByText(testChain.name);
     expect(text).toBeInTheDocument();
   });
 
   test('should render assets', () => {
-    render(<NetworkBalances chain={testChain} publicKeys={[TEST_PUBLIC_KEY]} />);
+    render(<NetworkBalances chain={testChain} accountIds={[TEST_ACCOUNT_ID]} />);
 
     const balances = screen.getAllByText('AssetBalance');
     expect(balances).toHaveLength(2);
   });
 
   test('should hide assets', async () => {
-    render(<NetworkBalances chain={testChain} publicKeys={[TEST_PUBLIC_KEY]} />);
+    render(<NetworkBalances chain={testChain} accountIds={[TEST_ACCOUNT_ID]} />);
 
     const balancesBefore = screen.getAllByText('AssetBalance');
     expect(balancesBefore).toHaveLength(2);
@@ -68,7 +68,7 @@ describe('screen/Balances/NetworkBalances', () => {
   });
 
   test('should show unverfied badge', () => {
-    render(<NetworkBalances chain={testChain} publicKeys={[TEST_PUBLIC_KEY]} />);
+    render(<NetworkBalances chain={testChain} accountIds={[TEST_ACCOUNT_ID]} />);
 
     const unverifiedBadge = screen.getByText('balances.verificationFailedLabel');
     expect(unverifiedBadge).toBeInTheDocument();

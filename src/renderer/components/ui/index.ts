@@ -1,4 +1,4 @@
-import Address from './Address/Address';
+import ChainAddress from './Address/ChainAddress';
 import Checkbox from './Checkbox/Checkbox';
 import Switch from './Switch/Switch';
 import Icon from './Icon/Icon';
@@ -32,7 +32,7 @@ import InfoLink from './InfoLink/InfoLink';
 import ProgressBadge from './ProgressBadge/ProgressBadge';
 
 export {
-  Address,
+  ChainAddress,
   Checkbox,
   Switch,
   Icon,

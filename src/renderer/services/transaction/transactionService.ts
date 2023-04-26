@@ -13,11 +13,11 @@ import {
 import { Call, Weight } from '@polkadot/types/interfaces';
 import { Type } from '@polkadot/types';
 
-import { AccountID, CallData, HexString } from '@renderer/domain/shared-kernel';
+import { Address, CallData, HexString, Threshold } from '@renderer/domain/shared-kernel';
 import { Transaction, TransactionType } from '@renderer/domain/transaction';
 import { createTxMetadata } from '@renderer/shared/utils/substrate';
 import { ITransactionService, HashData, ExtrinsicResultParams } from './common/types';
-import { toPublicKey } from '@renderer/shared/utils/address';
+import { toAccountId } from '@renderer/shared/utils/address';
 import { MAX_WEIGHT } from '@renderer/services/transaction/common/constants';
 import { decodeDispatchError } from './common/utils';
 
@@ -101,7 +101,6 @@ export const useTransaction = (): ITransactionService => {
           callHash: transaction.args.callHash,
           threshold: transaction.args.threshold,
           otherSignatories: transaction.args.otherSignatories,
-          maxWeight: transaction.args.maxWeight || MAX_WEIGHT,
         },
         info,
         options,
@@ -272,7 +271,7 @@ export const useTransaction = (): ITransactionService => {
     return weight;
   };
 
-  const getTransactionDeposit = (threshold: number, api: ApiPromise): string => {
+  const getTransactionDeposit = (threshold: Threshold, api: ApiPromise): string => {
     const { depositFactor, depositBase } = api.consts.multisig;
     const deposit = depositFactor.muln(threshold).add(depositBase);
 
@@ -307,7 +306,7 @@ export const useTransaction = (): ITransactionService => {
         // information for each contained extrinsic
         signedBlock.block.extrinsics.forEach(({ method: extrinsicMethod, signer, hash }, index) => {
           if (
-            toPublicKey(signer.toString()) !== toPublicKey(unsigned.address) ||
+            toAccountId(signer.toString()) !== toAccountId(unsigned.address) ||
             method !== extrinsicMethod.method ||
             section !== extrinsicMethod.section
           ) {
@@ -356,7 +355,7 @@ export const useTransaction = (): ITransactionService => {
   };
 
   // TODO: will be refactored with next tasks
-  const decodeCallData = (api: ApiPromise, accountId: AccountID, callData: CallData): Transaction => {
+  const decodeCallData = (api: ApiPromise, accountId: Address, callData: CallData): Transaction => {
     const transaction: Transaction = {
       type: TransactionType.TRANSFER,
       address: accountId,
@@ -420,9 +419,9 @@ export const useTransaction = (): ITransactionService => {
     if (method === 'batchAll' && section === 'utility') {
       transaction.type = TransactionType.BATCH_ALL;
 
-      const batchCall = api.createType('Vec<Call>', decoded.args[0].toHex());
+      const calls = api.createType('Vec<Call>', decoded.args[0].toHex());
 
-      transaction.args.calls = batchCall.map((call) => decodeCallData(api, accountId, call.toHex()));
+      transaction.args.transactions = calls.map((call) => decodeCallData(api, accountId, call.toHex()));
     }
 
     if (method === 'bond' && section === 'staking') {

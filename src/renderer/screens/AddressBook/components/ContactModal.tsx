@@ -3,11 +3,11 @@ import { useEffect } from 'react';
 
 import { BaseModal, Button, Icon, Identicon, Input, InputHint } from '@renderer/components/ui';
 import { useI18n } from '@renderer/context/I18nContext';
-import { AccountID, ErrorType } from '@renderer/domain/shared-kernel';
+import { Address, ErrorType } from '@renderer/domain/shared-kernel';
 import { useContact } from '@renderer/services/contact/contactService';
-import { pasteAddressHandler, toPublicKey } from '@renderer/shared/utils/address';
-import { validateAddress, validateMatrixId } from '../utils/validation';
+import { pasteAddressHandler, toAccountId, validateAddress } from '@renderer/shared/utils/address';
 import { ContactDS } from '@renderer/services/storage';
+import { useMatrix } from '@renderer/context/MatrixContext';
 
 type Props = {
   isOpen: boolean;
@@ -18,15 +18,15 @@ type Props = {
 type ContactForm = {
   name: string;
   matrixId?: string;
-  accountId: AccountID;
+  address: Address;
 };
 
 const getButtonText = (errors: FieldErrors<ContactForm>, isEdit: boolean): string => {
-  if (errors.accountId && errors.name) {
+  if (errors.address && errors.name) {
     return 'addressBook.addContact.typeAddressAndNameButton';
   }
 
-  if (errors.accountId) {
+  if (errors.address) {
     return 'addressBook.addContact.typeAddressButton';
   }
 
@@ -43,7 +43,7 @@ const getButtonText = (errors: FieldErrors<ContactForm>, isEdit: boolean): strin
 
 const ContactModal = ({ isOpen, onToggle, contact }: Props) => {
   const { t } = useI18n();
-
+  const { matrix } = useMatrix();
   const { addContact, updateContact } = useContact();
 
   const isEdit = contact !== undefined;
@@ -56,18 +56,14 @@ const ContactModal = ({ isOpen, onToggle, contact }: Props) => {
     resetField,
   } = useForm<ContactForm>({
     mode: 'onChange',
-    defaultValues: {
-      name: '',
-      matrixId: '',
-      accountId: '',
-    },
+    defaultValues: { name: '', matrixId: '', address: '' },
   });
 
   useEffect(() => {
     reset({
       name: isEdit ? contact.name : '',
       matrixId: isEdit ? contact.matrixId : '',
-      accountId: isEdit ? contact.accountId : '',
+      address: isEdit ? contact.accountId : '',
     });
   }, [contact]);
 
@@ -75,7 +71,7 @@ const ContactModal = ({ isOpen, onToggle, contact }: Props) => {
     const updatedContact = {
       ...contact,
       ...newContact,
-      publicKey: toPublicKey(newContact.accountId) || '0x',
+      accountId: toAccountId(newContact.address),
     };
 
     if (isEdit) {
@@ -85,6 +81,10 @@ const ContactModal = ({ isOpen, onToggle, contact }: Props) => {
     }
 
     onToggle();
+  };
+
+  const validateMatrixLogin = (value?: string): boolean => {
+    return !value || matrix.validateFullUserName(value);
   };
 
   return (
@@ -119,7 +119,7 @@ const ContactModal = ({ isOpen, onToggle, contact }: Props) => {
         <Controller
           name="matrixId"
           control={control}
-          rules={{ validate: validateMatrixId }}
+          rules={{ validate: validateMatrixLogin }}
           render={({ field: { value, onChange }, fieldState: { error } }) => (
             <>
               <Input
@@ -148,7 +148,7 @@ const ContactModal = ({ isOpen, onToggle, contact }: Props) => {
           )}
         />
         <Controller
-          name="accountId"
+          name="address"
           control={control}
           rules={{ required: true, validate: validateAddress }}
           render={({ field: { value, onChange }, fieldState: { error } }) => (
@@ -162,7 +162,7 @@ const ContactModal = ({ isOpen, onToggle, contact }: Props) => {
                     <button
                       className="text-neutral"
                       type="button"
-                      onClick={() => resetField('accountId', { defaultValue: '' })}
+                      onClick={() => resetField('address', { defaultValue: '' })}
                     >
                       <Icon name="clearOutline" />
                     </button>

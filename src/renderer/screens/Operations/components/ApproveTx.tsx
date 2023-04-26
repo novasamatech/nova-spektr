@@ -3,7 +3,7 @@ import { UnsignedTransaction } from '@substrate/txwrapper-polkadot';
 import { Weight } from '@polkadot/types/interfaces';
 import { BN } from '@polkadot/util';
 
-import { Address, BaseModal, Button, Icon } from '@renderer/components/ui';
+import { ChainAddress, BaseModal, Button, Icon } from '@renderer/components/ui';
 import { useI18n } from '@renderer/context/I18nContext';
 import { AccountDS } from '@renderer/services/storage';
 import { useToggle } from '@renderer/shared/hooks';
@@ -13,8 +13,8 @@ import Chain from './Chain';
 import { Signing } from './Signing/Signing';
 import { Scanning } from './Scanning/Scanning';
 import { MultisigTransaction, Transaction, TransactionType } from '@renderer/domain/transaction';
-import { AccountID, HexString, Timepoint } from '@renderer/domain/shared-kernel';
-import { formatAddress } from '@renderer/shared/utils/address';
+import { Address, HexString, Timepoint } from '@renderer/domain/shared-kernel';
+import { toAddress } from '@renderer/shared/utils/address';
 import { getAssetById } from '@renderer/shared/utils/assets';
 import { useAccount } from '@renderer/services/account/accountService';
 import { getTransactionTitle } from '../common/utils';
@@ -26,7 +26,6 @@ import { Fee } from '@renderer/components/common';
 import { useCountdown } from '@renderer/screens/Staking/Operations/hooks/useCountdown';
 import { useBalance } from '@renderer/services/balance/balanceService';
 import { transferableAmount } from '@renderer/services/balance/common/utils';
-import { MAX_WEIGHT } from '@renderer/services/transaction/common/constants';
 import { TEST_ADDRESS } from '@renderer/shared/utils/constants';
 
 type Props = {
@@ -44,6 +43,9 @@ const enum Step {
 
 const ApproveTx = ({ tx, account, connection }: Props) => {
   const { t } = useI18n();
+  const { getBalance } = useBalance();
+  const { getLiveAccounts } = useAccount();
+  const { getTransactionFee, getTxWeight } = useTransaction();
 
   const [isModalOpen, toggleModal] = useToggle(false);
   const [isSelectAccountModalOpen, toggleSelectAccountModal] = useToggle(false);
@@ -52,16 +54,12 @@ const ApproveTx = ({ tx, account, connection }: Props) => {
   const [countdown, resetCountdown] = useCountdown(connection.api);
   const [signAccount, setSignAccount] = useState<AccountDS>();
 
-  const { getBalance } = useBalance();
-  const { getTransactionFee, getTxWeight } = useTransaction();
-  const { getLiveAccounts } = useAccount();
-
   const accounts = getLiveAccounts();
 
   const unsignedAccounts = accounts.filter(
     (a) =>
-      account.signatories.find((s) => s.publicKey === a.publicKey) &&
-      !tx.events.find((e) => e.accountId === a.publicKey),
+      account.signatories.find((s) => s.accountId === a.accountId) &&
+      !tx.events.find((e) => e.accountId === a.accountId),
   );
 
   const [approveTx, setApproveTx] = useState<Transaction>();
@@ -87,7 +85,7 @@ const ApproveTx = ({ tx, account, connection }: Props) => {
   };
 
   useEffect(() => {
-    if (!signAccount?.accountId) return;
+    if (!signAccount?.accountId || !txWeight) return;
 
     const multisigTx = getMultisigTx(signAccount?.accountId);
 
@@ -103,18 +101,20 @@ const ApproveTx = ({ tx, account, connection }: Props) => {
   useEffect(() => {
     if (!tx.transaction || !connection.api) return;
 
-    getTxWeight(tx.transaction, connection.api).then((txWeight) => setTxWeight(txWeight));
-  }, [tx, connection.api]);
+    getTxWeight(tx.transaction, connection.api).then((txWeight) => {
+      setTxWeight(txWeight);
+    });
+  }, [tx.transaction, connection.api]);
 
   const asset = getAssetById(tx.transaction?.args.assetId, connection.assets);
 
-  const getMultisigTx = (signer: AccountID): Transaction => {
+  const getMultisigTx = (signer: Address): Transaction => {
     const chainId = tx.chainId;
 
     const otherSignatories = account.signatories
-      .reduce<AccountID[]>((acc, s) => {
-        const signerAddress = formatAddress(signer, connection?.addressPrefix);
-        const signatoryAddress = formatAddress(s.accountId, connection?.addressPrefix);
+      .reduce<Address[]>((acc, s) => {
+        const signerAddress = toAddress(signer, { prefix: connection?.addressPrefix });
+        const signatoryAddress = toAddress(s.accountId, { prefix: connection?.addressPrefix });
 
         if (signerAddress !== signatoryAddress) {
           acc.push(signatoryAddress);
@@ -131,7 +131,7 @@ const ApproveTx = ({ tx, account, connection }: Props) => {
       args: {
         threshold: account.threshold,
         otherSignatories,
-        maxWeight: txWeight || MAX_WEIGHT,
+        maxWeight: txWeight,
         maybeTimepoint: {
           height: tx.blockCreated,
           index: tx.indexCreated,
@@ -143,11 +143,11 @@ const ApproveTx = ({ tx, account, connection }: Props) => {
   };
 
   const validateBalanceForFee = async (signAccount: AccountDS): Promise<boolean> => {
-    if (!connection.api || !approveTx || !signAccount.publicKey || !asset) return false;
+    if (!connection.api || !feeTx || !signAccount.accountId || !asset) return false;
 
-    const fee = await getTransactionFee(approveTx, connection.api);
+    const fee = await getTransactionFee(feeTx, connection.api);
 
-    const balance = await getBalance(signAccount.publicKey, connection.chainId, asset.assetId.toString());
+    const balance = await getBalance(signAccount.accountId, connection.chainId, asset.assetId.toString());
 
     if (!balance) return false;
 
@@ -310,7 +310,7 @@ const ApproveTx = ({ tx, account, connection }: Props) => {
                 key={a.id}
                 onClick={() => handleAccountSelect(a)}
               >
-                <Address address={a.accountId || ''} name={a.name} />
+                <ChainAddress accountId={a.accountId} name={a.name} />
 
                 <Icon className="text-shade-40" name="right" />
               </li>

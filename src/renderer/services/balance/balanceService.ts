@@ -6,7 +6,7 @@ import { Codec } from '@polkadot/types/types';
 import { Option } from '@polkadot/types';
 
 import { Asset, AssetType, OrmlExtras, StatemineExtras } from '@renderer/domain/asset';
-import { ChainId, PublicKey } from '@renderer/domain/shared-kernel';
+import { ChainId, AccountId } from '@renderer/domain/shared-kernel';
 import { ExtendedChain } from '@renderer/services/network/common/types';
 import { isLightClient } from '@renderer/services/network/common/utils';
 import { validate } from '../dataVerification/dataVerification';
@@ -14,7 +14,7 @@ import storage, { BalanceDS } from '../storage';
 import { IBalanceService } from './common/types';
 import { VERIFY_TIMEOUT } from './common/constants';
 import { useSubscription } from '@renderer/services/subscription/subscriptionService';
-import { formatAddress } from '@renderer/shared/utils/address';
+import { toAddress } from '@renderer/shared/utils/address';
 
 export const useBalance = (): IBalanceService => {
   const balanceStorage = storage.connectTo('balances');
@@ -35,32 +35,32 @@ export const useBalance = (): IBalanceService => {
     setBalanceIsValid,
   } = balanceStorage;
 
-  const getLiveBalance = (publicKey: PublicKey, chainId: ChainId, assetId: string): BalanceDS | undefined => {
-    return useLiveQuery(() => getBalance(publicKey, chainId, assetId), [publicKey, chainId, assetId]);
+  const getLiveBalance = (accountId: AccountId, chainId: ChainId, assetId: string): BalanceDS | undefined => {
+    return useLiveQuery(() => getBalance(accountId, chainId, assetId), [accountId, chainId, assetId]);
   };
 
-  const getLiveNetworkBalances = (publicKeys: PublicKey[], chainId: ChainId): BalanceDS[] => {
+  const getLiveNetworkBalances = (accountIds: AccountId[], chainId: ChainId): BalanceDS[] => {
     const query = () => {
-      return getNetworkBalances(publicKeys, chainId);
+      return getNetworkBalances(accountIds, chainId);
     };
 
-    return useLiveQuery(query, [publicKeys.length, chainId], []);
+    return useLiveQuery(query, [accountIds.length, chainId], []);
   };
 
-  const getLiveAssetBalances = (publicKeys: PublicKey[], chainId: ChainId, assetId: string): BalanceDS[] => {
+  const getLiveAssetBalances = (accountIds: AccountId[], chainId: ChainId, assetId: string): BalanceDS[] => {
     const query = () => {
-      return getAssetBalances(publicKeys, chainId, assetId);
+      return getAssetBalances(accountIds, chainId, assetId);
     };
 
-    return useLiveQuery(query, [publicKeys.length, chainId, assetId], []);
+    return useLiveQuery(query, [accountIds.length, chainId, assetId], []);
   };
 
-  const getLiveBalances = (publicKeys: PublicKey[]): BalanceDS[] => {
+  const getLiveBalances = (accountIds: AccountId[]): BalanceDS[] => {
     const query = () => {
-      return getBalances(publicKeys);
+      return getBalances(accountIds);
     };
 
-    return useLiveQuery(query, [publicKeys.length], []);
+    return useLiveQuery(query, [accountIds.length], []);
   };
 
   const runValidation = async (
@@ -103,7 +103,7 @@ export const useBalance = (): IBalanceService => {
   };
 
   const subscribeBalancesChange = (
-    publicKeys: PublicKey[],
+    accountIds: AccountId[],
     chain: ExtendedChain,
     relaychain: ExtendedChain | undefined,
     asset: Asset,
@@ -111,7 +111,7 @@ export const useBalance = (): IBalanceService => {
     const api = chain.api;
     if (!api) return;
 
-    const addresses = publicKeys.map((pk) => formatAddress(pk, chain.addressPrefix));
+    const addresses = accountIds.map((accointId) => toAddress(accointId, { prefix: chain.addressPrefix }));
 
     return api.query.system.account.multi(addresses, (data: any[]) => {
       data.forEach(async (accountInfo, i) => {
@@ -119,7 +119,7 @@ export const useBalance = (): IBalanceService => {
         const feeFrozen = new BN(accountInfo.data.feeFrozen);
 
         const balance = {
-          publicKey: publicKeys[i],
+          accountId: accountIds[i],
           chainId: chain.chainId,
           assetId: asset.assetId.toString(),
           verified: true,
@@ -146,7 +146,7 @@ export const useBalance = (): IBalanceService => {
   };
 
   const subscribeStatemineAssetsChange = (
-    publicKeys: PublicKey[],
+    accountIds: AccountId[],
     chain: ExtendedChain,
     relaychain: ExtendedChain | undefined,
     asset: Asset,
@@ -155,7 +155,7 @@ export const useBalance = (): IBalanceService => {
     const api = chain.api;
     if (!api) return;
 
-    const addresses = publicKeys.map((pk) => formatAddress(pk, chain.addressPrefix));
+    const addresses = accountIds.map((accountId) => toAddress(accountId, { prefix: chain.addressPrefix }));
 
     return api.query.assets.account.multi(
       addresses.map((a) => [statemineAssetId, a]),
@@ -164,7 +164,7 @@ export const useBalance = (): IBalanceService => {
           try {
             const free = accountInfo.isNone ? '0' : accountInfo.unwrap().balance.toString();
             const balance = {
-              publicKey: publicKeys[i],
+              accountId: accountIds[i],
               chainId: chain.chainId,
               assetId: asset.assetId.toString(),
               verified: true,
@@ -195,7 +195,7 @@ export const useBalance = (): IBalanceService => {
   };
 
   const subscribeOrmlAssetsChange = async (
-    publicKeys: PublicKey[],
+    accountIds: AccountId[],
     chain: ExtendedChain,
     relaychain: ExtendedChain | undefined,
     asset: Asset,
@@ -204,7 +204,7 @@ export const useBalance = (): IBalanceService => {
     const api = chain.api;
     if (!api) return;
 
-    const addresses = publicKeys.map((pk) => formatAddress(pk, chain.addressPrefix));
+    const addresses = accountIds.map((accountId) => toAddress(accountId, { prefix: chain.addressPrefix }));
 
     const method = api.query.tokens ? api.query.tokens.accounts : api.query.currencies.accounts;
 
@@ -214,7 +214,7 @@ export const useBalance = (): IBalanceService => {
         data.forEach(async (accountInfo: any, i) => {
           const { free, reserved, frozen } = accountInfo;
           const balance = {
-            publicKey: publicKeys[i],
+            accountId: accountIds[i],
             chainId: chain.chainId,
             assetId: asset.assetId.toString(),
             verified: true,
@@ -241,16 +241,16 @@ export const useBalance = (): IBalanceService => {
     );
   };
 
-  const subscribeLockBalanceChange = (publicKeys: PublicKey[], chain: ExtendedChain, asset: Asset) => {
+  const subscribeLockBalanceChange = (accountIds: AccountId[], chain: ExtendedChain, asset: Asset) => {
     const api = chain.api;
     if (!api) return;
 
-    const addresses = publicKeys.map((pk) => formatAddress(pk, chain.addressPrefix));
+    const addresses = accountIds.map((accountId) => toAddress(accountId, { prefix: chain.addressPrefix }));
 
     return api.query.balances.locks.multi(addresses, (balanceLocks: any[]) => {
       balanceLocks.forEach(async (balanceLock, i) => {
         const balance = {
-          publicKey: publicKeys[i],
+          accountId: accountIds[i],
           chainId: chain.chainId,
           assetId: asset.assetId.toString(),
           locked: [
@@ -266,12 +266,12 @@ export const useBalance = (): IBalanceService => {
     });
   };
 
-  const subscribeLockOrmlAssetChange = async (publicKeys: PublicKey[], chain: ExtendedChain, asset: Asset) => {
+  const subscribeLockOrmlAssetChange = async (accountIds: AccountId[], chain: ExtendedChain, asset: Asset) => {
     const ormlAssetId = (asset?.typeExtras as OrmlExtras).currencyIdScale;
     const api = chain.api;
     if (!api) return;
 
-    const addresses = publicKeys.map((pk) => formatAddress(pk, chain.addressPrefix));
+    const addresses = accountIds.map((accountId) => toAddress(accountId, { prefix: chain.addressPrefix }));
 
     const method = api.query.tokens ? api.query.tokens.locks : api.query.currencies.locks;
 
@@ -280,7 +280,7 @@ export const useBalance = (): IBalanceService => {
       (balanceLocks: any[]) => {
         balanceLocks.forEach(async (balanceLock, i) => {
           const balance = {
-            publicKey: publicKeys[i],
+            accountId: accountIds[i],
             chainId: chain.chainId,
             assetId: asset.assetId.toString(),
             locked: [
@@ -300,33 +300,33 @@ export const useBalance = (): IBalanceService => {
   const subscribeBalances = (
     chain: ExtendedChain,
     relaychain: ExtendedChain | undefined,
-    publicKeys: PublicKey[],
+    accountIds: AccountId[],
   ): Promise<any> => {
     const unsubscribeBalances = chain.assets?.map((asset) => {
       if (!asset.type) {
-        return subscribeBalancesChange(publicKeys, chain, relaychain, asset);
+        return subscribeBalancesChange(accountIds, chain, relaychain, asset);
       }
 
       if (asset.type === AssetType.STATEMINE) {
-        return subscribeStatemineAssetsChange(publicKeys, chain, relaychain, asset);
+        return subscribeStatemineAssetsChange(accountIds, chain, relaychain, asset);
       }
 
       if (asset.type === AssetType.ORML) {
-        return subscribeOrmlAssetsChange(publicKeys, chain, relaychain, asset);
+        return subscribeOrmlAssetsChange(accountIds, chain, relaychain, asset);
       }
     });
 
     return Promise.all([...unsubscribeBalances, () => validationSubscriptionService.unsubscribe(chain.chainId)]);
   };
 
-  const subscribeLockBalances = (chain: ExtendedChain, publicKeys: PublicKey[]): Promise<any> => {
+  const subscribeLockBalances = (chain: ExtendedChain, accountIds: AccountId[]): Promise<any> => {
     const unsubscribe = chain.assets?.map((asset) => {
       if (!asset.type) {
-        return subscribeLockBalanceChange(publicKeys, chain, asset);
+        return subscribeLockBalanceChange(accountIds, chain, asset);
       }
 
       if (asset.type === AssetType.ORML) {
-        return subscribeLockOrmlAssetChange(publicKeys, chain, asset);
+        return subscribeLockOrmlAssetChange(accountIds, chain, asset);
       }
     });
 

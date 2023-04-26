@@ -60,6 +60,7 @@
     "nameDescription": "Назовите ваш multisig аккаунт",
     "nameLabel": "Аккаунт",
     "namePlaceholder": "Nova Spektr",
+    "noWallets": "Похоже, что у вас не добавлены не watch-only кошельки",
     "searchContactPlaceholder": "Поиск аккаунта или контакта...",
     "signatoriesDescription": "Добавьте подписантов в ваш multisig аккаунт",
     "signatoriesLabel": "Подписанты",
@@ -182,7 +183,7 @@
       "accountsExistTitle": "These <strong>accounts</strong> already exist!",
       "addAccount": "Добавить кошелёк",
       "addByParitySignerLabel": "Добавить Parity Signer кошелёк",
-      "addSingleParitySignerDescription1": "Here is your account scanned from Parity Signer",
+      "addSingleParitySignerDescription": "Ваши отсканированные аккаунты из Parity Signer",
       "autoFillAccountsListButton": "Autofill account names",
       "checkAddress": "Проверить адрес",
       "chooseCameraLabel": "Выберите камеру, чтобы продолжить",
@@ -308,6 +309,14 @@
       "inputHint": "Доступно только вам и подписантам",
       "inputPlaceholder": "0x00...",
       "title": "Введите call data"
+    },
+    "filters": {
+      "networkPlaceholder": "Сеть",
+      "networkSummary": "Сети",
+      "operationTypePlaceholder": "Тип операции",
+      "operationTypeSummary": "Типы операции",
+      "statusPlaceholder": "Статус операции",
+      "statusSummary": "Статусы операции"
     },
     "noOperationsDescription": "Нет ожидающих операций с мультиподписью",
     "subTitle": "Ваши операции",

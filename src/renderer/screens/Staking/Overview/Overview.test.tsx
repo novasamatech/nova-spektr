@@ -4,7 +4,7 @@ import { MemoryRouter } from 'react-router-dom';
 import { useNetworkContext } from '@renderer/context/NetworkContext';
 import { Chain } from '@renderer/domain/chain';
 import { ConnectionType } from '@renderer/domain/connection';
-import { TEST_ADDRESS, TEST_PUBLIC_KEY } from '@renderer/shared/utils/constants';
+import { TEST_ACCOUNT_ID } from '@renderer/shared/utils/constants';
 import Overview from './Overview';
 
 jest.mock('@renderer/context/NetworkContext', () => ({
@@ -35,13 +35,7 @@ jest.mock('@renderer/services/network/chainsService', () => ({
 
 jest.mock('@renderer/services/account/accountService', () => ({
   useAccount: jest.fn().mockReturnValue({
-    getActiveAccounts: () => [
-      {
-        name: 'Test account',
-        accountId: TEST_ADDRESS,
-        publicKey: TEST_PUBLIC_KEY,
-      },
-    ],
+    getActiveAccounts: () => [{ name: 'Test Wallet', accountId: TEST_ACCOUNT_ID }],
   }),
 }));
 

@@ -6,17 +6,18 @@ import { Balance, Icon, Identicon, Popover, Shimmering, Table } from '@renderer/
 import { useI18n } from '@renderer/context/I18nContext';
 import { Asset } from '@renderer/domain/asset';
 import { Explorer } from '@renderer/domain/chain';
-import { AccountID } from '@renderer/domain/shared-kernel';
+import { Address } from '@renderer/domain/shared-kernel';
 import { Validator } from '@renderer/domain/validator';
 import { bigNumberSorter } from '@renderer/shared/utils/bignumber';
-import { getComposedIdentity, getShortAddress } from '@renderer/shared/utils/strings';
+import { getComposedIdentity } from '@renderer/shared/utils/strings';
+import { toShortAddress } from '@renderer/shared/utils/address';
 
 type ValidatorWithNomination = Validator & { nominated: string };
 type AvailableColumns = ('apy' | 'ownStake' | 'totalStake' | 'nominated')[];
 
 const VALIDATORS_SKELETON = Array.from({ length: 10 }, (_, index) => ({ address: index.toString() }));
 
-const getValidatorsWithNomination = (stash: AccountID, validators: Validator[]): ValidatorWithNomination[] => {
+const getValidatorsWithNomination = (stash: Address, validators: Validator[]): ValidatorWithNomination[] => {
   return validators.map((validator) => {
     const nominated = validator.nominators.reduce((acc, data) => {
       return data.who === stash ? acc.add(new BN(data.value)) : acc;
@@ -27,7 +28,7 @@ const getValidatorsWithNomination = (stash: AccountID, validators: Validator[]):
 };
 
 type Props = {
-  stash?: AccountID;
+  stash?: Address;
   validators: Validator[];
   columns?: AvailableColumns;
   amountBadge?: boolean;
@@ -37,7 +38,7 @@ type Props = {
   explorers?: Explorer[];
   addressPrefix?: number;
   className?: string;
-  onSelect?: (selected: AccountID[]) => void;
+  onSelect?: (selected: Address[]) => void;
 };
 
 const ValidatorsTable = ({
@@ -55,12 +56,12 @@ const ValidatorsTable = ({
 }: Props) => {
   const { t } = useI18n();
 
-  const [selectedValidators, setSelectedValidators] = useState<AccountID[]>([]);
+  const [selectedValidators, setSelectedValidators] = useState<Address[]>([]);
 
   const includeNomination = !stash || !columns.includes('nominated');
   const extendedValidators = includeNomination ? validators : getValidatorsWithNomination(stash, validators);
 
-  const selectValidator = (selected: AccountID[]) => {
+  const selectValidator = (selected: Address[]) => {
     setSelectedValidators(selected);
     onSelect?.(selected);
   };
@@ -127,7 +128,7 @@ const ValidatorsTable = ({
                   {identity ? (
                     <span className="text-sm font-semibold text-neutral">{getComposedIdentity(identity)}</span>
                   ) : (
-                    <span className="text-sm font-semibold text-neutral-variant">{getShortAddress(address, 11)}</span>
+                    <span className="text-sm font-semibold text-neutral-variant">{toShortAddress(address, 11)}</span>
                   )}
                   {(oversubscribed || slashed || blocked) && (
                     <div className="flex items-center gap-x-2.5 ml-1.5">
@@ -204,7 +205,7 @@ const ValidatorsTable = ({
               {isLoading ? (
                 <Shimmering width={40} height={20} />
               ) : (
-                <Explorers address={address} explorers={explorers} addressPrefix={addressPrefix} />
+                <Explorers address={address} addressPrefix={addressPrefix} explorers={explorers} />
               )}
             </Table.Cell>
           </Table.Row>

@@ -1,5 +1,3 @@
-import { formatAddress } from '@renderer/shared/utils/address';
-import { TEST_PUBLIC_KEY } from '@renderer/shared/utils/constants';
 import { formatBalance } from '../common/utils';
 
 describe('services/balance/utils', () => {
@@ -42,18 +40,6 @@ describe('services/balance/utils', () => {
       expect(value).toEqual('91.52');
       expect(suffix).toEqual('T');
       expect(decimalPlaces).toEqual(2);
-    });
-  });
-
-  describe('formatBalance', () => {
-    test('should convert address to Polkadot', () => {
-      const address = formatAddress(TEST_PUBLIC_KEY, 0);
-      expect(address).toEqual('1ChFWeNRLarAPRCTM3bfJmncJbSAbSS9yqjueWz7jX7iTVZ');
-    });
-
-    test('should convert address to Substrate', () => {
-      const address = formatAddress(TEST_PUBLIC_KEY);
-      expect(address).toEqual('5CGQ7BPJZZKNirQgVhzbX9wdkgbnUHtJ5V7FkMXdZeVbXyr9');
     });
   });
 });

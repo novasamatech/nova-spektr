@@ -16,6 +16,7 @@ type Props = {
   prefixElement?: ReactNode;
   suffixElement?: ReactNode;
   onClick?: (event: MouseEvent<HTMLButtonElement>) => void;
+  tabIndex?: number;
 };
 
 const Button = ({
@@ -30,6 +31,7 @@ const Button = ({
   prefixElement,
   suffixElement,
   onClick = noop,
+  tabIndex,
 }: PropsWithChildren<Props>) => (
   <button
     type={type}
@@ -44,6 +46,7 @@ const Button = ({
       { 'active-styles': variant === 'fill' && pallet === 'primary' },
       className,
     )}
+    tabIndex={tabIndex}
     onClick={onClick}
   >
     {prefixElement && <div data-testid="prefix">{prefixElement}</div>}

@@ -1,6 +1,6 @@
 import { ApiPromise } from '@polkadot/api';
 
-import { AccountID, ChainId, EraIndex } from '@renderer/domain/shared-kernel';
+import { Address, ChainId, EraIndex } from '@renderer/domain/shared-kernel';
 import { Stake } from '@renderer/domain/stake';
 import { IStakingDataService, StakingMap } from './common/types';
 
@@ -8,7 +8,7 @@ export const useStakingData = (): IStakingDataService => {
   const subscribeStaking = async (
     chainId: ChainId,
     api: ApiPromise,
-    accounts: AccountID[],
+    accounts: Address[],
     callback: (staking: StakingMap) => void,
   ): Promise<() => void> => {
     const controllers = await getControllers(api, accounts);
@@ -16,7 +16,7 @@ export const useStakingData = (): IStakingDataService => {
     return listenToLedger(chainId, api, controllers, accounts, callback);
   };
 
-  const getControllers = async (api: ApiPromise, accounts: AccountID[]): Promise<AccountID[]> => {
+  const getControllers = async (api: ApiPromise, accounts: Address[]): Promise<Address[]> => {
     try {
       const controllers = await api.query.staking.bonded.multi(accounts);
 
@@ -33,14 +33,14 @@ export const useStakingData = (): IStakingDataService => {
   const listenToLedger = async (
     chainId: ChainId,
     api: ApiPromise,
-    controllers: AccountID[],
-    accounts: AccountID[],
+    controllers: Address[],
+    accounts: Address[],
     callback: (data: StakingMap) => void,
   ): Promise<() => void> => {
     return api.query.staking.ledger.multi(controllers, (data) => {
       try {
         const staking = data.reduce<StakingMap>((acc, ledger, index) => {
-          const accountId = accounts[index] as AccountID;
+          const accountId = accounts[index] as Address;
 
           if (ledger.isNone) {
             return { ...acc, [accountId]: undefined };
@@ -54,7 +54,7 @@ export const useStakingData = (): IStakingDataService => {
           }));
 
           const payload: Stake = {
-            accountId,
+            address: accountId,
             chainId,
             controller: controllers[index] || stash.toHuman(),
             stash: stash.toHuman(),

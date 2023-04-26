@@ -19,6 +19,7 @@ import { useMatrix } from '@renderer/context/MatrixContext';
 import { Account } from '@renderer/domain/account';
 import { ExtrinsicResultParams } from '@renderer/services/transaction/common/types';
 import { useMultisigTx } from '@renderer/services/multisigTx/multisigTxService';
+import { toAccountId } from '@renderer/shared/utils/address';
 
 type Props = {
   api: ApiPromise;
@@ -48,13 +49,13 @@ export const Submit = ({ api, tx, multisigTx, account, matrixRoomId, unsignedTx,
     submitAndWatchExtrinsic(extrinsic, unsignedTx, api, (executed, params) => {
       if (executed) {
         const typedParams = params as ExtrinsicResultParams;
-        if (multisigTx?.transaction && account?.publicKey) {
+        if (multisigTx?.transaction && account?.accountId) {
           const isReject = multisigTx?.transaction.type === TransactionType.MULTISIG_CANCEL_AS_MULTI;
           const eventStatus: SigningStatus = isReject ? 'CANCELLED' : 'SIGNED';
 
           const event: MultisigEvent = {
             status: eventStatus,
-            accountId: account.publicKey,
+            accountId: account.accountId,
             extrinsicHash: typedParams.extrinsicHash,
             eventBlock: typedParams.timepoint.height,
             eventIndex: typedParams.timepoint.index,
@@ -96,7 +97,7 @@ export const Submit = ({ api, tx, multisigTx, account, matrixRoomId, unsignedTx,
 
     const transaction = multisigTx.transaction;
     const payload = {
-      senderAddress: tx.address,
+      senderAccountId: toAccountId(tx.address),
       chainId: transaction.chainId,
       callHash: transaction.args.callHash,
       extrinsicTimepoint: params.timepoint,
@@ -134,14 +135,14 @@ export const Submit = ({ api, tx, multisigTx, account, matrixRoomId, unsignedTx,
         {successMessage && (
           <div className="flex uppercase items-center gap-2.5">
             <Icon name="checkmarkCutout" size={20} className="text-success" />
-            {t('transfer.successMessage')}
+            <p className="flex-1">{t('transfer.successMessage')}</p>
           </div>
         )}
 
         {errorMessage && (
           <div className="flex uppercase items-center gap-2.5">
             <Icon name="warnCutout" size={20} className="text-error" />
-            {errorMessage}
+            <p className="flex-1">{errorMessage}</p>
           </div>
         )}
       </Plate>

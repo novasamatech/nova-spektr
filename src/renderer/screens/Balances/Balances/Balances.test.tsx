@@ -2,26 +2,20 @@ import { render, screen } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 
 import Balances from './Balances';
-import { TEST_ADDRESS, TEST_PUBLIC_KEY } from '@renderer/shared/utils/constants';
+import { TEST_ACCOUNT_ID } from '@renderer/shared/utils/constants';
 import { ConnectionType } from '@renderer/domain/connection';
 import { useAccount } from '@renderer/services/account/accountService';
 
 jest.mock('@renderer/services/account/accountService', () => ({
   useAccount: jest.fn().mockReturnValue({
-    getActiveAccounts: () => [
-      {
-        name: 'Test Wallet',
-        accountId: TEST_ADDRESS,
-        publicKey: TEST_PUBLIC_KEY,
-      },
-    ],
+    getActiveAccounts: () => [{ name: 'Test Wallet', accountId: TEST_ACCOUNT_ID }],
   }),
 }));
 
 jest.mock('@renderer/context/NetworkContext', () => ({
   useNetworkContext: jest.fn(() => ({
     connections: {
-      '0x0000000000000000000000000000000000000000': {
+      '0x0': {
         chainId: '1',
         assets: [
           { assetId: '1', symbol: '1' },
@@ -31,7 +25,7 @@ jest.mock('@renderer/context/NetworkContext', () => ({
           connectionType: ConnectionType.RPC_NODE,
         },
       },
-      '0x0000000000000000000000000000000000000001': {
+      '0x1': {
         chainId: '2',
         assets: [{ assetId: '1', symbol: '1' }],
         connection: {
@@ -67,13 +61,7 @@ describe('screen/Balances/Balances', () => {
 
   test('should render empty state', () => {
     (useAccount as jest.Mock).mockReturnValue({
-      getActiveAccounts: () => [
-        {
-          name: 'Test Wallet',
-          accountId: TEST_ADDRESS,
-          publicKey: TEST_PUBLIC_KEY,
-        },
-      ],
+      getActiveAccounts: () => [{ name: 'Test Wallet', accountId: TEST_ACCOUNT_ID }],
     });
 
     render(<Balances />, { wrapper: MemoryRouter });

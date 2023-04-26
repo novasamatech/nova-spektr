@@ -1,26 +1,24 @@
-import { IndexableType } from 'dexie';
-import { createKeyMulti, encodeAddress } from '@polkadot/util-crypto';
+import { createKeyMulti } from '@polkadot/util-crypto';
+import { u8aToHex } from '@polkadot/util';
 
-import { toPublicKey } from '@renderer/shared/utils/address';
-import { ChainId, CryptoType, PublicKey, ChainType, SigningType, AccountID, Threshold } from './shared-kernel';
+import { ChainId, CryptoType, AccountId, ChainType, SigningType, Threshold } from './shared-kernel';
 import { Signatory } from '@renderer/domain/signatory';
-import { SS58_DEFAULT_PREFIX } from '@renderer/shared/utils/constants';
+import { ID } from '@renderer/services/storage';
 
 export type Account = {
-  walletId?: IndexableType;
-  rootId?: IndexableType;
+  walletId?: ID;
+  rootId?: ID;
   name: string;
-  publicKey?: PublicKey;
-  accountId?: AccountID;
+  accountId: AccountId;
   signingType: SigningType;
-  cryptoType?: CryptoType;
+  cryptoType: CryptoType;
   chainType: ChainType;
   chainId?: ChainId;
   // TODO: rename this to something as replacer for root account
   isMain: boolean;
-  signingExtras?: Record<string, any>;
   isActive: boolean;
   derivationPath?: string;
+  signingExtras?: Record<string, any>;
 };
 
 export function createAccount({
@@ -32,9 +30,8 @@ export function createAccount({
   signingType,
   signingExtras,
   derivationPath,
-}: Omit<Account, 'publicKey' | 'cryptoType' | 'chainType' | 'isMain' | 'isActive'>): Account {
+}: Omit<Account, 'cryptoType' | 'chainType' | 'isMain' | 'isActive'>): Account {
   return {
-    publicKey: toPublicKey(accountId),
     accountId,
     cryptoType: CryptoType.SR25519,
     chainType: ChainType.SUBSTRATE,
@@ -44,25 +41,21 @@ export function createAccount({
     chainId,
     signingType,
     isMain: false,
-    signingExtras,
     isActive: true,
     derivationPath,
-  } as Account;
+    signingExtras,
+  };
 }
 
 export type MultisigAccount = Account & {
-  accountId: AccountID;
-  publicKey: PublicKey;
   signatories: Signatory[];
   threshold: Threshold;
   matrixRoomId: string;
-  inviterPublicKey: PublicKey;
+  creatorAccountId: AccountId;
 };
 
-export function getMultisigAddress(accountIds: AccountID[], threshold: number): AccountID {
-  const multisigKey = createKeyMulti(accountIds, threshold);
-
-  return encodeAddress(multisigKey, SS58_DEFAULT_PREFIX);
+export function getMultisigAccountId(addresses: AccountId[], threshold: Threshold): AccountId {
+  return u8aToHex(createKeyMulti(addresses, threshold));
 }
 
 export function createMultisigAccount({
@@ -70,16 +63,15 @@ export function createMultisigAccount({
   signatories,
   threshold,
   matrixRoomId,
-  inviterPublicKey,
-}: Pick<MultisigAccount, 'name' | 'signatories' | 'threshold' | 'matrixRoomId' | 'inviterPublicKey'>): MultisigAccount {
-  const multisigAddress = getMultisigAddress(
+  creatorAccountId,
+}: Pick<MultisigAccount, 'name' | 'signatories' | 'threshold' | 'matrixRoomId' | 'creatorAccountId'>): MultisigAccount {
+  const multisigAccountId = getMultisigAccountId(
     signatories.map((s) => s.accountId),
     threshold,
   );
 
   return {
-    publicKey: toPublicKey(multisigAddress),
-    accountId: multisigAddress,
+    accountId: multisigAccountId,
     cryptoType: CryptoType.SR25519,
     chainType: ChainType.SUBSTRATE,
     name,
@@ -87,7 +79,7 @@ export function createMultisigAccount({
     threshold,
     matrixRoomId,
     signingType: SigningType.MULTISIG,
-    inviterPublicKey,
+    creatorAccountId,
     isMain: false,
     isActive: true,
   } as MultisigAccount;

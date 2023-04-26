@@ -24,10 +24,10 @@ describe('screens/Onboarding/Parity/ScanMoreModal', () => {
     147, 104, 187, 44, 120, 73, 222, 89,
   ];
 
-  const createRootQrPayload = (publicKey: number[], derived: string[] = []): SeedInfo => ({
+  const createRootQrPayload = (accountId: number[], derived: string[] = []): SeedInfo => ({
     name: '',
     derivedKeys: derived.map(createDerivedPayload),
-    multiSigner: { MultiSigner: CryptoTypeString.SR25519, public: new Uint8Array(publicKey) },
+    multiSigner: { MultiSigner: CryptoTypeString.SR25519, public: new Uint8Array(accountId) },
   });
 
   const createDerivedPayload = (derived: string, index: number): AddressInfo => ({
@@ -56,8 +56,10 @@ describe('screens/Onboarding/Parity/ScanMoreModal', () => {
     jest.clearAllMocks();
   });
 
-  test('should render component', () => {
-    render(<ScanMoreModal isOpen accounts={[]} onResult={() => {}} onClose={() => {}} />);
+  test('should render component', async () => {
+    await act(async () => {
+      render(<ScanMoreModal isOpen accounts={[]} onResult={() => {}} onClose={() => {}} />);
+    });
 
     const modalTitle = screen.getByText('onboarding.paritySigner.qrModalTitle');
     expect(modalTitle).toBeInTheDocument();
