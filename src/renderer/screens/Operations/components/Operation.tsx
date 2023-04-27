@@ -1,19 +1,12 @@
 import { format } from 'date-fns';
-import cn from 'classnames';
 import { useEffect, useState } from 'react';
+import cn from 'classnames';
 
-import { ChainAddress, Button, Icon, Table } from '@renderer/components/ui';
+import { Button, ChainAddress, Icon } from '@renderer/components/ui';
 import { useI18n } from '@renderer/context/I18nContext';
-import {
-  MultisigTxFinalStatus,
-  MultisigTxInitStatus,
-  MultisigEvent,
-  MultisigTxStatus,
-  MultisigTransaction,
-} from '@renderer/domain/transaction';
-import Chain from './Chain';
+import { MultisigEvent } from '@renderer/domain/transaction';
 import { useMultisigTx } from '@renderer/services/multisigTx/multisigTxService';
-import ShortTransactionInfo from './ShortTransactionInfo';
+import Chain from './Chain';
 import TransactionTitle from './TransactionTitle';
 import { useToggle } from '@renderer/shared/hooks';
 import { CallData, ChainId } from '@renderer/domain/shared-kernel';
@@ -27,17 +20,13 @@ import { getMultisigExtrinsicLink } from '../common/utils';
 import RejectTx from './RejectTx';
 import ApproveTx from './ApproveTx';
 import { useMatrix } from '@renderer/context/MatrixContext';
-
-const StatusTitle: Record<MultisigTxStatus, string> = {
-  [MultisigTxInitStatus.SIGNING]: 'operation.status.signing',
-  [MultisigTxFinalStatus.CANCELLED]: 'operation.status.cancelled',
-  [MultisigTxFinalStatus.ERROR]: 'operation.status.error',
-  [MultisigTxFinalStatus.ESTABLISHED]: 'operation.status.established',
-  [MultisigTxFinalStatus.EXECUTED]: 'operation.status.executed',
-};
+import OperationStatus from '@renderer/screens/Operations/components/OperationStatus';
+import { FootnoteText } from '@renderer/components/ui-redesign';
+import ShortTransactionInfo from './ShortTransactionInfo';
+import { MultisigTransactionDS } from '@renderer/services/storage';
 
 type Props = {
-  tx: MultisigTransaction & { rowIndex: number };
+  tx: MultisigTransactionDS;
   account?: MultisigAccount;
 };
 
@@ -100,32 +89,24 @@ const Operation = ({ tx, account }: Props) => {
   const explorerLink = getMultisigExtrinsicLink(tx.callHash, tx.indexCreated, tx.blockCreated, connection?.explorers);
 
   return (
-    <>
-      <Table.Row className="bg-white" height="lg">
-        <Table.Cell>{format(new Date(dateCreated || 0), 'p', { locale: dateLocale })}</Table.Cell>
-        <Table.Cell>
-          <TransactionTitle tx={transaction} description={description} />
-        </Table.Cell>
-        <Table.Cell>{transaction && <ShortTransactionInfo tx={transaction} />}</Table.Cell>
-        <Table.Cell>
-          <Chain chainId={chainId} />
-        </Table.Cell>
-        <Table.Cell>
-          {status === 'SIGNING'
-            ? t('operation.signing', {
-                signed: approvals.length,
-                threshold: account?.threshold || 0,
-              })
-            : t(StatusTitle[status])}
-        </Table.Cell>
-        <Table.Cell>
-          <Button pallet="shade" variant="text" onClick={toggleRow}>
-            <Icon name={isRowShown ? 'up' : 'down'} />
-          </Button>
-        </Table.Cell>
-      </Table.Row>
-      <Table.Row className={cn('bg-shade-1', isRowShown ? 'table-row' : 'hidden')} height="lg">
-        <Table.Cell className="align-top" cellAlign="width" colSpan={3}>
+    <li className="flex flex-col bg-block-background-default rounded">
+      {/* MAIN ROW */}
+      <div className="h-[52px] pl-2.5 pr-2 grid grid-cols-operation-card items-center justify-items-start">
+        <FootnoteText className="text-text-tertiary pl-3.5">
+          {format(new Date(dateCreated || 0), 'p', { locale: dateLocale })}
+        </FootnoteText>
+        <TransactionTitle tx={transaction} description={description} />
+        {(transaction && <ShortTransactionInfo tx={transaction} />) || <span />}
+        <Chain chainId={chainId} />
+        <OperationStatus status={status} signed={approvals.length} threshold={account?.threshold || 0} />
+        <Button pallet="shade" variant="text" onClick={toggleRow}>
+          <Icon name={isRowShown ? 'up' : 'down'} />
+        </Button>
+      </div>
+
+      {/* DETAILS */}
+      <div className={cn('flex flex-1 border-t border-divider', !isRowShown && 'hidden')}>
+        <div className="w-[56%]">
           <div className="flex-1 p-4 w-full max-w-md">
             <div className="flex justify-between items-center mb-2">
               <div className="font-bold text-base">{t('operation.detailsTitle')}</div>
@@ -149,8 +130,8 @@ const Operation = ({ tx, account }: Props) => {
               {account && connection && <ApproveTx tx={tx} account={account} connection={connection} />}
             </div>
           </div>
-        </Table.Cell>
-        <Table.Cell className="align-top" cellAlign="width" colSpan={3}>
+        </div>
+        <div>
           <div className="p-4">
             <div className="flex justify-between items-center mb-2">
               <div className="font-bold text-base">{t('operation.signatoriesTitle')}</div>
@@ -179,11 +160,11 @@ const Operation = ({ tx, account }: Props) => {
               ))}
             </div>
           </div>
-        </Table.Cell>
-      </Table.Row>
+        </div>
+      </div>
 
       <CallDataModal isOpen={isCallDataModalOpen} tx={tx} onSubmit={setupCallData} onClose={toggleCallDataModal} />
-    </>
+    </li>
   );
 };
 

@@ -293,7 +293,7 @@
     "selectSignatoryTitle": "Select signatory",
     "signButton": "Sign with Polkadot Vault",
     "signatoriesTitle": "Signatories",
-    "signing": "Signing ({ signed } of { threshold })",
+    "signing": "{ signed } of { threshold } signed",
     "status": {
       "cancelled": "Cancelled",
       "error": "Error",

@@ -29,7 +29,7 @@ import { transferableAmount } from '@renderer/services/balance/common/utils';
 import { TEST_ADDRESS } from '@renderer/shared/utils/constants';
 
 type Props = {
-  tx: MultisigTransactionDS & { rowIndex: number };
+  tx: MultisigTransactionDS;
   account: MultisigAccount;
   connection: ExtendedChain;
 };
