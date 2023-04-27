@@ -16,6 +16,7 @@ import Deposit from './Deposit/Deposit';
 import Badge from './Badge/Badge';
 import Fee from './Fee/Fee';
 import ExplorerLink from './ExplorerLink/ExplorerLink';
+import BalanceNew from './BalanceNew/BalanceNew';
 
 export {
   AccountsList,
@@ -36,4 +37,5 @@ export {
   Badge,
   Fee,
   ExplorerLink,
+  BalanceNew,
 };

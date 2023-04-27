@@ -30,7 +30,7 @@ import { MAX_WEIGHT } from '@renderer/services/transaction/common/constants';
 import RejectReasonModal from './RejectReasonModal';
 
 type Props = {
-  tx: MultisigTransactionDS & { rowIndex: number };
+  tx: MultisigTransactionDS;
   account: MultisigAccount;
   connection: ExtendedChain;
 };
