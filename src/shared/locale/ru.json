@@ -267,6 +267,7 @@
       "controller": "Контроллер",
       "deposit": "Multisig депозит",
       "depositor": "Депозитор",
+      "description": "Description",
       "multisigWallet": "Отправитель",
       "payee": "Payee",
       "recipient": "Получатель",
