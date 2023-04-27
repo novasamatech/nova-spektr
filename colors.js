@@ -62,7 +62,6 @@ module.exports = {
   'block-background-hover': 'var(--block-background-hover)',
   'block-background': 'var(--block-background)',
   'extended-block-background': 'var(--extended-block-background)',
-  'block-background-default': 'var(--block-background-default)',
   'negative-action-background': 'var(--negative-action-background)',
   'dim-background': 'var(--dim-background)',
   'qr-valid-background': 'var(--qr-valid-background)',
