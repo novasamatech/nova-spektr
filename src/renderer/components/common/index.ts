@@ -19,6 +19,7 @@ import ExplorerLink from './ExplorerLink/ExplorerLink';
 import BalanceNew from './BalanceNew/BalanceNew';
 import AddressWithExplorers from './AddressWithExplorers/AddressWithExplorers';
 import AccountAddress from './AccountAddress/AccountAddress';
+import SignatoryCard from './SignatoryCard/SignatoryCard';
 
 export {
   AccountsList,
@@ -42,4 +43,5 @@ export {
   BalanceNew,
   AccountAddress,
   AddressWithExplorers,
+  SignatoryCard,
 };

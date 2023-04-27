@@ -7,6 +7,7 @@ import { FootnoteText } from '@renderer/components/ui-redesign';
 type Props = {
   data: InfoSection[];
   className?: string;
+  buttonClassName?: string;
   offsetPx?: number;
 };
 
@@ -20,12 +21,12 @@ export type InfoSection = {
   items: MenuItem[];
 };
 
-const InfoPopover = ({ data, className, children, offsetPx = 7 }: PropsWithChildren<Props>) => {
+const InfoPopover = ({ data, className, buttonClassName, children, offsetPx = 7 }: PropsWithChildren<Props>) => {
   return (
     <Menu>
       {({ open }) => (
         <div className={cn('relative', open && 'z-10')}>
-          <Menu.Button className="flex items-center">{children}</Menu.Button>
+          <Menu.Button className={cn('flex items-center', buttonClassName)}>{children}</Menu.Button>
           <Menu.Items
             style={{ marginTop: offsetPx + 'px' }}
             className={cn(
