@@ -3,11 +3,10 @@ import AccountAddress, {
   Props as AccountAddressProps,
 } from '@renderer/components/common/AccountAddress/AccountAddress';
 import { InfoPopover } from '@renderer/components/ui-redesign';
-import { InfoSection } from '@renderer/components/ui-redesign/Popovers/InfoPopover/InfoPopover';
 import { Icon } from '@renderer/components/ui';
 import { Explorer } from '@renderer/domain/chain';
-import { ExplorerLink } from '@renderer/components/common';
 import { SigningStatus } from '@renderer/domain/transaction';
+import useAddressInfo from '@renderer/components/common/AccountAddress/useAddressInfo';
 
 const IconProps = {
   SIGNED: { className: 'group-hover:hidden text-text-positive', name: 'checkLineRedesign' },
@@ -27,19 +26,7 @@ const SignatoryCard = ({
   ...addressProps
 }: Props) => {
   const address = getAddress(addressProps);
-  const infoSections: InfoSection[] = [
-    { title: 'Address', items: [{ id: address, value: address }] },
-    { title: 'Matrix ID', items: [{ id: 'idk', value: '@matrix_handle' }] },
-  ];
-
-  const explorerSection: InfoSection | undefined = explorers && {
-    items: explorers.map((exolorer) => ({
-      id: exolorer.name,
-      value: <ExplorerLink explorer={exolorer} address={address} />,
-    })),
-  };
-
-  const popoverItems = explorerSection ? [...infoSections, explorerSection] : infoSections;
+  const popoverItems = useAddressInfo(address, explorers);
 
   return (
     <InfoPopover data={popoverItems} buttonClassName="w-full">
