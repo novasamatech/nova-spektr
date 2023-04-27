@@ -9,6 +9,7 @@ import Staking from './Staking';
 import Signing from './Signing/SigningDev';
 import Transfer from './Transfer/Transfer';
 import CreateMultisigAccount from './CreateMultisigAccount/CreateMultisigAccount';
+import Notifications from './Notifications/Notifications';
 
 export default {
   Settings,
@@ -22,4 +23,5 @@ export default {
   Signing,
   Transfer,
   CreateMultisigAccount,
+  Notifications,
 };
