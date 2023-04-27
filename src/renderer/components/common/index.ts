@@ -17,6 +17,8 @@ import Badge from './Badge/Badge';
 import Fee from './Fee/Fee';
 import ExplorerLink from './ExplorerLink/ExplorerLink';
 import BalanceNew from './BalanceNew/BalanceNew';
+import AddressWithExplorers from './AddressWithExplorers/AddressWithExplorers';
+import AccountAddress from './AccountAddress/AccountAddress';
 
 export {
   AccountsList,
@@ -38,4 +40,6 @@ export {
   Fee,
   ExplorerLink,
   BalanceNew,
+  AccountAddress,
+  AddressWithExplorers,
 };

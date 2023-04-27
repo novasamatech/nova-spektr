@@ -4,6 +4,7 @@ import { Weight } from '@polkadot/types/interfaces';
 import { BN } from '@polkadot/util';
 
 import { ChainAddress, BaseModal, Button, Icon } from '@renderer/components/ui';
+import { Button as ButtonRedesign } from '@renderer/components/ui-redesign';
 import { useI18n } from '@renderer/context/I18nContext';
 import { AccountDS, MultisigTransactionDS } from '@renderer/services/storage';
 import { useToggle } from '@renderer/shared/hooks';
@@ -188,9 +189,9 @@ const ApproveTx = ({ tx, account, connection }: Props) => {
   return (
     <>
       <div className="flex justify-between">
-        <Button pallet="primary" variant="fill" onClick={toggleModal}>
+        <ButtonRedesign size="sm" pallet="primary" variant="fill" onClick={toggleModal}>
           {t('operation.approveButton')}
-        </Button>
+        </ButtonRedesign>
       </div>
 
       <BaseModal
