@@ -116,6 +116,7 @@ const InitOperation = ({ api, chainId, addressPrefix, identifiers, asset, onResu
 
       <OperationForm
         chainId={chainId}
+        canSubmit={activeDestAccounts.length > 0}
         addressPrefix={addressPrefix}
         fields={['destination']}
         asset={asset}

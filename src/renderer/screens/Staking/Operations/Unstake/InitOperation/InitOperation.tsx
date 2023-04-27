@@ -1,9 +1,10 @@
 import { ApiPromise } from '@polkadot/api';
 import { BN } from '@polkadot/util';
 import { useEffect, useState } from 'react';
+import cn from 'classnames';
 
 import { Fee } from '@renderer/components/common';
-import { Balance, Block, HintList, Plate, Select } from '@renderer/components/ui';
+import { Balance, Block, HintList, Plate, Select, Icon } from '@renderer/components/ui';
 import { DropdownOption, DropdownResult } from '@renderer/components/ui/Dropdowns/common/types';
 import { useI18n } from '@renderer/context/I18nContext';
 import { Asset } from '@renderer/domain/asset';
@@ -195,6 +196,7 @@ const InitOperation = ({ api, chainId, addressPrefix, staking, identifiers, asse
 
       <OperationForm
         chainId={chainId}
+        canSubmit={activeUnstakeAccounts.length > 0}
         addressPrefix={addressPrefix}
         fields={['amount']}
         asset={asset}
@@ -205,35 +207,40 @@ const InitOperation = ({ api, chainId, addressPrefix, staking, identifiers, asse
           setAmount(amount);
         }}
       >
-        <div className="flex justify-between items-center uppercase text-neutral-variant text-2xs">
-          <p>{t('staking.unstake.transferable')}</p>
+        {(error) => (
+          <>
+            <div className="flex justify-between items-center uppercase text-neutral-variant text-2xs">
+              <p>{t('staking.unstake.transferable')}</p>
 
-          <div className="flex font-semibold">
-            {transferable}&nbsp;{asset.symbol}
-          </div>
-        </div>
+              <div className={cn('flex font-semibold', error ? 'text-error' : 'text-neutral')}>
+                {error && <Icon className="text-error mr-1" name="warnCutout" size={12} />}
+                {transferable}&nbsp;{asset.symbol}
+              </div>
+            </div>
 
-        <div className="flex justify-between items-center uppercase text-neutral-variant text-2xs">
-          <p>{t('staking.unstake.networkFee', { count: activeUnstakeAccounts.length })}</p>
+            <div className="flex justify-between items-center uppercase text-neutral-variant text-2xs">
+              <p>{t('staking.unstake.networkFee', { count: activeUnstakeAccounts.length })}</p>
 
-          <Fee
-            className="text-neutral font-semibold"
-            api={api}
-            asset={asset}
-            transaction={transactions[0]}
-            onFeeChange={setFee}
-          />
-        </div>
+              <Fee
+                className="text-neutral font-semibold"
+                api={api}
+                asset={asset}
+                transaction={transactions[0]}
+                onFeeChange={setFee}
+              />
+            </div>
 
-        <HintList>
-          <HintList.Item>
-            {t('staking.unstake.durationHint')} {'('}
-            <UnstakingDuration className="ml-1" api={api} />
-            {')'}
-          </HintList.Item>
-          <HintList.Item>{t('staking.unstake.noRewardsHint')}</HintList.Item>
-          <HintList.Item>{t('staking.unstake.redeemHint')}</HintList.Item>
-        </HintList>
+            <HintList>
+              <HintList.Item>
+                {t('staking.unstake.durationHint')} {'('}
+                <UnstakingDuration className="ml-1" api={api} />
+                {')'}
+              </HintList.Item>
+              <HintList.Item>{t('staking.unstake.noRewardsHint')}</HintList.Item>
+              <HintList.Item>{t('staking.unstake.redeemHint')}</HintList.Item>
+            </HintList>
+          </>
+        )}
       </OperationForm>
     </Plate>
   );

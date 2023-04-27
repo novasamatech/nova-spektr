@@ -1,5 +1,5 @@
 import { useForm, Controller } from 'react-hook-form';
-import { useState, useEffect, PropsWithChildren, FormEvent } from 'react';
+import { useState, useEffect, FormEvent, ReactNode } from 'react';
 import { TFunction } from 'react-i18next';
 
 import { Button, AmountInput, InputHint, Icon, RadioGroup, Combobox, Identicon, Block } from '@renderer/components/ui';
@@ -40,10 +40,12 @@ type FormData = {
 
 type Props = {
   chainId: ChainId;
+  canSubmit: boolean;
   addressPrefix: number;
   fields: string[];
   balanceRange?: [string, string];
   asset: Asset;
+  children: ((error: boolean) => ReactNode) | ReactNode;
   validateBalance?: (amount: string) => boolean;
   validateFee?: (amount: string) => boolean;
   onFormChange: (data: FormData) => void;
@@ -52,6 +54,7 @@ type Props = {
 
 export const OperationForm = ({
   chainId,
+  canSubmit,
   addressPrefix,
   fields,
   balanceRange,
@@ -61,7 +64,7 @@ export const OperationForm = ({
   validateFee = () => true,
   onFormChange,
   onSubmit,
-}: PropsWithChildren<Props>) => {
+}: Props) => {
   const { t } = useI18n();
   const { getLiveAccounts } = useAccount();
   const { getLiveWallets } = useWallet();
@@ -81,7 +84,7 @@ export const OperationForm = ({
     watch,
     register,
     unregister,
-    formState: { isValid },
+    formState: { isValid, errors },
   } = useForm<FormData>({
     mode: 'onChange',
     defaultValues: { amount: '', destination: '' },
@@ -233,7 +236,7 @@ export const OperationForm = ({
               )}
             </>
           )}
-          {children}
+          {typeof children === 'function' ? children(Boolean(errors.amount || errors.destination)) : children}
         </form>
       </Block>
 
@@ -244,7 +247,7 @@ export const OperationForm = ({
         variant="fill"
         pallet="primary"
         weight="lg"
-        disabled={!isValid}
+        disabled={!isValid || !canSubmit}
       >
         {t('staking.bond.continueButton')}
       </Button>
