@@ -1,7 +1,7 @@
 import { render, screen } from '@testing-library/react';
 
-import SignatoryCard from '@renderer/components/common/Signatory/SignatoryCard';
 import { TEST_ADDRESS } from '@renderer/shared/utils/constants';
+import SignatoryCard from './SignatoryCard';
 
 describe('ui/Signatory', () => {
   test('should render component', () => {

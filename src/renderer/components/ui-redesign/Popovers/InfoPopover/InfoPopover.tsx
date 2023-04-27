@@ -43,7 +43,7 @@ const InfoPopover = ({ data, className, buttonClassName, children, offsetPx = 7 
                   </FootnoteText>
                 )}
 
-                <FootnoteText key={index} className="text-3xs pb-4 flex flex-col last:p-0">
+                <FootnoteText key={index} className="text-text-secondary pb-4 flex flex-col last:p-0">
                   {section.items.map(({ value, id }) =>
                     typeof value === 'string' ? (
                       value
