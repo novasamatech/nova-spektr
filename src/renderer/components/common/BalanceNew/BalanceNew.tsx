@@ -1,6 +1,7 @@
+import cn from 'classnames';
+
 import { formatBalance } from '@renderer/services/balance/common/utils';
 import { Asset } from '@renderer/domain/asset';
-import { BodyText } from '@renderer/components/ui-redesign';
 import { useI18n } from '@renderer/context/I18nContext';
 
 type Props = {
@@ -10,7 +11,7 @@ type Props = {
   showIcon?: boolean;
 };
 
-const BalanceNew = ({ value, asset, className, showIcon = true }: Props) => {
+const BalanceNew = ({ value, asset, className = 'text-body text-text-primary', showIcon = true }: Props) => {
   const { t } = useI18n();
   const { precision, symbol, icon } = asset;
   const { value: formattedValue, decimalPlaces, suffix } = formatBalance(value, precision);
@@ -21,9 +22,9 @@ const BalanceNew = ({ value, asset, className, showIcon = true }: Props) => {
   });
 
   const balance = (
-    <BodyText className={className}>
+    <p className={cn('font-inter', className)}>
       {balanceValue} {suffix} {symbol}
-    </BodyText>
+    </p>
   );
 
   if (!showIcon) {

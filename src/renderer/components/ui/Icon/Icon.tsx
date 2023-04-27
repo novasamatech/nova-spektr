@@ -34,7 +34,7 @@ const Icon = ({ as = 'svg', name, size = 24, className, alt = '' }: Props) => {
       <img
         className={className}
         src={IconComponent as string}
-        alt={alt}
+        alt={alt || name}
         width={size}
         height={size}
         data-testid={`${name}-img`}

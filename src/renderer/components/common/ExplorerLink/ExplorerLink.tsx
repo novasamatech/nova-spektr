@@ -5,10 +5,11 @@ import { Icon } from '@renderer/components/ui';
 import { DefaultExplorer, ExplorerIcons } from '@renderer/components/common/Explorers/common/constants';
 import { Explorer } from '@renderer/domain/chain';
 import { useI18n } from '@renderer/context/I18nContext';
+import { AccountId, Address } from '@renderer/domain/shared-kernel';
 
 interface Props {
   explorer: Explorer;
-  address: string;
+  address: Address | AccountId;
   addressPrefix?: number;
 }
 

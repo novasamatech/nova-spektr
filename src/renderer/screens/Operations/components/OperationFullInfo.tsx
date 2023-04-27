@@ -81,7 +81,7 @@ const OperationFullInfo = ({ tx, account }: Props) => {
 
   return (
     <div className="flex flex-1">
-      <div className="flex flex-col flex-1 pt-[19px] px-4 pb-4 border border-r-divider">
+      <div className="flex flex-col flex-1 pt-[19px] px-4 pb-4 border-r border-r-divider">
         <div className="flex justify-between items-center mb-3">
           <SmallTitleText>{t('operation.detailsTitle')}</SmallTitleText>
 
