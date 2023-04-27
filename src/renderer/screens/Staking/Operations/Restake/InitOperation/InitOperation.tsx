@@ -148,7 +148,7 @@ const InitOperation = ({ api, chainId, addressPrefix, staking, identifiers, asse
 
     onResult({
       accounts,
-      amount: formatAmount(amount, asset.precision),
+      amount: formatAmount(data.amount, asset.precision),
     });
   };
 
@@ -186,6 +186,7 @@ const InitOperation = ({ api, chainId, addressPrefix, staking, identifiers, asse
 
       <OperationForm
         chainId={chainId}
+        canSubmit={activeRestakeAccounts.length > 0}
         addressPrefix={addressPrefix}
         fields={['amount']}
         asset={asset}

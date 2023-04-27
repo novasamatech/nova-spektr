@@ -160,6 +160,7 @@ const InitOperation = ({ api, chainId, addressPrefix, identifiers, asset, onResu
 
       <OperationForm
         chainId={chainId}
+        canSubmit={activeStakeMoreAccounts.length > 0}
         addressPrefix={addressPrefix}
         fields={['amount']}
         asset={asset}

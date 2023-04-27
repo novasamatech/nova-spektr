@@ -16,7 +16,6 @@ import { formatAmount, stakeableAmount } from '@renderer/shared/utils/balance';
 import { useValidators } from '@renderer/services/staking/validatorsService';
 import { useWallet } from '@renderer/services/wallet/walletService';
 import { Account } from '@renderer/domain/account';
-import { Explorer } from '@renderer/domain/chain';
 import { toAccountId } from '@renderer/shared/utils/address';
 import { nonNullable } from '@renderer/shared/utils/functions';
 import { getStakeAccountOption, validateBalanceForFee, validateStake, getTotalAccounts } from '../../common/utils';
@@ -33,12 +32,11 @@ type Props = {
   chainId: ChainId;
   identifiers: string[];
   asset: Asset;
-  explorers?: Explorer[];
   addressPrefix: number;
   onResult: (data: BondResult) => void;
 };
 
-const InitOperation = ({ api, chainId, identifiers, asset, explorers, addressPrefix, onResult }: Props) => {
+const InitOperation = ({ api, chainId, identifiers, asset, addressPrefix, onResult }: Props) => {
   const { t } = useI18n();
   const { getLiveAssetBalances } = useBalance();
   const { getLiveAccounts } = useAccount();
@@ -245,6 +243,7 @@ const InitOperation = ({ api, chainId, identifiers, asset, explorers, addressPre
 
       <OperationForm
         chainId={chainId}
+        canSubmit={activeStakeAccounts.length > 0}
         addressPrefix={addressPrefix}
         fields={['amount', 'destination']}
         asset={asset}
