@@ -1,18 +1,23 @@
 import cn from 'classnames';
-import { useRef, useState } from 'react';
+import { useRef, useState, useEffect } from 'react';
 import { NavLink } from 'react-router-dom';
+import { keyBy } from 'lodash';
 
 import { Icon, Identicon } from '@renderer/components/ui';
 import { useI18n } from '@renderer/context/I18nContext';
-import { SigningType } from '@renderer/domain/shared-kernel';
+import { SigningType, ChainId } from '@renderer/domain/shared-kernel';
 import { useClickOutside } from '@renderer/shared/hooks';
 import Paths from '@renderer/routes/paths';
 import { useAccount } from '@renderer/services/account/accountService';
 import { AccountDS } from '@renderer/services/storage';
 import Wallets from '../Wallets/Wallets';
 import { useMultisigTx } from '@renderer/services/multisigTx/multisigTxService';
-import { nonNullable } from '@renderer/shared/utils/functions';
 import './Navigation.css';
+import { MultisigTxInitStatus } from '@renderer/domain/transaction';
+import { toAddress } from '@renderer/shared/utils/address';
+import { useChains } from '@renderer/services/network/chainsService';
+import { Chain } from '@renderer/domain/chain';
+import { SS58_DEFAULT_PREFIX } from '@renderer/shared/utils/constants';
 
 type CardType = SigningType | 'multiple' | 'none';
 
@@ -34,18 +39,24 @@ const getCardType = (accounts: AccountDS[]): CardType => {
 const Navigation = () => {
   const { LocaleComponent, t } = useI18n();
   const { getActiveAccounts } = useAccount();
+  const { getChainsData } = useChains();
   const { getLiveAccountMultisigTxs } = useMultisigTx();
 
   const walletsRef = useRef<HTMLDivElement>(null);
   const showWalletsRef = useRef<HTMLButtonElement>(null);
 
+  const [chainsObject, setChainsObject] = useState<Record<ChainId, Chain>>({});
   const [isWalletsOpen, setIsWalletsOpen] = useState(false);
 
   const activeAccounts = getActiveAccounts();
   const cardType = getCardType(activeAccounts);
 
-  const txs = getLiveAccountMultisigTxs(activeAccounts.map((a) => a.accountId).filter(nonNullable)).filter(
-    (tx) => tx.status === 'SIGNING',
+  useEffect(() => {
+    getChainsData().then((chains) => setChainsObject(keyBy(chains, 'chainId')));
+  }, []);
+
+  const txs = getLiveAccountMultisigTxs(activeAccounts.map((a) => a.accountId)).filter(
+    (tx) => tx.status === MultisigTxInitStatus.SIGNING,
   );
 
   const NavItems = [
@@ -70,6 +81,9 @@ const Navigation = () => {
   });
 
   const currentAccount = activeAccounts[0];
+  const addressPrefix = activeAccounts[0]?.chainId
+    ? chainsObject[activeAccounts[0].chainId].addressPrefix
+    : SS58_DEFAULT_PREFIX;
 
   const accountName =
     cardType === 'multiple'
@@ -84,7 +98,7 @@ const Navigation = () => {
             <div className="relative">
               {cardType === SigningType.PARITY_SIGNER && (
                 <>
-                  <Identicon theme="polkadot" address={currentAccount?.accountId || ''} size={46} />
+                  <Identicon address={toAddress(currentAccount?.accountId, { prefix: addressPrefix })} size={46} />
 
                   <div className="absolute box-border right-0 bottom-0 bg-shade-70 w-5 h-5 flex justify-center items-center rounded-full border border-primary border-solid">
                     <Icon name="paritySigner" size={12} />
@@ -93,7 +107,7 @@ const Navigation = () => {
               )}
               {cardType === SigningType.WATCH_ONLY && (
                 <>
-                  <Identicon theme="polkadot" address={currentAccount?.accountId || ''} size={46} />
+                  <Identicon address={toAddress(currentAccount?.accountId, { prefix: addressPrefix })} size={46} />
 
                   <div className="absolute box-border right-0 bottom-0 bg-shade-70 w-5 h-5 flex justify-center items-center rounded-full border border-alert border-solid">
                     <Icon name="watchOnly" size={12} />
@@ -102,7 +116,7 @@ const Navigation = () => {
               )}
               {cardType === SigningType.MULTISIG && (
                 <>
-                  <Identicon theme="polkadot" address={currentAccount?.accountId || ''} size={46} />
+                  <Identicon address={toAddress(currentAccount?.accountId, { prefix: addressPrefix })} size={46} />
 
                   <div className="absolute right-0 bottom-0 bg-shade-70 w-5 h-5 flex justify-center items-center rounded-full">
                     <Icon name="multisigBg" size={20} />

@@ -164,9 +164,9 @@ const Operation = ({ tx, account }: Props) => {
             </div>
 
             <div className="flex flex-col gap-3">
-              {signatoriesList.map(({ accountId, name }) => (
-                <div className="flex justify-between" key={accountId}>
-                  <ChainAddress size={20} accountId={accountId} name={name} canCopy />
+              {signatoriesList.map(({ accountId, address, name }) => (
+                <div key={accountId} className="flex justify-between">
+                  <ChainAddress size={20} address={address} name={name} canCopy />
 
                   {events.find((e) => e.status === 'CANCELLED' && e.accountId === accountId) ? (
                     <Icon className="text-error rotate-45" name="addLine" />
