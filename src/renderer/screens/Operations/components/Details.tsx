@@ -186,7 +186,7 @@ const Details = ({ tx, account, connection, withAdvanced = true }: Props) => {
                   value={deposit}
                   asset={defaultAsset}
                   showIcon={false}
-                  className="text-footnote text-text-secondary"
+                  className="text-footnote text-text-secondary py-[3px] px-2"
                 />
               </DetailsRow>
             )}
