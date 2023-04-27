@@ -267,6 +267,7 @@
       "controller": "Controller",
       "deposit": "Multisig deposit",
       "depositor": "Depositor",
+      "description": "Description",
       "multisigWallet": "Multisig wallet",
       "payee": "Payee",
       "recipient": "Recipient",

@@ -1,4 +1,5 @@
 import cn from 'classnames';
+import { PropsWithChildren } from 'react';
 
 import { useI18n } from '@renderer/context/I18nContext';
 import { MultisigAccount } from '@renderer/domain/account';
@@ -11,6 +12,7 @@ import { Explorers } from '@renderer/components/common';
 import { getMultisigExtrinsicLink } from '../common/utils';
 import ValidatorsModal from '@renderer/screens/Staking/Operations/components/ValidatorsModal/ValidatorsModal';
 import { MultisigTransaction } from '@renderer/domain/transaction';
+import { FootnoteText } from '@renderer/components/ui-redesign';
 
 type Props = {
   tx: MultisigTransaction;
@@ -19,13 +21,35 @@ type Props = {
   withAdvanced?: boolean;
 };
 
+const RowStyle = 'flex justify-between items-center py-[3px] px-2';
+const LabelStyle = 'text-text-tertiary';
+const ValueStyle = 'text-text-secondary';
+
+type DetailsRowProps = {
+  label: string;
+};
+const DetailsRow = ({ label, children }: PropsWithChildren<DetailsRowProps>) => (
+  <div className={RowStyle}>
+    <FootnoteText as="dt" className={LabelStyle}>
+      {label}
+    </FootnoteText>
+    {typeof children === 'string' ? (
+      <FootnoteText as="dd" className={ValueStyle}>
+        {children}
+      </FootnoteText>
+    ) : (
+      <dd className={cn('flex items-center gap-1', ValueStyle)}>{children}</dd>
+    )}
+  </div>
+);
+
 const Details = ({ tx, account, connection, withAdvanced = true }: Props) => {
   const { t } = useI18n();
 
   const [isAdvancedShown, toggleAdvanced] = useToggle();
   const [isValidatorsOpen, toggleValidators] = useToggle();
 
-  const { indexCreated, blockCreated, deposit, depositor, callHash, callData, transaction } = tx;
+  const { indexCreated, blockCreated, deposit, depositor, callHash, callData, transaction, description } = tx;
 
   const defaultAsset = connection?.assets[0];
   const addressPrefix = connection?.addressPrefix;
@@ -35,61 +59,59 @@ const Details = ({ tx, account, connection, withAdvanced = true }: Props) => {
 
   return (
     <>
-      <ul>
+      <dl className="flex flex-col gap-y-1">
+        {description && (
+          <div className="rounded bg-block-background pl-3 py-2 flex flex-col gap-x-0.5 mb-2">
+            <FootnoteText as="dt" className={LabelStyle}>
+              {t('operation.details.multisigWallet')}
+            </FootnoteText>
+            <FootnoteText as="dd" className={ValueStyle}>
+              {description}
+            </FootnoteText>
+          </div>
+        )}
+
         {account && (
-          <li className="flex justify-between items-center">
-            <div className="text-shade-40">{t('operation.details.multisigWallet')}</div>
-            <div className="flex items-center gap-1">
-              <ChainAddress accountId={account.accountId} addressPrefix={addressPrefix} name={account.name} canCopy />
-              <Explorers address={account.accountId} addressPrefix={addressPrefix} explorers={explorers} />
-            </div>
-          </li>
+          <DetailsRow label={t('operation.details.multisigWallet')}>
+            <ChainAddress accountId={account.accountId} addressPrefix={addressPrefix} name={account.name} canCopy />
+            <Explorers address={account.accountId} addressPrefix={addressPrefix} explorers={explorers} />
+          </DetailsRow>
         )}
 
         {transaction?.args.dest && (
-          <li className="flex justify-between items-center">
-            <div className="text-shade-40">{t('operation.details.recipient')}</div>
-            <div className="flex items-center gap-1">
-              <ChainAddress type="short" address={transaction.args.dest} />
-              <Explorers address={transaction.args.dest} addressPrefix={addressPrefix} explorers={explorers} />
-            </div>
-          </li>
+          <DetailsRow label={t('operation.details.recipient')}>
+            <ChainAddress type="short" address={transaction.args.dest} />
+            <Explorers address={transaction.args.dest} addressPrefix={addressPrefix} explorers={explorers} />
+          </DetailsRow>
         )}
 
         {transaction?.args.payee && (
-          <li className="flex justify-between items-center">
-            <div className="text-shade-40">{t('operation.details.payee')}</div>
-            <div className="flex items-center gap-1">
-              {transaction.args.payee.account ? (
-                <>
-                  <ChainAddress type="short" address={transaction.args.payee.account} />
-                  <Explorers
-                    address={transaction.args.payee.account}
-                    addressPrefix={addressPrefix}
-                    explorers={connection?.explorers}
-                  />
-                </>
-              ) : (
-                transaction.args.payee
-              )}
-            </div>
-          </li>
+          <DetailsRow label={t('operation.details.payee')}>
+            {transaction.args.payee.account ? (
+              <>
+                <ChainAddress type="short" address={transaction.args.payee.account} />
+                <Explorers
+                  address={transaction.args.payee.account}
+                  addressPrefix={addressPrefix}
+                  explorers={connection?.explorers}
+                />
+              </>
+            ) : (
+              transaction.args.payee
+            )}
+          </DetailsRow>
         )}
 
         {transaction?.args.controller && (
-          <li className="flex justify-between items-center">
-            <div className="text-shade-40">{t('operation.details.controller')}</div>
-            <div className="flex items-center gap-1">
-              <ChainAddress type="short" address={transaction.args.controller} />
-              <Explorers address={transaction.args.controller} explorers={connection?.explorers} />
-            </div>
-          </li>
+          <DetailsRow label={t('operation.details.controller')}>
+            <ChainAddress type="short" address={transaction.args.controller} />
+            <Explorers address={transaction.args.controller} explorers={connection?.explorers} />
+          </DetailsRow>
         )}
 
         {transaction?.args.targets && defaultAsset && (
-          <li className="flex justify-between items-center">
-            <div className="text-shade-40">{t('operation.details.validators')}</div>
-            <div className="flex items-center gap-1">
+          <>
+            <DetailsRow label={t('operation.details.validators')}>
               <button
                 type="button"
                 className={cn(
@@ -106,8 +128,7 @@ const Details = ({ tx, account, connection, withAdvanced = true }: Props) => {
                   <Icon name="right" size={20} />
                 </div>
               </button>
-            </div>
-
+            </DetailsRow>
             <ValidatorsModal
               isOpen={isValidatorsOpen}
               validators={transaction?.args.targets.map((address: string) => ({
@@ -118,72 +139,55 @@ const Details = ({ tx, account, connection, withAdvanced = true }: Props) => {
               addressPrefix={connection?.addressPrefix}
               onClose={toggleValidators}
             />
-          </li>
+          </>
         )}
 
         {isAdvancedShown && (
           <>
             {callHash && (
-              <li className="flex justify-between items-center">
-                <div className="text-shade-40">{t('operation.details.callHash')}</div>
-                <div className="flex items-center">
-                  <Truncate className="max-w-[120px]" text={callHash} />
-                  <Button variant="text" pallet="shade" onClick={() => copyToClipboard(callHash)}>
-                    <Icon name="copy" />
-                  </Button>
-                </div>
-              </li>
+              <DetailsRow label={t('operation.details.callHash')}>
+                <Truncate className="max-w-[120px]" text={callHash} />
+                <Button variant="text" pallet="shade" onClick={() => copyToClipboard(callHash)}>
+                  <Icon name="copy" />
+                </Button>
+              </DetailsRow>
             )}
 
             {callData && (
-              <li className="flex justify-between items-center">
-                <div className="text-shade-40">{t('operation.details.callData')}</div>
-                <div className="flex items-center">
-                  <Truncate className="max-w-[120px]" text={callData} />
-                  <Button variant="text" pallet="shade" onClick={() => copyToClipboard(callData)}>
-                    <Icon name="copy" />
-                  </Button>
-                </div>
-              </li>
+              <DetailsRow label={t('operation.details.callData')}>
+                <Truncate className="max-w-[120px]" text={callData} />
+                <Button variant="text" pallet="shade" onClick={() => copyToClipboard(callData)}>
+                  <Icon name="copy" />
+                </Button>
+              </DetailsRow>
             )}
 
             {depositorSignatory && (
-              <li className="flex justify-between items-center">
-                <div className="text-shade-40">{t('operation.details.depositor')}</div>
-                <div className="flex gap-1">
-                  <ChainAddress address={depositorSignatory.address} name={depositorSignatory.name} canCopy />
-                  <Explorers
-                    address={depositorSignatory.accountId}
-                    addressPrefix={addressPrefix}
-                    explorers={explorers}
-                  />
-                </div>
-              </li>
+              <DetailsRow label={t('operation.details.depositor')}>
+                <ChainAddress address={depositorSignatory.address} name={depositorSignatory.name} canCopy />
+                <Explorers address={depositorSignatory.accountId} addressPrefix={addressPrefix} explorers={explorers} />
+              </DetailsRow>
             )}
 
             {deposit && defaultAsset && (
-              <li className="flex justify-between items-center">
-                <div className="text-shade-40">{t('operation.details.deposit')}</div>
+              <DetailsRow label={t('operation.details.deposit')}>
                 <Balance value={deposit} precision={defaultAsset.precision} symbol={defaultAsset?.symbol} />
-              </li>
+              </DetailsRow>
             )}
 
             {indexCreated && blockCreated && (
-              <li className="flex justify-between items-center">
-                <div className="text-shade-40">{t('operation.details.timePoint')}</div>
-                <div className="flex gap-1">
-                  {blockCreated}-{indexCreated}
-                  {extrinsicLink && (
-                    <a href={extrinsicLink} target="_blank" rel="noopener noreferrer">
-                      <Icon className="text-shade-40" name="globe" />
-                    </a>
-                  )}
-                </div>
-              </li>
+              <DetailsRow label={t('operation.details.timePoint')}>
+                {blockCreated}-{indexCreated}
+                {extrinsicLink && (
+                  <a href={extrinsicLink} target="_blank" rel="noopener noreferrer">
+                    <Icon className="text-shade-40" name="globe" />
+                  </a>
+                )}
+              </DetailsRow>
             )}
           </>
         )}
-      </ul>
+      </dl>
 
       {withAdvanced && (
         <Button
