@@ -6,14 +6,20 @@ import { toAddress } from '@renderer/shared/utils/address';
 import { SigningBadges } from '@renderer/shared/utils/constants';
 
 type Props = {
-  address: Address | AccountId;
-  accountName: string;
-  signingType: SigningType;
+  address?: Address | AccountId;
+  accountName?: string;
+  signingType?: SigningType;
   addressPrefix: number;
   explorers?: Explorer[];
 };
 
-const ActiveAddress = ({ address, accountName, signingType, explorers, addressPrefix }: Props) => (
+const ActiveAddress = ({
+  address = '',
+  accountName = '',
+  signingType = SigningType.PARITY_SIGNER,
+  explorers,
+  addressPrefix,
+}: Props) => (
   <div className="flex items-center justify-between h-15 bg-shade-2 p-2.5 rounded-2lg">
     <div className="flex gap-2.5 items-center">
       <Icon name={SigningBadges[signingType]} size={34} />

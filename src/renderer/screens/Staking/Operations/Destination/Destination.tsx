@@ -13,7 +13,7 @@ import { useNetworkContext } from '@renderer/context/NetworkContext';
 import { useChains } from '@renderer/services/network/chainsService';
 import { Address, ChainId, HexString } from '@renderer/domain/shared-kernel';
 import { Transaction, TransactionType } from '@renderer/domain/transaction';
-import { Confirmation, Scanning, Signing, Submit } from '../components';
+import { Confirmation, MultiScanning, Signing, Submit } from '../components';
 import Paths from '@renderer/routes/paths';
 import { AccountDS } from '@renderer/services/storage';
 import InitOperation, { DestinationResult } from './InitOperation/InitOperation';
@@ -174,7 +174,7 @@ const Destination = () => {
         />
       )}
       {activeStep === Step.SCANNING && (
-        <Scanning
+        <MultiScanning
           api={api}
           chainId={chainId}
           accounts={accounts}

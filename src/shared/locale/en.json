@@ -491,6 +491,7 @@
       "selectValidators": "Selected validators",
       "setValidatorsTitle": "Set validators",
       "signButton": "Sign with Parity Signer",
+      "signer": "Signer",
       "submittingOperation": "Submitting operation",
       "totalAmount": "Total amount",
       "totalNetworkFee": "Total network fee",
@@ -513,6 +514,7 @@
       "yourValidatorsTitle": "Your validators"
     },
     "notEnoughBalanceError": "Not enough funds to stake specific amount",
+    "notEnoughBalanceForDepositError": "Insufficient balance to pay deposit",
     "notEnoughBalanceForFeeError": "Insufficient balance to pay network fee",
     "notEnoughStakedError": "Not enough staked to unstake specific amount",
     "notEnoughUnlockingError": "Not enough unlocking to return specific amount",

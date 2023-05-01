@@ -3,20 +3,20 @@ import { BN_ZERO, BN } from '@polkadot/util';
 import cn from 'classnames';
 import { PropsWithChildren } from 'react';
 
-import { AddressOnPlate, Fee } from '@renderer/components/common';
+import { AddressOnPlate, Fee, Deposit } from '@renderer/components/common';
 import { Balance, Block, Icon } from '@renderer/components/ui';
 import { useI18n } from '@renderer/context/I18nContext';
 import { Asset } from '@renderer/domain/asset';
 import { Explorer } from '@renderer/domain/chain';
-import { Address } from '@renderer/domain/shared-kernel';
+import { Address, SigningType } from '@renderer/domain/shared-kernel';
 import { RewardsDestination } from '@renderer/domain/stake';
 import { Transaction } from '@renderer/domain/transaction';
 import { Validator } from '@renderer/domain/validator';
-import { AccountDS } from '@renderer/services/storage';
 import { useToggle } from '@renderer/shared/hooks';
 import AccountsModal from '../AccountsModal/AccountsModal';
 import ValidatorsModal from '../ValidatorsModal/ValidatorsModal';
 import { toAccountId } from '@renderer/shared/utils/address';
+import { Account } from '@renderer/domain/account';
 
 type Destination = {
   address?: Address;
@@ -27,13 +27,14 @@ export interface InfoProps {
   api: ApiPromise;
   title?: string;
   validators?: Validator[];
-  accounts: AccountDS[];
+  accounts: Account[];
   amounts?: string[];
   destination?: Destination;
   asset: Asset;
   explorers?: Explorer[];
   addressPrefix: number;
   transaction: Transaction;
+  multisigTx?: Transaction;
 }
 
 const TransactionInfo = ({
@@ -47,6 +48,7 @@ const TransactionInfo = ({
   explorers,
   addressPrefix,
   transaction,
+  multisigTx,
   children,
 }: PropsWithChildren<InfoProps>) => {
   const { t } = useI18n();
@@ -56,6 +58,10 @@ const TransactionInfo = ({
   const singleAccount = accounts.length === 1;
   const validatorsExist = validators && validators.length > 0;
   const totalAmount = amounts.reduce((acc, amount) => acc.add(new BN(amount)), BN_ZERO).toString();
+
+  const threshold = multisigTx?.args.threshold;
+  console.log(multisigTx);
+  console.log(transaction);
 
   return (
     <>
@@ -81,7 +87,7 @@ const TransactionInfo = ({
             {singleAccount ? (
               <AddressOnPlate
                 title={t('staking.confirmation.account')}
-                accountId={accounts[0].accountId || ''}
+                accountId={accounts[0].accountId}
                 signType={accounts[0].signingType}
                 name={accounts[0].name}
                 addressPrefix={addressPrefix}
@@ -104,6 +110,16 @@ const TransactionInfo = ({
               </button>
             )}
 
+            {multisigTx && (
+              <AddressOnPlate
+                title={t('staking.confirmation.signer')}
+                accountId={toAccountId(multisigTx?.address)}
+                signType={SigningType.PARITY_SIGNER}
+                addressPrefix={addressPrefix}
+                explorers={explorers}
+              />
+            )}
+
             <div className="flex flex-col px-[15px] rounded-2lg bg-shade-2">
               <div className="flex items-center justify-between h-10">
                 {singleAccount ? (
@@ -111,23 +127,24 @@ const TransactionInfo = ({
                 ) : (
                   <p className="text-sm text-neutral-variant">{t('staking.confirmation.networkFeePerAccount')}</p>
                 )}
-                <Fee
-                  className="text-base font-semibold text-neutral"
-                  api={api}
-                  asset={asset}
-                  transaction={transaction}
-                />
+                <Fee className="text-base text-neutral" api={api} asset={asset} transaction={transaction} />
               </div>
               {!singleAccount && (
                 <div className="flex items-center justify-between h-10 border-t border-shade-10">
                   <p className="text-sm text-neutral-variant">{t('staking.confirmation.totalNetworkFee')}</p>
                   <Fee
-                    className="text-base font-semibold text-neutral"
+                    className="text-base text-neutral"
                     api={api}
                     multiply={accounts.length}
                     asset={asset}
                     transaction={transaction}
                   />
+                </div>
+              )}
+              {multisigTx && (
+                <div className="flex items-center justify-between h-10 border-t border-shade-10">
+                  <p className="text-sm text-neutral-variant">{t('transferDetails.networkDeposit')}</p>
+                  <Deposit className="text-base text-neutral" api={api} asset={asset} threshold={threshold} />
                 </div>
               )}
             </div>

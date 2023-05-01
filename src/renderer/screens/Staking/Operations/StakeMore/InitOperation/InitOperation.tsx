@@ -8,17 +8,17 @@ import { DropdownOption, DropdownResult } from '@renderer/components/ui/Dropdown
 import { useI18n } from '@renderer/context/I18nContext';
 import { Asset } from '@renderer/domain/asset';
 import { Balance, Balance as AccountBalance } from '@renderer/domain/balance';
-import { Address, ChainId, AccountId } from '@renderer/domain/shared-kernel';
+import { ChainId, AccountId } from '@renderer/domain/shared-kernel';
 import { Transaction, TransactionType } from '@renderer/domain/transaction';
 import { useAccount } from '@renderer/services/account/accountService';
 import { useBalance } from '@renderer/services/balance/balanceService';
 import { formatAmount, stakeableAmount } from '@renderer/shared/utils/balance';
 import { AccountDS } from '@renderer/services/storage';
-import { useTransaction } from '@renderer/services/transaction/transactionService';
 import { nonNullable } from '@renderer/shared/utils/functions';
 import { getStakeAccountOption, getTotalAccounts, validateBalanceForFee, validateStake } from '../../common/utils';
 import { OperationForm } from '../../components';
-import { toAccountId } from '@renderer/shared/utils/address';
+import { toAccountId, toAddress } from '@renderer/shared/utils/address';
+import { Account } from '@renderer/domain/account';
 
 export type StakeMoreResult = {
   accounts: AccountDS[];
@@ -38,7 +38,6 @@ const InitOperation = ({ api, chainId, addressPrefix, identifiers, asset, onResu
   const { t } = useI18n();
   const { getLiveAssetBalances } = useBalance();
   const { getLiveAccounts } = useAccount();
-  const { getTransactionFee } = useTransaction();
 
   const dbAccounts = getLiveAccounts();
 
@@ -48,8 +47,8 @@ const InitOperation = ({ api, chainId, addressPrefix, identifiers, asset, onResu
   const [stakedRange, setStakedRange] = useState<[string, string]>(['0', '0']);
   const [transactions, setTransactions] = useState<Transaction[]>([]);
 
-  const [stakeMoreAccounts, setStakeMoreAccounts] = useState<DropdownOption<Address>[]>([]);
-  const [activeStakeMoreAccounts, setActiveStakeMoreAccounts] = useState<DropdownResult<Address>[]>([]);
+  const [stakeMoreAccounts, setStakeMoreAccounts] = useState<DropdownOption<Account>[]>([]);
+  const [activeStakeMoreAccounts, setActiveStakeMoreAccounts] = useState<DropdownResult<Account>[]>([]);
 
   const [activeBalances, setActiveBalances] = useState<Balance[]>([]);
 
@@ -106,11 +105,11 @@ const InitOperation = ({ api, chainId, addressPrefix, identifiers, asset, onResu
   useEffect(() => {
     if (!stakedRange) return;
 
-    const newTransactions = activeStakeMoreAccounts.map(({ value }) => {
+    const newTransactions = activeStakeMoreAccounts.map(({ id }) => {
       return {
         chainId,
         type: TransactionType.STAKE_MORE,
-        address: value,
+        address: toAddress(id, { prefix: addressPrefix }),
         args: { maxAdditional: formatAmount(amount, asset.precision) },
       };
     });
@@ -118,15 +117,9 @@ const InitOperation = ({ api, chainId, addressPrefix, identifiers, asset, onResu
     setTransactions(newTransactions);
   }, [stakedRange, amount]);
 
-  useEffect(() => {
-    if (!amount || !transactions.length) return;
-
-    getTransactionFee(transactions[0], api).then(setFee);
-  }, [amount]);
-
   const submitStakeMore = (data: { amount: string }) => {
-    const selectedAddresses = activeStakeMoreAccounts.map((stake) => toAccountId(stake.id));
-    const accounts = totalAccounts.filter((account) => selectedAddresses.includes(account.accountId));
+    const selectedAccountIds = activeStakeMoreAccounts.map((stake) => toAccountId(stake.id));
+    const accounts = totalAccounts.filter((account) => selectedAccountIds.includes(account.accountId));
 
     onResult({
       accounts,

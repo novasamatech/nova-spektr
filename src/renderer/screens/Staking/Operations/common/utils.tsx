@@ -1,7 +1,8 @@
 import { BN } from '@polkadot/util';
 import cn from 'classnames';
+import { ReactNode } from 'react';
 
-import { Account } from '@renderer/domain/account';
+import { Account, MultisigAccount } from '@renderer/domain/account';
 import { Address, SigningType } from '@renderer/domain/shared-kernel';
 import { DropdownOption } from '@renderer/components/ui/Dropdowns/common/types';
 import { Icon, ChainAddress, Balance } from '@renderer/components/ui';
@@ -11,11 +12,22 @@ import { Asset } from '@renderer/domain/asset';
 import { toAddress } from '@renderer/shared/utils/address';
 import { Stake } from '@renderer/domain/stake';
 import { AccountDS } from '@renderer/services/storage';
+import { SigningBadges } from '@renderer/shared/utils/constants';
 
 export const validateBalanceForFee = (balance: AccountBalance | string, fee: string): boolean => {
   const transferableBalance = typeof balance === 'string' ? balance : transferableAmount(balance);
 
   return new BN(fee).lte(new BN(transferableBalance));
+};
+
+export const validateBalanceForFeeDeposit = (
+  balance: AccountBalance | string,
+  deposit: string,
+  fee: string,
+): boolean => {
+  const transferableBalance = typeof balance === 'string' ? balance : transferableAmount(balance);
+
+  return new BN(deposit).add(new BN(fee)).lte(new BN(transferableBalance));
 };
 
 export const validateStake = (
@@ -46,6 +58,24 @@ export const validateUnstake = (stake: Stake | string, amount: string, precision
   return new BN(formatAmount(amount, precision)).lte(new BN(unstakeableBalance));
 };
 
+const getElement = (address: Address, account: Account, content?: ReactNode, walletName?: string): ReactNode => {
+  return (
+    <div className="flex justify-between items-center gap-x-2.5">
+      <div className="flex gap-x-[5px] items-center">
+        <ChainAddress
+          address={address}
+          name={account.name}
+          subName={walletName}
+          signType={account.signingType}
+          size={30}
+          canCopy={false}
+        />
+      </div>
+      {content}
+    </div>
+  );
+};
+
 type Params = {
   asset: Asset;
   addressPrefix: number;
@@ -58,18 +88,16 @@ type ParamsWithStake = Params & {
   stake?: Stake;
 };
 
-export const getStakeAccountOption = (
-  account: Account,
+export const getStakeAccountOption = <T extends Account | MultisigAccount>(
+  account: T,
   { walletName, balance, asset, fee, addressPrefix, amount = '0' }: Params,
-): DropdownOption<Address> => {
+): DropdownOption<T> => {
   const address = toAddress(account.accountId, { prefix: addressPrefix });
-  const canValidateBalance = balance && amount && fee;
+  const canValidateBalance = balance && fee;
 
   let balanceIsCorrect = true;
   if (canValidateBalance) {
-    const bondIsValid = validateStake(balance, amount, asset.precision);
-    const feeIsValid = validateBalanceForFee(balance, fee);
-    balanceIsCorrect = bondIsValid && feeIsValid;
+    balanceIsCorrect = validateStake(balance, amount, asset.precision, fee);
   }
 
   const balanceContent = balance && (
@@ -85,23 +113,9 @@ export const getStakeAccountOption = (
     </div>
   );
 
-  const element = (
-    <div className="flex justify-between items-center gap-x-2.5">
-      <div className="flex gap-x-[5px] items-center">
-        <ChainAddress
-          address={address}
-          name={account.name}
-          subName={walletName}
-          signType={account.signingType}
-          size={30}
-          canCopy={false}
-        />
-      </div>
-      {balanceContent}
-    </div>
-  );
+  const element = getElement(address, account, balanceContent, walletName);
 
-  return { id: account.accountId, value: address, element };
+  return { id: account.accountId, value: account, element };
 };
 
 export const getRestakeAccountOption = (
@@ -109,7 +123,7 @@ export const getRestakeAccountOption = (
   { walletName, balance, stake, asset, fee, addressPrefix, amount = '0' }: ParamsWithStake,
 ): DropdownOption<Address> => {
   const address = toAddress(account.accountId, { prefix: addressPrefix });
-  const canValidateBalance = balance && stake && amount && fee;
+  const canValidateBalance = balance && stake && fee;
 
   let balanceIsCorrect = true;
   if (canValidateBalance) {
@@ -130,22 +144,7 @@ export const getRestakeAccountOption = (
       />
     </div>
   );
-
-  const element = (
-    <div className="flex justify-between items-center gap-x-2.5">
-      <div className="flex gap-x-[5px] items-center">
-        <ChainAddress
-          address={address}
-          name={account.name}
-          subName={walletName}
-          signType={account.signingType}
-          size={30}
-          canCopy={false}
-        />
-      </div>
-      {balanceContent}
-    </div>
-  );
+  const element = getElement(address, account, balanceContent, walletName);
 
   return { id: account.accountId, value: address, element };
 };
@@ -155,7 +154,7 @@ export const getUnstakeAccountOption = (
   { walletName, balance, stake, asset, fee, addressPrefix, amount = '0' }: ParamsWithStake,
 ): DropdownOption<Address> => {
   const address = toAddress(account.accountId, { prefix: addressPrefix });
-  const canValidateBalance = balance && stake && amount && fee;
+  const canValidateBalance = balance && stake && fee;
 
   let balanceIsCorrect = true;
   if (canValidateBalance) {
@@ -176,22 +175,7 @@ export const getUnstakeAccountOption = (
       />
     </div>
   );
-
-  const element = (
-    <div className="flex justify-between items-center gap-x-2.5">
-      <div className="flex gap-x-[5px] items-center">
-        <ChainAddress
-          address={address}
-          name={account.name}
-          subName={walletName}
-          signType={account.signingType}
-          size={30}
-          canCopy={false}
-        />
-      </div>
-      {balanceContent}
-    </div>
-  );
+  const element = getElement(address, account, balanceContent, walletName);
 
   return { id: account.accountId, value: address, element };
 };
@@ -207,30 +191,18 @@ export const getTotalAccounts = (dbAccounts: AccountDS[], identifiers: string[])
   });
 };
 
-// export const getAccountsOptions = <T extends Account>(
-//   chainId: ChainId,
-//   accounts: T[],
-//   addressPrefix: number,
-// ): DropdownOption<T>[] => {
-//   return accounts.reduce<DropdownOption<T>[]>((acc, account) => {
-//     const address = toAddress(account.accountId, { prefix: addressPrefix });
-//
-//     const isWatchOnly = account.signingType === SigningType.WATCH_ONLY;
-//     const isSameChain = !account.chainId || account.chainId === chainId;
-//     const isNewOption = acc.every((a) => a.id !== address);
-//
-//     if (!isWatchOnly && isSameChain && isNewOption) {
-//       const element = (
-//         <div className="grid grid-rows-2 grid-flow-col gap-x-2.5">
-//           <Icon className="row-span-2 self-center" name={SigningBadges[account.signingType]} size={34} />
-//           <p className="text-left text-neutral text-lg font-semibold leading-5">{account.name}</p>
-//           <ChainAddress type="short" address={address} canCopy={false} />
-//         </div>
-//       );
-//
-//       acc.push({ id: address, value: account, element });
-//     }
-//
-//     return acc;
-//   }, []);
-// };
+export const getSignatoryOptions = (accounts: Account[], addressPrefix: number): DropdownOption<Account>[] => {
+  return accounts.map((account) => {
+    const address = toAddress(account.accountId, { prefix: addressPrefix });
+
+    const element = (
+      <div className="grid grid-rows-2 grid-flow-col gap-x-2.5">
+        <Icon className="row-span-2 self-center" name={SigningBadges[account.signingType]} size={34} />
+        <p className="text-left text-neutral text-lg font-semibold leading-5">{account.name}</p>
+        <ChainAddress type="short" address={address} canCopy={false} />
+      </div>
+    );
+
+    return { id: address, value: account, element };
+  });
+};

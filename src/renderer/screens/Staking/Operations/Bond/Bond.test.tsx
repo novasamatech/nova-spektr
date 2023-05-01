@@ -55,14 +55,17 @@ jest.mock('./InitOperation/InitOperation', () => ({ onResult }: any) => {
 jest.mock('../components/index', () => ({
   Validators: ({ onResult }: any) => mockButton('to confirm', onResult),
   Confirmation: ({ onResult }: any) => mockButton('to scan', onResult),
-  Scanning: ({ onResult }: any) => mockButton('to sign', onResult),
+  SingleScanning: ({ onResult }: any) => mockButton('to sign', onResult),
+  MultiScanning: ({ onResult }: any) => mockButton('to sign', onResult),
   Signing: ({ onResult }: any) => mockButton('to submit', onResult),
   Submit: () => 'finish',
 }));
 
 describe('screens/Staking/Bond', () => {
-  test('should render component', () => {
-    render(<Bond />, { wrapper: MemoryRouter });
+  test('should render component', async () => {
+    await act(async () => {
+      render(<Bond />, { wrapper: MemoryRouter });
+    });
 
     const title = screen.getByText('staking.title');
     const subTitle = screen.getByText('staking.bond.initBondSubtitle');
@@ -73,7 +76,9 @@ describe('screens/Staking/Bond', () => {
   });
 
   test('should change process state', async () => {
-    render(<Bond />, { wrapper: MemoryRouter });
+    await act(async () => {
+      render(<Bond />, { wrapper: MemoryRouter });
+    });
 
     let nextButton = screen.getByRole('button', { name: 'to validators' });
     await act(async () => nextButton.click());

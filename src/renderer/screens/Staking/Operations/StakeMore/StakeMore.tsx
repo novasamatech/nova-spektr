@@ -13,7 +13,7 @@ import { Transaction, TransactionType } from '@renderer/domain/transaction';
 import Paths from '@renderer/routes/paths';
 import { AccountDS } from '@renderer/services/storage';
 import InitOperation, { StakeMoreResult } from './InitOperation/InitOperation';
-import { Confirmation, Scanning, Signing, Submit } from '../components';
+import { Confirmation, MultiScanning, Signing, Submit } from '../components';
 import { getRelaychainAsset } from '@renderer/shared/utils/assets';
 import { useCountdown } from '@renderer/shared/hooks';
 
@@ -168,7 +168,7 @@ const StakeMore = () => {
         </Confirmation>
       )}
       {activeStep === Step.SCANNING && (
-        <Scanning
+        <MultiScanning
           api={api}
           chainId={chainId}
           accounts={accounts}

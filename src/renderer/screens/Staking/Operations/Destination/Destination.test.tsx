@@ -54,7 +54,7 @@ jest.mock('./InitOperation/InitOperation', () => ({ onResult }: any) => {
 
 jest.mock('../components/index', () => ({
   Confirmation: ({ onResult }: any) => mockButton('to scan', onResult),
-  Scanning: ({ onResult }: any) => mockButton('to sign', onResult),
+  MultiScanning: ({ onResult }: any) => mockButton('to sign', onResult),
   Signing: ({ onResult }: any) => mockButton('to submit', onResult),
   Submit: () => 'finish',
 }));
