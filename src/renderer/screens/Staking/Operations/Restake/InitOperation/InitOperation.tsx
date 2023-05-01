@@ -59,7 +59,6 @@ const InitOperation = ({ api, chainId, addressPrefix, staking, identifiers, asse
   const accountIds = totalAccounts.map((account) => account.accountId);
   const balances = getLiveAssetBalances(accountIds, chainId, asset.assetId.toString());
 
-  // Set balance map
   useEffect(() => {
     const balancesMap = new Map(balances.map((balance) => [balance.accountId, balance]));
     const newActiveBalances = activeRestakeAccounts
@@ -69,7 +68,6 @@ const InitOperation = ({ api, chainId, addressPrefix, staking, identifiers, asse
     setActiveBalances(newActiveBalances);
   }, [activeRestakeAccounts.length, balances]);
 
-  // Set staked range
   useEffect(() => {
     if (!Object.keys(staking).length) return;
 
@@ -143,8 +141,8 @@ const InitOperation = ({ api, chainId, addressPrefix, staking, identifiers, asse
   }, [stakedRange, amount]);
 
   const submitRestake = (data: { amount: string }) => {
-    const selectedAddresses = activeRestakeAccounts.map((stake) => toAccountId(stake.id));
-    const accounts = totalAccounts.filter((account) => selectedAddresses.includes(account.accountId));
+    const selectedAccountIds = activeRestakeAccounts.map((stake) => toAccountId(stake.id));
+    const accounts = totalAccounts.filter((account) => selectedAccountIds.includes(account.accountId));
 
     onResult({
       accounts,

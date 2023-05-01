@@ -17,7 +17,7 @@ import { useChains } from '@renderer/services/network/chainsService';
 import { AccountDS } from '@renderer/services/storage';
 import { redeemableAmount } from '@renderer/shared/utils/balance';
 import { useEra } from '@renderer/services/staking/eraService';
-import { Confirmation, Scanning, Signing, Submit } from '../components';
+import { Confirmation, MultiScanning, Signing, Submit } from '../components';
 import { getRelaychainAsset } from '@renderer/shared/utils/assets';
 import { useCountdown } from '@renderer/shared/hooks';
 
@@ -202,7 +202,7 @@ const Unstake = () => {
         />
       )}
       {activeStep === Step.SCANNING && (
-        <Scanning
+        <MultiScanning
           api={api}
           chainId={chainId}
           accounts={accounts}

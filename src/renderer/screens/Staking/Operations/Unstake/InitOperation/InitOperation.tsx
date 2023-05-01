@@ -14,7 +14,6 @@ import { useAccount } from '@renderer/services/account/accountService';
 import { useBalance } from '@renderer/services/balance/balanceService';
 import { formatAmount, transferableAmount } from '@renderer/shared/utils/balance';
 import { AccountDS, BalanceDS } from '@renderer/services/storage';
-import { useTransaction } from '@renderer/services/transaction/transactionService';
 import { StakingMap } from '@renderer/services/staking/common/types';
 import { UnstakingDuration } from '../../../Overview/components';
 import { getUnstakeAccountOption, getTotalAccounts, validateBalanceForFee, validateUnstake } from '../../common/utils';
@@ -41,7 +40,6 @@ const InitOperation = ({ api, chainId, addressPrefix, staking, identifiers, asse
   const { t } = useI18n();
   const { getLiveAssetBalances } = useBalance();
   const { getLiveAccounts } = useAccount();
-  const { getTransactionFee } = useTransaction();
 
   const dbAccounts = getLiveAccounts();
 
@@ -146,15 +144,9 @@ const InitOperation = ({ api, chainId, addressPrefix, staking, identifiers, asse
     setTransactions(newTransactions);
   }, [stakedRange, amount]);
 
-  useEffect(() => {
-    if (!amount || !transactions.length) return;
-
-    getTransactionFee(transactions[0], api).then(setFee);
-  }, [amount]);
-
   const submitUnstake = (data: { amount: string }) => {
-    const selectedAddresses = activeUnstakeAccounts.map((stake) => stake.id);
-    const accounts = totalAccounts.filter((account) => selectedAddresses.includes(account.accountId));
+    const selectedAccountIds = activeUnstakeAccounts.map((stake) => stake.id);
+    const accounts = totalAccounts.filter((account) => selectedAccountIds.includes(account.accountId));
 
     onResult({
       accounts,

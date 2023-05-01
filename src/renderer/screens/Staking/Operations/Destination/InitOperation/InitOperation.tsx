@@ -13,7 +13,7 @@ import { useBalance } from '@renderer/services/balance/balanceService';
 import { useWallet } from '@renderer/services/wallet/walletService';
 import { Balance } from '@renderer/domain/balance';
 import { Account } from '@renderer/domain/account';
-import { toAccountId } from '@renderer/shared/utils/address';
+import { toAccountId, toAddress } from '@renderer/shared/utils/address';
 import { getTotalAccounts, getStakeAccountOption } from '../../common/utils';
 import { OperationForm } from '../../components';
 
@@ -44,8 +44,8 @@ const InitOperation = ({ api, chainId, addressPrefix, identifiers, asset, onResu
   const [fee, setFee] = useState('');
   const [destination, setDestination] = useState('');
 
-  const [destAccounts, setDestAccounts] = useState<DropdownOption<Address>[]>([]);
-  const [activeDestAccounts, setActiveDestAccounts] = useState<DropdownResult<Address>[]>([]);
+  const [destAccounts, setDestAccounts] = useState<DropdownOption<Account>[]>([]);
+  const [activeDestAccounts, setActiveDestAccounts] = useState<DropdownResult<Account>[]>([]);
 
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [balancesMap, setBalancesMap] = useState<Map<AccountId, Balance>>(new Map());
@@ -83,7 +83,7 @@ const InitOperation = ({ api, chainId, addressPrefix, identifiers, asset, onResu
   useEffect(() => {
     const newTransactions = activeDestAccounts.map(({ value }) => ({
       chainId,
-      address: value,
+      address: toAddress(value.accountId, { prefix: addressPrefix }),
       type: TransactionType.DESTINATION,
       args: { payee: destination ? { Account: destination } : 'Staked' },
     }));
@@ -92,8 +92,8 @@ const InitOperation = ({ api, chainId, addressPrefix, identifiers, asset, onResu
   }, [activeDestAccounts.length, destination]);
 
   const submitDestination = (data: { destination?: string }) => {
-    const selectedAddresses = activeDestAccounts.map((stake) => toAccountId(stake.value));
-    const accounts = totalAccounts.filter((account) => selectedAddresses.includes(account.accountId));
+    const selectedAccountIds = activeDestAccounts.map((stake) => toAccountId(stake.id));
+    const accounts = totalAccounts.filter((account) => selectedAccountIds.includes(account.accountId));
 
     onResult({
       accounts,

@@ -47,6 +47,16 @@ jest.mock('@renderer/services/balance/balanceService', () => ({
 }));
 
 jest.mock('../../../Overview/components', () => ({ UnstakingDuration: () => 'unstaking_duration' }));
+jest.mock('../../components', () => ({
+  OperationForm: ({ children }: any) => {
+    return (
+      <div>
+        <p>operationForm</p>
+        {children()}
+      </div>
+    );
+  },
+}));
 
 describe('screens/Staking/Unstake/InitOperation', () => {
   const defaultProps = {
@@ -64,11 +74,11 @@ describe('screens/Staking/Unstake/InitOperation', () => {
       render(<InitOperation {...defaultProps} />);
     });
 
-    const button = screen.getByText('staking.bond.continueButton');
+    const form = screen.getByText('operationForm');
     const durationHint = screen.getByText(/staking.unstake.durationHint/);
     const noRewardsHint = screen.getByText('staking.unstake.noRewardsHint');
     const redeemHint = screen.getByText('staking.unstake.redeemHint');
-    expect(button).toBeInTheDocument();
+    expect(form).toBeInTheDocument();
     expect(durationHint).toBeInTheDocument();
     expect(noRewardsHint).toBeInTheDocument();
     expect(redeemHint).toBeInTheDocument();

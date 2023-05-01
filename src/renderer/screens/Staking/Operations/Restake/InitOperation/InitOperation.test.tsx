@@ -5,7 +5,7 @@ import noop from 'lodash/noop';
 import { Asset } from '@renderer/domain/asset';
 import { TEST_ACCOUNT_ID } from '@renderer/shared/utils/constants';
 import InitOperation from './InitOperation';
-import { ChainId } from '@renderer/domain/shared-kernel';
+import { ChainId, SigningType } from '@renderer/domain/shared-kernel';
 
 jest.mock('@renderer/context/I18nContext', () => ({
   useI18n: jest.fn().mockReturnValue({
@@ -13,27 +13,16 @@ jest.mock('@renderer/context/I18nContext', () => ({
   }),
 }));
 
-jest.mock('@renderer/services/wallet/walletService', () => ({
-  useWallet: jest.fn().mockReturnValue({
-    getLiveWallets: jest.fn().mockReturnValue([]),
-  }),
-}));
-
 jest.mock('@renderer/services/account/accountService', () => ({
   useAccount: jest.fn().mockReturnValue({
-    getLiveAccounts: () => [{ name: 'Test Wallet', accountId: TEST_ACCOUNT_ID }],
+    getLiveAccounts: () => [
+      { id: '1', name: 'Test Wallet', accountId: TEST_ACCOUNT_ID, signingType: SigningType.PARITY_SIGNER },
+    ],
   }),
 }));
 
 jest.mock('@renderer/services/balance/balanceService', () => ({
   useBalance: jest.fn().mockReturnValue({
-    getBalance: jest.fn().mockReturnValue({
-      assetId: 1,
-      chainId: '0x123',
-      accountId: TEST_ACCOUNT_ID,
-      free: '10',
-      frozen: [{ type: 'test', amount: '1' }],
-    }),
     getLiveAssetBalances: jest.fn().mockReturnValue([
       {
         assetId: 1,
@@ -44,6 +33,17 @@ jest.mock('@renderer/services/balance/balanceService', () => ({
       },
     ]),
   }),
+}));
+
+jest.mock('../../components', () => ({
+  OperationForm: ({ children }: any) => {
+    return (
+      <div>
+        <p>operationForm</p>
+        {children}
+      </div>
+    );
+  },
 }));
 
 describe('screens/Staking/Restake/InitOperation', () => {
@@ -62,9 +62,11 @@ describe('screens/Staking/Restake/InitOperation', () => {
       render(<InitOperation {...defaultProps} />);
     });
 
-    const button = screen.getByText('staking.bond.continueButton');
+    const form = screen.getByText('operationForm');
+    const address = screen.getByText('Test Wallet');
     const eraHint = screen.getByText('staking.restake.eraHint');
-    expect(button).toBeInTheDocument();
+    expect(form).toBeInTheDocument();
+    expect(address).toBeInTheDocument();
     expect(eraHint).toBeInTheDocument();
   });
 });

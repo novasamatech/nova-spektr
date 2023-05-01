@@ -491,6 +491,7 @@
       "selectValidators": "Выбранные валидаторы",
       "setValidatorsTitle": "Выбор валидаторов",
       "signButton": "Подписать в Parity Signer",
+      "signer": "Подписант",
       "submittingOperation": "Подтверждение операции",
       "totalAmount": "Общая сумма",
       "totalNetworkFee": "Общая комиссия сети",
@@ -513,6 +514,7 @@
       "yourValidatorsTitle": "Мои валидаторы"
     },
     "notEnoughBalanceError": "Недостаточно средств для выполнения операции",
+    "notEnoughBalanceForDepositError": "Недостаточно средств для оплаты депозита",
     "notEnoughBalanceForFeeError": "Недостаточно средств для оплаты комиссии",
     "notEnoughStakedError": "Not enough staked to unstake specific amount",
     "notEnoughUnlockingError": "Not enough unlocking to return specific amount",

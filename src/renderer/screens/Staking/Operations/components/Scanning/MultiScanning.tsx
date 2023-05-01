@@ -33,7 +33,7 @@ type Props = {
   onResult: (unsigned: UnsignedTransaction[]) => void;
 };
 
-export const Scanning = ({
+export const MultiScanning = ({
   api,
   chainId,
   accounts,
@@ -58,8 +58,8 @@ export const Scanning = ({
         const { payload, unsigned } = await createPayload(transactions[index], api);
 
         return {
-          signPayload: createSignPayload(address, Command.Transaction, payload, chainId),
           unsigned,
+          signPayload: createSignPayload(address, Command.Transaction, payload, chainId),
           transactionData: transactions[index],
         };
       })();

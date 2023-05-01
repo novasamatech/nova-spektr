@@ -16,7 +16,7 @@ import { StakingMap } from '@renderer/services/staking/common/types';
 import { useStakingData } from '@renderer/services/staking/stakingDataService';
 import { AccountDS } from '@renderer/services/storage';
 import InitOperation, { RestakeResult } from './InitOperation/InitOperation';
-import { Confirmation, Scanning, Signing, Submit } from '../components';
+import { Confirmation, MultiScanning, Signing, Submit } from '../components';
 import { getRelaychainAsset } from '@renderer/shared/utils/assets';
 import { useCountdown } from '@renderer/shared/hooks';
 
@@ -203,7 +203,7 @@ const Restake = () => {
         </Confirmation>
       )}
       {activeStep === Step.SCANNING && (
-        <Scanning
+        <MultiScanning
           api={api}
           chainId={chainId}
           accounts={accounts}
