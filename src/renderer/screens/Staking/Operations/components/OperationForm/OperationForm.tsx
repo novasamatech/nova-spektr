@@ -56,7 +56,7 @@ type Props = {
   fields: string[];
   balanceRange?: [string, string];
   asset: Asset;
-  children: ((error: boolean) => ReactNode) | ReactNode;
+  children: ((errorType: string) => ReactNode) | ReactNode;
   validateBalance?: (amount: string) => boolean;
   validateFee?: (amount: string) => boolean;
   validateDeposit?: (amount: string) => boolean;
@@ -103,6 +103,8 @@ export const OperationForm = ({
     defaultValues: { amount: '', destination: '' },
   });
 
+  const destination = watch('destination');
+
   useEffect(() => {
     if (activeDestination?.value === RewardsDestination.RESTAKE) {
       unregister('destination');
@@ -127,12 +129,6 @@ export const OperationForm = ({
     setPayoutAccounts(payoutAccounts);
   }, [dbAccounts.length]);
 
-  const destination = watch('destination');
-
-  const hasAmountField = fields.includes('amount') && balanceRange;
-  const hasDestinationField = fields.includes('destination');
-  const hasDescriptionField = fields.includes('description');
-
   const handleFormChange = (event: FormEvent<HTMLFormElement>) => {
     const data = new FormData(event.currentTarget);
     const amount = data.get('amount')?.toString() || '';
@@ -140,6 +136,11 @@ export const OperationForm = ({
 
     onFormChange({ amount, destination });
   };
+
+  const hasAmountField = fields.includes('amount') && balanceRange;
+  const hasDestinationField = fields.includes('destination');
+  const hasDescriptionField = fields.includes('description');
+  const errorType = errors.amount?.type || errors.destination?.type || errors.description?.type || '';
 
   return (
     <form className="w-full" onSubmit={handleSubmit(onSubmit)} onChange={handleFormChange}>
@@ -249,7 +250,7 @@ export const OperationForm = ({
             )}
           </>
         )}
-        {typeof children === 'function' ? children(Boolean(errors.amount || errors.destination)) : children}
+        {typeof children === 'function' ? children(errorType) : children}
       </Block>
 
       {hasDescriptionField && (

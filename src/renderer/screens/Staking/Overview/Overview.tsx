@@ -113,31 +113,29 @@ const Overview = () => {
   useEffect(() => {
     if (!api?.isConnected || !era) return;
 
-    (async () => {
-      const validators = await getValidators(chainId, api, era);
-
-      setValidators(validators);
-    })();
+    getValidators(chainId, api, era).then(setValidators);
   }, [api, era]);
 
   useEffect(() => {
-    (async () => {
-      const chainsData = await getChainsData();
-
+    getChainsData().then((chainsData) => {
       const relaychains = sortChains(chainsData).reduce<DropdownOption<NetworkOption>[]>((acc, chain) => {
         const asset = getRelaychainAsset(chain.assets);
-        if (!asset) return acc;
-
-        return acc.concat({
-          id: chain.chainId,
-          value: { asset, addressPrefix: chain.addressPrefix },
-          element: (
+        if (asset) {
+          const element = (
             <>
               <img src={chain.icon} alt="" width={20} height={20} />
               {chain.name}
             </>
-          ),
-        });
+          );
+
+          acc.push({
+            id: chain.chainId,
+            value: { asset, addressPrefix: chain.addressPrefix },
+            element,
+          });
+        }
+
+        return acc;
       }, []);
 
       const settingsChainId = getStakingNetwork();
@@ -146,7 +144,7 @@ const Overview = () => {
       setStakingNetworks(relaychains);
       setActiveNetwork(settingsChain || { id: relaychains[0].id, value: relaychains[0].value });
       changeClient(settingsChainId || relaychains[0].id);
-    })();
+    });
   }, []);
 
   const onNetworkChange = (option: DropdownResult<NetworkOption>) => {

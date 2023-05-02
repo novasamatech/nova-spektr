@@ -64,7 +64,7 @@ export const SingleScanning = ({
 
   return (
     <div className="overflow-y-auto flex-1">
-      <Plate as="section" className="w-[500px] flex flex-col items-center mx-auto gap-y-2.5">
+      <Plate as="section" className="w-[600px] flex flex-col items-center mx-auto gap-y-2.5">
         <Block>
           <ActiveAddress
             address={activeAddress}

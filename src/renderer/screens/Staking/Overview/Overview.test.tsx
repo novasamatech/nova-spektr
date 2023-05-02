@@ -22,7 +22,7 @@ jest.mock('@renderer/context/GraphqlContext', () => ({
 jest.mock('@renderer/services/network/chainsService', () => ({
   useChains: jest.fn().mockReturnValue({
     sortChains: (value: Chain[]) => value,
-    getChainsData: jest.fn().mockReturnValue([
+    getChainsData: jest.fn().mockResolvedValue([
       {
         addressPrefix: 0,
         assets: [{ staking: 'relaychain' }],
