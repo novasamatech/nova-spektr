@@ -20,6 +20,7 @@ import {
 import Select from './Dropdowns/Select/Select';
 import Combobox from './Dropdowns/Combobox/Combobox';
 import PopoverLink from './PopoverLink/PopoverLink';
+import Checkbox from './Checkbox/Checkbox';
 
 export {
   Input,
@@ -42,4 +43,5 @@ export {
   Select,
   Combobox,
   PopoverLink,
+  Checkbox,
 };
