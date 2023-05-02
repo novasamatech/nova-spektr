@@ -1,7 +1,6 @@
 import cn from 'classnames';
 
 import { useI18n } from '@renderer/context/I18nContext';
-import { MultisigTransactionDS } from '@renderer/services/storage';
 import { MultisigAccount } from '@renderer/domain/account';
 import { ChainAddress, Balance, Button, Icon } from '@renderer/components/ui';
 import Truncate from '@renderer/components/ui/Truncate/Truncate';
@@ -11,9 +10,10 @@ import { ExtendedChain } from '@renderer/services/network/common/types';
 import { Explorers } from '@renderer/components/common';
 import { getMultisigExtrinsicLink } from '../common/utils';
 import ValidatorsModal from '@renderer/screens/Staking/Operations/components/ValidatorsModal/ValidatorsModal';
+import { MultisigTransaction } from '@renderer/domain/transaction';
 
 type Props = {
-  tx: MultisigTransactionDS & { rowIndex: number };
+  tx: MultisigTransaction;
   account?: MultisigAccount;
   connection?: ExtendedChain;
   withAdvanced?: boolean;

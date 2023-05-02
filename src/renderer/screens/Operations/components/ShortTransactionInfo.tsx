@@ -4,8 +4,8 @@ import { Transaction, TransactionType } from '@renderer/domain/transaction';
 import { DEFAULT } from '@shared/constants/common';
 import { useChains } from '@renderer/services/network/chainsService';
 import { Asset } from '@renderer/domain/asset';
-import { Balance } from '@renderer/components/ui';
 import { getAssetById } from '@renderer/shared/utils/assets';
+import { BalanceNew } from '@renderer/components/common';
 
 type Props = {
   tx: Transaction;
@@ -19,29 +19,13 @@ type TransactionProps = {
 const TransactionInfo = ({ tx, asset }: TransactionProps) => {
   if (!asset) return null;
 
-  return (
-    <div className="flex gap-2">
-      <div className="flex items-center justify-center bg-shade-70 border border-shade-20 rounded-full w-6 h-6">
-        <img src={asset.icon} alt={asset.name} width={16} height={16} />
-      </div>
-
-      <Balance value={tx.args.value} symbol={asset.symbol} precision={asset.precision} />
-    </div>
-  );
+  return <BalanceNew value={tx.args.value} asset={asset} />;
 };
 
 const StakeMore = ({ tx, asset }: TransactionProps) => {
   if (!asset) return null;
 
-  return (
-    <div className="flex gap-2">
-      <div className="flex items-center justify-center bg-shade-70 border border-shade-20 rounded-full w-6 h-6">
-        <img src={asset.icon} alt={asset.name} width={16} height={16} />
-      </div>
-
-      <Balance value={tx.args.maxAdditional} symbol={asset.symbol} precision={asset.precision} />
-    </div>
-  );
+  return <BalanceNew value={tx.args.maxAdditional} asset={asset} />;
 };
 
 const ShortTransactionInfo = ({ tx }: Props) => {
@@ -71,7 +55,7 @@ const ShortTransactionInfo = ({ tx }: Props) => {
     [TransactionType.DESTINATION]: null,
 
     // Technical
-    [TransactionType.BATCH_ALL]: <ShortTransactionInfo tx={tx.args?.calls?.[0]} />,
+    [TransactionType.BATCH_ALL]: tx.args?.transactions?.[0] && <ShortTransactionInfo tx={tx.args?.transactions?.[0]} />,
     [TransactionType.CHILL]: null,
     [TransactionType.MULTISIG_APPROVE_AS_MULTI]: null,
     [TransactionType.MULTISIG_CANCEL_AS_MULTI]: null,

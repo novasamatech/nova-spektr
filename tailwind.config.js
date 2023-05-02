@@ -87,16 +87,20 @@ module.exports = {
         'large-title': ['1.625rem', '2.25rem'],
         title: ['1.375rem', '1.875rem'],
         'small-title': ['0.9375rem', '1.375rem'],
+        'button-text': ['0.875', '1.125'],
         caption: ['0.625rem', '0.75rem'],
         headline: ['0.9375rem', '1.375rem'],
         body: ['0.8125rem', '1.125rem'],
-        footnote: ['0.75rem', '1rem'],
+        footnote: ['0.75rem', '1.125rem'],
       },
       borderRadius: {
         '2lg': '10px',
       },
       outlineOffset: {
         reduced: '-5px',
+      },
+      gridTemplateColumns: {
+        'operation-card': '72px 182px 182px 130px 130px 40px',
       },
     },
   },
