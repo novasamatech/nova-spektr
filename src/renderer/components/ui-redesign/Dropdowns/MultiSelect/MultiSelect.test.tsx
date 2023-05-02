@@ -2,7 +2,7 @@ import { act, render, screen } from '@testing-library/react';
 
 import MultiSelect from './MultiSelect';
 
-describe('ui-redesign/Dropdowns/Select', () => {
+describe('ui-redesign/Dropdowns/MultiSelect', () => {
   const options = [
     { id: '0', element: 'label_0', value: '0' },
     { id: '1', element: 'label_1', value: '1' },
