@@ -27,6 +27,12 @@ jest.mock('@renderer/services/contact/contactService', () => ({
   }),
 }));
 
+jest.mock('@renderer/services/notification/notificationService', () => ({
+  useNotification: jest.fn().mockReturnValue({
+    addNotification: jest.fn(),
+  }),
+}));
+
 jest.mock('@renderer/context/NetworkContext', () => ({
   useNetworkContext: jest.fn(() => ({
     connections: {

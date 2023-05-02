@@ -30,6 +30,7 @@ const routesConfig: RouteObject[] = [
       { path: Paths.TRANSFER, element: <Screens.Transfer /> },
       { path: Paths.CAMERA_DEV, element: <Screens.CameraDev /> },
       { path: Paths.CHAT_DEV, element: <Screens.ChatDev /> },
+      { path: Paths.NOTIFICATIONS, element: <Screens.Notifications /> },
       {
         path: Paths.SETTINGS,
         children: [

@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react';
 import { UnsignedTransaction } from '@substrate/txwrapper-polkadot';
-import { Weight } from '@polkadot/types/interfaces';
 import { BN } from '@polkadot/util';
 
 import { BaseModal, Button } from '@renderer/components/ui';
@@ -26,7 +25,6 @@ import { Fee } from '@renderer/components/common';
 import { useCountdown } from '@renderer/screens/Staking/Operations/hooks/useCountdown';
 import { useBalance } from '@renderer/services/balance/balanceService';
 import { transferableAmount } from '@renderer/services/balance/common/utils';
-import { MAX_WEIGHT } from '@renderer/services/transaction/common/constants';
 import RejectReasonModal from './RejectReasonModal';
 
 type Props = {
@@ -46,7 +44,7 @@ const RejectTx = ({ tx, account, connection }: Props) => {
   const { t } = useI18n();
   const { getBalance } = useBalance();
   const { getLiveAccounts } = useAccount();
-  const { getTransactionFee, getTxWeight } = useTransaction();
+  const { getTransactionFee } = useTransaction();
 
   const [isModalOpen, toggleModal] = useToggle(false);
   const [isRejectReasonModalOpen, toggleRejectReasonModal] = useToggle(false);
@@ -55,10 +53,9 @@ const RejectTx = ({ tx, account, connection }: Props) => {
 
   const [activeStep, setActiveStep] = useState(Step.CONFIRMATION);
   const [rejectReason, setRejectReason] = useState('');
-  const [approveTx, setApproveTx] = useState<Transaction>();
+  const [rejectTx, setRejectTx] = useState<Transaction>();
   const [signature, setSignature] = useState<HexString>();
   const [unsignedTx, setUnsignedTx] = useState<UnsignedTransaction>();
-  const [txWeight, setTxWeight] = useState<Weight>();
 
   const accounts = getLiveAccounts();
   const signAccount = accounts.find((a) => a.accountId === tx.depositor);
@@ -81,14 +78,8 @@ const RejectTx = ({ tx, account, connection }: Props) => {
   useEffect(() => {
     const multisigTx = getMultisigTx(signAccount?.accountId || account.signatories[0].accountId);
 
-    setApproveTx(multisigTx);
-  }, [tx, accounts.length, signAccount?.accountId, txWeight]);
-
-  useEffect(() => {
-    if (!tx.transaction || !connection.api) return;
-
-    getTxWeight(tx.transaction, connection.api).then((txWeight) => setTxWeight(txWeight));
-  }, [tx, connection.api]);
+    setRejectTx(multisigTx);
+  }, [tx, accounts.length, signAccount?.accountId]);
 
   const asset = getAssetById(tx.transaction?.args.assetId, connection.assets);
 
@@ -111,7 +102,6 @@ const RejectTx = ({ tx, account, connection }: Props) => {
       args: {
         threshold: account.threshold,
         otherSignatories: otherSignatories.sort(),
-        maxWeight: txWeight || MAX_WEIGHT,
         callHash: tx.callHash,
         maybeTimepoint: {
           height: tx.blockCreated,
@@ -122,9 +112,9 @@ const RejectTx = ({ tx, account, connection }: Props) => {
   };
 
   const validateBalanceForFee = async (signAccount: AccountDS): Promise<boolean> => {
-    if (!connection.api || !approveTx || !signAccount.accountId || !asset) return false;
+    if (!connection.api || !rejectTx || !signAccount.accountId || !asset) return false;
 
-    const fee = await getTransactionFee(approveTx, connection.api);
+    const fee = await getTransactionFee(rejectTx, connection.api);
     const balance = await getBalance(signAccount.accountId, connection.chainId, asset.assetId.toString());
 
     if (!balance) return false;
@@ -177,12 +167,12 @@ const RejectTx = ({ tx, account, connection }: Props) => {
             <div className="flex justify-between items-center">
               <div className="text-shade-40">{t('operation.networkFee')}</div>
               <div>
-                {connection.api && approveTx && (
+                {connection.api && rejectTx && (
                   <Fee
                     className="text-shade-40"
                     api={connection.api}
                     asset={connection.assets[0]}
-                    transaction={approveTx}
+                    transaction={rejectTx}
                   />
                 )}
               </div>
@@ -197,11 +187,11 @@ const RejectTx = ({ tx, account, connection }: Props) => {
         )}
         {activeStep === Step.SCANNING && (
           <>
-            {approveTx && connection.api && signAccount && (
+            {rejectTx && connection.api && signAccount && (
               <Scanning
                 api={connection.api}
                 chainId={tx.chainId}
-                transaction={approveTx}
+                transaction={rejectTx}
                 account={signAccount}
                 explorers={connection?.explorers}
                 addressPrefix={connection?.addressPrefix}
@@ -225,11 +215,11 @@ const RejectTx = ({ tx, account, connection }: Props) => {
 
         {activeStep === Step.SIGNING && (
           <div>
-            {approveTx && connection.api && signAccount && (
+            {rejectTx && connection.api && signAccount && (
               <Signing
                 api={connection.api}
                 chainId={tx.chainId}
-                transaction={approveTx}
+                transaction={rejectTx}
                 account={signAccount}
                 explorers={connection.explorers}
                 addressPrefix={connection.addressPrefix}
@@ -244,9 +234,9 @@ const RejectTx = ({ tx, account, connection }: Props) => {
         )}
         {activeStep === Step.SUBMIT && (
           <div>
-            {approveTx && connection.api && signAccount && signature && unsignedTx && (
+            {rejectTx && connection.api && signAccount && signature && unsignedTx && (
               <Submit
-                tx={approveTx}
+                tx={rejectTx}
                 api={connection.api}
                 multisigTx={tx}
                 matrixRoomId={account.matrixRoomId}
