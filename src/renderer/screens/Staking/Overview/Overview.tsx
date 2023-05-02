@@ -314,6 +314,8 @@ const Overview = () => {
                   <EmptyFilter />
                 ) : (
                   <StakingTable
+                    api={api}
+                    currentEra={era}
                     stakeInfo={stakingInfo}
                     selectedStakes={selectedAccounts}
                     addressPrefix={activeNetwork?.value.addressPrefix}
@@ -321,8 +323,6 @@ const Overview = () => {
                     explorers={explorers}
                     openValidators={setupNominators}
                     selectStaking={setSelectedAccounts}
-                    currentEra={era}
-                    api={api}
                   />
                 )}
               </>
