@@ -108,6 +108,7 @@
     "historyLabel": "History",
     "mstOperationLabel": "Multisig Operations",
     "multipleWalletsLabel": "Multiple wallets",
+    "notificationsLabel": "Notifications",
     "settingsLabel": "Settings",
     "signingDEVLabel": "Signing DEV",
     "stakingLabel": "Staking",
@@ -169,6 +170,14 @@
       "selectConnectionLabel": "Select connection type"
     },
     "subTitle": "Networks"
+  },
+  "notifications": {
+    "details": {
+      "newMultisigAccountDescription": "with threshold { threshold } and { signatories } signatories",
+      "newMultisigAccountTitle": "New Multisig wallet added:"
+    },
+    "noNotificationsDescription": "There are no notifications yet",
+    "title": "Notifications"
   },
   "onboarding": {
     "accountAddressLabel": "Account address",

@@ -173,6 +173,19 @@ const Navigation = () => {
 
         <div>
           <NavLink
+            to={Paths.NOTIFICATIONS}
+            className={({ isActive }) =>
+              cn(
+                'select-none rounded-lg text-gray-500 flex items-center p-3 mr-2.5 outline-offset-reduced hover:bg-black/5 ',
+                isActive && 'text-primary',
+              )
+            }
+          >
+            <Icon name="bell" />
+            <span className="font-semibold text-sm ml-3">{t('navigation.notificationsLabel')}</span>
+          </NavLink>
+
+          <NavLink
             to={Paths.SETTINGS}
             className={({ isActive }) =>
               cn(

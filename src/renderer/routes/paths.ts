@@ -12,6 +12,7 @@ const Paths = {
   BALANCES: '/balances',
   OPERATIONS: '/operations',
   SIGNING: '/signing',
+  NOTIFICATIONS: '/notifications',
 
   // Settings
   SETTINGS: '/settings',

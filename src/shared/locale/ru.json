@@ -108,6 +108,7 @@
     "historyLabel": "История",
     "mstOperationLabel": "Мульти-Операции",
     "multipleWalletsLabel": "Multiple wallets",
+    "notificationsLabel": "Уведомления",
     "settingsLabel": "Настройки",
     "signingDEVLabel": "Подпись DEV",
     "stakingLabel": "Стейкинг",
@@ -169,6 +170,14 @@
       "selectConnectionLabel": "Выберите тип подключения"
     },
     "subTitle": "Сети"
+  },
+  "notifications": {
+    "details": {
+      "newMultisigAccountDescription": "with threshold { threshold } and { signatories } signatories",
+      "newMultisigAccountTitle": "New Multisig wallet added:"
+    },
+    "noNotificationsDescription": "There are no notifications yet",
+    "title": "Notifications"
   },
   "onboarding": {
     "accountAddressLabel": "Адрес аккаунта",
