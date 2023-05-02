@@ -5,7 +5,7 @@ import { Fragment, useId } from 'react';
 import { Icon } from '@renderer/components/ui';
 import { DropdownOption, DropdownResult, Position } from '../common/types';
 import CommonInputStyles from '@renderer/components/ui-redesign/Inputs/common/styles';
-import { FootnoteText, LabelText } from '@renderer/components/ui-redesign';
+import { CaptionText, Checkbox, FootnoteText, LabelText } from '@renderer/components/ui-redesign';
 import { OptionsContainerStyle, OptionStyle, SelectButtonStyle, ViewClass } from '../common/constants';
 
 type Props = {
@@ -14,30 +14,30 @@ type Props = {
   label?: string;
   disabled?: boolean;
   invalid?: boolean;
-  selectedId?: DropdownOption['id'];
+  selectedIds?: DropdownOption['id'][];
   options: DropdownOption[];
   position?: Position;
   tabIndex?: number;
-  onChange: (data: DropdownResult) => void;
+  onChange: (data: DropdownResult[]) => void;
 };
 
-const Select = ({
+const MultiSelect = ({
   className,
   placeholder,
   label,
   disabled,
   invalid,
-  selectedId,
+  selectedIds = [],
   options,
   onChange,
   position = 'down',
   tabIndex,
 }: Props) => {
-  const selectedOption = options.find((option) => option.id === selectedId);
+  const selectedOptions = options.filter((option) => selectedIds?.includes(option.id));
   const id = useId();
 
   const selectElement = (
-    <Listbox disabled={disabled} value={selectedOption || {}} onChange={onChange}>
+    <Listbox multiple by="id" disabled={disabled} value={selectedOptions} onChange={onChange}>
       {({ open }) => (
         <div className={cn('relative', className)}>
           <Listbox.Button
@@ -48,23 +48,22 @@ const Select = ({
               invalid && SelectButtonStyle.invalid,
               SelectButtonStyle.disabled,
               CommonInputStyles,
-              'w-full flex items-center gap-x-2 justify-between pr-2',
+              'w-full inline-flex items-center gap-x-2 justify-between pr-2',
             )}
             tabIndex={tabIndex}
           >
-            {selectedOption ? (
-              typeof selectedOption.element === 'string' ? (
-                <FootnoteText as="span" className="truncate">
-                  {selectedOption.element}
-                </FootnoteText>
-              ) : (
-                selectedOption.element
-              )
-            ) : (
-              <FootnoteText as="span" className="text-text-secondary">
-                {placeholder}
-              </FootnoteText>
-            )}
+            <FootnoteText as="span" className={selectedOptions.length ? 'text-text-primary' : 'text-text-secondary'}>
+              {placeholder}
+              {selectedOptions.length > 0 && (
+                <CaptionText
+                  as="span"
+                  className="text-button-text ml-2 py-0.5 px-1.5 rounded-[30px] bg-accent-background"
+                >
+                  {selectedOptions.length}
+                </CaptionText>
+              )}
+            </FootnoteText>
+
             <Icon name="down" size={16} className="text-icon-default" />
           </Listbox.Button>
 
@@ -72,7 +71,18 @@ const Select = ({
             <Listbox.Options className={cn(OptionsContainerStyle, position !== 'auto' && ViewClass[position])}>
               {options.map(({ id, value, element }) => (
                 <Listbox.Option key={id} className={OptionStyle} value={{ id, value }}>
-                  {typeof element === 'string' ? <FootnoteText>{element}</FootnoteText> : element}
+                  {({ selected }) => (
+                    <Checkbox
+                      readOnly
+                      checked={selected}
+                      className={cn(
+                        'w-full pointer-events-none',
+                        selected ? 'text-text-primary' : 'text-text-secondary',
+                      )}
+                    >
+                      {element}
+                    </Checkbox>
+                  )}
                 </Listbox.Option>
               ))}
             </Listbox.Options>
@@ -96,4 +106,4 @@ const Select = ({
   );
 };
 
-export default Select;
+export default MultiSelect;

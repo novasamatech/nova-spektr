@@ -1,6 +1,6 @@
 import { act, render, screen } from '@testing-library/react';
 
-import Select from './Select';
+import MultiSelect from './MultiSelect';
 
 describe('ui-redesign/Dropdowns/Select', () => {
   const options = [
@@ -15,7 +15,7 @@ describe('ui-redesign/Dropdowns/Select', () => {
   };
 
   test('should render component', () => {
-    render(<Select {...defaultProps} />);
+    render(<MultiSelect {...defaultProps} />);
 
     const button = screen.getByRole('button');
     const placeholder = screen.getByText('Select option');
@@ -25,7 +25,7 @@ describe('ui-redesign/Dropdowns/Select', () => {
 
   test('should call onSelected', async () => {
     const spySelected = jest.fn();
-    render(<Select {...defaultProps} onChange={spySelected} />);
+    render(<MultiSelect {...defaultProps} onChange={spySelected} />);
 
     const button = screen.getByRole('button');
     await act(() => button.click());
@@ -33,6 +33,6 @@ describe('ui-redesign/Dropdowns/Select', () => {
     const option = screen.getByRole('option', { name: options[0].element });
     await act(() => option.click());
 
-    expect(spySelected).toBeCalledWith({ id: options[0].id, value: options[0].value });
+    expect(spySelected).toBeCalledWith([{ id: options[0].id, value: options[0].value }]);
   });
 });
