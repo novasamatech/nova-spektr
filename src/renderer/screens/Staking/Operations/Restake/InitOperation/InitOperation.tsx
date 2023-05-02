@@ -71,7 +71,7 @@ const InitOperation = ({ api, chainId, addressPrefix, staking, identifiers, asse
   useEffect(() => {
     if (!Object.keys(staking).length) return;
 
-    const staked = activeRestakeAccounts.map((a) => unlockingAmount(staking[a.value]?.unlocking));
+    const staked = activeRestakeAccounts.map((a) => unlockingAmount(staking[a.id]?.unlocking));
     const minMaxBalances = staked.reduce<[string, string]>(
       (acc, balance) => {
         if (!balance) return acc;
@@ -151,7 +151,7 @@ const InitOperation = ({ api, chainId, addressPrefix, staking, identifiers, asse
   };
 
   const validateBalance = (amount: string): boolean => {
-    return activeRestakeAccounts.every((a) => validateRestake(staking[a.value] || '0', amount, asset.precision));
+    return activeRestakeAccounts.every((a) => validateRestake(staking[a.id] || '0', amount, asset.precision));
   };
 
   const validateFee = (): boolean => {
@@ -187,6 +187,7 @@ const InitOperation = ({ api, chainId, addressPrefix, staking, identifiers, asse
         canSubmit={activeRestakeAccounts.length > 0}
         addressPrefix={addressPrefix}
         fields={['amount']}
+        balanceRange={stakedRange}
         asset={asset}
         validateBalance={validateBalance}
         validateFee={validateFee}

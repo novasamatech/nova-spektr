@@ -72,7 +72,7 @@ const InitOperation = ({ api, chainId, addressPrefix, staking, identifiers, asse
   useEffect(() => {
     if (!Object.keys(staking).length) return;
 
-    const staked = activeUnstakeAccounts.map((a) => staking[a.value]?.active || '0');
+    const staked = activeUnstakeAccounts.map((a) => staking[a.id]?.active || '0');
     const minMaxBalances = staked.reduce<[string, string]>(
       (acc, balance) => {
         if (!balance) return acc;
@@ -88,7 +88,6 @@ const InitOperation = ({ api, chainId, addressPrefix, staking, identifiers, asse
     setStakedRange(minMaxBalances);
   }, [activeUnstakeAccounts.length, staking]);
 
-  // Set transferable range
   useEffect(() => {
     if (!activeUnstakeAccounts.length) return;
 
@@ -120,7 +119,6 @@ const InitOperation = ({ api, chainId, addressPrefix, staking, identifiers, asse
     setUnstakeAccounts(formattedAccounts);
   }, [totalAccounts.length, staking, amount, fee, activeBalances]);
 
-  // Init active unstake accounts
   useEffect(() => {
     if (unstakeAccounts.length === 0) return;
 
@@ -128,7 +126,6 @@ const InitOperation = ({ api, chainId, addressPrefix, staking, identifiers, asse
     setActiveUnstakeAccounts(activeAccounts);
   }, [unstakeAccounts.length]);
 
-  // Setup transactions
   useEffect(() => {
     if (!stakedRange) return;
 
@@ -155,7 +152,7 @@ const InitOperation = ({ api, chainId, addressPrefix, staking, identifiers, asse
   };
 
   const validateBalance = (amount: string): boolean => {
-    return activeUnstakeAccounts.every((a) => validateUnstake(staking[a.value] || '0', amount, asset.precision));
+    return activeUnstakeAccounts.every((a) => validateUnstake(staking[a.id] || '0', amount, asset.precision));
   };
 
   const validateFee = (): boolean => {
@@ -191,6 +188,7 @@ const InitOperation = ({ api, chainId, addressPrefix, staking, identifiers, asse
         canSubmit={activeUnstakeAccounts.length > 0}
         addressPrefix={addressPrefix}
         fields={['amount']}
+        balanceRange={stakedRange}
         asset={asset}
         validateBalance={validateBalance}
         validateFee={validateFee}
@@ -199,40 +197,44 @@ const InitOperation = ({ api, chainId, addressPrefix, staking, identifiers, asse
           setAmount(amount);
         }}
       >
-        {(error) => (
-          <>
-            <div className="flex justify-between items-center uppercase text-neutral-variant text-2xs">
-              <p>{t('staking.unstake.transferable')}</p>
+        {(errorType) => {
+          const hasFeeError = errorType === 'insufficientBalanceForFee';
 
-              <div className={cn('flex font-semibold', error ? 'text-error' : 'text-neutral')}>
-                {error && <Icon className="text-error mr-1" name="warnCutout" size={12} />}
-                {transferable}&nbsp;{asset.symbol}
+          return (
+            <>
+              <div className="flex justify-between items-center uppercase text-neutral-variant text-2xs">
+                <p>{t('staking.unstake.transferable')}</p>
+
+                <div className={cn('flex font-semibold', hasFeeError ? 'text-error' : 'text-neutral')}>
+                  {hasFeeError && <Icon className="text-error mr-1" name="warnCutout" size={12} />}
+                  {transferable}&nbsp;{asset.symbol}
+                </div>
               </div>
-            </div>
 
-            <div className="flex justify-between items-center uppercase text-neutral-variant text-2xs">
-              <p>{t('staking.unstake.networkFee', { count: activeUnstakeAccounts.length })}</p>
+              <div className="flex justify-between items-center uppercase text-neutral-variant text-2xs">
+                <p>{t('staking.unstake.networkFee', { count: activeUnstakeAccounts.length })}</p>
 
-              <Fee
-                className="text-neutral font-semibold"
-                api={api}
-                asset={asset}
-                transaction={transactions[0]}
-                onFeeChange={setFee}
-              />
-            </div>
+                <Fee
+                  className="text-neutral font-semibold"
+                  api={api}
+                  asset={asset}
+                  transaction={transactions[0]}
+                  onFeeChange={setFee}
+                />
+              </div>
 
-            <HintList>
-              <HintList.Item>
-                {t('staking.unstake.durationHint')} {'('}
-                <UnstakingDuration className="ml-1" api={api} />
-                {')'}
-              </HintList.Item>
-              <HintList.Item>{t('staking.unstake.noRewardsHint')}</HintList.Item>
-              <HintList.Item>{t('staking.unstake.redeemHint')}</HintList.Item>
-            </HintList>
-          </>
-        )}
+              <HintList>
+                <HintList.Item>
+                  {t('staking.unstake.durationHint')} {'('}
+                  <UnstakingDuration className="ml-1" api={api} />
+                  {')'}
+                </HintList.Item>
+                <HintList.Item>{t('staking.unstake.noRewardsHint')}</HintList.Item>
+                <HintList.Item>{t('staking.unstake.redeemHint')}</HintList.Item>
+              </HintList>
+            </>
+          );
+        }}
       </OperationForm>
     </Plate>
   );

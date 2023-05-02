@@ -513,7 +513,7 @@
       "validators": "Validators",
       "yourValidatorsTitle": "Your validators"
     },
-    "notEnoughBalanceError": "Not enough funds to stake specific amount",
+    "notEnoughBalanceError": "Not enough funds to complete operation",
     "notEnoughBalanceForDepositError": "Insufficient balance to pay deposit",
     "notEnoughBalanceForFeeError": "Insufficient balance to pay network fee",
     "notEnoughStakedError": "Not enough staked to unstake specific amount",
