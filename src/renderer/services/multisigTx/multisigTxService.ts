@@ -11,6 +11,7 @@ import { useChains } from '../network/chainsService';
 import { useTransaction } from '../transaction/transactionService';
 import { CallData, AccountId } from '@renderer/domain/shared-kernel';
 import { toAddress } from '@renderer/shared/utils/address';
+import { getCurrentBlockNumber, getExpectedBlockTime } from '@renderer/shared/utils/substrate';
 
 export const useMultisigTx = (): IMultisigTxService => {
   const transactionStorage = storage.connectTo('multisigTransactions');
@@ -20,15 +21,15 @@ export const useMultisigTx = (): IMultisigTxService => {
   }
   const { getMultisigTx, getMultisigTxs, getAccountMultisigTxs, addMultisigTx, updateMultisigTx, deleteMultisigTx } =
     transactionStorage;
-  const { getExpectedBlockTime, getChainById } = useChains();
+  const { getChainById } = useChains();
   const { decodeCallData } = useTransaction();
 
   const subscribeMultisigAccount = (api: ApiPromise, account: MultisigAccount): (() => void) => {
     const intervalId = setInterval(async () => {
       const transactions = await getMultisigTxs({ accountId: account.accountId });
       const pendingTxs = await getPendingMultisigTxs(api, account.accountId);
-      const { block } = await api.rpc.chain.getBlock();
-      const currentBlockNumber = block.header.number.toNumber();
+      const currentBlockNumber = await getCurrentBlockNumber(api);
+      const blockTime = getExpectedBlockTime(api);
 
       pendingTxs.forEach((pendingTx) => {
         const oldTx = transactions.find(
@@ -45,8 +46,6 @@ export const useMultisigTx = (): IMultisigTxService => {
         } else {
           const depositor = pendingTx.params.depositor.toHex();
           if (!account.signatories.find((s) => s.accountId == depositor)) return;
-
-          const blockTime = getExpectedBlockTime(api);
 
           addMultisigTx(
             createTransactionPayload(

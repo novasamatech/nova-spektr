@@ -24,6 +24,7 @@ import OperationStatus from '@renderer/screens/Operations/components/OperationSt
 import { FootnoteText } from '@renderer/components/ui-redesign';
 import ShortTransactionInfo from './ShortTransactionInfo';
 import { MultisigTransactionDS } from '@renderer/services/storage';
+import LogModal from './Log';
 
 type Props = {
   tx: MultisigTransactionDS;
@@ -38,6 +39,7 @@ const Operation = ({ tx, account }: Props) => {
   const { connections } = useNetworkContext();
 
   const [isRowShown, toggleRow] = useToggle();
+  const [isLogModalOpen, toggleLogModal] = useToggle();
   const [isCallDataModalOpen, toggleCallDataModal] = useToggle();
   const [signatoriesList, setSignatories] = useState<Signatory[]>([]);
 
@@ -139,6 +141,7 @@ const Operation = ({ tx, account }: Props) => {
                 pallet="primary"
                 variant="outline"
                 suffixElement={<div className="bg-primary text-white rounded-full px-2">{events.length}</div>}
+                onClick={toggleLogModal}
               >
                 {t('operation.logButton')}
               </Button>
@@ -164,6 +167,7 @@ const Operation = ({ tx, account }: Props) => {
       </div>
 
       <CallDataModal isOpen={isCallDataModalOpen} tx={tx} onSubmit={setupCallData} onClose={toggleCallDataModal} />
+      <LogModal isOpen={isLogModalOpen} tx={tx} account={account} connection={connection} onClose={toggleLogModal} />
     </li>
   );
 };

@@ -94,6 +94,15 @@
       "appName": "Nova Spektr"
     }
   },
+  "log": {
+    "cancelledMessage": "отменил эту операцию",
+    "errorCancelledMessage": "попытался отменить эту операцию",
+    "errorSignedMessage": "попытался подписать эту операцию",
+    "initiatedMessage": "создал эту операцию",
+    "signedMessage": "подписал эту операцию",
+    "title": "Лог",
+    "unknownMessage": " made an unknown action"
+  },
   "matrixCredentials": {
     "subTitle": "Реквизиты Matrix"
   },

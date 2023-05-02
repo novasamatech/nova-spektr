@@ -77,7 +77,7 @@ const Filters = ({ onChangeFilters }: Props) => {
 
     onChangeFilters(filtered);
     setFilteredTxs(filtered);
-  }, [txs.length, activeStatusesValues.length, activeNetworksValues.length, activeOperationTypesValues.length]);
+  }, [txs, activeStatusesValues.length, activeNetworksValues.length, activeOperationTypesValues.length]);
 
   const getTransactionTypeOption = (tx: MultisigTransactionDS) => {
     return TransactionOptions.find((s) => s.value === getFilterableType(tx));
