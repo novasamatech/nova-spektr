@@ -55,6 +55,7 @@ const Bond = () => {
 
   const [activeStep, setActiveStep] = useState<Step>(Step.INIT);
   const [chainName, setChainName] = useState('...');
+
   const [validators, setValidators] = useState<ValidatorMap>({});
   const [accounts, setAccounts] = useState<Account[]>([]);
   const [signer, setSigner] = useState<Account>();

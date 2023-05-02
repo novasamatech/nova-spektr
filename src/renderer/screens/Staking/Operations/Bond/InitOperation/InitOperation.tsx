@@ -136,7 +136,7 @@ const InitOperation = ({ api, chainId, explorers, identifiers, asset, addressPre
 
     setSignatoryOptions(options);
     setActiveSignatory({ id: options[0].id, value: options[0].value });
-  }, [activeStakeAccounts.length, accountIsMultisig, dbAccounts]);
+  }, [firstAccount, accountIsMultisig, dbAccounts]);
 
   useEffect(() => {
     if (stakeAccounts.length === 0) return;
@@ -235,11 +235,11 @@ const InitOperation = ({ api, chainId, explorers, identifiers, asset, addressPre
           />
         )}
 
-        {isMultisig(totalAccounts[0]) &&
+        {accountIsMultisig &&
           (signatoryOptions.length > 1 ? (
             <Dropdown
               weight="lg"
-              placeholder="Select signer"
+              placeholder={t('general.input.signerLabel')}
               activeId={activeSignatory?.id}
               options={signatoryOptions}
               onChange={setActiveSignatory}

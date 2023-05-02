@@ -15,7 +15,7 @@ import {
 } from '@renderer/components/ui';
 import { useI18n } from '@renderer/context/I18nContext';
 import { RewardsDestination } from '@renderer/domain/stake';
-import { validateAddress } from '@renderer/shared/utils/address';
+import { validateAddress, toAddress } from '@renderer/shared/utils/address';
 import { Asset } from '@renderer/domain/asset';
 import { Address, ChainId } from '@renderer/domain/shared-kernel';
 import { RadioResult, RadioOption } from '@renderer/components/ui/RadioGroup/common/types';
@@ -120,7 +120,8 @@ export const OperationForm = ({
         const walletName = wallet?.name || '';
 
         const option = getStakeAccountOption(account, { asset, addressPrefix, walletName });
-        acc.push({ ...option, value: option.value.accountId });
+        const address = toAddress(option.value.accountId, { prefix: addressPrefix });
+        acc.push({ ...option, value: address });
       }
 
       return acc;
