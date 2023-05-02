@@ -57,6 +57,7 @@ const Destination = () => {
   const [accounts, setAccounts] = useState<AccountDS[]>([]);
   const [signer, setSigner] = useState<Account>();
   const [destination, setDestination] = useState<DestinationType>();
+  const [description, setDescription] = useState('');
 
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [multisigTx, setMultisigTx] = useState<Transaction>();
@@ -159,7 +160,7 @@ const Destination = () => {
     };
   };
 
-  const onDestinationResult = ({ accounts, destination, signer }: DestinationResult) => {
+  const onDestinationResult = ({ accounts, destination, signer, description }: DestinationResult) => {
     const destPayload = destination
       ? { type: RewardsDestination.TRANSFERABLE, address: destination }
       : { type: RewardsDestination.RESTAKE };
@@ -169,9 +170,10 @@ const Destination = () => {
     if (signer && isMultisig(accounts[0])) {
       const multisigTx = getMultisigTx(accounts[0], signer.accountId, transactions[0]);
       setMultisigTx(multisigTx);
+      setSigner(signer);
+      setDescription(description || '');
     }
 
-    setSigner(signer);
     setTransactions(transactions);
     setAccounts(accounts);
     setDestination(destPayload);
@@ -263,6 +265,7 @@ const Destination = () => {
           unsignedTx={unsignedTransactions}
           accounts={accounts}
           destination={destination}
+          description={description}
           asset={asset}
           explorers={explorers}
           addressPrefix={addressPrefix}

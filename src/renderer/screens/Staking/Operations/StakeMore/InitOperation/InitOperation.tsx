@@ -17,7 +17,7 @@ import { AccountDS } from '@renderer/services/storage';
 import { nonNullable } from '@renderer/shared/utils/functions';
 import { getStakeAccountOption, getTotalAccounts, validateBalanceForFee, validateStake } from '../../common/utils';
 import { OperationForm } from '../../components';
-import { toAccountId, toAddress } from '@renderer/shared/utils/address';
+import { toAddress } from '@renderer/shared/utils/address';
 import { Account } from '@renderer/domain/account';
 
 export type StakeMoreResult = {
@@ -118,7 +118,7 @@ const InitOperation = ({ api, chainId, addressPrefix, identifiers, asset, onResu
   }, [stakedRange, amount]);
 
   const submitStakeMore = (data: { amount: string }) => {
-    const selectedAccountIds = activeStakeMoreAccounts.map((stake) => toAccountId(stake.id));
+    const selectedAccountIds = activeStakeMoreAccounts.map((stake) => stake.id);
     const accounts = totalAccounts.filter((account) => selectedAccountIds.includes(account.accountId));
 
     onResult({

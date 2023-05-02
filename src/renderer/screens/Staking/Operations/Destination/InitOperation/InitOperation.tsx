@@ -13,7 +13,7 @@ import { useBalance } from '@renderer/services/balance/balanceService';
 import { useWallet } from '@renderer/services/wallet/walletService';
 import { Balance } from '@renderer/domain/balance';
 import { Account, isMultisig } from '@renderer/domain/account';
-import { toAccountId, toAddress } from '@renderer/shared/utils/address';
+import { toAddress } from '@renderer/shared/utils/address';
 import { getTotalAccounts, getStakeAccountOption, getSignatoryOptions } from '../../common/utils';
 import { OperationForm } from '../../components';
 import { Explorer } from '@renderer/domain/chain';
@@ -22,6 +22,7 @@ export type DestinationResult = {
   accounts: Account[];
   destination: Address;
   signer?: Account;
+  description?: string;
 };
 
 type Props = {
@@ -114,14 +115,17 @@ const InitOperation = ({ api, chainId, explorers, addressPrefix, identifiers, as
     setTransactions(newTransactions);
   }, [activeDestAccounts.length, destination]);
 
-  const submitDestination = (data: { destination?: string }) => {
-    const selectedAccountIds = activeDestAccounts.map((stake) => toAccountId(stake.id));
+  const submitDestination = (data: { destination?: string; description?: string }) => {
+    const selectedAccountIds = activeDestAccounts.map((stake) => stake.id);
     const accounts = totalAccounts.filter((account) => selectedAccountIds.includes(account.accountId));
 
     onResult({
       accounts,
       destination: data.destination || '',
-      ...(accountIsMultisig && { signer: activeSignatory?.value }),
+      ...(accountIsMultisig && {
+        description: data.description,
+        signer: activeSignatory?.value,
+      }),
     });
   };
 

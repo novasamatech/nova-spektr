@@ -16,7 +16,7 @@ import { formatAmount, stakeableAmount } from '@renderer/shared/utils/balance';
 import { useValidators } from '@renderer/services/staking/validatorsService';
 import { useWallet } from '@renderer/services/wallet/walletService';
 import { Account, isMultisig, MultisigAccount } from '@renderer/domain/account';
-import { toAccountId, toAddress } from '@renderer/shared/utils/address';
+import { toAddress } from '@renderer/shared/utils/address';
 import { nonNullable } from '@renderer/shared/utils/functions';
 import {
   getStakeAccountOption,
@@ -34,6 +34,7 @@ export type BondResult = {
   accounts: Account[];
   destination: Address;
   signer?: Account;
+  description?: string;
 };
 
 type Props = {
@@ -178,14 +179,17 @@ const InitOperation = ({ api, chainId, explorers, identifiers, asset, addressPre
   }, [activeStakeAccounts.length, activeSignatory, amount, destination]);
 
   const submitBond = (data: { amount: string; destination?: string; description?: string }) => {
-    const selectedAccountIds = activeStakeAccounts.map((a) => toAccountId(a.id));
+    const selectedAccountIds = activeStakeAccounts.map((a) => a.id);
     const accounts = totalAccounts.filter((account) => selectedAccountIds.includes(account.accountId));
 
     onResult({
       accounts,
       amount: formatAmount(data.amount, asset.precision),
       destination: data.destination || '',
-      ...(accountIsMultisig && { signer: activeSignatory?.value }),
+      ...(accountIsMultisig && {
+        description: data.description,
+        signer: activeSignatory?.value,
+      }),
     });
   };
 

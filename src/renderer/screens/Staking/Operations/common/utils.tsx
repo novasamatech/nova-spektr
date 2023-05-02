@@ -121,7 +121,7 @@ export const getStakeAccountOption = <T extends Account | MultisigAccount>(
 export const getRestakeAccountOption = (
   account: Account,
   { walletName, balance, stake, asset, fee, addressPrefix, amount = '0' }: ParamsWithStake,
-): DropdownOption<Address> => {
+): DropdownOption<Account> => {
   const address = toAddress(account.accountId, { prefix: addressPrefix });
   const canValidateBalance = balance && stake && fee;
 
@@ -146,7 +146,7 @@ export const getRestakeAccountOption = (
   );
   const element = getElement(address, account, balanceContent, walletName);
 
-  return { id: account.accountId, value: address, element };
+  return { id: account.accountId, value: account, element };
 };
 
 export const getUnstakeAccountOption = (
