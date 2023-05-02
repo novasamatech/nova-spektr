@@ -9,6 +9,7 @@ import {
   TConnection,
   TAccount,
   TMultisigTransaction,
+  TNotification,
 } from './common/types';
 import { useBalanceStorage } from './balanceStorage';
 import { useConnectionStorage } from './connectionStorage';
@@ -16,6 +17,7 @@ import { useWalletStorage } from './walletStorage';
 import { useAccountStorage } from './accountStorage';
 import { useContactStorage } from './contactStorage';
 import { useTransactionStorage } from './transactionStorage';
+import { useNotificationStorage } from './notificationStorage';
 
 class DexieStorage extends Dexie {
   connections: TConnection;
@@ -24,6 +26,7 @@ class DexieStorage extends Dexie {
   accounts: TAccount;
   contacts: TContact;
   multisigTransactions: TMultisigTransaction;
+  notifications: TNotification;
 
   constructor() {
     super('spektr');
@@ -35,6 +38,7 @@ class DexieStorage extends Dexie {
       contacts: '++id,name,accountId,matrixId',
       multisigTransactions:
         '++id,[accountId+status],[accountId+callHash],[callHash+status+chainId],[accountId+chainId+callHash+blockCreated+indexCreated],accountId,status,callHash',
+      notifications: '++id,type,read',
     });
 
     this.connections = this.table('connections');
@@ -43,6 +47,7 @@ class DexieStorage extends Dexie {
     this.accounts = this.table('accounts');
     this.contacts = this.table('contacts');
     this.multisigTransactions = this.table('multisigTransactions');
+    this.notifications = this.table('notifications');
   }
 }
 
@@ -67,6 +72,8 @@ class StorageFactory implements IStorage {
         return useContactStorage(this.dexieDB.contacts) as DataStorage[T];
       case 'multisigTransactions':
         return useTransactionStorage(this.dexieDB.multisigTransactions) as DataStorage[T];
+      case 'notifications':
+        return useNotificationStorage(this.dexieDB.notifications) as DataStorage[T];
       default:
         return undefined;
     }

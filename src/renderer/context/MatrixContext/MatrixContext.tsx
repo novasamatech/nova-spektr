@@ -29,6 +29,8 @@ import {
 import { Signatory } from '@renderer/domain/signatory';
 import { useNetworkContext } from '@renderer/context/NetworkContext';
 import { useTransaction } from '@renderer/services/transaction/transactionService';
+import { useNotification } from '@renderer/services/notification/notificationService';
+import { MultisigNotificationType } from '@renderer/domain/notification';
 
 type MatrixContextProps = {
   matrix: ISecureMessenger;
@@ -43,6 +45,7 @@ export const MatrixProvider = ({ children }: PropsWithChildren) => {
   const { getAccounts, addAccount, updateAccount } = useAccount();
   const { decodeCallData } = useTransaction();
   const { connections } = useNetworkContext();
+  const { addNotification } = useNotification();
 
   const connectionsRef = useRef(connections);
 
@@ -76,7 +79,7 @@ export const MatrixProvider = ({ children }: PropsWithChildren) => {
     console.info('💛 ===> onInvite');
 
     const { roomId, content } = payload;
-    const { accountId, threshold, signatories } = content.mstAccount;
+    const { accountId, threshold, signatories, accountName, creatorAccountId } = content.mstAccount;
 
     const mstAccountIsValid = accountId === getMultisigAccountId(signatories, threshold);
     if (!mstAccountIsValid) return;
@@ -87,6 +90,18 @@ export const MatrixProvider = ({ children }: PropsWithChildren) => {
 
     if (!mstAccount) {
       await joinRoom(roomId, content);
+
+      addNotification({
+        smpRoomId: roomId,
+        multisigAccountId: accountId,
+        multisigAccountName: accountName,
+        signatories,
+        threshold,
+        originatorAccountId: creatorAccountId,
+        read: true,
+        dateCreated: Date.now(),
+        type: MultisigNotificationType.ACCOUNT_INVITED,
+      });
     } else if (signer) {
       await changeRoom(roomId, mstAccount, content, signer.accountId);
     } else {
