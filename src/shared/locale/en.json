@@ -293,7 +293,7 @@
     "selectSignatoryTitle": "Select signatory",
     "signButton": "Sign with Polkadot Vault",
     "signatoriesTitle": "Signatories",
-    "signing": "Signing ({ signed } of { threshold })",
+    "signing": "{ signed } of { threshold } signed",
     "status": {
       "cancelled": "Cancelled",
       "error": "Error",
@@ -309,6 +309,14 @@
       "inputHint": "Visible only for you and signers",
       "inputPlaceholder": "0x00...",
       "title": "Enter call data"
+    },
+    "filters": {
+      "networkPlaceholder": "Network",
+      "networkSummary": "Networks",
+      "operationTypePlaceholder": "Operation type",
+      "operationTypeSummary": "Operation types",
+      "statusPlaceholder": "Operation status",
+      "statusSummary": "Operation statuses"
     },
     "noOperationsDescription": "There are no pending multisig operations",
     "subTitle": "Your operations",

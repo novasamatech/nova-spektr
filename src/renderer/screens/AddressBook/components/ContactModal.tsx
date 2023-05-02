@@ -6,19 +6,19 @@ import { useI18n } from '@renderer/context/I18nContext';
 import { Address, ErrorType } from '@renderer/domain/shared-kernel';
 import { useContact } from '@renderer/services/contact/contactService';
 import { pasteAddressHandler, toAccountId, validateAddress } from '@renderer/shared/utils/address';
-import { ContactDS } from '@renderer/services/storage';
 import { useMatrix } from '@renderer/context/MatrixContext';
-
-type Props = {
-  isOpen: boolean;
-  onToggle: () => void;
-  contact?: ContactDS;
-};
+import { Contact } from '@renderer/domain/contact';
 
 type ContactForm = {
   name: string;
   matrixId?: string;
   address: Address;
+};
+
+type Props = {
+  isOpen: boolean;
+  onToggle: () => void;
+  contact?: Contact;
 };
 
 const getButtonText = (errors: FieldErrors<ContactForm>, isEdit: boolean): string => {
@@ -63,7 +63,7 @@ const ContactModal = ({ isOpen, onToggle, contact }: Props) => {
     reset({
       name: isEdit ? contact.name : '',
       matrixId: isEdit ? contact.matrixId : '',
-      address: isEdit ? contact.accountId : '',
+      address: isEdit ? contact.address : '',
     });
   }, [contact]);
 

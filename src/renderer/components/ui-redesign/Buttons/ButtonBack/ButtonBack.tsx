@@ -6,9 +6,10 @@ import Icon from '../../../ui/Icon/Icon';
 type Props = {
   path?: string;
   onCustomReturn?: () => void;
+  tabIndex?: number;
 };
 
-const ButtonBack = ({ path, onCustomReturn }: PropsWithChildren<Props>) => {
+const ButtonBack = ({ path, onCustomReturn, tabIndex }: PropsWithChildren<Props>) => {
   const navigate = useNavigate();
 
   const onClick = () => {
@@ -25,6 +26,7 @@ const ButtonBack = ({ path, onCustomReturn }: PropsWithChildren<Props>) => {
     <button
       type="button"
       className="group flex items-center gap-x-2.5 p-1 border rounded border-filter-border" // TODO add proper color when available
+      tabIndex={tabIndex}
       onClick={onClick}
     >
       <Icon size={16} className="text-filter-border" name="arrowLeft" />

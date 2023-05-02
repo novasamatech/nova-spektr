@@ -6,5 +6,5 @@ import React from 'react';
 interface LabelProps extends React.DetailedHTMLProps<React.LabelHTMLAttributes<HTMLLabelElement>, HTMLLabelElement> {}
 
 export const LabelText = ({ className, ...props }: LabelProps) => (
-  <label className={cn('text-footnote text-text-primary', className)} {...props} />
+  <label className={cn('text-footnote font-inter text-text-primary', className)} {...props} />
 );

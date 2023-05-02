@@ -293,7 +293,7 @@
     "selectSignatoryTitle": "Выберите подписанта",
     "signButton": "Подписать в Polkadot Vault",
     "signatoriesTitle": "Подписи",
-    "signing": "Подписание ({ signed } из { threshold })",
+    "signing": "{ signed } из { threshold } подписали",
     "status": {
       "cancelled": "Отменено",
       "error": "Ошибка",
@@ -309,6 +309,14 @@
       "inputHint": "Доступно только вам и подписантам",
       "inputPlaceholder": "0x00...",
       "title": "Введите call data"
+    },
+    "filters": {
+      "networkPlaceholder": "Сеть",
+      "networkSummary": "Сети",
+      "operationTypePlaceholder": "Тип операции",
+      "operationTypeSummary": "Типы операции",
+      "statusPlaceholder": "Статус операции",
+      "statusSummary": "Статусы операции"
     },
     "noOperationsDescription": "Нет ожидающих операций с мультиподписью",
     "subTitle": "Ваши операции",

@@ -95,16 +95,16 @@ export const MatrixProvider = ({ children }: PropsWithChildren) => {
   const createMstAccount = async (roomId: string, extras: SpektrExtras) => {
     const { signatories, threshold, accountName, creatorAccountId } = extras.mstAccount;
 
-    const contactsMap = (await getContacts()).reduce<Record<AccountId, string>>((acc, contact) => {
-      acc[contact.accountId] = contact.name;
+    const contactsMap = (await getContacts()).reduce<Record<AccountId, [Address, string]>>((acc, contact) => {
+      acc[contact.accountId] = [contact.address, contact.name];
 
       return acc;
     }, {});
 
     const mstSignatories = signatories.map((accountId) => ({
       accountId,
-      name: contactsMap[accountId] || toShortAddress(accountId),
-      address: toAddress(accountId),
+      address: contactsMap[accountId][0] || toAddress(accountId),
+      name: contactsMap[accountId][1] || toShortAddress(accountId),
     }));
 
     const mstAccount = createMultisigAccount({
@@ -199,10 +199,10 @@ export const MatrixProvider = ({ children }: PropsWithChildren) => {
     return senderIsSignatory && mstAccountIsValid && callDataIsValid;
   };
 
-  const getMultisigAccount = async (address: Address): Promise<MultisigAccount | undefined> => {
+  const getMultisigAccount = async (accountId: AccountId): Promise<MultisigAccount | undefined> => {
     const accounts = await getAccounts<MultisigAccount>({ signingType: SigningType.MULTISIG });
 
-    return accounts.find((a) => a.accountId === address) as MultisigAccount;
+    return accounts.find((a) => a.accountId === accountId) as MultisigAccount;
   };
 
   const createEvent = (payload: ApprovePayload | FinalApprovePayload, eventStatus: SigningStatus): MultisigEvent => {
@@ -225,7 +225,7 @@ export const MatrixProvider = ({ children }: PropsWithChildren) => {
     event: MultisigEvent,
     txStatus: MultisigTxStatus,
   ): Promise<unknown> => {
-    const descriptionField = txStatus === 'CANCELLED' ? 'cancelDescription' : 'description';
+    const descriptionField = txStatus === MultisigTxFinalStatus.CANCELLED ? 'cancelDescription' : 'description';
 
     return addMultisigTx({
       accountId,

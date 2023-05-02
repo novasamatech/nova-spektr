@@ -1,22 +1,25 @@
 import { Popover as Popup, Transition } from '@headlessui/react';
-import { Fragment, PropsWithChildren, ReactNode, useRef, useState } from 'react';
+import { Fragment, PropsWithChildren, ReactNode, useId, useRef, useState } from 'react';
 import cn from 'classnames';
 
-export interface PopoverProps {
+export type PopoverProps = {
   content: ReactNode;
   offsetPx?: number;
   contentClass?: string;
-}
+};
 
 const Popover = ({ content, children, offsetPx = 10, contentClass }: PropsWithChildren<PopoverProps>) => {
+  const id = useId();
   const ref = useRef<HTMLDivElement>(null);
   const [isOpen, setIsOpen] = useState(false);
 
   return (
     <Popup className="relative">
       <div
+        className="w-fit"
         ref={ref}
         tabIndex={0}
+        aria-details={id}
         onFocus={() => setIsOpen(true)}
         onBlur={() => setIsOpen(false)}
         onMouseEnter={() => setIsOpen(true)}
@@ -35,7 +38,7 @@ const Popover = ({ content, children, offsetPx = 10, contentClass }: PropsWithCh
         leaveTo="opacity-0 translate-y-1"
       >
         <Popup.Panel
-          id="popup"
+          id={id}
           style={{ top: '100%', marginTop: offsetPx + 'px' }}
           className="absolute z-20 rounded-md bg-white border border-container-border shadow-popover" // TODO add proper colors
         >
