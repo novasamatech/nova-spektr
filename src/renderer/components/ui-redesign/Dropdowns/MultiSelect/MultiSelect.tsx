@@ -36,6 +36,35 @@ const MultiSelect = ({
   const selectedOptions = options.filter((option) => selectedIds?.includes(option.id));
   const id = useId();
 
+  const getSelectButtonElement = () => {
+    // if one option selected we show that option
+    // over-wise we show placeholder and selected options count (if not 0)
+    if (selectedOptions.length === 0) {
+      return (
+        <FootnoteText as="span" className="text-text-secondary">
+          {placeholder}
+        </FootnoteText>
+      );
+    }
+
+    if (selectedOptions.length === 1) {
+      return typeof selectedOptions[0].element === 'string' ? (
+        <FootnoteText as="span">{selectedOptions[0].element}</FootnoteText>
+      ) : (
+        selectedOptions[0].element
+      );
+    }
+
+    return (
+      <FootnoteText as="span" className="text-text-primary">
+        {placeholder}
+        <CaptionText as="span" className="text-button-text ml-2 py-0.5 px-1.5 rounded-[30px] bg-accent-background">
+          {selectedOptions.length}
+        </CaptionText>
+      </FootnoteText>
+    );
+  };
+
   const selectElement = (
     <Listbox multiple by="id" disabled={disabled} value={selectedOptions} onChange={onChange}>
       {({ open }) => (
@@ -52,18 +81,7 @@ const MultiSelect = ({
             )}
             tabIndex={tabIndex}
           >
-            <FootnoteText as="span" className={selectedOptions.length ? 'text-text-primary' : 'text-text-secondary'}>
-              {placeholder}
-              {selectedOptions.length > 0 && (
-                <CaptionText
-                  as="span"
-                  className="text-button-text ml-2 py-0.5 px-1.5 rounded-[30px] bg-accent-background"
-                >
-                  {selectedOptions.length}
-                </CaptionText>
-              )}
-            </FootnoteText>
-
+            {getSelectButtonElement()}
             <Icon name="down" size={16} className="text-icon-default" />
           </Listbox.Button>
 
