@@ -152,7 +152,7 @@ export const getRestakeAccountOption = (
 export const getUnstakeAccountOption = (
   account: Account,
   { walletName, balance, stake, asset, fee, addressPrefix, amount = '0' }: ParamsWithStake,
-): DropdownOption<Address> => {
+): DropdownOption<Account> => {
   const address = toAddress(account.accountId, { prefix: addressPrefix });
   const canValidateBalance = balance && stake && fee;
 
@@ -177,7 +177,7 @@ export const getUnstakeAccountOption = (
   );
   const element = getElement(address, account, balanceContent, walletName);
 
-  return { id: account.accountId, value: address, element };
+  return { id: account.accountId, value: account, element };
 };
 
 export const getTotalAccounts = (dbAccounts: AccountDS[], identifiers: string[]): AccountDS[] => {
