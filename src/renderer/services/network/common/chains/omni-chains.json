@@ -3514,6 +3514,10 @@
     ],
     "nodes": [
       {
+        "url": "wss://centrifuge-parachain.api.onfinality.io/public-ws",
+        "name": "Onfinality node"
+      },
+      {
         "url": "wss://fullnode.parachain.centrifuge.io",
         "name": "Centrifuge node"
       }
@@ -5142,69 +5146,16 @@
     "addressPrefix": 42
   },
   {
-    "chainId": "0xe71578b37a7c799b0ab4ee87ffa6f059a6b98f71f06fb8c84a8d88013a548ad6",
-    "parentId": "0x91b171bb158e2d3848fa23a9f1c25182fb8e20313b2c1eb49219da7a70ce90c3",
-    "name": "Darwinia",
-    "assets": [
-      {
-        "assetId": 0,
-        "symbol": "RING",
-        "precision": 18,
-        "priceId": "darwinia-network-native-token",
-        "icon": "https://raw.githubusercontent.com/nova-wallet/nova-utils/master/icons/tokens/white/RING.svg",
-        "name": "Darwinia"
-      }
-    ],
-    "nodes": [
-      {
-        "url": "wss://parachain-rpc.darwinia.network",
-        "name": "Darwinia Network node"
-      },
-      {
-        "url": "wss://darwinia-rpc.dwellir.com",
-        "name": "Dwellir node"
-      }
-    ],
-    "explorers": [
-      {
-        "name": "Subscan",
-        "extrinsic": "https://darwinia-parachain.subscan.io/extrinsic/{hash}",
-        "account": "https://darwinia-parachain.subscan.io/{address}",
-        "event": null,
-        "multisig": "multisig_extrinsic/{index}?call_hash={callHash}"
-      },
-      {
-        "name": "Polkaholic",
-        "account": "https://polkaholic.io/account/{address}",
-        "extrinsic": "https://polkaholic.io/tx/{hash}"
-      }
-    ],
-    "externalApi": {
-      "history": [
-        {
-          "type": "subquery",
-          "url": "https://api.subquery.network/sq/nova-wallet/nova-wallet-darwinia"
-        }
-      ]
-    },
-    "types": {
-      "url": "https://raw.githubusercontent.com/nova-wallet/nova-utils/master/chains/v2/types/darwinia.json",
-      "overridesCommon": true
-    },
-    "icon": "https://raw.githubusercontent.com/nova-wallet/nova-utils/master/icons/chains/gradient/Darwinia.svg",
-    "addressPrefix": 18
-  },
-  {
     "chainId": "0x7838c3c774e887c0a53bcba9e64f702361a1a852d5550b86b58cd73827fa1e1e",
     "parentId": "0x91b171bb158e2d3848fa23a9f1c25182fb8e20313b2c1eb49219da7a70ce90c3",
     "name": "Kapex",
     "assets": [
       {
         "assetId": 0,
-        "symbol": "KAPEX",
+        "symbol": "KPX",
         "precision": 12,
         "icon": "https://raw.githubusercontent.com/nova-wallet/nova-utils/master/icons/tokens/white/KAPEX.svg",
-        "name": "Kapex"
+        "name": "Should be included in assetsNameMap"
       }
     ],
     "nodes": [
@@ -5608,5 +5559,68 @@
     },
     "icon": "https://raw.githubusercontent.com/nova-wallet/nova-utils/master/icons/chains/gradient/Bittensor.svg",
     "addressPrefix": 42
+  },
+  {
+    "chainId": "0xe358eb1d11b31255a286c12e44fe6780b7edb171d657905a97e39f71d9c6c3ee",
+    "parentId": "0x91b171bb158e2d3848fa23a9f1c25182fb8e20313b2c1eb49219da7a70ce90c3",
+    "name": "Ajuna",
+    "assets": [
+      {
+        "assetId": 0,
+        "symbol": "AJUN",
+        "precision": 12,
+        "icon": "https://raw.githubusercontent.com/nova-wallet/nova-utils/master/icons/tokens/white/AJUN.svg",
+        "name": "Ajuna"
+      }
+    ],
+    "nodes": [
+      {
+        "url": "wss://rpc-parachain.ajuna.network",
+        "name": "Ajuna node"
+      },
+      {
+        "url": "wss://ajuna.public.curie.radiumblock.co/ws",
+        "name": "RadiumBlock node"
+      }
+    ],
+    "types": {
+      "url": "https://raw.githubusercontent.com/nova-wallet/nova-utils/master/chains/v2/types/ajuna.json",
+      "overridesCommon": true
+    },
+    "icon": "https://raw.githubusercontent.com/nova-wallet/nova-utils/master/icons/chains/gradient/Ajuna.svg",
+    "addressPrefix": 1328
+  },
+  {
+    "chainId": "0x6c5894837ad89b6d92b114a2fb3eafa8fe3d26a54848e3447015442cd6ef4e66",
+    "name": "3DPass",
+    "assets": [
+      {
+        "assetId": 0,
+        "symbol": "P3D",
+        "precision": 12,
+        "icon": "https://raw.githubusercontent.com/nova-wallet/nova-utils/master/icons/tokens/white/P3D.svg",
+        "name": "3DPass"
+      }
+    ],
+    "nodes": [
+      {
+        "url": "wss://rpc2.3dpass.org",
+        "name": "3DPass node"
+      }
+    ],
+    "explorers": [
+      {
+        "name": "3DPass explorer",
+        "extrinsic": "https://explorer.3dpass.org/extrinsic/{hash}",
+        "account": "https://explorer.3dpass.org/account/{address}",
+        "event": null
+      }
+    ],
+    "types": {
+      "url": "https://raw.githubusercontent.com/nova-wallet/nova-utils/master/chains/v2/types/3dpass.json",
+      "overridesCommon": true
+    },
+    "icon": "https://raw.githubusercontent.com/nova-wallet/nova-utils/master/icons/chains/gradient/3DPass.svg",
+    "addressPrefix": 71
   }
 ]
