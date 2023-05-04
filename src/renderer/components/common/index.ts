@@ -17,9 +17,12 @@ import Badge from './Badge/Badge';
 import Fee from './Fee/Fee';
 import ExplorerLink from './ExplorerLink/ExplorerLink';
 import BalanceNew from './BalanceNew/BalanceNew';
-import AddressWithExplorers from './AddressWithExplorers/AddressWithExplorers';
 import AccountAddress from './AccountAddress/AccountAddress';
-import SignatoryCard from './SignatoryCard/SignatoryCard';
+
+// SignatoryCard and AddressWithExplorers exported separately.
+// Adding them to this file causes to crash all tests which use anything from that file
+// similar issue on stackoverflow:
+// https://stackoverflow.com/questions/49156356/why-does-jest-try-to-resolve-every-component-in-my-index-ts
 
 export {
   AccountsList,
@@ -42,6 +45,4 @@ export {
   ExplorerLink,
   BalanceNew,
   AccountAddress,
-  AddressWithExplorers,
-  SignatoryCard,
 };
