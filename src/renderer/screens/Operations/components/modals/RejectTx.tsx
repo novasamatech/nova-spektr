@@ -3,24 +3,25 @@ import { UnsignedTransaction } from '@substrate/txwrapper-polkadot';
 import { BN } from '@polkadot/util';
 
 import { BaseModal, Button } from '@renderer/components/ui';
+import { Button as ButtonRedesign } from '@renderer/components/ui-redesign';
 import { useI18n } from '@renderer/context/I18nContext';
 import { AccountDS, MultisigTransactionDS } from '@renderer/services/storage';
 import { useToggle } from '@renderer/shared/hooks';
 import { MultisigAccount } from '@renderer/domain/account';
 import { ExtendedChain } from '@renderer/services/network/common/types';
-import Chain from './Chain';
-import { Signing } from './Signing/Signing';
-import { Scanning } from './Scanning/Scanning';
+import Chain from '../Chain';
+import { Signing } from '../Signing/Signing';
+import { Scanning } from '../Scanning/Scanning';
 import { Transaction, TransactionType } from '@renderer/domain/transaction';
 import { Address, HexString, Timepoint } from '@renderer/domain/shared-kernel';
 import { toAddress } from '@renderer/shared/utils/address';
 import { getAssetById } from '@renderer/shared/utils/assets';
 import { useAccount } from '@renderer/services/account/accountService';
-import { getTransactionTitle } from '../common/utils';
-import Details from './Details';
-import { Submit } from './Submit/Submit';
+import { getTransactionTitle } from '../../common/utils';
+import Details from '../Details';
+import { Submit } from '../Submit/Submit';
 import { useTransaction } from '@renderer/services/transaction/transactionService';
-import ShortTransactionInfo from './ShortTransactionInfo';
+import ShortTransactionInfo from '../ShortTransactionInfo';
 import { Fee } from '@renderer/components/common';
 import { useCountdown } from '@renderer/screens/Staking/Operations/hooks/useCountdown';
 import { useBalance } from '@renderer/services/balance/balanceService';
@@ -140,9 +141,9 @@ const RejectTx = ({ tx, account, connection }: Props) => {
   return (
     <>
       <div className="flex justify-between">
-        <Button pallet="error" variant="fill" onClick={toggleModal}>
+        <ButtonRedesign size="sm" pallet="error" variant="fill" onClick={toggleModal}>
           {t('operation.rejectButton')}
-        </Button>
+        </ButtonRedesign>
       </div>
 
       <BaseModal
