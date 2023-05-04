@@ -276,11 +276,12 @@
       "controller": "Controller",
       "deposit": "Multisig deposit",
       "depositor": "Depositor",
+      "description": "Description",
       "multisigWallet": "Multisig wallet",
       "payee": "Payee",
       "recipient": "Recipient",
       "timePoint": "Time Point",
-      "validators": "Validators"
+      "validators": "Selected validators"
     },
     "detailsTitle": "Details",
     "explorerLink": "View in explorer",

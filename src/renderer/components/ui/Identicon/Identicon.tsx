@@ -1,7 +1,7 @@
 import { Identicon as PolkadotIdenticon } from '@polkadot/react-identicon';
 import { IconTheme } from '@polkadot/react-identicon/types';
 import cn from 'classnames';
-import { ReactNode, useLayoutEffect, useRef, memo } from 'react';
+import { ReactNode, useLayoutEffect, useRef, memo, SyntheticEvent } from 'react';
 
 import { SigningType, Address } from '@renderer/domain/shared-kernel';
 import { copyToClipboard } from '@renderer/shared/utils/strings';
@@ -40,7 +40,8 @@ const Identicon = ({
     wrapperRef.current.querySelector('circle')?.setAttribute('fill', 'none');
   }, []);
 
-  const onCopyToClipboard = async () => {
+  const onCopyToClipboard = async (e: SyntheticEvent) => {
+    e.stopPropagation();
     await copyToClipboard(address);
   };
 
