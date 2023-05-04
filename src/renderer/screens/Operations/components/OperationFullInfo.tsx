@@ -17,7 +17,7 @@ import { useNetworkContext } from '@renderer/context/NetworkContext';
 import { useToggle } from '@renderer/shared/hooks';
 import { useI18n } from '@renderer/context/I18nContext';
 import { Button, CaptionText, InfoLink, SmallTitleText } from '@renderer/components/ui-redesign';
-import { SignatoryCard } from '@renderer/components/common';
+import SignatoryCard from '@renderer/components/common/SignatoryCard/SignatoryCard';
 
 type Props = {
   tx: MultisigTransaction;

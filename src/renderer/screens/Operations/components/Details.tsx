@@ -12,7 +12,8 @@ import { getMultisigExtrinsicLink } from '../common/utils';
 import { MultisigTransaction } from '@renderer/domain/transaction';
 import { Button, FootnoteText } from '@renderer/components/ui-redesign';
 import ValidatorsModal from '@renderer/screens/Staking/Operations/components/ValidatorsModal/ValidatorsModal';
-import { AddressWithExplorers, BalanceNew } from '@renderer/components/common';
+import { BalanceNew } from '@renderer/components/common';
+import AddressWithExplorers from '@renderer/components/common/AddressWithExplorers/AddressWithExplorers';
 
 type Props = {
   tx: MultisigTransaction;
