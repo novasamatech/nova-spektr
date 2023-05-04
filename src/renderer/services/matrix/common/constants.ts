@@ -5,7 +5,7 @@ export const ROOM_CRYPTO_CONFIG = { algorithm: 'm.megolm.v1.aes-sha2' };
 export const MATRIX_SHORT_USERNAME_REGEX = /^[a-z\d=_\-./]+$/i;
 
 export const MATRIX_FULL_USERNAME_REGEX =
-  /@[\w\d\-_]*:(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.)+[a-z0-9][a-z0-9-]{0,61}[a-z0-9]/i;
+  /^@[\w\-_./=]*:(?:[a-z\d](?:[a-z\d-]{0,61}[a-z\d])?\.)+[a-z\d][a-z\d-]{0,61}[a-z\d]$/i;
 
 export const KEY_FILE_MAX_SIZE = 128;
 
