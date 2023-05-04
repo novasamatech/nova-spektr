@@ -1,6 +1,6 @@
 import { act, render, screen } from '@testing-library/react';
 
-import { AddressInfo, SeedInfo, SimpleSeedInfo } from '@renderer/components/common/QrCode/QrReader/common/types';
+import { AddressInfo, SeedInfo, CompactSeedInfo } from '@renderer/components/common/QrCode/QrReader/common/types';
 import { CryptoType, CryptoTypeString } from '@renderer/domain/shared-kernel';
 import ParitySignerQrReader from '../ParitySignerQrReader/ParitySignerQrReader';
 import ScanMoreModal from './ScanMoreModal';
@@ -37,14 +37,14 @@ describe('screens/Onboarding/Parity/ScanMoreModal', () => {
     genesisHash: new Uint8Array([0]),
   });
 
-  const renderWithAccounts = async (oldAccs: SimpleSeedInfo[], qrPayload: SeedInfo[]) => {
+  const renderWithAccounts = async (oldAccs: CompactSeedInfo[], qrPayload: SeedInfo[]) => {
     const spyResult = jest.fn();
     (ParitySignerQrReader as jest.Mock).mockImplementation(({ onResult }: any) => (
       <button type="button" onClick={() => onResult(qrPayload)}>
         paritySignerQrReader
       </button>
     ));
-    render(<ScanMoreModal isOpen accounts={oldAccs} onResult={spyResult} onClose={() => {}} />);
+    render(<ScanMoreModal isOpen seedInfo={oldAccs} onResult={spyResult} onClose={() => {}} />);
 
     const qrReader = screen.getByRole('button', { name: 'paritySignerQrReader' });
     await act(async () => qrReader.click());
@@ -58,7 +58,7 @@ describe('screens/Onboarding/Parity/ScanMoreModal', () => {
 
   test('should render component', async () => {
     await act(async () => {
-      render(<ScanMoreModal isOpen accounts={[]} onResult={() => {}} onClose={() => {}} />);
+      render(<ScanMoreModal isOpen seedInfo={[]} onResult={() => {}} onClose={() => {}} />);
     });
 
     const modalTitle = screen.getByText('onboarding.paritySigner.qrModalTitle');
@@ -67,7 +67,7 @@ describe('screens/Onboarding/Parity/ScanMoreModal', () => {
 
   // We have: 1 derived, receive: 1 derived
   test('should render account exists state', async () => {
-    const oldAccs: SimpleSeedInfo[] = [{ address: DERIVED_ADDRESS, derivedKeys: {} }];
+    const oldAccs: CompactSeedInfo[] = [{ address: DERIVED_ADDRESS, derivedKeys: {} }];
     const qrPayload: SeedInfo[] = [
       createRootQrPayload([
         226, 65, 55, 251, 108, 96, 245, 152, 153, 32, 22, 197, 5, 226, 224, 219, 19, 33, 85, 67, 151, 63, 167, 99, 98,
@@ -85,7 +85,7 @@ describe('screens/Onboarding/Parity/ScanMoreModal', () => {
 
   // We have: 2 derived, receive: 1 root + 4 derived
   test('should render some accounts exist state_1', async () => {
-    const oldAccs: SimpleSeedInfo[] = [
+    const oldAccs: CompactSeedInfo[] = [
       { address: DERIVED_ADDRESS, derivedKeys: {} },
       { address: '15dQe7XkGCExuWYH72VcDkf74aTT7ncDfKVtTKs2DHrbA2cY', derivedKeys: {} },
     ];
@@ -110,7 +110,7 @@ describe('screens/Onboarding/Parity/ScanMoreModal', () => {
 
   // We have: 1 root, 1 derived, receive: 1 root + 4 derived
   test('should render some accounts exist state_2', async () => {
-    const oldAccs: SimpleSeedInfo[] = [
+    const oldAccs: CompactSeedInfo[] = [
       { address: ROOT_ADDRESS, derivedKeys: {} },
       { address: DERIVED_ADDRESS, derivedKeys: {} },
     ];
@@ -135,7 +135,7 @@ describe('screens/Onboarding/Parity/ScanMoreModal', () => {
 
   // We have: 1 root, 1 derived, receive: 1 root + 1 same derived
   test('should render no new accounts state_1', async () => {
-    const oldAccs: SimpleSeedInfo[] = [
+    const oldAccs: CompactSeedInfo[] = [
       { address: ROOT_ADDRESS, derivedKeys: {} },
       { address: DERIVED_ADDRESS, derivedKeys: {} },
     ];
@@ -149,7 +149,7 @@ describe('screens/Onboarding/Parity/ScanMoreModal', () => {
 
   // We have: 1 root + 1 derived, receive: 1 root + 1 same derived
   test('should render no new accounts state_2', async () => {
-    const oldAccs: SimpleSeedInfo[] = [
+    const oldAccs: CompactSeedInfo[] = [
       {
         address: ROOT_ADDRESS,
         derivedKeys: { '0x123': [createDerivedPayload(DERIVED_ADDRESS, 0)] },
