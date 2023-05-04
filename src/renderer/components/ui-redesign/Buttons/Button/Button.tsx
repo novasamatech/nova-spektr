@@ -38,7 +38,7 @@ const Button = ({
     form={form}
     disabled={disabled}
     className={cn(
-      'flex items-center justify-center gap-x-2 font-medium select-none',
+      'flex items-center justify-center gap-x-2 font-medium select-none outline-offset-1',
       SizeClass[size],
       ViewClass[`${variant}_${pallet}`],
       // primary fill button has linear gradient bg for hover & active
