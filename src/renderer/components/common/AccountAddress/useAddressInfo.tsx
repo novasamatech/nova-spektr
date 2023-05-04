@@ -13,29 +13,29 @@ const useAddressInfo = (address: Address, explorers?: Explorer[]): InfoSection[]
   const { getLiveAccounts } = useAccount();
   const { matrix } = useMatrix();
 
-  const accountFromUser = getLiveAccounts().find((x) => toAddress(x.accountId) === address);
-  const accountFromContact = contacts.find((x) => x.address === address);
+  const accountFromUser = getLiveAccounts().find((account) => toAddress(account.accountId) === address);
+  const accountFromContact = contacts.find((contact) => contact.address === address);
 
   const matrixId = accountFromContact?.matrixId || (accountFromUser && matrix.userId);
 
   const infoSection: InfoSection = { title: 'Address', items: [{ id: address, value: address }] };
   const popoverItems = [infoSection];
 
-  const matrixSection: InfoSection | undefined =
-    (matrixId && {
+  if (matrixId) {
+    popoverItems.push({
       title: 'Matrix ID',
       items: [{ id: matrixId, value: matrixId }],
-    }) ||
-    undefined;
-  matrixSection && popoverItems.push(matrixSection);
+    });
+  }
 
-  const explorerSection: InfoSection | undefined = explorers && {
-    items: explorers.map((exolorer) => ({
-      id: exolorer.name,
-      value: <ExplorerLink explorer={exolorer} address={address} />,
-    })),
-  };
-  explorerSection && popoverItems.push(explorerSection);
+  if (explorers) {
+    popoverItems.push({
+      items: explorers.map((exolorer) => ({
+        id: exolorer.name,
+        value: <ExplorerLink explorer={exolorer} address={address} />,
+      })),
+    });
+  }
 
   return popoverItems;
 };
