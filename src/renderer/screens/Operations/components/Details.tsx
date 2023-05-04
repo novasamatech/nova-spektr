@@ -222,7 +222,7 @@ const Details = ({ tx, account, connection, withAdvanced = true }: Props) => {
           pallet="primary"
           size="sm"
           suffixElement={<Icon name={isAdvancedShown ? 'up' : 'down'} size={16} className="text-icon-default" />}
-          className="my-1"
+          className="my-1 w-fit"
           onClick={toggleAdvanced}
         >
           {t('operation.advanced')}
