@@ -38,7 +38,7 @@ const MultiSelect = ({
 
   const getSelectButtonElement = () => {
     // if one option selected we show that option
-    // over-wise we show placeholder and selected options count (if not 0)
+    // otherwise we show placeholder and selected options count (if not 0)
     if (selectedOptions.length === 0) {
       return (
         <FootnoteText as="span" className="text-text-secondary">
