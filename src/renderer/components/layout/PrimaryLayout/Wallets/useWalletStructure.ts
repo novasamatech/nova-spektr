@@ -15,7 +15,7 @@ export const useWalletsStructure = (accountQuery: Partial<AccountDS>, query: str
   const { getLiveWallets } = useWallet();
   const { getChainsData } = useChains();
 
-  const [chainsObject, setChainsObject] = useState<Record<string, Chain>>({});
+  const [chainsObject, setChainsObject] = useState<Record<ChainId, Chain>>({});
 
   const wallets = getLiveWallets();
   const paritySignerAccounts = getLiveAccounts(accountQuery);

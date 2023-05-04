@@ -57,7 +57,7 @@ const Parity = () => {
             {isPlainQr ? (
               <StepThreeSingle qrData={qrPayload} onNextStep={() => setActiveStep(Step.FINAL)} />
             ) : (
-              <StepThree qrData={qrPayload} onNextStep={() => setActiveStep(Step.FINAL)} />
+              <StepThree seedInfo={qrPayload} onNextStep={() => setActiveStep(Step.FINAL)} />
             )}
           </>
         )}

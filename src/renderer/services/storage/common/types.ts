@@ -7,6 +7,7 @@ import { Address, ChainId, AccountId } from '@renderer/domain/shared-kernel';
 import { Wallet } from '@renderer/domain/wallet';
 import { MultisigTransaction } from '@renderer/domain/transaction';
 import { Account, MultisigAccount } from '@renderer/domain/account';
+import { Notification } from '@renderer/domain/notification';
 
 // =====================================================
 // ================ Storage interface ==================
@@ -68,6 +69,10 @@ export interface IMultisigTransactionStorage {
   updateMultisigTx: (tx: MultisigTransactionDS) => Promise<ID>;
   deleteMultisigTx: (txId: ID) => Promise<void>;
 }
+export interface INotificationStorage {
+  getNotifications: <T extends Notification>(where?: Partial<T>) => Promise<NotificationDS[]>;
+  addNotification: (notification: Notification) => Promise<ID>;
+}
 
 // =====================================================
 // ================== Storage Schemes ==================
@@ -80,6 +85,7 @@ export type DataStorage = {
   accounts: IAccountStorage;
   contacts: IContactStorage;
   multisigTransactions: IMultisigTransactionStorage;
+  notifications: INotificationStorage;
 };
 
 export type ID = string;
@@ -91,6 +97,7 @@ export type BalanceDS = WithID<Balance>;
 export type ConnectionDS = WithID<Connection>;
 export type AccountDS = WithID<Account | MultisigAccount>;
 export type MultisigTransactionDS = WithID<MultisigTransaction>;
+export type NotificationDS = WithID<Notification>;
 
 export type TWallet = Table<Wallet, ID>;
 export type TContact = Table<Contact, ID>;
@@ -98,3 +105,4 @@ export type TBalance = Table<Balance, ID[]>;
 export type TConnection = Table<Connection, ID>;
 export type TAccount = Table<Account | MultisigAccount, ID>;
 export type TMultisigTransaction = Table<MultisigTransaction, ID>;
+export type TNotification = Table<Notification, ID>;

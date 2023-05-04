@@ -28,6 +28,8 @@ import {
 } from '@renderer/domain/transaction';
 import { Signatory } from '@renderer/domain/signatory';
 import { useNetworkContext } from '@renderer/context/NetworkContext';
+import { useNotification } from '@renderer/services/notification/notificationService';
+import { MultisigNotificationType } from '@renderer/domain/notification';
 
 type MatrixContextProps = {
   matrix: ISecureMessenger;
@@ -41,6 +43,7 @@ export const MatrixProvider = ({ children }: PropsWithChildren) => {
   const { getMultisigTxs, addMultisigTx, updateMultisigTx, updateCallData } = useMultisigTx();
   const { getAccounts, addAccount, updateAccount } = useAccount();
   const { connections } = useNetworkContext();
+  const { addNotification } = useNotification();
 
   const connectionsRef = useRef(connections);
 
@@ -74,7 +77,7 @@ export const MatrixProvider = ({ children }: PropsWithChildren) => {
     console.info('💛 ===> onInvite');
 
     const { roomId, content } = payload;
-    const { accountId, threshold, signatories } = content.mstAccount;
+    const { accountId, threshold, signatories, accountName, creatorAccountId } = content.mstAccount;
 
     const mstAccountIsValid = accountId === getMultisigAccountId(signatories, threshold);
     if (!mstAccountIsValid) return;
@@ -85,6 +88,18 @@ export const MatrixProvider = ({ children }: PropsWithChildren) => {
 
     if (!mstAccount) {
       await joinRoom(roomId, content);
+
+      addNotification({
+        smpRoomId: roomId,
+        multisigAccountId: accountId,
+        multisigAccountName: accountName,
+        signatories,
+        threshold,
+        originatorAccountId: creatorAccountId,
+        read: true,
+        dateCreated: Date.now(),
+        type: MultisigNotificationType.ACCOUNT_INVITED,
+      });
     } else if (signer) {
       await changeRoom(roomId, mstAccount, content, signer.accountId);
     } else {
@@ -95,16 +110,16 @@ export const MatrixProvider = ({ children }: PropsWithChildren) => {
   const createMstAccount = async (roomId: string, extras: SpektrExtras) => {
     const { signatories, threshold, accountName, creatorAccountId } = extras.mstAccount;
 
-    const contactsMap = (await getContacts()).reduce<Record<AccountId, string>>((acc, contact) => {
-      acc[contact.accountId] = contact.name;
+    const contactsMap = (await getContacts()).reduce<Record<AccountId, [Address, string]>>((acc, contact) => {
+      acc[contact.accountId] = [contact.address, contact.name];
 
       return acc;
     }, {});
 
     const mstSignatories = signatories.map((accountId) => ({
       accountId,
-      name: contactsMap[accountId] || toShortAddress(accountId),
-      address: toAddress(accountId),
+      address: contactsMap[accountId][0] || toAddress(accountId),
+      name: contactsMap[accountId][1] || toShortAddress(accountId),
     }));
 
     const mstAccount = createMultisigAccount({
@@ -199,10 +214,10 @@ export const MatrixProvider = ({ children }: PropsWithChildren) => {
     return senderIsSignatory && mstAccountIsValid && callDataIsValid;
   };
 
-  const getMultisigAccount = async (address: Address): Promise<MultisigAccount | undefined> => {
+  const getMultisigAccount = async (accountId: AccountId): Promise<MultisigAccount | undefined> => {
     const accounts = await getAccounts<MultisigAccount>({ signingType: SigningType.MULTISIG });
 
-    return accounts.find((a) => a.accountId === address) as MultisigAccount;
+    return accounts.find((a) => a.accountId === accountId) as MultisigAccount;
   };
 
   const createEvent = (payload: ApprovePayload | FinalApprovePayload, eventStatus: SigningStatus): MultisigEvent => {
@@ -225,7 +240,7 @@ export const MatrixProvider = ({ children }: PropsWithChildren) => {
     event: MultisigEvent,
     txStatus: MultisigTxStatus,
   ): Promise<unknown> => {
-    const descriptionField = txStatus === 'CANCELLED' ? 'cancelDescription' : 'description';
+    const descriptionField = txStatus === MultisigTxFinalStatus.CANCELLED ? 'cancelDescription' : 'description';
 
     return addMultisigTx({
       accountId,
