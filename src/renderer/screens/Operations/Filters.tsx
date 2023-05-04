@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react';
 
-import { Select } from '@renderer/components/ui';
 import { useI18n } from '@renderer/context/I18nContext';
 import { useMultisigTx } from '@renderer/services/multisigTx/multisigTxService';
 import { MultisigTransactionDS } from '@renderer/services/storage';
@@ -8,9 +7,22 @@ import { ChainId, SigningType } from '@renderer/domain/shared-kernel';
 import { useAccount } from '@renderer/services/account/accountService';
 import { nonNullable } from '@renderer/shared/utils/functions';
 import { UNKNOWN_TYPE, getStatusOptions, getTransactionOptions, TransferTypes } from './common/utils';
-import { DropdownOption, DropdownResult } from '@renderer/components/ui/Dropdowns/common/types';
+import { DropdownOption, DropdownResult } from '@renderer/components/ui-redesign/Dropdowns/common/types';
 import { MultisigTransaction, MultisigTxStatus, TransactionType } from '@renderer/domain/transaction';
 import { useNetworkContext } from '@renderer/context/NetworkContext';
+import { MultiSelect } from '@renderer/components/ui-redesign';
+
+type FiltersOptions = {
+  statusOptions: Set<DropdownOption>;
+  networkOptions: Set<DropdownOption>;
+  typeOptions: Set<DropdownOption>;
+};
+
+const filtersEmptyValue: FiltersOptions = {
+  statusOptions: new Set<DropdownOption>(),
+  networkOptions: new Set<DropdownOption>(),
+  typeOptions: new Set<DropdownOption>(),
+};
 
 type Props = {
   onChangeFilters: (filteredTxs: MultisigTransaction[]) => void;
@@ -39,6 +51,8 @@ const Filters = ({ onChangeFilters }: Props) => {
   const [activeOperationTypes, setActiveOperationTypes] = useState<
     DropdownResult<TransactionType | typeof UNKNOWN_TYPE>[]
   >([]);
+
+  const [filtersOptions, setFiltersOptions] = useState<FiltersOptions>(filtersEmptyValue);
 
   const accounts = getActiveAccounts({ signingType: SigningType.MULTISIG });
   const accountIds = accounts.map((a) => a.accountId).filter(nonNullable);
@@ -82,51 +96,73 @@ const Filters = ({ onChangeFilters }: Props) => {
   const getTransactionTypeOption = (tx: MultisigTransactionDS) => {
     return TransactionOptions.find((s) => s.value === getFilterableType(tx));
   };
+  const getAvailableFiltersOptions = (transactions: MultisigTransaction[]) =>
+    transactions.reduce(
+      (acc, tx) => {
+        const statusOption = StatusOptions.find((s) => s.value === tx.status);
+        const networkOption = NetworkOptions.find((s) => s.value === tx.chainId);
+        const typeOption = getTransactionTypeOption(tx);
 
-  const { statusOptions, networkOptions, typeOptions } = filteredTxs.reduce(
-    (acc, tx) => {
-      const statusOption = StatusOptions.find((s) => s.value === tx.status);
-      const networkOption = NetworkOptions.find((s) => s.value === tx.chainId);
-      const typeOption = getTransactionTypeOption(tx);
+        if (statusOption) acc.statusOptions.add(statusOption);
+        if (networkOption) acc.networkOptions.add(networkOption);
+        if (typeOption) acc.typeOptions.add(typeOption);
 
-      if (statusOption) acc.statusOptions.add(statusOption);
-      if (networkOption) acc.networkOptions.add(networkOption);
-      if (typeOption) acc.typeOptions.add(typeOption);
+        return acc;
+      },
+      {
+        statusOptions: new Set<DropdownOption>(),
+        networkOptions: new Set<DropdownOption>(),
+        typeOptions: new Set<DropdownOption>(),
+      },
+    );
 
-      return acc;
-    },
-    {
-      statusOptions: new Set<DropdownOption>(),
-      networkOptions: new Set<DropdownOption>(),
-      typeOptions: new Set<DropdownOption>(),
-    },
-  );
+  const changeFiltersOptions = (changedFilter: 'status' | 'network' | 'type') => {
+    const availableOptions = getAvailableFiltersOptions(filteredTxs);
+    setFiltersOptions((prevState) => ({
+      statusOptions: changedFilter === 'status' ? prevState.statusOptions : availableOptions.statusOptions,
+      networkOptions: changedFilter === 'network' ? prevState.networkOptions : availableOptions.networkOptions,
+      typeOptions: changedFilter === 'type' ? prevState.typeOptions : availableOptions.typeOptions,
+    }));
+  };
+
+  useEffect(() => setFiltersOptions(getAvailableFiltersOptions(txs)), [txs.length]);
+
+  const { statusOptions, networkOptions, typeOptions } = filtersOptions;
 
   return (
     <div className="flex gap-2 my-4 pl-6">
-      <Select
+      <MultiSelect
         className="w-[200px]"
         placeholder={t('operations.filters.statusPlaceholder')}
-        summary={t('operations.filters.statusSummary')}
-        activeIds={activeStatuses.map(({ id }) => id)}
+        selectedIds={activeStatuses.map(({ id }) => id)}
         options={[...statusOptions]}
-        onChange={setActiveStatuses}
+        disabled={statusOptions.size === 1}
+        onChange={(value) => {
+          setActiveStatuses(value);
+          changeFiltersOptions('status');
+        }}
       />
-      <Select
+      <MultiSelect
         className="w-[200px]"
         placeholder={t('operations.filters.networkPlaceholder')}
-        summary={t('operations.filters.networkSummary')}
-        activeIds={activeNetworks.map(({ id }) => id)}
+        selectedIds={activeNetworks.map(({ id }) => id)}
         options={[...networkOptions]}
-        onChange={setActiveNetworks}
+        disabled={networkOptions.size === 1}
+        onChange={(value) => {
+          setActiveNetworks(value);
+          changeFiltersOptions('network');
+        }}
       />
-      <Select
+      <MultiSelect
         className="w-[200px]"
         placeholder={t('operations.filters.operationTypePlaceholder')}
-        summary={t('operations.filters.operationTypeSummary')}
-        activeIds={activeOperationTypes.map(({ id }) => id)}
+        selectedIds={activeOperationTypes.map(({ id }) => id)}
         options={[...typeOptions]}
-        onChange={setActiveOperationTypes}
+        disabled={typeOptions.size === 1}
+        onChange={(value) => {
+          setActiveOperationTypes(value);
+          changeFiltersOptions('type');
+        }}
       />
     </div>
   );
