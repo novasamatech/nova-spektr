@@ -49,9 +49,15 @@ describe('screens/Onboard/Parity/StepThree', () => {
       derivedKeys: [
         {
           address: '5E7TYrCi6Yc2rZkU1x9hERoJSMyN3vDgNPmt3RFMtYBpzC1o',
-          derivationPath: '//test',
+          derivationPath: '//test_1',
           encryption: CryptoType.ED25519,
           genesisHash: new Uint8Array([0]),
+        },
+        {
+          address: '5HND6z7jovmTEeEyXnucmT1SzUA8eb1d3AsWdDp8TBFWKC5u',
+          derivationPath: '//test_2',
+          encryption: CryptoType.ED25519,
+          genesisHash: new Uint8Array([1, 2, 3]),
         },
       ],
     },
@@ -59,7 +65,7 @@ describe('screens/Onboard/Parity/StepThree', () => {
 
   test('should render component', async () => {
     await act(async () => {
-      render(<StepThree qrData={qrData} onNextStep={() => {}} />);
+      render(<StepThree seedInfo={qrData} onNextStep={() => {}} />);
     });
 
     const inputs = screen.getAllByRole('textbox');
@@ -68,7 +74,7 @@ describe('screens/Onboard/Parity/StepThree', () => {
 
   test('should render 1 root 1 derived', async () => {
     await act(async () => {
-      render(<StepThree qrData={qrData} onNextStep={() => {}} />);
+      render(<StepThree seedInfo={qrData} onNextStep={() => {}} />);
     });
 
     const root = screen.getByDisplayValue('5CGQ7BPJZZ...XdZeVbXyr9');
@@ -77,11 +83,22 @@ describe('screens/Onboard/Parity/StepThree', () => {
     expect(derived).toBeInTheDocument();
   });
 
+  test('should not render not existing chains', async () => {
+    await act(async () => {
+      render(<StepThree seedInfo={qrData} onNextStep={() => {}} />);
+    });
+
+    const root = screen.getByDisplayValue('5CGQ7BPJZZ...XdZeVbXyr9');
+    const skippedDerived = screen.queryByDisplayValue('5HND6z7jov...p8TBFWKC5u');
+    expect(root).toBeInTheDocument();
+    expect(skippedDerived).not.toBeInTheDocument();
+  });
+
   test('should lead to root block explorers', async () => {
     window.HTMLElement.prototype.scrollIntoView = jest.fn();
 
     await act(async () => {
-      render(<StepThree qrData={qrData} onNextStep={() => {}} />);
+      render(<StepThree seedInfo={qrData} onNextStep={() => {}} />);
     });
 
     const button = screen.getByTestId(`explorers-${TEST_ADDRESS}`);
