@@ -5155,7 +5155,7 @@
         "symbol": "KPX",
         "precision": 12,
         "icon": "https://raw.githubusercontent.com/nova-wallet/nova-utils/master/icons/tokens/white/KAPEX.svg",
-        "name": "Should be included in assetsNameMap"
+        "name": "Kapex"
       }
     ],
     "nodes": [
@@ -5220,46 +5220,6 @@
     },
     "icon": "https://raw.githubusercontent.com/nova-wallet/nova-utils/master/icons/chains/gradient/Polymesh.svg",
     "addressPrefix": 12
-  },
-  {
-    "chainId": "0xb34f6cd03a41f0fab38ba9fd5b11cce5f303633c46f39f0c6fdc7c3c602bafa9",
-    "parentId": "0xb0a8d493285c2df73290dfb7e61f870f17b41801197a149ca93654499ea3dafe",
-    "name": "Snow",
-    "assets": [
-      {
-        "assetId": 0,
-        "symbol": "ICZ",
-        "precision": 18,
-        "icon": "https://raw.githubusercontent.com/nova-wallet/nova-utils/master/icons/tokens/white/ICZ.svg",
-        "name": "Snow token"
-      }
-    ],
-    "nodes": [
-      {
-        "url": "wss://snow-rpc.icenetwork.io",
-        "name": "Snow node"
-      }
-    ],
-    "explorers": [
-      {
-        "name": "Subscan",
-        "extrinsic": "https://snow.subscan.io/extrinsic/{hash}",
-        "account": "https://snow.subscan.io/account/{address}",
-        "event": null,
-        "multisig": "https://snow.subscan.io/multisig_extrinsic/{index}?call_hash={callHash}"
-      },
-      {
-        "name": "Polkaholic",
-        "account": "https://polkaholic.io/account/{address}",
-        "extrinsic": "https://polkaholic.io/tx/{hash}"
-      }
-    ],
-    "types": {
-      "url": "https://raw.githubusercontent.com/nova-wallet/nova-utils/master/chains/v2/types/snow.json",
-      "overridesCommon": true
-    },
-    "icon": "https://raw.githubusercontent.com/nova-wallet/nova-utils/master/icons/chains/gradient/SNOW.svg",
-    "addressPrefix": 2207
   },
   {
     "chainId": "0x6f0f071506de39058fe9a95bbca983ac0e9c5da3443909574e95d52eb078d348",
