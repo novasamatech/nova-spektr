@@ -76,7 +76,7 @@ const InitOperation = ({ api, chainId, addressPrefix, explorers, staking, identi
 
   const firstAccount = activeUnstakeAccounts[0]?.value;
   const accountIsMultisig = isMultisig(firstAccount);
-  const formFields = accountIsMultisig ? ['amount', 'description'] : ['amount'];
+  const formFields = accountIsMultisig ? [{ name: 'amount' }, { name: 'description' }] : [{ name: 'amount' }];
 
   useEffect(() => {
     const balancesMap = new Map(balances.map((balance) => [balance.accountId, balance]));

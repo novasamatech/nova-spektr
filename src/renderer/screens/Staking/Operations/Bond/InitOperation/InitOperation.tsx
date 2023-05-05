@@ -78,7 +78,9 @@ const InitOperation = ({ api, chainId, explorers, identifiers, asset, addressPre
 
   const firstAccount = activeStakeAccounts[0]?.value;
   const accountIsMultisig = isMultisig(firstAccount);
-  const formFields = accountIsMultisig ? ['amount', 'destination', 'description'] : ['amount', 'destination'];
+  const formFields = accountIsMultisig
+    ? [{ name: 'amount' }, { name: 'destination' }, { name: 'description' }]
+    : [{ name: 'amount' }, { name: 'destination' }];
 
   const accountIds = totalAccounts.map((account) => account.accountId);
   const signerBalance = getLiveBalance(activeSignatory?.value.accountId || '0x0', chainId, asset.assetId.toString());

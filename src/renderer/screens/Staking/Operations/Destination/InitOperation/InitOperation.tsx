@@ -64,7 +64,7 @@ const InitOperation = ({ api, chainId, explorers, addressPrefix, identifiers, as
 
   const firstAccount = activeDestAccounts[0]?.value;
   const accountIsMultisig = isMultisig(firstAccount);
-  const formFields = accountIsMultisig ? ['destination', 'description'] : ['destination'];
+  const formFields = accountIsMultisig ? [{ name: 'destination' }, { name: 'description' }] : [{ name: 'destination' }];
 
   useEffect(() => {
     const newBalancesMap = new Map(balances.map((balance) => [balance.accountId, balance]));

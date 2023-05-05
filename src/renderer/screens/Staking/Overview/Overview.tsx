@@ -76,8 +76,8 @@ const Overview = () => {
     })
     .map((a) => ({ ...a, accountId: toAddress(a.accountId, { prefix: addressPrefix }) }));
 
-  const accountAddresses = activeAccounts.reduce<Address[]>((acc, account) => {
-    return account.accountId ? acc.concat(account.accountId) : acc;
+  const accountAddresses = activeAccounts.map(({ accountId }) => {
+    return toAddress(accountId, { prefix: addressPrefix });
   }, []);
 
   const totalStakes = Object.values(staking).reduce<string[]>((acc, stake) => {
@@ -199,7 +199,7 @@ const Overview = () => {
   }, {});
 
   const stakingInfo = activeAccounts.reduce<AccountStakeInfo[]>((acc, account) => {
-    const address = account.accountId;
+    const address = toAddress(account.accountId, { prefix: addressPrefix });
     if (!address) return acc;
 
     let walletName = account.walletId ? walletNames[account.walletId.toString()] : '';
