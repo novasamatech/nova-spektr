@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 
-import { MultisigEvent, MultisigTransaction } from '@renderer/domain/transaction';
+import { MultisigEvent, MultisigTransaction, SigningStatus } from '@renderer/domain/transaction';
 import { MultisigAccount } from '@renderer/domain/account';
 import { Icon } from '@renderer/components/ui';
 import Details from '@renderer/screens/Operations/components/Details';
@@ -80,8 +80,8 @@ const OperationFullInfo = ({ tx, account }: Props) => {
     setSignatories([...new Set<Signatory>([...tempCancellation, ...tempApprovals, ...signatories])]);
   }, [signatories.length, approvals.length, cancellation.length]);
 
-  const getSignatoryStatus = (signatory: AccountId) => {
-    const event = events.find((e) => e.status === 'SIGNED' || (e.status === 'CANCELLED' && e.accountId === signatory));
+  const getSignatoryStatus = (signatory: AccountId): SigningStatus | undefined => {
+    const event = events.find((e) => (e.status === 'SIGNED' || e.status === 'CANCELLED') && e.accountId === signatory);
 
     return event?.status;
   };
