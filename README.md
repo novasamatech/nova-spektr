@@ -1,8 +1,21 @@
+//todo logo
+
+<div align="center">
+
+![badge](https://img.shields.io/endpoint?url=https://gist.githubusercontent.com/stepanLav/77132f25d05c7e9264cd410aef162a7e/raw/jest-coverage-main.json)
+//generate with https://shields.io/
+[![GitHub tag (latest by date)](https://img.shields.io/github/v/tag/AcalaNetwork/Acala)](https://github.com/AcalaNetwork/Acala/tags) //todo
+[![License](todo)](https://github.com/nova-wallet/omni-enterprise/blob/dev/LICENSE.md)
+<br />
+[![Twitter URL](https://img.shields.io/twitter/url?style=social&url=https%3A%2F%2Ftwitter.com)](todo)
+[![Telegram](https://img.shields.io/badge/Telegram-gray?logo=telegram)](todo)
+[![Medium](https://img.shields.io/badge/Medium-gray?logo=medium)](todo)
+
+</div>
+
 # Omni Enterprise
 
 Polkadot & Kusama ecosystem Enterprise Desktop application.
-
-![badge](https://img.shields.io/endpoint?url=https://gist.githubusercontent.com/stepanLav/77132f25d05c7e9264cd410aef162a7e/raw/jest-coverage-main.json)
 
 ## Key features
 
