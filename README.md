@@ -1,34 +1,43 @@
-//todo logo
+<p align="center">
+  <img src="logo" width="460"> //todo
+</p>
 
 <div align="center">
 
 ![badge](https://img.shields.io/endpoint?url=https://gist.githubusercontent.com/stepanLav/77132f25d05c7e9264cd410aef162a7e/raw/jest-coverage-main.json)
-//generate with https://shields.io/
 [![GitHub release (latest by date)](https://img.shields.io/github/v/release/nova-wallet/omni-enterprise)](https://github.com/nova-wallet/omni-enterprise/releases)
-[![License](todo)](https://github.com/nova-wallet/omni-enterprise/blob/dev/LICENSE.md)
+[![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](https://github.com/nova-wallet/omni-enterprise/blob/dev/LICENSE.md)
 <br />
 [![Twitter URL](https://img.shields.io/twitter/url?style=social&url=https%3A%2F%2Ftwitter.com)](todo)
 [![Telegram](https://img.shields.io/badge/Telegram-gray?logo=telegram)](todo)
 [![Medium](https://img.shields.io/badge/Medium-gray?logo=medium)](todo)
 
 </div>
+
 <!-- TOC -->
-todo
-- [1. Introduction](#1-introduction)
-- [2. Overview](#2-overview)
-  - [2.1. aUSD and the Honzon stablecoin protocol](#21-ausd-and-the-honzon-stablecoin-protocol)
-  - [2.2. Acala Network Economic Model](#22-acala-network-economic-model)
-- [3. Building](#3-building)
-- [4. Run](#4-run)
-- [5. Development](#5-development)
-- [6. Bug Bounty :bug:](#6-bug-bounty-bug)
+- [Introduction](#introduction)
+- [What is Nova Spektr](#what-is-nova-spektr)
+  - [Key features](#key-features)
+  - [Changelog](#changelog)
+- [Development](#development)
+  - [Requirements](#requirements)
+  - [Install dependencies](#install-dependencies)
+  - [Start development](#start-development)
+  - [Project localisation](#project-localisation)
+- [Production build](#production-build)
+- [Contributing](#contributing)
+- [Support](#support)
 <!-- /TOC -->
 
-# Omni Enterprise
+# Introduction
+
+# What is Nova Spektr
 
 Polkadot & Kusama ecosystem Enterprise Desktop application.
 
 ## Key features
+
+todo changelog
 
 1. Add and manage wallets for Substrate networks.
 2. Show wallet balances for multiple Substrate networks.
@@ -37,9 +46,12 @@ Polkadot & Kusama ecosystem Enterprise Desktop application.
 5. MST creation and signing.
 6. MST account and transactions interaction with Matrix standard.
 
-## Development
+## Changelog
 
-### Requirements
+
+# Development
+
+## Requirements
 
 Minimum version of `Node.js` is `v16.x`.
 
@@ -59,7 +71,7 @@ Husky hooks will be installed automatically after installing project dependencie
 ```
 **P.S. don't update pre-commit file to `npm githook:pre-commit`**
 
-## Starting development
+## Start development
 
 Start application in the `dev` environment with hot-reload:
 
@@ -101,7 +113,7 @@ or
 const qrCodePayload = `substrate:${address}:${wallet.publicKey}`;
 ```
 
-## Packaging for production
+# Production build
 
 To package application for the local platform:
 
@@ -110,3 +122,7 @@ pnpm build
 pnpm postbuild
 pnpm dist
 ```
+
+# Contributing
+
+# Support
