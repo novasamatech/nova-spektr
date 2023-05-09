@@ -3,7 +3,7 @@ import { BN } from '@polkadot/util';
 import { useEffect, useState } from 'react';
 import cn from 'classnames';
 
-import { Fee, ActiveAddress } from '@renderer/components/common';
+import { Fee, ActiveAddress, Deposit } from '@renderer/components/common';
 import { Balance, Block, HintList, Plate, Select, Icon, Dropdown } from '@renderer/components/ui';
 import { DropdownOption, DropdownResult } from '@renderer/components/ui/Dropdowns/common/types';
 import { useI18n } from '@renderer/context/I18nContext';
@@ -21,6 +21,7 @@ import {
   validateBalanceForFee,
   validateUnstake,
   getSignatoryOptions,
+  validateBalanceForFeeDeposit,
 } from '../../common/utils';
 import { nonNullable } from '@renderer/shared/utils/functions';
 import { Balance as AccountBalance } from '@renderer/domain/balance';
@@ -49,12 +50,13 @@ type Props = {
 
 const InitOperation = ({ api, chainId, addressPrefix, explorers, staking, identifiers, asset, onResult }: Props) => {
   const { t } = useI18n();
-  const { getLiveAssetBalances } = useBalance();
+  const { getLiveBalance, getLiveAssetBalances } = useBalance();
   const { getLiveAccounts } = useAccount();
 
   const dbAccounts = getLiveAccounts();
 
   const [fee, setFee] = useState('');
+  const [deposit, setDeposit] = useState('');
   const [amount, setAmount] = useState('');
 
   const [stakedRange, setStakedRange] = useState<[string, string]>(['0', '0']);
@@ -66,13 +68,13 @@ const InitOperation = ({ api, chainId, addressPrefix, explorers, staking, identi
 
   const [activeSignatory, setActiveSignatory] = useState<DropdownResult<Account>>();
   const [signatoryOptions, setSignatoryOptions] = useState<DropdownOption<Account>[]>([]);
-
   const [activeBalances, setActiveBalances] = useState<AccountBalance[]>([]);
 
   const totalAccounts = getTotalAccounts(dbAccounts, identifiers);
 
   const accountIds = totalAccounts.map((account) => account.accountId);
   const balances = getLiveAssetBalances(accountIds, chainId, asset.assetId.toString());
+  const signerBalance = getLiveBalance(activeSignatory?.value.accountId || '0x0', chainId, asset.assetId.toString());
 
   const firstAccount = activeUnstakeAccounts[0]?.value;
   const accountIsMultisig = isMultisig(firstAccount);
@@ -107,29 +109,33 @@ const InitOperation = ({ api, chainId, addressPrefix, explorers, staking, identi
   }, [activeUnstakeAccounts.length, staking]);
 
   useEffect(() => {
-    if (!activeUnstakeAccounts.length) return;
+    if (signerBalance) {
+      const balance = transferableAmount(signerBalance);
+      setTransferableRange([balance, balance]);
+    } else if (activeUnstakeAccounts.length) {
+      const balancesMap = new Map(activeBalances.map((b) => [b.accountId, b]));
+      const transferable = activeUnstakeAccounts.map((a) => transferableAmount(balancesMap.get(a.id as AccountId)));
+      const minMaxTransferable = transferable.reduce<[string, string]>(
+        (acc, balance) => {
+          if (balance) {
+            acc[0] = new BN(balance).lt(new BN(acc[0])) ? balance : acc[0];
+            acc[1] = new BN(balance).gt(new BN(acc[1])) ? balance : acc[1];
+          }
 
-    const balancesMap = new Map(balances.map((balance) => [balance.accountId, balance]));
-    const transferable = activeUnstakeAccounts.map((a) => transferableAmount(balancesMap.get(a.id as AccountId)));
-    const minMaxTransferable = transferable.reduce<[string, string]>(
-      (acc, balance) => {
-        if (!balance) return acc;
+          return acc;
+        },
+        [transferable?.[0], transferable?.[0]],
+      );
 
-        acc[0] = new BN(balance).lt(new BN(acc[0])) ? balance : acc[0];
-        acc[1] = new BN(balance).gt(new BN(acc[1])) ? balance : acc[1];
-
-        return acc;
-      },
-      [transferable?.[0], transferable?.[0]],
-    );
-
-    setTransferableRange(minMaxTransferable);
-  }, [activeUnstakeAccounts.length, activeBalances]);
+      setTransferableRange(minMaxTransferable);
+    }
+  }, [activeUnstakeAccounts.length, signerBalance, activeBalances]);
 
   useEffect(() => {
     const formattedAccounts = totalAccounts.map((account) => {
       const balance = activeBalances.find((b) => b.accountId === account.accountId);
-      const stake = staking[account.accountId];
+      const address = toAddress(account.accountId, { prefix: addressPrefix });
+      const stake = staking[address];
 
       return getUnstakeAccountOption(account, { balance, stake, asset, addressPrefix, fee, amount });
     });
@@ -194,13 +200,20 @@ const InitOperation = ({ api, chainId, addressPrefix, explorers, staking, identi
     return activeBalances.every((b) => validateBalanceForFee(b, fee));
   };
 
+  const validateDeposit = (): boolean => {
+    if (!accountIsMultisig) return true;
+    if (!signerBalance) return false;
+
+    return validateBalanceForFeeDeposit(signerBalance, deposit, fee);
+  };
+
   const transferable =
     transferableRange[0] === transferableRange[1] ? (
       <Balance value={transferableRange[0]} precision={asset.precision} />
     ) : (
       <>
         <Balance value={transferableRange[0]} precision={asset.precision} />
-        {' - '}
+        &nbsp;{'-'}&nbsp;
         <Balance value={transferableRange[1]} precision={asset.precision} />
       </>
     );
@@ -256,6 +269,7 @@ const InitOperation = ({ api, chainId, addressPrefix, explorers, staking, identi
         asset={asset}
         validateBalance={validateBalance}
         validateFee={validateFee}
+        validateDeposit={validateDeposit}
         onSubmit={submitUnstake}
         onFormChange={({ amount }) => {
           setAmount(amount);
@@ -275,16 +289,31 @@ const InitOperation = ({ api, chainId, addressPrefix, explorers, staking, identi
                 </div>
               </div>
 
-              <div className="flex justify-between items-center uppercase text-neutral-variant text-2xs">
-                <p>{t('staking.unstake.networkFee', { count: activeUnstakeAccounts.length })}</p>
+              <div className="grid grid-flow-row grid-cols-2 items-center gap-y-5">
+                <p className="uppercase text-neutral-variant text-2xs">
+                  {t('staking.unstake.networkFee', { count: activeUnstakeAccounts.length })}
+                </p>
 
                 <Fee
-                  className="text-neutral font-semibold"
+                  className="text-neutral justify-self-end text-2xs font-semibold"
                   api={api}
                   asset={asset}
                   transaction={transactions[0]}
                   onFeeChange={setFee}
                 />
+
+                {accountIsMultisig && (
+                  <>
+                    <p className="uppercase text-neutral-variant text-2xs">{t('transfer.networkDeposit')}</p>
+                    <Deposit
+                      className="text-neutral justify-self-end text-2xs font-semibold"
+                      api={api}
+                      asset={asset}
+                      threshold={firstAccount.threshold}
+                      onDepositChange={setDeposit}
+                    />
+                  </>
+                )}
               </div>
 
               <HintList>

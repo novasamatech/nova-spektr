@@ -69,8 +69,6 @@ describe('screens/Staking/StakeMore/InitOperation', () => {
     });
 
     const form = screen.getByText('operationForm');
-    const eraHint = screen.getByText('staking.stakeMore.eraHint');
     expect(form).toBeInTheDocument();
-    expect(eraHint).toBeInTheDocument();
   });
 });

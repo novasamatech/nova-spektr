@@ -122,7 +122,7 @@ export const OperationForm = ({
   const destination = watch('destination');
 
   useEffect(() => {
-    if (!amountField?.value || amountField.value === '0') return;
+    if (!amountField?.value || amountField.value === '') return;
 
     setValue('amount', amountField.value);
     trigger('amount');

@@ -1,18 +1,19 @@
 import { ApiPromise } from '@polkadot/api';
 import { BN, BN_ZERO } from '@polkadot/util';
 import { useEffect, useState } from 'react';
+import cn from 'classnames';
 
 import { Fee, ActiveAddress, Deposit } from '@renderer/components/common';
-import { HintList, Select, Block, Plate, Dropdown } from '@renderer/components/ui';
+import { Select, Block, Balance, Plate, Dropdown, Icon } from '@renderer/components/ui';
 import { DropdownOption, DropdownResult } from '@renderer/components/ui/Dropdowns/common/types';
 import { useI18n } from '@renderer/context/I18nContext';
 import { Asset } from '@renderer/domain/asset';
-import { Balance, Balance as AccountBalance } from '@renderer/domain/balance';
+import { Balance as AccountBalance } from '@renderer/domain/balance';
 import { ChainId, AccountId, SigningType } from '@renderer/domain/shared-kernel';
 import { Transaction, TransactionType } from '@renderer/domain/transaction';
 import { useAccount } from '@renderer/services/account/accountService';
 import { useBalance } from '@renderer/services/balance/balanceService';
-import { redeemableAmount, formatBalance } from '@renderer/shared/utils/balance';
+import { redeemableAmount, formatBalance, transferableAmount } from '@renderer/shared/utils/balance';
 import { nonNullable } from '@renderer/shared/utils/functions';
 import {
   getTotalAccounts,
@@ -67,6 +68,7 @@ const InitOperation = ({
   const [deposit, setDeposit] = useState('');
   const [redeemAmounts, setRedeemAmounts] = useState<string[]>([]);
 
+  const [transferableRange, setTransferableRange] = useState<[string, string]>(['0', '0']);
   const [transactions, setTransactions] = useState<Transaction[]>([]);
 
   const [redeemAccounts, setRedeemAccounts] = useState<DropdownOption<Account>[]>([]);
@@ -75,7 +77,7 @@ const InitOperation = ({
   const [activeSignatory, setActiveSignatory] = useState<DropdownResult<Account>>();
   const [signatoryOptions, setSignatoryOptions] = useState<DropdownOption<Account>[]>([]);
 
-  const [activeBalances, setActiveBalances] = useState<Balance[]>([]);
+  const [activeBalances, setActiveBalances] = useState<AccountBalance[]>([]);
 
   const totalAccounts = getTotalAccounts(dbAccounts, identifiers);
 
@@ -102,8 +104,32 @@ const InitOperation = ({
   }, [activeRedeemAccounts.length, balances]);
 
   useEffect(() => {
+    if (signerBalance) {
+      const balance = transferableAmount(signerBalance);
+      setTransferableRange([balance, balance]);
+    } else if (activeRedeemAccounts.length) {
+      const balancesMap = new Map(activeBalances.map((b) => [b.accountId, b]));
+      const transferable = activeRedeemAccounts.map((a) => transferableAmount(balancesMap.get(a.id as AccountId)));
+      const minMaxTransferable = transferable.reduce<[string, string]>(
+        (acc, balance) => {
+          if (balance) {
+            acc[0] = new BN(balance).lt(new BN(acc[0])) ? balance : acc[0];
+            acc[1] = new BN(balance).gt(new BN(acc[1])) ? balance : acc[1];
+          }
+
+          return acc;
+        },
+        [transferable?.[0], transferable?.[0]],
+      );
+
+      setTransferableRange(minMaxTransferable);
+    }
+  }, [activeRedeemAccounts.length, signerBalance, activeBalances]);
+
+  useEffect(() => {
     const formattedAccounts = totalAccounts.map((account) => {
-      const stake = staking[account.accountId];
+      const address = toAddress(account.accountId, { prefix: addressPrefix });
+      const stake = staking[address];
 
       return getRedeemAccountOption(account, { asset, addressPrefix, stake, era });
     });
@@ -178,6 +204,17 @@ const InitOperation = ({
     return validateBalanceForFeeDeposit(signerBalance, deposit, fee);
   };
 
+  const transferable =
+    transferableRange[0] === transferableRange[1] ? (
+      <Balance value={transferableRange[0]} precision={asset.precision} />
+    ) : (
+      <>
+        <Balance value={transferableRange[0]} precision={asset.precision} />
+        {' - '}
+        <Balance value={transferableRange[1]} precision={asset.precision} />
+      </>
+    );
+
   return (
     <Plate as="section" className="w-[600px] flex flex-col items-center mx-auto gap-y-2.5">
       <Block className="flex flex-col gap-y-2 p-5">
@@ -230,35 +267,48 @@ const InitOperation = ({
         validateDeposit={validateDeposit}
         onSubmit={submitRedeem}
       >
-        <div className="grid grid-flow-row grid-cols-2 items-center gap-y-5">
-          <p className="uppercase text-neutral-variant text-2xs">
-            {t('staking.unstake.networkFee', { count: activeRedeemAccounts.length })}
-          </p>
+        {(errorType) => {
+          const hasFeeError = ['insufficientBalanceForFee', 'insufficientBalanceForDeposit'].includes(errorType);
 
-          <Fee
-            className="text-neutral justify-self-end text-2xs font-semibold"
-            api={api}
-            asset={asset}
-            transaction={transactions[0]}
-            onFeeChange={setFee}
-          />
-          {accountIsMultisig && (
+          return (
             <>
-              <p className="uppercase text-neutral-variant text-2xs">{t('transfer.networkDeposit')}</p>
-              <Deposit
-                className="text-neutral justify-self-end text-2xs font-semibold"
-                api={api}
-                asset={asset}
-                threshold={firstAccount.threshold}
-                onDepositChange={setDeposit}
-              />
-            </>
-          )}
-        </div>
+              <div className="flex justify-between items-center uppercase text-neutral-variant text-2xs">
+                <p>{t('staking.unstake.transferable')}</p>
 
-        <HintList>
-          <HintList.Item>{t('staking.stakeMore.eraHint')}</HintList.Item>
-        </HintList>
+                <div className={cn('flex font-semibold', hasFeeError ? 'text-error' : 'text-neutral')}>
+                  {hasFeeError && <Icon className="text-error mr-1" name="warnCutout" size={12} />}
+                  {transferable}&nbsp;{asset.symbol}
+                </div>
+              </div>
+
+              <div className="grid grid-flow-row grid-cols-2 items-center gap-y-5">
+                <p className="uppercase text-neutral-variant text-2xs">
+                  {t('staking.unstake.networkFee', { count: activeRedeemAccounts.length })}
+                </p>
+
+                <Fee
+                  className="text-neutral justify-self-end text-2xs font-semibold"
+                  api={api}
+                  asset={asset}
+                  transaction={transactions[0]}
+                  onFeeChange={setFee}
+                />
+                {accountIsMultisig && (
+                  <>
+                    <p className="uppercase text-neutral-variant text-2xs">{t('transfer.networkDeposit')}</p>
+                    <Deposit
+                      className="text-neutral justify-self-end text-2xs font-semibold"
+                      api={api}
+                      asset={asset}
+                      threshold={firstAccount.threshold}
+                      onDepositChange={setDeposit}
+                    />
+                  </>
+                )}
+              </div>
+            </>
+          );
+        }}
       </OperationForm>
     </Plate>
   );
