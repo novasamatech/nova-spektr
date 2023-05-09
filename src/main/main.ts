@@ -2,6 +2,7 @@ import { join } from 'path';
 import { BrowserWindow, shell } from 'electron';
 import log from 'electron-log';
 import * as path from 'path';
+import windowStateKeeper from 'electron-window-state';
 
 import { ENVIRONMENT } from '@shared/constants';
 import { APP_CONFIG } from '../../app.config';
@@ -32,10 +33,18 @@ log.errorHandler.startCatching({
 
 
 export async function MainWindow() {
+  const mainWindowState = windowStateKeeper({
+    defaultWidth: MAIN.WINDOW.WIDTH,
+    defaultHeight: MAIN.WINDOW.HEIGHT,
+  });
   const window = createWindow({
     title: TITLE,
+    x: mainWindowState.x,
+    y: mainWindowState.y,
     minWidth: MAIN.WINDOW.WIDTH,
     minHeight: MAIN.WINDOW.HEIGHT,
+    width: mainWindowState.width,
+    height: mainWindowState.height,
     show: false,
     center: true,
     autoHideMenuBar: true,
@@ -44,8 +53,6 @@ export async function MainWindow() {
       preload: join(__dirname, 'bridge.js'),
     },
   });
-
-  window.maximize();
 
   ENVIRONMENT.IS_DEV && window.webContents.openDevTools({ mode: 'bottom' });
 
@@ -66,6 +73,7 @@ export async function MainWindow() {
 
     window.show();
   });
+  mainWindowState.manage(window);
 
   return window;
 }
