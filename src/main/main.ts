@@ -9,7 +9,7 @@ import { createWindow } from './factories/create';
 const { MAIN, TITLE } = APP_CONFIG;
 
 export async function MainWindow() {
-  let mainWindowState = windowStateKeeper({
+  const mainWindowState = windowStateKeeper({
     defaultWidth: MAIN.WINDOW.WIDTH,
     defaultHeight: MAIN.WINDOW.HEIGHT,
   });
