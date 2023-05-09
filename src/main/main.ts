@@ -31,7 +31,6 @@ log.errorHandler.startCatching({
   },
 });
 
-
 export async function MainWindow() {
   const mainWindowState = windowStateKeeper({
     defaultWidth: MAIN.WINDOW.WIDTH,
