@@ -41,7 +41,7 @@ const enum Step {
   SUBMIT,
 }
 
-const ChainFontStyle = 'font-manrope text-modal-title text-text-primary';
+export const ChainFontStyle = 'font-manrope text-modal-title text-text-primary';
 
 const ApproveTx = ({ tx, account, connection }: Props) => {
   const { t } = useI18n();
