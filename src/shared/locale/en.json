@@ -297,7 +297,7 @@
       "errorMessage": "Reject reason is required",
       "inputHint": "Visible only for you and signers",
       "placeholder": "Reason...",
-      "title": "Set reject reason"
+      "title": "Enter reject reason"
     },
     "selectSignatory": "Select signatory",
     "selectSignatoryTitle": "Select signatory",

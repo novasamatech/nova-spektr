@@ -32,7 +32,6 @@ const Input = forwardRef<HTMLInputElement, Props>(
             invalid && 'border-filter-border-negative',
             'hover:enabled:shadow-card-shadow',
             'disabled:bg-input-background-disabled disabled:text-text-tertiary disabled:placeholder:text-text-tertiary',
-            'outline-0', // until custom outline is developed
             'flex-1 border-filter-border',
             className,
           )}

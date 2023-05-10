@@ -2,8 +2,7 @@ import { useEffect, useState } from 'react';
 import { UnsignedTransaction } from '@substrate/txwrapper-polkadot';
 import { BN } from '@polkadot/util';
 
-import { BaseModal, Button } from '@renderer/components/ui';
-import { Button as ButtonRedesign } from '@renderer/components/ui-redesign';
+import { BaseModal, Button } from '@renderer/components/ui-redesign';
 import { useI18n } from '@renderer/context/I18nContext';
 import { AccountDS, MultisigTransactionDS } from '@renderer/services/storage';
 import { useToggle } from '@renderer/shared/hooks';
@@ -18,15 +17,15 @@ import { toAddress } from '@renderer/shared/utils/address';
 import { getAssetById } from '@renderer/shared/utils/assets';
 import { useAccount } from '@renderer/services/account/accountService';
 import { getTransactionTitle } from '../../common/utils';
-import Details from '../Details';
 import { Submit } from '../ActionSteps/Submit';
 import { useTransaction } from '@renderer/services/transaction/transactionService';
-import TransactionAmount from '../TransactionAmount';
-import { Fee } from '@renderer/components/common';
 import { useCountdown } from '@renderer/screens/Staking/Operations/hooks/useCountdown';
 import { useBalance } from '@renderer/services/balance/balanceService';
 import { transferableAmount } from '@renderer/services/balance/common/utils';
 import RejectReasonModal from './RejectReasonModal';
+import { ChainFontStyle } from '@renderer/screens/Operations/components/modals/ApproveTx';
+import Confirmation from '@renderer/screens/Operations/components/ActionSteps/Confirmation';
+import { Icon } from '@renderer/components/ui';
 
 type Props = {
   tx: MultisigTransactionDS;
@@ -138,53 +137,39 @@ const RejectTx = ({ tx, account, connection }: Props) => {
     }
   };
 
+  const rejectTitle = (
+    <div className="flex items-center py-1 ml-4">
+      {t('operation.cancelTitle')} {t(transactionTitle)} {t('on')}
+      <Chain className="ml-0.5" chainId={tx.chainId} fontProps={{ className: ChainFontStyle, fontWeight: 'bold' }} />
+    </div>
+  );
+
   return (
     <>
       <div className="flex justify-between">
-        <ButtonRedesign size="sm" pallet="error" variant="fill" onClick={toggleModal}>
+        <Button size="sm" pallet="error" variant="fill" onClick={toggleModal}>
           {t('operation.rejectButton')}
-        </ButtonRedesign>
+        </Button>
       </div>
 
       <BaseModal
         isOpen={isModalOpen}
         closeButton
-        title={
-          <div className="flex items-center">
-            {t('operation.cancelTitle')} {t(transactionTitle)} {t('on')} <Chain chainId={tx.chainId} />
-          </div>
-        }
+        title={rejectTitle}
         contentClass="px-5 pb-4 h-3/4 w-[520px]"
         onClose={handleClose}
       >
         {activeStep === Step.CONFIRMATION && (
-          <div className="flex flex-col gap-2">
-            <div className="flex justify-center">{tx.transaction && <TransactionAmount tx={tx.transaction} />} </div>
-
-            {tx.description && <div className="flex justify-center bg-shade-5 rounded-2lg">{tx.description}</div>}
-
-            <Details tx={tx} account={account} connection={connection} withAdvanced={false} />
-
-            <div className="flex justify-between items-center">
-              <div className="text-shade-40">{t('operation.networkFee')}</div>
-              <div>
-                {connection.api && rejectTx && (
-                  <Fee
-                    className="text-shade-40"
-                    api={connection.api}
-                    asset={connection.assets[0]}
-                    transaction={rejectTx}
-                  />
-                )}
-              </div>
-            </div>
-
-            <div className="flex justify-end">
-              <Button pallet="primary" variant="fill" onClick={toggleRejectReasonModal}>
-                {t('operation.signButton')}
-              </Button>
-            </div>
-          </div>
+          <>
+            <Confirmation tx={tx} account={account} connection={connection} feeTx={rejectTx} />
+            <Button
+              className="mt-7 ml-auto"
+              prefixElement={<Icon name="vault" size={14} />}
+              onClick={toggleRejectReasonModal}
+            >
+              {t('operation.signButton')}
+            </Button>
+          </>
         )}
         {activeStep === Step.SCANNING && (
           <>
@@ -203,13 +188,11 @@ const RejectTx = ({ tx, account, connection }: Props) => {
             )}
 
             <div className="flex w-full justify-between">
-              <Button pallet="shade" variant="fill" onClick={goBack}>
+              <Button variant="text" onClick={goBack}>
                 {t('operation.goBackButton')}
               </Button>
 
-              <Button pallet="primary" variant="fill" onClick={() => setActiveStep(Step.SIGNING)}>
-                {t('operation.continueButton')}
-              </Button>
+              <Button onClick={() => setActiveStep(Step.SIGNING)}>{t('operation.continueButton')}</Button>
             </div>
           </>
         )}
