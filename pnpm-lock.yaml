@@ -68,6 +68,7 @@ specifiers:
   electron: 19.1.8
   electron-builder: ^23.6.0
   electron-devtools-installer: ^3.2.0
+  electron-log: 5.0.0-beta.23
   electron-react-devtools: ^0.5.3
   electron-window-state: ^5.0.3
   eslint: ^8.19.0
@@ -159,6 +160,7 @@ dependencies:
   date-fns: 2.29.3
   dexie: 3.2.3
   dexie-react-hooks: 1.1.3_4iukfvhmgcnnh4d5nh5negxyly
+  electron-log: 5.0.0-beta.23
   electron-window-state: 5.0.3
   graphql: 16.6.0
   i18next: 21.10.0
@@ -9578,6 +9580,11 @@ packages:
       tslib: 2.5.0
       unzip-crx-3: 0.2.0
     dev: true
+
+  /electron-log/5.0.0-beta.23:
+    resolution: {integrity: sha512-7tj3LnWet2g5biaaBvVmmJY7762koyrCtjjhC6Llk7SfgaUt7zRX6PS8CZf8qCgzQp+9p6IH8ArRxLS6kNZ4mA==}
+    engines: {electron: '>= 13', node: '>= 14'}
+    dev: false
 
   /electron-osx-sign/0.6.0:
     resolution: {integrity: sha512-+hiIEb2Xxk6eDKJ2FFlpofCnemCbjbT5jz+BKGpVBrRNT3kWTGs4DfNX6IzGwgi33hUcXF+kFs9JW+r6Wc1LRg==}
