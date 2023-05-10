@@ -1,7 +1,6 @@
 import { join } from 'path';
 import { BrowserWindow, shell } from 'electron';
 import log from 'electron-log';
-import * as path from 'path';
 import windowStateKeeper from 'electron-window-state';
 
 import { ENVIRONMENT } from '@shared/constants';
@@ -16,12 +15,9 @@ log.transports.console.format = '{y}/{m}/{d} {h}:{i}:{s}.{ms} [{env}#{version}]-
 log.transports.console.useStyles = true;
 
 log.transports.file.fileName = 'nova-spektr.log';
-log.transports.file.resolvePathFn = (variables) => {
-  return path.join(variables.home, 'Nova Spektr', variables.fileName ? variables.fileName : 'nova-spektr.log');
-};
 log.transports.file.format = '{y}/{m}/{d} {h}:{i}:{s}.{ms} [{env}#{version}]-{processType} [{level}] > {text}';
 log.transports.file.level = 'info';
-log.transports.file.maxSize = 1048576 * 3; //3mb
+log.transports.file.maxSize = 1048576 * 5; //5mb
 
 Object.assign(console, log.functions);
 log.errorHandler.startCatching({

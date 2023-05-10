@@ -87,4 +87,7 @@ pnpm postbuild
 pnpm dist
 ```
 ## Troubleshooting
-Logs are collected in the `<home dir>/Nova Spektr/nova-spektr.log file`.
+Logs are collected in the 
+1. macOS `~/Librarly/Logs/Nova Spektr/nova-spektr.log` file 
+2. Windows todo
+3. Linux todo
