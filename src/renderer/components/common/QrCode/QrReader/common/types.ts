@@ -1,7 +1,7 @@
 // eslint-disable-next-line import/named
 import { DecodeContinuouslyCallback } from '@zxing/browser/esm/common/DecodeContinuouslyCallback';
 
-import { Address, CryptoType, CryptoTypeString, HexString } from '@renderer/domain/shared-kernel';
+import { Address, CryptoType, CryptoTypeString, ChainId } from '@renderer/domain/shared-kernel';
 
 export const enum QrError {
   USER_DENY,
@@ -37,9 +37,9 @@ export type SeedInfo = {
   derivedKeys: AddressInfo[];
 };
 
-export type SimpleSeedInfo = {
+export type CompactSeedInfo = {
   address: Address;
-  derivedKeys: Record<HexString, AddressInfo[]>;
+  derivedKeys: Record<ChainId, AddressInfo[]>;
 };
 
 export type AddressInfo = {
