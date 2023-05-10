@@ -3,8 +3,8 @@ import { UnsignedTransaction } from '@substrate/txwrapper-polkadot';
 import { Weight } from '@polkadot/types/interfaces';
 import { BN } from '@polkadot/util';
 
-import { BaseModal, Button, Icon } from '@renderer/components/ui';
-import { Button as ButtonRedesign, BaseModal as BaseModalRedesign } from '@renderer/components/ui-redesign';
+import { Icon } from '@renderer/components/ui';
+import { Button, BaseModal as BaseModalRedesign } from '@renderer/components/ui-redesign';
 import { useI18n } from '@renderer/context/I18nContext';
 import { AccountDS } from '@renderer/services/storage';
 import { useToggle } from '@renderer/shared/hooks';
@@ -27,6 +27,7 @@ import { transferableAmount } from '@renderer/services/balance/common/utils';
 import { TEST_ADDRESS } from '@renderer/shared/utils/constants';
 import Confirmation from '@renderer/screens/Operations/components/ActionSteps/Confirmation';
 import SignatorySelectModal from '@renderer/screens/Operations/components/modals/SignatorySelectModal';
+import OperationResult from '@renderer/components/ui-redesign/OperationResult/OperationResult';
 
 type Props = {
   tx: MultisigTransaction;
@@ -78,6 +79,7 @@ const ApproveTx = ({ tx, account, connection }: Props) => {
 
   const onSignResult = (signature: HexString) => {
     setSignature(signature);
+    toggleModal();
     setActiveStep(Step.SUBMIT);
   };
 
@@ -196,9 +198,9 @@ const ApproveTx = ({ tx, account, connection }: Props) => {
 
   return (
     <>
-      <ButtonRedesign size="sm" onClick={toggleModal}>
+      <Button size="sm" onClick={toggleModal}>
         {t('operation.approveButton')}
-      </ButtonRedesign>
+      </Button>
 
       <BaseModalRedesign
         isOpen={isModalOpen}
@@ -211,13 +213,9 @@ const ApproveTx = ({ tx, account, connection }: Props) => {
         {activeStep === Step.CONFIRMATION && (
           <>
             <Confirmation tx={tx} account={account} connection={connection} feeTx={feeTx} />
-            <ButtonRedesign
-              className="mt-7 ml-auto"
-              prefixElement={<Icon name="vault" size={14} />}
-              onClick={selectAccount}
-            >
+            <Button className="mt-7 ml-auto" prefixElement={<Icon name="vault" size={14} />} onClick={selectAccount}>
               {t('operation.signButton')}
-            </ButtonRedesign>
+            </Button>
           </>
         )}
         {activeStep === Step.SCANNING && (
@@ -237,13 +235,11 @@ const ApproveTx = ({ tx, account, connection }: Props) => {
             )}
 
             <div className="flex w-full justify-between">
-              <ButtonRedesign variant="text" onClick={goBack}>
+              <Button variant="text" onClick={goBack}>
                 {t('operation.goBackButton')}
-              </ButtonRedesign>
+              </Button>
 
-              <ButtonRedesign onClick={() => setActiveStep(Step.SIGNING)}>
-                {t('operation.continueButton')}
-              </ButtonRedesign>
+              <Button onClick={() => setActiveStep(Step.SIGNING)}>{t('operation.continueButton')}</Button>
             </div>
           </>
         )}
@@ -267,21 +263,6 @@ const ApproveTx = ({ tx, account, connection }: Props) => {
             )}
           </div>
         )}
-        {activeStep === Step.SUBMIT && (
-          <div>
-            {approveTx && connection.api && signAccount && signature && unsignedTx && (
-              <Submit
-                tx={approveTx}
-                api={connection.api}
-                multisigTx={tx}
-                matrixRoomId={account.matrixRoomId}
-                account={signAccount}
-                unsignedTx={unsignedTx}
-                signature={signature}
-              />
-            )}
-          </div>
-        )}
 
         <SignatorySelectModal
           isOpen={isSelectAccountModalOpen}
@@ -293,20 +274,27 @@ const ApproveTx = ({ tx, account, connection }: Props) => {
           onSelect={handleAccountSelect}
         />
 
-        <BaseModal
-          closeButton
+        <OperationResult
           isOpen={isFeeModalOpen}
           title={t('operation.feeErrorTitle')}
-          contentClass="px-5 pb-4 w-[260px] flex flex-col items-center"
+          description={t('operation.feeErrorMessage')}
           onClose={toggleFeeModal}
         >
-          <div>{t('operation.feeErrorMessage')}</div>
-
-          <Button pallet="primary" variant="fill" onClick={toggleFeeModal}>
-            {t('operation.feeErrorButton')}
-          </Button>
-        </BaseModal>
+          <Button onClick={toggleFeeModal}>{t('operation.feeErrorButton')}</Button>
+        </OperationResult>
       </BaseModalRedesign>
+
+      {activeStep === Step.SUBMIT && approveTx && connection.api && signAccount && signature && unsignedTx && (
+        <Submit
+          tx={approveTx}
+          api={connection.api}
+          multisigTx={tx}
+          matrixRoomId={account.matrixRoomId}
+          account={signAccount}
+          unsignedTx={unsignedTx}
+          signature={signature}
+        />
+      )}
     </>
   );
 };

@@ -289,6 +289,7 @@
     "feeErrorMessage": "Insufficient funds to pay the network fee",
     "feeErrorTitle": "Error",
     "goBackButton": "Go back",
+    "inProgress": "Submitting approval...",
     "logButton": "Log",
     "networkFee": "Network fee",
     "rejectButton": "Cancel",
@@ -310,7 +311,8 @@
       "established": "Established",
       "executed": "Executed",
       "signing": "Signing"
-    }
+    },
+    "successMessage": "Operation Approved"
   },
   "operations": {
     "callData": {

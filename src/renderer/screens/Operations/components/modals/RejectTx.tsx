@@ -26,6 +26,7 @@ import RejectReasonModal from './RejectReasonModal';
 import { ChainFontStyle } from '@renderer/screens/Operations/components/modals/ApproveTx';
 import Confirmation from '@renderer/screens/Operations/components/ActionSteps/Confirmation';
 import { Icon } from '@renderer/components/ui';
+import OperationResult from '@renderer/components/ui-redesign/OperationResult/OperationResult';
 
 type Props = {
   tx: MultisigTransactionDS;
@@ -67,6 +68,7 @@ const RejectTx = ({ tx, account, connection }: Props) => {
 
   const onSignResult = (signature: HexString) => {
     setSignature(signature);
+    toggleModal();
     setActiveStep(Step.SUBMIT);
   };
 
@@ -216,22 +218,6 @@ const RejectTx = ({ tx, account, connection }: Props) => {
             )}
           </div>
         )}
-        {activeStep === Step.SUBMIT && (
-          <div>
-            {rejectTx && connection.api && signAccount && signature && unsignedTx && (
-              <Submit
-                tx={rejectTx}
-                api={connection.api}
-                multisigTx={tx}
-                matrixRoomId={account.matrixRoomId}
-                account={signAccount}
-                unsignedTx={unsignedTx}
-                signature={signature}
-                rejectReason={rejectReason}
-              />
-            )}
-          </div>
-        )}
 
         <RejectReasonModal
           isOpen={isRejectReasonModalOpen}
@@ -239,20 +225,28 @@ const RejectTx = ({ tx, account, connection }: Props) => {
           onSubmit={handleRejectReason}
         />
 
-        <BaseModal
-          closeButton
+        <OperationResult
           isOpen={isFeeModalOpen}
           title={t('operation.feeErrorTitle')}
-          contentClass="px-5 pb-4 w-[260px] flex flex-col items-center"
+          description={t('operation.feeErrorMessage')}
           onClose={toggleFeeModal}
         >
-          <div>{t('operation.feeErrorMessage')}</div>
-
-          <Button pallet="primary" variant="fill" onClick={toggleFeeModal}>
-            {t('operation.feeErrorButton')}
-          </Button>
-        </BaseModal>
+          <Button onClick={toggleFeeModal}>{t('operation.feeErrorButton')}</Button>
+        </OperationResult>
       </BaseModal>
+
+      {activeStep === Step.SUBMIT && rejectTx && connection.api && signAccount && signature && unsignedTx && (
+        <Submit
+          tx={rejectTx}
+          api={connection.api}
+          multisigTx={tx}
+          matrixRoomId={account.matrixRoomId}
+          account={signAccount}
+          unsignedTx={unsignedTx}
+          signature={signature}
+          rejectReason={rejectReason}
+        />
+      )}
     </>
   );
 };
