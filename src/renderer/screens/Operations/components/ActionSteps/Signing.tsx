@@ -91,17 +91,15 @@ export const Signing = ({
   };
 
   return (
-    <div className="py-2 flex flex-col items-center gap-y-2.5 w-full">
-      <div className="text-neutral-variant text-base font-semibold">{t('signing.scanSignatureTitle')}</div>
-      <div className="h-[460px]">
-        <ParitySignerSignatureReader
-          className="w-full rounded-2lg"
-          countdown={countdown}
-          size={460}
-          validationError={validationError}
-          onResult={handleResult}
-        />
-      </div>
+    <div className="flex flex-col items-center gap-y-2.5 w-full">
+      <ParitySignerSignatureReader
+        className="w-full"
+        countdown={countdown}
+        header={t('signing.scanSignatureTitle')}
+        size={440}
+        validationError={validationError}
+        onResult={handleResult}
+      />
 
       {countdown === 0 && (
         <Button variant="fill" pallet="primary" weight="lg" onClick={onGoBack}>

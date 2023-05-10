@@ -156,7 +156,7 @@ const RejectTx = ({ tx, account, connection }: Props) => {
         isOpen={isModalOpen}
         closeButton
         title={rejectTitle}
-        contentClass="px-5 pb-4 h-3/4 w-[520px]"
+        contentClass={activeStep === Step.SIGNING ? '' : undefined}
         onClose={handleClose}
       >
         {activeStep === Step.CONFIRMATION && (

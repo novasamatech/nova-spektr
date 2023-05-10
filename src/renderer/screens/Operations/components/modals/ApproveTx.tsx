@@ -204,6 +204,7 @@ const ApproveTx = ({ tx, account, connection }: Props) => {
         isOpen={isModalOpen}
         closeButton
         title={approveTitile}
+        contentClass={activeStep === Step.SIGNING ? '' : undefined}
         panelClass="w-[440px]"
         onClose={handleClose}
       >
