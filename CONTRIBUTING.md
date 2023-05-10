@@ -1,5 +1,5 @@
 # Code of Conduct
-This project and everyone participating in it is governed by the [Nova Spektr Code of Conduct](./CODE_OF_CONDUCT.md). 
+This project and everyone participating in it is governed by the [Nova Spektr Code of Conduct](https://github.com/nova-wallet/omni-enterprise/blob/dev/CODE_OF_CONDUCT.md). 
 By participating, you are expected to uphold this code. Please report unacceptable behavior 
 to [pavel@novawallet.io](mailto:pavel@novawallet.io).
 
