@@ -22,7 +22,6 @@ const enum CameraState {
 }
 
 const RESULT_DELAY = 250;
-import './index.css';
 
 type Props = {
   size?: number;
