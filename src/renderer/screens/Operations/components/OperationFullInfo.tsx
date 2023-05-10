@@ -18,6 +18,7 @@ import { useToggle } from '@renderer/shared/hooks';
 import { useI18n } from '@renderer/context/I18nContext';
 import { Button, CaptionText, InfoLink, SmallTitleText } from '@renderer/components/ui-redesign';
 import SignatoryCard from '@renderer/components/common/SignatoryCard/SignatoryCard';
+import LogModal from './Log';
 
 type Props = {
   tx: MultisigTransaction;
@@ -37,6 +38,7 @@ const OperationFullInfo = ({ tx, account }: Props) => {
   const cancellation = events.filter((e) => e.status === 'CANCELLED');
 
   const [isCallDataModalOpen, toggleCallDataModal] = useToggle();
+  const [isLogModalOpen, toggleLogModal] = useToggle();
 
   const [signatoriesList, setSignatories] = useState<Signatory[]>([]);
   const explorerLink = getMultisigExtrinsicLink(tx.callHash, tx.indexCreated, tx.blockCreated, connection?.explorers);
@@ -133,6 +135,7 @@ const OperationFullInfo = ({ tx, account }: Props) => {
                 {events.length}
               </CaptionText>
             }
+            onClick={toggleLogModal}
           >
             {t('operation.logButton')}
           </Button>
@@ -148,7 +151,9 @@ const OperationFullInfo = ({ tx, account }: Props) => {
           })}
         </ul>
       </div>
+
       <CallDataModal isOpen={isCallDataModalOpen} tx={tx} onSubmit={setupCallData} onClose={toggleCallDataModal} />
+      <LogModal isOpen={isLogModalOpen} tx={tx} account={account} connection={connection} onClose={toggleLogModal} />
     </div>
   );
 };

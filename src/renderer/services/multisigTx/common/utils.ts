@@ -4,6 +4,7 @@ import { MultisigAccount } from '@renderer/domain/account';
 import { Address, ChainId } from '@renderer/domain/shared-kernel';
 import { MultisigEvent, MultisigTransaction, MultisigTxInitStatus } from '@renderer/domain/transaction';
 import { PendingMultisigTransaction } from './types';
+import { getCreatedDate } from '@renderer/shared/utils/substrate';
 
 export const getPendingMultisigTxs = async (
   api: ApiPromise,
@@ -30,6 +31,15 @@ export const updateTransactionPayload = (
   const { events } = transaction;
   const { when, deposit, depositor } = pendingTransaction.params;
 
+  const oldEvents = events.map((e) => {
+    return e.status === 'PENDING_SIGNED' && pendingTransaction.params.approvals.find((a) => a.toHex() === e.accountId)
+      ? ({
+          ...e,
+          status: 'SIGNED',
+        } as MultisigEvent)
+      : e;
+  });
+
   const newApprovals = pendingTransaction.params.approvals.reduce<MultisigEvent[]>((acc, a) => {
     const hasApprovalEvent = events.find((e) => e.status === 'SIGNED' && e.accountId === a.toHex());
 
@@ -37,6 +47,7 @@ export const updateTransactionPayload = (
       acc.push({
         status: 'SIGNED',
         accountId: a.toHex(),
+        dateCreated: Date.now(),
       });
     }
 
@@ -49,7 +60,7 @@ export const updateTransactionPayload = (
     indexCreated: when.index.toNumber(),
     deposit: deposit.toString(),
     depositor: depositor.toHex(),
-    events: [...events, ...newApprovals],
+    events: [...oldEvents, ...newApprovals],
   };
 };
 
@@ -62,12 +73,12 @@ export const createTransactionPayload = (
 ): MultisigTransaction => {
   const { when, approvals, deposit, depositor } = pendingTransaction.params;
 
+  const dateCreated = getCreatedDate(when.height.toNumber(), currentBlock, blockTime);
   const events: MultisigEvent[] = approvals.map((a) => ({
     status: 'SIGNED',
     accountId: account.signatories.find((s) => s.accountId === a.toHuman())?.accountId || a.toHex(),
+    dateCreated: dateCreated,
   }));
-
-  const dateCreated = Date.now() - (currentBlock - when.height.toNumber()) * blockTime;
 
   return {
     chainId,

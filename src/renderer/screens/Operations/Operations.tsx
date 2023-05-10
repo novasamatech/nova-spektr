@@ -10,7 +10,7 @@ import { MultisigAccount } from '@renderer/domain/account';
 import Operation from './components/Operation';
 import { sortByDate } from './common/utils';
 import { FootnoteText } from '@renderer/components/ui-redesign';
-import Filters from './Filters';
+import Filters from './components/Filters';
 import { MultisigTransactionDS } from '@renderer/services/storage';
 
 const Operations = () => {

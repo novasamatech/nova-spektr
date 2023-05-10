@@ -49,8 +49,8 @@ export const Submit = ({ api, tx, multisigTx, account, matrixRoomId, unsignedTx,
     submitAndWatchExtrinsic(extrinsic, unsignedTx, api, (executed, params) => {
       if (executed) {
         const typedParams = params as ExtrinsicResultParams;
-        if (multisigTx?.transaction && account?.accountId) {
-          const isReject = multisigTx?.transaction.type === TransactionType.MULTISIG_CANCEL_AS_MULTI;
+        if (multisigTx && tx && account?.accountId) {
+          const isReject = tx.type === TransactionType.MULTISIG_CANCEL_AS_MULTI;
           const eventStatus: SigningStatus = isReject ? 'CANCELLED' : 'SIGNED';
 
           const event: MultisigEvent = {
@@ -92,27 +92,28 @@ export const Submit = ({ api, tx, multisigTx, account, matrixRoomId, unsignedTx,
     });
   };
 
-  const sendMultisigEvent = (multisigTx: MultisigTransaction, params: ExtrinsicResultParams, rejectReason?: string) => {
-    if (!multisigTx.transaction) return;
+  const sendMultisigEvent = (updatedTx: MultisigTransaction, params: ExtrinsicResultParams, rejectReason?: string) => {
+    if (!tx || !updatedTx.transaction) return;
 
-    const transaction = multisigTx.transaction;
+    const transaction = updatedTx.transaction;
     const payload = {
       senderAccountId: toAccountId(tx.address),
       chainId: transaction.chainId,
-      callHash: transaction.args.callHash,
+      callHash: updatedTx.callHash,
       extrinsicTimepoint: params.timepoint,
+      extrinsicHash: params.extrinsicHash,
       error: Boolean(params.multisigError),
       description: rejectReason,
       callTimepoint: {
-        height: multisigTx.blockCreated || params.timepoint.height,
-        index: multisigTx.indexCreated || params.timepoint.index,
+        height: updatedTx.blockCreated || params.timepoint.height,
+        index: updatedTx.indexCreated || params.timepoint.index,
       },
     };
 
-    if (transaction.type === TransactionType.MULTISIG_CANCEL_AS_MULTI) {
+    if (tx.type === TransactionType.MULTISIG_CANCEL_AS_MULTI) {
       matrix.sendCancel(matrixRoomId, payload).catch(console.warn);
     } else if (params.isFinalApprove) {
-      matrix.sendFinalApprove(matrixRoomId, { ...payload, callOutcome: multisigTx.status }).catch(console.warn);
+      matrix.sendFinalApprove(matrixRoomId, { ...payload, callOutcome: updatedTx.status }).catch(console.warn);
     } else {
       matrix.sendApprove(matrixRoomId, payload).catch(console.warn);
     }

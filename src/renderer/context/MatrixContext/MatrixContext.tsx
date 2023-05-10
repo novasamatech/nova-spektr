@@ -16,7 +16,7 @@ import { useAccount } from '@renderer/services/account/accountService';
 import { toShortAddress, toAddress } from '@renderer/shared/utils/address';
 import { useContact } from '@renderer/services/contact/contactService';
 import { Address, AccountId, SigningType } from '@renderer/domain/shared-kernel';
-import { validateCallData } from '@renderer/shared/utils/substrate';
+import { getCreatedDateFromApi, validateCallData } from '@renderer/shared/utils/substrate';
 import { useMultisigTx } from '@renderer/services/multisigTx/multisigTxService';
 import {
   MultisigTransaction,
@@ -28,6 +28,7 @@ import {
 } from '@renderer/domain/transaction';
 import { Signatory } from '@renderer/domain/signatory';
 import { useNetworkContext } from '@renderer/context/NetworkContext';
+import { useTransaction } from '@renderer/services/transaction/transactionService';
 import { useNotification } from '@renderer/services/notification/notificationService';
 import { MultisigNotificationType } from '@renderer/domain/notification';
 
@@ -42,6 +43,7 @@ export const MatrixProvider = ({ children }: PropsWithChildren) => {
   const { getContacts } = useContact();
   const { getMultisigTxs, addMultisigTx, updateMultisigTx, updateCallData } = useMultisigTx();
   const { getAccounts, addAccount, updateAccount } = useAccount();
+  const { decodeCallData } = useTransaction();
   const { connections } = useNetworkContext();
   const { addNotification } = useNotification();
 
@@ -175,6 +177,7 @@ export const MatrixProvider = ({ children }: PropsWithChildren) => {
     if (!validateMatrixEvent(content, extras)) return;
 
     const multisigAccount = await getMultisigAccount(extras.mstAccount.accountId);
+
     if (!multisigAccount) return;
 
     const multisigTxs = await getMultisigTxs({
@@ -220,8 +223,14 @@ export const MatrixProvider = ({ children }: PropsWithChildren) => {
     return accounts.find((a) => a.accountId === accountId) as MultisigAccount;
   };
 
-  const createEvent = (payload: ApprovePayload | FinalApprovePayload, eventStatus: SigningStatus): MultisigEvent => {
+  const createEvent = async (
+    payload: ApprovePayload | FinalApprovePayload,
+    eventStatus: SigningStatus,
+  ): Promise<MultisigEvent> => {
     const callOutcome = (payload as FinalApprovePayload).callOutcome;
+
+    const api = connectionsRef.current[payload.chainId]?.api;
+    const dateCreated = api ? await getCreatedDateFromApi(payload.extrinsicTimepoint.height, api) : Date.now();
 
     return {
       status: eventStatus,
@@ -229,11 +238,12 @@ export const MatrixProvider = ({ children }: PropsWithChildren) => {
       eventBlock: payload.extrinsicTimepoint.height,
       eventIndex: payload.extrinsicTimepoint.index,
       accountId: payload.senderAccountId,
+      dateCreated,
       ...(callOutcome && { multisigOutcome: callOutcome }),
     };
   };
 
-  const addMultisigTxToDB = <T extends BaseMultisigPayload>(
+  const addMultisigTxToDB = async <T extends BaseMultisigPayload>(
     payload: T,
     accountId: AccountId,
     signatories: Signatory[],
@@ -241,6 +251,11 @@ export const MatrixProvider = ({ children }: PropsWithChildren) => {
     txStatus: MultisigTxStatus,
   ): Promise<unknown> => {
     const descriptionField = txStatus === MultisigTxFinalStatus.CANCELLED ? 'cancelDescription' : 'description';
+    const { api, addressPrefix } = connectionsRef.current[payload.chainId];
+
+    const dateCreated = api ? await getCreatedDateFromApi(payload.callTimepoint.height, api) : Date.now();
+    const transaction =
+      api && payload.callData && decodeCallData(api, toAddress(accountId, { prefix: addressPrefix }), payload.callData);
 
     return addMultisigTx({
       accountId,
@@ -253,6 +268,8 @@ export const MatrixProvider = ({ children }: PropsWithChildren) => {
       status: txStatus,
       blockCreated: payload.callTimepoint.height,
       indexCreated: payload.callTimepoint.index,
+      dateCreated,
+      transaction,
     });
   };
 
@@ -271,8 +288,9 @@ export const MatrixProvider = ({ children }: PropsWithChildren) => {
     { accountId, signatories }: MultisigAccount,
     tx?: MultisigTransaction,
   ): Promise<void> => {
-    const eventStatus = payload.error ? 'ERROR_CANCELLED' : 'PENDING_CANCELLED';
-    const newEvent = createEvent(payload, eventStatus);
+    const eventStatus = payload.error ? 'ERROR_CANCELLED' : 'CANCELLED';
+
+    const newEvent = await createEvent(payload, eventStatus);
 
     if (!tx) {
       await addMultisigTxToDB(payload, accountId, signatories, newEvent, MultisigTxFinalStatus.CANCELLED);
@@ -288,6 +306,7 @@ export const MatrixProvider = ({ children }: PropsWithChildren) => {
       senderEvent.extrinsicHash = payload.extrinsicHash;
       senderEvent.eventBlock = payload.extrinsicTimepoint.height;
       senderEvent.eventIndex = payload.extrinsicTimepoint.index;
+      senderEvent.dateCreated = newEvent.dateCreated;
 
       if (senderEvent.status !== 'CANCELLED') {
         senderEvent.status = eventStatus;
@@ -302,14 +321,15 @@ export const MatrixProvider = ({ children }: PropsWithChildren) => {
     { accountId, signatories }: MultisigAccount,
     tx?: MultisigTransaction,
   ): Promise<void> => {
-    const eventStatus = payload.error ? 'ERROR_SIGNED' : 'PENDING_SIGNED';
-    const newEvent = createEvent(payload, eventStatus);
+    const eventStatus = payload.error ? 'ERROR_SIGNED' : 'SIGNED';
+    const newEvent = await createEvent(payload, eventStatus);
 
     if (!tx) {
       await addMultisigTxToDB(payload, accountId, signatories, newEvent, MultisigTxInitStatus.SIGNING);
 
       return;
     }
+
     const senderEvent = tx.events.find((e) => e.accountId === payload.senderAccountId);
 
     if (!senderEvent) {
@@ -318,6 +338,7 @@ export const MatrixProvider = ({ children }: PropsWithChildren) => {
       senderEvent.extrinsicHash = payload.extrinsicHash;
       senderEvent.eventBlock = payload.extrinsicTimepoint.height;
       senderEvent.eventIndex = payload.extrinsicTimepoint.index;
+      senderEvent.dateCreated = newEvent.dateCreated;
 
       if (senderEvent.status !== 'SIGNED') {
         senderEvent.status = eventStatus;
@@ -332,8 +353,8 @@ export const MatrixProvider = ({ children }: PropsWithChildren) => {
     { accountId, signatories }: MultisigAccount,
     tx?: MultisigTransaction,
   ): Promise<void> => {
-    const eventStatus = payload.error ? 'ERROR_SIGNED' : 'PENDING_SIGNED';
-    const newEvent = createEvent(payload, eventStatus);
+    const eventStatus = payload.error ? 'ERROR_SIGNED' : 'SIGNED';
+    const newEvent = await createEvent(payload, eventStatus);
 
     if (!tx) {
       await addMultisigTxToDB(payload, accountId, signatories, newEvent, payload.callOutcome);
@@ -349,6 +370,7 @@ export const MatrixProvider = ({ children }: PropsWithChildren) => {
       senderEvent.eventBlock = payload.extrinsicTimepoint.height;
       senderEvent.eventIndex = payload.extrinsicTimepoint.index;
       senderEvent.multisigOutcome = payload.callOutcome;
+      senderEvent.dateCreated = newEvent.dateCreated;
 
       if (senderEvent.status !== 'SIGNED') {
         senderEvent.status = eventStatus;

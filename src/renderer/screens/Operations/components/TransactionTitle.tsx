@@ -7,9 +7,10 @@ import { BodyText, FootnoteText } from '@renderer/components/ui-redesign';
 type Props = {
   tx?: Transaction;
   description?: string;
+  withoutIcon?: boolean;
 };
 
-const TransactionTitle = ({ tx, description }: Props) => {
+const TransactionTitle = ({ tx, description, withoutIcon }: Props) => {
   const { t } = useI18n();
 
   const iconName = getIconName(tx);
@@ -17,11 +18,13 @@ const TransactionTitle = ({ tx, description }: Props) => {
 
   return (
     <div className="inline-flex gap-x-2 items-center">
-      <Icon
-        className="p-1.5 box-content rounded-full border border-token-container-border text-icon-default"
-        name={iconName}
-        size={16}
-      />
+      {!withoutIcon && (
+        <Icon
+          className="p-1.5 box-content rounded-full border border-token-container-border text-icon-default"
+          name={iconName}
+          size={16}
+        />
+      )}
       <div className="flex flex-col gap-0.5 justify-center">
         <BodyText>{t(transactionTitle)}</BodyText>
         {description && <FootnoteText className="text-text-tertiary truncate">{description} </FootnoteText>}
