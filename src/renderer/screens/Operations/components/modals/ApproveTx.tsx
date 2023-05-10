@@ -3,34 +3,33 @@ import { UnsignedTransaction } from '@substrate/txwrapper-polkadot';
 import { Weight } from '@polkadot/types/interfaces';
 import { BN } from '@polkadot/util';
 
-import { ChainAddress, BaseModal, Button, Icon } from '@renderer/components/ui';
-import { Button as ButtonRedesign } from '@renderer/components/ui-redesign';
+import { BaseModal, Button, Icon } from '@renderer/components/ui';
+import { Button as ButtonRedesign, BaseModal as BaseModalRedesign } from '@renderer/components/ui-redesign';
 import { useI18n } from '@renderer/context/I18nContext';
-import { AccountDS, MultisigTransactionDS } from '@renderer/services/storage';
+import { AccountDS } from '@renderer/services/storage';
 import { useToggle } from '@renderer/shared/hooks';
 import { MultisigAccount } from '@renderer/domain/account';
 import { ExtendedChain } from '@renderer/services/network/common/types';
 import Chain from '../Chain';
-import { Signing } from '../Signing/Signing';
-import { Scanning } from '../Scanning/Scanning';
-import { Transaction, TransactionType } from '@renderer/domain/transaction';
+import { Signing } from '../ActionSteps/Signing';
+import { Scanning } from '../ActionSteps/Scanning';
+import { MultisigTransaction, Transaction, TransactionType } from '@renderer/domain/transaction';
 import { Address, HexString, Timepoint } from '@renderer/domain/shared-kernel';
 import { toAddress } from '@renderer/shared/utils/address';
 import { getAssetById } from '@renderer/shared/utils/assets';
 import { useAccount } from '@renderer/services/account/accountService';
 import { getTransactionTitle } from '../../common/utils';
-import Details from '../Details';
-import { Submit } from '../Submit/Submit';
+import { Submit } from '../ActionSteps/Submit';
 import { useTransaction } from '@renderer/services/transaction/transactionService';
-import ShortTransactionInfo from '../ShortTransactionInfo';
-import { Fee } from '@renderer/components/common';
 import { useCountdown } from '@renderer/screens/Staking/Operations/hooks/useCountdown';
 import { useBalance } from '@renderer/services/balance/balanceService';
 import { transferableAmount } from '@renderer/services/balance/common/utils';
 import { TEST_ADDRESS } from '@renderer/shared/utils/constants';
+import Confirmation from '@renderer/screens/Operations/components/ActionSteps/Confirmation';
+import SignatorySelectModal from '@renderer/screens/Operations/components/modals/SignatorySelectModal';
 
 type Props = {
-  tx: MultisigTransactionDS;
+  tx: MultisigTransaction;
   account: MultisigAccount;
   connection: ExtendedChain;
 };
@@ -41,6 +40,8 @@ const enum Step {
   SIGNING,
   SUBMIT,
 }
+
+const ChainFontStyle = 'font-manrope text-modal-title text-text-primary';
 
 const ApproveTx = ({ tx, account, connection }: Props) => {
   const { t } = useI18n();
@@ -186,53 +187,37 @@ const ApproveTx = ({ tx, account, connection }: Props) => {
 
   if (!(readyForFinalSign || readyForNonFinalSign)) return <></>;
 
+  const approveTitile = (
+    <div className="flex items-center py-1 ml-4">
+      {t(transactionTitle)} {t('on')}
+      <Chain className="ml-0.5" chainId={tx.chainId} fontProps={{ className: ChainFontStyle, fontWeight: 'bold' }} />
+    </div>
+  );
+
   return (
     <>
-      <div className="flex justify-between">
-        <ButtonRedesign size="sm" pallet="primary" variant="fill" onClick={toggleModal}>
-          {t('operation.approveButton')}
-        </ButtonRedesign>
-      </div>
+      <ButtonRedesign size="sm" onClick={toggleModal}>
+        {t('operation.approveButton')}
+      </ButtonRedesign>
 
-      <BaseModal
+      <BaseModalRedesign
         isOpen={isModalOpen}
         closeButton
-        title={
-          <div className="flex items-center">
-            {t(transactionTitle)} {t('on')} <Chain chainId={tx.chainId} />
-          </div>
-        }
-        contentClass="px-5 pb-4 h-3/4 w-[520px]"
+        title={approveTitile}
+        panelClass="w-[440px]"
         onClose={handleClose}
       >
         {activeStep === Step.CONFIRMATION && (
-          <div className="flex flex-col gap-2">
-            <div className="flex justify-center">{tx.transaction && <ShortTransactionInfo tx={tx.transaction} />} </div>
-
-            {tx.description && <div className="flex justify-center bg-shade-5 rounded-2lg">{tx.description}</div>}
-
-            <Details tx={tx} account={account} connection={connection} withAdvanced={false} />
-
-            <div className="flex justify-between items-center">
-              <div className="text-shade-40">{t('operation.networkFee')}</div>
-              <div>
-                {connection.api && feeTx && (
-                  <Fee
-                    className="text-shade-40"
-                    api={connection.api}
-                    asset={connection.assets[0]}
-                    transaction={feeTx}
-                  />
-                )}
-              </div>
-            </div>
-
-            <div className="flex justify-end">
-              <Button pallet="primary" variant="fill" onClick={selectAccount}>
-                {t('operation.signButton')}
-              </Button>
-            </div>
-          </div>
+          <>
+            <Confirmation tx={tx} account={account} connection={connection} feeTx={feeTx} />
+            <ButtonRedesign
+              className="mt-7 ml-auto"
+              prefixElement={<Icon name="vault" size={14} />}
+              onClick={selectAccount}
+            >
+              {t('operation.signButton')}
+            </ButtonRedesign>
+          </>
         )}
         {activeStep === Step.SCANNING && (
           <>
@@ -251,13 +236,13 @@ const ApproveTx = ({ tx, account, connection }: Props) => {
             )}
 
             <div className="flex w-full justify-between">
-              <Button pallet="shade" variant="fill" onClick={goBack}>
+              <ButtonRedesign variant="text" onClick={goBack}>
                 {t('operation.goBackButton')}
-              </Button>
+              </ButtonRedesign>
 
-              <Button pallet="primary" variant="fill" onClick={() => setActiveStep(Step.SIGNING)}>
+              <ButtonRedesign onClick={() => setActiveStep(Step.SIGNING)}>
                 {t('operation.continueButton')}
-              </Button>
+              </ButtonRedesign>
             </div>
           </>
         )}
@@ -275,7 +260,7 @@ const ApproveTx = ({ tx, account, connection }: Props) => {
                 countdown={countdown}
                 assetId={asset?.assetId.toString() || '0'}
                 onGoBack={() => {}}
-                onStartOver={() => {}}
+                onStartOver={goBack}
                 onResult={onSignResult}
               />
             )}
@@ -297,27 +282,15 @@ const ApproveTx = ({ tx, account, connection }: Props) => {
           </div>
         )}
 
-        <BaseModal
-          closeButton
+        <SignatorySelectModal
           isOpen={isSelectAccountModalOpen}
-          title={t('operation.selectSignatory')}
-          contentClass="px-5 pb-4 w-[520px]"
+          accounts={unsignedAccounts}
+          explorers={connection.explorers}
+          chainId={connection.chainId}
+          asset={asset}
           onClose={toggleSelectAccountModal}
-        >
-          <ul>
-            {unsignedAccounts.map((a) => (
-              <li
-                className="flex justify-between items-center p-1 hover:bg-shade-5 cursor-pointer"
-                key={a.id}
-                onClick={() => handleAccountSelect(a)}
-              >
-                <ChainAddress accountId={a.accountId} name={a.name} />
-
-                <Icon className="text-shade-40" name="right" />
-              </li>
-            ))}
-          </ul>
-        </BaseModal>
+          onSelect={handleAccountSelect}
+        />
 
         <BaseModal
           closeButton
@@ -332,7 +305,7 @@ const ApproveTx = ({ tx, account, connection }: Props) => {
             {t('operation.feeErrorButton')}
           </Button>
         </BaseModal>
-      </BaseModal>
+      </BaseModalRedesign>
     </>
   );
 };

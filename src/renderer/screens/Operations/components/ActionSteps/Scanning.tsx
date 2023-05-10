@@ -3,7 +3,7 @@ import cn from 'classnames';
 import { useEffect, useState } from 'react';
 import { UnsignedTransaction } from '@substrate/txwrapper-polkadot';
 
-import { InfoLink, Button } from '@renderer/components/ui';
+import { Icon } from '@renderer/components/ui';
 import { QrTxGenerator } from '@renderer/components/common';
 import { secondsToMinutes } from '@renderer/shared/utils/time';
 import { TROUBLESHOOTING_URL, getMetadataPortalUrl } from '@renderer/screens/Signing/common/consts';
@@ -11,9 +11,10 @@ import { useI18n } from '@renderer/context/I18nContext';
 import { Transaction } from '@renderer/domain/transaction';
 import { useTransaction } from '@renderer/services/transaction/transactionService';
 import { ChainId } from '@renderer/domain/shared-kernel';
-import { ActiveAddress } from '@renderer/screens/Transfer/components';
 import { Explorer } from '@renderer/domain/chain';
 import { Account, MultisigAccount, isMultisig } from '@renderer/domain/account';
+import { Button, CaptionText, FootnoteText, SmallTitleText, InfoLink } from '@renderer/components/ui-redesign';
+import AddressWithExplorers from '@renderer/components/common/AddressWithExplorers/AddressWithExplorers';
 
 type Props = {
   api: ApiPromise;
@@ -66,49 +67,64 @@ export const Scanning = ({
   const activeAddress = isMultisig(account) ? account.accountId : transaction.address;
 
   return (
-    <div className="py-2 flex flex-col items-center gap-y-2.5 w-full">
-      <ActiveAddress
-        address={activeAddress}
-        accountName={account.name}
-        signingType={account.signingType}
-        explorers={explorers}
-        addressPrefix={addressPrefix}
-      />
+    <div className="py-2 flex flex-col items-center gap-y-2 w-full">
+      <div className="flex items-center gap-x-0.5">
+        <FootnoteText className="text-text-secondary">{t('signing.signatory')}</FootnoteText>
+        <AddressWithExplorers
+          address={activeAddress}
+          name={account.name}
+          signType={account.signingType}
+          explorers={explorers}
+          addressPrefix={addressPrefix}
+        />
+      </div>
 
-      <div className="text-neutral-variant text-base font-semibold">{t('signing.scanQrTitle')}</div>
+      <SmallTitleText>{t('signing.scanQrTitle')}</SmallTitleText>
 
       {txPayload && (
-        <div className="flex items-center uppercase font-normal text-xs gap-1.25">
-          {t('signing.qrCountdownTitle')}
-          <div
+        <div className="flex items-center gap-x-2 mt-1 mb-2">
+          <FootnoteText className="text-text-secondary">{t('signing.qrCountdownTitle')}</FootnoteText>
+          <CaptionText
             className={cn(
-              'w-10 rounded-md text-white py-0.5 text-center',
-              (!countdown && 'bg-error') || (countdown >= 60 ? 'bg-success' : 'bg-alert'),
+              'py-1 px-2 w-[50px] h-5 rounded-[26px] text-button-text',
+              (!countdown && 'bg-filter-border-negative') ||
+                (countdown >= 60 ? 'bg-qr-valid-background' : 'bg-text-secondary'),
             )}
+            align="center"
           >
             {secondsToMinutes(countdown)}
-          </div>
+          </CaptionText>
         </div>
       )}
 
       {txPayload ? (
-        <div className="w-[220px] h-[220px]">
-          <QrTxGenerator cmd={0} payload={txPayload} address={address} genesisHash={chainId} />
+        <div className="w-[240px] h-[240px] relative flex flex-col items-center justify-center gap-y-4">
+          {unsignedTx && countdown <= 0 ? (
+            <>
+              <Icon name="qrFrame" className="absolute w-full h-full text-icon-default" />
+              <FootnoteText>{t('signing.qrNotValid')}</FootnoteText>
+              <Button
+                className="z-10"
+                size="sm"
+                prefixElement={<Icon size={16} name="refresh" />}
+                onClick={setupTransaction}
+              >
+                {t('signing.generateNewQrButton')}
+              </Button>
+            </>
+          ) : (
+            <QrTxGenerator cmd={0} payload={txPayload} address={address} genesisHash={chainId} />
+          )}
         </div>
       ) : (
-        <div className="w-[220px] h-[220px] rounded-2lg bg-shade-20 animate-pulse" />
+        <div className="w-[240px] h-[240px] rounded-2lg bg-shade-20 animate-pulse" />
       )}
 
-      <div className="flex flex-col items-center gap-y-1 text-xs font-semibold text-primary mt-2.5 mb-5">
+      <div className="flex flex-row items-center gap-x-2 mt-5 mb-6">
         <InfoLink url={TROUBLESHOOTING_URL}>{t('signing.troubleshootingLink')}</InfoLink>
+        <span className="border border-divider h-4"></span>
         <InfoLink url={getMetadataPortalUrl(chainId)}>{t('signing.metadataPortalLink')}</InfoLink>
       </div>
-
-      {unsignedTx && countdown <= 0 && (
-        <Button className="w-max mx-auto" variant="fill" pallet="primary" weight="lg" onClick={setupTransaction}>
-          {t('signing.generateNewQrButton')}
-        </Button>
-      )}
     </div>
   );
 };

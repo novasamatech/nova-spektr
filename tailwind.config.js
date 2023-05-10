@@ -87,11 +87,13 @@ module.exports = {
         'large-title': ['1.625rem', '2.25rem'],
         title: ['1.375rem', '1.875rem'],
         'small-title': ['0.9375rem', '1.375rem'],
-        'button-text': ['0.875rem', '1.125rem'],
+        'button-small': ['0.75rem', '1.125rem'],
+        'button-large': ['0.875rem', '1.125rem'],
         caption: ['0.625rem', '0.75rem'],
         headline: ['0.9375rem', '1.375rem'],
         body: ['0.8125rem', '1.125rem'],
         footnote: ['0.75rem', '1.125rem'],
+        'modal-title': ['1.0625rem', '1.375rem'], // 17, 22
       },
       borderRadius: {
         '2lg': '10px',

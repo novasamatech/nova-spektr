@@ -13,9 +13,8 @@ import { useBalance } from '@renderer/services/balance/balanceService';
 import { ChainId, HexString } from '@renderer/domain/shared-kernel';
 import { useTransaction } from '@renderer/services/transaction/transactionService';
 import { Balance } from '@renderer/domain/balance';
-import { ActiveAddress } from '@renderer/screens/Transfer/components';
 import { Explorer } from '@renderer/domain/chain';
-import { Account, MultisigAccount, isMultisig } from '@renderer/domain/account';
+import { Account, MultisigAccount } from '@renderer/domain/account';
 
 type Props = {
   api: ApiPromise;
@@ -91,18 +90,8 @@ export const Signing = ({
     }
   };
 
-  const address = isMultisig(account) ? account.accountId : transaction.address;
-
   return (
     <div className="py-2 flex flex-col items-center gap-y-2.5 w-full">
-      <ActiveAddress
-        address={address}
-        accountName={account.name}
-        signingType={account.signingType}
-        explorers={explorers}
-        addressPrefix={addressPrefix}
-      />
-
       <div className="text-neutral-variant text-base font-semibold">{t('signing.scanSignatureTitle')}</div>
       <div className="h-[460px]">
         <ParitySignerSignatureReader

@@ -3,6 +3,7 @@ import cn from 'classnames';
 
 import { IconNames } from '@renderer/components/ui/Icon/data';
 import { Icon } from '@renderer/components/ui';
+import { ViewClass } from '@renderer/components/ui-redesign/Buttons/common/constants';
 
 type Props = {
   url: string;
@@ -19,7 +20,7 @@ const InfoLink = ({
   children,
   iconName = 'info',
   className,
-  fontClass = 'text-footnote',
+  fontClass = 'text-button-small font-semibold font-inter',
   tabIndex,
 }: PropsWithChildren<Props>) => (
   <a
@@ -27,12 +28,7 @@ const InfoLink = ({
     rel="noopener noreferrer"
     target="_blank"
     tabIndex={tabIndex}
-    className={cn(
-      'text-action-text-default hover:text-action-text cursor-pointer',
-      fontClass,
-      showIcon && 'flex items-center gap-x-1',
-      className,
-    )}
+    className={cn(ViewClass['text_primary'], fontClass, showIcon && 'flex items-center gap-x-1', className)}
   >
     {showIcon && <Icon name={iconName} size={14} />}
     {children}
