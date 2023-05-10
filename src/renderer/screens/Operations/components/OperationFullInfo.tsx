@@ -135,6 +135,7 @@ const OperationFullInfo = ({ tx, account }: Props) => {
                 {events.length}
               </CaptionText>
             }
+            onClick={toggleLogModal}
           >
             {t('operation.logButton')}
           </Button>
