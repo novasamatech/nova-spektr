@@ -3,14 +3,14 @@ import { format } from 'date-fns';
 
 import { useI18n } from '@renderer/context/I18nContext';
 import { MultisigAccount } from '@renderer/domain/account';
-import { BaseModal, ChainAddress } from '@renderer/components/ui';
 import { ExtendedChain } from '@renderer/services/network/common/types';
 import { MultisigEvent, MultisigTransaction, SigningStatus } from '@renderer/domain/transaction';
 import TransactionTitle from './TransactionTitle';
 import OperationStatus from './OperationStatus';
 import Chain from './Chain';
 import { getExtrinsicLink, sortByDate } from '../common/utils';
-import { FootnoteText } from '@renderer/components/ui-redesign';
+import { BaseModal, FootnoteText } from '@renderer/components/ui-redesign';
+import { AccountAddress } from '@renderer/components/common';
 
 type Props = {
   tx: MultisigTransaction;
@@ -65,7 +65,7 @@ const LogModal = ({ isOpen, onClose, tx, account, connection }: Props) => {
                   .map((event) => (
                     <li key={`${event.accountId}_${event.status}`}>
                       <div className="flex gap-1 w-full items-center">
-                        <ChainAddress
+                        <AccountAddress
                           address={event.accountId}
                           name={
                             account?.signatories.find((s) => s.accountId === event.accountId)?.name || event.accountId
