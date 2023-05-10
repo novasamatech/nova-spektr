@@ -54,6 +54,7 @@ export type MultisigEvent = {
   extrinsicHash?: HexString;
   eventBlock?: number;
   eventIndex?: number;
+  dateCreated?: number;
 };
 
 export type MultisigTransaction = {

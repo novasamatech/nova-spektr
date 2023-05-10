@@ -7,9 +7,10 @@ import { FootnoteText } from '@renderer/components/ui-redesign';
 
 type Props = {
   chainId: ChainId;
+  withoutName?: boolean;
 };
 
-const Chain = ({ chainId }: Props) => {
+const Chain = ({ chainId, withoutName }: Props) => {
   const { getChainById } = useChains();
 
   const [chain, setChain] = useState<ChainType>();
@@ -21,9 +22,11 @@ const Chain = ({ chainId }: Props) => {
   return (
     <div className="flex gap-1 items-center">
       <img className="inline-block mx-1" width={16} height={16} alt={chain?.name} src={chain?.icon} />
-      <FootnoteText as="span" className="text-text-tertiary">
-        {chain?.name}
-      </FootnoteText>
+      {!withoutName && (
+        <FootnoteText as="span" className="text-text-tertiary">
+          {chain?.name}
+        </FootnoteText>
+      )}
     </div>
   );
 };

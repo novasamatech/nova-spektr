@@ -11,7 +11,7 @@ import { FootnoteText } from '@renderer/components/ui-redesign';
 import ShortTransactionInfo from './ShortTransactionInfo';
 import { MultisigTransactionDS } from '@renderer/services/storage';
 import OperationStatus from './OperationStatus';
-import OperationFullInfo from '@renderer/screens/Operations/components/OperationFullInfo';
+import OperationFullInfo from './OperationFullInfo';
 
 type Props = {
   tx: MultisigTransactionDS;
