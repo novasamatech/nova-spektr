@@ -1,5 +1,5 @@
 import cn from 'classnames';
-import { PropsWithChildren } from 'react';
+import { PropsWithChildren, useCallback } from 'react';
 
 import { useI18n } from '@renderer/context/I18nContext';
 import { MultisigAccount } from '@renderer/domain/account';
@@ -22,25 +22,23 @@ type Props = {
   withAdvanced?: boolean;
 };
 
-const RowStyle = 'flex justify-between items-center';
+const RowStyle = 'flex justify-between items-center w-full';
 const LabelStyle = 'text-text-tertiary';
-const ValueStyle = 'text-text-secondary';
 const InteractableStyle = 'rounded hover:bg-action-background-hover cursor-pointer py-[3px] px-2';
+const AddressStyle = 'text-footnote text-inherit';
 
-type DetailsRowProps = {
-  label: string;
-};
-const DetailsRow = ({ label, children }: PropsWithChildren<DetailsRowProps>) => (
+type DetailsWithLabelProps = PropsWithChildren<{ label: string }>;
+export const DetailWithLabel = ({ label, children, className }: DetailsWithLabelProps & { className: string }) => (
   <div className={RowStyle}>
     <FootnoteText as="dt" className={LabelStyle}>
       {label}
     </FootnoteText>
     {typeof children === 'string' ? (
-      <FootnoteText as="dd" className={cn(ValueStyle, 'py-[3px] px-2')}>
+      <FootnoteText as="dd" className={cn(className, 'py-[3px] px-2')}>
         {children}
       </FootnoteText>
     ) : (
-      <dd className={cn('flex items-center gap-1', ValueStyle)}>{children}</dd>
+      <dd className={cn('flex items-center gap-1', className)}>{children}</dd>
     )}
   </div>
 );
@@ -59,15 +57,22 @@ const Details = ({ tx, account, connection, withAdvanced = true }: Props) => {
   const depositorSignatory = account?.signatories.find((s) => s.accountId === depositor);
   const extrinsicLink = getMultisigExtrinsicLink(callHash, indexCreated, blockCreated, explorers);
 
+  const valueClass = withAdvanced ? 'text-text-secondary' : 'text-text-primary';
+  // const DetailsRow = (props: DetailsWithLabelProps) => <DetailWithLabel {...props} className={valueClass} />;
+  const DetailsRow = useCallback(
+    (props: DetailsWithLabelProps) => <DetailWithLabel {...props} className={valueClass} />,
+    [valueClass],
+  );
+
   return (
     <>
-      <dl className="flex flex-col gap-y-1">
+      <dl className="flex flex-col gap-y-1 w-full">
         {description && (
           <div className="rounded bg-block-background pl-3 py-2 flex flex-col gap-x-0.5 mb-2">
             <FootnoteText as="dt" className={LabelStyle}>
               {t('operation.details.multisigWallet')}
             </FootnoteText>
-            <FootnoteText as="dd" className={ValueStyle}>
+            <FootnoteText as="dd" className={valueClass}>
               {description}
             </FootnoteText>
           </div>
@@ -77,6 +82,7 @@ const Details = ({ tx, account, connection, withAdvanced = true }: Props) => {
           <DetailsRow label={t('operation.details.multisigWallet')}>
             <AddressWithExplorers
               explorers={explorers}
+              addressFont={AddressStyle}
               accountId={account.accountId}
               addressPrefix={addressPrefix}
               name={account.name}
@@ -89,6 +95,7 @@ const Details = ({ tx, account, connection, withAdvanced = true }: Props) => {
             <AddressWithExplorers
               type="short"
               explorers={explorers}
+              addressFont={AddressStyle}
               address={transaction.args.dest}
               addressPrefix={addressPrefix}
             />
@@ -100,6 +107,7 @@ const Details = ({ tx, account, connection, withAdvanced = true }: Props) => {
             {transaction.args.payee.account ? (
               <AddressWithExplorers
                 explorers={explorers}
+                addressFont={AddressStyle}
                 type="short"
                 address={transaction.args.payee.account}
                 addressPrefix={addressPrefix}
@@ -112,7 +120,12 @@ const Details = ({ tx, account, connection, withAdvanced = true }: Props) => {
 
         {transaction?.args.controller && (
           <DetailsRow label={t('operation.details.controller')}>
-            <AddressWithExplorers explorers={explorers} type="short" address={transaction.args.controller} />
+            <AddressWithExplorers
+              explorers={explorers}
+              addressFont={AddressStyle}
+              type="short"
+              address={transaction.args.controller}
+            />
           </DetailsRow>
         )}
 

@@ -9,8 +9,8 @@ type Props = {
   className?: string;
   type?: 'button' | 'submit';
   form?: string;
-  variant: Variant;
-  pallet: Pallet;
+  variant?: Variant;
+  pallet?: Pallet;
   size?: keyof typeof SizeClass;
   disabled?: boolean;
   prefixElement?: ReactNode;
@@ -20,8 +20,8 @@ type Props = {
 };
 
 const Button = ({
-  variant,
-  pallet,
+  variant = 'fill',
+  pallet = 'primary',
   type = 'button',
   size = 'md',
   form,
@@ -42,9 +42,6 @@ const Button = ({
       SizeClass[size],
       variant !== 'text' && Padding[size],
       ViewClass[`${variant}_${pallet}`],
-      // primary fill button has linear gradient bg for hover & active
-      // Can't use tailwind here cause bg- resolves into background-color it doesn't work with linear gradient
-      { 'active-styles': variant === 'fill' && pallet === 'primary' },
       className,
     )}
     tabIndex={tabIndex}

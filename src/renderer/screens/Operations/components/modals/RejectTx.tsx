@@ -10,8 +10,8 @@ import { useToggle } from '@renderer/shared/hooks';
 import { MultisigAccount } from '@renderer/domain/account';
 import { ExtendedChain } from '@renderer/services/network/common/types';
 import Chain from '../Chain';
-import { Signing } from '../Signing/Signing';
-import { Scanning } from '../Scanning/Scanning';
+import { Signing } from '../ActionSteps/Signing';
+import { Scanning } from '../ActionSteps/Scanning';
 import { Transaction, TransactionType } from '@renderer/domain/transaction';
 import { Address, HexString, Timepoint } from '@renderer/domain/shared-kernel';
 import { toAddress } from '@renderer/shared/utils/address';
@@ -19,9 +19,9 @@ import { getAssetById } from '@renderer/shared/utils/assets';
 import { useAccount } from '@renderer/services/account/accountService';
 import { getTransactionTitle } from '../../common/utils';
 import Details from '../Details';
-import { Submit } from '../Submit/Submit';
+import { Submit } from '../ActionSteps/Submit';
 import { useTransaction } from '@renderer/services/transaction/transactionService';
-import ShortTransactionInfo from '../ShortTransactionInfo';
+import TransactionAmount from '../TransactionAmount';
 import { Fee } from '@renderer/components/common';
 import { useCountdown } from '@renderer/screens/Staking/Operations/hooks/useCountdown';
 import { useBalance } from '@renderer/services/balance/balanceService';
@@ -159,7 +159,7 @@ const RejectTx = ({ tx, account, connection }: Props) => {
       >
         {activeStep === Step.CONFIRMATION && (
           <div className="flex flex-col gap-2">
-            <div className="flex justify-center">{tx.transaction && <ShortTransactionInfo tx={tx.transaction} />} </div>
+            <div className="flex justify-center">{tx.transaction && <TransactionAmount tx={tx.transaction} />} </div>
 
             {tx.description && <div className="flex justify-center bg-shade-5 rounded-2lg">{tx.description}</div>}
 

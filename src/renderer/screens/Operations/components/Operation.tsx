@@ -8,7 +8,7 @@ import TransactionTitle from './TransactionTitle';
 import { useToggle } from '@renderer/shared/hooks';
 import { MultisigAccount } from '@renderer/domain/account';
 import { FootnoteText } from '@renderer/components/ui-redesign';
-import ShortTransactionInfo from './ShortTransactionInfo';
+import TransactionAmount from './TransactionAmount';
 import { MultisigTransactionDS } from '@renderer/services/storage';
 import OperationStatus from './OperationStatus';
 import OperationFullInfo from '@renderer/screens/Operations/components/OperationFullInfo';
@@ -32,7 +32,7 @@ const Operation = ({ tx, account }: Props) => {
           {format(new Date(dateCreated || 0), 'p', { locale: dateLocale })}
         </FootnoteText>
         <TransactionTitle tx={transaction} description={description} />
-        {(transaction && <ShortTransactionInfo tx={transaction} />) || <span />}
+        {(transaction && <TransactionAmount tx={transaction} />) || <span />}
         <Chain chainId={chainId} />
         <OperationStatus status={status} signed={approvals.length} threshold={account?.threshold || 0} />
         <Button pallet="shade" variant="text" onClick={toggleRow}>
