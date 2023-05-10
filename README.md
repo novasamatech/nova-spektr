@@ -1,21 +1,57 @@
-# Omni Enterprise
+<p align="center">
+  <img src="logo" width="460"> //todo
+</p>
+
+<div align="center">
+
+![badge](https://img.shields.io/endpoint?url=https://gist.githubusercontent.com/stepanLav/77132f25d05c7e9264cd410aef162a7e/raw/jest-coverage-main.json)
+[![GitHub release (latest by date)](https://img.shields.io/github/v/release/nova-wallet/omni-enterprise)](https://github.com/nova-wallet/omni-enterprise/releases)
+[![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](./LICENSE.md)
+<br />
+[![Twitter URL](https://img.shields.io/twitter/url?style=social&url=https%3A%2F%2Ftwitter.com)](todo)
+[![Telegram](https://img.shields.io/badge/Telegram-gray?logo=telegram)](todo)
+[![Medium](https://img.shields.io/badge/Medium-gray?logo=medium)](todo)
+[![YouTube](https://img.shields.io/youtube/channel/views/UCiP-xl8q-W4b4HiZh8N11Ew)](https://www.youtube.com/watch?v=yx1mY299cCM&list=PLpZ2RdLApAYvjXl-Ja2_Dv9g62JtLignp)
+
+</div>
+
+<!-- TOC -->
+- [Introduction](#introduction)
+- [What is Nova Spektr](#what-is-nova-spektr)
+  - [Key features](#key-features)
+  - [Changelog](#changelog)
+- [Development](#development)
+  - [Requirements](#requirements)
+  - [Install dependencies](#install-dependencies)
+  - [Start development](#start-development)
+  - [Project localisation](#project-localisation)
+- [Production build](#production-build)
+- [Contributing](#contributing)
+- [Support](#support)
+<!-- /TOC -->
+
+# Introduction
+
+# What is Nova Spektr
 
 Polkadot & Kusama ecosystem Enterprise Desktop application.
 
-![badge](https://img.shields.io/endpoint?url=https://gist.githubusercontent.com/stepanLav/77132f25d05c7e9264cd410aef162a7e/raw/jest-coverage-main.json)
-
 ## Key features
 
-1. Add and manage wallets for Substrate networks.
-2. Show wallet balances for multiple Substrate networks.
-3. Token transfers in multiple Substrate networks.
-4. MST account management.
-5. MST creation and signing.
-6. MST account and transactions interaction with Matrix standard.
+1. Hardware wallet (Polkadot Vault) support
+2. Multishard wallet and multishard operations
+3. Show wallet balances for any supported token (assets, ORML, balances)
+4. Token transfer for any supported token (assets, ORML, balances)
+5. Multisig account and transactions with Spektr Matrix Protocol implementation
+6. Relay Chain staking
 
-## Development
+## Changelog
 
-### Requirements
+Detailed changelog with releases description is located in the [changelog file](./CHANGELOG.md)
+
+# Development
+
+## Requirements
 
 Minimum version of `Node.js` is `v16.x`.
 
@@ -35,7 +71,7 @@ Husky hooks will be installed automatically after installing project dependencie
 ```
 **P.S. don't update pre-commit file to `npm githook:pre-commit`**
 
-## Starting development
+## Start development
 
 Start application in the `dev` environment with hot-reload:
 
@@ -77,7 +113,7 @@ or
 const qrCodePayload = `substrate:${address}:${wallet.accountId}`;
 ```
 
-## Packaging for production
+# Production build
 
 To package application for the local platform:
 
@@ -86,3 +122,8 @@ pnpm build
 pnpm postbuild
 pnpm dist
 ```
+
+# Contributing
+TODO
+# Support
+TODO
