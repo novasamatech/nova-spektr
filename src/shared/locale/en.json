@@ -298,6 +298,7 @@
     "feeErrorMessage": "Insufficient funds to pay the network fee",
     "feeErrorTitle": "Error",
     "goBackButton": "Go back",
+    "inProgress": "Submitting approval...",
     "logButton": "Log",
     "networkFee": "Network fee",
     "rejectButton": "Cancel",
@@ -306,7 +307,7 @@
       "errorMessage": "Reject reason is required",
       "inputHint": "Visible only for you and signers",
       "placeholder": "Reason...",
-      "title": "Set reject reason"
+      "title": "Enter reject reason"
     },
     "selectSignatory": "Select signatory",
     "selectSignatoryTitle": "Select signatory",
@@ -319,7 +320,8 @@
       "established": "Established",
       "executed": "Executed",
       "signing": "On signing"
-    }
+    },
+    "successMessage": "Operation Approved"
   },
   "operations": {
     "callData": {
@@ -430,8 +432,10 @@
     "generateNewQrButton": "Generate new QR code",
     "metadataPortalLink": "Update metadata in Parity Signer",
     "qrCountdownTitle": "QR code is valid for",
-    "scanQrTitle": "Scan the operation QR code with Parity Signer",
+    "qrNotValid": "QR code isn’t valid anymore",
+    "scanQrTitle": "Scan the operation QR code with Polkadot Vault",
     "scanSignatureTitle": "Scan QR code from Parity Signer",
+    "signatory": "Signatory:",
     "signatureExpiredDescription": "For security reasons generated operations valid for only 5 mins. Please generate new QR code and sign it with Parity Signer",
     "signatureExpiredLabel": "QR Code has expired",
     "title": "Signing",

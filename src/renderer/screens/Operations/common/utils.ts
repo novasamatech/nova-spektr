@@ -9,6 +9,7 @@ import {
   Transaction,
   TransactionType,
 } from '@renderer/domain/transaction';
+import { DEFAULT } from '@shared/constants/common';
 
 export const UNKNOWN_TYPE = 'UNKNOWN_TYPE';
 export const TransferTypes = [TransactionType.TRANSFER, TransactionType.ASSET_TRANSFER, TransactionType.ORML_TRANSFER];
@@ -179,4 +180,29 @@ export const getTransactionOptions = (t: TFunction) => {
       element: t('operations.titles.unknown'),
     },
   ];
+};
+
+export const getTransactionAmount = (tx: Transaction): string | null => {
+  const txType = tx.type || DEFAULT;
+
+  if (
+    [
+      TransactionType.ASSET_TRANSFER,
+      TransactionType.ORML_TRANSFER,
+      TransactionType.TRANSFER,
+      TransactionType.BOND,
+      TransactionType.RESTAKE,
+      TransactionType.UNSTAKE,
+    ].includes(txType)
+  ) {
+    return tx.args.value;
+  }
+  if (txType === TransactionType.STAKE_MORE) {
+    return tx.args.maxAdditional;
+  }
+  if (txType === TransactionType.BATCH_ALL) {
+    return getTransactionAmount(tx.args?.transactions?.[0]);
+  }
+
+  return null;
 };
