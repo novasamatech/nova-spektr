@@ -4,7 +4,7 @@ import { Weight } from '@polkadot/types/interfaces';
 import { BN } from '@polkadot/util';
 
 import { Icon } from '@renderer/components/ui';
-import { Button, BaseModal as BaseModalRedesign } from '@renderer/components/ui-redesign';
+import { Button, BaseModal } from '@renderer/components/ui-redesign';
 import { useI18n } from '@renderer/context/I18nContext';
 import { AccountDS } from '@renderer/services/storage';
 import { useToggle } from '@renderer/shared/hooks';
@@ -210,13 +210,15 @@ const ApproveTx = ({ tx, account, connection }: Props) => {
     </div>
   );
 
+  const isSubmitStep = activeStep === Step.SUBMIT && approveTx && signAccount && signature && unsignedTx;
+
   return (
     <>
       <Button size="sm" onClick={toggleModal}>
         {t('operation.approveButton')}
       </Button>
 
-      <BaseModalRedesign
+      <BaseModal
         isOpen={isModalOpen}
         closeButton
         title={approveTitile}
@@ -294,9 +296,9 @@ const ApproveTx = ({ tx, account, connection }: Props) => {
         >
           <Button onClick={toggleFeeModal}>{t('operation.feeErrorButton')}</Button>
         </OperationResult>
-      </BaseModalRedesign>
+      </BaseModal>
 
-      {activeStep === Step.SUBMIT && approveTx && connection.api && signAccount && signature && unsignedTx && (
+      {isSubmitStep && connection.api && (
         <Submit
           tx={approveTx}
           api={connection.api}

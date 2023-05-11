@@ -161,6 +161,8 @@ const RejectTx = ({ tx, account, connection }: Props) => {
     setIsQrExpired(false);
   };
 
+  const isSubmitStep = activeStep === Step.SUBMIT && rejectTx && signAccount && signature && unsignedTx;
+
   return (
     <>
       <div className="flex justify-between">
@@ -248,7 +250,7 @@ const RejectTx = ({ tx, account, connection }: Props) => {
         </OperationResult>
       </BaseModal>
 
-      {activeStep === Step.SUBMIT && rejectTx && connection.api && signAccount && signature && unsignedTx && (
+      {isSubmitStep && connection.api && (
         <Submit
           tx={rejectTx}
           api={connection.api}
