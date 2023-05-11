@@ -42,6 +42,8 @@ const enum Step {
   SUBMIT,
 }
 
+const AllSteps = [Step.CONFIRMATION, Step.SCANNING, Step.SIGNING, Step.SUBMIT];
+
 export const ChainFontStyle = 'font-manrope text-modal-title text-text-primary';
 
 const ApproveTx = ({ tx, account, connection }: Props) => {
@@ -56,6 +58,8 @@ const ApproveTx = ({ tx, account, connection }: Props) => {
   const [activeStep, setActiveStep] = useState(Step.CONFIRMATION);
   const [countdown, resetCountdown] = useCountdown(connection.api);
   const [signAccount, setSignAccount] = useState<AccountDS>();
+  // if qr expires while on signing screen this state used as a flag for Scanning step to show qr error instead of generating new
+  const [isQrExpired, setIsQrExpired] = useState(false);
 
   const accounts = getLiveAccounts();
 
@@ -74,7 +78,7 @@ const ApproveTx = ({ tx, account, connection }: Props) => {
   const transactionTitle = getTransactionTitle(tx.transaction);
 
   const goBack = () => {
-    setActiveStep(Step.CONFIRMATION);
+    setActiveStep(AllSteps.indexOf(activeStep) - 1);
   };
 
   const onSignResult = (signature: HexString) => {
@@ -181,6 +185,16 @@ const ApproveTx = ({ tx, account, connection }: Props) => {
     }
   };
 
+  const handleQrExpiredWhileSigning = () => {
+    setIsQrExpired(true);
+    goBack();
+  };
+
+  const handleQrReset = () => {
+    resetCountdown();
+    setIsQrExpired(false);
+  };
+
   const thresholdReached = tx.events.filter((e) => e.status === 'SIGNED').length === account.threshold - 1;
 
   const readyForSign = tx.status === 'SIGNING' && unsignedAccounts.length > 0;
@@ -229,7 +243,8 @@ const ApproveTx = ({ tx, account, connection }: Props) => {
                 explorers={connection?.explorers}
                 addressPrefix={connection?.addressPrefix}
                 countdown={countdown}
-                onResetCountdown={resetCountdown}
+                isQrExpired={isQrExpired}
+                onResetCountdown={handleQrReset}
                 onResult={setUnsignedTx}
               />
             )}
@@ -251,13 +266,10 @@ const ApproveTx = ({ tx, account, connection }: Props) => {
                 api={connection.api}
                 chainId={tx.chainId}
                 transaction={approveTx}
-                account={signAccount}
-                explorers={connection.explorers}
-                addressPrefix={connection.addressPrefix}
                 countdown={countdown}
                 assetId={asset?.assetId.toString() || '0'}
-                onGoBack={() => {}}
-                onStartOver={goBack}
+                onQrExpired={handleQrExpiredWhileSigning}
+                onStartOver={() => {}}
                 onResult={onSignResult}
               />
             )}

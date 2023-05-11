@@ -24,6 +24,7 @@ type Props = {
   explorers?: Explorer[];
   addressPrefix: number;
   countdown: number;
+  isQrExpired: boolean;
   onResetCountdown: () => void;
   onResult: (unsignedTx: UnsignedTransaction) => void;
 };
@@ -36,6 +37,7 @@ export const Scanning = ({
   explorers,
   addressPrefix,
   countdown,
+  isQrExpired,
   onResetCountdown,
   onResult,
 }: Props) => {
@@ -43,14 +45,12 @@ export const Scanning = ({
   const { createPayload } = useTransaction();
 
   const [txPayload, setTxPayload] = useState<Uint8Array>();
-  const [unsignedTx, setUnsignedTx] = useState<UnsignedTransaction>();
 
   const setupTransaction = async (): Promise<void> => {
     try {
       const { payload, unsigned } = await createPayload(transaction, api);
 
       setTxPayload(payload);
-      setUnsignedTx(unsigned);
       onResult(unsigned);
     } catch (error) {
       console.warn(error);
@@ -58,10 +58,13 @@ export const Scanning = ({
   };
 
   useEffect(() => {
-    setupTransaction();
+    // if qr expired while on the next screen (signing) we need to show qr expired error first
+    !isQrExpired && setupTransaction();
   }, []);
 
-  useEffect(onResetCountdown, [txPayload]);
+  useEffect(() => {
+    txPayload && onResetCountdown();
+  }, [txPayload]);
 
   const address = transaction.address;
   const activeAddress = isMultisig(account) ? account.accountId : transaction.address;
@@ -97,28 +100,26 @@ export const Scanning = ({
         </div>
       )}
 
-      {txPayload ? (
-        <div className="w-[240px] h-[240px] relative flex flex-col items-center justify-center gap-y-4">
-          {unsignedTx && countdown <= 0 ? (
-            <>
-              <Icon name="qrFrame" className="absolute w-full h-full text-icon-default" />
-              <FootnoteText>{t('signing.qrNotValid')}</FootnoteText>
-              <Button
-                className="z-10"
-                size="sm"
-                prefixElement={<Icon size={16} name="refresh" />}
-                onClick={setupTransaction}
-              >
-                {t('signing.generateNewQrButton')}
-              </Button>
-            </>
-          ) : (
-            <QrTxGenerator cmd={0} payload={txPayload} address={address} genesisHash={chainId} />
-          )}
-        </div>
-      ) : (
-        <div className="w-[240px] h-[240px] rounded-2lg bg-shade-20 animate-pulse" />
-      )}
+      <div className="w-[240px] h-[240px] relative flex flex-col items-center justify-center gap-y-4">
+        {!txPayload && !isQrExpired ? (
+          <div className="w-full h-full rounded-2lg bg-shade-20 animate-pulse" />
+        ) : txPayload && countdown > 0 ? (
+          <QrTxGenerator cmd={0} payload={txPayload} address={address} genesisHash={chainId} />
+        ) : (
+          <>
+            <Icon name="qrFrame" className="absolute w-full h-full text-icon-default" />
+            <FootnoteText>{t('signing.qrNotValid')}</FootnoteText>
+            <Button
+              className="z-10"
+              size="sm"
+              prefixElement={<Icon size={16} name="refresh" />}
+              onClick={setupTransaction}
+            >
+              {t('signing.generateNewQrButton')}
+            </Button>
+          </>
+        )}
+      </div>
 
       <div className="flex flex-row items-center gap-x-2 mt-5 mb-6">
         <InfoLink url={TROUBLESHOOTING_URL}>{t('signing.troubleshootingLink')}</InfoLink>

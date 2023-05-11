@@ -41,6 +41,8 @@ const enum Step {
   SUBMIT,
 }
 
+const AllSteps = [Step.CONFIRMATION, Step.SCANNING, Step.SIGNING, Step.SUBMIT];
+
 const RejectTx = ({ tx, account, connection }: Props) => {
   const { t } = useI18n();
   const { getBalance } = useBalance();
@@ -58,12 +60,15 @@ const RejectTx = ({ tx, account, connection }: Props) => {
   const [signature, setSignature] = useState<HexString>();
   const [unsignedTx, setUnsignedTx] = useState<UnsignedTransaction>();
 
+  // if qr expires while on signing screen this state used as a flag for Scanning step to show qr error instead of generating new
+  const [isQrExpired, setIsQrExpired] = useState(false);
+
   const accounts = getLiveAccounts();
   const signAccount = accounts.find((a) => a.accountId === tx.depositor);
   const transactionTitle = getTransactionTitle(tx.transaction);
 
   const goBack = () => {
-    setActiveStep(Step.CONFIRMATION);
+    setActiveStep(AllSteps.indexOf(activeStep) - 1);
   };
 
   const onSignResult = (signature: HexString) => {
@@ -146,6 +151,16 @@ const RejectTx = ({ tx, account, connection }: Props) => {
     </div>
   );
 
+  const handleQrExpiredWhileSigning = () => {
+    setIsQrExpired(true);
+    goBack();
+  };
+
+  const handleQrReset = () => {
+    resetCountdown();
+    setIsQrExpired(false);
+  };
+
   return (
     <>
       <div className="flex justify-between">
@@ -184,7 +199,8 @@ const RejectTx = ({ tx, account, connection }: Props) => {
                 explorers={connection?.explorers}
                 addressPrefix={connection?.addressPrefix}
                 countdown={countdown}
-                onResetCountdown={resetCountdown}
+                isQrExpired={isQrExpired}
+                onResetCountdown={handleQrReset}
                 onResult={setUnsignedTx}
               />
             )}
@@ -206,12 +222,9 @@ const RejectTx = ({ tx, account, connection }: Props) => {
                 api={connection.api}
                 chainId={tx.chainId}
                 transaction={rejectTx}
-                account={signAccount}
-                explorers={connection.explorers}
-                addressPrefix={connection.addressPrefix}
                 countdown={countdown}
                 assetId={asset?.assetId.toString() || '0'}
-                onGoBack={() => {}}
+                onQrExpired={handleQrExpiredWhileSigning}
                 onStartOver={() => {}}
                 onResult={onSignResult}
               />

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { BN } from '@polkadot/util';
 import { ApiPromise } from '@polkadot/api';
 
@@ -13,19 +13,14 @@ import { useBalance } from '@renderer/services/balance/balanceService';
 import { ChainId, HexString } from '@renderer/domain/shared-kernel';
 import { useTransaction } from '@renderer/services/transaction/transactionService';
 import { Balance } from '@renderer/domain/balance';
-import { Explorer } from '@renderer/domain/chain';
-import { Account, MultisigAccount } from '@renderer/domain/account';
 
 type Props = {
   api: ApiPromise;
   chainId: ChainId;
   transaction: Transaction;
-  account: Account | MultisigAccount;
   assetId: string;
   countdown: number;
-  explorers?: Explorer[];
-  addressPrefix: number;
-  onGoBack: () => void;
+  onQrExpired: () => void;
   onStartOver: () => void;
   onResult: (signature: HexString) => void;
 };
@@ -34,12 +29,9 @@ export const Signing = ({
   api,
   chainId,
   transaction,
-  account,
   assetId,
   countdown,
-  explorers,
-  addressPrefix,
-  onGoBack,
+  onQrExpired,
   onStartOver,
   onResult,
 }: Props) => {
@@ -90,22 +82,22 @@ export const Signing = ({
     }
   };
 
+  useEffect(() => {
+    if (countdown === 0) {
+      onQrExpired();
+    }
+  }, [countdown]);
+
   return (
     <div className="flex flex-col items-center gap-y-2.5 w-full">
       <ParitySignerSignatureReader
         className="w-full"
         countdown={countdown}
         header={t('signing.scanSignatureTitle')}
-        size={440}
+        size={[440, 496]}
         validationError={validationError}
         onResult={handleResult}
       />
-
-      {countdown === 0 && (
-        <Button variant="fill" pallet="primary" weight="lg" onClick={onGoBack}>
-          {t('signing.generateNewQrButton')}
-        </Button>
-      )}
 
       {validationError && (
         <Button className="w-max mb-5" weight="lg" variant="fill" pallet="primary" onClick={onStartOver}>
