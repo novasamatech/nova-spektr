@@ -129,6 +129,15 @@ Logs are collected in the
 3. Linux todo
 
 # Contributing
-TODO
+Contributing guide is described in the [CONTRIBUTING.md](https://github.com/nova-wallet/omni-enterprise/blob/dev/CONTRIBUTING.md)
+
 # Support
-TODO
+Check the official support channels:
+1. wiki
+2. telegram group
+
+All issues are being tracked in the [Nova Spektr Support project](https://github.com/orgs/nova-wallet/projects/4)
+
+# Feedback
+Your feedback is welcome. Use GitHub issues for submitting the feedback.
+All feedback is being tracked in the [Nova Spektr Feedback project](https://github.com/orgs/nova-wallet/projects/5)
