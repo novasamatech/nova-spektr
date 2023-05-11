@@ -47,7 +47,7 @@ Polkadot & Kusama ecosystem Enterprise Desktop application.
 
 ## Changelog
 
-Detailed changelog with releases description is located in the [changelog file](./CHANGELOG.md)
+Detailed changelog with releases description is located in the [changelog file](https://github.com/nova-wallet/omni-enterprise/blob/dev/CHANGELOG.md)
 
 # Development
 
