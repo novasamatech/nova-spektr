@@ -16,7 +16,7 @@ jest.mock('@renderer/services/account/accountService', () => ({
 }));
 
 jest.mock('./components/Chain', () => () => 'Chain');
-jest.mock('./components/ShortTransactionInfo', () => () => 'ShortTransactionInfo');
+jest.mock('./components/TransactionAmount', () => () => 'TransactionAmount');
 jest.mock('./components/TransactionTitle', () => () => 'TransactionTitle');
 jest.mock('./components/EmptyState/EmptyOperations', () => () => 'EmptyState/EmptyOperations');
 jest.mock('./components/Operation', () => () => 'Operation');
