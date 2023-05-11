@@ -133,8 +133,8 @@ Contributing guide is described in the [CONTRIBUTING.md](https://github.com/nova
 
 # Support
 Check the official support channels:
-1. wiki
-2. telegram group
+1. wiki (todo)
+2. telegram group (todo)
 
 All issues are being tracked in the [Nova Spektr Support project](https://github.com/orgs/nova-wallet/projects/4)
 
