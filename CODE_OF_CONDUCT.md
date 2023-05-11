@@ -33,4 +33,4 @@ We will take appropriate action to address any behavior that violates this Code 
 including warning, suspension, or expulsion from the community.
 
 ## Conclusion
-The Crypto Wallet project is committed to creating a welcoming and inclusive community where all contributors feel valued and respected. By adhering to this Code of Conduct, we can build a strong and supportive community that works together to create high-quality software.
+The Nova Spektr project is committed to creating a welcoming and inclusive community where all contributors feel valued and respected. By adhering to this Code of Conduct, we can build a strong and supportive community that works together to create high-quality software.

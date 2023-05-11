@@ -32,7 +32,7 @@ To contribute code to the project, please follow these steps:
 5. Run the tests with `pnpm test` to make sure that your changes did not introduce any regressions
 6. Test your changes. Use `pnpm start` for running the application
 7. Push your changes to your forked repository
-8. Open a pull request against the main branch of the electron/electron-typescript-definitions repository
+8. Open a pull request against the dev branch of the Nova Spektr repository
 9. Wait for feedback from the maintainers
 
 When contributing code, please keep the following guidelines in mind:
@@ -51,5 +51,5 @@ If you are reviewing code that has been submitted by someone else, please follow
 - Remember that the goal is to improve the project, not to prove that you are right
 
 # License
-By contributing to the Crypto Wallet project, you agree that your contributions will be licensed under the 
+By contributing to the Nova Spektr project, you agree that your contributions will be licensed under the 
 [Apache 2.0 License](https://github.com/nova-wallet/omni-enterprise/blob/dev/LICENSE.md).
