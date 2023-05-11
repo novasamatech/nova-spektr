@@ -93,7 +93,7 @@ const ApproveTx = ({ tx, account, connection }: Props) => {
   };
 
   useEffect(() => {
-    if (!signAccount?.accountId || !txWeight) return;
+    if (!signAccount?.accountId) return;
 
     const multisigTx = getMultisigTx(signAccount?.accountId);
 
@@ -234,6 +234,7 @@ const ApproveTx = ({ tx, account, connection }: Props) => {
             </Button>
           </>
         )}
+
         {activeStep === Step.SCANNING && (
           <>
             {approveTx && connection.api && signAccount && (

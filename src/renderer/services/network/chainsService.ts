@@ -1,5 +1,3 @@
-import { ApiPromise } from '@polkadot/api';
-import { BN, BN_TWO, bnMin } from '@polkadot/util';
 import compact from 'lodash/compact';
 import sortBy from 'lodash/sortBy';
 
@@ -7,7 +5,6 @@ import { Chain } from '@renderer/domain/chain';
 import chainsDev from './common/chains/chains.json';
 import chainsOmniProd from './common/chains/omni-chains.json';
 import chainsOmniDev from './common/chains/omni-chains_dev.json';
-import { DEFAULT_TIME, ONE_DAY, THRESHOLD } from './common/constants';
 import { ChainLike, IChainService } from './common/types';
 import { isKusama, isPolkadot, isTestnet } from './common/utils';
 import { ChainId } from '@renderer/domain/shared-kernel';
@@ -61,35 +58,10 @@ export function useChains(): IChainService {
     return compact([polkadot, kusama, ...sortBy(parachains, 'name'), ...sortBy(testnets, 'name')]) as T[];
   };
 
-  const getExpectedBlockTime = (api: ApiPromise): BN => {
-    const substrateBlockTime = api.consts.babe?.expectedBlockTime;
-    const proofOfWorkBlockTime = api.consts.difficulty?.targetBlockTime;
-    const subspaceBlockTime = api.consts.subspace?.expectedBlockTime;
-
-    const blockTime = substrateBlockTime || proofOfWorkBlockTime || subspaceBlockTime;
-    if (blockTime) {
-      return bnMin(ONE_DAY, blockTime);
-    }
-
-    const thresholdCheck = api.consts.timestamp?.minimumPeriod.gte(THRESHOLD);
-    if (thresholdCheck) {
-      return bnMin(ONE_DAY, api.consts.timestamp.minimumPeriod.mul(BN_TWO));
-    }
-
-    // default guess for a parachain
-    if (api.query.parachainSystem) {
-      return bnMin(ONE_DAY, DEFAULT_TIME.mul(BN_TWO));
-    }
-
-    // default guess for others
-    return bnMin(ONE_DAY, DEFAULT_TIME);
-  };
-
   return {
     getChainsData,
     getChainById,
     getStakingChainsData,
     sortChains,
-    getExpectedBlockTime,
   };
 }

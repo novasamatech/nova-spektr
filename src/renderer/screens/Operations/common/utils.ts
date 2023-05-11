@@ -9,7 +9,6 @@ import {
   Transaction,
   TransactionType,
 } from '@renderer/domain/transaction';
-import { MultisigTransactionDS } from '@renderer/services/storage';
 import { DEFAULT } from '@shared/constants/common';
 
 export const UNKNOWN_TYPE = 'UNKNOWN_TYPE';
@@ -77,8 +76,16 @@ export const getIconName = (transaction?: Transaction): IconNames => {
   return TransactionIcons[transaction.type];
 };
 
-export const sortByDate = ([dateA]: [string, MultisigTransactionDS[]], [dateB]: [string, MultisigTransactionDS[]]) =>
+export const sortByDate = <T>([dateA]: [string, T[]], [dateB]: [string, T[]]) =>
   new Date(dateA) < new Date(dateB) ? 1 : -1;
+
+export const getExtrinsicLink = (hash?: HexString, explorers?: Explorer[]): string | undefined => {
+  const extrinsicLink = explorers?.find((e) => e.extrinsic)?.extrinsic;
+
+  if (!extrinsicLink || !hash) return;
+
+  return extrinsicLink.replace('{hash}', hash);
+};
 
 export const getMultisigExtrinsicLink = (
   callHash?: HexString,
@@ -88,11 +95,11 @@ export const getMultisigExtrinsicLink = (
 ): string | undefined => {
   if (!callHash || !indexCreated || !blockCreated || !explorers) return;
 
-  const multisigLink = explorers.find((e) => e.multisig);
+  const multisigLink = explorers.find((e) => e.multisig)?.multisig;
 
-  if (!multisigLink?.multisig) return;
+  if (!multisigLink) return;
 
-  return multisigLink.multisig.replace('{index}', `${blockCreated}-${indexCreated}`).replace('{callHash}', callHash);
+  return multisigLink.replace('{index}', `${blockCreated}-${indexCreated}`).replace('{callHash}', callHash);
 };
 
 export const getStatusOptions = (t: TFunction) => {

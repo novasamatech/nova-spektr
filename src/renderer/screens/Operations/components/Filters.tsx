@@ -6,7 +6,7 @@ import { MultisigTransactionDS } from '@renderer/services/storage';
 import { ChainId, SigningType } from '@renderer/domain/shared-kernel';
 import { useAccount } from '@renderer/services/account/accountService';
 import { nonNullable } from '@renderer/shared/utils/functions';
-import { UNKNOWN_TYPE, getStatusOptions, getTransactionOptions, TransferTypes } from './common/utils';
+import { UNKNOWN_TYPE, getStatusOptions, getTransactionOptions, TransferTypes } from '../common/utils';
 import { DropdownOption, DropdownResult } from '@renderer/components/ui-redesign/Dropdowns/common/types';
 import { MultisigTransaction, MultisigTxStatus, TransactionType } from '@renderer/domain/transaction';
 import { useNetworkContext } from '@renderer/context/NetworkContext';
@@ -91,7 +91,7 @@ const Filters = ({ onChangeFilters }: Props) => {
 
     onChangeFilters(filtered);
     setFilteredTxs(filtered);
-  }, [txs.length, activeStatusesValues.length, activeNetworksValues.length, activeOperationTypesValues.length]);
+  }, [txs, activeStatusesValues.length, activeNetworksValues.length, activeOperationTypesValues.length]);
 
   const getTransactionTypeOption = (tx: MultisigTransactionDS) => {
     return TransactionOptions.find((s) => s.value === getFilterableType(tx));

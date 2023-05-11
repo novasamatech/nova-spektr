@@ -94,6 +94,15 @@
       "appName": "Nova Spektr"
     }
   },
+  "log": {
+    "cancelledMessage": "rejected this operation",
+    "errorCancelledMessage": "tried to reject this operation",
+    "errorSignedMessage": "tried to sign this operation",
+    "initiatedMessage": "created this operation",
+    "signedMessage": "signed this operation",
+    "title": "Log",
+    "unknownMessage": " made an unknown action"
+  },
   "matrixCredentials": {
     "subTitle": "Matrix Credentials"
   },
@@ -310,7 +319,7 @@
       "error": "Error",
       "established": "Established",
       "executed": "Executed",
-      "signing": "Signing"
+      "signing": "On signing"
     },
     "successMessage": "Operation Approved"
   },

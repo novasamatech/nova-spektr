@@ -49,7 +49,9 @@ const MultiSelect = ({
 
     if (selectedOptions.length === 1) {
       return typeof selectedOptions[0].element === 'string' ? (
-        <FootnoteText as="span">{selectedOptions[0].element}</FootnoteText>
+        <FootnoteText as="span" className="truncate">
+          {selectedOptions[0].element}
+        </FootnoteText>
       ) : (
         selectedOptions[0].element
       );
