@@ -26,8 +26,8 @@
   /* BUTTON */
   /* primary */
   --primary-button-background-default: #4649f6;
-  --primary-button-background-hover: linear-gradient(0deg, rgba(0, 0, 0, 0.12), rgba(0, 0, 0, 0.12)), #4649f6;
-  --primary-button-background-active: linear-gradient(0deg, rgba(0, 0, 0, 0.24), rgba(0, 0, 0, 0.24)), #4649f6;
+  --primary-button-background-hover: #3e40d8;
+  --primary-button-background-active: #3e40d8;
   --primary-button-background-inactive: rgba(70, 73, 246, 0.48);
   /* secondary */
   --secondary-button-background: rgba(69, 69, 137, 0.06);
@@ -66,6 +66,7 @@
   --dim-background: rgba(54, 54, 67, 0.4);
   --qr-valid-background: #01a63e;
   --accent-background: #4649f6;
+  --hover: rgba(36, 99, 235, 0.04);
 
   /* SHADOW */
   --card-shadow: 0px 3px 4px rgba(69, 69, 137, 0.04), inset 0px -0.5px 0px rgba(69, 69, 137, 0.12);

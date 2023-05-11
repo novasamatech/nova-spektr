@@ -1,8 +1,7 @@
 import { ApiPromise } from '@polkadot/api';
 import { UnsignedTransaction } from '@substrate/txwrapper-polkadot';
-import { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 
-import { Icon, Plate } from '@renderer/components/ui';
 import { useI18n } from '@renderer/context/I18nContext';
 import {
   MultisigEvent,
@@ -20,6 +19,10 @@ import { Account } from '@renderer/domain/account';
 import { ExtrinsicResultParams } from '@renderer/services/transaction/common/types';
 import { useMultisigTx } from '@renderer/services/multisigTx/multisigTxService';
 import { toAccountId } from '@renderer/shared/utils/address';
+import { Button } from '@renderer/components/ui-redesign';
+import OperationResult from '@renderer/components/ui-redesign/OperationResult/OperationResult';
+
+type ResultProps = Pick<React.ComponentProps<typeof OperationResult>, 'title' | 'description' | 'variant'>;
 
 type Props = {
   api: ApiPromise;
@@ -85,6 +88,7 @@ export const Submit = ({ api, tx, multisigTx, account, matrixRoomId, unsignedTx,
         }
 
         toggleSuccessMessage();
+        setTimeout(toggleSuccessMessage, 2000);
       } else {
         setErrorMessage(params as string);
       }
@@ -119,34 +123,33 @@ export const Submit = ({ api, tx, multisigTx, account, matrixRoomId, unsignedTx,
     }
   };
 
+  const getResultProps = (): ResultProps => {
+    if (inProgress) {
+      return { title: t('operation.inProgress'), variant: 'loading' };
+    }
+    if (successMessage) {
+      return { title: t('operation.successMessage'), variant: 'success' };
+    }
+    if (errorMessage) {
+      return { title: t('operation.feeErrorTitle'), description: errorMessage, variant: 'error' };
+    }
+
+    return { title: '' };
+  };
+
   useEffect(() => {
     submitExtrinsic(signature);
   }, []);
 
   return (
     <>
-      <Plate as="section" className="w-[500px] flex flex-col items-center mx-auto gap-y-5">
-        {inProgress && (
-          <div className="flex items-center gap-x-2.5 mx-auto">
-            <Icon className="text-neutral-variant animate-spin" name="loader" size={20} />
-            <p className="text-neutral-variant font-semibold">{t('transfer.executing')}</p>
-          </div>
-        )}
-
-        {successMessage && (
-          <div className="flex uppercase items-center gap-2.5">
-            <Icon name="checkmarkCutout" size={20} className="text-success" />
-            <p className="flex-1">{t('transfer.successMessage')}</p>
-          </div>
-        )}
-
-        {errorMessage && (
-          <div className="flex uppercase items-center gap-2.5">
-            <Icon name="warnCutout" size={20} className="text-error" />
-            <p className="flex-1">{errorMessage}</p>
-          </div>
-        )}
-      </Plate>
+      <OperationResult
+        isOpen={Boolean(inProgress || errorMessage || successMessage)}
+        {...getResultProps()}
+        onClose={() => {}}
+      >
+        {errorMessage && <Button onClick={() => setErrorMessage('')}>{t('operation.feeErrorButton')}</Button>}
+      </OperationResult>
     </>
   );
 };

@@ -26,7 +26,9 @@ const InfoPopover = ({ data, className, buttonClassName, children, offsetPx = 7 
     <Menu>
       {({ open }) => (
         <div className={cn('relative', open && 'z-10')}>
-          <Menu.Button className={cn('flex items-center', buttonClassName)}>{children}</Menu.Button>
+          <Menu.Button className={cn('flex items-center', buttonClassName)} onClick={(e) => e.stopPropagation()}>
+            {children}
+          </Menu.Button>
           <Menu.Items
             style={{ marginTop: offsetPx + 'px' }}
             className={cn(
