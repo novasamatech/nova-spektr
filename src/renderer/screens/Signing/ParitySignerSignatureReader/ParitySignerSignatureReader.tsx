@@ -24,7 +24,7 @@ const enum CameraState {
 const RESULT_DELAY = 250;
 
 type Props = {
-  size?: number;
+  size?: number | [number, number];
   className?: string;
   countdown?: number;
   validationError?: ValidationErrors;
@@ -267,7 +267,7 @@ const ParitySignerSignatureReader = ({
               {header}
             </SmallTitleText>
           )}
-          {countdown && countdown > 0 ? (
+          {countdown && countdown > 0 && (
             <div className="flex items-center justify-center gap-x-2 mt-1 mb-2">
               <FootnoteText className="text-text-tertiary">{t('signing.qrCountdownTitle')}</FootnoteText>
               <CaptionText
@@ -280,13 +280,6 @@ const ParitySignerSignatureReader = ({
               >
                 {secondsToMinutes(countdown)}
               </CaptionText>
-            </div>
-          ) : (
-            <div>
-              <p className="text-error text-xl text-center leading-6 font-semibold">
-                {t('signing.signatureExpiredLabel')}
-              </p>
-              <p className="text-neutral-variant text-center text-sm">{t('signing.signatureExpiredDescription')}</p>
             </div>
           )}
         </div>
