@@ -183,7 +183,6 @@ export const getTransactionAmount = (tx: Transaction): string | null => {
       TransactionType.ASSET_TRANSFER,
       TransactionType.ORML_TRANSFER,
       TransactionType.TRANSFER,
-      TransactionType.MULTISIG_AS_MULTI,
       TransactionType.BOND,
       TransactionType.RESTAKE,
       TransactionType.UNSTAKE,
