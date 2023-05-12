@@ -104,11 +104,11 @@ Use the following instructions in order to start application in the `dev` enviro
 
 Electron (desktop) environment:
 ```bash
-pnpm start:dev
+pnpm start:debug
 ```
 Web (browser) environment:
 ```bash
-pnpm start:renderer:dev
+pnpm start:renderer:debug
 ```
 
 ## Project localisation
