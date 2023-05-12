@@ -71,16 +71,16 @@ Husky hooks will be installed automatically after installing project dependencie
 ```
 **P.S. don't update pre-commit file to `npm githook:pre-commit`**
 
-## Start development mode
-The `dev` run configuration is the same as [production build](#production-build) except that the application won't be
+## Start in production mode
+The `production` run configuration is the same as [production build](#production-build) except that the application won't be
 installed in the operating system and source code hot-reload will be used.
 
-Development configuration uses:
+Production configuration uses:
 1. [`chains.json`](/src/renderer/services/network/common/chains/chains.json) file for chains configuration
 2. debug tools are disabled by default
 3. error are handled in a smooth way in order not to interrupt the user
 
-Use the following instructions in order to start application in the `dev` environment with hot-reload:
+Use the following instructions in order to start application in the `production` environment with hot-reload:
 
 Electron (desktop) environment - recommended:
 ```bash
@@ -91,11 +91,11 @@ Web (browser) environment - not recommended:
 pnpm start:renderer
 ```
 
-## Start debug mode
-The `debug` run configuration **shouldn't be** used for production. This configuration is only for developing new features and
+## Start in development mode
+The `dev` run configuration **shouldn't be** used for production. This configuration is only for developing new features and
 debugging errors.
 
-Debug configuration uses:
+Development configuration uses:
 1. [`chains_dev.json`](/src/renderer/services/network/common/chains/chains_dev.json) file that contains testnets in order to debug and test new features
 2. debug tools are enabled by default
 3. error handling is turned off in order to pay developer's attention to errors
@@ -104,11 +104,11 @@ Use the following instructions in order to start application in the `dev` enviro
 
 Electron (desktop) environment:
 ```bash
-pnpm start:debug
+pnpm start:dev
 ```
 Web (browser) environment:
 ```bash
-pnpm start:renderer:debug
+pnpm start:renderer:dev
 ```
 
 ## Project localisation
