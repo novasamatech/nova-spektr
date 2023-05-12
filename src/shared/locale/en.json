@@ -339,9 +339,9 @@
       "statusPlaceholder": "Operation status",
       "statusSummary": "Operation statuses"
     },
-    "noOperationsDescription": "There are no pending multisig operations",
-    "subTitle": "Your operations",
-    "title": "Operations",
+    "noOperationsDescription": "Your operation history will appear here",
+    "noOperationsWalletNotMulti": "You can only view operations for your Multisig wallets. Transaction history for other types of wallets will be available later. Stay tuned.",
+    "title": "Your Operations",
     "titles": {
       "destination": "Set reward destination",
       "nominate": "Nominate",
