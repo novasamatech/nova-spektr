@@ -1,11 +1,8 @@
 import { useEffect, useState } from 'react';
 
 import { useI18n } from '@renderer/context/I18nContext';
-import { useMultisigTx } from '@renderer/services/multisigTx/multisigTxService';
 import { MultisigTransactionDS } from '@renderer/services/storage';
-import { ChainId, SigningType } from '@renderer/domain/shared-kernel';
-import { useAccount } from '@renderer/services/account/accountService';
-import { nonNullable } from '@renderer/shared/utils/functions';
+import { ChainId } from '@renderer/domain/shared-kernel';
 import { UNKNOWN_TYPE, getStatusOptions, getTransactionOptions, TransferTypes } from '../common/utils';
 import { DropdownOption, DropdownResult } from '@renderer/components/ui-redesign/Dropdowns/common/types';
 import { MultisigTransaction, MultisigTxStatus, TransactionType } from '@renderer/domain/transaction';
@@ -25,10 +22,11 @@ const filtersEmptyValue: FiltersOptions = {
 };
 
 type Props = {
+  txs: MultisigTransactionDS[];
   onChangeFilters: (filteredTxs: MultisigTransaction[]) => void;
 };
 
-const Filters = ({ onChangeFilters }: Props) => {
+const Filters = ({ txs, onChangeFilters }: Props) => {
   const { t } = useI18n();
   const { connections } = useNetworkContext();
 
@@ -43,9 +41,6 @@ const Filters = ({ onChangeFilters }: Props) => {
     element: c.name,
   }));
 
-  const { getActiveAccounts } = useAccount();
-  const { getLiveAccountMultisigTxs } = useMultisigTx();
-
   const [activeNetworks, setActiveNetworks] = useState<DropdownResult<ChainId>[]>([]);
   const [activeStatuses, setActiveStatuses] = useState<DropdownResult<MultisigTxStatus>[]>([]);
   const [activeOperationTypes, setActiveOperationTypes] = useState<
@@ -53,11 +48,6 @@ const Filters = ({ onChangeFilters }: Props) => {
   >([]);
 
   const [filtersOptions, setFiltersOptions] = useState<FiltersOptions>(filtersEmptyValue);
-
-  const accounts = getActiveAccounts({ signingType: SigningType.MULTISIG });
-  const accountIds = accounts.map((a) => a.accountId).filter(nonNullable);
-
-  const txs = getLiveAccountMultisigTxs(accountIds);
 
   const activeStatusesValues = activeStatuses.map((t) => t.value);
   const activeNetworksValues = activeNetworks.map((t) => t.value);

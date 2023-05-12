@@ -12,15 +12,20 @@ import { sortByDate } from './common/utils';
 import { FootnoteText } from '@renderer/components/ui-redesign';
 import Filters from './components/Filters';
 import { MultisigTransactionDS } from '@renderer/services/storage';
+import { useMultisigTx } from '@renderer/services/multisigTx/multisigTxService';
+import { nonNullable } from '@renderer/shared/utils/functions';
 
 const Operations = () => {
   const { t, dateLocale } = useI18n();
   const { getActiveAccounts } = useAccount();
+  const { getLiveAccountMultisigTxs } = useMultisigTx();
 
   const accounts = getActiveAccounts({ signingType: SigningType.MULTISIG });
   const accountsMap = new Map(accounts.map((account) => [account.accountId, account as MultisigAccount]));
+  const accountIds = accounts.map((a) => a.accountId).filter(nonNullable);
+  const txs = getLiveAccountMultisigTxs(accountIds);
 
-  const [filteredTxs, setFilteredTxs] = useState<MultisigTransactionDS[]>([]);
+  const [filteredTxs, setFilteredTxs] = useState<MultisigTransactionDS[]>(txs);
 
   const groupedTxs = groupBy(filteredTxs, ({ dateCreated }) =>
     format(new Date(dateCreated || 0), 'PP', { locale: dateLocale }),
@@ -32,7 +37,7 @@ const Operations = () => {
         <h1 className="font-semibold text-2xl text-neutral"> {t('operations.title')}</h1>
       </header>
 
-      <Filters onChangeFilters={setFilteredTxs} />
+      {!!txs.length && <Filters txs={txs} onChangeFilters={setFilteredTxs} />}
 
       <div className="overflow-y-auto flex-1 mx-auto w-full pl-6 pt-4">
         {filteredTxs.length ? (

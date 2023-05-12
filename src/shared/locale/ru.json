@@ -340,8 +340,8 @@
       "statusSummary": "Статусы операции"
     },
     "noOperationsDescription": "Нет ожидающих операций с мультиподписью",
-    "subTitle": "Ваши операции",
-    "title": "Операции",
+    "noOperationsWalletNotMulti": "You can only view operations for your Multisig wallets. Transaction history for other types of wallets will be available later. Stay tuned.",
+    "title": "Ваши операции",
     "titles": {
       "destination": "Установить кошелёк получения награды",
       "nominate": "Номинирование",
