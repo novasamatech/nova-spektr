@@ -71,7 +71,7 @@ Husky hooks will be installed automatically after installing project dependencie
 ```
 **P.S. don't update pre-commit file to `npm githook:pre-commit`**
 
-## Start development
+## Start development mode
 The `dev` run configuration is the same as [production build](#production-build) except that the application won't be
 installed in the operating system and source code hot-reload will be used.
 
