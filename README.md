@@ -72,16 +72,34 @@ Husky hooks will be installed automatically after installing project dependencie
 **P.S. don't update pre-commit file to `npm githook:pre-commit`**
 
 ## Start development
+The `dev` run configuration is the same as [production build](#production-build) except that the application won't be
+installed in the operating system and source code hot-reload will be used.
+Use the following instructions in order to start application in the `dev` environment with hot-reload:
 
-Start application in the `dev` environment with hot-reload:
-
-Electron:
+Electron (desktop) environment - recommended:
 ```bash
 pnpm start
 ```
-Web:
+Web (browser) environment - not recommended:
 ```bash
 pnpm start:renderer
+```
+
+## Start debug mode
+The `debug` run configuration **shouldn't be** used for production. This configuration is only for developing new features and
+debugging errors.
+Debug configuration uses:
+1. `chains_dev.json` file  that contains testnets in order to debug and test new features
+2. debug tools are enabled by default
+3. error handling is turned off in order to pay developer's attention to errors
+
+Electron (desktop) environment:
+```bash
+pnpm start:dev
+```
+Web (browser) environment:
+```bash
+pnpm start:renderer:dev
 ```
 
 ## Project localisation
