@@ -41,6 +41,8 @@ const getButtonText = (errors: FieldErrors<ContactForm>, isEdit: boolean): strin
   return 'addressBook.addContact.addContactButton';
 };
 
+const initialFormValues = { name: '', matrixId: '', address: '' };
+
 const ContactModal = ({ isOpen, onToggle, contact }: Props) => {
   const { t } = useI18n();
   const { matrix } = useMatrix();
@@ -56,7 +58,7 @@ const ContactModal = ({ isOpen, onToggle, contact }: Props) => {
     resetField,
   } = useForm<ContactForm>({
     mode: 'onChange',
-    defaultValues: { name: '', matrixId: '', address: '' },
+    defaultValues: initialFormValues,
   });
 
   useEffect(() => {
@@ -80,6 +82,11 @@ const ContactModal = ({ isOpen, onToggle, contact }: Props) => {
       await addContact(updatedContact);
     }
 
+    handleClose();
+  };
+
+  const handleClose = () => {
+    reset(initialFormValues);
     onToggle();
   };
 
@@ -93,7 +100,7 @@ const ContactModal = ({ isOpen, onToggle, contact }: Props) => {
       closeButton
       isOpen={isOpen}
       contentClass="px-5 pb-4 w-[520px]"
-      onClose={onToggle}
+      onClose={handleClose}
     >
       <form className="flex flex-col mt-14 mb-3 gap-4" onSubmit={handleSubmit(onSubmit)}>
         <Controller
