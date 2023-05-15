@@ -106,7 +106,7 @@ const InitOperation = ({ api, chainId, identifiers, asset, onResult }: Props) =>
   const dbAccounts = getLiveAccounts();
 
   const [fee, setFee] = useState('');
-  const [stakedRange, setStakedRange] = useState<[string, string]>(['0', '0']);
+  const [minBalance, setMinBalance] = useState<string>('0');
   const [transactions, setTransactions] = useState<Transaction[]>([]);
 
   const [unstakeAccounts, setUnstakeAccounts] = useState<DropdownOption<Address>[]>([]);
@@ -146,20 +146,14 @@ const InitOperation = ({ api, chainId, identifiers, asset, onResult }: Props) =>
   useEffect(() => {
     if (!activeBalances.length) return;
 
-    const stakeableBalance = activeBalances.map(stakeableAmount);
-    const minMaxBalances = stakeableBalance.reduce<[string, string]>(
-      (acc, balance) => {
-        if (!balance) return acc;
+    const stakeableBalances = activeBalances.map(stakeableAmount);
+    const minStakeableBalance = stakeableBalances.reduce<string>((acc, balance) => {
+      if (!balance) return acc;
 
-        acc[0] = new BN(balance).lt(new BN(acc[0])) ? balance : acc[0];
-        acc[1] = new BN(balance).gt(new BN(acc[1])) ? balance : acc[1];
+      return new BN(balance).lt(new BN(acc)) ? balance : acc;
+    }, stakeableBalances[0]);
 
-        return acc;
-      },
-      [stakeableBalance[0], stakeableBalance[0]],
-    );
-
-    setStakedRange(minMaxBalances);
+    setMinBalance(minStakeableBalance);
   }, [activeBalances]);
 
   useEffect(() => {
@@ -195,7 +189,7 @@ const InitOperation = ({ api, chainId, identifiers, asset, onResult }: Props) =>
 
   // Setup transactions
   useEffect(() => {
-    if (!stakedRange) return;
+    if (!minBalance) return;
 
     const newTransactions = activeUnstakeAccounts.map(({ value }) => {
       return {
@@ -207,7 +201,7 @@ const InitOperation = ({ api, chainId, identifiers, asset, onResult }: Props) =>
     });
 
     setTransactions(newTransactions);
-  }, [stakedRange, amount]);
+  }, [minBalance, amount]);
 
   useEffect(() => {
     if (!amount || !transactions.length) return;
@@ -265,7 +259,7 @@ const InitOperation = ({ api, chainId, identifiers, asset, onResult }: Props) =>
                 balancePlaceholder={t('staking.stakeMore.availablePlaceholder')}
                 value={value}
                 name="amount"
-                balance={stakedRange[0] === stakedRange[1] ? stakedRange[0] : stakedRange}
+                balance={['0', minBalance]}
                 asset={asset}
                 invalid={Boolean(error)}
                 onChange={onChange}
