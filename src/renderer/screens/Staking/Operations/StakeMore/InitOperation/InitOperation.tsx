@@ -2,7 +2,7 @@ import { ApiPromise } from '@polkadot/api';
 import { BN } from '@polkadot/util';
 import { useEffect, useState } from 'react';
 
-import { Fee, ActiveAddress } from '@renderer/components/common';
+import { Fee, ActiveAddress, Deposit } from '@renderer/components/common';
 import { HintList, Select, Block, Plate, Dropdown } from '@renderer/components/ui';
 import { DropdownOption, DropdownResult } from '@renderer/components/ui/Dropdowns/common/types';
 import { useI18n } from '@renderer/context/I18nContext';
@@ -13,7 +13,6 @@ import { Transaction, TransactionType } from '@renderer/domain/transaction';
 import { useAccount } from '@renderer/services/account/accountService';
 import { useBalance } from '@renderer/services/balance/balanceService';
 import { formatAmount, stakeableAmount } from '@renderer/shared/utils/balance';
-import { AccountDS } from '@renderer/services/storage';
 import { nonNullable } from '@renderer/shared/utils/functions';
 import {
   getStakeAccountOption,
@@ -21,6 +20,7 @@ import {
   validateBalanceForFee,
   validateStake,
   getSignatoryOptions,
+  validateBalanceForFeeDeposit,
 } from '../../common/utils';
 import { OperationForm } from '../../components';
 import { toAddress } from '@renderer/shared/utils/address';
@@ -28,7 +28,7 @@ import { Account, isMultisig } from '@renderer/domain/account';
 import { Explorer } from '@renderer/domain/chain';
 
 export type StakeMoreResult = {
-  accounts: AccountDS[];
+  accounts: Account[];
   amount: string;
   signer?: Account;
   description?: string;
@@ -46,12 +46,13 @@ type Props = {
 
 const InitOperation = ({ api, chainId, addressPrefix, explorers, identifiers, asset, onResult }: Props) => {
   const { t } = useI18n();
-  const { getLiveAssetBalances } = useBalance();
+  const { getLiveBalance, getLiveAssetBalances } = useBalance();
   const { getLiveAccounts } = useAccount();
 
   const dbAccounts = getLiveAccounts();
 
   const [fee, setFee] = useState('');
+  const [deposit, setDeposit] = useState('');
   const [amount, setAmount] = useState('');
 
   const [stakedRange, setStakedRange] = useState<[string, string]>(['0', '0']);
@@ -69,10 +70,11 @@ const InitOperation = ({ api, chainId, addressPrefix, explorers, identifiers, as
 
   const accountIds = totalAccounts.map((account) => account.accountId);
   const balances = getLiveAssetBalances(accountIds, chainId, asset.assetId.toString());
+  const signerBalance = getLiveBalance(activeSignatory?.value.accountId || '0x0', chainId, asset.assetId.toString());
 
   const firstAccount = activeStakeMoreAccounts[0]?.value;
   const accountIsMultisig = isMultisig(firstAccount);
-  const formFields = accountIsMultisig ? ['amount', 'description'] : ['amount'];
+  const formFields = accountIsMultisig ? [{ name: 'amount' }, { name: 'description' }] : [{ name: 'amount' }];
 
   useEffect(() => {
     if (!activeBalances.length) return;
@@ -172,6 +174,13 @@ const InitOperation = ({ api, chainId, addressPrefix, explorers, identifiers, as
     return feeIsValid && balanceIsValid;
   };
 
+  const validateDeposit = (): boolean => {
+    if (!accountIsMultisig) return true;
+    if (!signerBalance) return false;
+
+    return validateBalanceForFeeDeposit(signerBalance, deposit, fee);
+  };
+
   return (
     <Plate as="section" className="w-[600px] flex flex-col items-center mx-auto gap-y-2.5">
       <Block className="flex flex-col gap-y-2 p-5">
@@ -223,21 +232,37 @@ const InitOperation = ({ api, chainId, addressPrefix, explorers, identifiers, as
         balanceRange={stakedRange}
         validateBalance={validateBalance}
         validateFee={validateFee}
+        validateDeposit={validateDeposit}
         onSubmit={submitStakeMore}
         onFormChange={({ amount }) => {
           setAmount(amount);
         }}
       >
-        <div className="flex justify-between items-center uppercase text-neutral-variant text-2xs">
-          <p>{t('staking.unstake.networkFee', { count: activeStakeMoreAccounts.length })}</p>
+        <div className="grid grid-flow-row grid-cols-2 items-center gap-y-5">
+          <p className="uppercase text-neutral-variant text-2xs">
+            {t('staking.unstake.networkFee', { count: activeStakeMoreAccounts.length })}
+          </p>
 
           <Fee
-            className="text-neutral font-semibold"
+            className="text-neutral justify-self-end text-2xs font-semibold"
             api={api}
             asset={asset}
             transaction={transactions[0]}
             onFeeChange={setFee}
           />
+
+          {accountIsMultisig && (
+            <>
+              <p className="uppercase text-neutral-variant text-2xs">{t('transfer.networkDeposit')}</p>
+              <Deposit
+                className="text-neutral justify-self-end text-2xs font-semibold"
+                api={api}
+                asset={asset}
+                threshold={firstAccount.threshold}
+                onDepositChange={setDeposit}
+              />
+            </>
+          )}
         </div>
 
         <HintList>

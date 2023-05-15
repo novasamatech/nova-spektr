@@ -563,6 +563,7 @@
     },
     "redeem": {
       "availablePlaceholder": "Доступно",
+      "confirmRedeemSubtitle": "Подтверждение",
       "initRedeemSubtitle": "Вывести"
     },
     "requiredAmountError": "Пожалуйста, введите сумму",
