@@ -76,36 +76,47 @@ export const MatrixProvider = ({ children }: PropsWithChildren) => {
   };
 
   const onInvite = async (payload: InvitePayload) => {
-    console.info('💛 ===> onInvite');
+    try {
+      console.info('💛 ===> onInvite');
 
-    const { roomId, content } = payload;
-    const { accountId, threshold, signatories, accountName, creatorAccountId } = content.mstAccount;
+      const { roomId, content } = payload;
+      const { accountId, threshold, signatories, accountName, creatorAccountId } = content.mstAccount;
 
-    const mstAccountIsValid = accountId === getMultisigAccountId(signatories, threshold);
-    if (!mstAccountIsValid) return;
+      const mstAccountIsValid = accountId === getMultisigAccountId(signatories, threshold);
+      if (!mstAccountIsValid) return;
 
-    const accounts = await getAccounts();
-    const mstAccount = accounts.find((a) => a.accountId === accountId) as MultisigAccount;
-    const signer = accounts.find((a) => signatories.includes(a.accountId));
+      const accounts = await getAccounts();
+      const mstAccount = accounts.find((a) => a.accountId === accountId) as MultisigAccount;
+      const signer = accounts.find((a) => signatories.includes(a.accountId));
 
-    if (!mstAccount) {
-      await joinRoom(roomId, content);
+      if (!mstAccount) {
+        await joinRoom(roomId, content);
 
-      addNotification({
-        smpRoomId: roomId,
-        multisigAccountId: accountId,
-        multisigAccountName: accountName,
-        signatories,
-        threshold,
-        originatorAccountId: creatorAccountId,
-        read: true,
-        dateCreated: Date.now(),
-        type: MultisigNotificationType.ACCOUNT_INVITED,
-      });
-    } else if (signer) {
-      await changeRoom(roomId, mstAccount, content, signer.accountId);
-    } else {
-      console.warn(`Signer for multisig account ${accountId} not found`);
+        addNotification({
+          smpRoomId: roomId,
+          multisigAccountId: accountId,
+          multisigAccountName: accountName,
+          signatories,
+          threshold,
+          originatorAccountId: creatorAccountId,
+          read: true,
+          dateCreated: Date.now(),
+          type: MultisigNotificationType.ACCOUNT_INVITED,
+        });
+      } else if (signer) {
+        await changeRoom(roomId, mstAccount, content, signer.accountId);
+      } else {
+        console.warn(`Signer for multisig account ${accountId} not found`);
+      }
+    } catch (error) {
+      console.error(
+        'Error processing Multisig invitation',
+        payload.roomId,
+        payload.eventId,
+        payload.roomId,
+        payload.roomName,
+        error,
+      );
     }
   };
 
@@ -117,11 +128,10 @@ export const MatrixProvider = ({ children }: PropsWithChildren) => {
 
       return acc;
     }, {});
-
     const mstSignatories = signatories.map((accountId) => ({
       accountId,
-      address: contactsMap[accountId][0] || toAddress(accountId),
-      name: contactsMap[accountId][1] || toShortAddress(accountId),
+      address: contactsMap[accountId] ? contactsMap[accountId][0] : toAddress(accountId),
+      name: contactsMap[accountId] ? contactsMap[accountId][1] : toShortAddress(accountId),
     }));
 
     const mstAccount = createMultisigAccount({
@@ -164,10 +174,10 @@ export const MatrixProvider = ({ children }: PropsWithChildren) => {
 
   const joinRoom = async (roomId: string, extras: SpektrExtras) => {
     try {
-      await matrix.joinRoom(roomId);
+      await matrix.joinRoom(roomId)
       await createMstAccount(roomId, extras);
     } catch (error) {
-      console.warn(error);
+      console.error(error);
     }
   };
 
