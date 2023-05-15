@@ -2,7 +2,7 @@ import { ApiPromise } from '@polkadot/api';
 import { useLiveQuery } from 'dexie-react-hooks';
 
 import { MultisigAccount } from '@renderer/domain/account';
-import { MultisigTxFinalStatus, MultisigTxInitStatus, MultisigTransaction } from '@renderer/domain/transaction';
+import { MultisigTxFinalStatus, MultisigTransaction } from '@renderer/domain/transaction';
 import storage, { MultisigTransactionDS } from '../storage';
 import { QUERY_INTERVAL } from './common/consts';
 import { IMultisigTxService } from './common/types';
@@ -37,8 +37,7 @@ export const useMultisigTx = (): IMultisigTxService => {
             t.callHash === pendingTx.callHash.toHex() &&
             t.blockCreated === pendingTx.params.when.height.toNumber() &&
             t.indexCreated === pendingTx.params.when.index.toNumber() &&
-            t.chainId === api.genesisHash.toHex() &&
-            t.status === MultisigTxInitStatus.SIGNING,
+            t.chainId === api.genesisHash.toHex(),
         );
 
         if (oldTx) {

@@ -291,7 +291,6 @@ export const MatrixProvider = ({ children }: PropsWithChildren) => {
     const eventStatus = payload.error ? 'ERROR_CANCELLED' : 'CANCELLED';
 
     const newEvent = await createEvent(payload, eventStatus);
-
     if (!tx) {
       await addMultisigTxToDB(payload, accountId, signatories, newEvent, MultisigTxFinalStatus.CANCELLED);
 

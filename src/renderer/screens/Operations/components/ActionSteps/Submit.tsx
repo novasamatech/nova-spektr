@@ -52,6 +52,7 @@ export const Submit = ({ api, tx, multisigTx, account, matrixRoomId, unsignedTx,
     submitAndWatchExtrinsic(extrinsic, unsignedTx, api, (executed, params) => {
       if (executed) {
         const typedParams = params as ExtrinsicResultParams;
+
         if (multisigTx && tx && account?.accountId) {
           const isReject = tx.type === TransactionType.MULTISIG_CANCEL_AS_MULTI;
           const eventStatus: SigningStatus = isReject ? 'CANCELLED' : 'SIGNED';
@@ -97,12 +98,11 @@ export const Submit = ({ api, tx, multisigTx, account, matrixRoomId, unsignedTx,
   };
 
   const sendMultisigEvent = (updatedTx: MultisigTransaction, params: ExtrinsicResultParams, rejectReason?: string) => {
-    if (!tx || !updatedTx.transaction) return;
+    if (!tx || !updatedTx) return;
 
-    const transaction = updatedTx.transaction;
     const payload = {
       senderAccountId: toAccountId(tx.address),
-      chainId: transaction.chainId,
+      chainId: updatedTx.chainId,
       callHash: updatedTx.callHash,
       extrinsicTimepoint: params.timepoint,
       extrinsicHash: params.extrinsicHash,

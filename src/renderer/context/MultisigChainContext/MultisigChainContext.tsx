@@ -8,6 +8,7 @@ import { useMultisigTx } from '@renderer/services/multisigTx/multisigTxService';
 import { useAccount } from '@renderer/services/account/accountService';
 import { MultisigAccount } from '@renderer/domain/account';
 import { MultisigTxFinalStatus, SigningStatus } from '@renderer/domain/transaction';
+import { toAddress } from '@renderer/shared/utils/address';
 
 type MultisigChainContextProps = {};
 
@@ -50,6 +51,7 @@ export const MultisigChainProvider = ({ children }: PropsWithChildren) => {
         status: resultEventStatus,
         accountId: event.data[0].toHex(),
         multisigOutcome: resultTransactionStatus,
+        dateCreated: Date.now(),
       });
     }
 
@@ -64,7 +66,7 @@ export const MultisigChainProvider = ({ children }: PropsWithChildren) => {
     const unsubscribeMultisigs: (() => void)[] = [];
     const unsubscribeEvents: UnsubscribePromise[] = [];
 
-    Object.values(connections).forEach(({ api }) => {
+    Object.values(connections).forEach(({ api, addressPrefix }) => {
       if (!api?.query.multisig) return;
 
       accounts.forEach((account) => {
@@ -74,7 +76,7 @@ export const MultisigChainProvider = ({ children }: PropsWithChildren) => {
         const successParams = {
           section: 'multisig',
           method: 'MultisigExecuted',
-          data: [undefined, undefined, account.accountId],
+          data: [undefined, undefined, toAddress(account.accountId, { prefix: addressPrefix })],
         };
         const unsubscribeSuccessEvent = subscribeEvents(api, successParams, (event: Event) => {
           eventCallback(
@@ -90,7 +92,7 @@ export const MultisigChainProvider = ({ children }: PropsWithChildren) => {
         const cancelParams = {
           section: 'multisig',
           method: 'MultisigCancelled',
-          data: [undefined, undefined, account.accountId],
+          data: [undefined, undefined, toAddress(account.accountId, { prefix: addressPrefix })],
         };
         const unsubscribeCancelEvent = subscribeEvents(api, cancelParams, (event: Event) => {
           eventCallback(
