@@ -115,8 +115,15 @@ export const useBalance = (): IBalanceService => {
 
     return api.query.system.account.multi(addresses, (data: any[]) => {
       data.forEach(async (accountInfo, i) => {
-        const miscFrozen = new BN(accountInfo.data.miscFrozen);
-        const feeFrozen = new BN(accountInfo.data.feeFrozen);
+        let frozen: string;
+
+        if (accountInfo.data.miscFrozen || accountInfo.data.feeFrozen) {
+          const miscFrozen = new BN(accountInfo.data.miscFrozen);
+          const feeFrozen = new BN(accountInfo.data.feeFrozen);
+          frozen = miscFrozen.gt(feeFrozen) ? miscFrozen.toString() : feeFrozen.toString();
+        } else {
+          frozen = new BN(accountInfo.data.frozen).toString();
+        }
 
         const balance = {
           accountId: accountIds[i],
@@ -124,7 +131,7 @@ export const useBalance = (): IBalanceService => {
           assetId: asset.assetId.toString(),
           verified: true,
           free: accountInfo.data.free.toString(),
-          frozen: miscFrozen.gt(feeFrozen) ? miscFrozen.toString() : feeFrozen.toString(),
+          frozen: frozen,
           reserved: accountInfo.data.reserved.toString(),
         };
 
