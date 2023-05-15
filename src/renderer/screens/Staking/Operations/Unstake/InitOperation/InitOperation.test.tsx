@@ -27,7 +27,7 @@ jest.mock('@renderer/services/account/accountService', () => ({
 
 jest.mock('@renderer/services/balance/balanceService', () => ({
   useBalance: jest.fn().mockReturnValue({
-    getBalance: jest.fn().mockReturnValue({
+    getLiveBalance: jest.fn().mockReturnValue({
       assetId: 1,
       chainId: '0x123',
       accountId: TEST_ACCOUNT_ID,

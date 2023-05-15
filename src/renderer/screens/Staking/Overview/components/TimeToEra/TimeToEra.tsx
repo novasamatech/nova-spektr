@@ -5,24 +5,21 @@ import { Duration, Shimmering } from '@renderer/components/ui';
 import { useEra } from '@renderer/services/staking/eraService';
 
 interface Props {
+  api?: ApiPromise;
   era?: number;
   currentEra?: number;
   className?: string;
-  api?: ApiPromise;
 }
 
 const TimeToEra = ({ api, era, className }: Props) => {
   const { getTimeToEra } = useEra();
 
-  const [seconds, setSeconds] = useState<number>(0);
+  const [seconds, setSeconds] = useState(0);
 
   useEffect(() => {
     if (!api) return;
 
-    (async () => {
-      const seconds = await getTimeToEra(api, era);
-      setSeconds(seconds);
-    })();
+    getTimeToEra(api, era).then(setSeconds);
   }, [era, api]);
 
   useEffect(() => {

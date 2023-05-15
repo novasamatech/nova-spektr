@@ -18,9 +18,10 @@ import { useMatrix } from '@renderer/context/MatrixContext';
 interface Props extends InfoProps {
   unsignedTx: UnsignedTransaction[];
   signatures: HexString[];
+  description?: string;
 }
 
-export const Submit = ({ unsignedTx, signatures, children, ...props }: PropsWithChildren<Props>) => {
+export const Submit = ({ unsignedTx, signatures, description, children, ...props }: PropsWithChildren<Props>) => {
   const { t } = useI18n();
   const { matrix } = useMatrix();
   const { confirm } = useConfirmContext();
@@ -78,6 +79,7 @@ export const Submit = ({ unsignedTx, signatures, children, ...props }: PropsWith
         extrinsicTimepoint: params.timepoint,
         callTimepoint: params.timepoint,
         error: Boolean(params.multisigError),
+        description,
       })
       .catch(console.warn);
   };

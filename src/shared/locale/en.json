@@ -88,6 +88,7 @@
     },
     "input": {
       "amountLabel": "Amount",
+      "signerLabel": "Select signer",
       "transferableLabel": "Transferable"
     },
     "title": {
@@ -562,6 +563,7 @@
     },
     "redeem": {
       "availablePlaceholder": "Available",
+      "confirmRedeemSubtitle": "Confirmation",
       "initRedeemSubtitle": "Redeem"
     },
     "requiredAmountError": "Please, enter amount",

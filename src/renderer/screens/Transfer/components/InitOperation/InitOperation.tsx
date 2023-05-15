@@ -111,7 +111,7 @@ export const InitOperation = ({
           (signatoryOptions.length > 1 ? (
             <Dropdown
               weight="lg"
-              placeholder="Select signer"
+              placeholder={t('general.input.signerLabel')}
               activeId={activeSignatory?.id}
               options={signatoryOptions}
               onChange={setActiveSignatory}

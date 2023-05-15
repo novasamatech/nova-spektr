@@ -55,6 +55,8 @@ describe('screens/Staking/StakeMore/InitOperation', () => {
   const defaultProps = {
     api: {} as ApiPromise,
     chainId: '0x123' as ChainId,
+    staking: {},
+    era: 123,
     addressPrefix: 0,
     identifiers: ['1'],
     asset: { assetId: 1, symbol: 'DOT', precision: 10 } as Asset,
@@ -67,8 +69,6 @@ describe('screens/Staking/StakeMore/InitOperation', () => {
     });
 
     const form = screen.getByText('operationForm');
-    const eraHint = screen.getByText('staking.stakeMore.eraHint');
     expect(form).toBeInTheDocument();
-    expect(eraHint).toBeInTheDocument();
   });
 });

@@ -9,19 +9,20 @@ import { ButtonBack, ButtonLink, HintList, Icon } from '@renderer/components/ui'
 import { ChainLoader } from '@renderer/components/common';
 import { useI18n } from '@renderer/context/I18nContext';
 import { useNetworkContext } from '@renderer/context/NetworkContext';
-import { Address, ChainId, HexString } from '@renderer/domain/shared-kernel';
+import { Address, ChainId, HexString, AccountId } from '@renderer/domain/shared-kernel';
 import { Transaction, TransactionType } from '@renderer/domain/transaction';
 import Paths from '@renderer/routes/paths';
 import { useAccount } from '@renderer/services/account/accountService';
 import { useChains } from '@renderer/services/network/chainsService';
 import { StakingMap } from '@renderer/services/staking/common/types';
 import { useStakingData } from '@renderer/services/staking/stakingDataService';
-import { AccountDS } from '@renderer/services/storage';
 import InitOperation, { UnstakeResult } from './InitOperation/InitOperation';
-import { Confirmation, MultiScanning, Signing, Submit } from '../components';
+import { Confirmation, MultiScanning, Signing, Submit, SingleScanning } from '../components';
 import { toAddress } from '@renderer/shared/utils/address';
 import { getRelaychainAsset } from '@renderer/shared/utils/assets';
 import { useCountdown } from '@renderer/shared/hooks';
+import { useTransaction } from '@renderer/services/transaction/transactionService';
+import { Account, MultisigAccount, isMultisig } from '@renderer/domain/account';
 
 const enum Step {
   INIT,
@@ -42,24 +43,32 @@ const HeaderTitles: Record<Step, string> = {
 const Unstake = () => {
   const { t } = useI18n();
   const navigate = useNavigate();
+  const { getTransactionHash } = useTransaction();
   const { connections } = useNetworkContext();
   const { getChainById } = useChains();
   const { subscribeStaking, getMinNominatorBond } = useStakingData();
   const { getLiveAccounts } = useAccount();
-  const dbAccounts = getLiveAccounts();
 
   const [searchParams] = useSearchParams();
   const params = useParams<{ chainId: ChainId }>();
 
   const [activeStep, setActiveStep] = useState<Step>(Step.INIT);
   const [chainName, setChainName] = useState('...');
-  const [unstakeAmount, setUnstakeAmount] = useState<string>('');
-  const [transactions, setTransactions] = useState<Transaction[]>([]);
-  const [unsignedTransactions, setUnsignedTransactions] = useState<UnsignedTransaction[]>([]);
-  const [staking, setStaking] = useState<StakingMap>({});
-  const [accounts, setAccounts] = useState<AccountDS[]>([]);
-  const [signatures, setSignatures] = useState<HexString[]>([]);
+  const [unstakeAmount, setUnstakeAmount] = useState('');
   const [minimumStake, setMinimumStake] = useState('0');
+  const [description, setDescription] = useState('');
+
+  const [transactions, setTransactions] = useState<Transaction[]>([]);
+  const [multisigTx, setMultisigTx] = useState<Transaction>();
+  const [unsignedTransactions, setUnsignedTransactions] = useState<UnsignedTransaction[]>([]);
+
+  const [staking, setStaking] = useState<StakingMap>({});
+  const [accounts, setAccounts] = useState<Account[]>([]);
+  const [signer, setSigner] = useState<Account>();
+
+  const [signatures, setSignatures] = useState<HexString[]>([]);
+
+  const dbAccounts = getLiveAccounts();
 
   const chainId = params.chainId || ('' as ChainId);
   const accountIds = searchParams.get('id')?.split(',') || [];
@@ -145,8 +154,8 @@ const Unstake = () => {
     );
   }
 
-  const onUnstakeResult = ({ accounts, amount }: UnstakeResult) => {
-    const transactions = accounts.map(({ accountId = '' }) => {
+  const getUnstakeTxs = (accounts: Account[], amount: string): Transaction[] => {
+    return accounts.map(({ accountId }) => {
       const address = toAddress(accountId, { prefix: addressPrefix });
       const commonPayload = { chainId, address };
 
@@ -172,6 +181,46 @@ const Unstake = () => {
         args: { transactions: [chillTx, unstakeTx] },
       };
     });
+  };
+
+  const getMultisigTx = (
+    account: MultisigAccount,
+    signerAccountId: AccountId,
+    transaction: Transaction,
+  ): Transaction => {
+    const { callData, callHash } = getTransactionHash(transaction, api);
+
+    const otherSignatories = account.signatories.reduce<Address[]>((acc, s) => {
+      if (s.accountId !== signerAccountId) {
+        acc.push(toAddress(s.accountId, { prefix: addressPrefix }));
+      }
+
+      return acc;
+    }, []);
+
+    return {
+      chainId,
+      address: toAddress(signerAccountId, { prefix: addressPrefix }),
+      type: TransactionType.MULTISIG_AS_MULTI,
+      args: {
+        threshold: account.threshold,
+        otherSignatories: otherSignatories.sort(),
+        maybeTimepoint: null,
+        callData,
+        callHash,
+      },
+    };
+  };
+
+  const onUnstakeResult = ({ accounts, amount, signer, description }: UnstakeResult) => {
+    const transactions = getUnstakeTxs(accounts, amount);
+
+    if (signer && isMultisig(accounts[0])) {
+      const multisigTx = getMultisigTx(accounts[0], signer.accountId, transactions[0]);
+      setMultisigTx(multisigTx);
+      setSigner(signer);
+      setDescription(description || '');
+    }
 
     setTransactions(transactions);
     setAccounts(accounts);
@@ -207,7 +256,6 @@ const Unstake = () => {
   return (
     <div className="flex flex-col h-full relative">
       {headerContent}
-
       {activeStep === Step.INIT && (
         <InitOperation
           api={api}
@@ -224,6 +272,7 @@ const Unstake = () => {
           api={api}
           accounts={accounts}
           transaction={transactions[0]}
+          multisigTx={multisigTx}
           amounts={unstakeValues}
           onResult={() => setActiveStep(Step.SCANNING)}
           onAddToQueue={noop}
@@ -232,18 +281,30 @@ const Unstake = () => {
           {hints}
         </Confirmation>
       )}
-      {activeStep === Step.SCANNING && (
-        <MultiScanning
-          api={api}
-          chainId={chainId}
-          accounts={accounts}
-          transactions={transactions}
-          addressPrefix={addressPrefix}
-          countdown={countdown}
-          onResetCountdown={resetCountdown}
-          onResult={onScanResult}
-        />
-      )}
+      {activeStep === Step.SCANNING &&
+        (transactions.length > 1 ? (
+          <MultiScanning
+            api={api}
+            addressPrefix={addressPrefix}
+            countdown={countdown}
+            accounts={accounts}
+            transactions={transactions}
+            chainId={chainId}
+            onResetCountdown={resetCountdown}
+            onResult={onScanResult}
+          />
+        ) : (
+          <SingleScanning
+            api={api}
+            addressPrefix={addressPrefix}
+            countdown={countdown}
+            account={signer || accounts[0]}
+            transaction={multisigTx || transactions[0]}
+            chainId={chainId}
+            onResetCountdown={resetCountdown}
+            onResult={(unsignedTx) => onScanResult([unsignedTx])}
+          />
+        ))}
       {activeStep === Step.SIGNING && (
         <Signing
           countdown={countdown}
@@ -256,9 +317,11 @@ const Unstake = () => {
         <Submit
           api={api}
           transaction={transactions[0]}
+          multisigTx={multisigTx}
           signatures={signatures}
           unsignedTx={unsignedTransactions}
           accounts={accounts}
+          description={description}
           amounts={unstakeValues}
           {...explorersProps}
         >

@@ -37,7 +37,10 @@ const Fee = ({ api, multiply = 1, asset, transaction, className, onFeeChange }: 
     } else {
       getTransactionFee(transaction, api)
         .then(updateFee)
-        .catch(() => updateFee('0'))
+        .catch((error) => {
+          updateFee('0');
+          console.info('Error getting fee - ', error);
+        })
         .finally(() => setIsLoading(false));
     }
   }, [transaction, api]);
