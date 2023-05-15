@@ -64,6 +64,8 @@ export const validateUnstake = (stake: Stake | string, amount: string, precision
   return new BN(formatAmount(amount, precision)).lte(new BN(unstakeableBalance));
 };
 
+//todo it has too much meaning, better to rename it.
+//todo isn't it better to avoid using react components in utils files. Better to move to another something like components
 const getElement = (address: Address, account: Account, content?: ReactNode, walletName?: string): ReactNode => {
   return (
     <div className="flex justify-between items-center gap-x-2.5">

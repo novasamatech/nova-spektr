@@ -24,7 +24,7 @@ import { useAccount } from '@renderer/services/account/accountService';
 import { useWallet } from '@renderer/services/wallet/walletService';
 import { getStakeAccountOption } from '../../common/utils';
 
-const PAYOUT_URL = 'https://wiki.polkadot.network/docs/learn-simple-payouts';
+const PAYOUT_URL = 'https://wiki.polkadot.network/docs/learn-simple-payouts'; //todo better move it to consts file
 
 const getDestinations = (t: TFunction): RadioOption<RewardsDestination>[] => {
   const options = [
