@@ -49,18 +49,25 @@ type FormData = {
   description?: string;
 };
 
+type Field = {
+  //todo better to add types here to avoid misspelling
+  name: string;
+  value?: string;
+  disabled?: boolean;
+};
+
 type Props = {
   chainId: ChainId;
   canSubmit: boolean;
   addressPrefix: number;
-  fields: string[];
+  fields: Field[];
   balanceRange?: [string, string];
   asset: Asset;
   children: ((errorType: string) => ReactNode) | ReactNode;
   validateBalance?: (amount: string) => boolean;
   validateFee?: (amount: string) => boolean;
   validateDeposit?: (amount: string) => boolean;
-  onFormChange: (data: FormData) => void;
+  onFormChange?: (data: FormData) => void;
   onSubmit: (data: FormData) => void;
 };
 
@@ -91,19 +98,36 @@ export const OperationForm = ({
 
   const walletsMap = new Map(wallets.map((wallet) => [(wallet.id || '').toString(), wallet]));
 
+  const amountField = fields.find((f) => f.name === 'amount');
+  const destinationField = fields.find((f) => f.name === 'destination');
+  const descriptionField = fields.find((f) => f.name === 'description');
+
   const {
     handleSubmit,
     control,
+    setValue,
+    trigger,
     watch,
     register,
     unregister,
     formState: { isValid, errors },
   } = useForm<FormData>({
     mode: 'onChange',
-    defaultValues: { amount: '', destination: '' },
+    defaultValues: {
+      amount: amountField?.value || '',
+      destination: destinationField?.value || '',
+      description: descriptionField?.value || '',
+    },
   });
 
   const destination = watch('destination');
+
+  useEffect(() => {
+    if (!amountField?.value || amountField.value === '') return;
+
+    setValue('amount', amountField.value);
+    trigger('amount');
+  }, [amountField]);
 
   useEffect(() => {
     if (activeDestination?.value === RewardsDestination.RESTAKE) {
@@ -130,23 +154,26 @@ export const OperationForm = ({
     setPayoutAccounts(payoutAccounts);
   }, [dbAccounts.length]);
 
+  const getBalance = (): string | [string, string] => {
+    if (!balanceRange) return '';
+
+    return balanceRange[0] === balanceRange[1] ? balanceRange[0] : balanceRange;
+  };
+
   const handleFormChange = (event: FormEvent<HTMLFormElement>) => {
     const data = new FormData(event.currentTarget);
     const amount = data.get('amount')?.toString() || '';
     const destination = data.get('destination')?.toString() || '';
 
-    onFormChange({ amount, destination });
+    onFormChange?.({ amount, destination });
   };
 
-  const hasAmountField = fields.includes('amount') && balanceRange;
-  const hasDestinationField = fields.includes('destination');
-  const hasDescriptionField = fields.includes('description');
   const errorType = errors.amount?.type || errors.destination?.type || errors.description?.type || '';
 
   return (
     <form className="w-full" onSubmit={handleSubmit(onSubmit)} onChange={handleFormChange}>
       <Block className="flex flex-col gap-y-5 p-5 mb-2.5">
-        {hasAmountField && (
+        {amountField && (
           <Controller
             name="amount"
             control={control}
@@ -162,11 +189,12 @@ export const OperationForm = ({
             render={({ field: { onChange, value }, fieldState: { error } }) => (
               <>
                 <AmountInput
+                  name="amount"
                   placeholder={t('staking.bond.amountPlaceholder')}
                   balancePlaceholder={t('staking.bond.availableBalancePlaceholder')}
                   value={value}
-                  name="amount"
-                  balance={balanceRange[0] === balanceRange[1] ? balanceRange[0] : balanceRange}
+                  disabled={amountField.disabled}
+                  balance={getBalance()}
                   asset={asset}
                   invalid={Boolean(error)}
                   onChange={onChange}
@@ -191,7 +219,7 @@ export const OperationForm = ({
           />
         )}
 
-        {hasDestinationField && (
+        {destinationField && (
           <>
             <div className="grid grid-cols-2">
               <p className="text-neutral text-xs uppercase font-bold">{t('staking.bond.rewardsDestinationTitle')}</p>
@@ -228,6 +256,7 @@ export const OperationForm = ({
                       label={t('staking.bond.payoutAccountLabel')}
                       placeholder={t('staking.bond.payoutAccountPlaceholder')}
                       options={payoutAccounts}
+                      disabled={destinationField.disabled}
                       invalid={Boolean(error)}
                       suffixElement={
                         destination && (
@@ -254,7 +283,7 @@ export const OperationForm = ({
         {typeof children === 'function' ? children(errorType) : children}
       </Block>
 
-      {hasDescriptionField && (
+      {descriptionField && (
         <Block>
           <Controller
             name="description"
@@ -267,6 +296,7 @@ export const OperationForm = ({
                   label={t('transfer.descriptionLabel')}
                   placeholder={t('transfer.descriptionPlaceholder')}
                   invalid={Boolean(error)}
+                  disabled={descriptionField.disabled}
                   rows={2}
                   value={value}
                   onChange={onChange}

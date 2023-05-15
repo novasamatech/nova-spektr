@@ -1,7 +1,7 @@
 import { ApiPromise } from '@polkadot/api';
 import { useEffect, useState } from 'react';
 
-import { Fee, ActiveAddress } from '@renderer/components/common';
+import { Fee, ActiveAddress, Deposit } from '@renderer/components/common';
 import { Select, Plate, Block, Dropdown } from '@renderer/components/ui';
 import { DropdownOption, DropdownResult } from '@renderer/components/ui/Dropdowns/common/types';
 import { useI18n } from '@renderer/context/I18nContext';
@@ -11,12 +11,19 @@ import { Transaction, TransactionType } from '@renderer/domain/transaction';
 import { useAccount } from '@renderer/services/account/accountService';
 import { useBalance } from '@renderer/services/balance/balanceService';
 import { useWallet } from '@renderer/services/wallet/walletService';
-import { Balance } from '@renderer/domain/balance';
+import { Balance as AccountBalance } from '@renderer/domain/balance';
 import { Account, isMultisig } from '@renderer/domain/account';
 import { toAddress } from '@renderer/shared/utils/address';
-import { getTotalAccounts, getStakeAccountOption, getSignatoryOptions } from '../../common/utils';
+import {
+  getTotalAccounts,
+  getSignatoryOptions,
+  validateBalanceForFeeDeposit,
+  validateBalanceForFee,
+  getGeneralAccountOption,
+} from '../../common/utils';
 import { OperationForm } from '../../components';
 import { Explorer } from '@renderer/domain/chain';
+import { nonNullable } from '@renderer/shared/utils/functions';
 
 export type DestinationResult = {
   accounts: Account[];
@@ -37,7 +44,7 @@ type Props = {
 
 const InitOperation = ({ api, chainId, explorers, addressPrefix, identifiers, asset, onResult }: Props) => {
   const { t } = useI18n();
-  const { getLiveAssetBalances } = useBalance();
+  const { getLiveBalance, getLiveAssetBalances } = useBalance();
   const { getLiveAccounts } = useAccount();
   const { getLiveWallets } = useWallet();
 
@@ -46,6 +53,7 @@ const InitOperation = ({ api, chainId, explorers, addressPrefix, identifiers, as
   const walletsMap = new Map(wallets.map((wallet) => [(wallet.id || '').toString(), wallet]));
 
   const [fee, setFee] = useState('');
+  const [deposit, setDeposit] = useState('');
   const [destination, setDestination] = useState('');
 
   const [destAccounts, setDestAccounts] = useState<DropdownOption<Account>[]>([]);
@@ -55,34 +63,38 @@ const InitOperation = ({ api, chainId, explorers, addressPrefix, identifiers, as
   const [signatoryOptions, setSignatoryOptions] = useState<DropdownOption<Account>[]>([]);
 
   const [transactions, setTransactions] = useState<Transaction[]>([]);
-  const [balancesMap, setBalancesMap] = useState<Map<AccountId, Balance>>(new Map());
+  const [activeBalances, setActiveBalances] = useState<AccountBalance[]>([]);
 
   const totalAccounts = getTotalAccounts(dbAccounts, identifiers);
 
   const accountIds = totalAccounts.map((account) => account.accountId);
   const balances = getLiveAssetBalances(accountIds, chainId, asset.assetId.toString());
+  const signerBalance = getLiveBalance(activeSignatory?.value.accountId || '0x0', chainId, asset.assetId.toString());
 
   const firstAccount = activeDestAccounts[0]?.value;
   const accountIsMultisig = isMultisig(firstAccount);
-  const formFields = accountIsMultisig ? ['destination', 'description'] : ['destination'];
+  const formFields = accountIsMultisig ? [{ name: 'destination' }, { name: 'description' }] : [{ name: 'destination' }];
 
   useEffect(() => {
-    const newBalancesMap = new Map(balances.map((balance) => [balance.accountId, balance]));
+    const balancesMap = new Map(balances.map((balance) => [balance.accountId, balance]));
+    const newActiveBalances = activeDestAccounts
+      .map((a) => balancesMap.get(a.id as AccountId))
+      .filter(nonNullable) as AccountBalance[];
 
-    setBalancesMap(newBalancesMap);
+    setActiveBalances(newActiveBalances);
   }, [activeDestAccounts.length, balances]);
 
   useEffect(() => {
     const formattedAccounts = totalAccounts.map((account) => {
-      const balance = balancesMap.get(account.accountId);
+      const balance = activeBalances.find((b) => b.accountId === account.accountId);
       const wallet = account.walletId ? walletsMap.get(account.walletId.toString()) : undefined;
       const walletName = wallet?.name || '';
 
-      return getStakeAccountOption(account, { asset, fee, balance, addressPrefix, walletName });
+      return getGeneralAccountOption(account, { asset, fee, balance, addressPrefix, walletName });
     });
 
     setDestAccounts(formattedAccounts);
-  }, [totalAccounts.length, fee, balancesMap]);
+  }, [totalAccounts.length, fee, activeBalances]);
 
   useEffect(() => {
     if (!accountIsMultisig) return;
@@ -127,6 +139,17 @@ const InitOperation = ({ api, chainId, explorers, addressPrefix, identifiers, as
         signer: activeSignatory?.value,
       }),
     });
+  };
+
+  const validateFee = (): boolean => {
+    return activeBalances.every((b) => validateBalanceForFee(b, fee));
+  };
+
+  const validateDeposit = (): boolean => {
+    if (!accountIsMultisig) return true;
+    if (!signerBalance) return false;
+
+    return validateBalanceForFeeDeposit(signerBalance, deposit, fee);
   };
 
   return (
@@ -177,21 +200,38 @@ const InitOperation = ({ api, chainId, explorers, addressPrefix, identifiers, as
         addressPrefix={addressPrefix}
         fields={formFields}
         asset={asset}
+        validateFee={validateFee}
+        validateDeposit={validateDeposit}
         onSubmit={submitDestination}
         onFormChange={({ destination = '' }) => {
           setDestination(destination);
         }}
       >
-        <div className="flex justify-between items-center uppercase text-neutral-variant text-2xs">
-          <p>{t('staking.bond.networkFee', { count: activeDestAccounts.length })}</p>
+        <div className="grid grid-flow-row grid-cols-2 items-center gap-y-5">
+          <p className="uppercase text-neutral-variant text-2xs">
+            {t('staking.bond.networkFee', { count: activeDestAccounts.length })}
+          </p>
 
           <Fee
-            className="text-neutral font-semibold"
+            className="text-neutral justify-self-end text-2xs font-semibold"
             api={api}
             asset={asset}
             transaction={transactions[0]}
             onFeeChange={setFee}
           />
+
+          {accountIsMultisig && (
+            <>
+              <p className="uppercase text-neutral-variant text-2xs">{t('transfer.networkDeposit')}</p>
+              <Deposit
+                className="text-neutral justify-self-end text-2xs font-semibold"
+                api={api}
+                asset={asset}
+                threshold={firstAccount.threshold}
+                onDepositChange={setDeposit}
+              />
+            </>
+          )}
         </div>
       </OperationForm>
     </Plate>

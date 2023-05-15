@@ -7,7 +7,13 @@ import { Address, SigningType } from '@renderer/domain/shared-kernel';
 import { DropdownOption } from '@renderer/components/ui/Dropdowns/common/types';
 import { Icon, ChainAddress, Balance } from '@renderer/components/ui';
 import { Balance as AccountBalance } from '@renderer/domain/balance';
-import { stakeableAmount, formatAmount, transferableAmount, unlockingAmount } from '@renderer/shared/utils/balance';
+import {
+  stakeableAmount,
+  formatAmount,
+  transferableAmount,
+  unlockingAmount,
+  redeemableAmount,
+} from '@renderer/shared/utils/balance';
 import { Asset } from '@renderer/domain/asset';
 import { toAddress } from '@renderer/shared/utils/address';
 import { Stake } from '@renderer/domain/stake';
@@ -76,6 +82,23 @@ const getElement = (address: Address, account: Account, content?: ReactNode, wal
   );
 };
 
+const getBalance = (balance: string, asset: Asset, isCorrect: boolean): ReactNode => {
+  if (!balance || balance === '0') return null;
+
+  return (
+    <div className="flex items-center gap-x-1">
+      {!isCorrect && <Icon size={12} className="text-error" name="warnCutout" />}
+
+      <Balance
+        className={cn(!isCorrect && 'text-error')}
+        value={balance}
+        precision={asset.precision}
+        symbol={asset.symbol}
+      />
+    </div>
+  );
+};
+
 type Params = {
   asset: Asset;
   addressPrefix: number;
@@ -86,6 +109,25 @@ type Params = {
 };
 type ParamsWithStake = Params & {
   stake?: Stake;
+  era?: number;
+};
+
+export const getGeneralAccountOption = <T extends Account | MultisigAccount>(
+  account: T,
+  { walletName, balance, asset, fee, addressPrefix, amount = '0' }: Params,
+): DropdownOption<T> => {
+  const address = toAddress(account.accountId, { prefix: addressPrefix });
+  const canValidateBalance = balance && fee;
+
+  let balanceIsCorrect = true;
+  if (canValidateBalance) {
+    balanceIsCorrect = validateStake(balance, amount, asset.precision, fee);
+  }
+
+  const balanceContent = getBalance(transferableAmount(balance), asset, balanceIsCorrect);
+  const element = getElement(address, account, balanceContent, walletName);
+
+  return { id: account.accountId, value: account, element };
 };
 
 export const getStakeAccountOption = <T extends Account | MultisigAccount>(
@@ -100,16 +142,21 @@ export const getStakeAccountOption = <T extends Account | MultisigAccount>(
     balanceIsCorrect = validateStake(balance, amount, asset.precision, fee);
   }
 
-  const balanceContent = balance && (
-    <div className="flex items-center gap-x-1">
-      {!balanceIsCorrect && <Icon size={12} className="text-error" name="warnCutout" />}
+  const balanceContent = getBalance(stakeableAmount(balance), asset, balanceIsCorrect);
+  const element = getElement(address, account, balanceContent, walletName);
 
-      <Balance
-        className={cn(!balanceIsCorrect && 'text-error')}
-        value={stakeableAmount(balance)}
-        precision={asset.precision}
-        symbol={asset.symbol}
-      />
+  return { id: account.accountId, value: account, element };
+};
+
+export const getRedeemAccountOption = <T extends Account | MultisigAccount>(
+  account: T,
+  { walletName, asset, stake, era, addressPrefix }: ParamsWithStake,
+): DropdownOption<T> => {
+  const address = toAddress(account.accountId, { prefix: addressPrefix });
+  const canDisplayRedeem = stake && era;
+  const balanceContent = canDisplayRedeem && (
+    <div className="flex items-center gap-x-1">
+      <Balance value={redeemableAmount(stake.unlocking, era)} precision={asset.precision} symbol={asset.symbol} />
     </div>
   );
 
@@ -132,18 +179,7 @@ export const getRestakeAccountOption = (
     balanceIsCorrect = restakeIsValid && feeIsValid;
   }
 
-  const balanceContent = stake && (
-    <div className="flex items-center gap-x-1">
-      {!balanceIsCorrect && <Icon size={12} className="text-error" name="warnCutout" />}
-
-      <Balance
-        className={cn(!balanceIsCorrect && 'text-error')}
-        value={unlockingAmount(stake.unlocking)}
-        precision={asset.precision}
-        symbol={asset.symbol}
-      />
-    </div>
-  );
+  const balanceContent = getBalance(unlockingAmount(stake?.unlocking), asset, balanceIsCorrect);
   const element = getElement(address, account, balanceContent, walletName);
 
   return { id: account.accountId, value: account, element };
@@ -163,18 +199,7 @@ export const getUnstakeAccountOption = (
     balanceIsCorrect = restakeIsValid && feeIsValid;
   }
 
-  const balanceContent = stake && (
-    <div className="flex items-center gap-x-1">
-      {!balanceIsCorrect && <Icon size={12} className="text-error" name="warnCutout" />}
-
-      <Balance
-        className={cn(!balanceIsCorrect && 'text-error')}
-        value={stake.active}
-        precision={asset.precision}
-        symbol={asset.symbol}
-      />
-    </div>
-  );
+  const balanceContent = getBalance(stake?.active || '', asset, balanceIsCorrect);
   const element = getElement(address, account, balanceContent, walletName);
 
   return { id: account.accountId, value: account, element };
