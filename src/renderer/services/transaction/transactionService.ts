@@ -447,6 +447,10 @@ export const useTransaction = (): ITransactionService => {
       transaction.args.value = decoded.args[0].toString();
     }
 
+    if (method === 'chill' && section === 'staking') {
+      transaction.type = TransactionType.CHILL;
+    }
+
     if (method === 'rebond' && section === 'staking') {
       transaction.type = TransactionType.RESTAKE;
       transaction.args.value = decoded.args[0].toString();
@@ -464,6 +468,11 @@ export const useTransaction = (): ITransactionService => {
     if (method === 'bondExtra' && section === 'staking') {
       transaction.type = TransactionType.STAKE_MORE;
       transaction.args.maxAdditional = decoded.args[0].toString();
+    }
+
+    if (method === 'setPayee' && section === 'staking') {
+      transaction.type = TransactionType.DESTINATION;
+      transaction.args.payee = decoded.args[0].toString();
     }
 
     return transaction;

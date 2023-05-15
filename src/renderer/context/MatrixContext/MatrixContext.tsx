@@ -354,6 +354,16 @@ export const MatrixProvider = ({ children }: PropsWithChildren) => {
         senderEvent.status = eventStatus;
       }
     }
+    if (payload.callData && !tx.callData) {
+      const { api, addressPrefix } = connectionsRef.current[payload.chainId];
+      const transaction =
+        api &&
+        payload.callData &&
+        decodeCallData(api, toAddress(accountId, { prefix: addressPrefix }), payload.callData);
+
+      tx.callData = payload.callData;
+      tx.transaction = transaction;
+    }
 
     await updateMultisigTx(tx);
   };
