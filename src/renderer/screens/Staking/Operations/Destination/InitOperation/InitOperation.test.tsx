@@ -19,27 +19,15 @@ jest.mock('@renderer/services/wallet/walletService', () => ({
   }),
 }));
 
-jest.mock('@renderer/services/transaction/transactionService', () => ({
-  useTransaction: jest.fn().mockReturnValue({
-    getTransactionFee: jest.fn().mockResolvedValue('1'),
-  }),
-}));
-
 jest.mock('@renderer/services/account/accountService', () => ({
   useAccount: jest.fn().mockReturnValue({
     getLiveAccounts: () => [{ id: '1', name: 'Test Wallet', accountId: TEST_ACCOUNT_ID }],
   }),
 }));
 
-jest.mock('@renderer/services/staking/validatorsService', () => ({
-  useValidators: jest.fn().mockReturnValue({
-    getMaxValidators: () => 4,
-  }),
-}));
-
 jest.mock('@renderer/services/balance/balanceService', () => ({
   useBalance: jest.fn().mockReturnValue({
-    getBalance: jest.fn().mockReturnValue({
+    getLiveBalance: jest.fn().mockReturnValue({
       assetId: 1,
       chainId: '0x123',
       accountId: TEST_ACCOUNT_ID,
@@ -58,10 +46,13 @@ jest.mock('@renderer/services/balance/balanceService', () => ({
   }),
 }));
 
+jest.mock('../../components', () => ({ OperationForm: () => 'operationForm' }));
+
 describe('screens/Staking/Destination/InitOperation', () => {
   const defaultProps = {
     api: {} as ApiPromise,
     chainId: '0x123' as ChainId,
+    addressPrefix: 0,
     identifiers: ['1'],
     asset: { assetId: 1, symbol: 'DOT', precision: 10 } as Asset,
     onResult: noop,
@@ -72,9 +63,7 @@ describe('screens/Staking/Destination/InitOperation', () => {
       render(<InitOperation {...defaultProps} />);
     });
 
-    const destination = screen.getByText('staking.bond.rewardsDestinationTitle');
-    const button = screen.getByText('staking.bond.continueButton');
-    expect(destination).toBeInTheDocument();
-    expect(button).toBeInTheDocument();
+    const form = screen.getByText('operationForm');
+    expect(form).toBeInTheDocument();
   });
 });

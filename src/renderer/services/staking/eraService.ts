@@ -43,15 +43,10 @@ export const useEra = (): IEraService => {
     const sessionProgress = currentSlot - sessionStartSlot;
     const eraProgress = (currentSessionIndex - eraStartSessionIndex) * sessionLength + sessionProgress;
     const eraRemained = eraLength * sessionLength - eraProgress;
+    const leftEras = destinationEra - activeEra.toNumber() - 1;
+    const timeForLeftEras = leftEras * eraLength * sessionLength * blockCreationTime;
 
-    if (destinationEra != null) {
-      const leftEras = destinationEra - activeEra.toNumber() - 1;
-      const timeForLeftEras = leftEras * eraLength * sessionLength * blockCreationTime;
-
-      return eraRemained * blockCreationTime + timeForLeftEras;
-    } else {
-      return eraRemained * blockCreationTime;
-    }
+    return eraRemained * blockCreationTime + timeForLeftEras;
   };
 
   return {

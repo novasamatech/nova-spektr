@@ -9,6 +9,7 @@ type Props = {
   name?: string;
   value: string;
   placeholder: string;
+  disabled?: boolean;
   asset: Asset;
   balancePlaceholder?: string;
   balance?: string | [string, string];
@@ -16,7 +17,17 @@ type Props = {
   onChange?: (value: string) => void;
 };
 
-const AmountInput = ({ name, value, asset, balancePlaceholder, balance, placeholder, invalid, onChange }: Props) => {
+const AmountInput = ({
+  name,
+  value,
+  asset,
+  balancePlaceholder,
+  balance,
+  placeholder,
+  disabled,
+  invalid,
+  onChange,
+}: Props) => {
   const { t } = useI18n();
 
   const getBalance = useCallback(() => {
@@ -73,12 +84,13 @@ const AmountInput = ({ name, value, asset, balancePlaceholder, balance, placehol
   return (
     <Input
       name={name}
-      label={label}
+      label={balance ? label : ''}
       prefixElement={prefixElement}
       className="w-full text-xl font-semibold text-right"
       placeholder={placeholder}
       invalid={invalid}
       value={value}
+      disabled={disabled}
       onChange={onChange}
     />
   );

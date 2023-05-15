@@ -88,6 +88,7 @@
     },
     "input": {
       "amountLabel": "Amount",
+      "signerLabel": "Select signer",
       "transferableLabel": "Transferable"
     },
     "title": {
@@ -522,6 +523,7 @@
       "selectValidators": "Selected validators",
       "setValidatorsTitle": "Set validators",
       "signButton": "Sign with Parity Signer",
+      "signer": "Signer",
       "submittingOperation": "Submitting operation",
       "totalAmount": "Total amount",
       "totalNetworkFee": "Total network fee",
@@ -543,7 +545,8 @@
       "validators": "Validators",
       "yourValidatorsTitle": "Your validators"
     },
-    "notEnoughBalanceError": "Not enough funds to stake specific amount",
+    "notEnoughBalanceError": "Not enough funds to complete operation",
+    "notEnoughBalanceForDepositError": "Insufficient balance to pay deposit",
     "notEnoughBalanceForFeeError": "Insufficient balance to pay network fee",
     "notEnoughStakedError": "Not enough staked to unstake specific amount",
     "notEnoughUnlockingError": "Not enough unlocking to return specific amount",
@@ -574,6 +577,7 @@
     },
     "redeem": {
       "availablePlaceholder": "Available",
+      "confirmRedeemSubtitle": "Confirmation",
       "initRedeemSubtitle": "Redeem"
     },
     "requiredAmountError": "Please, enter amount",

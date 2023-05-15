@@ -1,7 +1,11 @@
 import { ChainId, AccountId } from './shared-kernel';
 
+export const enum LockTypes {
+  STAKING = '0x7374616b696e6720',
+}
+
 export type BalanceLock = {
-  type: string;
+  type: LockTypes;
   amount: string;
 };
 

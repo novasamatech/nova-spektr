@@ -1,6 +1,6 @@
-import { formatBalance } from '../common/utils';
+import { formatBalance } from '../balance';
 
-describe('services/balance/utils', () => {
+describe('shared/utils/balance', () => {
   describe('formatBalance', () => {
     test('should calculate small amount', () => {
       const { value, suffix, decimalPlaces } = formatBalance('5923210799282', 12);

@@ -54,14 +54,17 @@ jest.mock('./InitOperation/InitOperation', () => ({ onResult }: any) => {
 
 jest.mock('../components/index', () => ({
   Confirmation: ({ onResult }: any) => mockButton('to scan', onResult),
-  Scanning: ({ onResult }: any) => mockButton('to sign', onResult),
+  SingleScanning: ({ onResult }: any) => mockButton('to sign', onResult),
+  MultiScanning: ({ onResult }: any) => mockButton('to sign', onResult),
   Signing: ({ onResult }: any) => mockButton('to submit', onResult),
   Submit: () => 'finish',
 }));
 
 describe('screens/Staking/Destination', () => {
-  test('should render component', () => {
-    render(<Destination />, { wrapper: MemoryRouter });
+  test('should render component', async () => {
+    await act(async () => {
+      render(<Destination />, { wrapper: MemoryRouter });
+    });
 
     const title = screen.getByText('staking.title');
     const subTitle = screen.getByText('staking.destination.initDestinationSubtitle');

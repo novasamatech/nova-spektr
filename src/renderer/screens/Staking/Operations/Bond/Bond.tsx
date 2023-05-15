@@ -11,14 +11,15 @@ import { ChainLoader } from '@renderer/components/common';
 import { useI18n } from '@renderer/context/I18nContext';
 import { useNetworkContext } from '@renderer/context/NetworkContext';
 import { useChains } from '@renderer/services/network/chainsService';
-import { Address, ChainId, HexString } from '@renderer/domain/shared-kernel';
+import { Address, ChainId, HexString, AccountId } from '@renderer/domain/shared-kernel';
 import { Transaction, TransactionType } from '@renderer/domain/transaction';
 import Paths from '@renderer/routes/paths';
 import InitOperation, { BondResult } from './InitOperation/InitOperation';
 import { ValidatorMap } from '@renderer/services/staking/common/types';
-import { AccountDS } from '@renderer/services/storage';
-import { Validators, Confirmation, Scanning, Signing, Submit } from '../components';
-import { useCountdown } from '../hooks/useCountdown';
+import { Validators, Confirmation, MultiScanning, Signing, Submit, SingleScanning } from '../components';
+import { useCountdown } from '@renderer/shared/hooks';
+import { Account, MultisigAccount, isMultisig } from '@renderer/domain/account';
+import { useTransaction } from '@renderer/services/transaction/transactionService';
 
 const enum Step {
   INIT,
@@ -48,17 +49,24 @@ const Bond = () => {
   const navigate = useNavigate();
   const { connections } = useNetworkContext();
   const { getChainById } = useChains();
+  const { getTransactionHash } = useTransaction();
   const [searchParams] = useSearchParams();
   const params = useParams<{ chainId: ChainId }>();
 
   const [activeStep, setActiveStep] = useState<Step>(Step.INIT);
   const [chainName, setChainName] = useState('...');
+
   const [validators, setValidators] = useState<ValidatorMap>({});
-  const [accounts, setAccounts] = useState<AccountDS[]>([]);
+  const [accounts, setAccounts] = useState<Account[]>([]);
+  const [signer, setSigner] = useState<Account>();
   const [stakeAmount, setStakeAmount] = useState<string>('');
   const [destination, setDestination] = useState<Destination>();
+  const [description, setDescription] = useState('');
+
   const [transactions, setTransactions] = useState<Transaction[]>([]);
+  const [multisigTx, setMultisigTx] = useState<Transaction>();
   const [unsignedTransactions, setUnsignedTransactions] = useState<UnsignedTransaction[]>([]);
+
   const [signatures, setSignatures] = useState<HexString[]>([]);
 
   const chainId = params.chainId || ('' as ChainId);
@@ -118,19 +126,21 @@ const Bond = () => {
     );
   }
 
-  const onInitResult = ({ accounts, destination, stake }: BondResult) => {
+  const onInitResult = ({ accounts, destination, amount, signer, description }: BondResult) => {
     const destPayload = destination
       ? { type: RewardsDestination.TRANSFERABLE, address: destination }
       : { type: RewardsDestination.RESTAKE };
 
+    setSigner(signer);
+    setDescription(description || '');
     setDestination(destPayload);
     setAccounts(accounts);
-    setStakeAmount(stake);
+    setStakeAmount(amount);
     setActiveStep(Step.VALIDATORS);
   };
 
-  const onSelectValidators = (validators: ValidatorMap) => {
-    const transactions = accounts.map(({ accountId = '' }) => {
+  const getBondTxs = (validators: Address[]): Transaction[] => {
+    return accounts.map(({ accountId }) => {
       const address = toAddress(accountId, { prefix: addressPrefix });
       const commonPayload = { chainId, address };
 
@@ -147,7 +157,7 @@ const Bond = () => {
       const nominateTx = {
         ...commonPayload,
         type: TransactionType.NOMINATE,
-        args: { targets: Object.keys(validators).map((address) => address) },
+        args: { targets: validators },
       };
 
       return {
@@ -156,6 +166,44 @@ const Bond = () => {
         args: { transactions: [bondTx, nominateTx] },
       };
     });
+  };
+
+  const getMultisigTx = (
+    account: MultisigAccount,
+    signerAccountId: AccountId,
+    transaction: Transaction,
+  ): Transaction => {
+    const { callData, callHash } = getTransactionHash(transaction, api);
+
+    const otherSignatories = account.signatories.reduce<Address[]>((acc, s) => {
+      if (s.accountId !== signerAccountId) {
+        acc.push(toAddress(s.accountId, { prefix: addressPrefix }));
+      }
+
+      return acc;
+    }, []);
+
+    return {
+      chainId,
+      address: toAddress(signerAccountId, { prefix: addressPrefix }),
+      type: TransactionType.MULTISIG_AS_MULTI,
+      args: {
+        threshold: account.threshold,
+        otherSignatories: otherSignatories.sort(),
+        maybeTimepoint: null,
+        callData,
+        callHash,
+      },
+    };
+  };
+
+  const onSelectValidators = (validators: ValidatorMap) => {
+    const transactions = getBondTxs(Object.keys(validators));
+
+    if (signer && isMultisig(accounts[0])) {
+      const multisigTx = getMultisigTx(accounts[0], signer.accountId, transactions[0]);
+      setMultisigTx(multisigTx);
+    }
 
     setTransactions(transactions);
     setValidators(validators);
@@ -194,7 +242,13 @@ const Bond = () => {
 
       <div className="overflow-y-auto">
         {activeStep === Step.INIT && (
-          <InitOperation api={api} chainId={chainId} identifiers={accountIds} asset={asset} onResult={onInitResult} />
+          <InitOperation
+            api={api}
+            chainId={chainId}
+            identifiers={accountIds}
+            onResult={onInitResult}
+            {...explorersProps}
+          />
         )}
         {activeStep === Step.VALIDATORS && (
           <Validators api={api} chainId={chainId} onResult={onSelectValidators} {...explorersProps} />
@@ -207,6 +261,7 @@ const Bond = () => {
             amounts={bondValues}
             destination={destination}
             transaction={transactions[0]}
+            multisigTx={multisigTx}
             onResult={() => setActiveStep(Step.SCANNING)}
             onAddToQueue={noop}
             {...explorersProps}
@@ -214,18 +269,30 @@ const Bond = () => {
             {hints}
           </Confirmation>
         )}
-        {activeStep === Step.SCANNING && (
-          <Scanning
-            api={api}
-            chainId={chainId}
-            accounts={accounts}
-            transactions={transactions}
-            addressPrefix={addressPrefix}
-            countdown={countdown}
-            onResetCountdown={resetCountdown}
-            onResult={onScanResult}
-          />
-        )}
+        {activeStep === Step.SCANNING &&
+          (transactions.length > 1 ? (
+            <MultiScanning
+              api={api}
+              addressPrefix={addressPrefix}
+              countdown={countdown}
+              accounts={accounts}
+              transactions={transactions}
+              chainId={chainId}
+              onResetCountdown={resetCountdown}
+              onResult={onScanResult}
+            />
+          ) : (
+            <SingleScanning
+              api={api}
+              addressPrefix={addressPrefix}
+              countdown={countdown}
+              account={signer || accounts[0]}
+              transaction={multisigTx || transactions[0]}
+              chainId={chainId}
+              onResetCountdown={resetCountdown}
+              onResult={(unsignedTx) => onScanResult([unsignedTx])}
+            />
+          ))}
         {activeStep === Step.SIGNING && (
           <Signing
             countdown={countdown}
@@ -237,12 +304,14 @@ const Bond = () => {
         {activeStep === Step.SUBMIT && (
           <Submit
             api={api}
+            multisigTx={multisigTx}
             transaction={transactions[0]}
             signatures={signatures}
             unsignedTx={unsignedTransactions}
             validators={Object.values(validators)}
             accounts={accounts}
             amounts={bondValues}
+            description={description}
             destination={destination}
             {...explorersProps}
           >

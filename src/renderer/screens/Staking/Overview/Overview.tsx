@@ -76,8 +76,8 @@ const Overview = () => {
     })
     .map((a) => ({ ...a, accountId: toAddress(a.accountId, { prefix: addressPrefix }) }));
 
-  const accountAddresses = activeAccounts.reduce<Address[]>((acc, account) => {
-    return account.accountId ? acc.concat(account.accountId) : acc;
+  const accountAddresses = activeAccounts.map(({ accountId }) => {
+    return toAddress(accountId, { prefix: addressPrefix });
   }, []);
 
   const totalStakes = Object.values(staking).reduce<string[]>((acc, stake) => {
@@ -113,31 +113,29 @@ const Overview = () => {
   useEffect(() => {
     if (!api?.isConnected || !era) return;
 
-    (async () => {
-      const validators = await getValidators(chainId, api, era);
-
-      setValidators(validators);
-    })();
+    getValidators(chainId, api, era).then(setValidators);
   }, [api, era]);
 
   useEffect(() => {
-    (async () => {
-      const chainsData = await getChainsData();
-
+    getChainsData().then((chainsData) => {
       const relaychains = sortChains(chainsData).reduce<DropdownOption<NetworkOption>[]>((acc, chain) => {
         const asset = getRelaychainAsset(chain.assets);
-        if (!asset) return acc;
-
-        return acc.concat({
-          id: chain.chainId,
-          value: { asset, addressPrefix: chain.addressPrefix },
-          element: (
+        if (asset) {
+          const element = (
             <>
               <img src={chain.icon} alt="" width={20} height={20} />
               {chain.name}
             </>
-          ),
-        });
+          );
+
+          acc.push({
+            id: chain.chainId,
+            value: { asset, addressPrefix: chain.addressPrefix },
+            element,
+          });
+        }
+
+        return acc;
       }, []);
 
       const settingsChainId = getStakingNetwork();
@@ -146,7 +144,7 @@ const Overview = () => {
       setStakingNetworks(relaychains);
       setActiveNetwork(settingsChain || { id: relaychains[0].id, value: relaychains[0].value });
       changeClient(settingsChainId || relaychains[0].id);
-    })();
+    });
   }, []);
 
   const onNetworkChange = (option: DropdownResult<NetworkOption>) => {
@@ -201,7 +199,7 @@ const Overview = () => {
   }, {});
 
   const stakingInfo = activeAccounts.reduce<AccountStakeInfo[]>((acc, account) => {
-    const address = account.accountId;
+    const address = toAddress(account.accountId, { prefix: addressPrefix });
     if (!address) return acc;
 
     let walletName = account.walletId ? walletNames[account.walletId.toString()] : '';
@@ -316,6 +314,8 @@ const Overview = () => {
                   <EmptyFilter />
                 ) : (
                   <StakingTable
+                    api={api}
+                    currentEra={era}
                     stakeInfo={stakingInfo}
                     selectedStakes={selectedAccounts}
                     addressPrefix={activeNetwork?.value.addressPrefix}
@@ -323,8 +323,6 @@ const Overview = () => {
                     explorers={explorers}
                     openValidators={setupNominators}
                     selectStaking={setSelectedAccounts}
-                    currentEra={era}
-                    api={api}
                   />
                 )}
               </>

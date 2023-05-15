@@ -12,9 +12,9 @@ import useAddressInfo from '@renderer/components/common/AccountAddress/useAddres
 import { toAccountId } from '@renderer/shared/utils/address';
 import { useBalance } from '@renderer/services/balance/balanceService';
 import { ChainId } from '@renderer/domain/shared-kernel';
-import { transferableAmount } from '@renderer/services/balance/common/utils';
 import { Asset } from '@renderer/domain/asset';
 import BalanceNew from '../BalanceNew/BalanceNew';
+import { transferableAmount } from '@renderer/shared/utils/balance';
 
 type Props<T extends any> = {
   explorers?: Explorer[];

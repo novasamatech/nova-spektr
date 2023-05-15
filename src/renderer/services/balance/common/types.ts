@@ -2,12 +2,6 @@ import { ChainId, AccountId } from '@renderer/domain/shared-kernel';
 import { BalanceDS } from '@renderer/services/storage/common/types';
 import { ExtendedChain } from '@renderer/services/network/common/types';
 
-export type FormattedBalance = {
-  value: string;
-  suffix: string;
-  decimalPlaces: number;
-};
-
 export interface IBalanceService {
   getBalance: (accountId: AccountId, chainId: ChainId, assetId: string) => Promise<BalanceDS | undefined>;
   getLiveBalance: (accountId: AccountId, chainId: ChainId, assetId: string) => BalanceDS | undefined;

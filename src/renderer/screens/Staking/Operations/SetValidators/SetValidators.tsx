@@ -8,15 +8,16 @@ import { ChainLoader } from '@renderer/components/common';
 import { useI18n } from '@renderer/context/I18nContext';
 import { useNetworkContext } from '@renderer/context/NetworkContext';
 import { useChains } from '@renderer/services/network/chainsService';
-import { ChainId, HexString, SigningType } from '@renderer/domain/shared-kernel';
+import { ChainId, HexString } from '@renderer/domain/shared-kernel';
 import { Transaction, TransactionType } from '@renderer/domain/transaction';
 import Paths from '@renderer/routes/paths';
 import { useAccount } from '@renderer/services/account/accountService';
 import { ValidatorMap } from '@renderer/services/staking/common/types';
 import { toAddress } from '@renderer/shared/utils/address';
 import { getRelaychainAsset } from '@renderer/shared/utils/assets';
-import { Confirmation, Scanning, Signing, Submit, Validators } from '../components';
-import { useCountdown } from '../hooks/useCountdown';
+import { Confirmation, MultiScanning, Signing, Submit, Validators } from '../components';
+import { useCountdown } from '@renderer/shared/hooks';
+import { getTotalAccounts } from '@renderer/screens/Staking/Operations/common/utils';
 
 const enum Step {
   INIT,
@@ -43,7 +44,7 @@ const SetValidators = () => {
   const [searchParams] = useSearchParams();
   const params = useParams<{ chainId: ChainId }>();
 
-  const dbAccounts = getLiveAccounts({ signingType: SigningType.PARITY_SIGNER });
+  const dbAccounts = getLiveAccounts();
 
   const [activeStep, setActiveStep] = useState<Step>(Step.INIT);
   const [chainName, setChainName] = useState('...');
@@ -53,15 +54,13 @@ const SetValidators = () => {
   const [signatures, setSignatures] = useState<HexString[]>([]);
 
   const chainId = params.chainId || ('' as ChainId);
-  const accountIds = searchParams.get('id')?.split(',') || [];
+  const identifiers = searchParams.get('id')?.split(',') || [];
 
-  if (!chainId || accountIds.length === 0) {
+  if (!chainId || identifiers.length === 0) {
     return <Navigate replace to={Paths.STAKING} />;
   }
 
-  const totalAccounts = dbAccounts.filter((account) => {
-    return account.id && accountIds.includes(account.id.toString());
-  });
+  const totalAccounts = getTotalAccounts(dbAccounts, identifiers);
 
   const { api, explorers, addressPrefix, assets, name } = connections[chainId];
   const asset = getRelaychainAsset(assets);
@@ -180,7 +179,7 @@ const SetValidators = () => {
         </Confirmation>
       )}
       {activeStep === Step.SCANNING && (
-        <Scanning
+        <MultiScanning
           api={api}
           chainId={chainId}
           accounts={totalAccounts}

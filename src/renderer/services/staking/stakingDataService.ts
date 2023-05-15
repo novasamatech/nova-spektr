@@ -1,27 +1,26 @@
 import { ApiPromise } from '@polkadot/api';
 
 import { Address, ChainId, EraIndex } from '@renderer/domain/shared-kernel';
-import { Stake } from '@renderer/domain/stake';
 import { IStakingDataService, StakingMap } from './common/types';
 
 export const useStakingData = (): IStakingDataService => {
   const subscribeStaking = async (
     chainId: ChainId,
     api: ApiPromise,
-    accounts: Address[],
+    addresses: Address[],
     callback: (staking: StakingMap) => void,
   ): Promise<() => void> => {
-    const controllers = await getControllers(api, accounts);
+    const controllers = await getControllers(api, addresses);
 
-    return listenToLedger(chainId, api, controllers, accounts, callback);
+    return listenToLedger(chainId, api, controllers, addresses, callback);
   };
 
-  const getControllers = async (api: ApiPromise, accounts: Address[]): Promise<Address[]> => {
+  const getControllers = async (api: ApiPromise, addresses: Address[]): Promise<Address[]> => {
     try {
-      const controllers = await api.query.staking.bonded.multi(accounts);
+      const controllers = await api.query.staking.bonded.multi(addresses);
 
       return controllers.map((controller, index) =>
-        controller.isNone ? accounts[index] : controller.unwrap().toString(),
+        controller.isNone ? addresses[index] : controller.unwrap().toString(),
       );
     } catch (error) {
       console.warn(error);
@@ -34,36 +33,36 @@ export const useStakingData = (): IStakingDataService => {
     chainId: ChainId,
     api: ApiPromise,
     controllers: Address[],
-    accounts: Address[],
+    addresses: Address[],
     callback: (data: StakingMap) => void,
   ): Promise<() => void> => {
     return api.query.staking.ledger.multi(controllers, (data) => {
       try {
         const staking = data.reduce<StakingMap>((acc, ledger, index) => {
-          const accountId = accounts[index] as Address;
+          const address = addresses[index] as Address;
 
           if (ledger.isNone) {
-            return { ...acc, [accountId]: undefined };
+            acc[address] = undefined;
+          } else {
+            const { active, stash, total, unlocking } = ledger.unwrap();
+
+            const formattedUnlocking = unlocking.toArray().map((unlock) => ({
+              value: unlock.value.toString(),
+              era: unlock.era.toString(),
+            }));
+
+            acc[address] = {
+              address,
+              chainId,
+              controller: controllers[index] || stash.toHuman(),
+              stash: stash.toHuman(),
+              active: active.toString(),
+              total: total.toString(),
+              unlocking: formattedUnlocking,
+            };
           }
 
-          const { active, stash, total, unlocking } = ledger.unwrap();
-
-          const formattedUnlocking = unlocking.toArray().map((unlock) => ({
-            value: unlock.value.toString(),
-            era: unlock.era.toString(),
-          }));
-
-          const payload: Stake = {
-            address: accountId,
-            chainId,
-            controller: controllers[index] || stash.toHuman(),
-            stash: stash.toHuman(),
-            active: active.toString(),
-            total: total.toString(),
-            unlocking: formattedUnlocking,
-          };
-
-          return { ...acc, [accountId]: payload };
+          return acc;
         }, {});
 
         callback(staking);
