@@ -8,6 +8,7 @@ import { DropdownOption, DropdownResult } from '@renderer/components/ui/Dropdown
 import { useI18n } from '@renderer/context/I18nContext';
 import { ValidationErrors } from '@renderer/shared/utils/validation';
 import { secondsToMinutes } from '@renderer/shared/utils/time';
+import { CaptionText, FootnoteText, SmallTitleText } from '@renderer/components/ui-redesign';
 
 const enum CameraState {
   ACTIVE,
@@ -23,14 +24,22 @@ const enum CameraState {
 const RESULT_DELAY = 250;
 
 type Props = {
-  size?: number;
+  size?: number | [number, number];
   className?: string;
   countdown?: number;
   validationError?: ValidationErrors;
+  header?: string;
   onResult: (payload: string) => void;
 };
 
-const ParitySignerSignatureReader = ({ size = 300, className, onResult, countdown, validationError }: Props) => {
+const ParitySignerSignatureReader = ({
+  size = 300,
+  className,
+  onResult,
+  countdown,
+  validationError,
+  header,
+}: Props) => {
   const { t } = useI18n();
 
   const [cameraState, setCameraState] = useState<CameraState>(CameraState.LOADING);
@@ -192,7 +201,7 @@ const ParitySignerSignatureReader = ({ size = 300, className, onResult, countdow
   return (
     <>
       {cameraState === CameraState.LOADING && (
-        <div className="flex flex-col items-center w-full h-full">
+        <div className="flex flex-col items-center w-full h-[400px]">
           <div className="relative flex items-center justify-center w-full h-full">
             <Icon className="absolute text-shade-10" name="qrSimple" size={70} />
             <Icon className="absolute text-shade-10" name="qrFrame" size={250} />
@@ -203,7 +212,7 @@ const ParitySignerSignatureReader = ({ size = 300, className, onResult, countdow
         </div>
       )}
       {cameraState === CameraState.SELECT && (
-        <div className="flex flex-col items-center w-full h-full">
+        <div className="flex flex-col items-center w-full h-[400px]">
           <div className="flex items-center justify-center bg-white w-full h-full">
             <div className="flex flex-col items-center text-center">
               <Icon className="text-alert" name="warnCutout" size={70} />
@@ -252,25 +261,25 @@ const ParitySignerSignatureReader = ({ size = 300, className, onResult, countdow
           />
         )}
 
-        <div className="absolute bottom-2.5 left-1/2 -translate-x-1/2 w-[calc(100%-20px)] p-[15px] rounded-lg bg-white">
-          {countdown && countdown > 0 ? (
-            <div className="flex m-auto items-center justify-center uppercase font-normal text-xs gap-1.25">
-              {t('signing.qrCountdownTitle')}
-              <div
+        <div className="absolute top-[6%] pb-2 w-full">
+          {header && (
+            <SmallTitleText className="text-button-text mb-3" align="center">
+              {header}
+            </SmallTitleText>
+          )}
+          {countdown && countdown > 0 && (
+            <div className="flex items-center justify-center gap-x-2 mt-1 mb-2">
+              <FootnoteText className="text-text-tertiary">{t('signing.qrCountdownTitle')}</FootnoteText>
+              <CaptionText
                 className={cn(
-                  'w-10 rounded-md text-white py-0.5 text-center',
-                  (!countdown && 'bg-error') || (countdown >= 60 ? 'bg-success' : 'bg-alert'),
+                  'py-1 px-2 w-[50px] h-5 rounded-[26px] text-button-text',
+                  (!countdown && 'bg-filter-border-negative') ||
+                    (countdown >= 60 ? 'bg-qr-valid-background' : 'bg-text-secondary'),
                 )}
+                align="center"
               >
                 {secondsToMinutes(countdown)}
-              </div>
-            </div>
-          ) : (
-            <div>
-              <p className="text-error text-xl text-center leading-6 font-semibold">
-                {t('signing.signatureExpiredLabel')}
-              </p>
-              <p className="text-neutral-variant text-center text-sm">{t('signing.signatureExpiredDescription')}</p>
+              </CaptionText>
             </div>
           )}
         </div>

@@ -1,6 +1,7 @@
+import cn from 'classnames';
+
 import { formatBalance } from '@renderer/shared/utils/balance';
 import { Asset } from '@renderer/domain/asset';
-import { BodyText } from '@renderer/components/ui-redesign';
 import { useI18n } from '@renderer/context/I18nContext';
 
 type Props = {
@@ -10,9 +11,9 @@ type Props = {
   showIcon?: boolean;
 };
 
-const BalanceNew = ({ value, asset, className, showIcon = true }: Props) => {
+const BalanceNew = ({ value, asset, className = 'text-body text-text-primary', showIcon = true }: Props) => {
   const { t } = useI18n();
-  const { precision, symbol, icon } = asset;
+  const { precision, symbol, icon, name } = asset;
   const { value: formattedValue, decimalPlaces, suffix } = formatBalance(value, precision);
 
   const balanceValue = t('assetBalance.number', {
@@ -21,9 +22,9 @@ const BalanceNew = ({ value, asset, className, showIcon = true }: Props) => {
   });
 
   const balance = (
-    <BodyText className={className}>
+    <p className={cn('font-inter', className)}>
       {balanceValue} {suffix} {symbol}
-    </BodyText>
+    </p>
   );
 
   if (!showIcon) {
@@ -32,7 +33,7 @@ const BalanceNew = ({ value, asset, className, showIcon = true }: Props) => {
 
   return (
     <div className="flex items-center gap-x-2">
-      <img src={icon} alt={asset.name} width={28} height={28} className="bg-black rounded-full" />
+      <img src={icon} alt={name} width={28} height={28} className="bg-black rounded-full" />
       {balance}
     </div>
   );

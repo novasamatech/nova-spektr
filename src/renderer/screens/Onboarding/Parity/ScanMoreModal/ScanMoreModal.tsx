@@ -2,7 +2,7 @@ import { hexToU8a, u8aToHex } from '@polkadot/util';
 import { HexString } from '@polkadot/util/types';
 import { useState, useEffect } from 'react';
 
-import { SeedInfo, SimpleSeedInfo } from '@renderer/components/common/QrCode/QrReader/common/types';
+import { SeedInfo, CompactSeedInfo } from '@renderer/components/common/QrCode/QrReader/common/types';
 import { BaseModal, Button, Icon, Identicon } from '@renderer/components/ui';
 import { useI18n } from '@renderer/context/I18nContext';
 import { Address, AccountId } from '@renderer/domain/shared-kernel';
@@ -28,12 +28,12 @@ type GroupedAccounts = {
 
 type Props = {
   isOpen: boolean;
-  accounts: SimpleSeedInfo[];
+  seedInfo: CompactSeedInfo[];
   onResult: (accounts: SeedInfo[]) => void;
   onClose: () => void;
 };
 
-const ScanMoreModal = ({ isOpen, accounts, onResult, onClose }: Props) => {
+const ScanMoreModal = ({ isOpen, seedInfo, onResult, onClose }: Props) => {
   const { t } = useI18n();
 
   const [cameraState, setCameraState] = useState<CameraState>(CameraState.ACTIVE);
@@ -47,7 +47,7 @@ const ScanMoreModal = ({ isOpen, accounts, onResult, onClose }: Props) => {
   }, [isOpen]);
 
   const allRootAndDerivedKeys = (): RootAndDerived => {
-    return accounts.reduce<RootAndDerived>(
+    return seedInfo.reduce<RootAndDerived>(
       (acc, account) => {
         acc.allRoot.push(toAccountId(account.address));
 
@@ -88,7 +88,7 @@ const ScanMoreModal = ({ isOpen, accounts, onResult, onClose }: Props) => {
         }
 
         let rootWithDerives =
-          rootAccountIndex >= 0 ? Object.values(accounts[rootAccountIndex].derivedKeys).flat().length > 0 : false;
+          rootAccountIndex >= 0 ? Object.values(seedInfo[rootAccountIndex].derivedKeys).flat().length > 0 : false;
         if (rootWithDerives) {
           return { newAccs: acc.newAccs, oldAccs: acc.oldAccs.concat(newAccount) };
         }

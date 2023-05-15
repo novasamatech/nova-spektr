@@ -65,4 +65,6 @@ module.exports = {
   'negative-action-background': 'var(--negative-action-background)',
   'dim-background': 'var(--dim-background)',
   'qr-valid-background': 'var(--qr-valid-background)',
+  'accent-background': 'var(--accent-background)',
+  hover: 'var(--hover)',
 };

@@ -4,7 +4,7 @@ import keyBy from 'lodash/keyBy';
 import { FormEvent, useEffect, useState } from 'react';
 
 import { Explorers } from '@renderer/components/common';
-import { AddressInfo, SeedInfo, SimpleSeedInfo } from '@renderer/components/common/QrCode/QrReader/common/types';
+import { AddressInfo, SeedInfo, CompactSeedInfo } from '@renderer/components/common/QrCode/QrReader/common/types';
 import { Button, Icon, Identicon, Input } from '@renderer/components/ui';
 import { useI18n } from '@renderer/context/I18nContext';
 import { Account, createAccount } from '@renderer/domain/account';
@@ -17,7 +17,6 @@ import { useChains } from '@renderer/services/network/chainsService';
 import { toShortAddress, toAddress, toAccountId } from '@renderer/shared/utils/address';
 import { useWallet } from '@renderer/services/wallet/walletService';
 import { createWallet } from '@renderer/domain/wallet';
-import './StepThree.css';
 import { ID } from '@renderer/services/storage';
 
 const RootExplorers: Explorer[] = [
@@ -26,11 +25,11 @@ const RootExplorers: Explorer[] = [
 ];
 
 type Props = {
-  qrData: SeedInfo[];
+  seedInfo: SeedInfo[];
   onNextStep: () => void;
 };
 
-const StepThree = ({ qrData, onNextStep }: Props) => {
+const StepThree = ({ seedInfo, onNextStep }: Props) => {
   const { t } = useI18n();
 
   const { addWallet } = useWallet();
@@ -38,25 +37,34 @@ const StepThree = ({ qrData, onNextStep }: Props) => {
   const { getChainsData } = useChains();
   const [isQrModalOpen, toggleQrModal] = useToggle();
 
-  const [chainsObject, setChainsObject] = useState<Record<string, Chain>>({});
+  const [chainsObject, setChainsObject] = useState<Record<ChainId, Chain>>({});
 
   const [inactiveAccounts, setInactiveAccounts] = useState<Record<string, boolean>>({});
   const [accountNames, setAccountNames] = useState<Record<string, string>>({});
 
-  const [accounts, setAccounts] = useState<SimpleSeedInfo[]>([]);
+  const [accounts, setAccounts] = useState<CompactSeedInfo[]>([]);
   const [walletName, setWalletName] = useState('');
 
   useEffect(() => {
     getChainsData().then((chains) => {
-      setChainsObject(keyBy(chains, 'chainId'));
+      const chainsMap = keyBy(chains, 'chainId');
+      setChainsObject(chainsMap);
 
-      const names = qrData.reduce((acc, data, index) => ({ ...acc, [getAccountId(index)]: data.name }), {});
+      const filteredQrData = seedInfo.map((data) => filterByExistingChains(data, chainsMap));
+
+      const names = filteredQrData.reduce((acc, data, index) => ({ ...acc, [getAccountId(index)]: data.name }), {});
       setAccountNames(names);
-      setAccounts(qrData.map(formatAccount));
+      setAccounts(filteredQrData.map(formatAccount));
     });
   }, []);
 
-  const formatAccount = (newAccount: SeedInfo): SimpleSeedInfo => {
+  const filterByExistingChains = (seedInfo: SeedInfo, chainsMap: Record<ChainId, Chain>): SeedInfo => {
+    const derivedKeysForChsains = seedInfo.derivedKeys.filter((key) => Boolean(chainsMap[u8aToHex(key.genesisHash)]));
+
+    return { ...seedInfo, derivedKeys: derivedKeysForChsains };
+  };
+
+  const formatAccount = (newAccount: SeedInfo): CompactSeedInfo => {
     return {
       address: newAccount.multiSigner ? toAddress(u8aToHex(newAccount.multiSigner?.public), { prefix: 0 }) : '',
       derivedKeys: groupDerivedKeys(newAccount.derivedKeys),
@@ -64,29 +72,31 @@ const StepThree = ({ qrData, onNextStep }: Props) => {
   };
 
   const mergeNewAccounts = (newAccounts: SeedInfo[]) => {
-    const { oldAccs, newAccs, newNames } = newAccounts.reduce(
-      (acc, current) => {
-        if (current.derivedKeys.length === 0) {
-          acc.newAccs.push(formatAccount(current));
-          acc.newNames.push(current.name);
-        } else {
-          const addressHex = u8aToHex(current.multiSigner.public);
-          const rootAccountIndex = acc.oldAccs.findIndex((a) => toAccountId(a.address) === addressHex);
+    const { oldAccs, newAccs, newNames } = newAccounts.reduce<{
+      oldAccs: CompactSeedInfo[];
+      newAccs: CompactSeedInfo[];
+      newNames: string[];
+    }>(
+      (acc, account) => {
+        acc.newNames.push(account.name);
 
+        if (account.derivedKeys.length === 0) {
+          acc.newAccs.push(formatAccount(account));
+        } else {
+          const accountId = u8aToHex(account.multiSigner.public);
+          const rootAccountIndex = acc.oldAccs.findIndex((a) => toAccountId(a.address) === accountId);
+
+          const filteredAccount = filterByExistingChains(account, chainsObject);
           if (rootAccountIndex >= 0) {
-            acc.oldAccs[rootAccountIndex] = formatAccount(current);
+            acc.oldAccs[rootAccountIndex] = formatAccount(filteredAccount);
           } else {
-            acc.oldAccs.push(formatAccount(current));
+            acc.oldAccs.push(formatAccount(filteredAccount));
           }
         }
 
         return acc;
       },
-      { oldAccs: accounts, newAccs: [], newNames: [] } as {
-        oldAccs: SimpleSeedInfo[];
-        newAccs: SimpleSeedInfo[];
-        newNames: string[];
-      },
+      { oldAccs: accounts, newAccs: [], newNames: [] },
     );
 
     const newLastIndex = parseInt(Object.keys(accountNames).pop()?.split('-')[0] || '0') + 1;
@@ -96,8 +106,8 @@ const StepThree = ({ qrData, onNextStep }: Props) => {
     setAccounts(oldAccs.concat(newAccs));
   };
 
-  const groupDerivedKeys = (derivedKeys: AddressInfo[]): Record<HexString, AddressInfo[]> => {
-    return derivedKeys.reduce<Record<HexString, AddressInfo[]>>((acc, key) => {
+  const groupDerivedKeys = (derivedKeys: AddressInfo[]): Record<ChainId, AddressInfo[]> => {
+    return derivedKeys.reduce<Record<ChainId, AddressInfo[]>>((acc, key) => {
       const genesisHash = u8aToHex(key.genesisHash);
 
       if (acc[genesisHash]) {
@@ -222,7 +232,7 @@ const StepThree = ({ qrData, onNextStep }: Props) => {
   const fillAccountNames = () => {
     accounts.forEach((account, accountIndex) => {
       Object.entries(account.derivedKeys).forEach(([chainId, derivedKeys]) => {
-        const { name: chainName } = chainsObject[chainId];
+        const { name: chainName } = chainsObject[chainId as ChainId];
 
         derivedKeys.forEach((_, derivedKeyIndex) => {
           const accountId = getAccountId(accountIndex, chainId, derivedKeyIndex);
@@ -313,7 +323,7 @@ const StepThree = ({ qrData, onNextStep }: Props) => {
                 {Object.entries(account.derivedKeys).length > 0 && (
                   <div className="flex flex-col gap-2.5">
                     {Object.entries(account.derivedKeys).map(([chainId, derivedKeys]) => {
-                      const { name, icon, explorers, addressPrefix } = chainsObject[chainId];
+                      const { name, icon, explorers, addressPrefix } = chainsObject[chainId as ChainId];
 
                       return (
                         <div key={chainId} className="flex flex-col gap-2.5">
@@ -421,7 +431,7 @@ const StepThree = ({ qrData, onNextStep }: Props) => {
         )}
       </div>
 
-      <ScanMoreModal isOpen={isQrModalOpen} accounts={accounts} onResult={mergeNewAccounts} onClose={toggleQrModal} />
+      <ScanMoreModal isOpen={isQrModalOpen} seedInfo={accounts} onResult={mergeNewAccounts} onClose={toggleQrModal} />
     </div>
   );
 };

@@ -64,7 +64,7 @@ const Combobox = ({
           <HeadlessCombobox.Options
             className={cn(
               'absolute z-20 py-2.5 px-2 max-h-60 w-full overflow-auto shadow-element',
-              'border border-primary rounded-2lg bg-white shadow-surface focus:outline-none',
+              'border border-primary rounded-2lg bg-white shadow-surface',
               variant !== 'auto' && ViewClass[variant],
             )}
           >

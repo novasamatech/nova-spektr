@@ -1,10 +1,11 @@
 import { Controller, SubmitHandler, useForm } from 'react-hook-form';
 
-import { BaseModal, Button, InputArea, InputHint } from '@renderer/components/ui';
+import { BaseModal, Button, InputHint } from '@renderer/components/ui-redesign';
 import { useI18n } from '@renderer/context/I18nContext';
 import { MultisigTransactionDS } from '@renderer/services/storage';
 import { CallData } from '@renderer/domain/shared-kernel';
 import { validateCallData } from '@renderer/shared/utils/substrate';
+import { InputArea } from '@renderer/components/ui';
 
 type CallDataForm = {
   callData: string;
@@ -54,7 +55,7 @@ const CallDataModal = ({ isOpen, tx, onClose, onSubmit }: Props) => {
       contentClass="px-5 pb-4 w-[400px]"
       onClose={closeHandler}
     >
-      <form id="multisigForm" className="flex flex-col my-3 gap-2" onSubmit={handleSubmit(submitHandler)}>
+      <form id="multisigForm" className="flex flex-col mt-2 gap-y-4" onSubmit={handleSubmit(submitHandler)}>
         <Controller
           name="callData"
           control={control}
@@ -62,26 +63,26 @@ const CallDataModal = ({ isOpen, tx, onClose, onSubmit }: Props) => {
           render={({ field: { value, onChange }, fieldState: { error } }) => (
             <>
               <InputArea
-                wrapperClass="my-2"
                 placeholder={t('operations.callData.inputPlaceholder')}
                 value={value}
                 invalid={!!error}
                 onChange={onChange}
               />
 
-              <InputHint className="mb-4" active={!!error} variant="error">
+              <InputHint className="mt-2" active={!!error} variant="error">
                 {t('operations.callData.errorMessage')}
-              </InputHint>
-              <InputHint className="mb-4" active={!error} variant="hint">
-                {t('operations.callData.inputHint')}
               </InputHint>
             </>
           )}
         />
 
-        <Button className="w-full" pallet="primary" variant="fill" disabled={!isValid} type="submit">
-          {t('operations.callData.continueButton')}
-        </Button>
+        <div className="flex items-center justify-between">
+          <InputHint active>{t('operations.callData.inputHint')}</InputHint>
+
+          <Button disabled={!isValid} type="submit">
+            {t('operations.callData.continueButton')}
+          </Button>
+        </div>
       </form>
     </BaseModal>
   );

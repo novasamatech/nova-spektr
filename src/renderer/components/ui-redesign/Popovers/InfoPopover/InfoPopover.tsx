@@ -3,11 +3,11 @@ import cn from 'classnames';
 import React, { PropsWithChildren } from 'react';
 
 import { FootnoteText } from '@renderer/components/ui-redesign';
-import TextBase from '@renderer/components/ui-redesign/Typography/common/TextBase';
 
 type Props = {
   data: InfoSection[];
   className?: string;
+  buttonClassName?: string;
   offsetPx?: number;
 };
 
@@ -17,16 +17,18 @@ type MenuItem = {
 };
 
 export type InfoSection = {
-  title: string;
+  title?: string;
   items: MenuItem[];
 };
 
-const InfoPopover = ({ data, className, children, offsetPx = 7 }: PropsWithChildren<Props>) => {
+const InfoPopover = ({ data, className, buttonClassName, children, offsetPx = 7 }: PropsWithChildren<Props>) => {
   return (
     <Menu>
       {({ open }) => (
         <div className={cn('relative', open && 'z-10')}>
-          <Menu.Button>{children}</Menu.Button>
+          <Menu.Button className={cn('flex items-center', buttonClassName)} onClick={(e) => e.stopPropagation()}>
+            {children}
+          </Menu.Button>
           <Menu.Items
             style={{ marginTop: offsetPx + 'px' }}
             className={cn(
@@ -37,12 +39,13 @@ const InfoPopover = ({ data, className, children, offsetPx = 7 }: PropsWithChild
           >
             {data.map((section, index) => (
               <div key={index}>
-                {/* // TODO change text*/}
-                <TextBase className="text-3xs text-redesign-shade-48 uppercase pb-2" key={section.title}>
-                  {section.title}
-                </TextBase>
+                {section.title && (
+                  <FootnoteText className="text-text-tertiary uppercase pb-2" key={section.title}>
+                    {section.title}
+                  </FootnoteText>
+                )}
 
-                <FootnoteText key={index} className="text-3xs pb-4 flex flex-col last:p-0">
+                <FootnoteText key={index} className="text-text-secondary pb-4 flex flex-col last:p-0">
                   {section.items.map(({ value, id }) =>
                     typeof value === 'string' ? (
                       value

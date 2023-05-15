@@ -3,6 +3,7 @@ import WatchOnlyBgImg, { ReactComponent as WatchOnlyBgSvg } from '@images/wallet
 import ParitySignerImg, { ReactComponent as ParitySignerSvg } from '@images/walletTypes/paritySigner.svg';
 import WatchOnlyImg, { ReactComponent as WatchOnlySvg } from '@images/walletTypes/watchOnly.svg';
 import MultisigBgImg, { ReactComponent as MultisigBgSvg } from '@images/walletTypes/multisigBg.svg';
+import VaultImg, { ReactComponent as VaultSvg } from '@images/walletTypes/vault.svg';
 
 const WalletTypeImages = {
   paritySigner: { svg: ParitySignerSvg, img: ParitySignerImg },
@@ -10,6 +11,7 @@ const WalletTypeImages = {
   watchOnly: { svg: WatchOnlySvg, img: WatchOnlyImg },
   watchOnlyBg: { svg: WatchOnlyBgSvg, img: WatchOnlyBgImg },
   multisigBg: { svg: MultisigBgSvg, img: MultisigBgImg },
+  vault: { svg: VaultSvg, img: VaultImg },
 } as const;
 
 export type WalletType = keyof typeof WalletTypeImages;

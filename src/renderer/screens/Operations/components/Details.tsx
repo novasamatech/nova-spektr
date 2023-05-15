@@ -1,16 +1,19 @@
 import cn from 'classnames';
+import { PropsWithChildren, useCallback } from 'react';
 
 import { useI18n } from '@renderer/context/I18nContext';
 import { MultisigAccount } from '@renderer/domain/account';
-import { ChainAddress, Balance, Button, Icon } from '@renderer/components/ui';
+import { Icon } from '@renderer/components/ui';
 import Truncate from '@renderer/components/ui/Truncate/Truncate';
 import { copyToClipboard } from '@renderer/shared/utils/strings';
 import { useToggle } from '@renderer/shared/hooks';
 import { ExtendedChain } from '@renderer/services/network/common/types';
-import { Explorers } from '@renderer/components/common';
 import { getMultisigExtrinsicLink } from '../common/utils';
-import ValidatorsModal from '@renderer/screens/Staking/Operations/components/ValidatorsModal/ValidatorsModal';
 import { MultisigTransaction } from '@renderer/domain/transaction';
+import { Button, FootnoteText } from '@renderer/components/ui-redesign';
+import ValidatorsModal from '@renderer/screens/Staking/Operations/components/ValidatorsModal/ValidatorsModal';
+import { BalanceNew } from '@renderer/components/common';
+import AddressWithExplorers from '@renderer/components/common/AddressWithExplorers/AddressWithExplorers';
 
 type Props = {
   tx: MultisigTransaction;
@@ -19,13 +22,34 @@ type Props = {
   withAdvanced?: boolean;
 };
 
+const RowStyle = 'flex justify-between items-center w-full';
+const LabelStyle = 'text-text-tertiary';
+const InteractableStyle = 'rounded hover:bg-action-background-hover cursor-pointer py-[3px] px-2';
+const AddressStyle = 'text-footnote text-inherit';
+
+type DetailsWithLabelProps = PropsWithChildren<{ label: string }>;
+export const DetailWithLabel = ({ label, children, className }: DetailsWithLabelProps & { className: string }) => (
+  <div className={RowStyle}>
+    <FootnoteText as="dt" className={LabelStyle}>
+      {label}
+    </FootnoteText>
+    {typeof children === 'string' ? (
+      <FootnoteText as="dd" className={cn(className, 'py-[3px] px-2')}>
+        {children}
+      </FootnoteText>
+    ) : (
+      <dd className={cn('flex items-center gap-1', className)}>{children}</dd>
+    )}
+  </div>
+);
+
 const Details = ({ tx, account, connection, withAdvanced = true }: Props) => {
   const { t } = useI18n();
 
   const [isAdvancedShown, toggleAdvanced] = useToggle();
   const [isValidatorsOpen, toggleValidators] = useToggle();
 
-  const { indexCreated, blockCreated, deposit, depositor, callHash, callData, transaction } = tx;
+  const { indexCreated, blockCreated, deposit, depositor, callHash, callData, transaction, description } = tx;
 
   const defaultAsset = connection?.assets[0];
   const addressPrefix = connection?.addressPrefix;
@@ -33,81 +57,90 @@ const Details = ({ tx, account, connection, withAdvanced = true }: Props) => {
   const depositorSignatory = account?.signatories.find((s) => s.accountId === depositor);
   const extrinsicLink = getMultisigExtrinsicLink(callHash, indexCreated, blockCreated, explorers);
 
+  const valueClass = withAdvanced ? 'text-text-secondary' : 'text-text-primary';
+  // const DetailsRow = (props: DetailsWithLabelProps) => <DetailWithLabel {...props} className={valueClass} />;
+  const DetailsRow = useCallback(
+    (props: DetailsWithLabelProps) => <DetailWithLabel {...props} className={valueClass} />,
+    [valueClass],
+  );
+
   return (
     <>
-      <ul>
+      <dl className="flex flex-col gap-y-1 w-full">
+        {description && (
+          <div className="rounded bg-block-background pl-3 py-2 flex flex-col gap-x-0.5 mb-2">
+            <FootnoteText as="dt" className={LabelStyle}>
+              {t('operation.details.multisigWallet')}
+            </FootnoteText>
+            <FootnoteText as="dd" className={valueClass}>
+              {description}
+            </FootnoteText>
+          </div>
+        )}
+
         {account && (
-          <li className="flex justify-between items-center">
-            <div className="text-shade-40">{t('operation.details.multisigWallet')}</div>
-            <div className="flex items-center gap-1">
-              <ChainAddress accountId={account.accountId} addressPrefix={addressPrefix} name={account.name} canCopy />
-              <Explorers address={account.accountId} addressPrefix={addressPrefix} explorers={explorers} />
-            </div>
-          </li>
+          <DetailsRow label={t('operation.details.multisigWallet')}>
+            <AddressWithExplorers
+              explorers={explorers}
+              addressFont={AddressStyle}
+              accountId={account.accountId}
+              addressPrefix={addressPrefix}
+              name={account.name}
+            />
+          </DetailsRow>
         )}
 
         {transaction?.args.dest && (
-          <li className="flex justify-between items-center">
-            <div className="text-shade-40">{t('operation.details.recipient')}</div>
-            <div className="flex items-center gap-1">
-              <ChainAddress type="short" address={transaction.args.dest} />
-              <Explorers address={transaction.args.dest} addressPrefix={addressPrefix} explorers={explorers} />
-            </div>
-          </li>
+          <DetailsRow label={t('operation.details.recipient')}>
+            <AddressWithExplorers
+              type="short"
+              explorers={explorers}
+              addressFont={AddressStyle}
+              address={transaction.args.dest}
+              addressPrefix={addressPrefix}
+            />
+          </DetailsRow>
         )}
 
         {transaction?.args.payee && (
-          <li className="flex justify-between items-center">
-            <div className="text-shade-40">{t('operation.details.payee')}</div>
-            <div className="flex items-center gap-1">
-              {transaction.args.payee.account ? (
-                <>
-                  <ChainAddress type="short" address={transaction.args.payee.account} />
-                  <Explorers
-                    address={transaction.args.payee.account}
-                    addressPrefix={addressPrefix}
-                    explorers={connection?.explorers}
-                  />
-                </>
-              ) : (
-                transaction.args.payee
-              )}
-            </div>
-          </li>
+          <DetailsRow label={t('operation.details.payee')}>
+            {transaction.args.payee.account ? (
+              <AddressWithExplorers
+                explorers={explorers}
+                addressFont={AddressStyle}
+                type="short"
+                address={transaction.args.payee.account}
+                addressPrefix={addressPrefix}
+              />
+            ) : (
+              transaction.args.payee
+            )}
+          </DetailsRow>
         )}
 
         {transaction?.args.controller && (
-          <li className="flex justify-between items-center">
-            <div className="text-shade-40">{t('operation.details.controller')}</div>
-            <div className="flex items-center gap-1">
-              <ChainAddress type="short" address={transaction.args.controller} />
-              <Explorers address={transaction.args.controller} explorers={connection?.explorers} />
-            </div>
-          </li>
+          <DetailsRow label={t('operation.details.controller')}>
+            <AddressWithExplorers
+              explorers={explorers}
+              addressFont={AddressStyle}
+              type="short"
+              address={transaction.args.controller}
+            />
+          </DetailsRow>
         )}
 
         {transaction?.args.targets && defaultAsset && (
-          <li className="flex justify-between items-center">
-            <div className="text-shade-40">{t('operation.details.validators')}</div>
-            <div className="flex items-center gap-1">
+          <>
+            <DetailsRow label={t('operation.details.validators')}>
               <button
                 type="button"
-                className={cn(
-                  'flex gap-x-1 items-center justify-between h-10 px-[15px] rounded-2lg bg-shade-2',
-                  'transition hover:bg-shade-5 focus:bg-shade-5',
-                )}
+                className={cn('flex gap-x-1 items-center', InteractableStyle)}
                 onClick={toggleValidators}
               >
-                <p className="text-sm text-neutral-variant">{t('staking.confirmation.selectValidators')}</p>
-                <div className="flex items-center gap-x-1">
-                  <p className="py-0.5 px-1 rounded-md bg-shade-30 text-white text-xs">
-                    {transaction.args.targets.length}
-                  </p>
-                  <Icon name="right" size={20} />
-                </div>
+                <FootnoteText as="span">{transaction.args.targets.length}</FootnoteText>
+                <Icon name="info" size={16} className="text-icon-default" />
               </button>
-            </div>
-
+            </DetailsRow>
             <ValidatorsModal
               isOpen={isValidatorsOpen}
               validators={transaction?.args.targets.map((address: string) => ({
@@ -118,78 +151,92 @@ const Details = ({ tx, account, connection, withAdvanced = true }: Props) => {
               addressPrefix={connection?.addressPrefix}
               onClose={toggleValidators}
             />
-          </li>
+          </>
         )}
 
         {isAdvancedShown && (
           <>
             {callHash && (
-              <li className="flex justify-between items-center">
-                <div className="text-shade-40">{t('operation.details.callHash')}</div>
-                <div className="flex items-center">
-                  <Truncate className="max-w-[120px]" text={callHash} />
-                  <Button variant="text" pallet="shade" onClick={() => copyToClipboard(callHash)}>
-                    <Icon name="copy" />
-                  </Button>
-                </div>
-              </li>
+              <DetailsRow label={t('operation.details.callHash')}>
+                <button
+                  type="button"
+                  className={cn('flex gap-x-1 items-center', InteractableStyle)}
+                  onClick={() => copyToClipboard(callHash)}
+                >
+                  <Truncate className="max-w-[120px] font-inter text-footnote" text={callHash} />
+                  <Icon name="copy" size={16} className="text-icon-default" />
+                </button>
+              </DetailsRow>
             )}
 
             {callData && (
-              <li className="flex justify-between items-center">
-                <div className="text-shade-40">{t('operation.details.callData')}</div>
-                <div className="flex items-center">
-                  <Truncate className="max-w-[120px]" text={callData} />
-                  <Button variant="text" pallet="shade" onClick={() => copyToClipboard(callData)}>
-                    <Icon name="copy" />
-                  </Button>
-                </div>
-              </li>
+              <DetailsRow label={t('operation.details.callData')}>
+                <button
+                  type="button"
+                  className={cn('flex gap-x-1 items-center', InteractableStyle)}
+                  onClick={() => copyToClipboard(callData)}
+                >
+                  <Truncate className="max-w-[120px] font-inter text-footnote" text={callData} />
+                  <Icon name="copy" size={16} className="text-icon-default" />
+                </button>
+              </DetailsRow>
             )}
 
+            {deposit && defaultAsset && depositorSignatory && <hr className="border-divider" />}
+
             {depositorSignatory && (
-              <li className="flex justify-between items-center">
-                <div className="text-shade-40">{t('operation.details.depositor')}</div>
-                <div className="flex gap-1">
-                  <ChainAddress address={depositorSignatory.address} name={depositorSignatory.name} canCopy />
-                  <Explorers
-                    address={depositorSignatory.accountId}
-                    addressPrefix={addressPrefix}
-                    explorers={explorers}
-                  />
-                </div>
-              </li>
+              <DetailsRow label={t('operation.details.depositor')}>
+                <AddressWithExplorers
+                  explorers={explorers}
+                  address={depositorSignatory.address}
+                  name={depositorSignatory.name}
+                />
+              </DetailsRow>
             )}
 
             {deposit && defaultAsset && (
-              <li className="flex justify-between items-center">
-                <div className="text-shade-40">{t('operation.details.deposit')}</div>
-                <Balance value={deposit} precision={defaultAsset.precision} symbol={defaultAsset?.symbol} />
-              </li>
+              <DetailsRow label={t('operation.details.deposit')}>
+                <BalanceNew
+                  value={deposit}
+                  asset={defaultAsset}
+                  showIcon={false}
+                  className="text-footnote text-text-secondary py-[3px] px-2"
+                />
+              </DetailsRow>
             )}
 
+            {deposit && defaultAsset && depositorSignatory && <hr className="border-divider" />}
+
             {indexCreated && blockCreated && (
-              <li className="flex justify-between items-center">
-                <div className="text-shade-40">{t('operation.details.timePoint')}</div>
-                <div className="flex gap-1">
-                  {blockCreated}-{indexCreated}
-                  {extrinsicLink && (
-                    <a href={extrinsicLink} target="_blank" rel="noopener noreferrer">
-                      <Icon className="text-shade-40" name="globe" />
-                    </a>
-                  )}
-                </div>
-              </li>
+              <DetailsRow label={t('operation.details.timePoint')}>
+                {extrinsicLink ? (
+                  <a
+                    className={cn('flex gap-x-1 items-center', InteractableStyle)}
+                    href={extrinsicLink}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    <FootnoteText>
+                      {blockCreated}-{indexCreated}
+                    </FootnoteText>
+                    <Icon name="globe" size={16} className="text-icon-default" />
+                  </a>
+                ) : (
+                  `${blockCreated}-${indexCreated}`
+                )}
+              </DetailsRow>
             )}
           </>
         )}
-      </ul>
+      </dl>
 
       {withAdvanced && (
         <Button
           variant="text"
           pallet="primary"
-          prefixElement={<Icon name={isAdvancedShown ? 'up' : 'down'} />}
+          size="sm"
+          suffixElement={<Icon name={isAdvancedShown ? 'up' : 'down'} size={16} className="text-icon-default" />}
+          className="my-1 w-fit"
           onClick={toggleAdvanced}
         >
           {t('operation.advanced')}

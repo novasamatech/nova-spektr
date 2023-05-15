@@ -95,6 +95,15 @@
       "appName": "Nova Spektr"
     }
   },
+  "log": {
+    "cancelledMessage": "отменил эту операцию",
+    "errorCancelledMessage": "попытался отменить эту операцию",
+    "errorSignedMessage": "попытался подписать эту операцию",
+    "initiatedMessage": "создал эту операцию",
+    "signedMessage": "подписал эту операцию",
+    "title": "Лог",
+    "unknownMessage": " made an unknown action"
+  },
   "matrixCredentials": {
     "subTitle": "Реквизиты Matrix"
   },
@@ -277,6 +286,7 @@
       "controller": "Контроллер",
       "deposit": "Multisig депозит",
       "depositor": "Депозитор",
+      "description": "Описание",
       "multisigWallet": "Отправитель",
       "payee": "Payee",
       "recipient": "Получатель",
@@ -289,6 +299,7 @@
     "feeErrorMessage": "Недостаточно средств чтобы заплатить коммиссию сети",
     "feeErrorTitle": "Ошибка",
     "goBackButton": "Вернуться",
+    "inProgress": "Submitting approval...",
     "logButton": "Лог",
     "networkFee": "Network fee",
     "rejectButton": "Отмена",
@@ -310,7 +321,8 @@
       "established": "Завершено",
       "executed": "Выполнено",
       "signing": "Подписание"
-    }
+    },
+    "successMessage": "Operation Approved"
   },
   "operations": {
     "callData": {
@@ -329,8 +341,8 @@
       "statusSummary": "Статусы операции"
     },
     "noOperationsDescription": "Нет ожидающих операций с мультиподписью",
-    "subTitle": "Ваши операции",
-    "title": "Операции",
+    "noOperationsWalletNotMulti": "You can only view operations for your Multisig wallets. Transaction history for other types of wallets will be available later. Stay tuned.",
+    "title": "Ваши операции",
     "titles": {
       "destination": "Установить кошелёк получения награды",
       "nominate": "Номинирование",
@@ -421,8 +433,10 @@
     "generateNewQrButton": "Generate new QR code",
     "metadataPortalLink": "Update metadata in Parity Signer",
     "qrCountdownTitle": "QR code is valid for",
-    "scanQrTitle": "Scan the operation QR code with Parity Signer",
+    "qrNotValid": "QR code isn’t valid anymore",
+    "scanQrTitle": "Scan the operation QR code with Polkadot Vault",
     "scanSignatureTitle": "Scan QR code from Parity Signer",
+    "signatory": "Подписант:",
     "signatureExpiredDescription": "For security reasons generated operations valid for only 5 mins. Please generate new QR code and sign it with Parity Signer",
     "signatureExpiredLabel": "QR Code has expired",
     "title": "Signing",

@@ -1,6 +1,6 @@
 import { act, render, screen } from '@testing-library/react';
 
-import ShortTransactionInfo from './ShortTransactionInfo';
+import TransactionAmount from './TransactionAmount';
 import { Transaction, TransactionType } from '@renderer/domain/transaction';
 import { TEST_ADDRESS, TEST_CHAIN_ID } from '@renderer/shared/utils/constants';
 
@@ -26,7 +26,7 @@ describe('screen/Operations/components/ShortTransactionInfo', () => {
     await act(async () => {
       render(
         <div data-testid="123">
-          <ShortTransactionInfo tx={transaction} />
+          <TransactionAmount tx={transaction} />
         </div>,
       );
     });

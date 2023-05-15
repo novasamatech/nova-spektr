@@ -45,7 +45,7 @@ const Input = forwardRef<HTMLInputElement, Props>(
       )}
       <input
         className={cn(
-          'rounded-sm leading-5 bg-transparent flex-1 placeholder-shade-30 focus:outline-none focus:text-primary',
+          'rounded-sm leading-5 bg-transparent flex-1 placeholder-shade-30 focus:text-primary',
           disabledStyle ? 'text-shade-40' : props.value && !invalid && 'text-neutral',
           invalid && 'text-error',
           label && 'py-1 my-4',

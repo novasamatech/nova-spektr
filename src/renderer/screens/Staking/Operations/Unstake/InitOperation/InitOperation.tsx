@@ -59,8 +59,9 @@ const InitOperation = ({ api, chainId, addressPrefix, explorers, staking, identi
   const [deposit, setDeposit] = useState('');
   const [amount, setAmount] = useState('');
 
-  const [stakedRange, setStakedRange] = useState<[string, string]>(['0', '0']);
+  const [minBalance, setMinBalance] = useState<string>('0');
   const [transferableRange, setTransferableRange] = useState<[string, string]>(['0', '0']);
+
   const [transactions, setTransactions] = useState<Transaction[]>([]);
 
   const [unstakeAccounts, setUnstakeAccounts] = useState<DropdownOption<Account>[]>([]);
@@ -92,20 +93,14 @@ const InitOperation = ({ api, chainId, addressPrefix, explorers, staking, identi
   useEffect(() => {
     if (!Object.keys(staking).length) return;
 
-    const staked = activeUnstakeAccounts.map((a) => staking[a.id]?.active || '0');
-    const minMaxBalances = staked.reduce<[string, string]>(
-      (acc, balance) => {
-        if (!balance) return acc;
+    const stakedBalances = activeUnstakeAccounts.map((a) => staking[a.id]?.active || '0');
+    const minStakedBalance = stakedBalances.reduce<string>((acc, balance) => {
+      if (!balance) return acc;
 
-        acc[0] = new BN(balance).lt(new BN(acc[0])) ? balance : acc[0];
-        acc[1] = new BN(balance).gt(new BN(acc[1])) ? balance : acc[1];
+      return new BN(balance).lt(new BN(acc)) ? balance : acc;
+    }, stakedBalances[0]);
 
-        return acc;
-      },
-      [staked[0], staked[0]],
-    );
-
-    setStakedRange(minMaxBalances);
+    setMinBalance(minStakedBalance);
   }, [activeUnstakeAccounts.length, staking]);
 
   useEffect(() => {
@@ -151,7 +146,7 @@ const InitOperation = ({ api, chainId, addressPrefix, explorers, staking, identi
   }, [unstakeAccounts.length]);
 
   useEffect(() => {
-    if (!stakedRange) return;
+    if (!minBalance) return;
 
     const newTransactions = activeUnstakeAccounts.map(({ value }) => {
       return {
@@ -163,7 +158,7 @@ const InitOperation = ({ api, chainId, addressPrefix, explorers, staking, identi
     });
 
     setTransactions(newTransactions);
-  }, [stakedRange, amount]);
+  }, [minBalance, amount]);
 
   useEffect(() => {
     if (!accountIsMultisig) return;
@@ -265,7 +260,7 @@ const InitOperation = ({ api, chainId, addressPrefix, explorers, staking, identi
         canSubmit={activeUnstakeAccounts.length > 0}
         addressPrefix={addressPrefix}
         fields={formFields} //todo fields prop has string array type. Maybe better to provide some types from form to avoid misspelling
-        balanceRange={stakedRange}
+        balanceRange={['0', minBalance]}
         asset={asset}
         validateBalance={validateBalance}
         validateFee={validateFee}

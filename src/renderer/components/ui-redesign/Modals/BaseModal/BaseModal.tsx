@@ -5,7 +5,7 @@ import cn from 'classnames';
 import Icon from '@renderer/components/ui/Icon/Icon';
 import { ModalBackdrop, ModalTransition } from '@renderer/components/ui-redesign/Modals/common';
 import { useI18n } from '@renderer/context/I18nContext';
-import { TitleText } from '../../Typography';
+import TextBase from '@renderer/components/ui-redesign/Typography/common/TextBase';
 
 type Props = {
   isOpen: boolean;
@@ -24,8 +24,8 @@ const BaseModal = ({
   title,
   children,
   onClose,
-  contentClass = 'pb-6 px-10',
-  headerClass = 'pt-5 px-10',
+  contentClass = 'pb-4 px-5',
+  headerClass = 'py-3 pr-3 pl-5',
   closeButton,
   panelClass,
 }: PropsWithChildren<Props>) => {
@@ -47,7 +47,10 @@ const BaseModal = ({
             >
               {title && (
                 <Dialog.Title as="header" className={cn('text-black font-bold', headerClass)}>
-                  <TitleText fontWeight="bold">{title}</TitleText>
+                  {/* TODO change */}
+                  <TextBase className="font-manrope text-modal-title text-text-primary" fontWeight="bold">
+                    {title}
+                  </TextBase>
                 </Dialog.Title>
               )}
 
@@ -55,10 +58,10 @@ const BaseModal = ({
                 <button
                   aria-label={t('basemodal.closeButton')}
                   type="button"
-                  className="text-icon-default absolute top-4 right-4"
+                  className="text-icon-default absolute top-4 right-4 p-1 rounded-full hover:bg-hover"
                   onClick={onClose}
                 >
-                  <Icon name="close" size={24} />
+                  <Icon name="close" size={20} />
                 </button>
               )}
 

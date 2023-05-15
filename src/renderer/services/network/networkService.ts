@@ -113,13 +113,7 @@ export const useNetwork = (networkSubscription?: ISubscriptionService<ChainId>):
           connectionStatus: ConnectionStatus.NONE,
         });
       } else {
-        const connectionType = ConnectionType.AUTO_BALANCE;
-
-        // TODO uncomment when fix light client problems
-        // const connectionType = ConnectionType.AUTO_BALANCE;
-        //   getKnownChain(chainId) && !isKusama(chains.current[chainId].name)
-        //     ? ConnectionType.LIGHT_CLIENT
-        //     : ConnectionType.AUTO_BALANCE;
+        const connectionType = getKnownChain(chainId) ? ConnectionType.LIGHT_CLIENT : ConnectionType.AUTO_BALANCE;
         const activeNode = connectionType === ConnectionType.AUTO_BALANCE ? nodes[0] : undefined;
 
         acc.push({

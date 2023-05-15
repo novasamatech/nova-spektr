@@ -24,17 +24,9 @@ Filled.args = {
     'Lorem ipsum dolor sit amet, consectetur adipisicing elit. Culpa doloribus iusto possimus praesentium ratione temporibus. Aperiam autem cumque esse eum fugit laborum quas! Architecto at, cupiditate dignissimos eveniet sunt voluptatibus.',
 };
 
-export const Label = Template.bind({});
-Label.args = {
-  rows: 1,
-  label: 'With label',
-  value: 'This is value',
-};
-
 export const Invalid = Template.bind({});
 Invalid.args = {
   rows: 1,
-  label: 'With invalid',
   value: 'This is value',
   invalid: true,
 };
@@ -42,7 +34,6 @@ Invalid.args = {
 export const Disabled = Template.bind({});
 Disabled.args = {
   rows: 1,
-  label: 'With disabled label',
   value: 'This is value',
   disabled: true,
 };
