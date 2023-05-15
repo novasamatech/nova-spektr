@@ -88,6 +88,7 @@
     },
     "input": {
       "amountLabel": "Сумма",
+      "signerLabel": "Выберите подписанта",
       "transferableLabel": "Доступно"
     },
     "title": {
@@ -562,6 +563,7 @@
     },
     "redeem": {
       "availablePlaceholder": "Доступно",
+      "confirmRedeemSubtitle": "Подтверждение",
       "initRedeemSubtitle": "Вывести"
     },
     "requiredAmountError": "Пожалуйста, введите сумму",

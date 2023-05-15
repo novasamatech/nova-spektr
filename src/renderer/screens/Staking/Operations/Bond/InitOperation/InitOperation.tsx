@@ -16,7 +16,7 @@ import { formatAmount, stakeableAmount } from '@renderer/shared/utils/balance';
 import { useValidators } from '@renderer/services/staking/validatorsService';
 import { useWallet } from '@renderer/services/wallet/walletService';
 import { Account, isMultisig, MultisigAccount } from '@renderer/domain/account';
-import { toAccountId, toAddress } from '@renderer/shared/utils/address';
+import { toAddress } from '@renderer/shared/utils/address';
 import { nonNullable } from '@renderer/shared/utils/functions';
 import {
   getStakeAccountOption,
@@ -34,6 +34,7 @@ export type BondResult = {
   accounts: Account[];
   destination: Address;
   signer?: Account;
+  description?: string;
 };
 
 type Props = {
@@ -77,7 +78,9 @@ const InitOperation = ({ api, chainId, explorers, identifiers, asset, addressPre
 
   const firstAccount = activeStakeAccounts[0]?.value;
   const accountIsMultisig = isMultisig(firstAccount);
-  const formFields = accountIsMultisig ? ['amount', 'destination', 'description'] : ['amount', 'destination'];
+  const formFields = accountIsMultisig
+    ? [{ name: 'amount' }, { name: 'destination' }, { name: 'description' }]
+    : [{ name: 'amount' }, { name: 'destination' }];
 
   const accountIds = totalAccounts.map((account) => account.accountId);
   const signerBalance = getLiveBalance(activeSignatory?.value.accountId || '0x0', chainId, asset.assetId.toString());
@@ -136,7 +139,7 @@ const InitOperation = ({ api, chainId, explorers, identifiers, asset, addressPre
 
     setSignatoryOptions(options);
     setActiveSignatory({ id: options[0].id, value: options[0].value });
-  }, [activeStakeAccounts.length, accountIsMultisig, dbAccounts]);
+  }, [firstAccount, accountIsMultisig, dbAccounts]);
 
   useEffect(() => {
     if (stakeAccounts.length === 0) return;
@@ -178,14 +181,17 @@ const InitOperation = ({ api, chainId, explorers, identifiers, asset, addressPre
   }, [activeStakeAccounts.length, activeSignatory, amount, destination]);
 
   const submitBond = (data: { amount: string; destination?: string; description?: string }) => {
-    const selectedAccountIds = activeStakeAccounts.map((a) => toAccountId(a.id));
+    const selectedAccountIds = activeStakeAccounts.map((a) => a.id);
     const accounts = totalAccounts.filter((account) => selectedAccountIds.includes(account.accountId));
 
     onResult({
       accounts,
       amount: formatAmount(data.amount, asset.precision),
       destination: data.destination || '',
-      ...(accountIsMultisig && { signer: activeSignatory?.value }),
+      ...(accountIsMultisig && {
+        description: data.description,
+        signer: activeSignatory?.value,
+      }),
     });
   };
 
@@ -235,11 +241,11 @@ const InitOperation = ({ api, chainId, explorers, identifiers, asset, addressPre
           />
         )}
 
-        {isMultisig(totalAccounts[0]) &&
+        {accountIsMultisig &&
           (signatoryOptions.length > 1 ? (
             <Dropdown
               weight="lg"
-              placeholder="Select signer"
+              placeholder={t('general.input.signerLabel')}
               activeId={activeSignatory?.id}
               options={signatoryOptions}
               onChange={setActiveSignatory}

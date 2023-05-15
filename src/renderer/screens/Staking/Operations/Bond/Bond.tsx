@@ -55,11 +55,13 @@ const Bond = () => {
 
   const [activeStep, setActiveStep] = useState<Step>(Step.INIT);
   const [chainName, setChainName] = useState('...');
+
   const [validators, setValidators] = useState<ValidatorMap>({});
   const [accounts, setAccounts] = useState<Account[]>([]);
   const [signer, setSigner] = useState<Account>();
   const [stakeAmount, setStakeAmount] = useState<string>('');
   const [destination, setDestination] = useState<Destination>();
+  const [description, setDescription] = useState('');
 
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [multisigTx, setMultisigTx] = useState<Transaction>();
@@ -124,12 +126,13 @@ const Bond = () => {
     );
   }
 
-  const onInitResult = ({ accounts, destination, amount, signer }: BondResult) => {
+  const onInitResult = ({ accounts, destination, amount, signer, description }: BondResult) => {
     const destPayload = destination
       ? { type: RewardsDestination.TRANSFERABLE, address: destination }
       : { type: RewardsDestination.RESTAKE };
 
     setSigner(signer);
+    setDescription(description || '');
     setDestination(destPayload);
     setAccounts(accounts);
     setStakeAmount(amount);
@@ -308,6 +311,7 @@ const Bond = () => {
             validators={Object.values(validators)}
             accounts={accounts}
             amounts={bondValues}
+            description={description}
             destination={destination}
             {...explorersProps}
           >
