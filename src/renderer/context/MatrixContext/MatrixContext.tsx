@@ -174,7 +174,7 @@ export const MatrixProvider = ({ children }: PropsWithChildren) => {
 
   const joinRoom = async (roomId: string, extras: SpektrExtras) => {
     try {
-      await matrix.joinRoom(roomId)
+      await matrix.joinRoom(roomId);
       await createMstAccount(roomId, extras);
     } catch (error) {
       console.error(error);
