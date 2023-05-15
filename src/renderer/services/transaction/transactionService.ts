@@ -5,6 +5,7 @@ import { methods as ormlMethods } from '@substrate/txwrapper-orml';
 import {
   BaseTxInfo,
   construct,
+  defineMethod,
   methods,
   OptionsWithMeta,
   TypeRegistry,
@@ -21,6 +22,25 @@ import { toAccountId } from '@renderer/shared/utils/address';
 import { MAX_WEIGHT } from '@renderer/services/transaction/common/constants';
 import { decodeDispatchError } from './common/utils';
 
+type BalancesTransferArgs = Parameters<typeof methods.balances.transfer>[0];
+
+const transferAllowDeath = (
+  args: BalancesTransferArgs,
+  info: BaseTxInfo,
+  options: OptionsWithMeta,
+): UnsignedTransaction =>
+  defineMethod(
+    {
+      method: {
+        args,
+        name: 'transferAllowDeath',
+        pallet: 'balances',
+      },
+      ...info,
+    },
+    options,
+  );
+
 export const useTransaction = (): ITransactionService => {
   const createRegistry = async (api: ApiPromise) => {
     const metadataRpc = await api.rpc.state.getMetadata();
@@ -33,20 +53,30 @@ export const useTransaction = (): ITransactionService => {
 
   const getUnsignedTransaction: Record<
     TransactionType,
-    (args: Transaction, info: BaseTxInfo, options: OptionsWithMeta) => UnsignedTransaction
+    (args: Transaction, info: BaseTxInfo, options: OptionsWithMeta, api: ApiPromise) => UnsignedTransaction
   > = {
-    [TransactionType.TRANSFER]: (transaction, info, options) => {
-      return methods.balances.transfer(
-        {
-          dest: transaction.args.dest,
-          value: transaction.args.value,
-        },
-        info,
-        options,
-      );
+    [TransactionType.TRANSFER]: (transaction, info, options, api) => {
+      // @ts-ignore
+      return api.tx.balances.transferAllowDeath
+        ? transferAllowDeath(
+            {
+              dest: transaction.args.dest,
+              value: transaction.args.value,
+            },
+            info,
+            options,
+          )
+        : methods.balances.transfer(
+            {
+              dest: transaction.args.dest,
+              value: transaction.args.value,
+            },
+            info,
+            options,
+          );
     },
     [TransactionType.ASSET_TRANSFER]: (transaction, info, options) => {
-      return methods.assets.transferKeepAlive(
+      return methods.assets.transfer(
         {
           id: transaction.args.asset,
           target: transaction.args.dest,
@@ -174,9 +204,9 @@ export const useTransaction = (): ITransactionService => {
     [TransactionType.CHILL]: (transaction, info, options) => {
       return methods.staking.chill({}, info, options);
     },
-    [TransactionType.BATCH_ALL]: (transaction, info, options) => {
+    [TransactionType.BATCH_ALL]: (transaction, info, options, api) => {
       const txMethods = transaction.args.transactions.map(
-        (tx: Transaction) => getUnsignedTransaction[tx.type](tx, info, options).method,
+        (tx: Transaction) => getUnsignedTransaction[tx.type](tx, info, options, api).method,
       );
 
       return methods.utility.batchAll(
@@ -193,9 +223,11 @@ export const useTransaction = (): ITransactionService => {
     TransactionType,
     (args: Record<string, any>, api: ApiPromise) => SubmittableExtrinsic<'promise'>
   > = {
-    [TransactionType.TRANSFER]: ({ dest, value }, api) => api.tx.balances.transferKeepAlive(dest, value),
-    [TransactionType.ASSET_TRANSFER]: ({ dest, value, asset }, api) =>
-      api.tx.assets.transferKeepAlive(asset, dest, value),
+    [TransactionType.TRANSFER]: ({ dest, value }, api) =>
+      api.tx.balances.transferAllowDeath
+        ? api.tx.balances.transferAllowDeath(dest, value)
+        : api.tx.balances.transfer(dest, value),
+    [TransactionType.ASSET_TRANSFER]: ({ dest, value, asset }, api) => api.tx.assets.transfer(asset, dest, value),
     [TransactionType.ORML_TRANSFER]: ({ dest, value, asset }, api) => api.tx.currencies.transfer(dest, asset, value),
     [TransactionType.MULTISIG_AS_MULTI]: ({ threshold, otherSignatories, maybeTimepoint, call, maxWeight }, api) =>
       api.tx.multisig.asMulti(threshold, otherSignatories, maybeTimepoint, call, maxWeight),
@@ -232,7 +264,7 @@ export const useTransaction = (): ITransactionService => {
   }> => {
     const { info, options, registry } = await createTxMetadata(transaction.address, api);
 
-    const unsigned = getUnsignedTransaction[transaction.type](transaction, info, options);
+    const unsigned = getUnsignedTransaction[transaction.type](transaction, info, options, api);
     const signingPayloadHex = construct.signingPayload(unsigned, { registry });
 
     return {
@@ -384,26 +416,15 @@ export const useTransaction = (): ITransactionService => {
       decoded = extrinsic;
     }
 
-    if (method === 'transferKeepAlive' && section === 'balances') {
+    const transferMethods = ['transfer', 'transferKeepAlive', 'transferAllowDeath'];
+
+    if (transferMethods.includes(method) && section === 'balances') {
       transaction.type = TransactionType.TRANSFER;
       transaction.args.dest = decoded.args[0].toString();
       transaction.args.value = decoded.args[1].toString();
     }
 
-    if (method === 'transferKeepAlive' && section === 'assets') {
-      transaction.type = TransactionType.ASSET_TRANSFER;
-
-      transaction.args.assetId = decoded.args[0].toString();
-      transaction.args.dest = decoded.args[1].toString();
-      transaction.args.value = decoded.args[2].toString();
-    }
-    if (method === 'transfer' && section === 'balances') {
-      transaction.type = TransactionType.TRANSFER;
-      transaction.args.dest = decoded.args[0].toString();
-      transaction.args.value = decoded.args[1].toString();
-    }
-
-    if (method === 'transfer' && section === 'assets') {
+    if (transferMethods.includes(method) && section === 'assets') {
       transaction.type = TransactionType.ASSET_TRANSFER;
 
       transaction.args.assetId = decoded.args[0].toString();
