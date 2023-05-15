@@ -273,7 +273,7 @@ const Restake = () => {
             onResetCountdown={resetCountdown}
             onResult={(unsignedTx) => onScanResult([unsignedTx])}
           />
-        ))}{' '}
+        ))}
       {activeStep === Step.SIGNING && (
         <Signing
           countdown={countdown}
