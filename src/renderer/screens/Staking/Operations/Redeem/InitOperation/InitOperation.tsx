@@ -210,7 +210,7 @@ const InitOperation = ({
     ) : (
       <>
         <Balance value={transferableRange[0]} precision={asset.precision} />
-        {' - '}
+        &nbsp;{'-'}&nbsp;
         <Balance value={transferableRange[1]} precision={asset.precision} />
       </>
     );

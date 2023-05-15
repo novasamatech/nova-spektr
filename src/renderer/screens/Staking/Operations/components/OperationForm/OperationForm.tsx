@@ -50,6 +50,7 @@ type FormData = {
 };
 
 type Field = {
+  //todo better to add types here to avoid misspelling
   name: string;
   value?: string;
   disabled?: boolean;
