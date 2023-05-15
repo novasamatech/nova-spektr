@@ -2,8 +2,6 @@ const { resolve } = require('path');
 const { writeFile } = require('fs/promises');
 const axios = require('axios');
 
-const tokenNames = require('./assetsNameMap.json');
-
 const SPEKTR_CONFIG_VERSION = process.env.CHAINS_VERSION || 'v1';
 const CONFIG_PATH = 'src/renderer/services/network/common/chains';
 const SPEKTR_CONFIG_URL = `https://raw.githubusercontent.com/nova-wallet/nova-spektr-utils/main/chains/${SPEKTR_CONFIG_VERSION}/`;
