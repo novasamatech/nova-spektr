@@ -219,7 +219,7 @@ export const useTransaction = (): ITransactionService => {
     [TransactionType.BATCH_ALL]: ({ transactions }, api) => {
       const calls = transactions.map((t: Transaction) => getExtrinsic[t.type](t.args, api).method);
 
-      return api.tx.utility.batch(calls);
+      return api.tx.utility.batchAll(calls);
     },
   };
 
