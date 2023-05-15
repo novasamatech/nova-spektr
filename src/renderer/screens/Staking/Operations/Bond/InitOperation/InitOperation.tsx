@@ -64,14 +64,13 @@ const InitOperation = ({ api, chainId, explorers, identifiers, asset, addressPre
   const [destination, setDestination] = useState('');
 
   const [activeBalances, setActiveBalances] = useState<AccountBalance[]>([]);
-  const [balanceRange, setBalanceRange] = useState<[string, string]>(['0', '0']);
 
   const [stakeAccounts, setStakeAccounts] = useState<DropdownOption<Account | MultisigAccount>[]>([]);
   const [activeStakeAccounts, setActiveStakeAccounts] = useState<DropdownResult<Account | MultisigAccount>[]>([]);
 
   const [activeSignatory, setActiveSignatory] = useState<DropdownResult<Account>>();
   const [signatoryOptions, setSignatoryOptions] = useState<DropdownOption<Account>[]>([]);
-
+  const [minBalance, setMinBalance] = useState<string>('0');
   const [transactions, setTransactions] = useState<Transaction[]>([]);
 
   const totalAccounts = getTotalAccounts(dbAccounts, identifiers);
@@ -99,19 +98,13 @@ const InitOperation = ({ api, chainId, explorers, identifiers, asset, addressPre
     if (!activeBalances.length) return;
 
     const stakeableBalance = activeBalances.map(stakeableAmount);
-    const minMaxBalances = stakeableBalance.reduce<[string, string]>(
-      (acc, balance) => {
-        if (!balance) return acc;
+    const minBalance = stakeableBalance.reduce<string>((acc, balance) => {
+      if (!balance) return acc;
 
-        acc[0] = new BN(balance).lt(new BN(acc[0])) ? balance : acc[0];
-        acc[1] = new BN(balance).gt(new BN(acc[1])) ? balance : acc[1];
+      return new BN(balance).lt(new BN(acc)) ? balance : acc;
+    }, stakeableBalance[0]);
 
-        return acc;
-      },
-      [stakeableBalance[0], stakeableBalance[0]],
-    );
-
-    setBalanceRange(minMaxBalances);
+    setMinBalance(minBalance);
   }, [activeBalances]);
 
   useEffect(() => {
@@ -267,7 +260,7 @@ const InitOperation = ({ api, chainId, explorers, identifiers, asset, addressPre
         addressPrefix={addressPrefix}
         fields={formFields}
         asset={asset}
-        balanceRange={balanceRange}
+        balanceRange={['0', minBalance]}
         validateBalance={validateBalance}
         validateFee={validateFee}
         validateDeposit={validateDeposit}

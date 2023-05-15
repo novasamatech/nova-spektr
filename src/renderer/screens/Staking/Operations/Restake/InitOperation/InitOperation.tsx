@@ -57,8 +57,9 @@ const InitOperation = ({ api, chainId, addressPrefix, explorers, staking, identi
   const [amount, setAmount] = useState('');
   const [deposit, setDeposit] = useState('');
 
-  const [stakedRange, setStakedRange] = useState<[string, string]>(['0', '0']);
+  const [minBalance, setMinBalance] = useState<string>('0');
   const [transferableRange, setTransferableRange] = useState<[string, string]>(['0', '0']);
+
   const [transactions, setTransactions] = useState<Transaction[]>([]);
 
   const [restakeAccounts, setRestakeAccounts] = useState<DropdownOption<Account>[]>([]);
@@ -91,20 +92,14 @@ const InitOperation = ({ api, chainId, addressPrefix, explorers, staking, identi
   useEffect(() => {
     if (!Object.keys(staking).length) return;
 
-    const staked = activeRestakeAccounts.map((a) => unlockingAmount(staking[a.id]?.unlocking));
-    const minMaxBalances = staked.reduce<[string, string]>(
-      (acc, balance) => {
-        if (!balance) return acc;
+    const stakedBalances = activeRestakeAccounts.map((a) => unlockingAmount(staking[a.id]?.unlocking));
+    const minStakedBalance = stakedBalances.reduce<string>((acc, balance) => {
+      if (!balance) return acc;
 
-        acc[0] = new BN(balance).lt(new BN(acc[0])) ? balance : acc[0];
-        acc[1] = new BN(balance).gt(new BN(acc[1])) ? balance : acc[1];
+      return new BN(balance).lt(new BN(acc)) ? balance : acc;
+    }, stakedBalances[0]);
 
-        return acc;
-      },
-      [staked[0], staked[0]],
-    );
-
-    setStakedRange(minMaxBalances);
+    setMinBalance(minStakedBalance);
   }, [activeRestakeAccounts.length, staking]);
 
   useEffect(() => {
@@ -163,7 +158,7 @@ const InitOperation = ({ api, chainId, addressPrefix, explorers, staking, identi
   }, [restakeAccounts.length]);
 
   useEffect(() => {
-    if (!stakedRange) return;
+    if (!minBalance) return;
 
     const newTransactions = activeRestakeAccounts.map(({ value }) => {
       return {
@@ -175,7 +170,7 @@ const InitOperation = ({ api, chainId, addressPrefix, explorers, staking, identi
     });
 
     setTransactions(newTransactions);
-  }, [stakedRange, amount]);
+  }, [minBalance, amount]);
 
   const submitRestake = (data: { amount: string; description?: string }) => {
     const selectedAccountIds = activeRestakeAccounts.map((stake) => stake.id);
@@ -264,7 +259,7 @@ const InitOperation = ({ api, chainId, addressPrefix, explorers, staking, identi
         canSubmit={activeRestakeAccounts.length > 0}
         addressPrefix={addressPrefix}
         fields={formFields} //todo add types here
-        balanceRange={stakedRange}
+        balanceRange={['0', minBalance]}
         asset={asset}
         validateBalance={validateBalance}
         validateFee={validateFee}

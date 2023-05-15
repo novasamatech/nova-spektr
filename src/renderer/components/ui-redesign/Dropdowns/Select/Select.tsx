@@ -6,7 +6,7 @@ import { Icon } from '@renderer/components/ui';
 import { DropdownOption, DropdownResult, Position } from '../common/types';
 import CommonInputStyles from '@renderer/components/ui-redesign/Inputs/common/styles';
 import { FootnoteText, LabelText } from '@renderer/components/ui-redesign';
-import { OptionsContainerStyle, OptionStyle, ViewClass } from '../common/constants';
+import { OptionsContainerStyle, OptionStyle, SelectButtonStyle, ViewClass } from '../common/constants';
 
 type Props = {
   className?: string;
@@ -43,10 +43,10 @@ const Select = ({
           <Listbox.Button
             id={id}
             className={cn(
-              open && 'border-active-container-border',
-              !open && !invalid && 'border-filter-border',
-              invalid && 'border-filter-border-negative',
-              'disabled:bg-input-background-disabled disabled:text-text-tertiary enabled:hover:shadow-card-shadow',
+              open && SelectButtonStyle.open,
+              !open && !invalid && SelectButtonStyle.closed,
+              invalid && SelectButtonStyle.invalid,
+              SelectButtonStyle.disabled,
               CommonInputStyles,
               'w-full flex items-center gap-x-2 justify-between pr-2',
             )}
@@ -71,7 +71,7 @@ const Select = ({
           <Transition as={Fragment} leave="transition ease-in duration-100" leaveFrom="opacity-100" leaveTo="opacity-0">
             <Listbox.Options className={cn(OptionsContainerStyle, position !== 'auto' && ViewClass[position])}>
               {options.map(({ id, value, element }) => (
-                <Listbox.Option key={id} className={OptionStyle} value={{ id, value: value || id }}>
+                <Listbox.Option key={id} className={OptionStyle} value={{ id, value }}>
                   {typeof element === 'string' ? <FootnoteText>{element}</FootnoteText> : element}
                 </Listbox.Option>
               ))}

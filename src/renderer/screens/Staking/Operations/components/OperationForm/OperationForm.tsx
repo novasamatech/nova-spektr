@@ -293,7 +293,6 @@ export const OperationForm = ({
               <div className="flex flex-col gap-y-2.5">
                 <InputArea
                   className="w-full"
-                  label={t('transfer.descriptionLabel')}
                   placeholder={t('transfer.descriptionPlaceholder')}
                   invalid={Boolean(error)}
                   disabled={descriptionField.disabled}

@@ -1,7 +1,8 @@
 import { Controller, SubmitHandler, useForm } from 'react-hook-form';
 
-import { BaseModal, Button, InputArea, InputHint } from '@renderer/components/ui';
+import { BaseModal, Button, InputHint } from '@renderer/components/ui-redesign';
 import { useI18n } from '@renderer/context/I18nContext';
+import { InputArea } from '@renderer/components/ui';
 
 type RejectReasonForm = {
   reason: string;
@@ -43,10 +44,10 @@ const RejectReasonModal = ({ isOpen, onClose, onSubmit }: Props) => {
       isOpen={isOpen}
       title={t('operation.rejectReason.title')}
       closeButton
-      contentClass="px-5 pb-4 w-[400px]"
+      panelClass="w-[370px]"
       onClose={closeHandler}
     >
-      <form id="rejectReasonForm" className="flex flex-col my-3 gap-2" onSubmit={handleSubmit(submitHandler)}>
+      <form id="rejectReasonForm" className="flex flex-col mt-2 gap-y-4" onSubmit={handleSubmit(submitHandler)}>
         <Controller
           name="reason"
           control={control}
@@ -54,26 +55,26 @@ const RejectReasonModal = ({ isOpen, onClose, onSubmit }: Props) => {
           render={({ field: { value, onChange }, fieldState: { error } }) => (
             <>
               <InputArea
-                wrapperClass="my-2"
                 placeholder={t('operation.rejectReason.placeholder')}
                 value={value}
                 invalid={!!error}
                 onChange={onChange}
               />
 
-              <InputHint className="mb-4" active={!!error} variant="error">
+              <InputHint className="mt-2" active={!!error} variant="error">
                 {t('operation.rejectReason.errorMessage')}
-              </InputHint>
-              <InputHint className="mb-4" active={!error} variant="hint">
-                {t('operation.rejectReason.inputHint')}
               </InputHint>
             </>
           )}
         />
 
-        <Button className="w-full" pallet="primary" variant="fill" disabled={!isValid} type="submit">
-          {t('operation.rejectReason.continueButton')}
-        </Button>
+        <div className="flex items-center justify-between">
+          <InputHint active>{t('operation.rejectReason.inputHint')}</InputHint>
+
+          <Button disabled={!isValid} type="submit">
+            {t('operation.rejectReason.continueButton')}
+          </Button>
+        </div>
       </form>
     </BaseModal>
   );

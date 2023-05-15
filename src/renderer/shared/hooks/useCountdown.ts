@@ -3,7 +3,7 @@ import { BN, BN_THOUSAND } from '@polkadot/util';
 import { ApiPromise } from '@polkadot/api';
 
 import { DEFAULT_QR_LIFETIME } from '@renderer/shared/utils/constants';
-import { useChains } from '@renderer/services/network/chainsService';
+import { getExpectedBlockTime } from '@renderer/shared/utils/substrate';
 
 /**
  * Start countdown based on Expected block time
@@ -11,8 +11,6 @@ import { useChains } from '@renderer/services/network/chainsService';
  * @return {Array}
  */
 function useCountdown(api?: ApiPromise): [number, () => void] {
-  const { getExpectedBlockTime } = useChains();
-
   const [countdown, setCountdown] = useState(DEFAULT_QR_LIFETIME);
 
   const resetCountdown = useCallback(() => {

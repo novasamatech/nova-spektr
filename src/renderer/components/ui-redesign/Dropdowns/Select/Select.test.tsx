@@ -2,7 +2,7 @@ import { act, render, screen } from '@testing-library/react';
 
 import Select from './Select';
 
-describe('ui/Dropdowns/Dropdown', () => {
+describe('ui-redesign/Dropdowns/Select', () => {
   const options = [
     { id: '0', element: 'label_0', value: '0' },
     { id: '1', element: 'label_1', value: '1' },
@@ -35,22 +35,4 @@ describe('ui/Dropdowns/Dropdown', () => {
 
     expect(spySelected).toBeCalledWith({ id: options[0].id, value: options[0].value });
   });
-
-  // no style for selected option yet
-  // test('should render selected option', async () => {
-  //   const { rerender } = render(<Select {...defaultProps} />);
-  //
-  //   const button = screen.getByRole('button');
-  //   await act(() => button.click());
-  //
-  //   let selectedOptions = screen.getAllByRole('option');
-  //   selectedOptions.forEach((option) => {
-  //     expect(option).not.toHaveClass('bg-shade-5');
-  //   });
-  //
-  //   rerender(<Select {...defaultProps} selectedId={options[1].id} />);
-  //
-  //   selectedOptions = screen.getAllByRole('option');
-  //   expect(selectedOptions[1]).toHaveClass('bg-shade-5');
-  // });
 });
