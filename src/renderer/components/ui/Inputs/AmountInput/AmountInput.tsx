@@ -1,4 +1,5 @@
 import cn from 'classnames';
+import { useCallback } from 'react';
 
 import { Balance, Input } from '@renderer/components/ui';
 import { useI18n } from '@renderer/context/I18nContext';
@@ -18,32 +19,44 @@ type Props = {
 const AmountInput = ({ name, value, asset, balancePlaceholder, balance, placeholder, invalid, onChange }: Props) => {
   const { t } = useI18n();
 
+  const getBalance = useCallback(() => {
+    if (!balance) return;
+
+    const isSameBalance = balance[0] == balance[1] || (balance[0] === '0' && !balance[1]);
+
+    if (Array.isArray(balance) && !isSameBalance) {
+      return (
+        <div className="flex gap-x-1">
+          <Balance className="text-neutral font-semibold" value={balance[0]} precision={asset.precision} />
+          <span>-</span>
+          <Balance
+            className="text-neutral font-semibold"
+            value={balance[1]}
+            precision={asset.precision}
+            symbol={asset.symbol}
+          />
+        </div>
+      );
+    }
+
+    const shownBalance = Array.isArray(balance) && isSameBalance ? balance[0] : (balance as string);
+
+    return (
+      <Balance
+        className="text-neutral font-semibold"
+        value={shownBalance}
+        precision={asset.precision}
+        symbol={asset.symbol}
+      />
+    );
+  }, [balance]);
+
   const label = (
     <div className="flex justify-between">
       <p>{t('general.input.amountLabel')}</p>
       <div className="flex gap-x-1">
         <p className="font-normal">{balancePlaceholder || t('general.input.transferableLabel')}:</p>
-        {Array.isArray(balance) ? (
-          <div className="flex gap-x-1">
-            <Balance className="text-neutral font-semibold" value={balance[0]} precision={asset.precision} />
-            <span>-</span>
-            <Balance
-              className="text-neutral font-semibold"
-              value={balance[1]}
-              precision={asset.precision}
-              symbol={asset.symbol}
-            />
-          </div>
-        ) : (
-          balance && (
-            <Balance
-              className="text-neutral font-semibold"
-              value={balance}
-              precision={asset.precision}
-              symbol={asset.symbol}
-            />
-          )
-        )}
+        {getBalance()}
       </div>
     </div>
   );
