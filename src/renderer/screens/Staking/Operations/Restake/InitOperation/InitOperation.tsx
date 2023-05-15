@@ -113,8 +113,10 @@ const InitOperation = ({ api, staking, chainId, identifiers, asset, onResult }: 
   const dbAccounts = getLiveAccounts({ signingType: SigningType.PARITY_SIGNER });
 
   const [fee, setFee] = useState('');
-  const [stakedRange, setStakedRange] = useState<[string, string]>(['0', '0']);
+
+  const [minBalance, setMinBalance] = useState<string>('0');
   const [transferableRange, setTransferableRange] = useState<[string, string]>(['0', '0']);
+
   const [transactions, setTransactions] = useState<Transaction[]>([]);
 
   const [unstakeAccounts, setUnstakeAccounts] = useState<DropdownOption<Address>[]>([]);
@@ -163,20 +165,14 @@ const InitOperation = ({ api, staking, chainId, identifiers, asset, onResult }: 
   useEffect(() => {
     if (!Object.keys(staking).length) return;
 
-    const staked = activeUnstakeAccounts.map((a) => unlockingAmount(staking[a.value]?.unlocking));
-    const minMaxBalances = staked.reduce<[string, string]>(
-      (acc, balance) => {
-        if (!balance) return acc;
+    const stakedBalances = activeUnstakeAccounts.map((a) => unlockingAmount(staking[a.value]?.unlocking));
+    const minStakedBalance = stakedBalances.reduce<string>((acc, balance) => {
+      if (!balance) return acc;
 
-        acc[0] = new BN(balance).lt(new BN(acc[0])) ? balance : acc[0];
-        acc[1] = new BN(balance).gt(new BN(acc[1])) ? balance : acc[1];
+      return new BN(balance).lt(new BN(acc)) ? balance : acc;
+    }, stakedBalances[0]);
 
-        return acc;
-      },
-      [staked[0], staked[0]],
-    );
-
-    setStakedRange(minMaxBalances);
+    setMinBalance(minStakedBalance);
   }, [activeUnstakeAccounts.length, staking]);
 
   // Set transferable range
@@ -225,7 +221,7 @@ const InitOperation = ({ api, staking, chainId, identifiers, asset, onResult }: 
 
   // Setup transactions
   useEffect(() => {
-    if (!stakedRange) return;
+    if (!minBalance) return;
 
     const newTransactions = activeUnstakeAccounts.map(({ value }) => {
       return {
@@ -237,7 +233,7 @@ const InitOperation = ({ api, staking, chainId, identifiers, asset, onResult }: 
     });
 
     setTransactions(newTransactions);
-  }, [stakedRange, amount]);
+  }, [minBalance, amount]);
 
   useEffect(() => {
     if (!amount || !transactions.length) return;
@@ -306,7 +302,7 @@ const InitOperation = ({ api, staking, chainId, identifiers, asset, onResult }: 
                 balancePlaceholder={t('staking.restake.unstakingPlaceholder')}
                 value={value}
                 name="amount"
-                balance={stakedRange[0] === stakedRange[1] ? stakedRange[0] : stakedRange}
+                balance={['0', minBalance]}
                 asset={asset}
                 invalid={Boolean(error)}
                 onChange={onChange}
