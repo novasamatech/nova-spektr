@@ -4,14 +4,13 @@ import { useEffect, useState } from 'react';
 import { UnsignedTransaction } from '@substrate/txwrapper-polkadot';
 
 import { Block, InfoLink, Button, Plate } from '@renderer/components/ui';
-import { QrTxGenerator } from '@renderer/components/common';
+import { QrTxGenerator, ActiveAddress } from '@renderer/components/common';
 import { secondsToMinutes } from '@renderer/shared/utils/time';
 import { TROUBLESHOOTING_URL, getMetadataPortalUrl } from '@renderer/screens/Signing/common/consts';
 import { useI18n } from '@renderer/context/I18nContext';
 import { Transaction } from '@renderer/domain/transaction';
 import { useTransaction } from '@renderer/services/transaction/transactionService';
 import { ChainId } from '@renderer/domain/shared-kernel';
-import { ActiveAddress } from '@renderer/screens/Transfer/components';
 import { Explorer } from '@renderer/domain/chain';
 import { Account, MultisigAccount, isMultisig } from '@renderer/domain/account';
 

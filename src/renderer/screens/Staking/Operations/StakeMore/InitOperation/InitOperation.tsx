@@ -1,148 +1,82 @@
 import { ApiPromise } from '@polkadot/api';
 import { BN } from '@polkadot/util';
-import cn from 'classnames';
 import { useEffect, useState } from 'react';
-import { Controller, SubmitHandler, useForm } from 'react-hook-form';
 
-import { Fee } from '@renderer/components/common';
-import { AmountInput, Balance, Button, HintList, Icon, Identicon, InputHint, Select } from '@renderer/components/ui';
+import { Fee, ActiveAddress, Deposit } from '@renderer/components/common';
+import { HintList, Select, Block, Plate, Dropdown } from '@renderer/components/ui';
 import { DropdownOption, DropdownResult } from '@renderer/components/ui/Dropdowns/common/types';
 import { useI18n } from '@renderer/context/I18nContext';
 import { Asset } from '@renderer/domain/asset';
-import { Address, ChainId, AccountId } from '@renderer/domain/shared-kernel';
+import { Balance, Balance as AccountBalance } from '@renderer/domain/balance';
+import { ChainId, AccountId, SigningType } from '@renderer/domain/shared-kernel';
 import { Transaction, TransactionType } from '@renderer/domain/transaction';
 import { useAccount } from '@renderer/services/account/accountService';
 import { useBalance } from '@renderer/services/balance/balanceService';
-import { formatAmount, stakeableAmount, transferableAmount } from '@renderer/services/balance/common/utils';
-import { AccountDS, BalanceDS } from '@renderer/services/storage';
-import { useTransaction } from '@renderer/services/transaction/transactionService';
-
-const validateBalance = (balance: BalanceDS | string, amount: string, asset: Asset, fee?: string): boolean => {
-  const stakeableBalance = typeof balance === 'string' ? balance : stakeableAmount(balance);
-
-  let formatedAmount = new BN(formatAmount(amount, asset.precision));
-
-  if (fee) {
-    formatedAmount = formatedAmount.add(new BN(fee));
-  }
-
-  return formatedAmount.lte(new BN(stakeableBalance));
-};
-
-const validateBalanceForFee = (balance: BalanceDS | string, fee: string, amount: string, asset: Asset): boolean => {
-  const transferableBalance = typeof balance === 'string' ? balance : transferableAmount(balance);
-
-  return new BN(fee).lte(new BN(transferableBalance)) && validateBalance(balance, amount, asset, fee);
-};
-const getDropdownPayload = (
-  account: AccountDS,
-  balance?: BalanceDS,
-  asset?: Asset,
-  fee?: string,
-  amount?: string,
-): DropdownOption<Address> => {
-  const address = account.accountId || '';
-  const accountId = account.accountId || '';
-  const balanceExists = !!(balance && asset);
-
-  const balanceIsIncorrect =
-    balanceExists &&
-    amount &&
-    fee &&
-    !(validateBalanceForFee(balance, fee, amount, asset) && validateBalance(balance, amount, asset));
-
-  const element = (
-    <div className="flex justify-between items-center gap-x-2.5">
-      <div className="flex gap-x-[5px] items-center">
-        <Identicon address={address} size={30} background={false} canCopy={false} />
-        <p className="text-left text-neutral text-lg font-semibold">{account.name}</p>
-      </div>
-
-      {balanceExists && (
-        <div className="flex items-center gap-x-1">
-          {balanceIsIncorrect && <Icon size={12} className="text-error" name="warnCutout" />}
-
-          <Balance
-            className={cn(balanceIsIncorrect && 'text-error')}
-            value={stakeableAmount(balance)}
-            precision={asset.precision}
-            symbol={asset.symbol}
-          />
-        </div>
-      )}
-    </div>
-  );
-
-  return {
-    id: accountId,
-    value: address,
-    element,
-  };
-};
-
-type StakeMoreForm = {
-  amount: string;
-};
+import { formatAmount, stakeableAmount } from '@renderer/shared/utils/balance';
+import { nonNullable } from '@renderer/shared/utils/functions';
+import {
+  getStakeAccountOption,
+  getTotalAccounts,
+  validateBalanceForFee,
+  validateStake,
+  getSignatoryOptions,
+  validateBalanceForFeeDeposit,
+} from '../../common/utils';
+import { OperationForm } from '../../components';
+import { toAddress } from '@renderer/shared/utils/address';
+import { Account, isMultisig } from '@renderer/domain/account';
+import { Explorer } from '@renderer/domain/chain';
 
 export type StakeMoreResult = {
-  accounts: AccountDS[];
+  accounts: Account[];
   amount: string;
+  signer?: Account;
+  description?: string;
 };
 
 type Props = {
   api: ApiPromise;
   chainId: ChainId;
+  addressPrefix: number;
+  explorers?: Explorer[];
   identifiers: string[];
   asset: Asset;
   onResult: (stakeMore: StakeMoreResult) => void;
 };
 
-const InitOperation = ({ api, chainId, identifiers, asset, onResult }: Props) => {
+const InitOperation = ({ api, chainId, addressPrefix, explorers, identifiers, asset, onResult }: Props) => {
   const { t } = useI18n();
-  const { getLiveAssetBalances } = useBalance();
+  const { getLiveBalance, getLiveAssetBalances } = useBalance();
   const { getLiveAccounts } = useAccount();
-  const { getTransactionFee } = useTransaction();
 
   const dbAccounts = getLiveAccounts();
 
   const [fee, setFee] = useState('');
+  const [deposit, setDeposit] = useState('');
+  const [amount, setAmount] = useState('');
+
   const [minBalance, setMinBalance] = useState<string>('0');
+
   const [transactions, setTransactions] = useState<Transaction[]>([]);
 
-  const [unstakeAccounts, setUnstakeAccounts] = useState<DropdownOption<Address>[]>([]);
-  const [activeUnstakeAccounts, setActiveUnstakeAccounts] = useState<DropdownResult<Address>[]>([]);
+  const [stakeMoreAccounts, setStakeMoreAccounts] = useState<DropdownOption<Account>[]>([]);
+  const [activeStakeMoreAccounts, setActiveStakeMoreAccounts] = useState<DropdownResult<Account>[]>([]);
 
-  const [activeBalances, setActiveBalances] = useState<BalanceDS[]>([]);
-  const [balancesMap, setBalancesMap] = useState<Map<string, BalanceDS>>(new Map());
+  const [activeSignatory, setActiveSignatory] = useState<DropdownResult<Account>>();
+  const [signatoryOptions, setSignatoryOptions] = useState<DropdownOption<Account>[]>([]);
 
-  const totalAccounts = dbAccounts.filter((account) => {
-    return account.id && identifiers.includes(account.id.toString());
-  });
+  const [activeBalances, setActiveBalances] = useState<Balance[]>([]);
 
-  const accountIds = totalAccounts.reduce<AccountId[]>((acc, account) => {
-    if (account.accountId) {
-      acc.push(account.accountId);
-    }
+  const totalAccounts = getTotalAccounts(dbAccounts, identifiers);
 
-    return acc;
-  }, []);
-
+  const accountIds = totalAccounts.map((account) => account.accountId);
   const balances = getLiveAssetBalances(accountIds, chainId, asset.assetId.toString());
+  const signerBalance = getLiveBalance(activeSignatory?.value.accountId || '0x0', chainId, asset.assetId.toString());
 
-  const {
-    handleSubmit,
-    control,
-    watch,
-    trigger,
-    formState: { isValid },
-  } = useForm<StakeMoreForm>({
-    mode: 'onChange',
-    defaultValues: { amount: '' },
-  });
+  const firstAccount = activeStakeMoreAccounts[0]?.value;
+  const accountIsMultisig = isMultisig(firstAccount);
+  const formFields = accountIsMultisig ? [{ name: 'amount' }, { name: 'description' }] : [{ name: 'amount' }];
 
-  const amount = watch('amount');
-
-  // Set balances
   useEffect(() => {
     if (!activeBalances.length) return;
 
@@ -157,45 +91,52 @@ const InitOperation = ({ api, chainId, identifiers, asset, onResult }: Props) =>
   }, [activeBalances]);
 
   useEffect(() => {
-    const newBalancesMap = new Map(balances.map((balance) => [balance.accountId, balance]));
-    const newActiveBalances = activeUnstakeAccounts.map((a) => newBalancesMap.get(a.id as AccountId)) as BalanceDS[];
+    const balancesMap = new Map(balances.map((balance) => [balance.accountId, balance]));
+    const newActiveBalances = activeStakeMoreAccounts
+      .map((a) => balancesMap.get(a.id as AccountId))
+      .filter(nonNullable) as AccountBalance[];
 
-    setBalancesMap(newBalancesMap);
     setActiveBalances(newActiveBalances);
-  }, [activeUnstakeAccounts.length, balances]);
+  }, [activeStakeMoreAccounts.length, balances]);
 
-  useEffect(() => {
-    amount && trigger('amount');
-  }, [activeBalances]);
-
-  // Init accounts
   useEffect(() => {
     const formattedAccounts = totalAccounts.map((account) => {
-      const matchBalance = balancesMap.get(account.accountId || '0x');
+      const balance = activeBalances.find((b) => b.accountId === account.accountId);
 
-      return getDropdownPayload(account, matchBalance, asset, fee, amount);
+      return getStakeAccountOption(account, { balance, asset, fee, addressPrefix, amount });
     });
 
-    setUnstakeAccounts(formattedAccounts);
-  }, [totalAccounts.length, amount, fee, balancesMap]);
+    setStakeMoreAccounts(formattedAccounts);
+  }, [totalAccounts.length, amount, fee, activeBalances]);
 
-  // Init active unstake accounts
   useEffect(() => {
-    if (unstakeAccounts.length === 0) return;
+    if (!accountIsMultisig) return;
 
-    const activeAccounts = unstakeAccounts.map(({ id, value }) => ({ id, value }));
-    setActiveUnstakeAccounts(activeAccounts);
-  }, [unstakeAccounts.length]);
+    const signatories = firstAccount.signatories.map((s) => s.accountId);
+    const signers = dbAccounts.filter((a) => signatories.includes(a.accountId));
+    const options = getSignatoryOptions(signers, addressPrefix);
 
-  // Setup transactions
+    if (options.length === 0) return;
+
+    setSignatoryOptions(options);
+    setActiveSignatory({ id: options[0].id, value: options[0].value });
+  }, [firstAccount, accountIsMultisig, dbAccounts]);
+
+  useEffect(() => {
+    if (stakeMoreAccounts.length === 0) return;
+
+    const activeAccounts = stakeMoreAccounts.map(({ id, value }) => ({ id, value }));
+    setActiveStakeMoreAccounts(activeAccounts);
+  }, [stakeMoreAccounts.length]);
+
   useEffect(() => {
     if (!minBalance) return;
 
-    const newTransactions = activeUnstakeAccounts.map(({ value }) => {
+    const newTransactions = activeStakeMoreAccounts.map(({ id }) => {
       return {
         chainId,
         type: TransactionType.STAKE_MORE,
-        address: value,
+        address: toAddress(id, { prefix: addressPrefix }),
         args: { maxAdditional: formatAmount(amount, asset.precision) },
       };
     });
@@ -203,99 +144,127 @@ const InitOperation = ({ api, chainId, identifiers, asset, onResult }: Props) =>
     setTransactions(newTransactions);
   }, [minBalance, amount]);
 
-  useEffect(() => {
-    if (!amount || !transactions.length) return;
-
-    getTransactionFee(transactions[0], api).then(setFee);
-  }, [amount]);
-
-  const submitStakeMore: SubmitHandler<StakeMoreForm> = ({ amount }) => {
-    const selectedAddresses = activeUnstakeAccounts.map((stake) => stake.id);
-
-    const accounts = totalAccounts.filter(
-      (account) => account.accountId && selectedAddresses.includes(account.accountId),
-    );
+  const submitStakeMore = (data: { amount: string; description?: string }) => {
+    const selectedAccountIds = activeStakeMoreAccounts.map((stake) => stake.id);
+    const accounts = totalAccounts.filter((account) => selectedAccountIds.includes(account.accountId));
 
     onResult({
-      amount: formatAmount(amount, asset.precision),
       accounts,
+      amount: formatAmount(data.amount, asset.precision),
+      ...(accountIsMultisig && {
+        description: data.description,
+        signer: activeSignatory?.value,
+      }),
     });
   };
 
+  const validateBalance = (amount: string): boolean => {
+    return activeBalances.every((b) => validateStake(b, amount, asset.precision));
+  };
+
+  const validateFee = (): boolean => {
+    const feeIsValid = activeBalances.every((b) => validateBalanceForFee(b, fee));
+    const balanceIsValid = activeBalances.every((b) => validateStake(b, amount, asset.precision, fee));
+
+    return feeIsValid && balanceIsValid;
+  };
+
+  const validateDeposit = (): boolean => {
+    if (!accountIsMultisig) return true;
+    if (!signerBalance) return false;
+
+    return validateBalanceForFeeDeposit(signerBalance, deposit, fee);
+  };
+
   return (
-    <div className="w-[600px] flex flex-col items-center mx-auto rounded-2lg bg-shade-2 p-5 ">
-      <div className="w-full p-5 rounded-2lg bg-white shadow-surface">
-        <Select
-          weight="lg"
-          placeholder={t('staking.bond.selectStakeAccountLabel')}
-          summary={t('staking.bond.selectStakeAccountSummary')}
-          activeIds={activeUnstakeAccounts.map((acc) => acc.id)}
-          options={unstakeAccounts}
-          onChange={setActiveUnstakeAccounts}
-        />
-      </div>
+    <Plate as="section" className="w-[600px] flex flex-col items-center mx-auto gap-y-2.5">
+      <Block className="flex flex-col gap-y-2 p-5">
+        {stakeMoreAccounts.length > 1 ? (
+          <Select
+            weight="lg"
+            placeholder={t('staking.bond.selectStakeAccountLabel')}
+            summary={t('staking.bond.selectStakeAccountSummary')}
+            activeIds={activeStakeMoreAccounts.map((acc) => acc.id)}
+            options={stakeMoreAccounts}
+            onChange={setActiveStakeMoreAccounts}
+          />
+        ) : (
+          <ActiveAddress
+            address={firstAccount?.accountId}
+            accountName={firstAccount?.name}
+            signingType={firstAccount?.signingType}
+            explorers={explorers}
+            addressPrefix={addressPrefix}
+          />
+        )}
 
-      <form
-        id="initStakeMoreForm"
-        className="flex flex-col gap-y-5 p-5 w-full rounded-2lg bg-white mt-2.5 mb-5 shadow-surface"
-        onSubmit={handleSubmit(submitStakeMore)}
+        {accountIsMultisig &&
+          (signatoryOptions.length > 1 ? (
+            <Dropdown
+              weight="lg"
+              placeholder={t('general.input.signerLabel')}
+              activeId={activeSignatory?.id}
+              options={signatoryOptions}
+              onChange={setActiveSignatory}
+            />
+          ) : (
+            <ActiveAddress
+              address={signatoryOptions[0]?.value.accountId}
+              accountName={signatoryOptions[0]?.value.name}
+              signingType={SigningType.PARITY_SIGNER}
+              explorers={explorers}
+              addressPrefix={addressPrefix}
+            />
+          ))}
+      </Block>
+
+      <OperationForm
+        chainId={chainId}
+        canSubmit={activeStakeMoreAccounts.length > 0}
+        addressPrefix={addressPrefix}
+        fields={formFields} //todo better to provide some types here
+        asset={asset}
+        balanceRange={['0', minBalance]}
+        validateBalance={validateBalance}
+        validateFee={validateFee}
+        validateDeposit={validateDeposit}
+        onSubmit={submitStakeMore}
+        onFormChange={({ amount }) => {
+          setAmount(amount);
+        }}
       >
-        <Controller
-          name="amount"
-          control={control}
-          rules={{
-            required: true,
-            validate: {
-              notZero: (v) => Number(v) > 0,
-              insufficientBalance: (amount) => activeBalances.every((b) => validateBalance(b || '0', amount, asset)),
-              insufficientBalanceForFee: (amount) =>
-                activeBalances.every((b) => validateBalanceForFee(b, fee, amount, asset)),
-            },
-          }}
-          render={({ field: { onChange, value }, fieldState: { error } }) => (
-            <>
-              <AmountInput
-                placeholder={t('staking.unstake.amountPlaceholder')}
-                balancePlaceholder={t('staking.stakeMore.availablePlaceholder')}
-                value={value}
-                name="amount"
-                balance={['0', minBalance]}
-                asset={asset}
-                invalid={Boolean(error)}
-                onChange={onChange}
-              />
+        <div className="grid grid-flow-row grid-cols-2 items-center gap-y-5">
+          <p className="uppercase text-neutral-variant text-2xs">
+            {t('staking.unstake.networkFee', { count: activeStakeMoreAccounts.length })}
+          </p>
 
-              <InputHint active={error?.type === 'insufficientBalance'} variant="error">
-                {t('staking.notEnoughBalanceError')}
-              </InputHint>
-              <InputHint active={error?.type === 'insufficientBalanceForFee'} variant="error">
-                {t('staking.notEnoughBalanceForFeeError')}
-              </InputHint>
-              <InputHint active={error?.type === 'required'} variant="error">
-                {t('staking.requiredAmountError')}
-              </InputHint>
-              <InputHint active={error?.type === 'notZero'} variant="error">
-                {t('staking.requiredAmountError')}
-              </InputHint>
+          <Fee
+            className="text-neutral justify-self-end text-2xs font-semibold"
+            api={api}
+            asset={asset}
+            transaction={transactions[0]}
+            onFeeChange={setFee}
+          />
+
+          {accountIsMultisig && (
+            <>
+              <p className="uppercase text-neutral-variant text-2xs">{t('transfer.networkDeposit')}</p>
+              <Deposit
+                className="text-neutral justify-self-end text-2xs font-semibold"
+                api={api}
+                asset={asset}
+                threshold={firstAccount.threshold}
+                onDepositChange={setDeposit}
+              />
             </>
           )}
-        />
-
-        <div className="flex justify-between items-center uppercase text-neutral-variant text-2xs">
-          <p>{t('staking.unstake.networkFee', { count: activeUnstakeAccounts.length })}</p>
-
-          <Fee className="text-neutral font-semibold" api={api} asset={asset} transaction={transactions[0]} />
         </div>
 
         <HintList>
           <HintList.Item>{t('staking.stakeMore.eraHint')}</HintList.Item>
         </HintList>
-      </form>
-
-      <Button type="submit" form="initStakeMoreForm" variant="fill" pallet="primary" weight="lg" disabled={!isValid}>
-        {t('staking.bond.continueButton')}
-      </Button>
-    </div>
+      </OperationForm>
+    </Plate>
   );
 };
 

@@ -1,10 +1,20 @@
 import { BN, BN_TEN, BN_ZERO } from '@polkadot/util';
 import BigNumber from 'bignumber.js';
 
-import { Balance } from '@renderer/domain/balance';
+import { Balance, LockTypes } from '@renderer/domain/balance';
 import { Unlocking } from '@renderer/domain/stake';
-import { Decimal, LockTypes, Suffix, ZERO_BALANCE } from '@renderer/services/balance/common/constants';
-import { FormattedBalance } from './types';
+import { ZERO_BALANCE } from '@renderer/services/balance/common/constants';
+
+const enum Suffix {
+  MILLIONS = 'M',
+  BILLIONS = 'B',
+  TRILLIONS = 'T',
+}
+
+const enum Decimal {
+  SMALL_NUMBER = 5,
+  BIG_NUMBER = 2,
+}
 
 export const formatAmount = (amount: string, precision: number): string => {
   if (!amount) return ZERO_BALANCE;
@@ -25,6 +35,11 @@ export const formatAmount = (amount: string, precision: number): string => {
   return new BN(amount.replace(/\D/g, '')).mul(BN_TEN.pow(bnPrecision)).toString();
 };
 
+type FormattedBalance = {
+  value: string;
+  suffix: string;
+  decimalPlaces: number;
+};
 export const formatBalance = (balance = '0', precision = 0): FormattedBalance => {
   const BNWithConfig = BigNumber.clone();
   BNWithConfig.config({
@@ -81,14 +96,6 @@ export const lockedAmount = ({ locked = [] }: Balance): string => {
   return bnFrozen.toString();
 };
 
-export const stakedAmount = ({ locked = [] }: Balance): string => {
-  const bnLocks = locked.find((lock) => lock.type === LockTypes.STAKING);
-
-  if (!bnLocks) return ZERO_BALANCE;
-
-  return bnLocks.amount;
-};
-
 export const transferableAmount = (balance?: Balance): string => {
   if (!balance) return ZERO_BALANCE;
 
@@ -99,10 +106,16 @@ export const transferableAmount = (balance?: Balance): string => {
   return bnFree.gt(bnFrozen) ? bnFree.sub(bnFrozen).toString() : ZERO_BALANCE;
 };
 
+const stakedAmount = ({ locked = [] }: Balance): string => {
+  const bnLocks = locked.find((lock) => lock.type === LockTypes.STAKING);
+
+  return bnLocks?.amount ?? ZERO_BALANCE;
+};
+
 export const stakeableAmount = (balance?: Balance): string => {
   if (!balance) return ZERO_BALANCE;
 
-  const bnFree = new BN(balance.free || 0);
+  const bnFree = new BN(balance.free || ZERO_BALANCE);
   const bnStaked = new BN(stakedAmount(balance));
 
   return bnFree.sub(bnStaked).toString();

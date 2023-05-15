@@ -21,25 +21,6 @@ export interface IStakingDataService {
 }
 
 // =====================================================
-// ============ IStakingTxService interface ============
-// =====================================================
-
-export interface IStakingTxService {
-  bondAndNominate: (
-    api: ApiPromise,
-    address: Address,
-    value: string,
-    payee: Payee,
-    targets: Address[],
-  ) => Promise<string>;
-  bondExtra: (api: ApiPromise, address: Address, value: string) => Promise<string>;
-
-  // unbond: () => Promise<void>;
-  // rebond: () => Promise<void>;
-  // withdrawUnbonded: () => Promise<void>;
-}
-
-// =====================================================
 // ============ IRewardsService interface ==============
 // =====================================================
 
