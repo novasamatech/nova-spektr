@@ -322,6 +322,9 @@ export const MatrixProvider = ({ children }: PropsWithChildren) => {
         senderEvent.status = eventStatus;
       }
     }
+    if (payload.description && !tx.cancelDescription) {
+      tx.cancelDescription = payload.description;
+    }
 
     await updateMultisigTx({ ...tx, status: MultisigTxFinalStatus.CANCELLED });
   };
@@ -363,6 +366,9 @@ export const MatrixProvider = ({ children }: PropsWithChildren) => {
 
       tx.callData = payload.callData;
       tx.transaction = transaction;
+    }
+    if (payload.description && !tx.description) {
+      tx.description = payload.description;
     }
 
     await updateMultisigTx(tx);
