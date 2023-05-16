@@ -2,7 +2,7 @@ import { ApiPromise } from '@polkadot/api';
 import { useLiveQuery } from 'dexie-react-hooks';
 
 import { MultisigAccount } from '@renderer/domain/account';
-import { MultisigTxFinalStatus, MultisigTransaction } from '@renderer/domain/transaction';
+import { MultisigTxFinalStatus, MultisigTransaction, MultisigTxInitStatus } from '@renderer/domain/transaction';
 import storage, { MultisigTransactionDS } from '../storage';
 import { QUERY_INTERVAL } from './common/consts';
 import { IMultisigTxService } from './common/types';
@@ -26,12 +26,11 @@ export const useMultisigTx = (): IMultisigTxService => {
 
   const subscribeMultisigAccount = (api: ApiPromise, account: MultisigAccount): (() => void) => {
     const intervalId = setInterval(async () => {
-      const transactions = await getMultisigTxs({ accountId: account.accountId });
+      const transactions = await getMultisigTxs({ accountId: account.accountId, status: MultisigTxInitStatus.SIGNING });
       const pendingTxs = await getPendingMultisigTxs(api, account.accountId);
       const currentBlockNumber = await getCurrentBlockNumber(api);
       const blockTime = getExpectedBlockTime(api);
 
-      console.log('Start to check new pending transactions from blockchain');
       pendingTxs.forEach((pendingTx) => {
         const oldTx = transactions.find(
           (t) =>
@@ -42,7 +41,12 @@ export const useMultisigTx = (): IMultisigTxService => {
         );
 
         if (oldTx) {
-          updateMultisigTx(updateTransactionPayload(oldTx, pendingTx));
+          const updatedTx = updateTransactionPayload(oldTx, pendingTx);
+
+          if (updatedTx) {
+            updateMultisigTx(updatedTx);
+            console.log(`Multisig transaction was update with call hash ${updatedTx.callHash}`);
+          }
         } else {
           const depositor = pendingTx.params.depositor.toHex();
           if (!account.signatories.find((s) => s.accountId == depositor)) return;
@@ -59,8 +63,6 @@ export const useMultisigTx = (): IMultisigTxService => {
           console.log(`New pending multisig transaction was found with call hash ${pendingTx.callHash}`);
         }
       });
-
-      console.log('Start to check established transactions from blockchain');
 
       transactions.forEach((tx) => {
         const hasTransaction = pendingTxs.find((t) => t.callHash.toHex() === tx.callHash);
