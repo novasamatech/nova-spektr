@@ -3,8 +3,8 @@ import cn from 'classnames';
 
 import { Button, Icon } from '@renderer/components/ui';
 import { useI18n } from '@renderer/context/I18nContext';
-import Chain from './Chain';
-import TransactionTitle from './TransactionTitle';
+import Chain from './Chain/Chain';
+import TransactionTitle from './TransactionTitle/TransactionTitle';
 import { useToggle } from '@renderer/shared/hooks';
 import { MultisigAccount } from '@renderer/domain/account';
 import { FootnoteText } from '@renderer/components/ui-redesign';

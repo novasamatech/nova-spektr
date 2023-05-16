@@ -1,5 +1,5 @@
 import cn from 'classnames';
-import { PropsWithChildren, useCallback } from 'react';
+import { useCallback } from 'react';
 
 import { useI18n } from '@renderer/context/I18nContext';
 import { MultisigAccount } from '@renderer/domain/account';
@@ -14,6 +14,8 @@ import { Button, FootnoteText } from '@renderer/components/ui-redesign';
 import ValidatorsModal from '@renderer/screens/Staking/Operations/components/ValidatorsModal/ValidatorsModal';
 import { BalanceNew } from '@renderer/components/common';
 import AddressWithExplorers from '@renderer/components/common/AddressWithExplorers/AddressWithExplorers';
+import DetailWithLabel, { DetailsWithLabelProps } from '@renderer/screens/Operations/components/DetailWithLabel';
+import { AddressStyle, DescriptionBlockStyle, InteractableStyle, LabelStyle } from '../common/constants';
 
 type Props = {
   tx: MultisigTransaction;
@@ -22,34 +24,23 @@ type Props = {
   withAdvanced?: boolean;
 };
 
-const RowStyle = 'flex justify-between items-center w-full';
-const LabelStyle = 'text-text-tertiary';
-const InteractableStyle = 'rounded hover:bg-action-background-hover cursor-pointer py-[3px] px-2';
-const AddressStyle = 'text-footnote text-inherit';
-
-type DetailsWithLabelProps = PropsWithChildren<{ label: string }>;
-export const DetailWithLabel = ({ label, children, className }: DetailsWithLabelProps & { className: string }) => (
-  <div className={RowStyle}>
-    <FootnoteText as="dt" className={LabelStyle}>
-      {label}
-    </FootnoteText>
-    {typeof children === 'string' ? (
-      <FootnoteText as="dd" className={cn(className, 'py-[3px] px-2')}>
-        {children}
-      </FootnoteText>
-    ) : (
-      <dd className={cn('flex items-center gap-1', className)}>{children}</dd>
-    )}
-  </div>
-);
-
 const Details = ({ tx, account, connection, withAdvanced = true }: Props) => {
   const { t } = useI18n();
 
   const [isAdvancedShown, toggleAdvanced] = useToggle();
   const [isValidatorsOpen, toggleValidators] = useToggle();
 
-  const { indexCreated, blockCreated, deposit, depositor, callHash, callData, transaction, description } = tx;
+  const {
+    indexCreated,
+    blockCreated,
+    deposit,
+    depositor,
+    callHash,
+    callData,
+    transaction,
+    description,
+    cancelDescription,
+  } = tx;
 
   const defaultAsset = connection?.assets[0];
   const addressPrefix = connection?.addressPrefix;
@@ -58,7 +49,6 @@ const Details = ({ tx, account, connection, withAdvanced = true }: Props) => {
   const extrinsicLink = getMultisigExtrinsicLink(callHash, indexCreated, blockCreated, explorers);
 
   const valueClass = withAdvanced ? 'text-text-secondary' : 'text-text-primary';
-  // const DetailsRow = (props: DetailsWithLabelProps) => <DetailWithLabel {...props} className={valueClass} />;
   const DetailsRow = useCallback(
     (props: DetailsWithLabelProps) => <DetailWithLabel {...props} className={valueClass} />,
     [valueClass],
@@ -68,12 +58,22 @@ const Details = ({ tx, account, connection, withAdvanced = true }: Props) => {
     <>
       <dl className="flex flex-col gap-y-1 w-full">
         {description && (
-          <div className="rounded bg-block-background pl-3 py-2 flex flex-col gap-x-0.5 mb-2">
+          <div className={DescriptionBlockStyle}>
             <FootnoteText as="dt" className={LabelStyle}>
               {t('operation.details.description')}
             </FootnoteText>
             <FootnoteText as="dd" className={valueClass}>
               {description}
+            </FootnoteText>
+          </div>
+        )}
+        {cancelDescription && (
+          <div className={DescriptionBlockStyle}>
+            <FootnoteText as="dt" className={LabelStyle}>
+              {t('operation.details.rejectReason')}
+            </FootnoteText>
+            <FootnoteText as="dd" className={valueClass}>
+              {cancelDescription}
             </FootnoteText>
           </div>
         )}

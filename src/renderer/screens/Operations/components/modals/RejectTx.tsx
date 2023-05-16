@@ -8,7 +8,7 @@ import { AccountDS, MultisigTransactionDS } from '@renderer/services/storage';
 import { useToggle, useCountdown } from '@renderer/shared/hooks';
 import { MultisigAccount } from '@renderer/domain/account';
 import { ExtendedChain } from '@renderer/services/network/common/types';
-import Chain from '../Chain';
+import Chain from '../Chain/Chain';
 import { Signing } from '../ActionSteps/Signing';
 import { Scanning } from '../ActionSteps/Scanning';
 import { Transaction, TransactionType } from '@renderer/domain/transaction';
@@ -259,6 +259,7 @@ const RejectTx = ({ tx, account, connection }: Props) => {
           unsignedTx={unsignedTx}
           signature={signature}
           rejectReason={rejectReason}
+          isReject
         />
       )}
     </>
