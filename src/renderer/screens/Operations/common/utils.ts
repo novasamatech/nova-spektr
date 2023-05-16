@@ -31,7 +31,7 @@ const TransactionTitles: Record<TransactionType, string> = {
   [TransactionType.DESTINATION]: 'operations.titles.destination',
   [TransactionType.UNSTAKE]: 'operations.titles.unstake',
   // Technical
-  [TransactionType.CHILL]: 'operations.titles.unknown',
+  [TransactionType.CHILL]: 'operations.titles.unstake',
   [TransactionType.BATCH_ALL]: 'operations.titles.unknown',
 };
 
@@ -52,7 +52,7 @@ const TransactionIcons: Record<TransactionType, IconNames> = {
   [TransactionType.DESTINATION]: 'stakingMst',
   [TransactionType.UNSTAKE]: 'stakingMst',
   // Technical
-  [TransactionType.CHILL]: 'unknownMst',
+  [TransactionType.CHILL]: 'stakingMst',
   [TransactionType.BATCH_ALL]: 'unknownMst',
 };
 

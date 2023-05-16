@@ -322,6 +322,9 @@ export const MatrixProvider = ({ children }: PropsWithChildren) => {
         senderEvent.status = eventStatus;
       }
     }
+    if (payload.description && !tx.cancelDescription) {
+      tx.cancelDescription = payload.description;
+    }
 
     await updateMultisigTx({ ...tx, status: MultisigTxFinalStatus.CANCELLED });
   };
@@ -353,6 +356,19 @@ export const MatrixProvider = ({ children }: PropsWithChildren) => {
       if (senderEvent.status !== 'SIGNED') {
         senderEvent.status = eventStatus;
       }
+    }
+    if (payload.callData && !tx.callData) {
+      const { api, addressPrefix } = connectionsRef.current[payload.chainId];
+      const transaction =
+        api &&
+        payload.callData &&
+        decodeCallData(api, toAddress(accountId, { prefix: addressPrefix }), payload.callData);
+
+      tx.callData = payload.callData;
+      tx.transaction = transaction;
+    }
+    if (payload.description && !tx.description) {
+      tx.description = payload.description;
     }
 
     await updateMultisigTx(tx);
