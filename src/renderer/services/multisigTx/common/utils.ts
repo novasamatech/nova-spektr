@@ -27,7 +27,7 @@ export const getPendingMultisigTxs = async (
 export const updateTransactionPayload = (
   transaction: MultisigTransaction,
   pendingTransaction: PendingMultisigTransaction,
-): MultisigTransaction => {
+): MultisigTransaction | undefined => {
   const { events } = transaction;
   const { when, deposit, depositor } = pendingTransaction.params;
 
@@ -54,10 +54,23 @@ export const updateTransactionPayload = (
     return acc;
   }, []);
 
+  const blockCreated = when.height.toNumber();
+  const indexCreated = when.index.toNumber();
+
+  if (
+    newApprovals.length === 0 &&
+    transaction.blockCreated === blockCreated &&
+    transaction.indexCreated === indexCreated &&
+    transaction.deposit === deposit.toString() &&
+    transaction.depositor === depositor.toHex()
+  ) {
+    return;
+  }
+
   return {
     ...transaction,
-    blockCreated: when.height.toNumber(),
-    indexCreated: when.index.toNumber(),
+    blockCreated,
+    indexCreated,
     deposit: deposit.toString(),
     depositor: depositor.toHex(),
     events: [...oldEvents, ...newApprovals],
