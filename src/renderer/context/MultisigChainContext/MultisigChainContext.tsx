@@ -8,6 +8,7 @@ import { useMultisigTx } from '@renderer/services/multisigTx/multisigTxService';
 import { useAccount } from '@renderer/services/account/accountService';
 import { MultisigAccount } from '@renderer/domain/account';
 import { MultisigTxFinalStatus, SigningStatus } from '@renderer/domain/transaction';
+import { toAddress } from '@renderer/shared/utils/address';
 
 type MultisigChainContextProps = {};
 
@@ -50,21 +51,24 @@ export const MultisigChainProvider = ({ children }: PropsWithChildren) => {
         status: resultEventStatus,
         accountId: event.data[0].toHex(),
         multisigOutcome: resultTransactionStatus,
+        dateCreated: Date.now(),
       });
     }
 
-    updateMultisigTx({
+    await updateMultisigTx({
       ...lastTx,
       events: newEvents,
       status: resultTransactionStatus,
     });
+
+    console.log(`Transaction ${lastTx.id} (${lastTx.callHash}) was updated`);
   };
 
   useEffect(() => {
     const unsubscribeMultisigs: (() => void)[] = [];
     const unsubscribeEvents: UnsubscribePromise[] = [];
 
-    Object.values(connections).forEach(({ api }) => {
+    Object.values(connections).forEach(({ api, addressPrefix }) => {
       if (!api?.query.multisig) return;
 
       accounts.forEach((account) => {
@@ -74,9 +78,12 @@ export const MultisigChainProvider = ({ children }: PropsWithChildren) => {
         const successParams = {
           section: 'multisig',
           method: 'MultisigExecuted',
-          data: [undefined, undefined, account.accountId],
+          data: [undefined, undefined, toAddress(account.accountId, { prefix: addressPrefix })],
         };
         const unsubscribeSuccessEvent = subscribeEvents(api, successParams, (event: Event) => {
+          console.log(
+            `Receive MultisigExecuted event for ${account.accountId} with call hash ${event.data[3].toHex()}`,
+          );
           eventCallback(
             account as MultisigAccount,
             event,
@@ -90,9 +97,13 @@ export const MultisigChainProvider = ({ children }: PropsWithChildren) => {
         const cancelParams = {
           section: 'multisig',
           method: 'MultisigCancelled',
-          data: [undefined, undefined, account.accountId],
+          data: [undefined, undefined, toAddress(account.accountId, { prefix: addressPrefix })],
         };
         const unsubscribeCancelEvent = subscribeEvents(api, cancelParams, (event: Event) => {
+          console.log(
+            `Receive MultisigCancelled event for ${account.accountId} with call hash ${event.data[3].toHex()}`,
+          );
+
           eventCallback(
             account as MultisigAccount,
             event,
