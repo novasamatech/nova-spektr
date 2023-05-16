@@ -2,25 +2,31 @@ name: Update chains file
 
 on:
   workflow_dispatch:
-    file_path:
-      description: 'Which version of chains.json will be used?'
-      required: true
-      type: string
-      default: 'v5'
+    inputs:
+      file_path:
+        description: 'Which version of chains.json will be used?'
+        required: true
+        type: string
+        default: v1
   schedule:
     - cron: '0 8 * * 1'
 
 jobs:
   update-chains-file:
-    env:
-      CHAINS_VERSION: ${{ github.event.inputs.file_path }}
-      CHAINS_ENV: ${{ github.event.inputs.file_env }}
-
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout
         uses: actions/checkout@v3
+
+      - name: Set spektr config version
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]
+          then
+            echo "CHAINS_VERSION=${{ github.event.inputs.file_path }}" >> $GITHUB_ENV
+          else
+            echo "CHAINS_VERSION=${{ secrets.SPEKTR_CONFIG_VERSION }}" >> $GITHUB_ENV
+          fi
 
       - name: ⚙️ Install dependencies
         uses: ./.github/workflows/install-pnpm
