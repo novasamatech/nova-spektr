@@ -55,11 +55,13 @@ export const MultisigChainProvider = ({ children }: PropsWithChildren) => {
       });
     }
 
-    updateMultisigTx({
+    await updateMultisigTx({
       ...lastTx,
       events: newEvents,
       status: resultTransactionStatus,
     });
+
+    console.log(`Transaction ${lastTx.id} (${lastTx.callHash}) was updated`);
   };
 
   useEffect(() => {
@@ -79,6 +81,9 @@ export const MultisigChainProvider = ({ children }: PropsWithChildren) => {
           data: [undefined, undefined, toAddress(account.accountId, { prefix: addressPrefix })],
         };
         const unsubscribeSuccessEvent = subscribeEvents(api, successParams, (event: Event) => {
+          console.log(
+            `Receive MultisigExecuted event for ${account.accountId} with call hash ${event.data[3].toHex()}`,
+          );
           eventCallback(
             account as MultisigAccount,
             event,
@@ -95,6 +100,10 @@ export const MultisigChainProvider = ({ children }: PropsWithChildren) => {
           data: [undefined, undefined, toAddress(account.accountId, { prefix: addressPrefix })],
         };
         const unsubscribeCancelEvent = subscribeEvents(api, cancelParams, (event: Event) => {
+          console.log(
+            `Receive MultisigCancelled event for ${account.accountId} with call hash ${event.data[3].toHex()}`,
+          );
+
           eventCallback(
             account as MultisigAccount,
             event,

@@ -31,6 +31,7 @@ export const useMultisigTx = (): IMultisigTxService => {
       const currentBlockNumber = await getCurrentBlockNumber(api);
       const blockTime = getExpectedBlockTime(api);
 
+      console.log('Start to check new pending transactions from blockchain');
       pendingTxs.forEach((pendingTx) => {
         const oldTx = transactions.find(
           (t) =>
@@ -55,8 +56,11 @@ export const useMultisigTx = (): IMultisigTxService => {
               blockTime.toNumber(),
             ),
           );
+          console.log(`New pending multisig transaction was found with call hash ${pendingTx.callHash}`);
         }
       });
+
+      console.log('Start to check established transactions from blockchain');
 
       transactions.forEach((tx) => {
         const hasTransaction = pendingTxs.find((t) => t.callHash.toHex() === tx.callHash);
@@ -77,6 +81,7 @@ export const useMultisigTx = (): IMultisigTxService => {
           : tx.status;
 
         updateMultisigTx({ ...tx, status });
+        console.log(`Multisig transaction was update with call hash ${tx.callHash} and status ${status}`);
       });
     }, QUERY_INTERVAL);
 
