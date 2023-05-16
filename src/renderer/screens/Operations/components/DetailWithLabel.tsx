@@ -4,9 +4,9 @@ import cn from 'classnames';
 import { FootnoteText } from '@renderer/components/ui-redesign';
 import { LabelStyle, RowStyle } from '../common/constants';
 
-export type DetailsWithLabelProps = PropsWithChildren<{ label: string }>;
+export type DetailWithLabelProps = PropsWithChildren<{ label: string }>;
 
-const DetailWithLabel = ({ label, children, className }: DetailsWithLabelProps & { className: string }) => (
+const DetailWithLabel = ({ label, children, className }: DetailWithLabelProps & { className: string }) => (
   <div className={RowStyle}>
     <FootnoteText as="dt" className={LabelStyle}>
       {label}

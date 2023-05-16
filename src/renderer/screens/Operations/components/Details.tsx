@@ -14,7 +14,7 @@ import { Button, FootnoteText } from '@renderer/components/ui-redesign';
 import ValidatorsModal from '@renderer/screens/Staking/Operations/components/ValidatorsModal/ValidatorsModal';
 import { BalanceNew } from '@renderer/components/common';
 import AddressWithExplorers from '@renderer/components/common/AddressWithExplorers/AddressWithExplorers';
-import DetailWithLabel, { DetailsWithLabelProps } from '@renderer/screens/Operations/components/DetailWithLabel';
+import DetailWithLabel, { DetailWithLabelProps } from '@renderer/screens/Operations/components/DetailWithLabel';
 import { AddressStyle, DescriptionBlockStyle, InteractableStyle, LabelStyle } from '../common/constants';
 
 type Props = {
@@ -50,7 +50,7 @@ const Details = ({ tx, account, connection, withAdvanced = true }: Props) => {
 
   const valueClass = withAdvanced ? 'text-text-secondary' : 'text-text-primary';
   const DetailsRow = useCallback(
-    (props: DetailsWithLabelProps) => <DetailWithLabel {...props} className={valueClass} />,
+    (props: DetailWithLabelProps) => <DetailWithLabel {...props} className={valueClass} />,
     [valueClass],
   );
 
