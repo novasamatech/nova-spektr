@@ -81,7 +81,7 @@ export const useMultisigTx = (): IMultisigTxService => {
           : tx.status;
 
         updateMultisigTx({ ...tx, status });
-        console.log(`Multisig transaction was update with call hash ${tx.callHash} and status ${status}`);
+        console.log(`Multisig transaction was updated with call hash ${tx.callHash} and status ${status}`);
       });
     }, QUERY_INTERVAL);
 
