@@ -70,7 +70,7 @@ const Details = ({ tx, account, connection, withAdvanced = true }: Props) => {
         {description && (
           <div className="rounded bg-block-background pl-3 py-2 flex flex-col gap-x-0.5 mb-2">
             <FootnoteText as="dt" className={LabelStyle}>
-              {t('operation.details.multisigWallet')}
+              {t('operation.details.description')}
             </FootnoteText>
             <FootnoteText as="dd" className={valueClass}>
               {description}
