@@ -33,7 +33,7 @@ type Props = {
   onResult: (unsigned: UnsignedTransaction[]) => void;
 };
 
-export const Scanning = ({
+export const MultiScanning = ({
   api,
   chainId,
   accounts,
@@ -58,8 +58,8 @@ export const Scanning = ({
         const { payload, unsigned } = await createPayload(transactions[index], api);
 
         return {
-          signPayload: createSignPayload(address, Command.Transaction, payload, chainId),
           unsigned,
+          signPayload: createSignPayload(address, Command.Transaction, payload, chainId),
           transactionData: transactions[index],
         };
       })();
@@ -91,7 +91,7 @@ export const Scanning = ({
 
   return (
     <div className="overflow-y-auto flex-1">
-      <Plate as="section" className="flex flex-col items-center mx-auto w-[500px]">
+      <Plate as="section" className="flex flex-col items-center mx-auto w-[600px]">
         <Block className="flex flex-col items-center gap-y-2.5 p-5">
           <div className="text-neutral-variant text-base font-semibold">{t('signing.scanQrTitle')}</div>
           {!bulkTransactions && <div className="w-[220px] h-[220px] rounded-2lg bg-shade-20 animate-pulse" />}

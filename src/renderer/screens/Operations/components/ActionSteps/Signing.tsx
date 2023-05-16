@@ -7,7 +7,7 @@ import { Button } from '@renderer/components/ui';
 import ParitySignerSignatureReader from '@renderer/screens/Signing/ParitySignerSignatureReader/ParitySignerSignatureReader';
 import { ValidationErrors } from '@renderer/shared/utils/validation';
 import { toAccountId } from '@renderer/shared/utils/address';
-import { transferableAmount } from '@renderer/services/balance/common/utils';
+import { transferableAmount } from '@renderer/shared/utils/balance';
 import { Transaction } from '@renderer/domain/transaction';
 import { useBalance } from '@renderer/services/balance/balanceService';
 import { ChainId, HexString } from '@renderer/domain/shared-kernel';

@@ -11,8 +11,8 @@ import { useNetworkContext } from '@renderer/context/NetworkContext';
 import { InitOperation, Confirmation, Scanning, Signing, Submit } from './components';
 import { useChains } from '@renderer/services/network/chainsService';
 import { Transaction } from '@renderer/domain/transaction';
-import { useCountdown } from '@renderer/screens/Staking/Operations/hooks/useCountdown';
 import { Account, MultisigAccount } from '@renderer/domain/account';
+import { useCountdown } from '@renderer/shared/hooks';
 
 const enum Step {
   INIT,

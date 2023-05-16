@@ -1,6 +1,6 @@
 import cn from 'classnames';
 
-import { formatBalance } from '@renderer/services/balance/common/utils';
+import { formatBalance } from '@renderer/shared/utils/balance';
 import { Asset } from '@renderer/domain/asset';
 import { useI18n } from '@renderer/context/I18nContext';
 

@@ -1,38 +1,36 @@
 import { ApiPromise } from '@polkadot/api';
-import { BN } from '@polkadot/util';
+import { BN, BN_ZERO } from '@polkadot/util';
 import { useEffect, useState } from 'react';
 import cn from 'classnames';
 
 import { Fee, ActiveAddress, Deposit } from '@renderer/components/common';
-import { Balance, Block, HintList, Plate, Select, Icon, Dropdown } from '@renderer/components/ui';
+import { Select, Block, Balance, Plate, Dropdown, Icon } from '@renderer/components/ui';
 import { DropdownOption, DropdownResult } from '@renderer/components/ui/Dropdowns/common/types';
 import { useI18n } from '@renderer/context/I18nContext';
 import { Asset } from '@renderer/domain/asset';
+import { Balance as AccountBalance } from '@renderer/domain/balance';
 import { ChainId, AccountId, SigningType } from '@renderer/domain/shared-kernel';
 import { Transaction, TransactionType } from '@renderer/domain/transaction';
 import { useAccount } from '@renderer/services/account/accountService';
 import { useBalance } from '@renderer/services/balance/balanceService';
-import { formatAmount, transferableAmount } from '@renderer/shared/utils/balance';
-import { StakingMap } from '@renderer/services/staking/common/types';
-import { UnstakingDuration } from '../../../Overview/components';
+import { redeemableAmount, formatBalance, transferableAmount } from '@renderer/shared/utils/balance';
+import { nonNullable } from '@renderer/shared/utils/functions';
 import {
-  getUnstakeAccountOption,
   getTotalAccounts,
   validateBalanceForFee,
-  validateUnstake,
   getSignatoryOptions,
   validateBalanceForFeeDeposit,
+  getRedeemAccountOption,
 } from '../../common/utils';
-import { nonNullable } from '@renderer/shared/utils/functions';
-import { Balance as AccountBalance } from '@renderer/domain/balance';
-import { OperationForm } from '@renderer/screens/Staking/Operations/components';
-import { isMultisig, Account } from '@renderer/domain/account';
-import { Explorer } from '@renderer/domain/chain';
+import { OperationForm } from '../../components';
 import { toAddress } from '@renderer/shared/utils/address';
+import { Account, isMultisig } from '@renderer/domain/account';
+import { Explorer } from '@renderer/domain/chain';
+import { StakingMap } from '@renderer/services/staking/common/types';
 
-export type UnstakeResult = {
+export type RedeemResult = {
   accounts: Account[];
-  amount: string;
+  amounts: string[];
   signer?: Account;
   description?: string;
 };
@@ -43,12 +41,23 @@ type Props = {
   addressPrefix: number;
   explorers?: Explorer[];
   identifiers: string[];
-  asset: Asset;
+  era?: number;
   staking: StakingMap;
-  onResult: (unstake: UnstakeResult) => void;
+  asset: Asset;
+  onResult: (stakeMore: RedeemResult) => void;
 };
 
-const InitOperation = ({ api, chainId, addressPrefix, explorers, staking, identifiers, asset, onResult }: Props) => {
+const InitOperation = ({
+  api,
+  chainId,
+  addressPrefix,
+  explorers,
+  identifiers,
+  staking,
+  era,
+  asset,
+  onResult,
+}: Props) => {
   const { t } = useI18n();
   const { getLiveBalance, getLiveAssetBalances } = useBalance();
   const { getLiveAccounts } = useAccount();
@@ -57,59 +66,50 @@ const InitOperation = ({ api, chainId, addressPrefix, explorers, staking, identi
 
   const [fee, setFee] = useState('');
   const [deposit, setDeposit] = useState('');
-  const [amount, setAmount] = useState('');
+  const [redeemAmounts, setRedeemAmounts] = useState<string[]>([]);
 
-  const [minBalance, setMinBalance] = useState<string>('0');
   const [transferableRange, setTransferableRange] = useState<[string, string]>(['0', '0']);
-
   const [transactions, setTransactions] = useState<Transaction[]>([]);
 
-  const [unstakeAccounts, setUnstakeAccounts] = useState<DropdownOption<Account>[]>([]);
-  const [activeUnstakeAccounts, setActiveUnstakeAccounts] = useState<DropdownResult<Account>[]>([]);
+  const [redeemAccounts, setRedeemAccounts] = useState<DropdownOption<Account>[]>([]);
+  const [activeRedeemAccounts, setActiveRedeemAccounts] = useState<DropdownResult<Account>[]>([]);
 
   const [activeSignatory, setActiveSignatory] = useState<DropdownResult<Account>>();
   const [signatoryOptions, setSignatoryOptions] = useState<DropdownOption<Account>[]>([]);
+
   const [activeBalances, setActiveBalances] = useState<AccountBalance[]>([]);
 
   const totalAccounts = getTotalAccounts(dbAccounts, identifiers);
 
   const accountIds = totalAccounts.map((account) => account.accountId);
-  const balances = getLiveAssetBalances(accountIds, chainId, asset.assetId.toString());
   const signerBalance = getLiveBalance(activeSignatory?.value.accountId || '0x0', chainId, asset.assetId.toString());
+  const balances = getLiveAssetBalances(accountIds, chainId, asset.assetId.toString());
 
-  const firstAccount = activeUnstakeAccounts[0]?.value;
+  const totalRedeem = redeemAmounts.reduce((acc, amount) => acc.add(new BN(amount)), BN_ZERO).toString();
+
+  const firstAccount = activeRedeemAccounts[0]?.value;
   const accountIsMultisig = isMultisig(firstAccount);
-  const formFields = accountIsMultisig ? [{ name: 'amount' }, { name: 'description' }] : [{ name: 'amount' }];
+  const redeemBalance = formatBalance(totalRedeem, asset.precision);
+  const formFields = accountIsMultisig
+    ? [{ name: 'amount', value: redeemBalance.value, disabled: true }, { name: 'description' }]
+    : [{ name: 'amount', value: redeemBalance.value, disabled: true }];
 
   useEffect(() => {
     const balancesMap = new Map(balances.map((balance) => [balance.accountId, balance]));
-    const newActiveBalances = activeUnstakeAccounts
+    const newActiveBalances = activeRedeemAccounts
       .map((a) => balancesMap.get(a.id as AccountId))
       .filter(nonNullable) as AccountBalance[];
 
     setActiveBalances(newActiveBalances);
-  }, [activeUnstakeAccounts.length, balances]);
-
-  useEffect(() => {
-    if (!Object.keys(staking).length) return;
-
-    const stakedBalances = activeUnstakeAccounts.map((a) => staking[a.id]?.active || '0');
-    const minStakedBalance = stakedBalances.reduce<string>((acc, balance) => {
-      if (!balance) return acc;
-
-      return new BN(balance).lt(new BN(acc)) ? balance : acc;
-    }, stakedBalances[0]);
-
-    setMinBalance(minStakedBalance);
-  }, [activeUnstakeAccounts.length, staking]);
+  }, [activeRedeemAccounts.length, balances]);
 
   useEffect(() => {
     if (signerBalance) {
       const balance = transferableAmount(signerBalance);
       setTransferableRange([balance, balance]);
-    } else if (activeUnstakeAccounts.length) {
+    } else if (activeRedeemAccounts.length) {
       const balancesMap = new Map(activeBalances.map((b) => [b.accountId, b]));
-      const transferable = activeUnstakeAccounts.map((a) => transferableAmount(balancesMap.get(a.id as AccountId)));
+      const transferable = activeRedeemAccounts.map((a) => transferableAmount(balancesMap.get(a.id as AccountId)));
       const minMaxTransferable = transferable.reduce<[string, string]>(
         (acc, balance) => {
           if (balance) {
@@ -124,41 +124,30 @@ const InitOperation = ({ api, chainId, addressPrefix, explorers, staking, identi
 
       setTransferableRange(minMaxTransferable);
     }
-  }, [activeUnstakeAccounts.length, signerBalance, activeBalances]);
+  }, [activeRedeemAccounts.length, signerBalance, activeBalances]);
 
   useEffect(() => {
     const formattedAccounts = totalAccounts.map((account) => {
-      const balance = activeBalances.find((b) => b.accountId === account.accountId);
       const address = toAddress(account.accountId, { prefix: addressPrefix });
       const stake = staking[address];
 
-      return getUnstakeAccountOption(account, { balance, stake, asset, addressPrefix, fee, amount });
+      return getRedeemAccountOption(account, { asset, addressPrefix, stake, era });
     });
 
-    setUnstakeAccounts(formattedAccounts);
-  }, [totalAccounts.length, staking, amount, fee, activeBalances]);
+    setRedeemAccounts(formattedAccounts);
+  }, [totalAccounts.length, staking, era]);
 
   useEffect(() => {
-    if (unstakeAccounts.length === 0) return;
+    if (!era) return;
 
-    const activeAccounts = unstakeAccounts.map(({ id, value }) => ({ id, value }));
-    setActiveUnstakeAccounts(activeAccounts);
-  }, [unstakeAccounts.length]);
+    const amounts = activeRedeemAccounts.map(({ value }) => {
+      const address = toAddress(value.accountId, { prefix: addressPrefix });
 
-  useEffect(() => {
-    if (!minBalance) return;
-
-    const newTransactions = activeUnstakeAccounts.map(({ value }) => {
-      return {
-        chainId,
-        type: TransactionType.UNSTAKE,
-        address: toAddress(value.accountId, { prefix: addressPrefix }),
-        args: { value: formatAmount(amount, asset.precision) },
-      };
+      return redeemableAmount(staking[address]?.unlocking, era);
     });
 
-    setTransactions(newTransactions);
-  }, [minBalance, amount]);
+    setRedeemAmounts(amounts);
+  }, [activeRedeemAccounts.length, staking, era]);
 
   useEffect(() => {
     if (!accountIsMultisig) return;
@@ -173,22 +162,35 @@ const InitOperation = ({ api, chainId, addressPrefix, explorers, staking, identi
     setActiveSignatory({ id: options[0].id, value: options[0].value });
   }, [firstAccount, accountIsMultisig, dbAccounts]);
 
-  const submitUnstake = (data: { amount: string; description?: string }) => {
-    const selectedAccountIds = activeUnstakeAccounts.map((stake) => stake.id);
-    const accounts = totalAccounts.filter((account) => selectedAccountIds.includes(account.accountId));
+  useEffect(() => {
+    if (redeemAccounts.length === 0) return;
 
+    const activeAccounts = redeemAccounts.map(({ id, value }) => ({ id, value }));
+    setActiveRedeemAccounts(activeAccounts);
+  }, [redeemAccounts.length]);
+
+  useEffect(() => {
+    const newTransactions = activeRedeemAccounts.map(({ value }) => {
+      return {
+        chainId,
+        address: toAddress(value.accountId, { prefix: addressPrefix }),
+        type: TransactionType.REDEEM,
+        args: { numSlashingSpans: 1 },
+      };
+    });
+
+    setTransactions(newTransactions);
+  }, [activeRedeemAccounts.length]);
+
+  const submitRedeem = (data: { description?: string }) => {
     onResult({
-      accounts,
-      amount: formatAmount(data.amount, asset.precision),
+      amounts: redeemAmounts,
+      accounts: activeRedeemAccounts.map((activeOption) => activeOption.value),
       ...(accountIsMultisig && {
         description: data.description,
         signer: activeSignatory?.value,
       }),
     });
-  };
-
-  const validateBalance = (amount: string): boolean => {
-    return activeUnstakeAccounts.every((a) => validateUnstake(staking[a.id] || '0', amount, asset.precision));
   };
 
   const validateFee = (): boolean => {
@@ -222,14 +224,14 @@ const InitOperation = ({ api, chainId, addressPrefix, explorers, staking, identi
   return (
     <Plate as="section" className="w-[600px] flex flex-col items-center mx-auto gap-y-2.5">
       <Block className="flex flex-col gap-y-2 p-5">
-        {unstakeAccounts.length > 1 ? (
+        {redeemAccounts.length > 1 ? (
           <Select
             weight="lg"
             placeholder={t('staking.bond.selectStakeAccountLabel')}
             summary={t('staking.bond.selectStakeAccountSummary')}
-            activeIds={activeUnstakeAccounts.map((acc) => acc.id)}
-            options={unstakeAccounts}
-            onChange={setActiveUnstakeAccounts}
+            activeIds={activeRedeemAccounts.map((acc) => acc.id)}
+            options={redeemAccounts}
+            onChange={setActiveRedeemAccounts}
           />
         ) : (
           <ActiveAddress
@@ -263,21 +265,16 @@ const InitOperation = ({ api, chainId, addressPrefix, explorers, staking, identi
 
       <OperationForm
         chainId={chainId}
-        canSubmit={activeUnstakeAccounts.length > 0}
+        canSubmit={activeRedeemAccounts.length > 0}
         addressPrefix={addressPrefix}
-        fields={formFields} //todo fields prop has string array type. Maybe better to provide some types from form to avoid misspelling
-        balanceRange={['0', minBalance]}
+        fields={formFields}
         asset={asset}
-        validateBalance={validateBalance}
         validateFee={validateFee}
         validateDeposit={validateDeposit}
-        onSubmit={submitUnstake}
-        onFormChange={({ amount }) => {
-          setAmount(amount);
-        }}
+        onSubmit={submitRedeem}
       >
         {(errorType) => {
-          const hasFeeError = errorType === 'insufficientBalanceForFee';
+          const hasFeeError = ['insufficientBalanceForFee', 'insufficientBalanceForDeposit'].includes(errorType);
 
           return (
             <>
@@ -292,7 +289,7 @@ const InitOperation = ({ api, chainId, addressPrefix, explorers, staking, identi
 
               <div className="grid grid-flow-row grid-cols-2 items-center gap-y-5">
                 <p className="uppercase text-neutral-variant text-2xs">
-                  {t('staking.unstake.networkFee', { count: activeUnstakeAccounts.length })}
+                  {t('staking.unstake.networkFee', { count: activeRedeemAccounts.length })}
                 </p>
 
                 <Fee
@@ -302,7 +299,6 @@ const InitOperation = ({ api, chainId, addressPrefix, explorers, staking, identi
                   transaction={transactions[0]}
                   onFeeChange={setFee}
                 />
-
                 {accountIsMultisig && (
                   <>
                     <p className="uppercase text-neutral-variant text-2xs">{t('transfer.networkDeposit')}</p>
@@ -316,16 +312,6 @@ const InitOperation = ({ api, chainId, addressPrefix, explorers, staking, identi
                   </>
                 )}
               </div>
-
-              <HintList>
-                <HintList.Item>
-                  {t('staking.unstake.durationHint')} {'('}
-                  <UnstakingDuration className="ml-1" api={api} />
-                  {')'}
-                </HintList.Item>
-                <HintList.Item>{t('staking.unstake.noRewardsHint')}</HintList.Item>
-                <HintList.Item>{t('staking.unstake.redeemHint')}</HintList.Item>
-              </HintList>
             </>
           );
         }}

@@ -76,36 +76,47 @@ export const MatrixProvider = ({ children }: PropsWithChildren) => {
   };
 
   const onInvite = async (payload: InvitePayload) => {
-    console.info('💛 ===> onInvite');
+    try {
+      console.info('💛 ===> onInvite');
 
-    const { roomId, content } = payload;
-    const { accountId, threshold, signatories, accountName, creatorAccountId } = content.mstAccount;
+      const { roomId, content } = payload;
+      const { accountId, threshold, signatories, accountName, creatorAccountId } = content.mstAccount;
 
-    const mstAccountIsValid = accountId === getMultisigAccountId(signatories, threshold);
-    if (!mstAccountIsValid) return;
+      const mstAccountIsValid = accountId === getMultisigAccountId(signatories, threshold);
+      if (!mstAccountIsValid) return;
 
-    const accounts = await getAccounts();
-    const mstAccount = accounts.find((a) => a.accountId === accountId) as MultisigAccount;
-    const signer = accounts.find((a) => signatories.includes(a.accountId));
+      const accounts = await getAccounts();
+      const mstAccount = accounts.find((a) => a.accountId === accountId) as MultisigAccount;
+      const signer = accounts.find((a) => signatories.includes(a.accountId));
 
-    if (!mstAccount) {
-      await joinRoom(roomId, content);
+      if (!mstAccount) {
+        await joinRoom(roomId, content);
 
-      addNotification({
-        smpRoomId: roomId,
-        multisigAccountId: accountId,
-        multisigAccountName: accountName,
-        signatories,
-        threshold,
-        originatorAccountId: creatorAccountId,
-        read: true,
-        dateCreated: Date.now(),
-        type: MultisigNotificationType.ACCOUNT_INVITED,
-      });
-    } else if (signer) {
-      await changeRoom(roomId, mstAccount, content, signer.accountId);
-    } else {
-      console.warn(`Signer for multisig account ${accountId} not found`);
+        addNotification({
+          smpRoomId: roomId,
+          multisigAccountId: accountId,
+          multisigAccountName: accountName,
+          signatories,
+          threshold,
+          originatorAccountId: creatorAccountId,
+          read: true,
+          dateCreated: Date.now(),
+          type: MultisigNotificationType.ACCOUNT_INVITED,
+        });
+      } else if (signer) {
+        await changeRoom(roomId, mstAccount, content, signer.accountId);
+      } else {
+        console.warn(`Signer for multisig account ${accountId} not found`);
+      }
+    } catch (error) {
+      console.error(
+        'Error processing Multisig invitation',
+        payload.roomId,
+        payload.eventId,
+        payload.roomId,
+        payload.roomName,
+        error,
+      );
     }
   };
 
@@ -117,11 +128,10 @@ export const MatrixProvider = ({ children }: PropsWithChildren) => {
 
       return acc;
     }, {});
-
     const mstSignatories = signatories.map((accountId) => ({
       accountId,
-      address: contactsMap[accountId][0] || toAddress(accountId),
-      name: contactsMap[accountId][1] || toShortAddress(accountId),
+      address: contactsMap[accountId] ? contactsMap[accountId][0] : toAddress(accountId),
+      name: contactsMap[accountId] ? contactsMap[accountId][1] : toShortAddress(accountId),
     }));
 
     const mstAccount = createMultisigAccount({
@@ -167,7 +177,7 @@ export const MatrixProvider = ({ children }: PropsWithChildren) => {
       await matrix.joinRoom(roomId);
       await createMstAccount(roomId, extras);
     } catch (error) {
-      console.warn(error);
+      console.error(error);
     }
   };
 
@@ -275,11 +285,11 @@ export const MatrixProvider = ({ children }: PropsWithChildren) => {
 
   const handleUpdateEvent = async ({ callData }: UpdatePayload, tx: MultisigTransaction): Promise<void> => {
     if (!tx) return;
-
+    console.log(`Start update call data for tx ${tx.callHash}`);
     const api = connectionsRef.current[tx.chainId]?.api;
 
     if (!api || !callData || callData === tx.callData) return;
-
+    console.log(`Updating call data for tx ${tx.callHash}`);
     await updateCallData(api, tx, callData);
   };
 
@@ -288,11 +298,13 @@ export const MatrixProvider = ({ children }: PropsWithChildren) => {
     { accountId, signatories }: MultisigAccount,
     tx?: MultisigTransaction,
   ): Promise<void> => {
+    console.log(`Start processing cancelling for tx ${payload.callHash}`);
+
     const eventStatus = payload.error ? 'ERROR_CANCELLED' : 'CANCELLED';
 
     const newEvent = await createEvent(payload, eventStatus);
-
     if (!tx) {
+      console.log(`Tx ${payload.callHash} not found. Create it`);
       await addMultisigTxToDB(payload, accountId, signatories, newEvent, MultisigTxFinalStatus.CANCELLED);
 
       return;
@@ -312,6 +324,10 @@ export const MatrixProvider = ({ children }: PropsWithChildren) => {
         senderEvent.status = eventStatus;
       }
     }
+    if (payload.description && !tx.cancelDescription) {
+      console.log(`Update cancel description for tx ${payload.callHash}`);
+      tx.cancelDescription = payload.description;
+    }
 
     await updateMultisigTx({ ...tx, status: MultisigTxFinalStatus.CANCELLED });
   };
@@ -321,10 +337,12 @@ export const MatrixProvider = ({ children }: PropsWithChildren) => {
     { accountId, signatories }: MultisigAccount,
     tx?: MultisigTransaction,
   ): Promise<void> => {
+    console.log(`Start processing approval for tx ${payload.callHash}`);
     const eventStatus = payload.error ? 'ERROR_SIGNED' : 'SIGNED';
     const newEvent = await createEvent(payload, eventStatus);
 
     if (!tx) {
+      console.log(`Tx ${payload.callHash} not found. Create it`);
       await addMultisigTxToDB(payload, accountId, signatories, newEvent, MultisigTxInitStatus.SIGNING);
 
       return;
@@ -344,6 +362,21 @@ export const MatrixProvider = ({ children }: PropsWithChildren) => {
         senderEvent.status = eventStatus;
       }
     }
+    if (payload.callData && !tx.callData) {
+      console.log(`Update call data for tx ${payload.callHash}`);
+      const { api, addressPrefix } = connectionsRef.current[payload.chainId];
+      const transaction =
+        api &&
+        payload.callData &&
+        decodeCallData(api, toAddress(accountId, { prefix: addressPrefix }), payload.callData);
+
+      tx.callData = payload.callData;
+      tx.transaction = transaction;
+    }
+    if (payload.description && !tx.description) {
+      console.log(`Update description for tx ${payload.callHash}`);
+      tx.description = payload.description;
+    }
 
     await updateMultisigTx(tx);
   };
@@ -353,10 +386,13 @@ export const MatrixProvider = ({ children }: PropsWithChildren) => {
     { accountId, signatories }: MultisigAccount,
     tx?: MultisigTransaction,
   ): Promise<void> => {
+    console.log(`Start processing final approval for tx ${payload.callHash}`);
+
     const eventStatus = payload.error ? 'ERROR_SIGNED' : 'SIGNED';
     const newEvent = await createEvent(payload, eventStatus);
 
     if (!tx) {
+      console.log(`Tx ${payload.callHash} not found. Create it`);
       await addMultisigTxToDB(payload, accountId, signatories, newEvent, payload.callOutcome);
 
       return;

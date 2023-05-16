@@ -205,6 +205,9 @@ export const useTransaction = (): ITransactionService => {
     ) => api.tx.multisig.approveAsMulti(threshold, otherSignatories, maybeTimepoint, callHash, maxWeight),
     [TransactionType.MULTISIG_CANCEL_AS_MULTI]: ({ threshold, otherSignatories, maybeTimepoint, callHash }, api) =>
       api.tx.multisig.cancelAsMulti(threshold, otherSignatories, maybeTimepoint, callHash),
+    // controller arg removed from bond but changes not released yet
+    // https://github.com/paritytech/substrate/pull/14039
+    // @ts-ignore
     [TransactionType.BOND]: ({ controller, value, payee }, api) => api.tx.staking.bond(controller, value, payee),
     [TransactionType.UNSTAKE]: ({ value }, api) => api.tx.staking.unbond(value),
     [TransactionType.STAKE_MORE]: ({ maxAdditional }, api) => api.tx.staking.bondExtra(maxAdditional),
@@ -216,7 +219,7 @@ export const useTransaction = (): ITransactionService => {
     [TransactionType.BATCH_ALL]: ({ transactions }, api) => {
       const calls = transactions.map((t: Transaction) => getExtrinsic[t.type](t.args, api).method);
 
-      return api.tx.utility.batch(calls);
+      return api.tx.utility.batchAll(calls);
     },
   };
 
@@ -444,6 +447,10 @@ export const useTransaction = (): ITransactionService => {
       transaction.args.value = decoded.args[0].toString();
     }
 
+    if (method === 'chill' && section === 'staking') {
+      transaction.type = TransactionType.CHILL;
+    }
+
     if (method === 'rebond' && section === 'staking') {
       transaction.type = TransactionType.RESTAKE;
       transaction.args.value = decoded.args[0].toString();
@@ -461,6 +468,11 @@ export const useTransaction = (): ITransactionService => {
     if (method === 'bondExtra' && section === 'staking') {
       transaction.type = TransactionType.STAKE_MORE;
       transaction.args.maxAdditional = decoded.args[0].toString();
+    }
+
+    if (method === 'setPayee' && section === 'staking') {
+      transaction.type = TransactionType.DESTINATION;
+      transaction.args.payee = decoded.args[0].toString();
     }
 
     return transaction;
