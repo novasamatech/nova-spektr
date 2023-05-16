@@ -1,11 +1,12 @@
 import { MultisigTransaction, Transaction } from '@renderer/domain/transaction';
 import TransactionAmount from '@renderer/screens/Operations/components/TransactionAmount';
 import { FootnoteText } from '@renderer/components/ui-redesign';
-import Details, { DetailWithLabel } from '@renderer/screens/Operations/components/Details';
+import Details from '@renderer/screens/Operations/components/Details';
 import { Fee } from '@renderer/components/common';
 import { MultisigAccount } from '@renderer/domain/account';
 import { ExtendedChain } from '@renderer/services/network/common/types';
 import { useI18n } from '@renderer/context/I18nContext';
+import DetailWithLabel from '../DetailWithLabel';
 
 const AmountFontStyle = 'font-manrope text-text-primary text-[32px] leading-[36px] font-bold';
 

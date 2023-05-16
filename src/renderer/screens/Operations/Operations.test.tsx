@@ -21,9 +21,9 @@ jest.mock('@renderer/services/multisigTx/multisigTxService', () => ({
   }),
 }));
 
-jest.mock('./components/Chain', () => () => 'Chain');
+jest.mock('./components/Chain/Chain', () => () => 'Chain');
 jest.mock('./components/TransactionAmount', () => () => 'TransactionAmount');
-jest.mock('./components/TransactionTitle', () => () => 'TransactionTitle');
+jest.mock('./components/TransactionTitle/TransactionTitle', () => () => 'TransactionTitle');
 jest.mock('./components/EmptyState/EmptyOperations', () => () => 'EmptyState/EmptyOperations');
 jest.mock('./components/Operation', () => () => 'Operation');
 jest.mock('./components/Filters', () => () => 'Filters');
