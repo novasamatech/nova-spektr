@@ -24,6 +24,7 @@ import { decodeDispatchError } from './common/utils';
 
 type BalancesTransferArgs = Parameters<typeof methods.balances.transfer>[0];
 
+// TODO change to substrate txwrapper method when it'll update
 const transferAllowDeath = (
   args: BalancesTransferArgs,
   info: BaseTxInfo,

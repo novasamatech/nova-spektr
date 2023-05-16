@@ -131,7 +131,7 @@ export const useBalance = (): IBalanceService => {
           assetId: asset.assetId.toString(),
           verified: true,
           free: accountInfo.data.free.toString(),
-          frozen: frozen,
+          frozen,
           reserved: accountInfo.data.reserved.toString(),
         };
 
