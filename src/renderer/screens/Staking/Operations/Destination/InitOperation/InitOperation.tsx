@@ -142,7 +142,13 @@ const InitOperation = ({ api, chainId, explorers, addressPrefix, identifiers, as
   };
 
   const validateFee = (): boolean => {
-    return activeBalances.every((b) => validateBalanceForFee(b, fee));
+    if (accountIsMultisig) {
+      if (!signerBalance) return false;
+
+      return validateBalanceForFee(signerBalance, fee);
+    } else {
+      return activeBalances.every((b) => validateBalanceForFee(b, fee));
+    }
   };
 
   const validateDeposit = (): boolean => {

@@ -163,10 +163,16 @@ const InitOperation = ({ api, chainId, addressPrefix, explorers, identifiers, as
   };
 
   const validateFee = (): boolean => {
-    const feeIsValid = activeBalances.every((b) => validateBalanceForFee(b, fee));
-    const balanceIsValid = activeBalances.every((b) => validateStake(b, amount, asset.precision, fee));
+    if (accountIsMultisig) {
+      if (!signerBalance) return false;
 
-    return feeIsValid && balanceIsValid;
+      return validateBalanceForFee(signerBalance, fee);
+    } else {
+      const feeIsValid = activeBalances.every((b) => validateBalanceForFee(b, fee));
+      const balanceIsValid = activeBalances.every((b) => validateStake(b, amount, asset.precision, fee));
+
+      return feeIsValid && balanceIsValid;
+    }
   };
 
   const validateDeposit = (): boolean => {
