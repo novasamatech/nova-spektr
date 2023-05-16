@@ -285,11 +285,11 @@ export const MatrixProvider = ({ children }: PropsWithChildren) => {
 
   const handleUpdateEvent = async ({ callData }: UpdatePayload, tx: MultisigTransaction): Promise<void> => {
     if (!tx) return;
-
+    console.log(`Start update call data for tx ${tx.callHash}`);
     const api = connectionsRef.current[tx.chainId]?.api;
 
     if (!api || !callData || callData === tx.callData) return;
-
+    console.log(`Updating call data for tx ${tx.callHash}`);
     await updateCallData(api, tx, callData);
   };
 
@@ -298,11 +298,14 @@ export const MatrixProvider = ({ children }: PropsWithChildren) => {
     { accountId, signatories }: MultisigAccount,
     tx?: MultisigTransaction,
   ): Promise<void> => {
+    console.log(`Start processing cancelling for tx ${payload.callHash}`);
+
     const eventStatus = payload.error ? 'ERROR_CANCELLED' : 'CANCELLED';
 
     const newEvent = await createEvent(payload, eventStatus);
 
     if (!tx) {
+      console.log(`Tx ${payload.callHash} not found. Create it`);
       await addMultisigTxToDB(payload, accountId, signatories, newEvent, MultisigTxFinalStatus.CANCELLED);
 
       return;
@@ -323,6 +326,7 @@ export const MatrixProvider = ({ children }: PropsWithChildren) => {
       }
     }
     if (payload.description && !tx.cancelDescription) {
+      console.log(`Update cancel description for tx ${payload.callHash}`);
       tx.cancelDescription = payload.description;
     }
 
@@ -334,10 +338,12 @@ export const MatrixProvider = ({ children }: PropsWithChildren) => {
     { accountId, signatories }: MultisigAccount,
     tx?: MultisigTransaction,
   ): Promise<void> => {
+    console.log(`Start processing approval for tx ${payload.callHash}`);
     const eventStatus = payload.error ? 'ERROR_SIGNED' : 'SIGNED';
     const newEvent = await createEvent(payload, eventStatus);
 
     if (!tx) {
+      console.log(`Tx ${payload.callHash} not found. Create it`);
       await addMultisigTxToDB(payload, accountId, signatories, newEvent, MultisigTxInitStatus.SIGNING);
 
       return;
@@ -358,6 +364,7 @@ export const MatrixProvider = ({ children }: PropsWithChildren) => {
       }
     }
     if (payload.callData && !tx.callData) {
+      console.log(`Update call data for tx ${payload.callHash}`);
       const { api, addressPrefix } = connectionsRef.current[payload.chainId];
       const transaction =
         api &&
@@ -368,6 +375,7 @@ export const MatrixProvider = ({ children }: PropsWithChildren) => {
       tx.transaction = transaction;
     }
     if (payload.description && !tx.description) {
+      console.log(`Update description for tx ${payload.callHash}`);
       tx.description = payload.description;
     }
 
@@ -379,10 +387,13 @@ export const MatrixProvider = ({ children }: PropsWithChildren) => {
     { accountId, signatories }: MultisigAccount,
     tx?: MultisigTransaction,
   ): Promise<void> => {
+    console.log(`Start processing final approval for tx ${payload.callHash}`);
+
     const eventStatus = payload.error ? 'ERROR_SIGNED' : 'SIGNED';
     const newEvent = await createEvent(payload, eventStatus);
 
     if (!tx) {
+      console.log(`Tx ${payload.callHash} not found. Create it`);
       await addMultisigTxToDB(payload, accountId, signatories, newEvent, payload.callOutcome);
 
       return;
