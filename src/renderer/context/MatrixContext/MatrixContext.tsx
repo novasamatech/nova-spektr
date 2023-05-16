@@ -264,6 +264,12 @@ export const MatrixProvider = ({ children }: PropsWithChildren) => {
     const { api, addressPrefix } = connectionsRef.current[payload.chainId];
 
     const dateCreated = api ? await getCreatedDateFromApi(payload.callTimepoint.height, api) : Date.now();
+    if (!api) {
+      console.warn(`No api found for ${payload.chainId} can't decode call data for ${payload.callHash}`);
+    }
+    if (!addressPrefix) {
+      console.warn(`No addressPrefix found for ${payload.chainId} can't decode call data for ${payload.callHash}`);
+    }
     const transaction =
       api && payload.callData && decodeCallData(api, toAddress(accountId, { prefix: addressPrefix }), payload.callData);
 
@@ -309,7 +315,7 @@ export const MatrixProvider = ({ children }: PropsWithChildren) => {
 
       return;
     }
-
+    console.log(`Tx ${payload.callHash} found. Update it`);
     const senderEvent = tx.events.find((e) => e.accountId === payload.senderAccountId);
 
     if (!senderEvent) {
@@ -347,6 +353,7 @@ export const MatrixProvider = ({ children }: PropsWithChildren) => {
 
       return;
     }
+    console.log(`Tx ${payload.callHash} found. Update it`);
 
     const senderEvent = tx.events.find((e) => e.accountId === payload.senderAccountId);
 
@@ -365,6 +372,12 @@ export const MatrixProvider = ({ children }: PropsWithChildren) => {
     if (payload.callData && !tx.callData) {
       console.log(`Update call data for tx ${payload.callHash}`);
       const { api, addressPrefix } = connectionsRef.current[payload.chainId];
+      if (!api) {
+        console.warn(`No api found for ${payload.chainId} can't decode call data for ${payload.callHash}`);
+      }
+      if (!addressPrefix) {
+        console.warn(`No addressPrefix found for ${payload.chainId} can't decode call data for ${payload.callHash}`);
+      }
       const transaction =
         api &&
         payload.callData &&
@@ -397,6 +410,7 @@ export const MatrixProvider = ({ children }: PropsWithChildren) => {
 
       return;
     }
+    console.log(`Tx ${payload.callHash} found. Update it`);
     const senderEvent = tx.events.find((e) => e.accountId === payload.senderAccountId);
 
     if (!senderEvent) {
