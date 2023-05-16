@@ -12,6 +12,7 @@ import TransactionAmount from './TransactionAmount';
 import { MultisigTransactionDS } from '@renderer/services/storage';
 import OperationStatus from './OperationStatus';
 import OperationFullInfo from './OperationFullInfo';
+import { getTransactionAmount } from '@renderer/screens/Operations/common/utils';
 
 type Props = {
   tx: MultisigTransactionDS;
@@ -32,7 +33,7 @@ const Operation = ({ tx, account }: Props) => {
           {format(new Date(dateCreated || 0), 'p', { locale: dateLocale })}
         </FootnoteText>
         <TransactionTitle tx={transaction} description={description} />
-        {(transaction && <TransactionAmount tx={transaction} />) || <span />}
+        {transaction && getTransactionAmount(transaction) ? <TransactionAmount tx={transaction} /> : <span />}
         <Chain chainId={chainId} />
         <OperationStatus status={status} signed={approvals.length} threshold={account?.threshold || 0} />
         <Button pallet="shade" variant="text" onClick={toggleRow}>

@@ -20,12 +20,12 @@ const TransactionTitle = ({ tx, description, withoutIcon }: Props) => {
     <div className="inline-flex gap-x-2 items-center max-w-full">
       {!withoutIcon && (
         <Icon
-          className="p-1.5 box-content rounded-full border border-token-container-border text-icon-default"
+          className="p-1.5 box-content rounded-full border border-token-container-border text-icon-default ml-2"
           name={iconName}
           size={16}
         />
       )}
-      <div className="flex flex-col gap-0.5 justify-center max-w-[133px]">
+      <div className="flex flex-col gap-0.5 justify-center max-w-[150px] pr-2">
         <BodyText>{t(transactionTitle)}</BodyText>
         {description && <FootnoteText className="text-text-tertiary truncate">{description} </FootnoteText>}
       </div>
