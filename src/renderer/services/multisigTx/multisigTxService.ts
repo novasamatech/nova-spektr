@@ -45,7 +45,9 @@ export const useMultisigTx = (): IMultisigTxService => {
 
           if (updatedTx) {
             updateMultisigTx(updatedTx);
-            console.log(`Multisig transaction was update with call hash ${updatedTx.callHash}`);
+            console.log(
+              `Multisig transaction was updated with ${updatedTx.callHash} and timepoint ${updatedTx.blockCreated}-${updatedTx.indexCreated}`,
+            );
           }
         } else {
           const depositor = pendingTx.params.depositor.toHex();
@@ -83,7 +85,9 @@ export const useMultisigTx = (): IMultisigTxService => {
           : tx.status;
 
         updateMultisigTx({ ...tx, status });
-        console.log(`Multisig transaction was updated with call hash ${tx.callHash} and status ${status}`);
+        console.log(
+          `Multisig transaction was updated with call hash ${tx.callHash} and timepoint ${tx.blockCreated}-${tx.indexCreated} and status ${status}`,
+        );
       });
     }, QUERY_INTERVAL);
 

@@ -3,7 +3,7 @@ import { Table } from 'dexie';
 import { Balance } from '@renderer/domain/balance';
 import { Connection, ConnectionType } from '@renderer/domain/connection';
 import { Contact } from '@renderer/domain/contact';
-import { Address, ChainId, AccountId } from '@renderer/domain/shared-kernel';
+import { Address, ChainId, AccountId, CallHash } from '@renderer/domain/shared-kernel';
 import { Wallet } from '@renderer/domain/wallet';
 import { MultisigTransaction } from '@renderer/domain/transaction';
 import { Account, MultisigAccount } from '@renderer/domain/account';
@@ -62,12 +62,24 @@ export interface IContactStorage {
 }
 
 export interface IMultisigTransactionStorage {
-  getMultisigTx: (txId: ID) => Promise<MultisigTransactionDS | undefined>;
+  getMultisigTx: (
+    accountId: AccountId,
+    chainId: ChainId,
+    callHash: CallHash,
+    blockCreated: number,
+    indexCreated: number,
+  ) => Promise<MultisigTransactionDS | undefined>;
   getMultisigTxs: <T extends MultisigTransaction>(where?: Partial<T>) => Promise<MultisigTransactionDS[]>;
   getAccountMultisigTxs: (accountIds: AccountId[]) => Promise<MultisigTransactionDS[]>;
-  addMultisigTx: (tx: MultisigTransaction) => Promise<ID>;
-  updateMultisigTx: (tx: MultisigTransactionDS) => Promise<ID>;
-  deleteMultisigTx: (txId: ID) => Promise<void>;
+  addMultisigTx: (tx: MultisigTransaction) => Promise<void>;
+  updateMultisigTx: (tx: MultisigTransactionDS) => Promise<ID[]>;
+  deleteMultisigTx: (
+    accountId: AccountId,
+    chainId: ChainId,
+    callHash: CallHash,
+    blockCreated: number,
+    indexCreated: number,
+  ) => Promise<void>;
 }
 export interface INotificationStorage {
   getNotifications: <T extends Notification>(where?: Partial<T>) => Promise<NotificationDS[]>;
@@ -104,5 +116,5 @@ export type TContact = Table<Contact, ID>;
 export type TBalance = Table<Balance, ID[]>;
 export type TConnection = Table<Connection, ID>;
 export type TAccount = Table<Account | MultisigAccount, ID>;
-export type TMultisigTransaction = Table<MultisigTransaction, ID>;
+export type TMultisigTransaction = Table<MultisigTransaction, ID[]>;
 export type TNotification = Table<Notification, ID>;
