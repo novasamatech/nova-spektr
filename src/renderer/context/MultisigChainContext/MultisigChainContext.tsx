@@ -84,14 +84,21 @@ export const MultisigChainProvider = ({ children }: PropsWithChildren) => {
         };
         const unsubscribeSuccessEvent = subscribeEvents(api, successParams, (event: Event) => {
           console.log(
-            `Receive MultisigExecuted event for ${account.accountId} with call hash ${event.data[3].toHex()}`,
+            `Receive MultisigExecuted event for ${
+              account.accountId
+            } with call hash ${event.data[3].toHex()} with result ${event.data[4]}`,
           );
+          const multisigResult = event.data[4].toString();
+          let multisigFinalStatus = MultisigTxFinalStatus.EXECUTED;
+          if (multisigResult !== 'Ok' && multisigResult.includes('err')) {
+            multisigFinalStatus = MultisigTxFinalStatus.ERROR;
+          }
           eventCallback(
             account as MultisigAccount,
             event,
             ['PENDING_SIGNED', 'SIGNED'],
             'SIGNED',
-            MultisigTxFinalStatus.EXECUTED,
+            multisigFinalStatus,
           ).catch(console.warn);
         });
         unsubscribeEvents.push(unsubscribeSuccessEvent);
