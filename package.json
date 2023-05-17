@@ -44,7 +44,7 @@
     "lint:i18n-locale": "cross-env I18N=true eslint ./src/shared/locale/ --ext=json --plugin i18n-json",
     "lint:i18n-fix": "cross-env I18N=true pnpm lint:i18n-locale --fix",
     "lint:i18n-tsx": "cross-env I18N=true eslint . --ext=tsx --ignore-pattern=**/*.test.* --ignore-pattern=**/*.stories.* --plugin i18next",
-    "update:chains-file": "node scripts/buildChainsJson.js && node scripts/updateDevChains.js",
+    "update:chains-file": "node scripts/buildChainsJson.js",
     "githook:pre-commit": "cross-env NODE_ENV=production lint-staged && tsc -p tsconfig.json",
     "githook:pre-push": "cross-env pnpm test:coverage",
     "storybook": "start-storybook -p 6006",

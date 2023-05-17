@@ -16,18 +16,18 @@ const CHAINS: Record<string, any> = {
 
 export function useChains(): IChainService {
   const getChainsData = (): Promise<Chain[]> => {
-    return Promise.resolve(CHAINS[process.env.CHAINS_FILE || 'dev']);
+    return Promise.resolve(CHAINS[process.env.CHAINS_FILE || 'chains']);
   };
 
   const getChainById = (chainId: ChainId): Promise<Chain | undefined> => {
-    const chainsData: Chain[] = CHAINS[process.env.CHAINS_FILE || 'dev'];
+    const chainsData: Chain[] = CHAINS[process.env.CHAINS_FILE || 'chains'];
     const chainMatch = chainsData.find((chain) => chain.chainId === chainId);
 
     return Promise.resolve(chainMatch);
   };
 
   const getStakingChainsData = (): Promise<Chain[]> => {
-    const chainsData: Chain[] = CHAINS[process.env.CHAINS_FILE || 'dev'];
+    const chainsData: Chain[] = CHAINS[process.env.CHAINS_FILE || 'chains'];
 
     const stakingChains = chainsData.reduce<Chain[]>((acc, chain) => {
       if (getRelaychainAsset(chain.assets)) {
