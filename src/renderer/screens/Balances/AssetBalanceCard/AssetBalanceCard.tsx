@@ -90,7 +90,11 @@ const AssetBalanceCard = ({ asset, chainId, balance, canMakeActions, onReceiveCl
         )}
         {canMakeActions && (
           <div className="flex gap-x-2 ml-3">
-            <Link to={createLink(Paths.TRANSFER, { chainId, assetId: asset.assetId })} className={IconButtonStyle}>
+            <Link
+              to={createLink(Paths.TRANSFER, { chainId, assetId: asset.assetId })}
+              className={IconButtonStyle}
+              data-testid="transferButton"
+            >
               <Icon name="sendArrow" size={16} className="text-inherit" />
             </Link>
             <IconButton name="receiveArrow" onClick={onReceive} />
