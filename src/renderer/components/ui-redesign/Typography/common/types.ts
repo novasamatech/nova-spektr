@@ -10,7 +10,7 @@ type Props = {
   as: Tags;
   fontWeight: FontWeight;
   align: Align;
-  className: string;
+  className?: string;
 };
 
 export type TypographyProps = PropsWithChildren<Partial<Props>>;
