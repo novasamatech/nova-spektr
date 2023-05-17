@@ -95,7 +95,7 @@ const NetworkBalances = ({
 
   return (
     <li aria-expanded={!isHidden}>
-      <div className="bg-white sticky top-0 z-10">
+      <div className="bg-white sticky top-0 z-[1]">
         <div className={cn('flex items-center justify-between py-1.5 px-2 mb-1 bg-main-app-background')}>
           <div className="flex items-center gap-x-2.5">
             <h2 className="flex items-center gap-x-2">
