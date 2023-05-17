@@ -35,7 +35,7 @@ async function readFileFromLocal(filePath) {
 
 async function updateDevChainsJson() {
   const devChainsConfig = await readFileFromLocal(CONFIG_PATH + '/chains.json');
-  const updatedChainsConfig = await readFileFromLocal(CONFIG_PATH + '/omni-chains_dev.json');
+  const updatedChainsConfig = await readFileFromLocal(CONFIG_PATH + '/chains_dev.json');
   const modifiedData = getUpdatedDevChains(devChainsConfig, updatedChainsConfig);
   await saveNewFile(modifiedData, 'chains.json');
   console.log('chains.json was successfuly updated');

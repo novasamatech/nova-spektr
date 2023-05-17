@@ -2,18 +2,16 @@ import compact from 'lodash/compact';
 import sortBy from 'lodash/sortBy';
 
 import { Chain } from '@renderer/domain/chain';
-import chainsDev from './common/chains/chains.json';
-import chainsOmniProd from './common/chains/omni-chains.json';
-import chainsOmniDev from './common/chains/omni-chains_dev.json';
+import chainsProd from './common/chains/chains.json';
+import chainsDev from './common/chains/chains_dev.json';
 import { ChainLike, IChainService } from './common/types';
 import { isKusama, isPolkadot, isTestnet } from './common/utils';
 import { ChainId } from '@renderer/domain/shared-kernel';
 import { getRelaychainAsset } from '@renderer/shared/utils/assets';
 
 const CHAINS: Record<string, any> = {
-  dev: chainsDev,
-  'omni-dev': chainsOmniDev,
-  'omni-prod': chainsOmniProd,
+  chains: chainsProd,
+  'chains-dev': chainsDev,
 };
 
 export function useChains(): IChainService {
