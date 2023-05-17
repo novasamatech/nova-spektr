@@ -30,50 +30,16 @@ class DexieStorage extends Dexie {
 
   constructor() {
     super('spektr');
-    this.version(15).stores({
+    this.version(16).stores({
       connections: '++id,chainId,type',
       wallets: '++id,isActive,type',
       balances: '[accountId+chainId+assetId],[accountId+chainId]',
       accounts: '++id,isActive,walletId,rootId,signingType',
       contacts: '++id,name,accountId,matrixId',
       multisigTransactions:
-        '++id,[accountId+status],[accountId+callHash],[callHash+status+chainId],[accountId+chainId+callHash+blockCreated+indexCreated],accountId,status,callHash',
+        '[accountId+chainId+callHash+blockCreated+indexCreated],[accountId+status],[accountId+callHash],[callHash+status+chainId],accountId,status,callHash',
       notifications: '++id,type,read',
     });
-
-    this.version(16)
-      .stores({
-        connections: '++id,chainId,type',
-        wallets: '++id,isActive,type',
-        balances: '[accountId+chainId+assetId],[accountId+chainId]',
-        accounts: '++id,isActive,walletId,rootId,signingType',
-        contacts: '++id,name,accountId,matrixId',
-        multisigTransactions: null,
-        multisigTransactionsTemp:
-          '[accountId+chainId+callHash+blockCreated+indexCreated],[accountId+status],[accountId+callHash],[callHash+status+chainId],accountId,status,callHash',
-        notifications: '++id,type,read',
-      })
-      .upgrade(async (transaction) => {
-        const multisigs = await transaction.table('multisigTransactions').toArray();
-        await transaction.table('multisigTransactionsTemp').bulkAdd(multisigs);
-      });
-
-    this.version(17)
-      .stores({
-        connections: '++id,chainId,type',
-        wallets: '++id,isActive,type',
-        balances: '[accountId+chainId+assetId],[accountId+chainId]',
-        accounts: '++id,isActive,walletId,rootId,signingType',
-        contacts: '++id,name,accountId,matrixId',
-        multisigTransactions:
-          '[accountId+chainId+callHash+blockCreated+indexCreated],[accountId+status],[accountId+callHash],[callHash+status+chainId],accountId,status,callHash',
-        multisigTransactionsTemp: null,
-        notifications: '++id,type,read',
-      })
-      .upgrade(async (transaction) => {
-        const multisigs = await transaction.table('multisigTransactionsTemp').toArray();
-        await transaction.table('multisigTransactions').bulkAdd(multisigs);
-      });
 
     this.connections = this.table('connections');
     this.balances = this.table('balances');
@@ -90,10 +56,6 @@ class StorageFactory implements IStorage {
 
   constructor() {
     this.dexieDB = new DexieStorage();
-    this.dexieDB
-      .open()
-      .then(() => console.log('Database is ready'))
-      .catch((error) => console.error('Error starting database:', error));
   }
 
   public connectTo<T extends keyof DataStorage>(name: T): DataStorage[T] | undefined {
