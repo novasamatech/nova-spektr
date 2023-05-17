@@ -33,9 +33,20 @@ type Props = {
   unsignedTx: UnsignedTransaction;
   signature: HexString;
   rejectReason?: string;
+  isReject?: boolean;
 };
 
-export const Submit = ({ api, tx, multisigTx, account, matrixRoomId, unsignedTx, signature, rejectReason }: Props) => {
+export const Submit = ({
+  api,
+  tx,
+  multisigTx,
+  account,
+  matrixRoomId,
+  unsignedTx,
+  signature,
+  rejectReason,
+  isReject,
+}: Props) => {
   const { t } = useI18n();
 
   const { matrix } = useMatrix();
@@ -125,10 +136,10 @@ export const Submit = ({ api, tx, multisigTx, account, matrixRoomId, unsignedTx,
 
   const getResultProps = (): ResultProps => {
     if (inProgress) {
-      return { title: t('operation.inProgress'), variant: 'loading' };
+      return { title: t(isReject ? 'operation.rejectInProgress' : 'operation.inProgress'), variant: 'loading' };
     }
     if (successMessage) {
-      return { title: t('operation.successMessage'), variant: 'success' };
+      return { title: t(isReject ? 'operation.successRejectMessage' : 'operation.successMessage'), variant: 'success' };
     }
     if (errorMessage) {
       return { title: t('operation.feeErrorTitle'), description: errorMessage, variant: 'error' };

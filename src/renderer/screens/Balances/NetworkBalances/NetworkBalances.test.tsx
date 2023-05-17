@@ -51,14 +51,14 @@ describe('screen/Balances/NetworkBalances', () => {
     render(<NetworkBalances chain={testChain} accountIds={[TEST_ACCOUNT_ID]} />);
 
     const balances = screen.getAllByText('AssetBalance');
-    expect(balances).toHaveLength(2);
+    expect(balances).toHaveLength(7);
   });
 
   test('should hide assets', async () => {
     render(<NetworkBalances chain={testChain} accountIds={[TEST_ACCOUNT_ID]} />);
 
     const balancesBefore = screen.getAllByText('AssetBalance');
-    expect(balancesBefore).toHaveLength(2);
+    expect(balancesBefore).toHaveLength(7);
 
     const button = screen.getByRole('button');
     await act(() => button.click());
