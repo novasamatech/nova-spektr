@@ -5,9 +5,12 @@ jest.mock(
   jest.fn().mockImplementation(() => {
     return jest.fn().mockReturnValue({
       version: jest.fn().mockReturnValue({
-        stores: jest.fn(),
+        stores: jest.fn().mockReturnValue({
+          upgrade: jest.fn(),
+        }),
       }),
       table: jest.fn(),
+      open: jest.fn().mockResolvedValue(Promise.resolve()),
     });
   }),
 );
