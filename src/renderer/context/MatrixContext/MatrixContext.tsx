@@ -13,7 +13,7 @@ import Matrix, {
 } from '@renderer/services/matrix';
 import { MultisigAccount, getMultisigAccountId, createMultisigAccount } from '@renderer/domain/account';
 import { useAccount } from '@renderer/services/account/accountService';
-import { toShortAddress, toAddress } from '@renderer/shared/utils/address';
+import { toAddress } from '@renderer/shared/utils/address';
 import { useContact } from '@renderer/services/contact/contactService';
 import { Address, AccountId, SigningType } from '@renderer/domain/shared-kernel';
 import { getCreatedDateFromApi, validateCallData } from '@renderer/shared/utils/substrate';
@@ -131,7 +131,7 @@ export const MatrixProvider = ({ children }: PropsWithChildren) => {
     const mstSignatories = signatories.map((accountId) => ({
       accountId,
       address: contactsMap[accountId] ? contactsMap[accountId][0] : toAddress(accountId),
-      name: contactsMap[accountId] ? contactsMap[accountId][1] : toShortAddress(accountId),
+      name: contactsMap[accountId] ? contactsMap[accountId][1] : undefined,
     }));
 
     const mstAccount = createMultisigAccount({
