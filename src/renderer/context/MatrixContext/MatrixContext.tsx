@@ -77,7 +77,7 @@ export const MatrixProvider = ({ children }: PropsWithChildren) => {
 
   const onInvite = async (payload: InvitePayload) => {
     try {
-      console.info('💛 ===> onInvite');
+      console.info('💛 ===> onInvite', payload);
 
       const { roomId, content } = payload;
       const { accountId, threshold, signatories, accountName, creatorAccountId } = content.mstAccount;
@@ -182,7 +182,7 @@ export const MatrixProvider = ({ children }: PropsWithChildren) => {
   };
 
   const onMultisigEvent = async ({ type, content }: MultisigPayload, extras: SpektrExtras) => {
-    console.info('🚀 === onMultisigEvent - ', type);
+    console.info('🚀 === onMultisigEvent - ', type, '\n Content: ', content);
 
     if (!validateMatrixEvent(content, extras)) return;
 
