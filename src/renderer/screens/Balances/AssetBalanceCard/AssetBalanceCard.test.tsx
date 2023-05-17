@@ -1,7 +1,7 @@
 import { act, render, screen } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 
-import AssetBalance from './AssetBalance';
+import AssetBalanceCard from './AssetBalanceCard';
 import { Chain } from '@renderer/domain/chain';
 import { Asset } from '@renderer/domain/asset';
 import chains from '@renderer/services/network/common/chains/chains.json';
@@ -31,14 +31,14 @@ const defaultProps = {
 
 describe('screen/Balances/AssetBalance', () => {
   test('should render component', () => {
-    render(<AssetBalance {...defaultProps} />);
+    render(<AssetBalanceCard {...defaultProps} />);
 
     const text = screen.getByTestId('balance');
     expect(text).toHaveTextContent('assetBalance.numberDOT');
   });
 
   test('should show expanded row', async () => {
-    render(<AssetBalance {...defaultProps} />);
+    render(<AssetBalanceCard {...defaultProps} />);
 
     const textHidden = screen.queryByTestId('transferable');
     expect(textHidden).not.toBeInTheDocument();
@@ -51,14 +51,14 @@ describe('screen/Balances/AssetBalance', () => {
   });
 
   test('should hide action buttons', () => {
-    render(<AssetBalance {...defaultProps} />);
+    render(<AssetBalanceCard {...defaultProps} />);
 
     const buttons = screen.getAllByRole('button');
     expect(buttons.length).toEqual(1);
   });
 
   test('should init transfer', () => {
-    render(<AssetBalance {...defaultProps} canMakeActions />, { wrapper: MemoryRouter });
+    render(<AssetBalanceCard {...defaultProps} canMakeActions />, { wrapper: MemoryRouter });
 
     const transferIcon = screen.getByTestId('arrowUp-svg');
     expect(transferIcon).toBeInTheDocument();
@@ -67,7 +67,9 @@ describe('screen/Balances/AssetBalance', () => {
   test('should init receive', () => {
     const spyReceive = jest.fn();
 
-    render(<AssetBalance {...defaultProps} canMakeActions onReceiveClick={spyReceive} />, { wrapper: MemoryRouter });
+    render(<AssetBalanceCard {...defaultProps} canMakeActions onReceiveClick={spyReceive} />, {
+      wrapper: MemoryRouter,
+    });
 
     const buttons = screen.getAllByRole('button');
     buttons[1].click();
@@ -77,7 +79,7 @@ describe('screen/Balances/AssetBalance', () => {
 
   test('should show label for unverified balance', () => {
     render(
-      <AssetBalance
+      <AssetBalanceCard
         asset={testAsset}
         chainId={testChain.chainId}
         balance={{

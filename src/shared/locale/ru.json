@@ -44,7 +44,7 @@
     "emptyStateDescription": "Попробуйте сбросить фильтры",
     "emptyStateLabel": "Ничего не найдено",
     "hideZeroBalancesLabel": "Скрыть активы с нулевыми балансами",
-    "searchPlaceholder": "Поиск по названию сети или токена",
+    "searchPlaceholder": "Поиск",
     "title": "Балансы",
     "verificationFailedLabel": "данные недостоверны"
   },

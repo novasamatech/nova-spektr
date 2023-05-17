@@ -2,7 +2,7 @@ import cn from 'classnames';
 import { useState } from 'react';
 import { BN } from '@polkadot/util';
 
-import { Button, Icon } from '@renderer/components/ui';
+import { Icon } from '@renderer/components/ui';
 import { Asset } from '@renderer/domain/asset';
 import { Chain } from '@renderer/domain/chain';
 import { AccountId } from '@renderer/domain/shared-kernel';
@@ -10,10 +10,11 @@ import { useBalance } from '@renderer/services/balance/balanceService';
 import { ZERO_BALANCE } from '@renderer/services/balance/common/constants';
 import { totalAmount } from '@renderer/shared/utils/balance';
 import { ExtendedChain } from '@renderer/services/network/common/types';
-import AssetBalance from '../AssetBalance/AssetBalance';
+import AssetBalanceCard from '../AssetBalanceCard/AssetBalanceCard';
 import { useI18n } from '@renderer/context/I18nContext';
 import { Balance } from '@renderer/domain/balance';
 import { includes } from '@renderer/shared/utils/strings';
+import { CaptionText, IconButton } from '@renderer/components/ui-redesign';
 
 type Props = {
   hideZeroBalance?: boolean;
@@ -93,35 +94,31 @@ const NetworkBalances = ({
   const hasFailedVerification = balances?.some((b) => !b.verified);
 
   return (
-    <li className="mb-5 rounded-2lg bg-white shadow-surface">
-      <div
-        className={cn(
-          'flex items-center justify-between border-b bg-white sticky top-0 z-10 rounded-t-2lg py-2.5 px-4',
-          isHidden ? 'rounded-2lg border-white' : 'border-shade-5',
-        )}
-      >
-        <div className="flex items-center gap-x-2.5">
-          <h2 className="flex items-center bg-white gap-x-2.5 text-neutral-variant">
-            <img src={chain.icon} width={20} height={20} alt="" />
-            <p className="text-sm font-bold uppercase">{chain.name}</p>
-          </h2>
-          {hasFailedVerification && (
-            <div className="flex items-center gap-x-1 text-alert">
-              <Icon name="shield" size={14} />
-              <p className="uppercase text-2xs leading-[15px]">{t('balances.verificationFailedLabel')}</p>
-            </div>
-          )}
-        </div>
-        <div className="flex items-center">
-          <Button pallet="shade" variant="text" className="max-h-5 px-0" onClick={() => setIsHidden(!isHidden)}>
-            <Icon name={isHidden ? 'down' : 'up'} size={20} />
-          </Button>
+    <li aria-expanded={!isHidden}>
+      <div className="bg-white sticky top-0 z-10">
+        <div className={cn('flex items-center justify-between py-1.5 px-2 mb-1 bg-main-app-background')}>
+          <div className="flex items-center gap-x-2.5">
+            <h2 className="flex items-center gap-x-2">
+              <img src={chain.icon} width={20} height={20} alt="" />
+              <CaptionText as="p" className="uppercase text-text-tertiary">
+                {chain.name}
+              </CaptionText>
+            </h2>
+            {hasFailedVerification && (
+              <div className="flex items-center gap-x-1 text-alert">
+                <Icon name="shield" size={14} />
+                <p className="uppercase text-2xs leading-[15px]">{t('balances.verificationFailedLabel')}</p>
+              </div>
+            )}
+          </div>
+          <IconButton name={isHidden ? 'down' : 'up'} onClick={() => setIsHidden(!isHidden)} />
         </div>
       </div>
+
       {!isHidden && (
-        <div className="flex flex-col divide-y divide-shade-5">
+        <ul className="flex flex-col gap-y-1.5">
           {filteredAssets.map((asset) => (
-            <AssetBalance
+            <AssetBalanceCard
               key={asset.assetId}
               chainId={chain.chainId}
               asset={asset}
@@ -130,7 +127,7 @@ const NetworkBalances = ({
               onReceiveClick={() => onReceiveClick?.(asset)}
             />
           ))}
-        </div>
+        </ul>
       )}
     </li>
   );

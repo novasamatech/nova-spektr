@@ -44,8 +44,8 @@
     "emptyStateDescription": "Try to reset filters or search for another key",
     "emptyStateLabel": "Nothing to show",
     "hideZeroBalancesLabel": "Hide zero balances",
-    "searchPlaceholder": "Search by token or network",
-    "title": "Balances",
+    "searchPlaceholder": "Search",
+    "title": "Assets",
     "verificationFailedLabel": "verification failed"
   },
   "basemodal": {

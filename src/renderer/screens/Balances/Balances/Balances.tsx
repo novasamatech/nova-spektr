@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 
-import { Icon, Input, Switch } from '@renderer/components/ui';
+import { Icon } from '@renderer/components/ui';
 import { useI18n } from '@renderer/context/I18nContext';
 import { useNetworkContext } from '@renderer/context/NetworkContext';
 import { Asset } from '@renderer/domain/asset';
@@ -14,6 +14,7 @@ import NetworkBalances from '../NetworkBalances/NetworkBalances';
 import ReceiveModal, { ReceivePayload } from '../ReceiveModal/ReceiveModal';
 import { useAccount } from '@renderer/services/account/accountService';
 import { isMultisig } from '@renderer/domain/account';
+import BalancesFilters from '@renderer/screens/Balances/Balances/BalancesFilters';
 
 const Balances = () => {
   const { t } = useI18n();
@@ -87,50 +88,41 @@ const Balances = () => {
 
   return (
     <>
-      <div className="h-full flex flex-col gap-y-9">
-        <h1 className="font-semibold text-2xl text-neutral mt-5 px-5">{t('balances.title')}</h1>
+      <div className="h-full flex flex-col items-start relative bg-main-app-background">
+        <header className="w-full px-6 py-4.5 bg-top-nav-bar-background border-b border-container-border flex justify-between">
+          <h1 className="font-semibold text-2xl text-neutral mt-5 px-5">{t('balances.title')}</h1>
+          <BalancesFilters
+            searchQuery={query}
+            hideZeroBalances={hideZeroBalance}
+            onSearchChange={setQuery}
+            onZeroBalancesChange={updateHideZeroBalance}
+          />
+        </header>
 
-        <div className="overflow-y-scroll">
-          <section className="flex flex-col gap-y-5 w-[900px] p-5 mb-28 mx-auto bg-shade-2 rounded-2lg">
-            <div className="flex justify-between items-center mb-5">
-              <Input
-                wrapperClass="!bg-shade-5 w-[300px]"
-                prefixElement={<Icon name="search" className="w-5 h-5" />}
-                value={query}
-                placeholder={t('balances.searchPlaceholder')}
-                onChange={setQuery}
-              />
-              <div className="text-sm text-neutral font-semibold flex gap-2.5">
-                <Switch checked={hideZeroBalance} onChange={updateHideZeroBalance}>
-                  {t('balances.hideZeroBalancesLabel')}
-                </Switch>
+        <section className="overflow-y-scroll mt-4 flex flex-col gap-y-4 w-[800px] mx-auto">
+          {accountIds.length > 0 && (
+            <ul className="flex-1 flex flex-col gap-y-4">
+              {sortedChains.map((chain) => (
+                <NetworkBalances
+                  key={chain.chainId}
+                  hideZeroBalance={hideZeroBalance}
+                  searchSymbolOnly={searchSymbolOnly}
+                  query={query.toLowerCase()}
+                  chain={chain}
+                  accountIds={accountIds}
+                  canMakeActions={checkCanMakeActions()}
+                  onReceiveClick={onReceive(chain)}
+                />
+              ))}
+
+              <div className="hidden only:flex w-full h-full flex-col items-center justify-center">
+                <Icon name="noResults" size={380} />
+                <p className="text-neutral text-3xl font-bold">{t('balances.emptyStateLabel')}</p>
+                <p className="text-neutral-variant text-base font-normal">{t('balances.emptyStateDescription')}</p>
               </div>
-            </div>
-
-            {accountIds.length > 0 && (
-              <ul className="flex-1">
-                {sortedChains.map((chain) => (
-                  <NetworkBalances
-                    key={chain.chainId}
-                    hideZeroBalance={hideZeroBalance}
-                    searchSymbolOnly={searchSymbolOnly}
-                    query={query.toLowerCase()}
-                    chain={chain}
-                    accountIds={accountIds}
-                    canMakeActions={checkCanMakeActions()}
-                    onReceiveClick={onReceive(chain)}
-                  />
-                ))}
-
-                <div className="hidden only:flex w-full h-full flex-col items-center justify-center">
-                  <Icon name="noResults" size={380} />
-                  <p className="text-neutral text-3xl font-bold">{t('balances.emptyStateLabel')}</p>
-                  <p className="text-neutral-variant text-base font-normal">{t('balances.emptyStateDescription')}</p>
-                </div>
-              </ul>
-            )}
-          </section>
-        </div>
+            </ul>
+          )}
+        </section>
       </div>
 
       {receiveData && <ReceiveModal data={receiveData} isOpen={isReceiveOpen} onClose={toggleReceive} />}
