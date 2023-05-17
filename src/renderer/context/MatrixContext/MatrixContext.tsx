@@ -269,7 +269,7 @@ export const MatrixProvider = ({ children }: PropsWithChildren) => {
     const transaction =
       api && payload.callData && decodeCallData(api, toAddress(accountId, { prefix: addressPrefix }), payload.callData);
 
-    addMultisigTx({
+    await addMultisigTx({
       accountId,
       signatories,
       callHash: payload.callHash,
