@@ -55,7 +55,7 @@ const mockButton = (text: string, callback: () => void) => (
 jest.mock('../components/index', () => ({
   Validators: ({ onResult }: any) => mockButton('to confirm', onResult),
   Confirmation: ({ onResult }: any) => mockButton('to scan', onResult),
-  Scanning: ({ onResult }: any) => mockButton('to sign', onResult),
+  MultiScanning: ({ onResult }: any) => mockButton('to sign', onResult),
   Signing: ({ onResult }: any) => mockButton('to submit', onResult),
   Submit: () => 'finish',
 }));

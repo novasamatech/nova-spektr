@@ -9,6 +9,7 @@ import {
   Transaction,
   TransactionType,
 } from '@renderer/domain/transaction';
+import { DEFAULT } from '@shared/constants/common';
 
 export const UNKNOWN_TYPE = 'UNKNOWN_TYPE';
 export const TransferTypes = [TransactionType.TRANSFER, TransactionType.ASSET_TRANSFER, TransactionType.ORML_TRANSFER];
@@ -30,7 +31,7 @@ const TransactionTitles: Record<TransactionType, string> = {
   [TransactionType.DESTINATION]: 'operations.titles.destination',
   [TransactionType.UNSTAKE]: 'operations.titles.unstake',
   // Technical
-  [TransactionType.CHILL]: 'operations.titles.unknown',
+  [TransactionType.CHILL]: 'operations.titles.unstake',
   [TransactionType.BATCH_ALL]: 'operations.titles.unknown',
 };
 
@@ -51,7 +52,7 @@ const TransactionIcons: Record<TransactionType, IconNames> = {
   [TransactionType.DESTINATION]: 'stakingMst',
   [TransactionType.UNSTAKE]: 'stakingMst',
   // Technical
-  [TransactionType.CHILL]: 'unknownMst',
+  [TransactionType.CHILL]: 'stakingMst',
   [TransactionType.BATCH_ALL]: 'unknownMst',
 };
 
@@ -179,4 +180,29 @@ export const getTransactionOptions = (t: TFunction) => {
       element: t('operations.titles.unknown'),
     },
   ];
+};
+
+export const getTransactionAmount = (tx: Transaction): string | null => {
+  const txType = tx.type || DEFAULT;
+
+  if (
+    [
+      TransactionType.ASSET_TRANSFER,
+      TransactionType.ORML_TRANSFER,
+      TransactionType.TRANSFER,
+      TransactionType.BOND,
+      TransactionType.RESTAKE,
+      TransactionType.UNSTAKE,
+    ].includes(txType)
+  ) {
+    return tx.args.value;
+  }
+  if (txType === TransactionType.STAKE_MORE) {
+    return tx.args.maxAdditional;
+  }
+  if (txType === TransactionType.BATCH_ALL) {
+    return getTransactionAmount(tx.args?.transactions?.[0]);
+  }
+
+  return null;
 };

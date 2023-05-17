@@ -29,7 +29,7 @@ export async function makeAppSetup(createWindow: () => Promise<BrowserWindow>) {
 
 PLATFORM.IS_LINUX && app.disableHardwareAcceleration();
 
-if (ENVIRONMENT.IS_DEV) {
+if (ENVIRONMENT.IS_DEV || ENVIRONMENT.IS_STAGE) {
   app.commandLine.appendSwitch('ignore-certificate-errors');
 }
 app.commandLine.appendSwitch('force-color-profile', 'srgb');

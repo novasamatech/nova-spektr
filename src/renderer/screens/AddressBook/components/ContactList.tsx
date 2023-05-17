@@ -25,7 +25,7 @@ const ContactList = ({ contacts, query }: Props) => {
     const filtered = contacts.filter((c) => includes(c.name, query) || includes(c.accountId, query));
 
     setFilteredContacts(filtered);
-  }, [query, contacts.length]);
+  }, [query, contacts]);
 
   if (filteredContacts.length === 0) {
     return <EmptySearch />;

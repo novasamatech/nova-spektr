@@ -83,9 +83,13 @@ const OperationFullInfo = ({ tx, account }: Props) => {
   }, [signatories.length, approvals.length, cancellation.length]);
 
   const getSignatoryStatus = (signatory: AccountId): SigningStatus | undefined => {
-    const event = events.find((e) => (e.status === 'SIGNED' || e.status === 'CANCELLED') && e.accountId === signatory);
+    const cancelEvent = events.find((e) => e.status === 'CANCELLED' && e.accountId === signatory);
+    if (cancelEvent) {
+      return cancelEvent.status;
+    }
+    const signedEvent = events.find((e) => e.status === 'SIGNED' && e.accountId === signatory);
 
-    return event?.status;
+    return signedEvent?.status;
   };
 
   return (
@@ -145,7 +149,7 @@ const OperationFullInfo = ({ tx, account }: Props) => {
           {signatoriesList.map(({ accountId, name }) => {
             return (
               <li key={accountId}>
-                <SignatoryCard accountId={accountId} name={name} status={getSignatoryStatus(accountId)} />
+                <SignatoryCard accountId={accountId} type="short" name={name} status={getSignatoryStatus(accountId)} />
               </li>
             );
           })}

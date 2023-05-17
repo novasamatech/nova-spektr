@@ -1,5 +1,5 @@
 import cn from 'classnames';
-import { PropsWithChildren } from 'react';
+import { useCallback } from 'react';
 
 import { useI18n } from '@renderer/context/I18nContext';
 import { MultisigAccount } from '@renderer/domain/account';
@@ -14,6 +14,8 @@ import { Button, FootnoteText } from '@renderer/components/ui-redesign';
 import ValidatorsModal from '@renderer/screens/Staking/Operations/components/ValidatorsModal/ValidatorsModal';
 import { BalanceNew } from '@renderer/components/common';
 import AddressWithExplorers from '@renderer/components/common/AddressWithExplorers/AddressWithExplorers';
+import DetailWithLabel, { DetailWithLabelProps } from '@renderer/screens/Operations/components/DetailWithLabel';
+import { AddressStyle, DescriptionBlockStyle, InteractableStyle, LabelStyle } from '../common/constants';
 
 type Props = {
   tx: MultisigTransaction;
@@ -22,36 +24,23 @@ type Props = {
   withAdvanced?: boolean;
 };
 
-const RowStyle = 'flex justify-between items-center';
-const LabelStyle = 'text-text-tertiary';
-const ValueStyle = 'text-text-secondary';
-const InteractableStyle = 'rounded hover:bg-action-background-hover cursor-pointer py-[3px] px-2';
-
-type DetailsRowProps = {
-  label: string;
-};
-const DetailsRow = ({ label, children }: PropsWithChildren<DetailsRowProps>) => (
-  <div className={RowStyle}>
-    <FootnoteText as="dt" className={LabelStyle}>
-      {label}
-    </FootnoteText>
-    {typeof children === 'string' ? (
-      <FootnoteText as="dd" className={cn(ValueStyle, 'py-[3px] px-2')}>
-        {children}
-      </FootnoteText>
-    ) : (
-      <dd className={cn('flex items-center gap-1', ValueStyle)}>{children}</dd>
-    )}
-  </div>
-);
-
 const Details = ({ tx, account, connection, withAdvanced = true }: Props) => {
   const { t } = useI18n();
 
   const [isAdvancedShown, toggleAdvanced] = useToggle();
   const [isValidatorsOpen, toggleValidators] = useToggle();
 
-  const { indexCreated, blockCreated, deposit, depositor, callHash, callData, transaction, description } = tx;
+  const {
+    indexCreated,
+    blockCreated,
+    deposit,
+    depositor,
+    callHash,
+    callData,
+    transaction,
+    description,
+    cancelDescription,
+  } = tx;
 
   const defaultAsset = connection?.assets[0];
   const addressPrefix = connection?.addressPrefix;
@@ -59,16 +48,32 @@ const Details = ({ tx, account, connection, withAdvanced = true }: Props) => {
   const depositorSignatory = account?.signatories.find((s) => s.accountId === depositor);
   const extrinsicLink = getMultisigExtrinsicLink(callHash, indexCreated, blockCreated, explorers);
 
+  const valueClass = withAdvanced ? 'text-text-secondary' : 'text-text-primary';
+  const DetailsRow = useCallback(
+    (props: DetailWithLabelProps) => <DetailWithLabel {...props} className={valueClass} />,
+    [valueClass],
+  );
+
   return (
     <>
-      <dl className="flex flex-col gap-y-1">
+      <dl className="flex flex-col gap-y-1 w-full">
         {description && (
-          <div className="rounded bg-block-background pl-3 py-2 flex flex-col gap-x-0.5 mb-2">
+          <div className={DescriptionBlockStyle}>
             <FootnoteText as="dt" className={LabelStyle}>
-              {t('operation.details.multisigWallet')}
+              {t('operation.details.description')}
             </FootnoteText>
-            <FootnoteText as="dd" className={ValueStyle}>
+            <FootnoteText as="dd" className={valueClass}>
               {description}
+            </FootnoteText>
+          </div>
+        )}
+        {cancelDescription && (
+          <div className={DescriptionBlockStyle}>
+            <FootnoteText as="dt" className={LabelStyle}>
+              {t('operation.details.rejectReason')}
+            </FootnoteText>
+            <FootnoteText as="dd" className={valueClass}>
+              {cancelDescription}
             </FootnoteText>
           </div>
         )}
@@ -77,6 +82,7 @@ const Details = ({ tx, account, connection, withAdvanced = true }: Props) => {
           <DetailsRow label={t('operation.details.multisigWallet')}>
             <AddressWithExplorers
               explorers={explorers}
+              addressFont={AddressStyle}
               accountId={account.accountId}
               addressPrefix={addressPrefix}
               name={account.name}
@@ -89,6 +95,7 @@ const Details = ({ tx, account, connection, withAdvanced = true }: Props) => {
             <AddressWithExplorers
               type="short"
               explorers={explorers}
+              addressFont={AddressStyle}
               address={transaction.args.dest}
               addressPrefix={addressPrefix}
             />
@@ -100,6 +107,7 @@ const Details = ({ tx, account, connection, withAdvanced = true }: Props) => {
             {transaction.args.payee.account ? (
               <AddressWithExplorers
                 explorers={explorers}
+                addressFont={AddressStyle}
                 type="short"
                 address={transaction.args.payee.account}
                 addressPrefix={addressPrefix}
@@ -112,7 +120,12 @@ const Details = ({ tx, account, connection, withAdvanced = true }: Props) => {
 
         {transaction?.args.controller && (
           <DetailsRow label={t('operation.details.controller')}>
-            <AddressWithExplorers explorers={explorers} type="short" address={transaction.args.controller} />
+            <AddressWithExplorers
+              explorers={explorers}
+              addressFont={AddressStyle}
+              type="short"
+              address={transaction.args.controller}
+            />
           </DetailsRow>
         )}
 

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { BN } from '@polkadot/util';
 import { ApiPromise } from '@polkadot/api';
 
@@ -7,26 +7,20 @@ import { Button } from '@renderer/components/ui';
 import ParitySignerSignatureReader from '@renderer/screens/Signing/ParitySignerSignatureReader/ParitySignerSignatureReader';
 import { ValidationErrors } from '@renderer/shared/utils/validation';
 import { toAccountId } from '@renderer/shared/utils/address';
-import { transferableAmount } from '@renderer/services/balance/common/utils';
+import { transferableAmount } from '@renderer/shared/utils/balance';
 import { Transaction } from '@renderer/domain/transaction';
 import { useBalance } from '@renderer/services/balance/balanceService';
 import { ChainId, HexString } from '@renderer/domain/shared-kernel';
 import { useTransaction } from '@renderer/services/transaction/transactionService';
 import { Balance } from '@renderer/domain/balance';
-import { ActiveAddress } from '@renderer/screens/Transfer/components';
-import { Explorer } from '@renderer/domain/chain';
-import { Account, MultisigAccount, isMultisig } from '@renderer/domain/account';
 
 type Props = {
   api: ApiPromise;
   chainId: ChainId;
   transaction: Transaction;
-  account: Account | MultisigAccount;
   assetId: string;
   countdown: number;
-  explorers?: Explorer[];
-  addressPrefix: number;
-  onGoBack: () => void;
+  onQrExpired: () => void;
   onStartOver: () => void;
   onResult: (signature: HexString) => void;
 };
@@ -35,12 +29,9 @@ export const Signing = ({
   api,
   chainId,
   transaction,
-  account,
   assetId,
   countdown,
-  explorers,
-  addressPrefix,
-  onGoBack,
+  onQrExpired,
   onStartOver,
   onResult,
 }: Props) => {
@@ -91,34 +82,22 @@ export const Signing = ({
     }
   };
 
-  const address = isMultisig(account) ? account.accountId : transaction.address;
+  useEffect(() => {
+    if (countdown === 0) {
+      onQrExpired();
+    }
+  }, [countdown]);
 
   return (
-    <div className="py-2 flex flex-col items-center gap-y-2.5 w-full">
-      <ActiveAddress
-        address={address}
-        accountName={account.name}
-        signingType={account.signingType}
-        explorers={explorers}
-        addressPrefix={addressPrefix}
+    <div className="flex flex-col items-center gap-y-2.5 w-full">
+      <ParitySignerSignatureReader
+        className="w-full"
+        countdown={countdown}
+        header={t('signing.scanSignatureTitle')}
+        size={[440, 496]}
+        validationError={validationError}
+        onResult={handleResult}
       />
-
-      <div className="text-neutral-variant text-base font-semibold">{t('signing.scanSignatureTitle')}</div>
-      <div className="h-[460px]">
-        <ParitySignerSignatureReader
-          className="w-full rounded-2lg"
-          countdown={countdown}
-          size={460}
-          validationError={validationError}
-          onResult={handleResult}
-        />
-      </div>
-
-      {countdown === 0 && (
-        <Button variant="fill" pallet="primary" weight="lg" onClick={onGoBack}>
-          {t('signing.generateNewQrButton')}
-        </Button>
-      )}
 
       {validationError && (
         <Button className="w-max mb-5" weight="lg" variant="fill" pallet="primary" onClick={onStartOver}>

@@ -10,7 +10,7 @@ import { Explorer } from '@renderer/domain/chain';
 import { Asset } from '@renderer/domain/asset';
 import { Transaction } from '@renderer/domain/transaction';
 import { TransferForm } from '../TransferForm/TransferForm';
-import { ActiveAddress } from '@renderer/screens/Transfer/components';
+import { ActiveAddress } from '@renderer/components/common';
 import { Account, MultisigAccount, isMultisig } from '@renderer/domain/account';
 import { getAccountsOptions } from '../../common/utils';
 
@@ -41,7 +41,7 @@ export const InitOperation = ({
   const { getLiveAccounts, getActiveAccounts } = useAccount();
 
   const accounts = getActiveAccounts();
-  const allAccounts = getLiveAccounts();
+  const dbAccounts = getLiveAccounts();
 
   const [activeAccount, setActiveAccount] = useState<DropdownResult<Account | MultisigAccount>>();
   const [accountsOptions, setAccountsOptions] = useState<DropdownOption<Account | MultisigAccount>[]>([]);
@@ -64,7 +64,7 @@ export const InitOperation = ({
       setSignatoryOptions([]);
     } else {
       const signatories = activeAccount.value.signatories.map((s) => s.accountId);
-      const signers = allAccounts.filter((a) => a.accountId && signatories.includes(a.accountId)) as MultisigAccount[];
+      const signers = dbAccounts.filter((a) => signatories.includes(a.accountId)) as MultisigAccount[];
 
       const options = getAccountsOptions<MultisigAccount>(chainId, signers, addressPrefix);
 
@@ -73,7 +73,7 @@ export const InitOperation = ({
       setSignatoryOptions(options);
       setActiveSignatory({ id: options[0].id, value: options[0].value });
     }
-  }, [activeAccount, allAccounts]);
+  }, [activeAccount, dbAccounts]);
 
   const changeAccount = (account: DropdownResult<Account | MultisigAccount>) => {
     onAccountChange(account.value);
@@ -111,7 +111,7 @@ export const InitOperation = ({
           (signatoryOptions.length > 1 ? (
             <Dropdown
               weight="lg"
-              placeholder="Select signer"
+              placeholder={t('general.input.signerLabel')}
               activeId={activeSignatory?.id}
               options={signatoryOptions}
               onChange={setActiveSignatory}

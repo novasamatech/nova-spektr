@@ -88,6 +88,7 @@
     },
     "input": {
       "amountLabel": "Сумма",
+      "signerLabel": "Выберите подписанта",
       "transferableLabel": "Доступно"
     },
     "title": {
@@ -289,6 +290,7 @@
       "multisigWallet": "Отправитель",
       "payee": "Payee",
       "recipient": "Получатель",
+      "rejectReason": "Причина отмены",
       "timePoint": "Time Point",
       "validators": "Валидаторы"
     },
@@ -298,9 +300,11 @@
     "feeErrorMessage": "Недостаточно средств чтобы заплатить коммиссию сети",
     "feeErrorTitle": "Ошибка",
     "goBackButton": "Вернуться",
+    "inProgress": "Submitting approval...",
     "logButton": "Лог",
     "networkFee": "Network fee",
     "rejectButton": "Отмена",
+    "rejectInProgress": "Submitting Rejection...",
     "rejectReason": {
       "continueButton": "Продолжить",
       "errorMessage": "Причина отмены обязательна",
@@ -319,7 +323,9 @@
       "established": "Завершено",
       "executed": "Выполнено",
       "signing": "Подписание"
-    }
+    },
+    "successMessage": "Operation Approved",
+    "successRejectMessage": "Операция Отменена"
   },
   "operations": {
     "callData": {
@@ -338,7 +344,7 @@
       "statusSummary": "Статусы операции"
     },
     "noOperationsDescription": "Нет ожидающих операций с мультиподписью",
-    "subTitle": "Ваши операции",
+    "noOperationsWalletNotMulti": "You can only view operations for your Multisig wallets. Transaction history for other types of wallets will be available later. Stay tuned.",
     "title": "Операции",
     "titles": {
       "destination": "Установить кошелёк получения награды",
@@ -430,8 +436,10 @@
     "generateNewQrButton": "Generate new QR code",
     "metadataPortalLink": "Update metadata in Parity Signer",
     "qrCountdownTitle": "QR code is valid for",
-    "scanQrTitle": "Scan the operation QR code with Parity Signer",
+    "qrNotValid": "QR code isn’t valid anymore",
+    "scanQrTitle": "Scan the operation QR code with Polkadot Vault",
     "scanSignatureTitle": "Scan QR code from Parity Signer",
+    "signatory": "Подписант:",
     "signatureExpiredDescription": "For security reasons generated operations valid for only 5 mins. Please generate new QR code and sign it with Parity Signer",
     "signatureExpiredLabel": "QR Code has expired",
     "title": "Signing",
@@ -518,6 +526,7 @@
       "selectValidators": "Выбранные валидаторы",
       "setValidatorsTitle": "Выбор валидаторов",
       "signButton": "Подписать в Parity Signer",
+      "signer": "Подписант",
       "submittingOperation": "Подтверждение операции",
       "totalAmount": "Общая сумма",
       "totalNetworkFee": "Общая комиссия сети",
@@ -540,6 +549,7 @@
       "yourValidatorsTitle": "Мои валидаторы"
     },
     "notEnoughBalanceError": "Недостаточно средств для выполнения операции",
+    "notEnoughBalanceForDepositError": "Недостаточно средств для оплаты депозита",
     "notEnoughBalanceForFeeError": "Недостаточно средств для оплаты комиссии",
     "notEnoughStakedError": "Not enough staked to unstake specific amount",
     "notEnoughUnlockingError": "Not enough unlocking to return specific amount",
@@ -570,6 +580,7 @@
     },
     "redeem": {
       "availablePlaceholder": "Доступно",
+      "confirmRedeemSubtitle": "Подтверждение",
       "initRedeemSubtitle": "Вывести"
     },
     "requiredAmountError": "Пожалуйста, введите сумму",

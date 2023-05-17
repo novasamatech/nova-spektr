@@ -2,7 +2,7 @@ import { ApiPromise } from '@polkadot/api';
 import { useLiveQuery } from 'dexie-react-hooks';
 
 import { MultisigAccount } from '@renderer/domain/account';
-import { MultisigTxFinalStatus, MultisigTxInitStatus, MultisigTransaction } from '@renderer/domain/transaction';
+import { MultisigTxFinalStatus, MultisigTransaction, MultisigTxInitStatus } from '@renderer/domain/transaction';
 import storage, { MultisigTransactionDS } from '../storage';
 import { QUERY_INTERVAL } from './common/consts';
 import { IMultisigTxService } from './common/types';
@@ -26,7 +26,7 @@ export const useMultisigTx = (): IMultisigTxService => {
 
   const subscribeMultisigAccount = (api: ApiPromise, account: MultisigAccount): (() => void) => {
     const intervalId = setInterval(async () => {
-      const transactions = await getMultisigTxs({ accountId: account.accountId });
+      const transactions = await getMultisigTxs({ accountId: account.accountId, status: MultisigTxInitStatus.SIGNING });
       const pendingTxs = await getPendingMultisigTxs(api, account.accountId);
       const currentBlockNumber = await getCurrentBlockNumber(api);
       const blockTime = getExpectedBlockTime(api);
@@ -37,12 +37,18 @@ export const useMultisigTx = (): IMultisigTxService => {
             t.callHash === pendingTx.callHash.toHex() &&
             t.blockCreated === pendingTx.params.when.height.toNumber() &&
             t.indexCreated === pendingTx.params.when.index.toNumber() &&
-            t.chainId === api.genesisHash.toHex() &&
-            t.status === MultisigTxInitStatus.SIGNING,
+            t.chainId === api.genesisHash.toHex(),
         );
 
         if (oldTx) {
-          updateMultisigTx(updateTransactionPayload(oldTx, pendingTx));
+          const updatedTx = updateTransactionPayload(oldTx, pendingTx);
+
+          if (updatedTx) {
+            updateMultisigTx(updatedTx);
+            console.log(
+              `Multisig transaction was updated with ${updatedTx.callHash} and timepoint ${updatedTx.blockCreated}-${updatedTx.indexCreated}`,
+            );
+          }
         } else {
           const depositor = pendingTx.params.depositor.toHex();
           if (!account.signatories.find((s) => s.accountId == depositor)) return;
@@ -56,6 +62,7 @@ export const useMultisigTx = (): IMultisigTxService => {
               blockTime.toNumber(),
             ),
           );
+          console.log(`New pending multisig transaction was found with call hash ${pendingTx.callHash}`);
         }
       });
 
@@ -78,6 +85,9 @@ export const useMultisigTx = (): IMultisigTxService => {
           : tx.status;
 
         updateMultisigTx({ ...tx, status });
+        console.log(
+          `Multisig transaction was updated with call hash ${tx.callHash} and timepoint ${tx.blockCreated}-${tx.indexCreated} and status ${status}`,
+        );
       });
     }, QUERY_INTERVAL);
 

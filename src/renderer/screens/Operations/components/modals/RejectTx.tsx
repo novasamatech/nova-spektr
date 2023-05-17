@@ -2,31 +2,30 @@ import { useEffect, useState } from 'react';
 import { UnsignedTransaction } from '@substrate/txwrapper-polkadot';
 import { BN } from '@polkadot/util';
 
-import { BaseModal, Button } from '@renderer/components/ui';
-import { Button as ButtonRedesign } from '@renderer/components/ui-redesign';
+import { BaseModal, Button } from '@renderer/components/ui-redesign';
 import { useI18n } from '@renderer/context/I18nContext';
 import { AccountDS, MultisigTransactionDS } from '@renderer/services/storage';
-import { useToggle } from '@renderer/shared/hooks';
+import { useToggle, useCountdown } from '@renderer/shared/hooks';
 import { MultisigAccount } from '@renderer/domain/account';
 import { ExtendedChain } from '@renderer/services/network/common/types';
-import Chain from '../Chain';
-import { Signing } from '../Signing/Signing';
-import { Scanning } from '../Scanning/Scanning';
+import Chain from '../Chain/Chain';
+import { Signing } from '../ActionSteps/Signing';
+import { Scanning } from '../ActionSteps/Scanning';
 import { Transaction, TransactionType } from '@renderer/domain/transaction';
 import { Address, HexString, Timepoint } from '@renderer/domain/shared-kernel';
 import { toAddress } from '@renderer/shared/utils/address';
 import { getAssetById } from '@renderer/shared/utils/assets';
 import { useAccount } from '@renderer/services/account/accountService';
 import { getTransactionTitle } from '../../common/utils';
-import Details from '../Details';
-import { Submit } from '../Submit/Submit';
+import { Submit } from '../ActionSteps/Submit';
 import { useTransaction } from '@renderer/services/transaction/transactionService';
-import ShortTransactionInfo from '../ShortTransactionInfo';
-import { Fee } from '@renderer/components/common';
-import { useCountdown } from '@renderer/screens/Staking/Operations/hooks/useCountdown';
 import { useBalance } from '@renderer/services/balance/balanceService';
-import { transferableAmount } from '@renderer/services/balance/common/utils';
+import { transferableAmount } from '@renderer/shared/utils/balance';
 import RejectReasonModal from './RejectReasonModal';
+import { ChainFontStyle } from '@renderer/screens/Operations/components/modals/ApproveTx';
+import Confirmation from '@renderer/screens/Operations/components/ActionSteps/Confirmation';
+import { Icon } from '@renderer/components/ui';
+import OperationResult from '@renderer/components/ui-redesign/OperationResult/OperationResult';
 
 type Props = {
   tx: MultisigTransactionDS;
@@ -40,6 +39,8 @@ const enum Step {
   SIGNING,
   SUBMIT,
 }
+
+const AllSteps = [Step.CONFIRMATION, Step.SCANNING, Step.SIGNING, Step.SUBMIT];
 
 const RejectTx = ({ tx, account, connection }: Props) => {
   const { t } = useI18n();
@@ -58,16 +59,20 @@ const RejectTx = ({ tx, account, connection }: Props) => {
   const [signature, setSignature] = useState<HexString>();
   const [unsignedTx, setUnsignedTx] = useState<UnsignedTransaction>();
 
+  // if qr expires while on signing screen this state used as a flag for Scanning step to show qr error instead of generating new
+  const [isQrExpired, setIsQrExpired] = useState(false);
+
   const accounts = getLiveAccounts();
   const signAccount = accounts.find((a) => a.accountId === tx.depositor);
   const transactionTitle = getTransactionTitle(tx.transaction);
 
   const goBack = () => {
-    setActiveStep(Step.CONFIRMATION);
+    setActiveStep(AllSteps.indexOf(activeStep) - 1);
   };
 
   const onSignResult = (signature: HexString) => {
     setSignature(signature);
+    toggleModal();
     setActiveStep(Step.SUBMIT);
   };
 
@@ -138,53 +143,51 @@ const RejectTx = ({ tx, account, connection }: Props) => {
     }
   };
 
+  const rejectTitle = (
+    <div className="flex items-center py-1 ml-4">
+      {t('operation.cancelTitle')} {t(transactionTitle)} {t('on')}
+      <Chain className="ml-0.5" chainId={tx.chainId} fontProps={{ className: ChainFontStyle, fontWeight: 'bold' }} />
+    </div>
+  );
+
+  const handleQrExpiredWhileSigning = () => {
+    setIsQrExpired(true);
+    goBack();
+  };
+
+  const handleQrReset = () => {
+    resetCountdown();
+    setIsQrExpired(false);
+  };
+
+  const isSubmitStep = activeStep === Step.SUBMIT && rejectTx && signAccount && signature && unsignedTx;
+
   return (
     <>
       <div className="flex justify-between">
-        <ButtonRedesign size="sm" pallet="error" variant="fill" onClick={toggleModal}>
+        <Button size="sm" pallet="error" variant="fill" onClick={toggleModal}>
           {t('operation.rejectButton')}
-        </ButtonRedesign>
+        </Button>
       </div>
 
       <BaseModal
         isOpen={isModalOpen}
         closeButton
-        title={
-          <div className="flex items-center">
-            {t('operation.cancelTitle')} {t(transactionTitle)} {t('on')} <Chain chainId={tx.chainId} />
-          </div>
-        }
-        contentClass="px-5 pb-4 h-3/4 w-[520px]"
+        title={rejectTitle}
+        contentClass={activeStep === Step.SIGNING ? '' : undefined}
         onClose={handleClose}
       >
         {activeStep === Step.CONFIRMATION && (
-          <div className="flex flex-col gap-2">
-            <div className="flex justify-center">{tx.transaction && <ShortTransactionInfo tx={tx.transaction} />} </div>
-
-            {tx.description && <div className="flex justify-center bg-shade-5 rounded-2lg">{tx.description}</div>}
-
-            <Details tx={tx} account={account} connection={connection} withAdvanced={false} />
-
-            <div className="flex justify-between items-center">
-              <div className="text-shade-40">{t('operation.networkFee')}</div>
-              <div>
-                {connection.api && rejectTx && (
-                  <Fee
-                    className="text-shade-40"
-                    api={connection.api}
-                    asset={connection.assets[0]}
-                    transaction={rejectTx}
-                  />
-                )}
-              </div>
-            </div>
-
-            <div className="flex justify-end">
-              <Button pallet="primary" variant="fill" onClick={toggleRejectReasonModal}>
-                {t('operation.signButton')}
-              </Button>
-            </div>
-          </div>
+          <>
+            <Confirmation tx={tx} account={account} connection={connection} feeTx={rejectTx} />
+            <Button
+              className="mt-7 ml-auto"
+              prefixElement={<Icon name="vault" size={14} />}
+              onClick={toggleRejectReasonModal}
+            >
+              {t('operation.signButton')}
+            </Button>
+          </>
         )}
         {activeStep === Step.SCANNING && (
           <>
@@ -197,19 +200,18 @@ const RejectTx = ({ tx, account, connection }: Props) => {
                 explorers={connection?.explorers}
                 addressPrefix={connection?.addressPrefix}
                 countdown={countdown}
-                onResetCountdown={resetCountdown}
+                isQrExpired={isQrExpired}
+                onResetCountdown={handleQrReset}
                 onResult={setUnsignedTx}
               />
             )}
 
             <div className="flex w-full justify-between">
-              <Button pallet="shade" variant="fill" onClick={goBack}>
+              <Button variant="text" onClick={goBack}>
                 {t('operation.goBackButton')}
               </Button>
 
-              <Button pallet="primary" variant="fill" onClick={() => setActiveStep(Step.SIGNING)}>
-                {t('operation.continueButton')}
-              </Button>
+              <Button onClick={() => setActiveStep(Step.SIGNING)}>{t('operation.continueButton')}</Button>
             </div>
           </>
         )}
@@ -221,30 +223,11 @@ const RejectTx = ({ tx, account, connection }: Props) => {
                 api={connection.api}
                 chainId={tx.chainId}
                 transaction={rejectTx}
-                account={signAccount}
-                explorers={connection.explorers}
-                addressPrefix={connection.addressPrefix}
                 countdown={countdown}
                 assetId={asset?.assetId.toString() || '0'}
-                onGoBack={() => {}}
+                onQrExpired={handleQrExpiredWhileSigning}
                 onStartOver={() => {}}
                 onResult={onSignResult}
-              />
-            )}
-          </div>
-        )}
-        {activeStep === Step.SUBMIT && (
-          <div>
-            {rejectTx && connection.api && signAccount && signature && unsignedTx && (
-              <Submit
-                tx={rejectTx}
-                api={connection.api}
-                multisigTx={tx}
-                matrixRoomId={account.matrixRoomId}
-                account={signAccount}
-                unsignedTx={unsignedTx}
-                signature={signature}
-                rejectReason={rejectReason}
               />
             )}
           </div>
@@ -256,20 +239,29 @@ const RejectTx = ({ tx, account, connection }: Props) => {
           onSubmit={handleRejectReason}
         />
 
-        <BaseModal
-          closeButton
+        <OperationResult
           isOpen={isFeeModalOpen}
           title={t('operation.feeErrorTitle')}
-          contentClass="px-5 pb-4 w-[260px] flex flex-col items-center"
+          description={t('operation.feeErrorMessage')}
           onClose={toggleFeeModal}
         >
-          <div>{t('operation.feeErrorMessage')}</div>
-
-          <Button pallet="primary" variant="fill" onClick={toggleFeeModal}>
-            {t('operation.feeErrorButton')}
-          </Button>
-        </BaseModal>
+          <Button onClick={toggleFeeModal}>{t('operation.feeErrorButton')}</Button>
+        </OperationResult>
       </BaseModal>
+
+      {isSubmitStep && connection.api && (
+        <Submit
+          tx={rejectTx}
+          api={connection.api}
+          multisigTx={tx}
+          matrixRoomId={account.matrixRoomId}
+          account={signAccount}
+          unsignedTx={unsignedTx}
+          signature={signature}
+          rejectReason={rejectReason}
+          isReject
+        />
+      )}
     </>
   );
 };

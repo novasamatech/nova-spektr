@@ -11,7 +11,7 @@ import { useI18n } from '@renderer/context/I18nContext';
 import { Asset, AssetType } from '@renderer/domain/asset';
 import { Transaction, MultisigTxInitStatus, TransactionType } from '@renderer/domain/transaction';
 import { useBalance } from '@renderer/services/balance/balanceService';
-import { formatAmount, transferableAmount } from '@renderer/services/balance/common/utils';
+import { formatAmount, transferableAmount } from '@renderer/shared/utils/balance';
 import { Address, ChainId, AccountId } from '@renderer/domain/shared-kernel';
 import { useTransaction } from '@renderer/services/transaction/transactionService';
 import { useMultisigTx } from '@renderer/services/multisigTx/multisigTxService';
@@ -191,6 +191,9 @@ export const TransferForm = ({
     if (nativeTokenBalance) {
       return new BN(fee).lte(new BN(nativeTokenBalance));
     }
+    if (isMultisig(account)) {
+      return new BN(fee).lte(new BN(balance));
+    }
 
     return new BN(fee).add(new BN(formatAmount(amount, asset.precision))).lte(new BN(balance));
   };
@@ -203,10 +206,7 @@ export const TransferForm = ({
       return new BN(deposit).add(new BN(fee)).lte(new BN(signerNativeTokenBalance));
     }
 
-    return new BN(deposit)
-      .add(new BN(fee))
-      .add(new BN(formatAmount(amount, asset.precision)))
-      .lte(new BN(signerBalance));
+    return new BN(deposit).add(new BN(fee)).lte(new BN(signerBalance));
   };
 
   const updateFee = async (fee: string) => {
@@ -358,7 +358,6 @@ export const TransferForm = ({
               <div className="flex flex-col gap-y-2.5">
                 <InputArea
                   className="w-full"
-                  label={t('transfer.descriptionLabel')}
                   placeholder={t('transfer.descriptionPlaceholder')}
                   invalid={Boolean(error)}
                   rows={2}

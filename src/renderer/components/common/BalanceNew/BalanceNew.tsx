@@ -1,6 +1,6 @@
 import cn from 'classnames';
 
-import { formatBalance } from '@renderer/services/balance/common/utils';
+import { formatBalance } from '@renderer/shared/utils/balance';
 import { Asset } from '@renderer/domain/asset';
 import { useI18n } from '@renderer/context/I18nContext';
 
@@ -13,7 +13,7 @@ type Props = {
 
 const BalanceNew = ({ value, asset, className = 'text-body text-text-primary', showIcon = true }: Props) => {
   const { t } = useI18n();
-  const { precision, symbol, icon } = asset;
+  const { precision, symbol, icon, name } = asset;
   const { value: formattedValue, decimalPlaces, suffix } = formatBalance(value, precision);
 
   const balanceValue = t('assetBalance.number', {
@@ -33,7 +33,7 @@ const BalanceNew = ({ value, asset, className = 'text-body text-text-primary', s
 
   return (
     <div className="flex items-center gap-x-2">
-      <img src={icon} alt={asset.name} width={28} height={28} className="bg-black rounded-full" />
+      <img src={icon} alt={name} width={28} height={28} className="bg-black rounded-full" />
       {balance}
     </div>
   );
