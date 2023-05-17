@@ -37,7 +37,7 @@ Husky hooks will be installed automatically after installing project dependencie
 
 ## Starting development
 
-Start application in the `dev` environment with hot-reload:
+Start application in the `prod` environment with hot-reload:
 
 Electron:
 ```bash
@@ -46,6 +46,17 @@ pnpm start
 Web:
 ```bash
 pnpm start:renderer
+```
+
+Start application in the `dev` environment with hot-reload:
+
+Electron:
+```bash
+pnpm start:dev
+```
+Web:
+```bash
+pnpm start:renderer:dev
 ```
 
 ## Project localisation
