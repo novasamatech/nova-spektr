@@ -44,7 +44,7 @@ export const MultisigChainProvider = ({ children }: PropsWithChildren) => {
       (event) => pendingEventStatuses.includes(event.status) && event.accountId === accountId,
     );
 
-    if (~pendingEvent) {
+    if (pendingEvent >= 0) {
       newEvents[pendingEvent].status = resultEventStatus;
     } else {
       newEvents.push({
@@ -61,7 +61,9 @@ export const MultisigChainProvider = ({ children }: PropsWithChildren) => {
       status: resultTransactionStatus,
     });
 
-    console.log(`Transaction ${lastTx.id} (${lastTx.callHash}) was updated`);
+    console.log(
+      `Transaction with call hash ${lastTx.callHash} and timepoint ${lastTx.blockCreated}-${lastTx.indexCreated} was updated`,
+    );
   };
 
   useEffect(() => {
