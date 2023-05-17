@@ -12,9 +12,8 @@ const { FOLDERS, RENDERER } = APP_CONFIG;
 const port = RENDERER.DEV_SERVER.URL.split(':')?.[2] || 3000;
 
 const config = merge<WpConfig & WdsConfig>(sharedConfig, {
-  mode: 'development',
+  mode: 'none',
   target: 'web',
-  devtool: 'inline-source-map',
 
   entry: resolve(FOLDERS.ENTRY_POINTS.RENDERER),
 
@@ -28,7 +27,7 @@ const config = merge<WpConfig & WdsConfig>(sharedConfig, {
     },
     allowedHosts: 'all',
     client: {
-      overlay: true,
+      overlay: false,
     },
   },
 
@@ -51,7 +50,8 @@ const config = merge<WpConfig & WdsConfig>(sharedConfig, {
     new ReactRefreshWebpackPlugin(),
 
     new webpack.EnvironmentPlugin({
-      NODE_ENV: 'development',
+      NODE_ENV: 'production',
+      DEBUG_PROD: false,
     }),
 
     new HTMLWebpackPlugin({
@@ -61,7 +61,7 @@ const config = merge<WpConfig & WdsConfig>(sharedConfig, {
         removeComments: true,
       },
       isBrowser: false,
-      isDevelopment: true,
+      isDevelopment: false,
     }),
   ],
 });
