@@ -300,7 +300,9 @@ export const MatrixProvider = ({ children }: PropsWithChildren) => {
     { accountId, signatories }: MultisigAccount,
     tx?: MultisigTransaction,
   ): Promise<void> => {
-    console.log(`Start processing cancelling for tx ${payload.callHash}`);
+    console.log(
+      `Start processing cancelling for tx ${payload.callHash} and timepoint ${payload.callTimepoint.height}-${payload.callTimepoint.index}`,
+    );
 
     const eventStatus = payload.error ? 'ERROR_CANCELLED' : 'CANCELLED';
 
@@ -322,7 +324,9 @@ export const MatrixProvider = ({ children }: PropsWithChildren) => {
       senderEvent.extrinsicHash = payload.extrinsicHash;
       senderEvent.eventBlock = payload.extrinsicTimepoint.height;
       senderEvent.eventIndex = payload.extrinsicTimepoint.index;
-      senderEvent.dateCreated = newEvent.dateCreated;
+      if (!senderEvent.dateCreated) {
+        senderEvent.dateCreated = newEvent.dateCreated;
+      }
 
       if (senderEvent.status !== 'CANCELLED') {
         senderEvent.status = eventStatus;
@@ -341,7 +345,9 @@ export const MatrixProvider = ({ children }: PropsWithChildren) => {
     { accountId, signatories }: MultisigAccount,
     tx?: MultisigTransaction,
   ): Promise<void> => {
-    console.log(`Start processing approval for tx ${payload.callHash}`);
+    console.log(
+      `Start processing approval for tx ${payload.callHash} and timepoint ${payload.callTimepoint.height}-${payload.callTimepoint.index}`,
+    );
     const eventStatus = payload.error ? 'ERROR_SIGNED' : 'SIGNED';
     const newEvent = await createEvent(payload, eventStatus);
 
@@ -363,7 +369,9 @@ export const MatrixProvider = ({ children }: PropsWithChildren) => {
       senderEvent.extrinsicHash = payload.extrinsicHash;
       senderEvent.eventBlock = payload.extrinsicTimepoint.height;
       senderEvent.eventIndex = payload.extrinsicTimepoint.index;
-      senderEvent.dateCreated = newEvent.dateCreated;
+      if (!senderEvent.dateCreated) {
+        senderEvent.dateCreated = newEvent.dateCreated;
+      }
 
       if (senderEvent.status !== 'SIGNED') {
         senderEvent.status = eventStatus;
@@ -399,7 +407,9 @@ export const MatrixProvider = ({ children }: PropsWithChildren) => {
     { accountId, signatories }: MultisigAccount,
     tx?: MultisigTransaction,
   ): Promise<void> => {
-    console.log(`Start processing final approval for tx ${payload.callHash}`);
+    console.log(
+      `Start processing final approval for tx ${payload.callHash} and timepoint ${payload.callTimepoint.height}-${payload.callTimepoint.index}`,
+    );
 
     const eventStatus = payload.error ? 'ERROR_SIGNED' : 'SIGNED';
     const newEvent = await createEvent(payload, eventStatus);
@@ -422,7 +432,9 @@ export const MatrixProvider = ({ children }: PropsWithChildren) => {
       senderEvent.eventBlock = payload.extrinsicTimepoint.height;
       senderEvent.eventIndex = payload.extrinsicTimepoint.index;
       senderEvent.multisigOutcome = payload.callOutcome;
-      senderEvent.dateCreated = newEvent.dateCreated;
+      if (!senderEvent.dateCreated) {
+        senderEvent.dateCreated = newEvent.dateCreated;
+      }
 
       if (senderEvent.status !== 'SIGNED') {
         senderEvent.status = eventStatus;

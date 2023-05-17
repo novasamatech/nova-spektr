@@ -23,9 +23,11 @@ export const useTransactionStorage = (db: TMultisigTransaction): IMultisigTransa
 
   addMultisigTx: async (tx: MultisigTransaction): Promise<void> => {
     try {
-      await db.add(tx); //todo it's not correct. The error handling should be here.
+      await db.add(tx);
     } catch (error) {
-      console.warn(`The same TX ${tx.callHash} already exists. Updating it.`);
+      console.warn(
+        `The same TX ${tx.callHash} ${tx.chainId} ${tx.callHash} ${tx.blockCreated} ${tx.indexCreated} already exists. Updating it.`,
+      );
       await db.update([tx.accountId, tx.chainId, tx.callHash, String(tx.blockCreated), String(tx.indexCreated)], tx);
     }
   },
