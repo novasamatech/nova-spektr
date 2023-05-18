@@ -72,7 +72,7 @@ export interface IMultisigTransactionStorage {
   getMultisigTxs: <T extends MultisigTransaction>(where?: Partial<T>) => Promise<MultisigTransactionDS[]>;
   getAccountMultisigTxs: (accountIds: AccountId[]) => Promise<MultisigTransactionDS[]>;
   addMultisigTx: (tx: MultisigTransaction) => Promise<void>;
-  updateMultisigTx: (tx: MultisigTransactionDS) => Promise<ID[]>;
+  updateMultisigTx: (tx: MultisigTransactionDS) => Promise<number>;
   deleteMultisigTx: (
     accountId: AccountId,
     chainId: ChainId,
