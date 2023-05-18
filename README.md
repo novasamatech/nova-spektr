@@ -150,10 +150,12 @@ pnpm postbuild
 pnpm dist
 ```
 ## Troubleshooting
-Logs are collected in the 
-1. macOS `~/Librarly/Logs/Nova Spektr/nova-spektr.log` file 
-2. Windows todo
-3. Linux todo
+Log files help to solve your problem. Logs are collected in the `nova-spektr.log` that is located in the folder:
+1. macOS `~/Librarly/Logs/Nova Spektr/nova-spektr.log` 
+2. Windows `%USERPROFILE%\AppData\Roaming\Nova Spektr\logs\nova-spektr.log`
+3. Linux `~/.config/Nova Spektr/logs/nova-spektr.log`
+
+Sharing logs when you're contacting the support will speed up the problem fix.
 
 # Contributing
 Contributing guide is described in the [CONTRIBUTING.md](https://github.com/nova-wallet/omni-enterprise/blob/dev/CONTRIBUTING.md)
