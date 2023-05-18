@@ -77,9 +77,7 @@ describe('screen/Balances/AssetBalanceCard', () => {
     expect(spyReceive).toBeCalled();
   });
 
-  {
-    /* TODO add back when design is ready */
-  }
+  // TODO add back when design is ready
   // test('should show label for unverified balance', () => {
   //   render(
   //     <AssetBalanceCard
