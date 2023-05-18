@@ -37,7 +37,7 @@ jest.mock('@renderer/context/I18nContext', () => ({
   }),
 }));
 
-jest.mock('../AssetBalance/AssetBalance', () => () => <div>AssetBalance</div>);
+jest.mock('../AssetBalanceCard/AssetBalanceCard', () => () => <div>AssetBalance</div>);
 
 describe('screen/Balances/NetworkBalances', () => {
   test('should render component', () => {

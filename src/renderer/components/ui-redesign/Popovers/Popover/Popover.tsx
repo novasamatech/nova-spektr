@@ -40,7 +40,7 @@ const Popover = ({ content, children, offsetPx = 10, contentClass }: PropsWithCh
         <Popup.Panel
           id={id}
           style={{ top: '100%', marginTop: offsetPx + 'px' }}
-          className="absolute z-20 rounded-md bg-white border border-container-border shadow-popover" // TODO add proper colors
+          className="absolute z-20 rounded-md bg-token-container-background border border-token-container-border shadow-card-shadow"
         >
           <div className={cn('relative w-[275px]', contentClass)}>{content}</div>
         </Popup.Panel>

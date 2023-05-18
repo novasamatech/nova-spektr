@@ -56,6 +56,7 @@ module.exports = {
   'left-navigation-menu-background': 'var(--left-navigation-menu-background)',
   'main-app-background': 'var(--main-app-background)',
   'token-container-background': 'var(--token-container-background)',
+  'token-background': 'var(--token-background)',
   'input-background': 'var(--input-background)',
   'input-background-disabled': 'var(--input-background-disabled)',
   'action-background-hover': 'var(--action-background-hover)',

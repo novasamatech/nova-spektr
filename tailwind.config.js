@@ -18,7 +18,6 @@ module.exports = {
         element: '0 0 5px rgba(0, 0, 0, 0.15)',
         component: '0 0 50px rgba(0, 0, 0, 0.1)',
         'icon-button': '0px 2px 2px rgba(0, 0, 0, 0.04), inset 0px -0.5px 0px rgba(8, 9, 14, 0.16)',
-        popover: '0px 0px 12px rgba(0, 0, 0, 0.16), 0px 0px 6px rgba(0, 0, 0, 0.08), 0px 2px 4px rgba(0, 0, 0, 0.04)',
         'active-input': '0px 0px 0px 2px rgba(36, 99, 235, 0.16)',
         modal: '0px 2px 6px rgba(24, 24, 28, 0.06), 0px 32px 41px -23px rgba(24, 24, 28, 0.07)',
         'card-shadow': 'var(--card-shadow)',
@@ -89,11 +88,12 @@ module.exports = {
         'small-title': ['0.9375rem', '1.375rem'],
         'button-small': ['0.75rem', '1.125rem'],
         'button-large': ['0.875rem', '1.125rem'],
-        caption: ['0.625rem', '0.75rem'],
+        caption: ['0.625rem', '0.75rem'], // 10 12
         headline: ['0.9375rem', '1.375rem'],
         body: ['0.8125rem', '1.125rem'],
         footnote: ['0.75rem', '1.125rem'],
-        'modal-title': ['1.0625rem', '1.375rem'], // 17, 22
+        'modal-title': ['1.0625rem', '1.375rem'], // 17 22
+        'help-text': ['0.625rem', '0.875rem'], // 10 14
       },
       borderRadius: {
         '2lg': '10px',

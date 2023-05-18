@@ -1,15 +1,14 @@
 import { PropsWithChildren } from 'react';
 import { useNavigate } from 'react-router-dom';
 
-import Icon from '../../../ui/Icon/Icon';
+import IconButton from '@renderer/components/ui-redesign/Buttons/IconButton/IconButton';
 
 type Props = {
   path?: string;
   onCustomReturn?: () => void;
-  tabIndex?: number;
 };
 
-const ButtonBack = ({ path, onCustomReturn, tabIndex }: PropsWithChildren<Props>) => {
+const ButtonBack = ({ path, onCustomReturn }: PropsWithChildren<Props>) => {
   const navigate = useNavigate();
 
   const onClick = () => {
@@ -22,16 +21,7 @@ const ButtonBack = ({ path, onCustomReturn, tabIndex }: PropsWithChildren<Props>
     }
   };
 
-  return (
-    <button
-      type="button"
-      className="group flex items-center gap-x-2.5 p-1 border rounded border-filter-border outline-offset-1" // TODO add proper color when available
-      tabIndex={tabIndex}
-      onClick={onClick}
-    >
-      <Icon size={16} className="text-filter-border" name="arrowLeft" />
-    </button>
-  );
+  return <IconButton name="arrowLeft" onClick={onClick} />;
 };
 
 export default ButtonBack;

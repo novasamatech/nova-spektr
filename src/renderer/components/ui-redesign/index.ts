@@ -22,6 +22,8 @@ import Combobox from './Dropdowns/Combobox/Combobox';
 import PopoverLink from './PopoverLink/PopoverLink';
 import Checkbox from './Checkbox/Checkbox';
 import MultiSelect from './Dropdowns/MultiSelect/MultiSelect';
+import MenuPopover from './Popovers/MenuPopover/MenuPopover';
+import IconButton from './Buttons/IconButton/IconButton';
 
 export {
   Input,
@@ -29,8 +31,10 @@ export {
   InputHint,
   Button,
   ButtonBack,
+  IconButton,
   BaseModal,
   InfoPopover,
+  MenuPopover,
   Popover,
   InfoLink,
   LargeTitleText,

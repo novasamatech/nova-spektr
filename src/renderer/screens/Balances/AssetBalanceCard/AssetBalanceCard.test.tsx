@@ -1,7 +1,7 @@
 import { act, render, screen } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 
-import AssetBalance from './AssetBalance';
+import AssetBalanceCard from './AssetBalanceCard';
 import { Chain } from '@renderer/domain/chain';
 import { Asset } from '@renderer/domain/asset';
 import chains from '@renderer/services/network/common/chains/chains.json';
@@ -29,45 +29,47 @@ const defaultProps = {
   } as Balance,
 };
 
-describe('screen/Balances/AssetBalance', () => {
+describe('screen/Balances/AssetBalanceCard', () => {
   test('should render component', () => {
-    render(<AssetBalance {...defaultProps} />);
+    render(<AssetBalanceCard {...defaultProps} />);
 
-    const text = screen.getByTestId('balance');
-    expect(text).toHaveTextContent('assetBalance.numberDOT');
+    const chainName = screen.getByText(testChain.name);
+    expect(chainName).toBeInTheDocument();
   });
 
   test('should show expanded row', async () => {
-    render(<AssetBalance {...defaultProps} />);
+    render(<AssetBalanceCard {...defaultProps} />);
 
-    const textHidden = screen.queryByTestId('transferable');
+    const textHidden = screen.queryByText('assetBalance.transferable');
     expect(textHidden).not.toBeInTheDocument();
 
     const row = screen.getByRole('button');
     await act(() => row.click());
 
-    const text = screen.getByTestId('transferable');
-    expect(text).toHaveTextContent('assetBalance.numberDOT');
+    const text = screen.queryByText('assetBalance.transferable');
+    expect(text).toBeInTheDocument();
   });
 
   test('should hide action buttons', () => {
-    render(<AssetBalance {...defaultProps} />);
+    render(<AssetBalanceCard {...defaultProps} />);
 
     const buttons = screen.getAllByRole('button');
     expect(buttons.length).toEqual(1);
   });
 
   test('should init transfer', () => {
-    render(<AssetBalance {...defaultProps} canMakeActions />, { wrapper: MemoryRouter });
+    render(<AssetBalanceCard {...defaultProps} canMakeActions />, { wrapper: MemoryRouter });
 
-    const transferIcon = screen.getByTestId('arrowUp-svg');
+    const transferIcon = screen.getByTestId('transferButton');
     expect(transferIcon).toBeInTheDocument();
   });
 
   test('should init receive', () => {
     const spyReceive = jest.fn();
 
-    render(<AssetBalance {...defaultProps} canMakeActions onReceiveClick={spyReceive} />, { wrapper: MemoryRouter });
+    render(<AssetBalanceCard {...defaultProps} canMakeActions onReceiveClick={spyReceive} />, {
+      wrapper: MemoryRouter,
+    });
 
     const buttons = screen.getAllByRole('button');
     buttons[1].click();
@@ -75,23 +77,24 @@ describe('screen/Balances/AssetBalance', () => {
     expect(spyReceive).toBeCalled();
   });
 
-  test('should show label for unverified balance', () => {
-    render(
-      <AssetBalance
-        asset={testAsset}
-        chainId={testChain.chainId}
-        balance={{
-          assetId: testAsset.assetId.toString(),
-          chainId: testChain.chainId,
-          accountId: TEST_ACCOUNT_ID,
-          free: '10',
-          frozen: '2',
-          verified: false,
-        }}
-      />,
-    );
-
-    const shield = screen.getByTestId('shield-svg');
-    expect(shield).toBeInTheDocument();
-  });
+  // TODO add back when design is ready
+  // test('should show label for unverified balance', () => {
+  //   render(
+  //     <AssetBalanceCard
+  //       asset={testAsset}
+  //       chainId={testChain.chainId}
+  //       balance={{
+  //         assetId: testAsset.assetId.toString(),
+  //         chainId: testChain.chainId,
+  //         accountId: TEST_ACCOUNT_ID,
+  //         free: '10',
+  //         frozen: '2',
+  //         verified: false,
+  //       }}
+  //     />,
+  //   );
+  //
+  //   const shield = screen.getByTestId('shield-svg');
+  //   expect(shield).toBeInTheDocument();
+  // });
 });

@@ -10,6 +10,7 @@ import {
   BodyText,
   FootnoteText,
 } from '@renderer/components/ui-redesign';
+import { HelpText } from '@renderer/components/ui-redesign/Typography/components/HelpText';
 
 export default {
   title: 'Redesign/Typography',
@@ -56,5 +57,11 @@ Body.args = {
 const FootnoteTemplate: ComponentStory<typeof TextBase> = (args) => <FootnoteText {...args} />;
 export const Footnote = FootnoteTemplate.bind({});
 Footnote.args = {
+  children: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et ',
+};
+
+const HelpTextTemplate: ComponentStory<typeof TextBase> = (args) => <HelpText {...args} />;
+export const Help = HelpTextTemplate.bind({});
+Help.args = {
   children: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et ',
 };
