@@ -12,6 +12,9 @@ import { toAddress } from '@renderer/shared/utils/address';
 
 type MultisigChainContextProps = {};
 
+const MULTISIG_RESULT_SUCCESS: string = 'Ok';
+const MULTISIG_RESULT_ERROR: string = 'err';
+
 const MultisigChainContext = createContext<MultisigChainContextProps>({} as MultisigChainContextProps);
 
 export const MultisigChainProvider = ({ children }: PropsWithChildren) => {
@@ -89,16 +92,14 @@ export const MultisigChainProvider = ({ children }: PropsWithChildren) => {
             } with call hash ${event.data[3].toHex()} with result ${event.data[4]}`,
           );
           const multisigResult = event.data[4].toString();
-          let multisigFinalStatus = MultisigTxFinalStatus.EXECUTED;
-          if (multisigResult !== 'Ok' && multisigResult.includes('err')) {
-            multisigFinalStatus = MultisigTxFinalStatus.ERROR;
-          }
           eventCallback(
             account as MultisigAccount,
             event,
             ['PENDING_SIGNED', 'SIGNED'],
             'SIGNED',
-            multisigFinalStatus,
+            multisigResult === MULTISIG_RESULT_SUCCESS && !multisigResult.includes(MULTISIG_RESULT_ERROR)
+              ? MultisigTxFinalStatus.EXECUTED
+              : MultisigTxFinalStatus.ERROR,
           ).catch(console.warn);
         });
         unsubscribeEvents.push(unsubscribeSuccessEvent);
