@@ -37,6 +37,7 @@
   "assetBalance": {
     "locked": "Заблокировано",
     "number": "{value, number}",
+    "numberWithSuffix": "{value, number}{suffix}",
     "reserved": "Зарезервировано",
     "transferable": "Доступно"
   },
@@ -646,6 +647,17 @@
     "hours_one": "{ count } час",
     "hours_other": "{ count } часов",
     "minutesSeconds": "{ minutes }:{ seconds }"
+  },
+  "transactionMessage": {
+    "bond": "Застейкать { amount } { asset }",
+    "destination": "Сменить получателя наград на { address }",
+    "nominate": "Смена валиадаторов",
+    "redeem": "Вывести { amount } { asset }",
+    "restake": "Вернуть { amount } { asset } в стейкинг",
+    "restakeDestination": "вернуть в стейк",
+    "stakeMore": "Увеличить стейкинг на { amount } { asset }",
+    "transfer": "Перевод { amount } { asset } на { address }",
+    "unstake": "Вывод из стейкинга { amount } { asset }"
   },
   "transfer": {
     "amountPlaceholder": "Сумма",

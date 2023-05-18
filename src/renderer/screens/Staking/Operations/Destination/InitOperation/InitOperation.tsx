@@ -135,7 +135,11 @@ const InitOperation = ({ api, chainId, explorers, addressPrefix, identifiers, as
       accounts,
       destination: data.destination || '',
       ...(accountIsMultisig && {
-        description: data.description,
+        description:
+          data.description ||
+          t('transactionMessage.destination', {
+            address: data.destination || t('transactionMessage.restakeDestination'),
+          }),
         signer: activeSignatory?.value,
       }),
     });

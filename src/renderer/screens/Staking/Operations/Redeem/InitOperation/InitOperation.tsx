@@ -182,12 +182,28 @@ const InitOperation = ({
     setTransactions(newTransactions);
   }, [activeRedeemAccounts.length]);
 
+  const {
+    value: formattedValue,
+    decimalPlaces,
+    suffix,
+  } = formatBalance(
+    redeemAmounts.reduce((acc, amount) => acc.add(new BN(amount)), BN_ZERO).toString(),
+    asset.precision,
+  );
+
+  const redeamAmountFormatted = t('assetBalance.numberWithSuffix', {
+    value: formattedValue,
+    maximumFractionDigits: decimalPlaces,
+    suffix,
+  });
+
   const submitRedeem = (data: { description?: string }) => {
     onResult({
       amounts: redeemAmounts,
       accounts: activeRedeemAccounts.map((activeOption) => activeOption.value),
       ...(accountIsMultisig && {
-        description: data.description,
+        description:
+          data.description || t('transactionMessage.redeem', { amount: redeamAmountFormatted, asset: asset.symbol }),
         signer: activeSignatory?.value,
       }),
     });
