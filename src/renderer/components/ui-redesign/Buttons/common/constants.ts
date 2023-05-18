@@ -3,7 +3,7 @@ import { Pallet, Variant } from './types';
 // TODO add action state styles e.g. active, disabled
 export const ViewClass: Record<`${Variant}_${Pallet}`, string> = {
   text_primary:
-    'text-primary-button-background-default active:text-bg-primary-button-background-inactive hover:text-bg-primary-button-background-hover disabled:text-primary-button-background-inactive border-transparent bg-transparent',
+    'text-action-text-default hover:text-action-text border-transparent bg-transparent px-2 py-1',
   text_error: '',
   text_secondary: '', // IDK if it's going to be a thing later, leave it here for now
   fill_primary:

@@ -28,9 +28,9 @@ const InfoLink = ({
     rel="noopener noreferrer"
     target="_blank"
     tabIndex={tabIndex}
-    className={cn(ViewClass['text_primary'], fontClass, showIcon && 'flex items-center gap-x-1', className)}
+    className={cn(ViewClass['text_primary'], fontClass, showIcon && 'flex items-center gap-x-0.5', className)}
   >
-    {showIcon && <Icon name={iconName} size={14} />}
+    {showIcon && <Icon name={iconName} size={16} />}
     {children}
   </a>
 );

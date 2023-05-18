@@ -86,6 +86,7 @@ const Details = ({ tx, account, connection, withAdvanced = true }: Props) => {
               accountId={account.accountId}
               addressPrefix={addressPrefix}
               name={account.name}
+              type="short"
             />
           </DetailsRow>
         )}
@@ -154,6 +155,19 @@ const Details = ({ tx, account, connection, withAdvanced = true }: Props) => {
           </>
         )}
 
+        {withAdvanced && (
+          <Button
+            variant="text"
+            pallet="primary"
+            size="sm"
+            suffixElement={<Icon name={isAdvancedShown ? 'up' : 'down'} size={16} className="text-icon-default" />}
+            className="w-fit"
+            onClick={toggleAdvanced}
+          >
+            {t('operation.advanced')}
+          </Button>
+        )}
+
         {isAdvancedShown && (
           <>
             {callHash && (
@@ -190,6 +204,7 @@ const Details = ({ tx, account, connection, withAdvanced = true }: Props) => {
                   explorers={explorers}
                   address={depositorSignatory.address}
                   name={depositorSignatory.name}
+                  type="short"
                 />
               </DetailsRow>
             )}
@@ -216,7 +231,7 @@ const Details = ({ tx, account, connection, withAdvanced = true }: Props) => {
                     target="_blank"
                     rel="noopener noreferrer"
                   >
-                    <FootnoteText>
+                    <FootnoteText className="text-text-secondary">
                       {blockCreated}-{indexCreated}
                     </FootnoteText>
                     <Icon name="globe" size={16} className="text-icon-default" />
@@ -229,19 +244,6 @@ const Details = ({ tx, account, connection, withAdvanced = true }: Props) => {
           </>
         )}
       </dl>
-
-      {withAdvanced && (
-        <Button
-          variant="text"
-          pallet="primary"
-          size="sm"
-          suffixElement={<Icon name={isAdvancedShown ? 'up' : 'down'} size={16} className="text-icon-default" />}
-          className="my-1 w-fit"
-          onClick={toggleAdvanced}
-        >
-          {t('operation.advanced')}
-        </Button>
-      )}
     </>
   );
 };
