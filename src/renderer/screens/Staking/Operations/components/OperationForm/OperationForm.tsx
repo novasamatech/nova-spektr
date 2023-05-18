@@ -288,7 +288,7 @@ export const OperationForm = ({
           <Controller
             name="description"
             control={control}
-            rules={{ required: true, maxLength: 120 }}
+            rules={{ maxLength: 120 }}
             render={({ field: { onChange, value }, fieldState: { error } }) => (
               <div className="flex flex-col gap-y-2.5">
                 <InputArea
@@ -300,9 +300,6 @@ export const OperationForm = ({
                   value={value}
                   onChange={onChange}
                 />
-                <InputHint active={error?.type === 'required'} variant="error">
-                  {t('transfer.requiredDescriptionError')}
-                </InputHint>
                 <InputHint active={error?.type === 'maxLength'} variant="error">
                   <Trans t={t} i18nKey="transfer.descriptionLengthError" values={{ maxLength: 120 }} />
                 </InputHint>

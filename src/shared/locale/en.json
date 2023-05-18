@@ -37,6 +37,7 @@
   "assetBalance": {
     "locked": "Locked",
     "number": "{value, number}",
+    "numberWithSuffix": "{value, number}{suffix}",
     "reserved": "Reserved",
     "transferable": "Transferable"
   },
@@ -646,6 +647,17 @@
     "hours_one": "{ count } hour",
     "hours_other": "{ count } hours",
     "minutesSeconds": "{ minutes }:{ seconds }"
+  },
+  "transactionMessage": {
+    "bond": "Stake { amount } { asset }",
+    "destination": "Change reward destination to { address }",
+    "nominate": "Change validators",
+    "redeem": "Withdraw { amount } { asset }",
+    "restake": "Return { amount } { asset } to stake",
+    "restakeDestination": "restake",
+    "stakeMore": "Increase stake { amount } { asset }",
+    "transfer": "Transfer { amount } { asset } to { address }",
+    "unstake": "Unstake { amount } { asset }"
   },
   "transfer": {
     "amountPlaceholder": "Amount",

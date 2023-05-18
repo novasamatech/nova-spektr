@@ -180,7 +180,7 @@ const InitOperation = ({ api, chainId, addressPrefix, explorers, staking, identi
       accounts,
       amount: formatAmount(data.amount, asset.precision),
       ...(accountIsMultisig && {
-        description: data.description,
+        description: data.description || t('transactionMessage.restake', { amount: data.amount, asset: asset.symbol }),
         signer: activeSignatory?.value,
       }),
     });
