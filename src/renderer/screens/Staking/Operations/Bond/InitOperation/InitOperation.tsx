@@ -182,7 +182,7 @@ const InitOperation = ({ api, chainId, explorers, identifiers, asset, addressPre
       amount: formatAmount(data.amount, asset.precision),
       destination: data.destination || '',
       ...(accountIsMultisig && {
-        description: data.description,
+        description: data.description || t('transactionMessage.bond', { amount: data.amount, asset: asset.symbol }),
         signer: activeSignatory?.value,
       }),
     });

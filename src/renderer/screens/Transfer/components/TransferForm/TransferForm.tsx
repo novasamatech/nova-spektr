@@ -18,6 +18,8 @@ import { useMultisigTx } from '@renderer/services/multisigTx/multisigTxService';
 import { getAssetId } from '@renderer/shared/utils/assets';
 import { MultisigAccount, Account, isMultisig } from '@renderer/domain/account';
 
+const DESCRIPTION_MAX_LENGTH = 120;
+
 type TransferFormData = {
   amount: string;
   signatory: Address;
@@ -232,6 +234,14 @@ export const TransferForm = ({
     if (multisigTxs.length !== 0) {
       setMultisigTxExist(true);
     } else {
+      description =
+        description ||
+        t('transactionMessage.transfer', {
+          amount,
+          asset: asset.symbol,
+          address: transferTx.args.dest,
+        });
+
       onSubmit(transferTx, { multisigTx, description });
     }
   };
@@ -353,7 +363,7 @@ export const TransferForm = ({
           <Controller
             name="description"
             control={control}
-            rules={{ required: true, maxLength: 120 }}
+            rules={{ maxLength: DESCRIPTION_MAX_LENGTH }}
             render={({ field: { onChange, value }, fieldState: { error } }) => (
               <div className="flex flex-col gap-y-2.5">
                 <InputArea
@@ -364,11 +374,12 @@ export const TransferForm = ({
                   value={value}
                   onChange={onChange}
                 />
-                <InputHint active={error?.type === 'required'} variant="error">
-                  {t('transfer.requiredDescriptionError')}
-                </InputHint>
                 <InputHint active={error?.type === 'maxLength'} variant="error">
-                  <Trans t={t} i18nKey="transfer.descriptionLengthError" values={{ maxLength: 120 }} />
+                  <Trans
+                    t={t}
+                    i18nKey="transfer.descriptionLengthError"
+                    values={{ maxLength: DESCRIPTION_MAX_LENGTH }}
+                  />
                 </InputHint>
               </div>
             )}
