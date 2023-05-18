@@ -90,7 +90,7 @@ export const createTransactionPayload = (
   const events: MultisigEvent[] = approvals.map((a) => ({
     status: 'SIGNED',
     accountId: account.signatories.find((s) => s.accountId === a.toHuman())?.accountId || a.toHex(),
-    dateCreated: dateCreated,
+    dateCreated: a.toHex() === depositor.toHex() ? dateCreated : undefined,
   }));
 
   return {

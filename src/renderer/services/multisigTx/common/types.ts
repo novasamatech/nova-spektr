@@ -3,7 +3,7 @@ import { U8aFixed } from '@polkadot/types';
 import { PalletMultisigMultisig } from '@polkadot/types/lookup';
 
 import { MultisigAccount } from '@renderer/domain/account';
-import { MultisigTransactionDS, ID } from '@renderer/services/storage';
+import { MultisigTransactionDS } from '@renderer/services/storage';
 import { MultisigTransaction } from '@renderer/domain/transaction';
 import { CallData, AccountId, ChainId, CallHash } from '@renderer/domain/shared-kernel';
 
@@ -21,7 +21,7 @@ export interface IMultisigTxService {
   getLiveMultisigTxs: <T extends MultisigTransaction>(where?: Partial<T>) => MultisigTransactionDS[];
   getLiveAccountMultisigTxs: (accountIds: AccountId[]) => MultisigTransactionDS[];
   addMultisigTx: (tx: MultisigTransaction) => Promise<void>;
-  updateMultisigTx: (tx: MultisigTransaction) => Promise<ID[]>;
+  updateMultisigTx: (tx: MultisigTransaction) => Promise<number>;
   deleteMultisigTx: (
     accountId: AccountId,
     chainId: ChainId,

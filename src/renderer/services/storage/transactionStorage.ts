@@ -1,5 +1,5 @@
 import { MultisigTransaction } from '@renderer/domain/transaction';
-import { MultisigTransactionDS, IMultisigTransactionStorage, TMultisigTransaction, ID } from './common/types';
+import { MultisigTransactionDS, IMultisigTransactionStorage, TMultisigTransaction } from './common/types';
 import { AccountId, CallHash, ChainId } from '@renderer/domain/shared-kernel';
 
 export const useTransactionStorage = (db: TMultisigTransaction): IMultisigTransactionStorage => ({
@@ -26,14 +26,20 @@ export const useTransactionStorage = (db: TMultisigTransaction): IMultisigTransa
       await db.add(tx);
     } catch (error) {
       console.warn(
-        `The same TX ${tx.callHash} ${tx.chainId} ${tx.callHash} ${tx.blockCreated} ${tx.indexCreated} already exists. Updating it.`,
+        `The same TX ${tx.accountId} ${tx.chainId} ${tx.callHash} ${tx.blockCreated} ${tx.indexCreated} already exists. Updating it ...`,
       );
-      await db.update([tx.accountId, tx.chainId, tx.callHash, String(tx.blockCreated), String(tx.indexCreated)], tx);
+      let rowsUpdate = await db.update(
+        //@ts-ignore
+        [tx.accountId, tx.chainId, tx.callHash, tx.blockCreated, tx.indexCreated],
+        tx,
+      );
+      console.log(`${rowsUpdate} transaction updated!`);
     }
   },
 
-  updateMultisigTx: (tx: MultisigTransactionDS): Promise<ID[]> => {
-    return db.put(tx);
+  updateMultisigTx: (tx: MultisigTransactionDS): Promise<number> => {
+    //@ts-ignore
+    return db.update([tx.accountId, tx.chainId, tx.callHash, tx.blockCreated, tx.indexCreated], tx);
   },
 
   deleteMultisigTx: (
@@ -43,6 +49,7 @@ export const useTransactionStorage = (db: TMultisigTransaction): IMultisigTransa
     blockCreated: number,
     indexCreated: number,
   ): Promise<void> => {
-    return db.delete([accountId, chainId, callHash, String(blockCreated), String(indexCreated)]);
+    //@ts-ignore
+    return db.delete([accountId, chainId, callHash, blockCreated, indexCreated]);
   },
 });
