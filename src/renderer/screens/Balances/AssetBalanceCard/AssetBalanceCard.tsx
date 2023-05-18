@@ -62,7 +62,7 @@ const AssetBalanceCard = ({ asset, chainId, balance, canMakeActions, onReceiveCl
       role="button"
       tabIndex={0}
       aria-expanded={isExpanded}
-      className={cn('group cursor-pointer bg-block-background-default rounded flex flex-col')}
+      className={cn('group cursor-pointer bg-block-background-default rounded flex flex-col hover:shadow-card-shadow')}
       onClick={toggleExpanded}
       onKeyDown={onWrapperKeyDown}
     >
@@ -74,6 +74,7 @@ const AssetBalanceCard = ({ asset, chainId, balance, canMakeActions, onReceiveCl
               // isVerificationFailed ? 'border-alert bg-warning-gradient' : 'border-shade-30 bg-shade-70',
             )}
           >
+            {/* TODO add back when design is ready */}
             {/*{isVerificationFailed && (*/}
             {/*  <div className="absolute top-0 left-0 w-4 h-4 bg-alert rounded-full flex justify-center items-center">*/}
             {/*    <Icon className="text-neutral-variant" name="shield" size={12} />*/}

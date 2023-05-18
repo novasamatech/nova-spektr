@@ -15,6 +15,7 @@ import ReceiveModal, { ReceivePayload } from '../ReceiveModal/ReceiveModal';
 import { useAccount } from '@renderer/services/account/accountService';
 import { isMultisig } from '@renderer/domain/account';
 import BalancesFilters from '@renderer/screens/Balances/Balances/BalancesFilters';
+import { BodyText } from '@renderer/components/ui-redesign';
 
 const Balances = () => {
   const { t } = useI18n();
@@ -99,7 +100,7 @@ const Balances = () => {
           />
         </header>
 
-        <section className="overflow-y-scroll mt-4 flex flex-col gap-y-4 w-[800px] mx-auto">
+        <section className="overflow-y-scroll mt-4 flex flex-col gap-y-4 w-[800px] mx-auto h-full">
           {accountIds.length > 0 && (
             <ul className="flex-1 flex flex-col gap-y-4">
               {sortedChains.map((chain) => (
@@ -115,10 +116,13 @@ const Balances = () => {
                 />
               ))}
 
-              <div className="hidden only:flex w-full h-full flex-col items-center justify-center">
-                <Icon name="noResults" size={380} />
-                <p className="text-neutral text-3xl font-bold">{t('balances.emptyStateLabel')}</p>
-                <p className="text-neutral-variant text-base font-normal">{t('balances.emptyStateDescription')}</p>
+              <div className="hidden only:flex flex-col items-center justify-center gap-y-8 w-full h-full">
+                <Icon as="img" name="emptyOperations" size={96} />
+                <BodyText align="center" className="text-text-tertiary">
+                  {t('balances.emptyStateLabel')}
+                  <br />
+                  {t('balances.emptyStateDescription')}
+                </BodyText>
               </div>
             </ul>
           )}

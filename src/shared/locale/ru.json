@@ -41,7 +41,7 @@
     "transferable": "Доступно"
   },
   "balances": {
-    "emptyStateDescription": "Попробуйте сбросить фильтры",
+    "emptyStateDescription": "Попробуйте изменить поисковый запрос или сбросить фильтры",
     "emptyStateLabel": "Ничего не найдено",
     "hideZeroBalancesLabel": "Скрыть активы с нулевыми балансами",
     "searchPlaceholder": "Поиск",

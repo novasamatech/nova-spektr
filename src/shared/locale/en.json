@@ -41,8 +41,8 @@
     "transferable": "Transferable"
   },
   "balances": {
-    "emptyStateDescription": "Try to reset filters or search for another key",
-    "emptyStateLabel": "Nothing to show",
+    "emptyStateDescription": "Update the search or cancel filtering.",
+    "emptyStateLabel": "Nothing was found.",
     "hideZeroBalancesLabel": "Hide zero balances",
     "searchPlaceholder": "Search",
     "title": "Assets",
