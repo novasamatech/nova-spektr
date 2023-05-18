@@ -74,8 +74,7 @@ const LogModal = ({ isOpen, onClose, tx, account, connection }: Props) => {
                         {t(getEventMessage(event))}
 
                         <FootnoteText className="ml-auto">
-                          {format(new Date(event.dateCreated || 0), 'p', { locale: dateLocale })}
-                          {/*TODO empty event date handler*/}
+                          {event.dateCreated && format(new Date(event.dateCreated), 'p', { locale: dateLocale })}
                         </FootnoteText>
                       </div>
 
