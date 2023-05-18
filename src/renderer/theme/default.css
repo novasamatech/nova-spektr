@@ -50,11 +50,12 @@
   --switch-background-active: #363643;
   --switch-background-inactive: rgba(69, 69, 137, 0.12);
   --top-nav-bar-background: #f8f8fa;
-  --knob-background: #363643;
+  --knob-background: #fff;
   --tab-background: rgba(69, 69, 137, 0.06);
   --left-navigation-menu-background: #ffffff;
   --main-app-background: rgba(69, 69, 137, 0.04);
   --token-container-background: #ffffff;
+  --token-background: #79797d;
   --input-background: #fff;
   --input-background-disabled: rgba(69, 69, 137, 0.04);
   --action-background-hover: rgba(69, 69, 137, 0.06);

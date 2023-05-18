@@ -66,7 +66,7 @@ describe('screen/Balances/Balances', () => {
 
     render(<Balances />, { wrapper: MemoryRouter });
 
-    const noResults = screen.getByText('balances.emptyStateLabel');
+    const noResults = screen.getByTestId('emptyOperations-img');
     expect(noResults).toBeInTheDocument();
   });
 });
