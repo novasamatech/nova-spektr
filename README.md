@@ -164,6 +164,7 @@ Contributing guide is described in the [CONTRIBUTING.md](https://github.com/nova
 Check the official support channels:
 1. wiki (todo)
 2. telegram group (todo)
+3. GitHub [issues](https://github.com/orgs/nova-wallet/projects/4)
 
 All issues are being tracked in the [Nova Spektr Support project](https://github.com/orgs/nova-wallet/projects/4)
 
