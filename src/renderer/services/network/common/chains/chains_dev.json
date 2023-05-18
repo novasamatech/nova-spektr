@@ -15,6 +15,10 @@
     ],
     "nodes": [
       {
+        "url": "wss://rpc-polkadot.luckyfriday.io",
+        "name": "LuckyFriday node"
+      },
+      {
         "url": "wss://rpc.polkadot.io",
         "name": "Parity node"
       },
@@ -95,6 +99,10 @@
       }
     ],
     "nodes": [
+      {
+        "url": "wss://rpc-kusama.luckyfriday.io",
+        "name": "LuckyFriday node"
+      },
       {
         "url": "wss://rpc.ibp.network/kusama",
         "name": "IBP network node"
@@ -5545,6 +5553,7 @@
         "assetId": 0,
         "symbol": "KSM",
         "precision": 12,
+        "staking": "relaychain",
         "icon": "https://raw.githubusercontent.com/nova-wallet/nova-spektr-utils/main/icons/v1/assets/white/Kusama_(KSM).svg",
         "name": "Kusama"
       }
@@ -5557,7 +5566,20 @@
     ],
     "icon": "https://raw.githubusercontent.com/nova-wallet/nova-spektr-utils/main/icons/v1/chains/Governance2_Testnet.svg",
     "addressPrefix": 2,
-    "externalApi": {}
+    "externalApi": {
+      "staking": [
+        {
+          "type": "subquery",
+          "url": "https://api.subquery.network/sq/nova-wallet/novasama-test-kusama"
+        }
+      ],
+      "history": [
+        {
+          "type": "subquery",
+          "url": "https://api.subquery.network/sq/nova-wallet/novasama-test-kusama"
+        }
+      ]
+    }
   },
   {
     "chainId": "0x6f0f071506de39058fe9a95bbca983ac0e9c5da3443909574e95d52eb078d348",

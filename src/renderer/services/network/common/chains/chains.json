@@ -4504,12 +4504,12 @@
     ],
     "nodes": [
       {
-        "url": "wss://prod-kusama-collator-01.mangatafinance.cloud",
+        "url": "wss://kusama-rpc.mangata.online",
         "name": "Mangata node"
       },
       {
-        "url": "wss://mangata-x.api.onfinality.io/public-ws",
-        "name": "OnFinality node"
+        "url": "wss://kusama-archive.mangata.online",
+        "name": "Mangata archive node"
       }
     ],
     "explorers": [
