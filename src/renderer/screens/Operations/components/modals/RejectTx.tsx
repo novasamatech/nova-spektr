@@ -8,7 +8,6 @@ import { AccountDS, MultisigTransactionDS } from '@renderer/services/storage';
 import { useToggle, useCountdown } from '@renderer/shared/hooks';
 import { MultisigAccount } from '@renderer/domain/account';
 import { ExtendedChain } from '@renderer/services/network/common/types';
-import Chain from '../Chain/Chain';
 import { Signing } from '../ActionSteps/Signing';
 import { Scanning } from '../ActionSteps/Scanning';
 import { Transaction, TransactionType } from '@renderer/domain/transaction';
@@ -22,10 +21,10 @@ import { useTransaction } from '@renderer/services/transaction/transactionServic
 import { useBalance } from '@renderer/services/balance/balanceService';
 import { transferableAmount } from '@renderer/shared/utils/balance';
 import RejectReasonModal from './RejectReasonModal';
-import { ChainFontStyle } from '@renderer/screens/Operations/components/modals/ApproveTx';
 import Confirmation from '@renderer/screens/Operations/components/ActionSteps/Confirmation';
 import { Icon } from '@renderer/components/ui';
 import OperationResult from '@renderer/components/ui-redesign/OperationResult/OperationResult';
+import OperationModalTitle from '@renderer/screens/Operations/components/OperationModalTitle';
 
 type Props = {
   tx: MultisigTransactionDS;
@@ -143,13 +142,6 @@ const RejectTx = ({ tx, account, connection }: Props) => {
     }
   };
 
-  const rejectTitle = (
-    <div className="flex items-center py-1 ml-4">
-      {t('operation.cancelTitle')} {t(transactionTitle)} {t('on')}
-      <Chain className="ml-0.5" chainId={tx.chainId} fontProps={{ className: ChainFontStyle, fontWeight: 'bold' }} />
-    </div>
-  );
-
   const handleQrExpiredWhileSigning = () => {
     setIsQrExpired(true);
     goBack();
@@ -173,7 +165,13 @@ const RejectTx = ({ tx, account, connection }: Props) => {
       <BaseModal
         isOpen={isModalOpen}
         closeButton
-        title={rejectTitle}
+        title={
+          <OperationModalTitle
+            title={`${t('operation.cancelTitle')} ${t(transactionTitle)} ${t('on')}`}
+            chainId={tx.chainId}
+          />
+        }
+        panelClass="w-[440px]"
         contentClass={activeStep === Step.SIGNING ? '' : undefined}
         onClose={handleClose}
       >
