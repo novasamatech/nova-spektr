@@ -202,6 +202,7 @@ export const getTransactionAmount = (tx: Transaction): string | null => {
   }
   if (txType === TransactionType.BATCH_ALL) {
     return getTransactionAmount(tx.args?.transactions?.[0]);
+    // for unstake 1st tx chill and 2nd unbond
   }
 
   return null;

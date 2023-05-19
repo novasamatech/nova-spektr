@@ -57,7 +57,7 @@ const Details = ({ tx, account, connection, withAdvanced = true }: Props) => {
   return (
     <>
       <dl className="flex flex-col gap-y-1 w-full">
-        {description && (
+        {withAdvanced && description && (
           <div className={DescriptionBlockStyle}>
             <FootnoteText as="dt" className={LabelStyle}>
               {t('operation.details.description')}
