@@ -37,11 +37,11 @@ const Operations = () => {
         <h1 className="font-semibold text-2xl text-neutral"> {t('operations.title')}</h1>
       </header>
 
-      <div className="pl-6 mx-auto">
+      <div className="pl-6 mx-auto h-full">
         {!!txs.length && <Filters txs={txs} onChangeFilters={setFilteredTxs} />}
 
         <div className="overflow-y-auto flex-1 mx-auto pt-4">
-          {filteredTxs.length ? (
+          {filteredTxs.length &&
             Object.entries(groupedTxs)
               .sort(sortByDate)
               .map(([date, txs]) => (
@@ -55,11 +55,10 @@ const Operations = () => {
                       ))}
                   </ul>
                 </section>
-              ))
-          ) : (
-            <EmptyOperations />
-          )}
+              ))}
         </div>
+
+        {!filteredTxs.length && <EmptyOperations />}
       </div>
     </div>
   );
