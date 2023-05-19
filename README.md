@@ -102,11 +102,11 @@ Development configuration uses:
 
 Use the following instructions in order to start application in the `dev` environment with hot-reload:
 
-Electron (desktop) environment:
+Electron (desktop) environment - recommended:
 ```bash
 pnpm start:dev
 ```
-Web (browser) environment:
+Web (browser) environment - not recommended:
 ```bash
 pnpm start:renderer:dev
 ```
