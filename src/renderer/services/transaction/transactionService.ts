@@ -247,7 +247,7 @@ export const useTransaction = (): ITransactionService => {
     [TransactionType.RESTAKE]: ({ value }, api) => api.tx.staking.rebond(value),
     [TransactionType.REDEEM]: ({ numSlashingSpans }, api) => api.tx.staking.withdrawUnbonded(numSlashingSpans),
     [TransactionType.NOMINATE]: ({ targets }, api) => api.tx.staking.nominate(targets),
-    [TransactionType.DESTINATION]: ({ targets }, api) => api.tx.staking.setPayee(targets),
+    [TransactionType.DESTINATION]: ({ payee }, api) => api.tx.staking.setPayee(payee),
     [TransactionType.CHILL]: (_, api) => api.tx.staking.chill(),
     [TransactionType.BATCH_ALL]: ({ transactions }, api) => {
       const calls = transactions.map((t: Transaction) => getExtrinsic[t.type](t.args, api).method);
@@ -494,7 +494,12 @@ export const useTransaction = (): ITransactionService => {
 
     if (method === 'setPayee' && section === 'staking') {
       transaction.type = TransactionType.DESTINATION;
-      transaction.args.payee = decoded.args[0].toString();
+      try {
+        transaction.args.payee = JSON.parse(decoded.args[0].toString());
+      } catch (e) {
+        console.warn(e);
+        transaction.args.payee = decoded.args[0].toString();
+      }
     }
 
     return transaction;
