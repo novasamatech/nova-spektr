@@ -494,14 +494,12 @@ export const useTransaction = (): ITransactionService => {
 
     if (method === 'setPayee' && section === 'staking') {
       transaction.type = TransactionType.DESTINATION;
-      let payee = decoded.args[0].toString();
       try {
-        payee = JSON.parse(decoded.args[0].toString());
+        transaction.args.payee = JSON.parse(decoded.args[0].toString());
       } catch (e) {
         console.warn(e);
+        transaction.args.payee = decoded.args[0].toString();
       }
-
-      transaction.args.payee = payee;
     }
 
     return transaction;
