@@ -1,5 +1,6 @@
-import cn from 'classnames';
 import { PropsWithChildren } from 'react';
+
+import cnTw from '@renderer/shared/utils/twMerge';
 
 type Props = {
   active: boolean;
@@ -12,7 +13,7 @@ const InputHint = ({ variant, active, className, children }: PropsWithChildren<P
 
   return (
     <p
-      className={cn(
+      className={cnTw(
         'uppercase font-bold text-2xs',
         variant === 'hint' && 'text-shade-40',
         variant === 'alert' && 'text-alert',

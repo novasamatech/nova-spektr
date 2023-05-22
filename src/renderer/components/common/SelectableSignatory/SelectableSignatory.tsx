@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
-import cn from 'classnames';
 
+import cnTw from '@renderer/shared/utils/twMerge';
 import AccountAddress, {
   getAddress,
   Props as AccountAddressProps,
@@ -58,7 +58,7 @@ const SelectableSignatory = <T extends any>({
       {balance && asset && (
         <BalanceNew value={balance} asset={asset} showIcon={false} className="text-body text-inherit ml-auto mr-6" />
       )}
-      <Icon name="right" className={cn('text-icon-default', !balance && 'ml-auto')} size={20} />
+      <Icon name="right" className={cnTw('text-icon-default', !balance && 'ml-auto')} size={20} />
     </button>
   );
 };

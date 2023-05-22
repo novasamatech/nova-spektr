@@ -1,5 +1,4 @@
-import cn from 'classnames';
-
+import cnTw from '@renderer/shared/utils/twMerge';
 import { formatBalance } from '@renderer/shared/utils/balance';
 import { Asset } from '@renderer/domain/asset';
 import { useI18n } from '@renderer/context/I18nContext';
@@ -22,7 +21,7 @@ const BalanceNew = ({ value, asset, className = 'text-body text-text-primary', s
   });
 
   const balance = (
-    <p className={cn('font-inter', className)}>
+    <p className={cnTw('font-inter', className)}>
       {balanceValue} {suffix} {symbol}
     </p>
   );

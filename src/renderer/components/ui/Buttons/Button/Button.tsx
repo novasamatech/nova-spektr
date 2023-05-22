@@ -1,7 +1,7 @@
-import cn from 'classnames';
 import noop from 'lodash/noop';
 import { MouseEvent, PropsWithChildren, ReactNode } from 'react';
 
+import cnTw from '@renderer/shared/utils/twMerge';
 import { ViewClass, WeightClass } from '../common/constants';
 import { Pallet, Variant } from '../common/types';
 
@@ -35,7 +35,7 @@ const Button = ({
     type={type}
     form={form}
     disabled={disabled}
-    className={cn(
+    className={cnTw(
       'flex items-center justify-center gap-x-2.5 border font-semibold select-none',
       WeightClass[weight],
       ViewClass[`${variant}_${disabled ? 'shade' : pallet}`],
@@ -44,7 +44,7 @@ const Button = ({
     onClick={onClick}
   >
     {prefixElement && <div data-testid="prefix">{prefixElement}</div>}
-    <div className={cn(prefixElement && 'ml-auto', suffixElement && 'ml-0 mr-auto')}>{children}</div>
+    <div className={cnTw(prefixElement && 'ml-auto', suffixElement && 'ml-0 mr-auto')}>{children}</div>
     {suffixElement && <div data-testid="suffix">{suffixElement}</div>}
   </button>
 );
