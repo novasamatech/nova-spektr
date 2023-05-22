@@ -207,13 +207,11 @@ export const getTransactionAmount = (tx: Transaction): string | null => {
     const transactions = tx.args?.transactions;
     if (!transactions) return null;
 
-  const txMatch = transactions.find((tx: Transaction) => tx.type === TransactionType.BOND || tx.type === TransactionType.UNSTAKE);
-  
-  return getTransactionAmount(txMatch, transactions[0]);
-      transactions?.find(
-        (tx: Transaction) => tx.type === TransactionType.BOND || tx.type === TransactionType.UNSTAKE,
-      ) || transactions[0],
+    const txMatch = transactions.find(
+      (tx: Transaction) => tx.type === TransactionType.BOND || tx.type === TransactionType.UNSTAKE,
     );
+
+    return getTransactionAmount(txMatch);
   }
 
   return null;
