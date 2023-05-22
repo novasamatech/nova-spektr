@@ -1,21 +1,18 @@
 import cn from 'classnames';
 import { KeyboardEvent, MouseEvent } from 'react';
-import { Link } from 'react-router-dom';
 
-import Paths from '@renderer/routes/paths';
-import { Icon, Shimmering } from '@renderer/components/ui';
+import { Shimmering } from '@renderer/components/ui';
 import { useI18n } from '@renderer/context/I18nContext';
 import { Asset } from '@renderer/domain/asset';
 import { Balance } from '@renderer/domain/balance';
 import { ChainId } from '@renderer/domain/shared-kernel';
 import { useToggle } from '@renderer/shared/hooks';
-import { createLink } from '@renderer/routes/utils';
 import { totalAmount, transferableAmount } from '@renderer/shared/utils/balance';
 import { KeyboardKey } from '@renderer/shared/utils/constants';
 import { BodyText, IconButton } from '@renderer/components/ui-redesign';
 import { BalanceNew } from '@renderer/components/common';
 import { HelpText } from '@renderer/components/ui-redesign/Typography';
-import { IconButtonStyle } from '@renderer/components/ui-redesign/Buttons/IconButton/IconButton';
+import Transfer from '@renderer/screens/Transfer/Transfer';
 
 type DetailProp = { asset: Asset; value?: string; label: string; showShimmer?: boolean };
 const AssetBalanceDetail = ({ asset, value, label }: DetailProp) => (
@@ -91,13 +88,7 @@ const AssetBalanceCard = ({ asset, chainId, balance, canMakeActions, onReceiveCl
         )}
         {canMakeActions && (
           <div className="flex gap-x-2 ml-3">
-            <Link
-              to={createLink(Paths.TRANSFER, { chainId, assetId: asset.assetId })}
-              className={IconButtonStyle}
-              data-testid="transferButton"
-            >
-              <Icon name="sendArrow" size={16} className="text-inherit" />
-            </Link>
+            <Transfer chainId={chainId} assetId={asset.assetId} />
             <IconButton name="receiveArrow" onClick={onReceive} />
           </div>
         )}

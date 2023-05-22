@@ -1,12 +1,13 @@
 import { BN } from '@polkadot/util';
 import { useEffect, useState } from 'react';
 import { Controller, useForm, SubmitHandler } from 'react-hook-form';
-import { Trans } from 'react-i18next';
 import { ApiPromise } from '@polkadot/api';
+import cn from 'classnames';
+import { Trans } from 'react-i18next';
 
-import { pasteAddressHandler, toAccountId, validateAddress, toAddress } from '@renderer/shared/utils/address';
-import { Button, AmountInput, Icon, Identicon, Input, InputHint, Block, InputArea } from '@renderer/components/ui';
-import { Fee, Deposit } from '@renderer/components/common';
+import { toAccountId, validateAddress, toAddress } from '@renderer/shared/utils/address';
+import { Icon, Identicon } from '@renderer/components/ui';
+import { Fee, Deposit, BalanceNew } from '@renderer/components/common';
 import { useI18n } from '@renderer/context/I18nContext';
 import { Asset, AssetType } from '@renderer/domain/asset';
 import { Transaction, MultisigTxInitStatus, TransactionType } from '@renderer/domain/transaction';
@@ -17,6 +18,7 @@ import { useTransaction } from '@renderer/services/transaction/transactionServic
 import { useMultisigTx } from '@renderer/services/multisigTx/multisigTxService';
 import { getAssetId } from '@renderer/shared/utils/assets';
 import { MultisigAccount, Account, isMultisig } from '@renderer/domain/account';
+import { Button, FootnoteText, Input, InputHint } from '@renderer/components/ui-redesign';
 
 const DESCRIPTION_MAX_LENGTH = 120;
 
@@ -39,17 +41,7 @@ type Props = {
   onSubmit: (transferTx: Transaction, multisig?: { multisigTx: Transaction; description: string }) => void;
 };
 
-export const TransferForm = ({
-  api,
-  chainId,
-  network,
-  account,
-  signer,
-  asset,
-  nativeToken,
-  addressPrefix,
-  onSubmit,
-}: Props) => {
+export const TransferForm = ({ api, chainId, account, signer, asset, nativeToken, addressPrefix, onSubmit }: Props) => {
   const { t } = useI18n();
   const { getBalance } = useBalance();
   const { getMultisigTxs } = useMultisigTx();
@@ -72,7 +64,6 @@ export const TransferForm = ({
     control,
     watch,
     trigger,
-    resetField,
     formState: { isValid },
   } = useForm<TransferFormData>({
     mode: 'onChange',
@@ -246,12 +237,18 @@ export const TransferForm = ({
     }
   };
 
+  const prefixElement = (
+    <div className="flex items-center gap-1">
+      <div className={cn('border rounded-full w-6 h-6 box-border border-shade-30 bg-shade-70')}>
+        <img src={asset.icon} alt={asset.name} width={26} height={26} />
+      </div>
+      <p className="text-lg">{asset.symbol}</p>
+    </div>
+  );
+
   return (
     <form className="w-full" onSubmit={handleSubmit(submitTransaction)}>
-      <Block className="flex flex-col gap-y-5 p-5 mb-2.5">
-        <p className="text-neutral text-base">
-          <Trans t={t} i18nKey="transfer.formTitle" values={{ asset: asset.symbol, network }} />
-        </p>
+      <div className="flex flex-col gap-y-5 mb-2.5">
         <Controller
           name="destination"
           control={control}
@@ -260,27 +257,16 @@ export const TransferForm = ({
             <div className="flex flex-col gap-y-2.5">
               <Input
                 prefixElement={
-                  value && !error ? <Identicon address={value} background={false} /> : <Icon name="emptyIdenticon" />
-                }
-                suffixElement={
-                  value ? (
-                    <button
-                      className="text-neutral"
-                      type="button"
-                      onClick={() => resetField('destination', { defaultValue: '' })}
-                    >
-                      <Icon name="clearOutline" />
-                    </button>
+                  value && !error ? (
+                    <Identicon size={20} address={value} background={false} />
                   ) : (
-                    <Button variant="outline" pallet="primary" onClick={pasteAddressHandler(onChange)}>
-                      {t('general.button.pasteButton')}
-                    </Button>
+                    <Icon size={20} name="emptyIdenticon" />
                   )
                 }
                 className="w-full"
                 invalid={Boolean(error)}
                 value={value}
-                label={t('transfer.recipientLabel')}
+                label={<FootnoteText>{t('transfer.recipientLabel')}</FootnoteText>}
                 placeholder={t('transfer.recipientLabel')}
                 onChange={onChange}
               />
@@ -308,11 +294,26 @@ export const TransferForm = ({
           }}
           render={({ field: { onChange, value }, fieldState: { error } }) => (
             <div className="flex flex-col gap-y-2.5">
-              <AmountInput
+              <Input
+                className="text-right text-title font-extrabold"
+                label={
+                  <div className="flex justify-between">
+                    <FootnoteText className="text-text-tertiary">{t('general.input.amountLabel')}</FootnoteText>
+                    <FootnoteText className="text-text-tertiary">
+                      {t('general.input.availableLabel')}{' '}
+                      <BalanceNew
+                        className="inline text-text-primary"
+                        value={accountBalance}
+                        asset={asset}
+                        showIcon={false}
+                      />
+                    </FootnoteText>
+                  </div>
+                }
                 value={value}
                 placeholder={t('transfer.amountPlaceholder')}
-                asset={asset}
-                balance={accountBalance}
+                invalid={Boolean(error)}
+                prefixElement={prefixElement}
                 onChange={onChange}
               />
               <InputHint active={error?.type === 'insufficientBalance'} variant="error">
@@ -333,6 +334,33 @@ export const TransferForm = ({
             </div>
           )}
         />
+
+        {isMultisig(account) && (
+          <Controller
+            name="description"
+            control={control}
+            rules={{ maxLength: DESCRIPTION_MAX_LENGTH }}
+            render={({ field: { onChange, value }, fieldState: { error } }) => (
+              <div className="flex flex-col gap-y-2.5">
+                <Input
+                  className="w-full"
+                  label={t('transfer.descriptionLabel')}
+                  placeholder={t('transfer.descriptionPlaceholder')}
+                  invalid={Boolean(error)}
+                  value={value}
+                  onChange={onChange}
+                />
+                <InputHint active={error?.type === 'maxLength'} variant="error">
+                  <Trans
+                    t={t}
+                    i18nKey="transfer.descriptionLengthError"
+                    values={{ maxLength: DESCRIPTION_MAX_LENGTH }}
+                  />
+                </InputHint>
+              </div>
+            )}
+          />
+        )}
 
         <div className="grid grid-flow-row grid-cols-2 items-center gap-y-5">
           <p className="uppercase text-neutral-variant text-2xs">{t('transfer.networkFee')}</p>
@@ -356,48 +384,12 @@ export const TransferForm = ({
             </>
           )}
         </div>
-      </Block>
+      </div>
+      <InputHint className="mt-2.5" active={multisigTxExist} variant="error">
+        {t('transfer.multisigTransactionExist')}
+      </InputHint>
 
-      {isMultisig(account) && (
-        <Block>
-          <Controller
-            name="description"
-            control={control}
-            rules={{ maxLength: DESCRIPTION_MAX_LENGTH }}
-            render={({ field: { onChange, value }, fieldState: { error } }) => (
-              <div className="flex flex-col gap-y-2.5">
-                <InputArea
-                  className="w-full"
-                  placeholder={t('transfer.descriptionPlaceholder')}
-                  invalid={Boolean(error)}
-                  rows={2}
-                  value={value}
-                  onChange={onChange}
-                />
-                <InputHint active={error?.type === 'maxLength'} variant="error">
-                  <Trans
-                    t={t}
-                    i18nKey="transfer.descriptionLengthError"
-                    values={{ maxLength: DESCRIPTION_MAX_LENGTH }}
-                  />
-                </InputHint>
-              </div>
-            )}
-          />
-          <InputHint className="mt-2.5" active={multisigTxExist} variant="error">
-            {t('transfer.multisigTransactionExist')}
-          </InputHint>
-        </Block>
-      )}
-
-      <Button
-        variant="fill"
-        pallet="primary"
-        weight="lg"
-        className="w-fit flex-0 m-auto mt-5"
-        type="submit"
-        disabled={!isValid}
-      >
+      <Button variant="fill" pallet="primary" className="w-fit flex-0 mt-5 ml-auto" type="submit" disabled={!isValid}>
         {t('transfer.continueButton')}
       </Button>
     </form>

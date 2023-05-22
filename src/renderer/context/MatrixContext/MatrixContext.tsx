@@ -220,6 +220,8 @@ export const MatrixProvider = ({ children }: PropsWithChildren) => {
     const mstAccountIsValid = accountId === getMultisigAccountId(signatories, threshold);
     const callDataIsValid = !callData || validateCallData(callData, callHash);
 
+    console.log('params6', senderAccountId);
+
     return senderIsSignatory && mstAccountIsValid && callDataIsValid;
   };
 

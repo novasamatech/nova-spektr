@@ -180,6 +180,7 @@ const QrReader = ({ size = 300, cameraId, className, onCameraList, onResult, onP
 
         const stringPayload = JSON.stringify(frame.data.payload);
         const isPacketExist = packets.current.get(stringPayload);
+
         if (isPacketExist) return;
 
         packets.current.set(stringPayload, frame.data.payload);

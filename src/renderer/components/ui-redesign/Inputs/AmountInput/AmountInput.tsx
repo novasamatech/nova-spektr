@@ -30,7 +30,7 @@ const Input = forwardRef<HTMLInputElement, Props>(
           invalid && 'border-filter-border-negative',
           'hover:enabled:shadow-card-shadow',
           'disabled:bg-input-background-disabled disabled:text-text-tertiary disabled:placeholder:text-text-tertiary',
-          'flex-1 gap-2 border-filter-border',
+          'flex-1 border-filter-border',
           wrapperClass,
         )}
       >
@@ -53,9 +53,7 @@ const Input = forwardRef<HTMLInputElement, Props>(
 
     return (
       <div className="flex flex-col gap-2">
-        <LabelText className="text-text-tertiary" htmlFor={id}>
-          {label}
-        </LabelText>
+        <LabelText htmlFor={id}>{label}</LabelText>
         {inputElement}
       </div>
     );
