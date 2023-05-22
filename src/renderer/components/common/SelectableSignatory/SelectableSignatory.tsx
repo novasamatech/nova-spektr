@@ -40,7 +40,7 @@ const SelectableSignatory = <T extends any>({
   const popoverItems = useAddressInfo(address, explorers);
   const account = getLiveAccounts().find((a) => toAddress(a.accountId) === address);
   const { getBalance } = useBalance();
-  const [balance, setBalance] = useState<string>('');
+  const [balance, setBalance] = useState('');
 
   useEffect(() => {
     if (chainId && asset) {
