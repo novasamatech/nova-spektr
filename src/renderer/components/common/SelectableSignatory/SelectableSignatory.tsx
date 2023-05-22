@@ -38,7 +38,7 @@ const SelectableSignatory = <T extends any>({
   const { getLiveAccounts } = useAccount();
   const address = getAddress(addressProps);
   const popoverItems = useAddressInfo(address, explorers);
-  const accountFromUser = getLiveAccounts().find((account) => toAddress(account.accountId) === address);
+  const account = getLiveAccounts().find((a) => toAddress(a.accountId) === address);
   const { getBalance } = useBalance();
   const [balance, setBalance] = useState<string>('');
 
@@ -55,12 +55,7 @@ const SelectableSignatory = <T extends any>({
       className="group flex items-center cursor-pointer hover:bg-action-background-hover px-2 py-1.5 rounded w-full text-text-secondary active:text-text-primary"
       onClick={() => onSelected(value)}
     >
-      <AccountAddress
-        addressFont="text-body text-inherit"
-        size={size}
-        name={accountFromUser?.name || name}
-        {...addressProps}
-      />
+      <AccountAddress addressFont="text-body text-inherit" size={size} name={account?.name || name} {...addressProps} />
       <InfoPopover data={popoverItems}>
         <Icon name="info" size={14} className="text-icon-default ml-2 mr-auto" />
       </InfoPopover>
