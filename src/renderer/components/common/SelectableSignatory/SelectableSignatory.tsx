@@ -64,9 +64,7 @@ const SelectableSignatory = <T extends any>({
       <InfoPopover data={popoverItems}>
         <Icon name="info" size={14} className="text-icon-default ml-2 mr-auto" />
       </InfoPopover>
-      {balance && asset && (
-        <BalanceNew value={balance} asset={asset} showIcon={false} className="text-body text-inherit ml-auto mr-6" />
-      )}
+      {balance && asset && <BalanceNew value={balance} asset={asset} className="text-body text-inherit ml-auto mr-6" />}
       <Icon name="right" className={cn('text-icon-default', !balance && 'ml-auto')} size={20} />
     </button>
   );

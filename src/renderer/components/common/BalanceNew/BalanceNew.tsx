@@ -16,7 +16,7 @@ const BalanceNew = ({
   value,
   asset,
   className = 'text-body text-text-primary',
-  showIcon = true,
+  showIcon = false,
   imgClassName = 'bg-token-background',
 }: Props) => {
   const { t } = useI18n();
