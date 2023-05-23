@@ -1,7 +1,7 @@
 import { ApiPromise } from '@polkadot/api';
 import BigNumber from 'bignumber.js';
 
-import { AccountID } from '@renderer/domain/shared-kernel';
+import { Address } from '@renderer/domain/shared-kernel';
 import { ApyValidator } from './common/types';
 import { DECAY_RATE, INTEREST_IDEAL, MINIMUM_INFLATION, STAKED_PORTION_IDEAL } from './common/constants';
 
@@ -35,7 +35,7 @@ const getApyForValidators = (
   totalStaked: BigNumber,
   avgRewardPercent: number,
   validators: ApyValidator[],
-): Record<AccountID, number> => {
+): Record<Address, number> => {
   const avgStake = totalStaked.div(validators.length);
 
   return validators.reduce((acc, validator) => {
@@ -78,7 +78,7 @@ const getMedianCommission = (validators: ApyValidator[]): number => {
 export const getValidatorsApy = async (
   api: ApiPromise,
   validators: ApyValidator[],
-): Promise<Record<AccountID, number>> => {
+): Promise<Record<Address, number>> => {
   const totalIssuance = await getTotalIssuance(api);
   const totalStaked = validators.reduce((acc, { totalStake }) => {
     return acc.plus(new BigNumber(totalStake));

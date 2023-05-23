@@ -1,5 +1,5 @@
 import { useI18n } from '@renderer/context/I18nContext';
-import { formatBalance } from '@renderer/services/balance/common/utils';
+import { formatBalance } from '@renderer/shared/utils/balance';
 
 interface Props {
   value: string;

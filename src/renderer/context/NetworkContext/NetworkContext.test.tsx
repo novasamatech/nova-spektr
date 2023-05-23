@@ -4,7 +4,7 @@ import { ConnectionStatus, ConnectionType } from '@renderer/domain/connection';
 import { useBalance } from '@renderer/services/balance/balanceService';
 import { useNetwork } from '@renderer/services/network/networkService';
 import { NetworkProvider, useNetworkContext } from './NetworkContext';
-import { TEST_ADDRESS, TEST_PUBLIC_KEY } from '@renderer/shared/utils/constants';
+import { TEST_ACCOUNT_ID } from '@renderer/shared/utils/constants';
 
 jest.mock('@renderer/services/network/networkService', () => ({
   useNetwork: jest.fn().mockReturnValue({
@@ -20,29 +20,19 @@ jest.mock('@renderer/services/balance/balanceService', () => ({
   }),
 }));
 
-jest.mock('@renderer/services/account/accountService', () => ({
-  useAccount: jest.fn().mockReturnValue({
-    getActiveAccounts: jest.fn(),
-  }),
-}));
-
 jest.mock('@renderer/services/subscription/subscriptionService', () => ({
   useSubscription: jest.fn().mockReturnValue({
     subscribe: jest.fn(),
     hasSubscription: jest.fn(),
     unsubscribe: jest.fn(),
+    unsubscribeAll: jest.fn(),
   }),
 }));
 
 jest.mock('@renderer/services/account/accountService', () => ({
   useAccount: jest.fn().mockReturnValue({
-    getActiveAccounts: () => [
-      {
-        name: 'Test Wallet',
-        accountId: TEST_ADDRESS,
-        publicKey: TEST_PUBLIC_KEY,
-      },
-    ],
+    getActiveAccounts: () => [{ name: 'Test Wallet', accountId: TEST_ACCOUNT_ID }],
+    getLiveAccounts: () => [{ name: 'Test Wallet', accountId: TEST_ACCOUNT_ID }],
   }),
 }));
 

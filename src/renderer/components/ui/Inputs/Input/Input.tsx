@@ -1,35 +1,31 @@
 import cn from 'classnames';
-import { InputHTMLAttributes, ReactNode, forwardRef } from 'react';
+import { ReactNode, ComponentPropsWithoutRef, forwardRef } from 'react';
 
-export interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
-  weight?: 'md' | 'lg';
+import { HTMLInputProps } from '../common/types';
+
+interface Props extends Pick<ComponentPropsWithoutRef<'input'>, HTMLInputProps> {
   label?: ReactNode;
+  disabledStyle?: boolean;
   invalid?: boolean;
   wrapperClass?: string;
-  disabledStyle?: boolean;
   prefixElement?: ReactNode;
   suffixElement?: ReactNode;
+  onChange?: (value: string) => void;
 }
 
-const Input = forwardRef<HTMLInputElement, InputProps>(
+const Input = forwardRef<HTMLInputElement, Props>(
   (
     {
-      id,
       type = 'text',
-      weight = 'lg',
       label = '',
-      required,
-      placeholder,
-      name,
-      disabled,
       disabledStyle,
       className,
       wrapperClass,
-      value,
       invalid = false,
       prefixElement,
       suffixElement,
       onChange,
+      ...props
     },
     ref,
   ) => (
@@ -45,27 +41,22 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
     >
       {prefixElement}
       {label && (
-        <div className="absolute top-2.5 font-bold text-neutral-variant uppercase text-xs w-full pr-5">{label}</div>
+        <div className="absolute top-2.5 font-bold text-neutral-variant uppercase text-2xs w-full pr-5">{label}</div>
       )}
       <input
         className={cn(
-          'rounded-sm leading-5 bg-transparent flex-1 focus:outline-none focus:text-primary',
-          disabledStyle ? 'text-shade-40' : value && !invalid && 'text-neutral',
+          'rounded-sm leading-5 bg-transparent flex-1 placeholder-shade-30 focus:text-primary',
+          disabledStyle ? 'text-shade-40' : props.value && !invalid && 'text-neutral',
           invalid && 'text-error',
           label && 'py-1 my-4',
           prefixElement && 'ml-2',
           suffixElement && 'mr-2',
           className,
         )}
-        required={required}
-        id={id}
         ref={ref}
-        disabled={disabled}
-        value={value}
         type={type}
-        name={name}
-        placeholder={placeholder}
-        onChange={onChange}
+        onChange={(event) => onChange?.(event.target.value)}
+        {...props}
       />
       {suffixElement}
     </label>

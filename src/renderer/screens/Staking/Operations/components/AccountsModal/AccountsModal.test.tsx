@@ -1,19 +1,14 @@
 import { render, screen } from '@testing-library/react';
 
 import { Asset } from '@renderer/domain/asset';
-import { AccountDS } from '@renderer/services/storage';
-import { SigningType } from '@renderer/domain/shared-kernel';
+import { SigningType, ChainType, CryptoType } from '@renderer/domain/shared-kernel';
 import AccountsModal from './AccountsModal';
+import { Account } from '@renderer/domain/account';
 
 jest.mock('@renderer/context/I18nContext', () => ({
   useI18n: jest.fn().mockReturnValue({
     t: (key: string) => key,
   }),
-}));
-
-window.IntersectionObserver = jest.fn().mockImplementation(() => ({
-  observe: jest.fn(),
-  disconnect: jest.fn(),
 }));
 
 describe('screens/Staking/components/AccountsModal', () => {
@@ -23,21 +18,33 @@ describe('screens/Staking/components/AccountsModal', () => {
     asset: { symbol: 'DOT', precision: 10 } as Asset,
     accounts: [
       {
-        accountId: '12QkLhnKL5vXsa7e74CC45RUSqA5fRqc8rKHzXYZb82ppZap',
+        accountId: '0x12QkLhnKL5vXsa7e74CC45RUSqA5fRqc8rKHzXYZb82ppZap',
         name: 'address_1',
         signingType: SigningType.WATCH_ONLY,
+        chainType: ChainType.SUBSTRATE,
+        cryptoType: CryptoType.SR25519,
+        isMain: false,
+        isActive: false,
       },
       {
-        accountId: 'EGSgCCMmg5vePv611bmJpgdy7CaXaHayqPH8XwgD1jetWjN',
+        accountId: '0xEGSgCCMmg5vePv611bmJpgdy7CaXaHayqPH8XwgD1jetWjN',
         name: 'address_2',
         signingType: SigningType.PARITY_SIGNER,
+        chainType: ChainType.SUBSTRATE,
+        cryptoType: CryptoType.SR25519,
+        isMain: false,
+        isActive: false,
       },
       {
-        accountId: '5H46Nxu6sJvTYe4rSUxYTUU6pG5dh6jZq66je2g7SLE3RCj6',
+        accountId: '0x5H46Nxu6sJvTYe4rSUxYTUU6pG5dh6jZq66je2g7SLE3RCj6',
         name: 'address_3',
         signingType: SigningType.PARITY_SIGNER,
+        chainType: ChainType.SUBSTRATE,
+        cryptoType: CryptoType.SR25519,
+        isMain: false,
+        isActive: false,
       },
-    ] as AccountDS[],
+    ] as Account[],
     onClose: () => {},
   };
 

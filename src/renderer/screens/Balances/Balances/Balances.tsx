@@ -1,24 +1,27 @@
 import { useEffect, useState } from 'react';
 
-import { Icon, Input, Switch } from '@renderer/components/ui';
+import { Icon } from '@renderer/components/ui';
 import { useI18n } from '@renderer/context/I18nContext';
 import { useNetworkContext } from '@renderer/context/NetworkContext';
 import { Asset } from '@renderer/domain/asset';
 import { Chain } from '@renderer/domain/chain';
 import { ConnectionType } from '@renderer/domain/connection';
-import { ChainId, PublicKey, SigningType } from '@renderer/domain/shared-kernel';
+import { ChainId, AccountId, SigningType } from '@renderer/domain/shared-kernel';
 import { useToggle } from '@renderer/shared/hooks';
 import { useChains } from '@renderer/services/network/chainsService';
 import { useSettingsStorage } from '@renderer/services/settings/settingsStorage';
 import NetworkBalances from '../NetworkBalances/NetworkBalances';
 import ReceiveModal, { ReceivePayload } from '../ReceiveModal/ReceiveModal';
 import { useAccount } from '@renderer/services/account/accountService';
+import { isMultisig } from '@renderer/domain/account';
+import BalancesFilters from '@renderer/screens/Balances/Balances/BalancesFilters';
+import { BodyText } from '@renderer/components/ui-redesign';
 
 const Balances = () => {
   const { t } = useI18n();
 
   const [query, setQuery] = useState('');
-  const [publicKeys, setPublicKeys] = useState<PublicKey[]>([]);
+  const [accountIds, setAccountIds] = useState<AccountId[]>([]);
   const [usedChains, setUsedChains] = useState<Record<ChainId, boolean>>({});
   const [receiveData, setReceiveData] = useState<ReceivePayload>();
 
@@ -39,39 +42,43 @@ const Balances = () => {
 
   useEffect(() => {
     if (activeAccounts.length === 0) {
-      setPublicKeys([]);
+      setAccountIds([]);
 
       return;
     }
 
-    const activePublicKeys = activeAccounts.reduce<PublicKey[]>((acc, account) => {
-      return account.publicKey ? [...acc, account.publicKey] : acc;
+    const activeAccountIds = activeAccounts.reduce<AccountId[]>((acc, account) => {
+      return account.accountId ? [...acc, account.accountId] : acc;
     }, []);
 
     const usedChains = activeAccounts.reduce<Record<ChainId, boolean>>((acc, account) => {
       return account.chainId ? { ...acc, [account.chainId]: true } : acc;
     }, {});
 
-    setPublicKeys(activePublicKeys);
+    setAccountIds(activeAccountIds);
     setUsedChains(usedChains);
   }, [activeAccounts.length]);
 
   const hasRootAccount = activeAccounts.some((account) => !account.rootId);
 
   const sortedChains = sortChains(
-    Object.values(connections).filter(
-      (c) => c.connection.connectionType !== ConnectionType.DISABLED && (hasRootAccount || usedChains[c.chainId]),
-    ),
+    Object.values(connections).filter((c) => {
+      const isDisabled = c.connection.connectionType !== ConnectionType.DISABLED;
+      const rootOrChain = hasRootAccount || usedChains[c.chainId];
+      const hasMultisigAccount = activeAccounts.some(isMultisig);
+      const hasMultiPallet = !hasMultisigAccount || Boolean(c.api?.tx.multisig);
+
+      return isDisabled && rootOrChain && hasMultiPallet;
+    }),
   );
 
   const searchSymbolOnly = sortedChains.some((chain) =>
     chain.assets.some((a) => a.symbol.toLowerCase() === query.toLowerCase()),
   );
 
-  const checkCanMakeActions = (chainId: ChainId) => {
-    return activeAccounts.some(
-      (account) =>
-        account.signingType === SigningType.PARITY_SIGNER && (!account.rootId || account.chainId === chainId),
+  const checkCanMakeActions = (): boolean => {
+    return activeAccounts.some((account) =>
+      [SigningType.MULTISIG, SigningType.PARITY_SIGNER].includes(account.signingType),
     );
   };
 
@@ -82,53 +89,47 @@ const Balances = () => {
 
   return (
     <>
-      <div className="h-full flex flex-col gap-y-9">
-        <h1 className="font-semibold text-2xl text-neutral mt-5 px-5">{t('balances.title')}</h1>
+      <div className="h-full flex flex-col items-start relative bg-main-app-background">
+        <header className="w-full px-6 py-4.5 bg-top-nav-bar-background border-b border-container-border flex justify-between">
+          <h1 className="font-semibold text-2xl text-neutral mt-5 px-5">{t('balances.title')}</h1>
+          <BalancesFilters
+            searchQuery={query}
+            hideZeroBalances={hideZeroBalance}
+            onSearchChange={setQuery}
+            onZeroBalancesChange={updateHideZeroBalance}
+          />
+        </header>
 
-        <div className="overflow-y-scroll">
-          <section className="flex flex-col gap-y-5 w-[900px] p-5 mb-28 mx-auto bg-shade-2 rounded-2lg">
-            <div className="flex justify-between items-center mb-5">
-              <Input
-                wrapperClass="!bg-shade-5 w-[300px]"
-                prefixElement={<Icon name="search" className="w-5 h-5" />}
-                value={query}
-                placeholder={t('balances.searchPlaceholder')}
-                onChange={(e) => setQuery(e.target.value)}
-              />
-              <div className="text-sm text-neutral font-semibold flex gap-2.5">
-                <Switch checked={hideZeroBalance} onChange={updateHideZeroBalance}>
-                  {t('balances.hideZeroBalancesLabel')}
-                </Switch>
+        <section className="overflow-y-scroll mt-4 flex flex-col gap-y-4 w-[800px] mx-auto h-full">
+          {accountIds.length > 0 && (
+            <ul className="flex-1 flex flex-col gap-y-4">
+              {sortedChains.map((chain) => (
+                <NetworkBalances
+                  key={chain.chainId}
+                  hideZeroBalance={hideZeroBalance}
+                  searchSymbolOnly={searchSymbolOnly}
+                  query={query.toLowerCase()}
+                  chain={chain}
+                  accountIds={accountIds}
+                  canMakeActions={checkCanMakeActions()}
+                  onReceiveClick={onReceive(chain)}
+                />
+              ))}
+
+              <div className="hidden only:flex flex-col items-center justify-center gap-y-8 w-full h-full">
+                <Icon as="img" name="emptyOperations" size={96} />
+                <BodyText align="center" className="text-text-tertiary">
+                  {t('balances.emptyStateLabel')}
+                  <br />
+                  {t('balances.emptyStateDescription')}
+                </BodyText>
               </div>
-            </div>
-
-            {publicKeys.length > 0 && (
-              <ul className="flex-1">
-                {sortedChains.map((chain) => (
-                  <NetworkBalances
-                    key={chain.chainId}
-                    hideZeroBalance={hideZeroBalance}
-                    searchSymbolOnly={searchSymbolOnly}
-                    query={query?.toLowerCase() || ''}
-                    chain={chain}
-                    publicKeys={publicKeys}
-                    canMakeActions={checkCanMakeActions(chain.chainId)}
-                    onReceiveClick={onReceive(chain)}
-                  />
-                ))}
-
-                <div className="hidden only:flex w-full h-full flex-col items-center justify-center">
-                  <Icon name="noResults" size={380} />
-                  <p className="text-neutral text-3xl font-bold">{t('balances.emptyStateLabel')}</p>
-                  <p className="text-neutral-variant text-base font-normal">{t('balances.emptyStateDescription')}</p>
-                </div>
-              </ul>
-            )}
-          </section>
-        </div>
+            </ul>
+          )}
+        </section>
       </div>
 
-      <ReceiveModal data={receiveData} isOpen={isReceiveOpen} onClose={toggleReceive} />
+      {receiveData && <ReceiveModal data={receiveData} isOpen={isReceiveOpen} onClose={toggleReceive} />}
     </>
   );
 };

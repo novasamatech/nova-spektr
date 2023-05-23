@@ -2,6 +2,7 @@ import { useLiveQuery } from 'dexie-react-hooks';
 
 import storage, { ContactDS } from '@renderer/services/storage';
 import { IContactService } from './common/types';
+import { Contact } from '@renderer/domain/contact';
 
 export const useContact = (): IContactService => {
   const contactStorage = storage.connectTo('contacts');
@@ -11,12 +12,12 @@ export const useContact = (): IContactService => {
   }
   const { getContact, getContacts, addContact, updateContact, deleteContact } = contactStorage;
 
-  const getLiveContacts = (where?: Record<string, any>): ContactDS[] => {
+  const getLiveContacts = <T extends Contact>(where?: Partial<T>): ContactDS[] => {
     const query = () => {
       try {
         return getContacts(where);
       } catch (error) {
-        console.warn('Error trying to get active wallet');
+        console.warn('Error trying to get contacts');
 
         return Promise.resolve([]);
       }

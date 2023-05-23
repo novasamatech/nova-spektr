@@ -14,6 +14,7 @@ type Props = {
   disabled?: boolean;
   prefixElement?: ReactNode;
   suffixElement?: ReactNode;
+  callback?: () => void;
 };
 
 const ButtonLink = ({
@@ -26,6 +27,7 @@ const ButtonLink = ({
   children,
   prefixElement,
   suffixElement,
+  callback,
 }: PropsWithChildren<Props>) => {
   const classes = cn(
     'flex items-center justify-center gap-x-2.5 border font-semibold select-none',
@@ -37,7 +39,7 @@ const ButtonLink = ({
   const content = (
     <>
       {prefixElement && <div data-testid="prefix">{prefixElement}</div>}
-      <div className={cn(prefixElement && 'ml-auto', suffixElement && 'ml-0 mr-auto')}>{children}</div>
+      <div className={cn((prefixElement || suffixElement) && 'ml-0 mr-auto')}>{children}</div>
       {suffixElement && <div data-testid="suffix">{suffixElement}</div>}
     </>
   );
@@ -45,7 +47,7 @@ const ButtonLink = ({
   return disabled ? (
     <div className={classes}>{content}</div>
   ) : (
-    <Link to={to} className={classes}>
+    <Link to={to} className={classes} onClick={callback}>
       {content}
     </Link>
   );

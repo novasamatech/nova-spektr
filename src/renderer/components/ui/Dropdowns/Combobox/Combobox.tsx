@@ -1,26 +1,24 @@
-import { Fragment, ReactNode, useState } from 'react';
+import { ComponentPropsWithoutRef, Fragment, ReactNode, useState } from 'react';
 import { Transition, Combobox as HeadlessCombobox } from '@headlessui/react';
 import cn from 'classnames';
 
 import { Input } from '@renderer/components/ui';
 import { ViewClass, DropdownClass } from '../common/constants';
-import { DropdownOption, DropdownResult, Variant } from '../common/types';
+import { DropdownOption, DropdownResult, HTMLComboboxProps, Variant } from '../common/types';
 import { includes } from '@renderer/shared/utils/strings';
 
-type Props = {
-  className?: string;
-  placeholder: string;
+interface Props extends Pick<ComponentPropsWithoutRef<'input'>, HTMLComboboxProps> {
   label?: ReactNode;
-  value?: DropdownOption['value'];
+  invalid?: boolean;
   options: DropdownOption[];
+  value?: DropdownOption['value'];
   filterBy?: string;
   suffixElement?: ReactNode;
   prefixElement?: ReactNode;
   variant?: Variant;
   weight?: keyof typeof DropdownClass;
-  invalid?: boolean;
   onChange: (data: DropdownResult) => void;
-};
+}
 
 const Combobox = ({
   className,
@@ -28,12 +26,14 @@ const Combobox = ({
   label,
   value,
   options,
+  disabled,
   suffixElement,
   prefixElement,
   variant = 'down',
   weight = 'md',
   invalid,
   onChange,
+  ...props
 }: Props) => {
   const style = DropdownClass[weight];
 
@@ -44,7 +44,7 @@ const Combobox = ({
     : options;
 
   return (
-    <HeadlessCombobox by="value" value={value} onChange={onChange}>
+    <HeadlessCombobox by="value" value={value} disabled={disabled} onChange={onChange}>
       <div className={cn('relative', className)}>
         <HeadlessCombobox.Input
           as={Input}
@@ -55,14 +55,16 @@ const Combobox = ({
           displayValue={(option) => option.value}
           prefixElement={prefixElement}
           suffixElement={suffixElement}
-          onChange={(event) => setQuery(event.target.value)}
+          // @ts-ignore onChange doesn't respect custom <Input /> onChange type
+          onChange={setQuery}
+          {...props}
         />
 
         <Transition as={Fragment} leave="transition" leaveFrom="opacity-100" leaveTo="opacity-0">
           <HeadlessCombobox.Options
             className={cn(
               'absolute z-20 py-2.5 px-2 max-h-60 w-full overflow-auto shadow-element',
-              'border border-primary rounded-2lg bg-white shadow-surface focus:outline-none',
+              'border border-primary rounded-2lg bg-white shadow-surface',
               variant !== 'auto' && ViewClass[variant],
             )}
           >

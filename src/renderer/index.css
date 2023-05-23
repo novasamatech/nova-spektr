@@ -62,24 +62,96 @@
   src: url('./assets/fonts/fira-sans/fira-sans-700.woff2') format('woff2');
 }
 
+/* Inter (Latin) */
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('assets/fonts/Inter/Inter-400.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url('assets/fonts/Inter/Inter-500.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url('assets/fonts/Inter/Inter-600.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 800;
+  font-display: swap;
+  src: url('assets/fonts/Inter/Inter-800.woff2') format('woff2');
+}
+
+/* Manrope (Latin) */
+@font-face {
+  font-family: 'Manrope';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('assets/fonts/Manrope/Manrope-400.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'Manrope';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url('assets/fonts/Manrope/Manrope-500.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'Manrope';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url('assets/fonts/Manrope/Manrope-600.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'Manrope';
+  font-style: normal;
+  font-weight: 800;
+  font-display: swap;
+  src: url('assets/fonts/Manrope/Manrope-800.woff2') format('woff2');
+}
+
 :root {
   --tree-width: 1px;
   --tree-bg-color: rgba(0, 0, 0, 0.3);
 }
 
-/* Thin scrollbar */
-.scrollbar::-webkit-scrollbar {
-  width: 4px;
+/* width */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px; /* horizontal scrollbar */
 }
 
-.scrollbar::-webkit-scrollbar-track {
-  background: hsl(0, 0%, 90%);
-  border-radius: 20px;
+/* Track */
+::-webkit-scrollbar-track {
+  background: transparent;
 }
 
-.scrollbar::-webkit-scrollbar-thumb {
-  background-color: hsl(0, 0%, 72%);
-  border-radius: 20px;
+::-webkit-scrollbar-track:vertical {
+  margin: 2px 0;
+}
+
+::-webkit-scrollbar-track:horizontal {
+  margin: 0 2px;
+}
+
+/* Handle */
+::-webkit-scrollbar-thumb {
+  background-color: var(--scroll-background-default);
+  border-radius: 4px;
+  border: 2px solid transparent;
+  background-clip: padding-box;
 }
 
 .start-tree:after {
@@ -110,4 +182,8 @@
   left: 0;
   width: var(--tree-width);
   height: 31px;
+}
+
+*:focus-visible {
+  outline: 2px solid var(--focus-container-border);
 }

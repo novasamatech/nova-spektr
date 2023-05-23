@@ -10,12 +10,12 @@ import EmptyContacts from './components/EmptyState/EmptyContacts';
 
 const AddressBook = () => {
   const { t } = useI18n();
-  const [query, setQuery] = useState('');
-
   const { getLiveContacts } = useContact();
-  const contacts = getLiveContacts();
 
-  const [isAddContactModalShown, toggleAddContactModal] = useToggle(false);
+  const [query, setQuery] = useState('');
+  const [isAddContactModalShown, toggleAddContactModal] = useToggle();
+
+  const contacts = getLiveContacts();
 
   return (
     <div className="h-full flex flex-col gap-y-9 relative">
@@ -30,7 +30,7 @@ const AddressBook = () => {
                   wrapperClass="bg-shade-5"
                   placeholder={t('addressBook.searchPlaceholder')}
                   prefixElement={<Icon name="search" />}
-                  onChange={(e) => setQuery(e.target.value)}
+                  onChange={setQuery}
                 />
                 <Button
                   variant="text"

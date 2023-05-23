@@ -5,7 +5,7 @@ import { ErrorObject, QrError, VideoInput } from '@renderer/components/common/Qr
 import { Button, Dropdown, Icon } from '@renderer/components/ui';
 import { DropdownOption, DropdownResult } from '@renderer/components/ui/Dropdowns/common/types';
 import { useI18n } from '@renderer/context/I18nContext';
-import { ValidationErrors } from '@renderer/screens/Transfer/common/constants';
+import { ValidationErrors } from '@renderer/shared/utils/validation';
 import QrMultiframeSignatureReader from '@renderer/components/common/QrCode/QrReader/QrMultiframeSignatureReader';
 import { HexString } from '@renderer/domain/shared-kernel';
 import { secondsToMinutes } from '@renderer/shared/utils/time';

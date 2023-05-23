@@ -1,26 +1,20 @@
-import { IndexableType, Table } from 'dexie';
-
 import { Wallet } from '@renderer/domain/wallet';
-import { IWalletStorage, WalletDS } from './common/types';
+import { IWalletStorage, WalletDS, TWallet, ID } from './common/types';
 
-export const useWalletStorage = (db: Table<WalletDS>): IWalletStorage => ({
-  getWallet: (walletId: IndexableType): Promise<WalletDS | undefined> => {
+export const useWalletStorage = (db: TWallet): IWalletStorage => ({
+  getWallet: (walletId: ID): Promise<WalletDS | undefined> => {
     return db.get(walletId);
   },
 
-  getWallets: (where: Record<string, any> | undefined): Promise<WalletDS[]> => {
-    if (where) {
-      return db.where(where).toArray();
-    }
-
-    return db.toArray();
+  getWallets: <T extends Wallet>(where?: Partial<T>): Promise<WalletDS[]> => {
+    return where ? db.where(where).toArray() : db.toArray();
   },
 
-  addWallet: (wallet: Wallet): Promise<IndexableType> => {
+  addWallet: (wallet: Wallet): Promise<ID> => {
     return db.add(wallet);
   },
 
-  updateWallet: (wallet: Wallet): Promise<IndexableType> => {
+  updateWallet: (wallet: Wallet): Promise<ID> => {
     return db.put(wallet);
   },
 

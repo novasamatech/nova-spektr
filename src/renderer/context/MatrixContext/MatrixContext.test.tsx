@@ -2,8 +2,50 @@ import { act, render, screen } from '@testing-library/react';
 
 import Matrix from '@renderer/services/matrix';
 import { MatrixProvider } from './MatrixContext';
+import { ConnectionType } from '@renderer/domain/connection';
 
 jest.mock('@renderer/services/matrix', () => jest.fn().mockReturnValue({}));
+
+jest.mock('@renderer/services/account/accountService', () => ({
+  useAccount: jest.fn().mockReturnValue({
+    getAccounts: jest.fn().mockReturnValue([]),
+  }),
+}));
+
+jest.mock('@renderer/services/multisigTx/multisigTxService', () => ({
+  useMultisigTx: jest.fn().mockReturnValue({
+    getMultisigTxs: jest.fn(),
+    addMultisigTx: jest.fn(),
+    updateMultisigTx: jest.fn(),
+    updateCallData: jest.fn(),
+  }),
+}));
+
+jest.mock('@renderer/services/contact/contactService', () => ({
+  useContact: jest.fn().mockReturnValue({
+    getContacts: jest.fn().mockReturnValue([]),
+  }),
+}));
+
+jest.mock('@renderer/services/notification/notificationService', () => ({
+  useNotification: jest.fn().mockReturnValue({
+    addNotification: jest.fn(),
+  }),
+}));
+
+jest.mock('@renderer/context/NetworkContext', () => ({
+  useNetworkContext: jest.fn(() => ({
+    connections: {
+      '0x0000000000000000000000000000000000000000': {
+        chainId: '1',
+        assets: [{ assetId: '1', symbol: '1' }],
+        connection: {
+          connectionType: ConnectionType.RPC_NODE,
+        },
+      },
+    },
+  })),
+}));
 
 describe('context/MatrixContext', () => {
   afterEach(() => {
@@ -12,52 +54,52 @@ describe('context/MatrixContext', () => {
 
   test('should render children', async () => {
     (Matrix as jest.Mock).mockImplementation(() => ({
-      init: jest.fn(),
-      loginFromCache: jest.fn(),
-      setupSubscribers: jest.fn(),
+      loginFromCache: jest.fn().mockResolvedValue({}),
+      setEventCallbacks: jest.fn(),
       stopClient: jest.fn(),
     }));
 
     await act(async () => {
-      render(<MatrixProvider onAutoLoginFail={() => {}}>children</MatrixProvider>);
+      render(<MatrixProvider>children</MatrixProvider>);
     });
 
     expect(screen.getByText('children')).toBeInTheDocument();
   });
 
-  test('should setup subscribers after login', async () => {
-    const setupSubscribers = jest.fn();
-    const loginFailSpy = jest.fn();
+  test('should set eventCallbacks and login', async () => {
+    const spyEventCallbacks = jest.fn();
+    const spyLoginFromCache = jest.fn().mockResolvedValue({});
 
     (Matrix as jest.Mock).mockImplementation(() => ({
-      init: jest.fn(),
-      loginFromCache: jest.fn(),
+      loginFromCache: spyLoginFromCache,
+      setEventCallbacks: spyEventCallbacks,
       stopClient: jest.fn(),
-      setupSubscribers,
     }));
 
     await act(async () => {
-      render(<MatrixProvider onAutoLoginFail={loginFailSpy}>children</MatrixProvider>);
+      render(<MatrixProvider>children</MatrixProvider>);
     });
 
-    expect(setupSubscribers).toBeCalled();
+    expect(spyEventCallbacks).toBeCalled();
+    expect(spyLoginFromCache).toBeCalled();
   });
 
-  test('should handle call onAutoLoginFail', async () => {
-    const loginFailSpy = jest.fn();
+  test('should stop Matrix client on context unmount', async () => {
+    const spyStopClient = jest.fn();
 
-    (Matrix as jest.Mock).mockReturnValue({
-      stopClient: jest.fn(),
-      init: jest.fn(() => {
-        throw new Error('fail');
-      }),
-    });
+    (Matrix as jest.Mock).mockImplementation(() => ({
+      loginFromCache: jest.fn().mockResolvedValue({}),
+      setEventCallbacks: jest.fn(),
+      stopClient: spyStopClient,
+    }));
 
+    let unmount = () => {};
     await act(async () => {
-      render(<MatrixProvider onAutoLoginFail={loginFailSpy}>children</MatrixProvider>);
+      const result = render(<MatrixProvider>children</MatrixProvider>);
+      unmount = result.unmount;
     });
 
-    expect(loginFailSpy).toBeCalledTimes(1);
-    expect(loginFailSpy).toBeCalledWith('fail');
+    unmount();
+    expect(spyStopClient).toBeCalled();
   });
 });

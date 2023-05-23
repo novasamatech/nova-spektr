@@ -1,3 +1,4 @@
+import cn from 'classnames';
 import { Link } from 'react-router-dom';
 
 import { Dropdown, Icon } from '@renderer/components/ui';
@@ -5,6 +6,21 @@ import { DropdownOption, DropdownResult } from '@renderer/components/ui/Dropdown
 import { useI18n } from '@renderer/context/I18nContext';
 import Paths from '@renderer/routes/paths';
 import { SupportedLocale } from '@renderer/services/translation/common/types';
+
+const LINKS = [
+  {
+    path: Paths.NETWORK,
+    icon: 'network',
+    title: 'settings.overview.networkLabel',
+    subtitle: 'settings.overview.networkDetailsLabel',
+  },
+  {
+    path: Paths.MATRIX,
+    icon: 'chat',
+    title: 'settings.overview.matrixLabel',
+    subtitle: 'settings.overview.matrixDetailsLabel',
+  },
+] as const;
 
 const Overview = () => {
   const { t, locale, locales, changeLocale } = useI18n();
@@ -36,47 +52,41 @@ const Overview = () => {
 
       <section className="flex flex-col items-center mx-auto w-full max-w-[740px] p-5 rounded-2lg bg-shade-2">
         <ul className="flex flex-col gap-y-2.5 w-full" data-testid="settings">
-          <li className="flex items-center gap-x-2.5 w-full px-[15px] py-5 text-neutral-variant bg-white rounded-2lg shadow-surface">
+          <li className="flex items-center gap-x-2.5 w-full p-[15px] text-neutral-variant bg-white rounded-2lg shadow-surface">
             <Icon name="language" />
-            <p className="font-semibold text-base">{t('settings.languageLabel')}</p>
+            <p className="font-semibold text-base">{t('settings.overview.languageLabel')}</p>
             <Dropdown
               className="ml-auto w-[200px]"
+              weight="md"
               placeholder={t('dropdown.chooseOptionLabel')}
               activeId={selectedLocale?.id}
               options={localeOptions}
               onChange={onLocaleChange}
             />
           </li>
-          <li>
-            <Link
-              to={Paths.NETWORK}
-              className="flex items-center gap-x-2.5 w-full px-[15px] py-5 text-neutral-variant bg-white rounded-2lg shadow-surface transition focus:shadow-element hover:shadow-element"
-            >
-              <Icon name="network" />
-              <div>
-                <p className="font-semibold text-base">{t('settings.networkLabel')}</p>
-                <p className="text-shade-40 text-xs">{t('settings.networkDetailsLabel')}</p>
-              </div>
-              <Icon className="ml-auto" name="right" />
-            </Link>
-          </li>
-          {/*<li>*/}
-          {/*  <Link*/}
-          {/*    to={Paths.CREDENTIALS}*/}
-          {/*    className="flex items-center gap-x-2.5 w-full px-[15px] py-5 text-neutral-variant bg-white rounded-2lg shadow-surface transition focus:shadow-element hover:shadow-element"*/}
-          {/*  >*/}
-          {/*    <Icon name="network" />*/}
-          {/*    <div>*/}
-          {/*      <p className="font-semibold text-base">{t('settings.matrixLabel')}</p>*/}
-          {/*      <p className="text-shade-40 text-xs">{t('settings.matrixDetailsLabel')}</p>*/}
-          {/*    </div>*/}
-          {/*    <Icon className="ml-auto" name="right" />*/}
-          {/*  </Link>*/}
-          {/*</li>*/}
+          {LINKS.map(({ path, icon, title, subtitle }) => (
+            <li key={path}>
+              <Link
+                to={path}
+                className={cn(
+                  'grid grid-flow-col grid-cols-[max-content,1fr,max-content] items-center gap-x-2.5 py-5 px-[15px]',
+                  'bg-white rounded-2lg text-neutral-variant shadow-surface transition',
+                  'hover:shadow-element focus:shadow-element',
+                )}
+              >
+                <Icon className="row-span-2" name={icon} size={30} />
+                <p className="font-semibold text-base">{t(title)}</p>
+                <p className="text-shade-40 text-xs">{t(subtitle)}</p>
+                <Icon className="justify-self-end row-span-2" name="right" />
+              </Link>
+            </li>
+          ))}
         </ul>
 
         <div className="mt-15 mb-7.5">
-          <p className="uppercase font-bold text-neutral-variant text-2xs">{t('settings.getInTouchLabel')}!</p>
+          <p className="uppercase font-bold text-center text-neutral-variant text-2xs">
+            {t('settings.overview.getInTouchLabel')}
+          </p>
           <ul className="flex justify-center gap-x-2.5 mt-2.5" data-testid="social">
             <li>
               <a href="https://twitter.com/NovasamaTech" target="_blank" rel="noopener noreferrer">

@@ -1,18 +1,18 @@
-import { IndexableType } from 'dexie';
 import { useLiveQuery } from 'dexie-react-hooks';
 
-import storage, { AccountDS } from '@renderer/services/storage';
+import storage, { AccountDS, ID } from '@renderer/services/storage';
 import { IAccountService } from './common/types';
+import { MultisigAccount, Account } from '@renderer/domain/account';
 
 export const useAccount = (): IAccountService => {
   const accountStorage = storage.connectTo('accounts');
 
   if (!accountStorage) {
-    throw new Error('=== 🔴 Wallet storage in not defined 🔴 ===');
+    throw new Error('=== 🔴 Account storage in not defined 🔴 ===');
   }
   const { getAccount, getAccounts, addAccount, updateAccount, deleteAccount } = accountStorage;
 
-  const getLiveAccounts = (where?: Record<string, any>): AccountDS[] => {
+  const getLiveAccounts = <T extends Account>(where?: Partial<T>): AccountDS[] => {
     const query = () => {
       try {
         return getAccounts(where);
@@ -26,10 +26,10 @@ export const useAccount = (): IAccountService => {
     return useLiveQuery(query, [], []);
   };
 
-  const getActiveAccounts = (): AccountDS[] => {
+  const getActiveAccounts = <T extends Account>(where?: Partial<T>): AccountDS[] => {
     const query = async () => {
       try {
-        const accounts = await getAccounts();
+        const accounts = await getAccounts(where);
 
         return accounts.filter((account) => account.isActive);
       } catch (error) {
@@ -42,8 +42,26 @@ export const useAccount = (): IAccountService => {
     return useLiveQuery(query, [], []);
   };
 
+  const getActiveMultisigAccounts = (): AccountDS[] => {
+    const query = async () => {
+      try {
+        const accounts = await getAccounts();
+
+        return accounts.filter(
+          (account) => account.isActive && (account as MultisigAccount).creatorAccountId !== undefined,
+        );
+      } catch (error) {
+        console.warn('Error trying to get active multisig accounts');
+
+        return Promise.resolve([]);
+      }
+    };
+
+    return useLiveQuery(query, [], []);
+  };
+
   // TODO: in future implement setWalletInactive
-  const toggleActiveAccount = async (accountId: IndexableType): Promise<void> => {
+  const toggleActiveAccount = async (accountId: ID): Promise<void> => {
     try {
       const newActiveAccount = await getAccount(accountId);
       if (newActiveAccount) {
@@ -64,6 +82,7 @@ export const useAccount = (): IAccountService => {
     getAccounts,
     getLiveAccounts,
     getActiveAccounts,
+    getActiveMultisigAccounts,
     toggleActiveAccount,
     addAccount,
     updateAccount,

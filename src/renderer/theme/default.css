@@ -1,0 +1,76 @@
+:root {
+  /* TEXT */
+  --text-primary: #363643;
+  --text-secondary: #79797d;
+  --text-tertiary: #a4a4ad;
+  --chip-text: #868692;
+  --input-text-placeholder: #acacb5;
+  --text-positive: #01a63e;
+  --text-negative: #f52163;
+  --tab-text-accent: #4649f6;
+  --action-text: #4649f6;
+  --action-text-default: rgba(70, 73, 246, 0.72);
+  --button-text: #fff;
+  --button-text-inactive: #a4a4ad;
+
+  /* ICON */
+  --icon-accent: #4649f6;
+  --icon-accent-default: rgba(70, 73, 246, 0.72);
+  --tab-icon-active: #363643;
+  --tab-icon-inactive: #868692;
+  --icon-hover: #79797d;
+  --icon-default: #d2d2d9;
+  --chip-icon: #b8b8bd;
+  --icon-button: #fff;
+
+  /* BUTTON */
+  /* primary */
+  --primary-button-background-default: #4649f6;
+  --primary-button-background-hover: #3e40d8;
+  --primary-button-background-active: #3e40d8;
+  --primary-button-background-inactive: rgba(70, 73, 246, 0.48);
+  /* secondary */
+  --secondary-button-background: rgba(69, 69, 137, 0.06);
+  --secondary-button-background-hover: rgba(69, 69, 137, 0.12);
+  --secondary-button-background-active: rgba(69, 69, 137, 0.16);
+  --scroll-background-default: rgba(69, 69, 137, 0.48);
+
+  /* BORDER */
+  --token-container-border: rgba(69, 69, 137, 0.06);
+  --filter-border: rgba(69, 69, 137, 0.12);
+  --container-border: rgba(69, 69, 137, 0.06);
+  --active-container-border: #4649f6;
+  --focus-container-border: rgba(70, 73, 246, 0.4);
+  --filter-border-negative: #f52163;
+
+  /* DIVIDER */
+  --divider: rgba(69, 69, 137, 0.06);
+
+  /* BACKGROUND */
+  --switch-background-active: #363643;
+  --switch-background-inactive: rgba(69, 69, 137, 0.12);
+  --top-nav-bar-background: #f8f8fa;
+  --knob-background: #fff;
+  --tab-background: rgba(69, 69, 137, 0.06);
+  --left-navigation-menu-background: #ffffff;
+  --main-app-background: rgba(69, 69, 137, 0.04);
+  --token-container-background: #ffffff;
+  --token-background: #79797d;
+  --input-background: #fff;
+  --input-background-disabled: rgba(69, 69, 137, 0.04);
+  --action-background-hover: rgba(69, 69, 137, 0.06);
+  --block-background-hover: rgba(69, 69, 137, 0.06);
+  --block-background: rgba(69, 69, 137, 0.04);
+  --extended-block-background: rgba(69, 69, 137, 0.03);
+  --block-background-default: #fff;
+  --negative-action-background: rgba(245, 33, 99, 0.06);
+  --dim-background: rgba(54, 54, 67, 0.4);
+  --qr-valid-background: #01a63e;
+  --accent-background: #4649f6;
+  --hover: rgba(36, 99, 235, 0.04);
+
+  /* SHADOW */
+  --card-shadow: 0px 3px 4px rgba(69, 69, 137, 0.04), inset 0px -0.5px 0px rgba(69, 69, 137, 0.12);
+  --knob-shadow: 0px 2px 6px rgba(0, 0, 0, 0.16);
+  --input-active-shadow: 0px 0px 0px 2px rgba(36, 99, 235, 0.16);
+}

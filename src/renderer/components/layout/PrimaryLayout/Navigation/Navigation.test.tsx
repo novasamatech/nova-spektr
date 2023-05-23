@@ -2,12 +2,7 @@ import { render, screen } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 
 import Navigation from './Navigation';
-import { useMatrix } from '@renderer/context/MatrixContext';
-import { TEST_PUBLIC_KEY } from '@renderer/shared/utils/constants';
-
-jest.mock('@renderer/context/MatrixContext', () => ({
-  useMatrix: jest.fn(),
-}));
+import { TEST_ACCOUNT_ID } from '@renderer/shared/utils/constants';
 
 jest.mock('@renderer/context/I18nContext', () => ({
   useI18n: jest.fn().mockReturnValue({
@@ -18,17 +13,24 @@ jest.mock('@renderer/context/I18nContext', () => ({
 
 jest.mock('@renderer/services/account/accountService', () => ({
   useAccount: jest.fn().mockReturnValue({
-    getActiveAccounts: () => [
-      {
-        name: 'Test Wallet',
-        accountId: '1ChFWeNRLarAPRCTM3bfJmncJbSAbSS9yqjueWz7jX7iTVZ',
-        publicKey: TEST_PUBLIC_KEY,
-      },
-    ],
+    getActiveAccounts: () => [{ name: 'Test Wallet', accountId: TEST_ACCOUNT_ID }],
   }),
 }));
 
-jest.mock('../Wallets/Wallets', () => () => 'wallets-mock');
+jest.mock('@renderer/services/multisigTx/multisigTxService', () => ({
+  useMultisigTx: jest.fn().mockReturnValue({
+    getLiveAccountMultisigTxs: jest.fn().mockReturnValue([]),
+  }),
+}));
+
+jest.mock('../Wallets/Wallets', () => {
+  const { forwardRef } = jest.requireActual('react');
+
+  return {
+    __esModule: true,
+    default: forwardRef((_: any, ref: any) => <div ref={ref}>wallets-mock</div>),
+  };
+});
 
 describe('layout/PrimaryLayout/Navigation', () => {
   afterEach(() => {
@@ -36,18 +38,13 @@ describe('layout/PrimaryLayout/Navigation', () => {
   });
 
   test('should render component', () => {
-    (useMatrix as jest.Mock).mockReturnValue({
-      matrix: {
-        isLoggedIn: true,
-        logout: jest.fn(),
-      },
-      setIsLoggedIn: jest.fn(),
-    });
-
     render(<Navigation />, { wrapper: MemoryRouter });
 
     const text = screen.getByText('Test Wallet');
     expect(text).toBeInTheDocument();
+
+    const wallets = screen.getByText('wallets-mock');
+    expect(wallets).toBeInTheDocument();
 
     const langSwitch = screen.getByText('localeComponent');
     expect(langSwitch).toBeInTheDocument();

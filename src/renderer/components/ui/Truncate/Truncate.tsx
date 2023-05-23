@@ -5,14 +5,14 @@ import { getTextMeasurement, getContainerMeasurement } from './utils';
 
 type Props = {
   text: string;
-  ellipsis: string;
-  end: number;
-  start: number;
+  ellipsis?: string;
+  end?: number;
+  start?: number;
   className?: string;
   style?: CSSProperties;
 };
 
-const Truncate = ({ text, ellipsis, end, start, className = '', style = {} }: Props) => {
+const Truncate = ({ text, ellipsis = '...', end = 5, start = 5, className = '', style = {} }: Props) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const textRef = useRef<HTMLParagraphElement>(null);
   const ellipsisRef = useRef<HTMLParagraphElement>(null);

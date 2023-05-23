@@ -3,32 +3,37 @@ import noop from 'lodash/noop';
 import { useEffect, useState } from 'react';
 import { Navigate, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 
+import Paths from '@renderer/routes/paths';
 import { ButtonBack, ButtonLink, Icon } from '@renderer/components/ui';
+import { ChainLoader } from '@renderer/components/common';
 import { useI18n } from '@renderer/context/I18nContext';
 import { useNetworkContext } from '@renderer/context/NetworkContext';
-import { StakingType } from '@renderer/domain/asset';
-import { AccountID, ChainId, HexString, SigningType } from '@renderer/domain/shared-kernel';
+import { ChainId, HexString, AccountId, Address } from '@renderer/domain/shared-kernel';
 import { Transaction, TransactionType } from '@renderer/domain/transaction';
-import Paths from '@renderer/routes/paths';
 import { useAccount } from '@renderer/services/account/accountService';
 import { StakingMap } from '@renderer/services/staking/common/types';
 import { useStakingData } from '@renderer/services/staking/stakingDataService';
 import { useChains } from '@renderer/services/network/chainsService';
-import { AccountDS } from '@renderer/services/storage';
-import { redeemableAmount } from '@renderer/services/balance/common/utils';
 import { useEra } from '@renderer/services/staking/eraService';
-import { Confirmation, Scanning, Signing, Submit, ChainLoader } from '../components';
-import { useCountdown } from '../hooks/useCountdown';
+import InitOperation, { RedeemResult } from './InitOperation/InitOperation';
+import { Confirmation, MultiScanning, Signing, Submit, SingleScanning } from '../components';
+import { getRelaychainAsset } from '@renderer/shared/utils/assets';
+import { useCountdown } from '@renderer/shared/hooks';
+import { Account, MultisigAccount, isMultisig } from '@renderer/domain/account';
+import { toAddress } from '@renderer/shared/utils/address';
+import { useTransaction } from '@renderer/services/transaction/transactionService';
 
 const enum Step {
+  INIT,
   CONFIRMATION,
   SCANNING,
   SIGNING,
   SUBMIT,
 }
 
-const HEADER_TITLE: Record<Step, string> = {
-  [Step.CONFIRMATION]: 'staking.redeem.initRedeemSubtitle',
+const HeaderTitles: Record<Step, string> = {
+  [Step.INIT]: 'staking.redeem.initRedeemSubtitle',
+  [Step.CONFIRMATION]: 'staking.redeem.confirmRedeemSubtitle',
   [Step.SCANNING]: 'staking.bond.scanSubtitle',
   [Step.SIGNING]: 'staking.bond.signSubtitle',
   [Step.SUBMIT]: 'staking.bond.submitSubtitle',
@@ -37,6 +42,7 @@ const HEADER_TITLE: Record<Step, string> = {
 const Unstake = () => {
   const { t } = useI18n();
   const navigate = useNavigate();
+  const { getTransactionHash } = useTransaction();
   const { connections } = useNetworkContext();
   const { subscribeStaking } = useStakingData();
   const { getLiveAccounts } = useAccount();
@@ -45,17 +51,22 @@ const Unstake = () => {
   const [searchParams] = useSearchParams();
   const params = useParams<{ chainId: ChainId }>();
 
-  const dbAccounts = getLiveAccounts({ signingType: SigningType.PARITY_SIGNER });
+  const dbAccounts = getLiveAccounts();
 
-  const [activeStep, setActiveStep] = useState<Step>(Step.CONFIRMATION);
+  const [activeStep, setActiveStep] = useState<Step>(Step.INIT);
   const [chainName, setChainName] = useState('...');
-  const [era, setEra] = useState<number>();
   const [redeemAmounts, setRedeemAmounts] = useState<string[]>([]);
-  const [isConfirmed, setIsConfirmed] = useState(false);
+  const [description, setDescription] = useState('');
+
+  const [era, setEra] = useState<number>();
+  const [staking, setStaking] = useState<StakingMap>({});
+  const [accounts, setAccounts] = useState<Account[]>([]);
+  const [signer, setSigner] = useState<Account>();
+
+  const [multisigTx, setMultisigTx] = useState<Transaction>();
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [unsignedTransactions, setUnsignedTransactions] = useState<UnsignedTransaction[]>([]);
-  const [staking, setStaking] = useState<StakingMap>({});
-  const [accounts, setAccounts] = useState<AccountDS[]>([]);
+
   const [signatures, setSignatures] = useState<HexString[]>([]);
 
   const chainId = params.chainId || ('' as ChainId);
@@ -66,61 +77,40 @@ const Unstake = () => {
   }
 
   const { api, explorers, addressPrefix, assets, name } = connections[chainId];
-  const asset = assets.find((asset) => asset.staking === StakingType.RELAYCHAIN);
+  const asset = getRelaychainAsset(assets);
 
   const [countdown, resetCountdown] = useCountdown(api);
 
   useEffect(() => {
-    const selectedAccounts = dbAccounts.reduce<AccountDS[]>((acc, account) => {
+    const selectedAccounts = dbAccounts.reduce<Account[]>((acc, account) => {
       const accountExists = account.id && accountIds.includes(account.id.toString());
+      if (accountExists) {
+        acc.push(account);
+      }
 
-      return accountExists ? [...acc, account] : acc;
+      return acc;
     }, []);
 
     setAccounts(selectedAccounts);
   }, [dbAccounts.length]);
 
   useEffect(() => {
-    const transactions = accounts.map(({ accountId = '' }) => ({
-      chainId,
-      address: accountId,
-      type: TransactionType.REDEEM,
-      args: { numSlashingSpans: 1 },
-    }));
-
-    setTransactions(transactions);
-  }, [accounts.length]);
-
-  useEffect(() => {
-    if (!api?.isConnected || accountIds.length === 0) return;
+    if (!api?.isConnected || accounts.length === 0) return;
 
     let unsubEra: () => void | undefined;
     let unsubStaking: () => void | undefined;
 
     (async () => {
+      const addresses = accounts.map((a) => toAddress(a.accountId, { prefix: addressPrefix }));
       unsubEra = await subscribeActiveEra(api, setEra);
-      unsubStaking = await subscribeStaking(chainId, api, accounts.map((a) => a.accountId) as AccountID[], setStaking);
+      unsubStaking = await subscribeStaking(chainId, api, addresses, setStaking);
     })();
 
     return () => {
       unsubEra?.();
       unsubStaking?.();
     };
-  }, [api, accounts.length, accountIds.length]);
-
-  useEffect(() => {
-    if (isConfirmed || !era || !staking) return;
-
-    const redeemAmounts = accounts.reduce<string[]>((acc, { accountId }) => {
-      if (!accountId) return acc;
-
-      const redeemable = redeemableAmount(staking[accountId]?.unlocking, era);
-
-      return [...acc, redeemable];
-    }, []);
-
-    setRedeemAmounts(redeemAmounts);
-  }, [staking, era, isConfirmed]);
+  }, [api, accounts.length]);
 
   useEffect(() => {
     getChainById(chainId).then((chain) => setChainName(chain?.name || ''));
@@ -131,7 +121,7 @@ const Unstake = () => {
   }
 
   const goToPrevStep = () => {
-    if (activeStep === Step.CONFIRMATION) {
+    if (activeStep === Step.INIT) {
       navigate(Paths.STAKING);
     } else {
       // TODO: reset data
@@ -141,10 +131,11 @@ const Unstake = () => {
 
   const headerContent = (
     <div className="flex items-center gap-x-2.5 mb-9 mt-5 px-5">
-      <ButtonBack onCustomReturn={goToPrevStep} />
-      <p className="font-semibold text-2xl text-neutral-variant">{t('staking.title')}</p>
-      <p className="font-semibold text-2xl text-neutral">/</p>
-      <h1 className="font-semibold text-2xl text-neutral">{t(HEADER_TITLE[activeStep])}</h1>
+      <ButtonBack onCustomReturn={goToPrevStep}>
+        <p className="font-semibold text-2xl text-neutral-variant">{t('staking.title')}</p>
+        <p className="font-semibold text-2xl text-neutral">/</p>
+        <h1 className="font-semibold text-2xl text-neutral">{t(HeaderTitles[activeStep])}</h1>
+      </ButtonBack>
     </div>
   );
 
@@ -167,9 +158,58 @@ const Unstake = () => {
     );
   }
 
-  const onConfirmResult = () => {
-    setIsConfirmed(true);
-    setActiveStep(Step.SCANNING);
+  const getRedeemTxs = (accounts: Account[]): Transaction[] => {
+    return accounts.map(({ accountId }) => ({
+      chainId,
+      address: toAddress(accountId, { prefix: addressPrefix }),
+      type: TransactionType.REDEEM,
+      args: { numSlashingSpans: 1 },
+    }));
+  };
+
+  const getMultisigTx = (
+    account: MultisigAccount,
+    signerAccountId: AccountId,
+    transaction: Transaction,
+  ): Transaction => {
+    const { callData, callHash } = getTransactionHash(transaction, api);
+
+    const otherSignatories = account.signatories.reduce<Address[]>((acc, s) => {
+      if (s.accountId !== signerAccountId) {
+        acc.push(toAddress(s.accountId, { prefix: addressPrefix }));
+      }
+
+      return acc;
+    }, []);
+
+    return {
+      chainId,
+      address: toAddress(signerAccountId, { prefix: addressPrefix }),
+      type: TransactionType.MULTISIG_AS_MULTI,
+      args: {
+        threshold: account.threshold,
+        otherSignatories: otherSignatories.sort(),
+        maybeTimepoint: null,
+        callData,
+        callHash,
+      },
+    };
+  };
+
+  const onRedeemResult = ({ accounts, signer, amounts, description }: RedeemResult) => {
+    const transactions = getRedeemTxs(accounts);
+
+    if (signer && isMultisig(accounts[0])) {
+      const multisigTx = getMultisigTx(accounts[0], signer.accountId, transactions[0]);
+      setMultisigTx(multisigTx);
+      setSigner(signer);
+      setDescription(description || '');
+    }
+
+    setTransactions(transactions);
+    setAccounts(accounts);
+    setRedeemAmounts(amounts);
+    setActiveStep(Step.CONFIRMATION);
   };
 
   const onScanResult = (unsigned: UnsignedTransaction[]) => {
@@ -187,30 +227,53 @@ const Unstake = () => {
   return (
     <div className="flex flex-col h-full relative">
       {headerContent}
-
+      {activeStep === Step.INIT && (
+        <InitOperation
+          api={api}
+          chainId={chainId}
+          identifiers={accountIds}
+          era={era}
+          staking={staking}
+          onResult={onRedeemResult}
+          {...explorersProps}
+        />
+      )}
       {activeStep === Step.CONFIRMATION && (
         <Confirmation
           api={api}
           accounts={accounts}
           amounts={redeemAmounts}
           transaction={transactions[0]}
-          onResult={onConfirmResult}
+          multisigTx={multisigTx}
+          onResult={() => setActiveStep(Step.SCANNING)}
           onAddToQueue={noop}
           {...explorersProps}
         />
       )}
-      {activeStep === Step.SCANNING && (
-        <Scanning
-          api={api}
-          chainId={chainId}
-          accounts={accounts}
-          transactions={transactions}
-          addressPrefix={addressPrefix}
-          countdown={countdown}
-          onResetCountdown={resetCountdown}
-          onResult={onScanResult}
-        />
-      )}
+      {activeStep === Step.SCANNING &&
+        (transactions.length > 1 ? (
+          <MultiScanning
+            api={api}
+            addressPrefix={addressPrefix}
+            countdown={countdown}
+            accounts={accounts}
+            transactions={transactions}
+            chainId={chainId}
+            onResetCountdown={resetCountdown}
+            onResult={onScanResult}
+          />
+        ) : (
+          <SingleScanning
+            api={api}
+            addressPrefix={addressPrefix}
+            countdown={countdown}
+            account={signer || accounts[0]}
+            transaction={multisigTx || transactions[0]}
+            chainId={chainId}
+            onResetCountdown={resetCountdown}
+            onResult={(unsignedTx) => onScanResult([unsignedTx])}
+          />
+        ))}
       {activeStep === Step.SIGNING && (
         <Signing
           countdown={countdown}
@@ -223,6 +286,8 @@ const Unstake = () => {
         <Submit
           api={api}
           transaction={transactions[0]}
+          multisigTx={multisigTx}
+          description={description}
           signatures={signatures}
           unsignedTx={unsignedTransactions}
           accounts={accounts}

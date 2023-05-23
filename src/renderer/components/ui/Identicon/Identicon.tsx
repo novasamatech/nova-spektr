@@ -1,22 +1,22 @@
 import { Identicon as PolkadotIdenticon } from '@polkadot/react-identicon';
 import { IconTheme } from '@polkadot/react-identicon/types';
 import cn from 'classnames';
-import { ReactNode, useLayoutEffect, useRef, memo } from 'react';
+import { ReactNode, useLayoutEffect, useRef, memo, SyntheticEvent } from 'react';
 
-import { SigningType } from '@renderer/domain/shared-kernel';
+import { SigningType, Address } from '@renderer/domain/shared-kernel';
 import { copyToClipboard } from '@renderer/shared/utils/strings';
 import Icon from '../Icon/Icon';
 
-const BADGES: Record<SigningType, (size?: number) => ReactNode> = {
-  [SigningType.WATCH_ONLY]: (size?: number) => <Icon as="img" name="watchOnlyBackground" size={size} />,
-  [SigningType.PARITY_SIGNER]: (size?: number) => <Icon as="img" name="paritySignerBackground" size={size} />,
-  [SigningType.MULTISIG]: (size?: number) => <Icon as="img" name="multisignature" size={size} />,
+const Badges: Record<SigningType, (size?: number) => ReactNode> = {
+  [SigningType.WATCH_ONLY]: (size?: number) => <Icon as="img" name="watchOnlyBg" size={size} />,
+  [SigningType.PARITY_SIGNER]: (size?: number) => <Icon as="img" name="paritySignerBg" size={size} />,
+  [SigningType.MULTISIG]: (size?: number) => <Icon as="img" name="multisigBg" size={size} />,
 };
 
 type Props = {
   theme?: IconTheme;
   signType?: SigningType;
-  address?: string;
+  address?: Address;
   size?: number;
   background?: boolean;
   canCopy?: boolean;
@@ -40,7 +40,8 @@ const Identicon = ({
     wrapperRef.current.querySelector('circle')?.setAttribute('fill', 'none');
   }, []);
 
-  const onCopyToClipboard = async () => {
+  const onCopyToClipboard = async (e: SyntheticEvent) => {
+    e.stopPropagation();
     await copyToClipboard(address);
   };
 
@@ -59,7 +60,7 @@ const Identicon = ({
     signType !== undefined ? (
       <>
         {icon}
-        <div className="absolute bottom-0 right-0 pointer-events-none">{BADGES[signType](size * 0.58)}</div>
+        <div className="absolute bottom-0 right-0 pointer-events-none">{Badges[signType](size * 0.58)}</div>
       </>
     ) : (
       icon

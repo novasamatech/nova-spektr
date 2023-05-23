@@ -37,7 +37,7 @@ Husky hooks will be installed automatically after installing project dependencie
 
 ## Starting development
 
-Start application in the `dev` environment with hot-reload:
+Start application in the `prod` environment with hot-reload:
 
 Electron:
 ```bash
@@ -46,6 +46,17 @@ pnpm start
 Web:
 ```bash
 pnpm start:renderer
+```
+
+Start application in the `dev` environment with hot-reload:
+
+Electron:
+```bash
+pnpm start:dev
+```
+Web:
+```bash
+pnpm start:renderer:dev
 ```
 
 ## Project localisation
@@ -74,7 +85,7 @@ In some cases there is no need to translate the text, so ESlint ignore rules sho
 or
 ```typescript
 //eslint-disable-next-line i18next/no-literal-string
-const qrCodePayload = `substrate:${address}:${wallet.publicKey}`;
+const qrCodePayload = `substrate:${address}:${wallet.accountId}`;
 ```
 
 ## Packaging for production
@@ -86,3 +97,8 @@ pnpm build
 pnpm postbuild
 pnpm dist
 ```
+## Troubleshooting
+Logs are collected in the 
+1. macOS `~/Librarly/Logs/Nova Spektr/nova-spektr.log` file 
+2. Windows todo
+3. Linux todo

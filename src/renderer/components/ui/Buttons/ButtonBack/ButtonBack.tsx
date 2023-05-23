@@ -1,13 +1,14 @@
+import { PropsWithChildren } from 'react';
 import { useNavigate } from 'react-router-dom';
 
-import { ReactComponent as LeftArrow } from '@images/arrows/left-cutout.svg';
+import Icon from '../../Icon/Icon';
 
 type Props = {
   path?: string;
   onCustomReturn?: () => void;
 };
 
-const ButtonBack = ({ path, onCustomReturn }: Props) => {
+const ButtonBack = ({ path, children, onCustomReturn }: PropsWithChildren<Props>) => {
   const navigate = useNavigate();
 
   const onClick = () => {
@@ -21,12 +22,12 @@ const ButtonBack = ({ path, onCustomReturn }: Props) => {
   };
 
   return (
-    <button
-      type="button"
-      className="text-neutral-variant ease-in transition-colors hover:text-neutral focus:text-neutral"
-      onClick={onClick}
-    >
-      <LeftArrow width={24} height={24} />
+    <button type="button" className="group flex items-center gap-x-2.5" onClick={onClick}>
+      <Icon
+        className="text-neutral-variant transition-colors group-hover:text-neutral group-focus:text-neutral"
+        name="arrowLeftCutout"
+      />
+      {children}
     </button>
   );
 };

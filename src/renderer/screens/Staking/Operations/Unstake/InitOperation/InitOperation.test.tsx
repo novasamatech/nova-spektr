@@ -3,7 +3,7 @@ import { act, render, screen } from '@testing-library/react';
 import noop from 'lodash/noop';
 
 import { Asset } from '@renderer/domain/asset';
-import { TEST_PUBLIC_KEY } from '@renderer/shared/utils/constants';
+import { TEST_ACCOUNT_ID } from '@renderer/shared/utils/constants';
 import InitOperation from './InitOperation';
 import { ChainId } from '@renderer/domain/shared-kernel';
 
@@ -21,22 +21,16 @@ jest.mock('@renderer/services/wallet/walletService', () => ({
 
 jest.mock('@renderer/services/account/accountService', () => ({
   useAccount: jest.fn().mockReturnValue({
-    getLiveAccounts: () => [
-      {
-        name: 'Test Wallet',
-        accountId: '1ChFWeNRLarAPRCTM3bfJmncJbSAbSS9yqjueWz7jX7iTVZ',
-        publicKey: TEST_PUBLIC_KEY,
-      },
-    ],
+    getLiveAccounts: () => [{ name: 'Test Wallet', accountId: TEST_ACCOUNT_ID }],
   }),
 }));
 
 jest.mock('@renderer/services/balance/balanceService', () => ({
   useBalance: jest.fn().mockReturnValue({
-    getBalance: jest.fn().mockReturnValue({
+    getLiveBalance: jest.fn().mockReturnValue({
       assetId: 1,
       chainId: '0x123',
-      publicKey: TEST_PUBLIC_KEY,
+      accountId: TEST_ACCOUNT_ID,
       free: '10',
       frozen: [{ type: 'test', amount: '1' }],
     }),
@@ -44,7 +38,7 @@ jest.mock('@renderer/services/balance/balanceService', () => ({
       {
         assetId: 1,
         chainId: '0x123',
-        publicKey: TEST_PUBLIC_KEY,
+        accountId: TEST_ACCOUNT_ID,
         free: '10',
         frozen: [{ type: 'test', amount: '1' }],
       },
@@ -52,27 +46,39 @@ jest.mock('@renderer/services/balance/balanceService', () => ({
   }),
 }));
 
+jest.mock('../../../Overview/components', () => ({ UnstakingDuration: () => 'unstaking_duration' }));
+jest.mock('../../components', () => ({
+  OperationForm: ({ children }: any) => {
+    return (
+      <div>
+        <p>operationForm</p>
+        {children()}
+      </div>
+    );
+  },
+}));
+
 describe('screens/Staking/Unstake/InitOperation', () => {
   const defaultProps = {
     api: {} as ApiPromise,
     chainId: '0x123' as ChainId,
+    addressPrefix: 0,
     staking: {},
-    accountIds: ['1'],
+    identifiers: ['1'],
     asset: { assetId: 1, symbol: 'DOT', precision: 10 } as Asset,
     onResult: noop,
   };
 
-  // TODO: mock <UnstakingDuration />
   test('should render component', async () => {
     await act(async () => {
       render(<InitOperation {...defaultProps} />);
     });
 
-    const button = screen.getByText('staking.bond.continueButton');
+    const form = screen.getByText('operationForm');
     const durationHint = screen.getByText(/staking.unstake.durationHint/);
     const noRewardsHint = screen.getByText('staking.unstake.noRewardsHint');
     const redeemHint = screen.getByText('staking.unstake.redeemHint');
-    expect(button).toBeInTheDocument();
+    expect(form).toBeInTheDocument();
     expect(durationHint).toBeInTheDocument();
     expect(noRewardsHint).toBeInTheDocument();
     expect(redeemHint).toBeInTheDocument();
