@@ -2,13 +2,11 @@ import { hexToU8a, u8aToHex } from '@polkadot/util';
 import { HexString } from '@polkadot/util/types';
 import { useState, useEffect } from 'react';
 
-import { SeedInfo, SimpleSeedInfo } from '@renderer/components/common/QrCode/QrReader/common/types';
+import { SeedInfo, CompactSeedInfo } from '@renderer/components/common/QrCode/QrReader/common/types';
 import { BaseModal, Button, Icon, Identicon } from '@renderer/components/ui';
 import { useI18n } from '@renderer/context/I18nContext';
-import { AccountID, PublicKey } from '@renderer/domain/shared-kernel';
-import { toAddress } from '@renderer/services/balance/common/utils';
-import { toPublicKey } from '@renderer/shared/utils/address';
-import { getShortAddress } from '@renderer/shared/utils/strings';
+import { Address, AccountId } from '@renderer/domain/shared-kernel';
+import { toShortAddress, toAddress, toAccountId } from '@renderer/shared/utils/address';
 import ParitySignerQrReader from '../ParitySignerQrReader/ParitySignerQrReader';
 
 const enum CameraState {
@@ -19,8 +17,8 @@ const enum CameraState {
 }
 
 type RootAndDerived = {
-  allRoot: PublicKey[];
-  allDerived: PublicKey[];
+  allRoot: AccountId[];
+  allDerived: AccountId[];
 };
 
 type GroupedAccounts = {
@@ -30,16 +28,16 @@ type GroupedAccounts = {
 
 type Props = {
   isOpen: boolean;
-  accounts: SimpleSeedInfo[];
+  seedInfo: CompactSeedInfo[];
   onResult: (accounts: SeedInfo[]) => void;
   onClose: () => void;
 };
 
-const ScanMoreModal = ({ isOpen, accounts, onResult, onClose }: Props) => {
+const ScanMoreModal = ({ isOpen, seedInfo, onResult, onClose }: Props) => {
   const { t } = useI18n();
 
   const [cameraState, setCameraState] = useState<CameraState>(CameraState.ACTIVE);
-  const [existingAccounts, setExistingAccounts] = useState<AccountID[]>([]);
+  const [existingAccounts, setExistingAccounts] = useState<Address[]>([]);
 
   useEffect(() => {
     if (!isOpen) return;
@@ -49,14 +47,14 @@ const ScanMoreModal = ({ isOpen, accounts, onResult, onClose }: Props) => {
   }, [isOpen]);
 
   const allRootAndDerivedKeys = (): RootAndDerived => {
-    return accounts.reduce<RootAndDerived>(
+    return seedInfo.reduce<RootAndDerived>(
       (acc, account) => {
-        acc.allRoot.push(toPublicKey(account.address) as PublicKey);
+        acc.allRoot.push(toAccountId(account.address));
 
         const derivedKeys = Object.values(account.derivedKeys).flat();
         if (derivedKeys.length > 0) {
-          const derivedPublicKeys = derivedKeys.map((key) => toPublicKey(key.address));
-          acc.allDerived.push(...(derivedPublicKeys as PublicKey[]));
+          const derivedAccountIds = derivedKeys.map((key) => toAccountId(key.address));
+          acc.allDerived.push(...derivedAccountIds);
         }
 
         return acc;
@@ -66,11 +64,11 @@ const ScanMoreModal = ({ isOpen, accounts, onResult, onClose }: Props) => {
   };
 
   const groupSingleAccount = (newAccounts: SeedInfo[], keys: RootAndDerived): GroupedAccounts => {
-    const addressHex = u8aToHex(newAccounts[0].multiSigner?.public);
-    const publicKey = toPublicKey(addressHex);
+    const addressHex = u8aToHex(newAccounts[0].multiSigner.public);
 
-    const isSameAccount =
-      keys.allRoot.some((key) => key === addressHex) || keys.allDerived.some((id) => id === publicKey);
+    const existInRoot = keys.allRoot.some((key) => key === addressHex);
+    const existInDerived = keys.allDerived.some((id) => id === addressHex);
+    const isSameAccount = existInRoot || existInDerived;
 
     return {
       newAccs: isSameAccount ? [] : newAccounts,
@@ -90,13 +88,14 @@ const ScanMoreModal = ({ isOpen, accounts, onResult, onClose }: Props) => {
         }
 
         let rootWithDerives =
-          rootAccountIndex >= 0 ? Object.values(accounts[rootAccountIndex].derivedKeys).flat().length > 0 : false;
+          rootAccountIndex >= 0 ? Object.values(seedInfo[rootAccountIndex].derivedKeys).flat().length > 0 : false;
         if (rootWithDerives) {
           return { newAccs: acc.newAccs, oldAccs: acc.oldAccs.concat(newAccount) };
         }
 
         const partialDerives = newAccount.derivedKeys.filter((key) => {
-          const deriveIndex = allRoot.findIndex((address) => address === toPublicKey(key.address));
+          const deriveIndex = allRoot.findIndex((address) => address === toAccountId(key.address));
+
           if (deriveIndex >= 0) {
             acc.oldAccs.push({
               name: '',
@@ -147,11 +146,11 @@ const ScanMoreModal = ({ isOpen, accounts, onResult, onClose }: Props) => {
       }
     } else if (oldAccs.length > 1 || oldAccs[0].derivedKeys.length > 0) {
       setCameraState(CameraState.NO_NEW_ACCOUNTS);
-      const oldAddresses = oldAccs.map(({ multiSigner }) => toAddress(u8aToHex(multiSigner?.public), 0));
+      const oldAddresses = oldAccs.map(({ multiSigner }) => toAddress(u8aToHex(multiSigner?.public), { prefix: 0 }));
       setExistingAccounts(oldAddresses);
     } else {
       setCameraState(CameraState.ACCOUNT_EXISTS);
-      setExistingAccounts([toAddress(u8aToHex(oldAccs[0].multiSigner?.public), 0)]);
+      setExistingAccounts([toAddress(u8aToHex(oldAccs[0].multiSigner?.public), { prefix: 0 })]);
     }
   };
 
@@ -170,7 +169,7 @@ const ScanMoreModal = ({ isOpen, accounts, onResult, onClose }: Props) => {
         <div className="flex flex-col justify-center items-center w-full h-full">
           <div className="flex flex-col items-center justify-center w-full h-full">
             <Identicon address={existingAccounts[0]} size={60} background={false} />
-            <p className="text-neutral font-semibold text-xl">{getShortAddress(existingAccounts[0], 16)}</p>
+            <p className="text-neutral font-semibold text-xl">{toShortAddress(existingAccounts[0], 16)}</p>
             <p className="text-neutral-variant text-sm">{t('onboarding.paritySigner.existingAccountDescription')}</p>
           </div>
           <Button

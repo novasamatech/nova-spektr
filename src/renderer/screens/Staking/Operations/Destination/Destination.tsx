@@ -3,20 +3,23 @@ import noop from 'lodash/noop';
 import { useState, useEffect } from 'react';
 import { Navigate, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 
-import { formatAddress } from '@renderer/shared/utils/address';
+import { toAddress } from '@renderer/shared/utils/address';
+import { getRelaychainAsset } from '@renderer/shared/utils/assets';
 import { RewardsDestination } from '@renderer/domain/stake';
+import { ChainLoader } from '@renderer/components/common';
 import { ButtonBack, ButtonLink, Icon } from '@renderer/components/ui';
 import { useI18n } from '@renderer/context/I18nContext';
 import { useNetworkContext } from '@renderer/context/NetworkContext';
 import { useChains } from '@renderer/services/network/chainsService';
-import { StakingType } from '@renderer/domain/asset';
-import { AccountID, ChainId, HexString } from '@renderer/domain/shared-kernel';
+import { Address, ChainId, HexString, AccountId } from '@renderer/domain/shared-kernel';
 import { Transaction, TransactionType } from '@renderer/domain/transaction';
-import { Confirmation, Scanning, Signing, Submit, ChainLoader } from '../components';
+import { Confirmation, MultiScanning, Signing, Submit, SingleScanning } from '../components';
 import Paths from '@renderer/routes/paths';
 import { AccountDS } from '@renderer/services/storage';
 import InitOperation, { DestinationResult } from './InitOperation/InitOperation';
-import { useCountdown } from '../hooks/useCountdown';
+import { useCountdown } from '@renderer/shared/hooks';
+import { MultisigAccount, isMultisig, Account } from '@renderer/domain/account';
+import { useTransaction } from '@renderer/services/transaction/transactionService';
 
 const enum Step {
   INIT,
@@ -27,11 +30,11 @@ const enum Step {
 }
 
 type DestinationType = {
-  address?: AccountID;
+  address?: Address;
   type: RewardsDestination;
 };
 
-const HEADER_TITLE: Record<Step, string> = {
+const HeaderTitles: Record<Step, string> = {
   [Step.INIT]: 'staking.destination.initDestinationSubtitle',
   [Step.CONFIRMATION]: 'staking.bond.confirmBondSubtitle',
   [Step.SCANNING]: 'staking.bond.scanSubtitle',
@@ -43,16 +46,23 @@ const Destination = () => {
   const { t } = useI18n();
   const navigate = useNavigate();
   const { connections } = useNetworkContext();
+  const { getTransactionHash } = useTransaction();
   const [searchParams] = useSearchParams();
   const { getChainById } = useChains();
   const params = useParams<{ chainId: ChainId }>();
 
   const [activeStep, setActiveStep] = useState<Step>(Step.INIT);
   const [chainName, setChainName] = useState('...');
+
   const [accounts, setAccounts] = useState<AccountDS[]>([]);
+  const [signer, setSigner] = useState<Account>();
   const [destination, setDestination] = useState<DestinationType>();
+  const [description, setDescription] = useState('');
+
   const [transactions, setTransactions] = useState<Transaction[]>([]);
+  const [multisigTx, setMultisigTx] = useState<Transaction>();
   const [unsignedTransactions, setUnsignedTransactions] = useState<UnsignedTransaction[]>([]);
+
   const [signatures, setSignatures] = useState<HexString[]>([]);
 
   const chainId = params.chainId || ('' as ChainId);
@@ -63,7 +73,7 @@ const Destination = () => {
   }
 
   const { api, explorers, addressPrefix, assets, name } = connections[chainId];
-  const asset = assets.find((asset) => asset.staking === StakingType.RELAYCHAIN);
+  const asset = getRelaychainAsset(assets);
 
   useEffect(() => {
     getChainById(chainId).then((chain) => setChainName(chain?.name || ''));
@@ -89,7 +99,7 @@ const Destination = () => {
       <ButtonBack onCustomReturn={goToPrevStep} />
       <p className="font-semibold text-2xl text-neutral-variant">{t('staking.title')}</p>
       <p className="font-semibold text-2xl text-neutral">/</p>
-      <h1 className="font-semibold text-2xl text-neutral">{t(HEADER_TITLE[activeStep])}</h1>
+      <h1 className="font-semibold text-2xl text-neutral">{t(HeaderTitles[activeStep])}</h1>
     </div>
   );
 
@@ -112,17 +122,57 @@ const Destination = () => {
     );
   }
 
-  const onDestinationResult = ({ accounts, destination }: DestinationResult) => {
+  const getDestinationTxs = (accounts: Account[], destination?: Address): Transaction[] => {
+    return accounts.map(({ accountId }) => ({
+      chainId,
+      address: toAddress(accountId, { prefix: addressPrefix }),
+      type: TransactionType.DESTINATION,
+      args: { payee: destination ? { Account: destination } : 'Staked' },
+    }));
+  };
+
+  const getMultisigTx = (
+    account: MultisigAccount,
+    signerAccountId: AccountId,
+    transaction: Transaction,
+  ): Transaction => {
+    const { callData, callHash } = getTransactionHash(transaction, api);
+
+    const otherSignatories = account.signatories.reduce<Address[]>((acc, s) => {
+      if (s.accountId !== signerAccountId) {
+        acc.push(toAddress(s.accountId, { prefix: addressPrefix }));
+      }
+
+      return acc;
+    }, []);
+
+    return {
+      chainId,
+      address: toAddress(signerAccountId, { prefix: addressPrefix }),
+      type: TransactionType.MULTISIG_AS_MULTI,
+      args: {
+        threshold: account.threshold,
+        otherSignatories: otherSignatories.sort(),
+        maybeTimepoint: null,
+        callData,
+        callHash,
+      },
+    };
+  };
+
+  const onDestinationResult = ({ accounts, destination, signer, description }: DestinationResult) => {
     const destPayload = destination
       ? { type: RewardsDestination.TRANSFERABLE, address: destination }
       : { type: RewardsDestination.RESTAKE };
 
-    const transactions = accounts.map(({ accountId = '' }) => ({
-      chainId,
-      address: formatAddress(accountId, addressPrefix),
-      type: TransactionType.DESTINATION,
-      args: { payee: destination ? { Account: destination } : 'Staked' },
-    }));
+    const transactions = getDestinationTxs(accounts, destination);
+
+    if (signer && isMultisig(accounts[0])) {
+      const multisigTx = getMultisigTx(accounts[0], signer.accountId, transactions[0]);
+      setMultisigTx(multisigTx);
+      setSigner(signer);
+      setDescription(description || '');
+    }
 
     setTransactions(transactions);
     setAccounts(accounts);
@@ -152,7 +202,8 @@ const Destination = () => {
         <InitOperation
           api={api}
           chainId={chainId}
-          accountIds={accountIds}
+          addressPrefix={addressPrefix}
+          identifiers={accountIds}
           asset={asset}
           onResult={onDestinationResult}
         />
@@ -164,6 +215,7 @@ const Destination = () => {
           accounts={accounts}
           destination={destination}
           transaction={transactions[0]}
+          multisigTx={multisigTx}
           asset={asset}
           explorers={explorers}
           addressPrefix={addressPrefix}
@@ -171,18 +223,30 @@ const Destination = () => {
           onAddToQueue={noop}
         />
       )}
-      {activeStep === Step.SCANNING && (
-        <Scanning
-          api={api}
-          chainId={chainId}
-          accounts={accounts}
-          transactions={transactions}
-          addressPrefix={addressPrefix}
-          countdown={countdown}
-          onResetCountdown={resetCountdown}
-          onResult={onScanResult}
-        />
-      )}
+      {activeStep === Step.SCANNING &&
+        (transactions.length > 1 ? (
+          <MultiScanning
+            api={api}
+            addressPrefix={addressPrefix}
+            countdown={countdown}
+            accounts={accounts}
+            transactions={transactions}
+            chainId={chainId}
+            onResetCountdown={resetCountdown}
+            onResult={onScanResult}
+          />
+        ) : (
+          <SingleScanning
+            api={api}
+            addressPrefix={addressPrefix}
+            countdown={countdown}
+            account={signer || accounts[0]}
+            transaction={multisigTx || transactions[0]}
+            chainId={chainId}
+            onResetCountdown={resetCountdown}
+            onResult={(unsignedTx) => onScanResult([unsignedTx])}
+          />
+        ))}
       {activeStep === Step.SIGNING && (
         <Signing
           countdown={countdown}
@@ -196,10 +260,12 @@ const Destination = () => {
           title={t('staking.confirmation.rewardDestinationTitle')}
           api={api}
           transaction={transactions[0]}
+          multisigTx={multisigTx}
           signatures={signatures}
           unsignedTx={unsignedTransactions}
           accounts={accounts}
           destination={destination}
+          description={description}
           asset={asset}
           explorers={explorers}
           addressPrefix={addressPrefix}

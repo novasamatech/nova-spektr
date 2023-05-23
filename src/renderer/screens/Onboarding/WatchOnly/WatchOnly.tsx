@@ -7,11 +7,11 @@ import { BaseModal, Button, ButtonBack, Icon, Identicon, Input } from '@renderer
 import { useI18n } from '@renderer/context/I18nContext';
 import { createAccount } from '@renderer/domain/account';
 import { Chain } from '@renderer/domain/chain';
-import { ErrorType, PublicKey, SigningType } from '@renderer/domain/shared-kernel';
+import { ErrorType, AccountId, SigningType } from '@renderer/domain/shared-kernel';
 import { useToggle } from '@renderer/shared/hooks';
 import { useAccount } from '@renderer/services/account/accountService';
 import { useChains } from '@renderer/services/network/chainsService';
-import { pasteAddressHandler, toPublicKey } from '@renderer/shared/utils/address';
+import { pasteAddressHandler, toAccountId, validateAddress } from '@renderer/shared/utils/address';
 import FinalStep from '../FinalStep/FinalStep';
 
 type WalletForm = {
@@ -21,6 +21,14 @@ type WalletForm = {
 
 const WatchOnly = () => {
   const { t } = useI18n();
+
+  const { addAccount } = useAccount();
+  const { getChainsData, sortChains } = useChains();
+
+  const [isModalOpen, toggleModal] = useToggle();
+  const [chains, setChains] = useState<Chain[]>([]);
+  const [accountId, setAccountId] = useState<AccountId>();
+  const [isCompleted, setIsCompleted] = useState(false);
 
   const {
     handleSubmit,
@@ -32,41 +40,28 @@ const WatchOnly = () => {
     defaultValues: { walletName: '', address: '' },
   });
 
-  const { getChainsData, sortChains } = useChains();
-  const { addAccount } = useAccount();
-  const [isModalOpen, toggleModal] = useToggle();
-
-  const [chains, setChains] = useState<Chain[]>([]);
-  const [publicKey, setPublicKey] = useState<PublicKey>();
-
-  const [isCompleted, setIsCompleted] = useState(false);
   const address = watch('address');
 
   useEffect(() => {
-    setPublicKey(toPublicKey(address));
+    setAccountId(toAccountId(address));
   }, [address]);
 
   useEffect(() => {
-    (async () => {
-      const chains = await getChainsData();
-      setChains(sortChains(chains));
-    })();
+    getChainsData().then((chains) => setChains(sortChains(chains)));
   }, []);
 
   const handleCreateWallet: SubmitHandler<WalletForm> = async ({ walletName, address }) => {
-    if (!publicKey || publicKey.length === 0) return;
+    if (!accountId || accountId.length === 0) return;
 
     const newAccount = createAccount({
       name: walletName.trim(),
       signingType: SigningType.WATCH_ONLY,
-      accountId: address,
+      accountId: toAccountId(address),
     });
 
     await addAccount(newAccount);
     setIsCompleted(true);
   };
-
-  const validateAddress = (a: string) => Boolean(toPublicKey(a));
 
   if (isCompleted) {
     return <FinalStep signingType={SigningType.WATCH_ONLY} />;
@@ -82,8 +77,9 @@ const WatchOnly = () => {
   return (
     <>
       <div className="flex items-center gap-x-2.5">
-        <ButtonBack />
-        <h1 className="text-neutral">{t('onboarding.watchonly.addWatchOnlyLabel')}</h1>
+        <ButtonBack>
+          <h1 className="text-neutral">{t('onboarding.watchonly.addWatchOnlyLabel')}</h1>
+        </ButtonBack>
       </div>
       <form
         className="flex h-full flex-col gap-10 justify-center items-center"
@@ -142,7 +138,7 @@ const WatchOnly = () => {
                   }
                   suffixElement={
                     <Button variant="outline" pallet="primary" onClick={pasteAddressHandler(onChange)}>
-                      {t('onboarding.pasteButton')}
+                      {t('general.button.pasteButton')}
                     </Button>
                   }
                   onChange={onChange}
@@ -159,8 +155,8 @@ const WatchOnly = () => {
             <div className="p-4">
               <h3 className="text-neutral font-semibold">{t('onboarding.watchonly.yourAccountsLoadingLabel')}</h3>
             </div>
-            <AccountsList chains={chains} publicKey={publicKey} limit={publicKey && 4} />
-            {publicKey && (
+            <AccountsList chains={chains} accountId={accountId} limit={accountId && 4} />
+            {accountId && (
               <div>
                 <Button
                   weight="md"
@@ -191,7 +187,7 @@ const WatchOnly = () => {
         isOpen={isModalOpen}
         onClose={toggleModal}
       >
-        <AccountsList className="pt-6 -mx-4 max-w-2xl" chains={chains} publicKey={publicKey} />
+        <AccountsList className="pt-6 -mx-4 max-w-2xl" chains={chains} accountId={accountId} />
       </BaseModal>
     </>
   );

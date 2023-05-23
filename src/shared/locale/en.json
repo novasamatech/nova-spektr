@@ -1,12 +1,12 @@
 {
   "addressBook": {
     "addContact": {
-      "accountIdIncorrectError": "Incrorrect account address",
+      "accountIdIncorrectError": "Incorrect account address",
       "accountIdLabel": "account Address",
       "accountIdPlaceholder": "Enter or paste an address",
       "accountIdRequiredError": "Account address is required",
       "addContactButton": "Add contact",
-      "matrixIdError": "Incrorrect matrix id",
+      "matrixIdError": "Incorrect matrix id",
       "matrixIdLabel": "matrix id (optional)",
       "matrixIdPlaceholder": "Enter or paste Matrix ID, ie: @bob:matrix.org",
       "nameLabel": "Name",
@@ -37,19 +37,38 @@
   "assetBalance": {
     "locked": "Locked",
     "number": "{value, number}",
+    "numberWithSuffix": "{value, number}{suffix}",
     "reserved": "Reserved",
     "transferable": "Transferable"
   },
   "balances": {
-    "emptyStateDescription": "Try to reset filters or search for another key",
-    "emptyStateLabel": "Nothing to show",
+    "emptyStateDescription": "Update the search or cancel filtering.",
+    "emptyStateLabel": "Nothing was found.",
     "hideZeroBalancesLabel": "Hide zero balances",
-    "searchPlaceholder": "Search by token or network",
-    "title": "Balances",
+    "searchPlaceholder": "Search",
+    "title": "Assets",
     "verificationFailedLabel": "verification failed"
   },
   "basemodal": {
     "closeButton": "Close modal window"
+  },
+  "createMultisigAccount": {
+    "addContactsButton": "Add selected",
+    "addSignatoryButton": "Add signatory",
+    "backButton": "Back",
+    "continueButton": "Continue",
+    "errorMessage": "Something went wrong",
+    "nameDescription": "Give a name to your multisig account",
+    "nameLabel": "Account",
+    "namePlaceholder": "Nova Spektr",
+    "noWallets": "Looks like you don't have any non-watch only wallets",
+    "searchContactPlaceholder": "Search for an account or contact...",
+    "signatoriesDescription": "Add signatories to your multisig account",
+    "signatoriesLabel": "Signatories",
+    "successMessage": "Multisig account created successfully",
+    "thresholdDescription": "Set the threshold of signatories required to sign a transaction.",
+    "thresholdName": "Threshold",
+    "title": "Create multisig account"
   },
   "dropdown": {
     "chooseOptionLabel": "Choose an option"
@@ -60,17 +79,31 @@
     "reloadButton": "Reload"
   },
   "general": {
+    "button": {
+      "pasteButton": "Paste",
+      "uploadButton": "Upload"
+    },
     "explorers": {
       "explorerButton": "View on { name }",
       "explorerTitle": "Explorers"
     },
     "input": {
       "amountLabel": "Amount",
+      "signerLabel": "Select signer",
       "transferableLabel": "Transferable"
+    },
+    "title": {
+      "appName": "Nova Spektr"
     }
   },
-  "history": {
-    "title": "History"
+  "log": {
+    "cancelledMessage": "rejected this operation",
+    "errorCancelledMessage": "tried to reject this operation",
+    "errorSignedMessage": "tried to sign this operation",
+    "initiatedMessage": "created this operation",
+    "signedMessage": "signed this operation",
+    "title": "Log",
+    "unknownMessage": " made an unknown action"
   },
   "matrixCredentials": {
     "subTitle": "Matrix Credentials"
@@ -86,6 +119,7 @@
     "historyLabel": "History",
     "mstOperationLabel": "Multisig Operations",
     "multipleWalletsLabel": "Multiple wallets",
+    "notificationsLabel": "Notifications",
     "settingsLabel": "Settings",
     "signingDEVLabel": "Signing DEV",
     "stakingLabel": "Staking",
@@ -148,6 +182,14 @@
     },
     "subTitle": "Networks"
   },
+  "notifications": {
+    "details": {
+      "newMultisigAccountDescription": "with threshold { threshold } and { signatories } signatories",
+      "newMultisigAccountTitle": "New Multisig wallet added:"
+    },
+    "noNotificationsDescription": "There are no notifications yet",
+    "title": "Notifications"
+  },
   "onboarding": {
     "accountAddressLabel": "Account address",
     "checkAccountsButton": "Check your accounts",
@@ -161,7 +203,7 @@
       "accountsExistTitle": "These <strong>accounts</strong> already exist!",
       "addAccount": "Add new accounts",
       "addByParitySignerLabel": "Add wallet by Parity Signer",
-      "addSingleParitySignerDescription1": "Here is your account scanned from Parity Signer",
+      "addSingleParitySignerDescription": "Here is your account scanned from Parity Signer",
       "autoFillAccountsListButton": "Autofill account names",
       "checkAddress": "Check address",
       "chooseCameraLabel": "Please choose one to continue",
@@ -233,6 +275,90 @@
     },
     "yourAccountsLabel": "Here are your accounts"
   },
+  "operation": {
+    "addCallDataButton": "Add call data",
+    "advanced": "Advanced",
+    "approveButton": "Approve",
+    "cancelTitle": "Cancel ",
+    "continueButton": "Continue",
+    "details": {
+      "callData": "Call Data",
+      "callHash": "Call Hash",
+      "controller": "Controller",
+      "deposit": "Multisig deposit",
+      "depositor": "Depositor",
+      "description": "Description",
+      "multisigWallet": "Multisig wallet",
+      "payee": "Rewards destination",
+      "recipient": "Recipient",
+      "rejectReason": "Reject reason",
+      "timePoint": "Time Point",
+      "validators": "Selected validators"
+    },
+    "detailsTitle": "Details",
+    "explorerLink": "View in explorer",
+    "feeErrorButton": "Close",
+    "feeErrorMessage": "Insufficient funds to pay the network fee",
+    "feeErrorTitle": "Error",
+    "goBackButton": "Go back",
+    "inProgress": "Submitting approval...",
+    "logButton": "Log",
+    "networkFee": "Network fee",
+    "rejectButton": "Cancel",
+    "rejectInProgress": "Submitting Rejection...",
+    "rejectReason": {
+      "continueButton": "Continue",
+      "errorMessage": "Reject reason is required",
+      "inputHint": "Visible only for you and signers",
+      "placeholder": "Reason...",
+      "title": "Enter reject reason"
+    },
+    "selectSignatory": "Select signatory",
+    "selectSignatoryTitle": "Select signatory",
+    "signButton": "Sign with Polkadot Vault",
+    "signatoriesTitle": "Signatories",
+    "signing": "{ signed } of { threshold } signed",
+    "status": {
+      "cancelled": "Cancelled",
+      "error": "Error",
+      "established": "Established",
+      "executed": "Executed",
+      "signing": "On signing"
+    },
+    "successMessage": "Operation Approved",
+    "successRejectMessage": "Operation Rejected"
+  },
+  "operations": {
+    "callData": {
+      "continueButton": "Continue",
+      "errorMessage": "Incorrect call data",
+      "inputHint": "Visible only for you and signers",
+      "inputPlaceholder": "0x00...",
+      "title": "Enter call data"
+    },
+    "filters": {
+      "networkPlaceholder": "Network",
+      "networkSummary": "Networks",
+      "operationTypePlaceholder": "Operation type",
+      "operationTypeSummary": "Operation types",
+      "statusPlaceholder": "Operation status",
+      "statusSummary": "Operation statuses"
+    },
+    "noOperationsDescription": "Your operation history will appear here",
+    "noOperationsWalletNotMulti": "You can only view operations for your Multisig wallets. Transaction history for other types of wallets will be available later. Stay tuned.",
+    "title": "Operations",
+    "titles": {
+      "destination": "Set reward destination",
+      "nominate": "Nominate",
+      "redeem": "Withdraw Unstaked",
+      "restake": "Restake",
+      "stakeMore": "Stake More",
+      "startStaking": "Start Staking",
+      "transfer": "Transfer",
+      "unknown": "Unknown Operation",
+      "unstake": "Unstake"
+    }
+  },
   "qrReader": {
     "parsingLabel": "Parsing data",
     "parsingSubLabel": "Please hold still...",
@@ -250,12 +376,60 @@
     "title": "Receive"
   },
   "settings": {
-    "getInTouchLabel": "Get in touch for more information",
-    "languageLabel": "Language",
-    "matrixDetailsLabel": "Manage Omni Matrix Protocol credentials",
-    "matrixLabel": "Matrix Credentials",
-    "networkDetailsLabel": "Manage network connection",
-    "networkLabel": "Network",
+    "matrix": {
+      "badCredentialsError": "Wrong username or password, please try again",
+      "badServerError": "Server is not a correct matrix server",
+      "fileError": "File does not contain a valid verification key, please upload another one",
+      "formSubtitle": "Sign in with your Matrix ID and password",
+      "formTitle": "Matrix credentials",
+      "homeserverLabel": "Matrix server",
+      "homeserverPlaceholder": "matrix.org",
+      "infoMatrixDescription": "<matrix>Matrix</matrix> is an open source, secure, decentralised, real-time communication standard. The <smp>Spektr Matrix Protocol</smp> extension is built on Matrix and uses Matrix for:",
+      "infoMatrixDescriptionOne": "Exchanging multisig account information amongst signatories.",
+      "infoMatrixDescriptionTwo": "Exchanging multisig transaction events: initiation, signing, final signing, cancelling.",
+      "infoMatrixEncryption": "Matrix provides state-of-the-art end-to-end-encryption. This ensures that only the intended recipients can ever decrypt your messages.",
+      "infoSpektrDescription": "Nova Spektr uses Matrix to share multisig account information and multisig transaction information (including call data) with other signatories. Signing in to Matrix is the easiest way to share this information with your fellow signatories, as all the necessary information will be automatically shared.",
+      "infoWhatIsMatrixTitle": "What is Matrix?",
+      "infoWhyMatrixTitle": "Why do I need to sign in with Matrix?",
+      "loginNotAvailable": "Login with credentials is not available for<br /><strong>{ homeserver }</strong>",
+      "loginSeparator": "Or",
+      "passphraseError": "Invalid passphrase, please try another one",
+      "passphrasePlaceholder": "Paste your passphrase",
+      "passwordLabel": "Password",
+      "passwordPlaceholder": "enter password",
+      "passwordRequiredError": "Password is required",
+      "passwordVisibilityButton": "Show password",
+      "privacyFooter": "By signing in you consent to the <terms>terms of use</terms> and <privacy>privacy policy</privacy>",
+      "privacyTitle": "Nova Spektr does not store your Matrix password",
+      "registerLink": "Don’t have an account?<register>Register</register>",
+      "secretFilePlaceholder": "Select file to upload",
+      "secretKeyError": "Invalid key, please try another one",
+      "secretKeyPlaceholder": "Paste your verification key",
+      "signInButton": "Sign in",
+      "signOutButton": "Sign out",
+      "statusNotVerified": "Not verified",
+      "statusVerified": "Verified",
+      "subTitle": "Matrix Credentials",
+      "uploadFile": "Upload file",
+      "usePassphrase": "Use passphrase",
+      "userIdLabel": "you are signed in as:",
+      "usernameError": "Invalid username",
+      "usernameLabel": "Username",
+      "usernamePlaceholder": "spektr",
+      "usernameRequiredError": "Username is required",
+      "verificationSubtitle": "Verify your device for secure connection",
+      "verificationTitle": "Device verification",
+      "verifyDeviceButton": "Verify your device",
+      "verifyWithKey": "Verify with key"
+    },
+    "overview": {
+      "getInTouchLabel": "Get in touch for more information!",
+      "languageLabel": "Language",
+      "matrixDetailsLabel": "Manage Omni Matrix Protocol credentials",
+      "matrixLabel": "Matrix Credentials",
+      "networkDetailsLabel": "Manage network connection",
+      "networkLabel": "Network"
+    },
     "title": "Settings"
   },
   "signing": {
@@ -263,8 +437,10 @@
     "generateNewQrButton": "Generate new QR code",
     "metadataPortalLink": "Update metadata in Parity Signer",
     "qrCountdownTitle": "QR code is valid for",
-    "scanQrTitle": "Scan the operation QR code with Parity Signer",
+    "qrNotValid": "QR code isn’t valid anymore",
+    "scanQrTitle": "Scan the operation QR code with Polkadot Vault",
     "scanSignatureTitle": "Scan QR code from Parity Signer",
+    "signatory": "Signatory:",
     "signatureExpiredDescription": "For security reasons generated operations valid for only 5 mins. Please generate new QR code and sign it with Parity Signer",
     "signatureExpiredLabel": "QR Code has expired",
     "title": "Signing",
@@ -351,6 +527,7 @@
       "selectValidators": "Selected validators",
       "setValidatorsTitle": "Set validators",
       "signButton": "Sign with Parity Signer",
+      "signer": "Signer",
       "submittingOperation": "Submitting operation",
       "totalAmount": "Total amount",
       "totalNetworkFee": "Total network fee",
@@ -372,7 +549,8 @@
       "validators": "Validators",
       "yourValidatorsTitle": "Your validators"
     },
-    "notEnoughBalanceError": "Not enough funds to stake specific amount",
+    "notEnoughBalanceError": "Not enough funds to complete operation",
+    "notEnoughBalanceForDepositError": "Insufficient balance to pay deposit",
     "notEnoughBalanceForFeeError": "Insufficient balance to pay network fee",
     "notEnoughStakedError": "Not enough staked to unstake specific amount",
     "notEnoughUnlockingError": "Not enough unlocking to return specific amount",
@@ -403,6 +581,7 @@
     },
     "redeem": {
       "availablePlaceholder": "Available",
+      "confirmRedeemSubtitle": "Confirmation",
       "initRedeemSubtitle": "Redeem"
     },
     "requiredAmountError": "Please, enter amount",
@@ -469,9 +648,23 @@
     "hours_other": "{ count } hours",
     "minutesSeconds": "{ minutes }:{ seconds }"
   },
+  "transactionMessage": {
+    "bond": "Stake { amount } { asset }",
+    "destination": "Change reward destination to { address }",
+    "nominate": "Change validators",
+    "redeem": "Withdraw { amount } { asset }",
+    "restake": "Return { amount } { asset } to stake",
+    "restakeDestination": "restake",
+    "stakeMore": "Increase stake { amount } { asset }",
+    "transfer": "Transfer { amount } { asset } to { address }",
+    "unstake": "Unstake { amount } { asset }"
+  },
   "transfer": {
     "amountPlaceholder": "Amount",
     "continueButton": "Continue",
+    "descriptionLabel": "Operation name",
+    "descriptionLengthError": "Description can be { maxLength } symbols long",
+    "descriptionPlaceholder": "Choose an operation name",
     "editOperationButton": "Edit operation",
     "executing": "Submitting operation",
     "formTitle": "Send <strong>{ asset }</strong> on <strong>{ network }</strong>",
@@ -480,12 +673,16 @@
       "executing": "Submitting operations",
       "transactions": "Transactions"
     },
+    "multisigTransactionExist": "Multisig transaction already exists",
+    "networkDeposit": "Deposit",
     "networkFee": "Network fee",
     "notEnoughBalanceError": "Not enough funds to transfer specific amount",
+    "notEnoughBalanceForDepositError": "Insufficient balance to pay deposit",
     "notEnoughBalanceForFeeError": "Insufficient balance to pay network fee",
     "pasteButton": "Paste",
     "recipientLabel": "Recipient",
     "requiredAmountError": "Please, enter amount",
+    "requiredDescriptionError": "Description is required",
     "requiredRecipientError": "Please, enter recipient address",
     "startSigningButton": "Sign with Parity Signer",
     "successMessage": "transaction submitted!",
@@ -493,6 +690,7 @@
   },
   "transferDetails": {
     "fromNetwork": "From network",
+    "networkDeposit": "Deposit",
     "networkFee": "Network fee",
     "recipient": "Recipient",
     "sender": "Sender",
@@ -501,8 +699,9 @@
   },
   "wallets": {
     "addByParitySignerButton": "Add wallet by Parity Signer",
+    "addMultisigWalletButton": "Create Multisig wallet",
     "addWatchOnlyButton": "Add Watch-Only wallet",
-    "multishardWalletsLabel": "Multishard",
+    "multishardLabel": "Multishard",
     "multisigLabel": "Multisig",
     "paritySignerLabel": "Parity Signer",
     "searchPlaceholder": "Search for a wallet",

@@ -1,4 +1,5 @@
 import '@renderer/index.css';
+import '@renderer/theme/default.css';
 
 export const parameters = {
   actions: { argTypesRegex: '^on[A-Z].*' },

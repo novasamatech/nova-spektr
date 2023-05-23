@@ -12,11 +12,6 @@ jest.mock('@renderer/context/I18nContext', () => ({
   }),
 }));
 
-window.IntersectionObserver = jest.fn().mockImplementation(() => ({
-  observe: jest.fn(),
-  disconnect: jest.fn(),
-}));
-
 describe('screens/Staking/Overview/NominatorsModal', () => {
   const elected = {
     '0x123': {

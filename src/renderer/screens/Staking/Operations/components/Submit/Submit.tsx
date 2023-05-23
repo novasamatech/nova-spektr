@@ -9,14 +9,21 @@ import { HexString } from '@renderer/domain/shared-kernel';
 import Paths from '@renderer/routes/paths';
 import { useTransaction } from '@renderer/services/transaction/transactionService';
 import TransactionInfo, { InfoProps } from '../TransactionInfo/TransactionInfo';
+import { ExtrinsicResultParams } from '@renderer/services/transaction/common/types';
+import { isMultisig } from '@renderer/domain/account';
+import { Transaction } from '@renderer/domain/transaction';
+import { toAccountId } from '@renderer/shared/utils/address';
+import { useMatrix } from '@renderer/context/MatrixContext';
 
 interface Props extends InfoProps {
   unsignedTx: UnsignedTransaction[];
   signatures: HexString[];
+  description?: string;
 }
 
-export const Submit = ({ unsignedTx, signatures, children, ...props }: PropsWithChildren<Props>) => {
+export const Submit = ({ unsignedTx, signatures, description, children, ...props }: PropsWithChildren<Props>) => {
   const { t } = useI18n();
+  const { matrix } = useMatrix();
   const { confirm } = useConfirmContext();
   const { submitAndWatchExtrinsic, getSignedExtrinsic } = useTransaction();
   const navigate = useNavigate();
@@ -25,6 +32,7 @@ export const Submit = ({ unsignedTx, signatures, children, ...props }: PropsWith
   const [failedTxs, setFailedTxs] = useState<number[]>([]);
 
   const submitFinished = unsignedTx.length === progress;
+  const { api, accounts, multisigTx } = props;
 
   const confirmFailedTx = (): Promise<boolean> => {
     return confirm({
@@ -38,19 +46,42 @@ export const Submit = ({ unsignedTx, signatures, children, ...props }: PropsWith
 
   const submitExtrinsic = async (signatures: HexString[]): Promise<void> => {
     const extrinsicRequests = unsignedTx.map((unsigned, index) => {
-      return getSignedExtrinsic(unsigned, signatures[index], props.api);
+      return getSignedExtrinsic(unsigned, signatures[index], api);
     });
 
     const allExtrinsic = await Promise.all(extrinsicRequests);
 
     allExtrinsic.forEach((extrinsic, index) => {
-      submitAndWatchExtrinsic(extrinsic, unsignedTx[index], props.api, (executed) => {
+      submitAndWatchExtrinsic(extrinsic, unsignedTx[index], api, (executed, params) => {
         setProgress((p) => p + 1);
-        if (!executed) {
+
+        if (executed) {
+          const mstAccount = accounts[0];
+
+          if (multisigTx && isMultisig(mstAccount) && matrix.userIsLoggedIn) {
+            sendMultisigEvent(mstAccount.matrixRoomId, multisigTx, params as ExtrinsicResultParams);
+          }
+        } else {
           setFailedTxs((f) => f.concat(index));
         }
       });
     });
+  };
+
+  const sendMultisigEvent = (roomId: string, transaction: Transaction, params: ExtrinsicResultParams) => {
+    matrix
+      .sendApprove(roomId, {
+        senderAccountId: toAccountId(transaction.address),
+        chainId: transaction.chainId,
+        callHash: transaction.args.callHash,
+        callData: transaction.args.callData,
+        extrinsicHash: params.extrinsicHash,
+        extrinsicTimepoint: params.timepoint,
+        callTimepoint: params.timepoint,
+        error: Boolean(params.multisigError),
+        description,
+      })
+      .catch(console.warn);
   };
 
   useEffect(() => {

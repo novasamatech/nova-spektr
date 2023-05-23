@@ -1,6 +1,15 @@
 import { EventType, MatrixEvent, Room } from 'matrix-js-sdk';
 
-import { HexString } from '@renderer/domain/shared-kernel';
+import {
+  HexString,
+  AccountId,
+  Timepoint,
+  Threshold,
+  CallHash,
+  CallData,
+  ChainId,
+} from '@renderer/domain/shared-kernel';
+import { MultisigTxStatus } from '@renderer/domain/transaction';
 
 // =====================================================
 // ============ ISecureMessenger interface =============
@@ -8,48 +17,52 @@ import { HexString } from '@renderer/domain/shared-kernel';
 
 export interface ISecureMessenger {
   // Init
-  init: () => Promise<void | never>;
-  setHomeserver: (url: string) => Promise<void | never>;
-  skipLogin: (value: boolean) => void;
-  loginWithCreds: (login: string, password: string) => Promise<void | never>;
-  loginFromCache: () => Promise<void | never>;
-  logout: () => Promise<void | never>;
-  // registration: (login: string, password: string) => Promise<void | never>;
+  setHomeserver: (domain: string) => Promise<void>;
+  loginFlows: () => Promise<LoginFlow[]>;
+  loginWithCreds: (login: string, password: string) => Promise<void>;
+  loginFromCache: () => Promise<void>;
+  logout: () => Promise<void>;
+  // registration: (login: string, password: string) => Promise<void>;
   stopClient: () => void;
 
   // Actions
-  startRoomCreation: (mstAccountAddress: string) => Promise<RoomSignature | never>;
-  finishRoomCreation: (params: RoomParams) => Promise<void | never>;
-  cancelRoomCreation: (roomId: string) => Promise<void | never>;
-  joinRoom: (roomId: string) => Promise<void | never>;
-  leaveRoom: (roomId: string) => Promise<void | never>;
-  invite: (roomId: string, signatoryId: string) => Promise<void | never>;
-  listOfOmniRooms: (type: Membership.INVITE | Membership.JOIN) => Room[];
-  setActiveRoom: (roomId: string) => void;
-  readTimeline: () => Promise<MSTPayload[] | never>;
-  sendMessage: (message: string) => void;
-  markAsRead: (event: MatrixEvent) => Promise<void | never>;
-  setupSubscribers: (handlers: Callbacks) => void;
-  clearSubscribers: () => void;
+  createRoom: (params: RoomParams) => Promise<string>;
+  joinRoom: (roomId: string) => Promise<void>;
+  leaveRoom: (roomId: string) => Promise<void>;
+  invite: (roomId: string, signatoryId: string) => Promise<void>;
+  joinedRooms: () => Room[];
+  sendMessage: (roomId: string, message: string) => Promise<string>;
+  markAsRead: (readEventId: string, events: MatrixEvent[]) => Promise<void>;
+  setEventCallbacks: (callbacks: Callbacks) => void;
+  syncSpektrTimeline: () => Promise<void>;
+
+  // Validators
+  validateShortUserName: (value: string) => boolean;
+  validateFullUserName: (value: string) => boolean;
   // checkUserExists: (userId: string) => Promise<boolean>;
 
   // Verification
-  verifyWithKey: (securityKey: string) => Promise<boolean | never>;
-  verifyWithFile: (securityFile: File) => Promise<boolean | never>;
-  verifyWithPhrase: (securityPhrase: string) => Promise<boolean | never>;
+  verifyWithKey: (securityKey: string) => Promise<boolean>;
+  verifyWithFile: (securityFile: File) => Promise<boolean>;
+  verifyWithPhrase: (securityPhrase: string) => Promise<boolean>;
 
-  // MST operations
-  mstInitiate: (params: MstParams) => void;
-  mstApprove: (params: MstParams) => void;
-  mstFinalApprove: (params: MstParams) => void;
-  mstCancel: (params: MstParams) => void;
+  // Multisig operations
+  sendUpdate: (roomId: string, params: UpdatePayload) => Promise<void>;
+  sendApprove: (roomId: string, params: ApprovePayload) => Promise<void>;
+  sendFinalApprove: (roomId: string, params: FinalApprovePayload) => Promise<void>;
+  sendCancel: (roomId: string, params: CancelPayload) => Promise<void>;
+
+  // Multisig event checkers
+  isUpdateEvent: (type: SpektrMultisigEvent, content?: BaseMultisigPayload) => content is UpdatePayload;
+  isApproveEvent: (type: SpektrMultisigEvent, content?: BaseMultisigPayload) => content is ApprovePayload;
+  isFinalApproveEvent: (type: SpektrMultisigEvent, content?: BaseMultisigPayload) => content is FinalApprovePayload;
+  isCancelEvent: (type: SpektrMultisigEvent, content?: BaseMultisigPayload) => content is CancelPayload;
 
   // Properties
-  userId: string;
-  isLoggedIn: boolean;
-  isSynced: boolean;
-  isVerified: boolean;
-  sessionKey: any;
+  userId: string | undefined;
+  userIsVerified: boolean;
+  userIsLoggedIn: boolean;
+  sessionKey: string | undefined;
 }
 
 // =====================================================
@@ -65,19 +78,11 @@ export type Credential = {
   isLastLogin: boolean;
 };
 
-export type SkipLogin = {
-  skip: boolean;
-};
-
 export interface ICredentialStorage {
   // Actions
   getCredentials: (key: keyof Credential, value: any) => Credential | undefined;
   saveCredentials: (credential: Credential) => void;
   updateCredentials: (userId: string, credential: Partial<Credential>) => void;
-
-  getSkipLogin: () => SkipLogin;
-  saveSkipLogin: (data: SkipLogin) => void;
-
   clear: () => void;
 }
 
@@ -87,7 +92,7 @@ export interface ICredentialStorage {
 
 export interface ISecretStorage {
   // Actions
-  storePrivateKey: (keyId: string, privateKey: Uint8Array | unknown) => void | never;
+  storePrivateKey: (keyId: string, privateKey: Uint8Array | unknown) => void;
   hasPrivateKey: (keyId: string) => boolean;
   getPrivateKey: (keyId: string) => Uint8Array | undefined;
   deletePrivateKey: (keyId: string) => void;
@@ -110,59 +115,64 @@ export const enum Membership {
   LEAVE = 'leave',
 }
 
-export type Signatory = {
-  matrixAddress: string;
-  accountId: string;
-  isInviter?: boolean;
-};
-
-export type RoomSignature = Record<'roomId' | 'sign', string>;
-
 export type RoomParams = {
-  roomId: string;
-  signature: string;
   accountName: string;
-  mstAccountAddress: string;
-  inviterPublicKey: string;
-  threshold: number;
-  signatories: Signatory[];
+  accountId: AccountId;
+  creatorAccountId: AccountId;
+  threshold: Threshold;
+  signatories: {
+    accountId: AccountId;
+    matrixId?: string;
+  }[];
 };
 
-export type OmniExtras = {
-  mst_account: {
+export type SpektrExtras = {
+  mstAccount: {
     accountName: string;
-    threshold: number;
-    signatories: string[];
-    address: string;
-  };
-  invite: {
-    signature: string;
-    public_key: string;
+    threshold: Threshold;
+    signatories: AccountId[];
+    accountId: AccountId;
+    creatorAccountId: AccountId;
   };
 };
+
+export type LoginFlow = 'password' | 'sso' | 'cas';
 
 // =====================================================
 // ============== MST Events / Callbacks ===============
 // =====================================================
 
-export enum OmniMstEvent {
-  INIT = 'io.novafoundation.omni.mst_initiated',
-  APPROVE = 'io.novafoundation.omni.mst_approved',
-  FINAL_APPROVE = 'io.novafoundation.omni.mst_executed',
-  CANCEL = 'io.novafoundation.omni.mst_cancelled',
+export const enum SpektrMultisigEvent {
+  UPDATE = 'io.novafoundation.spektr.mst_updated',
+  APPROVE = 'io.novafoundation.spektr.mst_approved',
+  FINAL_APPROVE = 'io.novafoundation.spektr.mst_executed',
+  CANCEL = 'io.novafoundation.spektr.mst_cancelled',
 }
 
-export type MstParams = {
-  salt: string;
-  senderAddress: string;
-  chainId: HexString;
-  callHash: HexString;
-  callData?: HexString;
-  extrinsicHash?: HexString;
+export interface BaseMultisigPayload {
+  chainId: ChainId;
+  callHash: CallHash;
+  callData?: CallData;
+  senderAccountId: AccountId;
   description?: string;
-};
+  callTimepoint: Timepoint;
+}
 
-type EventPayload = {
+export interface ApprovePayload extends BaseMultisigPayload {
+  extrinsicHash?: HexString;
+  extrinsicTimepoint: Timepoint;
+  error: boolean;
+}
+
+export interface FinalApprovePayload extends ApprovePayload {
+  callOutcome: MultisigTxStatus;
+}
+
+export interface CancelPayload extends ApprovePayload {}
+
+export interface UpdatePayload extends BaseMultisigPayload {}
+
+type MatrixEventPayload = {
   eventId: string;
   roomId: string;
   sender: string;
@@ -171,17 +181,15 @@ type EventPayload = {
   date: Date;
 };
 
-export type InvitePayload = EventPayload & {
-  content: OmniExtras;
+export type InvitePayload = MatrixEventPayload & {
+  content: SpektrExtras;
   type: EventType.RoomMember;
 };
 
-export type MSTPayload = EventPayload & {
-  content: MstParams;
-  type: OmniMstEvent;
+export type MultisigPayload = MatrixEventPayload & {
+  content: ApprovePayload | FinalApprovePayload | CancelPayload | UpdatePayload;
+  type: SpektrMultisigEvent;
 };
-
-export type CombinedEventPayload = InvitePayload | MSTPayload;
 
 type GeneralCallbacks = {
   onSyncEnd: () => void;
@@ -189,13 +197,14 @@ type GeneralCallbacks = {
   onInvite: (data: InvitePayload) => void;
   // TODO: change message type in future
   onMessage: (message: string) => void;
+  onLogout: () => void;
 };
 
-export type MSTCallbacks = {
-  onMstEvent: (data: MSTPayload) => void;
+export type MultisigCallbacks = {
+  onMultisigEvent: (payload: MultisigPayload, extras: SpektrExtras) => Promise<void>;
 };
 
-export type Callbacks = GeneralCallbacks & MSTCallbacks;
+export type Callbacks = GeneralCallbacks & MultisigCallbacks;
 
 // =====================================================
 // ===================== Errors ========================
@@ -214,18 +223,18 @@ export const enum MatrixError {
   PHRASE_VERIFICATION,
   LOGOUT,
   LOGIN_CREDS,
+  LOGIN_FLOWS,
   LOGIN_CACHE,
   INIT_WITH_CREDENTIALS,
   NO_CREDS_IN_DB,
-  START_ROOM,
-  FINISH_ROOM,
+  CREATE_ROOM,
   LEAVE_ROOM,
   JOIN_ROOM,
   INVITE_IN_ROOM,
   JOINED_ROOMS,
   MESSAGE,
   MARK_AS_READ,
-  MST_INIT,
+  MST_UPDATE,
   MST_APPROVE,
   MST_FINAL_APPROVE,
   MST_CANCEL,
@@ -234,11 +243,11 @@ export const enum MatrixError {
   OUTSIDE_ROOM,
   INVITE_USERS,
   MEMBERS_VERIFICATION,
-  READ_TIMELINE,
   CREATE_MATRIX_CLIENT,
   VERIFY_FILE_MAX_SIZE,
   READ_VERIFY_FILE,
   VERIFY_FILE_BAD_CONTENT,
+  TIMELINE_PAGINATION,
 }
 
 export type ErrorObject = {

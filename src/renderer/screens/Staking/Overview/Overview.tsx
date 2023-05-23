@@ -8,9 +8,9 @@ import { DropdownOption, DropdownResult } from '@renderer/components/ui/Dropdown
 import { useGraphql } from '@renderer/context/GraphqlContext';
 import { useI18n } from '@renderer/context/I18nContext';
 import { useNetworkContext } from '@renderer/context/NetworkContext';
-import { Asset, StakingType } from '@renderer/domain/asset';
+import { Asset } from '@renderer/domain/asset';
 import { ConnectionStatus, ConnectionType } from '@renderer/domain/connection';
-import { AccountID, ChainId, SigningType } from '@renderer/domain/shared-kernel';
+import { Address, ChainId, SigningType } from '@renderer/domain/shared-kernel';
 import { Stake } from '@renderer/domain/stake';
 import { PathValue } from '@renderer/routes/paths';
 import { createLink } from '@renderer/routes/utils';
@@ -29,7 +29,8 @@ import { isStringsMatchQuery } from '@renderer/shared/utils/strings';
 import { AboutStaking, EmptyFilter, InactiveChain, NoAccounts, StakingTable } from './components';
 import NominatorsModal from './components/NominatorsModal/NominatorsModal';
 import { AccountStakeInfo } from './components/StakingTable/StakingTable';
-import { toAddress } from '@renderer/services/balance/common/utils';
+import { toAddress } from '@renderer/shared/utils/address';
+import { getRelaychainAsset } from '@renderer/shared/utils/assets';
 
 type NetworkOption = { asset: Asset; addressPrefix: number };
 
@@ -57,8 +58,8 @@ const Overview = () => {
   const [networkIsActive, setNetworkIsActive] = useState(true);
   const [activeNetwork, setActiveNetwork] = useState<DropdownResult<NetworkOption>>();
   const [stakingNetworks, setStakingNetworks] = useState<DropdownOption<NetworkOption>[]>([]);
-  const [selectedAccounts, setSelectedAccounts] = useState<AccountID[]>([]);
-  const [selectedStash, setSelectedStash] = useState<AccountID>('');
+  const [selectedAccounts, setSelectedAccounts] = useState<Address[]>([]);
+  const [selectedStash, setSelectedStash] = useState<Address>('');
 
   const chainId = (activeNetwork?.id || '') as ChainId;
   const api = connections[chainId]?.api;
@@ -73,10 +74,10 @@ const Overview = () => {
 
       return !rootId || derivationIsCorrect;
     })
-    .map((a) => ({ ...a, accountId: toAddress(a.publicKey, addressPrefix) }));
+    .map((a) => ({ ...a, accountId: toAddress(a.accountId, { prefix: addressPrefix }) }));
 
-  const accountAddresses = activeAccounts.reduce<AccountID[]>((acc, account) => {
-    return account.accountId ? acc.concat(account.accountId) : acc;
+  const accountAddresses = activeAccounts.map(({ accountId }) => {
+    return toAddress(accountId, { prefix: addressPrefix });
   }, []);
 
   const totalStakes = Object.values(staking).reduce<string[]>((acc, stake) => {
@@ -112,31 +113,29 @@ const Overview = () => {
   useEffect(() => {
     if (!api?.isConnected || !era) return;
 
-    (async () => {
-      const validators = await getValidators(chainId, api, era);
-
-      setValidators(validators);
-    })();
+    getValidators(chainId, api, era).then(setValidators);
   }, [api, era]);
 
   useEffect(() => {
-    (async () => {
-      const chainsData = await getChainsData();
-
+    getChainsData().then((chainsData) => {
       const relaychains = sortChains(chainsData).reduce<DropdownOption<NetworkOption>[]>((acc, chain) => {
-        const asset = chain.assets.find((asset) => asset.staking === StakingType.RELAYCHAIN) as Asset;
-        if (!asset) return acc;
-
-        return acc.concat({
-          id: chain.chainId,
-          value: { asset, addressPrefix: chain.addressPrefix },
-          element: (
+        const asset = getRelaychainAsset(chain.assets);
+        if (asset) {
+          const element = (
             <>
               <img src={chain.icon} alt="" width={20} height={20} />
               {chain.name}
             </>
-          ),
-        });
+          );
+
+          acc.push({
+            id: chain.chainId,
+            value: { asset, addressPrefix: chain.addressPrefix },
+            element,
+          });
+        }
+
+        return acc;
       }, []);
 
       const settingsChainId = getStakingNetwork();
@@ -145,7 +144,7 @@ const Overview = () => {
       setStakingNetworks(relaychains);
       setActiveNetwork(settingsChain || { id: relaychains[0].id, value: relaychains[0].value });
       changeClient(settingsChainId || relaychains[0].id);
-    })();
+    });
   }, []);
 
   const onNetworkChange = (option: DropdownResult<NetworkOption>) => {
@@ -158,7 +157,7 @@ const Overview = () => {
     setQuery('');
   };
 
-  const setupNominators = async (stash?: AccountID) => {
+  const setupNominators = async (stash?: Address) => {
     if (!api || !stash) return;
 
     const nominators = await getNominators(api, stash);
@@ -168,7 +167,7 @@ const Overview = () => {
     toggleNominatorsModal();
   };
 
-  const { watchOnlyAccs, paritySignerAccs } = activeAccounts.reduce<Record<string, AccountID[]>>(
+  const { watchOnlyAccs, paritySignerAccs } = activeAccounts.reduce<Record<string, Address[]>>(
     (acc, account) => {
       if (!account.accountId) return acc;
 
@@ -192,7 +191,7 @@ const Overview = () => {
     return wallet.id ? { ...acc, [wallet.id]: wallet.name } : acc;
   }, {});
 
-  const rootNames = activeAccounts.reduce<Record<AccountID, string>>((acc, account) => {
+  const rootNames = activeAccounts.reduce<Record<Address, string>>((acc, account) => {
     const chainOrWatchOnlyAccount = account.rootId || account.signingType === SigningType.WATCH_ONLY;
     if (!account.id || chainOrWatchOnlyAccount) return acc;
 
@@ -200,7 +199,7 @@ const Overview = () => {
   }, {});
 
   const stakingInfo = activeAccounts.reduce<AccountStakeInfo[]>((acc, account) => {
-    const address = account.accountId;
+    const address = toAddress(account.accountId, { prefix: addressPrefix });
     if (!address) return acc;
 
     let walletName = account.walletId ? walletNames[account.walletId.toString()] : '';
@@ -232,13 +231,13 @@ const Overview = () => {
     if (stake) {
       acc.push(stake);
     } else {
-      acc.push({ accountId: address } as Stake);
+      acc.push({ address: address } as Stake);
     }
 
     return acc;
   }, []);
 
-  const navigateToStake = (path: PathValue, accounts?: AccountID[]) => {
+  const navigateToStake = (path: PathValue, accounts?: Address[]) => {
     if (accounts) {
       setSelectedAccounts(accounts);
 
@@ -306,7 +305,7 @@ const Overview = () => {
                     placeholder={t('staking.overview.searchPlaceholder')}
                     prefixElement={<Icon name="search" className="w-5 h-5" />}
                     value={query}
-                    onChange={(e) => setQuery(e.target.value)}
+                    onChange={setQuery}
                   />
                   {/*<Filter />*/}
                 </div>
@@ -315,6 +314,8 @@ const Overview = () => {
                   <EmptyFilter />
                 ) : (
                   <StakingTable
+                    api={api}
+                    currentEra={era}
                     stakeInfo={stakingInfo}
                     selectedStakes={selectedAccounts}
                     addressPrefix={activeNetwork?.value.addressPrefix}
@@ -322,8 +323,6 @@ const Overview = () => {
                     explorers={explorers}
                     openValidators={setupNominators}
                     selectStaking={setSelectedAccounts}
-                    currentEra={era}
-                    api={api}
                   />
                 )}
               </>

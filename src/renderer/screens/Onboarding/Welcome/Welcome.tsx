@@ -1,4 +1,4 @@
-import { ButtonLink, Icon } from '@renderer/components/ui';
+import { ButtonLink, Icon, Plate } from '@renderer/components/ui';
 import Paths from '@renderer/routes/paths';
 import LedgerBg from '@images/misc/onboarding/ledger-bg.webp';
 import LedgerImg from '@images/misc/onboarding/ledger.svg';
@@ -18,7 +18,7 @@ const Welcome = () => {
         <span className="font-bold text-4.5xl text-primary">{t('welcome.omniEnterpriseLabel')}</span>
       </h1>
 
-      <ul className="flex items-center gap-x-9 m-auto p-5 bg-shade-2 rounded-2lg">
+      <Plate as="ul" className="flex items-center gap-x-9 m-auto">
         <li
           aria-label={t('welcome.addWatchOnlyAreaLabel')}
           role="listitem"
@@ -63,7 +63,7 @@ const Welcome = () => {
             {t('welcome.addLedgerButton')}
           </ButtonLink>
         </li>
-      </ul>
+      </Plate>
     </div>
   );
 };

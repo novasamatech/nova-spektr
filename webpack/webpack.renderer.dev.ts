@@ -47,6 +47,7 @@ const config = merge<WpConfig & WdsConfig>(sharedConfig, {
   },
 
   plugins: [
+    //@ts-ignore
     new ReactRefreshWebpackPlugin(),
 
     new webpack.EnvironmentPlugin({

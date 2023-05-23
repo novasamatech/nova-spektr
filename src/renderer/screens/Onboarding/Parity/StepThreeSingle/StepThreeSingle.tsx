@@ -13,7 +13,7 @@ import { useChains } from '@renderer/services/network/chainsService';
 import { useAccount } from '@renderer/services/account/accountService';
 import { createAccount } from '@renderer/domain/account';
 import { SeedInfo } from '@renderer/components/common/QrCode/QrReader/common/types';
-import { toAddress } from '@renderer/services/balance/common/utils';
+import { toAddress, toAccountId } from '@renderer/shared/utils/address';
 
 type AccountForm = {
   name: string;
@@ -26,8 +26,8 @@ type Props = {
 
 const StepThreeSingle = ({ qrData, onNextStep }: Props) => {
   const { t } = useI18n();
-  const publicKey = u8aToHex(qrData[0].multiSigner?.public);
-  const address = toAddress(publicKey, 0);
+  const accountId = u8aToHex(qrData[0].multiSigner?.public);
+  const address = toAddress(accountId, { prefix: 0 });
 
   const {
     handleSubmit,
@@ -54,12 +54,12 @@ const StepThreeSingle = ({ qrData, onNextStep }: Props) => {
   }, []);
 
   const handleCreateAccount: SubmitHandler<AccountForm> = async ({ name }) => {
-    if (!publicKey || publicKey.length === 0) return;
+    if (!accountId || accountId.length === 0) return;
 
     const newAccount = createAccount({
       name: name.trim(),
       signingType: SigningType.PARITY_SIGNER,
-      accountId: address,
+      accountId: toAccountId(address),
     });
 
     await addAccount(newAccount);
@@ -75,7 +75,7 @@ const StepThreeSingle = ({ qrData, onNextStep }: Props) => {
       onSubmit={handleSubmit(handleCreateAccount)}
     >
       <h2 className="text-2xl leading-relaxed font-normal text-neutral-variant text-center">
-        {t('onboarding.paritySigner.addSingleParitySignerDescription1')}
+        {t('onboarding.paritySigner.addSingleParitySignerDescription')}
       </h2>
       <div className="flex gap-10">
         <div className="flex flex-col w-[480px] h-[310px] p-4 bg-white shadow-surface rounded-2lg">
@@ -120,9 +120,9 @@ const StepThreeSingle = ({ qrData, onNextStep }: Props) => {
             <p className="text-neutral-variant text-xs">{t('onboarding.paritySigner.yourAccountsDescription')}</p>
           </div>
 
-          <AccountsList chains={chains} publicKey={publicKey} limit={publicKey && 4} />
+          <AccountsList chains={chains} accountId={accountId} limit={accountId && 4} />
 
-          {publicKey && (
+          {accountId && (
             <>
               <div>
                 <Button
@@ -143,7 +143,7 @@ const StepThreeSingle = ({ qrData, onNextStep }: Props) => {
                 isOpen={isModalOpen}
                 onClose={toggleModal}
               >
-                <AccountsList className="pt-6 -mx-4 max-w-2xl" chains={chains} publicKey={publicKey} />
+                <AccountsList className="pt-6 -mx-4 max-w-2xl" chains={chains} accountId={accountId} />
               </BaseModal>
             </>
           )}

@@ -2,6 +2,7 @@ import { useLiveQuery } from 'dexie-react-hooks';
 
 import storage, { WalletDS } from '@renderer/services/storage';
 import { IWalletService } from './common/types';
+import { Wallet } from '@renderer/domain/wallet';
 
 export const useWallet = (): IWalletService => {
   const walletStorage = storage.connectTo('wallets');
@@ -11,7 +12,7 @@ export const useWallet = (): IWalletService => {
   }
   const { getWallet, getWallets, addWallet, updateWallet, deleteWallet } = walletStorage;
 
-  const getLiveWallets = (where?: Record<string, any>): WalletDS[] => {
+  const getLiveWallets = <T extends Wallet>(where?: Partial<T>): WalletDS[] => {
     const query = () => {
       try {
         return getWallets(where);

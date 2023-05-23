@@ -2,10 +2,10 @@ import { render, screen, act } from '@testing-library/react';
 import { hexToU8a } from '@polkadot/util';
 
 import { SeedInfo } from '@renderer/components/common/QrCode/QrReader/common/types';
-import { CryptoTypeString } from '@renderer/domain/shared-kernel';
+import { CryptoTypeString, CryptoType } from '@renderer/domain/shared-kernel';
 import StepThree from './StepThree';
 import { Chain } from '@renderer/domain/chain';
-import { TEST_ADDRESS } from '@renderer/shared/utils/constants';
+import { TEST_ACCOUNT_ID, TEST_ADDRESS } from '@renderer/shared/utils/constants';
 
 jest.mock('@renderer/context/I18nContext', () => ({
   useI18n: jest.fn().mockReturnValue({
@@ -28,7 +28,8 @@ jest.mock('@renderer/services/wallet/walletService', () => ({
 
 jest.mock('@renderer/services/network/chainsService', () => ({
   useChains: jest.fn().mockReturnValue({
-    getChainsData: jest.fn().mockReturnValue([
+    sortChains: jest.fn((value: Chain[]) => value),
+    getChainsData: jest.fn().mockResolvedValue([
       {
         addressPrefix: 0,
         assets: [],
@@ -36,32 +37,76 @@ jest.mock('@renderer/services/network/chainsService', () => ({
         name: 'My test chain',
       },
     ]),
-    sortChains: (value: Chain[]) => value,
   }),
 }));
 
 describe('screens/Onboard/Parity/StepThree', () => {
-  test('should render component', async () => {
-    const data: SeedInfo[] = [
-      {
-        name: 'test wallet',
-        multiSigner: { MultiSigner: CryptoTypeString.SR25519, public: new Uint8Array([0]) },
-        derivedKeys: [
-          {
-            address: TEST_ADDRESS,
-            derivationPath: '//test',
-            encryption: 1,
-            genesisHash: hexToU8a('0x00'),
-          },
-        ],
-      },
-    ];
+  const WND_ADDRESS = '5CGQ7BPJZZKNirQgVhzbX9wdkgbnUHtJ5V7FkMXdZeVbXyr9';
+  const qrData: SeedInfo[] = [
+    {
+      name: 'test wallet',
+      multiSigner: { MultiSigner: CryptoTypeString.SR25519, public: hexToU8a(TEST_ACCOUNT_ID) },
+      derivedKeys: [
+        {
+          address: '5E7TYrCi6Yc2rZkU1x9hERoJSMyN3vDgNPmt3RFMtYBpzC1o',
+          derivationPath: '//test_1',
+          encryption: CryptoType.ED25519,
+          genesisHash: new Uint8Array([0]),
+        },
+        {
+          address: '5HND6z7jovmTEeEyXnucmT1SzUA8eb1d3AsWdDp8TBFWKC5u',
+          derivationPath: '//test_2',
+          encryption: CryptoType.ED25519,
+          genesisHash: new Uint8Array([1, 2, 3]),
+        },
+      ],
+    },
+  ];
 
+  test('should render component', async () => {
     await act(async () => {
-      render(<StepThree qrData={data} onNextStep={() => {}} />);
+      render(<StepThree seedInfo={qrData} onNextStep={() => {}} />);
     });
 
     const inputs = screen.getAllByRole('textbox');
-    expect(inputs.length).toBe(5);
+    expect(inputs).toHaveLength(5);
+  });
+
+  test('should render 1 root 1 derived', async () => {
+    await act(async () => {
+      render(<StepThree seedInfo={qrData} onNextStep={() => {}} />);
+    });
+
+    const root = screen.getByDisplayValue('5CGQ7BPJZZ...XdZeVbXyr9');
+    const derived = screen.getByDisplayValue('5E7TYrCi6Y...FMtYBpzC1o');
+    expect(root).toBeInTheDocument();
+    expect(derived).toBeInTheDocument();
+  });
+
+  test('should not render not existing chains', async () => {
+    await act(async () => {
+      render(<StepThree seedInfo={qrData} onNextStep={() => {}} />);
+    });
+
+    const root = screen.getByDisplayValue('5CGQ7BPJZZ...XdZeVbXyr9');
+    const skippedDerived = screen.queryByDisplayValue('5HND6z7jov...p8TBFWKC5u');
+    expect(root).toBeInTheDocument();
+    expect(skippedDerived).not.toBeInTheDocument();
+  });
+
+  test('should lead to root block explorers', async () => {
+    window.HTMLElement.prototype.scrollIntoView = jest.fn();
+
+    await act(async () => {
+      render(<StepThree seedInfo={qrData} onNextStep={() => {}} />);
+    });
+
+    const button = screen.getByTestId(`explorers-${TEST_ADDRESS}`);
+    await act(async () => button.click());
+
+    const links = screen.getAllByRole('menuitem');
+    expect(links).toHaveLength(2);
+    expect(links[0]).toHaveAttribute('href', `https://subscan.io/account/${WND_ADDRESS}`);
+    expect(links[1]).toHaveAttribute('href', `https://sub.id/${WND_ADDRESS}`);
   });
 });

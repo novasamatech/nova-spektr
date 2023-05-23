@@ -37,6 +37,15 @@ jest.mock('@renderer/services/transaction/transactionService', () => ({
   }),
 }));
 
+jest.mock('@renderer/context/MatrixContext', () => ({
+  useMatrix: jest.fn().mockReturnValue({
+    matrix: {
+      userIsLoggedIn: true,
+      sendApprove: jest.fn(),
+    },
+  }),
+}));
+
 jest.mock(
   '../TransactionInfo/TransactionInfo',
   () =>

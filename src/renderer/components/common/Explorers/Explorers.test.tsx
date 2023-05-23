@@ -10,6 +10,7 @@ jest.mock('@renderer/context/I18nContext', () => ({
 }));
 
 describe('components/common/Explorers', () => {
+  // TODO: fails in github CI, works on local machine
   test.skip('should render component', async () => {
     const explorers = [
       {

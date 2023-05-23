@@ -1,11 +1,12 @@
 import { ApiPromise } from '@polkadot/api';
+import { useMemo } from 'react';
 
 import { Explorers } from '@renderer/components/common';
 import { Balance, Icon, Identicon, Table, Shimmering, Popover } from '@renderer/components/ui';
 import { useI18n } from '@renderer/context/I18nContext';
 import { Asset } from '@renderer/domain/asset';
 import { Explorer } from '@renderer/domain/chain';
-import { AccountID, SigningType } from '@renderer/domain/shared-kernel';
+import { Address, SigningType } from '@renderer/domain/shared-kernel';
 import { bigNumberSorter } from '@renderer/shared/utils/bignumber';
 import { Unlocking } from '@renderer/domain/stake';
 import TimeToEra from '../TimeToEra/TimeToEra';
@@ -17,8 +18,8 @@ const getNextUnstaking = (unlocking: Unlocking[], currentEra?: number): Unlockin
 };
 
 export type AccountStakeInfo = {
-  address: AccountID;
-  stash?: AccountID;
+  address: Address;
+  stash?: Address;
   signingType: SigningType;
   accountName: string;
   walletName?: string;
@@ -29,29 +30,50 @@ export type AccountStakeInfo = {
 };
 
 type Props = {
+  api?: ApiPromise;
+  currentEra?: number;
   stakeInfo: AccountStakeInfo[];
-  selectedStakes: AccountID[];
+  selectedStakes: Address[];
   asset?: Asset;
   explorers?: Explorer[];
   addressPrefix?: number;
-  currentEra?: number;
-  api?: ApiPromise;
-  openValidators: (stash?: AccountID) => void;
+  openValidators: (stash?: Address) => void;
   selectStaking: (keys: string[]) => void;
 };
 
 const StakingTable = ({
+  api,
+  currentEra,
   stakeInfo,
   selectedStakes,
   asset,
   explorers,
   addressPrefix,
-  currentEra,
-  api,
   openValidators,
   selectStaking,
 }: Props) => {
   const { t } = useI18n();
+
+  const signingTypeMap = useMemo(() => {
+    return stakeInfo.reduce<Record<Address, SigningType>>((acc, info) => {
+      acc[info.address] = info.signingType;
+
+      return acc;
+    }, {});
+  }, [stakeInfo.length]);
+
+  const getDisabled = (address: Address, signingType: SigningType): boolean => {
+    if (signingType === SigningType.WATCH_ONLY) return false;
+    if (!selectedStakes.length) return true;
+
+    const activeSigningType = signingTypeMap[selectedStakes[0]];
+
+    const passOnlyParitySigner =
+      activeSigningType === SigningType.PARITY_SIGNER && signingType === SigningType.PARITY_SIGNER;
+    const passOnlyOneMultisig = activeSigningType === SigningType.MULTISIG && address === selectedStakes[0];
+
+    return passOnlyParitySigner || passOnlyOneMultisig;
+  };
 
   return (
     <Table
@@ -83,7 +105,7 @@ const StakingTable = ({
           <Table.Row
             className="bg-shade-1"
             key={stake.address}
-            selectable={stake.signingType !== SigningType.WATCH_ONLY}
+            selectable={getDisabled(stake.address, stake.signingType)}
           >
             <Table.Cell>
               <div className="grid grid-flow-col gap-x-1">
@@ -139,9 +161,9 @@ const StakingTable = ({
             <Table.Cell>
               <Explorers
                 className="ml-3"
-                explorers={explorers}
                 address={stake.address}
                 addressPrefix={addressPrefix}
+                explorers={explorers}
                 header={
                   stake.stash && (
                     <div className="flex gap-x-2.5">

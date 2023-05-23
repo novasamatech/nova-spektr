@@ -57,6 +57,10 @@ const MATRIX_ERRORS: Record<MatrixError, ErrorObject> = {
     code: MatrixError.LOGIN_CREDS,
     message: 'Login with credentials failed',
   },
+  [MatrixError.LOGIN_FLOWS]: {
+    code: MatrixError.LOGIN_FLOWS,
+    message: 'Failed getting available login methods',
+  },
   [MatrixError.LOGIN_CACHE]: {
     code: MatrixError.LOGIN_CACHE,
     message: 'Login from cache failed',
@@ -65,13 +69,9 @@ const MATRIX_ERRORS: Record<MatrixError, ErrorObject> = {
     code: MatrixError.NO_CREDS_IN_DB,
     message: 'No credentials in DataBase',
   },
-  [MatrixError.START_ROOM]: {
-    code: MatrixError.START_ROOM,
-    message: 'Start room creation failed',
-  },
-  [MatrixError.FINISH_ROOM]: {
-    code: MatrixError.FINISH_ROOM,
-    message: 'Finish room creation failed',
+  [MatrixError.CREATE_ROOM]: {
+    code: MatrixError.CREATE_ROOM,
+    message: 'Room creation failed',
   },
   [MatrixError.LEAVE_ROOM]: {
     code: MatrixError.LEAVE_ROOM,
@@ -97,9 +97,9 @@ const MATRIX_ERRORS: Record<MatrixError, ErrorObject> = {
     code: MatrixError.MARK_AS_READ,
     message: 'Mark as read failed',
   },
-  [MatrixError.MST_INIT]: {
-    code: MatrixError.MST_INIT,
-    message: 'Mst init failed',
+  [MatrixError.MST_UPDATE]: {
+    code: MatrixError.MST_UPDATE,
+    message: 'Mst update failed',
   },
   [MatrixError.MST_APPROVE]: {
     code: MatrixError.MST_APPROVE,
@@ -133,10 +133,6 @@ const MATRIX_ERRORS: Record<MatrixError, ErrorObject> = {
     code: MatrixError.MEMBERS_VERIFICATION,
     message: 'Could not verify members devices in room',
   },
-  [MatrixError.READ_TIMELINE]: {
-    code: MatrixError.READ_TIMELINE,
-    message: 'Failed to read the timeline',
-  },
   [MatrixError.VERIFY_FILE_MAX_SIZE]: {
     code: MatrixError.VERIFY_FILE_MAX_SIZE,
     message: 'File exceeded max size limit',
@@ -148,6 +144,10 @@ const MATRIX_ERRORS: Record<MatrixError, ErrorObject> = {
   [MatrixError.VERIFY_FILE_BAD_CONTENT]: {
     code: MatrixError.VERIFY_FILE_BAD_CONTENT,
     message: 'Verification file has bad content',
+  },
+  [MatrixError.TIMELINE_PAGINATION]: {
+    code: MatrixError.TIMELINE_PAGINATION,
+    message: 'Paginating timeline failed',
   },
 };
 

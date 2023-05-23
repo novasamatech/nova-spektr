@@ -7,7 +7,6 @@ import Paths from './paths';
 // React router v6 hint:
 // https://github.com/remix-run/react-router/blob/main/docs/upgrading/v5.md#use-useroutes-instead-of-react-router-config
 const routesConfig: RouteObject[] = [
-  { path: Paths.LOGIN, element: <Screens.Login /> },
   {
     path: Paths.ONBOARDING,
     element: <Layouts.Onboarding />,
@@ -25,18 +24,19 @@ const routesConfig: RouteObject[] = [
       { index: true, element: <Screens.Balances /> },
       { path: Paths.ADDRESS_BOOK, element: <Screens.AddressBook /> },
       { path: Paths.SIGNING, element: <Screens.Signing /> },
-      { path: Paths.MULTISIG, element: <Screens.MultisigOperations /> },
-      { path: Paths.HISTORY, element: <Screens.History /> },
+      { path: Paths.CREATE_MULTISIG_ACCOUNT, element: <Screens.CreateMultisigAccount /> },
+      { path: Paths.OPERATIONS, element: <Screens.Operations /> },
       { path: Paths.BALANCES, element: <Screens.Balances /> },
       { path: Paths.TRANSFER, element: <Screens.Transfer /> },
-      { path: Paths.CHAT_DEV, element: <Screens.ChatDev /> },
       { path: Paths.CAMERA_DEV, element: <Screens.CameraDev /> },
+      { path: Paths.CHAT_DEV, element: <Screens.ChatDev /> },
+      { path: Paths.NOTIFICATIONS, element: <Screens.Notifications /> },
       {
         path: Paths.SETTINGS,
         children: [
           { index: true, element: <Screens.Settings.Overview /> },
           { path: Paths.NETWORK, element: <Screens.Settings.Networks /> },
-          { path: Paths.CREDENTIALS, element: <Screens.Settings.Credentials /> },
+          { path: Paths.MATRIX, element: <Screens.Settings.Matrix /> },
         ],
       },
       {

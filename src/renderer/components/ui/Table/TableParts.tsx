@@ -1,7 +1,7 @@
 import cn from 'classnames';
 import { Children, cloneElement, PropsWithChildren, ReactElement, ReactNode, useEffect } from 'react';
 
-import { HeightClass } from '@renderer/components/ui/Table/common/constants';
+import { AlignmentClass, HeightClass } from '@renderer/components/ui/Table/common/constants';
 import { Checkbox, Icon } from '@renderer/components/ui';
 import { Alignment, AnyRecord, IndexKey, SortType } from './common/types';
 import { useTableContext } from './TableContext';
@@ -39,7 +39,7 @@ export type ColumnProps = {
 };
 export const TableColumn = ({
   dataKey,
-  align = 'right',
+  align = 'left',
   sortable = false,
   defaultSort,
   width,
@@ -58,7 +58,7 @@ export const TableColumn = ({
         className={cn('px-1 first:pl-4 first:rounded-tl-2lg last:pr-4 last:rounded-tr-2lg', classname)}
         style={{ width }}
       >
-        <div className={cn('w-max text-neutral-variant', align === 'left' ? 'mr-auto' : 'ml-auto')}>
+        <div className={cn('text-neutral-variant', AlignmentClass[align])}>
           <div className="text-2xs font-bold uppercase">{children}</div>
         </div>
       </th>
@@ -73,7 +73,7 @@ export const TableColumn = ({
       className={cn('px-1 first:pl-4 first:rounded-tl-2lg last:pr-4 last:rounded-tr-2lg', classname)}
       style={{ width }}
     >
-      <div className={cn('w-max text-neutral-variant', align === 'left' ? 'mr-auto' : 'ml-auto')}>
+      <div className={cn('text-neutral-variant', AlignmentClass[align])}>
         <button className="flex items-center gap-x-2.5" type="button" onClick={() => updateSortingOrder(dataKey)}>
           <div className="text-2xs font-bold uppercase">{children}</div>
           <Icon className={cn(!columnIsSorted && 'opacity-50')} name={sortIcon} size={18} />
@@ -150,19 +150,21 @@ export const TableRow = ({
 
 type CellProps = {
   className?: string;
+  colSpan?: number;
+  cellAlign?: Alignment;
 };
 
 type _CellProps = {
   align: Alignment;
 };
 
-export const TableCell = ({ className, children, ...props }: PropsWithChildren<CellProps>) => {
+export const TableCell = ({ className, children, colSpan, cellAlign, ...props }: PropsWithChildren<CellProps>) => {
   // eslint-disable-next-line react/prop-types
   const { align } = props as _CellProps;
 
   return (
-    <td className={cn('px-1 first:pl-4 last:pr-4', className)}>
-      <div className={cn('w-max', align === 'left' ? 'mr-auto' : 'ml-auto')}>{children}</div>
+    <td className={cn('px-1 first:pl-4 last:pr-4', className)} colSpan={colSpan}>
+      <div className={cn(AlignmentClass[cellAlign || align])}>{children}</div>
     </td>
   );
 };

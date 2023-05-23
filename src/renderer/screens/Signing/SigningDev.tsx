@@ -7,7 +7,7 @@ import { useNetworkContext } from '@renderer/context/NetworkContext';
 import { useChains } from '@renderer/services/network/chainsService';
 import { ConnectionType } from '@renderer/domain/connection';
 import { useI18n } from '@renderer/context/I18nContext';
-import { Button, Icon } from '@renderer/components/ui';
+import { Button, Plate, InfoLink } from '@renderer/components/ui';
 import { useTransaction } from '@renderer/services/transaction/transactionService';
 import { Transaction, TransactionType } from '@renderer/domain/transaction';
 import { getMetadataPortalUrl, TROUBLESHOOTING_URL } from './common/consts';
@@ -21,11 +21,11 @@ import { Command } from '@renderer/components/common/QrCode/QrGenerator/common/c
 import QrMultiframeGenerator from '@renderer/components/common/QrCode/QrGenerator/QrMultiframeTxGenerator';
 import MultiframeSignatureReader from './MultiframeSignatureReader/MultiframeSignatureReader';
 import { HexString, SigningType } from '@renderer/domain/shared-kernel';
-import { toAddress } from '@renderer/services/balance/common/utils';
 import Progress from './Progress';
 import { secondsToMinutes } from '@renderer/shared/utils/time';
+import { toAddress } from '@renderer/shared/utils/address';
 
-const enum Steps {
+const enum Step {
   SCANNING = 0,
   SIGNING = 1,
   EXECUTING = 2,
@@ -49,7 +49,7 @@ const Signing = () => {
   const activeAccounts = allActiveAccounts.filter((a) => a.signingType === SigningType.PARITY_SIGNER);
 
   const [countdown, setCountdown] = useState<number>(DEFAULT_QR_LIFETIME);
-  const [currentStep, setCurrentStep] = useState<Steps>(Steps.SCANNING);
+  const [currentStep, setCurrentStep] = useState<Step>(Step.SCANNING);
 
   const [rawTransactions, setRawTransactions] = useState<Transaction[]>([]);
   const [bulkTransactions, setBulkTransactions] = useState<Uint8Array>();
@@ -78,20 +78,16 @@ const Signing = () => {
     if (!api) return;
 
     const transactionPromises = activeAccounts.map(async (account, index) => {
-      const sourceAddress = toAddress(account.publicKey || '0x', currentConnection.addressPrefix);
-      const destAddress = toAddress(
-        activeAccounts[activeAccounts.length - 1 - index].publicKey || '0x',
-        currentConnection.addressPrefix,
-      );
+      const sourceAddress = toAddress(account.accountId || '0x', { prefix: currentConnection.addressPrefix });
+      const destAddress = toAddress(activeAccounts[activeAccounts.length - 1 - index].accountId || '0x', {
+        prefix: currentConnection.addressPrefix,
+      });
 
       const transactionData = {
         address: sourceAddress,
         type: TransactionType.TRANSFER,
         chainId: currentConnection.chainId,
-        args: {
-          dest: destAddress,
-          value: '100',
-        },
+        args: { dest: destAddress, value: '100' },
       };
 
       const { payload, unsigned } = await createPayload(transactionData, api);
@@ -126,7 +122,7 @@ const Signing = () => {
     setupTransactions();
   }, [currentConnection, activeAccounts.length]);
 
-  const validateTransaction = (transaction: any) => {
+  const validateTransaction = () => {
     return true;
   };
 
@@ -134,7 +130,7 @@ const Signing = () => {
     const api = currentConnection?.api;
     if (!api || !rawTransactions.some(validateTransaction)) return;
 
-    setCurrentStep(Steps.EXECUTING);
+    setCurrentStep(Step.EXECUTING);
 
     unsignedTransactions.forEach(async (unsigned, index) => {
       const extrinsic = await getSignedExtrinsic(unsigned, signatures[index], api);
@@ -160,8 +156,8 @@ const Signing = () => {
       <h1 className="font-semibold text-2xl text-neutral mt-5 px-5">{t('signing.title')}</h1>
 
       <div className="overflow-y-auto flex-1">
-        <section className="w-[550px] rounded-2xl bg-shade-2 p-5 flex flex-col items-center m-auto gap-2.5">
-          {currentStep === Steps.SCANNING && (
+        <Plate as="section" className="w-[550px] flex flex-col items-center m-auto gap-2.5">
+          {currentStep === Step.SCANNING && (
             <div className="flex flex-col gap-2.5 w-full">
               <div className="bg-white p-5 shadow-surface rounded-2xl flex flex-col items-center gap-5 w-full">
                 <div className="text-neutral-variant text-base font-semibold">
@@ -189,18 +185,11 @@ const Signing = () => {
               </div>
 
               <div className="flex flex-col gap-y-1 items-center text-xs font-semibold text-primary">
-                <a className="flex items-center" href={TROUBLESHOOTING_URL} rel="noopener noreferrer" target="_blank">
-                  <Icon className="mr-1" name="globe" size={18} /> {t('signing.troubleshootingLink')}
-                </a>
+                <InfoLink url={TROUBLESHOOTING_URL}>{t('signing.troubleshootingLink')}</InfoLink>
                 {currentConnection && (
-                  <a
-                    className="flex items-center"
-                    href={getMetadataPortalUrl(currentConnection.chainId)}
-                    rel="noopener noreferrer"
-                    target="_blank"
-                  >
-                    <Icon className="mr-1" name="globe" size={18} /> {t('signing.metadataPortalLink')}
-                  </a>
+                  <InfoLink url={getMetadataPortalUrl(currentConnection.chainId)}>
+                    {t('signing.metadataPortalLink')}
+                  </InfoLink>
                 )}
               </div>
 
@@ -209,14 +198,14 @@ const Signing = () => {
                 variant="fill"
                 pallet="primary"
                 weight="lg"
-                onClick={() => setCurrentStep(Steps.SIGNING)}
+                onClick={() => setCurrentStep(Step.SIGNING)}
               >
                 {t('signing.continueButton')}
               </Button>
             </div>
           )}
 
-          {currentStep === Steps.SIGNING && (
+          {currentStep === Step.SIGNING && (
             <div className="bg-white shadow-surface rounded-2xl flex flex-col items-center gap-5 w-full">
               <div className="my-4 text-neutral-variant text-base font-semibold">{t('signing.scanSignatureTitle')}</div>
 
@@ -234,7 +223,7 @@ const Signing = () => {
                   pallet="primary"
                   weight="lg"
                   onClick={() => {
-                    setCurrentStep(Steps.SCANNING);
+                    setCurrentStep(Step.SCANNING);
                   }}
                 >
                   {t('signing.generateNewQrButton')}
@@ -243,10 +232,10 @@ const Signing = () => {
             </div>
           )}
 
-          {currentStep === Steps.EXECUTING && (
+          {currentStep === Step.EXECUTING && (
             <Progress progress={progress + failedTxs.length} max={unsignedTransactions.length} />
           )}
-        </section>
+        </Plate>
       </div>
     </div>
   );

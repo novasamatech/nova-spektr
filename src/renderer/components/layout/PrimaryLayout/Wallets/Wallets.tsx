@@ -1,8 +1,8 @@
 import cn from 'classnames';
 import { forwardRef, useState } from 'react';
 
-import { getShortAddress, includes } from '@renderer/shared/utils/strings';
-import { Address, ButtonLink, Checkbox, Icon, Identicon, Input } from '@renderer/components/ui';
+import { includes } from '@renderer/shared/utils/strings';
+import { ChainAddress, ButtonLink, Checkbox, Icon, Input } from '@renderer/components/ui';
 import { useI18n } from '@renderer/context/I18nContext';
 import { AccountDS } from '@renderer/services/storage';
 import { useAccount } from '@renderer/services/account/accountService';
@@ -11,19 +11,21 @@ import { useWalletsStructure } from './useWalletStructure';
 import { ChainWithAccounts, RootAccount, WalletStructure } from './types';
 import { Expandable, Explorers } from '@renderer/components/common';
 import Paths from '@renderer/routes/paths';
+import { toAddress } from '@renderer/shared/utils/address';
 
 type Props = {
   className?: string;
+  onUrlChange: () => void;
 };
 
 const GroupLabels = {
+  [SigningType.MULTISIG]: 'wallets.multisigLabel',
+  [WalletType.MULTISHARD_PARITY_SIGNER]: 'wallets.multishardLabel',
   [SigningType.WATCH_ONLY]: 'wallets.watchOnlyLabel',
   [SigningType.PARITY_SIGNER]: 'wallets.paritySignerLabel',
-  [SigningType.MULTISIG]: 'wallets.multisigLabel',
-  [WalletType.MULTISHARD_PARITY_SIGNER]: 'wallets.multishardWalletsLabel',
 };
 
-const Wallets = forwardRef<HTMLDivElement, Props>(({ className }, ref) => {
+const Wallets = forwardRef<HTMLDivElement, Props>(({ className, onUrlChange }, ref) => {
   const { t } = useI18n();
   const { getLiveAccounts, toggleActiveAccount } = useAccount();
 
@@ -95,7 +97,7 @@ const Wallets = forwardRef<HTMLDivElement, Props>(({ className }, ref) => {
         prefixElement={<Icon name="search" className="w-5 h-5" />}
         placeholder={t('wallets.searchPlaceholder')}
         value={query}
-        onChange={(e) => setQuery(e.target.value)}
+        onChange={setQuery}
       />
 
       <div className="flex-1 flex flex-col overflow-auto gap-2.5">
@@ -153,17 +155,13 @@ const Wallets = forwardRef<HTMLDivElement, Props>(({ className }, ref) => {
                                       />
 
                                       <div className="flex flex-1 gap-x-1 items-center overflow-hidden">
-                                        <div className="relative">
-                                          <Identicon
-                                            address={rootAccount.accountId}
-                                            signType={rootAccount.signingType}
-                                            background={false}
-                                          />
-                                        </div>
+                                        <ChainAddress
+                                          accountId={rootAccount.accountId}
+                                          signType={rootAccount.signingType}
+                                          name={rootAccount.name}
+                                          size={24}
+                                        />
 
-                                        <p className="text-neutral-variant text-sm text-semibold truncate">
-                                          {rootAccount.name}
-                                        </p>
                                         <div className="ml-1 flex items-center justify-center bg-shade-20 w-4 h-4 rounded">
                                           {rootAccount.amount}
                                         </div>
@@ -223,20 +221,24 @@ const Wallets = forwardRef<HTMLDivElement, Props>(({ className }, ref) => {
                                                     <div className="bg-shade-30 absolute w-[9px] h-[1px] top-[2px] left-[1px]"></div>
                                                     <div className="border-shade-30 absolute rounded-full border w-[5px] h-[5px] box-border top-0 right-0"></div>
                                                   </div>
-
-                                                  <Address
+                                                  <ChainAddress
                                                     className="row-span-2 self-center"
-                                                    address={chainAccount.accountId || ''}
+                                                    accountId={chainAccount.accountId}
+                                                    addressPrefix={chain.addressPrefix}
                                                     signType={chainAccount.signingType}
                                                     name={chainAccount.name}
-                                                    subName={getShortAddress(chainAccount.accountId || '', 8)}
                                                     size={24}
+                                                    subName={toAddress(chainAccount.accountId, {
+                                                      chunk: 8,
+                                                      prefix: chain.addressPrefix,
+                                                    })}
                                                   />
                                                 </div>
 
                                                 <Explorers
+                                                  address={chainAccount.accountId}
+                                                  addressPrefix={chain.addressPrefix}
                                                   explorers={chain.explorers}
-                                                  address={chainAccount.accountId || ''}
                                                 />
                                               </div>
                                             </li>
@@ -258,8 +260,8 @@ const Wallets = forwardRef<HTMLDivElement, Props>(({ className }, ref) => {
                             />
 
                             <div className="flex flex-1 gap-x-1 overflow-hidden">
-                              <Address
-                                address={(account as AccountDS).accountId || ''}
+                              <ChainAddress
+                                accountId={(account as AccountDS).accountId}
                                 signType={(account as AccountDS).signingType}
                                 name={account.name}
                                 size={24}
@@ -294,6 +296,16 @@ const Wallets = forwardRef<HTMLDivElement, Props>(({ className }, ref) => {
           variant="text"
         >
           {t('wallets.addByParitySignerButton')}
+        </ButtonLink>
+        <ButtonLink
+          to={Paths.CREATE_MULTISIG_ACCOUNT}
+          className="w-full"
+          prefixElement={<Icon name="multisigOutline" size={16} />}
+          pallet="primary"
+          variant="fill"
+          callback={onUrlChange}
+        >
+          {t('wallets.addMultisigWalletButton')}
         </ButtonLink>
       </div>
     </div>

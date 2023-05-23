@@ -10,6 +10,7 @@ type Props = {
   className?: string;
   placeholder: string;
   label?: string;
+  disabled?: boolean;
   activeId?: DropdownOption['id'];
   options: DropdownOption[];
   suffix?: ReactNode;
@@ -22,6 +23,7 @@ const Dropdown = ({
   className,
   placeholder,
   label,
+  disabled,
   activeId,
   options,
   suffix,
@@ -34,12 +36,13 @@ const Dropdown = ({
   const activeOption = options.find((option) => option.id === activeId);
 
   return (
-    <Listbox by="id" value={activeOption || {}} onChange={onChange}>
-      {({ open }) => (
+    <Listbox by="id" value={activeOption || {}} disabled={disabled} onChange={onChange}>
+      {({ open, disabled }) => (
         <div className={cn('relative', className)}>
           <Listbox.Button
             className={cn(
-              'group w-full rounded-2lg border px-2.5 transition hover:border-primary focus:border-primary',
+              'group w-full rounded-2lg border px-2.5 ',
+              !disabled && 'hover:border-primary focus:border-primary transition',
               open && 'border-primary',
               label ? `flex flex-col bg-shade-2 border-shade-2 ${style.label.height}` : `bg-white ${style.height}`,
             )}
@@ -50,12 +53,12 @@ const Dropdown = ({
               </p>
             )}
 
-            <div className={cn('flex items-center gap-x-2.5 w-full', style.label.content)}>
+            <div className="flex items-center gap-x-2.5 w-full">
               {activeOption &&
                 (typeof activeOption.element === 'string' ? (
                   <p
                     className={cn(
-                      'group-hover:text-primary group-focus:text-primary transition',
+                      !disabled && 'group-hover:text-primary group-focus:text-primary transition',
                       open ? 'text-primary' : 'text-neutral',
                       style.text,
                     )}
@@ -69,7 +72,7 @@ const Dropdown = ({
               {!activeOption && (
                 <p
                   className={cn(
-                    'group-hover:text-primary group-focus:text-primary transition',
+                    !disabled && 'group-hover:text-primary group-focus:text-primary transition',
                     open ? 'text-primary' : 'text-shade-30',
                     style.placeholder,
                   )}
@@ -79,7 +82,8 @@ const Dropdown = ({
               )}
               <span
                 className={cn(
-                  'ml-auto pointer-events-none group-hover:text-primary group-focus:text-primary transition',
+                  'ml-auto pointer-events-none',
+                  !disabled && 'group-hover:text-primary group-focus:text-primary transition',
                   open ? 'text-primary' : 'text-neutral-variant',
                 )}
               >
@@ -92,7 +96,7 @@ const Dropdown = ({
             <Listbox.Options
               className={cn(
                 'absolute z-20 py-2.5 px-2 max-h-60 w-full overflow-auto shadow-element',
-                'border border-primary rounded-2lg bg-white shadow-surface focus:outline-none',
+                'border border-primary rounded-2lg bg-white shadow-surface',
                 variant !== 'auto' && ViewClass[variant],
               )}
             >

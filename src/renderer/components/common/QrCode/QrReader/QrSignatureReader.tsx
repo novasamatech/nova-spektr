@@ -10,7 +10,7 @@ import { QR_READER_ERRORS } from './common/errors';
 import { DecodeCallback, ErrorObject, QrError, VideoInput } from './common/types';
 
 type Props = {
-  size?: number;
+  size?: number | [number, number];
   cameraId?: string;
   className?: string;
   onStart?: () => void;
@@ -28,6 +28,11 @@ const QrSignatureReader = ({ size = 300, cameraId, className, onCameraList, onRe
   const scannerRef = useRef<BrowserQRCodeReader>();
   const controlsRef = useRef<IScannerControls>();
   const isComplete = useRef(false);
+
+  const videoStyle =
+    typeof size === 'number'
+      ? { width: size + 'px', height: size + 'px' }
+      : { width: size[0] + 'px', height: size[1] + 'px' };
 
   const isQrErrorObject = (error: unknown): boolean => {
     if (!error) return false;
@@ -135,7 +140,7 @@ const QrSignatureReader = ({ size = 300, cameraId, className, onCameraList, onRe
       ref={videoRef}
       data-testid="qr-reader"
       className={cn('object-cover -scale-x-100', className)}
-      style={{ width: size + 'px', height: size + 'px' }}
+      style={videoStyle}
     >
       {t('qrReader.videoError')}
     </video>

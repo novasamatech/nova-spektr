@@ -2,18 +2,23 @@ import { ApiPromise } from '@polkadot/api';
 import { render, screen } from '@testing-library/react';
 
 import { Asset } from '@renderer/domain/asset';
-import { SigningType } from '@renderer/domain/shared-kernel';
+import { SigningType, ChainType, CryptoType } from '@renderer/domain/shared-kernel';
 import { RewardsDestination } from '@renderer/domain/stake';
 import { Transaction } from '@renderer/domain/transaction';
-import { AccountDS } from '@renderer/services/storage';
 import { TEST_ADDRESS } from '@renderer/shared/utils/constants';
 import TransactionInfo from './TransactionInfo';
+import { Account } from '@renderer/domain/account';
 
 jest.mock('@renderer/context/I18nContext', () => ({
   useI18n: jest.fn().mockReturnValue({
     t: (key: string) => key,
   }),
 }));
+
+jest.mock(
+  '@renderer/components/common/AddressWithExplorers/AddressWithExplorers',
+  jest.fn().mockReturnValue(({ address }: { address: string }) => <span data-testid="validator">{address}</span>),
+);
 
 describe('screens/Staking/components/TransactionInfo', () => {
   const defaultProps = {
@@ -26,16 +31,24 @@ describe('screens/Staking/components/TransactionInfo', () => {
     destination: { address: TEST_ADDRESS, type: RewardsDestination.TRANSFERABLE },
     accounts: [
       {
-        accountId: '12QkLhnKL5vXsa7e74CC45RUSqA5fRqc8rKHzXYZb82ppZap',
+        accountId: '0x12QkLhnKL5vXsa7e74CC45RUSqA5fRqc8rKHzXYZb82ppZap',
         name: 'address_1',
         signingType: SigningType.PARITY_SIGNER,
+        chainType: ChainType.SUBSTRATE,
+        cryptoType: CryptoType.SR25519,
+        isMain: false,
+        isActive: false,
       },
       {
-        accountId: 'EGSgCCMmg5vePv611bmJpgdy7CaXaHayqPH8XwgD1jetWjN',
+        accountId: '0xEGSgCCMmg5vePv611bmJpgdy7CaXaHayqPH8XwgD1jetWjN',
         name: 'address_2',
         signingType: SigningType.PARITY_SIGNER,
+        chainType: ChainType.SUBSTRATE,
+        cryptoType: CryptoType.SR25519,
+        isMain: false,
+        isActive: false,
       },
-    ] as AccountDS[],
+    ] as Account[],
   };
 
   test('should render component', () => {

@@ -1,8 +1,15 @@
 export type HexString = `0x${string}`;
-export type AccountID = string;
-export type PublicKey = HexString;
+export type Address = string;
+export type AccountId = HexString;
+export type Threshold = number;
+export type CallData = HexString;
+export type CallHash = HexString;
 export type ChainId = HexString;
 export type EraIndex = number;
+export type Timepoint = {
+  height: number;
+  index: number;
+};
 
 export const enum CryptoType {
   SR25519,
@@ -31,13 +38,13 @@ export const enum ErrorType {
 }
 
 export const enum WalletType {
-  WATCH_ONLY,
-  SINGLE_PARITY_SIGNER,
-  MULTISHARD_PARITY_SIGNER,
+  WATCH_ONLY = 'wallet_wo',
+  SINGLE_PARITY_SIGNER = 'wallet_sps',
+  MULTISHARD_PARITY_SIGNER = 'wallet_mps',
 }
 
 export const enum SigningType {
-  WATCH_ONLY,
-  PARITY_SIGNER,
-  MULTISIG,
+  WATCH_ONLY = 'signing_wo',
+  PARITY_SIGNER = 'signing_ps',
+  MULTISIG = 'signing_ms',
 }

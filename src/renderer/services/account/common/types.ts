@@ -1,16 +1,15 @@
-import { IndexableType } from 'dexie';
-
 import { Account } from '@renderer/domain/account';
-import { AccountID } from '@renderer/domain/shared-kernel';
-import { AccountDS } from '@renderer/services/storage';
+import { Address } from '@renderer/domain/shared-kernel';
+import { AccountDS, ID } from '@renderer/services/storage';
 
 export interface IAccountService {
-  getAccount: (accountId: AccountID) => Promise<AccountDS | undefined>;
-  getAccounts: (where?: Record<string, any>) => Promise<AccountDS[]>;
-  getActiveAccounts: () => AccountDS[];
-  getLiveAccounts: (where?: Record<string, any>) => AccountDS[];
-  toggleActiveAccount: (accountId: IndexableType) => Promise<void>;
-  addAccount: (account: Account) => Promise<IndexableType>;
-  updateAccount: (account: Account) => Promise<IndexableType>;
-  deleteAccount: (accountId: AccountID) => Promise<void>;
+  getAccount: (accountId: Address) => Promise<AccountDS | undefined>;
+  getAccounts: <T extends Account>(where?: Partial<T>) => Promise<AccountDS[]>;
+  getActiveAccounts: <T extends Account>(where?: Partial<T>) => AccountDS[];
+  getLiveAccounts: <T extends Account>(where?: Partial<T>) => AccountDS[];
+  toggleActiveAccount: (accountId: ID) => Promise<void>;
+  addAccount: <T extends Account>(account: T) => Promise<ID>;
+  updateAccount: <T extends Account>(account: T) => Promise<ID>;
+  deleteAccount: (accountId: Address) => Promise<void>;
+  getActiveMultisigAccounts: () => AccountDS[];
 }

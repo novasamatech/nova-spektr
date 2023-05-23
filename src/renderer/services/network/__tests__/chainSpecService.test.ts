@@ -24,9 +24,9 @@ describe('service/chainSpec', () => {
 
   test('should not provide chain id for incorrect data', () => {
     const { getKnownChain } = useChainSpec();
-    const unknown = getKnownChain('0x0000000000000000000000000000000000000000000000000000000000000000');
+    const unknown = getKnownChain('0x0');
 
-    expect(unknown).toEqual(undefined);
+    expect(unknown).toBeUndefined();
   });
 
   test('should get chains supporting Light Client', () => {

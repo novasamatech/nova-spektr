@@ -1,23 +1,23 @@
 import { Menu } from '@headlessui/react';
-import { encodeAddress } from '@polkadot/util-crypto';
 import cn from 'classnames';
 import { ReactNode, useRef } from 'react';
 
 import { Icon } from '@renderer/components/ui';
 import { useI18n } from '@renderer/context/I18nContext';
 import { Explorer } from '@renderer/domain/chain';
-import { toPublicKey } from '@renderer/shared/utils/address';
+import { toAddress } from '@renderer/shared/utils/address';
 import { DefaultExplorer, ExplorerIcons } from './common/constants';
+import { AccountId, Address } from '@renderer/domain/shared-kernel';
 
 type Props = {
   explorers?: Explorer[];
+  address: Address | AccountId;
   addressPrefix?: number;
-  address: string;
   header?: ReactNode;
   className?: string;
 };
 
-const Explorers = ({ explorers, addressPrefix, address, header, className }: Props) => {
+const Explorers = ({ explorers, address, addressPrefix, header, className }: Props) => {
   const { t } = useI18n();
 
   const explorersRef = useRef<HTMLDivElement>(null);
@@ -31,6 +31,7 @@ const Explorers = ({ explorers, addressPrefix, address, header, className }: Pro
       {({ open }) => (
         <div className={cn('relative', open && 'z-10', className)}>
           <Menu.Button
+            data-testid={`explorers-${address}`}
             className="flex items-center w-5 h-5 rounded-full hover:bg-primary hover:text-white transition"
             onClick={scrollToMenu}
           >
@@ -73,7 +74,7 @@ const Explorers = ({ explorers, addressPrefix, address, header, className }: Pro
                         'rounded-2lg flex items-center gap-x-2.5 p-2.5 text-sm font-normal select-none transition',
                         active ? 'bg-primary text-white' : 'bg-white text-neutral',
                       )}
-                      href={account.replace('{address}', encodeAddress(toPublicKey(address) || '', addressPrefix))}
+                      href={account.replace('{address}', toAddress(address, { prefix: addressPrefix }))}
                       rel="noopener noreferrer"
                       target="_blank"
                     >

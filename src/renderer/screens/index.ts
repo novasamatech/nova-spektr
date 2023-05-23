@@ -1,27 +1,27 @@
 import AddressBook from './AddressBook/AddressBook';
-import MultisigOperations from './MultisigOperations/MultisigOperations';
 import Settings from './Settings';
-import Login from './Login/Login';
-import ChatDev from './ChatDev/ChatDev';
 import CameraDev from './CameraDev/CameraDev';
+import ChatDev from './ChatDev/ChatDev';
 import Onboarding from './Onboarding';
-import History from './History/History';
+import Operations from './Operations/Operations';
 import Balances from './Balances';
 import Staking from './Staking';
 import Signing from './Signing/SigningDev';
 import Transfer from './Transfer/Transfer';
+import CreateMultisigAccount from './CreateMultisigAccount/CreateMultisigAccount';
+import Notifications from './Notifications/Notifications';
 
 export default {
-  MultisigOperations,
   Settings,
   Balances,
   AddressBook,
-  Login,
-  History,
+  Operations,
   Onboarding,
   Staking,
-  ChatDev,
   CameraDev,
+  ChatDev,
   Signing,
   Transfer,
+  CreateMultisigAccount,
+  Notifications,
 };
