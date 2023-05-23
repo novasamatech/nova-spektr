@@ -18,11 +18,11 @@ const StatusTitle: Record<MultisigTxStatus, string> = {
 };
 
 const StatusColor: Record<MultisigTxStatus, string> = {
-  [MultisigTxInitStatus.SIGNING]: 'text-text-tertiary',
-  [MultisigTxFinalStatus.CANCELLED]: 'text-text-negative',
-  [MultisigTxFinalStatus.ERROR]: 'text-text-negative',
-  [MultisigTxFinalStatus.ESTABLISHED]: 'text-text-tertiary',
-  [MultisigTxFinalStatus.EXECUTED]: 'text-text-positive',
+  [MultisigTxInitStatus.SIGNING]: '!text-text-tertiary',
+  [MultisigTxFinalStatus.CANCELLED]: '!text-text-negative',
+  [MultisigTxFinalStatus.ERROR]: '!text-text-negative',
+  [MultisigTxFinalStatus.ESTABLISHED]: '!text-text-tertiary',
+  [MultisigTxFinalStatus.EXECUTED]: '!text-text-positive',
 };
 
 type Props = {
@@ -36,10 +36,7 @@ const OperationStatus = ({ status, signed, threshold }: Props) => {
 
   return (
     <CaptionText
-      className={cn(
-        'py-1 px-2.5 rounded-[20px] border border-redesign-shade-8 uppercase text-text-negative',
-        StatusColor[status],
-      )}
+      className={cn('py-1 px-2.5 rounded-[20px] border border-redesign-shade-8 uppercase', StatusColor[status])}
       align="center"
     >
       {status === 'SIGNING'

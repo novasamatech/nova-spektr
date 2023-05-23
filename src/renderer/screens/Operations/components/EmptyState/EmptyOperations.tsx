@@ -2,6 +2,7 @@ import { Icon } from '@renderer/components/ui';
 import { useI18n } from '@renderer/context/I18nContext';
 import { BodyText } from '@renderer/components/ui-redesign';
 
+// TODO move to shared and add label as a prop since empty list state the same for assets
 const EmptyOperations = () => {
   const { t } = useI18n();
 

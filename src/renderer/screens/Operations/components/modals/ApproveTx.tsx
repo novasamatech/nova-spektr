@@ -204,7 +204,7 @@ const ApproveTx = ({ tx, account, connection }: Props) => {
 
   return (
     <>
-      <Button size="sm" onClick={toggleModal}>
+      <Button size="sm" className="ml-auto" onClick={toggleModal}>
         {t('operation.approveButton')}
       </Button>
 

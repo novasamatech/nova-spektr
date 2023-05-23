@@ -67,9 +67,7 @@ const LogModal = ({ isOpen, onClose, tx, account, connection }: Props) => {
                       <div className="flex gap-1 w-full items-center">
                         <AccountAddress
                           address={event.accountId}
-                          name={
-                            account?.signatories.find((s) => s.accountId === event.accountId)?.name || event.accountId
-                          }
+                          name={account?.signatories.find((s) => s.accountId === event.accountId)?.name}
                         />
                         {t(getEventMessage(event))}
 

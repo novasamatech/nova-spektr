@@ -37,27 +37,28 @@ const Operations = () => {
         <h1 className="font-semibold text-2xl text-neutral"> {t('operations.title')}</h1>
       </header>
 
-      {!!txs.length && <Filters txs={txs} onChangeFilters={setFilteredTxs} />}
+      <div className="pl-6 mx-auto h-full">
+        {Boolean(txs.length) && <Filters txs={txs} onChangeFilters={setFilteredTxs} />}
 
-      <div className="overflow-y-auto flex-1 mx-auto w-full pl-6 pt-4">
-        {filteredTxs.length ? (
-          Object.entries(groupedTxs)
-            .sort(sortByDate)
-            .map(([date, txs]) => (
-              <section className="w-fit mt-6" key={date}>
-                <FootnoteText className="text-text-tertiary mb-3 ml-2">{date}</FootnoteText>
-                <ul className="flex flex-col gap-y-1.5">
-                  {txs
-                    .sort((a, b) => (b.dateCreated || 0) - (a.dateCreated || 0))
-                    .map((tx) => (
-                      <Operation key={tx.dateCreated} tx={tx} account={accountsMap.get(tx.accountId)} />
-                    ))}
-                </ul>
-              </section>
-            ))
-        ) : (
-          <EmptyOperations />
-        )}
+        <div className="overflow-y-auto flex-1 mx-auto pt-4">
+          {Boolean(filteredTxs.length) &&
+            Object.entries(groupedTxs)
+              .sort(sortByDate)
+              .map(([date, txs]) => (
+                <section className="w-fit mt-6" key={date}>
+                  <FootnoteText className="text-text-tertiary mb-3 ml-2">{date}</FootnoteText>
+                  <ul className="flex flex-col gap-y-1.5">
+                    {txs
+                      .sort((a, b) => (b.dateCreated || 0) - (a.dateCreated || 0))
+                      .map((tx) => (
+                        <Operation key={tx.dateCreated} tx={tx} account={accountsMap.get(tx.accountId)} />
+                      ))}
+                  </ul>
+                </section>
+              ))}
+        </div>
+
+        {!filteredTxs.length && <EmptyOperations />}
       </div>
     </div>
   );

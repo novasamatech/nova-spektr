@@ -289,7 +289,7 @@
       "depositor": "Depositor",
       "description": "Description",
       "multisigWallet": "Multisig wallet",
-      "payee": "Payee",
+      "payee": "Rewards destination",
       "recipient": "Recipient",
       "rejectReason": "Reject reason",
       "timePoint": "Time Point",

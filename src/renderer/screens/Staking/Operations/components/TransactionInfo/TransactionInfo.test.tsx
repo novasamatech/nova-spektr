@@ -15,6 +15,11 @@ jest.mock('@renderer/context/I18nContext', () => ({
   }),
 }));
 
+jest.mock(
+  '@renderer/components/common/AddressWithExplorers/AddressWithExplorers',
+  jest.fn().mockReturnValue(({ address }: { address: string }) => <span data-testid="validator">{address}</span>),
+);
+
 describe('screens/Staking/components/TransactionInfo', () => {
   const defaultProps = {
     api: {} as ApiPromise,

@@ -9,9 +9,16 @@ type Props = {
   asset: Asset; // maybe change type to Asset | number to allow pass just asset id and then get asset by id
   className?: string;
   showIcon?: boolean;
+  imgClassName?: string;
 };
 
-const BalanceNew = ({ value, asset, className = 'text-body text-text-primary', showIcon = true }: Props) => {
+const BalanceNew = ({
+  value,
+  asset,
+  className = 'text-body text-text-primary',
+  showIcon = false,
+  imgClassName = 'bg-token-background',
+}: Props) => {
   const { t } = useI18n();
   const { precision, symbol, icon, name } = asset;
   const { value: formattedValue, decimalPlaces, suffix } = formatBalance(value, precision);
@@ -33,7 +40,7 @@ const BalanceNew = ({ value, asset, className = 'text-body text-text-primary', s
 
   return (
     <div className="flex items-center gap-x-2">
-      <img src={icon} alt={name} width={28} height={28} className="bg-black rounded-full" />
+      <img src={icon} alt={name} width={28} height={28} className={cn('rounded-full', imgClassName)} />
       {balance}
     </div>
   );

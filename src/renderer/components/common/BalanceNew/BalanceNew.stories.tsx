@@ -23,4 +23,5 @@ export const Default = Template.bind({});
 Default.args = {
   asset: assetDot,
   value: '10000000',
+  showIcon: true,
 };

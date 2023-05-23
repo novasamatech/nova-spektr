@@ -29,7 +29,7 @@ const Confirmation = ({ tx, account, connection, feeTx }: Props) => {
         </FootnoteText>
       )}
 
-      <Details tx={tx} account={account} connection={connection} withAdvanced={false} />
+      <Details tx={tx} account={account} connection={connection} isCardDetails={false} />
 
       <hr className="border-divider my-1 w-full" />
 

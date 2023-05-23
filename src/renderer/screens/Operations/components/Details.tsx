@@ -9,7 +9,7 @@ import { copyToClipboard } from '@renderer/shared/utils/strings';
 import { useToggle } from '@renderer/shared/hooks';
 import { ExtendedChain } from '@renderer/services/network/common/types';
 import { getMultisigExtrinsicLink } from '../common/utils';
-import { MultisigTransaction } from '@renderer/domain/transaction';
+import { MultisigTransaction, Transaction, TransactionType } from '@renderer/domain/transaction';
 import { Button, FootnoteText } from '@renderer/components/ui-redesign';
 import ValidatorsModal from '@renderer/screens/Staking/Operations/components/ValidatorsModal/ValidatorsModal';
 import { BalanceNew } from '@renderer/components/common';
@@ -21,26 +21,29 @@ type Props = {
   tx: MultisigTransaction;
   account?: MultisigAccount;
   connection?: ExtendedChain;
-  withAdvanced?: boolean;
+  isCardDetails?: boolean;
 };
 
-const Details = ({ tx, account, connection, withAdvanced = true }: Props) => {
+const Details = ({ tx, account, connection, isCardDetails = true }: Props) => {
   const { t } = useI18n();
 
   const [isAdvancedShown, toggleAdvanced] = useToggle();
   const [isValidatorsOpen, toggleValidators] = useToggle();
 
-  const {
-    indexCreated,
-    blockCreated,
-    deposit,
-    depositor,
-    callHash,
-    callData,
-    transaction,
-    description,
-    cancelDescription,
-  } = tx;
+  const { indexCreated, blockCreated, deposit, depositor, callHash, callData, description, cancelDescription } = tx;
+
+  const transaction =
+    tx.transaction?.type === 'batchAll'
+      ? tx.transaction.args.transactions.find(
+          (tx: Transaction) => tx.type === TransactionType.BOND || tx.type === TransactionType.UNSTAKE,
+        ) || tx.transaction.args.transactions[0]
+      : tx.transaction;
+
+  const startStakingValidators =
+    tx.transaction?.type === 'batchAll' &&
+    tx.transaction.args.transactions.find((tx: Transaction) => tx.type === 'nominate')?.args?.targets;
+
+  const validators = transaction?.args.targets || startStakingValidators;
 
   const defaultAsset = connection?.assets[0];
   const addressPrefix = connection?.addressPrefix;
@@ -48,7 +51,7 @@ const Details = ({ tx, account, connection, withAdvanced = true }: Props) => {
   const depositorSignatory = account?.signatories.find((s) => s.accountId === depositor);
   const extrinsicLink = getMultisigExtrinsicLink(callHash, indexCreated, blockCreated, explorers);
 
-  const valueClass = withAdvanced ? 'text-text-secondary' : 'text-text-primary';
+  const valueClass = isCardDetails ? 'text-text-secondary' : 'text-text-primary';
   const DetailsRow = useCallback(
     (props: DetailWithLabelProps) => <DetailWithLabel {...props} className={valueClass} />,
     [valueClass],
@@ -57,7 +60,7 @@ const Details = ({ tx, account, connection, withAdvanced = true }: Props) => {
   return (
     <>
       <dl className="flex flex-col gap-y-1 w-full">
-        {description && (
+        {isCardDetails && description && (
           <div className={DescriptionBlockStyle}>
             <FootnoteText as="dt" className={LabelStyle}>
               {t('operation.details.description')}
@@ -78,7 +81,7 @@ const Details = ({ tx, account, connection, withAdvanced = true }: Props) => {
           </div>
         )}
 
-        {account && (
+        {!isCardDetails && account && (
           <DetailsRow label={t('operation.details.multisigWallet')}>
             <AddressWithExplorers
               explorers={explorers}
@@ -86,6 +89,7 @@ const Details = ({ tx, account, connection, withAdvanced = true }: Props) => {
               accountId={account.accountId}
               addressPrefix={addressPrefix}
               name={account.name}
+              type="short"
             />
           </DetailsRow>
         )}
@@ -100,6 +104,31 @@ const Details = ({ tx, account, connection, withAdvanced = true }: Props) => {
               addressPrefix={addressPrefix}
             />
           </DetailsRow>
+        )}
+
+        {validators && defaultAsset && (
+          <>
+            <DetailsRow label={t('operation.details.validators')}>
+              <button
+                type="button"
+                className={cn('flex gap-x-1 items-center', InteractableStyle)}
+                onClick={toggleValidators}
+              >
+                <FootnoteText as="span">{validators.length}</FootnoteText>
+                <Icon name="info" size={16} className="text-icon-default" />
+              </button>
+            </DetailsRow>
+            <ValidatorsModal
+              isOpen={isValidatorsOpen}
+              validators={validators.map((address: string) => ({
+                address,
+              }))}
+              asset={defaultAsset}
+              explorers={connection?.explorers}
+              addressPrefix={connection?.addressPrefix}
+              onClose={toggleValidators}
+            />
+          </>
         )}
 
         {transaction?.args.payee && (
@@ -118,40 +147,17 @@ const Details = ({ tx, account, connection, withAdvanced = true }: Props) => {
           </DetailsRow>
         )}
 
-        {transaction?.args.controller && (
-          <DetailsRow label={t('operation.details.controller')}>
-            <AddressWithExplorers
-              explorers={explorers}
-              addressFont={AddressStyle}
-              type="short"
-              address={transaction.args.controller}
-            />
-          </DetailsRow>
-        )}
-
-        {transaction?.args.targets && defaultAsset && (
-          <>
-            <DetailsRow label={t('operation.details.validators')}>
-              <button
-                type="button"
-                className={cn('flex gap-x-1 items-center', InteractableStyle)}
-                onClick={toggleValidators}
-              >
-                <FootnoteText as="span">{transaction.args.targets.length}</FootnoteText>
-                <Icon name="info" size={16} className="text-icon-default" />
-              </button>
-            </DetailsRow>
-            <ValidatorsModal
-              isOpen={isValidatorsOpen}
-              validators={transaction?.args.targets.map((address: string) => ({
-                address,
-              }))}
-              asset={defaultAsset}
-              explorers={connection?.explorers}
-              addressPrefix={connection?.addressPrefix}
-              onClose={toggleValidators}
-            />
-          </>
+        {isCardDetails && (
+          <Button
+            variant="text"
+            pallet="primary"
+            size="sm"
+            suffixElement={<Icon name={isAdvancedShown ? 'up' : 'down'} size={16} className="text-icon-default" />}
+            className="w-fit"
+            onClick={toggleAdvanced}
+          >
+            {t('operation.advanced')}
+          </Button>
         )}
 
         {isAdvancedShown && (
@@ -190,6 +196,7 @@ const Details = ({ tx, account, connection, withAdvanced = true }: Props) => {
                   explorers={explorers}
                   address={depositorSignatory.address}
                   name={depositorSignatory.name}
+                  type="short"
                 />
               </DetailsRow>
             )}
@@ -216,7 +223,7 @@ const Details = ({ tx, account, connection, withAdvanced = true }: Props) => {
                     target="_blank"
                     rel="noopener noreferrer"
                   >
-                    <FootnoteText>
+                    <FootnoteText className="text-text-secondary">
                       {blockCreated}-{indexCreated}
                     </FootnoteText>
                     <Icon name="globe" size={16} className="text-icon-default" />
@@ -229,19 +236,6 @@ const Details = ({ tx, account, connection, withAdvanced = true }: Props) => {
           </>
         )}
       </dl>
-
-      {withAdvanced && (
-        <Button
-          variant="text"
-          pallet="primary"
-          size="sm"
-          suffixElement={<Icon name={isAdvancedShown ? 'up' : 'down'} size={16} className="text-icon-default" />}
-          className="my-1 w-fit"
-          onClick={toggleAdvanced}
-        >
-          {t('operation.advanced')}
-        </Button>
-      )}
     </>
   );
 };

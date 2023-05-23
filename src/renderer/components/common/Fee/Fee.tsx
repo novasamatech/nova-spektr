@@ -53,7 +53,7 @@ const Fee = ({ api, multiply = 1, asset, transaction, className, onFeeChange }: 
 
   const totalFee = new BN(fee).muln(multiply).toString();
 
-  return <BalanceNew value={totalFee} asset={asset} className={className} showIcon={false} />;
+  return <BalanceNew value={totalFee} asset={asset} className={className} />;
 };
 
 export default React.memo(Fee);
