@@ -119,7 +119,7 @@ export const TransferForm = ({ api, chainId, account, signer, asset, nativeToken
     }
 
     setTransferTx(transferPayload);
-  }, [account, destination, amount]);
+  }, [account, signer, destination, amount]);
 
   const getTransferTx = (accountId: AccountId): Transaction => {
     const TransferType: Record<AssetType, TransactionType> = {
