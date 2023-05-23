@@ -68,7 +68,7 @@ const Confirmation = ({ account, connection, transaction, signatory, description
         </DetailWithLabel>
       )}
 
-      <Button variant="fill" pallet="primary" className="w-fit flex-0 mt-5 ml-auto" onClick={onResult}>
+      <Button className="w-fit flex-0 mt-5 ml-auto" onClick={onResult}>
         {t('operation.signButton')}
       </Button>
     </div>

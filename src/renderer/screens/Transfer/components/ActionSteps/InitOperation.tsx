@@ -90,7 +90,7 @@ const InitOperation = ({
     <div className="flex flex-col gap-y-2">
       {accountsOptions.length > 1 && (
         <Select
-          label={'transfer.senderLabel'}
+          label={t('transfer.senderLabel')}
           placeholder={t('receive.selectWalletPlaceholder')}
           selectedId={activeAccount?.id}
           options={accountsOptions}

@@ -16,7 +16,18 @@ export type Props = Pick<ComponentPropsWithoutRef<'input'>, HTMLInputProps> & {
 
 const Input = forwardRef<HTMLInputElement, Props>(
   (
-    { type = 'text', label, className, wrapperClass, invalid, prefixElement, suffixElement, onChange, ...props },
+    {
+      type = 'text',
+      label,
+      className,
+      wrapperClass,
+      invalid,
+      prefixElement,
+      suffixElement,
+      onChange,
+      disabled,
+      ...props
+    },
     ref,
   ) => {
     const id = useId();
@@ -26,11 +37,10 @@ const Input = forwardRef<HTMLInputElement, Props>(
         className={cn(
           'relative flex object-contain',
           CommonInputStyles,
-          'focus-within:enabled:border-active-container-border',
+          !disabled && 'focus-within:border-active-container-border hover:shadow-card-shadow',
           invalid && 'border-filter-border-negative',
-          'hover:enabled:shadow-card-shadow',
           'disabled:bg-input-background-disabled disabled:text-text-tertiary disabled:placeholder:text-text-tertiary',
-          'flex-1 gap-2 border-filter-border',
+          'flex-1 border-filter-border',
           wrapperClass,
         )}
       >
@@ -40,6 +50,7 @@ const Input = forwardRef<HTMLInputElement, Props>(
           className={cn('focus:outline-none w-full', className)}
           ref={ref}
           type={type}
+          disabled={disabled}
           onChange={(event) => onChange?.(event.target.value)}
           {...props}
         />

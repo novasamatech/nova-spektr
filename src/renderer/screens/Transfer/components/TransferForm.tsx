@@ -258,9 +258,9 @@ export const TransferForm = ({ api, chainId, account, signer, asset, nativeToken
               <Input
                 prefixElement={
                   value && !error ? (
-                    <Identicon size={20} address={value} background={false} />
+                    <Identicon className="pr-2" size={20} address={value} background={false} />
                   ) : (
-                    <Icon size={20} name="emptyIdenticon" />
+                    <Icon className="pr-2" size={20} name="emptyIdenticon" />
                   )
                 }
                 className="w-full"
