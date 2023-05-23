@@ -1,6 +1,6 @@
 import { PropsWithChildren } from 'react';
-import cn from 'classnames';
 
+import cnTw from '@renderer/shared/utils/twMerge';
 import { Icon } from '@renderer/components/ui';
 
 type Props = {
@@ -9,7 +9,7 @@ type Props = {
 };
 const InfoLink = ({ url, showIcon = true, children }: PropsWithChildren<Props>) => (
   <a
-    className={cn('w-max outline-offset-4', showIcon && 'flex items-center gap-x-1')}
+    className={cnTw('w-max outline-offset-4', showIcon && 'flex items-center gap-x-1')}
     href={url}
     rel="noopener noreferrer"
     target="_blank"

@@ -1,6 +1,6 @@
-import cn from 'classnames';
 import { ReactNode, ComponentPropsWithoutRef, forwardRef } from 'react';
 
+import cnTw from '@renderer/shared/utils/twMerge';
 import { HTMLInputProps } from '../common/types';
 
 interface Props extends Pick<ComponentPropsWithoutRef<'input'>, HTMLInputProps> {
@@ -30,7 +30,7 @@ const Input = forwardRef<HTMLInputElement, Props>(
     ref,
   ) => (
     <label
-      className={cn(
+      className={cnTw(
         'relative flex items-center rounded-2lg p-2 box-border border-2',
         'text-sm font-normal leading-5 focus-within:border-primary',
         invalid ? 'border-error' : 'border-shade-2',
@@ -44,7 +44,7 @@ const Input = forwardRef<HTMLInputElement, Props>(
         <div className="absolute top-2.5 font-bold text-neutral-variant uppercase text-2xs w-full pr-5">{label}</div>
       )}
       <input
-        className={cn(
+        className={cnTw(
           'rounded-sm leading-5 bg-transparent flex-1 placeholder-shade-30 focus:text-primary',
           disabledStyle ? 'text-shade-40' : props.value && !invalid && 'text-neutral',
           invalid && 'text-error',

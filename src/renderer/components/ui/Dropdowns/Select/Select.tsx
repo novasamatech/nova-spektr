@@ -1,7 +1,7 @@
 import { Listbox, Transition } from '@headlessui/react';
-import cn from 'classnames';
 import { Fragment, ReactNode } from 'react';
 
+import cnTw from '@renderer/shared/utils/twMerge';
 import { Checkbox, Icon } from '@renderer/components/ui';
 import { ViewClass, SelectClass } from '../common/constants';
 import { DropdownResult, DropdownOption, Variant } from '../common/types';
@@ -38,9 +38,9 @@ const Select = ({
   return (
     <Listbox multiple by="id" value={activeOptions} onChange={onChange}>
       {({ open }) => (
-        <div className={cn('relative', className)}>
+        <div className={cnTw('relative', className)}>
           <Listbox.Button
-            className={cn(
+            className={cnTw(
               'group relative flex justify-between items-center gap-x-2.5 w-full',
               'rounded-2lg border bg-white px-2.5 transition',
               'hover:text-primary hover:border-primary focus:text-primary focus:border-primary',
@@ -49,13 +49,13 @@ const Select = ({
             )}
           >
             <div
-              className={cn(
+              className={cnTw(
                 'flex-1 group-hover:text-primary group-focus:text-primary transition',
                 open && 'border-primary',
               )}
             >
               {activeOptions.length === 0 && (
-                <p className={cn('text-left', weightStyle.placeholder, open ? 'text-primary' : 'text-shade-30')}>
+                <p className={cnTw('text-left', weightStyle.placeholder, open ? 'text-primary' : 'text-shade-30')}>
                   {placeholder}
                 </p>
               )}
@@ -63,19 +63,19 @@ const Select = ({
               {activeOptions.length > 1 && (
                 <div className="flex gap-x-2.5 items-center">
                   <p
-                    className={cn(
+                    className={cnTw(
                       'flex items-center justify-center bg-neutral rounded-full text-white text-xs font-bold',
                       weightStyle.count,
                     )}
                   >
                     {activeOptions.length}
                   </p>
-                  <p className={cn('text-neutral font-semibold', weightStyle.summary)}>{summary}</p>
+                  <p className={cnTw('text-neutral font-semibold', weightStyle.summary)}>{summary}</p>
                 </div>
               )}
             </div>
             <span
-              className={cn(
+              className={cnTw(
                 'pointer-events-none group-hover:text-primary group-focus:text-primary transition',
                 open ? 'text-primary' : 'text-neutral-variant',
               )}
@@ -86,7 +86,7 @@ const Select = ({
           </Listbox.Button>
           <Transition as={Fragment} leave="transition" leaveFrom="opacity-100" leaveTo="opacity-0">
             <Listbox.Options
-              className={cn(
+              className={cnTw(
                 'absolute z-10 py-[15px] px-2.5 max-h-60 w-full overflow-auto shadow-element',
                 'border border-primary rounded-2lg bg-white shadow-surface',
                 variant !== 'auto' && ViewClass[variant],
@@ -97,7 +97,7 @@ const Select = ({
                   key={id}
                   value={{ id, value }}
                   className={({ active }) =>
-                    cn(
+                    cnTw(
                       'flex items-center cursor-pointer select-none px-2.5 rounded-2lg',
                       active && 'bg-shade-5',
                       weightStyle.option,

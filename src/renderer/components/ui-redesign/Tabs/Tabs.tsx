@@ -1,7 +1,7 @@
 import { Tab } from '@headlessui/react';
 import { ReactNode } from 'react';
-import cn from 'classnames';
 
+import cnTw from '@renderer/shared/utils/twMerge';
 import { SmallTitleText } from '../Typography';
 
 export interface TabItem {
@@ -22,7 +22,7 @@ const Tabs = ({ items, tabClassName, panelClassName = 'mt-4', onChange }: Props)
         {items.map(({ id, title }) => (
           <Tab
             key={id}
-            className={cn(
+            className={cnTw(
               'w-full py-1 px-2 rounded text-redesign-shade-32 ui-selected:shadow-tab ui-selected:text-shade-100 ui-selected:bg-white uppercase flex items-center justify-center',
               tabClassName,
             )}

@@ -1,6 +1,6 @@
 import { Listbox } from '@headlessui/react';
-import cn from 'classnames';
 
+import cnTw from '@renderer/shared/utils/twMerge';
 import { LanguageItem, SupportedLocale } from '@renderer/services/translation/common/types';
 import Icon from '../Icon/Icon';
 
@@ -19,10 +19,10 @@ const LanguageSwitcher = ({ className, languages, selected, short, onChange, top
   const languagesList = top ? [...availableLanguages, selectedLanguage] : [selectedLanguage, ...availableLanguages];
 
   return (
-    <div className={cn('relative', className)}>
+    <div className={cnTw('relative', className)}>
       <Listbox value={selectedLanguage.value} onChange={onChange}>
         <Listbox.Button
-          className={cn(
+          className={cnTw(
             'h-7.5 pr-1 pl-2.5 select-none',
             'hover:bg-primary hover:text-white',
             'bg-shade-5 text-neutral-variant',
@@ -34,13 +34,13 @@ const LanguageSwitcher = ({ className, languages, selected, short, onChange, top
           <Icon className="rounded-full border border-white" name={selectedLanguage.value} />
         </Listbox.Button>
         <Listbox.Options
-          className={cn('absolute flex flex-col gap-1', top ? 'bottom-0 top-auto' : 'top-0 bottom-auto')}
+          className={cnTw('absolute flex flex-col gap-1', top ? 'bottom-0 top-auto' : 'top-0 bottom-auto')}
         >
           {languagesList.map((language) => (
             <Listbox.Option key={language.value} value={language.value}>
               {({ active }) => (
                 <div
-                  className={cn(
+                  className={cnTw(
                     'w-full h-7.5 pr-1 pl-2.5 cursor-pointer select-none',
                     'rounded-l-full rounded-r-full  flex justify-between items-center gap-x-2.5',
                     active ? 'bg-primary text-white' : 'bg-shade-5 text-neutral-variant',

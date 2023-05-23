@@ -1,6 +1,7 @@
 import { Popover as Popup, Transition } from '@headlessui/react';
 import { Fragment, PropsWithChildren, ReactNode, useId, useRef, useState } from 'react';
-import cn from 'classnames';
+
+import cnTw from '@renderer/shared/utils/twMerge';
 
 export type PopoverProps = {
   content: ReactNode;
@@ -42,7 +43,7 @@ const Popover = ({ content, children, offsetPx = 10, contentClass }: PropsWithCh
           style={{ top: '100%', marginTop: offsetPx + 'px' }}
           className="absolute z-20 rounded-md bg-token-container-background border border-token-container-border shadow-card-shadow"
         >
-          <div className={cn('relative w-[275px]', contentClass)}>{content}</div>
+          <div className={cnTw('relative w-[275px]', contentClass)}>{content}</div>
         </Popup.Panel>
       </Transition>
     </Popup>

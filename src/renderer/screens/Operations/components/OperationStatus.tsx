@@ -18,11 +18,11 @@ const StatusTitle: Record<MultisigTxStatus, string> = {
 };
 
 const StatusColor: Record<MultisigTxStatus, string> = {
-  [MultisigTxInitStatus.SIGNING]: '!text-text-tertiary',
-  [MultisigTxFinalStatus.CANCELLED]: '!text-text-negative',
-  [MultisigTxFinalStatus.ERROR]: '!text-text-negative',
-  [MultisigTxFinalStatus.ESTABLISHED]: '!text-text-tertiary',
-  [MultisigTxFinalStatus.EXECUTED]: '!text-text-positive',
+  [MultisigTxInitStatus.SIGNING]: 'text-text-tertiary',
+  [MultisigTxFinalStatus.CANCELLED]: 'text-text-negative',
+  [MultisigTxFinalStatus.ERROR]: 'text-text-negative',
+  [MultisigTxFinalStatus.ESTABLISHED]: 'text-text-tertiary',
+  [MultisigTxFinalStatus.EXECUTED]: 'text-text-positive',
 };
 
 type Props = {
