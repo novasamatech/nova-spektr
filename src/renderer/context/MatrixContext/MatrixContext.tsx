@@ -152,7 +152,7 @@ export const MatrixProvider = ({ children }: PropsWithChildren) => {
     signerAccountId: AccountId,
   ) => {
     const { accountName, creatorAccountId } = extras.mstAccount;
-    const stayInRoom = signerAccountId > creatorAccountId;
+    const stayInRoom = toAddress(signerAccountId, { prefix: 42 }) < toAddress(creatorAccountId, { prefix: 42 });
 
     try {
       if (stayInRoom) {
