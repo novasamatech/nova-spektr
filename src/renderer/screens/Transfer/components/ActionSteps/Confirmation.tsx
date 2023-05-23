@@ -69,7 +69,7 @@ const Confirmation = ({ account, connection, transaction, signatory, description
         </DetailWithLabel>
       )}
 
-      <div className="flex justify-between mt-5">
+      <div className="flex w-full justify-between mt-5">
         <Button variant="text" onClick={onResult}>
           {t('operation.goBackButton')}
         </Button>
