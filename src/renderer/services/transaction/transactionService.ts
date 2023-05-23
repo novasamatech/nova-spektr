@@ -23,6 +23,7 @@ import { MAX_WEIGHT } from '@renderer/services/transaction/common/constants';
 import { decodeDispatchError } from './common/utils';
 
 type BalancesTransferArgs = Parameters<typeof methods.balances.transfer>[0];
+type MultisigAsMultiArgs = Parameters<typeof methods.multisig.asMulti>[0] & { storeCall: boolean };
 
 // TODO change to substrate txwrapper method when it'll update
 const transferAllowDeath = (
@@ -36,6 +37,19 @@ const transferAllowDeath = (
         args,
         name: 'transferAllowDeath',
         pallet: 'balances',
+      },
+      ...info,
+    },
+    options,
+  );
+
+const oldAsMulti = (args: MultisigAsMultiArgs, info: BaseTxInfo, options: OptionsWithMeta): UnsignedTransaction =>
+  defineMethod(
+    {
+      method: {
+        args,
+        name: 'asMulti',
+        pallet: 'multisig',
       },
       ...info,
     },
@@ -98,19 +112,32 @@ export const useTransaction = (): ITransactionService => {
         options,
       );
     },
-    [TransactionType.MULTISIG_AS_MULTI]: (transaction, info, options) => {
-      return methods.multisig.asMulti(
-        {
-          threshold: transaction.args.threshold,
-          otherSignatories: transaction.args.otherSignatories,
-          maybeTimepoint: transaction.args.maybeTimepoint,
-          maxWeight: transaction.args.maxWeight || MAX_WEIGHT,
-          call: transaction.args.callData,
-          callHash: transaction.args.callHash,
-        },
-        info,
-        options,
-      );
+    [TransactionType.MULTISIG_AS_MULTI]: (transaction, info, options, api) => {
+      // @ts-ignore
+      return api.tx.multisig.asMulti.args.length === 6
+        ? oldAsMulti(
+            {
+              threshold: transaction.args.threshold,
+              otherSignatories: transaction.args.otherSignatories,
+              maybeTimepoint: transaction.args.maybeTimepoint,
+              maxWeight: transaction.args.maxWeight || MAX_WEIGHT,
+              call: transaction.args.callData,
+              storeCall: false,
+            },
+            info,
+            options,
+          )
+        : methods.multisig.asMulti(
+            {
+              threshold: transaction.args.threshold,
+              otherSignatories: transaction.args.otherSignatories,
+              maybeTimepoint: transaction.args.maybeTimepoint,
+              maxWeight: transaction.args.maxWeight || MAX_WEIGHT,
+              call: transaction.args.callData,
+            },
+            info,
+            options,
+          );
     },
     [TransactionType.MULTISIG_APPROVE_AS_MULTI]: (transaction, info, options) => {
       return methods.multisig.approveAsMulti(

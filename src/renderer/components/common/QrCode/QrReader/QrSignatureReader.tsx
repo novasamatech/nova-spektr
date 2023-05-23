@@ -1,7 +1,7 @@
 import { hexToU8a, u8aToHex } from '@polkadot/util';
 import { BrowserCodeReader, BrowserQRCodeReader, IScannerControls } from '@zxing/browser';
-import init from 'raptorq';
 import { useEffect, useRef } from 'react';
+import init from 'raptorq';
 
 import cnTw from '@renderer/shared/utils/twMerge';
 import { useI18n } from '@renderer/context/I18nContext';
