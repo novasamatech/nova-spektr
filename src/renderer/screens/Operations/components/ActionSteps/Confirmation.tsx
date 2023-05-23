@@ -5,8 +5,8 @@ import { Fee } from '@renderer/components/common';
 import { MultisigAccount } from '@renderer/domain/account';
 import { ExtendedChain } from '@renderer/services/network/common/types';
 import { useI18n } from '@renderer/context/I18nContext';
-import DetailWithLabel from '../DetailWithLabel';
 import Details from '../Details';
+import DetailWithLabel from '@renderer/components/common/DetailsWithLabel/DetailWithLabel';
 
 const AmountFontStyle = 'font-manrope text-text-primary text-[32px] leading-[36px] font-bold';
 

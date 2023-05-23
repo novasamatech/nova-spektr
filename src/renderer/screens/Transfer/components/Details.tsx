@@ -5,7 +5,7 @@ import { Account, MultisigAccount } from '@renderer/domain/account';
 import { ExtendedChain } from '@renderer/services/network/common/types';
 import { Transaction } from '@renderer/domain/transaction';
 import AddressWithExplorers from '@renderer/components/common/AddressWithExplorers/AddressWithExplorers';
-import DetailWithLabel, { DetailWithLabelProps } from '@renderer/screens/Operations/components/DetailWithLabel';
+import DetailWithLabel, { DetailWithLabelProps } from '@renderer/components/common/DetailsWithLabel/DetailWithLabel';
 import { AddressStyle } from '../common/constants';
 
 type Props = {
