@@ -88,8 +88,6 @@ const Filters = ({ txs, onChangeFilters }: Props) => {
     );
 
   useEffect(() => {
-    const options = getAvailableFiltersOptions(txs);
-    console.log(options);
     setFiltersOptions(getAvailableFiltersOptions(txs));
     onChangeFilters(txs);
   }, [txs.length]);
