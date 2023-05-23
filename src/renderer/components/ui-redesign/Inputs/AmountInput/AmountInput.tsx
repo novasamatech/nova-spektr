@@ -1,63 +1,88 @@
 import cn from 'classnames';
-import { ReactNode, ComponentPropsWithoutRef, forwardRef, useId } from 'react';
+import { useCallback } from 'react';
 
-import { LabelText } from '../../Typography';
-import { HTMLInputProps } from '../common/types';
-import CommonInputStyles from '@renderer/components/ui-redesign/Inputs/common/styles';
+import { useI18n } from '@renderer/context/I18nContext';
+import { Asset } from '@renderer/domain/asset';
+import { FootnoteText } from '../../Typography';
+import { BalanceNew } from '@renderer/components/common';
+import Input from '../Input/Input';
 
-export type Props = Pick<ComponentPropsWithoutRef<'input'>, HTMLInputProps> & {
-  label?: ReactNode;
+type Props = {
+  name?: string;
+  value: string;
+  placeholder: string;
+  disabled?: boolean;
+  asset: Asset;
+  balancePlaceholder?: string;
+  balance?: string | [string, string];
   invalid?: boolean;
-  wrapperClass?: string;
-  prefixElement?: ReactNode;
-  suffixElement?: ReactNode;
   onChange?: (value: string) => void;
 };
 
-const Input = forwardRef<HTMLInputElement, Props>(
-  (
-    { type = 'text', label, className, wrapperClass, invalid, prefixElement, suffixElement, onChange, ...props },
-    ref,
-  ) => {
-    const id = useId();
+const AmountInput = ({
+  name,
+  value,
+  asset,
+  balancePlaceholder,
+  balance,
+  placeholder,
+  disabled,
+  invalid,
+  onChange,
+}: Props) => {
+  const { t } = useI18n();
 
-    const inputElement = (
-      <div
-        className={cn(
-          'relative flex object-contain',
-          CommonInputStyles,
-          'focus-within:enabled:border-active-container-border',
-          invalid && 'border-filter-border-negative',
-          'hover:enabled:shadow-card-shadow',
-          'disabled:bg-input-background-disabled disabled:text-text-tertiary disabled:placeholder:text-text-tertiary',
-          'flex-1 border-filter-border',
-          wrapperClass,
-        )}
-      >
-        {prefixElement}
-        <input
-          id={id}
-          className={cn('focus:outline-none w-full', className)}
-          ref={ref}
-          type={type}
-          onChange={(event) => onChange?.(event.target.value)}
-          {...props}
-        />
-        {suffixElement}
-      </div>
-    );
+  const getBalance = useCallback(() => {
+    if (!balance) return;
 
-    if (!label) {
-      return inputElement;
+    const isSameBalance = balance[0] == balance[1] || (balance[0] === '0' && !balance[1]);
+
+    if (Array.isArray(balance) && !isSameBalance) {
+      return (
+        <div className="flex gap-x-1">
+          <BalanceNew className="text-neutral font-semibold" value={balance[0]} asset={asset} />
+          <span>-</span>
+          <BalanceNew className="text-neutral font-semibold" value={balance[1]} asset={asset} />
+        </div>
+      );
     }
 
-    return (
-      <div className="flex flex-col gap-2">
-        <LabelText htmlFor={id}>{label}</LabelText>
-        {inputElement}
-      </div>
-    );
-  },
-);
+    const shownBalance = Array.isArray(balance) && isSameBalance ? balance[0] : (balance as string);
 
-export default Input;
+    return <BalanceNew className="inline text-text-primary" value={shownBalance} asset={asset} showIcon={false} />;
+  }, [balance]);
+
+  const label = (
+    <div className="flex justify-between">
+      <FootnoteText className="text-text-tertiary">{placeholder}</FootnoteText>
+      <FootnoteText className="text-text-tertiary">
+        {balancePlaceholder || t('general.input.availableLabel')} {getBalance()}
+      </FootnoteText>
+    </div>
+  );
+
+  const prefixElement = (
+    <div className="flex items-center gap-1">
+      <div className={cn('border rounded-full w-6 h-6 box-border border-shade-30 bg-shade-70')}>
+        <img src={asset.icon} alt={asset.name} width={26} height={26} />
+      </div>
+      <p className="text-lg">{asset.symbol}</p>
+    </div>
+  );
+
+  return (
+    <Input
+      name={name}
+      className="text-right text-title font-extrabold"
+      label={label}
+      value={value}
+      placeholder={t('transfer.amountPlaceholder')}
+      invalid={invalid}
+      prefixElement={prefixElement}
+      disabled={disabled}
+      onChange={onChange}
+    />
+  );
+};
+
+export default AmountInput;

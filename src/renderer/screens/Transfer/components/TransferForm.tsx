@@ -2,12 +2,11 @@ import { BN } from '@polkadot/util';
 import { useEffect, useState } from 'react';
 import { Controller, useForm, SubmitHandler } from 'react-hook-form';
 import { ApiPromise } from '@polkadot/api';
-import cn from 'classnames';
 import { Trans } from 'react-i18next';
 
 import { toAccountId, validateAddress, toAddress } from '@renderer/shared/utils/address';
 import { Icon, Identicon } from '@renderer/components/ui';
-import { Fee, Deposit, BalanceNew } from '@renderer/components/common';
+import { Fee, Deposit } from '@renderer/components/common';
 import { useI18n } from '@renderer/context/I18nContext';
 import { Asset, AssetType } from '@renderer/domain/asset';
 import { Transaction, MultisigTxInitStatus, TransactionType } from '@renderer/domain/transaction';
@@ -18,7 +17,7 @@ import { useTransaction } from '@renderer/services/transaction/transactionServic
 import { useMultisigTx } from '@renderer/services/multisigTx/multisigTxService';
 import { getAssetId } from '@renderer/shared/utils/assets';
 import { MultisigAccount, Account, isMultisig } from '@renderer/domain/account';
-import { Button, FootnoteText, Input, InputHint } from '@renderer/components/ui-redesign';
+import { Button, AmountInput, FootnoteText, Input, InputHint } from '@renderer/components/ui-redesign';
 
 const DESCRIPTION_MAX_LENGTH = 120;
 
@@ -237,15 +236,6 @@ export const TransferForm = ({ api, chainId, account, signer, asset, nativeToken
     }
   };
 
-  const prefixElement = (
-    <div className="flex items-center gap-1">
-      <div className={cn('border rounded-full w-6 h-6 box-border border-shade-30 bg-shade-70')}>
-        <img src={asset.icon} alt={asset.name} width={26} height={26} />
-      </div>
-      <p className="text-lg">{asset.symbol}</p>
-    </div>
-  );
-
   return (
     <form className="w-full" onSubmit={handleSubmit(submitTransaction)}>
       <div className="flex flex-col gap-y-5 mb-2.5">
@@ -294,26 +284,13 @@ export const TransferForm = ({ api, chainId, account, signer, asset, nativeToken
           }}
           render={({ field: { onChange, value }, fieldState: { error } }) => (
             <div className="flex flex-col gap-y-2.5">
-              <Input
-                className="text-right text-title font-extrabold"
-                label={
-                  <div className="flex justify-between">
-                    <FootnoteText className="text-text-tertiary">{t('general.input.amountLabel')}</FootnoteText>
-                    <FootnoteText className="text-text-tertiary">
-                      {t('general.input.availableLabel')}{' '}
-                      <BalanceNew
-                        className="inline text-text-primary"
-                        value={accountBalance}
-                        asset={asset}
-                        showIcon={false}
-                      />
-                    </FootnoteText>
-                  </div>
-                }
-                value={value}
-                placeholder={t('transfer.amountPlaceholder')}
+              <AmountInput
                 invalid={Boolean(error)}
-                prefixElement={prefixElement}
+                value={value}
+                balance={accountBalance}
+                balancePlaceholder={t('general.input.availableLabel')}
+                placeholder={t('general.input.amountLabel')}
+                asset={asset}
                 onChange={onChange}
               />
               <InputHint active={error?.type === 'insufficientBalance'} variant="error">
