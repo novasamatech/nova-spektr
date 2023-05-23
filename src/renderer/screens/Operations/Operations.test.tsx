@@ -15,9 +15,15 @@ jest.mock('@renderer/services/account/accountService', () => ({
   }),
 }));
 
-jest.mock('./components/Chain', () => () => 'Chain');
-jest.mock('./components/ShortTransactionInfo', () => () => 'ShortTransactionInfo');
-jest.mock('./components/TransactionTitle', () => () => 'TransactionTitle');
+jest.mock('@renderer/services/multisigTx/multisigTxService', () => ({
+  useMultisigTx: jest.fn().mockReturnValue({
+    getLiveAccountMultisigTxs: () => [{ name: 'Test Wallet', accountId: TEST_ACCOUNT_ID }],
+  }),
+}));
+
+jest.mock('./components/Chain/Chain', () => () => 'Chain');
+jest.mock('./components/TransactionAmount', () => () => 'TransactionAmount');
+jest.mock('./components/TransactionTitle/TransactionTitle', () => () => 'TransactionTitle');
 jest.mock('./components/EmptyState/EmptyOperations', () => () => 'EmptyState/EmptyOperations');
 jest.mock('./components/Operation', () => () => 'Operation');
 jest.mock('./components/Filters', () => () => 'Filters');

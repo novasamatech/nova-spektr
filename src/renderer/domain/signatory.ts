@@ -1,3 +1,3 @@
 import { Contact } from './contact';
 
-export type Signatory = Contact;
+export type Signatory = Omit<Contact, 'name'> & { name?: string };

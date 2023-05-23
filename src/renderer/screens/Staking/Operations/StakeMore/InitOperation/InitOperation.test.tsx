@@ -13,12 +13,6 @@ jest.mock('@renderer/context/I18nContext', () => ({
   }),
 }));
 
-jest.mock('@renderer/services/wallet/walletService', () => ({
-  useWallet: jest.fn().mockReturnValue({
-    getLiveWallets: jest.fn().mockReturnValue([]),
-  }),
-}));
-
 jest.mock('@renderer/services/account/accountService', () => ({
   useAccount: jest.fn().mockReturnValue({
     getLiveAccounts: () => [{ name: 'Test Wallet', accountId: TEST_ACCOUNT_ID }],
@@ -27,7 +21,7 @@ jest.mock('@renderer/services/account/accountService', () => ({
 
 jest.mock('@renderer/services/balance/balanceService', () => ({
   useBalance: jest.fn().mockReturnValue({
-    getBalance: jest.fn().mockReturnValue({
+    getLiveBalance: jest.fn().mockReturnValue({
       assetId: 1,
       chainId: '0x123',
       accountId: TEST_ACCOUNT_ID,
@@ -46,10 +40,22 @@ jest.mock('@renderer/services/balance/balanceService', () => ({
   }),
 }));
 
+jest.mock('../../components', () => ({
+  OperationForm: ({ children }: any) => {
+    return (
+      <div>
+        <p>operationForm</p>
+        {children}
+      </div>
+    );
+  },
+}));
+
 describe('screens/Staking/StakeMore/InitOperation', () => {
   const defaultProps = {
     api: {} as ApiPromise,
     chainId: '0x123' as ChainId,
+    addressPrefix: 0,
     identifiers: ['1'],
     asset: { assetId: 1, symbol: 'DOT', precision: 10 } as Asset,
     onResult: noop,
@@ -60,9 +66,9 @@ describe('screens/Staking/StakeMore/InitOperation', () => {
       render(<InitOperation {...defaultProps} />);
     });
 
-    const button = screen.getByText('staking.bond.continueButton');
+    const form = screen.getByText('operationForm');
     const eraHint = screen.getByText('staking.stakeMore.eraHint');
-    expect(button).toBeInTheDocument();
+    expect(form).toBeInTheDocument();
     expect(eraHint).toBeInTheDocument();
   });
 });

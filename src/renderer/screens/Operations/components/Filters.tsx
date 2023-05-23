@@ -1,14 +1,10 @@
 import { useEffect, useState } from 'react';
 
 import { useI18n } from '@renderer/context/I18nContext';
-import { useMultisigTx } from '@renderer/services/multisigTx/multisigTxService';
 import { MultisigTransactionDS } from '@renderer/services/storage';
-import { SigningType } from '@renderer/domain/shared-kernel';
-import { useAccount } from '@renderer/services/account/accountService';
-import { nonNullable } from '@renderer/shared/utils/functions';
 import { UNKNOWN_TYPE, getStatusOptions, getTransactionOptions, TransferTypes } from '../common/utils';
 import { DropdownOption, DropdownResult } from '@renderer/components/ui-redesign/Dropdowns/common/types';
-import { MultisigTransaction, TransactionType } from '@renderer/domain/transaction';
+import { MultisigTransaction, Transaction, TransactionType } from '@renderer/domain/transaction';
 import { useNetworkContext } from '@renderer/context/NetworkContext';
 import { MultiSelect } from '@renderer/components/ui-redesign';
 
@@ -30,32 +26,24 @@ const emptySelected: SelectedFilters = {
 };
 
 type Props = {
+  txs: MultisigTransactionDS[];
   onChangeFilters: (filteredTxs: MultisigTransaction[]) => void;
 };
 
-const Filters = ({ onChangeFilters }: Props) => {
+const Filters = ({ txs, onChangeFilters }: Props) => {
   const { t } = useI18n();
   const { connections } = useNetworkContext();
 
   const StatusOptions = getStatusOptions(t);
   const TransactionOptions = getTransactionOptions(t);
-
   const NetworkOptions = Object.values(connections).map((c) => ({
     id: c.chainId,
     value: c.chainId,
     element: c.name,
   }));
 
-  const { getActiveAccounts } = useAccount();
-  const { getLiveAccountMultisigTxs } = useMultisigTx();
-
   const [filtersOptions, setFiltersOptions] = useState<FiltersOptions>(emptyOptions);
   const [selectedOptions, setSelectedOptions] = useState<SelectedFilters>(emptySelected);
-
-  const accounts = getActiveAccounts({ signingType: SigningType.MULTISIG });
-  const accountIds = accounts.map((a) => a.accountId).filter(nonNullable);
-
-  const txs = getLiveAccountMultisigTxs(accountIds);
 
   const getFilterableType = (tx: MultisigTransaction): TransactionType | typeof UNKNOWN_TYPE => {
     let filterableType: TransactionType | typeof UNKNOWN_TYPE = UNKNOWN_TYPE;
@@ -64,7 +52,9 @@ const Filters = ({ onChangeFilters }: Props) => {
       if (TransferTypes.includes(tx.transaction.type)) {
         filterableType = TransactionType.TRANSFER;
       } else if (tx.transaction.type === TransactionType.BATCH_ALL) {
-        filterableType = tx.transaction.args?.transactions?.[0]?.type;
+        filterableType = tx.transaction.args?.transactions?.find(
+          (tx: Transaction) => tx.type === TransactionType.BOND || tx.type === TransactionType.UNSTAKE,
+        )?.type;
       } else {
         filterableType = tx.transaction?.type;
       }
@@ -97,7 +87,12 @@ const Filters = ({ onChangeFilters }: Props) => {
       },
     );
 
-  useEffect(() => setFiltersOptions(getAvailableFiltersOptions(txs)), [txs.length]);
+  useEffect(() => {
+    const options = getAvailableFiltersOptions(txs);
+    console.log(options);
+    setFiltersOptions(getAvailableFiltersOptions(txs));
+    onChangeFilters(txs);
+  }, [txs.length]);
 
   const mapValues = (result: DropdownResult) => result.value;
 
@@ -123,7 +118,7 @@ const Filters = ({ onChangeFilters }: Props) => {
   };
 
   return (
-    <div className="flex gap-2 my-4 pl-6">
+    <div className="flex gap-2 my-4">
       <MultiSelect
         className="w-[200px]"
         placeholder={t('operations.filters.statusPlaceholder')}

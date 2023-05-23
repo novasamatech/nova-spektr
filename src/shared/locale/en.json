@@ -37,15 +37,16 @@
   "assetBalance": {
     "locked": "Locked",
     "number": "{value, number}",
+    "numberWithSuffix": "{value, number}{suffix}",
     "reserved": "Reserved",
     "transferable": "Transferable"
   },
   "balances": {
-    "emptyStateDescription": "Try to reset filters or search for another key",
-    "emptyStateLabel": "Nothing to show",
+    "emptyStateDescription": "Update the search or cancel filtering.",
+    "emptyStateLabel": "Nothing was found.",
     "hideZeroBalancesLabel": "Hide zero balances",
-    "searchPlaceholder": "Search by token or network",
-    "title": "Balances",
+    "searchPlaceholder": "Search",
+    "title": "Assets",
     "verificationFailedLabel": "verification failed"
   },
   "basemodal": {
@@ -88,6 +89,7 @@
     },
     "input": {
       "amountLabel": "Amount",
+      "signerLabel": "Select signer",
       "transferableLabel": "Transferable"
     },
     "title": {
@@ -287,8 +289,9 @@
       "depositor": "Depositor",
       "description": "Description",
       "multisigWallet": "Multisig wallet",
-      "payee": "Payee",
+      "payee": "Rewards destination",
       "recipient": "Recipient",
+      "rejectReason": "Reject reason",
       "timePoint": "Time Point",
       "validators": "Selected validators"
     },
@@ -298,15 +301,17 @@
     "feeErrorMessage": "Insufficient funds to pay the network fee",
     "feeErrorTitle": "Error",
     "goBackButton": "Go back",
+    "inProgress": "Submitting approval...",
     "logButton": "Log",
     "networkFee": "Network fee",
     "rejectButton": "Cancel",
+    "rejectInProgress": "Submitting Rejection...",
     "rejectReason": {
       "continueButton": "Continue",
       "errorMessage": "Reject reason is required",
       "inputHint": "Visible only for you and signers",
       "placeholder": "Reason...",
-      "title": "Set reject reason"
+      "title": "Enter reject reason"
     },
     "selectSignatory": "Select signatory",
     "selectSignatoryTitle": "Select signatory",
@@ -318,8 +323,10 @@
       "error": "Error",
       "established": "Established",
       "executed": "Executed",
-      "signing": "Signing"
-    }
+      "signing": "On signing"
+    },
+    "successMessage": "Operation Approved",
+    "successRejectMessage": "Operation Rejected"
   },
   "operations": {
     "callData": {
@@ -337,13 +344,13 @@
       "statusPlaceholder": "Operation status",
       "statusSummary": "Operation statuses"
     },
-    "noOperationsDescription": "There are no pending multisig operations",
-    "subTitle": "Your operations",
+    "noOperationsDescription": "Your operation history will appear here",
+    "noOperationsWalletNotMulti": "You can only view operations for your Multisig wallets. Transaction history for other types of wallets will be available later. Stay tuned.",
     "title": "Operations",
     "titles": {
       "destination": "Set reward destination",
       "nominate": "Nominate",
-      "redeem": "Redeem",
+      "redeem": "Withdraw Unstaked",
       "restake": "Restake",
       "stakeMore": "Stake More",
       "startStaking": "Start Staking",
@@ -430,8 +437,10 @@
     "generateNewQrButton": "Generate new QR code",
     "metadataPortalLink": "Update metadata in Parity Signer",
     "qrCountdownTitle": "QR code is valid for",
-    "scanQrTitle": "Scan the operation QR code with Parity Signer",
+    "qrNotValid": "QR code isn’t valid anymore",
+    "scanQrTitle": "Scan the operation QR code with Polkadot Vault",
     "scanSignatureTitle": "Scan QR code from Parity Signer",
+    "signatory": "Signatory:",
     "signatureExpiredDescription": "For security reasons generated operations valid for only 5 mins. Please generate new QR code and sign it with Parity Signer",
     "signatureExpiredLabel": "QR Code has expired",
     "title": "Signing",
@@ -518,6 +527,7 @@
       "selectValidators": "Selected validators",
       "setValidatorsTitle": "Set validators",
       "signButton": "Sign with Parity Signer",
+      "signer": "Signer",
       "submittingOperation": "Submitting operation",
       "totalAmount": "Total amount",
       "totalNetworkFee": "Total network fee",
@@ -539,7 +549,8 @@
       "validators": "Validators",
       "yourValidatorsTitle": "Your validators"
     },
-    "notEnoughBalanceError": "Not enough funds to stake specific amount",
+    "notEnoughBalanceError": "Not enough funds to complete operation",
+    "notEnoughBalanceForDepositError": "Insufficient balance to pay deposit",
     "notEnoughBalanceForFeeError": "Insufficient balance to pay network fee",
     "notEnoughStakedError": "Not enough staked to unstake specific amount",
     "notEnoughUnlockingError": "Not enough unlocking to return specific amount",
@@ -570,6 +581,7 @@
     },
     "redeem": {
       "availablePlaceholder": "Available",
+      "confirmRedeemSubtitle": "Confirmation",
       "initRedeemSubtitle": "Redeem"
     },
     "requiredAmountError": "Please, enter amount",
@@ -635,6 +647,17 @@
     "hours_one": "{ count } hour",
     "hours_other": "{ count } hours",
     "minutesSeconds": "{ minutes }:{ seconds }"
+  },
+  "transactionMessage": {
+    "bond": "Stake { amount } { asset }",
+    "destination": "Change reward destination to { address }",
+    "nominate": "Change validators",
+    "redeem": "Withdraw { amount } { asset }",
+    "restake": "Return { amount } { asset } to stake",
+    "restakeDestination": "restake",
+    "stakeMore": "Increase stake { amount } { asset }",
+    "transfer": "Transfer { amount } { asset } to { address }",
+    "unstake": "Unstake { amount } { asset }"
   },
   "transfer": {
     "amountPlaceholder": "Amount",

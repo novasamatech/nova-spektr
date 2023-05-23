@@ -1,5 +1,4 @@
-import cn from 'classnames';
-
+import cnTw from '@renderer/shared/utils/twMerge';
 import { Chain } from '@renderer/domain/chain';
 import { ChainAddress } from '@renderer/components/ui';
 import { AccountId } from '@renderer/domain/shared-kernel';
@@ -36,7 +35,7 @@ const AccountsList = ({ accountId, chains, className, limit }: Props) => {
   }
 
   return (
-    <ul className={cn('flex flex-col z-0 divide-y divide-gray-200 overflow-y-auto overflow-x-hidden', className)}>
+    <ul className={cnTw('flex flex-col z-0 divide-y divide-gray-200 overflow-y-auto overflow-x-hidden', className)}>
       {limitedChains.map((chain) => {
         const { name, icon, addressPrefix, explorers } = chain;
 

@@ -36,10 +36,7 @@ const OperationStatus = ({ status, signed, threshold }: Props) => {
 
   return (
     <CaptionText
-      className={cn(
-        'py-1 px-2.5 rounded-[20px] border border-redesign-shade-8 uppercase text-text-negative',
-        StatusColor[status],
-      )}
+      className={cn('py-1 px-2.5 rounded-[20px] border border-redesign-shade-8 uppercase', StatusColor[status])}
       align="center"
     >
       {status === 'SIGNING'

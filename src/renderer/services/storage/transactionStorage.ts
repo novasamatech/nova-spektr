@@ -1,10 +1,16 @@
 import { MultisigTransaction } from '@renderer/domain/transaction';
-import { MultisigTransactionDS, IMultisigTransactionStorage, TMultisigTransaction, ID } from './common/types';
-import { AccountId } from '@renderer/domain/shared-kernel';
+import { MultisigTransactionDS, IMultisigTransactionStorage, TMultisigTransaction } from './common/types';
+import { AccountId, CallHash, ChainId } from '@renderer/domain/shared-kernel';
 
 export const useTransactionStorage = (db: TMultisigTransaction): IMultisigTransactionStorage => ({
-  getMultisigTx: (txId: ID): Promise<MultisigTransactionDS | undefined> => {
-    return db.get(txId);
+  getMultisigTx: (
+    accountId: AccountId,
+    chainId: ChainId,
+    callHash: CallHash,
+    blockCreated: number,
+    indexCreated: number,
+  ): Promise<MultisigTransactionDS | undefined> => {
+    return db.get([accountId, chainId, callHash, blockCreated, indexCreated]);
   },
 
   getMultisigTxs: <T extends MultisigTransaction>(where?: Partial<T>): Promise<MultisigTransactionDS[]> => {
@@ -15,15 +21,35 @@ export const useTransactionStorage = (db: TMultisigTransaction): IMultisigTransa
     return db.where('accountId').anyOf(accountIds).toArray();
   },
 
-  addMultisigTx: (tx: MultisigTransaction): Promise<ID> => {
-    return db.add(tx);
+  addMultisigTx: async (tx: MultisigTransaction): Promise<void> => {
+    try {
+      await db.add(tx);
+    } catch (error) {
+      console.warn(
+        `The same TX ${tx.accountId} ${tx.chainId} ${tx.callHash} ${tx.blockCreated} ${tx.indexCreated} already exists. Updating it ...`,
+      );
+      let rowsUpdate = await db.update(
+        //@ts-ignore
+        [tx.accountId, tx.chainId, tx.callHash, tx.blockCreated, tx.indexCreated],
+        tx,
+      );
+      console.log(`${rowsUpdate} transaction updated!`);
+    }
   },
 
-  updateMultisigTx: (tx: MultisigTransactionDS): Promise<ID> => {
-    return db.put(tx);
+  updateMultisigTx: (tx: MultisigTransactionDS): Promise<number> => {
+    //@ts-ignore
+    return db.update([tx.accountId, tx.chainId, tx.callHash, tx.blockCreated, tx.indexCreated], tx);
   },
 
-  deleteMultisigTx: (txId: ID): Promise<void> => {
-    return db.delete(txId);
+  deleteMultisigTx: (
+    accountId: AccountId,
+    chainId: ChainId,
+    callHash: CallHash,
+    blockCreated: number,
+    indexCreated: number,
+  ): Promise<void> => {
+    //@ts-ignore
+    return db.delete([accountId, chainId, callHash, blockCreated, indexCreated]);
   },
 });

@@ -1,11 +1,11 @@
 import { Fragment, PropsWithChildren, ReactNode } from 'react';
 import { Dialog, Transition } from '@headlessui/react';
-import cn from 'classnames';
 
-import Icon from '@renderer/components/ui/Icon/Icon';
+import cnTw from '@renderer/shared/utils/twMerge';
 import { ModalBackdrop, ModalTransition } from '@renderer/components/ui-redesign/Modals/common';
 import { useI18n } from '@renderer/context/I18nContext';
-import { TitleText } from '../../Typography';
+import TextBase from '@renderer/components/ui-redesign/Typography/common/TextBase';
+import { IconButton } from '@renderer/components/ui-redesign';
 
 type Props = {
   isOpen: boolean;
@@ -24,8 +24,8 @@ const BaseModal = ({
   title,
   children,
   onClose,
-  contentClass = 'pb-6 px-10',
-  headerClass = 'pt-5 px-10',
+  contentClass = 'pb-4 px-5',
+  headerClass = 'py-3 pr-3 pl-5',
   closeButton,
   panelClass,
 }: PropsWithChildren<Props>) => {
@@ -40,26 +40,27 @@ const BaseModal = ({
           <ModalTransition>
             {/* TODO add proper colors for titles and bg */}
             <Dialog.Panel
-              className={cn(
+              className={cnTw(
                 'transform overflow-y-auto rounded-lg bg-white text-left align-middle shadow-modal transition-all',
                 panelClass,
               )}
             >
               {title && (
-                <Dialog.Title as="header" className={cn('text-black font-bold', headerClass)}>
-                  <TitleText fontWeight="bold">{title}</TitleText>
+                <Dialog.Title as="header" className={cnTw('text-black font-bold', closeButton && 'pr-11', headerClass)}>
+                  {/* TODO change */}
+                  <TextBase className="font-manrope text-modal-title text-text-primary truncate" fontWeight="bold">
+                    {title}
+                  </TextBase>
                 </Dialog.Title>
               )}
 
               {closeButton && (
-                <button
-                  aria-label={t('basemodal.closeButton')}
-                  type="button"
-                  className="text-icon-default absolute top-4 right-4"
+                <IconButton
+                  name="close"
+                  className="absolute top-3 right-3"
+                  ariaLabel={t('basemodal.closeButton')}
                   onClick={onClose}
-                >
-                  <Icon name="close" size={24} />
-                </button>
+                />
               )}
 
               <div className={contentClass}>{children}</div>

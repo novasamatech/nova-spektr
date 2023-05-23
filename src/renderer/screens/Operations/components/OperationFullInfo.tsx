@@ -83,42 +83,51 @@ const OperationFullInfo = ({ tx, account }: Props) => {
   }, [signatories.length, approvals.length, cancellation.length]);
 
   const getSignatoryStatus = (signatory: AccountId): SigningStatus | undefined => {
-    const event = events.find((e) => (e.status === 'SIGNED' || e.status === 'CANCELLED') && e.accountId === signatory);
+    const cancelEvent = events.find((e) => e.status === 'CANCELLED' && e.accountId === signatory);
+    if (cancelEvent) {
+      return cancelEvent.status;
+    }
+    const signedEvent = events.find((e) => e.status === 'SIGNED' && e.accountId === signatory);
 
-    return event?.status;
+    return signedEvent?.status;
   };
 
   return (
     <div className="flex flex-1">
-      <div className="flex flex-col flex-1 pt-[19px] px-4 pb-4 border-r border-r-divider">
-        <div className="flex justify-between items-center mb-3">
-          <SmallTitleText>{t('operation.detailsTitle')}</SmallTitleText>
+      <div className="flex flex-col w-[416px] p-4 border-r border-r-divider">
+        <div className="flex justify-between items-center mb-4 py-1">
+          <SmallTitleText className="mr-auto">{t('operation.detailsTitle')}</SmallTitleText>
 
-          {callData ? (
-            explorerLink && (
-              <InfoLink url={explorerLink} className="flex items-center gap-x-0.5">
-                <span>{t('operation.explorerLink')}</span>
-                <Icon name="right" size={16} />
-              </InfoLink>
-            )
-          ) : (
-            <>
-              <Button pallet="primary" variant="text" size="sm" onClick={toggleCallDataModal}>
-                {t('operation.addCallDataButton')}
-              </Button>
-            </>
+          {(!callData || explorerLink) && (
+            <div className="flex items-center">
+              {!callData && (
+                <Button pallet="primary" variant="text" size="sm" onClick={toggleCallDataModal}>
+                  {t('operation.addCallDataButton')}
+                </Button>
+              )}
+              {explorerLink && (
+                <InfoLink
+                  url={explorerLink}
+                  className="flex items-center gap-x-0.5 ml-0.5"
+                  fontClass="text-footnote font-medium font-inter"
+                >
+                  <span>{t('operation.explorerLink')}</span>
+                  <Icon name="right" size={16} />
+                </InfoLink>
+              )}
+            </div>
           )}
         </div>
 
         <Details tx={tx} account={account} connection={connection} />
 
-        <div className="flex justify-between items-center">
+        <div className="flex items-center mt-3">
           {account && connection && <RejectTx tx={tx} account={account} connection={connection} />}
           {account && connection && <ApproveTx tx={tx} account={account} connection={connection} />}
         </div>
       </div>
 
-      <div className="flex flex-col flex-1 pt-[19px] px-4 pb-4">
+      <div className="flex flex-col w-[320px] px-2 py-4">
         <div className="flex justify-between items-center mb-3">
           <SmallTitleText>{t('operation.signatoriesTitle')}</SmallTitleText>
 
@@ -129,7 +138,7 @@ const OperationFullInfo = ({ tx, account }: Props) => {
             prefixElement={<Icon name="chatRedesign" className="text-icon-default" size={16} />}
             suffixElement={
               <CaptionText
-                className="text-button-text bg-primary-button-background-default rounded-full pt-[1px] pb-[2px] px-1.5"
+                className="!text-button-text bg-primary-button-background-default rounded-full pt-[1px] pb-[2px] px-1.5"
                 fontWeight="semibold"
               >
                 {events.length}
@@ -145,7 +154,7 @@ const OperationFullInfo = ({ tx, account }: Props) => {
           {signatoriesList.map(({ accountId, name }) => {
             return (
               <li key={accountId}>
-                <SignatoryCard accountId={accountId} name={name} status={getSignatoryStatus(accountId)} />
+                <SignatoryCard accountId={accountId} type="short" name={name} status={getSignatoryStatus(accountId)} />
               </li>
             );
           })}

@@ -5,9 +5,9 @@ import { useI18n } from '@renderer/context/I18nContext';
 import { MultisigAccount } from '@renderer/domain/account';
 import { ExtendedChain } from '@renderer/services/network/common/types';
 import { MultisigEvent, MultisigTransaction, SigningStatus } from '@renderer/domain/transaction';
-import TransactionTitle from './TransactionTitle';
+import TransactionTitle from './TransactionTitle/TransactionTitle';
 import OperationStatus from './OperationStatus';
-import Chain from './Chain';
+import Chain from './Chain/Chain';
 import { getExtrinsicLink, sortByDate } from '../common/utils';
 import { BaseModal, FootnoteText } from '@renderer/components/ui-redesign';
 import { AccountAddress } from '@renderer/components/common';
@@ -67,14 +67,12 @@ const LogModal = ({ isOpen, onClose, tx, account, connection }: Props) => {
                       <div className="flex gap-1 w-full items-center">
                         <AccountAddress
                           address={event.accountId}
-                          name={
-                            account?.signatories.find((s) => s.accountId === event.accountId)?.name || event.accountId
-                          }
+                          name={account?.signatories.find((s) => s.accountId === event.accountId)?.name}
                         />
                         {t(getEventMessage(event))}
 
                         <FootnoteText className="ml-auto">
-                          {format(new Date(event.dateCreated || 0), 'p', { locale: dateLocale })}
+                          {event.dateCreated && format(new Date(event.dateCreated), 'p', { locale: dateLocale })}
                         </FootnoteText>
                       </div>
 
