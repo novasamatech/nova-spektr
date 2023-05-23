@@ -120,7 +120,7 @@ const Filters = ({ txs, onChangeFilters }: Props) => {
   const { statusOptions, networkOptions, typeOptions } = filtersOptions;
 
   return (
-    <div className="flex gap-2 my-4 pl-6">
+    <div className="flex gap-2 my-4">
       <MultiSelect
         className="w-[200px]"
         placeholder={t('operations.filters.statusPlaceholder')}

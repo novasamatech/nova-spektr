@@ -201,7 +201,17 @@ export const getTransactionAmount = (tx: Transaction): string | null => {
     return tx.args.maxAdditional;
   }
   if (txType === TransactionType.BATCH_ALL) {
-    return getTransactionAmount(tx.args?.transactions?.[0]);
+    // multi staking tx made with batch all:
+    // unstake - chill, unbond
+    // start staking - bond, nominate
+    const transactions = tx.args?.transactions;
+    if (!transactions) return null;
+
+    const txMatch = transactions.find(
+      (tx: Transaction) => tx.type === TransactionType.BOND || tx.type === TransactionType.UNSTAKE,
+    );
+
+    return getTransactionAmount(txMatch);
   }
 
   return null;
