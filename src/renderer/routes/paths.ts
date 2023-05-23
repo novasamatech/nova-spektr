@@ -30,8 +30,6 @@ const Paths = {
   VALIDATORS: '/staking/validators/:chainId',
 
   // Operations
-  TRANSFER: '/transfer/:chainId/:assetId',
-
   CREATE_MULTISIG_ACCOUNT: '/create-multisig-account',
 
   // DEV

@@ -14,7 +14,7 @@ import { Button, FootnoteText } from '@renderer/components/ui-redesign';
 import ValidatorsModal from '@renderer/screens/Staking/Operations/components/ValidatorsModal/ValidatorsModal';
 import { BalanceNew } from '@renderer/components/common';
 import AddressWithExplorers from '@renderer/components/common/AddressWithExplorers/AddressWithExplorers';
-import DetailWithLabel, { DetailWithLabelProps } from '@renderer/screens/Operations/components/DetailWithLabel';
+import DetailWithLabel, { DetailWithLabelProps } from '@renderer/components/common/DetailsWithLabel/DetailWithLabel';
 import { AddressStyle, DescriptionBlockStyle, InteractableStyle, LabelStyle } from '../common/constants';
 
 type Props = {

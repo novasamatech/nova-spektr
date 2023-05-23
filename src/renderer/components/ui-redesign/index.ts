@@ -1,4 +1,5 @@
 import Input from './Inputs/Input/Input';
+import AmountInput from './Inputs/AmountInput/AmountInput';
 import PasswordInput from './Inputs/PasswordInput/PasswordInput';
 import InputHint from './InputHint/InputHint';
 import Button from './Buttons/Button/Button';
@@ -27,6 +28,7 @@ import IconButton from './Buttons/IconButton/IconButton';
 
 export {
   Input,
+  AmountInput,
   PasswordInput,
   InputHint,
   Button,
