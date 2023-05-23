@@ -19,6 +19,10 @@
         "name": "Parity node"
       },
       {
+        "url": "wss://rpc-polkadot.luckyfriday.io",
+        "name": "LuckyFriday node"
+      },
+      {
         "url": "wss://polkadot.api.onfinality.io/public-ws",
         "name": "OnFinality node"
       },
@@ -98,6 +102,10 @@
       {
         "url": "wss://rpc.ibp.network/kusama",
         "name": "IBP network node"
+      },
+      {
+        "url": "wss://rpc-kusama.luckyfriday.io",
+        "name": "LuckyFriday node"
       },
       {
         "url": "wss://1rpc.io/ksm",
