@@ -18,9 +18,10 @@ type Props = {
   connection: ExtendedChain;
   feeTx?: Transaction;
   onResult?: () => void;
+  onBack?: () => void;
 };
 
-const Confirmation = ({ account, connection, transaction, signatory, description, feeTx, onResult }: Props) => {
+const Confirmation = ({ account, connection, transaction, signatory, description, feeTx, onResult, onBack }: Props) => {
   const { t } = useI18n();
 
   return (
@@ -68,9 +69,13 @@ const Confirmation = ({ account, connection, transaction, signatory, description
         </DetailWithLabel>
       )}
 
-      <Button className="w-fit flex-0 mt-5 ml-auto" onClick={onResult}>
-        {t('operation.signButton')}
-      </Button>
+      <div className="flex justify-between mt-5">
+        <Button variant="text" onClick={onResult}>
+          {t('operation.goBackButton')}
+        </Button>
+
+        <Button onClick={onResult}>{t('operation.signButton')}</Button>
+      </div>
     </div>
   );
 };

@@ -169,6 +169,7 @@ const Transfer = ({ assetId, chainId }: Props) => {
             account={account}
             signatory={signatory}
             connection={connection}
+            onBack={() => setActiveStep(Step.INIT)}
             onResult={onConfirmResult}
           />
         )}
