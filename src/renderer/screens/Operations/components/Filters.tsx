@@ -8,10 +8,10 @@ import { MultisigTransaction, Transaction, TransactionType } from '@renderer/dom
 import { useNetworkContext } from '@renderer/context/NetworkContext';
 import { MultiSelect } from '@renderer/components/ui-redesign';
 
-type FilterNames = 'status' | 'network' | 'type';
+type FilterName = 'status' | 'network' | 'type';
 
-type FiltersOptions = Record<FilterNames, Set<DropdownOption>>;
-type SelectedFilters = Record<FilterNames, DropdownResult[]>;
+type FiltersOptions = Record<FilterName, Set<DropdownOption>>;
+type SelectedFilters = Record<FilterName, DropdownResult[]>;
 
 const emptyOptions: FiltersOptions = {
   status: new Set<DropdownOption>(),
@@ -101,8 +101,8 @@ const Filters = ({ txs, onChangeFilters }: Props) => {
     (!filters.network.length || filters.network.map(mapValues).includes(t.chainId)) &&
     (!filters.type.length || filters.type.map(mapValues).includes(getFilterableType(t)));
 
-  const handleFilterChange = (values: DropdownResult[], filter: FilterNames) => {
-    const newSelectedOptions = { ...selectedOptions, [filter]: values };
+  const handleFilterChange = (values: DropdownResult[], filterName: FilterName) => {
+    const newSelectedOptions = { ...selectedOptions, [filterName]: values };
     setSelectedOptions(newSelectedOptions);
 
     const filteredTxs = txs.filter((t) => filterTx(t, newSelectedOptions));
@@ -111,9 +111,9 @@ const Filters = ({ txs, onChangeFilters }: Props) => {
     const filterOptionsFromTx = getAvailableFiltersOptions(filteredTxs);
 
     setFiltersOptions((prevState) => ({
-      status: filter === 'status' ? prevState.status : filterOptionsFromTx.status,
-      network: filter === 'network' ? prevState.network : filterOptionsFromTx.network,
-      type: filter === 'type' ? prevState.type : filterOptionsFromTx.type,
+      status: filterName === 'status' ? prevState.status : filterOptionsFromTx.status,
+      network: filterName === 'network' ? prevState.network : filterOptionsFromTx.network,
+      type: filterName === 'type' ? prevState.type : filterOptionsFromTx.type,
     }));
   };
 
