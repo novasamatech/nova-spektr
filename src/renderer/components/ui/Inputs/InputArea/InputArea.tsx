@@ -1,6 +1,6 @@
-import cn from 'classnames';
 import { ComponentPropsWithoutRef, forwardRef } from 'react';
 
+import cnTw from '@renderer/shared/utils/twMerge';
 import CommonInputStyles from '@renderer/components/ui-redesign/Inputs/common/styles';
 import { HTMLTextAreaProps } from '../common/types';
 
@@ -11,7 +11,7 @@ interface Props extends Pick<ComponentPropsWithoutRef<'textarea'>, HTMLTextAreaP
 
 const InputArea = forwardRef<HTMLTextAreaElement, Props>(({ className, invalid = false, onChange, ...props }, ref) => (
   <textarea
-    className={cn(
+    className={cnTw(
       'resize-none text-footnote flex-1',
       CommonInputStyles,
       'focus-within:enabled:border-active-container-border',

@@ -1,6 +1,6 @@
-import cn from 'classnames';
 import { ReactNode, ComponentPropsWithoutRef, forwardRef, useId } from 'react';
 
+import cnTw from '@renderer/shared/utils/twMerge';
 import { LabelText } from '../../Typography';
 import { HTMLInputProps } from '../common/types';
 import CommonInputStyles from '@renderer/components/ui-redesign/Inputs/common/styles';
@@ -22,11 +22,11 @@ const Input = forwardRef<HTMLInputElement, Props>(
     const id = useId();
 
     const inputElement = (
-      <div className={cn('relative flex object-contain', wrapperClass)}>
+      <div className={cnTw('relative flex object-contain', wrapperClass)}>
         {prefixElement}
         <input
           id={id}
-          className={cn(
+          className={cnTw(
             CommonInputStyles,
             'focus-within:enabled:border-active-container-border',
             invalid && 'border-filter-border-negative',
