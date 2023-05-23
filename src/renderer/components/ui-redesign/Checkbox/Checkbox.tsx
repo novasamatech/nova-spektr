@@ -1,8 +1,8 @@
-import cn from 'classnames';
 import { ChangeEvent, PropsWithChildren } from 'react';
 
 import './styles.css';
 import { LabelText } from '@renderer/components/ui-redesign';
+import cnTw from '@renderer/shared/utils/twMerge';
 
 type Props = {
   defaultChecked?: boolean;
@@ -29,7 +29,7 @@ const Checkbox = ({
   tabIndex,
 }: PropsWithChildren<Props>) => {
   return (
-    <LabelText className={cn('flex items-center gap-x-2', !disabled && 'hover:cursor-pointer', className)}>
+    <LabelText className={cnTw('flex items-center gap-x-2', !disabled && 'hover:cursor-pointer', className)}>
       {children && position === 'left' && children}
       <input
         type="checkbox"
@@ -39,7 +39,7 @@ const Checkbox = ({
         readOnly={readOnly}
         checked={checked}
         value={value}
-        className={cn(
+        className={cnTw(
           'relative appearance-none w-4 h-4 text-button-text outline-offset-1',
           'rounded border border-filter-border bg-button-text',
           'checked:bg-icon-accent checked:border-0 checked:focus:border checked:border-icon-accent-default',

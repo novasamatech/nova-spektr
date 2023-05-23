@@ -1,9 +1,9 @@
 import { decodeAddress } from '@polkadot/util-crypto';
 import { BrowserCodeReader, BrowserQRCodeReader, IScannerControls } from '@zxing/browser';
-import cn from 'classnames';
 import init, { Decoder, EncodingPacket } from 'raptorq';
 import { useEffect, useRef } from 'react';
 
+import cnTw from '@renderer/shared/utils/twMerge';
 import { validateSignerFormat } from '@renderer/shared/utils/strings';
 import { CryptoTypeString } from '@renderer/domain/shared-kernel';
 import { useI18n } from '@renderer/context/I18nContext';
@@ -262,7 +262,7 @@ const QrReader = ({ size = 300, cameraId, className, onCameraList, onResult, onP
       controls={false}
       ref={videoRef}
       data-testid="qr-reader"
-      className={cn('object-cover -scale-x-100', className)}
+      className={cnTw('object-cover -scale-x-100', className)}
       style={{ width: size + 'px', height: size + 'px' }}
     >
       {t('qrReader.videoError')}

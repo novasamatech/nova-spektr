@@ -1,10 +1,11 @@
-import cn from 'classnames';
 import React from 'react';
+
+import cnTw from '@renderer/shared/utils/twMerge';
 
 // eslint-plugin-react has problems with DetailedHTMLProps so this workaround needed
 // https://github.com/jsx-eslint/eslint-plugin-react/issues/3284
 interface LabelProps extends React.DetailedHTMLProps<React.LabelHTMLAttributes<HTMLLabelElement>, HTMLLabelElement> {}
 
 export const LabelText = ({ className = 'text-text-primary', ...props }: LabelProps) => (
-  <label className={cn('text-footnote font-inter', className)} {...props} />
+  <label className={cnTw('text-footnote font-inter', className)} {...props} />
 );

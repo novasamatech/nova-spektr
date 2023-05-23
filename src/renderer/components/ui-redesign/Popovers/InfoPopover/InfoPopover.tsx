@@ -1,7 +1,7 @@
 import { Menu } from '@headlessui/react';
-import cn from 'classnames';
 import React, { PropsWithChildren } from 'react';
 
+import cnTw from '@renderer/shared/utils/twMerge';
 import MenuPopover, { Props as MenuPopoverProps } from '../MenuPopover/MenuPopover';
 import { FootnoteText } from '@renderer/components/ui-redesign';
 
@@ -47,7 +47,7 @@ const InfoPopover = ({ data, className, children, ...popoverProps }: PropsWithCh
   ));
 
   return (
-    <MenuPopover content={popoverContent} className={cn('min-w-[220px]', className)} {...popoverProps}>
+    <MenuPopover content={popoverContent} className={cnTw('min-w-[220px]', className)} {...popoverProps}>
       {children}
     </MenuPopover>
   );

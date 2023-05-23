@@ -1,9 +1,9 @@
 import { hexToU8a, u8aToHex } from '@polkadot/util';
 import { BrowserCodeReader, BrowserQRCodeReader, IScannerControls } from '@zxing/browser';
 import { useEffect, useRef } from 'react';
-import cn from 'classnames';
 import init from 'raptorq';
 
+import cnTw from '@renderer/shared/utils/twMerge';
 import { useI18n } from '@renderer/context/I18nContext';
 import { ErrorFields } from './common/constants';
 import { QR_READER_ERRORS } from './common/errors';
@@ -139,7 +139,7 @@ const QrSignatureReader = ({ size = 300, cameraId, className, onCameraList, onRe
       controls={false}
       ref={videoRef}
       data-testid="qr-reader"
-      className={cn('object-cover -scale-x-100', className)}
+      className={cnTw('object-cover -scale-x-100', className)}
       style={videoStyle}
     >
       {t('qrReader.videoError')}

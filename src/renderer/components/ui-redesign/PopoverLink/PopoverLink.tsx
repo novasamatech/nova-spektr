@@ -1,6 +1,6 @@
 import { PropsWithChildren } from 'react';
-import cn from 'classnames';
 
+import cnTw from '@renderer/shared/utils/twMerge';
 import { IconNames } from '@renderer/components/ui/Icon/data';
 import { Icon } from '@renderer/components/ui';
 
@@ -20,7 +20,7 @@ const PopoverLink = ({
 }: PropsWithChildren<Props>) => {
   return (
     <span
-      className={cn(
+      className={cnTw(
         'text-action-text-default hover:text-action-text cursor-pointer',
         fontClass,
         showIcon && 'flex items-center gap-x-1',

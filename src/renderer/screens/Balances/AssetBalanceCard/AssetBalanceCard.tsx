@@ -20,9 +20,7 @@ const AssetBalanceDetail = ({ asset, value, label }: DetailProp) => (
     <HelpText as="dt" className="text-text-tertiary">
       {label}
     </HelpText>
-    <dd>
-      {value ? <BalanceNew value={value} asset={asset} showIcon={false} /> : <Shimmering width={150} height={20} />}
-    </dd>
+    <dd>{value ? <BalanceNew value={value} asset={asset} /> : <Shimmering width={150} height={20} />}</dd>
   </div>
 );
 
@@ -82,7 +80,7 @@ const AssetBalanceCard = ({ asset, chainId, balance, canMakeActions, onReceiveCl
           <BodyText>{asset.name}</BodyText>
         </div>
         {balance?.free ? (
-          <BalanceNew value={totalAmount(balance)} asset={asset} showIcon={false} />
+          <BalanceNew value={totalAmount(balance)} asset={asset} />
         ) : (
           <Shimmering width={82} height={20} />
         )}
