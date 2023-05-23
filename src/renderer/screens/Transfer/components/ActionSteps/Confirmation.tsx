@@ -7,6 +7,7 @@ import { ExtendedChain } from '@renderer/services/network/common/types';
 import { useI18n } from '@renderer/context/I18nContext';
 import Details from '../Details';
 import DetailWithLabel from '@renderer/components/common/DetailsWithLabel/DetailWithLabel';
+import { Icon } from '@renderer/components/ui';
 
 const AmountFontStyle = 'font-manrope text-text-primary text-[32px] leading-[36px] font-bold';
 
@@ -74,7 +75,9 @@ const Confirmation = ({ account, connection, transaction, signatory, description
           {t('operation.goBackButton')}
         </Button>
 
-        <Button onClick={onResult}>{t('operation.signButton')}</Button>
+        <Button prefixElement={<Icon name="vault" size={14} />} onClick={onResult}>
+          {t('operation.signButton')}
+        </Button>
       </div>
     </div>
   );
