@@ -37,17 +37,13 @@ jobs:
           bash .github/bump_release_version.sh ${{ steps.previoustag.outputs.tag }} ${{ github.event.inputs.component }}
 
       - name: Update package.json version
-        uses: jossef/action-set-json-field@v2
-        with:
-          file: package.json
-          field: version
-          value: ${{ steps.bump.outputs.major }}.${{ steps.bump.outputs.minor }}.${{ steps.bump.outputs.patch }}
+        run: node scripts/updatePackageVersion.js ${{ steps.bump.outputs.major }}.${{ steps.bump.outputs.minor }}.${{ steps.bump.outputs.patch }}
 
       - name: ➡️ Make pull request
         uses: ./.github/workflows/make-pull-request
         with:
           commit-path: package.json
-          commit-message: 'ci: version in package.json'
+          commit-message: 'ci: update version in package.json'
           branch-name: rc/${{ steps.bump.outputs.major }}.${{ steps.bump.outputs.minor }}.${{ steps.bump.outputs.patch }}
           destination_branch: main
           pr-title: Release candidate - ${{ steps.bump.outputs.major }}.${{ steps.bump.outputs.minor }}.${{ steps.bump.outputs.patch }}
