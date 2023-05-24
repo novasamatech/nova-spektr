@@ -41,7 +41,7 @@ const AccountAddress = ({
   signType,
   name,
   size = 16,
-  addressFont = 'text-footnote text-text-secondary',
+  addressFont,
   type = 'full',
   canCopy = true,
   showIcon = true,
@@ -54,9 +54,17 @@ const AccountAddress = ({
   const nameContent = name && <p className={cnTw(addressFont, 'font-inter')}>{name}</p>;
 
   const addressContent = typeIsAdaptive ? (
-    <Truncate className={cnTw(addressFont, 'font-inter')} ellipsis="..." start={4} end={4} text={addressToShow} />
+    <Truncate
+      className={cnTw('font-inter text-footnote text-text-secondary', addressFont)}
+      ellipsis="..."
+      start={4}
+      end={4}
+      text={addressToShow}
+    />
   ) : (
-    <p className={cnTw('inline-block break-all font-inter', addressFont)}>{addressToShow}</p>
+    <p className={cnTw('inline-block break-all font-inter text-footnote text-text-secondary', addressFont)}>
+      {addressToShow}
+    </p>
   );
 
   return (

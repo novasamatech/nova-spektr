@@ -698,13 +698,16 @@
     "wallet": "Wallet"
   },
   "wallets": {
-    "addByParitySignerButton": "Add wallet by Parity Signer",
-    "addMultisigWalletButton": "Create Multisig wallet",
-    "addWatchOnlyButton": "Add Watch-Only wallet",
+    "addButtonTitle": "Add",
+    "addMultisig": "Multisig",
+    "addPolkadotVault": "Polkadot Vault",
+    "addWatchOnly": "Watch-only",
     "multishardLabel": "Multishard",
     "multisigLabel": "Multisig",
     "paritySignerLabel": "Parity Signer",
-    "searchPlaceholder": "Search for a wallet",
+    "searchPlaceholder": "Search",
+    "shards": "Shards",
+    "title": "Wallets",
     "watchOnlyLabel": "Watch-only"
   },
   "welcome": {

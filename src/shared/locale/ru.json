@@ -698,13 +698,16 @@
     "wallet": "Кошелёк"
   },
   "wallets": {
-    "addByParitySignerButton": "Добавить кошелёк из Parity Signer",
-    "addMultisigWalletButton": "Добавить multisig кошелёк",
-    "addWatchOnlyButton": "Добавить Watch-Only кошелёк",
+    "addButtonTitle": "Добавить",
+    "addMultisig": "Multisig",
+    "addPolkadotVault": "Polkadot Vault",
+    "addWatchOnly": "Watch-only",
     "multishardLabel": "Multishard",
     "multisigLabel": "Multisig",
     "paritySignerLabel": "Parity Signer",
-    "searchPlaceholder": "Поиск кошелька",
+    "searchPlaceholder": "Поиск",
+    "shards": "Shards",
+    "title": "Кошельки",
     "watchOnlyLabel": "Watch-only"
   },
   "welcome": {

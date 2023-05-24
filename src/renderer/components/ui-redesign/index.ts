@@ -24,10 +24,13 @@ import Checkbox from './Checkbox/Checkbox';
 import MultiSelect from './Dropdowns/MultiSelect/MultiSelect';
 import MenuPopover from './Popovers/MenuPopover/MenuPopover';
 import IconButton from './Buttons/IconButton/IconButton';
+import SearchInput from './Inputs/SearchInput';
+import DropdownButton from './Dropdowns/DropdownButton/DropdownButton';
 
 export {
   Input,
   PasswordInput,
+  SearchInput,
   InputHint,
   Button,
   ButtonBack,
@@ -50,4 +53,5 @@ export {
   PopoverLink,
   Checkbox,
   MultiSelect,
+  DropdownButton,
 };

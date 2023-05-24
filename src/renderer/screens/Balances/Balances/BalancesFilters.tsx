@@ -1,6 +1,6 @@
-import { Icon, Switch } from '@renderer/components/ui';
+import { Switch } from '@renderer/components/ui';
 import { useI18n } from '@renderer/context/I18nContext';
-import { IconButton, Input, MenuPopover } from '@renderer/components/ui-redesign';
+import { IconButton, MenuPopover, SearchInput } from '@renderer/components/ui-redesign';
 
 type Props = {
   searchQuery: string;
@@ -13,11 +13,10 @@ const BalancesFilters = ({ searchQuery, onSearchChange, hideZeroBalances, onZero
 
   return (
     <div className="flex items-center gap-x-3">
-      <Input
-        prefixElement={<Icon name="search" size={16} className="absolute top-[9px] left-3" />}
+      <SearchInput
         value={searchQuery}
         placeholder={t('balances.searchPlaceholder')}
-        className="w-[230px] pl-9"
+        className="w-[230px]"
         onChange={onSearchChange}
       />
       <MenuPopover

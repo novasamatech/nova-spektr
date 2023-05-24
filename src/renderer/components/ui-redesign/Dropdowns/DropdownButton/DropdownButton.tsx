@@ -52,13 +52,13 @@ const DropdownButton = ({ options, title, disabled, buttonProps }: Props) => {
                 {/* TODO maybe try to refactor to avoid duplicating option children */}
                 {'to' in opt ? (
                   <Link to={opt.to} className="flex items-center gap-x-1.5">
-                    <Icon name={opt.iconName} size={20} className="text-icon-accent" />
-                    <FootnoteText className="text-text-secondary">{title}</FootnoteText>
+                    <Icon name={opt.iconName} size={20} className="text-icon-accent p-[3px]" />
+                    <FootnoteText className="text-text-secondary">{opt.title}</FootnoteText>
                   </Link>
                 ) : (
                   <button className="flex items-center gap-x-1.5" onClick={opt.onClick}>
                     <Icon name={opt.iconName} size={20} className="text-icon-accent" />
-                    <FootnoteText className="text-text-secondary">{title}</FootnoteText>
+                    <FootnoteText className="text-text-secondary">{opt.title}</FootnoteText>
                   </button>
                 )}
               </Menu.Item>
