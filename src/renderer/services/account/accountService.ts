@@ -10,7 +10,7 @@ export const useAccount = (): IAccountService => {
   if (!accountStorage) {
     throw new Error('=== 🔴 Account storage in not defined 🔴 ===');
   }
-  const { getAccount, getAccounts, addAccount, updateAccount, deleteAccount } = accountStorage;
+  const { getAccount, getAccounts, addAccount, updateAccount, updateAccounts, deleteAccount } = accountStorage;
 
   const getLiveAccounts = <T extends Account>(where?: Partial<T>): AccountDS[] => {
     const query = () => {
@@ -26,6 +26,9 @@ export const useAccount = (): IAccountService => {
     return useLiveQuery(query, [], []);
   };
 
+  // Only one wallet can be active at the time
+  // For watch only account or polkadot vault account would be returned array with only one element
+  // but for mutishard wallet active accounts would be all root account + all derived
   const getActiveAccounts = <T extends Account>(where?: Partial<T>): AccountDS[] => {
     const query = async () => {
       try {
@@ -42,22 +45,24 @@ export const useAccount = (): IAccountService => {
     return useLiveQuery(query, [], []);
   };
 
-  const getActiveMultisigAccounts = (): AccountDS[] => {
+  // There can be only one active mustisig account at one moment
+  const getActiveMultisigAccount = (): AccountDS | null => {
     const query = async () => {
       try {
         const accounts = await getAccounts();
 
-        return accounts.filter(
-          (account) => account.isActive && (account as MultisigAccount).creatorAccountId !== undefined,
+        return (
+          accounts.find((account) => account.isActive && (account as MultisigAccount).creatorAccountId !== undefined) ||
+          null
         );
       } catch (error) {
         console.warn('Error trying to get active multisig accounts');
 
-        return Promise.resolve([]);
+        return Promise.resolve(null);
       }
     };
 
-    return useLiveQuery(query, [], []);
+    return useLiveQuery(query, [], null);
   };
 
   // TODO: in future implement setWalletInactive
@@ -77,15 +82,59 @@ export const useAccount = (): IAccountService => {
     }
   };
 
+  const setActiveAccounts = async (accountsId: ID[]): Promise<void> => {
+    try {
+      const allAccounts = await getAccounts();
+      await deactiveAccounts(allAccounts);
+
+      const newActiveAccounts = allAccounts
+        .filter((a) => accountsId.includes(a.accountId))
+        .map((a) => ({ ...a, isActive: true }));
+      if (newActiveAccounts.length) {
+        await updateAccounts(newActiveAccounts);
+      }
+    } catch (error) {
+      console.warn('Could not set new active wallets');
+    }
+  };
+
+  const setActiveAccount = async (accountId: ID): Promise<void> => {
+    try {
+      const allAccounts = await getAccounts();
+      await deactiveAccounts(allAccounts);
+
+      const newActiveAccount = allAccounts.find((a) => a.accountId === accountId);
+      if (newActiveAccount) {
+        await updateAccount({ ...newActiveAccount, isActive: true });
+      }
+    } catch (error) {
+      console.warn('Could not set new active wallets');
+    }
+  };
+
+  const deactiveAccounts = async (accounts: AccountDS[]): Promise<void> => {
+    try {
+      const accountsToDeactivate = accounts.filter((a) => a.isActive).map((a) => ({ ...a, isActive: false }));
+
+      if (accountsToDeactivate.length) {
+        await updateAccounts(accountsToDeactivate);
+      }
+    } catch (error) {
+      console.warn('Could not deactivate wallets');
+    }
+  };
+
   return {
     getAccount,
     getAccounts,
     getLiveAccounts,
     getActiveAccounts,
-    getActiveMultisigAccounts,
+    getActiveMultisigAccount,
     toggleActiveAccount,
     addAccount,
     updateAccount,
     deleteAccount,
+    setActiveAccount,
+    setActiveAccounts,
   };
 };

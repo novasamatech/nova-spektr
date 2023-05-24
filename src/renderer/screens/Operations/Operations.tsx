@@ -4,7 +4,6 @@ import { format } from 'date-fns';
 
 import { useI18n } from '@renderer/context/I18nContext';
 import EmptyOperations from './components/EmptyState/EmptyOperations';
-import { SigningType } from '@renderer/domain/shared-kernel';
 import { useAccount } from '@renderer/services/account/accountService';
 import { MultisigAccount } from '@renderer/domain/account';
 import Operation from './components/Operation';
@@ -13,17 +12,14 @@ import { FootnoteText } from '@renderer/components/ui-redesign';
 import Filters from './components/Filters';
 import { MultisigTransactionDS } from '@renderer/services/storage';
 import { useMultisigTx } from '@renderer/services/multisigTx/multisigTxService';
-import { nonNullable } from '@renderer/shared/utils/functions';
 
 const Operations = () => {
   const { t, dateLocale } = useI18n();
-  const { getActiveAccounts } = useAccount();
+  const { getActiveMultisigAccount } = useAccount();
   const { getLiveAccountMultisigTxs } = useMultisigTx();
 
-  const accounts = getActiveAccounts({ signingType: SigningType.MULTISIG });
-  const accountsMap = new Map(accounts.map((account) => [account.accountId, account as MultisigAccount]));
-  const accountIds = accounts.map((a) => a.accountId).filter(nonNullable);
-  const txs = getLiveAccountMultisigTxs(accountIds);
+  const account = getActiveMultisigAccount();
+  const txs = getLiveAccountMultisigTxs(account?.accountId ? [account.accountId] : []);
 
   const [filteredTxs, setFilteredTxs] = useState<MultisigTransactionDS[]>(txs);
 
@@ -51,7 +47,7 @@ const Operations = () => {
                     {txs
                       .sort((a, b) => (b.dateCreated || 0) - (a.dateCreated || 0))
                       .map((tx) => (
-                        <Operation key={tx.dateCreated} tx={tx} account={accountsMap.get(tx.accountId)} />
+                        <Operation key={tx.dateCreated} tx={tx} account={account as MultisigAccount} />
                       ))}
                   </ul>
                 </section>

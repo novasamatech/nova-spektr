@@ -26,6 +26,7 @@ export const useMultisigTx = (): IMultisigTxService => {
 
   const subscribeMultisigAccount = (api: ApiPromise, account: MultisigAccount): (() => void) => {
     const intervalId = setInterval(async () => {
+      //
       const transactions = await getMultisigTxs({ accountId: account.accountId, status: MultisigTxInitStatus.SIGNING });
       const pendingTxs = await getPendingMultisigTxs(api, account.accountId);
       const currentBlockNumber = await getCurrentBlockNumber(api);

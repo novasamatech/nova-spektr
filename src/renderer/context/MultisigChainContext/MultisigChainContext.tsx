@@ -20,10 +20,10 @@ const MultisigChainContext = createContext<MultisigChainContextProps>({} as Mult
 export const MultisigChainProvider = ({ children }: PropsWithChildren) => {
   const { connections } = useNetworkContext();
   const { subscribeMultisigAccount, updateMultisigTx, getMultisigTxs } = useMultisigTx();
-  const { getActiveMultisigAccounts } = useAccount();
+  const { getActiveMultisigAccount } = useAccount();
   const { subscribeEvents } = useChainSubscription();
 
-  const accounts = getActiveMultisigAccounts();
+  const account = getActiveMultisigAccount();
 
   const eventCallback = async (
     account: MultisigAccount,
@@ -73,10 +73,10 @@ export const MultisigChainProvider = ({ children }: PropsWithChildren) => {
     const unsubscribeMultisigs: (() => void)[] = [];
     const unsubscribeEvents: UnsubscribePromise[] = [];
 
-    Object.values(connections).forEach(({ api, addressPrefix }) => {
-      if (!api?.query.multisig) return;
+    if (account) {
+      Object.values(connections).forEach(({ api, addressPrefix }) => {
+        if (!api?.query.multisig) return;
 
-      accounts.forEach((account) => {
         const unsubscribeMultisig = subscribeMultisigAccount(api, account as MultisigAccount);
         unsubscribeMultisigs.push(unsubscribeMultisig);
 
@@ -125,13 +125,13 @@ export const MultisigChainProvider = ({ children }: PropsWithChildren) => {
 
         unsubscribeEvents.push(unsubscribeCancelEvent);
       });
-    });
+    }
 
     return () => {
       unsubscribeMultisigs.forEach((unsubscribeEvent) => unsubscribeEvent());
       Promise.all(unsubscribeEvents).then(() => console.info('unsubscribed from events'));
     };
-  }, [connections, accounts.length]);
+  }, [connections, account]);
 
   return <MultisigChainContext.Provider value={{}}>{children}</MultisigChainContext.Provider>;
 };

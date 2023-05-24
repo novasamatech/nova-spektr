@@ -13,10 +13,11 @@ import { AccountDS } from '@renderer/services/storage';
 
 type Props = {
   type: WalletType;
-  wallets: WalletGroupItem;
+  wallets: WalletGroupItem[];
+  onWalletClick: (wallet: WalletGroupItem) => void;
 };
 
-const WalletGroup = ({ type, wallets }: Props) => {
+const WalletGroup = ({ type, wallets, onWalletClick }: Props) => {
   const { t } = useI18n();
 
   if (!wallets.length) {
@@ -47,7 +48,7 @@ const WalletGroup = ({ type, wallets }: Props) => {
         <Disclosure.Panel as="ul" className="flex flex-col gap-y-1 px-1 py-2">
           {wallets.map((wallet, index) => (
             <li key={index} className="hover:bg-action-background-hover rounded">
-              <button className="w-full py-1.5 px-4 flex flex-col">
+              <button className="w-full py-1.5 px-4 flex flex-col" onClick={() => onWalletClick(wallet)}>
                 {type === WalletType.MULTISHARD_PARITY_SIGNER ? (
                   <>
                     {/* TODO change font according to design */}

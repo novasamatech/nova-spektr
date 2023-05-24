@@ -6,16 +6,20 @@ import { DropdownButton, SearchInput, SmallTitleText } from '@renderer/component
 import { useI18n } from '@renderer/context/I18nContext';
 import { addWalletOptions } from '@renderer/components/layout/PrimaryLayout/Wallets/common/constants';
 import { useWalletsStructure } from '@renderer/components/layout/PrimaryLayout/Wallets/common/useWalletStructure';
-import { SigningType, WalletType } from '@renderer/domain/shared-kernel';
+import { AccountId, SigningType, WalletType } from '@renderer/domain/shared-kernel';
 import { useAccount } from '@renderer/services/account/accountService';
-import { WalletGroupType } from '@renderer/components/layout/PrimaryLayout/Wallets/common/types';
+import {
+  WalletGroupItem,
+  WalletGroupType,
+  WalletStructure,
+} from '@renderer/components/layout/PrimaryLayout/Wallets/common/types';
 import { AccountDS } from '@renderer/services/storage';
 import { includes } from '@renderer/shared/utils/strings';
 import WalletGroup from '@renderer/components/layout/PrimaryLayout/Wallets/WalletGroup';
 
 const WalletMenu = ({ children }: PropsWithChildren) => {
   const { t } = useI18n();
-  const { getLiveAccounts } = useAccount();
+  const { getLiveAccounts, setActiveAccount, setActiveAccounts } = useAccount();
 
   const [query, setQuery] = useState('');
 
@@ -46,6 +50,30 @@ const WalletMenu = ({ children }: PropsWithChildren) => {
 
   const dropdownOptions = addWalletOptions.map((o) => ({ ...o, title: t(o.title) }));
 
+  const getAllShardsIds = (wallet: WalletStructure): AccountId[] => {
+    const ids: AccountId[] = [];
+    wallet.rootAccounts.forEach((rootAcc) => {
+      ids.push(rootAcc.accountId);
+      rootAcc.chains.forEach((c) => ids.push(...c.accounts.map((a) => a.accountId)));
+    });
+
+    return ids;
+  };
+
+  const selectMultishardWallet = (wallet: WalletStructure) => {
+    const allShardsIds = getAllShardsIds(wallet);
+    setActiveAccounts(allShardsIds);
+  };
+
+  const changeActiveAccount = (wallet: WalletGroupItem, closeMenu: () => void) => {
+    closeMenu();
+    if ('rootAccounts' in wallet) {
+      selectMultishardWallet(wallet as WalletStructure);
+    } else {
+      setActiveAccount(wallet.accountId);
+    }
+  };
+
   return (
     <Popover className="relative">
       <Popover.Button className="border border-container-border bg-left-navigation-menu-background rounded-md w-full">
@@ -61,26 +89,33 @@ const WalletMenu = ({ children }: PropsWithChildren) => {
         leaveTo="opacity-0 translate-y-1"
       >
         <Popover.Panel className="absolute z-40 rounded-md bg-token-container-background border border-token-container-border shadow-card-shadow mt-2">
-          <section className={cn('relative w-[289px] bg-white')}>
-            <header className="px-5 py-3 flex items-center justify-between border-b border-divider">
-              <SmallTitleText>{t('wallets.title')}</SmallTitleText>
-              <DropdownButton
-                options={dropdownOptions}
-                buttonProps={{ className: 'w-[134px] justify-center', size: 'sm' }}
-                title={t('wallets.addButtonTitle')}
-              />
-            </header>
+          {({ close }) => (
+            <section className={cn('relative w-[289px] bg-white')}>
+              <header className="px-5 py-3 flex items-center justify-between border-b border-divider">
+                <SmallTitleText>{t('wallets.title')}</SmallTitleText>
+                <DropdownButton
+                  options={dropdownOptions}
+                  buttonProps={{ className: 'w-[134px] justify-center', size: 'sm' }}
+                  title={t('wallets.addButtonTitle')}
+                />
+              </header>
 
-            <div className="p-2 border-b border-divider">
-              <SearchInput value={query} placeholder={t('wallets.searchPlaceholder')} onChange={setQuery} />
-            </div>
+              <div className="p-2 border-b border-divider">
+                <SearchInput value={query} placeholder={t('wallets.searchPlaceholder')} onChange={setQuery} />
+              </div>
 
-            <ul className="flex flex-col divide-y divide-divider">
-              {Object.entries(walletGroups).map(([type, wallets]) => (
-                <WalletGroup key={type} type={type as WalletType} wallets={wallets} />
-              ))}
-            </ul>
-          </section>
+              <ul className="flex flex-col divide-y divide-divider">
+                {Object.entries(walletGroups).map(([type, wallets]) => (
+                  <WalletGroup
+                    key={type}
+                    type={type as WalletType}
+                    wallets={wallets}
+                    onWalletClick={(wallet) => changeActiveAccount(wallet, close)}
+                  />
+                ))}
+              </ul>
+            </section>
+          )}
         </Popover.Panel>
       </Transition>
     </Popover>

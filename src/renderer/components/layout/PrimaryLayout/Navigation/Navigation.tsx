@@ -1,13 +1,10 @@
 import cn from 'classnames';
-import { useRef, useState } from 'react';
 import { NavLink } from 'react-router-dom';
 
 import { Icon } from '@renderer/components/ui';
 import { useI18n } from '@renderer/context/I18nContext';
-import { useClickOutside } from '@renderer/shared/hooks';
 import Paths from '@renderer/routes/paths';
 import { useAccount } from '@renderer/services/account/accountService';
-import Wallets from '../Wallets/Wallets';
 import { useMultisigTx } from '@renderer/services/multisigTx/multisigTxService';
 import './Navigation.css';
 import { MultisigTxInitStatus } from '@renderer/domain/transaction';
@@ -18,11 +15,6 @@ const Navigation = () => {
   const { LocaleComponent, t } = useI18n();
   const { getActiveAccounts } = useAccount();
   const { getLiveAccountMultisigTxs } = useMultisigTx();
-
-  const walletsRef = useRef<HTMLDivElement>(null);
-  const showWalletsRef = useRef<HTMLButtonElement>(null);
-
-  const [isWalletsOpen, setIsWalletsOpen] = useState(false);
 
   const activeAccounts = getActiveAccounts();
 
@@ -47,15 +39,11 @@ const Navigation = () => {
     // { icon: <Icon name="history" />, title: 'navigation.signingDEVLabel', link: Paths.SIGNING },
   ];
 
-  useClickOutside([walletsRef, showWalletsRef], () => {
-    setIsWalletsOpen(false);
-  });
-
   return (
     <>
       <aside className="relative flex gap-y-5 flex-col w-[300px] bg-shade-5 p-5 z-30">
         <WalletMenu>
-          <ActiveAccountCard account={activeAccounts[0]} />
+          <ActiveAccountCard accounts={activeAccounts} />
         </WalletMenu>
 
         <nav className="flex-1 overflow-y-auto scrollbar">
@@ -109,15 +97,6 @@ const Navigation = () => {
           </div>
         </div>
       </aside>
-
-      <Wallets
-        ref={walletsRef}
-        className={cn(
-          'ease-in-out transition-all transform duration-200 absolute z-20 w-[350px] left-0 top-0 overflow-y-auto',
-          isWalletsOpen ? 'translate-x-[300px] opacity-100 visible' : 'translate-x-0 opacity-0 invisible',
-        )}
-        onUrlChange={() => setIsWalletsOpen(false)}
-      />
     </>
   );
 };

@@ -4,7 +4,6 @@ import { u8aToHex } from '@polkadot/util';
 import { ChainId, CryptoType, AccountId, ChainType, SigningType, Threshold } from './shared-kernel';
 import { Signatory } from '@renderer/domain/signatory';
 import { ID } from '@renderer/services/storage';
-import { ActiveAccount, RootAccount } from '@renderer/components/layout/PrimaryLayout/Wallets/common/types';
 
 export type Account = {
   walletId?: ID;
@@ -93,13 +92,4 @@ export function isMultisig(account?: Account | MultisigAccount): account is Mult
   const hasThreshold = 'threshold' in (account as MultisigAccount);
 
   return hasSignatories && hasThreshold;
-}
-
-export function isRootAccount(account?: ActiveAccount): account is RootAccount {
-  if (!account) return false;
-
-  const hasChainAccounts = 'chains' in (account as RootAccount);
-  const hasAccountsAmount = 'amount' in (account as RootAccount);
-
-  return hasChainAccounts && hasAccountsAmount;
 }
