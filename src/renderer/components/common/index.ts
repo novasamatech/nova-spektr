@@ -16,6 +16,7 @@ import Expandable from './Expandable/Expandable';
 import Deposit from './Deposit/Deposit';
 import Badge from './Badge/Badge';
 import Fee from './Fee/Fee';
+import Header from './Header/Header';
 import ExplorerLink from './ExplorerLink/ExplorerLink';
 import BalanceNew from './BalanceNew/BalanceNew';
 import AccountAddress from './AccountAddress/AccountAddress';
@@ -44,6 +45,7 @@ export {
   Message,
   Badge,
   Fee,
+  Header,
   ExplorerLink,
   BalanceNew,
   AccountAddress,

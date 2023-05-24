@@ -33,8 +33,8 @@ const Select = ({
   position = 'down',
   tabIndex,
 }: Props) => {
-  const selectedOption = options.find((option) => option.id === selectedId);
   const id = useId();
+  const selectedOption = options.find((option) => option.id === selectedId);
 
   const selectElement = (
     <Listbox disabled={disabled} value={selectedOption || {}} onChange={onChange}>
@@ -42,6 +42,7 @@ const Select = ({
         <div className={cn('relative', className)}>
           <Listbox.Button
             id={id}
+            tabIndex={tabIndex}
             className={cn(
               open && SelectButtonStyle.open,
               !open && !invalid && SelectButtonStyle.closed,
@@ -50,7 +51,6 @@ const Select = ({
               CommonInputStyles,
               'w-full flex items-center gap-x-2 justify-between pr-2',
             )}
-            tabIndex={tabIndex}
           >
             {selectedOption ? (
               typeof selectedOption.element === 'string' ? (

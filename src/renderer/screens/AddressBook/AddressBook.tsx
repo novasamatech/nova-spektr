@@ -3,9 +3,10 @@ import { useState } from 'react';
 import { Button, Icon, Input } from '@renderer/components/ui';
 import { useI18n } from '@renderer/context/I18nContext';
 import { useToggle } from '@renderer/shared/hooks';
+import { Header } from '@renderer/components/common';
+import { useContact } from '@renderer/services/contact/contactService';
 import ContactModal from './components/ContactModal';
 import ContactList from './components/ContactList';
-import { useContact } from '@renderer/services/contact/contactService';
 import EmptyContacts from './components/EmptyState/EmptyContacts';
 
 const AddressBook = () => {
@@ -19,7 +20,7 @@ const AddressBook = () => {
 
   return (
     <div className="h-full flex flex-col gap-y-9 relative">
-      <h1 className="font-semibold text-2xl text-neutral mt-5 px-5">{t('addressBook.title')}</h1>
+      <Header title={t('addressBook.title')} />
 
       <div className="overflow-y-auto flex-1">
         <section className="w-[900px] p-5 mx-auto bg-shade-2 rounded-2lg mb-36 last:mb-0">

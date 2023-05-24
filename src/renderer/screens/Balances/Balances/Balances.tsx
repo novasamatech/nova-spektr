@@ -16,6 +16,7 @@ import { useAccount } from '@renderer/services/account/accountService';
 import { isMultisig } from '@renderer/domain/account';
 import BalancesFilters from '@renderer/screens/Balances/Balances/BalancesFilters';
 import { BodyText } from '@renderer/components/ui-redesign';
+import { Header } from '@renderer/components/common';
 
 const Balances = () => {
   const { t } = useI18n();
@@ -90,15 +91,14 @@ const Balances = () => {
   return (
     <>
       <div className="h-full flex flex-col items-start relative bg-main-app-background">
-        <header className="w-full px-6 py-4.5 bg-top-nav-bar-background border-b border-container-border flex justify-between">
-          <h1 className="font-semibold text-2xl text-neutral mt-5 px-5">{t('balances.title')}</h1>
+        <Header title={t('balances.title')}>
           <BalancesFilters
             searchQuery={query}
             hideZeroBalances={hideZeroBalance}
             onSearchChange={setQuery}
             onZeroBalancesChange={updateHideZeroBalance}
           />
-        </header>
+        </Header>
 
         <section className="overflow-y-scroll mt-4 flex flex-col gap-y-4 w-[800px] mx-auto h-full">
           {accountIds.length > 0 && (
