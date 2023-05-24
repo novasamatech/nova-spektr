@@ -14,13 +14,13 @@ import { useAccount } from '@renderer/services/account/accountService';
 import { toAddress } from '@renderer/shared/utils/address';
 import { SigningBadges } from '@renderer/shared/utils/constants';
 
-export type ReceivePayload = {
+export type DataPayload = {
   chain: Chain;
   asset: Asset;
 };
 
 type Props = {
-  data: ReceivePayload;
+  data: DataPayload;
   isOpen: boolean;
   onClose: () => void;
 };
