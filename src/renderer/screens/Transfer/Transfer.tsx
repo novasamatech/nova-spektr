@@ -177,7 +177,7 @@ const Transfer = ({ assetId, chainId }: Props) => {
           <>
             <Scanning
               chainId={chainId}
-              account={account}
+              account={signatory || account}
               transaction={multisigTx || transferTx}
               isQrExpired={isQrExpired}
               countdown={countdown}
