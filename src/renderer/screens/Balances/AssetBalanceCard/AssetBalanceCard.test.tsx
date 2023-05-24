@@ -14,8 +14,6 @@ jest.mock('@renderer/context/I18nContext', () => ({
   }),
 }));
 
-jest.mock('@renderer/screens/Transfer/Transfer', () => 'TransferButton');
-
 const testChain = chains[0] as Chain;
 const testAsset = testChain.assets[0];
 
@@ -67,7 +65,7 @@ describe('screen/Balances/AssetBalanceCard', () => {
     });
 
     const buttons = screen.getAllByRole('button');
-    buttons[1].click();
+    buttons[2].click();
 
     expect(spyReceive).toBeCalled();
   });
