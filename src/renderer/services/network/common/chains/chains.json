@@ -19,6 +19,10 @@
         "name": "Parity node"
       },
       {
+        "url": "wss://rpc-polkadot.luckyfriday.io",
+        "name": "LuckyFriday node"
+      },
+      {
         "url": "wss://polkadot.api.onfinality.io/public-ws",
         "name": "OnFinality node"
       },
@@ -98,6 +102,10 @@
       {
         "url": "wss://rpc.ibp.network/kusama",
         "name": "IBP network node"
+      },
+      {
+        "url": "wss://rpc-kusama.luckyfriday.io",
+        "name": "LuckyFriday node"
       },
       {
         "url": "wss://1rpc.io/ksm",
@@ -5289,78 +5297,6 @@
     ],
     "icon": "https://raw.githubusercontent.com/nova-wallet/nova-spektr-utils/main/icons/v1/chains/Bittensor.svg",
     "addressPrefix": 42
-  },
-  {
-    "chainId": "0x89d3ec46d2fb43ef5a9713833373d5ea666b092fa8fd68fbc34596036571b907",
-    "parentId": "0x91b171bb158e2d3848fa23a9f1c25182fb8e20313b2c1eb49219da7a70ce90c3",
-    "name": "Equilibrium",
-    "assets": [
-      {
-        "assetId": 0,
-        "symbol": "EQ",
-        "precision": 9,
-        "type": "equilibrium",
-        "priceId": "equilibrium-token",
-        "icon": "https://raw.githubusercontent.com/nova-wallet/nova-spektr-utils/main/icons/v1/assets/white/Equilibrium_(EQ).svg",
-        "typeExtras": {
-          "assetId": "25969"
-        },
-        "name": "Equilibrium"
-      },
-      {
-        "assetId": 1,
-        "symbol": "DOT",
-        "precision": 10,
-        "type": "equilibrium",
-        "priceId": "polkadot",
-        "icon": "https://raw.githubusercontent.com/nova-wallet/nova-spektr-utils/main/icons/v1/assets/white/Polkadot_(DOT).svg",
-        "typeExtras": {
-          "assetId": "6582132"
-        },
-        "name": "Polkadot"
-      },
-      {
-        "assetId": 2,
-        "symbol": "EQD",
-        "precision": 9,
-        "type": "equilibrium",
-        "priceId": "tether",
-        "icon": "https://raw.githubusercontent.com/nova-wallet/nova-spektr-utils/main/icons/v1/assets/white/EQD.svg",
-        "typeExtras": {
-          "assetId": "6648164"
-        },
-        "name": "Equilibrium USD"
-      }
-    ],
-    "nodes": [
-      {
-        "url": "wss://node.pol.equilibrium.io",
-        "name": "Equilibrium node"
-      },
-      {
-        "url": "wss://equilibrium-rpc.dwellir.com",
-        "name": "Dwellir node"
-      }
-    ],
-    "explorers": [
-      {
-        "name": "Subscan",
-        "extrinsic": "https://equilibrium.subscan.io/extrinsic/{hash}",
-        "account": "https://equilibrium.subscan.io/account/{address}",
-        "event": null,
-        "multisig": "https://equilibrium.subscan.io/multisig_extrinsic/{index}?call_hash={callHash}"
-      }
-    ],
-    "icon": "https://raw.githubusercontent.com/nova-wallet/nova-spektr-utils/main/icons/v1/chains/Equilibrium.svg",
-    "addressPrefix": 68,
-    "externalApi": {
-      "history": [
-        {
-          "type": "subquery",
-          "url": "https://api.subquery.network/sq/nova-wallet/nova-wallet-equilibrium"
-        }
-      ]
-    }
   },
   {
     "chainId": "0xe358eb1d11b31255a286c12e44fe6780b7edb171d657905a97e39f71d9c6c3ee",
