@@ -3,6 +3,7 @@ import { Identicon } from '@renderer/components/ui';
 import { SigningType, AccountId, Address } from '@renderer/domain/shared-kernel';
 import { toShortAddress, toAddress } from '@renderer/shared/utils/address';
 import Truncate from '../Truncate/Truncate';
+import { FootnoteText } from '@renderer/components/ui-redesign';
 
 type AddressType = 'full' | 'short' | 'adaptive';
 type AddressStyle = 'small' | 'normal' | 'large';
@@ -62,7 +63,7 @@ const ChainAddress = ({
 
   const nameContent = (name || subName) && (
     <div className="flex flex-col items-start">
-      <p className="text-neutral text-sm font-semibold leading-4">{name}</p>
+      <FootnoteText className="text-text-primary">{name}</FootnoteText>
       {subName && <p className="text-neutral-variant text-2xs">{subName}</p>}
     </div>
   );

@@ -9,7 +9,7 @@ type Props = Omit<InputProps, 'prefixElement'>;
 
 const SearchInput = forwardRef<HTMLInputElement, Props>(({ className, ...props }, ref) => (
   <Input
-    prefixElement={<Icon name="search" size={16} className="absolute top-[9px] left-3" />}
+    prefixElement={<Icon name="search" size={16} className="mr-2" />}
     className={cnTw('pl-9', className)}
     {...props}
   />
