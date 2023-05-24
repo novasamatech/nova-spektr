@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { keyBy } from 'lodash';
 
 import { BodyText, CaptionText, HeadlineText } from '@renderer/components/ui-redesign';
-import { Icon, Identicon } from '@renderer/components/ui';
+import { Icon, Identicon, Shimmering } from '@renderer/components/ui';
 import { isMultisig } from '@renderer/domain/account';
 import { ChainId, SigningType, WalletType } from '@renderer/domain/shared-kernel';
 import { GroupIcons, GroupLabels } from '@renderer/components/layout/PrimaryLayout/Wallets/common/constants';
@@ -41,7 +41,7 @@ type Props = {
 };
 
 const ActiveAccountCard = ({ accounts }: Props) => {
-  if (!accounts.length) return null;
+  if (!accounts.length) return <Shimmering height={52} className="w-full" />;
 
   const { getChainsData } = useChains();
   const { t } = useI18n();
