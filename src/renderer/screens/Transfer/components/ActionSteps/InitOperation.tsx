@@ -17,7 +17,7 @@ type Props = {
   api: ApiPromise;
   chainId: ChainId;
   network: string;
-  asset: Asset;
+  asset?: Asset;
   nativeToken: Asset;
   explorers?: Explorer[];
   addressPrefix: number;
@@ -108,17 +108,19 @@ const InitOperation = ({
         />
       )}
 
-      <TransferForm
-        api={api}
-        chainId={chainId}
-        network={network}
-        account={activeAccount?.value}
-        signer={activeSignatory?.value}
-        asset={asset}
-        nativeToken={nativeToken}
-        addressPrefix={addressPrefix}
-        onSubmit={onResult}
-      />
+      {asset && (
+        <TransferForm
+          api={api}
+          chainId={chainId}
+          network={network}
+          account={activeAccount?.value}
+          signer={activeSignatory?.value}
+          asset={asset}
+          nativeToken={nativeToken}
+          addressPrefix={addressPrefix}
+          onSubmit={onResult}
+        />
+      )}
     </div>
   );
 };

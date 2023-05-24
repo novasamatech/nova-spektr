@@ -11,11 +11,12 @@ import { useToggle } from '@renderer/shared/hooks';
 import { useChains } from '@renderer/services/network/chainsService';
 import { useSettingsStorage } from '@renderer/services/settings/settingsStorage';
 import NetworkBalances from '../NetworkBalances/NetworkBalances';
-import ReceiveModal, { ReceivePayload } from '../ReceiveModal/ReceiveModal';
+import ReceiveModal, { DataPayload } from '../ReceiveModal/ReceiveModal';
 import { useAccount } from '@renderer/services/account/accountService';
 import { isMultisig } from '@renderer/domain/account';
 import BalancesFilters from '@renderer/screens/Balances/Balances/BalancesFilters';
 import { BodyText } from '@renderer/components/ui-redesign';
+import Transfer from '@renderer/screens/Transfer/Transfer';
 
 const Balances = () => {
   const { t } = useI18n();
@@ -23,9 +24,10 @@ const Balances = () => {
   const [query, setQuery] = useState('');
   const [accountIds, setAccountIds] = useState<AccountId[]>([]);
   const [usedChains, setUsedChains] = useState<Record<ChainId, boolean>>({});
-  const [receiveData, setReceiveData] = useState<ReceivePayload>();
+  const [data, setData] = useState<DataPayload>();
 
   const [isReceiveOpen, toggleReceive] = useToggle();
+  const [isTransferOpen, toggleTransfer] = useToggle();
 
   const { connections } = useNetworkContext();
   const { getActiveAccounts } = useAccount();
@@ -83,8 +85,13 @@ const Balances = () => {
   };
 
   const onReceive = (chain: Chain) => (asset: Asset) => {
-    setReceiveData({ chain, asset });
+    setData({ chain, asset });
     toggleReceive();
+  };
+
+  const onTransfer = (chain: Chain) => (asset: Asset) => {
+    setData({ chain, asset });
+    toggleTransfer();
   };
 
   return (
@@ -113,6 +120,7 @@ const Balances = () => {
                   accountIds={accountIds}
                   canMakeActions={checkCanMakeActions()}
                   onReceiveClick={onReceive(chain)}
+                  onTransferClick={onTransfer(chain)}
                 />
               ))}
 
@@ -129,7 +137,15 @@ const Balances = () => {
         </section>
       </div>
 
-      {receiveData && <ReceiveModal data={receiveData} isOpen={isReceiveOpen} onClose={toggleReceive} />}
+      {data && <ReceiveModal data={data} isOpen={isReceiveOpen} onClose={toggleReceive} />}
+      {data && (
+        <Transfer
+          assetId={data?.asset.assetId}
+          chainId={data?.chain.chainId}
+          isOpen={isTransferOpen}
+          onClose={toggleTransfer}
+        />
+      )}
     </>
   );
 };

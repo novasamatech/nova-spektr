@@ -17,7 +17,7 @@ import { useTransaction } from '@renderer/services/transaction/transactionServic
 import { useMultisigTx } from '@renderer/services/multisigTx/multisigTxService';
 import { getAssetId } from '@renderer/shared/utils/assets';
 import { MultisigAccount, Account, isMultisig } from '@renderer/domain/account';
-import { Button, AmountInput, FootnoteText, Input, InputHint } from '@renderer/components/ui-redesign';
+import { Button, AmountInput, Input, InputHint } from '@renderer/components/ui-redesign';
 
 const DESCRIPTION_MAX_LENGTH = 120;
 
@@ -256,7 +256,7 @@ export const TransferForm = ({ api, chainId, account, signer, asset, nativeToken
                 className="w-full"
                 invalid={Boolean(error)}
                 value={value}
-                label={<FootnoteText>{t('transfer.recipientLabel')}</FootnoteText>}
+                label={t('transfer.recipientLabel')}
                 placeholder={t('transfer.recipientLabel')}
                 onChange={onChange}
               />
