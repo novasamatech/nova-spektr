@@ -1,6 +1,6 @@
-import { Menu } from '@headlessui/react';
 import cn from 'classnames';
-import React, { PropsWithChildren } from 'react';
+import { PropsWithChildren, ReactNode } from 'react';
+import { Menu } from '@headlessui/react';
 
 import MenuPopover, { Props as MenuPopoverProps } from '../MenuPopover/MenuPopover';
 import { FootnoteText } from '@renderer/components/ui-redesign';
@@ -11,7 +11,7 @@ type Props = {
 
 type MenuItem = {
   id: string;
-  value: string | React.ReactElement;
+  value: string | ReactNode;
 };
 
 export type InfoSection = {
@@ -35,7 +35,7 @@ const InfoPopover = ({ data, className, children, ...popoverProps }: PropsWithCh
           ) : (
             <Menu.Item key={id}>
               {/* // TODO check out why headless ui menu item type dont support className */}
-              <div className="rounded-xs text-shade-100 ui-active:bg-primary ui-active:text-white h-8 w-full">
+              <div className="rounded-md text-shade-100 ui-active:bg-primary ui-active:text-white h-8 w-full">
                 {value}
               </div>
             </Menu.Item>

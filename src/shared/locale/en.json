@@ -471,7 +471,7 @@
       "unstakeLabel": "Unstake"
     },
     "badges": {
-      "unstakeDescription": "Your tokens are being unstaked at the moment",
+      "unstakeDescription": "Your tokens are being unstaked<br />at the moment",
       "unstakeTitle": "Unstaking"
     },
     "bond": {
@@ -556,6 +556,7 @@
     "overview": {
       "aboutStakingLabel": "About { asset } staking",
       "accountTableHeader": "Accounts",
+      "actionsTitle": "Accounts",
       "emptyFilterDescription": "Try another filter parameters",
       "emptyFilterLabel": "No results",
       "filterButton": "Filters",

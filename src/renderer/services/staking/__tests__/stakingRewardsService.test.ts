@@ -17,6 +17,6 @@ describe('services/staking/stakingTxService', () => {
     } = renderHook(() => useStakingRewards([]));
 
     expect(current.rewards).toBeDefined();
-    expect(current.isLoading).toBeDefined();
+    expect(current.isRewardsLoading).toBeDefined();
   });
 });

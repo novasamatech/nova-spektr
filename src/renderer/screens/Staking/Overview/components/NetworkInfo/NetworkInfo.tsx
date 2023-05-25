@@ -8,8 +8,6 @@ import { useChains } from '@renderer/services/network/chainsService';
 import { useSettingsStorage } from '@renderer/services/settings/settingsStorage';
 import { Chain } from '@renderer/domain/chain';
 import { useToggle } from '@renderer/shared/hooks';
-import { useStakingRewards } from '@renderer/services/staking/stakingRewardsService';
-import { Address } from '@renderer/domain/shared-kernel';
 import { useI18n } from '@renderer/context/I18nContext';
 import { Shimmering, Balance } from '@renderer/components/ui';
 
@@ -18,12 +16,19 @@ const getTotal = (values: string[]): BN => {
 };
 
 type Props = {
-  addresses: Address[];
+  rewards: string[];
+  isRewardsLoading: boolean;
   totalStakes: string[];
   onNetworkChange: (value: Chain) => void;
 };
 
-const NetworkInfo = ({ addresses, totalStakes, children, onNetworkChange }: PropsWithChildren<Props>) => {
+const NetworkInfo = ({
+  rewards,
+  isRewardsLoading,
+  totalStakes,
+  children,
+  onNetworkChange,
+}: PropsWithChildren<Props>) => {
   const { t } = useI18n();
   const { sortChains, getChainsData } = useChains();
   const { getStakingNetwork } = useSettingsStorage();
@@ -31,8 +36,6 @@ const NetworkInfo = ({ addresses, totalStakes, children, onNetworkChange }: Prop
   const [isChildrenShown, toggleChildren] = useToggle();
   const [networks, setNetworks] = useState<DropdownOption<Chain>[]>([]);
   const [activeNetwork, setActiveNetwork] = useState<DropdownResult<Chain>>();
-
-  const { rewards, isLoading } = useStakingRewards(addresses);
 
   useEffect(() => {
     getChainsData().then((chainsData) => {
@@ -64,9 +67,9 @@ const NetworkInfo = ({ addresses, totalStakes, children, onNetworkChange }: Prop
 
   const totalInfo = [
     {
-      isLoading: isLoading,
+      isLoading: isRewardsLoading,
       title: t('staking.overview.totalRewardsLabel'),
-      amount: getTotal(Object.values(rewards)).toString(),
+      amount: getTotal(rewards).toString(),
       asset: getRelaychainAsset(activeNetwork?.value.assets),
     },
     {
@@ -91,7 +94,7 @@ const NetworkInfo = ({ addresses, totalStakes, children, onNetworkChange }: Prop
         />
         {totalInfo.map(({ isLoading, title, amount, asset }) =>
           isLoading || !asset ? (
-            <div key={title} className="flex flex-col items-end gap-y-1" data-testid="total-loading">
+            <div key={title} className="flex flex-col gap-y-1" data-testid="total-loading">
               <Shimmering width={80} height={14} />
               <Shimmering width={122} height={22} />
             </div>

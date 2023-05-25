@@ -1,14 +1,14 @@
 import { render, screen } from '@testing-library/react';
 
-import Filter from './Filter';
+import Actions from './Actions';
 jest.mock('@renderer/context/I18nContext', () => ({
   useI18n: jest.fn().mockReturnValue({
     t: (key: string) => key,
   }),
 }));
-describe('screens/Staking/Overview/Filter', () => {
+describe('screens/Staking/Overview/Actions', () => {
   test('should create component', () => {
-    render(<Filter />);
+    render(<Actions />);
 
     const text = screen.getByText('staking.overview.filterButton');
     expect(text).toBeInTheDocument();

@@ -26,6 +26,6 @@ export const useStakingRewards = (addresses: Address[]): IStakingRewardsService 
 
   return {
     rewards: rewards || addressMap,
-    isLoading: loading,
+    isRewardsLoading: loading,
   };
 };

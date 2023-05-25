@@ -30,7 +30,7 @@ const Checkbox = ({
 }: PropsWithChildren<Props>) => {
   return (
     <LabelText className={cn('flex items-center gap-x-2', !disabled && 'hover:cursor-pointer', className)}>
-      {children && position === 'left' && children}
+      {Boolean(children) && position === 'left' && children}
       <input
         type="checkbox"
         name="checkbox"
@@ -50,7 +50,7 @@ const Checkbox = ({
         tabIndex={tabIndex}
         onChange={onChange}
       />
-      {children && position === 'right' && children}
+      {Boolean(children) && position === 'right' && children}
     </LabelText>
   );
 };

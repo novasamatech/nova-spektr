@@ -1,6 +1,7 @@
 import { render, screen } from '@testing-library/react';
 
 import StakingList from './StakingList';
+import noop from 'lodash/noop';
 
 jest.mock('@renderer/context/I18nContext', () => ({
   useI18n: jest.fn().mockReturnValue({
@@ -10,15 +11,13 @@ jest.mock('@renderer/context/I18nContext', () => ({
 
 describe('screens/Staking/Overview/StakingList', () => {
   test('should create component', () => {
-    render(<StakingList />);
+    render(<StakingList stakeInfo={[]} onCheckValidators={noop} />);
 
-    const account = screen.getByText('LIST');
-    // const account = screen.getByText('staking.overview.accountTableHeader');
-    // const rewards = screen.getByText('staking.overview.rewardsTableHeader');
-    // const stake = screen.getByText('staking.overview.stakeTableHeader');
-    expect(account).toBeInTheDocument();
-    // expect(account).toBeInTheDocument();
-    // expect(rewards).toBeInTheDocument();
-    // expect(stake).toBeInTheDocument();
+    const accountHeader = screen.getByText('staking.overview.accountTableHeader');
+    const stakeHeader = screen.getByText('staking.overview.stakeTableHeader');
+    const rewardsHeader = screen.getByText('staking.overview.rewardsTableHeader');
+    expect(accountHeader).toBeInTheDocument();
+    expect(stakeHeader).toBeInTheDocument();
+    expect(rewardsHeader).toBeInTheDocument();
   });
 });

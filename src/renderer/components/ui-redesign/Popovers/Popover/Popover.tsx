@@ -2,13 +2,20 @@ import { Popover as Popup, Transition } from '@headlessui/react';
 import { Fragment, PropsWithChildren, ReactNode, useId, useRef, useState } from 'react';
 import cn from 'classnames';
 
-export type PopoverProps = {
+type Props = {
   content: ReactNode;
   offsetPx?: number;
+  position?: string;
   contentClass?: string;
 };
 
-const Popover = ({ content, children, offsetPx = 10, contentClass }: PropsWithChildren<PopoverProps>) => {
+const Popover = ({
+  content,
+  children,
+  offsetPx = 10,
+  position = 'left-0 top-full',
+  contentClass,
+}: PropsWithChildren<Props>) => {
   const id = useId();
   const ref = useRef<HTMLDivElement>(null);
   const [isOpen, setIsOpen] = useState(false);
@@ -39,10 +46,13 @@ const Popover = ({ content, children, offsetPx = 10, contentClass }: PropsWithCh
       >
         <Popup.Panel
           id={id}
-          style={{ top: '100%', marginTop: offsetPx + 'px' }}
-          className="absolute z-20 rounded-md bg-token-container-background border border-token-container-border shadow-card-shadow"
+          style={{ marginTop: offsetPx + 'px' }}
+          className={cn(
+            'absolute z-20 rounded-md bg-token-container-background border border-token-container-border shadow-card-shadow',
+            position,
+          )}
         >
-          <div className={cn('relative w-[275px]', contentClass)}>{content}</div>
+          <div className={cn('relative', contentClass)}>{content}</div>
         </Popup.Panel>
       </Transition>
     </Popup>

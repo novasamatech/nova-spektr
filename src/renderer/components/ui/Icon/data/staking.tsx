@@ -3,10 +3,9 @@ import ChangeValidatorsImg, { ReactComponent as ChangeValidatorsSvg } from '@ima
 import SetValidatorsImg, { ReactComponent as SetValidatorsSvg } from '@images/staking/set-validators.svg';
 import ReturnToStakeImg, { ReactComponent as ReturnToStakeSvg } from '@images/staking/return-to-stake.svg';
 import UnstakeImg, { ReactComponent as UnstakeSvg } from '@images/staking/unstake.svg';
-import DestinationImg, { ReactComponent as DestinationSvg } from '@images/staking/reward-destination.svg';
+import DestinationImg, { ReactComponent as DestinationSvg } from '@images/staking/rewards-destination.svg';
 import StakeMoreImg, { ReactComponent as StakeMoreSvg } from '@images/staking/stake-more.svg';
 import StartStakingImg, { ReactComponent as StartStakingSvg } from '@images/staking/start-staking.svg';
-import StopStakingImg, { ReactComponent as StopStakingSvg } from '@images/staking/stop-staking.svg';
 
 const StakingImages = {
   redeem: { svg: RedeemSvg, img: RedeemImg },
@@ -17,7 +16,6 @@ const StakingImages = {
   destination: { svg: DestinationSvg, img: DestinationImg },
   stakeMore: { svg: StakeMoreSvg, img: StakeMoreImg },
   startStaking: { svg: StartStakingSvg, img: StartStakingImg },
-  stopStaking: { svg: StopStakingSvg, img: StopStakingImg },
 } as const;
 
 export type Staking = keyof typeof StakingImages;

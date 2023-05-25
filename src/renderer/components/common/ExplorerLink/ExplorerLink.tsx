@@ -21,7 +21,7 @@ const ExplorerLink = ({ explorer, address, addressPrefix }: Props) => {
 
   return (
     <a
-      className={cn('rounded-2lg flex items-center gap-x-2 p-2 select-none transition')}
+      className={cn('rounded-2lg flex items-center gap-x-2 p-2 select-none')}
       href={account.replace('{address}', toAddress(address, { prefix: addressPrefix }))}
       rel="noopener noreferrer"
       target="_blank"

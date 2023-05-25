@@ -471,7 +471,7 @@
       "unstakeLabel": "Отменить стейк"
     },
     "badges": {
-      "unstakeDescription": "Ваши токены сейчас выводятся из стейка",
+      "unstakeDescription": "Ваши токены сейчас<br />выводятся из стейка",
       "unstakeTitle": "Вывод из стейка"
     },
     "bond": {
@@ -556,6 +556,7 @@
     "overview": {
       "aboutStakingLabel": "О стейкинге { asset } токенов",
       "accountTableHeader": "Аккаунты",
+      "actionsTitle": "Аккаунты",
       "emptyFilterDescription": "Попробуйте другие параметры фильтра",
       "emptyFilterLabel": "Результаты не найдены",
       "filterButton": "Фильтры",

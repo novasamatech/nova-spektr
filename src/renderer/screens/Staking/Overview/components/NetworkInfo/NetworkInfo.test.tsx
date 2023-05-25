@@ -3,8 +3,6 @@ import noop from 'lodash/noop';
 
 import NetworkInfo from './NetworkInfo';
 import { Chain } from '@renderer/domain/chain';
-import { TEST_ADDRESS } from '@renderer/shared/utils/constants';
-import { useStakingRewards } from '@renderer/services/staking/stakingRewardsService';
 
 jest.mock('@renderer/context/I18nContext', () => ({
   useI18n: jest.fn().mockReturnValue({
@@ -32,13 +30,6 @@ jest.mock('@renderer/services/settings/settingsStorage', () => ({
   }),
 }));
 
-jest.mock('@renderer/services/staking/stakingRewardsService', () => ({
-  useStakingRewards: jest.fn().mockReturnValue({
-    rewards: {},
-    isLoading: false,
-  }),
-}));
-
 describe('screens/Staking/Overview/NetworkInfo', () => {
   afterEach(() => {
     jest.clearAllMocks();
@@ -47,7 +38,7 @@ describe('screens/Staking/Overview/NetworkInfo', () => {
   test('should create component', async () => {
     await act(async () => {
       render(
-        <NetworkInfo addresses={[TEST_ADDRESS]} totalStakes={['10000']} onNetworkChange={noop}>
+        <NetworkInfo rewards={[]} isRewardsLoading={false} totalStakes={['10000']} onNetworkChange={noop}>
           children
         </NetworkInfo>,
       );
@@ -64,7 +55,7 @@ describe('screens/Staking/Overview/NetworkInfo', () => {
   test('should expand children', async () => {
     await act(async () => {
       render(
-        <NetworkInfo totalStakes={[]} addresses={[]} onNetworkChange={noop}>
+        <NetworkInfo rewards={['100', '200']} isRewardsLoading={true} totalStakes={[]} onNetworkChange={noop}>
           children
         </NetworkInfo>,
       );
@@ -81,12 +72,8 @@ describe('screens/Staking/Overview/NetworkInfo', () => {
   });
 
   test('should render loading state', async () => {
-    (useStakingRewards as jest.Mock).mockReturnValue({
-      rewards: {},
-      isLoading: true,
-    });
     await act(async () => {
-      render(<NetworkInfo totalStakes={[]} addresses={[]} onNetworkChange={noop} />);
+      render(<NetworkInfo rewards={[]} isRewardsLoading={true} totalStakes={[]} onNetworkChange={noop} />);
     });
 
     const balances = screen.queryByText('assetBalance.number');
@@ -96,17 +83,14 @@ describe('screens/Staking/Overview/NetworkInfo', () => {
   });
 
   test('should render total values', async () => {
-    const accounts = [TEST_ADDRESS, '5GmedEVixRJoE8TjMePLqz7DnnQG1d5517sXdiAvAF2t7EYW'];
-    (useStakingRewards as jest.Mock).mockReturnValue({
-      isLoading: false,
-      rewards: {
-        [accounts[0]]: '360854699511',
-        [accounts[1]]: '519204699511',
-      },
-    });
     await act(async () => {
       render(
-        <NetworkInfo totalStakes={['201494854699', '401494854699']} addresses={accounts} onNetworkChange={noop} />,
+        <NetworkInfo
+          rewards={['360854699511', '519204699511']}
+          isRewardsLoading={false}
+          totalStakes={['201494854699', '401494854699']}
+          onNetworkChange={noop}
+        />,
       );
     });
 
