@@ -369,15 +369,12 @@
     "videoError": "Your browser doesn't support video"
   },
   "receive": {
-    "chainLabel1": "token to this address on the",
-    "chainLabel2": "{name} (Parachain)",
-    "chainLabel3": "network",
+    "chainLabel": "token to this address on the {name} (Parachain) network!",
     "copyAddressButton": "Copy address",
     "explorerLinkLabel": "Link to {name}",
-    "on": "on",
     "selectWalletPlaceholder": "Select a wallet...",
     "sendOnlyLabel": "Send only",
-    "title": "Receive"
+    "title": "Receive {asset} on"
   },
   "settings": {
     "matrix": {
@@ -708,7 +705,7 @@
     "addMultisig": "Multisig",
     "addPolkadotVault": "Polkadot Vault",
     "addWatchOnly": "Watch-only",
-    "multishardLabel": "Multishard",
+    "multishardLabel": "Multishardd",
     "multisigLabel": "Multisig",
     "paritySignerLabel": "Parity Signer",
     "searchPlaceholder": "Search",

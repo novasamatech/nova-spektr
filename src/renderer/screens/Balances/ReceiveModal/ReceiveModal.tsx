@@ -1,9 +1,9 @@
 import cn from 'classnames';
 import { useEffect, useState } from 'react';
 
-import { QrTextGenerator } from '@renderer/components/common';
+import { AccountAddress, QrTextGenerator } from '@renderer/components/common';
 import { ExplorerIcons } from '@renderer/components/common/Explorers/common/constants';
-import { ChainAddress, BaseModal, Button, Dropdown, Icon } from '@renderer/components/ui';
+import { Icon } from '@renderer/components/ui';
 import { DropdownOption, DropdownResult } from '@renderer/components/ui/Dropdowns/common/types';
 import { useI18n } from '@renderer/context/I18nContext';
 import { Asset } from '@renderer/domain/asset';
@@ -12,7 +12,9 @@ import { SigningType } from '@renderer/domain/shared-kernel';
 import { copyToClipboard } from '@renderer/shared/utils/strings';
 import { useAccount } from '@renderer/services/account/accountService';
 import { toAddress } from '@renderer/shared/utils/address';
-import { SigningBadges } from '@renderer/shared/utils/constants';
+import { BaseModal, Button, FootnoteText, Select } from '@renderer/components/ui-redesign';
+import OperationModalTitle from '@renderer/screens/Operations/components/OperationModalTitle';
+import { HelpText } from '@renderer/components/ui-redesign/Typography';
 
 export type DataPayload = {
   chain: Chain;
@@ -42,16 +44,15 @@ const ReceiveModal = ({ data, isOpen, onClose }: Props) => {
       if (isWatchOnly || isWrongChain) return acc;
 
       const element = (
-        <div className="grid grid-rows-2 grid-flow-col gap-x-2.5">
-          <Icon className="row-span-2 self-center" name={SigningBadges[account.signingType]} size={34} />
-          <p className="text-left text-neutral text-lg font-semibold leading-5">{account.name}</p>
-          <ChainAddress
-            type="short"
-            accountId={account.accountId}
-            addressPrefix={data.chain.addressPrefix}
-            canCopy={false}
-          />
-        </div>
+        <AccountAddress
+          type="short"
+          accountId={account.accountId}
+          addressPrefix={data.chain.addressPrefix}
+          name={account.name}
+          size={20}
+          canCopy={false}
+          showIcon
+        />
       );
 
       return acc.concat({ id: index.toString(), value: index, element });
@@ -72,78 +73,63 @@ const ReceiveModal = ({ data, isOpen, onClose }: Props) => {
   const qrCodePayload = `substrate:${address}:${accountId}`;
 
   return (
-    <BaseModal closeButton title={t('receive.title')} isOpen={isOpen} onClose={onClose}>
-      <div className="flex flex-col items-center max-w-[550px]">
-        <div className="flex mt-4 mb-6 text-neutral font-semibold">
-          <div className="flex items-center justify-center bg-shade-70 border border-shade-20 rounded-full w-6 h-6">
-            <img src={data.asset.icon} alt="" width={16} height={16} />
-          </div>
-          <span className="ml-1 uppercase">{data.asset.symbol}</span>
-          <span className="mx-2.5 text-neutral-variant">{t('receive.on')}</span>
-          <img src={data.chain.icon} alt="" width={24} height={24} />
-          <span className="ml-1">{data.chain.name}</span>
-        </div>
+    <BaseModal
+      title={
+        <OperationModalTitle title={t('receive.title', { asset: data.asset.symbol })} chainId={data.chain.chainId} />
+      }
+      contentClass="pb-6 px-4 pt-4 flex flex-col items-center"
+      closeButton
+      isOpen={isOpen}
+      onClose={onClose}
+    >
+      <>
+        <Select
+          placeholder={t('receive.selectWalletPlaceholder')}
+          className="w-full mb-6"
+          disabled={activeAccountsOptions.length === 1}
+          selectedId={activeAccount?.id}
+          options={activeAccountsOptions}
+          onChange={setActiveAccount}
+        />
 
-        {activeAccounts.length > 1 && (
-          <Dropdown
-            weight="lg"
-            placeholder={t('receive.selectWalletPlaceholder')}
-            className="w-full mb-2.5"
-            activeId={activeAccount?.id}
-            options={activeAccountsOptions}
-            onChange={setActiveAccount}
-          />
+        <FootnoteText className="w-[240px] mb-4" align="center">
+          {/* eslint-disable-next-line i18next/no-literal-string */}
+          {t('receive.sendOnlyLabel')} {data.asset.symbol} ({data.asset.name}){' '}
+          {t('receive.chainLabel', { name: data.chain.name })}
+        </FootnoteText>
+
+        <QrTextGenerator
+          skipEncoding
+          className={cn('mb-4', !activeAccount && 'invisible')}
+          payload={qrCodePayload}
+          size={240}
+        />
+
+        {(data.chain.explorers || []).length > 0 && (
+          <ul className="flex gap-x-2 mb-4">
+            {data.chain.explorers?.map(({ name, account }) => (
+              <li aria-label={t('receive.explorerLinkLabel', { name })} key={name} className="flex">
+                <a
+                  href={account?.replace('{address}', address)}
+                  rel="noopener noreferrer"
+                  target="_blank"
+                  className="flex py-1 px-1.5 w-6 h-6"
+                >
+                  <Icon size={16} as="img" name={ExplorerIcons[name]} />
+                </a>
+              </li>
+            ))}
+          </ul>
         )}
 
-        <div className="w-full bg-shade-2 rounded-2lg overflow-hidden">
-          <div className="flex flex-col items-center pb-2.5 rounded-b-2lg bg-shade-5">
-            <QrTextGenerator
-              skipEncoding
-              className={cn('mt-10 mb-6', !activeAccount && 'invisible')}
-              payload={qrCodePayload}
-              size={280}
-              bgColor="#F1F1F1"
-            />
+        <HelpText className="w-[240px] mb-2 break-all" align="center">
+          {toAddress(accountId, { prefix })}
+        </HelpText>
 
-            <ChainAddress
-              className="mb-2 text-sm text-neutral-variant"
-              type="full"
-              accountId={accountId}
-              addressPrefix={prefix}
-            />
-
-            {(data.chain.explorers || []).length > 0 && (
-              <ul className="flex gap-x-3">
-                {data.chain.explorers?.map(({ name, account }) => (
-                  <li aria-label={t('receive.explorerLinkLabel', { name })} key={name}>
-                    <a href={account?.replace('{address}', address)} rel="noopener noreferrer" target="_blank">
-                      <Icon as="img" name={ExplorerIcons[name]} />
-                    </a>
-                  </li>
-                ))}
-              </ul>
-            )}
-          </div>
-
-          <div className="flex items-center gap-x-2.5 px-2.5 py-3.5 text-neutral-variant bg-shade-2">
-            <Icon name="warnCutout" size={30} />
-            <p className="uppercase text-xs leading-[14px]">
-              {t('receive.sendOnlyLabel')}{' '}
-              <span className="font-bold">
-                {/* eslint-disable-next-line i18next/no-literal-string */}
-                {data.asset.symbol} ({data.asset.name})
-              </span>{' '}
-              {t('receive.chainLabel1')}{' '}
-              <span className="font-bold">{t('receive.chainLabel2', { name: data.chain.name })}</span>{' '}
-              {t('receive.chainLabel3')}
-            </p>
-          </div>
-        </div>
-
-        <Button className="mt-5" variant="fill" pallet="primary" weight="lg" onClick={() => copyToClipboard(address)}>
+        <Button variant="text" size="sm" onClick={() => copyToClipboard(address)}>
           {t('receive.copyAddressButton')}
         </Button>
-      </div>
+      </>
     </BaseModal>
   );
 };

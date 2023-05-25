@@ -369,15 +369,12 @@
     "videoError": "Браузер не поддерживает видео"
   },
   "receive": {
-    "chainLabel1": "токен на этот адрес в",
-    "chainLabel2": "{name} (Парачейн)",
-    "chainLabel3": "сети",
+    "chainLabel": "токен на этот адрес в {name} (Парачейн) сети!",
     "copyAddressButton": "Копировать адрес",
     "explorerLinkLabel": "Ссылка на {name}",
-    "on": "в",
     "selectWalletPlaceholder": "Выберите кошелек...",
     "sendOnlyLabel": "Отправляйте только",
-    "title": "Получить"
+    "title": "Получить {asset} на"
   },
   "settings": {
     "matrix": {

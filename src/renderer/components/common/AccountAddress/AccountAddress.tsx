@@ -51,7 +51,7 @@ const AccountAddress = ({
   const typeIsAdaptive = type === 'adaptive';
   const addressToShow = type === 'short' ? toShortAddress(currentAddress, symbols) : currentAddress;
 
-  const nameContent = name && <p className={cnTw(addressFont, 'font-inter')}>{name}</p>;
+  const nameContent = name && <p className={cnTw('font-inter text-footnote text-text-primary', addressFont)}>{name}</p>;
 
   const addressContent = typeIsAdaptive ? (
     <Truncate
