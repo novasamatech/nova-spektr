@@ -60,9 +60,9 @@ const Navigation = () => {
   );
 
   const NavItems: NavItemProps[] = [
-    { icon: 'balance', title: 'navigation.balancesLabel', link: Paths.BALANCES },
+    { icon: 'asset', title: 'navigation.balancesLabel', link: Paths.BALANCES },
     { icon: 'staking', title: 'navigation.stakingLabel', link: Paths.STAKING },
-    { icon: 'book', title: 'navigation.addressBookLabel', link: Paths.ADDRESS_BOOK },
+    { icon: 'addressBook', title: 'navigation.addressBookLabel', link: Paths.ADDRESS_BOOK },
     {
       icon: 'operations',
       title: 'navigation.mstOperationLabel',
@@ -163,7 +163,7 @@ const Navigation = () => {
         </nav>
 
         <div className="flex flex-col gap-2">
-          <NavItem icon={'bell'} title={'navigation.notificationsLabel'} link={Paths.NOTIFICATIONS} />
+          <NavItem icon={'notification'} title={'navigation.notificationsLabel'} link={Paths.NOTIFICATIONS} />
           <NavItem icon={'settings'} title={'navigation.settingsLabel'} link={Paths.SETTINGS} />
         </div>
       </aside>
