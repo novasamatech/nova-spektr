@@ -75,7 +75,7 @@
   },
   "fallbackScreen": {
     "message": "Что-то пошло не так",
-    "omniLogoAlt": "Логотип Omni Enterprise",
+    "omniLogoAlt": "Логотип Nova Spektr",
     "reloadButton": "Перезагрузить"
   },
   "general": {
@@ -236,7 +236,7 @@
       "sliderAltText2": "Открыта вкладка 'Ключи'",
       "sliderAltText3": "Сгенерированный QR код в Parity Signer",
       "sliderLabel1": "Откройте <strong>Parity Signer</strong> на своем смартфоне",
-      "sliderLabel2": "Перейдите во вкладку “<strong>Keys</strong>”. Выберите <strong>аккаунты</strong>,<br />которые вы хотите добавить в Omni Enterprise",
+      "sliderLabel2": "Перейдите во вкладку “<strong>Keys</strong>”. Выберите <strong>аккаунты</strong>,<br />которые вы хотите добавить в Nova Spektr",
       "sliderLabel3": "Parity Signer сгенерирует специальный <strong>QR код</strong> для сканирования",
       "someOldAccountDescription": "Некоторые аккаунты были уже отсканированны ранее",
       "someOldAccountLabel": "Не все аккаунты добавлены",
@@ -265,7 +265,7 @@
       "accountAddressError": "Некорректный адрес, пожалуйста введите или скопируйте адрес заново",
       "accountAddressPlaceholder": "Введите или вставьте адрес аккаунта",
       "addWatchOnlyDescription1": "Отследить любой кошелек не указывая",
-      "addWatchOnlyDescription2": "приватный ключ в Omni Enterprise",
+      "addWatchOnlyDescription2": "приватный ключ в Nova Spektr",
       "addWatchOnlyLabel": "Добавить Watch-Only кошелёк",
       "addressAndNameRequiredError": "Type address and name",
       "addressRequiredError": "Type or paste address",
@@ -724,9 +724,9 @@
     "addWatchOnlyAlt": "Иконка онбординга Watch-Only",
     "addWatchOnlyAreaLabel": "Добавить Watch-Only кошелёк",
     "addWatchOnlyButton": "Добавить Watch-Only кошелёк",
-    "addWatchOnlyLabel": "Track the activity of any wallet without injecting your private key to Omni Enterprise.",
+    "addWatchOnlyLabel": "Track the activity of any wallet without injecting your private key to Nova Spektr.",
     "ledgerImageAlt": "Иконка онбординга с Ledger",
-    "omniEnterpriseLabel": "Omni Enterprise",
+    "omniEnterpriseLabel": "Nova Spektr",
     "welcomeToLabel": "Добро пожаловать в"
   }
 }

@@ -75,7 +75,7 @@
   },
   "fallbackScreen": {
     "message": "Something went wrong",
-    "omniLogoAlt": "Omni Enterprise logo",
+    "omniLogoAlt": "Nova Spektr logo",
     "reloadButton": "Reload"
   },
   "general": {
@@ -236,7 +236,7 @@
       "sliderAltText2": "'Keys' tab is opened with appropriate account",
       "sliderAltText3": "Parity Signer built-in QR code",
       "sliderLabel1": "Open the <strong>Parity Signer</strong> application on your smartphone",
-      "sliderLabel2": "Go to “<strong>Keys</strong>” tab. Select <strong>accounts</strong>,<br />you would like to add to Omni Enterprise",
+      "sliderLabel2": "Go to “<strong>Keys</strong>” tab. Select <strong>accounts</strong>,<br />you would like to add to Nova Spektr",
       "sliderLabel3": "Parity Signer will provide you a <strong>QR code</strong> for scanning",
       "someOldAccountDescription": "Some accounts were scanned and added recently",
       "someOldAccountLabel": "Not all accounts added",
@@ -265,7 +265,7 @@
       "accountAddressError": "The entered address is not a valid one, please type or paste it again",
       "accountAddressPlaceholder": "Enter or paste your account address",
       "addWatchOnlyDescription1": "Track the activity of any wallet without injecting",
-      "addWatchOnlyDescription2": "your private key to Omni Enterprise",
+      "addWatchOnlyDescription2": "your private key to Nova Spektr",
       "addWatchOnlyLabel": "Add Watch-Only Wallet",
       "addressAndNameRequiredError": "Type address and name",
       "addressRequiredError": "Type or paste address",
@@ -724,9 +724,9 @@
     "addWatchOnlyAlt": "Icon of Watch-Only option",
     "addWatchOnlyAreaLabel": "Add Watch-Only wallet",
     "addWatchOnlyButton": "Add Watch-Only wallet",
-    "addWatchOnlyLabel": "Track the activity of any wallet without injecting your private key to Omni Enterprise.",
+    "addWatchOnlyLabel": "Track the activity of any wallet without injecting your private key to Nova Spektr.",
     "ledgerImageAlt": "Icon of Ledger option",
-    "omniEnterpriseLabel": "Omni Enterprise",
+    "omniEnterpriseLabel": "Nova Spektr",
     "welcomeToLabel": "Welcome to"
   }
 }
