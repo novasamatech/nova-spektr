@@ -89,6 +89,7 @@
     },
     "input": {
       "amountLabel": "Сумма",
+      "availableLabel": "Доступно",
       "signerLabel": "Выберите подписанта",
       "transferableLabel": "Доступно"
     },
@@ -282,6 +283,7 @@
     "cancelTitle": "Отменить ",
     "continueButton": "Продолжить",
     "details": {
+      "amount": "количество",
       "callData": "Call Data",
       "callHash": "Call Hash",
       "controller": "Контроллер",
@@ -292,8 +294,10 @@
       "payee": "Payee",
       "recipient": "Получатель",
       "rejectReason": "Причина отмены",
+      "sender": "Отправитель",
       "timePoint": "Time Point",
-      "validators": "Валидаторы"
+      "validators": "Валидаторы",
+      "wallet": "Кошелёк"
     },
     "detailsTitle": "Детали",
     "explorerLink": "Просмотреть в обозревателе",
@@ -685,9 +689,11 @@
     "requiredAmountError": "Пожалуйста, введите сумму",
     "requiredDescriptionError": "Пожалуйста, заполните описание транзакции",
     "requiredRecipientError": "Пожалуйста, введите адрес получателя",
+    "senderLabel": "Отправитель",
+    "signatoryLabel": "Подписант",
     "startSigningButton": "Подписать в Parity Signer",
     "successMessage": "Транзакция отправлена!",
-    "title": "Переводы"
+    "title": "Перевод { asset } в сети"
   },
   "transferDetails": {
     "fromNetwork": "Из сети",

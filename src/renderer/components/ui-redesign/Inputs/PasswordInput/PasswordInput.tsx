@@ -18,7 +18,7 @@ const PasswordInput = forwardRef<HTMLInputElement, Props>(({ ...props }, ref) =>
       label={t('settings.matrix.passwordLabel')}
       placeholder={t('settings.matrix.passwordPlaceholder')}
       suffixElement={
-        <button className="absolute mt-1.5 mr-2.5 right-0 text-icon-default" onClick={toggleVisibility}>
+        <button className="mr-2.5 text-icon-default" onClick={toggleVisibility}>
           <Icon name={isHidden ? 'eyeSlashed' : 'eye'} size={20} alt={t('settings.matrix.passwordVisibilityButton')} />
         </button>
       }

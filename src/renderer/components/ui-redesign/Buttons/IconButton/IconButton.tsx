@@ -1,6 +1,6 @@
 import { ComponentProps, MouseEvent } from 'react';
-import cn from 'classnames';
 
+import cnTw from '@renderer/shared/utils/twMerge';
 import Icon from '../../../ui/Icon/Icon';
 
 type IconProps = ComponentProps<typeof Icon>;
@@ -12,7 +12,7 @@ export const IconButtonStyle =
 
 const IconButton = ({ onClick, size = 16, className, ariaLabel, ...iconProps }: Props) => {
   return (
-    <button type="button" className={cn(IconButtonStyle, className)} aria-label={ariaLabel} onClick={onClick}>
+    <button type="button" className={cnTw(IconButtonStyle, className)} aria-label={ariaLabel} onClick={onClick}>
       <Icon size={size} className="text-inherit" {...iconProps} />
     </button>
   );

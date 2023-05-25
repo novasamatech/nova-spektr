@@ -25,7 +25,6 @@ const apyToMonthlyRate = (apy: number) => {
 };
 
 const AboutStaking = ({ api, era, asset, validators }: Props) => {
-  console.log(validators);
   const { t } = useI18n();
 
   const { getMinNominatorBond, getUnbondingPeriod, getTotalStaked } = useStakingData();

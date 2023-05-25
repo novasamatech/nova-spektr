@@ -97,5 +97,5 @@ module.exports = {
       },
     ],
   },
-  ignorePatterns: ['node_modules', 'coverage.txt', 'junit.xml', 'jest-unit-results.json'],
+  ignorePatterns: ['node_modules', 'coverage.txt', 'junit.xml', 'jest-unit-results.json', 'package.json'],
 };

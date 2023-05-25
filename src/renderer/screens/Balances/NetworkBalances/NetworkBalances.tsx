@@ -24,6 +24,7 @@ type Props = {
   accountIds: AccountId[];
   canMakeActions?: boolean;
   onReceiveClick?: (asset: Asset) => void;
+  onTransferClick?: (asset: Asset) => void;
 };
 
 const sumValues = (firstValue?: string, secondValue?: string): string => {
@@ -55,6 +56,7 @@ const NetworkBalances = ({
   searchSymbolOnly,
   canMakeActions,
   onReceiveClick,
+  onTransferClick,
 }: Props) => {
   const { t } = useI18n();
   const [isCardShown, toggleCard] = useToggle();
@@ -118,11 +120,11 @@ const NetworkBalances = ({
           {filteredAssets.map((asset) => (
             <AssetBalanceCard
               key={asset.assetId}
-              chainId={chain.chainId}
               asset={asset}
               balance={balancesObject[asset.assetId.toString()]}
               canMakeActions={canMakeActions}
               onReceiveClick={() => onReceiveClick?.(asset)}
+              onTransferClick={() => onTransferClick?.(asset)}
             />
           ))}
         </ul>

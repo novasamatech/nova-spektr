@@ -1,7 +1,7 @@
 {
   "name": "omni-enterprise",
   "description": "Polkadot Enterprise application",
-  "version": "0.3.3",
+  "version": "0.4.1",
   "main": "./release/build/main.js",
   "license": "MIT",
   "author": {
@@ -10,24 +10,18 @@
   "scripts": {
     "start": "pnpm clean:build && concurrently \"pnpm start:renderer\" \"pnpm start:main\" && watch",
     "start:dev": "pnpm clean:build && concurrently \"pnpm start:renderer:dev\" \"pnpm start:main:dev\" && watch",
-
     "start:electron": "electron .",
-
     "start:renderer": "cross-env NODE_ENV=staging CHAINS_FILE=chains pnpm webpack:renderer:stage",
     "start:renderer:dev": "cross-env NODE_ENV=development CHAINS_FILE=chains-dev pnpm webpack:renderer:dev",
-
     "start:main": "cross-env NODE_ENV=staging pnpm r webpack:main:stage start:electron",
     "start:main:dev": "cross-env NODE_ENV=development pnpm r webpack:main:dev start:electron",
     "watch": "nodemon --watch src/main --watch src/renderer/bridge --watch src/shared --ignore src/main/resources --ext \"*\" --exec",
-
     "webpack:renderer:dev": "webpack serve --config webpack/webpack.renderer.dev.ts",
     "webpack:renderer:stage": "webpack serve --config webpack/webpack.renderer.stage.ts",
     "webpack:renderer:prod": "webpack --config webpack/webpack.renderer.prod.ts",
-
     "webpack:main:dev": "webpack --config webpack/webpack.main.dev.ts",
     "webpack:main:stage": "webpack --config webpack/webpack.main.stage.ts",
     "webpack:main:prod": "webpack --config webpack/webpack.main.prod.ts",
-
     "build": "cross-env NODE_ENV=production CHAINS_FILE=chains pnpm r clean:prod webpack:renderer:prod webpack:main:prod",
     "postbuild": "node scripts/postbuild.js",
     "dist": "electron-builder -p never",
@@ -61,17 +55,17 @@
     "@headlessui/react": "^1.6.5",
     "@matrix-org/olm": "https://gitlab.matrix.org/api/v4/projects/27/packages/npm/@matrix-org/olm/-/@matrix-org/olm-3.2.12.tgz",
     "@polkadot/api": "^10.7.1",
-    "@polkadot/keyring": "^10.3.1",
-    "@polkadot/react-identicon": "^2.8.2",
+    "@polkadot/keyring": "^12.2.1",
+    "@polkadot/react-identicon": "^3.4.1",
     "@polkadot/rpc-provider": "^10.7.1",
     "@polkadot/types": "^10.7.1",
-    "@polkadot/util": "^10.3.1",
-    "@polkadot/util-crypto": "^10.3.1",
+    "@polkadot/util": "^12.2.1",
+    "@polkadot/util-crypto": "^12.2.1",
     "@substrate/connect": "^0.7.26",
-    "@substrate/txwrapper-orml": "^5.0.0",
-    "@substrate/txwrapper-polkadot": "^5.0.0",
-    "@zxing/browser": "^0.1.1",
-    "@zxing/library": "^0.19.1",
+    "@substrate/txwrapper-orml": "^6.0.0",
+    "@substrate/txwrapper-polkadot": "^6.0.0",
+    "@zxing/browser": "^0.1.3",
+    "@zxing/library": "^0.20.0",
     "bignumber.js": "^9.0.2",
     "binary-parser": "^2.2.1",
     "buffer": "^6.0.3",
@@ -87,7 +81,7 @@
     "lodash": "^4.17.21",
     "parity-scale-codec": "^0.6.1",
     "qrcode-generator": "^1.4.4",
-    "raptorq": "^1.7.21",
+    "raptorq": "^1.7.22",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-error-boundary": "^3.1.4",
@@ -97,6 +91,7 @@
     "stream-browserify": "^3.0.0",
     "styled-components": "^5.3.6",
     "swiper": "^8.3.2",
+    "tailwind-merge": "^1.12.0",
     "tailwindcss": "^3.2.4",
     "units-css": "^0.4.0"
   },

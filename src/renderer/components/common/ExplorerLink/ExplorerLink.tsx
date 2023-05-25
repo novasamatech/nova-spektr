@@ -1,5 +1,4 @@
-import cn from 'classnames';
-
+import cnTw from '@renderer/shared/utils/twMerge';
 import { toAddress } from '@renderer/shared/utils/address';
 import { Icon } from '@renderer/components/ui';
 import { DefaultExplorer, ExplorerIcons } from '@renderer/components/common/Explorers/common/constants';
@@ -21,7 +20,7 @@ const ExplorerLink = ({ explorer, address, addressPrefix }: Props) => {
 
   return (
     <a
-      className={cn('rounded-2lg flex items-center gap-x-2 p-2 select-none')}
+      className={cnTw('rounded-2lg flex items-center gap-x-2 p-2 select-none')}
       href={account.replace('{address}', toAddress(address, { prefix: addressPrefix }))}
       rel="noopener noreferrer"
       target="_blank"

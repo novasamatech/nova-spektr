@@ -26,7 +26,7 @@ const TransactionAmount = ({ tx, ...balanceProps }: Props & BalanceProps) => {
 
   if (!asset || !value) return null;
 
-  return <BalanceNew value={value} asset={asset} {...balanceProps} />;
+  return <BalanceNew value={value} asset={asset} showIcon {...balanceProps} />;
 };
 
 export default TransactionAmount;

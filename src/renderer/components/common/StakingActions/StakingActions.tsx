@@ -1,7 +1,7 @@
 import { useState } from 'react';
-import cn from 'classnames';
 import { Trans } from 'react-i18next';
 
+import cnTw from '@renderer/shared/utils/twMerge';
 import { BaseModal, Button, Icon } from '@renderer/components/ui';
 import { useI18n } from '@renderer/context/I18nContext';
 import { Stake } from '@renderer/domain/stake';
@@ -140,7 +140,7 @@ const StakingActions = ({ stakes, className, onNavigate }: Props) => {
   };
 
   return (
-    <div className={cn('shadow-surface bg-white rounded-2lg border-2 border-shade-10', className)}>
+    <div className={cnTw('shadow-surface bg-white rounded-2lg border-2 border-shade-10', className)}>
       <ul className="flex gap-x-1 p-2.5">
         {Object.entries(actionsSummary).map(([key, value]) => {
           if (stakes.length !== value) return null;
@@ -149,7 +149,7 @@ const StakingActions = ({ stakes, className, onNavigate }: Props) => {
           return (
             <li key={key} className="font-semibold text-sm text-primary w-[105px]">
               <button
-                className={cn(
+                className={cnTw(
                   'flex flex-col justify-between items-center rounded-2lg h-full w-full p-1 transition',
                   'hover:bg-shade-10 focus:bg-shade-10',
                 )}

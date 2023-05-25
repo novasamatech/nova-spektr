@@ -57,13 +57,6 @@ describe('screen/Balances/AssetBalanceCard', () => {
     expect(buttons.length).toEqual(1);
   });
 
-  test('should init transfer', () => {
-    render(<AssetBalanceCard {...defaultProps} canMakeActions />, { wrapper: MemoryRouter });
-
-    const transferIcon = screen.getByTestId('transferButton');
-    expect(transferIcon).toBeInTheDocument();
-  });
-
   test('should init receive', () => {
     const spyReceive = jest.fn();
 
@@ -72,7 +65,7 @@ describe('screen/Balances/AssetBalanceCard', () => {
     });
 
     const buttons = screen.getAllByRole('button');
-    buttons[1].click();
+    buttons[2].click();
 
     expect(spyReceive).toBeCalled();
   });

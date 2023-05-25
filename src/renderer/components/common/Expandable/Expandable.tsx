@@ -1,7 +1,7 @@
 import { PropsWithChildren, ReactNode } from 'react';
-import cn from 'classnames';
 import { Transition } from '@headlessui/react';
 
+import cnTw from '@renderer/shared/utils/twMerge';
 import { useToggle } from '@renderer/shared/hooks';
 import { Button, Icon } from '@renderer/components/ui';
 
@@ -31,14 +31,14 @@ const Expandable = ({
         <Button
           pallet="shade"
           variant="text"
-          className={cn('w-full', itemClass)}
+          className={cnTw('w-full', itemClass)}
           suffixElement={<Icon name={isActive || alwaysActive ? 'down' : 'up'} size={20} />}
           onClick={() => !alwaysActive && toggleIsActive()}
         >
           {item}
         </Button>
       ) : (
-        <div className={cn('flex justify-between items-center', itemClass)}>
+        <div className={cnTw('flex justify-between items-center', itemClass)}>
           {item}
           <Button
             pallet="shade"
