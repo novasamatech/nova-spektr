@@ -67,7 +67,7 @@ const Navigation = () => {
       icon: 'operations',
       title: 'navigation.mstOperationLabel',
       link: Paths.OPERATIONS,
-      badge: txs.length.toString(),
+      badge: txs.length,
     },
 
     // { icon: <Icon name="history" />, title: 'navigation.historyLabel', link: Paths.HISTORY },
