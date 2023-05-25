@@ -92,7 +92,12 @@ const Navigation = () => {
 
   return (
     <>
-      <aside className="relative flex gap-y-5 flex-col w-[300px] bg-shade-5 p-5 z-30">
+      <aside
+        className={cn(
+          'relative flex gap-y-5 flex-col w-[240px] p-4 z-30',
+          'bg-left-navigation-menu-background border-r border-r-container-border',
+        )}
+      >
         <div className={cn('rounded-xl text-white p-4', CardStyle[cardType])}>
           <div className="flex gap-x-2.5">
             <div className="relative">
