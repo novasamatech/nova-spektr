@@ -705,7 +705,7 @@
     "addMultisig": "Multisig",
     "addPolkadotVault": "Polkadot Vault",
     "addWatchOnly": "Watch-only",
-    "multishardLabel": "Multishardd",
+    "multishardLabel": "Multishard",
     "multisigLabel": "Multisig",
     "paritySignerLabel": "Parity Signer",
     "searchPlaceholder": "Search",

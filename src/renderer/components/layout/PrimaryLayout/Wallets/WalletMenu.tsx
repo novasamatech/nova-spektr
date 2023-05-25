@@ -90,12 +90,12 @@ const WalletMenu = ({ children }: PropsWithChildren) => {
       >
         <Popover.Panel className="absolute z-40 rounded-md bg-token-container-background border border-token-container-border shadow-card-shadow mt-2">
           {({ close }) => (
-            <section className={cn('relative w-[289px] bg-white')}>
+            <section className={cn('relative w-[289px] bg-card-background')}>
               <header className="px-5 py-3 flex items-center justify-between border-b border-divider">
                 <SmallTitleText>{t('wallets.title')}</SmallTitleText>
                 <DropdownButton
                   options={dropdownOptions}
-                  buttonProps={{ className: 'w-[134px] justify-center', size: 'sm' }}
+                  buttonProps={{ className: 'w-[134px] justify-center py-2 h-8.5' }}
                   title={t('wallets.addButtonTitle')}
                 />
               </header>

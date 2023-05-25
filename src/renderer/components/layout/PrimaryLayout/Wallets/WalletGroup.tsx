@@ -5,7 +5,7 @@ import { WalletGroupItem, WalletStructure } from '@renderer/components/layout/Pr
 import { Icon } from '@renderer/components/ui';
 import { WalletType } from '@renderer/domain/shared-kernel';
 import { GroupIcons, GroupLabels } from '@renderer/components/layout/PrimaryLayout/Wallets/common/constants';
-import { BodyText, CaptionText, SmallTitleText } from '@renderer/components/ui-redesign';
+import { BodyText, CaptionText } from '@renderer/components/ui-redesign';
 import { useI18n } from '@renderer/context/I18nContext';
 import { HelpText } from '@renderer/components/ui-redesign/Typography';
 import { AccountAddress } from '@renderer/components/common';
@@ -32,10 +32,8 @@ const WalletGroup = ({ type, wallets, onWalletClick }: Props) => {
             <>
               <div className="flex items-center justify-between gap-x-1.5">
                 <Icon size={14} name={GroupIcons[type]} className="text-chip-icon" />
-                <SmallTitleText className="text-chip-text uppercase" fontWeight="semibold">
-                  {t(GroupLabels[type])}
-                </SmallTitleText>
-                <CaptionText className="bg-chip-icon text-button-text px-1.5 py-0.5 rounded-full">
+                <CaptionText className="text-chip-text uppercase">{t(GroupLabels[type])}</CaptionText>
+                <CaptionText className="bg-chip-icon text-button-text px-1.5 py-0.5 h-4 rounded-full" align="center">
                   {wallets.length}
                 </CaptionText>
               </div>
@@ -51,11 +49,8 @@ const WalletGroup = ({ type, wallets, onWalletClick }: Props) => {
               <button className="w-full py-1.5 px-4 flex flex-col" onClick={() => onWalletClick(wallet)}>
                 {type === WalletType.MULTISHARD_PARITY_SIGNER ? (
                   <>
-                    {/* TODO change font according to design */}
-                    <BodyText fontWeight="medium" className="text-text-secondary">
-                      {(wallet as WalletStructure).name}
-                    </BodyText>
-                    <HelpText fontWeight="medium" className="text-text-tertiary">
+                    <BodyText className="text-text-secondary">{(wallet as WalletStructure).name}</BodyText>
+                    <HelpText className="text-text-tertiary">
                       {(wallet as WalletStructure).amount}&nbsp;{t('wallets.shards')}
                     </HelpText>
                   </>
