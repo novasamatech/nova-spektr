@@ -67,7 +67,7 @@ const LogModal = ({ isOpen, onClose, tx, account, connection }: Props) => {
       isOpen={isOpen}
       onClose={onClose}
     >
-      <div className="flex gap-2 items-center px-4 py-2">
+      <div className="flex gap-2 items-center px-4 py-3">
         {showAsset && (
           <img
             src={getIconVariant(asset?.icon || '', 'alternative')}
