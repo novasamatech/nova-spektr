@@ -13,8 +13,8 @@ exports.APP_CONFIG = {
 
   MAIN: {
     WINDOW: {
-      WIDTH: 1200,
-      HEIGHT: 768,
+      WIDTH: 1024,
+      HEIGHT: 800,
     },
   },
 
