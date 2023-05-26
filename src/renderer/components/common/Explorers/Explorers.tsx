@@ -1,7 +1,7 @@
 import { Menu } from '@headlessui/react';
-import cn from 'classnames';
 import { ReactNode, useRef } from 'react';
 
+import cnTw from '@renderer/shared/utils/twMerge';
 import { Icon } from '@renderer/components/ui';
 import { useI18n } from '@renderer/context/I18nContext';
 import { Explorer } from '@renderer/domain/chain';
@@ -29,7 +29,7 @@ const Explorers = ({ explorers, address, addressPrefix, header, className }: Pro
   return (
     <Menu>
       {({ open }) => (
-        <div className={cn('relative', open && 'z-10', className)}>
+        <div className={cnTw('relative', open && 'z-10', className)}>
           <Menu.Button
             data-testid={`explorers-${address}`}
             className="flex items-center w-5 h-5 rounded-full hover:bg-primary hover:text-white transition"
@@ -39,7 +39,7 @@ const Explorers = ({ explorers, address, addressPrefix, header, className }: Pro
           </Menu.Button>
           <Menu.Items
             ref={explorersRef}
-            className={cn(
+            className={cnTw(
               'bg-white z-10 absolute right-0 top-0 rounded-2lg',
               'shadow-surface w-max border-2 border-shade-5 p-2.5',
             )}
@@ -49,7 +49,7 @@ const Explorers = ({ explorers, address, addressPrefix, header, className }: Pro
                 <Menu.Item>
                   {({ active }) => (
                     <div
-                      className={cn(
+                      className={cnTw(
                         'rounded-2lg flex items-center gap-1 p-2.5 text-sm font-normal select-none cursor-pointer',
                         active ? 'bg-primary text-white' : 'bg-white text-neutral',
                       )}
@@ -70,7 +70,7 @@ const Explorers = ({ explorers, address, addressPrefix, header, className }: Pro
                 <Menu.Item key={name}>
                   {({ active }) => (
                     <a
-                      className={cn(
+                      className={cnTw(
                         'rounded-2lg flex items-center gap-x-2.5 p-2.5 text-sm font-normal select-none transition',
                         active ? 'bg-primary text-white' : 'bg-white text-neutral',
                       )}

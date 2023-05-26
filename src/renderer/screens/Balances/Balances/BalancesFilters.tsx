@@ -14,10 +14,10 @@ const BalancesFilters = ({ searchQuery, onSearchChange, hideZeroBalances, onZero
   return (
     <div className="flex items-center gap-x-3">
       <Input
-        prefixElement={<Icon name="search" size={16} className="absolute top-[9px] left-3" />}
+        prefixElement={<Icon name="search" size={16} className="mr-2" />}
         value={searchQuery}
         placeholder={t('balances.searchPlaceholder')}
-        className="w-[230px] pl-9"
+        className="w-[230px]"
         onChange={onSearchChange}
       />
       <MenuPopover

@@ -1,7 +1,7 @@
 import { Listbox, Transition } from '@headlessui/react';
-import cn from 'classnames';
 import { Fragment, useId } from 'react';
 
+import cnTw from '@renderer/shared/utils/twMerge';
 import { Icon } from '@renderer/components/ui';
 import { DropdownOption, DropdownResult, Position } from '../common/types';
 import CommonInputStyles from '@renderer/components/ui-redesign/Inputs/common/styles';
@@ -39,10 +39,10 @@ const Select = ({
   const selectElement = (
     <Listbox disabled={disabled} value={selectedOption || {}} onChange={onChange}>
       {({ open }) => (
-        <div className={cn('relative', className)}>
+        <div className={cnTw('relative', className)}>
           <Listbox.Button
             id={id}
-            className={cn(
+            className={cnTw(
               open && SelectButtonStyle.open,
               !open && !invalid && SelectButtonStyle.closed,
               invalid && SelectButtonStyle.invalid,
@@ -69,7 +69,7 @@ const Select = ({
           </Listbox.Button>
 
           <Transition as={Fragment} leave="transition ease-in duration-100" leaveFrom="opacity-100" leaveTo="opacity-0">
-            <Listbox.Options className={cn(OptionsContainerStyle, position !== 'auto' && ViewClass[position])}>
+            <Listbox.Options className={cnTw(OptionsContainerStyle, position !== 'auto' && ViewClass[position])}>
               {options.map(({ id, value, element }) => (
                 <Listbox.Option key={id} className={OptionStyle} value={{ id, value }}>
                   {typeof element === 'string' ? <FootnoteText>{element}</FootnoteText> : element}
@@ -88,7 +88,7 @@ const Select = ({
 
   return (
     <div className="flex flex-col gap-2">
-      <LabelText className="cursor-pointer" htmlFor={id}>
+      <LabelText className="cursor-pointer text-text-tertiary" htmlFor={id}>
         {label}
       </LabelText>
       {selectElement}

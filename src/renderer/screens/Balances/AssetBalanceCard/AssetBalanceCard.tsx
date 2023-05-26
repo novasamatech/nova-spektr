@@ -1,21 +1,16 @@
 import cn from 'classnames';
 import { KeyboardEvent, MouseEvent } from 'react';
-import { Link } from 'react-router-dom';
 
-import Paths from '@renderer/routes/paths';
-import { Icon, Shimmering } from '@renderer/components/ui';
+import { Shimmering } from '@renderer/components/ui';
 import { useI18n } from '@renderer/context/I18nContext';
 import { Asset } from '@renderer/domain/asset';
 import { Balance } from '@renderer/domain/balance';
-import { ChainId } from '@renderer/domain/shared-kernel';
 import { useToggle } from '@renderer/shared/hooks';
-import { createLink } from '@renderer/routes/utils';
 import { totalAmount, transferableAmount } from '@renderer/shared/utils/balance';
 import { KeyboardKey } from '@renderer/shared/utils/constants';
 import { BodyText, IconButton } from '@renderer/components/ui-redesign';
 import { BalanceNew } from '@renderer/components/common';
 import { HelpText } from '@renderer/components/ui-redesign/Typography';
-import { IconButtonStyle } from '@renderer/components/ui-redesign/Buttons/IconButton/IconButton';
 
 type DetailProp = { asset: Asset; value?: string; label: string; showShimmer?: boolean };
 const AssetBalanceDetail = ({ asset, value, label }: DetailProp) => (
@@ -29,19 +24,24 @@ const AssetBalanceDetail = ({ asset, value, label }: DetailProp) => (
 
 type Props = {
   asset: Asset;
-  chainId: ChainId;
   balance?: Balance;
   canMakeActions?: boolean;
   onReceiveClick?: () => void;
+  onTransferClick?: () => void;
 };
 
-const AssetBalanceCard = ({ asset, chainId, balance, canMakeActions, onReceiveClick }: Props) => {
+const AssetBalanceCard = ({ asset, balance, canMakeActions, onReceiveClick, onTransferClick }: Props) => {
   const { t } = useI18n();
   const [isExpanded, toggleExpanded] = useToggle();
 
   const onReceive = (event: MouseEvent<HTMLButtonElement>) => {
     event.stopPropagation();
     onReceiveClick?.();
+  };
+
+  const onTransfer = (event: MouseEvent<HTMLButtonElement>) => {
+    event.stopPropagation();
+    onTransferClick?.();
   };
 
   const onWrapperKeyDown = (event: KeyboardEvent<HTMLLIElement>) => {
@@ -89,13 +89,7 @@ const AssetBalanceCard = ({ asset, chainId, balance, canMakeActions, onReceiveCl
         )}
         {canMakeActions && (
           <div className="flex gap-x-2 ml-3">
-            <Link
-              to={createLink(Paths.TRANSFER, { chainId, assetId: asset.assetId })}
-              className={IconButtonStyle}
-              data-testid="transferButton"
-            >
-              <Icon name="sendArrow" size={16} className="text-inherit" />
-            </Link>
+            <IconButton name="sendArrow" onClick={onTransfer} />
             <IconButton name="receiveArrow" onClick={onReceive} />
           </div>
         )}

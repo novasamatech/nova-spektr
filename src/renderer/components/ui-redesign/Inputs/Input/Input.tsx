@@ -1,6 +1,6 @@
-import cn from 'classnames';
 import { ReactNode, ComponentPropsWithoutRef, forwardRef, useId } from 'react';
 
+import cnTw from '@renderer/shared/utils/twMerge';
 import { LabelText } from '../../Typography';
 import { HTMLInputProps } from '../common/types';
 import CommonInputStyles from '@renderer/components/ui-redesign/Inputs/common/styles';
@@ -16,27 +16,42 @@ export type Props = Pick<ComponentPropsWithoutRef<'input'>, HTMLInputProps> & {
 
 const Input = forwardRef<HTMLInputElement, Props>(
   (
-    { type = 'text', label, className, wrapperClass, invalid, prefixElement, suffixElement, onChange, ...props },
+    {
+      type = 'text',
+      label,
+      className,
+      wrapperClass,
+      invalid,
+      prefixElement,
+      suffixElement,
+      onChange,
+      disabled,
+      ...props
+    },
     ref,
   ) => {
     const id = useId();
 
     const inputElement = (
-      <div className={cn('relative flex object-contain', wrapperClass)}>
+      <div
+        className={cnTw(
+          'relative flex object-contain',
+          CommonInputStyles,
+          !disabled && 'focus-within:border-active-container-border hover:shadow-card-shadow',
+          !disabled && 'focus-within:outline focus-within:outline-2 focus-within:outline-focus-container-border',
+          invalid && 'border-filter-border-negative',
+          'disabled:bg-input-background-disabled disabled:text-text-tertiary disabled:placeholder:text-text-tertiary',
+          'flex-1 border-filter-border',
+          wrapperClass,
+        )}
+      >
         {prefixElement}
         <input
           id={id}
-          className={cn(
-            CommonInputStyles,
-            'focus-within:enabled:border-active-container-border',
-            invalid && 'border-filter-border-negative',
-            'hover:enabled:shadow-card-shadow',
-            'disabled:bg-input-background-disabled disabled:text-text-tertiary disabled:placeholder:text-text-tertiary',
-            'flex-1 border-filter-border',
-            className,
-          )}
+          className={cnTw('focus:outline-none w-full', className)}
           ref={ref}
           type={type}
+          disabled={disabled}
           onChange={(event) => onChange?.(event.target.value)}
           {...props}
         />
@@ -50,7 +65,9 @@ const Input = forwardRef<HTMLInputElement, Props>(
 
     return (
       <div className="flex flex-col gap-2">
-        <LabelText htmlFor={id}>{label}</LabelText>
+        <LabelText className="text-text-tertiary" htmlFor={id}>
+          {label}
+        </LabelText>
         {inputElement}
       </div>
     );

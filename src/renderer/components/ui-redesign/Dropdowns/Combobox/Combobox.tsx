@@ -1,7 +1,7 @@
 import { Fragment, useState } from 'react';
 import { Transition, Combobox as HeadlessCombobox } from '@headlessui/react';
-import cn from 'classnames';
 
+import cnTw from '@renderer/shared/utils/twMerge';
 import { Props as InputProps } from '@renderer/components/ui-redesign/Inputs/Input/Input';
 import { OptionsContainerStyle, OptionStyle, ViewClass } from '../common/constants';
 import { DropdownOption, DropdownResult, Position } from '../common/types';
@@ -27,7 +27,7 @@ const Combobox = ({ className, value, options, disabled, position = 'down', onCh
 
   return (
     <HeadlessCombobox by="value" value={value} disabled={disabled} onChange={onChange}>
-      <div className={cn('relative', className)}>
+      <div className={cnTw('relative', className)}>
         <HeadlessCombobox.Input
           as={Input}
           displayValue={(option: ComboboxOption) => option.value}
@@ -37,7 +37,7 @@ const Combobox = ({ className, value, options, disabled, position = 'down', onCh
         />
 
         <Transition as={Fragment} leave="transition" leaveFrom="opacity-100" leaveTo="opacity-0">
-          <HeadlessCombobox.Options className={cn(OptionsContainerStyle, position !== 'auto' && ViewClass[position])}>
+          <HeadlessCombobox.Options className={cnTw(OptionsContainerStyle, position !== 'auto' && ViewClass[position])}>
             {query.length > 0 && (
               <HeadlessCombobox.Option value={{ id: '', value: query, element: query }} className={OptionStyle}>
                 <FootnoteText>{query}</FootnoteText>

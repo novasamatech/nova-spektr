@@ -1,5 +1,4 @@
-import cn from 'classnames';
-
+import cnTw from '@renderer/shared/utils/twMerge';
 import { formatBalance } from '@renderer/shared/utils/balance';
 import { Asset } from '@renderer/domain/asset';
 import { useI18n } from '@renderer/context/I18nContext';
@@ -29,7 +28,7 @@ const BalanceNew = ({
   });
 
   const balance = (
-    <p className={cn('font-inter', className)}>
+    <p className={cnTw('font-inter', className)}>
       {balanceValue} {suffix} {symbol}
     </p>
   );
@@ -40,7 +39,7 @@ const BalanceNew = ({
 
   return (
     <div className="flex items-center gap-x-2">
-      <img src={icon} alt={name} width={28} height={28} className={cn('rounded-full', imgClassName)} />
+      <img src={icon} alt={name} width={28} height={28} className={cnTw('rounded-full', imgClassName)} />
       {balance}
     </div>
   );

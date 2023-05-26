@@ -89,6 +89,7 @@
     },
     "input": {
       "amountLabel": "Amount",
+      "availableLabel": "Available:",
       "signerLabel": "Select signer",
       "transferableLabel": "Transferable"
     },
@@ -117,7 +118,7 @@
     "cameraDEVLabel": "Camera DEV",
     "chatDEVLabel": "Chat DEV",
     "historyLabel": "History",
-    "mstOperationLabel": "Multisig Operations",
+    "mstOperationLabel": "Operations",
     "multipleWalletsLabel": "Multiple wallets",
     "notificationsLabel": "Notifications",
     "settingsLabel": "Settings",
@@ -282,6 +283,7 @@
     "cancelTitle": "Cancel ",
     "continueButton": "Continue",
     "details": {
+      "amount": "Amount",
       "callData": "Call Data",
       "callHash": "Call Hash",
       "controller": "Controller",
@@ -292,8 +294,10 @@
       "payee": "Rewards destination",
       "recipient": "Recipient",
       "rejectReason": "Reject reason",
+      "sender": "Sender",
       "timePoint": "Time Point",
-      "validators": "Selected validators"
+      "validators": "Selected validators",
+      "wallet": "Wallet"
     },
     "detailsTitle": "Details",
     "explorerLink": "View in explorer",
@@ -684,9 +688,11 @@
     "requiredAmountError": "Please, enter amount",
     "requiredDescriptionError": "Description is required",
     "requiredRecipientError": "Please, enter recipient address",
+    "senderLabel": "Sender",
+    "signatoryLabel": "Signatory",
     "startSigningButton": "Sign with Parity Signer",
     "successMessage": "transaction submitted!",
-    "title": "Transfer"
+    "title": "Transfer { asset } on"
   },
   "transferDetails": {
     "fromNetwork": "From network",
