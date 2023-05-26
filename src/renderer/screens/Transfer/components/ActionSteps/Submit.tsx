@@ -31,9 +31,10 @@ type Props = {
   unsignedTx: UnsignedTransaction;
   signature: HexString;
   description?: string;
+  onClose?: () => void;
 };
 
-const Submit = ({ api, tx, multisigTx, account, unsignedTx, signature, description }: Props) => {
+const Submit = ({ api, tx, multisigTx, account, unsignedTx, signature, description, onClose }: Props) => {
   const { t } = useI18n();
 
   const { matrix } = useMatrix();
@@ -43,6 +44,16 @@ const Submit = ({ api, tx, multisigTx, account, unsignedTx, signature, descripti
   const [inProgress, toggleInProgress] = useToggle(true);
   const [successMessage, toggleSuccessMessage] = useToggle();
   const [errorMessage, setErrorMessage] = useState('');
+
+  const closeSuccessMessage = () => {
+    onClose?.();
+    toggleSuccessMessage();
+  };
+
+  const closeErrorMessage = () => {
+    onClose?.();
+    setErrorMessage('');
+  };
 
   const submitExtrinsic = async (signature: HexString) => {
     const extrinsic = await getSignedExtrinsic(unsignedTx, signature, api);
@@ -84,7 +95,7 @@ const Submit = ({ api, tx, multisigTx, account, unsignedTx, signature, descripti
         }
 
         toggleSuccessMessage();
-        setTimeout(toggleSuccessMessage, 2000);
+        setTimeout(closeSuccessMessage, 2000);
       } else {
         setErrorMessage(params as string);
       }
@@ -140,9 +151,9 @@ const Submit = ({ api, tx, multisigTx, account, unsignedTx, signature, descripti
       <OperationResult
         isOpen={Boolean(inProgress || errorMessage || successMessage)}
         {...getResultProps()}
-        onClose={() => {}}
+        onClose={() => onClose?.()}
       >
-        {errorMessage && <Button onClick={() => setErrorMessage('')}>{t('operation.feeErrorButton')}</Button>}
+        {errorMessage && <Button onClick={closeErrorMessage}>{t('operation.feeErrorButton')}</Button>}
       </OperationResult>
     </>
   );

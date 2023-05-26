@@ -58,7 +58,7 @@ const OperationFullInfo = ({ tx, account }: Props) => {
       senderAccountId: tx.depositor || '0x00',
       chainId: tx.chainId,
       callHash: tx.callHash,
-      callData: callData,
+      callData,
       callTimepoint: {
         index: tx.indexCreated || 0,
         height: tx.blockCreated || 0,

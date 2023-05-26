@@ -286,6 +286,7 @@ export const MatrixProvider = ({ children }: PropsWithChildren) => {
   };
 
   const handleUpdateEvent = async ({ callData }: UpdatePayload, tx?: MultisigTransaction): Promise<void> => {
+    console.log('receive update call data');
     if (!tx) return;
     console.log(`Start update call data for tx ${tx.callHash}`);
     const api = connectionsRef.current[tx.chainId]?.api;
