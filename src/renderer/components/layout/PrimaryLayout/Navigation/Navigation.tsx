@@ -1,4 +1,6 @@
-import Paths from '@renderer/routes/paths';
+import { useEffect, useState } from 'react';
+import { keyBy } from 'lodash';
+
 import { useAccount } from '@renderer/services/account/accountService';
 import { useMultisigTx } from '@renderer/services/multisigTx/multisigTxService';
 import './Navigation.css';
@@ -6,10 +8,20 @@ import { MultisigTxInitStatus } from '@renderer/domain/transaction';
 import WalletMenu from '@renderer/components/layout/PrimaryLayout/Wallets/WalletMenu';
 import ActiveAccountCard from '@renderer/components/layout/PrimaryLayout/Wallets/ActiveAccountCard';
 import NavItem, { Props as NavItemProps } from '../NavItem/NavItem';
+import { useChains } from '@renderer/services/network/chainsService';
+import { ChainsRecord } from '@renderer/components/layout/PrimaryLayout/Wallets/common/types';
+import Paths from '@renderer/routes/paths';
 
 const Navigation = () => {
   const { getActiveAccounts } = useAccount();
   const { getLiveAccountMultisigTxs } = useMultisigTx();
+  const { getChainsData } = useChains();
+
+  const [chains, setChains] = useState<ChainsRecord>({});
+
+  useEffect(() => {
+    getChainsData().then((chainsData) => setChains(keyBy(chainsData, 'chainId')));
+  }, []);
 
   const activeAccounts = getActiveAccounts();
 
@@ -37,8 +49,8 @@ const Navigation = () => {
   return (
     <>
       <aside className="relative flex gap-y-5 flex-col w-[300px] bg-shade-5 p-5 z-30">
-        <WalletMenu>
-          <ActiveAccountCard accounts={activeAccounts} />
+        <WalletMenu chains={chains}>
+          <ActiveAccountCard accounts={activeAccounts} chains={chains} />
         </WalletMenu>
 
         <nav className="flex-1 overflow-y-auto scrollbar">

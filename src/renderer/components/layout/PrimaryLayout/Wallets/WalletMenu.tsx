@@ -9,24 +9,28 @@ import { useWalletsStructure } from '@renderer/components/layout/PrimaryLayout/W
 import { AccountId, SigningType, WalletType } from '@renderer/domain/shared-kernel';
 import { useAccount } from '@renderer/services/account/accountService';
 import {
+  ChainsRecord,
+  GroupedWallets,
   WalletGroupItem,
-  WalletGroupType,
   WalletStructure,
 } from '@renderer/components/layout/PrimaryLayout/Wallets/common/types';
 import { AccountDS } from '@renderer/services/storage';
 import { includes } from '@renderer/shared/utils/strings';
 import WalletGroup from '@renderer/components/layout/PrimaryLayout/Wallets/WalletGroup';
 
-const WalletMenu = ({ children }: PropsWithChildren) => {
+type Props = {
+  chains: ChainsRecord;
+};
+
+const WalletMenu = ({ children, chains }: PropsWithChildren<Props>) => {
   const { t } = useI18n();
   const { getLiveAccounts, setActiveAccount, setActiveAccounts } = useAccount();
 
   const [query, setQuery] = useState('');
-
-  const multishardWallets = useWalletsStructure({ signingType: SigningType.PARITY_SIGNER }, query);
   const watchOnlyAccounts = getLiveAccounts({ signingType: SigningType.WATCH_ONLY });
   const paritySignerAccounts = getLiveAccounts({ signingType: SigningType.PARITY_SIGNER });
   const multisigAccounts = getLiveAccounts({ signingType: SigningType.MULTISIG });
+  const multishardWallets = useWalletsStructure(paritySignerAccounts, query, chains);
 
   const searchAccount = (accounts: AccountDS[] = [], query: string = '') => {
     return accounts.filter((account) => {
@@ -41,7 +45,7 @@ const WalletMenu = ({ children }: PropsWithChildren) => {
   const searchedWatchOnlyAccounts = searchAccount(watchOnlyAccounts, query);
   const searchedMultisigAccounts = searchAccount(multisigAccounts, query);
 
-  const walletGroups: WalletGroupType = {
+  const walletGroups: GroupedWallets = {
     [WalletType.SINGLE_PARITY_SIGNER]: searchedParitySignerAccounts,
     [WalletType.MULTISHARD_PARITY_SIGNER]: multishardWallets,
     [WalletType.WATCH_ONLY]: searchedWatchOnlyAccounts,

@@ -4,15 +4,15 @@ import { keyBy } from 'lodash';
 import { BodyText, CaptionText, HeadlineText } from '@renderer/components/ui-redesign';
 import { Icon, Identicon, Shimmering } from '@renderer/components/ui';
 import { isMultisig } from '@renderer/domain/account';
-import { ChainId, SigningType, WalletType } from '@renderer/domain/shared-kernel';
+import { SigningType, WalletType } from '@renderer/domain/shared-kernel';
 import { GroupIcons, GroupLabels } from '@renderer/components/layout/PrimaryLayout/Wallets/common/constants';
 import { toAddress } from '@renderer/shared/utils/address';
-import { Chain } from '@renderer/domain/chain';
 import { useChains } from '@renderer/services/network/chainsService';
 import { SS58_DEFAULT_PREFIX } from '@renderer/shared/utils/constants';
 import { useI18n } from '@renderer/context/I18nContext';
 import { AccountDS } from '@renderer/services/storage';
 import { useWalletsStructure } from '@renderer/components/layout/PrimaryLayout/Wallets/common/useWalletStructure';
+import { ChainsRecord } from './common/types';
 
 // TODO move somewhere to shared
 const getWalletType = (accounts: AccountDS[]): WalletType => {
@@ -38,17 +38,17 @@ const getWalletType = (accounts: AccountDS[]): WalletType => {
 
 type Props = {
   accounts: AccountDS[];
+  chains: ChainsRecord;
 };
 
-const ActiveAccountCard = ({ accounts }: Props) => {
+const ActiveAccountCard = ({ accounts, chains }: Props) => {
   if (!accounts.length) return <Shimmering height={52} className="w-full" />;
 
   const { getChainsData } = useChains();
   const { t } = useI18n();
+  const wallets = useWalletsStructure(accounts, '', chains);
 
-  const [chainsObject, setChainsObject] = useState<Record<ChainId, Chain>>({});
-  const wallets = useWalletsStructure({ signingType: SigningType.PARITY_SIGNER }, '');
-
+  const [chainsObject, setChainsObject] = useState<ChainsRecord>({});
   useEffect(() => {
     getChainsData().then((chains) => setChainsObject(keyBy(chains, 'chainId')));
   }, []);
