@@ -11,11 +11,15 @@ import NavItem, { Props as NavItemProps } from '../NavItem/NavItem';
 import { useChains } from '@renderer/services/network/chainsService';
 import { ChainsRecord } from '@renderer/components/layout/PrimaryLayout/Wallets/common/types';
 import Paths from '@renderer/routes/paths';
+import { useWallet } from '@renderer/services/wallet/walletService';
+import { Shimmering } from '@renderer/components/ui';
 
 const Navigation = () => {
   const { getActiveAccounts } = useAccount();
   const { getLiveAccountMultisigTxs } = useMultisigTx();
   const { getChainsData } = useChains();
+  const { getLiveWallets } = useWallet();
+  const wallets = getLiveWallets();
 
   const [chains, setChains] = useState<ChainsRecord>({});
 
@@ -49,8 +53,12 @@ const Navigation = () => {
   return (
     <>
       <aside className="relative flex gap-y-5 flex-col w-[300px] bg-shade-5 p-5 z-30">
-        <WalletMenu chains={chains}>
-          <ActiveAccountCard accounts={activeAccounts} chains={chains} />
+        <WalletMenu chains={chains} wallets={wallets}>
+          {activeAccounts?.length ? (
+            <ActiveAccountCard activeAccounts={activeAccounts} chains={chains} wallets={wallets} />
+          ) : (
+            <Shimmering height={52} className="w-full" />
+          )}
         </WalletMenu>
 
         <nav className="flex-1 overflow-y-auto scrollbar">

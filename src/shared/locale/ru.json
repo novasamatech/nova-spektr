@@ -46,6 +46,10 @@
     "emptyStateLabel": "Ничего не найдено",
     "hideZeroBalancesLabel": "Скрыть активы с нулевыми балансами",
     "searchPlaceholder": "Поиск",
+    "shard": "shard",
+    "shards": "shards",
+    "shardsModalTitle": "Your shards",
+    "shardsTitle": "Ваши активы на:",
     "title": "Балансы",
     "verificationFailedLabel": "данные недостоверны"
   },

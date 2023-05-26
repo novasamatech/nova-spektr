@@ -1,65 +1,31 @@
-import { useEffect, useState } from 'react';
-import { keyBy } from 'lodash';
-
 import { BodyText, CaptionText, HeadlineText } from '@renderer/components/ui-redesign';
-import { Icon, Identicon, Shimmering } from '@renderer/components/ui';
-import { isMultisig } from '@renderer/domain/account';
-import { SigningType, WalletType } from '@renderer/domain/shared-kernel';
+import { Icon, Identicon } from '@renderer/components/ui';
+import { WalletType } from '@renderer/domain/shared-kernel';
 import { GroupIcons, GroupLabels } from '@renderer/components/layout/PrimaryLayout/Wallets/common/constants';
 import { toAddress } from '@renderer/shared/utils/address';
-import { useChains } from '@renderer/services/network/chainsService';
 import { SS58_DEFAULT_PREFIX } from '@renderer/shared/utils/constants';
 import { useI18n } from '@renderer/context/I18nContext';
-import { AccountDS } from '@renderer/services/storage';
-import { useWalletsStructure } from '@renderer/components/layout/PrimaryLayout/Wallets/common/useWalletStructure';
+import { AccountDS, WalletDS } from '@renderer/services/storage';
 import { ChainsRecord } from './common/types';
-
-// TODO move somewhere to shared
-const getWalletType = (accounts: AccountDS[]): WalletType => {
-  if (accounts.length > 1) {
-    return WalletType.MULTISHARD_PARITY_SIGNER;
-  }
-
-  const account = accounts[0];
-  if (isMultisig(account)) {
-    return WalletType.MULTISIG;
-  }
-
-  if (account.signingType === SigningType.WATCH_ONLY) {
-    return WalletType.WATCH_ONLY;
-  }
-
-  if (account.signingType === SigningType.PARITY_SIGNER) {
-    return WalletType.SINGLE_PARITY_SIGNER;
-  }
-
-  return WalletType.SINGLE_PARITY_SIGNER;
-};
+import { getActiveWalletType } from '@renderer/domain/account';
 
 type Props = {
-  accounts: AccountDS[];
+  activeAccounts: AccountDS[];
   chains: ChainsRecord;
+  wallets: WalletDS[];
 };
 
-const ActiveAccountCard = ({ accounts, chains }: Props) => {
-  if (!accounts.length) return <Shimmering height={52} className="w-full" />;
-
-  const { getChainsData } = useChains();
+const ActiveAccountCard = ({ activeAccounts, chains, wallets }: Props) => {
   const { t } = useI18n();
-  const wallets = useWalletsStructure(accounts, '', chains);
 
-  const [chainsObject, setChainsObject] = useState<ChainsRecord>({});
-  useEffect(() => {
-    getChainsData().then((chains) => setChainsObject(keyBy(chains, 'chainId')));
-  }, []);
+  const walletType = getActiveWalletType(activeAccounts);
+  if (!walletType) return null;
 
-  const walletType = getWalletType(accounts);
   const isMultishard = walletType === WalletType.MULTISHARD_PARITY_SIGNER;
+  const multishardWallet = isMultishard ? wallets.find((w) => w.id === activeAccounts[0].walletId) : null;
 
-  const account = isMultishard ? null : accounts[0];
-  const addressPrefix = account?.chainId ? chainsObject[account.chainId].addressPrefix : SS58_DEFAULT_PREFIX;
-
-  const multishardWallet = isMultishard ? wallets.find((w) => w.id === accounts[0].walletId) : null;
+  const account = isMultishard ? null : activeAccounts[0];
+  const addressPrefix = account?.chainId ? chains[account.chainId].addressPrefix : SS58_DEFAULT_PREFIX;
 
   return (
     <div className="flex items-center px-3 py-2 gap-x-2 flex-1">
@@ -69,7 +35,7 @@ const ActiveAccountCard = ({ accounts, chains }: Props) => {
           align="center"
           className="border border-token-container-border bg-token-container-background p-[3px] h-7 w-7"
         >
-          {multishardWallet.amount}
+          {activeAccounts.length}
         </HeadlineText>
       )}
       {!isMultishard && account && (

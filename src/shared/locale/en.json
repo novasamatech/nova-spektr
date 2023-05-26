@@ -46,6 +46,10 @@
     "emptyStateLabel": "Nothing was found.",
     "hideZeroBalancesLabel": "Hide zero balances",
     "searchPlaceholder": "Search",
+    "shard": "shard",
+    "shards": "shards",
+    "shardsModalTitle": "Your shards",
+    "shardsTitle": "Your assets on:",
     "title": "Assets",
     "verificationFailedLabel": "verification failed"
   },

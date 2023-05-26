@@ -5,56 +5,33 @@ import cn from 'classnames';
 import { DropdownButton, SearchInput, SmallTitleText } from '@renderer/components/ui-redesign';
 import { useI18n } from '@renderer/context/I18nContext';
 import { addWalletOptions } from '@renderer/components/layout/PrimaryLayout/Wallets/common/constants';
-import { useWalletsStructure } from '@renderer/components/layout/PrimaryLayout/Wallets/common/useWalletStructure';
-import { AccountId, SigningType, WalletType } from '@renderer/domain/shared-kernel';
+import { AccountId, WalletType } from '@renderer/domain/shared-kernel';
 import { useAccount } from '@renderer/services/account/accountService';
 import {
   ChainsRecord,
-  GroupedWallets,
   WalletGroupItem,
-  WalletStructure,
+  MultishardWallet,
 } from '@renderer/components/layout/PrimaryLayout/Wallets/common/types';
-import { AccountDS } from '@renderer/services/storage';
-import { includes } from '@renderer/shared/utils/strings';
 import WalletGroup from '@renderer/components/layout/PrimaryLayout/Wallets/WalletGroup';
+import { useGroupedWallets } from './common/useGroupedWallets';
+import { WalletDS } from '@renderer/services/storage';
 
 type Props = {
   chains: ChainsRecord;
+  wallets: WalletDS[];
 };
 
-const WalletMenu = ({ children, chains }: PropsWithChildren<Props>) => {
+const WalletMenu = ({ children, chains, wallets }: PropsWithChildren<Props>) => {
   const { t } = useI18n();
-  const { getLiveAccounts, setActiveAccount, setActiveAccounts } = useAccount();
+  const { setActiveAccount, setActiveAccounts } = useAccount();
 
   const [query, setQuery] = useState('');
-  const watchOnlyAccounts = getLiveAccounts({ signingType: SigningType.WATCH_ONLY });
-  const paritySignerAccounts = getLiveAccounts({ signingType: SigningType.PARITY_SIGNER });
-  const multisigAccounts = getLiveAccounts({ signingType: SigningType.MULTISIG });
-  const multishardWallets = useWalletsStructure(paritySignerAccounts, query, chains);
 
-  const searchAccount = (accounts: AccountDS[] = [], query: string = '') => {
-    return accounts.filter((account) => {
-      return includes(account.name, query) || includes(account.accountId, query);
-    });
-  };
-
-  const searchedParitySignerAccounts = searchAccount(
-    paritySignerAccounts.filter((a) => !a.walletId),
-    query,
-  );
-  const searchedWatchOnlyAccounts = searchAccount(watchOnlyAccounts, query);
-  const searchedMultisigAccounts = searchAccount(multisigAccounts, query);
-
-  const walletGroups: GroupedWallets = {
-    [WalletType.SINGLE_PARITY_SIGNER]: searchedParitySignerAccounts,
-    [WalletType.MULTISHARD_PARITY_SIGNER]: multishardWallets,
-    [WalletType.WATCH_ONLY]: searchedWatchOnlyAccounts,
-    [WalletType.MULTISIG]: searchedMultisigAccounts,
-  };
+  const groupedWallets = useGroupedWallets(wallets, chains, query);
 
   const dropdownOptions = addWalletOptions.map((o) => ({ ...o, title: t(o.title) }));
 
-  const getAllShardsIds = (wallet: WalletStructure): AccountId[] => {
+  const getAllShardsIds = (wallet: MultishardWallet): AccountId[] => {
     const ids: AccountId[] = [];
     wallet.rootAccounts.forEach((rootAcc) => {
       ids.push(rootAcc.accountId);
@@ -64,7 +41,7 @@ const WalletMenu = ({ children, chains }: PropsWithChildren<Props>) => {
     return ids;
   };
 
-  const selectMultishardWallet = (wallet: WalletStructure) => {
+  const selectMultishardWallet = (wallet: MultishardWallet) => {
     const allShardsIds = getAllShardsIds(wallet);
     setActiveAccounts(allShardsIds);
   };
@@ -72,7 +49,7 @@ const WalletMenu = ({ children, chains }: PropsWithChildren<Props>) => {
   const changeActiveAccount = (wallet: WalletGroupItem, closeMenu: () => void) => {
     closeMenu();
     if ('rootAccounts' in wallet) {
-      selectMultishardWallet(wallet as WalletStructure);
+      selectMultishardWallet(wallet as MultishardWallet);
     } else {
       setActiveAccount(wallet.accountId);
     }
@@ -109,14 +86,15 @@ const WalletMenu = ({ children, chains }: PropsWithChildren<Props>) => {
               </div>
 
               <ul className="flex flex-col divide-y divide-divider">
-                {Object.entries(walletGroups).map(([type, wallets]) => (
-                  <WalletGroup
-                    key={type}
-                    type={type as WalletType}
-                    wallets={wallets}
-                    onWalletClick={(wallet) => changeActiveAccount(wallet, close)}
-                  />
-                ))}
+                {groupedWallets &&
+                  Object.entries(groupedWallets).map(([type, wallets]) => (
+                    <WalletGroup
+                      key={type}
+                      type={type as WalletType}
+                      wallets={wallets}
+                      onWalletClick={(wallet) => changeActiveAccount(wallet, close)}
+                    />
+                  ))}
               </ul>
             </section>
           )}

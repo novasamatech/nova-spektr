@@ -1,7 +1,7 @@
 import { Disclosure } from '@headlessui/react';
 import cn from 'classnames';
 
-import { WalletGroupItem, WalletStructure } from '@renderer/components/layout/PrimaryLayout/Wallets/common/types';
+import { WalletGroupItem, MultishardWallet } from '@renderer/components/layout/PrimaryLayout/Wallets/common/types';
 import { Icon } from '@renderer/components/ui';
 import { WalletType } from '@renderer/domain/shared-kernel';
 import { GroupIcons, GroupLabels } from '@renderer/components/layout/PrimaryLayout/Wallets/common/constants';
@@ -49,9 +49,9 @@ const WalletGroup = ({ type, wallets, onWalletClick }: Props) => {
               <button className="w-full py-1.5 px-4 flex flex-col" onClick={() => onWalletClick(wallet)}>
                 {type === WalletType.MULTISHARD_PARITY_SIGNER ? (
                   <>
-                    <BodyText className="text-text-secondary">{(wallet as WalletStructure).name}</BodyText>
+                    <BodyText className="text-text-secondary">{(wallet as MultishardWallet).name}</BodyText>
                     <HelpText className="text-text-tertiary">
-                      {(wallet as WalletStructure).amount}&nbsp;{t('wallets.shards')}
+                      {(wallet as MultishardWallet).amount}&nbsp;{t('wallets.shards')}
                     </HelpText>
                   </>
                 ) : (
