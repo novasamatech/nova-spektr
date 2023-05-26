@@ -1,6 +1,5 @@
 import cn from 'classnames';
 import { useRef, useState, useEffect } from 'react';
-import { NavLink } from 'react-router-dom';
 import { keyBy } from 'lodash';
 
 import { Icon, Identicon } from '@renderer/components/ui';
@@ -18,6 +17,7 @@ import { toAddress } from '@renderer/shared/utils/address';
 import { useChains } from '@renderer/services/network/chainsService';
 import { Chain } from '@renderer/domain/chain';
 import { SS58_DEFAULT_PREFIX } from '@renderer/shared/utils/constants';
+import NavItem, { Props as NavItemProps } from '../NavItem/NavItem';
 
 type CardType = SigningType | 'multiple' | 'none';
 
@@ -37,7 +37,7 @@ const getCardType = (accounts: AccountDS[]): CardType => {
 };
 
 const Navigation = () => {
-  const { LocaleComponent, t } = useI18n();
+  const { t } = useI18n();
   const { getActiveAccounts } = useAccount();
   const { getChainsData } = useChains();
   const { getLiveAccountMultisigTxs } = useMultisigTx();
@@ -59,12 +59,12 @@ const Navigation = () => {
     (tx) => tx.status === MultisigTxInitStatus.SIGNING,
   );
 
-  const NavItems = [
-    { icon: <Icon name="balance" />, title: 'navigation.balancesLabel', link: Paths.BALANCES },
-    { icon: <Icon name="staking" />, title: 'navigation.stakingLabel', link: Paths.STAKING },
-    { icon: <Icon name="book" />, title: 'navigation.addressBookLabel', link: Paths.ADDRESS_BOOK },
+  const NavItems: NavItemProps[] = [
+    { icon: 'asset', title: 'navigation.balancesLabel', link: Paths.BALANCES },
+    { icon: 'staking', title: 'navigation.stakingLabel', link: Paths.STAKING },
+    { icon: 'addressBook', title: 'navigation.addressBookLabel', link: Paths.ADDRESS_BOOK },
     {
-      icon: <Icon name="operations" />,
+      icon: 'operations',
       title: 'navigation.mstOperationLabel',
       link: Paths.OPERATIONS,
       badge: txs.length,
@@ -92,7 +92,12 @@ const Navigation = () => {
 
   return (
     <>
-      <aside className="relative flex gap-y-5 flex-col w-[300px] bg-shade-5 p-5 z-30">
+      <aside
+        className={cn(
+          'relative flex gap-y-5 flex-col w-[240px] p-4 z-30',
+          'bg-left-navigation-menu-background border-r border-r-container-border',
+        )}
+      >
         <div className={cn('rounded-xl text-white p-4', CardStyle[cardType])}>
           <div className="flex gap-x-2.5">
             <div className="relative">
@@ -153,54 +158,18 @@ const Navigation = () => {
         </div>
 
         <nav className="flex-1 overflow-y-auto scrollbar">
-          <ul className="pr-2.5">
+          <ul className="pr-2.5 flex flex-col gap-2">
             {NavItems.map(({ icon, title, link, badge }) => (
-              <li key={title} className="cursor-pointer select-none rounded-lg hover:bg-black/5 text-gray-500">
-                <NavLink
-                  to={link}
-                  className={({ isActive }) =>
-                    cn('flex items-center p-3 outline-offset-reduced', isActive && 'text-primary')
-                  }
-                >
-                  {icon}
-                  <span className="font-semibold text-sm ml-3">{t(title)}</span>
-                  {!!badge && <div className="ml-auto text-shade-50">{badge}</div>}
-                </NavLink>
+              <li key={title}>
+                <NavItem icon={icon} title={title} link={link} badge={badge} />
               </li>
             ))}
           </ul>
         </nav>
 
-        <div>
-          <NavLink
-            to={Paths.NOTIFICATIONS}
-            className={({ isActive }) =>
-              cn(
-                'select-none rounded-lg text-gray-500 flex items-center p-3 mr-2.5 outline-offset-reduced hover:bg-black/5 ',
-                isActive && 'text-primary',
-              )
-            }
-          >
-            <Icon name="bell" />
-            <span className="font-semibold text-sm ml-3">{t('navigation.notificationsLabel')}</span>
-          </NavLink>
-
-          <NavLink
-            to={Paths.SETTINGS}
-            className={({ isActive }) =>
-              cn(
-                'select-none rounded-lg text-gray-500 flex items-center p-3 mr-2.5 outline-offset-reduced hover:bg-black/5 ',
-                isActive && 'text-primary',
-              )
-            }
-          >
-            <Icon name="settings" />
-            <span className="font-semibold text-sm ml-3">{t('navigation.settingsLabel')}</span>
-          </NavLink>
-          <div className="flex justify-between bg-gradient-to-b from-shade-2 py-2 px-3 rounded-t-2lg">
-            <LocaleComponent top short />
-            {/*<Icon className="text-success" name="networkDuotone" />*/}
-          </div>
+        <div className="flex flex-col gap-2">
+          <NavItem icon={'notification'} title={'navigation.notificationsLabel'} link={Paths.NOTIFICATIONS} />
+          <NavItem icon={'settings'} title={'navigation.settingsLabel'} link={Paths.SETTINGS} />
         </div>
       </aside>
 
@@ -208,7 +177,7 @@ const Navigation = () => {
         ref={walletsRef}
         className={cn(
           'ease-in-out transition-all transform duration-200 absolute z-20 w-[350px] left-0 top-0 overflow-y-auto',
-          isWalletsOpen ? 'translate-x-[300px] opacity-100 visible' : 'translate-x-0 opacity-0 invisible',
+          isWalletsOpen ? 'translate-x-[240px] opacity-100 visible' : 'translate-x-0 opacity-0 invisible',
         )}
         onUrlChange={() => setIsWalletsOpen(false)}
       />

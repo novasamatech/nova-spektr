@@ -1,9 +1,9 @@
-import cn from 'classnames';
-
+import cnTw from '@renderer/shared/utils/twMerge';
 import { Identicon } from '@renderer/components/ui';
 import { SigningType, AccountId, Address } from '@renderer/domain/shared-kernel';
 import { toShortAddress, toAddress } from '@renderer/shared/utils/address';
 import Truncate from '../Truncate/Truncate';
+import { FootnoteText } from '@renderer/components/ui-redesign';
 
 type AddressType = 'full' | 'short' | 'adaptive';
 type AddressStyle = 'small' | 'normal' | 'large';
@@ -63,7 +63,7 @@ const ChainAddress = ({
 
   const nameContent = (name || subName) && (
     <div className="flex flex-col items-start">
-      <p className="text-neutral text-sm font-semibold leading-4">{name}</p>
+      <FootnoteText className="text-text-primary">{name}</FootnoteText>
       {subName && <p className="text-neutral-variant text-2xs">{subName}</p>}
     </div>
   );
@@ -71,11 +71,11 @@ const ChainAddress = ({
   const addressContent = typeIsAdaptive ? (
     <Truncate className={Styles[addressStyle]} ellipsis="..." start={4} end={4} text={addressToShow} />
   ) : (
-    <p className={cn('inline-block break-all', Styles[addressStyle])}>{addressToShow}</p>
+    <p className={cnTw('inline-block break-all', Styles[addressStyle])}>{addressToShow}</p>
   );
 
   return (
-    <div className={cn('flex items-center gap-x-1', className)}>
+    <div className={cnTw('flex items-center gap-x-1', className)}>
       {showIcon && (
         <Identicon address={currentAddress} signType={signType} size={size} background={false} canCopy={canCopy} />
       )}

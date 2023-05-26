@@ -1,6 +1,6 @@
 import { PropsWithChildren } from 'react';
-import cn from 'classnames';
 
+import cnTw from '@renderer/shared/utils/twMerge';
 import { Button } from '@renderer/components/ui';
 import BaseModal from '../BaseModal/BaseModal';
 
@@ -22,7 +22,7 @@ const ConfirmModal = ({
   onClose,
   onConfirm,
 }: PropsWithChildren<Props>) => (
-  <BaseModal isOpen={isOpen} contentClass={cn('p-5', contentClass)} onClose={onClose}>
+  <BaseModal isOpen={isOpen} contentClass={cnTw('p-5', contentClass)} onClose={onClose}>
     {children}
     <div className="flex gap-x-3">
       {cancelText && (

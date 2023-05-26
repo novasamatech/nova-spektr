@@ -1,7 +1,7 @@
-import cn from 'classnames';
 import { PropsWithChildren, ReactNode } from 'react';
 import { Link } from 'react-router-dom';
 
+import cnTw from '@renderer/shared/utils/twMerge';
 import { ViewClass, WeightClass } from '../common/constants';
 import { Pallet, Variant } from '../common/types';
 
@@ -29,7 +29,7 @@ const ButtonLink = ({
   suffixElement,
   callback,
 }: PropsWithChildren<Props>) => {
-  const classes = cn(
+  const classes = cnTw(
     'flex items-center justify-center gap-x-2.5 border font-semibold select-none',
     WeightClass[weight],
     ViewClass[`${variant}_${disabled ? 'shade' : pallet}`],
@@ -39,7 +39,7 @@ const ButtonLink = ({
   const content = (
     <>
       {prefixElement && <div data-testid="prefix">{prefixElement}</div>}
-      <div className={cn((prefixElement || suffixElement) && 'ml-0 mr-auto')}>{children}</div>
+      <div className={cnTw((prefixElement || suffixElement) && 'ml-0 mr-auto')}>{children}</div>
       {suffixElement && <div data-testid="suffix">{suffixElement}</div>}
     </>
   );

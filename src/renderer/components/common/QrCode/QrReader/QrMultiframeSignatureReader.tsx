@@ -1,9 +1,9 @@
 import { BrowserCodeReader, BrowserQRCodeReader, IScannerControls } from '@zxing/browser';
-import cn from 'classnames';
 import init, { Decoder, EncodingPacket } from 'raptorq';
 import { useEffect, useRef } from 'react';
 import { u8aToHex } from '@polkadot/util';
 
+import cnTw from '@renderer/shared/utils/twMerge';
 import { useI18n } from '@renderer/context/I18nContext';
 import { ErrorFields, FRAME_KEY, SIGNED_TRANSACTION_BULK } from './common/constants';
 import { QR_READER_ERRORS } from './common/errors';
@@ -246,7 +246,7 @@ const QrMultiframeSignatureReader = ({
       controls={false}
       ref={videoRef}
       data-testid="qr-reader"
-      className={cn('object-cover -scale-x-100', className)}
+      className={cnTw('object-cover -scale-x-100', className)}
       style={{ width: size + 'px', height: size + 'px' }}
     >
       {t('qrReader.videoError')}

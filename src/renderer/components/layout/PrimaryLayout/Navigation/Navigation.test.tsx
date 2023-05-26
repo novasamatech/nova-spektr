@@ -45,8 +45,5 @@ describe('layout/PrimaryLayout/Navigation', () => {
 
     const wallets = screen.getByText('wallets-mock');
     expect(wallets).toBeInTheDocument();
-
-    const langSwitch = screen.getByText('localeComponent');
-    expect(langSwitch).toBeInTheDocument();
   });
 });

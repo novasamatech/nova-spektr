@@ -1,7 +1,7 @@
 import { ComponentPropsWithoutRef, Fragment, ReactNode, useState } from 'react';
 import { Transition, Combobox as HeadlessCombobox } from '@headlessui/react';
-import cn from 'classnames';
 
+import cnTw from '@renderer/shared/utils/twMerge';
 import { Input } from '@renderer/components/ui';
 import { ViewClass, DropdownClass } from '../common/constants';
 import { DropdownOption, DropdownResult, HTMLComboboxProps, Variant } from '../common/types';
@@ -45,7 +45,7 @@ const Combobox = ({
 
   return (
     <HeadlessCombobox by="value" value={value} disabled={disabled} onChange={onChange}>
-      <div className={cn('relative', className)}>
+      <div className={cnTw('relative', className)}>
         <HeadlessCombobox.Input
           as={Input}
           placeholder={placeholder}
@@ -62,7 +62,7 @@ const Combobox = ({
 
         <Transition as={Fragment} leave="transition" leaveFrom="opacity-100" leaveTo="opacity-0">
           <HeadlessCombobox.Options
-            className={cn(
+            className={cnTw(
               'absolute z-20 py-2.5 px-2 max-h-60 w-full overflow-auto shadow-element',
               'border border-primary rounded-2lg bg-white shadow-surface',
               variant !== 'auto' && ViewClass[variant],
@@ -72,15 +72,15 @@ const Combobox = ({
               <HeadlessCombobox.Option
                 value={{ id: '', value: query, element: query }}
                 className={({ active }) =>
-                  cn(
+                  cnTw(
                     'flex items-center cursor-pointer select-none px-2.5 rounded-2lg mb-[2px] last:mb-0',
                     active && 'bg-shade-5',
                     style.option,
                   )
                 }
               >
-                <div className={cn('flex items-center gap-x-2.5 truncate text-sm', style.option)}>
-                  <p className={cn('text-neutral', style.text)}>{query}</p>
+                <div className={cnTw('flex items-center gap-x-2.5 truncate text-sm', style.option)}>
+                  <p className={cnTw('text-neutral', style.text)}>{query}</p>
                 </div>
               </HeadlessCombobox.Option>
             )}
@@ -90,16 +90,16 @@ const Combobox = ({
                 key={option.id}
                 value={option}
                 className={({ active }) =>
-                  cn(
+                  cnTw(
                     'flex items-center cursor-pointer select-none px-2.5 rounded-2lg mb-[2px] last:mb-0',
                     active && 'bg-shade-5',
                     style.option,
                   )
                 }
               >
-                <div className={cn('flex items-center gap-x-2.5 truncate text-sm', style.option)}>
+                <div className={cnTw('flex items-center gap-x-2.5 truncate text-sm', style.option)}>
                   {typeof option.element === 'string' ? (
-                    <p className={cn('text-neutral', style.text)}>{option.element}</p>
+                    <p className={cnTw('text-neutral', style.text)}>{option.element}</p>
                   ) : (
                     option.element
                   )}

@@ -1,5 +1,6 @@
-import cn from 'classnames';
 import { ChangeEvent, PropsWithChildren } from 'react';
+
+import cnTw from '@renderer/shared/utils/twMerge';
 import './styles.css';
 
 type Props = {
@@ -27,7 +28,7 @@ const Checkbox = ({
   const content = typeof children === 'string' ? <p className="text-gray-700 font-normal">{children}</p> : children;
 
   return (
-    <label className={cn('flex items-center gap-x-2.5', !disabled && 'hover:cursor-pointer', className)}>
+    <label className={cnTw('flex items-center gap-x-2.5', !disabled && 'hover:cursor-pointer', className)}>
       {children && position === 'left' && content}
       <input
         type="checkbox"
@@ -37,7 +38,7 @@ const Checkbox = ({
         readOnly={readOnly}
         checked={checked}
         value={value}
-        className={cn(
+        className={cnTw(
           'relative appearance-none w-5 h-5 text-primary bg-white',
           'rounded-md border-shade-30 border-2 checked:bg-primary checked:border-0',
           disabled && 'opacity-50',

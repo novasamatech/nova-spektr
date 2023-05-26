@@ -19,8 +19,7 @@ import { Transaction, TransactionType } from '@renderer/domain/transaction';
 import { createTxMetadata } from '@renderer/shared/utils/substrate';
 import { ITransactionService, HashData, ExtrinsicResultParams } from './common/types';
 import { toAccountId } from '@renderer/shared/utils/address';
-import { MAX_WEIGHT } from '@renderer/services/transaction/common/constants';
-import { decodeDispatchError } from './common/utils';
+import { decodeDispatchError, getMaxWeight, isOldMultisigPallet } from './common/utils';
 
 type BalancesTransferArgs = Parameters<typeof methods.balances.transfer>[0];
 
@@ -98,13 +97,14 @@ export const useTransaction = (): ITransactionService => {
         options,
       );
     },
-    [TransactionType.MULTISIG_AS_MULTI]: (transaction, info, options) => {
+    [TransactionType.MULTISIG_AS_MULTI]: (transaction, info, options, api) => {
       return methods.multisig.asMulti(
         {
           threshold: transaction.args.threshold,
           otherSignatories: transaction.args.otherSignatories,
           maybeTimepoint: transaction.args.maybeTimepoint,
-          maxWeight: transaction.args.maxWeight || MAX_WEIGHT,
+          maxWeight: getMaxWeight(api, transaction),
+          storeCall: false,
           call: transaction.args.callData,
           callHash: transaction.args.callHash,
         },
@@ -112,13 +112,13 @@ export const useTransaction = (): ITransactionService => {
         options,
       );
     },
-    [TransactionType.MULTISIG_APPROVE_AS_MULTI]: (transaction, info, options) => {
+    [TransactionType.MULTISIG_APPROVE_AS_MULTI]: (transaction, info, options, api) => {
       return methods.multisig.approveAsMulti(
         {
           threshold: transaction.args.threshold,
           otherSignatories: transaction.args.otherSignatories,
           maybeTimepoint: transaction.args.maybeTimepoint,
-          maxWeight: transaction.args.maxWeight || MAX_WEIGHT,
+          maxWeight: getMaxWeight(api, transaction),
           callHash: transaction.args.callHash,
         },
         info,
@@ -230,8 +230,12 @@ export const useTransaction = (): ITransactionService => {
         : api.tx.balances.transfer(dest, value),
     [TransactionType.ASSET_TRANSFER]: ({ dest, value, asset }, api) => api.tx.assets.transfer(asset, dest, value),
     [TransactionType.ORML_TRANSFER]: ({ dest, value, asset }, api) => api.tx.currencies.transfer(dest, asset, value),
-    [TransactionType.MULTISIG_AS_MULTI]: ({ threshold, otherSignatories, maybeTimepoint, call, maxWeight }, api) =>
-      api.tx.multisig.asMulti(threshold, otherSignatories, maybeTimepoint, call, maxWeight),
+    [TransactionType.MULTISIG_AS_MULTI]: ({ threshold, otherSignatories, maybeTimepoint, call, maxWeight }, api) => {
+      return isOldMultisigPallet(api)
+        ? // @ts-ignore
+          api.tx.multisig.asMulti(threshold, otherSignatories, maybeTimepoint, call, false, maxWeight)
+        : api.tx.multisig.asMulti(threshold, otherSignatories, maybeTimepoint, call, maxWeight);
+    },
     [TransactionType.MULTISIG_APPROVE_AS_MULTI]: (
       { threshold, otherSignatories, maybeTimepoint, callHash, maxWeight },
       api,

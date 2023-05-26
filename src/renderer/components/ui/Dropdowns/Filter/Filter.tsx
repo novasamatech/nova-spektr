@@ -1,7 +1,7 @@
 import { Listbox, Transition } from '@headlessui/react';
-import cn from 'classnames';
 import { Fragment } from 'react';
 
+import cnTw from '@renderer/shared/utils/twMerge';
 import { Icon, Switch } from '@renderer/components/ui';
 import { DropdownOption, DropdownResult } from '../common/types';
 
@@ -20,16 +20,16 @@ const Filter = ({ activeIds, placeholder, position = 'right', options, className
   return (
     <Listbox multiple by="id" value={activeOptions} onChange={onChange}>
       {({ open }) => (
-        <div className={cn('relative flex', position === 'right' && 'justify-end', className)}>
+        <div className={cnTw('relative flex', position === 'right' && 'justify-end', className)}>
           <Listbox.Button
-            className={cn(
+            className={cnTw(
               'group w-max px-2.5 h-10 rounded-2lg border transition',
               'hover:border-primary focus:border-primary',
               open && 'border-primary',
             )}
           >
             <div
-              className={cn(
+              className={cnTw(
                 'flex gap-x-2.5 items-center',
                 'group-hover:text-primary group-focus:text-primary transition',
                 open ? 'text-primary' : 'text-neutral',
@@ -41,7 +41,7 @@ const Filter = ({ activeIds, placeholder, position = 'right', options, className
           </Listbox.Button>
           <Transition as={Fragment} leave="transition" leaveFrom="opacity-100" leaveTo="opacity-0">
             <Listbox.Options
-              className={cn(
+              className={cnTw(
                 'absolute z-10 top-full mt-1 py-[15px] px-2.5 max-h-60 w-full overflow-auto shadow-element',
                 'border border-primary rounded-2lg bg-white shadow-surface',
               )}
@@ -51,7 +51,7 @@ const Filter = ({ activeIds, placeholder, position = 'right', options, className
                   key={id}
                   value={{ id, value }}
                   className={({ active }) =>
-                    cn('h-10 flex items-center px-2.5 cursor-pointer rounded-2lg', active && 'bg-shade-10')
+                    cnTw('h-10 flex items-center px-2.5 cursor-pointer rounded-2lg', active && 'bg-shade-10')
                   }
                 >
                   {({ selected }) => (

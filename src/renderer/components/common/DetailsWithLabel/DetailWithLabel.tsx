@@ -2,7 +2,7 @@ import { PropsWithChildren } from 'react';
 import cn from 'classnames';
 
 import { FootnoteText } from '@renderer/components/ui-redesign';
-import { LabelStyle, RowStyle } from '../common/constants';
+import { LabelStyle, RowStyle } from '../../../screens/Operations/common/constants';
 
 export type DetailWithLabelProps = PropsWithChildren<{ label: string }>;
 

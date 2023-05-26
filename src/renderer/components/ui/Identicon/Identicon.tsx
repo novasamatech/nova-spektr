@@ -1,8 +1,8 @@
 import { Identicon as PolkadotIdenticon } from '@polkadot/react-identicon';
 import { IconTheme } from '@polkadot/react-identicon/types';
-import cn from 'classnames';
 import { ReactNode, useLayoutEffect, useRef, memo, SyntheticEvent } from 'react';
 
+import cnTw from '@renderer/shared/utils/twMerge';
 import { SigningType, Address } from '@renderer/domain/shared-kernel';
 import { copyToClipboard } from '@renderer/shared/utils/strings';
 import Icon from '../Icon/Icon';
@@ -70,7 +70,7 @@ const Identicon = ({
     return (
       <div
         ref={wrapperRef}
-        className={cn('relative flex justify-center items-center', background && 'bg-white rounded-full', className)}
+        className={cnTw('relative flex justify-center items-center', background && 'bg-white rounded-full', className)}
         style={{ width: size, height: size }}
         data-testid={`identicon-${address}`}
       >
@@ -83,7 +83,7 @@ const Identicon = ({
     <div ref={wrapperRef} className={className}>
       <button
         type="button"
-        className={cn('relative flex justify-center items-center cursor-copy', background && 'bg-white rounded-full')}
+        className={cnTw('relative flex justify-center items-center cursor-copy', background && 'bg-white rounded-full')}
         style={{ width: size, height: size }}
         data-testid={`identicon-${address}`}
         onClick={onCopyToClipboard}
