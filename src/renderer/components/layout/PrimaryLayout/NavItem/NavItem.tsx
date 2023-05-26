@@ -1,3 +1,4 @@
+import { ReactNode } from 'react';
 import { NavLink } from 'react-router-dom';
 
 import { Icon } from '@renderer/components/ui';
@@ -10,7 +11,7 @@ export type Props = {
   title: string;
   link: string;
   icon: IconNames;
-  badge?: string;
+  badge?: ReactNode;
 };
 
 const NavItem = ({ title, link, icon, badge }: Props) => {
