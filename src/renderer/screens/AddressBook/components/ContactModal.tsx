@@ -102,7 +102,7 @@ const ContactModal = ({ isOpen, onToggle, contact }: Props) => {
       contentClass="px-5 pb-4 w-[440px]"
       onClose={handleClose}
     >
-      <form className="flex flex-col mb-3 gap-4" onSubmit={handleSubmit(onSubmit)}>
+      <form className="flex flex-col gap-4" onSubmit={handleSubmit(onSubmit)}>
         <Controller
           name="name"
           control={control}
