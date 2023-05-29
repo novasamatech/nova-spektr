@@ -90,7 +90,7 @@ const Filters = ({ txs, onChangeFilters }: Props) => {
   useEffect(() => {
     setFiltersOptions(getAvailableFiltersOptions(txs));
     onChangeFilters(txs);
-  }, [txs.length]);
+  }, [txs]);
 
   const mapValues = (result: DropdownResult) => result.value;
 
