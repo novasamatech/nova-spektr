@@ -15,7 +15,7 @@ describe('screens/AddressBook/components/EmptyState/EmptyContacts.tsx', () => {
     render(<EmptyContacts onAddContact={onAddContactSpy} />);
 
     const label = screen.getByText('addressBook.contactList.noContactsLabel');
-    const button = screen.getByText('addressBook.contactList.noContactsButton');
+    const button = screen.getByText('addressBook.addContactButton');
 
     expect(label).toBeInTheDocument();
     expect(button).toBeInTheDocument();
