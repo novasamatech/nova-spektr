@@ -36,7 +36,6 @@ const ControllerActions: StakeActions[] = [
   StakeActions.SET_VALIDATORS,
   StakeActions.DESTINATION,
 ];
-// onClick: () => onClickAction(StakeActions.START_STAKING, Paths.BOND),
 
 const OperationOptions: Record<StakeActions, { icon: IconNames; title: string; path: PathValue }> = {
   [StakeActions.START_STAKING]: { icon: 'startStaking', title: 'staking.actions.startStakingLabel', path: Paths.BOND },
