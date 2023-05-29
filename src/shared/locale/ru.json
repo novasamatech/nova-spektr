@@ -7,6 +7,7 @@
       "accountIdRequiredError": "Account address is required",
       "addContactButton": "Add contact",
       "matrixIdError": "Incrorrect matrix id",
+      "matrixIdHint": "В формате: @user_name:matrix.org",
       "matrixIdLabel": "matrix id (optional)",
       "matrixIdPlaceholder": "Enter or paste Matrix ID, ie: @bob:matrix.org",
       "nameLabel": "Name",

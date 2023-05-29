@@ -121,7 +121,7 @@ const Table = <T extends AnyRecord>({
 
   return (
     <TableContext.Provider value={value}>
-      <table className={cnTw('w-full bg-white rounded-2lg table-auto', className)}>{children}</table>
+      <table className={cnTw('w-full rounded-2lg table-auto', className)}>{children}</table>
     </TableContext.Provider>
   );
 };
