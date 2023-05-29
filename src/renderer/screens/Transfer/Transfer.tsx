@@ -106,69 +106,63 @@ const Transfer = ({ assetId, chainId, isOpen, onClose }: Props) => {
         panelClass="w-[440px]"
         onClose={handleClose}
       >
-        {api?.isConnected ? (
+        {activeStep === Step.INIT && (
+          <InitOperation
+            chainId={chainId}
+            asset={asset}
+            nativeToken={assets[0]}
+            network={chainName}
+            onResult={onInitResult}
+            onAccountChange={onAccountChange}
+            onSignatoryChange={setSignatory}
+            {...commonProps}
+          />
+        )}
+        {activeStep === Step.CONFIRMATION && (
+          <Confirmation
+            transaction={transferTx}
+            description={description}
+            feeTx={transferTx}
+            account={account}
+            signatory={signatory}
+            connection={connection}
+            onBack={() => setActiveStep(Step.INIT)}
+            onResult={onConfirmResult}
+          />
+        )}
+        {activeStep === Step.SCANNING && (
           <>
-            {activeStep === Step.INIT && (
-              <InitOperation
-                chainId={chainId}
-                asset={asset}
-                nativeToken={assets[0]}
-                network={chainName}
-                onResult={onInitResult}
-                onAccountChange={onAccountChange}
-                onSignatoryChange={setSignatory}
-                {...commonProps}
-              />
-            )}
-            {activeStep === Step.CONFIRMATION && (
-              <Confirmation
-                transaction={transferTx}
-                description={description}
-                feeTx={transferTx}
-                account={account}
-                signatory={signatory}
-                connection={connection}
-                onBack={() => setActiveStep(Step.INIT)}
-                onResult={onConfirmResult}
-              />
-            )}
-            {activeStep === Step.SCANNING && (
-              <>
-                <Scanning
-                  chainId={chainId}
-                  account={signatory || account}
-                  transaction={multisigTx || transferTx}
-                  isQrExpired={isQrExpired}
-                  countdown={countdown}
-                  onResetCountdown={resetCountdown}
-                  onResult={setUnsignedTx}
-                  {...commonProps}
-                />
+            <Scanning
+              chainId={chainId}
+              account={signatory || account}
+              transaction={multisigTx || transferTx}
+              isQrExpired={isQrExpired}
+              countdown={countdown}
+              onResetCountdown={resetCountdown}
+              onResult={setUnsignedTx}
+              {...commonProps}
+            />
 
-                <div className="flex w-full justify-between">
-                  <Button variant="text" onClick={() => setActiveStep(Step.CONFIRMATION)}>
-                    {t('operation.goBackButton')}
-                  </Button>
+            <div className="flex w-full justify-between">
+              <Button variant="text" onClick={() => setActiveStep(Step.CONFIRMATION)}>
+                {t('operation.goBackButton')}
+              </Button>
 
-                  <Button onClick={() => setActiveStep(Step.SIGNING)}>{t('operation.continueButton')}</Button>
-                </div>
-              </>
-            )}
-            {activeStep === Step.SIGNING && (
-              <Signing
-                chainId={chainId}
-                transaction={multisigTx || transferTx}
-                assetId={assetId.toString()}
-                countdown={countdown}
-                onQrExpired={handleQrExpiredWhileSigning}
-                onStartOver={onStartOver}
-                onResult={onSignResult}
-                {...commonProps}
-              />
-            )}
+              <Button onClick={() => setActiveStep(Step.SIGNING)}>{t('operation.continueButton')}</Button>
+            </div>
           </>
-        ) : (
-          <ChainLoader chainName={chainName} />
+        )}
+        {activeStep === Step.SIGNING && (
+          <Signing
+            chainId={chainId}
+            transaction={multisigTx || transferTx}
+            assetId={assetId.toString()}
+            countdown={countdown}
+            onQrExpired={handleQrExpiredWhileSigning}
+            onStartOver={onStartOver}
+            onResult={onSignResult}
+            {...commonProps}
+          />
         )}
       </BaseModal>
 
@@ -180,6 +174,7 @@ const Transfer = ({ assetId, chainId, isOpen, onClose }: Props) => {
           unsignedTx={unsignedTx}
           signature={signature}
           description={description}
+          onClose={() => setActiveStep(Step.INIT)}
           {...commonProps}
         />
       )}
