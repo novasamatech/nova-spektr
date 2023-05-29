@@ -6,7 +6,6 @@ import QrReader from './QrCode/QrReader/QrReader';
 import QrSignatureReader from './QrCode/QrReader/QrSignatureReader';
 import QrTextGenerator from './QrCode/QrGenerator/QrTextGenerator';
 import ValidatorsTable from './ValidatorsTable/ValidatorsTable';
-import StakingActions from './StakingActions/StakingActions';
 import QrTxGenerator from './QrCode/QrGenerator/QrTxGenerator';
 import ActiveAddress from './ActiveAddress/ActiveAddress';
 import ChainLoader from './ChainLoader/ChainLoader';
@@ -36,7 +35,6 @@ export {
   QrSignatureReader,
   QrTextGenerator,
   ValidatorsTable,
-  StakingActions,
   QrTxGenerator,
   ChainLoader,
   Explorers,

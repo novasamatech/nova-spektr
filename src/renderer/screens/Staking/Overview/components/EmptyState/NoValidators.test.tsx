@@ -1,6 +1,6 @@
 import { render, screen } from '@testing-library/react';
 
-import NoAccounts from './NoAccounts';
+import NoValidators from './NoValidators';
 
 jest.mock('@renderer/context/I18nContext', () => ({
   useI18n: jest.fn().mockReturnValue({
@@ -8,11 +8,11 @@ jest.mock('@renderer/context/I18nContext', () => ({
   }),
 }));
 
-describe('screens/Staking/Overview/NoAccounts', () => {
+describe('screens/Staking/Overview/NoValidators', () => {
   test('should render component', () => {
-    render(<NoAccounts />);
+    render(<NoValidators />);
 
-    const label = screen.getByText('staking.overview.noAccountsLabel');
+    const label = screen.getByText('staking.overview.noValidatorsLabel');
     expect(label).toBeInTheDocument();
   });
 });

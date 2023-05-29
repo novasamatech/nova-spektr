@@ -57,7 +57,7 @@ describe('screens/Staking/Overview/AboutStaking', () => {
     });
 
     const loaders = screen.getAllByTestId('shimmer');
-    expect(loaders).toHaveLength(9);
+    expect(loaders).toHaveLength(5);
   });
 
   test('should show whole info', async () => {
@@ -65,17 +65,11 @@ describe('screens/Staking/Overview/AboutStaking', () => {
       render(<AboutStaking api={api} era={100} asset={asset} validators={validators} />);
     });
 
-    const monthlyEarning = screen.getByText(/1.27%/);
-    const allYearlyEarning = screen.getAllByText(/16.35%/);
-    const averageApyLabel = screen.getByText(/3%/);
     const totalStaked = screen.getByText(/assetBalance.number 1.42M/);
     const minimumStake = screen.getByText('assetBalance.number 1');
     const activeNominators = screen.getByText('2');
     const stakingPeriod = screen.getByText('staking.about.unlimitedLabel');
     const unstakingPeriod = screen.getByText('time.hours');
-    expect(monthlyEarning).toBeInTheDocument();
-    expect(allYearlyEarning).toHaveLength(2);
-    expect(averageApyLabel).toBeInTheDocument();
     expect(totalStaked).toBeInTheDocument();
     expect(minimumStake).toBeInTheDocument();
     expect(activeNominators).toBeInTheDocument();

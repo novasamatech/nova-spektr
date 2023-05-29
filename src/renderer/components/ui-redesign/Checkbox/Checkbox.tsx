@@ -27,32 +27,30 @@ const Checkbox = ({
   children,
   onChange,
   tabIndex,
-}: PropsWithChildren<Props>) => {
-  return (
-    <LabelText className={cnTw('flex items-center gap-x-2', !disabled && 'hover:cursor-pointer', className)}>
-      {Boolean(children) && position === 'left' && children}
-      <input
-        type="checkbox"
-        name="checkbox"
-        defaultChecked={defaultChecked}
-        disabled={disabled}
-        readOnly={readOnly}
-        checked={checked}
-        value={value}
-        className={cnTw(
-          'relative appearance-none w-4 h-4 text-button-text outline-offset-1',
-          'rounded border border-filter-border bg-button-text',
-          'checked:bg-icon-accent checked:border-0 checked:focus:border checked:border-icon-accent-default',
-          'hover:shadow-card-shadow hover:checked:bg-icon-accent-default',
-          'disabled:text-filter-border disabled:bg-main-app-background disabled:checked:bg-main-app-background',
-          !disabled && 'hover:cursor-pointer',
-        )}
-        tabIndex={tabIndex}
-        onChange={onChange}
-      />
-      {Boolean(children) && position === 'right' && children}
-    </LabelText>
-  );
-};
+}: PropsWithChildren<Props>) => (
+  <LabelText className={cnTw('flex items-center gap-x-2', !disabled && 'hover:cursor-pointer', className)}>
+    {Boolean(children) && position === 'left' && children}
+    <input
+      type="checkbox"
+      name="checkbox"
+      defaultChecked={defaultChecked}
+      disabled={disabled}
+      readOnly={readOnly}
+      checked={checked}
+      value={value}
+      className={cnTw(
+        'relative shrink-0 appearance-none w-4 h-4 text-button-text outline-offset-1',
+        'rounded border border-filter-border bg-button-text',
+        'checked:bg-icon-accent checked:border-0 checked:focus:border checked:border-icon-accent-default',
+        'hover:shadow-card-shadow hover:checked:bg-icon-accent-default',
+        'disabled:text-filter-border disabled:bg-main-app-background disabled:checked:bg-main-app-background',
+        !disabled && 'hover:cursor-pointer',
+      )}
+      tabIndex={tabIndex}
+      onChange={onChange}
+    />
+    {Boolean(children) && position === 'right' && children}
+  </LabelText>
+);
 
 export default Checkbox;

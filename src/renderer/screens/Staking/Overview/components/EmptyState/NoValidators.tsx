@@ -15,7 +15,7 @@ const NoAccounts = ({ className }: Props) => {
     <div className={cn('flex flex-col items-center justify-center gap-y-4', className)}>
       <img src={EmptyList} alt={t('staking.overview.noAccountsLabel')} width="178" height="172" />
       <FootnoteText className="w-52 text-center text-text-tertiary">
-        {t('staking.overview.noAccountsLabel')}
+        {t('staking.overview.noValidatorsLabel')}
       </FootnoteText>
     </div>
   );

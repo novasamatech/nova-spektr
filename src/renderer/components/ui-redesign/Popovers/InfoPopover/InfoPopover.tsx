@@ -35,9 +35,7 @@ const InfoPopover = ({ data, className, children, ...popoverProps }: PropsWithCh
           ) : (
             <Menu.Item key={id}>
               {/* // TODO check out why headless ui menu item type dont support className */}
-              <div className="rounded-md text-shade-100 ui-active:bg-primary ui-active:text-white h-8 w-full">
-                {value}
-              </div>
+              <div className="rounded-md text-shade-100 ui-active:bg-action-background-hover h-8 w-full">{value}</div>
             </Menu.Item>
           ),
         )}

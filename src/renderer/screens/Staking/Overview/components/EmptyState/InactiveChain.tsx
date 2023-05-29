@@ -1,16 +1,27 @@
-import { ButtonLink, Icon } from '@renderer/components/ui';
+import cn from 'classnames';
+
+import NoConnection from '@images/misc/no-connection.webp';
 import { useI18n } from '@renderer/context/I18nContext';
+import { FootnoteText, ButtonLink } from '@renderer/components/ui-redesign';
 import Paths from '@renderer/routes/paths';
 
-const InactiveChain = () => {
+type Props = {
+  className?: string;
+};
+
+const InactiveChain = ({ className }: Props) => {
   const { t } = useI18n();
 
   return (
-    <div className="flex flex-col items-center justify-center mt-10 mb-5">
-      <Icon as="img" name="noResults" size={380} />
-      <p className="text-neutral text-3xl font-bold">{t('staking.overview.networkDisabledLabel')}</p>
-      <p className="text-neutral-variant text-base font-normal">{t('staking.overview.networkDisabledDescription')}</p>
-      <ButtonLink className="mt-5" to={Paths.NETWORK} variant="fill" pallet="primary" weight="lg">
+    <div className={cn('flex flex-col items-center justify-center gap-y-7', className)}>
+      <img src={NoConnection} alt={t('staking.overview.noAccountsLabel')} width="178" height="172" />
+      <FootnoteText className="w-52 text-center text-text-tertiary">
+        {t('staking.overview.networkDisabledLabel')}
+      </FootnoteText>
+      <FootnoteText className="w-52 text-center text-text-tertiary">
+        {t('staking.overview.networkDisabledDescription')}
+      </FootnoteText>
+      <ButtonLink className="mt-5" to={Paths.NETWORK}>
         {t('staking.overview.networkSettingsLink')}
       </ButtonLink>
     </div>

@@ -79,9 +79,8 @@ jest.mock('@renderer/services/staking/stakingRewardsService', () => ({
 
 jest.mock('./components/NetworkInfo/NetworkInfo', () => () => <span>networkInfo</span>);
 // jest.mock('./components/AboutStaking/AboutStaking', () => () => <span>aboutStaking</span>);
-// jest.mock('./components/Filter/Filter', () => () => <span>filter</span>);
 jest.mock('./components/StakingList/StakingList', () => () => <span>stakingTable</span>);
-// jest.mock('./components/NominatorsModal/NominatorsModal', () => () => <span>nominatorsModal</span>);
+// jest.mock('./components/ValidatorsModal/ValidatorsModal', () => () => <span>nominatorsModal</span>);
 
 describe('screens/Staking/Overview', () => {
   beforeEach(() => {

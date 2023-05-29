@@ -467,14 +467,20 @@
     },
     "actions": {
       "destinationLabel": "Rewards destination",
+      "filterButton": "Filter",
+      "manageStakePlaceholder": "Manage stake",
+      "noOverlapPlaceholder": "No intersecting operation",
       "redeemLabel": "Redeem",
       "returnToStakeLabel": "Return to stake",
+      "selectAccPlaceholder": "Select accounts",
       "setValidatorsLabel": "Set validators",
       "stakeMoreLabel": "Stake more",
       "startStakingLabel": "Start staking",
       "unstakeLabel": "Unstake"
     },
     "badges": {
+      "redeemDescription": "Your tokens are ready to be withdrawn",
+      "redeemTitle": "Redeem",
       "unstakeDescription": "Your tokens are being unstaked<br />at the moment",
       "unstakeTitle": "Unstaking"
     },
@@ -546,11 +552,10 @@
       "electedTitle": "Elected",
       "nominated": "Nominated",
       "notAssigned": "Not assigned",
-      "notElectedDescription": "Validators without enough stake to be elected",
       "notElectedTitle": "Not Elected",
       "rewards": "Rewards (APY)",
       "validators": "Validators",
-      "yourValidatorsTitle": "Your validators"
+      "yourValidatorsTitle": "Selected validators"
     },
     "notEnoughBalanceError": "Not enough funds to complete operation",
     "notEnoughBalanceForDepositError": "Insufficient balance to pay deposit",
@@ -563,18 +568,15 @@
       "actionsTitle": "Accounts",
       "emptyFilterDescription": "Try another filter parameters",
       "emptyFilterLabel": "No results",
-      "filterButton": "Filters",
-      "networkDisabledDescription": "Please, to go the network settings and check the connection",
+      "networkDisabledDescription": "Please, check the connection in Network Settings",
       "networkDisabledLabel": "Network is inactive",
       "networkPlaceholder": "Select network",
       "networkSettingsLink": "Network settings",
-      "noAccountsDescription": "Please, select <strong>{ chainName }</strong> accounts to continue staking",
-      "noAccountsLabel": "No accounts are selected",
+      "noAccountsLabel": "Your haven’t got any account to start staking",
       "noActiveWalletsDescription": "Please select a wallet for staking",
       "noActiveWalletsLabel": "No wallet selected",
       "noResultsDescription": "Please try another filter parameters",
       "noResultsLabel": "No staking found",
-      "noValidatorsDescription": "This account has not nominated any validators yet",
       "noValidatorsLabel": "No validators nominated",
       "rewardsTableHeader": "Total rewards",
       "searchPlaceholder": "Search by account name",
@@ -636,7 +638,7 @@
       "slashedPopoverTitle": "Slashed",
       "subtitle": "Validators",
       "totalStakeTableHeader": "Total stake",
-      "validatorsTableHeader": "Validators"
+      "validatorsTableHeader": "Accounts"
     },
     "warning": {
       "controller": "This operation works with <strong>Controller</strong> accounts only.<br />Would you like to deselect <strong>Stash</strong> accounts to continue?",

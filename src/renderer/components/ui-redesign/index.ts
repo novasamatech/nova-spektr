@@ -4,6 +4,7 @@ import AmountInput from './Inputs/AmountInput/AmountInput';
 import PasswordInput from './Inputs/PasswordInput/PasswordInput';
 import InputHint from './InputHint/InputHint';
 import Button from './Buttons/Button/Button';
+import ButtonLink from './Buttons/ButtonLink/ButtonLink';
 import ButtonBack from './Buttons/ButtonBack/ButtonBack';
 import BaseModal from './Modals/BaseModal/BaseModal';
 import InfoPopover from './Popovers/InfoPopover/InfoPopover';
@@ -16,6 +17,7 @@ import Checkbox from './Checkbox/Checkbox';
 import MultiSelect from './Dropdowns/MultiSelect/MultiSelect';
 import MenuPopover from './Popovers/MenuPopover/MenuPopover';
 import IconButton from './Buttons/IconButton/IconButton';
+import DropdownButton from './Dropdowns/DropdownButton/DropdownButton';
 import {
   LargeTitleText,
   TitleText,
@@ -34,6 +36,7 @@ export {
   PasswordInput,
   InputHint,
   Button,
+  ButtonLink,
   ButtonBack,
   IconButton,
   BaseModal,
@@ -54,4 +57,5 @@ export {
   PopoverLink,
   Checkbox,
   MultiSelect,
+  DropdownButton,
 };

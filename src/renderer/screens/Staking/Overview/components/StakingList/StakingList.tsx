@@ -11,6 +11,7 @@ import { Explorer } from '@renderer/domain/chain';
 import { Asset } from '@renderer/domain/asset';
 import TimeToEra from '../TimeToEra/TimeToEra';
 import { HelpText } from '@renderer/components/ui-redesign/Typography';
+import { redeemableAmount } from '@renderer/shared/utils/balance';
 
 const getNextUnstakingEra = (unlocking: Unlocking[] = [], era?: number): EraIndex | undefined => {
   if (!era) return undefined;
@@ -20,12 +21,18 @@ const getNextUnstakingEra = (unlocking: Unlocking[] = [], era?: number): EraInde
   return unlockingMatch ? Number(unlockingMatch.era) : undefined;
 };
 
+const hasRedeem = (unlocking: Unlocking[] = [], era?: number): boolean => {
+  if (!era || unlocking.length === 0) return false;
+
+  return Boolean(redeemableAmount(unlocking, era));
+};
+
 export type AccountStakeInfo = {
   address: Address;
   stash?: Address;
   signingType: SigningType;
   accountName: string;
-  // accountIsSelected: boolean;
+  isSelected: boolean;
   totalReward?: string;
   totalStake?: string;
   unlocking?: Unlocking[];
@@ -35,46 +42,33 @@ type Props = {
   api?: ApiPromise;
   era?: number;
   stakeInfo: AccountStakeInfo[];
-  // selectedStakes: Address[];
   asset?: Asset;
   explorers?: Explorer[];
-  // addressPrefix?: number;
   onCheckValidators: (stash?: Address) => void;
-  // selectStaking: (keys: string[]) => void;
+  onToggleNominator: (nominator: Address) => void;
 };
 
-const StakingList = ({
-  api,
-  era,
-  stakeInfo,
-  // selectedStakes,
-  asset,
-  explorers,
-  onCheckValidators,
-}: // addressPrefix,
-// openValidators,
-// selectStaking,
-Props) => {
+const StakingList = ({ api, era, stakeInfo, asset, explorers, onCheckValidators, onToggleNominator }: Props) => {
   const { t } = useI18n();
 
   const getExplorers = (address: Address, stash?: Address, explorers: Explorer[] = []) => {
-    const validatorsButton = (
-      <button
-        type="button"
-        className="flex items-center gap-x-2 px-2 w-full h-full group hover:text-white focus:text-white"
-        onClick={() => onCheckValidators(stash)}
-      >
-        <Icon name="asset" size={16} />
-        <FootnoteText as="span" className="group-hover:text-white">
-          {t('staking.overview.viewValidatorsOption')}
-        </FootnoteText>
-      </button>
-    );
-
     const explorersContent = explorers.map((explorer) => ({
       id: explorer.name,
       value: <ExplorerLink explorer={explorer} address={address} />,
     }));
+
+    if (!stash) return [{ items: explorersContent }];
+
+    const validatorsButton = (
+      <button
+        type="button"
+        className="flex items-center gap-x-2 px-2 w-full h-full"
+        onClick={() => onCheckValidators(stash)}
+      >
+        <Icon name="viewValidators" size={16} />
+        <FootnoteText as="span">{t('staking.overview.viewValidatorsOption')}</FootnoteText>
+      </button>
+    );
 
     return [{ items: [{ id: '0', value: validatorsButton }] }, { items: explorersContent }];
   };
@@ -107,12 +101,30 @@ Props) => {
             </Popover>
           );
 
+          const redeemBadge = hasRedeem(stake.unlocking, era) && (
+            <Popover
+              offsetPx={-48}
+              contentClass="py-1 px-2 bg-switch-background-active rounded w-max"
+              position="left-1/2 -translate-x-1/2"
+              content={
+                <HelpText className="text-white">
+                  <Trans t={t} i18nKey="staking.badges.redeemDescription" />
+                </HelpText>
+              }
+            >
+              <div className="flex gap-x-1 items-center rounded-md bg-positive-background text-text-positive text-2xs px-2 py-0.5">
+                <Icon name="redeem" className="text-text-positive" size={14} />
+                {t('staking.badges.redeemTitle')}
+              </div>
+            </Popover>
+          );
+
           return (
             <li key={stake.address}>
               <Plate className="grid grid-cols-[226px,104px,104px,16px] items-center gap-x-6">
-                <Checkbox onChange={console.log}>
+                <Checkbox checked={stake.isSelected} onChange={() => onToggleNominator(stake.address)}>
                   <AccountAddress name={stake.accountName} address={stake.address} />
-                  {unstakeBadge}
+                  {unstakeBadge || redeemBadge}
                 </Checkbox>
                 {stake.totalStake === undefined || !asset ? (
                   <Shimmering width={104} height={14} />

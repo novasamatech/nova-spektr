@@ -96,7 +96,7 @@ const Dropdown = ({
             <Listbox.Options
               className={cnTw(
                 'absolute z-20 py-2.5 px-2 max-h-60 w-full overflow-auto shadow-element',
-                'border border-primary rounded-2lg bg-white shadow-surface',
+                'border border-primary rounded bg-white shadow-surface',
                 variant !== 'auto' && ViewClass[variant],
               )}
             >
@@ -106,7 +106,7 @@ const Dropdown = ({
                   value={{ id, value }}
                   className={({ active, selected }) =>
                     cnTw(
-                      'flex items-center cursor-pointer select-none px-2.5 rounded-2lg mb-[2px] last:mb-0',
+                      'flex items-center cursor-pointer select-none px-2.5 rounded mb-0.5 last:mb-0',
                       (active || selected) && 'bg-shade-5',
                       style.option,
                     )

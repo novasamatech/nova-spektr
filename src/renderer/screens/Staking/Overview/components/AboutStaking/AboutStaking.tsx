@@ -7,9 +7,8 @@ import { useI18n } from '@renderer/context/I18nContext';
 import { Asset } from '@renderer/domain/asset';
 import { Address, EraIndex } from '@renderer/domain/shared-kernel';
 import { Validator } from '@renderer/domain/validator';
-import { getAvgApy } from '@renderer/services/staking/apyCalculator';
 import { useStakingData } from '@renderer/services/staking/stakingDataService';
-import { FootnoteText, LargeTitleText, TitleText } from '@renderer/components/ui-redesign';
+import { FootnoteText } from '@renderer/components/ui-redesign';
 
 type Props = {
   api?: ApiPromise;
@@ -18,11 +17,11 @@ type Props = {
   validators: Validator[];
 };
 
-const apyToMonthlyRate = (apy: number) => {
-  const monthly = Math.pow(1 + apy / 100, 1 / 12) - 1;
-
-  return (monthly * 100).toFixed(2);
-};
+// const apyToMonthlyRate = (apy: number) => {
+//   const monthly = Math.pow(1 + apy / 100, 1 / 12) - 1;
+//
+//   return (monthly * 100).toFixed(2);
+// };
 
 const AboutStaking = ({ api, era, asset, validators }: Props) => {
   const { t } = useI18n();
@@ -32,7 +31,7 @@ const AboutStaking = ({ api, era, asset, validators }: Props) => {
   const [minimumStake, setMinimumStake] = useState('');
   const [unstakingPeriod, setUnstakingPeriod] = useState('');
   const [totalStaked, setTotalStaked] = useState('');
-  const [averageApy, setAverageApy] = useState('');
+  // const [averageApy, setAverageApy] = useState('');
 
   useEffect(() => {
     if (!api?.isConnected) return;
@@ -49,11 +48,11 @@ const AboutStaking = ({ api, era, asset, validators }: Props) => {
   useEffect(() => {
     if (!api?.isConnected || !era) return;
 
-    getAvgApy(api, validators).then(setAverageApy);
+    // getAvgApy(api, validators).then(setAverageApy);
     getTotalStaked(api, era).then(setTotalStaked);
 
     return () => {
-      setAverageApy('');
+      // setAverageApy('');
       setTotalStaked('');
     };
   }, [api, era, validators.length]);
@@ -68,7 +67,7 @@ const AboutStaking = ({ api, era, asset, validators }: Props) => {
     return new Set(nominatorsAddresses).size;
   }, [validators.length]);
 
-  const maximumApy = validators.reduce((acc, validator) => Math.max(acc, validator.apy), 0);
+  // const maximumApy = validators.reduce((acc, validator) => Math.max(acc, validator.apy), 0);
 
   return (
     <div className="flex flex-col gap-y-2">
@@ -76,32 +75,34 @@ const AboutStaking = ({ api, era, asset, validators }: Props) => {
         <Trans t={t} i18nKey="staking.about.aboutStakingTitle" values={{ asset: asset?.symbol }} />
       </FootnoteText>
 
-      <div className="grid grid-cols-2 gap-x-4">
-        <div className="rounded-md bg-block-background py-5 px-4">
-          <div className="grid grid-cols-2 auto-rows-min gap-x-7">
-            <FootnoteText>{t('staking.about.monthlyEarningLabel')}</FootnoteText>
-            <FootnoteText>{t('staking.about.yearlyEarningLabel')}</FootnoteText>
+      {/* TODO: APY calculation must be revisited */}
+      {/*<div className="grid grid-cols-2 gap-x-4">*/}
+      {/*<div className="rounded-md bg-block-background py-5 px-4">*/}
+      {/*  <div className="grid grid-cols-2 auto-rows-min gap-x-7">*/}
+      {/*    <FootnoteText>{t('staking.about.monthlyEarningLabel')}</FootnoteText>*/}
+      {/*    <FootnoteText>{t('staking.about.yearlyEarningLabel')}</FootnoteText>*/}
 
-            {maximumApy ? (
-              <LargeTitleText as="p">{apyToMonthlyRate(maximumApy)}%</LargeTitleText>
-            ) : (
-              <Shimmering width={96} height={36} />
-            )}
-            {maximumApy ? <LargeTitleText as="p">{maximumApy}%</LargeTitleText> : <Shimmering width={96} height={36} />}
-          </div>
+      {/*    {maximumApy ? (*/}
+      {/*      <LargeTitleText as="p">{apyToMonthlyRate(maximumApy)}%</LargeTitleText>*/}
+      {/*    ) : (*/}
+      {/*      <Shimmering width={96} height={36} />*/}
+      {/*    )}*/}
+      {/*    {maximumApy ? <LargeTitleText as="p">{maximumApy}%</LargeTitleText> : <Shimmering width={96} height={36} />}*/}
+      {/*  </div>*/}
 
-          <hr className="border-divider my-2" />
+      {/*  <hr className="border-divider my-2" />*/}
 
-          <div className="grid grid-cols-2 auto-rows-min gap-x-7">
-            <FootnoteText className="text-text-secondary">{t('staking.about.maximumApyLabel')}</FootnoteText>
-            <FootnoteText className="text-text-secondary">{t('staking.about.averageApyLabel')}</FootnoteText>
+      {/*  <div className="grid grid-cols-2 auto-rows-min gap-x-7">*/}
+      {/*    <FootnoteText className="text-text-secondary">{t('staking.about.maximumApyLabel')}</FootnoteText>*/}
+      {/*    <FootnoteText className="text-text-secondary">{t('staking.about.averageApyLabel')}</FootnoteText>*/}
 
-            {maximumApy ? <TitleText>{maximumApy}%</TitleText> : <Shimmering width={96} height={30} />}
-            {averageApy ? <TitleText>{averageApy}%</TitleText> : <Shimmering width={96} height={30} />}
-          </div>
-        </div>
+      {/*    {maximumApy ? <TitleText>{maximumApy}%</TitleText> : <Shimmering width={96} height={30} />}*/}
+      {/*    {averageApy ? <TitleText>{averageApy}%</TitleText> : <Shimmering width={96} height={30} />}*/}
+      {/*  </div>*/}
+      {/*</div>*/}
 
-        <div className="grid grid-cols-2 grid-flow-row auto-rows-min content-center gap-y-3">
+      <div className="grid grid-cols-2 gap-y-3 gap-x-6">
+        <div className="flex justify-between gap-x-1">
           <FootnoteText className="text-text-secondary">{t('staking.about.totalStakedLabel')}</FootnoteText>
           {totalStaked ? (
             <FootnoteText align="right">
@@ -110,7 +111,9 @@ const AboutStaking = ({ api, era, asset, validators }: Props) => {
           ) : (
             <Shimmering className="justify-self-end" width={100} height={18} />
           )}
+        </div>
 
+        <div className="flex justify-between gap-x-1">
           <FootnoteText className="text-text-secondary">{t('staking.about.minimumStakeLabel')}</FootnoteText>
           {minimumStake ? (
             <FootnoteText align="right">
@@ -119,21 +122,27 @@ const AboutStaking = ({ api, era, asset, validators }: Props) => {
           ) : (
             <Shimmering className="justify-self-end" width={100} height={18} />
           )}
+        </div>
 
+        <div className="flex justify-between gap-x-1">
           <FootnoteText className="text-text-secondary">{t('staking.about.activeNominatorsLabel')}</FootnoteText>
           {activeNominatorsAmount ? (
             <FootnoteText align="right">{activeNominatorsAmount}</FootnoteText>
           ) : (
             <Shimmering className="justify-self-end" width={100} height={18} />
           )}
+        </div>
 
+        <div className="flex justify-between gap-x-1">
           <FootnoteText className="text-text-secondary">{t('staking.about.stakingPeriodLabel')}</FootnoteText>
           {unstakingPeriod ? (
             <FootnoteText align="right">{t('staking.about.unlimitedLabel')}</FootnoteText>
           ) : (
             <Shimmering className="justify-self-end" width={100} height={18} />
           )}
+        </div>
 
+        <div className="flex justify-between gap-x-1">
           <FootnoteText className="text-text-secondary">{t('staking.about.unstakingPeriodLabel')}</FootnoteText>
           {unstakingPeriod ? (
             <FootnoteText align="right">
