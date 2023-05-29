@@ -108,8 +108,7 @@ const OperationFullInfo = ({ tx, account }: Props) => {
               {explorerLink && (
                 <InfoLink
                   url={explorerLink}
-                  className="flex items-center gap-x-0.5 ml-0.5"
-                  fontClass="text-footnote font-medium font-inter"
+                  className="flex items-center gap-x-0.5 ml-0.5 text-footnote font-medium font-inter"
                 >
                   <span>{t('operation.explorerLink')}</span>
                   <Icon name="right" size={16} />
