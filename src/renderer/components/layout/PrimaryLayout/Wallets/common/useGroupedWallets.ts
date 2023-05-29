@@ -3,7 +3,7 @@ import { uniq } from 'lodash';
 
 import { AccountDS, WalletDS } from '@renderer/services/storage';
 import { ChainsRecord, GroupedWallets } from './types';
-import { getWalletStructure } from '@renderer/components/layout/PrimaryLayout/Wallets/common/utils';
+import { getMultishardStructure } from '@renderer/components/layout/PrimaryLayout/Wallets/common/utils';
 import { SigningType, WalletType } from '@renderer/domain/shared-kernel';
 import { includes } from '@renderer/shared/utils/strings';
 import { useAccount } from '@renderer/services/account/accountService';
@@ -60,7 +60,7 @@ export const useGroupedWallets = (
   const getMultishardWallets = () =>
     liveWallets
       .filter((w) => w.id && w.type === WalletType.MULTISHARD_PARITY_SIGNER)
-      .map((w) => ({ ...w, ...getWalletStructure(paritySignerAccounts, chains, w.id!) }));
+      .map((w) => ({ ...w, ...getMultishardStructure(paritySignerAccounts, chains, w.id!) }));
 
   return wallets;
 };

@@ -1,4 +1,4 @@
-input[type='checkbox']:checked::before {
+input[type='checkbox'].old-checkbox:checked::before {
   content: '✓';
   color: white;
   display: block;

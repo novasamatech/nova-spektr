@@ -9,6 +9,17 @@ input[type='checkbox']:checked::before {
   text-align: center;
 }
 
+input[type='checkbox'].semi-checked::before {
+  content: '-';
+  color: inherit;
+  display: block;
+  width: 100%;
+  line-height: 16px;
+  font-weight: bold;
+  font-size: 14px;
+  text-align: center;
+}
+
 input::-webkit-outer-spin-button,
 input::-webkit-inner-spin-button {
   appearance: none;
