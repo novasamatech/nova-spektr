@@ -6,7 +6,7 @@ import { useNetworkContext } from '@renderer/context/NetworkContext';
 import { Asset } from '@renderer/domain/asset';
 import { Chain } from '@renderer/domain/chain';
 import { ConnectionType } from '@renderer/domain/connection';
-import { AccountId, ChainId, SigningType } from '@renderer/domain/shared-kernel';
+import { ChainId, SigningType } from '@renderer/domain/shared-kernel';
 import { useToggle } from '@renderer/shared/hooks';
 import { useChains } from '@renderer/services/network/chainsService';
 import { useSettingsStorage } from '@renderer/services/settings/settingsStorage';
@@ -24,7 +24,8 @@ const Balances = () => {
   const { t } = useI18n();
 
   const [query, setQuery] = useState('');
-  const [accountIds, setAccountIds] = useState<AccountId[]>([]);
+  const [activeAccounts, setActiveAccounts] = useState<AccountDS[]>([]);
+  const accountIds = activeAccounts.map((a) => a.accountId).filter((a) => a);
   const [usedChains, setUsedChains] = useState<Record<ChainId, boolean>>({});
   const [data, setData] = useState<DataPayload>();
 
@@ -35,8 +36,8 @@ const Balances = () => {
   const { connections } = useNetworkContext();
   const { getActiveAccounts } = useAccount();
   const { sortChains } = useChains();
-  const activeAccounts = getActiveAccounts();
-  const isMultishard = activeAccounts.length > 1;
+  const activeAccountsFromWallet = getActiveAccounts();
+  const isMultishard = activeAccountsFromWallet.length > 1;
 
   const { setHideZeroBalance, getHideZeroBalance } = useSettingsStorage();
   const [hideZeroBalance, setHideZeroBalanceState] = useState(getHideZeroBalance());
@@ -47,25 +48,21 @@ const Balances = () => {
   };
 
   useEffect(() => {
-    updateChainsAndAccounts(activeAccounts);
-  }, [activeAccounts.length]);
+    updateChainsAndAccounts(activeAccountsFromWallet);
+  }, [activeAccountsFromWallet.length]);
 
   const updateChainsAndAccounts = (accounts: AccountDS[]) => {
     if (accounts.length === 0) {
-      setAccountIds([]);
+      setActiveAccounts([]);
 
       return;
     }
-
-    const activeAccountIds = accounts.reduce<AccountId[]>((acc, account) => {
-      return account.accountId ? [...acc, account.accountId] : acc;
-    }, []);
 
     const usedChains = accounts.reduce<Record<ChainId, boolean>>((acc, account) => {
       return account.chainId ? { ...acc, [account.chainId]: true } : acc;
     }, {});
 
-    setAccountIds(activeAccountIds);
+    setActiveAccounts(accounts);
     setUsedChains(usedChains);
   };
 
@@ -102,9 +99,11 @@ const Balances = () => {
     toggleTransfer();
   };
 
-  const handleShardSelect = (selectedIds?: AccountId[]) => {
+  const handleShardSelect = (selectedAccounts?: AccountDS[]) => {
     toggleSelectShardsOpen();
-    selectedIds && setAccountIds(selectedIds);
+    if (selectedAccounts) {
+      updateChainsAndAccounts(selectedAccounts);
+    }
   };
 
   return (
@@ -173,8 +172,8 @@ const Balances = () => {
       )}
       {isMultishard && (
         <SelectShardModal
-          accounts={activeAccounts}
-          activeIds={accountIds}
+          accounts={activeAccountsFromWallet}
+          activeAccounts={activeAccounts}
           connections={connections}
           isOpen={isSelectShardsOpen}
           onClose={handleShardSelect}

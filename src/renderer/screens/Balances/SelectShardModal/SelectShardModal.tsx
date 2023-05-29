@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 
-import { AccountId, ChainId } from '@renderer/domain/shared-kernel';
+import { ChainId } from '@renderer/domain/shared-kernel';
 import { BaseModal, Button, Checkbox, FootnoteText, SearchInput } from '@renderer/components/ui-redesign';
 import { useI18n } from '@renderer/context/I18nContext';
 import { AccountDS } from '@renderer/services/storage';
@@ -21,16 +21,17 @@ import {
 
 type Props = {
   accounts: AccountDS[];
-  activeIds: AccountId[];
+  activeAccounts: AccountDS[];
   connections: ConnectionsMap;
   isOpen: boolean;
-  onClose: (selectedIds?: AccountId[]) => void;
+  onClose: (selectedAccounts?: AccountDS[]) => void;
 };
 
-const SelectShardModal = ({ isOpen, onClose, activeIds, accounts, connections }: Props) => {
+const SelectShardModal = ({ isOpen, onClose, activeAccounts, accounts, connections }: Props) => {
   if (!accounts[0]?.walletId) return null;
 
   const { t } = useI18n();
+  const activeIds = activeAccounts.map((a) => a.accountId);
 
   useEffect(() => {
     const multishard = getMultishardStructure(accounts, connections, accounts[0].walletId!);
@@ -38,7 +39,7 @@ const SelectShardModal = ({ isOpen, onClose, activeIds, accounts, connections }:
 
     setShards(selectable);
     setQuery('');
-  }, [activeIds]);
+  }, []);
 
   const [shards, setShards] = useState<SelectableShards>({ rootAccounts: [], amount: 0 });
   const [query, setQuery] = useState('');
@@ -90,13 +91,15 @@ const SelectShardModal = ({ isOpen, onClose, activeIds, accounts, connections }:
   };
 
   const handleSubmit = () => {
-    const selectedIds: AccountId[] = [];
+    const selected: AccountDS[] = [];
     shards.rootAccounts.forEach((root) => {
-      root.isSelected && selectedIds.push(root.accountId);
-      root.chains.forEach((chain) => chain.accounts.forEach((a) => a.isSelected && selectedIds.push(a.accountId)));
+      if (root.isSelected) {
+        selected.push(root);
+      }
+      root.chains.forEach((chain) => chain.accounts.forEach((a) => a.isSelected && selected.push(a)));
     });
 
-    onClose(selectedIds);
+    onClose(selected);
   };
 
   const searchedShards = searchShards(shards, query);
