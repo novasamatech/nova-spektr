@@ -58,7 +58,7 @@ const OperationFullInfo = ({ tx, account }: Props) => {
       senderAccountId: tx.depositor || '0x00',
       chainId: tx.chainId,
       callHash: tx.callHash,
-      callData: callData,
+      callData,
       callTimepoint: {
         index: tx.indexCreated || 0,
         height: tx.blockCreated || 0,
@@ -108,8 +108,7 @@ const OperationFullInfo = ({ tx, account }: Props) => {
               {explorerLink && (
                 <InfoLink
                   url={explorerLink}
-                  className="flex items-center gap-x-0.5 ml-0.5"
-                  fontClass="text-footnote font-medium font-inter"
+                  className="flex items-center gap-x-0.5 ml-0.5 text-footnote font-medium font-inter"
                 >
                   <span>{t('operation.explorerLink')}</span>
                   <Icon name="right" size={16} />
