@@ -82,54 +82,52 @@ const ReceiveModal = ({ data, isOpen, onClose }: Props) => {
       isOpen={isOpen}
       onClose={onClose}
     >
-      <>
-        <Select
-          placeholder={t('receive.selectWalletPlaceholder')}
-          className="w-full mb-6"
-          disabled={activeAccountsOptions.length === 1}
-          selectedId={activeAccount?.id}
-          options={activeAccountsOptions}
-          onChange={setActiveAccount}
-        />
+      <Select
+        placeholder={t('receive.selectWalletPlaceholder')}
+        className="w-full mb-6"
+        disabled={activeAccountsOptions.length === 1}
+        selectedId={activeAccount?.id}
+        options={activeAccountsOptions}
+        onChange={setActiveAccount}
+      />
 
-        <FootnoteText className="w-[240px] mb-4" align="center">
-          {/* eslint-disable-next-line i18next/no-literal-string */}
-          {t('receive.sendOnlyLabel')} {data.asset.symbol} ({data.asset.name}){' '}
-          {t('receive.chainLabel', { name: data.chain.name })}
-        </FootnoteText>
+      <FootnoteText className="w-[240px] mb-4" align="center">
+        {/* eslint-disable-next-line i18next/no-literal-string */}
+        {t('receive.sendOnlyLabel')} {data.asset.symbol} ({data.asset.name}){' '}
+        {t('receive.chainLabel', { name: data.chain.name })}
+      </FootnoteText>
 
-        <QrTextGenerator
-          skipEncoding
-          className={cn('mb-4', !activeAccount && 'invisible')}
-          payload={qrCodePayload}
-          size={240}
-        />
+      <QrTextGenerator
+        skipEncoding
+        className={cn('mb-4', !activeAccount && 'invisible')}
+        payload={qrCodePayload}
+        size={240}
+      />
 
-        {(data.chain.explorers || []).length > 0 && (
-          <ul className="flex gap-x-2 mb-4">
-            {data.chain.explorers?.map(({ name, account }) => (
-              <li aria-label={t('receive.explorerLinkLabel', { name })} key={name} className="flex">
-                <a
-                  href={account?.replace('{address}', address)}
-                  rel="noopener noreferrer"
-                  target="_blank"
-                  className="flex py-1 px-1.5 w-6 h-6"
-                >
-                  <Icon size={16} as="img" name={ExplorerIcons[name]} />
-                </a>
-              </li>
-            ))}
-          </ul>
-        )}
+      {(data.chain.explorers || []).length > 0 && (
+        <ul className="flex gap-x-2 mb-4">
+          {data.chain.explorers?.map(({ name, account }) => (
+            <li aria-label={t('receive.explorerLinkLabel', { name })} key={name} className="flex">
+              <a
+                href={account?.replace('{address}', address)}
+                rel="noopener noreferrer"
+                target="_blank"
+                className="flex py-1 px-1.5 w-6 h-6"
+              >
+                <Icon size={16} as="img" name={ExplorerIcons[name]} />
+              </a>
+            </li>
+          ))}
+        </ul>
+      )}
 
-        <HelpText className="w-[240px] mb-2 break-all" align="center">
-          {toAddress(accountId, { prefix })}
-        </HelpText>
+      <HelpText className="w-[240px] mb-2 break-all" align="center">
+        {toAddress(accountId, { prefix })}
+      </HelpText>
 
-        <Button variant="text" size="sm" onClick={() => copyToClipboard(address)}>
-          {t('receive.copyAddressButton')}
-        </Button>
-      </>
+      <Button variant="text" size="sm" onClick={() => copyToClipboard(address)}>
+        {t('receive.copyAddressButton')}
+      </Button>
     </BaseModal>
   );
 };

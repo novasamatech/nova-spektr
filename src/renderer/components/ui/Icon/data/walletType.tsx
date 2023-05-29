@@ -18,6 +18,6 @@ const WalletTypeImages = {
   multishard: { svg: MultishardSvg, img: MultishardImg },
 } as const;
 
-export type WalletImagesUnion = keyof typeof WalletTypeImages;
+export type WalletImages = keyof typeof WalletTypeImages;
 
 export default WalletTypeImages;

@@ -73,59 +73,57 @@ export const MultisigChainProvider = ({ children }: PropsWithChildren) => {
     const unsubscribeMultisigs: (() => void)[] = [];
     const unsubscribeEvents: UnsubscribePromise[] = [];
 
-    if (account) {
-      Object.values(connections).forEach(({ api, addressPrefix }) => {
-        if (!api?.query.multisig) return;
+    if (!account) return;
 
-        const unsubscribeMultisig = subscribeMultisigAccount(api, account as MultisigAccount);
-        unsubscribeMultisigs.push(unsubscribeMultisig);
+    Object.values(connections).forEach(({ api, addressPrefix }) => {
+      if (!api?.query.multisig) return;
 
-        const successParams = {
-          section: 'multisig',
-          method: 'MultisigExecuted',
-          data: [undefined, undefined, toAddress(account.accountId, { prefix: addressPrefix })],
-        };
-        const unsubscribeSuccessEvent = subscribeEvents(api, successParams, (event: Event) => {
-          console.log(
-            `Receive MultisigExecuted event for ${
-              account.accountId
-            } with call hash ${event.data[3].toHex()} with result ${event.data[4]}`,
-          );
-          const multisigResult = event.data[4].toString();
-          eventCallback(
-            account as MultisigAccount,
-            event,
-            ['PENDING_SIGNED', 'SIGNED'],
-            'SIGNED',
-            multisigResult === MULTISIG_RESULT_SUCCESS && !multisigResult.includes(MULTISIG_RESULT_ERROR)
-              ? MultisigTxFinalStatus.EXECUTED
-              : MultisigTxFinalStatus.ERROR,
-          ).catch(console.warn);
-        });
-        unsubscribeEvents.push(unsubscribeSuccessEvent);
+      const unsubscribeMultisig = subscribeMultisigAccount(api, account as MultisigAccount);
+      unsubscribeMultisigs.push(unsubscribeMultisig);
 
-        const cancelParams = {
-          section: 'multisig',
-          method: 'MultisigCancelled',
-          data: [undefined, undefined, toAddress(account.accountId, { prefix: addressPrefix })],
-        };
-        const unsubscribeCancelEvent = subscribeEvents(api, cancelParams, (event: Event) => {
-          console.log(
-            `Receive MultisigCancelled event for ${account.accountId} with call hash ${event.data[3].toHex()}`,
-          );
-
-          eventCallback(
-            account as MultisigAccount,
-            event,
-            ['PENDING_CANCELLED', 'CANCELLED'],
-            'CANCELLED',
-            MultisigTxFinalStatus.CANCELLED,
-          ).catch(console.warn);
-        });
-
-        unsubscribeEvents.push(unsubscribeCancelEvent);
+      const successParams = {
+        section: 'multisig',
+        method: 'MultisigExecuted',
+        data: [undefined, undefined, toAddress(account.accountId, { prefix: addressPrefix })],
+      };
+      const unsubscribeSuccessEvent = subscribeEvents(api, successParams, (event: Event) => {
+        console.log(
+          `Receive MultisigExecuted event for ${
+            account.accountId
+          } with call hash ${event.data[3].toHex()} with result ${event.data[4]}`,
+        );
+        const multisigResult = event.data[4].toString();
+        eventCallback(
+          account as MultisigAccount,
+          event,
+          ['PENDING_SIGNED', 'SIGNED'],
+          'SIGNED',
+          multisigResult === MULTISIG_RESULT_SUCCESS && !multisigResult.includes(MULTISIG_RESULT_ERROR)
+            ? MultisigTxFinalStatus.EXECUTED
+            : MultisigTxFinalStatus.ERROR,
+        ).catch(console.warn);
       });
-    }
+      unsubscribeEvents.push(unsubscribeSuccessEvent);
+
+      const cancelParams = {
+        section: 'multisig',
+        method: 'MultisigCancelled',
+        data: [undefined, undefined, toAddress(account.accountId, { prefix: addressPrefix })],
+      };
+      const unsubscribeCancelEvent = subscribeEvents(api, cancelParams, (event: Event) => {
+        console.log(`Receive MultisigCancelled event for ${account.accountId} with call hash ${event.data[3].toHex()}`);
+
+        eventCallback(
+          account as MultisigAccount,
+          event,
+          ['PENDING_CANCELLED', 'CANCELLED'],
+          'CANCELLED',
+          MultisigTxFinalStatus.CANCELLED,
+        ).catch(console.warn);
+      });
+
+      unsubscribeEvents.push(unsubscribeCancelEvent);
+    });
 
     return () => {
       unsubscribeMultisigs.forEach((unsubscribeEvent) => unsubscribeEvent());

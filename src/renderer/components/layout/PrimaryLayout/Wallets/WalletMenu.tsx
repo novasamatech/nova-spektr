@@ -32,18 +32,16 @@ const WalletMenu = ({ children, chains, wallets }: PropsWithChildren<Props>) => 
   const dropdownOptions = addWalletOptions.map((o) => ({ ...o, title: t(o.title) }));
 
   const getAllShardsIds = (wallet: MultishardWallet): AccountId[] => {
-    const ids: AccountId[] = [];
-    wallet.rootAccounts.forEach((rootAcc) => {
-      ids.push(rootAcc.accountId);
-      rootAcc.chains.forEach((c) => ids.push(...c.accounts.map((a) => a.accountId)));
-    });
+    return wallet.rootAccounts.reduce<AccountId[]>((acc, root) => {
+      acc.push(root.accountId);
+      root.chains.forEach((c) => c.accounts.forEach((a) => acc.push(a.accountId)));
 
-    return ids;
+      return acc;
+    }, []);
   };
 
   const selectMultishardWallet = (wallet: MultishardWallet) => {
-    const allShardsIds = getAllShardsIds(wallet);
-    setActiveAccounts(allShardsIds);
+    setActiveAccounts(getAllShardsIds(wallet));
   };
 
   const changeActiveAccount = (wallet: WalletGroupItem, closeMenu: () => void) => {

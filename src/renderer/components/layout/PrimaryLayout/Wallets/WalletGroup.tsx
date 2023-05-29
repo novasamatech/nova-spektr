@@ -9,7 +9,7 @@ import { BodyText, CaptionText } from '@renderer/components/ui-redesign';
 import { useI18n } from '@renderer/context/I18nContext';
 import { HelpText } from '@renderer/components/ui-redesign/Typography';
 import { AccountAddress } from '@renderer/components/common';
-import { AccountDS } from '@renderer/services/storage';
+import { Account } from '@renderer/domain/account';
 
 type Props = {
   type: WalletType;
@@ -58,8 +58,8 @@ const WalletGroup = ({ type, wallets, onWalletClick }: Props) => {
                   <AccountAddress
                     size={20}
                     addressFont="text-body text-text-primary font-medium"
-                    name={(wallet as AccountDS).name}
-                    accountId={(wallet as AccountDS).accountId}
+                    name={(wallet as Account).name}
+                    accountId={(wallet as Account).accountId}
                   />
                 )}
               </button>

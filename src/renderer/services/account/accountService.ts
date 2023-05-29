@@ -75,10 +75,10 @@ export const useAccount = (): IAccountService => {
           isActive: !newActiveAccount.isActive,
         });
       } else {
-        console.warn('Could not find wallet with such id');
+        console.warn('Could not find accounts with such id');
       }
     } catch (error) {
-      console.warn('Could not set new active wallet');
+      console.warn('Could not set new active accounts');
     }
   };
 
@@ -94,7 +94,7 @@ export const useAccount = (): IAccountService => {
         await updateAccounts(newActiveAccounts);
       }
     } catch (error) {
-      console.warn('Could not set new active wallets');
+      console.warn('Could not set new active accounts');
     }
   };
 
@@ -108,7 +108,7 @@ export const useAccount = (): IAccountService => {
         await updateAccount({ ...newActiveAccount, isActive: true });
       }
     } catch (error) {
-      console.warn('Could not set new active wallets');
+      console.warn('Could not set new active accounts');
     }
   };
 
@@ -120,7 +120,7 @@ export const useAccount = (): IAccountService => {
         await updateAccounts(accountsToDeactivate);
       }
     } catch (error) {
-      console.warn('Could not deactivate wallets');
+      console.warn('Could not deactivate accounts');
     }
   };
 
