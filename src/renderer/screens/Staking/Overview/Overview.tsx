@@ -7,7 +7,7 @@ import { Chain } from '@renderer/domain/chain';
 import {
   AboutStaking,
   NetworkInfo,
-  StakingList,
+  NominatorsList,
   Actions,
   ValidatorsModal,
   NoAccounts,
@@ -25,7 +25,7 @@ import { StakingMap, ValidatorMap } from '@renderer/services/staking/common/type
 import { useToggle } from '@renderer/shared/hooks';
 import { useValidators } from '@renderer/services/staking/validatorsService';
 import { useStakingRewards } from '@renderer/services/staking/stakingRewardsService';
-import { AccountStakeInfo } from './components/StakingList/StakingList';
+import { NominatorInfo } from '@renderer/screens/Staking/Overview/components/NominatorsList/NominatorsList';
 import { Stake } from '@renderer/domain/stake';
 import { PathValue } from '@renderer/routes/paths';
 import { createLink } from '@renderer/routes/utils';
@@ -56,6 +56,7 @@ const Overview = () => {
 
   const chainId = (activeChain?.chainId || '') as ChainId;
   const api = connections[chainId]?.api;
+  const connection = connections[chainId]?.connection;
   const addressPrefix = activeChain?.addressPrefix;
   const explorers = activeChain?.explorers;
 
@@ -74,15 +75,13 @@ const Overview = () => {
   const { rewards, isRewardsLoading } = useStakingRewards(addresses);
 
   useEffect(() => {
-    const connection = connections[chainId]?.connection;
-
     if (!connection) return;
 
-    const isNotDisabled = connection.connectionType !== ConnectionType.DISABLED;
-    const isNotError = connection.connectionStatus !== ConnectionStatus.ERROR;
+    const isDisabled = connection.connectionType === ConnectionType.DISABLED;
+    const isError = connection.connectionStatus === ConnectionStatus.ERROR;
 
-    setNetworkIsActive(isNotDisabled && isNotError);
-  }, [chainId, connections]);
+    setNetworkIsActive(!isDisabled && !isError);
+  }, [chainId, connection]);
 
   useEffect(() => {
     if (!chainId || !api?.isConnected || addresses.length === 0) return;
@@ -122,7 +121,7 @@ const Overview = () => {
     toggleNominators();
   };
 
-  const accountsStakeInfo = accounts.reduce<AccountStakeInfo[]>((acc, account) => {
+  const nominatorsInfo = accounts.reduce<NominatorInfo[]>((acc, account) => {
     const address = toAddress(account.accountId, { prefix: addressPrefix });
 
     acc.push({
@@ -197,10 +196,10 @@ const Overview = () => {
               <>
                 <Actions stakes={selectedStakes} onNavigate={navigateToStake} />
 
-                <StakingList
+                <NominatorsList
                   api={api}
                   era={era}
-                  stakeInfo={accountsStakeInfo}
+                  nominators={nominatorsInfo}
                   asset={relaychainAsset}
                   explorers={activeChain?.explorers}
                   onCheckValidators={setupNominators}

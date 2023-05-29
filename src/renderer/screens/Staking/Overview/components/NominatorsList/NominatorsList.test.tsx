@@ -1,7 +1,7 @@
 import { render, screen } from '@testing-library/react';
 import noop from 'lodash/noop';
 
-import StakingList from './StakingList';
+import NominatorsList from './NominatorsList';
 
 jest.mock('@renderer/context/I18nContext', () => ({
   useI18n: jest.fn().mockReturnValue({
@@ -9,9 +9,9 @@ jest.mock('@renderer/context/I18nContext', () => ({
   }),
 }));
 
-describe('screens/Staking/Overview/StakingList', () => {
+describe('screens/Staking/Overview/NominatorsList', () => {
   test('should create component', () => {
-    render(<StakingList stakeInfo={[]} onCheckValidators={noop} onToggleNominator={noop} />);
+    render(<NominatorsList nominators={[]} onCheckValidators={noop} onToggleNominator={noop} />);
 
     const accountHeader = screen.getByText('staking.overview.accountTableHeader');
     const stakeHeader = screen.getByText('staking.overview.stakeTableHeader');

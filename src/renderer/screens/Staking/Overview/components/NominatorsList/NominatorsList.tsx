@@ -27,7 +27,7 @@ const hasRedeem = (unlocking: Unlocking[] = [], era?: number): boolean => {
   return Boolean(redeemableAmount(unlocking, era));
 };
 
-export type AccountStakeInfo = {
+export type NominatorInfo = {
   address: Address;
   stash?: Address;
   signingType: SigningType;
@@ -41,14 +41,14 @@ export type AccountStakeInfo = {
 type Props = {
   api?: ApiPromise;
   era?: number;
-  stakeInfo: AccountStakeInfo[];
+  nominators: NominatorInfo[];
   asset?: Asset;
   explorers?: Explorer[];
   onCheckValidators: (stash?: Address) => void;
   onToggleNominator: (nominator: Address) => void;
 };
 
-const StakingList = ({ api, era, stakeInfo, asset, explorers, onCheckValidators, onToggleNominator }: Props) => {
+const NominatorsList = ({ api, era, nominators, asset, explorers, onCheckValidators, onToggleNominator }: Props) => {
   const { t } = useI18n();
 
   const getExplorers = (address: Address, stash?: Address, explorers: Explorer[] = []) => {
@@ -82,7 +82,7 @@ const StakingList = ({ api, era, stakeInfo, asset, explorers, onCheckValidators,
       </div>
 
       <ul className="flex flex-col gap-y-2">
-        {stakeInfo.map((stake) => {
+        {nominators.map((stake) => {
           const unstakeBadge = getNextUnstakingEra(stake.unlocking, era) && (
             <Popover
               offsetPx={-65}
@@ -290,4 +290,4 @@ const StakingList = ({ api, era, stakeInfo, asset, explorers, onCheckValidators,
   // );
 };
 
-export default StakingList;
+export default NominatorsList;

@@ -27,7 +27,7 @@ type Props = {
 
 const DropdownButton = ({ options, title, disabled, ...buttonProps }: Props) => (
   <Menu>
-    {({ open, close }) => (
+    {({ open }) => (
       <div className={cn('relative', open && 'z-10')}>
         <Menu.Button
           as={Button}

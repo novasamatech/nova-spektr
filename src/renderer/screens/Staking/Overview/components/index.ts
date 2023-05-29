@@ -1,7 +1,7 @@
 import NetworkInfo from './NetworkInfo/NetworkInfo';
 import ValidatorsModal from '@renderer/screens/Staking/Overview/components/ValidatorsModal/ValidatorsModal';
 import AboutStaking from './AboutStaking/AboutStaking';
-import StakingList from '@renderer/screens/Staking/Overview/components/StakingList/StakingList';
+import NominatorsList from '@renderer/screens/Staking/Overview/components/NominatorsList/NominatorsList';
 import InactiveChain from './EmptyState/InactiveChain';
 import NoAccounts from './EmptyState/NoAccounts';
 import UnstakingDuration from './UnstakingDuration/UnstakingDuration';
@@ -11,7 +11,7 @@ export {
   NetworkInfo,
   ValidatorsModal,
   AboutStaking,
-  StakingList,
+  NominatorsList,
   InactiveChain,
   NoAccounts,
   UnstakingDuration,
