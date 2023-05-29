@@ -90,10 +90,8 @@ export const MultisigChainProvider = ({ children }: PropsWithChildren) => {
     const unsubscribeMultisigs: (() => void)[] = [];
     const unsubscribeEvents: UnsubscribePromise[] = [];
 
-    if (!account) return;
-
     Object.values(connections).forEach(({ api, addressPrefix }) => {
-      if (!api?.query.multisig) return;
+      if (!api?.query.multisig || !account) return;
 
       const unsubscribeMultisig = subscribeMultisigAccount(api, account as MultisigAccount);
       unsubscribeMultisigs.push(unsubscribeMultisig);
