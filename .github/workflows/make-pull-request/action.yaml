@@ -50,7 +50,6 @@ runs:
       id: mpr
       uses: repo-sync/pull-request@v2
       if: steps.commit.outcome == 'success'
-      name: pull-request
       with:
         source_branch: '${{ inputs.branch_name }}-${{github.run_number}}'
         destination_branch: ${{ inputs.destination_branch }}
