@@ -99,6 +99,7 @@
   },
   "log": {
     "cancelledMessage": "rejected this operation",
+    "error": "Error",
     "errorCancelledMessage": "tried to reject this operation",
     "errorSignedMessage": "tried to sign this operation",
     "initiatedMessage": "created this operation",

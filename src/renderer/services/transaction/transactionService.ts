@@ -270,6 +270,9 @@ export const useTransaction = (): ITransactionService => {
     const { info, options, registry } = await createTxMetadata(transaction.address, api);
 
     const unsigned = getUnsignedTransaction[transaction.type](transaction, info, options, api);
+    if (options.signedExtensions?.includes('ChargeAssetTxPayment')) {
+      unsigned.assetId = undefined;
+    }
     const signingPayloadHex = construct.signingPayload(unsigned, { registry });
 
     return {

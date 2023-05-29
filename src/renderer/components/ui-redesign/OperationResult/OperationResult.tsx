@@ -24,7 +24,7 @@ const OperationResult = ({
   onClose,
 }: PropsWithChildren<Props>) => (
   <Transition appear show={isOpen} as={Fragment}>
-    <Dialog as="div" className="relative z-30" onClose={onClose}>
+    <Dialog as="div" className="relative z-50" onClose={onClose}>
       <ModalBackdrop />
 
       <div className="fixed inset-0 overflow-hidden flex min-h-full w-full items-center justify-center text-center">
