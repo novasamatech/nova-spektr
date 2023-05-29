@@ -33,11 +33,6 @@ const EventMessage: Partial<Record<SigningStatus | 'INITIATED', string>> = {
   ERROR_CANCELLED: 'log.errorCancelledMessage',
 } as const;
 
-// TODO: Return INITIATED for first approval
-const getEventMessage = (event: MultisigEvent): string => {
-  return EventMessage[event.status] || 'log.unknownMessage';
-};
-
 const LogModal = ({ isOpen, onClose, tx, account, connection }: Props) => {
   const { t, dateLocale } = useI18n();
   const { getChainById } = useChains();
@@ -56,6 +51,14 @@ const LogModal = ({ isOpen, onClose, tx, account, connection }: Props) => {
   const groupedEvents = groupBy(tx.events, ({ dateCreated }) =>
     format(new Date(dateCreated || 0), 'PP', { locale: dateLocale }),
   );
+
+  const getEventMessage = (event: MultisigEvent): string => {
+    const signatory = account?.signatories.find((s) => s.accountId === event.accountId);
+    const isCreatedEvent =
+      signatory?.accountId === tx.depositor && (event.status === 'SIGNED' || event.status === 'PENDING_SIGNED');
+
+    return `${signatory?.name} ${t(EventMessage[isCreatedEvent ? 'INITIATED' : event.status] || 'log.unknownMessage')}`;
+  };
 
   return (
     <BaseModal
@@ -102,14 +105,15 @@ const LogModal = ({ isOpen, onClose, tx, account, connection }: Props) => {
                           address={toAddress(event.accountId, { prefix: addressPrefix })}
                           background={false}
                         />
-                        <BodyText className="text-text-secondary">
-                          {account?.signatories.find((s) => s.accountId === event.accountId)?.name}{' '}
-                          {t(getEventMessage(event))}
-                        </BodyText>
+                        <BodyText className="text-text-secondary">{getEventMessage(event)}</BodyText>
                         <BodyText className="text-text-tertiary ml-auto">
                           {event.dateCreated && format(new Date(event.dateCreated), 'p', { locale: dateLocale })}
                         </BodyText>
                       </div>
+
+                      {(event.status === 'ERROR_CANCELLED' || event.status === 'ERROR_SIGNED') && (
+                        <BodyText className="text-text-negative">{t('log.error')}</BodyText>
+                      )}
 
                       {getExtrinsicLink(event.extrinsicHash, connection?.explorers) && (
                         <InfoLink

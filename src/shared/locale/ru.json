@@ -99,6 +99,7 @@
   },
   "log": {
     "cancelledMessage": "отменил эту операцию",
+    "error": "Ошибка",
     "errorCancelledMessage": "попытался отменить эту операцию",
     "errorSignedMessage": "попытался подписать эту операцию",
     "initiatedMessage": "создал эту операцию",
