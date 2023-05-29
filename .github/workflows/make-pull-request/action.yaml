@@ -69,7 +69,7 @@ runs:
         pr_title: 'PR in order to sync ${{ inputs.commit_path }}'
         pr_body: |
           That pull-request was generated automatically 🤖
-          Main PR is: ${{ steps.mpr.outputs.pull-request-url }}
+          Main PR is: ${{ steps.mpr.outputs.pr_url }}
         pr_reviewer: "stepanLav,pgolovkin,tuul-wq,Asmadek"
         pr_draft: false
         github_token: ${{ inputs.github_token }}
