@@ -60,14 +60,14 @@ const Navigation = () => {
   );
 
   const NavItems: NavItemProps[] = [
-    { icon: 'balance', title: 'navigation.balancesLabel', link: Paths.BALANCES },
+    { icon: 'asset', title: 'navigation.balancesLabel', link: Paths.BALANCES },
     { icon: 'staking', title: 'navigation.stakingLabel', link: Paths.STAKING },
-    { icon: 'book', title: 'navigation.addressBookLabel', link: Paths.ADDRESS_BOOK },
+    { icon: 'addressBook', title: 'navigation.addressBookLabel', link: Paths.ADDRESS_BOOK },
     {
       icon: 'operations',
       title: 'navigation.mstOperationLabel',
       link: Paths.OPERATIONS,
-      badge: txs.length.toString(),
+      badge: txs.length,
     },
 
     // { icon: <Icon name="history" />, title: 'navigation.historyLabel', link: Paths.HISTORY },
@@ -92,7 +92,12 @@ const Navigation = () => {
 
   return (
     <>
-      <aside className="relative flex gap-y-5 flex-col w-[300px] bg-shade-5 p-5 z-30">
+      <aside
+        className={cn(
+          'relative flex gap-y-5 flex-col w-[240px] p-4 z-30',
+          'bg-left-navigation-menu-background border-r border-r-container-border',
+        )}
+      >
         <div className={cn('rounded-xl text-white p-4', CardStyle[cardType])}>
           <div className="flex gap-x-2.5">
             <div className="relative">
@@ -163,7 +168,7 @@ const Navigation = () => {
         </nav>
 
         <div className="flex flex-col gap-2">
-          <NavItem icon={'bell'} title={'navigation.notificationsLabel'} link={Paths.NOTIFICATIONS} />
+          <NavItem icon={'notification'} title={'navigation.notificationsLabel'} link={Paths.NOTIFICATIONS} />
           <NavItem icon={'settings'} title={'navigation.settingsLabel'} link={Paths.SETTINGS} />
         </div>
       </aside>
@@ -172,7 +177,7 @@ const Navigation = () => {
         ref={walletsRef}
         className={cn(
           'ease-in-out transition-all transform duration-200 absolute z-20 w-[350px] left-0 top-0 overflow-y-auto',
-          isWalletsOpen ? 'translate-x-[300px] opacity-100 visible' : 'translate-x-0 opacity-0 invisible',
+          isWalletsOpen ? 'translate-x-[240px] opacity-100 visible' : 'translate-x-0 opacity-0 invisible',
         )}
         onUrlChange={() => setIsWalletsOpen(false)}
       />

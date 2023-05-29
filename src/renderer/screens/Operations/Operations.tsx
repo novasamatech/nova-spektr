@@ -33,7 +33,7 @@ const Operations = () => {
   );
 
   return (
-    <div className="h-full flex flex-col items-start relative bg-main-app-background">
+    <div className="flex flex-col items-start relative bg-main-app-background min-h-full">
       <Header title={t('operations.title')} />
 
       <div className="pl-6 mx-auto h-full">
