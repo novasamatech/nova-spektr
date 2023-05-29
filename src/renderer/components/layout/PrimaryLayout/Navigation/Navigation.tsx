@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { keyBy } from 'lodash';
+import cn from 'classnames';
 
 import { useAccount } from '@renderer/services/account/accountService';
 import { useMultisigTx } from '@renderer/services/multisigTx/multisigTxService';
@@ -34,14 +35,14 @@ const Navigation = () => {
   );
 
   const NavItems: NavItemProps[] = [
-    { icon: 'balance', title: 'navigation.balancesLabel', link: Paths.BALANCES },
+    { icon: 'asset', title: 'navigation.balancesLabel', link: Paths.BALANCES },
     { icon: 'staking', title: 'navigation.stakingLabel', link: Paths.STAKING },
-    { icon: 'book', title: 'navigation.addressBookLabel', link: Paths.ADDRESS_BOOK },
+    { icon: 'addressBook', title: 'navigation.addressBookLabel', link: Paths.ADDRESS_BOOK },
     {
       icon: 'operations',
       title: 'navigation.mstOperationLabel',
       link: Paths.OPERATIONS,
-      badge: txs.length.toString(),
+      badge: txs.length,
     },
 
     // { icon: <Icon name="history" />, title: 'navigation.historyLabel', link: Paths.HISTORY },
@@ -52,7 +53,12 @@ const Navigation = () => {
 
   return (
     <>
-      <aside className="relative flex gap-y-5 flex-col w-[300px] bg-shade-5 p-5 z-30">
+      <aside
+        className={cn(
+          'relative flex gap-y-5 flex-col w-[240px] p-4 z-30',
+          'bg-left-navigation-menu-background border-r border-r-container-border',
+        )}
+      >
         <WalletMenu chains={chains} wallets={wallets}>
           {activeAccounts?.length ? (
             <ActiveAccountCard activeAccounts={activeAccounts} chains={chains} wallets={wallets} />
@@ -72,7 +78,7 @@ const Navigation = () => {
         </nav>
 
         <div className="flex flex-col gap-2">
-          <NavItem icon={'bell'} title={'navigation.notificationsLabel'} link={Paths.NOTIFICATIONS} />
+          <NavItem icon={'notification'} title={'navigation.notificationsLabel'} link={Paths.NOTIFICATIONS} />
           <NavItem icon={'settings'} title={'navigation.settingsLabel'} link={Paths.SETTINGS} />
         </div>
       </aside>

@@ -10,25 +10,21 @@ type Props = {
   showIcon?: boolean;
   iconName?: IconNames;
   className?: string;
-  fontClass?: string;
   tabIndex?: number;
 };
 
-const InfoLink = ({
-  url,
-  showIcon,
-  children,
-  iconName = 'info',
-  className,
-  fontClass = 'text-button-small font-semibold font-inter',
-  tabIndex,
-}: PropsWithChildren<Props>) => (
+const InfoLink = ({ url, showIcon, children, iconName = 'info', className, tabIndex }: PropsWithChildren<Props>) => (
   <a
     href={url}
     rel="noopener noreferrer"
     target="_blank"
     tabIndex={tabIndex}
-    className={cnTw(ViewClass['text_primary'], fontClass, showIcon && 'flex items-center gap-x-0.5', className)}
+    className={cnTw(
+      ViewClass['text_primary'],
+      'text-button-small font-semibold font-inter',
+      showIcon && 'flex items-center gap-x-0.5',
+      className,
+    )}
   >
     {showIcon && <Icon name={iconName} size={16} />}
     {children}

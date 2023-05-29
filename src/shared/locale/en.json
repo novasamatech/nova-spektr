@@ -103,6 +103,7 @@
   },
   "log": {
     "cancelledMessage": "rejected this operation",
+    "error": "Error",
     "errorCancelledMessage": "tried to reject this operation",
     "errorSignedMessage": "tried to sign this operation",
     "initiatedMessage": "created this operation",
@@ -122,7 +123,7 @@
     "cameraDEVLabel": "Camera DEV",
     "chatDEVLabel": "Chat DEV",
     "historyLabel": "History",
-    "mstOperationLabel": "Multisig Operations",
+    "mstOperationLabel": "Operations",
     "multipleWalletsLabel": "Multiple wallets",
     "notificationsLabel": "Notifications",
     "settingsLabel": "Settings",

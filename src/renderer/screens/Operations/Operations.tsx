@@ -28,7 +28,7 @@ const Operations = () => {
   );
 
   return (
-    <div className="h-full flex flex-col items-start relative bg-main-app-background">
+    <div className="flex flex-col items-start relative bg-main-app-background min-h-full">
       <header className="w-full px-6 py-4.5 bg-top-nav-bar-background border-b border-container-border">
         <h1 className="font-semibold text-2xl text-neutral"> {t('operations.title')}</h1>
       </header>

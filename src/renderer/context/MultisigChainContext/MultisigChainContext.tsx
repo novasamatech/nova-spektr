@@ -9,6 +9,8 @@ import { useAccount } from '@renderer/services/account/accountService';
 import { MultisigAccount } from '@renderer/domain/account';
 import { MultisigTxFinalStatus, SigningStatus } from '@renderer/domain/transaction';
 import { toAddress } from '@renderer/shared/utils/address';
+import { ChainId } from '@renderer/domain/shared-kernel';
+import { useDebounce } from '@renderer/shared/hooks';
 
 type MultisigChainContextProps = {};
 
@@ -19,30 +21,45 @@ const MultisigChainContext = createContext<MultisigChainContextProps>({} as Mult
 
 export const MultisigChainProvider = ({ children }: PropsWithChildren) => {
   const { connections } = useNetworkContext();
-  const { subscribeMultisigAccount, updateMultisigTx, getMultisigTxs } = useMultisigTx();
+  const { subscribeMultisigAccount, updateMultisigTx, getMultisigTx, getLiveAccountMultisigTxs, updateCallData } =
+    useMultisigTx();
   const { getActiveMultisigAccount } = useAccount();
   const { subscribeEvents } = useChainSubscription();
+  const debouncedConnections = useDebounce(connections, 1000);
 
   const account = getActiveMultisigAccount();
 
+  const txs = account?.accountId ? getLiveAccountMultisigTxs([account.accountId]) : [];
+
+  useEffect(() => {
+    txs.forEach(async (tx) => {
+      const connection = connections[tx.chainId];
+
+      if (connection.api && tx.callData && !tx.transaction) {
+        updateCallData(connection.api, tx, tx.callData);
+      }
+    });
+  }, [txs, debouncedConnections]);
+
   const eventCallback = async (
     account: MultisigAccount,
+    chainId: ChainId,
     event: Event,
     pendingEventStatuses: SigningStatus[],
     resultEventStatus: SigningStatus,
     resultTransactionStatus: MultisigTxFinalStatus,
   ): Promise<void> => {
-    const txs = await getMultisigTxs({
-      accountId: account.accountId,
-      callHash: event.data[3].toHex(),
-    });
+    const callHash = event.data[3].toHex();
+    const blockCreated = (event.data[1] as any).height.toNumber();
+    const indexCreated = (event.data[1] as any).index.toNumber();
 
-    const lastTx = txs[txs.length - 1];
-    if (!lastTx) return;
+    const tx = await getMultisigTx(account.accountId, chainId, callHash, blockCreated, indexCreated);
+
+    if (!tx) return;
 
     const accountId = event.data[0].toHex();
 
-    const newEvents = lastTx.events;
+    const newEvents = tx.events;
     const pendingEvent = newEvents.findIndex(
       (event) => pendingEventStatuses.includes(event.status) && event.accountId === accountId,
     );
@@ -59,13 +76,13 @@ export const MultisigChainProvider = ({ children }: PropsWithChildren) => {
     }
 
     await updateMultisigTx({
-      ...lastTx,
+      ...tx,
       events: newEvents,
       status: resultTransactionStatus,
     });
 
     console.log(
-      `Transaction with call hash ${lastTx.callHash} and timepoint ${lastTx.blockCreated}-${lastTx.indexCreated} was updated`,
+      `Transaction with call hash ${tx.callHash} and timepoint ${tx.blockCreated}-${tx.indexCreated} was updated`,
     );
   };
 
@@ -95,6 +112,7 @@ export const MultisigChainProvider = ({ children }: PropsWithChildren) => {
         const multisigResult = event.data[4].toString();
         eventCallback(
           account as MultisigAccount,
+          api.genesisHash.toHex(),
           event,
           ['PENDING_SIGNED', 'SIGNED'],
           'SIGNED',
@@ -115,6 +133,7 @@ export const MultisigChainProvider = ({ children }: PropsWithChildren) => {
 
         eventCallback(
           account as MultisigAccount,
+          api.genesisHash.toHex(),
           event,
           ['PENDING_CANCELLED', 'CANCELLED'],
           'CANCELLED',
@@ -129,7 +148,7 @@ export const MultisigChainProvider = ({ children }: PropsWithChildren) => {
       unsubscribeMultisigs.forEach((unsubscribeEvent) => unsubscribeEvent());
       Promise.all(unsubscribeEvents).then(() => console.info('unsubscribed from events'));
     };
-  }, [connections, account]);
+  }, [debouncedConnections, account]);
 
   return <MultisigChainContext.Provider value={{}}>{children}</MultisigChainContext.Provider>;
 };

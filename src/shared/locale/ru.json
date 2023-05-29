@@ -103,6 +103,7 @@
   },
   "log": {
     "cancelledMessage": "отменил эту операцию",
+    "error": "Ошибка",
     "errorCancelledMessage": "попытался отменить эту операцию",
     "errorSignedMessage": "попытался подписать эту операцию",
     "initiatedMessage": "создал эту операцию",
@@ -122,7 +123,7 @@
     "cameraDEVLabel": "Камера DEV",
     "chatDEVLabel": "Чат DEV",
     "historyLabel": "История",
-    "mstOperationLabel": "Мульти-Операции",
+    "mstOperationLabel": "Операции",
     "multipleWalletsLabel": "Multiple wallets",
     "notificationsLabel": "Уведомления",
     "settingsLabel": "Настройки",
