@@ -51,7 +51,7 @@ export const useGroupedWallets = (
     });
   }, [searchQuery]);
 
-  const searchAccount = (accounts: AccountDS[] = [], query: string = '') => {
+  const searchAccount = (accounts: AccountDS[] = [], query = '') => {
     return accounts.filter((account) => {
       return includes(account.name, query) || includes(account.accountId, query);
     });
