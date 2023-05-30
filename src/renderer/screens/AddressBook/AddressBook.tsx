@@ -21,7 +21,7 @@ const AddressBook = () => {
   const isEmpty = contacts.length === 0;
 
   return (
-    <div className="h-full flex flex-col gap-y-9 relative">
+    <div className="h-full flex flex-col items-start relative bg-main-app-background">
       <Header title={t('addressBook.title')}>
         <div className="flex items-center gap-4">
           <Input
@@ -45,7 +45,7 @@ const AddressBook = () => {
         </div>
       </Header>
 
-      <section className="overflow-y-scroll mt-4 flex flex-col gap-y-4 w-[546px] mx-auto h-full">
+      <section className="overflow-y-auto mt-4 flex flex-col gap-y-4 w-[546px] mx-auto h-full">
         {isEmpty ? (
           <EmptyContacts onAddContact={toggleAddContactModal} />
         ) : (
