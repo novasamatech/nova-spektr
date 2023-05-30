@@ -2,7 +2,7 @@ import { Alignment } from './types';
 
 export const HeightClass = {
   md: 'h-10',
-  lg: 'h-12.5',
+  lg: 'h-15',
 };
 
 export const AlignmentClass: Record<Alignment, string> = {

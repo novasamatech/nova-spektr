@@ -69,5 +69,6 @@ module.exports = {
   'qr-valid-background': 'var(--qr-valid-background)',
   'positive-background': 'var(--positive-background)',
   'accent-background': 'var(--accent-background)',
+  'row-background': 'var(--row-background)',
   hover: 'var(--hover)',
 };

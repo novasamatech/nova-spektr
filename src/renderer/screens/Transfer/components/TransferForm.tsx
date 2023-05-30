@@ -366,7 +366,7 @@ export const TransferForm = ({ api, chainId, account, signer, asset, nativeToken
         {t('transfer.multisigTransactionExist')}
       </InputHint>
 
-      <Button variant="fill" pallet="primary" className="w-fit flex-0 mt-5 ml-auto" type="submit" disabled={!isValid}>
+      <Button className="w-fit flex-0 mt-5 ml-auto" type="submit" disabled={!isValid}>
         {t('transfer.continueButton')}
       </Button>
     </form>
