@@ -429,12 +429,13 @@
       "verifyWithKey": "Verify with key"
     },
     "overview": {
-      "getInTouchLabel": "На связи!",
       "languageLabel": "Язык",
       "matrixDetailsLabel": "Управление доступом в Omni Matrix Protocol",
       "matrixLabel": "Реквизиты доступа Matrix",
       "networkDetailsLabel": "Управления подключением к сетям",
-      "networkLabel": "Сети"
+      "networkLabel": "Сети",
+      "socialLabel": "Социальные сети",
+      "versionLabel": "Версия"
     },
     "title": "Настройки"
   },
