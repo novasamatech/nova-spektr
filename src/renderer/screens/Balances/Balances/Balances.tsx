@@ -125,7 +125,7 @@ const Balances = () => {
               {t('balances.shardsTitle')}{' '}
               <Button
                 variant="text"
-                suffixElement={<Icon name="edit" className="text-icon-accent" />}
+                suffixElement={<Icon name="edit" size={16} className="text-icon-accent" />}
                 onClick={toggleSelectShardsOpen}
               >
                 {activeAccounts.length} {t('balances.shards')}

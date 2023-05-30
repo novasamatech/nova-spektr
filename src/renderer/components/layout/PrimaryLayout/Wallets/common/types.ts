@@ -9,7 +9,7 @@ export type MultishardWallet = WalletDS & MultishardStructure;
 
 type Selectable<T> = T & { isSelected: boolean };
 export type SelectableAccount = Selectable<AccountDS>;
-export type SelectableChain = Selectable<Chain & { accounts: SelectableAccount[], selectedAmount: number }>;
+export type SelectableChain = Selectable<Chain & { accounts: SelectableAccount[]; selectedAmount: number }>;
 export type SelectableRoot = Selectable<AccountDS & { chains: SelectableChain[]; selectedAmount: number }>;
 export type SelectableShards = { rootAccounts: SelectableRoot[]; amount: number };
 

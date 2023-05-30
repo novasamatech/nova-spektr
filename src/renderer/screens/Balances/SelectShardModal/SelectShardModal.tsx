@@ -110,7 +110,7 @@ const SelectShardModal = ({ isOpen, onClose, activeAccounts, accounts, connectio
       title={t('balances.shardsModalTitle')}
       closeButton
       contentClass="px-5 py-4"
-      onClose={onClose}
+      onClose={() => onClose()}
     >
       <SearchInput
         value={query}
