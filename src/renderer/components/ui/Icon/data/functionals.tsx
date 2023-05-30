@@ -39,6 +39,7 @@ import CloseLineRedesignImg, {
 } from '@images/functionals/close-line-redesign.svg';
 import RefreshImg, { ReactComponent as RefreshSvg } from '@images/functionals/refresh.svg';
 import SettingsLiteImg, { ReactComponent as SettingsLiteSvg } from '@images/functionals/settings-lite.svg';
+import ViewValidatorsImg, { ReactComponent as ViewValidatorsSvg } from '@images/functionals/view-validators.svg';
 
 const FunctionalImages = {
   copy: { svg: CopySvg, img: CopyImg },
@@ -78,6 +79,7 @@ const FunctionalImages = {
   closeLineRedesign: { svg: CloseLineRedesignSvg, img: CloseLineRedesignImg },
   refresh: { svg: RefreshSvg, img: RefreshImg },
   settingsLite: { svg: SettingsLiteSvg, img: SettingsLiteImg },
+  viewValidators: { svg: ViewValidatorsSvg, img: ViewValidatorsImg },
 } as const;
 
 export type Functional = keyof typeof FunctionalImages;

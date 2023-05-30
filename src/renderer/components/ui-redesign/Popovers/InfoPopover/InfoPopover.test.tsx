@@ -2,23 +2,22 @@ import { act, render, screen } from '@testing-library/react';
 
 import InfoPopover, { InfoSection } from './InfoPopover';
 
-/*eslint i18next/no-literal-string: [0]*/
-export const menuLinks = [
+const menuLinks = [
   {
+    id: '3',
     value: (
       <a key="1" href="https://metadata.novasama.io/#/polkadot">
         some link
       </a>
     ),
-    id: '3',
   },
   {
+    id: '4',
     value: (
       <a key="2" href="https://metadata.novasama.io/#/kusama">
         some other link
       </a>
     ),
-    id: '4',
   },
 ];
 export const popoverItems: InfoSection[] = [
@@ -35,6 +34,8 @@ export const popoverItems: InfoSection[] = [
 
 describe('components/ui-redesign/InfoPopover', () => {
   test('should render component', async () => {
+    window.HTMLElement.prototype.scrollIntoView = jest.fn();
+
     render(<InfoPopover data={popoverItems}>test</InfoPopover>);
 
     const button = screen.getByText('test');

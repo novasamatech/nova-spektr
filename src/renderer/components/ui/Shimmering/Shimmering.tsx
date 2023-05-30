@@ -10,9 +10,10 @@ type Props = {
 };
 
 const Shimmering = ({ width, height, circle, className }: Props) => (
-  <div
+  <span
     className={cnTw('h-full w-full spektr-shimmer', circle ? 'rounded-full' : 'rounded-[10px]', className)}
     style={{ width: `${width}px`, height: `${circle ? width : height}px` }}
+    data-testid="shimmer"
   />
 );
 

@@ -33,8 +33,8 @@ const MultiSelect = ({
   position = 'down',
   tabIndex,
 }: Props) => {
-  const selectedOptions = options.filter((option) => selectedIds?.includes(option.id));
   const id = useId();
+  const selectedOptions = options.filter((option) => selectedIds?.includes(option.id));
 
   const getSelectButtonElement = () => {
     // if one option selected we show that option

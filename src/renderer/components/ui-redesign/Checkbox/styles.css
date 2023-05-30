@@ -1,4 +1,4 @@
-input[type='checkbox']:checked::before {
+.checkbox:checked::before {
   content: '✓';
   color: inherit;
   display: block;
@@ -9,8 +9,8 @@ input[type='checkbox']:checked::before {
   text-align: center;
 }
 
-input::-webkit-outer-spin-button,
-input::-webkit-inner-spin-button {
+.checkbox::-webkit-outer-spin-button,
+.checkbox::-webkit-inner-spin-button {
   appearance: none;
   margin: 0;
 }

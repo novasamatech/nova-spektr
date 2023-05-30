@@ -14,9 +14,9 @@ describe('services/staking/stakingTxService', () => {
   test('should return functions', () => {
     const {
       result: { current },
-    } = renderHook(() => useStakingRewards([], 12));
+    } = renderHook(() => useStakingRewards([]));
 
     expect(current.rewards).toBeDefined();
-    expect(current.isLoading).toBeDefined();
+    expect(current.isRewardsLoading).toBeDefined();
   });
 });

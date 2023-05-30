@@ -35,12 +35,14 @@ const SelectableSignatory = <T extends any>({
   name,
   ...addressProps
 }: Props<T>) => {
-  const { getLiveAccounts } = useAccount();
   const address = getAddress(addressProps);
-  const popoverItems = useAddressInfo(address, explorers);
-  const account = getLiveAccounts().find((a) => toAddress(a.accountId) === address);
+
   const { getBalance } = useBalance();
+  const { getLiveAccounts } = useAccount();
+  const popoverItems = useAddressInfo(address, explorers);
+
   const [balance, setBalance] = useState('');
+  const account = getLiveAccounts().find((a) => toAddress(a.accountId) === address);
 
   useEffect(() => {
     if (chainId && asset) {
