@@ -43,6 +43,7 @@
     "transferable": "Доступно"
   },
   "balances": {
+    "allShards": "All shards",
     "emptyStateDescription": "Попробуйте изменить поисковый запрос или сбросить фильтры",
     "emptyStateLabel": "Ничего не найдено",
     "hideZeroBalancesLabel": "Скрыть активы с нулевыми балансами",

@@ -48,7 +48,7 @@ const SelectShardModal = ({ isOpen, onClose, activeAccounts, accounts }: Props) 
       setShards(selectable);
       setQuery('');
     });
-  }, []);
+  }, [activeAccounts]);
 
   const [shards, setShards] = useState<SelectableShards>({ rootAccounts: [], amount: 0 });
   const [query, setQuery] = useState('');
@@ -95,6 +95,10 @@ const SelectShardModal = ({ isOpen, onClose, activeAccounts, accounts }: Props) 
     setShards({ ...allShards });
   };
 
+  const selectAll = (value: boolean) => {
+    shards.rootAccounts.forEach((r) => selectRoot(value, r, shards));
+  };
+
   const handleSubmit = () => {
     const selected: AccountDS[] = [];
     shards.rootAccounts.forEach((root) => {
@@ -108,6 +112,9 @@ const SelectShardModal = ({ isOpen, onClose, activeAccounts, accounts }: Props) 
   };
 
   const searchedShards = searchShards(shards, query);
+  const allShardsChecked = searchedShards.rootAccounts.every((r) => r.isSelected);
+  const allShardsSemiChecked =
+    !allShardsChecked && searchedShards.rootAccounts.some((r) => r.isSelected || r.selectedAmount > 0);
 
   return (
     <BaseModal
@@ -126,6 +133,17 @@ const SelectShardModal = ({ isOpen, onClose, activeAccounts, accounts }: Props) 
 
       {/* root accounts */}
       <ul>
+        {!query && (
+          <li key="all" className="mb-2">
+            <Checkbox
+              checked={allShardsChecked}
+              semiChecked={allShardsSemiChecked}
+              onChange={(event) => selectAll(event.target.checked)}
+            >
+              {t('balances.allShards')}
+            </Checkbox>
+          </li>
+        )}
         {searchedShards.rootAccounts.map((root) => (
           <li key={root.id}>
             <Checkbox
