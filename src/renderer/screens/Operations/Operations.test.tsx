@@ -9,15 +9,15 @@ jest.mock('@renderer/context/I18nContext', () => ({
   }),
 }));
 
-jest.mock('@renderer/services/account/accountService', () => ({
-  useAccount: jest.fn().mockReturnValue({
-    getActiveAccounts: () => [{ name: 'Test Wallet', accountId: TEST_ACCOUNT_ID }],
-  }),
-}));
-
 jest.mock('@renderer/services/multisigTx/multisigTxService', () => ({
   useMultisigTx: jest.fn().mockReturnValue({
     getLiveAccountMultisigTxs: () => [{ name: 'Test Wallet', accountId: TEST_ACCOUNT_ID }],
+  }),
+}));
+
+jest.mock('@renderer/services/account/accountService', () => ({
+  useAccount: jest.fn().mockReturnValue({
+    getActiveMultisigAccount: () => [{ name: 'Test Account', accountId: TEST_ACCOUNT_ID }],
   }),
 }));
 

@@ -41,7 +41,7 @@ const AccountAddress = ({
   signType,
   name,
   size = 16,
-  addressFont = 'text-footnote text-text-secondary',
+  addressFont,
   type = 'full',
   canCopy = true,
   showIcon = true,
@@ -51,16 +51,26 @@ const AccountAddress = ({
   const typeIsAdaptive = type === 'adaptive';
   const addressToShow = type === 'short' ? toShortAddress(currentAddress, symbols) : currentAddress;
 
-  const nameContent = name && <p className={cnTw(addressFont, 'font-inter')}>{name}</p>;
+  const nameContent = name && (
+    <p className={cnTw('font-inter text-footnote text-text-primary truncate', addressFont)}>{name}</p>
+  );
 
   const addressContent = typeIsAdaptive ? (
-    <Truncate className={cnTw(addressFont, 'font-inter')} ellipsis="..." start={4} end={4} text={addressToShow} />
+    <Truncate
+      className={cnTw('font-inter text-footnote text-text-secondary', addressFont)}
+      ellipsis="..."
+      start={4}
+      end={4}
+      text={addressToShow}
+    />
   ) : (
-    <p className={cnTw('inline-block break-all font-inter', addressFont)}>{addressToShow}</p>
+    <p className={cnTw('inline-block break-all font-inter text-footnote text-text-secondary truncate', addressFont)}>
+      {addressToShow}
+    </p>
   );
 
   return (
-    <div className={cnTw('flex items-center gap-x-2', className)}>
+    <div className={cnTw('flex items-center gap-x-2 overflow-hidden', className)}>
       {showIcon && (
         <Identicon address={currentAddress} signType={signType} size={size} background={false} canCopy={canCopy} />
       )}

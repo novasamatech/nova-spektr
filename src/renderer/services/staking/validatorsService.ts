@@ -118,9 +118,9 @@ export const useValidators = (): IValidatorsService => {
     }, {});
   };
 
-  const getNominators = async (api: ApiPromise, account: Address): Promise<ValidatorMap> => {
+  const getNominators = async (api: ApiPromise, stash: Address): Promise<ValidatorMap> => {
     try {
-      const data = await api.query.staking.nominators(account);
+      const data = await api.query.staking.nominators(stash);
       if (data.isNone) return {};
 
       const nominators = data

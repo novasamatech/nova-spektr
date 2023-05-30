@@ -6,7 +6,6 @@ import QrReader from './QrCode/QrReader/QrReader';
 import QrSignatureReader from './QrCode/QrReader/QrSignatureReader';
 import QrTextGenerator from './QrCode/QrGenerator/QrTextGenerator';
 import ValidatorsTable from './ValidatorsTable/ValidatorsTable';
-import StakingActions from './StakingActions/StakingActions';
 import QrTxGenerator from './QrCode/QrGenerator/QrTxGenerator';
 import ActiveAddress from './ActiveAddress/ActiveAddress';
 import ChainLoader from './ChainLoader/ChainLoader';
@@ -16,9 +15,11 @@ import Expandable from './Expandable/Expandable';
 import Deposit from './Deposit/Deposit';
 import Badge from './Badge/Badge';
 import Fee from './Fee/Fee';
+import Header from './Header/Header';
 import ExplorerLink from './ExplorerLink/ExplorerLink';
 import BalanceNew from './BalanceNew/BalanceNew';
 import AccountAddress from './AccountAddress/AccountAddress';
+import AddressWithName from './AddressWithName/AddressWithName';
 
 // SignatoryCard and AddressWithExplorers exported separately.
 // Adding them to this file causes to crash all tests which use anything from that file
@@ -35,7 +36,6 @@ export {
   QrSignatureReader,
   QrTextGenerator,
   ValidatorsTable,
-  StakingActions,
   QrTxGenerator,
   ChainLoader,
   Explorers,
@@ -44,7 +44,9 @@ export {
   Message,
   Badge,
   Fee,
+  Header,
   ExplorerLink,
   BalanceNew,
   AccountAddress,
+  AddressWithName,
 };

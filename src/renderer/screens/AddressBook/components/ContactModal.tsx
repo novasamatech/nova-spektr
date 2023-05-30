@@ -1,13 +1,14 @@
 import { Controller, FieldErrors, SubmitHandler, useForm } from 'react-hook-form';
 import { useEffect } from 'react';
 
-import { BaseModal, Button, Icon, Identicon, Input, InputHint } from '@renderer/components/ui';
+import { Icon, Identicon } from '@renderer/components/ui';
 import { useI18n } from '@renderer/context/I18nContext';
 import { Address, ErrorType } from '@renderer/domain/shared-kernel';
 import { useContact } from '@renderer/services/contact/contactService';
-import { pasteAddressHandler, toAccountId, validateAddress } from '@renderer/shared/utils/address';
+import { toAccountId, validateAddress } from '@renderer/shared/utils/address';
 import { useMatrix } from '@renderer/context/MatrixContext';
 import { Contact } from '@renderer/domain/contact';
+import { BaseModal, Button, Input, InputHint } from '@renderer/components/ui-redesign';
 
 type ContactForm = {
   name: string;
@@ -55,7 +56,6 @@ const ContactModal = ({ isOpen, onToggle, contact }: Props) => {
     handleSubmit,
     formState: { isValid, errors },
     reset,
-    resetField,
   } = useForm<ContactForm>({
     mode: 'onChange',
     defaultValues: initialFormValues,
@@ -99,16 +99,16 @@ const ContactModal = ({ isOpen, onToggle, contact }: Props) => {
       title={t(isEdit ? 'addressBook.editContact.title' : 'addressBook.addContact.title')}
       closeButton
       isOpen={isOpen}
-      contentClass="px-5 pb-4 w-[520px]"
+      contentClass="px-5 pb-4 w-[440px]"
       onClose={handleClose}
     >
-      <form className="flex flex-col mt-14 mb-3 gap-4" onSubmit={handleSubmit(onSubmit)}>
+      <form className="flex flex-col gap-4" onSubmit={handleSubmit(onSubmit)}>
         <Controller
           name="name"
           control={control}
           rules={{ required: true }}
           render={({ field: { value, onChange }, fieldState: { error } }) => (
-            <>
+            <div>
               <Input
                 className="w-full"
                 label={t('addressBook.addContact.nameLabel')}
@@ -120,7 +120,7 @@ const ContactModal = ({ isOpen, onToggle, contact }: Props) => {
               <InputHint variant="error" active={Boolean(error)}>
                 {t('addressBook.addContact.nameRequiredError')}
               </InputHint>
-            </>
+            </div>
           )}
         />
         <Controller
@@ -128,19 +128,8 @@ const ContactModal = ({ isOpen, onToggle, contact }: Props) => {
           control={control}
           rules={{ validate: validateMatrixLogin }}
           render={({ field: { value, onChange }, fieldState: { error } }) => (
-            <>
+            <div>
               <Input
-                suffixElement={
-                  value && (
-                    <button
-                      className="text-neutral"
-                      type="button"
-                      onClick={() => resetField('matrixId', { defaultValue: '' })}
-                    >
-                      <Icon name="clearOutline" />
-                    </button>
-                  )
-                }
                 className="w-full"
                 label={t('addressBook.addContact.matrixIdLabel')}
                 placeholder={t('addressBook.addContact.matrixIdPlaceholder')}
@@ -148,10 +137,11 @@ const ContactModal = ({ isOpen, onToggle, contact }: Props) => {
                 value={value}
                 onChange={onChange}
               />
+              <InputHint active={!error}>{t('addressBook.addContact.matrixIdHint')}</InputHint>
               <InputHint variant="error" active={Boolean(error)}>
                 {t('addressBook.addContact.matrixIdError')}
               </InputHint>
-            </>
+            </div>
           )}
         />
         <Controller
@@ -159,27 +149,12 @@ const ContactModal = ({ isOpen, onToggle, contact }: Props) => {
           control={control}
           rules={{ required: true, validate: validateAddress }}
           render={({ field: { value, onChange }, fieldState: { error } }) => (
-            <>
+            <div>
               <Input
                 prefixElement={
                   value && !error ? <Identicon address={value} background={false} /> : <Icon name="emptyIdenticon" />
                 }
-                suffixElement={
-                  value ? (
-                    <button
-                      className="text-neutral"
-                      type="button"
-                      onClick={() => resetField('address', { defaultValue: '' })}
-                    >
-                      <Icon name="clearOutline" />
-                    </button>
-                  ) : (
-                    <Button variant="outline" pallet="primary" onClick={pasteAddressHandler(onChange)}>
-                      {t('general.button.pasteButton')}
-                    </Button>
-                  )
-                }
-                className="w-full"
+                className="w-full ml-2"
                 label={t('addressBook.addContact.accountIdLabel')}
                 placeholder={t('addressBook.addContact.accountIdPlaceholder')}
                 invalid={Boolean(error)}
@@ -192,7 +167,7 @@ const ContactModal = ({ isOpen, onToggle, contact }: Props) => {
               <InputHint variant="error" active={error?.type === ErrorType.VALIDATE}>
                 {t('addressBook.addContact.accountIdIncorrectError')}
               </InputHint>
-            </>
+            </div>
           )}
         />
 
@@ -200,14 +175,7 @@ const ContactModal = ({ isOpen, onToggle, contact }: Props) => {
           {t('addressBook.editContact.editWarning')}
         </InputHint>
 
-        <Button
-          weight="lg"
-          className="w-fit self-center"
-          pallet="primary"
-          variant="fill"
-          type="submit"
-          disabled={!isValid}
-        >
+        <Button className="ml-auto" type="submit" disabled={!isValid}>
           {t(getButtonText(errors, isEdit))}
         </Button>
       </form>

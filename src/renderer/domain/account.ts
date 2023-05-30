@@ -1,9 +1,9 @@
 import { createKeyMulti } from '@polkadot/util-crypto';
 import { u8aToHex } from '@polkadot/util';
 
-import { ChainId, CryptoType, AccountId, ChainType, SigningType, Threshold } from './shared-kernel';
+import { ChainId, CryptoType, AccountId, ChainType, SigningType, Threshold, WalletType } from './shared-kernel';
 import { Signatory } from '@renderer/domain/signatory';
-import { ID } from '@renderer/services/storage';
+import { AccountDS, ID } from '@renderer/services/storage';
 
 export type Account = {
   walletId?: ID;
@@ -93,3 +93,26 @@ export function isMultisig(account?: Account | MultisigAccount): account is Mult
 
   return hasSignatories && hasThreshold;
 }
+
+export const getActiveWalletType = (activeAccounts?: AccountDS[]): WalletType | null => {
+  if (!activeAccounts?.length) return null;
+
+  if (activeAccounts.length > 1) {
+    return WalletType.MULTISHARD_PARITY_SIGNER;
+  }
+
+  const account = activeAccounts[0];
+  if (isMultisig(account)) {
+    return WalletType.MULTISIG;
+  }
+
+  if (account.signingType === SigningType.WATCH_ONLY) {
+    return WalletType.WATCH_ONLY;
+  }
+
+  if (account.signingType === SigningType.PARITY_SIGNER) {
+    return WalletType.SINGLE_PARITY_SIGNER;
+  }
+
+  return null;
+};

@@ -6,6 +6,7 @@ import { DropdownOption, DropdownResult } from '@renderer/components/ui/Dropdown
 import { useI18n } from '@renderer/context/I18nContext';
 import Paths from '@renderer/routes/paths';
 import { SupportedLocale } from '@renderer/services/translation/common/types';
+import { Header } from '@renderer/components/common';
 
 const LINKS = [
   {
@@ -48,7 +49,7 @@ const Overview = () => {
 
   return (
     <div className="h-full flex flex-col gap-y-9">
-      <h1 className="font-semibold text-2xl text-neutral mt-5 px-5">{t('settings.title')}</h1>
+      <Header title={t('settings.title')} />
 
       <section className="flex flex-col items-center mx-auto w-full max-w-[740px] p-5 rounded-2lg bg-shade-2">
         <ul className="flex flex-col gap-y-2.5 w-full" data-testid="settings">

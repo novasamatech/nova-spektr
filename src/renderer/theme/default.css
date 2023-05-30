@@ -61,13 +61,17 @@
   --action-background-hover: rgba(69, 69, 137, 0.06);
   --block-background-hover: rgba(69, 69, 137, 0.06);
   --block-background: rgba(69, 69, 137, 0.04);
+  --badge-background: rgba(70, 73, 246, 0.16);
   --extended-block-background: rgba(69, 69, 137, 0.03);
   --block-background-default: #fff;
   --negative-action-background: rgba(245, 33, 99, 0.06);
   --dim-background: rgba(54, 54, 67, 0.4);
   --qr-valid-background: #01a63e;
+  --positive-background: rgba(1, 166, 62, 0.16);
   --accent-background: #4649f6;
+  --row-background: #fff;
   --hover: rgba(36, 99, 235, 0.04);
+  --card-background: #fff;
 
   /* SHADOW */
   --card-shadow: 0px 3px 4px rgba(69, 69, 137, 0.04), inset 0px -0.5px 0px rgba(69, 69, 137, 0.12);

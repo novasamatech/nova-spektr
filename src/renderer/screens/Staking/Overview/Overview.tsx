@@ -1,352 +1,234 @@
-import { useEffect, useState } from 'react';
-import { Trans } from 'react-i18next';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 
-import { StakingActions } from '@renderer/components/common';
-import { Dropdown, Icon, Input } from '@renderer/components/ui';
-import { DropdownOption, DropdownResult } from '@renderer/components/ui/Dropdowns/common/types';
-import { useGraphql } from '@renderer/context/GraphqlContext';
+import { Header } from '@renderer/components/common';
 import { useI18n } from '@renderer/context/I18nContext';
+import { Chain } from '@renderer/domain/chain';
+import {
+  AboutStaking,
+  NetworkInfo,
+  NominatorsList,
+  Actions,
+  ValidatorsModal,
+  NoAccounts,
+  InactiveChain,
+} from './components';
+import { getRelaychainAsset } from '@renderer/shared/utils/assets';
+import { useGraphql } from '@renderer/context/GraphqlContext';
+import { ChainId, Address } from '@renderer/domain/shared-kernel';
 import { useNetworkContext } from '@renderer/context/NetworkContext';
-import { Asset } from '@renderer/domain/asset';
-import { ConnectionStatus, ConnectionType } from '@renderer/domain/connection';
-import { Address, ChainId, SigningType } from '@renderer/domain/shared-kernel';
+import { useEra } from '@renderer/services/staking/eraService';
+import { useStakingData } from '@renderer/services/staking/stakingDataService';
+import { toAddress } from '@renderer/shared/utils/address';
+import { useAccount } from '@renderer/services/account/accountService';
+import { StakingMap, ValidatorMap } from '@renderer/services/staking/common/types';
+import { useToggle } from '@renderer/shared/hooks';
+import { useValidators } from '@renderer/services/staking/validatorsService';
+import { useStakingRewards } from '@renderer/services/staking/stakingRewardsService';
+import { NominatorInfo } from '@renderer/screens/Staking/Overview/components/NominatorsList/NominatorsList';
 import { Stake } from '@renderer/domain/stake';
 import { PathValue } from '@renderer/routes/paths';
 import { createLink } from '@renderer/routes/utils';
-import TotalAmount from '@renderer/screens/Staking/Overview/components/TotalAmount/TotalAmount';
-import { useAccount } from '@renderer/services/account/accountService';
-import { useChains } from '@renderer/services/network/chainsService';
-import { useSettingsStorage } from '@renderer/services/settings/settingsStorage';
-import { StakingMap, ValidatorMap } from '@renderer/services/staking/common/types';
-import { useEra } from '@renderer/services/staking/eraService';
-import { useStakingData } from '@renderer/services/staking/stakingDataService';
-import { useStakingRewards } from '@renderer/services/staking/stakingRewardsService';
-import { useValidators } from '@renderer/services/staking/validatorsService';
-import { useWallet } from '@renderer/services/wallet/walletService';
-import { useToggle } from '@renderer/shared/hooks';
-import { isStringsMatchQuery } from '@renderer/shared/utils/strings';
-import { AboutStaking, EmptyFilter, InactiveChain, NoAccounts, StakingTable } from './components';
-import NominatorsModal from './components/NominatorsModal/NominatorsModal';
-import { AccountStakeInfo } from './components/StakingTable/StakingTable';
-import { toAddress } from '@renderer/shared/utils/address';
-import { getRelaychainAsset } from '@renderer/shared/utils/assets';
-
-type NetworkOption = { asset: Asset; addressPrefix: number };
+import { AccountDS } from '@renderer/services/storage';
+import { ConnectionType, ConnectionStatus } from '@renderer/domain/connection';
 
 const Overview = () => {
   const { t } = useI18n();
   const navigate = useNavigate();
-  const [isNominatorsModalOpen, toggleNominatorsModal] = useToggle();
-
   const { changeClient } = useGraphql();
   const { connections } = useNetworkContext();
-  const { getActiveAccounts } = useAccount();
-  const { getLiveWallets } = useWallet();
-  const { sortChains, getChainsData } = useChains();
-  const { subscribeStaking } = useStakingData();
-  const { getValidators, getNominators } = useValidators();
+
   const { subscribeActiveEra } = useEra();
-  const { setStakingNetwork, getStakingNetwork } = useSettingsStorage();
+  const { subscribeStaking } = useStakingData();
+  const { getValidators } = useValidators();
+  const { getActiveAccounts } = useAccount();
+  const [isShowNominators, toggleNominators] = useToggle();
 
   const [era, setEra] = useState<number>();
   const [staking, setStaking] = useState<StakingMap>({});
+  const [isStakingLoading, setIsStakingLoading] = useState(true);
   const [validators, setValidators] = useState<ValidatorMap>({});
-  const [nominators, setNominators] = useState<ValidatorMap>({});
 
-  const [query, setQuery] = useState('');
+  const [activeChain, setActiveChain] = useState<Chain>();
   const [networkIsActive, setNetworkIsActive] = useState(true);
-  const [activeNetwork, setActiveNetwork] = useState<DropdownResult<NetworkOption>>();
-  const [stakingNetworks, setStakingNetworks] = useState<DropdownOption<NetworkOption>[]>([]);
-  const [selectedAccounts, setSelectedAccounts] = useState<Address[]>([]);
+
+  const [selectedNominators, setSelectedNominators] = useState<Address[]>([]);
   const [selectedStash, setSelectedStash] = useState<Address>('');
 
-  const chainId = (activeNetwork?.id || '') as ChainId;
+  const chainId = (activeChain?.chainId || '') as ChainId;
   const api = connections[chainId]?.api;
-  const addressPrefix = connections[chainId]?.addressPrefix;
   const connection = connections[chainId]?.connection;
-  const explorers = connections[chainId]?.explorers;
+  const addressPrefix = activeChain?.addressPrefix;
+  const explorers = activeChain?.explorers;
 
-  const activeWallets = getLiveWallets();
-  const activeAccounts = getActiveAccounts()
-    .filter(({ rootId, derivationPath, chainId: accChainId }) => {
-      const derivationIsCorrect = accChainId === chainId && rootId && derivationPath;
+  const accounts = getActiveAccounts().reduce<AccountDS[]>((acc, a) => {
+    const derivationIsCorrect = a.rootId && a.derivationPath && a.chainId === chainId;
 
-      return !rootId || derivationIsCorrect;
-    })
-    .map((a) => ({ ...a, accountId: toAddress(a.accountId, { prefix: addressPrefix }) }));
+    if (!a.rootId || derivationIsCorrect) {
+      acc.push(a);
+    }
 
-  const accountAddresses = activeAccounts.map(({ accountId }) => {
-    return toAddress(accountId, { prefix: addressPrefix });
+    return acc;
   }, []);
 
-  const totalStakes = Object.values(staking).reduce<string[]>((acc, stake) => {
-    return acc.concat(stake?.total || '0');
-  }, []);
+  const addresses = accounts.map((a) => toAddress(a.accountId, { prefix: addressPrefix }));
+
+  const { rewards, isRewardsLoading } = useStakingRewards(addresses);
 
   useEffect(() => {
     if (!connection) return;
 
-    const isNotDisabled = connection.connectionType !== ConnectionType.DISABLED;
-    const isNotError = connection.connectionStatus !== ConnectionStatus.ERROR;
+    const isDisabled = connection.connectionType === ConnectionType.DISABLED;
+    const isError = connection.connectionStatus === ConnectionStatus.ERROR;
 
-    setNetworkIsActive(isNotDisabled && isNotError);
-  }, [connection, networkIsActive]);
+    setNetworkIsActive(!isDisabled && !isError);
+  }, [chainId, connection]);
 
   useEffect(() => {
-    if (!api?.isConnected || accountAddresses.length === 0) return;
+    if (!chainId || !api?.isConnected) return;
 
     let unsubEra: () => void | undefined;
     let unsubStaking: () => void | undefined;
 
+    setIsStakingLoading(true);
+
     (async () => {
       unsubEra = await subscribeActiveEra(api, setEra);
-      unsubStaking = await subscribeStaking(chainId, api, accountAddresses, setStaking);
+      unsubStaking = await subscribeStaking(chainId, api, addresses, (staking) => {
+        setStaking(staking);
+        setIsStakingLoading(false);
+      });
     })();
 
     return () => {
       unsubEra?.();
       unsubStaking?.();
     };
-  }, [api, accountAddresses.length]);
+  }, [chainId, api, addresses.length]);
 
   useEffect(() => {
-    if (!api?.isConnected || !era) return;
+    if (!chainId || !api?.isConnected || !era) return;
 
     getValidators(chainId, api, era).then(setValidators);
-  }, [api, era]);
+  }, [chainId, api, era]);
 
-  useEffect(() => {
-    getChainsData().then((chainsData) => {
-      const relaychains = sortChains(chainsData).reduce<DropdownOption<NetworkOption>[]>((acc, chain) => {
-        const asset = getRelaychainAsset(chain.assets);
-        if (asset) {
-          const element = (
-            <>
-              <img src={chain.icon} alt="" width={20} height={20} />
-              {chain.name}
-            </>
-          );
-
-          acc.push({
-            id: chain.chainId,
-            value: { asset, addressPrefix: chain.addressPrefix },
-            element,
-          });
-        }
-
-        return acc;
-      }, []);
-
-      const settingsChainId = getStakingNetwork();
-      const settingsChain = relaychains.find((chain) => chain.id === settingsChainId);
-
-      setStakingNetworks(relaychains);
-      setActiveNetwork(settingsChain || { id: relaychains[0].id, value: relaychains[0].value });
-      changeClient(settingsChainId || relaychains[0].id);
-    });
-  }, []);
-
-  const onNetworkChange = (option: DropdownResult<NetworkOption>) => {
-    setStakingNetwork(option.id as ChainId);
-    changeClient(option.id as ChainId);
-    setActiveNetwork(option);
-    setSelectedAccounts([]);
+  const changeNetwork = (chain: Chain) => {
+    changeClient(chain.chainId);
+    setActiveChain(chain);
     setStaking({});
+    setSelectedNominators([]);
     setValidators({});
-    setQuery('');
   };
 
-  const setupNominators = async (stash?: Address) => {
+  const openSelectedValidators = async (stash?: Address) => {
     if (!api || !stash) return;
 
-    const nominators = await getNominators(api, stash);
-
     setSelectedStash(stash);
-    setNominators(nominators);
-    toggleNominatorsModal();
+    toggleNominators();
   };
 
-  const { watchOnlyAccs, paritySignerAccs } = activeAccounts.reduce<Record<string, Address[]>>(
-    (acc, account) => {
-      if (!account.accountId) return acc;
-
-      if (account.signingType === SigningType.WATCH_ONLY) {
-        acc.watchOnlyAccs.push(account.accountId);
-      } else {
-        acc.paritySignerAccs.push(account.accountId);
-      }
-
-      return acc;
-    },
-    { watchOnlyAccs: [], paritySignerAccs: [] },
-  );
-
-  const { rewards, isLoading } = useStakingRewards(
-    watchOnlyAccs.concat(paritySignerAccs),
-    activeNetwork?.value.addressPrefix,
-  );
-
-  const walletNames = activeWallets.reduce<Record<string, string>>((acc, wallet) => {
-    return wallet.id ? { ...acc, [wallet.id]: wallet.name } : acc;
-  }, {});
-
-  const rootNames = activeAccounts.reduce<Record<Address, string>>((acc, account) => {
-    const chainOrWatchOnlyAccount = account.rootId || account.signingType === SigningType.WATCH_ONLY;
-    if (!account.id || chainOrWatchOnlyAccount) return acc;
-
-    return { ...acc, [account.id.toString()]: account.name };
-  }, {});
-
-  const stakingInfo = activeAccounts.reduce<AccountStakeInfo[]>((acc, account) => {
+  const nominatorsInfo = accounts.reduce<NominatorInfo[]>((acc, account) => {
     const address = toAddress(account.accountId, { prefix: addressPrefix });
-    if (!address) return acc;
 
-    let walletName = account.walletId ? walletNames[account.walletId.toString()] : '';
-    if (account.rootId) {
-      //eslint-disable-next-line i18next/no-literal-string
-      walletName += `- ${rootNames[account.rootId.toString()]}`;
-    }
-
-    if (!query || isStringsMatchQuery(query, [walletName, account.name, address])) {
-      acc.push({
-        walletName,
-        address,
-        stash: staking[address]?.stash,
-        signingType: account.signingType,
-        accountName: account.name,
-        accountIsSelected: selectedAccounts.includes(address),
-        totalStake: staking[address]?.total || '0',
-        totalReward: isLoading ? undefined : rewards[address],
-        unlocking: staking[address]?.unlocking,
-      });
-    }
+    acc.push({
+      address,
+      stash: staking[address]?.stash,
+      signingType: account.signingType,
+      accountName: account.name,
+      isSelected: selectedNominators.includes(address),
+      totalStake: isStakingLoading ? undefined : staking[address]?.total || '0',
+      totalReward: isRewardsLoading ? undefined : rewards[address],
+      unlocking: staking[address]?.unlocking,
+    });
 
     return acc;
   }, []);
 
-  const selectedStakes = Object.entries(staking).reduce<Stake[]>((acc, [address, stake]) => {
-    if (!selectedAccounts.includes(address)) return acc;
-
-    if (stake) {
-      acc.push(stake);
-    } else {
-      acc.push({ address: address } as Stake);
-    }
+  const selectedStakes = selectedNominators.reduce<Stake[]>((acc, address) => {
+    const stake = staking[address];
+    stake ? acc.push(stake) : acc.push({ address } as Stake);
 
     return acc;
   }, []);
 
-  const navigateToStake = (path: PathValue, accounts?: Address[]) => {
-    if (accounts) {
-      setSelectedAccounts(accounts);
+  const navigateToStake = (path: PathValue, addresses?: Address[]) => {
+    if (addresses) {
+      setSelectedNominators(addresses);
 
       return;
     }
 
-    const activeAccountIds = activeAccounts.reduce<string[]>((acc, account) => {
-      if (account.id && account.accountId && selectedAccounts.includes(account.accountId)) {
-        acc.push(account.id.toString());
+    const accountsMap = accounts.reduce<Record<Address, string>>((acc, account) => {
+      if (account.id) {
+        acc[toAddress(account.accountId, { prefix: addressPrefix })] = account.id;
       }
 
       return acc;
-    }, []);
+    }, {});
 
-    navigate(createLink(path, { chainId }, { id: activeAccountIds }));
+    const stakeAccountIds = selectedNominators.map((nominator) => accountsMap[nominator]);
+
+    navigate(createLink(path, { chainId }, { id: stakeAccountIds }));
+  };
+
+  const totalStakes = Object.values(staking).map((stake) => stake?.total || '0');
+  const relaychainAsset = getRelaychainAsset(activeChain?.assets);
+
+  const toggleSelectedNominators = (address: Address) => {
+    if (selectedNominators.includes(address)) {
+      setSelectedNominators((value) => value.filter((a) => a !== address));
+    } else {
+      setSelectedNominators((value) => value.concat(address));
+    }
   };
 
   return (
     <>
-      <div className="h-full flex flex-col gap-y-9 relative">
-        <h1 className="font-semibold text-2xl text-neutral mt-5 px-5">{t('staking.title')}</h1>
+      <div className="h-full flex flex-col items-start relative bg-main-app-background">
+        <Header title={t('staking.title')} />
 
-        <div className="overflow-y-auto flex-1">
-          <section className="w-[900px] p-5 mx-auto bg-shade-2 rounded-2lg mb-36 last:mb-0">
-            <div className="flex items-center mb-5">
-              <p className="text-xl text-neutral mr-5">
-                <Trans
-                  t={t}
-                  i18nKey="staking.overview.stakingAssetLabel"
-                  values={{ asset: activeNetwork?.value.asset.symbol }}
-                />
-              </p>
-              <Dropdown
-                className="w-40"
-                placeholder={t('staking.startStaking.selectNetworkLabel')}
-                activeId={activeNetwork?.id}
-                options={stakingNetworks}
-                onChange={onNetworkChange}
-              />
-              {networkIsActive && activeAccounts.length > 0 && (
-                <TotalAmount
-                  totalStakes={totalStakes}
-                  asset={activeNetwork?.value.asset}
-                  accounts={accountAddresses}
-                  addressPrefix={activeNetwork?.value.addressPrefix}
-                />
-              )}
-            </div>
+        <section className="overflow-y-auto flex flex-col gap-y-6 mx-auto mt-6 h-full w-[546px]">
+          <NetworkInfo
+            rewards={Object.values(rewards)}
+            isRewardsLoading={isRewardsLoading}
+            isStakingLoading={isStakingLoading}
+            totalStakes={totalStakes}
+            onNetworkChange={changeNetwork}
+          >
+            <AboutStaking api={api} era={era} validators={Object.values(validators)} asset={relaychainAsset} />
+          </NetworkInfo>
 
-            {networkIsActive && activeAccounts.length > 0 && (
+          {networkIsActive &&
+            (accounts.length > 0 ? (
               <>
-                <AboutStaking
-                  className="mb-5"
-                  validators={Object.values(validators)}
+                <Actions stakes={selectedStakes} onNavigate={navigateToStake} />
+
+                <NominatorsList
                   api={api}
                   era={era}
-                  asset={activeNetwork?.value.asset}
+                  nominators={nominatorsInfo}
+                  asset={relaychainAsset}
+                  explorers={activeChain?.explorers}
+                  onCheckValidators={openSelectedValidators}
+                  onToggleNominator={toggleSelectedNominators}
                 />
-
-                {/*<InfoBanners />*/}
-
-                <div className="flex items-center justify-between">
-                  <Input
-                    wrapperClass="!bg-shade-5 w-[300px]"
-                    placeholder={t('staking.overview.searchPlaceholder')}
-                    prefixElement={<Icon name="search" className="w-5 h-5" />}
-                    value={query}
-                    onChange={setQuery}
-                  />
-                  {/*<Filter />*/}
-                </div>
-
-                {query && stakingInfo.length === 0 ? (
-                  <EmptyFilter />
-                ) : (
-                  <StakingTable
-                    api={api}
-                    currentEra={era}
-                    stakeInfo={stakingInfo}
-                    selectedStakes={selectedAccounts}
-                    addressPrefix={activeNetwork?.value.addressPrefix}
-                    asset={activeNetwork?.value.asset}
-                    explorers={explorers}
-                    openValidators={setupNominators}
-                    selectStaking={setSelectedAccounts}
-                  />
-                )}
               </>
-            )}
-            {networkIsActive && !activeAccounts.length && <NoAccounts chainName={connections[chainId]?.name} />}
-            {!networkIsActive && <InactiveChain />}
-          </section>
+            ) : (
+              <NoAccounts className="flex-grow mb-28" />
+            ))}
 
-          <StakingActions
-            className="absolute bottom-4 left-1/2 -translate-x-1/2"
-            stakes={selectedStakes}
-            onNavigate={navigateToStake}
-          />
-        </div>
+          {!networkIsActive && <InactiveChain className="flex-grow mb-28" />}
+        </section>
       </div>
 
-      <NominatorsModal
-        isOpen={isNominatorsModalOpen}
+      <ValidatorsModal
+        api={api}
+        asset={relaychainAsset}
         stash={selectedStash}
         validators={validators}
-        nominators={nominators}
         explorers={explorers}
-        asset={activeNetwork?.value.asset}
-        onClose={toggleNominatorsModal}
+        isOpen={isShowNominators}
+        onClose={toggleNominators}
       />
     </>
   );

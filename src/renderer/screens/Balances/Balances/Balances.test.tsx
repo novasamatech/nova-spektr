@@ -45,6 +45,11 @@ jest.mock('@renderer/context/I18nContext', () => ({
 jest.mock('../NetworkBalances/NetworkBalances', () => () => <div>NetworkBalances</div>);
 jest.mock('@renderer/screens/Transfer/Transfer', () => 'TransferButton');
 
+jest.mock(
+  '@renderer/components/common/AddressWithExplorers/AddressWithExplorers',
+  jest.fn().mockReturnValue(({ address }: { address: string }) => <span data-testid="validator">{address}</span>),
+);
+
 describe('screen/Balances/Balances', () => {
   test('should render component', () => {
     render(<Balances />, { wrapper: MemoryRouter });

@@ -7,6 +7,7 @@
       "accountIdRequiredError": "Account address is required",
       "addContactButton": "Add contact",
       "matrixIdError": "Incrorrect matrix id",
+      "matrixIdHint": "В формате: @user_name:matrix.org",
       "matrixIdLabel": "matrix id (optional)",
       "matrixIdPlaceholder": "Enter or paste Matrix ID, ie: @bob:matrix.org",
       "nameLabel": "Name",
@@ -46,6 +47,10 @@
     "emptyStateLabel": "Ничего не найдено",
     "hideZeroBalancesLabel": "Скрыть активы с нулевыми балансами",
     "searchPlaceholder": "Поиск",
+    "shards": "shards",
+    "shardsModalButton": "Продолжить",
+    "shardsModalTitle": "Your shards",
+    "shardsTitle": "Ваши активы на:",
     "title": "Балансы",
     "verificationFailedLabel": "данные недостоверны"
   },
@@ -115,7 +120,7 @@
   },
   "navigation": {
     "addressBookLabel": "Контакты",
-    "balancesLabel": "Балансы",
+    "balancesLabel": "Ассеты",
     "cameraDEVLabel": "Камера DEV",
     "chatDEVLabel": "Чат DEV",
     "historyLabel": "История",
@@ -370,15 +375,12 @@
     "videoError": "Браузер не поддерживает видео"
   },
   "receive": {
-    "chainLabel1": "токен на этот адрес в",
-    "chainLabel2": "{name} (Парачейн)",
-    "chainLabel3": "сети",
+    "chainLabel": "токен на этот адрес в {name} (Парачейн) сети!",
     "copyAddressButton": "Копировать адрес",
     "explorerLinkLabel": "Ссылка на {name}",
-    "on": "в",
     "selectWalletPlaceholder": "Выберите кошелек...",
     "sendOnlyLabel": "Отправляйте только",
-    "title": "Получить"
+    "title": "Получить {asset} на"
   },
   "settings": {
     "matrix": {
@@ -456,7 +458,6 @@
       "aboutStakingTitle": "About { asset } staking",
       "activeNominatorsLabel": "Active nominators",
       "averageApyLabel": "Average APY",
-      "earningsTitle": "Estimated <strong>{ asset }</strong> earnings with restake",
       "maximumApyLabel": "Maximum APY",
       "minimumStakeLabel": "Minimum stake",
       "monthlyEarningLabel": "Monthly",
@@ -468,16 +469,22 @@
       "yearlyEarningLabel": "Yearly"
     },
     "actions": {
-      "destinationLabel": "Адрес наград",
-      "redeemLabel": "Награда",
+      "destinationLabel": "Сменить адрес наград",
+      "filterButton": "Фильтр",
+      "manageStakePlaceholder": "Управлять стейком",
+      "noOverlapPlaceholder": "Нет общих операций",
+      "redeemLabel": "Забрать анстейк",
       "returnToStakeLabel": "Вернуть в стейк",
+      "selectAccPlaceholder": "Выберите аккаунт",
       "setValidatorsLabel": "Назнанить валидаторов",
       "stakeMoreLabel": "Увеличить стейк",
       "startStakingLabel": "Начать стейкинг",
       "unstakeLabel": "Отменить стейк"
     },
     "badges": {
-      "unstakeDescription": "Ваши токены сейчас выводятся из стейка",
+      "redeemDescription": "Вы можете забрать ваши unstaked токены",
+      "redeemTitle": "Забрать",
+      "unstakeDescription": "Ваши токены сейчас<br />выводятся из стейка",
       "unstakeTitle": "Вывод из стейка"
     },
     "bond": {
@@ -548,7 +555,6 @@
       "electedTitle": "Выбранные",
       "nominated": "Вклад",
       "notAssigned": "Нет вклада",
-      "notElectedDescription": "Валидаторы с недостаточным стейком пока не избраны",
       "notElectedTitle": "Не избранные",
       "rewards": "Награды (APY)",
       "validators": "Валидаторы",
@@ -562,19 +568,18 @@
     "overview": {
       "aboutStakingLabel": "О стейкинге { asset } токенов",
       "accountTableHeader": "Аккаунты",
+      "actionsTitle": "Аккаунты",
       "emptyFilterDescription": "Попробуйте другие параметры фильтра",
       "emptyFilterLabel": "Результаты не найдены",
-      "filterButton": "Фильтры",
-      "networkDisabledDescription": "Пожалуйста, пройдите в настройки сети и проверьте соединение",
+      "networkDisabledDescription": "Пожалуйста, проверьте соеднинение в настройках сети",
       "networkDisabledLabel": "Сеть неактивна",
+      "networkPlaceholder": "Выберите сеть",
       "networkSettingsLink": "Настройки сети",
-      "noAccountsDescription": "Для продолжения стейкинга выберите аккаунты в сети <strong>{ chainName }</strong>",
       "noAccountsLabel": "Не выбран ни один аккаунт",
       "noActiveWalletsDescription": "Пожалуйста, выберите кошелек для просмотра стейкинга",
       "noActiveWalletsLabel": "Нет выбранных кошельков",
       "noResultsDescription": "Пожалуйста, попробуйте другие параметры фильтрации",
       "noResultsLabel": "Сттейкинги не найдены",
-      "noValidatorsDescription": "Аккаунт еще не номинировал валидаторов",
       "noValidatorsLabel": "Валидаторы не наминированы",
       "rewardsTableHeader": "Общая награда",
       "searchPlaceholder": "Искать по имени кошелька",
@@ -636,7 +641,7 @@
       "slashedPopoverTitle": "Урезан",
       "subtitle": "Валидаторы",
       "totalStakeTableHeader": "Общий стейк",
-      "validatorsTableHeader": "Валидаторы"
+      "validatorsTableHeader": "Аккаунты"
     },
     "warning": {
       "controller": "Данная операция работает только на <strong>Controller</strong> аккаунтах.<br />Отключить все <strong>Stash</strong> аккаунты чтобы продолжить?",
@@ -705,13 +710,16 @@
     "wallet": "Кошелёк"
   },
   "wallets": {
-    "addByParitySignerButton": "Добавить кошелёк из Parity Signer",
-    "addMultisigWalletButton": "Добавить multisig кошелёк",
-    "addWatchOnlyButton": "Добавить Watch-Only кошелёк",
+    "addButtonTitle": "Добавить",
+    "addMultisig": "Multisig",
+    "addPolkadotVault": "Polkadot Vault",
+    "addWatchOnly": "Watch-only",
     "multishardLabel": "Multishard",
     "multisigLabel": "Multisig",
     "paritySignerLabel": "Parity Signer",
-    "searchPlaceholder": "Поиск кошелька",
+    "searchPlaceholder": "Поиск",
+    "shards": "Shards",
+    "title": "Кошельки",
     "watchOnlyLabel": "Watch-only"
   },
   "welcome": {
