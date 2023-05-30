@@ -102,7 +102,7 @@ const Balances = () => {
 
   const handleShardSelect = (selectedAccounts?: AccountDS[]) => {
     toggleSelectShardsOpen();
-    if (selectedAccounts) {
+    if (Array.isArray(selectedAccounts)) {
       updateChainsAndAccounts(selectedAccounts);
     }
   };

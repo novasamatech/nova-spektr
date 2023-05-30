@@ -24,7 +24,7 @@ const getRootAccount = (accounts: AccountDS[], chains: ChainsRecord, root: Accou
   return {
     ...root,
     chains: chainAccounts,
-    amount: chainAccounts.reduce((acc, chain) => acc + chain.accounts.length, 1),
+    amount: chainAccounts.reduce((acc, chain) => acc + chain.accounts.length, 1), // start with 1 because we want to count root acc as well
   };
 };
 

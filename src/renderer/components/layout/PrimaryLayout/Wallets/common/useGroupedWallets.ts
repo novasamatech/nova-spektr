@@ -1,12 +1,13 @@
 import { useEffect, useState } from 'react';
 import { uniq } from 'lodash';
 
-import { AccountDS, WalletDS } from '@renderer/services/storage';
+import { WalletDS } from '@renderer/services/storage';
 import { ChainsRecord, GroupedWallets } from './types';
 import { getMultishardStructure } from '@renderer/components/layout/PrimaryLayout/Wallets/common/utils';
 import { SigningType, WalletType } from '@renderer/domain/shared-kernel';
 import { includes } from '@renderer/shared/utils/strings';
 import { useAccount } from '@renderer/services/account/accountService';
+import { Account } from '@renderer/domain/account';
 
 export const useGroupedWallets = (
   liveWallets: WalletDS[],
@@ -51,7 +52,7 @@ export const useGroupedWallets = (
     });
   }, [searchQuery]);
 
-  const searchAccount = (accounts: AccountDS[] = [], query = '') => {
+  const searchAccount = (accounts: Account[] = [], query = '') => {
     return accounts.filter((account) => {
       return includes(account.name, query) || includes(account.accountId, query);
     });

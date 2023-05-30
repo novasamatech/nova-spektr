@@ -5,12 +5,12 @@ import { GroupIcons, GroupLabels } from '@renderer/components/layout/PrimaryLayo
 import { toAddress } from '@renderer/shared/utils/address';
 import { SS58_DEFAULT_PREFIX } from '@renderer/shared/utils/constants';
 import { useI18n } from '@renderer/context/I18nContext';
-import { AccountDS, WalletDS } from '@renderer/services/storage';
+import { WalletDS } from '@renderer/services/storage';
 import { ChainsRecord } from './common/types';
-import { getActiveWalletType } from '@renderer/domain/account';
+import { Account, getActiveWalletType } from '@renderer/domain/account';
 
 type Props = {
-  activeAccounts: AccountDS[];
+  activeAccounts: Account[];
   chains: ChainsRecord;
   wallets: WalletDS[];
 };

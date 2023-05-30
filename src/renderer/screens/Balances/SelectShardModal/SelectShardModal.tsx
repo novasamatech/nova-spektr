@@ -28,12 +28,13 @@ type Props = {
 };
 
 const SelectShardModal = ({ isOpen, onClose, activeAccounts, accounts, connections }: Props) => {
-  if (!accounts[0]?.walletId) return null;
-
   const { t } = useI18n();
-  const activeIds = activeAccounts.map((a) => a.accountId);
 
   useEffect(() => {
+    if (!accounts[0]?.walletId) return;
+
+    const activeIds = activeAccounts.map((a) => a.accountId);
+
     const multishard = getMultishardStructure(accounts, connections, accounts[0].walletId!);
     const selectable = getSelectableShards(multishard, activeIds);
 
@@ -43,10 +44,6 @@ const SelectShardModal = ({ isOpen, onClose, activeAccounts, accounts, connectio
 
   const [shards, setShards] = useState<SelectableShards>({ rootAccounts: [], amount: 0 });
   const [query, setQuery] = useState('');
-
-  const handleSearchChange = (value: string) => {
-    setQuery(value);
-  };
 
   const selectRoot = (value: boolean, root: SelectableRoot, allShards: SelectableShards) => {
     root.isSelected = value;
@@ -110,13 +107,13 @@ const SelectShardModal = ({ isOpen, onClose, activeAccounts, accounts, connectio
       title={t('balances.shardsModalTitle')}
       closeButton
       contentClass="px-5 py-4"
-      onClose={() => onClose()}
+      onClose={onClose}
     >
       <SearchInput
         value={query}
         placeholder={t('balances.searchPlaceholder')}
         wrapperClass="mb-4"
-        onChange={handleSearchChange}
+        onChange={setQuery}
       />
 
       {/* root accounts */}

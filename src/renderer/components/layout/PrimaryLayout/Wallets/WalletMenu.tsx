@@ -4,7 +4,7 @@ import cn from 'classnames';
 
 import { DropdownButton, SearchInput, SmallTitleText } from '@renderer/components/ui-redesign';
 import { useI18n } from '@renderer/context/I18nContext';
-import { addWalletOptions } from '@renderer/components/layout/PrimaryLayout/Wallets/common/constants';
+import { AddWalletOptions } from '@renderer/components/layout/PrimaryLayout/Wallets/common/constants';
 import { AccountId, WalletType } from '@renderer/domain/shared-kernel';
 import { useAccount } from '@renderer/services/account/accountService';
 import {
@@ -29,7 +29,7 @@ const WalletMenu = ({ children, chains, wallets }: PropsWithChildren<Props>) => 
 
   const groupedWallets = useGroupedWallets(wallets, chains, query);
 
-  const dropdownOptions = addWalletOptions.map((o) => ({ ...o, title: t(o.title) }));
+  const dropdownOptions = AddWalletOptions.map((o) => ({ ...o, title: t(o.title) }));
 
   const getAllShardsIds = (wallet: MultishardWallet): AccountId[] => {
     return wallet.rootAccounts.reduce<AccountId[]>((acc, root) => {
