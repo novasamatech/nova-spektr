@@ -47,6 +47,10 @@
     "emptyStateLabel": "Ничего не найдено",
     "hideZeroBalancesLabel": "Скрыть активы с нулевыми балансами",
     "searchPlaceholder": "Поиск",
+    "shards": "shards",
+    "shardsModalButton": "Продолжить",
+    "shardsModalTitle": "Your shards",
+    "shardsTitle": "Ваши активы на:",
     "title": "Балансы",
     "verificationFailedLabel": "данные недостоверны"
   },
@@ -116,7 +120,7 @@
   },
   "navigation": {
     "addressBookLabel": "Контакты",
-    "balancesLabel": "Балансы",
+    "balancesLabel": "Ассеты",
     "cameraDEVLabel": "Камера DEV",
     "chatDEVLabel": "Чат DEV",
     "historyLabel": "История",
@@ -371,15 +375,12 @@
     "videoError": "Браузер не поддерживает видео"
   },
   "receive": {
-    "chainLabel1": "токен на этот адрес в",
-    "chainLabel2": "{name} (Парачейн)",
-    "chainLabel3": "сети",
+    "chainLabel": "токен на этот адрес в {name} (Парачейн) сети!",
     "copyAddressButton": "Копировать адрес",
     "explorerLinkLabel": "Ссылка на {name}",
-    "on": "в",
     "selectWalletPlaceholder": "Выберите кошелек...",
     "sendOnlyLabel": "Отправляйте только",
-    "title": "Получить"
+    "title": "Получить {asset} на"
   },
   "settings": {
     "matrix": {
@@ -710,13 +711,16 @@
     "wallet": "Кошелёк"
   },
   "wallets": {
-    "addByParitySignerButton": "Добавить кошелёк из Parity Signer",
-    "addMultisigWalletButton": "Добавить multisig кошелёк",
-    "addWatchOnlyButton": "Добавить Watch-Only кошелёк",
+    "addButtonTitle": "Добавить",
+    "addMultisig": "Multisig",
+    "addPolkadotVault": "Polkadot Vault",
+    "addWatchOnly": "Watch-only",
     "multishardLabel": "Multishard",
     "multisigLabel": "Multisig",
     "paritySignerLabel": "Parity Signer",
-    "searchPlaceholder": "Поиск кошелька",
+    "searchPlaceholder": "Поиск",
+    "shards": "Shards",
+    "title": "Кошельки",
     "watchOnlyLabel": "Watch-only"
   },
   "welcome": {

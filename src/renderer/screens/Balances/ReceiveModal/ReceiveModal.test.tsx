@@ -45,7 +45,7 @@ describe('screens/Balances/ReceiveModal', () => {
       render(<ReceiveModal {...defaultProps(westendExplorers)} />);
     });
 
-    const title = screen.getByRole('heading', { name: 'receive.title' });
+    const title = screen.getByRole('dialog', { name: 'receive.title' });
     const address = screen.getByText('5CGQ7BPJZZKNirQgVhzbX9wdkgbnUHtJ5V7FkMXdZeVbXyr9');
     expect(title).toBeInTheDocument();
     expect(address).toBeInTheDocument();

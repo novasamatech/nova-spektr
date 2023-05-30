@@ -18,6 +18,7 @@ import MultiSelect from './Dropdowns/MultiSelect/MultiSelect';
 import MenuPopover from './Popovers/MenuPopover/MenuPopover';
 import IconButton from './Buttons/IconButton/IconButton';
 import DropdownButton from './Dropdowns/DropdownButton/DropdownButton';
+import SearchInput from './Inputs/SearchInput';
 import {
   LargeTitleText,
   TitleText,
@@ -34,6 +35,7 @@ export {
   Plate,
   AmountInput,
   PasswordInput,
+  SearchInput,
   InputHint,
   Button,
   ButtonLink,

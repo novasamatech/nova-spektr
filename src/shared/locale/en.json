@@ -47,6 +47,10 @@
     "emptyStateLabel": "Nothing was found.",
     "hideZeroBalancesLabel": "Hide zero balances",
     "searchPlaceholder": "Search",
+    "shards": "shards",
+    "shardsModalButton": "Continue",
+    "shardsModalTitle": "Your shards",
+    "shardsTitle": "Your assets on:",
     "title": "Assets",
     "verificationFailedLabel": "verification failed"
   },
@@ -116,7 +120,7 @@
   },
   "navigation": {
     "addressBookLabel": "Address Book",
-    "balancesLabel": "Balances",
+    "balancesLabel": "Assets",
     "cameraDEVLabel": "Camera DEV",
     "chatDEVLabel": "Chat DEV",
     "historyLabel": "History",
@@ -371,15 +375,12 @@
     "videoError": "Your browser doesn't support video"
   },
   "receive": {
-    "chainLabel1": "token to this address on the",
-    "chainLabel2": "{name} (Parachain)",
-    "chainLabel3": "network",
+    "chainLabel": "token to this address on the {name} (Parachain) network!",
     "copyAddressButton": "Copy address",
     "explorerLinkLabel": "Link to {name}",
-    "on": "on",
     "selectWalletPlaceholder": "Select a wallet...",
     "sendOnlyLabel": "Send only",
-    "title": "Receive"
+    "title": "Receive {asset} on"
   },
   "settings": {
     "matrix": {
@@ -710,13 +711,16 @@
     "wallet": "Wallet"
   },
   "wallets": {
-    "addByParitySignerButton": "Add wallet by Parity Signer",
-    "addMultisigWalletButton": "Create Multisig wallet",
-    "addWatchOnlyButton": "Add Watch-Only wallet",
+    "addButtonTitle": "Add",
+    "addMultisig": "Multisig",
+    "addPolkadotVault": "Polkadot Vault",
+    "addWatchOnly": "Watch-only",
     "multishardLabel": "Multishard",
     "multisigLabel": "Multisig",
     "paritySignerLabel": "Parity Signer",
-    "searchPlaceholder": "Search for a wallet",
+    "searchPlaceholder": "Search",
+    "shards": "Shards",
+    "title": "Wallets",
     "watchOnlyLabel": "Watch-only"
   },
   "welcome": {
