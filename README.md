@@ -5,8 +5,8 @@
 <div align="center">
 
 ![badge](https://img.shields.io/endpoint?url=https://gist.githubusercontent.com/stepanLav/77132f25d05c7e9264cd410aef162a7e/raw/jest-coverage-main.json)
-[![GitHub release (latest by date)](https://img.shields.io/github/v/release/nova-wallet/omni-enterprise)](https://github.com/nova-wallet/omni-enterprise/releases)
-[![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](https://github.com/nova-wallet/omni-enterprise/blob/dev/LICENSE.md)
+[![GitHub release (latest by date)](https://img.shields.io/github/v/release/nova-wallet/nova-spektr)](https://github.com/nova-wallet/nova-spektr/releases)
+[![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](https://github.com/nova-wallet/nova-spektr/blob/dev/LICENSE.md)
 <br />
 [![Twitter URL](https://img.shields.io/twitter/url?style=social&url=https%3A%2F%2Ftwitter.com)](todo)
 [![Telegram](https://img.shields.io/badge/Telegram-gray?logo=telegram)](todo)
@@ -47,7 +47,7 @@ Polkadot & Kusama ecosystem Enterprise Desktop application.
 
 ## Changelog
 
-Detailed changelog with releases description is located in the [changelog file](https://github.com/nova-wallet/omni-enterprise/blob/dev/CHANGELOG.md)
+Detailed changelog with releases description is located in the [changelog file](https://github.com/nova-wallet/nova-spektr/blob/dev/CHANGELOG.md)
 
 # Development
 
@@ -158,7 +158,7 @@ Log files help to solve your problem. Logs are collected in the `nova-spektr.log
 Sharing logs when you're contacting the support will speed up the problem fix.
 
 # Contributing
-Contributing guide is described in the [CONTRIBUTING.md](https://github.com/nova-wallet/omni-enterprise/blob/dev/CONTRIBUTING.md)
+Contributing guide is described in the [CONTRIBUTING.md](https://github.com/nova-wallet/nova-spektr/blob/dev/CONTRIBUTING.md)
 
 # Support
 Check the official support channels:
