@@ -1,4 +1,5 @@
-import { Button, Icon } from '@renderer/components/ui';
+import { Icon } from '@renderer/components/ui';
+import { BodyText, Button } from '@renderer/components/ui-redesign';
 import { useI18n } from '@renderer/context/I18nContext';
 
 type Props = {
@@ -9,13 +10,19 @@ const EmptyContacts = ({ onAddContact }: Props) => {
   const { t } = useI18n();
 
   return (
-    <div className="flex flex-col items-center justify-center mt-10 mb-5">
-      <Icon as="img" name="noContacts" size={380} />
-      <p className="text-neutral text-2xl font-bold mb-10">{t('addressBook.contactList.noContactsLabel')}</p>
+    <div className="flex flex-col items-center justify-center gap-4 h-full">
+      <Icon as="img" name="noContacts" size={178} />
+      <BodyText className="text-text-tertiary">{t('addressBook.contactList.noContactsLabel')}</BodyText>
 
       {onAddContact && (
-        <Button className="mb-10" weight="lg" variant="fill" pallet="primary" onClick={onAddContact}>
-          {t('addressBook.contactList.noContactsButton')}
+        <Button
+          variant="text"
+          pallet="primary"
+          className="font-semibold h-4.5"
+          suffixElement={<Icon size={16} name="add" />}
+          onClick={onAddContact}
+        >
+          {t('addressBook.addContactButton')}
         </Button>
       )}
     </div>

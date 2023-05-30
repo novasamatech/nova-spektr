@@ -1,12 +1,13 @@
 import { useState } from 'react';
 
-import { Button, Icon, Input } from '@renderer/components/ui';
+import { Icon } from '@renderer/components/ui';
 import { useI18n } from '@renderer/context/I18nContext';
 import { useToggle } from '@renderer/shared/hooks';
 import ContactModal from './components/ContactModal';
 import ContactList from './components/ContactList';
 import { useContact } from '@renderer/services/contact/contactService';
 import EmptyContacts from './components/EmptyState/EmptyContacts';
+import { Button, Input } from '@renderer/components/ui-redesign';
 
 const AddressBook = () => {
   const { t } = useI18n();
@@ -16,39 +17,42 @@ const AddressBook = () => {
   const [isAddContactModalShown, toggleAddContactModal] = useToggle();
 
   const contacts = getLiveContacts();
+  const isEmpty = contacts.length === 0;
 
   return (
-    <div className="h-full flex flex-col gap-y-9 relative">
-      <h1 className="font-semibold text-2xl text-neutral mt-5 px-5">{t('addressBook.title')}</h1>
+    <div className="h-full flex flex-col items-start relative bg-main-app-background">
+      <header className="w-full px-6 py-4 bg-top-nav-bar-background border-b border-container-border flex justify-between">
+        <h1 className="font-semibold text-2xl text-neutral">{t('addressBook.title')}</h1>
 
-      <div className="overflow-y-auto flex-1">
-        <section className="w-[900px] p-5 mx-auto bg-shade-2 rounded-2lg mb-36 last:mb-0">
-          {contacts.length > 0 ? (
-            <>
-              <div className="flex justify-between items-center mb-5">
-                <Input
-                  wrapperClass="bg-shade-5"
-                  placeholder={t('addressBook.searchPlaceholder')}
-                  prefixElement={<Icon name="search" />}
-                  onChange={setQuery}
-                />
-                <Button
-                  variant="text"
-                  pallet="primary"
-                  prefixElement={<Icon name="add" />}
-                  onClick={toggleAddContactModal}
-                >
-                  {t('addressBook.addContactButton')}
-                </Button>
-              </div>
+        <div className="flex items-center gap-4">
+          <Input
+            placeholder={t('addressBook.searchPlaceholder')}
+            prefixElement={<Icon size={16} name="search" />}
+            className="ml-2"
+            onChange={setQuery}
+          />
 
-              <ContactList contacts={contacts} query={query} onAddContact={toggleAddContactModal} />
-            </>
-          ) : (
-            <EmptyContacts onAddContact={toggleAddContactModal} />
+          {!isEmpty && (
+            <Button
+              variant="text"
+              pallet="primary"
+              className="font-semibold h-5"
+              suffixElement={<Icon size={16} name="add" />}
+              onClick={toggleAddContactModal}
+            >
+              {t('addressBook.addContactButton')}
+            </Button>
           )}
-        </section>
-      </div>
+        </div>
+      </header>
+
+      <section className="overflow-y-scroll mt-4 flex flex-col gap-y-4 w-[546px] mx-auto h-full">
+        {isEmpty ? (
+          <EmptyContacts onAddContact={toggleAddContactModal} />
+        ) : (
+          <ContactList contacts={contacts} query={query} onAddContact={toggleAddContactModal} />
+        )}
+      </section>
 
       <ContactModal isOpen={isAddContactModalShown} onToggle={toggleAddContactModal} />
     </div>
