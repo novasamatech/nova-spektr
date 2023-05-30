@@ -7,7 +7,6 @@ import { useEra } from '@renderer/services/staking/eraService';
 interface Props {
   api?: ApiPromise;
   era?: number;
-  currentEra?: number;
   className?: string;
 }
 

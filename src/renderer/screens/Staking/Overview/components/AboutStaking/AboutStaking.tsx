@@ -1,32 +1,29 @@
 import { ApiPromise } from '@polkadot/api';
-import cn from 'classnames';
 import { useEffect, useMemo, useState } from 'react';
 import { Trans } from 'react-i18next';
 
-import { Expandable } from '@renderer/components/common';
-import { Balance, Duration, Icon, Shimmering } from '@renderer/components/ui';
+import { Balance, Duration, Shimmering } from '@renderer/components/ui';
 import { useI18n } from '@renderer/context/I18nContext';
 import { Asset } from '@renderer/domain/asset';
 import { Address, EraIndex } from '@renderer/domain/shared-kernel';
 import { Validator } from '@renderer/domain/validator';
-import { getAvgApy } from '@renderer/services/staking/apyCalculator';
 import { useStakingData } from '@renderer/services/staking/stakingDataService';
+import { FootnoteText } from '@renderer/components/ui-redesign';
 
 type Props = {
-  asset?: Asset;
-  validators: Validator[];
   api?: ApiPromise;
   era?: EraIndex;
-  className?: string;
+  asset?: Asset;
+  validators: Validator[];
 };
 
-const apyToMonthlyRate = (apy: number) => {
-  const monthly = Math.pow(1 + apy / 100, 1 / 12) - 1;
+// const apyToMonthlyRate = (apy: number) => {
+//   const monthly = Math.pow(1 + apy / 100, 1 / 12) - 1;
+//
+//   return (monthly * 100).toFixed(2);
+// };
 
-  return (monthly * 100).toFixed(2);
-};
-
-const AboutStaking = ({ asset, api, validators, era, className }: Props) => {
+const AboutStaking = ({ api, era, asset, validators }: Props) => {
   const { t } = useI18n();
 
   const { getMinNominatorBond, getUnbondingPeriod, getTotalStaked } = useStakingData();
@@ -34,15 +31,13 @@ const AboutStaking = ({ asset, api, validators, era, className }: Props) => {
   const [minimumStake, setMinimumStake] = useState('');
   const [unstakingPeriod, setUnstakingPeriod] = useState('');
   const [totalStaked, setTotalStaked] = useState('');
-  const [averageApy, setAverageApy] = useState('');
+  // const [averageApy, setAverageApy] = useState('');
 
   useEffect(() => {
-    (async () => {
-      if (!api) return;
+    if (!api?.isConnected) return;
 
-      setMinimumStake(await getMinNominatorBond(api));
-      setUnstakingPeriod(getUnbondingPeriod(api));
-    })();
+    getMinNominatorBond(api).then(setMinimumStake);
+    setUnstakingPeriod(getUnbondingPeriod(api));
 
     return () => {
       setMinimumStake('');
@@ -51,119 +46,114 @@ const AboutStaking = ({ asset, api, validators, era, className }: Props) => {
   }, [api]);
 
   useEffect(() => {
-    (async () => {
-      if (!api || !era) return;
+    if (!api?.isConnected || !era) return;
 
-      setAverageApy(await getAvgApy(api, validators));
-    })();
+    // getAvgApy(api, validators).then(setAverageApy);
+    getTotalStaked(api, era).then(setTotalStaked);
 
-    return () => setAverageApy('');
-  }, [api, validators.length]);
-
-  useEffect(() => {
-    (async () => {
-      if (!api || !era) return;
-
-      setTotalStaked(await getTotalStaked(api, era));
-    })();
-
-    return () => setTotalStaked('');
-  }, [api, era]);
-
-  const maximumApy = validators.reduce((acc, validator) => (acc > validator.apy ? acc : validator.apy), 0);
+    return () => {
+      // setAverageApy('');
+      setTotalStaked('');
+    };
+  }, [api, era, validators.length]);
 
   const activeNominatorsAmount = useMemo(() => {
     const nominatorsAddresses = validators.reduce<Address[]>((acc, { nominators }) => {
-      const addresses = nominators.map((nominator) => nominator.who);
+      nominators.forEach(({ who }) => acc.push(who));
 
-      return acc.concat(addresses);
+      return acc;
     }, []);
 
     return new Set(nominatorsAddresses).size;
   }, [validators.length]);
 
-  return (
-    <Expandable
-      full
-      defaultActive={false}
-      itemClass="font-semibold text-neutral-variant"
-      wrapperClass={cn('w-full shadow-surface p-4 rounded-2lg bg-white', className)}
-      item={
-        <div className="flex items-center gap-2.5">
-          <Icon name="staking" />
-          <Trans t={t} i18nKey="staking.about.aboutStakingTitle" values={{ asset: asset?.symbol }} />
-        </div>
-      }
-    >
-      <div className="flex gap-12 text-neutral-variant text-sm">
-        <div className="flex-1">
-          <div className="flex justify-between items-center h-10">
-            {t('staking.about.totalStakedLabel')}
-            <div className="flex font-semibold">
-              {totalStaked ? (
-                <Balance value={totalStaked} precision={asset?.precision || 0} symbol={asset?.symbol} />
-              ) : (
-                <Shimmering width={100} height={20} />
-              )}
-            </div>
-          </div>
-          <div className="flex justify-between items-center h-10">
-            {t('staking.about.minimumStakeLabel')}
-            <div className="flex font-semibold">
-              {minimumStake ? (
-                <Balance value={minimumStake} precision={asset?.precision || 0} symbol={asset?.symbol} />
-              ) : (
-                <Shimmering width={100} height={20} />
-              )}
-            </div>
-          </div>
-          <div className="flex justify-between items-center h-10">
-            {t('staking.about.activeNominatorsLabel')}
+  // const maximumApy = validators.reduce((acc, validator) => Math.max(acc, validator.apy), 0);
 
-            <div className="font-semibold">{activeNominatorsAmount || <Shimmering width={100} height={20} />}</div>
-          </div>
-          <div className="flex justify-between items-center h-10">
-            {t('staking.about.stakingPeriodLabel')}
-            <div className="font-semibold">
-              {unstakingPeriod ? t('staking.about.unlimitedLabel') : <Shimmering width={100} height={20} />}
-            </div>
-          </div>
-          <div className="flex justify-between items-center h-10">
-            {t('staking.about.unstakingPeriodLabel')}
-            <div className="font-semibold">
-              {unstakingPeriod ? <Duration seconds={unstakingPeriod} /> : <Shimmering width={100} height={20} />}
-            </div>
-          </div>
+  return (
+    <div className="flex flex-col gap-y-2">
+      <FootnoteText className="text-text-secondary">
+        <Trans t={t} i18nKey="staking.about.aboutStakingTitle" values={{ asset: asset?.symbol }} />
+      </FootnoteText>
+
+      {/* TODO: APY calculation must be revisited */}
+      {/*<div className="grid grid-cols-2 gap-x-4">*/}
+      {/*<div className="rounded-md bg-block-background py-5 px-4">*/}
+      {/*  <div className="grid grid-cols-2 auto-rows-min gap-x-7">*/}
+      {/*    <FootnoteText>{t('staking.about.monthlyEarningLabel')}</FootnoteText>*/}
+      {/*    <FootnoteText>{t('staking.about.yearlyEarningLabel')}</FootnoteText>*/}
+
+      {/*    {maximumApy ? (*/}
+      {/*      <LargeTitleText as="p">{apyToMonthlyRate(maximumApy)}%</LargeTitleText>*/}
+      {/*    ) : (*/}
+      {/*      <Shimmering width={96} height={36} />*/}
+      {/*    )}*/}
+      {/*    {maximumApy ? <LargeTitleText as="p">{maximumApy}%</LargeTitleText> : <Shimmering width={96} height={36} />}*/}
+      {/*  </div>*/}
+
+      {/*  <hr className="border-divider my-2" />*/}
+
+      {/*  <div className="grid grid-cols-2 auto-rows-min gap-x-7">*/}
+      {/*    <FootnoteText className="text-text-secondary">{t('staking.about.maximumApyLabel')}</FootnoteText>*/}
+      {/*    <FootnoteText className="text-text-secondary">{t('staking.about.averageApyLabel')}</FootnoteText>*/}
+
+      {/*    {maximumApy ? <TitleText>{maximumApy}%</TitleText> : <Shimmering width={96} height={30} />}*/}
+      {/*    {averageApy ? <TitleText>{averageApy}%</TitleText> : <Shimmering width={96} height={30} />}*/}
+      {/*  </div>*/}
+      {/*</div>*/}
+
+      <div className="grid grid-cols-2 gap-y-3 gap-x-6">
+        <div className="flex justify-between gap-x-1">
+          <FootnoteText className="text-text-secondary">{t('staking.about.totalStakedLabel')}</FootnoteText>
+          {totalStaked ? (
+            <FootnoteText align="right">
+              <Balance value={totalStaked} precision={asset?.precision || 0} symbol={asset?.symbol} />
+            </FootnoteText>
+          ) : (
+            <Shimmering className="justify-self-end" width={100} height={18} />
+          )}
         </div>
-        <div className="flex-1">
-          <div className="mb-2.5">
-            <Trans t={t} i18nKey="staking.about.earningsTitle" values={{ asset: asset?.symbol }} />
-          </div>
-          <div className="flex gap-2.5 mb-4">
-            <div className={'flex-1 bg-white border-2 border-shade-2 rounded-2lg py-7.5'}>
-              <div className="text-success text-3xl w-fit m-auto">
-                {maximumApy ? `${apyToMonthlyRate(maximumApy)}%` : <Shimmering width={100} height={36} />}
-              </div>
-              <div className="text-shade-30 text-xs w-fit m-auto">{t('staking.about.monthlyEarningLabel')}</div>
-            </div>
-            <div className={'flex-1 bg-white border-2 border-shade-2 rounded-2lg py-7.5'}>
-              <div className="text-success text-3xl w-fit m-auto">
-                {maximumApy ? `${maximumApy}%` : <Shimmering width={100} height={36} />}
-              </div>
-              <div className="text-shade-30 text-xs w-fit m-auto">{t('staking.about.yearlyEarningLabel')}</div>
-            </div>
-          </div>
-          <div className="flex justify-between items-center text-2xs mb-1">
-            <div className="uppercase">{t('staking.about.maximumApyLabel')}</div>
-            {maximumApy ? `${maximumApy}%` : <Shimmering width={100} height={12} />}
-          </div>
-          <div className="flex justify-between items-center text-2xs mb-1">
-            <div className="uppercase">{t('staking.about.averageApyLabel')}</div>
-            {averageApy ? `${averageApy}%` : <Shimmering width={100} height={12} />}
-          </div>
+
+        <div className="flex justify-between gap-x-1">
+          <FootnoteText className="text-text-secondary">{t('staking.about.minimumStakeLabel')}</FootnoteText>
+          {minimumStake ? (
+            <FootnoteText align="right">
+              <Balance value={minimumStake} precision={asset?.precision || 0} symbol={asset?.symbol} />
+            </FootnoteText>
+          ) : (
+            <Shimmering className="justify-self-end" width={100} height={18} />
+          )}
+        </div>
+
+        <div className="flex justify-between gap-x-1">
+          <FootnoteText className="text-text-secondary">{t('staking.about.activeNominatorsLabel')}</FootnoteText>
+          {activeNominatorsAmount ? (
+            <FootnoteText align="right">{activeNominatorsAmount}</FootnoteText>
+          ) : (
+            <Shimmering className="justify-self-end" width={100} height={18} />
+          )}
+        </div>
+
+        <div className="flex justify-between gap-x-1">
+          <FootnoteText className="text-text-secondary">{t('staking.about.stakingPeriodLabel')}</FootnoteText>
+          {unstakingPeriod ? (
+            <FootnoteText align="right">{t('staking.about.unlimitedLabel')}</FootnoteText>
+          ) : (
+            <Shimmering className="justify-self-end" width={100} height={18} />
+          )}
+        </div>
+
+        <div className="flex justify-between gap-x-1">
+          <FootnoteText className="text-text-secondary">{t('staking.about.unstakingPeriodLabel')}</FootnoteText>
+          {unstakingPeriod ? (
+            <FootnoteText align="right">
+              <Duration seconds={unstakingPeriod} />
+            </FootnoteText>
+          ) : (
+            <Shimmering className="justify-self-end" width={100} height={18} />
+          )}
         </div>
       </div>
-    </Expandable>
+    </div>
   );
 };
 

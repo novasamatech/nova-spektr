@@ -5,6 +5,7 @@ import { DefaultExplorer, ExplorerIcons } from '@renderer/components/common/Expl
 import { Explorer } from '@renderer/domain/chain';
 import { useI18n } from '@renderer/context/I18nContext';
 import { AccountId, Address } from '@renderer/domain/shared-kernel';
+import { FootnoteText } from '@renderer/components/ui-redesign';
 
 interface Props {
   explorer: Explorer;
@@ -20,13 +21,15 @@ const ExplorerLink = ({ explorer, address, addressPrefix }: Props) => {
 
   return (
     <a
-      className={cnTw('rounded-2lg flex items-center gap-x-2 p-2 select-none transition')}
+      className={cnTw('rounded-md flex items-center gap-x-2 p-2 select-none')}
       href={account.replace('{address}', toAddress(address, { prefix: addressPrefix }))}
       rel="noopener noreferrer"
       target="_blank"
     >
-      <Icon as="img" name={ExplorerIcons[name] || ExplorerIcons[DefaultExplorer]} size={16} />
-      {t('general.explorers.explorerButton', { name })}
+      <Icon as="img" name={ExplorerIcons[name] || ExplorerIcons[DefaultExplorer]} size={12} />
+      <FootnoteText as="span" className="text-text-secondary">
+        {t('general.explorers.explorerButton', { name })}
+      </FootnoteText>
     </a>
   );
 };

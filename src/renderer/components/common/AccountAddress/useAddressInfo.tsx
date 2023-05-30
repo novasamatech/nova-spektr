@@ -8,10 +8,10 @@ import { toAddress } from '@renderer/shared/utils/address';
 import { ExplorerLink } from '@renderer/components/common';
 
 const useAddressInfo = (address: Address, explorers?: Explorer[]): InfoSection[] => {
-  const { getLiveContacts } = useContact();
-  const contacts = getLiveContacts();
-  const { getLiveAccounts } = useAccount();
   const { matrix } = useMatrix();
+  const { getLiveContacts } = useContact();
+  const { getLiveAccounts } = useAccount();
+  const contacts = getLiveContacts();
 
   const accountFromUser = getLiveAccounts().find((account) => toAddress(account.accountId) === address);
   const accountFromContact = contacts.find((contact) => contact.address === address);
@@ -30,9 +30,9 @@ const useAddressInfo = (address: Address, explorers?: Explorer[]): InfoSection[]
 
   if (explorers) {
     popoverItems.push({
-      items: explorers.map((exolorer) => ({
-        id: exolorer.name,
-        value: <ExplorerLink explorer={exolorer} address={address} />,
+      items: explorers.map((explorer) => ({
+        id: explorer.name,
+        value: <ExplorerLink explorer={explorer} address={address} />,
       })),
     });
   }

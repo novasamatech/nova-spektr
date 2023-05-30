@@ -3,9 +3,10 @@ import { useState } from 'react';
 import { Icon } from '@renderer/components/ui';
 import { useI18n } from '@renderer/context/I18nContext';
 import { useToggle } from '@renderer/shared/hooks';
+import { Header } from '@renderer/components/common';
+import { useContact } from '@renderer/services/contact/contactService';
 import ContactModal from './components/ContactModal';
 import ContactList from './components/ContactList';
-import { useContact } from '@renderer/services/contact/contactService';
 import EmptyContacts from './components/EmptyState/EmptyContacts';
 import { Button, Input } from '@renderer/components/ui-redesign';
 
@@ -21,9 +22,7 @@ const AddressBook = () => {
 
   return (
     <div className="h-full flex flex-col items-start relative bg-main-app-background">
-      <header className="w-full px-6 py-4 bg-top-nav-bar-background border-b border-container-border flex justify-between">
-        <h1 className="font-semibold text-2xl text-neutral">{t('addressBook.title')}</h1>
-
+      <Header title={t('addressBook.title')}>
         <div className="flex items-center gap-4">
           <Input
             placeholder={t('addressBook.searchPlaceholder')}
@@ -44,9 +43,9 @@ const AddressBook = () => {
             </Button>
           )}
         </div>
-      </header>
+      </Header>
 
-      <section className="overflow-y-scroll mt-4 flex flex-col gap-y-4 w-[546px] mx-auto h-full">
+      <section className="overflow-y-auto mt-4 flex flex-col gap-y-4 w-[546px] mx-auto h-full">
         {isEmpty ? (
           <EmptyContacts onAddContact={toggleAddContactModal} />
         ) : (

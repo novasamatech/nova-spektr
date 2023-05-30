@@ -6,7 +6,7 @@ import { useToggle } from '@renderer/shared/hooks';
 import { Button, Icon } from '@renderer/components/ui';
 
 type Props = {
-  item: ReactNode;
+  item?: ReactNode;
   defaultActive?: boolean;
   itemClass?: string;
   wrapperClass?: string;

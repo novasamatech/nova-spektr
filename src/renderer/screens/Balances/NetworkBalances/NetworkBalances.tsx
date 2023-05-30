@@ -1,5 +1,4 @@
 import cn from 'classnames';
-import { useState } from 'react';
 import { BN } from '@polkadot/util';
 
 import { Icon } from '@renderer/components/ui';
@@ -15,6 +14,7 @@ import { useI18n } from '@renderer/context/I18nContext';
 import { Balance } from '@renderer/domain/balance';
 import { includes } from '@renderer/shared/utils/strings';
 import { CaptionText, IconButton } from '@renderer/components/ui-redesign';
+import { useToggle } from '@renderer/shared/hooks';
 
 type Props = {
   hideZeroBalance?: boolean;
@@ -58,20 +58,17 @@ const NetworkBalances = ({
   onReceiveClick,
   onTransferClick,
 }: Props) => {
-  const [isHidden, setIsHidden] = useState(false);
-
   const { t } = useI18n();
-
+  const [isCardShown, toggleCard] = useToggle(true);
   const { getLiveNetworkBalances } = useBalance();
 
   const balances = getLiveNetworkBalances(accountIds, chain.chainId);
 
   const balancesObject =
     balances?.reduce<Record<string, Balance>>((acc, balance) => {
-      return {
-        ...acc,
-        [balance.assetId]: sumBalances(balance, acc[balance.assetId]),
-      };
+      acc[balance.assetId] = sumBalances(balance, acc[balance.assetId]);
+
+      return acc;
     }, {}) || {};
 
   const filteredAssets = chain.assets.filter((asset) => {
@@ -96,7 +93,7 @@ const NetworkBalances = ({
   const hasFailedVerification = balances?.some((b) => !b.verified);
 
   return (
-    <li aria-expanded={!isHidden}>
+    <li aria-expanded={isCardShown}>
       <div className="bg-white sticky top-0 z-[1]">
         <div className={cn('flex items-center justify-between py-1.5 px-2 mb-1 bg-main-app-background')}>
           <div className="flex items-center gap-x-2.5">
@@ -113,11 +110,11 @@ const NetworkBalances = ({
               </div>
             )}
           </div>
-          <IconButton name={isHidden ? 'down' : 'up'} onClick={() => setIsHidden(!isHidden)} />
+          <IconButton name={isCardShown ? 'down' : 'up'} onClick={toggleCard} />
         </div>
       </div>
 
-      {!isHidden && (
+      {isCardShown && (
         <ul className="flex flex-col gap-y-1.5">
           {filteredAssets.map((asset) => (
             <AssetBalanceCard

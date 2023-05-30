@@ -39,7 +39,7 @@ const Checkbox = ({
         checked={checked}
         value={value}
         className={cnTw(
-          'relative appearance-none w-5 h-5 text-primary bg-white old-checkbox',
+          'old-checkbox relative appearance-none w-5 h-5 text-primary bg-white',
           'rounded-md border-shade-30 border-2 checked:bg-primary checked:border-0',
           disabled && 'opacity-50',
         )}
