@@ -93,6 +93,7 @@ const InitOperation = ({
           label={t('transfer.senderLabel')}
           placeholder={t('receive.selectWalletPlaceholder')}
           selectedId={activeAccount?.id}
+          disabled={accountsOptions.length === 1}
           options={accountsOptions}
           onChange={changeAccount}
         />
