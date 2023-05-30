@@ -65,8 +65,10 @@ const NominatorsList = ({ api, era, nominators, asset, explorers, onCheckValidat
         className="flex items-center gap-x-2 px-2 w-full h-full"
         onClick={() => onCheckValidators(stash)}
       >
-        <Icon name="viewValidators" size={16} />
-        <FootnoteText as="span">{t('staking.overview.viewValidatorsOption')}</FootnoteText>
+        <Icon className="text-icon-default" name="viewValidators" size={16} />
+        <FootnoteText as="span" className="text-text-primary">
+          {t('staking.overview.viewValidatorsOption')}
+        </FootnoteText>
       </button>
     );
 
@@ -122,32 +124,26 @@ const NominatorsList = ({ api, era, nominators, asset, explorers, onCheckValidat
           return (
             <li key={stake.address}>
               <Plate className="grid grid-cols-[226px,104px,104px,16px] items-center gap-x-6">
-                <Checkbox checked={stake.isSelected} onChange={() => onToggleNominator(stake.address)}>
+                <Checkbox
+                  disabled={stake.signingType === SigningType.WATCH_ONLY}
+                  checked={stake.isSelected}
+                  onChange={() => onToggleNominator(stake.address)}
+                >
                   <AccountAddress name={stake.accountName} address={stake.address} />
                   {unstakeBadge || redeemBadge}
                 </Checkbox>
-                {stake.totalStake === undefined || !asset ? (
+                {!stake.totalStake || !asset ? (
                   <Shimmering width={104} height={14} />
                 ) : (
                   <BodyText>
-                    <Balance
-                      className="text-xs font-semibold"
-                      value={stake.totalStake}
-                      precision={asset.precision}
-                      symbol={asset.symbol}
-                    />
+                    <Balance value={stake.totalStake} precision={asset.precision} symbol={asset.symbol} />
                   </BodyText>
                 )}
-                {stake.totalReward === undefined || !asset ? (
+                {!stake.totalReward || !asset ? (
                   <Shimmering width={104} height={14} />
                 ) : (
                   <BodyText>
-                    <Balance
-                      className="text-xs font-semibold"
-                      value={stake.totalReward}
-                      precision={asset.precision}
-                      symbol={asset.symbol}
-                    />
+                    <Balance value={stake.totalReward} precision={asset.precision} symbol={asset.symbol} />
                   </BodyText>
                 )}
                 <InfoPopover data={getExplorers(stake.address, stake.stash, explorers)} position="top-full right-0">

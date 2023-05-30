@@ -46,6 +46,7 @@ const Overview = () => {
 
   const [era, setEra] = useState<number>();
   const [staking, setStaking] = useState<StakingMap>({});
+  const [isStakingLoading, setIsStakingLoading] = useState(true);
   const [validators, setValidators] = useState<ValidatorMap>({});
 
   const [activeChain, setActiveChain] = useState<Chain>();
@@ -84,14 +85,19 @@ const Overview = () => {
   }, [chainId, connection]);
 
   useEffect(() => {
-    if (!chainId || !api?.isConnected || addresses.length === 0) return;
+    if (!chainId || !api?.isConnected) return;
 
     let unsubEra: () => void | undefined;
     let unsubStaking: () => void | undefined;
 
+    setIsStakingLoading(true);
+
     (async () => {
       unsubEra = await subscribeActiveEra(api, setEra);
-      unsubStaking = await subscribeStaking(chainId, api, addresses, setStaking);
+      unsubStaking = await subscribeStaking(chainId, api, addresses, (staking) => {
+        setStaking(staking);
+        setIsStakingLoading(false);
+      });
     })();
 
     return () => {
@@ -114,7 +120,7 @@ const Overview = () => {
     setValidators({});
   };
 
-  const setupNominators = async (stash?: Address) => {
+  const openSelectedValidators = async (stash?: Address) => {
     if (!api || !stash) return;
 
     setSelectedStash(stash);
@@ -130,7 +136,7 @@ const Overview = () => {
       signingType: account.signingType,
       accountName: account.name,
       isSelected: selectedNominators.includes(address),
-      totalStake: staking[address]?.total || '0',
+      totalStake: isStakingLoading ? undefined : staking[address]?.total || '0',
       totalReward: isRewardsLoading ? undefined : rewards[address],
       unlocking: staking[address]?.unlocking,
     });
@@ -185,6 +191,7 @@ const Overview = () => {
           <NetworkInfo
             rewards={Object.values(rewards)}
             isRewardsLoading={isRewardsLoading}
+            isStakingLoading={isStakingLoading}
             totalStakes={totalStakes}
             onNetworkChange={changeNetwork}
           >
@@ -202,7 +209,7 @@ const Overview = () => {
                   nominators={nominatorsInfo}
                   asset={relaychainAsset}
                   explorers={activeChain?.explorers}
-                  onCheckValidators={setupNominators}
+                  onCheckValidators={openSelectedValidators}
                   onToggleNominator={toggleSelectedNominators}
                 />
               </>

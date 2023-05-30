@@ -467,11 +467,11 @@
       "yearlyEarningLabel": "Yearly"
     },
     "actions": {
-      "destinationLabel": "Rewards destination",
+      "destinationLabel": "Change rewards destination",
       "filterButton": "Filter",
       "manageStakePlaceholder": "Manage stake",
       "noOverlapPlaceholder": "No intersecting operation",
-      "redeemLabel": "Redeem",
+      "redeemLabel": "Withdraw unstaked",
       "returnToStakeLabel": "Return to stake",
       "selectAccPlaceholder": "Select accounts",
       "setValidatorsLabel": "Set validators",
@@ -481,7 +481,7 @@
     },
     "badges": {
       "redeemDescription": "Your tokens are ready to be withdrawn",
-      "redeemTitle": "Redeem",
+      "redeemTitle": "Withdraw",
       "unstakeDescription": "Your tokens are being unstaked<br />at the moment",
       "unstakeTitle": "Unstaking"
     },

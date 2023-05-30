@@ -18,6 +18,7 @@ const getTotal = (values: string[]): BN => {
 type Props = {
   rewards: string[];
   isRewardsLoading: boolean;
+  isStakingLoading: boolean;
   totalStakes: string[];
   onNetworkChange: (value: Chain) => void;
 };
@@ -25,6 +26,7 @@ type Props = {
 const NetworkInfo = ({
   rewards,
   isRewardsLoading,
+  isStakingLoading,
   totalStakes,
   children,
   onNetworkChange,
@@ -67,15 +69,15 @@ const NetworkInfo = ({
 
   const totalInfo = [
     {
-      isLoading: isRewardsLoading,
-      title: t('staking.overview.totalRewardsLabel'),
-      amount: getTotal(rewards).toString(),
+      isLoading: isStakingLoading,
+      title: t('staking.overview.totalStakedLabel'),
+      amount: getTotal(totalStakes).toString(),
       asset: getRelaychainAsset(activeNetwork?.value.assets),
     },
     {
-      isLoading: totalStakes.length === 0,
-      title: t('staking.overview.totalStakedLabel'),
-      amount: getTotal(totalStakes).toString(),
+      isLoading: isRewardsLoading,
+      title: t('staking.overview.totalRewardsLabel'),
+      amount: getTotal(rewards).toString(),
       asset: getRelaychainAsset(activeNetwork?.value.assets),
     },
   ];
@@ -94,7 +96,7 @@ const NetworkInfo = ({
         />
         {totalInfo.map(({ isLoading, title, amount, asset }) =>
           isLoading || !asset ? (
-            <div key={title} className="flex flex-col gap-y-1" data-testid="total-loading">
+            <div key={title} className="flex flex-col gap-y-1" data-testid="value-loading">
               <Shimmering width={80} height={14} />
               <Shimmering width={122} height={22} />
             </div>

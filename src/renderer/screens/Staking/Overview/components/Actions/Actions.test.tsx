@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react';
+import { render, screen, act } from '@testing-library/react';
 import noop from 'lodash/noop';
 
 import Actions from './Actions';
@@ -23,6 +23,13 @@ describe('screens/Staking/Overview/Actions', () => {
     },
   ];
 
+  const renderActions = async (stakes: Stake[]) => {
+    render(<Actions stakes={stakes} onNavigate={noop} />);
+
+    const button = screen.getByRole('button');
+    await act(() => button.click());
+  };
+
   test('should create component', () => {
     render(<Actions stakes={stakes} onNavigate={noop} />);
 
@@ -30,55 +37,58 @@ describe('screens/Staking/Overview/Actions', () => {
     expect(accounts).toBeInTheDocument();
   });
 
-  // test('should render actions for existing stake', () => {
-  //   const stakes = [
-  //     {
-  //       accountId: TEST_ADDRESS,
-  //       active: '750000000000',
-  //       total: '950000000000',
-  //       unlocking: [{ value: '15000000000', era: '1000' }],
-  //     },
-  //   ] as unknown as Stake[];
-  //   render(<StakingActions stakes={stakes} onNavigate={() => {}} />);
-  //
-  //   const actions = screen.getAllByRole('button');
-  //   expect(actions).toHaveLength(6);
-  // });
-  //
-  // test('should render actions for overlapping stake', () => {
-  //   const stakes = [
-  //     {
-  //       accountId: TEST_ADDRESS,
-  //       active: '1050000000000',
-  //       total: '1050000000000',
-  //       unlocking: [],
-  //     },
-  //     {
-  //       accountId: '133khBTmxKsWJ6kyybChNadTHyy1kDmpStWNCiEiSdDMAZwS',
-  //       active: '750000000000',
-  //       total: '950000000000',
-  //       unlocking: [{ value: '15000000000', era: '1000' }],
-  //     },
-  //   ] as unknown as Stake[];
-  //   render(<StakingActions stakes={stakes} onNavigate={() => {}} />);
-  //
-  //   const actions = screen.getAllByRole('button');
-  //   expect(actions).toHaveLength(4);
-  // });
-  //
-  // test('should render actions for not overlapping stake', () => {
-  //   const stakes = [
-  //     { accountId: TEST_ADDRESS },
-  //     {
-  //       accountId: '133khBTmxKsWJ6kyybChNadTHyy1kDmpStWNCiEiSdDMAZwS',
-  //       active: '750000000000',
-  //       total: '950000000000',
-  //       unlocking: [{ value: '15000000000', era: '1000' }],
-  //     },
-  //   ] as unknown as Stake[];
-  //   render(<StakingActions stakes={stakes} onNavigate={() => {}} />);
-  //
-  //   const actions = screen.queryByRole('button');
-  //   expect(actions).not.toBeInTheDocument();
-  // });
+  test('should render actions for existing stake', async () => {
+    const stakes = [
+      {
+        address: TEST_ADDRESS,
+        active: '750000000000',
+        total: '950000000000',
+        unlocking: [{ value: '15000000000', era: '1000' }],
+      },
+    ] as unknown as Stake[];
+
+    await renderActions(stakes);
+
+    const actions = screen.getAllByRole('menuitem');
+    expect(actions).toHaveLength(6);
+  });
+
+  test('should render actions for overlapping stake', async () => {
+    const stakes = [
+      {
+        address: TEST_ADDRESS,
+        active: '1050000000000',
+        total: '1050000000000',
+        unlocking: [],
+      },
+      {
+        address: '133khBTmxKsWJ6kyybChNadTHyy1kDmpStWNCiEiSdDMAZwS',
+        active: '750000000000',
+        total: '950000000000',
+        unlocking: [{ value: '15000000000', era: '1000' }],
+      },
+    ] as unknown as Stake[];
+
+    await renderActions(stakes);
+
+    const actions = screen.getAllByRole('menuitem');
+    expect(actions).toHaveLength(4);
+  });
+
+  test('should render actions for not overlapping stake', async () => {
+    const stakes = [
+      { address: TEST_ADDRESS },
+      {
+        address: '133khBTmxKsWJ6kyybChNadTHyy1kDmpStWNCiEiSdDMAZwS',
+        active: '750000000000',
+        total: '950000000000',
+        unlocking: [{ value: '15000000000', era: '1000' }],
+      },
+    ] as unknown as Stake[];
+
+    await renderActions(stakes);
+
+    const actions = screen.queryByRole('menuitem');
+    expect(actions).not.toBeInTheDocument();
+  });
 });

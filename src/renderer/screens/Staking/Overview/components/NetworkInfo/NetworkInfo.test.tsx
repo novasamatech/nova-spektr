@@ -38,7 +38,13 @@ describe('screens/Staking/Overview/NetworkInfo', () => {
   test('should create component', async () => {
     await act(async () => {
       render(
-        <NetworkInfo rewards={[]} isRewardsLoading={false} totalStakes={['10000']} onNetworkChange={noop}>
+        <NetworkInfo
+          isRewardsLoading={false}
+          isStakingLoading={false}
+          rewards={[]}
+          totalStakes={['10000']}
+          onNetworkChange={noop}
+        >
           children
         </NetworkInfo>,
       );
@@ -55,7 +61,13 @@ describe('screens/Staking/Overview/NetworkInfo', () => {
   test('should expand children', async () => {
     await act(async () => {
       render(
-        <NetworkInfo rewards={['100', '200']} isRewardsLoading={true} totalStakes={[]} onNetworkChange={noop}>
+        <NetworkInfo
+          isRewardsLoading={false}
+          isStakingLoading={false}
+          rewards={['100', '200']}
+          totalStakes={[]}
+          onNetworkChange={noop}
+        >
           children
         </NetworkInfo>,
       );
@@ -73,12 +85,20 @@ describe('screens/Staking/Overview/NetworkInfo', () => {
 
   test('should render loading state', async () => {
     await act(async () => {
-      render(<NetworkInfo rewards={[]} isRewardsLoading={true} totalStakes={[]} onNetworkChange={noop} />);
+      render(
+        <NetworkInfo
+          isRewardsLoading={true}
+          isStakingLoading={true}
+          rewards={[]}
+          totalStakes={[]}
+          onNetworkChange={noop}
+        />,
+      );
     });
 
-    const balances = screen.queryByText('assetBalance.number');
-    const shimmers = screen.getAllByTestId('total-loading');
-    expect(balances).not.toBeInTheDocument();
+    const balances = screen.queryAllByText('assetBalance.number');
+    const shimmers = screen.getAllByTestId('value-loading');
+    expect(balances.length).toEqual(0);
     expect(shimmers).toHaveLength(2);
   });
 
@@ -86,8 +106,9 @@ describe('screens/Staking/Overview/NetworkInfo', () => {
     await act(async () => {
       render(
         <NetworkInfo
-          rewards={['360854699511', '519204699511']}
           isRewardsLoading={false}
+          isStakingLoading={false}
+          rewards={['360854699511', '519204699511']}
           totalStakes={['201494854699', '401494854699']}
           onNetworkChange={noop}
         />,

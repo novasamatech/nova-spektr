@@ -467,11 +467,11 @@
       "yearlyEarningLabel": "Yearly"
     },
     "actions": {
-      "destinationLabel": "Адрес наград",
+      "destinationLabel": "Сменить адрес наград",
       "filterButton": "Фильтр",
       "manageStakePlaceholder": "Управлять стейком",
       "noOverlapPlaceholder": "Нет общих операций",
-      "redeemLabel": "Награда",
+      "redeemLabel": "Забрать анстейк",
       "returnToStakeLabel": "Вернуть в стейк",
       "selectAccPlaceholder": "Выберите аккаунт",
       "setValidatorsLabel": "Назнанить валидаторов",
