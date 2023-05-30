@@ -29,7 +29,7 @@ export const MultisigChainProvider = ({ children }: PropsWithChildren) => {
 
   const account = getActiveMultisigAccount();
 
-  const txs = account?.accountId ? getLiveAccountMultisigTxs([account.accountId]) : [];
+  const txs = getLiveAccountMultisigTxs(account?.accountId ? [account.accountId] : []);
 
   useEffect(() => {
     txs.forEach(async (tx) => {
