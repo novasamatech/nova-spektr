@@ -12,7 +12,7 @@
 10. Wallets: Add Multishard wallet via Parity Signer
 11. Staking: Show staking information and nominating with multishard wallet
 12. Wallets: Sign multiple transactions in a single action
-13. Multisig accounts: Create mulitisg accounts
+13. Multisig accounts: Create multisig accounts
 14. Multisig operations: Transfers, Staking - Nominating
 
 **Changed:**

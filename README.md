@@ -23,7 +23,8 @@
 - [Development](#development)
   - [Requirements](#requirements)
   - [Install dependencies](#install-dependencies)
-  - [Start development](#start-development)
+  - [Start in production mode](#start-in-production-mode)
+  - [Start in development mode](#start-in-development-mode)
   - [Project localisation](#project-localisation)
 - [Production build](#production-build)
 - [Contributing](#contributing)
@@ -66,7 +67,7 @@ pnpm install
 ```
 Husky hooks will be installed automatically after installing project dependencies:
 
-```json
+```bash
 "prepare": "husky install"
 ```
 **P.S. don't update pre-commit file to `npm githook:pre-commit`**
