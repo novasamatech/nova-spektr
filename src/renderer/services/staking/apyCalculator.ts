@@ -96,9 +96,8 @@ export const getValidatorsApy = async (
  * @return {Promise}
  */
 export const getAvgApy = async (api: ApiPromise, validators: ApyValidator[]): Promise<string> => {
-  if (validators.length === 0) {
-    return '';
-  }
+  if (validators.length === 0) return '';
+
   const totalIssuance = await getTotalIssuance(api);
   const stake = validators.reduce((acc, { totalStake }) => {
     return acc.plus(new BigNumber(totalStake));

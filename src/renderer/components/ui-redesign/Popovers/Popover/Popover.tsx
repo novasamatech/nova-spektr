@@ -3,13 +3,20 @@ import { Fragment, PropsWithChildren, ReactNode, useId, useRef, useState } from 
 
 import cnTw from '@renderer/shared/utils/twMerge';
 
-export type PopoverProps = {
+type Props = {
   content: ReactNode;
   offsetPx?: number;
+  position?: string;
   contentClass?: string;
 };
 
-const Popover = ({ content, children, offsetPx = 10, contentClass }: PropsWithChildren<PopoverProps>) => {
+const Popover = ({
+  content,
+  children,
+  offsetPx = 10,
+  position = 'left-0 top-full',
+  contentClass,
+}: PropsWithChildren<Props>) => {
   const id = useId();
   const ref = useRef<HTMLDivElement>(null);
   const [isOpen, setIsOpen] = useState(false);
@@ -40,10 +47,13 @@ const Popover = ({ content, children, offsetPx = 10, contentClass }: PropsWithCh
       >
         <Popup.Panel
           id={id}
-          style={{ top: '100%', marginTop: offsetPx + 'px' }}
-          className="absolute z-20 rounded-md bg-token-container-background border border-token-container-border shadow-card-shadow"
+          style={{ marginTop: offsetPx + 'px' }}
+          className={cnTw(
+            'absolute z-20 rounded-md bg-token-container-background border border-token-container-border shadow-card-shadow',
+            position,
+          )}
         >
-          <div className={cnTw('relative w-[275px]', contentClass)}>{content}</div>
+          <div className={cnTw('relative', contentClass)}>{content}</div>
         </Popup.Panel>
       </Transition>
     </Popup>

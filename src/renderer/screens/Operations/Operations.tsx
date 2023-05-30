@@ -14,6 +14,7 @@ import Filters from './components/Filters';
 import { MultisigTransactionDS } from '@renderer/services/storage';
 import { useMultisigTx } from '@renderer/services/multisigTx/multisigTxService';
 import { nonNullable } from '@renderer/shared/utils/functions';
+import { Header } from '@renderer/components/common';
 
 const Operations = () => {
   const { t, dateLocale } = useI18n();
@@ -33,9 +34,7 @@ const Operations = () => {
 
   return (
     <div className="flex flex-col items-start relative bg-main-app-background min-h-full">
-      <header className="w-full px-6 py-4.5 bg-top-nav-bar-background border-b border-container-border">
-        <h1 className="font-semibold text-2xl text-neutral"> {t('operations.title')}</h1>
-      </header>
+      <Header title={t('operations.title')} />
 
       <div className="pl-6 mx-auto h-full">
         {Boolean(txs.length) && <Filters txs={txs} onChangeFilters={setFilteredTxs} />}
