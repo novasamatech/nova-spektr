@@ -71,6 +71,7 @@
   --accent-background: #4649f6;
   --row-background: #fff;
   --hover: rgba(36, 99, 235, 0.04);
+  --card-background: #fff;
 
   /* SHADOW */
   --card-shadow: 0px 3px 4px rgba(69, 69, 137, 0.04), inset 0px -0.5px 0px rgba(69, 69, 137, 0.12);

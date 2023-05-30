@@ -44,6 +44,7 @@ const Button = forwardRef<HTMLButtonElement, PropsWithChildren<Props>>(
       disabled={disabled}
       className={cnTw(
         'flex items-center justify-center gap-x-2 font-medium select-none outline-offset-1',
+        (prefixElement || suffixElement) && 'justify-between',
         SizeClass[size],
         variant !== 'text' && Padding[size],
         ViewClass[`${variant}_${pallet}`],
@@ -53,7 +54,7 @@ const Button = forwardRef<HTMLButtonElement, PropsWithChildren<Props>>(
       onClick={onClick}
     >
       {prefixElement && <div data-testid="prefix">{prefixElement}</div>}
-      <div className={cnTw(prefixElement && 'ml-auto', suffixElement && 'ml-0 mr-auto')}>{children}</div>
+      <div>{children}</div>
       {suffixElement && <div data-testid="suffix">{suffixElement}</div>}
     </button>
   ),

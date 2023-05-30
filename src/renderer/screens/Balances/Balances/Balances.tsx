@@ -6,7 +6,7 @@ import { useNetworkContext } from '@renderer/context/NetworkContext';
 import { Asset } from '@renderer/domain/asset';
 import { Chain } from '@renderer/domain/chain';
 import { ConnectionType } from '@renderer/domain/connection';
-import { ChainId, AccountId, SigningType } from '@renderer/domain/shared-kernel';
+import { ChainId, SigningType } from '@renderer/domain/shared-kernel';
 import { useToggle } from '@renderer/shared/hooks';
 import { useChains } from '@renderer/services/network/chainsService';
 import { useSettingsStorage } from '@renderer/services/settings/settingsStorage';
@@ -15,25 +15,30 @@ import ReceiveModal, { DataPayload } from '../ReceiveModal/ReceiveModal';
 import { useAccount } from '@renderer/services/account/accountService';
 import { isMultisig } from '@renderer/domain/account';
 import BalancesFilters from '@renderer/screens/Balances/Balances/BalancesFilters';
-import { BodyText } from '@renderer/components/ui-redesign';
+import { BodyText, Button, SmallTitleText } from '@renderer/components/ui-redesign';
 import { Header } from '@renderer/components/common';
 import Transfer from '@renderer/screens/Transfer/Transfer';
+import { AccountDS } from '@renderer/services/storage';
+import SelectShardModal from '@renderer/screens/Balances/SelectShardModal/SelectShardModal';
 
 const Balances = () => {
   const { t } = useI18n();
 
   const [query, setQuery] = useState('');
-  const [accountIds, setAccountIds] = useState<AccountId[]>([]);
+  const [activeAccounts, setActiveAccounts] = useState<AccountDS[]>([]);
+  const accountIds = activeAccounts.map((a) => a.accountId).filter((a) => a);
   const [usedChains, setUsedChains] = useState<Record<ChainId, boolean>>({});
   const [data, setData] = useState<DataPayload>();
 
   const [isReceiveOpen, toggleReceive] = useToggle();
   const [isTransferOpen, toggleTransfer] = useToggle();
+  const [isSelectShardsOpen, toggleSelectShardsOpen] = useToggle();
 
   const { connections } = useNetworkContext();
   const { getActiveAccounts } = useAccount();
   const { sortChains } = useChains();
-  const activeAccounts = getActiveAccounts();
+  const activeAccountsFromWallet = getActiveAccounts();
+  const isMultishard = activeAccountsFromWallet.length > 1;
 
   const { setHideZeroBalance, getHideZeroBalance } = useSettingsStorage();
   const [hideZeroBalance, setHideZeroBalanceState] = useState(getHideZeroBalance());
@@ -44,23 +49,23 @@ const Balances = () => {
   };
 
   useEffect(() => {
-    if (activeAccounts.length === 0) {
-      setAccountIds([]);
+    updateChainsAndAccounts(activeAccountsFromWallet);
+  }, [activeAccountsFromWallet.length]);
+
+  const updateChainsAndAccounts = (accounts: AccountDS[]) => {
+    if (accounts.length === 0) {
+      setActiveAccounts([]);
 
       return;
     }
 
-    const activeAccountIds = activeAccounts.reduce<AccountId[]>((acc, account) => {
-      return account.accountId ? [...acc, account.accountId] : acc;
-    }, []);
-
-    const usedChains = activeAccounts.reduce<Record<ChainId, boolean>>((acc, account) => {
+    const usedChains = accounts.reduce<Record<ChainId, boolean>>((acc, account) => {
       return account.chainId ? { ...acc, [account.chainId]: true } : acc;
     }, {});
 
-    setAccountIds(activeAccountIds);
+    setActiveAccounts(accounts);
     setUsedChains(usedChains);
-  }, [activeAccounts.length]);
+  };
 
   const hasRootAccount = activeAccounts.some((account) => !account.rootId);
 
@@ -95,6 +100,13 @@ const Balances = () => {
     toggleTransfer();
   };
 
+  const handleShardSelect = (selectedAccounts?: AccountDS[]) => {
+    toggleSelectShardsOpen();
+    if (Array.isArray(selectedAccounts)) {
+      updateChainsAndAccounts(selectedAccounts);
+    }
+  };
+
   return (
     <>
       <div className="h-full flex flex-col items-start relative bg-main-app-background">
@@ -108,6 +120,18 @@ const Balances = () => {
         </Header>
 
         <section className="overflow-y-scroll mt-4 flex flex-col gap-y-4 w-[800px] mx-auto h-full">
+          {isMultishard && (
+            <SmallTitleText as="h3">
+              {t('balances.shardsTitle')}{' '}
+              <Button
+                variant="text"
+                suffixElement={<Icon name="edit" size={16} className="text-icon-accent" />}
+                onClick={toggleSelectShardsOpen}
+              >
+                {activeAccounts.length} {t('balances.shards')}
+              </Button>
+            </SmallTitleText>
+          )}
           {accountIds.length > 0 && (
             <ul className="flex-1 flex flex-col gap-y-4">
               {sortedChains.map((chain) => (
@@ -144,6 +168,15 @@ const Balances = () => {
           chainId={data?.chain.chainId}
           isOpen={isTransferOpen}
           onClose={toggleTransfer}
+        />
+      )}
+      {isMultishard && (
+        <SelectShardModal
+          accounts={activeAccountsFromWallet}
+          activeAccounts={activeAccounts}
+          connections={connections}
+          isOpen={isSelectShardsOpen}
+          onClose={handleShardSelect}
         />
       )}
     </>

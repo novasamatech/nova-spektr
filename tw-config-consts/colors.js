@@ -71,4 +71,5 @@ module.exports = {
   'accent-background': 'var(--accent-background)',
   'row-background': 'var(--row-background)',
   hover: 'var(--hover)',
+  'card-background': 'var(--card-background)',
 };
