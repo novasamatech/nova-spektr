@@ -67,6 +67,7 @@ module.exports = {
   'dim-background': 'var(--dim-background)',
   'qr-valid-background': 'var(--qr-valid-background)',
   'accent-background': 'var(--accent-background)',
+  'row-background': 'var(--row-background)',
   hover: 'var(--hover)',
   'card-background': 'var(--card-background)',
 };
