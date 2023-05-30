@@ -8,7 +8,7 @@ import { ExtendedChain } from '@renderer/services/network/common/types';
 import { MultisigEvent, MultisigTransaction, SigningStatus } from '@renderer/domain/transaction';
 import TransactionTitle from './TransactionTitle/TransactionTitle';
 import OperationStatus from './OperationStatus';
-import { getExtrinsicLink, getTransactionAmount, sortByDate } from '../common/utils';
+import { getExtrinsicLink, getTransactionAmount, sortByDateIncrease } from '../common/utils';
 import { BaseModal, BodyText, FootnoteText, InfoLink } from '@renderer/components/ui-redesign';
 import { useChains } from '@renderer/services/network/chainsService';
 import { getAssetById, getIconVariant } from '@renderer/shared/utils/assets';
@@ -41,6 +41,7 @@ const LogModal = ({ isOpen, onClose, tx, account, connection }: Props) => {
   useEffect(() => {
     getChainById(tx.chainId).then((chain) => setChain(chain));
   }, []);
+
   const { transaction, description, status } = tx;
   const approvals = tx.events.filter((e) => e.status === 'SIGNED');
 
@@ -87,7 +88,7 @@ const LogModal = ({ isOpen, onClose, tx, account, connection }: Props) => {
 
       <div className="bg-main-app-background p-5 flex flex-col gap-y-4 min-h-[464px]">
         {Object.entries(groupedEvents)
-          .sort(sortByDate<MultisigEvent>)
+          .sort(sortByDateIncrease<MultisigEvent>)
           .map(([date, events]) => (
             <section className="w-full" key={date}>
               <FootnoteText as="h4" className="text-text-tertiary mb-4">
@@ -96,7 +97,7 @@ const LogModal = ({ isOpen, onClose, tx, account, connection }: Props) => {
 
               <ul className="flex flex-col gap-y-4">
                 {events
-                  .sort((a, b) => (b.dateCreated || 0) - (a.dateCreated || 0))
+                  .sort((a, b) => (a.dateCreated || 0) - (b.dateCreated || 0))
                   .map((event) => (
                     <li key={`${event.accountId}_${event.status}`} className="flex flex-col">
                       <div className="flex gap-x-2 w-full items-center">

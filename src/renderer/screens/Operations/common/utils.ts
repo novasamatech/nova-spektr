@@ -79,6 +79,9 @@ export const getIconName = (transaction?: Transaction): IconNames => {
 export const sortByDate = <T>([dateA]: [string, T[]], [dateB]: [string, T[]]) =>
   new Date(dateA) < new Date(dateB) ? 1 : -1;
 
+export const sortByDateIncrease = <T>([dateA]: [string, T[]], [dateB]: [string, T[]]) =>
+  new Date(dateA) > new Date(dateB) ? 1 : -1;
+
 export const getExtrinsicLink = (hash?: HexString, explorers?: Explorer[]): string | undefined => {
   const extrinsicLink = explorers?.find((e) => e.extrinsic)?.extrinsic;
 
