@@ -1,4 +1,4 @@
-input[type='checkbox']:checked::before {
+.old-checkbox:checked::before {
   content: '✓';
   color: white;
   display: block;
@@ -9,8 +9,8 @@ input[type='checkbox']:checked::before {
   text-align: center;
 }
 
-input::-webkit-outer-spin-button,
-input::-webkit-inner-spin-button {
+.old-checkbox::-webkit-outer-spin-button,
+.old-checkbox::-webkit-inner-spin-button {
   appearance: none;
   margin: 0;
 }

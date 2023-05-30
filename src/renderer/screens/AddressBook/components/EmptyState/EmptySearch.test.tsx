@@ -13,8 +13,6 @@ describe('screens/AddressBook/components/EmptyState/EmptySearch.tsx', () => {
     render(<EmptySearch />);
 
     const label = screen.getByText('addressBook.contactList.emptySearchLabel');
-    const description = screen.getByText('addressBook.contactList.emptySearchDescription');
     expect(label).toBeInTheDocument();
-    expect(description).toBeInTheDocument();
   });
 });

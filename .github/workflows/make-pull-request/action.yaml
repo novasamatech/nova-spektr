@@ -50,7 +50,6 @@ runs:
       id: mpr
       uses: repo-sync/pull-request@v2
       if: steps.commit.outcome == 'success'
-      name: pull-request
       with:
         source_branch: '${{ inputs.branch_name }}-${{github.run_number}}'
         destination_branch: ${{ inputs.destination_branch }}
@@ -65,12 +64,12 @@ runs:
       if: steps.commit.outcome == 'success' && inputs.second_destination_branch
       uses: repo-sync/pull-request@v2
       with:
-        source_branch: '${{ inputs.branch-name }}-${{github.run_number}}'
-        destination-branch: ${{ inputs.second_destination_branch }}
+        source_branch: '${{ inputs.branch_name }}-${{github.run_number}}'
+        destination_branch: ${{ inputs.second_destination_branch }}
         pr_title: 'PR in order to sync ${{ inputs.commit_path }}'
         pr_body: |
           That pull-request was generated automatically 🤖
-          Main PR is: ${{ steps.mpr.outputs.pull-request-url }}
+          Main PR is: ${{ steps.mpr.outputs.pr_url }}
         pr_reviewer: "stepanLav,pgolovkin,tuul-wq,Asmadek"
         pr_draft: false
         github_token: ${{ inputs.github_token }}

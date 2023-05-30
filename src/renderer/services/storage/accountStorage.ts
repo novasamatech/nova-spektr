@@ -19,6 +19,10 @@ export const useAccountStorage = (db: TAccount): IAccountStorage => ({
     return db.put(account);
   },
 
+  updateAccounts: <T extends Account>(accounts: T[]): Promise<ID> => {
+    return db.bulkPut(accounts);
+  },
+
   deleteAccount: (accountId: Address): Promise<void> => {
     return db.delete(accountId);
   },

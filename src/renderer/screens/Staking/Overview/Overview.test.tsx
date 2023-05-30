@@ -77,12 +77,15 @@ jest.mock('@renderer/services/staking/stakingRewardsService', () => ({
   }),
 }));
 
+jest.mock('./components/NetworkInfo/NetworkInfo', () => ({ onNetworkChange }: any) => (
+  <button type="button" onClick={() => onNetworkChange({ chainId: '0x00', name: 'Polkadot', addressPrefix: 0 })}>
+    networkInfo
+  </button>
+));
+jest.mock('./components/Actions/Actions', () => () => <span>actions</span>);
 jest.mock('./components/AboutStaking/AboutStaking', () => () => <span>aboutStaking</span>);
-jest.mock('./components/InfoBanners/InfoBanners', () => () => <span>infoBanners</span>);
-jest.mock('./components/Filter/Filter', () => () => <span>filter</span>);
-jest.mock('./components/StakingTable/StakingTable', () => () => <span>stakingTable</span>);
-jest.mock('./components/TotalAmount/TotalAmount', () => () => <span>totalAmount</span>);
-jest.mock('./components/NominatorsModal/NominatorsModal', () => () => <span>nominatorsModal</span>);
+jest.mock('./components/NominatorsList/NominatorsList', () => () => <span>nominatorsList</span>);
+jest.mock('./components/ValidatorsModal/ValidatorsModal', () => () => <span>validatorsModal</span>);
 
 describe('screens/Staking/Overview', () => {
   beforeEach(() => {
@@ -101,13 +104,13 @@ describe('screens/Staking/Overview', () => {
     });
 
     const title = screen.getByText('staking.title');
-    const stakingTable = screen.getByText('stakingTable');
-    const totalAmount = screen.getByText('totalAmount');
-    const nominatorsModal = screen.getByText('nominatorsModal');
+    const actions = screen.getByText('actions');
+    const nominatorsList = screen.getByText('nominatorsList');
+    const validatorsModal = screen.getByText('validatorsModal');
     expect(title).toBeInTheDocument();
-    expect(stakingTable).toBeInTheDocument();
-    expect(totalAmount).toBeInTheDocument();
-    expect(nominatorsModal).toBeInTheDocument();
+    expect(actions).toBeInTheDocument();
+    expect(nominatorsList).toBeInTheDocument();
+    expect(validatorsModal).toBeInTheDocument();
   });
 
   test('should render network settings link', async () => {
@@ -121,7 +124,10 @@ describe('screens/Staking/Overview', () => {
       render(<Overview />, { wrapper: MemoryRouter });
     });
 
-    const title = screen.getByText('staking.overview.networkSettingsLink');
+    const networkButton = screen.getByRole('button', { name: 'networkInfo' });
+    await act(() => networkButton.click());
+
+    const title = screen.getByRole('link', { name: 'staking.overview.networkSettingsLink' });
     expect(title).toBeInTheDocument();
   });
 });
