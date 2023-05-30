@@ -62,13 +62,13 @@ const Navigation = () => {
   const NavItems: NavItemProps[] = [
     { icon: 'asset', title: 'navigation.balancesLabel', link: Paths.BALANCES },
     { icon: 'staking', title: 'navigation.stakingLabel', link: Paths.STAKING },
-    { icon: 'addressBook', title: 'navigation.addressBookLabel', link: Paths.ADDRESS_BOOK },
     {
       icon: 'operations',
       title: 'navigation.mstOperationLabel',
       link: Paths.OPERATIONS,
       badge: txs.length,
     },
+    { icon: 'addressBook', title: 'navigation.addressBookLabel', link: Paths.ADDRESS_BOOK },
 
     // { icon: <Icon name="history" />, title: 'navigation.historyLabel', link: Paths.HISTORY },
     // { icon: <Icon name="eth" />, title: 'navigation.cameraDEVLabel', link: Paths.CAMERA_DEV },
