@@ -152,7 +152,7 @@ pnpm dist
 ```
 ## Troubleshooting
 Log files help to solve your problem. Logs are collected in the `nova-spektr.log` that is located in the folder:
-1. macOS `~/Librarly/Logs/Nova Spektr/nova-spektr.log` 
+1. macOS `~/Library/Logs/Nova Spektr/nova-spektr.log` 
 2. Windows `%USERPROFILE%\AppData\Roaming\Nova Spektr\logs\nova-spektr.log`
 3. Linux `~/.config/Nova Spektr/logs/nova-spektr.log`
 
