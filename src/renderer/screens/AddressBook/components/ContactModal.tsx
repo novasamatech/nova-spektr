@@ -175,7 +175,7 @@ const ContactModal = ({ isOpen, onToggle, contact }: Props) => {
           {t('addressBook.editContact.editWarning')}
         </InputHint>
 
-        <Button className="ml-auto" pallet="primary" variant="fill" type="submit" disabled={!isValid}>
+        <Button className="ml-auto" type="submit" disabled={!isValid}>
           {t(getButtonText(errors, isEdit))}
         </Button>
       </form>

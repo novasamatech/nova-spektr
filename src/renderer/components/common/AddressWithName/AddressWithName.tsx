@@ -59,7 +59,7 @@ const AddressWithName = ({
   const firstLine = <div className="text-body text-text-primary">{nameContent || addressContent}</div>;
   const secondLine = nameContent && addressContent && (
     <div className="text-help-text text-text-tertiary">
-      {addressContent && canCopySubName ? (
+      {canCopySubName ? (
         <div className="flex items-center gap-1">
           {addressContent}
           <IconButton
