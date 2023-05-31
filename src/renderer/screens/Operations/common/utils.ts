@@ -76,10 +76,10 @@ export const getIconName = (transaction?: Transaction): IconNames => {
   return TransactionIcons[transaction.type];
 };
 
-export const sortByDate = <T>([dateA]: [string, T[]], [dateB]: [string, T[]]) =>
+export const sortByDateDesc = <T>([dateA]: [string, T[]], [dateB]: [string, T[]]) =>
   new Date(dateA) < new Date(dateB) ? 1 : -1;
 
-export const sortByDateIncrease = <T>([dateA]: [string, T[]], [dateB]: [string, T[]]) =>
+export const sortByDateAsc = <T>([dateA]: [string, T[]], [dateB]: [string, T[]]) =>
   new Date(dateA) > new Date(dateB) ? 1 : -1;
 
 export const getExtrinsicLink = (hash?: HexString, explorers?: Explorer[]): string | undefined => {

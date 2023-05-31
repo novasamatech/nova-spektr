@@ -8,7 +8,7 @@ import { ExtendedChain } from '@renderer/services/network/common/types';
 import { MultisigEvent, MultisigTransaction, SigningStatus } from '@renderer/domain/transaction';
 import TransactionTitle from './TransactionTitle/TransactionTitle';
 import OperationStatus from './OperationStatus';
-import { getExtrinsicLink, getTransactionAmount, sortByDateIncrease } from '../common/utils';
+import { getExtrinsicLink, getTransactionAmount, sortByDateAsc } from '../common/utils';
 import { BaseModal, BodyText, FootnoteText, InfoLink } from '@renderer/components/ui-redesign';
 import { useChains } from '@renderer/services/network/chainsService';
 import { getAssetById, getIconVariant } from '@renderer/shared/utils/assets';
@@ -88,7 +88,7 @@ const LogModal = ({ isOpen, onClose, tx, account, connection }: Props) => {
 
       <div className="bg-main-app-background p-5 flex flex-col gap-y-4 min-h-[464px]">
         {Object.entries(groupedEvents)
-          .sort(sortByDateIncrease<MultisigEvent>)
+          .sort(sortByDateAsc<MultisigEvent>)
           .map(([date, events]) => (
             <section className="w-full" key={date}>
               <FootnoteText as="h4" className="text-text-tertiary mb-4">
