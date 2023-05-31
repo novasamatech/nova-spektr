@@ -5,8 +5,8 @@
 <div align="center">
 
 ![badge](https://img.shields.io/endpoint?url=https://gist.githubusercontent.com/stepanLav/77132f25d05c7e9264cd410aef162a7e/raw/jest-coverage-main.json)
-[![GitHub release (latest by date)](https://img.shields.io/github/v/release/nova-wallet/nova-spektr)](https://github.com/nova-wallet/nova-spektr/releases)
-[![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](https://github.com/nova-wallet/nova-spektr/blob/dev/LICENSE.md)
+[![GitHub release (latest by date)](https://img.shields.io/github/v/release/novasamatech/nova-spektr)](https://github.com/novasamatech/nova-spektr/releases)
+[![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](https://github.com/novasamatech/nova-spektr/blob/dev/LICENSE.md)
 <br />
 [![Twitter URL](https://img.shields.io/twitter/url?style=social&url=https%3A%2F%2Ftwitter.com)](todo)
 [![Telegram](https://img.shields.io/badge/Telegram-gray?logo=telegram)](todo)
@@ -48,7 +48,7 @@ Polkadot & Kusama ecosystem Enterprise Desktop application.
 
 ## Changelog
 
-Detailed changelog with releases description is located in the [changelog file](https://github.com/nova-wallet/nova-spektr/blob/dev/CHANGELOG.md)
+Detailed changelog with releases description is located in the [changelog file](https://github.com/novasamatech/nova-spektr/blob/dev/CHANGELOG.md)
 
 # Development
 
@@ -79,7 +79,7 @@ installed in the operating system and source code hot-reload will be used.
 Production configuration uses:
 1. [`chains.json`](/src/renderer/services/network/common/chains/chains.json) file for chains configuration
 2. debug tools are disabled by default
-3. error are handled in a smooth way in order not to interrupt the user
+3. errors are handled in a smooth way in order not to interrupt the user
 
 Use the following instructions in order to start application in the `production` environment with hot-reload:
 
@@ -159,16 +159,16 @@ Log files help to solve your problem. Logs are collected in the `nova-spektr.log
 Sharing logs when you're contacting the support will speed up the problem fix.
 
 # Contributing
-Contributing guide is described in the [CONTRIBUTING.md](https://github.com/nova-wallet/nova-spektr/blob/dev/CONTRIBUTING.md)
+Contributing guide is described in the [CONTRIBUTING.md](https://github.com/novasamatech/nova-spektr/blob/dev/CONTRIBUTING.md)
 
 # Support
 Check the official support channels:
 1. wiki (todo)
 2. telegram group (todo)
-3. GitHub [issues](https://github.com/orgs/nova-wallet/projects/4)
+3. GitHub [issues](https://github.com/orgs/novasamatech/projects/4)
 
-All issues are being tracked in the [Nova Spektr Support project](https://github.com/orgs/nova-wallet/projects/4)
+All issues are being tracked in the [Nova Spektr Support project](https://github.com/orgs/novasamatech/projects/4)
 
 # Feedback
 Your feedback is welcome. Use GitHub issues for submitting the feedback.
-All feedback is being tracked in the [Nova Spektr Feedback project](https://github.com/orgs/nova-wallet/projects/5)
+All feedback is being tracked in the [Nova Spektr Feedback project](https://github.com/orgs/novasamatech/projects/5)
