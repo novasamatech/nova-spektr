@@ -2,6 +2,7 @@ import { Icon } from '@renderer/components/ui';
 import { useI18n } from '@renderer/context/I18nContext';
 import { FootnoteText, Plate, BodyText } from '@renderer/components/ui-redesign';
 import { HelpText } from '@renderer/components/ui-redesign/Typography';
+import twMerge from '@renderer/shared/utils/twMerge';
 
 const Links = [
   {
@@ -47,7 +48,10 @@ export const SocialLinks = () => {
         {Links.map((link) => (
           <Plate as="li" key={link.title} className="p-0">
             <a
-              className="grid grid-flow-col grid-cols-[auto,1fr,auto] items-center gap-x-2 p-3 rounded-md"
+              className={twMerge(
+                'w-full grid grid-flow-col grid-cols-[auto,1fr,auto] items-center gap-x-2 p-3 rounded-md',
+                'transition hover:shadow-card-shadow focus:shadow-card-shadow',
+              )}
               href={link.href}
               target="_blank"
               rel="noopener noreferrer"
