@@ -24,7 +24,7 @@ export const MatrixAction = () => {
         >
           <Icon className="text-icon-default row-span-2" name="matrix" size={36} />
           <BodyText>{t('settings.overview.matrixLabel')}</BodyText>
-          <HelpText className="text-text-tertiary">{t('settings.overview.matrixLabel')}</HelpText>
+          <HelpText className="text-text-tertiary">{t('settings.overview.matrixDescription')}</HelpText>
           <Icon className="text-icon-default row-span-2" name="right" size={16} />
         </Link>
       </Plate>

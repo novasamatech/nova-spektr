@@ -434,7 +434,7 @@
       "githubDescription": "Исходный код на GitHub",
       "githubLabel": "GitHub",
       "languageLabel": "Язык",
-      "matrixDescription": "Matrix Description",
+      "matrixDescription": "Управление подключением к Matrix ",
       "matrixDetailsLabel": "Управление доступом в Omni Matrix Protocol",
       "matrixLabel": "Реквизиты доступа Matrix",
       "mediumDescription": "Все новости на Medium",
