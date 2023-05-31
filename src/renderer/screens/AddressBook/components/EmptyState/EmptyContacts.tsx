@@ -11,7 +11,7 @@ const EmptyContacts = ({ onAddContact }: Props) => {
 
   return (
     <div className="flex flex-col items-center justify-center gap-4 h-full">
-      <Icon as="img" name="noContacts" size={178} />
+      <Icon as="img" name="emptyList" alt={t('addressBook.contactList.noContactsLabel')} size={178} />
       <BodyText className="text-text-tertiary">{t('addressBook.contactList.noContactsLabel')}</BodyText>
 
       {onAddContact && (

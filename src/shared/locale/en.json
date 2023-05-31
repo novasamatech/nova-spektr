@@ -431,12 +431,26 @@
       "verifyWithKey": "Verify with key"
     },
     "overview": {
-      "getInTouchLabel": "Get in touch for more information!",
+      "generalLabel": "General",
+      "githubDescription": "Code and collaborate on GitHub",
+      "githubLabel": "GitHub",
       "languageLabel": "Language",
+      "matrixDescription": "Manage Matrix connection",
       "matrixDetailsLabel": "Manage Omni Matrix Protocol credentials",
-      "matrixLabel": "Matrix Credentials",
+      "matrixLabel": "Matrix Connection",
+      "mediumDescription": "Discover and share stories on Medium",
+      "mediumLabel": "Medium",
       "networkDetailsLabel": "Manage network connection",
-      "networkLabel": "Network"
+      "networkLabel": "Network",
+      "smpLabel": "Spektr Matrix protocol",
+      "socialLabel": "Social",
+      "telegramDescription": "Connect, chat, and explore on Telegram",
+      "telegramLabel": "Telegram",
+      "twitterDescription": "Tweet your thoughts and stay connected on Twitter",
+      "twitterLabel": "Twitter",
+      "versionLabel": "Version",
+      "youtubeDescription": "Watch, share, and discover with YouTube",
+      "youtubeLabel": "YouTube"
     },
     "title": "Settings"
   },
