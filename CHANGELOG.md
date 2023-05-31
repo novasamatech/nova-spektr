@@ -1,4 +1,4 @@
-#### 1.0.0 (29.05.2023)
+#### 1.0.0 (12.06.2023)
 **Added:**
 1. Wallets: Add Watch-Only wallet
 2. Wallets: Add a single wallet via Parity Signer
