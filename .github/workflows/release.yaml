@@ -66,7 +66,7 @@ jobs:
             release/dist/*.AppImage
 
   releas-project:
-    name: Release Omni build-project
+    name: Release Nova Spektr build-project
     runs-on: ubuntu-latest
     needs: release-build
     steps:
