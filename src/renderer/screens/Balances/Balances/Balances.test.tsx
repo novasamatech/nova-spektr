@@ -72,7 +72,7 @@ describe('screen/Balances/Balances', () => {
 
     render(<Balances />, { wrapper: MemoryRouter });
 
-    const noResults = screen.getByTestId('emptyOperations-img');
+    const noResults = screen.getByTestId('emptyList-img');
     expect(noResults).toBeInTheDocument();
   });
 });

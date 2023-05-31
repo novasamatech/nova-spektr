@@ -8,7 +8,7 @@ exports.APP_CONFIG = {
   VERSION,
   DESCRIPTION,
 
-  TITLE: 'Omni Enterprise',
+  TITLE: 'Nova Spektr',
   APP_ID: `com.${AUTHOR_IN_KEBAB_CASE}.${NAME}`.toLowerCase(),
 
   MAIN: {

@@ -10,7 +10,14 @@ export const useAccount = (): IAccountService => {
   if (!accountStorage) {
     throw new Error('=== 🔴 Account storage in not defined 🔴 ===');
   }
-  const { getAccount, getAccounts, addAccount, updateAccount, updateAccounts, deleteAccount } = accountStorage;
+  const {
+    getAccount,
+    getAccounts,
+    addAccount: dbAddAccount,
+    updateAccount,
+    updateAccounts,
+    deleteAccount,
+  } = accountStorage;
 
   const getLiveAccounts = <T extends Account>(where?: Partial<T>): AccountDS[] => {
     const query = () => {
@@ -85,7 +92,7 @@ export const useAccount = (): IAccountService => {
   const setActiveAccounts = async (accountsId: ID[]): Promise<void> => {
     try {
       const allAccounts = await getAccounts();
-      await deactiveAccounts(allAccounts);
+      await deactivateAccounts(allAccounts);
 
       const newActiveAccounts = allAccounts
         .filter((a) => accountsId.includes(a.accountId))
@@ -101,7 +108,7 @@ export const useAccount = (): IAccountService => {
   const setActiveAccount = async (accountId: ID): Promise<void> => {
     try {
       const allAccounts = await getAccounts();
-      await deactiveAccounts(allAccounts);
+      await deactivateAccounts(allAccounts);
 
       const newActiveAccount = allAccounts.find((a) => a.accountId === accountId);
       if (newActiveAccount) {
@@ -112,7 +119,7 @@ export const useAccount = (): IAccountService => {
     }
   };
 
-  const deactiveAccounts = async (accounts: AccountDS[]): Promise<void> => {
+  const deactivateAccounts = async (accounts: AccountDS[]): Promise<void> => {
     try {
       const accountsToDeactivate = accounts.filter((a) => a.isActive).map((a) => ({ ...a, isActive: false }));
 
@@ -122,6 +129,16 @@ export const useAccount = (): IAccountService => {
     } catch (error) {
       console.warn('Could not deactivate accounts');
     }
+  };
+
+  const addAccount = async <T extends Account>(account: T): Promise<ID> => {
+    const accounts = await getAccounts();
+
+    return dbAddAccount(account).then((res) => {
+      deactivateAccounts(accounts);
+
+      return res;
+    });
   };
 
   return {
