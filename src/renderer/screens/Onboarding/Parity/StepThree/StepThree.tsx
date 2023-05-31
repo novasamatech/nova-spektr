@@ -161,7 +161,7 @@ const StepThree = ({ seedInfo, onNextStep }: Props) => {
       walletId,
     });
 
-    return addAccount(rootAccount);
+    return addAccount(rootAccount, false);
   };
 
   const createDerivedAccounts = (
