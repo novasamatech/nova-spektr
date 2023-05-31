@@ -8,7 +8,6 @@ import {
   RootAccount,
   SelectableShards,
 } from '@renderer/components/layout/PrimaryLayout/Wallets/common/types';
-import { AccountId, ChainId } from '@renderer/domain/shared-kernel';
 import { includes } from '@renderer/shared/utils/strings';
 
 const getRootAccount = (accounts: AccountDS[], chains: ChainsRecord, root: AccountDS): RootAccount => {
@@ -16,10 +15,11 @@ const getRootAccount = (accounts: AccountDS[], chains: ChainsRecord, root: Accou
     accounts.filter((a) => a.rootId === root.id),
     ({ chainId }) => chainId,
   );
-  const chainAccounts: ChainWithAccounts[] = Object.entries(accountsByChain).map(([chainId, accounts]) => ({
-    ...chains[chainId as ChainId],
-    accounts,
-  }));
+
+  // iterate by chain and not the account to preserve chains order (if sorted)
+  const chainAccounts: ChainWithAccounts[] = Object.values(chains)
+    .filter((chain) => accountsByChain[chain.chainId])
+    .map((chain) => ({ ...chain, accounts: accountsByChain[chain.chainId] }));
 
   return {
     ...root,
@@ -44,12 +44,12 @@ export const getMultishardStructure = (
   };
 };
 
-export const getSelectableShards = (multishard: MultishardStructure, selectedIds: AccountId[]): SelectableShards => {
+export const getSelectableShards = (multishard: MultishardStructure, selectedIds: string[]): SelectableShards => {
   return {
     ...multishard,
     rootAccounts: multishard.rootAccounts.map((r) => {
       const chains = r.chains.map((c) => {
-        const accounts = c.accounts.map((a) => ({ ...a, isSelected: selectedIds.includes(a.accountId) }));
+        const accounts = c.accounts.map((a) => ({ ...a, isSelected: selectedIds.includes(a.id || '') }));
         const selectedAccounts = accounts.filter((a) => a.isSelected);
 
         return {
@@ -62,7 +62,7 @@ export const getSelectableShards = (multishard: MultishardStructure, selectedIds
 
       return {
         ...r,
-        isSelected: selectedIds.includes(r.accountId),
+        isSelected: selectedIds.includes(r.id || ''),
         chains: chains,
         selectedAmount: chains.filter((c) => c.isSelected).length,
       };

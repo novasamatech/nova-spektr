@@ -9,14 +9,16 @@ type Props = {
   className?: string;
   showIcon?: boolean;
   imgClassName?: string;
+  wrapperClassName?: string;
 };
 
 const BalanceNew = ({
   value,
   asset,
-  className = 'text-body text-text-primary',
+  className,
   showIcon = false,
   imgClassName = 'bg-token-background',
+  wrapperClassName,
 }: Props) => {
   const { t } = useI18n();
   const { precision, symbol, icon, name } = asset;
@@ -28,7 +30,7 @@ const BalanceNew = ({
   });
 
   const balance = (
-    <p className={cnTw('font-inter', className)}>
+    <p className={cnTw('font-inter text-body text-text-primary', className)}>
       {balanceValue} {suffix} {symbol}
     </p>
   );
@@ -38,7 +40,7 @@ const BalanceNew = ({
   }
 
   return (
-    <div className="flex items-center gap-x-2">
+    <div className={cnTw('flex items-center gap-x-2', wrapperClassName)}>
       <img src={icon} alt={name} width={28} height={28} className={cnTw('rounded-full', imgClassName)} />
       {balance}
     </div>

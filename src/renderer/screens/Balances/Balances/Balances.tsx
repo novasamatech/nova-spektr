@@ -174,7 +174,6 @@ const Balances = () => {
         <SelectShardModal
           accounts={activeAccountsFromWallet}
           activeAccounts={activeAccounts}
-          connections={connections}
           isOpen={isSelectShardsOpen}
           onClose={handleShardSelect}
         />

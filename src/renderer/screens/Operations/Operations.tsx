@@ -7,7 +7,7 @@ import EmptyOperations from './components/EmptyState/EmptyOperations';
 import { useAccount } from '@renderer/services/account/accountService';
 import { MultisigAccount } from '@renderer/domain/account';
 import Operation from './components/Operation';
-import { sortByDate } from './common/utils';
+import { sortByDateDesc } from './common/utils';
 import { FootnoteText } from '@renderer/components/ui-redesign';
 import Filters from './components/Filters';
 import { MultisigTransactionDS } from '@renderer/services/storage';
@@ -38,7 +38,7 @@ const Operations = () => {
         <div className="overflow-y-auto flex-1 mx-auto pt-4">
           {Boolean(filteredTxs.length) &&
             Object.entries(groupedTxs)
-              .sort(sortByDate)
+              .sort(sortByDateDesc)
               .map(([date, txs]) => (
                 <section className="w-fit mt-6" key={date}>
                   <FootnoteText className="text-text-tertiary mb-3 ml-2">{date}</FootnoteText>
