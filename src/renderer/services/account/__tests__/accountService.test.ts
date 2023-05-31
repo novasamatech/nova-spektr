@@ -30,17 +30,17 @@ describe('service/accountService', () => {
   });
 
   test('should set new active account', async () => {
-    const accountsDb = [{ name: 'test_1', isActive: false }];
+    const accountsDb = [{ accountId: 'test_1', isActive: false }];
 
     storage.connectTo = jest.fn().mockReturnValue({
-      getAccount: jest.fn().mockResolvedValue(accountsDb[0]),
+      getAccounts: jest.fn().mockResolvedValue(accountsDb),
       updateAccount: jest.fn().mockImplementation(() => {
         accountsDb[0].isActive = true;
       }),
     });
 
-    const { toggleActiveAccount } = useAccount();
-    await toggleActiveAccount('wallet_id');
+    const { setActiveAccount } = useAccount();
+    await setActiveAccount('test_1');
 
     expect(accountsDb[0].isActive).toEqual(true);
   });

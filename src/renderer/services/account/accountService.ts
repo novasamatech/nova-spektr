@@ -72,23 +72,6 @@ export const useAccount = (): IAccountService => {
     return useLiveQuery(query, [], null);
   };
 
-  // TODO: in future implement setWalletInactive
-  const toggleActiveAccount = async (accountId: ID): Promise<void> => {
-    try {
-      const newActiveAccount = await getAccount(accountId);
-      if (newActiveAccount) {
-        await updateAccount({
-          ...newActiveAccount,
-          isActive: !newActiveAccount.isActive,
-        });
-      } else {
-        console.warn('Could not find accounts with such id');
-      }
-    } catch (error) {
-      console.warn('Could not set new active accounts');
-    }
-  };
-
   const setActiveAccounts = async (accountsId: ID[]): Promise<void> => {
     try {
       const allAccounts = await getAccounts();
@@ -131,14 +114,18 @@ export const useAccount = (): IAccountService => {
     }
   };
 
-  const addAccount = async <T extends Account>(account: T): Promise<ID> => {
-    const accounts = await getAccounts();
+  const addAccount = async <T extends Account>(account: T, deactivateOld = true): Promise<ID> => {
+    if (deactivateOld) {
+      const accounts = await getAccounts();
 
-    return dbAddAccount(account).then((res) => {
-      deactivateAccounts(accounts);
+      return dbAddAccount(account).then((res) => {
+        deactivateAccounts(accounts);
 
-      return res;
-    });
+        return res;
+      });
+    } else {
+      return dbAddAccount(account);
+    }
   };
 
   return {
@@ -147,11 +134,11 @@ export const useAccount = (): IAccountService => {
     getLiveAccounts,
     getActiveAccounts,
     getActiveMultisigAccount,
-    toggleActiveAccount,
     addAccount,
     updateAccount,
     deleteAccount,
     setActiveAccount,
     setActiveAccounts,
+    deactivateAccounts,
   };
 };
