@@ -1,8 +1,8 @@
 import cn from 'classnames';
 
 import { useI18n } from '@renderer/context/I18nContext';
-import EmptyList from '@images/misc/empty-list.webp';
 import { FootnoteText } from '@renderer/components/ui-redesign';
+import { Icon } from '@renderer/components/ui';
 
 type Props = {
   className?: string;
@@ -13,7 +13,7 @@ const NoAccounts = ({ className }: Props) => {
 
   return (
     <div className={cn('flex flex-col items-center justify-center gap-y-4', className)}>
-      <img src={EmptyList} alt={t('staking.overview.noAccountsLabel')} width="178" height="172" />
+      <Icon as="img" name="emptyList" alt={t('staking.overview.noAccountsLabel')} size={178} />
       <FootnoteText className="w-52 text-center text-text-tertiary">
         {t('staking.overview.noValidatorsLabel')}
       </FootnoteText>

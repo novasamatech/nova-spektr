@@ -431,12 +431,26 @@
       "verifyWithKey": "Verify with key"
     },
     "overview": {
-      "getInTouchLabel": "На связи!",
+      "generalLabel": "Основные",
+      "githubDescription": "Исходный код на GitHub",
+      "githubLabel": "GitHub",
       "languageLabel": "Язык",
+      "matrixDescription": "Управление подключением к Matrix ",
       "matrixDetailsLabel": "Управление доступом в Omni Matrix Protocol",
       "matrixLabel": "Реквизиты доступа Matrix",
+      "mediumDescription": "Все новости на Medium",
+      "mediumLabel": "Medium",
       "networkDetailsLabel": "Управления подключением к сетям",
-      "networkLabel": "Сети"
+      "networkLabel": "Сети",
+      "smpLabel": "Spektr Matrix протокол",
+      "socialLabel": "Социальные сети",
+      "telegramDescription": "Наш официальный канал в Telegram",
+      "telegramLabel": "Telegram",
+      "twitterDescription": "Оставляйте комментарии нам в Twitter",
+      "twitterLabel": "Twitter",
+      "versionLabel": "Версия",
+      "youtubeDescription": "Смотрите нас на YouTube",
+      "youtubeLabel": "YouTube"
     },
     "title": "Настройки"
   },

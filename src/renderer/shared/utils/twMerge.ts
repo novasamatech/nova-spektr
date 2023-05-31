@@ -14,5 +14,13 @@ const twMerge = extendTailwindMerge({
     ],
   },
 });
-const cnTw = (...args: CnArgs) => twMerge(cn(args));
+
+/**
+ * Merge CSS classes
+ * use Tailwind Merge internally to overcome Tailwind styling cascade
+ * @param args list of arguments for <b>cn</b>
+ * @return {String}
+ */
+const cnTw = (...args: CnArgs): string => twMerge(cn(args));
+
 export default cnTw;
