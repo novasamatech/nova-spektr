@@ -26,14 +26,13 @@ const App = () => {
   useEffect(() => {
     setTimeout(() => setShowSplashScreen(false), SPLASH_SCREEN_DELAY);
 
-    (async () => {
-      const accounts = await getAccounts();
+    getAccounts().then((accounts) => {
       setIsAccountsLoading(false);
 
       if (accounts.length === 0) {
         navigate(Paths.ONBOARDING, { replace: true });
       }
-    })();
+    });
   }, []);
 
   const content = showSplashScreen || isAccountsLoading ? <SplashScreen /> : appRoutes;

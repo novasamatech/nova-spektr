@@ -149,7 +149,7 @@ const Balances = () => {
               ))}
 
               <div className="hidden only:flex flex-col items-center justify-center gap-y-8 w-full h-full">
-                <Icon as="img" name="emptyOperations" size={96} />
+                <Icon as="img" name="emptyList" alt={t('balances.emptyStateLabel')} size={178} />
                 <BodyText align="center" className="text-text-tertiary">
                   {t('balances.emptyStateLabel')}
                   <br />
@@ -174,7 +174,6 @@ const Balances = () => {
         <SelectShardModal
           accounts={activeAccountsFromWallet}
           activeAccounts={activeAccounts}
-          connections={connections}
           isOpen={isSelectShardsOpen}
           onClose={handleShardSelect}
         />

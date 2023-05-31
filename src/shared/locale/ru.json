@@ -43,6 +43,7 @@
     "transferable": "Доступно"
   },
   "balances": {
+    "allShards": "All shards",
     "emptyStateDescription": "Попробуйте изменить поисковый запрос или сбросить фильтры",
     "emptyStateLabel": "Ничего не найдено",
     "hideZeroBalancesLabel": "Скрыть активы с нулевыми балансами",
@@ -80,7 +81,7 @@
   },
   "fallbackScreen": {
     "message": "Что-то пошло не так",
-    "omniLogoAlt": "Логотип Omni Enterprise",
+    "omniLogoAlt": "Логотип Nova Spektr",
     "reloadButton": "Перезагрузить"
   },
   "general": {
@@ -242,7 +243,7 @@
       "sliderAltText2": "Открыта вкладка 'Ключи'",
       "sliderAltText3": "Сгенерированный QR код в Parity Signer",
       "sliderLabel1": "Откройте <strong>Parity Signer</strong> на своем смартфоне",
-      "sliderLabel2": "Перейдите во вкладку “<strong>Keys</strong>”. Выберите <strong>аккаунты</strong>,<br />которые вы хотите добавить в Omni Enterprise",
+      "sliderLabel2": "Перейдите во вкладку “<strong>Keys</strong>”. Выберите <strong>аккаунты</strong>,<br />которые вы хотите добавить в Nova Spektr",
       "sliderLabel3": "Parity Signer сгенерирует специальный <strong>QR код</strong> для сканирования",
       "someOldAccountDescription": "Некоторые аккаунты были уже отсканированны ранее",
       "someOldAccountLabel": "Не все аккаунты добавлены",
@@ -271,7 +272,7 @@
       "accountAddressError": "Некорректный адрес, пожалуйста введите или скопируйте адрес заново",
       "accountAddressPlaceholder": "Введите или вставьте адрес аккаунта",
       "addWatchOnlyDescription1": "Отследить любой кошелек не указывая",
-      "addWatchOnlyDescription2": "приватный ключ в Omni Enterprise",
+      "addWatchOnlyDescription2": "приватный ключ в Nova Spektr",
       "addWatchOnlyLabel": "Добавить Watch-Only кошелёк",
       "addressAndNameRequiredError": "Type address and name",
       "addressRequiredError": "Type or paste address",
@@ -430,12 +431,26 @@
       "verifyWithKey": "Verify with key"
     },
     "overview": {
-      "getInTouchLabel": "На связи!",
+      "generalLabel": "Основные",
+      "githubDescription": "Исходный код на GitHub",
+      "githubLabel": "GitHub",
       "languageLabel": "Язык",
+      "matrixDescription": "Управление подключением к Matrix ",
       "matrixDetailsLabel": "Управление доступом в Omni Matrix Protocol",
       "matrixLabel": "Реквизиты доступа Matrix",
+      "mediumDescription": "Все новости на Medium",
+      "mediumLabel": "Medium",
       "networkDetailsLabel": "Управления подключением к сетям",
-      "networkLabel": "Сети"
+      "networkLabel": "Сети",
+      "smpLabel": "Spektr Matrix протокол",
+      "socialLabel": "Социальные сети",
+      "telegramDescription": "Наш официальный канал в Telegram",
+      "telegramLabel": "Telegram",
+      "twitterDescription": "Оставляйте комментарии нам в Twitter",
+      "twitterLabel": "Twitter",
+      "versionLabel": "Версия",
+      "youtubeDescription": "Смотрите нас на YouTube",
+      "youtubeLabel": "YouTube"
     },
     "title": "Настройки"
   },
@@ -733,9 +748,9 @@
     "addWatchOnlyAlt": "Иконка онбординга Watch-Only",
     "addWatchOnlyAreaLabel": "Добавить Watch-Only кошелёк",
     "addWatchOnlyButton": "Добавить Watch-Only кошелёк",
-    "addWatchOnlyLabel": "Track the activity of any wallet without injecting your private key to Omni Enterprise.",
+    "addWatchOnlyLabel": "Track the activity of any wallet without injecting your private key to Nova Spektr.",
     "ledgerImageAlt": "Иконка онбординга с Ledger",
-    "omniEnterpriseLabel": "Omni Enterprise",
+    "omniEnterpriseLabel": "Nova Spektr",
     "welcomeToLabel": "Добро пожаловать в"
   }
 }

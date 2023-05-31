@@ -1,7 +1,7 @@
 {
-  "name": "omni-enterprise",
+  "name": "nova-spektr",
   "description": "Polkadot Enterprise application",
-  "version": "0.4.4",
+  "version": "0.4.5",
   "main": "./release/build/main.js",
   "license": "MIT",
   "author": {
