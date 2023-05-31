@@ -33,6 +33,17 @@ export const getAssetById = (id: string, assets?: Asset[]): Asset | undefined =>
  * @param assets network assets
  * @return {Asset | undefined}
  */
-export const getRelaychainAsset = (assets: Asset[]): Asset | undefined => {
+export const getRelaychainAsset = (assets: Asset[] = []): Asset | undefined => {
+  if (assets.length === 0) return undefined;
+
   return assets.find((asset) => asset.staking === StakingType.RELAYCHAIN);
 };
+
+/**
+ * Get asset alternative icon
+ * @param url default icon url
+ * @param variant variant name
+ * @return {string}
+ */
+export const getIconVariant = (url: string, variant: 'alternative' | 'original' | 'white') =>
+  url.replace('/white/', `/${variant}/`);

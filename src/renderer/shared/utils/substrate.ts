@@ -42,7 +42,11 @@ export const createTxMetadata = async (
     tip: 0,
   };
 
-  const options: OptionsWithMeta = { metadataRpc: metadataRpc.toHex(), registry };
+  const options: OptionsWithMeta = {
+    metadataRpc: metadataRpc.toHex(),
+    registry,
+    signedExtensions: registry.signedExtensions,
+  };
 
   return { options, info, registry };
 };

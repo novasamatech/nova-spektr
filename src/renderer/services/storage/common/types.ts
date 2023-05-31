@@ -50,6 +50,7 @@ export interface IAccountStorage {
   getAccounts: <T extends Account>(where?: Partial<T>) => Promise<AccountDS[]>;
   addAccount: <T extends Account>(account: T) => Promise<ID>;
   updateAccount: <T extends Account>(account: T) => Promise<ID>;
+  updateAccounts: <T extends Account>(accounts: T[]) => Promise<ID>;
   deleteAccount: (accountId: Address) => Promise<void>;
 }
 
@@ -72,7 +73,7 @@ export interface IMultisigTransactionStorage {
   getMultisigTxs: <T extends MultisigTransaction>(where?: Partial<T>) => Promise<MultisigTransactionDS[]>;
   getAccountMultisigTxs: (accountIds: AccountId[]) => Promise<MultisigTransactionDS[]>;
   addMultisigTx: (tx: MultisigTransaction) => Promise<void>;
-  updateMultisigTx: (tx: MultisigTransactionDS) => Promise<ID[]>;
+  updateMultisigTx: (tx: MultisigTransactionDS) => Promise<number>;
   deleteMultisigTx: (
     accountId: AccountId,
     chainId: ChainId,

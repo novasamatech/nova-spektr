@@ -1,10 +1,11 @@
-import cn from 'classnames';
 import { Children, cloneElement, PropsWithChildren, ReactElement, ReactNode, useEffect } from 'react';
 
+import cnTw from '@renderer/shared/utils/twMerge';
 import { AlignmentClass, HeightClass } from '@renderer/components/ui/Table/common/constants';
 import { Checkbox, Icon } from '@renderer/components/ui';
 import { Alignment, AnyRecord, IndexKey, SortType } from './common/types';
 import { useTableContext } from './TableContext';
+import { FootnoteText } from '@renderer/components/ui-redesign';
 
 type HeaderProps = {
   hidden?: boolean;
@@ -14,16 +15,16 @@ export const TableHeader = ({ hidden, className, children }: PropsWithChildren<H
   const { allRowsSelected, selectedKeys, loading, selectAll } = useTableContext();
 
   return (
-    <thead className={cn(!hidden && 'bg-white border-b border-shade-5', className)}>
+    <thead className={cnTw(className)}>
       {selectedKeys ? (
-        <tr className={cn(hidden ? 'h-0' : 'h-10')}>
+        <tr className={cnTw(hidden ? 'h-0' : 'h-10')}>
           <th className="pl-4 pr-1 w-5 rounded-tl-2lg">
             <Checkbox disabled={loading} checked={allRowsSelected} onChange={selectAll} />
           </th>
           {children}
         </tr>
       ) : (
-        <tr className={cn(hidden ? 'h-0' : 'h-7.5')}>{children}</tr>
+        <tr className={cnTw(hidden ? 'h-0' : 'h-7.5')}>{children}</tr>
       )}
     </thead>
   );
@@ -55,11 +56,11 @@ export const TableColumn = ({
   if (!sortable) {
     return (
       <th
-        className={cn('px-1 first:pl-4 first:rounded-tl-2lg last:pr-4 last:rounded-tr-2lg', classname)}
+        className={cnTw('px-1 first:pl-4 first:rounded-tl-2lg last:pr-4 last:rounded-tr-2lg', classname)}
         style={{ width }}
       >
-        <div className={cn('text-neutral-variant', AlignmentClass[align])}>
-          <div className="text-2xs font-bold uppercase">{children}</div>
+        <div className={cnTw(AlignmentClass[align])}>
+          <FootnoteText className="text-text-tertiary">{children}</FootnoteText>
         </div>
       </th>
     );
@@ -70,13 +71,13 @@ export const TableColumn = ({
 
   return (
     <th
-      className={cn('px-1 first:pl-4 first:rounded-tl-2lg last:pr-4 last:rounded-tr-2lg', classname)}
+      className={cnTw('px-1 first:pl-4 first:rounded-tl-2lg last:pr-4 last:rounded-tr-2lg', classname)}
       style={{ width }}
     >
-      <div className={cn('text-neutral-variant', AlignmentClass[align])}>
+      <div className={cnTw('text-text-tertiary', AlignmentClass[align])}>
         <button className="flex items-center gap-x-2.5" type="button" onClick={() => updateSortingOrder(dataKey)}>
-          <div className="text-2xs font-bold uppercase">{children}</div>
-          <Icon className={cn(!columnIsSorted && 'opacity-50')} name={sortIcon} size={18} />
+          <FootnoteText>{children}</FootnoteText>
+          <Icon className={cnTw(!columnIsSorted && 'opacity-50')} name={sortIcon} size={18} />
         </button>
       </div>
     </th>
@@ -128,7 +129,7 @@ export const TableRow = ({
   }, []);
 
   return (
-    <tr className={cn('border-b border-shade-5 last:border-b-0', HeightClass[height], className)}>
+    <tr className={cnTw('border-b border-shade-5 last:border-b-0', HeightClass[height], className)}>
       {selectedKeys && (
         <td className="pr-1 pl-4 w-5">
           <Checkbox
@@ -163,8 +164,8 @@ export const TableCell = ({ className, children, colSpan, cellAlign, ...props }:
   const { align } = props as _CellProps;
 
   return (
-    <td className={cn('px-1 first:pl-4 last:pr-4', className)} colSpan={colSpan}>
-      <div className={cn(AlignmentClass[cellAlign || align])}>{children}</div>
+    <td className={cnTw('px-1 first:pl-4 last:pr-4', className)} colSpan={colSpan}>
+      <div className={cnTw(AlignmentClass[cellAlign || align])}>{children}</div>
     </td>
   );
 };

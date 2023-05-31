@@ -43,6 +43,12 @@ jest.mock('@renderer/context/I18nContext', () => ({
 }));
 
 jest.mock('../NetworkBalances/NetworkBalances', () => () => <div>NetworkBalances</div>);
+jest.mock('@renderer/screens/Transfer/Transfer', () => 'TransferButton');
+
+jest.mock(
+  '@renderer/components/common/AddressWithExplorers/AddressWithExplorers',
+  jest.fn().mockReturnValue(({ address }: { address: string }) => <span data-testid="validator">{address}</span>),
+);
 
 describe('screen/Balances/Balances', () => {
   test('should render component', () => {
@@ -66,7 +72,7 @@ describe('screen/Balances/Balances', () => {
 
     render(<Balances />, { wrapper: MemoryRouter });
 
-    const noResults = screen.getByText('balances.emptyStateLabel');
+    const noResults = screen.getByTestId('emptyOperations-img');
     expect(noResults).toBeInTheDocument();
   });
 });

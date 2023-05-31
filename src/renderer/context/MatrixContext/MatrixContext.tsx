@@ -408,7 +408,7 @@ export const MatrixProvider = ({ children }: PropsWithChildren) => {
     tx?: MultisigTransaction,
   ): Promise<void> => {
     console.log(
-      `Start processing final approval for tx ${payload.callHash} and timepoint ${payload.callTimepoint.height}-${payload.callTimepoint.index}`,
+      `Start processing final approval for tx ${payload.callHash} and timepoint ${payload.callTimepoint.height}-${payload.callTimepoint.index} and outcome ${payload.callOutcome}`,
     );
 
     const eventStatus = payload.error ? 'ERROR_SIGNED' : 'SIGNED';

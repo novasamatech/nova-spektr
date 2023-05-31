@@ -7,6 +7,7 @@ import NotificationRow from './components/NotificationRow';
 import { sortByDate } from './common/utils';
 import { FootnoteText } from '@renderer/components/ui-redesign';
 import { useNotification } from '@renderer/services/notification/notificationService';
+import { Header } from '@renderer/components/common';
 
 const Notifications = () => {
   const { t, dateLocale } = useI18n();
@@ -20,9 +21,7 @@ const Notifications = () => {
 
   return (
     <div className="h-full flex flex-col items-start relative bg-main-app-background">
-      <header className="w-full px-6 py-4.5 bg-top-nav-bar-background border-b border-container-border pl-6">
-        <h1 className="font-semibold text-2xl text-neutral"> {t('notifications.title')}</h1>
-      </header>
+      <Header title={t('notifications.title')} />
 
       <div className="overflow-y-auto flex-1 mx-auto w-full pl-6 pt-4">
         {notifications.length ? (

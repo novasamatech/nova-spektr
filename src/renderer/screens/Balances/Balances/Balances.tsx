@@ -1,34 +1,44 @@
 import { useEffect, useState } from 'react';
 
-import { Icon, Input, Switch } from '@renderer/components/ui';
+import { Icon } from '@renderer/components/ui';
 import { useI18n } from '@renderer/context/I18nContext';
 import { useNetworkContext } from '@renderer/context/NetworkContext';
 import { Asset } from '@renderer/domain/asset';
 import { Chain } from '@renderer/domain/chain';
 import { ConnectionType } from '@renderer/domain/connection';
-import { ChainId, AccountId, SigningType } from '@renderer/domain/shared-kernel';
+import { ChainId, SigningType } from '@renderer/domain/shared-kernel';
 import { useToggle } from '@renderer/shared/hooks';
 import { useChains } from '@renderer/services/network/chainsService';
 import { useSettingsStorage } from '@renderer/services/settings/settingsStorage';
 import NetworkBalances from '../NetworkBalances/NetworkBalances';
-import ReceiveModal, { ReceivePayload } from '../ReceiveModal/ReceiveModal';
+import ReceiveModal, { DataPayload } from '../ReceiveModal/ReceiveModal';
 import { useAccount } from '@renderer/services/account/accountService';
 import { isMultisig } from '@renderer/domain/account';
+import BalancesFilters from '@renderer/screens/Balances/Balances/BalancesFilters';
+import { BodyText, Button, SmallTitleText } from '@renderer/components/ui-redesign';
+import { Header } from '@renderer/components/common';
+import Transfer from '@renderer/screens/Transfer/Transfer';
+import { AccountDS } from '@renderer/services/storage';
+import SelectShardModal from '@renderer/screens/Balances/SelectShardModal/SelectShardModal';
 
 const Balances = () => {
   const { t } = useI18n();
 
   const [query, setQuery] = useState('');
-  const [accountIds, setAccountIds] = useState<AccountId[]>([]);
+  const [activeAccounts, setActiveAccounts] = useState<AccountDS[]>([]);
+  const accountIds = activeAccounts.map((a) => a.accountId).filter((a) => a);
   const [usedChains, setUsedChains] = useState<Record<ChainId, boolean>>({});
-  const [receiveData, setReceiveData] = useState<ReceivePayload>();
+  const [data, setData] = useState<DataPayload>();
 
   const [isReceiveOpen, toggleReceive] = useToggle();
+  const [isTransferOpen, toggleTransfer] = useToggle();
+  const [isSelectShardsOpen, toggleSelectShardsOpen] = useToggle();
 
   const { connections } = useNetworkContext();
   const { getActiveAccounts } = useAccount();
   const { sortChains } = useChains();
-  const activeAccounts = getActiveAccounts();
+  const activeAccountsFromWallet = getActiveAccounts();
+  const isMultishard = activeAccountsFromWallet.length > 1;
 
   const { setHideZeroBalance, getHideZeroBalance } = useSettingsStorage();
   const [hideZeroBalance, setHideZeroBalanceState] = useState(getHideZeroBalance());
@@ -39,23 +49,23 @@ const Balances = () => {
   };
 
   useEffect(() => {
-    if (activeAccounts.length === 0) {
-      setAccountIds([]);
+    updateChainsAndAccounts(activeAccountsFromWallet);
+  }, [activeAccountsFromWallet.length]);
+
+  const updateChainsAndAccounts = (accounts: AccountDS[]) => {
+    if (accounts.length === 0) {
+      setActiveAccounts([]);
 
       return;
     }
 
-    const activeAccountIds = activeAccounts.reduce<AccountId[]>((acc, account) => {
-      return account.accountId ? [...acc, account.accountId] : acc;
-    }, []);
-
-    const usedChains = activeAccounts.reduce<Record<ChainId, boolean>>((acc, account) => {
+    const usedChains = accounts.reduce<Record<ChainId, boolean>>((acc, account) => {
       return account.chainId ? { ...acc, [account.chainId]: true } : acc;
     }, {});
 
-    setAccountIds(activeAccountIds);
+    setActiveAccounts(accounts);
     setUsedChains(usedChains);
-  }, [activeAccounts.length]);
+  };
 
   const hasRootAccount = activeAccounts.some((account) => !account.rootId);
 
@@ -81,59 +91,94 @@ const Balances = () => {
   };
 
   const onReceive = (chain: Chain) => (asset: Asset) => {
-    setReceiveData({ chain, asset });
+    setData({ chain, asset });
     toggleReceive();
+  };
+
+  const onTransfer = (chain: Chain) => (asset: Asset) => {
+    setData({ chain, asset });
+    toggleTransfer();
+  };
+
+  const handleShardSelect = (selectedAccounts?: AccountDS[]) => {
+    toggleSelectShardsOpen();
+    if (Array.isArray(selectedAccounts)) {
+      updateChainsAndAccounts(selectedAccounts);
+    }
   };
 
   return (
     <>
-      <div className="h-full flex flex-col gap-y-9">
-        <h1 className="font-semibold text-2xl text-neutral mt-5 px-5">{t('balances.title')}</h1>
+      <div className="h-full flex flex-col items-start relative bg-main-app-background">
+        <Header title={t('balances.title')}>
+          <BalancesFilters
+            searchQuery={query}
+            hideZeroBalances={hideZeroBalance}
+            onSearchChange={setQuery}
+            onZeroBalancesChange={updateHideZeroBalance}
+          />
+        </Header>
 
-        <div className="overflow-y-scroll">
-          <section className="flex flex-col gap-y-5 w-[900px] p-5 mb-28 mx-auto bg-shade-2 rounded-2lg">
-            <div className="flex justify-between items-center mb-5">
-              <Input
-                wrapperClass="!bg-shade-5 w-[300px]"
-                prefixElement={<Icon name="search" className="w-5 h-5" />}
-                value={query}
-                placeholder={t('balances.searchPlaceholder')}
-                onChange={setQuery}
-              />
-              <div className="text-sm text-neutral font-semibold flex gap-2.5">
-                <Switch checked={hideZeroBalance} onChange={updateHideZeroBalance}>
-                  {t('balances.hideZeroBalancesLabel')}
-                </Switch>
+        <section className="overflow-y-scroll mt-4 flex flex-col gap-y-4 w-[800px] mx-auto h-full">
+          {isMultishard && (
+            <SmallTitleText as="h3">
+              {t('balances.shardsTitle')}{' '}
+              <Button
+                variant="text"
+                suffixElement={<Icon name="edit" size={16} className="text-icon-accent" />}
+                onClick={toggleSelectShardsOpen}
+              >
+                {activeAccounts.length} {t('balances.shards')}
+              </Button>
+            </SmallTitleText>
+          )}
+          {accountIds.length > 0 && (
+            <ul className="flex-1 flex flex-col gap-y-4">
+              {sortedChains.map((chain) => (
+                <NetworkBalances
+                  key={chain.chainId}
+                  hideZeroBalance={hideZeroBalance}
+                  searchSymbolOnly={searchSymbolOnly}
+                  query={query.toLowerCase()}
+                  chain={chain}
+                  accountIds={accountIds}
+                  canMakeActions={checkCanMakeActions()}
+                  onReceiveClick={onReceive(chain)}
+                  onTransferClick={onTransfer(chain)}
+                />
+              ))}
+
+              <div className="hidden only:flex flex-col items-center justify-center gap-y-8 w-full h-full">
+                <Icon as="img" name="emptyOperations" size={96} />
+                <BodyText align="center" className="text-text-tertiary">
+                  {t('balances.emptyStateLabel')}
+                  <br />
+                  {t('balances.emptyStateDescription')}
+                </BodyText>
               </div>
-            </div>
-
-            {accountIds.length > 0 && (
-              <ul className="flex-1">
-                {sortedChains.map((chain) => (
-                  <NetworkBalances
-                    key={chain.chainId}
-                    hideZeroBalance={hideZeroBalance}
-                    searchSymbolOnly={searchSymbolOnly}
-                    query={query.toLowerCase()}
-                    chain={chain}
-                    accountIds={accountIds}
-                    canMakeActions={checkCanMakeActions()}
-                    onReceiveClick={onReceive(chain)}
-                  />
-                ))}
-
-                <div className="hidden only:flex w-full h-full flex-col items-center justify-center">
-                  <Icon name="noResults" size={380} />
-                  <p className="text-neutral text-3xl font-bold">{t('balances.emptyStateLabel')}</p>
-                  <p className="text-neutral-variant text-base font-normal">{t('balances.emptyStateDescription')}</p>
-                </div>
-              </ul>
-            )}
-          </section>
-        </div>
+            </ul>
+          )}
+        </section>
       </div>
 
-      {receiveData && <ReceiveModal data={receiveData} isOpen={isReceiveOpen} onClose={toggleReceive} />}
+      {data && <ReceiveModal data={data} isOpen={isReceiveOpen} onClose={toggleReceive} />}
+      {data && (
+        <Transfer
+          assetId={data?.asset.assetId}
+          chainId={data?.chain.chainId}
+          isOpen={isTransferOpen}
+          onClose={toggleTransfer}
+        />
+      )}
+      {isMultishard && (
+        <SelectShardModal
+          accounts={activeAccountsFromWallet}
+          activeAccounts={activeAccounts}
+          connections={connections}
+          isOpen={isSelectShardsOpen}
+          onClose={handleShardSelect}
+        />
+      )}
     </>
   );
 };

@@ -2,50 +2,56 @@
   "addressBook": {
     "addContact": {
       "accountIdIncorrectError": "Incorrect account address",
-      "accountIdLabel": "account Address",
+      "accountIdLabel": "Account address",
       "accountIdPlaceholder": "Enter or paste an address",
       "accountIdRequiredError": "Account address is required",
-      "addContactButton": "Add contact",
+      "addContactButton": "Add new contact",
       "matrixIdError": "Incorrect matrix id",
-      "matrixIdLabel": "matrix id (optional)",
-      "matrixIdPlaceholder": "Enter or paste Matrix ID, ie: @bob:matrix.org",
+      "matrixIdHint": "In the format: @user_name:matrix.org",
+      "matrixIdLabel": "Matrix ID",
+      "matrixIdPlaceholder": "Enter text",
       "nameLabel": "Name",
-      "namePlaceholder": "Enter a name",
+      "namePlaceholder": "Enter text",
       "nameRequiredError": "Name is required",
       "title": "Add contact",
       "typeAddressAndNameButton": "Type a name and address",
       "typeAddressButton": "Type the address",
       "typeNameButton": "Type a name"
     },
-    "addContactButton": "Add contact",
+    "addContactButton": "Add new contact",
     "contactList": {
       "emptySearchDescription": "Try to search for another name",
       "emptySearchLabel": "No contact with entered name were found",
       "matrixIdColumnTitle": "Matrix ID",
       "nameColumnTitle": "Name",
       "noContactsButton": "Add your first contact",
-      "noContactsLabel": "Your address book is empty"
+      "noContactsLabel": "The contact list is empty. You can add a new contact."
     },
     "editContact": {
-      "editWarning": "please note: by changing the address, multisig account will not be changed.",
+      "editWarning": "Please note: by changing the address, multisig account will not be changed.",
       "saveContactButton": "Save contact",
       "title": "Edit contact"
     },
-    "searchPlaceholder": "Enter name or address...",
+    "searchPlaceholder": "Search",
     "title": "Address Book"
   },
   "assetBalance": {
     "locked": "Locked",
     "number": "{value, number}",
+    "numberWithSuffix": "{value, number}{suffix}",
     "reserved": "Reserved",
     "transferable": "Transferable"
   },
   "balances": {
-    "emptyStateDescription": "Try to reset filters or search for another key",
-    "emptyStateLabel": "Nothing to show",
+    "emptyStateDescription": "Update the search or cancel filtering.",
+    "emptyStateLabel": "Nothing was found.",
     "hideZeroBalancesLabel": "Hide zero balances",
-    "searchPlaceholder": "Search by token or network",
-    "title": "Balances",
+    "searchPlaceholder": "Search",
+    "shards": "shards",
+    "shardsModalButton": "Continue",
+    "shardsModalTitle": "Your shards",
+    "shardsTitle": "Your assets on:",
+    "title": "Assets",
     "verificationFailedLabel": "verification failed"
   },
   "basemodal": {
@@ -74,7 +80,7 @@
   },
   "fallbackScreen": {
     "message": "Something went wrong",
-    "omniLogoAlt": "Omni Enterprise logo",
+    "omniLogoAlt": "Nova Spektr logo",
     "reloadButton": "Reload"
   },
   "general": {
@@ -88,6 +94,7 @@
     },
     "input": {
       "amountLabel": "Amount",
+      "availableLabel": "Available:",
       "signerLabel": "Select signer",
       "transferableLabel": "Transferable"
     },
@@ -97,6 +104,7 @@
   },
   "log": {
     "cancelledMessage": "rejected this operation",
+    "error": "Error",
     "errorCancelledMessage": "tried to reject this operation",
     "errorSignedMessage": "tried to sign this operation",
     "initiatedMessage": "created this operation",
@@ -112,11 +120,11 @@
   },
   "navigation": {
     "addressBookLabel": "Address Book",
-    "balancesLabel": "Balances",
+    "balancesLabel": "Assets",
     "cameraDEVLabel": "Camera DEV",
     "chatDEVLabel": "Chat DEV",
     "historyLabel": "History",
-    "mstOperationLabel": "Multisig Operations",
+    "mstOperationLabel": "Operations",
     "multipleWalletsLabel": "Multiple wallets",
     "notificationsLabel": "Notifications",
     "settingsLabel": "Settings",
@@ -234,7 +242,7 @@
       "sliderAltText2": "'Keys' tab is opened with appropriate account",
       "sliderAltText3": "Parity Signer built-in QR code",
       "sliderLabel1": "Open the <strong>Parity Signer</strong> application on your smartphone",
-      "sliderLabel2": "Go to “<strong>Keys</strong>” tab. Select <strong>accounts</strong>,<br />you would like to add to Omni Enterprise",
+      "sliderLabel2": "Go to “<strong>Keys</strong>” tab. Select <strong>accounts</strong>,<br />you would like to add to Nova Spektr",
       "sliderLabel3": "Parity Signer will provide you a <strong>QR code</strong> for scanning",
       "someOldAccountDescription": "Some accounts were scanned and added recently",
       "someOldAccountLabel": "Not all accounts added",
@@ -263,7 +271,7 @@
       "accountAddressError": "The entered address is not a valid one, please type or paste it again",
       "accountAddressPlaceholder": "Enter or paste your account address",
       "addWatchOnlyDescription1": "Track the activity of any wallet without injecting",
-      "addWatchOnlyDescription2": "your private key to Omni Enterprise",
+      "addWatchOnlyDescription2": "your private key to Nova Spektr",
       "addWatchOnlyLabel": "Add Watch-Only Wallet",
       "addressAndNameRequiredError": "Type address and name",
       "addressRequiredError": "Type or paste address",
@@ -281,6 +289,7 @@
     "cancelTitle": "Cancel ",
     "continueButton": "Continue",
     "details": {
+      "amount": "Amount",
       "callData": "Call Data",
       "callHash": "Call Hash",
       "controller": "Controller",
@@ -288,11 +297,13 @@
       "depositor": "Depositor",
       "description": "Description",
       "multisigWallet": "Multisig wallet",
-      "payee": "Payee",
+      "payee": "Rewards destination",
       "recipient": "Recipient",
       "rejectReason": "Reject reason",
+      "sender": "Sender",
       "timePoint": "Time Point",
-      "validators": "Selected validators"
+      "validators": "Selected validators",
+      "wallet": "Wallet"
     },
     "detailsTitle": "Details",
     "explorerLink": "View in explorer",
@@ -364,15 +375,12 @@
     "videoError": "Your browser doesn't support video"
   },
   "receive": {
-    "chainLabel1": "token to this address on the",
-    "chainLabel2": "{name} (Parachain)",
-    "chainLabel3": "network",
+    "chainLabel": "token to this address on the {name} (Parachain) network!",
     "copyAddressButton": "Copy address",
     "explorerLinkLabel": "Link to {name}",
-    "on": "on",
     "selectWalletPlaceholder": "Select a wallet...",
     "sendOnlyLabel": "Send only",
-    "title": "Receive"
+    "title": "Receive {asset} on"
   },
   "settings": {
     "matrix": {
@@ -450,7 +458,6 @@
       "aboutStakingTitle": "About { asset } staking",
       "activeNominatorsLabel": "Active nominators",
       "averageApyLabel": "Average APY",
-      "earningsTitle": "Estimated <strong>{ asset }</strong> earnings with restake",
       "maximumApyLabel": "Maximum APY",
       "minimumStakeLabel": "Minimum stake",
       "monthlyEarningLabel": "Monthly",
@@ -462,16 +469,22 @@
       "yearlyEarningLabel": "Yearly"
     },
     "actions": {
-      "destinationLabel": "Rewards destination",
-      "redeemLabel": "Redeem",
+      "destinationLabel": "Change rewards destination",
+      "filterButton": "Filter",
+      "manageStakePlaceholder": "Manage stake",
+      "noOverlapPlaceholder": "No intersecting operation",
+      "redeemLabel": "Withdraw unstaked",
       "returnToStakeLabel": "Return to stake",
+      "selectAccPlaceholder": "Select accounts",
       "setValidatorsLabel": "Set validators",
       "stakeMoreLabel": "Stake more",
       "startStakingLabel": "Start staking",
       "unstakeLabel": "Unstake"
     },
     "badges": {
-      "unstakeDescription": "Your tokens are being unstaked at the moment",
+      "redeemDescription": "Your tokens are ready to be withdrawn",
+      "redeemTitle": "Withdraw",
+      "unstakeDescription": "Your tokens are being unstaked<br />at the moment",
       "unstakeTitle": "Unstaking"
     },
     "bond": {
@@ -542,11 +555,10 @@
       "electedTitle": "Elected",
       "nominated": "Nominated",
       "notAssigned": "Not assigned",
-      "notElectedDescription": "Validators without enough stake to be elected",
       "notElectedTitle": "Not Elected",
       "rewards": "Rewards (APY)",
       "validators": "Validators",
-      "yourValidatorsTitle": "Your validators"
+      "yourValidatorsTitle": "Selected validators"
     },
     "notEnoughBalanceError": "Not enough funds to complete operation",
     "notEnoughBalanceForDepositError": "Insufficient balance to pay deposit",
@@ -556,19 +568,18 @@
     "overview": {
       "aboutStakingLabel": "About { asset } staking",
       "accountTableHeader": "Accounts",
+      "actionsTitle": "Accounts",
       "emptyFilterDescription": "Try another filter parameters",
       "emptyFilterLabel": "No results",
-      "filterButton": "Filters",
-      "networkDisabledDescription": "Please, to go the network settings and check the connection",
+      "networkDisabledDescription": "Please, check the connection in Network Settings",
       "networkDisabledLabel": "Network is inactive",
+      "networkPlaceholder": "Select network",
       "networkSettingsLink": "Network settings",
-      "noAccountsDescription": "Please, select <strong>{ chainName }</strong> accounts to continue staking",
-      "noAccountsLabel": "No accounts are selected",
+      "noAccountsLabel": "Your haven’t got any account to start staking",
       "noActiveWalletsDescription": "Please select a wallet for staking",
       "noActiveWalletsLabel": "No wallet selected",
       "noResultsDescription": "Please try another filter parameters",
       "noResultsLabel": "No staking found",
-      "noValidatorsDescription": "This account has not nominated any validators yet",
       "noValidatorsLabel": "No validators nominated",
       "rewardsTableHeader": "Total rewards",
       "searchPlaceholder": "Search by account name",
@@ -630,7 +641,7 @@
       "slashedPopoverTitle": "Slashed",
       "subtitle": "Validators",
       "totalStakeTableHeader": "Total stake",
-      "validatorsTableHeader": "Validators"
+      "validatorsTableHeader": "Accounts"
     },
     "warning": {
       "controller": "This operation works with <strong>Controller</strong> accounts only.<br />Would you like to deselect <strong>Stash</strong> accounts to continue?",
@@ -646,6 +657,17 @@
     "hours_one": "{ count } hour",
     "hours_other": "{ count } hours",
     "minutesSeconds": "{ minutes }:{ seconds }"
+  },
+  "transactionMessage": {
+    "bond": "Stake { amount } { asset }",
+    "destination": "Change reward destination to { address }",
+    "nominate": "Change validators",
+    "redeem": "Withdraw { amount } { asset }",
+    "restake": "Return { amount } { asset } to stake",
+    "restakeDestination": "restake",
+    "stakeMore": "Increase stake { amount } { asset }",
+    "transfer": "Transfer { amount } { asset } to { address }",
+    "unstake": "Unstake { amount } { asset }"
   },
   "transfer": {
     "amountPlaceholder": "Amount",
@@ -672,9 +694,11 @@
     "requiredAmountError": "Please, enter amount",
     "requiredDescriptionError": "Description is required",
     "requiredRecipientError": "Please, enter recipient address",
+    "senderLabel": "Sender",
+    "signatoryLabel": "Signatory",
     "startSigningButton": "Sign with Parity Signer",
     "successMessage": "transaction submitted!",
-    "title": "Transfer"
+    "title": "Transfer { asset } on"
   },
   "transferDetails": {
     "fromNetwork": "From network",
@@ -686,13 +710,16 @@
     "wallet": "Wallet"
   },
   "wallets": {
-    "addByParitySignerButton": "Add wallet by Parity Signer",
-    "addMultisigWalletButton": "Create Multisig wallet",
-    "addWatchOnlyButton": "Add Watch-Only wallet",
+    "addButtonTitle": "Add",
+    "addMultisig": "Multisig",
+    "addPolkadotVault": "Polkadot Vault",
+    "addWatchOnly": "Watch-only",
     "multishardLabel": "Multishard",
     "multisigLabel": "Multisig",
     "paritySignerLabel": "Parity Signer",
-    "searchPlaceholder": "Search for a wallet",
+    "searchPlaceholder": "Search",
+    "shards": "Shards",
+    "title": "Wallets",
     "watchOnlyLabel": "Watch-only"
   },
   "welcome": {
@@ -706,9 +733,9 @@
     "addWatchOnlyAlt": "Icon of Watch-Only option",
     "addWatchOnlyAreaLabel": "Add Watch-Only wallet",
     "addWatchOnlyButton": "Add Watch-Only wallet",
-    "addWatchOnlyLabel": "Track the activity of any wallet without injecting your private key to Omni Enterprise.",
+    "addWatchOnlyLabel": "Track the activity of any wallet without injecting your private key to Nova Spektr.",
     "ledgerImageAlt": "Icon of Ledger option",
-    "omniEnterpriseLabel": "Omni Enterprise",
+    "omniEnterpriseLabel": "Nova Spektr",
     "welcomeToLabel": "Welcome to"
   }
 }

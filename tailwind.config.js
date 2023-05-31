@@ -1,6 +1,7 @@
 const defaultTheme = require('tailwindcss/defaultTheme');
 
-const colors = require('./colors');
+const colors = require('./tw-config-consts/colors');
+const fontSizes = require('./tw-config-consts/font-sizes');
 
 module.exports = {
   mode: 'jit',
@@ -18,7 +19,6 @@ module.exports = {
         element: '0 0 5px rgba(0, 0, 0, 0.15)',
         component: '0 0 50px rgba(0, 0, 0, 0.1)',
         'icon-button': '0px 2px 2px rgba(0, 0, 0, 0.04), inset 0px -0.5px 0px rgba(8, 9, 14, 0.16)',
-        popover: '0px 0px 12px rgba(0, 0, 0, 0.16), 0px 0px 6px rgba(0, 0, 0, 0.08), 0px 2px 4px rgba(0, 0, 0, 0.04)',
         'active-input': '0px 0px 0px 2px rgba(36, 99, 235, 0.16)',
         modal: '0px 2px 6px rgba(24, 24, 28, 0.06), 0px 32px 41px -23px rgba(24, 24, 28, 0.07)',
         'card-shadow': 'var(--card-shadow)',
@@ -80,21 +80,7 @@ module.exports = {
         12.5: '3.125rem',
         15: '3.75rem',
       },
-      fontSize: {
-        '3xs': ['0.5625rem', '0.6875rem'], // rename to something according to our typography system
-        '2xs': ['0.625rem', '0.75rem'],
-        '4.5xl': ['2.75rem', '3rem'],
-        'large-title': ['1.625rem', '2.25rem'],
-        title: ['1.375rem', '1.875rem'],
-        'small-title': ['0.9375rem', '1.375rem'],
-        'button-small': ['0.75rem', '1.125rem'],
-        'button-large': ['0.875rem', '1.125rem'],
-        caption: ['0.625rem', '0.75rem'],
-        headline: ['0.9375rem', '1.375rem'],
-        body: ['0.8125rem', '1.125rem'],
-        footnote: ['0.75rem', '1.125rem'],
-        'modal-title': ['1.0625rem', '1.375rem'], // 17, 22
-      },
+      fontSize: fontSizes,
       borderRadius: {
         '2lg': '10px',
       },

@@ -1,7 +1,7 @@
 import { Listbox, Transition } from '@headlessui/react';
-import cn from 'classnames';
 import { Fragment, ReactNode } from 'react';
 
+import cnTw from '@renderer/shared/utils/twMerge';
 import { Icon } from '@renderer/components/ui';
 import { ViewClass, DropdownClass } from '../common/constants';
 import { DropdownOption, DropdownResult, Variant } from '../common/types';
@@ -38,9 +38,9 @@ const Dropdown = ({
   return (
     <Listbox by="id" value={activeOption || {}} disabled={disabled} onChange={onChange}>
       {({ open, disabled }) => (
-        <div className={cn('relative', className)}>
+        <div className={cnTw('relative', className)}>
           <Listbox.Button
-            className={cn(
+            className={cnTw(
               'group w-full rounded-2lg border px-2.5 ',
               !disabled && 'hover:border-primary focus:border-primary transition',
               open && 'border-primary',
@@ -48,7 +48,7 @@ const Dropdown = ({
             )}
           >
             {label && (
-              <p className={cn('pt-2.5 pb-1 text-left text-neutral-variant font-bold uppercase', style.label.text)}>
+              <p className={cnTw('pt-2.5 pb-1 text-left text-neutral-variant font-bold uppercase', style.label.text)}>
                 {label}
               </p>
             )}
@@ -57,7 +57,7 @@ const Dropdown = ({
               {activeOption &&
                 (typeof activeOption.element === 'string' ? (
                   <p
-                    className={cn(
+                    className={cnTw(
                       !disabled && 'group-hover:text-primary group-focus:text-primary transition',
                       open ? 'text-primary' : 'text-neutral',
                       style.text,
@@ -71,7 +71,7 @@ const Dropdown = ({
 
               {!activeOption && (
                 <p
-                  className={cn(
+                  className={cnTw(
                     !disabled && 'group-hover:text-primary group-focus:text-primary transition',
                     open ? 'text-primary' : 'text-shade-30',
                     style.placeholder,
@@ -81,7 +81,7 @@ const Dropdown = ({
                 </p>
               )}
               <span
-                className={cn(
+                className={cnTw(
                   'ml-auto pointer-events-none',
                   !disabled && 'group-hover:text-primary group-focus:text-primary transition',
                   open ? 'text-primary' : 'text-neutral-variant',
@@ -94,9 +94,9 @@ const Dropdown = ({
           </Listbox.Button>
           <Transition as={Fragment} leave="transition" leaveFrom="opacity-100" leaveTo="opacity-0">
             <Listbox.Options
-              className={cn(
+              className={cnTw(
                 'absolute z-20 py-2.5 px-2 max-h-60 w-full overflow-auto shadow-element',
-                'border border-primary rounded-2lg bg-white shadow-surface',
+                'border border-primary rounded bg-white shadow-surface',
                 variant !== 'auto' && ViewClass[variant],
               )}
             >
@@ -105,16 +105,16 @@ const Dropdown = ({
                   key={id}
                   value={{ id, value }}
                   className={({ active, selected }) =>
-                    cn(
-                      'flex items-center cursor-pointer select-none px-2.5 rounded-2lg mb-[2px] last:mb-0',
+                    cnTw(
+                      'flex items-center cursor-pointer select-none px-2.5 rounded mb-0.5 last:mb-0',
                       (active || selected) && 'bg-shade-5',
                       style.option,
                     )
                   }
                 >
-                  <div className={cn('flex items-center gap-x-2.5 truncate text-sm', style.option)}>
+                  <div className={cnTw('flex items-center gap-x-2.5 truncate text-sm', style.option)}>
                     {typeof element === 'string' ? (
-                      <p className={cn('text-neutral', style.text)}>{element}</p>
+                      <p className={cnTw('text-neutral', style.text)}>{element}</p>
                     ) : (
                       element
                     )}

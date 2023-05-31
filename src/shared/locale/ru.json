@@ -7,6 +7,7 @@
       "accountIdRequiredError": "Account address is required",
       "addContactButton": "Add contact",
       "matrixIdError": "Incrorrect matrix id",
+      "matrixIdHint": "В формате: @user_name:matrix.org",
       "matrixIdLabel": "matrix id (optional)",
       "matrixIdPlaceholder": "Enter or paste Matrix ID, ie: @bob:matrix.org",
       "nameLabel": "Name",
@@ -37,14 +38,19 @@
   "assetBalance": {
     "locked": "Заблокировано",
     "number": "{value, number}",
+    "numberWithSuffix": "{value, number}{suffix}",
     "reserved": "Зарезервировано",
     "transferable": "Доступно"
   },
   "balances": {
-    "emptyStateDescription": "Попробуйте сбросить фильтры",
+    "emptyStateDescription": "Попробуйте изменить поисковый запрос или сбросить фильтры",
     "emptyStateLabel": "Ничего не найдено",
     "hideZeroBalancesLabel": "Скрыть активы с нулевыми балансами",
-    "searchPlaceholder": "Поиск по названию сети или токена",
+    "searchPlaceholder": "Поиск",
+    "shards": "shards",
+    "shardsModalButton": "Продолжить",
+    "shardsModalTitle": "Your shards",
+    "shardsTitle": "Ваши активы на:",
     "title": "Балансы",
     "verificationFailedLabel": "данные недостоверны"
   },
@@ -74,7 +80,7 @@
   },
   "fallbackScreen": {
     "message": "Что-то пошло не так",
-    "omniLogoAlt": "Логотип Omni Enterprise",
+    "omniLogoAlt": "Логотип Nova Spektr",
     "reloadButton": "Перезагрузить"
   },
   "general": {
@@ -88,6 +94,7 @@
     },
     "input": {
       "amountLabel": "Сумма",
+      "availableLabel": "Доступно",
       "signerLabel": "Выберите подписанта",
       "transferableLabel": "Доступно"
     },
@@ -97,6 +104,7 @@
   },
   "log": {
     "cancelledMessage": "отменил эту операцию",
+    "error": "Ошибка",
     "errorCancelledMessage": "попытался отменить эту операцию",
     "errorSignedMessage": "попытался подписать эту операцию",
     "initiatedMessage": "создал эту операцию",
@@ -112,11 +120,11 @@
   },
   "navigation": {
     "addressBookLabel": "Контакты",
-    "balancesLabel": "Балансы",
+    "balancesLabel": "Ассеты",
     "cameraDEVLabel": "Камера DEV",
     "chatDEVLabel": "Чат DEV",
     "historyLabel": "История",
-    "mstOperationLabel": "Мульти-Операции",
+    "mstOperationLabel": "Операции",
     "multipleWalletsLabel": "Multiple wallets",
     "notificationsLabel": "Уведомления",
     "settingsLabel": "Настройки",
@@ -234,7 +242,7 @@
       "sliderAltText2": "Открыта вкладка 'Ключи'",
       "sliderAltText3": "Сгенерированный QR код в Parity Signer",
       "sliderLabel1": "Откройте <strong>Parity Signer</strong> на своем смартфоне",
-      "sliderLabel2": "Перейдите во вкладку “<strong>Keys</strong>”. Выберите <strong>аккаунты</strong>,<br />которые вы хотите добавить в Omni Enterprise",
+      "sliderLabel2": "Перейдите во вкладку “<strong>Keys</strong>”. Выберите <strong>аккаунты</strong>,<br />которые вы хотите добавить в Nova Spektr",
       "sliderLabel3": "Parity Signer сгенерирует специальный <strong>QR код</strong> для сканирования",
       "someOldAccountDescription": "Некоторые аккаунты были уже отсканированны ранее",
       "someOldAccountLabel": "Не все аккаунты добавлены",
@@ -263,7 +271,7 @@
       "accountAddressError": "Некорректный адрес, пожалуйста введите или скопируйте адрес заново",
       "accountAddressPlaceholder": "Введите или вставьте адрес аккаунта",
       "addWatchOnlyDescription1": "Отследить любой кошелек не указывая",
-      "addWatchOnlyDescription2": "приватный ключ в Omni Enterprise",
+      "addWatchOnlyDescription2": "приватный ключ в Nova Spektr",
       "addWatchOnlyLabel": "Добавить Watch-Only кошелёк",
       "addressAndNameRequiredError": "Type address and name",
       "addressRequiredError": "Type or paste address",
@@ -281,6 +289,7 @@
     "cancelTitle": "Отменить ",
     "continueButton": "Продолжить",
     "details": {
+      "amount": "количество",
       "callData": "Call Data",
       "callHash": "Call Hash",
       "controller": "Контроллер",
@@ -291,8 +300,10 @@
       "payee": "Payee",
       "recipient": "Получатель",
       "rejectReason": "Причина отмены",
+      "sender": "Отправитель",
       "timePoint": "Time Point",
-      "validators": "Валидаторы"
+      "validators": "Валидаторы",
+      "wallet": "Кошелёк"
     },
     "detailsTitle": "Детали",
     "explorerLink": "Просмотреть в обозревателе",
@@ -364,15 +375,12 @@
     "videoError": "Браузер не поддерживает видео"
   },
   "receive": {
-    "chainLabel1": "токен на этот адрес в",
-    "chainLabel2": "{name} (Парачейн)",
-    "chainLabel3": "сети",
+    "chainLabel": "токен на этот адрес в {name} (Парачейн) сети!",
     "copyAddressButton": "Копировать адрес",
     "explorerLinkLabel": "Ссылка на {name}",
-    "on": "в",
     "selectWalletPlaceholder": "Выберите кошелек...",
     "sendOnlyLabel": "Отправляйте только",
-    "title": "Получить"
+    "title": "Получить {asset} на"
   },
   "settings": {
     "matrix": {
@@ -450,7 +458,6 @@
       "aboutStakingTitle": "About { asset } staking",
       "activeNominatorsLabel": "Active nominators",
       "averageApyLabel": "Average APY",
-      "earningsTitle": "Estimated <strong>{ asset }</strong> earnings with restake",
       "maximumApyLabel": "Maximum APY",
       "minimumStakeLabel": "Minimum stake",
       "monthlyEarningLabel": "Monthly",
@@ -462,16 +469,22 @@
       "yearlyEarningLabel": "Yearly"
     },
     "actions": {
-      "destinationLabel": "Адрес наград",
-      "redeemLabel": "Награда",
+      "destinationLabel": "Сменить адрес наград",
+      "filterButton": "Фильтр",
+      "manageStakePlaceholder": "Управлять стейком",
+      "noOverlapPlaceholder": "Нет общих операций",
+      "redeemLabel": "Забрать анстейк",
       "returnToStakeLabel": "Вернуть в стейк",
+      "selectAccPlaceholder": "Выберите аккаунт",
       "setValidatorsLabel": "Назнанить валидаторов",
       "stakeMoreLabel": "Увеличить стейк",
       "startStakingLabel": "Начать стейкинг",
       "unstakeLabel": "Отменить стейк"
     },
     "badges": {
-      "unstakeDescription": "Ваши токены сейчас выводятся из стейка",
+      "redeemDescription": "Вы можете забрать ваши unstaked токены",
+      "redeemTitle": "Забрать",
+      "unstakeDescription": "Ваши токены сейчас<br />выводятся из стейка",
       "unstakeTitle": "Вывод из стейка"
     },
     "bond": {
@@ -542,7 +555,6 @@
       "electedTitle": "Выбранные",
       "nominated": "Вклад",
       "notAssigned": "Нет вклада",
-      "notElectedDescription": "Валидаторы с недостаточным стейком пока не избраны",
       "notElectedTitle": "Не избранные",
       "rewards": "Награды (APY)",
       "validators": "Валидаторы",
@@ -556,19 +568,18 @@
     "overview": {
       "aboutStakingLabel": "О стейкинге { asset } токенов",
       "accountTableHeader": "Аккаунты",
+      "actionsTitle": "Аккаунты",
       "emptyFilterDescription": "Попробуйте другие параметры фильтра",
       "emptyFilterLabel": "Результаты не найдены",
-      "filterButton": "Фильтры",
-      "networkDisabledDescription": "Пожалуйста, пройдите в настройки сети и проверьте соединение",
+      "networkDisabledDescription": "Пожалуйста, проверьте соеднинение в настройках сети",
       "networkDisabledLabel": "Сеть неактивна",
+      "networkPlaceholder": "Выберите сеть",
       "networkSettingsLink": "Настройки сети",
-      "noAccountsDescription": "Для продолжения стейкинга выберите аккаунты в сети <strong>{ chainName }</strong>",
       "noAccountsLabel": "Не выбран ни один аккаунт",
       "noActiveWalletsDescription": "Пожалуйста, выберите кошелек для просмотра стейкинга",
       "noActiveWalletsLabel": "Нет выбранных кошельков",
       "noResultsDescription": "Пожалуйста, попробуйте другие параметры фильтрации",
       "noResultsLabel": "Сттейкинги не найдены",
-      "noValidatorsDescription": "Аккаунт еще не номинировал валидаторов",
       "noValidatorsLabel": "Валидаторы не наминированы",
       "rewardsTableHeader": "Общая награда",
       "searchPlaceholder": "Искать по имени кошелька",
@@ -630,7 +641,7 @@
       "slashedPopoverTitle": "Урезан",
       "subtitle": "Валидаторы",
       "totalStakeTableHeader": "Общий стейк",
-      "validatorsTableHeader": "Валидаторы"
+      "validatorsTableHeader": "Аккаунты"
     },
     "warning": {
       "controller": "Данная операция работает только на <strong>Controller</strong> аккаунтах.<br />Отключить все <strong>Stash</strong> аккаунты чтобы продолжить?",
@@ -646,6 +657,17 @@
     "hours_one": "{ count } час",
     "hours_other": "{ count } часов",
     "minutesSeconds": "{ minutes }:{ seconds }"
+  },
+  "transactionMessage": {
+    "bond": "Застейкать { amount } { asset }",
+    "destination": "Сменить получателя наград на { address }",
+    "nominate": "Смена валиадаторов",
+    "redeem": "Вывести { amount } { asset }",
+    "restake": "Вернуть { amount } { asset } в стейкинг",
+    "restakeDestination": "вернуть в стейк",
+    "stakeMore": "Увеличить стейкинг на { amount } { asset }",
+    "transfer": "Перевод { amount } { asset } на { address }",
+    "unstake": "Вывод из стейкинга { amount } { asset }"
   },
   "transfer": {
     "amountPlaceholder": "Сумма",
@@ -672,9 +694,11 @@
     "requiredAmountError": "Пожалуйста, введите сумму",
     "requiredDescriptionError": "Пожалуйста, заполните описание транзакции",
     "requiredRecipientError": "Пожалуйста, введите адрес получателя",
+    "senderLabel": "Отправитель",
+    "signatoryLabel": "Подписант",
     "startSigningButton": "Подписать в Parity Signer",
     "successMessage": "Транзакция отправлена!",
-    "title": "Переводы"
+    "title": "Перевод { asset } в сети"
   },
   "transferDetails": {
     "fromNetwork": "Из сети",
@@ -686,13 +710,16 @@
     "wallet": "Кошелёк"
   },
   "wallets": {
-    "addByParitySignerButton": "Добавить кошелёк из Parity Signer",
-    "addMultisigWalletButton": "Добавить multisig кошелёк",
-    "addWatchOnlyButton": "Добавить Watch-Only кошелёк",
+    "addButtonTitle": "Добавить",
+    "addMultisig": "Multisig",
+    "addPolkadotVault": "Polkadot Vault",
+    "addWatchOnly": "Watch-only",
     "multishardLabel": "Multishard",
     "multisigLabel": "Multisig",
     "paritySignerLabel": "Parity Signer",
-    "searchPlaceholder": "Поиск кошелька",
+    "searchPlaceholder": "Поиск",
+    "shards": "Shards",
+    "title": "Кошельки",
     "watchOnlyLabel": "Watch-only"
   },
   "welcome": {
@@ -706,9 +733,9 @@
     "addWatchOnlyAlt": "Иконка онбординга Watch-Only",
     "addWatchOnlyAreaLabel": "Добавить Watch-Only кошелёк",
     "addWatchOnlyButton": "Добавить Watch-Only кошелёк",
-    "addWatchOnlyLabel": "Track the activity of any wallet without injecting your private key to Omni Enterprise.",
+    "addWatchOnlyLabel": "Track the activity of any wallet without injecting your private key to Nova Spektr.",
     "ledgerImageAlt": "Иконка онбординга с Ledger",
-    "omniEnterpriseLabel": "Omni Enterprise",
+    "omniEnterpriseLabel": "Nova Spektr",
     "welcomeToLabel": "Добро пожаловать в"
   }
 }

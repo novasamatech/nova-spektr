@@ -25,6 +25,7 @@ import AddLineImg, { ReactComponent as AddLineSvg } from '@images/functionals/ad
 import AddCutoutImg, { ReactComponent as AddCutoutSvg } from '@images/functionals/add-cutout.svg';
 import ClearOutlineImg, { ReactComponent as ClearOutlineSvg } from '@images/functionals/clear-outline.svg';
 import EditOutlineImg, { ReactComponent as EditOutlineSvg } from '@images/functionals/edit-outline.svg';
+import EditImg, { ReactComponent as EditSvg } from '@images/functionals/edit.svg';
 import DeleteOutlineImg, { ReactComponent as DeleteOutlineSvg } from '@images/functionals/delete-outline.svg';
 import OptionsImg, { ReactComponent as OptionsSvg } from '@images/functionals/options.svg';
 import MultisigOutlineImg, { ReactComponent as MultisigOutlineSvg } from '@images/functionals/multisig-outline.svg';
@@ -37,6 +38,8 @@ import CloseLineRedesignImg, {
   ReactComponent as CloseLineRedesignSvg,
 } from '@images/functionals/close-line-redesign.svg';
 import RefreshImg, { ReactComponent as RefreshSvg } from '@images/functionals/refresh.svg';
+import SettingsLiteImg, { ReactComponent as SettingsLiteSvg } from '@images/functionals/settings-lite.svg';
+import ViewValidatorsImg, { ReactComponent as ViewValidatorsSvg } from '@images/functionals/view-validators.svg';
 
 const FunctionalImages = {
   copy: { svg: CopySvg, img: CopyImg },
@@ -66,6 +69,7 @@ const FunctionalImages = {
   addCutout: { svg: AddCutoutSvg, img: AddCutoutImg },
   clearOutline: { svg: ClearOutlineSvg, img: ClearOutlineImg },
   editOutline: { svg: EditOutlineSvg, img: EditOutlineImg },
+  edit: { svg: EditSvg, img: EditImg },
   deleteOutline: { svg: DeleteOutlineSvg, img: DeleteOutlineImg },
   options: { svg: OptionsSvg, img: OptionsImg },
   multisigOutline: { svg: MultisigOutlineSvg, img: MultisigOutlineImg },
@@ -74,6 +78,8 @@ const FunctionalImages = {
   checkLineRedesign: { svg: CheckLineRedesignSvg, img: CheckLineRedesignImg },
   closeLineRedesign: { svg: CloseLineRedesignSvg, img: CloseLineRedesignImg },
   refresh: { svg: RefreshSvg, img: RefreshImg },
+  settingsLite: { svg: SettingsLiteSvg, img: SettingsLiteImg },
+  viewValidators: { svg: ViewValidatorsSvg, img: ViewValidatorsImg },
 } as const;
 
 export type Functional = keyof typeof FunctionalImages;

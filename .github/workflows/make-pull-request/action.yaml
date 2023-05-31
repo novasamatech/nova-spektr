@@ -1,14 +1,14 @@
 name: Making a pull request
 description: That action create a pull request with all changes
 inputs:
-  commit-path:
+  commit_path:
     description: 'Path to the files that will be committed'
     required: true
-  commit-message:
+  commit_message:
     description: 'Message for commit'
     required: true
     default: 'Updating'
-  branch-name:
+  branch_name:
     description: 'Name for creating branch'
     required: true
     default: 'update'
@@ -16,10 +16,13 @@ inputs:
     description: 'Name for destination branch'
     required: false
     default: 'dev'
-  pr-title:
+  second_destination_branch:
+    description: 'Name for second destination branch in order to sync data'
+    required: false
+  pr_title:
     description: 'Title for pull request'
     required: true
-  github-token:
+  github_token:
     description: 'Token for making operations with GitHub'
     required: true
 
@@ -32,26 +35,41 @@ runs:
       run: |
         git config --local user.email "41898282+github-actions[bot]@users.noreply.github.com"
         git config --local user.name "github-actions[bot]"
-        git add ${{ inputs.commit-path }}
-        git commit -m "${{ inputs.commit-message }}"
+        git add ${{ inputs.commit_path }}
+        git commit -m "${{ inputs.commit_message }}"
       shell: bash
 
     - name: Push changes
       if: steps.commit.outcome == 'success'
       uses: ad-m/github-push-action@master
       with:
-        github_token: ${{ inputs.github-token }}
-        branch: refs/heads/${{ inputs.branch-name }}-${{github.run_number}}
+        github_token: ${{ inputs.github_token }}
+        branch: refs/heads/${{ inputs.branch_name }}-${{github.run_number}}
 
-    - uses: repo-sync/pull-request@v2
+    - name: Pull Request
+      id: mpr
+      uses: repo-sync/pull-request@v2
       if: steps.commit.outcome == 'success'
-      name: pull-request
       with:
-        source_branch: '${{ inputs.branch-name }}-${{github.run_number}}'
+        source_branch: '${{ inputs.branch_name }}-${{github.run_number}}'
         destination_branch: ${{ inputs.destination_branch }}
-        pr_title: ${{ inputs.pr-title }}
+        pr_title: ${{ inputs.pr_title }}
         pr_body: |
           That pull-request was generated automatically 🤖
         pr_reviewer: "stepanLav,pgolovkin,tuul-wq,Asmadek"
         pr_draft: false
-        github_token: ${{ inputs.github-token }}
+        github_token: ${{ inputs.github_token }}
+
+    - name: Second Pull Request
+      if: steps.commit.outcome == 'success' && inputs.second_destination_branch
+      uses: repo-sync/pull-request@v2
+      with:
+        source_branch: '${{ inputs.branch_name }}-${{github.run_number}}'
+        destination_branch: ${{ inputs.second_destination_branch }}
+        pr_title: 'PR in order to sync ${{ inputs.commit_path }}'
+        pr_body: |
+          That pull-request was generated automatically 🤖
+          Main PR is: ${{ steps.mpr.outputs.pr_url }}
+        pr_reviewer: "stepanLav,pgolovkin,tuul-wq,Asmadek"
+        pr_draft: false
+        github_token: ${{ inputs.github_token }}

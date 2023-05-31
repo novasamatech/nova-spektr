@@ -1,4 +1,3 @@
-import cn from 'classnames';
 import { ReactNode, useState } from 'react';
 import { EffectFade, Autoplay } from 'swiper';
 import { Swiper as SwiperRoot, SwiperSlide } from 'swiper/react';
@@ -7,6 +6,7 @@ import 'swiper/css';
 import 'swiper/css/effect-fade';
 
 import { Icon } from '@renderer/components/ui';
+import cnTw from '@renderer/shared/utils/twMerge';
 
 type Props = {
   animationDuration?: number;
@@ -54,7 +54,7 @@ const Carousel = ({ loop, autoplay, animationDuration = 300, slides }: Props) =>
             <button
               key={slide.id}
               type="button"
-              className={cn(
+              className={cnTw(
                 'border-2 rounded-full w-4 h-4',
                 index === activeIndex ? 'bg-primary border-primary' : 'border-shade-30',
               )}

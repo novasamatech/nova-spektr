@@ -10,6 +10,11 @@ jest.mock('@renderer/context/I18nContext', () => ({
   }),
 }));
 
+jest.mock(
+  '@renderer/components/common/AddressWithExplorers/AddressWithExplorers',
+  jest.fn().mockReturnValue(({ address }: { address: string }) => <span data-testid="validator">{address}</span>),
+);
+
 describe('screens/Staking/components/ValidatorsModal', () => {
   const defaultProps = {
     isOpen: true,
@@ -53,7 +58,7 @@ describe('screens/Staking/components/ValidatorsModal', () => {
   test('should render all validators', () => {
     render(<ValidatorsModal {...defaultProps} />);
 
-    const items = screen.getAllByRole('row');
-    expect(items).toHaveLength(4);
+    const items = screen.getAllByTestId('validator');
+    expect(items).toHaveLength(defaultProps.validators.length);
   });
 });

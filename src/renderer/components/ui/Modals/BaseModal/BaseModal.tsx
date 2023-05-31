@@ -1,7 +1,7 @@
 import { Fragment, PropsWithChildren, ReactNode } from 'react';
 import { Dialog, Transition } from '@headlessui/react';
-import cn from 'classnames';
 
+import cnTw from '@renderer/shared/utils/twMerge';
 import { ReactComponent as CloseCutout } from '@images/functionals/close-cutout.svg';
 import { useI18n } from '@renderer/context/I18nContext';
 
@@ -56,7 +56,7 @@ const BaseModal = ({
               <Dialog.Panel className="transform overflow-hidden rounded-2xl bg-white text-left align-middle shadow-xl transition-all">
                 {title && closeButton && (
                   <Dialog.Title as="header">
-                    <div className={cn('relative flex justify-end items-center', headerClass)}>
+                    <div className={cnTw('relative flex justify-end items-center', headerClass)}>
                       <h2 className="absolute left-1/2 -translate-x-1/2 w-max text-xl text-neutral font-semibold leading-5">
                         {title}
                       </h2>
@@ -74,7 +74,7 @@ const BaseModal = ({
                 {title && !closeButton && (
                   <Dialog.Title
                     as="header"
-                    className={cn('text-xl text-neutral font-semibold leading-5 text-center', headerClass)}
+                    className={cnTw('text-xl text-neutral font-semibold leading-5 text-center', headerClass)}
                   >
                     {title}
                   </Dialog.Title>

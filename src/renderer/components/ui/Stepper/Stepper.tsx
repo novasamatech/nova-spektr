@@ -1,5 +1,4 @@
-import cn from 'classnames';
-
+import cnTw from '@renderer/shared/utils/twMerge';
 import { ReactComponent as CheckSvg } from '@images/functionals/checkmark.svg';
 
 const getTitleClass = (isStart: boolean, isEnd: boolean): string => {
@@ -24,7 +23,7 @@ const InactiveStep = ({ index, title, isStart, isEnd }: StepProps) => (
       <div className="flex justify-center items-center rounded-full border-2 border-shade-20 bg-white text-shade-40 w-10 h-10">
         {index + 1}
       </div>
-      <p className={cn('text-shade-40', getTitleClass(isStart, isEnd))}>{title}</p>
+      <p className={cnTw('text-shade-40', getTitleClass(isStart, isEnd))}>{title}</p>
     </div>
     {!isEnd && <hr className="w-full border-shade-20" />}
   </div>
@@ -34,7 +33,7 @@ const ActiveStep = ({ index, title, isStart, isEnd }: StepProps) => (
   <div className="flex items-center cursor-default gap-x-2.5" data-testid="active-step">
     <div className="relative">
       <div className="flex justify-center items-center rounded-full bg-tertiary text-white w-10 h-10">{index + 1}</div>
-      <p className={cn('font-bold text-neutral-variant', getTitleClass(isStart, isEnd))}>{title}</p>
+      <p className={cnTw('font-bold text-neutral-variant', getTitleClass(isStart, isEnd))}>{title}</p>
     </div>
     {!isEnd && <hr className="w-full border-shade-20" />}
   </div>
@@ -46,7 +45,7 @@ const CompleteStep = ({ title, isStart, isEnd }: StepProps) => (
       <div className="flex justify-center items-center rounded-full bg-success text-white w-10 h-10">
         <CheckSvg width={24} height={24} className="text-white" role="img" />
       </div>
-      <p className={cn('text-shade-40', getTitleClass(isStart, isEnd))}>{title}</p>
+      <p className={cnTw('text-shade-40', getTitleClass(isStart, isEnd))}>{title}</p>
     </div>
     {!isEnd && <hr className="w-full border-t-2 border-success" />}
   </div>
@@ -68,7 +67,7 @@ const Stepper = ({ steps, active }: Props) => (
       else if (index > active) variant = InactiveStep;
 
       return (
-        <li key={title} className={cn(!isEnd && 'flex-1')}>
+        <li key={title} className={cnTw(!isEnd && 'flex-1')}>
           {variant({ index, title, isStart, isEnd })}
         </li>
       );

@@ -1,5 +1,6 @@
-import cn from 'classnames';
 import { PropsWithChildren } from 'react';
+
+import cnTw from '@renderer/shared/utils/twMerge';
 
 type Props = {
   progress: number;
@@ -11,9 +12,9 @@ const ProgressBadge = ({ progress, total, className, children }: PropsWithChildr
   const progressIsComplete = progress === total;
 
   return (
-    <div className={cn('flex items-center w-max bg-white rounded-md', className)}>
+    <div className={cnTw('flex items-center w-max bg-white rounded-md', className)}>
       <p
-        className={cn(
+        className={cnTw(
           'text-white font-semibold text-xs leading-[14px] rounded-md py-[3px] px-1.5 transition-colors',
           progressIsComplete ? 'bg-success' : 'bg-shade-30',
         )}

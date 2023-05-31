@@ -1,6 +1,6 @@
-import cn from 'classnames';
 import { PropsWithChildren, useCallback, useMemo, useState } from 'react';
 
+import cnTw from '@renderer/shared/utils/twMerge';
 import { SortConfig, SortType, AnyRecord, IndexKey, ColumnConfig } from './common/types';
 import { getUpdatedConfig, getSortedData } from './common/utils';
 import { TableBody, TableCell, TableColumn, TableHeader, TableRow } from './TableParts';
@@ -121,7 +121,7 @@ const Table = <T extends AnyRecord>({
 
   return (
     <TableContext.Provider value={value}>
-      <table className={cn('w-full bg-white rounded-2lg table-auto', className)}>{children}</table>
+      <table className={cnTw('w-full rounded-2lg table-auto', className)}>{children}</table>
     </TableContext.Provider>
   );
 };

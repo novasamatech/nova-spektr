@@ -23,7 +23,13 @@ jest.mock('@renderer/services/multisigTx/multisigTxService', () => ({
   }),
 }));
 
-jest.mock('../Wallets/Wallets', () => {
+jest.mock('@renderer/services/wallet/walletService', () => ({
+  useWallet: jest.fn().mockReturnValue({
+    getLiveWallets: jest.fn().mockReturnValue([]),
+  }),
+}));
+
+jest.mock('../Wallets/WalletMenu', () => {
   const { forwardRef } = jest.requireActual('react');
 
   return {
@@ -40,13 +46,10 @@ describe('layout/PrimaryLayout/Navigation', () => {
   test('should render component', () => {
     render(<Navigation />, { wrapper: MemoryRouter });
 
-    const text = screen.getByText('Test Wallet');
-    expect(text).toBeInTheDocument();
+    const navMenu = screen.getByRole('navigation');
+    expect(navMenu).toBeInTheDocument();
 
     const wallets = screen.getByText('wallets-mock');
     expect(wallets).toBeInTheDocument();
-
-    const langSwitch = screen.getByText('localeComponent');
-    expect(langSwitch).toBeInTheDocument();
   });
 });

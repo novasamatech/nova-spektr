@@ -41,6 +41,7 @@ export const enum WalletType {
   WATCH_ONLY = 'wallet_wo',
   SINGLE_PARITY_SIGNER = 'wallet_sps',
   MULTISHARD_PARITY_SIGNER = 'wallet_mps',
+  MULTISIG = 'wallet_ms',
 }
 
 export const enum SigningType {

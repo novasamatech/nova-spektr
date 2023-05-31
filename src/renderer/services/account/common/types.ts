@@ -11,5 +11,7 @@ export interface IAccountService {
   addAccount: <T extends Account>(account: T) => Promise<ID>;
   updateAccount: <T extends Account>(account: T) => Promise<ID>;
   deleteAccount: (accountId: Address) => Promise<void>;
-  getActiveMultisigAccounts: () => AccountDS[];
+  getActiveMultisigAccount: () => AccountDS | null;
+  setActiveAccounts: (accountsId: ID[]) => Promise<void>;
+  setActiveAccount: (accountId: ID) => Promise<void>;
 }

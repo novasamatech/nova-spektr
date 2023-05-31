@@ -10,7 +10,6 @@ import { AccountDS } from '@renderer/services/storage';
 import { useToggle, useCountdown } from '@renderer/shared/hooks';
 import { MultisigAccount } from '@renderer/domain/account';
 import { ExtendedChain } from '@renderer/services/network/common/types';
-import Chain from '../Chain/Chain';
 import { Signing } from '../ActionSteps/Signing';
 import { Scanning } from '../ActionSteps/Scanning';
 import { MultisigTransaction, Transaction, TransactionType } from '@renderer/domain/transaction';
@@ -27,6 +26,7 @@ import { TEST_ADDRESS } from '@renderer/shared/utils/constants';
 import Confirmation from '@renderer/screens/Operations/components/ActionSteps/Confirmation';
 import SignatorySelectModal from '@renderer/screens/Operations/components/modals/SignatorySelectModal';
 import OperationResult from '@renderer/components/ui-redesign/OperationResult/OperationResult';
+import OperationModalTitle from '@renderer/screens/Operations/components/OperationModalTitle';
 
 type Props = {
   tx: MultisigTransaction;
@@ -42,8 +42,6 @@ const enum Step {
 }
 
 const AllSteps = [Step.CONFIRMATION, Step.SCANNING, Step.SIGNING, Step.SUBMIT];
-
-export const ChainFontStyle = 'font-manrope text-modal-title text-text-primary';
 
 const ApproveTx = ({ tx, account, connection }: Props) => {
   const { t } = useI18n();
@@ -202,25 +200,18 @@ const ApproveTx = ({ tx, account, connection }: Props) => {
 
   if (!(readyForFinalSign || readyForNonFinalSign)) return <></>;
 
-  const approveTitile = (
-    <div className="flex items-center py-1 ml-4">
-      {t(transactionTitle)} {t('on')}
-      <Chain className="ml-0.5" chainId={tx.chainId} fontProps={{ className: ChainFontStyle, fontWeight: 'bold' }} />
-    </div>
-  );
-
   const isSubmitStep = activeStep === Step.SUBMIT && approveTx && signAccount && signature && unsignedTx;
 
   return (
     <>
-      <Button size="sm" onClick={toggleModal}>
+      <Button size="sm" className="ml-auto" onClick={toggleModal}>
         {t('operation.approveButton')}
       </Button>
 
       <BaseModal
         isOpen={isModalOpen}
         closeButton
-        title={approveTitile}
+        title={<OperationModalTitle title={`${t(transactionTitle)} ${t('on')}`} chainId={tx.chainId} />}
         contentClass={activeStep === Step.SIGNING ? '' : undefined}
         panelClass="w-[440px]"
         onClose={handleClose}
