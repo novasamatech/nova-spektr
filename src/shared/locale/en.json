@@ -430,13 +430,26 @@
       "verifyWithKey": "Verify with key"
     },
     "overview": {
+      "generalLabel": "General",
+      "githubDescription": "Github Description",
+      "githubLabel": "GitHub",
       "languageLabel": "Language",
+      "matrixDescription": "Matrix Description",
       "matrixDetailsLabel": "Manage Omni Matrix Protocol credentials",
-      "matrixLabel": "Matrix Credentials",
+      "matrixLabel": "Matrix Connection",
+      "mediumDescription": "Medium Description",
+      "mediumLabel": "Medium",
       "networkDetailsLabel": "Manage network connection",
       "networkLabel": "Network",
+      "smpLabel": "Spektr Matrix protocol",
       "socialLabel": "Social",
-      "versionLabel": "Version"
+      "telegramDescription": "Telegram Description",
+      "telegramLabel": "Telegram",
+      "twitterDescription": "Twitter Description",
+      "twitterLabel": "Twitter",
+      "versionLabel": "Version",
+      "youtubeDescription": "Youtube Description",
+      "youtubeLabel": "YouTube"
     },
     "title": "Settings"
   },

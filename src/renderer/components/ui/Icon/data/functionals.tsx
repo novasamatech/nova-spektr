@@ -19,7 +19,6 @@ import SearchImg, { ReactComponent as SearchSvg } from '@images/functionals/sear
 import NetworkDuotoneImg, { ReactComponent as NetworkDuotoneSvg } from '@images/functionals/network-duotone.svg';
 import NetworkOnImg, { ReactComponent as NetworkOnSvg } from '@images/functionals/network-on.svg';
 import NetworkOffImg, { ReactComponent as NetworkOffSvg } from '@images/functionals/network-off.svg';
-import NetworkImg, { ReactComponent as NetworkSvg } from '@images/functionals/network.svg';
 import AddImg, { ReactComponent as AddSvg } from '@images/functionals/add.svg';
 import AddLineImg, { ReactComponent as AddLineSvg } from '@images/functionals/add-line.svg';
 import AddCutoutImg, { ReactComponent as AddCutoutSvg } from '@images/functionals/add-cutout.svg';
@@ -40,6 +39,7 @@ import CloseLineRedesignImg, {
 import RefreshImg, { ReactComponent as RefreshSvg } from '@images/functionals/refresh.svg';
 import SettingsLiteImg, { ReactComponent as SettingsLiteSvg } from '@images/functionals/settings-lite.svg';
 import ViewValidatorsImg, { ReactComponent as ViewValidatorsSvg } from '@images/functionals/view-validators.svg';
+import LinkImg, { ReactComponent as LinkSvg } from '@images/functionals/link.svg';
 
 const FunctionalImages = {
   copy: { svg: CopySvg, img: CopyImg },
@@ -63,7 +63,6 @@ const FunctionalImages = {
   networkDuotone: { svg: NetworkDuotoneSvg, img: NetworkDuotoneImg },
   networkOn: { svg: NetworkOnSvg, img: NetworkOnImg },
   networkOff: { svg: NetworkOffSvg, img: NetworkOffImg },
-  network: { svg: NetworkSvg, img: NetworkImg },
   add: { svg: AddSvg, img: AddImg },
   addLine: { svg: AddLineSvg, img: AddLineImg },
   addCutout: { svg: AddCutoutSvg, img: AddCutoutImg },
@@ -80,6 +79,7 @@ const FunctionalImages = {
   refresh: { svg: RefreshSvg, img: RefreshImg },
   settingsLite: { svg: SettingsLiteSvg, img: SettingsLiteImg },
   viewValidators: { svg: ViewValidatorsSvg, img: ViewValidatorsImg },
+  link: { svg: LinkSvg, img: LinkImg },
 } as const;
 
 export type Functional = keyof typeof FunctionalImages;

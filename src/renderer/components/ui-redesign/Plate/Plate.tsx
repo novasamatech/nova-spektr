@@ -1,5 +1,6 @@
-import cn from 'classnames';
 import { ElementType, PropsWithChildren } from 'react';
+
+import twMerge from '@renderer/shared/utils/twMerge';
 
 type Props = {
   as?: ElementType;
@@ -7,7 +8,7 @@ type Props = {
 };
 
 const Plate = ({ as: Tag = 'div', className, children }: PropsWithChildren<Props>) => (
-  <Tag className={cn('p-3 rounded-md bg-white', className)}>{children}</Tag>
+  <Tag className={twMerge('p-3 rounded-md bg-white', className)}>{children}</Tag>
 );
 
 export default Plate;
