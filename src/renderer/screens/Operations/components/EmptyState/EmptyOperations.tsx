@@ -11,7 +11,7 @@ const EmptyOperations = () => {
 
   return (
     <div className="flex flex-col items-center justify-center gap-y-8 w-full h-full">
-      <Icon as="img" name="emptyOperations" size={96} />
+      <Icon as="img" name="emptyList" alt={t('operations.noOperationsDescription')} size={178} />
       <BodyText align="center" className="text-text-tertiary max-w-[340px]">
         {walletIsMulti ? t('operations.noOperationsDescription') : t('operations.noOperationsWalletNotMulti')}
       </BodyText>
