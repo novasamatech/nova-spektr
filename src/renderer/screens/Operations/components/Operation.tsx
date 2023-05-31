@@ -1,13 +1,12 @@
 import { format } from 'date-fns';
 import cn from 'classnames';
 
-import { Button, Icon } from '@renderer/components/ui';
 import { useI18n } from '@renderer/context/I18nContext';
 import Chain from './Chain/Chain';
 import TransactionTitle from './TransactionTitle/TransactionTitle';
 import { useToggle } from '@renderer/shared/hooks';
 import { MultisigAccount } from '@renderer/domain/account';
-import { FootnoteText } from '@renderer/components/ui-redesign';
+import { FootnoteText, IconButton } from '@renderer/components/ui-redesign';
 import TransactionAmount from './TransactionAmount';
 import { MultisigTransactionDS } from '@renderer/services/storage';
 import OperationStatus from './OperationStatus';
@@ -28,17 +27,21 @@ const Operation = ({ tx, account }: Props) => {
   return (
     <li className="flex flex-col bg-block-background-default rounded">
       {/* MAIN ROW */}
-      <div className="h-[52px] pl-2.5 pr-2 grid grid-cols-operation-card items-center justify-items-start">
-        <FootnoteText className="text-text-tertiary pl-3.5">
+      <div className="h-[52px] grid grid-cols-operation-card items-center justify-items-start">
+        <FootnoteText className="text-text-tertiary pl-6">
           {format(new Date(dateCreated || 0), 'p', { locale: dateLocale })}
         </FootnoteText>
-        <TransactionTitle tx={transaction} description={description} />
-        {transaction && getTransactionAmount(transaction) ? <TransactionAmount tx={transaction} /> : <span />}
-        <Chain chainId={chainId} />
-        <OperationStatus status={status} signed={approvals.length} threshold={account?.threshold || 0} />
-        <Button pallet="shade" variant="text" onClick={toggleRow}>
-          <Icon name={isRowShown ? 'up' : 'down'} />
-        </Button>
+        <TransactionTitle tx={transaction} description={description} className="px-2" />
+        {transaction && getTransactionAmount(transaction) ? (
+          <TransactionAmount tx={transaction} wrapperClassName="px-2" />
+        ) : (
+          <span />
+        )}
+        <Chain chainId={chainId} className="px-2" />
+        <div className="flex justify-end px-2 w-full">
+          <OperationStatus status={status} signed={approvals.length} threshold={account?.threshold || 0} />
+        </div>
+        <IconButton name={isRowShown ? 'up' : 'down'} className="mx-2" onClick={toggleRow} />
       </div>
 
       {/* DETAILS */}

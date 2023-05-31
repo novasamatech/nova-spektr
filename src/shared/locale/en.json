@@ -43,6 +43,7 @@
     "transferable": "Transferable"
   },
   "balances": {
+    "allShards": "All shards",
     "emptyStateDescription": "Update the search or cancel filtering.",
     "emptyStateLabel": "Nothing was found.",
     "hideZeroBalancesLabel": "Hide zero balances",

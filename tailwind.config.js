@@ -88,7 +88,7 @@ module.exports = {
         reduced: '-5px',
       },
       gridTemplateColumns: {
-        'operation-card': '72px 196px 182px 130px 130px 40px',
+        'operation-card': '72px 182px 182px 130px 130px 40px',
       },
     },
   },

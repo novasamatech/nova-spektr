@@ -11,7 +11,7 @@ type Props = {
   tx: Transaction;
 };
 
-type BalanceProps = Pick<React.ComponentProps<typeof BalanceNew>, 'className' | 'showIcon'>;
+type BalanceProps = Pick<React.ComponentProps<typeof BalanceNew>, 'className' | 'showIcon' | 'wrapperClassName'>;
 
 const TransactionAmount = ({ tx, ...balanceProps }: Props & BalanceProps) => {
   const { getChainById } = useChains();
