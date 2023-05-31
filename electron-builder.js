@@ -47,6 +47,6 @@ module.exports = {
   publish: {
     provider: 'github',
     owner: 'nova-wallet',
-    // repo: 'omni-enterprise',
+    // repo: 'nova-spektr',
   },
 };

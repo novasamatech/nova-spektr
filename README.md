@@ -152,9 +152,9 @@ pnpm dist
 ```
 ## Troubleshooting
 Log files help to solve your problem. Logs are collected in the `nova-spektr.log` that is located in the folder:
-1. macOS `~/Library/Logs/Nova Spektr/nova-spektr.log` 
-2. Windows `%USERPROFILE%\AppData\Roaming\Nova Spektr\logs\nova-spektr.log`
-3. Linux `~/.config/Nova Spektr/logs/nova-spektr.log`
+1. macOS `~/Library/Logs/nova-spektr/nova-spektr.log` 
+2. Windows `%USERPROFILE%\AppData\Roaming\nova-spektr\logs\nova-spektr.log`
+3. Linux `~/.config/nova-spektr/logs/nova-spektr.log`
 
 Sharing logs when you're contacting the support will speed up the problem fix.
 
