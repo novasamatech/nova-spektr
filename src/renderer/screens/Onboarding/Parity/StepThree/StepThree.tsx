@@ -33,7 +33,7 @@ const StepThree = ({ seedInfo, onNextStep }: Props) => {
   const { t } = useI18n();
 
   const { addWallet } = useWallet();
-  const { addAccount } = useAccount();
+  const { addAccount, getActiveAccounts, deactivateAccounts } = useAccount();
   const { getChainsData } = useChains();
   const [isQrModalOpen, toggleQrModal] = useToggle();
 
@@ -57,6 +57,8 @@ const StepThree = ({ seedInfo, onNextStep }: Props) => {
       setAccounts(filteredQrData.map(formatAccount));
     });
   }, []);
+
+  const activeAccounts = getActiveAccounts();
 
   const filterByExistingChains = (seedInfo: SeedInfo, chainsMap: Record<ChainId, Chain>): SeedInfo => {
     const derivedKeysForChsains = seedInfo.derivedKeys.filter((key) => Boolean(chainsMap[u8aToHex(key.genesisHash)]));
@@ -159,7 +161,7 @@ const StepThree = ({ seedInfo, onNextStep }: Props) => {
       walletId,
     });
 
-    return addAccount(rootAccount);
+    return addAccount(rootAccount, false);
   };
 
   const createDerivedAccounts = (
@@ -217,13 +219,19 @@ const StepThree = ({ seedInfo, onNextStep }: Props) => {
         })
         .flat();
 
-      return derivedAccounts.map(addAccount);
+      return derivedAccounts.map((account) => addAccount(account, false));
     });
 
     try {
       await Promise.all(promises);
     } catch (e) {
       console.warn('Error saving wallets', e);
+    }
+
+    try {
+      await deactivateAccounts(activeAccounts);
+    } catch (e) {
+      console.warn('Error deactivating previously active accounts', e);
     }
 
     onNextStep();

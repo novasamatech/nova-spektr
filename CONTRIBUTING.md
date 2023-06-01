@@ -1,11 +1,11 @@
 # Code of Conduct
-This project and everyone participating in it is governed by the [Nova Spektr Code of Conduct](https://github.com/nova-wallet/omni-enterprise/blob/dev/CODE_OF_CONDUCT.md). 
+This project and everyone participating in it is governed by the [Nova Spektr Code of Conduct](https://github.com/novasamatech/nova-spektr/blob/dev/CODE_OF_CONDUCT.md). 
 By participating, you are expected to uphold this code. Please report unacceptable behavior 
 to [pavel@novawallet.io](mailto:pavel@novawallet.io).
 
 # How to Contribute
 ## Reporting Bugs
-Before opening a new issue, please search the [existing issues](https://github.com/nova-wallet/omni-enterprise/issues?q=label%3Abug) to make sure that the bug has not already been reported. 
+Before opening a new issue, please search the [existing issues](https://github.com/novasamatech/nova-spektr/issues?q=label%3Abug) to make sure that the bug has not already been reported. 
 If it has not, please open a new issue and include the following information:
 
 - A clear and descriptive title
@@ -52,4 +52,4 @@ If you are reviewing code that has been submitted by someone else, please follow
 
 # License
 By contributing to the Nova Spektr project, you agree that your contributions will be licensed under the 
-[Apache 2.0 License](https://github.com/nova-wallet/omni-enterprise/blob/dev/LICENSE.md).
+[Apache 2.0 License](https://github.com/novasamatech/nova-spektr/blob/dev/LICENSE.md).
