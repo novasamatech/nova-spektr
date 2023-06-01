@@ -82,10 +82,10 @@ jobs:
         id: get_version
         run: echo ::set-output name=VERSION::${GITHUB_REF/refs\/tags\//}
       
-      - name: Rename Linux artifact
+      - name: Rename Linux distr # In order to show that we do not support ARM yet.
         run: rename 's/\.AppImage$/_x86_64.AppImage/' *.AppImage
       
-      - name: Generate checksum
+      - name: 🔐 Generate checksum
         run: |
           for filename in Nova.Spektr*; do
               shasum -a 256 "$filename" | awk '{print $1}' | tr -d '\n' > "${filename}.sha256"
