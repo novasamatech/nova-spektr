@@ -30,7 +30,7 @@ describe('service/accountService', () => {
   });
 
   test('should set new active account', async () => {
-    const accountsDb = [{ accountId: 'test_1', isActive: false }];
+    const accountsDb = [{ id: 'test_1', isActive: false }];
 
     storage.connectTo = jest.fn().mockReturnValue({
       getAccounts: jest.fn().mockResolvedValue(accountsDb),
