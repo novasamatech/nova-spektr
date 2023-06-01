@@ -3628,7 +3628,7 @@
   {
     "chainId": "0x335369975fced3fc22e23498da306a712f4fd964c957364d53c49cea9db8bc2f",
     "parentId": "0x91b171bb158e2d3848fa23a9f1c25182fb8e20313b2c1eb49219da7a70ce90c3",
-    "name": "Efinity",
+    "name": "Efinity (PAUSED)",
     "assets": [
       {
         "assetId": 0,
@@ -4945,7 +4945,7 @@
   {
     "chainId": "0xfeb426ca713f0f46c96465b8f039890370cf6bfd687c9076ea2843f58a6ae8a7",
     "parentId": "0xb0a8d493285c2df73290dfb7e61f870f17b41801197a149ca93654499ea3dafe",
-    "name": "Kabocha",
+    "name": "Kabocha (PAUSED)",
     "assets": [
       {
         "assetId": 0,
@@ -4975,51 +4975,6 @@
         {
           "type": "subquery",
           "url": "https://api.subquery.network/sq/nova-wallet/nova-wallet-kabocha"
-        }
-      ]
-    }
-  },
-  {
-    "chainId": "0xeacdd2d5b42de9769ccbb6e8d9013ab0d90ab105bf601d4aac53e874c145ec21",
-    "parentId": "0xb0a8d493285c2df73290dfb7e61f870f17b41801197a149ca93654499ea3dafe",
-    "name": "Tanganika",
-    "assets": [
-      {
-        "assetId": 0,
-        "symbol": "DHX",
-        "precision": 18,
-        "priceId": "datahighway",
-        "icon": "https://raw.githubusercontent.com/nova-wallet/nova-spektr-utils/main/icons/v1/assets/white/Tanganika_DataHighway_(DHX).svg",
-        "name": "DataHighway"
-      }
-    ],
-    "nodes": [
-      {
-        "url": "wss://tanganika.datahighway.com",
-        "name": "DataHighway node"
-      }
-    ],
-    "explorers": [
-      {
-        "name": "Subscan",
-        "extrinsic": "https://datahighway.subscan.io/extrinsic/{hash}",
-        "account": "https://datahighway.subscan.io/account/{address}",
-        "event": null,
-        "multisig": "https://datahighway.subscan.io/multisig_extrinsic/{index}?call_hash={callHash}"
-      },
-      {
-        "name": "Polkaholic",
-        "account": "https://polkaholic.io/account/{address}",
-        "extrinsic": "https://polkaholic.io/tx/{hash}"
-      }
-    ],
-    "icon": "https://raw.githubusercontent.com/nova-wallet/nova-spektr-utils/main/icons/v1/chains/Tanganika_DataHighway.svg",
-    "addressPrefix": 33,
-    "externalApi": {
-      "history": [
-        {
-          "type": "subquery",
-          "url": "https://api.subquery.network/sq/nova-wallet/nova-wallet-tanganika"
         }
       ]
     }
