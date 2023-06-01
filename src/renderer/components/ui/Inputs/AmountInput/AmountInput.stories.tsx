@@ -23,7 +23,7 @@ const asset = {
   assetId: 0,
   symbol: 'DOT',
   precision: 10,
-  icon: 'https://raw.githubusercontent.com/nova-wallet/nova-utils/master/icons/chains/white/Polkadot.svg',
+  icon: 'https://raw.githubusercontent.com/novasamatech/nova-utils/master/icons/chains/white/Polkadot.svg',
 } as Asset;
 
 export const Primary = Template.bind({});

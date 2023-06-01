@@ -1,21 +1,58 @@
-# Omni Enterprise
+<p align="center">
+  <img src="logo" width="460" alt="Nova Spektr logo"> //todo
+</p>
+
+<div align="center">
+
+![badge](https://img.shields.io/endpoint?url=https://gist.githubusercontent.com/stepanLav/77132f25d05c7e9264cd410aef162a7e/raw/jest-coverage-main.json)
+[![GitHub release (latest by date)](https://img.shields.io/github/v/release/novasamatech/nova-spektr)](https://github.com/novasamatech/nova-spektr/releases)
+[![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](https://github.com/novasamatech/nova-spektr/blob/dev/LICENSE.md)
+<br />
+[![Twitter URL](https://img.shields.io/twitter/url?style=social&url=https%3A%2F%2Ftwitter.com)](todo)
+[![Telegram](https://img.shields.io/badge/Telegram-gray?logo=telegram)](todo)
+[![Medium](https://img.shields.io/badge/Medium-gray?logo=medium)](todo)
+[![YouTube](https://img.shields.io/youtube/channel/views/UCiP-xl8q-W4b4HiZh8N11Ew)](https://www.youtube.com/watch?v=yx1mY299cCM&list=PLpZ2RdLApAYvjXl-Ja2_Dv9g62JtLignp)
+
+</div>
+
+<!-- TOC -->
+- [Introduction](#introduction)
+- [What is Nova Spektr](#what-is-nova-spektr)
+  - [Key features](#key-features)
+  - [Changelog](#changelog)
+- [Development](#development)
+  - [Requirements](#requirements)
+  - [Install dependencies](#install-dependencies)
+  - [Start in production mode](#start-in-production-mode)
+  - [Start in development mode](#start-in-development-mode)
+  - [Project localisation](#project-localisation)
+- [Production build](#production-build)
+- [Contributing](#contributing)
+- [Support](#support)
+<!-- /TOC -->
+
+# Introduction
+
+# What is Nova Spektr
 
 Polkadot & Kusama ecosystem Enterprise Desktop application.
 
-![badge](https://img.shields.io/endpoint?url=https://gist.githubusercontent.com/stepanLav/77132f25d05c7e9264cd410aef162a7e/raw/jest-coverage-main.json)
-
 ## Key features
 
-1. Add and manage wallets for Substrate networks.
-2. Show wallet balances for multiple Substrate networks.
-3. Token transfers in multiple Substrate networks.
-4. MST account management.
-5. MST creation and signing.
-6. MST account and transactions interaction with Matrix standard.
+1. Hardware wallet (Polkadot Vault) support
+2. Multishard wallet and multishard operations
+3. Show wallet balances for any supported token (assets, ORML, balances)
+4. Token transfer for any supported token (assets, ORML, balances)
+5. Multisig account and transactions with Spektr Matrix Protocol implementation
+6. Relay Chain staking
 
-## Development
+## Changelog
 
-### Requirements
+Detailed changelog with releases description is located in the [changelog file](https://github.com/novasamatech/nova-spektr/blob/dev/CHANGELOG.md)
+
+# Development
+
+## Requirements
 
 Minimum version of `Node.js` is `v16.x`.
 
@@ -30,31 +67,47 @@ pnpm install
 ```
 Husky hooks will be installed automatically after installing project dependencies:
 
-```json
+```bash
 "prepare": "husky install"
 ```
 **P.S. don't update pre-commit file to `npm githook:pre-commit`**
 
-## Starting development
+## Start in production mode
+The `production` run configuration is the same as [production build](#production-build) except that the application won't be
+installed in the operating system and source code hot-reload will be used.
 
-Start application in the `prod` environment with hot-reload:
+Production configuration uses:
+1. [`chains.json`](/src/renderer/services/network/common/chains/chains.json) file for chains configuration
+2. debug tools are disabled by default
+3. errors are handled in a smooth way in order not to interrupt the user
 
-Electron:
+Use the following instructions in order to start application in the `production` environment with hot-reload:
+
+Electron (desktop) environment - recommended:
 ```bash
 pnpm start
 ```
-Web:
+Web (browser) environment - not recommended:
 ```bash
 pnpm start:renderer
 ```
 
-Start application in the `dev` environment with hot-reload:
+## Start in development mode
+The `dev` run configuration **shouldn't be** used for production. This configuration is only for developing new features and
+debugging errors.
 
-Electron:
+Development configuration uses:
+1. [`chains_dev.json`](/src/renderer/services/network/common/chains/chains_dev.json) file that contains testnets in order to debug and test new features
+2. debug tools are enabled by default
+3. error handling is turned off in order to pay developer's attention to errors
+
+Use the following instructions in order to start application in the `dev` environment with hot-reload:
+
+Electron (desktop) environment - recommended:
 ```bash
 pnpm start:dev
 ```
-Web:
+Web (browser) environment - not recommended:
 ```bash
 pnpm start:renderer:dev
 ```
@@ -88,7 +141,7 @@ or
 const qrCodePayload = `substrate:${address}:${wallet.accountId}`;
 ```
 
-## Packaging for production
+# Production build
 
 To package application for the local platform:
 
@@ -98,7 +151,24 @@ pnpm postbuild
 pnpm dist
 ```
 ## Troubleshooting
-Logs are collected in the 
-1. macOS `~/Librarly/Logs/Nova Spektr/nova-spektr.log` file 
-2. Windows todo
-3. Linux todo
+Log files help to solve your problem. Logs are collected in the `nova-spektr.log` that is located in the folder:
+1. macOS `~/Library/Logs/nova-spektr/nova-spektr.log` 
+2. Windows `%USERPROFILE%\AppData\Roaming\nova-spektr\logs\nova-spektr.log`
+3. Linux `~/.config/nova-spektr/logs/nova-spektr.log`
+
+Sharing logs when you're contacting the support will speed up the problem fix.
+
+# Contributing
+Contributing guide is described in the [CONTRIBUTING.md](https://github.com/novasamatech/nova-spektr/blob/dev/CONTRIBUTING.md)
+
+# Support
+Check the official support channels:
+1. wiki (todo)
+2. telegram group (todo)
+3. GitHub [issues](https://github.com/orgs/novasamatech/projects/4)
+
+All issues are being tracked in the [Nova Spektr Support project](https://github.com/orgs/novasamatech/projects/4)
+
+# Feedback
+Your feedback is welcome. Use GitHub issues for submitting the feedback.
+All feedback is being tracked in the [Nova Spektr Feedback project](https://github.com/orgs/novasamatech/projects/5)

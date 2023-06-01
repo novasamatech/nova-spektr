@@ -16,7 +16,8 @@ jest.mock('@renderer/context/I18nContext', () => ({
 jest.mock('@renderer/services/account/accountService', () => ({
   useAccount: jest.fn().mockReturnValue({
     addAccount: jest.fn(),
-    toggleActiveAccount: jest.fn(),
+    getActiveAccounts: jest.fn(),
+    deactivateAccounts: jest.fn(),
   }),
 }));
 
