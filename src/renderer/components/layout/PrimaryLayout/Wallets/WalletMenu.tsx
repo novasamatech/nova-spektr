@@ -34,7 +34,7 @@ const WalletMenu = ({ children, chains, wallets }: PropsWithChildren<Props>) => 
   const getAllShardsIds = (wallet: MultishardWallet): ID[] => {
     return wallet.rootAccounts.reduce<ID[]>((acc, root) => {
       if (root.id) {
-        root.id && acc.push(root.id);
+        acc.push(root.id);
       }
       root.chains.forEach((c) => c.accounts.forEach((a) => a.id && acc.push(a.id)));
 
