@@ -5,7 +5,7 @@ import matrix from 'matrix-js-sdk';
 //      🔶 Matrix original error object: Error: Missing required option: indexedDB 🔶
 import 'fake-indexeddb/auto';
 // Adding fetch function to run such code without problem:
-// https://github.com/nova-wallet/omni-enterprise/blob/b855567d98587e6b83ce248e524505a5a3a3ba76/src/renderer/services/matrix/matrix.ts#L101-L102
+// https://github.com/novasamatech/nova-spektr/blob/b855567d98587e6b83ce248e524505a5a3a3ba76/src/renderer/services/matrix/matrix.ts#L101-L102
 // https://github.com/mswjs/msw/issues/686
 import 'whatwg-fetch';
 

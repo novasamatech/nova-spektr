@@ -35,7 +35,7 @@ describe('components/common/AccountsList', () => {
           account: 'https://sub.id/{address}',
         },
       ],
-      icon: 'https://raw.githubusercontent.com/nova-wallet/nova-utils/master/icons/chains/gradient/Polkadot.svg',
+      icon: 'https://raw.githubusercontent.com/novasamatech/nova-utils/master/icons/chains/gradient/Polkadot.svg',
       addressPrefix: 0,
     },
   ] as Chain[];
