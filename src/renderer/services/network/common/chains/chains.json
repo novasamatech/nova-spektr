@@ -1779,7 +1779,7 @@
   {
     "chainId": "0x4ac80c99289841dd946ef92765bf659a307d39189b3ce374a92b5f0415ee17a1",
     "parentId": "0xb0a8d493285c2df73290dfb7e61f870f17b41801197a149ca93654499ea3dafe",
-    "name": "Calamari",
+    "name": "Calamari (PAUSED)",
     "assets": [
       {
         "assetId": 0,
@@ -2118,6 +2118,7 @@
         "symbol": "EQ",
         "precision": 9,
         "type": "orml",
+        "priceId": "equilibrium-token",
         "icon": "https://raw.githubusercontent.com/nova-wallet/nova-spektr-utils/main/icons/v1/assets/white/Equilibrium_(EQ).svg",
         "typeExtras": {
           "currencyIdScale": "0x050700",
@@ -2141,6 +2142,21 @@
           "transfersEnabled": true
         },
         "name": "Interlay Bitcoin"
+      },
+      {
+        "assetId": 13,
+        "symbol": "USDT",
+        "precision": 6,
+        "type": "orml",
+        "priceId": "tether",
+        "icon": "https://raw.githubusercontent.com/nova-wallet/nova-spektr-utils/main/icons/v1/assets/white/USDT.svg",
+        "typeExtras": {
+          "currencyIdScale": "0x050c00",
+          "currencyIdType": "acala_primitives.currency.CurrencyId",
+          "existentialDeposit": "10000",
+          "transfersEnabled": true
+        },
+        "name": "USD Tether"
       }
     ],
     "nodes": [
@@ -3576,6 +3592,21 @@
           "transfersEnabled": true
         },
         "name": "Astar"
+      },
+      {
+        "assetId": 9,
+        "symbol": "USDT",
+        "precision": 6,
+        "type": "orml",
+        "priceId": "tether",
+        "icon": "https://raw.githubusercontent.com/nova-wallet/nova-spektr-utils/main/icons/v1/assets/white/USDT.svg",
+        "typeExtras": {
+          "currencyIdScale": "0x0a000000",
+          "currencyIdType": "u32",
+          "existentialDeposit": "10000",
+          "transfersEnabled": true
+        },
+        "name": "USD Tether"
       }
     ],
     "nodes": [
@@ -3843,8 +3874,16 @@
     ],
     "nodes": [
       {
+        "url": "wss://phala-rpc.dwellir.com",
+        "name": "Dwellir node"
+      },
+      {
         "url": "wss://api.phala.network/ws",
         "name": "Phala node"
+      },
+      {
+        "url": "wss://phala.api.onfinality.io/public-ws",
+        "name": "OnFinality node"
       }
     ],
     "explorers": [
@@ -4136,6 +4175,10 @@
     ],
     "nodes": [
       {
+        "url": "wss://composable.api.onfinality.io/public-ws",
+        "name": "Onfinality node"
+      },
+      {
         "url": "wss://rpc.composable.finance",
         "name": "Composable node"
       }
@@ -4294,6 +4337,21 @@
           "transfersEnabled": true
         },
         "name": "Polkadot"
+      },
+      {
+        "assetId": 3,
+        "symbol": "USDT",
+        "precision": 6,
+        "type": "orml",
+        "priceId": "tether",
+        "icon": "https://raw.githubusercontent.com/nova-wallet/nova-spektr-utils/main/icons/v1/assets/white/USDT.svg",
+        "typeExtras": {
+          "currencyIdScale": "0x0802",
+          "currencyIdType": "node_primitives.currency.CurrencyId",
+          "existentialDeposit": "1000",
+          "transfersEnabled": true
+        },
+        "name": "USD Tether"
       }
     ],
     "nodes": [
@@ -4823,10 +4881,6 @@
         "name": "bLd node"
       },
       {
-        "url": "wss://intern.gmordie.com",
-        "name": "GM intern node"
-      },
-      {
         "url": "wss://leemo.gmordie.com",
         "name": "Leemo node"
       }
@@ -5068,88 +5122,6 @@
     }
   },
   {
-    "chainId": "0x74ed91fbc18497f011290f9119a2217908649170337b6414a2d44923ade07063",
-    "name": "Myriad",
-    "assets": [
-      {
-        "assetId": 0,
-        "symbol": "MYRIA",
-        "precision": 18,
-        "priceId": "myriad-social",
-        "icon": "https://raw.githubusercontent.com/nova-wallet/nova-spektr-utils/main/icons/v1/assets/white/Myriad_(MYRIA).svg",
-        "name": "Myriad"
-      }
-    ],
-    "nodes": [
-      {
-        "url": "wss://gateway.mainnet.octopus.network/myriad/a4cb0a6e30ff5233a3567eb4e8cb71e0",
-        "name": "Octopus node"
-      }
-    ],
-    "explorers": [
-      {
-        "name": "Explorer",
-        "extrinsic": null,
-        "account": "https://explorer.mainnet.oct.network/myriad/accounts/{address}",
-        "event": null
-      }
-    ],
-    "icon": "https://raw.githubusercontent.com/nova-wallet/nova-spektr-utils/main/icons/v1/chains/Myriad.svg",
-    "addressPrefix": 42
-  },
-  {
-    "chainId": "0x50dd5d206917bf10502c68fb4d18a59fc8aa31586f4e8856b493e43544aa82aa",
-    "name": "XX network",
-    "assets": [
-      {
-        "assetId": 0,
-        "symbol": "XX",
-        "precision": 9,
-        "priceId": "xxcoin",
-        "icon": "https://raw.githubusercontent.com/nova-wallet/nova-spektr-utils/main/icons/v1/assets/white/xx_network_(XX).svg",
-        "name": "XX network"
-      }
-    ],
-    "nodes": [
-      {
-        "url": "wss://rpc-hetzner.xx.network",
-        "name": "xx Foundation node"
-      },
-      {
-        "url": "wss://rpc-do.xx.network",
-        "name": "xx Foundation node"
-      },
-      {
-        "url": "wss://xx.api.onfinality.io/public-ws",
-        "name": "OnFinality node"
-      }
-    ],
-    "explorers": [
-      {
-        "name": "XX explorer",
-        "extrinsic": "https://explorer.xx.network/extrinsics/{hash}",
-        "account": "https://explorer.xx.network/accounts/{address}",
-        "event": null
-      },
-      {
-        "name": "Polkastats",
-        "extrinsic": "https://xx.polkastats.io/extrinsic/{hash}",
-        "account": "https://xx.polkastats.io/account/{address}",
-        "event": null
-      }
-    ],
-    "icon": "https://raw.githubusercontent.com/nova-wallet/nova-spektr-utils/main/icons/v1/chains/XX_network.svg",
-    "addressPrefix": 55,
-    "externalApi": {
-      "history": [
-        {
-          "type": "subquery",
-          "url": "https://api.subquery.network/sq/nova-wallet/nova-wallet-xx-network"
-        }
-      ]
-    }
-  },
-  {
     "chainId": "0x5d3c298622d5634ed019bf61ea4b71655030015bde9beb0d6a24743714462c86",
     "parentId": "0x91b171bb158e2d3848fa23a9f1c25182fb8e20313b2c1eb49219da7a70ce90c3",
     "name": "Pendulum",
@@ -5220,37 +5192,6 @@
     "addressPrefix": 88
   },
   {
-    "chainId": "0x8b5c955b5c8fd7112562327e3859473df4e3dff49bd72a113dbb668d2cfa20d7",
-    "parentId": "0x91b171bb158e2d3848fa23a9f1c25182fb8e20313b2c1eb49219da7a70ce90c3",
-    "name": "Aventus",
-    "assets": [
-      {
-        "assetId": 0,
-        "symbol": "AVT",
-        "precision": 18,
-        "priceId": "aventus",
-        "icon": "https://raw.githubusercontent.com/nova-wallet/nova-spektr-utils/main/icons/v1/assets/white/Aventus_(AVT).svg",
-        "name": "Aventus"
-      }
-    ],
-    "nodes": [
-      {
-        "url": "wss://public-rpc.mainnet.aventus.io",
-        "name": "Aventus node"
-      }
-    ],
-    "explorers": [
-      {
-        "name": "Aventus explorer",
-        "extrinsic": "https://explorer.mainnet.aventus.io/transaction/{hash}",
-        "account": "https://explorer.mainnet.aventus.io/address/{address}",
-        "event": null
-      }
-    ],
-    "icon": "https://raw.githubusercontent.com/nova-wallet/nova-spektr-utils/main/icons/v1/chains/Aventus.svg",
-    "addressPrefix": 42
-  },
-  {
     "chainId": "0xdce5477cfca571c2cb652f38bbb70429004be3cf9649dd2b4ad9455b2251fe43",
     "parentId": "0x91b171bb158e2d3848fa23a9f1c25182fb8e20313b2c1eb49219da7a70ce90c3",
     "name": "Hashed Network",
@@ -5264,10 +5205,6 @@
       }
     ],
     "nodes": [
-      {
-        "url": "wss://c1.hashed.network",
-        "name": "Hashed systems 1 node"
-      },
       {
         "url": "wss://c2.hashed.network",
         "name": "Hashed systems 2 node"
@@ -5323,35 +5260,6 @@
     ],
     "icon": "https://raw.githubusercontent.com/nova-wallet/nova-spektr-utils/main/icons/v1/chains/Ajuna.svg",
     "addressPrefix": 1328
-  },
-  {
-    "chainId": "0x6c5894837ad89b6d92b114a2fb3eafa8fe3d26a54848e3447015442cd6ef4e66",
-    "name": "3DPass",
-    "assets": [
-      {
-        "assetId": 0,
-        "symbol": "P3D",
-        "precision": 12,
-        "icon": "https://raw.githubusercontent.com/nova-wallet/nova-spektr-utils/main/icons/v1/assets/white/3DPass_(P3D).svg",
-        "name": "3DPass"
-      }
-    ],
-    "nodes": [
-      {
-        "url": "wss://rpc2.3dpass.org",
-        "name": "3DPass node"
-      }
-    ],
-    "explorers": [
-      {
-        "name": "3DPass explorer",
-        "extrinsic": "https://explorer.3dpass.org/extrinsic/{hash}",
-        "account": "https://explorer.3dpass.org/account/{address}",
-        "event": null
-      }
-    ],
-    "icon": "https://raw.githubusercontent.com/nova-wallet/nova-spektr-utils/main/icons/v1/chains/3DPass.svg",
-    "addressPrefix": 71
   },
   {
     "chainId": "0x4a587bf17a404e3572747add7aab7bbe56e805a5479c6c436f07f36fcc8d3ae1",
