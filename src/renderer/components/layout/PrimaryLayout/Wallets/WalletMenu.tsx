@@ -5,7 +5,7 @@ import cn from 'classnames';
 import { DropdownButton, SearchInput, SmallTitleText } from '@renderer/components/ui-redesign';
 import { useI18n } from '@renderer/context/I18nContext';
 import { AddWalletOptions } from '@renderer/components/layout/PrimaryLayout/Wallets/common/constants';
-import { AccountId, WalletType } from '@renderer/domain/shared-kernel';
+import { WalletType } from '@renderer/domain/shared-kernel';
 import { useAccount } from '@renderer/services/account/accountService';
 import {
   ChainsRecord,
@@ -14,7 +14,7 @@ import {
 } from '@renderer/components/layout/PrimaryLayout/Wallets/common/types';
 import WalletGroup from '@renderer/components/layout/PrimaryLayout/Wallets/WalletGroup';
 import { useGroupedWallets } from './common/useGroupedWallets';
-import { WalletDS } from '@renderer/services/storage';
+import { ID, WalletDS } from '@renderer/services/storage';
 
 type Props = {
   chains: ChainsRecord;
@@ -31,10 +31,12 @@ const WalletMenu = ({ children, chains, wallets }: PropsWithChildren<Props>) => 
 
   const dropdownOptions = AddWalletOptions.map((o) => ({ ...o, title: t(o.title) }));
 
-  const getAllShardsIds = (wallet: MultishardWallet): AccountId[] => {
-    return wallet.rootAccounts.reduce<AccountId[]>((acc, root) => {
-      acc.push(root.accountId);
-      root.chains.forEach((c) => c.accounts.forEach((a) => acc.push(a.accountId)));
+  const getAllShardsIds = (wallet: MultishardWallet): ID[] => {
+    return wallet.rootAccounts.reduce<ID[]>((acc, root) => {
+      if (root.id) {
+        acc.push(root.id);
+      }
+      root.chains.forEach((c) => c.accounts.forEach((a) => a.id && acc.push(a.id)));
 
       return acc;
     }, []);
@@ -49,13 +51,15 @@ const WalletMenu = ({ children, chains, wallets }: PropsWithChildren<Props>) => 
     if ('rootAccounts' in wallet) {
       selectMultishardWallet(wallet as MultishardWallet);
     } else {
-      setActiveAccount(wallet.accountId);
+      if (wallet.id) {
+        setActiveAccount(wallet.id);
+      }
     }
   };
 
   return (
     <Popover className="relative">
-      <Popover.Button className="border border-container-border bg-left-navigation-menu-background rounded-md w-full shadow-card-shadow ">
+      <Popover.Button className="border border-container-border bg-left-navigation-menu-background rounded-md w-full shadow-card-shadow h-[52px]">
         {children}
       </Popover.Button>
       <Transition
