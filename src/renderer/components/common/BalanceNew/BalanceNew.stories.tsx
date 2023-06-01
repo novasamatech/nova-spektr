@@ -13,7 +13,7 @@ const assetDot = {
   symbol: 'DOT',
   precision: 10,
   priceId: 'polkadot',
-  icon: 'https://raw.githubusercontent.com/nova-wallet/nova-utils/master/icons/chains/white/Polkadot.svg',
+  icon: 'https://raw.githubusercontent.com/novasamatech/nova-utils/master/icons/chains/white/Polkadot.svg',
   name: 'Polkadot',
 };
 
