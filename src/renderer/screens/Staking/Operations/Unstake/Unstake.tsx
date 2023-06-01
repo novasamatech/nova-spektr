@@ -17,12 +17,13 @@ import { useChains } from '@renderer/services/network/chainsService';
 import { StakingMap } from '@renderer/services/staking/common/types';
 import { useStakingData } from '@renderer/services/staking/stakingDataService';
 import InitOperation, { UnstakeResult } from './InitOperation/InitOperation';
-import { Confirmation, MultiScanning, Signing, Submit, SingleScanning } from '../components';
+import { Confirmation, MultiScanning, Signing, Submit } from '../components';
 import { toAddress } from '@renderer/shared/utils/address';
 import { getRelaychainAsset } from '@renderer/shared/utils/assets';
 import { useCountdown } from '@renderer/shared/hooks';
 import { useTransaction } from '@renderer/services/transaction/transactionService';
 import { Account, MultisigAccount, isMultisig } from '@renderer/domain/account';
+import { Scanning } from '@renderer/components/common/Scaning/Scaning';
 
 const enum Step {
   INIT,
@@ -290,17 +291,19 @@ const Unstake = () => {
             accounts={accounts}
             transactions={transactions}
             chainId={chainId}
+            onGoBack={() => setActiveStep(Step.CONFIRMATION)}
             onResetCountdown={resetCountdown}
             onResult={onScanResult}
           />
         ) : (
-          <SingleScanning
+          <Scanning
             api={api}
             addressPrefix={addressPrefix}
             countdown={countdown}
             account={signer || accounts[0]}
             transaction={multisigTx || transactions[0]}
             chainId={chainId}
+            onGoBack={() => setActiveStep(Step.CONFIRMATION)}
             onResetCountdown={resetCountdown}
             onResult={(unsignedTx) => onScanResult([unsignedTx])}
           />

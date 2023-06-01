@@ -72,6 +72,9 @@
   --row-background: #fff;
   --hover: rgba(36, 99, 235, 0.04);
   --card-background: #fff;
+  --label-background-green: #01a63e;
+  --label-background-red: #f52163;
+  --label-background-gray: rgba(128, 128, 128, 0.48);
 
   /* SHADOW */
   --card-shadow: 0px 3px 4px rgba(69, 69, 137, 0.04), inset 0px -0.5px 0px rgba(69, 69, 137, 0.12);

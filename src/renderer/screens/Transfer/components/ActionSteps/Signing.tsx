@@ -20,17 +20,23 @@ type Props = {
   transaction: Transaction;
   assetId: string;
   countdown: number;
-  onQrExpired: () => void;
   onStartOver: () => void;
+  onGoBack: () => void;
   onResult: (signature: HexString) => void;
 };
 
-const Signing = ({ api, chainId, transaction, assetId, countdown, onQrExpired, onStartOver, onResult }: Props) => {
+const Signing = ({ api, chainId, transaction, assetId, countdown, onGoBack, onStartOver, onResult }: Props) => {
   const { t } = useI18n();
   const { getBalance } = useBalance();
   const { getTransactionFee } = useTransaction();
 
   const [validationError, setValidationError] = useState<ValidationErrors>();
+
+  useEffect(() => {
+    if (countdown === 0) {
+      onGoBack();
+    }
+  }, [countdown]);
 
   const getTokenBalance = (): Promise<Balance | undefined> => {
     return getBalance(toAccountId(transaction.address), chainId, assetId.toString());
@@ -72,12 +78,6 @@ const Signing = ({ api, chainId, transaction, assetId, countdown, onQrExpired, o
       onResult(signature as HexString);
     }
   };
-
-  useEffect(() => {
-    if (countdown === 0) {
-      onQrExpired();
-    }
-  }, [countdown]);
 
   return (
     <div className="flex flex-col items-center gap-y-2.5 w-full">

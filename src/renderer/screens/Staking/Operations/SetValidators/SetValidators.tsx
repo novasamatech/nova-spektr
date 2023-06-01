@@ -186,6 +186,7 @@ const SetValidators = () => {
           transactions={transactions}
           addressPrefix={addressPrefix}
           countdown={countdown}
+          onGoBack={() => setActiveStep(Step.CONFIRMATION)}
           onResetCountdown={resetCountdown}
           onResult={onScanResult}
         />

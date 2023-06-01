@@ -1,6 +1,8 @@
+import { useEffect } from 'react';
+
 import ParitySignerSignatureReader from '@renderer/screens/Signing/ParitySignerSignatureReader/ParitySignerSignatureReader';
 import MultiframeSignatureReader from '@renderer/screens/Signing/MultiframeSignatureReader/MultiframeSignatureReader';
-import { Block, Button, Plate } from '@renderer/components/ui';
+import { Block, Plate } from '@renderer/components/ui';
 import { useI18n } from '@renderer/context/I18nContext';
 import { HexString } from '@renderer/domain/shared-kernel';
 
@@ -13,6 +15,12 @@ type Props = {
 
 export const Signing = ({ multiQr, countdown, onResult, onGoBack }: Props) => {
   const { t } = useI18n();
+
+  useEffect(() => {
+    if (countdown === 0) {
+      onGoBack();
+    }
+  }, [countdown]);
 
   const handleResult = (data: string | string[]) => {
     if (Array.isArray(data)) {
@@ -33,12 +41,6 @@ export const Signing = ({ multiQr, countdown, onResult, onGoBack }: Props) => {
             <QrReader className="w-full rounded-2lg" countdown={countdown} size={460} onResult={handleResult} />
           </div>
         </Block>
-
-        {countdown === 0 && (
-          <Button variant="fill" pallet="primary" weight="lg" onClick={onGoBack}>
-            {t('signing.generateNewQrButton')}
-          </Button>
-        )}
       </Plate>
     </div>
   );

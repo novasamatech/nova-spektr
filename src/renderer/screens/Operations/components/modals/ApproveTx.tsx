@@ -8,10 +8,9 @@ import { Button, BaseModal } from '@renderer/components/ui-redesign';
 import { useI18n } from '@renderer/context/I18nContext';
 import { AccountDS } from '@renderer/services/storage';
 import { useToggle, useCountdown } from '@renderer/shared/hooks';
-import { MultisigAccount } from '@renderer/domain/account';
+import { Account, MultisigAccount } from '@renderer/domain/account';
 import { ExtendedChain } from '@renderer/services/network/common/types';
 import { Signing } from '../ActionSteps/Signing';
-import { Scanning } from '../ActionSteps/Scanning';
 import { MultisigTransaction, Transaction, TransactionType } from '@renderer/domain/transaction';
 import { Address, HexString, Timepoint } from '@renderer/domain/shared-kernel';
 import { toAddress } from '@renderer/shared/utils/address';
@@ -27,6 +26,7 @@ import Confirmation from '@renderer/screens/Operations/components/ActionSteps/Co
 import SignatorySelectModal from '@renderer/screens/Operations/components/modals/SignatorySelectModal';
 import OperationResult from '@renderer/components/ui-redesign/OperationResult/OperationResult';
 import OperationModalTitle from '@renderer/screens/Operations/components/OperationModalTitle';
+import { Scanning } from '@renderer/components/common/Scaning/Scaning';
 
 type Props = {
   tx: MultisigTransaction;
@@ -54,9 +54,7 @@ const ApproveTx = ({ tx, account, connection }: Props) => {
   const [isFeeModalOpen, toggleFeeModal] = useToggle(false);
   const [activeStep, setActiveStep] = useState(Step.CONFIRMATION);
   const [countdown, resetCountdown] = useCountdown(connection.api);
-  const [signAccount, setSignAccount] = useState<AccountDS>();
-  // if qr expires while on signing screen this state used as a flag for Scanning step to show qr error instead of generating new
-  const [isQrExpired, setIsQrExpired] = useState(false);
+  const [signAccount, setSignAccount] = useState<Account>();
 
   const accounts = getLiveAccounts();
 
@@ -182,16 +180,6 @@ const ApproveTx = ({ tx, account, connection }: Props) => {
     }
   };
 
-  const handleQrExpiredWhileSigning = () => {
-    setIsQrExpired(true);
-    goBack();
-  };
-
-  const handleQrReset = () => {
-    resetCountdown();
-    setIsQrExpired(false);
-  };
-
   const thresholdReached = tx.events.filter((e) => e.status === 'SIGNED').length === account.threshold - 1;
 
   const readyForSign = tx.status === 'SIGNING' && unsignedAccounts.length > 0;
@@ -225,31 +213,22 @@ const ApproveTx = ({ tx, account, connection }: Props) => {
           </>
         )}
 
-        {activeStep === Step.SCANNING && (
-          <>
-            {approveTx && connection.api && signAccount && (
-              <Scanning
-                api={connection.api}
-                chainId={tx.chainId}
-                transaction={approveTx}
-                account={signAccount}
-                explorers={connection?.explorers}
-                addressPrefix={connection?.addressPrefix}
-                countdown={countdown}
-                isQrExpired={isQrExpired}
-                onResetCountdown={handleQrReset}
-                onResult={setUnsignedTx}
-              />
-            )}
-
-            <div className="flex w-full justify-between">
-              <Button variant="text" onClick={goBack}>
-                {t('operation.goBackButton')}
-              </Button>
-
-              <Button onClick={() => setActiveStep(Step.SIGNING)}>{t('operation.continueButton')}</Button>
-            </div>
-          </>
+        {activeStep === Step.SCANNING && approveTx && connection.api && signAccount && (
+          <Scanning
+            api={connection.api}
+            chainId={tx.chainId}
+            transaction={approveTx}
+            account={signAccount}
+            explorers={connection?.explorers}
+            addressPrefix={connection?.addressPrefix}
+            countdown={countdown}
+            onResetCountdown={resetCountdown}
+            onGoBack={goBack}
+            onResult={(tx) => {
+              setUnsignedTx(tx);
+              setActiveStep(Step.SIGNING);
+            }}
+          />
         )}
 
         {activeStep === Step.SIGNING && (
@@ -261,7 +240,7 @@ const ApproveTx = ({ tx, account, connection }: Props) => {
                 transaction={approveTx}
                 countdown={countdown}
                 assetId={asset?.assetId.toString() || '0'}
-                onQrExpired={handleQrExpiredWhileSigning}
+                onGoBack={goBack}
                 onStartOver={() => {}}
                 onResult={onSignResult}
               />

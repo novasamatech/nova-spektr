@@ -9,9 +9,10 @@ import { useChains } from '@renderer/services/network/chainsService';
 import { Transaction } from '@renderer/domain/transaction';
 import { Account, MultisigAccount } from '@renderer/domain/account';
 import { useCountdown } from '@renderer/shared/hooks';
-import { BaseModal, Button } from '@renderer/components/ui-redesign';
+import { BaseModal } from '@renderer/components/ui-redesign';
 import OperationModalTitle from '../Operations/components/OperationModalTitle';
-import { InitOperation, Confirmation, Scanning, Signing, Submit } from './components/ActionSteps';
+import { InitOperation, Confirmation, Signing, Submit } from './components/ActionSteps';
+import { Scanning } from '@renderer/components/common/Scaning/Scaning';
 
 const enum Step {
   INIT,
@@ -43,14 +44,12 @@ const Transfer = ({ assetId, chainId, isOpen, onClose }: Props) => {
   const [unsignedTx, setUnsignedTx] = useState<UnsignedTransaction>({} as UnsignedTransaction);
   const [signature, setSignature] = useState<HexString>('0x0');
 
-  const [isQrExpired, setIsQrExpired] = useState(false);
+  const connection = connections[chainId];
+  const [countdown, resetCountdown] = useCountdown(connection?.api);
 
   useEffect(() => {
     getChainById(chainId).then((chain) => setChainName(chain?.name || ''));
   }, []);
-
-  const connection = connections[chainId];
-  const [countdown, resetCountdown] = useCountdown(connection?.api);
 
   if (!connection?.api?.isConnected) {
     return <ChainLoader chainName={chainName} />;
@@ -67,11 +66,6 @@ const Transfer = ({ assetId, chainId, isOpen, onClose }: Props) => {
   };
 
   const onConfirmResult = () => {
-    setActiveStep(Step.SCANNING);
-  };
-
-  const handleQrExpiredWhileSigning = () => {
-    setIsQrExpired(true);
     setActiveStep(Step.SCANNING);
   };
 
@@ -131,26 +125,19 @@ const Transfer = ({ assetId, chainId, isOpen, onClose }: Props) => {
           />
         )}
         {activeStep === Step.SCANNING && (
-          <>
-            <Scanning
-              chainId={chainId}
-              account={signatory || account}
-              transaction={multisigTx || transferTx}
-              isQrExpired={isQrExpired}
-              countdown={countdown}
-              onResetCountdown={resetCountdown}
-              onResult={setUnsignedTx}
-              {...commonProps}
-            />
-
-            <div className="flex w-full justify-between">
-              <Button variant="text" onClick={() => setActiveStep(Step.CONFIRMATION)}>
-                {t('operation.goBackButton')}
-              </Button>
-
-              <Button onClick={() => setActiveStep(Step.SIGNING)}>{t('operation.continueButton')}</Button>
-            </div>
-          </>
+          <Scanning
+            chainId={chainId}
+            account={signatory || account}
+            transaction={multisigTx || transferTx}
+            countdown={countdown}
+            onResetCountdown={resetCountdown}
+            onResult={(tx) => {
+              setUnsignedTx(tx);
+              setActiveStep(Step.SIGNING);
+            }}
+            onGoBack={() => setActiveStep(Step.CONFIRMATION)}
+            {...commonProps}
+          />
         )}
         {activeStep === Step.SIGNING && (
           <Signing
@@ -158,7 +145,7 @@ const Transfer = ({ assetId, chainId, isOpen, onClose }: Props) => {
             transaction={multisigTx || transferTx}
             assetId={assetId.toString()}
             countdown={countdown}
-            onQrExpired={handleQrExpiredWhileSigning}
+            onGoBack={() => setActiveStep(Step.SCANNING)}
             onStartOver={onStartOver}
             onResult={onSignResult}
             {...commonProps}

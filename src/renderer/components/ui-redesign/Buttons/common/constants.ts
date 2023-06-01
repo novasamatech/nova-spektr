@@ -2,6 +2,7 @@ import { Pallet, Variant } from './types';
 
 // TODO add action state styles e.g. active, disabled
 export const ViewClass: Record<`${Variant}_${Pallet}`, string> = {
+  // TODO check if text button should have link style or action text style
   text_primary: 'text-action-text-default hover:text-action-text border-transparent bg-transparent px-2 py-1',
   text_error: '',
   text_secondary: '', // IDK if it's going to be a thing later, leave it here for now

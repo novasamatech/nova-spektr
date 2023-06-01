@@ -16,10 +16,11 @@ import { Transaction, TransactionType } from '@renderer/domain/transaction';
 import Paths from '@renderer/routes/paths';
 import InitOperation, { BondResult } from './InitOperation/InitOperation';
 import { ValidatorMap } from '@renderer/services/staking/common/types';
-import { Validators, Confirmation, MultiScanning, Signing, Submit, SingleScanning } from '../components';
+import { Validators, Confirmation, MultiScanning, Signing, Submit } from '../components';
 import { useCountdown } from '@renderer/shared/hooks';
 import { Account, MultisigAccount, isMultisig } from '@renderer/domain/account';
 import { useTransaction } from '@renderer/services/transaction/transactionService';
+import { Scanning } from '@renderer/components/common/Scaning/Scaning';
 
 const enum Step {
   INIT,
@@ -278,17 +279,19 @@ const Bond = () => {
               accounts={accounts}
               transactions={transactions}
               chainId={chainId}
+              onGoBack={() => setActiveStep(Step.SCANNING)}
               onResetCountdown={resetCountdown}
               onResult={onScanResult}
             />
           ) : (
-            <SingleScanning
+            <Scanning
               api={api}
               addressPrefix={addressPrefix}
               countdown={countdown}
               account={signer || accounts[0]}
               transaction={multisigTx || transactions[0]}
               chainId={chainId}
+              onGoBack={() => setActiveStep(Step.CONFIRMATION)}
               onResetCountdown={resetCountdown}
               onResult={(unsignedTx) => onScanResult([unsignedTx])}
             />
