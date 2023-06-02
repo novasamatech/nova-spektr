@@ -451,7 +451,7 @@ export const useTransaction = (): ITransactionService => {
       transaction.args.value = decoded.args[2].toString();
     }
 
-    if (method === 'transfer' && section === 'currencies') {
+    if (method === 'transfer' && (section === 'currencies' || section === 'tokens')) {
       transaction.type = TransactionType.ORML_TRANSFER;
 
       transaction.args.dest = decoded.args[0].toString();
