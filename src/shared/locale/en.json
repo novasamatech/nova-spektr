@@ -676,11 +676,11 @@
   "transactionMessage": {
     "bond": "Stake { amount } { asset }",
     "destination": "Change reward destination to { address }",
-    "nominate": "Change validators",
+    "nominate": "Change validator set",
     "redeem": "Withdraw { amount } { asset }",
     "restake": "Return { amount } { asset } to stake",
     "restakeDestination": "restake",
-    "stakeMore": "Increase stake { amount } { asset }",
+    "stakeMore": "Increase stake by { amount } { asset }",
     "transfer": "Transfer { amount } { asset } to { address }",
     "unstake": "Unstake { amount } { asset }"
   },
