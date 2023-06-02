@@ -9,7 +9,7 @@ import { useI18n } from '@renderer/context/I18nContext';
 import { ValidationErrors } from '@renderer/shared/utils/validation';
 import { secondsToMinutes } from '@renderer/shared/utils/time';
 import { Button, CaptionText, FootnoteText, Select, SmallTitleText } from '@renderer/components/ui-redesign';
-import { CameraAccessErrors, CameraError } from '../common/consts';
+import { CameraAccessErrors, CameraError, WhiteTextButtonStyle } from '../common/consts';
 import cnTw from '@renderer/shared/utils/twMerge';
 import SignatureReaderError from '@renderer/screens/Signing/SignatureReaderError';
 import '../style.css';
@@ -79,11 +79,15 @@ const QrReaderWrapper = ({
       setTimeout(() => onResult(qrPayload), RESULT_DELAY);
     } catch (error) {
       setError(CameraError.INVALID_ERROR);
-      setActiveCamera(undefined);
+
+      // try to scan again after 5 seconds
+      setTimeout(() => setError(undefined), 5000);
     }
   };
 
   const onError = (error: ErrorObject) => {
+    setIsLoading(false);
+
     if (error.code === QrError.USER_DENY) {
       setError(CameraError.DENY_ERROR);
     } else if (error.code === QrError.DECODE_ERROR) {
@@ -97,7 +101,11 @@ const QrReaderWrapper = ({
     size: 240,
     bgVideo: true,
     bgVideoClassName: 'w-[440px] h-[532px]',
-    className: cnTw('z-10 w-[440px] h-[532px] lef-[-100px] top-[-124px]', className),
+    className: cnTw(
+      'z-10 w-[440px] h-[532px] lef-[-100px] top-[-124px]',
+      error === CameraError.INVALID_ERROR && 'blur-[13px]',
+      className,
+    ),
     cameraId: activeCamera?.value,
     onStart: () => setIsLoading(false),
     onCameraList: onCameraList,
@@ -133,21 +141,20 @@ const QrReaderWrapper = ({
               name="qrFrame"
               size={240}
               className={cnTw(
-                'absolute w-full h-full min-h-[240px] z-20',
-                isCameraOn ? 'text-button-text camera-frame' : 'text-filter-border',
+                'absolute w-full h-full min-h-[240px] camera-frame z-20',
+                isCameraOn ? 'text-button-text' : 'text-filter-border',
               )}
             />
+            <div className="z-30 absolute flex flex-col items-center justify-center gap-y-4 w-full h-[240px]">
+              <SignatureReaderError
+                error={error}
+                validationError={validationError}
+                isCameraOn={isCameraOn && !isLoading}
+                onTryAgain={onRetryCamera}
+              />
+            </div>
           </div>
         )}
-
-        <div className="z-10">
-          <SignatureReaderError
-            error={error}
-            validationError={validationError}
-            isCameraOn={isCameraOn && !isLoading}
-            onTryAgain={onRetryCamera}
-          />
-        </div>
 
         {isLoading && <Shimmering width={240} height={240} className="absolute rounded-[1.75rem]" />}
 
@@ -172,9 +179,9 @@ const QrReaderWrapper = ({
         />
       )}
 
-      <footer className="flex w-full justify-start mt-auto pt-6 pb-7 pl-9 z-10">
+      <footer className="flex w-full justify-start mt-auto pt-5 pb-6 pl-7 z-10">
         {onGoBack && (
-          <Button variant="text" className={isCameraOn ? 'text-button-text' : ''} onClick={onGoBack}>
+          <Button variant="text" className={cn('h-6.5', isCameraOn ? WhiteTextButtonStyle : '')} onClick={onGoBack}>
             {t('operation.goBackButton')}
           </Button>
         )}

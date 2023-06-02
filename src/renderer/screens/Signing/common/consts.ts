@@ -19,14 +19,14 @@ export const enum CameraError {
   DENY_ERROR,
 }
 
-export const CameraAccessErrors = [CameraError.UNKNOWN_ERROR, CameraError.DECODE_ERROR, CameraError.INVALID_ERROR];
+export const CameraAccessErrors = [CameraError.UNKNOWN_ERROR, CameraError.DENY_ERROR, CameraError.DECODE_ERROR];
 
 export const CameraErrorText = {
-  [CameraError.UNKNOWN_ERROR]: {
+  [CameraError.INVALID_ERROR]: {
     label: 'onboarding.paritySigner.wrongQRCodeLabel',
     description: 'onboarding.paritySigner.wrongQRCodeDescription',
   },
-  [CameraError.INVALID_ERROR]: {
+  [CameraError.UNKNOWN_ERROR]: {
     label: 'onboarding.paritySigner.notWorkingLabel',
     description: 'onboarding.paritySigner.notWorkingDescription',
   },
@@ -39,3 +39,6 @@ export const CameraErrorText = {
     description: 'onboarding.paritySigner.accessDeniedDescription',
   },
 } as const;
+
+export const WhiteTextButtonStyle =
+  'text-white-button-background-default hover:text-white-button-background-hover active:text-white-button-background-active disabled:text-white-button-background-disabled';

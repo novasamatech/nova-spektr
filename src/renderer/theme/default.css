@@ -34,6 +34,10 @@
   --secondary-button-background-hover: rgba(69, 69, 137, 0.12);
   --secondary-button-background-active: rgba(69, 69, 137, 0.16);
   --scroll-background-default: rgba(69, 69, 137, 0.48);
+  --white-button-background-default: #ffffff;
+  --white-button-background-hover: rgba(255, 255, 255, 0.8);
+  --white-button-background-active: rgba(255, 255, 255, 0.64);
+  --white-button-background-disabled: rgba(255, 255, 255, 0.48);
 
   /* BORDER */
   --token-container-border: rgba(69, 69, 137, 0.06);

@@ -83,7 +83,7 @@ export const Scanning = ({
         {txPayload && <QrTxGenerator cmd={0} payload={txPayload} address={address} genesisHash={chainId} />}
       </QrGeneratorContainer>
 
-      <footer className="flex w-full justify-between mt-3">
+      <footer className="flex w-full justify-between mt-3 pl-2">
         <Button variant="text" onClick={onGoBack}>
           {t('operation.goBackButton')}
         </Button>
