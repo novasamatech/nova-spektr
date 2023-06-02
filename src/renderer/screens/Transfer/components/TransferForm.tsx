@@ -238,7 +238,7 @@ export const TransferForm = ({ api, chainId, account, signer, asset, nativeToken
 
   return (
     <form className="w-full" onSubmit={handleSubmit(submitTransaction)}>
-      <div className="flex flex-col gap-y-5 mb-2.5">
+      <div className="flex flex-col gap-y-5">
         <Controller
           name="destination"
           control={control}
@@ -366,7 +366,7 @@ export const TransferForm = ({ api, chainId, account, signer, asset, nativeToken
         {t('transfer.multisigTransactionExist')}
       </InputHint>
 
-      <Button className="w-fit flex-0 mt-5 ml-auto" type="submit" disabled={!isValid}>
+      <Button className="w-fit flex-0 mt-7 ml-auto" type="submit" disabled={!isValid}>
         {t('transfer.continueButton')}
       </Button>
     </form>

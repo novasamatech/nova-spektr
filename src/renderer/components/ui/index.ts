@@ -18,7 +18,6 @@ import Stepper from './Stepper/Stepper';
 import LanguageSwitcher from './LanguageSwitcher/LanguageSwitcher';
 import Carousel from './Carousel/Carousel';
 import Dropdown from './Dropdowns/Dropdown/Dropdown';
-import RadioGroup from './RadioGroup/RadioGroup';
 import HintList from './HintList/HintList';
 import Select from './Dropdowns/Select/Select';
 import Balance from './Balance/Balance';
@@ -51,7 +50,6 @@ export {
   Stepper,
   LanguageSwitcher,
   Dropdown,
-  RadioGroup,
   HintList,
   Select,
   Carousel,

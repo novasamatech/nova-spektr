@@ -113,6 +113,7 @@ export const useNetwork = (networkSubscription?: ISubscriptionService<ChainId>):
           connectionStatus: ConnectionStatus.NONE,
         });
       } else {
+        // const connectionType = getKnownChain(chainId) ? ConnectionType.LIGHT_CLIENT : ConnectionType.DISABLED;
         const connectionType = getKnownChain(chainId) ? ConnectionType.LIGHT_CLIENT : ConnectionType.AUTO_BALANCE;
         const activeNode = connectionType === ConnectionType.AUTO_BALANCE ? nodes[0] : undefined;
 

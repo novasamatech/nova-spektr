@@ -19,6 +19,7 @@ import { toAddress } from '@renderer/shared/utils/address';
 import { Stake } from '@renderer/domain/stake';
 import { AccountDS } from '@renderer/services/storage';
 import { SigningBadges } from '@renderer/shared/utils/constants';
+import { AccountAddress, BalanceNew } from '@renderer/components/common';
 
 export const validateBalanceForFee = (balance: AccountBalance | string, fee: string): boolean => {
   const transferableBalance = typeof balance === 'string' ? balance : transferableAmount(balance);
@@ -66,45 +67,24 @@ export const validateUnstake = (stake: Stake | string, amount: string, precision
 
 //todo it has too much meaning, better to rename it.
 //todo isn't it better to avoid using react components in utils files. Better to move to another something like components
-const getElement = (address: Address, account: Account, content?: ReactNode, walletName?: string): ReactNode => {
+const getElement = (address: Address, accountName: string, content?: ReactNode): ReactNode => {
   return (
-    <div className="flex justify-between items-center gap-x-2.5">
-      <div className="flex gap-x-[5px] items-center">
-        <ChainAddress
-          address={address}
-          name={account.name}
-          subName={walletName}
-          signType={account.signingType}
-          size={30}
-          canCopy={false}
-        />
-      </div>
+    <div className="flex justify-between w-full">
+      <AccountAddress size={20} type="short" address={address} name={accountName} canCopy={false} />
       {content}
     </div>
   );
 };
 
 const getBalance = (balance: string, asset: Asset, isCorrect: boolean): ReactNode => {
-  if (!balance || balance === '0') return null;
+  if (!balance) return null;
 
-  return (
-    <div className="flex items-center gap-x-1">
-      {!isCorrect && <Icon size={12} className="text-error" name="warnCutout" />}
-
-      <Balance
-        className={cn(!isCorrect && 'text-error')}
-        value={balance}
-        precision={asset.precision}
-        symbol={asset.symbol}
-      />
-    </div>
-  );
+  return <BalanceNew className={cn(!isCorrect && 'text-text-negative')} value={balance} asset={asset} />;
 };
 
 type Params = {
   asset: Asset;
   addressPrefix: number;
-  walletName?: string;
   fee?: string;
   amount?: string;
   balance?: AccountBalance;
@@ -116,7 +96,7 @@ type ParamsWithStake = Params & {
 
 export const getGeneralAccountOption = <T extends Account | MultisigAccount>(
   account: T,
-  { walletName, balance, asset, fee, addressPrefix, amount = '0' }: Params,
+  { balance, asset, fee, addressPrefix, amount = '0' }: Params,
 ): DropdownOption<T> => {
   const address = toAddress(account.accountId, { prefix: addressPrefix });
   const canValidateBalance = balance && fee;
@@ -127,14 +107,14 @@ export const getGeneralAccountOption = <T extends Account | MultisigAccount>(
   }
 
   const balanceContent = getBalance(transferableAmount(balance), asset, balanceIsCorrect);
-  const element = getElement(address, account, balanceContent, walletName);
+  const element = getElement(address, account.name, balanceContent);
 
   return { id: account.accountId, value: account, element };
 };
 
 export const getStakeAccountOption = <T extends Account | MultisigAccount>(
   account: T,
-  { walletName, balance, asset, fee, addressPrefix, amount = '0' }: Params,
+  { balance, asset, fee, addressPrefix, amount = '0' }: Params,
 ): DropdownOption<T> => {
   const address = toAddress(account.accountId, { prefix: addressPrefix });
   const canValidateBalance = balance && fee;
@@ -145,14 +125,14 @@ export const getStakeAccountOption = <T extends Account | MultisigAccount>(
   }
 
   const balanceContent = getBalance(stakeableAmount(balance), asset, balanceIsCorrect);
-  const element = getElement(address, account, balanceContent, walletName);
+  const element = getElement(address, account.name, balanceContent);
 
   return { id: account.accountId, value: account, element };
 };
 
 export const getRedeemAccountOption = <T extends Account | MultisigAccount>(
   account: T,
-  { walletName, asset, stake, era, addressPrefix }: ParamsWithStake,
+  { asset, stake, era, addressPrefix }: ParamsWithStake,
 ): DropdownOption<T> => {
   const address = toAddress(account.accountId, { prefix: addressPrefix });
   const canDisplayRedeem = stake && era;
@@ -162,14 +142,14 @@ export const getRedeemAccountOption = <T extends Account | MultisigAccount>(
     </div>
   );
 
-  const element = getElement(address, account, balanceContent, walletName);
+  const element = getElement(address, account.name, balanceContent);
 
   return { id: account.accountId, value: account, element };
 };
 
 export const getRestakeAccountOption = (
   account: Account,
-  { walletName, balance, stake, asset, fee, addressPrefix, amount = '0' }: ParamsWithStake,
+  { balance, stake, asset, fee, addressPrefix, amount = '0' }: ParamsWithStake,
 ): DropdownOption<Account> => {
   const address = toAddress(account.accountId, { prefix: addressPrefix });
   const canValidateBalance = balance && stake && fee;
@@ -182,14 +162,14 @@ export const getRestakeAccountOption = (
   }
 
   const balanceContent = getBalance(unlockingAmount(stake?.unlocking), asset, balanceIsCorrect);
-  const element = getElement(address, account, balanceContent, walletName);
+  const element = getElement(address, account.name, balanceContent);
 
   return { id: account.accountId, value: account, element };
 };
 
 export const getUnstakeAccountOption = (
   account: Account,
-  { walletName, balance, stake, asset, fee, addressPrefix, amount = '0' }: ParamsWithStake,
+  { balance, stake, asset, fee, addressPrefix, amount = '0' }: ParamsWithStake,
 ): DropdownOption<Account> => {
   const address = toAddress(account.accountId, { prefix: addressPrefix });
   const canValidateBalance = balance && stake && fee;
@@ -202,7 +182,7 @@ export const getUnstakeAccountOption = (
   }
 
   const balanceContent = getBalance(stake?.active || '', asset, balanceIsCorrect);
-  const element = getElement(address, account, balanceContent, walletName);
+  const element = getElement(address, account.name, balanceContent);
 
   return { id: account.accountId, value: account, element };
 };

@@ -39,11 +39,11 @@ const AmountInput = ({
 
     if (Array.isArray(balance) && !isSameBalance) {
       return (
-        <div className="flex gap-x-1">
-          <BalanceNew className="text-neutral font-semibold" value={balance[0]} asset={asset} />
+        <span className="flex gap-x-1">
+          <BalanceNew className="text-neutral font-medium" value={balance[0]} asset={asset} />
           <span>-</span>
-          <BalanceNew className="text-neutral font-semibold" value={balance[1]} asset={asset} />
-        </div>
+          <BalanceNew className="text-neutral font-medium" value={balance[1]} asset={asset} />
+        </span>
       );
     }
 
@@ -53,16 +53,19 @@ const AmountInput = ({
   }, [balance]);
 
   const label = (
-    <div className="flex justify-between">
+    <div className="flex justify-between items-center gax-x-2">
       <FootnoteText className="text-text-tertiary">{placeholder}</FootnoteText>
-      <FootnoteText className="text-text-tertiary">
-        {balancePlaceholder || t('general.input.availableLabel')} {getBalance()}
-      </FootnoteText>
+      <span className="flex gap-x-1.5">
+        <FootnoteText className="text-text-tertiary">
+          {balancePlaceholder || t('general.input.availableLabel')}
+        </FootnoteText>
+        <FootnoteText> {getBalance()}</FootnoteText>
+      </span>
     </div>
   );
 
   const prefixElement = (
-    <div className="flex items-center gap-1">
+    <div className="flex items-center gap-x-1">
       <div className={cn('border rounded-full w-6 h-6 box-border border-shade-30 bg-shade-70')}>
         <img src={asset.icon} alt={asset.name} width={26} height={26} />
       </div>

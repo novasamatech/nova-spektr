@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Outlet } from 'react-router-dom';
 
 import { Header } from '@renderer/components/common';
 import { useI18n } from '@renderer/context/I18nContext';
@@ -230,6 +230,8 @@ const Overview = () => {
         isOpen={isShowNominators}
         onClose={toggleNominators}
       />
+
+      <Outlet />
     </>
   );
 };

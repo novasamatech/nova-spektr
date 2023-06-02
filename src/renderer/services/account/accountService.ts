@@ -33,9 +33,9 @@ export const useAccount = (): IAccountService => {
     return useLiveQuery(query, [], []);
   };
 
-  // Only one wallet can be active at the time
-  // For watch only account or polkadot vault account would be returned array with only one element
-  // but for mutishard wallet active accounts would be all root account + all derived
+  // Only one wallet can be active at a time
+  // Watch-Only or Polkadot Vault wallet will return array with one account
+  // Mutishard wallet will return all root accounts + all derived
   const getActiveAccounts = <T extends Account>(where?: Partial<T>): AccountDS[] => {
     const query = async () => {
       try {

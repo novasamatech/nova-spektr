@@ -12,6 +12,7 @@ import Popover from './Popovers/Popover/Popover';
 import InfoLink from './InfoLink/InfoLink';
 import Select from './Dropdowns/Select/Select';
 import Combobox from './Dropdowns/Combobox/Combobox';
+import RadioGroup from './RadioGroup/RadioGroup';
 import PopoverLink from './PopoverLink/PopoverLink';
 import Checkbox from './Checkbox/Checkbox';
 import MultiSelect from './Dropdowns/MultiSelect/MultiSelect';
@@ -58,6 +59,7 @@ export {
   Combobox,
   PopoverLink,
   Checkbox,
+  RadioGroup,
   MultiSelect,
   DropdownButton,
 };

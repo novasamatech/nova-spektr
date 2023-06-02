@@ -10,7 +10,6 @@ import { Address, ChainId, AccountId, SigningType } from '@renderer/domain/share
 import { Transaction, TransactionType } from '@renderer/domain/transaction';
 import { useAccount } from '@renderer/services/account/accountService';
 import { useBalance } from '@renderer/services/balance/balanceService';
-import { useWallet } from '@renderer/services/wallet/walletService';
 import { Balance as AccountBalance } from '@renderer/domain/balance';
 import { Account, isMultisig } from '@renderer/domain/account';
 import { toAddress } from '@renderer/shared/utils/address';
@@ -46,11 +45,8 @@ const InitOperation = ({ api, chainId, explorers, addressPrefix, identifiers, as
   const { t } = useI18n();
   const { getLiveBalance, getLiveAssetBalances } = useBalance();
   const { getLiveAccounts } = useAccount();
-  const { getLiveWallets } = useWallet();
 
   const dbAccounts = getLiveAccounts();
-  const wallets = getLiveWallets();
-  const walletsMap = new Map(wallets.map((wallet) => [(wallet.id || '').toString(), wallet]));
 
   const [fee, setFee] = useState('');
   const [deposit, setDeposit] = useState('');
@@ -87,10 +83,8 @@ const InitOperation = ({ api, chainId, explorers, addressPrefix, identifiers, as
   useEffect(() => {
     const formattedAccounts = totalAccounts.map((account) => {
       const balance = activeBalances.find((b) => b.accountId === account.accountId);
-      const wallet = account.walletId ? walletsMap.get(account.walletId.toString()) : undefined;
-      const walletName = wallet?.name || '';
 
-      return getGeneralAccountOption(account, { asset, fee, balance, addressPrefix, walletName });
+      return getGeneralAccountOption(account, { asset, fee, balance, addressPrefix });
     });
 
     setDestAccounts(formattedAccounts);

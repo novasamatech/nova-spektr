@@ -47,10 +47,13 @@ const BaseModal = ({
             >
               {title && (
                 <Dialog.Title as="header" className={cnTw('text-black font-bold', closeButton && 'pr-11', headerClass)}>
-                  {/* TODO change */}
-                  <TextBase className="font-manrope text-modal-title text-text-primary truncate" fontWeight="bold">
-                    {title}
-                  </TextBase>
+                  {typeof title === 'string' ? (
+                    <TextBase className="font-manrope text-modal-title text-text-primary truncate" fontWeight="bold">
+                      {title}
+                    </TextBase>
+                  ) : (
+                    title
+                  )}
                 </Dialog.Title>
               )}
 
