@@ -86,16 +86,26 @@ export const useTransaction = (): ITransactionService => {
         options,
       );
     },
-    [TransactionType.ORML_TRANSFER]: (transaction, info, options) => {
-      return ormlMethods.currencies.transfer(
-        {
-          dest: transaction.args.dest,
-          amount: transaction.args.value,
-          currencyId: transaction.args.asset,
-        },
-        info,
-        options,
-      );
+    [TransactionType.ORML_TRANSFER]: (transaction, info, options, api) => {
+      return api.tx.currencies
+        ? ormlMethods.currencies.transfer(
+            {
+              dest: transaction.args.dest,
+              amount: transaction.args.value,
+              currencyId: transaction.args.asset,
+            },
+            info,
+            options,
+          )
+        : ormlMethods.tokens.transfer(
+            {
+              dest: transaction.args.dest,
+              amount: transaction.args.value,
+              currencyId: transaction.args.asset,
+            },
+            info,
+            options,
+          );
     },
     [TransactionType.MULTISIG_AS_MULTI]: (transaction, info, options, api) => {
       return methods.multisig.asMulti(
@@ -229,7 +239,8 @@ export const useTransaction = (): ITransactionService => {
         ? api.tx.balances.transferAllowDeath(dest, value)
         : api.tx.balances.transfer(dest, value),
     [TransactionType.ASSET_TRANSFER]: ({ dest, value, asset }, api) => api.tx.assets.transfer(asset, dest, value),
-    [TransactionType.ORML_TRANSFER]: ({ dest, value, asset }, api) => api.tx.currencies.transfer(dest, asset, value),
+    [TransactionType.ORML_TRANSFER]: ({ dest, value, asset }, api) =>
+      api.tx.currencies ? api.tx.currencies.transfer(dest, asset, value) : api.tx.tokens.transfer(dest, asset, value),
     [TransactionType.MULTISIG_AS_MULTI]: ({ threshold, otherSignatories, maybeTimepoint, call, maxWeight }, api) => {
       return isOldMultisigPallet(api)
         ? // @ts-ignore
