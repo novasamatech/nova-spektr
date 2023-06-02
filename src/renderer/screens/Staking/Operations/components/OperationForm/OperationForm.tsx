@@ -12,7 +12,8 @@ import { Address, ChainId } from '@renderer/domain/shared-kernel';
 import { RadioResult, RadioOption } from '@renderer/components/ui-redesign/RadioGroup/common/types';
 import { DropdownOption } from '@renderer/components/ui/Dropdowns/common/types';
 import { useAccount } from '@renderer/services/account/accountService';
-import { getStakeAccountOption } from '../../common/utils';
+import { getPayoutAccountOption } from '../../common/utils';
+import { useBalance } from '@renderer/services/balance/balanceService';
 
 const getDestinations = (t: TFunction): RadioOption<RewardsDestination>[] => {
   const options = [
@@ -34,7 +35,6 @@ type FormData = {
 };
 
 type Field = {
-  //todo better to add types here to avoid misspelling
   name: string;
   value?: string;
   disabled?: boolean;
@@ -45,7 +45,7 @@ type Props = {
   canSubmit: boolean;
   addressPrefix: number;
   fields: Field[];
-  balanceRange?: [string, string];
+  balanceRange?: string | string[];
   asset: Asset;
   children: ((errorType: string) => ReactNode) | ReactNode;
   validateBalance?: (amount: string) => boolean;
@@ -71,12 +71,17 @@ export const OperationForm = ({
 }: Props) => {
   const { t } = useI18n();
   const { getLiveAccounts } = useAccount();
+  const { getLiveAssetBalances } = useBalance();
 
   const dbAccounts = getLiveAccounts();
   const destinations = getDestinations(t);
 
   const [payoutAccounts, setPayoutAccounts] = useState<DropdownOption<Address>[]>([]);
   const [activeDestination, setActiveDestination] = useState<RadioResult<RewardsDestination>>(destinations[0]);
+
+  const destAccounts = dbAccounts.filter((a) => !a.chainId || a.chainId === chainId);
+  const payoutIds = destAccounts.map((a) => a.accountId);
+  const balances = getLiveAssetBalances(payoutIds, chainId, asset.assetId.toString());
 
   const amountField = fields.find((f) => f.name === 'amount');
   const destinationField = fields.find((f) => f.name === 'destination');
@@ -118,10 +123,13 @@ export const OperationForm = ({
   }, [activeDestination?.value]);
 
   useEffect(() => {
-    const payoutAccounts = dbAccounts.reduce<DropdownOption<Address>[]>((acc, account) => {
+    const payoutAccounts = destAccounts.reduce<DropdownOption<Address>[]>((acc, account) => {
       if (!account.chainId || account.chainId === chainId) {
-        const option = getStakeAccountOption(account, { asset, addressPrefix });
+        const balance = balances.find((b) => b.accountId === account.accountId);
+
+        const option = getPayoutAccountOption(account, { asset, addressPrefix, balance });
         const address = toAddress(option.value.accountId, { prefix: addressPrefix });
+
         acc.push({ ...option, value: address });
       }
 
@@ -129,13 +137,7 @@ export const OperationForm = ({
     }, []);
 
     setPayoutAccounts(payoutAccounts);
-  }, [dbAccounts.length]);
-
-  const getBalance = (): string | [string, string] => {
-    if (!balanceRange) return '';
-
-    return balanceRange[0] === balanceRange[1] ? balanceRange[0] : balanceRange;
-  };
+  }, [destAccounts.length, balances]);
 
   const handleFormChange = (event: FormEvent<HTMLFormElement>) => {
     const data = new FormData(event.currentTarget);
@@ -171,7 +173,7 @@ export const OperationForm = ({
                   balancePlaceholder={t('staking.bond.availableBalancePlaceholder')}
                   value={value}
                   disabled={amountField.disabled}
-                  balance={getBalance()}
+                  balance={balanceRange}
                   asset={asset}
                   invalid={Boolean(error)}
                   onChange={onChange}
@@ -215,10 +217,19 @@ export const OperationForm = ({
                     <Combobox
                       placeholder={t('staking.bond.payoutAccountPlaceholder')}
                       options={payoutAccounts}
-                      disabled={destinationField.disabled}
+                      // disabled={destinationField.disabled}
                       invalid={Boolean(error)}
-                      prefixElement={<Identicon address={destination} size={20} background={false} canCopy={false} />}
-                      onChange={(option) => onChange(option.value)}
+                      prefixElement={
+                        <Identicon
+                          className="mr-1"
+                          address={destination}
+                          size={20}
+                          background={false}
+                          canCopy={false}
+                        />
+                      }
+                      onChange={console.log}
+                      // onChange={(option) => onChange(option.value)}
                     />
                     <InputHint active={error?.type === 'isAddress'} variant="error">
                       {t('staking.bond.incorrectAddressError')}

@@ -101,13 +101,13 @@ const InitOperation = ({ api, chainId, addressPrefix, explorers, identifiers, as
 
   useEffect(() => {
     const formattedAccounts = totalAccounts.map((account) => {
-      const balance = activeBalances.find((b) => b.accountId === account.accountId);
+      const balance = balances.find((b) => b.accountId === account.accountId);
 
       return getStakeAccountOption(account, { balance, asset, fee, addressPrefix, amount });
     });
 
     setStakeMoreAccounts(formattedAccounts);
-  }, [totalAccounts.length, amount, fee, activeBalances]);
+  }, [totalAccounts.length, amount, fee]);
 
   useEffect(() => {
     if (!accountIsMultisig) return;

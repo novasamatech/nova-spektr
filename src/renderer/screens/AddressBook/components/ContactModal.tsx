@@ -154,7 +154,7 @@ const ContactModal = ({ isOpen, onToggle, contact }: Props) => {
                 prefixElement={
                   value && !error ? <Identicon address={value} background={false} /> : <Icon name="emptyIdenticon" />
                 }
-                className="w-full ml-2"
+                className="w-full ml-1"
                 label={t('addressBook.addContact.accountIdLabel')}
                 placeholder={t('addressBook.addContact.accountIdPlaceholder')}
                 invalid={Boolean(error)}

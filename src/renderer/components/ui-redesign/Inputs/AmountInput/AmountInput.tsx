@@ -14,7 +14,7 @@ type Props = {
   disabled?: boolean;
   asset: Asset;
   balancePlaceholder?: string;
-  balance?: string | [string, string];
+  balance?: string | string[];
   invalid?: boolean;
   onChange?: (value: string) => void;
 };
@@ -35,9 +35,7 @@ const AmountInput = ({
   const getBalance = useCallback(() => {
     if (!balance) return;
 
-    const isSameBalance = balance[0] == balance[1] || (balance[0] === '0' && !balance[1]);
-
-    if (Array.isArray(balance) && !isSameBalance) {
+    if (Array.isArray(balance)) {
       return (
         <span className="flex gap-x-1">
           <BalanceNew className="text-neutral font-medium" value={balance[0]} asset={asset} />
@@ -47,9 +45,7 @@ const AmountInput = ({
       );
     }
 
-    const shownBalance = Array.isArray(balance) && isSameBalance ? balance[0] : (balance as string);
-
-    return <BalanceNew className="inline text-text-primary" value={shownBalance} asset={asset} showIcon={false} />;
+    return <BalanceNew className="inline text-text-primary" value={balance} asset={asset} showIcon={false} />;
   }, [balance]);
 
   const label = (

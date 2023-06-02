@@ -82,13 +82,13 @@ const InitOperation = ({ api, chainId, explorers, addressPrefix, identifiers, as
 
   useEffect(() => {
     const formattedAccounts = totalAccounts.map((account) => {
-      const balance = activeBalances.find((b) => b.accountId === account.accountId);
+      const balance = balances.find((b) => b.accountId === account.accountId);
 
       return getGeneralAccountOption(account, { asset, fee, balance, addressPrefix });
     });
 
     setDestAccounts(formattedAccounts);
-  }, [totalAccounts.length, fee, activeBalances]);
+  }, [totalAccounts.length, fee, balances]);
 
   useEffect(() => {
     if (!accountIsMultisig) return;

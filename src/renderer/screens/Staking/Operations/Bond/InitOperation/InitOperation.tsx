@@ -89,21 +89,24 @@ const InitOperation = ({ api, chainId, explorers, accounts, asset, addressPrefix
   }, [activeStakeAccounts.length, balances]);
 
   useEffect(() => {
-    if (!activeBalances.length) return;
+    if (!activeBalances.length) {
+      setMinBalance('0');
+    } else if (activeBalances.length === 1) {
+      setMinBalance(stakeableAmount(activeBalances[0]));
+    } else {
+      const stakeableBalance = activeBalances.map(stakeableAmount).filter((balance) => balance && balance !== '0');
+      const minBalance = stakeableBalance.reduce<string>(
+        (acc, balance) => (new BN(balance).lt(new BN(acc)) ? balance : acc),
+        stakeableBalance[0],
+      );
 
-    const stakeableBalance = activeBalances.map(stakeableAmount);
-    const minBalance = stakeableBalance.reduce<string>((acc, balance) => {
-      if (!balance) return acc;
-
-      return new BN(balance).lt(new BN(acc)) ? balance : acc;
-    }, stakeableBalance[0]);
-
-    setMinBalance(minBalance);
-  }, [activeBalances]);
+      setMinBalance(minBalance);
+    }
+  }, [activeBalances.length]);
 
   useEffect(() => {
     const formattedAccounts = accounts.map((account) => {
-      const balance = activeBalances.find((b) => b.accountId === account.accountId);
+      const balance = balances.find((b) => b.accountId === account.accountId);
 
       return getStakeAccountOption(account, { asset, fee, amount, balance, addressPrefix });
     });
@@ -111,7 +114,7 @@ const InitOperation = ({ api, chainId, explorers, accounts, asset, addressPrefix
     if (formattedAccounts.length === 0) return;
 
     setStakeAccounts(formattedAccounts);
-  }, [amount, fee, activeBalances]);
+  }, [amount, fee, balances]);
 
   useEffect(() => {
     if (!accountIsMultisig) return;
@@ -204,6 +207,8 @@ const InitOperation = ({ api, chainId, explorers, accounts, asset, addressPrefix
     return validateBalanceForFeeDeposit(signerBalance, deposit, fee);
   };
 
+  const balanceRange = activeBalances.length > 1 ? ['0', minBalance] : minBalance;
+
   return (
     <div className="flex flex-col gap-y-4">
       {stakeAccounts.length > 1 && (
@@ -233,7 +238,7 @@ const InitOperation = ({ api, chainId, explorers, accounts, asset, addressPrefix
         addressPrefix={addressPrefix}
         fields={formFields}
         asset={asset}
-        balanceRange={['0', minBalance]}
+        balanceRange={balanceRange}
         validateBalance={validateBalance}
         validateFee={validateFee}
         validateDeposit={validateDeposit}

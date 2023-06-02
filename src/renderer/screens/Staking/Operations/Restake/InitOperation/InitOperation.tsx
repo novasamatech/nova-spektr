@@ -127,7 +127,7 @@ const InitOperation = ({ api, chainId, addressPrefix, explorers, staking, identi
 
   useEffect(() => {
     const formattedAccounts = totalAccounts.map((account) => {
-      const balance = activeBalances.find((b) => b.accountId === account.accountId);
+      const balance = balances.find((b) => b.accountId === account.accountId);
       const address = toAddress(account.accountId, { prefix: addressPrefix });
       const stake = staking[address];
 
@@ -135,7 +135,7 @@ const InitOperation = ({ api, chainId, addressPrefix, explorers, staking, identi
     });
 
     setRestakeAccounts(formattedAccounts);
-  }, [totalAccounts.length, amount, fee, activeBalances]);
+  }, [totalAccounts.length, amount, fee, balances]);
 
   useEffect(() => {
     if (!accountIsMultisig) return;

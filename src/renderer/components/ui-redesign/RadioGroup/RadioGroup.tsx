@@ -45,7 +45,7 @@ const Option = ({ option, children }: PropsWithChildren<OptionProps>) => {
 
   return (
     <HeadlessRadioGroup.Option value={{ id, value }} as={Fragment}>
-      {({ checked, disabled }) => (
+      {({ checked }) => (
         <div
           className={cnTw(
             'rounded border border-filter-border cursor-pointer mb-2 last:mb-0',
@@ -54,7 +54,7 @@ const Option = ({ option, children }: PropsWithChildren<OptionProps>) => {
         >
           <div
             className={cnTw(
-              'flex justify-between items-center p-3 cursor-pointer hover:bg-hover focus:bg-hover',
+              'flex justify-between items-center p-3 cursor-pointer hover:bg-hover focus:bg-hover transition',
               checked ? 'bg-hover' : 'bg-tab-background',
             )}
           >

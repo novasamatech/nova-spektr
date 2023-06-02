@@ -41,7 +41,7 @@ const BaseModal = ({
             {/* TODO add proper colors for titles and bg */}
             <Dialog.Panel
               className={cnTw(
-                'transform overflow-y-auto rounded-lg bg-white text-left align-middle shadow-modal transition-all w-[440px]',
+                'transform rounded-lg bg-white text-left align-middle shadow-modal transition-all w-[440px]',
                 panelClass,
               )}
             >

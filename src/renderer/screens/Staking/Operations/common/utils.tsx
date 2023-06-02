@@ -76,7 +76,7 @@ const getElement = (address: Address, accountName: string, content?: ReactNode):
   );
 };
 
-const getBalance = (balance: string, asset: Asset, isCorrect: boolean): ReactNode => {
+const getBalance = (balance: string, asset: Asset, isCorrect = true): ReactNode => {
   if (!balance) return null;
 
   return <BalanceNew className={cn(!isCorrect && 'text-text-negative')} value={balance} asset={asset} />;
@@ -125,6 +125,18 @@ export const getStakeAccountOption = <T extends Account | MultisigAccount>(
   }
 
   const balanceContent = getBalance(stakeableAmount(balance), asset, balanceIsCorrect);
+  const element = getElement(address, account.name, balanceContent);
+
+  return { id: account.accountId, value: account, element };
+};
+
+export const getPayoutAccountOption = <T extends Account | MultisigAccount>(
+  account: T,
+  { balance, asset, addressPrefix }: Params,
+): DropdownOption<T> => {
+  const address = toAddress(account.accountId, { prefix: addressPrefix });
+
+  const balanceContent = getBalance(transferableAmount(balance), asset);
   const element = getElement(address, account.name, balanceContent);
 
   return { id: account.accountId, value: account, element };
