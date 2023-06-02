@@ -10,7 +10,6 @@ import { AccountDS } from '@renderer/services/storage';
 import { useToggle, useCountdown } from '@renderer/shared/hooks';
 import { Account, MultisigAccount } from '@renderer/domain/account';
 import { ExtendedChain } from '@renderer/services/network/common/types';
-import { Signing } from '../ActionSteps/Signing';
 import { MultisigTransaction, Transaction, TransactionType } from '@renderer/domain/transaction';
 import { Address, HexString, Timepoint } from '@renderer/domain/shared-kernel';
 import { toAddress } from '@renderer/shared/utils/address';
@@ -27,6 +26,7 @@ import SignatorySelectModal from '@renderer/screens/Operations/components/modals
 import OperationResult from '@renderer/components/ui-redesign/OperationResult/OperationResult';
 import OperationModalTitle from '@renderer/screens/Operations/components/OperationModalTitle';
 import { Scanning } from '@renderer/components/common/Scaning/Scaning';
+import { Signing } from '@renderer/screens/Transfer/components/ActionSteps';
 
 type Props = {
   tx: MultisigTransaction;

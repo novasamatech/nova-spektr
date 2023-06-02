@@ -21,6 +21,8 @@ type Props = {
   size?: number;
   cameraId?: string;
   className?: string;
+  bgVideo?: boolean;
+  bgVideoClassName?: string;
   onStart?: () => void;
   onResult: (scanResult: HexString[]) => void;
   onError?: (error: ErrorObject) => void;
@@ -32,6 +34,8 @@ const QrMultiframeSignatureReader = ({
   size = 300,
   cameraId,
   className,
+  bgVideo,
+  bgVideoClassName,
   onCameraList,
   onResult,
   onProgress,
@@ -45,6 +49,11 @@ const QrMultiframeSignatureReader = ({
 
   const scannerRef = useRef<BrowserQRCodeReader>();
   const controlsRef = useRef<IScannerControls>();
+
+  const bgVideoRef = useRef<HTMLVideoElement>(null);
+  const bgControlsRef = useRef<IScannerControls>();
+
+  const videoStyle = { width: size + 'px', height: size + 'px' };
 
   const status = useRef<Status>(Status.FIRST_FRAME);
   const packets = useRef<Map<string, Uint8Array>>(new Map());
@@ -193,6 +202,14 @@ const QrMultiframeSignatureReader = ({
 
     try {
       controlsRef.current = await scannerRef.current.decodeFromVideoDevice(cameraId, videoRef.current, decodeCallback);
+      if (bgVideoRef.current) {
+        bgControlsRef.current = await scannerRef.current.decodeFromVideoDevice(
+          cameraId,
+          bgVideoRef.current,
+          decodeCallback,
+        );
+      }
+
       onStart?.();
     } catch (error) {
       throw QR_READER_ERRORS[QrError.DECODE_ERROR];
@@ -239,15 +256,40 @@ const QrMultiframeSignatureReader = ({
     })();
   }, [cameraId]);
 
-  return (
+  return bgVideo ? (
+    <>
+      <div className="relative w-[240px] h-[240px] overflow-hidden rounded-[1.75rem]">
+        <video
+          muted
+          autoPlay
+          controls={false}
+          ref={videoRef}
+          data-testid="qr-reader"
+          className={cnTw('object-cover absolute', className)}
+        >
+          {t('qrReader.videoError')}
+        </video>
+      </div>
+      {bgVideo && (
+        <video
+          muted
+          autoPlay
+          controls={false}
+          ref={bgVideoRef}
+          data-testid="qr-reader"
+          className={cnTw('absolute object-cover top-0 left-0 blur-[14px] max-w-none', bgVideoClassName)}
+        />
+      )}
+    </>
+  ) : (
     <video
       muted
       autoPlay
       controls={false}
       ref={videoRef}
       data-testid="qr-reader"
-      className={cnTw('object-cover -scale-x-100', className)}
-      style={{ width: size + 'px', height: size + 'px' }}
+      className={cnTw('object-cover  absolute -scale-x-100', className)}
+      style={videoStyle}
     >
       {t('qrReader.videoError')}
     </video>

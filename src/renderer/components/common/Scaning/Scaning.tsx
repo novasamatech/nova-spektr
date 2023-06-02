@@ -83,7 +83,7 @@ export const Scanning = ({
         {txPayload && <QrTxGenerator cmd={0} payload={txPayload} address={address} genesisHash={chainId} />}
       </QrGeneratorContainer>
 
-      <div className="flex w-full justify-between mt-3">
+      <footer className="flex w-full justify-between mt-3">
         <Button variant="text" onClick={onGoBack}>
           {t('operation.goBackButton')}
         </Button>
@@ -91,7 +91,7 @@ export const Scanning = ({
         <Button disabled={!unsignedTx || countdown === 0} onClick={() => onResult(unsignedTx!)}>
           {t('signing.continueButton')}
         </Button>
-      </div>
+      </footer>
     </div>
   );
 };
