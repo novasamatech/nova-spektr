@@ -161,7 +161,7 @@ const QrSignatureReader = ({
           controls={false}
           ref={videoRef}
           data-testid="qr-reader"
-          className={cnTw('object-cover absolute', className)}
+          className={cnTw('object-cover absolute -scale-x-100', className)}
         >
           {t('qrReader.videoError')}
         </video>
@@ -173,7 +173,7 @@ const QrSignatureReader = ({
           controls={false}
           ref={bgVideoRef}
           data-testid="qr-reader"
-          className={cnTw('absolute object-cover top-0 left-0 blur-[14px] max-w-none', bgVideoClassName)}
+          className={cnTw('absolute -scale-x-100 object-cover top-0 left-0 blur-[14px] max-w-none', bgVideoClassName)}
         />
       )}
     </>

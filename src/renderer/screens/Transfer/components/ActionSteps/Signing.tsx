@@ -4,7 +4,7 @@ import { ApiPromise } from '@polkadot/api';
 
 import { useI18n } from '@renderer/context/I18nContext';
 import { Button } from '@renderer/components/ui';
-import QrSignatureReader from '@renderer/screens/Signing/QrReaderWrapper/QrReaderWrapper';
+import QrReaderWrapper from '@renderer/screens/Signing/QrReaderWrapper/QrReaderWrapper';
 import { ValidationErrors } from '@renderer/shared/utils/validation';
 import { toAccountId } from '@renderer/shared/utils/address';
 import { transferableAmount } from '@renderer/shared/utils/balance';
@@ -81,7 +81,7 @@ const Signing = ({ api, chainId, transaction, assetId, countdown, onGoBack, onSt
 
   return (
     <div className="flex flex-col items-center gap-y-2.5 w-full">
-      <QrSignatureReader
+      <QrReaderWrapper
         countdown={countdown}
         size={[440, 496]}
         validationError={validationError}

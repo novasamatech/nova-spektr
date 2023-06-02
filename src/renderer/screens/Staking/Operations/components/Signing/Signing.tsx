@@ -36,6 +36,7 @@ export const Signing = ({ multiQr, countdown, onResult, onGoBack }: Props) => {
           <div className="text-neutral-variant text-base font-semibold">{t('signing.scanQrTitle')}</div>
           <div className="h-[460px]">
             <QrSignatureReader
+              isMultiFrame={multiQr}
               className="w-full rounded-2lg"
               countdown={countdown || 0}
               size={460}

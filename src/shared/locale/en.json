@@ -458,6 +458,8 @@
     "continueButton": "Continue",
     "generateNewQrButton": "Generate new QR code",
     "metadataPortalLink": "Update metadata in Parity Signer",
+    "parsingLabel": "Parsing data",
+    "parsingOf": "of",
     "qrCountdownTitle": "QR code is valid for",
     "qrNotValid": "QR code isn’t valid anymore",
     "scanQrTitle": "Scan the operation QR code with Polkadot Vault",

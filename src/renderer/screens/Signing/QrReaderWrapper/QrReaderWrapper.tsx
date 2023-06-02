@@ -2,7 +2,7 @@ import cn from 'classnames';
 import React, { useState } from 'react';
 
 import { QrSignatureReader } from '@renderer/components/common';
-import { ErrorObject, QrError, VideoInput } from '@renderer/components/common/QrCode/QrReader/common/types';
+import { ErrorObject, Progress, QrError, VideoInput } from '@renderer/components/common/QrCode/QrReader/common/types';
 import { Icon, Shimmering } from '@renderer/components/ui';
 import { DropdownOption, DropdownResult } from '@renderer/components/ui/Dropdowns/common/types';
 import { useI18n } from '@renderer/context/I18nContext';
@@ -44,6 +44,8 @@ const QrReaderWrapper = ({
 
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<CameraError>();
+  const [progress, setProgress] = useState<Progress>();
+
   const [activeCamera, setActiveCamera] = useState<DropdownResult<string>>();
   const [availableCameras, setAvailableCameras] = useState<DropdownOption<string>[]>([]);
 
@@ -163,7 +165,7 @@ const QrReaderWrapper = ({
             {!isMultiFrame ? (
               <QrSignatureReader {...qrReaderProps} onResult={onScanResult} />
             ) : (
-              <QrMultiframeSignatureReader {...qrReaderProps} onResult={onScanResult} onProgress={() => {}} />
+              <QrMultiframeSignatureReader {...qrReaderProps} onResult={onScanResult} onProgress={setProgress} />
             )}
           </div>
         )}
@@ -177,6 +179,15 @@ const QrReaderWrapper = ({
           className="mb-4 w-[208px]"
           onChange={setActiveCamera}
         />
+      )}
+
+      {progress && (
+        <div className="flex items-center gap-x-2 mt-4">
+          <FootnoteText className="text-text-tertiary">{t('signing.parsingLabel')}</FootnoteText>
+          <CaptionText as="span" className="bg-label-background-gray text-button-text uppercase">
+            {progress.decoded} {t('signing.parsingOf')} {progress.total}
+          </CaptionText>
+        </div>
       )}
 
       <footer className="flex w-full justify-start mt-auto pt-5 pb-6 pl-7 z-10">
