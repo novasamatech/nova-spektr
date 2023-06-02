@@ -21,7 +21,7 @@ const TransactionAmount = ({ tx, ...balanceProps }: Props & BalanceProps) => {
     getChainById(tx.chainId).then((chain) => setAssets(chain?.assets || []));
   }, []);
 
-  const asset = getAssetById(tx.args.asset, assets);
+  const asset = getAssetById(tx.args.assetId, assets);
   const value = getTransactionAmount(tx);
 
   if (!asset || !value) return null;
