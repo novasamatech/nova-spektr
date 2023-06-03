@@ -1,8 +1,10 @@
-import { ApiPromise, WsProvider, ScProvider } from '@polkadot/api';
+import { ApiPromise, ScProvider, WsProvider } from '@polkadot/api';
 import * as Sc from '@substrate/connect';
+import { WellKnownChain } from '@substrate/connect';
 import { ProviderInterface } from '@polkadot/rpc-provider/types';
 import keyBy from 'lodash/keyBy';
 import { useRef, useState } from 'react';
+import { start as smoldotStart } from 'smoldot';
 
 import { Chain, RpcNode } from '@renderer/domain/chain';
 import { Connection, ConnectionStatus, ConnectionType } from '@renderer/domain/connection';
@@ -13,6 +15,7 @@ import { useChainSpec } from './chainSpecService';
 import { useChains } from './chainsService';
 import { AUTO_BALANCE_TIMEOUT, MAX_ATTEMPTS, PROGRESSION_BASE } from './common/constants';
 import { ConnectionsMap, ConnectProps, INetworkService, RpcValidation } from './common/types';
+import polkadot from './polkadot.json';
 
 export const useNetwork = (networkSubscription?: ISubscriptionService<ChainId>): INetworkService => {
   const chains = useRef<Record<ChainId, Chain>>({});
@@ -147,7 +150,14 @@ export const useNetwork = (networkSubscription?: ISubscriptionService<ChainId>):
     const knownChainId = getKnownChain(chainId);
 
     if (knownChainId) {
-      return new ScProvider(Sc, knownChainId);
+      let polkadotChainspec = localStorage.getItem('polkadot');
+      // if (polkadotChainspec) {
+      //   console.log("polkadot chainspec");
+      //   console.log(polkadotChainspec);
+      //   return new ScProvider(Sc, polkadotChainspec);
+      // } else {
+        return new ScProvider(Sc, knownChainId);
+      // }
     } else {
       throw new Error('Parachains do not support Substrate Connect yet');
     }
@@ -162,9 +172,41 @@ export const useNetwork = (networkSubscription?: ISubscriptionService<ChainId>):
     const handler = async () => {
       console.info('🟢 connected ==> ', chainId);
 
+      // smoldotChain.sendJsonRpc(
+      //   JSON.stringify({
+      //     jsonrpc: "2.0",
+      //     id: "best-block-header:" + this.#nextRpcRqId,
+      //     method: "chainHead_unstable_header",
+      //     params: [
+      //       chainInfo.readySubscriptionId,
+      //       chainInfo.finalizedBlockHashHex,
+      //     ],
+      //   }),
+      // )
       const api = await ApiPromise.create({ provider, throwOnConnect: true, throwOnUnknown: true });
-      if (!api) await provider.disconnect();
+      if (provider instanceof ScProvider) {
+        console.log(provider);
 
+        const client = Sc.createScClient({ forceEmbeddedNode: false, embeddedNodeConfig: { maxLogLevel: 3 } });
+        let chain = await client.addWellKnownChain(WellKnownChain.polkadot, (response) => {
+          console.log(response);
+          const jsonResponse = JSON.parse(response);
+          if (jsonResponse.id === '1') {
+            localStorage.setItem('polkadot', jsonResponse.result);
+          }
+        });
+        chain.sendJsonRpc(
+            JSON.stringify({
+              jsonrpc: '2.0',
+            id: '1',
+              method: 'chainHead_unstable_finalizedDatabase',
+              params: [
+                100000, //todo calculate
+              ],
+            })
+          )
+      }
+      //#15806372
       updateConnectionState(
         chainId,
         {
@@ -175,6 +217,8 @@ export const useNetwork = (networkSubscription?: ISubscriptionService<ChainId>):
         disconnectFromNetwork(chainId, provider, api),
         api,
       );
+      //#15806346
+      //#15371728
     };
 
     provider.on('connected', handler);
@@ -237,7 +281,16 @@ export const useNetwork = (networkSubscription?: ISubscriptionService<ChainId>):
     };
 
     if (type === ConnectionType.LIGHT_CLIENT) {
+      if (localStorage.getItem('polkadot')) {
+        console.log("sync from database")
+        const client = smoldotStart({
+          cpuRateLimit: 0.5, // Politely limit the CPU usage of the smoldot background worker.
+        });
+
+        await client.addChain({ chainSpec: JSON.stringify(polkadot), databaseContent: localStorage.getItem('polkadot') });
+      }
       provider.instance = createSubstrateProvider(chainId);
+
     } else if ([ConnectionType.RPC_NODE, ConnectionType.AUTO_BALANCE].includes(type) && node) {
       provider.instance = createWebsocketProvider(node.url);
     }
@@ -266,7 +319,8 @@ export const useNetwork = (networkSubscription?: ISubscriptionService<ChainId>):
       subscribeError(chainId, provider.instance, onAutoBalanceError);
 
       if (provider.isScProvider) {
-        await provider.instance.connect();
+        console.log('try to connect to sc provider');
+        await provider.instance.connect({ forceEmbeddedNode: false, embeddedNodeConfig: { maxLogLevel: 3 } });
       }
     } else {
       updateConnectionState(chainId, {
