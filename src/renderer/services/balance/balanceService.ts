@@ -1,6 +1,6 @@
 import { useLiveQuery } from 'dexie-react-hooks';
 import { BalanceLock } from '@polkadot/types/interfaces';
-import { BN } from '@polkadot/util';
+import { BN, hexToU8a } from '@polkadot/util';
 import { ApiPromise } from '@polkadot/api';
 import { Codec } from '@polkadot/types/types';
 import { Option } from '@polkadot/types';
@@ -207,16 +207,18 @@ export const useBalance = (): IBalanceService => {
     relaychain: ExtendedChain | undefined,
     asset: Asset,
   ) => {
+    const currencyIdType = (asset?.typeExtras as OrmlExtras).currencyIdType;
     const ormlAssetId = (asset?.typeExtras as OrmlExtras).currencyIdScale;
+
     const api = chain.api;
     if (!api) return;
 
+    const assetId = api.createType(currencyIdType, hexToU8a(ormlAssetId));
     const addresses = accountIds.map((accountId) => toAddress(accountId, { prefix: chain.addressPrefix }));
-
     const method = api.query.tokens ? api.query.tokens.accounts : api.query.currencies.accounts;
 
     return method.multi(
-      addresses.map((a) => [a, ormlAssetId]),
+      addresses.map((a) => [a, assetId]),
       (data: any[]) => {
         data.forEach(async (accountInfo: any, i) => {
           const { free, reserved, frozen } = accountInfo;
@@ -274,16 +276,18 @@ export const useBalance = (): IBalanceService => {
   };
 
   const subscribeLockOrmlAssetChange = async (accountIds: AccountId[], chain: ExtendedChain, asset: Asset) => {
+    const currencyIdType = (asset?.typeExtras as OrmlExtras).currencyIdType;
     const ormlAssetId = (asset?.typeExtras as OrmlExtras).currencyIdScale;
+
     const api = chain.api;
     if (!api) return;
 
+    const assetId = api.createType(currencyIdType, hexToU8a(ormlAssetId));
     const addresses = accountIds.map((accountId) => toAddress(accountId, { prefix: chain.addressPrefix }));
-
     const method = api.query.tokens ? api.query.tokens.locks : api.query.currencies.locks;
 
     return method.multi(
-      addresses.map((a) => [a, ormlAssetId]),
+      addresses.map((a) => [a, assetId]),
       (balanceLocks: any[]) => {
         balanceLocks.forEach(async (balanceLock, i) => {
           const balance = {
