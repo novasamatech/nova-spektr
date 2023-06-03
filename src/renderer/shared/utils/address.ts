@@ -1,8 +1,13 @@
-import { u8aToHex } from '@polkadot/util';
-import { decodeAddress, encodeAddress, isAddress } from '@polkadot/util-crypto';
+import { isHex, isU8a, u8aToHex, u8aToU8a } from '@polkadot/util';
+import { base58Decode, checkAddressChecksum, decodeAddress, encodeAddress } from '@polkadot/util-crypto';
 
 import { AccountId, Address } from '@renderer/domain/shared-kernel';
-import { PUBLIC_KEY_LENGTH, SS58_DEFAULT_PREFIX } from './constants';
+import {
+  ADDRESS_ALLOWED_ENCODED_LENGTHS,
+  PUBLIC_KEY_LENGTH,
+  PUBLIC_KEY_LENGTH_BYTES,
+  SS58_DEFAULT_PREFIX,
+} from './constants';
 
 /**
  * Format address or accountId with prefix and chunk size
@@ -42,7 +47,29 @@ export const toShortAddress = (address: Address, chunk = 6): string => {
  * @return {Boolean}
  */
 export const validateAddress = (address?: Address | AccountId): boolean => {
-  return isAddress(address);
+  if (!address) {
+    return false;
+  }
+  if (isU8a(address) || isHex(address)) {
+    let res = u8aToU8a(address);
+
+    return res ? res.length === PUBLIC_KEY_LENGTH_BYTES : false;
+  }
+
+  try {
+    const decoded = base58Decode(address);
+    if (!ADDRESS_ALLOWED_ENCODED_LENGTHS.includes(decoded.length)) {
+      return false;
+    }
+    const [isValid, endPos, ss58Length] = checkAddressChecksum(decoded);
+    if (!isValid) {
+      return false;
+    }
+
+    return !!decoded.slice(ss58Length, endPos);
+  } catch (error) {
+    return false;
+  }
 };
 
 /**

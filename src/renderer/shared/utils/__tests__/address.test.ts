@@ -1,5 +1,5 @@
 import { TEST_ACCOUNT_ID, TEST_ADDRESS } from '@renderer/shared/utils/constants';
-import { toAddress } from '../address';
+import { toAddress, validateAddress } from '../address';
 
 describe('shared/utils/address', () => {
   test('should convert address to Polkadot', () => {
@@ -20,5 +20,40 @@ describe('shared/utils/address', () => {
   test('should convert address to specific prefix', () => {
     const address = toAddress(TEST_ADDRESS, { prefix: 0 });
     expect(address).toEqual(TEST_ADDRESS);
+  });
+
+  test('should fail validation for short address', () => {
+    const result = validateAddress('0x00');
+    expect(false).toEqual(result);
+  });
+
+  test('should fail validation for invalid public key', () => {
+    const result = validateAddress('0xf5d5714c08vc112843aca74f8c498da06cc5a2d63153b825189baa51043b1f0b');
+    expect(false).toEqual(result);
+  });
+
+  test('should fail validation for incorrect ss58 address', () => {
+    const result = validateAddress('16fL8yLyXv3V3L3z9ofR1ovFLziyXaN1DPq4yffMAZ9czzBD');
+    expect(false).toEqual(result);
+  });
+
+  test('should pass validation for valid public', () => {
+    const result = validateAddress('0xf5d5714c084c112843aca74f8c498da06cc5a2d63153b825189baa51043b1f0b');
+    expect(true).toEqual(result);
+  });
+
+  test('should pass validation for valid ss58 address', () => {
+    const result = validateAddress('16ZL8yLyXv3V3L3z9ofR1ovFLziyXaN1DPq4yffMAZ9czzBD');
+    expect(true).toEqual(result);
+  });
+
+  test('should fail validation for random set of bytes', () => {
+    const result = validateAddress('0x00010200102');
+    expect(false).toEqual(result);
+  });
+
+  test('should fail validation for invalid set of chars', () => {
+    const result = validateAddress('randomaddress');
+    expect(false).toEqual(result);
   });
 });
