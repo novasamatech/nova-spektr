@@ -27,6 +27,7 @@ import {
   validateBalanceForFeeDeposit,
 } from '../../common/utils';
 import { Icon } from '@renderer/components/ui';
+import { TEST_ADDRESS } from '@renderer/shared/utils/constants';
 
 export type BondResult = {
   amount: string;
@@ -57,7 +58,6 @@ const InitOperation = ({ api, chainId, explorers, accounts, asset, addressPrefix
   const [fee, setFee] = useState('');
   const [deposit, setDeposit] = useState('');
   const [amount, setAmount] = useState('');
-  const [destination, setDestination] = useState('');
 
   const [activeBalances, setActiveBalances] = useState<AccountBalance[]>([]);
 
@@ -149,7 +149,7 @@ const InitOperation = ({ api, chainId, explorers, accounts, asset, addressPrefix
         args: {
           value: formatAmount(amount, asset.precision),
           controller: address,
-          payee: destination ? { Account: destination } : 'Staked',
+          payee: { Account: TEST_ADDRESS },
         },
       };
 
@@ -165,8 +165,9 @@ const InitOperation = ({ api, chainId, explorers, accounts, asset, addressPrefix
         args: { transactions: [bondTx, nominateTx] },
       };
     });
+
     setTransactions(bondPayload);
-  }, [activeStakeAccounts.length, activeSignatory, amount, destination]);
+  }, [activeStakeAccounts.length, activeSignatory, amount]);
 
   const submitBond = (data: { amount: string; destination?: string; description?: string }) => {
     const selectedAccountIds = activeStakeAccounts.map((a) => a.id);
@@ -210,17 +211,15 @@ const InitOperation = ({ api, chainId, explorers, accounts, asset, addressPrefix
   const balanceRange = activeBalances.length > 1 ? ['0', minBalance] : minBalance;
 
   return (
-    <div className="flex flex-col gap-y-4">
-      {stakeAccounts.length > 1 && (
-        <MultiSelect
-          label={t('staking.bond.accountLabel')}
-          placeholder={t('staking.bond.accountPlaceholder')}
-          multiPlaceholder={t('staking.bond.manyAccountsPlaceholder')}
-          selectedIds={activeStakeAccounts.map((acc) => acc.id)}
-          options={stakeAccounts}
-          onChange={setActiveStakeAccounts}
-        />
-      )}
+    <div className="flex flex-col gap-y-4 w-[440px] px-5 pb-4">
+      <MultiSelect
+        label={t('staking.bond.accountLabel')}
+        placeholder={t('staking.bond.accountPlaceholder')}
+        multiPlaceholder={t('staking.bond.manyAccountsPlaceholder')}
+        selectedIds={activeStakeAccounts.map((acc) => acc.id)}
+        options={stakeAccounts}
+        onChange={setActiveStakeAccounts}
+      />
 
       {signatoryOptions.length > 1 && (
         <Select
@@ -243,10 +242,7 @@ const InitOperation = ({ api, chainId, explorers, accounts, asset, addressPrefix
         validateFee={validateFee}
         validateDeposit={validateDeposit}
         onSubmit={submitBond}
-        onFormChange={({ amount, destination = '' }) => {
-          setAmount(amount);
-          setDestination(destination);
-        }}
+        onAmountChange={setAmount}
       >
         <div className="grid grid-flow-row grid-cols-2 items-center gap-y-5">
           {accountIsMultisig && (

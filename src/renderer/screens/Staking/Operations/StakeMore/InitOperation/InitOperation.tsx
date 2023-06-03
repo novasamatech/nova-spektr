@@ -236,9 +236,7 @@ const InitOperation = ({ api, chainId, addressPrefix, explorers, identifiers, as
         validateFee={validateFee}
         validateDeposit={validateDeposit}
         onSubmit={submitStakeMore}
-        onFormChange={({ amount }) => {
-          setAmount(amount);
-        }}
+        onAmountChange={setAmount}
       >
         <div className="grid grid-flow-row grid-cols-2 items-center gap-y-5">
           <p className="uppercase text-neutral-variant text-2xs">

@@ -6,7 +6,7 @@ import { Navigate, useParams, useSearchParams, useNavigate } from 'react-router-
 import { toAddress } from '@renderer/shared/utils/address';
 import { getRelaychainAsset } from '@renderer/shared/utils/assets';
 import { RewardsDestination } from '@renderer/domain/stake';
-import { ButtonLink, HintList, Icon } from '@renderer/components/ui';
+import { ButtonLink, Icon } from '@renderer/components/ui';
 import { ChainLoader } from '@renderer/components/common';
 import { useI18n } from '@renderer/context/I18nContext';
 import { useNetworkContext } from '@renderer/context/NetworkContext';
@@ -18,7 +18,7 @@ import { Validators, Confirmation, MultiScanning, Signing, Submit, SingleScannin
 import { useCountdown, useToggle } from '@renderer/shared/hooks';
 import { Account, MultisigAccount, isMultisig } from '@renderer/domain/account';
 import { useTransaction } from '@renderer/services/transaction/transactionService';
-import { BaseModal } from '@renderer/components/ui-redesign';
+import { BaseModal, Alert } from '@renderer/components/ui-redesign';
 import InitOperation, { BondResult } from './InitOperation/InitOperation';
 import Paths from '@renderer/routes/paths';
 import { DEFAULT_TRANSITION } from '@renderer/shared/utils/constants';
@@ -50,6 +50,7 @@ const Bond = () => {
   const [searchParams] = useSearchParams();
   const params = useParams<{ chainId: ChainId }>();
   const [isBondModalOpen, toggleBondModal] = useToggle(true);
+  const [isAlertOpen, toggleAlert] = useToggle(true);
 
   const [activeStep, setActiveStep] = useState<Step>(Step.INIT);
   const [chainName, setChainName] = useState('...');
@@ -97,14 +98,13 @@ const Bond = () => {
     return <ChainLoader chainName={chainName} />;
   }
 
-  // const goToPrevStep = () => {
-  //   if (activeStep === Step.INIT) {
-  //     navigate(Paths.STAKING);
-  //   } else {
-  //     // TODO: reset data
-  //     setActiveStep((prev) => prev - 1);
-  //   }
-  // };
+  const goToPrevStep = () => {
+    if (activeStep === Step.INIT) {
+      navigate(Paths.STAKING);
+    } else {
+      setActiveStep((prev) => prev - 1);
+    }
+  };
 
   if (!asset) {
     return (
@@ -233,28 +233,35 @@ const Bond = () => {
   const explorersProps = { explorers, addressPrefix, asset };
   const bondValues = new Array(accountsToStake.length).fill(stakeAmount);
 
-  const hints = (
-    <HintList className="px-[15px]">
-      <HintList.Item>{t('staking.confirmation.hintRewards')}</HintList.Item>
-      <HintList.Item>{t('staking.confirmation.hintUnstakePeriod')}</HintList.Item>
-      <HintList.Item>{t('staking.confirmation.hintNoRewards')}</HintList.Item>
-      <HintList.Item>{t('staking.confirmation.hintRedeem')}</HintList.Item>
-    </HintList>
+  const infoAlert = (
+    <Alert title="Learn more about rewards" onClose={toggleAlert}>
+      <Alert.Item>{t('staking.confirmation.hintRewards')}</Alert.Item>
+      <Alert.Item>{t('staking.confirmation.hintUnstakePeriod')}</Alert.Item>
+      <Alert.Item>{t('staking.confirmation.hintNoRewards')}</Alert.Item>
+      <Alert.Item>{t('staking.confirmation.hintRedeem')}</Alert.Item>
+    </Alert>
   );
 
   return (
     <BaseModal
       closeButton
+      contentClass=""
+      panelClass="w-max"
       isOpen={isBondModalOpen}
       title={<OperationModalTitle title={`${t('staking.bond.title', { asset: asset.symbol })}`} chainId={chainId} />}
-      contentClass={activeStep === Step.SIGNING ? '' : undefined}
       onClose={closeBondModal}
     >
       {activeStep === Step.INIT && (
         <InitOperation api={api} chainId={chainId} accounts={accounts} onResult={onInitResult} {...explorersProps} />
       )}
       {activeStep === Step.VALIDATORS && (
-        <Validators api={api} chainId={chainId} onResult={onSelectValidators} {...explorersProps} />
+        <Validators
+          api={api}
+          chainId={chainId}
+          onResult={onSelectValidators}
+          onGoBack={goToPrevStep}
+          {...explorersProps}
+        />
       )}
       {activeStep === Step.CONFIRMATION && (
         <Confirmation
@@ -269,7 +276,7 @@ const Bond = () => {
           onAddToQueue={noop}
           {...explorersProps}
         >
-          {hints}
+          {isAlertOpen && infoAlert}
         </Confirmation>
       )}
       {activeStep === Step.SCANNING &&
@@ -318,7 +325,7 @@ const Bond = () => {
           destination={destination}
           {...explorersProps}
         >
-          {hints}
+          {infoAlert}
         </Submit>
       )}
     </BaseModal>

@@ -3,8 +3,8 @@ import { RadioGroup as HeadlessRadioGroup } from '@headlessui/react';
 
 import cnTw from '@renderer/shared/utils/twMerge';
 import { RadioOption, RadioResult } from './common/types';
-import './RadioGroup.css';
 import { SmallTitleText, LabelText } from '@renderer/components/ui-redesign';
+import './RadioGroup.css';
 
 type Props = {
   name?: string;

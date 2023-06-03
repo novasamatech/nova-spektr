@@ -23,6 +23,7 @@ import {
 import { OperationForm } from '../../components';
 import { Explorer } from '@renderer/domain/chain';
 import { nonNullable } from '@renderer/shared/utils/functions';
+import { TEST_ADDRESS } from '@renderer/shared/utils/constants';
 
 export type DestinationResult = {
   accounts: Account[];
@@ -50,7 +51,6 @@ const InitOperation = ({ api, chainId, explorers, addressPrefix, identifiers, as
 
   const [fee, setFee] = useState('');
   const [deposit, setDeposit] = useState('');
-  const [destination, setDestination] = useState('');
 
   const [destAccounts, setDestAccounts] = useState<DropdownOption<Account>[]>([]);
   const [activeDestAccounts, setActiveDestAccounts] = useState<DropdownResult<Account>[]>([]);
@@ -115,11 +115,11 @@ const InitOperation = ({ api, chainId, explorers, addressPrefix, identifiers, as
       chainId,
       address: toAddress(value.accountId, { prefix: addressPrefix }),
       type: TransactionType.DESTINATION,
-      args: { payee: destination ? { Account: destination } : 'Staked' },
+      args: { payee: { Account: TEST_ADDRESS } },
     }));
 
     setTransactions(newTransactions);
-  }, [activeDestAccounts.length, destination]);
+  }, [activeDestAccounts.length]);
 
   const submitDestination = (data: { destination?: string; description?: string }) => {
     const selectedAccountIds = activeDestAccounts.map((stake) => stake.id);
@@ -207,9 +207,6 @@ const InitOperation = ({ api, chainId, explorers, addressPrefix, identifiers, as
         validateFee={validateFee}
         validateDeposit={validateDeposit}
         onSubmit={submitDestination}
-        onFormChange={({ destination = '' }) => {
-          setDestination(destination);
-        }}
       >
         <div className="grid grid-flow-row grid-cols-2 items-center gap-y-5">
           <p className="uppercase text-neutral-variant text-2xs">

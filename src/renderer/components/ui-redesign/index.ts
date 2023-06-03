@@ -20,6 +20,7 @@ import MenuPopover from './Popovers/MenuPopover/MenuPopover';
 import IconButton from './Buttons/IconButton/IconButton';
 import DropdownButton from './Dropdowns/DropdownButton/DropdownButton';
 import SearchInput from './Inputs/SearchInput';
+import Alert from './Alert/Alert';
 import {
   LargeTitleText,
   TitleText,
@@ -62,4 +63,5 @@ export {
   RadioGroup,
   MultiSelect,
   DropdownButton,
+  Alert,
 };

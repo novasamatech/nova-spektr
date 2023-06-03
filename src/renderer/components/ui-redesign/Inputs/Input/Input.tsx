@@ -41,7 +41,7 @@ const Input = forwardRef<HTMLInputElement, Props>(
           !disabled && 'focus-within:outline focus-within:outline-2 focus-within:outline-focus-container-border',
           invalid && 'border-filter-border-negative',
           'disabled:bg-input-background-disabled disabled:text-text-tertiary disabled:placeholder:text-text-tertiary',
-          'flex-1 border-filter-border',
+          'border-filter-border',
           wrapperClass,
         )}
       >

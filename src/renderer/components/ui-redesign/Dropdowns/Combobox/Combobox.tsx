@@ -4,17 +4,15 @@ import { Transition, Combobox as HeadlessCombobox } from '@headlessui/react';
 import cnTw from '@renderer/shared/utils/twMerge';
 import { Props as InputProps } from '@renderer/components/ui-redesign/Inputs/Input/Input';
 import { OptionsContainerStyle, OptionStyle, ViewClass } from '../common/constants';
-import { DropdownOption, DropdownResult, Position } from '../common/types';
+import { Position, ComboboxOption, ComboboxResult } from '../common/types';
 import { includes } from '@renderer/shared/utils/strings';
 import { FootnoteText, Input } from '@renderer/components/ui-redesign';
-
-type ComboboxOption = Required<DropdownOption>;
 
 type Props = Omit<InputProps, 'onChange'> & {
   options: ComboboxOption[];
   value?: ComboboxOption['value'];
   position?: Position;
-  onChange: (data: DropdownResult) => void;
+  onChange: (data: ComboboxResult) => void;
   tabIndex?: number;
 };
 

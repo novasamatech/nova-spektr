@@ -162,6 +162,7 @@ const SetValidators = () => {
           explorers={explorers}
           addressPrefix={addressPrefix}
           onResult={onSelectValidators}
+          onGoBack={console.log}
         />
       )}
       {activeStep === Step.CONFIRMATION && (

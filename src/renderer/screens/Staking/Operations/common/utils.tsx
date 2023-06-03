@@ -130,16 +130,16 @@ export const getStakeAccountOption = <T extends Account | MultisigAccount>(
   return { id: account.accountId, value: account, element };
 };
 
-export const getPayoutAccountOption = <T extends Account | MultisigAccount>(
-  account: T,
+export const getPayoutAccountOption = (
+  account: Account,
   { balance, asset, addressPrefix }: Params,
-): DropdownOption<T> => {
+): DropdownOption<Address> => {
   const address = toAddress(account.accountId, { prefix: addressPrefix });
 
   const balanceContent = getBalance(transferableAmount(balance), asset);
   const element = getElement(address, account.name, balanceContent);
 
-  return { id: account.accountId, value: account, element };
+  return { id: account.accountId, value: address, element };
 };
 
 export const getRedeemAccountOption = <T extends Account | MultisigAccount>(

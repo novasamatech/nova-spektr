@@ -272,9 +272,7 @@ const InitOperation = ({ api, chainId, addressPrefix, explorers, staking, identi
         validateFee={validateFee}
         validateDeposit={validateDeposit}
         onSubmit={submitUnstake}
-        onFormChange={({ amount }) => {
-          setAmount(amount);
-        }}
+        onAmountChange={setAmount}
       >
         {(errorType) => {
           const hasFeeError = errorType === 'insufficientBalanceForFee';

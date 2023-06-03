@@ -1,7 +1,7 @@
 import { ApiPromise } from '@polkadot/api';
 import { act, render, screen } from '@testing-library/react';
+import noop from 'lodash/noop';
 
-import { ValidatorsTable } from '@renderer/components/common';
 import { Asset } from '@renderer/domain/asset';
 import { Validators } from './Validators';
 
@@ -16,7 +16,14 @@ jest.mock('@renderer/context/I18nContext', () => ({
 jest.mock('@renderer/services/staking/validatorsService', () => ({
   useValidators: jest.fn().mockReturnValue({
     getMaxValidators: jest.fn().mockReturnValue(6),
-    getValidators: jest.fn().mockReturnValue({}),
+    getValidators: jest.fn().mockResolvedValue({
+      '5C556QTtg1bJ43GDSgeowa3Ark6aeSHGTac1b2rKSXtgmSmW': {
+        address: '5C556QTtg1bJ43GDSgeowa3Ark6aeSHGTac1b2rKSXtgmSmW',
+        totalStake: '84293898648764293',
+        ownStake: '27425315022592146',
+        blocked: false,
+      },
+    }),
   }),
 }));
 
@@ -27,30 +34,26 @@ jest.mock('@renderer/services/staking/eraService', () => ({
 }));
 
 describe('screens/Staking/components/Validators', () => {
-  beforeEach(() => {
-    (ValidatorsTable as jest.Mock).mockImplementation(() => 'validatorsTable');
-  });
+  const api = { isConnected: true } as ApiPromise;
+  const asset = {
+    assetId: 0,
+    symbol: 'WND',
+    precision: 12,
+    staking: 'relaychain',
+  } as Asset;
 
   afterEach(() => {
     jest.clearAllMocks();
   });
 
   test('should render component', async () => {
-    const api = { isConnected: true } as ApiPromise;
-    const asset = {
-      assetId: 0,
-      symbol: 'WND',
-      precision: 12,
-      staking: 'relaychain',
-    } as Asset;
-
     await act(async () => {
-      render(<Validators api={api} chainId="0x123" asset={asset} onResult={() => {}} />);
+      render(<Validators api={api} chainId="0x123" asset={asset} onResult={noop} onGoBack={noop} />);
     });
 
-    const table = screen.getByText('validatorsTable');
+    const validators = screen.getByRole('listitem');
     const continueButton = screen.getByRole('button', { name: 'staking.validators.selectValidatorButton' });
-    expect(table).toBeInTheDocument();
+    expect(validators).toBeInTheDocument();
     expect(continueButton).toBeInTheDocument();
   });
 });

@@ -271,9 +271,7 @@ const InitOperation = ({ api, chainId, addressPrefix, explorers, staking, identi
         validateFee={validateFee}
         validateDeposit={validateDeposit}
         onSubmit={submitRestake}
-        onFormChange={({ amount }) => {
-          setAmount(amount);
-        }}
+        onAmountChange={setAmount}
       >
         <div className="flex justify-between items-center uppercase text-neutral-variant text-2xs">
           <p>{t('staking.unstake.transferable')}</p>

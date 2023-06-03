@@ -1,0 +1,20 @@
+import { Variant } from './types';
+import { IconNames } from '@renderer/components/ui/Icon/data';
+
+export const IconName: Record<Variant, IconNames> = {
+  info: 'info',
+  warn: 'warn',
+  error: 'warn',
+};
+
+export const ViewStyle: Record<Variant, string> = {
+  info: 'bg-alert-background border-alert-border',
+  warn: 'bg-alert-background-warning border-alert-border-warning',
+  error: 'bg-alert-background-negative border-alert-border-negative',
+};
+
+export const IconStyle: Record<Variant, string> = {
+  info: 'text-icon-alert',
+  warn: 'text-icon-warning',
+  error: 'text-icon-negative',
+};
