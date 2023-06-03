@@ -1,11 +1,12 @@
 import { join } from 'path';
-import { BrowserWindow, shell } from 'electron';
+import { BrowserWindow, Menu, shell } from 'electron';
 import log from 'electron-log';
 import windowStateKeeper from 'electron-window-state';
 
 import { ENVIRONMENT } from '@shared/constants';
 import { APP_CONFIG } from '../../app.config';
 import { createWindow } from './factories/create';
+import { buildMenuTemplate } from '@main/vectormenu';
 
 const { MAIN, TITLE } = APP_CONFIG;
 log.initialize({ preload: true });
@@ -68,6 +69,8 @@ export async function MainWindow() {
 
     window.show();
   });
+
+  Menu.setApplicationMenu(buildMenuTemplate());
   mainWindowState.manage(window);
 
   return window;
