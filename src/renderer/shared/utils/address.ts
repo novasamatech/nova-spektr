@@ -47,26 +47,19 @@ export const toShortAddress = (address: Address, chunk = 6): string => {
  * @return {Boolean}
  */
 export const validateAddress = (address?: Address | AccountId): boolean => {
-  if (!address) {
-    return false;
-  }
-  if (isU8a(address) || isHex(address)) {
-    let res = u8aToU8a(address);
+  if (!address) return false;
 
-    return res ? res.length === PUBLIC_KEY_LENGTH_BYTES : false;
+  if (isU8a(address) || isHex(address)) {
+    return u8aToU8a(address).length === PUBLIC_KEY_LENGTH_BYTES;
   }
 
   try {
     const decoded = base58Decode(address);
-    if (!ADDRESS_ALLOWED_ENCODED_LENGTHS.includes(decoded.length)) {
-      return false;
-    }
-    const [isValid, endPos, ss58Length] = checkAddressChecksum(decoded);
-    if (!isValid) {
-      return false;
-    }
+    if (!ADDRESS_ALLOWED_ENCODED_LENGTHS.includes(decoded.length)) return false;
 
-    return !!decoded.slice(ss58Length, endPos);
+    const [isValid, endPos, ss58Length] = checkAddressChecksum(decoded);
+
+    return isValid && Boolean(decoded.slice(ss58Length, endPos));
   } catch (error) {
     return false;
   }
