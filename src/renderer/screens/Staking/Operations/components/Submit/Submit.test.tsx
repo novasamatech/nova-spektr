@@ -7,7 +7,6 @@ import noop from 'lodash/noop';
 import { HexString } from '@renderer/domain/shared-kernel';
 import { Asset } from '@renderer/domain/asset';
 import { RewardsDestination } from '@renderer/domain/stake';
-import { Transaction } from '@renderer/domain/transaction';
 import { TEST_ADDRESS } from '@renderer/shared/utils/constants';
 import { Submit } from './Submit';
 
@@ -48,7 +47,7 @@ jest.mock('@renderer/context/MatrixContext', () => ({
 describe('screens/Staking/components/Submit', () => {
   const defaultProps = {
     api: {} as ApiPromise,
-    transaction: {} as Transaction,
+    txs: [],
     asset: { assetId: 1, symbol: 'DOT', precision: 10 } as Asset,
     accounts: [],
     amount: '123',

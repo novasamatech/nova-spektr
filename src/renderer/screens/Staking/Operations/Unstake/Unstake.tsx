@@ -323,7 +323,7 @@ const Unstake = () => {
       {activeStep === Step.SUBMIT && (
         <Submit
           api={api}
-          // transaction={transactions[0]}
+          txs={transactions}
           multisigTx={multisigTx}
           signatures={signatures}
           unsignedTx={unsignedTransactions}
@@ -331,7 +331,6 @@ const Unstake = () => {
           description={description}
           successMessage={t('staking.unstake.submitSuccess')}
           onClose={closeUnstakeModal}
-          // amounts={unstakeValues}
           {...explorersProps}
         />
       )}

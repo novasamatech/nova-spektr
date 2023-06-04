@@ -292,13 +292,12 @@ const Restake = () => {
       {activeStep === Step.SUBMIT && (
         <Submit
           api={api}
-          // transaction={transactions[0]}
+          txs={transactions}
           multisigTx={multisigTx}
           signatures={signatures}
           unsignedTx={unsignedTransactions}
           accounts={accounts}
           description={description}
-          // amounts={restakeValues}
           successMessage={t('staking.restake.submitSuccess')}
           onClose={closeRestakeModal}
           {...explorersProps}

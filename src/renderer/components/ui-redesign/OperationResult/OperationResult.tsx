@@ -36,12 +36,8 @@ const OperationResult = ({
             <Dialog.Title className="font-semibold mb-2">
               <SmallTitleText>{title}</SmallTitleText>
             </Dialog.Title>
-            {description && (
-              <Dialog.Description className="text-text-tertiary">
-                <FootnoteText>{description}</FootnoteText>
-              </Dialog.Description>
-            )}
-            {children}
+            {description && <FootnoteText className="text-text-tertiary">{description}</FootnoteText>}
+            <div className="mt-2">{children}</div>
           </Dialog.Panel>
         </ModalTransition>
       </div>

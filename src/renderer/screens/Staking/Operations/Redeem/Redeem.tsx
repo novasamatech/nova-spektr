@@ -292,7 +292,7 @@ const Unstake = () => {
       {activeStep === Step.SUBMIT && (
         <Submit
           api={api}
-          // transaction={transactions[0]}
+          txs={transactions}
           multisigTx={multisigTx}
           description={description}
           signatures={signatures}
@@ -300,7 +300,6 @@ const Unstake = () => {
           accounts={accounts}
           successMessage={t('staking.redeem.submitSuccess')}
           onClose={closeRedeemModal}
-          // amounts={redeemAmounts}
           {...explorersProps}
         />
       )}

@@ -15,7 +15,6 @@ import { useValidators } from '@renderer/services/staking/validatorsService';
 import { Account, isMultisig, MultisigAccount } from '@renderer/domain/account';
 import { toAddress } from '@renderer/shared/utils/address';
 import { nonNullable } from '@renderer/shared/utils/functions';
-import { Explorer } from '@renderer/domain/chain';
 import { MultiSelect, Select, FootnoteText } from '@renderer/components/ui-redesign';
 import { Deposit, Fee } from '@renderer/components/common';
 import { OperationForm } from '../../components';
@@ -40,14 +39,13 @@ export type BondResult = {
 type Props = {
   api: ApiPromise;
   chainId: ChainId;
-  explorers?: Explorer[];
   accounts: Account[];
   asset: Asset;
   addressPrefix: number;
   onResult: (data: BondResult) => void;
 };
 
-const InitOperation = ({ api, chainId, explorers, accounts, asset, addressPrefix, onResult }: Props) => {
+const InitOperation = ({ api, chainId, accounts, asset, addressPrefix, onResult }: Props) => {
   const { t } = useI18n();
   const { getLiveBalance, getLiveAssetBalances } = useBalance();
   const { getLiveAccounts } = useAccount();

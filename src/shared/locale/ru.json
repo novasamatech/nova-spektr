@@ -618,7 +618,8 @@
       "availablePlaceholder": "Доступно",
       "confirmStakeMoreSubtitle": "Подтверждение",
       "eraHint": "Вы будете получать увеличенную награду начиная со следующей эры",
-      "initStakeMoreSubtitle": "Застейкать ещё"
+      "initStakeMoreSubtitle": "Застейкать ещё",
+      "title": "Увеличить стейк"
     },
     "title": "Стейкинг",
     "unstake": {

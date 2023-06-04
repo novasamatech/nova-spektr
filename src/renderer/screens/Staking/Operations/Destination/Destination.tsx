@@ -264,18 +264,14 @@ const Destination = () => {
       {activeStep === Step.SUBMIT && (
         <Submit
           api={api}
-          // transaction={transactions[0]}
+          txs={transactions}
           multisigTx={multisigTx}
           signatures={signatures}
           unsignedTx={unsignedTransactions}
           accounts={accounts}
-          // destination={destination}
           successMessage={t('staking.destination.submitSuccess')}
           description={description}
           onClose={closeDestinationModal}
-          // asset={asset}
-          // explorers={explorers}
-          // addressPrefix={addressPrefix}
         />
       )}
     </div>

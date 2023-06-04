@@ -208,10 +208,9 @@ const SetValidators = () => {
       {activeStep === Step.SUBMIT && (
         <Submit
           api={api}
-          // transaction={transactions[0]}
+          txs={transactions}
           signatures={signatures}
           unsignedTx={unsignedTransactions}
-          // validators={Object.values(validators)}
           accounts={totalAccounts}
           successMessage={t('staking.validators.submitSuccess')}
           onClose={closeValidatorsModal}

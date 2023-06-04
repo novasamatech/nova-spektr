@@ -7,18 +7,28 @@ import { HexString } from '@renderer/domain/shared-kernel';
 import { useTransaction } from '@renderer/services/transaction/transactionService';
 import { ExtrinsicResultParams } from '@renderer/services/transaction/common/types';
 import { isMultisig, Account, MultisigAccount } from '@renderer/domain/account';
-import { Transaction } from '@renderer/domain/transaction';
+import {
+  Transaction,
+  SigningStatus,
+  MultisigEvent,
+  MultisigTransaction,
+  MultisigTxInitStatus,
+} from '@renderer/domain/transaction';
 import { toAccountId } from '@renderer/shared/utils/address';
 import { useMatrix } from '@renderer/context/MatrixContext';
 import { Button } from '@renderer/components/ui-redesign';
 import OperationResult from '@renderer/components/ui-redesign/OperationResult/OperationResult';
 import { useToggle } from '@renderer/shared/hooks';
+import { useMultisigTx } from '@renderer/services/multisigTx/multisigTxService';
 
 type ResultProps = Pick<ComponentProps<typeof OperationResult>, 'title' | 'description' | 'variant'>;
+
+// TODO: Looks very similar to ActionSteps/Submit.tsx
 
 type Props = {
   api: ApiPromise;
   accounts: Array<Account | MultisigAccount>;
+  txs: Transaction[];
   multisigTx?: Transaction;
   unsignedTx: UnsignedTransaction[];
   signatures: HexString[];
@@ -30,6 +40,7 @@ type Props = {
 export const Submit = ({
   api,
   accounts,
+  txs,
   multisigTx,
   unsignedTx,
   signatures,
@@ -41,21 +52,11 @@ export const Submit = ({
 
   const { matrix } = useMatrix();
   const { submitAndWatchExtrinsic, getSignedExtrinsic } = useTransaction();
-  // const { addMultisigTx } = useMultisigTx();
+  const { addMultisigTx } = useMultisigTx();
 
   const [isSuccess, toggleSuccessMessage] = useToggle();
   const [inProgress, toggleInProgress] = useToggle(true);
   const [errorMessage, setErrorMessage] = useState('');
-
-  const closeSuccessMessage = () => {
-    toggleSuccessMessage();
-    onClose();
-  };
-
-  const closeErrorMessage = () => {
-    onClose();
-    setErrorMessage('');
-  };
 
   useEffect(() => {
     submitExtrinsic(signatures).catch(() => console.warn('Error getting signed extrinsics'));
@@ -71,14 +72,42 @@ export const Submit = ({
     allExtrinsics.forEach((extrinsic, index) => {
       submitAndWatchExtrinsic(extrinsic, unsignedTx[index], api, (executed, params) => {
         if (executed) {
-          const mstAccount = accounts[0];
+          const typedParams = params as ExtrinsicResultParams;
 
+          const mstAccount = accounts[0];
           if (multisigTx && isMultisig(mstAccount) && matrix.userIsLoggedIn) {
-            sendMultisigEvent(mstAccount.matrixRoomId, multisigTx, params as ExtrinsicResultParams);
+            const eventStatus: SigningStatus = 'SIGNED';
+
+            const event: MultisigEvent = {
+              status: eventStatus,
+              accountId: mstAccount.accountId,
+              extrinsicHash: typedParams.extrinsicHash,
+              eventBlock: typedParams.timepoint.height,
+              eventIndex: typedParams.timepoint.index,
+            };
+
+            const newTx: MultisigTransaction = {
+              accountId: mstAccount.accountId,
+              chainId: multisigTx.chainId,
+              signatories: mstAccount.signatories,
+              callData: multisigTx.args.callData,
+              callHash: multisigTx.args.callHash,
+              transaction: txs[index],
+              status: MultisigTxInitStatus.SIGNING,
+              blockCreated: typedParams.timepoint.height,
+              indexCreated: typedParams.timepoint.index,
+              events: [event],
+            };
+
+            if (matrix.userIsLoggedIn) {
+              sendMultisigEvent(mstAccount.matrixRoomId, newTx, typedParams);
+            } else {
+              addMultisigTx(newTx);
+            }
           }
 
           toggleSuccessMessage();
-          setTimeout(closeSuccessMessage, 2000);
+          setTimeout(onClose, 2000);
         } else {
           setErrorMessage(params as string);
         }
@@ -88,18 +117,23 @@ export const Submit = ({
     });
   };
 
-  const sendMultisigEvent = (roomId: string, transaction: Transaction, params: ExtrinsicResultParams) => {
+  const sendMultisigEvent = (matrixRoomId: string, updatedTx: MultisigTransaction, params: ExtrinsicResultParams) => {
+    if (!multisigTx) return;
+
     matrix
-      .sendApprove(roomId, {
-        senderAccountId: toAccountId(transaction.address),
-        chainId: transaction.chainId,
-        callHash: transaction.args.callHash,
-        callData: transaction.args.callData,
-        extrinsicHash: params.extrinsicHash,
+      .sendApprove(matrixRoomId, {
+        senderAccountId: toAccountId(multisigTx.address),
+        chainId: updatedTx.chainId,
+        callHash: updatedTx.callHash,
+        callData: updatedTx.callData,
         extrinsicTimepoint: params.timepoint,
-        callTimepoint: params.timepoint,
+        extrinsicHash: params.extrinsicHash,
         error: Boolean(params.multisigError),
         description,
+        callTimepoint: {
+          height: updatedTx.blockCreated || params.timepoint.height,
+          index: updatedTx.indexCreated || params.timepoint.index,
+        },
       })
       .catch(console.warn);
   };
@@ -120,7 +154,7 @@ export const Submit = ({
 
   return (
     <OperationResult isOpen={Boolean(inProgress || errorMessage || isSuccess)} {...getResultProps()} onClose={onClose}>
-      {errorMessage && <Button onClick={closeErrorMessage}>{t('operation.feeErrorButton')}</Button>}
+      {errorMessage && <Button onClick={onClose}>{t('operation.feeErrorButton')}</Button>}
     </OperationResult>
   );
 };

@@ -12,18 +12,17 @@ import { useChains } from '@renderer/services/network/chainsService';
 import { Address, ChainId, HexString, AccountId } from '@renderer/domain/shared-kernel';
 import { Transaction, TransactionType } from '@renderer/domain/transaction';
 import { ValidatorMap } from '@renderer/services/staking/common/types';
-import { Validators, Confirmation, MultiScanning, Signing, SingleScanning, Submit } from '../components';
+import { Validators, Confirmation, MultiScanning, Signing, SingleScanning, Submit, NoAsset } from '../components';
 import { useCountdown, useToggle } from '@renderer/shared/hooks';
 import { Account, MultisigAccount, isMultisig } from '@renderer/domain/account';
 import { useTransaction } from '@renderer/services/transaction/transactionService';
-import { BaseModal, Alert, TitleText, BodyText, Button } from '@renderer/components/ui-redesign';
+import { BaseModal, Alert } from '@renderer/components/ui-redesign';
 import InitOperation, { BondResult } from './InitOperation/InitOperation';
 import Paths from '@renderer/routes/paths';
 import { DEFAULT_TRANSITION } from '@renderer/shared/utils/constants';
 import OperationModalTitle from '@renderer/screens/Operations/components/OperationModalTitle';
 import { useAccount } from '@renderer/services/account/accountService';
 import { AccountDS } from '@renderer/services/storage';
-import { Icon } from '@renderer/components/ui';
 
 const enum Step {
   INIT,
@@ -54,19 +53,19 @@ const Bond = () => {
 
   const [activeStep, setActiveStep] = useState<Step>(Step.INIT);
   const [chainName, setChainName] = useState('...');
-
   const [validators, setValidators] = useState<ValidatorMap>({});
-  const [accounts, setAccounts] = useState<AccountDS[]>([]);
   const [accountsToStake, setAccountsToStake] = useState<Account[]>([]);
-  const [signer, setSigner] = useState<Account>();
+
   const [stakeAmount, setStakeAmount] = useState<string>('');
   const [destination, setDestination] = useState<Destination>();
   const [description, setDescription] = useState('');
 
-  const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [multisigTx, setMultisigTx] = useState<Transaction>();
+  const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [unsignedTransactions, setUnsignedTransactions] = useState<UnsignedTransaction[]>([]);
 
+  const [accounts, setAccounts] = useState<AccountDS[]>([]);
+  const [signer, setSigner] = useState<Account>();
   const [signatures, setSignatures] = useState<HexString[]>([]);
 
   const accountIds = searchParams.get('id')?.split(',') || [];
@@ -113,20 +112,7 @@ const Bond = () => {
 
   if (!asset) {
     return (
-      <BaseModal closeButton isOpen={isBondModalOpen} title={t('staking.bond.title')} onClose={closeBondModal}>
-        <div className="flex flex-col h-full relative">
-          <div className="flex w-full h-full flex-col items-center justify-center">
-            <Icon as="img" name="emptyList" size={178} />
-            <TitleText className="mt-4">{t('staking.bond.noStakingAssetLabel')}</TitleText>
-            <BodyText className="text-text-tertiary">
-              {t('staking.bond.noStakingAssetDescription', { chainName: name })}
-            </BodyText>
-            <Button className="mt-7" onClick={closeBondModal}>
-              {t('staking.bond.goToStakingButton')}
-            </Button>
-          </div>
-        </div>
-      </BaseModal>
+      <NoAsset title={t('staking.bond.title')} chainName={name} isOpen={isBondModalOpen} onClose={closeBondModal} />
     );
   }
 
@@ -135,8 +121,11 @@ const Bond = () => {
       ? { type: RewardsDestination.TRANSFERABLE, address: destination }
       : { type: RewardsDestination.RESTAKE };
 
-    setSigner(signer);
-    setDescription(description || '');
+    if (signer && isMultisig(accounts[0])) {
+      setSigner(signer);
+      setDescription(description || '');
+    }
+
     setDestination(destPayload);
     setAccountsToStake(accounts);
     setStakeAmount(amount);
@@ -217,10 +206,6 @@ const Bond = () => {
   const onScanResult = (unsigned: UnsignedTransaction[]) => {
     setUnsignedTransactions(unsigned);
     setActiveStep(Step.SIGNING);
-  };
-
-  const onBackToScan = () => {
-    setActiveStep(Step.SCANNING);
   };
 
   const onSignResult = (signatures: HexString[]) => {
@@ -304,23 +289,20 @@ const Bond = () => {
           countdown={countdown}
           multiQr={transactions.length > 1}
           onResult={onSignResult}
-          onGoBack={onBackToScan}
+          onGoBack={() => setActiveStep(Step.SCANNING)}
         />
       )}
       {activeStep === Step.SUBMIT && (
         <Submit
           api={api}
+          txs={transactions}
           multisigTx={multisigTx}
-          // transaction={transactions[0]}
           signatures={signatures}
           unsignedTx={unsignedTransactions}
-          // validators={Object.values(validators)}
           accounts={accountsToStake}
-          // amounts={bondValues}
           successMessage={t('staking.bond.submitSuccess')}
           description={description}
           onClose={closeBondModal}
-          // destination={destination}
           {...explorersProps}
         />
       )}
