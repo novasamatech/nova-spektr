@@ -136,14 +136,13 @@ export const useBalance = (): IBalanceService => {
           reserved: accountInfo.data.reserved.toString(),
         };
 
-        const existingBalacne = await balanceStorage.getBalance(balance.accountId, balance.chainId, balance.assetId);
-        console.log('existing balance!!!');
-        if (!existingBalacne) {
+        const existingBalance = await balanceStorage.getBalance(balance.accountId, balance.chainId, balance.assetId);
+        if (!existingBalance) {
           await saveBalance(balance);
         } else if (
-          balance.free !== existingBalacne.free ||
-          balance.frozen !== existingBalacne.frozen ||
-          balance.reserved !== existingBalacne.reserved
+          balance.free !== existingBalance.free ||
+          balance.frozen !== existingBalance.frozen ||
+          balance.reserved !== existingBalance.reserved
         ) {
           await updateBalance(balance);
         }
