@@ -5,7 +5,6 @@ import { Navigate, useParams, useSearchParams, useNavigate } from 'react-router-
 import { toAddress } from '@renderer/shared/utils/address';
 import { getRelaychainAsset } from '@renderer/shared/utils/assets';
 import { RewardsDestination } from '@renderer/domain/stake';
-import { ButtonLink, Icon } from '@renderer/components/ui';
 import { ChainLoader } from '@renderer/components/common';
 import { useI18n } from '@renderer/context/I18nContext';
 import { useNetworkContext } from '@renderer/context/NetworkContext';
@@ -13,17 +12,18 @@ import { useChains } from '@renderer/services/network/chainsService';
 import { Address, ChainId, HexString, AccountId } from '@renderer/domain/shared-kernel';
 import { Transaction, TransactionType } from '@renderer/domain/transaction';
 import { ValidatorMap } from '@renderer/services/staking/common/types';
-import { Validators, Confirmation, MultiScanning, Signing, SingleScanning } from '../components';
+import { Validators, Confirmation, MultiScanning, Signing, SingleScanning, Submit } from '../components';
 import { useCountdown, useToggle } from '@renderer/shared/hooks';
 import { Account, MultisigAccount, isMultisig } from '@renderer/domain/account';
 import { useTransaction } from '@renderer/services/transaction/transactionService';
-import { BaseModal, Alert } from '@renderer/components/ui-redesign';
+import { BaseModal, Alert, TitleText, BodyText, Button } from '@renderer/components/ui-redesign';
 import InitOperation, { BondResult } from './InitOperation/InitOperation';
 import Paths from '@renderer/routes/paths';
 import { DEFAULT_TRANSITION } from '@renderer/shared/utils/constants';
 import OperationModalTitle from '@renderer/screens/Operations/components/OperationModalTitle';
 import { useAccount } from '@renderer/services/account/accountService';
 import { AccountDS } from '@renderer/services/storage';
+import { Icon } from '@renderer/components/ui';
 
 const enum Step {
   INIT,
@@ -61,13 +61,13 @@ const Bond = () => {
   const [signer, setSigner] = useState<Account>();
   const [stakeAmount, setStakeAmount] = useState<string>('');
   const [destination, setDestination] = useState<Destination>();
-  // const [description, setDescription] = useState('');
+  const [description, setDescription] = useState('');
 
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [multisigTx, setMultisigTx] = useState<Transaction>();
-  // const [unsignedTransactions, setUnsignedTransactions] = useState<UnsignedTransaction[]>([]);
+  const [unsignedTransactions, setUnsignedTransactions] = useState<UnsignedTransaction[]>([]);
 
-  // const [signatures, setSignatures] = useState<HexString[]>([]);
+  const [signatures, setSignatures] = useState<HexString[]>([]);
 
   const accountIds = searchParams.get('id')?.split(',') || [];
   const chainId = params.chainId || ('' as ChainId);
@@ -106,21 +106,24 @@ const Bond = () => {
     }
   };
 
+  const closeBondModal = () => {
+    toggleBondModal();
+    setTimeout(() => navigate(Paths.STAKING), DEFAULT_TRANSITION);
+  };
+
   if (!asset) {
     return (
-      <BaseModal isOpen closeButton title="TEST" onClose={() => console.log('close')}>
+      <BaseModal closeButton isOpen={isBondModalOpen} title={t('staking.bond.title')} onClose={closeBondModal}>
         <div className="flex flex-col h-full relative">
-          {/*{headerContent}*/}
-
           <div className="flex w-full h-full flex-col items-center justify-center">
-            <Icon name="noResults" size={380} />
-            <p className="text-neutral text-3xl font-bold">{t('staking.bond.noStakingAssetLabel')}</p>
-            <p className="text-neutral-variant text-base font-normal">
+            <Icon as="img" name="emptyList" size={178} />
+            <TitleText className="mt-4">{t('staking.bond.noStakingAssetLabel')}</TitleText>
+            <BodyText className="text-text-tertiary">
               {t('staking.bond.noStakingAssetDescription', { chainName: name })}
-            </p>
-            <ButtonLink className="mt-5" to={Paths.STAKING} variant="fill" pallet="primary" weight="lg">
+            </BodyText>
+            <Button className="mt-7" onClick={closeBondModal}>
               {t('staking.bond.goToStakingButton')}
-            </ButtonLink>
+            </Button>
           </div>
         </div>
       </BaseModal>
@@ -133,7 +136,7 @@ const Bond = () => {
       : { type: RewardsDestination.RESTAKE };
 
     setSigner(signer);
-    // setDescription(description || '');
+    setDescription(description || '');
     setDestination(destPayload);
     setAccountsToStake(accounts);
     setStakeAmount(amount);
@@ -212,7 +215,7 @@ const Bond = () => {
   };
 
   const onScanResult = (unsigned: UnsignedTransaction[]) => {
-    // setUnsignedTransactions(unsigned);
+    setUnsignedTransactions(unsigned);
     setActiveStep(Step.SIGNING);
   };
 
@@ -221,13 +224,8 @@ const Bond = () => {
   };
 
   const onSignResult = (signatures: HexString[]) => {
-    // setSignatures(signatures);
+    setSignatures(signatures);
     setActiveStep(Step.SUBMIT);
-  };
-
-  const closeBondModal = () => {
-    toggleBondModal();
-    setTimeout(() => navigate(Paths.STAKING), DEFAULT_TRANSITION);
   };
 
   const explorersProps = { explorers, addressPrefix, asset };
@@ -310,23 +308,21 @@ const Bond = () => {
         />
       )}
       {activeStep === Step.SUBMIT && (
-        //eslint-disable-next-line i18next/no-literal-string
-        <div>Submit</div>
-        // <Submit
-        //   api={api}
-        //   multisigTx={multisigTx}
-        //   transaction={transactions[0]}
-        //   signatures={signatures}
-        //   unsignedTx={unsignedTransactions}
-        //   validators={Object.values(validators)}
-        //   accounts={accountsToStake}
-        //   amounts={bondValues}
-        //   description={description}
-        //   destination={destination}
-        //   {...explorersProps}
-        // >
-        //   {infoAlert}
-        // </Submit>
+        <Submit
+          api={api}
+          multisigTx={multisigTx}
+          // transaction={transactions[0]}
+          signatures={signatures}
+          unsignedTx={unsignedTransactions}
+          // validators={Object.values(validators)}
+          accounts={accountsToStake}
+          // amounts={bondValues}
+          successMessage={t('staking.bond.submitSuccess')}
+          description={description}
+          onClose={closeBondModal}
+          // destination={destination}
+          {...explorersProps}
+        />
       )}
     </BaseModal>
   );

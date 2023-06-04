@@ -18,6 +18,7 @@ import { Confirmation, MultiScanning, Signing, Submit, Validators } from '../com
 import { useCountdown, useToggle } from '@renderer/shared/hooks';
 import { getTotalAccounts } from '@renderer/screens/Staking/Operations/common/utils';
 import { Alert } from '@renderer/components/ui-redesign';
+import { DEFAULT_TRANSITION } from '@renderer/shared/utils/constants';
 
 const enum Step {
   INIT,
@@ -46,6 +47,7 @@ const SetValidators = () => {
 
   const dbAccounts = getLiveAccounts();
 
+  const [_, toggleValidatorsModal] = useToggle(true);
   const [isAlertOpen, toggleAlert] = useToggle(true);
 
   const [activeStep, setActiveStep] = useState<Step>(Step.INIT);
@@ -84,6 +86,11 @@ const SetValidators = () => {
       // TODO: reset data
       setActiveStep((prev) => prev - 1);
     }
+  };
+
+  const closeValidatorsModal = () => {
+    toggleValidatorsModal();
+    setTimeout(() => navigate(Paths.STAKING), DEFAULT_TRANSITION);
   };
 
   const headerContent = (
@@ -206,7 +213,8 @@ const SetValidators = () => {
           unsignedTx={unsignedTransactions}
           // validators={Object.values(validators)}
           accounts={totalAccounts}
-          onClose={console.log}
+          successMessage={t('staking.validators.submitSuccess')}
+          onClose={closeValidatorsModal}
           {...explorersProps}
         />
       )}

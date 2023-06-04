@@ -23,6 +23,7 @@ import { useCountdown, useToggle } from '@renderer/shared/hooks';
 import { useTransaction } from '@renderer/services/transaction/transactionService';
 import { Account, MultisigAccount, isMultisig } from '@renderer/domain/account';
 import { Alert } from '@renderer/components/ui-redesign';
+import { DEFAULT_TRANSITION } from '@renderer/shared/utils/constants';
 
 const enum Step {
   INIT,
@@ -52,6 +53,7 @@ const Unstake = () => {
   const [searchParams] = useSearchParams();
   const params = useParams<{ chainId: ChainId }>();
 
+  const [_, toggleUnstakeModal] = useToggle(true);
   const [isAlertOpen, toggleAlert] = useToggle(true);
 
   const [activeStep, setActiveStep] = useState<Step>(Step.INIT);
@@ -125,6 +127,11 @@ const Unstake = () => {
       // TODO: reset data
       setActiveStep((prev) => prev - 1);
     }
+  };
+
+  const closeUnstakeModal = () => {
+    toggleUnstakeModal();
+    setTimeout(() => navigate(Paths.STAKING), DEFAULT_TRANSITION);
   };
 
   const headerContent = (
@@ -322,7 +329,8 @@ const Unstake = () => {
           unsignedTx={unsignedTransactions}
           accounts={accounts}
           description={description}
-          onClose={console.log}
+          successMessage={t('staking.unstake.submitSuccess')}
+          onClose={closeUnstakeModal}
           // amounts={unstakeValues}
           {...explorersProps}
         />

@@ -99,6 +99,7 @@ const Submit = ({ api, tx, multisigTx, account, unsignedTx, signature, descripti
       } else {
         setErrorMessage(params as string);
       }
+
       toggleInProgress();
     });
   };

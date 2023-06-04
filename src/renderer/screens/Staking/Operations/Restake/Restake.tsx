@@ -21,6 +21,7 @@ import { useTransaction } from '@renderer/services/transaction/transactionServic
 import { Account, MultisigAccount, isMultisig } from '@renderer/domain/account';
 import { toAddress } from '@renderer/shared/utils/address';
 import { Alert } from '@renderer/components/ui-redesign';
+import { DEFAULT_TRANSITION } from '@renderer/shared/utils/constants';
 
 const enum Step {
   INIT,
@@ -51,6 +52,7 @@ const Restake = () => {
 
   const dbAccounts = getLiveAccounts();
 
+  const [_, toggleRestakeModal] = useToggle(true);
   const [isAlertOpen, toggleAlert] = useToggle(true);
 
   const [activeStep, setActiveStep] = useState<Step>(Step.INIT);
@@ -114,6 +116,11 @@ const Restake = () => {
       // TODO: reset data
       setActiveStep((prev) => prev - 1);
     }
+  };
+
+  const closeRestakeModal = () => {
+    toggleRestakeModal();
+    setTimeout(() => navigate(Paths.STAKING), DEFAULT_TRANSITION);
   };
 
   const headerContent = (
@@ -292,7 +299,8 @@ const Restake = () => {
           accounts={accounts}
           description={description}
           // amounts={restakeValues}
-          onClose={console.log}
+          successMessage={t('staking.restake.submitSuccess')}
+          onClose={closeRestakeModal}
           {...explorersProps}
         />
       )}

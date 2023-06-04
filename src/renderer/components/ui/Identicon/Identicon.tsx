@@ -57,13 +57,13 @@ const Identicon = ({
   );
 
   const content =
-    signType !== undefined ? (
+    signType === undefined ? (
+      icon
+    ) : (
       <>
         {icon}
         <div className="absolute bottom-0 right-0 pointer-events-none">{Badges[signType](size * 0.58)}</div>
       </>
-    ) : (
-      icon
     );
 
   if (!canCopy || !address) {

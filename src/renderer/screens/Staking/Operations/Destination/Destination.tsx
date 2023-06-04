@@ -16,9 +16,10 @@ import { Confirmation, MultiScanning, Signing, Submit, SingleScanning } from '..
 import Paths from '@renderer/routes/paths';
 import { AccountDS } from '@renderer/services/storage';
 import InitOperation, { DestinationResult } from './InitOperation/InitOperation';
-import { useCountdown } from '@renderer/shared/hooks';
+import { useCountdown, useToggle } from '@renderer/shared/hooks';
 import { MultisigAccount, isMultisig, Account } from '@renderer/domain/account';
 import { useTransaction } from '@renderer/services/transaction/transactionService';
+import { DEFAULT_TRANSITION } from '@renderer/shared/utils/constants';
 
 const enum Step {
   INIT,
@@ -49,6 +50,8 @@ const Destination = () => {
   const [searchParams] = useSearchParams();
   const { getChainById } = useChains();
   const params = useParams<{ chainId: ChainId }>();
+
+  const [_, toggleDestinationModal] = useToggle(true);
 
   const [activeStep, setActiveStep] = useState<Step>(Step.INIT);
   const [chainName, setChainName] = useState('...');
@@ -91,6 +94,11 @@ const Destination = () => {
       // TODO: reset data
       setActiveStep((prev) => prev - 1);
     }
+  };
+
+  const closeDestinationModal = () => {
+    toggleDestinationModal();
+    setTimeout(() => navigate(Paths.STAKING), DEFAULT_TRANSITION);
   };
 
   const headerContent = (
@@ -262,8 +270,9 @@ const Destination = () => {
           unsignedTx={unsignedTransactions}
           accounts={accounts}
           // destination={destination}
+          successMessage={t('staking.destination.submitSuccess')}
           description={description}
-          onClose={console.log}
+          onClose={closeDestinationModal}
           // asset={asset}
           // explorers={explorers}
           // addressPrefix={addressPrefix}

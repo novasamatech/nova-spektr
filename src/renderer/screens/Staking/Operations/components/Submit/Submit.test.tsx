@@ -56,6 +56,7 @@ describe('screens/Staking/components/Submit', () => {
     destination: { address: TEST_ADDRESS, type: RewardsDestination.TRANSFERABLE },
     unsignedTx: [{}, {}, {}] as UnsignedTransaction[],
     signatures: ['0x1', '0x2', '0x3'] as HexString[],
+    successMessage: 'Success!',
     onClose: noop,
   };
 

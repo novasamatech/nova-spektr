@@ -18,6 +18,7 @@ import { isMultisig, MultisigAccount, Account } from '@renderer/domain/account';
 import { useTransaction } from '@renderer/services/transaction/transactionService';
 import { toAddress } from '@renderer/shared/utils/address';
 import { Alert } from '@renderer/components/ui-redesign';
+import { DEFAULT_TRANSITION } from '@renderer/shared/utils/constants';
 
 const enum Step {
   INIT,
@@ -44,6 +45,7 @@ const StakeMore = () => {
   const [searchParams] = useSearchParams();
   const params = useParams<{ chainId: ChainId }>();
 
+  const [_, toggleStakeMoreModal] = useToggle(true);
   const [isAlertOpen, toggleAlert] = useToggle(true);
 
   const [activeStep, setActiveStep] = useState<Step>(Step.INIT);
@@ -86,6 +88,11 @@ const StakeMore = () => {
       // TODO: reset data
       setActiveStep((prev) => prev - 1);
     }
+  };
+
+  const closeStakeMoreModal = () => {
+    toggleStakeMoreModal();
+    setTimeout(() => navigate(Paths.STAKING), DEFAULT_TRANSITION);
   };
 
   const headerContent = (
@@ -256,7 +263,8 @@ const StakeMore = () => {
           unsignedTx={unsignedTransactions}
           accounts={accounts}
           description={description}
-          onClose={console.log}
+          successMessage={t('staking.stakeMore.submitSuccess')}
+          onClose={closeStakeMoreModal}
           // amounts={stakeMoreValues}
           {...explorersProps}
         />

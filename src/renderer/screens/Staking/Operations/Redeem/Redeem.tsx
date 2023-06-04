@@ -17,10 +17,11 @@ import { useEra } from '@renderer/services/staking/eraService';
 import InitOperation, { RedeemResult } from './InitOperation/InitOperation';
 import { Confirmation, MultiScanning, Signing, Submit, SingleScanning } from '../components';
 import { getRelaychainAsset } from '@renderer/shared/utils/assets';
-import { useCountdown } from '@renderer/shared/hooks';
+import { useCountdown, useToggle } from '@renderer/shared/hooks';
 import { Account, MultisigAccount, isMultisig } from '@renderer/domain/account';
 import { toAddress } from '@renderer/shared/utils/address';
 import { useTransaction } from '@renderer/services/transaction/transactionService';
+import { DEFAULT_TRANSITION } from '@renderer/shared/utils/constants';
 
 const enum Step {
   INIT,
@@ -51,6 +52,8 @@ const Unstake = () => {
   const params = useParams<{ chainId: ChainId }>();
 
   const dbAccounts = getLiveAccounts();
+
+  const [_, toggleRedeemModal] = useToggle(true);
 
   const [activeStep, setActiveStep] = useState<Step>(Step.INIT);
   const [chainName, setChainName] = useState('...');
@@ -126,6 +129,11 @@ const Unstake = () => {
       // TODO: reset data
       setActiveStep((prev) => prev - 1);
     }
+  };
+
+  const closeRedeemModal = () => {
+    toggleRedeemModal();
+    setTimeout(() => navigate(Paths.STAKING), DEFAULT_TRANSITION);
   };
 
   const headerContent = (
@@ -290,7 +298,8 @@ const Unstake = () => {
           signatures={signatures}
           unsignedTx={unsignedTransactions}
           accounts={accounts}
-          onClose={console.log}
+          successMessage={t('staking.redeem.submitSuccess')}
+          onClose={closeRedeemModal}
           // amounts={redeemAmounts}
           {...explorersProps}
         />

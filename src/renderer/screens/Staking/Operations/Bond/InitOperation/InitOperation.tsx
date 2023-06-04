@@ -244,34 +244,24 @@ const InitOperation = ({ api, chainId, explorers, accounts, asset, addressPrefix
         onSubmit={submitBond}
         onAmountChange={setAmount}
       >
-        <div className="grid grid-flow-row grid-cols-2 items-center gap-y-5">
-          {accountIsMultisig && (
-            <>
-              <div className="flex gap-x-2">
-                <Icon className="text-text-tertiary" name="lock" size={123} />
-                <FootnoteText className="text-text-tertiary">{t('transfer.networkDeposit')}</FootnoteText>
-              </div>
-              <Deposit
-                className="text-neutral justify-self-end text-2xs font-semibold"
-                api={api}
-                asset={asset}
-                threshold={firstAccount.threshold}
-                onDepositChange={setDeposit}
-              />
-            </>
-          )}
-
+        <div className="flex justify-between items-center gap-x-2">
+          <FootnoteText className="text-text-tertiary">{t('staking.bond.networkFeeLabel')}</FootnoteText>
           <FootnoteText className="text-text-tertiary">
-            {t('staking.bond.networkFee', { count: activeStakeAccounts.length })}
+            <Fee api={api} asset={asset} transaction={transactions[0]} onFeeChange={setFee} />
           </FootnoteText>
-          <Fee
-            className="text-neutral justify-self-end text-2xs font-semibold"
-            api={api}
-            asset={asset}
-            transaction={transactions[0]}
-            onFeeChange={setFee}
-          />
         </div>
+
+        {accountIsMultisig && (
+          <div className="flex justify-between items-center gap-x-2">
+            <div className="flex items-center gap-x-2">
+              <Icon className="text-text-tertiary" name="lock" size={12} />
+              <FootnoteText className="text-text-tertiary">{t('staking.bond.networkDepositLabel')}</FootnoteText>
+            </div>
+            <FootnoteText>
+              <Deposit api={api} asset={asset} threshold={firstAccount.threshold} onDepositChange={setDeposit} />
+            </FootnoteText>
+          </div>
+        )}
       </OperationForm>
     </div>
   );

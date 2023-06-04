@@ -1,23 +1,25 @@
 import { BN, BN_ZERO } from '@polkadot/util';
-import cn from 'classnames';
 import { ApiPromise } from '@polkadot/api';
 import { PropsWithChildren } from 'react';
 
-import { Icon, Block, Balance } from '@renderer/components/ui';
-import { Button } from '@renderer/components/ui-redesign';
+import { Icon } from '@renderer/components/ui';
+import { Button, FootnoteText, CaptionText } from '@renderer/components/ui-redesign';
 import { useI18n } from '@renderer/context/I18nContext';
 import { useToggle } from '@renderer/shared/hooks';
-import { AddressOnPlate, Fee, Deposit } from '@renderer/components/common';
-import { toAccountId } from '@renderer/shared/utils/address';
-import { SigningType, Address } from '@renderer/domain/shared-kernel';
+import { Deposit, BalanceNew, Fee } from '@renderer/components/common';
+import { Address } from '@renderer/domain/shared-kernel';
 import { RewardsDestination } from '@renderer/domain/stake';
-import AccountsModal from '@renderer/screens/Staking/Operations/components/AccountsModal/AccountsModal';
-import ValidatorsModal from '@renderer/screens/Staking/Operations/components/ValidatorsModal/ValidatorsModal';
 import { Validator } from '@renderer/domain/validator';
 import { Account } from '@renderer/domain/account';
 import { Asset } from '@renderer/domain/asset';
 import { Explorer } from '@renderer/domain/chain';
 import { Transaction } from '@renderer/domain/transaction';
+import AddressWithExplorers from '@renderer/components/common/AddressWithExplorers/AddressWithExplorers';
+import AccountsModal from '../Modals/AccountsModal/AccountsModal';
+import ValidatorsModal from '../Modals/ValidatorsModal/ValidatorsModal';
+import cnTw from '@renderer/shared/utils/twMerge';
+
+const ActionStyle = 'group hover:bg-action-background-hover px-2 py-1 rounded';
 
 type Destination = {
   address?: Address;
@@ -42,7 +44,6 @@ type Props = {
 
 export const Confirmation = ({
   api,
-  title,
   validators,
   accounts,
   amounts = [],
@@ -68,139 +69,98 @@ export const Confirmation = ({
 
   return (
     <>
-      <div className="flex flex-col gap-y-4 w-[440px] px-5 pb-4">
-        <section className="w-[600px] p-5 mx-auto bg-shade-2 rounded-2lg">
-          <Block className="flex flex-col gap-y-5 p-5">
-            {title ? (
-              <h2 className="text-center text-neutral font-semibold text-xl">{title}</h2>
-            ) : (
-              <div className="flex flex-col items-center mt-6 mb-9">
-                {!singleAccount && (
-                  <h2 className="text-neutral font-semibold text-xl">{t('staking.confirmation.totalAmount')}</h2>
-                )}
-                <Balance
-                  className="text-4.5xl font-bold"
-                  value={totalAmount}
-                  precision={asset.precision}
-                  symbol={asset.symbol}
-                />
-              </div>
-            )}
+      <div className="w-[440px] px-5 pb-4">
+        <BalanceNew
+          className="block mt-4 mb-6 mx-auto text-center text-4xl font-bold"
+          value={totalAmount}
+          asset={asset}
+        />
 
+        <div className="flex flex-col gap-y-4">
+          <div className="flex justify-between items-center gap-x-2">
+            <FootnoteText className="text-text-tertiary">{t('staking.confirmation.accountLabel')}</FootnoteText>
             {singleAccount ? (
-              <AddressOnPlate
-                title={t('staking.confirmation.account')}
+              <AddressWithExplorers
                 accountId={accounts[0].accountId}
-                signType={accounts[0].signingType}
                 name={accounts[0].name}
-                addressPrefix={addressPrefix}
+                signType={accounts[0].signingType}
                 explorers={explorers}
+                addressPrefix={addressPrefix}
               />
             ) : (
-              <button
-                type="button"
-                className={cn(
-                  'flex items-center justify-between h-10 px-[15px] rounded-2lg bg-shade-2',
-                  'transition hover:bg-shade-5 focus:bg-shade-5',
-                )}
-                onClick={toggleAccounts}
-              >
-                <p className="text-sm text-neutral-variant">{t('staking.confirmation.accounts')}</p>
-                <div className="flex items-center gap-x-2.5">
-                  <p className="py-0.5 px-1.5 rounded-md bg-shade-30 text-white text-xs">{accounts.length}</p>
-                  <Icon name="right" size={20} />
+              <button type="button" className={cnTw('flex items-center gap-x-1', ActionStyle)} onClick={toggleAccounts}>
+                <div className="rounded-[30px] px-1.5 py-[1px] bg-icon-accent">
+                  <CaptionText className="text-button-text">{accounts.length}</CaptionText>
                 </div>
+                <Icon className="text-icon-default group-hover:text-icon-hover" name="info" size={16} />
               </button>
             )}
+          </div>
 
-            {multisigTx && (
-              <AddressOnPlate
-                title={t('staking.confirmation.signer')}
-                accountId={toAccountId(multisigTx?.address)}
-                signType={SigningType.PARITY_SIGNER}
-                addressPrefix={addressPrefix}
-                explorers={explorers}
-              />
-            )}
-
-            <div className="flex flex-col px-[15px] rounded-2lg bg-shade-2">
-              <div className="flex items-center justify-between h-10">
-                {singleAccount ? (
-                  <p className="text-sm text-neutral-variant">{t('staking.confirmation.networkFee')}</p>
-                ) : (
-                  <p className="text-sm text-neutral-variant">{t('staking.confirmation.networkFeePerAccount')}</p>
-                )}
-                <Fee className="text-base text-neutral" api={api} asset={asset} transaction={transaction} />
-              </div>
-              {!singleAccount && (
-                <div className="flex items-center justify-between h-10 border-t border-shade-10">
-                  <p className="text-sm text-neutral-variant">{t('staking.confirmation.totalNetworkFee')}</p>
-                  <Fee
-                    className="text-base text-neutral"
-                    api={api}
-                    multiply={accounts.length}
-                    asset={asset}
-                    transaction={transaction}
-                  />
-                </div>
-              )}
-              {multisigTx && (
-                <div className="flex items-center justify-between h-10 border-t border-shade-10">
-                  <p className="text-sm text-neutral-variant">{t('transferDetails.networkDeposit')}</p>
-                  <Deposit className="text-base text-neutral" api={api} asset={asset} threshold={threshold} />
-                </div>
-              )}
-            </div>
-
-            {validatorsExist && (
+          {validatorsExist && (
+            <div className="flex justify-between items-center gap-x-2">
+              <FootnoteText className="text-text-tertiary">{t('staking.confirmation.validatorsLabel')}</FootnoteText>
               <button
                 type="button"
-                className={cn(
-                  'flex items-center justify-between h-10 px-[15px] rounded-2lg bg-shade-2',
-                  'transition hover:bg-shade-5 focus:bg-shade-5',
-                )}
+                className={cnTw('flex items-center gap-x-1', ActionStyle)}
                 onClick={toggleValidators}
               >
-                <p className="text-sm text-neutral-variant">{t('staking.confirmation.selectValidators')}</p>
-                <div className="flex items-center gap-x-2.5">
-                  <p className="py-0.5 px-1.5 rounded-md bg-shade-30 text-white text-xs">{validators.length}</p>
-                  <Icon name="right" size={20} />
+                <div className="rounded-[30px] px-1.5 py-[1px] bg-icon-accent">
+                  <CaptionText className="text-button-text">{validators.length}</CaptionText>
                 </div>
+                <Icon className="text-icon-default group-hover:text-icon-hover" name="info" size={16} />
               </button>
-            )}
-
-            {destination?.type === RewardsDestination.TRANSFERABLE && destination.address && (
-              <AddressOnPlate
-                title={t('staking.confirmation.rewardsDestination')}
-                suffix={t('staking.confirmation.transferableRewards')}
-                accountId={toAccountId(destination.address)}
-                addressPrefix={addressPrefix}
-                explorers={explorers}
-              />
-            )}
-            {destination?.type === RewardsDestination.RESTAKE && (
-              <div className="flex items-center justify-between h-10 px-[15px] rounded-2lg bg-shade-2">
-                <p className="text-sm text-neutral-variant">{t('staking.confirmation.rewardsDestination')}</p>
-                <div className="flex items-center gap-x-2.5">
-                  <p className="text-base font-semibold text-neutral">{t('staking.confirmation.restakeRewards')}</p>
-                </div>
-              </div>
-            )}
-          </Block>
-
-          <div className="flex flex-col gap-y-4 mt-4">
-            {children}
-
-            <div className="flex justify-between mt-7 px-5">
-              <Button variant="text" onClick={onGoBack}>
-                {t('staking.confirmation.backButton')}
-              </Button>
-              <Button className="mt-7 ml-auto" prefixElement={<Icon name="vault" size={14} />} onClick={onResult}>
-                {t('staking.confirmation.signButton')}
-              </Button>
             </div>
+          )}
+
+          <hr className="border-divider w-full" />
+
+          <div className="flex justify-between items-center gap-x-2">
+            <FootnoteText className="text-text-tertiary">
+              {t('staking.confirmation.rewardsDestinationLabel')}
+            </FootnoteText>
+            {destination?.type === RewardsDestination.RESTAKE && (
+              <FootnoteText>{t('staking.confirmation.restakeRewards')}</FootnoteText>
+            )}
+            {destination?.type === RewardsDestination.TRANSFERABLE && destination.address && (
+              <AddressWithExplorers address={destination.address} explorers={explorers} type="short" />
+            )}
           </div>
-        </section>
+
+          <hr className="border-divider w-full" />
+
+          {multisigTx && (
+            <div className="flex justify-between items-center gap-x-2">
+              <div className="flex items-center gap-x-2">
+                <Icon className="text-text-tertiary" name="lock" size={12} />
+                <FootnoteText className="text-text-tertiary">
+                  {t('staking.confirmation.networkDepositLabel')}
+                </FootnoteText>
+              </div>
+              <FootnoteText>
+                <Deposit api={api} asset={asset} threshold={threshold} />
+              </FootnoteText>
+            </div>
+          )}
+
+          <div className="flex justify-between items-center gap-x-2">
+            <FootnoteText className="text-text-tertiary">{t('staking.confirmation.networkFeeLabel')}</FootnoteText>
+            <FootnoteText>
+              <Fee api={api} multiply={accounts.length} asset={asset} transaction={transaction} />
+            </FootnoteText>
+          </div>
+
+          {children}
+        </div>
+
+        <div className="flex justify-between items-center mt-7">
+          <Button variant="text" onClick={onGoBack}>
+            {t('staking.confirmation.backButton')}
+          </Button>
+          <Button prefixElement={<Icon name="vault" size={14} />} onClick={onResult}>
+            {t('staking.confirmation.signButton')}
+          </Button>
+        </div>
       </div>
 
       <AccountsModal

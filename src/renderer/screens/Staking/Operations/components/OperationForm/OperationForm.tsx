@@ -224,9 +224,6 @@ export const OperationForm = ({
                   <InputHint className="mt-1" active={!validateDestination()} variant="error">
                     {t('staking.bond.incorrectAddressError')}
                   </InputHint>
-                  {/*<InputHint className="mt-1" active={!validateDestination()} variant="error">*/}
-                  {/*  {t('staking.bond.incorrectAddressError')}*/}
-                  {/*</InputHint>*/}
                 </RadioGroup.Option>
               </RadioGroup>
             )}

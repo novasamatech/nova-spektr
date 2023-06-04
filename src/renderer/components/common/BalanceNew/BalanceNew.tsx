@@ -40,10 +40,10 @@ const BalanceNew = ({
   }
 
   return (
-    <div className={cnTw('flex items-center gap-x-2', wrapperClassName)}>
+    <span className={cnTw('flex items-center gap-x-2', wrapperClassName)}>
       <img src={icon} alt={name} width={28} height={28} className={cnTw('rounded-full', imgClassName)} />
       {balance}
-    </div>
+    </span>
   );
 };
 
