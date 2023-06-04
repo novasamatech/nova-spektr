@@ -23,6 +23,7 @@ export interface IBalanceStorage {
   getAssetBalances: (accountIds: AccountId[], chainId: ChainId, assetId: string) => Promise<BalanceDS[]>;
   getBalances: (accountIds: AccountId[]) => Promise<BalanceDS[]>;
   getAllBalances: () => Promise<BalanceDS[]>;
+  saveBalance: (balance: Balance) => Promise<void>;
   updateBalance: (balance: Balance) => Promise<void>;
   setBalanceIsValid: (balance: Balance, verified: boolean) => Promise<number>;
 }
