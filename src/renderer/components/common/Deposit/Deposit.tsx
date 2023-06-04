@@ -1,5 +1,5 @@
 import { ApiPromise } from '@polkadot/api';
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState, memo } from 'react';
 
 import { Asset } from '@renderer/domain/asset';
 import { Threshold } from '@renderer/domain/shared-kernel';
@@ -29,4 +29,4 @@ const Deposit = ({ api, asset, threshold, className, onDepositChange }: Props) =
   return <BalanceNew className={className} value={deposit} asset={asset} />;
 };
 
-export default React.memo(Deposit);
+export default memo(Deposit);

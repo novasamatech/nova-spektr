@@ -1,5 +1,4 @@
 import { UnsignedTransaction } from '@substrate/txwrapper-polkadot';
-import noop from 'lodash/noop';
 import { useState, useEffect } from 'react';
 import { Navigate, useParams, useSearchParams, useNavigate } from 'react-router-dom';
 
@@ -14,7 +13,7 @@ import { useChains } from '@renderer/services/network/chainsService';
 import { Address, ChainId, HexString, AccountId } from '@renderer/domain/shared-kernel';
 import { Transaction, TransactionType } from '@renderer/domain/transaction';
 import { ValidatorMap } from '@renderer/services/staking/common/types';
-import { Validators, Confirmation, MultiScanning, Signing, Submit, SingleScanning } from '../components';
+import { Validators, Confirmation, MultiScanning, Signing, SingleScanning } from '../components';
 import { useCountdown, useToggle } from '@renderer/shared/hooks';
 import { Account, MultisigAccount, isMultisig } from '@renderer/domain/account';
 import { useTransaction } from '@renderer/services/transaction/transactionService';
@@ -49,6 +48,7 @@ const Bond = () => {
   const { getTransactionHash } = useTransaction();
   const [searchParams] = useSearchParams();
   const params = useParams<{ chainId: ChainId }>();
+
   const [isBondModalOpen, toggleBondModal] = useToggle(true);
   const [isAlertOpen, toggleAlert] = useToggle(true);
 
@@ -61,13 +61,13 @@ const Bond = () => {
   const [signer, setSigner] = useState<Account>();
   const [stakeAmount, setStakeAmount] = useState<string>('');
   const [destination, setDestination] = useState<Destination>();
-  const [description, setDescription] = useState('');
+  // const [description, setDescription] = useState('');
 
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [multisigTx, setMultisigTx] = useState<Transaction>();
-  const [unsignedTransactions, setUnsignedTransactions] = useState<UnsignedTransaction[]>([]);
+  // const [unsignedTransactions, setUnsignedTransactions] = useState<UnsignedTransaction[]>([]);
 
-  const [signatures, setSignatures] = useState<HexString[]>([]);
+  // const [signatures, setSignatures] = useState<HexString[]>([]);
 
   const accountIds = searchParams.get('id')?.split(',') || [];
   const chainId = params.chainId || ('' as ChainId);
@@ -133,7 +133,7 @@ const Bond = () => {
       : { type: RewardsDestination.RESTAKE };
 
     setSigner(signer);
-    setDescription(description || '');
+    // setDescription(description || '');
     setDestination(destPayload);
     setAccountsToStake(accounts);
     setStakeAmount(amount);
@@ -212,7 +212,7 @@ const Bond = () => {
   };
 
   const onScanResult = (unsigned: UnsignedTransaction[]) => {
-    setUnsignedTransactions(unsigned);
+    // setUnsignedTransactions(unsigned);
     setActiveStep(Step.SIGNING);
   };
 
@@ -221,7 +221,7 @@ const Bond = () => {
   };
 
   const onSignResult = (signatures: HexString[]) => {
-    setSignatures(signatures);
+    // setSignatures(signatures);
     setActiveStep(Step.SUBMIT);
   };
 
@@ -232,15 +232,6 @@ const Bond = () => {
 
   const explorersProps = { explorers, addressPrefix, asset };
   const bondValues = new Array(accountsToStake.length).fill(stakeAmount);
-
-  const infoAlert = (
-    <Alert title="Learn more about rewards" onClose={toggleAlert}>
-      <Alert.Item>{t('staking.confirmation.hintRewards')}</Alert.Item>
-      <Alert.Item>{t('staking.confirmation.hintUnstakePeriod')}</Alert.Item>
-      <Alert.Item>{t('staking.confirmation.hintNoRewards')}</Alert.Item>
-      <Alert.Item>{t('staking.confirmation.hintRedeem')}</Alert.Item>
-    </Alert>
-  );
 
   return (
     <BaseModal
@@ -273,10 +264,17 @@ const Bond = () => {
           transaction={transactions[0]}
           multisigTx={multisigTx}
           onResult={() => setActiveStep(Step.SCANNING)}
-          onAddToQueue={noop}
+          onGoBack={goToPrevStep}
           {...explorersProps}
         >
-          {isAlertOpen && infoAlert}
+          {isAlertOpen && (
+            <Alert title="Learn more about rewards" onClose={toggleAlert}>
+              <Alert.Item>{t('staking.confirmation.hintRewards')}</Alert.Item>
+              <Alert.Item>{t('staking.confirmation.hintUnstakePeriod')}</Alert.Item>
+              <Alert.Item>{t('staking.confirmation.hintNoRewards')}</Alert.Item>
+              <Alert.Item>{t('staking.confirmation.hintRedeem')}</Alert.Item>
+            </Alert>
+          )}
         </Confirmation>
       )}
       {activeStep === Step.SCANNING &&
@@ -312,21 +310,23 @@ const Bond = () => {
         />
       )}
       {activeStep === Step.SUBMIT && (
-        <Submit
-          api={api}
-          multisigTx={multisigTx}
-          transaction={transactions[0]}
-          signatures={signatures}
-          unsignedTx={unsignedTransactions}
-          validators={Object.values(validators)}
-          accounts={accountsToStake}
-          amounts={bondValues}
-          description={description}
-          destination={destination}
-          {...explorersProps}
-        >
-          {infoAlert}
-        </Submit>
+        //eslint-disable-next-line i18next/no-literal-string
+        <div>Submit</div>
+        // <Submit
+        //   api={api}
+        //   multisigTx={multisigTx}
+        //   transaction={transactions[0]}
+        //   signatures={signatures}
+        //   unsignedTx={unsignedTransactions}
+        //   validators={Object.values(validators)}
+        //   accounts={accountsToStake}
+        //   amounts={bondValues}
+        //   description={description}
+        //   destination={destination}
+        //   {...explorersProps}
+        // >
+        //   {infoAlert}
+        // </Submit>
       )}
     </BaseModal>
   );

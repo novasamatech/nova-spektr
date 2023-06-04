@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState, ComponentProps } from 'react';
 
 import { Transaction } from '@renderer/domain/transaction';
 import { useChains } from '@renderer/services/network/chainsService';
@@ -11,7 +11,7 @@ type Props = {
   tx: Transaction;
 };
 
-type BalanceProps = Pick<React.ComponentProps<typeof BalanceNew>, 'className' | 'showIcon' | 'wrapperClassName'>;
+type BalanceProps = Pick<ComponentProps<typeof BalanceNew>, 'className' | 'showIcon' | 'wrapperClassName'>;
 
 const TransactionAmount = ({ tx, ...balanceProps }: Props & BalanceProps) => {
   const { getChainById } = useChains();

@@ -1,27 +1,34 @@
 import { UnsignedTransaction } from '@substrate/txwrapper-polkadot';
-import { PropsWithChildren, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { ApiPromise } from '@polkadot/api';
 
-import { Icon, ProgressBadge } from '@renderer/components/ui';
 import { useConfirmContext } from '@renderer/context/ConfirmContext';
 import { useI18n } from '@renderer/context/I18nContext';
 import { HexString } from '@renderer/domain/shared-kernel';
 import Paths from '@renderer/routes/paths';
 import { useTransaction } from '@renderer/services/transaction/transactionService';
-import TransactionInfo, { InfoProps } from '../TransactionInfo/TransactionInfo';
 import { ExtrinsicResultParams } from '@renderer/services/transaction/common/types';
-import { isMultisig } from '@renderer/domain/account';
+import { isMultisig, Account, MultisigAccount } from '@renderer/domain/account';
 import { Transaction } from '@renderer/domain/transaction';
 import { toAccountId } from '@renderer/shared/utils/address';
 import { useMatrix } from '@renderer/context/MatrixContext';
+// import { Button } from '@renderer/components/ui-redesign';
+// import OperationResult from '@renderer/components/ui-redesign/OperationResult/OperationResult';
 
-interface Props extends InfoProps {
+// type ResultProps = Pick<ComponentProps<typeof OperationResult>, 'title' | 'description' | 'variant'>;
+
+type Props = {
+  api: ApiPromise;
+  accounts: Array<Account | MultisigAccount>;
+  multisigTx?: Transaction;
   unsignedTx: UnsignedTransaction[];
   signatures: HexString[];
   description?: string;
-}
+  onClose: () => void;
+};
 
-export const Submit = ({ unsignedTx, signatures, description, children, ...props }: PropsWithChildren<Props>) => {
+export const Submit = ({ api, accounts, multisigTx, unsignedTx, signatures, description, onClose }: Props) => {
   const { t } = useI18n();
   const { matrix } = useMatrix();
   const { confirm } = useConfirmContext();
@@ -32,7 +39,6 @@ export const Submit = ({ unsignedTx, signatures, description, children, ...props
   const [failedTxs, setFailedTxs] = useState<number[]>([]);
 
   const submitFinished = unsignedTx.length === progress;
-  const { api, accounts, multisigTx } = props;
 
   const confirmFailedTx = (): Promise<boolean> => {
     return confirm({
@@ -100,23 +106,29 @@ export const Submit = ({ unsignedTx, signatures, description, children, ...props
     });
   }, [submitFinished]);
 
-  return (
-    <TransactionInfo {...props}>
-      <div className="flex flex-col gap-y-4 mt-4">
-        {children}
+  // const getResultProps = (): ResultProps => {
+  //   if (inProgress) {
+  //     return { title: t('operation.inProgress'), variant: 'loading' };
+  //   }
+  //   if (successMessage) {
+  //     return { title: t('operation.successMessage'), variant: 'success' };
+  //   }
+  //   if (errorMessage) {
+  //     return { title: t('operation.feeErrorTitle'), description: errorMessage, variant: 'error' };
+  //   }
+  //
+  //   return { title: '' };
+  // };
 
-        <div className="flex flex-col items-center gap-y-2.5">
-          {!submitFinished && (
-            <div className="flex items-center gap-x-2.5">
-              <Icon className="text-neutral-variant animate-spin" name="loader" size={20} />
-              <p className="text-neutral-variant font-semibold">{t('staking.confirmation.submittingOperation')}</p>
-            </div>
-          )}
-          <ProgressBadge progress={progress} total={signatures.length}>
-            {t('staking.confirmation.transactionProgress')}
-          </ProgressBadge>
-        </div>
-      </div>
-    </TransactionInfo>
+  return (
+    //eslint-disable-next-line i18next/no-literal-string
+    <div>Submit</div>
+    // <OperationResult
+    //   isOpen={Boolean(inProgress || errorMessage || successMessage)}
+    //   {...getResultProps()}
+    //   onClose={onClose}
+    // >
+    //   {errorMessage && <Button onClick={closeErrorMessage}>{t('operation.feeErrorButton')}</Button>}
+    // </OperationResult>
   );
 };

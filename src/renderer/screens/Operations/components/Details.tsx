@@ -120,12 +120,8 @@ const Details = ({ tx, account, connection, isCardDetails = true }: Props) => {
             </DetailsRow>
             <ValidatorsModal
               isOpen={isValidatorsOpen}
-              validators={validators.map((address: string) => ({
-                address,
-              }))}
-              asset={defaultAsset}
+              validators={validators.map((address: string) => ({ address }))}
               explorers={connection?.explorers}
-              addressPrefix={connection?.addressPrefix}
               onClose={toggleValidators}
             />
           </>

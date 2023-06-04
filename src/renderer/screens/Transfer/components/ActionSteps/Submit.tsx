@@ -1,6 +1,6 @@
 import { ApiPromise } from '@polkadot/api';
 import { UnsignedTransaction } from '@substrate/txwrapper-polkadot';
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState, ComponentProps } from 'react';
 
 import { useI18n } from '@renderer/context/I18nContext';
 import {
@@ -21,7 +21,7 @@ import { useToggle } from '@renderer/shared/hooks';
 import { Button } from '@renderer/components/ui-redesign';
 import OperationResult from '@renderer/components/ui-redesign/OperationResult/OperationResult';
 
-type ResultProps = Pick<React.ComponentProps<typeof OperationResult>, 'title' | 'description' | 'variant'>;
+type ResultProps = Pick<ComponentProps<typeof OperationResult>, 'title' | 'description' | 'variant'>;
 
 type Props = {
   api: ApiPromise;
@@ -31,7 +31,7 @@ type Props = {
   unsignedTx: UnsignedTransaction;
   signature: HexString;
   description?: string;
-  onClose?: () => void;
+  onClose: () => void;
 };
 
 const Submit = ({ api, tx, multisigTx, account, unsignedTx, signature, description, onClose }: Props) => {
@@ -147,15 +147,13 @@ const Submit = ({ api, tx, multisigTx, account, unsignedTx, signature, descripti
   }, []);
 
   return (
-    <>
-      <OperationResult
-        isOpen={Boolean(inProgress || errorMessage || successMessage)}
-        {...getResultProps()}
-        onClose={() => onClose?.()}
-      >
-        {errorMessage && <Button onClick={closeErrorMessage}>{t('operation.feeErrorButton')}</Button>}
-      </OperationResult>
-    </>
+    <OperationResult
+      isOpen={Boolean(inProgress || errorMessage || successMessage)}
+      {...getResultProps()}
+      onClose={onClose}
+    >
+      {errorMessage && <Button onClick={closeErrorMessage}>{t('operation.feeErrorButton')}</Button>}
+    </OperationResult>
   );
 };
 

@@ -1,9 +1,8 @@
 import { UnsignedTransaction } from '@substrate/txwrapper-polkadot';
-import noop from 'lodash/noop';
 import { useState, useEffect } from 'react';
 import { Navigate, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 
-import { ButtonBack, ButtonLink, HintList, Icon } from '@renderer/components/ui';
+import { ButtonBack, ButtonLink, Icon } from '@renderer/components/ui';
 import { ChainLoader } from '@renderer/components/common';
 import { useI18n } from '@renderer/context/I18nContext';
 import { useNetworkContext } from '@renderer/context/NetworkContext';
@@ -16,8 +15,9 @@ import { ValidatorMap } from '@renderer/services/staking/common/types';
 import { toAddress } from '@renderer/shared/utils/address';
 import { getRelaychainAsset } from '@renderer/shared/utils/assets';
 import { Confirmation, MultiScanning, Signing, Submit, Validators } from '../components';
-import { useCountdown } from '@renderer/shared/hooks';
+import { useCountdown, useToggle } from '@renderer/shared/hooks';
 import { getTotalAccounts } from '@renderer/screens/Staking/Operations/common/utils';
+import { Alert } from '@renderer/components/ui-redesign';
 
 const enum Step {
   INIT,
@@ -45,6 +45,8 @@ const SetValidators = () => {
   const params = useParams<{ chainId: ChainId }>();
 
   const dbAccounts = getLiveAccounts();
+
+  const [isAlertOpen, toggleAlert] = useToggle(true);
 
   const [activeStep, setActiveStep] = useState<Step>(Step.INIT);
   const [chainName, setChainName] = useState('...');
@@ -144,12 +146,6 @@ const SetValidators = () => {
 
   const explorersProps = { explorers, addressPrefix, asset };
 
-  const hints = (
-    <HintList className="px-[15px]">
-      <HintList.Item>{t('staking.confirmation.hintNewValidators')}</HintList.Item>
-    </HintList>
-  );
-
   return (
     <div className="flex flex-col h-full relative">
       {headerContent}
@@ -167,16 +163,19 @@ const SetValidators = () => {
       )}
       {activeStep === Step.CONFIRMATION && (
         <Confirmation
-          title={t('staking.confirmation.setValidatorsTitle')}
           api={api}
           validators={Object.values(validators)}
           transaction={transactions[0]}
           accounts={totalAccounts}
           onResult={() => setActiveStep(Step.SCANNING)}
-          onAddToQueue={noop}
+          onGoBack={goToPrevStep}
           {...explorersProps}
         >
-          {hints}
+          {isAlertOpen && (
+            <Alert title="YYYY" className="px-[15px]" onClose={toggleAlert}>
+              <Alert.Item>{t('staking.confirmation.hintNewValidators')}</Alert.Item>
+            </Alert>
+          )}
         </Confirmation>
       )}
       {activeStep === Step.SCANNING && (
@@ -201,17 +200,15 @@ const SetValidators = () => {
       )}
       {activeStep === Step.SUBMIT && (
         <Submit
-          title={t('staking.confirmation.setValidatorsTitle')}
           api={api}
-          transaction={transactions[0]}
+          // transaction={transactions[0]}
           signatures={signatures}
           unsignedTx={unsignedTransactions}
-          validators={Object.values(validators)}
+          // validators={Object.values(validators)}
           accounts={totalAccounts}
+          onClose={console.log}
           {...explorersProps}
-        >
-          {hints}
-        </Submit>
+        />
       )}
     </div>
   );

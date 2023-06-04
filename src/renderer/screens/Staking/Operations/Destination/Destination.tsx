@@ -1,5 +1,4 @@
 import { UnsignedTransaction } from '@substrate/txwrapper-polkadot';
-import noop from 'lodash/noop';
 import { useState, useEffect } from 'react';
 import { Navigate, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 
@@ -210,7 +209,6 @@ const Destination = () => {
       )}
       {activeStep === Step.CONFIRMATION && (
         <Confirmation
-          title={t('staking.confirmation.rewardDestinationTitle')}
           api={api}
           accounts={accounts}
           destination={destination}
@@ -220,7 +218,7 @@ const Destination = () => {
           explorers={explorers}
           addressPrefix={addressPrefix}
           onResult={() => setActiveStep(Step.SCANNING)}
-          onAddToQueue={noop}
+          onGoBack={goToPrevStep}
         />
       )}
       {activeStep === Step.SCANNING &&
@@ -257,18 +255,18 @@ const Destination = () => {
       )}
       {activeStep === Step.SUBMIT && (
         <Submit
-          title={t('staking.confirmation.rewardDestinationTitle')}
           api={api}
-          transaction={transactions[0]}
+          // transaction={transactions[0]}
           multisigTx={multisigTx}
           signatures={signatures}
           unsignedTx={unsignedTransactions}
           accounts={accounts}
-          destination={destination}
+          // destination={destination}
           description={description}
-          asset={asset}
-          explorers={explorers}
-          addressPrefix={addressPrefix}
+          onClose={console.log}
+          // asset={asset}
+          // explorers={explorers}
+          // addressPrefix={addressPrefix}
         />
       )}
     </div>

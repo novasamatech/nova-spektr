@@ -21,7 +21,7 @@ jest.mock(
 
 describe('screens/Staking/components/Confirmation', () => {
   const spyResult = jest.fn();
-  const spyAddToQueue = jest.fn();
+  const spyGoBack = jest.fn();
 
   const defaultProps = {
     api: {} as ApiPromise,
@@ -30,34 +30,24 @@ describe('screens/Staking/components/Confirmation', () => {
     transaction: {} as Transaction,
     accounts: [] as AccountDS[],
     onResult: spyResult,
-    onAddToQueue: spyAddToQueue,
+    onGoBack: spyGoBack,
   };
 
   test('should render component', () => {
     render(<Confirmation {...defaultProps} />);
 
     const signButton = screen.getByText('staking.confirmation.signButton');
-    // const queueButton = screen.getByText('staking.confirmation.queueButton');
     expect(signButton).toBeInTheDocument();
-    // expect(queueButton).toBeInTheDocument();
   });
 
-  test('should call onResult', () => {
+  test('should call onResult and onGoBack', () => {
     render(<Confirmation {...defaultProps} />);
 
     const signButton = screen.getByText('staking.confirmation.signButton');
+    const backButton = screen.getByText('staking.confirmation.backButton');
     signButton.click();
+    backButton.click();
 
     expect(spyResult).toBeCalled();
   });
-
-  // TODO: uncomment after adding Queue
-  // test('should call onAddToQueue', () => {
-  //   render(<Confirmation {...defaultProps} />);
-  //
-  //   const addToQueue = screen.getByText('staking.confirmation.queueButton');
-  //   addToQueue.click();
-  //
-  //   expect(spyAddToQueue).toBeCalled();
-  // });
 });

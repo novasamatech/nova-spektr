@@ -1,9 +1,8 @@
 import { UnsignedTransaction } from '@substrate/txwrapper-polkadot';
-import noop from 'lodash/noop';
 import { useState, useEffect } from 'react';
 import { Navigate, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 
-import { ButtonBack, ButtonLink, HintList, Icon } from '@renderer/components/ui';
+import { ButtonBack, ButtonLink, Icon } from '@renderer/components/ui';
 import { ChainLoader } from '@renderer/components/common';
 import { useI18n } from '@renderer/context/I18nContext';
 import { useNetworkContext } from '@renderer/context/NetworkContext';
@@ -14,10 +13,11 @@ import Paths from '@renderer/routes/paths';
 import InitOperation, { StakeMoreResult } from './InitOperation/InitOperation';
 import { Confirmation, MultiScanning, Signing, Submit, SingleScanning } from '../components';
 import { getRelaychainAsset } from '@renderer/shared/utils/assets';
-import { useCountdown } from '@renderer/shared/hooks';
+import { useCountdown, useToggle } from '@renderer/shared/hooks';
 import { isMultisig, MultisigAccount, Account } from '@renderer/domain/account';
 import { useTransaction } from '@renderer/services/transaction/transactionService';
 import { toAddress } from '@renderer/shared/utils/address';
+import { Alert } from '@renderer/components/ui-redesign';
 
 const enum Step {
   INIT,
@@ -43,6 +43,8 @@ const StakeMore = () => {
   const { getChainById } = useChains();
   const [searchParams] = useSearchParams();
   const params = useParams<{ chainId: ChainId }>();
+
+  const [isAlertOpen, toggleAlert] = useToggle(true);
 
   const [activeStep, setActiveStep] = useState<Step>(Step.INIT);
   const [chainName, setChainName] = useState('...');
@@ -182,12 +184,6 @@ const StakeMore = () => {
   const explorersProps = { explorers, addressPrefix, asset };
   const stakeMoreValues = new Array(accounts.length).fill(stakeMoreAmount);
 
-  const hints = (
-    <HintList className="px-[15px]">
-      <HintList.Item>{t('staking.stakeMore.eraHint')}</HintList.Item>
-    </HintList>
-  );
-
   return (
     <div className="flex flex-col h-full relative">
       {headerContent}
@@ -209,10 +205,14 @@ const StakeMore = () => {
           amounts={stakeMoreValues}
           multisigTx={multisigTx}
           onResult={() => setActiveStep(Step.SCANNING)}
-          onAddToQueue={noop}
+          onGoBack={goToPrevStep}
           {...explorersProps}
         >
-          {hints}
+          {isAlertOpen && (
+            <Alert title="PPPP" className="px-[15px]" onClose={toggleAlert}>
+              <Alert.Item>{t('staking.stakeMore.eraHint')}</Alert.Item>
+            </Alert>
+          )}
         </Confirmation>
       )}
       {activeStep === Step.SCANNING &&
@@ -250,17 +250,16 @@ const StakeMore = () => {
       {activeStep === Step.SUBMIT && (
         <Submit
           api={api}
-          transaction={transactions[0]}
+          // transaction={transactions[0]}
           multisigTx={multisigTx}
           signatures={signatures}
           unsignedTx={unsignedTransactions}
           accounts={accounts}
           description={description}
-          amounts={stakeMoreValues}
+          onClose={console.log}
+          // amounts={stakeMoreValues}
           {...explorersProps}
-        >
-          {hints}
-        </Submit>
+        />
       )}
     </div>
   );

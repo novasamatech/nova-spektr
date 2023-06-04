@@ -1,5 +1,4 @@
 import { UnsignedTransaction } from '@substrate/txwrapper-polkadot';
-import noop from 'lodash/noop';
 import { useEffect, useState } from 'react';
 import { Navigate, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 
@@ -246,7 +245,7 @@ const Unstake = () => {
           transaction={transactions[0]}
           multisigTx={multisigTx}
           onResult={() => setActiveStep(Step.SCANNING)}
-          onAddToQueue={noop}
+          onGoBack={goToPrevStep}
           {...explorersProps}
         />
       )}
@@ -285,13 +284,14 @@ const Unstake = () => {
       {activeStep === Step.SUBMIT && (
         <Submit
           api={api}
-          transaction={transactions[0]}
+          // transaction={transactions[0]}
           multisigTx={multisigTx}
           description={description}
           signatures={signatures}
           unsignedTx={unsignedTransactions}
           accounts={accounts}
-          amounts={redeemAmounts}
+          onClose={console.log}
+          // amounts={redeemAmounts}
           {...explorersProps}
         />
       )}

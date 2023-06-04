@@ -28,7 +28,6 @@ import Shimmering from './Shimmering/Shimmering';
 import Combobox from './Dropdowns/Combobox/Combobox';
 import Duration from './Duration/Duration';
 import InfoLink from './InfoLink/InfoLink';
-import ProgressBadge from './ProgressBadge/ProgressBadge';
 
 export {
   ChainAddress,
@@ -61,5 +60,4 @@ export {
   Combobox,
   InfoLink,
   Duration,
-  ProgressBadge,
 };

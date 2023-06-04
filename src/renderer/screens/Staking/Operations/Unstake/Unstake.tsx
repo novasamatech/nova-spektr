@@ -1,11 +1,10 @@
 import { UnsignedTransaction } from '@substrate/txwrapper-polkadot';
-import noop from 'lodash/noop';
 import { useEffect, useState } from 'react';
 import { Navigate, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { BN } from '@polkadot/util';
 
 import { UnstakingDuration } from '@renderer/screens/Staking/Overview/components';
-import { ButtonBack, ButtonLink, HintList, Icon } from '@renderer/components/ui';
+import { ButtonBack, ButtonLink, Icon } from '@renderer/components/ui';
 import { ChainLoader } from '@renderer/components/common';
 import { useI18n } from '@renderer/context/I18nContext';
 import { useNetworkContext } from '@renderer/context/NetworkContext';
@@ -20,9 +19,10 @@ import InitOperation, { UnstakeResult } from './InitOperation/InitOperation';
 import { Confirmation, MultiScanning, Signing, Submit, SingleScanning } from '../components';
 import { toAddress } from '@renderer/shared/utils/address';
 import { getRelaychainAsset } from '@renderer/shared/utils/assets';
-import { useCountdown } from '@renderer/shared/hooks';
+import { useCountdown, useToggle } from '@renderer/shared/hooks';
 import { useTransaction } from '@renderer/services/transaction/transactionService';
 import { Account, MultisigAccount, isMultisig } from '@renderer/domain/account';
+import { Alert } from '@renderer/components/ui-redesign';
 
 const enum Step {
   INIT,
@@ -51,6 +51,8 @@ const Unstake = () => {
 
   const [searchParams] = useSearchParams();
   const params = useParams<{ chainId: ChainId }>();
+
+  const [isAlertOpen, toggleAlert] = useToggle(true);
 
   const [activeStep, setActiveStep] = useState<Step>(Step.INIT);
   const [chainName, setChainName] = useState('...');
@@ -241,18 +243,6 @@ const Unstake = () => {
   const explorersProps = { explorers, addressPrefix, asset };
   const unstakeValues = new Array(accounts.length).fill(unstakeAmount);
 
-  const hints = (
-    <HintList className="px-[15px]">
-      <HintList.Item>
-        {t('staking.unstake.durationHint')} {'('}
-        <UnstakingDuration className="ml-1" api={api} />
-        {')'}
-      </HintList.Item>
-      <HintList.Item>{t('staking.unstake.noRewardsHint')}</HintList.Item>
-      <HintList.Item>{t('staking.unstake.redeemHint')}</HintList.Item>
-    </HintList>
-  );
-
   return (
     <div className="flex flex-col h-full relative">
       {headerContent}
@@ -275,10 +265,20 @@ const Unstake = () => {
           multisigTx={multisigTx}
           amounts={unstakeValues}
           onResult={() => setActiveStep(Step.SCANNING)}
-          onAddToQueue={noop}
+          onGoBack={goToPrevStep}
           {...explorersProps}
         >
-          {hints}
+          {isAlertOpen && (
+            <Alert title="BBBBB" className="px-[15px]" onClose={toggleAlert}>
+              <Alert.Item>
+                {t('staking.unstake.durationHint')} {'('}
+                <UnstakingDuration className="ml-1" api={api} />
+                {')'}
+              </Alert.Item>
+              <Alert.Item>{t('staking.unstake.noRewardsHint')}</Alert.Item>
+              <Alert.Item>{t('staking.unstake.redeemHint')}</Alert.Item>
+            </Alert>
+          )}
         </Confirmation>
       )}
       {activeStep === Step.SCANNING &&
@@ -316,17 +316,16 @@ const Unstake = () => {
       {activeStep === Step.SUBMIT && (
         <Submit
           api={api}
-          transaction={transactions[0]}
+          // transaction={transactions[0]}
           multisigTx={multisigTx}
           signatures={signatures}
           unsignedTx={unsignedTransactions}
           accounts={accounts}
           description={description}
-          amounts={unstakeValues}
+          onClose={console.log}
+          // amounts={unstakeValues}
           {...explorersProps}
-        >
-          {hints}
-        </Submit>
+        />
       )}
     </div>
   );

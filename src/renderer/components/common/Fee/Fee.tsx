@@ -1,6 +1,6 @@
 import { ApiPromise } from '@polkadot/api';
 import { BN } from '@polkadot/util';
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState, memo } from 'react';
 
 import cnTw from '@renderer/shared/utils/twMerge';
 import { Asset } from '@renderer/domain/asset';
@@ -56,4 +56,4 @@ const Fee = ({ api, multiply = 1, asset, transaction, className, onFeeChange }: 
   return <BalanceNew value={totalFee} asset={asset} className={className} />;
 };
 
-export default React.memo(Fee);
+export default memo(Fee);

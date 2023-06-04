@@ -1,11 +1,10 @@
 import { ApiPromise } from '@polkadot/api';
 import { UnsignedTransaction } from '@substrate/txwrapper-polkadot';
 import { act, render, screen } from '@testing-library/react';
-import { MemoryRouter, useNavigate } from 'react-router-dom';
+import { MemoryRouter } from 'react-router-dom';
+import noop from 'lodash/noop';
 
-import { useTransaction } from '@renderer/services/transaction/transactionService';
 import { HexString } from '@renderer/domain/shared-kernel';
-import { ProgressBadge } from '@renderer/components/ui';
 import { Asset } from '@renderer/domain/asset';
 import { RewardsDestination } from '@renderer/domain/stake';
 import { Transaction } from '@renderer/domain/transaction';
@@ -46,13 +45,6 @@ jest.mock('@renderer/context/MatrixContext', () => ({
   }),
 }));
 
-jest.mock(
-  '../TransactionInfo/TransactionInfo',
-  () =>
-    ({ children }: any) =>
-      children,
-);
-
 describe('screens/Staking/components/Submit', () => {
   const defaultProps = {
     api: {} as ApiPromise,
@@ -64,22 +56,12 @@ describe('screens/Staking/components/Submit', () => {
     destination: { address: TEST_ADDRESS, type: RewardsDestination.TRANSFERABLE },
     unsignedTx: [{}, {}, {}] as UnsignedTransaction[],
     signatures: ['0x1', '0x2', '0x3'] as HexString[],
+    onClose: noop,
   };
-
-  beforeAll(() => {
-    (ProgressBadge as jest.Mock).mockImplementation(({ total, progress, children }: any) => (
-      <div>
-        <p>
-          {progress} / {total}
-        </p>
-        {children}
-      </div>
-    ));
-  });
 
   test('should render component', async () => {
     await act(async () => {
-      render(<Submit {...defaultProps}>children</Submit>, { wrapper: MemoryRouter });
+      render(<Submit {...defaultProps} />, { wrapper: MemoryRouter });
     });
 
     const children = screen.getByText('children');
@@ -88,22 +70,5 @@ describe('screens/Staking/components/Submit', () => {
     expect(children).toBeInTheDocument();
     expect(progress).toBeInTheDocument();
     expect(progressValue).toBeInTheDocument();
-  });
-
-  test('should handle error submission', async () => {
-    (useTransaction as jest.Mock).mockImplementation(() => ({
-      submitAndWatchExtrinsic: jest.fn((...args) => args[3](false)),
-      getSignedExtrinsic: jest.fn(),
-    }));
-
-    const spyNavigate = jest.fn();
-
-    (useNavigate as jest.Mock).mockReturnValue(spyNavigate);
-
-    await act(async () => {
-      render(<Submit {...defaultProps}>children</Submit>, { wrapper: MemoryRouter });
-    });
-
-    expect(spyNavigate).toBeCalled();
   });
 });
