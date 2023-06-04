@@ -33,7 +33,7 @@ const Links = [
     icon: 'telegram',
     title: 'settings.overview.telegramLabel',
     subtitle: 'settings.overview.telegramDescription',
-    href: 'https://telegram.com',
+    href: 'https://t.me/+dL5b4g6BmMUyYTRi',
   },
 ] as const;
 
