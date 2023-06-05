@@ -29,7 +29,7 @@ export const useBalanceStorage = (db: TBalance): IBalanceStorage => ({
       .toArray();
   },
 
-  saveBalance: async (balance: Balance): Promise<void> => {
+  addBalance: async (balance: Balance): Promise<void> => {
     try {
       await db.add(balance);
     } catch (e) {

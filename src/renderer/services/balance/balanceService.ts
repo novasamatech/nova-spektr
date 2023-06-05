@@ -26,7 +26,7 @@ export const useBalance = (): IBalanceService => {
   const validationSubscriptionService = useSubscription<ChainId>();
 
   const {
-    saveBalance,
+    addBalance,
     getBalances,
     getAllBalances,
     getBalance,
@@ -138,7 +138,7 @@ export const useBalance = (): IBalanceService => {
 
         const existingBalance = await balanceStorage.getBalance(balance.accountId, balance.chainId, balance.assetId);
         if (!existingBalance) {
-          await saveBalance(balance);
+          await addBalance(balance);
         } else if (
           balance.free !== existingBalance.free ||
           balance.frozen !== existingBalance.frozen ||
@@ -196,7 +196,7 @@ export const useBalance = (): IBalanceService => {
               balance.assetId,
             );
             if (!existingBalance) {
-              await saveBalance(balance);
+              await addBalance(balance);
             } else if (balance.free !== existingBalance.free) {
               await updateBalance(balance);
             }
@@ -253,7 +253,7 @@ export const useBalance = (): IBalanceService => {
 
           const existingBalance = await balanceStorage.getBalance(balance.accountId, balance.chainId, balance.assetId);
           if (!existingBalance) {
-            await saveBalance(balance);
+            await addBalance(balance);
           } else if (
             balance.free !== existingBalance.free ||
             balance.frozen !== existingBalance.frozen ||
@@ -299,7 +299,7 @@ export const useBalance = (): IBalanceService => {
         };
         const existingBalance = await balanceStorage.getBalance(balance.accountId, balance.chainId, balance.assetId);
         if (!existingBalance) {
-          await saveBalance(balance);
+          await addBalance(balance);
         } else if (balance.locked.toString() !== existingBalance.locked?.toString()) {//todo
           await updateBalance(balance);
         }
@@ -336,7 +336,7 @@ export const useBalance = (): IBalanceService => {
 
           const existingBalance = await balanceStorage.getBalance(balance.accountId, balance.chainId, balance.assetId);
           if (!existingBalance) {
-            await saveBalance(balance);
+            await addBalance(balance);
           } else if (balance.locked.toString() !== existingBalance.locked?.toString()) {//todo
             await updateBalance(balance);
           }
