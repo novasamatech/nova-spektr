@@ -9,10 +9,7 @@ import { useNetworkContext } from '@renderer/context/NetworkContext';
 import { ChainId, HexString, AccountId, Address } from '@renderer/domain/shared-kernel';
 import { Transaction, TransactionType } from '@renderer/domain/transaction';
 import { useAccount } from '@renderer/services/account/accountService';
-import { StakingMap } from '@renderer/services/staking/common/types';
-import { useStakingData } from '@renderer/services/staking/stakingDataService';
 import { useChains } from '@renderer/services/network/chainsService';
-import { useEra } from '@renderer/services/staking/eraService';
 import InitOperation, { RedeemResult } from './InitOperation/InitOperation';
 import { Confirmation, MultiScanning, Signing, Submit, SingleScanning, NoAsset } from '../components';
 import { getRelaychainAsset } from '@renderer/shared/utils/assets';
@@ -37,9 +34,7 @@ const Redeem = () => {
   const navigate = useNavigate();
   const { getTransactionHash } = useTransaction();
   const { connections } = useNetworkContext();
-  const { subscribeStaking } = useStakingData();
   const { getLiveAccounts } = useAccount();
-  const { subscribeActiveEra } = useEra();
   const { getChainById } = useChains();
   const [searchParams] = useSearchParams();
   const params = useParams<{ chainId: ChainId }>();
@@ -53,8 +48,6 @@ const Redeem = () => {
   const [redeemAmounts, setRedeemAmounts] = useState<string[]>([]);
   const [description, setDescription] = useState('');
 
-  const [era, setEra] = useState<number>();
-  const [staking, setStaking] = useState<StakingMap>({});
   const [accounts, setAccounts] = useState<Account[]>([]);
   const [signer, setSigner] = useState<Account>();
 
@@ -88,24 +81,6 @@ const Redeem = () => {
 
     setAccounts(selectedAccounts);
   }, [dbAccounts.length]);
-
-  useEffect(() => {
-    if (!api?.isConnected || accounts.length === 0) return;
-
-    let unsubEra: () => void | undefined;
-    let unsubStaking: () => void | undefined;
-
-    (async () => {
-      const addresses = accounts.map((a) => toAddress(a.accountId, { prefix: addressPrefix }));
-      unsubEra = await subscribeActiveEra(api, setEra);
-      unsubStaking = await subscribeStaking(chainId, api, addresses, setStaking);
-    })();
-
-    return () => {
-      unsubEra?.();
-      unsubStaking?.();
-    };
-  }, [api, accounts.length]);
 
   useEffect(() => {
     getChainById(chainId).then((chain) => setChainName(chain?.name || ''));
@@ -216,15 +191,7 @@ const Redeem = () => {
       onClose={closeRedeemModal}
     >
       {activeStep === Step.INIT && (
-        <InitOperation
-          api={api}
-          chainId={chainId}
-          accounts={accounts}
-          era={era}
-          staking={staking}
-          onResult={onInitResult}
-          {...explorersProps}
-        />
+        <InitOperation api={api} chainId={chainId} accounts={accounts} onResult={onInitResult} {...explorersProps} />
       )}
       {activeStep === Step.CONFIRMATION && (
         <Confirmation

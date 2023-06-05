@@ -25,6 +25,8 @@ import {
   validateBalanceForFeeDeposit,
   getRedeemAccountOption,
 } from '../../common/utils';
+import { useStakingData } from '@renderer/services/staking/stakingDataService';
+import { useEra } from '@renderer/services/staking/eraService';
 
 export type RedeemResult = {
   accounts: Account[];
@@ -38,22 +40,24 @@ type Props = {
   chainId: ChainId;
   accounts: Account[];
   addressPrefix: number;
-  era?: number;
-  staking: StakingMap;
   asset: Asset;
   onResult: (data: RedeemResult) => void;
 };
 
-const InitOperation = ({ api, chainId, accounts, addressPrefix, staking, era, asset, onResult }: Props) => {
+const InitOperation = ({ api, chainId, accounts, addressPrefix, asset, onResult }: Props) => {
   const { t } = useI18n();
   const { getLiveAccounts } = useAccount();
   const { getLiveBalance, getLiveAssetBalances } = useBalance();
+  const { subscribeStaking } = useStakingData();
+  const { subscribeActiveEra } = useEra();
 
   const dbAccounts = getLiveAccounts();
 
   const [fee, setFee] = useState('');
   const [deposit, setDeposit] = useState('');
   const [redeemAmounts, setRedeemAmounts] = useState<string[]>([]);
+  const [era, setEra] = useState<number>();
+  const [staking, setStaking] = useState<StakingMap>({});
 
   const [redeemAccounts, setRedeemAccounts] = useState<DropdownOption<Account>[]>([]);
   const [activeRedeemAccounts, setActiveRedeemAccounts] = useState<DropdownResult<Account>[]>([]);
@@ -77,6 +81,22 @@ const InitOperation = ({ api, chainId, accounts, addressPrefix, staking, era, as
   const accountIds = accounts.map((account) => account.accountId);
   const signerBalance = getLiveBalance(activeSignatory?.value.accountId || '0x0', chainId, asset.assetId.toString());
   const balances = getLiveAssetBalances(accountIds, chainId, asset.assetId.toString());
+
+  useEffect(() => {
+    let unsubEra: () => void | undefined;
+    let unsubStaking: () => void | undefined;
+
+    (async () => {
+      const addresses = accounts.map((a) => toAddress(a.accountId, { prefix: addressPrefix }));
+      unsubEra = await subscribeActiveEra(api, setEra);
+      unsubStaking = await subscribeStaking(chainId, api, addresses, setStaking);
+    })();
+
+    return () => {
+      unsubEra?.();
+      unsubStaking?.();
+    };
+  }, [api, accounts.length]);
 
   useEffect(() => {
     const balancesMap = new Map(balances.map((balance) => [balance.accountId, balance]));
@@ -145,7 +165,7 @@ const InitOperation = ({ api, chainId, accounts, addressPrefix, staking, era, as
 
     setSignatoryOptions(options);
     setActiveSignatory({ id: options[0].id, value: options[0].value });
-  }, [firstAccount, accountIsMultisig, dbAccounts]);
+  }, [firstAccount, accountIsMultisig, dbAccounts.length]);
 
   useEffect(() => {
     if (redeemAccounts.length === 0) return;
@@ -222,7 +242,7 @@ const InitOperation = ({ api, chainId, accounts, addressPrefix, staking, era, as
   //     </>
   //   );
 
-  const canSubmit = activeRedeemAccounts.length > 0 || Boolean(activeSignatory);
+  const canSubmit = (Boolean(fee) && fee !== '0') || activeRedeemAccounts.length > 0 || Boolean(activeSignatory);
 
   return (
     <div className="flex flex-col gap-y-4 w-[440px] px-5 py-4">

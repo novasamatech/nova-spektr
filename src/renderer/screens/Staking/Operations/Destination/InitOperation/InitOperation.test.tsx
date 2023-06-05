@@ -6,6 +6,7 @@ import { Asset } from '@renderer/domain/asset';
 import { TEST_ACCOUNT_ID } from '@renderer/shared/utils/constants';
 import InitOperation from './InitOperation';
 import { ChainId } from '@renderer/domain/shared-kernel';
+import { Account } from '@renderer/domain/account';
 
 jest.mock('@renderer/context/I18nContext', () => ({
   useI18n: jest.fn().mockReturnValue({
@@ -13,15 +14,9 @@ jest.mock('@renderer/context/I18nContext', () => ({
   }),
 }));
 
-jest.mock('@renderer/services/wallet/walletService', () => ({
-  useWallet: jest.fn().mockReturnValue({
-    getLiveWallets: jest.fn().mockReturnValue([]),
-  }),
-}));
-
 jest.mock('@renderer/services/account/accountService', () => ({
   useAccount: jest.fn().mockReturnValue({
-    getLiveAccounts: () => [{ id: '1', name: 'Test Wallet', accountId: TEST_ACCOUNT_ID }],
+    getLiveAccounts: () => [{ name: 'Test Wallet', accountId: TEST_ACCOUNT_ID }],
   }),
 }));
 
@@ -53,7 +48,7 @@ describe('screens/Staking/Destination/InitOperation', () => {
     api: {} as ApiPromise,
     chainId: '0x123' as ChainId,
     addressPrefix: 0,
-    accounts: [],
+    accounts: [{ name: 'Test Wallet', accountId: TEST_ACCOUNT_ID }] as unknown as Account[],
     asset: { assetId: 1, symbol: 'DOT', precision: 10 } as Asset,
     onResult: noop,
   };
@@ -64,6 +59,8 @@ describe('screens/Staking/Destination/InitOperation', () => {
     });
 
     const form = screen.getByText('operationForm');
+    const address = screen.getByText('Test Wallet');
     expect(form).toBeInTheDocument();
+    expect(address).toBeInTheDocument();
   });
 });

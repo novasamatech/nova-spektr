@@ -127,7 +127,7 @@ const InitOperation = ({ api, chainId, accounts, asset, addressPrefix, onResult 
 
     setSignatoryOptions(options);
     setActiveSignatory({ id: options[0].id, value: options[0].value });
-  }, [firstAccount, accountIsMultisig, dbAccounts]);
+  }, [firstAccount, accountIsMultisig, dbAccounts.length]);
 
   useEffect(() => {
     if (stakeAccounts.length === 0) return;
@@ -214,7 +214,7 @@ const InitOperation = ({ api, chainId, accounts, asset, addressPrefix, onResult 
     return activeBalances.length > 1 ? ['0', minBalance] : minBalance;
   };
 
-  const canSubmit = activeStakeAccounts.length > 0 || Boolean(activeSignatory);
+  const canSubmit = (Boolean(fee) && fee !== '0') || activeStakeAccounts.length > 0 || Boolean(activeSignatory);
 
   return (
     <div className="flex flex-col gap-y-4 w-[440px] px-5 py-4">

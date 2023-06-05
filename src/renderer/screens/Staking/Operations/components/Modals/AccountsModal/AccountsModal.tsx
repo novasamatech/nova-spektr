@@ -27,7 +27,7 @@ const AccountsModal = ({ isOpen, accounts, explorers, addressPrefix, onClose }: 
       isOpen={isOpen}
       onClose={onClose}
     >
-      <li className="flex flex-col gap-y-3">
+      <ul className="max-h-[600px] flex flex-col gap-y-3">
         {accounts.map((account) => (
           <li key={account.accountId}>
             <AddressWithExplorers
@@ -42,7 +42,7 @@ const AccountsModal = ({ isOpen, accounts, explorers, addressPrefix, onClose }: 
             />
           </li>
         ))}
-      </li>
+      </ul>
     </BaseModal>
   );
 };

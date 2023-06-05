@@ -3,6 +3,7 @@ import { MemoryRouter } from 'react-router-dom';
 
 import { ConnectionStatus } from '@renderer/domain/connection';
 import StakeMore from './StakeMore';
+import { TEST_ACCOUNT_ID } from '@renderer/shared/utils/constants';
 
 jest.mock('@renderer/context/I18nContext', () => ({
   useI18n: jest.fn().mockReturnValue({
@@ -14,6 +15,12 @@ jest.mock('react-router-dom', () => ({
   useSearchParams: jest.fn().mockReturnValue([new URLSearchParams('id=1,2,3')]),
   useParams: jest.fn().mockReturnValue({ chainId: '0x123' }),
   useNavigate: jest.fn(),
+}));
+
+jest.mock('@renderer/services/account/accountService', () => ({
+  useAccount: jest.fn().mockReturnValue({
+    getActiveAccounts: () => [{ name: 'Test Wallet', accountId: TEST_ACCOUNT_ID }],
+  }),
 }));
 
 jest.mock('@renderer/context/NetworkContext', () => ({
@@ -66,11 +73,9 @@ describe('screens/Staking/StakeMore', () => {
       render(<StakeMore />, { wrapper: MemoryRouter });
     });
 
-    const title = screen.getByText('staking.title');
-    const subTitle = screen.getByText('staking.stakeMore.initStakeMoreSubtitle');
+    const title = screen.getByText('staking.stakeMore.title');
     const next = screen.getByText('to confirm');
     expect(title).toBeInTheDocument();
-    expect(subTitle).toBeInTheDocument();
     expect(next).toBeInTheDocument();
   });
 

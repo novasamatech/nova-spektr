@@ -4,18 +4,10 @@ import { MemoryRouter } from 'react-router-dom';
 import { ConnectionStatus } from '@renderer/domain/connection';
 import Unstake from './Unstake';
 import { TEST_ACCOUNT_ID } from '@renderer/shared/utils/constants';
-import { SigningType } from '@renderer/domain/shared-kernel';
 
 jest.mock('@renderer/context/I18nContext', () => ({
   useI18n: jest.fn().mockReturnValue({
     t: (key: string) => key,
-  }),
-}));
-
-jest.mock('@renderer/services/staking/stakingDataService', () => ({
-  useStakingData: jest.fn().mockReturnValue({
-    subscribeStaking: jest.fn(),
-    getMinNominatorBond: jest.fn().mockResolvedValue(1),
   }),
 }));
 
@@ -27,9 +19,7 @@ jest.mock('react-router-dom', () => ({
 
 jest.mock('@renderer/services/account/accountService', () => ({
   useAccount: jest.fn().mockReturnValue({
-    getLiveAccounts: () => [
-      { id: '1', name: 'Test Wallet', accountId: TEST_ACCOUNT_ID, signingType: SigningType.PARITY_SIGNER },
-    ],
+    getActiveAccounts: () => [{ name: 'Test Wallet', accountId: TEST_ACCOUNT_ID }],
   }),
 }));
 
@@ -83,11 +73,9 @@ describe('screens/Staking/Unstake', () => {
       render(<Unstake />, { wrapper: MemoryRouter });
     });
 
-    const title = screen.getByText('staking.title');
-    const subTitle = screen.getByText('staking.unstake.initUnstakeSubtitle');
+    const title = screen.getByText('staking.unstake.title');
     const next = screen.getByText('to confirm');
     expect(title).toBeInTheDocument();
-    expect(subTitle).toBeInTheDocument();
     expect(next).toBeInTheDocument();
   });
 

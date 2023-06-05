@@ -16,6 +16,12 @@ jest.mock('react-router-dom', () => ({
   useNavigate: jest.fn(),
 }));
 
+jest.mock('@renderer/services/account/accountService', () => ({
+  useAccount: jest.fn().mockReturnValue({
+    getActiveAccounts: jest.fn().mockReturnValue([]),
+  }),
+}));
+
 jest.mock('@renderer/context/NetworkContext', () => ({
   useNetworkContext: jest.fn(() => ({
     connections: {
@@ -67,11 +73,9 @@ describe('screens/Staking/Bond', () => {
       render(<Bond />, { wrapper: MemoryRouter });
     });
 
-    const title = screen.getByText('staking.title');
-    const subTitle = screen.getByText('staking.bond.initBondSubtitle');
+    const title = screen.getByText('staking.bond.title');
     const next = screen.getByText('to validators');
     expect(title).toBeInTheDocument();
-    expect(subTitle).toBeInTheDocument();
     expect(next).toBeInTheDocument();
   });
 

@@ -49,10 +49,8 @@ describe('screens/Staking/components/ValidatorsModal', () => {
   test('should render component', () => {
     render(<ValidatorsModal {...defaultProps} />);
 
-    const title = screen.getByText('staking.confirmation.yourValidators');
-    const header = screen.queryByRole('rowheader');
+    const title = screen.getByText('staking.confirmation.validatorsTitle');
     expect(title).toBeInTheDocument();
-    expect(header).not.toBeInTheDocument();
   });
 
   test('should render all validators', () => {

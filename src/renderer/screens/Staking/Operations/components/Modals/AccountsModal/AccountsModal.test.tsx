@@ -2,14 +2,19 @@ import { render, screen } from '@testing-library/react';
 
 import { Asset } from '@renderer/domain/asset';
 import { SigningType, ChainType, CryptoType } from '@renderer/domain/shared-kernel';
-import AccountsModal from './AccountsModal';
 import { Account } from '@renderer/domain/account';
+import AccountsModal from './AccountsModal';
 
 jest.mock('@renderer/context/I18nContext', () => ({
   useI18n: jest.fn().mockReturnValue({
     t: (key: string) => key,
   }),
 }));
+
+jest.mock(
+  '@renderer/components/common/AddressWithExplorers/AddressWithExplorers',
+  jest.fn().mockReturnValue(({ address }: { address: string }) => <span data-testid="account">{address}</span>),
+);
 
 describe('screens/Staking/components/AccountsModal', () => {
   const defaultProps = {
@@ -52,17 +57,13 @@ describe('screens/Staking/components/AccountsModal', () => {
     render(<AccountsModal {...defaultProps} />);
 
     const title = screen.getByText('staking.confirmation.accountsTitle');
-    const header = screen.queryByRole('rowheader');
     expect(title).toBeInTheDocument();
-    expect(header).not.toBeInTheDocument();
   });
 
   test('should render all accounts', () => {
     render(<AccountsModal {...defaultProps} />);
 
-    const items = screen.getAllByRole('row');
-    const amounts = screen.getAllByText('assetBalance.number');
-    expect(items).toHaveLength(4);
-    expect(amounts).toHaveLength(3);
+    const items = screen.getAllByTestId('account');
+    expect(items).toHaveLength(defaultProps.accounts.length);
   });
 });

@@ -13,10 +13,8 @@ jest.mock('@renderer/context/I18nContext', () => ({
 }));
 
 jest.mock(
-  '../TransactionInfo/TransactionInfo',
-  () =>
-    ({ children }: any) =>
-      children,
+  '@renderer/components/common/AddressWithExplorers/AddressWithExplorers',
+  jest.fn().mockReturnValue(({ address }: any) => <span data-testid="address">{address}</span>),
 );
 
 describe('screens/Staking/components/Confirmation', () => {
@@ -48,6 +46,7 @@ describe('screens/Staking/components/Confirmation', () => {
     signButton.click();
     backButton.click();
 
+    expect(spyGoBack).toBeCalled();
     expect(spyResult).toBeCalled();
   });
 });

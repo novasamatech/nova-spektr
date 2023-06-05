@@ -14,7 +14,12 @@ describe('ui/RadioGroup', () => {
   };
 
   test('should render component', () => {
-    render(<RadioGroup {...defaultProps} />);
+    render(
+      <RadioGroup {...defaultProps}>
+        <RadioGroup.Option option={options[0]} />
+        <RadioGroup.Option option={options[1]} />
+      </RadioGroup>,
+    );
 
     const items = screen.getAllByRole('radio');
     expect(items).toHaveLength(2);
@@ -22,7 +27,12 @@ describe('ui/RadioGroup', () => {
 
   test('should call onChange', async () => {
     const spyChange = jest.fn();
-    render(<RadioGroup {...defaultProps} onChange={spyChange} />);
+    render(
+      <RadioGroup {...defaultProps} onChange={spyChange}>
+        <RadioGroup.Option option={options[0]} />
+        <RadioGroup.Option option={options[1]} />
+      </RadioGroup>,
+    );
 
     const item = screen.getByRole('radio', { checked: false });
     await act(async () => item.click());
@@ -31,13 +41,23 @@ describe('ui/RadioGroup', () => {
   });
 
   test('should change active value', async () => {
-    const { rerender } = render(<RadioGroup {...defaultProps} />);
+    const { rerender } = render(
+      <RadioGroup {...defaultProps}>
+        <RadioGroup.Option option={options[0]} />
+        <RadioGroup.Option option={options[1]} />
+      </RadioGroup>,
+    );
 
     let items = screen.getAllByRole('radio');
     expect(items[0]).toBeChecked();
     expect(items[1]).not.toBeChecked();
 
-    rerender(<RadioGroup {...defaultProps} activeId={options[1].id} />);
+    rerender(
+      <RadioGroup {...defaultProps} activeId={options[1].id}>
+        <RadioGroup.Option option={options[0]} />
+        <RadioGroup.Option option={options[1]} />
+      </RadioGroup>,
+    );
 
     items = screen.getAllByRole('radio');
     expect(items[0]).not.toBeChecked();
