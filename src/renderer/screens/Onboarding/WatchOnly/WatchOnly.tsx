@@ -2,33 +2,37 @@ import cn from 'classnames';
 import { useEffect, useState } from 'react';
 import { Controller, SubmitHandler, useForm } from 'react-hook-form';
 
-import { AccountsList } from '@renderer/components/common';
-import { BaseModal, Button, ButtonBack, Icon, Identicon, Input } from '@renderer/components/ui';
+import { Icon, Identicon } from '@renderer/components/ui';
 import { useI18n } from '@renderer/context/I18nContext';
-import { createAccount } from '@renderer/domain/account';
 import { Chain } from '@renderer/domain/chain';
 import { ErrorType, AccountId, SigningType } from '@renderer/domain/shared-kernel';
-import { useToggle } from '@renderer/shared/hooks';
-import { useAccount } from '@renderer/services/account/accountService';
 import { useChains } from '@renderer/services/network/chainsService';
-import { pasteAddressHandler, toAccountId, validateAddress } from '@renderer/shared/utils/address';
-import FinalStep from '../FinalStep/FinalStep';
+import { toAccountId, validateAddress } from '@renderer/shared/utils/address';
+import { BaseModal, Button, Input, InputHint, HeaderTitleText, SmallTitleText } from '@renderer/components/ui-redesign';
+import EmptyState from './EmptyState';
+import { createAccount } from '@renderer/domain/account';
+import { useAccount } from '@renderer/services/account/accountService';
+import AccountsList from '@renderer/components/common/AccountsList/AccountsList';
 
 type WalletForm = {
   walletName: string;
   address: string;
 };
 
-const WatchOnly = () => {
+type Props = {
+  isOpen: boolean;
+  onClose: () => void;
+  onComplete: () => void;
+};
+
+const WatchOnly = ({ isOpen, onClose, onComplete }: Props) => {
   const { t } = useI18n();
 
-  const { addAccount } = useAccount();
   const { getChainsData, sortChains } = useChains();
+  const { addAccount } = useAccount();
 
-  const [isModalOpen, toggleModal] = useToggle();
   const [chains, setChains] = useState<Chain[]>([]);
   const [accountId, setAccountId] = useState<AccountId>();
-  const [isCompleted, setIsCompleted] = useState(false);
 
   const {
     handleSubmit,
@@ -50,9 +54,7 @@ const WatchOnly = () => {
     getChainsData().then((chains) => setChains(sortChains(chains)));
   }, []);
 
-  const handleCreateWallet: SubmitHandler<WalletForm> = async ({ walletName, address }) => {
-    if (!accountId || accountId.length === 0) return;
-
+  const createWallet: SubmitHandler<WalletForm> = async ({ walletName, address }) => {
     const newAccount = createAccount({
       name: walletName.trim(),
       signingType: SigningType.WATCH_ONLY,
@@ -60,42 +62,29 @@ const WatchOnly = () => {
     });
 
     await addAccount(newAccount);
-    setIsCompleted(true);
+
+    onComplete();
   };
 
-  if (isCompleted) {
-    return <FinalStep signingType={SigningType.WATCH_ONLY} />;
-  }
-
-  const errorButtonText =
-    (errors.address && errors.walletName) || Object.values(errors).length === 0
-      ? t('onboarding.watchonly.addressAndNameRequiredError')
-      : errors.address
-      ? t('onboarding.watchonly.addressRequiredError')
-      : errors.walletName && t('onboarding.watchonly.nameRequiredError');
-
   return (
-    <>
-      <div className="flex items-center gap-x-2.5">
-        <ButtonBack>
-          <h1 className="text-neutral">{t('onboarding.watchonly.addWatchOnlyLabel')}</h1>
-        </ButtonBack>
-      </div>
-      <form
-        className="flex h-full flex-col gap-10 justify-center items-center"
-        onSubmit={handleSubmit(handleCreateWallet)}
-      >
-        <h2 className="text-2xl leading-relaxed font-normal text-neutral-variant text-center">
-          {t('onboarding.watchonly.addWatchOnlyDescription1')} <br />{' '}
-          {t('onboarding.watchonly.addWatchOnlyDescription2')}
-        </h2>
-        <div className="flex gap-10">
-          <div className="flex flex-col w-[480px] h-[310px] p-4 bg-white shadow-surface rounded-2lg">
-            <Controller
-              name="walletName"
-              control={control}
-              rules={{ required: true, maxLength: 256 }}
-              render={({ field: { onChange, value } }) => (
+    <BaseModal
+      contentClass="flex h-full"
+      panelClass="w-[944px] h-[576px]"
+      isOpen={isOpen}
+      closeButton
+      onClose={onClose}
+    >
+      <div className="w-[472px] flex flex-col px-5 py-4 bg-white">
+        <HeaderTitleText className="mb-10">{t('onboarding.watchOnly.title')}</HeaderTitleText>
+        <SmallTitleText className="mb-6">{t('onboarding.watchOnly.manageTitle')}</SmallTitleText>
+
+        <form className="flex flex-col gap-4 h-full" onSubmit={handleSubmit(createWallet)}>
+          <Controller
+            name="walletName"
+            control={control}
+            rules={{ required: true, maxLength: 256 }}
+            render={({ field: { onChange, value } }) => (
+              <div>
                 <Input
                   wrapperClass={cn('flex items-center')}
                   label={t('onboarding.walletNameLabel')}
@@ -104,92 +93,66 @@ const WatchOnly = () => {
                   value={value}
                   onChange={onChange}
                 />
-              )}
-            />
-            {!errors.walletName && (
-              <p className="uppercase pt-2.5 pb-10 font-bold text-2xs text-shade-40">
-                {t('onboarding.walletNameExample')}
-              </p>
+                <InputHint variant="error" active={errors.walletName?.type === ErrorType.MAX_LENGTH}>
+                  {t('onboarding.watchOnly.walletNameMaxLenError')}
+                </InputHint>
+                <InputHint variant="error" active={errors.walletName?.type === ErrorType.REQUIRED}>
+                  {t('onboarding.watchOnly.walletNameRequiredError')}
+                </InputHint>
+              </div>
             )}
-            {errors.walletName?.type === ErrorType.MAX_LENGTH && (
-              <p className="uppercase pt-2.5 pb-10 font-bold text-2xs text-error">
-                {t('onboarding.watchonly.walletNameMaxLenError')}
-              </p>
-            )}
-            {errors.walletName?.type === ErrorType.REQUIRED && (
-              <p className="uppercase pt-2.5 pb-10 font-bold text-2xs text-error">
-                {t('onboarding.watchonly.walletNameRequiredError')}
-              </p>
-            )}
+          />
 
-            <Controller
-              name="address"
-              control={control}
-              rules={{ required: true, validate: validateAddress }}
-              render={({ field: { onChange, value } }) => (
+          <Controller
+            name="address"
+            control={control}
+            rules={{ required: true, validate: validateAddress }}
+            render={({ field: { onChange, value } }) => (
+              <div>
                 <Input
                   wrapperClass={cn('flex items-center')}
                   invalid={Boolean(errors.address)}
                   label={t('onboarding.accountAddressLabel')}
-                  placeholder={t('onboarding.watchonly.accountAddressPlaceholder')}
+                  placeholder={t('onboarding.watchOnly.accountAddressPlaceholder')}
                   value={value}
                   prefixElement={
-                    isValid ? <Identicon address={value} background={false} /> : <Icon name="emptyIdenticon" />
-                  }
-                  suffixElement={
-                    <Button variant="outline" pallet="primary" onClick={pasteAddressHandler(onChange)}>
-                      {t('general.button.pasteButton')}
-                    </Button>
+                    <div className="mr-2">
+                      {isValid ? <Identicon address={value} background={false} /> : <Icon name="emptyIdenticon" />}
+                    </div>
                   }
                   onChange={onChange}
                 />
-              )}
-            />
-            {errors.address && (
-              <p className="uppercase pt-2.5 pb-10 font-bold text-2xs text-error">
-                {t('onboarding.watchonly.accountAddressError')}
-              </p>
-            )}
-          </div>
-          <div className="flex flex-col bg-white shadow-surface rounded-2lg w-[480px] h-[310px]">
-            <div className="p-4">
-              <h3 className="text-neutral font-semibold">{t('onboarding.watchonly.yourAccountsLoadingLabel')}</h3>
-            </div>
-            <AccountsList chains={chains} accountId={accountId} limit={accountId && 4} />
-            {accountId && (
-              <div>
-                <Button
-                  weight="md"
-                  className="w-content p-4 mt-2 underline underline-offset-2"
-                  variant="text"
-                  pallet="primary"
-                  disabled={Boolean(errors.address)}
-                  onClick={toggleModal}
-                >
-                  {t('onboarding.checkAccountsButton')}
-                </Button>
+
+                <InputHint variant="error" active={!!errors.address}>
+                  {t('onboarding.watchOnly.accountAddressError')}
+                </InputHint>
               </div>
             )}
+          />
+
+          <div className="flex flex-1 justify-between items-end">
+            <Button variant="text" onClick={onClose}>
+              {t('onboarding.backButton')}
+            </Button>
+
+            <Button type="submit" disabled={!isValid}>
+              {t('onboarding.continueButton')}
+            </Button>
           </div>
-        </div>
+        </form>
+      </div>
 
-        <div className="flex justify-center items-center gap-4">
-          <Button type="submit" weight="lg" variant="fill" pallet="primary" disabled={!isValid}>
-            {isValid ? t('onboarding.confirmAccountsListButton') : errorButtonText}
-          </Button>
-        </div>
-      </form>
-
-      <BaseModal
-        closeButton
-        title={t('onboarding.yourAccountsLabel')}
-        description={t('onboarding.readAccountsLabel')}
-        isOpen={isModalOpen}
-        onClose={toggleModal}
-      >
-        <AccountsList className="pt-6 -mx-4 max-w-2xl" chains={chains} accountId={accountId} />
-      </BaseModal>
-    </>
+      <div className="w-[472px] flex flex-col bg-input-background-disabled px-3 py-4">
+        {accountId && accountId.length > 12 ? (
+          <>
+            <SmallTitleText className="px-2 mt-[52px] mb-6">{t('onboarding.watchOnly.accountsTitle')}</SmallTitleText>
+            <AccountsList chains={chains} accountId={accountId} />
+          </>
+        ) : (
+          <EmptyState />
+        )}
+      </div>
+    </BaseModal>
   );
 };
 

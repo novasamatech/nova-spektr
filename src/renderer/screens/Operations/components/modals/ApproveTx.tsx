@@ -49,9 +49,9 @@ const ApproveTx = ({ tx, account, connection }: Props) => {
   const { getLiveAccounts } = useAccount();
   const { getTransactionFee, getTxWeight } = useTransaction();
 
-  const [isModalOpen, toggleModal] = useToggle(false);
-  const [isSelectAccountModalOpen, toggleSelectAccountModal] = useToggle(false);
-  const [isFeeModalOpen, toggleFeeModal] = useToggle(false);
+  const [isModalOpen, toggleModal] = useToggle();
+  const [isSelectAccountModalOpen, toggleSelectAccountModal] = useToggle();
+  const [isFeeModalOpen, toggleFeeModal] = useToggle();
   const [activeStep, setActiveStep] = useState(Step.CONFIRMATION);
   const [countdown, resetCountdown] = useCountdown(connection.api);
   const [signAccount, setSignAccount] = useState<AccountDS>();

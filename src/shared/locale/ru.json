@@ -1,4 +1,8 @@
 {
+  "accountList": {
+    "addressColumn": "Address",
+    "networksColumn": "Networks { chains }"
+  },
   "addressBook": {
     "addContact": {
       "accountIdIncorrectError": "Incrorrect account address",
@@ -200,8 +204,11 @@
   },
   "onboarding": {
     "accountAddressLabel": "Адрес аккаунта",
+    "accountsTitle": "Manage accounts",
+    "backButton": "Back",
     "checkAccountsButton": "Ваши аккаунты",
     "confirmAccountsListButton": "Да, это мои аккаунты",
+    "continueButton": "Continue",
     "paritySigner": {
       "accessDeniedDescription": "Убедитесь, что доступ к камере разрешен",
       "accessDeniedLabel": "Доступ запрещен!",
@@ -265,21 +272,45 @@
     "readAccountsLabel": "Following accounts have been successfully read.",
     "readAccountsParitySignerLabel": "Следующие аккаунты были получены из Parity Signer",
     "readyToUseLabel": "Ваш кошелёк готов к использованию!",
+    "vault": {
+      "accountsTitle": "Manage accounts",
+      "addressColumn": "Address",
+      "fillNamesButton": "Autofill account names",
+      "manageTitle": "Manage your wallet",
+      "nameColumn": "Account name",
+      "scanTitle": "Scan the account QR code",
+      "title": "Add wallet by Polkadot Vault"
+    },
     "walletNameExample": "Например: Основной аккаунт, My validator, Dotsama crowdloans, и т.д.",
     "walletNameLabel": "Название кошелька",
     "walletNamePlaceholder": "Введите название кошелька",
-    "watchonly": {
+    "watchOnly": {
       "accountAddressError": "Некорректный адрес, пожалуйста введите или скопируйте адрес заново",
       "accountAddressPlaceholder": "Введите или вставьте адрес аккаунта",
+      "accountsTitle": "Manage accounts",
       "addWatchOnlyDescription1": "Отследить любой кошелек не указывая",
       "addWatchOnlyDescription2": "приватный ключ в Nova Spektr",
       "addWatchOnlyLabel": "Добавить Watch-Only кошелёк",
       "addressAndNameRequiredError": "Type address and name",
       "addressRequiredError": "Type or paste address",
+      "emptyState": "All your accounts in different networks will be shown here",
+      "manageTitle": "Manage your wallet",
       "nameRequiredError": "Type a wallet name",
+      "title": "Add Watch-only wallet",
       "walletNameMaxLenError": "Имя кошелька должно быть короче 256 символов",
       "walletNameRequiredError": "Пожалуйста, введите название кошелька",
       "yourAccountsLoadingLabel": "Your accounts will be showing up here"
+    },
+    "welcome": {
+      "novaWalletDescription": "Seamless and secure transaction signing with Nova Wallet using WalletConnect v2",
+      "novaWalletTitle": "Nova Wallet",
+      "polkadotVaultDescription": "Use dedicated hardware wallet for Polkadot, Kusama, and other Substrate-based chains",
+      "polkadotVaultTitle": "Polkadot Vault",
+      "privacy": "By continuing, you agree to our <terms>Terms of Services</terms> and <privacy>Privacy Policy</privacy>",
+      "soonBadge": "soon",
+      "title": "Add your wallet",
+      "watchOnlyDescription": "Track the activity of any wallet without injecting your private key to Nova Spektr",
+      "watchOnlyTitle": "Watch-only"
     },
     "yourAccountsLabel": "Ваши аккаунты"
   },
@@ -372,6 +403,7 @@
   },
   "qrReader": {
     "parsingLabel": "Обработка данных",
+    "parsingProgress": "{decoded} из {total}",
     "parsingSubLabel": "Пожалуйста, держите устройство ровно...",
     "videoError": "Браузер не поддерживает видео"
   },

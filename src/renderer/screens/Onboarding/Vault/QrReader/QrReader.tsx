@@ -5,9 +5,11 @@ import { useState } from 'react';
 
 import { QrReader } from '@renderer/components/common';
 import { ErrorObject, QrError, SeedInfo, VideoInput } from '@renderer/components/common/QrCode/QrReader/common/types';
-import { Button, Dropdown, Icon } from '@renderer/components/ui';
+import { Icon } from '@renderer/components/ui';
 import { DropdownOption, DropdownResult } from '@renderer/components/ui/Dropdowns/common/types';
 import { useI18n } from '@renderer/context/I18nContext';
+import { Button, CaptionText, FootnoteText, Select } from '@renderer/components/ui-redesign';
+import cnTw from '@renderer/shared/utils/twMerge';
 
 const enum CameraState {
   ACTIVE,
@@ -22,12 +24,12 @@ const enum CameraState {
 const RESULT_DELAY = 250;
 
 type Props = {
-  size?: number;
+  size?: number | [number, number];
   className?: string;
   onResult: (payload: SeedInfo[]) => void;
 };
 
-const ParitySignerQrReader = ({ size = 300, className, onResult }: Props) => {
+const KeyQrReader = ({ size = 300, className, onResult }: Props) => {
   const { t } = useI18n();
 
   const [cameraState, setCameraState] = useState<CameraState>(CameraState.LOADING);
@@ -148,12 +150,12 @@ const ParitySignerQrReader = ({ size = 300, className, onResult }: Props) => {
         </div>
 
         {[CameraState.UNKNOWN_ERROR, CameraState.DENY_ERROR, CameraState.DECODE_ERROR].includes(cameraState) && (
-          <Button className="w-max mb-5" weight="lg" variant="fill" pallet="primary" onClick={onRetryCamera}>
+          <Button className="w-max mb-5" onClick={onRetryCamera}>
             {t('onboarding.paritySigner.tryAgainButton')}
           </Button>
         )}
         {cameraState === CameraState.INVALID_ERROR && (
-          <Button className="w-max mb-5" weight="lg" variant="fill" pallet="primary" onClick={onRetryCamera}>
+          <Button className="w-max mb-5" onClick={onRetryCamera}>
             {t('onboarding.paritySigner.scanAgainButton')}
           </Button>
         )}
@@ -164,18 +166,17 @@ const ParitySignerQrReader = ({ size = 300, className, onResult }: Props) => {
   return (
     <>
       {cameraState === CameraState.LOADING && (
-        <div className="flex flex-col items-center w-full h-full">
+        <div className="flex flex-col items-center w-full h-[288px]">
           <div className="relative flex items-center justify-center w-full h-full">
-            <Icon className="absolute text-shade-10" name="qrSimple" size={70} />
-            <Icon className="absolute text-shade-10" name="qrFrame" size={250} />
+            <p className="absolute flex items-center gap-x-2.5 text-shade-40 font-semibold pb-3.5">
+              <Icon name="loader" className="animate-spin" /> {t('onboarding.paritySigner.startCameraLabel')}
+            </p>
+            <Icon className="absolute text-shade-10" name="qrFrame" size={240} />
           </div>
-          <p className="flex items-center gap-x-2.5 text-shade-40 font-semibold pb-3.5">
-            <Icon name="loader" className="animate-spin" /> {t('onboarding.paritySigner.startCameraLabel')}
-          </p>
         </div>
       )}
       {cameraState === CameraState.SELECT && (
-        <div className="flex flex-col items-center w-full h-full">
+        <div className="flex flex-col items-center w-full h-[288px]">
           <div className="flex items-center justify-center bg-white w-full h-full">
             <div className="flex flex-col items-center text-center">
               <Icon className="text-alert" name="warnCutout" size={70} />
@@ -185,65 +186,64 @@ const ParitySignerQrReader = ({ size = 300, className, onResult }: Props) => {
               <p className="text-neutral-variant text-sm">{t('onboarding.paritySigner.chooseCameraLabel')}</p>
             </div>
           </div>
-          <div className="mb-5 w-[242px]">
-            <Dropdown
-              variant="up"
-              placeholder={t('onboarding.paritySigner.selectCameraLabel')}
-              activeId={activeCamera?.id}
-              options={availableCameras}
-              onChange={setActiveCamera}
-            />
-          </div>
         </div>
       )}
 
-      <div className={cn('relative bg-shade-40', isCameraPending && 'hidden', className)}>
-        <QrReader
-          size={size}
-          className={className}
-          cameraId={activeCamera?.value}
-          onStart={() => setCameraState(CameraState.ACTIVE)}
-          onCameraList={onCameraList}
-          onProgress={setProgress}
-          onResult={onScanResult}
-          onError={onError}
-        />
-        {isScanComplete ? (
-          <>
-            <div className="absolute inset-0 backdrop-blur-sm rounded-2lg after:absolute after:inset-0 after:bg-white/50" />
-            <Icon
-              size={100}
-              name="checkmarkCutout"
-              className="absolute left-1/2 top-40 -translate-x-1/2 text-success"
+      <div className="flex flex-col gap-4">
+        <div className={cn('relative', isCameraPending && 'hidden', className)}>
+          <div className="h-[288px] overflow-hidden flex items-center justify-center rounded">
+            <QrReader
+              size={size}
+              className={className}
+              cameraId={activeCamera?.value}
+              onStart={() => setCameraState(CameraState.ACTIVE)}
+              onCameraList={onCameraList}
+              onProgress={setProgress}
+              onResult={onScanResult}
+              onError={onError}
             />
-          </>
-        ) : (
-          <Icon name="qrFrame" size={250} className="absolute left-1/2 top-20 -translate-x-1/2 text-white" />
+          </div>
+
+          {isScanComplete ? (
+            <>
+              <div className="absolute inset-0 backdrop-blur-sm rounded-2lg after:absolute after:inset-0 after:bg-white/50" />
+              <Icon
+                size={100}
+                name="checkmarkCutout"
+                className="absolute left-1/2 top-6 -translate-x-1/2 text-success"
+              />
+            </>
+          ) : (
+            <Icon name="qrFrame" size={240} className="absolute left-1/2 top-6 -translate-x-1/2 text-white" />
+          )}
+        </div>
+
+        {availableCameras.length > 1 && (
+          <Select
+            placeholder={t('onboarding.paritySigner.selectCameraLabel')}
+            selectedId={activeCamera?.id}
+            options={availableCameras}
+            onChange={setActiveCamera}
+          />
         )}
-        <div className="absolute bottom-2.5 left-1/2 -translate-x-1/2 w-[calc(100%-20px)] p-[15px] pb-6 rounded-lg bg-white">
-          <div className="grid grid-flow-col grid-rows-2">
-            <p className="text-2xs text-neutral">{t('qrReader.parsingLabel')}</p>
-            <p className="text-2xs text-shade-40">{t('qrReader.parsingSubLabel')}</p>
-            <p
-              className="row-span-2 self-center justify-self-end text-lg leading-6 text-shade-40"
+
+        {total > 1 && (
+          <div className="flex items-center justify-center gap-2">
+            <FootnoteText className="text-text-tertiary">{t('qrReader.parsingLabel')}</FootnoteText>
+            <CaptionText
+              className={cnTw(
+                'text-button-text uppercase bg-label-background-gray px-2 py-1 rounded-full',
+                total === decoded && 'bg-label-background-green',
+              )}
               data-testid="progress"
             >
-              <span className={cn(decoded > 0 ? 'text-success' : 'text-shade-40')}>{decoded}</span>
-              {/* eslint-disable-next-line i18next/no-literal-string */}
-              <span className={cn(decoded > 0 && decoded === total && 'text-success')}> / {total}</span>
-            </p>
+              {t('qrReader.parsingProgress', { decoded, total })}
+            </CaptionText>
           </div>
-          <div className="relative mt-2">
-            <div className="absolute top-0 left-0 h-2 w-full border-2 border-shade-20 rounded-2lg" />
-            <div
-              className="absolute top-0 left-0 h-2 bg-neutral rounded-2lg transition-[width]"
-              style={{ width: (decoded / total || 0) * 100 + '%' }}
-            />
-          </div>
-        </div>
+        )}
       </div>
     </>
   );
 };
 
-export default ParitySignerQrReader;
+export default KeyQrReader;

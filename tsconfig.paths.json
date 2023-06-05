@@ -5,7 +5,8 @@
       "@main/*": ["./src/main/*"],
       "@shared/*": ["./src/shared/*"],
       "@renderer/*": ["./src/renderer/*"],
-      "@images/*": ["./src/renderer/assets/images/*"]
+      "@images/*": ["./src/renderer/assets/images/*"],
+      "@video/*": ["./src/renderer/assets/video/*"]
     }
   }
 }

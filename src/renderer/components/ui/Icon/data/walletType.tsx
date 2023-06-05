@@ -6,6 +6,7 @@ import MultisigBgImg, { ReactComponent as MultisigBgSvg } from '@images/walletTy
 import MultisigImg, { ReactComponent as MultisigSvg } from '@images/walletTypes/multisig.svg';
 import VaultImg, { ReactComponent as VaultSvg } from '@images/walletTypes/vault.svg';
 import MultishardImg, { ReactComponent as MultishardSvg } from '@images/walletTypes/multishard.svg';
+import NovaWalletImg, { ReactComponent as NovaWalletSvg } from '@images/walletTypes/novaWallet.svg';
 
 const WalletTypeImages = {
   paritySigner: { svg: ParitySignerSvg, img: ParitySignerImg },
@@ -16,6 +17,7 @@ const WalletTypeImages = {
   multisig: { svg: MultisigSvg, img: MultisigImg },
   vault: { svg: VaultSvg, img: VaultImg },
   multishard: { svg: MultishardSvg, img: MultishardImg },
+  novaWallet: { img: NovaWalletImg, svg: NovaWalletSvg },
 } as const;
 
 export type WalletImages = keyof typeof WalletTypeImages;

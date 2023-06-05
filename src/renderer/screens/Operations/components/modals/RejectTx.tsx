@@ -47,9 +47,9 @@ const RejectTx = ({ tx, account, connection }: Props) => {
   const { getLiveAccounts } = useAccount();
   const { getTransactionFee } = useTransaction();
 
-  const [isModalOpen, toggleModal] = useToggle(false);
-  const [isRejectReasonModalOpen, toggleRejectReasonModal] = useToggle(false);
-  const [isFeeModalOpen, toggleFeeModal] = useToggle(false);
+  const [isModalOpen, toggleModal] = useToggle();
+  const [isRejectReasonModalOpen, toggleRejectReasonModal] = useToggle();
+  const [isFeeModalOpen, toggleFeeModal] = useToggle();
   const [countdown, resetCountdown] = useCountdown(connection.api);
 
   const [activeStep, setActiveStep] = useState(Step.CONFIRMATION);
