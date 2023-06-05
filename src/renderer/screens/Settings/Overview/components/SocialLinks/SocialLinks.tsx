@@ -21,7 +21,7 @@ const Links = [
     icon: 'youtube',
     title: 'settings.overview.youtubeLabel',
     subtitle: 'settings.overview.youtubeDescription',
-    href: 'https://www.youtube.com/@NovasamaTech',
+    href: 'https://www.youtube.com/@NovaSpektr',
   },
   {
     icon: 'medium',
