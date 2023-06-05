@@ -379,7 +379,7 @@
         "icon": "https://raw.githubusercontent.com/nova-wallet/nova-spektr-utils/main/icons/v1/assets/white/aUSD.svg",
         "typeExtras": {
           "currencyIdScale": "0x0081",
-          "currencyIdType": "acala_primitives.currency.CurrencyId",
+          "currencyIdType": "AcalaPrimitivesCurrencyCurrencyId",
           "existentialDeposit": "10000000000",
           "transfersEnabled": true
         },
@@ -394,7 +394,7 @@
         "icon": "https://raw.githubusercontent.com/nova-wallet/nova-spektr-utils/main/icons/v1/assets/white/Kusama_(KSM).svg",
         "typeExtras": {
           "currencyIdScale": "0x0082",
-          "currencyIdType": "acala_primitives.currency.CurrencyId",
+          "currencyIdType": "AcalaPrimitivesCurrencyCurrencyId",
           "existentialDeposit": "100000000",
           "transfersEnabled": true
         },
@@ -409,7 +409,7 @@
         "icon": "https://raw.githubusercontent.com/nova-wallet/nova-spektr-utils/main/icons/v1/assets/white/RMRK.svg",
         "typeExtras": {
           "currencyIdScale": "0x050000",
-          "currencyIdType": "acala_primitives.currency.CurrencyId",
+          "currencyIdType": "AcalaPrimitivesCurrencyCurrencyId",
           "existentialDeposit": "100000000",
           "transfersEnabled": true
         },
@@ -424,7 +424,7 @@
         "icon": "https://raw.githubusercontent.com/nova-wallet/nova-spektr-utils/main/icons/v1/assets/white/Bifrost_(BNC).svg",
         "typeExtras": {
           "currencyIdScale": "0x00a8",
-          "currencyIdType": "acala_primitives.currency.CurrencyId",
+          "currencyIdType": "AcalaPrimitivesCurrencyCurrencyId",
           "existentialDeposit": "8000000000",
           "transfersEnabled": true
         },
@@ -439,7 +439,7 @@
         "icon": "https://raw.githubusercontent.com/nova-wallet/nova-spektr-utils/main/icons/v1/assets/white/lKSM.svg",
         "typeExtras": {
           "currencyIdScale": "0x0083",
-          "currencyIdType": "acala_primitives.currency.CurrencyId",
+          "currencyIdType": "AcalaPrimitivesCurrencyCurrencyId",
           "existentialDeposit": "500000000",
           "transfersEnabled": true
         },
@@ -454,7 +454,7 @@
         "icon": "https://raw.githubusercontent.com/nova-wallet/nova-spektr-utils/main/icons/v1/assets/white/Phala_(PHA).svg",
         "typeExtras": {
           "currencyIdScale": "0x00aa",
-          "currencyIdType": "acala_primitives.currency.CurrencyId",
+          "currencyIdType": "AcalaPrimitivesCurrencyCurrencyId",
           "existentialDeposit": "40000000000",
           "transfersEnabled": true
         },
@@ -469,7 +469,7 @@
         "icon": "https://raw.githubusercontent.com/nova-wallet/nova-spektr-utils/main/icons/v1/assets/white/Kintsugi_(KINT).svg",
         "typeExtras": {
           "currencyIdScale": "0x00ab",
-          "currencyIdType": "acala_primitives.currency.CurrencyId",
+          "currencyIdType": "AcalaPrimitivesCurrencyCurrencyId",
           "existentialDeposit": "133330000",
           "transfersEnabled": true
         },
@@ -484,7 +484,7 @@
         "icon": "https://raw.githubusercontent.com/nova-wallet/nova-spektr-utils/main/icons/v1/assets/white/kBTC.svg",
         "typeExtras": {
           "currencyIdScale": "0x00ac",
-          "currencyIdType": "acala_primitives.currency.CurrencyId",
+          "currencyIdType": "AcalaPrimitivesCurrencyCurrencyId",
           "existentialDeposit": "660000",
           "transfersEnabled": true
         },
@@ -498,7 +498,7 @@
         "icon": "https://raw.githubusercontent.com/nova-wallet/nova-spektr-utils/main/icons/v1/assets/white/Taiga_(TAI).svg",
         "typeExtras": {
           "currencyIdScale": "0x0084",
-          "currencyIdType": "acala_primitives.currency.CurrencyId",
+          "currencyIdType": "AcalaPrimitivesCurrencyCurrencyId",
           "existentialDeposit": "1000000000000",
           "transfersEnabled": true
         },
@@ -512,7 +512,7 @@
         "icon": "https://raw.githubusercontent.com/nova-wallet/nova-spektr-utils/main/icons/v1/assets/white/vsKSM.svg",
         "typeExtras": {
           "currencyIdScale": "0x00a9",
-          "currencyIdType": "acala_primitives.currency.CurrencyId",
+          "currencyIdType": "AcalaPrimitivesCurrencyCurrencyId",
           "existentialDeposit": "100000000",
           "transfersEnabled": true
         },
@@ -526,7 +526,7 @@
         "icon": "https://raw.githubusercontent.com/nova-wallet/nova-spektr-utils/main/icons/v1/assets/white/taiKSM.svg",
         "typeExtras": {
           "currencyIdScale": "0x0300000000",
-          "currencyIdType": "acala_primitives.currency.CurrencyId",
+          "currencyIdType": "AcalaPrimitivesCurrencyCurrencyId",
           "existentialDeposit": "100000000",
           "transfersEnabled": true
         },
@@ -541,7 +541,7 @@
         "icon": "https://raw.githubusercontent.com/nova-wallet/nova-spektr-utils/main/icons/v1/assets/white/Quartz_(QTZ).svg",
         "typeExtras": {
           "currencyIdScale": "0x050200",
-          "currencyIdType": "acala_primitives.currency.CurrencyId",
+          "currencyIdType": "AcalaPrimitivesCurrencyCurrencyId",
           "existentialDeposit": "1000000000000000000",
           "transfersEnabled": true
         },
@@ -556,7 +556,7 @@
         "icon": "https://raw.githubusercontent.com/nova-wallet/nova-spektr-utils/main/icons/v1/assets/white/Moonriver_(MOVR).svg",
         "typeExtras": {
           "currencyIdScale": "0x050300",
-          "currencyIdType": "acala_primitives.currency.CurrencyId",
+          "currencyIdType": "AcalaPrimitivesCurrencyCurrencyId",
           "existentialDeposit": "1000000000000000",
           "transfersEnabled": true
         },
@@ -570,7 +570,7 @@
         "icon": "https://raw.githubusercontent.com/nova-wallet/nova-spektr-utils/main/icons/v1/assets/white/HKO.svg",
         "typeExtras": {
           "currencyIdScale": "0x050400",
-          "currencyIdType": "acala_primitives.currency.CurrencyId",
+          "currencyIdType": "AcalaPrimitivesCurrencyCurrencyId",
           "existentialDeposit": "100000000000",
           "transfersEnabled": true
         },
@@ -585,7 +585,7 @@
         "icon": "https://raw.githubusercontent.com/nova-wallet/nova-spektr-utils/main/icons/v1/assets/white/Crust_Shadow_(CSM).svg",
         "typeExtras": {
           "currencyIdScale": "0x050500",
-          "currencyIdType": "acala_primitives.currency.CurrencyId",
+          "currencyIdType": "AcalaPrimitivesCurrencyCurrencyId",
           "existentialDeposit": "1000000000000",
           "transfersEnabled": true
         },
@@ -600,7 +600,7 @@
         "icon": "https://raw.githubusercontent.com/nova-wallet/nova-spektr-utils/main/icons/v1/assets/white/USDT.svg",
         "typeExtras": {
           "currencyIdScale": "0x050700",
-          "currencyIdType": "acala_primitives.currency.CurrencyId",
+          "currencyIdType": "AcalaPrimitivesCurrencyCurrencyId",
           "existentialDeposit": "10000",
           "transfersEnabled": true
         },
@@ -615,7 +615,7 @@
         "icon": "https://raw.githubusercontent.com/nova-wallet/nova-spektr-utils/main/icons/v1/assets/white/Calamari_(KMA).svg",
         "typeExtras": {
           "currencyIdScale": "0x050a00",
-          "currencyIdType": "acala_primitives.currency.CurrencyId",
+          "currencyIdType": "AcalaPrimitivesCurrencyCurrencyId",
           "existentialDeposit": "100000000000",
           "transfersEnabled": true
         },
@@ -630,7 +630,7 @@
         "icon": "https://raw.githubusercontent.com/nova-wallet/nova-spektr-utils/main/icons/v1/assets/white/Integritee_Parachain_(TEER).svg",
         "typeExtras": {
           "currencyIdScale": "0x050800",
-          "currencyIdType": "acala_primitives.currency.CurrencyId",
+          "currencyIdType": "AcalaPrimitivesCurrencyCurrencyId",
           "existentialDeposit": "100000000000",
           "transfersEnabled": true
         },
@@ -644,7 +644,7 @@
         "icon": "https://raw.githubusercontent.com/nova-wallet/nova-spektr-utils/main/icons/v1/assets/white/KICO_(KICO).svg",
         "typeExtras": {
           "currencyIdScale": "0x050600",
-          "currencyIdType": "acala_primitives.currency.CurrencyId",
+          "currencyIdType": "AcalaPrimitivesCurrencyCurrencyId",
           "existentialDeposit": "100000000000000",
           "transfersEnabled": true
         },
@@ -659,7 +659,7 @@
         "icon": "https://raw.githubusercontent.com/nova-wallet/nova-spektr-utils/main/icons/v1/assets/white/Bit.Country_Pioneer_(NEER).svg",
         "typeExtras": {
           "currencyIdScale": "0x050900",
-          "currencyIdType": "acala_primitives.currency.CurrencyId",
+          "currencyIdType": "AcalaPrimitivesCurrencyCurrencyId",
           "existentialDeposit": "100000000000000000",
           "transfersEnabled": true
         },
@@ -674,7 +674,7 @@
         "icon": "https://raw.githubusercontent.com/nova-wallet/nova-spektr-utils/main/icons/v1/assets/white/Basilisk_(BSX).svg",
         "typeExtras": {
           "currencyIdScale": "0x050b00",
-          "currencyIdType": "acala_primitives.currency.CurrencyId",
+          "currencyIdType": "AcalaPrimitivesCurrencyCurrencyId",
           "existentialDeposit": "1000000000000",
           "transfersEnabled": true
         },
@@ -689,7 +689,7 @@
         "icon": "https://raw.githubusercontent.com/nova-wallet/nova-spektr-utils/main/icons/v1/assets/white/Altair_(AIR).svg",
         "typeExtras": {
           "currencyIdScale": "0x050c00",
-          "currencyIdType": "acala_primitives.currency.CurrencyId",
+          "currencyIdType": "AcalaPrimitivesCurrencyCurrencyId",
           "existentialDeposit": "100000000000000000",
           "transfersEnabled": true
         },
@@ -704,7 +704,7 @@
         "icon": "https://raw.githubusercontent.com/nova-wallet/nova-spektr-utils/main/icons/v1/assets/white/Genshiro_(GENS).svg",
         "typeExtras": {
           "currencyIdScale": "0x050e00",
-          "currencyIdType": "acala_primitives.currency.CurrencyId",
+          "currencyIdType": "AcalaPrimitivesCurrencyCurrencyId",
           "existentialDeposit": "1000000000000",
           "transfersEnabled": true
         },
@@ -719,7 +719,7 @@
         "icon": "https://raw.githubusercontent.com/nova-wallet/nova-spektr-utils/main/icons/v1/assets/white/EQD.svg",
         "typeExtras": {
           "currencyIdScale": "0x050f00",
-          "currencyIdType": "acala_primitives.currency.CurrencyId",
+          "currencyIdType": "AcalaPrimitivesCurrencyCurrencyId",
           "existentialDeposit": "10000000000",
           "transfersEnabled": true
         },
@@ -734,7 +734,7 @@
         "icon": "https://raw.githubusercontent.com/nova-wallet/nova-spektr-utils/main/icons/v1/assets/white/Crab_(CRAB).svg",
         "typeExtras": {
           "currencyIdScale": "0x050d00",
-          "currencyIdType": "acala_primitives.currency.CurrencyId",
+          "currencyIdType": "AcalaPrimitivesCurrencyCurrencyId",
           "existentialDeposit": "1000000000000000000",
           "transfersEnabled": true
         },
@@ -991,7 +991,7 @@
         "icon": "https://raw.githubusercontent.com/nova-wallet/nova-spektr-utils/main/icons/v1/assets/white/Kusama_(KSM).svg",
         "typeExtras": {
           "currencyIdScale": "0x0204",
-          "currencyIdType": "node_primitives.currency.CurrencyId",
+          "currencyIdType": "NodePrimitivesCurrencyCurrencyId",
           "existentialDeposit": "100000000",
           "transfersEnabled": true
         },
@@ -1006,7 +1006,7 @@
         "icon": "https://raw.githubusercontent.com/nova-wallet/nova-spektr-utils/main/icons/v1/assets/white/RMRK.svg",
         "typeExtras": {
           "currencyIdScale": "0x0209",
-          "currencyIdType": "node_primitives.currency.CurrencyId",
+          "currencyIdType": "NodePrimitivesCurrencyCurrencyId",
           "existentialDeposit": "10000",
           "transfersEnabled": true
         },
@@ -1021,7 +1021,7 @@
         "icon": "https://raw.githubusercontent.com/nova-wallet/nova-spektr-utils/main/icons/v1/assets/white/Zenlink_(ZLK).svg",
         "typeExtras": {
           "currencyIdScale": "0x0207",
-          "currencyIdType": "node_primitives.currency.CurrencyId",
+          "currencyIdType": "NodePrimitivesCurrencyCurrencyId",
           "existentialDeposit": "1000000000000",
           "transfersEnabled": true
         },
@@ -1036,7 +1036,7 @@
         "icon": "https://raw.githubusercontent.com/nova-wallet/nova-spektr-utils/main/icons/v1/assets/white/Karura_(KAR).svg",
         "typeExtras": {
           "currencyIdScale": "0x0206",
-          "currencyIdType": "node_primitives.currency.CurrencyId",
+          "currencyIdType": "NodePrimitivesCurrencyCurrencyId",
           "existentialDeposit": "100000000",
           "transfersEnabled": true
         },
@@ -1051,7 +1051,7 @@
         "icon": "https://raw.githubusercontent.com/nova-wallet/nova-spektr-utils/main/icons/v1/assets/white/aUSD.svg",
         "typeExtras": {
           "currencyIdScale": "0x0302",
-          "currencyIdType": "node_primitives.currency.CurrencyId",
+          "currencyIdType": "NodePrimitivesCurrencyCurrencyId",
           "existentialDeposit": "100000000",
           "transfersEnabled": true
         },
@@ -1065,7 +1065,7 @@
         "icon": "https://raw.githubusercontent.com/nova-wallet/nova-spektr-utils/main/icons/v1/assets/white/vsKSM.svg",
         "typeExtras": {
           "currencyIdScale": "0x0404",
-          "currencyIdType": "node_primitives.currency.CurrencyId",
+          "currencyIdType": "NodePrimitivesCurrencyCurrencyId",
           "existentialDeposit": "100000000",
           "transfersEnabled": true
         },
@@ -1080,7 +1080,7 @@
         "icon": "https://raw.githubusercontent.com/nova-wallet/nova-spektr-utils/main/icons/v1/assets/white/USDT.svg",
         "typeExtras": {
           "currencyIdScale": "0x0800",
-          "currencyIdType": "node_primitives.currency.CurrencyId",
+          "currencyIdType": "NodePrimitivesCurrencyCurrencyId",
           "existentialDeposit": "1000",
           "transfersEnabled": true
         },
@@ -1095,7 +1095,7 @@
         "icon": "https://raw.githubusercontent.com/nova-wallet/nova-spektr-utils/main/icons/v1/assets/white/Moonriver_(MOVR).svg",
         "typeExtras": {
           "currencyIdScale": "0x020a",
-          "currencyIdType": "node_primitives.currency.CurrencyId",
+          "currencyIdType": "NodePrimitivesCurrencyCurrencyId",
           "existentialDeposit": "1000000000000",
           "transfersEnabled": true
         },
@@ -1110,7 +1110,7 @@
         "icon": "https://raw.githubusercontent.com/nova-wallet/nova-spektr-utils/main/icons/v1/assets/white/Phala_(PHA).svg",
         "typeExtras": {
           "currencyIdScale": "0x0208",
-          "currencyIdType": "node_primitives.currency.CurrencyId",
+          "currencyIdType": "NodePrimitivesCurrencyCurrencyId",
           "existentialDeposit": "40000000000",
           "transfersEnabled": true
         },
@@ -1124,7 +1124,7 @@
         "icon": "https://raw.githubusercontent.com/nova-wallet/nova-spektr-utils/main/icons/v1/assets/white/vKSM.svg",
         "typeExtras": {
           "currencyIdScale": "0x0104",
-          "currencyIdType": "node_primitives.currency.CurrencyId",
+          "currencyIdType": "NodePrimitivesCurrencyCurrencyId",
           "existentialDeposit": "100000000",
           "transfersEnabled": true
         },
@@ -1914,7 +1914,7 @@
         "icon": "https://raw.githubusercontent.com/nova-wallet/nova-spektr-utils/main/icons/v1/assets/white/BIT.svg",
         "typeExtras": {
           "currencyIdScale": "0x030000000000000000",
-          "currencyIdType": "bit_country_primitives.FungibleTokenId",
+          "currencyIdType": "BitCountryPrimitivesFungibleTokenId",
           "existentialDeposit": "0",
           "transfersEnabled": true
         },
@@ -1974,7 +1974,7 @@
         "icon": "https://raw.githubusercontent.com/nova-wallet/nova-spektr-utils/main/icons/v1/assets/white/lDOT.svg",
         "typeExtras": {
           "currencyIdScale": "0x0003",
-          "currencyIdType": "acala_primitives.currency.CurrencyId",
+          "currencyIdType": "AcalaPrimitivesCurrencyCurrencyId",
           "existentialDeposit": "500000000",
           "transfersEnabled": true
         },
@@ -1989,7 +1989,7 @@
         "icon": "https://raw.githubusercontent.com/nova-wallet/nova-spektr-utils/main/icons/v1/assets/white/aUSD.svg",
         "typeExtras": {
           "currencyIdScale": "0x0001",
-          "currencyIdType": "acala_primitives.currency.CurrencyId",
+          "currencyIdType": "AcalaPrimitivesCurrencyCurrencyId",
           "existentialDeposit": "100000000000",
           "transfersEnabled": true
         },
@@ -2004,7 +2004,7 @@
         "icon": "https://raw.githubusercontent.com/nova-wallet/nova-spektr-utils/main/icons/v1/assets/white/Polkadot_(DOT).svg",
         "typeExtras": {
           "currencyIdScale": "0x0002",
-          "currencyIdType": "acala_primitives.currency.CurrencyId",
+          "currencyIdType": "AcalaPrimitivesCurrencyCurrencyId",
           "existentialDeposit": "100000000",
           "transfersEnabled": true
         },
@@ -2019,7 +2019,7 @@
         "icon": "https://raw.githubusercontent.com/nova-wallet/nova-spektr-utils/main/icons/v1/assets/white/lcDOT.svg",
         "typeExtras": {
           "currencyIdScale": "0x040d000000",
-          "currencyIdType": "acala_primitives.currency.CurrencyId",
+          "currencyIdType": "AcalaPrimitivesCurrencyCurrencyId",
           "existentialDeposit": "100000000",
           "transfersEnabled": true
         },
@@ -2034,7 +2034,7 @@
         "icon": "https://raw.githubusercontent.com/nova-wallet/nova-spektr-utils/main/icons/v1/assets/white/Moonbeam_(GLMR).svg",
         "typeExtras": {
           "currencyIdScale": "0x050000",
-          "currencyIdType": "acala_primitives.currency.CurrencyId",
+          "currencyIdType": "AcalaPrimitivesCurrencyCurrencyId",
           "existentialDeposit": "100000000000000000",
           "transfersEnabled": true
         },
@@ -2049,7 +2049,7 @@
         "icon": "https://raw.githubusercontent.com/nova-wallet/nova-spektr-utils/main/icons/v1/assets/white/PARA.svg",
         "typeExtras": {
           "currencyIdScale": "0x050100",
-          "currencyIdType": "acala_primitives.currency.CurrencyId",
+          "currencyIdType": "AcalaPrimitivesCurrencyCurrencyId",
           "existentialDeposit": "100000000000",
           "transfersEnabled": true
         },
@@ -2063,7 +2063,7 @@
         "icon": "https://raw.githubusercontent.com/nova-wallet/nova-spektr-utils/main/icons/v1/assets/white/Tapio_(TAP).svg",
         "typeExtras": {
           "currencyIdScale": "0x0004",
-          "currencyIdType": "acala_primitives.currency.CurrencyId",
+          "currencyIdType": "AcalaPrimitivesCurrencyCurrencyId",
           "existentialDeposit": "1000000000000",
           "transfersEnabled": true
         },
@@ -2077,7 +2077,7 @@
         "icon": "https://raw.githubusercontent.com/nova-wallet/nova-spektr-utils/main/icons/v1/assets/white/tDOT.svg",
         "typeExtras": {
           "currencyIdScale": "0x0300000000",
-          "currencyIdType": "acala_primitives.currency.CurrencyId",
+          "currencyIdType": "AcalaPrimitivesCurrencyCurrencyId",
           "existentialDeposit": "100000000",
           "transfersEnabled": true
         },
@@ -2092,7 +2092,7 @@
         "icon": "https://raw.githubusercontent.com/nova-wallet/nova-spektr-utils/main/icons/v1/assets/white/Interlay_(INTR).svg",
         "typeExtras": {
           "currencyIdScale": "0x050400",
-          "currencyIdType": "acala_primitives.currency.CurrencyId",
+          "currencyIdType": "AcalaPrimitivesCurrencyCurrencyId",
           "existentialDeposit": "1000000000",
           "transfersEnabled": true
         },
@@ -2107,7 +2107,7 @@
         "icon": "https://raw.githubusercontent.com/nova-wallet/nova-spektr-utils/main/icons/v1/assets/white/Astar_(ASTR).svg",
         "typeExtras": {
           "currencyIdScale": "0x050200",
-          "currencyIdType": "acala_primitives.currency.CurrencyId",
+          "currencyIdType": "AcalaPrimitivesCurrencyCurrencyId",
           "existentialDeposit": "100000000000000000",
           "transfersEnabled": true
         },
@@ -2122,7 +2122,7 @@
         "icon": "https://raw.githubusercontent.com/nova-wallet/nova-spektr-utils/main/icons/v1/assets/white/Equilibrium_(EQ).svg",
         "typeExtras": {
           "currencyIdScale": "0x050700",
-          "currencyIdType": "acala_primitives.currency.CurrencyId",
+          "currencyIdType": "AcalaPrimitivesCurrencyCurrencyId",
           "existentialDeposit": "1000000000",
           "transfersEnabled": true
         },
@@ -2137,7 +2137,7 @@
         "icon": "https://raw.githubusercontent.com/nova-wallet/nova-spektr-utils/main/icons/v1/assets/white/iBTC.svg",
         "typeExtras": {
           "currencyIdScale": "0x050300",
-          "currencyIdType": "acala_primitives.currency.CurrencyId",
+          "currencyIdType": "AcalaPrimitivesCurrencyCurrencyId",
           "existentialDeposit": "100",
           "transfersEnabled": true
         },
@@ -2152,7 +2152,7 @@
         "icon": "https://raw.githubusercontent.com/nova-wallet/nova-spektr-utils/main/icons/v1/assets/white/USDT.svg",
         "typeExtras": {
           "currencyIdScale": "0x050c00",
-          "currencyIdType": "acala_primitives.currency.CurrencyId",
+          "currencyIdType": "AcalaPrimitivesCurrencyCurrencyId",
           "existentialDeposit": "10000",
           "transfersEnabled": true
         },
@@ -2851,7 +2851,7 @@
         "icon": "https://raw.githubusercontent.com/nova-wallet/nova-spektr-utils/main/icons/v1/assets/white/Kintsugi_(KINT).svg",
         "typeExtras": {
           "currencyIdScale": "0x000c",
-          "currencyIdType": "interbtc_primitives.CurrencyId",
+          "currencyIdType": "InterbtcPrimitivesCurrencyId",
           "existentialDeposit": "0",
           "transfersEnabled": true
         },
@@ -2866,7 +2866,7 @@
         "icon": "https://raw.githubusercontent.com/nova-wallet/nova-spektr-utils/main/icons/v1/assets/white/kBTC.svg",
         "typeExtras": {
           "currencyIdScale": "0x000b",
-          "currencyIdType": "interbtc_primitives.CurrencyId",
+          "currencyIdType": "InterbtcPrimitivesCurrencyId",
           "existentialDeposit": "0",
           "transfersEnabled": true
         },
@@ -2881,7 +2881,7 @@
         "icon": "https://raw.githubusercontent.com/nova-wallet/nova-spektr-utils/main/icons/v1/assets/white/Kusama_(KSM).svg",
         "typeExtras": {
           "currencyIdScale": "0x000a",
-          "currencyIdType": "interbtc_primitives.CurrencyId",
+          "currencyIdType": "InterbtcPrimitivesCurrencyId",
           "existentialDeposit": "0",
           "transfersEnabled": true
         },
@@ -2896,7 +2896,7 @@
         "icon": "https://raw.githubusercontent.com/nova-wallet/nova-spektr-utils/main/icons/v1/assets/white/lKSM.svg",
         "typeExtras": {
           "currencyIdScale": "0x0102000000",
-          "currencyIdType": "interbtc_primitives.CurrencyId",
+          "currencyIdType": "InterbtcPrimitivesCurrencyId",
           "existentialDeposit": "0",
           "transfersEnabled": true
         },
@@ -2911,7 +2911,7 @@
         "icon": "https://raw.githubusercontent.com/nova-wallet/nova-spektr-utils/main/icons/v1/assets/white/USDT.svg",
         "typeExtras": {
           "currencyIdScale": "0x0103000000",
-          "currencyIdType": "interbtc_primitives.CurrencyId",
+          "currencyIdType": "InterbtcPrimitivesCurrencyId",
           "existentialDeposit": "0",
           "transfersEnabled": true
         },
@@ -2926,7 +2926,7 @@
         "icon": "https://raw.githubusercontent.com/nova-wallet/nova-spektr-utils/main/icons/v1/assets/white/aUSD.svg",
         "typeExtras": {
           "currencyIdScale": "0x0101000000",
-          "currencyIdType": "interbtc_primitives.CurrencyId",
+          "currencyIdType": "InterbtcPrimitivesCurrencyId",
           "existentialDeposit": "0",
           "transfersEnabled": true
         },
@@ -2940,7 +2940,7 @@
         "icon": "https://raw.githubusercontent.com/nova-wallet/nova-spektr-utils/main/icons/v1/assets/white/KSM-kBTC.svg",
         "typeExtras": {
           "currencyIdScale": "0x03000a000b",
-          "currencyIdType": "interbtc_primitives.CurrencyId",
+          "currencyIdType": "InterbtcPrimitivesCurrencyId",
           "existentialDeposit": "0",
           "transfersEnabled": false
         },
@@ -2954,7 +2954,7 @@
         "icon": "https://raw.githubusercontent.com/nova-wallet/nova-spektr-utils/main/icons/v1/assets/white/kBTC-USDT.svg",
         "typeExtras": {
           "currencyIdScale": "0x03000b0103000000",
-          "currencyIdType": "interbtc_primitives.CurrencyId",
+          "currencyIdType": "InterbtcPrimitivesCurrencyId",
           "existentialDeposit": "0",
           "transfersEnabled": false
         },
@@ -2968,7 +2968,7 @@
         "icon": "https://raw.githubusercontent.com/nova-wallet/nova-spektr-utils/main/icons/v1/assets/white/KSM-KINT.svg",
         "typeExtras": {
           "currencyIdScale": "0x03000a000c",
-          "currencyIdType": "interbtc_primitives.CurrencyId",
+          "currencyIdType": "InterbtcPrimitivesCurrencyId",
           "existentialDeposit": "0",
           "transfersEnabled": false
         },
@@ -3658,7 +3658,7 @@
         "icon": "https://raw.githubusercontent.com/nova-wallet/nova-spektr-utils/main/icons/v1/assets/white/Interlay_(INTR).svg",
         "typeExtras": {
           "currencyIdScale": "0x0002",
-          "currencyIdType": "interbtc_primitives.CurrencyId",
+          "currencyIdType": "InterbtcPrimitivesCurrencyId",
           "existentialDeposit": "0",
           "transfersEnabled": true
         },
@@ -3673,7 +3673,7 @@
         "icon": "https://raw.githubusercontent.com/nova-wallet/nova-spektr-utils/main/icons/v1/assets/white/iBTC.svg",
         "typeExtras": {
           "currencyIdScale": "0x0001",
-          "currencyIdType": "interbtc_primitives.CurrencyId",
+          "currencyIdType": "InterbtcPrimitivesCurrencyId",
           "existentialDeposit": "0",
           "transfersEnabled": true
         },
@@ -3688,7 +3688,7 @@
         "icon": "https://raw.githubusercontent.com/nova-wallet/nova-spektr-utils/main/icons/v1/assets/white/Polkadot_(DOT).svg",
         "typeExtras": {
           "currencyIdScale": "0x0000",
-          "currencyIdType": "interbtc_primitives.CurrencyId",
+          "currencyIdType": "InterbtcPrimitivesCurrencyId",
           "existentialDeposit": "0",
           "transfersEnabled": true
         },
@@ -3703,7 +3703,7 @@
         "icon": "https://raw.githubusercontent.com/nova-wallet/nova-spektr-utils/main/icons/v1/assets/white/Kintsugi_(KINT).svg",
         "typeExtras": {
           "currencyIdScale": "0x000c",
-          "currencyIdType": "interbtc_primitives.CurrencyId",
+          "currencyIdType": "InterbtcPrimitivesCurrencyId",
           "existentialDeposit": "0",
           "transfersEnabled": true
         },
@@ -3718,7 +3718,7 @@
         "icon": "https://raw.githubusercontent.com/nova-wallet/nova-spektr-utils/main/icons/v1/assets/white/kBTC.svg",
         "typeExtras": {
           "currencyIdScale": "0x000b",
-          "currencyIdType": "interbtc_primitives.CurrencyId",
+          "currencyIdType": "InterbtcPrimitivesCurrencyId",
           "existentialDeposit": "0",
           "transfersEnabled": true
         },
@@ -3733,7 +3733,7 @@
         "icon": "https://raw.githubusercontent.com/nova-wallet/nova-spektr-utils/main/icons/v1/assets/white/Kusama_(KSM).svg",
         "typeExtras": {
           "currencyIdScale": "0x000a",
-          "currencyIdType": "interbtc_primitives.CurrencyId",
+          "currencyIdType": "InterbtcPrimitivesCurrencyId",
           "existentialDeposit": "0",
           "transfersEnabled": true
         },
@@ -3748,7 +3748,7 @@
         "icon": "https://raw.githubusercontent.com/nova-wallet/nova-spektr-utils/main/icons/v1/assets/white/lDOT.svg",
         "typeExtras": {
           "currencyIdScale": "0x0101000000",
-          "currencyIdType": "interbtc_primitives.CurrencyId",
+          "currencyIdType": "InterbtcPrimitivesCurrencyId",
           "existentialDeposit": "0",
           "transfersEnabled": true
         },
@@ -3763,7 +3763,7 @@
         "icon": "https://raw.githubusercontent.com/nova-wallet/nova-spektr-utils/main/icons/v1/assets/white/USDT.svg",
         "typeExtras": {
           "currencyIdScale": "0x0102000000",
-          "currencyIdType": "interbtc_primitives.CurrencyId",
+          "currencyIdType": "InterbtcPrimitivesCurrencyId",
           "existentialDeposit": "0",
           "transfersEnabled": true
         },
@@ -4317,7 +4317,7 @@
         "icon": "https://raw.githubusercontent.com/nova-wallet/nova-spektr-utils/main/icons/v1/assets/white/Moonbeam_(GLMR).svg",
         "typeExtras": {
           "currencyIdScale": "0x0801",
-          "currencyIdType": "node_primitives.currency.CurrencyId",
+          "currencyIdType": "NodePrimitivesCurrencyCurrencyId",
           "existentialDeposit": "1000000000000",
           "transfersEnabled": true
         },
@@ -4332,7 +4332,7 @@
         "icon": "https://raw.githubusercontent.com/nova-wallet/nova-spektr-utils/main/icons/v1/assets/white/Polkadot_(DOT).svg",
         "typeExtras": {
           "currencyIdScale": "0x0800",
-          "currencyIdType": "node_primitives.currency.CurrencyId",
+          "currencyIdType": "NodePrimitivesCurrencyCurrencyId",
           "existentialDeposit": "1000000",
           "transfersEnabled": true
         },
@@ -4347,7 +4347,7 @@
         "icon": "https://raw.githubusercontent.com/nova-wallet/nova-spektr-utils/main/icons/v1/assets/white/USDT.svg",
         "typeExtras": {
           "currencyIdScale": "0x0802",
-          "currencyIdType": "node_primitives.currency.CurrencyId",
+          "currencyIdType": "NodePrimitivesCurrencyCurrencyId",
           "existentialDeposit": "1000",
           "transfersEnabled": true
         },
@@ -4809,7 +4809,7 @@
         "icon": "https://raw.githubusercontent.com/nova-wallet/nova-spektr-utils/main/icons/v1/assets/white/GM_(GM).svg",
         "typeExtras": {
           "currencyIdScale": "0x01",
-          "currencyIdType": "gm_chain_runtime.Coooooins",
+          "currencyIdType": "GmChainRuntimeCoooooins",
           "existentialDeposit": "0",
           "transfersEnabled": true
         },
@@ -4823,7 +4823,7 @@
         "icon": "https://raw.githubusercontent.com/nova-wallet/nova-spektr-utils/main/icons/v1/assets/white/GN.svg",
         "typeExtras": {
           "currencyIdScale": "0x02",
-          "currencyIdType": "gm_chain_runtime.Coooooins",
+          "currencyIdType": "GmChainRuntimeCoooooins",
           "existentialDeposit": "0",
           "transfersEnabled": true
         },
@@ -5098,7 +5098,7 @@
         "icon": "https://raw.githubusercontent.com/nova-wallet/nova-spektr-utils/main/icons/v1/assets/white/Polkadot_(DOT).svg",
         "typeExtras": {
           "currencyIdScale": "0x0100",
-          "currencyIdType": "pendulum_runtime.currency.CurrencyId",
+          "currencyIdType": "PendulumRuntimeCurrencyCurrencyId",
           "existentialDeposit": "1000",
           "transfersEnabled": true
         },

@@ -1,4 +1,3 @@
-import AccountsList from './AccountsList/AccountsList';
 import AddressOnPlate from './AddressOnPlate/AddressOnPlate';
 import FallbackScreen from './FallbackScreen/FallbackScreen';
 import SplashScreen from './SplashScreen/SplashScreen';
@@ -28,7 +27,6 @@ import QrGeneratorContainer from './QrCode/QrGeneratorContainer/QrGeneratorConta
 // https://stackoverflow.com/questions/49156356/why-does-jest-try-to-resolve-every-component-in-my-index-ts
 
 export {
-  AccountsList,
   AddressOnPlate,
   FallbackScreen,
   ActiveAddress,

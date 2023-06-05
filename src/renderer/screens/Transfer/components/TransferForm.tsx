@@ -134,7 +134,7 @@ export const TransferForm = ({ api, chainId, account, signer, asset, nativeToken
       args: {
         dest: toAddress(destination, { prefix: addressPrefix }),
         value: formatAmount(amount, asset.precision),
-        asset: getAssetId(asset),
+        assetId: getAssetId(asset),
       },
     };
   };

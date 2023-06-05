@@ -1,4 +1,8 @@
 {
+  "accountList": {
+    "addressColumn": "Address",
+    "networksColumn": "Networks { chains }"
+  },
   "addressBook": {
     "addContact": {
       "accountIdIncorrectError": "Incorrect account address",
@@ -200,8 +204,11 @@
   },
   "onboarding": {
     "accountAddressLabel": "Account address",
+    "accountsTitle": "Manage accounts",
+    "backButton": "Back",
     "checkAccountsButton": "Check your accounts",
     "confirmAccountsListButton": "Yes, these are my accounts",
+    "continueButton": "Continue",
     "paritySigner": {
       "accessDeniedDescription": "Please make sure you grant access to camera",
       "accessDeniedLabel": "Access denied!",
@@ -265,21 +272,45 @@
     "readAccountsLabel": "Following accounts have been successfully read.",
     "readAccountsParitySignerLabel": "Following accounts have been successfully read from Parity Signer",
     "readyToUseLabel": "Your wallet is ready to use!",
+    "vault": {
+      "accountsTitle": "Manage accounts",
+      "addressColumn": "Address",
+      "fillNamesButton": "Autofill account names",
+      "manageTitle": "Manage your wallet",
+      "nameColumn": "Account name",
+      "scanTitle": "Scan the account QR code",
+      "title": "Add wallet by Polkadot Vault"
+    },
     "walletNameExample": "Name examples: Main account, My validator, Dotsama crowdloans, etc.",
     "walletNameLabel": "Wallet name",
     "walletNamePlaceholder": "Enter a name for your wallet",
-    "watchonly": {
+    "watchOnly": {
       "accountAddressError": "The entered address is not a valid one, please type or paste it again",
       "accountAddressPlaceholder": "Enter or paste your account address",
+      "accountsTitle": "Manage accounts",
       "addWatchOnlyDescription1": "Track the activity of any wallet without injecting",
       "addWatchOnlyDescription2": "your private key to Nova Spektr",
       "addWatchOnlyLabel": "Add Watch-Only Wallet",
       "addressAndNameRequiredError": "Type address and name",
       "addressRequiredError": "Type or paste address",
+      "emptyState": "All your accounts in different networks will be shown here",
+      "manageTitle": "Manage your wallet",
       "nameRequiredError": "Type a wallet name",
+      "title": "Add Watch-only wallet",
       "walletNameMaxLenError": "Wallet name should be shorter then 256 symbols",
       "walletNameRequiredError": "Please, enter wallet name",
       "yourAccountsLoadingLabel": "Your accounts will be showing up here"
+    },
+    "welcome": {
+      "novaWalletDescription": "Seamless and secure transaction signing with Nova Wallet using WalletConnect v2",
+      "novaWalletTitle": "Nova Wallet",
+      "polkadotVaultDescription": "Use dedicated hardware wallet for Polkadot, Kusama, and other Substrate-based chains",
+      "polkadotVaultTitle": "Polkadot Vault",
+      "privacy": "By continuing, you agree to our <terms>Terms of Services</terms> and <privacy>Privacy Policy</privacy>",
+      "soonBadge": "soon",
+      "title": "Add your wallet",
+      "watchOnlyDescription": "Track the activity of any wallet without injecting your private key to Nova Spektr",
+      "watchOnlyTitle": "Watch-only"
     },
     "yourAccountsLabel": "Here are your accounts"
   },
@@ -287,7 +318,7 @@
     "addCallDataButton": "Add call data",
     "advanced": "Advanced",
     "approveButton": "Approve",
-    "cancelTitle": "Cancel ",
+    "cancelTitle": "Reject",
     "continueButton": "Continue",
     "details": {
       "amount": "Amount",
@@ -315,7 +346,7 @@
     "inProgress": "Submitting approval...",
     "logButton": "Log",
     "networkFee": "Network fee",
-    "rejectButton": "Cancel",
+    "rejectButton": "Reject",
     "rejectInProgress": "Submitting Rejection...",
     "rejectReason": {
       "continueButton": "Continue",
@@ -330,7 +361,7 @@
     "signatoriesTitle": "Signatories",
     "signing": "{ signed } of { threshold } signed",
     "status": {
-      "cancelled": "Cancelled",
+      "cancelled": "Rejected",
       "error": "Error",
       "established": "Established",
       "executed": "Executed",
@@ -372,6 +403,7 @@
   },
   "qrReader": {
     "parsingLabel": "Parsing data",
+    "parsingProgress": "{decoded} of {total}",
     "parsingSubLabel": "Please hold still...",
     "videoError": "Your browser doesn't support video"
   },
@@ -678,11 +710,11 @@
   "transactionMessage": {
     "bond": "Stake { amount } { asset }",
     "destination": "Change reward destination to { address }",
-    "nominate": "Change validators",
+    "nominate": "Change validator set",
     "redeem": "Withdraw { amount } { asset }",
     "restake": "Return { amount } { asset } to stake",
     "restakeDestination": "restake",
-    "stakeMore": "Increase stake { amount } { asset }",
+    "stakeMore": "Increase stake by { amount } { asset }",
     "transfer": "Transfer { amount } { asset } to { address }",
     "unstake": "Unstake { amount } { asset }"
   },
