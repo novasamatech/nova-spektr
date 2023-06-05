@@ -81,7 +81,7 @@ jest.mock('../components/index', () => ({
   Submit: () => 'finish',
 }));
 
-jest.mock('@renderer/components/common/Scaning/Scaning', () => ({
+jest.mock('@renderer/components/common/Scanning/Scanning', () => ({
   Scanning: ({ onResult }: any) => mockButton('to sign', onResult),
 }));
 
