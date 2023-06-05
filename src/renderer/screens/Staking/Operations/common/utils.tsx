@@ -5,7 +5,7 @@ import { ReactNode } from 'react';
 import { Account, MultisigAccount } from '@renderer/domain/account';
 import { Address, SigningType } from '@renderer/domain/shared-kernel';
 import { DropdownOption } from '@renderer/components/ui/Dropdowns/common/types';
-import { Icon, ChainAddress, Balance } from '@renderer/components/ui';
+import { Balance } from '@renderer/components/ui';
 import { Balance as AccountBalance } from '@renderer/domain/balance';
 import {
   stakeableAmount,
@@ -18,7 +18,6 @@ import { Asset } from '@renderer/domain/asset';
 import { toAddress } from '@renderer/shared/utils/address';
 import { Stake } from '@renderer/domain/stake';
 import { AccountDS } from '@renderer/services/storage';
-import { SigningBadges } from '@renderer/shared/utils/constants';
 import { AccountAddress, BalanceNew } from '@renderer/components/common';
 
 export const validateBalanceForFee = (balance: AccountBalance | string, fee: string): boolean => {
@@ -65,8 +64,6 @@ export const validateUnstake = (stake: Stake | string, amount: string, precision
   return new BN(formatAmount(amount, precision)).lte(new BN(unstakeableBalance));
 };
 
-//todo it has too much meaning, better to rename it.
-//todo isn't it better to avoid using react components in utils files. Better to move to another something like components
 const getElement = (address: Address, accountName: string, content?: ReactNode): ReactNode => {
   return (
     <div className="flex justify-between w-full">
@@ -213,14 +210,7 @@ export const getTotalAccounts = (dbAccounts: AccountDS[], identifiers: string[])
 export const getSignatoryOptions = (accounts: Account[], addressPrefix: number): DropdownOption<Account>[] => {
   return accounts.map((account) => {
     const address = toAddress(account.accountId, { prefix: addressPrefix });
-
-    const element = (
-      <div className="grid grid-rows-2 grid-flow-col gap-x-2.5">
-        <Icon className="row-span-2 self-center" name={SigningBadges[account.signingType]} size={34} />
-        <p className="text-left text-neutral text-lg font-semibold leading-5">{account.name}</p>
-        <ChainAddress type="short" address={address} canCopy={false} />
-      </div>
-    );
+    const element = getElement(address, account.name);
 
     return { id: address, value: account, element };
   });

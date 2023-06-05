@@ -513,6 +513,7 @@
       "descriptionLabel": "Description",
       "descriptionPlaceholder": "ex. Staking ....",
       "goToStakingButton": "Back to Staking",
+      "hintTitle": "Learn more about rewards",
       "incorrectAddressError": "Please, enter correct address",
       "manyAccountsPlaceholder": "Multiple accounts selected",
       "networkDepositLabel": "Multisig Deposit",
@@ -550,16 +551,19 @@
       "restakeRewards": "Restake rewards",
       "rewardsDestinationLabel": "Rewards destination",
       "signButton": "Sign with Polkadot Vault",
+      "signatoryLabel": "Signatory",
       "signer": "Signer",
       "submittingOperation": "Submitting operation",
       "totalAmount": "Total amount",
       "transactionProgress": "Transactions",
       "transferableRewards": "Transferable rewards",
       "validatorsLabel": "Validators",
-      "validatorsTitle": "Selected validators"
+      "validatorsTitle": "Selected validators",
+      "walletLabel": "Wallet"
     },
     "destination": {
-      "initDestinationSubtitle": "Rewards destination"
+      "initDestinationSubtitle": "Rewards destination",
+      "submitSuccess": "Rewards destination has been changed"
     },
     "loadingMessage": "Connecting to { chainName }",
     "nominators": {
@@ -603,22 +607,26 @@
     "redeem": {
       "availablePlaceholder": "Available",
       "confirmRedeemSubtitle": "Confirmation",
-      "initRedeemSubtitle": "Redeem"
+      "initRedeemSubtitle": "Redeem",
+      "submitSuccess": "Unstaked tokens have been withdrawn"
     },
     "requiredAmountError": "Please, enter amount",
     "restake": {
       "amountPlaceholder": "Amount",
       "confirmRestakeSubtitle": "Confirmation",
       "eraHint": "Returned tokens will be counted from the next era",
+      "hintTitle": "Learn more about restake",
       "initRestakeSubtitle": "Restake",
+      "submitSuccess": "You successfully restaked tokens",
       "transferable": "Transferable",
       "unstakingPlaceholder": "Unstaking"
     },
     "stakeMore": {
       "availablePlaceholder": "Available",
       "confirmStakeMoreSubtitle": "Confirmation",
-      "eraHint": "You will get increased rewards starting from the next era",
+      "hintTitle": "You will get increased rewards starting from the next era",
       "initStakeMoreSubtitle": "Stake more",
+      "submitSuccess": "You funds staked successfully",
       "title": "Stake more"
     },
     "title": "Staking",
@@ -626,12 +634,14 @@
       "amountPlaceholder": "Amount",
       "confirmUnstakeSubtitle": "Confirmation",
       "durationHint": "To unstake tokens you will have to wait for the ustaking period",
+      "hintTitle": "Learn more about unstake",
       "initUnstakeSubtitle": "Unstake",
       "networkFee_one": "Network fee",
       "networkFee_other": "Network fee per account",
       "noRewardsHint": "During unstaking period tokens produce no rewards",
       "redeemHint": "After unstaking period don’t forget to redeem your tokens",
       "stakedPlaceholder": "Staked",
+      "submitSuccess": "Your funds have been unstaked",
       "transferable": "Transferable"
     },
     "validators": {
@@ -642,6 +652,7 @@
       "filterByIdentity": "Having on-chain identity",
       "filterNotOversubscribed": "Not oversubscribed",
       "filterNotSlashed": "Not slashed",
+      "hintTitle": "Your validators will change in the next era",
       "maxValidatorsLabel": "(Max { max })",
       "nominatedTableHeader": "Nominated",
       "oversubPopoverSubtitle": "Validator is oversubscribed",
@@ -653,6 +664,7 @@
       "selectedValidatorsLabel": "Selected validators",
       "slashedPopoverSubtitle": "Validator has been slashed recently",
       "slashedPopoverTitle": "Slashed",
+      "submitSuccess": "Validators have been successfully set",
       "subtitle": "Validators",
       "totalStakeTableHeader": "Total stake",
       "validatorsTableHeader": "Accounts"

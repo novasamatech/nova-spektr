@@ -513,6 +513,7 @@
       "descriptionLabel": "Описание",
       "descriptionPlaceholder": "пример, Стейкинг ....",
       "goToStakingButton": "Обратно к Стейкингу",
+      "hintTitle": "Узнайте больше о наградах",
       "incorrectAddressError": "Пожалуйста, введите корректный адрес",
       "manyAccountsPlaceholder": "Выбрано несколько аккаунтов",
       "networkDepositLabel": "Депозит",
@@ -550,16 +551,19 @@
       "restakeRewards": "Вложить награды",
       "rewardsDestinationLabel": "Выплата наград",
       "signButton": "Подписать в Polkadot Vault",
+      "signatoryLabel": "Подписант",
       "signer": "Подписант",
       "submittingOperation": "Подтверждение операции",
       "totalAmount": "Общая сумма",
       "transactionProgress": "Транзакции",
       "transferableRewards": "Вывести награды",
       "validatorsLabel": "Валидаторы",
-      "validatorsTitle": "Выбранные валидаторы"
+      "validatorsTitle": "Выбранные валидаторы",
+      "walletLabel": "Кошелек"
     },
     "destination": {
-      "initDestinationSubtitle": "Выплата наград"
+      "initDestinationSubtitle": "Выплата наград",
+      "submitSuccess": "Адрес наград был успешно измененм"
     },
     "loadingMessage": "Подключаемся к { chainName }",
     "nominators": {
@@ -603,22 +607,26 @@
     "redeem": {
       "availablePlaceholder": "Доступно",
       "confirmRedeemSubtitle": "Подтверждение",
-      "initRedeemSubtitle": "Вывести"
+      "initRedeemSubtitle": "Вывести",
+      "submitSuccess": "Анстейк токены были успешно возвращены"
     },
     "requiredAmountError": "Пожалуйста, введите сумму",
     "restake": {
       "amountPlaceholder": "Сумма",
       "confirmRestakeSubtitle": "Подтверждение",
       "eraHint": "Возвращённые токены начнут учитываться начиная со следующей эры",
+      "hintTitle": "Узнайте больше о рестейке",
       "initRestakeSubtitle": "Вернуть в стейк",
+      "submitSuccess": "Вы успешно вернули токены в стейк",
       "transferable": "Доступно",
       "unstakingPlaceholder": "Выводится из стейка"
     },
     "stakeMore": {
       "availablePlaceholder": "Доступно",
       "confirmStakeMoreSubtitle": "Подтверждение",
-      "eraHint": "Вы будете получать увеличенную награду начиная со следующей эры",
+      "hintTitle": "Вы будете получать увеличенную награду начиная со следующей эры",
       "initStakeMoreSubtitle": "Застейкать ещё",
+      "submitSuccess": "Вы успешно увеличи стейк",
       "title": "Увеличить стейк"
     },
     "title": "Стейкинг",
@@ -626,12 +634,14 @@
       "amountPlaceholder": "Сумма",
       "confirmUnstakeSubtitle": "Подтверждение",
       "durationHint": "To unstake tokens you will have to wait for the ustaking period",
+      "hintTitle": "Узнайте больше об анстейкинге",
       "initUnstakeSubtitle": "Вывод из стейка",
       "networkFee_one": "Комиссия сети",
       "networkFee_other": "Комиссия сети за аккаунт",
       "noRewardsHint": "During unstaking period tokens produce no rewards",
       "redeemHint": "После периода вывода из стейкинга не забудьте redeem ваши токены",
       "stakedPlaceholder": "В стейке",
+      "submitSuccess": "Вы успешно забрали токены",
       "transferable": "Доступно"
     },
     "validators": {
@@ -642,6 +652,7 @@
       "filterByIdentity": "Имеют identity",
       "filterNotOversubscribed": "Не перегружены",
       "filterNotSlashed": "Не урезаны",
+      "hintTitle": "Изменение валидаторов применятся со следующей эры",
       "maxValidatorsLabel": "(Макс. { max })",
       "nominatedTableHeader": "Номинировано",
       "oversubPopoverSubtitle": "Валидатор перегружен номинаторами",
@@ -653,6 +664,7 @@
       "selectedValidatorsLabel": "Выбранные валидаторы",
       "slashedPopoverSubtitle": "Валидатор был недавно урезан",
       "slashedPopoverTitle": "Урезан",
+      "submitSuccess": "Валидаторы были успешно выбраны",
       "subtitle": "Валидаторы",
       "totalStakeTableHeader": "Общий стейк",
       "validatorsTableHeader": "Аккаунты"

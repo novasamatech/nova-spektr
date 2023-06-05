@@ -17,6 +17,8 @@ import { toAddress } from '@renderer/shared/utils/address';
 import { nonNullable } from '@renderer/shared/utils/functions';
 import { MultiSelect, Select, FootnoteText } from '@renderer/components/ui-redesign';
 import { Deposit, Fee } from '@renderer/components/common';
+import { Icon } from '@renderer/components/ui';
+import { TEST_ADDRESS } from '@renderer/shared/utils/constants';
 import { OperationForm } from '../../components';
 import {
   getStakeAccountOption,
@@ -25,8 +27,6 @@ import {
   validateBalanceForFee,
   validateBalanceForFeeDeposit,
 } from '../../common/utils';
-import { Icon } from '@renderer/components/ui';
-import { TEST_ADDRESS } from '@renderer/shared/utils/constants';
 
 export type BondResult = {
   amount: string;
@@ -57,6 +57,7 @@ const InitOperation = ({ api, chainId, accounts, asset, addressPrefix, onResult 
   const [deposit, setDeposit] = useState('');
   const [amount, setAmount] = useState('');
 
+  const [minBalance, setMinBalance] = useState('0');
   const [activeBalances, setActiveBalances] = useState<AccountBalance[]>([]);
 
   const [stakeAccounts, setStakeAccounts] = useState<DropdownOption<Account | MultisigAccount>[]>([]);
@@ -64,7 +65,7 @@ const InitOperation = ({ api, chainId, accounts, asset, addressPrefix, onResult 
 
   const [activeSignatory, setActiveSignatory] = useState<DropdownResult<Account>>();
   const [signatoryOptions, setSignatoryOptions] = useState<DropdownOption<Account>[]>([]);
-  const [minBalance, setMinBalance] = useState<string>('0');
+
   const [transactions, setTransactions] = useState<Transaction[]>([]);
 
   const firstAccount = activeStakeAccounts[0]?.value;
@@ -87,6 +88,7 @@ const InitOperation = ({ api, chainId, accounts, asset, addressPrefix, onResult 
   }, [activeStakeAccounts.length, balances]);
 
   useEffect(() => {
+    // TODO: check signatory
     if (!activeBalances.length) {
       setMinBalance('0');
     } else if (activeBalances.length === 1) {
@@ -206,20 +208,17 @@ const InitOperation = ({ api, chainId, accounts, asset, addressPrefix, onResult 
     return validateBalanceForFeeDeposit(signerBalance, deposit, fee);
   };
 
-  const balanceRange = activeBalances.length > 1 ? ['0', minBalance] : minBalance;
+  const getBalanceRange = (): string | string[] => {
+    if (activeSignatory) return minBalance;
+
+    return activeBalances.length > 1 ? ['0', minBalance] : minBalance;
+  };
+
+  const canSubmit = activeStakeAccounts.length > 0 || Boolean(activeSignatory);
 
   return (
     <div className="flex flex-col gap-y-4 w-[440px] px-5 pb-4">
-      <MultiSelect
-        label={t('staking.bond.accountLabel')}
-        placeholder={t('staking.bond.accountPlaceholder')}
-        multiPlaceholder={t('staking.bond.manyAccountsPlaceholder')}
-        selectedIds={activeStakeAccounts.map((acc) => acc.id)}
-        options={stakeAccounts}
-        onChange={setActiveStakeAccounts}
-      />
-
-      {signatoryOptions.length > 1 && (
+      {accountIsMultisig ? (
         <Select
           label={t('staking.bond.accountLabel')}
           placeholder={t('staking.bond.accountPlaceholder')}
@@ -227,39 +226,50 @@ const InitOperation = ({ api, chainId, accounts, asset, addressPrefix, onResult 
           options={signatoryOptions}
           onChange={setActiveSignatory}
         />
+      ) : (
+        <MultiSelect
+          label={t('staking.bond.accountLabel')}
+          placeholder={t('staking.bond.accountPlaceholder')}
+          multiPlaceholder={t('staking.bond.manyAccountsPlaceholder')}
+          selectedIds={activeStakeAccounts.map((acc) => acc.id)}
+          options={stakeAccounts}
+          onChange={setActiveStakeAccounts}
+        />
       )}
 
       <OperationForm
         chainId={chainId}
-        canSubmit={activeStakeAccounts.length > 0}
+        canSubmit={canSubmit}
         addressPrefix={addressPrefix}
         fields={formFields}
         asset={asset}
-        balanceRange={balanceRange}
+        balanceRange={getBalanceRange()}
         validateBalance={validateBalance}
         validateFee={validateFee}
         validateDeposit={validateDeposit}
         onSubmit={submitBond}
         onAmountChange={setAmount}
       >
-        <div className="flex justify-between items-center gap-x-2">
-          <FootnoteText className="text-text-tertiary">{t('staking.bond.networkFeeLabel')}</FootnoteText>
-          <FootnoteText className="text-text-tertiary">
-            <Fee api={api} asset={asset} transaction={transactions[0]} onFeeChange={setFee} />
-          </FootnoteText>
-        </div>
-
-        {accountIsMultisig && (
-          <div className="flex justify-between items-center gap-x-2">
-            <div className="flex items-center gap-x-2">
-              <Icon className="text-text-tertiary" name="lock" size={12} />
-              <FootnoteText className="text-text-tertiary">{t('staking.bond.networkDepositLabel')}</FootnoteText>
+        <div className="flex flex-col gap-y-2">
+          {accountIsMultisig && (
+            <div className="flex justify-between items-center gap-x-2">
+              <div className="flex items-center gap-x-2">
+                <Icon className="text-text-tertiary" name="lock" size={12} />
+                <FootnoteText className="text-text-tertiary">{t('staking.bond.networkDepositLabel')}</FootnoteText>
+              </div>
+              <FootnoteText>
+                <Deposit api={api} asset={asset} threshold={firstAccount.threshold} onDepositChange={setDeposit} />
+              </FootnoteText>
             </div>
-            <FootnoteText>
-              <Deposit api={api} asset={asset} threshold={firstAccount.threshold} onDepositChange={setDeposit} />
+          )}
+
+          <div className="flex justify-between items-center gap-x-2">
+            <FootnoteText className="text-text-tertiary">{t('staking.bond.networkFeeLabel')}</FootnoteText>
+            <FootnoteText className="text-text-tertiary">
+              <Fee api={api} asset={asset} transaction={transactions[0]} onFeeChange={setFee} />
             </FootnoteText>
           </div>
-        )}
+        </div>
       </OperationForm>
     </div>
   );

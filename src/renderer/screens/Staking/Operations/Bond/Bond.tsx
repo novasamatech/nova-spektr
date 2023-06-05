@@ -242,6 +242,7 @@ const Bond = () => {
           api={api}
           validators={Object.values(validators)}
           accounts={accountsToStake}
+          signer={signer}
           amounts={bondValues}
           destination={destination}
           transaction={transactions[0]}

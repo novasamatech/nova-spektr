@@ -276,7 +276,7 @@ const Unstake = () => {
           {...explorersProps}
         >
           {isAlertOpen && (
-            <Alert title="BBBBB" className="px-[15px]" onClose={toggleAlert}>
+            <Alert title={t('staking.unstake.hintTitle')} onClose={toggleAlert}>
               <Alert.Item>
                 {t('staking.unstake.durationHint')} {'('}
                 <UnstakingDuration className="ml-1" api={api} />

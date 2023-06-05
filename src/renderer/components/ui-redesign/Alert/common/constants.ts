@@ -14,7 +14,7 @@ export const ViewStyle: Record<Variant, string> = {
 };
 
 export const IconStyle: Record<Variant, string> = {
-  info: 'text-icon-alert',
-  warn: 'text-icon-warning',
-  error: 'text-icon-negative',
+  info: 'shrink-0 text-icon-alert',
+  warn: 'shrink-0 text-icon-warning',
+  error: 'shrink-0 text-icon-negative',
 };

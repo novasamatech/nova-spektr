@@ -192,7 +192,7 @@ const StakeMore = () => {
           api={api}
           chainId={chainId}
           addressPrefix={addressPrefix}
-          identifiers={accountIds}
+          accounts={accounts}
           asset={asset}
           onResult={onInitResult}
         />
@@ -201,6 +201,7 @@ const StakeMore = () => {
         <Confirmation
           api={api}
           accounts={accounts}
+          signer={signer}
           transaction={transactions[0]}
           amounts={stakeMoreValues}
           multisigTx={multisigTx}
@@ -208,11 +209,7 @@ const StakeMore = () => {
           onGoBack={goToPrevStep}
           {...explorersProps}
         >
-          {isAlertOpen && (
-            <Alert title="PPPP" className="px-[15px]" onClose={toggleAlert}>
-              <Alert.Item>{t('staking.stakeMore.eraHint')}</Alert.Item>
-            </Alert>
-          )}
+          {isAlertOpen && <Alert title={t('staking.stakeMore.hintTitle')} onClose={toggleAlert} />}
         </Confirmation>
       )}
       {activeStep === Step.SCANNING &&

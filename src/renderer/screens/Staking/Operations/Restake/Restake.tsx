@@ -251,7 +251,7 @@ const Restake = () => {
           {...explorersProps}
         >
           {isAlertOpen && (
-            <Alert title="XXX" onClose={toggleAlert}>
+            <Alert title={t('staking.restake.hintTitle')} onClose={toggleAlert}>
               <Alert.Item>{t('staking.restake.eraHint')}</Alert.Item>
             </Alert>
           )}

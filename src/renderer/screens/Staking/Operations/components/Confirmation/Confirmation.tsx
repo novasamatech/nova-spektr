@@ -28,9 +28,9 @@ type Destination = {
 
 type Props = {
   api: ApiPromise;
-  title?: string;
   validators?: Validator[];
   accounts: Account[];
+  signer?: Account;
   amounts?: string[];
   destination?: Destination;
   asset: Asset;
@@ -46,6 +46,7 @@ export const Confirmation = ({
   api,
   validators,
   accounts,
+  signer,
   amounts = [],
   destination,
   asset,
@@ -78,12 +79,15 @@ export const Confirmation = ({
 
         <div className="flex flex-col gap-y-4">
           <div className="flex justify-between items-center gap-x-2">
-            <FootnoteText className="text-text-tertiary">{t('staking.confirmation.accountLabel')}</FootnoteText>
+            {signer ? (
+              <FootnoteText className="text-text-tertiary">{t('staking.confirmation.walletLabel')}</FootnoteText>
+            ) : (
+              <FootnoteText className="text-text-tertiary">{t('staking.confirmation.accountLabel')}</FootnoteText>
+            )}
             {singleAccount ? (
               <AddressWithExplorers
                 accountId={accounts[0].accountId}
                 name={accounts[0].name}
-                signType={accounts[0].signingType}
                 explorers={explorers}
                 addressPrefix={addressPrefix}
               />
@@ -96,6 +100,18 @@ export const Confirmation = ({
               </button>
             )}
           </div>
+
+          {signer && (
+            <div className="flex justify-between items-center gap-x-2">
+              <FootnoteText className="text-text-tertiary">{t('staking.confirmation.signatoryLabel')}</FootnoteText>
+              <AddressWithExplorers
+                accountId={signer.accountId}
+                name={signer.name}
+                explorers={explorers}
+                addressPrefix={addressPrefix}
+              />
+            </div>
+          )}
 
           {validatorsExist && (
             <div className="flex justify-between items-center gap-x-2">
@@ -115,19 +131,23 @@ export const Confirmation = ({
 
           <hr className="border-divider w-full" />
 
-          <div className="flex justify-between items-center gap-x-2">
-            <FootnoteText className="text-text-tertiary">
-              {t('staking.confirmation.rewardsDestinationLabel')}
-            </FootnoteText>
-            {destination?.type === RewardsDestination.RESTAKE && (
-              <FootnoteText>{t('staking.confirmation.restakeRewards')}</FootnoteText>
-            )}
-            {destination?.type === RewardsDestination.TRANSFERABLE && destination.address && (
-              <AddressWithExplorers address={destination.address} explorers={explorers} type="short" />
-            )}
-          </div>
+          {destination && (
+            <>
+              <div className="flex justify-between items-center gap-x-2">
+                <FootnoteText className="text-text-tertiary">
+                  {t('staking.confirmation.rewardsDestinationLabel')}
+                </FootnoteText>
+                {destination?.type === RewardsDestination.RESTAKE && (
+                  <FootnoteText>{t('staking.confirmation.restakeRewards')}</FootnoteText>
+                )}
+                {destination?.type === RewardsDestination.TRANSFERABLE && destination.address && (
+                  <AddressWithExplorers address={destination.address} explorers={explorers} type="short" />
+                )}
+              </div>
 
-          <hr className="border-divider w-full" />
+              <hr className="border-divider w-full" />
+            </>
+          )}
 
           {multisigTx && (
             <div className="flex justify-between items-center gap-x-2">

@@ -178,11 +178,7 @@ const SetValidators = () => {
           onGoBack={goToPrevStep}
           {...explorersProps}
         >
-          {isAlertOpen && (
-            <Alert title="YYYY" className="px-[15px]" onClose={toggleAlert}>
-              <Alert.Item>{t('staking.confirmation.hintNewValidators')}</Alert.Item>
-            </Alert>
-          )}
+          {isAlertOpen && <Alert title={t('staking.validators.hintTitle')} onClose={toggleAlert} />}
         </Confirmation>
       )}
       {activeStep === Step.SCANNING && (
