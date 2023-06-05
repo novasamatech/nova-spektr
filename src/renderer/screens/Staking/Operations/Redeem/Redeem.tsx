@@ -3,7 +3,6 @@ import { useEffect, useState } from 'react';
 import { Navigate, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 
 import Paths from '@renderer/routes/paths';
-import { ButtonBack, ButtonLink, Icon } from '@renderer/components/ui';
 import { ChainLoader } from '@renderer/components/common';
 import { useI18n } from '@renderer/context/I18nContext';
 import { useNetworkContext } from '@renderer/context/NetworkContext';
@@ -15,13 +14,15 @@ import { useStakingData } from '@renderer/services/staking/stakingDataService';
 import { useChains } from '@renderer/services/network/chainsService';
 import { useEra } from '@renderer/services/staking/eraService';
 import InitOperation, { RedeemResult } from './InitOperation/InitOperation';
-import { Confirmation, MultiScanning, Signing, Submit, SingleScanning } from '../components';
+import { Confirmation, MultiScanning, Signing, Submit, SingleScanning, NoAsset } from '../components';
 import { getRelaychainAsset } from '@renderer/shared/utils/assets';
 import { useCountdown, useToggle } from '@renderer/shared/hooks';
 import { Account, MultisigAccount, isMultisig } from '@renderer/domain/account';
 import { toAddress } from '@renderer/shared/utils/address';
 import { useTransaction } from '@renderer/services/transaction/transactionService';
 import { DEFAULT_TRANSITION } from '@renderer/shared/utils/constants';
+import OperationModalTitle from '@renderer/screens/Operations/components/OperationModalTitle';
+import { BaseModal } from '@renderer/components/ui-redesign';
 
 const enum Step {
   INIT,
@@ -31,15 +32,7 @@ const enum Step {
   SUBMIT,
 }
 
-const HeaderTitles: Record<Step, string> = {
-  [Step.INIT]: 'staking.redeem.initRedeemSubtitle',
-  [Step.CONFIRMATION]: 'staking.redeem.confirmRedeemSubtitle',
-  [Step.SCANNING]: 'staking.bond.scanSubtitle',
-  [Step.SIGNING]: 'staking.bond.signSubtitle',
-  [Step.SUBMIT]: 'staking.bond.submitSubtitle',
-};
-
-const Unstake = () => {
+const Redeem = () => {
   const { t } = useI18n();
   const navigate = useNavigate();
   const { getTransactionHash } = useTransaction();
@@ -53,7 +46,7 @@ const Unstake = () => {
 
   const dbAccounts = getLiveAccounts();
 
-  const [_, toggleRedeemModal] = useToggle(true);
+  const [isRedeemModalOpen, toggleRedeemModal] = useToggle(true);
 
   const [activeStep, setActiveStep] = useState<Step>(Step.INIT);
   const [chainName, setChainName] = useState('...');
@@ -136,32 +129,14 @@ const Unstake = () => {
     setTimeout(() => navigate(Paths.STAKING), DEFAULT_TRANSITION);
   };
 
-  const headerContent = (
-    <div className="flex items-center gap-x-2.5 mb-9 mt-5 px-5">
-      <ButtonBack onCustomReturn={goToPrevStep}>
-        <p className="font-semibold text-2xl text-neutral-variant">{t('staking.title')}</p>
-        <p className="font-semibold text-2xl text-neutral">/</p>
-        <h1 className="font-semibold text-2xl text-neutral">{t(HeaderTitles[activeStep])}</h1>
-      </ButtonBack>
-    </div>
-  );
-
   if (!asset) {
     return (
-      <div className="flex flex-col h-full relative">
-        {headerContent}
-
-        <div className="flex w-full h-full flex-col items-center justify-center">
-          <Icon name="noResults" size={380} />
-          <p className="text-neutral text-3xl font-bold">{t('staking.bond.noStakingAssetLabel')}</p>
-          <p className="text-neutral-variant text-base font-normal">
-            {t('staking.bond.noStakingAssetDescription', { chainName: name })}
-          </p>
-          <ButtonLink className="mt-5" to={Paths.STAKING} variant="fill" pallet="primary" weight="lg">
-            {t('staking.bond.goToStakingButton')}
-          </ButtonLink>
-        </div>
-      </div>
+      <NoAsset
+        title={t('staking.redeem.title')}
+        chainName={name}
+        isOpen={isRedeemModalOpen}
+        onClose={closeRedeemModal}
+      />
     );
   }
 
@@ -203,7 +178,7 @@ const Unstake = () => {
     };
   };
 
-  const onRedeemResult = ({ accounts, signer, amounts, description }: RedeemResult) => {
+  const onInitResult = ({ accounts, signer, amounts, description }: RedeemResult) => {
     const transactions = getRedeemTxs(accounts);
 
     if (signer && isMultisig(accounts[0])) {
@@ -232,16 +207,22 @@ const Unstake = () => {
   const explorersProps = { explorers, addressPrefix, asset };
 
   return (
-    <div className="flex flex-col h-full relative">
-      {headerContent}
+    <BaseModal
+      closeButton
+      contentClass=""
+      panelClass="w-max"
+      isOpen={isRedeemModalOpen}
+      title={<OperationModalTitle title={`${t('staking.redeem.title', { asset: asset.symbol })}`} chainId={chainId} />}
+      onClose={closeRedeemModal}
+    >
       {activeStep === Step.INIT && (
         <InitOperation
           api={api}
           chainId={chainId}
-          identifiers={accountIds}
+          accounts={accounts}
           era={era}
           staking={staking}
-          onResult={onRedeemResult}
+          onResult={onInitResult}
           {...explorersProps}
         />
       )}
@@ -249,6 +230,7 @@ const Unstake = () => {
         <Confirmation
           api={api}
           accounts={accounts}
+          signer={signer}
           amounts={redeemAmounts}
           transaction={transactions[0]}
           multisigTx={multisigTx}
@@ -303,8 +285,8 @@ const Unstake = () => {
           {...explorersProps}
         />
       )}
-    </div>
+    </BaseModal>
   );
 };
 
-export default Unstake;
+export default Redeem;

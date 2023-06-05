@@ -130,7 +130,7 @@ export const Validators = ({ api, chainId, asset, explorers, onGoBack, onResult 
   );
 
   return (
-    <div className="w-[784px] max-h-[660px] pb-4">
+    <div className="w-[784px] max-h-[660px] py-4">
       <div className="flex items-center gap-x-1 px-5">
         <SmallTitleText as="p">{t('staking.validators.selectedValidatorsLabel')}</SmallTitleText>
         {isValidatorsLoading ? (

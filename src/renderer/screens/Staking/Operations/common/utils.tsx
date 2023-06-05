@@ -5,7 +5,6 @@ import { ReactNode } from 'react';
 import { Account, MultisigAccount } from '@renderer/domain/account';
 import { Address, SigningType } from '@renderer/domain/shared-kernel';
 import { DropdownOption } from '@renderer/components/ui/Dropdowns/common/types';
-import { Balance } from '@renderer/components/ui';
 import { Balance as AccountBalance } from '@renderer/domain/balance';
 import {
   stakeableAmount,
@@ -145,12 +144,8 @@ export const getRedeemAccountOption = <T extends Account | MultisigAccount>(
 ): DropdownOption<T> => {
   const address = toAddress(account.accountId, { prefix: addressPrefix });
   const canDisplayRedeem = stake && era;
-  const balanceContent = canDisplayRedeem && (
-    <div className="flex items-center gap-x-1">
-      <Balance value={redeemableAmount(stake.unlocking, era)} precision={asset.precision} symbol={asset.symbol} />
-    </div>
-  );
 
+  const balanceContent = canDisplayRedeem && getBalance(redeemableAmount(stake.unlocking, era), asset);
   const element = getElement(address, account.name, balanceContent);
 
   return { id: account.accountId, value: account, element };

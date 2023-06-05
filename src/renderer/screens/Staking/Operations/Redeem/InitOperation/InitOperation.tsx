@@ -1,32 +1,30 @@
 import { ApiPromise } from '@polkadot/api';
 import { BN, BN_ZERO } from '@polkadot/util';
 import { useEffect, useState } from 'react';
-import cn from 'classnames';
 
-import { Fee, ActiveAddress, Deposit } from '@renderer/components/common';
-import { Select, Block, Balance, Plate, Dropdown, Icon } from '@renderer/components/ui';
+import { Fee, Deposit } from '@renderer/components/common';
+import { Icon } from '@renderer/components/ui';
 import { DropdownOption, DropdownResult } from '@renderer/components/ui/Dropdowns/common/types';
 import { useI18n } from '@renderer/context/I18nContext';
 import { Asset } from '@renderer/domain/asset';
 import { Balance as AccountBalance } from '@renderer/domain/balance';
-import { ChainId, AccountId, SigningType } from '@renderer/domain/shared-kernel';
+import { ChainId, AccountId } from '@renderer/domain/shared-kernel';
 import { Transaction, TransactionType } from '@renderer/domain/transaction';
 import { useAccount } from '@renderer/services/account/accountService';
 import { useBalance } from '@renderer/services/balance/balanceService';
-import { redeemableAmount, formatBalance, transferableAmount } from '@renderer/shared/utils/balance';
+import { redeemableAmount, formatBalance } from '@renderer/shared/utils/balance';
 import { nonNullable } from '@renderer/shared/utils/functions';
+import { toAddress } from '@renderer/shared/utils/address';
+import { Account, isMultisig } from '@renderer/domain/account';
+import { StakingMap } from '@renderer/services/staking/common/types';
+import { MultiSelect, Select, FootnoteText } from '@renderer/components/ui-redesign';
+import { OperationForm } from '../../components';
 import {
-  getTotalAccounts,
   validateBalanceForFee,
   getSignatoryOptions,
   validateBalanceForFeeDeposit,
   getRedeemAccountOption,
 } from '../../common/utils';
-import { OperationForm } from '../../components';
-import { toAddress } from '@renderer/shared/utils/address';
-import { Account, isMultisig } from '@renderer/domain/account';
-import { Explorer } from '@renderer/domain/chain';
-import { StakingMap } from '@renderer/services/staking/common/types';
 
 export type RedeemResult = {
   accounts: Account[];
@@ -38,29 +36,18 @@ export type RedeemResult = {
 type Props = {
   api: ApiPromise;
   chainId: ChainId;
+  accounts: Account[];
   addressPrefix: number;
-  explorers?: Explorer[];
-  identifiers: string[];
   era?: number;
   staking: StakingMap;
   asset: Asset;
-  onResult: (stakeMore: RedeemResult) => void;
+  onResult: (data: RedeemResult) => void;
 };
 
-const InitOperation = ({
-  api,
-  chainId,
-  addressPrefix,
-  explorers,
-  identifiers,
-  staking,
-  era,
-  asset,
-  onResult,
-}: Props) => {
+const InitOperation = ({ api, chainId, accounts, addressPrefix, staking, era, asset, onResult }: Props) => {
   const { t } = useI18n();
-  const { getLiveBalance, getLiveAssetBalances } = useBalance();
   const { getLiveAccounts } = useAccount();
+  const { getLiveBalance, getLiveAssetBalances } = useBalance();
 
   const dbAccounts = getLiveAccounts();
 
@@ -68,22 +55,15 @@ const InitOperation = ({
   const [deposit, setDeposit] = useState('');
   const [redeemAmounts, setRedeemAmounts] = useState<string[]>([]);
 
-  const [transferableRange, setTransferableRange] = useState<[string, string]>(['0', '0']);
-  const [transactions, setTransactions] = useState<Transaction[]>([]);
-
   const [redeemAccounts, setRedeemAccounts] = useState<DropdownOption<Account>[]>([]);
   const [activeRedeemAccounts, setActiveRedeemAccounts] = useState<DropdownResult<Account>[]>([]);
 
   const [activeSignatory, setActiveSignatory] = useState<DropdownResult<Account>>();
   const [signatoryOptions, setSignatoryOptions] = useState<DropdownOption<Account>[]>([]);
 
+  // const [transferableRange, setTransferableRange] = useState<[string, string]>(['0', '0']);
   const [activeBalances, setActiveBalances] = useState<AccountBalance[]>([]);
-
-  const totalAccounts = getTotalAccounts(dbAccounts, identifiers);
-
-  const accountIds = totalAccounts.map((account) => account.accountId);
-  const signerBalance = getLiveBalance(activeSignatory?.value.accountId || '0x0', chainId, asset.assetId.toString());
-  const balances = getLiveAssetBalances(accountIds, chainId, asset.assetId.toString());
+  const [transactions, setTransactions] = useState<Transaction[]>([]);
 
   const totalRedeem = redeemAmounts.reduce((acc, amount) => acc.add(new BN(amount)), BN_ZERO).toString();
 
@@ -94,6 +74,10 @@ const InitOperation = ({
     ? [{ name: 'amount', value: redeemBalance.value, disabled: true }, { name: 'description' }]
     : [{ name: 'amount', value: redeemBalance.value, disabled: true }];
 
+  const accountIds = accounts.map((account) => account.accountId);
+  const signerBalance = getLiveBalance(activeSignatory?.value.accountId || '0x0', chainId, asset.assetId.toString());
+  const balances = getLiveAssetBalances(accountIds, chainId, asset.assetId.toString());
+
   useEffect(() => {
     const balancesMap = new Map(balances.map((balance) => [balance.accountId, balance]));
     const newActiveBalances = activeRedeemAccounts
@@ -103,31 +87,32 @@ const InitOperation = ({
     setActiveBalances(newActiveBalances);
   }, [activeRedeemAccounts.length, balances]);
 
+  // useEffect(() => {
+  //   // TODO: research what is this
+  //   if (signerBalance) {
+  //     const balance = transferableAmount(signerBalance);
+  //     setTransferableRange([balance, balance]);
+  //   } else if (activeRedeemAccounts.length) {
+  //     const balancesMap = new Map(activeBalances.map((b) => [b.accountId, b]));
+  //     const transferable = activeRedeemAccounts.map((a) => transferableAmount(balancesMap.get(a.id as AccountId)));
+  //     const minMaxTransferable = transferable.reduce<[string, string]>(
+  //       (acc, balance) => {
+  //         if (balance) {
+  //           acc[0] = new BN(balance).lt(new BN(acc[0])) ? balance : acc[0];
+  //           acc[1] = new BN(balance).gt(new BN(acc[1])) ? balance : acc[1];
+  //         }
+  //
+  //         return acc;
+  //       },
+  //       [transferable?.[0], transferable?.[0]],
+  //     );
+  //
+  //     setTransferableRange(minMaxTransferable);
+  //   }
+  // }, [activeRedeemAccounts.length, signerBalance, activeBalances]);
+
   useEffect(() => {
-    if (signerBalance) {
-      const balance = transferableAmount(signerBalance);
-      setTransferableRange([balance, balance]);
-    } else if (activeRedeemAccounts.length) {
-      const balancesMap = new Map(activeBalances.map((b) => [b.accountId, b]));
-      const transferable = activeRedeemAccounts.map((a) => transferableAmount(balancesMap.get(a.id as AccountId)));
-      const minMaxTransferable = transferable.reduce<[string, string]>(
-        (acc, balance) => {
-          if (balance) {
-            acc[0] = new BN(balance).lt(new BN(acc[0])) ? balance : acc[0];
-            acc[1] = new BN(balance).gt(new BN(acc[1])) ? balance : acc[1];
-          }
-
-          return acc;
-        },
-        [transferable?.[0], transferable?.[0]],
-      );
-
-      setTransferableRange(minMaxTransferable);
-    }
-  }, [activeRedeemAccounts.length, signerBalance, activeBalances]);
-
-  useEffect(() => {
-    const formattedAccounts = totalAccounts.map((account) => {
+    const formattedAccounts = accounts.map((account) => {
       const address = toAddress(account.accountId, { prefix: addressPrefix });
       const stake = staking[address];
 
@@ -135,7 +120,7 @@ const InitOperation = ({
     });
 
     setRedeemAccounts(formattedAccounts);
-  }, [totalAccounts.length, staking, era]);
+  }, [staking, era]);
 
   useEffect(() => {
     if (!era) return;
@@ -182,28 +167,28 @@ const InitOperation = ({
     setTransactions(newTransactions);
   }, [activeRedeemAccounts.length]);
 
-  const {
-    value: formattedValue,
-    decimalPlaces,
-    suffix,
-  } = formatBalance(
-    redeemAmounts.reduce((acc, amount) => acc.add(new BN(amount)), BN_ZERO).toString(),
-    asset.precision,
-  );
-
-  const redeamAmountFormatted = t('assetBalance.numberWithSuffix', {
-    value: formattedValue,
-    maximumFractionDigits: decimalPlaces,
-    suffix,
-  });
-
   const submitRedeem = (data: { description?: string }) => {
+    const {
+      value: formattedValue,
+      decimalPlaces,
+      suffix,
+    } = formatBalance(
+      redeemAmounts.reduce((acc, amount) => acc.add(new BN(amount)), BN_ZERO).toString(),
+      asset.precision,
+    );
+
+    const redeemAmountFormatted = t('assetBalance.numberWithSuffix', {
+      value: formattedValue,
+      maximumFractionDigits: decimalPlaces,
+      suffix,
+    });
+
     onResult({
       amounts: redeemAmounts,
       accounts: activeRedeemAccounts.map((activeOption) => activeOption.value),
       ...(accountIsMultisig && {
         description:
-          data.description || t('transactionMessage.redeem', { amount: redeamAmountFormatted, asset: asset.symbol }),
+          data.description || t('transactionMessage.redeem', { amount: redeemAmountFormatted, asset: asset.symbol }),
         signer: activeSignatory?.value,
       }),
     });
@@ -226,62 +211,43 @@ const InitOperation = ({
     return validateBalanceForFeeDeposit(signerBalance, deposit, fee);
   };
 
-  const transferable =
-    transferableRange[0] === transferableRange[1] ? (
-      <Balance value={transferableRange[0]} precision={asset.precision} />
-    ) : (
-      <>
-        <Balance value={transferableRange[0]} precision={asset.precision} />
-        &nbsp;{'-'}&nbsp;
-        <Balance value={transferableRange[1]} precision={asset.precision} />
-      </>
-    );
+  // const transferable =
+  //   transferableRange[0] === transferableRange[1] ? (
+  //     <BalanceNew value={transferableRange[0]} asset={asset} />
+  //   ) : (
+  //     <>
+  //       <BalanceNew value={transferableRange[0]} asset={asset} />
+  //       &nbsp;{'-'}&nbsp;
+  //       <BalanceNew value={transferableRange[1]} asset={asset} />
+  //     </>
+  //   );
+
+  const canSubmit = activeRedeemAccounts.length > 0 || Boolean(activeSignatory);
 
   return (
-    <Plate as="section" className="w-[600px] flex flex-col items-center mx-auto gap-y-2.5">
-      <Block className="flex flex-col gap-y-2 p-5">
-        {redeemAccounts.length > 1 ? (
-          <Select
-            weight="lg"
-            placeholder={t('staking.bond.selectStakeAccountLabel')}
-            summary={t('staking.bond.selectStakeAccountSummary')}
-            activeIds={activeRedeemAccounts.map((acc) => acc.id)}
-            options={redeemAccounts}
-            onChange={setActiveRedeemAccounts}
-          />
-        ) : (
-          <ActiveAddress
-            address={firstAccount?.accountId}
-            accountName={firstAccount?.name}
-            signingType={firstAccount?.signingType}
-            explorers={explorers}
-            addressPrefix={addressPrefix}
-          />
-        )}
-
-        {accountIsMultisig &&
-          (signatoryOptions.length > 1 ? (
-            <Dropdown
-              weight="lg"
-              placeholder={t('general.input.signerLabel')}
-              activeId={activeSignatory?.id}
-              options={signatoryOptions}
-              onChange={setActiveSignatory}
-            />
-          ) : (
-            <ActiveAddress
-              address={signatoryOptions[0]?.value.accountId}
-              accountName={signatoryOptions[0]?.value.name}
-              signingType={SigningType.PARITY_SIGNER}
-              explorers={explorers}
-              addressPrefix={addressPrefix}
-            />
-          ))}
-      </Block>
+    <div className="flex flex-col gap-y-4 w-[440px] px-5 py-4">
+      {accountIsMultisig ? (
+        <Select
+          label={t('staking.bond.signatoryLabel')}
+          placeholder={t('staking.bond.signatoryPlaceholder')}
+          selectedId={activeSignatory?.id}
+          options={signatoryOptions}
+          onChange={setActiveSignatory}
+        />
+      ) : (
+        <MultiSelect
+          label={t('staking.bond.accountLabel')}
+          placeholder={t('staking.bond.accountPlaceholder')}
+          multiPlaceholder={t('staking.bond.manyAccountsPlaceholder')}
+          selectedIds={activeRedeemAccounts.map((acc) => acc.id)}
+          options={redeemAccounts}
+          onChange={setActiveRedeemAccounts}
+        />
+      )}
 
       <OperationForm
         chainId={chainId}
-        canSubmit={activeRedeemAccounts.length > 0}
+        canSubmit={canSubmit}
         addressPrefix={addressPrefix}
         fields={formFields}
         asset={asset}
@@ -290,49 +256,51 @@ const InitOperation = ({
         onSubmit={submitRedeem}
       >
         {(errorType) => {
-          const hasFeeError = ['insufficientBalanceForFee', 'insufficientBalanceForDeposit'].includes(errorType);
+          // const hasFeeError = ['insufficientBalanceForFee', 'insufficientBalanceForDeposit'].includes(errorType);
 
           return (
             <>
-              <div className="flex justify-between items-center uppercase text-neutral-variant text-2xs">
-                <p>{t('staking.unstake.transferable')}</p>
+              {/*<div className="flex justify-between items-center uppercase text-neutral-variant text-2xs">*/}
+              {/*  <p>{t('staking.unstake.transferable')}</p>*/}
 
-                <div className={cn('flex font-semibold', hasFeeError ? 'text-error' : 'text-neutral')}>
-                  {hasFeeError && <Icon className="text-error mr-1" name="warnCutout" size={12} />}
-                  {transferable}&nbsp;{asset.symbol}
-                </div>
-              </div>
+              {/*  <div className={cn('flex font-semibold', hasFeeError ? 'text-error' : 'text-neutral')}>*/}
+              {/*    {hasFeeError && <Icon className="text-error mr-1" name="warnCutout" size={12} />}*/}
+              {/*    {transferable}&nbsp;{asset.symbol}*/}
+              {/*  </div>*/}
+              {/*</div>*/}
 
-              <div className="grid grid-flow-row grid-cols-2 items-center gap-y-5">
-                <p className="uppercase text-neutral-variant text-2xs">
-                  {t('staking.unstake.networkFee', { count: activeRedeemAccounts.length })}
-                </p>
-
-                <Fee
-                  className="text-neutral justify-self-end text-2xs font-semibold"
-                  api={api}
-                  asset={asset}
-                  transaction={transactions[0]}
-                  onFeeChange={setFee}
-                />
+              <div className="flex flex-col gap-y-2">
                 {accountIsMultisig && (
-                  <>
-                    <p className="uppercase text-neutral-variant text-2xs">{t('transfer.networkDeposit')}</p>
-                    <Deposit
-                      className="text-neutral justify-self-end text-2xs font-semibold"
-                      api={api}
-                      asset={asset}
-                      threshold={firstAccount.threshold}
-                      onDepositChange={setDeposit}
-                    />
-                  </>
+                  <div className="flex justify-between items-center gap-x-2">
+                    <div className="flex items-center gap-x-2">
+                      <Icon className="text-text-tertiary" name="lock" size={12} />
+                      <FootnoteText className="text-text-tertiary">
+                        {t('staking.bond.networkDepositLabel')}
+                      </FootnoteText>
+                    </div>
+                    <FootnoteText>
+                      <Deposit
+                        api={api}
+                        asset={asset}
+                        threshold={firstAccount.threshold}
+                        onDepositChange={setDeposit}
+                      />
+                    </FootnoteText>
+                  </div>
                 )}
+
+                <div className="flex justify-between items-center gap-x-2">
+                  <FootnoteText className="text-text-tertiary">{t('staking.bond.networkFeeLabel')}</FootnoteText>
+                  <FootnoteText className="text-text-tertiary">
+                    <Fee api={api} asset={asset} transaction={transactions[0]} onFeeChange={setFee} />
+                  </FootnoteText>
+                </div>
               </div>
             </>
           );
         }}
       </OperationForm>
-    </Plate>
+    </div>
   );
 };
 

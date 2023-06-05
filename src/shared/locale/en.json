@@ -527,6 +527,8 @@
       "rewardsDestinationLabel": "Rewards destination",
       "selectNetworkLabel": "Select network",
       "selectStakeAccountSummary": "Multiple accounts",
+      "signatoryLabel": "Signatory",
+      "signatoryPlaceholder": "Select Signatory",
       "submitSuccess": "You funds staked successfully",
       "title": "Start Staking",
       "transferableRewards": "Transferable rewards"
@@ -563,7 +565,8 @@
     },
     "destination": {
       "initDestinationSubtitle": "Rewards destination",
-      "submitSuccess": "Rewards destination has been changed"
+      "submitSuccess": "Rewards destination has been changed",
+      "title": "Change rewards destination"
     },
     "loadingMessage": "Connecting to { chainName }",
     "nominators": {
@@ -608,16 +611,17 @@
       "availablePlaceholder": "Available",
       "confirmRedeemSubtitle": "Confirmation",
       "initRedeemSubtitle": "Redeem",
-      "submitSuccess": "Unstaked tokens have been withdrawn"
+      "submitSuccess": "Unstaked tokens have been withdrawn",
+      "title": "Withdraw unstaked"
     },
     "requiredAmountError": "Please, enter amount",
     "restake": {
       "amountPlaceholder": "Amount",
       "confirmRestakeSubtitle": "Confirmation",
-      "eraHint": "Returned tokens will be counted from the next era",
-      "hintTitle": "Learn more about restake",
+      "hintTitle": "Returned tokens will be counted from the next era",
       "initRestakeSubtitle": "Restake",
       "submitSuccess": "You successfully restaked tokens",
+      "title": "Return to stake",
       "transferable": "Transferable",
       "unstakingPlaceholder": "Unstaking"
     },
@@ -642,6 +646,7 @@
       "redeemHint": "After unstaking period don’t forget to redeem your tokens",
       "stakedPlaceholder": "Staked",
       "submitSuccess": "Your funds have been unstaked",
+      "title": "Unstake",
       "transferable": "Transferable"
     },
     "validators": {
@@ -666,6 +671,7 @@
       "slashedPopoverTitle": "Slashed",
       "submitSuccess": "Validators have been successfully set",
       "subtitle": "Validators",
+      "title": "Set validators",
       "totalStakeTableHeader": "Total stake",
       "validatorsTableHeader": "Accounts"
     },

@@ -527,6 +527,8 @@
       "rewardsDestinationLabel": "Выплата наград",
       "selectNetworkLabel": "Выберите сеть",
       "selectStakeAccountSummary": "Несколько аккаунтов",
+      "signatoryLabel": "Подписант",
+      "signatoryPlaceholder": "Выберите подписанта",
       "submitSuccess": "Стейкинг прошел успешно",
       "title": "Начало Стейкинга",
       "transferableRewards": "Вывести награды"
@@ -563,7 +565,8 @@
     },
     "destination": {
       "initDestinationSubtitle": "Выплата наград",
-      "submitSuccess": "Адрес наград был успешно измененм"
+      "submitSuccess": "Адрес наград был успешно измененм",
+      "title": "Смена адреса наград"
     },
     "loadingMessage": "Подключаемся к { chainName }",
     "nominators": {
@@ -608,16 +611,17 @@
       "availablePlaceholder": "Доступно",
       "confirmRedeemSubtitle": "Подтверждение",
       "initRedeemSubtitle": "Вывести",
-      "submitSuccess": "Анстейк токены были успешно возвращены"
+      "submitSuccess": "Анстейк токены были успешно возвращены",
+      "title": "Вывод анстейк"
     },
     "requiredAmountError": "Пожалуйста, введите сумму",
     "restake": {
       "amountPlaceholder": "Сумма",
       "confirmRestakeSubtitle": "Подтверждение",
-      "eraHint": "Возвращённые токены начнут учитываться начиная со следующей эры",
-      "hintTitle": "Узнайте больше о рестейке",
+      "hintTitle": "Возвращённые токены начнут учитываться начиная со следующей эры",
       "initRestakeSubtitle": "Вернуть в стейк",
       "submitSuccess": "Вы успешно вернули токены в стейк",
+      "title": "Вернуть в стейк",
       "transferable": "Доступно",
       "unstakingPlaceholder": "Выводится из стейка"
     },
@@ -642,6 +646,7 @@
       "redeemHint": "После периода вывода из стейкинга не забудьте redeem ваши токены",
       "stakedPlaceholder": "В стейке",
       "submitSuccess": "Вы успешно забрали токены",
+      "title": "Анстейк",
       "transferable": "Доступно"
     },
     "validators": {
@@ -666,6 +671,7 @@
       "slashedPopoverTitle": "Урезан",
       "submitSuccess": "Валидаторы были успешно выбраны",
       "subtitle": "Валидаторы",
+      "title": "Выбор валидаторов",
       "totalStakeTableHeader": "Общий стейк",
       "validatorsTableHeader": "Аккаунты"
     },

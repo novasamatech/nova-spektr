@@ -47,9 +47,9 @@ type Props = {
 
 const InitOperation = ({ api, chainId, accounts, asset, addressPrefix, onResult }: Props) => {
   const { t } = useI18n();
-  const { getLiveBalance, getLiveAssetBalances } = useBalance();
   const { getLiveAccounts } = useAccount();
   const { getMaxValidators } = useValidators();
+  const { getLiveBalance, getLiveAssetBalances } = useBalance();
 
   const dbAccounts = getLiveAccounts();
 
@@ -58,7 +58,6 @@ const InitOperation = ({ api, chainId, accounts, asset, addressPrefix, onResult 
   const [amount, setAmount] = useState('');
 
   const [minBalance, setMinBalance] = useState('0');
-  const [activeBalances, setActiveBalances] = useState<AccountBalance[]>([]);
 
   const [stakeAccounts, setStakeAccounts] = useState<DropdownOption<Account | MultisigAccount>[]>([]);
   const [activeStakeAccounts, setActiveStakeAccounts] = useState<DropdownResult<Account | MultisigAccount>[]>([]);
@@ -67,6 +66,7 @@ const InitOperation = ({ api, chainId, accounts, asset, addressPrefix, onResult 
   const [signatoryOptions, setSignatoryOptions] = useState<DropdownOption<Account>[]>([]);
 
   const [transactions, setTransactions] = useState<Transaction[]>([]);
+  const [activeBalances, setActiveBalances] = useState<AccountBalance[]>([]);
 
   const firstAccount = activeStakeAccounts[0]?.value;
   const accountIsMultisig = isMultisig(firstAccount);
@@ -167,7 +167,7 @@ const InitOperation = ({ api, chainId, accounts, asset, addressPrefix, onResult 
     });
 
     setTransactions(bondPayload);
-  }, [activeStakeAccounts.length, activeSignatory, amount]);
+  }, [activeStakeAccounts.length, amount]);
 
   const submitBond = (data: { amount: string; destination?: string; description?: string }) => {
     const selectedAccountIds = activeStakeAccounts.map((a) => a.id);
@@ -217,11 +217,11 @@ const InitOperation = ({ api, chainId, accounts, asset, addressPrefix, onResult 
   const canSubmit = activeStakeAccounts.length > 0 || Boolean(activeSignatory);
 
   return (
-    <div className="flex flex-col gap-y-4 w-[440px] px-5 pb-4">
+    <div className="flex flex-col gap-y-4 w-[440px] px-5 py-4">
       {accountIsMultisig ? (
         <Select
-          label={t('staking.bond.accountLabel')}
-          placeholder={t('staking.bond.accountPlaceholder')}
+          label={t('staking.bond.signatoryLabel')}
+          placeholder={t('staking.bond.signatoryPlaceholder')}
           selectedId={activeSignatory?.id}
           options={signatoryOptions}
           onChange={setActiveSignatory}

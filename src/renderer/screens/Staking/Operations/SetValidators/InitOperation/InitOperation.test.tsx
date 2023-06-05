@@ -45,21 +45,19 @@ jest.mock('../../components', () => ({
     return (
       <div>
         <p>operationForm</p>
-        {children}
+        {children()}
       </div>
     );
   },
 }));
 
-describe('screens/Staking/StakeMore/InitOperation', () => {
+describe('screens/Staking/Unstake/InitOperation', () => {
   const defaultProps = {
     api: {} as ApiPromise,
     chainId: '0x123' as ChainId,
-    accounts: [],
-    staking: {},
-    era: 123,
     addressPrefix: 0,
-    identifiers: ['1'],
+    staking: {},
+    accounts: [],
     asset: { assetId: 1, symbol: 'DOT', precision: 10 } as Asset,
     onResult: noop,
   };
@@ -70,6 +68,12 @@ describe('screens/Staking/StakeMore/InitOperation', () => {
     });
 
     const form = screen.getByText('operationForm');
+    const durationHint = screen.getByText(/staking.unstake.durationHint/);
+    const noRewardsHint = screen.getByText('staking.unstake.noRewardsHint');
+    const redeemHint = screen.getByText('staking.unstake.redeemHint');
     expect(form).toBeInTheDocument();
+    expect(durationHint).toBeInTheDocument();
+    expect(noRewardsHint).toBeInTheDocument();
+    expect(redeemHint).toBeInTheDocument();
   });
 });

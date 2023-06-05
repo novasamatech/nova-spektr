@@ -64,7 +64,7 @@ describe('screens/Staking/Unstake/InitOperation', () => {
     chainId: '0x123' as ChainId,
     addressPrefix: 0,
     staking: {},
-    identifiers: ['1'],
+    accounts: [],
     asset: { assetId: 1, symbol: 'DOT', precision: 10 } as Asset,
     onResult: noop,
   };

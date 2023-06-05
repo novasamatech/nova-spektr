@@ -188,14 +188,7 @@ const StakeMore = () => {
       onClose={closeStakeMoreModal}
     >
       {activeStep === Step.INIT && (
-        <InitOperation
-          api={api}
-          chainId={chainId}
-          addressPrefix={addressPrefix}
-          accounts={accounts}
-          asset={asset}
-          onResult={onInitResult}
-        />
+        <InitOperation api={api} chainId={chainId} accounts={accounts} onResult={onInitResult} {...explorersProps} />
       )}
       {activeStep === Step.CONFIRMATION && (
         <Confirmation

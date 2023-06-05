@@ -47,7 +47,10 @@ const Fee = ({ api, multiply = 1, asset, transaction, className, onFeeChange }: 
 
   if (isLoading) {
     return (
-      <span className={cnTw('animate-pulse bg-shade-20 rounded-lg w-20 h-2.5', className)} data-testid="fee-loader" />
+      <span
+        className={cnTw('block animate-pulse bg-shade-20 rounded-lg w-20 h-2.5', className)}
+        data-testid="fee-loader"
+      />
     );
   }
 

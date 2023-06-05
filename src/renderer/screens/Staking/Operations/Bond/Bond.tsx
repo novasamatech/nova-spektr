@@ -22,7 +22,7 @@ import Paths from '@renderer/routes/paths';
 import { DEFAULT_TRANSITION } from '@renderer/shared/utils/constants';
 import OperationModalTitle from '@renderer/screens/Operations/components/OperationModalTitle';
 import { useAccount } from '@renderer/services/account/accountService';
-import { AccountDS } from '@renderer/services/storage';
+import { DestinationType } from '../common/types';
 
 const enum Step {
   INIT,
@@ -32,11 +32,6 @@ const enum Step {
   SIGNING,
   SUBMIT,
 }
-
-type Destination = {
-  address?: Address;
-  type: RewardsDestination;
-};
 
 const Bond = () => {
   const { t } = useI18n();
@@ -57,14 +52,14 @@ const Bond = () => {
   const [accountsToStake, setAccountsToStake] = useState<Account[]>([]);
 
   const [stakeAmount, setStakeAmount] = useState<string>('');
-  const [destination, setDestination] = useState<Destination>();
+  const [destination, setDestination] = useState<DestinationType>();
   const [description, setDescription] = useState('');
 
   const [multisigTx, setMultisigTx] = useState<Transaction>();
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [unsignedTransactions, setUnsignedTransactions] = useState<UnsignedTransaction[]>([]);
 
-  const [accounts, setAccounts] = useState<AccountDS[]>([]);
+  const [accounts, setAccounts] = useState<Account[]>([]);
   const [signer, setSigner] = useState<Account>();
   const [signatures, setSignatures] = useState<HexString[]>([]);
 
@@ -132,6 +127,19 @@ const Bond = () => {
     setActiveStep(Step.VALIDATORS);
   };
 
+  const onSelectValidators = (validators: ValidatorMap) => {
+    const transactions = getBondTxs(Object.keys(validators));
+
+    if (signer && isMultisig(accountsToStake[0])) {
+      const multisigTx = getMultisigTx(accountsToStake[0], signer.accountId, transactions[0]);
+      setMultisigTx(multisigTx);
+    }
+
+    setTransactions(transactions);
+    setValidators(validators);
+    setActiveStep(Step.CONFIRMATION);
+  };
+
   const getBondTxs = (validators: Address[]): Transaction[] => {
     return accountsToStake.map(({ accountId }) => {
       const address = toAddress(accountId, { prefix: addressPrefix });
@@ -190,19 +198,6 @@ const Bond = () => {
     };
   };
 
-  const onSelectValidators = (validators: ValidatorMap) => {
-    const transactions = getBondTxs(Object.keys(validators));
-
-    if (signer && isMultisig(accountsToStake[0])) {
-      const multisigTx = getMultisigTx(accountsToStake[0], signer.accountId, transactions[0]);
-      setMultisigTx(multisigTx);
-    }
-
-    setTransactions(transactions);
-    setValidators(validators);
-    setActiveStep(Step.CONFIRMATION);
-  };
-
   const onScanResult = (unsigned: UnsignedTransaction[]) => {
     setUnsignedTransactions(unsigned);
     setActiveStep(Step.SIGNING);
@@ -256,7 +251,7 @@ const Bond = () => {
               <Alert.Item>{t('staking.confirmation.hintRewards')}</Alert.Item>
               <Alert.Item>{t('staking.confirmation.hintUnstakePeriod')}</Alert.Item>
               <Alert.Item>{t('staking.confirmation.hintNoRewards')}</Alert.Item>
-              <Alert.Item>{t('staking.confirmation.hintRedeem')}</Alert.Item>
+              <Alert.Item>{t('staking.confirmation.hintWithdraw')}</Alert.Item>
             </Alert>
           )}
         </Confirmation>
@@ -304,7 +299,6 @@ const Bond = () => {
           successMessage={t('staking.bond.submitSuccess')}
           description={description}
           onClose={closeBondModal}
-          {...explorersProps}
         />
       )}
     </BaseModal>

@@ -7,7 +7,6 @@ import { Button, FootnoteText, CaptionText } from '@renderer/components/ui-redes
 import { useI18n } from '@renderer/context/I18nContext';
 import { useToggle } from '@renderer/shared/hooks';
 import { Deposit, BalanceNew, Fee } from '@renderer/components/common';
-import { Address } from '@renderer/domain/shared-kernel';
 import { RewardsDestination } from '@renderer/domain/stake';
 import { Validator } from '@renderer/domain/validator';
 import { Account } from '@renderer/domain/account';
@@ -18,13 +17,9 @@ import AddressWithExplorers from '@renderer/components/common/AddressWithExplore
 import AccountsModal from '../Modals/AccountsModal/AccountsModal';
 import ValidatorsModal from '../Modals/ValidatorsModal/ValidatorsModal';
 import cnTw from '@renderer/shared/utils/twMerge';
+import { DestinationType } from '../../common/types';
 
 const ActionStyle = 'group hover:bg-action-background-hover px-2 py-1 rounded';
-
-type Destination = {
-  address?: Address;
-  type: RewardsDestination;
-};
 
 type Props = {
   api: ApiPromise;
@@ -32,7 +27,7 @@ type Props = {
   accounts: Account[];
   signer?: Account;
   amounts?: string[];
-  destination?: Destination;
+  destination?: DestinationType;
   asset: Asset;
   explorers?: Explorer[];
   addressPrefix: number;
@@ -70,12 +65,14 @@ export const Confirmation = ({
 
   return (
     <>
-      <div className="w-[440px] px-5 pb-4">
-        <BalanceNew
-          className="block mt-4 mb-6 mx-auto text-center text-4xl font-bold"
-          value={totalAmount}
-          asset={asset}
-        />
+      <div className="w-[440px] px-5 py-4">
+        {amounts.length > 0 && (
+          <BalanceNew
+            className="block mt-4 mb-6 mx-auto text-center text-4xl font-bold"
+            value={totalAmount}
+            asset={asset}
+          />
+        )}
 
         <div className="flex flex-col gap-y-4">
           <div className="flex justify-between items-center gap-x-2">
