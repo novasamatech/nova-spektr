@@ -33,6 +33,7 @@ export const Signing = ({ multiQr, countdown, onResult, onGoBack }: Props) => {
         className="w-full rounded-2lg"
         countdown={countdown || 0}
         onResult={handleResult}
+        onGoBack={onGoBack}
       />
     </ModalMock>
   );
