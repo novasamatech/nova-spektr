@@ -4,6 +4,7 @@ import { BN, hexToU8a } from '@polkadot/util';
 import { ApiPromise } from '@polkadot/api';
 import { Codec } from '@polkadot/types/types';
 import { Option } from '@polkadot/types';
+import _ from 'lodash';
 
 import { Asset, AssetType, OrmlExtras, StatemineExtras } from '@renderer/domain/asset';
 import { ChainId, AccountId } from '@renderer/domain/shared-kernel';
@@ -300,7 +301,7 @@ export const useBalance = (): IBalanceService => {
         const existingBalance = await balanceStorage.getBalance(balance.accountId, balance.chainId, balance.assetId);
         if (!existingBalance) {
           await addBalance(balance);
-        } else if (balance.locked.toString() !== existingBalance.locked?.toString()) {//todo
+        } else if (!_.isEqual(balance.locked, existingBalance.locked)) {
           await updateBalance(balance);
         }
       });
@@ -337,7 +338,7 @@ export const useBalance = (): IBalanceService => {
           const existingBalance = await balanceStorage.getBalance(balance.accountId, balance.chainId, balance.assetId);
           if (!existingBalance) {
             await addBalance(balance);
-          } else if (balance.locked.toString() !== existingBalance.locked?.toString()) {//todo
+          } else if (!_.isEqual(balance.locked, existingBalance.locked)) {
             await updateBalance(balance);
           }
         });
