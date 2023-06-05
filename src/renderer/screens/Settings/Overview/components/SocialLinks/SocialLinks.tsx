@@ -9,7 +9,7 @@ const Links = [
     icon: 'twitter',
     title: 'settings.overview.twitterLabel',
     subtitle: 'settings.overview.twitterDescription',
-    href: 'https://twitter.com/NovasamaTech',
+    href: 'https://twitter.com/NovaSpektr',
   },
   {
     icon: 'github',

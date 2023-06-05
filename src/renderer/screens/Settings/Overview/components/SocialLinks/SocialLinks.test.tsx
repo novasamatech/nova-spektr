@@ -19,7 +19,7 @@ describe('screen/Settings/Overview/SocialLinks', () => {
     expect(links[0]).toHaveAttribute('href', 'https://twitter.com/NovasamaTech');
     expect(links[1]).toHaveAttribute('href', 'https://github.com/novasamatech/nova-spektr');
     expect(links[2]).toHaveAttribute('href', 'https://www.youtube.com/@NovaSpektr');
-    expect(links[3]).toHaveAttribute('href', 'https://medium.com/@NovaSpektr');
+    expect(links[3]).toHaveAttribute('href', 'https://twitter.com/NovaSpektr');
     expect(links[4]).toHaveAttribute('href', 'https://t.me/+dL5b4g6BmMUyYTRi');
   });
 });
