@@ -167,7 +167,7 @@ const RejectTx = ({ tx, account, connection }: Props) => {
         closeButton
         title={
           <OperationModalTitle
-            title={`${t('operation.cancelTitle')} ${t(transactionTitle)} ${t('on')}`}
+            title={`${t('operation.rejectTitle')} ${t(transactionTitle)} ${t('on')}`}
             chainId={tx.chainId}
           />
         }
