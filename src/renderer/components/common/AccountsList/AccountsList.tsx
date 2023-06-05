@@ -1,57 +1,55 @@
 import cnTw from '@renderer/shared/utils/twMerge';
-import { Chain } from '@renderer/domain/chain';
-import { ChainAddress } from '@renderer/components/ui';
+import { Chain as ChainType } from '@renderer/domain/chain';
 import { AccountId } from '@renderer/domain/shared-kernel';
-import { isCorrectAccountId } from '@renderer/shared/utils/address';
-import Explorers from '../Explorers/Explorers';
+import AddressWithExplorers from '../AddressWithExplorers/AddressWithExplorers';
+import Chain from '@renderer/screens/Operations/components/Chain/Chain';
+import { useI18n } from '@renderer/context/I18nContext';
+import { FootnoteText } from '@renderer/components/ui-redesign';
 
 type Props = {
-  accountId?: AccountId;
-  chains: Chain[];
+  accountId: AccountId;
+  chains: ChainType[];
   className?: string;
-  limit?: number;
 };
 
-const AccountsList = ({ accountId, chains, className, limit }: Props) => {
-  const limitedChains = limit ? chains.slice(0, limit) : chains;
-
-  if (!accountId || !isCorrectAccountId(accountId)) {
-    return (
-      <div className="overflow-hidden divide-y divide-gray-200">
-        {limitedChains.map(({ name }) => (
-          <div key={name} className="flex items-center h-[50px] gap-2.5 px-4 py-1.25">
-            <div className="border border-shade-20 border-dashed rounded-2lg w-9 h-9 box-border"></div>
-            <div className="flex flex-col gap-2">
-              <div className="border border-shade-20 border-dashed rounded-2lg w-16 h-3 box-border"></div>
-              <div className="flex gap-2">
-                <div className="border border-shade-20 border-dashed rounded-full w-3 h-3 box-border"></div>
-                <div className="border border-shade-20 border-dashed rounded-full w-60 h-3 box-border"></div>
-              </div>
-            </div>
-          </div>
-        ))}
-      </div>
-    );
-  }
+const AccountsList = ({ accountId, chains, className }: Props) => {
+  const { t } = useI18n();
 
   return (
-    <ul className={cnTw('flex flex-col z-0 divide-y divide-gray-200 overflow-y-auto overflow-x-hidden', className)}>
-      {limitedChains.map((chain) => {
-        const { name, icon, addressPrefix, explorers } = chain;
+    <>
+      <div className="flex mx-3 py-4">
+        <FootnoteText className="w-[214px] text-text-tertiary">
+          {t('accountList.networksColumn', { chains: chains.length })}
+        </FootnoteText>
+        <FootnoteText className="w-[214px] text-text-tertiary">{t('accountList.addressColumn')}</FootnoteText>
+      </div>
 
-        return (
-          <li key={name} className="flex flex-row items-center gap-2.5 px-6 py-1.25">
-            <img width="36px" height="36px" alt={name} src={icon} />
-            <div className="flex flex-col flex-1 overflow-hidden whitespace-nowrap">
-              <div className="font-bold text-neutral text-base w-full leading-5">{name}</div>
-              <ChainAddress className="w-full" accountId={accountId} addressPrefix={addressPrefix} />
-            </div>
+      <ul className={cnTw('flex flex-col z-0 divide-y divide-divider overflow-y-auto overflow-x-hidden', className)}>
+        {chains.map((chain) => {
+          const { chainId, addressPrefix, explorers } = chain;
 
-            <Explorers address={accountId} addressPrefix={addressPrefix} explorers={explorers} />
-          </li>
-        );
-      })}
-    </ul>
+          return (
+            <li key={chainId} className="flex items-center mx-3 py-4">
+              <Chain
+                className="w-[214px] gap-x-2"
+                fontProps={{ className: 'text-text-primary text-footnote font-inter' }}
+                chainId={chainId}
+              />
+
+              <div className="w-[214]">
+                <AddressWithExplorers
+                  type="adaptive"
+                  className="w-[160px]"
+                  accountId={accountId}
+                  addressPrefix={addressPrefix}
+                  explorers={explorers}
+                />
+              </div>
+            </li>
+          );
+        })}
+      </ul>
+    </>
   );
 };
 

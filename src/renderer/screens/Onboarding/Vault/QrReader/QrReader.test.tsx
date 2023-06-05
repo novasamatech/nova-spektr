@@ -3,7 +3,7 @@ import { act, render, screen, waitFor } from '@testing-library/react';
 import { QrReader } from '@renderer/components/common';
 import { QrError } from '@renderer/components/common/QrCode/QrReader/common/types';
 import { Button, Dropdown } from '@renderer/components/ui';
-import ParitySignerQrReader from './ParitySignerQrReader';
+import VaultQrReader from './QrReader';
 
 jest.mock('@renderer/components/common');
 jest.mock('@renderer/components/ui');
@@ -14,7 +14,7 @@ jest.mock('@renderer/context/I18nContext', () => ({
   }),
 }));
 
-describe('screens/Onboarding/Parity/ParitySignerQrReader', () => {
+describe('screens/Onboarding/Vault/VaultQrReader', () => {
   describe('success state', () => {
     afterEach(() => {
       jest.clearAllMocks();
@@ -23,7 +23,7 @@ describe('screens/Onboarding/Parity/ParitySignerQrReader', () => {
     test('should render component', () => {
       (QrReader as jest.Mock).mockImplementation(() => 'qr_reader');
 
-      render(<ParitySignerQrReader onResult={() => {}} />);
+      render(<VaultQrReader onResult={() => {}} />);
 
       const qrReader = screen.getByText('qr_reader');
       const loading = screen.getByText('onboarding.paritySigner.startCameraLabel');
@@ -45,7 +45,7 @@ describe('screens/Onboarding/Parity/ParitySignerQrReader', () => {
         options.map((o: any) => <span key="1">{o.element}</span>),
       );
 
-      render(<ParitySignerQrReader onResult={() => {}} />);
+      render(<VaultQrReader onResult={() => {}} />);
 
       const qrButton = screen.getByRole('button');
       act(() => qrButton.click());
@@ -66,7 +66,7 @@ describe('screens/Onboarding/Parity/ParitySignerQrReader', () => {
         </button>
       ));
 
-      render(<ParitySignerQrReader onResult={() => {}} />);
+      render(<VaultQrReader onResult={() => {}} />);
 
       const checkmarkBefore = screen.queryByTestId('checkmarkCutout-svg');
       expect(checkmarkBefore).not.toBeInTheDocument();
@@ -87,7 +87,7 @@ describe('screens/Onboarding/Parity/ParitySignerQrReader', () => {
         </button>
       ));
 
-      render(<ParitySignerQrReader onResult={() => {}} />);
+      render(<VaultQrReader onResult={() => {}} />);
 
       const qrButton = screen.getByRole('button');
       act(() => qrButton.click());
@@ -105,7 +105,7 @@ describe('screens/Onboarding/Parity/ParitySignerQrReader', () => {
         </button>
       ));
 
-      render(<ParitySignerQrReader onResult={() => {}} />);
+      render(<VaultQrReader onResult={() => {}} />);
 
       const qrButton = screen.getByRole('button');
       act(() => qrButton.click());
@@ -127,7 +127,7 @@ describe('screens/Onboarding/Parity/ParitySignerQrReader', () => {
         </button>
       ));
 
-      render(<ParitySignerQrReader onResult={() => {}} />);
+      render(<VaultQrReader onResult={() => {}} />);
 
       const qrButton = screen.getByRole('button');
       act(() => qrButton.click());

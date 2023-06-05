@@ -19,6 +19,7 @@ module.exports = {
   'tab-icon-active': 'var(--tab-icon-active)',
   'tab-icon-inactive': 'var(--tab-icon-inactive)',
   'icon-hover': 'var(--icon-hover)',
+  'icon-active': 'var(--icon-active)',
   'icon-default': 'var(--icon-default)',
   'chip-icon': 'var(--chip-icon)',
   'icon-button': 'var(--icon-button)',
@@ -72,4 +73,6 @@ module.exports = {
   'row-background': 'var(--row-background)',
   hover: 'var(--hover)',
   'card-background': 'var(--card-background)',
+  'label-background-gray': 'var(--label-background-gray)',
+  'label-background-green': 'var(--label-background-green)',
 };

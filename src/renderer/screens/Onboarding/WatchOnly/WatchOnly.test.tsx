@@ -26,10 +26,10 @@ jest.mock('@renderer/services/network/chainsService', () => ({
 describe('screens/Onboarding/WatchOnly', () => {
   test('should render component', async () => {
     await act(async () => {
-      render(<WatchOnly />, { wrapper: MemoryRouter });
+      render(<WatchOnly isOpen={true} onClose={() => {}} onComplete={() => {}} />, { wrapper: MemoryRouter });
     });
 
-    const title = screen.getByRole('heading', { name: 'onboarding.watchonly.addWatchOnlyLabel' });
+    const title = screen.getByRole('heading', { name: 'onboarding.watchOnly.title' });
     expect(title).toBeInTheDocument();
   });
 });

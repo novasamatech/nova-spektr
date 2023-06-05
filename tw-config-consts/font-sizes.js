@@ -4,6 +4,7 @@ module.exports = {
   '4.5xl': ['2.75rem', '3rem'],
   'large-title': ['1.625rem', '2.25rem'],
   title: ['1.375rem', '1.875rem'],
+  'header-title': ['1.0625rem', '1.375rem'],
   'small-title': ['0.9375rem', '1.375rem'],
   'button-small': ['0.75rem', '1.125rem'],
   'button-large': ['0.875rem', '1.125rem'],

@@ -1,7 +1,7 @@
 import { render, screen } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 
-import Parity from './Parity';
+import Vault from './Vault';
 
 jest.mock('./StepOne/StepOne', () => () => 'step_1');
 jest.mock('./StepTwo/StepTwo', () => () => 'step_2');
@@ -14,14 +14,12 @@ jest.mock('@renderer/context/I18nContext', () => ({
   }),
 }));
 
-describe('screens/Onboarding/Parity', () => {
+describe('screens/Onboarding/Vault', () => {
   test('should render component', () => {
-    render(<Parity />, { wrapper: MemoryRouter });
+    render(<Vault isOpen={true} onClose={() => {}} onComplete={() => {}} />, { wrapper: MemoryRouter });
 
-    const title = screen.getByRole('heading', { name: 'onboarding.paritySigner.addByParitySignerLabel' });
-    const stepOne = screen.getByText('step_1');
+    const title = screen.getByRole('heading', { name: 'onboarding.vault.title' });
 
     expect(title).toBeInTheDocument();
-    expect(stepOne).toBeInTheDocument();
   });
 });
