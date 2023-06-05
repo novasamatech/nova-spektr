@@ -27,7 +27,7 @@ const Links = [
     icon: 'medium',
     title: 'settings.overview.mediumLabel',
     subtitle: 'settings.overview.mediumDescription',
-    href: 'https://medium.com',
+    href: 'https://medium.com/@NovaSpektr',
   },
   {
     icon: 'telegram',
