@@ -52,9 +52,10 @@ const Operations = () => {
                 </section>
               ))}
         </div>
-
-        {!filteredTxs.length && <EmptyOperations />}
       </div>
+      {!filteredTxs.length && (
+        <EmptyOperations multisigAccount={account} isEmptyFromFilters={txs.length !== filteredTxs.length} />
+      )}
     </div>
   );
 };

@@ -10,7 +10,7 @@ jest.mock('@renderer/context/I18nContext', () => ({
 
 describe('screens/Operations/components/EmptyState/EmptyOperations.tsx', () => {
   test('should render component', () => {
-    render(<EmptyOperations />);
+    render(<EmptyOperations multisigAccount={null} isEmptyFromFilters={false} />);
 
     const label = screen.getByText('operations.noOperationsDescription');
 

@@ -348,6 +348,7 @@
       "title": "Введите call data"
     },
     "filters": {
+      "clearAll": "Очистить всё",
       "networkPlaceholder": "Сеть",
       "networkSummary": "Сети",
       "operationTypePlaceholder": "Тип операции",
@@ -356,6 +357,7 @@
       "statusSummary": "Статусы операции"
     },
     "noOperationsDescription": "Нет ожидающих операций с мультиподписью",
+    "noOperationsFilters": "Nothing was found for the filters. Try changing filters or canceling filtering.",
     "noOperationsWalletNotMulti": "You can only view operations for your Multisig wallets. Transaction history for other types of wallets will be available later. Stay tuned.",
     "title": "Операции",
     "titles": {
