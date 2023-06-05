@@ -15,7 +15,7 @@ import { useAccount } from '@renderer/services/account/accountService';
 import { ValidatorMap } from '@renderer/services/staking/common/types';
 import { toAddress } from '@renderer/shared/utils/address';
 import { getRelaychainAsset } from '@renderer/shared/utils/assets';
-import { Confirmation, MultiScanning, Signing, Submit, Validators } from '../components';
+import { Confirmation, ModalMock, MultiScanning, Signing, Submit, Validators } from '../components';
 import { useCountdown } from '@renderer/shared/hooks';
 import { getTotalAccounts } from '@renderer/screens/Staking/Operations/common/utils';
 
@@ -179,17 +179,19 @@ const SetValidators = () => {
         </Confirmation>
       )}
       {activeStep === Step.SCANNING && (
-        <MultiScanning
-          api={api}
-          chainId={chainId}
-          accounts={totalAccounts}
-          transactions={transactions}
-          addressPrefix={addressPrefix}
-          countdown={countdown}
-          onGoBack={() => setActiveStep(Step.CONFIRMATION)}
-          onResetCountdown={resetCountdown}
-          onResult={onScanResult}
-        />
+        <ModalMock>
+          <MultiScanning
+            api={api}
+            chainId={chainId}
+            accounts={totalAccounts}
+            transactions={transactions}
+            addressPrefix={addressPrefix}
+            countdown={countdown}
+            onGoBack={() => setActiveStep(Step.CONFIRMATION)}
+            onResetCountdown={resetCountdown}
+            onResult={onScanResult}
+          />
+        </ModalMock>
       )}
       {activeStep === Step.SIGNING && (
         <Signing

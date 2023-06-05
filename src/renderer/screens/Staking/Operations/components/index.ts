@@ -4,3 +4,4 @@ export { MultiScanning } from './Scanning/MultiScanning';
 export { Signing } from './Signing/Signing';
 export { Submit } from './Submit/Submit';
 export { OperationForm } from './OperationForm/OperationForm';
+export { ModalMock } from './ModalMock';

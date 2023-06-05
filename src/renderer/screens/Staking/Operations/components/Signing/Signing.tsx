@@ -1,9 +1,8 @@
 import { useEffect } from 'react';
 
 import QrReaderWrapper from '@renderer/screens/Signing/QrReaderWrapper/QrReaderWrapper';
-import { Block, Plate } from '@renderer/components/ui';
-import { useI18n } from '@renderer/context/I18nContext';
 import { HexString } from '@renderer/domain/shared-kernel';
+import { ModalMock } from '@renderer/screens/Staking/Operations/components';
 
 type Props = {
   multiQr: boolean;
@@ -13,8 +12,6 @@ type Props = {
 };
 
 export const Signing = ({ multiQr, countdown, onResult, onGoBack }: Props) => {
-  const { t } = useI18n();
-
   useEffect(() => {
     if (countdown === 0) {
       onGoBack();
@@ -30,20 +27,13 @@ export const Signing = ({ multiQr, countdown, onResult, onGoBack }: Props) => {
   };
 
   return (
-    <div className="overflow-y-auto flex-1">
-      <Plate as="section" className="flex flex-col items-center gap-y-5 mx-auto w-[600px]">
-        <Block className="flex flex-col items-center gap-y-2.5 p-5">
-          <div className="text-neutral-variant text-base font-semibold">{t('signing.scanQrTitle')}</div>
-          <div className="h-[460px]">
-            <QrReaderWrapper
-              isMultiFrame={multiQr}
-              className="w-full rounded-2lg"
-              countdown={countdown || 0}
-              onResult={handleResult}
-            />
-          </div>
-        </Block>
-      </Plate>
-    </div>
+    <ModalMock>
+      <QrReaderWrapper
+        isMultiFrame={multiQr}
+        className="w-full rounded-2lg"
+        countdown={countdown || 0}
+        onResult={handleResult}
+      />
+    </ModalMock>
   );
 };
