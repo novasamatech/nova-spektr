@@ -22,7 +22,6 @@ const QrGeneratorContainer = ({ countdown, onQrReset, chainId, children }: Props
       <SmallTitleText>{t('signing.scanQrTitle')}</SmallTitleText>
 
       <div className="flex items-center gap-x-2 mt-3 mb-4">
-        {/* CHECK  mb-1 */}
         <FootnoteText className="text-text-tertiary">{t('signing.qrCountdownTitle')}</FootnoteText>
         <CaptionText
           className={cn(

@@ -53,6 +53,11 @@ jest.mock('@renderer/services/account/accountService', () => ({
   }),
 }));
 
+jest.mock(
+  '@renderer/components/common/AddressWithExplorers/AddressWithExplorers',
+  jest.fn().mockReturnValue(({ address }: { address: string }) => <span>{address}</span>),
+);
+
 const mockButton = (text: string, callback: () => void) => (
   <button type="button" onClick={callback}>
     {text}
