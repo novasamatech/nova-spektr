@@ -4,6 +4,7 @@ import { BN, hexToU8a } from '@polkadot/util';
 import { ApiPromise } from '@polkadot/api';
 import { Codec } from '@polkadot/types/types';
 import { Option } from '@polkadot/types';
+import _ from 'lodash';
 
 import { Asset, AssetType, OrmlExtras, StatemineExtras } from '@renderer/domain/asset';
 import { ChainId, AccountId } from '@renderer/domain/shared-kernel';
@@ -26,13 +27,14 @@ export const useBalance = (): IBalanceService => {
   const validationSubscriptionService = useSubscription<ChainId>();
 
   const {
-    updateBalance,
+    addBalance,
     getBalances,
     getAllBalances,
     getBalance,
     getNetworkBalances,
     getAssetBalances,
     setBalanceIsValid,
+    updateBalance,
   } = balanceStorage;
 
   const getLiveBalance = (accountId: AccountId, chainId: ChainId, assetId: string): BalanceDS | undefined => {
@@ -135,7 +137,16 @@ export const useBalance = (): IBalanceService => {
           reserved: accountInfo.data.reserved.toString(),
         };
 
-        await updateBalance(balance);
+        const existingBalance = await balanceStorage.getBalance(balance.accountId, balance.chainId, balance.assetId);
+        if (!existingBalance) {
+          await addBalance(balance);
+        } else if (
+          balance.free !== existingBalance.free ||
+          balance.frozen !== existingBalance.frozen ||
+          balance.reserved !== existingBalance.reserved
+        ) {
+          await updateBalance(balance);
+        }
 
         if (relaychain?.api && isLightClient(relaychain)) {
           const storageKey = api.query.system.account.key(addresses[i]);
@@ -180,7 +191,16 @@ export const useBalance = (): IBalanceService => {
               reserved: (0).toString(),
             };
 
-            await updateBalance(balance);
+            const existingBalance = await balanceStorage.getBalance(
+              balance.accountId,
+              balance.chainId,
+              balance.assetId,
+            );
+            if (!existingBalance) {
+              await addBalance(balance);
+            } else if (balance.free !== existingBalance.free) {
+              await updateBalance(balance);
+            }
 
             if (relaychain?.api && isLightClient(relaychain)) {
               const storageKey = api.query.assets.account.key(statemineAssetId, addresses[i]);
@@ -232,7 +252,16 @@ export const useBalance = (): IBalanceService => {
             reserved: reserved.toString(),
           };
 
-          await updateBalance(balance);
+          const existingBalance = await balanceStorage.getBalance(balance.accountId, balance.chainId, balance.assetId);
+          if (!existingBalance) {
+            await addBalance(balance);
+          } else if (
+            balance.free !== existingBalance.free ||
+            balance.frozen !== existingBalance.frozen ||
+            balance.reserved !== existingBalance.reserved
+          ) {
+            await updateBalance(balance);
+          }
 
           if (relaychain?.api && isLightClient(relaychain)) {
             const storageKey = method.key(addresses[i], ormlAssetId);
@@ -269,8 +298,12 @@ export const useBalance = (): IBalanceService => {
             })),
           ],
         };
-
-        await updateBalance(balance);
+        const existingBalance = await balanceStorage.getBalance(balance.accountId, balance.chainId, balance.assetId);
+        if (!existingBalance) {
+          await addBalance(balance);
+        } else if (!_.isEqual(balance.locked, existingBalance.locked)) {
+          await updateBalance(balance);
+        }
       });
     });
   };
@@ -302,7 +335,12 @@ export const useBalance = (): IBalanceService => {
             ],
           };
 
-          await updateBalance(balance);
+          const existingBalance = await balanceStorage.getBalance(balance.accountId, balance.chainId, balance.assetId);
+          if (!existingBalance) {
+            await addBalance(balance);
+          } else if (!_.isEqual(balance.locked, existingBalance.locked)) {
+            await updateBalance(balance);
+          }
         });
       },
     );
