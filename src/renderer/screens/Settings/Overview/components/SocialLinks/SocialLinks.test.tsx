@@ -20,6 +20,6 @@ describe('screen/Settings/Overview/SocialLinks', () => {
     expect(links[1]).toHaveAttribute('href', 'https://github.com/novasamatech/nova-spektr');
     expect(links[2]).toHaveAttribute('href', 'https://www.youtube.com/@NovasamaTech');
     expect(links[3]).toHaveAttribute('href', 'https://medium.com');
-    expect(links[4]).toHaveAttribute('href', 'https://telegram.com');
+    expect(links[4]).toHaveAttribute('href', 'https://t.me/+dL5b4g6BmMUyYTRi');
   });
 });

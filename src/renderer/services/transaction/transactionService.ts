@@ -78,7 +78,7 @@ export const useTransaction = (): ITransactionService => {
     [TransactionType.ASSET_TRANSFER]: (transaction, info, options) => {
       return methods.assets.transfer(
         {
-          id: transaction.args.asset,
+          id: transaction.args.assetId,
           target: transaction.args.dest,
           amount: transaction.args.value,
         },
@@ -86,16 +86,26 @@ export const useTransaction = (): ITransactionService => {
         options,
       );
     },
-    [TransactionType.ORML_TRANSFER]: (transaction, info, options) => {
-      return ormlMethods.currencies.transfer(
-        {
-          dest: transaction.args.dest,
-          amount: transaction.args.value,
-          currencyId: transaction.args.asset,
-        },
-        info,
-        options,
-      );
+    [TransactionType.ORML_TRANSFER]: (transaction, info, options, api) => {
+      return api.tx.currencies
+        ? ormlMethods.currencies.transfer(
+            {
+              dest: transaction.args.dest,
+              amount: transaction.args.value,
+              currencyId: transaction.args.assetId,
+            },
+            info,
+            options,
+          )
+        : ormlMethods.tokens.transfer(
+            {
+              dest: transaction.args.dest,
+              amount: transaction.args.value,
+              currencyId: transaction.args.assetId,
+            },
+            info,
+            options,
+          );
     },
     [TransactionType.MULTISIG_AS_MULTI]: (transaction, info, options, api) => {
       return methods.multisig.asMulti(
@@ -229,7 +239,8 @@ export const useTransaction = (): ITransactionService => {
         ? api.tx.balances.transferAllowDeath(dest, value)
         : api.tx.balances.transfer(dest, value),
     [TransactionType.ASSET_TRANSFER]: ({ dest, value, asset }, api) => api.tx.assets.transfer(asset, dest, value),
-    [TransactionType.ORML_TRANSFER]: ({ dest, value, asset }, api) => api.tx.currencies.transfer(dest, asset, value),
+    [TransactionType.ORML_TRANSFER]: ({ dest, value, asset }, api) =>
+      api.tx.currencies ? api.tx.currencies.transfer(dest, asset, value) : api.tx.tokens.transfer(dest, asset, value),
     [TransactionType.MULTISIG_AS_MULTI]: ({ threshold, otherSignatories, maybeTimepoint, call, maxWeight }, api) => {
       return isOldMultisigPallet(api)
         ? // @ts-ignore
@@ -440,7 +451,7 @@ export const useTransaction = (): ITransactionService => {
       transaction.args.value = decoded.args[2].toString();
     }
 
-    if (method === 'transfer' && section === 'currencies') {
+    if (method === 'transfer' && (section === 'currencies' || section === 'tokens')) {
       transaction.type = TransactionType.ORML_TRANSFER;
 
       transaction.args.dest = decoded.args[0].toString();

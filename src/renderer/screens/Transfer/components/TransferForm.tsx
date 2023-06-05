@@ -17,7 +17,7 @@ import { useTransaction } from '@renderer/services/transaction/transactionServic
 import { useMultisigTx } from '@renderer/services/multisigTx/multisigTxService';
 import { getAssetId } from '@renderer/shared/utils/assets';
 import { MultisigAccount, Account, isMultisig } from '@renderer/domain/account';
-import { Button, AmountInput, Input, InputHint } from '@renderer/components/ui-redesign';
+import { Button, AmountInput, Input, InputHint, FootnoteText } from '@renderer/components/ui-redesign';
 
 const DESCRIPTION_MAX_LENGTH = 120;
 
@@ -134,7 +134,7 @@ export const TransferForm = ({ api, chainId, account, signer, asset, nativeToken
       args: {
         dest: toAddress(destination, { prefix: addressPrefix }),
         value: formatAmount(amount, asset.precision),
-        asset: getAssetId(asset),
+        assetId: getAssetId(asset),
       },
     };
   };
@@ -340,9 +340,9 @@ export const TransferForm = ({ api, chainId, account, signer, asset, nativeToken
         )}
 
         <div className="grid grid-flow-row grid-cols-2 items-center gap-y-5">
-          <p className="uppercase text-neutral-variant text-2xs">{t('transfer.networkFee')}</p>
+          <FootnoteText className="text-text-tertiary">{t('transfer.networkFee')}</FootnoteText>
           <Fee
-            className="text-neutral justify-self-end text-2xs font-semibold"
+            className="font-inter font-medium text-footnote text-text-primary text-right"
             api={api}
             asset={nativeToken}
             transaction={transferTx}
@@ -350,9 +350,9 @@ export const TransferForm = ({ api, chainId, account, signer, asset, nativeToken
           />
           {isMultisig(account) && (
             <>
-              <p className="uppercase text-neutral-variant text-2xs">{t('transfer.networkDeposit')}</p>
+              <FootnoteText className="text-text-tertiary">{t('transfer.networkDeposit')}</FootnoteText>
               <Deposit
-                className="text-neutral justify-self-end text-2xs font-semibold"
+                className="justify-self-end font-inter font-medium text-footnote text-text-primary w-fit text-right"
                 api={api}
                 asset={nativeToken}
                 threshold={account.threshold}

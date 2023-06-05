@@ -1,9 +1,10 @@
 import { useLiveQuery } from 'dexie-react-hooks';
 import { BalanceLock } from '@polkadot/types/interfaces';
-import { BN } from '@polkadot/util';
+import { BN, hexToU8a } from '@polkadot/util';
 import { ApiPromise } from '@polkadot/api';
 import { Codec } from '@polkadot/types/types';
 import { Option } from '@polkadot/types';
+import _ from 'lodash';
 
 import { Asset, AssetType, OrmlExtras, StatemineExtras } from '@renderer/domain/asset';
 import { ChainId, AccountId } from '@renderer/domain/shared-kernel';
@@ -26,13 +27,14 @@ export const useBalance = (): IBalanceService => {
   const validationSubscriptionService = useSubscription<ChainId>();
 
   const {
-    updateBalance,
+    addBalance,
     getBalances,
     getAllBalances,
     getBalance,
     getNetworkBalances,
     getAssetBalances,
     setBalanceIsValid,
+    updateBalance,
   } = balanceStorage;
 
   const getLiveBalance = (accountId: AccountId, chainId: ChainId, assetId: string): BalanceDS | undefined => {
@@ -135,7 +137,16 @@ export const useBalance = (): IBalanceService => {
           reserved: accountInfo.data.reserved.toString(),
         };
 
-        await updateBalance(balance);
+        const existingBalance = await balanceStorage.getBalance(balance.accountId, balance.chainId, balance.assetId);
+        if (!existingBalance) {
+          await addBalance(balance);
+        } else if (
+          balance.free !== existingBalance.free ||
+          balance.frozen !== existingBalance.frozen ||
+          balance.reserved !== existingBalance.reserved
+        ) {
+          await updateBalance(balance);
+        }
 
         if (relaychain?.api && isLightClient(relaychain)) {
           const storageKey = api.query.system.account.key(addresses[i]);
@@ -180,7 +191,16 @@ export const useBalance = (): IBalanceService => {
               reserved: (0).toString(),
             };
 
-            await updateBalance(balance);
+            const existingBalance = await balanceStorage.getBalance(
+              balance.accountId,
+              balance.chainId,
+              balance.assetId,
+            );
+            if (!existingBalance) {
+              await addBalance(balance);
+            } else if (balance.free !== existingBalance.free) {
+              await updateBalance(balance);
+            }
 
             if (relaychain?.api && isLightClient(relaychain)) {
               const storageKey = api.query.assets.account.key(statemineAssetId, addresses[i]);
@@ -207,16 +227,18 @@ export const useBalance = (): IBalanceService => {
     relaychain: ExtendedChain | undefined,
     asset: Asset,
   ) => {
+    const currencyIdType = (asset?.typeExtras as OrmlExtras).currencyIdType;
     const ormlAssetId = (asset?.typeExtras as OrmlExtras).currencyIdScale;
+
     const api = chain.api;
     if (!api) return;
 
+    const assetId = api.createType(currencyIdType, hexToU8a(ormlAssetId));
     const addresses = accountIds.map((accountId) => toAddress(accountId, { prefix: chain.addressPrefix }));
-
     const method = api.query.tokens ? api.query.tokens.accounts : api.query.currencies.accounts;
 
     return method.multi(
-      addresses.map((a) => [a, ormlAssetId]),
+      addresses.map((a) => [a, assetId]),
       (data: any[]) => {
         data.forEach(async (accountInfo: any, i) => {
           const { free, reserved, frozen } = accountInfo;
@@ -230,7 +252,16 @@ export const useBalance = (): IBalanceService => {
             reserved: reserved.toString(),
           };
 
-          await updateBalance(balance);
+          const existingBalance = await balanceStorage.getBalance(balance.accountId, balance.chainId, balance.assetId);
+          if (!existingBalance) {
+            await addBalance(balance);
+          } else if (
+            balance.free !== existingBalance.free ||
+            balance.frozen !== existingBalance.frozen ||
+            balance.reserved !== existingBalance.reserved
+          ) {
+            await updateBalance(balance);
+          }
 
           if (relaychain?.api && isLightClient(relaychain)) {
             const storageKey = method.key(addresses[i], ormlAssetId);
@@ -267,23 +298,29 @@ export const useBalance = (): IBalanceService => {
             })),
           ],
         };
-
-        await updateBalance(balance);
+        const existingBalance = await balanceStorage.getBalance(balance.accountId, balance.chainId, balance.assetId);
+        if (!existingBalance) {
+          await addBalance(balance);
+        } else if (!_.isEqual(balance.locked, existingBalance.locked)) {
+          await updateBalance(balance);
+        }
       });
     });
   };
 
   const subscribeLockOrmlAssetChange = async (accountIds: AccountId[], chain: ExtendedChain, asset: Asset) => {
+    const currencyIdType = (asset?.typeExtras as OrmlExtras).currencyIdType;
     const ormlAssetId = (asset?.typeExtras as OrmlExtras).currencyIdScale;
+
     const api = chain.api;
     if (!api) return;
 
+    const assetId = api.createType(currencyIdType, hexToU8a(ormlAssetId));
     const addresses = accountIds.map((accountId) => toAddress(accountId, { prefix: chain.addressPrefix }));
-
     const method = api.query.tokens ? api.query.tokens.locks : api.query.currencies.locks;
 
     return method.multi(
-      addresses.map((a) => [a, ormlAssetId]),
+      addresses.map((a) => [a, assetId]),
       (balanceLocks: any[]) => {
         balanceLocks.forEach(async (balanceLock, i) => {
           const balance = {
@@ -298,7 +335,12 @@ export const useBalance = (): IBalanceService => {
             ],
           };
 
-          await updateBalance(balance);
+          const existingBalance = await balanceStorage.getBalance(balance.accountId, balance.chainId, balance.assetId);
+          if (!existingBalance) {
+            await addBalance(balance);
+          } else if (!_.isEqual(balance.locked, existingBalance.locked)) {
+            await updateBalance(balance);
+          }
         });
       },
     );

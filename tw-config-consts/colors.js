@@ -19,6 +19,7 @@ module.exports = {
   'tab-icon-active': 'var(--tab-icon-active)',
   'tab-icon-inactive': 'var(--tab-icon-inactive)',
   'icon-hover': 'var(--icon-hover)',
+  'icon-active': 'var(--icon-active)',
   'icon-default': 'var(--icon-default)',
   'chip-icon': 'var(--chip-icon)',
   'icon-button': 'var(--icon-button)',
@@ -34,6 +35,11 @@ module.exports = {
   'secondary-button-background-hover': 'var(--secondary-button-background-hover)',
   'secondary-button-background-active': 'var(--secondary-button-background-active)',
   'scroll-background-default': 'var(--scroll-background-default)',
+
+  'white-button-background-default': 'var(--white-button-background-default)',
+  'white-button-background-hover': 'var(--white-button-background-hover)',
+  'white-button-background-active': 'var(--white-button-background-active)',
+  'white-button-background-disabled': 'var(--white-button-background-disabled)',
 
   /* BORDER */
   'token-container-border': 'var(--token-container-border)',
@@ -72,4 +78,7 @@ module.exports = {
   'row-background': 'var(--row-background)',
   hover: 'var(--hover)',
   'card-background': 'var(--card-background)',
+  'label-background-green': 'var(--label-background-green)',
+  'label-background-red': 'var(--label-background-red)',
+  'label-background-gray': 'var(--label-background-gray)',
 };

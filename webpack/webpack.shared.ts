@@ -90,6 +90,10 @@ const sharedConfig: Configuration = {
           filename: 'fonts/[name][ext]',
         },
       },
+      {
+        test: /\.(mp4|webm)$/,
+        loader: 'file-loader',
+      },
     ],
   },
 

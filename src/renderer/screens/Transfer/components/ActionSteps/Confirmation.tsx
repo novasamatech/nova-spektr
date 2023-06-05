@@ -1,3 +1,5 @@
+import { useState } from 'react';
+
 import { Transaction } from '@renderer/domain/transaction';
 import TransactionAmount from '@renderer/screens/Operations/components/TransactionAmount';
 import { Button, FootnoteText } from '@renderer/components/ui-redesign';
@@ -24,6 +26,7 @@ type Props = {
 
 const Confirmation = ({ account, connection, transaction, signatory, description, feeTx, onResult, onBack }: Props) => {
   const { t } = useI18n();
+  const [feeLoaded, setFeeLoaded] = useState(false);
 
   return (
     <div className="flex flex-col items-center gap-y-3">
@@ -53,6 +56,7 @@ const Confirmation = ({ account, connection, transaction, signatory, description
             api={connection.api}
             asset={connection.assets[0]}
             transaction={feeTx}
+            onFeeChange={(fee) => setFeeLoaded(Boolean(fee))}
           />
         )}
       </DetailWithLabel>
@@ -71,11 +75,11 @@ const Confirmation = ({ account, connection, transaction, signatory, description
       )}
 
       <div className="flex w-full justify-between mt-5">
-        <Button variant="text" onClick={onResult}>
+        <Button variant="text" onClick={onBack}>
           {t('operation.goBackButton')}
         </Button>
 
-        <Button prefixElement={<Icon name="vault" size={14} />} onClick={onResult}>
+        <Button disabled={!feeLoaded} prefixElement={<Icon name="vault" size={14} />} onClick={onResult}>
           {t('operation.signButton')}
         </Button>
       </div>

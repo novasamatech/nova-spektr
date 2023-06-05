@@ -42,6 +42,7 @@ module.exports = {
           ['@shared', './src/shared/'],
           ['@renderer', './src/renderer/'],
           ['@images', './src/renderer/assets/images/'],
+          ['@video', './src/renderer/assets/video/'],
         ],
         extensions: ['.js', '.jsx', '.ts', '.tsx', '.json'],
       },

@@ -4,7 +4,7 @@ import { BalanceDS, IBalanceStorage, TBalance } from './common/types';
 
 export const useBalanceStorage = (db: TBalance): IBalanceStorage => ({
   getBalance: (accountId: AccountId, chainId: ChainId, assetId: string): Promise<BalanceDS | undefined> => {
-    return db.where({ accountId, chainId, assetId }).first();
+    return db.get([accountId, chainId, assetId]);
   },
 
   getBalances: (accountIds: AccountId[]): Promise<BalanceDS[]> => {
@@ -29,12 +29,19 @@ export const useBalanceStorage = (db: TBalance): IBalanceStorage => ({
       .toArray();
   },
 
-  updateBalance: async (balance: Balance): Promise<void> => {
+  addBalance: async (balance: Balance): Promise<void> => {
     try {
       await db.add(balance);
     } catch (e) {
+      console.warn(
+        `The same balance for account ${balance.accountId} chain ${balance.chainId} and asset ${balance.assetId} exists`,
+      );
       await db.update([balance.accountId, balance.chainId, balance.assetId], balance);
     }
+  },
+
+  updateBalance: async (balance: Balance): Promise<void> => {
+    await db.update([balance.accountId, balance.chainId, balance.assetId], balance);
   },
 
   setBalanceIsValid: ({ accountId, chainId, assetId }: Balance, verified: boolean): Promise<number> => {

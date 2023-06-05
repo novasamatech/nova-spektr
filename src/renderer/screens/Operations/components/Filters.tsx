@@ -6,7 +6,7 @@ import { UNKNOWN_TYPE, getStatusOptions, getTransactionOptions, TransferTypes } 
 import { DropdownOption, DropdownResult } from '@renderer/components/ui-redesign/Dropdowns/common/types';
 import { MultisigTransaction, Transaction, TransactionType } from '@renderer/domain/transaction';
 import { useNetworkContext } from '@renderer/context/NetworkContext';
-import { MultiSelect } from '@renderer/components/ui-redesign';
+import { Button, MultiSelect } from '@renderer/components/ui-redesign';
 
 type FilterName = 'status' | 'network' | 'type';
 
@@ -92,6 +92,11 @@ const Filters = ({ txs, onChangeFilters }: Props) => {
     onChangeFilters(txs);
   }, [txs]);
 
+  const clearFilters = () => {
+    setSelectedOptions(emptySelected);
+    onChangeFilters(txs);
+  };
+
   const mapValues = (result: DropdownResult) => result.value;
 
   const filterTx = (t: MultisigTransaction, filters: SelectedFilters) =>
@@ -105,15 +110,10 @@ const Filters = ({ txs, onChangeFilters }: Props) => {
 
     const filteredTxs = txs.filter((t) => filterTx(t, newSelectedOptions));
     onChangeFilters(filteredTxs);
-
-    const filterOptionsFromTx = getAvailableFiltersOptions(filteredTxs);
-
-    setFiltersOptions((prevState) => ({
-      status: filterName === 'status' ? prevState.status : filterOptionsFromTx.status,
-      network: filterName === 'network' ? prevState.network : filterOptionsFromTx.network,
-      type: filterName === 'type' ? prevState.type : filterOptionsFromTx.type,
-    }));
   };
+
+  const filtersSelected =
+    selectedOptions.network.length || selectedOptions.status.length || selectedOptions.type.length;
 
   return (
     <div className="flex gap-2 my-4">
@@ -122,7 +122,6 @@ const Filters = ({ txs, onChangeFilters }: Props) => {
         placeholder={t('operations.filters.statusPlaceholder')}
         selectedIds={selectedOptions.status.map(({ id }) => id)}
         options={[...filtersOptions.status]}
-        disabled={filtersOptions.status.size === 1}
         onChange={(value) => handleFilterChange(value, 'status')}
       />
       <MultiSelect
@@ -130,7 +129,6 @@ const Filters = ({ txs, onChangeFilters }: Props) => {
         placeholder={t('operations.filters.networkPlaceholder')}
         selectedIds={selectedOptions.network.map(({ id }) => id)}
         options={[...filtersOptions.network]}
-        disabled={filtersOptions.network.size === 1}
         onChange={(value) => handleFilterChange(value, 'network')}
       />
       <MultiSelect
@@ -138,9 +136,12 @@ const Filters = ({ txs, onChangeFilters }: Props) => {
         placeholder={t('operations.filters.operationTypePlaceholder')}
         selectedIds={selectedOptions.type.map(({ id }) => id)}
         options={[...filtersOptions.type]}
-        disabled={filtersOptions.type.size === 1}
         onChange={(value) => handleFilterChange(value, 'type')}
       />
+
+      <Button variant="text" className="ml-auto" disabled={!filtersSelected} onClick={clearFilters}>
+        {t('operations.filters.clearAll')}
+      </Button>
     </div>
   );
 };
