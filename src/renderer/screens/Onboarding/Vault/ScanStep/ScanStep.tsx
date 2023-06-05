@@ -3,9 +3,9 @@ import { useI18n } from '@renderer/context/I18nContext';
 import QrReader from '../QrReader/QrReader';
 import { Button, HeaderTitleText, SmallTitleText } from '@renderer/components/ui-redesign';
 // @ts-ignore
-import onboarding_tutorial from '@renderer/assets/video/onboarding_tutorial.mp4';
+import onboarding_tutorial from '@video/onboarding_tutorial.mp4';
 // @ts-ignore
-import onboarding_tutorial_webm from '@renderer/assets/video/onboarding_tutorial.webm';
+import onboarding_tutorial_webm from '@video/onboarding_tutorial.webm';
 
 type Props = {
   onBack: () => void;

@@ -179,24 +179,25 @@ const ManageStepSingle = ({ seedInfo, onBack, onComplete }: Props) => {
     return derivedKeys.reduce<Account[]>((acc, derivedKey, index) => {
       const accountId = getAccountId(accountIndex, chainId, index);
 
-      if (inactiveAccounts[accountId]) return acc;
+      if (inactiveAccounts[accountId]) {
+        acc.push(
+          createAccount({
+            name: accountNames[accountId],
+            signingType: SigningType.PARITY_SIGNER,
+            rootId: rootAccountId,
+            accountId: toAccountId(derivedKey.address),
+            derivationPath: derivedKey.derivationPath,
+            chainId,
+            walletId,
+          }),
+        );
+      }
 
-      return [
-        ...acc,
-        createAccount({
-          name: accountNames[accountId],
-          signingType: SigningType.PARITY_SIGNER,
-          rootId: rootAccountId,
-          accountId: toAccountId(derivedKey.address),
-          derivationPath: derivedKey.derivationPath,
-          chainId,
-          walletId,
-        }),
-      ];
+      return acc;
     }, []);
   };
 
-  const createWallets: SubmitHandler<WalletForm> = async ({ walletName }) => {
+  const saveNewWallet: SubmitHandler<WalletForm> = async ({ walletName }) => {
     let walletId: ID;
 
     try {
@@ -246,7 +247,7 @@ const ManageStepSingle = ({ seedInfo, onBack, onComplete }: Props) => {
         <HeaderTitleText className="mb-10">{t('onboarding.vault.title')}</HeaderTitleText>
         <SmallTitleText className="mb-6">{t('onboarding.vault.manageTitle')}</SmallTitleText>
 
-        <form className="flex flex-col h-full" onSubmit={handleSubmit(createWallets)}>
+        <form className="flex flex-col h-full" onSubmit={handleSubmit(saveNewWallet)}>
           <Controller
             name="walletName"
             control={control}
@@ -319,7 +320,7 @@ const ManageStepSingle = ({ seedInfo, onBack, onComplete }: Props) => {
                       <div className="flex items-center ml-4">
                         <div className="bg-divider w-[2px] h-[34px] mr-4"></div>
                         <Chain
-                          fontProps={{ className: 'text-footnote font-inter text-text-primary' }}
+                          fontProps={{ className: 'text-footnote font-inter font-medium text-text-primary' }}
                           chainId={chainId as ChainId}
                         />
                       </div>

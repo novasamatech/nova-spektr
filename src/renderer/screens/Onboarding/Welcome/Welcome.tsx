@@ -14,8 +14,8 @@ const Welcome = () => {
   const { t } = useI18n();
   const navigate = useNavigate();
 
-  const [isWatchOnlyModalOpen, toggleWatchOnlyModal] = useToggle(false);
-  const [isVaultModalOpen, toggleVaultModal] = useToggle(false);
+  const [isWatchOnlyModalOpen, toggleWatchOnlyModal] = useToggle();
+  const [isVaultModalOpen, toggleVaultModal] = useToggle();
 
   const handleCreateWatchOnlyWallet = () => {
     toggleWatchOnlyModal();

@@ -29,8 +29,8 @@ const WalletMenu = ({ children, chains, wallets }: PropsWithChildren<Props>) => 
   const { setActiveAccount, setActiveAccounts } = useAccount();
 
   const [query, setQuery] = useState('');
-  const [isWatchOnlyModalOpen, toggleWatchOnlyModal] = useToggle(false);
-  const [isVaultModalOpen, toggleVaultModal] = useToggle(false);
+  const [isWatchOnlyModalOpen, toggleWatchOnlyModal] = useToggle();
+  const [isVaultModalOpen, toggleVaultModal] = useToggle();
 
   const groupedWallets = useGroupedWallets(wallets, chains, query);
 
