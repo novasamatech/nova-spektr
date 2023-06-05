@@ -287,6 +287,7 @@
     "addCallDataButton": "Добавить call data",
     "advanced": "Дополнительно",
     "approveButton": "Approve",
+    "cancelTitle": "Отменить",
     "continueButton": "Продолжить",
     "details": {
       "amount": "количество",
@@ -323,7 +324,6 @@
       "placeholder": "Причина...",
       "title": "Укажите причину отмены"
     },
-    "rejectTitle": "Отменить",
     "selectSignatory": "Выберите подписанта",
     "selectSignatoryTitle": "Выберите подписанта",
     "signButton": "Подписать в Polkadot Vault",

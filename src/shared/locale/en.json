@@ -287,6 +287,7 @@
     "addCallDataButton": "Add call data",
     "advanced": "Advanced",
     "approveButton": "Approve",
+    "cancelTitle": "Reject",
     "continueButton": "Continue",
     "details": {
       "amount": "Amount",
@@ -323,14 +324,13 @@
       "placeholder": "Reason...",
       "title": "Enter reject reason"
     },
-    "rejectTitle": "Reject",
     "selectSignatory": "Select signatory",
     "selectSignatoryTitle": "Select signatory",
     "signButton": "Sign with Polkadot Vault",
     "signatoriesTitle": "Signatories",
     "signing": "{ signed } of { threshold } signed",
     "status": {
-      "cancelled": "Cancelled",
+      "cancelled": "Rejected",
       "error": "Error",
       "established": "Established",
       "executed": "Executed",
