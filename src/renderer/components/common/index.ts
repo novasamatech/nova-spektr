@@ -19,6 +19,7 @@ import ExplorerLink from './ExplorerLink/ExplorerLink';
 import BalanceNew from './BalanceNew/BalanceNew';
 import AccountAddress from './AccountAddress/AccountAddress';
 import AddressWithName from './AddressWithName/AddressWithName';
+import QrGeneratorContainer from './QrCode/QrGeneratorContainer/QrGeneratorContainer';
 
 // SignatoryCard and AddressWithExplorers exported separately.
 // Adding them to this file causes to crash all tests which use anything from that file
@@ -33,6 +34,7 @@ export {
   QrReader,
   QrSignatureReader,
   QrTextGenerator,
+  QrGeneratorContainer,
   ValidatorsTable,
   QrTxGenerator,
   ChainLoader,

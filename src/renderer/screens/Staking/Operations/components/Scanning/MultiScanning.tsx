@@ -1,7 +1,6 @@
 import { ApiPromise } from '@polkadot/api';
 import { u8aConcat } from '@polkadot/util';
 import { UnsignedTransaction } from '@substrate/txwrapper-polkadot';
-import cn from 'classnames';
 import init, { Encoder } from 'raptorq';
 import { useEffect, useState } from 'react';
 
@@ -12,15 +11,14 @@ import {
 } from '@renderer/components/common/QrCode/QrGenerator/common/utils';
 import QrMultiframeGenerator from '@renderer/components/common/QrCode/QrGenerator/QrMultiframeTxGenerator';
 import { TRANSACTION_BULK } from '@renderer/components/common/QrCode/QrReader/common/constants';
-import { Block, Button, InfoLink, Plate } from '@renderer/components/ui';
 import { useI18n } from '@renderer/context/I18nContext';
 import { ChainId } from '@renderer/domain/shared-kernel';
 import { Transaction } from '@renderer/domain/transaction';
-import { getMetadataPortalUrl, TROUBLESHOOTING_URL } from '@renderer/screens/Signing/common/consts';
 import { AccountDS } from '@renderer/services/storage';
 import { useTransaction } from '@renderer/services/transaction/transactionService';
 import { toAddress } from '@renderer/shared/utils/address';
-import { secondsToMinutes } from '@renderer/shared/utils/time';
+import { Button } from '@renderer/components/ui-redesign';
+import { QrGeneratorContainer } from '@renderer/components/common';
 
 type Props = {
   api: ApiPromise;
@@ -28,7 +26,8 @@ type Props = {
   accounts: AccountDS[];
   addressPrefix: number;
   transactions: Transaction[];
-  countdown?: number;
+  countdown: number;
+  onGoBack: () => void;
   onResetCountdown: () => void;
   onResult: (unsigned: UnsignedTransaction[]) => void;
 };
@@ -39,7 +38,8 @@ export const MultiScanning = ({
   accounts,
   addressPrefix,
   transactions,
-  countdown = 0,
+  countdown,
+  onGoBack,
   onResetCountdown,
   onResult,
 }: Props) => {
@@ -90,52 +90,20 @@ export const MultiScanning = ({
   const bulkTxExist = bulkTransactions && bulkTransactions.length > 0;
 
   return (
-    <div className="overflow-y-auto flex-1">
-      <Plate as="section" className="flex flex-col items-center mx-auto w-[600px]">
-        <Block className="flex flex-col items-center gap-y-2.5 p-5">
-          <div className="text-neutral-variant text-base font-semibold">{t('signing.scanQrTitle')}</div>
-          {!bulkTransactions && <div className="w-[220px] h-[220px] rounded-2lg bg-shade-20 animate-pulse" />}
+    <div className="pt-4 flex flex-col items-center w-full">
+      <QrGeneratorContainer countdown={countdown} chainId={chainId} onQrReset={setupTransactions}>
+        {bulkTxExist && encoder && <QrMultiframeGenerator payload={bulkTransactions} size={200} encoder={encoder} />}
+      </QrGeneratorContainer>
 
-          {bulkTxExist && encoder && (
-            <div className="w-[220px] h-[220px]">
-              <QrMultiframeGenerator payload={bulkTransactions} size={200} encoder={encoder} />
-            </div>
-          )}
-          {bulkTxExist && (
-            <div className="flex items-center uppercase font-normal text-xs gap-1.25">
-              {t('signing.qrCountdownTitle')}
-              <div
-                className={cn(
-                  'w-10 rounded-md text-white py-0.5 text-center',
-                  (!countdown && 'bg-error') || (countdown >= 60 ? 'bg-success' : 'bg-alert'),
-                )}
-              >
-                {secondsToMinutes(countdown)}
-              </div>
-            </div>
-          )}
-        </Block>
-        <div className="flex flex-col items-center gap-y-1 text-xs font-semibold text-primary mt-2.5 mb-5">
-          <InfoLink url={TROUBLESHOOTING_URL}>{t('signing.troubleshootingLink')}</InfoLink>
-          <InfoLink url={getMetadataPortalUrl(chainId)}>{t('signing.metadataPortalLink')}</InfoLink>
-        </div>
+      <div className="flex w-full justify-between mt-3">
+        <Button variant="text" onClick={onGoBack}>
+          {t('operation.goBackButton')}
+        </Button>
 
-        {bulkTxExist && countdown > 0 ? (
-          <Button
-            className="w-fit mx-auto"
-            variant="fill"
-            pallet="primary"
-            weight="lg"
-            onClick={() => onResult(unsignedTransactions)}
-          >
-            {t('signing.continueButton')}
-          </Button>
-        ) : (
-          <Button variant="fill" pallet="primary" weight="lg" onClick={setupTransactions}>
-            {t('signing.generateNewQrButton')}
-          </Button>
-        )}
-      </Plate>
+        <Button disabled={!bulkTxExist || countdown === 0} onClick={() => onResult(unsignedTransactions)}>
+          {t('signing.continueButton')}
+        </Button>
+      </div>
     </div>
   );
 };

@@ -8,18 +8,31 @@ import { useI18n } from '@renderer/context/I18nContext';
 import { ErrorFields } from './common/constants';
 import { QR_READER_ERRORS } from './common/errors';
 import { DecodeCallback, ErrorObject, QrError, VideoInput } from './common/types';
+import { HexString } from '@renderer/domain/shared-kernel';
 
 type Props = {
-  size?: number | [number, number];
+  size?: number;
   cameraId?: string;
   className?: string;
   onStart?: () => void;
-  onResult: (scanResult: string) => void;
+  bgVideo?: boolean;
+  bgVideoClassName?: string;
+  onResult: (scanResult: HexString) => void;
   onError?: (error: ErrorObject) => void;
   onCameraList?: (cameras: VideoInput[]) => void;
 };
 
-const QrSignatureReader = ({ size = 300, cameraId, className, onCameraList, onResult, onStart, onError }: Props) => {
+const QrSignatureReader = ({
+  size = 300,
+  cameraId,
+  className,
+  onCameraList,
+  bgVideo,
+  bgVideoClassName,
+  onResult,
+  onStart,
+  onError,
+}: Props) => {
   const { t } = useI18n();
 
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -29,10 +42,10 @@ const QrSignatureReader = ({ size = 300, cameraId, className, onCameraList, onRe
   const controlsRef = useRef<IScannerControls>();
   const isComplete = useRef(false);
 
-  const videoStyle =
-    typeof size === 'number'
-      ? { width: size + 'px', height: size + 'px' }
-      : { width: size[0] + 'px', height: size[1] + 'px' };
+  const bgVideoRef = useRef<HTMLVideoElement>(null);
+  const bgControlsRef = useRef<IScannerControls>();
+
+  const videoStyle = { width: size + 'px', height: size + 'px' };
 
   const isQrErrorObject = (error: unknown): boolean => {
     if (!error) return false;
@@ -86,6 +99,13 @@ const QrSignatureReader = ({ size = 300, cameraId, className, onCameraList, onRe
 
     try {
       controlsRef.current = await scannerRef.current.decodeFromVideoDevice(cameraId, videoRef.current, decodeCallback);
+      if (bgVideoRef.current) {
+        bgControlsRef.current = await scannerRef.current.decodeFromVideoDevice(
+          cameraId,
+          bgVideoRef.current,
+          decodeCallback,
+        );
+      }
       onStart?.();
     } catch (error) {
       throw QR_READER_ERRORS[QrError.DECODE_ERROR];
@@ -132,18 +152,45 @@ const QrSignatureReader = ({ size = 300, cameraId, className, onCameraList, onRe
     })();
   }, [cameraId]);
 
+  if (!bgVideo) {
+    return (
+      <video
+        muted
+        autoPlay
+        controls={false}
+        ref={videoRef}
+        data-testid="qr-reader"
+        className={cnTw('object-cover  absolute -scale-x-100', className)}
+        style={videoStyle}
+      >
+        {t('qrReader.videoError')}
+      </video>
+    );
+  }
+
   return (
-    <video
-      muted
-      autoPlay
-      controls={false}
-      ref={videoRef}
-      data-testid="qr-reader"
-      className={cnTw('object-cover -scale-x-100', className)}
-      style={videoStyle}
-    >
-      {t('qrReader.videoError')}
-    </video>
+    <>
+      <div className="relative w-[240px] h-[240px] rounded-[1.75rem] overflow-hidden">
+        <video
+          muted
+          autoPlay
+          controls={false}
+          ref={videoRef}
+          data-testid="qr-reader"
+          className={cnTw('object-cover absolute -scale-x-100', className)}
+        >
+          {t('qrReader.videoError')}
+        </video>
+      </div>
+      <video
+        muted
+        autoPlay
+        controls={false}
+        ref={bgVideoRef}
+        data-testid="qr-reader"
+        className={cnTw('absolute -scale-x-100 object-cover top-0 left-0 blur-[14px] max-w-none', bgVideoClassName)}
+      />
+    </>
   );
 };
 

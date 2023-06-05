@@ -19,11 +19,11 @@ import {
 import { TRANSACTION_BULK } from '@renderer/components/common/QrCode/QrReader/common/constants';
 import { Command } from '@renderer/components/common/QrCode/QrGenerator/common/constants';
 import QrMultiframeGenerator from '@renderer/components/common/QrCode/QrGenerator/QrMultiframeTxGenerator';
-import MultiframeSignatureReader from './MultiframeSignatureReader/MultiframeSignatureReader';
 import { HexString, SigningType } from '@renderer/domain/shared-kernel';
 import Progress from './Progress';
 import { secondsToMinutes } from '@renderer/shared/utils/time';
 import { toAddress } from '@renderer/shared/utils/address';
+import QrSignatureReader from '@renderer/screens/Signing/QrReaderWrapper/QrReaderWrapper';
 
 const enum Step {
   SCANNING = 0,
@@ -210,11 +210,10 @@ const Signing = () => {
               <div className="my-4 text-neutral-variant text-base font-semibold">{t('signing.scanSignatureTitle')}</div>
 
               <div className="h-[460px]">
-                <MultiframeSignatureReader
+                <QrSignatureReader
                   className="w-full rounded-2lg"
                   countdown={countdown}
-                  size={460}
-                  onResult={sign}
+                  onResult={(res) => sign(res as HexString[])}
                 />
               </div>
               {countdown === 0 && (
