@@ -70,7 +70,7 @@ export const Scanning = ({
         <div className="flex items-center gap-x-0.5 mb-2">
           <FootnoteText className="text-text-secondary">{t('signing.signatory')}</FootnoteText>
           <AddressWithExplorers
-            address={account.accountId}
+            accountId={account.accountId}
             name={account.name}
             signType={account.signingType}
             explorers={explorers}
