@@ -30,6 +30,7 @@ import {
   BodyText,
   FootnoteText,
   LabelText,
+  HeaderTitleText,
 } from './Typography';
 
 export {
@@ -64,4 +65,5 @@ export {
   MultiSelect,
   DropdownButton,
   Alert,
+  HeaderTitleText,
 };

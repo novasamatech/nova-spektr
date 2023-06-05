@@ -19,6 +19,7 @@ module.exports = {
   'tab-icon-active': 'var(--tab-icon-active)',
   'tab-icon-inactive': 'var(--tab-icon-inactive)',
   'icon-hover': 'var(--icon-hover)',
+  'icon-active': 'var(--icon-active)',
   'icon-default': 'var(--icon-default)',
   'chip-icon': 'var(--chip-icon)',
   'icon-button': 'var(--icon-button)',
@@ -81,4 +82,6 @@ module.exports = {
   'alert-background': 'var(--alert-background)',
   'alert-background-warning': 'var(--alert-background-warning)',
   'alert-background-negative': 'var(--alert-background-negative)',
+  'label-background-gray': 'var(--label-background-gray)',
+  'label-background-green': 'var(--label-background-green)',
 };

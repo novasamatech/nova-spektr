@@ -19,6 +19,7 @@
   --tab-icon-active: #363643;
   --tab-icon-inactive: #868692;
   --icon-hover: #79797d;
+  --icon-active: #363643;
   --icon-default: #d2d2d9;
   --chip-icon: #b8b8bd;
   --icon-button: #fff;
@@ -81,6 +82,8 @@
   --alert-background: rgb(246, 240, 250);
   --alert-background-warning: rgba(246, 143, 7, 0.12);
   --alert-background-negative: rgba(245, 33, 99, 0.08);
+  --label-background-gray: rgba(128, 128, 128, 0.48);
+  --label-background-green: #01a63e;
 
   /* SHADOW */
   --card-shadow: 0px 3px 4px rgba(69, 69, 137, 0.04), inset 0px -0.5px 0px rgba(69, 69, 137, 0.12);

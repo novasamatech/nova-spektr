@@ -12,6 +12,7 @@ export const browserRouter = createBrowserRouter([
     path: Paths.ROOT,
     element: <App />,
     children: [
+      { path: Paths.ONBOARDING, element: <Screens.Onboarding.Welcome /> },
       {
         element: <Layouts.PrimaryLayout />,
         children: [
@@ -45,16 +46,6 @@ export const browserRouter = createBrowserRouter([
               { path: Paths.MATRIX, element: <Screens.Settings.Matrix /> },
             ],
           },
-        ],
-      },
-      {
-        path: Paths.ONBOARDING,
-        element: <Layouts.Onboarding />,
-        children: [
-          { index: true, element: <Screens.Onboarding.Welcome /> },
-          { path: Paths.WATCH_ONLY, element: <Screens.Onboarding.WatchOnly /> },
-          { path: Paths.PARITY, element: <Screens.Onboarding.Parity /> },
-          // { path: Paths.LEDGER, element: <Screens.Onboarding.LedgerFlow /> },
         ],
       },
     ],

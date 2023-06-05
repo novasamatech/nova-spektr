@@ -39,16 +39,20 @@ const Input = forwardRef<HTMLInputElement, Props>(
           CommonInputStyles,
           !disabled && 'focus-within:border-active-container-border hover:shadow-card-shadow',
           !disabled && 'focus-within:outline focus-within:outline-2 focus-within:outline-focus-container-border',
-          invalid && 'border-filter-border-negative',
-          'disabled:bg-input-background-disabled disabled:text-text-tertiary disabled:placeholder:text-text-tertiary',
+          disabled && 'bg-input-background-disabled text-text-tertiary',
           'border-filter-border',
+          invalid && 'border-filter-border-negative',
           wrapperClass,
         )}
       >
         {prefixElement}
         <input
           id={id}
-          className={cnTw('focus:outline-none w-full', className)}
+          className={cnTw(
+            'focus:outline-none w-full placeholder:text-text-secondary',
+            disabled && 'text-text-tertiary placeholder:text-text-tertiary',
+            className,
+          )}
           ref={ref}
           type={type}
           disabled={disabled}
