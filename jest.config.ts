@@ -46,7 +46,7 @@ const config: Config = {
     '^@shared(.*)$': '<rootDir>/src/shared/$1',
     '^@renderer(.*)$': '<rootDir>/src/renderer/$1',
     '^@images(.*)$': '<rootDir>/src/renderer/assets/images/$1',
-    '^@video(.*)$': '<rootDir>/src/renderer/assets/images/$1',
+    '^@video(.*)$': '<rootDir>/src/renderer/assets/video/$1',
   },
   modulePathIgnorePatterns: ['<rootDir>/tests'],
   collectCoverageFrom: [

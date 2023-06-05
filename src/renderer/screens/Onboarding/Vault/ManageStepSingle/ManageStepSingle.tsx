@@ -3,7 +3,6 @@ import { useEffect, useState } from 'react';
 import { Controller, useForm, SubmitHandler } from 'react-hook-form';
 import { u8aToHex } from '@polkadot/util';
 
-import { AccountsList } from '@renderer/components/common';
 import { useI18n } from '@renderer/context/I18nContext';
 import { Chain } from '@renderer/domain/chain';
 import { ErrorType, SigningType } from '@renderer/domain/shared-kernel';
@@ -12,6 +11,7 @@ import { Button, Input, InputHint, HeaderTitleText, SmallTitleText } from '@rend
 import { SeedInfo } from '@renderer/components/common/QrCode/QrReader/common/types';
 import { useAccount } from '@renderer/services/account/accountService';
 import { createAccount } from '@renderer/domain/account';
+import AccountsList from '@renderer/components/common/AccountsList/AccountsList';
 
 type WalletForm = {
   walletName: string;

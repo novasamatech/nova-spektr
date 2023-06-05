@@ -6,10 +6,6 @@ import { useI18n } from '@renderer/context/I18nContext';
 import { useToggle } from '@renderer/shared/hooks';
 import cnTw from '@renderer/shared/utils/twMerge';
 import WatchOnly from '../WatchOnly/WatchOnly';
-import { createAccount } from '@renderer/domain/account';
-import { SigningType } from '@renderer/domain/shared-kernel';
-import { toAccountId } from '@renderer/shared/utils/address';
-import { useAccount } from '@renderer/services/account/accountService';
 import Paths from '@renderer/routes/paths';
 import Vault from '../Vault/Vault';
 import PrivacyPolicy from './PrivacyPolicy';
@@ -17,19 +13,11 @@ import PrivacyPolicy from './PrivacyPolicy';
 const Welcome = () => {
   const { t } = useI18n();
   const navigate = useNavigate();
-  const { addAccount } = useAccount();
 
   const [isWatchOnlyModalOpen, toggleWatchOnlyModal] = useToggle(false);
   const [isVaultModalOpen, toggleVaultModal] = useToggle(false);
 
-  const handleCreateWatchOnlyWallet = async ({ walletName, address }: { walletName: string; address: string }) => {
-    const newAccount = createAccount({
-      name: walletName.trim(),
-      signingType: SigningType.WATCH_ONLY,
-      accountId: toAccountId(address),
-    });
-
-    await addAccount(newAccount);
+  const handleCreateWatchOnlyWallet = () => {
     toggleWatchOnlyModal();
     navigate(Paths.BALANCES);
   };

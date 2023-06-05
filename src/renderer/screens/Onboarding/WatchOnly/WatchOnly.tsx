@@ -2,15 +2,17 @@ import cn from 'classnames';
 import { useEffect, useState } from 'react';
 import { Controller, SubmitHandler, useForm } from 'react-hook-form';
 
-import { AccountsList } from '@renderer/components/common';
 import { Icon, Identicon } from '@renderer/components/ui';
 import { useI18n } from '@renderer/context/I18nContext';
 import { Chain } from '@renderer/domain/chain';
-import { ErrorType, AccountId } from '@renderer/domain/shared-kernel';
+import { ErrorType, AccountId, SigningType } from '@renderer/domain/shared-kernel';
 import { useChains } from '@renderer/services/network/chainsService';
 import { toAccountId, validateAddress } from '@renderer/shared/utils/address';
 import { BaseModal, Button, Input, InputHint, HeaderTitleText, SmallTitleText } from '@renderer/components/ui-redesign';
 import EmptyState from './EmptyState';
+import { createAccount } from '@renderer/domain/account';
+import { useAccount } from '@renderer/services/account/accountService';
+import AccountsList from '@renderer/components/common/AccountsList/AccountsList';
 
 type WalletForm = {
   walletName: string;
@@ -20,13 +22,14 @@ type WalletForm = {
 type Props = {
   isOpen: boolean;
   onClose: () => void;
-  onComplete: SubmitHandler<WalletForm>;
+  onComplete: () => void;
 };
 
 const WatchOnly = ({ isOpen, onClose, onComplete }: Props) => {
   const { t } = useI18n();
 
   const { getChainsData, sortChains } = useChains();
+  const { addAccount } = useAccount();
 
   const [chains, setChains] = useState<Chain[]>([]);
   const [accountId, setAccountId] = useState<AccountId>();
@@ -51,6 +54,18 @@ const WatchOnly = ({ isOpen, onClose, onComplete }: Props) => {
     getChainsData().then((chains) => setChains(sortChains(chains)));
   }, []);
 
+  const createWallet: SubmitHandler<WalletForm> = async ({ walletName, address }) => {
+    const newAccount = createAccount({
+      name: walletName.trim(),
+      signingType: SigningType.WATCH_ONLY,
+      accountId: toAccountId(address),
+    });
+
+    await addAccount(newAccount);
+
+    onComplete();
+  };
+
   return (
     <BaseModal
       contentClass="flex h-full"
@@ -63,7 +78,7 @@ const WatchOnly = ({ isOpen, onClose, onComplete }: Props) => {
         <HeaderTitleText className="mb-10">{t('onboarding.watchOnly.title')}</HeaderTitleText>
         <SmallTitleText className="mb-6">{t('onboarding.watchOnly.manageTitle')}</SmallTitleText>
 
-        <form className="flex flex-col gap-4 h-full" onSubmit={handleSubmit(onComplete)}>
+        <form className="flex flex-col gap-4 h-full" onSubmit={handleSubmit(createWallet)}>
           <Controller
             name="walletName"
             control={control}
