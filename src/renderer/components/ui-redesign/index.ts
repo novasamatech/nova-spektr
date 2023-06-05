@@ -28,6 +28,7 @@ import {
   BodyText,
   FootnoteText,
   LabelText,
+  HeaderTitleText,
 } from './Typography';
 
 export {
@@ -60,4 +61,5 @@ export {
   Checkbox,
   MultiSelect,
   DropdownButton,
+  HeaderTitleText,
 };

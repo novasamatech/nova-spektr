@@ -78,7 +78,7 @@ export const useAccount = (): IAccountService => {
       await deactivateAccounts(allAccounts);
 
       const newActiveAccounts = allAccounts
-        .filter((a) => accountsId.includes(a.accountId))
+        .filter((a) => a.id && accountsId.includes(a.id))
         .map((a) => ({ ...a, isActive: true }));
       if (newActiveAccounts.length) {
         await updateAccounts(newActiveAccounts);
@@ -88,12 +88,12 @@ export const useAccount = (): IAccountService => {
     }
   };
 
-  const setActiveAccount = async (accountId: ID): Promise<void> => {
+  const setActiveAccount = async (id: ID): Promise<void> => {
     try {
       const allAccounts = await getAccounts();
       await deactivateAccounts(allAccounts);
 
-      const newActiveAccount = allAccounts.find((a) => a.accountId === accountId);
+      const newActiveAccount = allAccounts.find((a) => a.id === id);
       if (newActiveAccount) {
         await updateAccount({ ...newActiveAccount, isActive: true });
       }

@@ -57,7 +57,7 @@ const BaseModal = ({
               {closeButton && (
                 <IconButton
                   name="close"
-                  className="absolute top-3 right-3"
+                  className="absolute top-3 right-3 z-10"
                   ariaLabel={t('basemodal.closeButton')}
                   onClick={onClose}
                 />

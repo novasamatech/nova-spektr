@@ -1,19 +1,27 @@
 import { Icon } from '@renderer/components/ui';
 import { useI18n } from '@renderer/context/I18nContext';
 import { BodyText } from '@renderer/components/ui-redesign';
+import { Account } from '@renderer/domain/account';
 
-// TODO move to shared and add label as a prop since empty list state the same for assets
-const EmptyOperations = () => {
+type Props = {
+  multisigAccount: Account | null;
+  isEmptyFromFilters: boolean;
+};
+
+const EmptyOperations = ({ multisigAccount, isEmptyFromFilters }: Props) => {
   const { t } = useI18n();
 
-  // TODO add wallet check here when new wallet management will be implemented
-  const walletIsMulti = true;
+  const emptyText = multisigAccount
+    ? isEmptyFromFilters
+      ? 'operations.noOperationsFilters'
+      : 'operations.noOperationsDescription'
+    : 'operations.noOperationsWalletNotMulti';
 
   return (
-    <div className="flex flex-col items-center justify-center gap-y-8 w-full h-full">
+    <div className="flex flex-col items-center justify-center gap-y-8 flex-1 w-full">
       <Icon as="img" name="emptyList" alt={t('operations.noOperationsDescription')} size={178} />
       <BodyText align="center" className="text-text-tertiary max-w-[340px]">
-        {walletIsMulti ? t('operations.noOperationsDescription') : t('operations.noOperationsWalletNotMulti')}
+        {t(emptyText)}
       </BodyText>
     </div>
   );
