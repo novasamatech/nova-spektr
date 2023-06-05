@@ -8,8 +8,6 @@ import { AccountDS, MultisigTransactionDS } from '@renderer/services/storage';
 import { useToggle, useCountdown } from '@renderer/shared/hooks';
 import { MultisigAccount } from '@renderer/domain/account';
 import { ExtendedChain } from '@renderer/services/network/common/types';
-import { Signing } from '../ActionSteps/Signing';
-import { Scanning } from '../ActionSteps/Scanning';
 import { Transaction, TransactionType } from '@renderer/domain/transaction';
 import { Address, HexString, Timepoint } from '@renderer/domain/shared-kernel';
 import { toAddress } from '@renderer/shared/utils/address';
@@ -25,6 +23,8 @@ import Confirmation from '@renderer/screens/Operations/components/ActionSteps/Co
 import { Icon } from '@renderer/components/ui';
 import OperationResult from '@renderer/components/ui-redesign/OperationResult/OperationResult';
 import OperationModalTitle from '@renderer/screens/Operations/components/OperationModalTitle';
+import { Scanning } from '@renderer/components/common/Scanning/Scanning';
+import Signing from '@renderer/screens/Transfer/components/ActionSteps/Signing';
 
 type Props = {
   tx: MultisigTransactionDS;
@@ -57,9 +57,6 @@ const RejectTx = ({ tx, account, connection }: Props) => {
   const [rejectTx, setRejectTx] = useState<Transaction>();
   const [signature, setSignature] = useState<HexString>();
   const [unsignedTx, setUnsignedTx] = useState<UnsignedTransaction>();
-
-  // if qr expires while on signing screen this state used as a flag for Scanning step to show qr error instead of generating new
-  const [isQrExpired, setIsQrExpired] = useState(false);
 
   const accounts = getLiveAccounts();
   const signAccount = accounts.find((a) => a.accountId === tx.depositor);
@@ -142,16 +139,6 @@ const RejectTx = ({ tx, account, connection }: Props) => {
     }
   };
 
-  const handleQrExpiredWhileSigning = () => {
-    setIsQrExpired(true);
-    goBack();
-  };
-
-  const handleQrReset = () => {
-    resetCountdown();
-    setIsQrExpired(false);
-  };
-
   const isSubmitStep = activeStep === Step.SUBMIT && rejectTx && signAccount && signature && unsignedTx;
 
   return (
@@ -187,31 +174,22 @@ const RejectTx = ({ tx, account, connection }: Props) => {
             </Button>
           </>
         )}
-        {activeStep === Step.SCANNING && (
-          <>
-            {rejectTx && connection.api && signAccount && (
-              <Scanning
-                api={connection.api}
-                chainId={tx.chainId}
-                transaction={rejectTx}
-                account={signAccount}
-                explorers={connection?.explorers}
-                addressPrefix={connection?.addressPrefix}
-                countdown={countdown}
-                isQrExpired={isQrExpired}
-                onResetCountdown={handleQrReset}
-                onResult={setUnsignedTx}
-              />
-            )}
-
-            <div className="flex w-full justify-between">
-              <Button variant="text" onClick={goBack}>
-                {t('operation.goBackButton')}
-              </Button>
-
-              <Button onClick={() => setActiveStep(Step.SIGNING)}>{t('operation.continueButton')}</Button>
-            </div>
-          </>
+        {activeStep === Step.SCANNING && rejectTx && connection.api && signAccount && (
+          <Scanning
+            api={connection.api}
+            chainId={tx.chainId}
+            transaction={rejectTx}
+            account={signAccount}
+            explorers={connection?.explorers}
+            addressPrefix={connection?.addressPrefix}
+            countdown={countdown}
+            onResetCountdown={resetCountdown}
+            onGoBack={goBack}
+            onResult={(tx) => {
+              setUnsignedTx(tx);
+              setActiveStep(Step.SIGNING);
+            }}
+          />
         )}
 
         {activeStep === Step.SIGNING && (
@@ -223,7 +201,7 @@ const RejectTx = ({ tx, account, connection }: Props) => {
                 transaction={rejectTx}
                 countdown={countdown}
                 assetId={asset?.assetId.toString() || '0'}
-                onQrExpired={handleQrExpiredWhileSigning}
+                onGoBack={goBack}
                 onStartOver={() => {}}
                 onResult={onSignResult}
               />

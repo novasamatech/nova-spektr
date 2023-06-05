@@ -13,13 +13,15 @@ import { useNetworkContext } from '@renderer/context/NetworkContext';
 import { useChains } from '@renderer/services/network/chainsService';
 import { Address, ChainId, HexString, AccountId } from '@renderer/domain/shared-kernel';
 import { Transaction, TransactionType } from '@renderer/domain/transaction';
-import { Confirmation, MultiScanning, Signing, Submit, SingleScanning } from '../components';
+import { Confirmation, MultiScanning, Signing, Submit } from '../components';
 import Paths from '@renderer/routes/paths';
 import { AccountDS } from '@renderer/services/storage';
 import InitOperation, { DestinationResult } from './InitOperation/InitOperation';
 import { useCountdown } from '@renderer/shared/hooks';
 import { MultisigAccount, isMultisig, Account } from '@renderer/domain/account';
 import { useTransaction } from '@renderer/services/transaction/transactionService';
+import { Scanning } from '@renderer/components/common/Scanning/Scanning';
+import ModalMock from '../components/ModalMock';
 
 const enum Step {
   INIT,
@@ -223,30 +225,35 @@ const Destination = () => {
           onAddToQueue={noop}
         />
       )}
-      {activeStep === Step.SCANNING &&
-        (transactions.length > 1 ? (
-          <MultiScanning
-            api={api}
-            addressPrefix={addressPrefix}
-            countdown={countdown}
-            accounts={accounts}
-            transactions={transactions}
-            chainId={chainId}
-            onResetCountdown={resetCountdown}
-            onResult={onScanResult}
-          />
-        ) : (
-          <SingleScanning
-            api={api}
-            addressPrefix={addressPrefix}
-            countdown={countdown}
-            account={signer || accounts[0]}
-            transaction={multisigTx || transactions[0]}
-            chainId={chainId}
-            onResetCountdown={resetCountdown}
-            onResult={(unsignedTx) => onScanResult([unsignedTx])}
-          />
-        ))}
+      {activeStep === Step.SCANNING && (
+        <ModalMock>
+          {transactions.length > 1 ? (
+            <MultiScanning
+              api={api}
+              addressPrefix={addressPrefix}
+              countdown={countdown}
+              accounts={accounts}
+              transactions={transactions}
+              chainId={chainId}
+              onGoBack={() => setActiveStep(Step.CONFIRMATION)}
+              onResetCountdown={resetCountdown}
+              onResult={onScanResult}
+            />
+          ) : (
+            <Scanning
+              api={api}
+              addressPrefix={addressPrefix}
+              countdown={countdown}
+              account={signer || accounts[0]}
+              transaction={multisigTx || transactions[0]}
+              chainId={chainId}
+              onGoBack={() => setActiveStep(Step.CONFIRMATION)}
+              onResetCountdown={resetCountdown}
+              onResult={(unsignedTx) => onScanResult([unsignedTx])}
+            />
+          )}
+        </ModalMock>
+      )}
       {activeStep === Step.SIGNING && (
         <Signing
           countdown={countdown}

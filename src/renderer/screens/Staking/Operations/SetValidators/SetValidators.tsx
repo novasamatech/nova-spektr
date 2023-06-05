@@ -18,6 +18,7 @@ import { getRelaychainAsset } from '@renderer/shared/utils/assets';
 import { Confirmation, MultiScanning, Signing, Submit, Validators } from '../components';
 import { useCountdown } from '@renderer/shared/hooks';
 import { getTotalAccounts } from '@renderer/screens/Staking/Operations/common/utils';
+import ModalMock from '../components/ModalMock';
 
 const enum Step {
   INIT,
@@ -179,16 +180,19 @@ const SetValidators = () => {
         </Confirmation>
       )}
       {activeStep === Step.SCANNING && (
-        <MultiScanning
-          api={api}
-          chainId={chainId}
-          accounts={totalAccounts}
-          transactions={transactions}
-          addressPrefix={addressPrefix}
-          countdown={countdown}
-          onResetCountdown={resetCountdown}
-          onResult={onScanResult}
-        />
+        <ModalMock>
+          <MultiScanning
+            api={api}
+            chainId={chainId}
+            accounts={totalAccounts}
+            transactions={transactions}
+            addressPrefix={addressPrefix}
+            countdown={countdown}
+            onGoBack={() => setActiveStep(Step.CONFIRMATION)}
+            onResetCountdown={resetCountdown}
+            onResult={onScanResult}
+          />
+        </ModalMock>
       )}
       {activeStep === Step.SIGNING && (
         <Signing

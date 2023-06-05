@@ -40,6 +40,11 @@ jest.mock('@renderer/context/NetworkContext', () => ({
   })),
 }));
 
+jest.mock(
+  '@renderer/components/common/AddressWithExplorers/AddressWithExplorers',
+  jest.fn().mockReturnValue(({ address }: { address: string }) => <span>{address}</span>),
+);
+
 const mockButton = (text: string, callback: () => void) => (
   <button type="button" onClick={callback}>
     {text}
@@ -55,10 +60,13 @@ jest.mock('./InitOperation/InitOperation', () => ({ onResult }: any) => {
 jest.mock('../components/index', () => ({
   Validators: ({ onResult }: any) => mockButton('to confirm', onResult),
   Confirmation: ({ onResult }: any) => mockButton('to scan', onResult),
-  SingleScanning: ({ onResult }: any) => mockButton('to sign', onResult),
   MultiScanning: ({ onResult }: any) => mockButton('to sign', onResult),
   Signing: ({ onResult }: any) => mockButton('to submit', onResult),
   Submit: () => 'finish',
+}));
+
+jest.mock('@renderer/components/common/Scanning/Scanning', () => ({
+  Scanning: ({ onResult }: any) => mockButton('to sign', onResult),
 }));
 
 describe('screens/Staking/Bond', () => {
