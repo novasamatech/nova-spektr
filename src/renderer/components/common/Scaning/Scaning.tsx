@@ -59,10 +59,10 @@ export const Scanning = ({
   };
 
   useEffect(() => {
-    setupTransaction();
+    !txPayload && setupTransaction();
   }, []);
 
-  const address = transaction.address;
+  const address = transaction?.address;
 
   return (
     <div className="pt-4 flex flex-col items-center w-full">

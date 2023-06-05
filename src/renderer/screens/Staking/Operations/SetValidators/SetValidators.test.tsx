@@ -65,6 +65,10 @@ jest.mock('../components/index', () => ({
   Submit: () => 'finish',
 }));
 
+jest.mock('@renderer/components/common/Scaning/Scaning', () => ({
+  Scanning: ({ onResult }: any) => mockButton('to sign', onResult),
+}));
+
 describe('screens/Staking/SetValidators', () => {
   test('should render component', () => {
     render(<SetValidators />, { wrapper: MemoryRouter });

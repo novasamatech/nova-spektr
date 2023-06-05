@@ -72,10 +72,13 @@ jest.mock('./InitOperation/InitOperation', () => ({ onResult }: any) => {
 
 jest.mock('../components/index', () => ({
   Confirmation: ({ onResult }: any) => mockButton('to scan', onResult),
-  SingleScanning: ({ onResult }: any) => mockButton('to sign', onResult),
   MultiScanning: ({ onResult }: any) => mockButton('to sign', onResult),
   Signing: ({ onResult }: any) => mockButton('to submit', onResult),
   Submit: () => 'finish',
+}));
+
+jest.mock('@renderer/components/common/Scaning/Scaning', () => ({
+  Scanning: ({ onResult }: any) => mockButton('to sign', onResult),
 }));
 
 describe('screens/Staking/Restake', () => {
