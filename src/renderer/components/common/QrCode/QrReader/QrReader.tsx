@@ -18,7 +18,7 @@ const enum Status {
 }
 
 type Props = {
-  size?: number;
+  size?: number | [number, number];
   cameraId?: string;
   className?: string;
   onStart?: () => void;
