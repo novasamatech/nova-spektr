@@ -15,9 +15,10 @@ import { useAccount } from '@renderer/services/account/accountService';
 import { ValidatorMap } from '@renderer/services/staking/common/types';
 import { toAddress } from '@renderer/shared/utils/address';
 import { getRelaychainAsset } from '@renderer/shared/utils/assets';
-import { Confirmation, ModalMock, MultiScanning, Signing, Submit, Validators } from '../components';
+import { Confirmation, MultiScanning, Signing, Submit, Validators } from '../components';
 import { useCountdown } from '@renderer/shared/hooks';
 import { getTotalAccounts } from '@renderer/screens/Staking/Operations/common/utils';
+import ModalMock from '../components/ModalMock';
 
 const enum Step {
   INIT,

@@ -2,7 +2,7 @@ import { useEffect } from 'react';
 
 import QrReaderWrapper from '@renderer/screens/Signing/QrReaderWrapper/QrReaderWrapper';
 import { HexString } from '@renderer/domain/shared-kernel';
-import { ModalMock } from '@renderer/screens/Staking/Operations/components';
+import ModalMock from '../ModalMock';
 
 type Props = {
   multiQr: boolean;

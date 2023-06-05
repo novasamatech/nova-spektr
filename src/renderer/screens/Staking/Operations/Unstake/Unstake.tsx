@@ -17,13 +17,14 @@ import { useChains } from '@renderer/services/network/chainsService';
 import { StakingMap } from '@renderer/services/staking/common/types';
 import { useStakingData } from '@renderer/services/staking/stakingDataService';
 import InitOperation, { UnstakeResult } from './InitOperation/InitOperation';
-import { Confirmation, ModalMock, MultiScanning, Signing, Submit } from '../components';
+import { Confirmation, MultiScanning, Signing, Submit } from '../components';
 import { toAddress } from '@renderer/shared/utils/address';
 import { getRelaychainAsset } from '@renderer/shared/utils/assets';
 import { useCountdown } from '@renderer/shared/hooks';
 import { useTransaction } from '@renderer/services/transaction/transactionService';
 import { Account, MultisigAccount, isMultisig } from '@renderer/domain/account';
 import { Scanning } from '@renderer/components/common/Scanning/Scanning';
+import ModalMock from '../components/ModalMock';
 
 const enum Step {
   INIT,

@@ -12,13 +12,14 @@ import { ChainId, HexString, Address, AccountId } from '@renderer/domain/shared-
 import { Transaction, TransactionType } from '@renderer/domain/transaction';
 import Paths from '@renderer/routes/paths';
 import InitOperation, { StakeMoreResult } from './InitOperation/InitOperation';
-import { Confirmation, ModalMock, MultiScanning, Signing, Submit } from '../components';
+import { Confirmation, MultiScanning, Signing, Submit } from '../components';
 import { getRelaychainAsset } from '@renderer/shared/utils/assets';
 import { useCountdown } from '@renderer/shared/hooks';
 import { isMultisig, MultisigAccount, Account } from '@renderer/domain/account';
 import { useTransaction } from '@renderer/services/transaction/transactionService';
 import { toAddress } from '@renderer/shared/utils/address';
 import { Scanning } from '@renderer/components/common/Scanning/Scanning';
+import ModalMock from '../components/ModalMock';
 
 const enum Step {
   INIT,

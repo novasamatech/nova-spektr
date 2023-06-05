@@ -16,11 +16,12 @@ import { Transaction, TransactionType } from '@renderer/domain/transaction';
 import Paths from '@renderer/routes/paths';
 import InitOperation, { BondResult } from './InitOperation/InitOperation';
 import { ValidatorMap } from '@renderer/services/staking/common/types';
-import { Validators, Confirmation, MultiScanning, Signing, Submit, ModalMock } from '../components';
+import { Validators, Confirmation, MultiScanning, Signing, Submit } from '../components';
 import { useCountdown } from '@renderer/shared/hooks';
 import { Account, MultisigAccount, isMultisig } from '@renderer/domain/account';
 import { useTransaction } from '@renderer/services/transaction/transactionService';
 import { Scanning } from '@renderer/components/common/Scanning/Scanning';
+import ModalMock from '../components/ModalMock';
 
 const enum Step {
   INIT,

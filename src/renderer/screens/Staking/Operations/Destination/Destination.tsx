@@ -13,7 +13,7 @@ import { useNetworkContext } from '@renderer/context/NetworkContext';
 import { useChains } from '@renderer/services/network/chainsService';
 import { Address, ChainId, HexString, AccountId } from '@renderer/domain/shared-kernel';
 import { Transaction, TransactionType } from '@renderer/domain/transaction';
-import { Confirmation, ModalMock, MultiScanning, Signing, Submit } from '../components';
+import { Confirmation, MultiScanning, Signing, Submit } from '../components';
 import Paths from '@renderer/routes/paths';
 import { AccountDS } from '@renderer/services/storage';
 import InitOperation, { DestinationResult } from './InitOperation/InitOperation';
@@ -21,6 +21,7 @@ import { useCountdown } from '@renderer/shared/hooks';
 import { MultisigAccount, isMultisig, Account } from '@renderer/domain/account';
 import { useTransaction } from '@renderer/services/transaction/transactionService';
 import { Scanning } from '@renderer/components/common/Scanning/Scanning';
+import ModalMock from '../components/ModalMock';
 
 const enum Step {
   INIT,
