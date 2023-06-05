@@ -379,6 +379,7 @@
       "title": "Enter call data"
     },
     "filters": {
+      "clearAll": "Clear all",
       "networkPlaceholder": "Network",
       "networkSummary": "Networks",
       "operationTypePlaceholder": "Operation type",
@@ -387,6 +388,7 @@
       "statusSummary": "Operation statuses"
     },
     "noOperationsDescription": "Your operation history will appear here",
+    "noOperationsFilters": "Nothing was found for the filters. Try changing filters or canceling filtering.",
     "noOperationsWalletNotMulti": "You can only view operations for your Multisig wallets. Transaction history for other types of wallets will be available later. Stay tuned.",
     "title": "Operations",
     "titles": {
