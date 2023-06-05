@@ -22,7 +22,7 @@ import { useCountdown } from '@renderer/shared/hooks';
 import { Account, MultisigAccount, isMultisig } from '@renderer/domain/account';
 import { toAddress } from '@renderer/shared/utils/address';
 import { useTransaction } from '@renderer/services/transaction/transactionService';
-import { Scanning } from '@renderer/components/common/Scaning/Scaning';
+import { Scanning } from '@renderer/components/common/Scanning/Scanning';
 
 const enum Step {
   INIT,

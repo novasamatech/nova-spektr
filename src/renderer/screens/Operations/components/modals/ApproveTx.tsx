@@ -25,7 +25,7 @@ import Confirmation from '@renderer/screens/Operations/components/ActionSteps/Co
 import SignatorySelectModal from '@renderer/screens/Operations/components/modals/SignatorySelectModal';
 import OperationResult from '@renderer/components/ui-redesign/OperationResult/OperationResult';
 import OperationModalTitle from '@renderer/screens/Operations/components/OperationModalTitle';
-import { Scanning } from '@renderer/components/common/Scaning/Scaning';
+import { Scanning } from '@renderer/components/common/Scanning/Scanning';
 import { Signing } from '@renderer/screens/Transfer/components/ActionSteps';
 
 type Props = {

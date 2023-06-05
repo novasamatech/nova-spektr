@@ -12,7 +12,7 @@ import { useCountdown } from '@renderer/shared/hooks';
 import { BaseModal } from '@renderer/components/ui-redesign';
 import OperationModalTitle from '../Operations/components/OperationModalTitle';
 import { InitOperation, Confirmation, Signing, Submit } from './components/ActionSteps';
-import { Scanning } from '@renderer/components/common/Scaning/Scaning';
+import { Scanning } from '@renderer/components/common/Scanning/Scanning';
 
 const enum Step {
   INIT,

@@ -20,7 +20,7 @@ import InitOperation, { DestinationResult } from './InitOperation/InitOperation'
 import { useCountdown } from '@renderer/shared/hooks';
 import { MultisigAccount, isMultisig, Account } from '@renderer/domain/account';
 import { useTransaction } from '@renderer/services/transaction/transactionService';
-import { Scanning } from '@renderer/components/common/Scaning/Scaning';
+import { Scanning } from '@renderer/components/common/Scanning/Scanning';
 
 const enum Step {
   INIT,

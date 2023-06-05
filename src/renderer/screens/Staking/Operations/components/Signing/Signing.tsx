@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 
-import QrSignatureReader from '@renderer/screens/Signing/QrReaderWrapper/QrReaderWrapper';
+import QrReaderWrapper from '@renderer/screens/Signing/QrReaderWrapper/QrReaderWrapper';
 import { Block, Plate } from '@renderer/components/ui';
 import { useI18n } from '@renderer/context/I18nContext';
 import { HexString } from '@renderer/domain/shared-kernel';
@@ -35,11 +35,10 @@ export const Signing = ({ multiQr, countdown, onResult, onGoBack }: Props) => {
         <Block className="flex flex-col items-center gap-y-2.5 p-5">
           <div className="text-neutral-variant text-base font-semibold">{t('signing.scanQrTitle')}</div>
           <div className="h-[460px]">
-            <QrSignatureReader
+            <QrReaderWrapper
               isMultiFrame={multiQr}
               className="w-full rounded-2lg"
               countdown={countdown || 0}
-              size={460}
               onResult={handleResult}
             />
           </div>

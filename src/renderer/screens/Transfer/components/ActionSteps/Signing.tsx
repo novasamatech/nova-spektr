@@ -83,7 +83,6 @@ const Signing = ({ api, chainId, transaction, assetId, countdown, onGoBack, onSt
     <div className="flex flex-col items-center gap-y-2.5 w-full">
       <QrReaderWrapper
         countdown={countdown}
-        size={[440, 496]}
         validationError={validationError}
         onResult={(res) => handleResult(res as string)}
         onGoBack={onGoBack}

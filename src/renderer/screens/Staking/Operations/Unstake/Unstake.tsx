@@ -23,7 +23,7 @@ import { getRelaychainAsset } from '@renderer/shared/utils/assets';
 import { useCountdown } from '@renderer/shared/hooks';
 import { useTransaction } from '@renderer/services/transaction/transactionService';
 import { Account, MultisigAccount, isMultisig } from '@renderer/domain/account';
-import { Scanning } from '@renderer/components/common/Scaning/Scaning';
+import { Scanning } from '@renderer/components/common/Scanning/Scanning';
 
 const enum Step {
   INIT,

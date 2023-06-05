@@ -213,7 +213,6 @@ const Signing = () => {
                 <QrSignatureReader
                   className="w-full rounded-2lg"
                   countdown={countdown}
-                  size={460}
                   onResult={(res) => sign(res as HexString[])}
                 />
               </div>

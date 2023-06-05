@@ -256,43 +256,45 @@ const QrMultiframeSignatureReader = ({
     })();
   }, [cameraId]);
 
-  return bgVideo ? (
+  if (!bgVideo) {
+    return (
+      <video
+        muted
+        autoPlay
+        controls={false}
+        ref={videoRef}
+        data-testid="qr-reader"
+        className={cnTw('object-cover  absolute -scale-x-100', className)}
+        style={videoStyle}
+      >
+        {t('qrReader.videoError')}
+      </video>
+    );
+  }
+
+  return (
     <>
-      <div className="relative w-[240px] h-[240px] overflow-hidden rounded-[1.75rem]">
+      <div className="relative w-[240px] h-[240px] rounded-[1.75rem] overflow-hidden">
         <video
           muted
           autoPlay
           controls={false}
           ref={videoRef}
           data-testid="qr-reader"
-          className={cnTw('object-cover absolute', className)}
+          className={cnTw('object-cover absolute -scale-x-100', className)}
         >
           {t('qrReader.videoError')}
         </video>
       </div>
-      {bgVideo && (
-        <video
-          muted
-          autoPlay
-          controls={false}
-          ref={bgVideoRef}
-          data-testid="qr-reader"
-          className={cnTw('absolute object-cover top-0 left-0 blur-[14px] max-w-none', bgVideoClassName)}
-        />
-      )}
+      <video
+        muted
+        autoPlay
+        controls={false}
+        ref={bgVideoRef}
+        data-testid="qr-reader"
+        className={cnTw('absolute -scale-x-100 object-cover top-0 left-0 blur-[14px] max-w-none', bgVideoClassName)}
+      />
     </>
-  ) : (
-    <video
-      muted
-      autoPlay
-      controls={false}
-      ref={videoRef}
-      data-testid="qr-reader"
-      className={cnTw('object-cover  absolute -scale-x-100', className)}
-      style={videoStyle}
-    >
-      {t('qrReader.videoError')}
-    </video>
   );
 };
 

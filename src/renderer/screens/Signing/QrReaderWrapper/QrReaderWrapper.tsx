@@ -22,7 +22,6 @@ type ScanResult = HexString | HexString[];
 type QrReaderProps = Omit<React.ComponentProps<typeof QrSignatureReader>, 'onResult'>;
 
 type Props = {
-  size?: number | [number, number];
   className?: string;
   countdown: number;
   validationError?: ValidationErrors;
@@ -31,15 +30,7 @@ type Props = {
   isMultiFrame?: boolean;
 };
 
-const QrReaderWrapper = ({
-  size = 300,
-  className,
-  onResult,
-  countdown,
-  validationError,
-  isMultiFrame,
-  onGoBack,
-}: Props) => {
+const QrReaderWrapper = ({ className, onResult, countdown, validationError, isMultiFrame, onGoBack }: Props) => {
   const { t } = useI18n();
 
   const [isLoading, setIsLoading] = useState(true);
@@ -185,7 +176,7 @@ const QrReaderWrapper = ({
         <div className="flex items-center gap-x-2 mt-4">
           <FootnoteText className="text-text-tertiary">{t('signing.parsingLabel')}</FootnoteText>
           <CaptionText as="span" className="bg-label-background-gray text-button-text uppercase">
-            {progress.decoded} {t('signing.parsingOf')} {progress.total}
+            {t('signing.parsingCount', { current: progress.decoded, total: progress.total })}
           </CaptionText>
         </div>
       )}
