@@ -287,7 +287,7 @@
     "addCallDataButton": "Add call data",
     "advanced": "Advanced",
     "approveButton": "Approve",
-    "cancelTitle": "Cancel ",
+    "cancelTitle": "Reject",
     "continueButton": "Continue",
     "details": {
       "amount": "Amount",
@@ -315,7 +315,7 @@
     "inProgress": "Submitting approval...",
     "logButton": "Log",
     "networkFee": "Network fee",
-    "rejectButton": "Cancel",
+    "rejectButton": "Reject",
     "rejectInProgress": "Submitting Rejection...",
     "rejectReason": {
       "continueButton": "Continue",
@@ -330,7 +330,7 @@
     "signatoriesTitle": "Signatories",
     "signing": "{ signed } of { threshold } signed",
     "status": {
-      "cancelled": "Cancelled",
+      "cancelled": "Rejected",
       "error": "Error",
       "established": "Established",
       "executed": "Executed",
