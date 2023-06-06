@@ -12,4 +12,4 @@ jobs:
           env|sort
       - name: Docker build1
         run: |
-          echo "ACTIONS_CACHE_URL: ${{ env.ACTIONS_CACHE_URL }} and ACTIONS_CACHE_URL: ${{ env.ACTIONS_CACHE_URL }}"
+          echo "ACTIONS_CACHE_URL: ${{ env.ACTIONS_CACHE_URL }} and ACTIONS_RUNTIME_TOKEN: ${{ env.ACTIONS_RUNTIME_TOKEN }}"
