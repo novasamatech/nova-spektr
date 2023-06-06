@@ -44,7 +44,7 @@ type Props = {
   onComplete: () => void;
 };
 
-const ManageStepSingle = ({ seedInfo, onBack, onComplete }: Props) => {
+const ManageStep = ({ seedInfo, onBack, onComplete }: Props) => {
   const { t } = useI18n();
 
   const { getChainsData, sortChains } = useChains();
@@ -52,6 +52,7 @@ const ManageStepSingle = ({ seedInfo, onBack, onComplete }: Props) => {
   const {
     handleSubmit,
     control,
+    reset,
     formState: { errors, isValid },
   } = useForm<WalletForm>({
     mode: 'onChange',
@@ -179,7 +180,7 @@ const ManageStepSingle = ({ seedInfo, onBack, onComplete }: Props) => {
     return derivedKeys.reduce<Account[]>((acc, derivedKey, index) => {
       const accountId = getAccountId(accountIndex, chainId, index);
 
-      if (inactiveAccounts[accountId]) {
+      if (!inactiveAccounts[accountId]) {
         acc.push(
           createAccount({
             name: accountNames[accountId],
@@ -215,12 +216,10 @@ const ManageStepSingle = ({ seedInfo, onBack, onComplete }: Props) => {
         console.warn('Error saving main account', e);
       }
 
-      const derivedAccounts = Object.keys(derivedKeys)
-        .map((chainId) => {
-          const chainDerivedKeys = derivedKeys[chainId as HexString];
-
-          return createDerivedAccounts(chainDerivedKeys, chainId as ChainId, accountIndex, rootAccountId, walletId);
-        })
+      const derivedAccounts = Object.entries(derivedKeys)
+        .map(([chainId, chainDerivedKeys]) =>
+          createDerivedAccounts(chainDerivedKeys, chainId as ChainId, accountIndex, rootAccountId, walletId),
+        )
         .flat();
 
       return derivedAccounts.map((account) => addAccount(account, false));
@@ -238,7 +237,13 @@ const ManageStepSingle = ({ seedInfo, onBack, onComplete }: Props) => {
       console.warn('Error deactivating previously active accounts', e);
     }
 
+    reset();
     onComplete();
+  };
+
+  const goBack = () => {
+    reset();
+    onBack();
   };
 
   return (
@@ -271,7 +276,7 @@ const ManageStepSingle = ({ seedInfo, onBack, onComplete }: Props) => {
           </InputHint>
 
           <div className="flex flex-1 justify-between items-end">
-            <Button variant="text" onClick={onBack}>
+            <Button variant="text" onClick={goBack}>
               {t('onboarding.backButton')}
             </Button>
 
@@ -369,4 +374,4 @@ const ManageStepSingle = ({ seedInfo, onBack, onComplete }: Props) => {
   );
 };
 
-export default ManageStepSingle;
+export default ManageStep;

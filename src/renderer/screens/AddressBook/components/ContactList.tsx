@@ -24,7 +24,9 @@ const ContactList = ({ contacts, query }: Props) => {
   const [filteredContacts, setFilteredContacts] = useState<ContactDS[]>([]);
 
   useEffect(() => {
-    const filtered = contacts.filter((c) => includes(c.name, query) || includes(c.accountId, query));
+    const filtered = contacts
+      .filter((c) => includes(c.name, query) || includes(c.address, query) || includes(c.matrixId, query))
+      .sort((a, b) => a.name.localeCompare(b.name));
 
     setFilteredContacts(filtered);
   }, [query, contacts]);

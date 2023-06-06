@@ -5,6 +5,7 @@
   },
   "addressBook": {
     "addContact": {
+      "accountIdExistsError": "Account address already in use",
       "accountIdIncorrectError": "Incrorrect account address",
       "accountIdLabel": "адрес контакта",
       "accountIdPlaceholder": "Enter or paste an address",
@@ -14,6 +15,7 @@
       "matrixIdHint": "В формате: @user_name:matrix.org",
       "matrixIdLabel": "matrix id (optional)",
       "matrixIdPlaceholder": "Enter or paste Matrix ID, ie: @bob:matrix.org",
+      "nameExistsError": "Name already in use",
       "nameLabel": "Name",
       "namePlaceholder": "Enter a name",
       "nameRequiredError": "Name is required",
