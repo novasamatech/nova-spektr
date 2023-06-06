@@ -1,11 +1,11 @@
 import { ApiPromise } from '@polkadot/api';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Trans } from 'react-i18next';
 
 import { Balance, Duration, Shimmering } from '@renderer/components/ui';
 import { useI18n } from '@renderer/context/I18nContext';
 import { Asset } from '@renderer/domain/asset';
-import { Address, EraIndex } from '@renderer/domain/shared-kernel';
+import { EraIndex } from '@renderer/domain/shared-kernel';
 import { Validator } from '@renderer/domain/validator';
 import { useStakingData } from '@renderer/services/staking/stakingDataService';
 import { FootnoteText } from '@renderer/components/ui-redesign';
@@ -57,20 +57,21 @@ const AboutStaking = ({ api, era, asset, validators }: Props) => {
     };
   }, [api, era, validators.length]);
 
-  const activeNominatorsAmount = useMemo(() => {
-    const nominatorsAddresses = validators.reduce<Address[]>((acc, { nominators }) => {
-      nominators.forEach(({ who }) => acc.push(who));
-
-      return acc;
-    }, []);
-
-    return new Set(nominatorsAddresses).size;
-  }, [validators.length]);
+  // TODO: temporary disabled
+  // const activeNominatorsAmount = useMemo(() => {
+  //   const nominatorsAddresses = validators.reduce<Address[]>((acc, { nominators }) => {
+  //     nominators.forEach(({ who }) => acc.push(who));
+  //
+  //     return acc;
+  //   }, []);
+  //
+  //   return new Set(nominatorsAddresses).size;
+  // }, [validators.length]);
 
   // const maximumApy = validators.reduce((acc, validator) => Math.max(acc, validator.apy), 0);
 
   return (
-    <div className="flex flex-col gap-y-2">
+    <div className="flex flex-col gap-y-6">
       <FootnoteText className="text-text-secondary">
         <Trans t={t} i18nKey="staking.about.aboutStakingTitle" values={{ asset: asset?.symbol }} />
       </FootnoteText>
@@ -124,14 +125,14 @@ const AboutStaking = ({ api, era, asset, validators }: Props) => {
           )}
         </div>
 
-        <div className="flex justify-between gap-x-1">
-          <FootnoteText className="text-text-secondary">{t('staking.about.activeNominatorsLabel')}</FootnoteText>
-          {activeNominatorsAmount ? (
-            <FootnoteText align="right">{activeNominatorsAmount}</FootnoteText>
-          ) : (
-            <Shimmering className="justify-self-end" width={100} height={18} />
-          )}
-        </div>
+        {/*<div className="flex justify-between gap-x-1">*/}
+        {/*  <FootnoteText className="text-text-secondary">{t('staking.about.activeNominatorsLabel')}</FootnoteText>*/}
+        {/*  {activeNominatorsAmount ? (*/}
+        {/*    <FootnoteText align="right">{activeNominatorsAmount}</FootnoteText>*/}
+        {/*  ) : (*/}
+        {/*    <Shimmering className="justify-self-end" width={100} height={18} />*/}
+        {/*  )}*/}
+        {/*</div>*/}
 
         <div className="flex justify-between gap-x-1">
           <FootnoteText className="text-text-secondary">{t('staking.about.stakingPeriodLabel')}</FootnoteText>

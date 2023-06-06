@@ -35,6 +35,7 @@ const ManageStepSingle = ({ seedInfo, onBack, onComplete }: Props) => {
   const {
     handleSubmit,
     control,
+    reset,
     formState: { errors, isValid },
   } = useForm<WalletForm>({
     mode: 'onChange',
@@ -55,7 +56,13 @@ const ManageStepSingle = ({ seedInfo, onBack, onComplete }: Props) => {
     });
 
     await addAccount(newAccount);
+    reset();
     onComplete();
+  };
+
+  const goBack = () => {
+    reset();
+    onBack();
   };
 
   return (
@@ -90,7 +97,7 @@ const ManageStepSingle = ({ seedInfo, onBack, onComplete }: Props) => {
           />
 
           <div className="flex flex-1 justify-between items-end">
-            <Button variant="text" onClick={onBack}>
+            <Button variant="text" onClick={goBack}>
               {t('onboarding.backButton')}
             </Button>
 

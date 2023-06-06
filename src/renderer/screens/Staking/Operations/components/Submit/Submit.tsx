@@ -1,122 +1,160 @@
 import { UnsignedTransaction } from '@substrate/txwrapper-polkadot';
-import { PropsWithChildren, useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useEffect, useState, ComponentProps } from 'react';
+import { ApiPromise } from '@polkadot/api';
 
-import { Icon, ProgressBadge } from '@renderer/components/ui';
-import { useConfirmContext } from '@renderer/context/ConfirmContext';
 import { useI18n } from '@renderer/context/I18nContext';
 import { HexString } from '@renderer/domain/shared-kernel';
-import Paths from '@renderer/routes/paths';
 import { useTransaction } from '@renderer/services/transaction/transactionService';
-import TransactionInfo, { InfoProps } from '../TransactionInfo/TransactionInfo';
 import { ExtrinsicResultParams } from '@renderer/services/transaction/common/types';
-import { isMultisig } from '@renderer/domain/account';
-import { Transaction } from '@renderer/domain/transaction';
+import { isMultisig, Account, MultisigAccount } from '@renderer/domain/account';
+import {
+  Transaction,
+  SigningStatus,
+  MultisigEvent,
+  MultisigTransaction,
+  MultisigTxInitStatus,
+} from '@renderer/domain/transaction';
 import { toAccountId } from '@renderer/shared/utils/address';
 import { useMatrix } from '@renderer/context/MatrixContext';
+import { Button } from '@renderer/components/ui-redesign';
+import OperationResult from '@renderer/components/ui-redesign/OperationResult/OperationResult';
+import { useToggle } from '@renderer/shared/hooks';
+import { useMultisigTx } from '@renderer/services/multisigTx/multisigTxService';
 
-interface Props extends InfoProps {
+type ResultProps = Pick<ComponentProps<typeof OperationResult>, 'title' | 'description' | 'variant'>;
+
+// TODO: Looks very similar to ActionSteps/Submit.tsx
+
+type Props = {
+  api: ApiPromise;
+  accounts: Array<Account | MultisigAccount>;
+  txs: Transaction[];
+  multisigTx?: Transaction;
   unsignedTx: UnsignedTransaction[];
   signatures: HexString[];
+  successMessage: string;
   description?: string;
-}
+  onClose: () => void;
+};
 
-export const Submit = ({ unsignedTx, signatures, description, children, ...props }: PropsWithChildren<Props>) => {
+export const Submit = ({
+  api,
+  accounts,
+  txs,
+  multisigTx,
+  unsignedTx,
+  signatures,
+  successMessage,
+  description,
+  onClose,
+}: Props) => {
   const { t } = useI18n();
+
   const { matrix } = useMatrix();
-  const { confirm } = useConfirmContext();
   const { submitAndWatchExtrinsic, getSignedExtrinsic } = useTransaction();
-  const navigate = useNavigate();
+  const { addMultisigTx } = useMultisigTx();
 
-  const [progress, setProgress] = useState(0);
-  const [failedTxs, setFailedTxs] = useState<number[]>([]);
+  const [isSuccess, toggleSuccessMessage] = useToggle();
+  const [inProgress, toggleInProgress] = useToggle(true);
+  const [errorMessage, setErrorMessage] = useState('');
 
-  const submitFinished = unsignedTx.length === progress;
-  const { api, accounts, multisigTx } = props;
-
-  const confirmFailedTx = (): Promise<boolean> => {
-    return confirm({
-      title: t('staking.confirmation.errorModalTitle', { number: failedTxs.length }),
-      message: t('staking.confirmation.errorModalSubtitle'),
-      cancelText: t('staking.confirmation.errorModalDiscardButton'),
-      // TODO: implement Edit flow
-      // confirmText: t('staking.confirmation.errorModalEditButton'),
-    });
-  };
+  useEffect(() => {
+    submitExtrinsic(signatures).catch(() => console.warn('Error getting signed extrinsics'));
+  }, []);
 
   const submitExtrinsic = async (signatures: HexString[]): Promise<void> => {
     const extrinsicRequests = unsignedTx.map((unsigned, index) => {
       return getSignedExtrinsic(unsigned, signatures[index], api);
     });
 
-    const allExtrinsic = await Promise.all(extrinsicRequests);
+    const allExtrinsics = await Promise.all(extrinsicRequests);
 
-    allExtrinsic.forEach((extrinsic, index) => {
+    allExtrinsics.forEach((extrinsic, index) => {
       submitAndWatchExtrinsic(extrinsic, unsignedTx[index], api, (executed, params) => {
-        setProgress((p) => p + 1);
-
         if (executed) {
-          const mstAccount = accounts[0];
+          const typedParams = params as ExtrinsicResultParams;
 
+          const mstAccount = accounts[0];
           if (multisigTx && isMultisig(mstAccount) && matrix.userIsLoggedIn) {
-            sendMultisigEvent(mstAccount.matrixRoomId, multisigTx, params as ExtrinsicResultParams);
+            const eventStatus: SigningStatus = 'SIGNED';
+
+            const event: MultisigEvent = {
+              status: eventStatus,
+              accountId: mstAccount.accountId,
+              extrinsicHash: typedParams.extrinsicHash,
+              eventBlock: typedParams.timepoint.height,
+              eventIndex: typedParams.timepoint.index,
+            };
+
+            const newTx: MultisigTransaction = {
+              accountId: mstAccount.accountId,
+              chainId: multisigTx.chainId,
+              signatories: mstAccount.signatories,
+              callData: multisigTx.args.callData,
+              callHash: multisigTx.args.callHash,
+              transaction: txs[index],
+              status: MultisigTxInitStatus.SIGNING,
+              blockCreated: typedParams.timepoint.height,
+              indexCreated: typedParams.timepoint.index,
+              events: [event],
+            };
+
+            if (matrix.userIsLoggedIn) {
+              sendMultisigEvent(mstAccount.matrixRoomId, newTx, typedParams);
+            } else {
+              addMultisigTx(newTx);
+            }
           }
+
+          toggleSuccessMessage();
+          setTimeout(onClose, 2000);
         } else {
-          setFailedTxs((f) => f.concat(index));
+          setErrorMessage(params as string);
         }
+
+        toggleInProgress();
       });
     });
   };
 
-  const sendMultisigEvent = (roomId: string, transaction: Transaction, params: ExtrinsicResultParams) => {
+  const sendMultisigEvent = (matrixRoomId: string, updatedTx: MultisigTransaction, params: ExtrinsicResultParams) => {
+    if (!multisigTx) return;
+
     matrix
-      .sendApprove(roomId, {
-        senderAccountId: toAccountId(transaction.address),
-        chainId: transaction.chainId,
-        callHash: transaction.args.callHash,
-        callData: transaction.args.callData,
-        extrinsicHash: params.extrinsicHash,
+      .sendApprove(matrixRoomId, {
+        senderAccountId: toAccountId(multisigTx.address),
+        chainId: updatedTx.chainId,
+        callHash: updatedTx.callHash,
+        callData: updatedTx.callData,
         extrinsicTimepoint: params.timepoint,
-        callTimepoint: params.timepoint,
+        extrinsicHash: params.extrinsicHash,
         error: Boolean(params.multisigError),
         description,
+        callTimepoint: {
+          height: updatedTx.blockCreated || params.timepoint.height,
+          index: updatedTx.indexCreated || params.timepoint.index,
+        },
       })
       .catch(console.warn);
   };
 
-  useEffect(() => {
-    submitExtrinsic(signatures);
-  }, []);
+  const getResultProps = (): ResultProps => {
+    if (inProgress) {
+      return { title: t('operation.inProgress'), variant: 'loading' };
+    }
+    if (isSuccess) {
+      return { title: successMessage, variant: 'success' };
+    }
+    if (errorMessage) {
+      return { title: t('operation.feeErrorTitle'), description: errorMessage, variant: 'error' };
+    }
 
-  useEffect(() => {
-    if (!submitFinished || failedTxs.length === 0) return;
-
-    confirmFailedTx().then((proceed) => {
-      if (!proceed) {
-        navigate(Paths.STAKING, { replace: true });
-      }
-
-      // TODO: implement Edit flow
-    });
-  }, [submitFinished]);
+    return { title: '' };
+  };
 
   return (
-    <TransactionInfo {...props}>
-      <div className="flex flex-col gap-y-4 mt-4">
-        {children}
-
-        <div className="flex flex-col items-center gap-y-2.5">
-          {!submitFinished && (
-            <div className="flex items-center gap-x-2.5">
-              <Icon className="text-neutral-variant animate-spin" name="loader" size={20} />
-              <p className="text-neutral-variant font-semibold">{t('staking.confirmation.submittingOperation')}</p>
-            </div>
-          )}
-          <ProgressBadge progress={progress} total={signatures.length}>
-            {t('staking.confirmation.transactionProgress')}
-          </ProgressBadge>
-        </div>
-      </div>
-    </TransactionInfo>
+    <OperationResult isOpen={Boolean(inProgress || errorMessage || isSuccess)} {...getResultProps()} onClose={onClose}>
+      {errorMessage && <Button onClick={onClose}>{t('operation.feeErrorButton')}</Button>}
+    </OperationResult>
   );
 };

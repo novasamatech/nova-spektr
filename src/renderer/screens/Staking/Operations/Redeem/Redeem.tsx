@@ -1,29 +1,27 @@
 import { UnsignedTransaction } from '@substrate/txwrapper-polkadot';
-import noop from 'lodash/noop';
 import { useEffect, useState } from 'react';
 import { Navigate, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 
 import Paths from '@renderer/routes/paths';
-import { ButtonBack, ButtonLink, Icon } from '@renderer/components/ui';
 import { ChainLoader } from '@renderer/components/common';
 import { useI18n } from '@renderer/context/I18nContext';
 import { useNetworkContext } from '@renderer/context/NetworkContext';
 import { ChainId, HexString, AccountId, Address } from '@renderer/domain/shared-kernel';
 import { Transaction, TransactionType } from '@renderer/domain/transaction';
 import { useAccount } from '@renderer/services/account/accountService';
-import { StakingMap } from '@renderer/services/staking/common/types';
-import { useStakingData } from '@renderer/services/staking/stakingDataService';
 import { useChains } from '@renderer/services/network/chainsService';
-import { useEra } from '@renderer/services/staking/eraService';
 import InitOperation, { RedeemResult } from './InitOperation/InitOperation';
-import { Confirmation, MultiScanning, Signing, Submit } from '../components';
+import { Confirmation, Signing, Submit, NoAsset } from '../components';
 import { getRelaychainAsset } from '@renderer/shared/utils/assets';
-import { useCountdown } from '@renderer/shared/hooks';
+import { useCountdown, useToggle } from '@renderer/shared/hooks';
 import { Account, MultisigAccount, isMultisig } from '@renderer/domain/account';
 import { toAddress } from '@renderer/shared/utils/address';
 import { useTransaction } from '@renderer/services/transaction/transactionService';
-import { Scanning } from '@renderer/components/common/Scanning/Scanning';
-import ModalMock from '../components/ModalMock';
+import { DEFAULT_TRANSITION } from '@renderer/shared/utils/constants';
+import OperationModalTitle from '@renderer/screens/Operations/components/OperationModalTitle';
+import { BaseModal } from '@renderer/components/ui-redesign';
+import ScanMultiframeQr from '@renderer/components/common/Scanning/ScanMultiframeQr';
+import ScanSingleframeQr from '@renderer/components/common/Scanning/ScanSingleframeQr';
 
 const enum Step {
   INIT,
@@ -33,35 +31,25 @@ const enum Step {
   SUBMIT,
 }
 
-const HeaderTitles: Record<Step, string> = {
-  [Step.INIT]: 'staking.redeem.initRedeemSubtitle',
-  [Step.CONFIRMATION]: 'staking.redeem.confirmRedeemSubtitle',
-  [Step.SCANNING]: 'staking.bond.scanSubtitle',
-  [Step.SIGNING]: 'staking.bond.signSubtitle',
-  [Step.SUBMIT]: 'staking.bond.submitSubtitle',
-};
-
-const Unstake = () => {
+const Redeem = () => {
   const { t } = useI18n();
   const navigate = useNavigate();
   const { getTransactionHash } = useTransaction();
   const { connections } = useNetworkContext();
-  const { subscribeStaking } = useStakingData();
   const { getLiveAccounts } = useAccount();
-  const { subscribeActiveEra } = useEra();
   const { getChainById } = useChains();
   const [searchParams] = useSearchParams();
   const params = useParams<{ chainId: ChainId }>();
 
   const dbAccounts = getLiveAccounts();
 
+  const [isRedeemModalOpen, toggleRedeemModal] = useToggle(true);
+
   const [activeStep, setActiveStep] = useState<Step>(Step.INIT);
   const [chainName, setChainName] = useState('...');
   const [redeemAmounts, setRedeemAmounts] = useState<string[]>([]);
   const [description, setDescription] = useState('');
 
-  const [era, setEra] = useState<number>();
-  const [staking, setStaking] = useState<StakingMap>({});
   const [accounts, setAccounts] = useState<Account[]>([]);
   const [signer, setSigner] = useState<Account>();
 
@@ -97,24 +85,6 @@ const Unstake = () => {
   }, [dbAccounts.length]);
 
   useEffect(() => {
-    if (!api?.isConnected || accounts.length === 0) return;
-
-    let unsubEra: () => void | undefined;
-    let unsubStaking: () => void | undefined;
-
-    (async () => {
-      const addresses = accounts.map((a) => toAddress(a.accountId, { prefix: addressPrefix }));
-      unsubEra = await subscribeActiveEra(api, setEra);
-      unsubStaking = await subscribeStaking(chainId, api, addresses, setStaking);
-    })();
-
-    return () => {
-      unsubEra?.();
-      unsubStaking?.();
-    };
-  }, [api, accounts.length]);
-
-  useEffect(() => {
     getChainById(chainId).then((chain) => setChainName(chain?.name || ''));
   }, []);
 
@@ -131,32 +101,19 @@ const Unstake = () => {
     }
   };
 
-  const headerContent = (
-    <div className="flex items-center gap-x-2.5 mb-9 mt-5 px-5">
-      <ButtonBack onCustomReturn={goToPrevStep}>
-        <p className="font-semibold text-2xl text-neutral-variant">{t('staking.title')}</p>
-        <p className="font-semibold text-2xl text-neutral">/</p>
-        <h1 className="font-semibold text-2xl text-neutral">{t(HeaderTitles[activeStep])}</h1>
-      </ButtonBack>
-    </div>
-  );
+  const closeRedeemModal = () => {
+    toggleRedeemModal();
+    setTimeout(() => navigate(Paths.STAKING), DEFAULT_TRANSITION);
+  };
 
   if (!asset) {
     return (
-      <div className="flex flex-col h-full relative">
-        {headerContent}
-
-        <div className="flex w-full h-full flex-col items-center justify-center">
-          <Icon name="noResults" size={380} />
-          <p className="text-neutral text-3xl font-bold">{t('staking.bond.noStakingAssetLabel')}</p>
-          <p className="text-neutral-variant text-base font-normal">
-            {t('staking.bond.noStakingAssetDescription', { chainName: name })}
-          </p>
-          <ButtonLink className="mt-5" to={Paths.STAKING} variant="fill" pallet="primary" weight="lg">
-            {t('staking.bond.goToStakingButton')}
-          </ButtonLink>
-        </div>
-      </div>
+      <NoAsset
+        title={t('staking.redeem.title')}
+        chainName={name}
+        isOpen={isRedeemModalOpen}
+        onClose={closeRedeemModal}
+      />
     );
   }
 
@@ -198,7 +155,7 @@ const Unstake = () => {
     };
   };
 
-  const onRedeemResult = ({ accounts, signer, amounts, description }: RedeemResult) => {
+  const onInitResult = ({ accounts, signer, amounts, description }: RedeemResult) => {
     const transactions = getRedeemTxs(accounts);
 
     if (signer && isMultisig(accounts[0])) {
@@ -227,35 +184,35 @@ const Unstake = () => {
   const explorersProps = { explorers, addressPrefix, asset };
 
   return (
-    <div className="flex flex-col h-full relative">
-      {headerContent}
+    <BaseModal
+      closeButton
+      contentClass=""
+      panelClass="w-max"
+      isOpen={isRedeemModalOpen}
+      title={<OperationModalTitle title={`${t('staking.redeem.title', { asset: asset.symbol })}`} chainId={chainId} />}
+      onClose={closeRedeemModal}
+    >
       {activeStep === Step.INIT && (
-        <InitOperation
-          api={api}
-          chainId={chainId}
-          identifiers={accountIds}
-          era={era}
-          staking={staking}
-          onResult={onRedeemResult}
-          {...explorersProps}
-        />
+        <InitOperation api={api} chainId={chainId} accounts={accounts} onResult={onInitResult} {...explorersProps} />
       )}
       {activeStep === Step.CONFIRMATION && (
         <Confirmation
           api={api}
           accounts={accounts}
+          signer={signer}
           amounts={redeemAmounts}
+          description={description}
           transaction={transactions[0]}
           multisigTx={multisigTx}
           onResult={() => setActiveStep(Step.SCANNING)}
-          onAddToQueue={noop}
+          onGoBack={goToPrevStep}
           {...explorersProps}
         />
       )}
       {activeStep === Step.SCANNING && (
-        <ModalMock>
+        <div className="w-[440px] px-5 py-4">
           {transactions.length > 1 ? (
-            <MultiScanning
+            <ScanMultiframeQr
               api={api}
               addressPrefix={addressPrefix}
               countdown={countdown}
@@ -267,7 +224,7 @@ const Unstake = () => {
               onResult={onScanResult}
             />
           ) : (
-            <Scanning
+            <ScanSingleframeQr
               api={api}
               addressPrefix={addressPrefix}
               countdown={countdown}
@@ -279,7 +236,7 @@ const Unstake = () => {
               onResult={(unsignedTx) => onScanResult([unsignedTx])}
             />
           )}
-        </ModalMock>
+        </div>
       )}
       {activeStep === Step.SIGNING && (
         <Signing
@@ -292,18 +249,19 @@ const Unstake = () => {
       {activeStep === Step.SUBMIT && (
         <Submit
           api={api}
-          transaction={transactions[0]}
+          txs={transactions}
           multisigTx={multisigTx}
           description={description}
           signatures={signatures}
           unsignedTx={unsignedTransactions}
           accounts={accounts}
-          amounts={redeemAmounts}
+          successMessage={t('staking.redeem.submitSuccess')}
+          onClose={closeRedeemModal}
           {...explorersProps}
         />
       )}
-    </div>
+    </BaseModal>
   );
 };
 
-export default Unstake;
+export default Redeem;

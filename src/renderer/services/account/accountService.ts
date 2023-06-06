@@ -33,9 +33,9 @@ export const useAccount = (): IAccountService => {
     return useLiveQuery(query, [], []);
   };
 
-  // Only one wallet can be active at the time
-  // For watch only account or polkadot vault account would be returned array with only one element
-  // but for mutishard wallet active accounts would be all root account + all derived
+  // Only one wallet can be active at a time
+  // Watch-Only or Polkadot Vault wallet will return array with one account
+  // Mutishard wallet will return all root accounts + all derived
   const getActiveAccounts = <T extends Account>(where?: Partial<T>): AccountDS[] => {
     const query = async () => {
       try {
@@ -75,13 +75,13 @@ export const useAccount = (): IAccountService => {
   const setActiveAccounts = async (accountsId: ID[]): Promise<void> => {
     try {
       const allAccounts = await getAccounts();
-      await deactivateAccounts(allAccounts);
+      const accountsToDeactivate = allAccounts.filter((a) => a.isActive).map((a) => ({ ...a, isActive: false }));
 
       const newActiveAccounts = allAccounts
         .filter((a) => a.id && accountsId.includes(a.id))
         .map((a) => ({ ...a, isActive: true }));
       if (newActiveAccounts.length) {
-        await updateAccounts(newActiveAccounts);
+        await updateAccounts([...newActiveAccounts, ...accountsToDeactivate]);
       }
     } catch (error) {
       console.warn('Could not set new active accounts');
@@ -91,11 +91,11 @@ export const useAccount = (): IAccountService => {
   const setActiveAccount = async (id: ID): Promise<void> => {
     try {
       const allAccounts = await getAccounts();
-      await deactivateAccounts(allAccounts);
+      const accountsToDeactivate = allAccounts.filter((a) => a.isActive).map((a) => ({ ...a, isActive: false }));
 
       const newActiveAccount = allAccounts.find((a) => a.id === id);
       if (newActiveAccount) {
-        await updateAccount({ ...newActiveAccount, isActive: true });
+        await updateAccounts([{ ...newActiveAccount, isActive: true }, ...accountsToDeactivate]);
       }
     } catch (error) {
       console.warn('Could not set new active accounts');

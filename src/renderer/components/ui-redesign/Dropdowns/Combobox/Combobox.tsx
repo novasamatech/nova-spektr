@@ -4,17 +4,15 @@ import { Transition, Combobox as HeadlessCombobox } from '@headlessui/react';
 import cnTw from '@renderer/shared/utils/twMerge';
 import { Props as InputProps } from '@renderer/components/ui-redesign/Inputs/Input/Input';
 import { OptionsContainerStyle, OptionStyle, ViewClass } from '../common/constants';
-import { DropdownOption, DropdownResult, Position } from '../common/types';
+import { Position, ComboboxOption, ComboboxResult } from '../common/types';
 import { includes } from '@renderer/shared/utils/strings';
 import { FootnoteText, Input } from '@renderer/components/ui-redesign';
-
-type ComboboxOption = Required<DropdownOption>;
 
 type Props = Omit<InputProps, 'onChange'> & {
   options: ComboboxOption[];
   value?: ComboboxOption['value'];
   position?: Position;
-  onChange: (data: DropdownResult) => void;
+  onChange: (data: ComboboxResult) => void;
   tabIndex?: number;
 };
 
@@ -24,6 +22,8 @@ const Combobox = ({ className, value, options, disabled, position = 'down', onCh
   const filteredOptions = query
     ? options.filter((option) => includes(option.value, query) || includes(JSON.stringify(option.element), query))
     : options;
+
+  const nothingFound = query.length > 0 && !filteredOptions.length;
 
   return (
     <HeadlessCombobox by="value" value={value} disabled={disabled} onChange={onChange}>
@@ -38,14 +38,21 @@ const Combobox = ({ className, value, options, disabled, position = 'down', onCh
 
         <Transition as={Fragment} leave="transition" leaveFrom="opacity-100" leaveTo="opacity-0">
           <HeadlessCombobox.Options className={cnTw(OptionsContainerStyle, position !== 'auto' && ViewClass[position])}>
-            {query.length > 0 && (
-              <HeadlessCombobox.Option value={{ id: '', value: query, element: query }} className={OptionStyle}>
+            {nothingFound && (
+              <HeadlessCombobox.Option
+                value={{ id: '', value: query, element: query }}
+                className={({ active }) => cnTw(OptionStyle, active && 'bg-action-background-hover')}
+              >
                 <FootnoteText>{query}</FootnoteText>
               </HeadlessCombobox.Option>
             )}
 
             {filteredOptions.map((option) => (
-              <HeadlessCombobox.Option key={option.id} value={option} className={OptionStyle}>
+              <HeadlessCombobox.Option
+                key={option.id}
+                value={option}
+                className={({ active }) => cnTw(OptionStyle, active && 'bg-action-background-hover')}
+              >
                 {typeof option.element === 'string' ? <FootnoteText>{option.element}</FootnoteText> : option.element}
               </HeadlessCombobox.Option>
             ))}

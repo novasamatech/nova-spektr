@@ -8,12 +8,13 @@ import { Explorer } from '@renderer/domain/chain';
 import useAddressInfo from '@renderer/components/common/AccountAddress/useAddressInfo';
 
 type Props = {
+  showMatrix?: boolean;
   explorers?: Explorer[];
 } & AccountAddressProps;
 
-const AddressWithExplorers = ({ explorers, ...addressProps }: Props) => {
+const AddressWithExplorers = ({ explorers, showMatrix, ...addressProps }: Props) => {
   const address = getAddress(addressProps);
-  const popoverItems = useAddressInfo(address, explorers);
+  const popoverItems = useAddressInfo(address, explorers, showMatrix);
 
   return (
     <InfoPopover data={popoverItems}>

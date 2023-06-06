@@ -41,16 +41,19 @@ const BaseModal = ({
             {/* TODO add proper colors for titles and bg */}
             <Dialog.Panel
               className={cnTw(
-                'transform overflow-y-auto rounded-lg bg-white text-left align-middle shadow-modal transition-all w-[440px]',
+                'transform rounded-lg bg-white text-left align-middle shadow-modal transition-all w-[440px]',
                 panelClass,
               )}
             >
               {title && (
                 <Dialog.Title as="header" className={cnTw('text-black font-bold', closeButton && 'pr-11', headerClass)}>
-                  {/* TODO change */}
-                  <TextBase className="font-manrope text-modal-title text-text-primary truncate" fontWeight="bold">
-                    {title}
-                  </TextBase>
+                  {typeof title === 'string' ? (
+                    <TextBase className="font-manrope text-modal-title text-text-primary truncate" fontWeight="bold">
+                      {title}
+                    </TextBase>
+                  ) : (
+                    title
+                  )}
                 </Dialog.Title>
               )}
 

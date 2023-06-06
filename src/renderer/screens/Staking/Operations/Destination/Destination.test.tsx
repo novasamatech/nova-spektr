@@ -16,6 +16,12 @@ jest.mock('react-router-dom', () => ({
   useNavigate: jest.fn(),
 }));
 
+jest.mock('@renderer/services/account/accountService', () => ({
+  useAccount: jest.fn().mockReturnValue({
+    getActiveAccounts: jest.fn().mockReturnValue([]),
+  }),
+}));
+
 jest.mock('@renderer/context/NetworkContext', () => ({
   useNetworkContext: jest.fn(() => ({
     connections: {
@@ -40,11 +46,6 @@ jest.mock('@renderer/context/NetworkContext', () => ({
   })),
 }));
 
-jest.mock(
-  '@renderer/components/common/AddressWithExplorers/AddressWithExplorers',
-  jest.fn().mockReturnValue(({ address }: { address: string }) => <span>{address}</span>),
-);
-
 const mockButton = (text: string, callback: () => void) => (
   <button type="button" onClick={callback}>
     {text}
@@ -59,14 +60,22 @@ jest.mock('./InitOperation/InitOperation', () => ({ onResult }: any) => {
 
 jest.mock('../components/index', () => ({
   Confirmation: ({ onResult }: any) => mockButton('to scan', onResult),
-  MultiScanning: ({ onResult }: any) => mockButton('to sign', onResult),
   Signing: ({ onResult }: any) => mockButton('to submit', onResult),
   Submit: () => 'finish',
 }));
 
-jest.mock('@renderer/components/common/Scanning/Scanning', () => ({
-  Scanning: ({ onResult }: any) => mockButton('to sign', onResult),
-}));
+jest.mock(
+  '@renderer/components/common/Scanning/ScanMultiframeQr',
+  () =>
+    ({ onResult }: any) =>
+      mockButton('to sign', onResult),
+);
+jest.mock(
+  '@renderer/components/common/Scanning/ScanSingleframeQr',
+  () =>
+    ({ onResult }: any) =>
+      mockButton('to sign', onResult),
+);
 
 describe('screens/Staking/Destination', () => {
   test('should render component', async () => {
@@ -74,11 +83,9 @@ describe('screens/Staking/Destination', () => {
       render(<Destination />, { wrapper: MemoryRouter });
     });
 
-    const title = screen.getByText('staking.title');
-    const subTitle = screen.getByText('staking.destination.initDestinationSubtitle');
+    const title = screen.getByText('staking.destination.title');
     const next = screen.getByText('to confirm');
     expect(title).toBeInTheDocument();
-    expect(subTitle).toBeInTheDocument();
     expect(next).toBeInTheDocument();
   });
 

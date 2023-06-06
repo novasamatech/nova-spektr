@@ -1,7 +1,7 @@
 {
   "name": "nova-spektr",
   "description": "Polkadot Enterprise application",
-  "version": "0.4.8",
+  "version": "0.4.9",
   "main": "./release/build/main.js",
   "license": "MIT",
   "author": {
@@ -93,7 +93,7 @@
     "react-error-boundary": "^3.1.4",
     "react-hook-form": "^7.33.1",
     "react-i18next": "^11.18.0",
-    "react-router-dom": "^6.3.0",
+    "react-router-dom": "^6.4.5",
     "stream-browserify": "^3.0.0",
     "styled-components": "^5.3.6",
     "swiper": "^8.3.2",

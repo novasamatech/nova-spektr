@@ -2,6 +2,7 @@ import { act, render, screen } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 
 import { ConnectionStatus } from '@renderer/domain/connection';
+import { TEST_ACCOUNT_ID } from '@renderer/shared/utils/constants';
 import StakeMore from './StakeMore';
 
 jest.mock('@renderer/context/I18nContext', () => ({
@@ -14,6 +15,12 @@ jest.mock('react-router-dom', () => ({
   useSearchParams: jest.fn().mockReturnValue([new URLSearchParams('id=1,2,3')]),
   useParams: jest.fn().mockReturnValue({ chainId: '0x123' }),
   useNavigate: jest.fn(),
+}));
+
+jest.mock('@renderer/services/account/accountService', () => ({
+  useAccount: jest.fn().mockReturnValue({
+    getActiveAccounts: () => [{ name: 'Test Wallet', accountId: TEST_ACCOUNT_ID }],
+  }),
 }));
 
 jest.mock('@renderer/context/NetworkContext', () => ({
@@ -40,11 +47,6 @@ jest.mock('@renderer/context/NetworkContext', () => ({
   })),
 }));
 
-jest.mock(
-  '@renderer/components/common/AddressWithExplorers/AddressWithExplorers',
-  jest.fn().mockReturnValue(({ address }: { address: string }) => <span>{address}</span>),
-);
-
 const mockButton = (text: string, callback: () => void) => (
   <button type="button" onClick={callback}>
     {text}
@@ -59,14 +61,22 @@ jest.mock('./InitOperation/InitOperation', () => ({ onResult }: any) => {
 
 jest.mock('../components/index', () => ({
   Confirmation: ({ onResult }: any) => mockButton('to scan', onResult),
-  MultiScanning: ({ onResult }: any) => mockButton('to sign', onResult),
   Signing: ({ onResult }: any) => mockButton('to submit', onResult),
   Submit: () => 'finish',
 }));
 
-jest.mock('@renderer/components/common/Scanning/Scanning', () => ({
-  Scanning: ({ onResult }: any) => mockButton('to sign', onResult),
-}));
+jest.mock(
+  '@renderer/components/common/Scanning/ScanMultiframeQr',
+  () =>
+    ({ onResult }: any) =>
+      mockButton('to sign', onResult),
+);
+jest.mock(
+  '@renderer/components/common/Scanning/ScanSingleframeQr',
+  () =>
+    ({ onResult }: any) =>
+      mockButton('to sign', onResult),
+);
 
 describe('screens/Staking/StakeMore', () => {
   test('should render component', async () => {
@@ -74,11 +84,9 @@ describe('screens/Staking/StakeMore', () => {
       render(<StakeMore />, { wrapper: MemoryRouter });
     });
 
-    const title = screen.getByText('staking.title');
-    const subTitle = screen.getByText('staking.stakeMore.initStakeMoreSubtitle');
+    const title = screen.getByText('staking.stakeMore.title');
     const next = screen.getByText('to confirm');
     expect(title).toBeInTheDocument();
-    expect(subTitle).toBeInTheDocument();
     expect(next).toBeInTheDocument();
   });
 

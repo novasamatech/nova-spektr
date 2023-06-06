@@ -8,7 +8,7 @@ import { useContact } from '@renderer/services/contact/contactService';
 import ContactModal from './components/ContactModal';
 import ContactList from './components/ContactList';
 import EmptyContacts from './components/EmptyState/EmptyContacts';
-import { Button, Input } from '@renderer/components/ui-redesign';
+import { IconButton, Input } from '@renderer/components/ui-redesign';
 
 const AddressBook = () => {
   const { t } = useI18n();
@@ -25,22 +25,18 @@ const AddressBook = () => {
       <Header title={t('addressBook.title')}>
         <div className="flex items-center gap-4">
           <Input
+            className="ml-1"
             placeholder={t('addressBook.searchPlaceholder')}
             prefixElement={<Icon size={16} name="search" />}
-            className="ml-2"
             onChange={setQuery}
           />
 
           {!isEmpty && (
-            <Button
-              variant="text"
-              pallet="primary"
-              className="font-semibold h-5"
-              suffixElement={<Icon size={16} name="add" />}
+            <IconButton
+              name="addAddress"
+              ariaLabel={t('addressBook.addContactButton')}
               onClick={toggleAddContactModal}
-            >
-              {t('addressBook.addContactButton')}
-            </Button>
+            />
           )}
         </div>
       </Header>

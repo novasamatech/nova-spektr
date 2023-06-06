@@ -5,12 +5,13 @@ import cnTw from '@renderer/shared/utils/twMerge';
 import { Icon } from '@renderer/components/ui';
 import { DropdownOption, DropdownResult, Position } from '../common/types';
 import CommonInputStyles from '@renderer/components/ui-redesign/Inputs/common/styles';
-import { CaptionText, Checkbox, FootnoteText, LabelText } from '@renderer/components/ui-redesign';
+import { Checkbox, FootnoteText, LabelText, HeadlineText } from '@renderer/components/ui-redesign';
 import { OptionsContainerStyle, OptionStyle, SelectButtonStyle, ViewClass } from '../common/constants';
 
 type Props = {
   className?: string;
   placeholder: string;
+  multiPlaceholder?: string;
   label?: string;
   disabled?: boolean;
   invalid?: boolean;
@@ -24,6 +25,7 @@ type Props = {
 const MultiSelect = ({
   className,
   placeholder,
+  multiPlaceholder,
   label,
   disabled,
   invalid,
@@ -58,12 +60,18 @@ const MultiSelect = ({
     }
 
     return (
-      <FootnoteText as="span" className="text-text-primary">
-        {placeholder}
-        <CaptionText as="span" className="text-button-text ml-2 py-0.5 px-1.5 rounded-[30px] bg-accent-background">
+      <span className="relative flex items-center">
+        <HeadlineText
+          as="span"
+          className="absolute w-6 h-6 border border-token-container-border rounded"
+          align="center"
+        >
           {selectedOptions.length}
-        </CaptionText>
-      </FootnoteText>
+        </HeadlineText>
+        <FootnoteText as="span" className="ml-7 py-[1px]">
+          {multiPlaceholder || placeholder}
+        </FootnoteText>
+      </span>
     );
   };
 
@@ -90,7 +98,11 @@ const MultiSelect = ({
           <Transition as={Fragment} leave="transition ease-in duration-100" leaveFrom="opacity-100" leaveTo="opacity-0">
             <Listbox.Options className={cnTw(OptionsContainerStyle, position !== 'auto' && ViewClass[position])}>
               {options.map(({ id, value, element }) => (
-                <Listbox.Option key={id} className={OptionStyle} value={{ id, value }}>
+                <Listbox.Option
+                  key={id}
+                  value={{ id, value }}
+                  className={({ active }) => cnTw(OptionStyle, active && 'bg-action-background-hover')}
+                >
                   {({ selected }) => (
                     <Checkbox
                       readOnly
@@ -117,8 +129,8 @@ const MultiSelect = ({
   }
 
   return (
-    <div className="flex flex-col gap-2">
-      <LabelText className="cursor-pointer" htmlFor={id}>
+    <div className="flex flex-col gap-y-2">
+      <LabelText className="cursor-pointer text-text-tertiary" htmlFor={id}>
         {label}
       </LabelText>
       {selectElement}

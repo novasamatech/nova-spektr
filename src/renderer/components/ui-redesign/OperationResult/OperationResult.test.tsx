@@ -6,7 +6,7 @@ import OperationResult from './OperationResult';
 describe('ui/OperationResult', () => {
   test('should render component', () => {
     render(
-      <OperationResult title="success" isOpen onClose={noop}>
+      <OperationResult isOpen title="success" onClose={noop}>
         children
       </OperationResult>,
     );

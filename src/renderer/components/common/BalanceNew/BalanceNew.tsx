@@ -16,7 +16,7 @@ const BalanceNew = ({
   value,
   asset,
   className,
-  showIcon = false,
+  showIcon,
   imgClassName = 'bg-token-background',
   wrapperClassName,
 }: Props) => {
@@ -30,9 +30,9 @@ const BalanceNew = ({
   });
 
   const balance = (
-    <p className={cnTw('font-inter text-body text-text-primary', className)}>
+    <span className={cnTw('font-inter text-body text-text-primary', className)}>
       {balanceValue} {suffix} {symbol}
-    </p>
+    </span>
   );
 
   if (!showIcon) {
@@ -40,10 +40,10 @@ const BalanceNew = ({
   }
 
   return (
-    <div className={cnTw('flex items-center gap-x-2', wrapperClassName)}>
+    <span className={cnTw('flex items-center gap-x-2', wrapperClassName)}>
       <img src={icon} alt={name} width={28} height={28} className={cnTw('rounded-full', imgClassName)} />
       {balance}
-    </div>
+    </span>
   );
 };
 

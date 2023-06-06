@@ -39,7 +39,7 @@ const SelectableSignatory = <T extends any>({
 
   const { getBalance } = useBalance();
   const { getLiveAccounts } = useAccount();
-  const popoverItems = useAddressInfo(address, explorers);
+  const popoverItems = useAddressInfo(address, explorers, true);
 
   const [balance, setBalance] = useState('');
   const account = getLiveAccounts().find((a) => toAddress(a.accountId) === address);

@@ -2,7 +2,6 @@ import { useEffect } from 'react';
 
 import QrReaderWrapper from '@renderer/screens/Signing/QrReaderWrapper/QrReaderWrapper';
 import { HexString } from '@renderer/domain/shared-kernel';
-import ModalMock from '../ModalMock';
 
 type Props = {
   multiQr: boolean;
@@ -27,7 +26,7 @@ export const Signing = ({ multiQr, countdown, onResult, onGoBack }: Props) => {
   };
 
   return (
-    <ModalMock>
+    <div className="w-[440px] pt-4">
       <QrReaderWrapper
         isMultiFrame={multiQr}
         className="w-full rounded-2lg"
@@ -35,6 +34,6 @@ export const Signing = ({ multiQr, countdown, onResult, onGoBack }: Props) => {
         onResult={handleResult}
         onGoBack={onGoBack}
       />
-    </ModalMock>
+    </div>
   );
 };

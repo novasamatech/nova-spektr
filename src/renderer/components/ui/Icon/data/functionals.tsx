@@ -20,6 +20,7 @@ import NetworkDuotoneImg, { ReactComponent as NetworkDuotoneSvg } from '@images/
 import NetworkOnImg, { ReactComponent as NetworkOnSvg } from '@images/functionals/network-on.svg';
 import NetworkOffImg, { ReactComponent as NetworkOffSvg } from '@images/functionals/network-off.svg';
 import AddImg, { ReactComponent as AddSvg } from '@images/functionals/add.svg';
+import AddAddressImg, { ReactComponent as AddAddressSvg } from '@images/functionals/add-address.svg';
 import AddLineImg, { ReactComponent as AddLineSvg } from '@images/functionals/add-line.svg';
 import AddCutoutImg, { ReactComponent as AddCutoutSvg } from '@images/functionals/add-cutout.svg';
 import ClearOutlineImg, { ReactComponent as ClearOutlineSvg } from '@images/functionals/clear-outline.svg';
@@ -40,6 +41,7 @@ import RefreshImg, { ReactComponent as RefreshSvg } from '@images/functionals/re
 import SettingsLiteImg, { ReactComponent as SettingsLiteSvg } from '@images/functionals/settings-lite.svg';
 import ViewValidatorsImg, { ReactComponent as ViewValidatorsSvg } from '@images/functionals/view-validators.svg';
 import LinkImg, { ReactComponent as LinkSvg } from '@images/functionals/link.svg';
+import LockImg, { ReactComponent as LockSvg } from '@images/functionals/lock.svg';
 import MagicImg, { ReactComponent as MagicSvg } from '@images/functionals/magic.svg';
 
 const FunctionalImages = {
@@ -65,6 +67,7 @@ const FunctionalImages = {
   networkOn: { svg: NetworkOnSvg, img: NetworkOnImg },
   networkOff: { svg: NetworkOffSvg, img: NetworkOffImg },
   add: { svg: AddSvg, img: AddImg },
+  addAddress: { svg: AddAddressSvg, img: AddAddressImg },
   addLine: { svg: AddLineSvg, img: AddLineImg },
   addCutout: { svg: AddCutoutSvg, img: AddCutoutImg },
   clearOutline: { svg: ClearOutlineSvg, img: ClearOutlineImg },
@@ -81,6 +84,7 @@ const FunctionalImages = {
   settingsLite: { svg: SettingsLiteSvg, img: SettingsLiteImg },
   viewValidators: { svg: ViewValidatorsSvg, img: ViewValidatorsImg },
   link: { svg: LinkSvg, img: LinkImg },
+  lock: { svg: LockSvg, img: LockImg },
   magic: { img: MagicImg, svg: MagicSvg },
 } as const;
 

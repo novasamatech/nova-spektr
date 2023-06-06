@@ -6,6 +6,7 @@ import GlobeImg, { ReactComponent as GlobeSvg } from '@images/aesthetics/globe.s
 import SortImg, { ReactComponent as SortSvg } from '@images/aesthetics/sort.svg';
 import ClockImg, { ReactComponent as ClockSvg } from '@images/aesthetics/clock.svg';
 import InfoImg, { ReactComponent as InfoSvg } from '@images/aesthetics/info.svg';
+import WarnImg, { ReactComponent as WarnSvg } from '@images/aesthetics/warning.svg';
 import ChatImg, { ReactComponent as ChatSvg } from '@images/aesthetics/chat.svg';
 import ChatRedesignImg, { ReactComponent as ChatRedesignSvg } from '@images/aesthetics/chat-redesign.svg';
 import BellImg, { ReactComponent as BellSvg } from '@images/aesthetics/bell.svg';
@@ -21,6 +22,7 @@ const AestheticImages = {
   sort: { svg: SortSvg, img: SortImg },
   clock: { svg: ClockSvg, img: ClockImg },
   info: { svg: InfoSvg, img: InfoImg },
+  warn: { svg: WarnSvg, img: WarnImg },
   chat: { svg: ChatSvg, img: ChatImg },
   bell: { svg: BellSvg, img: BellImg },
   question: { svg: QuestionSvg, img: QuestionImg },

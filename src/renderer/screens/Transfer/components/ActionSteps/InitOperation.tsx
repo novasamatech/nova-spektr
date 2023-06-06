@@ -74,7 +74,7 @@ const InitOperation = ({
       onSignatoryChange(options[0].value);
       setActiveSignatory({ id: options[0].id, value: options[0].value });
     }
-  }, [activeAccount, dbAccounts]);
+  }, [activeAccount, dbAccounts.length]);
 
   const changeAccount = (account: DropdownResult<Account | MultisigAccount>) => {
     onAccountChange(account.value);
