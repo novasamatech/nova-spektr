@@ -34,7 +34,7 @@ describe('service/accountService', () => {
 
     storage.connectTo = jest.fn().mockReturnValue({
       getAccounts: jest.fn().mockResolvedValue(accountsDb),
-      updateAccount: jest.fn().mockImplementation(() => {
+      updateAccounts: jest.fn().mockImplementation(() => {
         accountsDb[0].isActive = true;
       }),
     });
