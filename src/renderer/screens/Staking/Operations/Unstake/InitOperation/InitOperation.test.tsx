@@ -29,13 +29,6 @@ jest.mock('@renderer/services/account/accountService', () => ({
 
 jest.mock('@renderer/services/balance/balanceService', () => ({
   useBalance: jest.fn().mockReturnValue({
-    getLiveBalance: jest.fn().mockReturnValue({
-      assetId: 1,
-      chainId: '0x123',
-      accountId: TEST_ACCOUNT_ID,
-      free: '10',
-      frozen: [{ type: 'test', amount: '1' }],
-    }),
     getLiveAssetBalances: jest.fn().mockReturnValue([
       {
         assetId: 1,
@@ -54,7 +47,7 @@ jest.mock('../../components', () => ({
     return (
       <div>
         <p>operationForm</p>
-        {children()}
+        {children}
       </div>
     );
   },

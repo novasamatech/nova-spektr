@@ -26,7 +26,7 @@ export const Signing = ({ multiQr, countdown, onResult, onGoBack }: Props) => {
   };
 
   return (
-    <div className="w-[440px] py-4">
+    <div className="w-[440px] pt-4">
       <QrReaderWrapper
         isMultiFrame={multiQr}
         className="w-full rounded-2lg"

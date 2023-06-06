@@ -19,7 +19,6 @@ import { Icon } from '@renderer/components/ui';
 import { OperationForm } from '../../components';
 import {
   getSignatoryOptions,
-  validateStake,
   validateBalanceForFee,
   validateBalanceForFeeDeposit,
   getGeneralAccountOption,
@@ -44,7 +43,7 @@ const InitOperation = ({ api, chainId, accounts, asset, addressPrefix, onResult 
   const { t } = useI18n();
   const { getLiveAccounts } = useAccount();
   const { getMaxValidators } = useValidators();
-  const { getLiveBalance, getLiveAssetBalances } = useBalance();
+  const { getLiveAssetBalances } = useBalance();
 
   const dbAccounts = getLiveAccounts();
 
@@ -67,8 +66,11 @@ const InitOperation = ({ api, chainId, accounts, asset, addressPrefix, onResult 
   const formFields = accountIsMultisig ? [{ name: 'description' }] : [];
 
   const accountIds = accounts.map((account) => account.accountId);
-  const signerBalance = getLiveBalance(activeSignatory?.value.accountId || '0x0', chainId, asset.assetId.toString());
   const balances = getLiveAssetBalances(accountIds, chainId, asset.assetId.toString());
+
+  const signatoryIds = accountIsMultisig ? firstAccount.signatories.map((s) => s.accountId) : [];
+  const signatoriesBalances = getLiveAssetBalances(signatoryIds, chainId, asset.assetId.toString());
+  const signerBalance = signatoriesBalances.find((b) => b.accountId === activeSignatory?.value.accountId);
 
   useEffect(() => {
     const balancesMap = new Map(balances.map((balance) => [balance.accountId, balance]));
@@ -94,15 +96,21 @@ const InitOperation = ({ api, chainId, accounts, asset, addressPrefix, onResult 
   useEffect(() => {
     if (!accountIsMultisig) return;
 
-    const signatories = firstAccount.signatories.map((s) => s.accountId);
-    const signers = dbAccounts.filter((a) => signatories.includes(a.accountId));
-    const options = getSignatoryOptions(signers, addressPrefix);
+    const signerOptions = dbAccounts.reduce<any[]>((acc, signer) => {
+      if (signatoryIds.includes(signer.accountId)) {
+        const balance = signatoriesBalances.find((b) => b.accountId === signer.accountId);
 
-    if (options.length === 0) return;
+        acc.push(getSignatoryOptions(signer, { addressPrefix, asset, balance }));
+      }
 
-    setSignatoryOptions(options);
-    setActiveSignatory({ id: options[0].id, value: options[0].value });
-  }, [firstAccount, accountIsMultisig, dbAccounts.length]);
+      return acc;
+    }, []);
+
+    if (signerOptions.length === 0) return;
+
+    setSignatoryOptions(signerOptions);
+    setActiveSignatory({ id: signerOptions[0].id, value: signerOptions[0].value });
+  }, [accountIsMultisig, dbAccounts.length, signatoriesBalances.length]);
 
   useEffect(() => {
     if (validatorsAccounts.length === 0) return;
@@ -141,21 +149,14 @@ const InitOperation = ({ api, chainId, accounts, asset, addressPrefix, onResult 
     });
   };
 
-  const validateBalance = (amount: string): boolean => {
-    return activeBalances.every((b) => validateStake(b, amount, asset.precision));
-  };
-
-  const validateFee = (amount: string): boolean => {
-    if (accountIsMultisig) {
-      if (!signerBalance) return false;
-
-      return validateBalanceForFee(signerBalance, fee);
-    } else {
-      const feeIsValid = activeBalances.every((b) => validateBalanceForFee(b, fee));
-      const balanceIsValid = activeBalances.every((b) => validateStake(b, amount, asset.precision, fee));
-
-      return feeIsValid && balanceIsValid;
+  const validateFee = (): boolean => {
+    if (!accountIsMultisig) {
+      return activeBalances.every((b) => validateBalanceForFee(b, fee));
     }
+
+    if (!signerBalance) return false;
+
+    return validateBalanceForFee(signerBalance, fee);
   };
 
   const validateDeposit = (): boolean => {
@@ -194,7 +195,6 @@ const InitOperation = ({ api, chainId, accounts, asset, addressPrefix, onResult 
         addressPrefix={addressPrefix}
         fields={formFields}
         asset={asset}
-        validateBalance={validateBalance}
         validateFee={validateFee}
         validateDeposit={validateDeposit}
         onSubmit={submitBond}

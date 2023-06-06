@@ -5,10 +5,6 @@ import init, { Encoder } from 'raptorq';
 import { useEffect, useState } from 'react';
 
 import { Command } from '@renderer/components/common/QrCode/QrGenerator/common/constants';
-import {
-  createMultipleSignPayload,
-  createSignPayload,
-} from '@renderer/components/common/QrCode/QrGenerator/common/utils';
 import QrMultiframeGenerator from '@renderer/components/common/QrCode/QrGenerator/QrMultiframeTxGenerator';
 import { TRANSACTION_BULK } from '@renderer/components/common/QrCode/QrReader/common/constants';
 import { useI18n } from '@renderer/context/I18nContext';
@@ -19,6 +15,10 @@ import { useTransaction } from '@renderer/services/transaction/transactionServic
 import { toAddress } from '@renderer/shared/utils/address';
 import { Button } from '@renderer/components/ui-redesign';
 import { QrGeneratorContainer } from '@renderer/components/common';
+import {
+  createMultipleSignPayload,
+  createSignPayload,
+} from '@renderer/components/common/QrCode/QrGenerator/common/utils';
 
 type Props = {
   api: ApiPromise;
@@ -51,6 +51,8 @@ const ScanMultiframeQr = ({
   const [unsignedTransactions, setUnsignedTransactions] = useState<UnsignedTransaction[]>([]);
 
   useEffect(() => {
+    if (unsignedTransactions.length) return;
+
     setupTransactions().catch(() => console.warn('ScanMultiQr | setupTransactions() failed'));
   }, []);
 

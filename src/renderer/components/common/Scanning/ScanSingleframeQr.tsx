@@ -44,6 +44,8 @@ const ScanSingleframeQr = ({
   const [unsignedTx, setUnsignedTx] = useState<UnsignedTransaction>();
 
   useEffect(() => {
+    if (txPayload) return;
+
     setupTransaction().catch(() => console.warn('ScanSingleframeQr | setupTransaction() failed'));
   }, []);
 

@@ -6,6 +6,10 @@ import { Account, MultisigAccount } from '@renderer/domain/account';
 import { Address } from '@renderer/domain/shared-kernel';
 import { DropdownOption } from '@renderer/components/ui/Dropdowns/common/types';
 import { Balance as AccountBalance } from '@renderer/domain/balance';
+import { Asset } from '@renderer/domain/asset';
+import { toAddress } from '@renderer/shared/utils/address';
+import { Stake } from '@renderer/domain/stake';
+import { AccountAddress, BalanceNew } from '@renderer/components/common';
 import {
   stakeableAmount,
   formatAmount,
@@ -13,10 +17,6 @@ import {
   unlockingAmount,
   redeemableAmount,
 } from '@renderer/shared/utils/balance';
-import { Asset } from '@renderer/domain/asset';
-import { toAddress } from '@renderer/shared/utils/address';
-import { Stake } from '@renderer/domain/stake';
-import { AccountAddress, BalanceNew } from '@renderer/components/common';
 
 export const validateBalanceForFee = (balance: AccountBalance | string, fee: string): boolean => {
   const transferableBalance = typeof balance === 'string' ? balance : transferableAmount(balance);
@@ -91,14 +91,14 @@ type ParamsWithStake = Params & {
 
 export const getGeneralAccountOption = <T extends Account | MultisigAccount>(
   account: T,
-  { balance, asset, fee, addressPrefix, amount = '0' }: Params,
+  { balance, asset, fee, addressPrefix }: Params,
 ): DropdownOption<T> => {
   const address = toAddress(account.accountId, { prefix: addressPrefix });
   const canValidateBalance = balance && fee;
 
   let balanceIsCorrect = true;
   if (canValidateBalance) {
-    balanceIsCorrect = validateStake(balance, amount, asset.precision, fee);
+    balanceIsCorrect = validateBalanceForFee(balance, fee);
   }
 
   const balanceContent = getBalance(transferableAmount(balance), asset, balanceIsCorrect);
@@ -164,7 +164,6 @@ export const getRestakeAccountOption = (
     balanceIsCorrect = restakeIsValid && feeIsValid;
   }
 
-  console.log(unlockingAmount(stake?.unlocking));
   const balanceContent = getBalance(unlockingAmount(stake?.unlocking), asset, balanceIsCorrect);
   const element = getElement(address, account.name, balanceContent);
 
@@ -191,11 +190,14 @@ export const getUnstakeAccountOption = (
   return { id: account.accountId, value: account, element };
 };
 
-export const getSignatoryOptions = (accounts: Account[], addressPrefix: number): DropdownOption<Account>[] => {
-  return accounts.map((account) => {
-    const address = toAddress(account.accountId, { prefix: addressPrefix });
-    const element = getElement(address, account.name);
+export const getSignatoryOptions = (
+  account: Account,
+  { balance, asset, addressPrefix }: Params,
+): DropdownOption<Account> => {
+  const address = toAddress(account.accountId, { prefix: addressPrefix });
 
-    return { id: address, value: account, element };
-  });
+  const balanceContent = getBalance(transferableAmount(balance), asset);
+  const element = getElement(address, account.name, balanceContent);
+
+  return { id: account.accountId, value: account, element };
 };

@@ -49,7 +49,7 @@ const InitOperation = ({ api, chainId, addressPrefix, accounts, asset, onResult 
   const { t } = useI18n();
   const { getLiveAccounts } = useAccount();
   const { subscribeStaking, getMinNominatorBond } = useStakingData();
-  const { getLiveBalance, getLiveAssetBalances } = useBalance();
+  const { getLiveAssetBalances } = useBalance();
 
   const dbAccounts = getLiveAccounts();
 
@@ -60,7 +60,6 @@ const InitOperation = ({ api, chainId, addressPrefix, accounts, asset, onResult 
 
   const [minBalance, setMinBalance] = useState('0');
   const [minimumStake, setMinimumStake] = useState('0');
-  // const [transferableRange, setTransferableRange] = useState<[string, string]>(['0', '0']);
 
   const [unstakeAccounts, setUnstakeAccounts] = useState<DropdownOption<Account>[]>([]);
   const [activeUnstakeAccounts, setActiveUnstakeAccounts] = useState<DropdownResult<Account>[]>([]);
@@ -77,7 +76,10 @@ const InitOperation = ({ api, chainId, addressPrefix, accounts, asset, onResult 
 
   const accountIds = accounts.map((account) => account.accountId);
   const balances = getLiveAssetBalances(accountIds, chainId, asset.assetId.toString());
-  const signerBalance = getLiveBalance(activeSignatory?.value.accountId || '0x0', chainId, asset.assetId.toString());
+
+  const signatoryIds = accountIsMultisig ? firstAccount.signatories.map((s) => s.accountId) : [];
+  const signatoriesBalances = getLiveAssetBalances(signatoryIds, chainId, asset.assetId.toString());
+  const signerBalance = signatoriesBalances.find((b) => b.accountId === activeSignatory?.value.accountId);
 
   useEffect(() => {
     getMinNominatorBond(api).then(setMinimumStake);
@@ -157,15 +159,21 @@ const InitOperation = ({ api, chainId, addressPrefix, accounts, asset, onResult 
   useEffect(() => {
     if (!accountIsMultisig) return;
 
-    const signatories = firstAccount.signatories.map((s) => s.accountId);
-    const signers = dbAccounts.filter((a) => signatories.includes(a.accountId));
-    const options = getSignatoryOptions(signers, addressPrefix);
+    const signerOptions = dbAccounts.reduce<any[]>((acc, signer) => {
+      if (signatoryIds.includes(signer.accountId)) {
+        const balance = signatoriesBalances.find((b) => b.accountId === signer.accountId);
 
-    if (options.length === 0) return;
+        acc.push(getSignatoryOptions(signer, { addressPrefix, asset, balance }));
+      }
 
-    setSignatoryOptions(options);
-    setActiveSignatory({ id: options[0].id, value: options[0].value });
-  }, [firstAccount, accountIsMultisig, dbAccounts.length]);
+      return acc;
+    }, []);
+
+    if (signerOptions.length === 0) return;
+
+    setSignatoryOptions(signerOptions);
+    setActiveSignatory({ id: signerOptions[0].id, value: signerOptions[0].value });
+  }, [accountIsMultisig, dbAccounts.length, signatoriesBalances.length]);
 
   useEffect(() => {
     if (unstakeAccounts.length === 0) return;
@@ -212,13 +220,13 @@ const InitOperation = ({ api, chainId, addressPrefix, accounts, asset, onResult 
   };
 
   const validateFee = (): boolean => {
-    if (accountIsMultisig) {
-      if (!signerBalance) return false;
-
-      return validateBalanceForFee(signerBalance, fee);
-    } else {
+    if (!accountIsMultisig) {
       return activeBalances.every((b) => validateBalanceForFee(b, fee));
     }
+
+    if (!signerBalance) return false;
+
+    return validateBalanceForFee(signerBalance, fee);
   };
 
   const validateDeposit = (): boolean => {
@@ -228,16 +236,13 @@ const InitOperation = ({ api, chainId, addressPrefix, accounts, asset, onResult 
     return validateBalanceForFeeDeposit(signerBalance, deposit, fee);
   };
 
-  // const transferable =
-  //   transferableRange[0] === transferableRange[1] ? (
-  //     <Balance value={transferableRange[0]} precision={asset.precision} />
-  //   ) : (
-  //     <>
-  //       <Balance value={transferableRange[0]} precision={asset.precision} />
-  //       &nbsp;{'-'}&nbsp;
-  //       <Balance value={transferableRange[1]} precision={asset.precision} />
-  //     </>
-  //   );
+  const getBalanceRange = (): string | string[] => {
+    if (activeSignatory) return minBalance;
+
+    return activeBalances.length > 1 ? ['0', minBalance] : minBalance;
+  };
+
+  const canSubmit = (Boolean(fee) && fee !== '0') || activeUnstakeAccounts.length > 0 || Boolean(activeSignatory);
 
   return (
     <div className="flex flex-col gap-y-4 w-[440px] px-5 py-4">
@@ -262,10 +267,10 @@ const InitOperation = ({ api, chainId, addressPrefix, accounts, asset, onResult 
 
       <OperationForm
         chainId={chainId}
-        canSubmit={activeUnstakeAccounts.length > 0}
+        canSubmit={canSubmit}
         addressPrefix={addressPrefix}
-        fields={formFields} //todo fields prop has string array type. Maybe better to provide some types from form to avoid misspelling
-        balanceRange={['0', minBalance]}
+        fields={formFields}
+        balanceRange={getBalanceRange()}
         asset={asset}
         validateBalance={validateBalance}
         validateFee={validateFee}
@@ -273,50 +278,26 @@ const InitOperation = ({ api, chainId, addressPrefix, accounts, asset, onResult 
         onSubmit={submitUnstake}
         onAmountChange={setAmount}
       >
-        {(errorType) => {
-          // const hasFeeError = errorType === 'insufficientBalanceForFee';
-
-          return (
-            <>
-              {/*<div className="flex justify-between items-center uppercase text-neutral-variant text-2xs">*/}
-              {/*  <p>{t('staking.unstake.transferable')}</p>*/}
-
-              {/*  <div className={cn('flex font-semibold', hasFeeError ? 'text-error' : 'text-neutral')}>*/}
-              {/*    {hasFeeError && <Icon className="text-error mr-1" name="warnCutout" size={12} />}*/}
-              {/*    {transferable}&nbsp;{asset.symbol}*/}
-              {/*  </div>*/}
-              {/*</div>*/}
-
-              <div className="flex flex-col gap-y-2">
-                {accountIsMultisig && (
-                  <div className="flex justify-between items-center gap-x-2">
-                    <div className="flex items-center gap-x-2">
-                      <Icon className="text-text-tertiary" name="lock" size={12} />
-                      <FootnoteText className="text-text-tertiary">
-                        {t('staking.bond.networkDepositLabel')}
-                      </FootnoteText>
-                    </div>
-                    <FootnoteText>
-                      <Deposit
-                        api={api}
-                        asset={asset}
-                        threshold={firstAccount.threshold}
-                        onDepositChange={setDeposit}
-                      />
-                    </FootnoteText>
-                  </div>
-                )}
-
-                <div className="flex justify-between items-center gap-x-2">
-                  <FootnoteText className="text-text-tertiary">{t('staking.bond.networkFeeLabel')}</FootnoteText>
-                  <FootnoteText className="text-text-tertiary">
-                    <Fee api={api} asset={asset} transaction={transactions[0]} onFeeChange={setFee} />
-                  </FootnoteText>
-                </div>
+        <div className="flex flex-col gap-y-2">
+          {accountIsMultisig && (
+            <div className="flex justify-between items-center gap-x-2">
+              <div className="flex items-center gap-x-2">
+                <Icon className="text-text-tertiary" name="lock" size={12} />
+                <FootnoteText className="text-text-tertiary">{t('staking.bond.networkDepositLabel')}</FootnoteText>
               </div>
-            </>
-          );
-        }}
+              <FootnoteText>
+                <Deposit api={api} asset={asset} threshold={firstAccount.threshold} onDepositChange={setDeposit} />
+              </FootnoteText>
+            </div>
+          )}
+
+          <div className="flex justify-between items-center gap-x-2">
+            <FootnoteText className="text-text-tertiary">{t('staking.bond.networkFeeLabel')}</FootnoteText>
+            <FootnoteText className="text-text-tertiary">
+              <Fee api={api} asset={asset} transaction={transactions[0]} onFeeChange={setFee} />
+            </FootnoteText>
+          </div>
+        </div>
       </OperationForm>
     </div>
   );

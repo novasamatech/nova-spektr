@@ -61,10 +61,14 @@ const MultiSelect = ({
 
     return (
       <span className="relative flex items-center">
-        <HeadlineText as="span" className="absolute w-6 h-6 border border-token-container-border rounded text-center">
+        <HeadlineText
+          as="span"
+          className="absolute w-6 h-6 border border-token-container-border rounded"
+          align="center"
+        >
           {selectedOptions.length}
         </HeadlineText>
-        <FootnoteText as="span" className="ml-7 py-[1px] text-text-primary">
+        <FootnoteText as="span" className="ml-7 py-[1px]">
           {multiPlaceholder || placeholder}
         </FootnoteText>
       </span>

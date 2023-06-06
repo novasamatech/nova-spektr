@@ -15,7 +15,7 @@ type Props = {
 };
 
 const Alert = ({ title, variant = 'info', className, children, onClose }: PropsWithChildren<Props>) => {
-  const isList = Children.count(children) > 0;
+  const isList = Children.toArray(children).length > 0;
 
   return (
     <div className={cnTw('p-4 rounded-lg border', ViewStyle[variant])}>
@@ -28,7 +28,7 @@ const Alert = ({ title, variant = 'info', className, children, onClose }: PropsW
           {isList ? <ul className={cnTw('flex flex-col gap-y-1 list-none pl-6', className)}>{children}</ul> : children}
         </div>
 
-        {onClose && <IconButton size={14} name="close" className="ml-auto text-icon-default" onClick={onClose} />}
+        {onClose && <IconButton size={14} name="close" className="ml-auto" onClick={onClose} />}
       </div>
     </div>
   );
