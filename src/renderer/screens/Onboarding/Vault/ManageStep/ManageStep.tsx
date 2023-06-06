@@ -52,6 +52,7 @@ const ManageStepSingle = ({ seedInfo, onBack, onComplete }: Props) => {
   const {
     handleSubmit,
     control,
+    reset,
     formState: { errors, isValid },
   } = useForm<WalletForm>({
     mode: 'onChange',
@@ -238,7 +239,13 @@ const ManageStepSingle = ({ seedInfo, onBack, onComplete }: Props) => {
       console.warn('Error deactivating previously active accounts', e);
     }
 
+    reset();
     onComplete();
+  };
+
+  const goBack = () => {
+    reset();
+    onBack();
   };
 
   return (
@@ -271,7 +278,7 @@ const ManageStepSingle = ({ seedInfo, onBack, onComplete }: Props) => {
           </InputHint>
 
           <div className="flex flex-1 justify-between items-end">
-            <Button variant="text" onClick={onBack}>
+            <Button variant="text" onClick={goBack}>
               {t('onboarding.backButton')}
             </Button>
 
