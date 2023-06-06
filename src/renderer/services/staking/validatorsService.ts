@@ -24,7 +24,9 @@ export const useValidators = (): IValidatorsService => {
   };
 
   const getValidatorsStake = async (api: ApiPromise, era: EraIndex): Promise<ValidatorMap> => {
-    const data = await api.query.staking.erasStakers.entries(era);
+    // TODO: uncomment if we need full lit of nominators (even those who doesn't get rewards)
+    // const data = await api.query.staking.erasStakers.entries(era);
+    const data = await api.query.staking.erasStakersClipped.entries(era);
     const maxNominatorRewarded = getMaxNominatorRewarded(api);
 
     return data.reduce((acc, [storageKey, type]) => {

@@ -2,6 +2,7 @@ import { act, render, screen } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 
 import { ConnectionStatus } from '@renderer/domain/connection';
+import { TEST_ACCOUNT_ID } from '@renderer/shared/utils/constants';
 import SetValidators from './SetValidators';
 
 jest.mock('@renderer/context/I18nContext', () => ({
@@ -18,7 +19,7 @@ jest.mock('react-router-dom', () => ({
 
 jest.mock('@renderer/services/account/accountService', () => ({
   useAccount: jest.fn().mockReturnValue({
-    getLiveAccounts: () => [],
+    getActiveAccounts: () => [{ name: 'Test Wallet', accountId: TEST_ACCOUNT_ID }],
   }),
 }));
 
@@ -46,45 +47,59 @@ jest.mock('@renderer/context/NetworkContext', () => ({
   })),
 }));
 
-jest.mock(
-  '@renderer/components/common/AddressWithExplorers/AddressWithExplorers',
-  jest.fn().mockReturnValue(({ address }: { address: string }) => <span>{address}</span>),
-);
-
 const mockButton = (text: string, callback: () => void) => (
   <button type="button" onClick={callback}>
     {text}
   </button>
 );
 
+jest.mock('./InitOperation/InitOperation', () => ({ onResult }: any) => {
+  const payload = { accounts: [], validators: [] };
+
+  return mockButton('to validators', () => onResult(payload));
+});
+
 jest.mock('../components/index', () => ({
   Validators: ({ onResult }: any) => mockButton('to confirm', onResult),
   Confirmation: ({ onResult }: any) => mockButton('to scan', onResult),
-  MultiScanning: ({ onResult }: any) => mockButton('to sign', onResult),
   Signing: ({ onResult }: any) => mockButton('to submit', onResult),
   Submit: () => 'finish',
 }));
 
-jest.mock('@renderer/components/common/Scanning/Scanning', () => ({
-  Scanning: ({ onResult }: any) => mockButton('to sign', onResult),
-}));
+jest.mock(
+  '@renderer/components/common/Scanning/ScanMultiframeQr',
+  () =>
+    ({ onResult }: any) =>
+      mockButton('to sign', onResult),
+);
+jest.mock(
+  '@renderer/components/common/Scanning/ScanSingleframeQr',
+  () =>
+    ({ onResult }: any) =>
+      mockButton('to sign', onResult),
+);
 
 describe('screens/Staking/SetValidators', () => {
-  test('should render component', () => {
-    render(<SetValidators />, { wrapper: MemoryRouter });
+  test('should render component', async () => {
+    await act(async () => {
+      render(<SetValidators />, { wrapper: MemoryRouter });
+    });
 
-    const title = screen.getByText('staking.title');
-    const subTitle = screen.getByText('staking.bond.validatorsSubtitle');
-    const next = screen.getByText('to confirm');
+    const title = screen.getByText('staking.validators.title');
+    const next = screen.getByText('to validators');
     expect(title).toBeInTheDocument();
-    expect(subTitle).toBeInTheDocument();
     expect(next).toBeInTheDocument();
   });
 
   test('should change process state', async () => {
-    render(<SetValidators />, { wrapper: MemoryRouter });
+    await act(async () => {
+      render(<SetValidators />, { wrapper: MemoryRouter });
+    });
 
-    let nextButton = screen.getByRole('button', { name: 'to confirm' });
+    let nextButton = screen.getByRole('button', { name: 'to validators' });
+    await act(async () => nextButton.click());
+
+    nextButton = screen.getByRole('button', { name: 'to confirm' });
     await act(async () => nextButton.click());
 
     nextButton = screen.getByRole('button', { name: 'to scan' });

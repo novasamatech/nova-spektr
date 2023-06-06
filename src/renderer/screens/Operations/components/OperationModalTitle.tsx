@@ -1,7 +1,10 @@
 import Chain from '@renderer/screens/Operations/components/Chain/Chain';
 import { ChainId } from '@renderer/domain/shared-kernel';
 
-type Props = { title: string; chainId: ChainId };
+type Props = {
+  title: string;
+  chainId: ChainId;
+};
 
 const ChainFontStyle = 'font-manrope text-modal-title text-text-primary';
 

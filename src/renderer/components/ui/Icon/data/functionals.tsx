@@ -41,6 +41,7 @@ import RefreshImg, { ReactComponent as RefreshSvg } from '@images/functionals/re
 import SettingsLiteImg, { ReactComponent as SettingsLiteSvg } from '@images/functionals/settings-lite.svg';
 import ViewValidatorsImg, { ReactComponent as ViewValidatorsSvg } from '@images/functionals/view-validators.svg';
 import LinkImg, { ReactComponent as LinkSvg } from '@images/functionals/link.svg';
+import LockImg, { ReactComponent as LockSvg } from '@images/functionals/lock.svg';
 import MagicImg, { ReactComponent as MagicSvg } from '@images/functionals/magic.svg';
 
 const FunctionalImages = {
@@ -83,6 +84,7 @@ const FunctionalImages = {
   settingsLite: { svg: SettingsLiteSvg, img: SettingsLiteImg },
   viewValidators: { svg: ViewValidatorsSvg, img: ViewValidatorsImg },
   link: { svg: LinkSvg, img: LinkImg },
+  lock: { svg: LockSvg, img: LockImg },
   magic: { img: MagicImg, svg: MagicSvg },
 } as const;
 

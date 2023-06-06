@@ -23,8 +23,8 @@ import Confirmation from '@renderer/screens/Operations/components/ActionSteps/Co
 import { Icon } from '@renderer/components/ui';
 import OperationResult from '@renderer/components/ui-redesign/OperationResult/OperationResult';
 import OperationModalTitle from '@renderer/screens/Operations/components/OperationModalTitle';
-import { Scanning } from '@renderer/components/common/Scanning/Scanning';
 import Signing from '@renderer/screens/Transfer/components/ActionSteps/Signing';
+import ScanSingleframeQr from '@renderer/components/common/Scanning/ScanSingleframeQr';
 
 type Props = {
   tx: MultisigTransactionDS;
@@ -175,7 +175,7 @@ const RejectTx = ({ tx, account, connection }: Props) => {
           </>
         )}
         {activeStep === Step.SCANNING && rejectTx && connection.api && signAccount && (
-          <Scanning
+          <ScanSingleframeQr
             api={connection.api}
             chainId={tx.chainId}
             transaction={rejectTx}

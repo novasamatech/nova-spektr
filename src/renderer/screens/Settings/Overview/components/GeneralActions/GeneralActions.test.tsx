@@ -18,6 +18,6 @@ describe('screen/Settings/Overview/GeneralActions', () => {
     const link = screen.getByRole('link');
     expect(label).toBeInTheDocument();
     expect(link).toBeInTheDocument();
-    expect(link).toHaveAttribute('href', Paths.NETWORK);
+    expect(link).toHaveAttribute('href', `/${Paths.NETWORK}`);
   });
 });

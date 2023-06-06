@@ -1,11 +1,11 @@
 import { ApiPromise } from '@polkadot/api';
 import { act, render, screen } from '@testing-library/react';
 
-import { Balance } from '@renderer/components/ui';
 import { Asset } from '@renderer/domain/asset';
+import { BalanceNew } from '@renderer/components/common';
 import Deposit from './Deposit';
 
-jest.mock('@renderer/components/ui');
+jest.mock('@renderer/components/common');
 
 jest.mock('@renderer/context/I18nContext', () => ({
   useI18n: jest.fn().mockReturnValue({
@@ -21,7 +21,7 @@ jest.mock('@renderer/services/transaction/transactionService', () => ({
 
 describe('components/common/Fee', () => {
   beforeAll(() => {
-    (Balance as jest.Mock).mockImplementation(({ value }: any) => <p>{value}</p>);
+    (BalanceNew as jest.Mock).mockImplementation(({ value }: any) => <p>{value}</p>);
   });
 
   afterEach(() => {

@@ -57,6 +57,7 @@ const config = merge<WpConfig & WdsConfig>(baseConfig, {
     }),
 
     new HtmlWebpackPlugin({
+      publicPath: '/',
       template: resolve(FOLDERS.INDEX_HTML),
       minify: {
         collapseWhitespace: true,

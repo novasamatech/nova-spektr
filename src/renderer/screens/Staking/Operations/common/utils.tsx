@@ -3,10 +3,13 @@ import cn from 'classnames';
 import { ReactNode } from 'react';
 
 import { Account, MultisigAccount } from '@renderer/domain/account';
-import { Address, SigningType } from '@renderer/domain/shared-kernel';
+import { Address } from '@renderer/domain/shared-kernel';
 import { DropdownOption } from '@renderer/components/ui/Dropdowns/common/types';
-import { Icon, ChainAddress, Balance } from '@renderer/components/ui';
 import { Balance as AccountBalance } from '@renderer/domain/balance';
+import { Asset } from '@renderer/domain/asset';
+import { toAddress } from '@renderer/shared/utils/address';
+import { Stake } from '@renderer/domain/stake';
+import { AccountAddress, BalanceNew } from '@renderer/components/common';
 import {
   stakeableAmount,
   formatAmount,
@@ -14,11 +17,6 @@ import {
   unlockingAmount,
   redeemableAmount,
 } from '@renderer/shared/utils/balance';
-import { Asset } from '@renderer/domain/asset';
-import { toAddress } from '@renderer/shared/utils/address';
-import { Stake } from '@renderer/domain/stake';
-import { AccountDS } from '@renderer/services/storage';
-import { SigningBadges } from '@renderer/shared/utils/constants';
 
 export const validateBalanceForFee = (balance: AccountBalance | string, fee: string): boolean => {
   const transferableBalance = typeof balance === 'string' ? balance : transferableAmount(balance);
@@ -64,47 +62,24 @@ export const validateUnstake = (stake: Stake | string, amount: string, precision
   return new BN(formatAmount(amount, precision)).lte(new BN(unstakeableBalance));
 };
 
-//todo it has too much meaning, better to rename it.
-//todo isn't it better to avoid using react components in utils files. Better to move to another something like components
-const getElement = (address: Address, account: Account, content?: ReactNode, walletName?: string): ReactNode => {
+const getElement = (address: Address, accountName: string, content?: ReactNode): ReactNode => {
   return (
-    <div className="flex justify-between items-center gap-x-2.5">
-      <div className="flex gap-x-[5px] items-center">
-        <ChainAddress
-          address={address}
-          name={account.name}
-          subName={walletName}
-          signType={account.signingType}
-          size={30}
-          canCopy={false}
-        />
-      </div>
+    <div className="flex justify-between w-full">
+      <AccountAddress size={20} type="short" address={address} name={accountName} canCopy={false} />
       {content}
     </div>
   );
 };
 
-const getBalance = (balance: string, asset: Asset, isCorrect: boolean): ReactNode => {
-  if (!balance || balance === '0') return null;
+const getBalance = (balance: string, asset: Asset, isCorrect = true): ReactNode => {
+  if (!balance) return null;
 
-  return (
-    <div className="flex items-center gap-x-1">
-      {!isCorrect && <Icon size={12} className="text-error" name="warnCutout" />}
-
-      <Balance
-        className={cn(!isCorrect && 'text-error')}
-        value={balance}
-        precision={asset.precision}
-        symbol={asset.symbol}
-      />
-    </div>
-  );
+  return <BalanceNew className={cn(!isCorrect && 'text-text-negative')} value={balance} asset={asset} />;
 };
 
 type Params = {
   asset: Asset;
   addressPrefix: number;
-  walletName?: string;
   fee?: string;
   amount?: string;
   balance?: AccountBalance;
@@ -116,25 +91,25 @@ type ParamsWithStake = Params & {
 
 export const getGeneralAccountOption = <T extends Account | MultisigAccount>(
   account: T,
-  { walletName, balance, asset, fee, addressPrefix, amount = '0' }: Params,
+  { balance, asset, fee, addressPrefix }: Params,
 ): DropdownOption<T> => {
   const address = toAddress(account.accountId, { prefix: addressPrefix });
   const canValidateBalance = balance && fee;
 
   let balanceIsCorrect = true;
   if (canValidateBalance) {
-    balanceIsCorrect = validateStake(balance, amount, asset.precision, fee);
+    balanceIsCorrect = validateBalanceForFee(balance, fee);
   }
 
   const balanceContent = getBalance(transferableAmount(balance), asset, balanceIsCorrect);
-  const element = getElement(address, account, balanceContent, walletName);
+  const element = getElement(address, account.name, balanceContent);
 
   return { id: account.accountId, value: account, element };
 };
 
 export const getStakeAccountOption = <T extends Account | MultisigAccount>(
   account: T,
-  { walletName, balance, asset, fee, addressPrefix, amount = '0' }: Params,
+  { balance, asset, fee, addressPrefix, amount = '0' }: Params,
 ): DropdownOption<T> => {
   const address = toAddress(account.accountId, { prefix: addressPrefix });
   const canValidateBalance = balance && fee;
@@ -145,31 +120,39 @@ export const getStakeAccountOption = <T extends Account | MultisigAccount>(
   }
 
   const balanceContent = getBalance(stakeableAmount(balance), asset, balanceIsCorrect);
-  const element = getElement(address, account, balanceContent, walletName);
+  const element = getElement(address, account.name, balanceContent);
 
   return { id: account.accountId, value: account, element };
 };
 
+export const getPayoutAccountOption = (
+  account: Account,
+  { balance, asset, addressPrefix }: Params,
+): DropdownOption<Address> => {
+  const address = toAddress(account.accountId, { prefix: addressPrefix });
+
+  const balanceContent = getBalance(transferableAmount(balance), asset);
+  const element = getElement(address, account.name, balanceContent);
+
+  return { id: account.accountId, value: address, element };
+};
+
 export const getRedeemAccountOption = <T extends Account | MultisigAccount>(
   account: T,
-  { walletName, asset, stake, era, addressPrefix }: ParamsWithStake,
+  { asset, stake, era, addressPrefix }: ParamsWithStake,
 ): DropdownOption<T> => {
   const address = toAddress(account.accountId, { prefix: addressPrefix });
   const canDisplayRedeem = stake && era;
-  const balanceContent = canDisplayRedeem && (
-    <div className="flex items-center gap-x-1">
-      <Balance value={redeemableAmount(stake.unlocking, era)} precision={asset.precision} symbol={asset.symbol} />
-    </div>
-  );
 
-  const element = getElement(address, account, balanceContent, walletName);
+  const balanceContent = canDisplayRedeem && getBalance(redeemableAmount(stake.unlocking, era), asset);
+  const element = getElement(address, account.name, balanceContent);
 
   return { id: account.accountId, value: account, element };
 };
 
 export const getRestakeAccountOption = (
   account: Account,
-  { walletName, balance, stake, asset, fee, addressPrefix, amount = '0' }: ParamsWithStake,
+  { balance, stake, asset, fee, addressPrefix, amount = '0' }: ParamsWithStake,
 ): DropdownOption<Account> => {
   const address = toAddress(account.accountId, { prefix: addressPrefix });
   const canValidateBalance = balance && stake && fee;
@@ -182,14 +165,14 @@ export const getRestakeAccountOption = (
   }
 
   const balanceContent = getBalance(unlockingAmount(stake?.unlocking), asset, balanceIsCorrect);
-  const element = getElement(address, account, balanceContent, walletName);
+  const element = getElement(address, account.name, balanceContent);
 
   return { id: account.accountId, value: account, element };
 };
 
 export const getUnstakeAccountOption = (
   account: Account,
-  { walletName, balance, stake, asset, fee, addressPrefix, amount = '0' }: ParamsWithStake,
+  { balance, stake, asset, fee, addressPrefix, amount = '0' }: ParamsWithStake,
 ): DropdownOption<Account> => {
   const address = toAddress(account.accountId, { prefix: addressPrefix });
   const canValidateBalance = balance && stake && fee;
@@ -202,34 +185,19 @@ export const getUnstakeAccountOption = (
   }
 
   const balanceContent = getBalance(stake?.active || '', asset, balanceIsCorrect);
-  const element = getElement(address, account, balanceContent, walletName);
+  const element = getElement(address, account.name, balanceContent);
 
   return { id: account.accountId, value: account, element };
 };
 
-export const getTotalAccounts = (dbAccounts: AccountDS[], identifiers: string[]): AccountDS[] => {
-  return dbAccounts.filter((account) => {
-    if (!account.id) return false;
+export const getSignatoryOptions = (
+  account: Account,
+  { balance, asset, addressPrefix }: Params,
+): DropdownOption<Account> => {
+  const address = toAddress(account.accountId, { prefix: addressPrefix });
 
-    const correctSigningType = [SigningType.PARITY_SIGNER, SigningType.MULTISIG].includes(account.signingType);
-    const accountExistInDb = identifiers.includes(account.id.toString());
+  const balanceContent = getBalance(transferableAmount(balance), asset);
+  const element = getElement(address, account.name, balanceContent);
 
-    return correctSigningType && accountExistInDb;
-  });
-};
-
-export const getSignatoryOptions = (accounts: Account[], addressPrefix: number): DropdownOption<Account>[] => {
-  return accounts.map((account) => {
-    const address = toAddress(account.accountId, { prefix: addressPrefix });
-
-    const element = (
-      <div className="grid grid-rows-2 grid-flow-col gap-x-2.5">
-        <Icon className="row-span-2 self-center" name={SigningBadges[account.signingType]} size={34} />
-        <p className="text-left text-neutral text-lg font-semibold leading-5">{account.name}</p>
-        <ChainAddress type="short" address={address} canCopy={false} />
-      </div>
-    );
-
-    return { id: address, value: account, element };
-  });
+  return { id: account.accountId, value: account, element };
 };

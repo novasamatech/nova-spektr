@@ -57,7 +57,7 @@ describe('screens/Staking/Overview/AboutStaking', () => {
     });
 
     const loaders = screen.getAllByTestId('shimmer');
-    expect(loaders).toHaveLength(5);
+    expect(loaders).toHaveLength(4);
   });
 
   test('should show whole info', async () => {
@@ -67,12 +67,12 @@ describe('screens/Staking/Overview/AboutStaking', () => {
 
     const totalStaked = screen.getByText(/assetBalance.number 1.42M/);
     const minimumStake = screen.getByText('assetBalance.number 1');
-    const activeNominators = screen.getByText('2');
+    // const activeNominators = screen.getByText('2');
     const stakingPeriod = screen.getByText('staking.about.unlimitedLabel');
     const unstakingPeriod = screen.getByText('time.hours');
     expect(totalStaked).toBeInTheDocument();
     expect(minimumStake).toBeInTheDocument();
-    expect(activeNominators).toBeInTheDocument();
+    // expect(activeNominators).toBeInTheDocument();
     expect(stakingPeriod).toBeInTheDocument();
     expect(unstakingPeriod).toBeInTheDocument();
   });

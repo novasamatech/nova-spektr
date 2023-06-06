@@ -23,6 +23,9 @@ module.exports = {
   'icon-default': 'var(--icon-default)',
   'chip-icon': 'var(--chip-icon)',
   'icon-button': 'var(--icon-button)',
+  'icon-alert': 'var(--icon-alert)',
+  'icon-warning': 'var(--icon-warning)',
+  'icon-negative': 'var(--icon-negative)',
 
   /* BUTTON */
   /* primary */
@@ -48,6 +51,9 @@ module.exports = {
   'active-container-border': 'var(--active-container-border)',
   'focus-container-border': 'var(--focus-container-border)',
   'filter-border-negative': 'var(--filter-border-negative)',
+  'alert-border': 'var(--alert-border)',
+  'alert-border-warning': 'var(--alert-border-warning)',
+  'alert-border-negative': 'var(--alert-border-negative)',
 
   /* DIVIDER */
   divider: 'var(--divider)',
@@ -78,6 +84,9 @@ module.exports = {
   'row-background': 'var(--row-background)',
   hover: 'var(--hover)',
   'card-background': 'var(--card-background)',
+  'alert-background': 'var(--alert-background)',
+  'alert-background-warning': 'var(--alert-background-warning)',
+  'alert-background-negative': 'var(--alert-background-negative)',
   'label-background-green': 'var(--label-background-green)',
   'label-background-red': 'var(--label-background-red)',
   'label-background-gray': 'var(--label-background-gray)',

@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { ErrorBoundary } from 'react-error-boundary';
-import { useNavigate, useRoutes } from 'react-router-dom';
+import { useNavigate, Outlet } from 'react-router-dom';
 
 import { FallbackScreen, SplashScreen } from '@renderer/components/common';
 import ConfirmDialogProvider from '@renderer/context/ConfirmContext';
@@ -9,7 +9,6 @@ import I18Provider from '@renderer/context/I18nContext';
 import MatrixProvider from '@renderer/context/MatrixContext';
 import NetworkProvider from '@renderer/context/NetworkContext';
 import Paths from '@renderer/routes/paths';
-import routesConfig from './routes';
 import { useAccount } from './services/account/accountService';
 import { MultisigChainProvider } from './context/MultisigChainContext/MultisigChainContext';
 
@@ -17,7 +16,6 @@ const SPLASH_SCREEN_DELAY = Math.random() * 300 + 200; // 300ms - 500ms
 
 const App = () => {
   const navigate = useNavigate();
-  const appRoutes = useRoutes(routesConfig);
   const { getAccounts } = useAccount();
 
   const [showSplashScreen, setShowSplashScreen] = useState(true);
@@ -35,7 +33,7 @@ const App = () => {
     });
   }, []);
 
-  const content = showSplashScreen || isAccountsLoading ? <SplashScreen /> : appRoutes;
+  const content = showSplashScreen || isAccountsLoading ? <SplashScreen /> : <Outlet />;
 
   return (
     <ErrorBoundary FallbackComponent={FallbackScreen} onError={console.error}>

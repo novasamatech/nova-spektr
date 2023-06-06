@@ -11,7 +11,7 @@ import { ExtendedChain } from '@renderer/services/network/common/types';
 import { getMultisigExtrinsicLink } from '../common/utils';
 import { MultisigTransaction, Transaction, TransactionType } from '@renderer/domain/transaction';
 import { Button, FootnoteText } from '@renderer/components/ui-redesign';
-import ValidatorsModal from '@renderer/screens/Staking/Operations/components/ValidatorsModal/ValidatorsModal';
+import ValidatorsModal from '@renderer/screens/Staking/Operations/components/Modals/ValidatorsModal/ValidatorsModal';
 import { BalanceNew } from '@renderer/components/common';
 import AddressWithExplorers from '@renderer/components/common/AddressWithExplorers/AddressWithExplorers';
 import DetailWithLabel, { DetailWithLabelProps } from '@renderer/components/common/DetailsWithLabel/DetailWithLabel';
@@ -120,12 +120,8 @@ const Details = ({ tx, account, connection, isCardDetails = true }: Props) => {
             </DetailsRow>
             <ValidatorsModal
               isOpen={isValidatorsOpen}
-              validators={validators.map((address: string) => ({
-                address,
-              }))}
-              asset={defaultAsset}
+              validators={validators.map((address: string) => ({ address }))}
               explorers={connection?.explorers}
-              addressPrefix={connection?.addressPrefix}
               onClose={toggleValidators}
             />
           </>

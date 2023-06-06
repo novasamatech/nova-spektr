@@ -1,9 +1,11 @@
 const Paths = {
+  ROOT: '/',
+
   // Onboarding
   ONBOARDING: '/onboarding',
-  WATCH_ONLY: '/onboarding/watch-only',
-  PARITY: '/onboarding/parity',
-  LEDGER: '/onboarding/ledger',
+  WATCH_ONLY: 'watch-only',
+  PARITY: 'parity',
+  LEDGER: 'ledger',
 
   // Navigation
   ADDRESS_BOOK: '/address-book',
@@ -16,18 +18,18 @@ const Paths = {
 
   // Settings
   SETTINGS: '/settings',
-  NETWORK: '/settings/network',
-  MATRIX: '/settings/matrix',
+  NETWORK: 'network',
+  MATRIX: 'matrix',
 
   // Staking
   STAKING: '/staking',
-  BOND: '/staking/bond/:chainId',
-  UNSTAKE: '/staking/unstake/:chainId',
-  DESTINATION: '/staking/destination/:chainId',
-  RESTAKE: '/staking/restake/:chainId',
-  REDEEM: '/staking/redeem/:chainId',
-  STAKE_MORE: '/staking/stake-more/:chainId',
-  VALIDATORS: '/staking/validators/:chainId',
+  BOND: 'bond/:chainId',
+  UNSTAKE: 'unstake/:chainId',
+  DESTINATION: 'destination/:chainId',
+  RESTAKE: 'restake/:chainId',
+  REDEEM: 'redeem/:chainId',
+  STAKE_MORE: 'stake-more/:chainId',
+  VALIDATORS: 'validators/:chainId',
 
   // Operations
   CREATE_MULTISIG_ACCOUNT: '/create-multisig-account',

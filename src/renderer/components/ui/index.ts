@@ -18,7 +18,6 @@ import Stepper from './Stepper/Stepper';
 import LanguageSwitcher from './LanguageSwitcher/LanguageSwitcher';
 import Carousel from './Carousel/Carousel';
 import Dropdown from './Dropdowns/Dropdown/Dropdown';
-import RadioGroup from './RadioGroup/RadioGroup';
 import HintList from './HintList/HintList';
 import Select from './Dropdowns/Select/Select';
 import Balance from './Balance/Balance';
@@ -29,7 +28,6 @@ import Shimmering from './Shimmering/Shimmering';
 import Combobox from './Dropdowns/Combobox/Combobox';
 import Duration from './Duration/Duration';
 import InfoLink from './InfoLink/InfoLink';
-import ProgressBadge from './ProgressBadge/ProgressBadge';
 
 export {
   ChainAddress,
@@ -51,7 +49,6 @@ export {
   Stepper,
   LanguageSwitcher,
   Dropdown,
-  RadioGroup,
   HintList,
   Select,
   Carousel,
@@ -63,5 +60,4 @@ export {
   Combobox,
   InfoLink,
   Duration,
-  ProgressBadge,
 };

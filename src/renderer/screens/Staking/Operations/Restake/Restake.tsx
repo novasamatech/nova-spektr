@@ -1,28 +1,26 @@
 import { UnsignedTransaction } from '@substrate/txwrapper-polkadot';
-import noop from 'lodash/noop';
 import { useEffect, useState } from 'react';
 import { Navigate, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 
-import { ButtonBack, ButtonLink, HintList, Icon } from '@renderer/components/ui';
 import { ChainLoader } from '@renderer/components/common';
 import { useI18n } from '@renderer/context/I18nContext';
 import { useNetworkContext } from '@renderer/context/NetworkContext';
 import { Address, ChainId, HexString, AccountId } from '@renderer/domain/shared-kernel';
 import { Transaction, TransactionType } from '@renderer/domain/transaction';
-import Paths from '@renderer/routes/paths';
 import { useAccount } from '@renderer/services/account/accountService';
 import { useChains } from '@renderer/services/network/chainsService';
-import { StakingMap } from '@renderer/services/staking/common/types';
-import { useStakingData } from '@renderer/services/staking/stakingDataService';
 import InitOperation, { RestakeResult } from './InitOperation/InitOperation';
-import { Confirmation, MultiScanning, Signing, Submit } from '../components';
+import { Confirmation, Signing, Submit, NoAsset } from '../components';
 import { getRelaychainAsset } from '@renderer/shared/utils/assets';
-import { useCountdown } from '@renderer/shared/hooks';
+import { useCountdown, useToggle } from '@renderer/shared/hooks';
 import { useTransaction } from '@renderer/services/transaction/transactionService';
 import { Account, MultisigAccount, isMultisig } from '@renderer/domain/account';
 import { toAddress } from '@renderer/shared/utils/address';
-import { Scanning } from '@renderer/components/common/Scanning/Scanning';
-import ModalMock from '../components/ModalMock';
+import { Alert, BaseModal } from '@renderer/components/ui-redesign';
+import { DEFAULT_TRANSITION } from '@renderer/shared/utils/constants';
+import Paths from '@renderer/routes/paths';
+import ScanMultiframeQr from '@renderer/components/common/Scanning/ScanMultiframeQr';
+import ScanSingleframeQr from '@renderer/components/common/Scanning/ScanSingleframeQr';
 
 const enum Step {
   INIT,
@@ -32,124 +30,101 @@ const enum Step {
   SUBMIT,
 }
 
-const HeaderTitles: Record<Step, string> = {
-  [Step.INIT]: 'staking.restake.initRestakeSubtitle',
-  [Step.CONFIRMATION]: 'staking.restake.confirmRestakeSubtitle',
-  [Step.SCANNING]: 'staking.bond.scanSubtitle',
-  [Step.SIGNING]: 'staking.bond.signSubtitle',
-  [Step.SUBMIT]: 'staking.bond.submitSubtitle',
-};
-
 const Restake = () => {
   const { t } = useI18n();
   const navigate = useNavigate();
   const { connections } = useNetworkContext();
   const { getTransactionHash } = useTransaction();
-  const { subscribeStaking } = useStakingData();
-  const { getLiveAccounts } = useAccount();
+  const { getActiveAccounts } = useAccount();
   const { getChainById } = useChains();
   const [searchParams] = useSearchParams();
   const params = useParams<{ chainId: ChainId }>();
 
-  const dbAccounts = getLiveAccounts();
+  const [isRestakeModalOpen, toggleRestakeModal] = useToggle(true);
+  const [isAlertOpen, toggleAlert] = useToggle(true);
 
   const [activeStep, setActiveStep] = useState<Step>(Step.INIT);
   const [chainName, setChainName] = useState('...');
+
   const [restakeAmount, setRestakeAmount] = useState('');
   const [description, setDescription] = useState('');
 
-  const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [multisigTx, setMultisigTx] = useState<Transaction>();
+  const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [unsignedTransactions, setUnsignedTransactions] = useState<UnsignedTransaction[]>([]);
 
-  const [staking, setStaking] = useState<StakingMap>({});
   const [accounts, setAccounts] = useState<Account[]>([]);
   const [signer, setSigner] = useState<Account>();
   const [signatures, setSignatures] = useState<HexString[]>([]);
 
-  const chainId = params.chainId || ('' as ChainId);
   const accountIds = searchParams.get('id')?.split(',') || [];
+  const chainId = params.chainId || ('' as ChainId);
+  const activeAccounts = getActiveAccounts();
 
-  if (!chainId || accountIds.length === 0) {
+  useEffect(() => {
+    if (!activeAccounts.length || !accountIds.length) return;
+
+    const accounts = activeAccounts.filter((a) => a.id && accountIds.includes(a.id.toString()));
+    setAccounts(accounts);
+  }, [activeAccounts.length]);
+
+  useEffect(() => {
+    getChainById(chainId).then((chain) => setChainName(chain?.name || ''));
+  }, []);
+
+  const connection = connections[chainId];
+  const [countdown, resetCountdown] = useCountdown(connection?.api);
+
+  if (!connection || accountIds.length === 0) {
     return <Navigate replace to={Paths.STAKING} />;
   }
 
   const { api, explorers, addressPrefix, assets, name } = connections[chainId];
   const asset = getRelaychainAsset(assets);
 
-  useEffect(() => {
-    if (!api?.isConnected || accountIds.length === 0) return;
-
-    let unsubStaking: () => void | undefined;
-
-    const selectedAccounts = dbAccounts.reduce<Address[]>((acc, account) => {
-      const accountExists = account.id && accountIds.includes(account.id.toString());
-
-      return accountExists ? [...acc, account.accountId as Address] : acc;
-    }, []);
-
-    (async () => {
-      unsubStaking = await subscribeStaking(chainId, api, selectedAccounts, setStaking);
-    })();
-
-    return () => {
-      unsubStaking?.();
-    };
-  }, [api, dbAccounts.length, accountIds.length]);
-
-  useEffect(() => {
-    getChainById(chainId).then((chain) => setChainName(chain?.name || ''));
-  }, []);
-
   if (!api?.isConnected) {
     return <ChainLoader chainName={chainName} />;
   }
-
-  const [countdown, resetCountdown] = useCountdown(api);
 
   const goToPrevStep = () => {
     if (activeStep === Step.INIT) {
       navigate(Paths.STAKING);
     } else {
-      // TODO: reset data
       setActiveStep((prev) => prev - 1);
     }
   };
 
-  const headerContent = (
-    <div className="flex items-center gap-x-2.5 mb-9 mt-5 px-5">
-      <ButtonBack onCustomReturn={goToPrevStep}>
-        <p className="font-semibold text-2xl text-neutral-variant">{t('staking.title')}</p>
-        {activeStep !== Step.INIT && (
-          <>
-            <p className="font-semibold text-2xl text-neutral-variant">/</p>
-            <p className="font-semibold text-2xl text-neutral-variant">{t(HeaderTitles[Step.INIT])}</p>
-          </>
-        )}
-        <p className="font-semibold text-2xl text-neutral">/</p>
-        <h1 className="font-semibold text-2xl text-neutral">{t(HeaderTitles[activeStep])}</h1>
-      </ButtonBack>
-    </div>
-  );
+  const closeRestakeModal = () => {
+    toggleRestakeModal();
+    setTimeout(() => navigate(Paths.STAKING), DEFAULT_TRANSITION);
+  };
 
   if (!asset) {
     return (
-      <div className="flex flex-col h-full relative">
-        {headerContent}
-
-        <div className="flex w-full h-full flex-col items-center justify-center">
-          <Icon name="noResults" size={380} />
-          <p className="text-neutral text-3xl font-bold">{t('staking.bond.noStakingAssetLabel')}</p>
-          <p className="text-neutral-variant text-base font-normal">
-            {t('staking.bond.noStakingAssetDescription', { chainName: name })}
-          </p>
-          <ButtonLink className="mt-5" to={Paths.STAKING} variant="fill" pallet="primary" weight="lg">
-            {t('staking.bond.goToStakingButton')}
-          </ButtonLink>
-        </div>
-      </div>
+      <NoAsset
+        title={t('staking.restake.title')}
+        chainName={name}
+        isOpen={isRestakeModalOpen}
+        onClose={closeRestakeModal}
+      />
     );
   }
+
+  const onInitResult = ({ accounts, amount, signer, description }: RestakeResult) => {
+    const transactions = getRestakeTxs(accounts, amount);
+
+    if (signer && isMultisig(accounts[0])) {
+      const multisigTx = getMultisigTx(accounts[0], signer.accountId, transactions[0]);
+      setMultisigTx(multisigTx);
+      setSigner(signer);
+      setDescription(description || '');
+    }
+
+    setTransactions(transactions);
+    setAccounts(accounts);
+    setRestakeAmount(amount);
+    setActiveStep(Step.CONFIRMATION);
+  };
 
   const getRestakeTxs = (accounts: Account[], amount: string): Transaction[] => {
     return accounts.map(({ accountId }) => ({
@@ -189,22 +164,6 @@ const Restake = () => {
     };
   };
 
-  const onRestakeResult = ({ accounts, amount, signer, description }: RestakeResult) => {
-    const transactions = getRestakeTxs(accounts, amount);
-
-    if (signer && isMultisig(accounts[0])) {
-      const multisigTx = getMultisigTx(accounts[0], signer.accountId, transactions[0]);
-      setMultisigTx(multisigTx);
-      setSigner(signer);
-      setDescription(description || '');
-    }
-
-    setTransactions(transactions);
-    setAccounts(accounts);
-    setRestakeAmount(amount);
-    setActiveStep(Step.CONFIRMATION);
-  };
-
   const onScanResult = (unsigned: UnsignedTransaction[]) => {
     setUnsignedTransactions(unsigned);
     setActiveStep(Step.SIGNING);
@@ -218,68 +177,61 @@ const Restake = () => {
   const explorersProps = { explorers, addressPrefix, asset };
   const restakeValues = new Array(accounts.length).fill(restakeAmount);
 
-  const hints = (
-    <HintList className="px-[15px]">
-      <HintList.Item>{t('staking.restake.eraHint')}</HintList.Item>
-    </HintList>
-  );
-
   return (
-    <div className="flex flex-col h-full relative">
-      {headerContent}
+    <BaseModal
+      closeButton
+      contentClass=""
+      panelClass="w-max"
+      isOpen={isRestakeModalOpen}
+      title={t('staking.restake.title')}
+      onClose={closeRestakeModal}
+    >
       {activeStep === Step.INIT && (
-        <InitOperation
-          api={api}
-          chainId={chainId}
-          addressPrefix={addressPrefix}
-          staking={staking}
-          identifiers={accountIds}
-          asset={asset}
-          onResult={onRestakeResult}
-        />
+        <InitOperation api={api} chainId={chainId} accounts={accounts} onResult={onInitResult} {...explorersProps} />
       )}
       {activeStep === Step.CONFIRMATION && (
         <Confirmation
           api={api}
           accounts={accounts}
+          signer={signer}
           amounts={restakeValues}
           transaction={transactions[0]}
           multisigTx={multisigTx}
           onResult={() => setActiveStep(Step.SCANNING)}
-          onAddToQueue={noop}
+          onGoBack={goToPrevStep}
           {...explorersProps}
         >
-          {hints}
+          {isAlertOpen && <Alert title={t('staking.restake.hintTitle')} onClose={toggleAlert} />}
         </Confirmation>
       )}
       {activeStep === Step.SCANNING && (
-        <ModalMock>
+        <div className="w-[440px] px-5 py-4">
           {transactions.length > 1 ? (
-            <MultiScanning
+            <ScanMultiframeQr
               api={api}
               addressPrefix={addressPrefix}
               countdown={countdown}
               accounts={accounts}
               transactions={transactions}
               chainId={chainId}
-              onGoBack={() => setActiveStep(Step.SCANNING)}
+              onGoBack={() => setActiveStep(Step.CONFIRMATION)}
               onResetCountdown={resetCountdown}
               onResult={onScanResult}
             />
           ) : (
-            <Scanning
+            <ScanSingleframeQr
               api={api}
               addressPrefix={addressPrefix}
               countdown={countdown}
               account={signer || accounts[0]}
               transaction={multisigTx || transactions[0]}
               chainId={chainId}
-              onGoBack={() => setActiveStep(Step.SCANNING)}
+              onGoBack={() => setActiveStep(Step.CONFIRMATION)}
               onResetCountdown={resetCountdown}
               onResult={(unsignedTx) => onScanResult([unsignedTx])}
             />
           )}
-        </ModalMock>
+        </div>
       )}
       {activeStep === Step.SIGNING && (
         <Signing
@@ -292,19 +244,18 @@ const Restake = () => {
       {activeStep === Step.SUBMIT && (
         <Submit
           api={api}
-          transaction={transactions[0]}
+          txs={transactions}
           multisigTx={multisigTx}
           signatures={signatures}
           unsignedTx={unsignedTransactions}
           accounts={accounts}
           description={description}
-          amounts={restakeValues}
+          successMessage={t('staking.restake.submitSuccess')}
+          onClose={closeRestakeModal}
           {...explorersProps}
-        >
-          {hints}
-        </Submit>
+        />
       )}
-    </div>
+    </BaseModal>
   );
 };
 
