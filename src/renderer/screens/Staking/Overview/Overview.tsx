@@ -1,18 +1,9 @@
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Outlet } from 'react-router-dom';
 
 import { Header } from '@renderer/components/common';
 import { useI18n } from '@renderer/context/I18nContext';
 import { Chain } from '@renderer/domain/chain';
-import {
-  AboutStaking,
-  NetworkInfo,
-  NominatorsList,
-  Actions,
-  ValidatorsModal,
-  NoAccounts,
-  InactiveChain,
-} from './components';
 import { getRelaychainAsset } from '@renderer/shared/utils/assets';
 import { useGraphql } from '@renderer/context/GraphqlContext';
 import { ChainId, Address } from '@renderer/domain/shared-kernel';
@@ -31,6 +22,15 @@ import { PathValue } from '@renderer/routes/paths';
 import { createLink } from '@renderer/routes/utils';
 import { AccountDS } from '@renderer/services/storage';
 import { ConnectionType, ConnectionStatus } from '@renderer/domain/connection';
+import {
+  AboutStaking,
+  NetworkInfo,
+  NominatorsList,
+  Actions,
+  ValidatorsModal,
+  NoAccounts,
+  InactiveChain,
+} from './components';
 
 const Overview = () => {
   const { t } = useI18n();
@@ -91,6 +91,7 @@ const Overview = () => {
     let unsubStaking: () => void | undefined;
 
     setIsStakingLoading(true);
+    setSelectedNominators([]);
 
     (async () => {
       unsubEra = await subscribeActiveEra(api, setEra);
@@ -230,6 +231,8 @@ const Overview = () => {
         isOpen={isShowNominators}
         onClose={toggleNominators}
       />
+
+      <Outlet />
     </>
   );
 };

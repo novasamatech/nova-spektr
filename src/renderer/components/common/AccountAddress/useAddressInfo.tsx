@@ -7,7 +7,7 @@ import { useMatrix } from '@renderer/context/MatrixContext';
 import { toAddress } from '@renderer/shared/utils/address';
 import { ExplorerLink } from '@renderer/components/common';
 
-const useAddressInfo = (address: Address, explorers?: Explorer[]): InfoSection[] => {
+const useAddressInfo = (address: Address, explorers?: Explorer[], showMatrix = false): InfoSection[] => {
   const { matrix } = useMatrix();
   const { getLiveContacts } = useContact();
   const { getLiveAccounts } = useAccount();
@@ -21,7 +21,7 @@ const useAddressInfo = (address: Address, explorers?: Explorer[]): InfoSection[]
   const infoSection: InfoSection = { title: 'Address', items: [{ id: address, value: address }] };
   const popoverItems = [infoSection];
 
-  if (matrixId) {
+  if (showMatrix && matrixId) {
     popoverItems.push({
       title: 'Matrix ID',
       items: [{ id: matrixId, value: matrixId }],

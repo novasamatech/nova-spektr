@@ -47,7 +47,9 @@ const initialFormValues = { name: '', matrixId: '', address: '' };
 const ContactModal = ({ isOpen, onToggle, contact }: Props) => {
   const { t } = useI18n();
   const { matrix } = useMatrix();
-  const { addContact, updateContact } = useContact();
+  const { addContact, updateContact, getLiveContacts } = useContact();
+
+  const contacts = getLiveContacts();
 
   const isEdit = contact !== undefined;
 
@@ -94,6 +96,14 @@ const ContactModal = ({ isOpen, onToggle, contact }: Props) => {
     return !value || matrix.validateFullUserName(value);
   };
 
+  const validateAddressExists = (value?: string): boolean => {
+    return !!value && contacts.some((contact) => contact.accountId !== toAccountId(value));
+  };
+
+  const validateNameExists = (value?: string): boolean => {
+    return contacts.some((contact) => contact.name.toLowerCase() !== value?.toLowerCase());
+  };
+
   return (
     <BaseModal
       title={t(isEdit ? 'addressBook.editContact.title' : 'addressBook.addContact.title')}
@@ -106,7 +116,7 @@ const ContactModal = ({ isOpen, onToggle, contact }: Props) => {
         <Controller
           name="name"
           control={control}
-          rules={{ required: true }}
+          rules={{ required: true, validate: validateNameExists }}
           render={({ field: { value, onChange }, fieldState: { error } }) => (
             <div>
               <Input
@@ -119,6 +129,9 @@ const ContactModal = ({ isOpen, onToggle, contact }: Props) => {
               />
               <InputHint variant="error" active={Boolean(error)}>
                 {t('addressBook.addContact.nameRequiredError')}
+              </InputHint>
+              <InputHint variant="error" active={error?.type === 'validateAddress'}>
+                {t('addressBook.addContact.nameExistsError')}
               </InputHint>
             </div>
           )}
@@ -147,25 +160,29 @@ const ContactModal = ({ isOpen, onToggle, contact }: Props) => {
         <Controller
           name="address"
           control={control}
-          rules={{ required: true, validate: validateAddress }}
+          rules={{ required: true, validate: { validateAddress, validateAddressExists } }}
           render={({ field: { value, onChange }, fieldState: { error } }) => (
             <div>
               <Input
                 prefixElement={
                   value && !error ? <Identicon address={value} background={false} /> : <Icon name="emptyIdenticon" />
                 }
-                className="w-full ml-2"
+                className="w-full ml-1"
                 label={t('addressBook.addContact.accountIdLabel')}
                 placeholder={t('addressBook.addContact.accountIdPlaceholder')}
                 invalid={Boolean(error)}
                 value={value}
                 onChange={onChange}
               />
+
               <InputHint variant="error" active={error?.type === ErrorType.REQUIRED}>
                 {t('addressBook.addContact.accountIdRequiredError')}
               </InputHint>
-              <InputHint variant="error" active={error?.type === ErrorType.VALIDATE}>
+              <InputHint variant="error" active={error?.type === 'validateAddress'}>
                 {t('addressBook.addContact.accountIdIncorrectError')}
+              </InputHint>
+              <InputHint variant="error" active={error?.type === 'validateAddressExists'}>
+                {t('addressBook.addContact.accountIdExistsError')}
               </InputHint>
             </div>
           )}

@@ -33,7 +33,7 @@ describe('screen/Operations/components/ShortTransactionInfo', () => {
 
     const container = screen.getByTestId('123');
 
-    const paragraph = container.querySelector('p');
+    const paragraph = container.querySelector('span');
     expect(paragraph).toHaveTextContent('DOT');
 
     expect(paragraph).toHaveTextContent('assetBalance.number');

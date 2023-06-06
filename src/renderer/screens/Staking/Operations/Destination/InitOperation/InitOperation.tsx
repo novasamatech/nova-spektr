@@ -1,29 +1,28 @@
 import { ApiPromise } from '@polkadot/api';
 import { useEffect, useState } from 'react';
 
-import { Fee, ActiveAddress, Deposit } from '@renderer/components/common';
-import { Select, Plate, Block, Dropdown } from '@renderer/components/ui';
+import { Select, MultiSelect, FootnoteText } from '@renderer/components/ui-redesign';
+import { Fee, Deposit } from '@renderer/components/common';
 import { DropdownOption, DropdownResult } from '@renderer/components/ui/Dropdowns/common/types';
 import { useI18n } from '@renderer/context/I18nContext';
 import { Asset } from '@renderer/domain/asset';
-import { Address, ChainId, AccountId, SigningType } from '@renderer/domain/shared-kernel';
+import { Address, ChainId, AccountId } from '@renderer/domain/shared-kernel';
 import { Transaction, TransactionType } from '@renderer/domain/transaction';
 import { useAccount } from '@renderer/services/account/accountService';
 import { useBalance } from '@renderer/services/balance/balanceService';
-import { useWallet } from '@renderer/services/wallet/walletService';
 import { Balance as AccountBalance } from '@renderer/domain/balance';
 import { Account, isMultisig } from '@renderer/domain/account';
 import { toAddress } from '@renderer/shared/utils/address';
+import { nonNullable } from '@renderer/shared/utils/functions';
+import { TEST_ADDRESS } from '@renderer/shared/utils/constants';
+import { OperationForm } from '../../components';
 import {
-  getTotalAccounts,
   getSignatoryOptions,
   validateBalanceForFeeDeposit,
   validateBalanceForFee,
   getGeneralAccountOption,
 } from '../../common/utils';
-import { OperationForm } from '../../components';
-import { Explorer } from '@renderer/domain/chain';
-import { nonNullable } from '@renderer/shared/utils/functions';
+import { Icon } from '@renderer/components/ui';
 
 export type DestinationResult = {
   accounts: Account[];
@@ -35,26 +34,21 @@ export type DestinationResult = {
 type Props = {
   api: ApiPromise;
   chainId: ChainId;
-  explorers?: Explorer[];
+  accounts: Account[];
   addressPrefix: number;
-  identifiers: string[];
   asset: Asset;
   onResult: (data: DestinationResult) => void;
 };
 
-const InitOperation = ({ api, chainId, explorers, addressPrefix, identifiers, asset, onResult }: Props) => {
+const InitOperation = ({ api, chainId, accounts, addressPrefix, asset, onResult }: Props) => {
   const { t } = useI18n();
-  const { getLiveBalance, getLiveAssetBalances } = useBalance();
   const { getLiveAccounts } = useAccount();
-  const { getLiveWallets } = useWallet();
+  const { getLiveAssetBalances } = useBalance();
 
   const dbAccounts = getLiveAccounts();
-  const wallets = getLiveWallets();
-  const walletsMap = new Map(wallets.map((wallet) => [(wallet.id || '').toString(), wallet]));
 
   const [fee, setFee] = useState('');
   const [deposit, setDeposit] = useState('');
-  const [destination, setDestination] = useState('');
 
   const [destAccounts, setDestAccounts] = useState<DropdownOption<Account>[]>([]);
   const [activeDestAccounts, setActiveDestAccounts] = useState<DropdownResult<Account>[]>([]);
@@ -65,15 +59,16 @@ const InitOperation = ({ api, chainId, explorers, addressPrefix, identifiers, as
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [activeBalances, setActiveBalances] = useState<AccountBalance[]>([]);
 
-  const totalAccounts = getTotalAccounts(dbAccounts, identifiers);
-
-  const accountIds = totalAccounts.map((account) => account.accountId);
-  const balances = getLiveAssetBalances(accountIds, chainId, asset.assetId.toString());
-  const signerBalance = getLiveBalance(activeSignatory?.value.accountId || '0x0', chainId, asset.assetId.toString());
-
   const firstAccount = activeDestAccounts[0]?.value;
   const accountIsMultisig = isMultisig(firstAccount);
   const formFields = accountIsMultisig ? [{ name: 'destination' }, { name: 'description' }] : [{ name: 'destination' }];
+
+  const accountIds = accounts.map((account) => account.accountId);
+  const balances = getLiveAssetBalances(accountIds, chainId, asset.assetId.toString());
+
+  const signatoryIds = accountIsMultisig ? firstAccount.signatories.map((s) => s.accountId) : [];
+  const signatoriesBalances = getLiveAssetBalances(signatoryIds, chainId, asset.assetId.toString());
+  const signerBalance = signatoriesBalances.find((b) => b.accountId === activeSignatory?.value.accountId);
 
   useEffect(() => {
     const balancesMap = new Map(balances.map((balance) => [balance.accountId, balance]));
@@ -85,29 +80,35 @@ const InitOperation = ({ api, chainId, explorers, addressPrefix, identifiers, as
   }, [activeDestAccounts.length, balances]);
 
   useEffect(() => {
-    const formattedAccounts = totalAccounts.map((account) => {
-      const balance = activeBalances.find((b) => b.accountId === account.accountId);
-      const wallet = account.walletId ? walletsMap.get(account.walletId.toString()) : undefined;
-      const walletName = wallet?.name || '';
+    const formattedAccounts = accounts.map((account) => {
+      const balance = balances.find((b) => b.accountId === account.accountId);
 
-      return getGeneralAccountOption(account, { asset, fee, balance, addressPrefix, walletName });
+      return getGeneralAccountOption(account, { asset, fee, balance, addressPrefix });
     });
 
+    if (formattedAccounts.length === 0) return;
+
     setDestAccounts(formattedAccounts);
-  }, [totalAccounts.length, fee, activeBalances]);
+  }, [fee, balances]);
 
   useEffect(() => {
     if (!accountIsMultisig) return;
 
-    const signatories = firstAccount.signatories.map((s) => s.accountId);
-    const signers = dbAccounts.filter((a) => signatories.includes(a.accountId));
-    const options = getSignatoryOptions(signers, addressPrefix);
+    const signerOptions = dbAccounts.reduce<any[]>((acc, signer) => {
+      if (signatoryIds.includes(signer.accountId)) {
+        const balance = signatoriesBalances.find((b) => b.accountId === signer.accountId);
 
-    if (options.length === 0) return;
+        acc.push(getSignatoryOptions(signer, { addressPrefix, asset, balance }));
+      }
 
-    setSignatoryOptions(options);
-    setActiveSignatory({ id: options[0].id, value: options[0].value });
-  }, [firstAccount, accountIsMultisig, dbAccounts]);
+      return acc;
+    }, []);
+
+    if (signerOptions.length === 0) return;
+
+    setSignatoryOptions(signerOptions);
+    setActiveSignatory({ id: signerOptions[0].id, value: signerOptions[0].value });
+  }, [accountIsMultisig, dbAccounts.length, signatoriesBalances.length]);
 
   useEffect(() => {
     if (destAccounts.length === 0) return;
@@ -121,18 +122,18 @@ const InitOperation = ({ api, chainId, explorers, addressPrefix, identifiers, as
       chainId,
       address: toAddress(value.accountId, { prefix: addressPrefix }),
       type: TransactionType.DESTINATION,
-      args: { payee: destination ? { Account: destination } : 'Staked' },
+      args: { payee: { Account: TEST_ADDRESS } },
     }));
 
     setTransactions(newTransactions);
-  }, [activeDestAccounts.length, destination]);
+  }, [activeDestAccounts.length]);
 
   const submitDestination = (data: { destination?: string; description?: string }) => {
     const selectedAccountIds = activeDestAccounts.map((stake) => stake.id);
-    const accounts = totalAccounts.filter((account) => selectedAccountIds.includes(account.accountId));
+    const selectedAccounts = accounts.filter((account) => selectedAccountIds.includes(account.accountId));
 
     onResult({
-      accounts,
+      accounts: selectedAccounts,
       destination: data.destination || '',
       ...(accountIsMultisig && {
         description:
@@ -146,13 +147,13 @@ const InitOperation = ({ api, chainId, explorers, addressPrefix, identifiers, as
   };
 
   const validateFee = (): boolean => {
-    if (accountIsMultisig) {
-      if (!signerBalance) return false;
-
-      return validateBalanceForFee(signerBalance, fee);
-    } else {
+    if (!accountIsMultisig) {
       return activeBalances.every((b) => validateBalanceForFee(b, fee));
     }
+
+    if (!signerBalance) return false;
+
+    return validateBalanceForFee(signerBalance, fee);
   };
 
   const validateDeposit = (): boolean => {
@@ -162,89 +163,61 @@ const InitOperation = ({ api, chainId, explorers, addressPrefix, identifiers, as
     return validateBalanceForFeeDeposit(signerBalance, deposit, fee);
   };
 
-  return (
-    <Plate as="section" className="w-[600px] flex flex-col items-center mx-auto gap-y-2.5">
-      <Block className="flex flex-col gap-y-2 p-5">
-        {destAccounts.length > 1 ? (
-          <Select
-            weight="lg"
-            placeholder={t('staking.bond.selectStakeAccountLabel')}
-            summary={t('staking.bond.selectStakeAccountSummary')}
-            activeIds={activeDestAccounts.map((acc) => acc.id)}
-            options={destAccounts}
-            onChange={setActiveDestAccounts}
-          />
-        ) : (
-          <ActiveAddress
-            address={firstAccount?.accountId}
-            accountName={firstAccount?.name}
-            signingType={firstAccount?.signingType}
-            explorers={explorers}
-            addressPrefix={addressPrefix}
-          />
-        )}
+  const canSubmit = (Boolean(fee) && fee !== '0') || activeDestAccounts.length > 0 || Boolean(activeSignatory);
 
-        {accountIsMultisig &&
-          (signatoryOptions.length > 1 ? (
-            <Dropdown
-              weight="lg"
-              placeholder={t('general.input.signerLabel')}
-              activeId={activeSignatory?.id}
-              options={signatoryOptions}
-              onChange={setActiveSignatory}
-            />
-          ) : (
-            <ActiveAddress
-              address={signatoryOptions[0]?.value.accountId}
-              accountName={signatoryOptions[0]?.value.name}
-              signingType={SigningType.PARITY_SIGNER}
-              explorers={explorers}
-              addressPrefix={addressPrefix}
-            />
-          ))}
-      </Block>
+  return (
+    <div className="flex flex-col gap-y-4 w-[440px] px-5 py-4">
+      {accountIsMultisig ? (
+        <Select
+          label={t('staking.bond.signatoryLabel')}
+          placeholder={t('staking.bond.signatoryPlaceholder')}
+          selectedId={activeSignatory?.id}
+          options={signatoryOptions}
+          onChange={setActiveSignatory}
+        />
+      ) : (
+        <MultiSelect
+          label={t('staking.bond.accountLabel')}
+          placeholder={t('staking.bond.accountPlaceholder')}
+          multiPlaceholder={t('staking.bond.manyAccountsPlaceholder')}
+          selectedIds={activeDestAccounts.map((acc) => acc.id)}
+          options={destAccounts}
+          onChange={setActiveDestAccounts}
+        />
+      )}
 
       <OperationForm
         chainId={chainId}
-        canSubmit={activeDestAccounts.length > 0}
+        canSubmit={canSubmit}
         addressPrefix={addressPrefix}
-        fields={formFields} //todo better to provide some types here
+        fields={formFields}
         asset={asset}
         validateFee={validateFee}
         validateDeposit={validateDeposit}
         onSubmit={submitDestination}
-        onFormChange={({ destination = '' }) => {
-          setDestination(destination);
-        }}
       >
-        <div className="grid grid-flow-row grid-cols-2 items-center gap-y-5">
-          <p className="uppercase text-neutral-variant text-2xs">
-            {t('staking.bond.networkFee', { count: activeDestAccounts.length })}
-          </p>
-
-          <Fee
-            className="text-neutral justify-self-end text-2xs font-semibold"
-            api={api}
-            asset={asset}
-            transaction={transactions[0]}
-            onFeeChange={setFee}
-          />
-
+        <div className="flex flex-col gap-y-2">
           {accountIsMultisig && (
-            <>
-              <p className="uppercase text-neutral-variant text-2xs">{t('transfer.networkDeposit')}</p>
-              <Deposit
-                className="text-neutral justify-self-end text-2xs font-semibold"
-                api={api}
-                asset={asset}
-                threshold={firstAccount.threshold}
-                onDepositChange={setDeposit}
-              />
-            </>
+            <div className="flex justify-between items-center gap-x-2">
+              <div className="flex items-center gap-x-2">
+                <Icon className="text-text-tertiary" name="lock" size={12} />
+                <FootnoteText className="text-text-tertiary">{t('staking.bond.networkDepositLabel')}</FootnoteText>
+              </div>
+              <FootnoteText>
+                <Deposit api={api} asset={asset} threshold={firstAccount.threshold} onDepositChange={setDeposit} />
+              </FootnoteText>
+            </div>
           )}
+
+          <div className="flex justify-between items-center gap-x-2">
+            <FootnoteText className="text-text-tertiary">{t('staking.bond.networkFeeLabel')}</FootnoteText>
+            <FootnoteText className="text-text-tertiary">
+              <Fee api={api} asset={asset} transaction={transactions[0]} onFeeChange={setFee} />
+            </FootnoteText>
+          </div>
         </div>
       </OperationForm>
-    </Plate>
+    </div>
   );
 };
 

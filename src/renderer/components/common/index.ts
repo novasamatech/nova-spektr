@@ -4,7 +4,6 @@ import SplashScreen from './SplashScreen/SplashScreen';
 import QrReader from './QrCode/QrReader/QrReader';
 import QrSignatureReader from './QrCode/QrReader/QrSignatureReader';
 import QrTextGenerator from './QrCode/QrGenerator/QrTextGenerator';
-import ValidatorsTable from './ValidatorsTable/ValidatorsTable';
 import QrTxGenerator from './QrCode/QrGenerator/QrTxGenerator';
 import ActiveAddress from './ActiveAddress/ActiveAddress';
 import ChainLoader from './ChainLoader/ChainLoader';
@@ -21,7 +20,7 @@ import AccountAddress from './AccountAddress/AccountAddress';
 import AddressWithName from './AddressWithName/AddressWithName';
 import QrGeneratorContainer from './QrCode/QrGeneratorContainer/QrGeneratorContainer';
 
-// SignatoryCard and AddressWithExplorers exported separately.
+// SignatoryCard, AddressWithExplorers, ScanMultiframeQr and ScanSingleframeQr exported separately.
 // Adding them to this file causes to crash all tests which use anything from that file
 // similar issue on stackoverflow:
 // https://stackoverflow.com/questions/49156356/why-does-jest-try-to-resolve-every-component-in-my-index-ts
@@ -35,7 +34,6 @@ export {
   QrSignatureReader,
   QrTextGenerator,
   QrGeneratorContainer,
-  ValidatorsTable,
   QrTxGenerator,
   ChainLoader,
   Explorers,

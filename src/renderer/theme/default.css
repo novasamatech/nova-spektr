@@ -23,6 +23,9 @@
   --icon-default: #d2d2d9;
   --chip-icon: #b8b8bd;
   --icon-button: #fff;
+  --icon-alert: rgb(123, 41, 255);
+  --icon-warning: rgb(246, 143, 7);
+  --icon-negative: rgb(245, 33, 99);
 
   /* BUTTON */
   /* primary */
@@ -47,6 +50,9 @@
   --active-container-border: #4649f6;
   --focus-container-border: rgba(70, 73, 246, 0.4);
   --filter-border-negative: #f52163;
+  --alert-border: rgb(123, 41, 255);
+  --alert-border-warning: rgb(246, 143, 7);
+  --alert-border-negative: rgb(245, 33, 99);
 
   /* DIVIDER */
   --divider: rgba(69, 69, 137, 0.06);
@@ -77,9 +83,12 @@
   --row-background: #fff;
   --hover: rgba(36, 99, 235, 0.04);
   --card-background: #fff;
+  --alert-background: rgb(246, 240, 250);
+  --alert-background-warning: rgba(246, 143, 7, 0.12);
+  --alert-background-negative: rgba(245, 33, 99, 0.08);
+  --label-background-gray: rgba(128, 128, 128, 0.48);
   --label-background-green: #01a63e;
   --label-background-red: #f52163;
-  --label-background-gray: rgba(128, 128, 128, 0.48);
 
   /* SHADOW */
   --card-shadow: 0px 3px 4px rgba(69, 69, 137, 0.04), inset 0px -0.5px 0px rgba(69, 69, 137, 0.12);

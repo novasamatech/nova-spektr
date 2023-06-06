@@ -153,10 +153,10 @@ const QrReaderWrapper = ({ className, onResult, countdown, validationError, isMu
 
         {isCameraOn && (
           <div className={cn(isLoading && 'hidden', className)}>
-            {!isMultiFrame ? (
-              <QrSignatureReader {...qrReaderProps} onResult={onScanResult} />
-            ) : (
+            {isMultiFrame ? (
               <QrMultiframeSignatureReader {...qrReaderProps} onResult={onScanResult} onProgress={setProgress} />
+            ) : (
+              <QrSignatureReader {...qrReaderProps} onResult={onScanResult} />
             )}
           </div>
         )}

@@ -7,7 +7,7 @@ import { Props as InputProps } from '@renderer/components/ui-redesign/Inputs/Inp
 type Props = Omit<InputProps, 'prefixElement'>;
 
 const SearchInput = forwardRef<HTMLInputElement, Props>(({ className, ...props }, ref) => (
-  <Input prefixElement={<Icon name="search" size={16} className="mr-2" />} className={className} {...props} />
+  <Input className={className} prefixElement={<Icon name="search" size={16} className="mr-2" />} {...props} />
 ));
 
 export default SearchInput;

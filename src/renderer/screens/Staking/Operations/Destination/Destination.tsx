@@ -1,5 +1,4 @@
 import { UnsignedTransaction } from '@substrate/txwrapper-polkadot';
-import noop from 'lodash/noop';
 import { useState, useEffect } from 'react';
 import { Navigate, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 
@@ -7,21 +6,23 @@ import { toAddress } from '@renderer/shared/utils/address';
 import { getRelaychainAsset } from '@renderer/shared/utils/assets';
 import { RewardsDestination } from '@renderer/domain/stake';
 import { ChainLoader } from '@renderer/components/common';
-import { ButtonBack, ButtonLink, Icon } from '@renderer/components/ui';
 import { useI18n } from '@renderer/context/I18nContext';
 import { useNetworkContext } from '@renderer/context/NetworkContext';
 import { useChains } from '@renderer/services/network/chainsService';
 import { Address, ChainId, HexString, AccountId } from '@renderer/domain/shared-kernel';
 import { Transaction, TransactionType } from '@renderer/domain/transaction';
-import { Confirmation, MultiScanning, Signing, Submit } from '../components';
-import Paths from '@renderer/routes/paths';
-import { AccountDS } from '@renderer/services/storage';
+import { Confirmation, Signing, Submit, NoAsset } from '../components';
 import InitOperation, { DestinationResult } from './InitOperation/InitOperation';
-import { useCountdown } from '@renderer/shared/hooks';
+import { useCountdown, useToggle } from '@renderer/shared/hooks';
 import { MultisigAccount, isMultisig, Account } from '@renderer/domain/account';
 import { useTransaction } from '@renderer/services/transaction/transactionService';
-import { Scanning } from '@renderer/components/common/Scanning/Scanning';
-import ModalMock from '../components/ModalMock';
+import { DEFAULT_TRANSITION } from '@renderer/shared/utils/constants';
+import { DestinationType } from '../common/types';
+import { BaseModal } from '@renderer/components/ui-redesign';
+import Paths from '@renderer/routes/paths';
+import { useAccount } from '@renderer/services/account/accountService';
+import ScanMultiframeQr from '@renderer/components/common/Scanning/ScanMultiframeQr';
+import ScanSingleframeQr from '@renderer/components/common/Scanning/ScanSingleframeQr';
 
 const enum Step {
   INIT,
@@ -31,98 +32,104 @@ const enum Step {
   SUBMIT,
 }
 
-type DestinationType = {
-  address?: Address;
-  type: RewardsDestination;
-};
-
-const HeaderTitles: Record<Step, string> = {
-  [Step.INIT]: 'staking.destination.initDestinationSubtitle',
-  [Step.CONFIRMATION]: 'staking.bond.confirmBondSubtitle',
-  [Step.SCANNING]: 'staking.bond.scanSubtitle',
-  [Step.SIGNING]: 'staking.bond.signSubtitle',
-  [Step.SUBMIT]: 'staking.bond.submitSubtitle',
-};
-
 const Destination = () => {
   const { t } = useI18n();
   const navigate = useNavigate();
+  const { getActiveAccounts } = useAccount();
   const { connections } = useNetworkContext();
   const { getTransactionHash } = useTransaction();
   const [searchParams] = useSearchParams();
   const { getChainById } = useChains();
   const params = useParams<{ chainId: ChainId }>();
 
+  const [isDestModalOpen, toggleDestModal] = useToggle(true);
+
   const [activeStep, setActiveStep] = useState<Step>(Step.INIT);
   const [chainName, setChainName] = useState('...');
 
-  const [accounts, setAccounts] = useState<AccountDS[]>([]);
-  const [signer, setSigner] = useState<Account>();
   const [destination, setDestination] = useState<DestinationType>();
   const [description, setDescription] = useState('');
 
-  const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [multisigTx, setMultisigTx] = useState<Transaction>();
+  const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [unsignedTransactions, setUnsignedTransactions] = useState<UnsignedTransaction[]>([]);
 
+  const [accounts, setAccounts] = useState<Account[]>([]);
+  const [signer, setSigner] = useState<Account>();
   const [signatures, setSignatures] = useState<HexString[]>([]);
 
-  const chainId = params.chainId || ('' as ChainId);
   const accountIds = searchParams.get('id')?.split(',') || [];
+  const chainId = params.chainId || ('' as ChainId);
+  const activeAccounts = getActiveAccounts();
 
-  if (!chainId || accountIds.length === 0) {
+  useEffect(() => {
+    if (!activeAccounts.length || !accountIds.length) return;
+
+    const accounts = activeAccounts.filter((a) => a.id && accountIds.includes(a.id.toString()));
+    setAccounts(accounts);
+  }, [activeAccounts.length]);
+
+  useEffect(() => {
+    getChainById(chainId).then((chain) => setChainName(chain?.name || ''));
+  }, []);
+
+  const connection = connections[chainId];
+  const [countdown, resetCountdown] = useCountdown(connection?.api);
+
+  if (!connection || accountIds.length === 0) {
     return <Navigate replace to={Paths.STAKING} />;
   }
 
   const { api, explorers, addressPrefix, assets, name } = connections[chainId];
   const asset = getRelaychainAsset(assets);
 
-  useEffect(() => {
-    getChainById(chainId).then((chain) => setChainName(chain?.name || ''));
-  }, []);
-
   if (!api?.isConnected) {
     return <ChainLoader chainName={chainName} />;
   }
-
-  const [countdown, resetCountdown] = useCountdown(api);
 
   const goToPrevStep = () => {
     if (activeStep === Step.INIT) {
       navigate(Paths.STAKING);
     } else {
-      // TODO: reset data
       setActiveStep((prev) => prev - 1);
     }
   };
 
-  const headerContent = (
-    <div className="flex items-center gap-x-2.5 mb-9 mt-5 px-5">
-      <ButtonBack onCustomReturn={goToPrevStep} />
-      <p className="font-semibold text-2xl text-neutral-variant">{t('staking.title')}</p>
-      <p className="font-semibold text-2xl text-neutral">/</p>
-      <h1 className="font-semibold text-2xl text-neutral">{t(HeaderTitles[activeStep])}</h1>
-    </div>
-  );
+  const closeDestinationModal = () => {
+    toggleDestModal();
+    setTimeout(() => navigate(Paths.STAKING), DEFAULT_TRANSITION);
+  };
 
   if (!asset) {
     return (
-      <div className="flex flex-col h-full relative">
-        {headerContent}
-
-        <div className="flex w-full h-full flex-col items-center justify-center">
-          <Icon name="noResults" size={380} />
-          <p className="text-neutral text-3xl font-bold">{t('staking.bond.noStakingAssetLabel')}</p>
-          <p className="text-neutral-variant text-base font-normal">
-            {t('staking.bond.noStakingAssetDescription', { chainName: name })}
-          </p>
-          <ButtonLink className="mt-5" to={Paths.STAKING} variant="fill" pallet="primary" weight="lg">
-            {t('staking.bond.goToStakingButton')}
-          </ButtonLink>
-        </div>
-      </div>
+      <NoAsset
+        title={t('staking.destination.title')}
+        chainName={name}
+        isOpen={isDestModalOpen}
+        onClose={closeDestinationModal}
+      />
     );
   }
+
+  const onInitResult = ({ accounts, destination, signer, description }: DestinationResult) => {
+    const destPayload = destination
+      ? { type: RewardsDestination.TRANSFERABLE, address: destination }
+      : { type: RewardsDestination.RESTAKE };
+
+    const transactions = getDestinationTxs(accounts, destination);
+
+    if (signer && isMultisig(accounts[0])) {
+      const multisigTx = getMultisigTx(accounts[0], signer.accountId, transactions[0]);
+      setMultisigTx(multisigTx);
+      setSigner(signer);
+      setDescription(description || '');
+    }
+
+    setTransactions(transactions);
+    setAccounts(accounts);
+    setDestination(destPayload);
+    setActiveStep(Step.CONFIRMATION);
+  };
 
   const getDestinationTxs = (accounts: Account[], destination?: Address): Transaction[] => {
     return accounts.map(({ accountId }) => ({
@@ -162,33 +169,9 @@ const Destination = () => {
     };
   };
 
-  const onDestinationResult = ({ accounts, destination, signer, description }: DestinationResult) => {
-    const destPayload = destination
-      ? { type: RewardsDestination.TRANSFERABLE, address: destination }
-      : { type: RewardsDestination.RESTAKE };
-
-    const transactions = getDestinationTxs(accounts, destination);
-
-    if (signer && isMultisig(accounts[0])) {
-      const multisigTx = getMultisigTx(accounts[0], signer.accountId, transactions[0]);
-      setMultisigTx(multisigTx);
-      setSigner(signer);
-      setDescription(description || '');
-    }
-
-    setTransactions(transactions);
-    setAccounts(accounts);
-    setDestination(destPayload);
-    setActiveStep(Step.CONFIRMATION);
-  };
-
   const onScanResult = (unsigned: UnsignedTransaction[]) => {
     setUnsignedTransactions(unsigned);
     setActiveStep(Step.SIGNING);
-  };
-
-  const onBackToScan = () => {
-    setActiveStep(Step.SCANNING);
   };
 
   const onSignResult = (signatures: HexString[]) => {
@@ -196,39 +179,38 @@ const Destination = () => {
     setActiveStep(Step.SUBMIT);
   };
 
-  return (
-    <div className="flex flex-col h-full relative">
-      {headerContent}
+  const explorersProps = { explorers, addressPrefix, asset };
 
+  return (
+    <BaseModal
+      closeButton
+      contentClass=""
+      panelClass="w-max"
+      isOpen={isDestModalOpen}
+      title={t('staking.destination.title')}
+      onClose={closeDestinationModal}
+    >
       {activeStep === Step.INIT && (
-        <InitOperation
-          api={api}
-          chainId={chainId}
-          addressPrefix={addressPrefix}
-          identifiers={accountIds}
-          asset={asset}
-          onResult={onDestinationResult}
-        />
+        <InitOperation api={api} chainId={chainId} accounts={accounts} onResult={onInitResult} {...explorersProps} />
       )}
       {activeStep === Step.CONFIRMATION && (
         <Confirmation
-          title={t('staking.confirmation.rewardDestinationTitle')}
           api={api}
           accounts={accounts}
+          signer={signer}
           destination={destination}
+          description={description}
           transaction={transactions[0]}
           multisigTx={multisigTx}
-          asset={asset}
-          explorers={explorers}
-          addressPrefix={addressPrefix}
           onResult={() => setActiveStep(Step.SCANNING)}
-          onAddToQueue={noop}
+          onGoBack={goToPrevStep}
+          {...explorersProps}
         />
       )}
       {activeStep === Step.SCANNING && (
-        <ModalMock>
+        <div className="w-[440px] px-5 py-4">
           {transactions.length > 1 ? (
-            <MultiScanning
+            <ScanMultiframeQr
               api={api}
               addressPrefix={addressPrefix}
               countdown={countdown}
@@ -240,7 +222,7 @@ const Destination = () => {
               onResult={onScanResult}
             />
           ) : (
-            <Scanning
+            <ScanSingleframeQr
               api={api}
               addressPrefix={addressPrefix}
               countdown={countdown}
@@ -252,33 +234,30 @@ const Destination = () => {
               onResult={(unsignedTx) => onScanResult([unsignedTx])}
             />
           )}
-        </ModalMock>
+        </div>
       )}
       {activeStep === Step.SIGNING && (
         <Signing
           countdown={countdown}
           multiQr={transactions.length > 1}
           onResult={onSignResult}
-          onGoBack={onBackToScan}
+          onGoBack={() => setActiveStep(Step.SCANNING)}
         />
       )}
       {activeStep === Step.SUBMIT && (
         <Submit
-          title={t('staking.confirmation.rewardDestinationTitle')}
           api={api}
-          transaction={transactions[0]}
+          txs={transactions}
           multisigTx={multisigTx}
           signatures={signatures}
           unsignedTx={unsignedTransactions}
           accounts={accounts}
-          destination={destination}
+          successMessage={t('staking.destination.submitSuccess')}
           description={description}
-          asset={asset}
-          explorers={explorers}
-          addressPrefix={addressPrefix}
+          onClose={closeDestinationModal}
         />
       )}
-    </div>
+    </BaseModal>
   );
 };
 

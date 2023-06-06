@@ -12,7 +12,7 @@ import { useCountdown } from '@renderer/shared/hooks';
 import { BaseModal } from '@renderer/components/ui-redesign';
 import OperationModalTitle from '../Operations/components/OperationModalTitle';
 import { InitOperation, Confirmation, Signing, Submit } from './components/ActionSteps';
-import { Scanning } from '@renderer/components/common/Scanning/Scanning';
+import ScanSingleframeQr from '@renderer/components/common/Scanning/ScanSingleframeQr';
 
 const enum Step {
   INIT,
@@ -125,7 +125,7 @@ const Transfer = ({ assetId, chainId, isOpen, onClose }: Props) => {
           />
         )}
         {activeStep === Step.SCANNING && (
-          <Scanning
+          <ScanSingleframeQr
             chainId={chainId}
             account={signatory || account}
             transaction={multisigTx || transferTx}

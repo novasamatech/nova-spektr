@@ -20,6 +20,6 @@ describe('screens/Staking/Overview/InactiveChain', () => {
     expect(label).toBeInTheDocument();
     expect(description).toBeInTheDocument();
     expect(link).toBeInTheDocument();
-    expect(link).toHaveAttribute('href', Paths.NETWORK);
+    expect(link).toHaveAttribute('href', `/${Paths.NETWORK}`);
   });
 });
