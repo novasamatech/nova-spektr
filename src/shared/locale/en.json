@@ -549,7 +549,7 @@
       "backButton": "Back",
       "continueButton": "Continue",
       "descriptionLabel": "Description",
-      "descriptionPlaceholder": "ex. Staking ....",
+      "descriptionPlaceholder": "Choose an operation name",
       "goToStakingButton": "Back to Staking",
       "hintTitle": "Learn more about rewards",
       "incorrectAddressError": "Please, enter correct address",

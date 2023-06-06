@@ -549,7 +549,7 @@
       "backButton": "Назад",
       "continueButton": "Продолжить",
       "descriptionLabel": "Описание",
-      "descriptionPlaceholder": "пример, Стейкинг ....",
+      "descriptionPlaceholder": "Задайте название операции",
       "goToStakingButton": "Обратно к Стейкингу",
       "hintTitle": "Узнайте больше о наградах",
       "incorrectAddressError": "Пожалуйста, введите корректный адрес",
