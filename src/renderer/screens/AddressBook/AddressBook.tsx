@@ -25,9 +25,9 @@ const AddressBook = () => {
       <Header title={t('addressBook.title')}>
         <div className="flex items-center gap-4">
           <Input
+            className="ml-1"
             placeholder={t('addressBook.searchPlaceholder')}
             prefixElement={<Icon size={16} name="search" />}
-            className="ml-2"
             onChange={setQuery}
           />
 

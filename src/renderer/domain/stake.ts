@@ -16,6 +16,6 @@ export type Unlocking = {
 };
 
 export const enum RewardsDestination {
-  RESTAKE,
-  TRANSFERABLE,
+  RESTAKE = 'restake',
+  TRANSFERABLE = 'transferable',
 }

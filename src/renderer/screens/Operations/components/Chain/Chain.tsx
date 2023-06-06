@@ -11,12 +11,12 @@ type Props = {
   chainId: ChainId;
   fontProps?: TypographyProps;
   className?: string;
-  withoutName?: boolean;
+  withName?: boolean;
 };
 
 const DefaultFontStyle = 'text-text-tertiary text-footnote font-inter';
 
-const Chain = ({ chainId, fontProps = { className: DefaultFontStyle }, className, withoutName }: Props) => {
+const Chain = ({ chainId, fontProps = { className: DefaultFontStyle }, className, withName = true }: Props) => {
   const { getChainById } = useChains();
 
   const [chain, setChain] = useState<ChainType>();
@@ -28,7 +28,7 @@ const Chain = ({ chainId, fontProps = { className: DefaultFontStyle }, className
   return (
     <div className={cnTw('flex items-center gap-x-2', className)}>
       <img className="inline-block" width={16} height={16} alt={chain?.name} src={chain?.icon} />
-      {!withoutName && (
+      {withName && (
         <TextBase as="span" {...fontProps}>
           {chain?.name}
         </TextBase>

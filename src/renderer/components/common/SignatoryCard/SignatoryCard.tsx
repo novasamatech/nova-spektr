@@ -31,7 +31,7 @@ const SignatoryCard = ({
   const { getLiveAccounts } = useAccount();
   const address = getAddress(addressProps);
   const account = getLiveAccounts().find((a) => toAddress(a.accountId) === address);
-  const popoverItems = useAddressInfo(address, explorers);
+  const popoverItems = useAddressInfo(address, explorers, true);
 
   return (
     <InfoPopover data={popoverItems} buttonClassName="w-full">

@@ -208,7 +208,6 @@ const Actions = ({ stakes, onNavigate }: Props) => {
       </div>
 
       <BaseModal
-        contentClass="px-5 py-5 w-[490px]"
         isOpen={isDialogOpen}
         title={
           <div className="flex items-center gap-2.5">
