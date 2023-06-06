@@ -180,7 +180,7 @@ const ManageStepSingle = ({ seedInfo, onBack, onComplete }: Props) => {
     return derivedKeys.reduce<Account[]>((acc, derivedKey, index) => {
       const accountId = getAccountId(accountIndex, chainId, index);
 
-      if (inactiveAccounts[accountId]) {
+      if (!inactiveAccounts[accountId]) {
         acc.push(
           createAccount({
             name: accountNames[accountId],
@@ -216,12 +216,10 @@ const ManageStepSingle = ({ seedInfo, onBack, onComplete }: Props) => {
         console.warn('Error saving main account', e);
       }
 
-      const derivedAccounts = Object.keys(derivedKeys)
-        .map((chainId) => {
-          const chainDerivedKeys = derivedKeys[chainId as HexString];
-
-          return createDerivedAccounts(chainDerivedKeys, chainId as ChainId, accountIndex, rootAccountId, walletId);
-        })
+      const derivedAccounts = Object.entries(derivedKeys)
+        .map(([chainId, chainDerivedKeys]) =>
+          createDerivedAccounts(chainDerivedKeys, chainId as ChainId, accountIndex, rootAccountId, walletId),
+        )
         .flat();
 
       return derivedAccounts.map((account) => addAccount(account, false));
