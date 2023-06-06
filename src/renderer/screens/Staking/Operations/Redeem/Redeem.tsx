@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react';
 import { Navigate, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 
 import Paths from '@renderer/routes/paths';
-import { ChainLoader } from '@renderer/components/common';
+import { ChainLoader, ScanSingleframeQr, ScanMultiframeQr } from '@renderer/components/common';
 import { useI18n } from '@renderer/context/I18nContext';
 import { useNetworkContext } from '@renderer/context/NetworkContext';
 import { ChainId, HexString, AccountId, Address } from '@renderer/domain/shared-kernel';
@@ -11,7 +11,7 @@ import { Transaction, TransactionType } from '@renderer/domain/transaction';
 import { useAccount } from '@renderer/services/account/accountService';
 import { useChains } from '@renderer/services/network/chainsService';
 import InitOperation, { RedeemResult } from './InitOperation/InitOperation';
-import { Confirmation, MultiScanning, Signing, Submit, SingleScanning, NoAsset } from '../components';
+import { Confirmation, Signing, Submit, NoAsset } from '../components';
 import { getRelaychainAsset } from '@renderer/shared/utils/assets';
 import { useCountdown, useToggle } from '@renderer/shared/hooks';
 import { Account, MultisigAccount, isMultisig } from '@renderer/domain/account';
@@ -199,6 +199,7 @@ const Redeem = () => {
           accounts={accounts}
           signer={signer}
           amounts={redeemAmounts}
+          description={description}
           transaction={transactions[0]}
           multisigTx={multisigTx}
           onResult={() => setActiveStep(Step.SCANNING)}
@@ -206,30 +207,35 @@ const Redeem = () => {
           {...explorersProps}
         />
       )}
-      {activeStep === Step.SCANNING &&
-        (transactions.length > 1 ? (
-          <MultiScanning
-            api={api}
-            addressPrefix={addressPrefix}
-            countdown={countdown}
-            accounts={accounts}
-            transactions={transactions}
-            chainId={chainId}
-            onResetCountdown={resetCountdown}
-            onResult={onScanResult}
-          />
-        ) : (
-          <SingleScanning
-            api={api}
-            addressPrefix={addressPrefix}
-            countdown={countdown}
-            account={signer || accounts[0]}
-            transaction={multisigTx || transactions[0]}
-            chainId={chainId}
-            onResetCountdown={resetCountdown}
-            onResult={(unsignedTx) => onScanResult([unsignedTx])}
-          />
-        ))}
+      {activeStep === Step.SCANNING && (
+        <div className="w-[440px] px-5 py-4">
+          {transactions.length > 1 ? (
+            <ScanMultiframeQr
+              api={api}
+              addressPrefix={addressPrefix}
+              countdown={countdown}
+              accounts={accounts}
+              transactions={transactions}
+              chainId={chainId}
+              onGoBack={() => setActiveStep(Step.CONFIRMATION)}
+              onResetCountdown={resetCountdown}
+              onResult={onScanResult}
+            />
+          ) : (
+            <ScanSingleframeQr
+              api={api}
+              addressPrefix={addressPrefix}
+              countdown={countdown}
+              account={signer || accounts[0]}
+              transaction={multisigTx || transactions[0]}
+              chainId={chainId}
+              onGoBack={() => setActiveStep(Step.CONFIRMATION)}
+              onResetCountdown={resetCountdown}
+              onResult={(unsignedTx) => onScanResult([unsignedTx])}
+            />
+          )}
+        </div>
+      )}
       {activeStep === Step.SIGNING && (
         <Signing
           countdown={countdown}

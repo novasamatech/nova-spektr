@@ -379,6 +379,7 @@
       "title": "Enter call data"
     },
     "filters": {
+      "clearAll": "Clear all",
       "networkPlaceholder": "Network",
       "networkSummary": "Networks",
       "operationTypePlaceholder": "Operation type",
@@ -387,6 +388,7 @@
       "statusSummary": "Operation statuses"
     },
     "noOperationsDescription": "Your operation history will appear here",
+    "noOperationsFilters": "Nothing was found for the filters. Try changing filters or canceling filtering.",
     "noOperationsWalletNotMulti": "You can only view operations for your Multisig wallets. Transaction history for other types of wallets will be available later. Stay tuned.",
     "title": "Operations",
     "titles": {
@@ -490,6 +492,8 @@
     "continueButton": "Continue",
     "generateNewQrButton": "Generate new QR code",
     "metadataPortalLink": "Update metadata in Parity Signer",
+    "parsingCount": "{current} of {total}",
+    "parsingLabel": "Parsing data",
     "qrCountdownTitle": "QR code is valid for",
     "qrNotValid": "QR code isn’t valid anymore",
     "scanQrTitle": "Scan the operation QR code with Polkadot Vault",
@@ -562,7 +566,7 @@
       "signatoryLabel": "Signatory",
       "signatoryPlaceholder": "Select Signatory",
       "submitSuccess": "You funds staked successfully",
-      "title": "Start Staking",
+      "title": "Start staking { asset } on",
       "transferableRewards": "Transferable rewards"
     },
     "confirmation": {
@@ -644,7 +648,7 @@
       "confirmRedeemSubtitle": "Confirmation",
       "initRedeemSubtitle": "Redeem",
       "submitSuccess": "Unstaked tokens have been withdrawn",
-      "title": "Withdraw unstaked"
+      "title": "Withdraw unstaked { asset } on"
     },
     "requiredAmountError": "Please, enter amount",
     "restake": {
@@ -663,7 +667,7 @@
       "hintTitle": "You will get increased rewards starting from the next era",
       "initStakeMoreSubtitle": "Stake more",
       "submitSuccess": "You funds staked successfully",
-      "title": "Stake more"
+      "title": "Stake more { asset } on"
     },
     "title": "Staking",
     "unstake": {
@@ -678,7 +682,7 @@
       "redeemHint": "After unstaking period don’t forget to redeem your tokens",
       "stakedPlaceholder": "Staked",
       "submitSuccess": "Your funds have been unstaked",
-      "title": "Unstake",
+      "title": "Unstake { asset } on",
       "transferable": "Transferable"
     },
     "validators": {

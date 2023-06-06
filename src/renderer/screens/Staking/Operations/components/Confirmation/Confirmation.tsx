@@ -28,6 +28,7 @@ type Props = {
   signer?: Account;
   amounts?: string[];
   destination?: DestinationType;
+  description?: string;
   asset: Asset;
   explorers?: Explorer[];
   addressPrefix: number;
@@ -44,6 +45,7 @@ export const Confirmation = ({
   signer,
   amounts = [],
   destination,
+  description,
   asset,
   explorers,
   addressPrefix,
@@ -66,13 +68,17 @@ export const Confirmation = ({
   return (
     <>
       <div className="w-[440px] px-5 py-4">
-        {amounts.length > 0 && (
-          <BalanceNew
-            className="block mt-4 mb-6 mx-auto text-center text-4xl font-bold"
-            value={totalAmount}
-            asset={asset}
-          />
-        )}
+        <div className="flex flex-col items-center gap-y-3 mb-6">
+          {amounts.length > 0 && (
+            <BalanceNew className="block mx-auto text-center text-4xl font-bold" value={totalAmount} asset={asset} />
+          )}
+
+          {description && (
+            <FootnoteText className="py-2 px-3 rounded bg-block-background text-text-secondary text-center">
+              {description}
+            </FootnoteText>
+          )}
+        </div>
 
         <div className="flex flex-col gap-y-4">
           <div className="flex justify-between items-center gap-x-2">

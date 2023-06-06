@@ -2,8 +2,8 @@ import { act, render, screen } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 
 import { ConnectionStatus } from '@renderer/domain/connection';
-import Unstake from './Unstake';
 import { TEST_ACCOUNT_ID } from '@renderer/shared/utils/constants';
+import Unstake from './Unstake';
 
 jest.mock('@renderer/context/I18nContext', () => ({
   useI18n: jest.fn().mockReturnValue({
@@ -61,11 +61,22 @@ jest.mock('./InitOperation/InitOperation', () => ({ onResult }: any) => {
 
 jest.mock('../components/index', () => ({
   Confirmation: ({ onResult }: any) => mockButton('to scan', onResult),
-  SingleScanning: ({ onResult }: any) => mockButton('to sign', onResult),
-  MultiScanning: ({ onResult }: any) => mockButton('to sign', onResult),
   Signing: ({ onResult }: any) => mockButton('to submit', onResult),
   Submit: () => 'finish',
 }));
+
+jest.mock(
+  '@renderer/components/common/Scanning/ScanMultiframeQr',
+  () =>
+    ({ onResult }: any) =>
+      mockButton('to sign', onResult),
+);
+jest.mock(
+  '@renderer/components/common/Scanning/ScanSingleframeQr',
+  () =>
+    ({ onResult }: any) =>
+      mockButton('to sign', onResult),
+);
 
 describe('screens/Staking/Unstake', () => {
   test('should render component', async () => {

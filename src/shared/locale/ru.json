@@ -379,6 +379,7 @@
       "title": "Введите call data"
     },
     "filters": {
+      "clearAll": "Очистить всё",
       "networkPlaceholder": "Сеть",
       "networkSummary": "Сети",
       "operationTypePlaceholder": "Тип операции",
@@ -387,6 +388,7 @@
       "statusSummary": "Статусы операции"
     },
     "noOperationsDescription": "Нет ожидающих операций с мультиподписью",
+    "noOperationsFilters": "Nothing was found for the filters. Try changing filters or canceling filtering.",
     "noOperationsWalletNotMulti": "You can only view operations for your Multisig wallets. Transaction history for other types of wallets will be available later. Stay tuned.",
     "title": "Операции",
     "titles": {
@@ -490,6 +492,8 @@
     "continueButton": "Continue",
     "generateNewQrButton": "Generate new QR code",
     "metadataPortalLink": "Update metadata in Parity Signer",
+    "parsingCount": "{current} of {total}",
+    "parsingLabel": "Parsing data",
     "qrCountdownTitle": "QR code is valid for",
     "qrNotValid": "QR code isn’t valid anymore",
     "scanQrTitle": "Scan the operation QR code with Polkadot Vault",
@@ -562,7 +566,7 @@
       "signatoryLabel": "Подписант",
       "signatoryPlaceholder": "Выберите подписанта",
       "submitSuccess": "Стейкинг прошел успешно",
-      "title": "Начало Стейкинга",
+      "title": "Начало стейкинга { asset } на",
       "transferableRewards": "Вывести награды"
     },
     "confirmation": {
@@ -644,7 +648,7 @@
       "confirmRedeemSubtitle": "Подтверждение",
       "initRedeemSubtitle": "Вывести",
       "submitSuccess": "Анстейк токены были успешно возвращены",
-      "title": "Вывод анстейк"
+      "title": "Вывод анстейк { asset } на"
     },
     "requiredAmountError": "Пожалуйста, введите сумму",
     "restake": {
@@ -663,7 +667,7 @@
       "hintTitle": "Вы будете получать увеличенную награду начиная со следующей эры",
       "initStakeMoreSubtitle": "Застейкать ещё",
       "submitSuccess": "Вы успешно увеличи стейк",
-      "title": "Увеличить стейк"
+      "title": "Увеличить стейк { asset } на"
     },
     "title": "Стейкинг",
     "unstake": {
@@ -678,7 +682,7 @@
       "redeemHint": "После периода вывода из стейкинга не забудьте redeem ваши токены",
       "stakedPlaceholder": "В стейке",
       "submitSuccess": "Вы успешно забрали токены",
-      "title": "Анстейк",
+      "title": "Анстейк { asset } на",
       "transferable": "Доступно"
     },
     "validators": {

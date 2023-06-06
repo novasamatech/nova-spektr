@@ -4,7 +4,7 @@ import { ApiPromise } from '@polkadot/api';
 
 import { useI18n } from '@renderer/context/I18nContext';
 import { Button } from '@renderer/components/ui';
-import ParitySignerSignatureReader from '@renderer/screens/Signing/ParitySignerSignatureReader/ParitySignerSignatureReader';
+import QrReaderWrapper from '@renderer/screens/Signing/QrReaderWrapper/QrReaderWrapper';
 import { ValidationErrors } from '@renderer/shared/utils/validation';
 import { toAccountId } from '@renderer/shared/utils/address';
 import { transferableAmount } from '@renderer/shared/utils/balance';
@@ -20,17 +20,23 @@ type Props = {
   transaction: Transaction;
   assetId: string;
   countdown: number;
-  onQrExpired: () => void;
   onStartOver: () => void;
+  onGoBack: () => void;
   onResult: (signature: HexString) => void;
 };
 
-const Signing = ({ api, chainId, transaction, assetId, countdown, onQrExpired, onStartOver, onResult }: Props) => {
+const Signing = ({ api, chainId, transaction, assetId, countdown, onGoBack, onStartOver, onResult }: Props) => {
   const { t } = useI18n();
   const { getBalance } = useBalance();
   const { getTransactionFee } = useTransaction();
 
   const [validationError, setValidationError] = useState<ValidationErrors>();
+
+  useEffect(() => {
+    if (countdown === 0) {
+      onGoBack();
+    }
+  }, [countdown]);
 
   const getTokenBalance = (): Promise<Balance | undefined> => {
     return getBalance(toAccountId(transaction.address), chainId, assetId.toString());
@@ -73,21 +79,13 @@ const Signing = ({ api, chainId, transaction, assetId, countdown, onQrExpired, o
     }
   };
 
-  useEffect(() => {
-    if (countdown === 0) {
-      onQrExpired();
-    }
-  }, [countdown]);
-
   return (
     <div className="flex flex-col items-center gap-y-2.5 w-full">
-      <ParitySignerSignatureReader
-        className="w-full"
+      <QrReaderWrapper
         countdown={countdown}
-        header={t('signing.scanSignatureTitle')}
-        size={[440, 496]}
         validationError={validationError}
-        onResult={handleResult}
+        onResult={(res) => handleResult(res as string)}
+        onGoBack={onGoBack}
       />
 
       {validationError && (

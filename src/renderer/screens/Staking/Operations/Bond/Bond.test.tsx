@@ -2,6 +2,7 @@ import { act, render, screen } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 
 import { ConnectionStatus } from '@renderer/domain/connection';
+import { TEST_ACCOUNT_ID } from '@renderer/shared/utils/constants';
 import Bond from './Bond';
 
 jest.mock('@renderer/context/I18nContext', () => ({
@@ -18,7 +19,7 @@ jest.mock('react-router-dom', () => ({
 
 jest.mock('@renderer/services/account/accountService', () => ({
   useAccount: jest.fn().mockReturnValue({
-    getActiveAccounts: jest.fn().mockReturnValue([]),
+    getActiveAccounts: () => [{ name: 'Test Wallet', accountId: TEST_ACCOUNT_ID }],
   }),
 }));
 
@@ -61,11 +62,22 @@ jest.mock('./InitOperation/InitOperation', () => ({ onResult }: any) => {
 jest.mock('../components/index', () => ({
   Validators: ({ onResult }: any) => mockButton('to confirm', onResult),
   Confirmation: ({ onResult }: any) => mockButton('to scan', onResult),
-  SingleScanning: ({ onResult }: any) => mockButton('to sign', onResult),
-  MultiScanning: ({ onResult }: any) => mockButton('to sign', onResult),
   Signing: ({ onResult }: any) => mockButton('to submit', onResult),
   Submit: () => 'finish',
 }));
+
+jest.mock(
+  '@renderer/components/common/Scanning/ScanMultiframeQr',
+  () =>
+    ({ onResult }: any) =>
+      mockButton('to sign', onResult),
+);
+jest.mock(
+  '@renderer/components/common/Scanning/ScanSingleframeQr',
+  () =>
+    ({ onResult }: any) =>
+      mockButton('to sign', onResult),
+);
 
 describe('screens/Staking/Bond', () => {
   test('should render component', async () => {

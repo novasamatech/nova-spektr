@@ -38,6 +38,10 @@
   --secondary-button-background-hover: rgba(69, 69, 137, 0.12);
   --secondary-button-background-active: rgba(69, 69, 137, 0.16);
   --scroll-background-default: rgba(69, 69, 137, 0.48);
+  --white-button-background-default: #ffffff;
+  --white-button-background-hover: rgba(255, 255, 255, 0.8);
+  --white-button-background-active: rgba(255, 255, 255, 0.64);
+  --white-button-background-disabled: rgba(255, 255, 255, 0.48);
 
   /* BORDER */
   --token-container-border: rgba(69, 69, 137, 0.06);
@@ -84,6 +88,7 @@
   --alert-background-negative: rgba(245, 33, 99, 0.08);
   --label-background-gray: rgba(128, 128, 128, 0.48);
   --label-background-green: #01a63e;
+  --label-background-red: #f52163;
 
   /* SHADOW */
   --card-shadow: 0px 3px 4px rgba(69, 69, 137, 0.04), inset 0px -0.5px 0px rgba(69, 69, 137, 0.12);

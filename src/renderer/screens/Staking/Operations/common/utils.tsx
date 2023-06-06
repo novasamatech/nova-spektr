@@ -3,7 +3,7 @@ import cn from 'classnames';
 import { ReactNode } from 'react';
 
 import { Account, MultisigAccount } from '@renderer/domain/account';
-import { Address, SigningType } from '@renderer/domain/shared-kernel';
+import { Address } from '@renderer/domain/shared-kernel';
 import { DropdownOption } from '@renderer/components/ui/Dropdowns/common/types';
 import { Balance as AccountBalance } from '@renderer/domain/balance';
 import {
@@ -16,7 +16,6 @@ import {
 import { Asset } from '@renderer/domain/asset';
 import { toAddress } from '@renderer/shared/utils/address';
 import { Stake } from '@renderer/domain/stake';
-import { AccountDS } from '@renderer/services/storage';
 import { AccountAddress, BalanceNew } from '@renderer/components/common';
 
 export const validateBalanceForFee = (balance: AccountBalance | string, fee: string): boolean => {
@@ -165,6 +164,7 @@ export const getRestakeAccountOption = (
     balanceIsCorrect = restakeIsValid && feeIsValid;
   }
 
+  console.log(unlockingAmount(stake?.unlocking));
   const balanceContent = getBalance(unlockingAmount(stake?.unlocking), asset, balanceIsCorrect);
   const element = getElement(address, account.name, balanceContent);
 
@@ -189,17 +189,6 @@ export const getUnstakeAccountOption = (
   const element = getElement(address, account.name, balanceContent);
 
   return { id: account.accountId, value: account, element };
-};
-
-export const getTotalAccounts = (dbAccounts: AccountDS[], identifiers: string[]): AccountDS[] => {
-  return dbAccounts.filter((account) => {
-    if (!account.id) return false;
-
-    const correctSigningType = [SigningType.PARITY_SIGNER, SigningType.MULTISIG].includes(account.signingType);
-    const accountExistInDb = identifiers.includes(account.id.toString());
-
-    return correctSigningType && accountExistInDb;
-  });
 };
 
 export const getSignatoryOptions = (accounts: Account[], addressPrefix: number): DropdownOption<Account>[] => {

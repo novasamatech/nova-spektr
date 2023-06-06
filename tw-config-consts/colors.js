@@ -39,6 +39,11 @@ module.exports = {
   'secondary-button-background-active': 'var(--secondary-button-background-active)',
   'scroll-background-default': 'var(--scroll-background-default)',
 
+  'white-button-background-default': 'var(--white-button-background-default)',
+  'white-button-background-hover': 'var(--white-button-background-hover)',
+  'white-button-background-active': 'var(--white-button-background-active)',
+  'white-button-background-disabled': 'var(--white-button-background-disabled)',
+
   /* BORDER */
   'token-container-border': 'var(--token-container-border)',
   'filter-border': 'var(--filter-border)',
@@ -82,6 +87,7 @@ module.exports = {
   'alert-background': 'var(--alert-background)',
   'alert-background-warning': 'var(--alert-background-warning)',
   'alert-background-negative': 'var(--alert-background-negative)',
-  'label-background-gray': 'var(--label-background-gray)',
   'label-background-green': 'var(--label-background-green)',
+  'label-background-red': 'var(--label-background-red)',
+  'label-background-gray': 'var(--label-background-gray)',
 };

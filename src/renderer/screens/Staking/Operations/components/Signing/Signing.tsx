@@ -1,7 +1,6 @@
-import ParitySignerSignatureReader from '@renderer/screens/Signing/ParitySignerSignatureReader/ParitySignerSignatureReader';
-import MultiframeSignatureReader from '@renderer/screens/Signing/MultiframeSignatureReader/MultiframeSignatureReader';
-import { Block, Button, Plate } from '@renderer/components/ui';
-import { useI18n } from '@renderer/context/I18nContext';
+import { useEffect } from 'react';
+
+import QrReaderWrapper from '@renderer/screens/Signing/QrReaderWrapper/QrReaderWrapper';
 import { HexString } from '@renderer/domain/shared-kernel';
 
 type Props = {
@@ -12,7 +11,11 @@ type Props = {
 };
 
 export const Signing = ({ multiQr, countdown, onResult, onGoBack }: Props) => {
-  const { t } = useI18n();
+  useEffect(() => {
+    if (countdown === 0) {
+      onGoBack();
+    }
+  }, [countdown]);
 
   const handleResult = (data: string | string[]) => {
     if (Array.isArray(data)) {
@@ -22,24 +25,15 @@ export const Signing = ({ multiQr, countdown, onResult, onGoBack }: Props) => {
     }
   };
 
-  const QrReader = multiQr ? MultiframeSignatureReader : ParitySignerSignatureReader;
-
   return (
-    <div className="overflow-y-auto flex-1">
-      <Plate as="section" className="flex flex-col items-center gap-y-5 mx-auto w-[600px]">
-        <Block className="flex flex-col items-center gap-y-2.5 p-5">
-          <div className="text-neutral-variant text-base font-semibold">{t('signing.scanQrTitle')}</div>
-          <div className="h-[460px]">
-            <QrReader className="w-full rounded-2lg" countdown={countdown} size={460} onResult={handleResult} />
-          </div>
-        </Block>
-
-        {countdown === 0 && (
-          <Button variant="fill" pallet="primary" weight="lg" onClick={onGoBack}>
-            {t('signing.generateNewQrButton')}
-          </Button>
-        )}
-      </Plate>
+    <div className="w-[440px] py-4">
+      <QrReaderWrapper
+        isMultiFrame={multiQr}
+        className="w-full rounded-2lg"
+        countdown={countdown || 0}
+        onResult={handleResult}
+        onGoBack={onGoBack}
+      />
     </div>
   );
 };
