@@ -1,10 +1,15 @@
 on: pull_request
 
 jobs:
-  release-build:
+  test:
     runs-on: ubuntu-latest
-    name: pp
     steps:
+      - name: Expose GitHub Runtime
+        uses: crazy-max/ghaction-github-runtime@v2
+      - name: Env
+        run: |
+          # ACTIONS_RUNTIME_TOKEN, ACTIONS_RUNTIME_URL should be exposed
+          env|sort
       - name: Docker build1
         run: |
           echo "ACTIONS_CACHE_URL: ${{ env.ACTIONS_CACHE_URL }} and $ACTIONS_CACHE_URL"
