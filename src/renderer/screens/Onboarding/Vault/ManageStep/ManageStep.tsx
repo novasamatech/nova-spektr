@@ -44,7 +44,7 @@ type Props = {
   onComplete: () => void;
 };
 
-const ManageStepSingle = ({ seedInfo, onBack, onComplete }: Props) => {
+const ManageStep = ({ seedInfo, onBack, onComplete }: Props) => {
   const { t } = useI18n();
 
   const { getChainsData, sortChains } = useChains();
@@ -374,4 +374,4 @@ const ManageStepSingle = ({ seedInfo, onBack, onComplete }: Props) => {
   );
 };
 
-export default ManageStepSingle;
+export default ManageStep;

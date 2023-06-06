@@ -31,9 +31,14 @@ const Vault = ({ isOpen, onClose, onComplete }: Props) => {
     ((qrPayload[0].derivedKeys.length === 0 && qrPayload[0].name === '') ||
       qrPayload[0].derivedKeys.every((d) => !d.derivationPath));
 
-  const onCloseModal = () => {
-    onClose();
+  const closeModal = () => {
     setActiveStep(Step.SCAN);
+    onClose();
+  };
+
+  const complete = () => {
+    setActiveStep(Step.SCAN);
+    onComplete();
   };
 
   return (
@@ -42,15 +47,15 @@ const Vault = ({ isOpen, onClose, onComplete }: Props) => {
       panelClass="w-[944px] h-[576px]"
       isOpen={isOpen}
       closeButton
-      onClose={onCloseModal}
+      onClose={closeModal}
     >
-      {activeStep === Step.SCAN && <ScanStep onBack={onCloseModal} onNextStep={onReceiveQr} />}
+      {activeStep === Step.SCAN && <ScanStep onBack={closeModal} onNextStep={onReceiveQr} />}
       {activeStep === Step.MANAGE && qrPayload && (
         <>
           {isPlainQr ? (
-            <ManageStepSingle seedInfo={qrPayload} onBack={() => setActiveStep(Step.SCAN)} onComplete={onComplete} />
+            <ManageStepSingle seedInfo={qrPayload} onBack={() => setActiveStep(Step.SCAN)} onComplete={complete} />
           ) : (
-            <ManageStep seedInfo={qrPayload} onBack={() => setActiveStep(Step.SCAN)} onComplete={onComplete} />
+            <ManageStep seedInfo={qrPayload} onBack={() => setActiveStep(Step.SCAN)} onComplete={complete} />
           )}
         </>
       )}
