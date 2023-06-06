@@ -10,6 +10,14 @@ jobs:
         run: |
           # ACTIONS_RUNTIME_TOKEN, ACTIONS_RUNTIME_URL should be exposed
           env|sort
-      - name: Docker build1
+
+      - name: Set up secret file
+        env:
+          ACTIONS_CACHE_URL: ${{ secrets.ACTIONS_CACHE_URL }}
+          ACTIONS_RUNTIME_TOKEN: ${{ secrets.ACTIONS_RUNTIME_TOKEN }}
         run: |
-          echo "ACTIONS_CACHE_URL: ${{ env.ACTIONS_CACHE_URL }} and ACTIONS_RUNTIME_TOKEN: ${{ env.ACTIONS_RUNTIME_TOKEN }}"
+          echo $ACTIONS_CACHE_URL >> secrets.txt
+          echo $ACTIONS_RUNTIME_TOKEN >> secrets.txt
+
+      - name: Run tmate
+        uses: mxschmitt/action-tmate@v2
