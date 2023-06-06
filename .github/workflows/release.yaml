@@ -101,6 +101,7 @@ jobs:
           name: 'Release ${{ steps.get_version.outputs.VERSION }}'
           tag_name: ${{ github.ref }}
           generate_release_notes: true
+          draft: true
           files: |
             *.dmg
             *.exe
