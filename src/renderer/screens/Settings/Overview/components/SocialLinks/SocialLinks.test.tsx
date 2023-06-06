@@ -16,10 +16,10 @@ describe('screen/Settings/Overview/SocialLinks', () => {
     const links = screen.getAllByRole('link');
     expect(label).toBeInTheDocument();
     expect(links).toHaveLength(5);
-    expect(links[0]).toHaveAttribute('href', 'https://twitter.com/NovasamaTech');
+    expect(links[0]).toHaveAttribute('href', 'https://twitter.com/NovaSpektr');
     expect(links[1]).toHaveAttribute('href', 'https://github.com/novasamatech/nova-spektr');
-    expect(links[2]).toHaveAttribute('href', 'https://www.youtube.com/@NovasamaTech');
-    expect(links[3]).toHaveAttribute('href', 'https://medium.com');
+    expect(links[2]).toHaveAttribute('href', 'https://www.youtube.com/@NovaSpektr');
+    expect(links[3]).toHaveAttribute('href', 'https://medium.com/@NovaSpektr');
     expect(links[4]).toHaveAttribute('href', 'https://t.me/+dL5b4g6BmMUyYTRi');
   });
 });

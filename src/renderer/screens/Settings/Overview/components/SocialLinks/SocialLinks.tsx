@@ -9,7 +9,7 @@ const Links = [
     icon: 'twitter',
     title: 'settings.overview.twitterLabel',
     subtitle: 'settings.overview.twitterDescription',
-    href: 'https://twitter.com/NovasamaTech',
+    href: 'https://twitter.com/NovaSpektr',
   },
   {
     icon: 'github',
@@ -21,13 +21,13 @@ const Links = [
     icon: 'youtube',
     title: 'settings.overview.youtubeLabel',
     subtitle: 'settings.overview.youtubeDescription',
-    href: 'https://www.youtube.com/@NovasamaTech',
+    href: 'https://www.youtube.com/@NovaSpektr',
   },
   {
     icon: 'medium',
     title: 'settings.overview.mediumLabel',
     subtitle: 'settings.overview.mediumDescription',
-    href: 'https://medium.com',
+    href: 'https://medium.com/@NovaSpektr',
   },
   {
     icon: 'telegram',
