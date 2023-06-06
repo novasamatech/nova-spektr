@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { UnsignedTransaction } from '@substrate/txwrapper-polkadot';
 
 import { useI18n } from '@renderer/context/I18nContext';
-import { ChainLoader, ScanSingleframeQr } from '@renderer/components/common';
+import { ChainLoader } from '@renderer/components/common';
 import { ChainId, HexString } from '@renderer/domain/shared-kernel';
 import { useNetworkContext } from '@renderer/context/NetworkContext';
 import { useChains } from '@renderer/services/network/chainsService';
@@ -12,6 +12,7 @@ import { useCountdown } from '@renderer/shared/hooks';
 import { BaseModal } from '@renderer/components/ui-redesign';
 import OperationModalTitle from '../Operations/components/OperationModalTitle';
 import { InitOperation, Confirmation, Signing, Submit } from './components/ActionSteps';
+import ScanSingleframeQr from '@renderer/components/common/Scanning/ScanSingleframeQr';
 
 const enum Step {
   INIT,

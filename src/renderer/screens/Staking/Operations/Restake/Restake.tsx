@@ -2,7 +2,7 @@ import { UnsignedTransaction } from '@substrate/txwrapper-polkadot';
 import { useEffect, useState } from 'react';
 import { Navigate, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 
-import { ChainLoader, ScanSingleframeQr, ScanMultiframeQr } from '@renderer/components/common';
+import { ChainLoader } from '@renderer/components/common';
 import { useI18n } from '@renderer/context/I18nContext';
 import { useNetworkContext } from '@renderer/context/NetworkContext';
 import { Address, ChainId, HexString, AccountId } from '@renderer/domain/shared-kernel';
@@ -19,6 +19,8 @@ import { toAddress } from '@renderer/shared/utils/address';
 import { Alert, BaseModal } from '@renderer/components/ui-redesign';
 import { DEFAULT_TRANSITION } from '@renderer/shared/utils/constants';
 import Paths from '@renderer/routes/paths';
+import ScanMultiframeQr from '@renderer/components/common/Scanning/ScanMultiframeQr';
+import ScanSingleframeQr from '@renderer/components/common/Scanning/ScanSingleframeQr';
 
 const enum Step {
   INIT,

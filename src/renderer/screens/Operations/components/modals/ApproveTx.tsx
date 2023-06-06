@@ -26,7 +26,7 @@ import SignatorySelectModal from '@renderer/screens/Operations/components/modals
 import OperationResult from '@renderer/components/ui-redesign/OperationResult/OperationResult';
 import OperationModalTitle from '@renderer/screens/Operations/components/OperationModalTitle';
 import { Signing } from '@renderer/screens/Transfer/components/ActionSteps';
-import { ScanSingleframeQr } from '@renderer/components/common';
+import ScanSingleframeQr from '@renderer/components/common/Scanning/ScanSingleframeQr';
 
 type Props = {
   tx: MultisigTransaction;

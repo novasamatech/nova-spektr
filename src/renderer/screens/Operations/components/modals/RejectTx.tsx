@@ -24,7 +24,7 @@ import { Icon } from '@renderer/components/ui';
 import OperationResult from '@renderer/components/ui-redesign/OperationResult/OperationResult';
 import OperationModalTitle from '@renderer/screens/Operations/components/OperationModalTitle';
 import Signing from '@renderer/screens/Transfer/components/ActionSteps/Signing';
-import { ScanSingleframeQr } from '@renderer/components/common';
+import ScanSingleframeQr from '@renderer/components/common/Scanning/ScanSingleframeQr';
 
 type Props = {
   tx: MultisigTransactionDS;

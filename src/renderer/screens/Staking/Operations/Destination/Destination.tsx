@@ -5,7 +5,7 @@ import { Navigate, useNavigate, useParams, useSearchParams } from 'react-router-
 import { toAddress } from '@renderer/shared/utils/address';
 import { getRelaychainAsset } from '@renderer/shared/utils/assets';
 import { RewardsDestination } from '@renderer/domain/stake';
-import { ChainLoader, ScanSingleframeQr, ScanMultiframeQr } from '@renderer/components/common';
+import { ChainLoader } from '@renderer/components/common';
 import { useI18n } from '@renderer/context/I18nContext';
 import { useNetworkContext } from '@renderer/context/NetworkContext';
 import { useChains } from '@renderer/services/network/chainsService';
@@ -21,6 +21,8 @@ import { DestinationType } from '../common/types';
 import { BaseModal } from '@renderer/components/ui-redesign';
 import Paths from '@renderer/routes/paths';
 import { useAccount } from '@renderer/services/account/accountService';
+import ScanMultiframeQr from '@renderer/components/common/Scanning/ScanMultiframeQr';
+import ScanSingleframeQr from '@renderer/components/common/Scanning/ScanSingleframeQr';
 
 const enum Step {
   INIT,

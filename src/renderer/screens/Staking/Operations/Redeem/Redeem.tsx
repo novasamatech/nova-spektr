@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react';
 import { Navigate, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 
 import Paths from '@renderer/routes/paths';
-import { ChainLoader, ScanSingleframeQr, ScanMultiframeQr } from '@renderer/components/common';
+import { ChainLoader } from '@renderer/components/common';
 import { useI18n } from '@renderer/context/I18nContext';
 import { useNetworkContext } from '@renderer/context/NetworkContext';
 import { ChainId, HexString, AccountId, Address } from '@renderer/domain/shared-kernel';
@@ -20,6 +20,8 @@ import { useTransaction } from '@renderer/services/transaction/transactionServic
 import { DEFAULT_TRANSITION } from '@renderer/shared/utils/constants';
 import OperationModalTitle from '@renderer/screens/Operations/components/OperationModalTitle';
 import { BaseModal } from '@renderer/components/ui-redesign';
+import ScanMultiframeQr from '@renderer/components/common/Scanning/ScanMultiframeQr';
+import ScanSingleframeQr from '@renderer/components/common/Scanning/ScanSingleframeQr';
 
 const enum Step {
   INIT,
