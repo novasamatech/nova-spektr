@@ -20,6 +20,7 @@ import NetworkDuotoneImg, { ReactComponent as NetworkDuotoneSvg } from '@images/
 import NetworkOnImg, { ReactComponent as NetworkOnSvg } from '@images/functionals/network-on.svg';
 import NetworkOffImg, { ReactComponent as NetworkOffSvg } from '@images/functionals/network-off.svg';
 import AddImg, { ReactComponent as AddSvg } from '@images/functionals/add.svg';
+import AddAddressImg, { ReactComponent as AddAddressSvg } from '@images/functionals/add-address.svg';
 import AddLineImg, { ReactComponent as AddLineSvg } from '@images/functionals/add-line.svg';
 import AddCutoutImg, { ReactComponent as AddCutoutSvg } from '@images/functionals/add-cutout.svg';
 import ClearOutlineImg, { ReactComponent as ClearOutlineSvg } from '@images/functionals/clear-outline.svg';
@@ -65,6 +66,7 @@ const FunctionalImages = {
   networkOn: { svg: NetworkOnSvg, img: NetworkOnImg },
   networkOff: { svg: NetworkOffSvg, img: NetworkOffImg },
   add: { svg: AddSvg, img: AddImg },
+  addAddress: { svg: AddAddressSvg, img: AddAddressImg },
   addLine: { svg: AddLineSvg, img: AddLineImg },
   addCutout: { svg: AddCutoutSvg, img: AddCutoutImg },
   clearOutline: { svg: ClearOutlineSvg, img: ClearOutlineImg },

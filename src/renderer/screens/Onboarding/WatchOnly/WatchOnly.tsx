@@ -38,6 +38,7 @@ const WatchOnly = ({ isOpen, onClose, onComplete }: Props) => {
     handleSubmit,
     control,
     watch,
+    reset,
     formState: { errors, isValid },
   } = useForm<WalletForm>({
     mode: 'onChange',
@@ -63,7 +64,13 @@ const WatchOnly = ({ isOpen, onClose, onComplete }: Props) => {
 
     await addAccount(newAccount);
 
+    reset();
     onComplete();
+  };
+
+  const closeModal = () => {
+    reset();
+    onClose();
   };
 
   return (
@@ -72,7 +79,7 @@ const WatchOnly = ({ isOpen, onClose, onComplete }: Props) => {
       panelClass="w-[944px] h-[576px]"
       isOpen={isOpen}
       closeButton
-      onClose={onClose}
+      onClose={closeModal}
     >
       <div className="w-[472px] flex flex-col px-5 py-4 bg-white">
         <HeaderTitleText className="mb-10">{t('onboarding.watchOnly.title')}</HeaderTitleText>
@@ -131,7 +138,7 @@ const WatchOnly = ({ isOpen, onClose, onComplete }: Props) => {
           />
 
           <div className="flex flex-1 justify-between items-end">
-            <Button variant="text" onClick={onClose}>
+            <Button variant="text" onClick={closeModal}>
               {t('onboarding.backButton')}
             </Button>
 
