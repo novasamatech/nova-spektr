@@ -31,7 +31,13 @@ const AddressBook = () => {
             onChange={setQuery}
           />
 
-          {!isEmpty && <IconButton name="addAddress" onClick={toggleAddContactModal} />}
+          {!isEmpty && (
+            <IconButton
+              name="addAddress"
+              ariaLabel={t('addressBook.addContactButton')}
+              onClick={toggleAddContactModal}
+            />
+          )}
         </div>
       </Header>
 
