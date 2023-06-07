@@ -83,10 +83,6 @@ const Destination = () => {
   const { api, explorers, addressPrefix, assets, name } = connections[chainId];
   const asset = getRelaychainAsset(assets);
 
-  if (!api?.isConnected) {
-    return <ChainLoader chainName={chainName} />;
-  }
-
   const goToPrevStep = () => {
     if (activeStep === Step.INIT) {
       navigate(Paths.STAKING);
@@ -100,14 +96,37 @@ const Destination = () => {
     setTimeout(() => navigate(Paths.STAKING), DEFAULT_TRANSITION);
   };
 
+  if (!api?.isConnected) {
+    return (
+      <BaseModal
+        closeButton
+        contentClass=""
+        panelClass="w-max"
+        isOpen={isDestModalOpen}
+        title={t('staking.destination.title')}
+        onClose={closeDestinationModal}
+      >
+        <div className="w-[440px] px-5 py-20">
+          <ChainLoader chainName={chainName} />
+        </div>
+      </BaseModal>
+    );
+  }
+
   if (!asset) {
     return (
-      <NoAsset
-        title={t('staking.destination.title')}
-        chainName={name}
+      <BaseModal
+        closeButton
+        contentClass=""
+        panelClass="w-max"
         isOpen={isDestModalOpen}
+        title={t('staking.destination.title')}
         onClose={closeDestinationModal}
-      />
+      >
+        <div className="w-[440px] px-5 py-20">
+          <NoAsset chainName={name} isOpen={isDestModalOpen} onClose={closeDestinationModal} />
+        </div>
+      </BaseModal>
     );
   }
 

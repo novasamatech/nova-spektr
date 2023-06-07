@@ -86,12 +86,11 @@ const InitOperation = ({ api, chainId, addressPrefix, accounts, asset, onResult 
   }, [api]);
 
   useEffect(() => {
-    const selectedAccountIds = activeUnstakeAccounts.map((stake) => stake.id);
-    const selectedAccounts = accounts.map((a) => a.accountId).filter((a) => selectedAccountIds.includes(a));
+    const addresses = activeUnstakeAccounts.map((stake) => toAddress(stake.id, { prefix: addressPrefix }));
 
     let unsubStaking: () => void | undefined;
     (async () => {
-      unsubStaking = await subscribeStaking(chainId, api, selectedAccounts, setStaking);
+      unsubStaking = await subscribeStaking(chainId, api, addresses, setStaking);
     })();
 
     return () => {
@@ -111,7 +110,12 @@ const InitOperation = ({ api, chainId, addressPrefix, accounts, asset, onResult 
   useEffect(() => {
     if (!Object.keys(staking).length) return;
 
-    const stakedBalances = activeUnstakeAccounts.map((a) => staking[a.id]?.active || '0');
+    const stakedBalances = activeUnstakeAccounts.map((a) => {
+      const address = toAddress(a.id, { prefix: addressPrefix });
+
+      return staking[address]?.active || '0';
+    });
+
     const minStakedBalance = stakedBalances.reduce<string>((acc, balance) => {
       if (!balance) return acc;
 
@@ -120,29 +124,6 @@ const InitOperation = ({ api, chainId, addressPrefix, accounts, asset, onResult 
 
     setMinBalance(minStakedBalance);
   }, [activeUnstakeAccounts.length, staking]);
-
-  // useEffect(() => {
-  //   if (signerBalance) {
-  //     const balance = transferableAmount(signerBalance);
-  //     setTransferableRange([balance, balance]);
-  //   } else if (activeUnstakeAccounts.length) {
-  //     const balancesMap = new Map(activeBalances.map((b) => [b.accountId, b]));
-  //     const transferable = activeUnstakeAccounts.map((a) => transferableAmount(balancesMap.get(a.id as AccountId)));
-  //     const minMaxTransferable = transferable.reduce<[string, string]>(
-  //       (acc, balance) => {
-  //         if (balance) {
-  //           acc[0] = new BN(balance).lt(new BN(acc[0])) ? balance : acc[0];
-  //           acc[1] = new BN(balance).gt(new BN(acc[1])) ? balance : acc[1];
-  //         }
-  //
-  //         return acc;
-  //       },
-  //       [transferable?.[0], transferable?.[0]],
-  //     );
-  //
-  //     setTransferableRange(minMaxTransferable);
-  //   }
-  // }, [activeUnstakeAccounts.length, signerBalance, activeBalances]);
 
   useEffect(() => {
     const formattedAccounts = accounts.map((account) => {
@@ -154,7 +135,7 @@ const InitOperation = ({ api, chainId, addressPrefix, accounts, asset, onResult 
     });
 
     setUnstakeAccounts(formattedAccounts);
-  }, [staking, amount, fee, balances]);
+  }, [staking, amount, fee, balances, accounts.length]);
 
   useEffect(() => {
     if (!accountIsMultisig) return;
@@ -199,7 +180,8 @@ const InitOperation = ({ api, chainId, addressPrefix, accounts, asset, onResult 
     const selectedAccountIds = activeUnstakeAccounts.map((stake) => stake.id);
     const selectedAccounts = accounts.filter((account) => selectedAccountIds.includes(account.accountId));
     const withChill = selectedAccounts.map((a) => {
-      const leftAmount = new BN(staking[a.accountId]?.active || 0).sub(new BN(amount));
+      const address = toAddress(a.accountId, { prefix: addressPrefix });
+      const leftAmount = new BN(staking[address]?.active || 0).sub(new BN(amount));
 
       return leftAmount.lte(new BN(minimumStake));
     });
@@ -216,7 +198,11 @@ const InitOperation = ({ api, chainId, addressPrefix, accounts, asset, onResult 
   };
 
   const validateBalance = (amount: string): boolean => {
-    return activeUnstakeAccounts.every((a) => validateUnstake(staking[a.id] || '0', amount, asset.precision));
+    return activeUnstakeAccounts.every((a) => {
+      const address = toAddress(a.id, { prefix: addressPrefix });
+
+      return validateUnstake(staking[address] || '0', amount, asset.precision);
+    });
   };
 
   const validateFee = (): boolean => {
