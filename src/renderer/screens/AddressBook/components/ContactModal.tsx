@@ -97,11 +97,11 @@ const ContactModal = ({ isOpen, onToggle, contact }: Props) => {
   };
 
   const validateAddressExists = (value?: string): boolean => {
-    return contacts && !!value && contacts.every((contact) => contact.accountId !== toAccountId(value));
+    return !!value && contacts.every((contact) => contact.accountId !== toAccountId(value));
   };
 
   const validateNameExists = (value?: string): boolean => {
-    return contacts && contacts.every((contact) => contact.name.toLowerCase() !== value?.toLowerCase());
+    return contacts.every((contact) => contact.name.toLowerCase() !== value?.toLowerCase());
   };
 
   return (
