@@ -122,7 +122,7 @@ const InitOperation = ({ api, chainId, accounts, asset, addressPrefix, onResult 
     if (formattedAccounts.length === 0) return;
 
     setStakeAccounts(formattedAccounts);
-  }, [amount, fee, balances]);
+  }, [amount, fee, balances, accounts.length]);
 
   useEffect(() => {
     if (!accountIsMultisig) return;
