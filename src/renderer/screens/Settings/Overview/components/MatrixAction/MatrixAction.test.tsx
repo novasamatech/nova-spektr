@@ -18,6 +18,6 @@ describe('screen/Settings/Overview/MatrixAction', () => {
     const link = screen.getByRole('link');
     expect(label).toBeInTheDocument();
     expect(link).toBeInTheDocument();
-    expect(link).toHaveAttribute('href', `/${Paths.MATRIX}`);
+    expect(link).toHaveAttribute('href', Paths.MATRIX);
   });
 });

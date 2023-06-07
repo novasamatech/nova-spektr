@@ -90,10 +90,6 @@ const Bond = () => {
   const { api, explorers, addressPrefix, assets, name } = connections[chainId];
   const asset = getRelaychainAsset(assets);
 
-  if (!api?.isConnected) {
-    return <ChainLoader chainName={chainName} />;
-  }
-
   const goToPrevStep = () => {
     if (activeStep === Step.INIT) {
       navigate(Paths.STAKING);
@@ -107,9 +103,37 @@ const Bond = () => {
     setTimeout(() => navigate(Paths.STAKING), DEFAULT_TRANSITION);
   };
 
+  if (!api?.isConnected) {
+    return (
+      <BaseModal
+        closeButton
+        contentClass=""
+        panelClass="w-max"
+        isOpen={isBondModalOpen}
+        title={<OperationModalTitle title={`${t('staking.bond.title', { asset: '' })}`} chainId={chainId} />}
+        onClose={closeBondModal}
+      >
+        <div className="w-[440px] px-5 py-20">
+          <ChainLoader chainName={chainName} />
+        </div>
+      </BaseModal>
+    );
+  }
+
   if (!asset) {
     return (
-      <NoAsset title={t('staking.bond.title')} chainName={name} isOpen={isBondModalOpen} onClose={closeBondModal} />
+      <BaseModal
+        closeButton
+        contentClass=""
+        panelClass="w-max"
+        isOpen={isBondModalOpen}
+        title={<OperationModalTitle title={`${t('staking.bond.title', { asset: '' })}`} chainId={chainId} />}
+        onClose={closeBondModal}
+      >
+        <div className="w-[440px] px-5 py-20">
+          <NoAsset chainName={name} isOpen={isBondModalOpen} onClose={closeBondModal} />
+        </div>
+      </BaseModal>
     );
   }
 
