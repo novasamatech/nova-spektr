@@ -84,10 +84,6 @@ const Unstake = () => {
   const { api, explorers, addressPrefix, assets, name } = connections[chainId];
   const asset = getRelaychainAsset(assets);
 
-  if (!api?.isConnected) {
-    return <ChainLoader chainName={chainName} />;
-  }
-
   const goToPrevStep = () => {
     if (activeStep === Step.INIT) {
       navigate(Paths.STAKING);
@@ -101,14 +97,37 @@ const Unstake = () => {
     setTimeout(() => navigate(Paths.STAKING), DEFAULT_TRANSITION);
   };
 
+  if (!api?.isConnected) {
+    return (
+      <BaseModal
+        closeButton
+        contentClass=""
+        panelClass="w-max"
+        isOpen={isUnstakeModalOpen}
+        title={<OperationModalTitle title={`${t('staking.unstake.title', { asset: '' })}`} chainId={chainId} />}
+        onClose={closeUnstakeModal}
+      >
+        <div className="w-[440px] px-5 py-20">
+          <ChainLoader chainName={chainName} />
+        </div>
+      </BaseModal>
+    );
+  }
+
   if (!asset) {
     return (
-      <NoAsset
-        title={t('staking.unstake.title')}
-        chainName={name}
+      <BaseModal
+        closeButton
+        contentClass=""
+        panelClass="w-max"
         isOpen={isUnstakeModalOpen}
+        title={<OperationModalTitle title={`${t('staking.unstake.title', { asset: '' })}`} chainId={chainId} />}
         onClose={closeUnstakeModal}
-      />
+      >
+        <div className="w-[440px] px-5 py-20">
+          <NoAsset chainName={name} isOpen={isUnstakeModalOpen} onClose={closeUnstakeModal} />
+        </div>
+      </BaseModal>
     );
   }
 

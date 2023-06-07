@@ -27,6 +27,6 @@ describe('screen/Settings/Overview/MatrixAction', () => {
     expect(label).toBeInTheDocument();
     expect(matrixId).toBeInTheDocument();
     expect(link).toBeInTheDocument();
-    expect(link).toHaveAttribute('href', `/${Paths.MATRIX}`);
+    expect(link).toHaveAttribute('href', Paths.MATRIX);
   });
 });
