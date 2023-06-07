@@ -85,11 +85,11 @@ const InitOperation = ({ api, chainId, accounts, addressPrefix, asset, onResult 
   const signerBalance = signatoriesBalances.find((b) => b.accountId === activeSignatory?.value.accountId);
 
   useEffect(() => {
+    const addresses = activeRedeemAccounts.map((stake) => toAddress(stake.id, { prefix: addressPrefix }));
+
     let unsubEra: () => void | undefined;
     let unsubStaking: () => void | undefined;
-
     (async () => {
-      const addresses = accounts.map((a) => toAddress(a.accountId, { prefix: addressPrefix }));
       unsubEra = await subscribeActiveEra(api, setEra);
       unsubStaking = await subscribeStaking(chainId, api, addresses, setStaking);
     })();
@@ -98,7 +98,7 @@ const InitOperation = ({ api, chainId, accounts, addressPrefix, asset, onResult 
       unsubEra?.();
       unsubStaking?.();
     };
-  }, [api, accounts.length]);
+  }, [api, activeRedeemAccounts.length]);
 
   useEffect(() => {
     const balancesMap = new Map(balances.map((balance) => [balance.accountId, balance]));
@@ -118,7 +118,7 @@ const InitOperation = ({ api, chainId, accounts, addressPrefix, asset, onResult 
     });
 
     setRedeemAccounts(formattedAccounts);
-  }, [staking, era]);
+  }, [staking, era, accounts.length]);
 
   useEffect(() => {
     if (!era) return;

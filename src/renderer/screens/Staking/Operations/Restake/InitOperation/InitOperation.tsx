@@ -80,12 +80,11 @@ const InitOperation = ({ api, chainId, accounts, addressPrefix, asset, onResult 
   const signerBalance = signatoriesBalances.find((b) => b.accountId === activeSignatory?.value.accountId);
 
   useEffect(() => {
-    const selectedAccountIds = activeRestakeAccounts.map((stake) => stake.id);
-    const selectedAccounts = accounts.map((a) => a.accountId).filter((a) => selectedAccountIds.includes(a));
+    const addresses = activeRestakeAccounts.map((stake) => toAddress(stake.id, { prefix: addressPrefix }));
 
     let unsubStaking: () => void | undefined;
     (async () => {
-      unsubStaking = await subscribeStaking(chainId, api, selectedAccounts, setStaking);
+      unsubStaking = await subscribeStaking(chainId, api, addresses, setStaking);
     })();
 
     return () => {
@@ -103,10 +102,14 @@ const InitOperation = ({ api, chainId, accounts, addressPrefix, asset, onResult 
   }, [activeRestakeAccounts.length, balances]);
 
   useEffect(() => {
-    // TODO: check signatory
     if (!Object.keys(staking).length) return;
 
-    const stakedBalances = activeRestakeAccounts.map((a) => unlockingAmount(staking[a.id]?.unlocking));
+    const stakedBalances = activeRestakeAccounts.map((a) => {
+      const address = toAddress(a.id, { prefix: addressPrefix });
+
+      return unlockingAmount(staking[address]?.unlocking);
+    });
+
     const minStakedBalance = stakedBalances.reduce<string>((acc, balance) => {
       if (!balance) return acc;
 
@@ -126,7 +129,7 @@ const InitOperation = ({ api, chainId, accounts, addressPrefix, asset, onResult 
     });
 
     setRestakeAccounts(formattedAccounts);
-  }, [amount, fee, balances]);
+  }, [staking, amount, fee, balances, accounts.length]);
 
   useEffect(() => {
     if (!accountIsMultisig) return;
@@ -182,7 +185,11 @@ const InitOperation = ({ api, chainId, accounts, addressPrefix, asset, onResult 
   };
 
   const validateBalance = (amount: string): boolean => {
-    return activeRestakeAccounts.every((a) => validateRestake(staking[a.id] || '0', amount, asset.precision));
+    return activeRestakeAccounts.every((a) => {
+      const address = toAddress(a.id, { prefix: addressPrefix });
+
+      return validateRestake(staking[address] || '0', amount, asset.precision);
+    });
   };
 
   const validateFee = (): boolean => {
