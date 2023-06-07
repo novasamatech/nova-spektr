@@ -109,7 +109,7 @@ const InitOperation = ({ api, chainId, accounts, addressPrefix, asset, onResult 
     });
 
     setStakeMoreAccounts(formattedAccounts);
-  }, [amount, fee, balances]);
+  }, [amount, fee, balances, accounts.length]);
 
   useEffect(() => {
     if (!accountIsMultisig) return;

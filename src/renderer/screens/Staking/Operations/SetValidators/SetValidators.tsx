@@ -85,10 +85,6 @@ const SetValidators = () => {
   const { api, explorers, addressPrefix, assets, name } = connections[chainId];
   const asset = getRelaychainAsset(assets);
 
-  if (!api?.isConnected) {
-    return <ChainLoader chainName={chainName} />;
-  }
-
   const goToPrevStep = () => {
     if (activeStep === Step.INIT) {
       navigate(Paths.STAKING);
@@ -102,14 +98,37 @@ const SetValidators = () => {
     setTimeout(() => navigate(Paths.STAKING), DEFAULT_TRANSITION);
   };
 
+  if (!api?.isConnected) {
+    return (
+      <BaseModal
+        closeButton
+        contentClass=""
+        panelClass="w-max"
+        isOpen={isValidatorsModalOpen}
+        title={t('staking.validators.title')}
+        onClose={closeValidatorsModal}
+      >
+        <div className="w-[440px] px-5 py-20">
+          <ChainLoader chainName={chainName} />
+        </div>
+      </BaseModal>
+    );
+  }
+
   if (!asset) {
     return (
-      <NoAsset
-        title={t('staking.validators.title')}
-        chainName={name}
+      <BaseModal
+        closeButton
+        contentClass=""
+        panelClass="w-max"
         isOpen={isValidatorsModalOpen}
+        title={t('staking.validators.title')}
         onClose={closeValidatorsModal}
-      />
+      >
+        <div className="w-[440px] px-5 py-20">
+          <NoAsset chainName={name} isOpen={isValidatorsModalOpen} onClose={closeValidatorsModal} />
+        </div>
+      </BaseModal>
     );
   }
 

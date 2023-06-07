@@ -91,7 +91,7 @@ const InitOperation = ({ api, chainId, accounts, asset, addressPrefix, onResult 
     if (formattedAccounts.length === 0) return;
 
     setValidatorsAccounts(formattedAccounts);
-  }, [fee, balances]);
+  }, [fee, balances, accounts.length]);
 
   useEffect(() => {
     if (!accountIsMultisig) return;

@@ -88,15 +88,10 @@ const Redeem = () => {
     getChainById(chainId).then((chain) => setChainName(chain?.name || ''));
   }, []);
 
-  if (!api?.isConnected) {
-    return <ChainLoader chainName={chainName} />;
-  }
-
   const goToPrevStep = () => {
     if (activeStep === Step.INIT) {
       navigate(Paths.STAKING);
     } else {
-      // TODO: reset data
       setActiveStep((prev) => prev - 1);
     }
   };
@@ -106,14 +101,37 @@ const Redeem = () => {
     setTimeout(() => navigate(Paths.STAKING), DEFAULT_TRANSITION);
   };
 
+  if (!api?.isConnected) {
+    return (
+      <BaseModal
+        closeButton
+        contentClass=""
+        panelClass="w-max"
+        isOpen={isRedeemModalOpen}
+        title={<OperationModalTitle title={`${t('staking.redeem.title', { asset: '' })}`} chainId={chainId} />}
+        onClose={closeRedeemModal}
+      >
+        <div className="w-[440px] px-5 py-20">
+          <ChainLoader chainName={chainName} />
+        </div>
+      </BaseModal>
+    );
+  }
+
   if (!asset) {
     return (
-      <NoAsset
-        title={t('staking.redeem.title')}
-        chainName={name}
+      <BaseModal
+        closeButton
+        contentClass=""
+        panelClass="w-max"
         isOpen={isRedeemModalOpen}
+        title={<OperationModalTitle title={`${t('staking.redeem.title', { asset: '' })}`} chainId={chainId} />}
         onClose={closeRedeemModal}
-      />
+      >
+        <div className="w-[440px] px-5 py-20">
+          <NoAsset chainName={name} isOpen={isRedeemModalOpen} onClose={closeRedeemModal} />
+        </div>
+      </BaseModal>
     );
   }
 

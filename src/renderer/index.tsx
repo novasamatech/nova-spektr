@@ -1,11 +1,12 @@
 import { createRoot } from 'react-dom/client';
-import { RouterProvider } from 'react-router-dom';
+import { HashRouter as Router } from 'react-router-dom';
 import log from 'electron-log';
+
+import App from './App';
 
 import './i18n';
 import './index.css';
 import './theme/default.css';
-import { browserRouter } from '@renderer/routes';
 
 log.variables.version = process.env.VERSION;
 log.variables.env = process.env.NODE_ENV;
@@ -25,7 +26,11 @@ if (!container) {
   throw new Error('Root container is missing in index.html');
 }
 
-createRoot(container).render(<RouterProvider router={browserRouter} />);
+createRoot(container).render(
+  <Router>
+    <App />
+  </Router>,
+);
 
 // NOTE: React 18 Strict mode renders twice in DEV mode
 // https://reactjs.org/docs/strict-mode.html#ensuring-reusable-state

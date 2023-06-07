@@ -89,7 +89,7 @@ const InitOperation = ({ api, chainId, accounts, addressPrefix, asset, onResult 
     if (formattedAccounts.length === 0) return;
 
     setDestAccounts(formattedAccounts);
-  }, [fee, balances]);
+  }, [fee, balances, accounts.length]);
 
   useEffect(() => {
     if (!accountIsMultisig) return;
