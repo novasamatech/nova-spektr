@@ -617,7 +617,7 @@ export class Matrix implements ISecureMessenger {
 
   /**
    * Get matrix userId
-   * @return {String | null}
+   * @return {String | undefined}
    */
   get userId(): string | undefined {
     return this.matrixClient.getUserId() || undefined;
@@ -633,7 +633,7 @@ export class Matrix implements ISecureMessenger {
 
   /**
    * Get device session key
-   * @return {String | null}
+   * @return {String | undefined}
    */
   get sessionKey(): string | undefined {
     return this.matrixClient.getDeviceEd25519Key() || undefined;
@@ -643,7 +643,7 @@ export class Matrix implements ISecureMessenger {
    * Get current device cross sign verification status
    * @return {Boolean}
    */
-  get userIsVerified(): boolean {
+  get sessionIsVerified(): boolean {
     if (!this.userId) return false;
 
     const mx = this.matrixClient;
