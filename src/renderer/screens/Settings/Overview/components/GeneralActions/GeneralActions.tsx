@@ -59,7 +59,6 @@ export const GeneralActions = () => {
           <Icon className="text-icon-default row-span-2" name="network" size={36} />
           <BodyText>{t('settings.overview.networkLabel')}</BodyText>
           <HelpText className="text-text-tertiary">{t('settings.overview.networkDetailsLabel')}</HelpText>
-          <Icon className="text-icon-default row-span-2" name="right" size={16} />
         </Link>
       </Plate>
     </div>

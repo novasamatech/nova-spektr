@@ -7,6 +7,7 @@
   --input-text-placeholder: #acacb5;
   --text-positive: #01a63e;
   --text-negative: #f52163;
+  --text-warning: #f68f07;
   --tab-text-accent: #4649f6;
   --action-text: #4649f6;
   --action-text-default: rgba(70, 73, 246, 0.72);
@@ -24,6 +25,7 @@
   --chip-icon: #b8b8bd;
   --icon-button: #fff;
   --icon-alert: rgb(123, 41, 255);
+  --icon-positive: rgb(1, 166, 62);
   --icon-warning: rgb(246, 143, 7);
   --icon-negative: rgb(245, 33, 99);
 

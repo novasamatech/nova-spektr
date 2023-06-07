@@ -60,7 +60,7 @@ export interface ISecureMessenger {
 
   // Properties
   userId: string | undefined;
-  userIsVerified: boolean;
+  sessionIsVerified: boolean;
   userIsLoggedIn: boolean;
   sessionKey: string | undefined;
 }
