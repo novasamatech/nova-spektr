@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="logo" width="460" alt="Nova Spektr logo"> //todo
+  <img src="NovaSpektr_GitHub.png" width="256" alt="Nova Spektr logo">
 </p>
 
 <div align="center">
