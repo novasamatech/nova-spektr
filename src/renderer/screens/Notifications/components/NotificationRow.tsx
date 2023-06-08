@@ -1,5 +1,5 @@
 import { format } from 'date-fns';
-import { TFunction } from 'react-i18next';
+import { TFunction, Trans } from 'react-i18next';
 
 import { BodyText, FootnoteText } from '@renderer/components/ui-redesign';
 import {
@@ -9,7 +9,7 @@ import {
   Notification,
 } from '@renderer/domain/notification';
 import { useI18n } from '@renderer/context/I18nContext';
-import { ChainAddress } from '@renderer/components/ui';
+import { AccountAddress } from '@renderer/components/common';
 
 const NotificationBody = {
   [MultisigNotificationType.ACCOUNT_INVITED]: (n: Notification, t: TFunction) => {
@@ -18,15 +18,24 @@ const NotificationBody = {
     return (
       <BodyText className="flex gap-1.5">
         {t('notifications.details.newMultisigAccountTitle')}
-        <ChainAddress
-          className="w-fit"
-          address={typedNotification.multisigAccountId}
-          name={typedNotification.multisigAccountName}
+        <Trans
+          t={t}
+          i18nKey="notifications.details.newMultisigAccountDescription"
+          values={{
+            threshold: typedNotification.threshold,
+            signatories: typedNotification.signatories.length,
+          }}
+          components={{
+            account: (
+              <AccountAddress
+                size={20}
+                addressFont="text-body"
+                address={typedNotification.multisigAccountId}
+                name={typedNotification.multisigAccountName}
+              />
+            ),
+          }}
         />
-        {t('notifications.details.newMultisigAccountDescription', {
-          threshold: typedNotification.threshold,
-          signatories: typedNotification.signatories.length,
-        })}
       </BodyText>
     );
   },
@@ -47,8 +56,8 @@ const NotificationRow = ({ notification }: Props) => {
 
   return (
     <li className="flex flex-col bg-block-background-default rounded">
-      <div className="h-[48px] pl-5 pr-5 flex items-center justify-items-start">
-        <FootnoteText className="text-text-tertiary pr-1.5">
+      <div className="h-[52px] pl-6 pr-6 flex items-center justify-items-start">
+        <FootnoteText className="text-text-tertiary pr-5.5">
           {format(new Date(dateCreated || 0), 'p', { locale: dateLocale })}
         </FootnoteText>
         {NotificationBody[type](notification, t)}

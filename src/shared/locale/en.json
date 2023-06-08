@@ -198,10 +198,10 @@
   },
   "notifications": {
     "details": {
-      "newMultisigAccountDescription": "with threshold { threshold } and { signatories } signatories",
+      "newMultisigAccountDescription": "<account /> with threshold { threshold } and { signatories } signatories",
       "newMultisigAccountTitle": "New Multisig wallet added:"
     },
-    "noNotificationsDescription": "There are no notifications yet",
+    "noNotificationsDescription": "You don't have notifications yet.",
     "title": "Notifications"
   },
   "onboarding": {
