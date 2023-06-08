@@ -59,7 +59,7 @@ const NotificationRow = ({ notification }: Props) => {
   return (
     <li className="flex flex-col bg-block-background-default rounded">
       <div className="py-4 pl-6 pr-6 flex">
-        <FootnoteText className="text-text-tertiary pr-5.5 pt-[2.5px]">
+        <FootnoteText className="text-text-tertiary pr-5.5 leading-5">
           {format(new Date(dateCreated || 0), 'p', { locale: dateLocale })}
         </FootnoteText>
         {NotificationBody[type](notification, t)}

@@ -200,7 +200,7 @@
     "details": {
       "newMultisigAccountDescription": "New Multisig wallet added: <identicon /> {name}, with threshold { threshold } and { signatories } signatories"
     },
-    "noNotificationsDescription": "You don't have notifications yet.",
+    "noNotificationsDescription": "You don't have notifications yet",
     "title": "Notifications"
   },
   "onboarding": {
