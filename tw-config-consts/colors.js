@@ -6,6 +6,7 @@ module.exports = {
   'chip-text': 'var(--chip-text)',
   'input-text-placeholder': 'var(--input-text-placeholder)',
   'text-positive': 'var(--text-positive)',
+  'text-warning': 'var(--text-warning)',
   'text-negative': 'var(--text-negative)',
   'tab-text-accent': 'var(--tab-text-accent)',
   'action-text': 'var(--action-text)',
@@ -24,6 +25,7 @@ module.exports = {
   'chip-icon': 'var(--chip-icon)',
   'icon-button': 'var(--icon-button)',
   'icon-alert': 'var(--icon-alert)',
+  'icon-positive': 'var(--icon-positive)',
   'icon-warning': 'var(--icon-warning)',
   'icon-negative': 'var(--icon-negative)',
 

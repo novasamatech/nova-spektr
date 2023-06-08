@@ -55,7 +55,7 @@ const Verification = () => {
   const verifyOptions = getVerifyOptions(t);
   const [verifyMethod, setVerifyMethod] = useState<DropdownResult<VerifyMethods>>(verifyOptions[0]);
 
-  const [sessionIsVerified, setSessionIsVerified] = useState(matrix.userIsVerified);
+  const [sessionIsVerified, setSessionIsVerified] = useState(matrix.sessionIsVerified);
   const [verifyFailed, setVerifyFailed] = useState(false);
 
   const {

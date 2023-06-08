@@ -21,6 +21,7 @@ import IconButton from './Buttons/IconButton/IconButton';
 import DropdownButton from './Dropdowns/DropdownButton/DropdownButton';
 import SearchInput from './Inputs/SearchInput';
 import Alert from './Alert/Alert';
+import StatusLabel from './StatusLabel/StatusLabel';
 import {
   LargeTitleText,
   TitleText,
@@ -65,5 +66,6 @@ export {
   MultiSelect,
   DropdownButton,
   Alert,
+  StatusLabel,
   HeaderTitleText,
 };

@@ -6,11 +6,6 @@ import { DropdownButton, SearchInput, SmallTitleText } from '@renderer/component
 import { useI18n } from '@renderer/context/I18nContext';
 import { WalletType } from '@renderer/domain/shared-kernel';
 import { useAccount } from '@renderer/services/account/accountService';
-import {
-  ChainsRecord,
-  WalletGroupItem,
-  MultishardWallet,
-} from '@renderer/components/layout/PrimaryLayout/Wallets/common/types';
 import WalletGroup from '@renderer/components/layout/PrimaryLayout/Wallets/WalletGroup';
 import { useGroupedWallets } from './common/useGroupedWallets';
 import { ID, WalletDS } from '@renderer/services/storage';
@@ -19,6 +14,11 @@ import Vault from '@renderer/screens/Onboarding/Vault/Vault';
 import { useToggle } from '@renderer/shared/hooks';
 import { ButtonDropdownOption } from '@renderer/components/ui-redesign/Dropdowns/DropdownButton/DropdownButton';
 import Paths from '@renderer/routes/paths';
+import {
+  ChainsRecord,
+  WalletGroupItem,
+  MultishardWallet,
+} from '@renderer/components/layout/PrimaryLayout/Wallets/common/types';
 
 type Props = {
   chains: ChainsRecord;

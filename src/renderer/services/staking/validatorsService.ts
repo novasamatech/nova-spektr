@@ -1,6 +1,9 @@
 import { ApiPromise } from '@polkadot/api';
 import { u8aToString } from '@polkadot/util';
 import merge from 'lodash/merge';
+import { Data, Option } from '@polkadot/types';
+import { PalletIdentityRegistration } from '@polkadot/types/lookup';
+import { AccountId32 } from '@polkadot/types/interfaces';
 
 import { Identity, SubIdentity } from '@renderer/domain/identity';
 import { Address, ChainId, EraIndex } from '@renderer/domain/shared-kernel';
@@ -67,14 +70,26 @@ export const useValidators = (): IValidatorsService => {
   };
 
   const getSubIdentities = async (api: ApiPromise, addresses: Address[]): Promise<SubIdentity[]> => {
-    const subIdentities = await api.query.identity.superOf.multi(addresses);
+    const wrappedIdentities = await api.query.identity.superOf.entries();
 
-    return subIdentities.reduce<SubIdentity[]>((acc, identity, index) => {
-      const payload = { sub: addresses[index], parent: addresses[index], subName: '' };
-      if (!identity.isNone) {
-        const [address, rawData] = identity.unwrap();
-        payload.parent = address.toHuman();
-        payload.subName = rawData.isRaw ? u8aToString(rawData.asRaw) : rawData.value.toString();
+    const subIdentities = wrappedIdentities.reduce<Record<Address, [AccountId32, Data]>>(
+      (acc, [storageKey, wrappedIdentity]) => {
+        const identity = wrappedIdentity.unwrap();
+
+        acc[storageKey.args[0].toString()] = identity;
+
+        return acc;
+      },
+      {},
+    );
+
+    return addresses.reduce<SubIdentity[]>((acc, subAddress) => {
+      const payload = { sub: subAddress, parent: subAddress, subName: '' };
+
+      if (subIdentities[subAddress]) {
+        const rawData = subIdentities[subAddress];
+        payload.parent = rawData[0].toHuman();
+        payload.subName = rawData[1].isRaw ? u8aToString(rawData[1].asRaw) : rawData[1].value.toString();
       }
 
       return acc.concat(payload);
@@ -85,11 +100,16 @@ export const useValidators = (): IValidatorsService => {
     api: ApiPromise,
     subIdentities: SubIdentity[],
   ): Promise<Record<Address, Identity>> => {
-    const identityAddresses = subIdentities.map((identity) => identity.parent);
+    const parentAddresses = subIdentities.map((identity) => identity.parent);
 
-    const parentIdentities = await api.query.identity.identityOf.multi(identityAddresses);
+    const wrappedIdentities = await api.query.identity.identityOf.entries();
 
-    return parentIdentities.reduce<Record<Address, Identity>>((acc, identity, index) => {
+    const parentIdentities = parentAddresses.map((a) => wrappedIdentities.find((i) => i[0].args[0].toString() === a));
+
+    return parentIdentities.reduce<Record<Address, Identity>>((acc, wrappedIdentity, index) => {
+      if (!wrappedIdentity) return acc;
+
+      const identity = wrappedIdentity[1] as Option<PalletIdentityRegistration>;
       if (identity.isNone) return acc;
 
       const { parent, sub, subName } = subIdentities[index];
@@ -123,17 +143,17 @@ export const useValidators = (): IValidatorsService => {
   const getNominators = async (api: ApiPromise, stash: Address): Promise<ValidatorMap> => {
     try {
       const data = await api.query.staking.nominators(stash);
+
       if (data.isNone) return {};
 
-      const nominators = data
-        .unwrap()
-        .targets.toArray()
-        .reduce<ValidatorMap>((acc, nominator) => {
-          const address = nominator.toString();
-          acc[address] = { address } as Validator;
+      const nominatorsUnwraped = data.unwrap();
 
-          return acc;
-        }, {});
+      const nominators = nominatorsUnwraped.targets.toArray().reduce<ValidatorMap>((acc, nominator) => {
+        const address = nominator.toString();
+        acc[address] = { address } as Validator;
+
+        return acc;
+      }, {});
 
       const identities = await getIdentities(api, Object.keys(nominators));
 
@@ -159,9 +179,14 @@ export const useValidators = (): IValidatorsService => {
     era: EraIndex,
   ): Promise<Record<Address, { slashed: boolean }>> => {
     const slashDeferDuration = getSlashDeferDuration(api);
-    const slashingSpans = await api.query.staking.slashingSpans.multi(addresses);
+    const slashingSpansWrapped = await api.query.staking.slashingSpans.entries();
+    const slashingSpans = slashingSpansWrapped.filter(([storageKey]) =>
+      addresses.includes(storageKey.args[0].toString()),
+    );
 
-    return slashingSpans.reduce((acc, span, index) => {
+    return slashingSpans.reduce((acc, spanWrapped, index) => {
+      const span = spanWrapped[1];
+
       let validatorIsSlashed = false;
       if (!span.isNone) {
         const { lastNonzeroSlash } = span.unwrap();

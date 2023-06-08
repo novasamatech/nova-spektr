@@ -42,15 +42,15 @@ const ActiveAccountCard = ({ activeAccounts, chains, wallets }: Props) => {
         <Identicon address={toAddress(account.accountId, { prefix: addressPrefix })} background={false} size={28} />
       )}
 
-      <div className="flex flex-col gap-y-1">
-        <BodyText>{(account || multishardWallet)?.name}</BodyText>
+      <div className="flex flex-col gap-y-1 overflow-hidden">
+        <BodyText className="truncate">{(account || multishardWallet)?.name}</BodyText>
         <div className="flex items-center gap-x-1.5">
           <Icon name={GroupIcons[walletType]} className="text-chip-icon" size={14} />
           <CaptionText className="text-chip-text">{t(GroupLabels[walletType])}</CaptionText>
         </div>
       </div>
 
-      <Icon name="down" size={16} className="text-icon-default ml-auto" />
+      <Icon name="down" size={16} className="text-icon-default ml-auto shrink-0" />
     </div>
   );
 };
