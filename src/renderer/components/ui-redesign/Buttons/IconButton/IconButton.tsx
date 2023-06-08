@@ -11,7 +11,7 @@ type Props = {
 } & IconProps;
 
 export const IconButtonStyle =
-  'p-1.5 rounded-full outline-offset-1 text-icon-default' +
+  'p-1.5 rounded-full outline-offset-1 text-icon-default ' +
   'hover:text-icon-hover hover:bg-hover active:bg-hover active:text-tab-icon-active';
 
 const IconButton = ({ onClick, size = 16, className, ariaLabel, ...iconProps }: Props) => (

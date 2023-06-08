@@ -95,7 +95,7 @@ const QrReaderWrapper = ({ className, onResult, countdown, validationError, isMu
     bgVideo: true,
     bgVideoClassName: 'w-[440px] h-[532px]',
     className: cnTw(
-      'z-10 w-[440px] h-[532px] lef-[-100px] top-[-124px]',
+      'z-10 w-[440px] h-[532px] top-[-124px]',
       error === CameraError.INVALID_ERROR && 'blur-[13px]',
       className,
     ),

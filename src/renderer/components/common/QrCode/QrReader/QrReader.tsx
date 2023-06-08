@@ -21,6 +21,8 @@ type Props = {
   size?: number | [number, number];
   cameraId?: string;
   className?: string;
+  bgVideo?: boolean;
+  bgVideoClassName?: string;
   onStart?: () => void;
   onResult: (scanResult: SeedInfo[]) => void;
   onError?: (error: ErrorObject) => void;
@@ -28,7 +30,18 @@ type Props = {
   onCameraList?: (cameras: VideoInput[]) => void;
 };
 
-const QrReader = ({ size = 300, cameraId, className, onCameraList, onResult, onProgress, onStart, onError }: Props) => {
+const QrReader = ({
+  size = 300,
+  cameraId,
+  className,
+  bgVideo,
+  bgVideoClassName,
+  onCameraList,
+  onResult,
+  onProgress,
+  onStart,
+  onError,
+}: Props) => {
   const { t } = useI18n();
 
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -37,10 +50,14 @@ const QrReader = ({ size = 300, cameraId, className, onCameraList, onResult, onP
   const scannerRef = useRef<BrowserQRCodeReader>();
   const controlsRef = useRef<IScannerControls>();
 
+  const bgVideoRef = useRef<HTMLVideoElement>(null);
+  const bgControlsRef = useRef<IScannerControls>();
+
   const status = useRef<Status>(Status.FIRST_FRAME);
   const packets = useRef<Map<string, Uint8Array>>(new Map());
   const progress = useRef({ size: 0, total: 0, collected: new Set() });
   const isComplete = useRef(false);
+  const sizeStyle = Array.isArray(size) ? { width: size[0], height: size[1] } : { width: size, height: size };
 
   const isQrErrorObject = (error: unknown): boolean => {
     if (!error) return false;
@@ -209,6 +226,13 @@ const QrReader = ({ size = 300, cameraId, className, onCameraList, onResult, onP
 
     try {
       controlsRef.current = await scannerRef.current.decodeFromVideoDevice(cameraId, videoRef.current, decodeCallback);
+      if (bgVideoRef.current) {
+        bgControlsRef.current = await scannerRef.current.decodeFromVideoDevice(
+          cameraId,
+          bgVideoRef.current,
+          decodeCallback,
+        );
+      }
       onStart?.();
     } catch (error) {
       throw QR_READER_ERRORS[QrError.DECODE_ERROR];
@@ -255,18 +279,49 @@ const QrReader = ({ size = 300, cameraId, className, onCameraList, onResult, onP
     })();
   }, [cameraId]);
 
+  if (!bgVideo) {
+    return (
+      <video
+        muted
+        autoPlay
+        controls={false}
+        ref={videoRef}
+        data-testid="qr-reader"
+        className={cnTw('object-cover absolute -scale-x-100', className)}
+        {...sizeStyle}
+      >
+        {t('qrReader.videoError')}
+      </video>
+    );
+  }
+
   return (
-    <video
-      muted
-      autoPlay
-      controls={false}
-      ref={videoRef}
-      data-testid="qr-reader"
-      className={cnTw('object-cover -scale-x-100', className)}
-      style={{ width: size + 'px', height: size + 'px' }}
-    >
-      {t('qrReader.videoError')}
-    </video>
+    <>
+      <div className="absolute inset-0 z-10 w-full h-full flex items-center justify-center rounded-[1.75rem] overflow-hidden">
+        <div className=" w-[240px] h-[240px] rounded-2lg overflow-hidden">
+          <video
+            muted
+            autoPlay
+            controls={false}
+            ref={videoRef}
+            data-testid="qr-reader"
+            style={sizeStyle}
+            className={cnTw('object-cover object-center', className)}
+          >
+            {t('qrReader.videoError')}
+          </video>
+        </div>
+      </div>
+      <video
+        muted
+        autoPlay
+        controls={false}
+        ref={bgVideoRef}
+        data-testid="qr-reader"
+        style={sizeStyle}
+        className={cnTw(' object-cover w-full h-full object-center scale-100 blur-[14px] max-w-none', bgVideoClassName)}
+      />
+    </>
   );
 };
 

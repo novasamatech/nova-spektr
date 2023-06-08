@@ -48,7 +48,7 @@ const AddressWithName = ({
   const typeIsAdaptive = type === 'adaptive';
   const addressToShow = type === 'short' ? toShortAddress(currentAddress, symbols) : currentAddress;
 
-  const nameContent = name && <p className={cnTw(addressFont)}>{name}</p>;
+  const nameContent = name && <p className={cnTw('truncate', addressFont)}>{name}</p>;
 
   const addressContent = typeIsAdaptive ? (
     <Truncate className={cnTw(addressFont)} ellipsis="..." start={4} end={4} text={addressToShow} />
@@ -80,7 +80,7 @@ const AddressWithName = ({
       {showIcon && (
         <Identicon address={currentAddress} signType={signType} size={size} background={false} canCopy={canCopy} />
       )}
-      <div>
+      <div className="truncate">
         {firstLine}
         {secondLine}
       </div>

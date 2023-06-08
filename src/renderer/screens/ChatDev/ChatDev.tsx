@@ -113,7 +113,7 @@ const ChatDev = () => {
   return (
     <div className="flex flex-col gap-y-5 m-10">
       <div>
-        <span className="text-lg block">Verification status: {matrix.userIsVerified.toString()}</span>
+        <span className="text-lg block">Verification status: {matrix.sessionIsVerified.toString()}</span>
         <span className="text-lg block">{`Session Key: ${matrix.sessionKey}`}</span>
       </div>
       <ul className="max-w-[650px]">

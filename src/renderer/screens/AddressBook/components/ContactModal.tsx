@@ -97,11 +97,17 @@ const ContactModal = ({ isOpen, onToggle, contact }: Props) => {
   };
 
   const validateAddressExists = (value?: string): boolean => {
-    return !!value && contacts.some((contact) => contact.accountId !== toAccountId(value));
+    return (
+      (isEdit && value?.toLowerCase() === contact.address.toLowerCase()) ||
+      (!!value && contacts.every((contact) => contact.accountId !== toAccountId(value)))
+    );
   };
 
   const validateNameExists = (value?: string): boolean => {
-    return contacts.some((contact) => contact.name.toLowerCase() !== value?.toLowerCase());
+    return (
+      (isEdit && value?.toLowerCase() === contact.name.toLowerCase()) ||
+      contacts.every((contact) => contact.name.toLowerCase() !== value?.toLowerCase())
+    );
   };
 
   return (
@@ -127,10 +133,10 @@ const ContactModal = ({ isOpen, onToggle, contact }: Props) => {
                 value={value}
                 onChange={onChange}
               />
-              <InputHint variant="error" active={Boolean(error)}>
+              <InputHint variant="error" active={error?.type === ErrorType.REQUIRED}>
                 {t('addressBook.addContact.nameRequiredError')}
               </InputHint>
-              <InputHint variant="error" active={error?.type === 'validateAddress'}>
+              <InputHint variant="error" active={error?.type === ErrorType.VALIDATE}>
                 {t('addressBook.addContact.nameExistsError')}
               </InputHint>
             </div>

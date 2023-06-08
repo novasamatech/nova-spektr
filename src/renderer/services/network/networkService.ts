@@ -27,7 +27,7 @@ export const useNetwork = (networkSubscription?: ISubscriptionService<ChainId>):
     throw new Error('=== 🔴 Connections storage in not defined 🔴 ===');
   }
 
-  const { getConnections, addConnections, clearConnections, updateConnection } = connectionStorage;
+  const { getConnections, getConnection, addConnections, clearConnections, updateConnection } = connectionStorage;
 
   const updateConnectionState = (
     chainId: ChainId,
@@ -41,15 +41,16 @@ export const useNetwork = (networkSubscription?: ISubscriptionService<ChainId>):
 
       // TODO: not a good solution, but here we got the most fresh connection
       updateConnection({ ...currentConnection.connection, ...updates }).catch(console.warn);
+      const updatedConnections = {
+        ...rest,
+        connection: { ...currentConnection.connection, ...updates },
+        api: api || currentApi,
+        disconnect: disconnect || currentDisconnect,
+      };
 
       return {
         ...currentConnections,
-        [chainId]: {
-          ...rest,
-          connection: { ...currentConnection.connection, ...updates },
-          api: api || currentApi,
-          disconnect: disconnect || currentDisconnect,
-        },
+        [chainId]: updatedConnections,
       };
     });
   };
@@ -57,6 +58,17 @@ export const useNetwork = (networkSubscription?: ISubscriptionService<ChainId>):
   const disconnectFromNetwork =
     (chainId: ChainId, provider?: ProviderInterface, api?: ApiPromise, timeoutId?: any) =>
     async (switchNetwork: boolean): Promise<void> => {
+      if (!switchNetwork) {
+        const connection = connections[chainId];
+        if (!connection) return;
+
+        updateConnectionState(chainId, {
+          activeNode: undefined,
+          connectionType: ConnectionType.DISABLED,
+          connectionStatus: ConnectionStatus.NONE,
+        });
+      }
+
       await networkSubscription?.unsubscribe(chainId);
 
       if (timeoutId) clearTimeout(timeoutId);
@@ -72,17 +84,6 @@ export const useNetwork = (networkSubscription?: ISubscriptionService<ChainId>):
       } catch (e) {
         console.warn(e);
       }
-
-      if (switchNetwork) return;
-
-      const connection = connections[chainId];
-      if (!connection) return;
-
-      updateConnectionState(chainId, {
-        activeNode: undefined,
-        connectionType: ConnectionType.DISABLED,
-        connectionStatus: ConnectionStatus.NONE,
-      });
     };
 
   const getNewConnections = async (): Promise<Connection[]> => {
@@ -207,10 +208,12 @@ export const useNetwork = (networkSubscription?: ISubscriptionService<ChainId>):
 
     const currentTimeout = AUTO_BALANCE_TIMEOUT * (PROGRESSION_BASE ^ attempt % MAX_ATTEMPTS);
 
-    const timeoutId = setTimeout(() => {
-      const currentConnection = connections[chainId];
+    const timeoutId = setTimeout(async () => {
+      const currentConnection = await getConnection(chainId);
 
-      if (currentConnection.connection.connectionType === ConnectionType.DISABLED) return;
+      if (!currentConnection) return;
+
+      if (attempt !== 0 && currentConnection.connectionType === ConnectionType.DISABLED) return;
 
       const nodes = [...connections[chainId].nodes, ...(connections[chainId].connection.customNodes || [])];
 
