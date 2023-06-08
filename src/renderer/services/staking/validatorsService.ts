@@ -100,15 +100,15 @@ export const useValidators = (): IValidatorsService => {
     api: ApiPromise,
     subIdentities: SubIdentity[],
   ): Promise<Record<Address, Identity>> => {
-    const identityAddresses = subIdentities.map((identity) => identity.parent);
+    const parentAddresses = subIdentities.map((identity) => identity.parent);
 
     const wrappedIdentities = await api.query.identity.identityOf.entries();
 
-    const parentIdentities = wrappedIdentities.filter(([accountId]) =>
-      identityAddresses.includes(accountId.args[0].toString()),
-    );
+    const parentIdentities = parentAddresses.map((a) => wrappedIdentities.find((i) => i[0].args[0].toString() === a));
 
     return parentIdentities.reduce<Record<Address, Identity>>((acc, wrappedIdentity, index) => {
+      if (!wrappedIdentity) return acc;
+
       const identity = wrappedIdentity[1] as Option<PalletIdentityRegistration>;
       if (identity.isNone) return acc;
 
@@ -143,17 +143,17 @@ export const useValidators = (): IValidatorsService => {
   const getNominators = async (api: ApiPromise, stash: Address): Promise<ValidatorMap> => {
     try {
       const data = await api.query.staking.nominators(stash);
+
       if (data.isNone) return {};
 
-      const nominators = data
-        .unwrap()
-        .targets.toArray()
-        .reduce<ValidatorMap>((acc, nominator) => {
-          const address = nominator.toString();
-          acc[address] = { address } as Validator;
+      const nominatorsUnwraped = data.unwrap();
 
-          return acc;
-        }, {});
+      const nominators = nominatorsUnwraped.targets.toArray().reduce<ValidatorMap>((acc, nominator) => {
+        const address = nominator.toString();
+        acc[address] = { address } as Validator;
+
+        return acc;
+      }, {});
 
       const identities = await getIdentities(api, Object.keys(nominators));
 
@@ -179,9 +179,14 @@ export const useValidators = (): IValidatorsService => {
     era: EraIndex,
   ): Promise<Record<Address, { slashed: boolean }>> => {
     const slashDeferDuration = getSlashDeferDuration(api);
-    const slashingSpans = await api.query.staking.slashingSpans.multi(addresses);
+    const slashingSpansWrapped = await api.query.staking.slashingSpans.entries();
+    const slashingSpans = slashingSpansWrapped.filter(([storageKey]) =>
+      addresses.includes(storageKey.args[0].toString()),
+    );
 
-    return slashingSpans.reduce((acc, span, index) => {
+    return slashingSpans.reduce((acc, spanWrapped, index) => {
+      const span = spanWrapped[1];
+
       let validatorIsSlashed = false;
       if (!span.isNone) {
         const { lastNonzeroSlash } = span.unwrap();
