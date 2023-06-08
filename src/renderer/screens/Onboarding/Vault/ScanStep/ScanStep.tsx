@@ -1,6 +1,6 @@
 import { SeedInfo } from '@renderer/components/common/QrCode/QrReader/common/types';
 import { useI18n } from '@renderer/context/I18nContext';
-import QrReader from '../QrReader/QrReader';
+import KeyQrReader from '../KeyQrReader/KeyQrReader';
 import { Button, HeaderTitleText, SmallTitleText } from '@renderer/components/ui-redesign';
 // @ts-ignore
 import onboarding_tutorial from '@video/onboarding_tutorial.mp4';
@@ -21,8 +21,8 @@ const ScanStep = ({ onBack, onNextStep }: Props) => {
         <HeaderTitleText className="mb-10">{t('onboarding.vault.title')}</HeaderTitleText>
         <SmallTitleText className="mb-6">{t('onboarding.vault.scanTitle')}</SmallTitleText>
 
-        <div className="rounded-2lg">
-          <QrReader className="rounded-2lg" size={[432, 288]} onResult={onNextStep} />
+        <div>
+          <KeyQrReader className="rounded-2lg" size={[432, 288]} onResult={onNextStep} />
         </div>
 
         <div className="flex-1 flex justify-between items-end">
