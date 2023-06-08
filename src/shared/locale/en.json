@@ -198,8 +198,7 @@
   },
   "notifications": {
     "details": {
-      "newMultisigAccountDescription": "<account /> with threshold { threshold } and { signatories } signatories",
-      "newMultisigAccountTitle": "New Multisig wallet added:"
+      "newMultisigAccountDescription": "New Multisig wallet added: <identicon /> {name}, with threshold { threshold } and { signatories } signatories"
     },
     "noNotificationsDescription": "You don't have notifications yet.",
     "title": "Notifications"

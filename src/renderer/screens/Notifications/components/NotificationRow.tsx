@@ -9,29 +9,31 @@ import {
   Notification,
 } from '@renderer/domain/notification';
 import { useI18n } from '@renderer/context/I18nContext';
-import { AccountAddress } from '@renderer/components/common';
+import { Identicon } from '@renderer/components/ui';
 
 const NotificationBody = {
   [MultisigNotificationType.ACCOUNT_INVITED]: (n: Notification, t: TFunction) => {
     const typedNotification = n as Notification & MultisigNotification & MultisigAccountInvitedNotification;
 
     return (
-      <BodyText className="flex gap-1.5">
-        {t('notifications.details.newMultisigAccountTitle')}
+      <BodyText className="inline">
         <Trans
           t={t}
           i18nKey="notifications.details.newMultisigAccountDescription"
           values={{
             threshold: typedNotification.threshold,
             signatories: typedNotification.signatories.length,
+            name: typedNotification.multisigAccountName,
           }}
           components={{
-            account: (
-              <AccountAddress
-                size={20}
-                addressFont="text-body"
+            identicon: (
+              <Identicon
+                className="inline-block"
+                buttonClassName="inline align-bottom"
                 address={typedNotification.multisigAccountId}
-                name={typedNotification.multisigAccountName}
+                size={20}
+                background={false}
+                canCopy={true}
               />
             ),
           }}
@@ -56,8 +58,8 @@ const NotificationRow = ({ notification }: Props) => {
 
   return (
     <li className="flex flex-col bg-block-background-default rounded">
-      <div className="h-[52px] pl-6 pr-6 flex items-center justify-items-start">
-        <FootnoteText className="text-text-tertiary pr-5.5">
+      <div className="py-4 pl-6 pr-6 flex">
+        <FootnoteText className="text-text-tertiary pr-5.5 pt-[2.5px]">
           {format(new Date(dateCreated || 0), 'p', { locale: dateLocale })}
         </FootnoteText>
         {NotificationBody[type](notification, t)}
