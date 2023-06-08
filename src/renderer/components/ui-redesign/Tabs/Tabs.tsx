@@ -18,16 +18,20 @@ type Props = {
 const Tabs = ({ items, tabClassName, panelClassName = 'mt-4', onChange }: Props) => {
   return (
     <Tab.Group onChange={onChange}>
-      <Tab.List className="p-0.5 flex bg-redesign-shade-5 border-redesign-shade-8 rounded-[5px] gap-1">
+      <Tab.List className="p-0.5 flex bg-tab-background rounded-md gap-x-1">
         {items.map(({ id, title }) => (
           <Tab
             key={id}
             className={cnTw(
-              'w-full py-1 px-2 rounded text-redesign-shade-32 ui-selected:shadow-tab ui-selected:text-shade-100 ui-selected:bg-white uppercase flex items-center justify-center',
+              'w-full py-1.5 px-2 rounded bg-inherit ui-selected:shadow-card-shadow ui-selected:bg-white flex items-center justify-center',
               tabClassName,
             )}
           >
-            <SmallTitleText fontWeight="semibold" className="w-full" align="center">
+            <SmallTitleText
+              fontWeight="semibold"
+              className="text-text-secondary ui-selected:text-text-primary flex items-center"
+              align="center"
+            >
               {title}
             </SmallTitleText>
           </Tab>

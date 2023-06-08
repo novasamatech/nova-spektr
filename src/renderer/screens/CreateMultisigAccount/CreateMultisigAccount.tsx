@@ -11,7 +11,6 @@ import { useAccount } from '@renderer/services/account/accountService';
 import { useMatrix } from '@renderer/context/MatrixContext';
 import { Message } from '@renderer/components/common';
 import { DropdownOption, DropdownResult } from '@renderer/components/ui/Dropdowns/common/types';
-import SelectContactsModal from './SelectContactsModal';
 import Settings from '../Settings';
 
 type MultisigAccountForm = {
@@ -37,7 +36,7 @@ const CreateMultisigAccount = () => {
   const accounts = getLiveAccounts();
 
   const [isSuccessMessageOpen, toggleSuccessMessage] = useToggle();
-  const [isAddSignatoryModalOpen, toggleAddSignatoryModal] = useToggle();
+  const [, toggleAddSignatoryModal] = useToggle();
   const [inProgress, toggleInProgress] = useToggle();
 
   const [signatories, setSignatories] = useState<Signatory[]>([]);
@@ -108,10 +107,6 @@ const CreateMultisigAccount = () => {
   const hasTwoSignatories = signatories.length > 1;
 
   const signatoriesAreValid = hasOwnSignatory && hasTwoSignatories && !accountAlreadyExists;
-
-  const onSelectContacts = (signatories: Signatory[]) => {
-    setSignatories((s) => s.concat(signatories));
-  };
 
   if (!isLoggedIn) {
     return (
@@ -238,13 +233,6 @@ const CreateMultisigAccount = () => {
           </div>
         </Plate>
       </div>
-
-      <SelectContactsModal
-        isOpen={isAddSignatoryModalOpen}
-        signatories={signatories}
-        onSelect={onSelectContacts}
-        onClose={toggleAddSignatoryModal}
-      />
 
       <Message
         isOpen={isSuccessMessageOpen}

@@ -65,10 +65,15 @@
     "closeButton": "Close modal window"
   },
   "createMultisigAccount": {
+    "addContact": "Add new +",
     "addContactsButton": "Add selected",
     "addSignatoryButton": "Add signatory",
+    "alertText": "To create a multisig wallet, you need to select at least one of your wallet",
+    "alertTitle": "Select wallet",
     "backButton": "Back",
+    "contactsTab": "Contacts",
     "continueButton": "Continue",
+    "create": "Create",
     "errorMessage": "Something went wrong",
     "nameDescription": "Give a name to your multisig account",
     "nameLabel": "Account",
@@ -77,10 +82,16 @@
     "searchContactPlaceholder": "Search for an account or contact...",
     "signatoriesDescription": "Add signatories to your multisig account",
     "signatoriesLabel": "Signatories",
-    "successMessage": "Multisig account created successfully",
+    "signatoryTitle": "Select signatories",
+    "successMessage": "Wallet added",
     "thresholdDescription": "Set the threshold of signatories required to sign a transaction.",
+    "thresholdHint": "Threshold of signatories required to sign a transaction.",
     "thresholdName": "Threshold",
-    "title": "Create multisig account"
+    "thresholdPlaceholder": "Select threshold",
+    "title": "Create Multisig Wallet",
+    "walletFormTitle": "Manage your wallet",
+    "walletNameLabel": "Wallet name",
+    "walletsTab": "Your wallets"
   },
   "dropdown": {
     "chooseOptionLabel": "Choose an option"
