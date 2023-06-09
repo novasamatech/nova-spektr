@@ -1,13 +1,14 @@
 import { Icon } from '@renderer/components/ui';
+import { BodyText } from '@renderer/components/ui-redesign';
 import { useI18n } from '@renderer/context/I18nContext';
 
 const EmptyNotifications = () => {
   const { t } = useI18n();
 
   return (
-    <div className="flex flex-col items-center justify-center mt-10 mb-5">
-      <Icon as="img" name="noResults" size={380} />
-      <p className="text-neutral text-2xl font-bold mb-10">{t('notifications.noNotificationsDescription')}</p>
+    <div className="flex flex-col h-full items-center justify-center">
+      <Icon as="img" name="emptyList" size={178} />
+      <BodyText className="text-text-tertiary">{t('notifications.noNotificationsDescription')}</BodyText>
     </div>
   );
 };

@@ -3,9 +3,8 @@ import { Trans } from 'react-i18next';
 import { useI18n } from '@renderer/context/I18nContext';
 import { FootnoteText, InfoLink } from '@renderer/components/ui-redesign';
 
-// TODO: use real links in future
-const TERMS_AND_CONDITIONS = 'https://link_1.com';
-const PRIVACY_POLICY = 'https://link_2.com';
+const TERMS_AND_CONDITIONS = 'https://novaspektr.io/terms';
+const PRIVACY_POLICY = 'https://novaspektr.io/privacy';
 
 const PrivacyPolicy = () => {
   const { t } = useI18n();
