@@ -20,6 +20,7 @@ import AddressWithExplorers from '@renderer/components/common/AddressWithExplore
 import { useToggle } from '@renderer/shared/hooks';
 import ContactModal from '@renderer/screens/AddressBook/components/ContactModal';
 import { WalletsTabItem } from './WalletsTabItem';
+import { Icon } from '@renderer/components/ui';
 
 type ContactWithId = { id: number } & Contact;
 export type WalletContact = ContactWithId & { walletName?: string; chainId?: ChainId };
@@ -154,7 +155,7 @@ const AddSignatory = ({ onSelect, isEditing }: Props) => {
           value={query}
           onChange={setQuery}
         />
-        <Button variant="text" onClick={toggleContactModalOpen}>
+        <Button variant="text" suffixElement={<Icon name="add" size={16} />} onClick={toggleContactModalOpen}>
           {t('createMultisigAccount.addContact')}
         </Button>
       </div>

@@ -65,7 +65,7 @@
     "closeButton": "Закрыть окно"
   },
   "createMultisigAccount": {
-    "addContact": "Добавить новый +",
+    "addContact": "Добавить новый",
     "addContactsButton": "Добавить выбранные",
     "addSignatoryButton": "Добавить подписанта",
     "alertText": "Для создания мультсиг кошелька необходимо выбрать хотя бы один из своих кошельков",
