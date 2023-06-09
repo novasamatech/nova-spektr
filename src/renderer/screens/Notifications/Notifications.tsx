@@ -23,13 +23,13 @@ const Notifications = () => {
     <div className="h-full flex flex-col items-start relative bg-main-app-background">
       <Header title={t('notifications.title')} />
 
-      <div className="overflow-y-auto flex-1 mx-auto w-full pl-6 pt-4">
+      <div className="overflow-y-auto flex-1 mx-auto w-[736px] pt-4 flex flex-col gap-4">
         {notifications.length ? (
           Object.entries(groupedNotifications)
             .sort(sortByDate)
             .map(([date, notifies]) => (
-              <section className="w-fit mt-6" key={date}>
-                <FootnoteText className="text-text-tertiary mb-3 ml-2">{date}</FootnoteText>
+              <section className="w-full flex flex-col gap-1" key={date}>
+                <FootnoteText className="text-text-tertiary ml-2 h-8 flex items-center">{date}</FootnoteText>
                 <ul className="flex flex-col gap-y-1.5">
                   {notifies
                     .sort((a, b) => (b.dateCreated || 0) - (a.dateCreated || 0))
