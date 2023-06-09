@@ -35,12 +35,14 @@ const AddressBook = () => {
         </div>
       </Header>
 
-      <section className="overflow-y-auto mt-4 flex flex-col gap-y-4 w-[546px] mx-auto h-full">
-        {isEmpty ? (
-          <EmptyContacts onAddContact={toggleAddContactModal} />
-        ) : (
-          <ContactList contacts={contacts} query={query} onAddContact={toggleAddContactModal} />
-        )}
+      <section className="overflow-y-auto mt-4 w-full h-full">
+        <div className="flex flex-col gap-y-4 w-[546px] mx-auto h-full">
+          {isEmpty ? (
+            <EmptyContacts onAddContact={toggleAddContactModal} />
+          ) : (
+            <ContactList contacts={contacts} query={query} onAddContact={toggleAddContactModal} />
+          )}
+        </div>
       </section>
 
       <ContactModal isOpen={isAddContactModalShown} onToggle={toggleAddContactModal} />
