@@ -8,10 +8,10 @@
 [![GitHub release (latest by date)](https://img.shields.io/github/v/release/novasamatech/nova-spektr)](https://github.com/novasamatech/nova-spektr/releases)
 [![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](https://github.com/novasamatech/nova-spektr/blob/dev/LICENSE.md)
 <br />
-[![Twitter URL](https://img.shields.io/twitter/url?style=social&url=https%3A%2F%2Ftwitter.com)](todo)
-[![Telegram](https://img.shields.io/badge/Telegram-gray?logo=telegram)](todo)
-[![Medium](https://img.shields.io/badge/Medium-gray?logo=medium)](todo)
-[![YouTube](https://img.shields.io/youtube/channel/views/UCiP-xl8q-W4b4HiZh8N11Ew)](https://www.youtube.com/watch?v=yx1mY299cCM&list=PLpZ2RdLApAYvjXl-Ja2_Dv9g62JtLignp)
+[![Twitter URL](https://img.shields.io/twitter/url?style=social&url=https%3A%2F%2Ftwitter.com)](https://twitter.com/NovaSpektr)
+[![Telegram](https://img.shields.io/badge/Telegram-gray?logo=telegram)](https://t.me/NovaSpektr)
+[![Medium](https://img.shields.io/badge/Medium-gray?logo=medium)](https://medium.com/@NovaSpektr)
+[![YouTube](https://img.shields.io/youtube/channel/views/UCrWNtfLVBu1GwZjVeyedwIg?style=social)](https://www.youtube.com/@NovaSpektr)
 
 </div>
 
@@ -163,8 +163,8 @@ Contributing guide is described in the [CONTRIBUTING.md](https://github.com/nova
 
 # Support
 Check the official support channels:
-1. wiki (todo)
-2. telegram group (todo)
+1. wiki (https://docs.novaspektr.io)
+2. [Telegram group](https://t.me/NovaSpektr)
 3. GitHub [issues](https://github.com/orgs/novasamatech/projects/4)
 
 All issues are being tracked in the [Nova Spektr Support project](https://github.com/orgs/novasamatech/projects/4)

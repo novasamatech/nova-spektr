@@ -30,7 +30,7 @@ describe('screens/Settings/Matrix/PrivacyPolicy', () => {
     expect(privacy).toBeInTheDocument();
     expect(footer).toBeInTheDocument();
     expect(links).toHaveLength(2);
-    expect(links[0]).toHaveAttribute('href', 'https://link_1.com');
-    expect(links[1]).toHaveAttribute('href', 'https://link_2.com');
+    expect(links[0]).toHaveAttribute('href', 'https://novaspektr.io/terms');
+    expect(links[1]).toHaveAttribute('href', 'https://novaspektr.io/privacy');
   });
 });
