@@ -23,7 +23,7 @@ const Tabs = ({ items, tabClassName, panelClassName = 'mt-4', onChange }: Props)
           <Tab
             key={id}
             className={cnTw(
-              'w-full py-1.5 px-2 rounded bg-inherit ui-selected:shadow-card-shadow ui-selected:bg-white flex items-center justify-center',
+              'w-full py-1.5 px-2 rounded bg-transparent ui-selected:shadow-card-shadow ui-selected:bg-white flex items-center justify-center',
               tabClassName,
             )}
           >
