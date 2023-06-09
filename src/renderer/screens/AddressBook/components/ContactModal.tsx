@@ -1,4 +1,4 @@
-import { Controller, FieldErrors, SubmitHandler, useForm } from 'react-hook-form';
+import { Controller, SubmitHandler, useForm } from 'react-hook-form';
 import { useEffect } from 'react';
 
 import { Icon, Identicon } from '@renderer/components/ui';
@@ -22,26 +22,6 @@ type Props = {
   contact?: Contact;
 };
 
-const getButtonText = (errors: FieldErrors<ContactForm>, isEdit: boolean): string => {
-  if (errors.address && errors.name) {
-    return 'addressBook.addContact.typeAddressAndNameButton';
-  }
-
-  if (errors.address) {
-    return 'addressBook.addContact.typeAddressButton';
-  }
-
-  if (errors.name) {
-    return 'addressBook.addContact.typeNameButton';
-  }
-
-  if (isEdit) {
-    return 'addressBook.editContact.saveContactButton';
-  }
-
-  return 'addressBook.addContact.addContactButton';
-};
-
 const initialFormValues = { name: '', matrixId: '', address: '' };
 
 const ContactModal = ({ isOpen, onToggle, contact }: Props) => {
@@ -56,7 +36,7 @@ const ContactModal = ({ isOpen, onToggle, contact }: Props) => {
   const {
     control,
     handleSubmit,
-    formState: { isValid, errors },
+    formState: { isValid },
     reset,
   } = useForm<ContactForm>({
     mode: 'onChange',
@@ -97,11 +77,17 @@ const ContactModal = ({ isOpen, onToggle, contact }: Props) => {
   };
 
   const validateAddressExists = (value?: string): boolean => {
-    return !!value && contacts.some((contact) => contact.accountId !== toAccountId(value));
+    return (
+      (isEdit && value?.toLowerCase() === contact.address.toLowerCase()) ||
+      (!!value && contacts.every((contact) => contact.accountId !== toAccountId(value)))
+    );
   };
 
   const validateNameExists = (value?: string): boolean => {
-    return contacts.some((contact) => contact.name.toLowerCase() !== value?.toLowerCase());
+    return (
+      (isEdit && value?.toLowerCase() === contact.name.toLowerCase()) ||
+      contacts.every((contact) => contact.name.toLowerCase() !== value?.toLowerCase())
+    );
   };
 
   return (
@@ -109,28 +95,30 @@ const ContactModal = ({ isOpen, onToggle, contact }: Props) => {
       title={t(isEdit ? 'addressBook.editContact.title' : 'addressBook.addContact.title')}
       closeButton
       isOpen={isOpen}
+      headerClass="py-[15px] px-5"
       contentClass="px-5 pb-4 w-[440px]"
       onClose={handleClose}
     >
-      <form className="flex flex-col gap-4" onSubmit={handleSubmit(onSubmit)}>
+      <form className="flex flex-col pt-4 gap-4" onSubmit={handleSubmit(onSubmit)}>
         <Controller
           name="name"
           control={control}
           rules={{ required: true, validate: validateNameExists }}
           render={({ field: { value, onChange }, fieldState: { error } }) => (
-            <div>
+            <div className="flex flex-col gap-2">
               <Input
                 className="w-full"
+                wrapperClass="h-[42px]"
                 label={t('addressBook.addContact.nameLabel')}
                 placeholder={t('addressBook.addContact.namePlaceholder')}
                 invalid={Boolean(error)}
                 value={value}
                 onChange={onChange}
               />
-              <InputHint variant="error" active={Boolean(error)}>
+              <InputHint variant="error" active={error?.type === ErrorType.REQUIRED}>
                 {t('addressBook.addContact.nameRequiredError')}
               </InputHint>
-              <InputHint variant="error" active={error?.type === 'validateAddress'}>
+              <InputHint variant="error" active={error?.type === ErrorType.VALIDATE}>
                 {t('addressBook.addContact.nameExistsError')}
               </InputHint>
             </div>
@@ -141,9 +129,10 @@ const ContactModal = ({ isOpen, onToggle, contact }: Props) => {
           control={control}
           rules={{ validate: validateMatrixLogin }}
           render={({ field: { value, onChange }, fieldState: { error } }) => (
-            <div>
+            <div className="flex flex-col gap-2">
               <Input
                 className="w-full"
+                wrapperClass="h-[42px]"
                 label={t('addressBook.addContact.matrixIdLabel')}
                 placeholder={t('addressBook.addContact.matrixIdPlaceholder')}
                 invalid={Boolean(error)}
@@ -162,12 +151,13 @@ const ContactModal = ({ isOpen, onToggle, contact }: Props) => {
           control={control}
           rules={{ required: true, validate: { validateAddress, validateAddressExists } }}
           render={({ field: { value, onChange }, fieldState: { error } }) => (
-            <div>
+            <div className="flex flex-col gap-2">
               <Input
                 prefixElement={
                   value && !error ? <Identicon address={value} background={false} /> : <Icon name="emptyIdenticon" />
                 }
-                className="w-full ml-1"
+                wrapperClass="h-[42px]"
+                className="w-full ml-2"
                 label={t('addressBook.addContact.accountIdLabel')}
                 placeholder={t('addressBook.addContact.accountIdPlaceholder')}
                 invalid={Boolean(error)}
@@ -193,7 +183,7 @@ const ContactModal = ({ isOpen, onToggle, contact }: Props) => {
         </InputHint>
 
         <Button className="ml-auto" type="submit" disabled={!isValid}>
-          {t(getButtonText(errors, isEdit))}
+          {t(isEdit ? 'addressBook.editContact.saveContactButton' : 'addressBook.editContact.addContactButton')}
         </Button>
       </form>
     </BaseModal>

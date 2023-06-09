@@ -163,6 +163,8 @@ const KeyQrReader = ({ size = 300, className, onResult }: Props) => {
     );
   }
 
+  const sizeStyle = Array.isArray(size) ? { width: size[0], height: size[1] } : { width: size, height: size };
+
   return (
     <>
       {cameraState === CameraState.LOADING && (
@@ -190,32 +192,29 @@ const KeyQrReader = ({ size = 300, className, onResult }: Props) => {
       )}
 
       <div className="flex flex-col gap-4">
-        <div className={cn('relative', isCameraPending && 'hidden', className)}>
-          <div className="h-[288px] overflow-hidden flex items-center justify-center rounded">
-            <QrReader
-              size={size}
-              className={className}
-              cameraId={activeCamera?.value}
-              onStart={() => setCameraState(CameraState.ACTIVE)}
-              onCameraList={onCameraList}
-              onProgress={setProgress}
-              onResult={onScanResult}
-              onError={onError}
-            />
-          </div>
+        <div className={cn('relative overflow-hidden', isCameraPending && 'hidden', className)} style={sizeStyle}>
+          <QrReader
+            size={size}
+            cameraId={activeCamera?.value}
+            bgVideo={true}
+            className="relative top-[-24px] scale-y-[1.125] -scale-x-[1.125]"
+            onStart={() => setCameraState(CameraState.ACTIVE)}
+            onCameraList={onCameraList}
+            onProgress={setProgress}
+            onResult={onScanResult}
+            onError={onError}
+          />
 
-          {isScanComplete ? (
-            <>
-              <div className="absolute inset-0 backdrop-blur-sm rounded-2lg after:absolute after:inset-0 after:bg-white/50" />
-              <Icon
-                size={100}
-                name="checkmarkCutout"
-                className="absolute left-1/2 top-6 -translate-x-1/2 text-success"
-              />
-            </>
-          ) : (
-            <Icon name="qrFrame" size={240} className="absolute left-1/2 top-6 -translate-x-1/2 text-white" />
-          )}
+          <div className="absolute inset-0 flex items-center justify-center w-full h-full">
+            {isScanComplete ? (
+              <>
+                <div className="backdrop-blur-sm rounded-2lg after:absolute after:inset-0 after:bg-white/50" />
+                <Icon size={100} name="checkmarkCutout" className="text-success" />
+              </>
+            ) : (
+              <Icon name="qrFrame" size={240} className="text-white z-20" />
+            )}
+          </div>
         </div>
 
         {availableCameras.length > 1 && (

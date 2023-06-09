@@ -221,7 +221,7 @@ const AddSignatory = ({ onSelect, isEditing }: Props) => {
           <Tabs items={tabItems} tabClassName="flex-inline" />
         ) : (
           <div className="flex flex-col gap-y-2">
-            <FootnoteText>
+            <FootnoteText className="text-text-tertiary">
               {t('createMultisigAccount.walletsTab')} <span className="ml-2">{selectedWallets.length}</span>
             </FootnoteText>
             <ul className="gap-y-2">
@@ -239,7 +239,7 @@ const AddSignatory = ({ onSelect, isEditing }: Props) => {
                 ))}
             </ul>
 
-            <FootnoteText>
+            <FootnoteText className="text-text-tertiary">
               {t('createMultisigAccount.contactsTab')} <span className="ml-2">{selectedContacts.length}</span>
             </FootnoteText>
             <ul className="gap-y-2">
