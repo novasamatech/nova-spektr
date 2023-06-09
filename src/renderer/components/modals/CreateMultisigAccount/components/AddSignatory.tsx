@@ -17,9 +17,9 @@ import Tabs, { TabItem } from '@renderer/components/ui-redesign/Tabs/Tabs';
 import { useChains } from '@renderer/services/network/chainsService';
 import { ChainsRecord } from '@renderer/components/layout/PrimaryLayout/Wallets/common/types';
 import AddressWithExplorers from '@renderer/components/common/AddressWithExplorers/AddressWithExplorers';
-import { WalletsTabItem } from '@renderer/screens/CreateMultisigAccount/components/WalletsTabItem';
 import { useToggle } from '@renderer/shared/hooks';
 import ContactModal from '@renderer/screens/AddressBook/components/ContactModal';
+import { WalletsTabItem } from './WalletsTabItem';
 
 type ContactWithId = { id: number } & Contact;
 export type WalletContact = ContactWithId & { walletName?: string; chainId?: ChainId };
@@ -119,7 +119,7 @@ const AddSignatory = ({ onSelect, isEditing }: Props) => {
   const walletsTab = (
     <ul className="mt-4 gap-y-2">
       {walletList.map(({ id, accountId, name, walletName, chainId }) => (
-        <li key={id} className="py-1.5">
+        <li key={id + 'wallets'} className="py-1.5">
           <Controller
             name="wallets"
             control={control}
@@ -127,6 +127,7 @@ const AddSignatory = ({ onSelect, isEditing }: Props) => {
             render={({ field: { onChange, value } }) => (
               <Checkbox
                 value={id}
+                checked={selectedWallets.includes(id)}
                 disabled={isAccountSelected(id, selectedWallets, walletList)}
                 onChange={(event) => onSelectAccount(event, value, onChange, 'wallets')}
               >
@@ -159,7 +160,7 @@ const AddSignatory = ({ onSelect, isEditing }: Props) => {
       </div>
       <ul className="mt-4 gap-y-2">
         {searchedContactList.map(({ id, accountId, name }) => (
-          <li key={id} className="py-1.5">
+          <li key={id + 'contacts'} className="py-1.5">
             <Controller
               name="contacts"
               control={control}
@@ -167,6 +168,7 @@ const AddSignatory = ({ onSelect, isEditing }: Props) => {
               render={({ field: { onChange, value } }) => (
                 <Checkbox
                   value={id}
+                  checked={selectedContacts.includes(id)}
                   disabled={isAccountSelected(id, selectedContacts, contactList)}
                   onChange={(event) => onSelectAccount(event, value, onChange, 'contacts')}
                 >
@@ -211,7 +213,7 @@ const AddSignatory = ({ onSelect, isEditing }: Props) => {
 
   return (
     <>
-      <section className="flex flex-col px-5 py-4 flex-1 bg-input-background-disabled h-full">
+      <section className="flex flex-col px-5 py-4 flex-1 bg-input-background-disabled h-full overflow-y-scroll">
         <SmallTitleText className="py-2">{t('createMultisigAccount.signatoryTitle')}</SmallTitleText>
 
         {isEditing ? (

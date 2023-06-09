@@ -1,4 +1,5 @@
 import { render, screen } from '@testing-library/react';
+import noop from 'lodash/noop';
 
 import { TEST_ACCOUNT_ID } from '@renderer/shared/utils/constants';
 import CreateMultisigAccount from './CreateMultisigAccount';
@@ -16,6 +17,24 @@ jest.mock('@renderer/services/account/accountService', () => ({
   }),
 }));
 
+jest.mock('@renderer/services/contact/contactService', () => ({
+  useContact: jest.fn().mockReturnValue({
+    getLiveContacts: jest.fn().mockReturnValue([]),
+  }),
+}));
+
+jest.mock('@renderer/services/contact/contactService', () => ({
+  useContact: jest.fn().mockReturnValue({
+    getLiveContacts: jest.fn().mockReturnValue([]),
+  }),
+}));
+
+jest.mock('@renderer/services/wallet/walletService', () => ({
+  useWallet: jest.fn().mockReturnValue({
+    getLiveWallets: jest.fn().mockReturnValue([]),
+  }),
+}));
+
 jest.mock('@renderer/context/MatrixContext', () => ({
   useMatrix: jest.fn().mockReturnValue({
     matrix: {
@@ -27,9 +46,7 @@ jest.mock('@renderer/context/MatrixContext', () => ({
     isLoggedIn: true,
   }),
 }));
-
-jest.mock('./SelectContactsModal', () => () => 'SelectContactsModal');
-jest.mock('../Settings', () => ({ Matrix: () => () => 'Matrix' }));
+jest.mock('@renderer/screens/Settings', () => ({ Matrix: () => () => 'Matrix' }));
 
 jest.mock('react-router-dom', () => ({
   useNavigate: jest.fn(),
@@ -37,7 +54,7 @@ jest.mock('react-router-dom', () => ({
 
 describe('screen/CreateMultisigAccount', () => {
   test('should render component', () => {
-    render(<CreateMultisigAccount />);
+    render(<CreateMultisigAccount isOpen={true} onClose={noop} />);
 
     const text = screen.getByText('createMultisigAccount.title');
     expect(text).toBeInTheDocument();

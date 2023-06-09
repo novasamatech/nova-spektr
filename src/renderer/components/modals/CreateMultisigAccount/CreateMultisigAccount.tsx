@@ -1,30 +1,28 @@
 import { useState } from 'react';
 import { SubmitHandler } from 'react-hook-form';
-import { useNavigate } from 'react-router-dom';
 
 import { BaseModal, HeaderTitleText, StatusLabel } from '@renderer/components/ui-redesign';
 import { useI18n } from '@renderer/context/I18nContext';
 import { useMatrix } from '@renderer/context/MatrixContext';
 import { useAccount } from '@renderer/services/account/accountService';
-import { MultisigAccountForm, WalletForm } from '@renderer/screens/CreateMultisigAccount/components/WalletForm';
 import { Signatory } from '@renderer/domain/signatory';
-import AddSignatory from '@renderer/screens/CreateMultisigAccount/components/AddSignatory';
 import Settings from '@renderer/screens/Settings';
 import { createMultisigAccount, MultisigAccount } from '@renderer/domain/account';
 import { useToggle } from '@renderer/shared/hooks';
 import OperationResult from '@renderer/components/ui-redesign/OperationResult/OperationResult';
+import { MultisigAccountForm, WalletForm } from './components/WalletForm';
+import AddSignatory from './components/AddSignatory';
 
 type Props = {
   isOpen: boolean;
   onClose: () => void;
 };
 
-export const AddMultisigAccountModal = ({ isOpen, onClose }: Props) => {
+const CreateMultisigAccount = ({ isOpen, onClose }: Props) => {
   const { t } = useI18n();
   const { matrix, isLoggedIn } = useMatrix();
   const { getLiveAccounts, addAccount } = useAccount();
   const accounts = getLiveAccounts();
-  const navigate = useNavigate();
 
   const [isEditing, toggleIsEditing] = useToggle(true);
   const [isResultModlaOpen, toggleResultModal] = useToggle();
@@ -33,7 +31,7 @@ export const AddMultisigAccountModal = ({ isOpen, onClose }: Props) => {
 
   const [signatories, setSignatories] = useState<Signatory[]>([]);
 
-  if (!isLoggedIn) {
+  if (isOpen && !isLoggedIn) {
     return (
       <Settings.Matrix
         title={<h1 className="font-semibold text-2xl text-neutral"> {t('createMultisigAccount.title')}</h1>}
@@ -45,7 +43,7 @@ export const AddMultisigAccountModal = ({ isOpen, onClose }: Props) => {
     if (!isEditing) {
       toggleIsEditing();
     } else {
-      navigate(-1);
+      onClose();
     }
   };
 
@@ -83,7 +81,7 @@ export const AddMultisigAccountModal = ({ isOpen, onClose }: Props) => {
   };
 
   const modalTitle = (
-    <div className="flex justify-between px-5 py-3 w-1/2 bg-white">
+    <div className="flex justify-between px-5 py-3 w-[472px] bg-white">
       <HeaderTitleText className="py-[3px]">{t('createMultisigAccount.title')}</HeaderTitleText>
       <StatusLabel title={matrix.userId || ''} variant="success" />
     </div>
@@ -92,7 +90,7 @@ export const AddMultisigAccountModal = ({ isOpen, onClose }: Props) => {
   return (
     <>
       <BaseModal
-        isOpen={isOpen}
+        isOpen={isOpen && !isResultModlaOpen}
         title={modalTitle}
         closeButton
         headerClass="bg-input-background-disabled"
@@ -121,3 +119,5 @@ export const AddMultisigAccountModal = ({ isOpen, onClose }: Props) => {
     </>
   );
 };
+
+export default CreateMultisigAccount;

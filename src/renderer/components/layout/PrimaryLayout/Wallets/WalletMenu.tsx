@@ -18,7 +18,7 @@ import {
   WalletGroupItem,
   MultishardWallet,
 } from '@renderer/components/layout/PrimaryLayout/Wallets/common/types';
-import { AddMultisigAccountModal } from '@renderer/screens/CreateMultisigAccount/components/AddMultisigAccountModal';
+import CreateMultisigAccount from '@renderer/components/modals/CreateMultisigAccount/CreateMultisigAccount';
 
 type Props = {
   chains: ChainsRecord;
@@ -118,7 +118,7 @@ const WalletMenu = ({ children, chains, wallets }: PropsWithChildren<Props>) => 
 
       <WatchOnly isOpen={isWatchOnlyModalOpen} onClose={toggleWatchOnlyModal} onComplete={toggleWatchOnlyModal} />
       <Vault isOpen={isVaultModalOpen} onClose={toggleVaultModal} onComplete={toggleVaultModal} />
-      <AddMultisigAccountModal isOpen={isMultisigModalOpen} onClose={toggleMultisigModalOpen} />
+      <CreateMultisigAccount isOpen={isMultisigModalOpen} onClose={toggleMultisigModalOpen} />
     </>
   );
 };
