@@ -19,9 +19,10 @@ import { Transaction, TransactionType } from '@renderer/domain/transaction';
 import { createTxMetadata } from '@renderer/shared/utils/substrate';
 import { ITransactionService, HashData, ExtrinsicResultParams } from './common/types';
 import { toAccountId } from '@renderer/shared/utils/address';
-import { decodeDispatchError, getMaxWeight, isOldMultisigPallet } from './common/utils';
+import { decodeDispatchError, getMaxWeight, isControllerMissing, isOldMultisigPallet } from './common/utils';
 
 type BalancesTransferArgs = Parameters<typeof methods.balances.transfer>[0];
+type BondWithoutContollerArgs = Omit<Parameters<typeof methods.staking.bond>[0], 'controller'>;
 
 // TODO change to substrate txwrapper method when it'll update
 const transferAllowDeath = (
@@ -35,6 +36,23 @@ const transferAllowDeath = (
         args,
         name: 'transferAllowDeath',
         pallet: 'balances',
+      },
+      ...info,
+    },
+    options,
+  );
+
+const bondWithoutController = (
+  args: BondWithoutContollerArgs,
+  info: BaseTxInfo,
+  options: OptionsWithMeta,
+): UnsignedTransaction =>
+  defineMethod(
+    {
+      method: {
+        args,
+        name: 'bond',
+        pallet: 'staking',
       },
       ...info,
     },
@@ -147,16 +165,25 @@ export const useTransaction = (): ITransactionService => {
         options,
       );
     },
-    [TransactionType.BOND]: (transaction, info, options) => {
-      return methods.staking.bond(
-        {
-          controller: transaction.args.controller,
-          value: transaction.args.value,
-          payee: transaction.args.payee,
-        },
-        info,
-        options,
-      );
+    [TransactionType.BOND]: (transaction, info, options, api) => {
+      return isControllerMissing(api)
+        ? bondWithoutController(
+            {
+              value: transaction.args.value,
+              payee: transaction.args.payee,
+            },
+            info,
+            options,
+          )
+        : methods.staking.bond(
+            {
+              controller: transaction.args.controller,
+              value: transaction.args.value,
+              payee: transaction.args.payee,
+            },
+            info,
+            options,
+          );
     },
     [TransactionType.UNSTAKE]: (transaction, info, options) => {
       return methods.staking.unbond(
@@ -256,7 +283,10 @@ export const useTransaction = (): ITransactionService => {
     // controller arg removed from bond but changes not released yet
     // https://github.com/paritytech/substrate/pull/14039
     // @ts-ignore
-    [TransactionType.BOND]: ({ controller, value, payee }, api) => api.tx.staking.bond(controller, value, payee),
+    [TransactionType.BOND]: ({ controller, value, payee }, api) =>
+      isControllerMissing(api)
+        ? api.tx.staking.bond(value, payee) // @ts-ignore
+        : api.tx.staking.bond(controller, value, payee),
     [TransactionType.UNSTAKE]: ({ value }, api) => api.tx.staking.unbond(value),
     [TransactionType.STAKE_MORE]: ({ maxAdditional }, api) => api.tx.staking.bondExtra(maxAdditional),
     [TransactionType.RESTAKE]: ({ value }, api) => api.tx.staking.rebond(value),
@@ -469,12 +499,17 @@ export const useTransaction = (): ITransactionService => {
 
     if (method === 'bond' && section === 'staking') {
       transaction.type = TransactionType.BOND;
-      transaction.args.controller = decoded.args[0].toString();
-      transaction.args.value = decoded.args[1].toString();
-      let payee = decoded.args[2].toString();
+      let index = 0;
+
+      if (!isControllerMissing(api)) {
+        transaction.args.controller = decoded.args[index++].toString();
+      }
+
+      transaction.args.value = decoded.args[index++].toString();
+      let payee = decoded.args[index++].toString();
 
       try {
-        payee = JSON.parse(decoded.args[2].toString());
+        payee = JSON.parse(payee);
       } catch (e) {
         console.warn(e);
       }

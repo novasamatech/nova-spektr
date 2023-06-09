@@ -2,7 +2,7 @@ import { ApiPromise } from '@polkadot/api';
 import { SpRuntimeDispatchError } from '@polkadot/types/lookup';
 
 import { Transaction } from '@renderer/domain/transaction';
-import { MAX_WEIGHT, OLD_MULTISIG_ARGS_AMOUNT } from './constants';
+import { MAX_WEIGHT, OLD_MULTISIG_ARGS_AMOUNT, BOND_WITHOUT_CONTROLLER_ARGS_AMOUNT } from './constants';
 
 export const decodeDispatchError = (error: SpRuntimeDispatchError, api: ApiPromise): string => {
   let errorInfo = error.toString();
@@ -21,6 +21,9 @@ export const decodeDispatchError = (error: SpRuntimeDispatchError, api: ApiPromi
 
 export const isOldMultisigPallet = (api: ApiPromise): boolean =>
   api.tx.multisig.asMulti.meta.args.length === OLD_MULTISIG_ARGS_AMOUNT;
+
+export const isControllerMissing = (api: ApiPromise): boolean =>
+  api.tx.staking.bond.meta.args.length === BOND_WITHOUT_CONTROLLER_ARGS_AMOUNT;
 
 export const getMaxWeight = (api: ApiPromise, transaction: Transaction) => {
   const maxWeight = transaction.args.maxWeight || MAX_WEIGHT;
