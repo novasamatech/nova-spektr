@@ -3,8 +3,8 @@ import { Trans } from 'react-i18next';
 import { useI18n } from '@renderer/context/I18nContext';
 import { InfoLink } from '@renderer/components/ui';
 
-const MATRIX = 'https://link_1.com';
-const SMP = 'https://link_2.com';
+const MATRIX = 'https://matrix.org/';
+const SMP = 'https://docs.novaspektr.io/multisig-accounts/spektr-matrix-protocol';
 
 const InfoSection = () => {
   const { t } = useI18n();
