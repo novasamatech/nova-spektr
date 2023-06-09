@@ -21,6 +21,7 @@ type Props = {
   background?: boolean;
   canCopy?: boolean;
   className?: string;
+  buttonClassName?: string;
 };
 
 const Identicon = ({
@@ -31,6 +32,7 @@ const Identicon = ({
   background = true,
   canCopy = true,
   className,
+  buttonClassName,
 }: Props) => {
   const wrapperRef = useRef<HTMLDivElement>(null);
 
@@ -83,7 +85,11 @@ const Identicon = ({
     <div ref={wrapperRef} className={className}>
       <button
         type="button"
-        className={cnTw('relative flex justify-center items-center cursor-copy', background && 'bg-white rounded-full')}
+        className={cnTw(
+          'relative flex justify-center items-center cursor-copy',
+          background && 'bg-white rounded-full',
+          buttonClassName,
+        )}
         style={{ width: size, height: size }}
         data-testid={`identicon-${address}`}
         onClick={onCopyToClipboard}
