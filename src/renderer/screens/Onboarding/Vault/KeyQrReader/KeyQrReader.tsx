@@ -197,7 +197,7 @@ const KeyQrReader = ({ size = 300, className, onResult }: Props) => {
             size={size}
             cameraId={activeCamera?.value}
             bgVideo={true}
-            className="relative top-[-24px] scale-[1.125]"
+            className="relative top-[-24px] scale-y-[1.125] -scale-x-[1.125]"
             onStart={() => setCameraState(CameraState.ACTIVE)}
             onCameraList={onCameraList}
             onProgress={setProgress}
