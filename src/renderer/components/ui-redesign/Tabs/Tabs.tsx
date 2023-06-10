@@ -37,11 +37,9 @@ const Tabs = ({ items, tabClassName, panelClassName = 'mt-4', onChange }: Props)
           </Tab>
         ))}
       </Tab.List>
-      <Tab.Panels>
+      <Tab.Panels className={panelClassName}>
         {items.map(({ id, panel }) => (
-          <Tab.Panel key={id} className={panelClassName}>
-            {panel}
-          </Tab.Panel>
+          <Tab.Panel key={id}>{panel}</Tab.Panel>
         ))}
       </Tab.Panels>
     </Tab.Group>

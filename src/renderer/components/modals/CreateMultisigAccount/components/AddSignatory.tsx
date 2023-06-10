@@ -1,6 +1,7 @@
 import { ChangeEvent, useEffect, useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { keyBy } from 'lodash';
+import cn from 'classnames';
 
 import { useI18n } from '@renderer/context/I18nContext';
 import { Signatory } from '@renderer/domain/signatory';
@@ -21,6 +22,7 @@ import { useToggle } from '@renderer/shared/hooks';
 import ContactModal from '@renderer/screens/AddressBook/components/ContactModal';
 import { WalletsTabItem } from './WalletsTabItem';
 import { Icon } from '@renderer/components/ui';
+import EmptyContacts from '@renderer/screens/AddressBook/components/EmptyState/EmptyContacts';
 
 type ContactWithIndex = { index: number } & Contact;
 export type WalletContact = ContactWithIndex & { walletName?: string; chainId?: ChainId };
@@ -129,7 +131,7 @@ const AddSignatory = ({ onSelect, isEditing }: Props) => {
   };
 
   const walletsTab = (
-    <ul className="mt-4 gap-y-2">
+    <ul className="gap-y-2">
       {walletList.map(({ index, accountId, name, walletName, chainId }) => (
         <li key={index + 'wallets'} className="py-1.5">
           <Controller
@@ -157,46 +159,54 @@ const AddSignatory = ({ onSelect, isEditing }: Props) => {
     </ul>
   );
 
+  const hasContacts = Boolean(contactList.length);
+
   const contactsTab = (
     <div>
-      <div className="flex items-center gap-x-4 flex-1">
+      <div className="flex items-center gap-x-4 flex-1 mb-4">
         <SearchInput
           placeholder={t('createMultisigAccount.searchContactPlaceholder')}
-          wrapperClass="flex-1"
+          wrapperClass={cn('flex-1')}
           value={query}
           onChange={setQuery}
         />
-        <Button variant="text" suffixElement={<Icon name="add" size={16} />} onClick={toggleContactModalOpen}>
-          {t('createMultisigAccount.addContact')}
-        </Button>
+        {hasContacts && (
+          <Button variant="text" suffixElement={<Icon name="add" size={16} />} onClick={toggleContactModalOpen}>
+            {t('createMultisigAccount.addContact')}
+          </Button>
+        )}
       </div>
-      <ul className="mt-4 gap-y-2">
-        {searchedContactList.map(({ index, accountId, name }) => (
-          <li key={index + 'contacts'} className="py-1.5">
-            <Controller
-              name="contacts"
-              control={control}
-              rules={{ required: true }}
-              render={({ field: { onChange, value } }) => (
-                <Checkbox
-                  value={index}
-                  checked={selectedContacts.includes(index)}
-                  disabled={isAccountSelected(index, selectedContacts, contactList)}
-                  onChange={(event) => onSelectAccount(event, value, onChange, 'contacts')}
-                >
-                  <AddressWithExplorers
-                    accountId={accountId}
-                    name={name}
-                    size={20}
-                    showIcon
-                    addressFont="text-footnote"
-                  />
-                </Checkbox>
-              )}
-            />
-          </li>
-        ))}
-      </ul>
+      {hasContacts ? (
+        <ul className="gap-y-2">
+          {searchedContactList.map(({ index, accountId, name }) => (
+            <li key={index + 'contacts'} className="py-0.5">
+              <Controller
+                name="contacts"
+                control={control}
+                rules={{ required: true }}
+                render={({ field: { onChange, value } }) => (
+                  <Checkbox
+                    value={index}
+                    checked={selectedContacts.includes(index)}
+                    disabled={isAccountSelected(index, selectedContacts, contactList)}
+                    onChange={(event) => onSelectAccount(event, value, onChange, 'contacts')}
+                  >
+                    <AddressWithExplorers
+                      accountId={accountId}
+                      name={name}
+                      size={20}
+                      showIcon
+                      addressFont="text-footnote"
+                    />
+                  </Checkbox>
+                )}
+              />
+            </li>
+          ))}
+        </ul>
+      ) : (
+        <EmptyContacts onAddContact={toggleContactModalOpen} />
+      )}
     </div>
   );
 
@@ -225,11 +235,11 @@ const AddSignatory = ({ onSelect, isEditing }: Props) => {
 
   return (
     <>
-      <section className="flex flex-col px-5 py-4 flex-1 bg-input-background-disabled h-full overflow-y-scroll">
-        <SmallTitleText className="py-2">{t('createMultisigAccount.signatoryTitle')}</SmallTitleText>
+      <section className="flex flex-col px-5 py-4 flex-1 bg-input-background-disabled h-full">
+        <SmallTitleText className="py-2 mb-4">{t('createMultisigAccount.signatoryTitle')}</SmallTitleText>
 
         {isEditing ? (
-          <Tabs items={tabItems} tabClassName="flex-inline" />
+          <Tabs items={tabItems} panelClassName="mt-4 overflow-y-scroll" tabClassName="flex-inline" />
         ) : (
           <div className="flex flex-col gap-y-2">
             <FootnoteText className="text-text-tertiary">
