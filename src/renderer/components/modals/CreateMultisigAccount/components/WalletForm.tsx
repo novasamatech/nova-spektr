@@ -25,12 +25,21 @@ type Props = {
   signatories: Signatory[];
   accounts: (Account | MultisigAccount)[];
   isEditing: boolean;
+  isLoading: boolean;
   onContinue: () => void;
   onCreateAccount: SubmitHandler<MultisigAccountForm>;
   onGoBack: () => void;
 };
 
-export const WalletForm = ({ signatories, accounts, onCreateAccount, onContinue, isEditing, onGoBack }: Props) => {
+export const WalletForm = ({
+  signatories,
+  accounts,
+  onCreateAccount,
+  onContinue,
+  isEditing,
+  isLoading,
+  onGoBack,
+}: Props) => {
   const { t } = useI18n();
 
   const {
@@ -123,7 +132,7 @@ export const WalletForm = ({ signatories, accounts, onCreateAccount, onContinue,
               {t('createMultisigAccount.continueButton')}
             </Button>
           ) : (
-            <Button key="create" disabled={!canContinue} type="submit">
+            <Button key="create" disabled={!canContinue || isLoading} type="submit">
               {t('createMultisigAccount.create')}
             </Button>
           )}

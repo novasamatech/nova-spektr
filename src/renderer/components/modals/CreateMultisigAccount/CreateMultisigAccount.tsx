@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { ComponentProps, useState } from 'react';
 import { SubmitHandler } from 'react-hook-form';
 
 import { BaseModal, HeaderTitleText, StatusLabel } from '@renderer/components/ui-redesign';
@@ -13,6 +13,8 @@ import OperationResult from '@renderer/components/ui-redesign/OperationResult/Op
 import { MultisigAccountForm, WalletForm } from './components/WalletForm';
 import AddSignatory from './components/AddSignatory';
 
+type OperationResultProps = Pick<ComponentProps<typeof OperationResult>, 'variant' | 'description'>;
+
 type Props = {
   isOpen: boolean;
   onClose: () => void;
@@ -26,6 +28,7 @@ const CreateMultisigAccount = ({ isOpen, onClose }: Props) => {
 
   const [isEditing, toggleIsEditing] = useToggle(true);
   const [isResultModlaOpen, toggleResultModal] = useToggle();
+  const [isLoading, toggleLoading] = useToggle();
   const [error, setError] = useState('');
   const [name, setName] = useState('');
 
@@ -49,6 +52,8 @@ const CreateMultisigAccount = ({ isOpen, onClose }: Props) => {
 
   const onCreateAccount: SubmitHandler<MultisigAccountForm> = async ({ name, threshold }) => {
     setName(name);
+    toggleLoading();
+    toggleResultModal();
 
     const inviter = signatories.find((s) => s.matrixId === matrix.userId);
     if (!inviter || !threshold) return;
@@ -73,11 +78,17 @@ const CreateMultisigAccount = ({ isOpen, onClose }: Props) => {
       });
       await addAccount<MultisigAccount>({ ...mstAccount, matrixRoomId });
 
-      toggleResultModal();
+      toggleLoading();
       setTimeout(toggleResultModal, 2000);
     } catch (error: any) {
+      toggleLoading();
       setError(error?.message || t('createMultisigAccount.errorMessage'));
     }
+
+    // reset back to initial state
+    toggleIsEditing();
+    setSignatories([]);
+    onClose();
   };
 
   const modalTitle = (
@@ -86,6 +97,16 @@ const CreateMultisigAccount = ({ isOpen, onClose }: Props) => {
       <StatusLabel title={matrix.userId || ''} variant="success" />
     </div>
   );
+
+  const getResultProps = (): OperationResultProps => {
+    if (isLoading) {
+      return { variant: 'loading' };
+    } else if (error) {
+      return { variant: 'error', description: error };
+    } else {
+      return { variant: 'success', description: t('createMultisigAccount.successMessage') };
+    }
+  };
 
   return (
     <>
@@ -102,6 +123,7 @@ const CreateMultisigAccount = ({ isOpen, onClose }: Props) => {
           signatories={signatories}
           accounts={accounts}
           isEditing={isEditing}
+          isLoading={isLoading}
           onContinue={toggleIsEditing}
           onGoBack={goBack}
           onCreateAccount={onCreateAccount}
@@ -109,13 +131,7 @@ const CreateMultisigAccount = ({ isOpen, onClose }: Props) => {
         <AddSignatory isEditing={isEditing} onSelect={setSignatories} />
       </BaseModal>
 
-      <OperationResult
-        variant={error ? 'error' : 'success'}
-        title={name}
-        isOpen={isResultModlaOpen}
-        description={!error ? t('createMultisigAccount.successMessage') : undefined}
-        onClose={toggleResultModal}
-      />
+      <OperationResult {...getResultProps()} title={name} isOpen={isResultModlaOpen} onClose={toggleResultModal} />
     </>
   );
 };
