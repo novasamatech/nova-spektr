@@ -22,13 +22,20 @@ import ContactModal from '@renderer/screens/AddressBook/components/ContactModal'
 import { WalletsTabItem } from './WalletsTabItem';
 import { Icon } from '@renderer/components/ui';
 
-type ContactWithId = { id: number } & Contact;
-export type WalletContact = ContactWithId & { walletName?: string; chainId?: ChainId };
+type ContactWithIndex = { index: number } & Contact;
+export type WalletContact = ContactWithIndex & { walletName?: string; chainId?: ChainId };
 
 type ContactsForm = {
   contacts: number[];
   wallets: number[];
 };
+
+const SignatoryTabs = {
+  WALLETS: 'wallets',
+  CONTACTS: 'contacts',
+} as const;
+
+type SignatoryTabsType = (typeof SignatoryTabs)[keyof typeof SignatoryTabs];
 
 type Props = {
   onSelect: (signatories: Signatory[]) => void;
@@ -44,7 +51,7 @@ const AddSignatory = ({ onSelect, isEditing }: Props) => {
   const { getChainsData } = useChains();
 
   const [query, setQuery] = useState('');
-  const [contactList, setContactList] = useState<ContactWithId[]>([]);
+  const [contactList, setContactList] = useState<ContactWithIndex[]>([]);
   const [walletList, setWalletList] = useState<WalletContact[]>([]);
   const [chains, setChains] = useState<ChainsRecord>({});
   const [isContactModalOpen, toggleContactModalOpen] = useToggle();
@@ -59,7 +66,7 @@ const AddSignatory = ({ onSelect, isEditing }: Props) => {
 
   useEffect(() => {
     const addressBookContacts = contacts.filter((c) => c.matrixId);
-    setContactList(addressBookContacts.map((contact, index) => ({ ...contact, id: index })));
+    setContactList(addressBookContacts.map((contact, index) => ({ ...contact, index })));
 
     const walletContacts = accounts
       .filter((a) => a.signingType !== SigningType.WATCH_ONLY)
@@ -68,7 +75,7 @@ const AddSignatory = ({ onSelect, isEditing }: Props) => {
         address: toAddress(a.accountId),
         accountId: a.accountId,
         matrixId: matrix.userId,
-        id: index,
+        index,
         chainId: a.chainId,
         walletName: a.walletId ? wallets.find((w) => w.id === a.walletId)?.name : undefined,
       }));
@@ -91,15 +98,19 @@ const AddSignatory = ({ onSelect, isEditing }: Props) => {
     event: ChangeEvent<HTMLInputElement>,
     value: number[],
     onChange: (indexes: number[]) => void,
-    tab: 'wallets' | 'contacts',
+    tab: SignatoryTabsType,
   ) => {
     const selectedAccount = Number(event.target.value);
     const newValues = event.target.checked ? value.concat(selectedAccount) : value.filter((v) => v !== selectedAccount);
 
     onChange(newValues);
 
-    const wallets = walletList.filter((c) => (tab === 'wallets' ? newValues : selectedWallets).includes(c.id));
-    const contacts = contactList.filter((c) => (tab === 'contacts' ? newValues : selectedContacts).includes(c.id));
+    const wallets = walletList.filter((c) =>
+      (tab === SignatoryTabs.WALLETS ? newValues : selectedWallets).includes(c.index),
+    );
+    const contacts = contactList.filter((c) =>
+      (tab === SignatoryTabs.CONTACTS ? newValues : selectedContacts).includes(c.index),
+    );
 
     onSelect([...wallets, ...contacts]);
   };
@@ -107,7 +118,7 @@ const AddSignatory = ({ onSelect, isEditing }: Props) => {
   const isAccountSelected = (
     accountIdx: number,
     selection: number[],
-    list: (ContactWithId | WalletContact)[],
+    list: (ContactWithIndex | WalletContact)[],
   ): boolean => {
     return selection.some((index) => {
       const isCurrentIndex = accountIdx === index;
@@ -119,17 +130,17 @@ const AddSignatory = ({ onSelect, isEditing }: Props) => {
 
   const walletsTab = (
     <ul className="mt-4 gap-y-2">
-      {walletList.map(({ id, accountId, name, walletName, chainId }) => (
-        <li key={id + 'wallets'} className="py-1.5">
+      {walletList.map(({ index, accountId, name, walletName, chainId }) => (
+        <li key={index + 'wallets'} className="py-1.5">
           <Controller
             name="wallets"
             control={control}
             rules={{ required: true }}
             render={({ field: { onChange, value } }) => (
               <Checkbox
-                value={id}
-                checked={selectedWallets.includes(id)}
-                disabled={isAccountSelected(id, selectedWallets, walletList)}
+                value={index}
+                checked={selectedWallets.includes(index)}
+                disabled={isAccountSelected(index, selectedWallets, walletList)}
                 onChange={(event) => onSelectAccount(event, value, onChange, 'wallets')}
               >
                 <WalletsTabItem
@@ -160,17 +171,17 @@ const AddSignatory = ({ onSelect, isEditing }: Props) => {
         </Button>
       </div>
       <ul className="mt-4 gap-y-2">
-        {searchedContactList.map(({ id, accountId, name }) => (
-          <li key={id + 'contacts'} className="py-1.5">
+        {searchedContactList.map(({ index, accountId, name }) => (
+          <li key={index + 'contacts'} className="py-1.5">
             <Controller
               name="contacts"
               control={control}
               rules={{ required: true }}
               render={({ field: { onChange, value } }) => (
                 <Checkbox
-                  value={id}
-                  checked={selectedContacts.includes(id)}
-                  disabled={isAccountSelected(id, selectedContacts, contactList)}
+                  value={index}
+                  checked={selectedContacts.includes(index)}
+                  disabled={isAccountSelected(index, selectedContacts, contactList)}
                   onChange={(event) => onSelectAccount(event, value, onChange, 'contacts')}
                 >
                   <AddressWithExplorers
@@ -191,7 +202,7 @@ const AddSignatory = ({ onSelect, isEditing }: Props) => {
 
   const tabItems: TabItem[] = [
     {
-      id: 'wallets',
+      id: SignatoryTabs.WALLETS,
       title: (
         <>
           {t('createMultisigAccount.walletsTab')}
@@ -201,7 +212,7 @@ const AddSignatory = ({ onSelect, isEditing }: Props) => {
       panel: walletsTab,
     },
     {
-      id: 'contacts',
+      id: SignatoryTabs.CONTACTS,
       title: (
         <>
           {t('createMultisigAccount.contactsTab')}
@@ -226,9 +237,9 @@ const AddSignatory = ({ onSelect, isEditing }: Props) => {
             </FootnoteText>
             <ul className="gap-y-2">
               {walletList
-                .filter((w) => selectedWallets.includes(w.id))
-                .map(({ id, accountId, name, walletName, chainId }) => (
-                  <li key={id} className="py-1.5 flex items-center gap-x-2">
+                .filter((w) => selectedWallets.includes(w.index))
+                .map(({ index, accountId, name, walletName, chainId }) => (
+                  <li key={index} className="py-1.5 flex items-center gap-x-2">
                     <WalletsTabItem
                       name={name}
                       accountId={accountId}
@@ -244,9 +255,9 @@ const AddSignatory = ({ onSelect, isEditing }: Props) => {
             </FootnoteText>
             <ul className="gap-y-2">
               {contactList
-                .filter((w) => selectedContacts.includes(w.id))
-                .map(({ id, accountId, name }) => (
-                  <li key={id} className="py-1.5">
+                .filter((w) => selectedContacts.includes(w.index))
+                .map(({ index, accountId, name }) => (
+                  <li key={index} className="py-1.5">
                     <AddressWithExplorers
                       accountId={accountId}
                       name={name}
