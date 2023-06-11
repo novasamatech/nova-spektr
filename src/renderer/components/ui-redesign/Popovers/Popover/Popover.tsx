@@ -2,6 +2,7 @@ import { Popover as Popup, Transition } from '@headlessui/react';
 import { Fragment, PropsWithChildren, ReactNode, useId, useRef, useState } from 'react';
 
 import cnTw from '@renderer/shared/utils/twMerge';
+import { useDebounce } from '@renderer/shared/hooks';
 
 type Props = {
   content: ReactNode;
@@ -21,6 +22,10 @@ const Popover = ({
   const ref = useRef<HTMLDivElement>(null);
   const [isOpen, setIsOpen] = useState(false);
 
+  // prevents modal flickering when just passing across popup button
+  // and gives user more time to move cursor to Popup.Panel
+  const debouncedIsOpen = useDebounce(isOpen, 200);
+
   return (
     <Popup className="relative">
       <div
@@ -36,7 +41,7 @@ const Popover = ({
         {children}
       </div>
       <Transition
-        show={isOpen}
+        show={debouncedIsOpen}
         as={Fragment}
         enter="transition ease-out duration-200"
         enterFrom="opacity-0 translate-y-1"
@@ -52,6 +57,8 @@ const Popover = ({
             'absolute z-20 rounded-md bg-token-container-background border border-token-container-border shadow-card-shadow',
             position,
           )}
+          onMouseEnter={() => setIsOpen(true)}
+          onMouseLeave={() => setIsOpen(false)}
         >
           <div className={cnTw('relative', contentClass)}>{content}</div>
         </Popup.Panel>
