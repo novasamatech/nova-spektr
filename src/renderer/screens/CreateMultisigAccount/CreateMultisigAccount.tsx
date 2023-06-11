@@ -11,8 +11,8 @@ import { useAccount } from '@renderer/services/account/accountService';
 import { useMatrix } from '@renderer/context/MatrixContext';
 import { Message } from '@renderer/components/common';
 import { DropdownOption, DropdownResult } from '@renderer/components/ui/Dropdowns/common/types';
+import { Matrix } from '@renderer/screens/Settings';
 import SelectContactsModal from './SelectContactsModal';
-import Settings from '../Settings';
 
 type MultisigAccountForm = {
   name: string;
@@ -115,9 +115,7 @@ const CreateMultisigAccount = () => {
 
   if (!isLoggedIn) {
     return (
-      <Settings.Matrix
-        title={<h1 className="font-semibold text-2xl text-neutral"> {t('createMultisigAccount.title')}</h1>}
-      />
+      <Matrix title={<h1 className="font-semibold text-2xl text-neutral"> {t('createMultisigAccount.title')}</h1>} />
     );
   }
 

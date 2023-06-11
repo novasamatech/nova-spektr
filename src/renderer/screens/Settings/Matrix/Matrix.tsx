@@ -13,7 +13,7 @@ type Props = {
   title?: ReactNode;
 };
 
-const Matrix = ({ title }: Props) => {
+export const Matrix = ({ title }: Props) => {
   const { t } = useI18n();
   const { isLoggedIn } = useMatrix();
 
@@ -50,5 +50,3 @@ const Matrix = ({ title }: Props) => {
     </div>
   );
 };
-
-export default Matrix;

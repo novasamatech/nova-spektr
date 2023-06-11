@@ -1,5 +1,5 @@
 import AddressBook from './AddressBook/AddressBook';
-import Settings from './Settings';
+import { Matrix, Overview, Networks } from './Settings';
 import CameraDev from './CameraDev/CameraDev';
 import ChatDev from './ChatDev/ChatDev';
 import Onboarding from './Onboarding';
@@ -12,7 +12,7 @@ import CreateMultisigAccount from './CreateMultisigAccount/CreateMultisigAccount
 import Notifications from './Notifications/Notifications';
 
 export default {
-  Settings,
+  Settings: { Matrix, Overview, Networks },
   Balances,
   AddressBook,
   Operations,

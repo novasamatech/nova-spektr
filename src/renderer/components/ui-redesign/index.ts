@@ -7,6 +7,7 @@ import Button from './Buttons/Button/Button';
 import ButtonLink from './Buttons/ButtonLink/ButtonLink';
 import ButtonBack from './Buttons/ButtonBack/ButtonBack';
 import BaseModal from './Modals/BaseModal/BaseModal';
+import ConfirmModal from './Modals/ConfirmModal/ConfirmModal';
 import InfoPopover from './Popovers/InfoPopover/InfoPopover';
 import Popover from './Popovers/Popover/Popover';
 import InfoLink from './InfoLink/InfoLink';
@@ -20,7 +21,9 @@ import MenuPopover from './Popovers/MenuPopover/MenuPopover';
 import IconButton from './Buttons/IconButton/IconButton';
 import DropdownButton from './Dropdowns/DropdownButton/DropdownButton';
 import SearchInput from './Inputs/SearchInput';
+import Accordion from './Accordion/Accordion';
 import Alert from './Alert/Alert';
+import Counter from './Counter/Counter';
 import StatusLabel from './StatusLabel/StatusLabel';
 import {
   LargeTitleText,
@@ -46,6 +49,7 @@ export {
   ButtonBack,
   IconButton,
   BaseModal,
+  ConfirmModal,
   InfoPopover,
   MenuPopover,
   Popover,
@@ -66,6 +70,8 @@ export {
   MultiSelect,
   DropdownButton,
   Alert,
+  Accordion,
+  Counter,
   StatusLabel,
   HeaderTitleText,
 };

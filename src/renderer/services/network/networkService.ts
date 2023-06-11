@@ -277,7 +277,7 @@ export const useNetwork = (networkSubscription?: ISubscriptionService<ChainId>):
     }
   };
 
-  const validateRpcNode = (genesisHash: ChainId, rpcUrl: string): Promise<RpcValidation> => {
+  const validateRpcNode = (chainId: ChainId, rpcUrl: string): Promise<RpcValidation> => {
     return new Promise((resolve) => {
       const provider = new WsProvider(rpcUrl);
 
@@ -285,7 +285,7 @@ export const useNetwork = (networkSubscription?: ISubscriptionService<ChainId>):
         let isNetworkMatch = false;
         try {
           const api = await ApiPromise.create({ provider, throwOnConnect: true, throwOnUnknown: true });
-          isNetworkMatch = genesisHash === api.genesisHash.toHex();
+          isNetworkMatch = chainId === api.genesisHash.toHex();
 
           api.disconnect().catch(console.warn);
         } catch (error) {

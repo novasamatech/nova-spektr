@@ -1,7 +1,7 @@
 import { render, screen } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 
-import Matrix from './Matrix';
+import { Matrix } from './Matrix';
 import { useMatrix } from '@renderer/context/MatrixContext';
 
 jest.mock('@renderer/context/I18nContext', () => ({

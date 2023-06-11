@@ -23,8 +23,8 @@ const routesConfig: RouteObject[] = [
       { path: Paths.NOTIFICATIONS, element: <Screens.Notifications /> },
       {
         path: Paths.SETTINGS,
+        element: <Screens.Settings.Overview />,
         children: [
-          { index: true, element: <Screens.Settings.Overview /> },
           { path: Paths.NETWORK, element: <Screens.Settings.Networks /> },
           { path: Paths.MATRIX, element: <Screens.Settings.Matrix /> },
         ],

@@ -13,7 +13,6 @@ import Button from './Buttons/Button/Button';
 import ButtonLink from './Buttons/ButtonLink/ButtonLink';
 import ButtonBack from './Buttons/ButtonBack/ButtonBack';
 import BaseModal from './Modals/BaseModal/BaseModal';
-import ConfirmModal from './Modals/ConfirmModal/ConfirmModal';
 import Stepper from './Stepper/Stepper';
 import LanguageSwitcher from './LanguageSwitcher/LanguageSwitcher';
 import Carousel from './Carousel/Carousel';
@@ -45,7 +44,6 @@ export {
   ButtonLink,
   ButtonBack,
   BaseModal,
-  ConfirmModal,
   Stepper,
   LanguageSwitcher,
   Dropdown,
