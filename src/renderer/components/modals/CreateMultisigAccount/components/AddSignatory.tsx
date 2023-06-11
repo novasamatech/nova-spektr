@@ -23,6 +23,7 @@ import ContactModal from '@renderer/screens/AddressBook/components/ContactModal'
 import { WalletsTabItem } from './WalletsTabItem';
 import { Icon } from '@renderer/components/ui';
 import EmptyContacts from '@renderer/screens/AddressBook/components/EmptyState/EmptyContacts';
+import { isMultisig } from '@renderer/domain/account';
 
 type ContactWithIndex = { index: number } & Contact;
 export type WalletContact = ContactWithIndex & { walletName?: string; chainId?: ChainId };
@@ -71,7 +72,7 @@ const AddSignatory = ({ onSelect, isEditing }: Props) => {
     setContactList(addressBookContacts.map((contact, index) => ({ ...contact, index })));
 
     const walletContacts = accounts
-      .filter((a) => a.signingType !== SigningType.WATCH_ONLY)
+      .filter((a) => a.signingType !== SigningType.WATCH_ONLY && !isMultisig(a))
       .map<WalletContact>((a, index) => ({
         name: a.name || a.accountId,
         address: toAddress(a.accountId),
