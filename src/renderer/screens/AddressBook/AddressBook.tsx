@@ -25,28 +25,24 @@ const AddressBook = () => {
       <Header title={t('addressBook.title')}>
         <div className="flex items-center gap-4">
           <Input
-            className="ml-1"
+            className="w-[230px] ml-2"
             placeholder={t('addressBook.searchPlaceholder')}
             prefixElement={<Icon size={16} name="search" />}
             onChange={setQuery}
           />
 
-          {!isEmpty && (
-            <IconButton
-              name="addAddress"
-              ariaLabel={t('addressBook.addContactButton')}
-              onClick={toggleAddContactModal}
-            />
-          )}
+          <IconButton name="addAddress" ariaLabel={t('addressBook.addContactButton')} onClick={toggleAddContactModal} />
         </div>
       </Header>
 
-      <section className="overflow-y-auto mt-4 flex flex-col gap-y-4 w-[546px] mx-auto h-full">
-        {isEmpty ? (
-          <EmptyContacts onAddContact={toggleAddContactModal} />
-        ) : (
-          <ContactList contacts={contacts} query={query} onAddContact={toggleAddContactModal} />
-        )}
+      <section className="overflow-y-auto mt-4 w-full h-full">
+        <div className="flex flex-col gap-y-4 w-[546px] mx-auto h-full">
+          {isEmpty ? (
+            <EmptyContacts onAddContact={toggleAddContactModal} />
+          ) : (
+            <ContactList contacts={contacts} query={query} onAddContact={toggleAddContactModal} />
+          )}
+        </div>
       </section>
 
       <ContactModal isOpen={isAddContactModalShown} onToggle={toggleAddContactModal} />

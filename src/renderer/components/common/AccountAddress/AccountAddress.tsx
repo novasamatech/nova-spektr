@@ -72,7 +72,14 @@ const AccountAddress = ({
   return (
     <div className={cnTw('flex items-center gap-x-2 overflow-hidden', className)}>
       {showIcon && (
-        <Identicon address={currentAddress} signType={signType} size={size} background={false} canCopy={canCopy} />
+        <Identicon
+          className="inline-block"
+          address={currentAddress}
+          signType={signType}
+          size={size}
+          background={false}
+          canCopy={canCopy}
+        />
       )}
       {nameContent || addressContent}
     </div>

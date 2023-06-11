@@ -12,9 +12,9 @@
       "accountIdRequiredError": "Account address is required",
       "addContactButton": "Add new contact",
       "matrixIdError": "Incorrect matrix id",
-      "matrixIdHint": "In the format: @user_name:matrix.org",
+      "matrixIdHint": "Matrix ID allows to exchange multisig information with signatory",
       "matrixIdLabel": "Matrix ID",
-      "matrixIdPlaceholder": "Enter text",
+      "matrixIdPlaceholder": "Enter @username:matrix.org",
       "nameExistsError": "Name already in use",
       "nameLabel": "Name",
       "namePlaceholder": "Enter text",
@@ -143,10 +143,9 @@
   },
   "notifications": {
     "details": {
-      "newMultisigAccountDescription": "with threshold { threshold } and { signatories } signatories",
-      "newMultisigAccountTitle": "New Multisig wallet added:"
+      "newMultisigAccountDescription": "New Multisig wallet added: <identicon /> {name}, with threshold { threshold } and { signatories } signatories"
     },
-    "noNotificationsDescription": "There are no notifications yet",
+    "noNotificationsDescription": "You don't have notifications yet",
     "title": "Notifications"
   },
   "onboarding": {
