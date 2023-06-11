@@ -65,10 +65,15 @@
     "closeButton": "Закрыть окно"
   },
   "createMultisigAccount": {
+    "addContact": "Добавить новый",
     "addContactsButton": "Добавить выбранные",
     "addSignatoryButton": "Добавить подписанта",
+    "alertText": "Для создания мультсиг кошелька необходимо выбрать хотя бы один из своих кошельков",
+    "alertTitle": "Выберете кошелёк",
     "backButton": "Назад",
+    "contactsTab": "Контакты",
     "continueButton": "Продолжить",
+    "create": "Создать",
     "errorMessage": "Что-то пошло не так",
     "nameDescription": "Назовите ваш multisig аккаунт",
     "nameLabel": "Аккаунт",
@@ -77,10 +82,16 @@
     "searchContactPlaceholder": "Поиск аккаунта или контакта...",
     "signatoriesDescription": "Добавьте подписантов в ваш multisig аккаунт",
     "signatoriesLabel": "Подписанты",
+    "signatoryTitle": "Выберете подписантов",
     "successMessage": "Multisig аккаунт успешно создан ",
     "thresholdDescription": "Установите количество подписей трубуемых для выполнения транзакции",
+    "thresholdHint": "Threshold of signatories required to sign a transaction.",
     "thresholdName": "Порог",
-    "title": "Создать multisig аккаунт"
+    "thresholdPlaceholder": "Select threshold",
+    "title": "Создать Multisig кошелёк",
+    "walletFormTitle": "Manage your wallet",
+    "walletNameLabel": "Название кошелька",
+    "walletsTab": "Кошельки"
   },
   "dropdown": {
     "chooseOptionLabel": "Choose an option"

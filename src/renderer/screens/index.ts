@@ -8,7 +8,6 @@ import Balances from './Balances';
 import Staking from './Staking';
 import Signing from './Signing/SigningDev';
 import Transfer from './Transfer/Transfer';
-import CreateMultisigAccount from './CreateMultisigAccount/CreateMultisigAccount';
 import Notifications from './Notifications/Notifications';
 
 export default {
@@ -22,6 +21,5 @@ export default {
   ChatDev,
   Signing,
   Transfer,
-  CreateMultisigAccount,
   Notifications,
 };

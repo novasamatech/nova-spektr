@@ -5,6 +5,7 @@ import ArrowRightImg, { ReactComponent as ArrowRightSvg } from '@images/arrows/r
 import ArrowLeftCutoutImg, { ReactComponent as ArrowLeftCutoutSvg } from '@images/arrows/left-cutout.svg';
 import SendArrowImg, { ReactComponent as SendArrowSvg } from '@images/arrows/send-arrow.svg';
 import ReceiveArrowImg, { ReactComponent as ReceiveArrowSvg } from '@images/arrows/receive-arrow.svg';
+import CurveArrowImg, { ReactComponent as CurveArrowSvg } from '@images/arrows/arrow-curve-left-right.svg';
 
 const ArrowImages = {
   arrowUp: { svg: ArrowUpSvg, img: ArrowUpImg },
@@ -14,6 +15,7 @@ const ArrowImages = {
   arrowRight: { svg: ArrowRightSvg, img: ArrowRightImg },
   sendArrow: { svg: SendArrowSvg, img: SendArrowImg },
   receiveArrow: { svg: ReceiveArrowSvg, img: ReceiveArrowImg },
+  curveArrow: { svg: CurveArrowSvg, img: CurveArrowImg },
 } as const;
 
 export type Arrow = keyof typeof ArrowImages;
