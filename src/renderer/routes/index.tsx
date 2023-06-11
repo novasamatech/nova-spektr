@@ -15,7 +15,6 @@ const routesConfig: RouteObject[] = [
       { index: true, element: <Screens.Balances /> },
       { path: Paths.ADDRESS_BOOK, element: <Screens.AddressBook /> },
       { path: Paths.SIGNING, element: <Screens.Signing /> },
-      { path: Paths.CREATE_MULTISIG_ACCOUNT, element: <Screens.CreateMultisigAccount /> },
       { path: Paths.OPERATIONS, element: <Screens.Operations /> },
       { path: Paths.BALANCES, element: <Screens.Balances /> },
       { path: Paths.CAMERA_DEV, element: <Screens.CameraDev /> },
