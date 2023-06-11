@@ -16,7 +16,7 @@ const Paths = {
   // Settings
   SETTINGS: '/settings',
   NETWORK: '/settings/network',
-  MATRIX: '/settings/matrix',
+  // MATRIX: '/settings/matrix',
 
   // Staking
   STAKING: '/staking',
@@ -29,7 +29,7 @@ const Paths = {
   VALIDATORS: '/staking/validators/:chainId',
 
   // Operations
-  CREATE_MULTISIG_ACCOUNT: '/create-multisig-account',
+  // CREATE_MULTISIG_ACCOUNT: '/create-multisig-account',
 
   // DEV
   CHAT_DEV: '/chat-dev',

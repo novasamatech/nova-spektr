@@ -7,6 +7,7 @@ import MediumImg, { ReactComponent as MediumSvg } from '@images/social/medium.sv
 import YoutubeImg, { ReactComponent as YoutubeSvg } from '@images/social/youtube.svg';
 import TwitterImg, { ReactComponent as TwitterSvg } from '@images/social/twitter.svg';
 import TelegramImg, { ReactComponent as TelegramSvg } from '@images/social/telegram.svg';
+import MatrixFullImg, { ReactComponent as MatrixFullSvg } from '@images/social/matrix-full.svg';
 
 const SocialImages = {
   apple: { svg: AppleSvg, img: AppleImg },
@@ -18,6 +19,7 @@ const SocialImages = {
   youtube: { svg: YoutubeSvg, img: YoutubeImg },
   twitter: { svg: TwitterSvg, img: TwitterImg },
   telegram: { svg: TelegramSvg, img: TelegramImg },
+  matrixFull: { svg: MatrixFullSvg, img: MatrixFullImg },
 } as const;
 
 export type Social = keyof typeof SocialImages;

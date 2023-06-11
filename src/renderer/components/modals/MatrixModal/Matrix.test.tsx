@@ -1,7 +1,8 @@
 import { render, screen } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
+import noop from 'lodash/noop';
 
-import Matrix from './Matrix';
+import MatrixModal from './MatrixModal';
 import { useMatrix } from '@renderer/context/MatrixContext';
 
 jest.mock('@renderer/context/I18nContext', () => ({
@@ -28,7 +29,7 @@ describe('screen/Settings/Matrix', () => {
   });
 
   test('should render component', () => {
-    render(<Matrix />, { wrapper: MemoryRouter });
+    render(<MatrixModal isOpen onClose={noop} />, { wrapper: MemoryRouter });
 
     const title = screen.getByText('settings.title');
     const subTitle = screen.getByText('settings.matrix.subTitle');
@@ -39,7 +40,7 @@ describe('screen/Settings/Matrix', () => {
   });
 
   test('should render Login and Policy', () => {
-    render(<Matrix />, { wrapper: MemoryRouter });
+    render(<MatrixModal isOpen onClose={noop} />, { wrapper: MemoryRouter });
 
     const login = screen.getByText('LoginForm');
     const policy = screen.getByText('PrivacyPolicy');
@@ -51,7 +52,7 @@ describe('screen/Settings/Matrix', () => {
     (useMatrix as jest.Mock).mockReturnValue({
       isLoggedIn: true,
     });
-    render(<Matrix />, { wrapper: MemoryRouter });
+    render(<MatrixModal isOpen onClose={noop} />, { wrapper: MemoryRouter });
 
     const credentials = screen.getByText('Credentials');
     const verification = screen.getByText('Verification');

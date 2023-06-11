@@ -2,6 +2,7 @@ import { render, screen, act } from '@testing-library/react';
 
 import Credentials from './Credentials';
 import { useMatrix } from '@renderer/context/MatrixContext';
+import noop from 'lodash/noop';
 
 jest.mock('@renderer/context/I18nContext', () => ({
   useI18n: jest.fn().mockReturnValue({
@@ -21,7 +22,7 @@ describe('screens/Settings/Matrix/Credentials', () => {
   });
 
   test('should render component', () => {
-    render(<Credentials />);
+    render(<Credentials onLogOut={noop} />);
 
     const title = screen.getByText('settings.matrix.formTitle');
     expect(title).toBeInTheDocument();
@@ -32,7 +33,7 @@ describe('screens/Settings/Matrix/Credentials', () => {
     (useMatrix as jest.Mock).mockReturnValue({
       matrix: { logout: spyLogout },
     });
-    render(<Credentials />);
+    render(<Credentials onLogOut={noop} />);
 
     const button = screen.getByRole('button');
     await act(async () => button.click());

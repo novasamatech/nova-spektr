@@ -25,7 +25,7 @@ const routesConfig: RouteObject[] = [
         children: [
           { index: true, element: <Screens.Settings.Overview /> },
           { path: Paths.NETWORK, element: <Screens.Settings.Networks /> },
-          { path: Paths.MATRIX, element: <Screens.Settings.Matrix /> },
+          // { path: Paths.MATRIX, element: <Screens.Settings.Matrix /> },
         ],
       },
       {

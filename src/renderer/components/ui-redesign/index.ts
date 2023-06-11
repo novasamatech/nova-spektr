@@ -33,6 +33,7 @@ import {
   LabelText,
   HeaderTitleText,
 } from './Typography';
+import InputFile from './Inputs/InputFile/InputFile';
 
 export {
   Input,
@@ -68,4 +69,5 @@ export {
   Alert,
   StatusLabel,
   HeaderTitleText,
+  InputFile,
 };
