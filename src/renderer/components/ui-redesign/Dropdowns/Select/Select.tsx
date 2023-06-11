@@ -76,11 +76,7 @@ const Select = ({
                   value={{ id, value }}
                   className={({ active }) => cnTw(OptionStyle, active && 'bg-action-background-hover')}
                 >
-                  {typeof element === 'string' || typeof element === 'number' ? (
-                    <FootnoteText>{element}</FootnoteText>
-                  ) : (
-                    element
-                  )}
+                  {['string', 'number'].includes(typeof element) ? <FootnoteText>{element}</FootnoteText> : element}
                 </Listbox.Option>
               ))}
             </Listbox.Options>
