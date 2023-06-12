@@ -1,10 +1,10 @@
 import { useI18n } from '@renderer/context/I18nContext';
 import { useMatrix } from '@renderer/context/MatrixContext';
 import { BaseModal } from '@renderer/components/ui-redesign';
-import MatrixInfoPopover from '@renderer/components/modals/MatrixModal/components/MatrixInfoPopover/MatrixInfoPopover';
-import LoginForm from '@renderer/components/modals/MatrixModal/components/LoginForm/LoginForm';
-import Credentials from '@renderer/components/modals/MatrixModal/components/Credentials/Credentials';
-import Verification from '@renderer/components/modals/MatrixModal/components/Verification/Verification';
+import MatrixInfoPopover from './components/MatrixInfoPopover/MatrixInfoPopover';
+import Credentials from './components/Credentials/Credentials';
+import Verification from './components/Verification/Verification';
+import LoginForm from './components/LoginForm/LoginForm';
 
 type Props = {
   isOpen: boolean;

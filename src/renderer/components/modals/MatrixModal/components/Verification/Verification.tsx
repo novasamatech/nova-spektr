@@ -22,33 +22,33 @@ const VerifyMethods = {
 type VerifyMethodsType = (typeof VerifyMethods)[keyof typeof VerifyMethods];
 
 const getVerifyLabel = (t: TFunction, method: VerifyMethodsType): string => {
-  const labels = {
+  const Labels = {
     [VerifyMethods.SECRET_KEY]: t('settings.matrix.verifyWithKey'),
     [VerifyMethods.PASS_PHRASE]: t('settings.matrix.verifyWithPassphrase'),
     [VerifyMethods.FILE]: t('settings.matrix.verifyWithFile'),
   };
 
-  return labels[method];
+  return Labels[method];
 };
 
 const getInputPlaceholders = (t: TFunction, method: VerifyMethodsType): string => {
-  const placeholders = {
+  const Placeholders = {
     [VerifyMethods.SECRET_KEY]: t('settings.matrix.secretKeyPlaceholder'),
     [VerifyMethods.PASS_PHRASE]: t('settings.matrix.passphrasePlaceholder'),
     [VerifyMethods.FILE]: t('settings.matrix.secretFilePlaceholder'),
   };
 
-  return placeholders[method];
+  return Placeholders[method];
 };
 
 const getErrorMessage = (t: TFunction, method: VerifyMethodsType): string => {
-  const errors = {
+  const Errors = {
     [VerifyMethods.SECRET_KEY]: t('settings.matrix.secretKeyError'),
     [VerifyMethods.PASS_PHRASE]: t('settings.matrix.passphraseError'),
     [VerifyMethods.FILE]: t('settings.matrix.fileError'),
   };
 
-  return errors[method];
+  return Errors[method];
 };
 
 const Verification = () => {
