@@ -10,13 +10,13 @@ type Props = Omit<InputProps, 'prefixElement' | 'suffixElement'>;
 const SearchInput = forwardRef<HTMLInputElement, Props>(({ className, ...props }, ref) => (
   <Input
     className={className}
-    prefixElement={<Icon name="search" size={16} className="mr-2" />}
+    prefixElement={<Icon name="search" size={16} className="mr-2 text-icon-default" />}
     suffixElement={
       <IconButton
         name="close"
         ariaLabel="clear search"
         className={cn('ml-2 p-[1px]', !props.value && 'hidden')}
-        onClick={() => props.onChange && props.onChange('')}
+        onClick={() => props.onChange?.('')}
       />
     }
     {...props}

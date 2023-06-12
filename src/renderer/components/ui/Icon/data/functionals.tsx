@@ -24,9 +24,8 @@ import AddAddressImg, { ReactComponent as AddAddressSvg } from '@images/function
 import AddLineImg, { ReactComponent as AddLineSvg } from '@images/functionals/add-line.svg';
 import AddCutoutImg, { ReactComponent as AddCutoutSvg } from '@images/functionals/add-cutout.svg';
 import ClearOutlineImg, { ReactComponent as ClearOutlineSvg } from '@images/functionals/clear-outline.svg';
-import EditOutlineImg, { ReactComponent as EditOutlineSvg } from '@images/functionals/edit-outline.svg';
 import EditImg, { ReactComponent as EditSvg } from '@images/functionals/edit.svg';
-import DeleteOutlineImg, { ReactComponent as DeleteOutlineSvg } from '@images/functionals/delete-outline.svg';
+import DeleteImg, { ReactComponent as DeleteSvg } from '@images/functionals/delete.svg';
 import OptionsImg, { ReactComponent as OptionsSvg } from '@images/functionals/options.svg';
 import MultisigOutlineImg, { ReactComponent as MultisigOutlineSvg } from '@images/functionals/multisig-outline.svg';
 import EyeSlashedImg, { ReactComponent as EyeSlashedSvg } from '@images/functionals/eye-slashed.svg';
@@ -71,9 +70,8 @@ const FunctionalImages = {
   addLine: { svg: AddLineSvg, img: AddLineImg },
   addCutout: { svg: AddCutoutSvg, img: AddCutoutImg },
   clearOutline: { svg: ClearOutlineSvg, img: ClearOutlineImg },
-  editOutline: { svg: EditOutlineSvg, img: EditOutlineImg },
   edit: { svg: EditSvg, img: EditImg },
-  deleteOutline: { svg: DeleteOutlineSvg, img: DeleteOutlineImg },
+  delete: { svg: DeleteSvg, img: DeleteImg },
   options: { svg: OptionsSvg, img: OptionsImg },
   multisigOutline: { svg: MultisigOutlineSvg, img: MultisigOutlineImg },
   eyeSlashed: { svg: EyeSlashedSvg, img: EyeSlashedImg },
