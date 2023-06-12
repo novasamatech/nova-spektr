@@ -42,6 +42,8 @@ import ViewValidatorsImg, { ReactComponent as ViewValidatorsSvg } from '@images/
 import LinkImg, { ReactComponent as LinkSvg } from '@images/functionals/link.svg';
 import LockImg, { ReactComponent as LockSvg } from '@images/functionals/lock.svg';
 import MagicImg, { ReactComponent as MagicSvg } from '@images/functionals/magic.svg';
+import QuestionImg, { ReactComponent as QuestionSvg } from '@images/functionals/question.svg';
+import UploadFileImg, { ReactComponent as UploadFileSvg } from '@images/functionals/updload-file.svg';
 
 const FunctionalImages = {
   copy: { svg: CopySvg, img: CopyImg },
@@ -84,6 +86,8 @@ const FunctionalImages = {
   link: { svg: LinkSvg, img: LinkImg },
   lock: { svg: LockSvg, img: LockImg },
   magic: { img: MagicImg, svg: MagicSvg },
+  questionOutline: { img: QuestionImg, svg: QuestionSvg },
+  uploadFile: { img: UploadFileImg, svg: UploadFileSvg },
 } as const;
 
 export type Functional = keyof typeof FunctionalImages;
