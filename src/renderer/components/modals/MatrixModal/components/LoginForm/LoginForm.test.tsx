@@ -25,11 +25,10 @@ describe('screen/Settings/Matrix/LoginForm', () => {
   test('should render component', () => {
     render(<LoginForm />);
 
-    const title = screen.getByText('settings.matrix.formTitle');
-    const subTitle = screen.getByText('settings.matrix.formSubtitle');
-    const submit = screen.getByRole('button', { name: 'settings.matrix.signInButton' });
-    expect(title).toBeInTheDocument();
-    expect(subTitle).toBeInTheDocument();
+    const homeserverInputLabel = screen.getByText('settings.matrix.homeserverLabel');
+    const submit = screen.getByRole('button', { name: 'settings.matrix.logInButton' });
+
+    expect(homeserverInputLabel).toBeInTheDocument();
     expect(submit).toBeDisabled();
   });
 
@@ -49,7 +48,7 @@ describe('screen/Settings/Matrix/LoginForm', () => {
     const password = screen.getByPlaceholderText('settings.matrix.passwordPlaceholder');
     await act(() => user.type(password, 'my_password'));
 
-    const submit = screen.getByRole('button', { name: 'settings.matrix.signInButton' });
+    const submit = screen.getByRole('button', { name: 'settings.matrix.logInButton' });
     expect(submit).toBeEnabled();
   });
 });

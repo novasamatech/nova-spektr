@@ -24,7 +24,7 @@ describe('screens/Settings/Matrix/Credentials', () => {
   test('should render component', () => {
     render(<Credentials onLogOut={noop} />);
 
-    const title = screen.getByText('settings.matrix.formTitle');
+    const title = screen.getByText('settings.matrix.userIdLabel');
     expect(title).toBeInTheDocument();
   });
 

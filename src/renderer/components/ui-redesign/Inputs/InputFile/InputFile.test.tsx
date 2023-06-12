@@ -8,7 +8,7 @@ describe('ui/Inputs/InputFile', () => {
     render(<InputFile placeholder="file input" />);
 
     const placeholder = screen.getByText('file input');
-    const input = screen.getByLabelText('file input');
+    const input = screen.getByTestId('file-input');
     expect(placeholder).toBeInTheDocument();
     expect(input).toBeInTheDocument();
   });
@@ -20,7 +20,7 @@ describe('ui/Inputs/InputFile', () => {
     const spyChange = jest.fn();
     render(<InputFile placeholder="file input" onChange={spyChange} />);
 
-    const input = screen.getByLabelText('file input') as HTMLInputElement;
+    const input = screen.getByTestId('file-input') as HTMLInputElement;
     await user.upload(input, file);
 
     expect(input.files?.[0]).toStrictEqual(file);

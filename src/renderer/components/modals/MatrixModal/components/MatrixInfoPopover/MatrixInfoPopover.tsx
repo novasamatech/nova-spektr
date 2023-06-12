@@ -41,7 +41,10 @@ const MatrixInfoPopover = () => {
       }
     >
       {/* TODO remove mt-4 when base modal props changed */}
-      <div className="flex gap-x-1 bg-secondary-button-background items-center rounded-md py-0.5 px-2 mt-4 mb-6">
+      <div
+        className="flex gap-x-1 bg-secondary-button-background items-center rounded-md py-0.5 px-2 mt-4 mb-6"
+        data-testid="popoverButton"
+      >
         <BodyText>{t('settings.matrix.tooltipLabel')}</BodyText>
         <Icon name="questionOutline" className="text-icon-default" size={16} />
       </div>

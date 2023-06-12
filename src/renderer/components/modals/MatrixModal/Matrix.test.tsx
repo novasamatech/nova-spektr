@@ -14,14 +14,16 @@ jest.mock('@renderer/context/I18nContext', () => ({
 jest.mock('@renderer/context/MatrixContext', () => ({
   useMatrix: jest.fn().mockReturnValue({
     isLoggedIn: false,
+    matrix: {
+      sessionIsVerified: false,
+    },
   }),
 }));
 
-jest.mock('./LoginForm/LoginForm', () => () => <span>LoginForm</span>);
-jest.mock('./InfoSection/InfoSection', () => () => <span>InfoSection</span>);
-jest.mock('./Credentials/Credentials', () => () => <span>Credentials</span>);
-jest.mock('./PrivacyPolicy/PrivacyPolicy', () => () => <span>PrivacyPolicy</span>);
-jest.mock('./Verification/Verification', () => () => <span>Verification</span>);
+jest.mock('./components/LoginForm/LoginForm', () => () => <span>LoginForm</span>);
+jest.mock('./components/MatrixInfoPopover/MatrixInfoPopover', () => () => <span>MatrixInfoPopover</span>);
+jest.mock('./components/Credentials/Credentials', () => () => <span>Credentials</span>);
+jest.mock('./components/Verification/Verification', () => () => <span>Verification</span>);
 
 describe('screen/Settings/Matrix', () => {
   afterEach(() => {
@@ -31,11 +33,10 @@ describe('screen/Settings/Matrix', () => {
   test('should render component', () => {
     render(<MatrixModal isOpen onClose={noop} />, { wrapper: MemoryRouter });
 
-    const title = screen.getByText('settings.title');
-    const subTitle = screen.getByText('settings.matrix.subTitle');
-    const info = screen.getByText('InfoSection');
-    expect(title).toBeInTheDocument();
-    expect(subTitle).toBeInTheDocument();
+    const logInTitle = screen.getByText('settings.matrix.logInTitle');
+    const info = screen.getByText('MatrixInfoPopover');
+
+    expect(logInTitle).toBeInTheDocument();
     expect(info).toBeInTheDocument();
   });
 
@@ -43,19 +44,21 @@ describe('screen/Settings/Matrix', () => {
     render(<MatrixModal isOpen onClose={noop} />, { wrapper: MemoryRouter });
 
     const login = screen.getByText('LoginForm');
-    const policy = screen.getByText('PrivacyPolicy');
     expect(login).toBeInTheDocument();
-    expect(policy).toBeInTheDocument();
   });
 
   test('should render Credentials and Verification', () => {
     (useMatrix as jest.Mock).mockReturnValue({
       isLoggedIn: true,
+      matrix: { sessionIsVerified: true },
     });
     render(<MatrixModal isOpen onClose={noop} />, { wrapper: MemoryRouter });
 
+    const verifyTitleTitle = screen.getByText('settings.matrix.verificationTitle');
     const credentials = screen.getByText('Credentials');
     const verification = screen.getByText('Verification');
+
+    expect(verifyTitleTitle).toBeInTheDocument();
     expect(credentials).toBeInTheDocument();
     expect(verification).toBeInTheDocument();
   });

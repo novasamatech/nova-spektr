@@ -1,4 +1,5 @@
 import { render, screen } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 
 import MatrixInfoPopover from './MatrixInfoPopover';
 
@@ -10,11 +11,16 @@ jest.mock('@renderer/context/I18nContext', () => ({
   }),
 }));
 
-describe('screens/Settings/Matrix/InfoSection', () => {
-  test('should render component', () => {
+describe('screens/Settings/Matrix/MatrixInfoPopover', () => {
+  test('should render component', async () => {
+    const user = userEvent.setup();
+
     render(<MatrixInfoPopover />);
 
-    const titleWhy = screen.getByText('settings.matrix.infoWhyMatrixTitle');
+    const popoverButton = screen.getByTestId('popoverButton');
+    await user.hover(popoverButton);
+
+    const titleWhy = await screen.findByText('settings.matrix.infoWhyMatrixTitle');
     const titleWhat = screen.getByText('settings.matrix.infoWhatIsMatrixTitle');
 
     expect(titleWhy).toBeInTheDocument();
