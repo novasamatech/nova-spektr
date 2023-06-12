@@ -1,6 +1,6 @@
 import { render, screen } from '@testing-library/react';
 
-import Overview from './Overview';
+import { Overview } from './Overview';
 
 jest.mock('@renderer/context/I18nContext', () => ({
   useI18n: jest.fn().mockReturnValue({

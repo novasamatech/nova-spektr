@@ -1,7 +1,8 @@
 export type HintVariant = 'hint' | 'alert' | 'error' | 'success';
-export const variantStyles: { [K in HintVariant]: string } = {
+
+export const HintStyles: { [K in HintVariant]: string } = {
   hint: 'text-text-tertiary',
-  alert: 'text-alert', // TODO add new styles for all variants
+  alert: 'text-text-warning',
   error: 'text-text-negative',
   success: 'text-text-positive',
 };

@@ -17,7 +17,7 @@ Primary.args = {
   children: (
     <p className="flex flex-col gap-8 p-4">
       <p>webpack building... 99% done plugins webpack-hot-middleware</p>
-      <p>webpack built preview 9c254e098227eeff8fe0 in 2605ms</p>
+      <p>webpack built preview in 2605ms</p>
       <p>webpack building... 99% done plugins webpack-hot-middleware</p>
     </p>
   ),

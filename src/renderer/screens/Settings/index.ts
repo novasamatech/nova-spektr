@@ -1,5 +1,3 @@
-import Overview from './Overview/Overview';
-import Networks from './Networks/Networks/Networks';
-import Matrix from './Matrix/Matrix';
-
-export default { Overview, Networks, Matrix };
+export { Overview } from './Overview/Overview';
+export { Networks } from './Networks/Networks';
+export { Matrix } from './Matrix/Matrix';

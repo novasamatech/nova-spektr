@@ -27,7 +27,7 @@ export interface INetworkService {
   addRpcNode: (chainId: ChainId, rpcNode: RpcNode) => Promise<void>;
   updateRpcNode: (chainId: ChainId, oldNode: RpcNode, newNode: RpcNode) => Promise<void>;
   removeRpcNode: (chainId: ChainId, rpcNode: RpcNode) => Promise<void>;
-  validateRpcNode: (genesisHash: ChainId, rpcUrl: string) => Promise<RpcValidation>;
+  validateRpcNode: (chainId: ChainId, rpcUrl: string) => Promise<RpcValidation>;
   connectToNetwork: (props: ConnectProps) => Promise<void>;
   connectWithAutoBalance: (chainId: ChainId, attempt: number) => Promise<void>;
 }
