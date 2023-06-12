@@ -183,7 +183,7 @@ const ContactModal = ({ isOpen, onToggle, contact }: Props) => {
         </InputHint>
 
         <Button className="ml-auto" type="submit" disabled={!isValid}>
-          {t(isEdit ? 'addressBook.editContact.saveContactButton' : 'addressBook.editContact.addContactButton')}
+          {t(isEdit ? 'addressBook.editContact.saveContactButton' : 'addressBook.addContact.addContactButton')}
         </Button>
       </form>
     </BaseModal>

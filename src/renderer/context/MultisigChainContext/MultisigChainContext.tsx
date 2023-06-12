@@ -35,7 +35,7 @@ export const MultisigChainProvider = ({ children }: PropsWithChildren) => {
     txs.forEach(async (tx) => {
       const connection = connections[tx.chainId];
 
-      if (connection.api && tx.callData && !tx.transaction) {
+      if (connection?.api && tx.callData && !tx.transaction) {
         updateCallData(connection.api, tx, tx.callData);
       }
     });

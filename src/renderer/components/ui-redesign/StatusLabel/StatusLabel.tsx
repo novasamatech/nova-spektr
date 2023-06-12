@@ -14,7 +14,7 @@ type Props = {
 const StatusLabel = ({ title, subtitle, variant, className }: Props) => {
   return (
     <div className={cnTw('grid grid-flow-col gap-x-1.5', className)}>
-      <span className={cnTw('w-[9px] h-[9px] mt-1.5 rounded-full row-span-2', DotStyles[variant])} />
+      <span className={cnTw('w-[9px] h-[9px] mt-[5px] rounded-full row-span-2', DotStyles[variant])} />
       <FootnoteText className={TitleStyles[variant]}>{title}</FootnoteText>
       {subtitle && <HelpText className="text-text-tertiary">{subtitle}</HelpText>}
     </div>

@@ -1,7 +1,8 @@
 import { createContext, PropsWithChildren, useCallback, useContext, useRef, useState, ReactNode } from 'react';
 
-import { ConfirmModal } from '@renderer/components/ui';
+import { ConfirmModal, SmallTitleText, FootnoteText } from '@renderer/components/ui-redesign';
 import { useToggle } from '@renderer/shared/hooks';
+import { DEFAULT_TRANSITION } from '@renderer/shared/utils/constants';
 
 export type ConfirmDialogProps = {
   title: string;
@@ -16,7 +17,6 @@ type ConfirmContextProps = {
 
 const ConfirmDialog = createContext<ConfirmContextProps>({} as ConfirmContextProps);
 
-const MODAL_ANIMATION = 350;
 const defaultState = {
   title: '',
   message: '',
@@ -41,7 +41,7 @@ export const ConfirmDialogProvider = ({ children }: PropsWithChildren) => {
         resolve(choice);
         setTimeout(() => {
           setDialogState(defaultState);
-        }, MODAL_ANIMATION);
+        }, DEFAULT_TRANSITION);
       };
     });
   }, []);
@@ -51,15 +51,17 @@ export const ConfirmDialogProvider = ({ children }: PropsWithChildren) => {
       {children}
 
       <ConfirmModal
-        contentClass="w-[400px]"
+        panelClass="w-[300px]"
         isOpen={isDialogOpen}
         confirmText={dialogState.confirmText}
         cancelText={dialogState.cancelText}
         onClose={() => fn.current?.(false)}
         onConfirm={() => fn.current?.(true)}
       >
-        <h2 className="text-error font-semibold text-xl border-b border-error pb-2.5">{dialogState.title}</h2>
-        <p className="pt-2.5 pb-5 text-neutral-variant">{dialogState.message}</p>
+        <SmallTitleText align="center">{dialogState.title}</SmallTitleText>
+        <FootnoteText className="mt-2 text-text-tertiary" align="center">
+          {dialogState.message}
+        </FootnoteText>
       </ConfirmModal>
     </ConfirmDialog.Provider>
   );

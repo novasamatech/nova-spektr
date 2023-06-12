@@ -6,9 +6,9 @@ export const ViewClass: Record<Exclude<Position, 'auto'>, string> = {
 };
 
 export const OptionsContainerStyle =
-  'mt-1 absolute z-20 py-2 px-1 max-h-60 w-full overflow-auto border border-token-container-border rounded bg-input-background shadow-card-shadow';
+  'mt-1 absolute z-20 py-1 px-1 max-h-60 w-full overflow-auto border border-token-container-border rounded bg-input-background shadow-card-shadow';
 
-export const OptionStyle = 'py-2 px-3 rounded cursor-pointer hover:bg-action-background-hover';
+export const OptionStyle = 'p-2 rounded cursor-pointer hover:bg-action-background-hover';
 
 export const SelectButtonStyle = {
   closed: 'border-filter-border',
