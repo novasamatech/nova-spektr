@@ -59,7 +59,9 @@ export const ConfirmDialogProvider = ({ children }: PropsWithChildren) => {
         onConfirm={() => fn.current?.(true)}
       >
         <SmallTitleText align="center">{dialogState.title}</SmallTitleText>
-        <FootnoteText className="mt-2 text-text-tertiary">{dialogState.message}</FootnoteText>
+        <FootnoteText className="mt-2 text-text-tertiary" align="center">
+          {dialogState.message}
+        </FootnoteText>
       </ConfirmModal>
     </ConfirmDialog.Provider>
   );

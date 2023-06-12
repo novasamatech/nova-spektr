@@ -436,7 +436,7 @@
         "cancelButton": "Отменить",
         "confirmButton": "Подтвердить",
         "disableLabel": "Вы собираетесь отключить сеть <strong>{ network }</strong>",
-        "disableLightLabel": "Переключение с Легкого клиента в сети <strong>{network}</strong> отключит <u>верификацию данных</u>",
+        "disableLightLabel": "Переключение с Легкого клиента в сети <strong>{network}</strong> отключит <verify>Верификацию данных</verify>",
         "disableLightTitle": "Отключить Легкий клиент",
         "disableTitle": "Отключить сеть",
         "enableLightLabel": "Мы рекомендуем держать не более 3-ех подключений к <strong>Легкому клиенту</strong> для <u>стабильной работы приложения</u>",

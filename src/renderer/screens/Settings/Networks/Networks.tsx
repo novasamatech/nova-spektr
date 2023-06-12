@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Trans } from 'react-i18next';
 
 import { useI18n } from '@renderer/context/I18nContext';
-import { BaseModal, SearchInput, BodyText } from '@renderer/components/ui-redesign';
+import { BaseModal, SearchInput, BodyText, InfoLink } from '@renderer/components/ui-redesign';
 import { useToggle } from '@renderer/shared/hooks';
 import { useNetworkContext } from '@renderer/context/NetworkContext';
 import { ExtendedChain } from '@renderer/services/network/common/types';
@@ -19,6 +19,8 @@ import { NetworkList, NetworkItem, CustomRpcModal } from './components';
 import Paths from '@renderer/routes/paths';
 
 const MAX_LIGHT_CLIENTS = 3;
+
+const DATA_VERIFICATION = 'https://docs.novaspektr.io/network-management/light-clients-and-parachain-data-verification';
 
 export const Networks = () => {
   const { t } = useI18n();
@@ -74,9 +76,18 @@ export const Networks = () => {
   };
 
   const confirmDisableLightClient = (name: string): Promise<boolean> => {
+    const verify = <InfoLink url={DATA_VERIFICATION} showIcon={false} />;
+
     return confirm({
       title: t('settings.networks.confirmModal.disableLightTitle'),
-      message: <Trans t={t} i18nKey="settings.networks.confirmModal.disableLightLabel" values={{ network: name }} />,
+      message: (
+        <Trans
+          t={t}
+          i18nKey="settings.networks.confirmModal.disableLightLabel"
+          components={{ verify }}
+          values={{ network: name }}
+        />
+      ),
       confirmText: t('settings.networks.confirmModal.confirmButton'),
       cancelText: t('settings.networks.confirmModal.cancelButton'),
     });

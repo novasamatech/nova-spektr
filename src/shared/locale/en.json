@@ -436,7 +436,7 @@
         "cancelButton": "Cancel",
         "confirmButton": "Confirm",
         "disableLabel": "You are about to disable <strong>{ network }</strong> network",
-        "disableLightLabel": "Changing Light Client on <strong>{network}</strong> network will turn off <u>Data Verification</u>",
+        "disableLightLabel": "Changing Light Client on <strong>{network}</strong> network will turn off <verify>Data Verification</verify>",
         "disableLightTitle": "Disable Light Client",
         "disableTitle": "Disable network",
         "enableLightLabel": "In order to have a <u>smooth experience</u>, we do not suggest to have more than <strong>3 Light Clients</strong> running at the same time",
