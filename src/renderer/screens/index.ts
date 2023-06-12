@@ -1,5 +1,5 @@
 import AddressBook from './AddressBook/AddressBook';
-import { Matrix, Overview, Networks } from './Settings';
+import { Overview, Networks } from './Settings';
 import CameraDev from './CameraDev/CameraDev';
 import ChatDev from './ChatDev/ChatDev';
 import Onboarding from './Onboarding';
@@ -11,7 +11,7 @@ import Transfer from './Transfer/Transfer';
 import Notifications from './Notifications/Notifications';
 
 export default {
-  Settings: { Matrix, Overview, Networks },
+  Settings: { Overview, Networks },
   Balances,
   AddressBook,
   Operations,

@@ -11,7 +11,7 @@ import { useToggle } from '@renderer/shared/hooks';
 import OperationResult from '@renderer/components/ui-redesign/OperationResult/OperationResult';
 import { MultisigAccountForm, WalletForm } from './components/WalletForm';
 import AddSignatory from './components/AddSignatory';
-import { Matrix } from '@renderer/screens/Settings';
+import MatrixModal from '@renderer/components/modals/MatrixModal/MatrixModal';
 
 type OperationResultProps = Pick<ComponentProps<typeof OperationResult>, 'variant' | 'description'>;
 
@@ -33,12 +33,6 @@ const CreateMultisigAccount = ({ isOpen, onClose }: Props) => {
   const [name, setName] = useState('');
 
   const [signatories, setSignatories] = useState<Signatory[]>([]);
-
-  if (isOpen && !isLoggedIn) {
-    return (
-      <Matrix title={<h1 className="font-semibold text-2xl text-neutral"> {t('createMultisigAccount.title')}</h1>} />
-    );
-  }
 
   const goBack = () => {
     if (!isEditing) {
@@ -130,6 +124,7 @@ const CreateMultisigAccount = ({ isOpen, onClose }: Props) => {
       </BaseModal>
 
       <OperationResult {...getResultProps()} title={name} isOpen={isResultModlaOpen} onClose={toggleResultModal} />
+      <MatrixModal isOpen={isOpen && !isLoggedIn} onClose={onClose} />
     </>
   );
 };

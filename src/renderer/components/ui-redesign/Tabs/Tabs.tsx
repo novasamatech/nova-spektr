@@ -2,10 +2,10 @@ import { Tab } from '@headlessui/react';
 import { ReactNode } from 'react';
 
 import cnTw from '@renderer/shared/utils/twMerge';
-import { SmallTitleText } from '../Typography';
+import TextBase from '@renderer/components/ui-redesign/Typography/common/TextBase';
 
 export interface TabItem {
-  id: string;
+  id: string | number;
   title: ReactNode;
   panel: ReactNode;
 }
@@ -27,13 +27,13 @@ const Tabs = ({ items, tabClassName, panelClassName = 'mt-4', onChange }: Props)
               tabClassName,
             )}
           >
-            <SmallTitleText
+            <TextBase
               fontWeight="semibold"
-              className="text-text-secondary ui-selected:text-text-primary flex items-center"
+              className="text-text-secondary ui-selected:text-text-primary flex items-center text-button-small"
               align="center"
             >
               {title}
-            </SmallTitleText>
+            </TextBase>
           </Tab>
         ))}
       </Tab.List>

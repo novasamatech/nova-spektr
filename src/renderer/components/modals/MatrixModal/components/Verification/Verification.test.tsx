@@ -32,7 +32,7 @@ describe('screens/Settings/Matrix/Verification', () => {
     const input = screen.getByRole('textbox');
     await act(() => user.type(input, 'my secret value'));
 
-    const submit = screen.getByRole('button', { name: 'settings.matrix.verifyDeviceButton' });
+    const submit = screen.getByRole('button', { name: 'settings.matrix.verifyButton' });
     await act(() => submit.click());
   };
 
@@ -40,16 +40,14 @@ describe('screens/Settings/Matrix/Verification', () => {
     const user = userEvent.setup();
     render(<Verification />);
 
-    const dropdown = screen.getByText('settings.matrix.verifyWithKey');
-    await act(() => dropdown.click());
-    const fileOption = screen.getByText('settings.matrix.uploadFile');
-    await act(() => fileOption.click());
+    const fileTab = screen.getByText('settings.matrix.verifyWithFile');
+    await act(() => fileTab.click());
 
     const file = new File(['hello'], 'hello.txt', { type: 'text/plain' });
     const input = screen.getByTestId('file-input');
     await act(() => user.upload(input, file));
 
-    const submit = screen.getByRole('button', { name: 'settings.matrix.verifyDeviceButton' });
+    const submit = screen.getByRole('button', { name: 'settings.matrix.verifyButton' });
     await act(() => submit.click());
   };
 
@@ -60,10 +58,11 @@ describe('screens/Settings/Matrix/Verification', () => {
   test('should render component', () => {
     render(<Verification />);
 
-    const title = screen.getByText('settings.matrix.verificationTitle');
-    const subtitle = screen.getByText('settings.matrix.verificationSubtitle');
+    const title = screen.getByText('settings.matrix.verificationLabel');
+    const tabs = screen.getByRole('tablist');
+
     expect(title).toBeInTheDocument();
-    expect(subtitle).toBeInTheDocument();
+    expect(tabs).toBeInTheDocument();
   });
 
   test('should secretKey submit fail with error', async () => {

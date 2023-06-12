@@ -36,6 +36,7 @@ import {
   LabelText,
   HeaderTitleText,
 } from './Typography';
+import InputFile from './Inputs/InputFile/InputFile';
 
 export {
   Input,
@@ -74,4 +75,5 @@ export {
   Counter,
   StatusLabel,
   HeaderTitleText,
+  InputFile,
 };

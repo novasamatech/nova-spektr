@@ -1,4 +1,4 @@
-import { act, screen, render } from '@testing-library/react';
+import { act, screen, render, waitForElementToBeRemoved } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 
 import Popover from './Popover';
@@ -24,13 +24,15 @@ describe('ui/Popover', () => {
 
     await act(async () => user.hover(text));
 
-    content = screen.getByText('content');
+    content = await screen.findByText('content');
     expect(content).toBeInTheDocument();
 
     await act(async () => user.unhover(text));
 
-    content = screen.queryByText('content');
-    expect(content).not.toBeInTheDocument();
+    await waitForElementToBeRemoved(screen.queryByText('content'), { timeout: 300 });
+
+    // content = screen.queryByText('content');
+    // expect(content).not.toBeInTheDocument();
   });
 
   test('should toggle popover on focus/blur', async () => {
@@ -42,12 +44,14 @@ describe('ui/Popover', () => {
 
     await act(async () => text.focus());
 
-    content = screen.getByText('content');
+    content = await screen.findByText('content');
     expect(content).toBeInTheDocument();
 
     await act(async () => text.blur());
 
-    content = screen.queryByText('content');
-    expect(content).not.toBeInTheDocument();
+    await waitForElementToBeRemoved(screen.queryByText('content'), { timeout: 300 });
+
+    // content = screen.queryByText('content');
+    // expect(content).not.toBeInTheDocument();
   });
 });
