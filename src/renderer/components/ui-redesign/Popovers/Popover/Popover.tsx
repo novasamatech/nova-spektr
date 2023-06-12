@@ -57,6 +57,8 @@ const Popover = ({
             'absolute z-20 rounded-md bg-token-container-background border border-token-container-border shadow-card-shadow',
             position,
           )}
+          onFocus={() => setIsOpen(true)}
+          onBlur={() => setIsOpen(false)}
           onMouseEnter={() => setIsOpen(true)}
           onMouseLeave={() => setIsOpen(false)}
         >
