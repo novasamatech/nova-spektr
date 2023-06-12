@@ -646,17 +646,23 @@ export class Matrix implements ISecureMessenger {
   get sessionIsVerified(): boolean {
     if (!this.userId) return false;
 
-    const mx = this.matrixClient;
-    const crossSignInfo = mx.getStoredCrossSigningForUser(this.userId);
-    const deviceId = mx.getDeviceId();
-    if (!deviceId || !crossSignInfo) return false;
+    try {
+      const mx = this.matrixClient;
+      const crossSignInfo = mx.getStoredCrossSigningForUser(this.userId);
+      const deviceId = mx.getDeviceId();
+      if (!deviceId || !crossSignInfo) return false;
 
-    const deviceInfo = mx.getStoredDevice(this.userId, deviceId);
-    if (!deviceInfo) return false;
+      const deviceInfo = mx.getStoredDevice(this.userId, deviceId);
+      if (!deviceInfo) return false;
 
-    const deviceTrust = crossSignInfo.checkDeviceTrust(crossSignInfo, deviceInfo, false, true);
+      const deviceTrust = crossSignInfo.checkDeviceTrust(crossSignInfo, deviceInfo, false, true);
 
-    return deviceTrust.isCrossSigningVerified();
+      return deviceTrust.isCrossSigningVerified();
+    } catch {
+      console.info('🔸 Matrix Crypto is inactive or about to start');
+
+      return false;
+    }
   }
 
   // =====================================================
