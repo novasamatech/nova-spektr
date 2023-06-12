@@ -1,4 +1,2 @@
-import Overview from './Overview/Overview';
-import Networks from './Networks/Networks/Networks';
-
-export default { Overview, Networks };
+export { Overview } from './Overview/Overview';
+export { Networks } from './Networks/Networks';

@@ -1,6 +1,6 @@
 import cnTw from '@renderer/shared/utils/twMerge';
 import { TypographyProps } from '@renderer/components/ui-redesign/Typography/common/types';
-import { HintVariant, variantStyles } from '@renderer/components/ui-redesign/InputHint/contants';
+import { HintVariant, HintStyles } from '@renderer/components/ui-redesign/InputHint/contants';
 import { FootnoteText } from '../Typography';
 
 type Props = {
@@ -12,7 +12,7 @@ const InputHint = ({ variant = 'hint', active, className, children, ...props }: 
   if (!active) return null;
 
   return (
-    <FootnoteText className={cnTw(variantStyles[variant], className)} {...props}>
+    <FootnoteText className={cnTw(HintStyles[variant], className)} {...props}>
       {children}
     </FootnoteText>
   );

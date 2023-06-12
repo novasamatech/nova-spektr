@@ -1,12 +1,11 @@
-import { act, render, screen } from '@testing-library/react';
+import { act, render, screen, waitFor } from '@testing-library/react';
 
 import { ConnectionStatus, ConnectionType } from '@renderer/domain/connection';
 import { ExtendedChain } from '@renderer/services/network/common/types';
-import NetworkList from './NetworkList';
+import { NetworkList } from './NetworkList';
 
-jest.mock('../NetworkItem/NetworkItem', () => () => 'networkItem');
-
-describe('screen/Settings/NetworkList', () => {
+describe('screen/Settings/Networks/NetworkList', () => {
+  const children = () => 'children';
   const networks: ExtendedChain[] = [
     {
       addressPrefix: 0,
@@ -27,8 +26,8 @@ describe('screen/Settings/NetworkList', () => {
 
   test('should render component', () => {
     render(
-      <NetworkList title="Test list" networkList={networks}>
-        children
+      <NetworkList isDefaultOpen title="Test list" networkList={networks}>
+        {children}
       </NetworkList>,
     );
 
@@ -39,37 +38,39 @@ describe('screen/Settings/NetworkList', () => {
   test('should render collapsed list by default', async () => {
     render(
       <NetworkList title="Test list" networkList={networks}>
-        children
+        {children}
       </NetworkList>,
     );
 
-    const hiddenNetworkItem = screen.queryByText('networkItem');
-    expect(hiddenNetworkItem).not.toBeInTheDocument();
+    const hiddenChildren = screen.queryByText('children');
+    expect(hiddenChildren).not.toBeInTheDocument();
 
     const button = screen.getByRole('button');
     await act(() => button.click());
 
-    const visibleNetworkItem = screen.getByText('networkItem');
-    expect(visibleNetworkItem).toBeInTheDocument();
+    const visibleChildren = screen.getByText('children');
+    expect(visibleChildren).toBeInTheDocument();
   });
 
   test('should render open list with active search query', async () => {
     const { rerender } = render(
       <NetworkList title="Test list" networkList={networks}>
-        children
+        {children}
       </NetworkList>,
     );
 
-    const hiddenNetworkItemBefore = screen.queryByText('networkItem');
-    expect(hiddenNetworkItemBefore).not.toBeInTheDocument();
+    const hiddenChildren = screen.queryByText('children');
+    expect(hiddenChildren).not.toBeInTheDocument();
 
     rerender(
       <NetworkList query="My test chain" title="Test list" networkList={networks}>
-        children
+        {children}
       </NetworkList>,
     );
 
-    const hiddenNetworkItemAfter = screen.getByText('networkItem');
-    expect(hiddenNetworkItemAfter).toBeInTheDocument();
+    waitFor(() => {
+      const visibleChildren = screen.getByText('children');
+      expect(visibleChildren).toBeInTheDocument();
+    });
   });
 });
