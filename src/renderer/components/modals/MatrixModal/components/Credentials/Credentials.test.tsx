@@ -1,8 +1,8 @@
 import { render, screen, act } from '@testing-library/react';
+import noop from 'lodash/noop';
 
 import Credentials from './Credentials';
 import { useMatrix } from '@renderer/context/MatrixContext';
-import noop from 'lodash/noop';
 
 jest.mock('@renderer/context/I18nContext', () => ({
   useI18n: jest.fn().mockReturnValue({
