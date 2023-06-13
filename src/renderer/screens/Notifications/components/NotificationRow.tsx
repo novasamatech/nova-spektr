@@ -1,5 +1,5 @@
 import { format } from 'date-fns';
-import { TFunction } from 'react-i18next';
+import { TFunction, Trans } from 'react-i18next';
 
 import { BodyText, FootnoteText } from '@renderer/components/ui-redesign';
 import {
@@ -9,24 +9,36 @@ import {
   Notification,
 } from '@renderer/domain/notification';
 import { useI18n } from '@renderer/context/I18nContext';
-import { ChainAddress } from '@renderer/components/ui';
+import { Identicon } from '@renderer/components/ui';
+import { toAddress } from '@renderer/shared/utils/address';
 
 const NotificationBody = {
   [MultisigNotificationType.ACCOUNT_INVITED]: (n: Notification, t: TFunction) => {
     const typedNotification = n as Notification & MultisigNotification & MultisigAccountInvitedNotification;
 
     return (
-      <BodyText className="flex gap-1.5">
-        {t('notifications.details.newMultisigAccountTitle')}
-        <ChainAddress
-          className="w-fit"
-          address={typedNotification.multisigAccountId}
-          name={typedNotification.multisigAccountName}
+      <BodyText className="inline">
+        <Trans
+          t={t}
+          i18nKey="notifications.details.newMultisigAccountDescription"
+          values={{
+            threshold: typedNotification.threshold,
+            signatories: typedNotification.signatories.length,
+            name: typedNotification.multisigAccountName,
+          }}
+          components={{
+            identicon: (
+              <Identicon
+                className="inline-block"
+                buttonClassName="inline align-bottom"
+                address={toAddress(typedNotification.multisigAccountId)}
+                size={20}
+                background={false}
+                canCopy={true}
+              />
+            ),
+          }}
         />
-        {t('notifications.details.newMultisigAccountDescription', {
-          threshold: typedNotification.threshold,
-          signatories: typedNotification.signatories.length,
-        })}
       </BodyText>
     );
   },
@@ -47,8 +59,8 @@ const NotificationRow = ({ notification }: Props) => {
 
   return (
     <li className="flex flex-col bg-block-background-default rounded">
-      <div className="h-[48px] pl-5 pr-5 flex items-center justify-items-start">
-        <FootnoteText className="text-text-tertiary pr-1.5">
+      <div className="py-4 pl-6 pr-6 flex">
+        <FootnoteText className="text-text-tertiary pr-5.5 leading-5">
           {format(new Date(dateCreated || 0), 'p', { locale: dateLocale })}
         </FootnoteText>
         {NotificationBody[type](notification, t)}

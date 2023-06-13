@@ -306,7 +306,7 @@ const QrReader = ({
             ref={videoRef}
             data-testid="qr-reader"
             style={sizeStyle}
-            className={cnTw('object-cover object-center', className)}
+            className={cnTw('object-cover object-center -scale-x-100', className)}
           >
             {t('qrReader.videoError')}
           </video>
@@ -319,7 +319,10 @@ const QrReader = ({
         ref={bgVideoRef}
         data-testid="qr-reader"
         style={sizeStyle}
-        className={cnTw(' object-cover w-full h-full object-center scale-100 blur-[14px] max-w-none', bgVideoClassName)}
+        className={cnTw(
+          ' object-cover w-full h-full object-center scale-100 blur-[14px] max-w-none -scale-x-100',
+          bgVideoClassName,
+        )}
       />
     </>
   );

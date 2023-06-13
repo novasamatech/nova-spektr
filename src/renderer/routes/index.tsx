@@ -15,7 +15,6 @@ const routesConfig: RouteObject[] = [
       { index: true, element: <Screens.Balances /> },
       { path: Paths.ADDRESS_BOOK, element: <Screens.AddressBook /> },
       { path: Paths.SIGNING, element: <Screens.Signing /> },
-      { path: Paths.CREATE_MULTISIG_ACCOUNT, element: <Screens.CreateMultisigAccount /> },
       { path: Paths.OPERATIONS, element: <Screens.Operations /> },
       { path: Paths.BALANCES, element: <Screens.Balances /> },
       { path: Paths.CAMERA_DEV, element: <Screens.CameraDev /> },
@@ -23,10 +22,10 @@ const routesConfig: RouteObject[] = [
       { path: Paths.NOTIFICATIONS, element: <Screens.Notifications /> },
       {
         path: Paths.SETTINGS,
+        element: <Screens.Settings.Overview />,
         children: [
-          { index: true, element: <Screens.Settings.Overview /> },
           { path: Paths.NETWORK, element: <Screens.Settings.Networks /> },
-          { path: Paths.MATRIX, element: <Screens.Settings.Matrix /> },
+          // { path: Paths.MATRIX, element: <Screens.Settings.Matrix /> },
         ],
       },
       {
