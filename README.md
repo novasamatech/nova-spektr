@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="logo" width="460" alt="Nova Spektr logo"> //todo
+  <img src="./src/renderer/assets/images/misc/logo.svg" width="160" alt="Nova Spektr logo">
 </p>
 
 <div align="center">
@@ -33,7 +33,7 @@
 
 # Introduction
 
-# What is Nova Spektr
+## What is Nova Spektr
 
 Polkadot & Kusama ecosystem Enterprise Desktop application.
 

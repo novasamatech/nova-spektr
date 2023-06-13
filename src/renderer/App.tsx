@@ -13,7 +13,7 @@ import routesConfig from './routes';
 import { useAccount } from './services/account/accountService';
 import { MultisigChainProvider } from './context/MultisigChainContext/MultisigChainContext';
 
-const SPLASH_SCREEN_DELAY = Math.random() * 300 + 200; // 300ms - 500ms
+const SPLASH_SCREEN_DELAY = 400;
 
 const App = () => {
   const navigate = useNavigate();
