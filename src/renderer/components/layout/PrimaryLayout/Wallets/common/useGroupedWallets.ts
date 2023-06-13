@@ -8,6 +8,7 @@ import { SigningType, WalletType } from '@renderer/domain/shared-kernel';
 import { includes } from '@renderer/shared/utils/strings';
 import { useAccount } from '@renderer/services/account/accountService';
 import { Account } from '@renderer/domain/account';
+import { toAddress } from '@renderer/shared/utils/address';
 
 export const useGroupedWallets = (
   liveWallets: WalletDS[],
@@ -32,8 +33,6 @@ export const useGroupedWallets = (
   }, [watchOnlyAccounts.length, paritySignerAccounts.length, multisigAccounts.length, liveWallets.length]);
 
   useEffect(() => {
-    if (!searchQuery) return;
-
     const searchedParitySignerAccounts = searchAccount(paritySignerAccounts, searchQuery);
     const searchedWatchOnlyAccounts = searchAccount(watchOnlyAccounts, searchQuery);
     const searchedMultisigAccounts = searchAccount(multisigAccounts, searchQuery);
@@ -54,7 +53,12 @@ export const useGroupedWallets = (
 
   const searchAccount = (accounts: Account[] = [], query = '') => {
     return accounts.filter((account) => {
-      return includes(account.name, query) || includes(account.accountId, query);
+      const accountAddress = toAddress(
+        account.accountId,
+        account.chainId && { prefix: chains[account.chainId].addressPrefix },
+      );
+
+      return includes(account.name, query) || includes(accountAddress, query);
     });
   };
 
