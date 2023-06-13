@@ -6,7 +6,7 @@ import { useEffect, useState } from 'react';
  * @param delay time to pause before action
  * @return {Any}
  */
-function useDebounce<T>(value: T, delay = 300): T {
+export function useDebounce<T>(value: T, delay = 300): T {
   const [debouncedValue, setDebouncedValue] = useState<T>(value);
 
   useEffect(() => {
@@ -21,5 +21,3 @@ function useDebounce<T>(value: T, delay = 300): T {
 
   return debouncedValue;
 }
-
-export default useDebounce;
