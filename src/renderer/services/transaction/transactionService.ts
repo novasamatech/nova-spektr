@@ -20,6 +20,7 @@ import { createTxMetadata } from '@renderer/shared/utils/substrate';
 import { ITransactionService, HashData, ExtrinsicResultParams } from './common/types';
 import { toAccountId } from '@renderer/shared/utils/address';
 import { decodeDispatchError, getMaxWeight, isControllerMissing, isOldMultisigPallet } from './common/utils';
+import { BOND_WITH_CONTROLLER_ARGS_AMOUNT } from './common/constants';
 
 type BalancesTransferArgs = Parameters<typeof methods.balances.transfer>[0];
 type BondWithoutContollerArgs = Omit<Parameters<typeof methods.staking.bond>[0], 'controller'>;
@@ -501,7 +502,7 @@ export const useTransaction = (): ITransactionService => {
       transaction.type = TransactionType.BOND;
       let index = 0;
 
-      if (!isControllerMissing(api)) {
+      if (decoded.args.length === BOND_WITH_CONTROLLER_ARGS_AMOUNT) {
         transaction.args.controller = decoded.args[index++].toString();
       }
 
