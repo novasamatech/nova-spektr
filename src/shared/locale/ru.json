@@ -35,7 +35,7 @@
     },
     "editContact": {
       "editWarning": "please note: by changing the address, multisig account will not be changed.",
-      "saveContactButton": "Save contact",
+      "saveContactButton": "Save",
       "title": "Edit contact"
     },
     "searchPlaceholder": "Введите название или адрес...",

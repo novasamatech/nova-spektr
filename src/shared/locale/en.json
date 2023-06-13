@@ -10,7 +10,7 @@
       "accountIdLabel": "Account address",
       "accountIdPlaceholder": "Enter or paste an address",
       "accountIdRequiredError": "Account address is required",
-      "addContactButton": "Add new contact",
+      "addContactButton": "Add contact",
       "matrixIdError": "Incorrect matrix id",
       "matrixIdHint": "Matrix ID allows to exchange multisig information with signatory",
       "matrixIdLabel": "Matrix ID",
@@ -35,7 +35,7 @@
     },
     "editContact": {
       "editWarning": "Please note: by changing the address, multisig account will not be changed.",
-      "saveContactButton": "Save contact",
+      "saveContactButton": "Save",
       "title": "Edit contact"
     },
     "searchPlaceholder": "Search",
