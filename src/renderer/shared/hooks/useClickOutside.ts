@@ -6,7 +6,7 @@ import { useEffect, RefObject } from 'react';
  * @param refs DOM element to observe
  * @param callback function to be called on click
  */
-function useClickOutside(refs: RefObject<HTMLElement>[], callback: () => void): void {
+export function useClickOutside(refs: RefObject<HTMLElement>[], callback: () => void): void {
   useEffect(() => {
     const listener = (event: Event) => {
       const refIsClicked = refs.every((ref) => {
@@ -25,5 +25,3 @@ function useClickOutside(refs: RefObject<HTMLElement>[], callback: () => void): 
     };
   }, [refs.length]);
 }
-
-export default useClickOutside;
