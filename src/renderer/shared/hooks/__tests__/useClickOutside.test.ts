@@ -1,6 +1,6 @@
 import { renderHook } from '@testing-library/react';
 
-import useClickOutside from '../useClickOutside';
+import { useClickOutside } from '../useClickOutside';
 
 const createDocumentListenersMock = () => {
   const listeners: Record<string, EventListener> = {};
