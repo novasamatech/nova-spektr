@@ -44,7 +44,7 @@ export const useGroupedWallets = (
     );
 
     setWallets({
-      [WalletType.SINGLE_PARITY_SIGNER]: paritySignerAccounts.filter((a) => !a.walletId),
+      [WalletType.SINGLE_PARITY_SIGNER]: searchedParitySignerAccounts.filter((a) => !a.walletId),
       [WalletType.MULTISHARD_PARITY_SIGNER]: multishardWallets,
       [WalletType.WATCH_ONLY]: searchedWatchOnlyAccounts,
       [WalletType.MULTISIG]: searchedMultisigAccounts,
