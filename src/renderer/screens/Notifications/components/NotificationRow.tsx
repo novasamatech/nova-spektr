@@ -10,6 +10,7 @@ import {
 } from '@renderer/domain/notification';
 import { useI18n } from '@renderer/context/I18nContext';
 import { Identicon } from '@renderer/components/ui';
+import { toAddress } from '@renderer/shared/utils/address';
 
 const NotificationBody = {
   [MultisigNotificationType.ACCOUNT_INVITED]: (n: Notification, t: TFunction) => {
@@ -30,7 +31,7 @@ const NotificationBody = {
               <Identicon
                 className="inline-block"
                 buttonClassName="inline align-bottom"
-                address={typedNotification.multisigAccountId}
+                address={toAddress(typedNotification.multisigAccountId)}
                 size={20}
                 background={false}
                 canCopy={true}
