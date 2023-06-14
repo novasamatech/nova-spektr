@@ -9,6 +9,7 @@ import { useNetwork } from '@renderer/services/network/networkService';
 import { useSubscription } from '@renderer/services/subscription/subscriptionService';
 import { useAccount } from '@renderer/services/account/accountService';
 import { usePrevious } from '@renderer/shared/hooks';
+import { isMultisig } from '@renderer/domain/account';
 
 type NetworkContextProps = {
   connections: Record<ChainId, ExtendedChain>;
@@ -95,6 +96,12 @@ export const NetworkProvider = ({ children }: PropsWithChildren) => {
     return activeAccounts.reduce<AccountId[]>((acc, account) => {
       if (account.accountId && (!account.rootId || account.chainId === chainId)) {
         acc.push(account.accountId);
+      }
+
+      if (isMultisig(account)) {
+        account.signatories.forEach((signatory) => {
+          acc.push(signatory.accountId);
+        });
       }
 
       return acc;

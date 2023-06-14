@@ -28,7 +28,7 @@ const Alert = ({ title, variant = 'info', className, children, onClose }: PropsW
           {isList ? <ul className={cnTw('flex flex-col gap-y-1 list-none pl-6', className)}>{children}</ul> : children}
         </div>
 
-        {onClose && <IconButton size={14} name="close" className="ml-auto" onClick={onClose} />}
+        {onClose && <IconButton size={16} name="close" onClick={onClose} />}
       </div>
     </div>
   );

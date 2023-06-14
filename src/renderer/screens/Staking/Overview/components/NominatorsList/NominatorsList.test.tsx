@@ -11,7 +11,9 @@ jest.mock('@renderer/context/I18nContext', () => ({
 
 describe('screens/Staking/Overview/NominatorsList', () => {
   test('should create component', () => {
-    render(<NominatorsList nominators={[]} onCheckValidators={noop} onToggleNominator={noop} />);
+    render(
+      <NominatorsList nominators={[]} isStakingLoading={false} onCheckValidators={noop} onToggleNominator={noop} />,
+    );
 
     const accountHeader = screen.getByText('staking.overview.accountTableHeader');
     const stakeHeader = screen.getByText('staking.overview.stakeTableHeader');

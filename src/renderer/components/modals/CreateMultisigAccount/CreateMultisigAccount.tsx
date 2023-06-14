@@ -91,21 +91,18 @@ const CreateMultisigAccount = ({ isOpen, onClose }: Props) => {
   );
 
   const getResultProps = (): OperationResultProps => {
-    if (isLoading) {
-      return { variant: 'loading' };
-    } else if (error) {
-      return { variant: 'error', description: error };
-    } else {
-      return { variant: 'success', description: t('createMultisigAccount.successMessage') };
-    }
+    if (isLoading) return { variant: 'loading' };
+    if (error) return { variant: 'error', description: error };
+
+    return { variant: 'success', description: t('createMultisigAccount.successMessage') };
   };
 
   return (
     <>
       <BaseModal
-        isOpen={isOpen && !isResultModlaOpen}
-        title={modalTitle}
         closeButton
+        title={modalTitle}
+        isOpen={isOpen && !isResultModlaOpen}
         headerClass="bg-input-background-disabled"
         panelClass="w-[944px] h-[576px]"
         contentClass="flex h-[524px]"

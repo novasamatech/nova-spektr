@@ -32,22 +32,11 @@ type Props = {
   multisigTx?: Transaction;
   unsignedTx: UnsignedTransaction[];
   signatures: HexString[];
-  successMessage: string;
   description?: string;
   onClose: () => void;
 };
 
-export const Submit = ({
-  api,
-  accounts,
-  txs,
-  multisigTx,
-  unsignedTx,
-  signatures,
-  successMessage,
-  description,
-  onClose,
-}: Props) => {
+export const Submit = ({ api, accounts, txs, multisigTx, unsignedTx, signatures, description, onClose }: Props) => {
   const { t } = useI18n();
 
   const { matrix } = useMatrix();
@@ -138,12 +127,19 @@ export const Submit = ({
       .catch(console.warn);
   };
 
+  const getSuccessMessage = (): string => {
+    if (multisigTx) return t('staking.submitSuccessMultisig');
+    if (accounts.length === 1) return t('staking.submitSuccessSingle');
+
+    return t('staking.submitSuccessMultishard');
+  };
+
   const getResultProps = (): ResultProps => {
     if (inProgress) {
       return { title: t('operation.inProgress'), variant: 'loading' };
     }
     if (isSuccess) {
-      return { title: successMessage, variant: 'success' };
+      return { title: getSuccessMessage(), variant: 'success' };
     }
     if (errorMessage) {
       return { title: t('operation.feeErrorTitle'), description: errorMessage, variant: 'error' };

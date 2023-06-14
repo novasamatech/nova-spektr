@@ -10,10 +10,13 @@ import { ExtendedChain } from '@renderer/services/network/common/types';
 import { SelectButtonStyle, OptionStyle } from '@renderer/components/ui-redesign/Dropdowns/common/constants';
 import { FootnoteText, IconButton, Button } from '@renderer/components/ui-redesign';
 import { HelpText } from '@renderer/components/ui-redesign/Typography';
+import { useScrollTo } from '@renderer/shared/hooks';
 import CommonInputStyles from '@renderer/components/ui-redesign/Inputs/common/styles';
 
 export const OptionsContainerStyle =
   'mt-1 absolute z-20 py-1 px-1 w-full border border-token-container-border rounded bg-input-background shadow-card-shadow';
+
+const TRANSITION_DURATION = 100;
 
 type SelectorPayload = {
   type: ConnectionType;
@@ -37,6 +40,7 @@ export const NetworkSelector = ({
   onChangeCustomNode,
 }: Props) => {
   const { t } = useI18n();
+  const [ref, scroll] = useScrollTo<HTMLDivElement>(TRANSITION_DURATION);
 
   const { connection, nodes } = networkItem;
   const { canUseLightClient, connectionType, activeNode, customNodes } = connection;
@@ -90,6 +94,7 @@ export const NetworkSelector = ({
               CommonInputStyles,
               'w-[248px] flex items-center gap-x-2 justify-between',
             )}
+            onClick={scroll}
           >
             <FootnoteText className="truncate">
               {selectedNode?.node?.name || selectedNode?.title || t('settings.networks.selectorPlaceholder')}
@@ -97,8 +102,16 @@ export const NetworkSelector = ({
             <Icon name="down" size={16} className="text-icon-default" />
           </Listbox.Button>
 
-          <Transition as={Fragment} leave="transition ease-in duration-100" leaveFrom="opacity-100" leaveTo="opacity-0">
-            <div className={OptionsContainerStyle}>
+          <Transition
+            as={Fragment}
+            enter="transition ease-out duration-150"
+            enterFrom="opacity-0 translate-y-0"
+            enterTo="opacity-100 translate-y-1"
+            leave="transition ease-in duration-100"
+            leaveFrom="opacity-100 translate-y-1"
+            leaveTo="opacity-0 translate-y-0"
+          >
+            <div ref={ref} className={OptionsContainerStyle}>
               <Listbox.Options className="max-h-60 overflow-y-auto overscroll-contain">
                 {availableNodes.map((data) => {
                   const { type, node, title } = data;
