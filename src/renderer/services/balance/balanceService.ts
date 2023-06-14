@@ -46,7 +46,7 @@ export const useBalance = (): IBalanceService => {
       return getNetworkBalances(accountIds, chainId);
     };
 
-    return useLiveQuery(query, [JSON.stringify(accountIds), chainId], []);
+    return useLiveQuery(query, [accountIds.length, accountIds.length > 0 && accountIds[0], chainId], []);
   };
 
   const getLiveAssetBalances = (accountIds: AccountId[], chainId: ChainId, assetId: string): BalanceDS[] => {
