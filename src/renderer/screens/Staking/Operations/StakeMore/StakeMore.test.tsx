@@ -3,7 +3,7 @@ import { MemoryRouter } from 'react-router-dom';
 
 import { ConnectionStatus } from '@renderer/domain/connection';
 import { TEST_ACCOUNT_ID } from '@renderer/shared/utils/constants';
-import StakeMore from './StakeMore';
+import { StakeMore } from './StakeMore';
 
 jest.mock('@renderer/context/I18nContext', () => ({
   useI18n: jest.fn().mockReturnValue({

@@ -16,8 +16,8 @@ import { Transaction } from '@renderer/domain/transaction';
 import AddressWithExplorers from '@renderer/components/common/AddressWithExplorers/AddressWithExplorers';
 import AccountsModal from '../Modals/AccountsModal/AccountsModal';
 import ValidatorsModal from '../Modals/ValidatorsModal/ValidatorsModal';
-import cnTw from '@renderer/shared/utils/twMerge';
 import { DestinationType } from '../../common/types';
+import cnTw from '@renderer/shared/utils/twMerge';
 
 const ActionStyle = 'group hover:bg-action-background-hover px-2 py-1 rounded';
 

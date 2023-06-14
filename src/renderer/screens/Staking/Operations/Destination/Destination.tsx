@@ -32,7 +32,7 @@ const enum Step {
   SUBMIT,
 }
 
-const Destination = () => {
+export const Destination = () => {
   const { t } = useI18n();
   const navigate = useNavigate();
   const { getActiveAccounts } = useAccount();
@@ -271,7 +271,6 @@ const Destination = () => {
           signatures={signatures}
           unsignedTx={unsignedTransactions}
           accounts={accounts}
-          successMessage={t('staking.destination.submitSuccess')}
           description={description}
           onClose={closeDestinationModal}
         />
@@ -279,5 +278,3 @@ const Destination = () => {
     </BaseModal>
   );
 };
-
-export default Destination;

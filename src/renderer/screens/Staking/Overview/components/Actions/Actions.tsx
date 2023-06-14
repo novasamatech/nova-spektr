@@ -23,7 +23,7 @@ const enum StakeActions {
   UNSTAKE = 'unstake',
   RETURN_TO_STAKE = 'returnToStake',
   REDEEM = 'redeem',
-  SET_VALIDATORS = 'setValidators',
+  CHANGE_VALIDATORS = 'changeValidators',
   DESTINATION = 'destination',
 }
 
@@ -33,7 +33,7 @@ const ControllerActions: StakeActions[] = [
   StakeActions.UNSTAKE,
   StakeActions.RETURN_TO_STAKE,
   StakeActions.REDEEM,
-  StakeActions.SET_VALIDATORS,
+  StakeActions.CHANGE_VALIDATORS,
   StakeActions.DESTINATION,
 ];
 
@@ -47,9 +47,9 @@ const OperationOptions: Record<StakeActions, { icon: IconNames; title: string; p
     path: Paths.RESTAKE,
   },
   [StakeActions.REDEEM]: { icon: 'redeem', title: 'staking.actions.redeemLabel', path: Paths.REDEEM },
-  [StakeActions.SET_VALIDATORS]: {
-    icon: 'setValidators',
-    title: 'staking.actions.setValidatorsLabel',
+  [StakeActions.CHANGE_VALIDATORS]: {
+    icon: 'changeValidators',
+    title: 'staking.actions.changeValidatorsLabel',
     path: Paths.VALIDATORS,
   },
   [StakeActions.DESTINATION]: {
@@ -61,10 +61,11 @@ const OperationOptions: Record<StakeActions, { icon: IconNames; title: string; p
 
 type Props = {
   stakes: Stake[];
+  isStakingLoading: boolean;
   onNavigate: (path: PathValue, addresses?: Address[]) => void;
 };
 
-const Actions = ({ stakes, onNavigate }: Props) => {
+const Actions = ({ stakes, isStakingLoading, onNavigate }: Props) => {
   const { t } = useI18n();
   const [isDialogOpen, toggleIsDialogOpen] = useToggle();
 
@@ -77,7 +78,7 @@ const Actions = ({ stakes, onNavigate }: Props) => {
       acc.startStaking += stake.total ? 0 : 1;
       acc.stakeMore += stake.total ? 1 : 0;
       acc.unstake += stake.total ? 1 : 0;
-      acc.setValidators += stake.total ? 1 : 0;
+      acc.changeValidators += stake.total ? 1 : 0;
       acc.destination += stake.total ? 1 : 0;
       acc.returnToStake += stake.unlocking?.length > 0 ? 1 : 0;
       acc.redeem += stake.total !== stake.active ? 1 : 0;
@@ -90,7 +91,7 @@ const Actions = ({ stakes, onNavigate }: Props) => {
       unstake: 0,
       returnToStake: 0,
       redeem: 0,
-      setValidators: 0,
+      changeValidators: 0,
       destination: 0,
     },
   );
@@ -202,7 +203,7 @@ const Actions = ({ stakes, onNavigate }: Props) => {
         <DropdownButton
           className="min-w-[228px]"
           title={getActionButtonText()}
-          disabled={noStakes || wrongOverlaps}
+          disabled={isStakingLoading || noStakes || wrongOverlaps}
           options={getAvailableButtonOptions()}
         />
       </div>
