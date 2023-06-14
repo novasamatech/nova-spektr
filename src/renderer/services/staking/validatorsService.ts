@@ -1,7 +1,7 @@
+import merge from 'lodash/merge';
 import { ApiPromise } from '@polkadot/api';
 import { u8aToString } from '@polkadot/util';
-import merge from 'lodash/merge';
-import { Data, Option } from '@polkadot/types';
+import { Data } from '@polkadot/types';
 import { PalletIdentityRegistration } from '@polkadot/types/lookup';
 import { AccountId32 } from '@polkadot/types/interfaces';
 
@@ -74,9 +74,7 @@ export const useValidators = (): IValidatorsService => {
 
     const subIdentities = wrappedIdentities.reduce<Record<Address, [AccountId32, Data]>>(
       (acc, [storageKey, wrappedIdentity]) => {
-        const identity = wrappedIdentity.unwrap();
-
-        acc[storageKey.args[0].toString()] = identity;
+        acc[storageKey.args[0].toString()] = wrappedIdentity.unwrap();
 
         return acc;
       },
@@ -100,20 +98,25 @@ export const useValidators = (): IValidatorsService => {
     api: ApiPromise,
     subIdentities: SubIdentity[],
   ): Promise<Record<Address, Identity>> => {
-    const parentAddresses = subIdentities.map((identity) => identity.parent);
-
     const wrappedIdentities = await api.query.identity.identityOf.entries();
 
-    const parentIdentities = parentAddresses.map((a) => wrappedIdentities.find((i) => i[0].args[0].toString() === a));
+    const parentAddresses = subIdentities.reduce<Record<string, boolean>>((acc, identity) => {
+      acc[identity.parent] = true;
 
-    return parentIdentities.reduce<Record<Address, Identity>>((acc, wrappedIdentity, index) => {
-      if (!wrappedIdentity) return acc;
+      return acc;
+    }, {});
 
-      const identity = wrappedIdentity[1] as Option<PalletIdentityRegistration>;
-      if (identity.isNone) return acc;
+    const parentIdentities = wrappedIdentities.reduce<PalletIdentityRegistration[]>((acc, [address, identity]) => {
+      if (parentAddresses[address.args[0].toString()] && !identity.isNone) {
+        acc.push(identity.unwrap());
+      }
 
+      return acc;
+    }, []);
+
+    return parentIdentities.reduce<Record<Address, Identity>>((acc, unwrapped, index) => {
       const { parent, sub, subName } = subIdentities[index];
-      const { info } = identity.unwrap(); // { judgements, info }
+      const { info } = unwrapped; // { judgements, info }
       const { display, web, riot, email, twitter } = info;
 
       const payload: Identity = {
