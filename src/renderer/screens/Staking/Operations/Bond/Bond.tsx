@@ -277,9 +277,11 @@ export const Bond = () => {
           {isAlertOpen && (
             <Alert title={t('staking.confirmation.hintTitle')} onClose={toggleAlert}>
               <Alert.Item>{t('staking.confirmation.hintRewards')}</Alert.Item>
-              {t('staking.confirmation.hintUnstakePeriod')} {'('}
-              <UnstakingDuration className="ml-1" api={api} />
-              {')'}
+              <Alert.Item>
+                {t('staking.confirmation.hintUnstakePeriod')} {'('}
+                <UnstakingDuration api={api} />
+                {')'}
+              </Alert.Item>
               <Alert.Item>{t('staking.confirmation.hintNoRewards')}</Alert.Item>
               <Alert.Item>{t('staking.confirmation.hintWithdraw')}</Alert.Item>
             </Alert>

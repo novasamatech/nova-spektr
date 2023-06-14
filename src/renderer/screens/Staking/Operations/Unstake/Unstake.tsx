@@ -245,7 +245,7 @@ export const Unstake = () => {
             <Alert title={t('staking.confirmation.hintTitle')} onClose={toggleAlert}>
               <Alert.Item>
                 {t('staking.confirmation.hintUnstakePeriod')} {'('}
-                <UnstakingDuration className="ml-1" api={api} />
+                <UnstakingDuration api={api} />
                 {')'}
               </Alert.Item>
               <Alert.Item>{t('staking.confirmation.hintNoRewards')}</Alert.Item>
