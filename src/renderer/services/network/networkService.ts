@@ -264,13 +264,13 @@ export const useNetwork = (networkSubscription?: ISubscriptionService<ChainId>):
     };
 
     if (provider.instance) {
-      subscribeConnected(chainId, provider.instance, type, node);
-      subscribeDisconnected(chainId, provider.instance);
-      subscribeError(chainId, provider.instance, onAutoBalanceError);
-
       if (provider.isScProvider) {
         await provider.instance.connect();
       }
+
+      subscribeConnected(chainId, provider.instance, type, node);
+      subscribeDisconnected(chainId, provider.instance);
+      subscribeError(chainId, provider.instance, onAutoBalanceError);
     } else {
       updateConnectionState(chainId, {
         activeNode: node,

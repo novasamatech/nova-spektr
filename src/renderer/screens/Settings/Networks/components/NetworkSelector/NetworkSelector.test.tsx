@@ -4,6 +4,7 @@ import noop from 'lodash/noop';
 import { ConnectionStatus, ConnectionType } from '@renderer/domain/connection';
 import { ExtendedChain } from '@renderer/services/network/common/types';
 import { NetworkSelector } from './NetworkSelector';
+import { useScrollTo } from '@renderer/shared/hooks';
 
 jest.mock('@renderer/context/I18nContext', () => ({
   useI18n: jest.fn().mockReturnValue({
@@ -11,7 +12,13 @@ jest.mock('@renderer/context/I18nContext', () => ({
   }),
 }));
 
+jest.mock('@renderer/shared/hooks');
+
 describe('screen/Settings/Networks/NetworkSelector', () => {
+  beforeAll(() => {
+    (useScrollTo as jest.Mock).mockReturnValue([{ current: {} }, noop]);
+  });
+
   const defaultNetwork: ExtendedChain = {
     addressPrefix: 0,
     assets: [],

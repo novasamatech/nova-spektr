@@ -32,7 +32,7 @@ const enum Step {
   SUBMIT,
 }
 
-const SetValidators = () => {
+export const ChangeValidators = () => {
   const { t } = useI18n();
   const navigate = useNavigate();
   const { getActiveAccounts } = useAccount();
@@ -227,7 +227,7 @@ const SetValidators = () => {
           explorers={explorers}
           addressPrefix={addressPrefix}
           onResult={onSelectValidators}
-          onGoBack={console.log}
+          onGoBack={goToPrevStep}
         />
       )}
       {activeStep === Step.CONFIRMATION && (
@@ -236,13 +236,18 @@ const SetValidators = () => {
           validators={Object.values(validators)}
           description={description}
           transaction={transactions[0]}
+          multisigTx={multisigTx}
           accounts={accounts}
           signer={signer}
           onResult={() => setActiveStep(Step.SCANNING)}
           onGoBack={goToPrevStep}
           {...explorersProps}
         >
-          {isAlertOpen && <Alert title={t('staking.validators.hintTitle')} onClose={toggleAlert} />}
+          {isAlertOpen && (
+            <Alert title={t('staking.confirmation.hintTitle')} onClose={toggleAlert}>
+              <Alert.Item>{t('staking.confirmation.hintNewValidators')}</Alert.Item>
+            </Alert>
+          )}
         </Confirmation>
       )}
       {activeStep === Step.SCANNING && (
@@ -290,7 +295,6 @@ const SetValidators = () => {
           signatures={signatures}
           unsignedTx={unsignedTransactions}
           accounts={accountsValidator}
-          successMessage={t('staking.validators.submitSuccess')}
           description={description}
           onClose={closeValidatorsModal}
         />
@@ -298,5 +302,3 @@ const SetValidators = () => {
     </BaseModal>
   );
 };
-
-export default SetValidators;

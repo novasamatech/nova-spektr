@@ -5,7 +5,7 @@ import { useEffect, useRef } from 'react';
  * @param value arbitrary value
  * @return {Any}
  */
-function usePrevious<T>(value: T): T {
+export function usePrevious<T>(value: T): T {
   const ref: any = useRef<T>();
 
   useEffect(() => {
@@ -14,5 +14,3 @@ function usePrevious<T>(value: T): T {
 
   return ref.current;
 }
-
-export default usePrevious;

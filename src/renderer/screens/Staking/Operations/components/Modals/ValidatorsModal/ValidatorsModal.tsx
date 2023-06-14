@@ -18,21 +18,21 @@ const ValidatorsModal = ({ isOpen, validators, explorers, onClose }: Props) => {
     <BaseModal
       closeButton
       contentClass="pb-3 px-3 pt-2"
-      panelClass="w-[368px]"
+      panelClass="w-[480px]"
       title={t('staking.confirmation.validatorsTitle')}
       isOpen={isOpen}
       onClose={onClose}
     >
-      <ul className="max-h-[600px] flex flex-col gap-y-3">
+      <ul className="max-h-[388px] flex flex-col gap-y-3 overflow-y-auto">
         {validators.map((validator) => (
           <li key={validator.address}>
             <AddressWithExplorers
-              address={validator.address}
-              size={20}
-              explorers={explorers}
-              addressFont="text-body text-text-secondary"
-              type="short"
               className="gap-x-1"
+              addressFont="text-body text-text-secondary"
+              type="full"
+              size={20}
+              address={validator.address}
+              explorers={explorers}
             />
           </li>
         ))}

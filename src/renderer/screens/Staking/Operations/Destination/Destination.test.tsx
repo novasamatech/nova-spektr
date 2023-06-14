@@ -2,7 +2,7 @@ import { act, render, screen } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 
 import { ConnectionStatus } from '@renderer/domain/connection';
-import Destination from './Destination';
+import { Destination } from './Destination';
 
 jest.mock('@renderer/context/I18nContext', () => ({
   useI18n: jest.fn().mockReturnValue({

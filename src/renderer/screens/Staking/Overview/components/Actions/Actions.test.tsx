@@ -24,14 +24,14 @@ describe('screens/Staking/Overview/Actions', () => {
   ];
 
   const renderActions = async (stakes: Stake[]) => {
-    render(<Actions stakes={stakes} onNavigate={noop} />);
+    render(<Actions isStakingLoading={false} stakes={stakes} onNavigate={noop} />);
 
     const button = screen.getByRole('button');
     await act(() => button.click());
   };
 
   test('should create component', () => {
-    render(<Actions stakes={stakes} onNavigate={noop} />);
+    render(<Actions isStakingLoading={false} stakes={stakes} onNavigate={noop} />);
 
     const accounts = screen.getByText('staking.overview.actionsTitle');
     expect(accounts).toBeInTheDocument();

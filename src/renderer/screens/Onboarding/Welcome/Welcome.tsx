@@ -1,4 +1,6 @@
 import { useNavigate } from 'react-router-dom';
+import { useLayoutEffect, useRef, useState } from 'react';
+import { throttle } from 'lodash';
 
 import { Icon } from '@renderer/components/ui';
 import { BodyText, FootnoteText, TitleText, CaptionText } from '@renderer/components/ui-redesign';
@@ -10,12 +12,35 @@ import Paths from '@renderer/routes/paths';
 import Vault from '../Vault/Vault';
 import PrivacyPolicy from './PrivacyPolicy';
 
+const LOGO_WIDTH = 232;
+const RIGHT_PADDING = 225;
+
 const Welcome = () => {
   const { t } = useI18n();
   const navigate = useNavigate();
 
   const [isWatchOnlyModalOpen, toggleWatchOnlyModal] = useToggle();
   const [isVaultModalOpen, toggleVaultModal] = useToggle();
+
+  const logo = useRef<HTMLDivElement>(null);
+
+  // const [windowSize, setWindowSize] = useState<{ width: number, height: number}>();
+  const [fixed, setFixed] = useState(true);
+
+  useLayoutEffect(() => {
+    function handleResize() {
+      const width = logo.current?.clientWidth || 0;
+
+      setFixed((width - LOGO_WIDTH) / 2 < RIGHT_PADDING);
+    }
+
+    handleResize();
+    window.addEventListener('resize', throttle(handleResize, 16));
+
+    return () => {
+      window.removeEventListener('resize', handleResize);
+    };
+  }, []); // Empty array ensures that effect is only run on mount and unmount
 
   const handleCreateWatchOnlyWallet = () => {
     toggleWatchOnlyModal();
@@ -102,7 +127,14 @@ const Welcome = () => {
           <PrivacyPolicy />
         </div>
       </div>
-      <div className="flex-1 flex flex-col h-full bg-input-background-disabled p-10"></div>
+      <div
+        ref={logo}
+        className="relative flex-1 flex flex-col h-full bg-input-background-disabled justify-center items-end logo-background"
+      >
+        <div className={cnTw('relative w-fit', fixed ? `pr-[${RIGHT_PADDING}px]` : 'self-center')}>
+          <Icon name="logoTitle" className="-scale-y-100" size={LOGO_WIDTH} />
+        </div>
+      </div>
 
       <WatchOnly
         isOpen={isWatchOnlyModalOpen}

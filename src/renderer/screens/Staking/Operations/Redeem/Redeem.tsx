@@ -31,7 +31,7 @@ const enum Step {
   SUBMIT,
 }
 
-const Redeem = () => {
+export const Redeem = () => {
   const { t } = useI18n();
   const navigate = useNavigate();
   const { getTransactionHash } = useTransaction();
@@ -273,7 +273,6 @@ const Redeem = () => {
           signatures={signatures}
           unsignedTx={unsignedTransactions}
           accounts={accounts}
-          successMessage={t('staking.redeem.submitSuccess')}
           onClose={closeRedeemModal}
           {...explorersProps}
         />
@@ -281,5 +280,3 @@ const Redeem = () => {
     </BaseModal>
   );
 };
-
-export default Redeem;
