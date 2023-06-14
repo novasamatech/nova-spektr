@@ -7,7 +7,7 @@ import { Icon } from '@renderer/components/ui';
 import { DropdownOption, DropdownResult } from '@renderer/components/ui/Dropdowns/common/types';
 import { useI18n } from '@renderer/context/I18nContext';
 import { Asset } from '@renderer/domain/asset';
-import { ChainId, AccountId } from '@renderer/domain/shared-kernel';
+import { ChainId, AccountId, SigningType } from '@renderer/domain/shared-kernel';
 import { Transaction, TransactionType } from '@renderer/domain/transaction';
 import { useAccount } from '@renderer/services/account/accountService';
 import { useBalance } from '@renderer/services/balance/balanceService';
@@ -19,7 +19,7 @@ import { OperationForm } from '@renderer/screens/Staking/Operations/components';
 import { isMultisig, Account } from '@renderer/domain/account';
 import { toAddress } from '@renderer/shared/utils/address';
 import { useStakingData } from '@renderer/services/staking/stakingDataService';
-import { FootnoteText, Select, MultiSelect } from '@renderer/components/ui-redesign';
+import { FootnoteText, Select, MultiSelect, InputHint } from '@renderer/components/ui-redesign';
 import {
   getUnstakeAccountOption,
   validateBalanceForFee,
@@ -140,15 +140,17 @@ const InitOperation = ({ api, chainId, addressPrefix, accounts, asset, onResult 
   useEffect(() => {
     if (!accountIsMultisig) return;
 
-    const signerOptions = dbAccounts.reduce<any[]>((acc, signer) => {
-      if (signatoryIds.includes(signer.accountId)) {
-        const balance = signatoriesBalances.find((b) => b.accountId === signer.accountId);
+    const signerOptions = dbAccounts
+      .filter((a) => a.signingType !== SigningType.WATCH_ONLY)
+      .reduce<any[]>((acc, signer) => {
+        if (signatoryIds.includes(signer.accountId)) {
+          const balance = signatoriesBalances.find((b) => b.accountId === signer.accountId);
 
-        acc.push(getSignatoryOptions(signer, { addressPrefix, asset, balance }));
-      }
+          acc.push(getSignatoryOptions(signer, { addressPrefix, asset, balance }));
+        }
 
-      return acc;
-    }, []);
+        return acc;
+      }, []);
 
     if (signerOptions.length === 0) return;
 
@@ -233,13 +235,19 @@ const InitOperation = ({ api, chainId, addressPrefix, accounts, asset, onResult 
   return (
     <div className="flex flex-col gap-y-4 w-[440px] px-5 py-4">
       {accountIsMultisig ? (
-        <Select
-          label={t('staking.bond.signatoryLabel')}
-          placeholder={t('staking.bond.signatoryPlaceholder')}
-          selectedId={activeSignatory?.id}
-          options={signatoryOptions}
-          onChange={setActiveSignatory}
-        />
+        <>
+          <Select
+            label={t('staking.bond.signatoryLabel')}
+            placeholder={t('staking.bond.signatoryPlaceholder')}
+            disabled={!signatoryOptions.length}
+            selectedId={activeSignatory?.id}
+            options={signatoryOptions}
+            onChange={setActiveSignatory}
+          />
+          <InputHint active={!signatoryOptions.length} className="-mt-2">
+            {t('multisigOperations.noSignatory')}
+          </InputHint>
+        </>
       ) : (
         <MultiSelect
           label={t('staking.bond.accountLabel')}

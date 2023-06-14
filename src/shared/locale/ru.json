@@ -134,6 +134,7 @@
     "subTitle": "Реквизиты Matrix"
   },
   "multisigOperations": {
+    "noSignatory": "Add signatory wallet before making multisig operation",
     "title": "Операции с мультиподписью"
   },
   "navigation": {

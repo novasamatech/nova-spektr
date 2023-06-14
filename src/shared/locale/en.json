@@ -134,6 +134,7 @@
     "subTitle": "Matrix Credentials"
   },
   "multisigOperations": {
+    "noSignatory": "Add signatory wallet before making multisig operation",
     "title": "Multisig Operations"
   },
   "navigation": {
