@@ -12,7 +12,7 @@ type Props = {
   explorers?: Explorer[];
 } & AccountAddressProps;
 
-const AddressWithExplorers = ({ explorers, showMatrix, ...addressProps }: Props) => {
+const AddressWithExplorers = ({ explorers = [], showMatrix, ...addressProps }: Props) => {
   const address = getAddress(addressProps);
   const popoverItems = useAddressInfo(address, explorers, showMatrix);
 

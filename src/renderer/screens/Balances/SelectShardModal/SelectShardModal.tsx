@@ -135,7 +135,7 @@ const SelectShardModal = ({ isOpen, onClose, activeAccounts, accounts }: Props) 
       />
 
       {/* root accounts */}
-      <ul>
+      <ul className="overflow-y-scroll max-h-[470px]">
         {!query && (
           <li key="all" className="mb-2">
             <Checkbox
@@ -156,8 +156,9 @@ const SelectShardModal = ({ isOpen, onClose, activeAccounts, accounts }: Props) 
               onChange={(event) => selectRoot(event.target?.checked, root.accountId)}
             >
               <AddressWithExplorers
-                explorers={chains[root.chainId as ChainId]?.explorers || []}
+                explorers={root.chainId && chains[root.chainId]?.explorers}
                 accountId={root.accountId}
+                addressPrefix={root.chainId && chains[root.chainId].addressPrefix}
                 name={root.name}
               />
             </Checkbox>
@@ -188,8 +189,9 @@ const SelectShardModal = ({ isOpen, onClose, activeAccounts, accounts }: Props) 
                           onChange={(event) => selectAccount(event.target?.checked, account)}
                         >
                           <AddressWithExplorers
-                            explorers={chains[account.chainId as ChainId]?.explorers || []}
+                            explorers={account.chainId && chains[account.chainId]?.explorers}
                             accountId={account.accountId}
+                            addressPrefix={account.chainId && chains[account.chainId].addressPrefix}
                             name={account.name}
                           />
                         </Checkbox>
