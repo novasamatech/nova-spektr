@@ -38,9 +38,24 @@ type Props = {
   nativeToken: Asset;
   addressPrefix: number;
   onSubmit: (transferTx: Transaction, multisig?: { multisigTx: Transaction; description: string }) => void;
+  onChangeAmount: (amount: string) => void;
+  onChangeFee: (fee: string) => void;
+  onChangeDeposit: (deposit: string) => void;
 };
 
-export const TransferForm = ({ api, chainId, account, signer, asset, nativeToken, addressPrefix, onSubmit }: Props) => {
+export const TransferForm = ({
+  api,
+  chainId,
+  account,
+  signer,
+  asset,
+  nativeToken,
+  addressPrefix,
+  onSubmit,
+  onChangeAmount,
+  onChangeFee,
+  onChangeDeposit,
+}: Props) => {
   const { t } = useI18n();
   const { getBalance } = useBalance();
   const { getMultisigTxs } = useMultisigTx();
@@ -63,7 +78,7 @@ export const TransferForm = ({ api, chainId, account, signer, asset, nativeToken
     control,
     watch,
     trigger,
-    formState: { isValid },
+    formState: { isValid, isDirty },
   } = useForm<TransferFormData>({
     mode: 'onChange',
     defaultValues: { amount: '', destination: '', signatory: '', description: '' },
@@ -71,6 +86,22 @@ export const TransferForm = ({ api, chainId, account, signer, asset, nativeToken
 
   const amount = watch('amount');
   const destination = watch('destination');
+
+  useEffect(() => {
+    isDirty && trigger('amount');
+  }, [accountBalance, signerBalance]);
+
+  useEffect(() => {
+    onChangeAmount(formatAmount(amount, asset.precision));
+  }, [amount]);
+
+  useEffect(() => {
+    onChangeFee(fee);
+  }, [fee]);
+
+  useEffect(() => {
+    onChangeDeposit(deposit);
+  }, [deposit]);
 
   const setupBalances = (
     address: Address,
@@ -190,7 +221,7 @@ export const TransferForm = ({ api, chainId, account, signer, asset, nativeToken
     return new BN(fee).add(new BN(formatAmount(amount, asset.precision))).lte(new BN(balance));
   };
 
-  const validateBalanceForFeeAndDeposit = (amount: string): boolean => {
+  const validateBalanceForFeeAndDeposit = (): boolean => {
     if (!isMultisig(account)) return true;
     if (!signerBalance) return false;
 

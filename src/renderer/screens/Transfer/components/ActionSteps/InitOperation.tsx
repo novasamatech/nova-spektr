@@ -10,8 +10,9 @@ import { Asset } from '@renderer/domain/asset';
 import { Transaction } from '@renderer/domain/transaction';
 import { TransferForm } from '../TransferForm';
 import { Account, MultisigAccount, isMultisig } from '@renderer/domain/account';
-import { getAccountsOptions } from '../../common/utils';
+import { getAccountOption, getSignatoryOption } from '../../common/utils';
 import { Select } from '@renderer/components/ui-redesign';
+import { useBalance } from '@renderer/services/balance/balanceService';
 
 type Props = {
   api: ApiPromise;
@@ -39,6 +40,7 @@ const InitOperation = ({
 }: Props) => {
   const { t } = useI18n();
   const { getLiveAccounts, getActiveAccounts } = useAccount();
+  const { getLiveAssetBalances } = useBalance();
 
   const accounts = getActiveAccounts();
   const dbAccounts = getLiveAccounts();
@@ -47,34 +49,67 @@ const InitOperation = ({
   const [accountsOptions, setAccountsOptions] = useState<DropdownOption<Account | MultisigAccount>[]>([]);
   const [activeSignatory, setActiveSignatory] = useState<DropdownResult<Account>>();
   const [signatoryOptions, setSignatoryOptions] = useState<DropdownOption<MultisigAccount>[]>([]);
+  const [amount, setAmount] = useState<string>('0');
+  const [fee, setFee] = useState<string>('0');
+  const [deposit, setDeposit] = useState<string>('0');
+
+  const accountIds = accounts.map((account) => account.accountId);
+  const balances = getLiveAssetBalances(accountIds, chainId, asset?.assetId.toString() || '');
+
+  const accountIsMultisig = activeAccount && isMultisig(activeAccount.value);
+  const signatoryIds = accountIsMultisig
+    ? (activeAccount.value as MultisigAccount).signatories.map((s) => s.accountId)
+    : [];
+  const signatoriesBalances = getLiveAssetBalances(signatoryIds, chainId, asset?.assetId.toString() || '');
 
   useEffect(() => {
-    const options = getAccountsOptions(chainId, accounts, addressPrefix);
+    if (!asset) return;
+
+    const options = accounts.reduce<any[]>((acc, account) => {
+      const balance = balances.find((b) => b.accountId === account.accountId);
+
+      const isSameChain = !account.chainId || account.chainId === chainId;
+      const isNewOption = acc.every((a) => a.id !== account.accountId);
+
+      if (isSameChain && isNewOption) {
+        acc.push(getAccountOption(account, { addressPrefix, asset, amount, balance, fee, deposit }));
+      }
+
+      return acc;
+    }, []);
 
     if (options.length === 0) return;
 
     setAccountsOptions(options);
-    setActiveAccount({ id: options[0].id, value: options[0].value });
+    !activeAccount && setActiveAccount({ id: options[0].id, value: options[0].value });
     onAccountChange(options[0].value);
-  }, [accounts.length]);
+  }, [accounts.length, balances, amount, fee, deposit]);
 
   useEffect(() => {
-    if (!activeAccount || !isMultisig(activeAccount.value)) {
+    if (!activeAccount || !isMultisig(activeAccount.value) || !asset) {
       setActiveSignatory(undefined);
       setSignatoryOptions([]);
     } else {
       const signatories = activeAccount.value.signatories.map((s) => s.accountId);
       const signers = dbAccounts.filter((a) => signatories.includes(a.accountId)) as MultisigAccount[];
 
-      const options = getAccountsOptions<MultisigAccount>(chainId, signers, addressPrefix);
+      const options = signers.reduce<any[]>((acc, signer) => {
+        if (signatoryIds.includes(signer.accountId)) {
+          const balance = signatoriesBalances.find((b) => b.accountId === signer.accountId);
+
+          acc.push(getSignatoryOption(signer, { addressPrefix, asset, balance, fee, deposit }));
+        }
+
+        return acc;
+      }, []);
 
       if (options.length === 0) return;
 
       setSignatoryOptions(options);
       onSignatoryChange(options[0].value);
-      setActiveSignatory({ id: options[0].id, value: options[0].value });
+      !activeSignatory && setActiveSignatory({ id: options[0].id, value: options[0].value });
     }
-  }, [activeAccount, dbAccounts.length]);
+  }, [activeAccount, signatoriesBalances, dbAccounts.length, fee, deposit]);
 
   const changeAccount = (account: DropdownResult<Account | MultisigAccount>) => {
     onAccountChange(account.value);
@@ -120,6 +155,9 @@ const InitOperation = ({
           nativeToken={nativeToken}
           addressPrefix={addressPrefix}
           onSubmit={onResult}
+          onChangeAmount={setAmount}
+          onChangeFee={setFee}
+          onChangeDeposit={setDeposit}
         />
       )}
     </div>
