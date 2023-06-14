@@ -10,7 +10,7 @@ import { getExpectedBlockTime } from '@renderer/shared/utils/substrate';
  * @param api ApiPromise to make RPC calls
  * @return {Array}
  */
-function useCountdown(api?: ApiPromise): [number, () => void] {
+export function useCountdown(api?: ApiPromise): [number, () => void] {
   const [countdown, setCountdown] = useState(DEFAULT_QR_LIFETIME);
 
   const resetCountdown = useCallback(() => {
@@ -33,5 +33,3 @@ function useCountdown(api?: ApiPromise): [number, () => void] {
 
   return [countdown, resetCountdown];
 }
-
-export default useCountdown;
