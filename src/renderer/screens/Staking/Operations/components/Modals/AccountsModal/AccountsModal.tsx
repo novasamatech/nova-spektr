@@ -22,23 +22,23 @@ const AccountsModal = ({ isOpen, accounts, explorers, addressPrefix, onClose }: 
     <BaseModal
       closeButton
       contentClass="pb-3 px-3 pt-2"
-      panelClass="w-[368px]"
+      panelClass="w-[480px]"
       title={t('staking.confirmation.accountsTitle')}
       isOpen={isOpen}
       onClose={onClose}
     >
-      <ul className="max-h-[600px] flex flex-col gap-y-3">
+      <ul className="max-h-[388px] flex flex-col gap-y-3 overflow-y-auto">
         {accounts.map((account) => (
           <li key={account.accountId}>
             <AddressWithExplorers
+              className="gap-x-1"
+              addressFont="text-body text-text-secondary"
+              type="full"
+              size={20}
               accountId={account.accountId}
               addressPrefix={addressPrefix}
               name={account.name}
-              size={20}
               explorers={explorers}
-              addressFont="text-body text-text-secondary"
-              type="short"
-              className="gap-x-1"
             />
           </li>
         ))}

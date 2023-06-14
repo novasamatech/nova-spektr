@@ -25,6 +25,7 @@ import { useAccount } from '@renderer/services/account/accountService';
 import { DestinationType } from '../common/types';
 import ScanMultiframeQr from '@renderer/components/common/Scanning/ScanMultiframeQr';
 import ScanSingleframeQr from '@renderer/components/common/Scanning/ScanSingleframeQr';
+import { UnstakingDuration } from '@renderer/screens/Staking/Overview/components';
 
 const enum Step {
   INIT,
@@ -35,7 +36,7 @@ const enum Step {
   SUBMIT,
 }
 
-const Bond = () => {
+export const Bond = () => {
   const { t } = useI18n();
   const navigate = useNavigate();
   const { connections } = useNetworkContext();
@@ -274,9 +275,11 @@ const Bond = () => {
           {...explorersProps}
         >
           {isAlertOpen && (
-            <Alert title="Learn more about rewards" onClose={toggleAlert}>
+            <Alert title={t('staking.confirmation.hintTitle')} onClose={toggleAlert}>
               <Alert.Item>{t('staking.confirmation.hintRewards')}</Alert.Item>
-              <Alert.Item>{t('staking.confirmation.hintUnstakePeriod')}</Alert.Item>
+              {t('staking.confirmation.hintUnstakePeriod')} {'('}
+              <UnstakingDuration className="ml-1" api={api} />
+              {')'}
               <Alert.Item>{t('staking.confirmation.hintNoRewards')}</Alert.Item>
               <Alert.Item>{t('staking.confirmation.hintWithdraw')}</Alert.Item>
             </Alert>
@@ -328,7 +331,6 @@ const Bond = () => {
           signatures={signatures}
           unsignedTx={unsignedTransactions}
           accounts={accountsToStake}
-          successMessage={t('staking.bond.submitSuccess')}
           description={description}
           onClose={closeBondModal}
         />
@@ -336,5 +338,3 @@ const Bond = () => {
     </BaseModal>
   );
 };
-
-export default Bond;

@@ -31,7 +31,7 @@ const enum Step {
   SUBMIT,
 }
 
-const StakeMore = () => {
+export const StakeMore = () => {
   const { t } = useI18n();
   const navigate = useNavigate();
   const { getActiveAccounts } = useAccount();
@@ -224,7 +224,11 @@ const StakeMore = () => {
           onGoBack={goToPrevStep}
           {...explorersProps}
         >
-          {isAlertOpen && <Alert title={t('staking.stakeMore.hintTitle')} onClose={toggleAlert} />}
+          {isAlertOpen && (
+            <Alert title={t('staking.confirmation.hintTitle')} onClose={toggleAlert}>
+              <Alert.Item>{t('staking.confirmation.hintNewRewards')}</Alert.Item>
+            </Alert>
+          )}
         </Confirmation>
       )}
       {activeStep === Step.SCANNING && (
@@ -273,7 +277,6 @@ const StakeMore = () => {
           unsignedTx={unsignedTransactions}
           accounts={accounts}
           description={description}
-          successMessage={t('staking.stakeMore.submitSuccess')}
           onClose={closeStakeMoreModal}
           {...explorersProps}
         />
@@ -281,5 +284,3 @@ const StakeMore = () => {
     </BaseModal>
   );
 };
-
-export default StakeMore;

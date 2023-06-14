@@ -6,7 +6,7 @@ import { useI18n } from '@renderer/context/I18nContext';
 import { Chain } from '@renderer/domain/chain';
 import { getRelaychainAsset } from '@renderer/shared/utils/assets';
 import { useGraphql } from '@renderer/context/GraphqlContext';
-import { ChainId, Address } from '@renderer/domain/shared-kernel';
+import { ChainId, Address, SigningType } from '@renderer/domain/shared-kernel';
 import { useNetworkContext } from '@renderer/context/NetworkContext';
 import { useEra } from '@renderer/services/staking/eraService';
 import { useStakingData } from '@renderer/services/staking/stakingDataService';
@@ -32,7 +32,7 @@ import {
   InactiveChain,
 } from './components';
 
-const Overview = () => {
+export const Overview = () => {
   const { t } = useI18n();
   const navigate = useNavigate();
   const { changeClient } = useGraphql();
@@ -71,6 +71,7 @@ const Overview = () => {
     return acc;
   }, []);
 
+  const signingType = accounts[0]?.signingType;
   const addresses = accounts.map((a) => toAddress(a.accountId, { prefix: addressPrefix }));
 
   const { rewards, isRewardsLoading } = useStakingRewards(addresses);
@@ -98,6 +99,10 @@ const Overview = () => {
       unsubStaking = await subscribeStaking(chainId, api, addresses, (staking) => {
         setStaking(staking);
         setIsStakingLoading(false);
+
+        if (accounts.length === 1 && accounts[0].signingType === SigningType.MULTISIG) {
+          setSelectedNominators([addresses[0]]);
+        }
       });
     })();
 
@@ -105,7 +110,7 @@ const Overview = () => {
       unsubEra?.();
       unsubStaking?.();
     };
-  }, [chainId, api, addresses.length]);
+  }, [chainId, api, signingType]);
 
   useEffect(() => {
     if (!chainId || !api?.isConnected || !era) return;
@@ -202,7 +207,7 @@ const Overview = () => {
           {networkIsActive &&
             (accounts.length > 0 ? (
               <>
-                <Actions stakes={selectedStakes} onNavigate={navigateToStake} />
+                <Actions stakes={selectedStakes} isStakingLoading={isStakingLoading} onNavigate={navigateToStake} />
 
                 <NominatorsList
                   api={api}
@@ -210,6 +215,7 @@ const Overview = () => {
                   nominators={nominatorsInfo}
                   asset={relaychainAsset}
                   explorers={activeChain?.explorers}
+                  isStakingLoading={isStakingLoading}
                   onCheckValidators={openSelectedValidators}
                   onToggleNominator={toggleSelectedNominators}
                 />
@@ -236,5 +242,3 @@ const Overview = () => {
     </>
   );
 };
-
-export default Overview;

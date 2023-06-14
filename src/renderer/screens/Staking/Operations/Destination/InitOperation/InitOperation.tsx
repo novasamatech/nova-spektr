@@ -16,13 +16,13 @@ import { toAddress } from '@renderer/shared/utils/address';
 import { nonNullable } from '@renderer/shared/utils/functions';
 import { TEST_ADDRESS } from '@renderer/shared/utils/constants';
 import { OperationForm } from '../../components';
+import { Icon } from '@renderer/components/ui';
 import {
   getSignatoryOptions,
   validateBalanceForFeeDeposit,
   validateBalanceForFee,
   getGeneralAccountOption,
 } from '../../common/utils';
-import { Icon } from '@renderer/components/ui';
 
 export type DestinationResult = {
   accounts: Account[];

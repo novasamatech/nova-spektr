@@ -44,11 +44,21 @@ type Props = {
   nominators: NominatorInfo[];
   asset?: Asset;
   explorers?: Explorer[];
+  isStakingLoading: boolean;
   onCheckValidators: (stash?: Address) => void;
   onToggleNominator: (nominator: Address) => void;
 };
 
-const NominatorsList = ({ api, era, nominators, asset, explorers, onCheckValidators, onToggleNominator }: Props) => {
+const NominatorsList = ({
+  api,
+  era,
+  nominators,
+  asset,
+  explorers,
+  isStakingLoading,
+  onCheckValidators,
+  onToggleNominator,
+}: Props) => {
   const { t } = useI18n();
 
   const getExplorers = (address: Address, stash?: Address, explorers: Explorer[] = []) => {
@@ -121,17 +131,27 @@ const NominatorsList = ({ api, era, nominators, asset, explorers, onCheckValidat
             </Popover>
           );
 
+          const content = (
+            <>
+              <AccountAddress name={stake.accountName} address={stake.address} />
+              {unstakeBadge || redeemBadge}
+            </>
+          );
+
           return (
             <li key={stake.address}>
               <Plate className="grid grid-cols-[226px,104px,104px,16px] items-center gap-x-6">
-                <Checkbox
-                  disabled={stake.signingType === SigningType.WATCH_ONLY}
-                  checked={stake.isSelected}
-                  onChange={() => onToggleNominator(stake.address)}
-                >
-                  <AccountAddress name={stake.accountName} address={stake.address} />
-                  {unstakeBadge || redeemBadge}
-                </Checkbox>
+                {stake.signingType === SigningType.PARITY_SIGNER ? (
+                  <Checkbox
+                    disabled={isStakingLoading}
+                    checked={stake.isSelected}
+                    onChange={() => onToggleNominator(stake.address)}
+                  >
+                    {content}
+                  </Checkbox>
+                ) : (
+                  <div className="flex items-center gap-x-2">{content}</div>
+                )}
                 {!stake.totalStake || !asset ? (
                   <Shimmering width={104} height={14} />
                 ) : (

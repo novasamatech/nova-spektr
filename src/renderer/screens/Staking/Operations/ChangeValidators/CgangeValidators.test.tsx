@@ -3,7 +3,7 @@ import { MemoryRouter } from 'react-router-dom';
 
 import { ConnectionStatus } from '@renderer/domain/connection';
 import { TEST_ACCOUNT_ID } from '@renderer/shared/utils/constants';
-import SetValidators from './SetValidators';
+import { ChangeValidators } from './ChangeValidators';
 
 jest.mock('@renderer/context/I18nContext', () => ({
   useI18n: jest.fn().mockReturnValue({
@@ -79,10 +79,10 @@ jest.mock(
       mockButton('to sign', onResult),
 );
 
-describe('screens/Staking/SetValidators', () => {
+describe('screens/Staking/ChangeValidators', () => {
   test('should render component', async () => {
     await act(async () => {
-      render(<SetValidators />, { wrapper: MemoryRouter });
+      render(<ChangeValidators />, { wrapper: MemoryRouter });
     });
 
     const title = screen.getByText('staking.validators.title');
@@ -93,7 +93,7 @@ describe('screens/Staking/SetValidators', () => {
 
   test('should change process state', async () => {
     await act(async () => {
-      render(<SetValidators />, { wrapper: MemoryRouter });
+      render(<ChangeValidators />, { wrapper: MemoryRouter });
     });
 
     let nextButton = screen.getByRole('button', { name: 'to validators' });

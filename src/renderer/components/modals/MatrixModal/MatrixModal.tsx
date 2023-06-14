@@ -18,9 +18,9 @@ const MatrixModal = ({ isOpen, onClose }: Props) => {
 
   return (
     <BaseModal
+      closeButton
       isOpen={isOpen}
       title={isVerified ? t('settings.matrix.verificationTitle') : t('settings.matrix.logInTitle')}
-      closeButton
       onClose={onClose}
     >
       <MatrixInfoPopover />

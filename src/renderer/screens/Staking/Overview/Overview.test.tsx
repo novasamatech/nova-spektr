@@ -5,7 +5,7 @@ import { useNetworkContext } from '@renderer/context/NetworkContext';
 import { Chain } from '@renderer/domain/chain';
 import { ConnectionType } from '@renderer/domain/connection';
 import { TEST_ACCOUNT_ID } from '@renderer/shared/utils/constants';
-import Overview from './Overview';
+import { Overview } from './Overview';
 
 jest.mock('@renderer/context/NetworkContext', () => ({
   useNetworkContext: jest.fn(() => ({

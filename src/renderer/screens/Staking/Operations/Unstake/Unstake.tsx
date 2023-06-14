@@ -32,7 +32,7 @@ const enum Step {
   SUBMIT,
 }
 
-const Unstake = () => {
+export const Unstake = () => {
   const { t } = useI18n();
   const navigate = useNavigate();
   const { getTransactionHash } = useTransaction();
@@ -242,14 +242,14 @@ const Unstake = () => {
           {...explorersProps}
         >
           {isAlertOpen && (
-            <Alert title={t('staking.unstake.hintTitle')} onClose={toggleAlert}>
+            <Alert title={t('staking.confirmation.hintTitle')} onClose={toggleAlert}>
               <Alert.Item>
-                {t('staking.unstake.durationHint')} {'('}
+                {t('staking.confirmation.hintUnstakePeriod')} {'('}
                 <UnstakingDuration className="ml-1" api={api} />
                 {')'}
               </Alert.Item>
-              <Alert.Item>{t('staking.unstake.noRewardsHint')}</Alert.Item>
-              <Alert.Item>{t('staking.unstake.redeemHint')}</Alert.Item>
+              <Alert.Item>{t('staking.confirmation.hintNoRewards')}</Alert.Item>
+              <Alert.Item>{t('staking.confirmation.hintWithdraw')}</Alert.Item>
             </Alert>
           )}
         </Confirmation>
@@ -300,7 +300,6 @@ const Unstake = () => {
           unsignedTx={unsignedTransactions}
           accounts={accounts}
           description={description}
-          successMessage={t('staking.unstake.submitSuccess')}
           onClose={closeUnstakeModal}
           {...explorersProps}
         />
@@ -308,5 +307,3 @@ const Unstake = () => {
     </BaseModal>
   );
 };
-
-export default Unstake;
