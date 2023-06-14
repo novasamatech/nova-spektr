@@ -4596,43 +4596,6 @@
     "addressPrefix": 42
   },
   {
-    "chainId": "0x0e06260459b4f9034aba0a75108c08ed73ea51d2763562749b1d3600986c4ea5",
-    "parentId": "0xb0a8d493285c2df73290dfb7e61f870f17b41801197a149ca93654499ea3dafe",
-    "name": "Pichiu",
-    "assets": [
-      {
-        "assetId": 0,
-        "symbol": "PCHU",
-        "precision": 18,
-        "icon": "https://raw.githubusercontent.com/nova-wallet/nova-spektr-utils/main/icons/v1/assets/white/Pichiu_(PCHU).svg",
-        "name": "Pichiu"
-      }
-    ],
-    "nodes": [
-      {
-        "url": "wss://kusama.kylin-node.co.uk",
-        "name": "Kylin node"
-      }
-    ],
-    "explorers": [
-      {
-        "name": "Polkaholic",
-        "account": "https://polkaholic.io/account/{address}",
-        "extrinsic": "https://polkaholic.io/tx/{hash}"
-      }
-    ],
-    "icon": "https://raw.githubusercontent.com/nova-wallet/nova-spektr-utils/main/icons/v1/chains/Pichiu.svg",
-    "addressPrefix": 42,
-    "externalApi": {
-      "history": [
-        {
-          "type": "subquery",
-          "url": "https://api.subquery.network/sq/nova-wallet/nova-wallet-pichiu"
-        }
-      ]
-    }
-  },
-  {
     "chainId": "0xfeb426ca713f0f46c96465b8f039890370cf6bfd687c9076ea2843f58a6ae8a7",
     "parentId": "0xb0a8d493285c2df73290dfb7e61f870f17b41801197a149ca93654499ea3dafe",
     "name": "Kabocha (PAUSED)",
