@@ -10,18 +10,12 @@ const EmptyContacts = ({ onAddContact }: Props) => {
   const { t } = useI18n();
 
   return (
-    <div className="flex flex-col items-center justify-center gap-4 h-full">
+    <div className="flex flex-col items-center justify-center gap-y-4 h-full">
       <Icon as="img" name="emptyList" alt={t('addressBook.contactList.noContactsLabel')} size={178} />
       <BodyText className="text-text-tertiary">{t('addressBook.contactList.noContactsLabel')}</BodyText>
 
       {onAddContact && (
-        <Button
-          variant="text"
-          pallet="primary"
-          className="font-semibold h-4.5"
-          suffixElement={<Icon size={16} name="add" />}
-          onClick={onAddContact}
-        >
+        <Button variant="text" className="h-4.5" suffixElement={<Icon size={16} name="add" />} onClick={onAddContact}>
           {t('addressBook.addContactButton')}
         </Button>
       )}

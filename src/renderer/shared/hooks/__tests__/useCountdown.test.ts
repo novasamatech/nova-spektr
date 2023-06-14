@@ -2,8 +2,8 @@ import { renderHook, act, waitFor } from '@testing-library/react';
 import { BN_MILLION } from '@polkadot/util';
 import { ApiPromise } from '@polkadot/api';
 
-import useCountdown from '../useCountdown';
 import { DEFAULT_QR_LIFETIME } from '@renderer/shared/utils/constants';
+import { useCountdown } from '../useCountdown';
 
 jest.mock('@renderer/shared/utils/substrate', () => ({
   getExpectedBlockTime: jest.fn().mockReturnValue(BN_MILLION.muln(2)),

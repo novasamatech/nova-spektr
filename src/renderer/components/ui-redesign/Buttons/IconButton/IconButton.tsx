@@ -1,4 +1,5 @@
 import { ComponentProps, MouseEvent } from 'react';
+import cn from 'classnames';
 
 import cnTw from '@renderer/shared/utils/twMerge';
 import Icon from '../../../ui/Icon/Icon';
@@ -10,9 +11,10 @@ type Props = {
   onClick?: (event: MouseEvent<HTMLButtonElement>) => void;
 } & IconProps;
 
-export const IconButtonStyle =
-  'p-1.5 rounded-full outline-offset-1 text-icon-default ' +
-  'hover:text-icon-hover hover:bg-hover active:bg-hover active:text-tab-icon-active';
+export const IconButtonStyle = cn(
+  'p-1.5 rounded-full outline-offset-1 text-icon-default',
+  'hover:text-icon-hover hover:bg-hover active:bg-hover active:text-tab-icon-active',
+);
 
 const IconButton = ({ onClick, size = 16, className, ariaLabel, ...iconProps }: Props) => (
   <button type="button" className={cnTw(IconButtonStyle, className)} aria-label={ariaLabel} onClick={onClick}>

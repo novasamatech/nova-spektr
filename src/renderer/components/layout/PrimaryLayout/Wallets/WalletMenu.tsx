@@ -13,12 +13,12 @@ import WatchOnly from '@renderer/screens/Onboarding/WatchOnly/WatchOnly';
 import Vault from '@renderer/screens/Onboarding/Vault/Vault';
 import { useToggle } from '@renderer/shared/hooks';
 import { ButtonDropdownOption } from '@renderer/components/ui-redesign/Dropdowns/DropdownButton/DropdownButton';
-import Paths from '@renderer/routes/paths';
 import {
   ChainsRecord,
   WalletGroupItem,
   MultishardWallet,
 } from '@renderer/components/layout/PrimaryLayout/Wallets/common/types';
+import CreateMultisigAccount from '@renderer/components/modals/CreateMultisigAccount/CreateMultisigAccount';
 
 type Props = {
   chains: ChainsRecord;
@@ -32,13 +32,14 @@ const WalletMenu = ({ children, chains, wallets }: PropsWithChildren<Props>) => 
   const [query, setQuery] = useState('');
   const [isWatchOnlyModalOpen, toggleWatchOnlyModal] = useToggle();
   const [isVaultModalOpen, toggleVaultModal] = useToggle();
+  const [isMultisigModalOpen, toggleMultisigModalOpen] = useToggle();
 
   const groupedWallets = useGroupedWallets(wallets, chains, query);
 
   const dropdownOptions: ButtonDropdownOption[] = [
     { id: 'vault', title: t('wallets.addPolkadotVault'), onClick: toggleVaultModal, iconName: 'vault' },
     { id: 'watch-only', title: t('wallets.addWatchOnly'), onClick: toggleWatchOnlyModal, iconName: 'watchOnly' },
-    { id: 'multi', title: t('wallets.addMultisig'), to: Paths.CREATE_MULTISIG_ACCOUNT, iconName: 'multisig' },
+    { id: 'multi', title: t('wallets.addMultisig'), onClick: toggleMultisigModalOpen, iconName: 'multisig' },
   ];
 
   const getAllShardsIds = (wallet: MultishardWallet): ID[] => {
@@ -117,6 +118,7 @@ const WalletMenu = ({ children, chains, wallets }: PropsWithChildren<Props>) => 
 
       <WatchOnly isOpen={isWatchOnlyModalOpen} onClose={toggleWatchOnlyModal} onComplete={toggleWatchOnlyModal} />
       <Vault isOpen={isVaultModalOpen} onClose={toggleVaultModal} onComplete={toggleVaultModal} />
+      <CreateMultisigAccount isOpen={isMultisigModalOpen} onClose={toggleMultisigModalOpen} />
     </>
   );
 };
