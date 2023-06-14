@@ -30,7 +30,7 @@ const enum Step {
   SUBMIT,
 }
 
-const Restake = () => {
+export const Restake = () => {
   const { t } = useI18n();
   const navigate = useNavigate();
   const { connections } = useNetworkContext();
@@ -220,7 +220,11 @@ const Restake = () => {
           onGoBack={goToPrevStep}
           {...explorersProps}
         >
-          {isAlertOpen && <Alert title={t('staking.restake.hintTitle')} onClose={toggleAlert} />}
+          {isAlertOpen && (
+            <Alert title={t('staking.confirmation.hintTitle')} onClose={toggleAlert}>
+              <Alert.Item>{t('staking.confirmation.hintRestake')}</Alert.Item>
+            </Alert>
+          )}
         </Confirmation>
       )}
       {activeStep === Step.SCANNING && (
@@ -269,7 +273,6 @@ const Restake = () => {
           unsignedTx={unsignedTransactions}
           accounts={accounts}
           description={description}
-          successMessage={t('staking.restake.submitSuccess')}
           onClose={closeRestakeModal}
           {...explorersProps}
         />
@@ -277,5 +280,3 @@ const Restake = () => {
     </BaseModal>
   );
 };
-
-export default Restake;

@@ -527,6 +527,7 @@
       "yearlyEarningLabel": "Yearly"
     },
     "actions": {
+      "changeValidatorsLabel": "Change validators",
       "destinationLabel": "Change rewards destination",
       "filterButton": "Filter",
       "manageStakePlaceholder": "Manage stake",
@@ -534,7 +535,6 @@
       "redeemLabel": "Withdraw unstaked",
       "returnToStakeLabel": "Return to stake",
       "selectAccPlaceholder": "Select accounts",
-      "setValidatorsLabel": "Set validators",
       "stakeMoreLabel": "Stake more",
       "startStakingLabel": "Start staking",
       "unstakeLabel": "Unstake"
@@ -556,7 +556,6 @@
       "descriptionLabel": "Description",
       "descriptionPlaceholder": "Choose an operation name",
       "goToStakingButton": "Back to Staking",
-      "hintTitle": "Learn more about rewards",
       "incorrectAddressError": "Please, enter correct address",
       "manyAccountsPlaceholder": "Multiple accounts selected",
       "networkDepositLabel": "Multisig Deposit",
@@ -572,7 +571,6 @@
       "selectStakeAccountSummary": "Multiple accounts",
       "signatoryLabel": "Signatory",
       "signatoryPlaceholder": "Select Signatory",
-      "submitSuccess": "You funds staked successfully",
       "title": "Start staking { asset } on",
       "transferableRewards": "Transferable rewards"
     },
@@ -585,11 +583,14 @@
       "errorModalEditButton": "Edit",
       "errorModalSubtitle": "You can discard these transactions",
       "errorModalTitle": "Error submitting { number } transactions",
+      "hintNewRewards": "You will get increased rewards starting from the next era",
       "hintNewValidators": "Your validators will change in the next era",
       "hintNoRewards": "During unstaking period tokens produce no rewards",
-      "hintRedeem": "After unstaking period don’t forget to redeem your tokens",
-      "hintRewards": "Tokens in stake produce rewards each era (6 hours)",
-      "hintUnstakePeriod": "To unstake tokens you will have to wait for the ustaking period (7 days)",
+      "hintRestake": "Returned tokens will be counted from the next era",
+      "hintRewards": "Tokens in stake produce rewards each era",
+      "hintTitle": "Learn more",
+      "hintUnstakePeriod": "To unstake tokens you will have to wait for the ustaking period",
+      "hintWithdraw": "After unstaking period don’t forget to redeem your tokens",
       "networkDepositLabel": "Multisig Deposit",
       "networkFeeLabel": "Network fee",
       "queueButton": "Add to operation queue",
@@ -608,7 +609,6 @@
     },
     "destination": {
       "initDestinationSubtitle": "Rewards destination",
-      "submitSuccess": "Rewards destination has been changed",
       "title": "Change rewards destination"
     },
     "loadingMessage": "Connecting to { chainName }",
@@ -654,16 +654,13 @@
       "availablePlaceholder": "Available",
       "confirmRedeemSubtitle": "Confirmation",
       "initRedeemSubtitle": "Redeem",
-      "submitSuccess": "Unstaked tokens have been withdrawn",
       "title": "Withdraw unstaked { asset } on"
     },
     "requiredAmountError": "Please, enter amount",
     "restake": {
       "amountPlaceholder": "Amount",
       "confirmRestakeSubtitle": "Confirmation",
-      "hintTitle": "Returned tokens will be counted from the next era",
       "initRestakeSubtitle": "Restake",
-      "submitSuccess": "You successfully restaked tokens",
       "title": "Return to stake",
       "transferable": "Transferable",
       "unstakingPlaceholder": "Unstaking"
@@ -671,24 +668,20 @@
     "stakeMore": {
       "availablePlaceholder": "Available",
       "confirmStakeMoreSubtitle": "Confirmation",
-      "hintTitle": "You will get increased rewards starting from the next era",
       "initStakeMoreSubtitle": "Stake more",
-      "submitSuccess": "You funds staked successfully",
       "title": "Stake more { asset } on"
     },
+    "submitSuccessMultishard": "Operations success",
+    "submitSuccessMultisig": "Operation approved",
+    "submitSuccessSingle": "Operation success",
     "title": "Staking",
     "unstake": {
       "amountPlaceholder": "Amount",
       "confirmUnstakeSubtitle": "Confirmation",
-      "durationHint": "To unstake tokens you will have to wait for the ustaking period",
-      "hintTitle": "Learn more about unstake",
       "initUnstakeSubtitle": "Unstake",
       "networkFee_one": "Network fee",
       "networkFee_other": "Network fee per account",
-      "noRewardsHint": "During unstaking period tokens produce no rewards",
-      "redeemHint": "After unstaking period don’t forget to redeem your tokens",
       "stakedPlaceholder": "Staked",
-      "submitSuccess": "Your funds have been unstaked",
       "title": "Unstake { asset } on",
       "transferable": "Transferable"
     },
@@ -700,7 +693,6 @@
       "filterByIdentity": "Having on-chain identity",
       "filterNotOversubscribed": "Not oversubscribed",
       "filterNotSlashed": "Not slashed",
-      "hintTitle": "Your validators will change in the next era",
       "maxValidatorsLabel": "(Max { max })",
       "nominatedTableHeader": "Nominated",
       "oversubPopoverSubtitle": "Validator is oversubscribed",
@@ -712,7 +704,6 @@
       "selectedValidatorsLabel": "Selected validators",
       "slashedPopoverSubtitle": "Validator has been slashed recently",
       "slashedPopoverTitle": "Slashed",
-      "submitSuccess": "Validators have been successfully set",
       "subtitle": "Validators",
       "title": "Set validators",
       "totalStakeTableHeader": "Total stake",

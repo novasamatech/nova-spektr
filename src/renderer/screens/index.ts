@@ -1,17 +1,17 @@
+import * as Settings from './Settings';
+import * as Staking from './Staking';
 import AddressBook from './AddressBook/AddressBook';
-import { Overview, Networks } from './Settings';
 import CameraDev from './CameraDev/CameraDev';
 import ChatDev from './ChatDev/ChatDev';
 import Onboarding from './Onboarding';
 import Operations from './Operations/Operations';
 import Balances from './Balances';
-import Staking from './Staking';
 import Signing from './Signing/SigningDev';
 import Transfer from './Transfer/Transfer';
 import Notifications from './Notifications/Notifications';
 
 export default {
-  Settings: { Overview, Networks },
+  Settings,
   Balances,
   AddressBook,
   Operations,

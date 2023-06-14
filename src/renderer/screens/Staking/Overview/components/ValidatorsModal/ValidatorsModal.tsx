@@ -125,7 +125,7 @@ const ValidatorsModal = ({ api, stash, validators, asset, explorers, isOpen, onC
   return (
     <BaseModal
       closeButton
-      contentClass="w-[784px] px-5 pb-4"
+      panelClass="w-[784px]"
       title={t('staking.nominators.yourValidatorsTitle')}
       isOpen={isOpen}
       onClose={onClose}
