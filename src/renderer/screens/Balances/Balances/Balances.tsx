@@ -48,9 +48,12 @@ const Balances = () => {
     setHideZeroBalanceState(value);
   };
 
+  const firstActiveAccount = activeAccountsFromWallet.length > 0 && activeAccountsFromWallet[0].accountId;
+  const activeWallet = activeAccountsFromWallet.length > 0 && activeAccountsFromWallet[0].walletId;
+
   useEffect(() => {
     updateChainsAndAccounts(activeAccountsFromWallet);
-  }, [activeAccountsFromWallet.length, activeAccountsFromWallet.length > 0 && activeAccountsFromWallet[0].walletId]);
+  }, [firstActiveAccount, activeWallet]);
 
   const updateChainsAndAccounts = (accounts: AccountDS[]) => {
     if (accounts.length === 0) {
