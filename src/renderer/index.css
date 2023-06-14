@@ -187,3 +187,15 @@
 *:focus-visible {
   outline: 2px solid var(--focus-container-border);
 }
+
+.logo-background {
+  background-size: cover;
+  background-position: center;
+  background-image: url('assets/images/misc/bg.webp');
+  transform: scaleY(-1);
+}
+
+.logo-container {
+  width: calc(50% + 116px);
+  min-width: fit-content;
+}
