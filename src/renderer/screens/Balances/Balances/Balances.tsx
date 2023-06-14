@@ -50,7 +50,7 @@ const Balances = () => {
 
   useEffect(() => {
     updateChainsAndAccounts(activeAccountsFromWallet);
-  }, [activeAccountsFromWallet.length]);
+  }, [activeAccountsFromWallet]);
 
   const updateChainsAndAccounts = (accounts: AccountDS[]) => {
     if (accounts.length === 0) {
