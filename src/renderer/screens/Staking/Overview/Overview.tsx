@@ -92,17 +92,12 @@ export const Overview = () => {
     let unsubStaking: () => void | undefined;
 
     setIsStakingLoading(true);
-    setSelectedNominators([]);
 
     (async () => {
       unsubEra = await subscribeActiveEra(api, setEra);
       unsubStaking = await subscribeStaking(chainId, api, addresses, (staking) => {
         setStaking(staking);
         setIsStakingLoading(false);
-
-        if (accounts.length === 1 && accounts[0].signingType === SigningType.MULTISIG) {
-          setSelectedNominators([addresses[0]]);
-        }
       });
     })();
 
@@ -111,6 +106,14 @@ export const Overview = () => {
       unsubStaking?.();
     };
   }, [chainId, api, signingType]);
+
+  useEffect(() => {
+    if ([SigningType.WATCH_ONLY, SigningType.PARITY_SIGNER].includes(signingType)) {
+      setSelectedNominators([]);
+    } else if (signingType === SigningType.MULTISIG && accounts.length === 1) {
+      setSelectedNominators([addresses[0]]);
+    }
+  }, [signingType]);
 
   useEffect(() => {
     if (!chainId || !api?.isConnected || !era) return;
