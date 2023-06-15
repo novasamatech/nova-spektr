@@ -113,6 +113,8 @@
     "input": {
       "amountLabel": "Amount",
       "availableLabel": "Available:",
+      "descriptionLabel": "Description",
+      "descriptionPlaceholder": "Choose an operation description",
       "signerLabel": "Select signer",
       "transferableLabel": "Transferable"
     },
@@ -551,8 +553,6 @@
       "accountPlaceholder": "Select accounts",
       "backButton": "Back",
       "continueButton": "Continue",
-      "descriptionLabel": "Description",
-      "descriptionPlaceholder": "Choose an operation description",
       "goToStakingButton": "Back to Staking",
       "incorrectAddressError": "Please, enter correct address",
       "manyAccountsPlaceholder": "Multiple accounts selected",
@@ -734,9 +734,7 @@
   "transfer": {
     "amountPlaceholder": "0",
     "continueButton": "Continue",
-    "descriptionLabel": "Description",
     "descriptionLengthError": "Description can be { maxLength } symbols long",
-    "descriptionPlaceholder": "Choose an operation description",
     "editOperationButton": "Edit operation",
     "executing": "Submitting operation",
     "formTitle": "Send <strong>{ asset }</strong> on <strong>{ network }</strong>",

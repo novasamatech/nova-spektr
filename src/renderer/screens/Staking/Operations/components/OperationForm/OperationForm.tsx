@@ -238,9 +238,9 @@ export const OperationForm = ({
             render={({ field: { onChange, value }, fieldState: { error } }) => (
               <div className="flex flex-col gap-y-2.5">
                 <Input
-                  label={t('staking.bond.descriptionLabel')}
+                  label={t('general.input.descriptionLabel')}
                   className="w-full"
-                  placeholder={t('staking.bond.descriptionPlaceholder')}
+                  placeholder={t('general.input.descriptionPlaceholder')}
                   invalid={Boolean(error)}
                   disabled={descriptionField.disabled}
                   value={value}
