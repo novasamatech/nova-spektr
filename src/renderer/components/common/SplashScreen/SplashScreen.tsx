@@ -1,11 +1,24 @@
-import { Icon } from '@renderer/components/ui';
+import SplashWEBM from '@video/splash_screen.webm';
+import SplashMP4 from '@video/splash_screen.mp4';
 
 const SplashScreen = () => {
+  const removeSvgPlaceholder = () => {
+    document.querySelector('.splash_placeholder')?.remove();
+  };
+
   return (
-    <main className="flex items-center justify-center bg-cover h-screen gap-x-10">
-      <Icon as="img" name="logo" size={140} alt={process.env.PRODUCT_NAME} />
-      <h1 className="text-5xl font-semibold text-neutral-variant">{process.env.PRODUCT_NAME}</h1>
-    </main>
+    <video
+      autoPlay
+      muted
+      width="1024"
+      height="800"
+      data-testid="splash-video"
+      className="object-none fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2"
+      onCanPlay={removeSvgPlaceholder}
+    >
+      <source src={SplashWEBM} type="video/webm" />
+      <source src={SplashMP4} type="video/mp4" />
+    </video>
   );
 };
 

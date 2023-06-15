@@ -6,7 +6,7 @@ describe('components/common/SplashScreen', () => {
   test('should render component', () => {
     render(<SplashScreen />);
 
-    const logo = screen.getByTestId('logo-img');
-    expect(logo).toBeInTheDocument();
+    const video = screen.getByTestId('splash-video');
+    expect(video).toBeInTheDocument();
   });
 });
