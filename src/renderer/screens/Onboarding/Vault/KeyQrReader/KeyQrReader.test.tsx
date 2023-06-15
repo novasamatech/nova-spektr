@@ -50,13 +50,11 @@ describe('screens/Onboarding/Vault/KeyQrReader', () => {
       const qrButton = screen.getByRole('button');
       act(() => qrButton.click());
 
-      const label = screen.getByText('onboarding.paritySigner.multipleCamerasLabel');
-      expect(label).toBeInTheDocument();
+      const index = 0;
+      const camera = cameras[index];
 
-      // cameras.forEach((camera, index) => {
-      //   const el = screen.getByText(`${index + 1}. ${camera.label}`);
-      //   expect(el).toBeInTheDocument();
-      // });
+      const el = screen.getByText(`${index + 1}. ${camera.label}`);
+      expect(el).toBeInTheDocument();
     });
 
     test('should render complete state', () => {

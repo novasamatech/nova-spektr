@@ -18,8 +18,8 @@ const AddressWithExplorers = ({ explorers = [], showMatrix, ...addressProps }: P
 
   return (
     <InfoPopover data={popoverItems}>
-      <div className="flex items-center gap-x-1 cursor-pointer group hover:bg-action-background-hover px-2 py-1 rounded">
-        <AccountAddress {...addressProps} />
+      <div className="flex max-w-full items-center gap-x-1 cursor-pointer group hover:bg-action-background-hover px-2 h-6 rounded">
+        <AccountAddress className="w-full" {...addressProps} />
         <Icon name="info" size={16} className="text-icon-default group-hover:text-icon-hover" />
       </div>
     </InfoPopover>
