@@ -38,19 +38,19 @@ const App = () => {
   const content = showSplashScreen || isAccountsLoading ? <SplashScreen /> : appRoutes;
 
   return (
-    <ErrorBoundary FallbackComponent={FallbackScreen} onError={console.error}>
-      <NetworkProvider>
-        <MatrixProvider>
-          <I18Provider>
+    <I18Provider>
+      <ErrorBoundary FallbackComponent={FallbackScreen} onError={console.error}>
+        <NetworkProvider>
+          <MatrixProvider>
             <MultisigChainProvider>
               <ConfirmDialogProvider>
                 <GraphqlContext>{content}</GraphqlContext>
               </ConfirmDialogProvider>
             </MultisigChainProvider>
-          </I18Provider>
-        </MatrixProvider>
-      </NetworkProvider>
-    </ErrorBoundary>
+          </MatrixProvider>
+        </NetworkProvider>
+      </ErrorBoundary>
+    </I18Provider>
   );
 };
 

@@ -44,7 +44,7 @@ export const Overview = () => {
   const { getActiveAccounts } = useAccount();
   const [isShowNominators, toggleNominators] = useToggle();
 
-  const [era, setEra] = useState<number>();
+  const [chainEra, setChainEra] = useState<Record<ChainId, number | undefined>>({});
   const [staking, setStaking] = useState<StakingMap>({});
   const [isStakingLoading, setIsStakingLoading] = useState(true);
   const [validators, setValidators] = useState<ValidatorMap>({});
@@ -94,7 +94,9 @@ export const Overview = () => {
     setIsStakingLoading(true);
 
     (async () => {
-      unsubEra = await subscribeActiveEra(api, setEra);
+      unsubEra = await subscribeActiveEra(api, (era) => {
+        setChainEra({ [chainId]: era });
+      });
       unsubStaking = await subscribeStaking(chainId, api, addresses, (staking) => {
         setStaking(staking);
         setIsStakingLoading(false);
@@ -116,10 +118,13 @@ export const Overview = () => {
   }, [signingType]);
 
   useEffect(() => {
-    if (!chainId || !api?.isConnected || !era) return;
+    if (!chainId || !api?.isConnected) return;
+
+    const era = chainEra[chainId];
+    if (!era) return;
 
     getValidators(chainId, api, era).then(setValidators);
-  }, [chainId, api, era]);
+  }, [chainId, api, chainEra]);
 
   const changeNetwork = (chain: Chain) => {
     changeClient(chain.chainId);
@@ -204,7 +209,12 @@ export const Overview = () => {
             totalStakes={totalStakes}
             onNetworkChange={changeNetwork}
           >
-            <AboutStaking api={api} era={era} validators={Object.values(validators)} asset={relaychainAsset} />
+            <AboutStaking
+              api={api}
+              era={chainEra[chainId]}
+              validators={Object.values(validators)}
+              asset={relaychainAsset}
+            />
           </NetworkInfo>
 
           {networkIsActive &&
@@ -214,7 +224,7 @@ export const Overview = () => {
 
                 <NominatorsList
                   api={api}
-                  era={era}
+                  era={chainEra[chainId]}
                   nominators={nominatorsInfo}
                   asset={relaychainAsset}
                   explorers={activeChain?.explorers}

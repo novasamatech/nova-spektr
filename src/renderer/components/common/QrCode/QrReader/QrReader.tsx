@@ -163,9 +163,9 @@ const QrReader = ({
       try {
         fountainResult = raptorDecoder.decode(packet);
       } catch (error) {
-        collected.delete(key);
         packets.current.delete(key);
-
+        collected.delete(blockNumber);
+        onProgress?.({ decoded: collected.size, total });
         break;
       }
 
@@ -298,7 +298,7 @@ const QrReader = ({
   return (
     <>
       <div className="absolute inset-0 z-10 w-full h-full flex items-center justify-center rounded-[1.75rem] overflow-hidden">
-        <div className=" w-[240px] h-[240px] rounded-2lg overflow-hidden">
+        <div className=" w-[240px] h-[240px] rounded-[20px] overflow-hidden">
           <video
             muted
             autoPlay
@@ -320,10 +320,11 @@ const QrReader = ({
         data-testid="qr-reader"
         style={sizeStyle}
         className={cnTw(
-          ' object-cover w-full h-full object-center scale-100 blur-[14px] max-w-none -scale-x-100',
+          'object-cover w-full h-full object-center scale-100 blur-[14px] max-w-none -scale-x-100',
           bgVideoClassName,
         )}
       />
+      <div className="video-cover" />
     </>
   );
 };
