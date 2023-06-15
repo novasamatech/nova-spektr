@@ -4,13 +4,12 @@ import { Trans } from 'react-i18next';
 import { Address, SigningType, EraIndex } from '@renderer/domain/shared-kernel';
 import { Unlocking } from '@renderer/domain/stake';
 import { useI18n } from '@renderer/context/I18nContext';
-import { FootnoteText, Plate, BodyText, Checkbox, InfoPopover, Popover } from '@renderer/components/ui-redesign';
+import { FootnoteText, Plate, BodyText, Checkbox, InfoPopover, Tooltip } from '@renderer/components/ui-redesign';
 import { AccountAddress, ExplorerLink } from '@renderer/components/common';
 import { Icon, Shimmering, Balance } from '@renderer/components/ui';
 import { Explorer } from '@renderer/domain/chain';
 import { Asset } from '@renderer/domain/asset';
 import TimeToEra from '../TimeToEra/TimeToEra';
-import { HelpText } from '@renderer/components/ui-redesign/Typography';
 import { redeemableAmount } from '@renderer/shared/utils/balance';
 
 const getNextUnstakingEra = (unlocking: Unlocking[] = [], era?: number): EraIndex | undefined => {
@@ -96,39 +95,21 @@ const NominatorsList = ({
       <ul className="flex flex-col gap-y-2">
         {nominators.map((stake) => {
           const unstakeBadge = getNextUnstakingEra(stake.unlocking, era) && (
-            <Popover
-              offsetPx={-65}
-              contentClass="py-1 px-2 bg-switch-background-active rounded w-max"
-              position="left-1/2 -translate-x-1/2"
-              content={
-                <HelpText className="text-white">
-                  <Trans t={t} i18nKey="staking.badges.unstakeDescription" />
-                </HelpText>
-              }
-            >
+            <Tooltip offsetPx={-65} content={<Trans t={t} i18nKey="staking.badges.unstakeDescription" />}>
               <div className="flex gap-x-1 items-center rounded-md bg-badge-background text-icon-accent text-2xs px-2 py-0.5">
                 <Icon name="unstake" className="text-icon-accent" size={14} />
                 <TimeToEra api={api} era={getNextUnstakingEra(stake.unlocking, era)} />
               </div>
-            </Popover>
+            </Tooltip>
           );
 
           const redeemBadge = hasRedeem(stake.unlocking, era) && (
-            <Popover
-              offsetPx={-48}
-              contentClass="py-1 px-2 bg-switch-background-active rounded w-max"
-              position="left-1/2 -translate-x-1/2"
-              content={
-                <HelpText className="text-white">
-                  <Trans t={t} i18nKey="staking.badges.redeemDescription" />
-                </HelpText>
-              }
-            >
+            <Tooltip offsetPx={-48} content={<Trans t={t} i18nKey="staking.badges.redeemDescription" />}>
               <div className="flex gap-x-1 items-center rounded-md bg-positive-background text-text-positive text-2xs px-2 py-0.5">
                 <Icon name="redeem" className="text-text-positive" size={14} />
                 {t('staking.badges.redeemTitle')}
               </div>
-            </Popover>
+            </Tooltip>
           );
 
           const content = (

@@ -37,17 +37,17 @@ const Switch = ({
         defaultChecked={defaultChecked}
         className={cnTw(
           checked || defaultChecked
-            ? 'bg-switch-background-active'
+            ? 'bg-switch-background-active border border-transparent'
             : 'bg-switch-background-inactive border border-container-border',
           disabled && 'opacity-50',
-          'relative inline-flex h-[16px] w-[28px] items-center rounded-full transform transition',
+          'relative inline-flex w-[30px] items-center rounded-full transform transition p-[1px]',
         )}
         onChange={onChange}
       >
         <span
           className={cnTw(
             'inline-block h-3.5 w-3.5 rounded-full bg-knob-background transition shadow-knob-shadow',
-            checked || defaultChecked ? 'translate-x-[13px]' : 'translate-x-[1px]',
+            checked || defaultChecked ? 'translate-x-[12px]' : '',
           )}
         />
       </HeadlessSwitch>

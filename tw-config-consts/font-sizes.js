@@ -3,7 +3,7 @@ module.exports = {
   '2xs': ['0.625rem', '0.75rem'],
   '4.5xl': ['2.75rem', '3rem'],
   'large-title': ['1.625rem', '2.25rem'],
-  title: ['1.375rem', '1.875rem'],
+  title: ['1.375rem', '1.75rem'],
   'header-title': ['1.0625rem', '1.375rem'],
   'small-title': ['0.9375rem', '1.375rem'],
   'button-small': ['0.75rem', '1.125rem'],

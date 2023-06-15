@@ -1,4 +1,3 @@
-import cn from 'classnames';
 import { BN } from '@polkadot/util';
 
 import { Icon } from '@renderer/components/ui';
@@ -13,7 +12,7 @@ import AssetBalanceCard from '../AssetBalanceCard/AssetBalanceCard';
 import { useI18n } from '@renderer/context/I18nContext';
 import { Balance } from '@renderer/domain/balance';
 import { includes } from '@renderer/shared/utils/strings';
-import { CaptionText, IconButton } from '@renderer/components/ui-redesign';
+import { CaptionText, IconButton, Tooltip } from '@renderer/components/ui-redesign';
 import { useToggle } from '@renderer/shared/hooks';
 
 type Props = {
@@ -93,24 +92,25 @@ const NetworkBalances = ({
   const hasFailedVerification = balances?.some((b) => !b.verified);
 
   return (
-    <li aria-expanded={isCardShown}>
+    <li aria-expanded={isCardShown} className="w-[546px] mx-auto">
       <div className="bg-white sticky top-0 z-[1]">
-        <div className={cn('flex items-center justify-between py-1.5 px-2 mb-1 bg-main-app-background')}>
-          <div className="flex items-center gap-x-2.5">
-            <h2 className="flex items-center gap-x-2">
+        <div className="flex items-center justify-between mb-1 bg-main-app-background hover:bg-block-background-hover rounded">
+          <div className="flex items-center">
+            <h2 className="flex items-center gap-x-2 px-2 py-1.5">
               <img src={chain.icon} width={20} height={20} alt="" />
-              <CaptionText as="p" className="uppercase text-text-tertiary">
-                {chain.name}
-              </CaptionText>
+              <CaptionText className="uppercase text-text-tertiary">{chain.name}</CaptionText>
             </h2>
             {hasFailedVerification && (
-              <div className="flex items-center gap-x-1 text-alert">
-                <Icon name="shield" size={14} />
-                <p className="uppercase text-2xs leading-[15px]">{t('balances.verificationFailedLabel')}</p>
+              <div className="flex items-center gap-x-2 text-text-warning">
+                {/* TODO fix tooltip not visible when first displayed network invalid. For now just render it below icon */}
+                <Tooltip content={t('balances.verificationTooltip')} contentClass="w-[184px]">
+                  <Icon name="warn" className="cursor-pointer" size={16} />
+                </Tooltip>
+                <CaptionText className="uppercase text-inherit">{t('balances.verificationFailedLabel')}</CaptionText>
               </div>
             )}
           </div>
-          <IconButton name={isCardShown ? 'down' : 'up'} onClick={toggleCard} />
+          <IconButton name={isCardShown ? 'down' : 'up'} className="p-2" onClick={toggleCard} />
         </div>
       </div>
 

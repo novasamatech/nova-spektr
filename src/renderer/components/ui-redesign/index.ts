@@ -37,6 +37,7 @@ import {
   HeaderTitleText,
 } from './Typography';
 import InputFile from './Inputs/InputFile/InputFile';
+import { Tooltip } from './Popovers/Tooltip/Tooltip';
 
 export {
   Input,
@@ -76,4 +77,5 @@ export {
   StatusLabel,
   HeaderTitleText,
   InputFile,
+  Tooltip,
 };

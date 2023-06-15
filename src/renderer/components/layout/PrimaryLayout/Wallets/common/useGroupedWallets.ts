@@ -15,7 +15,10 @@ export const useGroupedWallets = (
   chains: ChainsRecord,
   searchQuery: string,
 ): GroupedWallets | undefined => {
-  const { getLiveAccounts } = useAccount();
+  const { getLiveAccounts, getActiveAccounts } = useAccount();
+  const activeAccounts = getActiveAccounts();
+
+  const firstActiveAccount = activeAccounts.length > 0 ? activeAccounts[0] : undefined;
 
   const watchOnlyAccounts = getLiveAccounts({ signingType: SigningType.WATCH_ONLY });
   const paritySignerAccounts = getLiveAccounts({ signingType: SigningType.PARITY_SIGNER });
@@ -49,7 +52,7 @@ export const useGroupedWallets = (
       [WalletType.WATCH_ONLY]: searchedWatchOnlyAccounts,
       [WalletType.MULTISIG]: searchedMultisigAccounts,
     });
-  }, [searchQuery]);
+  }, [searchQuery, firstActiveAccount?.accountId, firstActiveAccount?.signingType]);
 
   const searchAccount = (accounts: Account[] = [], query = '') => {
     return accounts.filter((account) => {

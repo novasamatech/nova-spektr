@@ -4,9 +4,9 @@ import { AccountDS } from '@renderer/services/storage';
 import {
   ChainsRecord,
   ChainWithAccounts,
-  MultishardStructure,
+  MultishardStructure, MultishardWallet,
   RootAccount,
-  SelectableShards,
+  SelectableShards, WalletGroupItem,
 } from '@renderer/components/layout/PrimaryLayout/Wallets/common/types';
 import { includes } from '@renderer/shared/utils/strings';
 
@@ -89,4 +89,8 @@ export const searchShards = (shards: SelectableShards, query: string): Selectabl
       (r) => includes(r.accountId, query) || includes(r.name, query) || r.chains.length,
     ),
   };
+};
+
+export const isMultishardWalletItem = (wallet: WalletGroupItem): wallet is MultishardWallet => {
+  return 'rootAccounts' in wallet;
 };

@@ -113,7 +113,7 @@ const Balances = () => {
   return (
     <>
       <div className="h-full flex flex-col items-start relative bg-main-app-background">
-        <Header title={t('balances.title')}>
+        <Header title={t('balances.title')} titleClass="py-[3px]" headerClass="pt-4 pb-[15px]">
           <BalancesFilters
             searchQuery={query}
             hideZeroBalances={hideZeroBalance}
@@ -122,9 +122,10 @@ const Balances = () => {
           />
         </Header>
 
-        <section className="overflow-y-scroll mt-4 flex flex-col gap-y-4 w-[800px] mx-auto h-full">
+        {/* 66px is header height */}
+        <section className="pt-4 flex flex-col gap-y-4 w-full max-h-[calc(100%-66px)] overflow-hidden">
           {isMultishard && (
-            <SmallTitleText as="h3">
+            <SmallTitleText as="h3" className="w-[546px] mx-auto flex items-center">
               {t('balances.shardsTitle')}{' '}
               <Button
                 variant="text"
@@ -136,7 +137,7 @@ const Balances = () => {
             </SmallTitleText>
           )}
           {accountIds.length > 0 && (
-            <ul className="flex-1 flex flex-col gap-y-4">
+            <ul className="flex flex-col gap-y-4 mx-auto overflow-y-scroll w-full pb-4">
               {sortedChains.map((chain) => (
                 <NetworkBalances
                   key={chain.chainId}
