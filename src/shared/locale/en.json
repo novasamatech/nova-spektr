@@ -705,7 +705,7 @@
       "slashedPopoverSubtitle": "Validator has been slashed recently",
       "slashedPopoverTitle": "Slashed",
       "subtitle": "Validators",
-      "title": "Set validators",
+      "title": "Change validators",
       "totalStakeTableHeader": "Total stake",
       "validatorsTableHeader": "Accounts"
     },
