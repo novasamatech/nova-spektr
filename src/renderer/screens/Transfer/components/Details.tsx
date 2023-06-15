@@ -7,17 +7,19 @@ import { Transaction } from '@renderer/domain/transaction';
 import AddressWithExplorers from '@renderer/components/common/AddressWithExplorers/AddressWithExplorers';
 import DetailWithLabel, { DetailWithLabelProps } from '@renderer/components/common/DetailsWithLabel/DetailWithLabel';
 import { AddressStyle } from '../common/constants';
+import { Wallet } from '@renderer/domain/wallet';
 
 type Props = {
   transaction: Transaction;
   account?: Account | MultisigAccount;
   signatory?: Account;
+  wallet?: Wallet;
   connection?: ExtendedChain;
   withAdvanced?: boolean;
   description?: string;
 };
 
-const Details = ({ transaction, account, signatory, connection, withAdvanced = true, description }: Props) => {
+const Details = ({ transaction, wallet, account, signatory, connection, withAdvanced = true, description }: Props) => {
   const { t } = useI18n();
 
   const addressPrefix = connection?.addressPrefix;
@@ -31,15 +33,15 @@ const Details = ({ transaction, account, signatory, connection, withAdvanced = t
 
   return (
     <>
-      <dl className="flex flex-col gap-y-1 w-full">
-        {account && (
+      <dl className="flex flex-col gap-y-4 w-full">
+        {wallet && account && (
           <DetailsRow label={t('operation.details.wallet')}>
             <AddressWithExplorers
               explorers={explorers}
               addressFont={AddressStyle}
               accountId={account.accountId}
               addressPrefix={addressPrefix}
-              name={account.name}
+              name={wallet.name}
             />
           </DetailsRow>
         )}

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 import { Transaction } from '@renderer/domain/transaction';
 import TransactionAmount from '@renderer/screens/Operations/components/TransactionAmount';
@@ -10,6 +10,8 @@ import { useI18n } from '@renderer/context/I18nContext';
 import Details from '../Details';
 import DetailWithLabel from '@renderer/components/common/DetailsWithLabel/DetailWithLabel';
 import { Icon } from '@renderer/components/ui';
+import { Wallet } from '@renderer/domain/wallet';
+import { useWallet } from '@renderer/services/wallet/walletService';
 
 const AmountFontStyle = 'font-manrope text-text-primary text-[32px] leading-[36px] font-bold';
 
@@ -26,10 +28,18 @@ type Props = {
 
 const Confirmation = ({ account, connection, transaction, signatory, description, feeTx, onResult, onBack }: Props) => {
   const { t } = useI18n();
+
+  const { getWallet } = useWallet();
+
   const [feeLoaded, setFeeLoaded] = useState(false);
+  const [wallet, setWallet] = useState<Wallet>();
+
+  useEffect(() => {
+    account.walletId && getWallet(account.walletId).then((wallet) => setWallet(wallet));
+  }, [account]);
 
   return (
-    <div className="flex flex-col items-center gap-y-3">
+    <div className="flex flex-col items-center pt-4 gap-y-3">
       {transaction && <TransactionAmount tx={transaction} showIcon={false} className={AmountFontStyle} />}
 
       {description && (
@@ -41,6 +51,7 @@ const Confirmation = ({ account, connection, transaction, signatory, description
       <Details
         transaction={transaction}
         account={account}
+        wallet={wallet}
         signatory={signatory}
         connection={connection}
         withAdvanced={false}

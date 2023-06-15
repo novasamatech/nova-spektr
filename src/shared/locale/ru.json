@@ -549,7 +549,7 @@
       "aboutRewards": "О наградах",
       "accountLabel": "Аккаунт",
       "accountPlaceholder": "Выберите аккаунт",
-      "amountPlaceholder": "Сумма",
+      "amountPlaceholder": "0",
       "availableBalancePlaceholder": "Доступно",
       "backButton": "Назад",
       "continueButton": "Продолжить",
@@ -658,7 +658,7 @@
     },
     "requiredAmountError": "Пожалуйста, введите сумму",
     "restake": {
-      "amountPlaceholder": "Сумма",
+      "amountPlaceholder": "0",
       "confirmRestakeSubtitle": "Подтверждение",
       "initRestakeSubtitle": "Вернуть в стейк",
       "title": "Вернуть в стейк",
@@ -676,7 +676,7 @@
     "submitSuccessSingle": "Operation success",
     "title": "Стейкинг",
     "unstake": {
-      "amountPlaceholder": "Сумма",
+      "amountPlaceholder": "0",
       "confirmUnstakeSubtitle": "Подтверждение",
       "initUnstakeSubtitle": "Вывод из стейка",
       "networkFee_one": "Комиссия сети",
@@ -736,7 +736,7 @@
     "unstake": "Вывод из стейкинга { amount } { asset }"
   },
   "transfer": {
-    "amountPlaceholder": "Сумма",
+    "amountPlaceholder": "0",
     "continueButton": "Продолжить",
     "descriptionLabel": "Название операции",
     "descriptionLengthError": "Описание может быть { maxLength } символов в длину",
@@ -744,6 +744,7 @@
     "editOperationButton": "Редактировать операцию",
     "executing": "Выполнение транзакции",
     "formTitle": "Отправить <strong>{ asset }</strong> в сети <strong>{ network }</strong>",
+    "inProgress": "Submitting approval...",
     "incorrectRecipientError": "Пожалуйста, введите корректный адрес получателя",
     "multiple": {
       "executing": "Выполнение операций",
@@ -757,6 +758,7 @@
     "notEnoughBalanceForFeeError": "Недостаточно средств для оплаты комиссии",
     "pasteButton": "Вставить",
     "recipientLabel": "Получатель",
+    "recipientPlaceholder": "Address",
     "requiredAmountError": "Пожалуйста, введите сумму",
     "requiredDescriptionError": "Пожалуйста, заполните описание транзакции",
     "requiredRecipientError": "Пожалуйста, введите адрес получателя",
