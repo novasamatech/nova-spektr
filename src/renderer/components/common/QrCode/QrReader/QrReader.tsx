@@ -163,9 +163,9 @@ const QrReader = ({
       try {
         fountainResult = raptorDecoder.decode(packet);
       } catch (error) {
-        collected.delete(key);
         packets.current.delete(key);
-
+        collected.delete(blockNumber);
+        onProgress?.({ decoded: collected.size, total });
         break;
       }
 

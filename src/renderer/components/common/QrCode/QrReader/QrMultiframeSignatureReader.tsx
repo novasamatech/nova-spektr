@@ -143,8 +143,18 @@ const QrMultiframeSignatureReader = ({
     collected.add(blockNumber);
     onProgress?.({ decoded: collected.size, total });
 
-    for (const [_, packet] of packets.current) {
-      const fountainResult = raptorDecoder.decode(packet);
+    for (const [key, packet] of packets.current) {
+      let fountainResult;
+
+      try {
+        fountainResult = raptorDecoder.decode(packet);
+      } catch (error) {
+        packets.current.delete(key);
+        collected.delete(blockNumber);
+        onProgress?.({ decoded: collected.size, total });
+        break;
+      }
+
       if (!fountainResult) continue;
 
       let result;
