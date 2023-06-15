@@ -354,8 +354,8 @@ export const TransferForm = ({
               <div className="flex flex-col gap-y-2.5">
                 <Input
                   className="w-full"
-                  label={t('transfer.descriptionLabel')}
-                  placeholder={t('transfer.descriptionPlaceholder')}
+                  label={t('general.input.descriptionLabel')}
+                  placeholder={t('general.intput.descriptionPlaceholder')}
                   invalid={Boolean(error)}
                   value={value}
                   onChange={onChange}
