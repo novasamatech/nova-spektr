@@ -18,6 +18,7 @@ import { useMultisigTx } from '@renderer/services/multisigTx/multisigTxService';
 import { getAssetId } from '@renderer/shared/utils/assets';
 import { MultisigAccount, Account, isMultisig } from '@renderer/domain/account';
 import { Button, AmountInput, Input, InputHint, FootnoteText } from '@renderer/components/ui-redesign';
+import DetailWithLabel from '@renderer/components/common/DetailsWithLabel/DetailWithLabel';
 
 const DESCRIPTION_MAX_LENGTH = 120;
 
@@ -62,6 +63,7 @@ export const TransferForm = ({
   const { getTransactionHash } = useTransaction();
 
   const [fee, setFee] = useState('');
+  const [feeLoading, setFeeLoading] = useState(false);
   const [deposit, setDeposit] = useState('');
 
   const [accountBalance, setAccountBalance] = useState('');
@@ -279,16 +281,16 @@ export const TransferForm = ({
               <Input
                 prefixElement={
                   value && !error ? (
-                    <Identicon className="pr-2" size={20} address={value} background={false} />
+                    <Identicon className="mr-2" size={20} address={value} background={false} />
                   ) : (
-                    <Icon className="pr-2" size={20} name="emptyIdenticon" />
+                    <Icon className="mr-2" size={20} name="emptyIdenticon" />
                   )
                 }
                 className="w-full"
                 invalid={Boolean(error)}
                 value={value}
                 label={t('transfer.recipientLabel')}
-                placeholder={t('transfer.recipientLabel')}
+                placeholder={t('transfer.recipientPlaceholder')}
                 onChange={onChange}
               />
               <InputHint active={error?.type === 'validate'} variant="error">
@@ -370,34 +372,49 @@ export const TransferForm = ({
           />
         )}
 
-        <div className="grid grid-flow-row grid-cols-2 items-center gap-y-5">
-          <FootnoteText className="text-text-tertiary">{t('transfer.networkFee')}</FootnoteText>
-          <Fee
-            className="font-inter font-medium text-footnote text-text-primary text-right"
-            api={api}
-            asset={nativeToken}
-            transaction={transferTx}
-            onFeeChange={updateFee}
-          />
+        <div className="flex flex-col items-center gap-y-3">
           {isMultisig(account) && (
-            <>
-              <FootnoteText className="text-text-tertiary">{t('transfer.networkDeposit')}</FootnoteText>
+            <DetailWithLabel
+              label={
+                <div className="flex items-center gap-x-1">
+                  <Icon className="text-text-tertiary" name="lock" size={12} />
+                  <FootnoteText className="text-text-tertiary">{t('transfer.networkDeposit')}</FootnoteText>
+                </div>
+              }
+              className="text-text-primary"
+            >
               <Deposit
-                className="justify-self-end font-inter font-medium text-footnote text-text-primary w-fit text-right"
+                className="text-footnote text-text-primary"
                 api={api}
                 asset={nativeToken}
                 threshold={account.threshold}
                 onDepositChange={setDeposit}
               />
-            </>
+            </DetailWithLabel>
           )}
+          <DetailWithLabel label={t('operation.networkFee')} className="text-text-primary">
+            {api && (
+              <Fee
+                className="text-footnote text-text-primary"
+                api={api}
+                asset={nativeToken}
+                transaction={transferTx}
+                onFeeLoading={setFeeLoading}
+                onFeeChange={updateFee}
+              />
+            )}
+          </DetailWithLabel>
         </div>
       </div>
       <InputHint className="mt-2.5" active={multisigTxExist} variant="error">
         {t('transfer.multisigTransactionExist')}
       </InputHint>
 
-      <Button className="w-fit flex-0 mt-7 ml-auto" type="submit" disabled={!isValid}>
+      <Button
+        className="w-fit flex-0 mt-7 ml-auto font-inter tracking-tight"
+        type="submit"
+        disabled={feeLoading || !isValid}
+      >
         {t('transfer.continueButton')}
       </Button>
     </form>

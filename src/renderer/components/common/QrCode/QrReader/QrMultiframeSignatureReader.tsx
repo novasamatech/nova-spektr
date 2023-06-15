@@ -294,6 +294,7 @@ const QrMultiframeSignatureReader = ({
         data-testid="qr-reader"
         className={cnTw('absolute -scale-x-100 object-cover top-0 left-0 blur-[14px] max-w-none', bgVideoClassName)}
       />
+      <div className="video-cover rounded-b-lg" />
     </>
   );
 };

@@ -245,7 +245,7 @@ export const Destination = () => {
               api={api}
               addressPrefix={addressPrefix}
               countdown={countdown}
-              account={signer || accounts[0]}
+              account={signer}
               transaction={multisigTx || transactions[0]}
               chainId={chainId}
               onGoBack={() => setActiveStep(Step.CONFIRMATION)}

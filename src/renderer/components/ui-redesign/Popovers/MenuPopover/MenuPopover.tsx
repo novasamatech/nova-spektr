@@ -6,6 +6,7 @@ import cnTw from '@renderer/shared/utils/twMerge';
 export type Props = {
   content: ReactNode; // for a11y features support use this popover with Menu.Item elements from headless ui
   className?: string;
+  containerClassName?: string;
   buttonClassName?: string;
   offsetPx?: number;
   position?: string;
@@ -14,6 +15,7 @@ export type Props = {
 const MenuPopover = ({
   content,
   className,
+  containerClassName,
   buttonClassName,
   children,
   offsetPx = 7,
@@ -29,7 +31,7 @@ const MenuPopover = ({
   return (
     <Menu>
       {({ open }) => (
-        <div className={cnTw('relative', open && 'z-10')}>
+        <div className={cnTw('relative', open && 'z-10', containerClassName)}>
           <Menu.Button className={cnTw('flex items-center', buttonClassName)} onClick={onMenuClick}>
             {children}
           </Menu.Button>
