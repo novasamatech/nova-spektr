@@ -2,9 +2,7 @@ import { SeedInfo } from '@renderer/components/common/QrCode/QrReader/common/typ
 import { useI18n } from '@renderer/context/I18nContext';
 import KeyQrReader from '../KeyQrReader/KeyQrReader';
 import { Button, HeaderTitleText, SmallTitleText } from '@renderer/components/ui-redesign';
-// @ts-ignore
 import onboarding_tutorial from '@video/onboarding_tutorial.mp4';
-// @ts-ignore
 import onboarding_tutorial_webm from '@video/onboarding_tutorial.webm';
 
 type Props = {
