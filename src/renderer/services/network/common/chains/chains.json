@@ -104,10 +104,6 @@
         "name": "IBP network node"
       },
       {
-        "url": "wss://rpc-kusama.luckyfriday.io",
-        "name": "LuckyFriday node"
-      },
-      {
         "url": "wss://1rpc.io/ksm",
         "name": "Automata 1RPC node"
       },
@@ -126,6 +122,10 @@
       {
         "url": "wss://kusama-rpc.polkadot.io",
         "name": "Parity node"
+      },
+      {
+        "url": "wss://rpc-kusama.luckyfriday.io",
+        "name": "LuckyFriday node"
       },
       {
         "url": "wss://kusama.api.onfinality.io/public-ws",
@@ -229,7 +229,7 @@
   {
     "chainId": "0x48239ef607d7928874027a43a67689209727dfb3d3dc5e5b03a39bdc2eda771a",
     "parentId": "0xb0a8d493285c2df73290dfb7e61f870f17b41801197a149ca93654499ea3dafe",
-    "name": "Statemine",
+    "name": "Kusama Asset Hub",
     "assets": [
       {
         "assetId": 0,
@@ -346,7 +346,7 @@
         "extrinsic": "https://polkaholic.io/tx/{hash}"
       }
     ],
-    "icon": "https://raw.githubusercontent.com/nova-wallet/nova-spektr-utils/main/icons/v1/chains/Statemine.svg",
+    "icon": "https://raw.githubusercontent.com/nova-wallet/nova-spektr-utils/main/icons/v1/chains/Kusama_Asset_Hub.svg",
     "addressPrefix": 2,
     "externalApi": {
       "history": [
@@ -2674,7 +2674,7 @@
   {
     "chainId": "0x68d56f15f85d3136970ec16946040bc1752654e906147f7e43e9d539d7c3de2f",
     "parentId": "0x91b171bb158e2d3848fa23a9f1c25182fb8e20313b2c1eb49219da7a70ce90c3",
-    "name": "Statemint",
+    "name": "Polkadot Asset Hub",
     "assets": [
       {
         "assetId": 0,
@@ -2724,7 +2724,7 @@
         "extrinsic": "https://polkaholic.io/tx/{hash}"
       }
     ],
-    "icon": "https://raw.githubusercontent.com/nova-wallet/nova-spektr-utils/main/icons/v1/chains/Statemint.svg",
+    "icon": "https://raw.githubusercontent.com/nova-wallet/nova-spektr-utils/main/icons/v1/chains/Polkadot_Asset_Hub.svg",
     "addressPrefix": 0,
     "externalApi": {
       "history": [
@@ -5211,5 +5211,26 @@
     ],
     "icon": "https://raw.githubusercontent.com/nova-wallet/nova-spektr-utils/main/icons/v1/chains/Frequency.svg",
     "addressPrefix": 90
+  },
+  {
+    "chainId": "0x49f4849244114177544d73d2412289f6d73a892b9eb1ca97cef81c9c0c9ec0ff",
+    "name": "GIANT",
+    "assets": [
+      {
+        "assetId": 0,
+        "symbol": "GIANT",
+        "precision": 12,
+        "icon": "https://raw.githubusercontent.com/nova-wallet/nova-spektr-utils/main/icons/v1/assets/white/GIANT.svg",
+        "name": "Should be included in scripts/data/assetsNameMap"
+      }
+    ],
+    "nodes": [
+      {
+        "url": "wss://rpc-anchor-1-giant-mainnet-ue1.giantprotocol.org:443",
+        "name": "Anchor node"
+      }
+    ],
+    "icon": "https://raw.githubusercontent.com/nova-wallet/nova-spektr-utils/main/icons/v1/chains/Giant.svg",
+    "addressPrefix": 42
   }
 ]

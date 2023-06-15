@@ -8,7 +8,7 @@ import { Transaction } from '@renderer/domain/transaction';
 import { useTransaction } from '@renderer/services/transaction/transactionService';
 import { ChainId } from '@renderer/domain/shared-kernel';
 import { Explorer } from '@renderer/domain/chain';
-import { Account, MultisigAccount, isMultisig } from '@renderer/domain/account';
+import { Account } from '@renderer/domain/account';
 import { Button, FootnoteText } from '@renderer/components/ui-redesign';
 import AddressWithExplorers from '@renderer/components/common/AddressWithExplorers/AddressWithExplorers';
 
@@ -16,7 +16,7 @@ type Props = {
   api: ApiPromise;
   chainId: ChainId;
   transaction: Transaction;
-  account: Account | MultisigAccount;
+  account?: Account;
   explorers?: Explorer[];
   addressPrefix: number;
   countdown: number;
@@ -66,8 +66,8 @@ const ScanSingleframeQr = ({
 
   return (
     <div className="pt-4 flex flex-col items-center w-full">
-      {isMultisig(account) && (
-        <div className="flex items-center gap-x-0.5 mb-2">
+      {account?.walletId && (
+        <div className="flex justify-center items-center w-1/2 gap-x-0.5 mb-2">
           <FootnoteText className="text-text-secondary">{t('signing.signatory')}</FootnoteText>
           <AddressWithExplorers
             accountId={account.accountId}

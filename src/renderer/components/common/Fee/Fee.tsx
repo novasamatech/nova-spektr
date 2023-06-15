@@ -15,9 +15,10 @@ type Props = {
   transaction?: Transaction;
   className?: string;
   onFeeChange?: (fee: string) => void;
+  onFeeLoading?: (loading: boolean) => void;
 };
 
-const Fee = ({ api, multiply = 1, asset, transaction, className, onFeeChange }: Props) => {
+const Fee = ({ api, multiply = 1, asset, transaction, className, onFeeChange, onFeeLoading }: Props) => {
   const { getTransactionFee } = useTransaction();
 
   const [fee, setFee] = useState('');
@@ -27,6 +28,10 @@ const Fee = ({ api, multiply = 1, asset, transaction, className, onFeeChange }: 
     setFee(fee);
     onFeeChange?.(fee);
   };
+
+  useEffect(() => {
+    onFeeLoading?.(isLoading);
+  }, [isLoading]);
 
   useEffect(() => {
     setIsLoading(true);

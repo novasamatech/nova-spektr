@@ -131,7 +131,7 @@ const Welcome = () => {
         ref={logo}
         className="relative flex-1 flex flex-col h-full bg-input-background-disabled justify-center items-end logo-background"
       >
-        <div className={cnTw('relative w-fit', fixed ? `pr-[${RIGHT_PADDING}px]` : 'self-center')}>
+        <div className={cnTw('relative w-fit', fixed ? `pr-[225px]` : 'self-center')}>
           <Icon name="logoTitle" className="-scale-y-100" size={LOGO_WIDTH} />
         </div>
       </div>

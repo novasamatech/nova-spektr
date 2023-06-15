@@ -39,7 +39,7 @@ const KeyQrReader = ({ size = 300, className, onResult }: Props) => {
   const [isScanComplete, setIsScanComplete] = useState(false);
   const [{ decoded, total }, setProgress] = useState({ decoded: 0, total: 0 });
 
-  const isCameraPending = [CameraState.LOADING, CameraState.SELECT].includes(cameraState);
+  const isCameraPending = CameraState.LOADING === cameraState;
 
   const isCameraError = [
     CameraState.UNKNOWN_ERROR,
@@ -57,7 +57,11 @@ const KeyQrReader = ({ size = 300, className, onResult }: Props) => {
     }));
 
     setAvailableCameras(formattedCameras);
-    setCameraState(CameraState.SELECT);
+
+    if (formattedCameras.length > 0) {
+      setActiveCamera(formattedCameras[0]);
+      setCameraState(CameraState.ACTIVE);
+    }
   };
 
   // FIXME: camera is blocked after 3 denies (that's intended browser reaction)
@@ -174,19 +178,6 @@ const KeyQrReader = ({ size = 300, className, onResult }: Props) => {
               <Icon name="loader" className="animate-spin" /> {t('onboarding.paritySigner.startCameraLabel')}
             </p>
             <Icon className="absolute text-shade-10" name="qrFrame" size={240} />
-          </div>
-        </div>
-      )}
-      {cameraState === CameraState.SELECT && (
-        <div className="flex flex-col items-center w-full h-[288px]">
-          <div className="flex items-center justify-center bg-white w-full h-full">
-            <div className="flex flex-col items-center text-center">
-              <Icon className="text-alert" name="warnCutout" size={70} />
-              <p className="text-neutral text-xl leading-6 font-semibold mt-5">
-                {t('onboarding.paritySigner.multipleCamerasLabel')}
-              </p>
-              <p className="text-neutral-variant text-sm">{t('onboarding.paritySigner.chooseCameraLabel')}</p>
-            </div>
           </div>
         </div>
       )}

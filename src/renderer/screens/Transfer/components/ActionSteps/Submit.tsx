@@ -122,10 +122,10 @@ const Submit = ({ api, tx, multisigTx, account, unsignedTx, signature, descripti
 
   const getResultProps = (): ResultProps => {
     if (inProgress) {
-      return { title: t('operation.inProgress'), variant: 'loading' };
+      return { title: t('transfer.inProgress'), variant: 'loading' };
     }
     if (successMessage) {
-      return { title: t('operation.successMessage'), variant: 'success' };
+      return { title: t('transfer.successMessage'), variant: 'success' };
     }
     if (errorMessage) {
       return { title: t('operation.feeErrorTitle'), description: errorMessage, variant: 'error' };

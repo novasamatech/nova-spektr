@@ -20,6 +20,10 @@ jest.mock('@renderer/services/account/accountService', () => ({
   }),
 }));
 
+jest.mock('@renderer/components/ui/Truncate/Truncate', () => () => (
+  <span>5CGQ7BPJZZKNirQgVhzbX9wdkgbnUHtJ5V7FkMXdZeVbXyr9</span>
+));
+
 const westendExplorers = chains.find((chain) => chain.name === 'Westend')?.explorers || [];
 
 describe('screens/Balances/ReceiveModal', () => {

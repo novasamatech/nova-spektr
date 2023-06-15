@@ -90,6 +90,9 @@ module.exports = {
       gridTemplateColumns: {
         'operation-card': '72px 182px 182px 130px 130px 40px',
       },
+      letterSpacing: {
+        tight: '-.01em',
+      },
     },
   },
   plugins: [require('@headlessui/tailwindcss')],
