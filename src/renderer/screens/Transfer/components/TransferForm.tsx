@@ -355,7 +355,7 @@ export const TransferForm = ({
                 <Input
                   className="w-full"
                   label={t('general.input.descriptionLabel')}
-                  placeholder={t('general.intput.descriptionPlaceholder')}
+                  placeholder={t('general.input.descriptionPlaceholder')}
                   invalid={Boolean(error)}
                   value={value}
                   onChange={onChange}
