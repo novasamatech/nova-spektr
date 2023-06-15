@@ -164,8 +164,8 @@ export const OperationForm = ({
               <>
                 <AmountInput
                   name="amount"
-                  placeholder={t('staking.bond.amountPlaceholder')}
-                  balancePlaceholder={t('staking.bond.availableBalancePlaceholder')}
+                  placeholder={t('general.input.amountLabel')}
+                  balancePlaceholder={t('general.input.availableLabel')}
                   value={value}
                   disabled={amountField.disabled}
                   balance={balanceRange}
