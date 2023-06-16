@@ -90,7 +90,7 @@ const WalletMenu = ({ children, chains, wallets }: PropsWithChildren<Props>) => 
                   <SmallTitleText>{t('wallets.title')}</SmallTitleText>
                   <DropdownButton
                     options={dropdownOptions}
-                    className={'w-[134px] justify-center py-2 h-8.5'}
+                    className="w-[134px] py-2 h-8.5"
                     title={t('wallets.addButtonTitle')}
                   />
                 </header>

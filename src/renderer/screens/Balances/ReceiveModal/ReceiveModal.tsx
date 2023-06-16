@@ -80,6 +80,7 @@ const ReceiveModal = ({ data, isOpen, onClose }: Props) => {
         <OperationModalTitle title={t('receive.title', { asset: data.asset.symbol })} chainId={data.chain.chainId} />
       }
       contentClass="pb-6 px-4 pt-4 flex flex-col items-center"
+      headerClass="py-4 px-5 max-w-[440px]"
       closeButton
       isOpen={isOpen}
       onClose={onClose}

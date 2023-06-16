@@ -159,6 +159,7 @@ const RejectTx = ({ tx, account, connection }: Props) => {
           />
         }
         panelClass="w-[440px]"
+        headerClass="py-4 px-5 max-w-[440px]"
         contentClass={activeStep === Step.SIGNING ? '' : undefined}
         onClose={handleClose}
       >

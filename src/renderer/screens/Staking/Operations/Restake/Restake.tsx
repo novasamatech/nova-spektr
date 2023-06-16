@@ -19,7 +19,8 @@ import { DEFAULT_TRANSITION } from '@renderer/shared/utils/constants';
 import Paths from '@renderer/routes/paths';
 import ScanMultiframeQr from '@renderer/components/common/Scanning/ScanMultiframeQr';
 import ScanSingleframeQr from '@renderer/components/common/Scanning/ScanSingleframeQr';
-import { Icon } from '@renderer/components/ui';
+import { Loader } from '@renderer/components/ui';
+import OperationModalTitle from '@renderer/screens/Operations/components/OperationModalTitle';
 
 const enum Step {
   INIT,
@@ -93,13 +94,14 @@ export const Restake = () => {
       <BaseModal
         closeButton
         contentClass=""
+        headerClass="py-4 px-5 max-w-[440px]"
         panelClass="w-max"
         isOpen={isRestakeModalOpen}
-        title={t('staking.restake.title')}
+        title={<OperationModalTitle title={`${t('staking.restake.title', { asset: '' })}`} chainId={chainId} />}
         onClose={closeRestakeModal}
       >
         <div className="w-[440px] px-5 py-4">
-          <Icon className="my-24 mx-auto" name="loader" />
+          <Loader className="my-24 mx-auto" color="primary" />
           <Button disabled className="w-fit flex-0 mt-7 ml-auto">
             {t('staking.bond.continueButton')}
           </Button>
@@ -113,9 +115,10 @@ export const Restake = () => {
       <BaseModal
         closeButton
         contentClass=""
+        headerClass="py-4 px-5 max-w-[440px]"
         panelClass="w-max"
         isOpen={isRestakeModalOpen}
-        title={t('staking.restake.title')}
+        title={<OperationModalTitle title={`${t('staking.restake.title', { asset: '' })}`} chainId={chainId} />}
         onClose={closeRestakeModal}
       >
         <div className="w-[440px] px-5 py-20">
@@ -196,9 +199,10 @@ export const Restake = () => {
     <BaseModal
       closeButton
       contentClass=""
+      headerClass="py-4 px-5 max-w-[440px]"
       panelClass="w-max"
       isOpen={isRestakeModalOpen}
-      title={t('staking.restake.title')}
+      title={<OperationModalTitle title={`${t('staking.restake.title', { asset: '' })}`} chainId={chainId} />}
       onClose={closeRestakeModal}
     >
       {activeStep === Step.INIT && (

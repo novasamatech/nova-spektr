@@ -20,7 +20,7 @@ import OperationModalTitle from '@renderer/screens/Operations/components/Operati
 import { BaseModal, Button } from '@renderer/components/ui-redesign';
 import ScanMultiframeQr from '@renderer/components/common/Scanning/ScanMultiframeQr';
 import ScanSingleframeQr from '@renderer/components/common/Scanning/ScanSingleframeQr';
-import { Icon } from '@renderer/components/ui';
+import { Loader } from '@renderer/components/ui';
 
 const enum Step {
   INIT,
@@ -99,13 +99,14 @@ export const Redeem = () => {
       <BaseModal
         closeButton
         contentClass=""
+        headerClass="py-4 px-5 max-w-[440px]"
         panelClass="w-max"
         isOpen={isRedeemModalOpen}
         title={<OperationModalTitle title={`${t('staking.redeem.title', { asset: '' })}`} chainId={chainId} />}
         onClose={closeRedeemModal}
       >
         <div className="w-[440px] px-5 py-4">
-          <Icon className="my-24 mx-auto" name="loader" />
+          <Loader className="my-24 mx-auto" color="primary" />
           <Button disabled className="w-fit flex-0 mt-7 ml-auto">
             {t('staking.bond.continueButton')}
           </Button>
@@ -119,6 +120,7 @@ export const Redeem = () => {
       <BaseModal
         closeButton
         contentClass=""
+        headerClass="py-4 px-5 max-w-[440px]"
         panelClass="w-max"
         isOpen={isRedeemModalOpen}
         title={<OperationModalTitle title={`${t('staking.redeem.title', { asset: '' })}`} chainId={chainId} />}
@@ -201,6 +203,7 @@ export const Redeem = () => {
     <BaseModal
       closeButton
       contentClass=""
+      headerClass="py-4 px-5 max-w-[440px]"
       panelClass="w-max"
       isOpen={isRedeemModalOpen}
       title={<OperationModalTitle title={`${t('staking.redeem.title', { asset: asset.symbol })}`} chainId={chainId} />}

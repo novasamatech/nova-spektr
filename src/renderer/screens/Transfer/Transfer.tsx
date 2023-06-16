@@ -12,7 +12,7 @@ import { BaseModal, Button } from '@renderer/components/ui-redesign';
 import OperationModalTitle from '../Operations/components/OperationModalTitle';
 import { InitOperation, Confirmation, Signing, Submit } from './components/ActionSteps';
 import ScanSingleframeQr from '@renderer/components/common/Scanning/ScanSingleframeQr';
-import { Icon } from '@renderer/components/ui';
+import { Loader } from '@renderer/components/ui';
 
 const enum Step {
   INIT,
@@ -90,16 +90,17 @@ const Transfer = ({ assetId, chainId, isOpen, onClose }: Props) => {
   return (
     <>
       <BaseModal
-        isOpen={activeStep !== Step.SUBMIT && isOpen}
         closeButton
+        isOpen={activeStep !== Step.SUBMIT && isOpen}
         title={<OperationModalTitle title={`${t('transfer.title', { asset: asset?.symbol })}`} chainId={chainId} />}
         contentClass={activeStep === Step.SIGNING ? '' : undefined}
         panelClass="w-[440px]"
+        headerClass="py-4 px-5 max-w-[440px]"
         onClose={handleClose}
       >
         {!api?.isConnected ? (
           <div>
-            <Icon className="my-24 mx-auto" name="loader" />
+            <Loader className="my-24 mx-auto" color="primary" />
             <Button disabled className="w-fit flex-0 mt-7 ml-auto">
               {t('transfer.continueButton')}
             </Button>
@@ -180,7 +181,7 @@ const Transfer = ({ assetId, chainId, isOpen, onClose }: Props) => {
             />
           ) : (
             <div className="w-[240px] h-[200px] px-5 py-4">
-              <Icon className="my-24 mx-auto" name="loader" />
+              <Loader className="my-24 mx-auto" color="primary" />
             </div>
           )}
         </>

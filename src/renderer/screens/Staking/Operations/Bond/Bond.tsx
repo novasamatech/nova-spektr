@@ -24,7 +24,7 @@ import { DestinationType } from '../common/types';
 import ScanMultiframeQr from '@renderer/components/common/Scanning/ScanMultiframeQr';
 import ScanSingleframeQr from '@renderer/components/common/Scanning/ScanSingleframeQr';
 import { UnstakingDuration } from '@renderer/screens/Staking/Overview/components';
-import { Icon } from '@renderer/components/ui';
+import { Loader } from '@renderer/components/ui';
 
 const enum Step {
   INIT,
@@ -102,13 +102,14 @@ export const Bond = () => {
       <BaseModal
         closeButton
         contentClass=""
+        headerClass="py-4 px-5 max-w-[440px]"
         panelClass="w-max"
         isOpen={isBondModalOpen}
         title={<OperationModalTitle title={`${t('staking.bond.title', { asset: '' })}`} chainId={chainId} />}
         onClose={closeBondModal}
       >
         <div className="w-[440px] px-5 py-4">
-          <Icon className="my-24 mx-auto" name="loader" />
+          <Loader className="my-24 mx-auto" color="primary" />
           <Button disabled className="w-fit flex-0 mt-7 ml-auto">
             {t('staking.bond.continueButton')}
           </Button>
@@ -122,6 +123,7 @@ export const Bond = () => {
       <BaseModal
         closeButton
         contentClass=""
+        headerClass="py-4 px-5 max-w-[440px]"
         panelClass="w-max"
         isOpen={isBondModalOpen}
         title={<OperationModalTitle title={`${t('staking.bond.title', { asset: '' })}`} chainId={chainId} />}
@@ -238,6 +240,7 @@ export const Bond = () => {
     <BaseModal
       closeButton
       contentClass=""
+      headerClass="py-4 px-5 max-w-[440px]"
       panelClass="w-max"
       isOpen={isBondModalOpen}
       title={<OperationModalTitle title={`${t('staking.bond.title', { asset: asset.symbol })}`} chainId={chainId} />}

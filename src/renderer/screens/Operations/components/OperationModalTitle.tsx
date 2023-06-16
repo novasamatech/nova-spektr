@@ -6,13 +6,13 @@ type Props = {
   chainId: ChainId;
 };
 
-const ChainFontStyle = 'font-manrope text-modal-title text-text-primary';
+const ChainFontStyle = 'font-manrope text-modal-title text-text-primary truncate';
 
 const OperationModalTitle = ({ title, chainId }: Props) => (
-  <div className="flex items-center py-1">
+  <div className="flex items-center whitespace-nowrap">
     {title}
     <Chain
-      className="ml-1.5 gap-x-1.5 text-ellipsis"
+      className="ml-1.5 gap-x-1.5 overflow-hidden"
       chainId={chainId}
       fontProps={{ className: ChainFontStyle, fontWeight: 'bold' }}
     />

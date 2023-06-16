@@ -2,7 +2,7 @@ import { ApiPromise } from '@polkadot/api';
 import { useEffect, useState } from 'react';
 import { mapValues } from 'lodash';
 
-import { Icon, Identicon, Shimmering } from '@renderer/components/ui';
+import { Icon, Identicon, Shimmering, Loader } from '@renderer/components/ui';
 import { useI18n } from '@renderer/context/I18nContext';
 import { Asset } from '@renderer/domain/asset';
 import { Explorer } from '@renderer/domain/chain';
@@ -123,7 +123,7 @@ export const Validators = ({ api, chainId, asset, explorers, onGoBack, onResult 
 
       {isValidatorsLoading && (
         <div className="h-[288px] flex items-center justify-center">
-          <Icon name="loader" />
+          <Loader color="primary" />
         </div>
       )}
 

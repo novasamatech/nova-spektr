@@ -2,15 +2,6 @@ import { ApiPromise } from '@polkadot/api';
 import { useEffect, useState, ReactNode } from 'react';
 
 import { ExplorerLink } from '@renderer/components/common';
-import { Icon, Balance, Identicon } from '@renderer/components/ui';
-import {
-  BaseModal,
-  SmallTitleText,
-  FootnoteText,
-  InfoPopover,
-  BodyText,
-  Accordion,
-} from '@renderer/components/ui-redesign';
 import { useI18n } from '@renderer/context/I18nContext';
 import { Asset } from '@renderer/domain/asset';
 import { Explorer } from '@renderer/domain/chain';
@@ -21,6 +12,15 @@ import { useValidators } from '@renderer/services/staking/validatorsService';
 import { getComposedIdentity } from '@renderer/shared/utils/strings';
 import { toShortAddress } from '@renderer/shared/utils/address';
 import { NoValidators } from '../EmptyState/NoValidators';
+import { Icon, Balance, Identicon, Loader } from '@renderer/components/ui';
+import {
+  BaseModal,
+  SmallTitleText,
+  FootnoteText,
+  InfoPopover,
+  BodyText,
+  Accordion,
+} from '@renderer/components/ui-redesign';
 
 type Props = {
   api?: ApiPromise;
@@ -112,7 +112,7 @@ export const ValidatorsModal = ({ api, stash, validators, asset, explorers, isOp
     >
       {isValidatorsLoading && (
         <div className="h-[366px] flex items-center justify-center">
-          <Icon name="loader" />
+          <Loader className="my-24 mx-auto" color="primary" />
         </div>
       )}
 
