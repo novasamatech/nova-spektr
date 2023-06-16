@@ -55,7 +55,7 @@ const Navigation = () => {
     <>
       <aside
         className={cn(
-          'relative flex gap-y-5 flex-col w-[240px] py-4 pl-4 pr-[15px] z-30',
+          'relative flex gap-y-5 flex-col w-[240px] p-4 z-30',
           'bg-left-navigation-menu-background border-r border-r-container-border',
         )}
       >

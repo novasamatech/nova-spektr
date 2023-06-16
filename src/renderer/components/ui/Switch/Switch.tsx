@@ -40,7 +40,7 @@ const Switch = ({
             ? 'bg-switch-background-active border border-transparent'
             : 'bg-switch-background-inactive border border-container-border',
           disabled && 'opacity-50',
-          'relative inline-flex w-[30px] items-center rounded-full transform transition p-[1px]',
+          'relative inline-flex w-7.5 items-center rounded-full transform transition p-[1px]',
         )}
         onChange={onChange}
       >

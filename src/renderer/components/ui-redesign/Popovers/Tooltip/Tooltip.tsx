@@ -3,7 +3,7 @@ import { ComponentProps } from 'react';
 import { Popover } from '@renderer/components/ui-redesign';
 import cnTw from '@renderer/shared/utils/twMerge';
 import { HelpText } from '../../Typography';
-import './pointer.css';
+import './Tooltip.css';
 
 type PopoverProps = ComponentProps<typeof Popover> & { pointer?: 'up' | 'down' };
 
