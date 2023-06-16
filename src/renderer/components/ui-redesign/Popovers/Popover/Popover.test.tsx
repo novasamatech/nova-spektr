@@ -1,7 +1,7 @@
 import { act, screen, render, waitForElementToBeRemoved } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 
-import Popover from './Popover';
+import { Popover } from './Popover';
 
 describe('ui/Popover', () => {
   test('should render component', () => {

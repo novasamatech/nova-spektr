@@ -19,6 +19,7 @@ import {
   WalletGroupItem,
   MultishardWallet,
 } from '@renderer/components/layout/PrimaryLayout/Wallets/common/types';
+import { isMultishardWalletItem } from '@renderer/components/layout/PrimaryLayout/Wallets/common/utils';
 
 type Props = {
   chains: ChainsRecord;
@@ -59,7 +60,7 @@ const WalletMenu = ({ children, chains, wallets }: PropsWithChildren<Props>) => 
 
   const changeActiveAccount = (wallet: WalletGroupItem, closeMenu: () => void) => {
     closeMenu();
-    if ('rootAccounts' in wallet) {
+    if (isMultishardWalletItem(wallet)) {
       selectMultishardWallet(wallet as MultishardWallet);
     } else {
       if (wallet.id) {

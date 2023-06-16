@@ -59,7 +59,8 @@
     "shardsModalTitle": "Your shards",
     "shardsTitle": "Your assets on:",
     "title": "Assets",
-    "verificationFailedLabel": "verification failed"
+    "verificationFailedLabel": "verification failed",
+    "verificationTooltip": "The balance may be wrong or outdated, please check your network connection."
   },
   "basemodal": {
     "closeButton": "Close modal window"

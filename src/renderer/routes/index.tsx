@@ -1,4 +1,4 @@
-import { RouteObject } from 'react-router-dom';
+import { Navigate, RouteObject } from 'react-router-dom';
 
 import Layouts from '@renderer/components/layout';
 import Screens from '@renderer/screens';
@@ -12,7 +12,7 @@ const routesConfig: RouteObject[] = [
     path: Paths.ROOT,
     element: <Layouts.PrimaryLayout />,
     children: [
-      { index: true, element: <Screens.Balances /> },
+      { index: true, element: <Navigate to={Paths.BALANCES} replace /> },
       { path: Paths.ADDRESS_BOOK, element: <Screens.AddressBook /> },
       { path: Paths.SIGNING, element: <Screens.Signing /> },
       { path: Paths.OPERATIONS, element: <Screens.Operations /> },

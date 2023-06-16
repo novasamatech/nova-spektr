@@ -1,10 +1,10 @@
 import { ComponentMeta, ComponentStory } from '@storybook/react';
 
-import { Popover } from './Popover';
+import { Tooltip } from './Tooltip';
 
 export default {
-  title: 'Redesign/Popover ',
-  component: Popover,
+  title: 'Redesign/Tooltip ',
+  component: Tooltip,
   parameters: { actions: { argTypesRegex: '^on.*' } },
   decorators: [
     (Story) => (
@@ -13,13 +13,13 @@ export default {
       </div>
     ),
   ],
-} as ComponentMeta<typeof Popover>;
+} as ComponentMeta<typeof Tooltip>;
 
-const Template: ComponentStory<typeof Popover> = (args) => <Popover {...args} />;
+const Template: ComponentStory<typeof Tooltip> = (args) => <Tooltip {...args} />;
 
-export const OnHover = Template.bind({});
-OnHover.args = {
+export const Default = Template.bind({});
+Default.args = {
   content: 'Staking will automatically start when the next era starts',
   contentClass: 'p-2',
-  children: <button className="py-2 px-3 bg-gray-200 w-40 text-center">Hover me</button>,
+  children: <p className="py-2 px-3 bg-gray-200 w-40 text-center">Hover me</p>,
 };
