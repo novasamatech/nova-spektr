@@ -1,10 +1,23 @@
 import { IconNames } from '@renderer/components/ui/Icon/data';
 import { Variant } from './types';
+import { AnimationNames, Props } from '@renderer/components/ui-redesign/Animation/Animation';
 
 export const VariantIcons: Record<Variant, IconNames> = {
   success: 'checkLineRedesign',
   error: 'closeLineRedesign',
   loading: 'loader',
+};
+
+export const VariantAnimations: Record<Variant, AnimationNames> = {
+  success: 'success',
+  error: 'error',
+  loading: 'loading',
+};
+
+export const VariantAnimationProps: Record<Variant, Partial<Props>> = {
+  success: {},
+  error: {},
+  loading: { loop: true },
 };
 
 export const VariantStyles: Record<Variant, string> = {

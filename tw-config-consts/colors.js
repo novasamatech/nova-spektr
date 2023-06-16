@@ -92,4 +92,5 @@ module.exports = {
   'label-background-green': 'var(--label-background-green)',
   'label-background-red': 'var(--label-background-red)',
   'label-background-gray': 'var(--label-background-gray)',
+  'selected-background': 'var(--selected-background)',
 };

@@ -59,7 +59,8 @@
     "shardsModalTitle": "Your shards",
     "shardsTitle": "Ваши активы на:",
     "title": "Балансы",
-    "verificationFailedLabel": "данные недостоверны"
+    "verificationFailedLabel": "данные недостоверны",
+    "verificationTooltip": "The balance may be wrong or outdated, please check your network connection."
   },
   "basemodal": {
     "closeButton": "Закрыть окно"

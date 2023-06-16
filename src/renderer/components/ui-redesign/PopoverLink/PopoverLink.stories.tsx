@@ -1,7 +1,7 @@
 import { ComponentStory, ComponentMeta } from '@storybook/react';
 
 import PopoverLink from './PopoverLink';
-import Popover from '@renderer/components/ui-redesign/Popovers/Popover/Popover';
+import { Popover } from '@renderer/components/ui-redesign/Popovers/Popover/Popover';
 
 export default {
   title: 'Redesign/Popover Link',
