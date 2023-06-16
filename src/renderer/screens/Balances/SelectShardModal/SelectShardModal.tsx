@@ -125,6 +125,7 @@ const SelectShardModal = ({ isOpen, onClose, activeAccounts, accounts }: Props) 
       title={t('balances.shardsModalTitle')}
       closeButton
       contentClass="px-5 py-4"
+      headerClass="px-5 py-4"
       onClose={onClose}
     >
       <SearchInput
