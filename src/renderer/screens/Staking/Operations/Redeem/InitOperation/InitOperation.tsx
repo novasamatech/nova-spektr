@@ -135,17 +135,17 @@ const InitOperation = ({ api, chainId, accounts, addressPrefix, asset, onResult 
   useEffect(() => {
     if (!accountIsMultisig) return;
 
-    const signerOptions = dbAccounts
-      .filter((a) => a.signingType !== SigningType.WATCH_ONLY)
-      .reduce<any[]>((acc, signer) => {
-        if (signatoryIds.includes(signer.accountId)) {
-          const balance = signatoriesBalances.find((b) => b.accountId === signer.accountId);
+    const signerOptions = dbAccounts.reduce<DropdownOption<Account>[]>((acc, signer) => {
+      const isWatchOnly = signer.signingType === SigningType.WATCH_ONLY;
+      const signerExist = signatoryIds.includes(signer.accountId);
+      if (!isWatchOnly && signerExist) {
+        const balance = signatoriesBalances.find((b) => b.accountId === signer.accountId);
 
-          acc.push(getSignatoryOptions(signer, { addressPrefix, asset, balance }));
-        }
+        acc.push(getSignatoryOptions(signer, { addressPrefix, asset, balance }));
+      }
 
-        return acc;
-      }, []);
+      return acc;
+    }, []);
 
     if (signerOptions.length === 0) return;
 
@@ -222,7 +222,7 @@ const InitOperation = ({ api, chainId, accounts, addressPrefix, asset, onResult 
   return (
     <div className="flex flex-col gap-y-4 w-[440px] px-5 py-4">
       {accountIsMultisig ? (
-        <>
+        <div className="flex flex-col gap-y-2">
           <Select
             label={t('staking.bond.signatoryLabel')}
             placeholder={t('staking.bond.signatoryPlaceholder')}
@@ -231,10 +231,8 @@ const InitOperation = ({ api, chainId, accounts, addressPrefix, asset, onResult 
             options={signatoryOptions}
             onChange={setActiveSignatory}
           />
-          <InputHint active={!signatoryOptions.length} className="-mt-2">
-            {t('multisigOperations.noSignatory')}
-          </InputHint>
-        </>
+          <InputHint active={!signatoryOptions.length}>{t('multisigOperations.noSignatory')}</InputHint>
+        </div>
       ) : (
         <MultiSelect
           label={t('staking.bond.accountLabel')}
