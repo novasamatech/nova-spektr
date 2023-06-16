@@ -747,6 +747,7 @@
     },
     "multisigTransactionExist": "Мультисиг транзакция уже существует",
     "networkDeposit": "Депозит",
+    "networkDepositHint": "The deposit stays locked on the depositor’s account until the multisig operation is executed or rejected",
     "networkFee": "Комиссия сети",
     "notEnoughBalanceError": "Недостаточно средств для указанной суммы",
     "notEnoughBalanceForDepositError": "Недостаточно средств для оплаты депозита",

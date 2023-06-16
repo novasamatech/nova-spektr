@@ -735,7 +735,7 @@
   "transfer": {
     "amountPlaceholder": "0",
     "continueButton": "Continue",
-    "descriptionLengthError": "Description can be { maxLength } symbols long",
+    "descriptionLengthError": "Description must be { maxLength } symbols long",
     "editOperationButton": "Edit operation",
     "executing": "Submitting operation",
     "formTitle": "Send <strong>{ asset }</strong> on <strong>{ network }</strong>",
@@ -747,6 +747,7 @@
     },
     "multisigTransactionExist": "Multisig transaction already exists",
     "networkDeposit": "Multisig deposit",
+    "networkDepositHint": "The deposit stays locked on the depositor’s account until the multisig operation is executed or rejected",
     "networkFee": "Network fee",
     "notEnoughBalanceError": "Not enough funds to transfer specific amount",
     "notEnoughBalanceForDepositError": "Insufficient balance to pay deposit",
