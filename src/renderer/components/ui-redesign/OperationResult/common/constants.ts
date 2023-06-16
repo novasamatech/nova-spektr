@@ -4,7 +4,7 @@ import { Variant } from './types';
 export const VariantIcons: Record<Variant, IconNames> = {
   success: 'checkLineRedesign',
   error: 'closeLineRedesign',
-  loading: 'loaderRedesign',
+  loading: 'loader',
 };
 
 export const VariantStyles: Record<Variant, string> = {
