@@ -5,7 +5,6 @@ import QrSignatureReader from './QrCode/QrReader/QrSignatureReader';
 import QrTextGenerator from './QrCode/QrGenerator/QrTextGenerator';
 import QrTxGenerator from './QrCode/QrGenerator/QrTxGenerator';
 import ActiveAddress from './ActiveAddress/ActiveAddress';
-import ChainLoader from './ChainLoader/ChainLoader';
 import Explorers from './Explorers/Explorers';
 import Message from './Message/Message';
 import Expandable from './Expandable/Expandable';
@@ -33,7 +32,6 @@ export {
   QrTextGenerator,
   QrGeneratorContainer,
   QrTxGenerator,
-  ChainLoader,
   Explorers,
   Expandable,
   Deposit,

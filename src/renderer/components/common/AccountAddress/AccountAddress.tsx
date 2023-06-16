@@ -70,7 +70,7 @@ const AccountAddress = ({
   );
 
   return (
-    <div className={cnTw('flex items-center gap-x-2 overflow-hidden', className)}>
+    <div className={cnTw('flex items-center gap-x-2', className)}>
       {showIcon && (
         <Identicon
           className="inline-block"

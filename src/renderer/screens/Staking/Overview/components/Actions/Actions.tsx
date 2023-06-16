@@ -65,7 +65,7 @@ type Props = {
   onNavigate: (path: PathValue, addresses?: Address[]) => void;
 };
 
-const Actions = ({ stakes, isStakingLoading, onNavigate }: Props) => {
+export const Actions = ({ stakes, isStakingLoading, onNavigate }: Props) => {
   const { t } = useI18n();
   const [isDialogOpen, toggleIsDialogOpen] = useToggle();
 
@@ -239,5 +239,3 @@ const Actions = ({ stakes, isStakingLoading, onNavigate }: Props) => {
     </>
   );
 };
-
-export default Actions;

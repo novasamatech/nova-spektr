@@ -383,7 +383,7 @@ export const TransferForm = ({
                   <Popover
                     offsetPx={-92}
                     contentClass="py-1 px-2 bg-switch-background-active rounded w-[184px] border-none"
-                    position="left-1/2 -translate-x-1/2"
+                    panelClass="left-1/2 -translate-x-1/2"
                     content={
                       <HelpText className="text-white">
                         <Trans t={t} i18nKey="transfer.networkDepositHint" />

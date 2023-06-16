@@ -5,7 +5,7 @@ import { AnimationNames, Props } from '@renderer/components/ui-redesign/Animatio
 export const VariantIcons: Record<Variant, IconNames> = {
   success: 'checkLineRedesign',
   error: 'closeLineRedesign',
-  loading: 'loaderRedesign',
+  loading: 'loader',
 };
 
 export const VariantAnimations: Record<Variant, AnimationNames> = {

@@ -1,7 +1,7 @@
 import { render, screen } from '@testing-library/react';
 import noop from 'lodash/noop';
 
-import NominatorsList from './NominatorsList';
+import { NominatorsList } from './NominatorsList';
 
 jest.mock('@renderer/context/I18nContext', () => ({
   useI18n: jest.fn().mockReturnValue({

@@ -3,13 +3,11 @@ import { useEffect, useState } from 'react';
 import { Navigate, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 
 import Paths from '@renderer/routes/paths';
-import { ChainLoader } from '@renderer/components/common';
 import { useI18n } from '@renderer/context/I18nContext';
 import { useNetworkContext } from '@renderer/context/NetworkContext';
 import { ChainId, HexString, AccountId, Address } from '@renderer/domain/shared-kernel';
 import { Transaction, TransactionType } from '@renderer/domain/transaction';
 import { useAccount } from '@renderer/services/account/accountService';
-import { useChains } from '@renderer/services/network/chainsService';
 import InitOperation, { RedeemResult } from './InitOperation/InitOperation';
 import { Confirmation, Signing, Submit, NoAsset } from '../components';
 import { getRelaychainAsset } from '@renderer/shared/utils/assets';
@@ -19,9 +17,10 @@ import { toAddress } from '@renderer/shared/utils/address';
 import { useTransaction } from '@renderer/services/transaction/transactionService';
 import { DEFAULT_TRANSITION } from '@renderer/shared/utils/constants';
 import OperationModalTitle from '@renderer/screens/Operations/components/OperationModalTitle';
-import { BaseModal } from '@renderer/components/ui-redesign';
+import { BaseModal, Button } from '@renderer/components/ui-redesign';
 import ScanMultiframeQr from '@renderer/components/common/Scanning/ScanMultiframeQr';
 import ScanSingleframeQr from '@renderer/components/common/Scanning/ScanSingleframeQr';
+import { Loader } from '@renderer/components/ui';
 
 const enum Step {
   INIT,
@@ -37,7 +36,6 @@ export const Redeem = () => {
   const { getTransactionHash } = useTransaction();
   const { connections } = useNetworkContext();
   const { getLiveAccounts } = useAccount();
-  const { getChainById } = useChains();
   const [searchParams] = useSearchParams();
   const params = useParams<{ chainId: ChainId }>();
 
@@ -46,7 +44,6 @@ export const Redeem = () => {
   const [isRedeemModalOpen, toggleRedeemModal] = useToggle(true);
 
   const [activeStep, setActiveStep] = useState<Step>(Step.INIT);
-  const [chainName, setChainName] = useState('...');
   const [redeemAmounts, setRedeemAmounts] = useState<string[]>([]);
   const [description, setDescription] = useState('');
 
@@ -84,10 +81,6 @@ export const Redeem = () => {
     setAccounts(selectedAccounts);
   }, [dbAccounts.length]);
 
-  useEffect(() => {
-    getChainById(chainId).then((chain) => setChainName(chain?.name || ''));
-  }, []);
-
   const goToPrevStep = () => {
     if (activeStep === Step.INIT) {
       navigate(Paths.STAKING);
@@ -106,13 +99,17 @@ export const Redeem = () => {
       <BaseModal
         closeButton
         contentClass=""
+        headerClass="py-4 px-5 max-w-[440px]"
         panelClass="w-max"
         isOpen={isRedeemModalOpen}
         title={<OperationModalTitle title={`${t('staking.redeem.title', { asset: '' })}`} chainId={chainId} />}
         onClose={closeRedeemModal}
       >
-        <div className="w-[440px] px-5 py-20">
-          <ChainLoader chainName={chainName} />
+        <div className="w-[440px] px-5 py-4">
+          <Loader className="my-24 mx-auto" color="primary" />
+          <Button disabled className="w-fit flex-0 mt-7 ml-auto">
+            {t('staking.bond.continueButton')}
+          </Button>
         </div>
       </BaseModal>
     );
@@ -123,6 +120,7 @@ export const Redeem = () => {
       <BaseModal
         closeButton
         contentClass=""
+        headerClass="py-4 px-5 max-w-[440px]"
         panelClass="w-max"
         isOpen={isRedeemModalOpen}
         title={<OperationModalTitle title={`${t('staking.redeem.title', { asset: '' })}`} chainId={chainId} />}
@@ -205,6 +203,7 @@ export const Redeem = () => {
     <BaseModal
       closeButton
       contentClass=""
+      headerClass="py-4 px-5 max-w-[440px]"
       panelClass="w-max"
       isOpen={isRedeemModalOpen}
       title={<OperationModalTitle title={`${t('staking.redeem.title', { asset: asset.symbol })}`} chainId={chainId} />}

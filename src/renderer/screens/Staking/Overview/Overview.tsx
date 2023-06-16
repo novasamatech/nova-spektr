@@ -22,15 +22,7 @@ import { PathValue } from '@renderer/routes/paths';
 import { createLink } from '@renderer/routes/utils';
 import { AccountDS } from '@renderer/services/storage';
 import { ConnectionType, ConnectionStatus } from '@renderer/domain/connection';
-import {
-  AboutStaking,
-  NetworkInfo,
-  NominatorsList,
-  Actions,
-  ValidatorsModal,
-  NoAccounts,
-  InactiveChain,
-} from './components';
+import { AboutStaking, NetworkInfo, NominatorsList, Actions, ValidatorsModal, InactiveChain } from './components';
 
 export const Overview = () => {
   const { t } = useI18n();
@@ -107,15 +99,18 @@ export const Overview = () => {
       unsubEra?.();
       unsubStaking?.();
     };
-  }, [chainId, api, signingType]);
+  }, [chainId, api, signingType, addresses.length]);
 
   useEffect(() => {
-    if ([SigningType.WATCH_ONLY, SigningType.PARITY_SIGNER].includes(signingType)) {
+    const isMultiShard = signingType === SigningType.PARITY_SIGNER && addresses.length > 1;
+    const isSingleShard = signingType === SigningType.PARITY_SIGNER && addresses.length === 1;
+
+    if (signingType === SigningType.WATCH_ONLY || isMultiShard) {
       setSelectedNominators([]);
-    } else if (signingType === SigningType.MULTISIG && accounts.length === 1) {
+    } else if (signingType === SigningType.MULTISIG || isSingleShard) {
       setSelectedNominators([addresses[0]]);
     }
-  }, [signingType]);
+  }, [chainId, signingType, addresses.length]);
 
   useEffect(() => {
     if (!chainId || !api?.isConnected) return;
@@ -201,24 +196,24 @@ export const Overview = () => {
       <div className="h-full flex flex-col items-start relative bg-main-app-background">
         <Header title={t('staking.title')} />
 
-        <section className="overflow-y-auto flex flex-col gap-y-6 mx-auto mt-6 h-full w-[546px]">
-          <NetworkInfo
-            rewards={Object.values(rewards)}
-            isRewardsLoading={isRewardsLoading}
-            isStakingLoading={isStakingLoading}
-            totalStakes={totalStakes}
-            onNetworkChange={changeNetwork}
-          >
-            <AboutStaking
-              api={api}
-              era={chainEra[chainId]}
-              validators={Object.values(validators)}
-              asset={relaychainAsset}
-            />
-          </NetworkInfo>
+        <div className="overflow-y-auto w-full h-full">
+          <section className="flex flex-col gap-y-6 mx-auto mt-6 h-full w-[546px]">
+            <NetworkInfo
+              rewards={Object.values(rewards)}
+              isRewardsLoading={isRewardsLoading}
+              isStakingLoading={isStakingLoading}
+              totalStakes={totalStakes}
+              onNetworkChange={changeNetwork}
+            >
+              <AboutStaking
+                api={api}
+                era={chainEra[chainId]}
+                validators={Object.values(validators)}
+                asset={relaychainAsset}
+              />
+            </NetworkInfo>
 
-          {networkIsActive &&
-            (accounts.length > 0 ? (
+            {networkIsActive && accounts.length > 0 && (
               <>
                 <Actions stakes={selectedStakes} isStakingLoading={isStakingLoading} onNavigate={navigateToStake} />
 
@@ -233,12 +228,11 @@ export const Overview = () => {
                   onToggleNominator={toggleSelectedNominators}
                 />
               </>
-            ) : (
-              <NoAccounts className="flex-grow mb-28" />
-            ))}
+            )}
 
-          {!networkIsActive && <InactiveChain className="flex-grow mb-28" />}
-        </section>
+            {!networkIsActive && <InactiveChain className="flex-grow mb-28" />}
+          </section>
+        </div>
       </div>
 
       <ValidatorsModal

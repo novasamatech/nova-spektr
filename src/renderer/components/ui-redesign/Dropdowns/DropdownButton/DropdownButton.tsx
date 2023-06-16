@@ -6,6 +6,7 @@ import { Link } from 'react-router-dom';
 import { IconNames } from '@renderer/components/ui/Icon/data';
 import { Button, FootnoteText } from '@renderer/components/ui-redesign';
 import { Icon } from '@renderer/components/ui';
+import cnTw from '@renderer/shared/utils/twMerge';
 
 type ButtonProps = ComponentProps<typeof Button>;
 
@@ -25,7 +26,7 @@ type Props = {
   options: ButtonDropdownOption[];
 } & Omit<ButtonProps, 'children' | 'suffixElement' | 'onClick'>;
 
-const DropdownButton = ({ options, title, disabled, ...buttonProps }: Props) => (
+const DropdownButton = ({ options, title, disabled, className, ...buttonProps }: Props) => (
   <Menu>
     {({ open }) => (
       <div className={cn('relative', open && 'z-10')}>
@@ -33,6 +34,7 @@ const DropdownButton = ({ options, title, disabled, ...buttonProps }: Props) => 
           as={Button}
           disabled={disabled}
           suffixElement={<Icon name={open ? 'up' : 'down'} size={16} className="text-inherit" />}
+          className={cnTw('justify-center', className)}
           {...buttonProps}
         >
           {title}

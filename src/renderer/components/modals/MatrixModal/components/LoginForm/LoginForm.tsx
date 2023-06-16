@@ -7,7 +7,7 @@ import { useI18n } from '@renderer/context/I18nContext';
 import { DropdownResult } from '@renderer/components/ui/Dropdowns/common/types';
 import { WELL_KNOWN_SERVERS } from '@renderer/services/matrix';
 import { Alert, Button, Combobox, FootnoteText, InfoLink, Input, InputHint } from '@renderer/components/ui-redesign';
-import { Icon } from '@renderer/components/ui';
+import { Icon, Loader } from '@renderer/components/ui';
 
 const HOME_SERVERS = WELL_KNOWN_SERVERS.map((server) => ({
   id: server.domain,
@@ -177,7 +177,7 @@ const LoginForm = () => {
                 name="password"
                 control={control}
                 rules={{ required: true }}
-                render={({ field: { value, onChange }, fieldState: { error } }) => (
+                render={({ field: { value, onChange } }) => (
                   <>
                     <Input
                       type="password"
@@ -197,9 +197,8 @@ const LoginForm = () => {
               />
             </>
           ) : (
-            // TODO fix loader icon
             <div className="w-full h-[136px] flex items-center justify-center">
-              <Icon name="loader" className="animate-spin" size={16} />
+              <Loader color="primary" />
             </div>
           )}
 

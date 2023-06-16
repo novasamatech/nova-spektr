@@ -5,7 +5,7 @@ import { useState } from 'react';
 
 import { QrReader } from '@renderer/components/common';
 import { ErrorObject, QrError, SeedInfo, VideoInput } from '@renderer/components/common/QrCode/QrReader/common/types';
-import { Icon } from '@renderer/components/ui';
+import { Icon, Loader } from '@renderer/components/ui';
 import { DropdownOption, DropdownResult } from '@renderer/components/ui/Dropdowns/common/types';
 import { useI18n } from '@renderer/context/I18nContext';
 import { Button, CaptionText, FootnoteText, Select } from '@renderer/components/ui-redesign';
@@ -175,7 +175,8 @@ const KeyQrReader = ({ size = 300, className, onResult }: Props) => {
         <div className="flex flex-col items-center w-full h-[288px]">
           <div className="relative flex items-center justify-center w-full h-full">
             <p className="absolute flex items-center gap-x-2.5 text-shade-40 font-semibold pb-3.5">
-              <Icon name="loader" className="animate-spin" /> {t('onboarding.paritySigner.startCameraLabel')}
+              <Loader color="primary" />
+              {t('onboarding.paritySigner.startCameraLabel')}
             </p>
             <Icon className="absolute text-shade-10" name="qrFrame" size={240} />
           </div>

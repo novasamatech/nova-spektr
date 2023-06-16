@@ -16,10 +16,9 @@ type Props = {
   wallet?: Wallet;
   connection?: ExtendedChain;
   withAdvanced?: boolean;
-  description?: string;
 };
 
-const Details = ({ transaction, wallet, account, signatory, connection, withAdvanced = true, description }: Props) => {
+const Details = ({ transaction, wallet, account, signatory, connection, withAdvanced = true }: Props) => {
   const { t } = useI18n();
 
   const addressPrefix = connection?.addressPrefix;

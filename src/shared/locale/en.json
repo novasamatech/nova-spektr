@@ -609,7 +609,7 @@
     },
     "destination": {
       "initDestinationSubtitle": "Rewards destination",
-      "title": "Change rewards destination"
+      "title": "Change rewards destination on"
     },
     "loadingMessage": "Connecting to { chainName }",
     "nominators": {
@@ -660,7 +660,7 @@
     "restake": {
       "confirmRestakeSubtitle": "Confirmation",
       "initRestakeSubtitle": "Restake",
-      "title": "Return to stake",
+      "title": "Return to stake on ",
       "transferable": "Transferable",
       "unstakingPlaceholder": "Unstaking"
     },
@@ -692,6 +692,7 @@
       "filterNotOversubscribed": "Not oversubscribed",
       "filterNotSlashed": "Not slashed",
       "maxValidatorsLabel": "(Max { max })",
+      "noValidatorsLabel": "No matching validators",
       "nominatedTableHeader": "Nominated",
       "oversubPopoverSubtitle": "Validator is oversubscribed",
       "oversubPopoverTitle": "Oversubscribed",
@@ -703,7 +704,7 @@
       "slashedPopoverSubtitle": "Validator has been slashed recently",
       "slashedPopoverTitle": "Slashed",
       "subtitle": "Validators",
-      "title": "Change validators",
+      "title": "Change validators on",
       "totalStakeTableHeader": "Total stake",
       "validatorsTableHeader": "Accounts"
     },

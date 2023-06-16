@@ -23,7 +23,7 @@ type Props = {
   onNetworkChange: (value: Chain) => void;
 };
 
-const NetworkInfo = ({
+export const NetworkInfo = ({
   rewards,
   isRewardsLoading,
   isStakingLoading,
@@ -109,7 +109,7 @@ const NetworkInfo = ({
             </div>
           ),
         )}
-        <IconButton name="down" onClick={toggleChildren} />
+        <IconButton name={isChildrenShown ? 'up' : 'down'} onClick={toggleChildren} />
       </div>
 
       {isChildrenShown && (
@@ -121,5 +121,3 @@ const NetworkInfo = ({
     </Plate>
   );
 };
-
-export default NetworkInfo;

@@ -1,9 +1,9 @@
 import { render, screen, act } from '@testing-library/react';
 import { ApiPromise } from '@polkadot/api';
 
-import AboutStaking from './AboutStaking';
 import { Asset } from '@renderer/domain/asset';
 import { Validator } from '@renderer/domain/validator';
+import { AboutStaking } from './AboutStaking';
 
 jest.mock('react-i18next', () => ({ Trans: (props: any) => props.i18nKey }));
 

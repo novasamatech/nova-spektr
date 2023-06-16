@@ -9,7 +9,7 @@ type Props = {
   className?: string;
 };
 
-const InactiveChain = ({ className }: Props) => {
+export const InactiveChain = ({ className }: Props) => {
   const { t } = useI18n();
 
   return (
@@ -27,5 +27,3 @@ const InactiveChain = ({ className }: Props) => {
     </div>
   );
 };
-
-export default InactiveChain;

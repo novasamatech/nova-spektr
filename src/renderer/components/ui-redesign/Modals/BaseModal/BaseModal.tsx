@@ -7,11 +7,12 @@ import { useI18n } from '@renderer/context/I18nContext';
 import TextBase from '@renderer/components/ui-redesign/Typography/common/TextBase';
 import { IconButton } from '@renderer/components/ui-redesign';
 
+// HINT: There are no modals with description right now
+// HeadlessUI provides description and title with some a11y features
+
 type Props = {
   isOpen: boolean;
   title?: ReactNode;
-  // description?: ReactNode; there is no modals with description rn, but it should be used in the future
-  // headless ui description and title provide some a11y features
   contentClass?: string;
   headerClass?: string;
   panelClass?: string;
@@ -25,7 +26,7 @@ const BaseModal = ({
   children,
   onClose,
   contentClass = 'pb-4 px-5',
-  headerClass = 'py-3 pr-3 pl-5',
+  headerClass = 'py-3 px-5',
   closeButton,
   panelClass,
 }: PropsWithChildren<Props>) => {
@@ -46,7 +47,10 @@ const BaseModal = ({
               )}
             >
               {title && (
-                <Dialog.Title as="header" className={cnTw('text-black font-bold', closeButton && 'pr-11', headerClass)}>
+                <Dialog.Title
+                  as="header"
+                  className={cnTw('text-text-primary font-bold', headerClass, closeButton && 'pr-12')}
+                >
                   {typeof title === 'string' ? (
                     <TextBase className="font-manrope text-modal-title text-text-primary truncate" fontWeight="bold">
                       {title}
@@ -61,13 +65,13 @@ const BaseModal = ({
                 <IconButton
                   name="close"
                   size={20}
-                  className="absolute top-3 right-3 z-10"
+                  className="absolute top-[18px] right-[14px] z-10"
                   ariaLabel={t('basemodal.closeButton')}
                   onClick={onClose}
                 />
               )}
 
-              <div className={contentClass}>{children}</div>
+              <section className={contentClass}>{children}</section>
             </Dialog.Panel>
           </ModalTransition>
         </div>

@@ -1,7 +1,7 @@
 import cn from 'classnames';
 
 import { useI18n } from '@renderer/context/I18nContext';
-import { Icon } from '@renderer/components/ui';
+import { Loader } from '@renderer/components/ui';
 
 type Props = {
   progress: number;
@@ -15,7 +15,7 @@ const Progress = ({ progress, max }: Props) => {
     <>
       {progress !== max && (
         <div className="mt-8 text-neutral-variant font-semibold flex items-center gap-3 w-fit m-auto">
-          <Icon className="animate-spin" name="loader" size={15} />
+          <Loader size={15} color="primary" />
           {t('transfer.multiple.executing')}
         </div>
       )}
