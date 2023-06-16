@@ -177,7 +177,7 @@ const LoginForm = () => {
                 name="password"
                 control={control}
                 rules={{ required: true }}
-                render={({ field: { value, onChange }, fieldState: { error } }) => (
+                render={({ field: { value, onChange } }) => (
                   <>
                     <Input
                       type="password"
