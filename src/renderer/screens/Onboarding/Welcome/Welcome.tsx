@@ -60,7 +60,7 @@ const Welcome = () => {
         <div className="flex flex-col gap-4">
           <button
             className={cnTw(
-              'flex items-center gap-4 px-4 py-2',
+              'flex items-center gap-4 px-4 py-2 rounded-lg',
               'bg-block-background-default hover:bg-block-background-hover border-filter-border border',
               'shadow-card-shadow',
             )}
@@ -80,7 +80,7 @@ const Welcome = () => {
 
           <button
             className={cnTw(
-              'flex items-center gap-4 px-4 py-2',
+              'flex items-center gap-4 px-4 py-2 rounded-lg',
               'bg-block-background-default hover:bg-block-background-hover border-filter-border border',
               'shadow-card-shadow',
             )}
@@ -99,7 +99,7 @@ const Welcome = () => {
           <button
             disabled
             className={cnTw(
-              'flex items-center gap-4 px-4 py-2',
+              'flex items-center gap-4 px-4 py-2 rounded-lg',
               'bg-input-background-disabled border-filter-border border',
               'shadow-card-shadow',
             )}

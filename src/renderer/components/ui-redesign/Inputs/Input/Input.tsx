@@ -38,7 +38,6 @@ const Input = forwardRef<HTMLInputElement, Props>(
           'relative flex object-contain',
           CommonInputStyles,
           !disabled && 'focus-within:border-active-container-border hover:shadow-card-shadow',
-          !disabled && 'focus-within:outline focus-within:outline-2 focus-within:outline-focus-container-border',
           disabled && 'bg-input-background-disabled text-text-tertiary',
           'border-filter-border',
           invalid && 'border-filter-border-negative',

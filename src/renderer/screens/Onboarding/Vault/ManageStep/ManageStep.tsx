@@ -248,7 +248,7 @@ const ManageStep = ({ seedInfo, onBack, onComplete }: Props) => {
 
   return (
     <>
-      <div className="w-[472px] flex flex-col px-5 py-4 bg-white">
+      <div className="w-[472px] flex flex-col px-5 py-4 bg-white rounded-l-lg">
         <HeaderTitleText className="mb-10">{t('onboarding.vault.title')}</HeaderTitleText>
         <SmallTitleText className="mb-6">{t('onboarding.vault.manageTitle')}</SmallTitleText>
 
@@ -287,7 +287,7 @@ const ManageStep = ({ seedInfo, onBack, onComplete }: Props) => {
         </form>
       </div>
 
-      <div className="w-[472px] flex flex-col bg-input-background-disabled py-4">
+      <div className="w-[472px] flex flex-col bg-input-background-disabled py-4 rounded-r-lg">
         <div className="flex items-center justify-between px-5 mt-[52px] mb-6">
           <SmallTitleText>{t('onboarding.vault.accountsTitle')}</SmallTitleText>
 
