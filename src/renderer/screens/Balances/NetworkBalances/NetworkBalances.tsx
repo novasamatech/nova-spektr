@@ -110,7 +110,7 @@ const NetworkBalances = ({
               </div>
             )}
           </div>
-          <IconButton name={isCardShown ? 'down' : 'up'} className="p-2 outline-offset-reduced" onClick={toggleCard} />
+          <IconButton name={isCardShown ? 'down' : 'up'} className="p-2" onClick={toggleCard} />
         </div>
       </div>
 

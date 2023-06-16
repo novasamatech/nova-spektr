@@ -112,7 +112,7 @@ const Balances = () => {
 
   return (
     <>
-      <div className="h-full flex flex-col items-start relative bg-main-app-background">
+      <section className="h-full flex flex-col items-start relative bg-main-app-background">
         <Header title={t('balances.title')} titleClass="py-[3px]" headerClass="pt-4 pb-[15px]">
           <BalancesFilters
             searchQuery={query}
@@ -122,23 +122,23 @@ const Balances = () => {
           />
         </Header>
 
-        {/* 66px is header height */}
-        <section className="pt-4 flex flex-col gap-y-4 w-full max-h-[calc(100%-66px)] overflow-hidden">
-          {isMultishard && (
-            <SmallTitleText as="h3" className="w-[546px] mx-auto flex items-center">
-              {t('balances.shardsTitle')}{' '}
-              <Button
-                variant="text"
-                suffixElement={<Icon name="edit" size={16} className="text-icon-accent" />}
-                className="outline-offset-reduced"
-                onClick={toggleSelectShardsOpen}
-              >
-                {activeAccounts.length} {t('balances.shards')}
-              </Button>
-            </SmallTitleText>
-          )}
+        {isMultishard && (
+          <div className="w-[546px] mx-auto flex items-center mt-4">
+            <SmallTitleText as="h3">{t('balances.shardsTitle')} </SmallTitleText>
+            <Button
+              variant="text"
+              suffixElement={<Icon name="edit" size={16} className="text-icon-accent" />}
+              className="outline-offset-reduced"
+              onClick={toggleSelectShardsOpen}
+            >
+              {activeAccounts.length} {t('balances.shards')}
+            </Button>
+          </div>
+        )}
+
+        <div className="flex flex-col gap-y-4 w-full h-full overflow-y-scroll">
           {accountIds.length > 0 && (
-            <ul className="flex flex-col gap-y-4 mx-auto overflow-y-scroll w-full pb-4">
+            <ul className="flex flex-col gap-y-4 items-center w-full py-4">
               {sortedChains.map((chain) => (
                 <NetworkBalances
                   key={chain.chainId}
@@ -163,8 +163,8 @@ const Balances = () => {
               </div>
             </ul>
           )}
-        </section>
-      </div>
+        </div>
+      </section>
 
       {data && <ReceiveModal data={data} isOpen={isReceiveOpen} onClose={toggleReceive} />}
       {data && (
