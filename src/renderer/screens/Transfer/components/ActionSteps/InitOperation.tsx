@@ -13,6 +13,7 @@ import { Account, isMultisig, MultisigAccount } from '@renderer/domain/account';
 import { getAccountOption, getSignatoryOption } from '../../common/utils';
 import { InputHint, Select } from '@renderer/components/ui-redesign';
 import { useBalance } from '@renderer/services/balance/balanceService';
+import { nonNullable } from '@renderer/shared/utils/functions';
 
 type Props = {
   api: ApiPromise;
@@ -91,9 +92,9 @@ const InitOperation = ({
       setSignatoryOptions([]);
     } else {
       const signatories = activeAccount.value.signatories.map((s) => s.accountId);
-      const signers = dbAccounts.filter(
-        (a) => a.signingType !== SigningType.WATCH_ONLY && signatories.includes(a.accountId),
-      ) as MultisigAccount[];
+      const signers = signatories
+        .map((s) => dbAccounts.find((a) => a.signingType !== SigningType.WATCH_ONLY && s === a.accountId))
+        .filter(nonNullable);
 
       const options = signers.reduce<any[]>((acc, signer) => {
         if (signatoryIds.includes(signer.accountId)) {
@@ -124,7 +125,7 @@ const InitOperation = ({
   };
 
   return (
-    <div className="flex flex-col gap-y-2">
+    <div className="flex flex-col gap-y-4">
       {accountsOptions.length > 1 && (
         <Select
           label={t('transfer.senderLabel')}
