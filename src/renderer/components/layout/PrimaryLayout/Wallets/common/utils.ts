@@ -4,9 +4,11 @@ import { AccountDS } from '@renderer/services/storage';
 import {
   ChainsRecord,
   ChainWithAccounts,
-  MultishardStructure, MultishardWallet,
+  MultishardStructure,
+  MultishardWallet,
   RootAccount,
-  SelectableShards, WalletGroupItem,
+  SelectableShards,
+  WalletGroupItem,
 } from '@renderer/components/layout/PrimaryLayout/Wallets/common/types';
 import { includes } from '@renderer/shared/utils/strings';
 
