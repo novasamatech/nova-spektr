@@ -13,7 +13,6 @@ import { Account, isMultisig, MultisigAccount } from '@renderer/domain/account';
 import { getAccountOption, getSignatoryOption } from '../../common/utils';
 import { InputHint, Select } from '@renderer/components/ui-redesign';
 import { useBalance } from '@renderer/services/balance/balanceService';
-import { nonNullable } from '@renderer/shared/utils/functions';
 
 type Props = {
   api: ApiPromise;
@@ -70,9 +69,8 @@ const InitOperation = ({
       const balance = balances.find((b) => b.accountId === account.accountId);
 
       const isSameChain = !account.chainId || account.chainId === chainId;
-      const isNewOption = acc.every((a) => a.id !== account.accountId);
 
-      if (isSameChain && isNewOption) {
+      if (isSameChain) {
         acc.push(getAccountOption(account, { addressPrefix, asset, amount, balance, fee, deposit }));
       }
 
@@ -92,14 +90,10 @@ const InitOperation = ({
       setSignatoryOptions([]);
     } else {
       const signatories = activeAccount.value.signatories.map((s) => s.accountId);
-      const signers = signatories
-        .map((s) =>
-          dbAccounts.find(
-            (a) =>
-              a.signingType !== SigningType.WATCH_ONLY && (!a.chainId || a.chainId === chainId) && s === a.accountId,
-          ),
-        )
-        .filter(nonNullable);
+
+      const signers = dbAccounts.filter(
+        (a) => a.signingType !== SigningType.WATCH_ONLY && signatories.includes(a.accountId),
+      ) as MultisigAccount[];
 
       const options = signers.reduce<any[]>((acc, signer) => {
         if (signatoryIds.includes(signer.accountId)) {
