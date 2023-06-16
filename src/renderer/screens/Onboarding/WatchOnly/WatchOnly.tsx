@@ -81,7 +81,7 @@ const WatchOnly = ({ isOpen, onClose, onComplete }: Props) => {
       closeButton
       onClose={closeModal}
     >
-      <div className="w-[472px] flex flex-col px-5 py-4 bg-white">
+      <div className="w-[472px] flex flex-col px-5 py-4 bg-white rounded-l-lg">
         <HeaderTitleText className="mb-10">{t('onboarding.watchOnly.title')}</HeaderTitleText>
         <SmallTitleText className="mb-6">{t('onboarding.watchOnly.manageTitle')}</SmallTitleText>
 
@@ -149,7 +149,7 @@ const WatchOnly = ({ isOpen, onClose, onComplete }: Props) => {
         </form>
       </div>
 
-      <div className="w-[472px] flex flex-col bg-input-background-disabled px-3 py-4">
+      <div className="w-[472px] flex flex-col bg-input-background-disabled px-3 py-4 rounded-r-lg">
         {accountId && accountId.length > 12 ? (
           <>
             <SmallTitleText className="px-2 mt-[52px] mb-6">{t('onboarding.watchOnly.accountsTitle')}</SmallTitleText>
