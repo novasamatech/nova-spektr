@@ -2,17 +2,17 @@ import { useState, useEffect } from 'react';
 import { UnsignedTransaction } from '@substrate/txwrapper-polkadot';
 
 import { useI18n } from '@renderer/context/I18nContext';
-import { ChainLoader } from '@renderer/components/common';
 import { ChainId, HexString } from '@renderer/domain/shared-kernel';
 import { useNetworkContext } from '@renderer/context/NetworkContext';
 import { useChains } from '@renderer/services/network/chainsService';
 import { Transaction } from '@renderer/domain/transaction';
 import { Account, MultisigAccount } from '@renderer/domain/account';
 import { useCountdown } from '@renderer/shared/hooks';
-import { BaseModal } from '@renderer/components/ui-redesign';
+import { BaseModal, Button } from '@renderer/components/ui-redesign';
 import OperationModalTitle from '../Operations/components/OperationModalTitle';
 import { InitOperation, Confirmation, Signing, Submit } from './components/ActionSteps';
 import ScanSingleframeQr from '@renderer/components/common/Scanning/ScanSingleframeQr';
+import { Loader } from '@renderer/components/ui';
 
 const enum Step {
   INIT,
@@ -90,15 +90,21 @@ const Transfer = ({ assetId, chainId, isOpen, onClose }: Props) => {
   return (
     <>
       <BaseModal
-        isOpen={activeStep !== Step.SUBMIT && isOpen}
         closeButton
+        isOpen={activeStep !== Step.SUBMIT && isOpen}
         title={<OperationModalTitle title={`${t('transfer.title', { asset: asset?.symbol })}`} chainId={chainId} />}
         contentClass={activeStep === Step.SIGNING ? '' : undefined}
         panelClass="w-[440px]"
+        headerClass="py-4 px-5 max-w-[440px]"
         onClose={handleClose}
       >
         {!api?.isConnected ? (
-          <ChainLoader chainName={chainName} />
+          <div>
+            <Loader className="my-24 mx-auto" color="primary" />
+            <Button disabled className="w-fit flex-0 mt-7 ml-auto">
+              {t('transfer.continueButton')}
+            </Button>
+          </div>
         ) : (
           <>
             {activeStep === Step.INIT && (
@@ -174,7 +180,9 @@ const Transfer = ({ assetId, chainId, isOpen, onClose }: Props) => {
               {...commonProps}
             />
           ) : (
-            <ChainLoader chainName={chainName} />
+            <div className="w-[240px] h-[200px] px-5 py-4">
+              <Loader className="my-24 mx-auto" color="primary" />
+            </div>
           )}
         </>
       )}

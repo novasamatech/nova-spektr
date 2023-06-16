@@ -609,7 +609,7 @@
     },
     "destination": {
       "initDestinationSubtitle": "Выплата наград",
-      "title": "Смена адреса наград"
+      "title": "Смена адреса наград на"
     },
     "loadingMessage": "Подключаемся к { chainName }",
     "nominators": {
@@ -660,7 +660,7 @@
     "restake": {
       "confirmRestakeSubtitle": "Подтверждение",
       "initRestakeSubtitle": "Вернуть в стейк",
-      "title": "Вернуть в стейк",
+      "title": "Вернуть в стейк на",
       "transferable": "Доступно",
       "unstakingPlaceholder": "Выводится из стейка"
     },
@@ -692,6 +692,7 @@
       "filterNotOversubscribed": "Не перегружены",
       "filterNotSlashed": "Не урезаны",
       "maxValidatorsLabel": "(Макс. { max })",
+      "noValidatorsLabel": "Поиск по валидаторам не дал результатов",
       "nominatedTableHeader": "Номинировано",
       "oversubPopoverSubtitle": "Валидатор перегружен номинаторами",
       "oversubPopoverTitle": "Перегрузка",
@@ -703,7 +704,7 @@
       "slashedPopoverSubtitle": "Валидатор был недавно урезан",
       "slashedPopoverTitle": "Урезан",
       "subtitle": "Валидаторы",
-      "title": "Выбор валидаторов",
+      "title": "Выбор валидаторов на",
       "totalStakeTableHeader": "Общий стейк",
       "validatorsTableHeader": "Аккаунты"
     },

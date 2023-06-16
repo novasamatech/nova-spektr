@@ -5,13 +5,13 @@ import { Icon } from '@renderer/components/ui';
 import cnTw from '@renderer/shared/utils/twMerge';
 
 type Props = {
-  isOpen?: boolean;
+  isDefaultOpen?: boolean;
 };
 
-const Accordion = ({ isOpen, children }: PropsWithChildren<Props>) => {
+const Accordion = ({ isDefaultOpen, children }: PropsWithChildren<Props>) => {
   return (
     <div className="w-full">
-      <Disclosure defaultOpen={isOpen}>{children}</Disclosure>
+      <Disclosure defaultOpen={isDefaultOpen}>{children}</Disclosure>
     </div>
   );
 };

@@ -55,7 +55,6 @@ const Confirmation = ({ account, connection, transaction, signatory, description
         signatory={signatory}
         connection={connection}
         withAdvanced={false}
-        description={description}
       />
 
       <hr className="border-divider my-1 w-full" />

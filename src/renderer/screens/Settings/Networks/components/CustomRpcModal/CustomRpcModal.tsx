@@ -8,7 +8,7 @@ import { RpcNode } from '@renderer/domain/chain';
 import { RpcValidation, ExtendedChain } from '@renderer/services/network/common/types';
 import { validateWsAddress } from '@renderer/shared/utils/strings';
 import OperationModalTitle from '@renderer/screens/Operations/components/OperationModalTitle';
-import { Icon } from '@renderer/components/ui';
+import { Loader } from '@renderer/components/ui';
 
 const MODAL_ANIMATION = 300;
 
@@ -141,6 +141,7 @@ export const CustomRpcModal = ({ network, node, isOpen, onClose }: Props) => {
     <BaseModal
       closeButton
       title={<OperationModalTitle title={modalTitle} chainId={network.chainId} />}
+      headerClass="py-4 px-5 max-w-[440px]"
       isOpen={isOpen}
       onClose={onClose}
     >
@@ -183,11 +184,7 @@ export const CustomRpcModal = ({ network, node, isOpen, onClose }: Props) => {
                   value={value}
                   invalid={Boolean(errors.url) || [FormState.INVALID, FormState.WRONG_NETWORK].includes(formState)}
                   disabled={formState === FormState.LOADING}
-                  suffixElement={
-                    formState === FormState.LOADING && (
-                      <Icon className="text-text-tertiary animate-spin" name="loader" size={14} />
-                    )
-                  }
+                  suffixElement={formState === FormState.LOADING && <Loader color="primary" size={14} />}
                   onChange={onAddressChange(onChange)}
                 />
               )}

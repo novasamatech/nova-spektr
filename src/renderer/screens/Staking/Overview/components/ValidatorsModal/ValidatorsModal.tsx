@@ -1,9 +1,7 @@
 import { ApiPromise } from '@polkadot/api';
 import { useEffect, useState, ReactNode } from 'react';
 
-import { Expandable, ExplorerLink } from '@renderer/components/common';
-import { Icon, Balance, Identicon, Shimmering } from '@renderer/components/ui';
-import { BaseModal, SmallTitleText, FootnoteText, InfoPopover, BodyText } from '@renderer/components/ui-redesign';
+import { ExplorerLink } from '@renderer/components/common';
 import { useI18n } from '@renderer/context/I18nContext';
 import { Asset } from '@renderer/domain/asset';
 import { Explorer } from '@renderer/domain/chain';
@@ -13,9 +11,16 @@ import { ValidatorMap } from '@renderer/services/staking/common/types';
 import { useValidators } from '@renderer/services/staking/validatorsService';
 import { getComposedIdentity } from '@renderer/shared/utils/strings';
 import { toShortAddress } from '@renderer/shared/utils/address';
-import NoValidators from '../EmptyState/NoValidators';
-
-const VALIDATORS_SKELETON = Array.from({ length: 10 }, (_, index) => ({ address: index.toString() }));
+import { NoValidators } from '../EmptyState/NoValidators';
+import { Icon, Balance, Identicon, Loader } from '@renderer/components/ui';
+import {
+  BaseModal,
+  SmallTitleText,
+  FootnoteText,
+  InfoPopover,
+  BodyText,
+  Accordion,
+} from '@renderer/components/ui-redesign';
 
 type Props = {
   api?: ApiPromise;
@@ -27,7 +32,7 @@ type Props = {
   onClose: () => void;
 };
 
-const ValidatorsModal = ({ api, stash, validators, asset, explorers, isOpen, onClose }: Props) => {
+export const ValidatorsModal = ({ api, stash, validators, asset, explorers, isOpen, onClose }: Props) => {
   const { t } = useI18n();
   const { getNominators } = useValidators();
   const [isValidatorsLoading, setIsValidatorsLoading] = useState(true);
@@ -74,7 +79,7 @@ const ValidatorsModal = ({ api, stash, validators, asset, explorers, isOpen, onC
     if (!asset) return undefined;
 
     return (
-      <li key={validator.address} className="grid grid-cols-[400px,120px,120px,1fr] items-center gap-x-6">
+      <li key={validator.address} className="grid grid-cols-[400px,130px,130px,1fr] items-center gap-x-6">
         <div className="flex gap-x-2">
           <Identicon address={validator.address} background={false} size={20} />
           {validator.identity ? (
@@ -90,113 +95,90 @@ const ValidatorsModal = ({ api, stash, validators, asset, explorers, isOpen, onC
           <Balance value={validator.totalStake || '0'} precision={asset.precision} symbol={asset.symbol} />
         </BodyText>
         <InfoPopover data={getExplorers(validator.address, explorers)} position="top-full right-0">
-          <Icon name="info" size={14} className="text-icon-default ml-2 mr-auto" />
+          <Icon name="info" size={14} className="text-icon-default " />
         </InfoPopover>
       </li>
     );
   };
 
-  const loadingContent = (
-    <div className="flex flex-col gap-y-4">
-      <Shimmering width={130} height={22} />
-      <div className="flex flex-col gap-y-2">
-        <div className="grid grid-cols-[400px,120px,1fr] items-center gap-x-6">
-          <Shimmering width={100} height={18} />
-          <Shimmering width={95} height={18} />
-          <Shimmering width={95} height={18} />
-        </div>
-
-        <ul className="flex flex-col gap-y-4">
-          {VALIDATORS_SKELETON.map((v) => (
-            <li key={v.address} className="grid grid-cols-[400px,120px,120px] items-center gap-x-6">
-              <div className="flex items-center gap-x-1.5">
-                <Shimmering circle width={20} height={20} />
-                <Shimmering width={250} height={18} />
-              </div>
-              <Shimmering width={115} height={18} />
-              <Shimmering width={115} height={18} />
-            </li>
-          ))}
-        </ul>
-      </div>
-    </div>
-  );
-
   return (
     <BaseModal
       closeButton
+      contentClass=""
       panelClass="w-[784px]"
       title={t('staking.nominators.yourValidatorsTitle')}
       isOpen={isOpen}
       onClose={onClose}
     >
-      {isValidatorsLoading && loadingContent}
+      {isValidatorsLoading && (
+        <div className="h-[366px] flex items-center justify-center">
+          <Loader className="my-24 mx-auto" color="primary" />
+        </div>
+      )}
 
       {!isValidatorsLoading && !validatorsExist && <NoValidators className="my-12" />}
 
       {!isValidatorsLoading && validatorsExist && (
-        <div className="max-h-[512px] overflow-y-auto">
+        <div className="max-h-[512px] flex flex-col gap-y-4 px-5 pt-0.5 pb-4 overflow-y-auto">
           {elected.length > 0 && (
-            <Expandable
-              itemClass="py-1.5"
-              item={
+            <Accordion isDefaultOpen>
+              <Accordion.Button>
                 <div className="flex items-center gap-x-1 w-full">
                   <SmallTitleText>{t('staking.nominators.electedTitle')}</SmallTitleText>
                   <SmallTitleText className="text-text-tertiary">({elected.length})</SmallTitleText>
                 </div>
-              }
-            >
-              <div className="flex flex-col gap-y-2 mt-4">
-                <div className="grid grid-cols-[400px,120px,1fr] items-center gap-x-6">
-                  <FootnoteText className="text-text-secondary">
-                    {t('staking.validators.validatorsTableHeader')}
-                  </FootnoteText>
-                  <FootnoteText className="text-text-secondary">
-                    {t('staking.validators.ownStakeTableHeader')}
-                  </FootnoteText>
-                  <FootnoteText className="text-text-secondary">
-                    {t('staking.validators.totalStakeTableHeader')}
-                  </FootnoteText>
-                </div>
+              </Accordion.Button>
+              <Accordion.Content>
+                <div className="flex flex-col gap-y-2 mt-4">
+                  <div className="grid grid-cols-[400px,130px,1fr] items-center gap-x-6">
+                    <FootnoteText className="text-text-secondary">
+                      {t('staking.validators.validatorsTableHeader')}
+                    </FootnoteText>
+                    <FootnoteText className="text-text-secondary">
+                      {t('staking.validators.ownStakeTableHeader')}
+                    </FootnoteText>
+                    <FootnoteText className="text-text-secondary">
+                      {t('staking.validators.totalStakeTableHeader')}
+                    </FootnoteText>
+                  </div>
 
-                <ul className="flex flex-col gap-y-4">{elected.map((e) => getRow(e, asset, explorers))}</ul>
-              </div>
-            </Expandable>
+                  <ul className="flex flex-col gap-y-4">{elected.map((e) => getRow(e, asset, explorers))}</ul>
+                </div>
+              </Accordion.Content>
+            </Accordion>
           )}
 
           {notElected.length > 0 && (
-            <Expandable
-              itemClass="px-[15px] py-1 border-b border-shade-5"
-              item={
+            <Accordion isDefaultOpen>
+              <Accordion.Button>
                 <div className="flex items-center gap-x-1 w-full">
                   <SmallTitleText>{t('staking.nominators.notElectedTitle')}</SmallTitleText>
                   <SmallTitleText className="text-text-tertiary">({notElected.length})</SmallTitleText>
                 </div>
-              }
-            >
-              <div className="flex flex-col gap-y-2 mt-4">
-                <div className="grid grid-cols-[400px,120px,1fr] items-center gap-x-6">
-                  <FootnoteText className="text-text-secondary">
-                    {t('staking.validators.validatorsTableHeader')}
-                  </FootnoteText>
-                  <FootnoteText className="text-text-secondary">
-                    {t('staking.validators.ownStakeTableHeader')}
-                  </FootnoteText>
-                  <FootnoteText className="text-text-secondary">
-                    {t('staking.validators.totalStakeTableHeader')}
-                  </FootnoteText>
-                </div>
+              </Accordion.Button>
+              <Accordion.Content>
+                <div className="flex flex-col gap-y-2 mt-4">
+                  <div className="grid grid-cols-[400px,130px,1fr] items-center gap-x-6">
+                    <FootnoteText className="text-text-secondary">
+                      {t('staking.validators.validatorsTableHeader')}
+                    </FootnoteText>
+                    <FootnoteText className="text-text-secondary">
+                      {t('staking.validators.ownStakeTableHeader')}
+                    </FootnoteText>
+                    <FootnoteText className="text-text-secondary">
+                      {t('staking.validators.totalStakeTableHeader')}
+                    </FootnoteText>
+                  </div>
 
-                <ul className="flex flex-col gap-y-4">
-                  <ul className="flex flex-col gap-y-4">{notElected.map((n) => getRow(n, asset, explorers))}</ul>
-                </ul>
-              </div>
-            </Expandable>
+                  <ul className="flex flex-col gap-y-4">
+                    <ul className="flex flex-col gap-y-4">{notElected.map((n) => getRow(n, asset, explorers))}</ul>
+                  </ul>
+                </div>
+              </Accordion.Content>
+            </Accordion>
           )}
         </div>
       )}
     </BaseModal>
   );
 };
-
-export default ValidatorsModal;

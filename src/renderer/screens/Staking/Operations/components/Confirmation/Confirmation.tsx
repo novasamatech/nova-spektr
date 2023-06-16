@@ -1,6 +1,6 @@
 import { BN, BN_ZERO } from '@polkadot/util';
 import { ApiPromise } from '@polkadot/api';
-import { PropsWithChildren } from 'react';
+import { PropsWithChildren, useState } from 'react';
 
 import { Icon } from '@renderer/components/ui';
 import { Button, FootnoteText, CaptionText } from '@renderer/components/ui-redesign';
@@ -58,6 +58,8 @@ export const Confirmation = ({
   const { t } = useI18n();
   const [isAccountsOpen, toggleAccounts] = useToggle();
   const [isValidatorsOpen, toggleValidators] = useToggle();
+
+  const [feeLoading, setFeeLoading] = useState(true);
 
   const singleAccount = accounts.length === 1;
   const validatorsExist = validators && validators.length > 0;
@@ -169,7 +171,13 @@ export const Confirmation = ({
           <div className="flex justify-between items-center gap-x-2">
             <FootnoteText className="text-text-tertiary">{t('staking.confirmation.networkFeeLabel')}</FootnoteText>
             <FootnoteText>
-              <Fee api={api} multiply={accounts.length} asset={asset} transaction={transaction} />
+              <Fee
+                api={api}
+                multiply={accounts.length}
+                asset={asset}
+                transaction={transaction}
+                onFeeLoading={setFeeLoading}
+              />
             </FootnoteText>
           </div>
 
@@ -180,7 +188,7 @@ export const Confirmation = ({
           <Button variant="text" onClick={onGoBack}>
             {t('staking.confirmation.backButton')}
           </Button>
-          <Button prefixElement={<Icon name="vault" size={14} />} onClick={onResult}>
+          <Button disabled={feeLoading} prefixElement={<Icon name="vault" size={14} />} onClick={onResult}>
             {t('staking.confirmation.signButton')}
           </Button>
         </div>

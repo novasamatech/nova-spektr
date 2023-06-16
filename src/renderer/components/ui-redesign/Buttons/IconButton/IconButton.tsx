@@ -13,7 +13,7 @@ type Props = {
 } & IconProps;
 
 export const IconButtonStyle = cn(
-  'relative w-max p-1 justify-center rounded-full outline-offset-1 text-icon-default ',
+  'relative w-max justify-center rounded-full outline-offset-1 text-icon-default ',
   'hover:text-icon-hover hover:bg-hover active:bg-hover active:text-tab-icon-active',
 );
 

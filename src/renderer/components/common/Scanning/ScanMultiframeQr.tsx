@@ -92,7 +92,7 @@ const ScanMultiframeQr = ({
   const bulkTxExist = bulkTransactions && bulkTransactions.length > 0;
 
   return (
-    <div className="pt-4 flex flex-col items-center w-full">
+    <div className="flex flex-col items-center w-full">
       <QrGeneratorContainer countdown={countdown} chainId={chainId} onQrReset={setupTransactions}>
         {bulkTxExist && encoder && <QrMultiframeGenerator payload={bulkTransactions} size={200} encoder={encoder} />}
       </QrGeneratorContainer>
