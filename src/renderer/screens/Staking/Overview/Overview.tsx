@@ -102,12 +102,12 @@ export const Overview = () => {
   }, [chainId, api, signingType, addresses.length]);
 
   useEffect(() => {
-    const isManyParitySigner = signingType === SigningType.PARITY_SIGNER && addresses.length > 1;
-    const isSingleParitySigner = signingType === SigningType.PARITY_SIGNER && addresses.length === 1;
+    const isMultiShard = signingType === SigningType.PARITY_SIGNER && addresses.length > 1;
+    const isSingleShard = signingType === SigningType.PARITY_SIGNER && addresses.length === 1;
 
-    if (signingType === SigningType.WATCH_ONLY || isManyParitySigner) {
+    if (signingType === SigningType.WATCH_ONLY || isMultiShard) {
       setSelectedNominators([]);
-    } else if (signingType === SigningType.MULTISIG || isSingleParitySigner) {
+    } else if (signingType === SigningType.MULTISIG || isSingleShard) {
       setSelectedNominators([addresses[0]]);
     }
   }, [chainId, signingType, addresses.length]);
