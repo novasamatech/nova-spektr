@@ -54,6 +54,7 @@ const InitOperation = ({ api, chainId, accounts, addressPrefix, asset, onResult 
   const dbAccounts = getLiveAccounts();
 
   const [fee, setFee] = useState('');
+  const [feeLoading, setFeeLoading] = useState(true);
   const [deposit, setDeposit] = useState('');
   const [redeemAmounts, setRedeemAmounts] = useState<string[]>([]);
   const [era, setEra] = useState<number>();
@@ -215,7 +216,7 @@ const InitOperation = ({ api, chainId, accounts, addressPrefix, asset, onResult 
     return validateBalanceForFeeDeposit(signerBalance, deposit, fee);
   };
 
-  const canSubmit = (Boolean(fee) && fee !== '0') || activeRedeemAccounts.length > 0 || Boolean(activeSignatory);
+  const canSubmit = !feeLoading && (activeRedeemAccounts.length > 0 || Boolean(activeSignatory));
 
   return (
     <div className="flex flex-col gap-y-4 w-[440px] px-5 py-4">
@@ -265,7 +266,13 @@ const InitOperation = ({ api, chainId, accounts, addressPrefix, asset, onResult 
           <div className="flex justify-between items-center gap-x-2">
             <FootnoteText className="text-text-tertiary">{t('staking.bond.networkFeeLabel')}</FootnoteText>
             <FootnoteText className="text-text-tertiary">
-              <Fee api={api} asset={asset} transaction={transactions[0]} onFeeChange={setFee} />
+              <Fee
+                api={api}
+                asset={asset}
+                transaction={transactions[0]}
+                onFeeChange={setFee}
+                onFeeLoading={setFeeLoading}
+              />
             </FootnoteText>
           </div>
         </div>
