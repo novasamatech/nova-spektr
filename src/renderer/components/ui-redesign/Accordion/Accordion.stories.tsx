@@ -12,7 +12,7 @@ const Template: ComponentStory<typeof Accordion> = (args) => <Accordion {...args
 
 export const Primary = Template.bind({});
 Primary.args = {
-  isOpen: false,
+  isDefaultOpen: false,
   children: (
     <>
       <Accordion.Button>Button</Accordion.Button>

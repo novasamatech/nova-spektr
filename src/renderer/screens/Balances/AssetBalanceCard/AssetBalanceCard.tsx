@@ -53,7 +53,6 @@ const AssetBalanceCard = ({ asset, balance, canMakeActions, onReceiveClick, onTr
   };
 
   const transferableBalance = balance?.free ? transferableAmount(balance) : undefined;
-  // const isVerificationFailed = balance?.free && !balance?.verified;
 
   return (
     <li
@@ -72,12 +71,6 @@ const AssetBalanceCard = ({ asset, balance, canMakeActions, onReceiveClick, onTr
               // isVerificationFailed ? 'border-alert bg-warning-gradient' : 'border-shade-30 bg-shade-70',
             )}
           >
-            {/* TODO add back when design is ready */}
-            {/*{isVerificationFailed && (*/}
-            {/*  <div className="absolute top-0 left-0 w-4 h-4 bg-alert rounded-full flex justify-center items-center">*/}
-            {/*    <Icon className="text-neutral-variant" name="shield" size={12} />*/}
-            {/*  </div>*/}
-            {/*)}*/}
             <img src={asset.icon} alt="" width={32} height={32} />
           </div>
           <BodyText>{asset.name}</BodyText>
@@ -89,8 +82,8 @@ const AssetBalanceCard = ({ asset, balance, canMakeActions, onReceiveClick, onTr
         )}
         {canMakeActions && (
           <div className="flex gap-x-2 ml-3">
-            <IconButton name="sendArrow" onClick={onTransfer} />
-            <IconButton name="receiveArrow" onClick={onReceive} />
+            <IconButton name="sendArrow" size={20} onClick={onTransfer} />
+            <IconButton name="receiveArrow" size={20} onClick={onReceive} />
           </div>
         )}
       </div>

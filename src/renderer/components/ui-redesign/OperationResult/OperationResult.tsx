@@ -1,12 +1,11 @@
 import { Fragment, PropsWithChildren } from 'react';
 import { Dialog, Transition } from '@headlessui/react';
 
-import cnTw from '@renderer/shared/utils/twMerge';
-import { Icon } from '@renderer/components/ui';
 import { ModalBackdrop, ModalTransition } from '@renderer/components/ui-redesign/Modals/common';
 import { FootnoteText, SmallTitleText } from '@renderer/components/ui-redesign';
-import { VariantIcons, VariantStyles } from './common/constants';
+import { VariantAnimations, VariantAnimationProps } from './common/constants';
 import { Variant } from './common/types';
+import Animation from '@renderer/components/ui-redesign/Animation/Animation';
 
 type Props = {
   title: string;
@@ -32,7 +31,7 @@ const OperationResult = ({
         <ModalTransition>
           {/* TODO: change bg color */}
           <Dialog.Panel className="w-[240px] max-w-md transform flex flex-col items-center justify-center rounded-lg bg-white p-4 align-middle shadow-card-shadow transition-all">
-            <Icon name={VariantIcons[variant]} className={cnTw('mb-2', VariantStyles[variant])} />
+            <Animation name={VariantAnimations[variant]} {...VariantAnimationProps[variant]} />
             <Dialog.Title className="font-semibold mb-2">
               <SmallTitleText>{title}</SmallTitleText>
             </Dialog.Title>

@@ -201,6 +201,7 @@ const ApproveTx = ({ tx, account, connection }: Props) => {
         closeButton
         title={<OperationModalTitle title={`${t(transactionTitle)} ${t('on')}`} chainId={tx.chainId} />}
         contentClass={activeStep === Step.SIGNING ? '' : undefined}
+        headerClass="py-4 px-5 max-w-[440px]"
         panelClass="w-[440px]"
         onClose={handleClose}
       >

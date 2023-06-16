@@ -23,7 +23,7 @@ type Props = {
 //   return (monthly * 100).toFixed(2);
 // };
 
-const AboutStaking = ({ api, era, asset, validators }: Props) => {
+export const AboutStaking = ({ api, era, asset, validators }: Props) => {
   const { t } = useI18n();
 
   const { getMinNominatorBond, getUnbondingPeriod, getTotalStaked } = useStakingData();
@@ -157,5 +157,3 @@ const AboutStaking = ({ api, era, asset, validators }: Props) => {
     </div>
   );
 };
-
-export default AboutStaking;

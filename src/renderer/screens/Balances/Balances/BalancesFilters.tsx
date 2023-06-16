@@ -20,16 +20,20 @@ const BalancesFilters = ({ searchQuery, onSearchChange, hideZeroBalances, onZero
         onChange={onSearchChange}
       />
       <MenuPopover
-        className="w-[176px] px-4"
+        className="w-[182px] px-4"
         position="top-full right-0"
-        offsetPx={4}
+        buttonClassName="rounded-full"
+        offsetPx={0}
         content={
-          <Switch checked={hideZeroBalances} labelPosition="right" onChange={onZeroBalancesChange}>
+          <Switch checked={hideZeroBalances} labelPosition="right" className="gap-x-2" onChange={onZeroBalancesChange}>
             {t('balances.hideZeroBalancesLabel')}
           </Switch>
         }
       >
-        <IconButton name="settingsLite" />
+        <div className="relative">
+          <IconButton name="settingsLite" className="p-1.5" />
+          {hideZeroBalances && <span className="absolute rounded-full w-1.5 h-1.5 right-0 top-0 bg-icon-accent" />}
+        </div>
       </MenuPopover>
     </div>
   );

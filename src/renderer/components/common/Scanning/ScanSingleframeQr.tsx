@@ -65,7 +65,7 @@ const ScanSingleframeQr = ({
   };
 
   return (
-    <div className="pt-4 flex flex-col items-center w-full">
+    <div className="flex flex-col items-center w-full">
       {account?.walletId && (
         <div className="flex justify-center items-center w-1/2 gap-x-0.5 mb-2">
           <FootnoteText className="text-text-secondary">{t('signing.signatory')}</FootnoteText>

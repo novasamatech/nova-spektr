@@ -1,6 +1,6 @@
 import { ComponentMeta, ComponentStory } from '@storybook/react';
 
-import Popover from './Popover';
+import { Popover } from './Popover';
 
 export default {
   title: 'Redesign/Popover ',

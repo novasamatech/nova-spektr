@@ -65,7 +65,7 @@ const Select = ({
                 {placeholder}
               </FootnoteText>
             )}
-            <Icon name="down" size={16} className="text-icon-default" />
+            <Icon name={open ? 'up' : 'down'} size={16} className="text-icon-default" />
           </Listbox.Button>
 
           <Transition as={Fragment} leave="transition ease-in duration-100" leaveFrom="opacity-100" leaveTo="opacity-0">
@@ -92,7 +92,7 @@ const Select = ({
 
   return (
     <div className="flex flex-col gap-2">
-      <LabelText className="cursor-pointer text-text-tertiary" htmlFor={id}>
+      <LabelText className="cursor-pointer text-text-tertiary font-medium" htmlFor={id}>
         {label}
       </LabelText>
       {selectElement}

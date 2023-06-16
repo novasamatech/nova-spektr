@@ -10,7 +10,7 @@ interface Props {
   className?: string;
 }
 
-const TimeToEra = ({ api, era, className }: Props) => {
+export const TimeToEra = ({ api, era, className }: Props) => {
   const { getTimeToEra } = useEra();
 
   const [seconds, setSeconds] = useState(0);
@@ -37,5 +37,3 @@ const TimeToEra = ({ api, era, className }: Props) => {
 
   return <Duration seconds={seconds.toString()} className={className} />;
 };
-
-export default TimeToEra;

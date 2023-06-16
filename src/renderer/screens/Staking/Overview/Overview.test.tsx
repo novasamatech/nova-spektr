@@ -7,6 +7,12 @@ import { ConnectionType } from '@renderer/domain/connection';
 import { TEST_ACCOUNT_ID } from '@renderer/shared/utils/constants';
 import { Overview } from './Overview';
 
+jest.mock('@renderer/context/I18nContext', () => ({
+  useI18n: jest.fn().mockReturnValue({
+    t: (key: string) => key,
+  }),
+}));
+
 jest.mock('@renderer/context/NetworkContext', () => ({
   useNetworkContext: jest.fn(() => ({
     connections: {},
@@ -39,12 +45,6 @@ jest.mock('@renderer/services/account/accountService', () => ({
   }),
 }));
 
-jest.mock('@renderer/services/wallet/walletService', () => ({
-  useWallet: jest.fn().mockReturnValue({
-    getLiveWallets: jest.fn().mockReturnValue([]),
-  }),
-}));
-
 jest.mock('@renderer/services/staking/stakingDataService', () => ({
   useStakingData: jest.fn().mockReturnValue({
     staking: {},
@@ -64,12 +64,6 @@ jest.mock('@renderer/services/staking/eraService', () => ({
   }),
 }));
 
-jest.mock('@renderer/context/I18nContext', () => ({
-  useI18n: jest.fn().mockReturnValue({
-    t: (key: string) => key,
-  }),
-}));
-
 jest.mock('@renderer/services/staking/stakingRewardsService', () => ({
   useStakingRewards: jest.fn().mockReturnValue({
     rewards: {},
@@ -77,15 +71,18 @@ jest.mock('@renderer/services/staking/stakingRewardsService', () => ({
   }),
 }));
 
-jest.mock('./components/NetworkInfo/NetworkInfo', () => ({ onNetworkChange }: any) => (
-  <button type="button" onClick={() => onNetworkChange({ chainId: '0x00', name: 'Polkadot', addressPrefix: 0 })}>
-    networkInfo
-  </button>
-));
-jest.mock('./components/Actions/Actions', () => () => <span>actions</span>);
-jest.mock('./components/AboutStaking/AboutStaking', () => () => <span>aboutStaking</span>);
-jest.mock('./components/NominatorsList/NominatorsList', () => () => <span>nominatorsList</span>);
-jest.mock('./components/ValidatorsModal/ValidatorsModal', () => () => <span>validatorsModal</span>);
+jest.mock('./components', () => ({
+  Actions: () => <span>actions</span>,
+  AboutStaking: () => <span>aboutStaking</span>,
+  NominatorsList: () => <span>nominatorsList</span>,
+  ValidatorsModal: () => <span>validatorsModal</span>,
+  InactiveChain: () => <span>inactiveChain</span>,
+  NetworkInfo: ({ onNetworkChange }: any) => (
+    <button type="button" onClick={() => onNetworkChange({ chainId: '0x00', name: 'Polkadot', addressPrefix: 0 })}>
+      networkInfo
+    </button>
+  ),
+}));
 
 describe('screens/Staking/Overview', () => {
   beforeEach(() => {
@@ -127,7 +124,7 @@ describe('screens/Staking/Overview', () => {
     const networkButton = screen.getByRole('button', { name: 'networkInfo' });
     await act(() => networkButton.click());
 
-    const title = screen.getByRole('link', { name: 'staking.overview.networkSettingsLink' });
+    const title = screen.getByText('inactiveChain');
     expect(title).toBeInTheDocument();
   });
 });

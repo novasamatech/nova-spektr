@@ -59,7 +59,8 @@
     "shardsModalTitle": "Your shards",
     "shardsTitle": "Ваши активы на:",
     "title": "Балансы",
-    "verificationFailedLabel": "данные недостоверны"
+    "verificationFailedLabel": "данные недостоверны",
+    "verificationTooltip": "The balance may be wrong or outdated, please check your network connection."
   },
   "basemodal": {
     "closeButton": "Закрыть окно"
@@ -85,7 +86,7 @@
     "signatoryTitle": "Выберете подписантов",
     "successMessage": "Multisig аккаунт успешно создан ",
     "thresholdDescription": "Установите количество подписей трубуемых для выполнения транзакции",
-    "thresholdHint": "Threshold of signatories required to sign a transaction.",
+    "thresholdHint": "Threshold of signatories required to execute a transaction.",
     "thresholdName": "Порог",
     "thresholdPlaceholder": "Select threshold",
     "title": "Создать Multisig кошелёк",
@@ -113,6 +114,8 @@
     "input": {
       "amountLabel": "Сумма",
       "availableLabel": "Доступно",
+      "descriptionLabel": "Описание",
+      "descriptionPlaceholder": "Описание операции",
       "signerLabel": "Выберите подписанта",
       "transferableLabel": "Доступно"
     },
@@ -134,6 +137,7 @@
     "subTitle": "Реквизиты Matrix"
   },
   "multisigOperations": {
+    "noSignatory": "Add signatory wallet before making multisig operation",
     "title": "Операции с мультиподписью"
   },
   "navigation": {
@@ -549,12 +553,8 @@
       "aboutRewards": "О наградах",
       "accountLabel": "Аккаунт",
       "accountPlaceholder": "Выберите аккаунт",
-      "amountPlaceholder": "0",
-      "availableBalancePlaceholder": "Доступно",
       "backButton": "Назад",
       "continueButton": "Продолжить",
-      "descriptionLabel": "Описание",
-      "descriptionPlaceholder": "Задайте название операции",
       "goToStakingButton": "Обратно к Стейкингу",
       "incorrectAddressError": "Пожалуйста, введите корректный адрес",
       "manyAccountsPlaceholder": "Выбрано несколько аккаунтов",
@@ -609,7 +609,7 @@
     },
     "destination": {
       "initDestinationSubtitle": "Выплата наград",
-      "title": "Смена адреса наград"
+      "title": "Смена адреса наград на"
     },
     "loadingMessage": "Подключаемся к { chainName }",
     "nominators": {
@@ -658,10 +658,9 @@
     },
     "requiredAmountError": "Пожалуйста, введите сумму",
     "restake": {
-      "amountPlaceholder": "0",
       "confirmRestakeSubtitle": "Подтверждение",
       "initRestakeSubtitle": "Вернуть в стейк",
-      "title": "Вернуть в стейк",
+      "title": "Вернуть в стейк на",
       "transferable": "Доступно",
       "unstakingPlaceholder": "Выводится из стейка"
     },
@@ -676,7 +675,6 @@
     "submitSuccessSingle": "Operation success",
     "title": "Стейкинг",
     "unstake": {
-      "amountPlaceholder": "0",
       "confirmUnstakeSubtitle": "Подтверждение",
       "initUnstakeSubtitle": "Вывод из стейка",
       "networkFee_one": "Комиссия сети",
@@ -694,6 +692,7 @@
       "filterNotOversubscribed": "Не перегружены",
       "filterNotSlashed": "Не урезаны",
       "maxValidatorsLabel": "(Макс. { max })",
+      "noValidatorsLabel": "Поиск по валидаторам не дал результатов",
       "nominatedTableHeader": "Номинировано",
       "oversubPopoverSubtitle": "Валидатор перегружен номинаторами",
       "oversubPopoverTitle": "Перегрузка",
@@ -705,7 +704,7 @@
       "slashedPopoverSubtitle": "Валидатор был недавно урезан",
       "slashedPopoverTitle": "Урезан",
       "subtitle": "Валидаторы",
-      "title": "Выбор валидаторов",
+      "title": "Выбор валидаторов на",
       "totalStakeTableHeader": "Общий стейк",
       "validatorsTableHeader": "Аккаунты"
     },
@@ -738,9 +737,7 @@
   "transfer": {
     "amountPlaceholder": "0",
     "continueButton": "Продолжить",
-    "descriptionLabel": "Название операции",
     "descriptionLengthError": "Описание может быть { maxLength } символов в длину",
-    "descriptionPlaceholder": "Задайте название операции",
     "editOperationButton": "Редактировать операцию",
     "executing": "Выполнение транзакции",
     "formTitle": "Отправить <strong>{ asset }</strong> в сети <strong>{ network }</strong>",
@@ -752,6 +749,7 @@
     },
     "multisigTransactionExist": "Мультисиг транзакция уже существует",
     "networkDeposit": "Депозит",
+    "networkDepositHint": "The deposit stays locked on the depositor’s account until the multisig operation is executed or rejected",
     "networkFee": "Комиссия сети",
     "notEnoughBalanceError": "Недостаточно средств для указанной суммы",
     "notEnoughBalanceForDepositError": "Недостаточно средств для оплаты депозита",

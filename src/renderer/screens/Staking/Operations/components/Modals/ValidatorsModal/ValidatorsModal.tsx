@@ -30,7 +30,7 @@ const ValidatorsModal = ({ isOpen, validators, explorers, onClose }: Props) => {
               className="gap-x-1"
               addressFont="text-body text-text-secondary"
               type="full"
-              size={20}
+              size={16}
               address={validator.address}
               explorers={explorers}
             />
