@@ -9,7 +9,7 @@ dependencies:
     version: 1.7.14(react-dom@18.2.0)(react@18.2.0)
   '@matrix-org/olm':
     specifier: https://gitlab.matrix.org/api/v4/projects/27/packages/npm/@matrix-org/olm/-/@matrix-org/olm-3.2.12.tgz
-    version: '@gitlab.matrix.org/api/v4/projects/27/packages/npm/@matrix-org/olm/-/@matrix-org/olm-3.2.12.tgz'
+    version: '@gitlab.matrix.org/api/v4/projects/27/packages/npm/@matrix-org/olm/-//matrix-org/olm-3.2.12.tgz'
   '@polkadot/api':
     specifier: ^10.7.1
     version: 10.8.1
@@ -337,8 +337,8 @@ devDependencies:
     specifier: ^13.0.3
     version: 13.2.2
   matrix-js-sdk:
-    specifier: 22.0.0
-    version: 22.0.0
+    specifier: 24.1.0
+    version: 24.1.0
   mini-css-extract-plugin:
     specifier: ^2.6.1
     version: 2.7.5(webpack@5.82.1)
@@ -2757,6 +2757,11 @@ packages:
       tmp-promise: 3.0.3
     transitivePeerDependencies:
       - supports-color
+    dev: true
+
+  /@matrix-org/matrix-sdk-crypto-js@0.1.0-alpha.10:
+    resolution: {integrity: sha512-8V2NKuzGOFzEZeZVgF2is7gmuopdRbMZ064tzPDE0vN34iX6s3O8A4oxIT7SA3qtymwm3t1yEvTnT+0gfbmh4g==}
+    engines: {node: '>= 10'}
     dev: true
 
   /@mdx-js/mdx@1.6.22:
@@ -5855,10 +5860,6 @@ packages:
 
   /@types/scheduler@0.16.3:
     resolution: {integrity: sha512-5cJ8CB4yAx7BH1oMvdU0Jh9lrEXyPkar6F9G/ERswkCuvP4KQZfZkSjcMbAICCpQTN4OuZn8tz0HiKv9TGZgrQ==}
-
-  /@types/sdp-transform@2.4.6:
-    resolution: {integrity: sha512-k3Nw6iaLoJbTjjY1tFT4L4IHNnLGJ52YacJNlNi6yqo76EYN1DiSPtuzzB7XnorZgrreUzCvzHDLklopmFdm7g==}
-    dev: true
 
   /@types/semver@7.5.0:
     resolution: {integrity: sha512-G8hZ6XJiHnuhQKR7ZmysCeJWE08o8T0AXtk5darsCaTVsYZhhgUrq53jizaR2FvsoeCwJhlmwTjkXBY5Pn/ZHw==}
@@ -13760,12 +13761,12 @@ packages:
     resolution: {integrity: sha512-1QEOsXO+bhyCroIe2/A5OwaxHvBm7EsSQ46DEDn8RBIfQwN5HWBpFvyWWR4QY0KHPPnnJdI99wgRiAl7Ad5qaA==}
     dev: true
 
-  /matrix-js-sdk@22.0.0:
-    resolution: {integrity: sha512-mpKqeD3nCobjGiUiATUyEoP44n+AzDW5cSeBTIBY5fPhj0AkzLJhblHt40vzSOJazj8tT0PhsSzhEIR9hGzYGA==}
+  /matrix-js-sdk@24.1.0:
+    resolution: {integrity: sha512-xEx2ZoNsS56dwgqLJ3rIv2SUpFxdQLrLKmJCpMatMUKCAg+NGuZfpQ3QXblIbGaqFNQZCH7fC7S48AeTMZp1Jw==}
     engines: {node: '>=16.0.0'}
     dependencies:
       '@babel/runtime': 7.21.5
-      '@types/sdp-transform': 2.4.6
+      '@matrix-org/matrix-sdk-crypto-js': 0.1.0-alpha.10
       another-json: 0.2.0
       bs58: 5.0.0
       content-type: 1.0.5
@@ -13773,9 +13774,9 @@ packages:
       matrix-events-sdk: 0.0.1
       matrix-widget-api: 1.4.0
       p-retry: 4.6.2
-      qs: 6.11.1
       sdp-transform: 2.14.1
       unhomoglyph: 1.0.6
+      uuid: 9.0.0
     dev: true
 
   /matrix-widget-api@1.4.0:
@@ -18798,6 +18799,11 @@ packages:
     hasBin: true
     dev: true
 
+  /uuid@9.0.0:
+    resolution: {integrity: sha512-MXcSTerfPa4uqyzStbRoTgt5XIe3x5+42+q1sDuy3R5MDk66URdLMOZe5aPX/SQd+kuYAh0FdP/pO28IkQyTeg==}
+    hasBin: true
+    dev: true
+
   /v8-compile-cache-lib@3.0.1:
     resolution: {integrity: sha512-wa7YjyUGfNZngI/vtK0UHAN+lgDCxBPCylVXGp0zu59Fz5aiGtNXaq3DhIov063MorB+VfufLh3JlF2KdTK3xg==}
 
@@ -19564,7 +19570,7 @@ packages:
     resolution: {integrity: sha512-V50KMwwzqJV0NpZIZFwfOD5/lyny3WlSzRiXgA0G7VUnRlqttta1L6UQIHzd6EuBY/cHGfwTIck7w1yH6Q5zUw==}
     dev: true
 
-  '@gitlab.matrix.org/api/v4/projects/27/packages/npm/@matrix-org/olm/-/@matrix-org/olm-3.2.12.tgz':
+  '@gitlab.matrix.org/api/v4/projects/27/packages/npm/@matrix-org/olm/-//matrix-org/olm-3.2.12.tgz':
     resolution: {tarball: https://gitlab.matrix.org/api/v4/projects/27/packages/npm/@matrix-org/olm/-/@matrix-org/olm-3.2.12.tgz}
     name: '@matrix-org/olm'
     version: 3.2.12
