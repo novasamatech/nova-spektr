@@ -85,7 +85,7 @@
     "signatoryTitle": "Выберете подписантов",
     "successMessage": "Multisig аккаунт успешно создан ",
     "thresholdDescription": "Установите количество подписей трубуемых для выполнения транзакции",
-    "thresholdHint": "Threshold of signatories required to sign a transaction.",
+    "thresholdHint": "Threshold of signatories required to execute a transaction.",
     "thresholdName": "Порог",
     "thresholdPlaceholder": "Select threshold",
     "title": "Создать Multisig кошелёк",
@@ -113,6 +113,8 @@
     "input": {
       "amountLabel": "Сумма",
       "availableLabel": "Доступно",
+      "descriptionLabel": "Описание",
+      "descriptionPlaceholder": "Описание операции",
       "signerLabel": "Выберите подписанта",
       "transferableLabel": "Доступно"
     },
@@ -549,12 +551,8 @@
       "aboutRewards": "О наградах",
       "accountLabel": "Аккаунт",
       "accountPlaceholder": "Выберите аккаунт",
-      "amountPlaceholder": "Сумма",
-      "availableBalancePlaceholder": "Доступно",
       "backButton": "Назад",
       "continueButton": "Продолжить",
-      "descriptionLabel": "Описание",
-      "descriptionPlaceholder": "Задайте название операции",
       "goToStakingButton": "Обратно к Стейкингу",
       "incorrectAddressError": "Пожалуйста, введите корректный адрес",
       "manyAccountsPlaceholder": "Выбрано несколько аккаунтов",
@@ -658,7 +656,6 @@
     },
     "requiredAmountError": "Пожалуйста, введите сумму",
     "restake": {
-      "amountPlaceholder": "Сумма",
       "confirmRestakeSubtitle": "Подтверждение",
       "initRestakeSubtitle": "Вернуть в стейк",
       "title": "Вернуть в стейк",
@@ -676,7 +673,6 @@
     "submitSuccessSingle": "Operation success",
     "title": "Стейкинг",
     "unstake": {
-      "amountPlaceholder": "Сумма",
       "confirmUnstakeSubtitle": "Подтверждение",
       "initUnstakeSubtitle": "Вывод из стейка",
       "networkFee_one": "Комиссия сети",
@@ -737,14 +733,13 @@
     "unstake": "Вывод из стейкинга { amount } { asset }"
   },
   "transfer": {
-    "amountPlaceholder": "Сумма",
+    "amountPlaceholder": "0",
     "continueButton": "Продолжить",
-    "descriptionLabel": "Название операции",
     "descriptionLengthError": "Описание может быть { maxLength } символов в длину",
-    "descriptionPlaceholder": "Задайте название операции",
     "editOperationButton": "Редактировать операцию",
     "executing": "Выполнение транзакции",
     "formTitle": "Отправить <strong>{ asset }</strong> в сети <strong>{ network }</strong>",
+    "inProgress": "Submitting approval...",
     "incorrectRecipientError": "Пожалуйста, введите корректный адрес получателя",
     "multiple": {
       "executing": "Выполнение операций",
@@ -758,6 +753,7 @@
     "notEnoughBalanceForFeeError": "Недостаточно средств для оплаты комиссии",
     "pasteButton": "Вставить",
     "recipientLabel": "Получатель",
+    "recipientPlaceholder": "Address",
     "requiredAmountError": "Пожалуйста, введите сумму",
     "requiredDescriptionError": "Пожалуйста, заполните описание транзакции",
     "requiredRecipientError": "Пожалуйста, введите адрес получателя",

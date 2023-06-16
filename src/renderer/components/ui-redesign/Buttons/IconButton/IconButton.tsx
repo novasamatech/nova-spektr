@@ -12,7 +12,7 @@ type Props = {
   onClick?: (event: MouseEvent<HTMLButtonElement>) => void;
 } & IconProps;
 
-const IconButtonStyle = cn(
+export const IconButtonStyle = cn(
   'relative w-max justify-center rounded-full outline-offset-1 text-icon-default ',
   'hover:text-icon-hover hover:bg-hover active:bg-hover active:text-tab-icon-active',
 );

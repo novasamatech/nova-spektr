@@ -47,7 +47,13 @@ const InfoPopover = ({ data, className, children, ...popoverProps }: PropsWithCh
   ));
 
   return (
-    <MenuPopover content={popoverContent} className={cnTw('min-w-[220px]', className)} {...popoverProps}>
+    <MenuPopover
+      buttonClassName="max-w-full"
+      containerClassName="max-w-full"
+      content={popoverContent}
+      className={cnTw('min-w-[220px]', className)}
+      {...popoverProps}
+    >
       {children}
     </MenuPopover>
   );

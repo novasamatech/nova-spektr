@@ -2,7 +2,7 @@ import cn from 'classnames';
 import { useEffect, useState } from 'react';
 
 import { AccountAddress, QrTextGenerator } from '@renderer/components/common';
-import { ExplorerIcons } from '@renderer/components/common/Explorers/common/constants';
+import { DefaultExplorer, ExplorerIcons } from '@renderer/components/common/Explorers/common/constants';
 import { Icon } from '@renderer/components/ui';
 import { DropdownOption, DropdownResult } from '@renderer/components/ui/Dropdowns/common/types';
 import { useI18n } from '@renderer/context/I18nContext';
@@ -15,6 +15,8 @@ import { toAddress } from '@renderer/shared/utils/address';
 import { BaseModal, Button, FootnoteText, Select } from '@renderer/components/ui-redesign';
 import OperationModalTitle from '@renderer/screens/Operations/components/OperationModalTitle';
 import { HelpText } from '@renderer/components/ui-redesign/Typography';
+import cnTw from '@renderer/shared/utils/twMerge';
+import { IconButtonStyle } from '@renderer/components/ui-redesign/Buttons/IconButton/IconButton';
 
 export type DataPayload = {
   chain: Chain;
@@ -112,9 +114,9 @@ const ReceiveModal = ({ data, isOpen, onClose }: Props) => {
                 href={account?.replace('{address}', address)}
                 rel="noopener noreferrer"
                 target="_blank"
-                className="flex py-1 px-1.5 w-6 h-6"
+                className={cnTw(IconButtonStyle, 'spektr-icon-button flex py-1 px-1.5 w-6 h-6')}
               >
-                <Icon size={16} as="img" name={ExplorerIcons[name]} />
+                <Icon size={16} as="img" name={ExplorerIcons[name] || ExplorerIcons[DefaultExplorer]} />
               </a>
             </li>
           ))}
@@ -122,7 +124,12 @@ const ReceiveModal = ({ data, isOpen, onClose }: Props) => {
       )}
 
       <HelpText className="w-[240px] mb-2 break-all" align="center">
-        {toAddress(accountId, { prefix })}
+        <AccountAddress
+          className="justify-center"
+          address={toAddress(accountId, { prefix })}
+          showIcon={false}
+          type="adaptive"
+        />
       </HelpText>
 
       <Button variant="text" size="sm" onClick={() => copyToClipboard(address)}>
