@@ -26,7 +26,7 @@ const BaseModal = ({
   children,
   onClose,
   contentClass = 'pb-4 px-5',
-  headerClass = 'py-4 px-5',
+  headerClass = 'py-3 px-5',
   closeButton,
   panelClass,
 }: PropsWithChildren<Props>) => {
