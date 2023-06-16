@@ -39,7 +39,7 @@ export const NetworkList = ({ title, isDefaultOpen, query, networkList, children
   );
 
   return (
-    <Accordion isOpen={isListOpen}>
+    <Accordion isDefaultOpen={isListOpen}>
       <Accordion.Button className="py-1.5">
         <div className="flex items-center gap-x-1.5 w-full">
           <CaptionText as="h2" className="uppercase text-text-secondary tracking-[0.75px]">

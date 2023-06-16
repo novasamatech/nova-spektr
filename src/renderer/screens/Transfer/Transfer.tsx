@@ -2,7 +2,6 @@ import { useState, useEffect } from 'react';
 import { UnsignedTransaction } from '@substrate/txwrapper-polkadot';
 
 import { useI18n } from '@renderer/context/I18nContext';
-import { ChainLoader } from '@renderer/components/common';
 import { ChainId, HexString } from '@renderer/domain/shared-kernel';
 import { useNetworkContext } from '@renderer/context/NetworkContext';
 import { useChains } from '@renderer/services/network/chainsService';
@@ -52,7 +51,7 @@ const Transfer = ({ assetId, chainId, isOpen, onClose }: Props) => {
   }, []);
 
   if (!connection?.api?.isConnected) {
-    return <ChainLoader chainName={chainName} />;
+    return null;
   }
 
   const { api, assets, addressPrefix, explorers } = connection;

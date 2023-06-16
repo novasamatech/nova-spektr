@@ -92,7 +92,7 @@ const MultiSelect = ({
             tabIndex={tabIndex}
           >
             {getSelectButtonElement()}
-            <Icon name="down" size={16} className="text-icon-default" />
+            <Icon name={open ? 'up' : 'down'} size={16} className="text-icon-default" />
           </Listbox.Button>
 
           <Transition as={Fragment} leave="transition ease-in duration-100" leaveFrom="opacity-100" leaveTo="opacity-0">

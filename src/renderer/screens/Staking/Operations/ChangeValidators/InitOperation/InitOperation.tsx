@@ -96,7 +96,7 @@ const InitOperation = ({ api, chainId, accounts, asset, addressPrefix, onResult 
   useEffect(() => {
     if (!accountIsMultisig) return;
 
-    const signerOptions = dbAccounts.reduce<any[]>((acc, signer) => {
+    const signerOptions = dbAccounts.reduce<DropdownOption<Account>[]>((acc, signer) => {
       if (signatoryIds.includes(signer.accountId)) {
         const balance = signatoriesBalances.find((b) => b.accountId === signer.accountId);
 

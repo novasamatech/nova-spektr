@@ -694,6 +694,7 @@
       "filterNotOversubscribed": "Not oversubscribed",
       "filterNotSlashed": "Not slashed",
       "maxValidatorsLabel": "(Max { max })",
+      "noValidatorsLabel": "No matching validators",
       "nominatedTableHeader": "Nominated",
       "oversubPopoverSubtitle": "Validator is oversubscribed",
       "oversubPopoverTitle": "Oversubscribed",

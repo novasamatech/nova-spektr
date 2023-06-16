@@ -9,7 +9,7 @@ type Props = {
   className?: string;
 };
 
-const UnstakingDuration = ({ api, className }: Props) => {
+export const UnstakingDuration = ({ api, className }: Props) => {
   const { getUnbondingPeriod } = useStakingData();
 
   const [unstakingPeriod, setUnstakingPeriod] = useState('');
@@ -26,5 +26,3 @@ const UnstakingDuration = ({ api, className }: Props) => {
 
   return <Duration className={className} seconds={unstakingPeriod} />;
 };
-
-export default UnstakingDuration;

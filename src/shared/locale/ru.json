@@ -694,6 +694,7 @@
       "filterNotOversubscribed": "Не перегружены",
       "filterNotSlashed": "Не урезаны",
       "maxValidatorsLabel": "(Макс. { max })",
+      "noValidatorsLabel": "Поиск по валидаторам не дал результатов",
       "nominatedTableHeader": "Номинировано",
       "oversubPopoverSubtitle": "Валидатор перегружен номинаторами",
       "oversubPopoverTitle": "Перегрузка",

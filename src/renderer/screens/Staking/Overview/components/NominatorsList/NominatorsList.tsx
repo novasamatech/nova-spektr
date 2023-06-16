@@ -9,7 +9,7 @@ import { AccountAddress, ExplorerLink } from '@renderer/components/common';
 import { Icon, Shimmering, Balance } from '@renderer/components/ui';
 import { Explorer } from '@renderer/domain/chain';
 import { Asset } from '@renderer/domain/asset';
-import TimeToEra from '../TimeToEra/TimeToEra';
+import { TimeToEra } from '../TimeToEra/TimeToEra';
 import { HelpText } from '@renderer/components/ui-redesign/Typography';
 import { redeemableAmount } from '@renderer/shared/utils/balance';
 
@@ -49,7 +49,7 @@ type Props = {
   onToggleNominator: (nominator: Address) => void;
 };
 
-const NominatorsList = ({
+export const NominatorsList = ({
   api,
   era,
   nominators,
@@ -88,9 +88,9 @@ const NominatorsList = ({
   return (
     <div className="flex flex-col gap-y-2">
       <div className="grid grid-cols-[226px,104px,144px] items-center gap-x-6 px-3">
-        <FootnoteText className="text-text-secondary">{t('staking.overview.accountTableHeader')}</FootnoteText>
-        <FootnoteText className="text-text-secondary">{t('staking.overview.stakeTableHeader')}</FootnoteText>
-        <FootnoteText className="text-text-secondary">{t('staking.overview.rewardsTableHeader')}</FootnoteText>
+        <FootnoteText className="text-text-tertiary">{t('staking.overview.accountTableHeader')}</FootnoteText>
+        <FootnoteText className="text-text-tertiary">{t('staking.overview.stakeTableHeader')}</FootnoteText>
+        <FootnoteText className="text-text-tertiary">{t('staking.overview.rewardsTableHeader')}</FootnoteText>
       </div>
 
       <ul className="flex flex-col gap-y-2">
@@ -133,7 +133,7 @@ const NominatorsList = ({
 
           const content = (
             <>
-              <AccountAddress name={stake.accountName} address={stake.address} />
+              <AccountAddress className="max-w-[115px]" name={stake.accountName} address={stake.address} />
               {unstakeBadge || redeemBadge}
             </>
           );
@@ -141,7 +141,7 @@ const NominatorsList = ({
           return (
             <li key={stake.address}>
               <Plate className="grid grid-cols-[226px,104px,104px,16px] items-center gap-x-6">
-                {stake.signingType === SigningType.PARITY_SIGNER ? (
+                {stake.signingType === SigningType.PARITY_SIGNER && nominators.length > 1 ? (
                   <Checkbox
                     disabled={isStakingLoading}
                     checked={stake.isSelected}
@@ -177,5 +177,3 @@ const NominatorsList = ({
     </div>
   );
 };
-
-export default NominatorsList;

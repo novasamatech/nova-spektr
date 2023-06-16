@@ -2,13 +2,11 @@ import { UnsignedTransaction } from '@substrate/txwrapper-polkadot';
 import { useEffect, useState } from 'react';
 import { Navigate, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 
-import { ChainLoader } from '@renderer/components/common';
 import { useI18n } from '@renderer/context/I18nContext';
 import { useNetworkContext } from '@renderer/context/NetworkContext';
 import { Address, ChainId, HexString, AccountId } from '@renderer/domain/shared-kernel';
 import { Transaction, TransactionType } from '@renderer/domain/transaction';
 import { useAccount } from '@renderer/services/account/accountService';
-import { useChains } from '@renderer/services/network/chainsService';
 import InitOperation, { RestakeResult } from './InitOperation/InitOperation';
 import { Confirmation, Signing, Submit, NoAsset } from '../components';
 import { getRelaychainAsset } from '@renderer/shared/utils/assets';
@@ -16,11 +14,12 @@ import { useCountdown, useToggle } from '@renderer/shared/hooks';
 import { useTransaction } from '@renderer/services/transaction/transactionService';
 import { Account, MultisigAccount, isMultisig } from '@renderer/domain/account';
 import { toAddress } from '@renderer/shared/utils/address';
-import { Alert, BaseModal } from '@renderer/components/ui-redesign';
+import { Alert, BaseModal, Button } from '@renderer/components/ui-redesign';
 import { DEFAULT_TRANSITION } from '@renderer/shared/utils/constants';
 import Paths from '@renderer/routes/paths';
 import ScanMultiframeQr from '@renderer/components/common/Scanning/ScanMultiframeQr';
 import ScanSingleframeQr from '@renderer/components/common/Scanning/ScanSingleframeQr';
+import { Icon } from '@renderer/components/ui';
 
 const enum Step {
   INIT,
@@ -36,7 +35,6 @@ export const Restake = () => {
   const { connections } = useNetworkContext();
   const { getTransactionHash } = useTransaction();
   const { getActiveAccounts } = useAccount();
-  const { getChainById } = useChains();
   const [searchParams] = useSearchParams();
   const params = useParams<{ chainId: ChainId }>();
 
@@ -44,7 +42,6 @@ export const Restake = () => {
   const [isAlertOpen, toggleAlert] = useToggle(true);
 
   const [activeStep, setActiveStep] = useState<Step>(Step.INIT);
-  const [chainName, setChainName] = useState('...');
 
   const [restakeAmount, setRestakeAmount] = useState('');
   const [description, setDescription] = useState('');
@@ -67,10 +64,6 @@ export const Restake = () => {
     const accounts = activeAccounts.filter((a) => a.id && accountIds.includes(a.id.toString()));
     setAccounts(accounts);
   }, [activeAccounts.length]);
-
-  useEffect(() => {
-    getChainById(chainId).then((chain) => setChainName(chain?.name || ''));
-  }, []);
 
   const connection = connections[chainId];
   const [countdown, resetCountdown] = useCountdown(connection?.api);
@@ -105,8 +98,11 @@ export const Restake = () => {
         title={t('staking.restake.title')}
         onClose={closeRestakeModal}
       >
-        <div className="w-[440px] px-5 py-20">
-          <ChainLoader chainName={chainName} />
+        <div className="w-[440px] px-5 py-4">
+          <Icon className="my-24 mx-auto" name="loader" />
+          <Button disabled className="w-fit flex-0 mt-7 ml-auto">
+            {t('staking.bond.continueButton')}
+          </Button>
         </div>
       </BaseModal>
     );

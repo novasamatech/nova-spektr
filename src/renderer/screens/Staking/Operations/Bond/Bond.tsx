@@ -5,10 +5,8 @@ import { Navigate, useParams, useSearchParams, useNavigate } from 'react-router-
 import { toAddress } from '@renderer/shared/utils/address';
 import { getRelaychainAsset } from '@renderer/shared/utils/assets';
 import { RewardsDestination } from '@renderer/domain/stake';
-import { ChainLoader } from '@renderer/components/common';
 import { useI18n } from '@renderer/context/I18nContext';
 import { useNetworkContext } from '@renderer/context/NetworkContext';
-import { useChains } from '@renderer/services/network/chainsService';
 import { Address, ChainId, HexString, AccountId } from '@renderer/domain/shared-kernel';
 import { Transaction, TransactionType } from '@renderer/domain/transaction';
 import { ValidatorMap } from '@renderer/services/staking/common/types';
@@ -16,7 +14,7 @@ import { Validators, Confirmation, Signing, Submit, NoAsset } from '../component
 import { useCountdown, useToggle } from '@renderer/shared/hooks';
 import { Account, MultisigAccount, isMultisig } from '@renderer/domain/account';
 import { useTransaction } from '@renderer/services/transaction/transactionService';
-import { BaseModal, Alert } from '@renderer/components/ui-redesign';
+import { BaseModal, Alert, Button } from '@renderer/components/ui-redesign';
 import InitOperation, { BondResult } from './InitOperation/InitOperation';
 import Paths from '@renderer/routes/paths';
 import { DEFAULT_TRANSITION } from '@renderer/shared/utils/constants';
@@ -26,6 +24,7 @@ import { DestinationType } from '../common/types';
 import ScanMultiframeQr from '@renderer/components/common/Scanning/ScanMultiframeQr';
 import ScanSingleframeQr from '@renderer/components/common/Scanning/ScanSingleframeQr';
 import { UnstakingDuration } from '@renderer/screens/Staking/Overview/components';
+import { Icon } from '@renderer/components/ui';
 
 const enum Step {
   INIT,
@@ -40,7 +39,6 @@ export const Bond = () => {
   const { t } = useI18n();
   const navigate = useNavigate();
   const { connections } = useNetworkContext();
-  const { getChainById } = useChains();
   const { getActiveAccounts } = useAccount();
   const { getTransactionHash } = useTransaction();
   const [searchParams] = useSearchParams();
@@ -50,7 +48,6 @@ export const Bond = () => {
   const [isAlertOpen, toggleAlert] = useToggle(true);
 
   const [activeStep, setActiveStep] = useState<Step>(Step.INIT);
-  const [chainName, setChainName] = useState('...');
   const [validators, setValidators] = useState<ValidatorMap>({});
   const [accountsToStake, setAccountsToStake] = useState<Account[]>([]);
 
@@ -76,10 +73,6 @@ export const Bond = () => {
     const accounts = activeAccounts.filter((a) => a.id && accountIds.includes(a.id.toString()));
     setAccounts(accounts);
   }, [activeAccounts.length]);
-
-  useEffect(() => {
-    getChainById(chainId).then((chain) => setChainName(chain?.name || ''));
-  }, []);
 
   const connection = connections[chainId];
   const [countdown, resetCountdown] = useCountdown(connection?.api);
@@ -114,8 +107,11 @@ export const Bond = () => {
         title={<OperationModalTitle title={`${t('staking.bond.title', { asset: '' })}`} chainId={chainId} />}
         onClose={closeBondModal}
       >
-        <div className="w-[440px] px-5 py-20">
-          <ChainLoader chainName={chainName} />
+        <div className="w-[440px] px-5 py-4">
+          <Icon className="my-24 mx-auto" name="loader" />
+          <Button disabled className="w-fit flex-0 mt-7 ml-auto">
+            {t('staking.bond.continueButton')}
+          </Button>
         </div>
       </BaseModal>
     );
