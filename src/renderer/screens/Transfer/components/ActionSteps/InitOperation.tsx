@@ -69,9 +69,8 @@ const InitOperation = ({
       const balance = balances.find((b) => b.accountId === account.accountId);
 
       const isSameChain = !account.chainId || account.chainId === chainId;
-      const isNewOption = acc.every((a) => a.id !== account.accountId);
 
-      if (isSameChain && isNewOption) {
+      if (isSameChain) {
         acc.push(getAccountOption(account, { addressPrefix, asset, amount, balance, fee, deposit }));
       }
 
@@ -91,6 +90,7 @@ const InitOperation = ({
       setSignatoryOptions([]);
     } else {
       const signatories = activeAccount.value.signatories.map((s) => s.accountId);
+
       const signers = dbAccounts.filter(
         (a) => a.signingType !== SigningType.WATCH_ONLY && signatories.includes(a.accountId),
       ) as MultisigAccount[];
@@ -124,7 +124,7 @@ const InitOperation = ({
   };
 
   return (
-    <div className="flex flex-col gap-y-2">
+    <div className="flex flex-col gap-y-4">
       {accountsOptions.length > 1 && (
         <Select
           label={t('transfer.senderLabel')}

@@ -92,7 +92,7 @@ const Select = ({
 
   return (
     <div className="flex flex-col gap-2">
-      <LabelText className="cursor-pointer text-text-tertiary" htmlFor={id}>
+      <LabelText className="cursor-pointer text-text-tertiary font-medium" htmlFor={id}>
         {label}
       </LabelText>
       {selectElement}
