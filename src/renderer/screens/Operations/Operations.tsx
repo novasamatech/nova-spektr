@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { groupBy } from 'lodash';
 import { format } from 'date-fns';
 
@@ -28,6 +28,12 @@ const Operations = () => {
     format(new Date(dateCreated || 0), 'PP', { locale: dateLocale }),
   );
 
+  useEffect(() => {
+    if (!txs.length) {
+      setFilteredTxs([]);
+    }
+  }, [txs.length]);
+
   return (
     <div className="flex flex-col items-start relative bg-main-app-background min-h-full">
       <Header title={t('operations.title')} />
@@ -53,6 +59,7 @@ const Operations = () => {
               ))}
         </div>
       </div>
+
       {!filteredTxs.length && (
         <EmptyOperations multisigAccount={account} isEmptyFromFilters={txs.length !== filteredTxs.length} />
       )}

@@ -15,7 +15,7 @@ const ScanStep = ({ onBack, onNextStep }: Props) => {
 
   return (
     <>
-      <div className="w-[472px] flex flex-col px-5 py-4 bg-white">
+      <div className="w-[472px] flex flex-col px-5 py-4 bg-white rounded-l-lg">
         <HeaderTitleText className="mb-10">{t('onboarding.vault.title')}</HeaderTitleText>
         <SmallTitleText className="mb-6">{t('onboarding.vault.scanTitle')}</SmallTitleText>
 

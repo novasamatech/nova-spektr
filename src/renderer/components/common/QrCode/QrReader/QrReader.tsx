@@ -242,6 +242,7 @@ const QrReader = ({
   const stopScanning = () => {
     streamRef.current?.getVideoTracks().forEach((track) => track.stop());
     controlsRef.current?.stop();
+    bgControlsRef.current?.stop();
   };
 
   useEffect(() => {
