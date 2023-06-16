@@ -142,7 +142,7 @@ export const MatrixProvider = ({ children }: PropsWithChildren) => {
       matrixRoomId: roomId,
     });
 
-    await addAccount(mstAccount);
+    await addAccount(mstAccount, false);
   };
 
   const changeRoom = async (
