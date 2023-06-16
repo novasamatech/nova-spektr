@@ -1,0 +1,29 @@
+.pointer-up:before {
+  content: '';
+  display: block;
+  width: 0;
+  height: 0;
+  position: absolute;
+
+  border-left: 6px solid transparent;
+  border-right: 6px solid transparent;
+  border-bottom: 8px solid var(--switch-background-active);
+  left: calc(50% - 6px);
+
+  top: -8px;
+}
+
+.pointer-down:before {
+  content: '';
+  display: block;
+  width: 0;
+  height: 0;
+  position: absolute;
+
+  border-left: 6px solid transparent;
+  border-right: 6px solid transparent;
+  border-top: 8px solid var(--switch-background-active);
+  left: calc(50% - 6px);
+
+  bottom: -8px;
+}

@@ -130,6 +130,7 @@ const Balances = () => {
               <Button
                 variant="text"
                 suffixElement={<Icon name="edit" size={16} className="text-icon-accent" />}
+                className="outline-offset-reduced"
                 onClick={toggleSelectShardsOpen}
               >
                 {activeAccounts.length} {t('balances.shards')}

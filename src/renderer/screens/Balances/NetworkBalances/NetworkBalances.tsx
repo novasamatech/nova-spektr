@@ -103,14 +103,14 @@ const NetworkBalances = ({
             {hasFailedVerification && (
               <div className="flex items-center gap-x-2 text-text-warning">
                 {/* TODO fix tooltip not visible when first displayed network invalid. For now just render it below icon */}
-                <Tooltip content={t('balances.verificationTooltip')} contentClass="w-[184px]">
+                <Tooltip content={t('balances.verificationTooltip')} panelClass="w-[184px]" pointer="up">
                   <Icon name="warn" className="cursor-pointer" size={16} />
                 </Tooltip>
                 <CaptionText className="uppercase text-inherit">{t('balances.verificationFailedLabel')}</CaptionText>
               </div>
             )}
           </div>
-          <IconButton name={isCardShown ? 'down' : 'up'} className="p-2" onClick={toggleCard} />
+          <IconButton name={isCardShown ? 'down' : 'up'} className="p-2 outline-offset-reduced" onClick={toggleCard} />
         </div>
       </div>
 

@@ -9,7 +9,7 @@ import ButtonBack from './Buttons/ButtonBack/ButtonBack';
 import BaseModal from './Modals/BaseModal/BaseModal';
 import ConfirmModal from './Modals/ConfirmModal/ConfirmModal';
 import InfoPopover from './Popovers/InfoPopover/InfoPopover';
-import Popover from './Popovers/Popover/Popover';
+import { Popover } from './Popovers/Popover/Popover';
 import InfoLink from './InfoLink/InfoLink';
 import Select from './Dropdowns/Select/Select';
 import Combobox from './Dropdowns/Combobox/Combobox';
