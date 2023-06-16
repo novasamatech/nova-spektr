@@ -2,10 +2,8 @@ import { UnsignedTransaction } from '@substrate/txwrapper-polkadot';
 import { useState, useEffect } from 'react';
 import { Navigate, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 
-import { ChainLoader } from '@renderer/components/common';
 import { useI18n } from '@renderer/context/I18nContext';
 import { useNetworkContext } from '@renderer/context/NetworkContext';
-import { useChains } from '@renderer/services/network/chainsService';
 import { ChainId, HexString, Address, AccountId } from '@renderer/domain/shared-kernel';
 import { Transaction, TransactionType } from '@renderer/domain/transaction';
 import InitOperation, { StakeMoreResult } from './InitOperation/InitOperation';
@@ -15,13 +13,14 @@ import { useCountdown, useToggle } from '@renderer/shared/hooks';
 import { isMultisig, MultisigAccount, Account } from '@renderer/domain/account';
 import { useTransaction } from '@renderer/services/transaction/transactionService';
 import { toAddress } from '@renderer/shared/utils/address';
-import { Alert, BaseModal } from '@renderer/components/ui-redesign';
+import { Alert, BaseModal, Button } from '@renderer/components/ui-redesign';
 import { DEFAULT_TRANSITION } from '@renderer/shared/utils/constants';
 import Paths from '@renderer/routes/paths';
 import OperationModalTitle from '@renderer/screens/Operations/components/OperationModalTitle';
 import { useAccount } from '@renderer/services/account/accountService';
 import ScanMultiframeQr from '@renderer/components/common/Scanning/ScanMultiframeQr';
 import ScanSingleframeQr from '@renderer/components/common/Scanning/ScanSingleframeQr';
+import { Loader } from '@renderer/components/ui';
 
 const enum Step {
   INIT,
@@ -37,7 +36,6 @@ export const StakeMore = () => {
   const { getActiveAccounts } = useAccount();
   const { getTransactionHash } = useTransaction();
   const { connections } = useNetworkContext();
-  const { getChainById } = useChains();
   const [searchParams] = useSearchParams();
   const params = useParams<{ chainId: ChainId }>();
 
@@ -45,7 +43,6 @@ export const StakeMore = () => {
   const [isAlertOpen, toggleAlert] = useToggle(true);
 
   const [activeStep, setActiveStep] = useState<Step>(Step.INIT);
-  const [chainName, setChainName] = useState('...');
 
   const [stakeMoreAmount, setStakeMoreAmount] = useState('');
   const [description, setDescription] = useState('');
@@ -68,10 +65,6 @@ export const StakeMore = () => {
     const accounts = activeAccounts.filter((a) => a.id && accountIds.includes(a.id.toString()));
     setAccounts(accounts);
   }, [activeAccounts.length]);
-
-  useEffect(() => {
-    getChainById(chainId).then((chain) => setChainName(chain?.name || ''));
-  }, []);
 
   const connection = connections[chainId];
   const [countdown, resetCountdown] = useCountdown(connection?.api);
@@ -101,13 +94,17 @@ export const StakeMore = () => {
       <BaseModal
         closeButton
         contentClass=""
+        headerClass="py-4 px-5 max-w-[440px]"
         panelClass="w-max"
         isOpen={isStakeMoreModalOpen}
         title={<OperationModalTitle title={`${t('staking.stakeMore.title', { asset: '' })}`} chainId={chainId} />}
         onClose={closeStakeMoreModal}
       >
-        <div className="w-[440px] px-5 py-20">
-          <ChainLoader chainName={chainName} />
+        <div className="w-[440px] px-5 py-4">
+          <Loader className="my-24 mx-auto" color="primary" />
+          <Button disabled className="w-fit flex-0 mt-7 ml-auto">
+            {t('staking.bond.continueButton')}
+          </Button>
         </div>
       </BaseModal>
     );
@@ -118,6 +115,7 @@ export const StakeMore = () => {
       <BaseModal
         closeButton
         contentClass=""
+        headerClass="py-4 px-5 max-w-[440px]"
         panelClass="w-max"
         isOpen={isStakeMoreModalOpen}
         title={<OperationModalTitle title={`${t('staking.stakeMore.title', { asset: '' })}`} chainId={chainId} />}
@@ -201,6 +199,7 @@ export const StakeMore = () => {
     <BaseModal
       closeButton
       contentClass=""
+      headerClass="py-4 px-5 max-w-[440px]"
       panelClass="w-max"
       isOpen={isStakeMoreModalOpen}
       title={

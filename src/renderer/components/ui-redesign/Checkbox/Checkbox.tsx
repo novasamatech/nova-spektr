@@ -2,7 +2,7 @@ import { ChangeEvent, PropsWithChildren } from 'react';
 
 import { LabelText } from '@renderer/components/ui-redesign';
 import cnTw from '@renderer/shared/utils/twMerge';
-import './styles.css';
+import './Checkbox.css';
 
 type Props = {
   defaultChecked?: boolean;

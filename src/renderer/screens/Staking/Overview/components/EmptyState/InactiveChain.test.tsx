@@ -2,7 +2,7 @@ import { render, screen } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 
 import Paths from '@renderer/routes/paths';
-import InactiveChain from './InactiveChain';
+import { InactiveChain } from './InactiveChain';
 
 jest.mock('@renderer/context/I18nContext', () => ({
   useI18n: jest.fn().mockReturnValue({

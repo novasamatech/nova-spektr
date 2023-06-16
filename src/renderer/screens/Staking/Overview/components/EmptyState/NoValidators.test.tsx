@@ -1,6 +1,6 @@
 import { render, screen } from '@testing-library/react';
 
-import NoValidators from './NoValidators';
+import { NoValidators } from './NoValidators';
 
 jest.mock('@renderer/context/I18nContext', () => ({
   useI18n: jest.fn().mockReturnValue({

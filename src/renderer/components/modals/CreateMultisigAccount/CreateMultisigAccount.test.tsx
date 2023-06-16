@@ -47,6 +47,7 @@ jest.mock('@renderer/context/MatrixContext', () => ({
   }),
 }));
 jest.mock('@renderer/screens/Settings', () => ({ Matrix: () => () => 'Matrix' }));
+jest.mock('@renderer/components/ui-redesign/Animation/Animation', () => 'animation');
 
 jest.mock('react-router-dom', () => ({
   useNavigate: jest.fn(),

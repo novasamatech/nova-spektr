@@ -2,7 +2,7 @@ import { ApiPromise } from '@polkadot/api';
 import { useEffect, useState } from 'react';
 import { mapValues } from 'lodash';
 
-import { Icon, Identicon, Shimmering } from '@renderer/components/ui';
+import { Icon, Identicon, Shimmering, Loader } from '@renderer/components/ui';
 import { useI18n } from '@renderer/context/I18nContext';
 import { Asset } from '@renderer/domain/asset';
 import { Explorer } from '@renderer/domain/chain';
@@ -22,8 +22,6 @@ import {
   SmallTitleText,
   Checkbox,
 } from '@renderer/components/ui-redesign';
-
-const VALIDATORS_SKELETON = Array.from({ length: 10 }, (_, index) => ({ address: index.toString() }));
 
 type Props = {
   api: ApiPromise;
@@ -104,37 +102,12 @@ export const Validators = ({ api, chainId, asset, explorers, onGoBack, onResult 
   const selectedLength = Object.values(selectedValidators).reduce((acc, v) => acc + Number(v), 0);
   const nextStepDisabled = !selectedLength || selectedLength > maxValidators;
 
-  const loadingContent = (
-    <div className="flex flex-col gap-y-2 mt-4 px-5">
-      <div className="flex flex-col gap-y-2">
-        <div className="grid grid-cols-[400px,120px,1fr] items-center gap-x-6">
-          <Shimmering width={100} height={18} />
-          <Shimmering width={95} height={18} />
-          <Shimmering width={95} height={18} />
-        </div>
-
-        <ul className="flex flex-col gap-y-4">
-          {VALIDATORS_SKELETON.map((v) => (
-            <li key={v.address} className="grid grid-cols-[400px,120px,120px] items-center gap-x-6">
-              <div className="flex items-center gap-x-1.5">
-                <Shimmering circle width={20} height={20} />
-                <Shimmering width={250} height={18} />
-              </div>
-              <Shimmering width={115} height={18} />
-              <Shimmering width={115} height={18} />
-            </li>
-          ))}
-        </ul>
-      </div>
-    </div>
-  );
-
   return (
     <div className="w-[784px] max-h-[660px] py-4">
       <div className="flex items-center gap-x-1 px-5">
         <SmallTitleText as="p">{t('staking.validators.selectedValidatorsLabel')}</SmallTitleText>
         {isValidatorsLoading ? (
-          <Shimmering width={70} height={22} />
+          <Shimmering width={70} height={16} />
         ) : (
           <SmallTitleText as="p" className="text-text-tertiary">
             {t('staking.validators.maxValidatorsLabel', { max: maxValidators })}
@@ -148,9 +121,22 @@ export const Validators = ({ api, chainId, asset, explorers, onGoBack, onResult 
         />
       </div>
 
-      {isValidatorsLoading && loadingContent}
+      {isValidatorsLoading && (
+        <div className="h-[288px] flex items-center justify-center">
+          <Loader color="primary" />
+        </div>
+      )}
 
-      {!isValidatorsLoading && (
+      {!isValidatorsLoading && validatorList.length === 0 && (
+        <div className="flex flex-col items-center justify-center gap-y-4">
+          <Icon as="img" name="emptyList" alt={t('staking.validators.noValidatorsLabel')} size={178} />
+          <BodyText className="w-52 text-center text-text-tertiary">
+            {t('staking.validators.noValidatorsLabel')}
+          </BodyText>
+        </div>
+      )}
+
+      {!isValidatorsLoading && validatorList.length > 0 && (
         <div className="flex flex-col gap-y-2 mt-4">
           <div className="grid grid-cols-[400px,120px,1fr] items-center gap-x-6 px-5">
             <FootnoteText className="text-text-secondary">{t('staking.validators.validatorsTableHeader')}</FootnoteText>

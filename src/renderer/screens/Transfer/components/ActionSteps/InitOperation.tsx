@@ -1,17 +1,17 @@
 import { ApiPromise } from '@polkadot/api';
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
 
 import { useI18n } from '@renderer/context/I18nContext';
 import { DropdownOption, DropdownResult } from '@renderer/components/ui/Dropdowns/common/types';
-import { ChainId } from '@renderer/domain/shared-kernel';
+import { ChainId, SigningType } from '@renderer/domain/shared-kernel';
 import { useAccount } from '@renderer/services/account/accountService';
 import { Explorer } from '@renderer/domain/chain';
 import { Asset } from '@renderer/domain/asset';
 import { Transaction } from '@renderer/domain/transaction';
 import { TransferForm } from '../TransferForm';
-import { Account, MultisigAccount, isMultisig } from '@renderer/domain/account';
+import { Account, isMultisig, MultisigAccount } from '@renderer/domain/account';
 import { getAccountOption, getSignatoryOption } from '../../common/utils';
-import { Select } from '@renderer/components/ui-redesign';
+import { InputHint, Select } from '@renderer/components/ui-redesign';
 import { useBalance } from '@renderer/services/balance/balanceService';
 
 type Props = {
@@ -69,9 +69,8 @@ const InitOperation = ({
       const balance = balances.find((b) => b.accountId === account.accountId);
 
       const isSameChain = !account.chainId || account.chainId === chainId;
-      const isNewOption = acc.every((a) => a.id !== account.accountId);
 
-      if (isSameChain && isNewOption) {
+      if (isSameChain) {
         acc.push(getAccountOption(account, { addressPrefix, asset, amount, balance, fee, deposit }));
       }
 
@@ -91,7 +90,10 @@ const InitOperation = ({
       setSignatoryOptions([]);
     } else {
       const signatories = activeAccount.value.signatories.map((s) => s.accountId);
-      const signers = dbAccounts.filter((a) => signatories.includes(a.accountId)) as MultisigAccount[];
+
+      const signers = dbAccounts.filter(
+        (a) => a.signingType !== SigningType.WATCH_ONLY && signatories.includes(a.accountId),
+      ) as MultisigAccount[];
 
       const options = signers.reduce<any[]>((acc, signer) => {
         if (signatoryIds.includes(signer.accountId)) {
@@ -122,7 +124,7 @@ const InitOperation = ({
   };
 
   return (
-    <div className="flex flex-col gap-y-2">
+    <div className="flex flex-col gap-y-4">
       {accountsOptions.length > 1 && (
         <Select
           label={t('transfer.senderLabel')}
@@ -134,14 +136,18 @@ const InitOperation = ({
         />
       )}
 
-      {signatoryOptions.length > 1 && (
-        <Select
-          label={t('transfer.signatoryLabel')}
-          placeholder={t('receive.selectWalletPlaceholder')}
-          selectedId={activeSignatory?.id}
-          options={signatoryOptions}
-          onChange={changeSignatory}
-        />
+      {isMultisig(activeAccount?.value) && (
+        <>
+          <Select
+            label={t('transfer.signatoryLabel')}
+            placeholder={t('receive.selectWalletPlaceholder')}
+            selectedId={activeSignatory?.id}
+            disabled={!signatoryOptions.length}
+            options={signatoryOptions}
+            onChange={changeSignatory}
+          />
+          <InputHint active={!signatoryOptions.length}>{t('multisigOperations.noSignatory')}</InputHint>
+        </>
       )}
 
       {asset && (

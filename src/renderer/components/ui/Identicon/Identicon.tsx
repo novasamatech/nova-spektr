@@ -86,7 +86,7 @@ const Identicon = ({
       <button
         type="button"
         className={cnTw(
-          'relative flex justify-center items-center cursor-copy',
+          'relative flex justify-center items-center cursor-copy rounded-sm',
           background && 'bg-white rounded-full',
           buttonClassName,
         )}

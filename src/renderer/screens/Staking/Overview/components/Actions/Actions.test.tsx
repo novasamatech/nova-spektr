@@ -1,9 +1,9 @@
 import { render, screen, act } from '@testing-library/react';
 import noop from 'lodash/noop';
 
-import Actions from './Actions';
 import { Stake } from '@renderer/domain/stake';
 import { TEST_ADDRESS } from '@renderer/shared/utils/constants';
+import { Actions } from './Actions';
 
 jest.mock('@renderer/context/I18nContext', () => ({
   useI18n: jest.fn().mockReturnValue({

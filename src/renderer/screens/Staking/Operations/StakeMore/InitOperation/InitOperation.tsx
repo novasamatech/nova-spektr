@@ -7,7 +7,7 @@ import { DropdownOption, DropdownResult } from '@renderer/components/ui/Dropdown
 import { useI18n } from '@renderer/context/I18nContext';
 import { Asset } from '@renderer/domain/asset';
 import { Balance, Balance as AccountBalance } from '@renderer/domain/balance';
-import { ChainId, AccountId } from '@renderer/domain/shared-kernel';
+import { ChainId, AccountId, SigningType } from '@renderer/domain/shared-kernel';
 import { Transaction, TransactionType } from '@renderer/domain/transaction';
 import { useAccount } from '@renderer/services/account/accountService';
 import { useBalance } from '@renderer/services/balance/balanceService';
@@ -16,7 +16,7 @@ import { nonNullable } from '@renderer/shared/utils/functions';
 import { OperationForm } from '../../components';
 import { toAddress } from '@renderer/shared/utils/address';
 import { Account, isMultisig } from '@renderer/domain/account';
-import { MultiSelect, Select, FootnoteText } from '@renderer/components/ui-redesign';
+import { MultiSelect, Select, FootnoteText, InputHint } from '@renderer/components/ui-redesign';
 import { Icon } from '@renderer/components/ui';
 import {
   getStakeAccountOption,
@@ -50,6 +50,7 @@ const InitOperation = ({ api, chainId, accounts, addressPrefix, asset, onResult 
   const dbAccounts = getLiveAccounts();
 
   const [fee, setFee] = useState('');
+  const [feeLoading, setFeeLoading] = useState(true);
   const [deposit, setDeposit] = useState('');
   const [amount, setAmount] = useState('');
 
@@ -114,8 +115,10 @@ const InitOperation = ({ api, chainId, accounts, addressPrefix, asset, onResult 
   useEffect(() => {
     if (!accountIsMultisig) return;
 
-    const signerOptions = dbAccounts.reduce<any[]>((acc, signer) => {
-      if (signatoryIds.includes(signer.accountId)) {
+    const signerOptions = dbAccounts.reduce<DropdownOption<Account>[]>((acc, signer) => {
+      const isWatchOnly = signer.signingType === SigningType.WATCH_ONLY;
+      const signerExist = signatoryIds.includes(signer.accountId);
+      if (!isWatchOnly && signerExist) {
         const balance = signatoriesBalances.find((b) => b.accountId === signer.accountId);
 
         acc.push(getSignatoryOptions(signer, { addressPrefix, asset, balance }));
@@ -194,18 +197,22 @@ const InitOperation = ({ api, chainId, accounts, addressPrefix, asset, onResult 
     return activeBalances.length > 1 ? ['0', minBalance] : minBalance;
   };
 
-  const canSubmit = (Boolean(fee) && fee !== '0') || activeStakeMoreAccounts.length > 0 || Boolean(activeSignatory);
+  const canSubmit = !feeLoading && (activeStakeMoreAccounts.length > 0 || Boolean(activeSignatory));
 
   return (
     <div className="flex flex-col gap-y-4 w-[440px] px-5 py-4">
       {accountIsMultisig ? (
-        <Select
-          label={t('staking.bond.signatoryLabel')}
-          placeholder={t('staking.bond.signatoryPlaceholder')}
-          selectedId={activeSignatory?.id}
-          options={signatoryOptions}
-          onChange={setActiveSignatory}
-        />
+        <div className="flex flex-col gap-y-2">
+          <Select
+            label={t('staking.bond.signatoryLabel')}
+            placeholder={t('staking.bond.signatoryPlaceholder')}
+            disabled={!signatoryOptions.length}
+            selectedId={activeSignatory?.id}
+            options={signatoryOptions}
+            onChange={setActiveSignatory}
+          />
+          <InputHint active={!signatoryOptions.length}>{t('multisigOperations.noSignatory')}</InputHint>
+        </div>
       ) : (
         <MultiSelect
           label={t('staking.bond.accountLabel')}
@@ -246,7 +253,13 @@ const InitOperation = ({ api, chainId, accounts, addressPrefix, asset, onResult 
           <div className="flex justify-between items-center gap-x-2">
             <FootnoteText className="text-text-tertiary">{t('staking.bond.networkFeeLabel')}</FootnoteText>
             <FootnoteText className="text-text-tertiary">
-              <Fee api={api} asset={asset} transaction={transactions[0]} onFeeChange={setFee} />
+              <Fee
+                api={api}
+                asset={asset}
+                transaction={transactions[0]}
+                onFeeChange={setFee}
+                onFeeLoading={setFeeLoading}
+              />
             </FootnoteText>
           </div>
         </div>

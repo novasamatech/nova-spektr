@@ -1,7 +1,7 @@
 import { ChangeEvent, PropsWithChildren } from 'react';
 
 import cnTw from '@renderer/shared/utils/twMerge';
-import './styles.css';
+import './Checkbox.css';
 
 type Props = {
   defaultChecked?: boolean;
