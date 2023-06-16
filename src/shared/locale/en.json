@@ -84,8 +84,8 @@
     "signatoriesLabel": "Signatories",
     "signatoryTitle": "Select signatories",
     "successMessage": "Wallet added",
-    "thresholdDescription": "Set the threshold of signatories required to sign a transaction.",
-    "thresholdHint": "Threshold of signatories required to sign a transaction.",
+    "thresholdDescription": "Set the threshold of signatories required to execute a transaction.",
+    "thresholdHint": "Threshold of signatories required to execute a transaction.",
     "thresholdName": "Threshold",
     "thresholdPlaceholder": "Select threshold",
     "title": "Create Multisig Wallet",
@@ -113,6 +113,8 @@
     "input": {
       "amountLabel": "Amount",
       "availableLabel": "Available:",
+      "descriptionLabel": "Description",
+      "descriptionPlaceholder": "Choose an operation description",
       "signerLabel": "Select signer",
       "transferableLabel": "Transferable"
     },
@@ -549,12 +551,8 @@
       "aboutRewards": "About rewards",
       "accountLabel": "Account",
       "accountPlaceholder": "Select accounts",
-      "amountPlaceholder": "0",
-      "availableBalancePlaceholder": "Available",
       "backButton": "Back",
       "continueButton": "Continue",
-      "descriptionLabel": "Description",
-      "descriptionPlaceholder": "Choose an operation name",
       "goToStakingButton": "Back to Staking",
       "incorrectAddressError": "Please, enter correct address",
       "manyAccountsPlaceholder": "Multiple accounts selected",
@@ -658,7 +656,6 @@
     },
     "requiredAmountError": "Please, enter amount",
     "restake": {
-      "amountPlaceholder": "0",
       "confirmRestakeSubtitle": "Confirmation",
       "initRestakeSubtitle": "Restake",
       "title": "Return to stake",
@@ -676,7 +673,6 @@
     "submitSuccessSingle": "Operation success",
     "title": "Staking",
     "unstake": {
-      "amountPlaceholder": "0",
       "confirmUnstakeSubtitle": "Confirmation",
       "initUnstakeSubtitle": "Unstake",
       "networkFee_one": "Network fee",
@@ -738,9 +734,7 @@
   "transfer": {
     "amountPlaceholder": "0",
     "continueButton": "Continue",
-    "descriptionLabel": "Operation name",
     "descriptionLengthError": "Description can be { maxLength } symbols long",
-    "descriptionPlaceholder": "Choose an operation name",
     "editOperationButton": "Edit operation",
     "executing": "Submitting operation",
     "formTitle": "Send <strong>{ asset }</strong> on <strong>{ network }</strong>",
