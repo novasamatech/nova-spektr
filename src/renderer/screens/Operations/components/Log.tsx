@@ -86,7 +86,7 @@ const LogModal = ({ isOpen, onClose, tx, account, connection }: Props) => {
         </div>
       </div>
 
-      <div className="bg-main-app-background p-5 flex flex-col gap-y-4 min-h-[464px]">
+      <div className="bg-main-app-background p-5 flex flex-col gap-y-4 min-h-[464px] max-h-[600px] overflow-y-scroll">
         {Object.entries(groupedEvents)
           .sort(sortByDateAsc<MultisigEvent>)
           .map(([date, events]) => (

@@ -192,6 +192,7 @@ const Details = ({ tx, account, connection, isCardDetails = true }: Props) => {
                   explorers={explorers}
                   address={depositorSignatory.address}
                   name={depositorSignatory.name}
+                  addressFont={AddressStyle}
                   type="short"
                 />
               </DetailsRow>
