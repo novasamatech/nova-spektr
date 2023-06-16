@@ -7,15 +7,15 @@ import { useDebounce } from '@renderer/shared/hooks';
 type Props = {
   content: ReactNode;
   offsetPx?: number;
-  position?: string;
+  panelClass?: string;
   contentClass?: string;
 };
 
-const Popover = ({
+export const Popover = ({
   content,
   children,
   offsetPx = 10,
-  position = 'left-0 top-full',
+  panelClass = 'left-0 top-full',
   contentClass,
 }: PropsWithChildren<Props>) => {
   const id = useId();
@@ -55,7 +55,7 @@ const Popover = ({
           style={{ marginTop: offsetPx + 'px' }}
           className={cnTw(
             'absolute z-20 rounded-md bg-token-container-background border border-token-container-border shadow-card-shadow',
-            position,
+            panelClass,
           )}
           onFocus={() => setIsOpen(true)}
           onBlur={() => setIsOpen(false)}
@@ -68,5 +68,3 @@ const Popover = ({
     </Popup>
   );
 };
-
-export default Popover;
