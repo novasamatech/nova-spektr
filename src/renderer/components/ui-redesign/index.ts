@@ -37,7 +37,6 @@ import {
   HeaderTitleText,
 } from './Typography';
 import InputFile from './Inputs/InputFile/InputFile';
-import Animation from './Animation/Animation';
 
 export {
   Input,
@@ -77,5 +76,4 @@ export {
   StatusLabel,
   HeaderTitleText,
   InputFile,
-  Animation,
 };

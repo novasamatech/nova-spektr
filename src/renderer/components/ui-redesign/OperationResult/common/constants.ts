@@ -1,6 +1,6 @@
 import { IconNames } from '@renderer/components/ui/Icon/data';
 import { Variant } from './types';
-import { AnimationNames, Props } from '../../Animation/Animation';
+import { AnimationNames, Props } from '@renderer/components/ui-redesign/Animation/Animation';
 
 export const VariantIcons: Record<Variant, IconNames> = {
   success: 'checkLineRedesign',

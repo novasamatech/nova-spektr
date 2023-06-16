@@ -2,9 +2,10 @@ import { Fragment, PropsWithChildren } from 'react';
 import { Dialog, Transition } from '@headlessui/react';
 
 import { ModalBackdrop, ModalTransition } from '@renderer/components/ui-redesign/Modals/common';
-import { FootnoteText, SmallTitleText, Animation } from '@renderer/components/ui-redesign';
+import { FootnoteText, SmallTitleText } from '@renderer/components/ui-redesign';
 import { VariantAnimations, VariantAnimationProps } from './common/constants';
 import { Variant } from './common/types';
+import Animation from '@renderer/components/ui-redesign/Animation/Animation';
 
 type Props = {
   title: string;
