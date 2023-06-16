@@ -17,8 +17,9 @@ import { useTransaction } from '@renderer/services/transaction/transactionServic
 import { useMultisigTx } from '@renderer/services/multisigTx/multisigTxService';
 import { getAssetId } from '@renderer/shared/utils/assets';
 import { MultisigAccount, Account, isMultisig } from '@renderer/domain/account';
-import { Button, AmountInput, Input, InputHint, FootnoteText } from '@renderer/components/ui-redesign';
+import { Button, AmountInput, Input, InputHint, FootnoteText, Popover } from '@renderer/components/ui-redesign';
 import DetailWithLabel from '@renderer/components/common/DetailsWithLabel/DetailWithLabel';
+import { HelpText } from '@renderer/components/ui-redesign/Typography';
 
 const DESCRIPTION_MAX_LENGTH = 120;
 
@@ -271,13 +272,13 @@ export const TransferForm = ({
 
   return (
     <form className="w-full" onSubmit={handleSubmit(submitTransaction)}>
-      <div className="flex flex-col gap-y-5">
+      <div className="flex flex-col gap-y-4">
         <Controller
           name="destination"
           control={control}
           rules={{ required: true, validate: validateAddress }}
           render={({ field: { onChange, value }, fieldState: { error } }) => (
-            <div className="flex flex-col gap-y-2.5">
+            <div className="flex flex-col gap-y-2">
               <Input
                 prefixElement={
                   value && !error ? (
@@ -316,7 +317,7 @@ export const TransferForm = ({
             },
           }}
           render={({ field: { onChange, value }, fieldState: { error } }) => (
-            <div className="flex flex-col gap-y-2.5">
+            <div className="flex flex-col gap-y-2">
               <AmountInput
                 invalid={Boolean(error)}
                 value={value}
@@ -351,7 +352,7 @@ export const TransferForm = ({
             control={control}
             rules={{ maxLength: DESCRIPTION_MAX_LENGTH }}
             render={({ field: { onChange, value }, fieldState: { error } }) => (
-              <div className="flex flex-col gap-y-2.5">
+              <div className="flex flex-col gap-y-2">
                 <Input
                   className="w-full"
                   label={t('general.input.descriptionLabel')}
@@ -372,13 +373,25 @@ export const TransferForm = ({
           />
         )}
 
-        <div className="flex flex-col items-center gap-y-3">
+        <div className="flex flex-col items-center mt-2 gap-y-4">
           {isMultisig(account) && (
             <DetailWithLabel
               label={
                 <div className="flex items-center gap-x-1">
                   <Icon className="text-text-tertiary" name="lock" size={12} />
                   <FootnoteText className="text-text-tertiary">{t('transfer.networkDeposit')}</FootnoteText>
+                  <Popover
+                    offsetPx={-92}
+                    contentClass="py-1 px-2 bg-switch-background-active rounded w-[184px] border-none"
+                    position="left-1/2 -translate-x-1/2"
+                    content={
+                      <HelpText className="text-white">
+                        <Trans t={t} i18nKey="transfer.networkDepositHint" />
+                      </HelpText>
+                    }
+                  >
+                    <Icon name="info" className="text-icon-default hover:text-icon-hover cursor-pointer" size={16} />
+                  </Popover>
                 </div>
               }
               className="text-text-primary"
@@ -406,7 +419,8 @@ export const TransferForm = ({
           </DetailWithLabel>
         </div>
       </div>
-      <InputHint className="mt-2.5" active={multisigTxExist} variant="error">
+
+      <InputHint className="mt-2" active={multisigTxExist} variant="error">
         {t('transfer.multisigTransactionExist')}
       </InputHint>
 
