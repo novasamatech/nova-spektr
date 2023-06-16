@@ -93,7 +93,12 @@ const InitOperation = ({
     } else {
       const signatories = activeAccount.value.signatories.map((s) => s.accountId);
       const signers = signatories
-        .map((s) => dbAccounts.find((a) => a.signingType !== SigningType.WATCH_ONLY && s === a.accountId))
+        .map((s) =>
+          dbAccounts.find(
+            (a) =>
+              a.signingType !== SigningType.WATCH_ONLY && (!a.chainId || a.chainId === chainId) && s === a.accountId,
+          ),
+        )
         .filter(nonNullable);
 
       const options = signers.reduce<any[]>((acc, signer) => {
