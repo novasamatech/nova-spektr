@@ -170,7 +170,7 @@ const Transfer = ({ assetId, chainId, isOpen, onClose }: Props) => {
               signature={signature}
               description={description}
               api={api}
-              onClose={() => setActiveStep(Step.INIT)}
+              onClose={handleClose}
               {...commonProps}
             />
           ) : (
