@@ -5832,5 +5832,102 @@
     ],
     "icon": "https://raw.githubusercontent.com/nova-wallet/nova-spektr-utils/main/icons/v1/chains/Giant.svg",
     "addressPrefix": 42
+  },
+  {
+    "chainId": "0xdcf691b5a3fbe24adc99ddc959c0561b973e329b1aef4c4b22e7bb2ddecb4464",
+    "parentId": "0x91b171bb158e2d3848fa23a9f1c25182fb8e20313b2c1eb49219da7a70ce90c3",
+    "name": "Polkadot Bridge Hub",
+    "assets": [
+      {
+        "assetId": 0,
+        "symbol": "DOT",
+        "precision": 10,
+        "priceId": "polkadot",
+        "icon": "https://raw.githubusercontent.com/nova-wallet/nova-spektr-utils/main/icons/v1/assets/white/Polkadot_(DOT).svg",
+        "name": "Polkadot"
+      }
+    ],
+    "nodes": [
+      {
+        "url": "wss://polkadot-bridge-hub-rpc.polkadot.io",
+        "name": "Parity node"
+      },
+      {
+        "url": "wss://dot-rpc.stakeworld.io/bridgehub",
+        "name": "Stakeworld node"
+      }
+    ],
+    "icon": "https://raw.githubusercontent.com/nova-wallet/nova-spektr-utils/main/icons/v1/chains/Polkadot_Bridge_Hub.svg",
+    "addressPrefix": 0
+  },
+  {
+    "chainId": "0x00dcb981df86429de8bbacf9803401f09485366c44efbf53af9ecfab03adc7e5",
+    "parentId": "0xb0a8d493285c2df73290dfb7e61f870f17b41801197a149ca93654499ea3dafe",
+    "name": "Kusama Bridge Hub",
+    "assets": [
+      {
+        "assetId": 0,
+        "symbol": "KSM",
+        "precision": 12,
+        "priceId": "kusama",
+        "icon": "https://raw.githubusercontent.com/nova-wallet/nova-spektr-utils/main/icons/v1/assets/white/Kusama_(KSM).svg",
+        "name": "Kusama"
+      }
+    ],
+    "nodes": [
+      {
+        "url": "wss://kusama-bridge-hub-rpc.polkadot.io",
+        "name": "Parity node"
+      },
+      {
+        "url": "wss://ksm-rpc.stakeworld.io/bridgehub",
+        "name": "Stakeworld node"
+      }
+    ],
+    "icon": "https://raw.githubusercontent.com/nova-wallet/nova-spektr-utils/main/icons/v1/chains/Kusama_Bridge_Hub.svg",
+    "addressPrefix": 2
+  },
+  {
+    "chainId": "0x46ee89aa2eedd13e988962630ec9fb7565964cf5023bb351f2b6b25c1b68b0b2",
+    "parentId": "0x91b171bb158e2d3848fa23a9f1c25182fb8e20313b2c1eb49219da7a70ce90c3",
+    "name": "Polkadot Collectives",
+    "assets": [
+      {
+        "assetId": 0,
+        "symbol": "DOT",
+        "precision": 10,
+        "priceId": "polkadot",
+        "icon": "https://raw.githubusercontent.com/nova-wallet/nova-spektr-utils/main/icons/v1/assets/white/Polkadot_(DOT).svg",
+        "name": "Polkadot"
+      }
+    ],
+    "nodes": [
+      {
+        "url": "wss://polkadot-collectives-rpc.polkadot.io",
+        "name": "Parity node"
+      },
+      {
+        "url": "wss://collectives.api.onfinality.io/public-ws",
+        "name": "Onfinality node"
+      },
+      {
+        "url": "wss://sys.dotters.network/collectives-polkadot",
+        "name": "via IBP-GeoDNS2"
+      },
+      {
+        "url": "wss://sys.ibp.network/collectives-polkadot",
+        "name": "via IBP-GeoDNS1"
+      },
+      {
+        "url": "wss://collectives.public.curie.radiumblock.co/ws",
+        "name": "Radium node"
+      },
+      {
+        "url": "wss://dot-rpc.stakeworld.io/collectives",
+        "name": "Stakeworld node"
+      }
+    ],
+    "icon": "https://raw.githubusercontent.com/nova-wallet/nova-spektr-utils/main/icons/v1/chains/Polkadot_Collectives.svg",
+    "addressPrefix": 0
   }
 ]
