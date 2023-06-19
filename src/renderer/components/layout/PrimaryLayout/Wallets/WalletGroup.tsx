@@ -58,7 +58,9 @@ const WalletGroup = ({ type, wallets, onWalletClick }: Props) => {
                 <button className="w-full py-1.5 px-4 flex flex-col" onClick={() => !isActive && onWalletClick(wallet)}>
                   {type === WalletType.MULTISHARD_PARITY_SIGNER ? (
                     <>
-                      <BodyText className="text-text-secondary">{(wallet as MultishardWallet).name}</BodyText>
+                      <BodyText className="text-text-secondary max-w-[260px] truncate">
+                        {(wallet as MultishardWallet).name}
+                      </BodyText>
                       <HelpText className="text-text-tertiary">
                         {(wallet as MultishardWallet).amount}&nbsp;{t('wallets.shards')}
                       </HelpText>
@@ -66,7 +68,8 @@ const WalletGroup = ({ type, wallets, onWalletClick }: Props) => {
                   ) : (
                     <AccountAddress
                       size={20}
-                      addressFont="text-body text-text-primary font-medium"
+                      className="max-w-[260px]"
+                      addressFont="text-body text-text-primary font-medium truncate"
                       name={(wallet as Account).name}
                       accountId={(wallet as Account).accountId}
                     />

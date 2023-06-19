@@ -25,7 +25,7 @@ const ActiveAccountCard = ({ activeAccounts, chains, wallets }: Props) => {
   const multishardWallet = isMultishard ? wallets.find((w) => w.id === activeAccounts[0].walletId) : null;
 
   const account = isMultishard ? null : activeAccounts[0];
-  const addressPrefix = account?.chainId ? chains[account.chainId].addressPrefix : SS58_DEFAULT_PREFIX;
+  const addressPrefix = account?.chainId ? chains[account.chainId]?.addressPrefix : SS58_DEFAULT_PREFIX;
 
   return (
     <div className="flex items-center px-3 py-2 gap-x-2 flex-1">
@@ -44,9 +44,9 @@ const ActiveAccountCard = ({ activeAccounts, chains, wallets }: Props) => {
 
       <div className="flex flex-col gap-y-1 overflow-hidden">
         <BodyText className="truncate">{(account || multishardWallet)?.name}</BodyText>
-        <div className="flex items-center gap-x-1.5">
+        <div className="flex items-center gap-x-1">
           <Icon name={GroupIcons[walletType]} className="text-chip-icon" size={14} />
-          <CaptionText className="text-chip-text">{t(GroupLabels[walletType])}</CaptionText>
+          <CaptionText className="text-chip-text uppercase">{t(GroupLabels[walletType])}</CaptionText>
         </div>
       </div>
 

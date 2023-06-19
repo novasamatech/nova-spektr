@@ -5,11 +5,13 @@ import fontSizes from '../../../../tw-config-consts/font-sizes';
 
 type CnArgs = Parameters<typeof cn>;
 
+const fonts = Object.keys(fontSizes as { [key: string]: object });
+
 const twMerge = extendTailwindMerge({
   classGroups: {
     'font-size': [
       {
-        text: Object.keys(fontSizes),
+        text: fonts,
       },
     ],
   },

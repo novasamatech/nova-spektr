@@ -8,7 +8,7 @@ import { useContact } from '@renderer/services/contact/contactService';
 import ContactModal from './components/ContactModal';
 import ContactList from './components/ContactList';
 import EmptyContacts from './components/EmptyState/EmptyContacts';
-import { IconButton, Input } from '@renderer/components/ui-redesign';
+import { Button, Input } from '@renderer/components/ui-redesign';
 
 const AddressBook = () => {
   const { t } = useI18n();
@@ -31,7 +31,9 @@ const AddressBook = () => {
             onChange={setQuery}
           />
 
-          <IconButton name="addAddress" ariaLabel={t('addressBook.addContactButton')} onClick={toggleAddContactModal} />
+          <Button size="sm" onClick={toggleAddContactModal}>
+            {t('addressBook.addContactButton')}
+          </Button>
         </div>
       </Header>
 
