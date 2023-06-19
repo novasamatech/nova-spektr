@@ -93,19 +93,21 @@ export const NetworkProvider = ({ children }: PropsWithChildren) => {
   const previousAccounts = usePrevious(activeAccounts);
 
   const getAccountIds = (chainId: ChainId): AccountId[] => {
-    return activeAccounts.reduce<AccountId[]>((acc, account) => {
-      if (account.accountId && (!account.rootId || account.chainId === chainId)) {
-        acc.push(account.accountId);
-      }
+    return Array.from(
+      activeAccounts.reduce<Set<AccountId>>((acc, account) => {
+        if (account.accountId && (!account.rootId || account.chainId === chainId)) {
+          acc.add(account.accountId);
+        }
 
-      if (isMultisig(account)) {
-        account.signatories.forEach((signatory) => {
-          acc.push(signatory.accountId);
-        });
-      }
+        if (isMultisig(account)) {
+          account.signatories.forEach((signatory) => {
+            acc.add(signatory.accountId);
+          });
+        }
 
-      return acc;
-    }, []);
+        return acc;
+      }, new Set()),
+    );
   };
 
   useEffect(() => {

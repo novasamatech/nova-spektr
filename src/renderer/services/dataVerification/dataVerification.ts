@@ -89,19 +89,25 @@ const validateWithBlockNumber = async (
   key: string,
   value: Uint8Array,
 ): Promise<boolean> => {
-  const parachainId = await getParachainId(parachainApi);
-  const header = await getHeader(relaychainApi, parachainId);
+  try {
+    const parachainId = await getParachainId(parachainApi);
+    const header = await getHeader(relaychainApi, parachainId);
 
-  const decodedHeader: Header = parachainApi.registry.createType('Header', header.toString()) as unknown as Header;
+    const decodedHeader: Header = parachainApi.registry.createType('Header', header.toString()) as unknown as Header;
 
-  if (decodedHeader.number.toBn().lte(blockNumber)) return false;
+    if (decodedHeader.number.toBn().lte(blockNumber)) return false;
 
-  const parachainStateRoot = decodedHeader.stateRoot;
-  const parachainBlockHash = await getBlockHash(parachainApi, decodedHeader);
+    const parachainStateRoot = decodedHeader.stateRoot;
+    const parachainBlockHash = await getBlockHash(parachainApi, decodedHeader);
 
-  const proof = await getProof(parachainApi, key, parachainBlockHash);
+    const proof = await getProof(parachainApi, key, parachainBlockHash);
 
-  return verify(proof, parachainStateRoot, key, value);
+    return verify(proof, parachainStateRoot, key, value);
+  } catch (e) {
+    console.warn('Data verification failed', e);
+
+    return false;
+  }
 };
 
 export const validate = async (
