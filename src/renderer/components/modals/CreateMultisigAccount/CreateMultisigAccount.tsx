@@ -1,4 +1,4 @@
-import { ComponentProps, useState } from 'react';
+import { ComponentProps, useEffect, useState } from 'react';
 import { SubmitHandler } from 'react-hook-form';
 
 import { BaseModal, HeaderTitleText, StatusLabel } from '@renderer/components/ui-redesign';
@@ -27,12 +27,16 @@ const CreateMultisigAccount = ({ isOpen, onClose }: Props) => {
   const accounts = getLiveAccounts();
 
   const [isEditing, toggleIsEditing] = useToggle(true);
-  const [isResultModlaOpen, toggleResultModal] = useToggle();
+  const [isResultModalOpen, toggleResultModal] = useToggle();
   const [isLoading, toggleLoading] = useToggle();
   const [error, setError] = useState('');
   const [name, setName] = useState('');
 
   const [signatories, setSignatories] = useState<Signatory[]>([]);
+
+  useEffect(() => {
+    isOpen && setSignatories([]);
+  }, [isOpen]);
 
   const goBack = () => {
     if (!isEditing) {
@@ -102,7 +106,7 @@ const CreateMultisigAccount = ({ isOpen, onClose }: Props) => {
       <BaseModal
         closeButton
         title={modalTitle}
-        isOpen={isOpen && !isResultModlaOpen}
+        isOpen={isOpen && !isResultModalOpen}
         headerClass="bg-input-background-disabled"
         panelClass="w-[944px] h-[576px]"
         contentClass="flex h-[524px]"
@@ -117,10 +121,11 @@ const CreateMultisigAccount = ({ isOpen, onClose }: Props) => {
           onGoBack={goBack}
           onCreateAccount={onCreateAccount}
         />
+
         <AddSignatory isEditing={isEditing} onSelect={setSignatories} />
       </BaseModal>
 
-      <OperationResult {...getResultProps()} title={name} isOpen={isResultModlaOpen} onClose={toggleResultModal} />
+      <OperationResult {...getResultProps()} title={name} isOpen={isResultModalOpen} onClose={toggleResultModal} />
       <MatrixModal isOpen={isOpen && !isLoggedIn} onClose={onClose} />
     </>
   );
