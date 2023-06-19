@@ -1,5 +1,4 @@
 import FallbackScreen from './FallbackScreen/FallbackScreen';
-import SplashScreen from './SplashScreen/SplashScreen';
 import QrReader from './QrCode/QrReader/QrReader';
 import QrSignatureReader from './QrCode/QrReader/QrSignatureReader';
 import QrTextGenerator from './QrCode/QrGenerator/QrTextGenerator';
@@ -26,7 +25,6 @@ import QrGeneratorContainer from './QrCode/QrGeneratorContainer/QrGeneratorConta
 export {
   FallbackScreen,
   ActiveAddress,
-  SplashScreen,
   QrReader,
   QrSignatureReader,
   QrTextGenerator,

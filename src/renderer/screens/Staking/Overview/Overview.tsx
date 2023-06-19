@@ -122,6 +122,8 @@ export const Overview = () => {
   }, [chainId, api, chainEra]);
 
   const changeNetwork = (chain: Chain) => {
+    if (chain.chainId === chainId) return;
+
     changeClient(chain.chainId);
     setActiveChain(chain);
     setStaking({});
