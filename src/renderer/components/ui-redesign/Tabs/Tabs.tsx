@@ -28,7 +28,6 @@ const Tabs = ({ items, tabClassName, panelClassName = 'mt-4', onChange }: Props)
             )}
           >
             <TextBase
-              fontWeight="semibold"
               className="text-text-secondary ui-selected:text-text-primary flex items-center text-button-small"
               align="center"
             >

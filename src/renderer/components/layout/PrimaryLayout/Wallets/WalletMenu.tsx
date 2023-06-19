@@ -72,7 +72,7 @@ const WalletMenu = ({ children, chains, wallets }: PropsWithChildren<Props>) => 
   return (
     <>
       <Popover className="relative">
-        <Popover.Button className="border border-container-border bg-left-navigation-menu-background rounded-md w-full shadow-card-shadow h-[54px]">
+        <Popover.Button className="border border-container-border bg-left-navigation-menu-background rounded-md w-full shadow-card-shadow">
           {children}
         </Popover.Button>
         <Transition

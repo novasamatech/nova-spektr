@@ -2,6 +2,6 @@ import cnTw from '@renderer/shared/utils/twMerge';
 import { TypographyProps } from '@renderer/components/ui-redesign/Typography/common/types';
 import TextBase from '@renderer/components/ui-redesign/Typography/common/TextBase';
 
-export const HeaderTitleText = ({ className, as = 'h3', fontWeight = 'extrabold', ...props }: TypographyProps) => (
-  <TextBase className={cnTw('text-header-title font-manrope', className)} fontWeight={fontWeight} {...props} />
+export const HeaderTitleText = ({ className, as = 'h3', ...props }: TypographyProps) => (
+  <TextBase className={cnTw('text-header-title font-manrope', className)} {...props} />
 );

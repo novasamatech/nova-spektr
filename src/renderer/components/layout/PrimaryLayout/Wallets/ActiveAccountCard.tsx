@@ -25,7 +25,7 @@ const ActiveAccountCard = ({ activeAccounts, chains, wallets }: Props) => {
   const multishardWallet = isMultishard ? wallets.find((w) => w.id === activeAccounts[0].walletId) : null;
 
   const account = isMultishard ? null : activeAccounts[0];
-  const addressPrefix = account?.chainId ? chains[account.chainId].addressPrefix : SS58_DEFAULT_PREFIX;
+  const addressPrefix = account?.chainId ? chains[account.chainId]?.addressPrefix : SS58_DEFAULT_PREFIX;
 
   return (
     <div className="flex items-center px-3 py-2 gap-x-2 flex-1">

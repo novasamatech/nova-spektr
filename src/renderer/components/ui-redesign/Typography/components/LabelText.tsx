@@ -7,5 +7,5 @@ import cnTw from '@renderer/shared/utils/twMerge';
 interface LabelProps extends DetailedHTMLProps<LabelHTMLAttributes<HTMLLabelElement>, HTMLLabelElement> {}
 
 export const LabelText = ({ className = 'text-text-primary', ...props }: LabelProps) => (
-  <label className={cnTw('text-footnote font-inter', className)} {...props} />
+  <label className={cnTw('text-footnote', className)} {...props} />
 );

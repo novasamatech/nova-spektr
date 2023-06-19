@@ -106,10 +106,7 @@ const OperationFullInfo = ({ tx, account }: Props) => {
                 </Button>
               )}
               {explorerLink && (
-                <InfoLink
-                  url={explorerLink}
-                  className="flex items-center gap-x-0.5 ml-0.5 text-footnote font-medium font-inter"
-                >
+                <InfoLink url={explorerLink} className="flex items-center gap-x-0.5 ml-0.5 text-footnote">
                   <span>{t('operation.explorerLink')}</span>
                   <Icon name="right" size={16} />
                 </InfoLink>
@@ -136,10 +133,7 @@ const OperationFullInfo = ({ tx, account }: Props) => {
             size="sm"
             prefixElement={<Icon name="chatRedesign" className="text-icon-default" size={16} />}
             suffixElement={
-              <CaptionText
-                className="!text-button-text bg-primary-button-background-default rounded-full pt-[1px] pb-[2px] px-1.5"
-                fontWeight="semibold"
-              >
+              <CaptionText className="!text-button-text bg-primary-button-background-default rounded-full pt-[1px] pb-[2px] px-1.5">
                 {events.length}
               </CaptionText>
             }

@@ -72,7 +72,7 @@ const AmountInput = ({
   return (
     <Input
       name={name}
-      className="text-right text-title font-extrabold"
+      className="text-right text-title font-manrope"
       label={label}
       value={value}
       placeholder={t('transfer.amountPlaceholder')}
