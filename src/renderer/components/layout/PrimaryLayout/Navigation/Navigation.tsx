@@ -63,7 +63,7 @@ const Navigation = () => {
           {activeAccounts?.length ? (
             <ActiveAccountCard activeAccounts={activeAccounts} chains={chains} wallets={wallets} />
           ) : (
-            <Shimmering height={52} className="w-full" />
+            <Shimmering height={54} className="w-full" />
           )}
         </WalletMenu>
 
