@@ -58,7 +58,7 @@ export const useGroupedWallets = (
     return accounts.filter((account) => {
       const accountAddress = toAddress(
         account.accountId,
-        account.chainId && { prefix: chains[account.chainId].addressPrefix },
+        account.chainId && chains[account.chainId] && { prefix: chains[account.chainId].addressPrefix },
       );
 
       return includes(account.name, query) || includes(accountAddress, query);
