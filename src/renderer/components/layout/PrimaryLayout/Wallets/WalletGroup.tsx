@@ -66,7 +66,7 @@ const WalletGroup = ({ type, wallets, onWalletClick }: Props) => {
                   ) : (
                     <AccountAddress
                       size={20}
-                      addressFont="text-body text-text-primary font-medium"
+                      addressFont="text-body text-text-primary"
                       name={(wallet as Account).name}
                       accountId={(wallet as Account).accountId}
                     />

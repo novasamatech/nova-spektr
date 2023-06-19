@@ -32,7 +32,7 @@ const AccountsList = ({ accountId, chains, className }: Props) => {
             <li key={chainId} className="flex items-center mx-3 py-4">
               <Chain
                 className="w-[214px] gap-x-2"
-                fontProps={{ className: 'text-text-primary text-footnote font-medium font-inter' }}
+                fontProps={{ className: 'text-text-primary text-footnote' }}
                 chainId={chainId}
               />
 
