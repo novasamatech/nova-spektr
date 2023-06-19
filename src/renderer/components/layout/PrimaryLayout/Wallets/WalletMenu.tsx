@@ -100,7 +100,7 @@ const WalletMenu = ({ children, chains, wallets }: PropsWithChildren<Props>) => 
                   <SearchInput value={query} placeholder={t('wallets.searchPlaceholder')} onChange={setQuery} />
                 </div>
 
-                <ul className="flex flex-col divide-y divide-divider overflow-y-auto max-w-[530px]">
+                <ul className="flex flex-col divide-y divide-divider overflow-y-auto max-h-[530px]">
                   {groupedWallets &&
                     Object.entries(groupedWallets).map(([type, wallets]) => (
                       <WalletGroup
