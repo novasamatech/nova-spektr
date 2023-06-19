@@ -4,7 +4,8 @@ import { Alert, Button, Input, InputHint, Select, SmallTitleText } from '@render
 import { useI18n } from '@renderer/context/I18nContext';
 import { DropdownOption, DropdownResult } from '@renderer/components/ui/Dropdowns/common/types';
 import { Signatory } from '@renderer/domain/signatory';
-import { Account, getMultisigAccountId, MultisigAccount } from '@renderer/domain/account';
+import { Account, getMultisigAccountId, isMultisig, MultisigAccount } from '@renderer/domain/account';
+import { SigningType } from '@renderer/domain/shared-kernel';
 
 export type MultisigAccountForm = {
   name: string;
@@ -65,7 +66,9 @@ export const WalletForm = ({
       threshold.value,
     );
 
-  const hasOwnSignatory = signatories.some((s) => accounts.find((a) => a.accountId === s.accountId));
+  const hasOwnSignatory = signatories.some((s) =>
+    accounts.find((a) => a.accountId === s.accountId && a.signingType !== SigningType.WATCH_ONLY && !isMultisig(a)),
+  );
   const accountAlreadyExists = accounts.find((a) => a.accountId === multisigAccountId);
   const hasTwoSignatories = signatories.length > 1;
 
