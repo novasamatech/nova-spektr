@@ -194,6 +194,7 @@ const QrReader = ({
         if (resultMetadata.length > 1) return;
 
         const frame = createFrame(resultMetadata);
+        if (frame.data.payload.length < 128) return;
 
         const stringPayload = JSON.stringify(frame.data.payload);
         const isPacketExist = packets.current.get(stringPayload);
