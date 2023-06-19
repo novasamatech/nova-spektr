@@ -1,17 +1,18 @@
+import type { Config } from 'tailwindcss';
+
+import fontSizes from './tw-config-consts/font-sizes';
+import colors from './tw-config-consts/colors';
+
 const defaultTheme = require('tailwindcss/defaultTheme');
 
-const colors = require('./tw-config-consts/colors');
-const fontSizes = require('./tw-config-consts/font-sizes');
-
-module.exports = {
+export default {
   mode: 'jit',
   content: ['./src/renderer/index.html', './src/renderer/**/*.{js,ts,tsx}'],
   darkMode: 'class',
   theme: {
     extend: {
       fontFamily: {
-        sans: ['Public Sans', ...defaultTheme.fontFamily.sans],
-        inter: ['Inter', ...defaultTheme.fontFamily.sans],
+        sans: ['Inter', ...defaultTheme.fontFamily.sans],
         manrope: ['Manrope', ...defaultTheme.fontFamily.sans],
       },
       boxShadow: {
@@ -96,4 +97,4 @@ module.exports = {
     },
   },
   plugins: [require('@headlessui/tailwindcss')],
-};
+} satisfies Config;

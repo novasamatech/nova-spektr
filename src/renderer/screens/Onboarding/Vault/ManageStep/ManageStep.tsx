@@ -325,7 +325,7 @@ const ManageStep = ({ seedInfo, onBack, onComplete }: Props) => {
                       <div className="flex items-center ml-4">
                         <div className="bg-divider w-[2px] h-[34px] mr-4"></div>
                         <Chain
-                          fontProps={{ className: 'text-footnote font-inter font-medium text-text-primary' }}
+                          fontProps={{ className: 'text-footnote text-text-primary' }}
                           chainId={chainId as ChainId}
                         />
                       </div>
