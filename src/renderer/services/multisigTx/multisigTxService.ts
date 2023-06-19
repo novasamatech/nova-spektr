@@ -119,7 +119,7 @@ export const useMultisigTx = (): IMultisigTxService => {
       }
     };
 
-    return useLiveQuery(query, [accountIds.length], []);
+    return useLiveQuery(query, [accountIds.length, accountIds.length > 0 && accountIds[0]], []);
   };
 
   const updateCallData = async (api: ApiPromise, tx: MultisigTransaction, callData: CallData) => {
