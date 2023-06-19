@@ -150,7 +150,7 @@ const AddSignatory = ({ onSelect, isEditing }: Props) => {
                   name={name}
                   accountId={accountId}
                   walletName={walletName}
-                  explorers={chainId ? chains[chainId].explorers : []}
+                  explorers={chainId ? chains[chainId]?.explorers : []}
                 />
               </Checkbox>
             )}
@@ -255,7 +255,7 @@ const AddSignatory = ({ onSelect, isEditing }: Props) => {
                       name={name}
                       accountId={accountId}
                       walletName={walletName}
-                      explorers={chainId ? chains[chainId].explorers : []}
+                      explorers={chainId ? chains[chainId]?.explorers : []}
                     />
                   </li>
                 ))}
