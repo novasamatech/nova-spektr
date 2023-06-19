@@ -273,6 +273,7 @@ const QrReader = ({
     (async () => {
       try {
         controlsRef.current?.stop();
+        bgControlsRef.current?.stop();
         await startScanning();
       } catch (error) {
         onError?.(QR_READER_ERRORS[QrError.BAD_NEW_CAMERA]);

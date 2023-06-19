@@ -84,7 +84,7 @@ const CreateMultisigAccount = ({ isOpen, onClose }: Props) => {
   };
 
   const modalTitle = (
-    <div className="flex justify-between px-5 py-3 w-[472px] bg-white">
+    <div className="flex justify-between items-center px-5 py-3 w-[472px] bg-white rounded-tl-lg">
       <HeaderTitleText className="py-[3px]">{t('createMultisigAccount.title')}</HeaderTitleText>
       <StatusLabel title={matrix.userId || ''} variant="success" />
     </div>
