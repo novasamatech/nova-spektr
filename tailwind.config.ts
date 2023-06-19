@@ -1,4 +1,5 @@
 import type { Config } from 'tailwindcss';
+
 import fontSizes from './tw-config-consts/font-sizes';
 import colors from './tw-config-consts/colors';
 
