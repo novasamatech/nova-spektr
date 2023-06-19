@@ -119,7 +119,7 @@ const LogModal = ({ isOpen, onClose, tx, account, connection }: Props) => {
                       {getExtrinsicLink(event.extrinsicHash, connection?.explorers) && (
                         <InfoLink
                           url={getExtrinsicLink(event.extrinsicHash, connection?.explorers)!}
-                          className="flex items-center gap-x-0.5 ml-4 text-footnote font-medium font-inter"
+                          className="flex items-center gap-x-0.5 ml-4 text-footnote"
                         >
                           <span>{t('operation.explorerLink')}</span>
                           <Icon name="right" size={16} />

@@ -14,7 +14,7 @@ type Props = {
   withName?: boolean;
 };
 
-const DefaultFontStyle = 'text-text-tertiary text-footnote font-inter';
+const DefaultFontStyle = 'text-text-tertiary text-footnote';
 
 const Chain = ({ chainId, fontProps = { className: DefaultFontStyle }, className, withName = true }: Props) => {
   const { getChainById } = useChains();

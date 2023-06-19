@@ -76,7 +76,7 @@ const AddressWithName = ({
   );
 
   return (
-    <div className={cnTw('flex font-inter items-center gap-x-2', className)}>
+    <div className={cnTw('flex items-center gap-x-2', className)}>
       {showIcon && (
         <Identicon address={currentAddress} signType={signType} size={size} background={false} canCopy={canCopy} />
       )}

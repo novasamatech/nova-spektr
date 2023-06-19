@@ -21,7 +21,6 @@ const InfoLink = ({ url, children, iconName, size = 'sm', className, tabIndex }:
     tabIndex={tabIndex}
     className={cnTw(
       'text-primary-button-background-default hover:text-primary-button-background-hover active:text-primary-button-background-active disabled:text-primary-button-background-inactive',
-      'font-semibold font-inter tracking-tight',
       size === 'sm' ? 'text-button-small' : 'text-button-large',
       iconName && 'flex items-center gap-x-0.5',
       className,

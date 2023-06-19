@@ -30,7 +30,7 @@ const BalanceNew = ({
   });
 
   const balance = (
-    <span className={cnTw('font-inter text-body text-text-primary', className)}>
+    <span className={cnTw('text-body text-text-primary', className)}>
       {balanceValue} {suffix} {symbol}
     </span>
   );

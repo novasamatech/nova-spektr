@@ -424,11 +424,7 @@ export const TransferForm = ({
         {t('transfer.multisigTransactionExist')}
       </InputHint>
 
-      <Button
-        className="w-fit flex-0 mt-7 ml-auto font-inter tracking-tight"
-        type="submit"
-        disabled={feeLoading || !isValid}
-      >
+      <Button className="w-fit flex-0 mt-7 ml-auto" type="submit" disabled={feeLoading || !isValid}>
         {t('transfer.continueButton')}
       </Button>
     </form>

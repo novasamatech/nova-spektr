@@ -165,7 +165,7 @@ const Details = ({ tx, account, connection, isCardDetails = true }: Props) => {
                   className={cn('flex gap-x-1 items-center', InteractableStyle)}
                   onClick={() => copyToClipboard(callHash)}
                 >
-                  <Truncate className="max-w-[120px] font-inter text-footnote" text={callHash} />
+                  <Truncate className="max-w-[120px] text-footnote" text={callHash} />
                   <Icon name="copy" size={16} className="text-icon-default" />
                 </button>
               </DetailsRow>
@@ -178,7 +178,7 @@ const Details = ({ tx, account, connection, isCardDetails = true }: Props) => {
                   className={cn('flex gap-x-1 items-center', InteractableStyle)}
                   onClick={() => copyToClipboard(callData)}
                 >
-                  <Truncate className="max-w-[120px] font-inter text-footnote" text={callData} />
+                  <Truncate className="max-w-[120px] text-footnote" text={callData} />
                   <Icon name="copy" size={16} className="text-icon-default" />
                 </button>
               </DetailsRow>

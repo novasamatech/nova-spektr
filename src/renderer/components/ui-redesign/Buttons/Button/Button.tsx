@@ -43,7 +43,7 @@ const Button = forwardRef<HTMLButtonElement, PropsWithChildren<Props>>(
       form={form}
       disabled={disabled}
       className={cnTw(
-        'flex items-center justify-center gap-x-2 font-medium select-none outline-offset-1',
+        'flex items-center justify-center gap-x-2 select-none outline-offset-1',
         (prefixElement || suffixElement) && 'justify-between',
         SizeClass[size],
         variant !== 'text' && Padding[size],
