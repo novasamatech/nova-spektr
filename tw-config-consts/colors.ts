@@ -1,4 +1,4 @@
-module.exports = {
+export default {
   /* TEXT */
   'text-primary': 'var(--text-primary)',
   'text-secondary': 'var(--text-secondary)',

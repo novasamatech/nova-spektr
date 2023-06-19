@@ -159,7 +159,7 @@ const SelectShardModal = ({ isOpen, onClose, activeAccounts, accounts }: Props) 
               <AddressWithExplorers
                 explorers={root.chainId && chains[root.chainId]?.explorers}
                 accountId={root.accountId}
-                addressPrefix={root.chainId && chains[root.chainId].addressPrefix}
+                addressPrefix={root.chainId && chains[root.chainId]?.addressPrefix}
                 name={root.name}
               />
             </Checkbox>
@@ -192,7 +192,7 @@ const SelectShardModal = ({ isOpen, onClose, activeAccounts, accounts }: Props) 
                           <AddressWithExplorers
                             explorers={account.chainId && chains[account.chainId]?.explorers}
                             accountId={account.accountId}
-                            addressPrefix={account.chainId && chains[account.chainId].addressPrefix}
+                            addressPrefix={account.chainId && chains[account.chainId]?.addressPrefix}
                             name={account.name}
                           />
                         </Checkbox>

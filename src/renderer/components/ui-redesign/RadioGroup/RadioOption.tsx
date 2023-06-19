@@ -30,7 +30,7 @@ const Option = ({ option, children }: PropsWithChildren<Props>) => {
               checked ? 'bg-hover' : 'bg-tab-background',
             )}
           >
-            <SmallTitleText as="p" fontWeight="semibold" className={cnTw(checked && 'text-action-text')}>
+            <SmallTitleText as="p" className={cnTw(checked && 'text-action-text')}>
               {title}
             </SmallTitleText>
             <span

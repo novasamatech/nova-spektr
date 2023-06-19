@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { ErrorBoundary } from 'react-error-boundary';
 import { useNavigate, useRoutes } from 'react-router-dom';
 
-import { FallbackScreen, SplashScreen } from '@renderer/components/common';
+import { FallbackScreen } from '@renderer/components/common';
 import ConfirmDialogProvider from '@renderer/context/ConfirmContext';
 import GraphqlContext from '@renderer/context/GraphqlContext';
 import I18Provider from '@renderer/context/I18nContext';
@@ -35,7 +35,13 @@ const App = () => {
     });
   }, []);
 
-  const content = showSplashScreen || isAccountsLoading ? <SplashScreen /> : appRoutes;
+  const getContent = () => {
+    if (showSplashScreen || isAccountsLoading) return null;
+
+    document.querySelector('.splash_placeholder')?.remove();
+
+    return appRoutes;
+  };
 
   return (
     <I18Provider>
@@ -44,7 +50,7 @@ const App = () => {
           <MatrixProvider>
             <MultisigChainProvider>
               <ConfirmDialogProvider>
-                <GraphqlContext>{content}</GraphqlContext>
+                <GraphqlContext>{getContent()}</GraphqlContext>
               </ConfirmDialogProvider>
             </MultisigChainProvider>
           </MatrixProvider>

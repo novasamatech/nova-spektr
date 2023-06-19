@@ -17,7 +17,6 @@ import { FootnoteText, SearchInput, SmallTitleText, Checkbox, Button } from '@re
 import Tabs, { TabItem } from '@renderer/components/ui-redesign/Tabs/Tabs';
 import { useChains } from '@renderer/services/network/chainsService';
 import { ChainsRecord } from '@renderer/components/layout/PrimaryLayout/Wallets/common/types';
-import AddressWithExplorers from '@renderer/components/common/AddressWithExplorers/AddressWithExplorers';
 import { useToggle } from '@renderer/shared/hooks';
 import ContactModal from '@renderer/screens/AddressBook/components/ContactModal';
 import { WalletsTabItem } from './WalletsTabItem';
@@ -131,33 +130,41 @@ const AddSignatory = ({ onSelect, isEditing }: Props) => {
     });
   };
 
+  const hasWallets = Boolean(walletList.length);
+
   const walletsTab = (
-    <ul className="gap-y-2">
-      {walletList.map(({ index, accountId, name, walletName, chainId }) => (
-        <li key={index + 'wallets'} className="py-1.5">
-          <Controller
-            name="wallets"
-            control={control}
-            rules={{ required: true }}
-            render={({ field: { onChange, value } }) => (
-              <Checkbox
-                value={index}
-                checked={selectedWallets.includes(index)}
-                disabled={isAccountSelected(index, selectedWallets, walletList)}
-                onChange={(event) => onSelectAccount(event, value, onChange, 'wallets')}
-              >
-                <WalletsTabItem
-                  name={name}
-                  accountId={accountId}
-                  walletName={walletName}
-                  explorers={chainId ? chains[chainId].explorers : []}
-                />
-              </Checkbox>
-            )}
-          />
-        </li>
-      ))}
-    </ul>
+    <>
+      {hasWallets ? (
+        <ul className="gap-y-2">
+          {walletList.map(({ index, accountId, name, walletName, chainId }) => (
+            <li key={index + 'wallets'} className="py-1.5">
+              <Controller
+                name="wallets"
+                control={control}
+                rules={{ required: true }}
+                render={({ field: { onChange, value } }) => (
+                  <Checkbox
+                    value={index}
+                    checked={selectedWallets.includes(index)}
+                    disabled={isAccountSelected(index, selectedWallets, walletList)}
+                    onChange={(event) => onSelectAccount(event, value, onChange, 'wallets')}
+                  >
+                    <WalletsTabItem
+                      name={name}
+                      accountId={accountId}
+                      walletName={walletName}
+                      explorers={chainId ? chains[chainId]?.explorers : []}
+                    />
+                  </Checkbox>
+                )}
+              />
+            </li>
+          ))}
+        </ul>
+      ) : (
+        <EmptyContacts description={t('createMultisigAccount.noWalletsLabel')} />
+      )}
+    </>
   );
 
   const hasContacts = Boolean(contactList.length);
@@ -177,10 +184,11 @@ const AddSignatory = ({ onSelect, isEditing }: Props) => {
           </Button>
         )}
       </div>
+
       {hasContacts ? (
-        <ul className="gap-y-2">
+        <ul className="flex flex-col gap-y-2">
           {searchedContactList.map(({ index, accountId, name }) => (
-            <li key={index + 'contacts'} className="py-0.5">
+            <li key={index + 'contacts'} className="py-1.5">
               <Controller
                 name="contacts"
                 control={control}
@@ -192,13 +200,7 @@ const AddSignatory = ({ onSelect, isEditing }: Props) => {
                     disabled={isAccountSelected(index, selectedContacts, contactList)}
                     onChange={(event) => onSelectAccount(event, value, onChange, 'contacts')}
                   >
-                    <AddressWithExplorers
-                      accountId={accountId}
-                      name={name}
-                      size={20}
-                      showIcon
-                      addressFont="text-footnote"
-                    />
+                    <WalletsTabItem name={name} accountId={accountId} />
                   </Checkbox>
                 )}
               />
@@ -217,7 +219,9 @@ const AddSignatory = ({ onSelect, isEditing }: Props) => {
       title: (
         <>
           {t('createMultisigAccount.walletsTab')}
-          <FootnoteText className="text-text-tertiary ml-1 mt-0.5">{selectedWallets.length}</FootnoteText>
+          {Boolean(selectedWallets.length) && (
+            <FootnoteText className="text-text-tertiary ml-1">{selectedWallets.length}</FootnoteText>
+          )}
         </>
       ),
       panel: walletsTab,
@@ -227,7 +231,9 @@ const AddSignatory = ({ onSelect, isEditing }: Props) => {
       title: (
         <>
           {t('createMultisigAccount.contactsTab')}
-          <FootnoteText className="text-text-tertiary ml-1 mt-0.5">{selectedContacts.length}</FootnoteText>
+          {Boolean(selectedContacts.length) && (
+            <FootnoteText className="text-text-tertiary ml-1">{selectedContacts.length}</FootnoteText>
+          )}
         </>
       ),
       panel: contactsTab,
@@ -237,12 +243,14 @@ const AddSignatory = ({ onSelect, isEditing }: Props) => {
   return (
     <>
       <section className="flex flex-col px-5 py-4 flex-1 bg-input-background-disabled h-full">
-        <SmallTitleText className="py-2 mb-4">{t('createMultisigAccount.signatoryTitle')}</SmallTitleText>
+        <SmallTitleText className="py-2 mb-4">
+          {t(isEditing ? 'createMultisigAccount.signatoryTitle' : 'createMultisigAccount.selectedSignatoriesTitle')}
+        </SmallTitleText>
 
         {isEditing ? (
           <Tabs items={tabItems} panelClassName="mt-4 overflow-y-scroll" tabClassName="flex-inline" />
         ) : (
-          <div className="flex flex-col gap-y-2">
+          <div className="flex flex-col gap-y-2 overflow-y-scroll">
             <FootnoteText className="text-text-tertiary">
               {t('createMultisigAccount.walletsTab')} <span className="ml-2">{selectedWallets.length}</span>
             </FootnoteText>
@@ -255,7 +263,7 @@ const AddSignatory = ({ onSelect, isEditing }: Props) => {
                       name={name}
                       accountId={accountId}
                       walletName={walletName}
-                      explorers={chainId ? chains[chainId].explorers : []}
+                      explorers={chainId ? chains[chainId]?.explorers : []}
                     />
                   </li>
                 ))}
@@ -269,19 +277,14 @@ const AddSignatory = ({ onSelect, isEditing }: Props) => {
                 .filter((w) => selectedContacts.includes(w.index))
                 .map(({ index, accountId, name }) => (
                   <li key={index} className="py-1.5">
-                    <AddressWithExplorers
-                      accountId={accountId}
-                      name={name}
-                      size={20}
-                      showIcon
-                      addressFont="text-footnote"
-                    />
+                    <WalletsTabItem name={name} accountId={accountId} />
                   </li>
                 ))}
             </ul>
           </div>
         )}
       </section>
+
       <ContactModal isOpen={isContactModalOpen} onToggle={toggleContactModalOpen} />
     </>
   );
