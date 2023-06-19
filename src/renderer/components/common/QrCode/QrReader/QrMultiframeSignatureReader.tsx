@@ -181,6 +181,7 @@ const QrMultiframeSignatureReader = ({
         await init();
 
         const frame = createFrame(result.getResultMetadata().get(FRAME_KEY) as Uint8Array[]);
+        if (frame.data.payload.length < 128) return;
 
         const stringPayload = JSON.stringify(frame.data.payload);
         const isPacketExist = packets.current.get(stringPayload);
