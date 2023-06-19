@@ -24,7 +24,7 @@
       "typeAddressButton": "Type the address",
       "typeNameButton": "Type a name"
     },
-    "addContactButton": "Add new contact",
+    "addContactButton": "Add contact",
     "contactList": {
       "emptySearchDescription": "Try to search for another name",
       "emptySearchLabel": "No contact with entered name were found",
