@@ -15,9 +15,11 @@ export const WalletsTabItem = ({ accountId, name, walletName, explorers = [] }: 
   return (
     <>
       <Identicon address={address} size={20} background={false} />
-      <div className="flex flex-col">
-        <BodyText className="truncate flex items-center">
-          {name || address} {walletName && <Icon className="ml-1 text-chip-icon" name="vault" size={14} />}
+
+      <div className="flex flex-col max-w-[348px]">
+        <BodyText as="span" className=" tracking-tight truncate">
+          {name || address}
+          {walletName && <Icon className="inline-block ml-1 mb-0.5 text-chip-icon" name="vault" size={14} />}
         </BodyText>
         {walletName && (
           <HelpText className="text-text-tertiary flex items-center">
@@ -25,8 +27,9 @@ export const WalletsTabItem = ({ accountId, name, walletName, explorers = [] }: 
           </HelpText>
         )}
       </div>
+
       <InfoPopover data={popoverItems}>
-        <Icon name="info" size={16} className="text-icon-default group-hover:text-icon-hover" />
+        <Icon name="info" size={16} className="text-icon-default hover:text-icon-hover" />
       </InfoPopover>
     </>
   );
