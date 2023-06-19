@@ -14,12 +14,12 @@ import Vault from '@renderer/screens/Onboarding/Vault/Vault';
 import { useToggle } from '@renderer/shared/hooks';
 import { ButtonDropdownOption } from '@renderer/components/ui-redesign/Dropdowns/DropdownButton/DropdownButton';
 import CreateMultisigAccount from '@renderer/components/modals/CreateMultisigAccount/CreateMultisigAccount';
+import { isMultishardWalletItem } from '@renderer/components/layout/PrimaryLayout/Wallets/common/utils';
 import {
   ChainsRecord,
   WalletGroupItem,
   MultishardWallet,
 } from '@renderer/components/layout/PrimaryLayout/Wallets/common/types';
-import { isMultishardWalletItem } from '@renderer/components/layout/PrimaryLayout/Wallets/common/utils';
 
 type Props = {
   chains: ChainsRecord;
@@ -72,7 +72,7 @@ const WalletMenu = ({ children, chains, wallets }: PropsWithChildren<Props>) => 
   return (
     <>
       <Popover className="relative">
-        <Popover.Button className="border border-container-border bg-left-navigation-menu-background rounded-md w-full shadow-card-shadow h-[52px]">
+        <Popover.Button className="border border-container-border bg-left-navigation-menu-background rounded-md w-full shadow-card-shadow h-[54px]">
           {children}
         </Popover.Button>
         <Transition
@@ -100,7 +100,7 @@ const WalletMenu = ({ children, chains, wallets }: PropsWithChildren<Props>) => 
                   <SearchInput value={query} placeholder={t('wallets.searchPlaceholder')} onChange={setQuery} />
                 </div>
 
-                <ul className="flex flex-col divide-y divide-divider">
+                <ul className="flex flex-col divide-y divide-divider overflow-y-auto max-w-[530px]">
                   {groupedWallets &&
                     Object.entries(groupedWallets).map(([type, wallets]) => (
                       <WalletGroup

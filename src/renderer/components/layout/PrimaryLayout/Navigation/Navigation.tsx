@@ -55,7 +55,7 @@ const Navigation = () => {
     <>
       <aside
         className={cn(
-          'relative flex gap-y-5 flex-col w-[240px] p-4 z-30',
+          'relative flex gap-y-6 flex-col w-[240px] p-4 z-30',
           'bg-left-navigation-menu-background border-r border-r-container-border',
         )}
       >
@@ -63,7 +63,7 @@ const Navigation = () => {
           {activeAccounts?.length ? (
             <ActiveAccountCard activeAccounts={activeAccounts} chains={chains} wallets={wallets} />
           ) : (
-            <Shimmering height={52} className="w-full" />
+            <Shimmering height={54} className="w-full" />
           )}
         </WalletMenu>
 
