@@ -44,9 +44,9 @@ const ActiveAccountCard = ({ activeAccounts, chains, wallets }: Props) => {
 
       <div className="flex flex-col gap-y-1 overflow-hidden">
         <BodyText className="truncate">{(account || multishardWallet)?.name}</BodyText>
-        <div className="flex items-center gap-x-1.5">
+        <div className="flex items-center gap-x-1">
           <Icon name={GroupIcons[walletType]} className="text-chip-icon" size={14} />
-          <CaptionText className="text-chip-text">{t(GroupLabels[walletType])}</CaptionText>
+          <CaptionText className="text-chip-text uppercase">{t(GroupLabels[walletType])}</CaptionText>
         </div>
       </div>
 
