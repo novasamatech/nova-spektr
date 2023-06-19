@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 import { SeedInfo } from '@renderer/components/common/QrCode/QrReader/common/types';
 import ScanStep from './ScanStep/ScanStep';
@@ -21,6 +21,10 @@ const Vault = ({ isOpen, onClose, onComplete }: Props) => {
   const [activeStep, setActiveStep] = useState<Step>(Step.SCAN);
   const [qrPayload, setQrPayload] = useState<SeedInfo[]>();
 
+  useEffect(() => {
+    isOpen && setActiveStep(Step.SCAN);
+  }, [isOpen]);
+
   const onReceiveQr = (payload: SeedInfo[]) => {
     setQrPayload(payload);
     setActiveStep(Step.MANAGE);
@@ -32,12 +36,10 @@ const Vault = ({ isOpen, onClose, onComplete }: Props) => {
       qrPayload[0].derivedKeys.every((d) => !d.derivationPath));
 
   const closeModal = () => {
-    setActiveStep(Step.SCAN);
     onClose();
   };
 
   const complete = () => {
-    setActiveStep(Step.SCAN);
     onComplete();
   };
 
