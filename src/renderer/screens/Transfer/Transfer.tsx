@@ -69,7 +69,6 @@ const Transfer = ({ assetId, chainId, isOpen, onClose }: Props) => {
   const onSignResult = (signature: HexString) => {
     setSignature(signature);
     setActiveStep(Step.SUBMIT);
-    onClose?.();
   };
 
   const onAccountChange = (account: Account | MultisigAccount) => {
