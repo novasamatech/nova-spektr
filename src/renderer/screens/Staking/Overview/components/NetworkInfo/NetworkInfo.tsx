@@ -97,8 +97,8 @@ export const NetworkInfo = ({
         {totalInfo.map(({ isLoading, title, amount, asset }) =>
           isLoading || !asset ? (
             <div key={title} className="flex flex-col gap-y-1" data-testid="value-loading">
-              <Shimmering width={80} height={14} />
-              <Shimmering width={122} height={22} />
+              <Shimmering width={80} height={12} />
+              <Shimmering width={122} height={20} />
             </div>
           ) : (
             <div key={title} className="text-left">

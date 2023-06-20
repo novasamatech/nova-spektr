@@ -112,7 +112,7 @@ export const NetworkSelector = ({
             leaveTo="opacity-0 translate-y-0"
           >
             <div ref={ref} className={OptionsContainerStyle}>
-              <Listbox.Options className="max-h-60 overflow-y-auto overscroll-contain">
+              <Listbox.Options className="max-h-64 overflow-y-auto overscroll-contain">
                 {availableNodes.map((data) => {
                   const { type, node, title } = data;
 
@@ -120,9 +120,12 @@ export const NetworkSelector = ({
                     <Listbox.Option
                       key={node ? `${node.name}_${node.url}` : type}
                       value={data}
-                      className={cnTw(OptionStyle, 'ui-active:bg-action-background-hover')}
+                      className={cnTw(
+                        OptionStyle,
+                        'ui-selected:bg-selected-background ui-active:bg-action-background-hover mb-1 last:mb-0',
+                      )}
                     >
-                      <div className="flex items-center">
+                      <div className="flex items-center gap-x-4">
                         <div className="flex flex-col justify-center overflow-hidden flex-1 h-8 pr-1">
                           <FootnoteText className="text-text-secondary truncate">{node?.name || title}</FootnoteText>
                           {node?.url && <HelpText className="text-text-tertiary truncate">{node.url}</HelpText>}
@@ -152,14 +155,11 @@ export const NetworkSelector = ({
                   );
                 })}
               </Listbox.Options>
-              <Listbox.Option
-                as="div"
-                value={null}
-                className="h-8.5 flex justify-center items-center ui-active:bg-action-background-hover"
-              >
+              <Listbox.Option as="div" value={null} className="h-8.5">
                 <Button
                   size="sm"
                   variant="text"
+                  className="w-full h-full justify-center"
                   suffixElement={<Icon name="add" size={16} />}
                   onClick={(event) => {
                     event.stopPropagation();

@@ -74,7 +74,9 @@ const Select = ({
                 <Listbox.Option
                   key={id}
                   value={{ id, value }}
-                  className={({ active }) => cnTw(OptionStyle, active && 'bg-action-background-hover')}
+                  className={({ active, selected }) =>
+                    cnTw(OptionStyle, active && 'bg-action-background-hover', selected && 'bg-selected-background')
+                  }
                 >
                   {['string', 'number'].includes(typeof element) ? <FootnoteText>{element}</FootnoteText> : element}
                 </Listbox.Option>

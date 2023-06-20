@@ -28,12 +28,12 @@ const ConfirmModal = ({
     {children}
     <div className="flex gap-x-3 mt-4">
       {cancelText && (
-        <Button className="flex-1" variant="text" pallet="primary" onClick={onClose}>
+        <Button className="flex-1" variant="text" size="sm" onClick={onClose}>
           {cancelText}
         </Button>
       )}
       {confirmText && (
-        <Button className="flex-1" variant="fill" pallet="primary" onClick={onConfirm}>
+        <Button className="flex-1" variant="fill" size="sm" onClick={onConfirm}>
           {confirmText}
         </Button>
       )}

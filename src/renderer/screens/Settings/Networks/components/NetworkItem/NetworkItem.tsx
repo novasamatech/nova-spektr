@@ -1,15 +1,28 @@
+import { TFunction } from 'react-i18next';
+
 import { ConnectionStatus, ConnectionType } from '@renderer/domain/connection';
 import { ExtendedChain } from '@renderer/services/network/common/types';
 import { NetworkSelector } from '../NetworkSelector/NetworkSelector';
-import { BodyText, StatusLabel } from '@renderer/components/ui-redesign';
+import { BodyText, StatusLabel, FootnoteText } from '@renderer/components/ui-redesign';
 import { HelpText } from '@renderer/components/ui-redesign/Typography';
 import { useI18n } from '@renderer/context/I18nContext';
 import { RpcNode } from '@renderer/domain/chain';
+import './NetworkItem.css';
 
 const Status = {
-  [ConnectionStatus.CONNECTING]: { title: 'settings.networks.connectingStatusLabel', variant: 'waiting' },
-  [ConnectionStatus.CONNECTED]: { title: 'settings.networks.connectedStatusLabel', variant: 'success' },
-  [ConnectionStatus.ERROR]: { title: 'settings.networks.errorStatusLabel', variant: 'error' },
+  [ConnectionStatus.CONNECTING]: {
+    variant: 'waiting',
+    title: (t: TFunction) => (
+      <div className="spektr-waiting">
+        <FootnoteText className="text-text-tertiary">{t('settings.networks.connectingStatusLabel')}</FootnoteText>
+      </div>
+    ),
+  },
+  [ConnectionStatus.CONNECTED]: {
+    variant: 'success',
+    title: (t: TFunction) => t('settings.networks.connectedStatusLabel'),
+  },
+  [ConnectionStatus.ERROR]: { variant: 'error', title: (t: TFunction) => t('settings.networks.errorStatusLabel') },
 } as const;
 
 type Props = {
@@ -43,7 +56,7 @@ export const NetworkItem = ({
       </div>
       {networkIsActive && (
         <StatusLabel
-          title={t(Status[connectionStatus].title)}
+          title={Status[connectionStatus].title(t)}
           variant={Status[connectionStatus].variant}
           className="mr-8.5"
         />
