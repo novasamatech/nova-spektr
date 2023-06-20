@@ -38,6 +38,7 @@ import {
 } from './Typography';
 import InputFile from './Inputs/InputFile/InputFile';
 import { Tooltip } from './Popovers/Tooltip/Tooltip';
+import { LabelHelpBox } from './LabelHelpbox/LabelHelpBox';
 
 export {
   Input,
@@ -78,4 +79,5 @@ export {
   HeaderTitleText,
   InputFile,
   Tooltip,
+  LabelHelpBox,
 };

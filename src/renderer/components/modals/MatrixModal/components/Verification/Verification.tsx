@@ -170,18 +170,18 @@ const Verification = () => {
       </div>
 
       {!sessionIsVerified ? (
-        <form className="flex flex-col gap-y-5" onSubmit={handleSubmit(submitVerification)}>
+        <form className="flex flex-col gap-y-2" onSubmit={handleSubmit(submitVerification)}>
           <Tabs
             items={tabItems}
-            panelClassName="-mt-2"
+            panelClassName=""
             onChange={(index: number) => changeVerifyMethod(index as VerifyMethodsType)}
           />
 
-          <InputHint variant="error" className="-mb-2" active={verifyFailed}>
+          <InputHint variant="error" active={verifyFailed}>
             {getErrorMessage(t, verifyMethod)}
           </InputHint>
 
-          <div className="flex justify-between items-center pt-3">
+          <div className="flex justify-between items-center pt-3 mt-2">
             <Icon name="matrixFull" className="!w-[56px] text-[#00000066]" size={24} />
             <Button type="submit" disabled={!isValid}>
               {t('settings.matrix.verifyButton')}
