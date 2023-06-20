@@ -11,7 +11,7 @@ import WatchOnly from '../WatchOnly/WatchOnly';
 import Paths from '@renderer/routes/paths';
 import Vault from '../Vault/Vault';
 import PrivacyPolicy from './PrivacyPolicy';
-import { WelcomeCard } from '@renderer/screens/Onboarding/Welcome/WelcomeCard';
+import { WelcomeCard } from './WelcomeCard';
 
 const LOGO_WIDTH = 232;
 const RIGHT_PADDING = 225;
