@@ -25,6 +25,7 @@ export default {
         'card-shadow': 'var(--card-shadow)',
         'knob-shadow': 'var(--knob-shadow)',
         'input-active-shadow': 'var(--input-active-shadow)',
+        'card-shadow-level2': 'var(--card-shadow-level2)',
       },
       colors: {
         primary: '#567CDC',
