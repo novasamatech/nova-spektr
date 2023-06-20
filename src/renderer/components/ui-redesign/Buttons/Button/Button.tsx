@@ -4,7 +4,7 @@ import { MouseEvent, PropsWithChildren, ReactNode, forwardRef } from 'react';
 import cnTw from '@renderer/shared/utils/twMerge';
 import { ViewClass, SizeClass, Padding } from '../common/constants';
 import { Pallet, Variant } from '../common/types';
-import { Icon } from '@renderer/components/ui';
+import { Loader } from '@renderer/components/ui';
 
 type Props = {
   className?: string;
@@ -56,9 +56,7 @@ const Button = forwardRef<HTMLButtonElement, PropsWithChildren<Props>>(
       tabIndex={tabIndex}
       onClick={(e) => !isLoading && onClick(e)}
     >
-      {isLoading && (
-        <Icon name="buttonLoader" className={cnTw('animate-spin', ViewClass[`${variant}_${pallet}`])} size={14} />
-      )}
+      {isLoading && <Loader color="white" />}
       {prefixElement && <div data-testid="prefix">{prefixElement}</div>}
       <div>{children}</div>
       {suffixElement && <div data-testid="suffix">{suffixElement}</div>}

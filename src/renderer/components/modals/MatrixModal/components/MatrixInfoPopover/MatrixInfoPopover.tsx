@@ -1,6 +1,6 @@
 import { Trans } from 'react-i18next';
 
-import { FootnoteText, InfoLink, LabelHelpbox, Popover, SmallTitleText } from '@renderer/components/ui-redesign';
+import { FootnoteText, InfoLink, LabelHelpBox, Popover, SmallTitleText } from '@renderer/components/ui-redesign';
 import { useI18n } from '@renderer/context/I18nContext';
 
 const MATRIX = 'https://matrix.org/';
@@ -41,7 +41,7 @@ const MatrixInfoPopover = () => {
       }
     >
       {/* TODO remove mt-4 when base modal props changed */}
-      <LabelHelpbox label={t('settings.matrix.tooltipLabel')} className="mt-4 mb-6" />
+      <LabelHelpBox className="mt-4 mb-6">{t('settings.matrix.tooltipLabel')}</LabelHelpBox>
     </Popover>
   );
 };
