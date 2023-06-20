@@ -17,7 +17,7 @@ describe('screens/Settings/Matrix/MatrixInfoPopover', () => {
 
     render(<MatrixInfoPopover />);
 
-    const popoverButton = screen.getByTestId('popoverButton');
+    const popoverButton = screen.getByTestId('labelHelpbox');
     await user.hover(popoverButton);
 
     const titleWhy = await screen.findByText('settings.matrix.infoWhyMatrixTitle');
