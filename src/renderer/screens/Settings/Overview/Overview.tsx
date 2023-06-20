@@ -12,8 +12,8 @@ export const Overview = () => {
       <div className="h-full flex flex-col">
         <Header title={t('settings.title')} />
 
-        <section className="w-full h-full overflow-y-auto bg-main-app-background">
-          <div className="w-[546px] flex flex-col gap-y-4 mx-auto py-4">
+        <section className="w-full h-full overflow-y-auto mt-4">
+          <div className="w-[546px] flex flex-col gap-y-4 mx-auto">
             <GeneralActions />
             <MatrixAction />
             <SocialLinks />

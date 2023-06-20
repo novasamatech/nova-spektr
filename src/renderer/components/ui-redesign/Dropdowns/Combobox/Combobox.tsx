@@ -51,7 +51,9 @@ const Combobox = ({ className, value, options, disabled, position = 'down', onCh
               <HeadlessCombobox.Option
                 key={option.id}
                 value={option}
-                className={({ active }) => cnTw(OptionStyle, active && 'bg-action-background-hover')}
+                className={({ active, selected }) =>
+                  cnTw(OptionStyle, active && 'bg-action-background-hover', selected && 'bg-selected-background')
+                }
               >
                 {typeof option.element === 'string' ? <FootnoteText>{option.element}</FootnoteText> : option.element}
               </HeadlessCombobox.Option>

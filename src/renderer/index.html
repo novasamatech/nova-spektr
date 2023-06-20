@@ -38,17 +38,14 @@
         left: 50%;
         top: 50%;
         transform: translate(-50%, -50%);
-        animation: fadeIn 0.25s;
+        animation: fadeIn 2s ease-in-out;
       }
 
       @keyframes fadeIn {
-        0% {
+        from {
           opacity: 0;
         }
-        50% {
-          opacity: 0.3;
-        }
-        100% {
+        to {
           opacity: 1;
         }
       }

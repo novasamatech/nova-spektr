@@ -66,6 +66,7 @@
     "closeButton": "Close modal window"
   },
   "createMultisigAccount": {
+    "accountsAlertText": "Add signatory wallet before creating Multisig wallet",
     "addContact": "Add new",
     "addContactsButton": "Add selected",
     "addSignatoryButton": "Add signatory",
@@ -265,13 +266,17 @@
       "yourAccountsLoadingLabel": "Your accounts will be showing up here"
     },
     "welcome": {
-      "novaWalletDescription": "Seamless and secure transaction signing with Nova Wallet using WalletConnect v2",
+      "ledgerDescription": "Ledger's the smartest way to secure, buy, exchange and grow your crypto assets.",
+      "ledgerTitle": "Ledger",
+      "novaWalletDescription": "Seamless and secure transaction signing with Nova Wallet, leading mobile application for Polkadot eco",
       "novaWalletTitle": "Nova Wallet",
       "polkadotVaultDescription": "Use dedicated hardware wallet for Polkadot, Kusama, and other Substrate-based chains",
       "polkadotVaultTitle": "Polkadot Vault",
       "privacy": "By continuing, you agree to our <terms>Terms of Services</terms> and <privacy>Privacy Policy</privacy>",
       "soonBadge": "soon",
       "title": "Add your wallet",
+      "walletConnectDescription": "Seamless and secure transaction signing with WalletConnect v2",
+      "walletConnectTitle": "WalletConnect v2",
       "watchOnlyDescription": "Track the activity of any wallet without injecting your private key to Nova Spektr",
       "watchOnlyTitle": "Watch-only"
     },
@@ -445,20 +450,20 @@
       "confirmModal": {
         "cancelButton": "Cancel",
         "confirmButton": "Confirm",
-        "disableLabel": "You are about to disable <strong>{ network }</strong> network",
-        "disableLightLabel": "Changing Light Client on <strong>{network}</strong> network will turn off <verify>Data Verification</verify>",
+        "disableLabel": "You are about to disable { network } network",
+        "disableLightLabel": "Changing Light Client on {network} network will turn off <verify>Data Verification</verify>",
         "disableLightTitle": "Disable Light Client",
         "disableTitle": "Disable network",
-        "enableLightLabel": "In order to have a <u>smooth experience</u>, we do not suggest to have more than <strong>3 Light Clients</strong> running at the same time",
+        "enableLightLabel": "In order to have a <u>smooth experience</u>, we do not suggest to have more than 3 Light Clients running at the same time",
         "enableLightTitle": "Connect to Light Client",
-        "removeLabel": "You are about to remove <strong>{ node }</strong> node",
+        "removeLabel": "You are about to remove { node } node",
         "removeTitle": "Remove custom node"
       },
       "connectedStatusLabel": "Connected",
-      "connectingStatusLabel": "Connecting...",
+      "connectingStatusLabel": "Connecting",
       "disabledNetworksLabel": "Disabled networks",
       "editNodeButton": "Edit custom node",
-      "emptyStateLabel": "No networks with entered name found",
+      "emptyStateLabel": "Nothing was found. Update the search",
       "errorStatusLabel": "Error",
       "maxLengthNameError": "Name cannot be longer than 50 characters",
       "nameLabel": "Name",

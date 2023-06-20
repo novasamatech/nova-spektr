@@ -115,7 +115,7 @@ const ReceiveModal = ({ data, isOpen, onClose }: Props) => {
                 href={account?.replace('{address}', address)}
                 rel="noopener noreferrer"
                 target="_blank"
-                className={cnTw(IconButtonStyle, 'spektr-icon-button flex py-1 px-1.5 w-6 h-6')}
+                className={cnTw(IconButtonStyle, 'spektr-icon-button flex py-1 px-1.5 rounded')}
               >
                 <Icon size={16} as="img" name={ExplorerIcons[name] || ExplorerIcons[DefaultExplorer]} />
               </a>

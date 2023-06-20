@@ -35,13 +35,13 @@ const Operations = () => {
   }, [txs.length]);
 
   return (
-    <div className="flex flex-col items-start relative bg-main-app-background min-h-full">
+    <div className="flex flex-col items-start relative min-h-full">
       <Header title={t('operations.title')} />
 
       <div className="pl-6 mx-auto h-full">
         {Boolean(txs.length) && <Filters txs={txs} onChangeFilters={setFilteredTxs} />}
 
-        <div className="overflow-y-auto flex-1 mx-auto pt-4">
+        <div className="overflow-y-auto flex-1 mx-auto mt-4">
           {Boolean(filteredTxs.length) &&
             Object.entries(groupedTxs)
               .sort(sortByDateDesc)

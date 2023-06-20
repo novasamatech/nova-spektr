@@ -1,4 +1,4 @@
-import { ComponentProps, useEffect, useState } from 'react';
+import { ComponentProps, useState } from 'react';
 import { SubmitHandler } from 'react-hook-form';
 
 import { BaseModal, HeaderTitleText, StatusLabel } from '@renderer/components/ui-redesign';
@@ -34,10 +34,6 @@ const CreateMultisigAccount = ({ isOpen, onClose }: Props) => {
 
   const [signatories, setSignatories] = useState<Signatory[]>([]);
 
-  useEffect(() => {
-    isOpen && setSignatories([]);
-  }, [isOpen]);
-
   const goBack = () => {
     if (!isEditing) {
       toggleIsEditing();
@@ -60,6 +56,7 @@ const CreateMultisigAccount = ({ isOpen, onClose }: Props) => {
       threshold: threshold.value,
       creatorAccountId: inviter.accountId,
       matrixRoomId: '',
+      isActive: true,
     });
 
     if (!mstAccount.accountId) return;
@@ -81,10 +78,7 @@ const CreateMultisigAccount = ({ isOpen, onClose }: Props) => {
       setError(error?.message || t('createMultisigAccount.errorMessage'));
     }
 
-    // reset back to initial state
-    toggleIsEditing();
-    setSignatories([]);
-    onClose();
+    handleClose();
   };
 
   const modalTitle = (
@@ -101,6 +95,12 @@ const CreateMultisigAccount = ({ isOpen, onClose }: Props) => {
     return { variant: 'success', description: t('createMultisigAccount.successMessage') };
   };
 
+  const handleClose = () => {
+    onClose();
+    toggleIsEditing();
+    setSignatories([]);
+  };
+
   return (
     <>
       <BaseModal
@@ -110,7 +110,7 @@ const CreateMultisigAccount = ({ isOpen, onClose }: Props) => {
         headerClass="bg-input-background-disabled"
         panelClass="w-[944px] h-[576px]"
         contentClass="flex h-[524px]"
-        onClose={onClose}
+        onClose={handleClose}
       >
         <WalletForm
           signatories={signatories}

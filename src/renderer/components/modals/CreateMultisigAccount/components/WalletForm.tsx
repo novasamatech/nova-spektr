@@ -125,6 +125,12 @@ export const WalletForm = ({
           </Alert>
         )}
 
+        {accounts.length === 0 && (
+          <Alert title={t('createMultisigAccount.alertTitle')} variant="warn">
+            <Alert.Item withDot={false}>{t('createMultisigAccount.accountsAlertText')}</Alert.Item>
+          </Alert>
+        )}
+
         <div className="flex justify-between items-center mt-auto">
           <Button variant="text" onClick={onGoBack}>
             {t('createMultisigAccount.backButton')}

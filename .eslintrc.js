@@ -63,6 +63,7 @@ module.exports = {
       },
     ],
     'no-unused-vars': 'off',
+    'no-irregular-whitespace': 'off',
     'newline-before-return': 'error',
     '@typescript-eslint/no-empty-interface': 0,
     'prettier/prettier': ['error', prettierOptions],
