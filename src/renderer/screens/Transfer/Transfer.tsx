@@ -6,14 +6,13 @@ import { ChainId, HexString } from '@renderer/domain/shared-kernel';
 import { useNetworkContext } from '@renderer/context/NetworkContext';
 import { useChains } from '@renderer/services/network/chainsService';
 import { Transaction } from '@renderer/domain/transaction';
-import { Account, MultisigAccount, isMultisig } from '@renderer/domain/account';
+import { Account, MultisigAccount, isMultisig, isMultishard } from '@renderer/domain/account';
 import { useCountdown } from '@renderer/shared/hooks';
 import { BaseModal, Button } from '@renderer/components/ui-redesign';
 import OperationModalTitle from '../Operations/components/OperationModalTitle';
 import { InitOperation, Confirmation, Signing, Submit } from './components/ActionSteps';
 import ScanSingleframeQr from '@renderer/components/common/Scanning/ScanSingleframeQr';
 import { Loader } from '@renderer/components/ui';
-import { isMultishardWalletItem } from '@renderer/components/layout/PrimaryLayout/Wallets/common/utils';
 
 const enum Step {
   INIT,
@@ -87,8 +86,8 @@ const Transfer = ({ assetId, chainId, isOpen, onClose }: Props) => {
 
   const commonProps = { explorers, addressPrefix };
 
-  const getSignatory = () => {
-    return isMultisig(account) || isMultishardWalletItem(account) ? signatory : account;
+  const getSignatory = (): Account | undefined => {
+    return isMultisig(account) ? signatory : isMultishard(account) ? account : undefined;
   };
 
   return (

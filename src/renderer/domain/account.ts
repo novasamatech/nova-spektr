@@ -98,6 +98,12 @@ export function isMultisig(account?: Account | MultisigAccount): account is Mult
   return hasSignatories && hasThreshold;
 }
 
+export function isMultishard(account?: Account | MultisigAccount): boolean {
+  if (!account) return false;
+
+  return Boolean(account.walletId);
+}
+
 export const getActiveWalletType = (activeAccounts?: AccountDS[]): WalletType | null => {
   if (!activeAccounts?.length) return null;
 
