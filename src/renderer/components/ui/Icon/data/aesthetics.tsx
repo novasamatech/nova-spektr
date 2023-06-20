@@ -10,6 +10,7 @@ import ChatImg, { ReactComponent as ChatSvg } from '@images/aesthetics/chat.svg'
 import ChatRedesignImg, { ReactComponent as ChatRedesignSvg } from '@images/aesthetics/chat-redesign.svg';
 import BellImg, { ReactComponent as BellSvg } from '@images/aesthetics/bell.svg';
 import QuestionImg, { ReactComponent as QuestionSvg } from '@images/aesthetics/question.svg';
+import ButtonLoaderImg, { ReactComponent as ButtonLoaderSvg } from '@images/aesthetics/button-loader.svg';
 
 const AestheticImages = {
   loader: { svg: LoaderSvg, img: LoaderImg },
@@ -24,6 +25,7 @@ const AestheticImages = {
   bell: { svg: BellSvg, img: BellImg },
   question: { svg: QuestionSvg, img: QuestionImg },
   chatRedesign: { svg: ChatRedesignSvg, img: ChatRedesignImg },
+  buttonLoader: { svg: ButtonLoaderSvg, img: ButtonLoaderImg },
 } as const;
 
 export type Aesthetic = keyof typeof AestheticImages;

@@ -37,7 +37,8 @@ const Input = forwardRef<HTMLInputElement, Props>(
         className={cnTw(
           'relative flex object-contain',
           CommonInputStyles,
-          !disabled && 'focus-within:border-active-container-border hover:shadow-card-shadow',
+          !disabled && 'hover:shadow-card-shadow',
+          !invalid && 'focus-within:border-active-container-border',
           disabled && 'bg-input-background-disabled text-text-tertiary',
           'border-filter-border',
           invalid && 'border-filter-border-negative',
