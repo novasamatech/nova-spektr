@@ -149,7 +149,6 @@ const QrMultiframeSignatureReader = ({
 
       if (previousPacket && previousPacket.length > packet.length) {
         //check if packet has correct size. If not remove it and wait when get it on next QR code rotation
-        console.log(`remove packet with key ${packet.length}`);
         packets.current.delete(key);
         collected.delete(blockNumber);
         onProgress?.({ decoded: collected.size, total });
