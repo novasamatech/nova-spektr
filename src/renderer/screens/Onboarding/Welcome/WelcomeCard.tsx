@@ -31,9 +31,9 @@ export const WelcomeCard = ({ title, description, iconName, disabled, onClick }:
         name={iconName}
       />
 
-      <div className="flex-1">
+      <div className="flex-1 flex flex-col gap-y-1">
         <div className="flex justify-between items-center w-full">
-          <BodyText className={disabled ? 'text-text-tertiary' : 'text-text-primary'}>{title}</BodyText>
+          <BodyText className={cnTw('pb-1', disabled ? 'text-text-tertiary' : 'text-text-primary')}>{title}</BodyText>
 
           {disabled ? (
             <CaptionText
@@ -43,7 +43,7 @@ export const WelcomeCard = ({ title, description, iconName, disabled, onClick }:
               {t('onboarding.welcome.soonBadge')}
             </CaptionText>
           ) : (
-            <Icon className="text-text-tertiary" name="arrowRight" size={24} />
+            <Icon className="text-icon-default" name="arrowRight" size={24} />
           )}
         </div>
         <FootnoteText className="text-text-tertiary">{description}</FootnoteText>
