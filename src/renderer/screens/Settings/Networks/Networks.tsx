@@ -207,7 +207,7 @@ export const Networks = () => {
     <>
       <BaseModal
         closeButton
-        contentClass="py-4"
+        contentClass="pt-4"
         panelClass="w-[784px]"
         isOpen={isNetworksModalOpen}
         title={t('settings.networks.title')}
@@ -215,7 +215,7 @@ export const Networks = () => {
       >
         <SearchInput wrapperClass="mx-5" placeholder="Search" value={query} onChange={setQuery} />
 
-        <div className="px-5 mt-6 h-[454px] overflow-y-auto">
+        <div className="flex flex-col gap-y-4 px-5 pb-4 pt-1 mt-5 h-[454px] overflow-y-auto">
           <NetworkList
             isDefaultOpen={false}
             query={query}

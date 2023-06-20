@@ -112,7 +112,7 @@ const Balances = () => {
 
   return (
     <>
-      <section className="h-full flex flex-col items-start relative bg-main-app-background">
+      <section className="h-full flex flex-col items-start relative">
         <Header title={t('balances.title')} titleClass="py-[3px]" headerClass="pt-4 pb-[15px]">
           <BalancesFilters
             searchQuery={query}
