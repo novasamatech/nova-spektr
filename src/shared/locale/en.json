@@ -66,6 +66,7 @@
     "closeButton": "Close modal window"
   },
   "createMultisigAccount": {
+    "accountsAlertText": "Add signatory wallet before creating Multisig wallet",
     "addContact": "Add new",
     "addContactsButton": "Add selected",
     "addSignatoryButton": "Add signatory",

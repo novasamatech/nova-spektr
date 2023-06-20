@@ -66,6 +66,7 @@
     "closeButton": "Закрыть окно"
   },
   "createMultisigAccount": {
+    "accountsAlertText": "Add signatory wallet before creating Multisig wallet",
     "addContact": "Добавить новый",
     "addContactsButton": "Добавить выбранные",
     "addSignatoryButton": "Добавить подписанта",
