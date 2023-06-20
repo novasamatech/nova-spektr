@@ -64,7 +64,11 @@ export function createMultisigAccount({
   threshold,
   matrixRoomId,
   creatorAccountId,
-}: Pick<MultisigAccount, 'name' | 'signatories' | 'threshold' | 'matrixRoomId' | 'creatorAccountId'>): MultisigAccount {
+  isActive,
+}: Pick<
+  MultisigAccount,
+  'name' | 'signatories' | 'threshold' | 'matrixRoomId' | 'creatorAccountId' | 'isActive'
+>): MultisigAccount {
   const multisigAccountId = getMultisigAccountId(
     signatories.map((s) => s.accountId),
     threshold,
@@ -81,7 +85,7 @@ export function createMultisigAccount({
     signingType: SigningType.MULTISIG,
     creatorAccountId,
     isMain: false,
-    isActive: true,
+    isActive,
   } as MultisigAccount;
 }
 
