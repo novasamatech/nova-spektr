@@ -79,7 +79,7 @@ export const MatrixProvider = ({ children }: PropsWithChildren) => {
     try {
       console.info('💛 ===> onInvite', payload);
 
-      const { roomId, content } = payload;
+      const { roomId, content, sender } = payload;
       const { accountId, threshold, signatories, accountName, creatorAccountId } = content.mstAccount;
 
       const mstAccountIsValid = accountId === getMultisigAccountId(signatories, threshold);
@@ -88,9 +88,10 @@ export const MatrixProvider = ({ children }: PropsWithChildren) => {
       const accounts = await getAccounts();
       const mstAccount = accounts.find((a) => a.accountId === accountId) as MultisigAccount;
       const signer = accounts.find((a) => signatories.includes(a.accountId));
+      const isActive = sender !== matrix.userId;
 
       if (!mstAccount) {
-        await joinRoom(roomId, content);
+        await joinRoom(roomId, content, isActive);
 
         addNotification({
           smpRoomId: roomId,
@@ -120,7 +121,7 @@ export const MatrixProvider = ({ children }: PropsWithChildren) => {
     }
   };
 
-  const createMstAccount = async (roomId: string, extras: SpektrExtras) => {
+  const createMstAccount = async (roomId: string, extras: SpektrExtras, isActive: boolean) => {
     const { signatories, threshold, accountName, creatorAccountId } = extras.mstAccount;
 
     const contactsMap = (await getContacts()).reduce<Record<AccountId, [Address, string]>>((acc, contact) => {
@@ -140,6 +141,7 @@ export const MatrixProvider = ({ children }: PropsWithChildren) => {
       name: accountName,
       signatories: mstSignatories,
       matrixRoomId: roomId,
+      isActive,
     });
 
     await addAccount(mstAccount, false);
@@ -172,16 +174,16 @@ export const MatrixProvider = ({ children }: PropsWithChildren) => {
     }
   };
 
-  const joinRoom = async (roomId: string, extras: SpektrExtras) => {
+  const joinRoom = async (roomId: string, extras: SpektrExtras, isActive: boolean) => {
     try {
       await matrix.joinRoom(roomId);
-      await createMstAccount(roomId, extras);
+      await createMstAccount(roomId, extras, isActive);
     } catch (error) {
       console.error(error);
     }
   };
 
-  const onMultisigEvent = async ({ type, content }: MultisigPayload, extras: SpektrExtras) => {
+  const onMultisigEvent = async ({ type, content, sender }: MultisigPayload, extras: SpektrExtras) => {
     console.info('🚀 === onMultisigEvent - ', type, '\n Content: ', content);
 
     if (!validateMatrixEvent(content, extras)) return;

@@ -6,7 +6,7 @@ import { ChainId, HexString } from '@renderer/domain/shared-kernel';
 import { useNetworkContext } from '@renderer/context/NetworkContext';
 import { useChains } from '@renderer/services/network/chainsService';
 import { Transaction } from '@renderer/domain/transaction';
-import { Account, MultisigAccount } from '@renderer/domain/account';
+import { Account, MultisigAccount, isMultisig, isMultishard } from '@renderer/domain/account';
 import { useCountdown } from '@renderer/shared/hooks';
 import { BaseModal, Button } from '@renderer/components/ui-redesign';
 import OperationModalTitle from '../Operations/components/OperationModalTitle';
@@ -68,7 +68,6 @@ const Transfer = ({ assetId, chainId, isOpen, onClose }: Props) => {
   const onSignResult = (signature: HexString) => {
     setSignature(signature);
     setActiveStep(Step.SUBMIT);
-    onClose?.();
   };
 
   const onAccountChange = (account: Account | MultisigAccount) => {
@@ -86,6 +85,10 @@ const Transfer = ({ assetId, chainId, isOpen, onClose }: Props) => {
   };
 
   const commonProps = { explorers, addressPrefix };
+
+  const getSignatory = (): Account | undefined => {
+    return isMultisig(account) ? signatory : isMultishard(account) ? account : undefined;
+  };
 
   return (
     <>
@@ -135,7 +138,7 @@ const Transfer = ({ assetId, chainId, isOpen, onClose }: Props) => {
             {activeStep === Step.SCANNING && (
               <ScanSingleframeQr
                 chainId={chainId}
-                account={signatory || account}
+                account={getSignatory()}
                 transaction={multisigTx || transferTx}
                 countdown={countdown}
                 api={api}
