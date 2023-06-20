@@ -4,9 +4,9 @@ import Navigation from './Navigation/Navigation';
 
 const PrimaryLayout = () => {
   return (
-    <div className="flex bg-cover h-screen">
+    <div className="flex h-screen">
       <Navigation />
-      <main className="flex-1">
+      <main className="flex-1 bg-main-app-background">
         <Outlet />
       </main>
     </div>

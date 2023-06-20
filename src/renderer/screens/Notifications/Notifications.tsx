@@ -20,10 +20,10 @@ const Notifications = () => {
   );
 
   return (
-    <div className="h-full flex flex-col items-start relative bg-main-app-background">
+    <div className="h-full flex flex-col items-start relative">
       <Header title={t('notifications.title')} />
 
-      <div className="overflow-y-auto flex-1 mx-auto w-[736px] pt-4 flex flex-col gap-4">
+      <div className="overflow-y-auto flex-1 mx-auto w-[736px] mt-4 flex flex-col gap-4">
         {notifications.length ? (
           Object.entries(groupedNotifications)
             .sort(sortByDate)

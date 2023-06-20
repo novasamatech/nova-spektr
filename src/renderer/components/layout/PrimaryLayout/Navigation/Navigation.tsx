@@ -67,7 +67,7 @@ const Navigation = () => {
           )}
         </WalletMenu>
 
-        <nav className="flex-1 overflow-y-auto scrollbar">
+        <nav className="flex-1 overflow-y-auto">
           <ul className="flex flex-col gap-2">
             {NavItems.map(({ icon, title, link, badge }) => (
               <li key={title}>
