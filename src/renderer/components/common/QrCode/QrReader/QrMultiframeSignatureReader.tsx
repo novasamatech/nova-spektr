@@ -143,8 +143,18 @@ const QrMultiframeSignatureReader = ({
     collected.add(blockNumber);
     onProgress?.({ decoded: collected.size, total });
 
+    let previousPacket;
     for (const [key, packet] of packets.current) {
       let fountainResult;
+
+      if (previousPacket && previousPacket.length > packet.length) {
+        //check if packet has correct size. If not remove it and wait when get it on next QR code rotation
+        console.log(`remove packet with key ${packet.length}`);
+        packets.current.delete(key);
+        collected.delete(blockNumber);
+        onProgress?.({ decoded: collected.size, total });
+        break;
+      }
 
       try {
         fountainResult = raptorDecoder.decode(packet);
@@ -155,7 +165,10 @@ const QrMultiframeSignatureReader = ({
         break;
       }
 
-      if (!fountainResult) continue;
+      if (!fountainResult) {
+        previousPacket = packet;
+        continue;
+      }
 
       let result;
       try {
@@ -181,7 +194,6 @@ const QrMultiframeSignatureReader = ({
         await init();
 
         const frame = createFrame(result.getResultMetadata().get(FRAME_KEY) as Uint8Array[]);
-        if (frame.data.payload.length < 128) return;
 
         const stringPayload = JSON.stringify(frame.data.payload);
         const isPacketExist = packets.current.get(stringPayload);
