@@ -195,11 +195,11 @@ export const Overview = () => {
 
   return (
     <>
-      <div className="h-full flex flex-col items-start relative bg-main-app-background">
+      <div className="h-full flex flex-col items-start relative">
         <Header title={t('staking.title')} />
 
-        <div className="overflow-y-auto w-full h-full">
-          <section className="flex flex-col gap-y-6 mx-auto mt-6 h-full w-[546px]">
+        <div className="overflow-y-auto w-full h-full mt-6">
+          <section className="flex flex-col gap-y-6 mx-auto h-full w-[546px]">
             <NetworkInfo
               rewards={Object.values(rewards)}
               isRewardsLoading={isRewardsLoading}

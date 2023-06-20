@@ -276,7 +276,7 @@ const AddSignatory = ({ onSelect, isEditing }: Props) => {
               {contactList
                 .filter((w) => selectedContacts.includes(w.index))
                 .map(({ index, accountId, name }) => (
-                  <li key={index} className="py-1.5">
+                  <li key={index} className="py-1.5 flex items-center gap-x-2">
                     <WalletsTabItem name={name} accountId={accountId} />
                   </li>
                 ))}

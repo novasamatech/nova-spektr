@@ -66,6 +66,7 @@
     "closeButton": "Закрыть окно"
   },
   "createMultisigAccount": {
+    "accountsAlertText": "Add signatory wallet before creating Multisig wallet",
     "addContact": "Добавить новый",
     "addContactsButton": "Добавить выбранные",
     "addSignatoryButton": "Добавить подписанта",
@@ -265,13 +266,17 @@
       "yourAccountsLoadingLabel": "Your accounts will be showing up here"
     },
     "welcome": {
-      "novaWalletDescription": "Seamless and secure transaction signing with Nova Wallet using WalletConnect v2",
+      "ledgerDescription": "Ledger's the smartest way to secure, buy, exchange and grow your crypto assets.",
+      "ledgerTitle": "Ledger",
+      "novaWalletDescription": "Seamless and secure transaction signing with Nova Wallet, leading mobile application for Polkadot eco",
       "novaWalletTitle": "Nova Wallet",
       "polkadotVaultDescription": "Use dedicated hardware wallet for Polkadot, Kusama, and other Substrate-based chains",
       "polkadotVaultTitle": "Polkadot Vault",
       "privacy": "By continuing, you agree to our <terms>Terms of Services</terms> and <privacy>Privacy Policy</privacy>",
       "soonBadge": "soon",
       "title": "Add your wallet",
+      "walletConnectDescription": "Seamless and secure transaction signing with WalletConnect v2",
+      "walletConnectTitle": "WalletConnect v2",
       "watchOnlyDescription": "Track the activity of any wallet without injecting your private key to Nova Spektr",
       "watchOnlyTitle": "Watch-only"
     },
@@ -445,20 +450,20 @@
       "confirmModal": {
         "cancelButton": "Отменить",
         "confirmButton": "Подтвердить",
-        "disableLabel": "Вы собираетесь отключить сеть <strong>{ network }</strong>",
-        "disableLightLabel": "Переключение с Легкого клиента в сети <strong>{network}</strong> отключит <verify>Верификацию данных</verify>",
+        "disableLabel": "Вы собираетесь отключить сеть { network }",
+        "disableLightLabel": "Переключение с Легкого клиента в сети {network} отключит <verify>Верификацию данных</verify>",
         "disableLightTitle": "Отключить Легкий клиент",
         "disableTitle": "Отключить сеть",
-        "enableLightLabel": "Мы рекомендуем держать не более 3-ех подключений к <strong>Легкому клиенту</strong> для <u>стабильной работы приложения</u>",
+        "enableLightLabel": "Мы рекомендуем держать не более 3-ех подключений к Легкому клиенту для <u>стабильной работы приложения</u>",
         "enableLightTitle": "Подключиться к Легкому клиенту",
-        "removeLabel": "Вы собираетесь удалить ноду <strong>{ node }</strong>",
+        "removeLabel": "Вы собираетесь удалить ноду { node }",
         "removeTitle": "Удалить ноду"
       },
       "connectedStatusLabel": "Подключено",
-      "connectingStatusLabel": "Подключение...",
+      "connectingStatusLabel": "Подключение",
       "disabledNetworksLabel": "Неактивные сети",
       "editNodeButton": "Редактировать ноду",
-      "emptyStateLabel": "Сети с таким именем не найдены",
+      "emptyStateLabel": "Сети с таким названием не найдены",
       "errorStatusLabel": "Ошибка",
       "maxLengthNameError": "Название не может быть длиньше 50 символов",
       "nameLabel": "Название",

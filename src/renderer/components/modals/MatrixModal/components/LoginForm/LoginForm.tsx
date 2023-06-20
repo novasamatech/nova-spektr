@@ -36,6 +36,7 @@ const LoginForm = () => {
   const { matrix } = useMatrix();
 
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [isHomeserverLoading, setIsHomeserverLoading] = useState(false);
   const [inProgress, setInProgress] = useState(false);
   const [credentialsFlow, setCredentialsFlow] = useState(true);
   const [invalidHomeserver, setInvalidHomeserver] = useState(false);
@@ -70,14 +71,14 @@ const LoginForm = () => {
     return async (option: DropdownResult<string>) => {
       onChange(option.value);
 
-      setInProgress(true);
+      setIsHomeserverLoading(true);
       try {
         await updateHomeserver(option.value);
         await checkLoginFlow();
       } catch (error) {
         console.warn(error);
       }
-      setInProgress(false);
+      setIsHomeserverLoading(false);
     };
   };
 
@@ -105,7 +106,7 @@ const LoginForm = () => {
   };
 
   const submitMatrixLogin: SubmitHandler<MatrixForm> = async ({ username, password }) => {
-    if (inProgress) return;
+    if (isHomeserverLoading) return;
 
     setInProgress(true);
     setInvalidLogin(false);
@@ -119,8 +120,8 @@ const LoginForm = () => {
     setInProgress(false);
   };
 
-  const logInDisabled = isLoggedIn || inProgress || !isValid || invalidHomeserver || invalidLogin;
-  const submitState = !isLoggedIn && !inProgress;
+  const logInDisabled = isLoggedIn || isHomeserverLoading || !isValid || invalidHomeserver || invalidLogin;
+  const submitState = !isLoggedIn && !isHomeserverLoading;
   const register = <InfoLink url="https://app.element.io/#/register" showIcon={false} />;
 
   return (
@@ -136,7 +137,7 @@ const LoginForm = () => {
               placeholder={t('settings.matrix.homeserverPlaceholder')}
               wrapperClass="py-[11px]"
               invalid={invalidHomeserver}
-              disabled={!submitState || inProgress}
+              disabled={!submitState || isHomeserverLoading}
               options={HOME_SERVERS}
               onChange={changeHomeserver(onChange)}
             />
@@ -149,7 +150,7 @@ const LoginForm = () => {
 
       {credentialsFlow ? (
         <>
-          {!inProgress ? (
+          {!isHomeserverLoading ? (
             <>
               <Controller
                 name="username"
@@ -216,7 +217,7 @@ const LoginForm = () => {
 
       <div className="flex justify-between items-center pt-3">
         <Icon name="matrixFull" className="!w-[56px] text-[#00000066]" size={24} />
-        <Button type="submit" disabled={logInDisabled}>
+        <Button type="submit" isLoading={inProgress} disabled={logInDisabled}>
           {t('settings.matrix.logInButton')}
         </Button>
       </div>

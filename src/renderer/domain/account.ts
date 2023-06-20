@@ -64,7 +64,11 @@ export function createMultisigAccount({
   threshold,
   matrixRoomId,
   creatorAccountId,
-}: Pick<MultisigAccount, 'name' | 'signatories' | 'threshold' | 'matrixRoomId' | 'creatorAccountId'>): MultisigAccount {
+  isActive,
+}: Pick<
+  MultisigAccount,
+  'name' | 'signatories' | 'threshold' | 'matrixRoomId' | 'creatorAccountId' | 'isActive'
+>): MultisigAccount {
   const multisigAccountId = getMultisigAccountId(
     signatories.map((s) => s.accountId),
     threshold,
@@ -81,7 +85,7 @@ export function createMultisigAccount({
     signingType: SigningType.MULTISIG,
     creatorAccountId,
     isMain: false,
-    isActive: true,
+    isActive,
   } as MultisigAccount;
 }
 
@@ -92,6 +96,12 @@ export function isMultisig(account?: Account | MultisigAccount): account is Mult
   const hasThreshold = 'threshold' in (account as MultisigAccount);
 
   return hasSignatories && hasThreshold;
+}
+
+export function isMultishard(account?: Account | MultisigAccount): boolean {
+  if (!account) return false;
+
+  return Boolean(account.walletId);
 }
 
 export const getActiveWalletType = (activeAccounts?: AccountDS[]): WalletType | null => {
