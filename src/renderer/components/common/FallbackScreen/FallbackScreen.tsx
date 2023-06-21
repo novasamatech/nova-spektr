@@ -1,4 +1,5 @@
-import { Button, Icon } from '@renderer/components/ui';
+import { Icon } from '@renderer/components/ui';
+import { BodyText, Button } from '@renderer/components/ui-redesign';
 import { useI18n } from '@renderer/context/I18nContext';
 
 const FallbackScreen = () => {
@@ -6,11 +7,9 @@ const FallbackScreen = () => {
 
   return (
     <main className="flex flex-col gap-4 items-center justify-center bg-cover h-screen">
-      <Icon as="img" name="logo" size={120} alt={t('fallbackScreen.omniLogoAlt')} />
-      <h1 className="text-3xl font-semibold">{t('fallbackScreen.message')}</h1>
-      <Button weight="lg" variant="fill" pallet="error" onClick={() => window.location.reload()}>
-        {t('fallbackScreen.reloadButton')}
-      </Button>
+      <Icon as="img" name="computer" size={172} />
+      <BodyText className="text-text-tertiary">{t('fallbackScreen.message')}</BodyText>
+      <Button onClick={() => window.location.reload()}>{t('fallbackScreen.reloadButton')}</Button>
     </main>
   );
 };

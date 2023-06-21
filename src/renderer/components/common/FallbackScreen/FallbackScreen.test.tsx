@@ -13,7 +13,7 @@ describe('components/common/FallbackScreen', () => {
   test('should render component', () => {
     render(<FallbackScreen />, { wrapper: MemoryRouter });
 
-    const logo = screen.getByTestId('logo-img');
+    const logo = screen.getByTestId('computer-img');
     expect(logo).toBeInTheDocument();
 
     const message = screen.getByText('fallbackScreen.message');
