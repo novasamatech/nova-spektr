@@ -22,6 +22,7 @@ import ScanSingleframeQr from '@renderer/components/common/Scanning/ScanSinglefr
 import Paths from '@renderer/routes/paths';
 import { Loader } from '@renderer/components/ui';
 import OperationModalTitle from '@renderer/screens/Operations/components/OperationModalTitle';
+import { ConnectionType } from '@renderer/domain/connection';
 
 const enum Step {
   INIT,
@@ -226,6 +227,7 @@ export const ChangeValidators = () => {
           asset={asset}
           explorers={explorers}
           addressPrefix={addressPrefix}
+          isLightClient={connection?.connection.connectionType === ConnectionType.LIGHT_CLIENT}
           onResult={onSelectValidators}
           onGoBack={goToPrevStep}
         />
