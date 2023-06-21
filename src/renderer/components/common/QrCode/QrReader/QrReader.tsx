@@ -157,8 +157,17 @@ const QrReader = ({
     collected.add(blockNumber);
     onProgress?.({ decoded: collected.size, total });
 
+    let previousPacket;
     for (const [key, packet] of packets.current) {
       let fountainResult;
+
+      if (previousPacket && previousPacket.length > packet.length) {
+        //check if packet has correct size. If not remove it and wait when get it on next QR code rotation
+        packets.current.delete(key);
+        collected.delete(blockNumber);
+        onProgress?.({ decoded: collected.size, total });
+        break;
+      }
 
       try {
         fountainResult = raptorDecoder.decode(packet);
@@ -169,7 +178,10 @@ const QrReader = ({
         break;
       }
 
-      if (!fountainResult) continue;
+      if (!fountainResult) {
+        previousPacket = packet;
+        continue;
+      }
 
       const result = EXPORT_ADDRESS.decode(fountainResult.slice(3));
       isComplete.current = true;

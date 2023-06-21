@@ -29,10 +29,20 @@ type Props = {
   asset?: Asset;
   explorers?: Explorer[];
   isOpen: boolean;
+  isLightClient?: boolean;
   onClose: () => void;
 };
 
-export const ValidatorsModal = ({ api, stash, validators, asset, explorers, isOpen, onClose }: Props) => {
+export const ValidatorsModal = ({
+  api,
+  stash,
+  validators,
+  asset,
+  explorers,
+  isOpen,
+  isLightClient,
+  onClose,
+}: Props) => {
   const { t } = useI18n();
   const { getNominators } = useValidators();
   const [isValidatorsLoading, setIsValidatorsLoading] = useState(true);
@@ -44,7 +54,7 @@ export const ValidatorsModal = ({ api, stash, validators, asset, explorers, isOp
 
     setIsValidatorsLoading(true);
 
-    getNominators(api, stash)
+    getNominators(api, stash, isLightClient)
       .then((nominators) => {
         setNominators(Object.values(nominators));
       })

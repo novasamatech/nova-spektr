@@ -88,7 +88,7 @@ export const MatrixProvider = ({ children }: PropsWithChildren) => {
       const accounts = await getAccounts();
       const mstAccount = accounts.find((a) => a.accountId === accountId) as MultisigAccount;
       const signer = accounts.find((a) => signatories.includes(a.accountId));
-      const isActive = sender !== matrix.userId;
+      const isActive = sender === matrix.userId;
 
       if (!mstAccount) {
         await joinRoom(roomId, content, isActive);

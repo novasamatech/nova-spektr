@@ -11,7 +11,7 @@ import { useMatrix } from '@renderer/context/MatrixContext';
 import { includes } from '@renderer/shared/utils/strings';
 import { Contact } from '@renderer/domain/contact';
 import { toAddress } from '@renderer/shared/utils/address';
-import { ChainId, SigningType } from '@renderer/domain/shared-kernel';
+import { ChainId } from '@renderer/domain/shared-kernel';
 import { useWallet } from '@renderer/services/wallet/walletService';
 import { FootnoteText, SearchInput, SmallTitleText, Checkbox, Button } from '@renderer/components/ui-redesign';
 import Tabs, { TabItem } from '@renderer/components/ui-redesign/Tabs/Tabs';
@@ -22,7 +22,7 @@ import ContactModal from '@renderer/screens/AddressBook/components/ContactModal'
 import { WalletsTabItem } from './WalletsTabItem';
 import { Icon } from '@renderer/components/ui';
 import EmptyContacts from '@renderer/screens/AddressBook/components/EmptyState/EmptyContacts';
-import { isMultisig } from '@renderer/domain/account';
+import { isWalletContact } from '@renderer/domain/account';
 
 type ContactWithIndex = { index: number } & Contact;
 export type WalletContact = ContactWithIndex & { walletName?: string; chainId?: ChainId };
@@ -70,17 +70,15 @@ const AddSignatory = ({ onSelect, isEditing }: Props) => {
     const addressBookContacts = contacts.filter((c) => c.matrixId);
     setContactList(addressBookContacts.map((contact, index) => ({ ...contact, index })));
 
-    const walletContacts = accounts
-      .filter((a) => a.signingType !== SigningType.WATCH_ONLY && !isMultisig(a))
-      .map<WalletContact>((a, index) => ({
-        name: a.name || a.accountId,
-        address: toAddress(a.accountId),
-        accountId: a.accountId,
-        matrixId: matrix.userId,
-        index,
-        chainId: a.chainId,
-        walletName: a.walletId ? wallets.find((w) => w.id === a.walletId)?.name : undefined,
-      }));
+    const walletContacts = accounts.filter(isWalletContact).map<WalletContact>((a, index) => ({
+      name: a.name || a.accountId,
+      address: toAddress(a.accountId),
+      accountId: a.accountId,
+      matrixId: matrix.userId,
+      index,
+      chainId: a.chainId,
+      walletName: a.walletId ? wallets.find((w) => w.id === a.walletId)?.name : undefined,
+    }));
     setWalletList(walletContacts);
   }, [accounts.length, contacts.length, wallets.length]);
 
@@ -248,9 +246,9 @@ const AddSignatory = ({ onSelect, isEditing }: Props) => {
         </SmallTitleText>
 
         {isEditing ? (
-          <Tabs items={tabItems} panelClassName="mt-4 overflow-y-scroll" tabClassName="flex-inline" />
+          <Tabs items={tabItems} panelClassName="mt-4 flex-1 overflow-y-scroll" tabClassName="flex-inline" />
         ) : (
-          <div className="flex flex-col gap-y-2 overflow-y-scroll">
+          <div className="flex flex-col gap-y-2 flex-1 overflow-y-scroll">
             <FootnoteText className="text-text-tertiary">
               {t('createMultisigAccount.walletsTab')} <span className="ml-2">{selectedWallets.length}</span>
             </FootnoteText>

@@ -4,6 +4,7 @@ import { MouseEvent, PropsWithChildren, ReactNode, forwardRef } from 'react';
 import cnTw from '@renderer/shared/utils/twMerge';
 import { ViewClass, SizeClass, Padding } from '../common/constants';
 import { Pallet, Variant } from '../common/types';
+import { Loader } from '@renderer/components/ui';
 
 type Props = {
   className?: string;
@@ -17,6 +18,7 @@ type Props = {
   suffixElement?: ReactNode;
   onClick?: (event: MouseEvent<HTMLButtonElement>) => void;
   tabIndex?: number;
+  isLoading?: boolean;
 };
 
 const Button = forwardRef<HTMLButtonElement, PropsWithChildren<Props>>(
@@ -33,6 +35,7 @@ const Button = forwardRef<HTMLButtonElement, PropsWithChildren<Props>>(
       suffixElement,
       tabIndex,
       children,
+      isLoading,
       onClick = noop,
     },
     ref,
@@ -44,15 +47,16 @@ const Button = forwardRef<HTMLButtonElement, PropsWithChildren<Props>>(
       disabled={disabled}
       className={cnTw(
         'flex items-center justify-center gap-x-2 select-none outline-offset-1',
-        (prefixElement || suffixElement) && 'justify-between',
+        (prefixElement || suffixElement || isLoading) && 'justify-between',
         SizeClass[size],
         variant !== 'text' && Padding[size],
         ViewClass[`${variant}_${pallet}`],
         className,
       )}
       tabIndex={tabIndex}
-      onClick={onClick}
+      onClick={(e) => !isLoading && onClick(e)}
     >
+      {isLoading && <Loader color="white" />}
       {prefixElement && <div data-testid="prefix">{prefixElement}</div>}
       <div>{children}</div>
       {suffixElement && <div data-testid="suffix">{suffixElement}</div>}

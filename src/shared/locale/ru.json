@@ -266,13 +266,17 @@
       "yourAccountsLoadingLabel": "Your accounts will be showing up here"
     },
     "welcome": {
-      "novaWalletDescription": "Seamless and secure transaction signing with Nova Wallet using WalletConnect v2",
+      "ledgerDescription": "Ledger's the smartest way to secure, buy, exchange and grow your crypto assets",
+      "ledgerTitle": "Ledger",
+      "novaWalletDescription": "Seamless and secure transaction signing with Nova Wallet, leading mobile application for Polkadot eco",
       "novaWalletTitle": "Nova Wallet",
       "polkadotVaultDescription": "Use dedicated hardware wallet for Polkadot, Kusama, and other Substrate-based chains",
       "polkadotVaultTitle": "Polkadot Vault",
       "privacy": "By continuing, you agree to our <terms>Terms of Services</terms> and <privacy>Privacy Policy</privacy>",
       "soonBadge": "soon",
       "title": "Add your wallet",
+      "walletConnectDescription": "Seamless and secure transaction signing with WalletConnect v2",
+      "walletConnectTitle": "WalletConnect v2",
       "watchOnlyDescription": "Track the activity of any wallet without injecting your private key to Nova Spektr",
       "watchOnlyTitle": "Watch-only"
     },
@@ -374,7 +378,7 @@
     "videoError": "Браузер не поддерживает видео"
   },
   "receive": {
-    "chainLabel": "токен на этот адрес в {name} (Парачейн) сети!",
+    "chainLabel": "токен на этот адрес в {name} сети!",
     "copyAddressButton": "Копировать адрес",
     "explorerLinkLabel": "Ссылка на {name}",
     "selectWalletPlaceholder": "Выберите кошелек...",
@@ -797,7 +801,7 @@
   "welcome": {
     "addLedgerButton": "Скоро",
     "addLedgerComingSoonLabel": "Добавите Ledger кошелёк (скоро)",
-    "addLedgerLabel": "Ledger's the smartest way to secure, buy, exchange and grow your crypto assets.",
+    "addLedgerLabel": "Ledger's the smartest way to secure, buy, exchange and grow your crypto assets",
     "addParitySignerAlt": "Иконка для онбординга с Polkadot Vault",
     "addParitySignerAreaLabel": "Добавить Polkadot Vault кошелёк",
     "addParitySignerButton": "Добавить Polkadot Vault кошелёк",

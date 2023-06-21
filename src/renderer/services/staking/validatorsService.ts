@@ -4,6 +4,7 @@ import { u8aToString } from '@polkadot/util';
 import { Data } from '@polkadot/types';
 import { PalletIdentityRegistration } from '@polkadot/types/lookup';
 import { AccountId32 } from '@polkadot/types/interfaces';
+import { Option } from '@polkadot/types';
 
 import { Identity, SubIdentity } from '@renderer/domain/identity';
 import { Address, ChainId, EraIndex } from '@renderer/domain/shared-kernel';
@@ -12,15 +13,20 @@ import { getValidatorsApy } from './apyCalculator';
 import { IValidatorsService, ValidatorMap } from './common/types';
 
 export const useValidators = (): IValidatorsService => {
-  const getValidators = async (chainId: ChainId, api: ApiPromise, era: EraIndex): Promise<ValidatorMap> => {
+  const getValidators = async (
+    chainId: ChainId,
+    api: ApiPromise,
+    era: EraIndex,
+    isLightClient?: boolean,
+  ): Promise<ValidatorMap> => {
     const [stake, prefs] = await Promise.all([getValidatorsStake(api, era), getValidatorsPrefs(api, era)]);
 
     const mergedValidators = merge(stake, prefs);
 
     const [identity, apy, slashes] = await Promise.all([
-      getIdentities(api, Object.keys(mergedValidators)),
+      getIdentities(api, Object.keys(mergedValidators), isLightClient),
       getApy(api, Object.values(mergedValidators)),
-      getSlashingSpans(api, Object.keys(stake), era),
+      getSlashingSpans(api, Object.keys(stake), era, isLightClient),
     ]);
 
     return merge(mergedValidators, apy, identity, slashes);
@@ -60,34 +66,57 @@ export const useValidators = (): IValidatorsService => {
     return api.consts.staking.maxNominations.toNumber();
   };
 
-  const getIdentities = async (api: ApiPromise, addresses: Address[]): Promise<Record<Address, Identity>> => {
-    const subIdentities = await getSubIdentities(api, addresses);
-    const parentIdentities = await getParentIdentities(api, subIdentities);
+  const getIdentities = async (
+    api: ApiPromise,
+    addresses: Address[],
+    isLightClient?: boolean,
+  ): Promise<Record<Address, Identity>> => {
+    const subIdentities = await getSubIdentities(api, addresses, isLightClient);
+    const parentIdentities = await getParentIdentities(api, subIdentities, isLightClient);
 
     return addresses.reduce((acc, address) => {
       return { ...acc, [address]: { identity: parentIdentities[address] } };
     }, {});
   };
 
-  const getSubIdentities = async (api: ApiPromise, addresses: Address[]): Promise<SubIdentity[]> => {
-    const wrappedIdentities = await api.query.identity.superOf.entries();
+  const getSubIdentities = async (
+    api: ApiPromise,
+    addresses: Address[],
+    isLightClient?: boolean,
+  ): Promise<SubIdentity[]> => {
+    if (isLightClient) {
+      const wrappedIdentities = await api.query.identity.superOf.entries();
 
-    const subIdentities = wrappedIdentities.reduce<Record<Address, [AccountId32, Data]>>(
-      (acc, [storageKey, wrappedIdentity]) => {
-        acc[storageKey.args[0].toString()] = wrappedIdentity.unwrap();
+      const subIdentities = wrappedIdentities.reduce<Record<Address, [AccountId32, Data]>>(
+        (acc, [storageKey, wrappedIdentity]) => {
+          acc[storageKey.args[0].toString()] = wrappedIdentity.unwrap();
 
-        return acc;
-      },
-      {},
-    );
+          return acc;
+        },
+        {},
+      );
 
-    return addresses.reduce<SubIdentity[]>((acc, subAddress) => {
-      const payload = { sub: subAddress, parent: subAddress, subName: '' };
+      return addresses.reduce<SubIdentity[]>((acc, subAddress) => {
+        const payload = { sub: subAddress, parent: subAddress, subName: '' };
 
-      if (subIdentities[subAddress]) {
-        const rawData = subIdentities[subAddress];
-        payload.parent = rawData[0].toHuman();
-        payload.subName = rawData[1].isRaw ? u8aToString(rawData[1].asRaw) : rawData[1].value.toString();
+        if (subIdentities[subAddress]) {
+          const rawData = subIdentities[subAddress];
+          payload.parent = rawData[0].toHuman();
+          payload.subName = rawData[1].isRaw ? u8aToString(rawData[1].asRaw) : rawData[1].value.toString();
+        }
+
+        return acc.concat(payload);
+      }, []);
+    }
+
+    const subIdentities = await api.query.identity.superOf.multi(addresses);
+
+    return subIdentities.reduce<SubIdentity[]>((acc, identity, index) => {
+      const payload = { sub: addresses[index], parent: addresses[index], subName: '' };
+      if (!identity.isNone) {
+        const [address, rawData] = identity.unwrap();
+        payload.parent = address.toHuman();
+        payload.subName = rawData.isRaw ? u8aToString(rawData.asRaw) : rawData.value.toString();
       }
 
       return acc.concat(payload);
@@ -97,26 +126,36 @@ export const useValidators = (): IValidatorsService => {
   const getParentIdentities = async (
     api: ApiPromise,
     subIdentities: SubIdentity[],
+    isLightClient?: boolean,
   ): Promise<Record<Address, Identity>> => {
-    const wrappedIdentities = await api.query.identity.identityOf.entries();
+    let parentIdentities;
 
-    const parentAddresses = subIdentities.reduce<Record<string, boolean>>((acc, identity) => {
-      acc[identity.parent] = true;
+    if (isLightClient) {
+      const wrappedIdentities = await api.query.identity.identityOf.entries();
 
-      return acc;
-    }, {});
+      const parentAddresses = subIdentities.reduce<Record<string, boolean>>((acc, identity) => {
+        acc[identity.parent] = true;
 
-    const parentIdentities = wrappedIdentities.reduce<PalletIdentityRegistration[]>((acc, [address, identity]) => {
-      if (parentAddresses[address.args[0].toString()] && !identity.isNone) {
-        acc.push(identity.unwrap());
-      }
+        return acc;
+      }, {});
 
-      return acc;
-    }, []);
+      parentIdentities = wrappedIdentities.reduce<Option<PalletIdentityRegistration>[]>((acc, [address, identity]) => {
+        if (parentAddresses[address.args[0].toString()] && !identity.isNone) {
+          acc.push(identity);
+        }
 
-    return parentIdentities.reduce<Record<Address, Identity>>((acc, unwrapped, index) => {
+        return acc;
+      }, []);
+    } else {
+      const identityAddresses = subIdentities.map((identity) => identity.parent);
+      parentIdentities = await api.query.identity.identityOf.multi(identityAddresses);
+    }
+
+    return parentIdentities.reduce<Record<Address, Identity>>((acc, identity, index) => {
+      if (identity.isNone) return acc;
+
       const { parent, sub, subName } = subIdentities[index];
-      const { info } = unwrapped; // { judgements, info }
+      const { info } = identity.unwrap(); // { judgements, info }
       const { display, web, riot, email, twitter } = info;
 
       const payload: Identity = {
@@ -143,7 +182,7 @@ export const useValidators = (): IValidatorsService => {
     }, {});
   };
 
-  const getNominators = async (api: ApiPromise, stash: Address): Promise<ValidatorMap> => {
+  const getNominators = async (api: ApiPromise, stash: Address, isLightClient?: boolean): Promise<ValidatorMap> => {
     try {
       const data = await api.query.staking.nominators(stash);
 
@@ -158,7 +197,7 @@ export const useValidators = (): IValidatorsService => {
         return acc;
       }, {});
 
-      const identities = await getIdentities(api, Object.keys(nominators));
+      const identities = await getIdentities(api, Object.keys(nominators), isLightClient);
 
       return merge(nominators, identities);
     } catch (error) {
@@ -180,16 +219,21 @@ export const useValidators = (): IValidatorsService => {
     api: ApiPromise,
     addresses: Address[],
     era: EraIndex,
+    isLightClient?: boolean,
   ): Promise<Record<Address, { slashed: boolean }>> => {
     const slashDeferDuration = getSlashDeferDuration(api);
-    const slashingSpansWrapped = await api.query.staking.slashingSpans.entries();
-    const slashingSpans = slashingSpansWrapped.filter(([storageKey]) =>
-      addresses.includes(storageKey.args[0].toString()),
-    );
+    let slashingSpans;
 
-    return slashingSpans.reduce((acc, spanWrapped, index) => {
-      const span = spanWrapped[1];
+    if (isLightClient) {
+      const slashingSpansWrapped = await api.query.staking.slashingSpans.entries();
+      slashingSpans = slashingSpansWrapped
+        .filter(([storageKey]) => addresses.includes(storageKey.args[0].toString()))
+        .map((spanWrapped) => spanWrapped[1]);
+    } else {
+      slashingSpans = await api.query.staking.slashingSpans.multi(addresses);
+    }
 
+    return slashingSpans.reduce((acc, span, index) => {
       let validatorIsSlashed = false;
       if (!span.isNone) {
         const { lastNonzeroSlash } = span.unwrap();

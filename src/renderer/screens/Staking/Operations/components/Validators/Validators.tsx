@@ -29,11 +29,12 @@ type Props = {
   asset: Asset;
   explorers?: Explorer[];
   addressPrefix?: number;
+  isLightClient?: boolean;
   onGoBack: () => void;
   onResult: (validators: ValidatorMap) => void;
 };
 
-export const Validators = ({ api, chainId, asset, explorers, onGoBack, onResult }: Props) => {
+export const Validators = ({ api, chainId, asset, explorers, isLightClient, onGoBack, onResult }: Props) => {
   const { t } = useI18n();
   const { subscribeActiveEra } = useEra();
   const { getMaxValidators, getValidators } = useValidators();
@@ -60,7 +61,7 @@ export const Validators = ({ api, chainId, asset, explorers, onGoBack, onResult 
   useEffect(() => {
     if (!era) return;
 
-    getValidators(chainId, api, era).then((validators) => {
+    getValidators(chainId, api, era, isLightClient).then((validators) => {
       setValidators(validators);
       setMaxValidators(getMaxValidators(api));
       setIsValidatorsLoading(false);

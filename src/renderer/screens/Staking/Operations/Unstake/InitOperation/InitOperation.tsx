@@ -184,7 +184,7 @@ const InitOperation = ({ api, chainId, addressPrefix, accounts, asset, onResult 
 
     const withChill = selectedAccounts.map((a) => {
       const address = toAddress(a.accountId, { prefix: addressPrefix });
-      const leftAmount = new BN(staking[address]?.active || 0).sub(new BN(amount));
+      const leftAmount = new BN(staking[address]?.active || 0).sub(new BN(formatAmount(amount, asset.precision)));
 
       return leftAmount.lte(new BN(minimumStake));
     });

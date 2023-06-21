@@ -26,7 +26,7 @@ const CreateMultisigAccount = ({ isOpen, onClose }: Props) => {
   const { getLiveAccounts, addAccount } = useAccount();
   const accounts = getLiveAccounts();
 
-  const [isEditing, toggleIsEditing] = useToggle(true);
+  const [isEditing, setIsEditing] = useState(true);
   const [isResultModalOpen, toggleResultModal] = useToggle();
   const [isLoading, toggleLoading] = useToggle();
   const [error, setError] = useState('');
@@ -36,7 +36,7 @@ const CreateMultisigAccount = ({ isOpen, onClose }: Props) => {
 
   const goBack = () => {
     if (!isEditing) {
-      toggleIsEditing();
+      setIsEditing(true);
     } else {
       onClose();
     }
@@ -97,7 +97,7 @@ const CreateMultisigAccount = ({ isOpen, onClose }: Props) => {
 
   const handleClose = () => {
     onClose();
-    toggleIsEditing();
+    setIsEditing(true);
     setSignatories([]);
   };
 
@@ -117,7 +117,7 @@ const CreateMultisigAccount = ({ isOpen, onClose }: Props) => {
           accounts={accounts}
           isEditing={isEditing}
           isLoading={isLoading}
-          onContinue={toggleIsEditing}
+          onContinue={() => setIsEditing(false)}
           onGoBack={goBack}
           onCreateAccount={onCreateAccount}
         />
