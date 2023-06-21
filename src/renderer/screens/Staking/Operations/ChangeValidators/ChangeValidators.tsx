@@ -19,10 +19,10 @@ import InitOperation, { ValidatorsResult } from './InitOperation/InitOperation';
 import { useTransaction } from '@renderer/services/transaction/transactionService';
 import ScanMultiframeQr from '@renderer/components/common/Scanning/ScanMultiframeQr';
 import ScanSingleframeQr from '@renderer/components/common/Scanning/ScanSingleframeQr';
+import { isLightClient } from '@renderer/services/network/common/utils';
 import Paths from '@renderer/routes/paths';
 import { Loader } from '@renderer/components/ui';
 import OperationModalTitle from '@renderer/screens/Operations/components/OperationModalTitle';
-import { ConnectionType } from '@renderer/domain/connection';
 
 const enum Step {
   INIT,
@@ -228,7 +228,7 @@ export const ChangeValidators = () => {
             asset={asset}
             explorers={explorers}
             addressPrefix={addressPrefix}
-            isLightClient={connection?.connection.connectionType === ConnectionType.LIGHT_CLIENT}
+            isLightClient={isLightClient(connection)}
             onResult={onSelectValidators}
             onGoBack={goToPrevStep}
           />

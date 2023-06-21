@@ -1,10 +1,9 @@
 import merge from 'lodash/merge';
 import { ApiPromise } from '@polkadot/api';
 import { u8aToString } from '@polkadot/util';
-import { Data } from '@polkadot/types';
+import { Data, Option } from '@polkadot/types';
 import { PalletIdentityRegistration } from '@polkadot/types/lookup';
 import { AccountId32 } from '@polkadot/types/interfaces';
-import { Option } from '@polkadot/types';
 
 import { Identity, SubIdentity } from '@renderer/domain/identity';
 import { Address, ChainId, EraIndex } from '@renderer/domain/shared-kernel';
@@ -33,7 +32,7 @@ export const useValidators = (): IValidatorsService => {
   };
 
   const getValidatorsStake = async (api: ApiPromise, era: EraIndex): Promise<ValidatorMap> => {
-    // TODO: uncomment if we need full lit of nominators (even those who doesn't get rewards)
+    // HINT: uncomment if we need full lit of nominators (even those who doesn't get rewards)
     // const data = await api.query.staking.erasStakers.entries(era);
     const data = await api.query.staking.erasStakersClipped.entries(era);
     const maxNominatorRewarded = getMaxNominatorRewarded(api);

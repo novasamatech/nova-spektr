@@ -24,8 +24,8 @@ import { DestinationType } from '../common/types';
 import ScanMultiframeQr from '@renderer/components/common/Scanning/ScanMultiframeQr';
 import ScanSingleframeQr from '@renderer/components/common/Scanning/ScanSingleframeQr';
 import { UnstakingDuration } from '@renderer/screens/Staking/Overview/components';
+import { isLightClient } from '@renderer/services/network/common/utils';
 import { Loader } from '@renderer/components/ui';
-import { ConnectionType } from '@renderer/domain/connection';
 
 const enum Step {
   INIT,
@@ -255,7 +255,7 @@ export const Bond = () => {
           <Validators
             api={api}
             chainId={chainId}
-            isLightClient={connection?.connection.connectionType === ConnectionType.LIGHT_CLIENT}
+            isLightClient={isLightClient(connection)}
             onResult={onSelectValidators}
             onGoBack={goToPrevStep}
             {...explorersProps}
