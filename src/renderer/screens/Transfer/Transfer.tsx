@@ -93,11 +93,6 @@ const Transfer = ({ assetId, chainId, isOpen, onClose }: Props) => {
     return isMultisig(account) ? signatory : isMultishard(account) ? account : undefined;
   };
 
-  const changeSignatory = (sign: Account) => {
-    setSignatory(sign);
-    console.log('sign 2', sign);
-  };
-
   return (
     <>
       <BaseModal
@@ -127,7 +122,7 @@ const Transfer = ({ assetId, chainId, isOpen, onClose }: Props) => {
                 api={api}
                 onResult={onInitResult}
                 onAccountChange={onAccountChange}
-                onSignatoryChange={changeSignatory}
+                onSignatoryChange={setSignatory}
                 {...commonProps}
               />
             )}
