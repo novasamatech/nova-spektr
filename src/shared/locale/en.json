@@ -266,7 +266,7 @@
       "yourAccountsLoadingLabel": "Your accounts will be showing up here"
     },
     "welcome": {
-      "ledgerDescription": "Ledger's the smartest way to secure, buy, exchange and grow your crypto assets.",
+      "ledgerDescription": "Ledger's the smartest way to secure, buy, exchange and grow your crypto assets",
       "ledgerTitle": "Ledger",
       "novaWalletDescription": "Seamless and secure transaction signing with Nova Wallet, leading mobile application for Polkadot eco",
       "novaWalletTitle": "Nova Wallet",
@@ -798,7 +798,7 @@
   "welcome": {
     "addLedgerButton": "Coming soon",
     "addLedgerComingSoonLabel": "Add Ledger wallet (coming soon)",
-    "addLedgerLabel": "Ledger's the smartest way to secure, buy, exchange and grow your crypto assets.",
+    "addLedgerLabel": "Ledger's the smartest way to secure, buy, exchange and grow your crypto assets",
     "addParitySignerAlt": "Icon of Polkadot Vault option",
     "addParitySignerAreaLabel": "Add Polkadot Vault wallet",
     "addParitySignerButton": "Add Polkadot Vault wallet",
