@@ -68,6 +68,8 @@ export const Overview = () => {
 
   const { rewards, isRewardsLoading } = useStakingRewards(addresses);
 
+  const isLightClient = connection?.connectionType === ConnectionType.LIGHT_CLIENT;
+
   useEffect(() => {
     if (!connection) return;
 
@@ -118,7 +120,7 @@ export const Overview = () => {
     const era = chainEra[chainId];
     if (!era) return;
 
-    getValidators(chainId, api, era).then(setValidators);
+    getValidators(chainId, api, era, isLightClient).then(setValidators);
   }, [chainId, api, chainEra]);
 
   const changeNetwork = (chain: Chain) => {
@@ -244,6 +246,7 @@ export const Overview = () => {
         validators={validators}
         explorers={explorers}
         isOpen={isShowNominators}
+        isLightClient={isLightClient}
         onClose={toggleNominators}
       />
 

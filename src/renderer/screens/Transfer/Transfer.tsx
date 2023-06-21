@@ -51,6 +51,10 @@ const Transfer = ({ assetId, chainId, isOpen, onClose }: Props) => {
     getChainById(chainId).then((chain) => setChainName(chain?.name || ''));
   }, []);
 
+  useEffect(() => {
+    isOpen && setActiveStep(Step.INIT);
+  }, [isOpen]);
+
   const { api, assets, addressPrefix, explorers } = connection;
   const asset = assets.find((a) => a.assetId === assetId);
 
@@ -80,7 +84,6 @@ const Transfer = ({ assetId, chainId, isOpen, onClose }: Props) => {
 
   const handleClose = () => {
     onClose?.();
-    setActiveStep(Step.INIT);
     setSignatory(undefined);
   };
 
