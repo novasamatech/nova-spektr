@@ -104,6 +104,18 @@ export function isMultishard(account?: Account | MultisigAccount): boolean {
   return Boolean(account.walletId);
 }
 
+export function isWalletContact(account?: Account | MultisigAccount): boolean {
+  if (!account) return false;
+
+  return account.signingType !== SigningType.WATCH_ONLY && !isMultisig(account);
+}
+
+export function isVaultAccount(account?: Account | MultisigAccount): boolean {
+  if (!account) return false;
+
+  return account.signingType === SigningType.PARITY_SIGNER;
+}
+
 export const getActiveWalletType = (activeAccounts?: AccountDS[]): WalletType | null => {
   if (!activeAccounts?.length) return null;
 

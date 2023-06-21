@@ -4,7 +4,7 @@ import { Alert, Button, Input, InputHint, Select, SmallTitleText } from '@render
 import { useI18n } from '@renderer/context/I18nContext';
 import { DropdownOption, DropdownResult } from '@renderer/components/ui/Dropdowns/common/types';
 import { Signatory } from '@renderer/domain/signatory';
-import { Account, getMultisigAccountId, isMultisig, MultisigAccount } from '@renderer/domain/account';
+import { Account, getMultisigAccountId, isMultisig, isWalletContact, MultisigAccount } from '@renderer/domain/account';
 import { SigningType } from '@renderer/domain/shared-kernel';
 
 export type MultisigAccountForm = {
@@ -66,6 +66,7 @@ export const WalletForm = ({
       threshold.value,
     );
 
+  const hasNoAccounts = accounts.filter(isWalletContact).length === 0;
   const hasOwnSignatory = signatories.some((s) =>
     accounts.find((a) => a.accountId === s.accountId && a.signingType !== SigningType.WATCH_ONLY && !isMultisig(a)),
   );
@@ -125,7 +126,7 @@ export const WalletForm = ({
           </Alert>
         )}
 
-        {accounts.length === 0 && (
+        {hasNoAccounts && (
           <Alert title={t('createMultisigAccount.alertTitle')} variant="warn">
             <Alert.Item withDot={false}>{t('createMultisigAccount.accountsAlertText')}</Alert.Item>
           </Alert>
