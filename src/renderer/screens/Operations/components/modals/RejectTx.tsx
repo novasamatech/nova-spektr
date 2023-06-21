@@ -218,6 +218,7 @@ const RejectTx = ({ tx, account, connection }: Props) => {
 
         <OperationResult
           isOpen={isFeeModalOpen}
+          variant="error"
           title={t('operation.feeErrorTitle')}
           description={t('operation.feeErrorMessage')}
           onClose={toggleFeeModal}
