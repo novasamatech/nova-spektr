@@ -378,7 +378,7 @@
     "videoError": "Браузер не поддерживает видео"
   },
   "receive": {
-    "chainLabel": "токен на этот адрес в {name} (Парачейн) сети!",
+    "chainLabel": "токен на этот адрес в {name} сети!",
     "copyAddressButton": "Копировать адрес",
     "explorerLinkLabel": "Ссылка на {name}",
     "selectWalletPlaceholder": "Выберите кошелек...",
