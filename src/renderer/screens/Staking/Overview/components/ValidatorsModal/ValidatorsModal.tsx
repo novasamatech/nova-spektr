@@ -112,7 +112,7 @@ export const ValidatorsModal = ({ api, stash, validators, asset, explorers, isOp
     >
       {isValidatorsLoading && (
         <div className="h-[366px] flex items-center justify-center">
-          <Loader className="my-24 mx-auto" color="primary" />
+          <Loader className="my-24 mx-auto" color="primary" size={25} />
         </div>
       )}
 

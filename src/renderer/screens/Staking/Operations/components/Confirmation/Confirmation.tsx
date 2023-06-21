@@ -1,9 +1,9 @@
 import { BN, BN_ZERO } from '@polkadot/util';
 import { ApiPromise } from '@polkadot/api';
-import { PropsWithChildren, useState } from 'react';
+import { PropsWithChildren, useState, useEffect } from 'react';
 
 import { Icon } from '@renderer/components/ui';
-import { Button, FootnoteText, CaptionText } from '@renderer/components/ui-redesign';
+import { Button, FootnoteText, CaptionText, InputHint, Tooltip } from '@renderer/components/ui-redesign';
 import { useI18n } from '@renderer/context/I18nContext';
 import { useToggle } from '@renderer/shared/hooks';
 import { Deposit, BalanceNew, Fee } from '@renderer/components/common';
@@ -12,12 +12,13 @@ import { Validator } from '@renderer/domain/validator';
 import { Account } from '@renderer/domain/account';
 import { Asset } from '@renderer/domain/asset';
 import { Explorer } from '@renderer/domain/chain';
-import { Transaction } from '@renderer/domain/transaction';
+import { Transaction, MultisigTxInitStatus } from '@renderer/domain/transaction';
 import AddressWithExplorers from '@renderer/components/common/AddressWithExplorers/AddressWithExplorers';
 import AccountsModal from '../Modals/AccountsModal/AccountsModal';
 import ValidatorsModal from '../Modals/ValidatorsModal/ValidatorsModal';
 import { DestinationType } from '../../common/types';
 import cnTw from '@renderer/shared/utils/twMerge';
+import { useMultisigTx } from '@renderer/services/multisigTx/multisigTxService';
 
 const ActionStyle = 'group hover:bg-action-background-hover px-2 py-1 rounded';
 
@@ -56,16 +57,34 @@ export const Confirmation = ({
   onGoBack,
 }: PropsWithChildren<Props>) => {
   const { t } = useI18n();
+  const { getMultisigTxs } = useMultisigTx();
+
   const [isAccountsOpen, toggleAccounts] = useToggle();
   const [isValidatorsOpen, toggleValidators] = useToggle();
 
   const [feeLoading, setFeeLoading] = useState(true);
+  const [multisigTxExist, setMultisigTxExist] = useState(false);
 
   const singleAccount = accounts.length === 1;
   const validatorsExist = validators && validators.length > 0;
   const totalAmount = amounts.reduce((acc, amount) => acc.add(new BN(amount)), BN_ZERO).toString();
 
   const threshold = multisigTx?.args.threshold;
+
+  useEffect(() => {
+    if (!multisigTx) return;
+
+    getMultisigTxs({
+      chainId: multisigTx.chainId,
+      accountId: accounts[0].accountId,
+      callHash: multisigTx.args.callHash,
+      status: MultisigTxInitStatus.SIGNING,
+    })
+      .then((txs) => setMultisigTxExist(Boolean(txs.length)))
+      .catch(() => {
+        console.warn('Could not retrieve multisig transactions from DB');
+      });
+  }, []);
 
   return (
     <>
@@ -99,7 +118,7 @@ export const Confirmation = ({
             ) : (
               <button type="button" className={cnTw('flex items-center gap-x-1', ActionStyle)} onClick={toggleAccounts}>
                 <div className="rounded-[30px] px-1.5 py-[1px] bg-icon-accent">
-                  <CaptionText className="text-button-text">{accounts.length}</CaptionText>
+                  <CaptionText className="text-white">{accounts.length}</CaptionText>
                 </div>
                 <Icon className="text-icon-default group-hover:text-icon-hover" name="info" size={16} />
               </button>
@@ -127,7 +146,7 @@ export const Confirmation = ({
                 onClick={toggleValidators}
               >
                 <div className="rounded-[30px] px-1.5 py-[1px] bg-icon-accent">
-                  <CaptionText className="text-button-text">{validators.length}</CaptionText>
+                  <CaptionText className="text-white">{validators.length}</CaptionText>
                 </div>
                 <Icon className="text-icon-default group-hover:text-icon-hover" name="info" size={16} />
               </button>
@@ -156,11 +175,14 @@ export const Confirmation = ({
 
           {multisigTx && (
             <div className="flex justify-between items-center gap-x-2">
-              <div className="flex items-center gap-x-2">
+              <div className="flex items-center gap-x-1">
                 <Icon className="text-text-tertiary" name="lock" size={12} />
                 <FootnoteText className="text-text-tertiary">
                   {t('staking.confirmation.networkDepositLabel')}
                 </FootnoteText>
+                <Tooltip content={t('staking.tooltips.depositDescription')} pointer="up">
+                  <Icon name="info" className="cursor-pointer" size={16} />
+                </Tooltip>
               </div>
               <FootnoteText>
                 <Deposit api={api} asset={asset} threshold={threshold} />
@@ -181,6 +203,10 @@ export const Confirmation = ({
             </FootnoteText>
           </div>
 
+          <InputHint active={multisigTxExist} variant="error">
+            {t('staking.confirmation.hintMstExists')}
+          </InputHint>
+
           {children}
         </div>
 
@@ -188,7 +214,11 @@ export const Confirmation = ({
           <Button variant="text" onClick={onGoBack}>
             {t('staking.confirmation.backButton')}
           </Button>
-          <Button disabled={feeLoading} prefixElement={<Icon name="vault" size={14} />} onClick={onResult}>
+          <Button
+            disabled={feeLoading || multisigTxExist}
+            prefixElement={<Icon name="vault" size={14} />}
+            onClick={onResult}
+          >
             {t('staking.confirmation.signButton')}
           </Button>
         </div>

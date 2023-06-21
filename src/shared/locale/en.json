@@ -546,12 +546,6 @@
       "startStakingLabel": "Start staking",
       "unstakeLabel": "Unstake"
     },
-    "badges": {
-      "redeemDescription": "Your tokens are ready to be withdrawn",
-      "redeemTitle": "Withdraw",
-      "unstakeDescription": "Your tokens are being unstaked<br />at the moment",
-      "unstakeTitle": "Unstaking"
-    },
     "bond": {
       "aboutRewards": "About rewards",
       "accountLabel": "Account",
@@ -586,6 +580,8 @@
       "errorModalEditButton": "Edit",
       "errorModalSubtitle": "You can discard these transactions",
       "errorModalTitle": "Error submitting { number } transactions",
+      "hintMstExists": "Multisig transaction already exists",
+      "hintMstTitle": "Error",
       "hintNewRewards": "You will get increased rewards starting from the next era",
       "hintNewValidators": "Your validators will change in the next era",
       "hintNoRewards": "During unstaking period tokens produce no rewards",
@@ -677,6 +673,13 @@
     "submitSuccessMultisig": "Operation approved",
     "submitSuccessSingle": "Operation success",
     "title": "Staking",
+    "tooltips": {
+      "depositDescription": "The deposit stays locked on the depositor’s account until the multisig operation is executed or rejected",
+      "redeemDescription": "Your tokens are ready to be withdrawn",
+      "redeemTitle": "Withdraw",
+      "unstakeDescription": "Your tokens are being unstaked<br />at the moment",
+      "unstakeTitle": "Unstaking"
+    },
     "unstake": {
       "confirmUnstakeSubtitle": "Confirmation",
       "initUnstakeSubtitle": "Unstake",

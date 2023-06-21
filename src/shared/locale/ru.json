@@ -546,12 +546,6 @@
       "startStakingLabel": "Начать стейкинг",
       "unstakeLabel": "Отменить стейк"
     },
-    "badges": {
-      "redeemDescription": "Вы можете забрать ваши unstaked токены",
-      "redeemTitle": "Забрать",
-      "unstakeDescription": "Ваши токены сейчас<br />выводятся из стейка",
-      "unstakeTitle": "Вывод из стейка"
-    },
     "bond": {
       "aboutRewards": "О наградах",
       "accountLabel": "Аккаунт",
@@ -586,6 +580,8 @@
       "errorModalEditButton": "Редактировать",
       "errorModalSubtitle": "Вы можете пропустить эти транзакции",
       "errorModalTitle": "Ошибка при отправке { number } транзакций",
+      "hintMstExists": "Мультисиг транзакция уже существует",
+      "hintMstTitle": "Ошибка",
       "hintNewRewards": "Вы будете получать увеличенную награду начиная со следующей эры",
       "hintNewValidators": "Изменения валидаторов вступят в силу со следующей эры",
       "hintNoRewards": "Во время разблокировки токенов награды не генерируются",
@@ -677,6 +673,13 @@
     "submitSuccessMultisig": "Operation approved",
     "submitSuccessSingle": "Operation success",
     "title": "Стейкинг",
+    "tooltips": {
+      "depositDescription": "На аккаунте депозитора блокируется сумма депозита до исполнения или отмены мультисиг операции",
+      "redeemDescription": "Вы можете забрать ваши unstaked токены",
+      "redeemTitle": "Забрать",
+      "unstakeDescription": "Ваши токены сейчас<br />выводятся из стейка",
+      "unstakeTitle": "Вывод из стейка"
+    },
     "unstake": {
       "confirmUnstakeSubtitle": "Подтверждение",
       "initUnstakeSubtitle": "Вывод из стейка",

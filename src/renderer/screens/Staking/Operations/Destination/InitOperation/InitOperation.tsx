@@ -1,7 +1,7 @@
 import { ApiPromise } from '@polkadot/api';
 import { useEffect, useState } from 'react';
 
-import { Select, MultiSelect, FootnoteText, InputHint } from '@renderer/components/ui-redesign';
+import { Select, MultiSelect, FootnoteText, InputHint, Tooltip } from '@renderer/components/ui-redesign';
 import { Fee, Deposit } from '@renderer/components/common';
 import { DropdownOption, DropdownResult } from '@renderer/components/ui/Dropdowns/common/types';
 import { useI18n } from '@renderer/context/I18nContext';
@@ -206,9 +206,12 @@ const InitOperation = ({ api, chainId, accounts, addressPrefix, asset, onResult 
         <div className="flex flex-col gap-y-2">
           {accountIsMultisig && (
             <div className="flex justify-between items-center gap-x-2">
-              <div className="flex items-center gap-x-2">
+              <div className="flex items-center gap-x-1">
                 <Icon className="text-text-tertiary" name="lock" size={12} />
                 <FootnoteText className="text-text-tertiary">{t('staking.bond.networkDepositLabel')}</FootnoteText>
+                <Tooltip content={t('staking.tooltips.depositDescription')} pointer="up">
+                  <Icon name="info" className="cursor-pointer" size={16} />
+                </Tooltip>
               </div>
               <FootnoteText>
                 <Deposit api={api} asset={asset} threshold={firstAccount.threshold} onDepositChange={setDeposit} />

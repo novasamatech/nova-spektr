@@ -109,7 +109,7 @@ export const Bond = () => {
         onClose={closeBondModal}
       >
         <div className="w-[440px] px-5 py-4">
-          <Loader className="my-24 mx-auto" color="primary" />
+          <Loader className="my-24 mx-auto" color="primary" size={25} />
           <Button disabled className="w-fit flex-0 mt-7 ml-auto">
             {t('staking.bond.continueButton')}
           </Button>
@@ -237,93 +237,96 @@ export const Bond = () => {
   const bondValues = new Array(accountsToStake.length).fill(stakeAmount);
 
   return (
-    <BaseModal
-      closeButton
-      contentClass=""
-      headerClass="py-4 px-5 max-w-[440px]"
-      panelClass="w-max"
-      isOpen={isBondModalOpen}
-      title={<OperationModalTitle title={`${t('staking.bond.title', { asset: asset.symbol })}`} chainId={chainId} />}
-      onClose={closeBondModal}
-    >
-      {activeStep === Step.INIT && (
-        <InitOperation api={api} chainId={chainId} accounts={accounts} onResult={onInitResult} {...explorersProps} />
-      )}
-      {activeStep === Step.VALIDATORS && (
-        <Validators
-          api={api}
-          chainId={chainId}
-          onResult={onSelectValidators}
-          onGoBack={goToPrevStep}
-          {...explorersProps}
-        />
-      )}
-      {activeStep === Step.CONFIRMATION && (
-        <Confirmation
-          api={api}
-          validators={Object.values(validators)}
-          accounts={accountsToStake}
-          signer={signer}
-          amounts={bondValues}
-          description={description}
-          destination={destination}
-          transaction={transactions[0]}
-          multisigTx={multisigTx}
-          onResult={() => setActiveStep(Step.SCANNING)}
-          onGoBack={goToPrevStep}
-          {...explorersProps}
-        >
-          {isAlertOpen && (
-            <Alert title={t('staking.confirmation.hintTitle')} onClose={toggleAlert}>
-              <Alert.Item>{t('staking.confirmation.hintRewards')}</Alert.Item>
-              <Alert.Item>
-                {t('staking.confirmation.hintUnstakePeriod')} {'('}
-                <UnstakingDuration api={api} />
-                {')'}
-              </Alert.Item>
-              <Alert.Item>{t('staking.confirmation.hintNoRewards')}</Alert.Item>
-              <Alert.Item>{t('staking.confirmation.hintWithdraw')}</Alert.Item>
-            </Alert>
-          )}
-        </Confirmation>
-      )}
-      {activeStep === Step.SCANNING && (
-        <div className="w-[440px] px-5 py-4">
-          {transactions.length > 1 ? (
-            <ScanMultiframeQr
-              api={api}
-              addressPrefix={addressPrefix}
-              countdown={countdown}
-              accounts={accounts}
-              transactions={transactions}
-              chainId={chainId}
-              onGoBack={() => setActiveStep(Step.CONFIRMATION)}
-              onResetCountdown={resetCountdown}
-              onResult={onScanResult}
-            />
-          ) : (
-            <ScanSingleframeQr
-              api={api}
-              addressPrefix={addressPrefix}
-              countdown={countdown}
-              account={signer || accounts[0]}
-              transaction={multisigTx || transactions[0]}
-              chainId={chainId}
-              onGoBack={() => setActiveStep(Step.CONFIRMATION)}
-              onResetCountdown={resetCountdown}
-              onResult={(unsignedTx) => onScanResult([unsignedTx])}
-            />
-          )}
-        </div>
-      )}
-      {activeStep === Step.SIGNING && (
-        <Signing
-          countdown={countdown}
-          multiQr={transactions.length > 1}
-          onResult={onSignResult}
-          onGoBack={() => setActiveStep(Step.SCANNING)}
-        />
-      )}
+    <>
+      <BaseModal
+        closeButton
+        contentClass=""
+        headerClass="py-4 px-5 max-w-[440px]"
+        panelClass="w-max"
+        isOpen={activeStep !== Step.SUBMIT && isBondModalOpen}
+        title={<OperationModalTitle title={`${t('staking.bond.title', { asset: asset.symbol })}`} chainId={chainId} />}
+        onClose={closeBondModal}
+      >
+        {activeStep === Step.INIT && (
+          <InitOperation api={api} chainId={chainId} accounts={accounts} onResult={onInitResult} {...explorersProps} />
+        )}
+        {activeStep === Step.VALIDATORS && (
+          <Validators
+            api={api}
+            chainId={chainId}
+            onResult={onSelectValidators}
+            onGoBack={goToPrevStep}
+            {...explorersProps}
+          />
+        )}
+        {activeStep === Step.CONFIRMATION && (
+          <Confirmation
+            api={api}
+            validators={Object.values(validators)}
+            accounts={accountsToStake}
+            signer={signer}
+            amounts={bondValues}
+            description={description}
+            destination={destination}
+            transaction={transactions[0]}
+            multisigTx={multisigTx}
+            onResult={() => setActiveStep(Step.SCANNING)}
+            onGoBack={goToPrevStep}
+            {...explorersProps}
+          >
+            {isAlertOpen && (
+              <Alert title={t('staking.confirmation.hintTitle')} onClose={toggleAlert}>
+                <Alert.Item>{t('staking.confirmation.hintRewards')}</Alert.Item>
+                <Alert.Item>
+                  {t('staking.confirmation.hintUnstakePeriod')} {'('}
+                  <UnstakingDuration api={api} />
+                  {')'}
+                </Alert.Item>
+                <Alert.Item>{t('staking.confirmation.hintNoRewards')}</Alert.Item>
+                <Alert.Item>{t('staking.confirmation.hintWithdraw')}</Alert.Item>
+              </Alert>
+            )}
+          </Confirmation>
+        )}
+        {activeStep === Step.SCANNING && (
+          <div className="w-[440px] px-5 py-4">
+            {transactions.length > 1 ? (
+              <ScanMultiframeQr
+                api={api}
+                addressPrefix={addressPrefix}
+                countdown={countdown}
+                accounts={accounts}
+                transactions={transactions}
+                chainId={chainId}
+                onGoBack={() => setActiveStep(Step.CONFIRMATION)}
+                onResetCountdown={resetCountdown}
+                onResult={onScanResult}
+              />
+            ) : (
+              <ScanSingleframeQr
+                api={api}
+                addressPrefix={addressPrefix}
+                countdown={countdown}
+                account={signer || accounts[0]}
+                transaction={multisigTx || transactions[0]}
+                chainId={chainId}
+                onGoBack={() => setActiveStep(Step.CONFIRMATION)}
+                onResetCountdown={resetCountdown}
+                onResult={(unsignedTx) => onScanResult([unsignedTx])}
+              />
+            )}
+          </div>
+        )}
+        {activeStep === Step.SIGNING && (
+          <Signing
+            countdown={countdown}
+            multiQr={transactions.length > 1}
+            onResult={onSignResult}
+            onGoBack={() => setActiveStep(Step.SCANNING)}
+          />
+        )}
+      </BaseModal>
+
       {activeStep === Step.SUBMIT && (
         <Submit
           api={api}
@@ -336,6 +339,6 @@ export const Bond = () => {
           onClose={closeBondModal}
         />
       )}
-    </BaseModal>
+    </>
   );
 };

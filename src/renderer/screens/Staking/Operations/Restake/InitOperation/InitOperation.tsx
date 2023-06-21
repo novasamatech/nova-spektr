@@ -18,7 +18,7 @@ import { Account, isMultisig } from '@renderer/domain/account';
 import { Balance as AccountBalance } from '@renderer/domain/balance';
 import { OperationForm } from '../../components';
 import { nonNullable } from '@renderer/shared/utils/functions';
-import { FootnoteText, Select, MultiSelect, InputHint } from '@renderer/components/ui-redesign';
+import { FootnoteText, Select, MultiSelect, InputHint, Tooltip } from '@renderer/components/ui-redesign';
 import { useStakingData } from '@renderer/services/staking/stakingDataService';
 import {
   getRestakeAccountOption,
@@ -261,9 +261,12 @@ const InitOperation = ({ api, chainId, accounts, addressPrefix, asset, onResult 
         <div className="flex flex-col gap-y-2">
           {accountIsMultisig && (
             <div className="flex justify-between items-center gap-x-2">
-              <div className="flex items-center gap-x-2">
+              <div className="flex items-center gap-x-1">
                 <Icon className="text-text-tertiary" name="lock" size={12} />
                 <FootnoteText className="text-text-tertiary">{t('staking.bond.networkDepositLabel')}</FootnoteText>
+                <Tooltip content={t('staking.tooltips.depositDescription')} pointer="up">
+                  <Icon name="info" className="cursor-pointer" size={16} />
+                </Tooltip>
               </div>
               <FootnoteText>
                 <Deposit api={api} asset={asset} threshold={firstAccount.threshold} onDepositChange={setDeposit} />

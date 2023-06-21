@@ -17,12 +17,12 @@ import { ComboboxOption } from '@renderer/components/ui-redesign/Dropdowns/commo
 import { getPayoutAccountOption } from '../../common/utils';
 
 const getDestinations = (t: TFunction): RadioOption<RewardsDestination>[] => {
-  const options = [
+  const Options = [
     { value: RewardsDestination.RESTAKE, title: t('staking.bond.restakeRewards') },
     { value: RewardsDestination.TRANSFERABLE, title: t('staking.bond.transferableRewards') },
   ];
 
-  return options.map((dest, index) => ({
+  return Options.map((dest, index) => ({
     id: index.toString(),
     value: dest.value,
     title: dest.title,

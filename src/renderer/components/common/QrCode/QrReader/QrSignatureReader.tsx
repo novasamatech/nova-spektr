@@ -67,7 +67,7 @@ const QrSignatureReader = ({
     if (cameras.length === 0) {
       throw QR_READER_ERRORS[QrError.NO_VIDEO_INPUT];
     }
-    if (cameras.length > 1) {
+    if (cameras.length > 0) {
       onCameraList?.(cameras);
     }
 
@@ -146,6 +146,7 @@ const QrSignatureReader = ({
     (async () => {
       try {
         controlsRef.current?.stop();
+        bgControlsRef.current?.stop();
         await startScanning();
       } catch (error) {
         onError?.(QR_READER_ERRORS[QrError.BAD_NEW_CAMERA]);

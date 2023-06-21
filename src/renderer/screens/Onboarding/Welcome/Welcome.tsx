@@ -110,7 +110,7 @@ const Welcome = () => {
               <div className="flex justify-between items-center w-full">
                 <BodyText className="text-text-tertiary">{t('onboarding.welcome.novaWalletTitle')}</BodyText>
                 <CaptionText
-                  className="text-button-text uppercase bg-label-background-gray px-2 py-1 rounded-full"
+                  className="text-white uppercase bg-label-background-gray px-2 py-1 rounded-full"
                   data-testid="progress"
                 >
                   {t('onboarding.welcome.soonBadge')}

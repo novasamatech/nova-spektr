@@ -107,7 +107,7 @@ export const Validators = ({ api, chainId, asset, explorers, onGoBack, onResult 
       <div className="flex items-center gap-x-1 px-5">
         <SmallTitleText as="p">{t('staking.validators.selectedValidatorsLabel')}</SmallTitleText>
         {isValidatorsLoading ? (
-          <Shimmering width={70} height={16} />
+          <Shimmering className="ml-1" width={70} height={16} />
         ) : (
           <SmallTitleText as="p" className="text-text-tertiary">
             {t('staking.validators.maxValidatorsLabel', { max: maxValidators })}
@@ -123,7 +123,7 @@ export const Validators = ({ api, chainId, asset, explorers, onGoBack, onResult 
 
       {isValidatorsLoading && (
         <div className="h-[288px] flex items-center justify-center">
-          <Loader color="primary" />
+          <Loader color="primary" size={25} />
         </div>
       )}
 

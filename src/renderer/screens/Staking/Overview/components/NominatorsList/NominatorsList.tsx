@@ -95,7 +95,7 @@ export const NominatorsList = ({
       <ul className="flex flex-col gap-y-2">
         {nominators.map((stake) => {
           const unstakeBadge = getNextUnstakingEra(stake.unlocking, era) && (
-            <Tooltip offsetPx={-65} content={<Trans t={t} i18nKey="staking.badges.unstakeDescription" />}>
+            <Tooltip offsetPx={-65} content={<Trans t={t} i18nKey="staking.tooltips.unstakeDescription" />}>
               <div className="flex gap-x-1 items-center rounded-md bg-badge-background text-icon-accent text-2xs px-2 py-0.5">
                 <Icon name="unstake" className="text-icon-accent" size={14} />
                 <TimeToEra api={api} era={getNextUnstakingEra(stake.unlocking, era)} />
@@ -104,10 +104,10 @@ export const NominatorsList = ({
           );
 
           const redeemBadge = hasRedeem(stake.unlocking, era) && (
-            <Tooltip offsetPx={-48} content={<Trans t={t} i18nKey="staking.badges.redeemDescription" />}>
+            <Tooltip offsetPx={-48} content={<Trans t={t} i18nKey="staking.tooltips.redeemDescription" />}>
               <div className="flex gap-x-1 items-center rounded-md bg-positive-background text-text-positive text-2xs px-2 py-0.5">
                 <Icon name="redeem" className="text-text-positive" size={14} />
-                {t('staking.badges.redeemTitle')}
+                {t('staking.tooltips.redeemTitle')}
               </div>
             </Tooltip>
           );
