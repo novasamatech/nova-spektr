@@ -80,22 +80,22 @@ export const ValidatorsModal = ({ api, stash, validators, asset, explorers, isOp
 
     return (
       <li key={validator.address} className="grid grid-cols-[400px,130px,130px,1fr] items-center gap-x-6">
-        <div className="flex gap-x-2">
-          <Identicon address={validator.address} background={false} size={20} />
-          {validator.identity ? (
-            <BodyText>{getComposedIdentity(validator.identity)}</BodyText>
-          ) : (
-            <BodyText>{toShortAddress(validator.address, 11)}</BodyText>
-          )}
-        </div>
-        <BodyText>
-          <Balance value={validator.ownStake || '0'} precision={asset.precision} symbol={asset.symbol} />
-        </BodyText>
-        <BodyText>
-          <Balance value={validator.totalStake || '0'} precision={asset.precision} symbol={asset.symbol} />
-        </BodyText>
         <InfoPopover data={getExplorers(validator.address, explorers)} position="top-full right-0">
-          <Icon name="info" size={14} className="text-icon-default " />
+          <div className="flex gap-x-2">
+            <Identicon address={validator.address} background={false} size={20} />
+            {validator.identity ? (
+              <BodyText>{getComposedIdentity(validator.identity)}</BodyText>
+            ) : (
+              <BodyText>{toShortAddress(validator.address, 11)}</BodyText>
+            )}
+          </div>
+          <BodyText>
+            <Balance value={validator.ownStake || '0'} precision={asset.precision} symbol={asset.symbol} />
+          </BodyText>
+          <BodyText>
+            <Balance value={validator.totalStake || '0'} precision={asset.precision} symbol={asset.symbol} />
+          </BodyText>
+          <Icon name="info" size={14} className="text-icon-default hover:text-icon-hover" />
         </InfoPopover>
       </li>
     );
@@ -105,6 +105,7 @@ export const ValidatorsModal = ({ api, stash, validators, asset, explorers, isOp
     <BaseModal
       closeButton
       contentClass=""
+      headerClass="py-4 px-5"
       panelClass="w-[784px]"
       title={t('staking.nominators.yourValidatorsTitle')}
       isOpen={isOpen}
@@ -119,7 +120,7 @@ export const ValidatorsModal = ({ api, stash, validators, asset, explorers, isOp
       {!isValidatorsLoading && !validatorsExist && <NoValidators className="my-12" />}
 
       {!isValidatorsLoading && validatorsExist && (
-        <div className="max-h-[512px] flex flex-col gap-y-4 px-5 pt-0.5 pb-4 overflow-y-auto">
+        <div className="max-h-[512px] flex flex-col gap-y-5 px-5 pt-5 pb-4 overflow-y-auto">
           {elected.length > 0 && (
             <Accordion isDefaultOpen>
               <Accordion.Button>
@@ -131,13 +132,13 @@ export const ValidatorsModal = ({ api, stash, validators, asset, explorers, isOp
               <Accordion.Content>
                 <div className="flex flex-col gap-y-2 mt-4">
                   <div className="grid grid-cols-[400px,130px,1fr] items-center gap-x-6">
-                    <FootnoteText className="text-text-secondary">
-                      {t('staking.validators.validatorsTableHeader')}
+                    <FootnoteText className="text-text-tertiary">
+                      {t('staking.validators.validatorTableHeader')}
                     </FootnoteText>
-                    <FootnoteText className="text-text-secondary">
+                    <FootnoteText className="text-text-tertiary">
                       {t('staking.validators.ownStakeTableHeader')}
                     </FootnoteText>
-                    <FootnoteText className="text-text-secondary">
+                    <FootnoteText className="text-text-tertiary">
                       {t('staking.validators.totalStakeTableHeader')}
                     </FootnoteText>
                   </div>
@@ -159,13 +160,13 @@ export const ValidatorsModal = ({ api, stash, validators, asset, explorers, isOp
               <Accordion.Content>
                 <div className="flex flex-col gap-y-2 mt-4">
                   <div className="grid grid-cols-[400px,130px,1fr] items-center gap-x-6">
-                    <FootnoteText className="text-text-secondary">
-                      {t('staking.validators.validatorsTableHeader')}
+                    <FootnoteText className="text-text-tertiary">
+                      {t('staking.validators.validatorTableHeader')}
                     </FootnoteText>
-                    <FootnoteText className="text-text-secondary">
+                    <FootnoteText className="text-text-tertiary">
                       {t('staking.validators.ownStakeTableHeader')}
                     </FootnoteText>
-                    <FootnoteText className="text-text-secondary">
+                    <FootnoteText className="text-text-tertiary">
                       {t('staking.validators.totalStakeTableHeader')}
                     </FootnoteText>
                   </div>

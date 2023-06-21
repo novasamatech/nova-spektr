@@ -712,7 +712,7 @@
       "subtitle": "Validators",
       "title": "Change validators on",
       "totalStakeTableHeader": "Total stake",
-      "validatorsTableHeader": "Accounts"
+      "validatorTableHeader": "Account"
     },
     "warning": {
       "controller": "This operation works with <strong>Controller</strong> accounts only.<br />Would you like to deselect <strong>Stash</strong> accounts to continue?",

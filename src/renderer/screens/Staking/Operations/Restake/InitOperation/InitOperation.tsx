@@ -2,8 +2,6 @@ import { ApiPromise } from '@polkadot/api';
 import { BN } from '@polkadot/util';
 import { useEffect, useState } from 'react';
 
-import { Fee, Deposit } from '@renderer/components/common';
-import { Icon } from '@renderer/components/ui';
 import { DropdownOption, DropdownResult } from '@renderer/components/ui/Dropdowns/common/types';
 import { useI18n } from '@renderer/context/I18nContext';
 import { Asset } from '@renderer/domain/asset';
@@ -18,7 +16,7 @@ import { Account, isMultisig } from '@renderer/domain/account';
 import { Balance as AccountBalance } from '@renderer/domain/balance';
 import { OperationForm } from '../../components';
 import { nonNullable } from '@renderer/shared/utils/functions';
-import { FootnoteText, Select, MultiSelect, InputHint, Tooltip } from '@renderer/components/ui-redesign';
+import { Select, MultiSelect, InputHint } from '@renderer/components/ui-redesign';
 import { useStakingData } from '@renderer/services/staking/stakingDataService';
 import {
   getRestakeAccountOption,
@@ -218,35 +216,19 @@ const InitOperation = ({ api, chainId, accounts, addressPrefix, asset, onResult 
     return activeBalances.length > 1 ? ['0', minBalance] : minBalance;
   };
 
+  const getActiveAccounts = (): AccountId[] => {
+    if (!accountIsMultisig) return activeRestakeAccounts.map((acc) => acc.id as AccountId);
+
+    return activeSignatory ? [activeSignatory.id as AccountId] : [];
+  };
+
   const canSubmit = !feeLoading && (activeRestakeAccounts.length > 0 || Boolean(activeSignatory));
 
   return (
     <div className="flex flex-col gap-y-4 w-[440px] px-5 py-4">
-      {accountIsMultisig ? (
-        <div className="flex flex-col gap-y-2">
-          <Select
-            label={t('staking.bond.signatoryLabel')}
-            placeholder={t('staking.bond.signatoryPlaceholder')}
-            disabled={!signatoryOptions.length}
-            selectedId={activeSignatory?.id}
-            options={signatoryOptions}
-            onChange={setActiveSignatory}
-          />
-          <InputHint active={!signatoryOptions.length}>{t('multisigOperations.noSignatory')}</InputHint>
-        </div>
-      ) : (
-        <MultiSelect
-          label={t('staking.bond.accountLabel')}
-          placeholder={t('staking.bond.accountPlaceholder')}
-          multiPlaceholder={t('staking.bond.manyAccountsPlaceholder')}
-          selectedIds={activeRestakeAccounts.map((acc) => acc.id)}
-          options={restakeAccounts}
-          onChange={setActiveRestakeAccounts}
-        />
-      )}
-
       <OperationForm
         chainId={chainId}
+        accounts={getActiveAccounts()}
         canSubmit={canSubmit}
         addressPrefix={addressPrefix}
         fields={formFields}
@@ -255,38 +237,45 @@ const InitOperation = ({ api, chainId, accounts, addressPrefix, asset, onResult 
         validateBalance={validateBalance}
         validateFee={validateFee}
         validateDeposit={validateDeposit}
+        render={({ invalidBalance, invalidFee, invalidDeposit }) =>
+          accountIsMultisig ? (
+            <div className="flex flex-col gap-y-2 mb-4">
+              <Select
+                label={t('staking.bond.signatoryLabel')}
+                placeholder={t('staking.bond.signatoryPlaceholder')}
+                disabled={!signatoryOptions.length}
+                invalid={invalidDeposit || invalidFee}
+                selectedId={activeSignatory?.id}
+                options={signatoryOptions}
+                onChange={setActiveSignatory}
+              />
+              <InputHint active={!signatoryOptions.length}>{t('multisigOperations.noSignatory')}</InputHint>
+            </div>
+          ) : (
+            <MultiSelect
+              className="mb-4"
+              label={t('staking.bond.accountLabel')}
+              placeholder={t('staking.bond.accountPlaceholder')}
+              multiPlaceholder={t('staking.bond.manyAccountsPlaceholder')}
+              invalid={invalidBalance || invalidFee}
+              selectedIds={activeRestakeAccounts.map((acc) => acc.id)}
+              options={restakeAccounts}
+              onChange={setActiveRestakeAccounts}
+            />
+          )
+        }
         onSubmit={submitRestake}
         onAmountChange={setAmount}
       >
-        <div className="flex flex-col gap-y-2">
-          {accountIsMultisig && (
-            <div className="flex justify-between items-center gap-x-2">
-              <div className="flex items-center gap-x-1">
-                <Icon className="text-text-tertiary" name="lock" size={12} />
-                <FootnoteText className="text-text-tertiary">{t('staking.bond.networkDepositLabel')}</FootnoteText>
-                <Tooltip content={t('staking.tooltips.depositDescription')} pointer="up">
-                  <Icon name="info" className="cursor-pointer" size={16} />
-                </Tooltip>
-              </div>
-              <FootnoteText>
-                <Deposit api={api} asset={asset} threshold={firstAccount.threshold} onDepositChange={setDeposit} />
-              </FootnoteText>
-            </div>
-          )}
-
-          <div className="flex justify-between items-center gap-x-2">
-            <FootnoteText className="text-text-tertiary">{t('staking.bond.networkFeeLabel')}</FootnoteText>
-            <FootnoteText className="text-text-tertiary">
-              <Fee
-                api={api}
-                asset={asset}
-                transaction={transactions[0]}
-                onFeeChange={setFee}
-                onFeeLoading={setFeeLoading}
-              />
-            </FootnoteText>
-          </div>
-        </div>
+        <OperationForm.Footer
+          api={api}
+          asset={asset}
+          account={firstAccount}
+          transaction={transactions[0]}
+          onFeeChange={setFee}
+          onFeeLoading={setFeeLoading}
+          onDepositChange={setDeposit}
+        />
       </OperationForm>
     </div>
   );

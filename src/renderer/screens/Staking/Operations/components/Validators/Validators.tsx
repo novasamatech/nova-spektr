@@ -139,7 +139,7 @@ export const Validators = ({ api, chainId, asset, explorers, onGoBack, onResult 
       {!isValidatorsLoading && validatorList.length > 0 && (
         <div className="flex flex-col gap-y-2 mt-4">
           <div className="grid grid-cols-[400px,120px,1fr] items-center gap-x-6 px-5">
-            <FootnoteText className="text-text-secondary">{t('staking.validators.validatorsTableHeader')}</FootnoteText>
+            <FootnoteText className="text-text-secondary">{t('staking.validators.validatorTableHeader')}</FootnoteText>
             <FootnoteText className="text-text-secondary">{t('staking.validators.ownStakeTableHeader')}</FootnoteText>
             <FootnoteText className="text-text-secondary">{t('staking.validators.totalStakeTableHeader')}</FootnoteText>
           </div>

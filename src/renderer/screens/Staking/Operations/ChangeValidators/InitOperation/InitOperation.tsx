@@ -13,9 +13,7 @@ import { useValidators } from '@renderer/services/staking/validatorsService';
 import { Account, isMultisig, MultisigAccount } from '@renderer/domain/account';
 import { toAddress } from '@renderer/shared/utils/address';
 import { nonNullable } from '@renderer/shared/utils/functions';
-import { MultiSelect, Select, FootnoteText, InputHint, Tooltip } from '@renderer/components/ui-redesign';
-import { Deposit, Fee } from '@renderer/components/common';
-import { Icon } from '@renderer/components/ui';
+import { MultiSelect, Select, InputHint } from '@renderer/components/ui-redesign';
 import { OperationForm } from '../../components';
 import {
   getSignatoryOptions,
@@ -169,72 +167,74 @@ const InitOperation = ({ api, chainId, accounts, asset, addressPrefix, onResult 
     return validateBalanceForFeeDeposit(signerBalance, deposit, fee);
   };
 
-  const canSubmit = !feeLoading && (activeValidatorsAccounts.length > 0 || Boolean(activeSignatory));
+  const getActiveAccounts = (): AccountId[] => {
+    if (!accountIsMultisig) return activeValidatorsAccounts.map((acc) => acc.id as AccountId);
+
+    return activeSignatory ? [activeSignatory.id as AccountId] : [];
+  };
+
+  const validFee = validateFee();
+  const validDeposit = validateDeposit();
+  const canSubmit =
+    !feeLoading && (activeValidatorsAccounts.length > 0 || Boolean(activeSignatory)) && validFee && validDeposit;
 
   return (
-    <div className="flex flex-col gap-y-4 w-[440px] px-5 py-4">
-      {accountIsMultisig ? (
-        <div className="flex flex-col gap-y-2">
-          <Select
-            label={t('staking.bond.signatoryLabel')}
-            placeholder={t('staking.bond.signatoryPlaceholder')}
-            disabled={!signatoryOptions.length}
-            selectedId={activeSignatory?.id}
-            options={signatoryOptions}
-            onChange={setActiveSignatory}
-          />
-          <InputHint active={!signatoryOptions.length}>{t('multisigOperations.noSignatory')}</InputHint>
-        </div>
-      ) : (
-        <MultiSelect
-          label={t('staking.bond.accountLabel')}
-          placeholder={t('staking.bond.accountPlaceholder')}
-          multiPlaceholder={t('staking.bond.manyAccountsPlaceholder')}
-          selectedIds={activeValidatorsAccounts.map((acc) => acc.id)}
-          options={validatorsAccounts}
-          onChange={setActiveValidatorsAccounts}
-        />
-      )}
-
+    <div className="flex flex-col w-[440px] px-5 py-4">
       <OperationForm
         chainId={chainId}
+        accounts={getActiveAccounts()}
         canSubmit={canSubmit}
         addressPrefix={addressPrefix}
         fields={formFields}
         asset={asset}
-        validateFee={validateFee}
-        validateDeposit={validateDeposit}
+        render={() =>
+          accountIsMultisig ? (
+            <div className="flex flex-col gap-y-2 mb-4">
+              <Select
+                label={t('staking.bond.signatoryLabel')}
+                placeholder={t('staking.bond.signatoryPlaceholder')}
+                disabled={!signatoryOptions.length}
+                invalid={!validDeposit || !validFee}
+                selectedId={activeSignatory?.id}
+                options={signatoryOptions}
+                onChange={setActiveSignatory}
+              />
+              <InputHint active={!signatoryOptions.length}>{t('multisigOperations.noSignatory')}</InputHint>
+              <InputHint active={!validFee} variant="error">
+                {t('staking.notEnoughBalanceForFeeError')}
+              </InputHint>
+              <InputHint active={!validDeposit} variant="error">
+                {t('staking.notEnoughBalanceForDepositError')}
+              </InputHint>
+            </div>
+          ) : (
+            <div className="flex flex-col gap-y-2 mb-4">
+              <MultiSelect
+                label={t('staking.bond.accountLabel')}
+                placeholder={t('staking.bond.accountPlaceholder')}
+                multiPlaceholder={t('staking.bond.manyAccountsPlaceholder')}
+                invalid={!validFee}
+                selectedIds={activeValidatorsAccounts.map((acc) => acc.id)}
+                options={validatorsAccounts}
+                onChange={setActiveValidatorsAccounts}
+              />
+              <InputHint active={!validFee} variant="error">
+                {t('staking.notEnoughBalanceForFeeError')}
+              </InputHint>
+            </div>
+          )
+        }
         onSubmit={submitBond}
       >
-        <div className="flex flex-col gap-y-2">
-          {accountIsMultisig && (
-            <div className="flex justify-between items-center gap-x-2">
-              <div className="flex items-center gap-x-1">
-                <Icon className="text-text-tertiary" name="lock" size={12} />
-                <FootnoteText className="text-text-tertiary">{t('staking.bond.networkDepositLabel')}</FootnoteText>
-                <Tooltip content={t('staking.tooltips.depositDescription')} pointer="up">
-                  <Icon name="info" className="cursor-pointer" size={16} />
-                </Tooltip>
-              </div>
-              <FootnoteText>
-                <Deposit api={api} asset={asset} threshold={firstAccount.threshold} onDepositChange={setDeposit} />
-              </FootnoteText>
-            </div>
-          )}
-
-          <div className="flex justify-between items-center gap-x-2">
-            <FootnoteText className="text-text-tertiary">{t('staking.bond.networkFeeLabel')}</FootnoteText>
-            <FootnoteText className="text-text-tertiary">
-              <Fee
-                api={api}
-                asset={asset}
-                transaction={transactions[0]}
-                onFeeChange={setFee}
-                onFeeLoading={setFeeLoading}
-              />
-            </FootnoteText>
-          </div>
-        </div>
+        <OperationForm.Footer
+          api={api}
+          asset={asset}
+          account={firstAccount}
+          transaction={transactions[0]}
+          onFeeChange={setFee}
+          onFeeLoading={setFeeLoading}
+          onDepositChange={setDeposit}
+        />
       </OperationForm>
     </div>
   );

@@ -712,7 +712,7 @@
       "subtitle": "Валидаторы",
       "title": "Выбор валидаторов на",
       "totalStakeTableHeader": "Общий стейк",
-      "validatorsTableHeader": "Аккаунты"
+      "validatorTableHeader": "Аккаунт"
     },
     "warning": {
       "controller": "Данная операция работает только на <strong>Controller</strong> аккаунтах.<br />Отключить все <strong>Stash</strong> аккаунты чтобы продолжить?",
