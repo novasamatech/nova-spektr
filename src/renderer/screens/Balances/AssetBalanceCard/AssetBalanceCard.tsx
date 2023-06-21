@@ -71,7 +71,13 @@ const AssetBalanceCard = ({ asset, balance, canMakeActions, onReceiveClick, onTr
               // isVerificationFailed ? 'border-alert bg-warning-gradient' : 'border-shade-30 bg-shade-70',
             )}
           >
-            <img src={asset.icon} alt="" width={32} height={32} />
+            <img
+              src={asset.icon}
+              alt=""
+              width={32}
+              height={32}
+              onError={(e) => ((e.target as HTMLImageElement).style.display = 'none')}
+            />
           </div>
           <BodyText>{asset.name}</BodyText>
         </div>

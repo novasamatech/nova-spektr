@@ -8,6 +8,8 @@ import { HelpText } from '@renderer/components/ui-redesign/Typography';
 import { useI18n } from '@renderer/context/I18nContext';
 import { RpcNode } from '@renderer/domain/chain';
 import './NetworkItem.css';
+import { useToggle } from '@renderer/shared/hooks';
+import { Shimmering } from '@renderer/components/ui';
 
 const Status = {
   [ConnectionStatus.CONNECTING]: {
@@ -42,6 +44,8 @@ export const NetworkItem = ({
 }: Props) => {
   const { t } = useI18n();
 
+  const [imgLoadError, toggleImgLoadError] = useToggle();
+
   const { icon, name, connection } = networkItem;
   const { connectionType, connectionStatus, activeNode } = connection;
 
@@ -49,7 +53,11 @@ export const NetworkItem = ({
 
   return (
     <div className="flex items-center py-3">
-      <img src={icon} alt="" width={26} height={26} />
+      {!imgLoadError ? (
+        <img src={icon} alt="" width={26} height={26} onError={() => toggleImgLoadError()} />
+      ) : (
+        <Shimmering width={26} height={26} />
+      )}
       <div className="flex flex-col ml-2 mr-auto pr-2 overflow-hidden">
         <BodyText className="truncate">{name}</BodyText>
         {networkIsActive && activeNode && <HelpText className="text-text-tertiary truncate">{activeNode.url}</HelpText>}
