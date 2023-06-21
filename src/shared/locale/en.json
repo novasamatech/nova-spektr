@@ -378,7 +378,7 @@
     "videoError": "Your browser doesn't support video"
   },
   "receive": {
-    "chainLabel": "token to this address on the {name} (Parachain) network!",
+    "chainLabel": "token to this address on the {name} network!",
     "copyAddressButton": "Copy address",
     "explorerLinkLabel": "Link to {name}",
     "selectWalletPlaceholder": "Select a wallet...",
