@@ -56,7 +56,7 @@ const ManageStep = ({ seedInfo, onBack, onComplete }: Props) => {
     formState: { errors, isValid },
   } = useForm<WalletForm>({
     mode: 'onChange',
-    defaultValues: { walletName: seedInfo[0].name || '' },
+    defaultValues: { walletName: '' },
   });
 
   const { addWallet } = useWallet();
