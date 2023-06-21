@@ -1,4 +1,4 @@
-import { BodyText, CaptionText, HeadlineText } from '@renderer/components/ui-redesign';
+import { BodyText, CaptionText, FootnoteText } from '@renderer/components/ui-redesign';
 import { Icon, Identicon } from '@renderer/components/ui';
 import { WalletType } from '@renderer/domain/shared-kernel';
 import { GroupIcons, GroupLabels } from '@renderer/components/layout/PrimaryLayout/Wallets/common/constants';
@@ -30,13 +30,13 @@ const ActiveAccountCard = ({ activeAccounts, chains, wallets }: Props) => {
   return (
     <div className="flex items-center px-3 py-2 gap-x-2 flex-1">
       {isMultishard && multishardWallet && (
-        <HeadlineText
+        <FootnoteText
           as="span"
           align="center"
-          className="border border-token-container-border bg-token-container-background p-[3px] h-7 w-7"
+          className="border border-token-container-border bg-token-container-background py-1 h-7 w-7"
         >
-          {activeAccounts.length}
-        </HeadlineText>
+          {activeAccounts.length > 99 ? '99+' : activeAccounts.length}
+        </FootnoteText>
       )}
       {!isMultishard && account && (
         <Identicon address={toAddress(account.accountId, { prefix: addressPrefix })} background={false} size={28} />
