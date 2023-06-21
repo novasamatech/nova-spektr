@@ -51,6 +51,10 @@ const Transfer = ({ assetId, chainId, isOpen, onClose }: Props) => {
     getChainById(chainId).then((chain) => setChainName(chain?.name || ''));
   }, []);
 
+  useEffect(() => {
+    isOpen && setActiveStep(Step.INIT);
+  }, [isOpen]);
+
   const { api, assets, addressPrefix, explorers } = connection;
   const asset = assets.find((a) => a.assetId === assetId);
 
@@ -80,7 +84,6 @@ const Transfer = ({ assetId, chainId, isOpen, onClose }: Props) => {
 
   const handleClose = () => {
     onClose?.();
-    setActiveStep(Step.INIT);
     setSignatory(undefined);
   };
 
@@ -88,6 +91,11 @@ const Transfer = ({ assetId, chainId, isOpen, onClose }: Props) => {
 
   const getSignatory = (): Account | undefined => {
     return isMultisig(account) ? signatory : isMultishard(account) ? account : undefined;
+  };
+
+  const changeSignatory = (sign: Account) => {
+    setSignatory(sign);
+    console.log('sign 2', sign);
   };
 
   return (
@@ -119,7 +127,7 @@ const Transfer = ({ assetId, chainId, isOpen, onClose }: Props) => {
                 api={api}
                 onResult={onInitResult}
                 onAccountChange={onAccountChange}
-                onSignatoryChange={setSignatory}
+                onSignatoryChange={changeSignatory}
                 {...commonProps}
               />
             )}
