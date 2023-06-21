@@ -80,8 +80,11 @@ const InitOperation = ({
     if (options.length === 0) return;
 
     setAccountsOptions(options);
-    !activeAccount && setActiveAccount({ id: options[0].id, value: options[0].value });
-    onAccountChange(options[0].value);
+
+    if (!activeAccount) {
+      setActiveAccount({ id: options[0].id, value: options[0].value });
+      onAccountChange(options[0].value);
+    }
   }, [accounts.length, balances, amount, fee, deposit]);
 
   useEffect(() => {
@@ -108,8 +111,11 @@ const InitOperation = ({
       if (options.length === 0) return;
 
       setSignatoryOptions(options);
-      onSignatoryChange(options[0].value);
-      !activeSignatory && setActiveSignatory({ id: options[0].id, value: options[0].value });
+
+      if (!activeSignatory) {
+        onSignatoryChange(options[0].value);
+        setActiveSignatory({ id: options[0].id, value: options[0].value });
+      }
     }
   }, [activeAccount, signatoriesBalances, dbAccounts.length, fee, deposit]);
 
