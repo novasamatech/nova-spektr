@@ -101,9 +101,9 @@
     "chooseOptionLabel": "Choose an option"
   },
   "fallbackScreen": {
-    "message": "Something went wrong",
+    "message": "Sorry, something went wrong",
     "omniLogoAlt": "Nova Spektr logo",
-    "reloadButton": "Reload"
+    "reloadButton": "Refresh"
   },
   "general": {
     "button": {
