@@ -115,13 +115,13 @@ const LoginForm = () => {
       setIsLoggedIn(true);
     } catch (error) {
       console.warn(error);
+      setInProgress(false);
       setInvalidLogin(true);
     }
-    setInProgress(false);
   };
 
-  const logInDisabled = isLoggedIn || isHomeserverLoading || !isValid || invalidHomeserver || invalidLogin;
-  const submitState = !isLoggedIn && !isHomeserverLoading;
+  const logInDisabled = isHomeserverLoading || !isValid || invalidHomeserver || invalidLogin;
+  const isEditing = !isLoggedIn && !isHomeserverLoading && !inProgress;
   const register = <InfoLink url="https://app.element.io/#/register" showIcon={false} />;
 
   return (
@@ -137,7 +137,7 @@ const LoginForm = () => {
               placeholder={t('settings.matrix.homeserverPlaceholder')}
               wrapperClass="py-[11px]"
               invalid={invalidHomeserver}
-              disabled={!submitState || isHomeserverLoading}
+              disabled={!isEditing || isHomeserverLoading}
               options={HOME_SERVERS}
               onChange={changeHomeserver(onChange)}
             />
@@ -162,7 +162,7 @@ const LoginForm = () => {
                       label={t('settings.matrix.usernameLabel')}
                       placeholder={t('settings.matrix.usernamePlaceholder')}
                       wrapperClass="py-[11px]"
-                      disabled={!submitState}
+                      disabled={!isEditing}
                       invalid={invalidLogin || Boolean(errors.username)}
                       value={value}
                       onChange={changeInputValue(onChange)}
@@ -185,7 +185,7 @@ const LoginForm = () => {
                       label={t('settings.matrix.passwordLabel')}
                       placeholder={t('settings.matrix.passwordPlaceholder')}
                       wrapperClass="py-[11px]"
-                      disabled={!submitState}
+                      disabled={!isEditing}
                       invalid={invalidLogin || Boolean(errors.password)}
                       value={value}
                       onChange={changeInputValue(onChange)}
