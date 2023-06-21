@@ -1,6 +1,5 @@
 import { useState } from 'react';
 
-import { Icon } from '@renderer/components/ui';
 import { useI18n } from '@renderer/context/I18nContext';
 import { useToggle } from '@renderer/shared/hooks';
 import { Header } from '@renderer/components/common';
@@ -8,7 +7,7 @@ import { useContact } from '@renderer/services/contact/contactService';
 import ContactModal from './components/ContactModal';
 import ContactList from './components/ContactList';
 import EmptyContacts from './components/EmptyState/EmptyContacts';
-import { Button, Input } from '@renderer/components/ui-redesign';
+import { Button, SearchInput } from '@renderer/components/ui-redesign';
 
 const AddressBook = () => {
   const { t } = useI18n();
@@ -24,10 +23,10 @@ const AddressBook = () => {
     <div className="h-full flex flex-col items-start relative">
       <Header title={t('addressBook.title')} titleClass="py-[3px]" headerClass="pt-4 pb-[15px]">
         <div className="flex items-center gap-4">
-          <Input
-            className="w-[230px] ml-2"
+          <SearchInput
+            value={query}
+            className="w-[230px]"
             placeholder={t('addressBook.searchPlaceholder')}
-            prefixElement={<Icon size={16} name="search" />}
             onChange={setQuery}
           />
 
