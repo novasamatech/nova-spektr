@@ -4,6 +4,7 @@ import QrFrameImg, { ReactComponent as QrFrameSvg } from '@images/misc/qr-frame.
 import NoResults, { ReactComponent as NoResultsSvg } from '@images/misc/no-results.svg';
 import NoWallets, { ReactComponent as NoWalletsSvg } from '@images/misc/no-wallets.svg';
 import EmptyList from '@images/misc/empty-list.webp';
+import Computer from '@images/misc/computer.webp';
 
 const MiscImages = {
   logo: { svg: LogoSvg, img: LogoImg },
@@ -12,6 +13,7 @@ const MiscImages = {
   noResults: { svg: NoResultsSvg, img: NoResults },
   noWallets: { svg: NoWalletsSvg, img: NoWallets },
   emptyList: { svg: null, img: EmptyList },
+  computer: { svg: null, img: Computer },
 } as const;
 
 export type Misc = keyof typeof MiscImages;
