@@ -10,16 +10,9 @@ type Props = {
 export const ChainIcon = ({ icon, name, size = 16 }: Props) => {
   const [imgLoadError, toggleImgLoadError] = useToggle();
 
-  return !imgLoadError ? (
-    <img
-      src={icon}
-      className="inline-block"
-      width={size}
-      height={size}
-      alt={name}
-      onError={() => toggleImgLoadError()}
-    />
+  return imgLoadError ? (
+    <Shimmering width={size} height={size} className="rounded" />
   ) : (
-    <Shimmering width={size} height={size} />
+    <img src={icon} className="inline-block" width={size} height={size} alt={name} onError={toggleImgLoadError} />
   );
 };
