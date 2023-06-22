@@ -39,6 +39,8 @@ import {
 import InputFile from './Inputs/InputFile/InputFile';
 import { Tooltip } from './Popovers/Tooltip/Tooltip';
 import { LabelHelpBox } from './LabelHelpbox/LabelHelpBox';
+import { Chain } from './Chain/Chain';
+import { ChainIcon } from './Chain/ChainIcon/ChainIcon';
 
 export {
   Input,
@@ -80,4 +82,6 @@ export {
   InputFile,
   Tooltip,
   LabelHelpBox,
+  Chain,
+  ChainIcon,
 };

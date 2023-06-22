@@ -45,6 +45,8 @@ export const NetworkInfo = ({
         const { chainId, icon, name, assets } = chain;
 
         if (getRelaychainAsset(assets)) {
+          // if replaced with Chain component there's visible delay on image load when dropdown opened
+          // TODO figure out why
           const element = (
             <div className="flex items-center gap-x-2 overflow-hidden">
               <img src={icon} alt={name} width={16} height={16} />
