@@ -6,7 +6,16 @@ import { useMatrix } from '@renderer/context/MatrixContext';
 import { useI18n } from '@renderer/context/I18nContext';
 import { DropdownResult } from '@renderer/components/ui/Dropdowns/common/types';
 import { WELL_KNOWN_SERVERS } from '@renderer/services/matrix';
-import { Alert, Button, Combobox, FootnoteText, InfoLink, Input, InputHint } from '@renderer/components/ui-redesign';
+import {
+  Alert,
+  Button,
+  Combobox,
+  FootnoteText,
+  InfoLink,
+  Input,
+  InputHint,
+  PasswordInput,
+} from '@renderer/components/ui-redesign';
 import { Icon, Loader } from '@renderer/components/ui';
 
 const HOME_SERVERS = WELL_KNOWN_SERVERS.map((server) => ({
@@ -180,8 +189,7 @@ const LoginForm = () => {
                 rules={{ required: true }}
                 render={({ field: { value, onChange } }) => (
                   <>
-                    <Input
-                      type="password"
+                    <PasswordInput
                       label={t('settings.matrix.passwordLabel')}
                       placeholder={t('settings.matrix.passwordPlaceholder')}
                       wrapperClass="py-[11px]"
