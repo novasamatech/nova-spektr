@@ -12,7 +12,19 @@ import { getValidatorsApy } from './apyCalculator';
 import { IValidatorsService, ValidatorMap } from './common/types';
 
 export const useValidators = (): IValidatorsService => {
-  const getValidators = async (
+  /**
+   * Get simple validators list
+   */
+  const getValidatorsList = async (api: ApiPromise, era: EraIndex): Promise<ValidatorMap> => {
+    const [stake, prefs] = await Promise.all([getValidatorsStake(api, era), getValidatorsPrefs(api, era)]);
+
+    return merge(stake, prefs);
+  };
+
+  /**
+   * Get validators with their identity, apy and slashing spans
+   */
+  const getValidatorsWithInfo = async (
     chainId: ChainId,
     api: ApiPromise,
     era: EraIndex,
@@ -132,19 +144,17 @@ export const useValidators = (): IValidatorsService => {
     if (isLightClient) {
       const wrappedIdentities = await api.query.identity.identityOf.entries();
 
-      const parentAddresses = subIdentities.reduce<Record<string, boolean>>((acc, identity) => {
-        acc[identity.parent] = true;
+      const identities = wrappedIdentities.reduce<Record<Address, Option<PalletIdentityRegistration>>>(
+        (acc, [storageKey, identity]) => {
+          const address = storageKey.args[0].toString();
+          acc[address] = identity;
 
-        return acc;
-      }, {});
+          return acc;
+        },
+        {},
+      );
 
-      parentIdentities = wrappedIdentities.reduce<Option<PalletIdentityRegistration>[]>((acc, [address, identity]) => {
-        if (parentAddresses[address.args[0].toString()] && !identity.isNone) {
-          acc.push(identity);
-        }
-
-        return acc;
-      }, []);
+      parentIdentities = subIdentities.map((identity) => identities[identity.parent]);
     } else {
       const identityAddresses = subIdentities.map((identity) => identity.parent);
       parentIdentities = await api.query.identity.identityOf.multi(identityAddresses);
@@ -244,7 +254,8 @@ export const useValidators = (): IValidatorsService => {
   };
 
   return {
-    getValidators,
+    getValidatorsWithInfo,
+    getValidatorsList,
     getMaxValidators,
     getNominators,
   };
