@@ -41,7 +41,7 @@ const Checkbox = ({
       checked={checked}
       value={value}
       className={cnTw(
-        'checkbox relative shrink-0 appearance-none w-4 h-4 text-button-text outline-offset-1',
+        'checkbox relative shrink-0 appearance-none w-4 h-4 text-white outline-offset-1',
         'rounded border border-filter-border bg-button-text',
         'checked:bg-icon-accent checked:border-0 checked:active:border checked:border-icon-accent-default',
         semiChecked && 'semi-checked bg-icon-accent border-0 focus:border border-icon-accent-default',

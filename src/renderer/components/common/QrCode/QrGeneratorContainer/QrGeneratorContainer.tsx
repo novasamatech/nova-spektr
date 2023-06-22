@@ -24,12 +24,12 @@ const QrGeneratorContainer = ({ countdown, onQrReset, chainId, children }: Props
       <div className="flex items-center gap-x-2 mt-3 mb-4">
         <FootnoteText className="text-text-tertiary">{t('signing.qrCountdownTitle')}</FootnoteText>
         <CaptionText
+          align="center"
           className={cn(
-            'py-1 px-2 w-[50px] h-5 rounded-[26px] text-button-text',
+            'py-1 px-2 w-[50px] h-5 rounded-[26px] text-white',
             ((countdown === 0 || !children) && 'bg-label-background-gray') ||
               (countdown >= 60 ? 'bg-label-background-green' : 'bg-label-background-red'),
           )}
-          align="center"
         >
           {/* if qr not loaded yet just show zero */}
           {secondsToMinutes(children ? countdown : 0)}

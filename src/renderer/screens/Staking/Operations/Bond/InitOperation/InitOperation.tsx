@@ -15,9 +15,7 @@ import { useValidators } from '@renderer/services/staking/validatorsService';
 import { Account, isMultisig, MultisigAccount } from '@renderer/domain/account';
 import { toAddress } from '@renderer/shared/utils/address';
 import { nonNullable } from '@renderer/shared/utils/functions';
-import { FootnoteText, InputHint, MultiSelect, Select } from '@renderer/components/ui-redesign';
-import { Deposit, Fee } from '@renderer/components/common';
-import { Icon } from '@renderer/components/ui';
+import { InputHint, MultiSelect, Select } from '@renderer/components/ui-redesign';
 import { TEST_ADDRESS } from '@renderer/shared/utils/constants';
 import { OperationForm } from '../../components';
 import {
@@ -92,7 +90,7 @@ const InitOperation = ({ api, chainId, accounts, asset, addressPrefix, onResult 
   }, [activeStakeAccounts.length, balances]);
 
   useEffect(() => {
-    if (accountIsMultisig) {
+    if (accountIsMultisig || activeBalances.length === 1) {
       setMinBalance(stakeableAmount(activeBalances[0]));
 
       return;
@@ -100,8 +98,6 @@ const InitOperation = ({ api, chainId, accounts, asset, addressPrefix, onResult 
 
     if (!activeBalances.length) {
       setMinBalance('0');
-    } else if (activeBalances.length === 1) {
-      setMinBalance(stakeableAmount(activeBalances[0]));
     } else {
       const stakeableBalance = activeBalances.map(stakeableAmount).filter((balance) => balance && balance !== '0');
       const minBalance = stakeableBalance.reduce<string>(
@@ -230,33 +226,17 @@ const InitOperation = ({ api, chainId, accounts, asset, addressPrefix, onResult 
 
   const canSubmit = !feeLoading && (activeStakeAccounts.length > 0 || Boolean(activeSignatory));
 
-  return (
-    <div className="flex flex-col gap-y-4 w-[440px] px-5 py-4">
-      {accountIsMultisig ? (
-        <div className="flex flex-col gap-y-2">
-          <Select
-            label={t('staking.bond.signatoryLabel')}
-            placeholder={t('staking.bond.signatoryPlaceholder')}
-            disabled={!signatoryOptions.length}
-            selectedId={activeSignatory?.id}
-            options={signatoryOptions}
-            onChange={setActiveSignatory}
-          />
-          <InputHint active={!signatoryOptions.length}>{t('multisigOperations.noSignatory')}</InputHint>
-        </div>
-      ) : (
-        <MultiSelect
-          label={t('staking.bond.accountLabel')}
-          placeholder={t('staking.bond.accountPlaceholder')}
-          multiPlaceholder={t('staking.bond.manyAccountsPlaceholder')}
-          selectedIds={activeStakeAccounts.map((acc) => acc.id)}
-          options={stakeAccounts}
-          onChange={setActiveStakeAccounts}
-        />
-      )}
+  const getActiveAccounts = (): AccountId[] => {
+    if (!accountIsMultisig) return activeStakeAccounts.map((acc) => acc.id as AccountId);
 
+    return activeSignatory ? [activeSignatory.id as AccountId] : [];
+  };
+
+  return (
+    <div className="flex flex-col w-[440px] px-5 py-4">
       <OperationForm
         chainId={chainId}
+        accounts={getActiveAccounts()}
         canSubmit={canSubmit}
         addressPrefix={addressPrefix}
         fields={formFields}
@@ -265,35 +245,48 @@ const InitOperation = ({ api, chainId, accounts, asset, addressPrefix, onResult 
         validateBalance={validateBalance}
         validateFee={validateFee}
         validateDeposit={validateDeposit}
+        footer={
+          <OperationForm.Footer
+            api={api}
+            asset={asset}
+            account={firstAccount}
+            totalAccounts={activeStakeAccounts.length}
+            transaction={transactions[0]}
+            onFeeChange={setFee}
+            onFeeLoading={setFeeLoading}
+            onDepositChange={setDeposit}
+          />
+        }
         onSubmit={submitBond}
         onAmountChange={setAmount}
       >
-        <div className="flex flex-col gap-y-2">
-          {accountIsMultisig && (
-            <div className="flex justify-between items-center gap-x-2">
-              <div className="flex items-center gap-x-2">
-                <Icon className="text-text-tertiary" name="lock" size={12} />
-                <FootnoteText className="text-text-tertiary">{t('staking.bond.networkDepositLabel')}</FootnoteText>
-              </div>
-              <FootnoteText>
-                <Deposit api={api} asset={asset} threshold={firstAccount.threshold} onDepositChange={setDeposit} />
-              </FootnoteText>
-            </div>
-          )}
-
-          <div className="flex justify-between items-center gap-x-2">
-            <FootnoteText className="text-text-tertiary">{t('staking.bond.networkFeeLabel')}</FootnoteText>
-            <FootnoteText className="text-text-tertiary">
-              <Fee
-                api={api}
-                asset={asset}
-                transaction={transactions[0]}
-                onFeeChange={setFee}
-                onFeeLoading={setFeeLoading}
+        {({ invalidBalance, invalidFee, invalidDeposit }) =>
+          accountIsMultisig ? (
+            <div className="flex flex-col gap-y-2 mb-4">
+              <Select
+                label={t('staking.bond.signatoryLabel')}
+                placeholder={t('staking.bond.signatoryPlaceholder')}
+                disabled={!signatoryOptions.length}
+                invalid={invalidDeposit || invalidFee}
+                selectedId={activeSignatory?.id}
+                options={signatoryOptions}
+                onChange={setActiveSignatory}
               />
-            </FootnoteText>
-          </div>
-        </div>
+              <InputHint active={!signatoryOptions.length}>{t('multisigOperations.noSignatory')}</InputHint>
+            </div>
+          ) : (
+            <MultiSelect
+              className="mb-4"
+              label={t('staking.bond.accountLabel')}
+              placeholder={t('staking.bond.accountPlaceholder')}
+              multiPlaceholder={t('staking.bond.manyAccountsPlaceholder')}
+              invalid={invalidBalance || invalidFee}
+              selectedIds={activeStakeAccounts.map((acc) => acc.id)}
+              options={stakeAccounts}
+              onChange={setActiveStakeAccounts}
+            />
+          )
+        }
       </OperationForm>
     </div>
   );

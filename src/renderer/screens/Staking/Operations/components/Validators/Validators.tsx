@@ -108,7 +108,7 @@ export const Validators = ({ api, chainId, asset, explorers, isLightClient, onGo
       <div className="flex items-center gap-x-1 px-5">
         <SmallTitleText as="p">{t('staking.validators.selectedValidatorsLabel')}</SmallTitleText>
         {isValidatorsLoading ? (
-          <Shimmering width={70} height={16} />
+          <Shimmering className="ml-1" width={70} height={16} />
         ) : (
           <SmallTitleText as="p" className="text-text-tertiary">
             {t('staking.validators.maxValidatorsLabel', { max: maxValidators })}
@@ -124,7 +124,7 @@ export const Validators = ({ api, chainId, asset, explorers, isLightClient, onGo
 
       {isValidatorsLoading && (
         <div className="h-[288px] flex items-center justify-center">
-          <Loader color="primary" />
+          <Loader color="primary" size={25} />
         </div>
       )}
 
@@ -140,7 +140,7 @@ export const Validators = ({ api, chainId, asset, explorers, isLightClient, onGo
       {!isValidatorsLoading && validatorList.length > 0 && (
         <div className="flex flex-col gap-y-2 mt-4">
           <div className="grid grid-cols-[400px,120px,1fr] items-center gap-x-6 px-5">
-            <FootnoteText className="text-text-secondary">{t('staking.validators.validatorsTableHeader')}</FootnoteText>
+            <FootnoteText className="text-text-secondary">{t('staking.validators.validatorTableHeader')}</FootnoteText>
             <FootnoteText className="text-text-secondary">{t('staking.validators.ownStakeTableHeader')}</FootnoteText>
             <FootnoteText className="text-text-secondary">{t('staking.validators.totalStakeTableHeader')}</FootnoteText>
           </div>

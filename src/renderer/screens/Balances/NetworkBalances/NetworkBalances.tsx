@@ -2,7 +2,7 @@ import { BN } from '@polkadot/util';
 
 import { Icon } from '@renderer/components/ui';
 import { Asset } from '@renderer/domain/asset';
-import { Chain } from '@renderer/domain/chain';
+import { Chain as ChainType } from '@renderer/domain/chain';
 import { AccountId } from '@renderer/domain/shared-kernel';
 import { useBalance } from '@renderer/services/balance/balanceService';
 import { ZERO_BALANCE } from '@renderer/services/balance/common/constants';
@@ -12,14 +12,14 @@ import AssetBalanceCard from '../AssetBalanceCard/AssetBalanceCard';
 import { useI18n } from '@renderer/context/I18nContext';
 import { Balance } from '@renderer/domain/balance';
 import { includes } from '@renderer/shared/utils/strings';
-import { CaptionText, IconButton, Tooltip } from '@renderer/components/ui-redesign';
+import { CaptionText, Chain, IconButton, Tooltip } from '@renderer/components/ui-redesign';
 import { useToggle } from '@renderer/shared/hooks';
 
 type Props = {
   hideZeroBalance?: boolean;
   searchSymbolOnly?: boolean;
   query?: string;
-  chain: Chain | ExtendedChain;
+  chain: ChainType | ExtendedChain;
   accountIds: AccountId[];
   canMakeActions?: boolean;
   onReceiveClick?: (asset: Asset) => void;
@@ -96,14 +96,11 @@ const NetworkBalances = ({
       <div className="bg-white sticky top-0 z-[1]">
         <div className="flex items-center justify-between mb-1 bg-main-app-background hover:bg-block-background-hover rounded">
           <div className="flex items-center">
-            <h2 className="flex items-center gap-x-2 px-2 py-1.5">
-              <img src={chain.icon} width={20} height={20} alt="" />
-              <CaptionText className="uppercase text-text-tertiary">{chain.name}</CaptionText>
-            </h2>
+            <Chain chain={chain} className="px-2 py-1.5" fontClass="text-caption uppercase" as="h2" iconSize={20} />
             {hasFailedVerification && (
               <div className="flex items-center gap-x-2 text-text-warning">
                 {/* TODO fix tooltip not visible when first displayed network invalid. For now just render it below icon */}
-                <Tooltip content={t('balances.verificationTooltip')} panelClass="w-[184px]" pointer="up">
+                <Tooltip content={t('balances.verificationTooltip')} pointer="up">
                   <Icon name="warn" className="cursor-pointer" size={16} />
                 </Tooltip>
                 <CaptionText className="uppercase text-inherit">{t('balances.verificationFailedLabel')}</CaptionText>

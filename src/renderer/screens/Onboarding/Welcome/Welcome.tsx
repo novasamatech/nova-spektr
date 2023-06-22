@@ -25,7 +25,6 @@ const Welcome = () => {
 
   const logo = useRef<HTMLDivElement>(null);
 
-  // const [windowSize, setWindowSize] = useState<{ width: number, height: number}>();
   const [fixed, setFixed] = useState(true);
 
   useLayoutEffect(() => {
@@ -41,7 +40,7 @@ const Welcome = () => {
     return () => {
       window.removeEventListener('resize', handleResize);
     };
-  }, []); // Empty array ensures that effect is only run on mount and unmount
+  }, []);
 
   const handleCreateWatchOnlyWallet = () => {
     toggleWatchOnlyModal();

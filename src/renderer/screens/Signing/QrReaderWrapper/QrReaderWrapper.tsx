@@ -64,9 +64,7 @@ const QrReaderWrapper = ({ className, onResult, countdown, validationError, isMu
   };
 
   const onScanResult = (qrPayload: HexString | HexString[]) => {
-    if (countdown === 0) {
-      return;
-    }
+    if (countdown === 0) return;
 
     try {
       setTimeout(() => onResult(qrPayload), RESULT_DELAY);
@@ -101,13 +99,13 @@ const QrReaderWrapper = ({ className, onResult, countdown, validationError, isMu
     ),
     cameraId: activeCamera?.value,
     onStart: () => setIsLoading(false),
-    onCameraList: onCameraList,
-    onError: onError,
+    onCameraList,
+    onError,
   };
 
   return (
     <div className="flex flex-col items-center flex-1 w-full relative pt-[52px] overflow-y-hidden">
-      <SmallTitleText as="h3" className={cn('z-10', activeCamera && 'text-white')}>
+      <SmallTitleText as="h3" className={cnTw('z-10', activeCamera && 'text-white')}>
         {t('signing.scanQrTitle')}
       </SmallTitleText>
 
@@ -115,12 +113,12 @@ const QrReaderWrapper = ({ className, onResult, countdown, validationError, isMu
       <div className="flex items-center gap-x-2 mt-3 mb-4.5 z-10">
         <FootnoteText className="text-text-tertiary">{t('signing.qrCountdownTitle')}</FootnoteText>
         <CaptionText
+          align="center"
           className={cn(
-            'py-1 px-2 w-[50px] h-5 rounded-[26px] text-button-text',
+            'py-1 px-2 w-[50px] h-5 rounded-[26px] text-white',
             (countdown === 0 && 'bg-label-background-gray') ||
               (countdown >= 60 ? 'bg-label-background-green' : 'bg-label-background-red'),
           )}
-          align="center"
         >
           {secondsToMinutes(countdown)}
         </CaptionText>
@@ -135,7 +133,7 @@ const QrReaderWrapper = ({ className, onResult, countdown, validationError, isMu
               size={240}
               className={cnTw(
                 'absolute w-full h-full min-h-[240px] camera-frame z-20',
-                isCameraOn ? 'text-button-text' : 'text-filter-border',
+                isCameraOn ? 'text-white' : 'text-filter-border',
               )}
             />
             <div className="z-30 absolute flex flex-col items-center justify-center gap-y-4 w-full h-[240px]">
