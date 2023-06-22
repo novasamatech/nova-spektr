@@ -116,7 +116,7 @@ const Filters = ({ txs, onChangeFilters }: Props) => {
     selectedOptions.network.length || selectedOptions.status.length || selectedOptions.type.length;
 
   return (
-    <div className="flex gap-2 my-4">
+    <div className="flex gap-2 my-4 w-[736px] ml-6">
       <MultiSelect
         className="w-[200px]"
         placeholder={t('operations.filters.statusPlaceholder')}
