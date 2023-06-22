@@ -4,6 +4,7 @@ import { Explorer } from '@renderer/domain/chain';
 import { Account } from '@renderer/domain/account';
 import { BaseModal } from '@renderer/components/ui-redesign';
 import AddressWithExplorers from '@renderer/components/common/AddressWithExplorers/AddressWithExplorers';
+import cnTw from '@renderer/shared/utils/twMerge';
 
 type Props = {
   isOpen: boolean;
@@ -27,7 +28,7 @@ const AccountsModal = ({ isOpen, accounts, explorers, addressPrefix, onClose }: 
       isOpen={isOpen}
       onClose={onClose}
     >
-      <ul className="max-h-[388px] flex flex-col gap-y-3 overflow-y-auto">
+      <ul className={cnTw('flex flex-col gap-y-3', accounts.length > 7 && 'max-h-[388px] overflow-y-auto')}>
         {accounts.map((account) => (
           <li key={account.accountId}>
             <AddressWithExplorers

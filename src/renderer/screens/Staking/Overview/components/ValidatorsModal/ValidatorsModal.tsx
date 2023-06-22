@@ -89,23 +89,25 @@ export const ValidatorsModal = ({
     if (!asset) return undefined;
 
     return (
-      <li key={validator.address} className="grid grid-cols-[400px,130px,130px,1fr] items-center gap-x-6">
-        <div className="flex gap-x-2">
-          <Identicon address={validator.address} background={false} size={20} />
-          {validator.identity ? (
-            <BodyText>{getComposedIdentity(validator.identity)}</BodyText>
-          ) : (
-            <BodyText>{toShortAddress(validator.address, 11)}</BodyText>
-          )}
-        </div>
-        <BodyText>
-          <Balance value={validator.ownStake || '0'} precision={asset.precision} symbol={asset.symbol} />
-        </BodyText>
-        <BodyText>
-          <Balance value={validator.totalStake || '0'} precision={asset.precision} symbol={asset.symbol} />
-        </BodyText>
+      <li key={validator.address} className="px-5 py-2 group hover:bg-hover cursor-pointer">
         <InfoPopover data={getExplorers(validator.address, explorers)} position="top-full right-0">
-          <Icon name="info" size={14} className="text-icon-default " />
+          <div className="grid grid-cols-[400px,130px,130px,1fr] items-center gap-x-6">
+            <div className="flex gap-x-2">
+              <Identicon address={validator.address} background={false} size={20} />
+              {validator.identity ? (
+                <BodyText>{getComposedIdentity(validator.identity)}</BodyText>
+              ) : (
+                <BodyText>{toShortAddress(validator.address, 11)}</BodyText>
+              )}
+            </div>
+            <BodyText>
+              <Balance value={validator.ownStake || '0'} precision={asset.precision} symbol={asset.symbol} />
+            </BodyText>
+            <BodyText>
+              <Balance value={validator.totalStake || '0'} precision={asset.precision} symbol={asset.symbol} />
+            </BodyText>
+            <Icon name="info" size={14} className="text-icon-default group-hover:text-icon-hover" />
+          </div>
         </InfoPopover>
       </li>
     );
@@ -115,6 +117,7 @@ export const ValidatorsModal = ({
     <BaseModal
       closeButton
       contentClass=""
+      headerClass="py-4 px-5"
       panelClass="w-[784px]"
       title={t('staking.nominators.yourValidatorsTitle')}
       isOpen={isOpen}
@@ -122,17 +125,17 @@ export const ValidatorsModal = ({
     >
       {isValidatorsLoading && (
         <div className="h-[366px] flex items-center justify-center">
-          <Loader className="my-24 mx-auto" color="primary" />
+          <Loader className="my-24 mx-auto" color="primary" size={25} />
         </div>
       )}
 
       {!isValidatorsLoading && !validatorsExist && <NoValidators className="my-12" />}
 
       {!isValidatorsLoading && validatorsExist && (
-        <div className="max-h-[512px] flex flex-col gap-y-4 px-5 pt-0.5 pb-4 overflow-y-auto">
+        <div className="max-h-[512px] flex flex-col gap-y-5 pt-5 pb-4 overflow-y-auto">
           {elected.length > 0 && (
             <Accordion isDefaultOpen>
-              <Accordion.Button>
+              <Accordion.Button className="px-5">
                 <div className="flex items-center gap-x-1 w-full">
                   <SmallTitleText>{t('staking.nominators.electedTitle')}</SmallTitleText>
                   <SmallTitleText className="text-text-tertiary">({elected.length})</SmallTitleText>
@@ -140,19 +143,19 @@ export const ValidatorsModal = ({
               </Accordion.Button>
               <Accordion.Content>
                 <div className="flex flex-col gap-y-2 mt-4">
-                  <div className="grid grid-cols-[400px,130px,1fr] items-center gap-x-6">
-                    <FootnoteText className="text-text-secondary">
-                      {t('staking.validators.validatorsTableHeader')}
+                  <div className="grid grid-cols-[400px,130px,1fr] items-center gap-x-6 px-5">
+                    <FootnoteText className="text-text-tertiary">
+                      {t('staking.validators.validatorTableHeader')}
                     </FootnoteText>
-                    <FootnoteText className="text-text-secondary">
+                    <FootnoteText className="text-text-tertiary">
                       {t('staking.validators.ownStakeTableHeader')}
                     </FootnoteText>
-                    <FootnoteText className="text-text-secondary">
+                    <FootnoteText className="text-text-tertiary">
                       {t('staking.validators.totalStakeTableHeader')}
                     </FootnoteText>
                   </div>
 
-                  <ul className="flex flex-col gap-y-4">{elected.map((e) => getRow(e, asset, explorers))}</ul>
+                  <ul className="flex flex-col gap-y-1">{elected.map((e) => getRow(e, asset, explorers))}</ul>
                 </div>
               </Accordion.Content>
             </Accordion>
@@ -169,13 +172,13 @@ export const ValidatorsModal = ({
               <Accordion.Content>
                 <div className="flex flex-col gap-y-2 mt-4">
                   <div className="grid grid-cols-[400px,130px,1fr] items-center gap-x-6">
-                    <FootnoteText className="text-text-secondary">
-                      {t('staking.validators.validatorsTableHeader')}
+                    <FootnoteText className="text-text-tertiary">
+                      {t('staking.validators.validatorTableHeader')}
                     </FootnoteText>
-                    <FootnoteText className="text-text-secondary">
+                    <FootnoteText className="text-text-tertiary">
                       {t('staking.validators.ownStakeTableHeader')}
                     </FootnoteText>
-                    <FootnoteText className="text-text-secondary">
+                    <FootnoteText className="text-text-tertiary">
                       {t('staking.validators.totalStakeTableHeader')}
                     </FootnoteText>
                   </div>

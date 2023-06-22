@@ -51,7 +51,7 @@ jest.mock('../../components', () => ({
   },
 }));
 
-describe('screens/Staking/Unstake/InitOperation', () => {
+describe('screens/Staking/ChangeValidators/InitOperation', () => {
   const defaultProps = {
     api: {} as ApiPromise,
     chainId: '0x123' as ChainId,

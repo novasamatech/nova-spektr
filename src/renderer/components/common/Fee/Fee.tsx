@@ -51,7 +51,7 @@ const Fee = ({ api, multiply = 1, asset, transaction, className, onFeeChange, on
   }, [transaction, api]);
 
   if (isLoading) {
-    return <Shimmering width={80} height={10} data-testid="fee-loader" />;
+    return <Shimmering width={90} height={20} data-testid="fee-loader" />;
   }
 
   const totalFee = new BN(fee).muln(multiply).toString();

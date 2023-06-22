@@ -51,7 +51,7 @@ jest.mock('../../components', () => ({
     return (
       <div>
         <p>operationForm</p>
-        {children}
+        {children({ invalidBalance: false, invalidFee: false, invalidDeposit: false })}
       </div>
     );
   },

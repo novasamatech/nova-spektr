@@ -45,13 +45,15 @@ const InitOperation = ({
   const accounts = getActiveAccounts();
   const dbAccounts = getLiveAccounts();
 
+  const [fee, setFee] = useState<string>('0');
+  const [amount, setAmount] = useState<string>('0');
+  const [deposit, setDeposit] = useState<string>('0');
+
   const [activeAccount, setActiveAccount] = useState<DropdownResult<Account | MultisigAccount>>();
   const [accountsOptions, setAccountsOptions] = useState<DropdownOption<Account | MultisigAccount>[]>([]);
+
   const [activeSignatory, setActiveSignatory] = useState<DropdownResult<Account>>();
   const [signatoryOptions, setSignatoryOptions] = useState<DropdownOption<MultisigAccount>[]>([]);
-  const [amount, setAmount] = useState<string>('0');
-  const [fee, setFee] = useState<string>('0');
-  const [deposit, setDeposit] = useState<string>('0');
 
   const accountIds = accounts.map((account) => account.accountId);
   const balances = getLiveAssetBalances(accountIds, chainId, asset?.assetId.toString() || '');

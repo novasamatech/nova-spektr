@@ -19,11 +19,11 @@ export const Tooltip = ({
     offsetPx={offsetPx}
     contentClass={cnTw('py-1 px-2', contentClass)}
     panelClass={cnTw(
-      'left-1/2 -translate-x-1/2 bg-switch-background-active rounded w-max rounded border-none shadow-none',
-      'pointer-' + pointer,
+      'max-w-[184px] left-1/2 -translate-x-1/2 bg-switch-background-active rounded w-max rounded border-none shadow-none',
+      'spektr-arrow spektr-arrow__' + pointer,
       panelClass,
     )}
-    content={<HelpText className="text-button-text">{content}</HelpText>}
+    content={<HelpText className="text-white">{content}</HelpText>}
   >
     {children}
   </Popover>

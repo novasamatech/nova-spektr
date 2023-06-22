@@ -51,13 +51,13 @@ jest.mock('../../components', () => ({
     return (
       <div>
         <p>operationForm</p>
-        {children}
+        {children({ invalidBalance: false, invalidFee: false, invalidDeposit: false })}
       </div>
     );
   },
 }));
 
-describe('screens/Staking/StakeMore/InitOperation', () => {
+describe('screens/Staking/Redeem/InitOperation', () => {
   const defaultProps = {
     api: {} as ApiPromise,
     chainId: '0x123' as ChainId,
