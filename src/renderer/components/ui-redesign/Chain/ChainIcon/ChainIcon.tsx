@@ -12,11 +12,11 @@ export const ChainIcon = ({ icon, name, size = 16 }: Props) => {
 
   return !imgLoadError ? (
     <img
+      src={icon}
       className="inline-block"
       width={size}
       height={size}
       alt={name}
-      src={icon}
       onError={() => toggleImgLoadError()}
     />
   ) : (
