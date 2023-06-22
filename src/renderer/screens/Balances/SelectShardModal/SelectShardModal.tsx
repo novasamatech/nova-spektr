@@ -173,7 +173,7 @@ const SelectShardModal = ({ isOpen, onClose, activeAccounts, accounts }: Props) 
                     semiChecked={chain.selectedAmount > 0 && chain.selectedAmount < chain.accounts.length}
                     onChange={(event) => selectChain(event.target?.checked, chain.chainId, root.accountId)}
                   >
-                    <Chain chain={chain} />
+                    <Chain chain={chain} fontClass="text-text-primary" />
                     <FootnoteText className="text-text-tertiary">
                       {chain.selectedAmount}/{chain.accounts.length}
                     </FootnoteText>

@@ -29,7 +29,7 @@ const AccountsList = ({ accountId, chains, className }: Props) => {
 
           return (
             <li key={chainId} className="flex items-center mx-3 py-4">
-              <Chain className="w-[214px] gap-x-2" fontClass="text-text-primary" chain={chain} />
+              <Chain className="w-[214px]" fontClass="text-text-primary" chain={chain} />
 
               <div className="w-[214]">
                 <AddressWithExplorers
