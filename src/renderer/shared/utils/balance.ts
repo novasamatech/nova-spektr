@@ -5,6 +5,8 @@ import { Balance, LockTypes } from '@renderer/domain/balance';
 import { Unlocking } from '@renderer/domain/stake';
 import { ZERO_BALANCE } from '@renderer/services/balance/common/constants';
 
+const MAX_INTEGER = 15;
+
 const enum Suffix {
   MILLIONS = 'M',
   BILLIONS = 'B',
@@ -133,4 +135,42 @@ export const redeemableAmount = (unlocking: Unlocking[] = [], currentEra: number
   return unlocking
     .reduce((acc, s) => (currentEra >= Number(s.era) ? acc.add(new BN(s.value)) : acc), BN_ZERO)
     .toString();
+};
+
+const trimLeadingZeros = (amount: string) => {
+  const withDecimal = amount.includes('.');
+
+  return withDecimal ? amount : amount.replace(/^0+(?!$)/, '');
+};
+
+export const validateSymbols = (amount: string) => {
+  return /^\d*\.?\d*$/.test(amount);
+};
+
+export const validatePrecision = (amount: string, precision: number) => {
+  const [integer, decimal] = amount.split('.');
+  if (decimal && decimal.length > precision) {
+    return false;
+  }
+
+  if (integer.length > MAX_INTEGER) return false;
+
+  return true;
+};
+
+export const formatGroups = (amount: string) => {
+  const [integer, decimal] = amount.split('.');
+  const groups = [];
+  let index = integer.length;
+
+  while (index > 0) {
+    groups.push(integer.slice(Math.max(0, index - 3), index));
+    index -= 3;
+  }
+
+  return groups.reverse().join(',') + (decimal || amount.includes('.') ? `.${decimal}` : '');
+};
+
+export const cleanAmount = (amount: string) => {
+  return trimLeadingZeros(amount).replace(/,/g, '');
 };
