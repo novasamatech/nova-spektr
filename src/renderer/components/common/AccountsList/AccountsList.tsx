@@ -2,9 +2,8 @@ import cnTw from '@renderer/shared/utils/twMerge';
 import { Chain as ChainType } from '@renderer/domain/chain';
 import { AccountId } from '@renderer/domain/shared-kernel';
 import AddressWithExplorers from '../AddressWithExplorers/AddressWithExplorers';
-import Chain from '@renderer/screens/Operations/components/Chain/Chain';
 import { useI18n } from '@renderer/context/I18nContext';
-import { FootnoteText } from '@renderer/components/ui-redesign';
+import { Chain, FootnoteText } from '@renderer/components/ui-redesign';
 
 type Props = {
   accountId: AccountId;
@@ -30,11 +29,7 @@ const AccountsList = ({ accountId, chains, className }: Props) => {
 
           return (
             <li key={chainId} className="flex items-center mx-3 py-4">
-              <Chain
-                className="w-[214px] gap-x-2"
-                fontProps={{ className: 'text-text-primary text-footnote' }}
-                chainId={chainId}
-              />
+              <Chain className="w-[214px]" fontClass="text-text-primary" chain={chain} />
 
               <div className="w-[214]">
                 <AddressWithExplorers

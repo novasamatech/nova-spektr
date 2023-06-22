@@ -21,10 +21,11 @@ jest.mock('@renderer/services/account/accountService', () => ({
   }),
 }));
 
-jest.mock('./components/Chain/Chain', () => () => 'Chain');
-jest.mock('./components/TransactionAmount', () => () => 'TransactionAmount');
-jest.mock('./components/TransactionTitle/TransactionTitle', () => () => 'TransactionTitle');
-jest.mock('./components/EmptyState/EmptyOperations', () => () => 'EmptyState/EmptyOperations');
+// TODO add test for Operation component and move it there
+// jest.mock('./components/Chain/Chain', () => () => 'Chain');
+// jest.mock('./components/TransactionAmount', () => () => 'TransactionAmount');
+// jest.mock('./components/TransactionTitle/TransactionTitle', () => () => 'TransactionTitle');
+// jest.mock('./components/EmptyState/EmptyOperations', () => () => 'EmptyState/EmptyOperations');
 jest.mock('./components/Operation', () => () => 'Operation');
 jest.mock('./components/Filters', () => () => 'Filters');
 
