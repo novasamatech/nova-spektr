@@ -106,7 +106,7 @@ export const Redeem = () => {
         onClose={closeRedeemModal}
       >
         <div className="w-[440px] px-5 py-4">
-          <Loader className="my-24 mx-auto" color="primary" />
+          <Loader className="my-24 mx-auto" color="primary" size={25} />
           <Button disabled className="w-fit flex-0 mt-7 ml-auto">
             {t('staking.bond.continueButton')}
           </Button>
@@ -200,69 +200,74 @@ export const Redeem = () => {
   const explorersProps = { explorers, addressPrefix, asset };
 
   return (
-    <BaseModal
-      closeButton
-      contentClass=""
-      headerClass="py-4 px-5 max-w-[440px]"
-      panelClass="w-max"
-      isOpen={isRedeemModalOpen}
-      title={<OperationModalTitle title={`${t('staking.redeem.title', { asset: asset.symbol })}`} chainId={chainId} />}
-      onClose={closeRedeemModal}
-    >
-      {activeStep === Step.INIT && (
-        <InitOperation api={api} chainId={chainId} accounts={accounts} onResult={onInitResult} {...explorersProps} />
-      )}
-      {activeStep === Step.CONFIRMATION && (
-        <Confirmation
-          api={api}
-          accounts={accounts}
-          signer={signer}
-          amounts={redeemAmounts}
-          description={description}
-          transaction={transactions[0]}
-          multisigTx={multisigTx}
-          onResult={() => setActiveStep(Step.SCANNING)}
-          onGoBack={goToPrevStep}
-          {...explorersProps}
-        />
-      )}
-      {activeStep === Step.SCANNING && (
-        <div className="w-[440px] px-5 py-4">
-          {transactions.length > 1 ? (
-            <ScanMultiframeQr
-              api={api}
-              addressPrefix={addressPrefix}
-              countdown={countdown}
-              accounts={accounts}
-              transactions={transactions}
-              chainId={chainId}
-              onGoBack={() => setActiveStep(Step.CONFIRMATION)}
-              onResetCountdown={resetCountdown}
-              onResult={onScanResult}
-            />
-          ) : (
-            <ScanSingleframeQr
-              api={api}
-              addressPrefix={addressPrefix}
-              countdown={countdown}
-              account={signer || accounts[0]}
-              transaction={multisigTx || transactions[0]}
-              chainId={chainId}
-              onGoBack={() => setActiveStep(Step.CONFIRMATION)}
-              onResetCountdown={resetCountdown}
-              onResult={(unsignedTx) => onScanResult([unsignedTx])}
-            />
-          )}
-        </div>
-      )}
-      {activeStep === Step.SIGNING && (
-        <Signing
-          countdown={countdown}
-          multiQr={transactions.length > 1}
-          onResult={onSignResult}
-          onGoBack={() => setActiveStep(Step.SCANNING)}
-        />
-      )}
+    <>
+      <BaseModal
+        closeButton
+        contentClass=""
+        headerClass="py-4 px-5 max-w-[440px]"
+        panelClass="w-max"
+        isOpen={activeStep !== Step.SUBMIT && isRedeemModalOpen}
+        title={
+          <OperationModalTitle title={`${t('staking.redeem.title', { asset: asset.symbol })}`} chainId={chainId} />
+        }
+        onClose={closeRedeemModal}
+      >
+        {activeStep === Step.INIT && (
+          <InitOperation api={api} chainId={chainId} accounts={accounts} onResult={onInitResult} {...explorersProps} />
+        )}
+        {activeStep === Step.CONFIRMATION && (
+          <Confirmation
+            api={api}
+            accounts={accounts}
+            signer={signer}
+            amounts={redeemAmounts}
+            description={description}
+            transaction={transactions[0]}
+            multisigTx={multisigTx}
+            onResult={() => setActiveStep(Step.SCANNING)}
+            onGoBack={goToPrevStep}
+            {...explorersProps}
+          />
+        )}
+        {activeStep === Step.SCANNING && (
+          <div className="w-[440px] px-5 py-4">
+            {transactions.length > 1 ? (
+              <ScanMultiframeQr
+                api={api}
+                addressPrefix={addressPrefix}
+                countdown={countdown}
+                accounts={accounts}
+                transactions={transactions}
+                chainId={chainId}
+                onGoBack={() => setActiveStep(Step.CONFIRMATION)}
+                onResetCountdown={resetCountdown}
+                onResult={onScanResult}
+              />
+            ) : (
+              <ScanSingleframeQr
+                api={api}
+                addressPrefix={addressPrefix}
+                countdown={countdown}
+                account={signer || accounts[0]}
+                transaction={multisigTx || transactions[0]}
+                chainId={chainId}
+                onGoBack={() => setActiveStep(Step.CONFIRMATION)}
+                onResetCountdown={resetCountdown}
+                onResult={(unsignedTx) => onScanResult([unsignedTx])}
+              />
+            )}
+          </div>
+        )}
+        {activeStep === Step.SIGNING && (
+          <Signing
+            countdown={countdown}
+            multiQr={transactions.length > 1}
+            onResult={onSignResult}
+            onGoBack={() => setActiveStep(Step.SCANNING)}
+          />
+        )}
+      </BaseModal>
+
       {activeStep === Step.SUBMIT && (
         <Submit
           api={api}
@@ -276,6 +281,6 @@ export const Redeem = () => {
           {...explorersProps}
         />
       )}
-    </BaseModal>
+    </>
   );
 };

@@ -223,7 +223,7 @@ const KeyQrReader = ({ size = 300, className, onResult }: Props) => {
             <FootnoteText className="text-text-tertiary">{t('qrReader.parsingLabel')}</FootnoteText>
             <CaptionText
               className={cnTw(
-                'text-button-text uppercase bg-label-background-gray px-2 py-1 rounded-full',
+                'text-white uppercase bg-label-background-gray px-2 py-1 rounded-full',
                 total === decoded && 'bg-label-background-green',
               )}
               data-testid="progress"

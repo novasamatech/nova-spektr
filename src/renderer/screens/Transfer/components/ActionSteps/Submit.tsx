@@ -32,8 +32,8 @@ const Submit = ({ api, tx, multisigTx, account, unsignedTx, signature, descripti
   const { t } = useI18n();
 
   const { matrix } = useMatrix();
-  const { submitAndWatchExtrinsic, getSignedExtrinsic } = useTransaction();
   const { addMultisigTx } = useMultisigTx();
+  const { submitAndWatchExtrinsic, getSignedExtrinsic } = useTransaction();
 
   const [inProgress, toggleInProgress] = useToggle(true);
   const [successMessage, toggleSuccessMessage] = useToggle();

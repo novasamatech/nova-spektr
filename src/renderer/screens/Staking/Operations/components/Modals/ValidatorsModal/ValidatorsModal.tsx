@@ -3,6 +3,8 @@ import { useI18n } from '@renderer/context/I18nContext';
 import { Explorer } from '@renderer/domain/chain';
 import { Validator } from '@renderer/domain/validator';
 import AddressWithExplorers from '@renderer/components/common/AddressWithExplorers/AddressWithExplorers';
+import { getComposedIdentity } from '@renderer/shared/utils/strings';
+import cnTw from '@renderer/shared/utils/twMerge';
 
 type Props = {
   isOpen: boolean;
@@ -23,11 +25,12 @@ const ValidatorsModal = ({ isOpen, validators, explorers, onClose }: Props) => {
       isOpen={isOpen}
       onClose={onClose}
     >
-      <ul className="max-h-[388px] flex flex-col gap-y-3 overflow-y-auto">
+      <ul className={cnTw('flex flex-col gap-y-3', validators.length > 7 && 'max-h-[388px] overflow-y-auto')}>
         {validators.map((validator) => (
           <li key={validator.address}>
             <AddressWithExplorers
               className="gap-x-1"
+              name={getComposedIdentity(validator.identity)}
               addressFont="text-body text-text-secondary"
               type="full"
               size={16}

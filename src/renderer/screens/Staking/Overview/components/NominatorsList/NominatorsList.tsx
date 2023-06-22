@@ -11,6 +11,7 @@ import { Explorer } from '@renderer/domain/chain';
 import { Asset } from '@renderer/domain/asset';
 import { TimeToEra } from '../TimeToEra/TimeToEra';
 import { redeemableAmount } from '@renderer/shared/utils/balance';
+import { HelpText } from '@renderer/components/ui-redesign/Typography';
 
 const getNextUnstakingEra = (unlocking: Unlocking[] = [], era?: number): EraIndex | undefined => {
   if (!era) return undefined;
@@ -95,19 +96,21 @@ export const NominatorsList = ({
       <ul className="flex flex-col gap-y-2">
         {nominators.map((stake) => {
           const unstakeBadge = getNextUnstakingEra(stake.unlocking, era) && (
-            <Tooltip offsetPx={-65} content={<Trans t={t} i18nKey="staking.badges.unstakeDescription" />}>
-              <div className="flex gap-x-1 items-center rounded-md bg-badge-background text-icon-accent text-2xs px-2 py-0.5">
+            <Tooltip offsetPx={-65} content={<Trans t={t} i18nKey="staking.tooltips.unstakeDescription" />}>
+              <div className="flex gap-x-1 items-center rounded-md bg-badge-background px-2 py-0.5">
                 <Icon name="unstake" className="text-icon-accent" size={14} />
-                <TimeToEra api={api} era={getNextUnstakingEra(stake.unlocking, era)} />
+                <HelpText className="text-icon-accent">
+                  <TimeToEra className="my-1" api={api} era={getNextUnstakingEra(stake.unlocking, era)} />
+                </HelpText>
               </div>
             </Tooltip>
           );
 
           const redeemBadge = hasRedeem(stake.unlocking, era) && (
-            <Tooltip offsetPx={-48} content={<Trans t={t} i18nKey="staking.badges.redeemDescription" />}>
-              <div className="flex gap-x-1 items-center rounded-md bg-positive-background text-text-positive text-2xs px-2 py-0.5">
+            <Tooltip offsetPx={-65} content={<Trans t={t} i18nKey="staking.tooltips.redeemDescription" />}>
+              <div className="flex gap-x-1 items-center rounded-md bg-positive-background text-text-positive px-2 py-0.5">
                 <Icon name="redeem" className="text-text-positive" size={14} />
-                {t('staking.badges.redeemTitle')}
+                <HelpText className="text-text-positive">{t('staking.tooltips.redeemTitle')}</HelpText>
               </div>
             </Tooltip>
           );
@@ -115,7 +118,7 @@ export const NominatorsList = ({
           const content = (
             <>
               <AccountAddress className="max-w-[115px]" name={stake.accountName} address={stake.address} />
-              {unstakeBadge || redeemBadge}
+              <div className="ml-auto">{unstakeBadge || redeemBadge}</div>
             </>
           );
 

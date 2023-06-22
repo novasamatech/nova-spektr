@@ -31,57 +31,55 @@ const Details = ({ transaction, wallet, account, signatory, connection, withAdva
   );
 
   return (
-    <>
-      <dl className="flex flex-col gap-y-4 w-full">
-        {wallet && account && (
-          <DetailsRow label={t('operation.details.wallet')}>
-            <AddressWithExplorers
-              explorers={explorers}
-              addressFont={AddressStyle}
-              accountId={account.accountId}
-              addressPrefix={addressPrefix}
-              name={wallet.name}
-            />
-          </DetailsRow>
-        )}
+    <dl className="flex flex-col gap-y-4 w-full">
+      {wallet && account && (
+        <DetailsRow label={t('operation.details.wallet')}>
+          <AddressWithExplorers
+            explorers={explorers}
+            addressFont={AddressStyle}
+            accountId={account.accountId}
+            addressPrefix={addressPrefix}
+            name={wallet.name}
+          />
+        </DetailsRow>
+      )}
 
-        {account && (
-          <DetailsRow label={t('operation.details.sender')}>
-            <AddressWithExplorers
-              type="short"
-              explorers={explorers}
-              addressFont={AddressStyle}
-              accountId={account.accountId}
-              addressPrefix={addressPrefix}
-            />
-          </DetailsRow>
-        )}
+      {account && (
+        <DetailsRow label={t('operation.details.sender')}>
+          <AddressWithExplorers
+            type="short"
+            explorers={explorers}
+            addressFont={AddressStyle}
+            accountId={account.accountId}
+            addressPrefix={addressPrefix}
+          />
+        </DetailsRow>
+      )}
 
-        {signatory && (
-          <DetailsRow label={t('transfer.signatoryLabel')}>
-            <AddressWithExplorers
-              explorers={explorers}
-              addressFont={AddressStyle}
-              accountId={signatory.accountId}
-              addressPrefix={addressPrefix}
-              name={signatory.name}
-            />
-          </DetailsRow>
-        )}
+      {signatory && (
+        <DetailsRow label={t('transfer.signatoryLabel')}>
+          <AddressWithExplorers
+            explorers={explorers}
+            addressFont={AddressStyle}
+            accountId={signatory.accountId}
+            addressPrefix={addressPrefix}
+            name={signatory.name}
+          />
+        </DetailsRow>
+      )}
 
-        {transaction?.args.dest && (
-          <DetailsRow label={t('operation.details.recipient')}>
-            <AddressWithExplorers
-              type="short"
-              explorers={explorers}
-              addressFont={AddressStyle}
-              address={transaction.args.dest}
-              addressPrefix={addressPrefix}
-            />
-          </DetailsRow>
-        )}
-      </dl>
-    </>
+      {transaction?.args.dest && (
+        <DetailsRow label={t('operation.details.recipient')}>
+          <AddressWithExplorers
+            type="short"
+            explorers={explorers}
+            addressFont={AddressStyle}
+            address={transaction.args.dest}
+            addressPrefix={addressPrefix}
+          />
+        </DetailsRow>
+      )}
+    </dl>
   );
 };
 

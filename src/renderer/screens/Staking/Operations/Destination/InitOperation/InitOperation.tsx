@@ -1,8 +1,7 @@
 import { ApiPromise } from '@polkadot/api';
 import { useEffect, useState } from 'react';
 
-import { Select, MultiSelect, FootnoteText, InputHint } from '@renderer/components/ui-redesign';
-import { Fee, Deposit } from '@renderer/components/common';
+import { Select, MultiSelect, InputHint } from '@renderer/components/ui-redesign';
 import { DropdownOption, DropdownResult } from '@renderer/components/ui/Dropdowns/common/types';
 import { useI18n } from '@renderer/context/I18nContext';
 import { Asset } from '@renderer/domain/asset';
@@ -16,7 +15,6 @@ import { toAddress } from '@renderer/shared/utils/address';
 import { nonNullable } from '@renderer/shared/utils/functions';
 import { TEST_ADDRESS } from '@renderer/shared/utils/constants';
 import { OperationForm } from '../../components';
-import { Icon } from '@renderer/components/ui';
 import {
   getSignatoryOptions,
   validateBalanceForFeeDeposit,
@@ -166,69 +164,75 @@ const InitOperation = ({ api, chainId, accounts, addressPrefix, asset, onResult 
     return validateBalanceForFeeDeposit(signerBalance, deposit, fee);
   };
 
-  const canSubmit = !feeLoading && (activeDestAccounts.length > 0 || Boolean(activeSignatory));
+  const getActiveAccounts = (): AccountId[] => {
+    if (!accountIsMultisig) return activeDestAccounts.map((acc) => acc.id as AccountId);
+
+    return activeSignatory ? [activeSignatory.id as AccountId] : [];
+  };
+
+  const isValidFee = validateFee();
+  const isValidDeposit = validateDeposit();
+  const canSubmit =
+    !feeLoading && (activeDestAccounts.length > 0 || Boolean(activeSignatory)) && isValidFee && isValidDeposit;
 
   return (
     <div className="flex flex-col gap-y-4 w-[440px] px-5 py-4">
-      {accountIsMultisig ? (
-        <div className="flex flex-col gap-y-2">
-          <Select
-            label={t('staking.bond.signatoryLabel')}
-            placeholder={t('staking.bond.signatoryPlaceholder')}
-            disabled={!signatoryOptions.length}
-            selectedId={activeSignatory?.id}
-            options={signatoryOptions}
-            onChange={setActiveSignatory}
-          />
-          <InputHint active={!signatoryOptions.length}>{t('multisigOperations.noSignatory')}</InputHint>
-        </div>
-      ) : (
-        <MultiSelect
-          label={t('staking.bond.accountLabel')}
-          placeholder={t('staking.bond.accountPlaceholder')}
-          multiPlaceholder={t('staking.bond.manyAccountsPlaceholder')}
-          selectedIds={activeDestAccounts.map((acc) => acc.id)}
-          options={destAccounts}
-          onChange={setActiveDestAccounts}
-        />
-      )}
-
       <OperationForm
         chainId={chainId}
+        accounts={getActiveAccounts()}
         canSubmit={canSubmit}
         addressPrefix={addressPrefix}
         fields={formFields}
         asset={asset}
-        validateFee={validateFee}
-        validateDeposit={validateDeposit}
+        footer={
+          <OperationForm.Footer
+            api={api}
+            asset={asset}
+            account={firstAccount}
+            totalAccounts={activeDestAccounts.length}
+            transaction={transactions[0]}
+            onFeeChange={setFee}
+            onFeeLoading={setFeeLoading}
+            onDepositChange={setDeposit}
+          />
+        }
         onSubmit={submitDestination}
       >
-        <div className="flex flex-col gap-y-2">
-          {accountIsMultisig && (
-            <div className="flex justify-between items-center gap-x-2">
-              <div className="flex items-center gap-x-2">
-                <Icon className="text-text-tertiary" name="lock" size={12} />
-                <FootnoteText className="text-text-tertiary">{t('staking.bond.networkDepositLabel')}</FootnoteText>
-              </div>
-              <FootnoteText>
-                <Deposit api={api} asset={asset} threshold={firstAccount.threshold} onDepositChange={setDeposit} />
-              </FootnoteText>
-            </div>
-          )}
-
-          <div className="flex justify-between items-center gap-x-2">
-            <FootnoteText className="text-text-tertiary">{t('staking.bond.networkFeeLabel')}</FootnoteText>
-            <FootnoteText className="text-text-tertiary">
-              <Fee
-                api={api}
-                asset={asset}
-                transaction={transactions[0]}
-                onFeeChange={setFee}
-                onFeeLoading={setFeeLoading}
-              />
-            </FootnoteText>
+        {accountIsMultisig ? (
+          <div className="flex flex-col gap-y-2 mb-4">
+            <Select
+              label={t('staking.bond.signatoryLabel')}
+              placeholder={t('staking.bond.signatoryPlaceholder')}
+              disabled={!signatoryOptions.length}
+              invalid={!isValidDeposit || !isValidFee}
+              selectedId={activeSignatory?.id}
+              options={signatoryOptions}
+              onChange={setActiveSignatory}
+            />
+            <InputHint active={!signatoryOptions.length}>{t('multisigOperations.noSignatory')}</InputHint>
+            <InputHint active={!isValidFee} variant="error">
+              {t('staking.notEnoughBalanceForFeeError')}
+            </InputHint>
+            <InputHint active={!isValidDeposit} variant="error">
+              {t('staking.notEnoughBalanceForDepositError')}
+            </InputHint>
           </div>
-        </div>
+        ) : (
+          <div className="flex flex-col gap-y-2 mb-4">
+            <MultiSelect
+              label={t('staking.bond.accountLabel')}
+              placeholder={t('staking.bond.accountPlaceholder')}
+              multiPlaceholder={t('staking.bond.manyAccountsPlaceholder')}
+              invalid={!isValidFee}
+              selectedIds={activeDestAccounts.map((acc) => acc.id)}
+              options={destAccounts}
+              onChange={setActiveDestAccounts}
+            />
+            <InputHint active={!isValidFee} variant="error">
+              {t('staking.notEnoughBalanceForFeeError')}
+            </InputHint>
+          </div>
+        )}
       </OperationForm>
     </div>
   );

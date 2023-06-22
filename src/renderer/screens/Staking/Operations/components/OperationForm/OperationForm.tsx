@@ -8,21 +8,22 @@ import { useI18n } from '@renderer/context/I18nContext';
 import { RewardsDestination } from '@renderer/domain/stake';
 import { validateAddress } from '@renderer/shared/utils/address';
 import { Asset } from '@renderer/domain/asset';
-import { Address, ChainId } from '@renderer/domain/shared-kernel';
+import { Address, ChainId, AccountId } from '@renderer/domain/shared-kernel';
 import { RadioOption } from '@renderer/components/ui-redesign/RadioGroup/common/types';
 import { DropdownOption } from '@renderer/components/ui/Dropdowns/common/types';
 import { useAccount } from '@renderer/services/account/accountService';
 import { useBalance } from '@renderer/services/balance/balanceService';
 import { ComboboxOption } from '@renderer/components/ui-redesign/Dropdowns/common/types';
 import { getPayoutAccountOption } from '../../common/utils';
+import OperationFooter from './OperationFooter';
 
 const getDestinations = (t: TFunction): RadioOption<RewardsDestination>[] => {
-  const options = [
+  const Options = [
     { value: RewardsDestination.RESTAKE, title: t('staking.bond.restakeRewards') },
     { value: RewardsDestination.TRANSFERABLE, title: t('staking.bond.transferableRewards') },
   ];
 
-  return options.map((dest, index) => ({
+  return Options.map((dest, index) => ({
     id: index.toString(),
     value: dest.value,
     title: dest.title,
@@ -41,32 +42,42 @@ type Field = {
   disabled?: boolean;
 };
 
+type ErrorPayload = {
+  invalidBalance: boolean;
+  invalidFee: boolean;
+  invalidDeposit: boolean;
+};
+
 type Props = {
   chainId: ChainId;
+  accounts: AccountId[];
   canSubmit: boolean;
   addressPrefix: number;
   fields: Field[];
-  balanceRange?: string | string[];
   asset: Asset;
-  children: ((errorType: string) => ReactNode) | ReactNode;
+  balanceRange?: string | string[];
   validateBalance?: (amount: string) => boolean;
   validateFee?: (amount: string) => boolean;
   validateDeposit?: (amount: string) => boolean;
+  footer: ReactNode;
+  children?: ReactNode | ((data: ErrorPayload) => ReactNode);
   onAmountChange?: (amount: string) => void;
   onSubmit: (data: FormData<Address>) => void;
 };
 
 export const OperationForm = ({
   chainId,
+  accounts,
   canSubmit,
   addressPrefix,
   fields,
-  balanceRange,
   asset,
-  children,
+  balanceRange,
   validateBalance = () => true,
   validateFee = () => true,
   validateDeposit = () => true,
+  footer,
+  children,
   onAmountChange,
   onSubmit,
 }: Props) => {
@@ -94,7 +105,7 @@ export const OperationForm = ({
     setValue,
     trigger,
     watch,
-    formState: { isValid, errors },
+    formState: { isValid, errors, isDirty },
   } = useForm<FormData<RewardsDestination>>({
     mode: 'onChange',
     defaultValues: {
@@ -112,6 +123,12 @@ export const OperationForm = ({
     setValue('amount', amountField.value);
     trigger('amount');
   }, [amountField]);
+
+  useEffect(() => {
+    if (!isDirty) return;
+
+    trigger('amount');
+  }, [isDirty, accounts]);
 
   useEffect(() => {
     const payoutAccounts = destAccounts.reduce<DropdownOption<Address>[]>((acc, account) => {
@@ -142,10 +159,16 @@ export const OperationForm = ({
 
   const submitDisabled = !isValid || !canSubmit || !validateDestination();
 
-  const errorType = errors.amount?.type || errors.destination?.type || errors.description?.type || '';
-
   return (
     <form className="w-full" onSubmit={handleSubmit(submitForm)}>
+      {typeof children === 'function'
+        ? children({
+            invalidBalance: errors.amount?.type === 'insufficientBalance',
+            invalidFee: errors.amount?.type === 'insufficientBalanceForFee',
+            invalidDeposit: errors.amount?.type === 'insufficientBalanceForDeposit',
+          })
+        : children}
+
       <div className="flex flex-col gap-y-5">
         {amountField && (
           <Controller
@@ -161,7 +184,7 @@ export const OperationForm = ({
               },
             }}
             render={({ field: { onChange, value }, fieldState: { error } }) => (
-              <>
+              <div className="flex flex-col gap-y-2">
                 <AmountInput
                   name="amount"
                   placeholder={t('general.input.amountLabel')}
@@ -176,6 +199,7 @@ export const OperationForm = ({
                     onChange(value);
                   }}
                 />
+
                 <InputHint active={error?.type === 'insufficientBalance'} variant="error">
                   {t('staking.notEnoughBalanceError')}
                 </InputHint>
@@ -191,7 +215,7 @@ export const OperationForm = ({
                 <InputHint active={error?.type === 'notZero'} variant="error">
                   {t('staking.requiredAmountError')}
                 </InputHint>
-              </>
+              </div>
             )}
           />
         )}
@@ -202,30 +226,39 @@ export const OperationForm = ({
             control={control}
             rules={{ required: true }}
             render={({ field: { value, onChange }, fieldState: { error } }) => (
-              <RadioGroup
-                label={t('staking.bond.rewardsDestinationLabel')}
-                className="col-span-2"
-                activeId={destinations.find((d) => d.value === value)?.id}
-                options={destinations}
-                onChange={(option) => onChange(option.value)}
-              >
-                <RadioGroup.Option option={destinations[0]} />
-                <RadioGroup.Option option={destinations[1]}>
-                  <Combobox
-                    placeholder={t('staking.bond.payoutAccountPlaceholder')}
-                    options={payoutAccounts}
-                    disabled={destinationField.disabled}
-                    invalid={Boolean(error)}
-                    prefixElement={
-                      <Identicon className="mr-1" address={activePayout} size={20} background={false} canCopy={false} />
-                    }
-                    onChange={(option) => setActivePayout(option.value)}
-                  />
-                  <InputHint className="mt-1" active={!validateDestination()} variant="error">
-                    {t('staking.bond.incorrectAddressError')}
-                  </InputHint>
-                </RadioGroup.Option>
-              </RadioGroup>
+              <div className="flex flex-col gap-y-2">
+                <RadioGroup
+                  label={t('staking.bond.rewardsDestinationLabel')}
+                  className="col-span-2"
+                  activeId={destinations.find((d) => d.value === value)?.id}
+                  options={destinations}
+                  onChange={(option) => onChange(option.value)}
+                >
+                  <RadioGroup.Option option={destinations[0]} />
+                  <RadioGroup.Option option={destinations[1]}>
+                    <Combobox
+                      placeholder={t('staking.bond.payoutAccountPlaceholder')}
+                      options={payoutAccounts}
+                      disabled={destinationField.disabled}
+                      invalid={Boolean(error)}
+                      prefixElement={
+                        <Identicon
+                          className="mr-1"
+                          address={activePayout}
+                          size={20}
+                          background={false}
+                          canCopy={false}
+                        />
+                      }
+                      onChange={(option) => setActivePayout(option.value)}
+                    />
+                  </RadioGroup.Option>
+                </RadioGroup>
+
+                <InputHint active={!validateDestination()} variant="error">
+                  {t('staking.bond.incorrectAddressError')}
+                </InputHint>
+              </div>
             )}
           />
         )}
@@ -236,7 +269,7 @@ export const OperationForm = ({
             control={control}
             rules={{ maxLength: 120 }}
             render={({ field: { onChange, value }, fieldState: { error } }) => (
-              <div className="flex flex-col gap-y-2.5">
+              <div className="flex flex-col gap-y-2">
                 <Input
                   label={t('general.input.descriptionLabel')}
                   className="w-full"
@@ -246,6 +279,7 @@ export const OperationForm = ({
                   value={value}
                   onChange={onChange}
                 />
+
                 <InputHint active={error?.type === 'maxLength'} variant="error">
                   <Trans t={t} i18nKey="transfer.descriptionLengthError" values={{ maxLength: 120 }} />
                 </InputHint>
@@ -254,7 +288,7 @@ export const OperationForm = ({
           />
         )}
 
-        {typeof children === 'function' ? children(errorType) : children}
+        {footer}
       </div>
 
       <Button className="w-fit flex-0 mt-7 ml-auto" type="submit" disabled={submitDisabled}>
@@ -263,3 +297,5 @@ export const OperationForm = ({
     </form>
   );
 };
+
+OperationForm.Footer = OperationFooter;

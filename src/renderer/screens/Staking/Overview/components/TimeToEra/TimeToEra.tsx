@@ -32,7 +32,7 @@ export const TimeToEra = ({ api, era, className }: Props) => {
   }, [seconds]);
 
   if (seconds <= 0) {
-    return <Shimmering width={40} height={10} />;
+    return <Shimmering width={40} height={10} className={className} />;
   }
 
   return <Duration seconds={seconds.toString()} className={className} />;

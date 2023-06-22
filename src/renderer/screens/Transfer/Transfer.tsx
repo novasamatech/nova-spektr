@@ -106,7 +106,7 @@ const Transfer = ({ assetId, chainId, isOpen, onClose }: Props) => {
       >
         {!api?.isConnected ? (
           <div>
-            <Loader className="my-24 mx-auto" color="primary" />
+            <Loader className="my-24 mx-auto" color="primary" size={25} />
             <Button disabled className="w-fit flex-0 mt-7 ml-auto">
               {t('transfer.continueButton')}
             </Button>
@@ -187,7 +187,7 @@ const Transfer = ({ assetId, chainId, isOpen, onClose }: Props) => {
             />
           ) : (
             <div className="w-[240px] h-[200px] px-5 py-4">
-              <Loader className="my-24 mx-auto" color="primary" />
+              <Loader className="my-24 mx-auto" color="primary" size={25} />
             </div>
           )}
         </>

@@ -550,12 +550,6 @@
       "startStakingLabel": "Начать стейкинг",
       "unstakeLabel": "Отменить стейк"
     },
-    "badges": {
-      "redeemDescription": "Вы можете забрать ваши unstaked токены",
-      "redeemTitle": "Забрать",
-      "unstakeDescription": "Ваши токены сейчас<br />выводятся из стейка",
-      "unstakeTitle": "Вывод из стейка"
-    },
     "bond": {
       "aboutRewards": "О наградах",
       "accountLabel": "Аккаунт",
@@ -565,8 +559,6 @@
       "goToStakingButton": "Обратно к Стейкингу",
       "incorrectAddressError": "Пожалуйста, введите корректный адрес",
       "manyAccountsPlaceholder": "Выбрано несколько аккаунтов",
-      "networkDepositLabel": "Депозит",
-      "networkFeeLabel": "Комиссия сети",
       "noStakingAssetDescription": "Для { chainName } ассет для стейкинга не найден",
       "noStakingAssetLabel": "Ассет не найден",
       "payoutAccountLabel": "Аккаунт для выплаты наград",
@@ -590,6 +582,8 @@
       "errorModalEditButton": "Редактировать",
       "errorModalSubtitle": "Вы можете пропустить эти транзакции",
       "errorModalTitle": "Ошибка при отправке { number } транзакций",
+      "hintMstExists": "Мультисиг транзакция уже существует",
+      "hintMstTitle": "Ошибка",
       "hintNewRewards": "Вы будете получать увеличенную награду начиная со следующей эры",
       "hintNewValidators": "Изменения валидаторов вступят в силу со следующей эры",
       "hintNoRewards": "Во время разблокировки токенов награды не генерируются",
@@ -598,8 +592,6 @@
       "hintTitle": "Узнайте больше о наградах",
       "hintUnstakePeriod": "Для вывода токенов нужно дождаться разблокировки",
       "hintWithdraw": "После разблокировки не забудбте забрать токены",
-      "networkDepositLabel": "Депозит",
-      "networkFeeLabel": "Комиссия сети",
       "queueButton": "добавить в очередь",
       "restakeRewards": "Вложить награды",
       "rewardsDestinationLabel": "Выплата наград",
@@ -619,6 +611,10 @@
       "title": "Смена адреса наград на"
     },
     "loadingMessage": "Подключаемся к { chainName }",
+    "networkDepositLabel": "Депозит",
+    "networkFeeTotal": "Общая комиссия сети",
+    "networkFee_one": "Комиссия сети",
+    "networkFee_other": "Комиссия сети за аккаунт",
     "nominators": {
       "electedTitle": "Выбранные",
       "nominated": "Вклад",
@@ -681,11 +677,16 @@
     "submitSuccessMultisig": "Operation approved",
     "submitSuccessSingle": "Operation success",
     "title": "Стейкинг",
+    "tooltips": {
+      "depositDescription": "На аккаунте депозитора блокируется сумма депозита до исполнения или отмены мультисиг операции",
+      "redeemDescription": "Вы можете забрать ваши unstaked токены",
+      "redeemTitle": "Забрать",
+      "unstakeDescription": "Ваши токены сейчас<br />выводятся из стейка",
+      "unstakeTitle": "Вывод из стейка"
+    },
     "unstake": {
       "confirmUnstakeSubtitle": "Подтверждение",
       "initUnstakeSubtitle": "Вывод из стейка",
-      "networkFee_one": "Комиссия сети",
-      "networkFee_other": "Комиссия сети за аккаунт",
       "stakedPlaceholder": "В стейке",
       "title": "Анстейк { asset } на",
       "transferable": "Доступно"
@@ -713,7 +714,7 @@
       "subtitle": "Валидаторы",
       "title": "Выбор валидаторов на",
       "totalStakeTableHeader": "Общий стейк",
-      "validatorsTableHeader": "Аккаунты"
+      "validatorTableHeader": "Аккаунт"
     },
     "warning": {
       "controller": "Данная операция работает только на <strong>Controller</strong> аккаунтах.<br />Отключить все <strong>Stash</strong> аккаунты чтобы продолжить?",

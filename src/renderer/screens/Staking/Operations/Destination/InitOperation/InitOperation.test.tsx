@@ -34,7 +34,16 @@ jest.mock('@renderer/services/balance/balanceService', () => ({
   }),
 }));
 
-jest.mock('../../components', () => ({ OperationForm: () => 'operationForm' }));
+jest.mock('../../components', () => ({
+  OperationForm: ({ children }: any) => {
+    return (
+      <div>
+        <p>operationForm</p>
+        {children}
+      </div>
+    );
+  },
+}));
 
 describe('screens/Staking/Destination/InitOperation', () => {
   const defaultProps = {
