@@ -16,6 +16,7 @@ import {
   SmallTitleText,
   IconButton,
   FootnoteText,
+  Chain,
 } from '@renderer/components/ui-redesign';
 import { AddressInfo, CompactSeedInfo, SeedInfo } from '@renderer/components/common/QrCode/QrReader/common/types';
 import { useWallet } from '@renderer/services/wallet/walletService';
@@ -25,7 +26,6 @@ import { Account, createAccount } from '@renderer/domain/account';
 import { ID } from '@renderer/services/storage';
 import { createWallet } from '@renderer/domain/wallet';
 import AddressWithExplorers from '@renderer/components/common/AddressWithExplorers/AddressWithExplorers';
-import Chain from '@renderer/screens/Operations/components/Chain/Chain';
 import cnTw from '@renderer/shared/utils/twMerge';
 import { Icon } from '@renderer/components/ui';
 
@@ -324,10 +324,7 @@ const ManageStep = ({ seedInfo, onBack, onComplete }: Props) => {
                     <div key={chainId}>
                       <div className="flex items-center ml-4">
                         <div className="bg-divider w-[2px] h-[34px] mr-4"></div>
-                        <Chain
-                          fontProps={{ className: 'text-footnote text-text-primary' }}
-                          chainId={chainId as ChainId}
-                        />
+                        <Chain fontClass="text-text-primary" chainId={chainId as ChainId} />
                       </div>
                       {derivedKeys.map(({ address }, derivedKeyIndex) => (
                         <div
