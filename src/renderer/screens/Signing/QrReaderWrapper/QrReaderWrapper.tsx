@@ -173,9 +173,9 @@ const QrReaderWrapper = ({ className, onResult, countdown, validationError, isMu
       )}
 
       {progress && (
-        <div className="flex items-center gap-x-2 mt-4">
+        <div className="flex items-center gap-x-2 mt-4 z-10">
           <FootnoteText className="text-text-tertiary">{t('signing.parsingLabel')}</FootnoteText>
-          <CaptionText as="span" className="bg-label-background-gray text-button-text uppercase">
+          <CaptionText as="span" className="bg-label-background-gray text-white uppercase px-2 py-1 rounded-[26px]">
             {t('signing.parsingCount', { current: progress.decoded, total: progress.total })}
           </CaptionText>
         </div>
