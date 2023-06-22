@@ -74,8 +74,7 @@ const SelectShardModal = ({ isOpen, onClose, activeAccounts, accounts }: Props) 
     chain.accounts.forEach((a) => (a.isSelected = value));
     chain.selectedAmount = value ? chain.accounts.length : 0;
 
-    root.isSelected = root.chains.some((c) => c.selectedAmount > 0);
-    root.selectedAmount = root.chains.filter((c) => c.isSelected).length;
+    root.selectedAmount = root.chains.reduce((acc, c) => acc + c.selectedAmount, 0);
 
     setShards({ ...shards });
   };
@@ -91,8 +90,7 @@ const SelectShardModal = ({ isOpen, onClose, activeAccounts, accounts }: Props) 
     chain.isSelected = selectedAccounts.length === chain.accounts.length;
     chain.selectedAmount = selectedAccounts.length;
 
-    root.isSelected = root.chains.some((c) => c.selectedAmount > 0);
-    root.selectedAmount = root.chains.filter((c) => c.isSelected).length;
+    root.selectedAmount = root.chains.reduce((acc, c) => acc + c.selectedAmount, 0);
 
     setShards({ ...shards });
   };
@@ -114,7 +112,9 @@ const SelectShardModal = ({ isOpen, onClose, activeAccounts, accounts }: Props) 
   };
 
   const searchedShards = searchShards(shards, query);
-  const allShardsChecked = searchedShards.rootAccounts.every((r) => r.isSelected);
+  const allShardsChecked = searchedShards.rootAccounts.every(
+    (r) => r.isSelected && r.chains.every((c) => c.isSelected),
+  );
   const allShardsSemiChecked =
     !allShardsChecked && searchedShards.rootAccounts.some((r) => r.isSelected || r.selectedAmount > 0);
 
@@ -152,7 +152,7 @@ const SelectShardModal = ({ isOpen, onClose, activeAccounts, accounts }: Props) 
             <Checkbox
               checked={root.isSelected}
               className="py-0.5"
-              semiChecked={root.selectedAmount > 0 && root.selectedAmount < root.chains.length}
+              semiChecked={root.selectedAmount > 0}
               onChange={(event) => selectRoot(event.target?.checked, root.accountId)}
             >
               <AddressWithExplorers
