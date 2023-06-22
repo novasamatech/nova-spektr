@@ -37,7 +37,7 @@ type Props = {
 export const Validators = ({ api, chainId, asset, explorers, isLightClient, onGoBack, onResult }: Props) => {
   const { t } = useI18n();
   const { subscribeActiveEra } = useEra();
-  const { getMaxValidators, getValidators } = useValidators();
+  const { getMaxValidators, getValidatorsWithInfo } = useValidators();
 
   const [era, setEra] = useState<number>();
   const [validators, setValidators] = useState<ValidatorMap>({});
@@ -61,7 +61,7 @@ export const Validators = ({ api, chainId, asset, explorers, isLightClient, onGo
   useEffect(() => {
     if (!era) return;
 
-    getValidators(chainId, api, era, isLightClient).then((validators) => {
+    getValidatorsWithInfo(chainId, api, era, isLightClient).then((validators) => {
       setValidators(validators);
       setMaxValidators(getMaxValidators(api));
       setIsValidatorsLoading(false);

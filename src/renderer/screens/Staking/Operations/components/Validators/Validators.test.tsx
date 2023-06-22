@@ -16,7 +16,7 @@ jest.mock('@renderer/context/I18nContext', () => ({
 jest.mock('@renderer/services/staking/validatorsService', () => ({
   useValidators: jest.fn().mockReturnValue({
     getMaxValidators: jest.fn().mockReturnValue(6),
-    getValidators: jest.fn().mockResolvedValue({
+    getValidatorsWithInfo: jest.fn().mockResolvedValue({
       '5C556QTtg1bJ43GDSgeowa3Ark6aeSHGTac1b2rKSXtgmSmW': {
         address: '5C556QTtg1bJ43GDSgeowa3Ark6aeSHGTac1b2rKSXtgmSmW',
         totalStake: '84293898648764293',

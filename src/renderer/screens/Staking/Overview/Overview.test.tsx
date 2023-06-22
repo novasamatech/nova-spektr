@@ -54,7 +54,7 @@ jest.mock('@renderer/services/staking/stakingDataService', () => ({
 
 jest.mock('@renderer/services/staking/validatorsService', () => ({
   useValidators: jest.fn().mockReturnValue({
-    getValidators: jest.fn(),
+    getValidatorsWithInfo: jest.fn(),
   }),
 }));
 

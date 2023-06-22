@@ -13,13 +13,19 @@ import { getValidatorsApy } from './apyCalculator';
 import { IValidatorsService, ValidatorMap } from './common/types';
 
 export const useValidators = (): IValidatorsService => {
+  /**
+   * Get simple validators list
+   */
   const getValidatorsList = async (api: ApiPromise, era: EraIndex): Promise<ValidatorMap> => {
     const [stake, prefs] = await Promise.all([getValidatorsStake(api, era), getValidatorsPrefs(api, era)]);
 
     return merge(stake, prefs);
   };
 
-  const getValidators = async (
+  /**
+   * Get validators with their identity, apy and slashing spans
+   */
+  const getValidatorsWithInfo = async (
     chainId: ChainId,
     api: ApiPromise,
     era: EraIndex,
@@ -142,8 +148,9 @@ export const useValidators = (): IValidatorsService => {
       const identities = wrappedIdentities.reduce<Record<Address, Option<PalletIdentityRegistration>>>(
         (acc, [storageKey, identity]) => {
           const address = storageKey.args[0].toString();
+          acc[address] = identity;
 
-          return { ...acc, [address]: identity };
+          return acc;
         },
         {},
       );
@@ -248,7 +255,7 @@ export const useValidators = (): IValidatorsService => {
   };
 
   return {
-    getValidators,
+    getValidatorsWithInfo,
     getValidatorsList,
     getMaxValidators,
     getNominators,
