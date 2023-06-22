@@ -1,6 +1,6 @@
 import { act, render, screen } from '@testing-library/react';
 
-import Chain from './Chain';
+import { Chain } from './Chain';
 import { TEST_CHAIN_ID } from '@renderer/shared/utils/constants';
 
 describe('screen/Operations/components/Chain', () => {

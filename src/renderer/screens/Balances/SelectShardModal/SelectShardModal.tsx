@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { keyBy } from 'lodash';
 
 import { AccountId, ChainId } from '@renderer/domain/shared-kernel';
-import { BaseModal, Button, Checkbox, FootnoteText, SearchInput } from '@renderer/components/ui-redesign';
+import { BaseModal, Button, Checkbox, FootnoteText, SearchInput, Chain } from '@renderer/components/ui-redesign';
 import { useI18n } from '@renderer/context/I18nContext';
 import { AccountDS } from '@renderer/services/storage';
 import {
@@ -11,7 +11,6 @@ import {
   searchShards,
 } from '@renderer/components/layout/PrimaryLayout/Wallets/common/utils';
 import AddressWithExplorers from '@renderer/components/common/AddressWithExplorers/AddressWithExplorers';
-import Chain from '@renderer/screens/Operations/components/Chain/Chain';
 import {
   ChainsRecord,
   SelectableAccount,
@@ -174,7 +173,7 @@ const SelectShardModal = ({ isOpen, onClose, activeAccounts, accounts }: Props) 
                     semiChecked={chain.selectedAmount > 0 && chain.selectedAmount < chain.accounts.length}
                     onChange={(event) => selectChain(event.target?.checked, chain.chainId, root.accountId)}
                   >
-                    <Chain chainId={chain.chainId} />
+                    <Chain chain={chain} />
                     <FootnoteText className="text-text-tertiary">
                       {chain.selectedAmount}/{chain.accounts.length}
                     </FootnoteText>
