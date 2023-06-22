@@ -20,6 +20,7 @@ import { MultisigAccount, Account, isMultisig } from '@renderer/domain/account';
 import { Button, AmountInput, Input, InputHint, FootnoteText, Popover } from '@renderer/components/ui-redesign';
 import DetailWithLabel from '@renderer/components/common/DetailsWithLabel/DetailWithLabel';
 import { HelpText } from '@renderer/components/ui-redesign/Typography';
+// import AmountInput from '@renderer/components/ui-redesign/Inputs/AmountInput/AmountInput copy';
 
 const DESCRIPTION_MAX_LENGTH = 120;
 
