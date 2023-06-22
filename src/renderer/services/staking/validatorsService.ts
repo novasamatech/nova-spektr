@@ -13,6 +13,12 @@ import { getValidatorsApy } from './apyCalculator';
 import { IValidatorsService, ValidatorMap } from './common/types';
 
 export const useValidators = (): IValidatorsService => {
+  const getValidatorsList = async (api: ApiPromise, era: EraIndex): Promise<ValidatorMap> => {
+    const [stake, prefs] = await Promise.all([getValidatorsStake(api, era), getValidatorsPrefs(api, era)]);
+
+    return merge(stake, prefs);
+  };
+
   const getValidators = async (
     chainId: ChainId,
     api: ApiPromise,
@@ -133,19 +139,16 @@ export const useValidators = (): IValidatorsService => {
     if (isLightClient) {
       const wrappedIdentities = await api.query.identity.identityOf.entries();
 
-      const parentAddresses = subIdentities.reduce<Record<string, boolean>>((acc, identity) => {
-        acc[identity.parent] = true;
+      const identities = wrappedIdentities.reduce<Record<Address, Option<PalletIdentityRegistration>>>(
+        (acc, [storageKey, identity]) => {
+          const address = storageKey.args[0].toString();
 
-        return acc;
-      }, {});
+          return { ...acc, [address]: identity };
+        },
+        {},
+      );
 
-      parentIdentities = wrappedIdentities.reduce<Option<PalletIdentityRegistration>[]>((acc, [address, identity]) => {
-        if (parentAddresses[address.args[0].toString()] && !identity.isNone) {
-          acc.push(identity);
-        }
-
-        return acc;
-      }, []);
+      parentIdentities = subIdentities.map((identity) => identities[identity.parent]);
     } else {
       const identityAddresses = subIdentities.map((identity) => identity.parent);
       parentIdentities = await api.query.identity.identityOf.multi(identityAddresses);
@@ -246,6 +249,7 @@ export const useValidators = (): IValidatorsService => {
 
   return {
     getValidators,
+    getValidatorsList,
     getMaxValidators,
     getNominators,
   };
