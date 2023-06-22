@@ -173,10 +173,10 @@ const InitOperation = ({ api, chainId, accounts, asset, addressPrefix, onResult 
     return activeSignatory ? [activeSignatory.id as AccountId] : [];
   };
 
-  const validFee = validateFee();
-  const validDeposit = validateDeposit();
+  const isValidFee = validateFee();
+  const isValidDeposit = validateDeposit();
   const canSubmit =
-    !feeLoading && (activeValidatorsAccounts.length > 0 || Boolean(activeSignatory)) && validFee && validDeposit;
+    !feeLoading && (activeValidatorsAccounts.length > 0 || Boolean(activeSignatory)) && isValidFee && isValidDeposit;
 
   return (
     <div className="flex flex-col w-[440px] px-5 py-4">
@@ -207,16 +207,16 @@ const InitOperation = ({ api, chainId, accounts, asset, addressPrefix, onResult 
               label={t('staking.bond.signatoryLabel')}
               placeholder={t('staking.bond.signatoryPlaceholder')}
               disabled={!signatoryOptions.length}
-              invalid={!validDeposit || !validFee}
+              invalid={!isValidDeposit || !isValidFee}
               selectedId={activeSignatory?.id}
               options={signatoryOptions}
               onChange={setActiveSignatory}
             />
             <InputHint active={!signatoryOptions.length}>{t('multisigOperations.noSignatory')}</InputHint>
-            <InputHint active={!validFee} variant="error">
+            <InputHint active={!isValidFee} variant="error">
               {t('staking.notEnoughBalanceForFeeError')}
             </InputHint>
-            <InputHint active={!validDeposit} variant="error">
+            <InputHint active={!isValidDeposit} variant="error">
               {t('staking.notEnoughBalanceForDepositError')}
             </InputHint>
           </div>
@@ -226,12 +226,12 @@ const InitOperation = ({ api, chainId, accounts, asset, addressPrefix, onResult 
               label={t('staking.bond.accountLabel')}
               placeholder={t('staking.bond.accountPlaceholder')}
               multiPlaceholder={t('staking.bond.manyAccountsPlaceholder')}
-              invalid={!validFee}
+              invalid={!isValidFee}
               selectedIds={activeValidatorsAccounts.map((acc) => acc.id)}
               options={validatorsAccounts}
               onChange={setActiveValidatorsAccounts}
             />
-            <InputHint active={!validFee} variant="error">
+            <InputHint active={!isValidFee} variant="error">
               {t('staking.notEnoughBalanceForFeeError')}
             </InputHint>
           </div>
