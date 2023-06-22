@@ -559,8 +559,6 @@
       "goToStakingButton": "Back to Staking",
       "incorrectAddressError": "Please, enter correct address",
       "manyAccountsPlaceholder": "Multiple accounts selected",
-      "networkDepositLabel": "Multisig Deposit",
-      "networkFeeLabel": "Network fee",
       "noStakingAssetDescription": "No staking asset was found for { chainName }",
       "noStakingAssetLabel": "No staking asset",
       "payoutAccountLabel": "Payout account",
@@ -594,8 +592,6 @@
       "hintTitle": "Learn more",
       "hintUnstakePeriod": "To unstake tokens you will have to wait for the ustaking period",
       "hintWithdraw": "After unstaking period don’t forget to redeem your tokens",
-      "networkDepositLabel": "Multisig Deposit",
-      "networkFeeLabel": "Network fee",
       "queueButton": "Add to operation queue",
       "restakeRewards": "Restake rewards",
       "rewardsDestinationLabel": "Rewards destination",
@@ -615,6 +611,10 @@
       "title": "Change rewards destination on"
     },
     "loadingMessage": "Connecting to { chainName }",
+    "networkDepositLabel": "Multisig Deposit",
+    "networkFeeTotal": "Total network fee",
+    "networkFee_one": "Network fee",
+    "networkFee_other": "Network fee per account",
     "nominators": {
       "electedTitle": "Elected",
       "nominated": "Nominated",
@@ -687,8 +687,6 @@
     "unstake": {
       "confirmUnstakeSubtitle": "Confirmation",
       "initUnstakeSubtitle": "Unstake",
-      "networkFee_one": "Network fee",
-      "networkFee_other": "Network fee per account",
       "stakedPlaceholder": "Staked",
       "title": "Unstake { asset } on",
       "transferable": "Transferable"

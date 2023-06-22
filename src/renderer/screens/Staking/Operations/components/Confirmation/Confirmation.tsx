@@ -191,17 +191,28 @@ export const Confirmation = ({
           )}
 
           <div className="flex justify-between items-center gap-x-2">
-            <FootnoteText className="text-text-tertiary">{t('staking.confirmation.networkFeeLabel')}</FootnoteText>
+            <FootnoteText className="text-text-tertiary">
+              {t('staking.networkFee', { count: accounts.length })}
+            </FootnoteText>
             <FootnoteText>
-              <Fee
-                api={api}
-                multiply={accounts.length}
-                asset={asset}
-                transaction={transaction}
-                onFeeLoading={setFeeLoading}
-              />
+              <Fee api={api} asset={asset} transaction={transaction} onFeeLoading={setFeeLoading} />
             </FootnoteText>
           </div>
+
+          {accounts.length > 1 && (
+            <div className="flex justify-between items-center gap-x-2">
+              <FootnoteText className="text-text-tertiary">{t('staking.networkFeeTotal')}</FootnoteText>
+              <FootnoteText className="text-text-tertiary">
+                <Fee
+                  api={api}
+                  asset={asset}
+                  multiply={accounts.length}
+                  transaction={transaction}
+                  onFeeLoading={setFeeLoading}
+                />
+              </FootnoteText>
+            </div>
+          )}
 
           <InputHint active={multisigTxExist} variant="error">
             {t('staking.confirmation.hintMstExists')}

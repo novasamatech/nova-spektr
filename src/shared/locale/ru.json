@@ -559,8 +559,6 @@
       "goToStakingButton": "Обратно к Стейкингу",
       "incorrectAddressError": "Пожалуйста, введите корректный адрес",
       "manyAccountsPlaceholder": "Выбрано несколько аккаунтов",
-      "networkDepositLabel": "Депозит",
-      "networkFeeLabel": "Комиссия сети",
       "noStakingAssetDescription": "Для { chainName } ассет для стейкинга не найден",
       "noStakingAssetLabel": "Ассет не найден",
       "payoutAccountLabel": "Аккаунт для выплаты наград",
@@ -594,8 +592,6 @@
       "hintTitle": "Узнайте больше о наградах",
       "hintUnstakePeriod": "Для вывода токенов нужно дождаться разблокировки",
       "hintWithdraw": "После разблокировки не забудбте забрать токены",
-      "networkDepositLabel": "Депозит",
-      "networkFeeLabel": "Комиссия сети",
       "queueButton": "добавить в очередь",
       "restakeRewards": "Вложить награды",
       "rewardsDestinationLabel": "Выплата наград",
@@ -615,6 +611,10 @@
       "title": "Смена адреса наград на"
     },
     "loadingMessage": "Подключаемся к { chainName }",
+    "networkDepositLabel": "Депозит",
+    "networkFeeTotal": "Общая комиссия сети",
+    "networkFee_one": "Комиссия сети",
+    "networkFee_other": "Комиссия сети за аккаунт",
     "nominators": {
       "electedTitle": "Выбранные",
       "nominated": "Вклад",
@@ -687,8 +687,6 @@
     "unstake": {
       "confirmUnstakeSubtitle": "Подтверждение",
       "initUnstakeSubtitle": "Вывод из стейка",
-      "networkFee_one": "Комиссия сети",
-      "networkFee_other": "Комиссия сети за аккаунт",
       "stakedPlaceholder": "В стейке",
       "title": "Анстейк { asset } на",
       "transferable": "Доступно"

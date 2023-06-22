@@ -230,6 +230,7 @@ const InitOperation = ({ api, chainId, accounts, asset, addressPrefix, onResult 
           api={api}
           asset={asset}
           account={firstAccount}
+          totalAccounts={activeValidatorsAccounts.length}
           transaction={transactions[0]}
           onFeeChange={setFee}
           onFeeLoading={setFeeLoading}

@@ -227,6 +227,7 @@ const InitOperation = ({ api, chainId, accounts, addressPrefix, asset, onResult 
           api={api}
           asset={asset}
           account={firstAccount}
+          totalAccounts={activeDestAccounts.length}
           transaction={transactions[0]}
           onFeeChange={setFee}
           onFeeLoading={setFeeLoading}
