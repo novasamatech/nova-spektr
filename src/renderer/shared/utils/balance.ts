@@ -5,6 +5,8 @@ import { Balance, LockTypes } from '@renderer/domain/balance';
 import { Unlocking } from '@renderer/domain/stake';
 import { ZERO_BALANCE } from '@renderer/services/balance/common/constants';
 
+const MAX_INTEGER = 15;
+
 const enum Suffix {
   MILLIONS = 'M',
   BILLIONS = 'B',
@@ -146,10 +148,12 @@ export const validateSymbols = (amount: string) => {
 };
 
 export const validatePrecision = (amount: string, precision: number) => {
-  const [_, decimal] = amount.split('.');
+  const [integer, decimal] = amount.split('.');
   if (decimal && decimal.length > precision) {
     return false;
   }
+
+  if (integer.length > MAX_INTEGER) return false;
 
   return true;
 };
