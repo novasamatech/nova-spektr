@@ -24,7 +24,7 @@ const LanguageSwitcher = ({ className, languages, selected, short, onChange, top
         <Listbox.Button
           className={cnTw(
             'h-7.5 pr-1 pl-2.5 select-none',
-            'hover:bg-primary hover:text-white',
+            'hover:bg-primary hover:text-text-white',
             'bg-shade-5 text-neutral-variant',
             'rounded-l-full rounded-r-full flex justify-between items-center gap-x-2.5',
           )}
@@ -43,7 +43,7 @@ const LanguageSwitcher = ({ className, languages, selected, short, onChange, top
                   className={cnTw(
                     'w-full h-7.5 pr-1 pl-2.5 cursor-pointer select-none',
                     'rounded-l-full rounded-r-full  flex justify-between items-center gap-x-2.5',
-                    active ? 'bg-primary text-white' : 'bg-shade-5 text-neutral-variant',
+                    active ? 'bg-primary text-text-white' : 'bg-shade-5 text-neutral-variant',
                   )}
                 >
                   {short ? language.shortLabel : language.label}

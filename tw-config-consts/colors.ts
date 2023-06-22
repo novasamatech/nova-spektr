@@ -1,6 +1,7 @@
 export default {
   /* TEXT */
   'text-primary': 'var(--text-primary)',
+  'text-white': 'var(--text-white)',
   'text-secondary': 'var(--text-secondary)',
   'text-tertiary': 'var(--text-tertiary)',
   'chip-text': 'var(--chip-text)',

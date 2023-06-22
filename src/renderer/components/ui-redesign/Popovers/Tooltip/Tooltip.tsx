@@ -23,7 +23,7 @@ export const Tooltip = ({
       'spektr-arrow spektr-arrow__' + pointer,
       panelClass,
     )}
-    content={<HelpText className="text-white">{content}</HelpText>}
+    content={<HelpText className="text-text-white">{content}</HelpText>}
   >
     {children}
   </Popover>

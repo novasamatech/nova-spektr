@@ -1,6 +1,7 @@
 :root {
   /* TEXT */
   --text-primary: #363643;
+  --text-white: #fff;
   --text-secondary: #79797d;
   --text-tertiary: #a4a4ad;
   --chip-text: #868692;

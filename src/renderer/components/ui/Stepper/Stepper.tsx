@@ -32,7 +32,9 @@ const InactiveStep = ({ index, title, isStart, isEnd }: StepProps) => (
 const ActiveStep = ({ index, title, isStart, isEnd }: StepProps) => (
   <div className="flex items-center cursor-default gap-x-2.5" data-testid="active-step">
     <div className="relative">
-      <div className="flex justify-center items-center rounded-full bg-tertiary text-white w-10 h-10">{index + 1}</div>
+      <div className="flex justify-center items-center rounded-full bg-tertiary text-text-white w-10 h-10">
+        {index + 1}
+      </div>
       <p className={cnTw('font-bold text-neutral-variant', getTitleClass(isStart, isEnd))}>{title}</p>
     </div>
     {!isEnd && <hr className="w-full border-shade-20" />}
@@ -42,8 +44,8 @@ const ActiveStep = ({ index, title, isStart, isEnd }: StepProps) => (
 const CompleteStep = ({ title, isStart, isEnd }: StepProps) => (
   <div className="flex items-center cursor-default gap-x-2.5" data-testid="complete-step">
     <div className="relative">
-      <div className="flex justify-center items-center rounded-full bg-success text-white w-10 h-10">
-        <CheckSvg width={24} height={24} className="text-white" role="img" />
+      <div className="flex justify-center items-center rounded-full bg-success text-text-white w-10 h-10">
+        <CheckSvg width={24} height={24} className="text-text-white" role="img" />
       </div>
       <p className={cnTw('text-shade-40', getTitleClass(isStart, isEnd))}>{title}</p>
     </div>

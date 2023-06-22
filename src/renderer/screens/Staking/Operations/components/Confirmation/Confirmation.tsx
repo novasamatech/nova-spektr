@@ -118,7 +118,7 @@ export const Confirmation = ({
             ) : (
               <button type="button" className={cnTw('flex items-center gap-x-1', ActionStyle)} onClick={toggleAccounts}>
                 <div className="rounded-[30px] px-1.5 py-[1px] bg-icon-accent">
-                  <CaptionText className="text-white">{accounts.length}</CaptionText>
+                  <CaptionText className="text-text-white">{accounts.length}</CaptionText>
                 </div>
                 <Icon className="text-icon-default group-hover:text-icon-hover" name="info" size={16} />
               </button>
@@ -146,7 +146,7 @@ export const Confirmation = ({
                 onClick={toggleValidators}
               >
                 <div className="rounded-[30px] px-1.5 py-[1px] bg-icon-accent">
-                  <CaptionText className="text-white">{validators.length}</CaptionText>
+                  <CaptionText className="text-text-white">{validators.length}</CaptionText>
                 </div>
                 <Icon className="text-icon-default group-hover:text-icon-hover" name="info" size={16} />
               </button>

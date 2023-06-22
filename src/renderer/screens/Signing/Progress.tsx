@@ -20,8 +20,8 @@ const Progress = ({ progress, max }: Props) => {
         </div>
       )}
       <div className="flex text-2xs items-center gap-1 mt-3 bg-white rounded-lg pr-1">
-        <div className={cn('rounded-lg px-1.5 py-1 text-white', progress === max ? 'bg-success' : 'bg-shade-30')}>
-          {progress} {'/'} <span className="text-white opacity-75">{max}</span>
+        <div className={cn('rounded-lg px-1.5 py-1 text-text-white', progress === max ? 'bg-success' : 'bg-shade-30')}>
+          {progress} {'/'} <span className="text-text-white opacity-75">{max}</span>
         </div>
 
         {t('transfer.multiple.transactions')}

@@ -33,7 +33,7 @@ const Message = ({ children, isOpen, onClose }: PropsWithChildren<Props>) => (
             leaveTo="opacity-0 scale-95"
           >
             <Dialog.Panel className="w-fix max-w-md transform overflow-hidden rounded-2lg bg-shade-70 p-4 text-left align-middle shadow-surface transition-all">
-              <Dialog.Title as="h3" className="font-semibold text-white">
+              <Dialog.Title as="h3" className="font-semibold text-text-white">
                 {children}
               </Dialog.Title>
             </Dialog.Panel>

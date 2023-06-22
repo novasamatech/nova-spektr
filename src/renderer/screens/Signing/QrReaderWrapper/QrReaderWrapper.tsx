@@ -105,7 +105,7 @@ const QrReaderWrapper = ({ className, onResult, countdown, validationError, isMu
 
   return (
     <div className="flex flex-col items-center flex-1 w-full relative pt-[52px] overflow-y-hidden">
-      <SmallTitleText as="h3" className={cnTw('z-10', activeCamera && 'text-white')}>
+      <SmallTitleText as="h3" className={cnTw('z-10', activeCamera && 'text-text-white')}>
         {t('signing.scanQrTitle')}
       </SmallTitleText>
 
@@ -115,7 +115,7 @@ const QrReaderWrapper = ({ className, onResult, countdown, validationError, isMu
         <CaptionText
           align="center"
           className={cn(
-            'py-1 px-2 w-[50px] h-5 rounded-[26px] text-white',
+            'py-1 px-2 w-[50px] h-5 rounded-[26px] text-text-white',
             (countdown === 0 && 'bg-label-background-gray') ||
               (countdown >= 60 ? 'bg-label-background-green' : 'bg-label-background-red'),
           )}
@@ -133,7 +133,7 @@ const QrReaderWrapper = ({ className, onResult, countdown, validationError, isMu
               size={240}
               className={cnTw(
                 'absolute w-full h-full min-h-[240px] camera-frame z-20',
-                isCameraOn ? 'text-white' : 'text-filter-border',
+                isCameraOn ? 'text-text-white' : 'text-filter-border',
               )}
             />
             <div className="z-30 absolute flex flex-col items-center justify-center gap-y-4 w-full h-[240px]">
@@ -173,7 +173,7 @@ const QrReaderWrapper = ({ className, onResult, countdown, validationError, isMu
       {progress && (
         <div className="flex items-center gap-x-2 mt-4">
           <FootnoteText className="text-text-tertiary">{t('signing.parsingLabel')}</FootnoteText>
-          <CaptionText as="span" className="bg-label-background-gray text-white uppercase">
+          <CaptionText as="span" className="bg-label-background-gray text-text-white uppercase">
             {t('signing.parsingCount', { current: progress.decoded, total: progress.total })}
           </CaptionText>
         </div>

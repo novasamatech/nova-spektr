@@ -173,7 +173,7 @@ const Signing = () => {
                     {countdown > 0 && (
                       <div className="flex items-center uppercase font-normal text-xs gap-1.25">
                         {t('signing.qrCountdownTitle')}
-                        <div className="rounded-md bg-success text-white py-0.5 px-1.5">
+                        <div className="rounded-md bg-success text-text-white py-0.5 px-1.5">
                           {secondsToMinutes(countdown)}
                         </div>
                       </div>

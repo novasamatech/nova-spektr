@@ -385,7 +385,7 @@ export const TransferForm = ({
                     contentClass="py-1 px-2 bg-switch-background-active rounded w-[184px] border-none"
                     panelClass="left-1/2 -translate-x-1/2"
                     content={
-                      <HelpText className="text-white">
+                      <HelpText className="text-text-white">
                         <Trans t={t} i18nKey="transfer.networkDepositHint" />
                       </HelpText>
                     }

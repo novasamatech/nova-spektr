@@ -204,7 +204,7 @@ const KeyQrReader = ({ size = 300, className, onResult }: Props) => {
                 <Icon size={100} name="checkmarkCutout" className="text-success" />
               </>
             ) : (
-              <Icon name="qrFrame" size={240} className="text-white z-20" />
+              <Icon name="qrFrame" size={240} className="text-text-white z-20" />
             )}
           </div>
         </div>
@@ -223,7 +223,7 @@ const KeyQrReader = ({ size = 300, className, onResult }: Props) => {
             <FootnoteText className="text-text-tertiary">{t('qrReader.parsingLabel')}</FootnoteText>
             <CaptionText
               className={cnTw(
-                'text-white uppercase bg-label-background-gray px-2 py-1 rounded-full',
+                'text-text-white uppercase bg-label-background-gray px-2 py-1 rounded-full',
                 total === decoded && 'bg-label-background-green',
               )}
               data-testid="progress"

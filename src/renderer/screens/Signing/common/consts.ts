@@ -41,4 +41,4 @@ export const CameraErrorText = {
 } as const;
 
 export const WhiteTextButtonStyle =
-  'text-white-button-background-default hover:text-white-button-background-hover active:text-white-button-background-active disabled:text-white-button-background-disabled';
+  'text-text-white-button-background-default hover:text-text-white-button-background-hover active:text-text-white-button-background-active disabled:text-text-white-button-background-disabled';

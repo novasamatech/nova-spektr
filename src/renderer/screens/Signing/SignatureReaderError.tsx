@@ -18,7 +18,7 @@ const SignatureReaderError = ({ error, validationError, onTryAgain, isCameraOn }
   if (error) {
     return (
       <>
-        <FootnoteText className={(isCameraOn && 'text-white') || ''} align="center">
+        <FootnoteText className={(isCameraOn && 'text-text-white') || ''} align="center">
           {t(CameraErrorText[error].label)}
           <br />
           {t(CameraErrorText[error].description)}

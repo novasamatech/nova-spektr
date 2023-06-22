@@ -64,7 +64,7 @@ const Select = ({
                 <div className="flex gap-x-2.5 items-center">
                   <p
                     className={cnTw(
-                      'flex items-center justify-center bg-neutral rounded-full text-white text-xs font-bold',
+                      'flex items-center justify-center bg-neutral rounded-full text-text-white text-xs font-bold',
                       weightStyle.count,
                     )}
                   >

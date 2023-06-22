@@ -26,7 +26,7 @@ const QrGeneratorContainer = ({ countdown, onQrReset, chainId, children }: Props
         <CaptionText
           align="center"
           className={cn(
-            'py-1 px-2 w-[50px] h-5 rounded-[26px] text-white',
+            'py-1 px-2 w-[50px] h-5 rounded-[26px] text-text-white',
             ((countdown === 0 || !children) && 'bg-label-background-gray') ||
               (countdown >= 60 ? 'bg-label-background-green' : 'bg-label-background-red'),
           )}

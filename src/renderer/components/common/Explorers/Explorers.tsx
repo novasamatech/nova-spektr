@@ -32,7 +32,7 @@ const Explorers = ({ explorers, address, addressPrefix, header, className }: Pro
         <div className={cnTw('relative', open && 'z-10', className)}>
           <Menu.Button
             data-testid={`explorers-${address}`}
-            className="flex items-center w-5 h-5 rounded-full hover:bg-primary hover:text-white transition"
+            className="flex items-center w-5 h-5 rounded-full hover:bg-primary hover:text-text-white transition"
             onClick={scrollToMenu}
           >
             <Icon name="options" size={20} />
@@ -51,7 +51,7 @@ const Explorers = ({ explorers, address, addressPrefix, header, className }: Pro
                     <div
                       className={cnTw(
                         'rounded-2lg flex items-center gap-1 p-2.5 text-sm font-normal select-none cursor-pointer',
-                        active ? 'bg-primary text-white' : 'bg-white text-neutral',
+                        active ? 'bg-primary text-text-white' : 'bg-white text-neutral',
                       )}
                     >
                       {header}
@@ -72,7 +72,7 @@ const Explorers = ({ explorers, address, addressPrefix, header, className }: Pro
                     <a
                       className={cnTw(
                         'rounded-2lg flex items-center gap-x-2.5 p-2.5 text-sm font-normal select-none transition',
-                        active ? 'bg-primary text-white' : 'bg-white text-neutral',
+                        active ? 'bg-primary text-text-white' : 'bg-white text-neutral',
                       )}
                       href={account.replace('{address}', toAddress(address, { prefix: addressPrefix }))}
                       rel="noopener noreferrer"
