@@ -84,7 +84,7 @@ const QrMultiframeSignatureReader = ({
     if (cameras.length === 0) {
       throw QR_READER_ERRORS[QrError.NO_VIDEO_INPUT];
     }
-    if (cameras.length > 1) {
+    if (cameras.length > 0) {
       onCameraList?.(cameras);
     }
 
@@ -117,7 +117,7 @@ const QrMultiframeSignatureReader = ({
       }
 
       isComplete.current = true;
-      onResult?.(makeResultPayload<Uint8Array[]>(result?.payload.map((item) => item.signature)));
+      onResult?.(makeResultPayload(result?.payload.map((item) => item.signature)));
     } else {
       // if there is more than 1 frame --> proceed scanning and keep the progress
       onProgress?.({ decoded: 1, total: frameData.total });
@@ -272,6 +272,7 @@ const QrMultiframeSignatureReader = ({
     (async () => {
       try {
         controlsRef.current?.stop();
+        bgControlsRef.current?.stop();
         await startScanning();
       } catch (error) {
         onError?.(QR_READER_ERRORS[QrError.BAD_NEW_CAMERA]);

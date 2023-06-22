@@ -34,7 +34,7 @@ const WalletGroup = ({ type, wallets, onWalletClick }: Props) => {
               <div className="flex items-center justify-between gap-x-1.5">
                 <Icon size={14} name={GroupIcons[type]} className="text-chip-icon" />
                 <CaptionText className="text-chip-text uppercase">{t(GroupLabels[type])}</CaptionText>
-                <CaptionText className="bg-chip-icon text-button-text px-1.5 py-0.5 h-4 rounded-full" align="center">
+                <CaptionText className="bg-chip-icon text-white px-1.5 py-0.5 h-4 rounded-full" align="center">
                   {wallets.length}
                 </CaptionText>
               </div>

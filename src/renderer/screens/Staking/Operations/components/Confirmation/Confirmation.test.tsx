@@ -12,6 +12,12 @@ jest.mock('@renderer/context/I18nContext', () => ({
   }),
 }));
 
+jest.mock('@renderer/services/multisigTx/multisigTxService', () => ({
+  useMultisigTx: jest.fn().mockReturnValue({
+    getMultisigTxs: jest.fn().mockReturnValue([]),
+  }),
+}));
+
 jest.mock(
   '@renderer/components/common/AddressWithExplorers/AddressWithExplorers',
   jest.fn().mockReturnValue(({ address }: any) => <span data-testid="address">{address}</span>),
