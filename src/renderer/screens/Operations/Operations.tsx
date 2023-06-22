@@ -35,30 +35,29 @@ const Operations = () => {
   }, [txs.length]);
 
   return (
-    <div className="flex flex-col items-start relative min-h-full">
+    <div className="flex flex-col items-center relative h-full">
       <Header title={t('operations.title')} />
 
-      <div className="pl-6 mx-auto h-full">
-        {Boolean(txs.length) && <Filters txs={txs} onChangeFilters={setFilteredTxs} />}
+      {Boolean(txs.length) && <Filters txs={txs} onChangeFilters={setFilteredTxs} />}
 
-        <div className="overflow-y-auto flex-1 mx-auto mt-4">
-          {Boolean(filteredTxs.length) &&
-            Object.entries(groupedTxs)
-              .sort(sortByDateDesc)
-              .map(([date, txs]) => (
-                <section className="w-fit mt-6" key={date}>
-                  <FootnoteText className="text-text-tertiary mb-3 ml-2">{date}</FootnoteText>
-                  <ul className="flex flex-col gap-y-1.5">
-                    {txs
-                      .sort((a, b) => (b.dateCreated || 0) - (a.dateCreated || 0))
-                      .map((tx) => (
-                        <Operation key={tx.dateCreated} tx={tx} account={account as MultisigAccount} />
-                      ))}
-                  </ul>
-                </section>
-              ))}
+      {Boolean(filteredTxs.length) && (
+        <div className="pl-6 overflow-y-auto w-full mt-4 h-full flex flex-col items-center">
+          {Object.entries(groupedTxs)
+            .sort(sortByDateDesc)
+            .map(([date, txs]) => (
+              <section className="w-fit mt-6" key={date}>
+                <FootnoteText className="text-text-tertiary mb-3 ml-2">{date}</FootnoteText>
+                <ul className="flex flex-col gap-y-1.5">
+                  {txs
+                    .sort((a, b) => (b.dateCreated || 0) - (a.dateCreated || 0))
+                    .map((tx) => (
+                      <Operation key={tx.dateCreated} tx={tx} account={account as MultisigAccount} />
+                    ))}
+                </ul>
+              </section>
+            ))}
         </div>
-      </div>
+      )}
 
       {!filteredTxs.length && (
         <EmptyOperations multisigAccount={account} isEmptyFromFilters={txs.length !== filteredTxs.length} />
