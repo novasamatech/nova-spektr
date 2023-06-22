@@ -32,7 +32,7 @@ export const Overview = () => {
 
   const { subscribeActiveEra } = useEra();
   const { subscribeStaking } = useStakingData();
-  const { getValidators } = useValidators();
+  const { getValidatorsList } = useValidators();
   const { getActiveAccounts } = useAccount();
   const [isShowNominators, toggleNominators] = useToggle();
 
@@ -120,7 +120,7 @@ export const Overview = () => {
     const era = chainEra[chainId];
     if (!era) return;
 
-    getValidators(chainId, api, era, isLightClient).then(setValidators);
+    getValidatorsList(api, era).then(setValidators);
   }, [chainId, api, chainEra]);
 
   const changeNetwork = (chain: Chain) => {
