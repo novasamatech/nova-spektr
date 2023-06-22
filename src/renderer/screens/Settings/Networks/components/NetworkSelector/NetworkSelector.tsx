@@ -69,11 +69,13 @@ export const NetworkSelector = ({
     setSelectedNode(allNodes.find(Predicates[connectionType]));
   }, [networkItem]);
 
-  const changeConnection = async ({ type, node }: SelectorPayload) => {
-    if (type === ConnectionType.DISABLED) {
+  const changeConnection = async (payload?: SelectorPayload) => {
+    if (!payload) {
+      onChangeCustomNode();
+    } else if (payload.type === ConnectionType.DISABLED) {
       onDisconnect();
     } else {
-      onConnect(type, node);
+      onConnect(payload.type, payload.node);
     }
   };
 
@@ -161,10 +163,6 @@ export const NetworkSelector = ({
                   variant="text"
                   className="w-full h-full justify-center"
                   suffixElement={<Icon name="add" size={16} />}
-                  onClick={(event) => {
-                    event.stopPropagation();
-                    onChangeCustomNode();
-                  }}
                 >
                   {t('settings.networks.addNodeButton')}
                 </Button>

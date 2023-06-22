@@ -40,7 +40,16 @@ jest.mock('@renderer/services/balance/balanceService', () => ({
   }),
 }));
 
-jest.mock('../../components', () => ({ OperationForm: () => 'operationForm' }));
+jest.mock('../../components', () => ({
+  OperationForm: ({ children }: any) => {
+    return (
+      <div>
+        <p>operationForm</p>
+        {children({ invalidBalance: false, invalidFee: false, invalidDeposit: false })}
+      </div>
+    );
+  },
+}));
 
 describe('screens/Staking/Bond/InitOperation', () => {
   const defaultProps = {
