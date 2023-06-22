@@ -1,5 +1,5 @@
 import { useForm, Controller, SubmitHandler } from 'react-hook-form';
-import { useState, useEffect, ReactNode, PropsWithChildren } from 'react';
+import { useState, useEffect, ReactNode } from 'react';
 import { Trans, TFunction } from 'react-i18next';
 
 import { Identicon } from '@renderer/components/ui';
@@ -15,7 +15,7 @@ import { useAccount } from '@renderer/services/account/accountService';
 import { useBalance } from '@renderer/services/balance/balanceService';
 import { ComboboxOption } from '@renderer/components/ui-redesign/Dropdowns/common/types';
 import { getPayoutAccountOption } from '../../common/utils';
-import OperationFooter from '@renderer/screens/Staking/Operations/components/OperationForm/OperationFooter';
+import OperationFooter from './OperationFooter';
 
 const getDestinations = (t: TFunction): RadioOption<RewardsDestination>[] => {
   const Options = [
@@ -59,7 +59,8 @@ type Props = {
   validateBalance?: (amount: string) => boolean;
   validateFee?: (amount: string) => boolean;
   validateDeposit?: (amount: string) => boolean;
-  render?: (data: ErrorPayload) => ReactNode;
+  footer: ReactNode;
+  children?: ReactNode | ((data: ErrorPayload) => ReactNode);
   onAmountChange?: (amount: string) => void;
   onSubmit: (data: FormData<Address>) => void;
 };
@@ -75,11 +76,11 @@ export const OperationForm = ({
   validateBalance = () => true,
   validateFee = () => true,
   validateDeposit = () => true,
-  render,
+  footer,
   children,
   onAmountChange,
   onSubmit,
-}: PropsWithChildren<Props>) => {
+}: Props) => {
   const { t } = useI18n();
   const { getLiveAccounts } = useAccount();
   const { getLiveAssetBalances } = useBalance();
@@ -160,11 +161,13 @@ export const OperationForm = ({
 
   return (
     <form className="w-full" onSubmit={handleSubmit(submitForm)}>
-      {render?.({
-        invalidBalance: errors.amount?.type === 'insufficientBalance',
-        invalidFee: errors.amount?.type === 'insufficientBalanceForFee',
-        invalidDeposit: errors.amount?.type === 'insufficientBalanceForDeposit',
-      })}
+      {typeof children === 'function'
+        ? children({
+            invalidBalance: errors.amount?.type === 'insufficientBalance',
+            invalidFee: errors.amount?.type === 'insufficientBalanceForFee',
+            invalidDeposit: errors.amount?.type === 'insufficientBalanceForDeposit',
+          })
+        : children}
 
       <div className="flex flex-col gap-y-5">
         {amountField && (
@@ -285,7 +288,7 @@ export const OperationForm = ({
           />
         )}
 
-        {children}
+        {footer}
       </div>
 
       <Button className="w-fit flex-0 mt-7 ml-auto" type="submit" disabled={submitDisabled}>

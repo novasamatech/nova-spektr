@@ -236,7 +236,21 @@ const InitOperation = ({ api, chainId, accounts, addressPrefix, asset, onResult 
         balanceRange={totalRedeem}
         validateFee={validateFee}
         validateDeposit={validateDeposit}
-        render={({ invalidBalance, invalidFee, invalidDeposit }) =>
+        footer={
+          <OperationForm.Footer
+            api={api}
+            asset={asset}
+            account={firstAccount}
+            totalAccounts={activeRedeemAccounts.length}
+            transaction={transactions[0]}
+            onFeeChange={setFee}
+            onFeeLoading={setFeeLoading}
+            onDepositChange={setDeposit}
+          />
+        }
+        onSubmit={submitRedeem}
+      >
+        {({ invalidBalance, invalidFee, invalidDeposit }) =>
           accountIsMultisig ? (
             <div className="flex flex-col gap-y-2 mb-4">
               <Select
@@ -263,18 +277,6 @@ const InitOperation = ({ api, chainId, accounts, addressPrefix, asset, onResult 
             />
           )
         }
-        onSubmit={submitRedeem}
-      >
-        <OperationForm.Footer
-          api={api}
-          asset={asset}
-          account={firstAccount}
-          totalAccounts={activeRedeemAccounts.length}
-          transaction={transactions[0]}
-          onFeeChange={setFee}
-          onFeeLoading={setFeeLoading}
-          onDepositChange={setDeposit}
-        />
       </OperationForm>
     </div>
   );

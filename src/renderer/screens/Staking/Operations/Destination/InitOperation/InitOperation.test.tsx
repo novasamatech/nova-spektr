@@ -35,11 +35,11 @@ jest.mock('@renderer/services/balance/balanceService', () => ({
 }));
 
 jest.mock('../../components', () => ({
-  OperationForm: ({ render }: any) => {
+  OperationForm: ({ children }: any) => {
     return (
       <div>
         <p>operationForm</p>
-        {render({ invalidBalance: false, invalidFee: false, invalidDeposit: false })}
+        {children}
       </div>
     );
   },

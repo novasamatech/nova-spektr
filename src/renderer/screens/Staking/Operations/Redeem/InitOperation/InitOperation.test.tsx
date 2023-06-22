@@ -47,17 +47,17 @@ jest.mock('@renderer/services/balance/balanceService', () => ({
 }));
 
 jest.mock('../../components', () => ({
-  OperationForm: ({ render }: any) => {
+  OperationForm: ({ children }: any) => {
     return (
       <div>
         <p>operationForm</p>
-        {render({ invalidBalance: false, invalidFee: false, invalidDeposit: false })}
+        {children({ invalidBalance: false, invalidFee: false, invalidDeposit: false })}
       </div>
     );
   },
 }));
 
-describe('screens/Staking/StakeMore/InitOperation', () => {
+describe('screens/Staking/Redeem/InitOperation', () => {
   const defaultProps = {
     api: {} as ApiPromise,
     chainId: '0x123' as ChainId,

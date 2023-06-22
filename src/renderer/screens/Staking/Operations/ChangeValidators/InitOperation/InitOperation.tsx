@@ -187,55 +187,55 @@ const InitOperation = ({ api, chainId, accounts, asset, addressPrefix, onResult 
         addressPrefix={addressPrefix}
         fields={formFields}
         asset={asset}
-        render={() =>
-          accountIsMultisig ? (
-            <div className="flex flex-col gap-y-2 mb-4">
-              <Select
-                label={t('staking.bond.signatoryLabel')}
-                placeholder={t('staking.bond.signatoryPlaceholder')}
-                disabled={!signatoryOptions.length}
-                invalid={!validDeposit || !validFee}
-                selectedId={activeSignatory?.id}
-                options={signatoryOptions}
-                onChange={setActiveSignatory}
-              />
-              <InputHint active={!signatoryOptions.length}>{t('multisigOperations.noSignatory')}</InputHint>
-              <InputHint active={!validFee} variant="error">
-                {t('staking.notEnoughBalanceForFeeError')}
-              </InputHint>
-              <InputHint active={!validDeposit} variant="error">
-                {t('staking.notEnoughBalanceForDepositError')}
-              </InputHint>
-            </div>
-          ) : (
-            <div className="flex flex-col gap-y-2 mb-4">
-              <MultiSelect
-                label={t('staking.bond.accountLabel')}
-                placeholder={t('staking.bond.accountPlaceholder')}
-                multiPlaceholder={t('staking.bond.manyAccountsPlaceholder')}
-                invalid={!validFee}
-                selectedIds={activeValidatorsAccounts.map((acc) => acc.id)}
-                options={validatorsAccounts}
-                onChange={setActiveValidatorsAccounts}
-              />
-              <InputHint active={!validFee} variant="error">
-                {t('staking.notEnoughBalanceForFeeError')}
-              </InputHint>
-            </div>
-          )
+        footer={
+          <OperationForm.Footer
+            api={api}
+            asset={asset}
+            account={firstAccount}
+            totalAccounts={activeValidatorsAccounts.length}
+            transaction={transactions[0]}
+            onFeeChange={setFee}
+            onFeeLoading={setFeeLoading}
+            onDepositChange={setDeposit}
+          />
         }
         onSubmit={submitBond}
       >
-        <OperationForm.Footer
-          api={api}
-          asset={asset}
-          account={firstAccount}
-          totalAccounts={activeValidatorsAccounts.length}
-          transaction={transactions[0]}
-          onFeeChange={setFee}
-          onFeeLoading={setFeeLoading}
-          onDepositChange={setDeposit}
-        />
+        {accountIsMultisig ? (
+          <div className="flex flex-col gap-y-2 mb-4">
+            <Select
+              label={t('staking.bond.signatoryLabel')}
+              placeholder={t('staking.bond.signatoryPlaceholder')}
+              disabled={!signatoryOptions.length}
+              invalid={!validDeposit || !validFee}
+              selectedId={activeSignatory?.id}
+              options={signatoryOptions}
+              onChange={setActiveSignatory}
+            />
+            <InputHint active={!signatoryOptions.length}>{t('multisigOperations.noSignatory')}</InputHint>
+            <InputHint active={!validFee} variant="error">
+              {t('staking.notEnoughBalanceForFeeError')}
+            </InputHint>
+            <InputHint active={!validDeposit} variant="error">
+              {t('staking.notEnoughBalanceForDepositError')}
+            </InputHint>
+          </div>
+        ) : (
+          <div className="flex flex-col gap-y-2 mb-4">
+            <MultiSelect
+              label={t('staking.bond.accountLabel')}
+              placeholder={t('staking.bond.accountPlaceholder')}
+              multiPlaceholder={t('staking.bond.manyAccountsPlaceholder')}
+              invalid={!validFee}
+              selectedIds={activeValidatorsAccounts.map((acc) => acc.id)}
+              options={validatorsAccounts}
+              onChange={setActiveValidatorsAccounts}
+            />
+            <InputHint active={!validFee} variant="error">
+              {t('staking.notEnoughBalanceForFeeError')}
+            </InputHint>
+          </div>
+        )}
       </OperationForm>
     </div>
   );

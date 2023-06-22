@@ -219,7 +219,22 @@ const InitOperation = ({ api, chainId, accounts, addressPrefix, asset, onResult 
         validateBalance={validateBalance}
         validateFee={validateFee}
         validateDeposit={validateDeposit}
-        render={({ invalidBalance, invalidFee, invalidDeposit }) =>
+        footer={
+          <OperationForm.Footer
+            api={api}
+            asset={asset}
+            account={firstAccount}
+            totalAccounts={activeStakeMoreAccounts.length}
+            transaction={transactions[0]}
+            onFeeChange={setFee}
+            onFeeLoading={setFeeLoading}
+            onDepositChange={setDeposit}
+          />
+        }
+        onSubmit={submitStakeMore}
+        onAmountChange={setAmount}
+      >
+        {({ invalidBalance, invalidFee, invalidDeposit }) =>
           accountIsMultisig ? (
             <div className="flex flex-col gap-y-2 mb-4">
               <Select
@@ -246,19 +261,6 @@ const InitOperation = ({ api, chainId, accounts, addressPrefix, asset, onResult 
             />
           )
         }
-        onSubmit={submitStakeMore}
-        onAmountChange={setAmount}
-      >
-        <OperationForm.Footer
-          api={api}
-          asset={asset}
-          account={firstAccount}
-          totalAccounts={activeStakeMoreAccounts.length}
-          transaction={transactions[0]}
-          onFeeChange={setFee}
-          onFeeLoading={setFeeLoading}
-          onDepositChange={setDeposit}
-        />
       </OperationForm>
     </div>
   );
