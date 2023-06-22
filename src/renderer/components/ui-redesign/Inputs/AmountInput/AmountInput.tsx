@@ -6,6 +6,7 @@ import { Asset } from '@renderer/domain/asset';
 import { FootnoteText } from '../../Typography';
 import { BalanceNew } from '@renderer/components/common';
 import Input from '../Input/Input';
+import { cleanAmount, formatGroups, validatePrecision, validateSymbols } from '@renderer/shared/utils/balance';
 
 type Props = {
   name?: string;
@@ -31,6 +32,16 @@ const AmountInput = ({
   onChange,
 }: Props) => {
   const { t } = useI18n();
+
+  const handleChange = (amount: string) => {
+    const cleanedAmount = cleanAmount(amount);
+
+    if (validateSymbols(cleanedAmount) && validatePrecision(cleanedAmount, asset.precision)) {
+      onChange?.(cleanedAmount);
+    } else {
+      onChange?.(value);
+    }
+  };
 
   const getBalance = useCallback(() => {
     if (!balance) return;
@@ -74,12 +85,12 @@ const AmountInput = ({
       name={name}
       className="text-right text-title font-manrope"
       label={label}
-      value={value}
+      value={formatGroups(value)}
       placeholder={t('transfer.amountPlaceholder')}
       invalid={invalid}
       prefixElement={prefixElement}
       disabled={disabled}
-      onChange={onChange}
+      onChange={handleChange}
     />
   );
 };
