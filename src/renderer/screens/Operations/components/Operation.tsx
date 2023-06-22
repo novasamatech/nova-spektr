@@ -2,11 +2,10 @@ import { format } from 'date-fns';
 import cn from 'classnames';
 
 import { useI18n } from '@renderer/context/I18nContext';
-import Chain from './Chain/Chain';
 import TransactionTitle from './TransactionTitle/TransactionTitle';
 import { useToggle } from '@renderer/shared/hooks';
 import { MultisigAccount } from '@renderer/domain/account';
-import { FootnoteText, IconButton } from '@renderer/components/ui-redesign';
+import { FootnoteText, IconButton, Chain } from '@renderer/components/ui-redesign';
 import TransactionAmount from './TransactionAmount';
 import { MultisigTransactionDS } from '@renderer/services/storage';
 import OperationStatus from './OperationStatus';
