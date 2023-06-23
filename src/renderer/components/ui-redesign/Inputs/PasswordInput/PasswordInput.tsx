@@ -7,7 +7,7 @@ import { useToggle } from '@renderer/shared/hooks';
 
 type Props = Omit<InputProps, 'type' | 'suffixElement'>;
 
-// TODO: remove Matrix text
+// TODO: Use label, placeholder and alt from props not static values
 const PasswordInput = forwardRef<HTMLInputElement, Props>(({ ...props }, ref) => {
   const { t } = useI18n();
   const [isHidden, toggleVisibility] = useToggle(true);
