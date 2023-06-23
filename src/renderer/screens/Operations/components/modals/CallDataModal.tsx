@@ -62,6 +62,7 @@ const CallDataModal = ({ isOpen, tx, onClose, onSubmit }: Props) => {
           rules={{ required: true, validate: validateCallDataValue }}
           render={({ field: { value, onChange }, fieldState: { error } }) => (
             <>
+              {/* TODO: use InputArea from ui-redesign */}
               <InputArea
                 placeholder={t('operations.callData.inputPlaceholder')}
                 value={value}

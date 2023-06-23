@@ -3,7 +3,7 @@ import { ReactNode, ComponentPropsWithoutRef, forwardRef, useId } from 'react';
 import cnTw from '@renderer/shared/utils/twMerge';
 import { LabelText } from '../../Typography';
 import { HTMLInputProps } from '../common/types';
-import CommonInputStyles from '@renderer/components/ui-redesign/Inputs/common/styles';
+import CommonInputStyles from '../common/styles';
 
 export type Props = Pick<ComponentPropsWithoutRef<'input'>, HTMLInputProps> & {
   label?: ReactNode;
@@ -26,6 +26,7 @@ const Input = forwardRef<HTMLInputElement, Props>(
       suffixElement,
       onChange,
       disabled,
+      spellCheck = false,
       ...props
     },
     ref,
@@ -56,6 +57,7 @@ const Input = forwardRef<HTMLInputElement, Props>(
           ref={ref}
           type={type}
           disabled={disabled}
+          spellCheck={spellCheck}
           onChange={(event) => onChange?.(event.target.value)}
           {...props}
         />
