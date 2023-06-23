@@ -276,7 +276,7 @@ export const Restake = () => {
           unsignedTx={unsignedTransactions}
           accounts={accounts}
           description={description}
-          onClose={closeRestakeModal}
+          onClose={toggleRestakeModal}
           {...explorersProps}
         />
       )}

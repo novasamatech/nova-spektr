@@ -1,6 +1,7 @@
 import { ApiPromise } from '@polkadot/api';
 import { UnsignedTransaction } from '@substrate/txwrapper-polkadot';
 import { useEffect, useState, ComponentProps } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 import { useI18n } from '@renderer/context/I18nContext';
 import { MultisigEvent, Transaction, MultisigTransaction, MultisigTxInitStatus } from '@renderer/domain/transaction';
@@ -14,6 +15,7 @@ import { toAccountId } from '@renderer/shared/utils/address';
 import { useToggle } from '@renderer/shared/hooks';
 import { Button } from '@renderer/components/ui-redesign';
 import OperationResult from '@renderer/components/ui-redesign/OperationResult/OperationResult';
+import Paths from '@renderer/routes/paths';
 
 type ResultProps = Pick<ComponentProps<typeof OperationResult>, 'title' | 'description' | 'variant'>;
 
@@ -30,6 +32,7 @@ type Props = {
 
 const Submit = ({ api, tx, multisigTx, account, unsignedTx, signature, description, onClose }: Props) => {
   const { t } = useI18n();
+  const navigate = useNavigate();
 
   const { matrix } = useMatrix();
   const { addMultisigTx } = useMultisigTx();
@@ -39,9 +42,21 @@ const Submit = ({ api, tx, multisigTx, account, unsignedTx, signature, descripti
   const [successMessage, toggleSuccessMessage] = useToggle();
   const [errorMessage, setErrorMessage] = useState('');
 
+  const handleClose = () => {
+    onClose();
+
+    if (isMultisig(account) && successMessage) {
+      navigate(Paths.OPERATIONS);
+    }
+  };
+
   const closeSuccessMessage = () => {
     onClose();
     toggleSuccessMessage();
+
+    if (isMultisig(account)) {
+      navigate(Paths.OPERATIONS);
+    }
   };
 
   const closeErrorMessage = () => {
@@ -138,7 +153,7 @@ const Submit = ({ api, tx, multisigTx, account, unsignedTx, signature, descripti
     <OperationResult
       isOpen={Boolean(inProgress || errorMessage || successMessage)}
       {...getResultProps()}
-      onClose={onClose}
+      onClose={handleClose}
     >
       {errorMessage && <Button onClick={closeErrorMessage}>{t('operation.feeErrorButton')}</Button>}
     </OperationResult>

@@ -279,7 +279,7 @@ export const StakeMore = () => {
           unsignedTx={unsignedTransactions}
           accounts={accounts}
           description={description}
-          onClose={closeStakeMoreModal}
+          onClose={toggleStakeMoreModal}
           {...explorersProps}
         />
       )}

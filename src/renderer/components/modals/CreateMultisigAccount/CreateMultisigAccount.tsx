@@ -1,5 +1,6 @@
 import { ComponentProps, useState } from 'react';
 import { SubmitHandler } from 'react-hook-form';
+import { useNavigate } from 'react-router-dom';
 
 import { BaseModal, HeaderTitleText, StatusLabel } from '@renderer/components/ui-redesign';
 import { useI18n } from '@renderer/context/I18nContext';
@@ -12,6 +13,7 @@ import OperationResult from '@renderer/components/ui-redesign/OperationResult/Op
 import { MultisigAccountForm, WalletForm } from './components/WalletForm';
 import AddSignatory from './components/AddSignatory';
 import MatrixModal from '@renderer/components/modals/MatrixModal/MatrixModal';
+import Paths from '@renderer/routes/paths';
 
 type OperationResultProps = Pick<ComponentProps<typeof OperationResult>, 'variant' | 'description'>;
 
@@ -22,6 +24,7 @@ type Props = {
 
 const CreateMultisigAccount = ({ isOpen, onClose }: Props) => {
   const { t } = useI18n();
+  const navigate = useNavigate();
   const { matrix, isLoggedIn } = useMatrix();
   const { getLiveAccounts, addAccount } = useAccount();
   const accounts = getLiveAccounts();
@@ -40,6 +43,11 @@ const CreateMultisigAccount = ({ isOpen, onClose }: Props) => {
     } else {
       onClose();
     }
+  };
+
+  const handleSuccessClose = () => {
+    toggleResultModal();
+    navigate(Paths.BALANCES);
   };
 
   const onCreateAccount: SubmitHandler<MultisigAccountForm> = async ({ name, threshold }) => {
@@ -72,7 +80,7 @@ const CreateMultisigAccount = ({ isOpen, onClose }: Props) => {
       await addAccount<MultisigAccount>({ ...mstAccount, matrixRoomId });
 
       toggleLoading();
-      setTimeout(toggleResultModal, 2000);
+      setTimeout(handleSuccessClose, 2000);
     } catch (error: any) {
       toggleLoading();
       setError(error?.message || t('createMultisigAccount.errorMessage'));
@@ -125,7 +133,7 @@ const CreateMultisigAccount = ({ isOpen, onClose }: Props) => {
         <AddSignatory isEditing={isEditing} onSelect={setSignatories} />
       </BaseModal>
 
-      <OperationResult {...getResultProps()} title={name} isOpen={isResultModalOpen} onClose={toggleResultModal} />
+      <OperationResult {...getResultProps()} title={name} isOpen={isResultModalOpen} onClose={handleSuccessClose} />
       <MatrixModal isOpen={isOpen && !isLoggedIn} onClose={onClose} />
     </>
   );
