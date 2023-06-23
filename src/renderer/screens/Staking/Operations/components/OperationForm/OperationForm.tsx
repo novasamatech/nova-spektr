@@ -271,6 +271,7 @@ export const OperationForm = ({
             render={({ field: { onChange, value }, fieldState: { error } }) => (
               <div className="flex flex-col gap-y-2">
                 <Input
+                  spellCheck
                   label={t('general.input.descriptionLabel')}
                   className="w-full"
                   placeholder={t('general.input.descriptionPlaceholder')}
