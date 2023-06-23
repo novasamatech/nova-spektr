@@ -300,7 +300,7 @@ export const ChangeValidators = () => {
           unsignedTx={unsignedTransactions}
           accounts={accountsValidator}
           description={description}
-          onClose={closeValidatorsModal}
+          onClose={toggleValidatorsModal}
         />
       )}
     </>
