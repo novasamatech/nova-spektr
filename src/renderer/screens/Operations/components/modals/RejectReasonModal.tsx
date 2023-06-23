@@ -54,6 +54,7 @@ const RejectReasonModal = ({ isOpen, onClose, onSubmit }: Props) => {
           rules={{ required: true }}
           render={({ field: { value, onChange }, fieldState: { error } }) => (
             <>
+              {/* TODO: use InputArea from ui-redesign */}
               <InputArea
                 placeholder={t('operation.rejectReason.placeholder')}
                 value={value}

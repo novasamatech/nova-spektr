@@ -7,6 +7,7 @@ import { useToggle } from '@renderer/shared/hooks';
 
 type Props = Omit<InputProps, 'type' | 'suffixElement'>;
 
+// TODO: remove Matrix text
 const PasswordInput = forwardRef<HTMLInputElement, Props>(({ ...props }, ref) => {
   const { t } = useI18n();
   const [isHidden, toggleVisibility] = useToggle(true);
@@ -19,10 +20,11 @@ const PasswordInput = forwardRef<HTMLInputElement, Props>(({ ...props }, ref) =>
       placeholder={t('settings.matrix.passwordPlaceholder')}
       suffixElement={
         <button className="ml-2 text-icon-default" onClick={toggleVisibility}>
-          <Icon name={isHidden ? 'eye' : 'eyeSlashed'} size={20} alt={t('settings.matrix.passwordVisibilityButton')} />
+          <Icon name={isHidden ? 'eyeSlashed' : 'eye'} size={20} alt={t('settings.matrix.passwordVisibilityButton')} />
         </button>
       }
       {...props}
+      spellCheck="false"
     />
   );
 });
