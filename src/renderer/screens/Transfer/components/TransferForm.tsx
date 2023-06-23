@@ -17,9 +17,8 @@ import { useTransaction } from '@renderer/services/transaction/transactionServic
 import { useMultisigTx } from '@renderer/services/multisigTx/multisigTxService';
 import { getAssetId } from '@renderer/shared/utils/assets';
 import { MultisigAccount, Account, isMultisig } from '@renderer/domain/account';
-import { Button, AmountInput, Input, InputHint, FootnoteText, Popover } from '@renderer/components/ui-redesign';
+import { Button, AmountInput, Input, InputHint, FootnoteText, Tooltip } from '@renderer/components/ui-redesign';
 import DetailWithLabel from '@renderer/components/common/DetailsWithLabel/DetailWithLabel';
-import { HelpText } from '@renderer/components/ui-redesign/Typography';
 
 const DESCRIPTION_MAX_LENGTH = 120;
 
@@ -380,18 +379,9 @@ export const TransferForm = ({
                 <div className="flex items-center gap-x-1">
                   <Icon className="text-text-tertiary" name="lock" size={12} />
                   <FootnoteText className="text-text-tertiary">{t('transfer.networkDeposit')}</FootnoteText>
-                  <Popover
-                    offsetPx={-92}
-                    contentClass="py-1 px-2 bg-switch-background-active rounded w-[184px] border-none"
-                    panelClass="left-1/2 -translate-x-1/2"
-                    content={
-                      <HelpText className="text-white">
-                        <Trans t={t} i18nKey="transfer.networkDepositHint" />
-                      </HelpText>
-                    }
-                  >
+                  <Tooltip offsetPx={-92} content={<Trans t={t} i18nKey="transfer.networkDepositHint" />}>
                     <Icon name="info" className="text-icon-default hover:text-icon-hover cursor-pointer" size={16} />
-                  </Popover>
+                  </Tooltip>
                 </div>
               }
               className="text-text-primary"
