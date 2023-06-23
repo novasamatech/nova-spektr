@@ -94,6 +94,15 @@ describe('screen/Settings/Networks/CustomRpcModal', () => {
     expect(spyValidateRpc).toBeCalledWith(defaultProps.network.chainId, url);
   });
 
+  test('should disable submit button during submission', async () => {
+    await renderAndFillTheForm();
+
+    const button = screen.getByRole('button', { name: 'settings.networks.addNodeButton' });
+    await act(async () => button.click());
+
+    expect(button).toBeDisabled();
+  });
+
   test('should call addRpcNode', async () => {
     const spyAddRpcNode = jest.fn();
 
