@@ -1,13 +1,12 @@
 import { useState, ChangeEvent, ComponentPropsWithoutRef, forwardRef } from 'react';
 
 import cnTw from '@renderer/shared/utils/twMerge';
-import { HTMLInputProps } from '../common/types';
+import { HTMLInputFileProps } from '../common/types';
 import { Icon } from '@renderer/components/ui';
 import TextBase from '@renderer/components/ui-redesign/Typography/common/TextBase';
 import { FootnoteText } from '@renderer/components/ui-redesign';
 
-type FileInputProps = HTMLInputProps | 'accept';
-interface Props extends Pick<ComponentPropsWithoutRef<'input'>, FileInputProps> {
+interface Props extends Pick<ComponentPropsWithoutRef<'input'>, HTMLInputFileProps> {
   invalid?: boolean;
   onChange?: (file: File) => void;
 }
@@ -45,6 +44,7 @@ const InputFile = forwardRef<HTMLInputElement, Props>(
         <input
           className="hidden"
           data-testid="file-input"
+          spellCheck="false"
           type="file"
           ref={ref}
           onChange={handleFileChange}
