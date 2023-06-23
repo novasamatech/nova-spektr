@@ -337,7 +337,7 @@ export const Bond = () => {
           unsignedTx={unsignedTransactions}
           accounts={accountsToStake}
           description={description}
-          onClose={closeBondModal}
+          onClose={toggleBondModal}
         />
       )}
     </>

@@ -277,7 +277,7 @@ export const Redeem = () => {
           signatures={signatures}
           unsignedTx={unsignedTransactions}
           accounts={accounts}
-          onClose={closeRedeemModal}
+          onClose={toggleRedeemModal}
           {...explorersProps}
         />
       )}

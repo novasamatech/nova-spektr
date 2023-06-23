@@ -1,6 +1,7 @@
 import { UnsignedTransaction } from '@substrate/txwrapper-polkadot';
 import { useEffect, useState, ComponentProps } from 'react';
 import { ApiPromise } from '@polkadot/api';
+import { useNavigate } from 'react-router-dom';
 
 import { useI18n } from '@renderer/context/I18nContext';
 import { HexString } from '@renderer/domain/shared-kernel';
@@ -20,6 +21,8 @@ import { Button } from '@renderer/components/ui-redesign';
 import OperationResult from '@renderer/components/ui-redesign/OperationResult/OperationResult';
 import { useToggle } from '@renderer/shared/hooks';
 import { useMultisigTx } from '@renderer/services/multisigTx/multisigTxService';
+import Paths from '@renderer/routes/paths';
+import { DEFAULT_TRANSITION } from '@renderer/shared/utils/constants';
 
 type ResultProps = Pick<ComponentProps<typeof OperationResult>, 'title' | 'description' | 'variant'>;
 
@@ -38,6 +41,7 @@ type Props = {
 
 export const Submit = ({ api, accounts, txs, multisigTx, unsignedTx, signatures, description, onClose }: Props) => {
   const { t } = useI18n();
+  const navigate = useNavigate();
 
   const { matrix } = useMatrix();
   const { submitAndWatchExtrinsic, getSignedExtrinsic } = useTransaction();
@@ -50,6 +54,16 @@ export const Submit = ({ api, accounts, txs, multisigTx, unsignedTx, signatures,
   useEffect(() => {
     submitExtrinsic(signatures).catch(() => console.warn('Error getting signed extrinsics'));
   }, []);
+
+  const handleSuccessClose = () => {
+    if (isMultisig(accounts[0]) && isSuccess) {
+      setTimeout(() => navigate(Paths.OPERATIONS), DEFAULT_TRANSITION);
+    } else {
+      setTimeout(() => navigate(Paths.STAKING), DEFAULT_TRANSITION);
+    }
+
+    onClose();
+  };
 
   const submitExtrinsic = async (signatures: HexString[]): Promise<void> => {
     const extrinsicRequests = unsignedTx.map((unsigned, index) => {
@@ -96,7 +110,15 @@ export const Submit = ({ api, accounts, txs, multisigTx, unsignedTx, signatures,
           }
 
           toggleSuccessMessage();
-          setTimeout(onClose, 2000);
+          setTimeout(() => {
+            onClose();
+
+            if (isMultisig(mstAccount)) {
+              setTimeout(() => navigate(Paths.OPERATIONS), DEFAULT_TRANSITION);
+            } else {
+              setTimeout(() => navigate(Paths.STAKING), DEFAULT_TRANSITION);
+            }
+          }, 2000);
         } else {
           setErrorMessage(params as string);
         }
@@ -149,7 +171,11 @@ export const Submit = ({ api, accounts, txs, multisigTx, unsignedTx, signatures,
   };
 
   return (
-    <OperationResult isOpen={Boolean(inProgress || errorMessage || isSuccess)} {...getResultProps()} onClose={onClose}>
+    <OperationResult
+      isOpen={Boolean(inProgress || errorMessage || isSuccess)}
+      {...getResultProps()}
+      onClose={handleSuccessClose}
+    >
       {errorMessage && <Button onClick={onClose}>{t('operation.feeErrorButton')}</Button>}
     </OperationResult>
   );
