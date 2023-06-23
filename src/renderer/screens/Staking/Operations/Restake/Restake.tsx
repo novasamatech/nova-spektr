@@ -52,6 +52,7 @@ export const Restake = () => {
   const [unsignedTransactions, setUnsignedTransactions] = useState<UnsignedTransaction[]>([]);
 
   const [accounts, setAccounts] = useState<Account[]>([]);
+  const [transactionAccounts, setTransactionAccounts] = useState<Account[]>([]);
   const [signer, setSigner] = useState<Account>();
   const [signatures, setSignatures] = useState<HexString[]>([]);
 
@@ -139,7 +140,7 @@ export const Restake = () => {
     }
 
     setTransactions(transactions);
-    setAccounts(accounts);
+    setTransactionAccounts(accounts);
     setRestakeAmount(amount);
     setActiveStep(Step.CONFIRMATION);
   };
@@ -212,7 +213,7 @@ export const Restake = () => {
         {activeStep === Step.CONFIRMATION && (
           <Confirmation
             api={api}
-            accounts={accounts}
+            accounts={transactionAccounts}
             signer={signer}
             amounts={restakeValues}
             transaction={transactions[0]}
@@ -235,7 +236,7 @@ export const Restake = () => {
                 api={api}
                 addressPrefix={addressPrefix}
                 countdown={countdown}
-                accounts={accounts}
+                accounts={transactionAccounts}
                 transactions={transactions}
                 chainId={chainId}
                 onGoBack={() => setActiveStep(Step.CONFIRMATION)}
@@ -247,7 +248,7 @@ export const Restake = () => {
                 api={api}
                 addressPrefix={addressPrefix}
                 countdown={countdown}
-                account={signer || accounts[0]}
+                account={signer || transactionAccounts[0]}
                 transaction={multisigTx || transactions[0]}
                 chainId={chainId}
                 onGoBack={() => setActiveStep(Step.CONFIRMATION)}
@@ -274,7 +275,7 @@ export const Restake = () => {
           multisigTx={multisigTx}
           signatures={signatures}
           unsignedTx={unsignedTransactions}
-          accounts={accounts}
+          accounts={transactionAccounts}
           description={description}
           onClose={toggleRestakeModal}
           {...explorersProps}

@@ -52,6 +52,7 @@ export const StakeMore = () => {
   const [unsignedTransactions, setUnsignedTransactions] = useState<UnsignedTransaction[]>([]);
 
   const [accounts, setAccounts] = useState<Account[]>([]);
+  const [transactionAccounts, setTransactionAccounts] = useState<Account[]>([]);
   const [signer, setSigner] = useState<Account>();
   const [signatures, setSignatures] = useState<HexString[]>([]);
 
@@ -177,7 +178,7 @@ export const StakeMore = () => {
     }
 
     setTransactions(transactions);
-    setAccounts(accounts);
+    setTransactionAccounts(accounts);
     setStakeMoreAmount(amount);
     setActiveStep(Step.CONFIRMATION);
   };
@@ -193,7 +194,7 @@ export const StakeMore = () => {
   };
 
   const explorersProps = { explorers, addressPrefix, asset };
-  const stakeMoreValues = new Array(accounts.length).fill(stakeMoreAmount);
+  const stakeMoreValues = new Array(transactionAccounts.length).fill(stakeMoreAmount);
 
   return (
     <>
@@ -214,7 +215,7 @@ export const StakeMore = () => {
         {activeStep === Step.CONFIRMATION && (
           <Confirmation
             api={api}
-            accounts={accounts}
+            accounts={transactionAccounts}
             signer={signer}
             transaction={transactions[0]}
             description={description}
@@ -238,7 +239,7 @@ export const StakeMore = () => {
                 api={api}
                 addressPrefix={addressPrefix}
                 countdown={countdown}
-                accounts={accounts}
+                accounts={transactionAccounts}
                 transactions={transactions}
                 chainId={chainId}
                 onGoBack={() => setActiveStep(Step.CONFIRMATION)}
@@ -250,7 +251,7 @@ export const StakeMore = () => {
                 api={api}
                 addressPrefix={addressPrefix}
                 countdown={countdown}
-                account={signer || accounts[0]}
+                account={signer || transactionAccounts[0]}
                 transaction={multisigTx || transactions[0]}
                 chainId={chainId}
                 onGoBack={() => setActiveStep(Step.CONFIRMATION)}
@@ -277,7 +278,7 @@ export const StakeMore = () => {
           multisigTx={multisigTx}
           signatures={signatures}
           unsignedTx={unsignedTransactions}
-          accounts={accounts}
+          accounts={transactionAccounts}
           description={description}
           onClose={toggleStakeMoreModal}
           {...explorersProps}

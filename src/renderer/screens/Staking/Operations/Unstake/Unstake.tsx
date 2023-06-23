@@ -53,6 +53,7 @@ export const Unstake = () => {
   const [unsignedTransactions, setUnsignedTransactions] = useState<UnsignedTransaction[]>([]);
 
   const [accounts, setAccounts] = useState<Account[]>([]);
+  const [transactionAccounts, setTransactionAccounts] = useState<Account[]>([]);
   const [signer, setSigner] = useState<Account>();
   const [signatures, setSignatures] = useState<HexString[]>([]);
 
@@ -140,7 +141,7 @@ export const Unstake = () => {
     }
 
     setTransactions(transactions);
-    setAccounts(accounts);
+    setTransactionAccounts(accounts);
     setUnstakeAmount(amount);
     setActiveStep(Step.CONFIRMATION);
   };
@@ -212,7 +213,7 @@ export const Unstake = () => {
   };
 
   const explorersProps = { explorers, addressPrefix, asset };
-  const unstakeValues = new Array(accounts.length).fill(unstakeAmount);
+  const unstakeValues = new Array(transactionAccounts.length).fill(unstakeAmount);
 
   return (
     <>
@@ -233,7 +234,7 @@ export const Unstake = () => {
         {activeStep === Step.CONFIRMATION && (
           <Confirmation
             api={api}
-            accounts={accounts}
+            accounts={transactionAccounts}
             signer={signer}
             description={description}
             transaction={transactions[0]}
@@ -263,7 +264,7 @@ export const Unstake = () => {
                 api={api}
                 addressPrefix={addressPrefix}
                 countdown={countdown}
-                accounts={accounts}
+                accounts={transactionAccounts}
                 transactions={transactions}
                 chainId={chainId}
                 onGoBack={() => setActiveStep(Step.CONFIRMATION)}
@@ -275,7 +276,7 @@ export const Unstake = () => {
                 api={api}
                 addressPrefix={addressPrefix}
                 countdown={countdown}
-                account={signer || accounts[0]}
+                account={signer || transactionAccounts[0]}
                 transaction={multisigTx || transactions[0]}
                 chainId={chainId}
                 onGoBack={() => setActiveStep(Step.CONFIRMATION)}
@@ -302,7 +303,7 @@ export const Unstake = () => {
           multisigTx={multisigTx}
           signatures={signatures}
           unsignedTx={unsignedTransactions}
-          accounts={accounts}
+          accounts={transactionAccounts}
           description={description}
           onClose={toggleUnstakeModal}
           {...explorersProps}
