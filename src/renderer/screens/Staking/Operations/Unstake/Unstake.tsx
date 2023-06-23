@@ -304,7 +304,7 @@ export const Unstake = () => {
           unsignedTx={unsignedTransactions}
           accounts={accounts}
           description={description}
-          onClose={closeUnstakeModal}
+          onClose={toggleUnstakeModal}
           {...explorersProps}
         />
       )}

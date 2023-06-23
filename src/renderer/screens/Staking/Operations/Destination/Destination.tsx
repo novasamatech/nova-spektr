@@ -275,7 +275,7 @@ export const Destination = () => {
           unsignedTx={unsignedTransactions}
           accounts={accounts}
           description={description}
-          onClose={closeDestinationModal}
+          onClose={toggleDestModal}
         />
       )}
     </>
