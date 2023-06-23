@@ -19,6 +19,6 @@ describe('ui-redesign/ChainIcon', () => {
     });
 
     const img = screen.getByRole('img');
-    expect(img).toHaveClass('hidden');
+    expect(img).toHaveClass('invisible');
   });
 });
