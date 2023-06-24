@@ -55,7 +55,7 @@ export const ChangeValidators = () => {
   const [unsignedTransactions, setUnsignedTransactions] = useState<UnsignedTransaction[]>([]);
 
   const [accounts, setAccounts] = useState<Account[]>([]);
-  const [transactionAccounts, setTransactionAccounts] = useState<Account[]>([]);
+  const [txAccounts, setTxAccounts] = useState<Account[]>([]);
   const [signer, setSigner] = useState<Account>();
   const [signatures, setSignatures] = useState<HexString[]>([]);
 
@@ -138,15 +138,15 @@ export const ChangeValidators = () => {
       setDescription(description || '');
     }
 
-    setTransactionAccounts(accounts);
+    setTxAccounts(accounts);
     setActiveStep(Step.VALIDATORS);
   };
 
   const onSelectValidators = (validators: ValidatorMap) => {
     const transactions = getNominateTxs(Object.keys(validators));
 
-    if (signer && isMultisig(transactionAccounts[0])) {
-      const multisigTx = getMultisigTx(transactionAccounts[0], signer.accountId, transactions[0]);
+    if (signer && isMultisig(txAccounts[0])) {
+      const multisigTx = getMultisigTx(txAccounts[0], signer.accountId, transactions[0]);
       setMultisigTx(multisigTx);
     }
 
@@ -260,7 +260,7 @@ export const ChangeValidators = () => {
                 api={api}
                 addressPrefix={addressPrefix}
                 countdown={countdown}
-                accounts={transactionAccounts}
+                accounts={txAccounts}
                 transactions={transactions}
                 chainId={chainId}
                 onGoBack={() => setActiveStep(Step.CONFIRMATION)}
@@ -272,7 +272,7 @@ export const ChangeValidators = () => {
                 api={api}
                 addressPrefix={addressPrefix}
                 countdown={countdown}
-                account={signer || transactionAccounts[0]}
+                account={signer || txAccounts[0]}
                 transaction={multisigTx || transactions[0]}
                 chainId={chainId}
                 onGoBack={() => setActiveStep(Step.CONFIRMATION)}
@@ -298,7 +298,7 @@ export const ChangeValidators = () => {
           multisigTx={multisigTx}
           signatures={signatures}
           unsignedTx={unsignedTransactions}
-          accounts={transactionAccounts}
+          accounts={txAccounts}
           description={description}
           onClose={toggleValidatorsModal}
         />
