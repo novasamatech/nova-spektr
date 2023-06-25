@@ -592,6 +592,7 @@
       "hintTitle": "Узнайте больше о наградах",
       "hintUnstakePeriod": "Для вывода токенов нужно дождаться разблокировки",
       "hintWithdraw": "После разблокировки не забудбте забрать токены",
+      "networkDepositLabel": "Депозит",
       "queueButton": "добавить в очередь",
       "restakeRewards": "Вложить награды",
       "rewardsDestinationLabel": "Выплата наград",

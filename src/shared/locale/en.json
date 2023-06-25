@@ -592,6 +592,7 @@
       "hintTitle": "Learn more",
       "hintUnstakePeriod": "To unstake tokens you will have to wait for the ustaking period",
       "hintWithdraw": "After unstaking period don’t forget to redeem your tokens",
+      "networkDepositLabel": "Multisig Deposit",
       "queueButton": "Add to operation queue",
       "restakeRewards": "Restake rewards",
       "rewardsDestinationLabel": "Rewards destination",
