@@ -353,6 +353,7 @@ export const TransferForm = ({
             render={({ field: { onChange, value }, fieldState: { error } }) => (
               <div className="flex flex-col gap-y-2">
                 <Input
+                  spellCheck
                   className="w-full"
                   label={t('general.input.descriptionLabel')}
                   placeholder={t('general.input.descriptionPlaceholder')}
