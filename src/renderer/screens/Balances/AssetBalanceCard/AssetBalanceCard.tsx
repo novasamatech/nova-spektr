@@ -8,7 +8,7 @@ import { Balance } from '@renderer/domain/balance';
 import { useToggle } from '@renderer/shared/hooks';
 import { totalAmount, transferableAmount } from '@renderer/shared/utils/balance';
 import { KeyboardKey } from '@renderer/shared/utils/constants';
-import { BodyText, IconButton } from '@renderer/components/ui-redesign';
+import { AssetIcon, BodyText, IconButton } from '@renderer/components/ui-redesign';
 import { BalanceNew } from '@renderer/components/common';
 import { HelpText } from '@renderer/components/ui-redesign/Typography';
 
@@ -65,20 +65,7 @@ const AssetBalanceCard = ({ asset, balance, canMakeActions, onReceiveClick, onTr
     >
       <div className="flex items-center py-1.5 px-2">
         <div className="flex items-center gap-x-2 px-2 py-1  mr-auto">
-          <div
-            className={cn(
-              'relative flex items-center justify-center rounded-full w-9 h-9 bg-token-background',
-              // isVerificationFailed ? 'border-alert bg-warning-gradient' : 'border-shade-30 bg-shade-70',
-            )}
-          >
-            <img
-              src={asset.icon}
-              alt=""
-              width={32}
-              height={32}
-              onError={(e) => ((e.target as HTMLImageElement).style.display = 'none')}
-            />
-          </div>
+          <AssetIcon src={asset.icon} name={asset.name} />
           <BodyText>{asset.name}</BodyText>
         </div>
         {balance?.free ? (

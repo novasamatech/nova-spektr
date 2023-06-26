@@ -1,12 +1,12 @@
-import cn from 'classnames';
 import { useCallback } from 'react';
 
 import { useI18n } from '@renderer/context/I18nContext';
 import { Asset } from '@renderer/domain/asset';
-import { FootnoteText } from '../../Typography';
+import { FootnoteText, TitleText } from '../../Typography';
 import { BalanceNew } from '@renderer/components/common';
 import Input from '../Input/Input';
 import { cleanAmount, formatGroups, validatePrecision, validateSymbols } from '@renderer/shared/utils/balance';
+import { AssetIcon } from '@renderer/components/ui-redesign';
 
 type Props = {
   name?: string;
@@ -74,11 +74,9 @@ const AmountInput = ({
   );
 
   const prefixElement = (
-    <div className="flex items-center gap-x-1">
-      <div className={cn('rounded-full flex items-center justify-center w-8 h-8 bg-token-background')}>
-        <img src={asset.icon} alt={asset.name} width={28} height={28} />
-      </div>
-      <p className="text-lg">{asset.symbol}</p>
+    <div className="flex items-center gap-x-1 min-w-fit">
+      <AssetIcon src={asset.icon} name={asset.name} size={28} className="flex" />
+      <TitleText>{asset.symbol}</TitleText>
     </div>
   );
 
