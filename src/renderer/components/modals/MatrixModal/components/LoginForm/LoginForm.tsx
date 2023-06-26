@@ -225,7 +225,7 @@ const LoginForm = () => {
 
       <div className="flex justify-between items-center pt-3">
         <Icon name="matrixFull" className="!w-[56px] text-[#00000066]" size={24} />
-        <Button type="submit" isLoading={inProgress} disabled={logInDisabled}>
+        <Button type="submit" isLoading={inProgress} disabled={logInDisabled || inProgress}>
           {t('settings.matrix.logInButton')}
         </Button>
       </div>
