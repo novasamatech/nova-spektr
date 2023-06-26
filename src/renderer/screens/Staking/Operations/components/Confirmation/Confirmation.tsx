@@ -177,9 +177,7 @@ export const Confirmation = ({
             <div className="flex justify-between items-center gap-x-2">
               <div className="flex items-center gap-x-1">
                 <Icon className="text-text-tertiary" name="lock" size={12} />
-                <FootnoteText className="text-text-tertiary">
-                  {t('staking.confirmation.networkDepositLabel')}
-                </FootnoteText>
+                <FootnoteText className="text-text-tertiary">{t('staking.networkDepositLabel')}</FootnoteText>
                 <Tooltip content={t('staking.tooltips.depositDescription')} pointer="up">
                   <Icon name="info" className="cursor-pointer" size={16} />
                 </Tooltip>
