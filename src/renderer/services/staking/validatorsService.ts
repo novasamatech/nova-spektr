@@ -161,7 +161,7 @@ export const useValidators = (): IValidatorsService => {
     }
 
     return parentIdentities.reduce<Record<Address, Identity>>((acc, identity, index) => {
-      if (identity.isNone) return acc;
+      if (!identity || identity.isNone) return acc;
 
       const { parent, sub, subName } = subIdentities[index];
       const { info } = identity.unwrap(); // { judgements, info }
