@@ -49,9 +49,9 @@ const AmountInput = ({
     if (Array.isArray(balance)) {
       return (
         <span className="flex gap-x-1">
-          <BalanceNew className="text-text-primary font-medium text-footnote" value={balance[0]} asset={asset} />
+          <BalanceNew className="text-text-primary text-footnote" value={balance[0]} asset={asset} />
           <span>-</span>
-          <BalanceNew className="text-text-primary font-medium text-footnote" value={balance[1]} asset={asset} />
+          <BalanceNew className="text-text-primary text-footnote" value={balance[1]} asset={asset} />
         </span>
       );
     }
