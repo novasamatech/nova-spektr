@@ -79,6 +79,17 @@ describe('screen/Settings/Networks/CustomRpcModal', () => {
     jest.useRealTimers();
   });
 
+  test('should disable submit button during submission', async () => {
+    await renderAndFillTheForm();
+
+    const button = screen.getByRole('button', { name: 'settings.networks.addNodeButton' });
+    expect(button).toBeEnabled();
+
+    await act(async () => button.click());
+
+    expect(button).toBeDisabled();
+  });
+
   test('should call validateRpcNode', async () => {
     const spyValidateRpc = jest.fn().mockResolvedValue(RpcValidation.VALID);
 
@@ -92,15 +103,6 @@ describe('screen/Settings/Networks/CustomRpcModal', () => {
     await act(async () => button.click());
 
     expect(spyValidateRpc).toBeCalledWith(defaultProps.network.chainId, url);
-  });
-
-  test('should disable submit button during submission', async () => {
-    await renderAndFillTheForm();
-
-    const button = screen.getByRole('button', { name: 'settings.networks.addNodeButton' });
-    await act(async () => button.click());
-
-    expect(button).toBeDisabled();
   });
 
   test('should call addRpcNode', async () => {
