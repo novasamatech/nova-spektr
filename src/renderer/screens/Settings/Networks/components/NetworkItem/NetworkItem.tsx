@@ -49,7 +49,7 @@ export const NetworkItem = ({
 
   return (
     <div className="flex items-center py-3">
-      <ChainIcon icon={icon} name={name} size={26} />
+      <ChainIcon src={icon} name={name} size={26} />
       <div className="flex flex-col ml-2 mr-auto pr-2 overflow-hidden">
         <BodyText className="truncate">{name}</BodyText>
         {networkIsActive && activeNode && <HelpText className="text-text-tertiary truncate">{activeNode.url}</HelpText>}

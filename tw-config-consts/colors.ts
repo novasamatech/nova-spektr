@@ -56,6 +56,7 @@ export default {
   'alert-border': 'var(--alert-border)',
   'alert-border-warning': 'var(--alert-border-warning)',
   'alert-border-negative': 'var(--alert-border-negative)',
+  'token-border': 'var(--token-border)',
 
   /* DIVIDER */
   divider: 'var(--divider)',

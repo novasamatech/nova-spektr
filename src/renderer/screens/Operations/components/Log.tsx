@@ -9,9 +9,9 @@ import { MultisigEvent, MultisigTransaction, SigningStatus } from '@renderer/dom
 import TransactionTitle from './TransactionTitle/TransactionTitle';
 import OperationStatus from './OperationStatus';
 import { getExtrinsicLink, getTransactionAmount, sortByDateAsc } from '../common/utils';
-import { BaseModal, BodyText, FootnoteText, InfoLink } from '@renderer/components/ui-redesign';
+import { AssetIcon, BaseModal, BodyText, FootnoteText, InfoLink } from '@renderer/components/ui-redesign';
 import { useChains } from '@renderer/services/network/chainsService';
-import { getAssetById, getIconVariant } from '@renderer/shared/utils/assets';
+import { getAssetById } from '@renderer/shared/utils/assets';
 import { Icon, Identicon } from '@renderer/components/ui';
 import { toAddress } from '@renderer/shared/utils/address';
 import { Chain } from '@renderer/domain/chain';
@@ -72,13 +72,7 @@ const LogModal = ({ isOpen, onClose, tx, account, connection }: Props) => {
       onClose={onClose}
     >
       <div className="flex gap-2 items-center px-4 py-3">
-        {showAsset && (
-          <img
-            src={getIconVariant(asset?.icon || '', 'alternative')}
-            alt={asset?.name}
-            className="rounded-full border border-token-container-border w-9 h-9"
-          />
-        )}
+        {showAsset && <AssetIcon name={asset?.name} src={asset?.icon} />}
         <TransactionTitle withoutIcon tx={transaction} description={description} />
 
         <div className="ml-auto">
