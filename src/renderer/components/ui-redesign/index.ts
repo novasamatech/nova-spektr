@@ -40,7 +40,8 @@ import InputFile from './Inputs/InputFile/InputFile';
 import { Tooltip } from './Popovers/Tooltip/Tooltip';
 import { LabelHelpBox } from './LabelHelpbox/LabelHelpBox';
 import { Chain } from './Chain/Chain';
-import { ChainIcon } from './Chain/ChainIcon/ChainIcon';
+import { ChainIcon } from './ChainIcon/ChainIcon';
+import { AssetIcon } from './AssetIcon/AssetIcon';
 
 export {
   Input,
@@ -84,4 +85,5 @@ export {
   LabelHelpBox,
   Chain,
   ChainIcon,
+  AssetIcon,
 };

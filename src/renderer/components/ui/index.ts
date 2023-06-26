@@ -7,7 +7,6 @@ import Input from './Inputs/Input/Input';
 import InputArea from './Inputs/InputArea/InputArea';
 import Block from './Block/Block';
 import Plate from './Plate/Plate';
-import AmountInput from './Inputs/AmountInput/AmountInput';
 import InputHint from './InputHint/InputHint';
 import Button from './Buttons/Button/Button';
 import ButtonLink from './Buttons/ButtonLink/ButtonLink';
@@ -37,7 +36,6 @@ export {
   InputArea,
   Block,
   Plate,
-  AmountInput,
   InputHint,
   Button,
   ButtonLink,
