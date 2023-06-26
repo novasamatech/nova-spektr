@@ -139,8 +139,8 @@ const InitOperation = ({ api, chainId, accounts, asset, addressPrefix, onResult 
     if (signerOptions.length === 0) return;
 
     setSignatoryOptions(signerOptions);
-    setActiveSignatory({ id: signerOptions[0].id, value: signerOptions[0].value });
-  }, [accountIsMultisig, dbAccounts.length, signatoriesBalances.length]);
+    !activeSignatory && setActiveSignatory({ id: signerOptions[0].id, value: signerOptions[0].value });
+  }, [accountIsMultisig, dbAccounts.length, signatoriesBalances]);
 
   useEffect(() => {
     if (stakeAccounts.length === 0) return;

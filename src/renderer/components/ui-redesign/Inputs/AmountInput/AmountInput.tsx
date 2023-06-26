@@ -49,24 +49,26 @@ const AmountInput = ({
     if (Array.isArray(balance)) {
       return (
         <span className="flex gap-x-1">
-          <BalanceNew className="text-neutral font-medium" value={balance[0]} asset={asset} />
+          <BalanceNew className="text-text-primary text-footnote" value={balance[0]} asset={asset} />
           <span>-</span>
-          <BalanceNew className="text-neutral font-medium" value={balance[1]} asset={asset} />
+          <BalanceNew className="text-text-primary text-footnote" value={balance[1]} asset={asset} />
         </span>
       );
     }
 
-    return <BalanceNew className="inline text-text-primary" value={balance} asset={asset} showIcon={false} />;
+    return (
+      <BalanceNew className="inline text-text-primary text-footnote" value={balance} asset={asset} showIcon={false} />
+    );
   }, [balance]);
 
   const label = (
     <div className="flex justify-between items-center gax-x-2">
       <FootnoteText className="text-text-tertiary">{placeholder}</FootnoteText>
       <span className="flex items-center gap-x-1.5">
-        <FootnoteText className="text-text-tertiary">
+        <FootnoteText as="span" className="text-text-tertiary">
           {balancePlaceholder || t('general.input.availableLabel')}
         </FootnoteText>
-        <FootnoteText> {getBalance()}</FootnoteText>
+        <FootnoteText as="span"> {getBalance()}</FootnoteText>
       </span>
     </div>
   );
