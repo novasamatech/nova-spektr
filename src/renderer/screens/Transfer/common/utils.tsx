@@ -58,7 +58,7 @@ export const getSignatoryOption = (
   const balanceContent = getBalance(transferableAmount(balance), asset, balanceIsCorrect);
   const element = getElement(address, account.name, balanceContent);
 
-  return { id: account.accountId, value: account, element };
+  return { id: account.accountId + account.name, value: account, element };
 };
 
 export const getAccountOption = <T extends Account | MultisigAccount>(
@@ -76,5 +76,5 @@ export const getAccountOption = <T extends Account | MultisigAccount>(
   const balanceContent = getBalance(transferableAmount(balance), asset, balanceIsCorrect);
   const element = getElement(address, account.name, balanceContent);
 
-  return { id: account.accountId, value: account, element };
+  return { id: account.accountId + account.name, value: account, element };
 };
