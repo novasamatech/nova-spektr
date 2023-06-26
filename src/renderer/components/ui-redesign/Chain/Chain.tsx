@@ -5,7 +5,7 @@ import { ChainId } from '@renderer/domain/shared-kernel';
 import { useChains } from '@renderer/services/network/chainsService';
 import { Chain as ChainType } from '@renderer/domain/chain';
 import TextBase from '@renderer/components/ui-redesign/Typography/common/TextBase';
-import { ChainIcon } from '@renderer/components/ui-redesign/Chain/ChainIcon/ChainIcon';
+import { ChainIcon } from '../ChainIcon/ChainIcon';
 
 type WithChain = { chain: ChainType };
 type WithChainId = { chainId: ChainId };
@@ -32,7 +32,7 @@ export const Chain = ({ as: Tag = 'div', fontClass, className, iconSize = 16, ..
 
   return (
     <Tag className={cnTw('flex items-center gap-x-2', className)}>
-      <ChainIcon icon={chainObj?.icon} name={chainObj?.name} size={iconSize} />
+      <ChainIcon src={chainObj?.icon} name={chainObj?.name} size={iconSize} />
       <TextBase as="span" className={cnTw('text-text-tertiary text-footnote', fontClass)}>
         {chainObj?.name}
       </TextBase>

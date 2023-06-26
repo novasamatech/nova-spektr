@@ -1,7 +1,14 @@
 import { PropsWithChildren, useEffect, useState } from 'react';
 import { BN, BN_ZERO } from '@polkadot/util';
 
-import { Select, FootnoteText, Plate, IconButton, SmallTitleText } from '@renderer/components/ui-redesign';
+import {
+  Select,
+  FootnoteText,
+  Plate,
+  IconButton,
+  SmallTitleText,
+  Chain as ChainComponent,
+} from '@renderer/components/ui-redesign';
 import { DropdownOption, DropdownResult } from '@renderer/components/ui-redesign/Dropdowns/common/types';
 import { getRelaychainAsset } from '@renderer/shared/utils/assets';
 import { useChains } from '@renderer/services/network/chainsService';
@@ -42,17 +49,10 @@ export const NetworkInfo = ({
   useEffect(() => {
     getChainsData().then((chainsData) => {
       const relaychains = sortChains(chainsData).reduce<DropdownOption<Chain>[]>((acc, chain) => {
-        const { chainId, icon, name, assets } = chain;
+        const { chainId, assets } = chain;
 
         if (getRelaychainAsset(assets)) {
-          // if replaced with Chain component there's visible delay on image load when dropdown opened
-          // TODO figure out why
-          const element = (
-            <div className="flex items-center gap-x-2 overflow-hidden">
-              <img src={icon} alt={name} width={16} height={16} />
-              <FootnoteText className="truncate">{name}</FootnoteText>
-            </div>
-          );
+          const element = <ChainComponent className="overflow-hidden" fontClass="truncate" chain={chain} />;
 
           acc.push({ id: chainId, value: chain, element });
         }
