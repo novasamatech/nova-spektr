@@ -52,7 +52,7 @@ export const useGroupedWallets = (
       [WalletType.MULTISIG]: searchedMultisigAccounts,
       [WalletType.WATCH_ONLY]: searchedWatchOnlyAccounts,
     });
-  }, [searchQuery, firstActiveAccount?.accountId, firstActiveAccount?.signingType]);
+  }, [searchQuery, firstActiveAccount?.id, firstActiveAccount?.signingType]);
 
   const searchAccount = (accounts: Account[] = [], query = '') => {
     return accounts.filter((account) => {
