@@ -55,6 +55,7 @@
   --alert-border: rgb(123, 41, 255);
   --alert-border-warning: rgb(246, 143, 7);
   --alert-border-negative: rgb(245, 33, 99);
+  --token-border: #c3c3cb;
 
   /* DIVIDER */
   --divider: rgba(69, 69, 137, 0.06);
