@@ -2,10 +2,10 @@ import { Icon } from '@renderer/components/ui';
 import { useI18n } from '@renderer/context/I18nContext';
 import { FootnoteText, Plate, BodyText, StatusLabel } from '@renderer/components/ui-redesign';
 import { HelpText } from '@renderer/components/ui-redesign/Typography';
-import cnTw from '@renderer/shared/utils/twMerge';
 import { useMatrix } from '@renderer/context/MatrixContext';
 import { useToggle } from '@renderer/shared/hooks';
-import MatrixModal from '@renderer/components/modals/MatrixModal/MatrixModal';
+import { MatrixModal } from '@renderer/components/modals';
+import cnTw from '@renderer/shared/utils/twMerge';
 
 export const MatrixAction = () => {
   const { t } = useI18n();
@@ -46,6 +46,7 @@ export const MatrixAction = () => {
           </button>
         </Plate>
       </div>
+
       <MatrixModal isOpen={isModalOpen} onClose={toggleModalOpen} />
     </>
   );

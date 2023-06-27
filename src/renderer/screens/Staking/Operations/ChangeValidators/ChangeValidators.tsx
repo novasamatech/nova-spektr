@@ -47,7 +47,6 @@ export const ChangeValidators = () => {
 
   const [activeStep, setActiveStep] = useState<Step>(Step.INIT);
   const [validators, setValidators] = useState<ValidatorMap>({});
-  const [accountsValidator, setAccountsValidator] = useState<Account[]>([]);
 
   const [description, setDescription] = useState('');
 
@@ -56,6 +55,7 @@ export const ChangeValidators = () => {
   const [unsignedTransactions, setUnsignedTransactions] = useState<UnsignedTransaction[]>([]);
 
   const [accounts, setAccounts] = useState<Account[]>([]);
+  const [txAccounts, setTxAccounts] = useState<Account[]>([]);
   const [signer, setSigner] = useState<Account>();
   const [signatures, setSignatures] = useState<HexString[]>([]);
 
@@ -138,15 +138,15 @@ export const ChangeValidators = () => {
       setDescription(description || '');
     }
 
-    setAccountsValidator(accounts);
+    setTxAccounts(accounts);
     setActiveStep(Step.VALIDATORS);
   };
 
   const onSelectValidators = (validators: ValidatorMap) => {
     const transactions = getNominateTxs(Object.keys(validators));
 
-    if (signer && isMultisig(accountsValidator[0])) {
-      const multisigTx = getMultisigTx(accountsValidator[0], signer.accountId, transactions[0]);
+    if (signer && isMultisig(txAccounts[0])) {
+      const multisigTx = getMultisigTx(txAccounts[0], signer.accountId, transactions[0]);
       setMultisigTx(multisigTx);
     }
 
@@ -236,11 +236,11 @@ export const ChangeValidators = () => {
         {activeStep === Step.CONFIRMATION && (
           <Confirmation
             api={api}
+            accounts={txAccounts}
             validators={Object.values(validators)}
             description={description}
             transaction={transactions[0]}
             multisigTx={multisigTx}
-            accounts={accounts}
             signer={signer}
             onResult={() => setActiveStep(Step.SCANNING)}
             onGoBack={goToPrevStep}
@@ -260,7 +260,7 @@ export const ChangeValidators = () => {
                 api={api}
                 addressPrefix={addressPrefix}
                 countdown={countdown}
-                accounts={accounts}
+                accounts={txAccounts}
                 transactions={transactions}
                 chainId={chainId}
                 onGoBack={() => setActiveStep(Step.CONFIRMATION)}
@@ -272,7 +272,7 @@ export const ChangeValidators = () => {
                 api={api}
                 addressPrefix={addressPrefix}
                 countdown={countdown}
-                account={signer || accounts[0]}
+                account={signer || txAccounts[0]}
                 transaction={multisigTx || transactions[0]}
                 chainId={chainId}
                 onGoBack={() => setActiveStep(Step.CONFIRMATION)}
@@ -298,9 +298,9 @@ export const ChangeValidators = () => {
           multisigTx={multisigTx}
           signatures={signatures}
           unsignedTx={unsignedTransactions}
-          accounts={accountsValidator}
+          accounts={txAccounts}
           description={description}
-          onClose={closeValidatorsModal}
+          onClose={toggleValidatorsModal}
         />
       )}
     </>

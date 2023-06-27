@@ -58,11 +58,13 @@ const ApproveTx = ({ tx, account, connection }: Props) => {
 
   const accounts = getLiveAccounts();
 
-  const unsignedAccounts = accounts.filter(
-    (a) =>
-      account.signatories.find((s) => s.accountId === a.accountId) &&
-      !tx.events.find((e) => e.accountId === a.accountId),
-  );
+  const unsignedAccounts = accounts.filter((a) => {
+    const isSignatory = account.signatories.find((s) => s.accountId === a.accountId);
+    const notSigned = !tx.events.find((e) => e.accountId === a.accountId);
+    const isCurrentChain = !a.chainId || a.chainId === tx.chainId;
+
+    return isSignatory && notSigned && isCurrentChain;
+  });
 
   const [approveTx, setApproveTx] = useState<Transaction>();
   const [feeTx, setFeeTx] = useState<Transaction>();
@@ -197,8 +199,8 @@ const ApproveTx = ({ tx, account, connection }: Props) => {
       </Button>
 
       <BaseModal
-        isOpen={isModalOpen}
         closeButton
+        isOpen={activeStep !== Step.SUBMIT && isModalOpen}
         title={<OperationModalTitle title={`${t(transactionTitle)} ${t('on')}`} chainId={tx.chainId} />}
         contentClass={activeStep === Step.SIGNING ? '' : undefined}
         headerClass="py-4 px-5 max-w-[440px]"

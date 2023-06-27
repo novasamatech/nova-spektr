@@ -64,6 +64,7 @@ export const Overview = () => {
   }, []);
 
   const signingType = accounts[0]?.signingType;
+  const rootAccountId = accounts[0]?.accountId;
   const addresses = accounts.map((a) => toAddress(a.accountId, { prefix: addressPrefix }));
 
   const { rewards, isRewardsLoading } = useStakingRewards(addresses);
@@ -101,7 +102,7 @@ export const Overview = () => {
       unsubEra?.();
       unsubStaking?.();
     };
-  }, [chainId, api, signingType, addresses.length]);
+  }, [chainId, api, signingType, rootAccountId, addresses.length]);
 
   useEffect(() => {
     const isMultiShard = signingType === SigningType.PARITY_SIGNER && addresses.length > 1;
@@ -112,7 +113,7 @@ export const Overview = () => {
     } else if (signingType === SigningType.MULTISIG || isSingleShard) {
       setSelectedNominators([addresses[0]]);
     }
-  }, [chainId, signingType, addresses.length]);
+  }, [chainId, signingType, rootAccountId, addresses.length]);
 
   useEffect(() => {
     if (!chainId || !api?.isConnected) return;
@@ -219,7 +220,12 @@ export const Overview = () => {
 
             {networkIsActive && accounts.length > 0 && (
               <>
-                <Actions stakes={selectedStakes} isStakingLoading={isStakingLoading} onNavigate={navigateToStake} />
+                <Actions
+                  canInteract={signingType !== SigningType.WATCH_ONLY}
+                  stakes={selectedStakes}
+                  isStakingLoading={isStakingLoading}
+                  onNavigate={navigateToStake}
+                />
 
                 <NominatorsList
                   api={api}

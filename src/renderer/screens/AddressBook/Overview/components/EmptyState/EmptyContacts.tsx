@@ -7,7 +7,7 @@ type Props = {
   onAddContact?: () => void;
 };
 
-const EmptyContacts = ({ description, onAddContact }: Props) => {
+export const EmptyContacts = ({ description, onAddContact }: Props) => {
   const { t } = useI18n();
 
   return (
@@ -23,5 +23,3 @@ const EmptyContacts = ({ description, onAddContact }: Props) => {
     </div>
   );
 };
-
-export default EmptyContacts;

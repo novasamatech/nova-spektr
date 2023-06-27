@@ -8,14 +8,18 @@ import { ExtendedChain } from '@renderer/services/network/common/types';
 import { MultisigEvent, MultisigTransaction, SigningStatus } from '@renderer/domain/transaction';
 import TransactionTitle from './TransactionTitle/TransactionTitle';
 import OperationStatus from './OperationStatus';
-import { getExtrinsicLink, getTransactionAmount, sortByDateAsc } from '../common/utils';
-import { BaseModal, BodyText, FootnoteText, InfoLink } from '@renderer/components/ui-redesign';
+import { getTransactionAmount, sortByDateAsc } from '../common/utils';
+import { AssetIcon, BaseModal, BodyText, FootnoteText } from '@renderer/components/ui-redesign';
 import { useChains } from '@renderer/services/network/chainsService';
-import { getAssetById, getIconVariant } from '@renderer/shared/utils/assets';
-import { Icon, Identicon } from '@renderer/components/ui';
+import { getAssetById } from '@renderer/shared/utils/assets';
+import { Identicon } from '@renderer/components/ui';
 import { toAddress } from '@renderer/shared/utils/address';
 import { Chain } from '@renderer/domain/chain';
 import { SS58_DEFAULT_PREFIX } from '@renderer/shared/utils/constants';
+import { ExtrinsicExplorers } from '@renderer/components/common';
+import { AccountId } from '@renderer/domain/shared-kernel';
+import { useContact } from '@renderer/services/contact/contactService';
+import { useAccount } from '@renderer/services/account/accountService';
 
 type Props = {
   tx: MultisigTransaction;
@@ -36,7 +40,13 @@ const EventMessage: Partial<Record<SigningStatus | 'INITIATED', string>> = {
 const LogModal = ({ isOpen, onClose, tx, account, connection }: Props) => {
   const { t, dateLocale } = useI18n();
   const { getChainById } = useChains();
+  const { getLiveContacts } = useContact();
+  const { getLiveAccounts } = useAccount();
+
   const [chain, setChain] = useState<Chain>();
+
+  const contacts = getLiveContacts();
+  const accounts = getLiveAccounts();
 
   useEffect(() => {
     getChainById(tx.chainId).then((chain) => setChain(chain));
@@ -53,12 +63,24 @@ const LogModal = ({ isOpen, onClose, tx, account, connection }: Props) => {
     format(new Date(dateCreated || 0), 'PP', { locale: dateLocale }),
   );
 
+  const getSignatory = (accountId: AccountId): { name?: string; accountId?: AccountId } | undefined => {
+    const fromSignatory = account?.signatories.find((s) => s.accountId === accountId);
+    const fromAccount = accounts.find((a) => a.accountId === accountId);
+    const fromContact = contacts.find((c) => c.accountId === accountId);
+
+    return fromSignatory || fromAccount || fromContact;
+  };
+
   const getEventMessage = (event: MultisigEvent): string => {
-    const signatory = account?.signatories.find((s) => s.accountId === event.accountId);
+    const signatory = getSignatory(event.accountId);
     const isCreatedEvent =
       signatory?.accountId === tx.depositor && (event.status === 'SIGNED' || event.status === 'PENDING_SIGNED');
 
-    return `${signatory?.name} ${t(EventMessage[isCreatedEvent ? 'INITIATED' : event.status] || 'log.unknownMessage')}`;
+    const signatoryName = signatory?.name || toAddress(event.accountId, { chunk: 5, prefix: chain?.addressPrefix });
+    const eventType = isCreatedEvent ? 'INITIATED' : event.status;
+    const eventMessage = EventMessage[eventType] || 'log.unknownMessage';
+
+    return `${signatoryName} ${t(eventMessage)}`;
   };
 
   return (
@@ -72,13 +94,7 @@ const LogModal = ({ isOpen, onClose, tx, account, connection }: Props) => {
       onClose={onClose}
     >
       <div className="flex gap-2 items-center px-4 py-3">
-        {showAsset && (
-          <img
-            src={getIconVariant(asset?.icon || '', 'alternative')}
-            alt={asset?.name}
-            className="rounded-full border border-token-container-border w-9 h-9"
-          />
-        )}
+        {showAsset && <AssetIcon name={asset?.name} src={asset?.icon} />}
         <TransactionTitle withoutIcon tx={transaction} description={description} />
 
         <div className="ml-auto">
@@ -110,20 +126,13 @@ const LogModal = ({ isOpen, onClose, tx, account, connection }: Props) => {
                         <BodyText className="text-text-tertiary ml-auto">
                           {event.dateCreated && format(new Date(event.dateCreated), 'p', { locale: dateLocale })}
                         </BodyText>
+                        {event.extrinsicHash && connection?.explorers && (
+                          <ExtrinsicExplorers hash={event.extrinsicHash} explorers={connection.explorers} />
+                        )}
                       </div>
 
                       {(event.status === 'ERROR_CANCELLED' || event.status === 'ERROR_SIGNED') && (
                         <BodyText className="text-text-negative">{t('log.error')}</BodyText>
-                      )}
-
-                      {getExtrinsicLink(event.extrinsicHash, connection?.explorers) && (
-                        <InfoLink
-                          url={getExtrinsicLink(event.extrinsicHash, connection?.explorers)!}
-                          className="flex items-center gap-x-0.5 ml-4 text-footnote"
-                        >
-                          <span>{t('operation.explorerLink')}</span>
-                          <Icon name="right" size={16} />
-                        </InfoLink>
                       )}
                     </li>
                   ))}

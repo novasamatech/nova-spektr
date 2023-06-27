@@ -6,7 +6,7 @@ import { useNetworkContext } from '@renderer/context/NetworkContext';
 import { Asset } from '@renderer/domain/asset';
 import { Chain } from '@renderer/domain/chain';
 import { ConnectionType } from '@renderer/domain/connection';
-import { ChainId, SigningType } from '@renderer/domain/shared-kernel';
+import { SigningType } from '@renderer/domain/shared-kernel';
 import { useToggle } from '@renderer/shared/hooks';
 import { useChains } from '@renderer/services/network/chainsService';
 import { useSettingsStorage } from '@renderer/services/settings/settingsStorage';
@@ -27,7 +27,6 @@ const Balances = () => {
   const [query, setQuery] = useState('');
   const [activeAccounts, setActiveAccounts] = useState<AccountDS[]>([]);
   const accountIds = activeAccounts.map((a) => a.accountId).filter((a) => a);
-  const [usedChains, setUsedChains] = useState<Record<ChainId, boolean>>({});
   const [data, setData] = useState<DataPayload>();
 
   const [isReceiveOpen, toggleReceive] = useToggle();
@@ -52,34 +51,26 @@ const Balances = () => {
   const activeWallet = activeAccountsFromWallet.length > 0 && activeAccountsFromWallet[0].walletId;
 
   useEffect(() => {
-    updateChainsAndAccounts(activeAccountsFromWallet);
+    updateAccounts(activeAccountsFromWallet);
   }, [firstActiveAccount, activeWallet]);
 
-  const updateChainsAndAccounts = (accounts: AccountDS[]) => {
+  const updateAccounts = (accounts: AccountDS[]) => {
     if (accounts.length === 0) {
       setActiveAccounts([]);
 
       return;
     }
 
-    const usedChains = accounts.reduce<Record<ChainId, boolean>>((acc, account) => {
-      return account.chainId ? { ...acc, [account.chainId]: true } : acc;
-    }, {});
-
     setActiveAccounts(accounts);
-    setUsedChains(usedChains);
   };
-
-  const hasRootAccount = activeAccounts.some((account) => !account.rootId);
 
   const sortedChains = sortChains(
     Object.values(connections).filter((c) => {
-      const isDisabled = c.connection.connectionType !== ConnectionType.DISABLED;
-      const rootOrChain = hasRootAccount || usedChains[c.chainId];
+      const isDisabled = c.connection.connectionType === ConnectionType.DISABLED;
       const hasMultisigAccount = activeAccounts.some(isMultisig);
       const hasMultiPallet = !hasMultisigAccount || Boolean(c.api?.tx.multisig);
 
-      return isDisabled && rootOrChain && hasMultiPallet;
+      return !isDisabled && hasMultiPallet;
     }),
   );
 
@@ -106,7 +97,7 @@ const Balances = () => {
   const handleShardSelect = (selectedAccounts?: AccountDS[]) => {
     toggleSelectShardsOpen();
     if (Array.isArray(selectedAccounts)) {
-      updateChainsAndAccounts(selectedAccounts);
+      updateAccounts(selectedAccounts);
     }
   };
 

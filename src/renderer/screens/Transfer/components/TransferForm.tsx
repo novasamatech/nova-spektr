@@ -6,7 +6,7 @@ import { Trans } from 'react-i18next';
 
 import { toAccountId, validateAddress, toAddress } from '@renderer/shared/utils/address';
 import { Icon, Identicon } from '@renderer/components/ui';
-import { Fee, Deposit } from '@renderer/components/common';
+import { Fee, Deposit, DetailRow } from '@renderer/components/common';
 import { useI18n } from '@renderer/context/I18nContext';
 import { Asset, AssetType } from '@renderer/domain/asset';
 import { Transaction, MultisigTxInitStatus, TransactionType } from '@renderer/domain/transaction';
@@ -17,10 +17,7 @@ import { useTransaction } from '@renderer/services/transaction/transactionServic
 import { useMultisigTx } from '@renderer/services/multisigTx/multisigTxService';
 import { getAssetId } from '@renderer/shared/utils/assets';
 import { MultisigAccount, Account, isMultisig } from '@renderer/domain/account';
-import { Button, AmountInput, Input, InputHint, FootnoteText, Popover } from '@renderer/components/ui-redesign';
-import DetailWithLabel from '@renderer/components/common/DetailsWithLabel/DetailWithLabel';
-import { HelpText } from '@renderer/components/ui-redesign/Typography';
-// import AmountInput from '@renderer/components/ui-redesign/Inputs/AmountInput/AmountInput copy';
+import { Button, AmountInput, Input, InputHint, FootnoteText, Tooltip } from '@renderer/components/ui-redesign';
 
 const DESCRIPTION_MAX_LENGTH = 120;
 
@@ -355,6 +352,7 @@ export const TransferForm = ({
             render={({ field: { onChange, value }, fieldState: { error } }) => (
               <div className="flex flex-col gap-y-2">
                 <Input
+                  spellCheck
                   className="w-full"
                   label={t('general.input.descriptionLabel')}
                   placeholder={t('general.input.descriptionPlaceholder')}
@@ -376,23 +374,14 @@ export const TransferForm = ({
 
         <div className="flex flex-col items-center mt-2 gap-y-4">
           {isMultisig(account) && (
-            <DetailWithLabel
+            <DetailRow
               label={
                 <div className="flex items-center gap-x-1">
                   <Icon className="text-text-tertiary" name="lock" size={12} />
                   <FootnoteText className="text-text-tertiary">{t('transfer.networkDeposit')}</FootnoteText>
-                  <Popover
-                    offsetPx={-92}
-                    contentClass="py-1 px-2 bg-switch-background-active rounded w-[184px] border-none"
-                    panelClass="left-1/2 -translate-x-1/2"
-                    content={
-                      <HelpText className="text-white">
-                        <Trans t={t} i18nKey="transfer.networkDepositHint" />
-                      </HelpText>
-                    }
-                  >
+                  <Tooltip offsetPx={-92} content={<Trans t={t} i18nKey="transfer.networkDepositHint" />}>
                     <Icon name="info" className="text-icon-default hover:text-icon-hover cursor-pointer" size={16} />
-                  </Popover>
+                  </Tooltip>
                 </div>
               }
               className="text-text-primary"
@@ -404,9 +393,9 @@ export const TransferForm = ({
                 threshold={account.threshold}
                 onDepositChange={setDeposit}
               />
-            </DetailWithLabel>
+            </DetailRow>
           )}
-          <DetailWithLabel label={t('operation.networkFee')} className="text-text-primary">
+          <DetailRow label={t('operation.networkFee')} className="text-text-primary">
             {api && (
               <Fee
                 className="text-footnote text-text-primary"
@@ -417,7 +406,7 @@ export const TransferForm = ({
                 onFeeChange={updateFee}
               />
             )}
-          </DetailWithLabel>
+          </DetailRow>
         </div>
       </div>
 

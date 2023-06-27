@@ -12,6 +12,7 @@ import Paths from '@renderer/routes/paths';
 import Vault from '../Vault/Vault';
 import PrivacyPolicy from './PrivacyPolicy';
 import { WelcomeCard } from './WelcomeCard';
+import { DEFAULT_TRANSITION } from '@renderer/shared/utils/constants';
 
 const LOGO_WIDTH = 232;
 const RIGHT_PADDING = 225;
@@ -49,7 +50,7 @@ const Welcome = () => {
 
   const handleCreateVaultWallet = () => {
     toggleVaultModal();
-    navigate(Paths.BALANCES);
+    setTimeout(() => navigate(Paths.BALANCES), DEFAULT_TRANSITION);
   };
 
   return (

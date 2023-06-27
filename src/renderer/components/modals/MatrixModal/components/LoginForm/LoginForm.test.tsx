@@ -22,6 +22,20 @@ jest.mock('@renderer/context/I18nContext', () => ({
 }));
 
 describe('screen/Settings/Matrix/LoginForm', () => {
+  const setupForm = async (withCredentials = false) => {
+    const user = userEvent.setup({ delay: null });
+
+    render(<LoginForm />);
+
+    if (withCredentials) {
+      const username = await screen.findByPlaceholderText('settings.matrix.usernamePlaceholder');
+      await act(() => user.type(username, 'my_username'));
+
+      const password = screen.getByPlaceholderText('settings.matrix.passwordPlaceholder');
+      await act(() => user.type(password, 'my_password'));
+    }
+  };
+
   test('should render component', () => {
     render(<LoginForm />);
 
@@ -32,23 +46,21 @@ describe('screen/Settings/Matrix/LoginForm', () => {
     expect(submit).toBeDisabled();
   });
 
-  test('should submit button be available', async () => {
-    const user = userEvent.setup({ delay: null });
+  test('should submit button be disabled', async () => {
+    await setupForm();
 
-    render(<LoginForm />);
+    const button = screen.getByRole('button', { name: 'settings.matrix.logInButton' });
+    expect(button).toBeDisabled();
+  });
 
-    const homeserver = screen.getByPlaceholderText('settings.matrix.homeserverPlaceholder');
-    await act(() => user.type(homeserver, 'm'));
-    const options = screen.getAllByText('matrix.org');
-    await act(() => options[options.length - 1].click());
+  test('should disable submit button during submission', async () => {
+    await setupForm(true);
 
-    const username = screen.getByPlaceholderText('settings.matrix.usernamePlaceholder');
-    await act(() => user.type(username, 'my_username'));
+    const button = screen.getByRole('button', { name: 'settings.matrix.logInButton' });
+    expect(button).toBeEnabled();
 
-    const password = screen.getByPlaceholderText('settings.matrix.passwordPlaceholder');
-    await act(() => user.type(password, 'my_password'));
+    await act(async () => button.click());
 
-    const submit = screen.getByRole('button', { name: 'settings.matrix.logInButton' });
-    expect(submit).toBeEnabled();
+    expect(button).toBeDisabled();
   });
 });

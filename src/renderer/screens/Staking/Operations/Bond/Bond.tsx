@@ -50,7 +50,7 @@ export const Bond = () => {
 
   const [activeStep, setActiveStep] = useState<Step>(Step.INIT);
   const [validators, setValidators] = useState<ValidatorMap>({});
-  const [accountsToStake, setAccountsToStake] = useState<Account[]>([]);
+  const [txAccounts, setTxAccounts] = useState<Account[]>([]);
 
   const [stakeAmount, setStakeAmount] = useState<string>('');
   const [destination, setDestination] = useState<DestinationType>();
@@ -148,7 +148,7 @@ export const Bond = () => {
     }
 
     setDestination(destPayload);
-    setAccountsToStake(accounts);
+    setTxAccounts(accounts);
     setStakeAmount(amount);
     setActiveStep(Step.VALIDATORS);
   };
@@ -156,8 +156,8 @@ export const Bond = () => {
   const onSelectValidators = (validators: ValidatorMap) => {
     const transactions = getBondTxs(Object.keys(validators));
 
-    if (signer && isMultisig(accountsToStake[0])) {
-      const multisigTx = getMultisigTx(accountsToStake[0], signer.accountId, transactions[0]);
+    if (signer && isMultisig(txAccounts[0])) {
+      const multisigTx = getMultisigTx(txAccounts[0], signer.accountId, transactions[0]);
       setMultisigTx(multisigTx);
     }
 
@@ -167,7 +167,7 @@ export const Bond = () => {
   };
 
   const getBondTxs = (validators: Address[]): Transaction[] => {
-    return accountsToStake.map(({ accountId }) => {
+    return txAccounts.map(({ accountId }) => {
       const address = toAddress(accountId, { prefix: addressPrefix });
       const commonPayload = { chainId, address };
 
@@ -235,7 +235,7 @@ export const Bond = () => {
   };
 
   const explorersProps = { explorers, addressPrefix, asset };
-  const bondValues = new Array(accountsToStake.length).fill(stakeAmount);
+  const bondValues = new Array(txAccounts.length).fill(stakeAmount);
 
   return (
     <>
@@ -265,7 +265,7 @@ export const Bond = () => {
           <Confirmation
             api={api}
             validators={Object.values(validators)}
-            accounts={accountsToStake}
+            accounts={txAccounts}
             signer={signer}
             amounts={bondValues}
             description={description}
@@ -297,7 +297,7 @@ export const Bond = () => {
                 api={api}
                 addressPrefix={addressPrefix}
                 countdown={countdown}
-                accounts={accounts}
+                accounts={txAccounts}
                 transactions={transactions}
                 chainId={chainId}
                 onGoBack={() => setActiveStep(Step.CONFIRMATION)}
@@ -309,7 +309,7 @@ export const Bond = () => {
                 api={api}
                 addressPrefix={addressPrefix}
                 countdown={countdown}
-                account={signer || accounts[0]}
+                account={signer || txAccounts[0]}
                 transaction={multisigTx || transactions[0]}
                 chainId={chainId}
                 onGoBack={() => setActiveStep(Step.CONFIRMATION)}
@@ -335,9 +335,9 @@ export const Bond = () => {
           multisigTx={multisigTx}
           signatures={signatures}
           unsignedTx={unsignedTransactions}
-          accounts={accountsToStake}
+          accounts={txAccounts}
           description={description}
-          onClose={closeBondModal}
+          onClose={toggleBondModal}
         />
       )}
     </>

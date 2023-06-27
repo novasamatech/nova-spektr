@@ -1,25 +1,22 @@
 import { UnsignedTransaction } from '@substrate/txwrapper-polkadot';
 import { useEffect, useState, ComponentProps } from 'react';
 import { ApiPromise } from '@polkadot/api';
+import { useNavigate } from 'react-router-dom';
 
 import { useI18n } from '@renderer/context/I18nContext';
 import { HexString } from '@renderer/domain/shared-kernel';
 import { useTransaction } from '@renderer/services/transaction/transactionService';
 import { ExtrinsicResultParams } from '@renderer/services/transaction/common/types';
 import { isMultisig, Account, MultisigAccount } from '@renderer/domain/account';
-import {
-  Transaction,
-  SigningStatus,
-  MultisigEvent,
-  MultisigTransaction,
-  MultisigTxInitStatus,
-} from '@renderer/domain/transaction';
 import { toAccountId } from '@renderer/shared/utils/address';
 import { useMatrix } from '@renderer/context/MatrixContext';
 import { Button } from '@renderer/components/ui-redesign';
 import OperationResult from '@renderer/components/ui-redesign/OperationResult/OperationResult';
 import { useToggle } from '@renderer/shared/hooks';
 import { useMultisigTx } from '@renderer/services/multisigTx/multisigTxService';
+import { DEFAULT_TRANSITION } from '@renderer/shared/utils/constants';
+import Paths from '@renderer/routes/paths';
+import { Transaction, MultisigEvent, MultisigTransaction, MultisigTxInitStatus } from '@renderer/domain/transaction';
 
 type ResultProps = Pick<ComponentProps<typeof OperationResult>, 'title' | 'description' | 'variant'>;
 
@@ -38,6 +35,7 @@ type Props = {
 
 export const Submit = ({ api, accounts, txs, multisigTx, unsignedTx, signatures, description, onClose }: Props) => {
   const { t } = useI18n();
+  const navigate = useNavigate();
 
   const { matrix } = useMatrix();
   const { submitAndWatchExtrinsic, getSignedExtrinsic } = useTransaction();
@@ -51,6 +49,16 @@ export const Submit = ({ api, accounts, txs, multisigTx, unsignedTx, signatures,
     submitExtrinsic(signatures).catch(() => console.warn('Error getting signed extrinsics'));
   }, []);
 
+  const handleSuccessClose = () => {
+    if (isMultisig(accounts[0]) && isSuccess) {
+      setTimeout(() => navigate(Paths.OPERATIONS), DEFAULT_TRANSITION);
+    } else {
+      setTimeout(() => navigate(Paths.STAKING), DEFAULT_TRANSITION);
+    }
+
+    onClose();
+  };
+
   const submitExtrinsic = async (signatures: HexString[]): Promise<void> => {
     const extrinsicRequests = unsignedTx.map((unsigned, index) => {
       return getSignedExtrinsic(unsigned, signatures[index], api);
@@ -61,14 +69,12 @@ export const Submit = ({ api, accounts, txs, multisigTx, unsignedTx, signatures,
     allExtrinsics.forEach((extrinsic, index) => {
       submitAndWatchExtrinsic(extrinsic, unsignedTx[index], api, (executed, params) => {
         if (executed) {
+          const mstAccount = accounts[0];
           const typedParams = params as ExtrinsicResultParams;
 
-          const mstAccount = accounts[0];
-          if (multisigTx && isMultisig(mstAccount) && matrix.userIsLoggedIn) {
-            const eventStatus: SigningStatus = 'SIGNED';
-
+          if (multisigTx && isMultisig(mstAccount)) {
             const event: MultisigEvent = {
-              status: eventStatus,
+              status: 'SIGNED',
               accountId: mstAccount.accountId,
               extrinsicHash: typedParams.extrinsicHash,
               eventBlock: typedParams.timepoint.height,
@@ -88,15 +94,23 @@ export const Submit = ({ api, accounts, txs, multisigTx, unsignedTx, signatures,
               events: [event],
             };
 
+            addMultisigTx(newTx);
+
             if (matrix.userIsLoggedIn) {
               sendMultisigEvent(mstAccount.matrixRoomId, newTx, typedParams);
-            } else {
-              addMultisigTx(newTx);
             }
           }
 
           toggleSuccessMessage();
-          setTimeout(onClose, 2000);
+          setTimeout(() => {
+            onClose();
+
+            if (isMultisig(mstAccount)) {
+              setTimeout(() => navigate(Paths.OPERATIONS), DEFAULT_TRANSITION);
+            } else {
+              setTimeout(() => navigate(Paths.STAKING), DEFAULT_TRANSITION);
+            }
+          }, 2000);
         } else {
           setErrorMessage(params as string);
         }
@@ -149,7 +163,11 @@ export const Submit = ({ api, accounts, txs, multisigTx, unsignedTx, signatures,
   };
 
   return (
-    <OperationResult isOpen={Boolean(inProgress || errorMessage || isSuccess)} {...getResultProps()} onClose={onClose}>
+    <OperationResult
+      isOpen={Boolean(inProgress || errorMessage || isSuccess)}
+      {...getResultProps()}
+      onClose={handleSuccessClose}
+    >
       {errorMessage && <Button onClick={onClose}>{t('operation.feeErrorButton')}</Button>}
     </OperationResult>
   );

@@ -199,5 +199,5 @@ export const getSignatoryOptions = (
   const balanceContent = getBalance(transferableAmount(balance), asset);
   const element = getElement(address, account.name, balanceContent);
 
-  return { id: account.accountId, value: account, element };
+  return { id: account.accountId + account.name, value: account, element };
 };

@@ -13,16 +13,23 @@ import { Contact } from '@renderer/domain/contact';
 import { toAddress } from '@renderer/shared/utils/address';
 import { ChainId } from '@renderer/domain/shared-kernel';
 import { useWallet } from '@renderer/services/wallet/walletService';
-import { FootnoteText, SearchInput, SmallTitleText, Checkbox, Button } from '@renderer/components/ui-redesign';
 import Tabs, { TabItem } from '@renderer/components/ui-redesign/Tabs/Tabs';
 import { useChains } from '@renderer/services/network/chainsService';
 import { ChainsRecord } from '@renderer/components/layout/PrimaryLayout/Wallets/common/types';
 import { useToggle } from '@renderer/shared/hooks';
-import ContactModal from '@renderer/screens/AddressBook/components/ContactModal';
 import { WalletsTabItem } from './WalletsTabItem';
 import { Icon } from '@renderer/components/ui';
-import EmptyContacts from '@renderer/screens/AddressBook/components/EmptyState/EmptyContacts';
+import { EmptyContacts } from '@renderer/screens/AddressBook/Overview/components';
 import { isWalletContact } from '@renderer/domain/account';
+import { ContactForm } from '@renderer/components/forms';
+import {
+  FootnoteText,
+  SearchInput,
+  SmallTitleText,
+  Checkbox,
+  Button,
+  BaseModal,
+} from '@renderer/components/ui-redesign';
 
 type ContactWithIndex = { index: number } & Contact;
 export type WalletContact = ContactWithIndex & { walletName?: string; chainId?: ChainId };
@@ -129,13 +136,14 @@ const AddSignatory = ({ onSelect, isEditing }: Props) => {
   };
 
   const hasWallets = Boolean(walletList.length);
+  const hasContacts = Boolean(contactList.length);
 
-  const walletsTab = (
+  const WalletsTab = (
     <>
       {hasWallets ? (
         <ul className="gap-y-2">
           {walletList.map(({ index, accountId, name, walletName, chainId }) => (
-            <li key={index + 'wallets'} className="py-1.5">
+            <li key={index + 'wallets'} className="p-1 mb-0.5 last:mb-0 rounded-md hover:bg-action-background-hover">
               <Controller
                 name="wallets"
                 control={control}
@@ -165,9 +173,7 @@ const AddSignatory = ({ onSelect, isEditing }: Props) => {
     </>
   );
 
-  const hasContacts = Boolean(contactList.length);
-
-  const contactsTab = (
+  const ContactsTab = (
     <div>
       <div className="flex items-center gap-x-4 flex-1 mb-4">
         <SearchInput
@@ -186,7 +192,7 @@ const AddSignatory = ({ onSelect, isEditing }: Props) => {
       {hasContacts ? (
         <ul className="flex flex-col gap-y-2">
           {searchedContactList.map(({ index, accountId, name }) => (
-            <li key={index + 'contacts'} className="py-1.5">
+            <li key={index + 'contacts'} className="p-1 mb-0.5 last:mb-0 rounded-md hover:bg-action-background-hover">
               <Controller
                 name="contacts"
                 control={control}
@@ -211,9 +217,10 @@ const AddSignatory = ({ onSelect, isEditing }: Props) => {
     </div>
   );
 
-  const tabItems: TabItem[] = [
+  const TabItems: TabItem[] = [
     {
       id: SignatoryTabs.WALLETS,
+      panel: WalletsTab,
       title: (
         <>
           {t('createMultisigAccount.walletsTab')}
@@ -222,10 +229,10 @@ const AddSignatory = ({ onSelect, isEditing }: Props) => {
           )}
         </>
       ),
-      panel: walletsTab,
     },
     {
       id: SignatoryTabs.CONTACTS,
+      panel: ContactsTab,
       title: (
         <>
           {t('createMultisigAccount.contactsTab')}
@@ -234,7 +241,6 @@ const AddSignatory = ({ onSelect, isEditing }: Props) => {
           )}
         </>
       ),
-      panel: contactsTab,
     },
   ];
 
@@ -246,9 +252,9 @@ const AddSignatory = ({ onSelect, isEditing }: Props) => {
         </SmallTitleText>
 
         {isEditing ? (
-          <Tabs items={tabItems} panelClassName="mt-4 flex-1 overflow-y-scroll" tabClassName="flex-inline" />
+          <Tabs items={TabItems} panelClassName="mt-4 flex-1 overflow-y-auto" tabClassName="flex-inline" />
         ) : (
-          <div className="flex flex-col gap-y-2 flex-1 overflow-y-scroll">
+          <div className="flex flex-col gap-y-2 flex-1 overflow-y-auto">
             <FootnoteText className="text-text-tertiary">
               {t('createMultisigAccount.walletsTab')} <span className="ml-2">{selectedWallets.length}</span>
             </FootnoteText>
@@ -256,7 +262,7 @@ const AddSignatory = ({ onSelect, isEditing }: Props) => {
               {walletList
                 .filter((w) => selectedWallets.includes(w.index))
                 .map(({ index, accountId, name, walletName, chainId }) => (
-                  <li key={index} className="py-1.5 flex items-center gap-x-2">
+                  <li key={index} className="p-1 mb-0.5 last:mb-0 rounded-md hover:bg-action-background-hover">
                     <WalletsTabItem
                       name={name}
                       accountId={accountId}
@@ -274,7 +280,7 @@ const AddSignatory = ({ onSelect, isEditing }: Props) => {
               {contactList
                 .filter((w) => selectedContacts.includes(w.index))
                 .map(({ index, accountId, name }) => (
-                  <li key={index} className="py-1.5 flex items-center gap-x-2">
+                  <li key={index} className="p-1 mb-0.5 last:mb-0 rounded-md hover:bg-action-background-hover">
                     <WalletsTabItem name={name} accountId={accountId} />
                   </li>
                 ))}
@@ -283,7 +289,16 @@ const AddSignatory = ({ onSelect, isEditing }: Props) => {
         )}
       </section>
 
-      <ContactModal isOpen={isContactModalOpen} onToggle={toggleContactModalOpen} />
+      <BaseModal
+        closeButton
+        isOpen={isContactModalOpen}
+        title={t('addressBook.addContact.title')}
+        headerClass="py-[15px] px-5"
+        contentClass="px-5 pb-4 w-[440px]"
+        onClose={toggleContactModalOpen}
+      >
+        <ContactForm onFormSubmit={toggleContactModalOpen} />
+      </BaseModal>
     </>
   );
 };
