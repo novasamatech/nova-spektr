@@ -31,6 +31,7 @@ import { useNetworkContext } from '@renderer/context/NetworkContext';
 import { useTransaction } from '@renderer/services/transaction/transactionService';
 import { useNotification } from '@renderer/services/notification/notificationService';
 import { MultisigNotificationType } from '@renderer/domain/notification';
+import { ID } from '@renderer/services/storage';
 
 type MatrixContextProps = {
   matrix: ISecureMessenger;
@@ -42,7 +43,7 @@ const MatrixContext = createContext<MatrixContextProps>({} as MatrixContextProps
 export const MatrixProvider = ({ children }: PropsWithChildren) => {
   const { getContacts } = useContact();
   const { getMultisigTx, addMultisigTx, updateMultisigTx, updateCallData } = useMultisigTx();
-  const { getAccounts, addAccount, updateAccount } = useAccount();
+  const { getAccounts, addAccount, updateAccount, setActiveAccount } = useAccount();
   const { decodeCallData } = useTransaction();
   const { connections } = useNetworkContext();
   const { addNotification } = useNotification();
@@ -141,10 +142,14 @@ export const MatrixProvider = ({ children }: PropsWithChildren) => {
       name: accountName,
       signatories: mstSignatories,
       matrixRoomId: roomId,
-      isActive,
+      isActive: false,
     });
 
-    await addAccount(mstAccount, false);
+    await addAccount(mstAccount).then((id: ID) => {
+      if (isActive) {
+        setActiveAccount(id);
+      }
+    });
   };
 
   const changeRoom = async (

@@ -7,7 +7,7 @@ export interface IAccountService {
   getAccounts: <T extends Account>(where?: Partial<T>) => Promise<AccountDS[]>;
   getActiveAccounts: <T extends Account>(where?: Partial<T>) => AccountDS[];
   getLiveAccounts: <T extends Account>(where?: Partial<T>) => AccountDS[];
-  addAccount: <T extends Account>(account: T, deactivateOld?: boolean) => Promise<ID>;
+  addAccount: <T extends Account>(account: T) => Promise<ID>;
   updateAccount: <T extends Account>(account: T) => Promise<ID>;
   deleteAccount: (accountId: Address) => Promise<void>;
   getActiveMultisigAccount: () => AccountDS | null;
