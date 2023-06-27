@@ -83,7 +83,7 @@
     "noWallets": "Похоже, что у вас не добавлены не watch-only кошельки",
     "noWalletsLabel": "The wallet list is empty",
     "searchContactPlaceholder": "Поиск аккаунта или контакта...",
-    "selectedSignatoriesTitle": "Selected signatories",
+    "selectedSignatoriesTitle": "Проверьте участников Multisig аккаунта",
     "signatoriesDescription": "Добавьте подписантов в ваш multisig аккаунт",
     "signatoriesLabel": "Подписанты",
     "signatoryTitle": "Выберете подписантов",

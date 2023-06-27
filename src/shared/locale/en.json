@@ -83,7 +83,7 @@
     "noWallets": "Looks like you don't have any non-watch only wallets",
     "noWalletsLabel": "The wallet list is empty",
     "searchContactPlaceholder": "Search for an account or contact...",
-    "selectedSignatoriesTitle": "Selected signatories",
+    "selectedSignatoriesTitle": "Check your signatories and proceed",
     "signatoriesDescription": "Add signatories to your multisig account",
     "signatoriesLabel": "Signatories",
     "signatoryTitle": "Select signatories",
