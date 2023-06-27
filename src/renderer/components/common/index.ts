@@ -15,6 +15,7 @@ import ExplorerLink from './ExplorerLink/ExplorerLink';
 import BalanceNew from './BalanceNew/BalanceNew';
 import AccountAddress from './AccountAddress/AccountAddress';
 import AddressWithName from './AddressWithName/AddressWithName';
+import ExtrinsicExplorers from './ExtrinsicExplorers/ExtrinsicExplorers';
 import QrGeneratorContainer from './QrCode/QrGeneratorContainer/QrGeneratorContainer';
 
 // SignatoryCard, AddressWithExplorers, ScanMultiframeQr and ScanSingleframeQr exported separately.
@@ -41,4 +42,5 @@ export {
   BalanceNew,
   AccountAddress,
   AddressWithName,
+  ExtrinsicExplorers,
 };

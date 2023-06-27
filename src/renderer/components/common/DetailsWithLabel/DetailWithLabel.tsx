@@ -18,7 +18,7 @@ const DetailWithLabel = ({ label, children, className }: DetailWithLabelProps & 
     )}
 
     {typeof children === 'string' ? (
-      <FootnoteText as="dd" align="right" className={cn(className, 'w-1/2 justify-end py-[3px] px-2')}>
+      <FootnoteText as="dd" align="right" className={cn(className, 'w-1/2 justify-end py-[3px]')}>
         {children}
       </FootnoteText>
     ) : (

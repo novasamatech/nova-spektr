@@ -116,7 +116,7 @@ const Filters = ({ txs, onChangeFilters }: Props) => {
     selectedOptions.network.length || selectedOptions.status.length || selectedOptions.type.length;
 
   return (
-    <div className="flex gap-2 my-4 w-[736px] ml-6">
+    <div className="flex items-center gap-2 my-4 w-[736px] ml-6">
       <MultiSelect
         className="w-[200px]"
         placeholder={t('operations.filters.statusPlaceholder')}
@@ -139,9 +139,11 @@ const Filters = ({ txs, onChangeFilters }: Props) => {
         onChange={(value) => handleFilterChange(value, 'type')}
       />
 
-      <Button variant="text" className="ml-auto" disabled={!filtersSelected} onClick={clearFilters}>
-        {t('operations.filters.clearAll')}
-      </Button>
+      {Boolean(filtersSelected) && (
+        <Button variant="text" className="ml-auto" onClick={clearFilters}>
+          {t('operations.filters.clearAll')}
+        </Button>
+      )}
     </div>
   );
 };
