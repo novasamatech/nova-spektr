@@ -6,20 +6,27 @@ import { InfoPopover } from '@renderer/components/ui-redesign';
 import { Icon } from '@renderer/components/ui';
 import { Explorer } from '@renderer/domain/chain';
 import useAddressInfo from '@renderer/components/common/AccountAddress/useAddressInfo';
+import cnTw from '@renderer/shared/utils/twMerge';
 
 type Props = {
   showMatrix?: boolean;
   explorers?: Explorer[];
+  wrapperClassName?: string;
 } & AccountAddressProps;
 
-const AddressWithExplorers = ({ explorers = [], showMatrix, ...addressProps }: Props) => {
+const AddressWithExplorers = ({ explorers = [], showMatrix, wrapperClassName, ...addressProps }: Props) => {
   const address = getAddress(addressProps);
   const popoverItems = useAddressInfo(address, explorers, showMatrix);
 
   return (
     <InfoPopover data={popoverItems}>
-      <div className="flex max-w-full items-center gap-x-1 cursor-pointer group hover:bg-action-background-hover hover:text-text-primary px-2 h-6 rounded">
-        <AccountAddress className="w-full" {...addressProps} />
+      <div
+        className={cnTw(
+          'flex max-w-fit items-center gap-x-1 cursor-pointer group hover:bg-action-background-hover hover:text-text-primary px-2 h-6 rounded',
+          wrapperClassName,
+        )}
+      >
+        <AccountAddress className="w-fit" {...addressProps} />
         <Icon name="info" size={16} className="text-icon-default group-hover:text-icon-hover" />
       </div>
     </InfoPopover>
