@@ -69,7 +69,9 @@ const LoginForm = () => {
   const homeserver = watch('homeserver');
 
   useEffect(() => {
-    changeHomeserver((value) => setValue('homeserver', value, { shouldValidate: true }))(DEFAULT_HOMESERVER);
+    const handler = (value: ComboboxOption) => setValue('homeserver', value, { shouldValidate: true });
+
+    changeHomeserver(handler)(DEFAULT_HOMESERVER);
   }, [setValue]);
 
   const changeInputValue = (onChange: (value: string) => void) => {

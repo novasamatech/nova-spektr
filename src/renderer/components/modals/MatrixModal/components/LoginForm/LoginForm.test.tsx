@@ -46,7 +46,7 @@ describe('screen/Settings/Matrix/LoginForm', () => {
     expect(submit).toBeDisabled();
   });
 
-  test('submit button should be disabled', async () => {
+  test('should submit button be disabled', async () => {
     await setupForm();
 
     const button = screen.getByRole('button', { name: 'settings.matrix.logInButton' });
