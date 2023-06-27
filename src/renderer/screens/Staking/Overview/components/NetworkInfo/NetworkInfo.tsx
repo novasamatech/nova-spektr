@@ -52,6 +52,8 @@ export const NetworkInfo = ({
         const { chainId, assets } = chain;
 
         if (getRelaychainAsset(assets)) {
+          // without key dropdown doesn't show changes (thought functionally everything works fine)
+          // TODO look into it
           const element = (
             <ChainComponent key={chain.chainId} className="overflow-hidden" fontClass="truncate" chain={chain} />
           );
