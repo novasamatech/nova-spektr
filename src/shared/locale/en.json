@@ -613,7 +613,7 @@
       "yourValidatorsTitle": "Selected validators"
     },
     "notEnoughBalanceError": "Not enough funds to complete operation",
-    "notEnoughBalanceForDepositError": "Insufficient balance to pay deposit",
+    "notEnoughBalanceForDepositError": "Insufficient balance to pay deposit and network fee",
     "notEnoughBalanceForFeeError": "Insufficient balance to pay network fee",
     "notEnoughStakedError": "Not enough staked to unstake specific amount",
     "notEnoughUnlockingError": "Not enough unlocking to return specific amount",
@@ -748,7 +748,7 @@
     "networkDepositHint": "The deposit stays locked on the depositor’s account until the multisig operation is executed or rejected",
     "networkFee": "Network fee",
     "notEnoughBalanceError": "Not enough funds to transfer specific amount",
-    "notEnoughBalanceForDepositError": "Insufficient balance to pay deposit",
+    "notEnoughBalanceForDepositError": "Insufficient balance to pay deposit and network fee",
     "notEnoughBalanceForFeeError": "Insufficient balance to pay network fee",
     "pasteButton": "Paste",
     "recipientLabel": "Recipient",
