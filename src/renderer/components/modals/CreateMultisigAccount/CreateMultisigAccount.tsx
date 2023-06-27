@@ -2,7 +2,7 @@ import { ComponentProps, useState } from 'react';
 import { SubmitHandler } from 'react-hook-form';
 import { useNavigate } from 'react-router-dom';
 
-import { BaseModal, HeaderTitleText, StatusLabel } from '@renderer/components/ui-redesign';
+import { BaseModal, HeaderTitleText, StatusLabel, Button } from '@renderer/components/ui-redesign';
 import { useI18n } from '@renderer/context/I18nContext';
 import { useMatrix } from '@renderer/context/MatrixContext';
 import { useAccount } from '@renderer/services/account/accountService';
@@ -29,19 +29,19 @@ export const CreateMultisigAccount = ({ isOpen, onClose }: Props) => {
   const { getLiveAccounts, addAccount, setActiveAccount } = useAccount();
   const accounts = getLiveAccounts();
 
-  const [isEditing, setIsEditing] = useState(true);
-  const [isResultModalOpen, toggleResultModal] = useToggle();
   const [isLoading, toggleLoading] = useToggle();
-  const [error, setError] = useState('');
-  const [name, setName] = useState('');
+  const [isResultModalOpen, toggleResultModal] = useToggle();
 
+  const [name, setName] = useState('');
+  const [error, setError] = useState('');
+  const [isEditing, setIsEditing] = useState(true);
   const [signatories, setSignatories] = useState<Signatory[]>([]);
 
   const goBack = () => {
-    if (!isEditing) {
-      setIsEditing(true);
-    } else {
+    if (isEditing) {
       onClose();
+    } else {
+      setIsEditing(true);
     }
   };
 
@@ -133,7 +133,9 @@ export const CreateMultisigAccount = ({ isOpen, onClose }: Props) => {
         <AddSignatory isEditing={isEditing} onSelect={setSignatories} />
       </BaseModal>
 
-      <OperationResult {...getResultProps()} title={name} isOpen={isResultModalOpen} onClose={handleSuccessClose} />
+      <OperationResult {...getResultProps()} title={name} isOpen={isResultModalOpen} onClose={handleSuccessClose}>
+        {error && <Button onClick={toggleResultModal}>{t('createMultisigAccount.closeButton')}</Button>}
+      </OperationResult>
       <MatrixModal isOpen={isOpen && !isLoggedIn} onClose={onClose} />
     </>
   );
