@@ -26,7 +26,7 @@ type Props = {
 const ManageStepSingle = ({ seedInfo, onBack, onComplete }: Props) => {
   const { t } = useI18n();
   const accountId = u8aToHex(seedInfo[0].multiSigner?.public);
-  const { addAccount } = useAccount();
+  const { addAccount, setActiveAccount } = useAccount();
 
   const { getChainsData, sortChains } = useChains();
 
@@ -55,7 +55,8 @@ const ManageStepSingle = ({ seedInfo, onBack, onComplete }: Props) => {
       accountId,
     });
 
-    await addAccount(newAccount);
+    const id = await addAccount(newAccount);
+    setActiveAccount(id);
     reset();
     onComplete();
   };
