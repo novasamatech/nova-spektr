@@ -12,6 +12,7 @@ import { SeedInfo } from '@renderer/components/common/QrCode/QrReader/common/typ
 import { useAccount } from '@renderer/services/account/accountService';
 import { createAccount } from '@renderer/domain/account';
 import AccountsList from '@renderer/components/common/AccountsList/AccountsList';
+import { ID } from '@renderer/services/storage';
 
 type WalletForm = {
   walletName: string;
@@ -26,7 +27,7 @@ type Props = {
 const ManageStepSingle = ({ seedInfo, onBack, onComplete }: Props) => {
   const { t } = useI18n();
   const accountId = u8aToHex(seedInfo[0].multiSigner?.public);
-  const { addAccount } = useAccount();
+  const { addAccount, setActiveAccount } = useAccount();
 
   const { getChainsData, sortChains } = useChains();
 
@@ -55,9 +56,11 @@ const ManageStepSingle = ({ seedInfo, onBack, onComplete }: Props) => {
       accountId,
     });
 
-    await addAccount(newAccount);
-    reset();
-    onComplete();
+    addAccount(newAccount).then((id: ID) => {
+      setActiveAccount(id);
+      reset();
+      onComplete();
+    });
   };
 
   const goBack = () => {

@@ -14,6 +14,7 @@ import { MultisigAccountForm, WalletForm } from './components/WalletForm';
 import AddSignatory from './components/AddSignatory';
 import MatrixModal from '@renderer/components/modals/MatrixModal/MatrixModal';
 import Paths from '@renderer/routes/paths';
+import { ID } from '@renderer/services/storage';
 
 type OperationResultProps = Pick<ComponentProps<typeof OperationResult>, 'variant' | 'description'>;
 
@@ -26,7 +27,7 @@ const CreateMultisigAccount = ({ isOpen, onClose }: Props) => {
   const { t } = useI18n();
   const navigate = useNavigate();
   const { matrix, isLoggedIn } = useMatrix();
-  const { getLiveAccounts, addAccount } = useAccount();
+  const { getLiveAccounts, addAccount, setActiveAccount } = useAccount();
   const accounts = getLiveAccounts();
 
   const [isEditing, setIsEditing] = useState(true);
@@ -64,7 +65,7 @@ const CreateMultisigAccount = ({ isOpen, onClose }: Props) => {
       threshold: threshold.value,
       creatorAccountId: inviter.accountId,
       matrixRoomId: '',
-      isActive: true,
+      isActive: false,
     });
 
     if (!mstAccount.accountId) return;
@@ -77,7 +78,7 @@ const CreateMultisigAccount = ({ isOpen, onClose }: Props) => {
         threshold: mstAccount.threshold,
         signatories: signatories.map(({ accountId, matrixId }) => ({ accountId, matrixId })),
       });
-      await addAccount<MultisigAccount>({ ...mstAccount, matrixRoomId });
+      await addAccount<MultisigAccount>({ ...mstAccount, matrixRoomId }).then((id: ID) => setActiveAccount(id));
 
       toggleLoading();
       setTimeout(handleSuccessClose, 2000);

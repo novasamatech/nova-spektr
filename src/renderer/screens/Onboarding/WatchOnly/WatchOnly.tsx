@@ -13,6 +13,7 @@ import EmptyState from './EmptyState';
 import { createAccount } from '@renderer/domain/account';
 import { useAccount } from '@renderer/services/account/accountService';
 import AccountsList from '@renderer/components/common/AccountsList/AccountsList';
+import { ID } from '@renderer/services/storage';
 
 type WalletForm = {
   walletName: string;
@@ -29,7 +30,7 @@ const WatchOnly = ({ isOpen, onClose, onComplete }: Props) => {
   const { t } = useI18n();
 
   const { getChainsData, sortChains } = useChains();
-  const { addAccount } = useAccount();
+  const { addAccount, setActiveAccount } = useAccount();
 
   const [chains, setChains] = useState<Chain[]>([]);
   const [accountId, setAccountId] = useState<AccountId>();
@@ -62,10 +63,11 @@ const WatchOnly = ({ isOpen, onClose, onComplete }: Props) => {
       accountId: toAccountId(address),
     });
 
-    await addAccount(newAccount);
-
-    reset();
-    onComplete();
+    addAccount(newAccount).then((id: ID) => {
+      setActiveAccount(id);
+      reset();
+      onComplete();
+    });
   };
 
   const closeModal = () => {
