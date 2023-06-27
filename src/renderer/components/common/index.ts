@@ -16,6 +16,7 @@ import BalanceNew from './BalanceNew/BalanceNew';
 import AccountAddress from './AccountAddress/AccountAddress';
 import AddressWithName from './AddressWithName/AddressWithName';
 import QrGeneratorContainer from './QrCode/QrGeneratorContainer/QrGeneratorContainer';
+import DetailRow from '@renderer/components/common/DetailRow/DetailRow';
 
 // SignatoryCard, AddressWithExplorers, ScanMultiframeQr and ScanSingleframeQr exported separately.
 // Adding them to this file causes to crash all tests which use anything from that file
@@ -41,4 +42,5 @@ export {
   BalanceNew,
   AccountAddress,
   AddressWithName,
+  DetailRow,
 };

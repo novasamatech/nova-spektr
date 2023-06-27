@@ -3,12 +3,11 @@ import { useEffect, useState } from 'react';
 import { Transaction } from '@renderer/domain/transaction';
 import TransactionAmount from '@renderer/screens/Operations/components/TransactionAmount';
 import { Button, FootnoteText } from '@renderer/components/ui-redesign';
-import { Deposit, Fee } from '@renderer/components/common';
+import { Deposit, Fee, DetailRow } from '@renderer/components/common';
 import { Account, MultisigAccount } from '@renderer/domain/account';
 import { ExtendedChain } from '@renderer/services/network/common/types';
 import { useI18n } from '@renderer/context/I18nContext';
 import Details from '../Details';
-import DetailWithLabel from '@renderer/components/common/DetailsWithLabel/DetailWithLabel';
 import { Icon } from '@renderer/components/ui';
 import { Wallet } from '@renderer/domain/wallet';
 import { useWallet } from '@renderer/services/wallet/walletService';
@@ -59,7 +58,7 @@ const Confirmation = ({ account, connection, transaction, signatory, description
 
       <hr className="border-divider my-1 w-full" />
 
-      <DetailWithLabel label={t('operation.networkFee')} className="text-text-primary">
+      <DetailRow label={t('operation.networkFee')} className="text-text-primary">
         {connection.api && feeTx && (
           <Fee
             className="text-footnote text-text-primary"
@@ -69,10 +68,10 @@ const Confirmation = ({ account, connection, transaction, signatory, description
             onFeeChange={(fee) => setFeeLoaded(Boolean(fee))}
           />
         )}
-      </DetailWithLabel>
+      </DetailRow>
 
       {signatory && (
-        <DetailWithLabel label={t('transfer.networkDeposit')} className="text-text-primary">
+        <DetailRow label={t('transfer.networkDeposit')} className="text-text-primary">
           {connection.api && feeTx && (
             <Deposit
               className="text-footnote text-text-primary"
@@ -81,7 +80,7 @@ const Confirmation = ({ account, connection, transaction, signatory, description
               threshold={(account as MultisigAccount).threshold}
             />
           )}
-        </DetailWithLabel>
+        </DetailRow>
       )}
 
       <div className="flex w-full justify-between mt-5">
