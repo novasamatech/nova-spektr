@@ -12,7 +12,6 @@ import { SeedInfo } from '@renderer/components/common/QrCode/QrReader/common/typ
 import { useAccount } from '@renderer/services/account/accountService';
 import { createAccount } from '@renderer/domain/account';
 import AccountsList from '@renderer/components/common/AccountsList/AccountsList';
-import { ID } from '@renderer/services/storage';
 
 type WalletForm = {
   walletName: string;
@@ -47,7 +46,7 @@ const ManageStepSingle = ({ seedInfo, onBack, onComplete }: Props) => {
     getChainsData().then((chains) => setChains(sortChains(chains)));
   }, []);
 
-  const submitHandler: SubmitHandler<WalletForm> = ({ walletName }) => {
+  const submitHandler: SubmitHandler<WalletForm> = async ({ walletName }) => {
     if (!accountId || accountId.length === 0) return;
 
     const newAccount = createAccount({
@@ -56,11 +55,10 @@ const ManageStepSingle = ({ seedInfo, onBack, onComplete }: Props) => {
       accountId,
     });
 
-    addAccount(newAccount).then((id: ID) => {
-      setActiveAccount(id);
-      reset();
-      onComplete();
-    });
+    const id = await addAccount(newAccount);
+    setActiveAccount(id);
+    reset();
+    onComplete();
   };
 
   const goBack = () => {

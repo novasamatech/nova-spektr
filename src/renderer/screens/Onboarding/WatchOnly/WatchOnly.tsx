@@ -13,7 +13,6 @@ import EmptyState from './EmptyState';
 import { createAccount } from '@renderer/domain/account';
 import { useAccount } from '@renderer/services/account/accountService';
 import AccountsList from '@renderer/components/common/AccountsList/AccountsList';
-import { ID } from '@renderer/services/storage';
 
 type WalletForm = {
   walletName: string;
@@ -56,18 +55,17 @@ const WatchOnly = ({ isOpen, onClose, onComplete }: Props) => {
     getChainsData().then((chains) => setChains(sortChains(chains)));
   }, []);
 
-  const createWallet: SubmitHandler<WalletForm> = ({ walletName, address }) => {
+  const createWallet: SubmitHandler<WalletForm> = async ({ walletName, address }) => {
     const newAccount = createAccount({
       name: walletName.trim(),
       signingType: SigningType.WATCH_ONLY,
       accountId: toAccountId(address),
     });
 
-    addAccount(newAccount).then((id: ID) => {
-      setActiveAccount(id);
-      reset();
-      onComplete();
-    });
+    const id = await addAccount(newAccount);
+    setActiveAccount(id);
+    reset();
+    onComplete();
   };
 
   const closeModal = () => {

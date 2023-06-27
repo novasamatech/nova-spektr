@@ -14,7 +14,6 @@ import { MultisigAccountForm, WalletForm } from './components/WalletForm';
 import AddSignatory from './components/AddSignatory';
 import MatrixModal from '@renderer/components/modals/MatrixModal/MatrixModal';
 import Paths from '@renderer/routes/paths';
-import { ID } from '@renderer/services/storage';
 
 type OperationResultProps = Pick<ComponentProps<typeof OperationResult>, 'variant' | 'description'>;
 
@@ -78,7 +77,7 @@ const CreateMultisigAccount = ({ isOpen, onClose }: Props) => {
         threshold: mstAccount.threshold,
         signatories: signatories.map(({ accountId, matrixId }) => ({ accountId, matrixId })),
       });
-      await addAccount<MultisigAccount>({ ...mstAccount, matrixRoomId }).then((id: ID) => setActiveAccount(id));
+      await addAccount<MultisigAccount>({ ...mstAccount, matrixRoomId }).then(setActiveAccount);
 
       toggleLoading();
       setTimeout(handleSuccessClose, 2000);
