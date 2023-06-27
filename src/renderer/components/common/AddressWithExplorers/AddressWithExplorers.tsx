@@ -11,15 +11,16 @@ import cnTw from '@renderer/shared/utils/twMerge';
 type Props = {
   showMatrix?: boolean;
   explorers?: Explorer[];
+  position?: string;
   wrapperClassName?: string;
 } & AccountAddressProps;
 
-const AddressWithExplorers = ({ explorers = [], showMatrix, wrapperClassName, ...addressProps }: Props) => {
+const AddressWithExplorers = ({ explorers = [], showMatrix, position, wrapperClassName, ...addressProps }: Props) => {
   const address = getAddress(addressProps);
   const popoverItems = useAddressInfo(address, explorers, showMatrix);
 
   return (
-    <InfoPopover data={popoverItems}>
+    <InfoPopover data={popoverItems} position={position}>
       <div
         className={cnTw(
           'flex max-w-full items-center gap-x-1 cursor-pointer group hover:bg-action-background-hover hover:text-text-primary px-2 h-6 rounded',
