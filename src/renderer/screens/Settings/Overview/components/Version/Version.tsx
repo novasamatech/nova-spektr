@@ -6,7 +6,7 @@ export const Version = () => {
   const { t } = useI18n();
 
   return (
-    <div className="flex flex-col items-center gap-y-4">
+    <div className="flex flex-col items-center gap-y-4 mt-7.5">
       <Icon name="logo" size={48} />
       <HelpText className="text-text-tertiary">
         {t('settings.overview.versionLabel')} {process.env.VERSION}
