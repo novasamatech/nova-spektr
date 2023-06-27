@@ -78,10 +78,11 @@ const Submit = ({ api, tx, multisigTx, account, unsignedTx, signature, descripti
         if (multisigTx && isMultisig(account)) {
           const event: MultisigEvent = {
             status: 'SIGNED',
-            accountId: account.accountId,
+            accountId: toAccountId(multisigTx.address),
             extrinsicHash: typedParams.extrinsicHash,
             eventBlock: typedParams.timepoint.height,
             eventIndex: typedParams.timepoint.index,
+            dateCreated: Date.now(),
           };
 
           const newTx: MultisigTransaction = {
@@ -95,6 +96,8 @@ const Submit = ({ api, tx, multisigTx, account, unsignedTx, signature, descripti
             blockCreated: typedParams.timepoint.height,
             indexCreated: typedParams.timepoint.index,
             events: [event],
+            description,
+            dateCreated: Date.now(),
           };
 
           addMultisigTx(newTx);
