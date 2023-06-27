@@ -42,7 +42,7 @@ describe('screens/Staking/Overview/AboutStaking', () => {
     },
   ] as Validator[];
 
-  test('should create component', async () => {
+  test('should render component', async () => {
     await act(async () => {
       render(<AboutStaking validators={[]} />);
     });

@@ -83,7 +83,7 @@
     "noWallets": "Похоже, что у вас не добавлены не watch-only кошельки",
     "noWalletsLabel": "The wallet list is empty",
     "searchContactPlaceholder": "Поиск аккаунта или контакта...",
-    "selectedSignatoriesTitle": "Selected signatories",
+    "selectedSignatoriesTitle": "Проверьте участников Multisig аккаунта",
     "signatoriesDescription": "Добавьте подписантов в ваш multisig аккаунт",
     "signatoriesLabel": "Подписанты",
     "signatoryTitle": "Выберете подписантов",
@@ -562,7 +562,8 @@
       "transferableRewards": "Вывести награды"
     },
     "confirmation": {
-      "accountLabel": "Аккаунт",
+      "accountLabel_one": "Аккаунт",
+      "accountLabel_other": "Аккаунты",
       "accountsTitle": "Выбранные аккаунты",
       "backButton": "Назад",
       "changeValidatorsTitle": "Смена валидаторов",
@@ -591,8 +592,7 @@
       "transactionProgress": "Транзакции",
       "transferableRewards": "Вывести награды",
       "validatorsLabel": "Валидаторы",
-      "validatorsTitle": "Выбранные валидаторы",
-      "walletLabel": "Кошелек"
+      "validatorsTitle": "Выбранные валидаторы"
     },
     "destination": {
       "initDestinationSubtitle": "Выплата наград",

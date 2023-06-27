@@ -60,18 +60,27 @@ const OperationOptions: Record<StakeActions, { icon: IconNames; title: string; p
 };
 
 type Props = {
+  canInteract: boolean;
   stakes: Stake[];
   isStakingLoading: boolean;
   onNavigate: (path: PathValue, addresses?: Address[]) => void;
 };
 
-export const Actions = ({ stakes, isStakingLoading, onNavigate }: Props) => {
+export const Actions = ({ canInteract, stakes, isStakingLoading, onNavigate }: Props) => {
   const { t } = useI18n();
   const [isDialogOpen, toggleIsDialogOpen] = useToggle();
 
   const [actionType, setActionType] = useState<StakeActions | null>(null);
   const [actionPath, setActionPath] = useState<PathValue>();
   const [warningMessage, setWarningMessage] = useState('');
+
+  if (!canInteract) {
+    return (
+      <div className="flex justify-between items-center">
+        <SmallTitleText className="leading-[42px]">{t('staking.overview.actionsTitle')}</SmallTitleText>
+      </div>
+    );
+  }
 
   const actionsSummary = stakes.reduce<Record<StakeActions, number>>(
     (acc, stake) => {
