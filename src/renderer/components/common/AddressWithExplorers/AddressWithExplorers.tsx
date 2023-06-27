@@ -22,11 +22,11 @@ const AddressWithExplorers = ({ explorers = [], showMatrix, wrapperClassName, ..
     <InfoPopover data={popoverItems}>
       <div
         className={cnTw(
-          'flex max-w-fit items-center gap-x-1 cursor-pointer group hover:bg-action-background-hover hover:text-text-primary px-2 h-6 rounded',
+          'flex max-w-full items-center gap-x-1 cursor-pointer group hover:bg-action-background-hover hover:text-text-primary px-2 h-6 rounded',
           wrapperClassName,
         )}
       >
-        <AccountAddress className="w-fit" {...addressProps} />
+        <AccountAddress className="w-full" {...addressProps} />
         <Icon name="info" size={16} className="text-icon-default group-hover:text-icon-hover" />
       </div>
     </InfoPopover>
