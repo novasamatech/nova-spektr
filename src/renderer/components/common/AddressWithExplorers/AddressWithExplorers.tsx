@@ -28,7 +28,7 @@ const AddressWithExplorers = ({ explorers = [], showMatrix, position, wrapperCla
         )}
       >
         <AccountAddress className="w-full" {...addressProps} />
-        <Icon name="info" size={16} className="text-icon-default group-hover:text-icon-hover" />
+        <Icon name="info" size={16} className="text-icon-default shrink-0 group-hover:text-icon-hover" />
       </div>
     </InfoPopover>
   );

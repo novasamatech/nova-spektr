@@ -1,11 +1,9 @@
-import { useCallback } from 'react';
-
 import { useI18n } from '@renderer/context/I18nContext';
 import { Account, MultisigAccount } from '@renderer/domain/account';
 import { ExtendedChain } from '@renderer/services/network/common/types';
+import { DetailRow } from '@renderer/components/common';
 import { Transaction } from '@renderer/domain/transaction';
 import AddressWithExplorers from '@renderer/components/common/AddressWithExplorers/AddressWithExplorers';
-import DetailWithLabel, { DetailWithLabelProps } from '@renderer/components/common/DetailsWithLabel/DetailWithLabel';
 import { AddressStyle } from '../common/constants';
 import { Wallet } from '@renderer/domain/wallet';
 
@@ -25,15 +23,11 @@ const Details = ({ transaction, wallet, account, signatory, connection, withAdva
   const explorers = connection?.explorers;
 
   const valueClass = withAdvanced ? 'text-text-secondary' : 'text-text-primary';
-  const DetailsRow = useCallback(
-    (props: DetailWithLabelProps) => <DetailWithLabel {...props} className={valueClass} />,
-    [valueClass],
-  );
 
   return (
     <dl className="flex flex-col gap-y-4 w-full">
       {wallet && account && (
-        <DetailsRow label={t('operation.details.wallet')}>
+        <DetailRow label={t('operation.details.wallet')} className={valueClass}>
           <AddressWithExplorers
             explorers={explorers}
             addressFont={AddressStyle}
@@ -41,11 +35,11 @@ const Details = ({ transaction, wallet, account, signatory, connection, withAdva
             addressPrefix={addressPrefix}
             name={wallet.name}
           />
-        </DetailsRow>
+        </DetailRow>
       )}
 
       {account && (
-        <DetailsRow label={t('operation.details.sender')}>
+        <DetailRow label={t('operation.details.sender')} className={valueClass}>
           <AddressWithExplorers
             type="short"
             explorers={explorers}
@@ -53,11 +47,11 @@ const Details = ({ transaction, wallet, account, signatory, connection, withAdva
             accountId={account.accountId}
             addressPrefix={addressPrefix}
           />
-        </DetailsRow>
+        </DetailRow>
       )}
 
       {signatory && (
-        <DetailsRow label={t('transfer.signatoryLabel')}>
+        <DetailRow label={t('transfer.signatoryLabel')} className={valueClass}>
           <AddressWithExplorers
             explorers={explorers}
             addressFont={AddressStyle}
@@ -65,11 +59,11 @@ const Details = ({ transaction, wallet, account, signatory, connection, withAdva
             addressPrefix={addressPrefix}
             name={signatory.name}
           />
-        </DetailsRow>
+        </DetailRow>
       )}
 
       {transaction?.args.dest && (
-        <DetailsRow label={t('operation.details.recipient')}>
+        <DetailRow label={t('operation.details.recipient')} className={valueClass}>
           <AddressWithExplorers
             type="short"
             explorers={explorers}
@@ -77,7 +71,7 @@ const Details = ({ transaction, wallet, account, signatory, connection, withAdva
             address={transaction.args.dest}
             addressPrefix={addressPrefix}
           />
-        </DetailsRow>
+        </DetailRow>
       )}
     </dl>
   );
