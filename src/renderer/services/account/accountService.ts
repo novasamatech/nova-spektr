@@ -10,14 +10,7 @@ export const useAccount = (): IAccountService => {
   if (!accountStorage) {
     throw new Error('=== 🔴 Account storage in not defined 🔴 ===');
   }
-  const {
-    getAccount,
-    getAccounts,
-    addAccount: dbAddAccount,
-    updateAccount,
-    updateAccounts,
-    deleteAccount,
-  } = accountStorage;
+  const { getAccount, getAccounts, addAccount, updateAccount, updateAccounts, deleteAccount } = accountStorage;
 
   const getLiveAccounts = <T extends Account>(where?: Partial<T>): AccountDS[] => {
     const query = () => {
@@ -111,20 +104,6 @@ export const useAccount = (): IAccountService => {
       }
     } catch (error) {
       console.warn('Could not deactivate accounts');
-    }
-  };
-
-  const addAccount = async <T extends Account>(account: T, deactivateOld = true): Promise<ID> => {
-    if (deactivateOld) {
-      const accounts = await getAccounts();
-
-      return dbAddAccount(account).then((res) => {
-        deactivateAccounts(accounts);
-
-        return res;
-      });
-    } else {
-      return dbAddAccount(account);
     }
   };
 

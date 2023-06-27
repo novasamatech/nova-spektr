@@ -26,7 +26,7 @@ export const CreateMultisigAccount = ({ isOpen, onClose }: Props) => {
   const { t } = useI18n();
   const navigate = useNavigate();
   const { matrix, isLoggedIn } = useMatrix();
-  const { getLiveAccounts, addAccount } = useAccount();
+  const { getLiveAccounts, addAccount, setActiveAccount } = useAccount();
   const accounts = getLiveAccounts();
 
   const [isEditing, setIsEditing] = useState(true);
@@ -64,7 +64,7 @@ export const CreateMultisigAccount = ({ isOpen, onClose }: Props) => {
       threshold: threshold.value,
       creatorAccountId: inviter.accountId,
       matrixRoomId: '',
-      isActive: true,
+      isActive: false,
     });
 
     if (!mstAccount.accountId) return;
@@ -77,7 +77,7 @@ export const CreateMultisigAccount = ({ isOpen, onClose }: Props) => {
         threshold: mstAccount.threshold,
         signatories: signatories.map(({ accountId, matrixId }) => ({ accountId, matrixId })),
       });
-      await addAccount<MultisigAccount>({ ...mstAccount, matrixRoomId });
+      await addAccount<MultisigAccount>({ ...mstAccount, matrixRoomId }).then(setActiveAccount);
 
       toggleLoading();
       setTimeout(handleSuccessClose, 2000);
