@@ -101,6 +101,7 @@ export const Confirmation = ({
           )}
         </div>
 
+        {/* TODO: use DetailRow */}
         <div className="flex flex-col gap-y-4">
           <div className="flex justify-between items-center gap-x-2">
             <FootnoteText className="text-text-tertiary">
