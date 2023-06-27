@@ -34,7 +34,7 @@
       "noContactsLabel": "Your address book is empty"
     },
     "editContact": {
-      "editWarning": "Please note: by changing the address, multisig account will not be changed.",
+      "editWarning": "If you have a multisig wallet with this contact, then changing the contact will not affect the multisig wallet",
       "saveContactButton": "Save",
       "title": "Edit contact"
     },
@@ -83,7 +83,7 @@
     "noWallets": "Похоже, что у вас не добавлены не watch-only кошельки",
     "noWalletsLabel": "The wallet list is empty",
     "searchContactPlaceholder": "Поиск аккаунта или контакта...",
-    "selectedSignatoriesTitle": "Selected signatories",
+    "selectedSignatoriesTitle": "Проверьте участников Multisig аккаунта",
     "signatoriesDescription": "Добавьте подписантов в ваш multisig аккаунт",
     "signatoriesLabel": "Подписанты",
     "signatoryTitle": "Выберете подписантов",
@@ -416,6 +416,7 @@
       "usernameLabel": "Username",
       "usernamePlaceholder": "Enter username",
       "usernameRequiredError": "Username is required",
+      "verificationHint": "Verify your session for enhanced secure messaging providing your Matrix Security Key.",
       "verificationLabel": "Session verification",
       "verificationSubtitle": "Verify your device for secure connection",
       "verificationTitle": "Matrix account",
@@ -469,7 +470,7 @@
     },
     "overview": {
       "generalLabel": "Основные",
-      "githubDescription": "Исходный код на GitHub",
+      "githubDescription": "Contribute and explore our open-source project on GitHub for collaborative code shaping!",
       "githubLabel": "GitHub",
       "languageLabel": "Язык",
       "matrixDescription": "Управление подключением к Matrix ",
@@ -478,18 +479,18 @@
       "matrixStatusLogin": "Войти или зарегистрироваться",
       "matrixStatusNotVerified": "Сессия не верифицирована",
       "matrixStatusVerified": "Сессия верифицирована",
-      "mediumDescription": "Все новости на Medium",
+      "mediumDescription": "Engaging content to expand knowledge and stay informed about Nova Spektr!",
       "mediumLabel": "Medium",
       "networkDetailsLabel": "Управления подключением к сетям",
       "networkLabel": "Сети",
       "smpLabel": "Spektr Matrix Протокол",
       "socialLabel": "Социальные сети",
-      "telegramDescription": "Наш официальный канал в Telegram",
+      "telegramDescription": "Connect, get help, and share ideas with our Telegram community!",
       "telegramLabel": "Telegram",
-      "twitterDescription": "Оставляйте комментарии нам в Twitter",
+      "twitterDescription": "Stay connected with us and never miss out on the latest updates and news!",
       "twitterLabel": "Twitter",
       "versionLabel": "Версия",
-      "youtubeDescription": "Смотрите нас на YouTube",
+      "youtubeDescription": "Discover our demo recordings and valuable learning materials on YouTube!",
       "youtubeLabel": "YouTube"
     },
     "title": "Настройки"
@@ -562,7 +563,8 @@
       "transferableRewards": "Вывести награды"
     },
     "confirmation": {
-      "accountLabel": "Аккаунт",
+      "accountLabel_one": "Аккаунт",
+      "accountLabel_other": "Аккаунты",
       "accountsTitle": "Выбранные аккаунты",
       "backButton": "Назад",
       "changeValidatorsTitle": "Смена валидаторов",
@@ -591,8 +593,7 @@
       "transactionProgress": "Транзакции",
       "transferableRewards": "Вывести награды",
       "validatorsLabel": "Валидаторы",
-      "validatorsTitle": "Выбранные валидаторы",
-      "walletLabel": "Кошелек"
+      "validatorsTitle": "Выбранные валидаторы"
     },
     "destination": {
       "initDestinationSubtitle": "Выплата наград",
@@ -613,7 +614,7 @@
       "yourValidatorsTitle": "Мои валидаторы"
     },
     "notEnoughBalanceError": "Недостаточно средств для выполнения операции",
-    "notEnoughBalanceForDepositError": "Недостаточно средств для оплаты депозита",
+    "notEnoughBalanceForDepositError": "Недостаточно средств для оплаты депозита и комиссии сети",
     "notEnoughBalanceForFeeError": "Недостаточно средств для оплаты комиссии",
     "notEnoughStakedError": "Not enough staked to unstake specific amount",
     "notEnoughUnlockingError": "Not enough unlocking to return specific amount",
@@ -748,7 +749,7 @@
     "networkDepositHint": "The deposit stays locked on the depositor’s account until the multisig operation is executed or rejected",
     "networkFee": "Комиссия сети",
     "notEnoughBalanceError": "Недостаточно средств для указанной суммы",
-    "notEnoughBalanceForDepositError": "Недостаточно средств для оплаты депозита",
+    "notEnoughBalanceForDepositError": "Недостаточно средств для оплаты депозита и комиссии сети",
     "notEnoughBalanceForFeeError": "Недостаточно средств для оплаты комиссии",
     "pasteButton": "Вставить",
     "recipientLabel": "Получатель",

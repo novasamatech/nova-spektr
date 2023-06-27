@@ -150,8 +150,8 @@ const RejectTx = ({ tx, account, connection }: Props) => {
       </div>
 
       <BaseModal
-        isOpen={isModalOpen}
         closeButton
+        isOpen={activeStep !== Step.SUBMIT && isModalOpen}
         title={
           <OperationModalTitle
             title={`${t('operation.cancelTitle')} ${t(transactionTitle)} ${t('on')}`}

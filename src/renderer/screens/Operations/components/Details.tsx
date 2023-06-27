@@ -14,6 +14,7 @@ import { BalanceNew, DetailRow } from '@renderer/components/common';
 import AddressWithExplorers from '@renderer/components/common/AddressWithExplorers/AddressWithExplorers';
 import { AddressStyle, DescriptionBlockStyle, InteractionStyle } from '../common/constants';
 import { getMultisigExtrinsicLink } from '../common/utils';
+import cnTw from '@renderer/shared/utils/twMerge';
 
 type Props = {
   tx: MultisigTransaction;
@@ -58,7 +59,7 @@ const Details = ({ tx, account, connection, isCardDetails = true }: Props) => {
           <FootnoteText as="dt" className="text-text-tertiary">
             {t('operation.details.description')}
           </FootnoteText>
-          <FootnoteText as="dd" className={valueClass}>
+          <FootnoteText as="dd" className={cnTw('break-words', valueClass)}>
             {description}
           </FootnoteText>
         </div>
@@ -68,7 +69,7 @@ const Details = ({ tx, account, connection, isCardDetails = true }: Props) => {
           <FootnoteText as="dt" className="text-text-tertiary">
             {t('operation.details.rejectReason')}
           </FootnoteText>
-          <FootnoteText as="dd" className={valueClass}>
+          <FootnoteText as="dd" className={cnTw('break-words', valueClass)}>
             {cancelDescription}
           </FootnoteText>
         </div>
@@ -81,6 +82,7 @@ const Details = ({ tx, account, connection, isCardDetails = true }: Props) => {
             addressFont={AddressStyle}
             accountId={account.accountId}
             addressPrefix={addressPrefix}
+            wrapperClassName="-mr-2 min-w-min"
             name={account.name}
             type="short"
           />
@@ -95,6 +97,7 @@ const Details = ({ tx, account, connection, isCardDetails = true }: Props) => {
             addressFont={AddressStyle}
             address={transaction.args.dest}
             addressPrefix={addressPrefix}
+            wrapperClassName="-mr-2 min-w-min"
           />
         </DetailRow>
       )}
@@ -129,6 +132,7 @@ const Details = ({ tx, account, connection, isCardDetails = true }: Props) => {
               type="short"
               address={transaction.args.payee.account}
               addressPrefix={addressPrefix}
+              wrapperClassName="-mr-2 min-w-min"
             />
           ) : (
             transaction.args.payee
@@ -142,7 +146,7 @@ const Details = ({ tx, account, connection, isCardDetails = true }: Props) => {
           pallet="primary"
           size="sm"
           suffixElement={<Icon name={isAdvancedShown ? 'up' : 'down'} size={16} className="text-icon-default" />}
-          className="w-fit"
+          className="text-action-text-default hover:text-action-text-default w-fit -ml-2"
           onClick={toggleAdvanced}
         >
           {t('operation.advanced')}
@@ -186,6 +190,7 @@ const Details = ({ tx, account, connection, isCardDetails = true }: Props) => {
                 address={depositorSignatory.address}
                 name={depositorSignatory.name}
                 addressFont={AddressStyle}
+                wrapperClassName="-mr-2 min-w-min"
                 type="short"
               />
             </DetailRow>
@@ -197,7 +202,7 @@ const Details = ({ tx, account, connection, isCardDetails = true }: Props) => {
                 value={deposit}
                 asset={defaultAsset}
                 showIcon={false}
-                className="text-footnote text-text-secondary py-[3px] px-2"
+                className="text-footnote text-text-secondary py-[3px]"
               />
             </DetailRow>
           )}

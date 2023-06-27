@@ -104,11 +104,9 @@ export const Confirmation = ({
         {/* TODO: use DetailRow */}
         <div className="flex flex-col gap-y-4">
           <div className="flex justify-between items-center gap-x-2">
-            {signer ? (
-              <FootnoteText className="text-text-tertiary">{t('staking.confirmation.walletLabel')}</FootnoteText>
-            ) : (
-              <FootnoteText className="text-text-tertiary">{t('staking.confirmation.accountLabel')}</FootnoteText>
-            )}
+            <FootnoteText className="text-text-tertiary">
+              {t('staking.confirmation.accountLabel', { count: accounts.length })}
+            </FootnoteText>
             {singleAccount ? (
               <AddressWithExplorers
                 accountId={accounts[0].accountId}

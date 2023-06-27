@@ -21,14 +21,14 @@ export type InfoSection = {
 
 const InfoPopover = ({ data, className, children, ...popoverProps }: PropsWithChildren<Props>) => {
   const popoverContent = data.map((section, index) => (
-    <div key={index}>
+    <div key={index} className="pb-3 mb-3 border-b border-divider last:pb-0 last:mb-0 last:border-b-0">
       {section.title && (
         <FootnoteText className="text-text-tertiary uppercase pb-2" key={section.title}>
           {section.title}
         </FootnoteText>
       )}
 
-      <ul className="flex flex-col mb-4 last:mb-0">
+      <ul className="flex flex-col">
         {section.items.map(({ value, id }) =>
           typeof value === 'string' ? (
             <li key={id}>
@@ -42,7 +42,6 @@ const InfoPopover = ({ data, className, children, ...popoverProps }: PropsWithCh
           ),
         )}
       </ul>
-      {index !== data.length - 1 && <hr className="border-divider pb-3" />}
     </div>
   ));
 

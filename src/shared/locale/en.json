@@ -34,7 +34,7 @@
       "noContactsLabel": "The contact list is empty, you can add a new contact"
     },
     "editContact": {
-      "editWarning": "Please note: by changing the address, multisig account will not be changed",
+      "editWarning": "If you have a multisig wallet with this contact, then changing the contact will not affect the multisig wallet",
       "saveContactButton": "Save",
       "title": "Edit contact"
     },
@@ -83,7 +83,7 @@
     "noWallets": "Looks like you don't have any non-watch only wallets",
     "noWalletsLabel": "The wallet list is empty",
     "searchContactPlaceholder": "Search for an account or contact...",
-    "selectedSignatoriesTitle": "Selected signatories",
+    "selectedSignatoriesTitle": "Check your signatories and proceed",
     "signatoriesDescription": "Add signatories to your multisig account",
     "signatoriesLabel": "Signatories",
     "signatoryTitle": "Select signatories",
@@ -416,6 +416,7 @@
       "usernameLabel": "Username",
       "usernamePlaceholder": "Enter username",
       "usernameRequiredError": "Username is required",
+      "verificationHint": "Verify your session for enhanced secure messaging providing your Matrix Security Key.",
       "verificationLabel": "Session verification",
       "verificationSubtitle": "Verify your device for secure connection",
       "verificationTitle": "Matrix account",
@@ -469,7 +470,7 @@
     },
     "overview": {
       "generalLabel": "General",
-      "githubDescription": "Code and collaborate on GitHub",
+      "githubDescription": "Contribute and explore our open-source project on GitHub for collaborative code shaping!",
       "githubLabel": "GitHub",
       "languageLabel": "Language",
       "matrixDescription": "Manage Matrix connection",
@@ -478,18 +479,18 @@
       "matrixStatusLogin": "Log in or register",
       "matrixStatusNotVerified": "Session not verified",
       "matrixStatusVerified": "Session verified",
-      "mediumDescription": "Discover and share stories on Medium",
+      "mediumDescription": "Engaging content to expand knowledge and stay informed about Nova Spektr!",
       "mediumLabel": "Medium",
       "networkDetailsLabel": "Manage network connection",
       "networkLabel": "Network",
       "smpLabel": "Spektr Matrix Protocol",
       "socialLabel": "Social",
-      "telegramDescription": "Connect, chat, and explore on Telegram",
+      "telegramDescription": "Connect, get help, and share ideas with our Telegram community!",
       "telegramLabel": "Telegram",
-      "twitterDescription": "Tweet your thoughts and stay connected on Twitter",
+      "twitterDescription": "Stay connected with us and never miss out on the latest updates and news!",
       "twitterLabel": "Twitter",
       "versionLabel": "Version",
-      "youtubeDescription": "Watch, share, and discover with YouTube",
+      "youtubeDescription": "Discover our demo recordings and valuable learning materials on YouTube!",
       "youtubeLabel": "YouTube"
     },
     "title": "Settings"
@@ -562,7 +563,8 @@
       "transferableRewards": "Transferable rewards"
     },
     "confirmation": {
-      "accountLabel": "Account",
+      "accountLabel_one": "Account",
+      "accountLabel_other": "Accounts",
       "accountsTitle": "Selected accounts",
       "backButton": "Back",
       "changeValidatorsTitle": "Change validators",
@@ -591,8 +593,7 @@
       "transactionProgress": "Transactions",
       "transferableRewards": "Transferable rewards",
       "validatorsLabel": "Validators",
-      "validatorsTitle": "Selected validators",
-      "walletLabel": "Wallet"
+      "validatorsTitle": "Selected validators"
     },
     "destination": {
       "initDestinationSubtitle": "Rewards destination",
@@ -613,7 +614,7 @@
       "yourValidatorsTitle": "Selected validators"
     },
     "notEnoughBalanceError": "Not enough funds to complete operation",
-    "notEnoughBalanceForDepositError": "Insufficient balance to pay deposit",
+    "notEnoughBalanceForDepositError": "Insufficient balance to pay deposit and network fee",
     "notEnoughBalanceForFeeError": "Insufficient balance to pay network fee",
     "notEnoughStakedError": "Not enough staked to unstake specific amount",
     "notEnoughUnlockingError": "Not enough unlocking to return specific amount",
@@ -748,7 +749,7 @@
     "networkDepositHint": "The deposit stays locked on the depositor’s account until the multisig operation is executed or rejected",
     "networkFee": "Network fee",
     "notEnoughBalanceError": "Not enough funds to transfer specific amount",
-    "notEnoughBalanceForDepositError": "Insufficient balance to pay deposit",
+    "notEnoughBalanceForDepositError": "Insufficient balance to pay deposit and network fee",
     "notEnoughBalanceForFeeError": "Insufficient balance to pay network fee",
     "pasteButton": "Paste",
     "recipientLabel": "Recipient",

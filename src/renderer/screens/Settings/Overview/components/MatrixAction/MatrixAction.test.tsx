@@ -16,6 +16,10 @@ jest.mock('@renderer/context/MatrixContext', () => ({
   }),
 }));
 
+jest.mock('@renderer/components/modals', () => ({
+  MatrixModal: () => <span>matrixModal</span>,
+}));
+
 describe('screen/Settings/Overview/MatrixAction', () => {
   test('should render label and link to SMP', () => {
     render(<MatrixAction />, { wrapper: MemoryRouter });

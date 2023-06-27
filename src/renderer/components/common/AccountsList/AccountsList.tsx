@@ -34,6 +34,7 @@ const AccountsList = ({ accountId, chains, className }: Props) => {
               <div className="w-[214]">
                 <AddressWithExplorers
                   type="adaptive"
+                  position="right-0"
                   className="w-[160px]"
                   accountId={accountId}
                   addressPrefix={addressPrefix}

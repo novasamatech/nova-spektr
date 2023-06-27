@@ -9,13 +9,12 @@ import { InfoPopover } from '@renderer/components/ui-redesign';
 import { Icon } from '@renderer/components/ui';
 import { Explorer } from '@renderer/domain/chain';
 import useAddressInfo from '@renderer/components/common/AccountAddress/useAddressInfo';
-import { toAccountId, toAddress } from '@renderer/shared/utils/address';
+import { toAccountId } from '@renderer/shared/utils/address';
 import { useBalance } from '@renderer/services/balance/balanceService';
 import { ChainId } from '@renderer/domain/shared-kernel';
 import { Asset } from '@renderer/domain/asset';
 import BalanceNew from '../BalanceNew/BalanceNew';
 import { transferableAmount } from '@renderer/shared/utils/balance';
-import { useAccount } from '@renderer/services/account/accountService';
 
 type Props<T extends any> = {
   explorers?: Explorer[];
@@ -38,11 +37,9 @@ const SelectableSignatory = <T extends any>({
   const address = getAddress(addressProps);
 
   const { getBalance } = useBalance();
-  const { getLiveAccounts } = useAccount();
   const popoverItems = useAddressInfo(address, explorers, true);
 
   const [balance, setBalance] = useState('');
-  const account = getLiveAccounts().find((a) => toAddress(a.accountId) === address);
 
   useEffect(() => {
     if (chainId && asset) {
@@ -57,7 +54,7 @@ const SelectableSignatory = <T extends any>({
       className="group flex items-center cursor-pointer hover:bg-action-background-hover px-2 py-1.5 rounded w-full text-text-secondary active:text-text-primary"
       onClick={() => onSelected(value)}
     >
-      <AccountAddress addressFont="text-body text-inherit" size={size} name={account?.name || name} {...addressProps} />
+      <AccountAddress addressFont="text-body text-inherit" size={size} name={name} {...addressProps} />
       <InfoPopover data={popoverItems}>
         <Icon name="info" size={14} className="text-icon-default ml-2 mr-auto" />
       </InfoPopover>
