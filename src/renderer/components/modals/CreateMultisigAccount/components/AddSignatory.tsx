@@ -13,16 +13,23 @@ import { Contact } from '@renderer/domain/contact';
 import { toAddress } from '@renderer/shared/utils/address';
 import { ChainId } from '@renderer/domain/shared-kernel';
 import { useWallet } from '@renderer/services/wallet/walletService';
-import { FootnoteText, SearchInput, SmallTitleText, Checkbox, Button } from '@renderer/components/ui-redesign';
 import Tabs, { TabItem } from '@renderer/components/ui-redesign/Tabs/Tabs';
 import { useChains } from '@renderer/services/network/chainsService';
 import { ChainsRecord } from '@renderer/components/layout/PrimaryLayout/Wallets/common/types';
 import { useToggle } from '@renderer/shared/hooks';
-import ContactModal from '@renderer/screens/AddressBook/components/ContactModal';
 import { WalletsTabItem } from './WalletsTabItem';
 import { Icon } from '@renderer/components/ui';
-import EmptyContacts from '@renderer/screens/AddressBook/components/EmptyState/EmptyContacts';
+import { EmptyContacts } from '@renderer/screens/AddressBook/Overview/components';
 import { isWalletContact } from '@renderer/domain/account';
+import { ContactForm } from '@renderer/components/forms';
+import {
+  FootnoteText,
+  SearchInput,
+  SmallTitleText,
+  Checkbox,
+  Button,
+  BaseModal,
+} from '@renderer/components/ui-redesign';
 
 type ContactWithIndex = { index: number } & Contact;
 export type WalletContact = ContactWithIndex & { walletName?: string; chainId?: ChainId };
@@ -283,7 +290,16 @@ const AddSignatory = ({ onSelect, isEditing }: Props) => {
         )}
       </section>
 
-      <ContactModal isOpen={isContactModalOpen} onToggle={toggleContactModalOpen} />
+      <BaseModal
+        title={t('addressBook.addContact.title')}
+        closeButton
+        isOpen={isContactModalOpen}
+        headerClass="py-[15px] px-5"
+        contentClass="px-5 pb-4 w-[440px]"
+        onClose={toggleContactModalOpen}
+      >
+        <ContactForm onFormSubmit={toggleContactModalOpen} />
+      </BaseModal>
     </>
   );
 };

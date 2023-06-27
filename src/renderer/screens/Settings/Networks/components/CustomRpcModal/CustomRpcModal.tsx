@@ -35,6 +35,7 @@ type Props = {
 export const CustomRpcModal = ({ network, node, isOpen, onClose }: Props) => {
   const { t } = useI18n();
   const { validateRpcNode, addRpcNode, updateRpcNode } = useNetworkContext();
+
   const [formState, setFormState] = useState<FormState>(FormState.INIT);
 
   const {
