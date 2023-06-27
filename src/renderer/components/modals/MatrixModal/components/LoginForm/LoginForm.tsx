@@ -1,10 +1,9 @@
 import { Controller, SubmitHandler, useForm } from 'react-hook-form';
 import { Trans } from 'react-i18next';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 import { useMatrix } from '@renderer/context/MatrixContext';
 import { useI18n } from '@renderer/context/I18nContext';
-import { DropdownResult } from '@renderer/components/ui/Dropdowns/common/types';
 import { WELL_KNOWN_SERVERS } from '@renderer/services/matrix';
 import {
   Alert,
@@ -17,12 +16,15 @@ import {
   PasswordInput,
 } from '@renderer/components/ui-redesign';
 import { Icon, Loader } from '@renderer/components/ui';
+import { ComboboxOption } from '@renderer/components/ui-redesign/Dropdowns/common/types';
 
 const HOME_SERVERS = WELL_KNOWN_SERVERS.map((server) => ({
   id: server.domain,
   value: server.domain,
   element: server.domain,
 }));
+
+const DEFAULT_HOMESERVER = HOME_SERVERS[0];
 
 // TODO: might come form loginFlows method
 // const REGISTER_LINKS: { icon: IconNames; url: string }[] = [
@@ -34,7 +36,7 @@ const HOME_SERVERS = WELL_KNOWN_SERVERS.map((server) => ({
 // ];
 
 type MatrixForm = {
-  homeserver: string;
+  homeserver: ComboboxOption;
   username: string;
   password: string;
 };
@@ -56,14 +58,21 @@ const LoginForm = () => {
     control,
     clearErrors,
     resetField,
+    setValue,
     watch,
     formState: { isValid, errors },
   } = useForm<MatrixForm>({
     mode: 'onChange',
-    defaultValues: { homeserver: '', username: '', password: '' },
+    defaultValues: { homeserver: DEFAULT_HOMESERVER, username: '', password: '' },
   });
 
   const homeserver = watch('homeserver');
+
+  useEffect(() => {
+    const handler = (value: ComboboxOption) => setValue('homeserver', value, { shouldValidate: true });
+
+    changeHomeserver(handler)(DEFAULT_HOMESERVER);
+  }, [setValue]);
 
   const changeInputValue = (onChange: (value: string) => void) => {
     return (value: string) => {
@@ -76,9 +85,9 @@ const LoginForm = () => {
     };
   };
 
-  const changeHomeserver = (onChange: (server: string) => void) => {
-    return async (option: DropdownResult<string>) => {
-      onChange(option.value);
+  const changeHomeserver = (onChange: (server: ComboboxOption) => void) => {
+    return async (option: ComboboxOption<string>) => {
+      onChange(option);
 
       setIsHomeserverLoading(true);
       try {
@@ -139,8 +148,8 @@ const LoginForm = () => {
         name="homeserver"
         control={control}
         rules={{ required: true }}
-        render={({ field: { onChange } }) => (
-          <>
+        render={({ field: { value, onChange } }) => (
+          <div className="flex flex-col gap-y-2">
             <Combobox
               label={t('settings.matrix.homeserverLabel')}
               placeholder={t('settings.matrix.homeserverPlaceholder')}
@@ -148,12 +157,13 @@ const LoginForm = () => {
               invalid={invalidHomeserver}
               disabled={!isEditing || isHomeserverLoading}
               options={HOME_SERVERS}
+              value={value}
               onChange={changeHomeserver(onChange)}
             />
-            <InputHint active={invalidHomeserver} variant="error" className="-mt-2">
+            <InputHint active={invalidHomeserver} variant="error">
               {t('settings.matrix.badServerError')}
             </InputHint>
-          </>
+          </div>
         )}
       />
 

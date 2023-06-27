@@ -416,6 +416,7 @@
       "usernameLabel": "Username",
       "usernamePlaceholder": "Enter username",
       "usernameRequiredError": "Username is required",
+      "verificationHint": "Verify your session for enhanced secure messaging providing your Matrix Security Key.",
       "verificationLabel": "Session verification",
       "verificationSubtitle": "Verify your device for secure connection",
       "verificationTitle": "Matrix account",
