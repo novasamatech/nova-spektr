@@ -73,6 +73,7 @@
     "alertText": "To create a multisig wallet, you need to select at least one of your wallet",
     "alertTitle": "Select wallet",
     "backButton": "Back",
+    "closeButton": "Close",
     "contactsTab": "Contacts",
     "continueButton": "Continue",
     "create": "Create",
