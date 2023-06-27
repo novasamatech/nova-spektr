@@ -52,7 +52,9 @@ export const NetworkInfo = ({
         const { chainId, assets } = chain;
 
         if (getRelaychainAsset(assets)) {
-          const element = <ChainComponent className="overflow-hidden" fontClass="truncate" chain={chain} />;
+          const element = (
+            <ChainComponent key={chain.chainId} className="overflow-hidden" fontClass="truncate" chain={chain} />
+          );
 
           acc.push({ id: chainId, value: chain, element });
         }
