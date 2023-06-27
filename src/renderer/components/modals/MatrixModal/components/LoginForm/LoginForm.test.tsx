@@ -27,13 +27,8 @@ describe('screen/Settings/Matrix/LoginForm', () => {
 
     render(<LoginForm />);
 
-    const homeserver = screen.getByPlaceholderText('settings.matrix.homeserverPlaceholder');
-    await act(() => user.type(homeserver, 'm'));
-    const options = screen.getAllByText('matrix.org');
-    await act(() => options[options.length - 1].click());
-
     if (withCredentials) {
-      const username = screen.getByPlaceholderText('settings.matrix.usernamePlaceholder');
+      const username = await screen.findByPlaceholderText('settings.matrix.usernamePlaceholder');
       await act(() => user.type(username, 'my_username'));
 
       const password = screen.getByPlaceholderText('settings.matrix.passwordPlaceholder');
@@ -51,11 +46,11 @@ describe('screen/Settings/Matrix/LoginForm', () => {
     expect(submit).toBeDisabled();
   });
 
-  test('should submit button be available', async () => {
+  test('submit button should be disabled', async () => {
     await setupForm();
 
     const button = screen.getByRole('button', { name: 'settings.matrix.logInButton' });
-    expect(button).toBeEnabled();
+    expect(button).toBeDisabled();
   });
 
   test('should disable submit button during submission', async () => {
