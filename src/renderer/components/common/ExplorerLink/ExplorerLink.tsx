@@ -4,25 +4,39 @@ import { Icon } from '@renderer/components/ui';
 import { DefaultExplorer, ExplorerIcons } from '@renderer/components/common/Explorers/common/constants';
 import { Explorer } from '@renderer/domain/chain';
 import { useI18n } from '@renderer/context/I18nContext';
-import { AccountId, Address } from '@renderer/domain/shared-kernel';
+import { AccountId, Address, HexString } from '@renderer/domain/shared-kernel';
 import { FootnoteText } from '@renderer/components/ui-redesign';
 
-interface Props {
-  explorer: Explorer;
+const isExtrinsic = (props: WithAccount | WithExtrinsic): props is WithExtrinsic =>
+  (props as WithExtrinsic).hash !== undefined;
+
+type WithAccount = {
   address: Address | AccountId;
   addressPrefix?: number;
-}
+};
 
-const ExplorerLink = ({ explorer, address, addressPrefix }: Props) => {
+type WithExtrinsic = {
+  hash: HexString;
+};
+
+type Props = {
+  explorer: Explorer;
+} & (WithAccount | WithExtrinsic);
+
+const ExplorerLink = ({ explorer, ...props }: Props) => {
   const { t } = useI18n();
-  const { account, name } = explorer;
+  const { account, extrinsic, name } = explorer;
 
-  if (!account) return null;
+  const href = isExtrinsic(props)
+    ? extrinsic && extrinsic.replace('{hash}', props.hash)
+    : account && account.replace('{address}', toAddress(props.address, { prefix: props.addressPrefix }));
+
+  if (!href) return null;
 
   return (
     <a
       className={cnTw('rounded-md flex items-center gap-x-2 p-2 select-none')}
-      href={account.replace('{address}', toAddress(address, { prefix: addressPrefix }))}
+      href={href}
       rel="noopener noreferrer"
       target="_blank"
     >
