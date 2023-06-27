@@ -158,7 +158,9 @@ export const validatePrecision = (amount: string, precision: number) => {
   return true;
 };
 
-export const formatGroups = (amount: string) => {
+export const formatGroups = (amount: string): string => {
+  if (!amount) return '';
+
   const [integer, decimal] = amount.split('.');
   const groups = [];
   let index = integer.length;
