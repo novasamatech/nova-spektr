@@ -5,7 +5,6 @@ const Paths = {
   ONBOARDING: '/onboarding',
 
   // Navigation
-  ADDRESS_BOOK: '/address-book',
   HISTORY: '/history',
   MULTISIG: '/multisig',
   BALANCES: '/balances',
@@ -13,10 +12,13 @@ const Paths = {
   SIGNING: '/signing',
   NOTIFICATIONS: '/notifications',
 
+  // Address book
+  ADDRESS_BOOK: '/address-book',
+  MANAGE_CONTACT: '/address-book/contact',
+
   // Settings
   SETTINGS: '/settings',
   NETWORK: '/settings/network',
-  // MATRIX: '/settings/matrix',
 
   // Staking
   STAKING: '/staking',
