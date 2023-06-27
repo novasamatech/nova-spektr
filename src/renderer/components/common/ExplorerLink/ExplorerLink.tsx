@@ -7,6 +7,9 @@ import { useI18n } from '@renderer/context/I18nContext';
 import { AccountId, Address, HexString } from '@renderer/domain/shared-kernel';
 import { FootnoteText } from '@renderer/components/ui-redesign';
 
+const isExtrinsic = (props: WithAccount | WithExtrinsic): props is WithExtrinsic =>
+  (props as WithExtrinsic).hash !== undefined;
+
 type WithAccount = {
   address: Address | AccountId;
   addressPrefix?: number;
@@ -24,13 +27,9 @@ const ExplorerLink = ({ explorer, ...props }: Props) => {
   const { t } = useI18n();
   const { account, extrinsic, name } = explorer;
 
-  const href = (props as WithExtrinsic).hash
-    ? extrinsic && extrinsic.replace('{hash}', (props as WithExtrinsic).hash)
-    : account &&
-      account.replace(
-        '{address}',
-        toAddress((props as WithAccount).address, { prefix: (props as WithAccount).addressPrefix }),
-      );
+  const href = isExtrinsic(props)
+    ? extrinsic && extrinsic.replace('{hash}', props.hash)
+    : account && account.replace('{address}', toAddress(props.address, { prefix: props.addressPrefix }));
 
   if (!href) return null;
 

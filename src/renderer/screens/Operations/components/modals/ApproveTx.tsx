@@ -58,17 +58,13 @@ const ApproveTx = ({ tx, account, connection }: Props) => {
 
   const accounts = getLiveAccounts();
 
-  const unsignedAccounts = accounts.reduce<AccountDS[]>((acc, a) => {
-    if (
-      account.signatories.find((s) => s.accountId === a.accountId) &&
-      !tx.events.find((e) => e.accountId === a.accountId) &&
-      (!a.chainId || a.chainId === tx.chainId)
-    ) {
-      acc.push(a);
-    }
+  const unsignedAccounts = accounts.filter((a) => {
+    const isSignatory = account.signatories.find((s) => s.accountId === a.accountId);
+    const notSigned = !tx.events.find((e) => e.accountId === a.accountId);
+    const isCurrentChain = !a.chainId || a.chainId === tx.chainId;
 
-    return acc;
-  }, []);
+    return isSignatory && notSigned && isCurrentChain;
+  });
 
   const [approveTx, setApproveTx] = useState<Transaction>();
   const [feeTx, setFeeTx] = useState<Transaction>();

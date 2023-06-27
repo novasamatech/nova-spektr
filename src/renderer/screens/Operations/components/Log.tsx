@@ -76,9 +76,11 @@ const LogModal = ({ isOpen, onClose, tx, account, connection }: Props) => {
     const isCreatedEvent =
       signatory?.accountId === tx.depositor && (event.status === 'SIGNED' || event.status === 'PENDING_SIGNED');
 
-    return `${signatory?.name || toAddress(event.accountId, { chunk: 5, prefix: chain?.addressPrefix })} ${t(
-      EventMessage[isCreatedEvent ? 'INITIATED' : event.status] || 'log.unknownMessage',
-    )}`;
+    const signatoryName = signatory?.name || toAddress(event.accountId, { chunk: 5, prefix: chain?.addressPrefix });
+    const eventType = isCreatedEvent ? 'INITIATED' : event.status;
+    const eventMessage = EventMessage[eventType] || 'log.unknownMessage';
+
+    return `${signatoryName} ${t(eventMessage)}`;
   };
 
   return (

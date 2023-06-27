@@ -4,18 +4,16 @@ import { Explorer } from '@renderer/domain/chain';
 import { ExplorerLink } from '@renderer/components/common';
 
 const useExtrinsicInfo = (hash: HexString, explorers?: Explorer[]): InfoSection[] => {
-  const popoverItems = [];
+  if (!explorers || explorers.length === 0) return [];
 
-  if (explorers) {
-    popoverItems.push({
+  return [
+    {
       items: explorers.map((explorer) => ({
         id: explorer.name,
         value: <ExplorerLink explorer={explorer} hash={hash} />,
       })),
-    });
-  }
-
-  return popoverItems;
+    },
+  ];
 };
 
 export default useExtrinsicInfo;
