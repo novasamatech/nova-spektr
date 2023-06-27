@@ -1,6 +1,6 @@
 import * as Settings from './Settings';
 import * as Staking from './Staking';
-import AddressBook from './AddressBook/AddressBook';
+import * as AddressBook from './AddressBook';
 import CameraDev from './CameraDev/CameraDev';
 import ChatDev from './ChatDev/ChatDev';
 import Onboarding from './Onboarding';

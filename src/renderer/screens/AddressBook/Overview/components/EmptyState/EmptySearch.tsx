@@ -2,7 +2,7 @@ import { Icon } from '@renderer/components/ui';
 import { BodyText } from '@renderer/components/ui-redesign';
 import { useI18n } from '@renderer/context/I18nContext';
 
-const EmptyFilter = () => {
+export const EmptySearch = () => {
   const { t } = useI18n();
 
   return (
@@ -12,5 +12,3 @@ const EmptyFilter = () => {
     </div>
   );
 };
-
-export default EmptyFilter;

@@ -14,15 +14,15 @@ import WatchOnly from '@renderer/screens/Onboarding/WatchOnly/WatchOnly';
 import Vault from '@renderer/screens/Onboarding/Vault/Vault';
 import { useToggle } from '@renderer/shared/hooks';
 import { ButtonDropdownOption } from '@renderer/components/ui-redesign/Dropdowns/DropdownButton/DropdownButton';
-import CreateMultisigAccount from '@renderer/components/modals/CreateMultisigAccount/CreateMultisigAccount';
+import { CreateMultisigAccount } from '@renderer/components/modals';
 import { isMultishardWalletItem } from '@renderer/components/layout/PrimaryLayout/Wallets/common/utils';
+import Paths from '@renderer/routes/paths';
+import { DEFAULT_TRANSITION } from '@renderer/shared/utils/constants';
 import {
   ChainsRecord,
   WalletGroupItem,
   MultishardWallet,
 } from '@renderer/components/layout/PrimaryLayout/Wallets/common/types';
-import Paths from '@renderer/routes/paths';
-import { DEFAULT_TRANSITION } from '@renderer/shared/utils/constants';
 
 type Props = {
   chains: ChainsRecord;
