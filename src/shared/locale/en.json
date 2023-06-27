@@ -34,7 +34,7 @@
       "noContactsLabel": "The contact list is empty, you can add a new contact"
     },
     "editContact": {
-      "editWarning": "Please note: by changing the address, multisig account will not be changed",
+      "editWarning": "If you have a multisig wallet with this contact, then changing the contact will not affect the multisig wallet",
       "saveContactButton": "Save",
       "title": "Edit contact"
     },

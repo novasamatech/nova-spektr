@@ -1,6 +1,6 @@
 import { render, screen } from '@testing-library/react';
 
-import EmptySearch from './EmptySearch';
+import { EmptySearch } from './EmptySearch';
 
 jest.mock('@renderer/context/I18nContext', () => ({
   useI18n: jest.fn().mockReturnValue({

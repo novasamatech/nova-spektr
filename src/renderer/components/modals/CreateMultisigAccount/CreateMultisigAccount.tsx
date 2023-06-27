@@ -12,7 +12,7 @@ import { useToggle } from '@renderer/shared/hooks';
 import OperationResult from '@renderer/components/ui-redesign/OperationResult/OperationResult';
 import { MultisigAccountForm, WalletForm } from './components/WalletForm';
 import AddSignatory from './components/AddSignatory';
-import MatrixModal from '@renderer/components/modals/MatrixModal/MatrixModal';
+import { MatrixModal } from '../MatrixModal/MatrixModal';
 import Paths from '@renderer/routes/paths';
 
 type OperationResultProps = Pick<ComponentProps<typeof OperationResult>, 'variant' | 'description'>;
@@ -22,7 +22,7 @@ type Props = {
   onClose: () => void;
 };
 
-const CreateMultisigAccount = ({ isOpen, onClose }: Props) => {
+export const CreateMultisigAccount = ({ isOpen, onClose }: Props) => {
   const { t } = useI18n();
   const navigate = useNavigate();
   const { matrix, isLoggedIn } = useMatrix();
@@ -138,5 +138,3 @@ const CreateMultisigAccount = ({ isOpen, onClose }: Props) => {
     </>
   );
 };
-
-export default CreateMultisigAccount;
