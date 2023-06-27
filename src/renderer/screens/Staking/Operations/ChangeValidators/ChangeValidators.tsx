@@ -236,11 +236,11 @@ export const ChangeValidators = () => {
         {activeStep === Step.CONFIRMATION && (
           <Confirmation
             api={api}
+            accounts={txAccounts}
             validators={Object.values(validators)}
             description={description}
             transaction={transactions[0]}
             multisigTx={multisigTx}
-            accounts={accounts}
             signer={signer}
             onResult={() => setActiveStep(Step.SCANNING)}
             onGoBack={goToPrevStep}

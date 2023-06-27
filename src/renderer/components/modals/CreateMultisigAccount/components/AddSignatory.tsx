@@ -129,13 +129,14 @@ const AddSignatory = ({ onSelect, isEditing }: Props) => {
   };
 
   const hasWallets = Boolean(walletList.length);
+  const hasContacts = Boolean(contactList.length);
 
-  const walletsTab = (
+  const WalletsTab = (
     <>
       {hasWallets ? (
         <ul className="gap-y-2">
           {walletList.map(({ index, accountId, name, walletName, chainId }) => (
-            <li key={index + 'wallets'} className="py-1.5">
+            <li key={index + 'wallets'} className="p-1 mb-0.5 last:mb-0 rounded-md hover:bg-action-background-hover">
               <Controller
                 name="wallets"
                 control={control}
@@ -165,9 +166,7 @@ const AddSignatory = ({ onSelect, isEditing }: Props) => {
     </>
   );
 
-  const hasContacts = Boolean(contactList.length);
-
-  const contactsTab = (
+  const ContactsTab = (
     <div>
       <div className="flex items-center gap-x-4 flex-1 mb-4">
         <SearchInput
@@ -186,7 +185,7 @@ const AddSignatory = ({ onSelect, isEditing }: Props) => {
       {hasContacts ? (
         <ul className="flex flex-col gap-y-2">
           {searchedContactList.map(({ index, accountId, name }) => (
-            <li key={index + 'contacts'} className="py-1.5">
+            <li key={index + 'contacts'} className="p-1 mb-0.5 last:mb-0 rounded-md hover:bg-action-background-hover">
               <Controller
                 name="contacts"
                 control={control}
@@ -211,9 +210,10 @@ const AddSignatory = ({ onSelect, isEditing }: Props) => {
     </div>
   );
 
-  const tabItems: TabItem[] = [
+  const TabItems: TabItem[] = [
     {
       id: SignatoryTabs.WALLETS,
+      panel: WalletsTab,
       title: (
         <>
           {t('createMultisigAccount.walletsTab')}
@@ -222,10 +222,10 @@ const AddSignatory = ({ onSelect, isEditing }: Props) => {
           )}
         </>
       ),
-      panel: walletsTab,
     },
     {
       id: SignatoryTabs.CONTACTS,
+      panel: ContactsTab,
       title: (
         <>
           {t('createMultisigAccount.contactsTab')}
@@ -234,7 +234,6 @@ const AddSignatory = ({ onSelect, isEditing }: Props) => {
           )}
         </>
       ),
-      panel: contactsTab,
     },
   ];
 
@@ -246,9 +245,9 @@ const AddSignatory = ({ onSelect, isEditing }: Props) => {
         </SmallTitleText>
 
         {isEditing ? (
-          <Tabs items={tabItems} panelClassName="mt-4 flex-1 overflow-y-scroll" tabClassName="flex-inline" />
+          <Tabs items={TabItems} panelClassName="mt-4 flex-1 overflow-y-auto" tabClassName="flex-inline" />
         ) : (
-          <div className="flex flex-col gap-y-2 flex-1 overflow-y-scroll">
+          <div className="flex flex-col gap-y-2 flex-1 overflow-y-auto">
             <FootnoteText className="text-text-tertiary">
               {t('createMultisigAccount.walletsTab')} <span className="ml-2">{selectedWallets.length}</span>
             </FootnoteText>
@@ -256,7 +255,7 @@ const AddSignatory = ({ onSelect, isEditing }: Props) => {
               {walletList
                 .filter((w) => selectedWallets.includes(w.index))
                 .map(({ index, accountId, name, walletName, chainId }) => (
-                  <li key={index} className="py-1.5 flex items-center gap-x-2">
+                  <li key={index} className="p-1 mb-0.5 last:mb-0 rounded-md hover:bg-action-background-hover">
                     <WalletsTabItem
                       name={name}
                       accountId={accountId}
@@ -274,7 +273,7 @@ const AddSignatory = ({ onSelect, isEditing }: Props) => {
               {contactList
                 .filter((w) => selectedContacts.includes(w.index))
                 .map(({ index, accountId, name }) => (
-                  <li key={index} className="py-1.5 flex items-center gap-x-2">
+                  <li key={index} className="p-1 mb-0.5 last:mb-0 rounded-md hover:bg-action-background-hover">
                     <WalletsTabItem name={name} accountId={accountId} />
                   </li>
                 ))}

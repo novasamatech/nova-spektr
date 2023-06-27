@@ -562,7 +562,8 @@
       "transferableRewards": "Transferable rewards"
     },
     "confirmation": {
-      "accountLabel": "Account",
+      "accountLabel_one": "Account",
+      "accountLabel_other": "Accounts",
       "accountsTitle": "Selected accounts",
       "backButton": "Back",
       "changeValidatorsTitle": "Change validators",
@@ -591,8 +592,7 @@
       "transactionProgress": "Transactions",
       "transferableRewards": "Transferable rewards",
       "validatorsLabel": "Validators",
-      "validatorsTitle": "Selected validators",
-      "walletLabel": "Wallet"
+      "validatorsTitle": "Selected validators"
     },
     "destination": {
       "initDestinationSubtitle": "Rewards destination",

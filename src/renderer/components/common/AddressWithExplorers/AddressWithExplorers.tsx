@@ -10,14 +10,15 @@ import useAddressInfo from '@renderer/components/common/AccountAddress/useAddres
 type Props = {
   showMatrix?: boolean;
   explorers?: Explorer[];
+  position?: string;
 } & AccountAddressProps;
 
-const AddressWithExplorers = ({ explorers = [], showMatrix, ...addressProps }: Props) => {
+const AddressWithExplorers = ({ explorers = [], showMatrix, position, ...addressProps }: Props) => {
   const address = getAddress(addressProps);
   const popoverItems = useAddressInfo(address, explorers, showMatrix);
 
   return (
-    <InfoPopover data={popoverItems}>
+    <InfoPopover data={popoverItems} position={position}>
       <div className="flex max-w-full items-center gap-x-1 cursor-pointer group hover:bg-action-background-hover hover:text-text-primary px-2 h-6 rounded">
         <AccountAddress className="w-full" {...addressProps} />
         <Icon name="info" size={16} className="text-icon-default group-hover:text-icon-hover" />

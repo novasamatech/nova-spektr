@@ -562,7 +562,8 @@
       "transferableRewards": "Вывести награды"
     },
     "confirmation": {
-      "accountLabel": "Аккаунт",
+      "accountLabel_one": "Аккаунт",
+      "accountLabel_other": "Аккаунты",
       "accountsTitle": "Выбранные аккаунты",
       "backButton": "Назад",
       "changeValidatorsTitle": "Смена валидаторов",
@@ -591,8 +592,7 @@
       "transactionProgress": "Транзакции",
       "transferableRewards": "Вывести награды",
       "validatorsLabel": "Валидаторы",
-      "validatorsTitle": "Выбранные валидаторы",
-      "walletLabel": "Кошелек"
+      "validatorsTitle": "Выбранные валидаторы"
     },
     "destination": {
       "initDestinationSubtitle": "Выплата наград",

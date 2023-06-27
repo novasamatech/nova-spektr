@@ -28,7 +28,7 @@ const useAddressInfo = (address: Address, explorers?: Explorer[], showMatrix = f
     });
   }
 
-  if (explorers) {
+  if (explorers && explorers.length > 0) {
     popoverItems.push({
       items: explorers.map((explorer) => ({
         id: explorer.name,
