@@ -36,7 +36,7 @@ const SignatoryCard = ({
   return (
     <InfoPopover data={popoverItems} buttonClassName="w-full" position="right-0 left-unset">
       <div className="group flex items-center justify-between cursor-pointer hover:bg-action-background-hover hover:text-text-primary text-text-secondary px-2 py-1.5 rounded flex-1">
-        <AccountAddress addressFont={addressFont} size={size} name={account?.name || name} {...addressProps} />
+        <AccountAddress addressFont={addressFont} size={size} name={name || account?.name} {...addressProps} />
         <Icon name="info" size={14} className="text-icon-hover invisible group-hover:visible" />
         {status && status in IconProps && <Icon size={14} {...IconProps[status as keyof typeof IconProps]} />}
       </div>

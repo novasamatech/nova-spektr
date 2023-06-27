@@ -89,7 +89,7 @@ const Details = ({ tx, account, connection, isCardDetails = true }: Props) => {
               addressFont={AddressStyle}
               accountId={account.accountId}
               addressPrefix={addressPrefix}
-              wrapperClassName="-mr-2"
+              wrapperClassName="-mr-2 min-w-min"
               name={account.name}
               type="short"
             />
@@ -104,7 +104,7 @@ const Details = ({ tx, account, connection, isCardDetails = true }: Props) => {
               addressFont={AddressStyle}
               address={transaction.args.dest}
               addressPrefix={addressPrefix}
-              wrapperClassName="-mr-2"
+              wrapperClassName="-mr-2 min-w-min"
             />
           </DetailsRow>
         )}
@@ -139,7 +139,7 @@ const Details = ({ tx, account, connection, isCardDetails = true }: Props) => {
                 type="short"
                 address={transaction.args.payee.account}
                 addressPrefix={addressPrefix}
-                wrapperClassName="-mr-2"
+                wrapperClassName="-mr-2 min-w-min"
               />
             ) : (
               transaction.args.payee
@@ -197,7 +197,7 @@ const Details = ({ tx, account, connection, isCardDetails = true }: Props) => {
                   address={depositorSignatory.address}
                   name={depositorSignatory.name}
                   addressFont={AddressStyle}
-                  wrapperClassName="-mr-2"
+                  wrapperClassName="-mr-2 min-w-min"
                   type="short"
                 />
               </DetailsRow>
