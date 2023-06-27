@@ -41,7 +41,7 @@ export function createAccount({
     chainId,
     signingType,
     isMain: false,
-    isActive: true,
+    isActive: false,
     derivationPath,
     signingExtras,
   };
