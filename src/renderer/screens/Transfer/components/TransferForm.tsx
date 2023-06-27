@@ -6,7 +6,7 @@ import { Trans } from 'react-i18next';
 
 import { toAccountId, validateAddress, toAddress } from '@renderer/shared/utils/address';
 import { Icon, Identicon } from '@renderer/components/ui';
-import { Fee, Deposit } from '@renderer/components/common';
+import { Fee, Deposit, DetailRow } from '@renderer/components/common';
 import { useI18n } from '@renderer/context/I18nContext';
 import { Asset, AssetType } from '@renderer/domain/asset';
 import { Transaction, MultisigTxInitStatus, TransactionType } from '@renderer/domain/transaction';
@@ -18,7 +18,6 @@ import { useMultisigTx } from '@renderer/services/multisigTx/multisigTxService';
 import { getAssetId } from '@renderer/shared/utils/assets';
 import { MultisigAccount, Account, isMultisig } from '@renderer/domain/account';
 import { Button, AmountInput, Input, InputHint, FootnoteText, Tooltip } from '@renderer/components/ui-redesign';
-import DetailWithLabel from '@renderer/components/common/DetailsWithLabel/DetailWithLabel';
 
 const DESCRIPTION_MAX_LENGTH = 120;
 
@@ -375,7 +374,7 @@ export const TransferForm = ({
 
         <div className="flex flex-col items-center mt-2 gap-y-4">
           {isMultisig(account) && (
-            <DetailWithLabel
+            <DetailRow
               label={
                 <div className="flex items-center gap-x-1">
                   <Icon className="text-text-tertiary" name="lock" size={12} />
@@ -394,9 +393,9 @@ export const TransferForm = ({
                 threshold={account.threshold}
                 onDepositChange={setDeposit}
               />
-            </DetailWithLabel>
+            </DetailRow>
           )}
-          <DetailWithLabel label={t('operation.networkFee')} className="text-text-primary">
+          <DetailRow label={t('operation.networkFee')} className="text-text-primary">
             {api && (
               <Fee
                 className="text-footnote text-text-primary"
@@ -407,7 +406,7 @@ export const TransferForm = ({
                 onFeeChange={updateFee}
               />
             )}
-          </DetailWithLabel>
+          </DetailRow>
         </div>
       </div>
 
