@@ -613,7 +613,7 @@
       "yourValidatorsTitle": "Мои валидаторы"
     },
     "notEnoughBalanceError": "Недостаточно средств для выполнения операции",
-    "notEnoughBalanceForDepositError": "Недостаточно средств для оплаты депозита",
+    "notEnoughBalanceForDepositError": "Недостаточно средств для оплаты депозита и комиссии сети",
     "notEnoughBalanceForFeeError": "Недостаточно средств для оплаты комиссии",
     "notEnoughStakedError": "Not enough staked to unstake specific amount",
     "notEnoughUnlockingError": "Not enough unlocking to return specific amount",
@@ -748,7 +748,7 @@
     "networkDepositHint": "The deposit stays locked on the depositor’s account until the multisig operation is executed or rejected",
     "networkFee": "Комиссия сети",
     "notEnoughBalanceError": "Недостаточно средств для указанной суммы",
-    "notEnoughBalanceForDepositError": "Недостаточно средств для оплаты депозита",
+    "notEnoughBalanceForDepositError": "Недостаточно средств для оплаты депозита и комиссии сети",
     "notEnoughBalanceForFeeError": "Недостаточно средств для оплаты комиссии",
     "pasteButton": "Вставить",
     "recipientLabel": "Получатель",
