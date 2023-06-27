@@ -48,6 +48,7 @@ export const Redeem = () => {
   const [description, setDescription] = useState('');
 
   const [accounts, setAccounts] = useState<Account[]>([]);
+  const [txAccounts, setTxAccounts] = useState<Account[]>([]);
   const [signer, setSigner] = useState<Account>();
 
   const [multisigTx, setMultisigTx] = useState<Transaction>();
@@ -182,7 +183,7 @@ export const Redeem = () => {
     }
 
     setTransactions(transactions);
-    setAccounts(accounts);
+    setTxAccounts(accounts);
     setRedeemAmounts(amounts);
     setActiveStep(Step.CONFIRMATION);
   };
@@ -218,7 +219,7 @@ export const Redeem = () => {
         {activeStep === Step.CONFIRMATION && (
           <Confirmation
             api={api}
-            accounts={accounts}
+            accounts={txAccounts}
             signer={signer}
             amounts={redeemAmounts}
             description={description}
@@ -236,7 +237,7 @@ export const Redeem = () => {
                 api={api}
                 addressPrefix={addressPrefix}
                 countdown={countdown}
-                accounts={accounts}
+                accounts={txAccounts}
                 transactions={transactions}
                 chainId={chainId}
                 onGoBack={() => setActiveStep(Step.CONFIRMATION)}
@@ -248,7 +249,7 @@ export const Redeem = () => {
                 api={api}
                 addressPrefix={addressPrefix}
                 countdown={countdown}
-                account={signer || accounts[0]}
+                account={signer || txAccounts[0]}
                 transaction={multisigTx || transactions[0]}
                 chainId={chainId}
                 onGoBack={() => setActiveStep(Step.CONFIRMATION)}
@@ -276,8 +277,8 @@ export const Redeem = () => {
           description={description}
           signatures={signatures}
           unsignedTx={unsignedTransactions}
-          accounts={accounts}
-          onClose={closeRedeemModal}
+          accounts={txAccounts}
+          onClose={toggleRedeemModal}
           {...explorersProps}
         />
       )}

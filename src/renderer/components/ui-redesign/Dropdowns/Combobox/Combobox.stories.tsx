@@ -60,7 +60,7 @@ export const Custom = Template.bind({});
 Custom.args = {
   placeholder: 'Select an option',
   label: 'Payout account',
-  value: customOptions[2].id,
+  value: customOptions[2],
   options: customOptions,
   suffixElement: <Icon name="warnCutout" className="text-alert right-2 top-[9px] absolute" size={16} />,
   onChange: () => {},

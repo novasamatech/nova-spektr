@@ -1,7 +1,8 @@
 import { ComponentProps, useState } from 'react';
 import { SubmitHandler } from 'react-hook-form';
+import { useNavigate } from 'react-router-dom';
 
-import { BaseModal, HeaderTitleText, StatusLabel } from '@renderer/components/ui-redesign';
+import { BaseModal, HeaderTitleText, StatusLabel, Button } from '@renderer/components/ui-redesign';
 import { useI18n } from '@renderer/context/I18nContext';
 import { useMatrix } from '@renderer/context/MatrixContext';
 import { useAccount } from '@renderer/services/account/accountService';
@@ -11,7 +12,8 @@ import { useToggle } from '@renderer/shared/hooks';
 import OperationResult from '@renderer/components/ui-redesign/OperationResult/OperationResult';
 import { MultisigAccountForm, WalletForm } from './components/WalletForm';
 import AddSignatory from './components/AddSignatory';
-import MatrixModal from '@renderer/components/modals/MatrixModal/MatrixModal';
+import { MatrixModal } from '../MatrixModal/MatrixModal';
+import Paths from '@renderer/routes/paths';
 
 type OperationResultProps = Pick<ComponentProps<typeof OperationResult>, 'variant' | 'description'>;
 
@@ -20,26 +22,32 @@ type Props = {
   onClose: () => void;
 };
 
-const CreateMultisigAccount = ({ isOpen, onClose }: Props) => {
+export const CreateMultisigAccount = ({ isOpen, onClose }: Props) => {
   const { t } = useI18n();
+  const navigate = useNavigate();
   const { matrix, isLoggedIn } = useMatrix();
-  const { getLiveAccounts, addAccount } = useAccount();
+  const { getLiveAccounts, addAccount, setActiveAccount } = useAccount();
   const accounts = getLiveAccounts();
 
-  const [isEditing, setIsEditing] = useState(true);
-  const [isResultModalOpen, toggleResultModal] = useToggle();
   const [isLoading, toggleLoading] = useToggle();
-  const [error, setError] = useState('');
-  const [name, setName] = useState('');
+  const [isResultModalOpen, toggleResultModal] = useToggle();
 
+  const [name, setName] = useState('');
+  const [error, setError] = useState('');
+  const [isEditing, setIsEditing] = useState(true);
   const [signatories, setSignatories] = useState<Signatory[]>([]);
 
   const goBack = () => {
-    if (!isEditing) {
-      setIsEditing(true);
-    } else {
+    if (isEditing) {
       onClose();
+    } else {
+      setIsEditing(true);
     }
+  };
+
+  const handleSuccessClose = () => {
+    toggleResultModal();
+    navigate(Paths.BALANCES);
   };
 
   const onCreateAccount: SubmitHandler<MultisigAccountForm> = async ({ name, threshold }) => {
@@ -56,7 +64,7 @@ const CreateMultisigAccount = ({ isOpen, onClose }: Props) => {
       threshold: threshold.value,
       creatorAccountId: inviter.accountId,
       matrixRoomId: '',
-      isActive: true,
+      isActive: false,
     });
 
     if (!mstAccount.accountId) return;
@@ -69,10 +77,10 @@ const CreateMultisigAccount = ({ isOpen, onClose }: Props) => {
         threshold: mstAccount.threshold,
         signatories: signatories.map(({ accountId, matrixId }) => ({ accountId, matrixId })),
       });
-      await addAccount<MultisigAccount>({ ...mstAccount, matrixRoomId });
+      await addAccount<MultisigAccount>({ ...mstAccount, matrixRoomId }).then(setActiveAccount);
 
       toggleLoading();
-      setTimeout(toggleResultModal, 2000);
+      setTimeout(handleSuccessClose, 2000);
     } catch (error: any) {
       toggleLoading();
       setError(error?.message || t('createMultisigAccount.errorMessage'));
@@ -125,10 +133,10 @@ const CreateMultisigAccount = ({ isOpen, onClose }: Props) => {
         <AddSignatory isEditing={isEditing} onSelect={setSignatories} />
       </BaseModal>
 
-      <OperationResult {...getResultProps()} title={name} isOpen={isResultModalOpen} onClose={toggleResultModal} />
+      <OperationResult {...getResultProps()} title={name} isOpen={isResultModalOpen} onClose={handleSuccessClose}>
+        {error && <Button onClick={toggleResultModal}>{t('createMultisigAccount.closeButton')}</Button>}
+      </OperationResult>
       <MatrixModal isOpen={isOpen && !isLoggedIn} onClose={onClose} />
     </>
   );
 };
-
-export default CreateMultisigAccount;

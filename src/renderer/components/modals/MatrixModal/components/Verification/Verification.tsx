@@ -181,6 +181,10 @@ const Verification = () => {
             {getErrorMessage(t, verifyMethod)}
           </InputHint>
 
+          <InputHint active className="mt-4">
+            {t('settings.matrix.verificationHint')}
+          </InputHint>
+
           <div className="flex justify-between items-center pt-3 mt-2">
             <Icon name="matrixFull" className="!w-[56px] text-[#00000066]" size={24} />
             <Button type="submit" disabled={!isValid}>

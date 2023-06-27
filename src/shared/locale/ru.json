@@ -34,7 +34,7 @@
       "noContactsLabel": "Your address book is empty"
     },
     "editContact": {
-      "editWarning": "please note: by changing the address, multisig account will not be changed.",
+      "editWarning": "If you have a multisig wallet with this contact, then changing the contact will not affect the multisig wallet",
       "saveContactButton": "Save",
       "title": "Edit contact"
     },
@@ -60,7 +60,7 @@
     "shardsTitle": "Ваши активы на:",
     "title": "Балансы",
     "verificationFailedLabel": "данные недостоверны",
-    "verificationTooltip": "The balance may be wrong or outdated, please check your network connection."
+    "verificationTooltip": "The balance may be wrong or outdated, please check your network connection"
   },
   "basemodal": {
     "closeButton": "Закрыть окно"
@@ -73,6 +73,7 @@
     "alertText": "Для создания мультсиг кошелька необходимо выбрать хотя бы один из своих кошельков",
     "alertTitle": "Выберете кошелёк",
     "backButton": "Назад",
+    "closeButton": "Закрыть",
     "contactsTab": "Контакты",
     "continueButton": "Продолжить",
     "create": "Создать",
@@ -83,13 +84,13 @@
     "noWallets": "Похоже, что у вас не добавлены не watch-only кошельки",
     "noWalletsLabel": "The wallet list is empty",
     "searchContactPlaceholder": "Поиск аккаунта или контакта...",
-    "selectedSignatoriesTitle": "Selected signatories",
+    "selectedSignatoriesTitle": "Проверьте участников Multisig аккаунта",
     "signatoriesDescription": "Добавьте подписантов в ваш multisig аккаунт",
     "signatoriesLabel": "Подписанты",
     "signatoryTitle": "Выберете подписантов",
     "successMessage": "Multisig аккаунт успешно создан ",
     "thresholdDescription": "Установите количество подписей трубуемых для выполнения транзакции",
-    "thresholdHint": "Threshold of signatories required to execute a transaction.",
+    "thresholdHint": "Threshold of signatories required to execute a transaction",
     "thresholdName": "Порог",
     "thresholdPlaceholder": "Select threshold",
     "title": "Создать Multisig кошелёк",
@@ -161,7 +162,7 @@
   },
   "notifications": {
     "details": {
-      "newMultisigAccountDescription": "New Multisig wallet added: <identicon /> {name}, with threshold { threshold } and { signatories } signatories"
+      "newMultisigAccountDescription": "New multisig wallet added: <identicon /> {name}, with threshold { threshold } out of { signatories } signatories"
     },
     "noNotificationsDescription": "There are no notifications yet",
     "title": "Notifications"
@@ -205,26 +206,14 @@
       "scanAgainButton": "Сканировать заново",
       "scanQRCodeAlt": "Отсканировать QR код из Polkadot Vault",
       "scanQRFromParitySignerButton": "Отсканировать QR код из Polkadot Vault",
-      "scanQRLabel1": "Отсканировать",
-      "scanQRLabel2": "QR код",
-      "scanQRLabel3": "из Polkadot Vault",
       "scannerModalTitle": "Отсканируйте QR код из Polkadot Vault",
       "selectCameraLabel": "Выберите камеру",
-      "sliderAltText1": "Polkadot Vault открывается на смартфоне",
-      "sliderAltText2": "Открыта вкладка 'Ключи'",
-      "sliderAltText3": "Сгенерированный QR код в Polkadot Vault",
-      "sliderLabel1": "Откройте <strong>Polkadot Vault</strong> на своем смартфоне",
-      "sliderLabel2": "Перейдите во вкладку “<strong>Keys</strong>”. Выберите <strong>аккаунты</strong>,<br />которые вы хотите добавить в Nova Spektr",
-      "sliderLabel3": "Polkadot Vault сгенерирует специальный <strong>QR код</strong> для сканирования",
       "someOldAccountDescription": "Некоторые аккаунты были уже отсканированны ранее",
       "someOldAccountLabel": "Не все аккаунты добавлены",
       "startCameraLabel": "Запуск камеры",
-      "step0": "Подготовьте QR код",
-      "step1": "Отсканируйте QR код",
-      "step2": "Проверьте результат",
       "tryAgainButton": "Попробовать снова",
       "typeNameButton": "Введите название ...",
-      "walletNameDescription": "Examples: Main accounts, My validators, Dotsama crowdloans, etc.",
+      "walletNameDescription": "Examples: Main accounts, My validators, Dotsama crowdloans, etc",
       "walletNameLabel": "Wallet name",
       "walletNamePlaceholder": "Enter a name for your wallet",
       "wrongQRCodeDescription": "QR код содержит некорректный адрес сети",
@@ -233,7 +222,7 @@
       "yourAccountsLabel": "Here are your accounts"
     },
     "pasteButton": "Вставить",
-    "readAccountsLabel": "Following accounts have been successfully read.",
+    "readAccountsLabel": "Following accounts have been successfully read",
     "readAccountsParitySignerLabel": "Следующие аккаунты были получены из Polkadot Vault",
     "readyToUseLabel": "Ваш кошелёк готов к использованию!",
     "vault": {
@@ -356,7 +345,7 @@
       "statusSummary": "Статусы операции"
     },
     "noOperationsDescription": "Нет ожидающих операций с мультиподписью",
-    "noOperationsFilters": "Nothing was found for the filters. Try changing filters or canceling filtering.",
+    "noOperationsFilters": "Nothing was found for the filters, try changing filters or canceling filtering",
     "noOperationsWalletNotMulti": "You can only view operations for your Multisig wallets. Transaction history for other types of wallets will be available later. Stay tuned.",
     "title": "Операции",
     "titles": {
@@ -428,6 +417,7 @@
       "usernameLabel": "Username",
       "usernamePlaceholder": "Enter username",
       "usernameRequiredError": "Username is required",
+      "verificationHint": "Verify your session for enhanced secure messaging providing your Matrix Security Key.",
       "verificationLabel": "Session verification",
       "verificationSubtitle": "Verify your device for secure connection",
       "verificationTitle": "Matrix account",
@@ -446,7 +436,7 @@
       "addressLabel": "Адрес ноды",
       "addressNoConnect": "Не удалось подключиться, попробуйте позже",
       "addressPlaceholder": "Введите адрес ноды",
-      "addressWrongNetwork": "Неверный адрес ноды в сети { networkName }. Попробуйте другой",
+      "addressWrongNetwork": "Неверный адрес ноды в сети { networkName }, попробуйте другой",
       "confirmModal": {
         "cancelButton": "Отменить",
         "confirmButton": "Подтвердить",
@@ -481,7 +471,7 @@
     },
     "overview": {
       "generalLabel": "Основные",
-      "githubDescription": "Исходный код на GitHub",
+      "githubDescription": "Contribute and explore our open-source project on GitHub for collaborative code shaping!",
       "githubLabel": "GitHub",
       "languageLabel": "Язык",
       "matrixDescription": "Управление подключением к Matrix ",
@@ -490,18 +480,18 @@
       "matrixStatusLogin": "Войти или зарегистрироваться",
       "matrixStatusNotVerified": "Сессия не верифицирована",
       "matrixStatusVerified": "Сессия верифицирована",
-      "mediumDescription": "Все новости на Medium",
+      "mediumDescription": "Engaging content to expand knowledge and stay informed about Nova Spektr!",
       "mediumLabel": "Medium",
       "networkDetailsLabel": "Управления подключением к сетям",
       "networkLabel": "Сети",
       "smpLabel": "Spektr Matrix Протокол",
       "socialLabel": "Социальные сети",
-      "telegramDescription": "Наш официальный канал в Telegram",
+      "telegramDescription": "Connect, get help, and share ideas with our Telegram community!",
       "telegramLabel": "Telegram",
-      "twitterDescription": "Оставляйте комментарии нам в Twitter",
+      "twitterDescription": "Stay connected with us and never miss out on the latest updates and news!",
       "twitterLabel": "Twitter",
       "versionLabel": "Версия",
-      "youtubeDescription": "Смотрите нас на YouTube",
+      "youtubeDescription": "Discover our demo recordings and valuable learning materials on YouTube!",
       "youtubeLabel": "YouTube"
     },
     "title": "Настройки"
@@ -574,7 +564,8 @@
       "transferableRewards": "Вывести награды"
     },
     "confirmation": {
-      "accountLabel": "Аккаунт",
+      "accountLabel_one": "Аккаунт",
+      "accountLabel_other": "Аккаунты",
       "accountsTitle": "Выбранные аккаунты",
       "backButton": "Назад",
       "changeValidatorsTitle": "Смена валидаторов",
@@ -603,8 +594,7 @@
       "transactionProgress": "Транзакции",
       "transferableRewards": "Вывести награды",
       "validatorsLabel": "Валидаторы",
-      "validatorsTitle": "Выбранные валидаторы",
-      "walletLabel": "Кошелек"
+      "validatorsTitle": "Выбранные валидаторы"
     },
     "destination": {
       "initDestinationSubtitle": "Выплата наград",
@@ -625,7 +615,7 @@
       "yourValidatorsTitle": "Мои валидаторы"
     },
     "notEnoughBalanceError": "Недостаточно средств для выполнения операции",
-    "notEnoughBalanceForDepositError": "Недостаточно средств для оплаты депозита",
+    "notEnoughBalanceForDepositError": "Недостаточно средств для оплаты депозита и комиссии сети",
     "notEnoughBalanceForFeeError": "Недостаточно средств для оплаты комиссии",
     "notEnoughStakedError": "Not enough staked to unstake specific amount",
     "notEnoughUnlockingError": "Not enough unlocking to return specific amount",
@@ -760,7 +750,7 @@
     "networkDepositHint": "The deposit stays locked on the depositor’s account until the multisig operation is executed or rejected",
     "networkFee": "Комиссия сети",
     "notEnoughBalanceError": "Недостаточно средств для указанной суммы",
-    "notEnoughBalanceForDepositError": "Недостаточно средств для оплаты депозита",
+    "notEnoughBalanceForDepositError": "Недостаточно средств для оплаты депозита и комиссии сети",
     "notEnoughBalanceForFeeError": "Недостаточно средств для оплаты комиссии",
     "pasteButton": "Вставить",
     "recipientLabel": "Получатель",
@@ -803,11 +793,11 @@
     "addParitySignerAlt": "Иконка для онбординга с Polkadot Vault",
     "addParitySignerAreaLabel": "Добавить Polkadot Vault кошелёк",
     "addParitySignerButton": "Добавить Polkadot Vault кошелёк",
-    "addParitySignerLabel": "Использовать аппаратный кошелёк для Polkadot, Kusama и других Substrate сетей.",
+    "addParitySignerLabel": "Использовать аппаратный кошелёк для Polkadot, Kusama и других Substrate сетей",
     "addWatchOnlyAlt": "Иконка онбординга Watch-Only",
     "addWatchOnlyAreaLabel": "Добавить Watch-Only кошелёк",
     "addWatchOnlyButton": "Добавить Watch-Only кошелёк",
-    "addWatchOnlyLabel": "Track the activity of any wallet without injecting your private key to Nova Spektr.",
+    "addWatchOnlyLabel": "Track the activity of any wallet without injecting your private key to Nova Spektr",
     "ledgerImageAlt": "Иконка онбординга с Ledger",
     "omniEnterpriseLabel": "Nova Spektr",
     "welcomeToLabel": "Добро пожаловать в"

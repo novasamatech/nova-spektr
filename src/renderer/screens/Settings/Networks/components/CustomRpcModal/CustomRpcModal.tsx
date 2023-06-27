@@ -8,7 +8,6 @@ import { RpcNode } from '@renderer/domain/chain';
 import { RpcValidation, ExtendedChain } from '@renderer/services/network/common/types';
 import { validateWsAddress } from '@renderer/shared/utils/strings';
 import OperationModalTitle from '@renderer/screens/Operations/components/OperationModalTitle';
-import { Loader } from '@renderer/components/ui';
 
 const MODAL_ANIMATION = 300;
 
@@ -35,6 +34,7 @@ type Props = {
 export const CustomRpcModal = ({ network, node, isOpen, onClose }: Props) => {
   const { t } = useI18n();
   const { validateRpcNode, addRpcNode, updateRpcNode } = useNetworkContext();
+
   const [formState, setFormState] = useState<FormState>(FormState.INIT);
 
   const {
@@ -135,7 +135,8 @@ export const CustomRpcModal = ({ network, node, isOpen, onClose }: Props) => {
 
   const modalTitle = node ? t('settings.networks.titleEdit') : t('settings.networks.titleAdd');
   const submitLabel = node ? t('settings.networks.editNodeButton') : t('settings.networks.addNodeButton');
-  const submitDisabled = !isValid || formState === FormState.LOADING || isNodeExist();
+  const submitDisabled = !isValid || isNodeExist();
+  const isLoading = formState === FormState.LOADING;
 
   return (
     <BaseModal
@@ -158,7 +159,7 @@ export const CustomRpcModal = ({ network, node, isOpen, onClose }: Props) => {
                   label={t('settings.networks.nameLabel')}
                   placeholder={t('settings.networks.namePlaceholder')}
                   invalid={Boolean(errors.name)}
-                  disabled={formState === FormState.LOADING}
+                  disabled={isLoading}
                   value={value}
                   onChange={onChange}
                 />
@@ -183,8 +184,7 @@ export const CustomRpcModal = ({ network, node, isOpen, onClose }: Props) => {
                   placeholder={t('settings.networks.addressPlaceholder')}
                   value={value}
                   invalid={Boolean(errors.url) || [FormState.INVALID, FormState.WRONG_NETWORK].includes(formState)}
-                  disabled={formState === FormState.LOADING}
-                  suffixElement={formState === FormState.LOADING && <Loader color="primary" size={14} />}
+                  disabled={isLoading}
                   onChange={onAddressChange(onChange)}
                 />
               )}
@@ -213,7 +213,7 @@ export const CustomRpcModal = ({ network, node, isOpen, onClose }: Props) => {
         </div>
 
         <div className="flex justify-end mt-7 w-full">
-          <Button type="submit" disabled={submitDisabled}>
+          <Button type="submit" isLoading={isLoading} disabled={submitDisabled || isLoading}>
             {submitLabel}
           </Button>
         </div>

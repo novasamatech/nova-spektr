@@ -60,7 +60,7 @@ const ManageStep = ({ seedInfo, onBack, onComplete }: Props) => {
   });
 
   const { addWallet } = useWallet();
-  const { addAccount, getActiveAccounts, deactivateAccounts } = useAccount();
+  const { addAccount, setActiveAccounts } = useAccount();
 
   const [chainsObject, setChainsObject] = useState<Record<ChainId, ChainType>>({});
 
@@ -81,8 +81,6 @@ const ManageStep = ({ seedInfo, onBack, onComplete }: Props) => {
       setAccounts(filteredQrData.map(formatAccount));
     });
   }, []);
-
-  const activeAccounts = getActiveAccounts();
 
   const filterByExistingChains = (seedInfo: SeedInfo, chainsMap: Record<ChainId, ChainType>): SeedInfo => {
     const derivedKeysForChsains = seedInfo.derivedKeys.filter((key) => Boolean(chainsMap[u8aToHex(key.genesisHash)]));
@@ -167,7 +165,7 @@ const ManageStep = ({ seedInfo, onBack, onComplete }: Props) => {
       walletId,
     });
 
-    return addAccount(rootAccount, false);
+    return addAccount(rootAccount);
   };
 
   const createDerivedAccounts = (
@@ -207,11 +205,14 @@ const ManageStep = ({ seedInfo, onBack, onComplete }: Props) => {
       console.warn('Error saving main account', e);
     }
 
+    const allShardsIds: ID[] = [];
+
     const promises = accounts.map(async ({ address, derivedKeys }, accountIndex) => {
       let rootAccountId: ID;
 
       try {
         rootAccountId = await saveRootAccount(address, accountIndex, walletId);
+        allShardsIds.push(rootAccountId);
       } catch (e) {
         console.warn('Error saving main account', e);
       }
@@ -222,7 +223,7 @@ const ManageStep = ({ seedInfo, onBack, onComplete }: Props) => {
         )
         .flat();
 
-      return derivedAccounts.map((account) => addAccount(account, false));
+      return derivedAccounts.map((account) => addAccount(account).then((ids) => allShardsIds.push(ids)));
     });
 
     try {
@@ -232,9 +233,9 @@ const ManageStep = ({ seedInfo, onBack, onComplete }: Props) => {
     }
 
     try {
-      await deactivateAccounts(activeAccounts);
+      await setActiveAccounts(allShardsIds);
     } catch (e) {
-      console.warn('Error deactivating previously active accounts', e);
+      console.warn('Error activating new accounts', e);
     }
 
     reset();

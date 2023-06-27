@@ -11,7 +11,7 @@ type Props = {
   onClose: () => void;
 };
 
-const MatrixModal = ({ isOpen, onClose }: Props) => {
+export const MatrixModal = ({ isOpen, onClose }: Props) => {
   const { t } = useI18n();
   const { isLoggedIn, matrix } = useMatrix();
   const isVerified = matrix.sessionIsVerified;
@@ -35,5 +35,3 @@ const MatrixModal = ({ isOpen, onClose }: Props) => {
     </BaseModal>
   );
 };
-
-export default MatrixModal;

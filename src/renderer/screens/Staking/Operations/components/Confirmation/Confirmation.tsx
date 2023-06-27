@@ -101,13 +101,12 @@ export const Confirmation = ({
           )}
         </div>
 
+        {/* TODO: use DetailRow */}
         <div className="flex flex-col gap-y-4">
           <div className="flex justify-between items-center gap-x-2">
-            {signer ? (
-              <FootnoteText className="text-text-tertiary">{t('staking.confirmation.walletLabel')}</FootnoteText>
-            ) : (
-              <FootnoteText className="text-text-tertiary">{t('staking.confirmation.accountLabel')}</FootnoteText>
-            )}
+            <FootnoteText className="text-text-tertiary">
+              {t('staking.confirmation.accountLabel', { count: accounts.length })}
+            </FootnoteText>
             {singleAccount ? (
               <AddressWithExplorers
                 accountId={accounts[0].accountId}
@@ -177,9 +176,7 @@ export const Confirmation = ({
             <div className="flex justify-between items-center gap-x-2">
               <div className="flex items-center gap-x-1">
                 <Icon className="text-text-tertiary" name="lock" size={12} />
-                <FootnoteText className="text-text-tertiary">
-                  {t('staking.confirmation.networkDepositLabel')}
-                </FootnoteText>
+                <FootnoteText className="text-text-tertiary">{t('staking.networkDepositLabel')}</FootnoteText>
                 <Tooltip content={t('staking.tooltips.depositDescription')} pointer="up">
                   <Icon name="info" className="cursor-pointer" size={16} />
                 </Tooltip>

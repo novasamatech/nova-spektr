@@ -45,10 +45,10 @@ const Vault = ({ isOpen, onClose, onComplete }: Props) => {
 
   return (
     <BaseModal
+      closeButton
+      isOpen={isOpen}
       contentClass="flex h-full"
       panelClass="w-[944px] h-[576px]"
-      isOpen={isOpen}
-      closeButton
       onClose={closeModal}
     >
       {activeStep === Step.SCAN && <ScanStep onBack={closeModal} onNextStep={onReceiveQr} />}

@@ -20,7 +20,7 @@ import MultiSelect from './Dropdowns/MultiSelect/MultiSelect';
 import MenuPopover from './Popovers/MenuPopover/MenuPopover';
 import IconButton from './Buttons/IconButton/IconButton';
 import DropdownButton from './Dropdowns/DropdownButton/DropdownButton';
-import SearchInput from './Inputs/SearchInput';
+import SearchInput from './Inputs/SearchInput/SearchInput';
 import Accordion from './Accordion/Accordion';
 import Alert from './Alert/Alert';
 import Counter from './Counter/Counter';
@@ -40,7 +40,8 @@ import InputFile from './Inputs/InputFile/InputFile';
 import { Tooltip } from './Popovers/Tooltip/Tooltip';
 import { LabelHelpBox } from './LabelHelpbox/LabelHelpBox';
 import { Chain } from './Chain/Chain';
-import { ChainIcon } from './Chain/ChainIcon/ChainIcon';
+import { ChainIcon } from './ChainIcon/ChainIcon';
+import { AssetIcon } from './AssetIcon/AssetIcon';
 
 export {
   Input,
@@ -84,4 +85,5 @@ export {
   LabelHelpBox,
   Chain,
   ChainIcon,
+  AssetIcon,
 };

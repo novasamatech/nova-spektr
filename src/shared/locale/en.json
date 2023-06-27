@@ -31,10 +31,10 @@
       "matrixIdColumnTitle": "Matrix ID",
       "nameColumnTitle": "Name",
       "noContactsButton": "Add your first contact",
-      "noContactsLabel": "The contact list is empty. You can add a new contact."
+      "noContactsLabel": "The contact list is empty, you can add a new contact"
     },
     "editContact": {
-      "editWarning": "Please note: by changing the address, multisig account will not be changed.",
+      "editWarning": "If you have a multisig wallet with this contact, then changing the contact will not affect the multisig wallet",
       "saveContactButton": "Save",
       "title": "Edit contact"
     },
@@ -50,8 +50,8 @@
   },
   "balances": {
     "allShards": "All shards",
-    "emptyStateDescription": "Update the search or cancel filtering.",
-    "emptyStateLabel": "Nothing was found.",
+    "emptyStateDescription": "Update the search or cancel filtering",
+    "emptyStateLabel": "Nothing was found",
     "hideZeroBalancesLabel": "Hide zero balances",
     "searchPlaceholder": "Search",
     "shards": "shards",
@@ -60,7 +60,7 @@
     "shardsTitle": "Your assets on:",
     "title": "Assets",
     "verificationFailedLabel": "verification failed",
-    "verificationTooltip": "The balance may be wrong or outdated, please check your network connection."
+    "verificationTooltip": "The balance may be wrong or outdated, please check your network connection"
   },
   "basemodal": {
     "closeButton": "Close modal window"
@@ -73,6 +73,7 @@
     "alertText": "To create a multisig wallet, you need to select at least one of your wallet",
     "alertTitle": "Select wallet",
     "backButton": "Back",
+    "closeButton": "Close",
     "contactsTab": "Contacts",
     "continueButton": "Continue",
     "create": "Create",
@@ -83,13 +84,13 @@
     "noWallets": "Looks like you don't have any non-watch only wallets",
     "noWalletsLabel": "The wallet list is empty",
     "searchContactPlaceholder": "Search for an account or contact...",
-    "selectedSignatoriesTitle": "Selected signatories",
+    "selectedSignatoriesTitle": "Check your signatories and proceed",
     "signatoriesDescription": "Add signatories to your multisig account",
     "signatoriesLabel": "Signatories",
     "signatoryTitle": "Select signatories",
     "successMessage": "Wallet added",
-    "thresholdDescription": "Set the threshold of signatories required to execute a transaction.",
-    "thresholdHint": "Threshold of signatories required to execute a transaction.",
+    "thresholdDescription": "Set the threshold of signatories required to execute a transaction",
+    "thresholdHint": "Threshold of signatories required to execute a transaction",
     "thresholdName": "Threshold",
     "thresholdPlaceholder": "Select threshold",
     "title": "Create Multisig Wallet",
@@ -161,7 +162,7 @@
   },
   "notifications": {
     "details": {
-      "newMultisigAccountDescription": "New Multisig wallet added: <identicon /> {name}, with threshold { threshold } and { signatories } signatories"
+      "newMultisigAccountDescription": "New multisig wallet added: <identicon /> {name}, with threshold { threshold } out of { signatories } signatories"
     },
     "noNotificationsDescription": "You don't have notifications yet",
     "title": "Notifications"
@@ -186,7 +187,7 @@
       "autoFillAccountsListButton": "Autofill account names",
       "checkAddress": "Check address",
       "chooseCameraLabel": "Please choose one to continue",
-      "choseWalletNameLabel": "Here is your account scanned from Polkadot Vault.",
+      "choseWalletNameLabel": "Here is your account scanned from Polkadot Vault",
       "continueButton": "Continue",
       "decodeErrorDescription": "Error occurred while decoding QR code",
       "decodeErrorLabel": "Recognition error!",
@@ -205,26 +206,14 @@
       "scanAgainButton": "Scan again",
       "scanQRCodeAlt": "Scan QR code from Polkadot Vault",
       "scanQRFromParitySignerButton": "Scan QR code from Polkadot Vault",
-      "scanQRLabel1": "Scan",
-      "scanQRLabel2": "QR code",
-      "scanQRLabel3": "from Polkadot Vault",
       "scannerModalTitle": "Scan QR code from Polkadot Vault",
       "selectCameraLabel": "Select camera",
-      "sliderAltText1": "Polkadot Vault application is being opened on your smartphone",
-      "sliderAltText2": "'Keys' tab is opened with appropriate account",
-      "sliderAltText3": "Polkadot Vault built-in QR code",
-      "sliderLabel1": "Open the <strong>Polkadot Vault</strong> application on your smartphone",
-      "sliderLabel2": "Go to “<strong>Keys</strong>” tab. Select <strong>accounts</strong>,<br />you would like to add to Nova Spektr",
-      "sliderLabel3": "Polkadot Vault will provide you a <strong>QR code</strong> for scanning",
       "someOldAccountDescription": "Some accounts were scanned and added recently",
       "someOldAccountLabel": "Not all accounts added",
       "startCameraLabel": "Starting camera",
-      "step0": "Prepare the QR code",
-      "step1": "Scan the QR code",
-      "step2": "Check the result",
       "tryAgainButton": "Try again",
       "typeNameButton": "Type a name to finish...",
-      "walletNameDescription": "Examples: Main accounts, My validators, Dotsama crowdloans, etc.",
+      "walletNameDescription": "Examples: Main accounts, My validators, Dotsama crowdloans, etc",
       "walletNameLabel": "Wallet name",
       "walletNamePlaceholder": "Enter a name for your wallet",
       "wrongQRCodeDescription": "The scanned QR code doesn't contain valid network address",
@@ -233,7 +222,7 @@
       "yourAccountsLabel": "Here are your accounts"
     },
     "pasteButton": "Paste",
-    "readAccountsLabel": "Following accounts have been successfully read.",
+    "readAccountsLabel": "Following accounts have been successfully read",
     "readAccountsParitySignerLabel": "Following accounts have been successfully read from Polkadot Vault",
     "readyToUseLabel": "Your wallet is ready to use!",
     "vault": {
@@ -245,7 +234,7 @@
       "scanTitle": "Scan the account QR code",
       "title": "Add wallet by Polkadot Vault"
     },
-    "walletNameExample": "Name examples: Main account, My validator, Dotsama crowdloans, etc.",
+    "walletNameExample": "Name examples: Main account, My validator, Dotsama crowdloans, etc",
     "walletNameLabel": "Wallet name",
     "walletNamePlaceholder": "Enter a name for your wallet",
     "watchOnly": {
@@ -262,7 +251,7 @@
       "nameRequiredError": "Type a wallet name",
       "title": "Add Watch-only wallet",
       "walletNameMaxLenError": "Wallet name should be shorter then 256 symbols",
-      "walletNameRequiredError": "Please, enter wallet name",
+      "walletNameRequiredError": "Please enter wallet name",
       "yourAccountsLoadingLabel": "Your accounts will be showing up here"
     },
     "welcome": {
@@ -413,7 +402,7 @@
       "passwordRequiredError": "Password is required",
       "passwordVisibilityButton": "Show password",
       "privacyFooter": "By signing in you consent to the <terms>terms of use</terms> and <privacy>privacy policy</privacy>",
-      "privacyTitle": "Nova Spektr does not store your Matrix account credentials.",
+      "privacyTitle": "Nova Spektr does not store your Matrix account credentials",
       "registerLink": "Don’t have an account? <register>Register</register>",
       "secretFilePlaceholder": "Select file to upload",
       "secretKeyError": "Invalid key, please try another one",
@@ -428,6 +417,7 @@
       "usernameLabel": "Username",
       "usernamePlaceholder": "Enter username",
       "usernameRequiredError": "Username is required",
+      "verificationHint": "Verify your session for enhanced secure messaging providing your Matrix Security Key.",
       "verificationLabel": "Session verification",
       "verificationSubtitle": "Verify your device for secure connection",
       "verificationTitle": "Matrix account",
@@ -446,7 +436,7 @@
       "addressLabel": "Node address",
       "addressNoConnect": "Could not connect to node, try again later",
       "addressPlaceholder": "Enter node address",
-      "addressWrongNetwork": "Not a valid { networkName } node. Try another address",
+      "addressWrongNetwork": "Not a valid { networkName } node, try another address",
       "confirmModal": {
         "cancelButton": "Cancel",
         "confirmButton": "Confirm",
@@ -463,7 +453,7 @@
       "connectingStatusLabel": "Connecting",
       "disabledNetworksLabel": "Disabled networks",
       "editNodeButton": "Edit custom node",
-      "emptyStateLabel": "Nothing was found. Update the search",
+      "emptyStateLabel": "Nothing was found, update the search",
       "errorStatusLabel": "Error",
       "maxLengthNameError": "Name cannot be longer than 50 characters",
       "nameLabel": "Name",
@@ -481,7 +471,7 @@
     },
     "overview": {
       "generalLabel": "General",
-      "githubDescription": "Code and collaborate on GitHub",
+      "githubDescription": "Contribute and explore our open-source project on GitHub for collaborative code shaping!",
       "githubLabel": "GitHub",
       "languageLabel": "Language",
       "matrixDescription": "Manage Matrix connection",
@@ -490,18 +480,18 @@
       "matrixStatusLogin": "Log in or register",
       "matrixStatusNotVerified": "Session not verified",
       "matrixStatusVerified": "Session verified",
-      "mediumDescription": "Discover and share stories on Medium",
+      "mediumDescription": "Engaging content to expand knowledge and stay informed about Nova Spektr!",
       "mediumLabel": "Medium",
       "networkDetailsLabel": "Manage network connection",
       "networkLabel": "Network",
       "smpLabel": "Spektr Matrix Protocol",
       "socialLabel": "Social",
-      "telegramDescription": "Connect, chat, and explore on Telegram",
+      "telegramDescription": "Connect, get help, and share ideas with our Telegram community!",
       "telegramLabel": "Telegram",
-      "twitterDescription": "Tweet your thoughts and stay connected on Twitter",
+      "twitterDescription": "Stay connected with us and never miss out on the latest updates and news!",
       "twitterLabel": "Twitter",
       "versionLabel": "Version",
-      "youtubeDescription": "Watch, share, and discover with YouTube",
+      "youtubeDescription": "Discover our demo recordings and valuable learning materials on YouTube!",
       "youtubeLabel": "YouTube"
     },
     "title": "Settings"
@@ -557,7 +547,7 @@
       "backButton": "Back",
       "continueButton": "Continue",
       "goToStakingButton": "Back to Staking",
-      "incorrectAddressError": "Please, enter correct address",
+      "incorrectAddressError": "Please enter correct address",
       "manyAccountsPlaceholder": "Multiple accounts selected",
       "noStakingAssetDescription": "No staking asset was found for { chainName }",
       "noStakingAssetLabel": "No staking asset",
@@ -574,7 +564,8 @@
       "transferableRewards": "Transferable rewards"
     },
     "confirmation": {
-      "accountLabel": "Account",
+      "accountLabel_one": "Account",
+      "accountLabel_other": "Accounts",
       "accountsTitle": "Selected accounts",
       "backButton": "Back",
       "changeValidatorsTitle": "Change validators",
@@ -603,8 +594,7 @@
       "transactionProgress": "Transactions",
       "transferableRewards": "Transferable rewards",
       "validatorsLabel": "Validators",
-      "validatorsTitle": "Selected validators",
-      "walletLabel": "Wallet"
+      "validatorsTitle": "Selected validators"
     },
     "destination": {
       "initDestinationSubtitle": "Rewards destination",
@@ -625,7 +615,7 @@
       "yourValidatorsTitle": "Selected validators"
     },
     "notEnoughBalanceError": "Not enough funds to complete operation",
-    "notEnoughBalanceForDepositError": "Insufficient balance to pay deposit",
+    "notEnoughBalanceForDepositError": "Insufficient balance to pay deposit and network fee",
     "notEnoughBalanceForFeeError": "Insufficient balance to pay network fee",
     "notEnoughStakedError": "Not enough staked to unstake specific amount",
     "notEnoughUnlockingError": "Not enough unlocking to return specific amount",
@@ -635,7 +625,7 @@
       "actionsTitle": "Accounts",
       "emptyFilterDescription": "Try another filter parameters",
       "emptyFilterLabel": "No results",
-      "networkDisabledDescription": "Please, check the connection in Network Settings",
+      "networkDisabledDescription": "Please check the connection in Network Settings",
       "networkDisabledLabel": "Network is inactive",
       "networkPlaceholder": "Select network",
       "networkSettingsLink": "Network settings",
@@ -659,7 +649,7 @@
       "initRedeemSubtitle": "Redeem",
       "title": "Withdraw unstaked { asset } on"
     },
-    "requiredAmountError": "Please, enter amount",
+    "requiredAmountError": "Please enter amount",
     "restake": {
       "confirmRestakeSubtitle": "Confirmation",
       "initRestakeSubtitle": "Restake",
@@ -750,7 +740,7 @@
     "executing": "Submitting operation",
     "formTitle": "Send <strong>{ asset }</strong> on <strong>{ network }</strong>",
     "inProgress": "Submitting operation...",
-    "incorrectRecipientError": "Please, enter correct recipient address",
+    "incorrectRecipientError": "Please enter correct recipient address",
     "multiple": {
       "executing": "Submitting operations",
       "transactions": "Transactions"
@@ -760,14 +750,14 @@
     "networkDepositHint": "The deposit stays locked on the depositor’s account until the multisig operation is executed or rejected",
     "networkFee": "Network fee",
     "notEnoughBalanceError": "Not enough funds to transfer specific amount",
-    "notEnoughBalanceForDepositError": "Insufficient balance to pay deposit",
+    "notEnoughBalanceForDepositError": "Insufficient balance to pay deposit and network fee",
     "notEnoughBalanceForFeeError": "Insufficient balance to pay network fee",
     "pasteButton": "Paste",
     "recipientLabel": "Recipient",
     "recipientPlaceholder": "Address",
-    "requiredAmountError": "Please, enter amount",
+    "requiredAmountError": "Please enter amount",
     "requiredDescriptionError": "Description is required",
-    "requiredRecipientError": "Please, enter recipient address",
+    "requiredRecipientError": "Please enter recipient address",
     "senderLabel": "Sender",
     "signatoryLabel": "Signatory",
     "startSigningButton": "Sign with Polkadot Vault",
@@ -803,11 +793,11 @@
     "addParitySignerAlt": "Icon of Polkadot Vault option",
     "addParitySignerAreaLabel": "Add Polkadot Vault wallet",
     "addParitySignerButton": "Add Polkadot Vault wallet",
-    "addParitySignerLabel": "Use dedicated hardware wallet for Polkadot, Kusama, and other Substrate-based chains.",
+    "addParitySignerLabel": "Use dedicated hardware wallet for Polkadot, Kusama, and other Substrate-based chains",
     "addWatchOnlyAlt": "Icon of Watch-Only option",
     "addWatchOnlyAreaLabel": "Add Watch-Only wallet",
     "addWatchOnlyButton": "Add Watch-Only wallet",
-    "addWatchOnlyLabel": "Track the activity of any wallet without injecting your private key to Nova Spektr.",
+    "addWatchOnlyLabel": "Track the activity of any wallet without injecting your private key to Nova Spektr",
     "ledgerImageAlt": "Icon of Ledger option",
     "omniEnterpriseLabel": "Nova Spektr",
     "welcomeToLabel": "Welcome to"

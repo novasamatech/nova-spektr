@@ -1,6 +1,7 @@
 import { Popover, Transition } from '@headlessui/react';
 import { Fragment, PropsWithChildren, useState } from 'react';
 import cn from 'classnames';
+import { useNavigate } from 'react-router-dom';
 
 import { DropdownButton, SearchInput, SmallTitleText } from '@renderer/components/ui-redesign';
 import { useI18n } from '@renderer/context/I18nContext';
@@ -13,8 +14,10 @@ import WatchOnly from '@renderer/screens/Onboarding/WatchOnly/WatchOnly';
 import Vault from '@renderer/screens/Onboarding/Vault/Vault';
 import { useToggle } from '@renderer/shared/hooks';
 import { ButtonDropdownOption } from '@renderer/components/ui-redesign/Dropdowns/DropdownButton/DropdownButton';
-import CreateMultisigAccount from '@renderer/components/modals/CreateMultisigAccount/CreateMultisigAccount';
+import { CreateMultisigAccount } from '@renderer/components/modals';
 import { isMultishardWalletItem } from '@renderer/components/layout/PrimaryLayout/Wallets/common/utils';
+import Paths from '@renderer/routes/paths';
+import { DEFAULT_TRANSITION } from '@renderer/shared/utils/constants';
 import {
   ChainsRecord,
   WalletGroupItem,
@@ -28,6 +31,7 @@ type Props = {
 
 const WalletMenu = ({ children, chains, wallets }: PropsWithChildren<Props>) => {
   const { t } = useI18n();
+  const navigate = useNavigate();
   const { setActiveAccount, setActiveAccounts } = useAccount();
 
   const [query, setQuery] = useState('');
@@ -67,6 +71,16 @@ const WalletMenu = ({ children, chains, wallets }: PropsWithChildren<Props>) => 
         setActiveAccount(wallet.id);
       }
     }
+  };
+
+  const handleCompleteVaultWalletCreation = () => {
+    toggleVaultModal();
+    setTimeout(() => navigate(Paths.BALANCES), DEFAULT_TRANSITION);
+  };
+
+  const handleCompleteWatchOnlyWalletCreation = () => {
+    toggleWatchOnlyModal();
+    setTimeout(() => navigate(Paths.BALANCES), DEFAULT_TRANSITION);
   };
 
   return (
@@ -117,8 +131,12 @@ const WalletMenu = ({ children, chains, wallets }: PropsWithChildren<Props>) => 
         </Transition>
       </Popover>
 
-      <WatchOnly isOpen={isWatchOnlyModalOpen} onClose={toggleWatchOnlyModal} onComplete={toggleWatchOnlyModal} />
-      <Vault isOpen={isVaultModalOpen} onClose={toggleVaultModal} onComplete={toggleVaultModal} />
+      <WatchOnly
+        isOpen={isWatchOnlyModalOpen}
+        onClose={toggleWatchOnlyModal}
+        onComplete={handleCompleteWatchOnlyWalletCreation}
+      />
+      <Vault isOpen={isVaultModalOpen} onClose={toggleVaultModal} onComplete={handleCompleteVaultWalletCreation} />
       <CreateMultisigAccount isOpen={isMultisigModalOpen} onClose={toggleMultisigModalOpen} />
     </>
   );

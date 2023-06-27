@@ -163,7 +163,7 @@ export const ValidatorsModal = ({
 
           {notElected.length > 0 && (
             <Accordion isDefaultOpen>
-              <Accordion.Button>
+              <Accordion.Button className="px-5">
                 <div className="flex items-center gap-x-1 w-full">
                   <SmallTitleText>{t('staking.nominators.notElectedTitle')}</SmallTitleText>
                   <SmallTitleText className="text-text-tertiary">({notElected.length})</SmallTitleText>
@@ -171,7 +171,7 @@ export const ValidatorsModal = ({
               </Accordion.Button>
               <Accordion.Content>
                 <div className="flex flex-col gap-y-2 mt-4">
-                  <div className="grid grid-cols-[400px,130px,1fr] items-center gap-x-6">
+                  <div className="grid grid-cols-[400px,130px,1fr] items-center gap-x-6 px-5">
                     <FootnoteText className="text-text-tertiary">
                       {t('staking.validators.validatorTableHeader')}
                     </FootnoteText>
@@ -183,9 +183,7 @@ export const ValidatorsModal = ({
                     </FootnoteText>
                   </div>
 
-                  <ul className="flex flex-col gap-y-4">
-                    <ul className="flex flex-col gap-y-4">{notElected.map((n) => getRow(n, asset, explorers))}</ul>
-                  </ul>
+                  <ul className="flex flex-col gap-y-1">{notElected.map((n) => getRow(n, asset, explorers))}</ul>
                 </div>
               </Accordion.Content>
             </Accordion>
