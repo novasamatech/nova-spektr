@@ -220,7 +220,12 @@ export const Overview = () => {
 
             {networkIsActive && accounts.length > 0 && (
               <>
-                <Actions stakes={selectedStakes} isStakingLoading={isStakingLoading} onNavigate={navigateToStake} />
+                <Actions
+                  canInteract={signingType !== SigningType.WATCH_ONLY}
+                  stakes={selectedStakes}
+                  isStakingLoading={isStakingLoading}
+                  onNavigate={navigateToStake}
+                />
 
                 <NominatorsList
                   api={api}

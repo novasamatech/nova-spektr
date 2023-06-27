@@ -137,14 +137,14 @@ export const NominatorsList = ({
                   <div className="flex items-center gap-x-2">{content}</div>
                 )}
                 {!stake.totalStake || !asset ? (
-                  <Shimmering width={104} height={14} />
+                  <Shimmering width={104} height={16} />
                 ) : (
                   <BodyText>
                     <Balance value={stake.totalStake} precision={asset.precision} symbol={asset.symbol} />
                   </BodyText>
                 )}
                 {!stake.totalReward || !asset ? (
-                  <Shimmering width={104} height={14} />
+                  <Shimmering width={104} height={16} />
                 ) : (
                   <BodyText>
                     <Balance value={stake.totalReward} precision={asset.precision} symbol={asset.symbol} />
