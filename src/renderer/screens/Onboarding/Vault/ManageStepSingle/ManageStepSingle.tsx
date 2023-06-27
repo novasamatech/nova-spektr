@@ -47,7 +47,7 @@ const ManageStepSingle = ({ seedInfo, onBack, onComplete }: Props) => {
     getChainsData().then((chains) => setChains(sortChains(chains)));
   }, []);
 
-  const submitHandler: SubmitHandler<WalletForm> = async ({ walletName }) => {
+  const submitHandler: SubmitHandler<WalletForm> = ({ walletName }) => {
     if (!accountId || accountId.length === 0) return;
 
     const newAccount = createAccount({
