@@ -162,6 +162,7 @@ const QrReaderWrapper = ({ className, onResult, countdown, validationError, isMu
 
       {availableCameras && availableCameras.length > 1 && (
         <Select
+          position="up"
           placeholder={t('onboarding.paritySigner.selectCameraLabel')}
           selectedId={activeCamera?.id}
           options={availableCameras}

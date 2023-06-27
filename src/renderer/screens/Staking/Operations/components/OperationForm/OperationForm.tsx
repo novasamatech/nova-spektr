@@ -109,7 +109,7 @@ export const OperationForm = ({
   } = useForm<FormData<RewardsDestination>>({
     mode: 'onChange',
     defaultValues: {
-      amount: amountField?.value || '0',
+      amount: amountField?.value,
       destination: destinations[0].value,
       description: descriptionField?.value || '',
     },
