@@ -2,7 +2,7 @@ import { render, screen } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import noop from 'lodash/noop';
 
-import MatrixModal from './MatrixModal';
+import { MatrixModal } from './MatrixModal';
 import { useMatrix } from '@renderer/context/MatrixContext';
 
 jest.mock('@renderer/context/I18nContext', () => ({

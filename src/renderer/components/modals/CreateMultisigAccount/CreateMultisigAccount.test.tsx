@@ -2,7 +2,7 @@ import { render, screen } from '@testing-library/react';
 import noop from 'lodash/noop';
 
 import { TEST_ACCOUNT_ID } from '@renderer/shared/utils/constants';
-import CreateMultisigAccount from './CreateMultisigAccount';
+import { CreateMultisigAccount } from './CreateMultisigAccount';
 
 jest.mock('@renderer/context/I18nContext', () => ({
   useI18n: jest.fn().mockReturnValue({
