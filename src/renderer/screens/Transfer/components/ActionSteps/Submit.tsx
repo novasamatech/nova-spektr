@@ -75,7 +75,7 @@ const Submit = ({ api, tx, multisigTx, account, unsignedTx, signature, descripti
       if (executed) {
         const typedParams = params as ExtrinsicResultParams;
 
-        if (multisigTx && isMultisig(account) && matrix.userIsLoggedIn) {
+        if (multisigTx && isMultisig(account)) {
           const event: MultisigEvent = {
             status: 'SIGNED',
             accountId: account.accountId,
@@ -97,10 +97,10 @@ const Submit = ({ api, tx, multisigTx, account, unsignedTx, signature, descripti
             events: [event],
           };
 
+          addMultisigTx(newTx);
+
           if (matrix.userIsLoggedIn) {
             sendMultisigEvent(account.matrixRoomId, newTx, typedParams);
-          } else {
-            addMultisigTx(newTx);
           }
         }
 
