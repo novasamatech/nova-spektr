@@ -40,11 +40,13 @@ export const ManageContact = () => {
     setTimeout(() => navigate(Paths.ADDRESS_BOOK), DEFAULT_TRANSITION);
   };
 
+  const isEdit = contactId && contact;
+
   return (
     <BaseModal
       closeButton
       isOpen={isContactModalOpen}
-      title={contactId ? t('addressBook.editContact.title') : t('addressBook.addContact.title')}
+      title={isEdit ? t('addressBook.editContact.title') : t('addressBook.addContact.title')}
       headerClass="py-[15px] px-5"
       contentClass="px-5 pb-4 w-[440px]"
       onClose={closeContactModal}

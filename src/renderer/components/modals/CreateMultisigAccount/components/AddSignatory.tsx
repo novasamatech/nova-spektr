@@ -291,9 +291,9 @@ const AddSignatory = ({ onSelect, isEditing }: Props) => {
       </section>
 
       <BaseModal
-        title={t('addressBook.addContact.title')}
         closeButton
         isOpen={isContactModalOpen}
+        title={t('addressBook.addContact.title')}
         headerClass="py-[15px] px-5"
         contentClass="px-5 pb-4 w-[440px]"
         onClose={toggleContactModalOpen}
