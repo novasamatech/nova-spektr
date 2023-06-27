@@ -35,7 +35,7 @@ describe('screens/Staking/Overview/NetworkInfo', () => {
     jest.clearAllMocks();
   });
 
-  test('should create component', async () => {
+  test('should render component', async () => {
     await act(async () => {
       render(
         <NetworkInfo

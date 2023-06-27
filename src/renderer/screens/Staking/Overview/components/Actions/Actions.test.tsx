@@ -10,6 +10,7 @@ jest.mock('@renderer/context/I18nContext', () => ({
     t: (key: string) => key,
   }),
 }));
+
 describe('screens/Staking/Overview/Actions', () => {
   const stakes: Stake[] = [
     {
@@ -23,18 +24,25 @@ describe('screens/Staking/Overview/Actions', () => {
     },
   ];
 
-  const renderActions = async (stakes: Stake[]) => {
-    render(<Actions isStakingLoading={false} stakes={stakes} onNavigate={noop} />);
+  const renderActions = async (stakes: Stake[], canInteract = true) => {
+    render(<Actions canInteract={canInteract} isStakingLoading={false} stakes={stakes} onNavigate={noop} />);
 
     const button = screen.getByRole('button');
     await act(() => button.click());
   };
 
-  test('should create component', () => {
-    render(<Actions isStakingLoading={false} stakes={stakes} onNavigate={noop} />);
+  test('should render component', () => {
+    render(<Actions canInteract isStakingLoading={false} stakes={stakes} onNavigate={noop} />);
 
     const accounts = screen.getByText('staking.overview.actionsTitle');
     expect(accounts).toBeInTheDocument();
+  });
+
+  test('should not render action button', () => {
+    render(<Actions canInteract={false} isStakingLoading={false} stakes={stakes} onNavigate={noop} />);
+
+    const actionButton = screen.queryByRole('button');
+    expect(actionButton).not.toBeInTheDocument();
   });
 
   test('should render actions for existing stake', async () => {

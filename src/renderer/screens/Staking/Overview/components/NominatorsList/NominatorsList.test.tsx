@@ -10,7 +10,7 @@ jest.mock('@renderer/context/I18nContext', () => ({
 }));
 
 describe('screens/Staking/Overview/NominatorsList', () => {
-  test('should create component', () => {
+  test('should render component', () => {
     render(
       <NominatorsList nominators={[]} isStakingLoading={false} onCheckValidators={noop} onToggleNominator={noop} />,
     );
