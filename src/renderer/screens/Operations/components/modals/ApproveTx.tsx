@@ -199,8 +199,8 @@ const ApproveTx = ({ tx, account, connection }: Props) => {
       </Button>
 
       <BaseModal
-        isOpen={isModalOpen}
         closeButton
+        isOpen={activeStep !== Step.SUBMIT && isModalOpen}
         title={<OperationModalTitle title={`${t(transactionTitle)} ${t('on')}`} chainId={tx.chainId} />}
         contentClass={activeStep === Step.SIGNING ? '' : undefined}
         headerClass="py-4 px-5 max-w-[440px]"

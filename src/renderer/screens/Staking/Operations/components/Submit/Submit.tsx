@@ -8,21 +8,15 @@ import { HexString } from '@renderer/domain/shared-kernel';
 import { useTransaction } from '@renderer/services/transaction/transactionService';
 import { ExtrinsicResultParams } from '@renderer/services/transaction/common/types';
 import { isMultisig, Account, MultisigAccount } from '@renderer/domain/account';
-import {
-  Transaction,
-  SigningStatus,
-  MultisigEvent,
-  MultisigTransaction,
-  MultisigTxInitStatus,
-} from '@renderer/domain/transaction';
 import { toAccountId } from '@renderer/shared/utils/address';
 import { useMatrix } from '@renderer/context/MatrixContext';
 import { Button } from '@renderer/components/ui-redesign';
 import OperationResult from '@renderer/components/ui-redesign/OperationResult/OperationResult';
 import { useToggle } from '@renderer/shared/hooks';
 import { useMultisigTx } from '@renderer/services/multisigTx/multisigTxService';
-import Paths from '@renderer/routes/paths';
 import { DEFAULT_TRANSITION } from '@renderer/shared/utils/constants';
+import Paths from '@renderer/routes/paths';
+import { Transaction, MultisigEvent, MultisigTransaction, MultisigTxInitStatus } from '@renderer/domain/transaction';
 
 type ResultProps = Pick<ComponentProps<typeof OperationResult>, 'title' | 'description' | 'variant'>;
 
@@ -75,14 +69,12 @@ export const Submit = ({ api, accounts, txs, multisigTx, unsignedTx, signatures,
     allExtrinsics.forEach((extrinsic, index) => {
       submitAndWatchExtrinsic(extrinsic, unsignedTx[index], api, (executed, params) => {
         if (executed) {
+          const mstAccount = accounts[0];
           const typedParams = params as ExtrinsicResultParams;
 
-          const mstAccount = accounts[0];
-          if (multisigTx && isMultisig(mstAccount) && matrix.userIsLoggedIn) {
-            const eventStatus: SigningStatus = 'SIGNED';
-
+          if (multisigTx && isMultisig(mstAccount)) {
             const event: MultisigEvent = {
-              status: eventStatus,
+              status: 'SIGNED',
               accountId: mstAccount.accountId,
               extrinsicHash: typedParams.extrinsicHash,
               eventBlock: typedParams.timepoint.height,
@@ -102,10 +94,10 @@ export const Submit = ({ api, accounts, txs, multisigTx, unsignedTx, signatures,
               events: [event],
             };
 
+            addMultisigTx(newTx);
+
             if (matrix.userIsLoggedIn) {
               sendMultisigEvent(mstAccount.matrixRoomId, newTx, typedParams);
-            } else {
-              addMultisigTx(newTx);
             }
           }
 
