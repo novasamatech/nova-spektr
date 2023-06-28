@@ -72,7 +72,7 @@ const QrReaderWrapper = ({ className, onResult, countdown, validationError, isMu
       setError(CameraError.INVALID_ERROR);
 
       // try to scan again after 5 seconds
-      setTimeout(() => setError(undefined), 5000);
+      // setTimeout(() => setError(undefined), 5000);
     }
   };
 
