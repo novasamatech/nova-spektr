@@ -24,8 +24,8 @@ type Props = {
 
 export const CreateMultisigAccount = ({ isOpen, onClose }: Props) => {
   const { t } = useI18n();
-  const navigate = useNavigate();
   const { matrix, isLoggedIn } = useMatrix();
+  const navigate = useNavigate();
   const { getLiveAccounts, addAccount, setActiveAccount } = useAccount();
   const accounts = getLiveAccounts();
 
