@@ -118,7 +118,9 @@ export const NetworkProvider = ({ children }: PropsWithChildren) => {
         return;
       }
 
-      if (previousAccounts?.length !== activeAccounts.length) {
+      const firstPrevAcc = previousAccounts.length && previousAccounts[0];
+      const firstNewAcc = activeAccounts.length && activeAccounts[0];
+      if (previousAccounts?.length !== activeAccounts.length || firstPrevAcc !== firstNewAcc) {
         connectedConnections.forEach((chain) => {
           const accountIds = getAccountIds(chain.chainId);
           subscribeBalanceChanges(chain, accountIds);
@@ -139,7 +141,7 @@ export const NetworkProvider = ({ children }: PropsWithChildren) => {
         unsubscribe(chain.chainId);
       });
     })();
-  }, [connectedConnections.length, activeAccounts.length]);
+  }, [connectedConnections.length, activeAccounts.length, activeAccounts.length && activeAccounts[0]]);
 
   return (
     <NetworkContext.Provider value={{ connections, connectToNetwork, connectWithAutoBalance, ...rest }}>

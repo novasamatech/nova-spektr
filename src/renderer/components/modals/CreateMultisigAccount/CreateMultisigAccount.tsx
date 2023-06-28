@@ -1,6 +1,6 @@
 import { ComponentProps, useState } from 'react';
 import { SubmitHandler } from 'react-hook-form';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 
 import { BaseModal, HeaderTitleText, StatusLabel, Button } from '@renderer/components/ui-redesign';
 import { useI18n } from '@renderer/context/I18nContext';
@@ -14,6 +14,7 @@ import { MultisigAccountForm, WalletForm } from './components/WalletForm';
 import AddSignatory from './components/AddSignatory';
 import { MatrixModal } from '../MatrixModal/MatrixModal';
 import Paths from '@renderer/routes/paths';
+import { DEFAULT_TRANSITION } from '@renderer/shared/utils/constants';
 
 type OperationResultProps = Pick<ComponentProps<typeof OperationResult>, 'variant' | 'description'>;
 
@@ -24,8 +25,9 @@ type Props = {
 
 export const CreateMultisigAccount = ({ isOpen, onClose }: Props) => {
   const { t } = useI18n();
-  const navigate = useNavigate();
   const { matrix, isLoggedIn } = useMatrix();
+  const navigate = useNavigate();
+  const location = useLocation();
   const { getLiveAccounts, addAccount, setActiveAccount } = useAccount();
   const accounts = getLiveAccounts();
 
@@ -47,7 +49,9 @@ export const CreateMultisigAccount = ({ isOpen, onClose }: Props) => {
 
   const handleSuccessClose = () => {
     toggleResultModal();
-    navigate(Paths.BALANCES);
+    if (location.pathname !== Paths.BALANCES) {
+      setTimeout(() => navigate(Paths.BALANCES), DEFAULT_TRANSITION);
+    }
   };
 
   const onCreateAccount: SubmitHandler<MultisigAccountForm> = async ({ name, threshold }) => {
