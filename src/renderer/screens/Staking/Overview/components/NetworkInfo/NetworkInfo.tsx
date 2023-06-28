@@ -55,7 +55,12 @@ export const NetworkInfo = ({
           // without key dropdown doesn't show changes (thought functionally everything works fine)
           // TODO look into it
           const element = (
-            <ChainComponent key={chain.chainId} className="overflow-hidden" fontClass="truncate" chain={chain} />
+            <ChainComponent
+              key={chain.chainId}
+              className="overflow-hidden"
+              fontClass="text-text-primary truncate"
+              chain={chain}
+            />
           );
 
           acc.push({ id: chainId, value: chain, element });
