@@ -46,7 +46,7 @@ export const useEra = (): IEraService => {
     const leftEras = destinationEra - activeEra.toNumber() - 1;
     const timeForLeftEras = leftEras * eraLength * sessionLength * blockCreationTime;
 
-    return eraRemained * blockCreationTime + timeForLeftEras;
+    return Math.abs(eraRemained * blockCreationTime + timeForLeftEras);
   };
 
   return {
