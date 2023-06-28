@@ -1129,6 +1129,21 @@
           "transfersEnabled": true
         },
         "name": "v Kusama"
+      },
+      {
+        "assetId": 11,
+        "symbol": "kBTC",
+        "precision": 8,
+        "type": "orml",
+        "priceId": "bitcoin",
+        "icon": "https://raw.githubusercontent.com/nova-wallet/nova-spektr-utils/main/icons/v1/assets/white/kBTC.svg",
+        "typeExtras": {
+          "currencyIdScale": "0x0802",
+          "currencyIdType": "NodePrimitivesCurrencyCurrencyId",
+          "existentialDeposit": "100",
+          "transfersEnabled": true
+        },
+        "name": "KINT Bitcoin"
       }
     ],
     "nodes": [
@@ -4351,6 +4366,21 @@
           "transfersEnabled": true
         },
         "name": "USD Tether"
+      },
+      {
+        "assetId": 4,
+        "symbol": "ASTR",
+        "precision": 18,
+        "type": "orml",
+        "priceId": "astar",
+        "icon": "https://raw.githubusercontent.com/nova-wallet/nova-spektr-utils/main/icons/v1/assets/white/Astar_(ASTR).svg",
+        "typeExtras": {
+          "currencyIdScale": "0x0803",
+          "currencyIdType": "NodePrimitivesCurrencyCurrencyId",
+          "existentialDeposit": "10000000000000000",
+          "transfersEnabled": true
+        },
+        "name": "Astar"
       }
     ],
     "nodes": [
@@ -4565,6 +4595,93 @@
           "transfersEnabled": true
         },
         "name": "Etherium"
+      },
+      {
+        "assetId": 3,
+        "symbol": "TUR",
+        "precision": 10,
+        "type": "orml",
+        "icon": "https://raw.githubusercontent.com/nova-wallet/nova-spektr-utils/main/icons/v1/assets/white/Turing_(TUR).svg",
+        "typeExtras": {
+          "currencyIdScale": "0x07000000",
+          "currencyIdType": "u32",
+          "existentialDeposit": "0",
+          "transfersEnabled": true
+        },
+        "name": "Turing"
+      },
+      {
+        "assetId": 4,
+        "symbol": "BNC",
+        "precision": 12,
+        "type": "orml",
+        "priceId": "bifrost-native-coin",
+        "icon": "https://raw.githubusercontent.com/nova-wallet/nova-spektr-utils/main/icons/v1/assets/white/Bifrost_(BNC).svg",
+        "typeExtras": {
+          "currencyIdScale": "0x0e000000",
+          "currencyIdType": "u32",
+          "existentialDeposit": "0",
+          "transfersEnabled": true
+        },
+        "name": "Bifrost"
+      },
+      {
+        "assetId": 5,
+        "symbol": "RMRK",
+        "precision": 10,
+        "type": "orml",
+        "priceId": "rmrk",
+        "icon": "https://raw.githubusercontent.com/nova-wallet/nova-spektr-utils/main/icons/v1/assets/white/RMRK.svg",
+        "typeExtras": {
+          "currencyIdScale": "0x1f000000",
+          "currencyIdType": "u32",
+          "existentialDeposit": "0",
+          "transfersEnabled": true
+        },
+        "name": "Remark"
+      },
+      {
+        "assetId": 6,
+        "symbol": "ZLK",
+        "precision": 18,
+        "type": "orml",
+        "priceId": "zenlink-network-token",
+        "icon": "https://raw.githubusercontent.com/nova-wallet/nova-spektr-utils/main/icons/v1/assets/white/Zenlink_(ZLK).svg",
+        "typeExtras": {
+          "currencyIdScale": "0x1a000000",
+          "currencyIdType": "u32",
+          "existentialDeposit": "0",
+          "transfersEnabled": true
+        },
+        "name": "Zenlink Network"
+      },
+      {
+        "assetId": 7,
+        "symbol": "vsKSM",
+        "precision": 12,
+        "type": "orml",
+        "icon": "https://raw.githubusercontent.com/nova-wallet/nova-spektr-utils/main/icons/v1/assets/white/vsKSM.svg",
+        "typeExtras": {
+          "currencyIdScale": "0x10000000",
+          "currencyIdType": "u32",
+          "existentialDeposit": "0",
+          "transfersEnabled": true
+        },
+        "name": "vs Kusama"
+      },
+      {
+        "assetId": 8,
+        "symbol": "vKSM",
+        "precision": 12,
+        "type": "orml",
+        "icon": "https://raw.githubusercontent.com/nova-wallet/nova-spektr-utils/main/icons/v1/assets/white/vKSM.svg",
+        "typeExtras": {
+          "currencyIdScale": "0x0f000000",
+          "currencyIdType": "u32",
+          "existentialDeposit": "0",
+          "transfersEnabled": true
+        },
+        "name": "v Kusama"
       }
     ],
     "nodes": [
@@ -5146,6 +5263,21 @@
           "transfersEnabled": true
         },
         "name": "Polkadot"
+      },
+      {
+        "assetId": 2,
+        "symbol": "USDT",
+        "precision": 6,
+        "type": "orml",
+        "priceId": "tether",
+        "icon": "https://raw.githubusercontent.com/nova-wallet/nova-spektr-utils/main/icons/v1/assets/white/USDT.svg",
+        "typeExtras": {
+          "currencyIdScale": "0x0101",
+          "currencyIdType": "PendulumRuntimeCurrencyCurrencyId",
+          "existentialDeposit": "1000",
+          "transfersEnabled": true
+        },
+        "name": "USD Tether"
       }
     ],
     "nodes": [
@@ -5390,7 +5522,7 @@
         "symbol": "GIANT",
         "precision": 12,
         "icon": "https://raw.githubusercontent.com/nova-wallet/nova-spektr-utils/main/icons/v1/assets/white/GIANT.svg",
-        "name": "Should be included in scripts/data/assetsNameMap"
+        "name": "Giant"
       }
     ],
     "nodes": [

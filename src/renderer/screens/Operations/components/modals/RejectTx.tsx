@@ -47,7 +47,7 @@ const RejectTx = ({ tx, account, connection }: Props) => {
   const { getLiveAccounts } = useAccount();
   const { getTransactionFee } = useTransaction();
 
-  const [isModalOpen, toggleModal] = useToggle();
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const [isRejectReasonModalOpen, toggleRejectReasonModal] = useToggle();
   const [isFeeModalOpen, toggleFeeModal] = useToggle();
   const [countdown, resetCountdown] = useCountdown(connection.api);
@@ -68,12 +68,12 @@ const RejectTx = ({ tx, account, connection }: Props) => {
 
   const onSignResult = (signature: HexString) => {
     setSignature(signature);
-    toggleModal();
+    setIsModalOpen(false);
     setActiveStep(Step.SUBMIT);
   };
 
   const handleClose = () => {
-    toggleModal();
+    setIsModalOpen(false);
     setActiveStep(Step.CONFIRMATION);
   };
 
@@ -144,7 +144,7 @@ const RejectTx = ({ tx, account, connection }: Props) => {
   return (
     <>
       <div className="flex justify-between">
-        <Button size="sm" pallet="error" variant="fill" onClick={toggleModal}>
+        <Button size="sm" pallet="error" variant="fill" onClick={() => setIsModalOpen(true)}>
           {t('operation.rejectButton')}
         </Button>
       </div>
@@ -238,6 +238,7 @@ const RejectTx = ({ tx, account, connection }: Props) => {
           signature={signature}
           rejectReason={rejectReason}
           isReject
+          onClose={handleClose}
         />
       )}
     </>
