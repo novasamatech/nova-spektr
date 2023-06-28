@@ -156,7 +156,7 @@ export const ChangeValidators = () => {
   };
 
   const getNominateTxs = (validators: Address[]): Transaction[] => {
-    return accounts.map(({ accountId }) => {
+    return txAccounts.map(({ accountId }) => {
       return {
         chainId,
         address: toAddress(accountId, { prefix: addressPrefix }),
