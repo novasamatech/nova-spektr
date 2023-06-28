@@ -1,7 +1,7 @@
 {
   "name": "nova-spektr",
   "description": "Polkadot Enterprise application",
-  "version": "0.8.0",
+  "version": "0.9.0",
   "main": "./release/build/main.js",
   "license": "MIT",
   "author": {
