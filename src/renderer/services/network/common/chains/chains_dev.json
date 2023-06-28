@@ -1175,6 +1175,21 @@
           "transfersEnabled": true
         },
         "name": "v Kusama"
+      },
+      {
+        "assetId": 11,
+        "symbol": "kBTC",
+        "precision": 8,
+        "type": "orml",
+        "priceId": "bitcoin",
+        "icon": "https://raw.githubusercontent.com/nova-wallet/nova-spektr-utils/main/icons/v1/assets/white/kBTC.svg",
+        "typeExtras": {
+          "currencyIdScale": "0x0802",
+          "currencyIdType": "NodePrimitivesCurrencyCurrencyId",
+          "existentialDeposit": "100",
+          "transfersEnabled": true
+        },
+        "name": "KINT Bitcoin"
       }
     ],
     "nodes": [
@@ -3329,6 +3344,21 @@
         "staking": "parachain",
         "icon": "https://raw.githubusercontent.com/nova-wallet/nova-spektr-utils/main/icons/v1/assets/white/Zeitgeist_(ZTG).svg",
         "name": "Zeitgeist"
+      },
+      {
+        "assetId": 1,
+        "symbol": "DOT",
+        "precision": 10,
+        "type": "orml",
+        "priceId": "polkadot",
+        "icon": "https://raw.githubusercontent.com/nova-wallet/nova-spektr-utils/main/icons/v1/assets/white/Polkadot_(DOT).svg",
+        "typeExtras": {
+          "currencyIdScale": "0x0500000000",
+          "currencyIdType": "zeitgeist_primitives.asset.Asset",
+          "existentialDeposit": "10000000",
+          "transfersEnabled": true
+        },
+        "name": "Polkadot"
       }
     ],
     "nodes": [
@@ -4451,6 +4481,7 @@
         "symbol": "PDEX",
         "precision": 12,
         "priceId": "polkadex",
+        "staking": "relaychain",
         "icon": "https://raw.githubusercontent.com/nova-wallet/nova-spektr-utils/main/icons/v1/assets/white/Polkadex_(PDEX).svg",
         "name": "Polkadex"
       }
@@ -4585,6 +4616,21 @@
           "transfersEnabled": true
         },
         "name": "USD Tether"
+      },
+      {
+        "assetId": 4,
+        "symbol": "ASTR",
+        "precision": 18,
+        "type": "orml",
+        "priceId": "astar",
+        "icon": "https://raw.githubusercontent.com/nova-wallet/nova-spektr-utils/main/icons/v1/assets/white/Astar_(ASTR).svg",
+        "typeExtras": {
+          "currencyIdScale": "0x0803",
+          "currencyIdType": "NodePrimitivesCurrencyCurrencyId",
+          "existentialDeposit": "10000000000000000",
+          "transfersEnabled": true
+        },
+        "name": "Astar"
       }
     ],
     "nodes": [
@@ -4799,6 +4845,93 @@
           "transfersEnabled": true
         },
         "name": "Etherium"
+      },
+      {
+        "assetId": 3,
+        "symbol": "TUR",
+        "precision": 10,
+        "type": "orml",
+        "icon": "https://raw.githubusercontent.com/nova-wallet/nova-spektr-utils/main/icons/v1/assets/white/Turing_(TUR).svg",
+        "typeExtras": {
+          "currencyIdScale": "0x07000000",
+          "currencyIdType": "u32",
+          "existentialDeposit": "0",
+          "transfersEnabled": true
+        },
+        "name": "Turing"
+      },
+      {
+        "assetId": 4,
+        "symbol": "BNC",
+        "precision": 12,
+        "type": "orml",
+        "priceId": "bifrost-native-coin",
+        "icon": "https://raw.githubusercontent.com/nova-wallet/nova-spektr-utils/main/icons/v1/assets/white/Bifrost_(BNC).svg",
+        "typeExtras": {
+          "currencyIdScale": "0x0e000000",
+          "currencyIdType": "u32",
+          "existentialDeposit": "0",
+          "transfersEnabled": true
+        },
+        "name": "Bifrost"
+      },
+      {
+        "assetId": 5,
+        "symbol": "RMRK",
+        "precision": 10,
+        "type": "orml",
+        "priceId": "rmrk",
+        "icon": "https://raw.githubusercontent.com/nova-wallet/nova-spektr-utils/main/icons/v1/assets/white/RMRK.svg",
+        "typeExtras": {
+          "currencyIdScale": "0x1f000000",
+          "currencyIdType": "u32",
+          "existentialDeposit": "0",
+          "transfersEnabled": true
+        },
+        "name": "Remark"
+      },
+      {
+        "assetId": 6,
+        "symbol": "ZLK",
+        "precision": 18,
+        "type": "orml",
+        "priceId": "zenlink-network-token",
+        "icon": "https://raw.githubusercontent.com/nova-wallet/nova-spektr-utils/main/icons/v1/assets/white/Zenlink_(ZLK).svg",
+        "typeExtras": {
+          "currencyIdScale": "0x1a000000",
+          "currencyIdType": "u32",
+          "existentialDeposit": "0",
+          "transfersEnabled": true
+        },
+        "name": "Zenlink Network"
+      },
+      {
+        "assetId": 7,
+        "symbol": "vsKSM",
+        "precision": 12,
+        "type": "orml",
+        "icon": "https://raw.githubusercontent.com/nova-wallet/nova-spektr-utils/main/icons/v1/assets/white/vsKSM.svg",
+        "typeExtras": {
+          "currencyIdScale": "0x10000000",
+          "currencyIdType": "u32",
+          "existentialDeposit": "0",
+          "transfersEnabled": true
+        },
+        "name": "vs Kusama"
+      },
+      {
+        "assetId": 8,
+        "symbol": "vKSM",
+        "precision": 12,
+        "type": "orml",
+        "icon": "https://raw.githubusercontent.com/nova-wallet/nova-spektr-utils/main/icons/v1/assets/white/vKSM.svg",
+        "typeExtras": {
+          "currencyIdScale": "0x0f000000",
+          "currencyIdType": "u32",
+          "existentialDeposit": "0",
+          "transfersEnabled": true
+        },
+        "name": "v Kusama"
       }
     ],
     "nodes": [
@@ -5197,6 +5330,7 @@
         "symbol": "CAPS",
         "precision": 18,
         "priceId": "coin-capsule",
+        "staking": "relaychain",
         "icon": "https://raw.githubusercontent.com/nova-wallet/nova-spektr-utils/main/icons/v1/assets/white/Ternoa_(CAPS).svg",
         "name": "Ternoa"
       }
@@ -6134,7 +6268,7 @@
         "symbol": "GIANT",
         "precision": 12,
         "icon": "https://raw.githubusercontent.com/nova-wallet/nova-spektr-utils/main/icons/v1/assets/white/GIANT.svg",
-        "name": "Should be included in scripts/data/assetsNameMap"
+        "name": "Giant"
       }
     ],
     "nodes": [
@@ -6156,7 +6290,7 @@
         "symbol": "GIANT",
         "precision": 12,
         "icon": "https://raw.githubusercontent.com/nova-wallet/nova-spektr-utils/main/icons/v1/assets/white/GIANT.svg",
-        "name": "Should be included in scripts/data/assetsNameMap"
+        "name": "Giant"
       }
     ],
     "nodes": [
@@ -6264,5 +6398,27 @@
     ],
     "icon": "https://raw.githubusercontent.com/nova-wallet/nova-spektr-utils/main/icons/v1/chains/Polkadot_Collectives.svg",
     "addressPrefix": 0
+  },
+  {
+    "chainId": "0x67221cd96c1551b72d55f65164d6a39f31b570c77a05c90e31931b0e2f379e13",
+    "parentId": "0xb0a8d493285c2df73290dfb7e61f870f17b41801197a149ca93654499ea3dafe",
+    "name": "Amplitude Foucoco",
+    "assets": [
+      {
+        "assetId": 0,
+        "symbol": "AMPE",
+        "precision": 12,
+        "icon": "https://raw.githubusercontent.com/nova-wallet/nova-spektr-utils/main/icons/v1/assets/white/Amplitude_(AMPE).svg",
+        "name": "Amplitude"
+      }
+    ],
+    "nodes": [
+      {
+        "url": "wss://rpc-foucoco.pendulumchain.tech/",
+        "name": "PendulumChain node"
+      }
+    ],
+    "icon": "https://raw.githubusercontent.com/nova-wallet/nova-spektr-utils/main/icons/v1/chains/Amplitude_foucoco.svg",
+    "addressPrefix": 57
   }
 ]
