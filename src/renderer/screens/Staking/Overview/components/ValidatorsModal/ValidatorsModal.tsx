@@ -64,7 +64,10 @@ export const ValidatorsModal = ({
   const [elected, notElected] = nominators.reduce<[Validator[], Validator[]]>(
     (acc, nominator) => {
       if (validators[nominator.address]) {
-        acc[0].push(validators[nominator.address]);
+        acc[0].push({
+          ...nominator,
+          ...validators[nominator.address],
+        });
       } else {
         acc[1].push(nominator);
       }
