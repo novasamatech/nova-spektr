@@ -9,7 +9,7 @@ import { useI18n } from '@renderer/context/I18nContext';
 import { ValidationErrors } from '@renderer/shared/utils/validation';
 import { secondsToMinutes } from '@renderer/shared/utils/time';
 import { Button, CaptionText, FootnoteText, Select, SmallTitleText } from '@renderer/components/ui-redesign';
-import { CameraAccessErrors, CameraError, WhiteTextButtonStyle } from '../common/consts';
+import { CameraAccessErrors, CameraError } from '../common/consts';
 import cnTw from '@renderer/shared/utils/twMerge';
 import SignatureReaderError from '@renderer/screens/Signing/SignatureReaderError';
 import '../style.css';
@@ -90,13 +90,9 @@ const QrReaderWrapper = ({ className, onResult, countdown, validationError, isMu
 
   const qrReaderProps: QrReaderProps = {
     size: 240,
-    bgVideo: true,
-    bgVideoClassName: 'w-[440px] h-[532px]',
-    className: cnTw(
-      'z-10 w-[440px] h-[532px] top-[-124px]',
-      error === CameraError.INVALID_ERROR && 'blur-[13px]',
-      className,
-    ),
+    // bgVideo: true,
+    // bgVideoClassName: 'w-[440px] h-[532px]',
+    className: cnTw('z-10 w-[440px] h-[532px]', error === CameraError.INVALID_ERROR && 'blur-[13px]', className),
     cameraId: activeCamera?.value,
     onStart: () => setIsLoading(false),
     onCameraList,
@@ -181,7 +177,7 @@ const QrReaderWrapper = ({ className, onResult, countdown, validationError, isMu
 
       <footer className="flex w-full justify-start mt-auto pt-5 pb-6 pl-7 z-10">
         {onGoBack && (
-          <Button variant="text" className={cn('h-6.5', isCameraOn ? WhiteTextButtonStyle : '')} onClick={onGoBack}>
+          <Button variant="text" className={cn('h-6.5', isCameraOn ? '' : '')} onClick={onGoBack}>
             {t('operation.goBackButton')}
           </Button>
         )}

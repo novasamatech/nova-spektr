@@ -15,8 +15,8 @@ type Props = {
   cameraId?: string;
   className?: string;
   onStart?: () => void;
-  bgVideo?: boolean;
-  bgVideoClassName?: string;
+  // bgVideo?: boolean;
+  // bgVideoClassName?: string;
   onResult: (scanResult: HexString) => void;
   onError?: (error: ErrorObject) => void;
   onCameraList?: (cameras: VideoInput[]) => void;
@@ -27,8 +27,8 @@ const QrSignatureReader = ({
   cameraId,
   className,
   onCameraList,
-  bgVideo,
-  bgVideoClassName,
+  // bgVideo,
+  // bgVideoClassName,
   onResult,
   onStart,
   onError,
@@ -42,8 +42,8 @@ const QrSignatureReader = ({
   const controlsRef = useRef<IScannerControls>();
   const isComplete = useRef(false);
 
-  const bgVideoRef = useRef<HTMLVideoElement>(null);
-  const bgControlsRef = useRef<IScannerControls>();
+  // const bgVideoRef = useRef<HTMLVideoElement>(null);
+  // const bgControlsRef = useRef<IScannerControls>();
 
   const videoStyle = { width: size + 'px', height: size + 'px' };
 
@@ -99,13 +99,13 @@ const QrSignatureReader = ({
 
     try {
       controlsRef.current = await scannerRef.current.decodeFromVideoDevice(cameraId, videoRef.current, decodeCallback);
-      if (bgVideoRef.current) {
-        bgControlsRef.current = await scannerRef.current.decodeFromVideoDevice(
-          cameraId,
-          bgVideoRef.current,
-          decodeCallback,
-        );
-      }
+      // if (bgVideoRef.current) {
+      //   bgControlsRef.current = await scannerRef.current.decodeFromVideoDevice(
+      //     cameraId,
+      //     bgVideoRef.current,
+      //     decodeCallback,
+      //   );
+      // }
       onStart?.();
     } catch (error) {
       throw QR_READER_ERRORS[QrError.DECODE_ERROR];
@@ -115,7 +115,7 @@ const QrSignatureReader = ({
   const stopScanning = () => {
     streamRef.current?.getVideoTracks().forEach((track) => track.stop());
     controlsRef.current?.stop();
-    bgControlsRef.current?.stop();
+    // bgControlsRef.current?.stop();
   };
 
   useEffect(() => {
@@ -146,7 +146,7 @@ const QrSignatureReader = ({
     (async () => {
       try {
         controlsRef.current?.stop();
-        bgControlsRef.current?.stop();
+        // bgControlsRef.current?.stop();
         await startScanning();
       } catch (error) {
         onError?.(QR_READER_ERRORS[QrError.BAD_NEW_CAMERA]);
@@ -154,8 +154,9 @@ const QrSignatureReader = ({
     })();
   }, [cameraId]);
 
-  if (!bgVideo) {
-    return (
+  // if (!bgVideo) {
+  return (
+    <div className="relative w-[240px] h-[240px] rounded-[1.75rem] overflow-hidden">
       <video
         muted
         autoPlay
@@ -167,34 +168,35 @@ const QrSignatureReader = ({
       >
         {t('qrReader.videoError')}
       </video>
-    );
-  }
-
-  return (
-    <>
-      <div className="relative w-[240px] h-[240px] rounded-[1.75rem] overflow-hidden">
-        <video
-          muted
-          autoPlay
-          controls={false}
-          ref={videoRef}
-          data-testid="qr-reader"
-          className={cnTw('object-cover absolute -scale-x-100', className)}
-        >
-          {t('qrReader.videoError')}
-        </video>
-      </div>
-      <video
-        muted
-        autoPlay
-        controls={false}
-        ref={bgVideoRef}
-        data-testid="qr-reader"
-        className={cnTw('absolute -scale-x-100 object-cover top-0 left-0 blur-[14px] max-w-none', bgVideoClassName)}
-      />
-      <div className="video-cover rounded-b-lg" />
-    </>
+    </div>
   );
+  // }
+
+  // return (
+  //   <>
+  //     <div className="relative w-[240px] h-[240px] rounded-[1.75rem] overflow-hidden">
+  //       <video
+  //         muted
+  //         autoPlay
+  //         controls={false}
+  //         ref={videoRef}
+  //         data-testid="qr-reader"
+  //         className={cnTw('object-cover absolute -scale-x-100', className)}
+  //       >
+  //         {t('qrReader.videoError')}
+  //       </video>
+  //     </div>
+  //     <video
+  //       muted
+  //       autoPlay
+  //       controls={false}
+  //       ref={bgVideoRef}
+  //       data-testid="qr-reader"
+  //       className={cnTw('absolute -scale-x-100 object-cover top-0 left-0 blur-[14px] max-w-none', bgVideoClassName)}
+  //     />
+  //     <div className="video-cover rounded-b-lg" />
+  //   </>
+  // );
 };
 
 export default QrSignatureReader;
