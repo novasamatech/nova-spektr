@@ -76,6 +76,7 @@ export const Submit = ({
             extrinsicHash: typedParams.extrinsicHash,
             eventBlock: typedParams.timepoint.height,
             eventIndex: typedParams.timepoint.index,
+            dateCreated: Date.now(),
           };
 
           const updatedTx: MultisigTransaction = { ...multisigTx, events: multisigTx.events.concat(event) };
