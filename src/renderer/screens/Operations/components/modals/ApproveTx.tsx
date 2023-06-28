@@ -49,7 +49,7 @@ const ApproveTx = ({ tx, account, connection }: Props) => {
   const { getLiveAccounts } = useAccount();
   const { getTransactionFee, getTxWeight } = useTransaction();
 
-  const [isModalOpen, toggleModal] = useToggle();
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const [isSelectAccountModalOpen, toggleSelectAccountModal] = useToggle();
   const [isFeeModalOpen, toggleFeeModal] = useToggle();
   const [activeStep, setActiveStep] = useState(Step.CONFIRMATION);
@@ -80,12 +80,12 @@ const ApproveTx = ({ tx, account, connection }: Props) => {
 
   const onSignResult = (signature: HexString) => {
     setSignature(signature);
-    toggleModal();
+    setIsModalOpen(false);
     setActiveStep(Step.SUBMIT);
   };
 
   const handleClose = () => {
-    toggleModal();
+    setIsModalOpen(false);
     setActiveStep(Step.CONFIRMATION);
   };
 
@@ -194,7 +194,7 @@ const ApproveTx = ({ tx, account, connection }: Props) => {
 
   return (
     <>
-      <Button size="sm" className="ml-auto" onClick={toggleModal}>
+      <Button size="sm" className="ml-auto" onClick={() => setIsModalOpen(true)}>
         {t('operation.approveButton')}
       </Button>
 
@@ -281,6 +281,7 @@ const ApproveTx = ({ tx, account, connection }: Props) => {
           account={signAccount}
           unsignedTx={unsignedTx}
           signature={signature}
+          onClose={handleClose}
         />
       )}
     </>

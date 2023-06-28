@@ -34,6 +34,7 @@ type Props = {
   signature: HexString;
   rejectReason?: string;
   isReject?: boolean;
+  onClose?: () => void;
 };
 
 export const Submit = ({
@@ -46,6 +47,7 @@ export const Submit = ({
   signature,
   rejectReason,
   isReject,
+  onClose,
 }: Props) => {
   const { t } = useI18n();
 
@@ -157,9 +159,18 @@ export const Submit = ({
       <OperationResult
         isOpen={Boolean(inProgress || errorMessage || successMessage)}
         {...getResultProps()}
-        onClose={() => {}}
+        onClose={() => onClose?.()}
       >
-        {errorMessage && <Button onClick={() => setErrorMessage('')}>{t('operation.feeErrorButton')}</Button>}
+        {errorMessage && (
+          <Button
+            onClick={() => {
+              setErrorMessage('');
+              onClose?.();
+            }}
+          >
+            {t('operation.feeErrorButton')}
+          </Button>
+        )}
       </OperationResult>
     </>
   );
