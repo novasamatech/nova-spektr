@@ -18,7 +18,7 @@ import {
   FootnoteText,
   Chain,
 } from '@renderer/components/ui-redesign';
-import { AddressInfo, CompactSeedInfo, SeedInfo } from '@renderer/components/common/QrCode/QrReader/common/types';
+import { AddressInfo, CompactSeedInfo, SeedInfo } from '@renderer/components/common/QrCode/common/types';
 import { useWallet } from '@renderer/services/wallet/walletService';
 import { useAccount } from '@renderer/services/account/accountService';
 import { toAccountId, toAddress } from '@renderer/shared/utils/address';

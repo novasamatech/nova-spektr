@@ -1,8 +1,8 @@
 import { u8aToHex } from '@polkadot/util';
 import { Parser } from 'binary-parser';
 
-import { QR_READER_ERRORS } from './common/errors';
-import { QrError } from './common/types';
+import { QR_READER_ERRORS } from '../common/errors';
+import { QrError } from '../common/types';
 
 const RAPTORQ_HEADER_SIZE = 4;
 
