@@ -125,12 +125,12 @@ const Details = ({ tx, account, connection, isCardDetails = true }: Props) => {
 
       {transaction?.args.payee && (
         <DetailRow label={t('operation.details.payee')} className={valueClass}>
-          {transaction.args.payee.account ? (
+          {transaction.args.payee.Account ? (
             <AddressWithExplorers
               explorers={explorers}
               addressFont={AddressStyle}
               type="short"
-              address={transaction.args.payee.account}
+              address={transaction.args.payee.Account}
               addressPrefix={addressPrefix}
               wrapperClassName="-mr-2 min-w-min"
             />
