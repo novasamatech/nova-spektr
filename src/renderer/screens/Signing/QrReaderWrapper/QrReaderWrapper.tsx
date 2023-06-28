@@ -51,8 +51,9 @@ const QrReaderWrapper = ({ className, onResult, countdown, validationError, isMu
     }));
 
     setAvailableCameras(formattedCameras);
-    if (formattedCameras[0]) {
+    if (formattedCameras.length > 0) {
       setActiveCamera(formattedCameras[0]);
+      setIsLoading(false);
     }
   };
 
@@ -72,13 +73,11 @@ const QrReaderWrapper = ({ className, onResult, countdown, validationError, isMu
       setError(CameraError.INVALID_ERROR);
 
       // try to scan again after 5 seconds
-      // setTimeout(() => setError(undefined), 5000);
+      setTimeout(() => setError(undefined), 5000);
     }
   };
 
   const onError = (error: ErrorObject) => {
-    setIsLoading(false);
-
     if (error.code === QrError.USER_DENY) {
       setError(CameraError.DENY_ERROR);
     } else if (error.code === QrError.DECODE_ERROR) {
@@ -86,11 +85,11 @@ const QrReaderWrapper = ({ className, onResult, countdown, validationError, isMu
     } else {
       setError(CameraError.UNKNOWN_ERROR);
     }
+    setIsLoading(false);
   };
 
   const qrReaderProps: QrReaderProps = {
     size: 240,
-    bgVideo: true,
     bgVideoClassName: 'w-[440px] h-[532px]',
     className: cnTw(
       'z-10 w-[440px] h-[532px] top-[-124px]',
@@ -105,7 +104,7 @@ const QrReaderWrapper = ({ className, onResult, countdown, validationError, isMu
 
   return (
     <div className="flex flex-col items-center flex-1 w-full relative pt-[52px] overflow-y-hidden">
-      <SmallTitleText as="h3" className={cnTw('z-10', activeCamera && 'text-white')}>
+      <SmallTitleText as="h3" className={cnTw('z-10', isCameraOn && 'text-white')}>
         {t('signing.scanQrTitle')}
       </SmallTitleText>
 

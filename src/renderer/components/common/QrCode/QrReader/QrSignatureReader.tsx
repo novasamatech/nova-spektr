@@ -27,7 +27,7 @@ const QrSignatureReader = ({
   cameraId,
   className,
   onCameraList,
-  bgVideo,
+  bgVideo = true,
   bgVideoClassName,
   onResult,
   onStart,
@@ -67,7 +67,13 @@ const QrSignatureReader = ({
     if (cameras.length === 0) {
       throw QR_READER_ERRORS[QrError.NO_VIDEO_INPUT];
     }
-    if (cameras.length > 0) {
+    // FIXME below:
+    // if used cameras.length > 0 it triggers setting active camera in parent component
+    // and that triggers useEffect(() => {...}, [cameraId]) which calls startScanning second time
+    // and that leads to camera not being released after components close
+    // need to check if scanning already started and passed cameraId same as cameraId used by current scanning process
+    // so startScanning wouldn't be called second time
+    if (cameras.length > 1) {
       onCameraList?.(cameras);
     }
 
@@ -131,6 +137,7 @@ const QrSignatureReader = ({
           await startScanning();
         }
       } catch (error) {
+        console.log('error_1');
         onError?.(error as ErrorObject);
       }
     })();
