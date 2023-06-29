@@ -1,4 +1,21 @@
-#### 1.0.0 (12.06.2023)
+#### 1.0.1 (29.06.2023)
+**Added:**
+N/A
+
+**Changed:**
+N/A
+
+**Deprecated:**
+N/A
+
+**Fixed:**
+1. Network fee validation in multi-asset networks
+2. Release camera after signing if only one camera is available
+
+**Security:**
+N/A
+
+#### 1.0.0 (28.06.2023)
 **Added:**
 1. Wallets: Add Watch-Only wallet
 2. Wallets: Add a single wallet via Parity Signer
