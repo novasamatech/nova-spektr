@@ -1,5 +1,3 @@
-// import { useEffect, useState } from 'react';
-
 import cnTw from '@renderer/shared/utils/twMerge';
 import AccountAddress, {
   getAddress,
@@ -20,8 +18,8 @@ type Props<T extends any> = {
   explorers?: Explorer[];
   value: T;
   onSelected: (value: T) => void;
-  chainId?: ChainId;
-  asset?: Asset;
+  chainId: ChainId;
+  asset: Asset;
 } & AccountAddressProps;
 
 const SelectableSignatory = <T extends any>({
@@ -39,7 +37,7 @@ const SelectableSignatory = <T extends any>({
   const { getLiveBalance } = useBalance();
   const popoverItems = useAddressInfo(address, explorers, true);
 
-  const balance = chainId && asset && getLiveBalance(toAccountId(address), chainId, asset.assetId.toString());
+  const balance = getLiveBalance(toAccountId(address), chainId, asset.assetId.toString());
 
   return (
     <button
