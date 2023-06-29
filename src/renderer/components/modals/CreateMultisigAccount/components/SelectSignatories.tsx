@@ -134,8 +134,7 @@ export const SelectSignatories = ({ isActive, chains, wallets, accounts, contact
       {walletList.map(({ index, accountId, name, walletName, chainId }) => (
         <li key={index + 'wallets'} className="p-1 mb-0.5 last:mb-0 rounded-md hover:bg-action-background-hover">
           <Checkbox
-            defaultChecked={selectedWallets[accountId]?.[index]}
-            checked={selectedWallets[accountId]?.[index]}
+            checked={selectedWallets[accountId]?.[index] || false}
             disabled={isSameItemSelected(index, selectedWallets[accountId])}
             onChange={() => selectSignatory(SignatoryTabs.WALLETS, index, accountId, selectedWallets)}
           >
@@ -174,8 +173,7 @@ export const SelectSignatories = ({ isActive, chains, wallets, accounts, contact
           {searchedContactList.map(({ index, accountId, name }) => (
             <li key={index + 'contacts'} className="p-1 mb-0.5 last:mb-0 rounded-md hover:bg-action-background-hover">
               <Checkbox
-                defaultChecked={selectedContacts[accountId]?.[index]}
-                checked={selectedContacts[accountId]?.[index]}
+                checked={selectedContacts[accountId]?.[index] || false}
                 disabled={isSameItemSelected(index, selectedContacts[accountId])}
                 onChange={() => selectSignatory(SignatoryTabs.CONTACTS, index, accountId, selectedContacts)}
               >
