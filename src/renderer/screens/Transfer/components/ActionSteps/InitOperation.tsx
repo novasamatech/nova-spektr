@@ -62,7 +62,11 @@ const InitOperation = ({
   const signatoryIds = accountIsMultisig
     ? (activeAccount.value as MultisigAccount).signatories.map((s) => s.accountId)
     : [];
-  const signatoriesBalances = getLiveAssetBalances(signatoryIds, chainId, asset?.assetId.toString() || '');
+  const signatoriesBalances = getLiveAssetBalances(
+    signatoryIds,
+    chainId,
+    nativeToken?.assetId.toString() || asset?.assetId.toString() || '',
+  );
 
   useEffect(() => {
     if (!asset) return;
