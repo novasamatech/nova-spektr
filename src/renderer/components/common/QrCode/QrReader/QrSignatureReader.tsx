@@ -27,7 +27,7 @@ const QrSignatureReader = ({
   cameraId,
   className,
   onCameraList,
-  bgVideo,
+  bgVideo = true,
   bgVideoClassName,
   onResult,
   onStart,
@@ -67,6 +67,7 @@ const QrSignatureReader = ({
     if (cameras.length === 0) {
       throw QR_READER_ERRORS[QrError.NO_VIDEO_INPUT];
     }
+
     if (cameras.length > 0) {
       onCameraList?.(cameras);
     }
