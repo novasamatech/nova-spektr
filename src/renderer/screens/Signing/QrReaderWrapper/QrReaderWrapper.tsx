@@ -51,7 +51,9 @@ const QrReaderWrapper = ({ className, onResult, countdown, validationError, isMu
     }));
 
     setAvailableCameras(formattedCameras);
-    if (formattedCameras.length > 0) {
+
+    if (formattedCameras.length > 1) {
+      // if multiple cameras are available we set first one as active
       setActiveCamera(formattedCameras[0]);
       setIsLoading(false);
     }
