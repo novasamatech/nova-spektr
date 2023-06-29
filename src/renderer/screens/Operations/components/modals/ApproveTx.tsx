@@ -22,7 +22,7 @@ import { transferableAmount } from '@renderer/shared/utils/balance';
 import { TEST_ADDRESS } from '@renderer/shared/utils/constants';
 import Confirmation from '@renderer/screens/Operations/components/ActionSteps/Confirmation';
 import SignatorySelectModal from '@renderer/screens/Operations/components/modals/SignatorySelectModal';
-import OperationResult from '@renderer/components/ui-redesign/OperationResult/OperationResult';
+import { OperationResult } from '@renderer/components/common/OperationResult/OperationResult';
 import OperationModalTitle from '@renderer/screens/Operations/components/OperationModalTitle';
 import { Signing } from '@renderer/screens/Transfer/components/ActionSteps';
 import ScanSingleframeQr from '@renderer/components/common/Scanning/ScanSingleframeQr';

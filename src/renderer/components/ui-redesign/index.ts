@@ -25,6 +25,13 @@ import Accordion from './Accordion/Accordion';
 import Alert from './Alert/Alert';
 import Counter from './Counter/Counter';
 import StatusLabel from './StatusLabel/StatusLabel';
+import InputFile from './Inputs/InputFile/InputFile';
+import { Tooltip } from './Popovers/Tooltip/Tooltip';
+import { LabelHelpBox } from './LabelHelpbox/LabelHelpBox';
+import { Chain } from './Chain/Chain';
+import { ChainIcon } from './ChainIcon/ChainIcon';
+import { AssetIcon } from './AssetIcon/AssetIcon';
+import { Tabs } from './Tabs/Tabs';
 import {
   LargeTitleText,
   TitleText,
@@ -36,12 +43,11 @@ import {
   LabelText,
   HeaderTitleText,
 } from './Typography';
-import InputFile from './Inputs/InputFile/InputFile';
-import { Tooltip } from './Popovers/Tooltip/Tooltip';
-import { LabelHelpBox } from './LabelHelpbox/LabelHelpBox';
-import { Chain } from './Chain/Chain';
-import { ChainIcon } from './ChainIcon/ChainIcon';
-import { AssetIcon } from './AssetIcon/AssetIcon';
+
+// FIXME: Animation component exported separately.
+// Adding them to this file causes to crash all tests which use anything from that file
+// similar issue on stackoverflow:
+// https://stackoverflow.com/questions/49156356/why-does-jest-try-to-resolve-every-component-in-my-index-ts
 
 export {
   Input,
@@ -86,4 +92,5 @@ export {
   Chain,
   ChainIcon,
   AssetIcon,
+  Tabs,
 };

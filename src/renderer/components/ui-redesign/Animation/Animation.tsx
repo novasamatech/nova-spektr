@@ -13,7 +13,7 @@ export type Props = {
   className?: string;
 };
 
-const Animation = ({ name, width = 80, height = 80, loop = false, autoplay = false, className }: Props) => {
+export const Animation = ({ name, width = 80, height = 80, loop = false, autoplay = false, className }: Props) => {
   const defaultOptions = {
     loop,
     autoplay,
@@ -29,5 +29,3 @@ const Animation = ({ name, width = 80, height = 80, loop = false, autoplay = fal
     </div>
   );
 };
-
-export default Animation;

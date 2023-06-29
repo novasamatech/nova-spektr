@@ -1,11 +1,13 @@
 import { render, screen } from '@testing-library/react';
 import noop from 'lodash/noop';
 
-import OperationResult from './OperationResult';
+import { OperationResult } from './OperationResult';
 
-jest.mock('@renderer/components/ui-redesign/Animation/Animation', () => 'animation');
+jest.mock('@renderer/components/ui-redesign/Animation/Animation', () => ({
+  Animation: () => <span>animation</span>,
+}));
 
-describe('ui/OperationResult', () => {
+describe('components/common/OperationResult', () => {
   test('should render component', () => {
     render(
       <OperationResult isOpen title="success" onClose={noop}>
