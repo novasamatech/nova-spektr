@@ -57,23 +57,29 @@ const InitOperation = ({
 
   const accountIds = accounts.map((account) => account.accountId);
   const balances = getLiveAssetBalances(accountIds, chainId, asset?.assetId.toString() || '');
+  const nativeBalances = getLiveAssetBalances(accountIds, chainId, nativeToken?.assetId.toString() || '');
 
   const accountIsMultisig = activeAccount && isMultisig(activeAccount.value);
   const signatoryIds = accountIsMultisig
     ? (activeAccount.value as MultisigAccount).signatories.map((s) => s.accountId)
     : [];
-  const signatoriesBalances = getLiveAssetBalances(signatoryIds, chainId, asset?.assetId.toString() || '');
+  const signatoriesBalances = getLiveAssetBalances(
+    signatoryIds,
+    chainId,
+    nativeToken?.assetId.toString() || asset?.assetId.toString() || '',
+  );
 
   useEffect(() => {
     if (!asset) return;
 
     const options = accounts.reduce<any[]>((acc, account) => {
       const balance = balances.find((b) => b.accountId === account.accountId);
+      const nativeBalance = nativeBalances.find((b) => b.accountId === account.accountId);
 
       const isSameChain = !account.chainId || account.chainId === chainId;
 
       if (isSameChain) {
-        acc.push(getAccountOption(account, { addressPrefix, asset, amount, balance, fee, deposit }));
+        acc.push(getAccountOption(account, { addressPrefix, asset, amount, balance, nativeBalance, fee, deposit }));
       }
 
       return acc;
@@ -104,7 +110,7 @@ const InitOperation = ({
         if (signatoryIds.includes(signer.accountId)) {
           const balance = signatoriesBalances.find((b) => b.accountId === signer.accountId);
 
-          acc.push(getSignatoryOption(signer, { addressPrefix, asset, balance, fee, deposit }));
+          acc.push(getSignatoryOption(signer, { addressPrefix, asset: nativeToken || asset, balance, fee, deposit }));
         }
 
         return acc;
