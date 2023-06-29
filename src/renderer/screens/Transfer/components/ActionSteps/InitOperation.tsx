@@ -108,7 +108,7 @@ const InitOperation = ({
         if (signatoryIds.includes(signer.accountId)) {
           const balance = signatoriesBalances.find((b) => b.accountId === signer.accountId);
 
-          acc.push(getSignatoryOption(signer, { addressPrefix, asset, balance, fee, deposit }));
+          acc.push(getSignatoryOption(signer, { addressPrefix, asset: nativeToken || asset, balance, fee, deposit }));
         }
 
         return acc;
