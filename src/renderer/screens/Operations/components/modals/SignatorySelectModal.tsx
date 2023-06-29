@@ -28,19 +28,21 @@ const SignatorySelectModal = ({ isOpen, onClose, onSelect, accounts, asset, chai
       onClose={onClose}
     >
       <ul className="mt-1">
-        {accounts.map((a) => (
-          <li key={a.id}>
-            <SelectableSignatory
-              accountId={a.accountId}
-              name={a.name}
-              asset={asset}
-              chainId={chainId}
-              explorers={explorers}
-              value={a}
-              onSelected={onSelect}
-            />
-          </li>
-        ))}
+        {asset &&
+          chainId &&
+          accounts.map((a) => (
+            <li key={a.id}>
+              <SelectableSignatory
+                accountId={a.accountId}
+                name={a.name}
+                asset={asset}
+                chainId={chainId}
+                explorers={explorers}
+                value={a}
+                onSelected={onSelect}
+              />
+            </li>
+          ))}
       </ul>
     </BaseModal>
   );
