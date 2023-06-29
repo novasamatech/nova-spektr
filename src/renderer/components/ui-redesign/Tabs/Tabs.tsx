@@ -33,7 +33,9 @@ export const Tabs = ({ items, tabClassName, panelClassName = 'mt-4', onChange }:
     </Tab.List>
     <Tab.Panels className={panelClassName}>
       {items.map(({ id, panel }) => (
-        <Tab.Panel key={id}>{panel}</Tab.Panel>
+        <Tab.Panel key={id} unmount={false}>
+          {panel}
+        </Tab.Panel>
       ))}
     </Tab.Panels>
   </Tab.Group>
