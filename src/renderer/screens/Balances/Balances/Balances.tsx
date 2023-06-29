@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 
 import { Icon } from '@renderer/components/ui';
 import { useI18n } from '@renderer/context/I18nContext';
@@ -64,14 +64,18 @@ const Balances = () => {
     setActiveAccounts(accounts);
   };
 
-  const sortedChains = sortChains(
-    Object.values(connections).filter((c) => {
-      const isDisabled = c.connection.connectionType === ConnectionType.DISABLED;
-      const hasMultisigAccount = activeAccounts.some(isMultisig);
-      const hasMultiPallet = !hasMultisigAccount || Boolean(c.api?.tx.multisig);
+  const sortedChains = useMemo(
+    () =>
+      sortChains(
+        Object.values(connections).filter((c) => {
+          const isDisabled = c.connection.connectionType === ConnectionType.DISABLED;
+          const hasMultisigAccount = activeAccounts.some(isMultisig);
+          const hasMultiPallet = !hasMultisigAccount || Boolean(c.api?.tx.multisig);
 
-      return !isDisabled && hasMultiPallet;
-    }),
+          return !isDisabled && hasMultiPallet;
+        }),
+      ),
+    [Object.values(connections).length, activeAccounts],
   );
 
   const searchSymbolOnly = sortedChains.some((chain) =>
