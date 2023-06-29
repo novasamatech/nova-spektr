@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+// import { useEffect, useState } from 'react';
 
 import cnTw from '@renderer/shared/utils/twMerge';
 import AccountAddress, {
@@ -36,18 +36,10 @@ const SelectableSignatory = <T extends any>({
 }: Props<T>) => {
   const address = getAddress(addressProps);
 
-  const { getBalance } = useBalance();
+  const { getLiveBalance } = useBalance();
   const popoverItems = useAddressInfo(address, explorers, true);
 
-  const [balance, setBalance] = useState('');
-
-  useEffect(() => {
-    if (chainId && asset) {
-      getBalance(toAccountId(address), chainId, asset.assetId.toString()).then((b) =>
-        setBalance(transferableAmount(b)),
-      );
-    }
-  }, [chainId, asset, address]);
+  const balance = chainId && asset && getLiveBalance(toAccountId(address), chainId, asset.assetId.toString());
 
   return (
     <button
@@ -58,7 +50,9 @@ const SelectableSignatory = <T extends any>({
       <InfoPopover data={popoverItems}>
         <Icon name="info" size={14} className="text-icon-default ml-2 mr-auto" />
       </InfoPopover>
-      {balance && asset && <BalanceNew value={balance} asset={asset} className="text-body text-inherit ml-auto mr-6" />}
+      {balance && asset && (
+        <BalanceNew value={transferableAmount(balance)} asset={asset} className="text-body text-inherit ml-auto mr-6" />
+      )}
       <Icon name="right" className={cnTw('text-icon-default', !balance && 'ml-auto')} size={20} />
     </button>
   );
