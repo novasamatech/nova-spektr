@@ -215,6 +215,7 @@ export const TransferForm = ({
     if (nativeTokenBalance) {
       return new BN(fee).lte(new BN(nativeTokenBalance));
     }
+
     if (isMultisig(account)) {
       return new BN(fee).lte(new BN(balance));
     }
