@@ -1,7 +1,7 @@
 import { Button, FootnoteText } from '@renderer/components/ui-redesign';
-import { CameraError, CameraErrorText } from '@renderer/screens/Signing/common/consts';
 import { ValidationErrors } from '@renderer/shared/utils/validation';
 import { useI18n } from '@renderer/context/I18nContext';
+import { CameraError, CameraErrorText } from '../common/constants';
 
 type Props = {
   error?: CameraError;

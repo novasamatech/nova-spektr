@@ -1,7 +1,7 @@
 import { act, render, screen, waitFor } from '@testing-library/react';
 
 import { QrReader } from '@renderer/components/common';
-import { QrError } from '@renderer/components/common/QrCode/QrReader/common/types';
+import { QrError } from '@renderer/components/common/QrCode/common/types';
 import { Button, Dropdown } from '@renderer/components/ui';
 import KeyQrReader from './KeyQrReader';
 

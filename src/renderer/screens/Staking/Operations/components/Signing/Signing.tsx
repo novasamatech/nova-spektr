@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 
-import QrReaderWrapper from '@renderer/screens/Signing/QrReaderWrapper/QrReaderWrapper';
+import QrReaderWrapper from '@renderer/components/common/QrCode/QrReader/QrReaderWrapper';
 import { HexString } from '@renderer/domain/shared-kernel';
 
 type Props = {

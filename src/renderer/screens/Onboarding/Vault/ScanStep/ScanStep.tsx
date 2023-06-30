@@ -1,4 +1,4 @@
-import { SeedInfo } from '@renderer/components/common/QrCode/QrReader/common/types';
+import { SeedInfo } from '@renderer/components/common/QrCode/common/types';
 import { useI18n } from '@renderer/context/I18nContext';
 import KeyQrReader from '../KeyQrReader/KeyQrReader';
 import { Button, HeaderTitleText, SmallTitleText } from '@renderer/components/ui-redesign';

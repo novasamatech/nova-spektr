@@ -5,11 +5,8 @@ const Paths = {
   ONBOARDING: '/onboarding',
 
   // Navigation
-  HISTORY: '/history',
-  MULTISIG: '/multisig',
   BALANCES: '/balances',
   OPERATIONS: '/operations',
-  SIGNING: '/signing',
   NOTIFICATIONS: '/notifications',
 
   // Address book
@@ -29,13 +26,6 @@ const Paths = {
   REDEEM: '/staking/redeem/:chainId',
   STAKE_MORE: '/staking/stake-more/:chainId',
   VALIDATORS: '/staking/validators/:chainId',
-
-  // Operations
-  // CREATE_MULTISIG_ACCOUNT: '/create-multisig-account',
-
-  // DEV
-  CHAT_DEV: '/chat-dev',
-  CAMERA_DEV: '/camera-dev',
 } as const;
 
 export type PathValue = (typeof Paths)[keyof typeof Paths];

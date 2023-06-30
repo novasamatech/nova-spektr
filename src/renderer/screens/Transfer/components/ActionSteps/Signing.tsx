@@ -4,7 +4,7 @@ import { ApiPromise } from '@polkadot/api';
 
 import { useI18n } from '@renderer/context/I18nContext';
 import { Button } from '@renderer/components/ui';
-import QrReaderWrapper from '@renderer/screens/Signing/QrReaderWrapper/QrReaderWrapper';
+import QrReaderWrapper from '@renderer/components/common/QrCode/QrReader/QrReaderWrapper';
 import { ValidationErrors } from '@renderer/shared/utils/validation';
 import { toAccountId } from '@renderer/shared/utils/address';
 import { transferableAmount } from '@renderer/shared/utils/balance';

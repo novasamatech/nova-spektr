@@ -7,9 +7,9 @@ import cnTw from '@renderer/shared/utils/twMerge';
 import { validateSignerFormat } from '@renderer/shared/utils/strings';
 import { CryptoTypeString } from '@renderer/domain/shared-kernel';
 import { useI18n } from '@renderer/context/I18nContext';
-import { ErrorFields, EXPORT_ADDRESS, FRAME_KEY } from './common/constants';
-import { QR_READER_ERRORS } from './common/errors';
-import { DecodeCallback, ErrorObject, Progress, QrError, SeedInfo, VideoInput } from './common/types';
+import { ErrorFields, EXPORT_ADDRESS, FRAME_KEY } from '../common/constants';
+import { QR_READER_ERRORS } from '../common/errors';
+import { DecodeCallback, ErrorObject, Progress, QrError, SeedInfo, VideoInput } from '../common/types';
 import RaptorFrame from './RaptorFrame';
 
 const enum Status {
