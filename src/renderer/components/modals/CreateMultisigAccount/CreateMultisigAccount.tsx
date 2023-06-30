@@ -1,6 +1,5 @@
 import { ComponentProps, useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { keyBy } from 'lodash';
 
 import { BaseModal, HeaderTitleText, StatusLabel, Button } from '@renderer/components/ui-redesign';
 import { useI18n } from '@renderer/context/I18nContext';
@@ -10,8 +9,6 @@ import { createMultisigAccount, MultisigAccount, Account } from '@renderer/domai
 import { useToggle } from '@renderer/shared/hooks';
 import { OperationResult } from '@renderer/components/common/OperationResult/OperationResult';
 import { MatrixModal } from '../MatrixModal/MatrixModal';
-import { useChains } from '@renderer/services/network/chainsService';
-import { ChainsRecord } from '@renderer/components/layout/PrimaryLayout/Wallets/common/types';
 import { Wallet } from '@renderer/domain/wallet';
 import { Contact } from '@renderer/domain/contact';
 import { useWallet } from '@renderer/services/wallet/walletService';
@@ -35,7 +32,6 @@ type Props = {
 export const CreateMultisigAccount = ({ isOpen, onClose }: Props) => {
   const { t } = useI18n();
   const { matrix, isLoggedIn } = useMatrix();
-  const { getChainsData } = useChains();
   const { getWallets } = useWallet();
   const { getContacts } = useContact();
   const { getAccounts, addAccount, setActiveAccount } = useAccount();
@@ -48,7 +44,6 @@ export const CreateMultisigAccount = ({ isOpen, onClose }: Props) => {
   const [error, setError] = useState('');
   const [activeStep, setActiveStep] = useState<Step>(Step.INIT);
 
-  const [chains, setChains] = useState<ChainsRecord>({});
   const [signatoryWallets, setSignatoryWallets] = useState<ExtendedWallet[]>([]);
   const [signatoryContacts, setSignatoryContacts] = useState<ExtendedContact[]>([]);
 
@@ -61,7 +56,6 @@ export const CreateMultisigAccount = ({ isOpen, onClose }: Props) => {
   useEffect(() => {
     if (!isOpen) return;
 
-    getChainsData().then((chainsData) => setChains(keyBy(chainsData, 'chainId')));
     getAccounts().then(setAccounts);
     getContacts().then(setContacts);
     getWallets().then(setWallets);
@@ -164,7 +158,6 @@ export const CreateMultisigAccount = ({ isOpen, onClose }: Props) => {
 
         <SelectSignatories
           isActive={activeStep === Step.INIT}
-          chains={chains}
           wallets={wallets}
           accounts={accounts}
           contacts={contacts}
@@ -175,7 +168,6 @@ export const CreateMultisigAccount = ({ isOpen, onClose }: Props) => {
         />
         <ConfirmSignatories
           isActive={activeStep === Step.CONFIRMATION}
-          chains={chains}
           wallets={signatoryWallets}
           contacts={signatoryContacts}
         />

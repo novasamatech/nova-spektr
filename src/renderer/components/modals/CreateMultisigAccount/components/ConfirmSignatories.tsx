@@ -1,19 +1,19 @@
 import cnTw from '@renderer/shared/utils/twMerge';
 import { useI18n } from '@renderer/context/I18nContext';
-import { ChainsRecord } from '@renderer/components/layout/PrimaryLayout/Wallets/common/types';
+import { useNetworkContext } from '@renderer/context/NetworkContext';
 import { FootnoteText, SmallTitleText } from '@renderer/components/ui-redesign';
 import { WalletsTabItem } from './WalletsTabItem';
 import { ExtendedWallet, ExtendedContact } from '../common/types';
 
 type Props = {
   isActive: boolean;
-  chains: ChainsRecord;
   wallets: ExtendedWallet[];
   contacts: ExtendedContact[];
 };
 
-export const ConfirmSignatories = ({ isActive, chains, wallets, contacts }: Props) => {
+export const ConfirmSignatories = ({ isActive, wallets, contacts }: Props) => {
   const { t } = useI18n();
+  const { connections } = useNetworkContext();
 
   return (
     <section
@@ -32,7 +32,7 @@ export const ConfirmSignatories = ({ isActive, chains, wallets, contacts }: Prop
                 name={name}
                 accountId={accountId}
                 walletName={walletName}
-                explorers={chainId ? chains[chainId]?.explorers : []}
+                explorers={chainId ? connections[chainId]?.explorers : []}
               />
             </li>
           ))}

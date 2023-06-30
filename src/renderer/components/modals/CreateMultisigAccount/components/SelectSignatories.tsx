@@ -1,13 +1,12 @@
 import { useState, useEffect } from 'react';
-import cn from 'classnames';
 import { keyBy } from 'lodash';
 
+import cnTw from '@renderer/shared/utils/twMerge';
 import { useI18n } from '@renderer/context/I18nContext';
 import { useMatrix } from '@renderer/context/MatrixContext';
 import { includes } from '@renderer/shared/utils/strings';
 import { toAddress } from '@renderer/shared/utils/address';
 import { AccountId } from '@renderer/domain/shared-kernel';
-import { ChainsRecord } from '@renderer/components/layout/PrimaryLayout/Wallets/common/types';
 import { useToggle } from '@renderer/shared/hooks';
 import { WalletsTabItem } from './WalletsTabItem';
 import { Icon } from '@renderer/components/ui';
@@ -17,8 +16,9 @@ import { ContactForm } from '@renderer/components/forms';
 import { TabItem } from '@renderer/components/ui-redesign/Tabs/common/types';
 import { Contact } from '@renderer/domain/contact';
 import { WalletDS } from '@renderer/services/storage';
-import cnTw from '@renderer/shared/utils/twMerge';
-import { ExtendedWallet, ExtendedContact } from '../common/types';
+import { useNetworkContext } from '@renderer/context/NetworkContext';
+import { getSelectedLength } from '../common/utils';
+import { ExtendedWallet, ExtendedContact, SelectedMap } from '../common/types';
 import {
   FootnoteText,
   SearchInput,
@@ -34,32 +34,26 @@ const enum SignatoryTabs {
   CONTACTS = 'contacts',
 }
 
-type SelectedObject = {
-  [key: AccountId]: {
-    [index: string]: boolean;
-  };
-};
-
 type Props = {
   isActive: boolean;
-  chains: ChainsRecord;
   wallets: WalletDS[];
   accounts: (Account | MultisigAccount)[];
   contacts: Contact[];
   onSelect: (wallets: ExtendedWallet[], contacts: ExtendedContact[]) => void;
 };
 
-export const SelectSignatories = ({ isActive, chains, wallets, accounts, contacts, onSelect }: Props) => {
+export const SelectSignatories = ({ isActive, wallets, accounts, contacts, onSelect }: Props) => {
   const { t } = useI18n();
   const { matrix } = useMatrix();
+  const { connections } = useNetworkContext();
 
   const [query, setQuery] = useState('');
   const [contactList, setContactList] = useState<ExtendedContact[]>([]);
   const [walletList, setWalletList] = useState<ExtendedWallet[]>([]);
   const [isContactModalOpen, toggleContactModalOpen] = useToggle();
 
-  const [selectedWallets, setSelectedWallets] = useState<SelectedObject>({});
-  const [selectedContacts, setSelectedContacts] = useState<SelectedObject>({});
+  const [selectedWallets, setSelectedWallets] = useState<SelectedMap>({});
+  const [selectedContacts, setSelectedContacts] = useState<SelectedMap>({});
 
   useEffect(() => {
     const walletMap = keyBy(wallets, 'id');
@@ -87,10 +81,10 @@ export const SelectSignatories = ({ isActive, chains, wallets, accounts, contact
     setContactList(addressBookContacts);
   }, [accounts.length, contacts.length, wallets.length]);
 
-  const selectSignatory = (tab: SignatoryTabs, index: string, accountId: AccountId, selection: SelectedObject) => {
+  const selectSignatory = (tab: SignatoryTabs, index: string, accountId: AccountId, selection: SelectedMap) => {
     const newValue = !selection[accountId]?.[index];
 
-    const newSelectedValues: SelectedObject = {
+    const newSelectedValues: SelectedMap = {
       ...selection,
       [accountId]: { ...selection[accountId], [index]: newValue },
     };
@@ -122,12 +116,8 @@ export const SelectSignatories = ({ isActive, chains, wallets, accounts, contact
   const hasWallets = Boolean(walletList.length);
   const hasContacts = Boolean(contactList.length);
 
-  const selectedWalletsLength = Object.values(selectedWallets).reduce((acc, w) => {
-    return acc + Object.values(w).reduce((total, flag) => total + (flag ? 1 : 0), 0);
-  }, 0);
-  const selectedContactsLength = Object.values(selectedContacts).reduce((acc, c) => {
-    return acc + Object.values(c).reduce((total, flag) => total + (flag ? 1 : 0), 0);
-  }, 0);
+  const selectedWalletsLength = getSelectedLength(selectedWallets);
+  const selectedContactsLength = getSelectedLength(selectedContacts);
 
   const WalletsTab = hasWallets ? (
     <ul className="gap-y-2">
@@ -142,7 +132,7 @@ export const SelectSignatories = ({ isActive, chains, wallets, accounts, contact
               name={name}
               accountId={accountId}
               walletName={walletName}
-              explorers={chainId ? chains[chainId]?.explorers : []}
+              explorers={chainId ? connections[chainId]?.explorers : []}
             />
           </Checkbox>
         </li>
@@ -154,10 +144,10 @@ export const SelectSignatories = ({ isActive, chains, wallets, accounts, contact
 
   const ContactsTab = (
     <div>
-      <div className="flex items-center gap-x-4 flex-1 mb-4">
+      <div className="flex items-center gap-x-4 mb-4">
         <SearchInput
+          wrapperClass="flex-1"
           placeholder={t('createMultisigAccount.searchContactPlaceholder')}
-          wrapperClass={cn('flex-1')}
           value={query}
           onChange={setQuery}
         />
