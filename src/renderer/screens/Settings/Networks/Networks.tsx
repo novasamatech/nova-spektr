@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Trans } from 'react-i18next';
+import uniqBy from 'lodash/uniqBy';
 
 import { useI18n } from '@renderer/context/I18nContext';
 import { BaseModal, SearchInput, BodyText, InfoLink } from '@renderer/components/ui-redesign';
@@ -17,6 +18,8 @@ import { useConfirmContext } from '@renderer/context/ConfirmContext';
 import { ChainId } from '@renderer/domain/shared-kernel';
 import { NetworkList, NetworkItem, CustomRpcModal } from './components';
 import Paths from '@renderer/routes/paths';
+import { useBalance } from '@renderer/services/balance/balanceService';
+import { useAccount } from '@renderer/services/account/accountService';
 
 const MAX_LIGHT_CLIENTS = 3;
 
@@ -27,7 +30,9 @@ export const Networks = () => {
   const navigate = useNavigate();
   const { sortChains } = useChains();
   const { confirm } = useConfirmContext();
-  const { connections, connectToNetwork, connectWithAutoBalance, removeRpcNode } = useNetworkContext();
+  const { connections, connectToNetwork, connectWithAutoBalance, removeRpcNode, getParachains } = useNetworkContext();
+  const { setBalanceIsValid } = useBalance();
+  const { getAccounts } = useAccount();
 
   const [isCustomRpcOpen, toggleCustomRpc] = useToggle();
   const [isNetworksModalOpen, toggleNetworksModal] = useToggle(true);
@@ -120,6 +125,10 @@ export const Networks = () => {
       let proceed = false;
       if (connection.connectionType === ConnectionType.LIGHT_CLIENT) {
         proceed = await confirmDisableLightClient(name);
+
+        if (proceed) {
+          resetBalanceValidation(connection.chainId);
+        }
       } else if ([ConnectionType.RPC_NODE, ConnectionType.AUTO_BALANCE].includes(connection.connectionType)) {
         proceed = await confirmDisableNetwork(name);
       }
@@ -133,11 +142,27 @@ export const Networks = () => {
     };
   };
 
+  const resetBalanceValidation = async (relaychainId: ChainId) => {
+    const parachains = getParachains(relaychainId);
+    const allAccounts = await getAccounts();
+    const uniqAccounts = await uniqBy(allAccounts, 'accountId');
+
+    parachains.forEach(({ chainId, assets }) => {
+      uniqAccounts.forEach(({ accountId }) => {
+        assets.forEach(({ assetId }) => {
+          setBalanceIsValid({ chainId, accountId, assetId: assetId.toString() }, true);
+        });
+      });
+    });
+  };
+
   const connectToNode = ({ chainId, connection, disconnect, name }: ExtendedChain) => {
     return async (type: ConnectionType, node?: RpcNode): Promise<void> => {
       if (connection.connectionType === ConnectionType.LIGHT_CLIENT) {
         const proceed = await confirmDisableLightClient(name);
         if (!proceed) return;
+
+        resetBalanceValidation(connection.chainId);
       }
 
       if (type === ConnectionType.LIGHT_CLIENT) {

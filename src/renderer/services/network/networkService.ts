@@ -358,6 +358,10 @@ export const useNetwork = (networkSubscription?: ISubscriptionService<ChainId>):
     }
   };
 
+  const getParachains = (chainId: ChainId) => {
+    return Object.values(connections).filter((c) => c.parentId === chainId);
+  };
+
   return {
     connections,
     setupConnections,
@@ -367,5 +371,6 @@ export const useNetwork = (networkSubscription?: ISubscriptionService<ChainId>):
     updateRpcNode,
     removeRpcNode,
     validateRpcNode,
+    getParachains,
   };
 };
