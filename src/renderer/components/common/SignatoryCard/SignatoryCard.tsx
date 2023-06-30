@@ -18,6 +18,7 @@ const IconProps = {
 type Props = {
   explorers?: Explorer[];
   status?: SigningStatus;
+  matrixId?: string;
 } & AccountAddressProps;
 
 const SignatoryCard = ({
@@ -26,12 +27,20 @@ const SignatoryCard = ({
   addressFont = 'text-body text-inherit',
   size = 20,
   name,
+  matrixId,
   ...addressProps
 }: Props) => {
   const { getLiveAccounts } = useAccount();
   const address = getAddress(addressProps);
   const account = getLiveAccounts().find((a) => toAddress(a.accountId) === address);
   const popoverItems = useAddressInfo(address, explorers, true);
+
+  if (!popoverItems.find((item) => item.title === 'Matrix ID') && matrixId) {
+    popoverItems.push({
+      title: 'Matrix ID',
+      items: [{ id: matrixId, value: matrixId }],
+    });
+  }
 
   return (
     <InfoPopover data={popoverItems} buttonClassName="w-full" position="right-0 left-unset">
