@@ -44,7 +44,20 @@ jest.mock('@renderer/context/NetworkContext', () => ({
     connectToNetwork: jest.fn(),
     connectWithAutoBalance: jest.fn(),
     removeRpcNode: jest.fn(),
+    getParachains: jest.fn().mockReturnValue([]),
   })),
+}));
+
+jest.mock('@renderer/services/balance/balanceService', () => ({
+  useBalance: jest.fn().mockReturnValue({
+    setBalanceIsValid: jest.fn(),
+  }),
+}));
+
+jest.mock('@renderer/services/account/accountService', () => ({
+  useAccount: jest.fn().mockReturnValue({
+    getAccounts: jest.fn().mockReturnValue([]),
+  }),
 }));
 
 const nodeToEdit = { name: 'edit_node', url: 'wss://edit_url.com' };

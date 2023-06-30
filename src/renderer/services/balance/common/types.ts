@@ -1,6 +1,7 @@
 import { ChainId, AccountId } from '@renderer/domain/shared-kernel';
 import { BalanceDS } from '@renderer/services/storage/common/types';
 import { ExtendedChain } from '@renderer/services/network/common/types';
+import { BalanceKey } from '@renderer/domain/balance';
 
 export interface IBalanceService {
   getBalance: (accountId: AccountId, chainId: ChainId, assetId: string) => Promise<BalanceDS | undefined>;
@@ -18,4 +19,5 @@ export interface IBalanceService {
     accountIds: AccountId[],
   ) => Promise<any>;
   subscribeLockBalances: (chain: ExtendedChain, accountIds: AccountId[]) => Promise<any>;
+  setBalanceIsValid: (balanceKey: BalanceKey, verified: boolean) => Promise<number>;
 }

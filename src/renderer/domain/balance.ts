@@ -19,3 +19,5 @@ export type Balance = {
   frozen?: string;
   locked?: BalanceLock[];
 };
+
+export type BalanceKey = Pick<Balance, 'accountId' | 'chainId' | 'assetId'>;
