@@ -13,7 +13,7 @@ export type Props = {
   className?: string;
 };
 
-const Animation = ({ name, width = 80, height = 80, loop = false, autoplay = false, className }: Props) => {
+const Animation = ({ name, width = 80, height = 80, loop = false, autoplay = true, className }: Props) => {
   const defaultOptions = {
     loop,
     autoplay,
@@ -25,7 +25,7 @@ const Animation = ({ name, width = 80, height = 80, loop = false, autoplay = fal
 
   return (
     <div className={className}>
-      <Lottie options={defaultOptions} height={height} width={width} />
+      <Lottie options={defaultOptions} isClickToPauseDisabled={true} height={height} width={width} />
     </div>
   );
 };
