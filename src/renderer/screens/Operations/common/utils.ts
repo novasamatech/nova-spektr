@@ -2,7 +2,7 @@ import { TFunction } from 'react-i18next';
 
 import { IconNames } from '@renderer/components/ui/Icon/data';
 import { Explorer } from '@renderer/domain/chain';
-import { HexString } from '@renderer/domain/shared-kernel';
+import { AccountId, HexString } from '@renderer/domain/shared-kernel';
 import {
   MultisigTxFinalStatus,
   MultisigTxInitStatus,
@@ -10,6 +10,10 @@ import {
   TransactionType,
 } from '@renderer/domain/transaction';
 import { DEFAULT } from '@shared/constants/common';
+import { toAddress } from '@renderer/shared/utils/address';
+import { Contact } from '@renderer/domain/contact';
+import { Account } from '@renderer/domain/account';
+import { Signatory } from '@renderer/domain/signatory';
 
 export const UNKNOWN_TYPE = 'UNKNOWN_TYPE';
 export const TransferTypes = [TransactionType.TRANSFER, TransactionType.ASSET_TRANSFER, TransactionType.ORML_TRANSFER];
@@ -218,4 +222,24 @@ export const getTransactionAmount = (tx: Transaction): string | null => {
   }
 
   return null;
+};
+
+export const getSignatoryName = (
+  signatoryId: AccountId,
+  txSignatories: Signatory[],
+  contacts: Contact[],
+  accounts: Account[],
+  addressPrefix?: number,
+): string => {
+  // signatory data source priority: transaction -> contacts -> wallets -> address
+  const fromTx = txSignatories.find((s) => s.accountId === signatoryId)?.name;
+  if (fromTx) return fromTx;
+
+  const fromContact = contacts.find((c) => c.accountId === signatoryId)?.name;
+  if (fromContact) return fromContact;
+
+  const fromAccount = accounts.find((a) => a.accountId === signatoryId)?.name;
+  if (fromAccount) return fromAccount;
+
+  return toAddress(signatoryId, { chunk: 5, prefix: addressPrefix });
 };

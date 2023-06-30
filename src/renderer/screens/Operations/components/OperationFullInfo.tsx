@@ -6,7 +6,7 @@ import { Icon } from '@renderer/components/ui';
 import Details from '@renderer/screens/Operations/components/Details';
 import RejectTx from '@renderer/screens/Operations/components/modals/RejectTx';
 import ApproveTx from '@renderer/screens/Operations/components/modals/ApproveTx';
-import { getMultisigExtrinsicLink } from '@renderer/screens/Operations/common/utils';
+import { getMultisigExtrinsicLink, getSignatoryName } from '@renderer/screens/Operations/common/utils';
 import { Signatory } from '@renderer/domain/signatory';
 import CallDataModal from '@renderer/screens/Operations/components/modals/CallDataModal';
 import { AccountId, CallData, ChainId } from '@renderer/domain/shared-kernel';
@@ -19,6 +19,8 @@ import { useI18n } from '@renderer/context/I18nContext';
 import { Button, CaptionText, InfoLink, SmallTitleText } from '@renderer/components/ui-redesign';
 import SignatoryCard from '@renderer/components/common/SignatoryCard/SignatoryCard';
 import LogModal from './Log';
+import { useContact } from '@renderer/services/contact/contactService';
+import { useAccount } from '@renderer/services/account/accountService';
 
 type Props = {
   tx: MultisigTransaction;
@@ -27,6 +29,9 @@ type Props = {
 
 const OperationFullInfo = ({ tx, account }: Props) => {
   const { t } = useI18n();
+  const { getLiveContacts } = useContact();
+  const { getLiveAccounts } = useAccount();
+
   const { callData, events, signatories } = tx;
 
   const { matrix } = useMatrix();
@@ -42,6 +47,9 @@ const OperationFullInfo = ({ tx, account }: Props) => {
 
   const [signatoriesList, setSignatories] = useState<Signatory[]>([]);
   const explorerLink = getMultisigExtrinsicLink(tx.callHash, tx.indexCreated, tx.blockCreated, connection?.explorers);
+
+  const contacts = getLiveContacts();
+  const accounts = getLiveAccounts();
 
   const setupCallData = async (callData: CallData) => {
     const api = connection.api;
@@ -144,24 +152,31 @@ const OperationFullInfo = ({ tx, account }: Props) => {
         </div>
 
         <ul className="flex flex-col gap-y-0.5">
-          {signatoriesList.map(({ accountId, name }) => {
-            return (
-              <li key={accountId}>
-                <SignatoryCard
-                  addressPrefix={connection.addressPrefix}
-                  accountId={accountId}
-                  type="short"
-                  name={name}
-                  status={getSignatoryStatus(accountId)}
-                />
-              </li>
-            );
-          })}
+          {signatoriesList.map(({ accountId, matrixId }) => (
+            <li key={accountId}>
+              <SignatoryCard
+                addressPrefix={connection.addressPrefix}
+                accountId={accountId}
+                type="short"
+                matrixId={matrixId}
+                name={getSignatoryName(accountId, tx.signatories, contacts, accounts, connection?.addressPrefix)}
+                status={getSignatoryStatus(accountId)}
+              />
+            </li>
+          ))}
         </ul>
       </div>
 
       <CallDataModal isOpen={isCallDataModalOpen} tx={tx} onSubmit={setupCallData} onClose={toggleCallDataModal} />
-      <LogModal isOpen={isLogModalOpen} tx={tx} account={account} connection={connection} onClose={toggleLogModal} />
+      <LogModal
+        isOpen={isLogModalOpen}
+        tx={tx}
+        account={account}
+        connection={connection}
+        accounts={accounts}
+        contacts={contacts}
+        onClose={toggleLogModal}
+      />
     </div>
   );
 };
