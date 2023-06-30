@@ -4,9 +4,9 @@ import useAddressInfo from '@renderer/components/common/AccountAddress/useAddres
 import { Icon, Identicon } from '@renderer/components/ui';
 import { BodyText, InfoPopover } from '@renderer/components/ui-redesign';
 import { HelpText } from '@renderer/components/ui-redesign/Typography';
-import { WalletContact } from './AddSignatory';
+import { ExtendedWallet } from '../common/types';
 
-type Props = Pick<WalletContact, 'accountId' | 'walletName' | 'name'> & { explorers?: Explorer[] };
+type Props = Pick<ExtendedWallet, 'accountId' | 'walletName' | 'name'> & { explorers?: Explorer[] };
 
 export const WalletsTabItem = ({ accountId, name, walletName, explorers = [] }: Props) => {
   const address = toAddress(accountId);

@@ -1,16 +1,14 @@
 import { ComponentMeta, ComponentStory } from '@storybook/react';
 
-import TextBase from '@renderer/components/ui-redesign/Typography/common/TextBase';
-import {
-  LargeTitleText,
-  TitleText,
-  SmallTitleText,
-  CaptionText,
-  HeadlineText,
-  BodyText,
-  FootnoteText,
-} from '@renderer/components/ui-redesign';
-import { HelpText } from '@renderer/components/ui-redesign/Typography/components/HelpText';
+import TextBase from './common/TextBase';
+import { BodyText } from './components/BodyText';
+import { CaptionText } from './components/CaptionText';
+import { FootnoteText } from './components/FootnoteText';
+import { HeadlineText } from './components/HeadlineText';
+import { HelpText } from './components/HelpText';
+import { LargeTitleText } from './components/LargeTitleText';
+import { SmallTitleText } from './components/SmallTitleText';
+import { TitleText } from './components/TitleText';
 
 export default {
   title: 'Redesign/Typography',

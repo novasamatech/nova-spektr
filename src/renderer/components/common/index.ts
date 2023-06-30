@@ -18,7 +18,7 @@ import QrGeneratorContainer from './QrCode/QrGeneratorContainer/QrGeneratorConta
 import DetailRow from '@renderer/components/common/DetailRow/DetailRow';
 import ExtrinsicExplorers from './ExtrinsicExplorers/ExtrinsicExplorers';
 
-// SignatoryCard, AddressWithExplorers, ScanMultiframeQr and ScanSingleframeQr exported separately.
+// FIXME: SignatoryCard, AddressWithExplorers, ScanMultiframeQr and ScanSingleframeQr exported separately.
 // Adding them to this file causes to crash all tests which use anything from that file
 // similar issue on stackoverflow:
 // https://stackoverflow.com/questions/49156356/why-does-jest-try-to-resolve-every-component-in-my-index-ts

@@ -14,7 +14,7 @@ import { useMultisigTx } from '@renderer/services/multisigTx/multisigTxService';
 import { toAccountId } from '@renderer/shared/utils/address';
 import { useToggle } from '@renderer/shared/hooks';
 import { Button } from '@renderer/components/ui-redesign';
-import OperationResult from '@renderer/components/ui-redesign/OperationResult/OperationResult';
+import { OperationResult } from '@renderer/components/common/OperationResult/OperationResult';
 import Paths from '@renderer/routes/paths';
 
 type ResultProps = Pick<ComponentProps<typeof OperationResult>, 'title' | 'description' | 'variant'>;

@@ -3,9 +3,9 @@ import { Dialog, Transition } from '@headlessui/react';
 
 import { ModalBackdrop, ModalTransition } from '@renderer/components/ui-redesign/Modals/common';
 import { FootnoteText, SmallTitleText } from '@renderer/components/ui-redesign';
+import { Animation } from '@renderer/components/ui-redesign/Animation/Animation';
 import { VariantAnimations, VariantAnimationProps } from './common/constants';
 import { Variant } from './common/types';
-import Animation from '@renderer/components/ui-redesign/Animation/Animation';
 
 type Props = {
   title: string;
@@ -15,7 +15,7 @@ type Props = {
   onClose: () => void;
 };
 
-const OperationResult = ({
+export const OperationResult = ({
   title,
   variant = 'success',
   description,
@@ -43,5 +43,3 @@ const OperationResult = ({
     </Dialog>
   </Transition>
 );
-
-export default OperationResult;
