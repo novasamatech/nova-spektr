@@ -13,11 +13,8 @@ const routesConfig: RouteObject[] = [
     element: <Layouts.PrimaryLayout />,
     children: [
       { index: true, element: <Navigate to={Paths.BALANCES} replace /> },
-      { path: Paths.SIGNING, element: <Screens.Signing /> },
       { path: Paths.OPERATIONS, element: <Screens.Operations /> },
       { path: Paths.BALANCES, element: <Screens.Balances /> },
-      { path: Paths.CAMERA_DEV, element: <Screens.CameraDev /> },
-      { path: Paths.CHAT_DEV, element: <Screens.ChatDev /> },
       { path: Paths.NOTIFICATIONS, element: <Screens.Notifications /> },
       {
         path: Paths.ADDRESS_BOOK,

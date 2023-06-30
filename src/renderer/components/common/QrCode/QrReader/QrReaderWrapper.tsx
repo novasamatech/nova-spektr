@@ -1,20 +1,20 @@
 import cn from 'classnames';
 import React, { useState } from 'react';
 
-import { QrSignatureReader } from '@renderer/components/common';
-import { ErrorObject, Progress, QrError, VideoInput } from '@renderer/components/common/QrCode/QrReader/common/types';
+import cnTw from '@renderer/shared/utils/twMerge';
 import { Icon, Shimmering } from '@renderer/components/ui';
-import { DropdownOption, DropdownResult } from '@renderer/components/ui/Dropdowns/common/types';
+import { DropdownOption, DropdownResult } from '@renderer/components/ui-redesign/Dropdowns/common/types';
 import { useI18n } from '@renderer/context/I18nContext';
 import { ValidationErrors } from '@renderer/shared/utils/validation';
 import { secondsToMinutes } from '@renderer/shared/utils/time';
 import { Button, CaptionText, FootnoteText, Select, SmallTitleText } from '@renderer/components/ui-redesign';
-import { CameraAccessErrors, CameraError, WhiteTextButtonStyle } from '../common/consts';
-import cnTw from '@renderer/shared/utils/twMerge';
-import SignatureReaderError from '@renderer/screens/Signing/SignatureReaderError';
-import '../style.css';
-import QrMultiframeSignatureReader from '@renderer/components/common/QrCode/QrReader/QrMultiframeSignatureReader';
+import SignatureReaderError from './SignatureReaderError';
+import QrMultiframeSignatureReader from './QrMultiframeSignatureReader';
 import { HexString } from '@renderer/domain/shared-kernel';
+import { CameraError, CameraAccessErrors, WhiteTextButtonStyle } from '../common/constants';
+import { ErrorObject, Progress, QrError, VideoInput } from '../common/types';
+import QrSignatureReader from './QrSignatureReader';
+import './style.css';
 
 const RESULT_DELAY = 250;
 

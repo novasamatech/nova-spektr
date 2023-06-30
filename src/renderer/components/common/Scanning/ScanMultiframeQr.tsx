@@ -6,7 +6,7 @@ import { useEffect, useState } from 'react';
 
 import { Command } from '@renderer/components/common/QrCode/QrGenerator/common/constants';
 import QrMultiframeGenerator from '@renderer/components/common/QrCode/QrGenerator/QrMultiframeTxGenerator';
-import { TRANSACTION_BULK } from '@renderer/components/common/QrCode/QrReader/common/constants';
+import { TRANSACTION_BULK } from '@renderer/components/common/QrCode/common/constants';
 import { useI18n } from '@renderer/context/I18nContext';
 import { ChainId } from '@renderer/domain/shared-kernel';
 import { Transaction } from '@renderer/domain/transaction';

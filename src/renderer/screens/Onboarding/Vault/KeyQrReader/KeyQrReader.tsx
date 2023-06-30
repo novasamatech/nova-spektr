@@ -4,7 +4,7 @@ import cn from 'classnames';
 import { useState } from 'react';
 
 import { QrReader } from '@renderer/components/common';
-import { ErrorObject, QrError, SeedInfo, VideoInput } from '@renderer/components/common/QrCode/QrReader/common/types';
+import { ErrorObject, QrError, SeedInfo, VideoInput } from '@renderer/components/common/QrCode/common/types';
 import { Icon, Loader } from '@renderer/components/ui';
 import { DropdownOption, DropdownResult } from '@renderer/components/ui/Dropdowns/common/types';
 import { useI18n } from '@renderer/context/I18nContext';

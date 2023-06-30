@@ -8,7 +8,6 @@ import Explorers from './Explorers/Explorers';
 import Message from './Message/Message';
 import Expandable from './Expandable/Expandable';
 import Deposit from './Deposit/Deposit';
-import Badge from './Badge/Badge';
 import Fee from './Fee/Fee';
 import Header from './Header/Header';
 import ExplorerLink from './ExplorerLink/ExplorerLink';
@@ -36,7 +35,6 @@ export {
   Expandable,
   Deposit,
   Message,
-  Badge,
   Fee,
   Header,
   ExplorerLink,

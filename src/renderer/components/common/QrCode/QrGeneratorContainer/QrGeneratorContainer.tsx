@@ -4,9 +4,9 @@ import cn from 'classnames';
 import { Button, CaptionText, FootnoteText, InfoLink, SmallTitleText } from '@renderer/components/ui-redesign';
 import { secondsToMinutes } from '@renderer/shared/utils/time';
 import { Icon, Shimmering } from '@renderer/components/ui';
-import { getMetadataPortalUrl, TROUBLESHOOTING_URL } from '@renderer/screens/Signing/common/consts';
 import { useI18n } from '@renderer/context/I18nContext';
 import { ChainId } from '@renderer/domain/shared-kernel';
+import { getMetadataPortalUrl, TROUBLESHOOTING_URL } from '../common/constants';
 
 type Props = {
   countdown: number;

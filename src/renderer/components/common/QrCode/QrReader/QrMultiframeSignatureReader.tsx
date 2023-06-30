@@ -3,13 +3,13 @@ import init, { Decoder, EncodingPacket } from 'raptorq';
 import { useEffect, useRef } from 'react';
 import { u8aToHex } from '@polkadot/util';
 
+import RaptorFrame from './RaptorFrame';
 import cnTw from '@renderer/shared/utils/twMerge';
 import { useI18n } from '@renderer/context/I18nContext';
-import { ErrorFields, FRAME_KEY, SIGNED_TRANSACTION_BULK } from './common/constants';
-import { QR_READER_ERRORS } from './common/errors';
-import { DecodeCallback, ErrorObject, Progress, QrError, VideoInput } from './common/types';
-import RaptorFrame from './RaptorFrame';
 import { HexString } from '@renderer/domain/shared-kernel';
+import { QR_READER_ERRORS } from '../common/errors';
+import { ErrorFields, FRAME_KEY, SIGNED_TRANSACTION_BULK } from '../common/constants';
+import { DecodeCallback, ErrorObject, Progress, QrError, VideoInput } from '../common/types';
 import { CRYPTO_SR25519 } from '../QrGenerator/common/constants';
 
 const enum Status {
