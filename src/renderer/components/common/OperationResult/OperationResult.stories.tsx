@@ -1,6 +1,6 @@
 import { ComponentMeta, ComponentStory } from '@storybook/react';
 
-import OperationResult from './OperationResult';
+import { OperationResult } from './OperationResult';
 
 export default {
   title: 'Redesign/Operation Result',

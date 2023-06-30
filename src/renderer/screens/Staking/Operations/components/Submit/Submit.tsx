@@ -11,7 +11,7 @@ import { isMultisig, Account, MultisigAccount } from '@renderer/domain/account';
 import { toAccountId } from '@renderer/shared/utils/address';
 import { useMatrix } from '@renderer/context/MatrixContext';
 import { Button } from '@renderer/components/ui-redesign';
-import OperationResult from '@renderer/components/ui-redesign/OperationResult/OperationResult';
+import { OperationResult } from '@renderer/components/common/OperationResult/OperationResult';
 import { useToggle } from '@renderer/shared/hooks';
 import { useMultisigTx } from '@renderer/services/multisigTx/multisigTxService';
 import { DEFAULT_TRANSITION } from '@renderer/shared/utils/constants';

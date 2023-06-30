@@ -20,7 +20,7 @@ import { transferableAmount } from '@renderer/shared/utils/balance';
 import RejectReasonModal from './RejectReasonModal';
 import Confirmation from '@renderer/screens/Operations/components/ActionSteps/Confirmation';
 import { Icon } from '@renderer/components/ui';
-import OperationResult from '@renderer/components/ui-redesign/OperationResult/OperationResult';
+import { OperationResult } from '@renderer/components/common/OperationResult/OperationResult';
 import OperationModalTitle from '@renderer/screens/Operations/components/OperationModalTitle';
 import Signing from '@renderer/screens/Transfer/components/ActionSteps/Signing';
 import ScanSingleframeQr from '@renderer/components/common/Scanning/ScanSingleframeQr';

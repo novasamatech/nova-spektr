@@ -1,6 +1,7 @@
 import { ComponentMeta, ComponentStory } from '@storybook/react';
 
-import Tabs, { TabItem } from '@renderer/components/ui-redesign/Tabs/Tabs';
+import { Tabs } from './Tabs';
+import { TabItem } from './common/types';
 
 export default {
   title: 'Redesign/Tabs',
