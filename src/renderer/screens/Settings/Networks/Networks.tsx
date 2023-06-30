@@ -145,11 +145,12 @@ export const Networks = () => {
   const resetBalanceValidation = async (relaychainId: ChainId) => {
     const parachains = getParachains(relaychainId);
     const allAccounts = await getAccounts();
-    const uniqAccounts = await uniqBy(allAccounts, 'accountId');
+    const uniqAccounts = uniqBy(allAccounts, 'accountId');
 
     parachains.forEach(({ chainId, assets }) => {
       uniqAccounts.forEach(({ accountId }) => {
         assets.forEach(({ assetId }) => {
+          // TODO: Use bulkUpdate when dexie 4.0 will be released
           setBalanceIsValid({ chainId, accountId, assetId: assetId.toString() }, true);
         });
       });
