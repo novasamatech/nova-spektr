@@ -179,8 +179,8 @@ export const OperationForm = ({
               validate: {
                 notZero: (v) => Number(v) > 0,
                 insufficientBalance: validateBalance,
-                insufficientBalanceForFee: validateFee,
                 insufficientBalanceForDeposit: validateDeposit,
+                insufficientBalanceForFee: validateFee,
               },
             }}
             render={({ field: { onChange, value }, fieldState: { error } }) => (
