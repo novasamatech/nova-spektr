@@ -56,4 +56,9 @@ describe('shared/utils/address', () => {
     const result = validateAddress('randomaddress');
     expect(result).toEqual(false);
   });
+
+  test('short address is not valid', () => {
+    const result = validateAddress('F7NZ');
+    expect(result).toEqual(false);
+  });
 });
