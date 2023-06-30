@@ -226,6 +226,12 @@ export const getTransactionAmount = (tx: Transaction): string | null => {
 export const getSignatoryName = (
   signatoryId: AccountId,
   tx: MultisigTransaction,
+  contacts: Contact[],
+  accounts: Account[],
+  addressPrefix?: number,
+): string => {
+  signatoryId: AccountId,
+  tx: MultisigTransaction,
   contacts: ContactDS[],
   accounts: AccountDS[],
   addressPrefix?: number,
