@@ -6,12 +6,13 @@ import { TabItem } from './common/types';
 
 type Props = {
   items: TabItem[];
+  unmount?: boolean;
   panelClassName?: string;
   tabClassName?: string;
   onChange?: (index: number) => void;
 };
 
-export const Tabs = ({ items, tabClassName, panelClassName = 'mt-4', onChange }: Props) => (
+export const Tabs = ({ items, unmount = true, tabClassName, panelClassName = 'mt-4', onChange }: Props) => (
   <Tab.Group onChange={onChange}>
     <Tab.List className="p-0.5 flex bg-tab-background rounded-md gap-x-1">
       {items.map(({ id, title }) => (
@@ -33,7 +34,7 @@ export const Tabs = ({ items, tabClassName, panelClassName = 'mt-4', onChange }:
     </Tab.List>
     <Tab.Panels className={panelClassName}>
       {items.map(({ id, panel }) => (
-        <Tab.Panel key={id} unmount={false}>
+        <Tab.Panel key={id} unmount={unmount}>
           {panel}
         </Tab.Panel>
       ))}

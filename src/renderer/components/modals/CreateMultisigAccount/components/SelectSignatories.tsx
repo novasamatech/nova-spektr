@@ -226,7 +226,12 @@ export const SelectSignatories = ({ isActive, chains, wallets, accounts, contact
       >
         <SmallTitleText className="py-2 mb-4">{t('createMultisigAccount.signatoryTitle')}</SmallTitleText>
 
-        <Tabs items={TabItems} panelClassName="mt-4 flex-1 overflow-y-auto" tabClassName="flex-inline" />
+        <Tabs
+          items={TabItems}
+          unmount={false}
+          panelClassName="mt-4 flex-1 overflow-y-auto"
+          tabClassName="flex-inline"
+        />
       </section>
 
       <BaseModal

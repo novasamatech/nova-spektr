@@ -55,10 +55,9 @@ const Verification = () => {
   const { t } = useI18n();
   const { matrix } = useMatrix();
 
-  const [verifyMethod, setVerifyMethod] = useState<VerifyMethodsType>(VerifyMethods.SECRET_KEY);
-
-  const [sessionIsVerified, setSessionIsVerified] = useState(matrix.sessionIsVerified);
   const [verifyFailed, setVerifyFailed] = useState(false);
+  const [sessionIsVerified, setSessionIsVerified] = useState(matrix.sessionIsVerified);
+  const [verifyMethod, setVerifyMethod] = useState<VerifyMethodsType>(VerifyMethods.SECRET_KEY);
 
   const {
     handleSubmit,
@@ -172,9 +171,9 @@ const Verification = () => {
       {!sessionIsVerified ? (
         <form className="flex flex-col gap-y-2" onSubmit={handleSubmit(submitVerification)}>
           <Tabs
-            items={tabItems}
             panelClassName=""
-            onChange={(index: number) => changeVerifyMethod(index as VerifyMethodsType)}
+            items={tabItems}
+            onChange={(index) => changeVerifyMethod(index as VerifyMethodsType)}
           />
 
           <InputHint variant="error" active={verifyFailed}>

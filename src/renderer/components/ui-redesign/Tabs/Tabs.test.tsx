@@ -10,7 +10,7 @@ const tabItems: TabItem[] = [
   { id: '3', title: 'Tab 3 title', panel: <div>tab 3 content</div> },
 ];
 
-describe('ui/Tabs', () => {
+describe('ui-redesign/Tabs', () => {
   test('should render component', () => {
     render(<Tabs items={tabItems} />);
 
@@ -18,6 +18,35 @@ describe('ui/Tabs', () => {
     const tabTitle = screen.getByText('Tab 1 title');
     expect(tabTitle).toBeInTheDocument();
     expect(tabContent).toBeInTheDocument();
+  });
+
+  test('should unmount tabs', () => {
+    render(<Tabs unmount items={tabItems} />);
+
+    const tabContentOne = screen.getByText('tab 1 content');
+    const tabContentTwo = screen.queryByText('tab 2 content');
+    const tabContentThree = screen.queryByText('tab 2 content');
+
+    expect(tabContentOne).toBeVisible();
+    expect(tabContentOne).toBeInTheDocument();
+    expect(tabContentTwo).not.toBeInTheDocument();
+    expect(tabContentThree).not.toBeInTheDocument();
+  });
+
+  test('should not unmount tabs', () => {
+    render(<Tabs items={tabItems} unmount={false} />);
+
+    const tabContentOne = screen.getByText('tab 1 content');
+    const tabContentTwo = screen.getByText('tab 2 content');
+    const tabContentThree = screen.getByText('tab 2 content');
+
+    expect(tabContentOne).toBeInTheDocument();
+    expect(tabContentTwo).toBeInTheDocument();
+    expect(tabContentThree).toBeInTheDocument();
+
+    expect(tabContentOne).toBeVisible();
+    expect(tabContentTwo).not.toBeVisible();
+    expect(tabContentThree).not.toBeVisible();
   });
 
   test('should change tabs via keyboard', async () => {
