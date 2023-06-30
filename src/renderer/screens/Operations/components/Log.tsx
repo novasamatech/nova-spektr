@@ -2,7 +2,7 @@ import { groupBy } from 'lodash';
 import { format } from 'date-fns';
 
 import { useI18n } from '@renderer/context/I18nContext';
-import { MultisigAccount } from '@renderer/domain/account';
+import { Account, MultisigAccount } from '@renderer/domain/account';
 import { ExtendedChain } from '@renderer/services/network/common/types';
 import { MultisigEvent, MultisigTransaction, SigningStatus } from '@renderer/domain/transaction';
 import TransactionTitle from './TransactionTitle/TransactionTitle';
@@ -14,14 +14,14 @@ import { Identicon } from '@renderer/components/ui';
 import { toAddress } from '@renderer/shared/utils/address';
 import { SS58_DEFAULT_PREFIX } from '@renderer/shared/utils/constants';
 import { ExtrinsicExplorers } from '@renderer/components/common';
-import { AccountDS, ContactDS } from '@renderer/services/storage';
+import { Contact } from '@renderer/domain/contact';
 
 type Props = {
   tx: MultisigTransaction;
   account?: MultisigAccount;
   connection?: ExtendedChain;
-  accounts: AccountDS[];
-  contacts: ContactDS[];
+  accounts: Account[];
+  contacts: Contact[];
   isOpen: boolean;
   onClose: () => void;
 };
@@ -52,11 +52,17 @@ const LogModal = ({ isOpen, onClose, tx, account, connection, contacts, accounts
     const isCreatedEvent =
       event.accountId === tx.depositor && (event.status === 'SIGNED' || event.status === 'PENDING_SIGNED');
 
-    const signatory = getSignatoryName(event.accountId, tx, contacts, accounts, connection?.addressPrefix);
+    const signatoryName = getSignatoryName(
+      event.accountId,
+      tx.signatories,
+      contacts,
+      accounts,
+      connection?.addressPrefix,
+    );
     const eventType = isCreatedEvent ? 'INITIATED' : event.status;
     const eventMessage = EventMessage[eventType] || 'log.unknownMessage';
 
-    return `${signatory} ${t(eventMessage)}`;
+    return `${signatoryName} ${t(eventMessage)}`;
   };
 
   return (

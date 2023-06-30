@@ -152,20 +152,18 @@ const OperationFullInfo = ({ tx, account }: Props) => {
         </div>
 
         <ul className="flex flex-col gap-y-0.5">
-          {signatoriesList.map(({ accountId, matrixId }) => {
-            return (
-              <li key={accountId}>
-                <SignatoryCard
-                  addressPrefix={connection.addressPrefix}
-                  accountId={accountId}
-                  type="short"
-                  matrixId={matrixId}
-                  name={getSignatoryName(accountId, tx, contacts, accounts, connection?.addressPrefix)}
-                  status={getSignatoryStatus(accountId)}
-                />
-              </li>
-            );
-          })}
+          {signatoriesList.map(({ accountId, matrixId }) => (
+            <li key={accountId}>
+              <SignatoryCard
+                addressPrefix={connection.addressPrefix}
+                accountId={accountId}
+                type="short"
+                matrixId={matrixId}
+                name={getSignatoryName(accountId, tx.signatories, contacts, accounts, connection?.addressPrefix)}
+                status={getSignatoryStatus(accountId)}
+              />
+            </li>
+          ))}
         </ul>
       </div>
 
