@@ -11,7 +11,6 @@ import { ExtendedChain } from '@renderer/services/network/common/types';
 import { Transaction, TransactionType } from '@renderer/domain/transaction';
 import { Address, HexString, Timepoint } from '@renderer/domain/shared-kernel';
 import { toAddress } from '@renderer/shared/utils/address';
-import { getAssetById } from '@renderer/shared/utils/assets';
 import { useAccount } from '@renderer/services/account/accountService';
 import { getTransactionTitle } from '../../common/utils';
 import { Submit } from '../ActionSteps/Submit';
@@ -83,7 +82,7 @@ const RejectTx = ({ tx, account, connection }: Props) => {
     setRejectTx(multisigTx);
   }, [tx, accounts.length, signAccount?.accountId]);
 
-  const asset = getAssetById(tx.transaction?.args.assetId, connection.assets);
+  const nativeAsset = connection.assets[0];
 
   const getMultisigTx = (signer: Address): Transaction => {
     const otherSignatories = account.signatories.reduce<Address[]>((acc, s) => {
@@ -114,10 +113,10 @@ const RejectTx = ({ tx, account, connection }: Props) => {
   };
 
   const validateBalanceForFee = async (signAccount: AccountDS): Promise<boolean> => {
-    if (!connection.api || !rejectTx || !signAccount.accountId || !asset) return false;
+    if (!connection.api || !rejectTx || !signAccount.accountId || !nativeAsset) return false;
 
     const fee = await getTransactionFee(rejectTx, connection.api);
-    const balance = await getBalance(signAccount.accountId, connection.chainId, asset.assetId.toString());
+    const balance = await getBalance(signAccount.accountId, connection.chainId, nativeAsset.assetId.toString());
 
     if (!balance) return false;
 
@@ -201,7 +200,7 @@ const RejectTx = ({ tx, account, connection }: Props) => {
                 chainId={tx.chainId}
                 transaction={rejectTx}
                 countdown={countdown}
-                assetId={asset?.assetId.toString() || '0'}
+                assetId={nativeAsset?.assetId.toString() || '0'}
                 onGoBack={goBack}
                 onStartOver={() => {}}
                 onResult={onSignResult}

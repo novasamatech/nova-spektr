@@ -18,6 +18,7 @@ type Params = {
   deposit?: string;
   amount?: string;
   balance?: Balance;
+  nativeBalance?: Balance;
 };
 
 const getBalance = (balance: string, asset: Asset, isCorrect = true): ReactNode => {
@@ -39,7 +40,11 @@ const validateSignatoryBalance = (balance: string, fee: string, deposit: string)
   return new BN(deposit).add(new BN(fee)).lte(new BN(balance));
 };
 
-const validateAccountBalance = (balance: string, amount: string, fee: string): boolean => {
+const validateAccountBalance = (balance: string, nativeBalance: string, amount: string, fee: string): boolean => {
+  if (nativeBalance) {
+    return new BN(amount).lte(new BN(balance)) && new BN(fee).lte(new BN(nativeBalance));
+  }
+
   return new BN(amount).add(new BN(fee)).lte(new BN(balance));
 };
 
@@ -63,14 +68,19 @@ export const getSignatoryOption = (
 
 export const getAccountOption = <T extends Account | MultisigAccount>(
   account: T,
-  { balance, asset, fee, addressPrefix, amount }: Params,
+  { balance, asset, fee, addressPrefix, amount, nativeBalance }: Params,
 ): DropdownOption<T> => {
   const address = toAddress(account.accountId, { prefix: addressPrefix });
   const canValidateBalance = balance && fee && amount;
 
   let balanceIsCorrect = true;
   if (canValidateBalance) {
-    balanceIsCorrect = validateAccountBalance(transferableAmount(balance), amount, fee);
+    balanceIsCorrect = validateAccountBalance(
+      transferableAmount(balance),
+      transferableAmount(nativeBalance),
+      amount,
+      fee,
+    );
   }
 
   const balanceContent = getBalance(transferableAmount(balance), asset, balanceIsCorrect);
