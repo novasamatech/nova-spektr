@@ -394,5 +394,6 @@ export const useBalance = (): IBalanceService => {
     getLiveNetworkBalances,
     subscribeBalances,
     subscribeLockBalances,
+    setBalanceIsValid,
   };
 };

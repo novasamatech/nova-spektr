@@ -30,6 +30,7 @@ export interface INetworkService {
   validateRpcNode: (chainId: ChainId, rpcUrl: string) => Promise<RpcValidation>;
   connectToNetwork: (props: ConnectProps) => Promise<void>;
   connectWithAutoBalance: (chainId: ChainId, attempt: number) => Promise<void>;
+  getParachains: (chainId: ChainId) => ExtendedChain[];
 }
 
 // =====================================================

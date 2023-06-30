@@ -1,6 +1,6 @@
 import { Table } from 'dexie';
 
-import { Balance } from '@renderer/domain/balance';
+import { Balance, BalanceKey } from '@renderer/domain/balance';
 import { Connection, ConnectionType } from '@renderer/domain/connection';
 import { Contact } from '@renderer/domain/contact';
 import { Address, ChainId, AccountId, CallHash } from '@renderer/domain/shared-kernel';
@@ -25,7 +25,7 @@ export interface IBalanceStorage {
   getAllBalances: () => Promise<BalanceDS[]>;
   addBalance: (balance: Balance) => Promise<void>;
   updateBalance: (balance: Balance) => Promise<void>;
-  setBalanceIsValid: (balance: Balance, verified: boolean) => Promise<number>;
+  setBalanceIsValid: (balanceKey: BalanceKey, verified: boolean) => Promise<number>;
 }
 
 export interface IConnectionStorage {
