@@ -40,7 +40,7 @@ export const NetworkInfo = ({
 }: PropsWithChildren<Props>) => {
   const { t } = useI18n();
   const { sortChains, getChainsData } = useChains();
-  const { getStakingNetwork } = useSettingsStorage();
+  const { getStakingNetwork, setStakingNetwork } = useSettingsStorage();
 
   const [isChildrenShown, toggleChildren] = useToggle();
   const [networks, setNetworks] = useState<DropdownOption<Chain>[]>([]);
@@ -102,6 +102,7 @@ export const NetworkInfo = ({
           selectedId={activeNetwork?.id}
           onChange={(chain) => {
             setActiveNetwork(chain);
+            setStakingNetwork(chain.value.chainId);
             onNetworkChange(chain.value);
           }}
         />

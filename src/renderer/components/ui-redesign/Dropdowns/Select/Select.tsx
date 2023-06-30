@@ -8,20 +8,20 @@ import CommonInputStyles from '@renderer/components/ui-redesign/Inputs/common/st
 import { FootnoteText, LabelText } from '@renderer/components/ui-redesign';
 import { OptionsContainerStyle, OptionStyle, SelectButtonStyle, ViewClass } from '../common/constants';
 
-type Props = {
+type Props<T> = {
   className?: string;
   placeholder: string;
   label?: string;
   disabled?: boolean;
   invalid?: boolean;
   selectedId?: DropdownOption['id'];
-  options: DropdownOption[];
+  options: DropdownOption<T>[];
   position?: Position;
   tabIndex?: number;
-  onChange: (data: DropdownResult) => void;
+  onChange: (data: DropdownResult<T>) => void;
 };
 
-const Select = ({
+const Select = <T extends any>({
   className,
   placeholder,
   label,
@@ -32,7 +32,7 @@ const Select = ({
   onChange,
   position = 'down',
   tabIndex,
-}: Props) => {
+}: Props<T>) => {
   const id = useId();
   const selectedOption = options.find((option) => option.id === selectedId);
 
