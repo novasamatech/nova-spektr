@@ -84,7 +84,13 @@ export const MatrixProvider = ({ children }: PropsWithChildren) => {
       const { accountId, threshold, signatories, accountName, creatorAccountId } = content.mstAccount;
 
       const mstAccountIsValid = accountId === getMultisigAccountId(signatories, threshold);
-      if (!mstAccountIsValid) return;
+      if (!mstAccountIsValid) {
+        console.log(
+          `Multisig account is not valid. Multisig address ${accountId} can't be derived from signatories and threshold`,
+        );
+
+        return;
+      }
 
       const accounts = await getAccounts();
       const mstAccount = accounts.find((a) => a.accountId === accountId) as MultisigAccount;
@@ -92,6 +98,7 @@ export const MatrixProvider = ({ children }: PropsWithChildren) => {
       const isActive = sender === matrix.userId;
 
       if (!mstAccount) {
+        console.log(`No multisig account ${accountId} found. Joining room and add wallet`);
         await joinRoom(roomId, content, isActive);
 
         addNotification({
@@ -106,9 +113,10 @@ export const MatrixProvider = ({ children }: PropsWithChildren) => {
           type: MultisigNotificationType.ACCOUNT_INVITED,
         });
       } else if (signer) {
+        console.log(`Multisig account ${accountId} already added. Changing room to ${roomId}`);
         await changeRoom(roomId, mstAccount, content, signer.accountId);
       } else {
-        console.warn(`Signer for multisig account ${accountId} not found`);
+        console.warn(`Signer for multisig account ${accountId} not found. Ignore invitation.`);
       }
     } catch (error) {
       console.error(
