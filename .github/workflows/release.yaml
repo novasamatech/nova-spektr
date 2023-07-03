@@ -111,3 +111,5 @@ jobs:
             *.exe
             *.AppImage
             *.sha256
+            latest*.yml
+            *mac.zip
