@@ -155,7 +155,7 @@ const OperationFullInfo = ({ tx, account }: Props) => {
           {signatoriesList.map(({ accountId, matrixId }) => (
             <li key={accountId}>
               <SignatoryCard
-                addressPrefix={connection.addressPrefix}
+                addressPrefix={connection?.addressPrefix}
                 accountId={accountId}
                 type="short"
                 matrixId={matrixId}
