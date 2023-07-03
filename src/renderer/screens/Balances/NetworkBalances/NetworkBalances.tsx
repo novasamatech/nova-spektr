@@ -1,4 +1,5 @@
 import { BN } from '@polkadot/util';
+import { useMemo } from 'react';
 
 import { Icon } from '@renderer/components/ui';
 import { Asset } from '@renderer/domain/asset';
@@ -6,7 +7,7 @@ import { Chain as ChainType } from '@renderer/domain/chain';
 import { AccountId } from '@renderer/domain/shared-kernel';
 import { useBalance } from '@renderer/services/balance/balanceService';
 import { ZERO_BALANCE } from '@renderer/services/balance/common/constants';
-import { totalAmount } from '@renderer/shared/utils/balance';
+import { formatBalance, totalAmount } from '@renderer/shared/utils/balance';
 import { ExtendedChain } from '@renderer/services/network/common/types';
 import AssetBalanceCard from '../AssetBalanceCard/AssetBalanceCard';
 import { useI18n } from '@renderer/context/I18nContext';
@@ -70,20 +71,37 @@ const NetworkBalances = ({
       return acc;
     }, {}) || {};
 
-  const filteredAssets = chain.assets.filter((asset) => {
-    if (query) {
-      return (
-        includes(asset.symbol, query) ||
-        (!searchSymbolOnly && (includes(chain.name, query) || includes(asset.name, query)))
-      );
-    }
+  const filteredAssets = useMemo(
+    () =>
+      chain.assets
+        .filter((asset) => {
+          if (query) {
+            return (
+              includes(asset.symbol, query) ||
+              (!searchSymbolOnly && (includes(chain.name, query) || includes(asset.name, query)))
+            );
+          }
 
-    const balance = balancesObject[asset.assetId];
+          const balance = balancesObject[asset.assetId];
 
-    return (
-      !hideZeroBalance || !balance || balance.verified !== true || (balance && totalAmount(balance) !== ZERO_BALANCE)
-    );
-  });
+          return (
+            !hideZeroBalance ||
+            !balance ||
+            balance.verified !== true ||
+            (balance && totalAmount(balance) !== ZERO_BALANCE)
+          );
+        })
+        .sort((a, b) => {
+          const aTotal = balancesObject[a.assetId.toString()] ? totalAmount(balancesObject[a.assetId.toString()]) : '0';
+          const bTotal = balancesObject[b.assetId.toString()] ? totalAmount(balancesObject[b.assetId.toString()]) : '0';
+
+          const aFormatted = formatBalance(aTotal, a.precision);
+          const bFormatted = formatBalance(bTotal, b.precision);
+
+          return Number(bFormatted.value) - Number(aFormatted.value) || a.name.localeCompare(b.name);
+        }),
+    [balances, chain.chainId],
+  );
 
   if (filteredAssets.length === 0) {
     return null;
