@@ -1,12 +1,12 @@
 import { render, screen, act } from '@testing-library/react';
 
 import { Asset } from '@renderer/domain/asset';
-import { Chain } from '@renderer/domain/chain';
 import { TEST_ACCOUNT_ID } from '@renderer/shared/utils/constants';
 import chains from '@renderer/services/network/common/chains/chains.json';
-import ReceiveModal from './ReceiveModal';
 import { useAccount } from '@renderer/services/account/accountService';
 import { SigningType } from '@renderer/domain/shared-kernel';
+import { Chain } from '@renderer/domain/chain';
+import { ReceiveModal } from './ReceiveModal';
 
 jest.mock('@renderer/context/I18nContext', () => ({
   useI18n: jest.fn().mockReturnValue({
@@ -26,7 +26,7 @@ jest.mock('@renderer/components/ui/Truncate/Truncate', () => () => (
 
 const westendExplorers = chains.find((chain) => chain.name === 'Westend')?.explorers || [];
 
-describe('screens/Balances/ReceiveModal', () => {
+describe('screens/Assets/ReceiveModal', () => {
   afterEach(() => {
     jest.clearAllMocks();
   });
@@ -34,14 +34,12 @@ describe('screens/Balances/ReceiveModal', () => {
   const defaultProps = (explorers?: any[]) => ({
     onClose: () => {},
     isOpen: true,
-    data: {
-      chain: {
-        name: 'Westend',
-        icon: 'westend-icon',
-        explorers,
-      } as Chain,
-      asset: { name: 'WND', icon: 'wnd-icon' } as Asset,
-    },
+    asset: { name: 'WND', icon: 'wnd-icon' } as Asset,
+    chain: {
+      name: 'Westend',
+      icon: 'westend-icon',
+      explorers,
+    } as Chain,
   });
 
   test('should render component', async () => {

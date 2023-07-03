@@ -2,7 +2,6 @@ import cn from 'classnames';
 import { KeyboardEvent, MouseEvent } from 'react';
 
 import { Shimmering } from '@renderer/components/ui';
-import { useI18n } from '@renderer/context/I18nContext';
 import { Asset } from '@renderer/domain/asset';
 import { Balance } from '@renderer/domain/balance';
 import { useToggle } from '@renderer/shared/hooks';
@@ -10,17 +9,8 @@ import { totalAmount, transferableAmount } from '@renderer/shared/utils/balance'
 import { KeyboardKey } from '@renderer/shared/utils/constants';
 import { AssetIcon, BodyText, IconButton } from '@renderer/components/ui-redesign';
 import { BalanceNew } from '@renderer/components/common';
-import { HelpText } from '@renderer/components/ui-redesign/Typography';
-
-type DetailProp = { asset: Asset; value?: string; label: string; showShimmer?: boolean };
-const AssetBalanceDetail = ({ asset, value, label }: DetailProp) => (
-  <div className="flex flex-col flex-1 gap-y-0.5 pl-4">
-    <HelpText as="dt" className="text-text-tertiary">
-      {label}
-    </HelpText>
-    <dd>{value ? <BalanceNew value={value} asset={asset} /> : <Shimmering width={150} height={20} />}</dd>
-  </div>
-);
+import { AssetDetails } from '../AssetDetails/AssetDetails';
+import { useI18n } from '@renderer/context/I18nContext';
 
 type Props = {
   asset: Asset;
@@ -30,8 +20,9 @@ type Props = {
   onTransferClick?: () => void;
 };
 
-const AssetBalanceCard = ({ asset, balance, canMakeActions, onReceiveClick, onTransferClick }: Props) => {
+export const AssetCard = ({ asset, balance, canMakeActions, onReceiveClick, onTransferClick }: Props) => {
   const { t } = useI18n();
+
   const [isExpanded, toggleExpanded] = useToggle();
 
   const onReceive = (event: MouseEvent<HTMLButtonElement>) => {
@@ -54,12 +45,16 @@ const AssetBalanceCard = ({ asset, balance, canMakeActions, onReceiveClick, onTr
 
   const transferableBalance = balance?.free ? transferableAmount(balance) : undefined;
 
+  // TODO: move <li> in parent beneath <ul>
   return (
     <li
       role="button"
       tabIndex={0}
       aria-expanded={isExpanded}
-      className={cn('group cursor-pointer bg-block-background-default rounded flex flex-col hover:shadow-card-shadow')}
+      className={cn(
+        'flex flex-col group cursor-pointer bg-block-background-default rounded',
+        'transition-shadow hover:shadow-card-shadow focus:shadow-card-shadow',
+      )}
       onClick={toggleExpanded}
       onKeyDown={onWrapperKeyDown}
     >
@@ -83,13 +78,11 @@ const AssetBalanceCard = ({ asset, balance, canMakeActions, onReceiveClick, onTr
 
       {isExpanded && (
         <dl className="flex divide-x border-t border-divider gap-x-4 py-4 pr-4">
-          <AssetBalanceDetail asset={asset} value={transferableBalance} label={t('assetBalance.transferable')} />
-          <AssetBalanceDetail asset={asset} value={balance?.frozen} label={t('assetBalance.locked')} />
-          <AssetBalanceDetail asset={asset} value={balance?.reserved} label={t('assetBalance.reserved')} />
+          <AssetDetails asset={asset} value={transferableBalance} label={t('assetBalance.transferable')} />
+          <AssetDetails asset={asset} value={balance?.frozen} label={t('assetBalance.locked')} />
+          <AssetDetails asset={asset} value={balance?.reserved} label={t('assetBalance.reserved')} />
         </dl>
       )}
     </li>
   );
 };
-
-export default AssetBalanceCard;

@@ -14,7 +14,7 @@ const routesConfig: RouteObject[] = [
     children: [
       { index: true, element: <Navigate to={Paths.BALANCES} replace /> },
       { path: Paths.OPERATIONS, element: <Screens.Operations /> },
-      { path: Paths.BALANCES, element: <Screens.Balances /> },
+      { path: Paths.BALANCES, element: <Screens.Assets.Assets /> },
       { path: Paths.NOTIFICATIONS, element: <Screens.Notifications /> },
       {
         path: Paths.ADDRESS_BOOK,

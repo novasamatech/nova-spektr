@@ -1,13 +1,19 @@
 import { act, render, screen } from '@testing-library/react';
 
-import NetworkBalances from './NetworkBalances';
 import { Chain } from '@renderer/domain/chain';
 import { TEST_ACCOUNT_ID } from '@renderer/shared/utils/constants';
 import chains from '@renderer/services/network/common/chains/chains.json';
+import { NetworkAssets } from './NetworkAssets';
 
 const testChain = chains.find((chain) => chain.assets.length > 1) as Chain;
 const testAsset = testChain.assets[0];
 const testAsset2 = testChain.assets[0];
+
+jest.mock('@renderer/context/I18nContext', () => ({
+  useI18n: jest.fn().mockReturnValue({
+    t: (key: string) => key,
+  }),
+}));
 
 jest.mock('@renderer/services/balance/balanceService', () => ({
   useBalance: jest.fn().mockReturnValue({
@@ -31,44 +37,40 @@ jest.mock('@renderer/services/balance/balanceService', () => ({
   }),
 }));
 
-jest.mock('@renderer/context/I18nContext', () => ({
-  useI18n: jest.fn().mockReturnValue({
-    t: (key: string) => key,
-  }),
+jest.mock('../AssetCard/AssetCard', () => ({
+  AssetCard: () => <span>AssetCard</span>,
 }));
 
-jest.mock('../AssetBalanceCard/AssetBalanceCard', () => () => <div>AssetBalance</div>);
-
-describe('screen/Balances/NetworkBalances', () => {
+describe('screen/Assets/NetworkAssets', () => {
   test('should render component', () => {
-    render(<NetworkBalances chain={testChain} accountIds={[TEST_ACCOUNT_ID]} />);
+    render(<NetworkAssets chain={testChain} accountIds={[TEST_ACCOUNT_ID]} />);
 
     const text = screen.getByText(testChain.name);
     expect(text).toBeInTheDocument();
   });
 
   test('should render assets', () => {
-    render(<NetworkBalances chain={testChain} accountIds={[TEST_ACCOUNT_ID]} />);
+    render(<NetworkAssets chain={testChain} accountIds={[TEST_ACCOUNT_ID]} />);
 
-    const balances = screen.getAllByText('AssetBalance');
+    const balances = screen.getAllByText('AssetCard');
     expect(balances).toHaveLength(7);
   });
 
   test('should hide assets', async () => {
-    render(<NetworkBalances chain={testChain} accountIds={[TEST_ACCOUNT_ID]} />);
+    render(<NetworkAssets chain={testChain} accountIds={[TEST_ACCOUNT_ID]} />);
 
-    const balancesBefore = screen.getAllByText('AssetBalance');
+    const balancesBefore = screen.getAllByText('AssetCard');
     expect(balancesBefore).toHaveLength(7);
 
     const button = screen.getByRole('button');
     await act(() => button.click());
 
-    const balancesAfter = screen.queryByText('AssetBalance');
+    const balancesAfter = screen.queryByText('AssetCard');
     expect(balancesAfter).not.toBeInTheDocument();
   });
 
-  test('should show unverfied badge', () => {
-    render(<NetworkBalances chain={testChain} accountIds={[TEST_ACCOUNT_ID]} />);
+  test('should show unverified badge', () => {
+    render(<NetworkAssets chain={testChain} accountIds={[TEST_ACCOUNT_ID]} />);
 
     const unverifiedBadge = screen.getByText('balances.verificationFailedLabel');
     expect(unverifiedBadge).toBeInTheDocument();
