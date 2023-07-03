@@ -10,16 +10,16 @@ import { SigningType } from '@renderer/domain/shared-kernel';
 import { useToggle } from '@renderer/shared/hooks';
 import { useChains } from '@renderer/services/network/chainsService';
 import { useSettingsStorage } from '@renderer/services/settings/settingsStorage';
-import NetworkBalances from '@renderer/screens/Balances/components/NetworkBalances/NetworkBalances';
-import ReceiveModal, { DataPayload } from '@renderer/screens/Balances/components/ReceiveModal/ReceiveModal';
+import NetworkBalances from './components/NetworkBalances/NetworkBalances';
+import ReceiveModal, { DataPayload } from './components/ReceiveModal/ReceiveModal';
 import { useAccount } from '@renderer/services/account/accountService';
 import { isMultisig } from '@renderer/domain/account';
-import BalancesFilters from '@renderer/screens/Balances/components/BalancesFilters';
+import BalancesFilters from './components/BalancesFilters';
 import { BodyText, Button, SmallTitleText } from '@renderer/components/ui-redesign';
 import { Header } from '@renderer/components/common';
 import Transfer from '@renderer/screens/Transfer/Transfer';
 import { AccountDS } from '@renderer/services/storage';
-import SelectShardModal from '@renderer/screens/Balances/components/SelectShardModal/SelectShardModal';
+import SelectShardModal from './components/SelectShardModal/SelectShardModal';
 
 const Balances = () => {
   const { t } = useI18n();
