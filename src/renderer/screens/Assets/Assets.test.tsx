@@ -49,11 +49,11 @@ jest.mock(
   jest.fn().mockReturnValue(({ address }: { address: string }) => <span data-testid="validator">{address}</span>),
 );
 
-jest.mock('../NetworkAssets/NetworkAssets', () => ({
+jest.mock('./components/NetworkAssets/NetworkAssets', () => ({
   NetworkAssets: () => <span>NetworkAssets</span>,
 }));
 
-describe('screen/Balances/Balances', () => {
+describe('screen/Assets/Assets', () => {
   test('should render component', () => {
     render(<Assets />, { wrapper: MemoryRouter });
 
