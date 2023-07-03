@@ -1,4 +1,3 @@
-import { BN } from '@polkadot/util';
 import { useMemo } from 'react';
 
 import { Icon } from '@renderer/components/ui';
@@ -7,14 +6,15 @@ import { Chain as ChainType } from '@renderer/domain/chain';
 import { AccountId } from '@renderer/domain/shared-kernel';
 import { useBalance } from '@renderer/services/balance/balanceService';
 import { ZERO_BALANCE } from '@renderer/services/balance/common/constants';
-import { formatBalance, totalAmount } from '@renderer/shared/utils/balance';
+import { totalAmount } from '@renderer/shared/utils/balance';
 import { ExtendedChain } from '@renderer/services/network/common/types';
-import AssetBalanceCard from '../AssetBalanceCard/AssetBalanceCard';
+import AssetBalanceCard from '@renderer/screens/Balances/components/AssetBalanceCard/AssetBalanceCard';
 import { useI18n } from '@renderer/context/I18nContext';
 import { Balance } from '@renderer/domain/balance';
 import { includes } from '@renderer/shared/utils/strings';
 import { CaptionText, Chain, IconButton, Tooltip } from '@renderer/components/ui-redesign';
 import { useToggle } from '@renderer/shared/hooks';
+import { balanceSorter, sumBalances } from '../../common/utils';
 
 type Props = {
   hideZeroBalance?: boolean;
@@ -25,27 +25,6 @@ type Props = {
   canMakeActions?: boolean;
   onReceiveClick?: (asset: Asset) => void;
   onTransferClick?: (asset: Asset) => void;
-};
-
-const sumValues = (firstValue?: string, secondValue?: string): string => {
-  if (firstValue && secondValue) {
-    return new BN(firstValue).add(new BN(secondValue)).toString();
-  }
-
-  return '0';
-};
-
-const sumBalances = (firstBalance: Balance, secondBalance?: Balance): Balance => {
-  if (!secondBalance) return firstBalance;
-
-  return {
-    ...firstBalance,
-    verified: firstBalance.verified && secondBalance.verified,
-    free: sumValues(firstBalance.free, secondBalance.free),
-    reserved: sumValues(firstBalance.reserved, secondBalance.reserved),
-    frozen: sumValues(firstBalance.frozen, secondBalance.frozen),
-    locked: (firstBalance.locked || []).concat(secondBalance.locked || []),
-  };
 };
 
 const NetworkBalances = ({
@@ -91,15 +70,7 @@ const NetworkBalances = ({
             (balance && totalAmount(balance) !== ZERO_BALANCE)
           );
         })
-        .sort((a, b) => {
-          const aTotal = balancesObject[a.assetId.toString()] ? totalAmount(balancesObject[a.assetId.toString()]) : '0';
-          const bTotal = balancesObject[b.assetId.toString()] ? totalAmount(balancesObject[b.assetId.toString()]) : '0';
-
-          const aFormatted = formatBalance(aTotal, a.precision);
-          const bFormatted = formatBalance(bTotal, b.precision);
-
-          return Number(bFormatted.value) - Number(aFormatted.value) || a.name.localeCompare(b.name);
-        }),
+        .sort((a, b) => balanceSorter(a, b, balancesObject)),
     [balances, chain.chainId],
   );
 
