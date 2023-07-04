@@ -17,6 +17,7 @@ export const Tooltip = ({
 }: PopoverProps) => (
   <Popover
     offsetPx={offsetPx}
+    role="tooltip"
     contentClass={cnTw('py-1 px-2', contentClass)}
     panelClass={cnTw(
       'max-w-[184px] left-1/2 -translate-x-1/2 bg-switch-background-active rounded w-max rounded border-none shadow-none',
