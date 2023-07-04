@@ -1,5 +1,17 @@
 import { createContext, PropsWithChildren, useContext, useEffect, useRef, useState } from 'react';
 
+import { createMultisigAccount, getMultisigAccountId, MultisigAccount } from '@renderer/domain/account';
+import { useAccount } from '@renderer/services/account/accountService';
+import { toAddress } from '@renderer/shared/utils/address';
+import { useContact } from '@renderer/services/contact/contactService';
+import { AccountId, Address, SigningType } from '@renderer/domain/shared-kernel';
+import { getCreatedDateFromApi, validateCallData } from '@renderer/shared/utils/substrate';
+import { useMultisigTx } from '@renderer/services/multisigTx/multisigTxService';
+import { Signatory } from '@renderer/domain/signatory';
+import { useNetworkContext } from '@renderer/context/NetworkContext';
+import { useTransaction } from '@renderer/services/transaction/transactionService';
+import { useNotification } from '@renderer/services/notification/notificationService';
+import { MultisigNotificationType } from '@renderer/domain/notification';
 import Matrix, {
   ApprovePayload,
   BaseMultisigPayload,
@@ -11,13 +23,6 @@ import Matrix, {
   SpektrExtras,
   UpdatePayload,
 } from '@renderer/services/matrix';
-import { createMultisigAccount, getMultisigAccountId, MultisigAccount } from '@renderer/domain/account';
-import { useAccount } from '@renderer/services/account/accountService';
-import { toAddress } from '@renderer/shared/utils/address';
-import { useContact } from '@renderer/services/contact/contactService';
-import { AccountId, Address, SigningType } from '@renderer/domain/shared-kernel';
-import { getCreatedDateFromApi, validateCallData } from '@renderer/shared/utils/substrate';
-import { useMultisigTx } from '@renderer/services/multisigTx/multisigTxService';
 import {
   MultisigEvent,
   MultisigTransaction,
@@ -26,12 +31,6 @@ import {
   MultisigTxStatus,
   SigningStatus,
 } from '@renderer/domain/transaction';
-import { Signatory } from '@renderer/domain/signatory';
-import { useNetworkContext } from '@renderer/context/NetworkContext';
-import { useTransaction } from '@renderer/services/transaction/transactionService';
-import { useNotification } from '@renderer/services/notification/notificationService';
-import { MultisigNotificationType } from '@renderer/domain/notification';
-import { ID } from '@renderer/services/storage';
 
 type MatrixContextProps = {
   matrix: ISecureMessenger;
@@ -49,14 +48,14 @@ export const MatrixProvider = ({ children }: PropsWithChildren) => {
   const { addNotification } = useNotification();
 
   const connectionsRef = useRef(connections);
+  const { current: matrix } = useRef<ISecureMessenger>(new Matrix());
 
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+
+  // HOOK: correct connections for update multisig tx
   useEffect(() => {
-    // HOOK: correct connections for update multisig tx
     connectionsRef.current = connections;
   }, [connections]);
-
-  const { current: matrix } = useRef<ISecureMessenger>(new Matrix());
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
 
   const onSyncProgress = () => {
     if (!isLoggedIn) {
@@ -77,12 +76,12 @@ export const MatrixProvider = ({ children }: PropsWithChildren) => {
   };
 
   const onInvite = async (payload: InvitePayload) => {
+    console.info('💛 ===> onInvite', payload);
+
+    const { roomId, content, sender } = payload;
+    const { accountId, threshold, signatories, accountName, creatorAccountId } = content.mstAccount;
+
     try {
-      console.info('💛 ===> onInvite', payload);
-
-      const { roomId, content, sender } = payload;
-      const { accountId, threshold, signatories, accountName, creatorAccountId } = content.mstAccount;
-
       const mstAccountIsValid = accountId === getMultisigAccountId(signatories, threshold);
       if (!mstAccountIsValid) {
         console.log(
@@ -91,17 +90,20 @@ export const MatrixProvider = ({ children }: PropsWithChildren) => {
 
         return;
       }
+    } catch (error) {
+      console.error('Could not validate signatories and accountId', accountId);
+    }
 
+    try {
       const accounts = await getAccounts();
       const mstAccount = accounts.find((a) => a.accountId === accountId) as MultisigAccount;
       const signer = accounts.find((a) => signatories.includes(a.accountId));
-      const isActive = sender === matrix.userId;
 
       if (!mstAccount) {
         console.log(`No multisig account ${accountId} found. Joining room and add wallet`);
-        await joinRoom(roomId, content, isActive);
 
-        addNotification({
+        await joinRoom(roomId, content, sender === matrix.userId);
+        await addNotification({
           smpRoomId: roomId,
           multisigAccountId: accountId,
           multisigAccountName: accountName,
@@ -113,35 +115,38 @@ export const MatrixProvider = ({ children }: PropsWithChildren) => {
           type: MultisigNotificationType.ACCOUNT_INVITED,
         });
       } else if (signer) {
-        console.log(`Multisig account ${accountId} already added. Changing room to ${roomId}`);
+        console.log(`Multisig account ${accountId} already exists. Trying to change room to ${roomId}`);
         await changeRoom(roomId, mstAccount, content, signer.accountId);
       } else {
-        console.warn(`Signer for multisig account ${accountId} not found. Ignore invitation.`);
+        console.warn(`Signer for multisig account ${accountId} not found. Cancel invitation.`);
+        await matrix.leaveRoom(roomId);
       }
     } catch (error) {
       console.error(
         'Error processing Multisig invitation',
+        payload.sender,
+        payload.roomName,
         payload.roomId,
         payload.eventId,
-        payload.roomId,
-        payload.roomName,
         error,
       );
+      await matrix.leaveRoom(roomId);
     }
   };
 
-  const createMstAccount = async (roomId: string, extras: SpektrExtras, isActive: boolean) => {
+  const createMstAccount = async (roomId: string, extras: SpektrExtras, makeActive: boolean) => {
     const { signatories, threshold, accountName, creatorAccountId } = extras.mstAccount;
 
-    const contactsMap = (await getContacts()).reduce<Record<AccountId, [Address, string]>>((acc, contact) => {
+    const contacts = await getContacts();
+    const contactsMap = contacts.reduce<Record<AccountId, [Address, string]>>((acc, contact) => {
       acc[contact.accountId] = [contact.address, contact.name];
 
       return acc;
     }, {});
     const mstSignatories = signatories.map((accountId) => ({
       accountId,
-      address: contactsMap[accountId] ? contactsMap[accountId][0] : toAddress(accountId),
-      name: contactsMap[accountId] ? contactsMap[accountId][1] : undefined,
+      address: contactsMap[accountId]?.[0] || toAddress(accountId),
+      name: contactsMap[accountId]?.[1],
     }));
 
     const mstAccount = createMultisigAccount({
@@ -153,10 +158,10 @@ export const MatrixProvider = ({ children }: PropsWithChildren) => {
       isActive: false,
     });
 
-    await addAccount(mstAccount).then((id: ID) => {
-      if (isActive) {
-        setActiveAccount(id);
-      }
+    await addAccount(mstAccount).then((id) => {
+      if (!makeActive) return;
+
+      setActiveAccount(id);
     });
   };
 
@@ -171,8 +176,10 @@ export const MatrixProvider = ({ children }: PropsWithChildren) => {
 
     try {
       if (stayInRoom) {
+        console.log(`Skip invitation from room ${roomId}`);
         await matrix.leaveRoom(roomId);
       } else {
+        console.log(`Leave old ${mstAccount.matrixRoomId}, join new room ${roomId}`);
         await matrix.leaveRoom(mstAccount.matrixRoomId);
         await matrix.joinRoom(roomId);
         await updateAccount<MultisigAccount>({
@@ -187,10 +194,10 @@ export const MatrixProvider = ({ children }: PropsWithChildren) => {
     }
   };
 
-  const joinRoom = async (roomId: string, extras: SpektrExtras, isActive: boolean) => {
+  const joinRoom = async (roomId: string, extras: SpektrExtras, makeActive: boolean) => {
     try {
       await matrix.joinRoom(roomId);
-      await createMstAccount(roomId, extras, isActive);
+      await createMstAccount(roomId, extras, makeActive);
     } catch (error) {
       console.error(error);
     }
