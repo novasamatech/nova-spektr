@@ -1,4 +1,4 @@
-import { BN } from '@polkadot/util';
+import { useEffect, useState } from 'react';
 
 import { Icon } from '@renderer/components/ui';
 import { Asset } from '@renderer/domain/asset';
@@ -8,12 +8,13 @@ import { useBalance } from '@renderer/services/balance/balanceService';
 import { ZERO_BALANCE } from '@renderer/services/balance/common/constants';
 import { totalAmount } from '@renderer/shared/utils/balance';
 import { ExtendedChain } from '@renderer/services/network/common/types';
-import AssetBalanceCard from '../AssetBalanceCard/AssetBalanceCard';
+import AssetBalanceCard from '@renderer/screens/Balances/components/AssetBalanceCard/AssetBalanceCard';
 import { useI18n } from '@renderer/context/I18nContext';
 import { Balance } from '@renderer/domain/balance';
 import { includes } from '@renderer/shared/utils/strings';
 import { CaptionText, Chain, IconButton, Tooltip } from '@renderer/components/ui-redesign';
 import { useToggle } from '@renderer/shared/hooks';
+import { balanceSorter, sumBalances } from '../../common/utils';
 
 type Props = {
   hideZeroBalance?: boolean;
@@ -24,27 +25,6 @@ type Props = {
   canMakeActions?: boolean;
   onReceiveClick?: (asset: Asset) => void;
   onTransferClick?: (asset: Asset) => void;
-};
-
-const sumValues = (firstValue?: string, secondValue?: string): string => {
-  if (firstValue && secondValue) {
-    return new BN(firstValue).add(new BN(secondValue)).toString();
-  }
-
-  return '0';
-};
-
-const sumBalances = (firstBalance: Balance, secondBalance?: Balance): Balance => {
-  if (!secondBalance) return firstBalance;
-
-  return {
-    ...firstBalance,
-    verified: firstBalance.verified && secondBalance.verified,
-    free: sumValues(firstBalance.free, secondBalance.free),
-    reserved: sumValues(firstBalance.reserved, secondBalance.reserved),
-    frozen: sumValues(firstBalance.frozen, secondBalance.frozen),
-    locked: (firstBalance.locked || []).concat(secondBalance.locked || []),
-  };
 };
 
 const NetworkBalances = ({
@@ -61,6 +41,8 @@ const NetworkBalances = ({
   const [isCardShown, toggleCard] = useToggle(true);
   const { getLiveNetworkBalances } = useBalance();
 
+  const [filteredAssets, setFilteredAssets] = useState<Asset[]>([]);
+
   const balances = getLiveNetworkBalances(accountIds, chain.chainId);
 
   const balancesObject =
@@ -70,20 +52,24 @@ const NetworkBalances = ({
       return acc;
     }, {}) || {};
 
-  const filteredAssets = chain.assets.filter((asset) => {
-    if (query) {
-      return (
-        includes(asset.symbol, query) ||
-        (!searchSymbolOnly && (includes(chain.name, query) || includes(asset.name, query)))
-      );
-    }
+  useEffect(() => {
+    const filteredAssets = chain.assets.filter((asset) => {
+      if (query) {
+        const hasSymbol = includes(asset.symbol, query);
+        const hasChainName = includes(chain.name, query);
+        const hasAssetName = includes(asset.name, query);
 
-    const balance = balancesObject[asset.assetId];
+        return hasSymbol || (!searchSymbolOnly && (hasChainName || hasAssetName));
+      }
 
-    return (
-      !hideZeroBalance || !balance || balance.verified !== true || (balance && totalAmount(balance) !== ZERO_BALANCE)
-    );
-  });
+      const balance = balancesObject[asset.assetId];
+
+      return !hideZeroBalance || !balance?.verified || totalAmount(balance) !== ZERO_BALANCE;
+    });
+    filteredAssets.sort((a, b) => balanceSorter(a, b, balancesObject));
+
+    setFilteredAssets(filteredAssets);
+  }, [balances, query, hideZeroBalance]);
 
   if (filteredAssets.length === 0) {
     return null;

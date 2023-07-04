@@ -13,7 +13,7 @@ const enum Suffix {
   TRILLIONS = 'T',
 }
 
-const enum Decimal {
+export const enum Decimal {
   SMALL_NUMBER = 5,
   BIG_NUMBER = 2,
 }
