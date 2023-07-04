@@ -42,7 +42,7 @@ jest.mock('@renderer/context/I18nContext', () => ({
   }),
 }));
 
-jest.mock('../NetworkBalances/NetworkBalances', () => () => <div>NetworkBalances</div>);
+jest.mock('./components/NetworkBalances/NetworkBalances', () => () => <div>NetworkBalances</div>);
 jest.mock('@renderer/screens/Transfer/Transfer', () => 'TransferButton');
 
 jest.mock(
