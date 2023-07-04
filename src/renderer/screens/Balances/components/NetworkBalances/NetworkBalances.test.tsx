@@ -9,25 +9,27 @@ const testChain = chains.find((chain) => chain.assets.length > 3) as Chain;
 const testAsset = testChain.assets[0];
 const testAsset2 = testChain.assets[1];
 
+const testBalances = [
+  {
+    assetId: testAsset.assetId.toString(),
+    chainId: testChain.chainId,
+    accountId: TEST_ACCOUNT_ID,
+    free: '10',
+    frozen: [{ type: 'test', amount: '1' }],
+  },
+  {
+    assetId: testAsset2.assetId.toString(),
+    chainId: testChain.chainId,
+    accountId: TEST_ACCOUNT_ID,
+    free: '1000000000000',
+    frozen: [{ type: 'test', amount: '1' }],
+    // verified: false,
+  },
+];
+
 jest.mock('@renderer/services/balance/balanceService', () => ({
   useBalance: jest.fn().mockReturnValue({
-    getLiveNetworkBalances: () => [
-      {
-        assetId: testAsset.assetId.toString(),
-        chainId: testChain.chainId,
-        accountId: TEST_ACCOUNT_ID,
-        free: '10',
-        frozen: [{ type: 'test', amount: '1' }],
-      },
-      {
-        assetId: testAsset2.assetId.toString(),
-        chainId: testChain.chainId,
-        accountId: TEST_ACCOUNT_ID,
-        free: '1000000000000',
-        frozen: [{ type: 'test', amount: '1' }],
-        // verified: false,
-      },
-    ],
+    getLiveNetworkBalances: () => testBalances,
   }),
 }));
 
