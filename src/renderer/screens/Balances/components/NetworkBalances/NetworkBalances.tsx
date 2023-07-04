@@ -75,7 +75,7 @@ const NetworkBalances = ({
           })
           .sort((a, b) => balanceSorter(a, b, balancesObject)),
       ),
-    [balances],
+    [balances, query, hideZeroBalance],
   );
 
   if (filteredAssets.length === 0) {
