@@ -27,7 +27,7 @@ const SignatorySelectModal = ({ isOpen, onClose, onSelect, accounts, asset, chai
       panelClass="w-[420px]"
       onClose={onClose}
     >
-      <ul className="mt-1">
+      <ul className="mt-1 max-h-[332px] overflow-y-scroll">
         {asset &&
           chainId &&
           accounts.map((a) => (
