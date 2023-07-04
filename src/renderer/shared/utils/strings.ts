@@ -57,3 +57,16 @@ export const includes = (value?: string, searchString?: string): boolean => {
 
   return value.toLowerCase().includes((searchString || '').toLowerCase());
 };
+
+/**
+ * Truncate text leaving fixed number of characters
+ * @param text text to truncate
+ * @param start number of leading symbols
+ * @param end number of ending symbols
+ * @return {String}
+ */
+export const truncate = (text: string, start = 5, end = 5): string => {
+  if (text.length <= start + end) return text;
+
+  return `${text.slice(0, start)}...${text.slice(-1 * end)}`;
+};

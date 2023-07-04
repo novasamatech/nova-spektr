@@ -3,8 +3,7 @@ import cn from 'classnames';
 import { useI18n } from '@renderer/context/I18nContext';
 import { MultisigAccount } from '@renderer/domain/account';
 import { Icon } from '@renderer/components/ui';
-import Truncate from '@renderer/components/ui/Truncate/Truncate';
-import { copyToClipboard } from '@renderer/shared/utils/strings';
+import { copyToClipboard, truncate } from '@renderer/shared/utils/strings';
 import { useToggle } from '@renderer/shared/hooks';
 import { ExtendedChain } from '@renderer/services/network/common/types';
 import { MultisigTransaction, Transaction, TransactionType } from '@renderer/domain/transaction';
@@ -162,7 +161,7 @@ const Details = ({ tx, account, connection, isCardDetails = true }: Props) => {
                 className={cn('flex gap-x-1 items-center group', InteractionStyle)}
                 onClick={() => copyToClipboard(callHash)}
               >
-                <Truncate className="max-w-[120px] text-footnote" text={callHash} />
+                <FootnoteText className="text-inherit">{truncate(callHash, 7, 8)}</FootnoteText>
                 <Icon name="copy" size={16} className="text-icon-default group-hover:text-icon-hover" />
               </button>
             </DetailRow>
@@ -175,7 +174,7 @@ const Details = ({ tx, account, connection, isCardDetails = true }: Props) => {
                 className={cn('flex gap-x-1 items-center group', InteractionStyle)}
                 onClick={() => copyToClipboard(callData)}
               >
-                <Truncate className="max-w-[120px] text-footnote" text={callData} />
+                <FootnoteText className="text-inherit">{truncate(callData, 7, 8)}</FootnoteText>
                 <Icon name="copy" size={16} className="text-icon-default group-hover:text-icon-hover" />
               </button>
             </DetailRow>
