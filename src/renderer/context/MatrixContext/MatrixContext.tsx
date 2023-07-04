@@ -82,25 +82,14 @@ export const MatrixProvider = ({ children }: PropsWithChildren) => {
     const { accountId, threshold, signatories, accountName, creatorAccountId } = content.mstAccount;
 
     try {
-      const mstAccountIsValid = accountId === getMultisigAccountId(signatories, threshold);
-      if (!mstAccountIsValid) {
-        console.log(
-          `Multisig account is not valid. Multisig address ${accountId} can't be derived from signatories and threshold`,
-        );
+      validateMstAccount(accountId, signatories, threshold);
 
-        return;
-      }
-    } catch (error) {
-      console.error('Could not validate signatories and accountId', accountId);
-    }
-
-    try {
       const accounts = await getAccounts();
       const mstAccount = accounts.find((a) => a.accountId === accountId) as MultisigAccount;
       const signer = accounts.find((a) => signatories.includes(a.accountId));
 
       if (!mstAccount) {
-        console.log(`No multisig account ${accountId} found. Joining room and add wallet`);
+        console.log(`No multisig account ${accountId} found. Joining room and adding wallet`);
 
         await joinRoom(roomId, content, sender === matrix.userId);
         await addNotification({
@@ -131,6 +120,14 @@ export const MatrixProvider = ({ children }: PropsWithChildren) => {
         error,
       );
       await matrix.leaveRoom(roomId);
+    }
+  };
+
+  const validateMstAccount = (accountId: AccountId, signatories: AccountId[], threshold: number) => {
+    const isValid = accountId === getMultisigAccountId(signatories, threshold);
+
+    if (!isValid) {
+      throw new Error(`Multisig address ${accountId} can't be derived from signatories and threshold`);
     }
   };
 
