@@ -52,31 +52,24 @@ const NetworkBalances = ({
       return acc;
     }, {}) || {};
 
-  useEffect(
-    () =>
-      setFilteredAssets(
-        chain.assets
-          .filter((asset) => {
-            if (query) {
-              return (
-                includes(asset.symbol, query) ||
-                (!searchSymbolOnly && (includes(chain.name, query) || includes(asset.name, query)))
-              );
-            }
+  useEffect(() => {
+    const filteredAssets = chain.assets.filter((asset) => {
+      if (query) {
+        const hasSymbol = includes(asset.symbol, query);
+        const hasChainName = includes(chain.name, query);
+        const hasAssetName = includes(asset.name, query);
 
-            const balance = balancesObject[asset.assetId];
+        return hasSymbol || (!searchSymbolOnly && (hasChainName || hasAssetName));
+      }
 
-            return (
-              !hideZeroBalance ||
-              !balance ||
-              balance.verified !== true ||
-              (balance && totalAmount(balance) !== ZERO_BALANCE)
-            );
-          })
-          .sort((a, b) => balanceSorter(a, b, balancesObject)),
-      ),
-    [balances, query, hideZeroBalance],
-  );
+      const balance = balancesObject[asset.assetId];
+
+      return !hideZeroBalance || !balance?.verified || totalAmount(balance) !== ZERO_BALANCE;
+    });
+    filteredAssets.sort((a, b) => balanceSorter(a, b, balancesObject));
+
+    setFilteredAssets(filteredAssets);
+  }, [balances, query, hideZeroBalance]);
 
   if (filteredAssets.length === 0) {
     return null;
