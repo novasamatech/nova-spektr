@@ -253,8 +253,7 @@ const ApproveTx = ({ tx, account, connection }: Props) => {
         <SignatorySelectModal
           isOpen={isSelectAccountModalOpen}
           accounts={unsignedAccounts}
-          explorers={connection.explorers}
-          chainId={connection.chainId}
+          chain={connection}
           asset={nativeAsset}
           onClose={toggleSelectAccountModal}
           onSelect={handleAccountSelect}
