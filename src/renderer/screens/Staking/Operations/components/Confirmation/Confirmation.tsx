@@ -119,7 +119,7 @@ export const Confirmation = ({
                 <div className="rounded-[30px] px-1.5 py-[1px] bg-icon-accent">
                   <CaptionText className="text-white">{accounts.length}</CaptionText>
                 </div>
-                <Icon className="text-icon-default group-hover:text-icon-hover" name="info" size={16} />
+                <Icon className="group-hover:text-icon-hover" name="info" size={16} />
               </button>
             )}
           </div>
@@ -147,7 +147,7 @@ export const Confirmation = ({
                 <div className="rounded-[30px] px-1.5 py-[1px] bg-icon-accent">
                   <CaptionText className="text-white">{validators.length}</CaptionText>
                 </div>
-                <Icon className="text-icon-default group-hover:text-icon-hover" name="info" size={16} />
+                <Icon className="group-hover:text-icon-hover" name="info" size={16} />
               </button>
             </div>
           )}

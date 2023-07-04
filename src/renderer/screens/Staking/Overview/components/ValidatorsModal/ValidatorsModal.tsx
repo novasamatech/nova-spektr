@@ -109,7 +109,7 @@ export const ValidatorsModal = ({
             <BodyText>
               <Balance value={validator.totalStake || '0'} precision={asset.precision} symbol={asset.symbol} />
             </BodyText>
-            <Icon name="info" size={14} className="text-icon-default group-hover:text-icon-hover" />
+            <Icon name="info" size={14} className="group-hover:text-icon-hover" />
           </div>
         </InfoPopover>
       </li>

@@ -26,7 +26,7 @@ const Button = ({ className, children }: PropsWithChildren<ButtonProps>) => {
       {({ open }) => (
         <>
           {children}
-          <Icon name={open ? 'up' : 'down'} className="ml-4 text-icon-default" size={16} />
+          <Icon name={open ? 'up' : 'down'} className="ml-4" size={16} />
         </>
       )}
     </Disclosure.Button>

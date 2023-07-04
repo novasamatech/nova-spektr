@@ -3,10 +3,7 @@ import QrReader from './QrCode/QrReader/QrReader';
 import QrSignatureReader from './QrCode/QrReader/QrSignatureReader';
 import QrTextGenerator from './QrCode/QrGenerator/QrTextGenerator';
 import QrTxGenerator from './QrCode/QrGenerator/QrTxGenerator';
-import ActiveAddress from './ActiveAddress/ActiveAddress';
-import Explorers from './Explorers/Explorers';
 import Message from './Message/Message';
-import Expandable from './Expandable/Expandable';
 import Deposit from './Deposit/Deposit';
 import Fee from './Fee/Fee';
 import Header from './Header/Header';
@@ -25,14 +22,11 @@ import ExtrinsicExplorers from './ExtrinsicExplorers/ExtrinsicExplorers';
 
 export {
   FallbackScreen,
-  ActiveAddress,
   QrReader,
   QrSignatureReader,
   QrTextGenerator,
   QrGeneratorContainer,
   QrTxGenerator,
-  Explorers,
-  Expandable,
   Deposit,
   Message,
   Fee,

@@ -39,7 +39,7 @@ const WalletGroup = ({ type, wallets, onWalletClick }: Props) => {
                 </CaptionText>
               </div>
 
-              <Icon name="down" size={16} className={cn('text-icon-default', open && 'rotate-180')} />
+              <Icon name="down" size={16} className={open ? 'rotate-180' : ''} />
             </>
           )}
         </Disclosure.Button>

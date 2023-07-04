@@ -381,7 +381,7 @@ export const TransferForm = ({
                   <Icon className="text-text-tertiary" name="lock" size={12} />
                   <FootnoteText className="text-text-tertiary">{t('transfer.networkDeposit')}</FootnoteText>
                   <Tooltip offsetPx={-92} content={<Trans t={t} i18nKey="transfer.networkDepositHint" />}>
-                    <Icon name="info" className="text-icon-default hover:text-icon-hover cursor-pointer" size={16} />
+                    <Icon name="info" className="hover:text-icon-hover cursor-pointer" size={16} />
                   </Tooltip>
                 </div>
               }

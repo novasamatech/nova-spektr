@@ -56,10 +56,10 @@ export const SocialLinks = () => {
               target="_blank"
               rel="noopener noreferrer"
             >
-              <Icon className="text-icon-default row-span-2" name={link.icon} size={36} />
+              <Icon className="row-span-2" name={link.icon} size={36} />
               <BodyText>{t(link.title)}</BodyText>
               <HelpText className="text-text-tertiary">{t(link.subtitle)}</HelpText>
-              <Icon className="text-icon-default row-span-2" name="link" size={16} />
+              <Icon className="row-span-2" name="link" size={16} />
             </a>
           </Plate>
         ))}
