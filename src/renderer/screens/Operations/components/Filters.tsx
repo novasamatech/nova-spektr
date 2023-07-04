@@ -140,7 +140,7 @@ const Filters = ({ txs, onChangeFilters }: Props) => {
       />
 
       {Boolean(filtersSelected) && (
-        <Button variant="text" className="ml-auto" onClick={clearFilters}>
+        <Button variant="text" className="ml-auto py-0 h-8.5" onClick={clearFilters}>
           {t('operations.filters.clearAll')}
         </Button>
       )}
