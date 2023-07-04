@@ -109,7 +109,11 @@ export const SelectSignatories = ({ isActive, wallets, accounts, contacts, onSel
     });
   };
 
-  const isDisabled = (index: string, accountId: AccountId) =>
+const isDisabled = (index: string, accountId: AccountId): boolean => {
+    return (
+      isSameItemSelected(index, selectedWallets[accountId]) || isSameItemSelected(index, selectedContacts[accountId])
+    );
+  };
     isSameItemSelected(index, selectedContacts[accountId]) || isSameItemSelected(index, selectedWallets[accountId]);
 
   const searchedContactList = contactList.filter((c) => {
