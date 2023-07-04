@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useEffect, useState } from 'react';
 
 import { Icon } from '@renderer/components/ui';
 import { Asset } from '@renderer/domain/asset';
@@ -41,6 +41,8 @@ const NetworkBalances = ({
   const [isCardShown, toggleCard] = useToggle(true);
   const { getLiveNetworkBalances } = useBalance();
 
+  const [filteredAssets, setFilteredAssets] = useState<Asset[]>([]);
+
   const balances = getLiveNetworkBalances(accountIds, chain.chainId);
 
   const balancesObject =
@@ -50,28 +52,30 @@ const NetworkBalances = ({
       return acc;
     }, {}) || {};
 
-  const filteredAssets = useMemo(
+  useEffect(
     () =>
-      chain.assets
-        .filter((asset) => {
-          if (query) {
+      setFilteredAssets(
+        chain.assets
+          .filter((asset) => {
+            if (query) {
+              return (
+                includes(asset.symbol, query) ||
+                (!searchSymbolOnly && (includes(chain.name, query) || includes(asset.name, query)))
+              );
+            }
+
+            const balance = balancesObject[asset.assetId];
+
             return (
-              includes(asset.symbol, query) ||
-              (!searchSymbolOnly && (includes(chain.name, query) || includes(asset.name, query)))
+              !hideZeroBalance ||
+              !balance ||
+              balance.verified !== true ||
+              (balance && totalAmount(balance) !== ZERO_BALANCE)
             );
-          }
-
-          const balance = balancesObject[asset.assetId];
-
-          return (
-            !hideZeroBalance ||
-            !balance ||
-            balance.verified !== true ||
-            (balance && totalAmount(balance) !== ZERO_BALANCE)
-          );
-        })
-        .sort((a, b) => balanceSorter(a, b, balancesObject)),
-    [balances, chain.chainId],
+          })
+          .sort((a, b) => balanceSorter(a, b, balancesObject)),
+      ),
+    [balances],
   );
 
   if (filteredAssets.length === 0) {
