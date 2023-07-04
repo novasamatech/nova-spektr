@@ -42,11 +42,11 @@ export const SIGNED_TRANSACTION_BULK = taggedUnion('SignaturesBulk', {
   4: ['V1', ['payload', array(MULTI_SIGNATURE)]],
 });
 
-const METADATA_PORTAL_URL = 'https://metadata.novasama.io/#/';
+const METADATA_PORTAL_METADATA_URL = 'https://metadata.novasama.io/?tab=1#/';
 export const TROUBLESHOOTING_URL =
   'https://docs.novaspektr.io/create-and-sign-operations/create-and-sign-operation-faq';
 
-export const getMetadataPortalUrl = (chainId: ChainId) => `${METADATA_PORTAL_URL}${chainId}`;
+export const getMetadataPortalMetadataUrl = (chainId: ChainId) => `${METADATA_PORTAL_METADATA_URL}${chainId}`;
 
 export const enum CameraError {
   UNKNOWN_ERROR = 3,
