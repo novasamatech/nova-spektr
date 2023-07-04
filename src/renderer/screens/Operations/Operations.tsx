@@ -13,26 +13,27 @@ import Filters from './components/Filters';
 import { MultisigTransactionDS } from '@renderer/services/storage';
 import { useMultisigTx } from '@renderer/services/multisigTx/multisigTxService';
 import { Header } from '@renderer/components/common';
+import { useNetworkContext } from '@renderer/context/NetworkContext';
 
 const Operations = () => {
   const { t, dateLocale } = useI18n();
   const { getActiveMultisigAccount } = useAccount();
   const { getLiveAccountMultisigTxs } = useMultisigTx();
+  const { connections } = useNetworkContext();
 
   const account = getActiveMultisigAccount();
-  const txs = getLiveAccountMultisigTxs(account?.accountId ? [account.accountId] : []);
+  const allTxs = getLiveAccountMultisigTxs(account?.accountId ? [account.accountId] : []);
 
-  const [filteredTxs, setFilteredTxs] = useState<MultisigTransactionDS[]>(txs);
+  const [txs, setTxs] = useState<MultisigTransactionDS[]>([]);
+  const [filteredTxs, setFilteredTxs] = useState<MultisigTransactionDS[]>([]);
 
   const groupedTxs = groupBy(filteredTxs, ({ dateCreated }) =>
     format(new Date(dateCreated || 0), 'PP', { locale: dateLocale }),
   );
 
   useEffect(() => {
-    if (!txs.length) {
-      setFilteredTxs([]);
-    }
-  }, [txs.length]);
+    setTxs(allTxs.filter((tx) => connections[tx.chainId]));
+  }, [allTxs]);
 
   return (
     <div className="flex flex-col items-center relative h-full">

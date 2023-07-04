@@ -155,11 +155,11 @@ const OperationFullInfo = ({ tx, account }: Props) => {
           {signatoriesList.map(({ accountId, matrixId }) => (
             <li key={accountId}>
               <SignatoryCard
-                addressPrefix={connection?.addressPrefix}
+                addressPrefix={connection.addressPrefix}
                 accountId={accountId}
                 type="short"
                 matrixId={matrixId}
-                name={getSignatoryName(accountId, tx.signatories, contacts, accounts, connection?.addressPrefix)}
+                name={getSignatoryName(accountId, tx.signatories, contacts, accounts, connection.addressPrefix)}
                 status={getSignatoryStatus(accountId)}
               />
             </li>
