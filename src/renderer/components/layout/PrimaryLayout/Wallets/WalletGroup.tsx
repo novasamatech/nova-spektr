@@ -11,6 +11,7 @@ import { HelpText } from '@renderer/components/ui-redesign/Typography';
 import { AccountAddress } from '@renderer/components/common';
 import { Account } from '@renderer/domain/account';
 import { isMultishardWalletItem } from '@renderer/components/layout/PrimaryLayout/Wallets/common/utils';
+import cnTw from '@renderer/shared/utils/twMerge';
 
 type Props = {
   type: WalletType;
@@ -39,7 +40,7 @@ const WalletGroup = ({ type, wallets, onWalletClick }: Props) => {
                 </CaptionText>
               </div>
 
-              <Icon name="down" size={16} className={open ? 'rotate-180' : ''} />
+              <Icon name="down" size={16} className={cnTw(open && 'rotate-180')} />
             </>
           )}
         </Disclosure.Button>

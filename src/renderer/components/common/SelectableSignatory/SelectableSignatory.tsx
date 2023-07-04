@@ -12,6 +12,7 @@ import { ChainId } from '@renderer/domain/shared-kernel';
 import { Asset } from '@renderer/domain/asset';
 import BalanceNew from '../BalanceNew/BalanceNew';
 import { transferableAmount } from '@renderer/shared/utils/balance';
+import cnTw from '@renderer/shared/utils/twMerge';
 
 type Props<T extends any> = {
   explorers?: Explorer[];
@@ -50,7 +51,7 @@ const SelectableSignatory = <T extends any>({
       {balance && asset && (
         <BalanceNew value={transferableAmount(balance)} asset={asset} className="text-body text-inherit ml-auto mr-6" />
       )}
-      <Icon name="right" className={balance ? '' : 'ml-auto'} size={20} />
+      <Icon name="right" className={cnTw(!balance && 'ml-auto')} size={20} />
     </button>
   );
 };
