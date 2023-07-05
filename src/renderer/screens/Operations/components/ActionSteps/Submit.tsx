@@ -21,6 +21,7 @@ import { toAccountId } from '@renderer/shared/utils/address';
 import { useToggle } from '@renderer/shared/hooks';
 import { Button } from '@renderer/components/ui-redesign';
 import { OperationResult } from '@renderer/components/common/OperationResult/OperationResult';
+import { useMultisigEvent } from '@renderer/services/multisigEvent/multisigEventService';
 
 type ResultProps = Pick<ComponentProps<typeof OperationResult>, 'title' | 'description' | 'variant'>;
 
@@ -54,6 +55,7 @@ export const Submit = ({
   const { matrix } = useMatrix();
   const { submitAndWatchExtrinsic, getSignedExtrinsic } = useTransaction();
   const { updateMultisigTx } = useMultisigTx();
+  const { addEvent } = useMultisigEvent();
 
   const [inProgress, toggleInProgress] = useToggle(true);
   const [successMessage, toggleSuccessMessage] = useToggle();
@@ -62,24 +64,14 @@ export const Submit = ({
   const submitExtrinsic = async (signature: HexString) => {
     const extrinsic = await getSignedExtrinsic(unsignedTx, signature, api);
 
-    submitAndWatchExtrinsic(extrinsic, unsignedTx, api, (executed, params) => {
+    submitAndWatchExtrinsic(extrinsic, unsignedTx, api, async (executed, params) => {
       if (executed) {
         const typedParams = params as ExtrinsicResultParams;
 
         if (multisigTx && tx && account?.accountId) {
           const isReject = tx.type === TransactionType.MULTISIG_CANCEL_AS_MULTI;
-          const eventStatus: SigningStatus = isReject ? 'CANCELLED' : 'SIGNED';
 
-          const event: MultisigEvent = {
-            status: eventStatus,
-            accountId: account.accountId,
-            extrinsicHash: typedParams.extrinsicHash,
-            eventBlock: typedParams.timepoint.height,
-            eventIndex: typedParams.timepoint.index,
-            dateCreated: Date.now(),
-          };
-
-          const updatedTx: MultisigTransaction = { ...multisigTx, events: multisigTx.events.concat(event) };
+          const updatedTx: MultisigTransaction = { ...multisigTx };
 
           if (typedParams.isFinalApprove) {
             const transactionStatus = typedParams.multisigError
@@ -87,18 +79,33 @@ export const Submit = ({
               : MultisigTxFinalStatus.EXECUTED;
 
             updatedTx.status = transactionStatus;
-            event.multisigOutcome = transactionStatus;
           }
 
           if (isReject) {
             updatedTx.status = MultisigTxFinalStatus.CANCELLED;
-            event.multisigOutcome = MultisigTxFinalStatus.CANCELLED;
           }
 
           if (matrix.userIsLoggedIn) {
             sendMultisigEvent(updatedTx, typedParams, rejectReason);
           } else {
-            updateMultisigTx(updatedTx);
+            await updateMultisigTx(updatedTx);
+
+            const eventStatus: SigningStatus = isReject ? 'CANCELLED' : 'SIGNED';
+            const event: MultisigEvent = {
+              txAccountId: multisigTx.accountId,
+              txChainId: multisigTx.chainId,
+              txCallHash: multisigTx.callHash,
+              txBlock: multisigTx.blockCreated,
+              txIndex: multisigTx.indexCreated,
+              status: eventStatus,
+              accountId: account.accountId,
+              extrinsicHash: typedParams.extrinsicHash,
+              eventBlock: typedParams.timepoint.height,
+              eventIndex: typedParams.timepoint.index,
+              dateCreated: Date.now(),
+            };
+
+            addEvent(event);
           }
         }
 

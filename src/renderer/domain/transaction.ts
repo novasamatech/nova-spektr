@@ -48,8 +48,13 @@ export type Transaction = {
 };
 
 export type MultisigEvent = {
-  status: SigningStatus;
+  txAccountId: AccountId;
+  txChainId: ChainId;
+  txCallHash: CallHash;
+  txBlock: number;
+  txIndex: number;
   accountId: AccountId;
+  status: SigningStatus;
   multisigOutcome?: MultisigTxStatus;
   extrinsicHash?: HexString;
   eventBlock?: number;
@@ -62,7 +67,6 @@ export type MultisigTransaction = {
   chainId: ChainId;
   callData?: CallData;
   callHash: CallHash;
-  events: MultisigEvent[];
   status: MultisigTxStatus;
   signatories: Signatory[];
   deposit?: string;
@@ -74,3 +78,8 @@ export type MultisigTransaction = {
   dateCreated?: number;
   transaction?: Transaction;
 };
+
+export type MultisigTransactionKey = Pick<
+  MultisigTransaction,
+  'accountId' | 'callHash' | 'chainId' | 'indexCreated' | 'blockCreated'
+>;
