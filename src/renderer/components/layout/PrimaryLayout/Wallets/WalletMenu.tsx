@@ -75,12 +75,12 @@ const WalletMenu = ({ children, chains, wallets }: PropsWithChildren<Props>) => 
 
   const handleCompleteVaultWalletCreation = () => {
     toggleVaultModal();
-    setTimeout(() => navigate(Paths.BALANCES), DEFAULT_TRANSITION);
+    setTimeout(() => navigate(Paths.ASSETS), DEFAULT_TRANSITION);
   };
 
   const handleCompleteWatchOnlyWalletCreation = () => {
     toggleWatchOnlyModal();
-    setTimeout(() => navigate(Paths.BALANCES), DEFAULT_TRANSITION);
+    setTimeout(() => navigate(Paths.ASSETS), DEFAULT_TRANSITION);
   };
 
   return (

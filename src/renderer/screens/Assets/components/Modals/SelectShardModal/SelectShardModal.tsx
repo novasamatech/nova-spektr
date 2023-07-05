@@ -5,18 +5,18 @@ import { AccountId, ChainId } from '@renderer/domain/shared-kernel';
 import { BaseModal, Button, Checkbox, FootnoteText, SearchInput, Chain } from '@renderer/components/ui-redesign';
 import { useI18n } from '@renderer/context/I18nContext';
 import { AccountDS } from '@renderer/services/storage';
+import { useChains } from '@renderer/services/network/chainsService';
+import AddressWithExplorers from '@renderer/components/common/AddressWithExplorers/AddressWithExplorers';
 import {
   getMultishardStructure,
   getSelectableShards,
   searchShards,
 } from '@renderer/components/layout/PrimaryLayout/Wallets/common/utils';
-import AddressWithExplorers from '@renderer/components/common/AddressWithExplorers/AddressWithExplorers';
 import {
   ChainsRecord,
   SelectableAccount,
   SelectableShards,
 } from '@renderer/components/layout/PrimaryLayout/Wallets/common/types';
-import { useChains } from '@renderer/services/network/chainsService';
 
 type Props = {
   accounts: AccountDS[];
@@ -25,7 +25,7 @@ type Props = {
   onClose: (selectedAccounts?: AccountDS[]) => void;
 };
 
-const SelectShardModal = ({ isOpen, onClose, activeAccounts, accounts }: Props) => {
+export const SelectShardModal = ({ isOpen, onClose, activeAccounts, accounts }: Props) => {
   const { t } = useI18n();
   const { getChainsData, sortChains } = useChains();
 
@@ -211,5 +211,3 @@ const SelectShardModal = ({ isOpen, onClose, activeAccounts, accounts }: Props) 
     </BaseModal>
   );
 };
-
-export default SelectShardModal;

@@ -62,6 +62,7 @@ export default {
   divider: 'var(--divider)',
 
   /* BACKGROUND */
+  'background-default': 'var(--background-default)',
   'switch-background-active': 'var(--switch-background-active)',
   'switch-background-inactive': 'var(--switch-background-inactive)',
   'top-nav-bar-background': 'var(--top-nav-bar-background)',

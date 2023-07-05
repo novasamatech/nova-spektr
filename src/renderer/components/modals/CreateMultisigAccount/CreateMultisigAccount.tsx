@@ -71,7 +71,7 @@ export const CreateMultisigAccount = ({ isOpen, onClose }: Props) => {
 
   const handleSuccessClose = () => {
     toggleResultModal();
-    navigate(Paths.BALANCES);
+    navigate(Paths.ASSETS);
   };
 
   const onCreateAccount = async (name: string, threshold: number) => {

@@ -33,10 +33,14 @@ export const OperationResult = ({
           <Dialog.Panel className="w-[240px] max-w-md transform flex flex-col items-center justify-center rounded-lg bg-white p-4 align-middle shadow-card-shadow transition-all">
             <Animation name={VariantAnimations[variant]} {...VariantAnimationProps[variant]} />
             <Dialog.Title className="font-semibold mb-2">
-              <SmallTitleText>{title}</SmallTitleText>
+              <SmallTitleText align="center">{title}</SmallTitleText>
             </Dialog.Title>
-            {description && <FootnoteText className="text-text-tertiary">{description}</FootnoteText>}
-            <div className="mt-2">{children}</div>
+            {description && (
+              <FootnoteText className="text-text-tertiary" align="center">
+                {description}
+              </FootnoteText>
+            )}
+            <div className="mt-3">{children}</div>
           </Dialog.Panel>
         </ModalTransition>
       </div>

@@ -61,6 +61,7 @@
   --divider: rgba(69, 69, 137, 0.06);
 
   /* BACKGROUND */
+  --background-default: #f8f8fa;
   --switch-background-active: #363643;
   --switch-background-inactive: rgba(69, 69, 137, 0.12);
   --top-nav-bar-background: #f8f8fa;

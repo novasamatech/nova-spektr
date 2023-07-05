@@ -12,9 +12,9 @@ const routesConfig: RouteObject[] = [
     path: Paths.ROOT,
     element: <Layouts.PrimaryLayout />,
     children: [
-      { index: true, element: <Navigate to={Paths.BALANCES} replace /> },
+      { index: true, element: <Navigate to={Paths.ASSETS} replace /> },
       { path: Paths.OPERATIONS, element: <Screens.Operations /> },
-      { path: Paths.BALANCES, element: <Screens.Balances /> },
+      { path: Paths.ASSETS, element: <Screens.Assets.Assets /> },
       { path: Paths.NOTIFICATIONS, element: <Screens.Notifications /> },
       {
         path: Paths.ADDRESS_BOOK,

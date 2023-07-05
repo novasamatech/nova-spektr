@@ -1,12 +1,12 @@
 import { act, render, screen } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 
-import AssetBalanceCard from './AssetBalanceCard';
 import { Chain } from '@renderer/domain/chain';
 import { Asset } from '@renderer/domain/asset';
 import chains from '@renderer/services/network/common/chains/chains.json';
 import { TEST_ACCOUNT_ID } from '@renderer/shared/utils/constants';
 import { Balance } from '@renderer/domain/balance';
+import { AssetCard } from './AssetCard';
 
 jest.mock('@renderer/context/I18nContext', () => ({
   useI18n: jest.fn().mockReturnValue({
@@ -29,16 +29,16 @@ const defaultProps = {
   } as Balance,
 };
 
-describe('screen/Balances/AssetBalanceCard', () => {
+describe('screen/Balances/AssetCard', () => {
   test('should render component', () => {
-    render(<AssetBalanceCard {...defaultProps} />);
+    render(<AssetCard {...defaultProps} />);
 
     const chainName = screen.getByText(testChain.name);
     expect(chainName).toBeInTheDocument();
   });
 
   test('should show expanded row', async () => {
-    render(<AssetBalanceCard {...defaultProps} />);
+    render(<AssetCard {...defaultProps} />);
 
     const textHidden = screen.queryByText('assetBalance.transferable');
     expect(textHidden).not.toBeInTheDocument();
@@ -51,7 +51,7 @@ describe('screen/Balances/AssetBalanceCard', () => {
   });
 
   test('should hide action buttons', () => {
-    render(<AssetBalanceCard {...defaultProps} />);
+    render(<AssetCard {...defaultProps} />);
 
     const buttons = screen.getAllByRole('button');
     expect(buttons.length).toEqual(1);
@@ -60,7 +60,7 @@ describe('screen/Balances/AssetBalanceCard', () => {
   test('should init receive', () => {
     const spyReceive = jest.fn();
 
-    render(<AssetBalanceCard {...defaultProps} canMakeActions onReceiveClick={spyReceive} />, {
+    render(<AssetCard {...defaultProps} canMakeActions onReceiveClick={spyReceive} />, {
       wrapper: MemoryRouter,
     });
 
@@ -73,7 +73,7 @@ describe('screen/Balances/AssetBalanceCard', () => {
   // TODO add back when design is ready
   // test('should show label for unverified balance', () => {
   //   render(
-  //     <AssetBalanceCard
+  //     <AssetCard
   //       asset={testAsset}
   //       chainId={testChain.chainId}
   //       balance={{

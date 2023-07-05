@@ -1,10 +1,16 @@
 import { render, screen } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 
-import Balances from './Balances';
 import { TEST_ACCOUNT_ID } from '@renderer/shared/utils/constants';
 import { ConnectionType } from '@renderer/domain/connection';
 import { useAccount } from '@renderer/services/account/accountService';
+import { Assets } from './Assets';
+
+jest.mock('@renderer/context/I18nContext', () => ({
+  useI18n: jest.fn().mockReturnValue({
+    t: (key: string) => key,
+  }),
+}));
 
 jest.mock('@renderer/services/account/accountService', () => ({
   useAccount: jest.fn().mockReturnValue({
@@ -36,32 +42,29 @@ jest.mock('@renderer/context/NetworkContext', () => ({
   })),
 }));
 
-jest.mock('@renderer/context/I18nContext', () => ({
-  useI18n: jest.fn().mockReturnValue({
-    t: (key: string) => key,
-  }),
-}));
-
-jest.mock('./components/NetworkBalances/NetworkBalances', () => () => <div>NetworkBalances</div>);
-jest.mock('@renderer/screens/Transfer/Transfer', () => 'TransferButton');
-
 jest.mock(
   '@renderer/components/common/AddressWithExplorers/AddressWithExplorers',
   jest.fn().mockReturnValue(({ address }: { address: string }) => <span data-testid="validator">{address}</span>),
 );
 
-describe('screen/Balances/Balances', () => {
+jest.mock('@renderer/screens/Transfer/Transfer', () => <span>TransferButton</span>);
+
+jest.mock('./components/NetworkAssets/NetworkAssets', () => ({
+  NetworkAssets: () => <span>NetworkAssets</span>,
+}));
+
+describe('screen/Assets/Assets', () => {
   test('should render component', () => {
-    render(<Balances />, { wrapper: MemoryRouter });
+    render(<Assets />, { wrapper: MemoryRouter });
 
     const text = screen.getByText('balances.title');
     expect(text).toBeInTheDocument();
   });
 
   test('should render networks', () => {
-    render(<Balances />, { wrapper: MemoryRouter });
+    render(<Assets />, { wrapper: MemoryRouter });
 
-    const balances = screen.getAllByText('NetworkBalances');
+    const balances = screen.getAllByText('NetworkAssets');
     expect(balances).toHaveLength(2);
   });
 
@@ -70,7 +73,7 @@ describe('screen/Balances/Balances', () => {
       getActiveAccounts: () => [{ name: 'Test Wallet', accountId: TEST_ACCOUNT_ID }],
     });
 
-    render(<Balances />, { wrapper: MemoryRouter });
+    render(<Assets />, { wrapper: MemoryRouter });
 
     const noResults = screen.getByTestId('emptyList-img');
     expect(noResults).toBeInTheDocument();

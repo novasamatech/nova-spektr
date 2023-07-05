@@ -8,7 +8,8 @@ type Props = {
   hideZeroBalances: boolean;
   onZeroBalancesChange: (value: boolean) => void;
 };
-const BalancesFilters = ({ searchQuery, onSearchChange, hideZeroBalances, onZeroBalancesChange }: Props) => {
+
+export const AssetsFilters = ({ searchQuery, onSearchChange, hideZeroBalances, onZeroBalancesChange }: Props) => {
   const { t } = useI18n();
 
   return (
@@ -38,5 +39,3 @@ const BalancesFilters = ({ searchQuery, onSearchChange, hideZeroBalances, onZero
     </div>
   );
 };
-
-export default BalancesFilters;
