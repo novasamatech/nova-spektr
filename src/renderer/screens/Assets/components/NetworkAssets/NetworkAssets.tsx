@@ -8,12 +8,11 @@ import { useBalance } from '@renderer/services/balance/balanceService';
 import { ZERO_BALANCE } from '@renderer/services/balance/common/constants';
 import { totalAmount } from '@renderer/shared/utils/balance';
 import { ExtendedChain } from '@renderer/services/network/common/types';
-import AssetBalanceCard from '@renderer/screens/Balances/components/AssetBalanceCard/AssetBalanceCard';
 import { useI18n } from '@renderer/context/I18nContext';
 import { Balance } from '@renderer/domain/balance';
 import { includes } from '@renderer/shared/utils/strings';
-import { CaptionText, Chain, IconButton, Tooltip } from '@renderer/components/ui-redesign';
-import { useToggle } from '@renderer/shared/hooks';
+import { CaptionText, Chain, Tooltip, Accordion } from '@renderer/components/ui-redesign';
+import { AssetCard } from '../AssetCard/AssetCard';
 import { balanceSorter, sumBalances } from '../../common/utils';
 
 type Props = {
@@ -27,7 +26,7 @@ type Props = {
   onTransferClick?: (asset: Asset) => void;
 };
 
-const NetworkBalances = ({
+export const NetworkAssets = ({
   query,
   hideZeroBalance,
   chain,
@@ -38,7 +37,6 @@ const NetworkBalances = ({
   onTransferClick,
 }: Props) => {
   const { t } = useI18n();
-  const [isCardShown, toggleCard] = useToggle(true);
   const { getLiveNetworkBalances } = useBalance();
 
   const [filteredAssets, setFilteredAssets] = useState<Asset[]>([]);
@@ -78,14 +76,15 @@ const NetworkBalances = ({
   const hasFailedVerification = balances?.some((b) => !b.verified);
 
   return (
-    <li aria-expanded={isCardShown} className="w-[546px] mx-auto">
-      <div className="bg-white sticky top-0 z-[1]">
-        <div className="flex items-center justify-between mb-1 bg-main-app-background hover:bg-block-background-hover rounded">
-          <div className="flex items-center">
-            <Chain chain={chain} className="px-2 py-1.5" fontClass="text-caption uppercase" as="h2" iconSize={20} />
+    <li className="w-[546px]">
+      <Accordion isDefaultOpen>
+        <Accordion.Button className="sticky top-0 z-10 bg-background-default px-2 py-1.5">
+          <div className="flex items-center justify-between gap-x-2">
+            <Chain chain={chain} fontClass="text-caption uppercase" as="h2" iconSize={20} />
+
             {hasFailedVerification && (
               <div className="flex items-center gap-x-2 text-text-warning">
-                {/* TODO fix tooltip not visible when first displayed network invalid. For now just render it below icon */}
+                {/* FIXME: tooltip not visible when first displayed network invalid. For now just render it below icon */}
                 <Tooltip content={t('balances.verificationTooltip')} pointer="up">
                   <Icon name="warn" className="cursor-pointer" size={16} />
                 </Tooltip>
@@ -93,26 +92,22 @@ const NetworkBalances = ({
               </div>
             )}
           </div>
-          <IconButton name={isCardShown ? 'down' : 'up'} className="p-2" onClick={toggleCard} />
-        </div>
-      </div>
-
-      {isCardShown && (
-        <ul className="flex flex-col gap-y-1.5">
-          {filteredAssets.map((asset) => (
-            <AssetBalanceCard
-              key={asset.assetId}
-              asset={asset}
-              balance={balancesObject[asset.assetId.toString()]}
-              canMakeActions={canMakeActions}
-              onReceiveClick={() => onReceiveClick?.(asset)}
-              onTransferClick={() => onTransferClick?.(asset)}
-            />
-          ))}
-        </ul>
-      )}
+        </Accordion.Button>
+        <Accordion.Content className="mt-1">
+          <ul className="flex flex-col gap-y-1.5">
+            {filteredAssets.map((asset) => (
+              <AssetCard
+                key={asset.assetId}
+                asset={asset}
+                balance={balancesObject[asset.assetId.toString()]}
+                canMakeActions={canMakeActions}
+                onReceiveClick={() => onReceiveClick?.(asset)}
+                onTransferClick={() => onTransferClick?.(asset)}
+              />
+            ))}
+          </ul>
+        </Accordion.Content>
+      </Accordion>
     </li>
   );
 };
-
-export default NetworkBalances;

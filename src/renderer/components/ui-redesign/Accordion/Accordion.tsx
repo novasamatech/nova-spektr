@@ -5,12 +5,13 @@ import { Icon } from '@renderer/components/ui';
 import cnTw from '@renderer/shared/utils/twMerge';
 
 type Props = {
+  className?: string;
   isDefaultOpen?: boolean;
 };
 
-const Accordion = ({ isDefaultOpen, children }: PropsWithChildren<Props>) => {
+const Accordion = ({ className, isDefaultOpen, children }: PropsWithChildren<Props>) => {
   return (
-    <div className="w-full">
+    <div className={cnTw('w-full', className)}>
       <Disclosure defaultOpen={isDefaultOpen}>{children}</Disclosure>
     </div>
   );
@@ -22,18 +23,30 @@ type ButtonProps = {
 
 const Button = ({ className, children }: PropsWithChildren<ButtonProps>) => {
   return (
-    <Disclosure.Button className={cnTw('flex items-center justify-between w-full', className)}>
+    <Disclosure.Button className={cnTw('group flex items-center justify-between w-full gap-x-2', className)}>
       {({ open }) => (
         <>
           {children}
-          <Icon name={open ? 'up' : 'down'} className="ml-4" size={16} />
+          <Icon
+            name={open ? 'up' : 'down'}
+            size={16}
+            className={cnTw(
+              'cursor-pointer rounded-full transition-colors',
+              'group-focus:text-icon-hover group-focus:bg-hover',
+              'group-hover:text-icon-hover group-hover:bg-hover',
+            )}
+          />
         </>
       )}
     </Disclosure.Button>
   );
 };
 
-const Content = ({ children }: PropsWithChildren) => {
+type ContentProps = {
+  className?: string;
+};
+
+const Content = ({ children, className }: PropsWithChildren<ContentProps>) => {
   return (
     <Transition
       enter="ease-out duration-300"
@@ -43,7 +56,7 @@ const Content = ({ children }: PropsWithChildren) => {
       leaveFrom="opacity-100"
       leaveTo="opacity-0"
     >
-      <Disclosure.Panel>{children}</Disclosure.Panel>
+      <Disclosure.Panel className={className}>{children}</Disclosure.Panel>
     </Transition>
   );
 };

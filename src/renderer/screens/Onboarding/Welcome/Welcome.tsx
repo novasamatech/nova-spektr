@@ -45,12 +45,12 @@ const Welcome = () => {
 
   const handleCreateWatchOnlyWallet = () => {
     toggleWatchOnlyModal();
-    navigate(Paths.BALANCES);
+    navigate(Paths.ASSETS);
   };
 
   const handleCreateVaultWallet = () => {
     toggleVaultModal();
-    setTimeout(() => navigate(Paths.BALANCES), DEFAULT_TRANSITION);
+    setTimeout(() => navigate(Paths.ASSETS), DEFAULT_TRANSITION);
   };
 
   return (

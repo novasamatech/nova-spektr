@@ -90,7 +90,7 @@ export default {
         reduced: '-2px', // same as outline width, so it would be aligned by inner border of element
       },
       gridTemplateColumns: {
-        'operation-card': '72px 182px 182px 130px 130px 40px',
+        'operation-card': '72px 182px 182px 130px 130px',
       },
       letterSpacing: {
         tight: '-.01em',
