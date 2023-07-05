@@ -5,7 +5,7 @@ const Paths = {
   ONBOARDING: '/onboarding',
 
   // Navigation
-  BALANCES: '/balances',
+  ASSETS: '/assets',
   OPERATIONS: '/operations',
   NOTIFICATIONS: '/notifications',
 

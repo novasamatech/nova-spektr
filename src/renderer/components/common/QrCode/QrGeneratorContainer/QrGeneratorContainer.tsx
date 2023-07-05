@@ -43,7 +43,7 @@ const QrGeneratorContainer = ({ countdown, onQrReset, chainId, children }: Props
           ) : (
             <>
               {/* qr expired */}
-              <Icon name="qrFrame" className="absolute w-full h-full text-icon-default" />
+              <Icon name="qrFrame" className="absolute w-full h-full" />
               <FootnoteText>{t('signing.qrNotValid')}</FootnoteText>
               <Button className="z-10" size="sm" prefixElement={<Icon size={16} name="refresh" />} onClick={onQrReset}>
                 {t('signing.generateNewQrButton')}

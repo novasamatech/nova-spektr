@@ -110,7 +110,7 @@ const Details = ({ tx, account, connection, isCardDetails = true }: Props) => {
               onClick={toggleValidators}
             >
               <FootnoteText as="span">{validators.length}</FootnoteText>
-              <Icon name="info" size={16} className="text-icon-default" />
+              <Icon name="info" size={16} />
             </button>
           </DetailRow>
           <ValidatorsModal
@@ -144,7 +144,7 @@ const Details = ({ tx, account, connection, isCardDetails = true }: Props) => {
           variant="text"
           pallet="primary"
           size="sm"
-          suffixElement={<Icon name={isAdvancedShown ? 'up' : 'down'} size={16} className="text-icon-default" />}
+          suffixElement={<Icon name={isAdvancedShown ? 'up' : 'down'} size={16} />}
           className="text-action-text-default hover:text-action-text-default w-fit -ml-2"
           onClick={toggleAdvanced}
         >
@@ -162,7 +162,7 @@ const Details = ({ tx, account, connection, isCardDetails = true }: Props) => {
                 onClick={() => copyToClipboard(callHash)}
               >
                 <FootnoteText className="text-inherit">{truncate(callHash, 7, 8)}</FootnoteText>
-                <Icon name="copy" size={16} className="text-icon-default group-hover:text-icon-hover" />
+                <Icon name="copy" size={16} className="group-hover:text-icon-hover" />
               </button>
             </DetailRow>
           )}
@@ -175,7 +175,7 @@ const Details = ({ tx, account, connection, isCardDetails = true }: Props) => {
                 onClick={() => copyToClipboard(callData)}
               >
                 <FootnoteText className="text-inherit">{truncate(callData, 7, 8)}</FootnoteText>
-                <Icon name="copy" size={16} className="text-icon-default group-hover:text-icon-hover" />
+                <Icon name="copy" size={16} className="group-hover:text-icon-hover" />
               </button>
             </DetailRow>
           )}
@@ -220,7 +220,7 @@ const Details = ({ tx, account, connection, isCardDetails = true }: Props) => {
                   <FootnoteText className="text-text-secondary">
                     {blockCreated}-{indexCreated}
                   </FootnoteText>
-                  <Icon name="globe" size={16} className="text-icon-default group-hover:text-icon-hover" />
+                  <Icon name="globe" size={16} className="group-hover:text-icon-hover" />
                 </a>
               ) : (
                 `${blockCreated}-${indexCreated}`
@@ -232,5 +232,4 @@ const Details = ({ tx, account, connection, isCardDetails = true }: Props) => {
     </dl>
   );
 };
-
 export default Details;

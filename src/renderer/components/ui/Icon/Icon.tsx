@@ -1,4 +1,5 @@
 import AllIcons, { IconNames } from './data';
+import cnTw from '@renderer/shared/utils/twMerge';
 
 type Props = {
   as?: 'img' | 'svg';
@@ -26,7 +27,15 @@ const Icon = ({ as = 'svg', name, size = 24, className, alt = '' }: Props) => {
   }
 
   if (iconType === 'svg') {
-    return <IconComponent className={className} width={size} height={size} role="img" data-testid={`${name}-svg`} />;
+    return (
+      <IconComponent
+        className={cnTw('text-icon-default', className)}
+        width={size}
+        height={size}
+        role="img"
+        data-testid={`${name}-svg`}
+      />
+    );
   }
 
   if (iconType === 'img') {
