@@ -1,7 +1,7 @@
 import cnTw from '@renderer/shared/utils/twMerge';
 import { toAddress } from '@renderer/shared/utils/address';
 import { Icon } from '@renderer/components/ui';
-import { DefaultExplorer, ExplorerIcons } from '@renderer/components/common/Explorers/common/constants';
+import { DefaultExplorer, ExplorerIcons } from '@renderer/components/common/ExplorerLink/constants';
 import { Explorer } from '@renderer/domain/chain';
 import { useI18n } from '@renderer/context/I18nContext';
 import { AccountId, Address, HexString } from '@renderer/domain/shared-kernel';

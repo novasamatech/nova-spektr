@@ -13,7 +13,7 @@ const SearchInput = forwardRef<HTMLInputElement, Props>(({ className, wrapperCla
     ref={ref}
     className={className}
     wrapperClass={cnTw('hover:shadow-none', wrapperClass)}
-    prefixElement={<Icon name="search" size={16} className="mr-2 text-icon-default" />}
+    prefixElement={<Icon name="search" size={16} className="mr-2" />}
     suffixElement={
       <IconButton
         name="close"

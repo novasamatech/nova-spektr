@@ -3,10 +3,7 @@ import QrReader from './QrCode/QrReader/QrReader';
 import QrSignatureReader from './QrCode/QrReader/QrSignatureReader';
 import QrTextGenerator from './QrCode/QrGenerator/QrTextGenerator';
 import QrTxGenerator from './QrCode/QrGenerator/QrTxGenerator';
-import ActiveAddress from './ActiveAddress/ActiveAddress';
-import Explorers from './Explorers/Explorers';
 import Message from './Message/Message';
-import Expandable from './Expandable/Expandable';
 import Deposit from './Deposit/Deposit';
 import Fee from './Fee/Fee';
 import Header from './Header/Header';
@@ -17,6 +14,7 @@ import AddressWithName from './AddressWithName/AddressWithName';
 import QrGeneratorContainer from './QrCode/QrGeneratorContainer/QrGeneratorContainer';
 import DetailRow from '@renderer/components/common/DetailRow/DetailRow';
 import ExtrinsicExplorers from './ExtrinsicExplorers/ExtrinsicExplorers';
+import { DepositWithLabel } from './DepositWithLabel/DepositWithLabel';
 
 // FIXME: SignatoryCard, AddressWithExplorers, ScanMultiframeQr and ScanSingleframeQr exported separately.
 // Adding them to this file causes to crash all tests which use anything from that file
@@ -25,15 +23,13 @@ import ExtrinsicExplorers from './ExtrinsicExplorers/ExtrinsicExplorers';
 
 export {
   FallbackScreen,
-  ActiveAddress,
   QrReader,
   QrSignatureReader,
   QrTextGenerator,
   QrGeneratorContainer,
   QrTxGenerator,
-  Explorers,
-  Expandable,
   Deposit,
+  DepositWithLabel,
   Message,
   Fee,
   Header,

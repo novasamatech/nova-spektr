@@ -43,7 +43,7 @@ export const WelcomeCard = ({ title, description, iconName, disabled, onClick }:
               {t('onboarding.welcome.soonBadge')}
             </CaptionText>
           ) : (
-            <Icon className="text-icon-default" name="arrowRight" size={24} />
+            <Icon name="arrowRight" size={24} />
           )}
         </div>
         <FootnoteText className="text-text-tertiary">{description}</FootnoteText>

@@ -39,7 +39,7 @@ const OperationFooter = ({
             <Icon className="text-text-tertiary" name="lock" size={12} />
             <FootnoteText className="text-text-tertiary">{t('staking.networkDepositLabel')}</FootnoteText>
             <Tooltip content={t('staking.tooltips.depositDescription')} offsetPx={-90} pointer="down">
-              <Icon name="info" className="cursor-pointer text-icon-default hover:text-icon-hover" size={16} />
+              <Icon name="info" className="cursor-pointer hover:text-icon-hover" size={16} />
             </Tooltip>
           </div>
           <FootnoteText>

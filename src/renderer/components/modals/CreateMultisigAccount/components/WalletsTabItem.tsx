@@ -30,7 +30,7 @@ export const WalletsTabItem = ({ accountId, name, walletName, explorers = [] }: 
       </div>
 
       <InfoPopover data={popoverItems} containerClassName="ml-auto" position="right-0">
-        <Icon name="info" size={16} className="text-icon-default hover:text-icon-hover" />
+        <Icon name="info" size={16} className="hover:text-icon-hover" />
       </InfoPopover>
     </div>
   );

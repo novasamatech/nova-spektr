@@ -1,5 +1,5 @@
 import { Popover as Popup, Transition } from '@headlessui/react';
-import { Fragment, PropsWithChildren, ReactNode, useId, useRef, useState } from 'react';
+import { AriaRole, Fragment, PropsWithChildren, ReactNode, useId, useRef, useState } from 'react';
 
 import cnTw from '@renderer/shared/utils/twMerge';
 import { useDebounce } from '@renderer/shared/hooks';
@@ -9,6 +9,7 @@ type Props = {
   offsetPx?: number;
   panelClass?: string;
   contentClass?: string;
+  role?: AriaRole;
 };
 
 export const Popover = ({
@@ -17,6 +18,7 @@ export const Popover = ({
   offsetPx = 10,
   panelClass = 'left-0 top-full',
   contentClass,
+  role,
 }: PropsWithChildren<Props>) => {
   const id = useId();
   const ref = useRef<HTMLDivElement>(null);
@@ -27,7 +29,7 @@ export const Popover = ({
   const debouncedIsOpen = useDebounce(isOpen, 200);
 
   return (
-    <Popup className="relative">
+    <Popup className="relative" role={role}>
       <div
         className="w-fit"
         ref={ref}
