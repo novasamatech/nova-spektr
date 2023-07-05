@@ -159,7 +159,7 @@ const OperationFullInfo = ({ tx, account }: Props) => {
                 accountId={accountId}
                 type="short"
                 matrixId={matrixId}
-                name={getSignatoryName(accountId, tx.signatories, contacts, accounts, connection?.addressPrefix)}
+                name={getSignatoryName(accountId, tx.signatories, contacts, accounts, connection.addressPrefix)}
                 status={getSignatoryStatus(accountId)}
               />
             </li>
