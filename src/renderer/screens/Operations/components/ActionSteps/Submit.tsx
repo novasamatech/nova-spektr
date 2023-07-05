@@ -34,7 +34,7 @@ type Props = {
   signature: HexString;
   rejectReason?: string;
   isReject?: boolean;
-  onClose?: () => void;
+  onClose: () => void;
 };
 
 export const Submit = ({
@@ -58,6 +58,10 @@ export const Submit = ({
   const [inProgress, toggleInProgress] = useToggle(true);
   const [successMessage, toggleSuccessMessage] = useToggle();
   const [errorMessage, setErrorMessage] = useState('');
+
+  useEffect(() => {
+    submitExtrinsic(signature).catch(() => console.warn('Error getting signed extrinsics'));
+  }, []);
 
   const submitExtrinsic = async (signature: HexString) => {
     const extrinsic = await getSignedExtrinsic(unsignedTx, signature, api);
@@ -151,28 +155,18 @@ export const Submit = ({
     return { title: '' };
   };
 
-  useEffect(() => {
-    submitExtrinsic(signature);
-  }, []);
+  const closeErrorMessage = () => {
+    onClose();
+    setErrorMessage('');
+  };
 
   return (
-    <>
-      <OperationResult
-        isOpen={Boolean(inProgress || errorMessage || successMessage)}
-        {...getResultProps()}
-        onClose={() => onClose?.()}
-      >
-        {errorMessage && (
-          <Button
-            onClick={() => {
-              setErrorMessage('');
-              onClose?.();
-            }}
-          >
-            {t('operation.feeErrorButton')}
-          </Button>
-        )}
-      </OperationResult>
-    </>
+    <OperationResult
+      isOpen={Boolean(inProgress || errorMessage || successMessage)}
+      {...getResultProps()}
+      onClose={onClose}
+    >
+      {errorMessage && <Button onClick={closeErrorMessage}>{t('operation.feeErrorButton')}</Button>}
+    </OperationResult>
   );
 };
