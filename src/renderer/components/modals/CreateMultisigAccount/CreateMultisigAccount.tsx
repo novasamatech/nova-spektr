@@ -15,6 +15,7 @@ import { useWallet } from '@renderer/services/wallet/walletService';
 import { useContact } from '@renderer/services/contact/contactService';
 import { ExtendedContact, ExtendedWallet } from './common/types';
 import { SelectSignatories, ConfirmSignatories, WalletForm } from './components';
+import { AccountId } from '@renderer/domain/shared-kernel';
 import Paths from '@renderer/routes/paths';
 
 type OperationResultProps = Pick<ComponentProps<typeof OperationResult>, 'variant' | 'description'>;
@@ -74,43 +75,69 @@ export const CreateMultisigAccount = ({ isOpen, onClose }: Props) => {
     navigate(Paths.ASSETS);
   };
 
-  const onCreateAccount = async (name: string, threshold: number) => {
+  const onCreateAccount = async (name: string, threshold: number, creatorId: AccountId): Promise<void> => {
     setName(name);
     toggleLoading();
     toggleResultModal();
 
-    const inviter = signatories.find((s) => s.matrixId === matrix.userId);
-    if (!inviter || !threshold) return;
+    try {
+      const roomId = matrix.joinedRooms()[0]?.roomId;
+      if (roomId) {
+        await createFromExistingRoom(name, threshold, creatorId, roomId);
+      } else {
+        await createNewRoom(name, threshold, creatorId);
+      }
+
+      setTimeout(handleSuccessClose, 2000);
+    } catch (error: any) {
+      setError(error?.message || t('createMultisigAccount.errorMessage'));
+    }
+
+    toggleLoading();
+    handleClose();
+  };
+
+  const createFromExistingRoom = async (
+    name: string,
+    threshold: number,
+    creatorId: AccountId,
+    matrixRoomId: string,
+  ): Promise<void> => {
+    console.log('Trying to create Multisig from existing room ', matrixRoomId);
 
     const mstAccount = createMultisigAccount({
       name,
       signatories,
       threshold,
-      creatorAccountId: inviter.accountId,
+      matrixRoomId,
+      creatorAccountId: creatorId,
+      isActive: false,
+    });
+
+    await addAccount<MultisigAccount>(mstAccount).then(setActiveAccount);
+  };
+
+  const createNewRoom = async (name: string, threshold: number, creatorId: AccountId): Promise<void> => {
+    console.log('Trying to create new Multisig room');
+
+    const mstAccount = createMultisigAccount({
+      name,
+      signatories,
+      threshold,
+      creatorAccountId: creatorId,
       matrixRoomId: '',
       isActive: false,
     });
 
-    if (!mstAccount.accountId) return;
+    const matrixRoomId = await matrix.createRoom({
+      creatorAccountId: creatorId,
+      accountName: mstAccount.name,
+      accountId: mstAccount.accountId,
+      threshold: mstAccount.threshold,
+      signatories: signatories.map(({ accountId, matrixId }) => ({ accountId, matrixId })),
+    });
 
-    try {
-      const matrixRoomId = await matrix.createRoom({
-        creatorAccountId: inviter.accountId,
-        accountName: mstAccount.name,
-        accountId: mstAccount.accountId,
-        threshold: mstAccount.threshold,
-        signatories: signatories.map(({ accountId, matrixId }) => ({ accountId, matrixId })),
-      });
-      await addAccount<MultisigAccount>({ ...mstAccount, matrixRoomId }).then(setActiveAccount);
-
-      toggleLoading();
-      setTimeout(handleSuccessClose, 2000);
-    } catch (error: any) {
-      toggleLoading();
-      setError(error?.message || t('createMultisigAccount.errorMessage'));
-    }
-
-    handleClose();
+    await addAccount<MultisigAccount>({ ...mstAccount, matrixRoomId }).then(setActiveAccount);
   };
 
   const getResultProps = (): OperationResultProps => {
