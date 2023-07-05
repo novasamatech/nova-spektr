@@ -132,18 +132,17 @@ export const Assets = () => {
           {accountIds.length > 0 && (
             <ul className="flex flex-col gap-y-4 items-center w-full py-4">
               {sortedChains.map((chain) => (
-                <li key={chain.chainId} className="w-[546px] mx-auto">
-                  <NetworkAssets
-                    hideZeroBalance={hideZeroBalance}
-                    searchSymbolOnly={searchSymbolOnly}
-                    query={query.toLowerCase()}
-                    chain={chain}
-                    accountIds={accountIds}
-                    canMakeActions={checkCanMakeActions()}
-                    onReceiveClick={onReceive(chain)}
-                    onTransferClick={onTransfer(chain)}
-                  />
-                </li>
+                <NetworkAssets
+                  key={chain.chainId}
+                  hideZeroBalance={hideZeroBalance}
+                  searchSymbolOnly={searchSymbolOnly}
+                  query={query.toLowerCase()}
+                  chain={chain}
+                  accountIds={accountIds}
+                  canMakeActions={checkCanMakeActions()}
+                  onReceiveClick={onReceive(chain)}
+                  onTransferClick={onTransfer(chain)}
+                />
               ))}
 
               <div className="hidden only:flex flex-col items-center justify-center gap-y-8 w-full h-full">

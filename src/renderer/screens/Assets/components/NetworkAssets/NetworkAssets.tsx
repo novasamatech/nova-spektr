@@ -76,36 +76,38 @@ export const NetworkAssets = ({
   const hasFailedVerification = balances?.some((b) => !b.verified);
 
   return (
-    <Accordion isDefaultOpen>
-      <Accordion.Button className="sticky top-0 z-10 bg-background-default px-2 py-1.5">
-        <div className="flex items-center justify-between gap-x-2">
-          <Chain chain={chain} fontClass="text-caption uppercase" as="h2" iconSize={20} />
+    <li className="w-[546px]">
+      <Accordion isDefaultOpen>
+        <Accordion.Button className="sticky top-0 z-10 bg-background-default px-2 py-1.5">
+          <div className="flex items-center justify-between gap-x-2">
+            <Chain chain={chain} fontClass="text-caption uppercase" as="h2" iconSize={20} />
 
-          {hasFailedVerification && (
-            <div className="flex items-center gap-x-2 text-text-warning">
-              {/* FIXME: tooltip not visible when first displayed network invalid. For now just render it below icon */}
-              <Tooltip content={t('balances.verificationTooltip')} pointer="up">
-                <Icon name="warn" className="cursor-pointer" size={16} />
-              </Tooltip>
-              <CaptionText className="uppercase text-inherit">{t('balances.verificationFailedLabel')}</CaptionText>
-            </div>
-          )}
-        </div>
-      </Accordion.Button>
-      <Accordion.Content className="mt-1">
-        <ul className="flex flex-col gap-y-1.5">
-          {filteredAssets.map((asset) => (
-            <AssetCard
-              key={asset.assetId}
-              asset={asset}
-              balance={balancesObject[asset.assetId.toString()]}
-              canMakeActions={canMakeActions}
-              onReceiveClick={() => onReceiveClick?.(asset)}
-              onTransferClick={() => onTransferClick?.(asset)}
-            />
-          ))}
-        </ul>
-      </Accordion.Content>
-    </Accordion>
+            {hasFailedVerification && (
+              <div className="flex items-center gap-x-2 text-text-warning">
+                {/* FIXME: tooltip not visible when first displayed network invalid. For now just render it below icon */}
+                <Tooltip content={t('balances.verificationTooltip')} pointer="up">
+                  <Icon name="warn" className="cursor-pointer" size={16} />
+                </Tooltip>
+                <CaptionText className="uppercase text-inherit">{t('balances.verificationFailedLabel')}</CaptionText>
+              </div>
+            )}
+          </div>
+        </Accordion.Button>
+        <Accordion.Content className="mt-1">
+          <ul className="flex flex-col gap-y-1.5">
+            {filteredAssets.map((asset) => (
+              <AssetCard
+                key={asset.assetId}
+                asset={asset}
+                balance={balancesObject[asset.assetId.toString()]}
+                canMakeActions={canMakeActions}
+                onReceiveClick={() => onReceiveClick?.(asset)}
+                onTransferClick={() => onTransferClick?.(asset)}
+              />
+            ))}
+          </ul>
+        </Accordion.Content>
+      </Accordion>
+    </li>
   );
 };
