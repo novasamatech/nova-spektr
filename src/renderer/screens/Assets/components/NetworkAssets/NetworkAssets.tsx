@@ -1,6 +1,5 @@
-import { BN } from '@polkadot/util';
+import { useEffect, useState } from 'react';
 
-import cnTw from '@renderer/shared/utils/twMerge';
 import { Icon } from '@renderer/components/ui';
 import { Asset } from '@renderer/domain/asset';
 import { Chain as ChainType } from '@renderer/domain/chain';
@@ -14,6 +13,7 @@ import { Balance } from '@renderer/domain/balance';
 import { includes } from '@renderer/shared/utils/strings';
 import { CaptionText, Chain, Tooltip, Accordion } from '@renderer/components/ui-redesign';
 import { AssetCard } from '../AssetCard/AssetCard';
+import { balanceSorter, sumBalances } from '../../common/utils';
 
 type Props = {
   hideZeroBalance?: boolean;
@@ -24,27 +24,6 @@ type Props = {
   canMakeActions?: boolean;
   onReceiveClick?: (asset: Asset) => void;
   onTransferClick?: (asset: Asset) => void;
-};
-
-const sumValues = (firstValue?: string, secondValue?: string): string => {
-  if (firstValue && secondValue) {
-    return new BN(firstValue).add(new BN(secondValue)).toString();
-  }
-
-  return '0';
-};
-
-const sumBalances = (firstBalance: Balance, secondBalance?: Balance): Balance => {
-  if (!secondBalance) return firstBalance;
-
-  return {
-    ...firstBalance,
-    verified: firstBalance.verified && secondBalance.verified,
-    free: sumValues(firstBalance.free, secondBalance.free),
-    reserved: sumValues(firstBalance.reserved, secondBalance.reserved),
-    frozen: sumValues(firstBalance.frozen, secondBalance.frozen),
-    locked: (firstBalance.locked || []).concat(secondBalance.locked || []),
-  };
 };
 
 export const NetworkAssets = ({
@@ -60,6 +39,8 @@ export const NetworkAssets = ({
   const { t } = useI18n();
   const { getLiveNetworkBalances } = useBalance();
 
+  const [filteredAssets, setFilteredAssets] = useState<Asset[]>([]);
+
   const balances = getLiveNetworkBalances(accountIds, chain.chainId);
 
   const balancesObject =
@@ -69,20 +50,24 @@ export const NetworkAssets = ({
       return acc;
     }, {}) || {};
 
-  const filteredAssets = chain.assets.filter((asset) => {
-    if (query) {
-      return (
-        includes(asset.symbol, query) ||
-        (!searchSymbolOnly && (includes(chain.name, query) || includes(asset.name, query)))
-      );
-    }
+  useEffect(() => {
+    const filteredAssets = chain.assets.filter((asset) => {
+      if (query) {
+        const hasSymbol = includes(asset.symbol, query);
+        const hasChainName = includes(chain.name, query);
+        const hasAssetName = includes(asset.name, query);
 
-    const balance = balancesObject[asset.assetId];
+        return hasSymbol || (!searchSymbolOnly && (hasChainName || hasAssetName));
+      }
 
-    return (
-      !hideZeroBalance || !balance || balance.verified !== true || (balance && totalAmount(balance) !== ZERO_BALANCE)
-    );
-  });
+      const balance = balancesObject[asset.assetId];
+
+      return !hideZeroBalance || !balance?.verified || totalAmount(balance) !== ZERO_BALANCE;
+    });
+    filteredAssets.sort((a, b) => balanceSorter(a, b, balancesObject));
+
+    setFilteredAssets(filteredAssets);
+  }, [balances, query, hideZeroBalance]);
 
   if (filteredAssets.length === 0) {
     return null;
@@ -92,7 +77,7 @@ export const NetworkAssets = ({
 
   return (
     <Accordion isDefaultOpen>
-      <Accordion.Button className={cnTw('sticky top-0 z-10 bg-background-default px-2 py-1.5')}>
+      <Accordion.Button className="sticky top-0 z-10 bg-background-default px-2 py-1.5">
         <div className="flex items-center justify-between gap-x-2">
           <Chain chain={chain} fontClass="text-caption uppercase" as="h2" iconSize={20} />
 

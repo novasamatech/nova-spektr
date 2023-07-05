@@ -13,9 +13,9 @@ import { useSettingsStorage } from '@renderer/services/settings/settingsStorage'
 import { useAccount } from '@renderer/services/account/accountService';
 import { isMultisig, Account } from '@renderer/domain/account';
 import { BodyText, Button, SmallTitleText } from '@renderer/components/ui-redesign';
+import { AssetsFilters, NetworkAssets, ReceiveModal, SelectShardModal } from './components';
 import { Header } from '@renderer/components/common';
 import Transfer from '@renderer/screens/Transfer/Transfer';
-import { AssetsFilters, NetworkAssets, ReceiveModal, SelectShardModal } from './components';
 
 export const Assets = () => {
   const { t } = useI18n();

@@ -42,12 +42,12 @@ jest.mock('@renderer/context/NetworkContext', () => ({
   })),
 }));
 
-jest.mock('@renderer/screens/Transfer/Transfer', () => <span>TransferButton</span>);
-
 jest.mock(
   '@renderer/components/common/AddressWithExplorers/AddressWithExplorers',
   jest.fn().mockReturnValue(({ address }: { address: string }) => <span data-testid="validator">{address}</span>),
 );
+
+jest.mock('@renderer/screens/Transfer/Transfer', () => <span>TransferButton</span>);
 
 jest.mock('./components/NetworkAssets/NetworkAssets', () => ({
   NetworkAssets: () => <span>NetworkAssets</span>,

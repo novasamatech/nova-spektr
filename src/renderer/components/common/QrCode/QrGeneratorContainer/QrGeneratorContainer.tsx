@@ -6,7 +6,7 @@ import { secondsToMinutes } from '@renderer/shared/utils/time';
 import { Icon, Shimmering } from '@renderer/components/ui';
 import { useI18n } from '@renderer/context/I18nContext';
 import { ChainId } from '@renderer/domain/shared-kernel';
-import { getMetadataPortalUrl, TROUBLESHOOTING_URL } from '../common/constants';
+import { getMetadataPortalMetadataUrl, TROUBLESHOOTING_URL } from '../common/constants';
 
 type Props = {
   countdown: number;
@@ -59,7 +59,7 @@ const QrGeneratorContainer = ({ countdown, onQrReset, chainId, children }: Props
 
         <span className="border border-divider h-4"></span>
 
-        <InfoLink url={getMetadataPortalUrl(chainId)}>{t('signing.metadataPortalLink')}</InfoLink>
+        <InfoLink url={getMetadataPortalMetadataUrl(chainId)}>{t('signing.metadataPortalLink')}</InfoLink>
       </div>
     </section>
   );
