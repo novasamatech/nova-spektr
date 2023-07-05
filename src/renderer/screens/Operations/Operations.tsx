@@ -51,7 +51,9 @@ const Operations = () => {
                   {txs
                     .sort((a, b) => (b.dateCreated || 0) - (a.dateCreated || 0))
                     .map((tx) => (
-                      <Operation key={tx.dateCreated} tx={tx} account={account as MultisigAccount} />
+                      <li key={tx.dateCreated}>
+                        <Operation tx={tx} account={account as MultisigAccount} />
+                      </li>
                     ))}
                 </ul>
               </section>

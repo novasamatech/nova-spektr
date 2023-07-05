@@ -10,37 +10,35 @@ import { SigningType } from '@renderer/domain/shared-kernel';
 import { useToggle } from '@renderer/shared/hooks';
 import { useChains } from '@renderer/services/network/chainsService';
 import { useSettingsStorage } from '@renderer/services/settings/settingsStorage';
-import NetworkBalances from './components/NetworkBalances/NetworkBalances';
-import ReceiveModal, { DataPayload } from './components/ReceiveModal/ReceiveModal';
 import { useAccount } from '@renderer/services/account/accountService';
-import { isMultisig } from '@renderer/domain/account';
-import BalancesFilters from './components/BalancesFilters';
+import { isMultisig, Account } from '@renderer/domain/account';
 import { BodyText, Button, SmallTitleText } from '@renderer/components/ui-redesign';
+import { AssetsFilters, NetworkAssets, ReceiveModal, SelectShardModal } from './components';
 import { Header } from '@renderer/components/common';
 import Transfer from '@renderer/screens/Transfer/Transfer';
-import { AccountDS } from '@renderer/services/storage';
-import SelectShardModal from './components/SelectShardModal/SelectShardModal';
 
-const Balances = () => {
+export const Assets = () => {
   const { t } = useI18n();
-
-  const [query, setQuery] = useState('');
-  const [activeAccounts, setActiveAccounts] = useState<AccountDS[]>([]);
-  const accountIds = activeAccounts.map((a) => a.accountId).filter((a) => a);
-  const [data, setData] = useState<DataPayload>();
+  const { sortChains } = useChains();
+  const { connections } = useNetworkContext();
+  const { getActiveAccounts } = useAccount();
+  const { setHideZeroBalance, getHideZeroBalance } = useSettingsStorage();
 
   const [isReceiveOpen, toggleReceive] = useToggle();
   const [isTransferOpen, toggleTransfer] = useToggle();
   const [isSelectShardsOpen, toggleSelectShardsOpen] = useToggle();
 
-  const { connections } = useNetworkContext();
-  const { getActiveAccounts } = useAccount();
-  const { sortChains } = useChains();
+  const [activeChain, setActiveChain] = useState<Chain>();
+  const [activeAsset, setActiveAsset] = useState<Asset>();
+  const [query, setQuery] = useState('');
+
+  const [activeAccounts, setActiveAccounts] = useState<Account[]>([]);
+  const [hideZeroBalance, setHideZeroBalanceState] = useState(getHideZeroBalance());
+
   const activeAccountsFromWallet = getActiveAccounts();
   const isMultishard = activeAccountsFromWallet.length > 1;
 
-  const { setHideZeroBalance, getHideZeroBalance } = useSettingsStorage();
-  const [hideZeroBalance, setHideZeroBalanceState] = useState(getHideZeroBalance());
+  const accountIds = activeAccounts.map((a) => a.accountId).filter((a) => a);
 
   const updateHideZeroBalance = (value: boolean) => {
     setHideZeroBalance(value);
@@ -54,14 +52,10 @@ const Balances = () => {
     updateAccounts(activeAccountsFromWallet);
   }, [firstActiveAccount, activeWallet]);
 
-  const updateAccounts = (accounts: AccountDS[]) => {
-    if (accounts.length === 0) {
-      setActiveAccounts([]);
+  const updateAccounts = (accounts: Account[]) => {
+    const result = accounts.length ? accounts : [];
 
-      return;
-    }
-
-    setActiveAccounts(accounts);
+    setActiveAccounts(result);
   };
 
   const sortedChains = useMemo(
@@ -78,9 +72,9 @@ const Balances = () => {
     [Object.values(connections).length, activeAccounts],
   );
 
-  const searchSymbolOnly = sortedChains.some((chain) =>
-    chain.assets.some((a) => a.symbol.toLowerCase() === query.toLowerCase()),
-  );
+  const searchSymbolOnly = sortedChains.some((chain) => {
+    return chain.assets.some((a) => a.symbol.toLowerCase() === query.toLowerCase());
+  });
 
   const checkCanMakeActions = (): boolean => {
     return activeAccounts.some((account) =>
@@ -89,17 +83,20 @@ const Balances = () => {
   };
 
   const onReceive = (chain: Chain) => (asset: Asset) => {
-    setData({ chain, asset });
+    setActiveChain(chain);
+    setActiveAsset(asset);
     toggleReceive();
   };
 
   const onTransfer = (chain: Chain) => (asset: Asset) => {
-    setData({ chain, asset });
+    setActiveChain(chain);
+    setActiveAsset(asset);
     toggleTransfer();
   };
 
-  const handleShardSelect = (selectedAccounts?: AccountDS[]) => {
+  const handleShardSelect = (selectedAccounts?: Account[]) => {
     toggleSelectShardsOpen();
+
     if (Array.isArray(selectedAccounts)) {
       updateAccounts(selectedAccounts);
     }
@@ -109,7 +106,7 @@ const Balances = () => {
     <>
       <section className="h-full flex flex-col items-start relative">
         <Header title={t('balances.title')} titleClass="py-[3px]" headerClass="pt-4 pb-[15px]">
-          <BalancesFilters
+          <AssetsFilters
             searchQuery={query}
             hideZeroBalances={hideZeroBalance}
             onSearchChange={setQuery}
@@ -135,7 +132,7 @@ const Balances = () => {
           {accountIds.length > 0 && (
             <ul className="flex flex-col gap-y-4 items-center w-full py-4">
               {sortedChains.map((chain) => (
-                <NetworkBalances
+                <NetworkAssets
                   key={chain.chainId}
                   hideZeroBalance={hideZeroBalance}
                   searchSymbolOnly={searchSymbolOnly}
@@ -161,15 +158,6 @@ const Balances = () => {
         </div>
       </section>
 
-      {data && <ReceiveModal data={data} isOpen={isReceiveOpen} onClose={toggleReceive} />}
-      {data && (
-        <Transfer
-          assetId={data?.asset.assetId}
-          chainId={data?.chain.chainId}
-          isOpen={isTransferOpen}
-          onClose={toggleTransfer}
-        />
-      )}
       {isMultishard && (
         <SelectShardModal
           accounts={activeAccountsFromWallet}
@@ -178,8 +166,21 @@ const Balances = () => {
           onClose={handleShardSelect}
         />
       )}
+
+      {/* TODO: Make navigational modal */}
+      {activeAsset && activeChain && (
+        <ReceiveModal chain={activeChain} asset={activeAsset} isOpen={isReceiveOpen} onClose={toggleReceive} />
+      )}
+
+      {/* TODO: Make navigational modal */}
+      {activeAsset && activeChain && (
+        <Transfer
+          isOpen={isTransferOpen}
+          assetId={activeAsset.assetId}
+          chainId={activeChain.chainId}
+          onClose={toggleTransfer}
+        />
+      )}
     </>
   );
 };
-
-export default Balances;
