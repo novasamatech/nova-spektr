@@ -2,7 +2,7 @@ import cn from 'classnames';
 import { useEffect, useState } from 'react';
 
 import { AccountAddress, QrTextGenerator } from '@renderer/components/common';
-import { DefaultExplorer, ExplorerIcons } from '@renderer/components/common/Explorers/common/constants';
+import { DefaultExplorer, ExplorerIcons } from '@renderer/components/common/ExplorerLink/constants';
 import { Icon } from '@renderer/components/ui';
 import { DropdownOption, DropdownResult } from '@renderer/components/ui/Dropdowns/common/types';
 import { useI18n } from '@renderer/context/I18nContext';

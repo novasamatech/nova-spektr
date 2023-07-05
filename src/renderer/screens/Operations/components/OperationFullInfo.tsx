@@ -139,7 +139,7 @@ const OperationFullInfo = ({ tx, account }: Props) => {
             pallet="secondary"
             variant="fill"
             size="sm"
-            prefixElement={<Icon name="chatRedesign" className="text-icon-default" size={16} />}
+            prefixElement={<Icon name="chatRedesign" size={16} />}
             suffixElement={
               <CaptionText className="!text-white bg-chip-icon rounded-full pt-[1px] pb-[2px] px-1.5">
                 {events.length}
