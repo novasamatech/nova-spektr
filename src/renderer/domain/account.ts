@@ -54,8 +54,8 @@ export type MultisigAccount = Account & {
   creatorAccountId: AccountId;
 };
 
-export function getMultisigAccountId(addresses: AccountId[], threshold: Threshold): AccountId {
-  return u8aToHex(createKeyMulti(addresses, threshold));
+export function getMultisigAccountId(accountIds: AccountId[], threshold: Threshold): AccountId {
+  return u8aToHex(createKeyMulti(accountIds, threshold));
 }
 
 export function createMultisigAccount({
