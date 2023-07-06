@@ -228,6 +228,7 @@ const RejectTx = ({ tx, account, connection }: Props) => {
 
       {isSubmitStep && connection.api && (
         <Submit
+          isReject
           tx={rejectTx}
           api={connection.api}
           multisigTx={tx}
@@ -236,7 +237,6 @@ const RejectTx = ({ tx, account, connection }: Props) => {
           unsignedTx={unsignedTx}
           signature={signature}
           rejectReason={rejectReason}
-          isReject
           onClose={handleClose}
         />
       )}

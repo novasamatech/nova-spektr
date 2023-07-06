@@ -40,6 +40,7 @@ export const enum MultisigTxFinalStatus {
 
 export type MultisigTxStatus = MultisigTxInitStatus | MultisigTxFinalStatus;
 
+// TODO: extend args for all Transaction types
 export type Transaction = {
   type: TransactionType;
   address: Address;
