@@ -31,7 +31,7 @@ const Navigation = () => {
   const activeAccounts = getActiveAccounts();
 
   const txs = getLiveAccountMultisigTxs(activeAccounts.map((a) => a.accountId)).filter(
-    (tx) => tx.status === MultisigTxInitStatus.SIGNING,
+    (tx) => tx.status === MultisigTxInitStatus.SIGNING && chains[tx.chainId],
   );
 
   const NavItems: NavItemProps[] = [
