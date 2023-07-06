@@ -151,6 +151,11 @@ export const Submit = ({ api, accounts, txs, multisigTx, unsignedTx, signatures,
     return t('staking.submitSuccessMultishard');
   };
 
+  const closeErrorMessage = () => {
+    onClose();
+    setErrorMessage('');
+  };
+
   const getResultProps = (): ResultProps => {
     if (inProgress) {
       return { title: t('operation.inProgress'), variant: 'loading' };
@@ -171,7 +176,7 @@ export const Submit = ({ api, accounts, txs, multisigTx, unsignedTx, signatures,
       {...getResultProps()}
       onClose={handleSuccessClose}
     >
-      {errorMessage && <Button onClick={onClose}>{t('operation.feeErrorButton')}</Button>}
+      {errorMessage && <Button onClick={closeErrorMessage}>{t('operation.feeErrorButton')}</Button>}
     </OperationResult>
   );
 };
