@@ -1,9 +1,9 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
+import { groupBy } from 'lodash';
 
 import { Icon } from '@renderer/components/ui';
 import { Asset } from '@renderer/domain/asset';
 import { Chain as ChainType } from '@renderer/domain/chain';
-import { AccountId } from '@renderer/domain/shared-kernel';
 import { useBalance } from '@renderer/services/balance/balanceService';
 import { ZERO_BALANCE } from '@renderer/services/balance/common/constants';
 import { totalAmount } from '@renderer/shared/utils/balance';
@@ -14,13 +14,16 @@ import { includes } from '@renderer/shared/utils/strings';
 import { CaptionText, Chain, Tooltip, Accordion } from '@renderer/components/ui-redesign';
 import { AssetCard } from '../AssetCard/AssetCard';
 import { balanceSorter, sumBalances } from '../../common/utils';
+import { BalanceDS } from '@renderer/services/storage';
+import { Account } from '@renderer/domain/account';
+import { AccountId } from '@renderer/domain/shared-kernel';
 
 type Props = {
   hideZeroBalance?: boolean;
   searchSymbolOnly?: boolean;
   query?: string;
   chain: ChainType | ExtendedChain;
-  accountIds: AccountId[];
+  accounts: Account[];
   canMakeActions?: boolean;
   onReceiveClick?: (asset: Asset) => void;
   onTransferClick?: (asset: Asset) => void;
@@ -30,7 +33,7 @@ export const NetworkAssets = ({
   query,
   hideZeroBalance,
   chain,
-  accountIds,
+  accounts,
   searchSymbolOnly,
   canMakeActions,
   onReceiveClick,
@@ -40,15 +43,34 @@ export const NetworkAssets = ({
   const { getLiveNetworkBalances } = useBalance();
 
   const [filteredAssets, setFilteredAssets] = useState<Asset[]>([]);
+  const [balancesObject, setBalancesObject] = useState<Record<string, Balance>>({});
+
+  const accountIds = useMemo(
+    () =>
+      accounts.reduce<AccountId[]>((acc, account) => {
+        if (!account.chainId || account.chainId === chain.chainId) acc.push(account.accountId);
+
+        return acc;
+      }, []),
+    [chain.chainId, accounts.map((a) => a.accountId).join('')],
+  );
 
   const balances = getLiveNetworkBalances(accountIds, chain.chainId);
 
-  const balancesObject =
-    balances?.reduce<Record<string, Balance>>((acc, balance) => {
-      acc[balance.assetId] = sumBalances(balance, acc[balance.assetId]);
+  useEffect(() => {
+    const newBalancesObject = Object.values(groupBy(balances, 'assetId')).reduce<Record<string, Balance>>(
+      (acc, balances: BalanceDS[]) => {
+        if (balances.length !== new Set(accountIds).size) return acc;
 
-      return acc;
-    }, {}) || {};
+        acc[balances[0].assetId] = balances.reduce<Balance>((acc, balance) => sumBalances(balance, acc), {} as Balance);
+
+        return acc;
+      },
+      {},
+    );
+
+    setBalancesObject(newBalancesObject);
+  }, [balances, accountIds.join('')]);
 
   useEffect(() => {
     const filteredAssets = chain.assets.filter((asset) => {
@@ -62,12 +84,13 @@ export const NetworkAssets = ({
 
       const balance = balancesObject[asset.assetId];
 
-      return !hideZeroBalance || !balance?.verified || totalAmount(balance) !== ZERO_BALANCE;
+      return !hideZeroBalance || balance?.verified === false || (balance && totalAmount(balance) !== ZERO_BALANCE);
     });
+
     filteredAssets.sort((a, b) => balanceSorter(a, b, balancesObject));
 
     setFilteredAssets(filteredAssets);
-  }, [balances, query, hideZeroBalance]);
+  }, [balancesObject, query, hideZeroBalance]);
 
   if (filteredAssets.length === 0) {
     return null;
