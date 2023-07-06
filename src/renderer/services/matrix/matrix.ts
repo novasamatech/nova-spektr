@@ -374,6 +374,7 @@ export class Matrix implements ISecureMessenger {
 
   /**
    * List of joined Nova Spektr rooms
+   * @param accountId multisig account id
    * @return {Array}
    */
   joinedRooms(accountId?: string): Room[] {

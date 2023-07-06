@@ -5,7 +5,7 @@ import { BaseModal, HeaderTitleText, StatusLabel, Button } from '@renderer/compo
 import { useI18n } from '@renderer/context/I18nContext';
 import { useMatrix } from '@renderer/context/MatrixContext';
 import { useAccount } from '@renderer/services/account/accountService';
-import { createMultisigAccount, MultisigAccount, Account } from '@renderer/domain/account';
+import { createMultisigAccount, MultisigAccount, Account, getMultisigAccountId } from '@renderer/domain/account';
 import { useToggle } from '@renderer/shared/hooks';
 import { OperationResult } from '@renderer/components/common/OperationResult/OperationResult';
 import { MatrixModal } from '../MatrixModal/MatrixModal';
@@ -81,7 +81,12 @@ export const CreateMultisigAccount = ({ isOpen, onClose }: Props) => {
     toggleResultModal();
 
     try {
-      const roomId = matrix.joinedRooms()[0]?.roomId;
+      const multisigAccountId = getMultisigAccountId(
+        signatories.map((s) => s.accountId),
+        threshold,
+      );
+
+      const roomId = matrix.joinedRooms(multisigAccountId)[0]?.roomId;
       if (roomId) {
         await createFromExistingRoom(name, threshold, creatorId, roomId);
       } else {
@@ -124,8 +129,8 @@ export const CreateMultisigAccount = ({ isOpen, onClose }: Props) => {
       name,
       signatories,
       threshold,
-      creatorAccountId: creatorId,
       matrixRoomId: '',
+      creatorAccountId: creatorId,
       isActive: false,
     });
 
