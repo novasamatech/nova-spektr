@@ -374,11 +374,16 @@ export class Matrix implements ISecureMessenger {
 
   /**
    * List of joined Nova Spektr rooms
+   * @param accountId multisig account id
    * @return {Array}
    */
-  joinedRooms(): Room[] {
+  joinedRooms(accountId?: string): Room[] {
     return this.matrixClient.getRooms().filter((room) => {
-      return this.isSpektrRoom(room) && room.getMyMembership() === Membership.JOIN;
+      const isSpektrRoom = this.isSpektrRoom(room);
+      const isJoinedRoom = room.getMyMembership() === Membership.JOIN;
+      if (!isSpektrRoom || !isJoinedRoom) return false;
+
+      return !accountId || this.getSpektrTopic(room).mstAccount.accountId === accountId;
     });
   }
 
