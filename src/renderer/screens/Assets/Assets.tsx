@@ -5,7 +5,7 @@ import { useI18n } from '@renderer/context/I18nContext';
 import { useNetworkContext } from '@renderer/context/NetworkContext';
 import { Asset } from '@renderer/domain/asset';
 import { Chain } from '@renderer/domain/chain';
-import { ConnectionType } from '@renderer/domain/connection';
+import { ConnectionStatus, ConnectionType } from '@renderer/domain/connection';
 import { SigningType } from '@renderer/domain/shared-kernel';
 import { useToggle } from '@renderer/shared/hooks';
 import { useChains } from '@renderer/services/network/chainsService';
@@ -69,7 +69,10 @@ export const Assets = () => {
           return !isDisabled && hasMultiPallet;
         }),
       ),
-    [Object.values(connections).length, activeAccounts],
+    [
+      Object.values(connections).filter((c) => c.connection.connectionStatus === ConnectionStatus.CONNECTED).length,
+      activeAccounts,
+    ],
   );
 
   const searchSymbolOnly = sortedChains.some((chain) => {
