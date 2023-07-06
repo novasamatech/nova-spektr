@@ -64,7 +64,7 @@ export const Assets = () => {
         Object.values(connections).filter((c) => {
           const isDisabled = c.connection.connectionType === ConnectionType.DISABLED;
           const hasMultisigAccount = activeAccounts.some(isMultisig);
-          const hasMultiPallet = !hasMultisigAccount || Boolean(c.api?.tx.multisig);
+          const hasMultiPallet = !hasMultisigAccount || c.connection.hasMultisigPallet !== false;
 
           return !isDisabled && hasMultiPallet;
         }),
