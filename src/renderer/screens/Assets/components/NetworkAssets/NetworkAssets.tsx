@@ -14,6 +14,7 @@ import { includes } from '@renderer/shared/utils/strings';
 import { CaptionText, Chain, Tooltip, Accordion } from '@renderer/components/ui-redesign';
 import { AssetCard } from '../AssetCard/AssetCard';
 import { balanceSorter, sumBalances } from '../../common/utils';
+import cnTw from '@renderer/shared/utils/twMerge';
 
 type Props = {
   hideZeroBalance?: boolean;
@@ -78,7 +79,12 @@ export const NetworkAssets = ({
   return (
     <li className="w-[546px]">
       <Accordion isDefaultOpen>
-        <Accordion.Button className="sticky top-0 z-10 bg-background-default px-2 py-1.5">
+        <Accordion.Button
+          className={cnTw(
+            'sticky top-0 z-10 bg-background-default px-2 py-1.5',
+            'transition-colors rounded hover:bg-block-background-hover focus-visible:bg-block-background-hover',
+          )}
+        >
           <div className="flex items-center justify-between gap-x-2">
             <Chain chain={chain} fontClass="text-caption uppercase" as="h2" iconSize={20} />
 

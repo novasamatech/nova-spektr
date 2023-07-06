@@ -32,8 +32,8 @@ const Button = ({ className, children }: PropsWithChildren<ButtonProps>) => {
             size={16}
             className={cnTw(
               'cursor-pointer rounded-full transition-colors',
-              'group-focus:text-icon-hover group-focus:bg-hover',
               'group-hover:text-icon-hover group-hover:bg-hover',
+              'group-focus-visible:text-icon-hover group-focus-visible:bg-hover',
             )}
           />
         </>

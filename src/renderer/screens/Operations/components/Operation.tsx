@@ -23,7 +23,7 @@ const Operation = ({ tx, account }: Props) => {
   const approvals = events.filter((e) => e.status === 'SIGNED');
 
   return (
-    <Accordion className="bg-block-background-default transition-shadow rounded hover:shadow-card-shadow focus:shadow-card-shadow">
+    <Accordion className="bg-block-background-default transition-shadow rounded hover:shadow-card-shadow focus-visible:shadow-card-shadow">
       <Accordion.Button className="px-2">
         <div className="h-[52px] grid grid-cols-operation-card items-center justify-items-start">
           <FootnoteText className="text-text-tertiary pl-6">
