@@ -105,7 +105,7 @@ export const Submit = ({
               dateCreated: Date.now(),
             };
 
-            addEvent(event);
+            await addEvent(event);
           }
         }
 
