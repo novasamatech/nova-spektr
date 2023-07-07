@@ -58,6 +58,10 @@ export const Assets = () => {
     setActiveAccounts(result);
   };
 
+  const availableConnectionsAmount = Object.values(connections).filter(
+    (c) => c.connection.connectionStatus === ConnectionStatus.CONNECTED,
+  ).length;
+
   const sortedChains = useMemo(
     () =>
       sortChains(
@@ -69,10 +73,7 @@ export const Assets = () => {
           return !isDisabled && hasMultiPallet;
         }),
       ),
-    [
-      Object.values(connections).filter((c) => c.connection.connectionStatus === ConnectionStatus.CONNECTED).length,
-      activeAccounts,
-    ],
+    [availableConnectionsAmount, activeAccounts],
   );
 
   const searchSymbolOnly = sortedChains.some((chain) => {
