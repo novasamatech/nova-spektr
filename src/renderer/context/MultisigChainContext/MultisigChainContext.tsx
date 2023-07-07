@@ -12,7 +12,7 @@ import { toAddress } from '@renderer/shared/utils/address';
 import { ChainId } from '@renderer/domain/shared-kernel';
 import { useDebounce } from '@renderer/shared/hooks';
 import { useMultisigEvent } from '@renderer/services/multisigEvent/multisigEventService';
-// import { ConnectionStatus } from '@renderer/domain/connection';
+import { ConnectionStatus } from '@renderer/domain/connection';
 
 type MultisigChainContextProps = {};
 
@@ -159,7 +159,11 @@ export const MultisigChainProvider = ({ children }: PropsWithChildren) => {
       unsubscribeMultisigs.forEach((unsubscribe) => unsubscribe());
       unsubscribeEvents.forEach((unsubscribe) => unsubscribe());
     };
-  }, [debouncedConnections, account]);
+  }, [
+    Object.values(debouncedConnections).filter((c) => c.connection.connectionStatus === ConnectionStatus.CONNECTED)
+      .length,
+    account,
+  ]);
 
   return <MultisigChainContext.Provider value={{}}>{children}</MultisigChainContext.Provider>;
 };

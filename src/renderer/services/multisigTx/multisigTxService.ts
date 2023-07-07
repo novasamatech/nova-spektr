@@ -117,7 +117,7 @@ export const useMultisigTx = (): IMultisigTxService => {
           ? MultisigTxFinalStatus.ESTABLISHED
           : tx.status;
 
-        updateMultisigTx(tx);
+        updateMultisigTx({ ...tx, status });
         console.log(
           `Multisig transaction was updated with call hash ${tx.callHash} and timepoint ${tx.blockCreated}-${tx.indexCreated} and status ${status}`,
         );
