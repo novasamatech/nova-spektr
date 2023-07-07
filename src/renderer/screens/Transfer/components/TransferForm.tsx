@@ -159,14 +159,16 @@ export const TransferForm = ({
       [AssetType.STATEMINE]: TransactionType.ASSET_TRANSFER,
     };
 
+    const transactionType = asset.type ? TransferType[asset.type] : TransactionType.TRANSFER;
+
     return {
       chainId,
       address: toAddress(accountId, { prefix: addressPrefix }),
-      type: asset.type ? TransferType[asset.type] : TransactionType.TRANSFER,
+      type: transactionType,
       args: {
         dest: toAddress(destination, { prefix: addressPrefix }),
         value: formatAmount(amount, asset.precision),
-        assetId: getAssetId(asset),
+        ...(transactionType !== TransactionType.TRANSFER && { asset: getAssetId(asset) }),
       },
     };
   };
