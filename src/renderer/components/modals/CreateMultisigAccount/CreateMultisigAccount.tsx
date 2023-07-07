@@ -5,16 +5,16 @@ import { BaseModal, HeaderTitleText, StatusLabel, Button } from '@renderer/compo
 import { useI18n } from '@renderer/context/I18nContext';
 import { useMatrix } from '@renderer/context/MatrixContext';
 import { useAccount } from '@renderer/services/account/accountService';
-import { createMultisigAccount, MultisigAccount, Account } from '@renderer/domain/account';
+import { createMultisigAccount, MultisigAccount, Account, getMultisigAccountId } from '@renderer/domain/account';
 import { useToggle } from '@renderer/shared/hooks';
 import { OperationResult } from '@renderer/components/common/OperationResult/OperationResult';
 import { MatrixModal } from '../MatrixModal/MatrixModal';
 import { Wallet } from '@renderer/domain/wallet';
-import { Contact } from '@renderer/domain/contact';
 import { useWallet } from '@renderer/services/wallet/walletService';
 import { useContact } from '@renderer/services/contact/contactService';
 import { ExtendedContact, ExtendedWallet } from './common/types';
 import { SelectSignatories, ConfirmSignatories, WalletForm } from './components';
+import { AccountId } from '@renderer/domain/shared-kernel';
 import Paths from '@renderer/routes/paths';
 
 type OperationResultProps = Pick<ComponentProps<typeof OperationResult>, 'variant' | 'description'>;
@@ -33,7 +33,7 @@ export const CreateMultisigAccount = ({ isOpen, onClose }: Props) => {
   const { t } = useI18n();
   const { matrix, isLoggedIn } = useMatrix();
   const { getWallets } = useWallet();
-  const { getContacts } = useContact();
+  const { getLiveContacts } = useContact();
   const { getAccounts, addAccount, setActiveAccount } = useAccount();
   const navigate = useNavigate();
 
@@ -49,15 +49,14 @@ export const CreateMultisigAccount = ({ isOpen, onClose }: Props) => {
 
   const [wallets, setWallets] = useState<Wallet[]>([]);
   const [accounts, setAccounts] = useState<Account[]>([]);
-  const [contacts, setContacts] = useState<Contact[]>([]);
 
+  const contacts = getLiveContacts();
   const signatories = signatoryWallets.concat(signatoryContacts);
 
   useEffect(() => {
     if (!isOpen) return;
 
     getAccounts().then(setAccounts);
-    getContacts().then(setContacts);
     getWallets().then(setWallets);
   }, [isOpen]);
 
@@ -74,43 +73,74 @@ export const CreateMultisigAccount = ({ isOpen, onClose }: Props) => {
     navigate(Paths.ASSETS);
   };
 
-  const onCreateAccount = async (name: string, threshold: number) => {
+  const onCreateAccount = async (name: string, threshold: number, creatorId: AccountId): Promise<void> => {
     setName(name);
     toggleLoading();
     toggleResultModal();
 
-    const inviter = signatories.find((s) => s.matrixId === matrix.userId);
-    if (!inviter || !threshold) return;
+    try {
+      const multisigAccountId = getMultisigAccountId(
+        signatories.map((s) => s.accountId),
+        threshold,
+      );
+
+      const roomId = matrix.joinedRooms(multisigAccountId)[0]?.roomId;
+      if (roomId) {
+        await createFromExistingRoom(name, threshold, creatorId, roomId);
+      } else {
+        await createNewRoom(name, threshold, creatorId);
+      }
+
+      setTimeout(handleSuccessClose, 2000);
+    } catch (error: any) {
+      setError(error?.message || t('createMultisigAccount.errorMessage'));
+    }
+
+    toggleLoading();
+    handleClose();
+  };
+
+  const createFromExistingRoom = async (
+    name: string,
+    threshold: number,
+    creatorId: AccountId,
+    matrixRoomId: string,
+  ): Promise<void> => {
+    console.log('Trying to create Multisig from existing room ', matrixRoomId);
 
     const mstAccount = createMultisigAccount({
       name,
       signatories,
       threshold,
-      creatorAccountId: inviter.accountId,
-      matrixRoomId: '',
+      matrixRoomId,
+      creatorAccountId: creatorId,
       isActive: false,
     });
 
-    if (!mstAccount.accountId) return;
+    await addAccount<MultisigAccount>(mstAccount).then(setActiveAccount);
+  };
 
-    try {
-      const matrixRoomId = await matrix.createRoom({
-        creatorAccountId: inviter.accountId,
-        accountName: mstAccount.name,
-        accountId: mstAccount.accountId,
-        threshold: mstAccount.threshold,
-        signatories: signatories.map(({ accountId, matrixId }) => ({ accountId, matrixId })),
-      });
-      await addAccount<MultisigAccount>({ ...mstAccount, matrixRoomId }).then(setActiveAccount);
+  const createNewRoom = async (name: string, threshold: number, creatorId: AccountId): Promise<void> => {
+    console.log('Trying to create new Multisig room');
 
-      toggleLoading();
-      setTimeout(handleSuccessClose, 2000);
-    } catch (error: any) {
-      toggleLoading();
-      setError(error?.message || t('createMultisigAccount.errorMessage'));
-    }
+    const mstAccount = createMultisigAccount({
+      name,
+      signatories,
+      threshold,
+      matrixRoomId: '',
+      creatorAccountId: creatorId,
+      isActive: false,
+    });
 
-    handleClose();
+    const matrixRoomId = await matrix.createRoom({
+      creatorAccountId: creatorId,
+      accountName: mstAccount.name,
+      accountId: mstAccount.accountId,
+      threshold: mstAccount.threshold,
+      signatories: signatories.map(({ accountId, matrixId }) => ({ accountId, matrixId })),
+    });
+
+    await addAccount<MultisigAccount>({ ...mstAccount, matrixRoomId }).then(setActiveAccount);
   };
 
   const getResultProps = (): OperationResultProps => {

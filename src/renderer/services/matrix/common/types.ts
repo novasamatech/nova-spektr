@@ -30,7 +30,7 @@ export interface ISecureMessenger {
   joinRoom: (roomId: string) => Promise<void>;
   leaveRoom: (roomId: string) => Promise<void>;
   invite: (roomId: string, signatoryId: string) => Promise<void>;
-  joinedRooms: () => Room[];
+  joinedRooms: (accountId?: string) => Room[];
   sendMessage: (roomId: string, message: string) => Promise<string>;
   markAsRead: (readEventId: string, events: MatrixEvent[]) => Promise<void>;
   setEventCallbacks: (callbacks: Callbacks) => void;

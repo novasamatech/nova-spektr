@@ -4,7 +4,7 @@ import { Explorer } from '@renderer/domain/chain';
 import { useContact } from '@renderer/services/contact/contactService';
 import { useAccount } from '@renderer/services/account/accountService';
 import { useMatrix } from '@renderer/context/MatrixContext';
-import { toAddress } from '@renderer/shared/utils/address';
+import { toAccountId } from '@renderer/shared/utils/address';
 import { ExplorerLink } from '@renderer/components/common';
 
 const useAddressInfo = (address: Address, explorers?: Explorer[], showMatrix = false): InfoSection[] => {
@@ -13,8 +13,8 @@ const useAddressInfo = (address: Address, explorers?: Explorer[], showMatrix = f
   const { getLiveAccounts } = useAccount();
   const contacts = getLiveContacts();
 
-  const accountFromUser = getLiveAccounts().find((account) => toAddress(account.accountId) === address);
-  const accountFromContact = contacts.find((contact) => contact.address === address);
+  const accountFromUser = getLiveAccounts().find((account) => account.accountId === toAccountId(address));
+  const accountFromContact = contacts.find((contact) => toAccountId(contact.address) === toAccountId(address));
 
   const matrixId = accountFromContact?.matrixId || (accountFromUser && matrix.userId);
 
