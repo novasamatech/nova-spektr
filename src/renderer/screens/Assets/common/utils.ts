@@ -23,7 +23,7 @@ export const sumValues = (firstValue?: string, secondValue?: string): string => 
     return new BN(firstValue).add(new BN(secondValue)).toString();
   }
 
-  return '0';
+  return firstValue || '0';
 };
 
 const getBalanceBn = (balance: string, precision: number) => {
