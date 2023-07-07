@@ -15,9 +15,9 @@ import { formatAmount, transferableAmount } from '@renderer/shared/utils/balance
 import { Address, ChainId, AccountId } from '@renderer/domain/shared-kernel';
 import { useTransaction } from '@renderer/services/transaction/transactionService';
 import { useMultisigTx } from '@renderer/services/multisigTx/multisigTxService';
-import { getAssetId } from '@renderer/shared/utils/assets';
 import { MultisigAccount, Account, isMultisig } from '@renderer/domain/account';
 import { Button, AmountInput, Input, InputHint } from '@renderer/components/ui-redesign';
+import { getAssetId } from '@renderer/shared/utils/assets';
 
 const DESCRIPTION_MAX_LENGTH = 120;
 
@@ -150,6 +150,10 @@ export const TransferForm = ({
       setMultisigTx(getMultisigTx(account, signer.accountId, transferPayload));
     }
 
+    console.log('transferPayload', transferPayload);
+    const { callData, callHash } = getTransactionHash(transferPayload, api);
+    console.log(callData, callHash);
+
     setTransferTx(transferPayload);
   }, [account, signer, destination, amount]);
 
@@ -159,14 +163,16 @@ export const TransferForm = ({
       [AssetType.STATEMINE]: TransactionType.ASSET_TRANSFER,
     };
 
+    const transactionType = asset.type ? TransferType[asset.type] : TransactionType.TRANSFER;
+
     return {
       chainId,
       address: toAddress(accountId, { prefix: addressPrefix }),
-      type: asset.type ? TransferType[asset.type] : TransactionType.TRANSFER,
+      type: transactionType,
       args: {
         dest: toAddress(destination, { prefix: addressPrefix }),
         value: formatAmount(amount, asset.precision),
-        assetId: getAssetId(asset),
+        ...(transactionType !== TransactionType.TRANSFER && { asset: getAssetId(asset) }),
       },
     };
   };
