@@ -10,7 +10,7 @@ export const useTransactionStorage = (db: TMultisigTransaction): IMultisigTransa
     blockCreated: number,
     indexCreated: number,
   ): Promise<MultisigTransactionDS | undefined> => {
-    return db.get([accountId, chainId, callHash, blockCreated, indexCreated]);
+    return db.get({ accountId, chainId, callHash, blockCreated, indexCreated });
   },
 
   getMultisigTxs: <T extends MultisigTransaction>(where?: Partial<T>): Promise<MultisigTransactionDS[]> => {

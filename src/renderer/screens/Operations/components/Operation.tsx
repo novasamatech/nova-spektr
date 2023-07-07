@@ -8,17 +8,22 @@ import TransactionAmount from './TransactionAmount';
 import OperationStatus from './OperationStatus';
 import OperationFullInfo from './OperationFullInfo';
 import { getTransactionAmount } from '@renderer/screens/Operations/common/utils';
-import { MultisigTransaction } from '@renderer/domain/transaction';
+import { useMultisigEvent } from '@renderer/services/multisigEvent/multisigEventService';
+import { MultisigTransactionDS } from '@renderer/services/storage';
 
 type Props = {
-  tx: MultisigTransaction;
+  tx: MultisigTransactionDS;
   account?: MultisigAccount;
 };
 
 const Operation = ({ tx, account }: Props) => {
   const { dateLocale } = useI18n();
+  const { getLiveTxEvents } = useMultisigEvent();
 
-  const { dateCreated, chainId, events, transaction, description, status } = tx;
+  const { dateCreated, chainId, transaction, description, status, accountId, callHash, blockCreated, indexCreated } =
+    tx;
+
+  const events = getLiveTxEvents(accountId, chainId, callHash, blockCreated, indexCreated);
 
   const approvals = events.filter((e) => e.status === 'SIGNED');
 

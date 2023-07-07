@@ -6,11 +6,11 @@ import { BN } from '@polkadot/util';
 import { Icon } from '@renderer/components/ui';
 import { Button, BaseModal } from '@renderer/components/ui-redesign';
 import { useI18n } from '@renderer/context/I18nContext';
-import { AccountDS } from '@renderer/services/storage';
+import { AccountDS, MultisigTransactionDS } from '@renderer/services/storage';
 import { useToggle, useCountdown } from '@renderer/shared/hooks';
 import { Account, MultisigAccount } from '@renderer/domain/account';
 import { ExtendedChain } from '@renderer/services/network/common/types';
-import { MultisigTransaction, Transaction, TransactionType } from '@renderer/domain/transaction';
+import { Transaction, TransactionType } from '@renderer/domain/transaction';
 import { Address, HexString, Timepoint } from '@renderer/domain/shared-kernel';
 import { toAddress } from '@renderer/shared/utils/address';
 import { useAccount } from '@renderer/services/account/accountService';
@@ -26,9 +26,10 @@ import { OperationResult } from '@renderer/components/common/OperationResult/Ope
 import OperationModalTitle from '@renderer/screens/Operations/components/OperationModalTitle';
 import { Signing } from '@renderer/screens/Transfer/components/ActionSteps';
 import ScanSingleframeQr from '@renderer/components/common/Scanning/ScanSingleframeQr';
+import { useMultisigEvent } from '@renderer/services/multisigEvent/multisigEventService';
 
 type Props = {
-  tx: MultisigTransaction;
+  tx: MultisigTransactionDS;
   account: MultisigAccount;
   connection: ExtendedChain;
 };
@@ -47,6 +48,8 @@ const ApproveTx = ({ tx, account, connection }: Props) => {
   const { getBalance } = useBalance();
   const { getLiveAccounts } = useAccount();
   const { getTransactionFee, getTxWeight } = useTransaction();
+  const { getLiveTxEvents } = useMultisigEvent();
+  const events = getLiveTxEvents(tx.accountId, tx.chainId, tx.callHash, tx.blockCreated, tx.indexCreated);
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isSelectAccountModalOpen, toggleSelectAccountModal] = useToggle();
@@ -59,7 +62,7 @@ const ApproveTx = ({ tx, account, connection }: Props) => {
 
   const unsignedAccounts = accounts.filter((a) => {
     const isSignatory = account.signatories.find((s) => s.accountId === a.accountId);
-    const notSigned = !tx.events.find((e) => e.accountId === a.accountId);
+    const notSigned = !events.find((e) => e.accountId === a.accountId);
     const isCurrentChain = !a.chainId || a.chainId === tx.chainId;
 
     return isSignatory && notSigned && isCurrentChain;
@@ -181,7 +184,7 @@ const ApproveTx = ({ tx, account, connection }: Props) => {
     }
   };
 
-  const thresholdReached = tx.events.filter((e) => e.status === 'SIGNED').length === account.threshold - 1;
+  const thresholdReached = events.filter((e) => e.status === 'SIGNED').length === account.threshold - 1;
 
   const readyForSign = tx.status === 'SIGNING' && unsignedAccounts.length > 0;
   const readyForNonFinalSign = readyForSign && !thresholdReached;

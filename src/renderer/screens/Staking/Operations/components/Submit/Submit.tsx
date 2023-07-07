@@ -17,6 +17,7 @@ import { useMultisigTx } from '@renderer/services/multisigTx/multisigTxService';
 import { DEFAULT_TRANSITION } from '@renderer/shared/utils/constants';
 import Paths from '@renderer/routes/paths';
 import { Transaction, MultisigEvent, MultisigTransaction, MultisigTxInitStatus } from '@renderer/domain/transaction';
+import { useMultisigEvent } from '@renderer/services/multisigEvent/multisigEventService';
 
 type ResultProps = Pick<ComponentProps<typeof OperationResult>, 'title' | 'description' | 'variant'>;
 
@@ -40,6 +41,7 @@ export const Submit = ({ api, accounts, txs, multisigTx, unsignedTx, signatures,
   const { matrix } = useMatrix();
   const { submitAndWatchExtrinsic, getSignedExtrinsic } = useTransaction();
   const { addMultisigTx } = useMultisigTx();
+  const { addEvent } = useMultisigEvent();
 
   const [isSuccess, toggleSuccessMessage] = useToggle();
   const [inProgress, toggleInProgress] = useToggle(true);
@@ -67,21 +69,12 @@ export const Submit = ({ api, accounts, txs, multisigTx, unsignedTx, signatures,
     const allExtrinsics = await Promise.all(extrinsicRequests);
 
     allExtrinsics.forEach((extrinsic, index) => {
-      submitAndWatchExtrinsic(extrinsic, unsignedTx[index], api, (executed, params) => {
+      submitAndWatchExtrinsic(extrinsic, unsignedTx[index], api, async (executed, params) => {
         if (executed) {
           const mstAccount = accounts[0];
           const typedParams = params as ExtrinsicResultParams;
 
           if (multisigTx && isMultisig(mstAccount)) {
-            const event: MultisigEvent = {
-              status: 'SIGNED',
-              accountId: toAccountId(multisigTx.address),
-              extrinsicHash: typedParams.extrinsicHash,
-              eventBlock: typedParams.timepoint.height,
-              eventIndex: typedParams.timepoint.index,
-              dateCreated: Date.now(),
-            };
-
             const newTx: MultisigTransaction = {
               accountId: mstAccount.accountId,
               chainId: multisigTx.chainId,
@@ -92,12 +85,25 @@ export const Submit = ({ api, accounts, txs, multisigTx, unsignedTx, signatures,
               status: MultisigTxInitStatus.SIGNING,
               blockCreated: typedParams.timepoint.height,
               indexCreated: typedParams.timepoint.index,
-              events: [event],
               description,
               dateCreated: Date.now(),
             };
 
-            addMultisigTx(newTx);
+            const event: MultisigEvent = {
+              txAccountId: newTx.accountId,
+              txChainId: newTx.chainId,
+              txCallHash: newTx.callHash,
+              txBlock: newTx.blockCreated,
+              txIndex: newTx.indexCreated,
+              status: 'SIGNED',
+              accountId: toAccountId(multisigTx.address),
+              extrinsicHash: typedParams.extrinsicHash,
+              eventBlock: typedParams.timepoint.height,
+              eventIndex: typedParams.timepoint.index,
+              dateCreated: Date.now(),
+            };
+
+            await Promise.all([addMultisigTx(newTx), addEvent(event)]);
 
             if (matrix.userIsLoggedIn) {
               sendMultisigEvent(mstAccount.matrixRoomId, newTx, typedParams);

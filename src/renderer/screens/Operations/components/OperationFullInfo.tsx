@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 
-import { MultisigEvent, MultisigTransaction, SigningStatus } from '@renderer/domain/transaction';
+import { MultisigEvent, SigningStatus } from '@renderer/domain/transaction';
 import { MultisigAccount } from '@renderer/domain/account';
 import { Icon } from '@renderer/components/ui';
 import Details from '@renderer/screens/Operations/components/Details';
@@ -21,9 +21,11 @@ import SignatoryCard from '@renderer/components/common/SignatoryCard/SignatoryCa
 import LogModal from './Log';
 import { useContact } from '@renderer/services/contact/contactService';
 import { useAccount } from '@renderer/services/account/accountService';
+import { MultisigTransactionDS } from '@renderer/services/storage';
+import { useMultisigEvent } from '@renderer/services/multisigEvent/multisigEventService';
 
 type Props = {
-  tx: MultisigTransaction;
+  tx: MultisigTransactionDS;
   account?: MultisigAccount;
 };
 
@@ -32,9 +34,12 @@ const OperationFullInfo = ({ tx, account }: Props) => {
   const { getLiveContacts } = useContact();
   const { getLiveAccounts } = useAccount();
 
-  const { callData, events, signatories } = tx;
+  const { callData, signatories, accountId, chainId, callHash, blockCreated, indexCreated } = tx;
 
   const { matrix } = useMatrix();
+  const { getLiveTxEvents } = useMultisigEvent();
+
+  const events = getLiveTxEvents(accountId, chainId, callHash, blockCreated, indexCreated);
 
   const { updateCallData } = useMultisigTx();
   const { connections } = useNetworkContext();
