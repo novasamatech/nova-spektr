@@ -5,7 +5,7 @@ import { useI18n } from '@renderer/context/I18nContext';
 import { useNetworkContext } from '@renderer/context/NetworkContext';
 import { Asset } from '@renderer/domain/asset';
 import { Chain } from '@renderer/domain/chain';
-import { ConnectionType } from '@renderer/domain/connection';
+import { ConnectionStatus, ConnectionType } from '@renderer/domain/connection';
 import { SigningType } from '@renderer/domain/shared-kernel';
 import { useToggle } from '@renderer/shared/hooks';
 import { useChains } from '@renderer/services/network/chainsService';
@@ -56,18 +56,22 @@ export const Assets = () => {
     setActiveAccounts(result);
   };
 
+  const availableConnectionsAmount = Object.values(connections).filter(
+    (c) => c.connection.connectionStatus === ConnectionStatus.CONNECTED,
+  ).length;
+
   const sortedChains = useMemo(
     () =>
       sortChains(
         Object.values(connections).filter((c) => {
           const isDisabled = c.connection.connectionType === ConnectionType.DISABLED;
           const hasMultisigAccount = activeAccounts.some(isMultisig);
-          const hasMultiPallet = !hasMultisigAccount || Boolean(c.api?.tx.multisig);
+          const hasMultiPallet = !hasMultisigAccount || c.connection.hasMultisigPallet !== false;
 
           return !isDisabled && hasMultiPallet;
         }),
       ),
-    [Object.values(connections).length, activeAccounts],
+    [availableConnectionsAmount, activeAccounts],
   );
 
   const searchSymbolOnly = sortedChains.some((chain) => {
