@@ -46,24 +46,29 @@ export const NetworkAssets = ({
   const [filteredAssets, setFilteredAssets] = useState<Asset[]>([]);
   const [balancesObject, setBalancesObject] = useState<Record<string, Balance>>({});
 
-  const accountIds = useMemo(
-    () =>
-      accounts.reduce<AccountId[]>((acc, account) => {
-        if (!account.chainId || account.chainId === chain.chainId) acc.push(account.accountId);
+  const selectedAccountIds = accounts.map((a) => a.accountId).join('');
 
-        return acc;
-      }, []),
-    [chain.chainId, accounts.map((a) => a.accountId).join('')],
-  );
+  const accountIds = useMemo(() => {
+    return accounts.reduce<AccountId[]>((acc, account) => {
+      if (!account.chainId || account.chainId === chain.chainId) acc.push(account.accountId);
+
+      return acc;
+    }, []);
+  }, [chain.chainId, selectedAccountIds]);
 
   const balances = getLiveNetworkBalances(accountIds, chain.chainId);
 
   useEffect(() => {
+    const accountsAmount = new Set(accountIds).size;
+
     const newBalancesObject = Object.values(groupBy(balances, 'assetId')).reduce<Record<string, Balance>>(
       (acc, balances: BalanceDS[]) => {
-        if (balances.length !== new Set(accountIds).size) return acc;
-
-        acc[balances[0].assetId] = balances.reduce<Balance>((acc, balance) => sumBalances(balance, acc), {} as Balance);
+        if (balances.length === accountsAmount) {
+          acc[balances[0].assetId] = balances.reduce<Balance>(
+            (acc, balance) => sumBalances(balance, acc),
+            {} as Balance,
+          );
+        }
 
         return acc;
       },
