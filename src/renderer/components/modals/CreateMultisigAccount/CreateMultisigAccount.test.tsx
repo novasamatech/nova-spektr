@@ -25,7 +25,7 @@ jest.mock('@renderer/services/account/accountService', () => ({
 
 jest.mock('@renderer/services/contact/contactService', () => ({
   useContact: jest.fn().mockReturnValue({
-    getContacts: jest.fn().mockResolvedValue([]),
+    getLiveContacts: jest.fn().mockReturnValue([]),
   }),
 }));
 
