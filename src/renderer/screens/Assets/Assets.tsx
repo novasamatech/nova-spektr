@@ -38,8 +38,6 @@ export const Assets = () => {
   const activeAccountsFromWallet = getActiveAccounts();
   const isMultishard = activeAccountsFromWallet.length > 1;
 
-  const accountIds = activeAccounts.map((a) => a.accountId).filter((a) => a);
-
   const updateHideZeroBalance = (value: boolean) => {
     setHideZeroBalance(value);
     setHideZeroBalanceState(value);
@@ -129,7 +127,7 @@ export const Assets = () => {
         )}
 
         <div className="flex flex-col gap-y-4 w-full h-full overflow-y-scroll">
-          {accountIds.length > 0 && (
+          {activeAccounts.length > 0 && (
             <ul className="flex flex-col gap-y-4 items-center w-full py-4">
               {sortedChains.map((chain) => (
                 <NetworkAssets
@@ -138,7 +136,7 @@ export const Assets = () => {
                   searchSymbolOnly={searchSymbolOnly}
                   query={query.toLowerCase()}
                   chain={chain}
-                  accountIds={accountIds}
+                  accounts={activeAccounts}
                   canMakeActions={checkCanMakeActions()}
                   onReceiveClick={onReceive(chain)}
                   onTransferClick={onTransfer(chain)}
