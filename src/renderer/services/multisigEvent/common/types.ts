@@ -1,0 +1,20 @@
+import { AccountId, CallHash, ChainId } from '@renderer/domain/shared-kernel';
+import { MultisigEvent } from '@renderer/domain/transaction';
+import { ID, MultisigEventDS } from '@renderer/services/storage';
+
+export interface IMultisigEventService {
+  getEvent: (eventId: ID) => Promise<MultisigEventDS | undefined>;
+  getEvents: <T extends MultisigEvent>(where?: Partial<T>) => Promise<MultisigEventDS[]>;
+  getLiveEvents: <T extends MultisigEvent>(where?: Partial<T>) => MultisigEventDS[];
+  getLiveTxEvents: <T extends MultisigEvent>(
+    txAccountId: AccountId,
+    txChainId: ChainId,
+    txCallHash: CallHash,
+    txBlock: number,
+    txIndex: number,
+    where?: Partial<T>,
+  ) => MultisigEventDS[];
+  addEvent: (event: MultisigEvent) => Promise<ID>;
+  updateEvent: (event: MultisigEventDS) => Promise<ID>;
+  deleteEvent: (eventId: ID) => Promise<void>;
+}
