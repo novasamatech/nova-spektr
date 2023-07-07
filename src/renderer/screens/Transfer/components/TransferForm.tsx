@@ -15,9 +15,9 @@ import { formatAmount, transferableAmount } from '@renderer/shared/utils/balance
 import { Address, ChainId, AccountId } from '@renderer/domain/shared-kernel';
 import { useTransaction } from '@renderer/services/transaction/transactionService';
 import { useMultisigTx } from '@renderer/services/multisigTx/multisigTxService';
+import { getAssetId } from '@renderer/shared/utils/assets';
 import { MultisigAccount, Account, isMultisig } from '@renderer/domain/account';
 import { Button, AmountInput, Input, InputHint } from '@renderer/components/ui-redesign';
-import { getAssetId } from '@renderer/shared/utils/assets';
 
 const DESCRIPTION_MAX_LENGTH = 120;
 
@@ -149,10 +149,6 @@ export const TransferForm = ({
     if (isMultisig(account) && signer) {
       setMultisigTx(getMultisigTx(account, signer.accountId, transferPayload));
     }
-
-    console.log('transferPayload', transferPayload);
-    const { callData, callHash } = getTransactionHash(transferPayload, api);
-    console.log(callData, callHash);
 
     setTransferTx(transferPayload);
   }, [account, signer, destination, amount]);
