@@ -92,8 +92,6 @@ const Submit = ({ api, tx, multisigTx, account, unsignedTx, signature, descripti
             dateCreated: Date.now(),
           };
 
-          await addMultisigTx(newTx);
-
           const event: MultisigEvent = {
             txAccountId: newTx.accountId,
             txChainId: newTx.chainId,
@@ -108,7 +106,7 @@ const Submit = ({ api, tx, multisigTx, account, unsignedTx, signature, descripti
             dateCreated: Date.now(),
           };
 
-          await addEvent(event);
+          await Promise.all([addMultisigTx(newTx), addEvent(event)]);
 
           if (matrix.userIsLoggedIn) {
             sendMultisigEvent(account.matrixRoomId, newTx, typedParams);

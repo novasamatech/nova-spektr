@@ -97,6 +97,10 @@ export const MultisigChainProvider = ({ children }: PropsWithChildren) => {
     );
   };
 
+  const availableConnectionsAmount = Object.values(debouncedConnections).filter(
+    (c) => c.connection.connectionStatus === ConnectionStatus.CONNECTED,
+  ).length;
+
   useEffect(() => {
     const unsubscribeMultisigs: (() => void)[] = [];
     const unsubscribeEvents: VoidFn[] = [];
@@ -159,11 +163,7 @@ export const MultisigChainProvider = ({ children }: PropsWithChildren) => {
       unsubscribeMultisigs.forEach((unsubscribe) => unsubscribe());
       unsubscribeEvents.forEach((unsubscribe) => unsubscribe());
     };
-  }, [
-    Object.values(debouncedConnections).filter((c) => c.connection.connectionStatus === ConnectionStatus.CONNECTED)
-      .length,
-    account,
-  ]);
+  }, [availableConnectionsAmount, account]);
 
   return <MultisigChainContext.Provider value={{}}>{children}</MultisigChainContext.Provider>;
 };

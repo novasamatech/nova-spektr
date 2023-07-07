@@ -1,4 +1,6 @@
 import { ApiPromise } from '@polkadot/api';
+import { Vec } from '@polkadot/types';
+import { AccountId32 } from '@polkadot/types/interfaces';
 
 import { MultisigAccount } from '@renderer/domain/account';
 import { Address, ChainId } from '@renderer/domain/shared-kernel';
@@ -24,23 +26,23 @@ export const getPendingMultisigTxs = async (
     }, []);
 };
 
-export const updateOldEventsPayload = (events: MultisigEvent[], pendingTransaction: PendingMultisigTransaction) => {
+export const updateOldEventsPayload = (events: MultisigEvent[], approvals: Vec<AccountId32>): MultisigEvent[] => {
   return events.map((e) => {
-    return e.status === 'PENDING_SIGNED' && pendingTransaction.params.approvals.find((a) => a.toHex() === e.accountId)
-      ? ({
-          ...e,
-          status: 'SIGNED',
-        } as MultisigEvent)
-      : e;
+    const isPendingSigned = e.status === 'PENDING_SIGNED';
+    const hasApproval = approvals.find((a) => a.toHex() === e.accountId);
+
+    if (!isPendingSigned || !hasApproval) return e;
+
+    return { ...e, status: 'SIGNED' };
   });
 };
 
 export const createNewEventsPayload = (
   events: MultisigEvent[],
   tx: MultisigTransaction,
-  pendingTransaction: PendingMultisigTransaction,
+  approvals: Vec<AccountId32>,
 ): MultisigEvent[] => {
-  return pendingTransaction.params.approvals.reduce<MultisigEvent[]>((acc, a) => {
+  return approvals.reduce<MultisigEvent[]>((acc, a) => {
     const hasApprovalEvent = events.find((e) => e.status === 'SIGNED' && e.accountId === a.toHex());
 
     if (!hasApprovalEvent) {

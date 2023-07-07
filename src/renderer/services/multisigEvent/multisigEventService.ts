@@ -2,23 +2,23 @@ import { useLiveQuery } from 'dexie-react-hooks';
 
 import storage, { MultisigEventDS } from '@renderer/services/storage';
 import { IMultisigEventService } from './common/types';
-import { Contact } from '@renderer/domain/contact';
 import { AccountId, CallHash, ChainId } from '@renderer/domain/shared-kernel';
+import { MultisigEvent } from '@renderer/domain/transaction';
 
 export const useMultisigEvent = (): IMultisigEventService => {
   const multisigEventStorage = storage.connectTo('multisigEvents');
 
   if (!multisigEventStorage) {
-    throw new Error('=== 🔴 Contact storage in not defined 🔴 ===');
+    throw new Error('=== 🔴 Multisig event storage in not defined 🔴 ===');
   }
   const { getEvent, getEvents, addEvent, updateEvent, deleteEvent } = multisigEventStorage;
 
-  const getLiveEvents = <T extends Contact>(where?: Partial<T>): MultisigEventDS[] => {
+  const getLiveEvents = <T extends MultisigEvent>(where?: Partial<T>): MultisigEventDS[] => {
     const query = () => {
       try {
         return getEvents(where);
       } catch (error) {
-        console.warn('Error trying to get contacts');
+        console.warn('Error trying to get multisig events');
 
         return Promise.resolve([]);
       }
@@ -27,7 +27,7 @@ export const useMultisigEvent = (): IMultisigEventService => {
     return useLiveQuery(query, [], []);
   };
 
-  const getLiveTxEvents = <T extends Contact>(
+  const getLiveTxEvents = <T extends MultisigEvent>(
     txAccountId: AccountId,
     txChainId: ChainId,
     txCallHash: CallHash,
@@ -46,7 +46,7 @@ export const useMultisigEvent = (): IMultisigEventService => {
           txIndex,
         });
       } catch (error) {
-        console.warn('Error trying to get contacts');
+        console.warn('Error trying to get multisig events');
 
         return Promise.resolve([]);
       }

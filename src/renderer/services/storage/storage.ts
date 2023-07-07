@@ -11,7 +11,6 @@ import {
   TMultisigTransaction,
   TNotification,
   TMultisigEvent,
-  MultisigEventDS,
 } from './common/types';
 import { useBalanceStorage } from './balanceStorage';
 import { useConnectionStorage } from './connectionStorage';
@@ -21,6 +20,7 @@ import { useContactStorage } from './contactStorage';
 import { useTransactionStorage } from './transactionStorage';
 import { useNotificationStorage } from './notificationStorage';
 import { useMultisigEventStorage } from './multisigEventStorage';
+import { upgradeEvents } from './common/upgrades';
 
 class DexieStorage extends Dexie {
   connections: TConnection;
@@ -59,31 +59,7 @@ class DexieStorage extends Dexie {
         multisigEvents: '++id,[txAccountId+txChainId+txCallHash+txBlock+txIndex],status,accountId',
         notifications: '++id,type,read',
       })
-      .upgrade(async (trans) => {
-        const txs = await trans.table('multisigTransactions').toArray();
-        const newEvents = txs
-          .map((tx) =>
-            tx.events.map((e: MultisigEventDS) => ({
-              ...e,
-              txAccountId: tx.accountId,
-              txChainId: tx.chainId,
-              txCallHash: tx.callHash,
-              txBlock: tx.blockCreated,
-              txIndex: tx.indexCreated,
-            })),
-          )
-          .flat();
-
-        return Promise.all([
-          trans
-            .table('multisigTransactions')
-            .toCollection()
-            .modify((tx) => {
-              delete tx.events;
-            }),
-          trans.table('multisigEvents').bulkAdd(newEvents),
-        ]);
-      });
+      .upgrade(upgradeEvents);
 
     this.connections = this.table('connections');
     this.balances = this.table('balances');

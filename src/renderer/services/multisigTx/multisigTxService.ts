@@ -59,11 +59,11 @@ export const useMultisigTx = (): IMultisigTxService => {
             txIndex: oldTx.indexCreated,
           });
 
-          const newEvents = createNewEventsPayload(oldEvents, oldTx, pendingTx);
-          newEvents.forEach((e) => addEvent(e));
+          const newEvents = createNewEventsPayload(oldEvents, oldTx, pendingTx.params.approvals);
+          newEvents.forEach(addEvent);
 
-          const updatedEvents = updateOldEventsPayload(oldEvents, pendingTx);
-          updatedEvents.forEach((e) => updateEvent(e));
+          const updatedEvents = updateOldEventsPayload(oldEvents, pendingTx.params.approvals);
+          updatedEvents.forEach(updateEvent);
 
           if (updatedTx) {
             updateMultisigTx(updatedTx);
