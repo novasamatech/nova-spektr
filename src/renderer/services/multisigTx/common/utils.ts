@@ -64,7 +64,6 @@ export const updateTransactionPayload = (
   transaction: MultisigTransaction,
   pendingTransaction: PendingMultisigTransaction,
 ): MultisigTransaction | undefined => {
-  // const { events } = transaction;
   const { when, deposit, depositor } = pendingTransaction.params;
 
   const blockCreated = when.height.toNumber();
