@@ -5,7 +5,7 @@ import cnTw from '@renderer/shared/utils/twMerge';
 import { Icon } from '@renderer/components/ui';
 import { DropdownOption, DropdownResult, Position } from '../common/types';
 import CommonInputStyles from '@renderer/components/ui-redesign/Inputs/common/styles';
-import { Checkbox, FootnoteText, LabelText, HeadlineText } from '@renderer/components/ui-redesign';
+import { Checkbox, FootnoteText, LabelText, CaptionText } from '@renderer/components/ui-redesign';
 import { OptionsContainerStyle, OptionStyle, SelectButtonStyle, ViewClass } from '../common/constants';
 
 type Props = {
@@ -60,17 +60,11 @@ const MultiSelect = ({
     }
 
     return (
-      <span className="relative flex items-center">
-        <HeadlineText
-          as="span"
-          className="absolute w-6 h-6 border border-token-container-border rounded"
-          align="center"
-        >
+      <span className="flex items-center gap-x-2">
+        <FootnoteText as="span">{multiPlaceholder || placeholder}</FootnoteText>
+        <CaptionText as="span" className="px-1.5 leading-4 h-4 rounded-[30px] bg-icon-accent text-white" align="center">
           {selectedOptions.length}
-        </HeadlineText>
-        <FootnoteText as="span" className="ml-7 py-[1px]">
-          {multiPlaceholder || placeholder}
-        </FootnoteText>
+        </CaptionText>
       </span>
     );
   };
@@ -87,7 +81,7 @@ const MultiSelect = ({
               invalid && SelectButtonStyle.invalid,
               SelectButtonStyle.disabled,
               CommonInputStyles,
-              'w-full inline-flex items-center gap-x-2 justify-between pr-2',
+              'w-full inline-flex items-center gap-x-2 justify-between pr-2 py-2',
             )}
             tabIndex={tabIndex}
           >
