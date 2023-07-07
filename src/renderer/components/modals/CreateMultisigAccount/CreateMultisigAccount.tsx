@@ -10,7 +10,6 @@ import { useToggle } from '@renderer/shared/hooks';
 import { OperationResult } from '@renderer/components/common/OperationResult/OperationResult';
 import { MatrixModal } from '../MatrixModal/MatrixModal';
 import { Wallet } from '@renderer/domain/wallet';
-import { Contact } from '@renderer/domain/contact';
 import { useWallet } from '@renderer/services/wallet/walletService';
 import { useContact } from '@renderer/services/contact/contactService';
 import { ExtendedContact, ExtendedWallet } from './common/types';
@@ -34,7 +33,7 @@ export const CreateMultisigAccount = ({ isOpen, onClose }: Props) => {
   const { t } = useI18n();
   const { matrix, isLoggedIn } = useMatrix();
   const { getWallets } = useWallet();
-  const { getContacts } = useContact();
+  const { getLiveContacts } = useContact();
   const { getAccounts, addAccount, setActiveAccount } = useAccount();
   const navigate = useNavigate();
 
@@ -50,15 +49,14 @@ export const CreateMultisigAccount = ({ isOpen, onClose }: Props) => {
 
   const [wallets, setWallets] = useState<Wallet[]>([]);
   const [accounts, setAccounts] = useState<Account[]>([]);
-  const [contacts, setContacts] = useState<Contact[]>([]);
 
+  const contacts = getLiveContacts();
   const signatories = signatoryWallets.concat(signatoryContacts);
 
   useEffect(() => {
     if (!isOpen) return;
 
     getAccounts().then(setAccounts);
-    getContacts().then(setContacts);
     getWallets().then(setWallets);
   }, [isOpen]);
 
