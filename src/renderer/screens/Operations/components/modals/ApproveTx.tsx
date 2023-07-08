@@ -106,9 +106,8 @@ const ApproveTx = ({ tx, account, connection }: Props) => {
   }, [tx, accounts.length, signAccount?.accountId, txWeight]);
 
   useEffect(() => {
-    if (!tx.transaction || !connection.api) return;
-
-    getTxWeight(tx.transaction, connection.api).then((txWeight) => {
+    if (!tx.transaction?.type || !connection.api) return;
+    getTxWeight(tx.transaction as Transaction, connection.api).then((txWeight) => {
       setTxWeight(txWeight);
     });
   }, [tx.transaction, connection.api]);

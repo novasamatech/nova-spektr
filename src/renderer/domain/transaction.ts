@@ -41,7 +41,7 @@ export const enum MultisigTxFinalStatus {
 export type MultisigTxStatus = MultisigTxInitStatus | MultisigTxFinalStatus;
 
 // TODO: extend args for all Transaction types
-// TODO: use it for prepare, sign and send transaction
+// TODO: use it for send transaction
 export type Transaction = {
   type: TransactionType;
   address: Address;
@@ -50,7 +50,8 @@ export type Transaction = {
 };
 
 // TODO: use it for decoding only
-export type DecodedTransaction = Transaction & {
+export type DecodedTransaction = Omit<Transaction, 'type'> & {
+  type?: TransactionType;
   method: string;
   section: string;
 };
@@ -84,7 +85,7 @@ export type MultisigTransaction = {
   blockCreated: number;
   indexCreated: number;
   dateCreated?: number;
-  transaction?: Transaction;
+  transaction?: Transaction | DecodedTransaction;
 };
 
 export type MultisigTransactionKey = Pick<

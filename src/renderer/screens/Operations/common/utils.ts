@@ -4,12 +4,12 @@ import { IconNames } from '@renderer/components/ui/Icon/data';
 import { Explorer } from '@renderer/domain/chain';
 import { AccountId, HexString } from '@renderer/domain/shared-kernel';
 import {
+  DecodedTransaction,
   MultisigTxFinalStatus,
   MultisigTxInitStatus,
   Transaction,
   TransactionType,
 } from '@renderer/domain/transaction';
-import { DEFAULT } from '@shared/constants/common';
 import { toAddress } from '@renderer/shared/utils/address';
 import { Contact } from '@renderer/domain/contact';
 import { Account } from '@renderer/domain/account';
@@ -60,7 +60,7 @@ const TransactionIcons: Record<TransactionType, IconNames> = {
   [TransactionType.BATCH_ALL]: 'unknownMst',
 };
 
-export const getTransactionTitle = (transaction?: Transaction): string => {
+export const getTransactionTitle = (transaction?: Transaction | DecodedTransaction): string => {
   if (!transaction?.type) return 'operations.titles.unknown';
 
   if (transaction.type === TransactionType.BATCH_ALL) {
@@ -70,7 +70,7 @@ export const getTransactionTitle = (transaction?: Transaction): string => {
   return TransactionTitles[transaction.type];
 };
 
-export const getIconName = (transaction?: Transaction): IconNames => {
+export const getIconName = (transaction?: Transaction | DecodedTransaction): IconNames => {
   if (!transaction?.type) return 'question';
 
   if (transaction.type === TransactionType.BATCH_ALL) {
@@ -189,9 +189,11 @@ export const getTransactionOptions = (t: TFunction) => {
   ];
 };
 
-export const getTransactionAmount = (tx: Transaction): string | null => {
-  const txType = tx.type || DEFAULT;
-
+export const getTransactionAmount = (tx: Transaction | DecodedTransaction): string | null => {
+  const txType = tx.type;
+  if (!txType) {
+    return null;
+  }
   if (
     [
       TransactionType.ASSET_TRANSFER,

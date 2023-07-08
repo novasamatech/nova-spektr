@@ -166,14 +166,6 @@ interface ICallDataParser {
 }
 
 abstract class AbstractCallDataParser implements ICallDataParser {
-  abstract supports(): TransactionType;
-
-  abstract parseDecodedCallArgs(
-    method: string,
-    section: string,
-    decoded: SubmittableExtrinsic<'promise'>,
-  ): Record<string, any>;
-
   public parse(
     address: Address,
     decoded: SubmittableExtrinsic<'promise'>,
@@ -190,6 +182,14 @@ abstract class AbstractCallDataParser implements ICallDataParser {
     return transaction;
   }
 
+  abstract parseDecodedCallArgs(
+    method: string,
+    section: string,
+    decoded: SubmittableExtrinsic<'promise'>,
+  ): Record<string, any>;
+
+  abstract supports(): TransactionType;
+
   protected prepareTransaction(
     address: Address,
     chainId: HexString,
@@ -202,10 +202,14 @@ abstract class AbstractCallDataParser implements ICallDataParser {
       method: method,
       section: section,
       args: {},
-      type: this.supports(),
+      type: this.getTransactionType(),
     };
 
     return transaction;
+  }
+
+  protected getTransactionType(): TransactionType | undefined {
+    return this.supports();
   }
 }
 
@@ -497,6 +501,10 @@ class UnknownOperationCallDataParser extends AbstractCallDataParser {
   }
 
   supports(): TransactionType {
-    throw new Error('Unknown call data barser is not standard and my not be use with supported()');
+    throw new Error('Unknown call data parser is not standard and my not be use with supported()');
+  }
+
+  getTransactionType(): TransactionType | undefined {
+    return undefined;
   }
 }
