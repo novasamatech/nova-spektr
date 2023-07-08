@@ -43,6 +43,8 @@ export type MultisigTxStatus = MultisigTxInitStatus | MultisigTxFinalStatus;
 // TODO: extend args for all Transaction types
 export type Transaction = {
   type: TransactionType;
+  method: string;
+  section: string;
   address: Address;
   chainId: ChainId;
   args: Record<string, any>;
