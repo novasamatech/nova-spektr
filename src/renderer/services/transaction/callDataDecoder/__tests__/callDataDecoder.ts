@@ -1,7 +1,7 @@
-import { CallDataDecoder } from '@renderer/services/transaction/callDataParser/callDataParser';
+import { CallDataDecoder } from '@renderer/services/transaction/callDataDecoder/callDataDecoder';
 import { TransactionType } from '@renderer/domain/transaction';
 
-describe('/service/transaction/callDataParser/callDataParser', () => {
+describe('/service/transaction/callDataDecoder/callDataDecoder', () => {
   test('Check all operations are supported correctly', () => {
     const provider = new CallDataDecoder();
     // @ts-ignore

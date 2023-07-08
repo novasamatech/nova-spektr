@@ -19,7 +19,7 @@ import { createTxMetadata } from '@renderer/shared/utils/substrate';
 import { ITransactionService, HashData, ExtrinsicResultParams } from './common/types';
 import { toAccountId } from '@renderer/shared/utils/address';
 import { decodeDispatchError, getMaxWeight, isControllerMissing, isOldMultisigPallet } from './common/utils';
-import { CallDataDecoder } from '@renderer/services/transaction/callDataParser/callDataParser';
+import { CallDataDecoder } from '@renderer/services/transaction/callDataDecoder/callDataDecoder';
 
 type BalancesTransferArgs = Parameters<typeof methods.balances.transfer>[0];
 type BondWithoutContollerArgs = Omit<Parameters<typeof methods.staking.bond>[0], 'controller'>;
@@ -438,127 +438,10 @@ export const useTransaction = (): ITransactionService => {
       });
   };
 
-  // TODO: will be refactored with next tasks
   const decodeCallData = (api: ApiPromise, accountId: Address, callData: CallData): DecodedTransaction => {
     const callDataProvider: CallDataDecoder = new CallDataDecoder();
 
     return callDataProvider.parse(api, accountId, callData);
-    // const transaction: Transaction = {
-    //   type: TransactionType.TRANSFER,
-    //   address: accountId,
-    //   chainId: api.genesisHash.toHex(),
-    //   args: {},
-    // };
-    // let extrinsicCall: Call;
-    // let decoded: SubmittableExtrinsic<'promise'> | null = null;
-    //
-    // try {
-    //   // cater for an extrinsic input...
-    //   decoded = api.tx(callData);
-    //   extrinsicCall = api.createType('Call', decoded.method);
-    // } catch (e) {
-    //   extrinsicCall = api.createType('Call', callData);
-    // }
-    //
-    // const { method, section } = api.registry.findMetaCall(extrinsicCall.callIndex);
-    // const extrinsicFn = api.tx[section][method];
-    // const extrinsic = extrinsicFn(...extrinsicCall.args);
-    //
-    // if (!decoded) {
-    //   decoded = extrinsic;
-    // }
-    //
-    // const transferMethods = ['transfer', 'transferKeepAlive', 'transferAllowDeath'];
-    //
-    // if (transferMethods.includes(method) && section === 'balances') {
-    //   transaction.type = TransactionType.TRANSFER;
-    //   transaction.args.dest = decoded.args[0].toString();
-    //   transaction.args.value = decoded.args[1].toString();
-    // }
-    //
-    // if (transferMethods.includes(method) && section === 'assets') {
-    //   transaction.type = TransactionType.ASSET_TRANSFER;
-    //
-    //   transaction.args.assetId = decoded.args[0].toString();
-    //   transaction.args.dest = decoded.args[1].toString();
-    //   transaction.args.value = decoded.args[2].toString();
-    // }
-    //
-    // if (method === 'transfer' && (section === 'currencies' || section === 'tokens')) {
-    //   transaction.type = TransactionType.ORML_TRANSFER;
-    //
-    //   transaction.args.dest = decoded.args[0].toString();
-    //   transaction.args.assetId = decoded.args[1].toHex();
-    //   transaction.args.value = decoded.args[2].toString();
-    // }
-    //
-    // if (method === 'batchAll' && section === 'utility') {
-    //   transaction.type = TransactionType.BATCH_ALL;
-    //
-    //   const calls = api.createType('Vec<Call>', decoded.args[0].toHex());
-    //
-    //   transaction.args.transactions = calls.map((call) => decodeCallData(api, accountId, call.toHex()));
-    // }
-    //
-    // if (method === 'bond' && section === 'staking') {
-    //   transaction.type = TransactionType.BOND;
-    //   let index = 0;
-    //
-    //   if (decoded.args.length === BOND_WITH_CONTROLLER_ARGS_AMOUNT) {
-    //     transaction.args.controller = decoded.args[index++].toString();
-    //   }
-    //
-    //   transaction.args.value = decoded.args[index++].toString();
-    //   let payee = decoded.args[index++].toString();
-    //
-    //   try {
-    //     payee = JSON.parse(payee);
-    //   } catch (e) {
-    //     console.warn(e);
-    //   }
-    //
-    //   transaction.args.payee = payee;
-    // }
-    //
-    // if (method === 'unbond' && section === 'staking') {
-    //   transaction.type = TransactionType.UNSTAKE;
-    //   transaction.args.value = decoded.args[0].toString();
-    // }
-    //
-    // if (method === 'chill' && section === 'staking') {
-    //   transaction.type = TransactionType.CHILL;
-    // }
-    //
-    // if (method === 'rebond' && section === 'staking') {
-    //   transaction.type = TransactionType.RESTAKE;
-    //   transaction.args.value = decoded.args[0].toString();
-    // }
-    //
-    // if (method === 'withdrawUnbonded' && section === 'staking') {
-    //   transaction.type = TransactionType.REDEEM;
-    // }
-    //
-    // if (method === 'nominate' && section === 'staking') {
-    //   transaction.type = TransactionType.NOMINATE;
-    //   transaction.args.targets = (decoded.args[0] as any).map((a: Type) => a.toString());
-    // }
-    //
-    // if (method === 'bondExtra' && section === 'staking') {
-    //   transaction.type = TransactionType.STAKE_MORE;
-    //   transaction.args.maxAdditional = decoded.args[0].toString();
-    // }
-    //
-    // if (method === 'setPayee' && section === 'staking') {
-    //   transaction.type = TransactionType.DESTINATION;
-    //   try {
-    //     transaction.args.payee = JSON.parse(decoded.args[0].toString());
-    //   } catch (e) {
-    //     console.warn(e);
-    //     transaction.args.payee = decoded.args[0].toString();
-    //   }
-    // }
-    //
-    // return transaction;
   };
 
   return {
