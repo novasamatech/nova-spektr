@@ -5,7 +5,7 @@ import { HexString } from '@polkadot/util/types';
 import { Type } from '@polkadot/types';
 
 import { Address, CallData } from '@renderer/domain/shared-kernel';
-import { Transaction, TransactionType } from '@renderer/domain/transaction';
+import { DecodedTransaction, TransactionType } from '@renderer/domain/transaction';
 import { BOND_WITH_CONTROLLER_ARGS_AMOUNT } from '@renderer/services/transaction/common/constants';
 
 /**
@@ -28,6 +28,9 @@ export class CallDataDecoderProvider {
     const ssmParser = new StakingStakeMoreCallDataParser();
     const ssdParser = new StakingChangeDestinationCallDataParser();
     const baParser = new BatchAllCallDataParser();
+    const msAsMulti = new MultisigAsMultiCallDataParser();
+    const msApproveAsMulti = new MultisigApproveAsMultiCallDataParser();
+    const msCancelAsMulti = new MultisigCancelAsMultiCallDataParser();
 
     this.callDataParsers.set(tbParser.supports(), tbParser);
     this.callDataParsers.set(taParser.supports(), taParser);
@@ -41,9 +44,12 @@ export class CallDataDecoderProvider {
     this.callDataParsers.set(ssmParser.supports(), ssmParser);
     this.callDataParsers.set(ssdParser.supports(), ssdParser);
     this.callDataParsers.set(baParser.supports(), baParser);
+    this.callDataParsers.set(msApproveAsMulti.supports(), msApproveAsMulti);
+    this.callDataParsers.set(msAsMulti.supports(), msAsMulti);
+    this.callDataParsers.set(msCancelAsMulti.supports(), msCancelAsMulti);
   }
 
-  public parse(api: ApiPromise, address: Address, callData: CallData): Transaction {
+  public parse(api: ApiPromise, address: Address, callData: CallData): DecodedTransaction {
     let extrinsicCall: Call;
     let decoded: SubmittableExtrinsic<'promise'> | null = null;
 
@@ -73,19 +79,19 @@ export class CallDataDecoderProvider {
     address: Address,
     decoded: SubmittableExtrinsic<'promise'>,
     api: ApiPromise,
-  ): Transaction {
-    let transactionType: TransactionType;
+  ): DecodedTransaction {
+    let transactionType: TransactionType | undefined = undefined;
     if (method === 'batchAll' && section === 'utility') {
       transactionType = TransactionType.BATCH_ALL;
-    } else {
-      throw new Error('errr'); //todo
     }
 
-    const callDataParser = this.callDataParsers.get(transactionType);
-    if (!callDataParser) {
-      throw new Error(`CallDataParser for ${transactionType} not found`);
-    }
-    const batchTransaction = callDataParser.parse(address, decoded, method, section, api.genesisHash.toHex());
+    const batchTransaction = this.getCallDataParser(transactionType).parse(
+      address,
+      decoded,
+      method,
+      section,
+      api.genesisHash.toHex(),
+    );
     const calls = api.createType('Vec<Call>', batchTransaction.args.calls);
     batchTransaction.args.transactions = calls.map((call) => this.parse(api, address, call.toHex()));
 
@@ -98,10 +104,11 @@ export class CallDataDecoderProvider {
     address: Address,
     decoded: SubmittableExtrinsic<'promise'>,
     genesisHash: HexString,
-  ): Transaction {
+  ): DecodedTransaction {
     console.log(`Start parsing call data for section ${section} and method ${method}`);
     const transferMethods = ['transfer', 'transferKeepAlive', 'transferAllowDeath'];
-    let transactionType: TransactionType;
+    let transactionType: TransactionType | undefined = undefined;
+
     if (transferMethods.includes(method) && section === 'balances') {
       transactionType = TransactionType.TRANSFER;
     } else if (transferMethods.includes(method) && section === 'assets') {
@@ -124,19 +131,26 @@ export class CallDataDecoderProvider {
       transactionType = TransactionType.STAKE_MORE;
     } else if (method === 'setPayee' && section === 'staking') {
       transactionType = TransactionType.DESTINATION;
-    } else {
-      throw new Error('errr'); //todo
-    }
-    const callDataParser = this.callDataParsers.get(transactionType);
-    if (!callDataParser) {
-      throw new Error(`CallDataParser for ${transactionType} not found`);
     }
 
-    return callDataParser.parse(address, decoded, method, section, genesisHash);
+    return this.getCallDataParser(transactionType).parse(address, decoded, method, section, genesisHash);
   }
 
   private isBatchExtrinsic(method: string, section: string): boolean {
     return section === 'utility' && method === 'batchAll';
+  }
+
+  private getCallDataParser(transactionType: TransactionType | undefined): ICallDataParser {
+    if (transactionType) {
+      const parser = this.callDataParsers.get(transactionType);
+      if (!parser) {
+        throw new Error(`Unexpected transaction type ${transactionType} for parsing call data`);
+      }
+
+      return parser;
+    } else {
+      return new UnknownOperationCallDataParser();
+    }
   }
 }
 
@@ -147,7 +161,7 @@ interface ICallDataParser {
     method: string,
     section: string,
     genesisHash: HexString,
-  ): Transaction;
+  ): DecodedTransaction;
   supports(): TransactionType;
 }
 
@@ -166,8 +180,8 @@ abstract class AbstractCallDataParser implements ICallDataParser {
     method: string,
     section: string,
     genesisHash: HexString,
-  ): Transaction {
-    const transaction: Transaction = this.prepareTransaction(address, genesisHash, method, section);
+  ): DecodedTransaction {
+    const transaction: DecodedTransaction = this.prepareTransaction(address, genesisHash, method, section);
     const parseResult = this.parseDecodedCallArgs(method, section, decoded);
     if (parseResult) {
       transaction.args = parseResult;
@@ -176,8 +190,13 @@ abstract class AbstractCallDataParser implements ICallDataParser {
     return transaction;
   }
 
-  protected prepareTransaction(address: Address, chainId: HexString, method: string, section: string): Transaction {
-    const transaction: Transaction = {
+  protected prepareTransaction(
+    address: Address,
+    chainId: HexString,
+    method: string,
+    section: string,
+  ): DecodedTransaction {
+    const transaction: DecodedTransaction = {
       address: address,
       chainId: chainId,
       method: method,
@@ -395,5 +414,89 @@ class BatchAllCallDataParser extends AbstractCallDataParser {
 
   supports(): TransactionType {
     return TransactionType.BATCH_ALL;
+  }
+}
+
+class MultisigAsMultiCallDataParser extends AbstractCallDataParser {
+  public parseDecodedCallArgs(
+    method: string,
+    section: string,
+    decoded: SubmittableExtrinsic<'promise'>,
+  ): Record<string, any> {
+    if (decoded.args.length == 5) {
+      return {
+        threshold: decoded.args[0],
+        otherSignatories: decoded.args[1],
+        timepoint: decoded.args[2],
+        call: decoded.args[3],
+        maxWeight: decoded.args[4],
+      };
+    } else {
+      return {
+        threshold: decoded.args[0],
+        otherSignatories: decoded.args[1],
+        timepoint: decoded.args[2],
+        call: decoded.args[3],
+        storeCall: decoded.args[4],
+        maxWeight: decoded.args[5],
+      };
+    }
+  }
+
+  supports(): TransactionType {
+    return TransactionType.MULTISIG_AS_MULTI;
+  }
+}
+
+class MultisigApproveAsMultiCallDataParser extends AbstractCallDataParser {
+  public parseDecodedCallArgs(
+    method: string,
+    section: string,
+    decoded: SubmittableExtrinsic<'promise'>,
+  ): Record<string, any> {
+    return {
+      threshold: decoded.args[0],
+      otherSignatories: decoded.args[1],
+      timepoint: decoded.args[2],
+      callHash: decoded.args[3],
+      maxWeight: decoded.args[4],
+    };
+  }
+
+  supports(): TransactionType {
+    return TransactionType.MULTISIG_APPROVE_AS_MULTI;
+  }
+}
+
+class MultisigCancelAsMultiCallDataParser extends AbstractCallDataParser {
+  public parseDecodedCallArgs(
+    method: string,
+    section: string,
+    decoded: SubmittableExtrinsic<'promise'>,
+  ): Record<string, any> {
+    return {
+      threshold: decoded.args[0],
+      otherSignatories: decoded.args[1],
+      timepoint: decoded.args[2],
+      callHash: decoded.args[3],
+    };
+  }
+
+  supports(): TransactionType {
+    return TransactionType.MULTISIG_CANCEL_AS_MULTI;
+  }
+}
+
+class UnknownOperationCallDataParser extends AbstractCallDataParser {
+  public parseDecodedCallArgs(
+    method: string,
+    section: string,
+    decoded: SubmittableExtrinsic<'promise'>,
+  ): Record<string, any> {
+    return {};
+  }
+
+  supports(): TransactionType {
+    throw new Error('Unknown call data barser is not standard and my not be use with supported()');
   }
 }

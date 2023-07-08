@@ -14,7 +14,7 @@ import {
 import { Weight } from '@polkadot/types/interfaces';
 
 import { Address, CallData, HexString, Threshold } from '@renderer/domain/shared-kernel';
-import { Transaction, TransactionType } from '@renderer/domain/transaction';
+import { DecodedTransaction, Transaction, TransactionType } from '@renderer/domain/transaction';
 import { createTxMetadata } from '@renderer/shared/utils/substrate';
 import { ITransactionService, HashData, ExtrinsicResultParams } from './common/types';
 import { toAccountId } from '@renderer/shared/utils/address';
@@ -439,7 +439,7 @@ export const useTransaction = (): ITransactionService => {
   };
 
   // TODO: will be refactored with next tasks
-  const decodeCallData = (api: ApiPromise, accountId: Address, callData: CallData): Transaction => {
+  const decodeCallData = (api: ApiPromise, accountId: Address, callData: CallData): DecodedTransaction => {
     const callDataProvider: CallDataDecoderProvider = new CallDataDecoderProvider();
 
     return callDataProvider.parse(api, accountId, callData);
