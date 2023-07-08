@@ -61,7 +61,17 @@ const TransactionIcons: Record<TransactionType, IconNames> = {
 };
 
 export const getTransactionTitle = (transaction?: Transaction | DecodedTransaction): string => {
-  if (!transaction?.type) return 'operations.titles.unknown';
+  if (!transaction) return 'operations.titles.unknown';
+
+  if (!transaction.type) {
+    return (
+      transaction.section.charAt(0).toUpperCase() +
+      transaction.section.slice(1) +
+      ' ' +
+      transaction.method.charAt(0).toUpperCase() +
+      transaction.method.slice(1)
+    );
+  }
 
   if (transaction.type === TransactionType.BATCH_ALL) {
     return getTransactionTitle(transaction?.args?.transactions?.[0]);
