@@ -19,7 +19,7 @@ import { createTxMetadata } from '@renderer/shared/utils/substrate';
 import { ITransactionService, HashData, ExtrinsicResultParams } from './common/types';
 import { toAccountId } from '@renderer/shared/utils/address';
 import { decodeDispatchError, getMaxWeight, isControllerMissing, isOldMultisigPallet } from './common/utils';
-import { CallDataDecoderProvider } from '@renderer/services/transaction/callDataParser/callDataParser';
+import { CallDataDecoder } from '@renderer/services/transaction/callDataParser/callDataParser';
 
 type BalancesTransferArgs = Parameters<typeof methods.balances.transfer>[0];
 type BondWithoutContollerArgs = Omit<Parameters<typeof methods.staking.bond>[0], 'controller'>;
@@ -440,7 +440,7 @@ export const useTransaction = (): ITransactionService => {
 
   // TODO: will be refactored with next tasks
   const decodeCallData = (api: ApiPromise, accountId: Address, callData: CallData): DecodedTransaction => {
-    const callDataProvider: CallDataDecoderProvider = new CallDataDecoderProvider();
+    const callDataProvider: CallDataDecoder = new CallDataDecoder();
 
     return callDataProvider.parse(api, accountId, callData);
     // const transaction: Transaction = {

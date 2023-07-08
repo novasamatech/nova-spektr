@@ -13,24 +13,24 @@ import { BOND_WITH_CONTROLLER_ARGS_AMOUNT } from '@renderer/services/transaction
  * Identify which call data parser has to be called for the transaction.
  *
  */
-export class CallDataDecoderProvider {
-  private callDataParsers = new Map<TransactionType, ICallDataParser>();
+export class CallDataDecoder {
+  private callDataParsers = new Map<TransactionType, ICallDataArgsParser>();
   constructor() {
-    const tbParser = new TransferBalancesCallDataParser();
-    const taParser = new TransferAssetsCallDataParser();
-    const toParser = new TransferORMLCallDataParser();
-    const sbParser = new StakingBondCallDataParser();
-    const subParser = new StakingUnbondCallDataParser();
-    const scParser = new StakingChillCallDataParser();
-    const srParser = new StakingRestakeCallDataParser();
-    const sredParser = new StakingRedeemCallDataParser();
-    const snParser = new StakingNominateCallDataParser();
-    const ssmParser = new StakingStakeMoreCallDataParser();
-    const ssdParser = new StakingChangeDestinationCallDataParser();
-    const baParser = new BatchAllCallDataParser();
-    const msAsMulti = new MultisigAsMultiCallDataParser();
-    const msApproveAsMulti = new MultisigApproveAsMultiCallDataParser();
-    const msCancelAsMulti = new MultisigCancelAsMultiCallDataParser();
+    const tbParser = new TransferBalancesCallDataArgsParser();
+    const taParser = new TransferAssetsCallDataArgsParser();
+    const toParser = new TransferORMLCallDataArgsParser();
+    const sbParser = new StakingBondCallDataArgsParser();
+    const subParser = new StakingUnbondCallDataArgsParser();
+    const scParser = new StakingChillCallDataArgsParser();
+    const srParser = new StakingRestakeCallDataArgsParser();
+    const sredParser = new StakingRedeemCallDataArgsParser();
+    const snParser = new StakingNominateCallDataArgsParser();
+    const ssmParser = new StakingStakeMoreCallDataArgsParser();
+    const ssdParser = new StakingChangeDestinationCallDataArgsParser();
+    const baParser = new BatchAllCallDataArgsParser();
+    const msAsMulti = new MultisigAsMultiCallDataArgsParser();
+    const msApproveAsMulti = new MultisigApproveAsMultiCallDataArgsParser();
+    const msCancelAsMulti = new MultisigCancelAsMultiCallDataArgsParser();
 
     this.callDataParsers.set(tbParser.supports(), tbParser);
     this.callDataParsers.set(taParser.supports(), taParser);
@@ -140,7 +140,7 @@ export class CallDataDecoderProvider {
     return section === 'utility' && method === 'batchAll';
   }
 
-  private getCallDataParser(transactionType: TransactionType | undefined): ICallDataParser {
+  private getCallDataParser(transactionType: TransactionType | undefined): ICallDataArgsParser {
     if (transactionType) {
       const parser = this.callDataParsers.get(transactionType);
       if (!parser) {
@@ -149,12 +149,12 @@ export class CallDataDecoderProvider {
 
       return parser;
     } else {
-      return new UnknownOperationCallDataParser();
+      return new UnknownOperationCallDataArgsParser();
     }
   }
 }
 
-interface ICallDataParser {
+interface ICallDataArgsParser {
   parse(
     address: Address,
     decoded: SubmittableExtrinsic<'promise'>,
@@ -165,7 +165,7 @@ interface ICallDataParser {
   supports(): TransactionType;
 }
 
-abstract class AbstractCallDataParser implements ICallDataParser {
+abstract class AbstractCallDataArgsParser implements ICallDataArgsParser {
   public parse(
     address: Address,
     decoded: SubmittableExtrinsic<'promise'>,
@@ -213,7 +213,7 @@ abstract class AbstractCallDataParser implements ICallDataParser {
   }
 }
 
-class TransferBalancesCallDataParser extends AbstractCallDataParser {
+class TransferBalancesCallDataArgsParser extends AbstractCallDataArgsParser {
   public parseDecodedCallArgs(
     method: string,
     section: string,
@@ -227,7 +227,7 @@ class TransferBalancesCallDataParser extends AbstractCallDataParser {
   }
 }
 
-class TransferAssetsCallDataParser extends AbstractCallDataParser {
+class TransferAssetsCallDataArgsParser extends AbstractCallDataArgsParser {
   public parseDecodedCallArgs(
     method: string,
     section: string,
@@ -244,7 +244,7 @@ class TransferAssetsCallDataParser extends AbstractCallDataParser {
   }
 }
 
-class TransferORMLCallDataParser extends AbstractCallDataParser {
+class TransferORMLCallDataArgsParser extends AbstractCallDataArgsParser {
   public parseDecodedCallArgs(
     method: string,
     section: string,
@@ -261,7 +261,7 @@ class TransferORMLCallDataParser extends AbstractCallDataParser {
   }
 }
 
-class StakingBondCallDataParser extends AbstractCallDataParser {
+class StakingBondCallDataArgsParser extends AbstractCallDataArgsParser {
   public parseDecodedCallArgs(
     method: string,
     section: string,
@@ -291,7 +291,7 @@ class StakingBondCallDataParser extends AbstractCallDataParser {
   }
 }
 
-class StakingUnbondCallDataParser extends AbstractCallDataParser {
+class StakingUnbondCallDataArgsParser extends AbstractCallDataArgsParser {
   public parseDecodedCallArgs(
     method: string,
     section: string,
@@ -307,7 +307,7 @@ class StakingUnbondCallDataParser extends AbstractCallDataParser {
   }
 }
 
-class StakingChillCallDataParser extends AbstractCallDataParser {
+class StakingChillCallDataArgsParser extends AbstractCallDataArgsParser {
   public parseDecodedCallArgs(
     method: string,
     section: string,
@@ -321,7 +321,7 @@ class StakingChillCallDataParser extends AbstractCallDataParser {
   }
 }
 
-class StakingRestakeCallDataParser extends AbstractCallDataParser {
+class StakingRestakeCallDataArgsParser extends AbstractCallDataArgsParser {
   public parseDecodedCallArgs(
     method: string,
     section: string,
@@ -337,7 +337,7 @@ class StakingRestakeCallDataParser extends AbstractCallDataParser {
   }
 }
 
-class StakingRedeemCallDataParser extends AbstractCallDataParser {
+class StakingRedeemCallDataArgsParser extends AbstractCallDataArgsParser {
   public parseDecodedCallArgs(
     method: string,
     section: string,
@@ -351,7 +351,7 @@ class StakingRedeemCallDataParser extends AbstractCallDataParser {
   }
 }
 
-class StakingNominateCallDataParser extends AbstractCallDataParser {
+class StakingNominateCallDataArgsParser extends AbstractCallDataArgsParser {
   public parseDecodedCallArgs(
     method: string,
     section: string,
@@ -367,7 +367,7 @@ class StakingNominateCallDataParser extends AbstractCallDataParser {
   }
 }
 
-class StakingStakeMoreCallDataParser extends AbstractCallDataParser {
+class StakingStakeMoreCallDataArgsParser extends AbstractCallDataArgsParser {
   public parseDecodedCallArgs(
     method: string,
     section: string,
@@ -383,7 +383,7 @@ class StakingStakeMoreCallDataParser extends AbstractCallDataParser {
   }
 }
 
-class StakingChangeDestinationCallDataParser extends AbstractCallDataParser {
+class StakingChangeDestinationCallDataArgsParser extends AbstractCallDataArgsParser {
   public parseDecodedCallArgs(
     method: string,
     section: string,
@@ -405,7 +405,7 @@ class StakingChangeDestinationCallDataParser extends AbstractCallDataParser {
   }
 }
 
-class BatchAllCallDataParser extends AbstractCallDataParser {
+class BatchAllCallDataArgsParser extends AbstractCallDataArgsParser {
   public parseDecodedCallArgs(
     method: string,
     section: string,
@@ -421,7 +421,7 @@ class BatchAllCallDataParser extends AbstractCallDataParser {
   }
 }
 
-class MultisigAsMultiCallDataParser extends AbstractCallDataParser {
+class MultisigAsMultiCallDataArgsParser extends AbstractCallDataArgsParser {
   public parseDecodedCallArgs(
     method: string,
     section: string,
@@ -452,7 +452,7 @@ class MultisigAsMultiCallDataParser extends AbstractCallDataParser {
   }
 }
 
-class MultisigApproveAsMultiCallDataParser extends AbstractCallDataParser {
+class MultisigApproveAsMultiCallDataArgsParser extends AbstractCallDataArgsParser {
   public parseDecodedCallArgs(
     method: string,
     section: string,
@@ -472,7 +472,7 @@ class MultisigApproveAsMultiCallDataParser extends AbstractCallDataParser {
   }
 }
 
-class MultisigCancelAsMultiCallDataParser extends AbstractCallDataParser {
+class MultisigCancelAsMultiCallDataArgsParser extends AbstractCallDataArgsParser {
   public parseDecodedCallArgs(
     method: string,
     section: string,
@@ -491,7 +491,7 @@ class MultisigCancelAsMultiCallDataParser extends AbstractCallDataParser {
   }
 }
 
-class UnknownOperationCallDataParser extends AbstractCallDataParser {
+class UnknownOperationCallDataArgsParser extends AbstractCallDataArgsParser {
   public parseDecodedCallArgs(
     method: string,
     section: string,
