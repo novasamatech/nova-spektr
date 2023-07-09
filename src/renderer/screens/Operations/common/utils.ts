@@ -14,6 +14,7 @@ import { toAddress } from '@renderer/shared/utils/address';
 import { Contact } from '@renderer/domain/contact';
 import { Account } from '@renderer/domain/account';
 import { Signatory } from '@renderer/domain/signatory';
+import { formatSectionAndMethod } from '@renderer/shared/utils/strings';
 
 export const UNKNOWN_TYPE = 'UNKNOWN_TYPE';
 export const TransferTypes = [TransactionType.TRANSFER, TransactionType.ASSET_TRANSFER, TransactionType.ORML_TRANSFER];
@@ -64,13 +65,7 @@ export const getTransactionTitle = (transaction?: Transaction | DecodedTransacti
   if (!transaction) return 'operations.titles.unknown';
 
   if (!transaction.type) {
-    return (
-      transaction.section.charAt(0).toUpperCase() +
-      transaction.section.slice(1) +
-      ' ' +
-      transaction.method.charAt(0).toUpperCase() +
-      transaction.method.slice(1)
-    );
+    return formatSectionAndMethod(transaction.section, transaction.method);
   }
 
   if (transaction.type === TransactionType.BATCH_ALL) {

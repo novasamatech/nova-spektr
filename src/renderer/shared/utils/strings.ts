@@ -70,3 +70,19 @@ export const truncate = (text: string, start = 5, end = 5): string => {
 
   return `${text.slice(0, start)}...${text.slice(-1 * end)}`;
 };
+
+/**
+ * Formats the section and method of transaction to the format:
+ * Section split camel case to separate words, 1st capital: Method split camel case to separate workds - 1st capital
+ * @param section extrinsic call section
+ * @param method extrinsic call method
+ * @return {String}
+ */
+export const formatSectionAndMethod = (section: string, method: string): string => {
+  const sectionSplit = section.replace(/([a-z0-9])([A-Z])/g, '$1 $2').toLowerCase();
+  const methodSplit = method.replace(/([a-z0-9])([A-Z])/g, '$1 $2').toLowerCase();
+
+  return `${sectionSplit.charAt(0).toUpperCase() + sectionSplit.slice(1)}: ${methodSplit
+    .charAt(0)
+    .toUpperCase()}${methodSplit.slice(1)}`;
+};
