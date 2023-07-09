@@ -16,37 +16,7 @@ import { BOND_WITH_CONTROLLER_ARGS_AMOUNT } from '@renderer/services/transaction
 export class CallDataDecoder {
   private callDataParsers = new Map<TransactionType, ICallDataArgsParser>();
   constructor() {
-    const tbParser = new TransferBalancesCallDataArgsParser();
-    const taParser = new TransferAssetsCallDataArgsParser();
-    const toParser = new TransferORMLCallDataArgsParser();
-    const sbParser = new StakingBondCallDataArgsParser();
-    const subParser = new StakingUnbondCallDataArgsParser();
-    const scParser = new StakingChillCallDataArgsParser();
-    const srParser = new StakingRestakeCallDataArgsParser();
-    const sredParser = new StakingRedeemCallDataArgsParser();
-    const snParser = new StakingNominateCallDataArgsParser();
-    const ssmParser = new StakingStakeMoreCallDataArgsParser();
-    const ssdParser = new StakingChangeDestinationCallDataArgsParser();
-    const baParser = new BatchAllCallDataArgsParser();
-    const msAsMulti = new MultisigAsMultiCallDataArgsParser();
-    const msApproveAsMulti = new MultisigApproveAsMultiCallDataArgsParser();
-    const msCancelAsMulti = new MultisigCancelAsMultiCallDataArgsParser();
-
-    this.callDataParsers.set(tbParser.supports(), tbParser);
-    this.callDataParsers.set(taParser.supports(), taParser);
-    this.callDataParsers.set(toParser.supports(), toParser);
-    this.callDataParsers.set(sbParser.supports(), sbParser);
-    this.callDataParsers.set(subParser.supports(), subParser);
-    this.callDataParsers.set(scParser.supports(), scParser);
-    this.callDataParsers.set(srParser.supports(), srParser);
-    this.callDataParsers.set(sredParser.supports(), sredParser);
-    this.callDataParsers.set(snParser.supports(), snParser);
-    this.callDataParsers.set(ssmParser.supports(), ssmParser);
-    this.callDataParsers.set(ssdParser.supports(), ssdParser);
-    this.callDataParsers.set(baParser.supports(), baParser);
-    this.callDataParsers.set(msApproveAsMulti.supports(), msApproveAsMulti);
-    this.callDataParsers.set(msAsMulti.supports(), msAsMulti);
-    this.callDataParsers.set(msCancelAsMulti.supports(), msCancelAsMulti);
+    this.initializeCallDataParsers();
   }
 
   public parse(api: ApiPromise, address: Address, callData: CallData): DecodedTransaction {
@@ -70,6 +40,30 @@ export class CallDataDecoder {
       return this.parseBatch(method, section, address, decoded, api);
     } else {
       return this.parseSingle(method, section, address, decoded, api.genesisHash.toHex());
+    }
+  }
+
+  private initializeCallDataParsers(): void {
+    const parsers: ICallDataArgsParser[] = [
+      new TransferBalancesCallDataArgsParser(),
+      new TransferAssetsCallDataArgsParser(),
+      new TransferORMLCallDataArgsParser(),
+      new StakingBondCallDataArgsParser(),
+      new StakingUnbondCallDataArgsParser(),
+      new StakingChillCallDataArgsParser(),
+      new StakingRestakeCallDataArgsParser(),
+      new StakingRedeemCallDataArgsParser(),
+      new StakingNominateCallDataArgsParser(),
+      new StakingStakeMoreCallDataArgsParser(),
+      new StakingChangeDestinationCallDataArgsParser(),
+      new BatchAllCallDataArgsParser(),
+      new MultisigAsMultiCallDataArgsParser(),
+      new MultisigApproveAsMultiCallDataArgsParser(),
+      new MultisigCancelAsMultiCallDataArgsParser(),
+    ];
+
+    for (const parser of parsers) {
+      this.callDataParsers.set(parser.supports(), parser);
     }
   }
 
@@ -162,6 +156,7 @@ interface ICallDataArgsParser {
     section: string,
     genesisHash: HexString,
   ): DecodedTransaction;
+
   supports(): TransactionType;
 }
 
