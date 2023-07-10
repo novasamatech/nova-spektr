@@ -20,19 +20,30 @@ const Operation = ({ tx, account }: Props) => {
   const { dateLocale } = useI18n();
   const { getLiveTxEvents } = useMultisigEvent();
 
-  const { dateCreated, chainId, transaction, description, status, accountId, callHash, blockCreated, indexCreated } =
-    tx;
+  const {
+    dateCreated,
+    chainId,
+    transaction,
+    description,
+    status,
+    accountId,
+    callHash,
+    blockCreated,
+    indexCreated,
+    depositor,
+  } = tx;
 
   const events = getLiveTxEvents(accountId, chainId, callHash, blockCreated, indexCreated);
 
   const approvals = events.filter((e) => e.status === 'SIGNED');
+  const initEvent = approvals.find((e) => e.accountId === depositor);
 
   return (
     <Accordion className="bg-block-background-default transition-shadow rounded hover:shadow-card-shadow focus-visible:shadow-card-shadow">
       <Accordion.Button className="px-2">
         <div className="h-[52px] grid grid-cols-operation-card items-center justify-items-start">
           <FootnoteText className="text-text-tertiary pl-6">
-            {format(new Date(dateCreated || 0), 'p', { locale: dateLocale })}
+            {format(new Date(dateCreated || initEvent?.dateCreated || Date.now()), 'p', { locale: dateLocale })}
           </FootnoteText>
           <TransactionTitle tx={transaction} description={description} className="px-2" />
           {transaction && getTransactionAmount(transaction) ? (
