@@ -33,6 +33,7 @@ const Operations = () => {
 
   useEffect(() => {
     setTxs(allTxs.filter((tx) => connections[tx.chainId]));
+    setFilteredTxs([]);
   }, [allTxs]);
 
   return (

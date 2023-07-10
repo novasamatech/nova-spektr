@@ -1,8 +1,8 @@
 import { render, screen } from '@testing-library/react';
 
 import { TEST_ACCOUNT_ID } from '@renderer/shared/utils/constants';
-import Operations from './Operations';
 import { ConnectionType } from '@renderer/domain/connection';
+import Operations from './Operations';
 
 jest.mock('@renderer/context/I18nContext', () => ({
   useI18n: jest.fn().mockReturnValue({
