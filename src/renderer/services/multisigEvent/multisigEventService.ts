@@ -11,7 +11,7 @@ export const useMultisigEvent = (): IMultisigEventService => {
   if (!multisigEventStorage) {
     throw new Error('=== 🔴 Multisig event storage in not defined 🔴 ===');
   }
-  const { getEvent, getEvents, addEvent, updateEvent, deleteEvent } = multisigEventStorage;
+  const { getEvent, getEvents, addEvent, updateEvent, deleteEvent, getEventsByKeys } = multisigEventStorage;
 
   const getLiveEvents = <T extends MultisigEvent>(where?: Partial<T>): MultisigEventDS[] => {
     const query = () => {
@@ -63,5 +63,6 @@ export const useMultisigEvent = (): IMultisigEventService => {
     deleteEvent,
     getLiveEvents,
     getLiveTxEvents,
+    getEventsByKeys,
   };
 };

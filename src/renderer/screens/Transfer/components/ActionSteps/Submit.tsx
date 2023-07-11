@@ -108,6 +108,8 @@ const Submit = ({ api, tx, multisigTx, account, unsignedTx, signature, descripti
 
           await Promise.all([addMultisigTx(newTx), addEvent(event)]);
 
+          console.log(`New transfer was created with call hash ${newTx.callHash}`);
+
           if (matrix.userIsLoggedIn) {
             sendMultisigEvent(account.matrixRoomId, newTx, typedParams);
           }
