@@ -52,6 +52,7 @@ const Operations = () => {
     setTxs(allTxs.filter((tx) => connections[tx.chainId]));
     const txsWithoutDate = allTxs.filter((tx) => !tx.dateCreated);
     getEventsByKeys(txsWithoutDate).then((events) => setEvents(events));
+    setFilteredTxs([]);
   }, [allTxs]);
 
   return (
