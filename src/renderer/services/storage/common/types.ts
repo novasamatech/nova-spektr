@@ -5,7 +5,7 @@ import { Connection, ConnectionType } from '@renderer/domain/connection';
 import { Contact } from '@renderer/domain/contact';
 import { Address, ChainId, AccountId, CallHash } from '@renderer/domain/shared-kernel';
 import { Wallet } from '@renderer/domain/wallet';
-import { MultisigEvent, MultisigTransaction } from '@renderer/domain/transaction';
+import { MultisigEvent, MultisigTransaction, MultisigTransactionKey } from '@renderer/domain/transaction';
 import { Account, MultisigAccount } from '@renderer/domain/account';
 import { Notification } from '@renderer/domain/notification';
 
@@ -49,6 +49,7 @@ export interface IWalletStorage {
 export interface IMultisigEventStorage {
   getEvent: (eventId: ID) => Promise<MultisigEventDS | undefined>;
   getEvents: <T extends MultisigEvent>(where?: Partial<T>) => Promise<MultisigEventDS[]>;
+  getEventsByKeys: (keys: MultisigTransactionKey[]) => Promise<MultisigEventDS[]>;
   addEvent: (event: MultisigEvent) => Promise<ID>;
   updateEvent: (event: MultisigEventDS) => Promise<ID>;
   deleteEvent: (eventId: ID) => Promise<void>;

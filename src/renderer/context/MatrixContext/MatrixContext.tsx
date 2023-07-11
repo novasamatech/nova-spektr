@@ -288,14 +288,15 @@ export const MatrixProvider = ({ children }: PropsWithChildren) => {
   ): Promise<void> => {
     const descriptionField = txStatus === MultisigTxFinalStatus.CANCELLED ? 'cancelDescription' : 'description';
     const { api, addressPrefix } = connectionsRef.current[payload.chainId];
+    const dateCreated = api && (await getCreatedDateFromApi(payload.callTimepoint.height, api));
 
-    const dateCreated = api ? await getCreatedDateFromApi(payload.callTimepoint.height, api) : Date.now();
     if (!api) {
       console.warn(`No api found for ${payload.chainId} can't decode call data for ${payload.callHash}`);
     }
     if (!addressPrefix) {
       console.warn(`No addressPrefix found for ${payload.chainId} can't decode call data for ${payload.callHash}`);
     }
+
     const transaction =
       api && payload.callData && decodeCallData(api, toAddress(accountId, { prefix: addressPrefix }), payload.callData);
 
@@ -496,6 +497,7 @@ export const MatrixProvider = ({ children }: PropsWithChildren) => {
 
     if (!tx) {
       console.log(`Tx ${payload.callHash} not found. Create it`);
+
       await addMultisigTxToDB(payload, accountId, signatories, payload.callOutcome);
       await addEvent(newEvent);
 

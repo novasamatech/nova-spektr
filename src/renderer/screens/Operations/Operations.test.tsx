@@ -19,6 +19,12 @@ jest.mock('@renderer/services/multisigTx/multisigTxService', () => ({
   }),
 }));
 
+jest.mock('@renderer/services/multisigEvent/multisigEventService', () => ({
+  useMultisigEvent: jest.fn().mockReturnValue({
+    getEventsByKeys: jest.fn().mockResolvedValue([]),
+  }),
+}));
+
 jest.mock('@renderer/services/account/accountService', () => ({
   useAccount: jest.fn().mockReturnValue({
     getActiveMultisigAccount: () => mockAccounts,

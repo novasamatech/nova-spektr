@@ -1,4 +1,4 @@
-import { MultisigEvent } from '@renderer/domain/transaction';
+import { MultisigEvent, MultisigTransactionKey } from '@renderer/domain/transaction';
 import { TMultisigEvent, IMultisigEventStorage, MultisigEventDS, ID } from './common/types';
 
 export const useMultisigEventStorage = (db: TMultisigEvent): IMultisigEventStorage => ({
@@ -8,6 +8,13 @@ export const useMultisigEventStorage = (db: TMultisigEvent): IMultisigEventStora
 
   getEvents: <T extends MultisigEvent>(where?: Partial<T>): Promise<MultisigEventDS[]> => {
     return where ? db.where(where).toArray() : db.toArray();
+  },
+
+  getEventsByKeys: (keys: MultisigTransactionKey[]): Promise<MultisigEventDS[]> => {
+    return db
+      .where(['txAccountId', 'txChainId', 'txCallHash', 'txBlock', 'txIndex'])
+      .anyOf(keys.map((k) => [k.accountId, k.chainId, k.callHash, k.blockCreated, k.indexCreated]))
+      .toArray();
   },
 
   addEvent: async (event: MultisigEvent): Promise<ID> => {

@@ -16,7 +16,6 @@ import {
   AutoDiscovery,
   AuthType,
   EventTimeline,
-  RoomEvent,
 } from 'matrix-js-sdk';
 import { ISecretStorageKeyInfo } from 'matrix-js-sdk/lib/crypto/api';
 import { deriveKey } from 'matrix-js-sdk/lib/crypto/key_passphrase';
@@ -816,7 +815,7 @@ export class Matrix implements ISecureMessenger {
     this.handleSyncEvent();
     this.handleInviteEvent();
     this.handleDecryptedEvents();
-    this.handleEchoEvents();
+    // this.handleEchoEvents();
   }
 
   /**
@@ -917,16 +916,17 @@ export class Matrix implements ISecureMessenger {
    * @description might be useful in future
    * @link https://spec.matrix.org/v1.6/client-server-api/#local-echo
    */
-  private handleEchoEvents() {
-    this.matrixClient.on(RoomEvent.LocalEchoUpdated, (event, room) => {
-      if (event.getSender() !== this.userId || event.status !== 'sent') return;
+  // TODO: Uncomment if we will decide to use echo events
+  // private handleEchoEvents() {
+  //   this.matrixClient.on(RoomEvent.LocalEchoUpdated, (event, room) => {
+  //     if (event.getSender() !== this.userId || event.status !== 'sent') return;
 
-      if (!this.isSpektrMultisigEvent(event) || !this.isSpektrRoom(room)) return;
+  //     if (!this.isSpektrMultisigEvent(event) || !this.isSpektrRoom(room)) return;
 
-      const payload = this.createEventPayload<MultisigPayload>(event);
-      this.eventCallbacks.onMultisigEvent(payload, this.getSpektrTopic(room)).catch(console.warn);
-    });
-  }
+  //     const payload = this.createEventPayload<MultisigPayload>(event);
+  //     this.eventCallbacks.onMultisigEvent(payload, this.getSpektrTopic(room)).catch(console.warn);
+  //   });
+  // }
 
   // =====================================================
   // ====================== Helpers ======================
