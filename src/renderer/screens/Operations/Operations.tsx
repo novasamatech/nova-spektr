@@ -49,9 +49,10 @@ const Operations = () => {
   });
 
   useEffect(() => {
-    setTxs(allTxs.filter((tx) => connections[tx.chainId]));
     const txsWithoutDate = allTxs.filter((tx) => !tx.dateCreated);
-    getEventsByKeys(txsWithoutDate).then((events) => setEvents(events));
+    getEventsByKeys(txsWithoutDate).then(setEvents);
+
+    setTxs(allTxs.filter((tx) => connections[tx.chainId]));
     setFilteredTxs([]);
   }, [allTxs]);
 

@@ -60,7 +60,9 @@ export const MultisigChainProvider = ({ children }: PropsWithChildren) => {
           accountId: tx.depositor,
         });
 
-        events[0] && updateEvent({ ...events[0], dateCreated });
+        if (events[0]) {
+          updateEvent({ ...events[0], dateCreated });
+        }
 
         console.log(`Create date recovered for multisig tx ${tx.callHash}`);
       }
