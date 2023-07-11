@@ -1,4 +1,4 @@
-import Lottie from 'react-lottie';
+import { useLottie } from 'lottie-react';
 
 import Animations from './Data';
 
@@ -23,9 +23,7 @@ export const Animation = ({ name, width = 80, height = 80, loop = false, autopla
     },
   };
 
-  return (
-    <div className={className}>
-      <Lottie options={defaultOptions} isClickToPauseDisabled={true} height={height} width={width} />
-    </div>
-  );
+  const { View } = useLottie(defaultOptions, { width: width, height: height });
+
+  return <div className={className}>{View}</div>;
 };
