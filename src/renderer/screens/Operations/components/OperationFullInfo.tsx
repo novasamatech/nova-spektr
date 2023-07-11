@@ -164,6 +164,7 @@ const OperationFullInfo = ({ tx, account }: Props) => {
                 accountId={accountId}
                 type="short"
                 matrixId={matrixId}
+                explorers={connection?.explorers}
                 name={getSignatoryName(accountId, tx.signatories, contacts, accounts, connection.addressPrefix)}
                 status={getSignatoryStatus(accountId)}
               />

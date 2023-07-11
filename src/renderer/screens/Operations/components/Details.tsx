@@ -186,9 +186,11 @@ const Details = ({ tx, account, connection, isCardDetails = true }: Props) => {
             <DetailRow label={t('operation.details.depositor')} className={valueClass}>
               <AddressWithExplorers
                 explorers={explorers}
-                address={depositorSignatory.address}
+                accountId={depositorSignatory.accountId}
                 name={depositorSignatory.name}
                 addressFont={AddressStyle}
+                addressPrefix={addressPrefix}
+                showMatrix
                 wrapperClassName="-mr-2 min-w-min"
                 type="short"
               />

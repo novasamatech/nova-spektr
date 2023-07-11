@@ -23,7 +23,7 @@ const InfoPopover = ({ data, className, children, ...popoverProps }: PropsWithCh
   const popoverContent = data.map((section, index) => (
     <div key={index} className="pb-3 mb-3 border-b border-divider last:pb-0 last:mb-0 last:border-b-0">
       {section.title && (
-        <FootnoteText className="text-text-tertiary uppercase pb-2" key={section.title}>
+        <FootnoteText className="text-text-tertiary pb-2 px-2" key={section.title}>
           {section.title}
         </FootnoteText>
       )}
@@ -32,7 +32,7 @@ const InfoPopover = ({ data, className, children, ...popoverProps }: PropsWithCh
         {section.items.map(({ value, id }) =>
           typeof value === 'string' ? (
             <li key={id}>
-              <FootnoteText className="text-text-secondary">{value}</FootnoteText>
+              <FootnoteText className="text-text-secondary px-2 break-words">{value}</FootnoteText>
             </li>
           ) : (
             <Menu.Item key={id} as="li">
