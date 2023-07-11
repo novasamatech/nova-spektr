@@ -20,7 +20,7 @@ const AddressWithExplorers = ({ explorers = [], showMatrix, position, wrapperCla
   const popoverItems = useAddressInfo(address, explorers, showMatrix);
 
   return (
-    <InfoPopover data={popoverItems} position={position}>
+    <InfoPopover data={popoverItems} position={position} className="w-[230px]">
       <div
         className={cnTw(
           'flex max-w-full items-center gap-x-1 cursor-pointer group hover:bg-action-background-hover hover:text-text-primary px-2 h-6 rounded',
