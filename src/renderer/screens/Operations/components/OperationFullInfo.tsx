@@ -23,6 +23,7 @@ import { useContact } from '@renderer/services/contact/contactService';
 import { useAccount } from '@renderer/services/account/accountService';
 import { MultisigTransactionDS } from '@renderer/services/storage';
 import { useMultisigEvent } from '@renderer/services/multisigEvent/multisigEventService';
+import { useMultisigChainContext } from '@renderer/context/MultisigChainContext';
 
 type Props = {
   tx: MultisigTransactionDS;
@@ -41,7 +42,8 @@ const OperationFullInfo = ({ tx, account }: Props) => {
 
   const events = getLiveTxEvents(accountId, chainId, callHash, blockCreated, indexCreated);
 
-  const { updateCallData } = useMultisigTx();
+  const { addEventTask } = useMultisigChainContext();
+  const { updateCallData } = useMultisigTx({ addEventTask });
   const { connections } = useNetworkContext();
   const connection = connections[tx?.chainId as ChainId];
   const approvals = events.filter((e) => e.status === 'SIGNED');

@@ -22,6 +22,7 @@ import { useToggle } from '@renderer/shared/hooks';
 import { Button } from '@renderer/components/ui-redesign';
 import { OperationResult } from '@renderer/components/common/OperationResult/OperationResult';
 import { useMultisigEvent } from '@renderer/services/multisigEvent/multisigEventService';
+import { useMultisigChainContext } from '@renderer/context/MultisigChainContext';
 
 type ResultProps = Pick<ComponentProps<typeof OperationResult>, 'title' | 'description' | 'variant'>;
 
@@ -54,7 +55,8 @@ export const Submit = ({
 
   const { matrix } = useMatrix();
   const { submitAndWatchExtrinsic, getSignedExtrinsic } = useTransaction();
-  const { updateMultisigTx } = useMultisigTx();
+  const { addEventTask } = useMultisigChainContext();
+  const { updateMultisigTx } = useMultisigTx({ addEventTask });
   const { addEvent } = useMultisigEvent();
 
   const [inProgress, toggleInProgress] = useToggle(true);

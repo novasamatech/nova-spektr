@@ -57,7 +57,7 @@ export const Confirmation = ({
   onGoBack,
 }: PropsWithChildren<Props>) => {
   const { t } = useI18n();
-  const { getMultisigTxs } = useMultisigTx();
+  const { getMultisigTxs } = useMultisigTx({});
 
   const [isAccountsOpen, toggleAccounts] = useToggle();
   const [isValidatorsOpen, toggleValidators] = useToggle();
