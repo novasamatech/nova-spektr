@@ -70,7 +70,7 @@ export function useChains(): IChainService {
   };
 
   const sortChainsByBalance = (chains: Chain[], balances: Balance[]): Chain[] => {
-    const dotsama = { withBalance: [], noBalance: [] };
+    const relaychains = { withBalance: [], noBalance: [] };
     const parachains = { withBalance: [], noBalance: [] };
     const numberchains = { withBalance: [], noBalance: [] };
     const testnets = { withBalance: [], noBalance: [] };
@@ -85,7 +85,7 @@ export function useChains(): IChainService {
       let collection: Chain[] = hasBalance ? parachains.withBalance : parachains.noBalance;
 
       if (isPolkadot(chain.name) || isKusama(chain.name)) {
-        collection = hasBalance ? dotsama.withBalance : dotsama.noBalance;
+        collection = hasBalance ? relaychains.withBalance : relaychains.noBalance;
       } else if (isTestnet(chain.options)) {
         collection = hasBalance ? testnets.withBalance : testnets.noBalance;
       } else if (isNameWithNumber(chain.name)) {
@@ -96,8 +96,8 @@ export function useChains(): IChainService {
     });
 
     return concat(
-      orderBy(dotsama.withBalance, 'name', ['desc']),
-      orderBy(dotsama.noBalance, 'name', ['desc']),
+      orderBy(relaychains.withBalance, 'name', ['desc']),
+      orderBy(relaychains.noBalance, 'name', ['desc']),
       sortBy(parachains.withBalance, 'name'),
       sortBy(parachains.noBalance, 'name'),
       sortBy(numberchains.withBalance, 'name'),
