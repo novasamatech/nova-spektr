@@ -1,11 +1,11 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useState } from 'react';
 
 import { Icon } from '@renderer/components/ui';
 import { useI18n } from '@renderer/context/I18nContext';
 import { useNetworkContext } from '@renderer/context/NetworkContext';
 import { Asset } from '@renderer/domain/asset';
 import { Chain } from '@renderer/domain/chain';
-import { ConnectionStatus, ConnectionType } from '@renderer/domain/connection';
+import { ConnectionType } from '@renderer/domain/connection';
 import { SigningType } from '@renderer/domain/shared-kernel';
 import { useToggle } from '@renderer/shared/hooks';
 import { useChains } from '@renderer/services/network/chainsService';
@@ -15,33 +15,33 @@ import { isMultisig, Account } from '@renderer/domain/account';
 import { BodyText, Button, SmallTitleText } from '@renderer/components/ui-redesign';
 import { AssetsFilters, NetworkAssets, ReceiveModal, SelectShardModal } from './components';
 import { Header } from '@renderer/components/common';
+import { useBalance } from '@renderer/services/balance/balanceService';
 import Transfer from '@renderer/screens/Transfer/Transfer';
 
 export const Assets = () => {
   const { t } = useI18n();
-  const { sortChains } = useChains();
   const { connections } = useNetworkContext();
   const { getActiveAccounts } = useAccount();
+  const { getLiveBalances } = useBalance();
+  const { sortChainsByBalance } = useChains();
   const { setHideZeroBalance, getHideZeroBalance } = useSettingsStorage();
 
   const [isReceiveOpen, toggleReceive] = useToggle();
   const [isTransferOpen, toggleTransfer] = useToggle();
   const [isSelectShardsOpen, toggleSelectShardsOpen] = useToggle();
 
+  const [query, setQuery] = useState('');
   const [activeChain, setActiveChain] = useState<Chain>();
   const [activeAsset, setActiveAsset] = useState<Asset>();
-  const [query, setQuery] = useState('');
+  const [sortedChains, setSortedChains] = useState<Chain[]>([]);
 
   const [activeAccounts, setActiveAccounts] = useState<Account[]>([]);
   const [hideZeroBalance, setHideZeroBalanceState] = useState(getHideZeroBalance());
 
   const activeAccountsFromWallet = getActiveAccounts();
-  const isMultishard = activeAccountsFromWallet.length > 1;
+  const balances = getLiveBalances(activeAccounts.map((a) => a.accountId));
 
-  const updateHideZeroBalance = (value: boolean) => {
-    setHideZeroBalance(value);
-    setHideZeroBalanceState(value);
-  };
+  const isMultishard = activeAccountsFromWallet.length > 1;
 
   const firstActiveAccount = activeAccountsFromWallet.length > 0 && activeAccountsFromWallet[0].accountId;
   const activeWallet = activeAccountsFromWallet.length > 0 && activeAccountsFromWallet[0].walletId;
@@ -51,28 +51,25 @@ export const Assets = () => {
   }, [firstActiveAccount, activeWallet]);
 
   const updateAccounts = (accounts: Account[]) => {
-    const result = accounts.length ? accounts : [];
-
-    setActiveAccounts(result);
+    setActiveAccounts(accounts.length ? accounts : []);
   };
 
-  const availableConnectionsAmount = Object.values(connections).filter(
-    (c) => c.connection.connectionStatus === ConnectionStatus.CONNECTED,
-  ).length;
+  useEffect(() => {
+    const filteredChains = Object.values(connections).filter((c) => {
+      const isDisabled = c.connection.connectionType === ConnectionType.DISABLED;
+      const hasMultisigAccount = activeAccounts.some(isMultisig);
+      const hasMultiPallet = !hasMultisigAccount || c.connection.hasMultisigPallet !== false;
 
-  const sortedChains = useMemo(
-    () =>
-      sortChains(
-        Object.values(connections).filter((c) => {
-          const isDisabled = c.connection.connectionType === ConnectionType.DISABLED;
-          const hasMultisigAccount = activeAccounts.some(isMultisig);
-          const hasMultiPallet = !hasMultisigAccount || c.connection.hasMultisigPallet !== false;
+      return !isDisabled && hasMultiPallet;
+    });
 
-          return !isDisabled && hasMultiPallet;
-        }),
-      ),
-    [availableConnectionsAmount, activeAccounts],
-  );
+    setSortedChains(sortChainsByBalance(filteredChains, balances));
+  }, [balances]);
+
+  const updateHideZeroBalance = (value: boolean) => {
+    setHideZeroBalance(value);
+    setHideZeroBalanceState(value);
+  };
 
   const searchSymbolOnly = sortedChains.some((chain) => {
     return chain.assets.some((a) => a.symbol.toLowerCase() === query.toLowerCase());

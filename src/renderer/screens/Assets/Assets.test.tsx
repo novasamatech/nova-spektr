@@ -18,26 +18,39 @@ jest.mock('@renderer/services/account/accountService', () => ({
   }),
 }));
 
+const CHAINS = [
+  {
+    chainId: '0x00',
+    assets: [
+      { assetId: '1', symbol: '1' },
+      { assetId: '2', symbol: '2' },
+    ],
+    connection: { connectionType: ConnectionType.RPC_NODE },
+  },
+  {
+    chainId: '0x01',
+    assets: [{ assetId: '1', symbol: '1' }],
+    connection: { connectionType: ConnectionType.RPC_NODE },
+  },
+];
+
+jest.mock('@renderer/services/network/chainsService', () => ({
+  useChains: jest.fn().mockReturnValue({
+    sortChainsByBalance: () => CHAINS,
+  }),
+}));
+
+jest.mock('@renderer/services/balance/balanceService', () => ({
+  useBalance: jest.fn().mockReturnValue({
+    getLiveBalances: jest.fn().mockReturnValue([]),
+  }),
+}));
+
 jest.mock('@renderer/context/NetworkContext', () => ({
   useNetworkContext: jest.fn(() => ({
     connections: {
-      '0x0': {
-        chainId: '1',
-        assets: [
-          { assetId: '1', symbol: '1' },
-          { assetId: '2', symbol: '2' },
-        ],
-        connection: {
-          connectionType: ConnectionType.RPC_NODE,
-        },
-      },
-      '0x1': {
-        chainId: '2',
-        assets: [{ assetId: '1', symbol: '1' }],
-        connection: {
-          connectionType: ConnectionType.RPC_NODE,
-        },
-      },
+      '0x00': CHAINS[0],
+      '0x01': CHAINS[1],
     },
   })),
 }));

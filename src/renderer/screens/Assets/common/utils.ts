@@ -44,12 +44,8 @@ const getBalanceBn = (balance: string, precision: number) => {
 };
 
 export const balanceSorter = (first: Asset, second: Asset, balancesObject: Record<string, Balance>) => {
-  const firstTotal = balancesObject[first.assetId.toString()]
-    ? totalAmount(balancesObject[first.assetId.toString()])
-    : '0';
-  const secondTotal = balancesObject[second.assetId.toString()]
-    ? totalAmount(balancesObject[second.assetId.toString()])
-    : '0';
+  const firstTotal = totalAmount(balancesObject[first.assetId.toString()]);
+  const secondTotal = totalAmount(balancesObject[second.assetId.toString()]);
 
   const firstBalance = getBalanceBn(firstTotal, first.precision);
   const secondBalance = getBalanceBn(secondTotal, second.precision);
