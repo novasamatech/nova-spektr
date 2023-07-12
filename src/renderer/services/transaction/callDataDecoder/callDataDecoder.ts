@@ -6,7 +6,10 @@ import { Type } from '@polkadot/types';
 
 import { Address, CallData } from '@renderer/domain/shared-kernel';
 import { DecodedTransaction, TransactionType } from '@renderer/domain/transaction';
-import { BOND_WITH_CONTROLLER_ARGS_AMOUNT } from '@renderer/services/transaction/common/constants';
+import {
+  BOND_WITH_CONTROLLER_ARGS_AMOUNT,
+  OLD_MULTISIG_ARGS_AMOUNT,
+} from '@renderer/services/transaction/common/constants';
 
 /**
  * Store all call data args parsers.
@@ -422,15 +425,7 @@ class MultisigAsMultiCallDataArgsParser extends AbstractCallDataArgsParser {
     section: string,
     decoded: SubmittableExtrinsic<'promise'>,
   ): Record<string, any> {
-    if (decoded.args.length == 5) {
-      return {
-        threshold: decoded.args[0],
-        otherSignatories: decoded.args[1],
-        timepoint: decoded.args[2],
-        call: decoded.args[3],
-        maxWeight: decoded.args[4],
-      };
-    } else {
+    if (decoded.args.length == OLD_MULTISIG_ARGS_AMOUNT) {
       return {
         threshold: decoded.args[0],
         otherSignatories: decoded.args[1],
@@ -438,6 +433,14 @@ class MultisigAsMultiCallDataArgsParser extends AbstractCallDataArgsParser {
         call: decoded.args[3],
         storeCall: decoded.args[4],
         maxWeight: decoded.args[5],
+      };
+    } else {
+      return {
+        threshold: decoded.args[0],
+        otherSignatories: decoded.args[1],
+        timepoint: decoded.args[2],
+        call: decoded.args[3],
+        maxWeight: decoded.args[4],
       };
     }
   }
