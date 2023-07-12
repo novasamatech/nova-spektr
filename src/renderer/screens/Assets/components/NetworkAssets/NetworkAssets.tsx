@@ -5,7 +5,7 @@ import { Icon } from '@renderer/components/ui';
 import { Asset } from '@renderer/domain/asset';
 import { Chain as ChainType } from '@renderer/domain/chain';
 import { useBalance } from '@renderer/services/balance/balanceService';
-import { ZERO_BALANCE } from '@renderer/services/balance/common/constants';
+import { ZERO_BALANCE } from '@renderer/shared/utils/constants';
 import { totalAmount } from '@renderer/shared/utils/balance';
 import { ExtendedChain } from '@renderer/services/network/common/types';
 import { useI18n } from '@renderer/context/I18nContext';
@@ -14,7 +14,6 @@ import { includes } from '@renderer/shared/utils/strings';
 import { CaptionText, Chain, Tooltip, Accordion } from '@renderer/components/ui-redesign';
 import { AssetCard } from '../AssetCard/AssetCard';
 import { balanceSorter, sumBalances } from '../../common/utils';
-import { BalanceDS } from '@renderer/services/storage';
 import { Account } from '@renderer/domain/account';
 import { AccountId } from '@renderer/domain/shared-kernel';
 import cnTw from '@renderer/shared/utils/twMerge';
@@ -61,19 +60,16 @@ export const NetworkAssets = ({
   useEffect(() => {
     const accountsAmount = new Set(accountIds).size;
 
-    const newBalancesObject = Object.values(groupBy(balances, 'assetId')).reduce<Record<string, Balance>>(
-      (acc, balances: BalanceDS[]) => {
-        if (balances.length === accountsAmount) {
-          acc[balances[0].assetId] = balances.reduce<Balance>(
-            (acc, balance) => sumBalances(balance, acc),
-            {} as Balance,
-          );
-        }
+    const groupedBalances = Object.values(groupBy(balances, 'assetId'));
+    const newBalancesObject = groupedBalances.reduce<Record<string, Balance>>((acc, balances) => {
+      if (balances.length === accountsAmount) {
+        acc[balances[0].assetId] = balances.reduce<Balance>((acc, balance) => {
+          return sumBalances(balance, acc);
+        }, {} as Balance);
+      }
 
-        return acc;
-      },
-      {},
-    );
+      return acc;
+    }, {});
 
     setBalancesObject(newBalancesObject);
   }, [balances, accountIds.join('')]);

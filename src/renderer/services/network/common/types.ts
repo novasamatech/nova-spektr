@@ -4,6 +4,7 @@ import { ProviderInterface } from '@polkadot/rpc-provider/types';
 import { Chain, RpcNode } from '@renderer/domain/chain';
 import { Connection, ConnectionType } from '@renderer/domain/connection';
 import { ChainId } from '@renderer/domain/shared-kernel';
+import { Balance } from '@renderer/domain/balance';
 
 // =====================================================
 // ================ Service interface ==================
@@ -14,6 +15,7 @@ export interface IChainService {
   getChainById: (chainId: ChainId) => Promise<Chain | undefined>;
   getStakingChainsData: () => Promise<Chain[]>;
   sortChains: <T extends ChainLike>(chains: T[]) => T[];
+  sortChainsByBalance: (chains: Chain[], balances: Balance[]) => Chain[];
 }
 
 export interface IChainSpecService {
