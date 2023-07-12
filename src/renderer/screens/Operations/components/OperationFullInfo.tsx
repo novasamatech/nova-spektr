@@ -61,11 +61,9 @@ const OperationFullInfo = ({ tx, account }: Props) => {
 
     if (!api || !tx) return;
 
-    if (!account?.matrixRoomId) {
-      updateCallData(api, tx, callData as CallData);
+    updateCallData(api, tx, callData as CallData);
 
-      return;
-    }
+    if (!account?.matrixRoomId) return;
 
     matrix.sendUpdate(account?.matrixRoomId, {
       senderAccountId: tx.depositor || '0x00',
