@@ -8,7 +8,7 @@ type TaskQueue = {
 
 export function useTaskQueue(): TaskQueue {
   const [tasks, setTasks] = useState<Task[]>([]);
-  const [isProcessing, setIsProcessing] = useState<boolean>(false);
+  const [isProcessing, setIsProcessing] = useState(false);
 
   useEffect(() => {
     if (tasks.length === 0) return;
