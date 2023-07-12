@@ -86,7 +86,7 @@ export const NetworkAssets = ({
 
       const balance = balancesObject[asset.assetId];
 
-      return !hideZeroBalance || balance?.verified === false || (balance && totalAmount(balance) !== ZERO_BALANCE);
+      return !hideZeroBalance || balance?.verified === false || totalAmount(balance) !== ZERO_BALANCE;
     });
 
     filteredAssets.sort((a, b) => balanceSorter(a, b, balancesObject));
