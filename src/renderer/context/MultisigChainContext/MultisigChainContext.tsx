@@ -13,6 +13,7 @@ import { ChainId } from '@renderer/domain/shared-kernel';
 import { useDebounce } from '@renderer/shared/hooks';
 import { useMultisigEvent } from '@renderer/services/multisigEvent/multisigEventService';
 import { ConnectionStatus } from '@renderer/domain/connection';
+import { getCreatedDateFromApi } from '@renderer/shared/utils/substrate';
 
 type MultisigChainContextProps = {};
 
@@ -39,8 +40,31 @@ export const MultisigChainProvider = ({ children }: PropsWithChildren) => {
     txs.forEach(async (tx) => {
       const connection = connections[tx.chainId];
 
-      if (connection?.api && tx.callData && !tx.transaction) {
+      if (!connection?.api) return;
+
+      if (tx.callData && !tx.transaction) {
         updateCallData(connection.api, tx, tx.callData);
+      }
+
+      if (!tx.dateCreated && tx.blockCreated) {
+        const dateCreated = await getCreatedDateFromApi(tx.blockCreated, connection.api);
+        updateMultisigTx({ ...tx, dateCreated });
+
+        const events = await getEvents({
+          txAccountId: tx.accountId,
+          txChainId: tx.chainId,
+          txCallHash: tx.callHash,
+          txBlock: tx.blockCreated,
+          txIndex: tx.indexCreated,
+          status: 'SIGNED',
+          accountId: tx.depositor,
+        });
+
+        if (events[0]) {
+          updateEvent({ ...events[0], dateCreated });
+        }
+
+        console.log(`Create date recovered for multisig tx ${tx.callHash}`);
       }
     });
   }, [txs, debouncedConnections]);
