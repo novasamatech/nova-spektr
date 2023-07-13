@@ -10,12 +10,15 @@ import { MultisigAccount } from '@renderer/domain/account';
 import { MultisigTxFinalStatus, SigningStatus } from '@renderer/domain/transaction';
 import { toAddress } from '@renderer/shared/utils/address';
 import { ChainId } from '@renderer/domain/shared-kernel';
-import { useDebounce } from '@renderer/shared/hooks';
+import { useDebounce, useTaskQueue } from '@renderer/shared/hooks';
 import { useMultisigEvent } from '@renderer/services/multisigEvent/multisigEventService';
 import { ConnectionStatus } from '@renderer/domain/connection';
 import { getCreatedDateFromApi } from '@renderer/shared/utils/substrate';
+import { Task } from '@renderer/shared/hooks/useTaskQueue';
 
-type MultisigChainContextProps = {};
+type MultisigChainContextProps = {
+  addEventTask: (task: Task) => void;
+};
 
 const MULTISIG_RESULT_SUCCESS: string = 'Ok';
 const MULTISIG_RESULT_ERROR: string = 'err';
@@ -24,8 +27,9 @@ const MultisigChainContext = createContext<MultisigChainContextProps>({} as Mult
 
 export const MultisigChainProvider = ({ children }: PropsWithChildren) => {
   const { connections } = useNetworkContext();
+  const { addTask: addEventTask } = useTaskQueue();
   const { subscribeMultisigAccount, updateMultisigTx, getMultisigTx, getLiveAccountMultisigTxs, updateCallData } =
-    useMultisigTx();
+    useMultisigTx({ addEventTask });
   const { getActiveMultisigAccount } = useAccount();
   const { updateEvent, addEvent, getEvents } = useMultisigEvent();
 
@@ -87,32 +91,34 @@ export const MultisigChainProvider = ({ children }: PropsWithChildren) => {
 
     const accountId = event.data[0].toHex();
 
-    const events = await getEvents({
-      txAccountId: account.accountId,
-      txChainId: chainId,
-      txCallHash: callHash,
-      txBlock: blockCreated,
-      txIndex: indexCreated,
-    });
-
-    const pendingEvent = events.find(
-      (event) => pendingEventStatuses.includes(event.status) && event.accountId === accountId,
-    );
-
-    if (pendingEvent) {
-      await updateEvent({ ...pendingEvent, status: resultEventStatus });
-    } else {
-      await addEvent({
+    addEventTask(async () => {
+      const events = await getEvents({
         txAccountId: account.accountId,
         txChainId: chainId,
         txCallHash: callHash,
         txBlock: blockCreated,
         txIndex: indexCreated,
-        status: resultEventStatus,
-        accountId: event.data[0].toHex(),
-        dateCreated: Date.now(),
       });
-    }
+
+      const pendingEvent = events.find(
+        (event) => pendingEventStatuses.includes(event.status) && event.accountId === accountId,
+      );
+
+      if (pendingEvent) {
+        await updateEvent({ ...pendingEvent, status: resultEventStatus });
+      } else {
+        await addEvent({
+          txAccountId: account.accountId,
+          txChainId: chainId,
+          txCallHash: callHash,
+          txBlock: blockCreated,
+          txIndex: indexCreated,
+          status: resultEventStatus,
+          accountId: event.data[0].toHex(),
+          dateCreated: Date.now(),
+        });
+      }
+    });
 
     await updateMultisigTx({ ...tx, status: resultTransactionStatus });
 
@@ -189,7 +195,7 @@ export const MultisigChainProvider = ({ children }: PropsWithChildren) => {
     };
   }, [availableConnectionsAmount, account]);
 
-  return <MultisigChainContext.Provider value={{}}>{children}</MultisigChainContext.Provider>;
+  return <MultisigChainContext.Provider value={{ addEventTask }}>{children}</MultisigChainContext.Provider>;
 };
 
 export const useMultisigChainContext = () => useContext<MultisigChainContextProps>(MultisigChainContext);

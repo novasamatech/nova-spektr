@@ -18,6 +18,7 @@ import { DEFAULT_TRANSITION } from '@renderer/shared/utils/constants';
 import Paths from '@renderer/routes/paths';
 import { Transaction, MultisigEvent, MultisigTransaction, MultisigTxInitStatus } from '@renderer/domain/transaction';
 import { useMultisigEvent } from '@renderer/services/multisigEvent/multisigEventService';
+import { useMultisigChainContext } from '@renderer/context/MultisigChainContext';
 
 type ResultProps = Pick<ComponentProps<typeof OperationResult>, 'title' | 'description' | 'variant'>;
 
@@ -40,7 +41,9 @@ export const Submit = ({ api, accounts, txs, multisigTx, unsignedTx, signatures,
 
   const { matrix } = useMatrix();
   const { submitAndWatchExtrinsic, getSignedExtrinsic } = useTransaction();
-  const { addMultisigTx } = useMultisigTx();
+  const { addEventTask } = useMultisigChainContext();
+
+  const { addMultisigTx } = useMultisigTx({ addEventTask });
   const { addEvent } = useMultisigEvent();
 
   const [isSuccess, toggleSuccessMessage] = useToggle();
