@@ -116,7 +116,10 @@ export const Submit = ({
         }
 
         toggleSuccessMessage();
-        setTimeout(toggleSuccessMessage, 2000);
+        setTimeout(() => {
+          toggleSuccessMessage();
+          onClose();
+        }, 2000);
       } else {
         setErrorMessage(params as string);
       }
