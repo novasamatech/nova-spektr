@@ -14,25 +14,26 @@ import { MultisigTransactionDS } from '@renderer/services/storage';
 import { useMultisigTx } from '@renderer/services/multisigTx/multisigTxService';
 import { Header } from '@renderer/components/common';
 import { useNetworkContext } from '@renderer/context/NetworkContext';
-import { MultisigEvent, MultisigTransaction } from '@renderer/domain/transaction';
+import { MultisigEvent, MultisigTransactionKey } from '@renderer/domain/transaction';
 import { useMultisigEvent } from '@renderer/services/multisigEvent/multisigEventService';
 
 const Operations = () => {
   const { t, dateLocale } = useI18n();
   const { getActiveMultisigAccount } = useAccount();
-  const { getLiveAccountMultisigTxs } = useMultisigTx();
+  const { getLiveAccountMultisigTxs } = useMultisigTx({});
   const { connections } = useNetworkContext();
-  const { getEventsByKeys } = useMultisigEvent();
+  const { getLiveEventsByKeys } = useMultisigEvent();
 
   const account = getActiveMultisigAccount();
   const allTxs = getLiveAccountMultisigTxs(account?.accountId ? [account.accountId] : []);
 
   const [txs, setTxs] = useState<MultisigTransactionDS[]>([]);
-  const [events, setEvents] = useState<MultisigEvent[]>([]);
   const [filteredTxs, setFilteredTxs] = useState<MultisigTransactionDS[]>([]);
 
-  const getEventByTransaction = (events: MultisigEvent[], tx: MultisigTransaction): MultisigEvent | undefined => {
-    return events.find(
+  const events = getLiveEventsByKeys(txs.filter((tx) => !tx.dateCreated));
+
+  const getEventsByTransaction = (tx: MultisigTransactionKey): MultisigEvent[] => {
+    return events.filter(
       (e) =>
         e.txAccountId === tx.accountId &&
         e.txChainId === tx.chainId &&
@@ -43,15 +44,12 @@ const Operations = () => {
   };
 
   const groupedTxs = groupBy(filteredTxs, (tx) => {
-    const date = tx.dateCreated || getEventByTransaction(events, tx)?.dateCreated || Date.now();
+    const date = tx.dateCreated || getEventsByTransaction(tx)[0]?.dateCreated || Date.now();
 
     return format(new Date(date), 'PP', { locale: dateLocale });
   });
 
   useEffect(() => {
-    const txsWithoutDate = allTxs.filter((tx) => !tx.dateCreated);
-    getEventsByKeys(txsWithoutDate).then(setEvents);
-
     setTxs(allTxs.filter((tx) => connections[tx.chainId]));
     setFilteredTxs([]);
   }, [allTxs]);

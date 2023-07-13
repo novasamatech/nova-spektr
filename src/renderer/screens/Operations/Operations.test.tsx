@@ -21,7 +21,7 @@ jest.mock('@renderer/services/multisigTx/multisigTxService', () => ({
 
 jest.mock('@renderer/services/multisigEvent/multisigEventService', () => ({
   useMultisigEvent: jest.fn().mockReturnValue({
-    getEventsByKeys: jest.fn().mockResolvedValue([]),
+    getLiveEventsByKeys: jest.fn().mockResolvedValue([]),
   }),
 }));
 

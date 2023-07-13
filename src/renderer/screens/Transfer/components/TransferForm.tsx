@@ -58,7 +58,7 @@ export const TransferForm = ({
 }: Props) => {
   const { t } = useI18n();
   const { getBalance } = useBalance();
-  const { getMultisigTxs } = useMultisigTx();
+  const { getMultisigTxs } = useMultisigTx({});
   const { getTransactionHash } = useTransaction();
 
   const [fee, setFee] = useState('');
