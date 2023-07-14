@@ -1,12 +1,12 @@
 import { Icon } from '@renderer/components/ui';
 import { useI18n } from '@renderer/context/I18nContext';
-import { Transaction } from '@renderer/domain/transaction';
+import { DecodedTransaction, Transaction } from '@renderer/domain/transaction';
 import { getIconName, getTransactionTitle } from '../../common/utils';
 import { BodyText, FootnoteText } from '@renderer/components/ui-redesign';
 import cnTw from '@renderer/shared/utils/twMerge';
 
 type Props = {
-  tx?: Transaction;
+  tx?: Transaction | DecodedTransaction;
   description?: string;
   withoutIcon?: boolean;
   className?: string;

@@ -3,7 +3,7 @@ import { UnsignedTransaction } from '@substrate/txwrapper-polkadot';
 import { Weight } from '@polkadot/types/interfaces';
 
 import { Address, CallData, HexString, Timepoint, Threshold } from '@renderer/domain/shared-kernel';
-import { Transaction } from '@renderer/domain/transaction';
+import { DecodedTransaction, Transaction } from '@renderer/domain/transaction';
 
 // =====================================================
 // =========== ITransactionService interface ===========
@@ -28,7 +28,15 @@ export type ITransactionService = {
   getTxWeight: (transaction: Transaction, api: ApiPromise) => Promise<Weight>;
   getTransactionDeposit: (threshold: Threshold, api: ApiPromise) => string;
   getTransactionHash: (transaction: Transaction, api: ApiPromise) => HashData;
-  decodeCallData: (api: ApiPromise, accountId: Address, callData: CallData) => Transaction;
+  decodeCallData: (api: ApiPromise, accountId: Address, callData: CallData) => DecodedTransaction;
+};
+
+// =====================================================
+// ============= ICallDataDecoder interface ============
+// =====================================================
+
+export type ICallDataDecoder = {
+  decodeCallData: (api: ApiPromise, address: Address, callData: CallData) => DecodedTransaction;
 };
 
 // =====================================================

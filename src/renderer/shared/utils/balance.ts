@@ -153,13 +153,9 @@ export const validateSymbols = (amount: string) => {
 
 export const validatePrecision = (amount: string, precision: number) => {
   const [integer, decimal] = amount.split('.');
-  if (decimal && decimal.length > precision) {
-    return false;
-  }
+  if (decimal && decimal.length > precision) return false;
 
-  if (integer.length > MAX_INTEGER) return false;
-
-  return true;
+  return integer.length <= MAX_INTEGER;
 };
 
 export const formatGroups = (amount: string): string => {

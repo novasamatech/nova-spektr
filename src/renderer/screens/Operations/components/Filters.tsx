@@ -53,11 +53,9 @@ const Filters = ({ txs, onChangeFilters }: Props) => {
   }, [txs]);
 
   const getFilterableType = (tx: MultisigTransaction): TransactionType | typeof UNKNOWN_TYPE => {
-    if (!tx.transaction) return UNKNOWN_TYPE;
+    if (!tx.transaction?.type) return UNKNOWN_TYPE;
 
-    if (TransferTypes.includes(tx.transaction.type)) {
-      return TransactionType.TRANSFER;
-    }
+    if (TransferTypes.includes(tx.transaction.type)) return TransactionType.TRANSFER;
 
     if (tx.transaction.type === TransactionType.BATCH_ALL) {
       const txMatch = tx.transaction.args?.transactions?.find((tx: Transaction) => {

@@ -1,5 +1,6 @@
 import { Address, ChainId, HexString, AccountId, CallData, CallHash } from './shared-kernel';
 import { Signatory } from './signatory';
+import { PartialBy } from '@renderer/domain/utility';
 
 export const enum TransactionType {
   TRANSFER = 'transfer',
@@ -41,11 +42,18 @@ export const enum MultisigTxFinalStatus {
 export type MultisigTxStatus = MultisigTxInitStatus | MultisigTxFinalStatus;
 
 // TODO: extend args for all Transaction types
+// TODO: use it for send transaction
 export type Transaction = {
   type: TransactionType;
   address: Address;
   chainId: ChainId;
   args: Record<string, any>;
+};
+
+// TODO: use it for decoding only
+export type DecodedTransaction = PartialBy<Transaction, 'type'> & {
+  method: string;
+  section: string;
 };
 
 export type MultisigEvent = {
@@ -77,10 +85,18 @@ export type MultisigTransaction = {
   blockCreated: number;
   indexCreated: number;
   dateCreated?: number;
-  transaction?: Transaction;
+  transaction?: Transaction | DecodedTransaction;
 };
 
 export type MultisigTransactionKey = Pick<
   MultisigTransaction,
   'accountId' | 'callHash' | 'chainId' | 'indexCreated' | 'blockCreated'
 >;
+
+export function isDecodedTx(tx: Transaction | DecodedTransaction): tx is DecodedTransaction {
+  const hasType = 'type' in (tx as Transaction);
+  const hasMethod = 'method' in (tx as DecodedTransaction);
+  const hasSection = 'section' in (tx as DecodedTransaction);
+
+  return !hasType && hasMethod && hasSection;
+}

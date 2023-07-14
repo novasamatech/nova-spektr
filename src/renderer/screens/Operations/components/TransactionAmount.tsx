@@ -1,6 +1,6 @@
 import { useEffect, useState, ComponentProps } from 'react';
 
-import { Transaction } from '@renderer/domain/transaction';
+import { DecodedTransaction, Transaction } from '@renderer/domain/transaction';
 import { useChains } from '@renderer/services/network/chainsService';
 import { Asset } from '@renderer/domain/asset';
 import { getAssetById } from '@renderer/shared/utils/assets';
@@ -8,7 +8,7 @@ import { BalanceNew } from '@renderer/components/common';
 import { getTransactionAmount } from '@renderer/screens/Operations/common/utils';
 
 type Props = {
-  tx: Transaction;
+  tx: Transaction | DecodedTransaction;
 };
 
 type BalanceProps = Pick<ComponentProps<typeof BalanceNew>, 'className' | 'showIcon' | 'wrapperClassName'>;
