@@ -32,6 +32,14 @@ export type ITransactionService = {
 };
 
 // =====================================================
+// ============= ICallDataDecoder interface ============
+// =====================================================
+
+export type ICallDataDecoder = {
+  decodeCallData: (api: ApiPromise, address: Address, callData: CallData) => DecodedTransaction;
+};
+
+// =====================================================
 // ======================= General =====================
 // =====================================================
 

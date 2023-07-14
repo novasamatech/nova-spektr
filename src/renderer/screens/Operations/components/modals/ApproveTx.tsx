@@ -10,7 +10,7 @@ import { AccountDS, MultisigTransactionDS } from '@renderer/services/storage';
 import { useToggle, useCountdown } from '@renderer/shared/hooks';
 import { Account, MultisigAccount } from '@renderer/domain/account';
 import { ExtendedChain } from '@renderer/services/network/common/types';
-import { Transaction, TransactionType } from '@renderer/domain/transaction';
+import { Transaction, TransactionType, isDecodedTx } from '@renderer/domain/transaction';
 import { Address, HexString, Timepoint } from '@renderer/domain/shared-kernel';
 import { toAddress } from '@renderer/shared/utils/address';
 import { useAccount } from '@renderer/services/account/accountService';
@@ -54,11 +54,20 @@ const ApproveTx = ({ tx, account, connection }: Props) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isSelectAccountModalOpen, toggleSelectAccountModal] = useToggle();
   const [isFeeModalOpen, toggleFeeModal] = useToggle();
+
   const [activeStep, setActiveStep] = useState(Step.CONFIRMATION);
   const [countdown, resetCountdown] = useCountdown(connection.api);
   const [signAccount, setSignAccount] = useState<Account>();
 
+  const [feeTx, setFeeTx] = useState<Transaction>();
+  const [approveTx, setApproveTx] = useState<Transaction>();
+  const [unsignedTx, setUnsignedTx] = useState<UnsignedTransaction>();
+
+  const [txWeight, setTxWeight] = useState<Weight>();
+  const [signature, setSignature] = useState<HexString>();
+
   const accounts = getLiveAccounts();
+  const transactionTitle = getTransactionTitle(tx.transaction);
 
   const unsignedAccounts = accounts.filter((a) => {
     const isSignatory = account.signatories.find((s) => s.accountId === a.accountId);
@@ -68,13 +77,22 @@ const ApproveTx = ({ tx, account, connection }: Props) => {
     return isSignatory && notSigned && isCurrentChain;
   });
 
-  const [approveTx, setApproveTx] = useState<Transaction>();
-  const [feeTx, setFeeTx] = useState<Transaction>();
-  const [signature, setSignature] = useState<HexString>();
-  const [unsignedTx, setUnsignedTx] = useState<UnsignedTransaction>();
-  const [txWeight, setTxWeight] = useState<Weight>();
+  useEffect(() => {
+    if (!signAccount?.accountId) return;
 
-  const transactionTitle = getTransactionTitle(tx.transaction);
+    setApproveTx(getMultisigTx(signAccount?.accountId));
+  }, [tx, accounts.length, signAccount?.accountId, txWeight]);
+
+  useEffect(() => {
+    setFeeTx(getMultisigTx(TEST_ADDRESS));
+  }, [tx, accounts.length, signAccount?.accountId, txWeight]);
+
+  useEffect(() => {
+    if (!tx.transaction || !connection.api) return;
+    if (isDecodedTx(tx.transaction)) return;
+
+    getTxWeight(tx.transaction, connection.api).then(setTxWeight);
+  }, [tx.transaction, connection.api]);
 
   const goBack = () => {
     setActiveStep(AllSteps.indexOf(activeStep) - 1);
@@ -90,27 +108,6 @@ const ApproveTx = ({ tx, account, connection }: Props) => {
     setIsModalOpen(false);
     setActiveStep(Step.CONFIRMATION);
   };
-
-  useEffect(() => {
-    if (!signAccount?.accountId) return;
-
-    const multisigTx = getMultisigTx(signAccount?.accountId);
-
-    setApproveTx(multisigTx);
-  }, [tx, accounts.length, signAccount?.accountId, txWeight]);
-
-  useEffect(() => {
-    const feeTx = getMultisigTx(TEST_ADDRESS);
-
-    setFeeTx(feeTx);
-  }, [tx, accounts.length, signAccount?.accountId, txWeight]);
-
-  useEffect(() => {
-    if (!tx.transaction?.type || !connection.api) return;
-    getTxWeight(tx.transaction as Transaction, connection.api).then((txWeight) => {
-      setTxWeight(txWeight);
-    });
-  }, [tx.transaction, connection.api]);
 
   const nativeAsset = connection.assets[0];
 

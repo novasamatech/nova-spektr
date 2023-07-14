@@ -16,10 +16,10 @@ import { Weight } from '@polkadot/types/interfaces';
 import { Address, CallData, HexString, Threshold } from '@renderer/domain/shared-kernel';
 import { DecodedTransaction, Transaction, TransactionType } from '@renderer/domain/transaction';
 import { createTxMetadata } from '@renderer/shared/utils/substrate';
-import { ITransactionService, HashData, ExtrinsicResultParams } from './common/types';
 import { toAccountId } from '@renderer/shared/utils/address';
+import { ITransactionService, HashData, ExtrinsicResultParams } from './common/types';
 import { decodeDispatchError, getMaxWeight, isControllerMissing, isOldMultisigPallet } from './common/utils';
-import { CallDataDecoder } from '@renderer/services/transaction/callDataDecoder/callDataDecoder';
+import { useCallDataDecoder } from './callDataDecoder';
 
 type BalancesTransferArgs = Parameters<typeof methods.balances.transfer>[0];
 type BondWithoutContollerArgs = Omit<Parameters<typeof methods.staking.bond>[0], 'controller'>;
@@ -439,9 +439,7 @@ export const useTransaction = (): ITransactionService => {
   };
 
   const decodeCallData = (api: ApiPromise, accountId: Address, callData: CallData): DecodedTransaction => {
-    const callDataProvider: CallDataDecoder = new CallDataDecoder();
-
-    return callDataProvider.parse(api, accountId, callData);
+    return useCallDataDecoder().decodeCallData(api, accountId, callData);
   };
 
   return {

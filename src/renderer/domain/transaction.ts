@@ -1,5 +1,6 @@
 import { Address, ChainId, HexString, AccountId, CallData, CallHash } from './shared-kernel';
 import { Signatory } from './signatory';
+import { PartialBy } from '@renderer/domain/utility';
 
 export const enum TransactionType {
   TRANSFER = 'transfer',
@@ -50,8 +51,7 @@ export type Transaction = {
 };
 
 // TODO: use it for decoding only
-export type DecodedTransaction = Omit<Transaction, 'type'> & {
-  type?: TransactionType;
+export type DecodedTransaction = PartialBy<Transaction, 'type'> & {
   method: string;
   section: string;
 };
@@ -88,7 +88,10 @@ export type MultisigTransaction = {
   transaction?: Transaction | DecodedTransaction;
 };
 
-export type MultisigTransactionKey = Pick<
-  MultisigTransaction,
-  'accountId' | 'callHash' | 'chainId' | 'indexCreated' | 'blockCreated'
->;
+export function isDecodedTx(tx: Transaction | DecodedTransaction): tx is DecodedTransaction {
+  const hasType = 'type' in (tx as Transaction);
+  const hasMethod = 'method' in (tx as DecodedTransaction);
+  const hasSection = 'section' in (tx as DecodedTransaction);
+
+  return !hasType && hasMethod && hasSection;
+}

@@ -17,6 +17,7 @@ import { Signatory } from '@renderer/domain/signatory';
 import { formatSectionAndMethod } from '@renderer/shared/utils/strings';
 
 export const UNKNOWN_TYPE = 'UNKNOWN_TYPE';
+export const TRANSACTION_UNKNOWN = 'operations.titles.unknown';
 export const TransferTypes = [TransactionType.TRANSFER, TransactionType.ASSET_TRANSFER, TransactionType.ORML_TRANSFER];
 
 const TransactionTitles: Record<TransactionType, string> = {
@@ -62,7 +63,7 @@ const TransactionIcons: Record<TransactionType, IconNames> = {
 };
 
 export const getTransactionTitle = (transaction?: Transaction | DecodedTransaction): string => {
-  if (!transaction) return 'operations.titles.unknown';
+  if (!transaction) return TRANSACTION_UNKNOWN;
 
   if (!transaction.type) {
     return formatSectionAndMethod(transaction.section, transaction.method);
@@ -196,9 +197,8 @@ export const getTransactionOptions = (t: TFunction) => {
 
 export const getTransactionAmount = (tx: Transaction | DecodedTransaction): string | null => {
   const txType = tx.type;
-  if (!txType) {
-    return null;
-  }
+  if (!txType) return null;
+
   if (
     [
       TransactionType.ASSET_TRANSFER,
@@ -238,14 +238,18 @@ export const getSignatoryName = (
   accounts: Account[],
   addressPrefix?: number,
 ): string => {
+  const finderFn = <T extends { accountId: AccountId }>(collection: T[]): T | undefined => {
+    return collection.find((c) => c.accountId === signatoryId);
+  };
+
   // signatory data source priority: transaction -> contacts -> wallets -> address
-  const fromTx = txSignatories.find((s) => s.accountId === signatoryId)?.name;
+  const fromTx = finderFn(txSignatories)?.name;
   if (fromTx) return fromTx;
 
-  const fromContact = contacts.find((c) => c.accountId === signatoryId)?.name;
+  const fromContact = finderFn(contacts)?.name;
   if (fromContact) return fromContact;
 
-  const fromAccount = accounts.find((a) => a.accountId === signatoryId)?.name;
+  const fromAccount = finderFn(accounts)?.name;
   if (fromAccount) return fromAccount;
 
   return toAddress(signatoryId, { chunk: 5, prefix: addressPrefix });
