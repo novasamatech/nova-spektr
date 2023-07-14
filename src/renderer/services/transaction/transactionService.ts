@@ -13,8 +13,8 @@ import {
 } from '@substrate/txwrapper-polkadot';
 import { Weight } from '@polkadot/types/interfaces';
 
-import { Address, CallData, HexString, Threshold } from '@renderer/domain/shared-kernel';
-import { DecodedTransaction, Transaction, TransactionType } from '@renderer/domain/transaction';
+import { HexString, Threshold } from '@renderer/domain/shared-kernel';
+import { Transaction, TransactionType } from '@renderer/domain/transaction';
 import { createTxMetadata } from '@renderer/shared/utils/substrate';
 import { toAccountId } from '@renderer/shared/utils/address';
 import { ITransactionService, HashData, ExtrinsicResultParams } from './common/types';
@@ -60,6 +60,8 @@ const bondWithoutController = (
   );
 
 export const useTransaction = (): ITransactionService => {
+  const { decodeCallData } = useCallDataDecoder();
+
   const createRegistry = async (api: ApiPromise) => {
     const metadataRpc = await api.rpc.state.getMetadata();
 
@@ -436,10 +438,6 @@ export const useTransaction = (): ITransactionService => {
       .catch((error) => {
         callback(false, (error as Error).message || 'Error');
       });
-  };
-
-  const decodeCallData = (api: ApiPromise, accountId: Address, callData: CallData): DecodedTransaction => {
-    return useCallDataDecoder().decodeCallData(api, accountId, callData);
   };
 
   return {
