@@ -45,14 +45,15 @@ export const useMultisigTx = ({ addEventTask }: Props): IMultisigTxService => {
       const currentBlockNumber = await getCurrentBlockNumber(api);
       const blockTime = getExpectedBlockTime(api);
 
-      pendingTxs.forEach(async (pendingTx) => {
-        const oldTx = transactions.find(
-          (t) =>
+      pendingTxs.forEach((pendingTx) => {
+        const oldTx = transactions.find((t) => {
+          return (
             t.callHash === pendingTx.callHash.toHex() &&
             t.blockCreated === pendingTx.params.when.height.toNumber() &&
             t.indexCreated === pendingTx.params.when.index.toNumber() &&
-            t.chainId === api.genesisHash.toHex(),
-        );
+            t.chainId === api.genesisHash.toHex()
+          );
+        });
 
         if (oldTx) {
           const updatedTx = updateTransactionPayload(oldTx, pendingTx);
@@ -73,10 +74,11 @@ export const useMultisigTx = ({ addEventTask }: Props): IMultisigTxService => {
           });
 
           if (updatedTx) {
-            updateMultisigTx(updatedTx);
-            console.log(
-              `Multisig transaction was updated with ${updatedTx.callHash} and timepoint ${updatedTx.blockCreated}-${updatedTx.indexCreated}`,
-            );
+            updateMultisigTx(updatedTx).then(() => {
+              console.log(
+                `Multisig transaction was updated with ${updatedTx.callHash} and timepoint ${updatedTx.blockCreated}-${updatedTx.indexCreated}`,
+              );
+            });
           }
         } else {
           const depositor = pendingTx.params.depositor.toHex();
@@ -92,13 +94,13 @@ export const useMultisigTx = ({ addEventTask }: Props): IMultisigTxService => {
           addMultisigTx(newTx);
 
           const newEvents = createEventsPayload(newTx, pendingTx, account, currentBlockNumber, blockTime.toNumber());
-          newEvents.forEach((e) => addEvent(e));
+          newEvents.forEach(addEvent);
 
           console.log(`New pending multisig transaction was found with call hash ${pendingTx.callHash}`);
         }
       });
 
-      transactions.forEach(async (tx) => {
+      transactions.forEach((tx) => {
         const hasTransaction = pendingTxs.find((t) => t.callHash.toHex() === tx.callHash);
         const isDifferentChain = tx.chainId !== api.genesisHash.toHex();
 
@@ -125,10 +127,11 @@ export const useMultisigTx = ({ addEventTask }: Props): IMultisigTxService => {
             ? MultisigTxFinalStatus.ESTABLISHED
             : tx.status;
 
-          updateMultisigTx({ ...tx, status });
-          console.log(
-            `Multisig transaction was updated with call hash ${tx.callHash} and timepoint ${tx.blockCreated}-${tx.indexCreated} and status ${status}`,
-          );
+          updateMultisigTx({ ...tx, status }).then(() => {
+            console.log(
+              `Multisig transaction was updated with call hash ${tx.callHash} and timepoint ${tx.blockCreated}-${tx.indexCreated} and status ${status}`,
+            );
+          });
         });
       });
     }, QUERY_INTERVAL);
