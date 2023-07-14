@@ -1,5 +1,7 @@
 import { SigningType } from '@renderer/domain/shared-kernel';
 
+export const ZERO_BALANCE = '0';
+
 export const DEFAULT_TRANSITION = 300;
 
 export const PUBLIC_KEY_LENGTH = 64;

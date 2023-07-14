@@ -1,8 +1,8 @@
 import { render, screen } from '@testing-library/react';
 
 import { TEST_ACCOUNT_ID } from '@renderer/shared/utils/constants';
-import Operations from './Operations';
 import { ConnectionType } from '@renderer/domain/connection';
+import Operations from './Operations';
 
 jest.mock('@renderer/context/I18nContext', () => ({
   useI18n: jest.fn().mockReturnValue({
@@ -16,6 +16,12 @@ const mockAccounts = [{ name: 'Test Account', accountId: TEST_ACCOUNT_ID }];
 jest.mock('@renderer/services/multisigTx/multisigTxService', () => ({
   useMultisigTx: jest.fn().mockReturnValue({
     getLiveAccountMultisigTxs: () => mockTxs,
+  }),
+}));
+
+jest.mock('@renderer/services/multisigEvent/multisigEventService', () => ({
+  useMultisigEvent: jest.fn().mockReturnValue({
+    getLiveEventsByKeys: jest.fn().mockResolvedValue([]),
   }),
 }));
 

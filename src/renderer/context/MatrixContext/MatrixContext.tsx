@@ -32,6 +32,7 @@ import {
   SigningStatus,
 } from '@renderer/domain/transaction';
 import { useMultisigEvent } from '@renderer/services/multisigEvent/multisigEventService';
+import { useMultisigChainContext } from '../MultisigChainContext';
 
 type MatrixContextProps = {
   matrix: ISecureMessenger;
@@ -42,7 +43,8 @@ const MatrixContext = createContext<MatrixContextProps>({} as MatrixContextProps
 
 export const MatrixProvider = ({ children }: PropsWithChildren) => {
   const { getContacts } = useContact();
-  const { getMultisigTx, addMultisigTx, updateMultisigTx, updateCallData } = useMultisigTx();
+  const { addEventTask } = useMultisigChainContext();
+  const { getMultisigTx, addMultisigTx, updateMultisigTx, updateCallData } = useMultisigTx({ addEventTask });
   const { getAccounts, addAccount, updateAccount, setActiveAccount } = useAccount();
   const { decodeCallData } = useTransaction();
   const { connections } = useNetworkContext();
@@ -288,14 +290,15 @@ export const MatrixProvider = ({ children }: PropsWithChildren) => {
   ): Promise<void> => {
     const descriptionField = txStatus === MultisigTxFinalStatus.CANCELLED ? 'cancelDescription' : 'description';
     const { api, addressPrefix } = connectionsRef.current[payload.chainId];
+    const dateCreated = api && (await getCreatedDateFromApi(payload.callTimepoint.height, api));
 
-    const dateCreated = api ? await getCreatedDateFromApi(payload.callTimepoint.height, api) : Date.now();
     if (!api) {
       console.warn(`No api found for ${payload.chainId} can't decode call data for ${payload.callHash}`);
     }
     if (!addressPrefix) {
       console.warn(`No addressPrefix found for ${payload.chainId} can't decode call data for ${payload.callHash}`);
     }
+
     const transaction =
       api && payload.callData && decodeCallData(api, toAddress(accountId, { prefix: addressPrefix }), payload.callData);
 
@@ -348,42 +351,46 @@ export const MatrixProvider = ({ children }: PropsWithChildren) => {
       console.log(`Tx ${payload.callHash} not found. Create it`);
 
       await addMultisigTxToDB(payload, accountId, signatories, MultisigTxFinalStatus.CANCELLED);
-      await addEvent(newEvent);
+      addEventTask(async () => {
+        await addEvent(newEvent);
+      });
 
       return;
     }
 
     console.log(`Tx ${payload.callHash} found. Update it`);
 
-    const events = await getEvents({
-      txAccountId: tx.accountId,
-      txChainId: tx.chainId,
-      txCallHash: tx.callHash,
-      txBlock: tx.blockCreated,
-      txIndex: tx.indexCreated,
+    addEventTask(async () => {
+      const events = await getEvents({
+        txAccountId: tx.accountId,
+        txChainId: tx.chainId,
+        txCallHash: tx.callHash,
+        txBlock: tx.blockCreated,
+        txIndex: tx.indexCreated,
+      });
+
+      const senderEvent = events.find(
+        (e) => e.accountId === payload.senderAccountId && ['PENDING_CANCELLED', 'CANCELLED'].includes(e.status),
+      );
+
+      if (!senderEvent) {
+        await addEvent(newEvent);
+      } else {
+        senderEvent.extrinsicHash = payload.extrinsicHash;
+        senderEvent.eventBlock = payload.extrinsicTimepoint.height;
+        senderEvent.eventIndex = payload.extrinsicTimepoint.index;
+
+        if (!senderEvent.dateCreated) {
+          senderEvent.dateCreated = newEvent.dateCreated;
+        }
+
+        if (senderEvent.status !== 'CANCELLED') {
+          senderEvent.status = eventStatus;
+        }
+
+        await updateEvent(senderEvent);
+      }
     });
-
-    const senderEvent = events.find(
-      (e) => e.accountId === payload.senderAccountId && ['PENDING_CANCELLED', 'CANCELLED'].includes(e.status),
-    );
-
-    if (!senderEvent) {
-      await addEvent(newEvent);
-    } else {
-      senderEvent.extrinsicHash = payload.extrinsicHash;
-      senderEvent.eventBlock = payload.extrinsicTimepoint.height;
-      senderEvent.eventIndex = payload.extrinsicTimepoint.index;
-
-      if (!senderEvent.dateCreated) {
-        senderEvent.dateCreated = newEvent.dateCreated;
-      }
-
-      if (senderEvent.status !== 'CANCELLED') {
-        senderEvent.status = eventStatus;
-      }
-
-      await updateEvent(senderEvent);
-    }
 
     if (payload.description && !tx.cancelDescription) {
       console.log(`Update cancel description for tx ${payload.callHash}`);
@@ -416,39 +423,44 @@ export const MatrixProvider = ({ children }: PropsWithChildren) => {
     if (!tx) {
       console.log(`Tx ${payload.callHash} not found. Create it`);
       await addMultisigTxToDB(payload, accountId, signatories, MultisigTxInitStatus.SIGNING);
-      await addEvent(newEvent);
+      addEventTask(async () => {
+        await addEvent(newEvent);
+      });
 
       return;
     }
     console.log(`Tx ${payload.callHash} found. Update it`);
 
-    const events = await getEvents({
-      txAccountId: tx.accountId,
-      txChainId: tx.chainId,
-      txCallHash: tx.callHash,
-      txBlock: tx.blockCreated,
-      txIndex: tx.indexCreated,
+    addEventTask(async () => {
+      const events = await getEvents({
+        txAccountId: tx.accountId,
+        txChainId: tx.chainId,
+        txCallHash: tx.callHash,
+        txBlock: tx.blockCreated,
+        txIndex: tx.indexCreated,
+      });
+      const senderEvent = events.find(
+        (e) => e.accountId === payload.senderAccountId && ['PENDING_SIGNED', 'SIGNED'].includes(e.status),
+      );
+
+      if (!senderEvent) {
+        await addEvent(newEvent);
+      } else {
+        senderEvent.extrinsicHash = payload.extrinsicHash;
+        senderEvent.eventBlock = payload.extrinsicTimepoint.height;
+        senderEvent.eventIndex = payload.extrinsicTimepoint.index;
+        if (!senderEvent.dateCreated) {
+          senderEvent.dateCreated = newEvent.dateCreated;
+        }
+
+        if (senderEvent.status !== 'SIGNED') {
+          senderEvent.status = eventStatus;
+        }
+
+        await updateEvent(senderEvent);
+      }
     });
-    const senderEvent = events.find(
-      (e) => e.accountId === payload.senderAccountId && ['PENDING_SIGNED', 'SIGNED'].includes(e.status),
-    );
 
-    if (!senderEvent) {
-      await addEvent(newEvent);
-    } else {
-      senderEvent.extrinsicHash = payload.extrinsicHash;
-      senderEvent.eventBlock = payload.extrinsicTimepoint.height;
-      senderEvent.eventIndex = payload.extrinsicTimepoint.index;
-      if (!senderEvent.dateCreated) {
-        senderEvent.dateCreated = newEvent.dateCreated;
-      }
-
-      if (senderEvent.status !== 'SIGNED') {
-        senderEvent.status = eventStatus;
-      }
-
-      await updateEvent(senderEvent);
-    }
     if (payload.callData && !tx.callData) {
       console.log(`Update call data for tx ${payload.callHash}`);
       const { api, addressPrefix } = connectionsRef.current[payload.chainId];
@@ -496,42 +508,47 @@ export const MatrixProvider = ({ children }: PropsWithChildren) => {
 
     if (!tx) {
       console.log(`Tx ${payload.callHash} not found. Create it`);
+
       await addMultisigTxToDB(payload, accountId, signatories, payload.callOutcome);
-      await addEvent(newEvent);
+      addEventTask(async () => {
+        await addEvent(newEvent);
+      });
 
       return;
     }
 
     console.log(`Tx ${payload.callHash} found. Update it`);
 
-    const events = await getEvents({
-      txAccountId: tx.accountId,
-      txChainId: tx.chainId,
-      txCallHash: tx.callHash,
-      txBlock: tx.blockCreated,
-      txIndex: tx.indexCreated,
+    addEventTask(async () => {
+      const events = await getEvents({
+        txAccountId: tx.accountId,
+        txChainId: tx.chainId,
+        txCallHash: tx.callHash,
+        txBlock: tx.blockCreated,
+        txIndex: tx.indexCreated,
+      });
+      const senderEvent = events.find(
+        (e) => e.accountId === payload.senderAccountId && ['PENDING_SIGNED', 'SIGNED'].includes(e.status),
+      );
+
+      if (!senderEvent) {
+        await addEvent(newEvent);
+      } else {
+        senderEvent.extrinsicHash = payload.extrinsicHash;
+        senderEvent.eventBlock = payload.extrinsicTimepoint.height;
+        senderEvent.eventIndex = payload.extrinsicTimepoint.index;
+        senderEvent.multisigOutcome = payload.callOutcome;
+        if (!senderEvent.dateCreated) {
+          senderEvent.dateCreated = newEvent.dateCreated;
+        }
+
+        if (senderEvent.status !== 'SIGNED') {
+          senderEvent.status = eventStatus;
+        }
+
+        await updateEvent(senderEvent);
+      }
     });
-    const senderEvent = events.find(
-      (e) => e.accountId === payload.senderAccountId && ['PENDING_SIGNED', 'SIGNED'].includes(e.status),
-    );
-
-    if (!senderEvent) {
-      await addEvent(newEvent);
-    } else {
-      senderEvent.extrinsicHash = payload.extrinsicHash;
-      senderEvent.eventBlock = payload.extrinsicTimepoint.height;
-      senderEvent.eventIndex = payload.extrinsicTimepoint.index;
-      senderEvent.multisigOutcome = payload.callOutcome;
-      if (!senderEvent.dateCreated) {
-        senderEvent.dateCreated = newEvent.dateCreated;
-      }
-
-      if (senderEvent.status !== 'SIGNED') {
-        senderEvent.status = eventStatus;
-      }
-
-      await updateEvent(senderEvent);
-    }
 
     await updateMultisigTx({ ...tx, status: payload.callOutcome });
   };

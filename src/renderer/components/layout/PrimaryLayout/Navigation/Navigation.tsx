@@ -17,7 +17,7 @@ import { Shimmering } from '@renderer/components/ui';
 
 const Navigation = () => {
   const { getActiveAccounts } = useAccount();
-  const { getLiveAccountMultisigTxs } = useMultisigTx();
+  const { getLiveAccountMultisigTxs } = useMultisigTx({});
   const { getChainsData } = useChains();
   const { getLiveWallets } = useWallet();
   const wallets = getLiveWallets();

@@ -17,6 +17,7 @@ import { Button } from '@renderer/components/ui-redesign';
 import { OperationResult } from '@renderer/components/common/OperationResult/OperationResult';
 import Paths from '@renderer/routes/paths';
 import { useMultisigEvent } from '@renderer/services/multisigEvent/multisigEventService';
+import { useMultisigChainContext } from '@renderer/context/MultisigChainContext';
 
 type ResultProps = Pick<ComponentProps<typeof OperationResult>, 'title' | 'description' | 'variant'>;
 
@@ -36,7 +37,9 @@ const Submit = ({ api, tx, multisigTx, account, unsignedTx, signature, descripti
   const navigate = useNavigate();
 
   const { matrix } = useMatrix();
-  const { addMultisigTx } = useMultisigTx();
+  const { addEventTask } = useMultisigChainContext();
+
+  const { addMultisigTx } = useMultisigTx({ addEventTask });
   const { submitAndWatchExtrinsic, getSignedExtrinsic } = useTransaction();
   const { addEvent } = useMultisigEvent();
 
@@ -107,6 +110,8 @@ const Submit = ({ api, tx, multisigTx, account, unsignedTx, signature, descripti
           };
 
           await Promise.all([addMultisigTx(newTx), addEvent(event)]);
+
+          console.log(`New transfer was created with call hash ${newTx.callHash}`);
 
           if (matrix.userIsLoggedIn) {
             sendMultisigEvent(account.matrixRoomId, newTx, typedParams);
