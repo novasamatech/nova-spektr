@@ -88,6 +88,11 @@ export type MultisigTransaction = {
   transaction?: Transaction | DecodedTransaction;
 };
 
+export type MultisigTransactionKey = Pick<
+  MultisigTransaction,
+  'accountId' | 'callHash' | 'chainId' | 'indexCreated' | 'blockCreated'
+>;
+
 export function isDecodedTx(tx: Transaction | DecodedTransaction): tx is DecodedTransaction {
   const hasType = 'type' in (tx as Transaction);
   const hasMethod = 'method' in (tx as DecodedTransaction);

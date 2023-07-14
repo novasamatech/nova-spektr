@@ -4,14 +4,14 @@ import { Weight } from '@polkadot/types/interfaces';
 import { BN } from '@polkadot/util';
 
 import { Icon } from '@renderer/components/ui';
-import { Button, BaseModal } from '@renderer/components/ui-redesign';
+import { BaseModal, Button } from '@renderer/components/ui-redesign';
 import { useI18n } from '@renderer/context/I18nContext';
 import { AccountDS, MultisigTransactionDS } from '@renderer/services/storage';
-import { useToggle, useCountdown } from '@renderer/shared/hooks';
+import { useCountdown, useToggle } from '@renderer/shared/hooks';
 import { Account, MultisigAccount } from '@renderer/domain/account';
 import { ExtendedChain } from '@renderer/services/network/common/types';
 import { Transaction, TransactionType, isDecodedTx } from '@renderer/domain/transaction';
-import { Address, HexString, Timepoint } from '@renderer/domain/shared-kernel';
+import { Address, HexString, SigningType, Timepoint } from '@renderer/domain/shared-kernel';
 import { toAddress } from '@renderer/shared/utils/address';
 import { useAccount } from '@renderer/services/account/accountService';
 import { getTransactionTitle } from '../../common/utils';
@@ -73,8 +73,9 @@ const ApproveTx = ({ tx, account, connection }: Props) => {
     const isSignatory = account.signatories.find((s) => s.accountId === a.accountId);
     const notSigned = !events.find((e) => e.accountId === a.accountId);
     const isCurrentChain = !a.chainId || a.chainId === tx.chainId;
+    const notWatchOnly = account.signingType !== SigningType.WATCH_ONLY;
 
-    return isSignatory && notSigned && isCurrentChain;
+    return isSignatory && notSigned && isCurrentChain && notWatchOnly;
   });
 
   useEffect(() => {

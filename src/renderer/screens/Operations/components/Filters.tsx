@@ -25,6 +25,8 @@ const emptySelected: SelectedFilters = {
   type: [],
 };
 
+const mapValues = (result: DropdownResult) => result.value;
+
 type Props = {
   txs: MultisigTransactionDS[];
   onChangeFilters: (filteredTxs: MultisigTransaction[]) => void;
@@ -45,25 +47,28 @@ const Filters = ({ txs, onChangeFilters }: Props) => {
   const [filtersOptions, setFiltersOptions] = useState<FiltersOptions>(emptyOptions);
   const [selectedOptions, setSelectedOptions] = useState<SelectedFilters>(emptySelected);
 
-  const getFilterableType = (tx: MultisigTransaction): TransactionType | typeof UNKNOWN_TYPE => {
-    let filterableType: TransactionType | typeof UNKNOWN_TYPE = UNKNOWN_TYPE;
+  useEffect(() => {
+    setFiltersOptions(getAvailableFiltersOptions(txs));
+    onChangeFilters(txs);
+  }, [txs]);
 
-    if (tx.transaction?.type) {
-      if (TransferTypes.includes(tx.transaction.type)) {
-        filterableType = TransactionType.TRANSFER;
-      } else if (tx.transaction.type === TransactionType.BATCH_ALL) {
-        filterableType = tx.transaction.args?.transactions?.find(
-          (tx: Transaction) => tx.type === TransactionType.BOND || tx.type === TransactionType.UNSTAKE,
-        )?.type;
-      } else {
-        filterableType = tx.transaction?.type;
-      }
+  const getFilterableType = (tx: MultisigTransaction): TransactionType | typeof UNKNOWN_TYPE => {
+    if (!tx.transaction?.type) return UNKNOWN_TYPE;
+
+    if (TransferTypes.includes(tx.transaction.type)) return TransactionType.TRANSFER;
+
+    if (tx.transaction.type === TransactionType.BATCH_ALL) {
+      const txMatch = tx.transaction.args?.transactions?.find((tx: Transaction) => {
+        return tx.type === TransactionType.BOND || tx.type === TransactionType.UNSTAKE;
+      });
+
+      return txMatch?.type || UNKNOWN_TYPE;
     }
 
-    return filterableType;
+    return tx.transaction.type;
   };
 
-  const getTransactionTypeOption = (tx: MultisigTransactionDS) => {
+  const getTransactionTypeOption = (tx: MultisigTransaction) => {
     return TransactionOptions.find((s) => s.value === getFilterableType(tx));
   };
 
@@ -87,28 +92,21 @@ const Filters = ({ txs, onChangeFilters }: Props) => {
       },
     );
 
-  useEffect(() => {
-    setFiltersOptions(getAvailableFiltersOptions(txs));
-    onChangeFilters(txs);
-  }, [txs]);
-
   const clearFilters = () => {
     setSelectedOptions(emptySelected);
     onChangeFilters(txs);
   };
 
-  const mapValues = (result: DropdownResult) => result.value;
-
-  const filterTx = (t: MultisigTransaction, filters: SelectedFilters) =>
-    (!filters.status.length || filters.status.map(mapValues).includes(t.status)) &&
-    (!filters.network.length || filters.network.map(mapValues).includes(t.chainId)) &&
-    (!filters.type.length || filters.type.map(mapValues).includes(getFilterableType(t)));
+  const filterTx = (tx: MultisigTransaction, filters: SelectedFilters) =>
+    (!filters.status.length || filters.status.map(mapValues).includes(tx.status)) &&
+    (!filters.network.length || filters.network.map(mapValues).includes(tx.chainId)) &&
+    (!filters.type.length || filters.type.map(mapValues).includes(getFilterableType(tx)));
 
   const handleFilterChange = (values: DropdownResult[], filterName: FilterName) => {
     const newSelectedOptions = { ...selectedOptions, [filterName]: values };
     setSelectedOptions(newSelectedOptions);
 
-    const filteredTxs = txs.filter((t) => filterTx(t, newSelectedOptions));
+    const filteredTxs = txs.filter((tx) => filterTx(tx, newSelectedOptions));
     onChangeFilters(filteredTxs);
   };
 
