@@ -80,11 +80,7 @@ export const Submit = ({
           const updatedTx: MultisigTransaction = { ...multisigTx };
 
           if (typedParams.isFinalApprove) {
-            const transactionStatus = typedParams.multisigError
-              ? MultisigTxFinalStatus.ERROR
-              : MultisigTxFinalStatus.EXECUTED;
-
-            updatedTx.status = transactionStatus;
+            updatedTx.status = typedParams.multisigError ? MultisigTxFinalStatus.ERROR : MultisigTxFinalStatus.EXECUTED;
           }
 
           if (isReject) {

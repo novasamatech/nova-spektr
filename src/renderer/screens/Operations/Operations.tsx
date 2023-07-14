@@ -33,14 +33,15 @@ const Operations = () => {
   const events = getLiveEventsByKeys(txs.filter((tx) => !tx.dateCreated));
 
   const getEventsByTransaction = (tx: MultisigTransactionKey): MultisigEvent[] => {
-    return events.filter(
-      (e) =>
+    return events.filter((e) => {
+      return (
         e.txAccountId === tx.accountId &&
         e.txChainId === tx.chainId &&
         e.txCallHash === tx.callHash &&
         e.txBlock === tx.blockCreated &&
-        e.txIndex === tx.indexCreated,
-    );
+        e.txIndex === tx.indexCreated
+      );
+    });
   };
 
   const groupedTxs = groupBy(filteredTxs, (tx) => {
