@@ -79,14 +79,12 @@ const ApproveTx = ({ tx, account, connection }: Props) => {
   });
 
   useEffect(() => {
+    setFeeTx(getMultisigTx(TEST_ADDRESS));
+
     if (!signAccount?.accountId) return;
 
     setApproveTx(getMultisigTx(signAccount?.accountId));
-  }, [tx, accounts.length, signAccount?.accountId, txWeight]);
-
-  useEffect(() => {
-    setFeeTx(getMultisigTx(TEST_ADDRESS));
-  }, [tx, accounts.length, signAccount?.accountId, txWeight]);
+  }, [tx, signAccount?.accountId, txWeight]);
 
   useEffect(() => {
     if (!tx.transaction || !connection.api) return;
@@ -113,28 +111,25 @@ const ApproveTx = ({ tx, account, connection }: Props) => {
   const nativeAsset = connection.assets[0];
 
   const getMultisigTx = (signer: Address): Transaction => {
-    const chainId = tx.chainId;
+    const signerAddress = toAddress(signer, { prefix: connection?.addressPrefix });
 
-    const otherSignatories = account.signatories
-      .reduce<Address[]>((acc, s) => {
-        const signerAddress = toAddress(signer, { prefix: connection?.addressPrefix });
-        const signatoryAddress = toAddress(s.accountId, { prefix: connection?.addressPrefix });
+    const otherSignatories = account.signatories.reduce<Address[]>((acc, s) => {
+      const signatoryAddress = toAddress(s.accountId, { prefix: connection?.addressPrefix });
 
-        if (signerAddress !== signatoryAddress) {
-          acc.push(signatoryAddress);
-        }
+      if (signerAddress !== signatoryAddress) {
+        acc.push(signatoryAddress);
+      }
 
-        return acc;
-      }, [])
-      .sort();
+      return acc;
+    }, []);
 
     return {
-      chainId,
+      chainId: tx.chainId,
       address: signer,
       type: tx.callData ? TransactionType.MULTISIG_AS_MULTI : TransactionType.MULTISIG_APPROVE_AS_MULTI,
       args: {
         threshold: account.threshold,
-        otherSignatories,
+        otherSignatories: otherSignatories.sort(),
         maxWeight: txWeight,
         maybeTimepoint: {
           height: tx.blockCreated,
@@ -150,7 +145,6 @@ const ApproveTx = ({ tx, account, connection }: Props) => {
     if (!connection.api || !feeTx || !signAccount.accountId || !nativeAsset) return false;
 
     const fee = await getTransactionFee(feeTx, connection.api);
-
     const balance = await getBalance(signAccount.accountId, connection.chainId, nativeAsset.assetId.toString());
 
     if (!balance) return false;
@@ -158,10 +152,10 @@ const ApproveTx = ({ tx, account, connection }: Props) => {
     return new BN(fee).lte(new BN(transferableAmount(balance)));
   };
 
-  const handleAccountSelect = async (a: AccountDS) => {
-    setSignAccount(a);
+  const handleAccountSelect = async (account: Account) => {
+    setSignAccount(account);
 
-    const isValid = await validateBalanceForFee(a);
+    const isValid = await validateBalanceForFee(account);
 
     if (isValid) {
       setActiveStep(Step.SCANNING);
@@ -187,7 +181,7 @@ const ApproveTx = ({ tx, account, connection }: Props) => {
   const readyForNonFinalSign = readyForSign && !thresholdReached;
   const readyForFinalSign = readyForSign && thresholdReached && !!tx.callData;
 
-  if (!(readyForFinalSign || readyForNonFinalSign)) return <></>;
+  if (!readyForFinalSign && !readyForNonFinalSign) return null;
 
   const isSubmitStep = activeStep === Step.SUBMIT && approveTx && signAccount && signature && unsignedTx;
 

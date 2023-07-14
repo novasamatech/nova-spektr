@@ -40,7 +40,7 @@ export const useCallDataDecoder = (): ICallDataDecoder => {
     decoded: SubmittableExtrinsic<'promise'>,
     api: ApiPromise,
   ): DecodedTransaction => {
-    let transactionType: TransactionType | undefined = undefined;
+    let transactionType: TransactionType | undefined;
     if (method === 'batchAll' && section === 'utility') {
       transactionType = TransactionType.BATCH_ALL;
     }
