@@ -82,7 +82,16 @@ export const useCallDataDecoder = (): ICallDataDecoder => {
     transactionType?: TransactionType,
   ): DecodedTransaction => {
     if (!transactionType) {
-      throw new Error(`Transaction type ${transactionType} is absent for ${method} & ${section}`);
+      console.log(`Unknown transaction type with section ${section} and method ${method}`);
+
+      return {
+        address,
+        method,
+        section,
+        chainId: genesisHash,
+        args: {},
+        type: transactionType,
+      };
     }
 
     const parser = getCallDataParser[transactionType];
