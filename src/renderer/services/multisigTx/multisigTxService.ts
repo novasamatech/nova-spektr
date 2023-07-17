@@ -107,6 +107,16 @@ export const useMultisigTx = ({ addEventTask }: Props): IMultisigTxService => {
         if (hasTransaction || isDifferentChain) return;
 
         addEventTask?.(async () => {
+          const transaction = await getMultisigTx(
+            tx.accountId,
+            tx.chainId,
+            tx.callHash,
+            tx.blockCreated,
+            tx.indexCreated,
+          );
+
+          if (['CANCELLED', 'SIGNED'].includes(transaction?.status || '')) return;
+
           const events = await getEvents({
             txAccountId: tx.accountId,
             txChainId: tx.chainId,
@@ -117,7 +127,7 @@ export const useMultisigTx = ({ addEventTask }: Props): IMultisigTxService => {
 
           // FIXME: Second condition is for already signed tx
           const hasPendingFinalApproval = events.some((e) => e.status === 'PENDING_SIGNED');
-          const hasPendingCancelled = events.some((e) => e.status === 'PENDING_CANCELLED' || e.status === 'CANCELLED');
+          const hasPendingCancelled = events.some((e) => e.status === 'PENDING_CANCELLED');
 
           const status = hasPendingFinalApproval
             ? MultisigTxFinalStatus.EXECUTED
