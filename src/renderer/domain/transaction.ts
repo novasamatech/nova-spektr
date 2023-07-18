@@ -94,9 +94,9 @@ export type MultisigTransactionKey = Pick<
 >;
 
 export function isDecodedTx(tx: Transaction | DecodedTransaction): tx is DecodedTransaction {
-  const hasType = 'type' in (tx as Transaction);
-  const hasMethod = 'method' in (tx as DecodedTransaction);
-  const hasSection = 'section' in (tx as DecodedTransaction);
+  const hasType = tx.type !== undefined;
+  const hasMethod = (tx as DecodedTransaction).method !== undefined;
+  const hasSection = (tx as DecodedTransaction).section !== undefined;
 
   return !hasType && hasMethod && hasSection;
 }
