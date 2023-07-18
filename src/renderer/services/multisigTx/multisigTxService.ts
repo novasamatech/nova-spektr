@@ -40,12 +40,12 @@ export const useMultisigTx = ({ addEventTask }: Props): IMultisigTxService => {
 
   const subscribeMultisigAccount = (api: ApiPromise, account: MultisigAccount): (() => void) => {
     const intervalId = setInterval(async () => {
-      const transactions = await getMultisigTxs({ accountId: account.accountId, status: MultisigTxInitStatus.SIGNING });
       const pendingTxs = await getPendingMultisigTxs(api, account.accountId);
       const currentBlockNumber = await getCurrentBlockNumber(api);
       const blockTime = getExpectedBlockTime(api);
+      const transactions = await getMultisigTxs({ accountId: account.accountId, status: MultisigTxInitStatus.SIGNING });
 
-      pendingTxs.forEach((pendingTx) => {
+      pendingTxs.forEach(async (pendingTx) => {
         const oldTx = transactions.find((t) => {
           return (
             t.callHash === pendingTx.callHash.toHex() &&
@@ -56,8 +56,19 @@ export const useMultisigTx = ({ addEventTask }: Props): IMultisigTxService => {
         });
 
         if (oldTx) {
-          const updatedTx = updateTransactionPayload(oldTx, pendingTx);
           addEventTask?.(async () => {
+            const freshOldTx = await getMultisigTx(
+              oldTx.accountId,
+              oldTx.chainId,
+              oldTx.callHash,
+              oldTx.blockCreated,
+              oldTx.indexCreated,
+            );
+
+            if (!freshOldTx) return;
+
+            const updatedTx = updateTransactionPayload(freshOldTx, pendingTx);
+
             const oldEvents = await getEvents({
               txAccountId: oldTx.accountId,
               txChainId: oldTx.chainId,
@@ -66,20 +77,20 @@ export const useMultisigTx = ({ addEventTask }: Props): IMultisigTxService => {
               txIndex: oldTx.indexCreated,
             });
 
-            const newEvents = createNewEventsPayload(oldEvents, oldTx, pendingTx.params.approvals);
+            const newEvents = createNewEventsPayload(oldEvents, freshOldTx, pendingTx.params.approvals);
             newEvents.forEach(addEvent);
 
             const updatedEvents = updateOldEventsPayload(oldEvents, pendingTx.params.approvals);
             updatedEvents.forEach(updateEvent);
-          });
 
-          if (updatedTx) {
-            updateMultisigTx(updatedTx).then(() => {
-              console.log(
-                `Multisig transaction was updated with ${updatedTx.callHash} and timepoint ${updatedTx.blockCreated}-${updatedTx.indexCreated}`,
-              );
-            });
-          }
+            if (updatedTx) {
+              updateMultisigTx(updatedTx).then(() => {
+                console.log(
+                  `Multisig transaction was updated with ${updatedTx.callHash} and timepoint ${updatedTx.blockCreated}-${updatedTx.indexCreated}`,
+                );
+              });
+            }
+          });
         } else {
           const depositor = pendingTx.params.depositor.toHex();
           if (!account.signatories.find((s) => s.accountId == depositor)) return;
@@ -91,6 +102,17 @@ export const useMultisigTx = ({ addEventTask }: Props): IMultisigTxService => {
             currentBlockNumber,
             blockTime.toNumber(),
           );
+
+          const freshOldTx = await getMultisigTx(
+            newTx.accountId,
+            newTx.chainId,
+            newTx.callHash,
+            newTx.blockCreated,
+            newTx.indexCreated,
+          );
+
+          if (freshOldTx) return;
+
           addMultisigTx(newTx);
 
           const newEvents = createEventsPayload(newTx, pendingTx, account, currentBlockNumber, blockTime.toNumber());
