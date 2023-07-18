@@ -90,7 +90,6 @@ export const MatrixProvider = ({ children }: PropsWithChildren) => {
 
       const accounts = await getAccounts();
       const mstAccount = accounts.find((a) => a.accountId === accountId) as MultisigAccount;
-      const signer = accounts.find((a) => signatories.includes(a.accountId));
 
       if (!mstAccount) {
         console.log(`No multisig account ${accountId} found. Joining room and adding wallet`);
@@ -107,12 +106,9 @@ export const MatrixProvider = ({ children }: PropsWithChildren) => {
           dateCreated: Date.now(),
           type: MultisigNotificationType.ACCOUNT_INVITED,
         });
-      } else if (signer) {
-        console.log(`Multisig account ${accountId} already exists. Trying to change room to ${roomId}`);
-        await changeRoom(roomId, mstAccount, content, signer.accountId);
       } else {
-        console.warn(`Signer for multisig account ${accountId} not found. Cancel invitation.`);
-        await matrix.leaveRoom(roomId);
+        console.log(`Multisig account ${accountId} already exists. Trying to change room to ${roomId}`);
+        await changeRoom(roomId, mstAccount, content, creatorAccountId);
       }
     } catch (error) {
       console.error(
@@ -170,10 +166,10 @@ export const MatrixProvider = ({ children }: PropsWithChildren) => {
     roomId: string,
     mstAccount: MultisigAccount,
     extras: SpektrExtras,
-    signerAccountId: AccountId,
+    newRoomCreatorAccountId: AccountId,
   ) => {
     const { accountName, creatorAccountId } = extras.mstAccount;
-    const stayInRoom = signerAccountId > creatorAccountId;
+    const stayInRoom = newRoomCreatorAccountId > creatorAccountId;
 
     try {
       if (stayInRoom) {
