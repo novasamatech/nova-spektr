@@ -39,7 +39,9 @@ export const useMultisigTx = ({ addEventTask }: Props): IMultisigTxService => {
   const { addEvent, getEvents, updateEvent } = useMultisigEvent();
 
   const subscribeMultisigAccount = (api: ApiPromise, account: MultisigAccount): (() => void) => {
-    const intervalId = setInterval(async () => {
+    let timeoutId: ReturnType<typeof setTimeout>;
+
+    const subscribeFn = async () => {
       const pendingTxs = await getPendingMultisigTxs(api, account.accountId);
       const currentBlockNumber = await getCurrentBlockNumber(api);
       const blockTime = getExpectedBlockTime(api);
@@ -166,9 +168,13 @@ export const useMultisigTx = ({ addEventTask }: Props): IMultisigTxService => {
           });
         });
       });
-    }, QUERY_INTERVAL);
 
-    return () => clearInterval(intervalId);
+      timeoutId = setTimeout(subscribeFn, QUERY_INTERVAL);
+    };
+
+    subscribeFn();
+
+    return () => clearTimeout(timeoutId);
   };
 
   const getLiveMultisigTxs = <T extends MultisigTransaction>(where?: Partial<T>): MultisigTransactionDS[] => {
