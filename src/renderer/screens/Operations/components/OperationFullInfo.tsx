@@ -38,12 +38,12 @@ const OperationFullInfo = ({ tx, account }: Props) => {
   const { callData, signatories, accountId, chainId, callHash, blockCreated, indexCreated } = tx;
 
   const { matrix } = useMatrix();
-  const { getLiveTxEvents } = useMultisigEvent();
+  const { getLiveTxEvents } = useMultisigEvent({});
 
   const events = getLiveTxEvents(accountId, chainId, callHash, blockCreated, indexCreated);
 
-  const { addEventTask } = useMultisigChainContext();
-  const { updateCallData } = useMultisigTx({ addEventTask });
+  const { addTask } = useMultisigChainContext();
+  const { updateCallData } = useMultisigTx({ addTask });
   const { connections } = useNetworkContext();
   const connection = connections[tx?.chainId as ChainId];
   const approvals = events.filter((e) => e.status === 'SIGNED');

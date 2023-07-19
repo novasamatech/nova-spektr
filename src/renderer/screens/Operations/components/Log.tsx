@@ -38,7 +38,7 @@ const EventMessage: Partial<Record<SigningStatus | 'INITIATED', string>> = {
 
 const LogModal = ({ isOpen, onClose, tx, account, connection, contacts, accounts }: Props) => {
   const { t, dateLocale } = useI18n();
-  const { getLiveTxEvents } = useMultisigEvent();
+  const { getLiveTxEvents } = useMultisigEvent({});
   const events = getLiveTxEvents(tx.accountId, tx.chainId, tx.callHash, tx.blockCreated, tx.indexCreated);
 
   const { transaction, description, status } = tx;

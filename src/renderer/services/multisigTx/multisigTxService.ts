@@ -23,10 +23,10 @@ import { useMultisigEvent } from '../multisigEvent/multisigEventService';
 import { Task } from '@renderer/shared/hooks/useTaskQueue';
 
 type Props = {
-  addEventTask?: (task: Task) => void;
+  addTask?: (task: Task) => void;
 };
 
-export const useMultisigTx = ({ addEventTask }: Props): IMultisigTxService => {
+export const useMultisigTx = ({ addTask }: Props): IMultisigTxService => {
   const transactionStorage = storage.connectTo('multisigTransactions');
 
   if (!transactionStorage) {
@@ -36,16 +36,19 @@ export const useMultisigTx = ({ addEventTask }: Props): IMultisigTxService => {
     transactionStorage;
   const { getChainById } = useChains();
   const { decodeCallData } = useTransaction();
-  const { addEvent, getEvents, updateEvent } = useMultisigEvent();
+  const { addEventWithQueue, getEvents, updateEvent } = useMultisigEvent({ addTask });
 
   const subscribeMultisigAccount = (api: ApiPromise, account: MultisigAccount): (() => void) => {
-    const intervalId = setInterval(async () => {
-      const transactions = await getMultisigTxs({ accountId: account.accountId, status: MultisigTxInitStatus.SIGNING });
+    let timeoutId: ReturnType<typeof setTimeout>;
+
+    const subscribeFn = async () => {
+      // TODO: Use mutex to avoid events doubling
       const pendingTxs = await getPendingMultisigTxs(api, account.accountId);
       const currentBlockNumber = await getCurrentBlockNumber(api);
       const blockTime = getExpectedBlockTime(api);
+      const transactions = await getMultisigTxs({ accountId: account.accountId, status: MultisigTxInitStatus.SIGNING });
 
-      pendingTxs.forEach((pendingTx) => {
+      pendingTxs.forEach(async (pendingTx) => {
         const oldTx = transactions.find((t) => {
           return (
             t.callHash === pendingTx.callHash.toHex() &&
@@ -56,22 +59,31 @@ export const useMultisigTx = ({ addEventTask }: Props): IMultisigTxService => {
         });
 
         if (oldTx) {
-          const updatedTx = updateTransactionPayload(oldTx, pendingTx);
-          addEventTask?.(async () => {
-            const oldEvents = await getEvents({
-              txAccountId: oldTx.accountId,
-              txChainId: oldTx.chainId,
-              txCallHash: oldTx.callHash,
-              txBlock: oldTx.blockCreated,
-              txIndex: oldTx.indexCreated,
-            });
+          const newestOldTx = await getMultisigTx(
+            oldTx.accountId,
+            oldTx.chainId,
+            oldTx.callHash,
+            oldTx.blockCreated,
+            oldTx.indexCreated,
+          );
 
-            const newEvents = createNewEventsPayload(oldEvents, oldTx, pendingTx.params.approvals);
-            newEvents.forEach(addEvent);
+          if (!newestOldTx) return;
 
-            const updatedEvents = updateOldEventsPayload(oldEvents, pendingTx.params.approvals);
-            updatedEvents.forEach(updateEvent);
+          const updatedTx = updateTransactionPayload(newestOldTx, pendingTx);
+
+          const oldEvents = await getEvents({
+            txAccountId: oldTx.accountId,
+            txChainId: oldTx.chainId,
+            txCallHash: oldTx.callHash,
+            txBlock: oldTx.blockCreated,
+            txIndex: oldTx.indexCreated,
           });
+
+          const newEvents = createNewEventsPayload(oldEvents, newestOldTx, pendingTx.params.approvals);
+          newEvents.forEach((e) => addEventWithQueue(e));
+
+          const updatedEvents = updateOldEventsPayload(oldEvents, pendingTx.params.approvals);
+          updatedEvents.forEach(updateEvent);
 
           if (updatedTx) {
             updateMultisigTx(updatedTx).then(() => {
@@ -91,62 +103,77 @@ export const useMultisigTx = ({ addEventTask }: Props): IMultisigTxService => {
             currentBlockNumber,
             blockTime.toNumber(),
           );
+
+          const freshOldTx = await getMultisigTx(
+            newTx.accountId,
+            newTx.chainId,
+            newTx.callHash,
+            newTx.blockCreated,
+            newTx.indexCreated,
+          );
+
+          if (freshOldTx) return;
+
           addMultisigTx(newTx);
 
           const newEvents = createEventsPayload(newTx, pendingTx, account, currentBlockNumber, blockTime.toNumber());
-          newEvents.forEach(addEvent);
+          newEvents.forEach((e) => addEventWithQueue(e));
 
-          console.log(`New pending multisig transaction was found with call hash ${pendingTx.callHash}`);
+          console.log(
+            `New pending multisig transaction was found in multisig.multisigs with call hash ${pendingTx.callHash}`,
+          );
         }
       });
 
-      transactions.forEach((tx) => {
+      transactions.forEach(async (tx) => {
         const hasTransaction = pendingTxs.find((t) => t.callHash.toHex() === tx.callHash);
         const isDifferentChain = tx.chainId !== api.genesisHash.toHex();
 
         if (hasTransaction || isDifferentChain) return;
 
-        addEventTask?.(async () => {
-          const transaction = await getMultisigTx(
-            tx.accountId,
-            tx.chainId,
-            tx.callHash,
-            tx.blockCreated,
-            tx.indexCreated,
+        const transaction = await getMultisigTx(
+          tx.accountId,
+          tx.chainId,
+          tx.callHash,
+          tx.blockCreated,
+          tx.indexCreated,
+        );
+
+        if (['CANCELLED', 'SIGNED'].includes(transaction?.status || '')) return;
+
+        const events = await getEvents({
+          txAccountId: tx.accountId,
+          txChainId: tx.chainId,
+          txCallHash: tx.callHash,
+          txBlock: tx.blockCreated,
+          txIndex: tx.indexCreated,
+        });
+
+        // FIXME: Second condition is for already signed tx
+        const hasPendingFinalApproval = events.some((e) => e.status === 'PENDING_SIGNED');
+        const hasPendingCancelled = events.some((e) => e.status === 'PENDING_CANCELLED');
+
+        const status = hasPendingFinalApproval
+          ? MultisigTxFinalStatus.EXECUTED
+          : hasPendingCancelled
+          ? MultisigTxFinalStatus.CANCELLED
+          : tx.status === 'SIGNING'
+          ? MultisigTxFinalStatus.ESTABLISHED
+          : tx.status;
+
+        updateMultisigTx({ ...tx, status }).then(() => {
+          console.log(
+            `Multisig transaction was updated with call hash ${tx.callHash} and timepoint ${tx.blockCreated}-${tx.indexCreated} and status ${status}`,
           );
-
-          if (['CANCELLED', 'SIGNED'].includes(transaction?.status || '')) return;
-
-          const events = await getEvents({
-            txAccountId: tx.accountId,
-            txChainId: tx.chainId,
-            txCallHash: tx.callHash,
-            txBlock: tx.blockCreated,
-            txIndex: tx.indexCreated,
-          });
-
-          // FIXME: Second condition is for already signed tx
-          const hasPendingFinalApproval = events.some((e) => e.status === 'PENDING_SIGNED');
-          const hasPendingCancelled = events.some((e) => e.status === 'PENDING_CANCELLED');
-
-          const status = hasPendingFinalApproval
-            ? MultisigTxFinalStatus.EXECUTED
-            : hasPendingCancelled
-            ? MultisigTxFinalStatus.CANCELLED
-            : tx.status === 'SIGNING'
-            ? MultisigTxFinalStatus.ESTABLISHED
-            : tx.status;
-
-          updateMultisigTx({ ...tx, status }).then(() => {
-            console.log(
-              `Multisig transaction was updated with call hash ${tx.callHash} and timepoint ${tx.blockCreated}-${tx.indexCreated} and status ${status}`,
-            );
-          });
         });
       });
-    }, QUERY_INTERVAL);
 
-    return () => clearInterval(intervalId);
+      timeoutId = setTimeout(subscribeFn, QUERY_INTERVAL);
+    };
+
+    subscribeFn();
+
+    return () => clearTimeout(timeoutId);
   };
 
   const getLiveMultisigTxs = <T extends MultisigTransaction>(where?: Partial<T>): MultisigTransactionDS[] => {

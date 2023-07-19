@@ -55,9 +55,9 @@ export const Submit = ({
 
   const { matrix } = useMatrix();
   const { submitAndWatchExtrinsic, getSignedExtrinsic } = useTransaction();
-  const { addEventTask } = useMultisigChainContext();
-  const { updateMultisigTx } = useMultisigTx({ addEventTask });
-  const { addEvent } = useMultisigEvent();
+  const { addTask } = useMultisigChainContext();
+  const { updateMultisigTx } = useMultisigTx({ addTask });
+  const { addEventWithQueue } = useMultisigEvent({ addTask });
 
   const [inProgress, toggleInProgress] = useToggle(true);
   const [successMessage, toggleSuccessMessage] = useToggle();
@@ -107,7 +107,7 @@ export const Submit = ({
               dateCreated: Date.now(),
             };
 
-            await addEvent(event);
+            await addEventWithQueue(event);
           }
         }
 

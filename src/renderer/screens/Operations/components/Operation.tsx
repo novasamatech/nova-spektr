@@ -19,7 +19,7 @@ type Props = {
 const Operation = ({ tx, account }: Props) => {
   const { dateLocale } = useI18n();
 
-  const { getLiveEventsByKeys } = useMultisigEvent();
+  const { getLiveEventsByKeys } = useMultisigEvent({});
   const events = getLiveEventsByKeys([tx]);
 
   const approvals = events?.filter((e) => e.status === 'SIGNED') || [];
