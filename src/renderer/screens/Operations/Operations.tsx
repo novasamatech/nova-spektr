@@ -52,8 +52,11 @@ const Operations = () => {
 
   useEffect(() => {
     setTxs(allTxs.filter((tx) => connections[tx.chainId]));
-    setFilteredTxs([]);
   }, [allTxs]);
+
+  useEffect(() => {
+    setFilteredTxs([]);
+  }, [account?.accountId]);
 
   return (
     <div className="flex flex-col items-center relative h-full">
