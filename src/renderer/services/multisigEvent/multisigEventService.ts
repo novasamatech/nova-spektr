@@ -3,9 +3,14 @@ import { useLiveQuery } from 'dexie-react-hooks';
 import storage, { MultisigEventDS } from '@renderer/services/storage';
 import { IMultisigEventService } from './common/types';
 import { AccountId, CallHash, ChainId } from '@renderer/domain/shared-kernel';
-import { MultisigEvent, MultisigTransactionKey } from '@renderer/domain/transaction';
+import { MultisigEvent, MultisigTransactionKey, SigningStatus } from '@renderer/domain/transaction';
+import { Task } from '@renderer/shared/hooks/useTaskQueue';
 
-export const useMultisigEvent = (): IMultisigEventService => {
+type Props = {
+  addTask?: (task: Task) => void;
+};
+
+export const useMultisigEvent = ({ addTask }: Props): IMultisigEventService => {
   const multisigEventStorage = storage.connectTo('multisigEvents');
 
   if (!multisigEventStorage) {
@@ -80,10 +85,35 @@ export const useMultisigEvent = (): IMultisigEventService => {
     );
   };
 
+  const addEventWithQueue = (event: MultisigEvent, pendingStatuses: SigningStatus[] = []) => {
+    addTask?.(async () => {
+      const events = await getEvents({
+        txAccountId: event.txAccountId,
+        txChainId: event.txChainId,
+        txCallHash: event.txCallHash,
+        txBlock: event.txBlock,
+        txIndex: event.txIndex,
+        accountId: event.accountId,
+      });
+
+      const oldEvent = events.find((e) => [...pendingStatuses, event.status].includes(e.status));
+
+      if (oldEvent) {
+        updateEvent({
+          ...oldEvent,
+          ...event,
+        });
+      } else {
+        addEvent(event);
+      }
+    });
+  };
+
   return {
     getEvent,
     getEvents,
     addEvent,
+    addEventWithQueue,
     updateEvent,
     deleteEvent,
     getLiveEvents,

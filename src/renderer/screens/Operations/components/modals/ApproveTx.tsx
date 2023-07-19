@@ -48,7 +48,7 @@ const ApproveTx = ({ tx, account, connection }: Props) => {
   const { getBalance } = useBalance();
   const { getLiveAccounts } = useAccount();
   const { getTransactionFee, getTxWeight } = useTransaction();
-  const { getLiveTxEvents } = useMultisigEvent();
+  const { getLiveTxEvents } = useMultisigEvent({});
   const events = getLiveTxEvents(tx.accountId, tx.chainId, tx.callHash, tx.blockCreated, tx.indexCreated);
 
   const [isModalOpen, setIsModalOpen] = useState(false);

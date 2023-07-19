@@ -43,13 +43,13 @@ const MatrixContext = createContext<MatrixContextProps>({} as MatrixContextProps
 
 export const MatrixProvider = ({ children }: PropsWithChildren) => {
   const { getContacts } = useContact();
-  const { addEventTask } = useMultisigChainContext();
-  const { getMultisigTx, addMultisigTx, updateMultisigTx, updateCallData } = useMultisigTx({ addEventTask });
+  const { addTask } = useMultisigChainContext();
+  const { getMultisigTx, addMultisigTx, updateMultisigTx, updateCallData } = useMultisigTx({ addTask });
   const { getAccounts, addAccount, updateAccount, setActiveAccount } = useAccount();
   const { decodeCallData } = useTransaction();
   const { connections } = useNetworkContext();
   const { addNotification } = useNotification();
-  const { addEvent, updateEvent, getEvents } = useMultisigEvent();
+  const { addEventWithQueue, updateEvent, getEvents } = useMultisigEvent({ addTask });
 
   const connectionsRef = useRef(connections);
   const { current: matrix } = useRef<ISecureMessenger>(new Matrix());
@@ -347,16 +347,15 @@ export const MatrixProvider = ({ children }: PropsWithChildren) => {
       console.log(`Tx ${payload.callHash} not found. Create it`);
 
       await addMultisigTxToDB(payload, accountId, signatories, MultisigTxFinalStatus.CANCELLED);
-      addEventTask(async () => {
-        await addEvent(newEvent);
-      });
+      await addEventWithQueue(newEvent);
 
       return;
     }
 
     console.log(`Tx ${payload.callHash} found. Update it`);
 
-    addEventTask(async () => {
+    // TODO: refactor with pending statuses for addEventWithQueue
+    addTask(async () => {
       const events = await getEvents({
         txAccountId: tx.accountId,
         txChainId: tx.chainId,
@@ -370,7 +369,7 @@ export const MatrixProvider = ({ children }: PropsWithChildren) => {
       );
 
       if (!senderEvent) {
-        await addEvent(newEvent);
+        await addEventWithQueue(newEvent);
       } else {
         senderEvent.extrinsicHash = payload.extrinsicHash;
         senderEvent.eventBlock = payload.extrinsicTimepoint.height;
@@ -418,16 +417,16 @@ export const MatrixProvider = ({ children }: PropsWithChildren) => {
 
     if (!tx) {
       console.log(`Tx ${payload.callHash} not found. Create it`);
+
       await addMultisigTxToDB(payload, accountId, signatories, MultisigTxInitStatus.SIGNING);
-      addEventTask(async () => {
-        await addEvent(newEvent);
-      });
+      await addEventWithQueue(newEvent, ['PENDING_SIGNED', 'SIGNED']);
 
       return;
     }
     console.log(`Tx ${payload.callHash} found. Update it`);
 
-    addEventTask(async () => {
+    // TODO: refactor with pending statuses for addEventWithQueue
+    addTask(async () => {
       const events = await getEvents({
         txAccountId: tx.accountId,
         txChainId: tx.chainId,
@@ -435,12 +434,13 @@ export const MatrixProvider = ({ children }: PropsWithChildren) => {
         txBlock: tx.blockCreated,
         txIndex: tx.indexCreated,
       });
+
       const senderEvent = events.find(
         (e) => e.accountId === payload.senderAccountId && ['PENDING_SIGNED', 'SIGNED'].includes(e.status),
       );
 
       if (!senderEvent) {
-        await addEvent(newEvent);
+        await addEventWithQueue(newEvent);
       } else {
         senderEvent.extrinsicHash = payload.extrinsicHash;
         senderEvent.eventBlock = payload.extrinsicTimepoint.height;
@@ -506,16 +506,15 @@ export const MatrixProvider = ({ children }: PropsWithChildren) => {
       console.log(`Tx ${payload.callHash} not found. Create it`);
 
       await addMultisigTxToDB(payload, accountId, signatories, payload.callOutcome);
-      addEventTask(async () => {
-        await addEvent(newEvent);
-      });
+      await addEventWithQueue(newEvent);
 
       return;
     }
 
     console.log(`Tx ${payload.callHash} found. Update it`);
 
-    addEventTask(async () => {
+    // TODO: Refactor with pending statuses for addEventWithQueue
+    addTask(async () => {
       const events = await getEvents({
         txAccountId: tx.accountId,
         txChainId: tx.chainId,
@@ -528,7 +527,7 @@ export const MatrixProvider = ({ children }: PropsWithChildren) => {
       );
 
       if (!senderEvent) {
-        await addEvent(newEvent);
+        await addEventWithQueue(newEvent);
       } else {
         senderEvent.extrinsicHash = payload.extrinsicHash;
         senderEvent.eventBlock = payload.extrinsicTimepoint.height;
