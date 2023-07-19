@@ -91,34 +91,19 @@ export const MultisigChainProvider = ({ children }: PropsWithChildren) => {
 
     const accountId = event.data[0].toHex();
 
-    addTask(async () => {
-      const events = await getEvents({
+    await addEventWithQueue(
+      {
         txAccountId: account.accountId,
         txChainId: chainId,
         txCallHash: callHash,
         txBlock: blockCreated,
         txIndex: indexCreated,
-      });
-
-      const pendingEvent = events.find(
-        (event) => pendingEventStatuses.includes(event.status) && event.accountId === accountId,
-      );
-
-      if (pendingEvent) {
-        await updateEvent({ ...pendingEvent, status: resultEventStatus });
-      } else {
-        await addEventWithQueue({
-          txAccountId: account.accountId,
-          txChainId: chainId,
-          txCallHash: callHash,
-          txBlock: blockCreated,
-          txIndex: indexCreated,
-          status: resultEventStatus,
-          accountId: event.data[0].toHex(),
-          dateCreated: Date.now(),
-        });
-      }
-    });
+        status: resultEventStatus,
+        accountId,
+        dateCreated: Date.now(),
+      },
+      pendingEventStatuses,
+    );
 
     await updateMultisigTx({ ...tx, status: resultTransactionStatus });
 

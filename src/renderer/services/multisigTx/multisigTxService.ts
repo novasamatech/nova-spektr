@@ -59,7 +59,7 @@ export const useMultisigTx = ({ addEventTask }: Props): IMultisigTxService => {
         });
 
         if (oldTx) {
-          const freshOldTx = await getMultisigTx(
+          const newestOldTx = await getMultisigTx(
             oldTx.accountId,
             oldTx.chainId,
             oldTx.callHash,
@@ -67,9 +67,9 @@ export const useMultisigTx = ({ addEventTask }: Props): IMultisigTxService => {
             oldTx.indexCreated,
           );
 
-          if (!freshOldTx) return;
+          if (!newestOldTx) return;
 
-          const updatedTx = updateTransactionPayload(freshOldTx, pendingTx);
+          const updatedTx = updateTransactionPayload(newestOldTx, pendingTx);
 
           const oldEvents = await getEvents({
             txAccountId: oldTx.accountId,
@@ -79,8 +79,8 @@ export const useMultisigTx = ({ addEventTask }: Props): IMultisigTxService => {
             txIndex: oldTx.indexCreated,
           });
 
-          const newEvents = createNewEventsPayload(oldEvents, freshOldTx, pendingTx.params.approvals);
-          newEvents.forEach(addEventWithQueue);
+          const newEvents = createNewEventsPayload(oldEvents, newestOldTx, pendingTx.params.approvals);
+          newEvents.forEach((e) => addEventWithQueue(e));
 
           const updatedEvents = updateOldEventsPayload(oldEvents, pendingTx.params.approvals);
           updatedEvents.forEach(updateEvent);
@@ -117,7 +117,7 @@ export const useMultisigTx = ({ addEventTask }: Props): IMultisigTxService => {
           addMultisigTx(newTx);
 
           const newEvents = createEventsPayload(newTx, pendingTx, account, currentBlockNumber, blockTime.toNumber());
-          newEvents.forEach(addEventWithQueue);
+          newEvents.forEach((e) => addEventWithQueue(e));
 
           console.log(
             `New pending multisig transaction was found in multisig.multisigs with call hash ${pendingTx.callHash}`,

@@ -354,6 +354,7 @@ export const MatrixProvider = ({ children }: PropsWithChildren) => {
 
     console.log(`Tx ${payload.callHash} found. Update it`);
 
+    // TODO: refactor with pending statuses for addEventWithQueue
     addEventTask(async () => {
       const events = await getEvents({
         txAccountId: tx.accountId,
@@ -416,31 +417,15 @@ export const MatrixProvider = ({ children }: PropsWithChildren) => {
 
     if (!tx) {
       console.log(`Tx ${payload.callHash} not found. Create it`);
+
       await addMultisigTxToDB(payload, accountId, signatories, MultisigTxInitStatus.SIGNING);
-
-      addEventTask(async () => {
-        const events = await getEvents({
-          txAccountId: newEvent.txAccountId,
-          txChainId: newEvent.txChainId,
-          txCallHash: newEvent.txCallHash,
-          txBlock: newEvent.txBlock,
-          txIndex: newEvent.txIndex,
-        });
-
-        if (events.length) {
-          const oldEvent = events.find(
-            (e) => e.accountId === newEvent.accountId && ['PENDING_SIGNED', 'SIGNED'].includes(e.status),
-          );
-          await updateEvent({ ...oldEvent, ...newEvent });
-        } else {
-          await addEventWithQueue(newEvent);
-        }
-      });
+      await addEventWithQueue(newEvent, ['PENDING_SIGNED', 'SIGNED']);
 
       return;
     }
     console.log(`Tx ${payload.callHash} found. Update it`);
 
+    // TODO: refactor with pending statuses for addEventWithQueue
     addEventTask(async () => {
       const events = await getEvents({
         txAccountId: tx.accountId,
@@ -528,6 +513,7 @@ export const MatrixProvider = ({ children }: PropsWithChildren) => {
 
     console.log(`Tx ${payload.callHash} found. Update it`);
 
+    // TODO: Refactor with pending statuses for addEventWithQueue
     addEventTask(async () => {
       const events = await getEvents({
         txAccountId: tx.accountId,
