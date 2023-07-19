@@ -23,10 +23,10 @@ import { useMultisigEvent } from '../multisigEvent/multisigEventService';
 import { Task } from '@renderer/shared/hooks/useTaskQueue';
 
 type Props = {
-  addEventTask?: (task: Task) => void;
+  addTask?: (task: Task) => void;
 };
 
-export const useMultisigTx = ({ addEventTask }: Props): IMultisigTxService => {
+export const useMultisigTx = ({ addTask }: Props): IMultisigTxService => {
   const transactionStorage = storage.connectTo('multisigTransactions');
 
   if (!transactionStorage) {
@@ -36,7 +36,7 @@ export const useMultisigTx = ({ addEventTask }: Props): IMultisigTxService => {
     transactionStorage;
   const { getChainById } = useChains();
   const { decodeCallData } = useTransaction();
-  const { addEventWithQueue, getEvents, updateEvent } = useMultisigEvent({ addTask: addEventTask });
+  const { addEventWithQueue, getEvents, updateEvent } = useMultisigEvent({ addTask });
 
   const subscribeMultisigAccount = (api: ApiPromise, account: MultisigAccount): (() => void) => {
     let timeoutId: ReturnType<typeof setTimeout>;

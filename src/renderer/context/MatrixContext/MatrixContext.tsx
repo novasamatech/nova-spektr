@@ -43,13 +43,13 @@ const MatrixContext = createContext<MatrixContextProps>({} as MatrixContextProps
 
 export const MatrixProvider = ({ children }: PropsWithChildren) => {
   const { getContacts } = useContact();
-  const { addEventTask } = useMultisigChainContext();
-  const { getMultisigTx, addMultisigTx, updateMultisigTx, updateCallData } = useMultisigTx({ addEventTask });
+  const { addTask } = useMultisigChainContext();
+  const { getMultisigTx, addMultisigTx, updateMultisigTx, updateCallData } = useMultisigTx({ addTask });
   const { getAccounts, addAccount, updateAccount, setActiveAccount } = useAccount();
   const { decodeCallData } = useTransaction();
   const { connections } = useNetworkContext();
   const { addNotification } = useNotification();
-  const { addEventWithQueue, updateEvent, getEvents } = useMultisigEvent({ addTask: addEventTask });
+  const { addEventWithQueue, updateEvent, getEvents } = useMultisigEvent({ addTask });
 
   const connectionsRef = useRef(connections);
   const { current: matrix } = useRef<ISecureMessenger>(new Matrix());
@@ -355,7 +355,7 @@ export const MatrixProvider = ({ children }: PropsWithChildren) => {
     console.log(`Tx ${payload.callHash} found. Update it`);
 
     // TODO: refactor with pending statuses for addEventWithQueue
-    addEventTask(async () => {
+    addTask(async () => {
       const events = await getEvents({
         txAccountId: tx.accountId,
         txChainId: tx.chainId,
@@ -426,7 +426,7 @@ export const MatrixProvider = ({ children }: PropsWithChildren) => {
     console.log(`Tx ${payload.callHash} found. Update it`);
 
     // TODO: refactor with pending statuses for addEventWithQueue
-    addEventTask(async () => {
+    addTask(async () => {
       const events = await getEvents({
         txAccountId: tx.accountId,
         txChainId: tx.chainId,
@@ -514,7 +514,7 @@ export const MatrixProvider = ({ children }: PropsWithChildren) => {
     console.log(`Tx ${payload.callHash} found. Update it`);
 
     // TODO: Refactor with pending statuses for addEventWithQueue
-    addEventTask(async () => {
+    addTask(async () => {
       const events = await getEvents({
         txAccountId: tx.accountId,
         txChainId: tx.chainId,

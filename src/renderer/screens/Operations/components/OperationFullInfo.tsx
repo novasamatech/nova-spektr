@@ -42,8 +42,8 @@ const OperationFullInfo = ({ tx, account }: Props) => {
 
   const events = getLiveTxEvents(accountId, chainId, callHash, blockCreated, indexCreated);
 
-  const { addEventTask } = useMultisigChainContext();
-  const { updateCallData } = useMultisigTx({ addEventTask });
+  const { addTask } = useMultisigChainContext();
+  const { updateCallData } = useMultisigTx({ addTask });
   const { connections } = useNetworkContext();
   const connection = connections[tx?.chainId as ChainId];
   const approvals = events.filter((e) => e.status === 'SIGNED');

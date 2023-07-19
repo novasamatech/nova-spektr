@@ -37,11 +37,11 @@ const Submit = ({ api, tx, multisigTx, account, unsignedTx, signature, descripti
   const navigate = useNavigate();
 
   const { matrix } = useMatrix();
-  const { addEventTask } = useMultisigChainContext();
+  const { addTask } = useMultisigChainContext();
 
-  const { addMultisigTx } = useMultisigTx({ addEventTask });
+  const { addMultisigTx } = useMultisigTx({ addTask });
   const { submitAndWatchExtrinsic, getSignedExtrinsic } = useTransaction();
-  const { addEventWithQueue } = useMultisigEvent({ addTask: addEventTask });
+  const { addEventWithQueue } = useMultisigEvent({ addTask });
 
   const [inProgress, toggleInProgress] = useToggle(true);
   const [successMessage, toggleSuccessMessage] = useToggle();

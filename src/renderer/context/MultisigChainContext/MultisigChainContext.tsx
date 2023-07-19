@@ -17,7 +17,7 @@ import { getCreatedDateFromApi } from '@renderer/shared/utils/substrate';
 import { Task } from '@renderer/shared/hooks/useTaskQueue';
 
 type MultisigChainContextProps = {
-  addEventTask: (task: Task) => void;
+  addTask: (task: Task) => void;
 };
 
 const MULTISIG_RESULT_SUCCESS: string = 'Ok';
@@ -29,7 +29,7 @@ export const MultisigChainProvider = ({ children }: PropsWithChildren) => {
   const { connections } = useNetworkContext();
   const { addTask } = useTaskQueue();
   const { subscribeMultisigAccount, updateMultisigTx, getMultisigTx, getLiveAccountMultisigTxs, updateCallData } =
-    useMultisigTx({ addEventTask: addTask });
+    useMultisigTx({ addTask });
   const { getActiveMultisigAccount } = useAccount();
   const { updateEvent, getEvents, addEventWithQueue } = useMultisigEvent({ addTask });
 
@@ -180,7 +180,7 @@ export const MultisigChainProvider = ({ children }: PropsWithChildren) => {
     };
   }, [availableConnectionsAmount, account]);
 
-  return <MultisigChainContext.Provider value={{ addEventTask: addTask }}>{children}</MultisigChainContext.Provider>;
+  return <MultisigChainContext.Provider value={{ addTask }}>{children}</MultisigChainContext.Provider>;
 };
 
 export const useMultisigChainContext = () => useContext<MultisigChainContextProps>(MultisigChainContext);
