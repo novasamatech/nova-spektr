@@ -100,8 +100,6 @@ export const MultisigChainProvider = ({ children }: PropsWithChildren) => {
         txIndex: indexCreated,
       });
 
-      console.log('purr', events);
-
       const pendingEvent = events.find(
         (event) => pendingEventStatuses.includes(event.status) && event.accountId === accountId,
       );
