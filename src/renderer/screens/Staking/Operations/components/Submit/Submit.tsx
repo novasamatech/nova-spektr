@@ -44,7 +44,7 @@ export const Submit = ({ api, accounts, txs, multisigTx, unsignedTx, signatures,
   const { addEventTask } = useMultisigChainContext();
 
   const { addMultisigTx } = useMultisigTx({ addEventTask });
-  const { addEvent } = useMultisigEvent();
+  const { addEventWithQueue } = useMultisigEvent({ addTask: addEventTask });
 
   const [isSuccess, toggleSuccessMessage] = useToggle();
   const [inProgress, toggleInProgress] = useToggle(true);
@@ -106,7 +106,7 @@ export const Submit = ({ api, accounts, txs, multisigTx, unsignedTx, signatures,
               dateCreated: Date.now(),
             };
 
-            await Promise.all([addMultisigTx(newTx), addEvent(event)]);
+            await Promise.all([addMultisigTx(newTx), addEventWithQueue(event)]);
 
             if (matrix.userIsLoggedIn) {
               sendMultisigEvent(mstAccount.matrixRoomId, newTx, typedParams);

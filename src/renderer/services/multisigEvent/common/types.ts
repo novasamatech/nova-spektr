@@ -17,6 +17,7 @@ export interface IMultisigEventService {
   getEventsByKeys: (keys: MultisigTransactionKey[]) => Promise<MultisigEventDS[]>;
   getLiveEventsByKeys: (keys: MultisigTransactionKey[]) => MultisigEventDS[];
   addEvent: (event: MultisigEvent) => Promise<ID>;
+  addEventWithQueue: (event: MultisigEvent) => void;
   updateEvent: (event: MultisigEventDS) => Promise<ID>;
   deleteEvent: (eventId: ID) => Promise<void>;
 }

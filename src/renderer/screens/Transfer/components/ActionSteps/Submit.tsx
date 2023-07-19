@@ -41,7 +41,7 @@ const Submit = ({ api, tx, multisigTx, account, unsignedTx, signature, descripti
 
   const { addMultisigTx } = useMultisigTx({ addEventTask });
   const { submitAndWatchExtrinsic, getSignedExtrinsic } = useTransaction();
-  const { addEvent } = useMultisigEvent();
+  const { addEventWithQueue } = useMultisigEvent({ addTask: addEventTask });
 
   const [inProgress, toggleInProgress] = useToggle(true);
   const [successMessage, toggleSuccessMessage] = useToggle();
@@ -109,7 +109,7 @@ const Submit = ({ api, tx, multisigTx, account, unsignedTx, signature, descripti
             dateCreated: Date.now(),
           };
 
-          await Promise.all([addMultisigTx(newTx), addEvent(event)]);
+          await Promise.all([addMultisigTx(newTx), addEventWithQueue(event)]);
 
           console.log(`New transfer was created with call hash ${newTx.callHash}`);
 

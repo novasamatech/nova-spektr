@@ -38,7 +38,7 @@ const OperationFullInfo = ({ tx, account }: Props) => {
   const { callData, signatories, accountId, chainId, callHash, blockCreated, indexCreated } = tx;
 
   const { matrix } = useMatrix();
-  const { getLiveTxEvents } = useMultisigEvent();
+  const { getLiveTxEvents } = useMultisigEvent({});
 
   const events = getLiveTxEvents(accountId, chainId, callHash, blockCreated, indexCreated);
 

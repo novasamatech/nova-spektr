@@ -27,11 +27,11 @@ const MultisigChainContext = createContext<MultisigChainContextProps>({} as Mult
 
 export const MultisigChainProvider = ({ children }: PropsWithChildren) => {
   const { connections } = useNetworkContext();
-  const { addTask: addEventTask } = useTaskQueue();
+  const { addTask } = useTaskQueue();
   const { subscribeMultisigAccount, updateMultisigTx, getMultisigTx, getLiveAccountMultisigTxs, updateCallData } =
-    useMultisigTx({ addEventTask });
+    useMultisigTx({ addEventTask: addTask });
   const { getActiveMultisigAccount } = useAccount();
-  const { updateEvent, addEvent, getEvents } = useMultisigEvent();
+  const { updateEvent, getEvents, addEventWithQueue } = useMultisigEvent({ addTask });
 
   const { subscribeEvents } = useChainSubscription();
   const debouncedConnections = useDebounce(connections, 1000);
@@ -91,7 +91,7 @@ export const MultisigChainProvider = ({ children }: PropsWithChildren) => {
 
     const accountId = event.data[0].toHex();
 
-    addEventTask(async () => {
+    addTask(async () => {
       const events = await getEvents({
         txAccountId: account.accountId,
         txChainId: chainId,
@@ -107,7 +107,7 @@ export const MultisigChainProvider = ({ children }: PropsWithChildren) => {
       if (pendingEvent) {
         await updateEvent({ ...pendingEvent, status: resultEventStatus });
       } else {
-        await addEvent({
+        await addEventWithQueue({
           txAccountId: account.accountId,
           txChainId: chainId,
           txCallHash: callHash,
@@ -195,7 +195,7 @@ export const MultisigChainProvider = ({ children }: PropsWithChildren) => {
     };
   }, [availableConnectionsAmount, account]);
 
-  return <MultisigChainContext.Provider value={{ addEventTask }}>{children}</MultisigChainContext.Provider>;
+  return <MultisigChainContext.Provider value={{ addEventTask: addTask }}>{children}</MultisigChainContext.Provider>;
 };
 
 export const useMultisigChainContext = () => useContext<MultisigChainContextProps>(MultisigChainContext);

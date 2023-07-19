@@ -22,7 +22,7 @@ const Operations = () => {
   const { getActiveMultisigAccount } = useAccount();
   const { getLiveAccountMultisigTxs } = useMultisigTx({});
   const { connections } = useNetworkContext();
-  const { getLiveEventsByKeys } = useMultisigEvent();
+  const { getLiveEventsByKeys } = useMultisigEvent({});
 
   const account = getActiveMultisigAccount();
   const allTxs = getLiveAccountMultisigTxs(account?.accountId ? [account.accountId] : []);
