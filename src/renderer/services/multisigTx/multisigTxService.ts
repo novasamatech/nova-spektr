@@ -42,6 +42,7 @@ export const useMultisigTx = ({ addEventTask }: Props): IMultisigTxService => {
     let timeoutId: ReturnType<typeof setTimeout>;
 
     const subscribeFn = async () => {
+      // TODO: Use mutex to avoid events doubling
       const pendingTxs = await getPendingMultisigTxs(api, account.accountId);
       const currentBlockNumber = await getCurrentBlockNumber(api);
       const blockTime = getExpectedBlockTime(api);
@@ -94,33 +95,37 @@ export const useMultisigTx = ({ addEventTask }: Props): IMultisigTxService => {
             }
           });
         } else {
-          const depositor = pendingTx.params.depositor.toHex();
-          if (!account.signatories.find((s) => s.accountId == depositor)) return;
+          addEventTask?.(async () => {
+            const depositor = pendingTx.params.depositor.toHex();
+            if (!account.signatories.find((s) => s.accountId == depositor)) return;
 
-          const newTx = createTransactionPayload(
-            pendingTx,
-            api.genesisHash.toHex(),
-            account,
-            currentBlockNumber,
-            blockTime.toNumber(),
-          );
+            const newTx = createTransactionPayload(
+              pendingTx,
+              api.genesisHash.toHex(),
+              account,
+              currentBlockNumber,
+              blockTime.toNumber(),
+            );
 
-          const freshOldTx = await getMultisigTx(
-            newTx.accountId,
-            newTx.chainId,
-            newTx.callHash,
-            newTx.blockCreated,
-            newTx.indexCreated,
-          );
+            const freshOldTx = await getMultisigTx(
+              newTx.accountId,
+              newTx.chainId,
+              newTx.callHash,
+              newTx.blockCreated,
+              newTx.indexCreated,
+            );
 
-          if (freshOldTx) return;
+            if (freshOldTx) return;
 
-          addMultisigTx(newTx);
+            addMultisigTx(newTx);
 
-          const newEvents = createEventsPayload(newTx, pendingTx, account, currentBlockNumber, blockTime.toNumber());
-          newEvents.forEach(addEvent);
+            const newEvents = createEventsPayload(newTx, pendingTx, account, currentBlockNumber, blockTime.toNumber());
+            newEvents.forEach(addEvent);
 
-          console.log(`New pending multisig transaction was found with call hash ${pendingTx.callHash}`);
+            console.log(
+              `New pending multisig transaction was found in multisig.multisigs with call hash ${pendingTx.callHash}`,
+            );
+          });
         }
       });
 

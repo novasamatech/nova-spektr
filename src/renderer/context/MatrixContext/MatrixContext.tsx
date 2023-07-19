@@ -417,7 +417,19 @@ export const MatrixProvider = ({ children }: PropsWithChildren) => {
     if (!tx) {
       console.log(`Tx ${payload.callHash} not found. Create it`);
       await addMultisigTxToDB(payload, accountId, signatories, MultisigTxInitStatus.SIGNING);
-      await addEvent(newEvent);
+
+      addEventTask(async () => {
+        const events = await getEvents({
+          txAccountId: newEvent.txAccountId,
+          txChainId: newEvent.txChainId,
+          txCallHash: newEvent.txCallHash,
+          txBlock: newEvent.txBlock,
+          txIndex: newEvent.txIndex,
+        });
+        if (events.length) return;
+
+        await addEvent(newEvent);
+      });
 
       return;
     }
@@ -502,7 +514,18 @@ export const MatrixProvider = ({ children }: PropsWithChildren) => {
       console.log(`Tx ${payload.callHash} not found. Create it`);
 
       await addMultisigTxToDB(payload, accountId, signatories, payload.callOutcome);
-      await addEvent(newEvent);
+      addEventTask(async () => {
+        const events = await getEvents({
+          txAccountId: newEvent.txAccountId,
+          txChainId: newEvent.txChainId,
+          txCallHash: newEvent.txCallHash,
+          txBlock: newEvent.txBlock,
+          txIndex: newEvent.txIndex,
+        });
+        if (events.length) return;
+
+        await addEvent(newEvent);
+      });
 
       return;
     }
