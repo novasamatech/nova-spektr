@@ -2,7 +2,7 @@ import { ApiPromise } from '@polkadot/api';
 import { useEffect, useState } from 'react';
 
 import { useI18n } from '@renderer/context/I18nContext';
-import { DropdownOption, DropdownResult } from '@renderer/components/ui/Dropdowns/common/types';
+import { DropdownOption, DropdownResult } from '@renderer/components/ui-redesign/Dropdowns/common/types';
 import { ChainId, SigningType } from '@renderer/domain/shared-kernel';
 import { useAccount } from '@renderer/services/account/accountService';
 import { Explorer } from '@renderer/domain/chain';

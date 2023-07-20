@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { AccountAddress, QrTextGenerator } from '@renderer/components/common';
 import { DefaultExplorer, ExplorerIcons } from '@renderer/components/common/ExplorerLink/constants';
 import { Icon } from '@renderer/components/ui';
-import { DropdownOption, DropdownResult } from '@renderer/components/ui/Dropdowns/common/types';
+import { DropdownOption, DropdownResult } from '@renderer/components/ui-redesign/Dropdowns/common/types';
 import { useI18n } from '@renderer/context/I18nContext';
 import { Asset } from '@renderer/domain/asset';
 import { Chain } from '@renderer/domain/chain';

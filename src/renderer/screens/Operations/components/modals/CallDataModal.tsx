@@ -1,11 +1,10 @@
 import { Controller, SubmitHandler, useForm } from 'react-hook-form';
 
-import { BaseModal, Button, InputHint } from '@renderer/components/ui-redesign';
+import { BaseModal, Button, InputHint, InputArea } from '@renderer/components/ui-redesign';
 import { useI18n } from '@renderer/context/I18nContext';
 import { MultisigTransactionDS } from '@renderer/services/storage';
 import { CallData } from '@renderer/domain/shared-kernel';
 import { validateCallData } from '@renderer/shared/utils/substrate';
-import { InputArea } from '@renderer/components/ui';
 
 type CallDataForm = {
   callData: string;
@@ -62,7 +61,6 @@ const CallDataModal = ({ isOpen, tx, onClose, onSubmit }: Props) => {
           rules={{ required: true, validate: validateCallDataValue }}
           render={({ field: { value, onChange }, fieldState: { error } }) => (
             <>
-              {/* TODO: use InputArea from ui-redesign */}
               <InputArea
                 placeholder={t('operations.callData.inputPlaceholder')}
                 value={value}

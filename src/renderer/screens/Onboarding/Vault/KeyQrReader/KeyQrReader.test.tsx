@@ -2,7 +2,7 @@ import { act, render, screen, waitFor } from '@testing-library/react';
 
 import { QrReader } from '@renderer/components/common';
 import { QrError } from '@renderer/components/common/QrCode/common/types';
-import { Button, Dropdown } from '@renderer/components/ui';
+import { Button, Select } from '@renderer/components/ui-redesign';
 import KeyQrReader from './KeyQrReader';
 
 jest.mock('@renderer/components/common');
@@ -41,7 +41,7 @@ describe('screens/Onboarding/Vault/KeyQrReader', () => {
           qrReader
         </button>
       ));
-      (Dropdown as jest.Mock).mockImplementation(({ options }: any) =>
+      (Select as jest.Mock).mockImplementation(({ options }: any) =>
         options.map((o: any) => <span key="1">{o.element}</span>),
       );
 
@@ -110,7 +110,9 @@ describe('screens/Onboarding/Vault/KeyQrReader', () => {
     };
 
     beforeAll(() => {
-      (Button as jest.Mock).mockImplementation(({ children }: any) => <button type="button">{children}</button>);
+      (Button as unknown as jest.Mock).mockImplementation(({ children }: any) => (
+        <button type="button">{children}</button>
+      ));
     });
 
     afterEach(() => {

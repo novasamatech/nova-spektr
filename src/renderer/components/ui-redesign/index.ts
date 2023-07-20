@@ -43,6 +43,7 @@ import {
   LabelText,
   HeaderTitleText,
 } from './Typography';
+import InputArea from './Inputs/InputArea/InputArea';
 
 // FIXME: Animation component exported separately.
 // Adding them to this file causes to crash all tests which use anything from that file
@@ -93,4 +94,5 @@ export {
   ChainIcon,
   AssetIcon,
   Tabs,
+  InputArea,
 };

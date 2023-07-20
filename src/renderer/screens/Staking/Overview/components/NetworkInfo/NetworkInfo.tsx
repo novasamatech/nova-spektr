@@ -1,14 +1,7 @@
 import { PropsWithChildren, useEffect, useState } from 'react';
 import { BN, BN_ZERO } from '@polkadot/util';
 
-import {
-  Select,
-  FootnoteText,
-  Plate,
-  IconButton,
-  SmallTitleText,
-  Chain as ChainComponent,
-} from '@renderer/components/ui-redesign';
+import { Select, FootnoteText, Plate, IconButton, Chain as ChainComponent } from '@renderer/components/ui-redesign';
 import { DropdownOption, DropdownResult } from '@renderer/components/ui-redesign/Dropdowns/common/types';
 import { getRelaychainAsset } from '@renderer/shared/utils/assets';
 import { useChains } from '@renderer/services/network/chainsService';
@@ -16,7 +9,8 @@ import { useSettingsStorage } from '@renderer/services/settings/settingsStorage'
 import { Chain } from '@renderer/domain/chain';
 import { useToggle } from '@renderer/shared/hooks';
 import { useI18n } from '@renderer/context/I18nContext';
-import { Shimmering, Balance } from '@renderer/components/ui';
+import { Shimmering } from '@renderer/components/ui';
+import { BalanceNew } from '@renderer/components/common';
 
 const getTotal = (values: string[]): BN => {
   return values.reduce((acc, value) => acc.add(new BN(value || 0)), BN_ZERO);
@@ -115,9 +109,7 @@ export const NetworkInfo = ({
           ) : (
             <div key={title} className="text-left">
               <FootnoteText className="text-text-secondary">{title}</FootnoteText>
-              <SmallTitleText>
-                <Balance value={amount.toString()} precision={asset.precision} symbol={asset.symbol} />
-              </SmallTitleText>
+              <BalanceNew value={amount.toString()} asset={asset} className="text-small-title" />
             </div>
           ),
         )}

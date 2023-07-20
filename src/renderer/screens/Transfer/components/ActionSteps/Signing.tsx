@@ -3,7 +3,6 @@ import { BN } from '@polkadot/util';
 import { ApiPromise } from '@polkadot/api';
 
 import { useI18n } from '@renderer/context/I18nContext';
-import { Button } from '@renderer/components/ui';
 import QrReaderWrapper from '@renderer/components/common/QrCode/QrReader/QrReaderWrapper';
 import { ValidationErrors } from '@renderer/shared/utils/validation';
 import { toAccountId } from '@renderer/shared/utils/address';
@@ -13,6 +12,7 @@ import { useBalance } from '@renderer/services/balance/balanceService';
 import { ChainId, HexString } from '@renderer/domain/shared-kernel';
 import { useTransaction } from '@renderer/services/transaction/transactionService';
 import { Balance } from '@renderer/domain/balance';
+import { Button } from '@renderer/components/ui-redesign';
 
 type Props = {
   api: ApiPromise;
@@ -88,11 +88,7 @@ const Signing = ({ api, chainId, transaction, assetId, countdown, onGoBack, onSt
         onGoBack={onGoBack}
       />
 
-      {validationError && (
-        <Button className="w-max mb-5" weight="lg" variant="fill" pallet="primary" onClick={onStartOver}>
-          {t('transfer.editOperationButton')}
-        </Button>
-      )}
+      {validationError && <Button onClick={onStartOver}>{t('transfer.editOperationButton')}</Button>}
     </div>
   );
 };

@@ -1,7 +1,7 @@
 import { ApiPromise } from '@polkadot/api';
 import { useEffect, useState, ReactNode } from 'react';
 
-import { ExplorerLink } from '@renderer/components/common';
+import { BalanceNew, ExplorerLink } from '@renderer/components/common';
 import { useI18n } from '@renderer/context/I18nContext';
 import { Asset } from '@renderer/domain/asset';
 import { Explorer } from '@renderer/domain/chain';
@@ -12,7 +12,7 @@ import { useValidators } from '@renderer/services/staking/validatorsService';
 import { getComposedIdentity } from '@renderer/shared/utils/strings';
 import { toShortAddress } from '@renderer/shared/utils/address';
 import { NoValidators } from '../EmptyState/NoValidators';
-import { Icon, Balance, Identicon, Loader } from '@renderer/components/ui';
+import { Icon, Identicon, Loader } from '@renderer/components/ui';
 import {
   BaseModal,
   SmallTitleText,
@@ -103,12 +103,8 @@ export const ValidatorsModal = ({
                 <BodyText>{toShortAddress(validator.address, 11)}</BodyText>
               )}
             </div>
-            <BodyText>
-              <Balance value={validator.ownStake || '0'} precision={asset.precision} symbol={asset.symbol} />
-            </BodyText>
-            <BodyText>
-              <Balance value={validator.totalStake || '0'} precision={asset.precision} symbol={asset.symbol} />
-            </BodyText>
+            <BalanceNew value={validator.ownStake || '0'} asset={asset} />
+            <BalanceNew value={validator.totalStake || '0'} asset={asset} />
             <Icon name="info" size={14} className="group-hover:text-icon-hover" />
           </div>
         </InfoPopover>

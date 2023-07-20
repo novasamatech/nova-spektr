@@ -2,13 +2,14 @@ import { ApiPromise } from '@polkadot/api';
 import { useEffect, useState } from 'react';
 import { Trans } from 'react-i18next';
 
-import { Balance, Duration, Shimmering } from '@renderer/components/ui';
+import { Duration, Shimmering } from '@renderer/components/ui';
 import { useI18n } from '@renderer/context/I18nContext';
 import { Asset } from '@renderer/domain/asset';
 import { EraIndex } from '@renderer/domain/shared-kernel';
 import { Validator } from '@renderer/domain/validator';
 import { useStakingData } from '@renderer/services/staking/stakingDataService';
 import { FootnoteText } from '@renderer/components/ui-redesign';
+import { BalanceNew } from '@renderer/components/common';
 
 type Props = {
   api?: ApiPromise;
@@ -105,10 +106,8 @@ export const AboutStaking = ({ api, era, asset, validators }: Props) => {
       <div className="grid grid-cols-2 gap-y-3 gap-x-6">
         <div className="flex justify-between gap-x-1">
           <FootnoteText className="text-text-secondary">{t('staking.about.totalStakedLabel')}</FootnoteText>
-          {totalStaked ? (
-            <FootnoteText align="right">
-              <Balance value={totalStaked} precision={asset?.precision || 0} symbol={asset?.symbol} />
-            </FootnoteText>
+          {totalStaked && asset ? (
+            <BalanceNew value={totalStaked} asset={asset} className="text-footnote text-right" />
           ) : (
             <Shimmering className="justify-self-end" width={100} height={18} />
           )}
@@ -116,10 +115,8 @@ export const AboutStaking = ({ api, era, asset, validators }: Props) => {
 
         <div className="flex justify-between gap-x-1">
           <FootnoteText className="text-text-secondary">{t('staking.about.minimumStakeLabel')}</FootnoteText>
-          {minimumStake ? (
-            <FootnoteText align="right">
-              <Balance value={minimumStake} precision={asset?.precision || 0} symbol={asset?.symbol} />
-            </FootnoteText>
+          {minimumStake && asset ? (
+            <BalanceNew value={minimumStake} asset={asset} className="text-footnote text-right" />
           ) : (
             <Shimmering className="justify-self-end" width={100} height={18} />
           )}

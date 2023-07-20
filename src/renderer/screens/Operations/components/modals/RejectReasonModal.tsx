@@ -1,8 +1,7 @@
 import { Controller, SubmitHandler, useForm } from 'react-hook-form';
 
-import { BaseModal, Button, InputHint } from '@renderer/components/ui-redesign';
+import { BaseModal, Button, InputHint, InputArea } from '@renderer/components/ui-redesign';
 import { useI18n } from '@renderer/context/I18nContext';
-import { InputArea } from '@renderer/components/ui';
 
 type RejectReasonForm = {
   reason: string;
@@ -54,7 +53,6 @@ const RejectReasonModal = ({ isOpen, onClose, onSubmit }: Props) => {
           rules={{ required: true }}
           render={({ field: { value, onChange }, fieldState: { error } }) => (
             <>
-              {/* TODO: use InputArea from ui-redesign */}
               <InputArea
                 placeholder={t('operation.rejectReason.placeholder')}
                 value={value}

@@ -10,10 +10,9 @@ import { validateAddress } from '@renderer/shared/utils/address';
 import { Asset } from '@renderer/domain/asset';
 import { Address, ChainId, AccountId } from '@renderer/domain/shared-kernel';
 import { RadioOption } from '@renderer/components/ui-redesign/RadioGroup/common/types';
-import { DropdownOption } from '@renderer/components/ui/Dropdowns/common/types';
+import { DropdownOption, ComboboxOption } from '@renderer/components/ui-redesign/Dropdowns/common/types';
 import { useAccount } from '@renderer/services/account/accountService';
 import { useBalance } from '@renderer/services/balance/balanceService';
-import { ComboboxOption } from '@renderer/components/ui-redesign/Dropdowns/common/types';
 import { getPayoutAccountOption } from '../../common/utils';
 import OperationFooter from './OperationFooter';
 

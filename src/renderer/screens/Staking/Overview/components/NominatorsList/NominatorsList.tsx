@@ -4,9 +4,9 @@ import { Trans } from 'react-i18next';
 import { Address, SigningType, EraIndex } from '@renderer/domain/shared-kernel';
 import { Unlocking } from '@renderer/domain/stake';
 import { useI18n } from '@renderer/context/I18nContext';
-import { FootnoteText, Plate, BodyText, Checkbox, InfoPopover, Tooltip } from '@renderer/components/ui-redesign';
-import { AccountAddress, ExplorerLink } from '@renderer/components/common';
-import { Icon, Shimmering, Balance } from '@renderer/components/ui';
+import { FootnoteText, Plate, Checkbox, InfoPopover, Tooltip } from '@renderer/components/ui-redesign';
+import { AccountAddress, BalanceNew, ExplorerLink } from '@renderer/components/common';
+import { Icon, Shimmering } from '@renderer/components/ui';
 import { Explorer } from '@renderer/domain/chain';
 import { Asset } from '@renderer/domain/asset';
 import { TimeToEra } from '../TimeToEra/TimeToEra';
@@ -139,16 +139,12 @@ export const NominatorsList = ({
                 {!stake.totalStake || !asset ? (
                   <Shimmering width={104} height={16} />
                 ) : (
-                  <BodyText>
-                    <Balance value={stake.totalStake} precision={asset.precision} symbol={asset.symbol} />
-                  </BodyText>
+                  <BalanceNew value={stake.totalStake} asset={asset} />
                 )}
                 {!stake.totalReward || !asset ? (
                   <Shimmering width={104} height={16} />
                 ) : (
-                  <BodyText>
-                    <Balance value={stake.totalReward} precision={asset.precision} symbol={asset.symbol} />
-                  </BodyText>
+                  <BalanceNew value={stake.totalReward} asset={asset} />
                 )}
                 <InfoPopover data={getExplorers(stake.address, stake.stash, explorers)} position="top-full right-0">
                   <Icon name="info" size={14} />
