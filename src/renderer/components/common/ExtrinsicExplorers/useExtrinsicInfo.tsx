@@ -8,10 +8,12 @@ const useExtrinsicInfo = (hash: HexString, explorers?: Explorer[]): InfoSection[
 
   return [
     {
-      items: explorers.map((explorer) => ({
-        id: explorer.name,
-        value: <ExplorerLink explorer={explorer} hash={hash} />,
-      })),
+      items: explorers
+        .filter((explorer) => Boolean(explorer.extrinsic))
+        .map((explorer) => ({
+          id: explorer.name,
+          value: <ExplorerLink explorer={explorer} hash={hash} />,
+        })),
     },
   ];
 };

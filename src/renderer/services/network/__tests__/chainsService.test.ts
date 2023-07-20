@@ -1,24 +1,25 @@
 import { useChains } from '../chainsService';
-import { Chain } from '@renderer/domain/chain';
 
 describe('service/chainsService', () => {
   test('should init', () => {
-    const { sortChains, getChainsData, getStakingChainsData } = useChains();
+    const { sortChains, sortChainsByBalance, getChainsData, getStakingChainsData } = useChains();
 
     expect(sortChains).toBeDefined();
+    expect(sortChainsByBalance).toBeDefined();
     expect(getChainsData).toBeDefined();
     expect(getStakingChainsData).toBeDefined();
   });
 
-  test('should sort data', () => {
-    const polkadot = { name: 'Polkadot' } as Chain;
-    const kusama = { name: 'Kusama' } as Chain;
-    const testnet = { name: 'Westend', options: ['testnet'] } as Chain;
-    const parachain = { name: 'Acala' } as Chain;
+  test('should sort chains', () => {
+    const polkadot = { name: 'Polkadot' };
+    const kusama = { name: 'Kusama' };
+    const threeDPass = { name: '3dPass' };
+    const testnet = { name: 'Westend', options: ['testnet'] };
+    const parachain = { name: 'Acala' };
 
     const { sortChains } = useChains();
-    const data = sortChains([testnet, polkadot, parachain, kusama]);
+    const data = sortChains([testnet, polkadot, threeDPass, parachain, kusama]);
 
-    expect(data).toEqual([polkadot, kusama, parachain, testnet]);
+    expect(data).toEqual([polkadot, kusama, parachain, threeDPass, testnet]);
   });
 });

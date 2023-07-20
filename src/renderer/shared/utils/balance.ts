@@ -3,7 +3,7 @@ import BigNumber from 'bignumber.js';
 
 import { Balance, LockTypes } from '@renderer/domain/balance';
 import { Unlocking } from '@renderer/domain/stake';
-import { ZERO_BALANCE } from '@renderer/services/balance/common/constants';
+import { ZERO_BALANCE } from './constants';
 
 const MAX_INTEGER = 15;
 
@@ -13,7 +13,7 @@ const enum Suffix {
   TRILLIONS = 'T',
 }
 
-const enum Decimal {
+export const enum Decimal {
   SMALL_NUMBER = 5,
   BIG_NUMBER = 2,
 }
@@ -87,7 +87,11 @@ export const formatBalance = (balance = '0', precision = 0): FormattedBalance =>
   };
 };
 
-export const totalAmount = ({ free = ZERO_BALANCE, reserved = ZERO_BALANCE }: Balance): string => {
+export const totalAmount = (balance?: Balance): string => {
+  if (!balance) return ZERO_BALANCE;
+
+  const { free = ZERO_BALANCE, reserved = ZERO_BALANCE } = balance;
+
   return new BN(free).add(new BN(reserved)).toString();
 };
 
@@ -149,13 +153,9 @@ export const validateSymbols = (amount: string) => {
 
 export const validatePrecision = (amount: string, precision: number) => {
   const [integer, decimal] = amount.split('.');
-  if (decimal && decimal.length > precision) {
-    return false;
-  }
+  if (decimal && decimal.length > precision) return false;
 
-  if (integer.length > MAX_INTEGER) return false;
-
-  return true;
+  return integer.length <= MAX_INTEGER;
 };
 
 export const formatGroups = (amount: string): string => {

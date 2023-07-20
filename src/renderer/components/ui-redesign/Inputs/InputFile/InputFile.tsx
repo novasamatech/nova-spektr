@@ -34,7 +34,7 @@ const InputFile = forwardRef<HTMLInputElement, Props>(
         )}
       >
         <div className="flex flex-col items-center gap-y-2">
-          <Icon name={invalid ? 'refresh' : 'uploadFile'} className="text-icon-default" />
+          <Icon name={invalid ? 'refresh' : 'uploadFile'} />
           {fileName ? (
             <FootnoteText>{fileName}</FootnoteText>
           ) : (

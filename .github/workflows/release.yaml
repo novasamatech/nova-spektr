@@ -64,6 +64,10 @@ jobs:
             release/dist/*.exe
             release/dist/*.dmg
             release/dist/*.AppImage
+            release/dist/latest.yml
+            release/dist/latest-mac.yml
+            release/dist/latest-linux.yml
+            release/dist/*mac.zip
 
   releas-project:
     name: Release Nova Spektr build-project
@@ -81,14 +85,14 @@ jobs:
       - name: Get the version
         id: get_version
         run: echo ::set-output name=VERSION::${GITHUB_REF/refs\/tags\//}
-      
+
       - name: Rename Linux distr # In order to show that we do not support ARM yet.
         run: |
           original=$(find . -name "Nova*.AppImage" -type f)
           filename="${original%.*}"
           new="$filename"_x86_64.AppImage
           mv "$original" "$new"
-      
+
       - name: 🔐 Generate checksum
         run: |
           for filename in Nova*; do
@@ -107,3 +111,5 @@ jobs:
             *.exe
             *.AppImage
             *.sha256
+            latest*.yml
+            *mac.zip

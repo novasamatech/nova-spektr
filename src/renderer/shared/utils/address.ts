@@ -8,6 +8,7 @@ import {
   PUBLIC_KEY_LENGTH_BYTES,
   SS58_DEFAULT_PREFIX,
 } from './constants';
+import { truncate } from '@renderer/shared/utils/strings';
 
 /**
  * Format address or accountId with prefix and chunk size
@@ -38,7 +39,7 @@ export const toAddress = (value: Address | AccountId, params?: { chunk?: number;
  * @return {String}
  */
 export const toShortAddress = (address: Address, chunk = 6): string => {
-  return address.length < 13 ? address : `${address.slice(0, chunk)}...${address.slice(-1 * chunk)}`;
+  return address.length < 13 ? address : truncate(address, chunk, chunk);
 };
 
 /**

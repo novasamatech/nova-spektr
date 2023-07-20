@@ -11,12 +11,14 @@ import { isMultisig, Account, MultisigAccount } from '@renderer/domain/account';
 import { toAccountId } from '@renderer/shared/utils/address';
 import { useMatrix } from '@renderer/context/MatrixContext';
 import { Button } from '@renderer/components/ui-redesign';
-import OperationResult from '@renderer/components/ui-redesign/OperationResult/OperationResult';
+import { OperationResult } from '@renderer/components/common/OperationResult/OperationResult';
 import { useToggle } from '@renderer/shared/hooks';
 import { useMultisigTx } from '@renderer/services/multisigTx/multisigTxService';
 import { DEFAULT_TRANSITION } from '@renderer/shared/utils/constants';
 import Paths from '@renderer/routes/paths';
 import { Transaction, MultisigEvent, MultisigTransaction, MultisigTxInitStatus } from '@renderer/domain/transaction';
+import { useMultisigEvent } from '@renderer/services/multisigEvent/multisigEventService';
+import { useMultisigChainContext } from '@renderer/context/MultisigChainContext';
 
 type ResultProps = Pick<ComponentProps<typeof OperationResult>, 'title' | 'description' | 'variant'>;
 
@@ -39,7 +41,10 @@ export const Submit = ({ api, accounts, txs, multisigTx, unsignedTx, signatures,
 
   const { matrix } = useMatrix();
   const { submitAndWatchExtrinsic, getSignedExtrinsic } = useTransaction();
-  const { addMultisigTx } = useMultisigTx();
+  const { addTask } = useMultisigChainContext();
+
+  const { addMultisigTx } = useMultisigTx({ addTask });
+  const { addEventWithQueue } = useMultisigEvent({ addTask });
 
   const [isSuccess, toggleSuccessMessage] = useToggle();
   const [inProgress, toggleInProgress] = useToggle(true);
@@ -67,21 +72,12 @@ export const Submit = ({ api, accounts, txs, multisigTx, unsignedTx, signatures,
     const allExtrinsics = await Promise.all(extrinsicRequests);
 
     allExtrinsics.forEach((extrinsic, index) => {
-      submitAndWatchExtrinsic(extrinsic, unsignedTx[index], api, (executed, params) => {
+      submitAndWatchExtrinsic(extrinsic, unsignedTx[index], api, async (executed, params) => {
         if (executed) {
           const mstAccount = accounts[0];
           const typedParams = params as ExtrinsicResultParams;
 
           if (multisigTx && isMultisig(mstAccount)) {
-            const event: MultisigEvent = {
-              status: 'SIGNED',
-              accountId: toAccountId(multisigTx.address),
-              extrinsicHash: typedParams.extrinsicHash,
-              eventBlock: typedParams.timepoint.height,
-              eventIndex: typedParams.timepoint.index,
-              dateCreated: Date.now(),
-            };
-
             const newTx: MultisigTransaction = {
               accountId: mstAccount.accountId,
               chainId: multisigTx.chainId,
@@ -92,12 +88,25 @@ export const Submit = ({ api, accounts, txs, multisigTx, unsignedTx, signatures,
               status: MultisigTxInitStatus.SIGNING,
               blockCreated: typedParams.timepoint.height,
               indexCreated: typedParams.timepoint.index,
-              events: [event],
               description,
               dateCreated: Date.now(),
             };
 
-            addMultisigTx(newTx);
+            const event: MultisigEvent = {
+              txAccountId: newTx.accountId,
+              txChainId: newTx.chainId,
+              txCallHash: newTx.callHash,
+              txBlock: newTx.blockCreated,
+              txIndex: newTx.indexCreated,
+              status: 'SIGNED',
+              accountId: toAccountId(multisigTx.address),
+              extrinsicHash: typedParams.extrinsicHash,
+              eventBlock: typedParams.timepoint.height,
+              eventIndex: typedParams.timepoint.index,
+              dateCreated: Date.now(),
+            };
+
+            await Promise.all([addMultisigTx(newTx), addEventWithQueue(event)]);
 
             if (matrix.userIsLoggedIn) {
               sendMultisigEvent(mstAccount.matrixRoomId, newTx, typedParams);
@@ -151,6 +160,11 @@ export const Submit = ({ api, accounts, txs, multisigTx, unsignedTx, signatures,
     return t('staking.submitSuccessMultishard');
   };
 
+  const closeErrorMessage = () => {
+    onClose();
+    setErrorMessage('');
+  };
+
   const getResultProps = (): ResultProps => {
     if (inProgress) {
       return { title: t('operation.inProgress'), variant: 'loading' };
@@ -171,7 +185,7 @@ export const Submit = ({ api, accounts, txs, multisigTx, unsignedTx, signatures,
       {...getResultProps()}
       onClose={handleSuccessClose}
     >
-      {errorMessage && <Button onClick={onClose}>{t('operation.feeErrorButton')}</Button>}
+      {errorMessage && <Button onClick={closeErrorMessage}>{t('operation.feeErrorButton')}</Button>}
     </OperationResult>
   );
 };

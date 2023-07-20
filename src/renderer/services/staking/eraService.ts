@@ -20,8 +20,8 @@ export const useEra = (): IEraService => {
     if (!destinationEra) return 0;
 
     const eraLength = api.consts.staking.sessionsPerEra.toNumber();
-    const sessionLength = api.consts.babe.epochDuration.toNumber();
-    const blockCreationTime = api.consts.babe.expectedBlockTime.toNumber() / 1000;
+    const sessionDuration = api.consts.babe.epochDuration.toNumber();
+    const blockTime = api.consts.babe.expectedBlockTime.toNumber() / 1000;
 
     const activeEra = (await api.query.staking.activeEra()).unwrap().index;
 
@@ -39,14 +39,17 @@ export const useEra = (): IEraService => {
       };
     });
 
-    const sessionStartSlot = currentSessionIndex * sessionLength + genesisSlot;
+    const sessionStartSlot = currentSessionIndex * sessionDuration + genesisSlot;
     const sessionProgress = currentSlot - sessionStartSlot;
-    const eraProgress = (currentSessionIndex - eraStartSessionIndex) * sessionLength + sessionProgress;
-    const eraRemained = eraLength * sessionLength - eraProgress / 1000;
+    const eraProgress = (currentSessionIndex - eraStartSessionIndex) * sessionDuration + sessionProgress;
+    let eraRemained = eraProgress;
+    if (eraProgress > 0 && eraProgress > eraLength * sessionDuration) {
+      eraRemained = eraProgress % (eraLength * sessionDuration);
+    }
     const leftEras = destinationEra - activeEra.toNumber() - 1;
-    const timeForLeftEras = leftEras * eraLength * sessionLength * blockCreationTime;
+    const blocksLeftForEras = leftEras * eraLength * sessionDuration;
 
-    return eraRemained * blockCreationTime + timeForLeftEras;
+    return (eraRemained + blocksLeftForEras) * blockTime;
   };
 
   return {

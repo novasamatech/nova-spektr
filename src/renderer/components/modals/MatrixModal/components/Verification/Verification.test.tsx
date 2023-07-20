@@ -100,9 +100,7 @@ describe('screens/Settings/Matrix/Verification', () => {
     (useMatrix as jest.Mock).mockReturnValue({
       matrix: { sessionIsVerified: true },
     });
-    await act(async () => {
-      render(<Verification />);
-    });
+    render(<Verification />);
 
     const verified = screen.getByText('settings.matrix.statusVerified');
     const submit = screen.queryByRole('button', { name: 'settings.matrix.verifyDeviceButton' });

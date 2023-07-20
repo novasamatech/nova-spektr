@@ -172,7 +172,7 @@ export const Validators = ({ api, chainId, asset, explorers, isLightClient, onGo
                   <BalanceNew value={v.totalStake || '0'} asset={asset} />
                 </BodyText>
                 <InfoPopover data={getExplorers(v.address, explorers)} position="top-full right-0">
-                  <Icon name="info" size={14} className="text-icon-default ml-2 mr-auto" />
+                  <Icon name="info" size={14} className="ml-2 mr-auto" />
                 </InfoPopover>
               </li>
             ))}

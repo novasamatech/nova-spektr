@@ -5,9 +5,9 @@ import init from 'raptorq';
 
 import cnTw from '@renderer/shared/utils/twMerge';
 import { useI18n } from '@renderer/context/I18nContext';
-import { ErrorFields } from './common/constants';
-import { QR_READER_ERRORS } from './common/errors';
-import { DecodeCallback, ErrorObject, QrError, VideoInput } from './common/types';
+import { ErrorFields } from '../common/constants';
+import { QR_READER_ERRORS } from '../common/errors';
+import { DecodeCallback, ErrorObject, QrError, VideoInput } from '../common/types';
 import { HexString } from '@renderer/domain/shared-kernel';
 
 type Props = {

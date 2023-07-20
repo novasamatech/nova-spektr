@@ -19,7 +19,7 @@ const FinalStep = ({ signingType }: Props) => {
 
   useEffect(() => {
     setTimeout(() => {
-      navigate(Paths.BALANCES);
+      navigate(Paths.ASSETS);
     }, 2000);
   }, []);
 

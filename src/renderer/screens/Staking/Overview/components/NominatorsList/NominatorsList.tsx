@@ -75,7 +75,7 @@ export const NominatorsList = ({
         className="flex items-center gap-x-2 px-2 w-full h-full"
         onClick={() => onCheckValidators(stash)}
       >
-        <Icon className="text-icon-default" name="viewValidators" size={16} />
+        <Icon name="viewValidators" size={16} />
         <FootnoteText as="span" className="text-text-primary">
           {t('staking.overview.viewValidatorsOption')}
         </FootnoteText>
@@ -151,7 +151,7 @@ export const NominatorsList = ({
                   </BodyText>
                 )}
                 <InfoPopover data={getExplorers(stake.address, stake.stash, explorers)} position="top-full right-0">
-                  <Icon name="info" size={14} className="text-icon-default" />
+                  <Icon name="info" size={14} />
                 </InfoPopover>
               </Plate>
             </li>

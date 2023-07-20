@@ -6,7 +6,7 @@ import { Trans } from 'react-i18next';
 
 import { toAccountId, validateAddress, toAddress } from '@renderer/shared/utils/address';
 import { Icon, Identicon } from '@renderer/components/ui';
-import { Fee, Deposit, DetailRow } from '@renderer/components/common';
+import { Fee, DetailRow, DepositWithLabel } from '@renderer/components/common';
 import { useI18n } from '@renderer/context/I18nContext';
 import { Asset, AssetType } from '@renderer/domain/asset';
 import { Transaction, MultisigTxInitStatus, TransactionType } from '@renderer/domain/transaction';
@@ -17,7 +17,7 @@ import { useTransaction } from '@renderer/services/transaction/transactionServic
 import { useMultisigTx } from '@renderer/services/multisigTx/multisigTxService';
 import { getAssetId } from '@renderer/shared/utils/assets';
 import { MultisigAccount, Account, isMultisig } from '@renderer/domain/account';
-import { Button, AmountInput, Input, InputHint, FootnoteText, Tooltip } from '@renderer/components/ui-redesign';
+import { Button, AmountInput, Input, InputHint } from '@renderer/components/ui-redesign';
 
 const DESCRIPTION_MAX_LENGTH = 120;
 
@@ -58,7 +58,7 @@ export const TransferForm = ({
 }: Props) => {
   const { t } = useI18n();
   const { getBalance } = useBalance();
-  const { getMultisigTxs } = useMultisigTx();
+  const { getMultisigTxs } = useMultisigTx({});
   const { getTransactionHash } = useTransaction();
 
   const [fee, setFee] = useState('');
@@ -159,14 +159,16 @@ export const TransferForm = ({
       [AssetType.STATEMINE]: TransactionType.ASSET_TRANSFER,
     };
 
+    const transactionType = asset.type ? TransferType[asset.type] : TransactionType.TRANSFER;
+
     return {
       chainId,
       address: toAddress(accountId, { prefix: addressPrefix }),
-      type: asset.type ? TransferType[asset.type] : TransactionType.TRANSFER,
+      type: transactionType,
       args: {
         dest: toAddress(destination, { prefix: addressPrefix }),
         value: formatAmount(amount, asset.precision),
-        assetId: getAssetId(asset),
+        ...(transactionType !== TransactionType.TRANSFER && { asset: getAssetId(asset) }),
       },
     };
   };
@@ -375,26 +377,13 @@ export const TransferForm = ({
 
         <div className="flex flex-col items-center mt-2 gap-y-4">
           {isMultisig(account) && (
-            <DetailRow
-              label={
-                <div className="flex items-center gap-x-1">
-                  <Icon className="text-text-tertiary" name="lock" size={12} />
-                  <FootnoteText className="text-text-tertiary">{t('transfer.networkDeposit')}</FootnoteText>
-                  <Tooltip offsetPx={-92} content={<Trans t={t} i18nKey="transfer.networkDepositHint" />}>
-                    <Icon name="info" className="text-icon-default hover:text-icon-hover cursor-pointer" size={16} />
-                  </Tooltip>
-                </div>
-              }
-              className="text-text-primary"
-            >
-              <Deposit
-                className="text-footnote text-text-primary"
-                api={api}
-                asset={nativeToken}
-                threshold={account.threshold}
-                onDepositChange={setDeposit}
-              />
-            </DetailRow>
+            <DepositWithLabel
+              className="text-footnote text-text-primary"
+              api={api}
+              asset={nativeToken}
+              threshold={account.threshold}
+              onDepositChange={setDeposit}
+            />
           )}
           <DetailRow label={t('operation.networkFee')} className="text-text-primary">
             {api && (

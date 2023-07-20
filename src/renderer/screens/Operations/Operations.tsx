@@ -13,26 +13,50 @@ import Filters from './components/Filters';
 import { MultisigTransactionDS } from '@renderer/services/storage';
 import { useMultisigTx } from '@renderer/services/multisigTx/multisigTxService';
 import { Header } from '@renderer/components/common';
+import { useNetworkContext } from '@renderer/context/NetworkContext';
+import { MultisigEvent, MultisigTransactionKey } from '@renderer/domain/transaction';
+import { useMultisigEvent } from '@renderer/services/multisigEvent/multisigEventService';
 
 const Operations = () => {
   const { t, dateLocale } = useI18n();
   const { getActiveMultisigAccount } = useAccount();
-  const { getLiveAccountMultisigTxs } = useMultisigTx();
+  const { getLiveAccountMultisigTxs } = useMultisigTx({});
+  const { connections } = useNetworkContext();
+  const { getLiveEventsByKeys } = useMultisigEvent({});
 
   const account = getActiveMultisigAccount();
-  const txs = getLiveAccountMultisigTxs(account?.accountId ? [account.accountId] : []);
+  const allTxs = getLiveAccountMultisigTxs(account?.accountId ? [account.accountId] : []);
 
-  const [filteredTxs, setFilteredTxs] = useState<MultisigTransactionDS[]>(txs);
+  const [txs, setTxs] = useState<MultisigTransactionDS[]>([]);
+  const [filteredTxs, setFilteredTxs] = useState<MultisigTransactionDS[]>([]);
 
-  const groupedTxs = groupBy(filteredTxs, ({ dateCreated }) =>
-    format(new Date(dateCreated || 0), 'PP', { locale: dateLocale }),
-  );
+  const events = getLiveEventsByKeys(txs.filter((tx) => !tx.dateCreated));
+
+  const getEventsByTransaction = (tx: MultisigTransactionKey): MultisigEvent[] => {
+    return events.filter((e) => {
+      return (
+        e.txAccountId === tx.accountId &&
+        e.txChainId === tx.chainId &&
+        e.txCallHash === tx.callHash &&
+        e.txBlock === tx.blockCreated &&
+        e.txIndex === tx.indexCreated
+      );
+    });
+  };
+
+  const groupedTxs = groupBy(filteredTxs, (tx) => {
+    const date = tx.dateCreated || getEventsByTransaction(tx)[0]?.dateCreated || Date.now();
+
+    return format(new Date(date), 'PP', { locale: dateLocale });
+  });
 
   useEffect(() => {
-    if (!txs.length) {
-      setFilteredTxs([]);
-    }
-  }, [txs.length]);
+    setTxs(allTxs.filter((tx) => connections[tx.chainId]));
+  }, [allTxs]);
+
+  useEffect(() => {
+    setFilteredTxs([]);
+  }, [account?.accountId]);
 
   return (
     <div className="flex flex-col items-center relative h-full">
@@ -51,7 +75,9 @@ const Operations = () => {
                   {txs
                     .sort((a, b) => (b.dateCreated || 0) - (a.dateCreated || 0))
                     .map((tx) => (
-                      <Operation key={tx.dateCreated} tx={tx} account={account as MultisigAccount} />
+                      <li key={tx.dateCreated}>
+                        <Operation tx={tx} account={account as MultisigAccount} />
+                      </li>
                     ))}
                 </ul>
               </section>

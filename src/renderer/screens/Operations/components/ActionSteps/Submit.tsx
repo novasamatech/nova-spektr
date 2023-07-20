@@ -20,7 +20,9 @@ import { useMultisigTx } from '@renderer/services/multisigTx/multisigTxService';
 import { toAccountId } from '@renderer/shared/utils/address';
 import { useToggle } from '@renderer/shared/hooks';
 import { Button } from '@renderer/components/ui-redesign';
-import OperationResult from '@renderer/components/ui-redesign/OperationResult/OperationResult';
+import { OperationResult } from '@renderer/components/common/OperationResult/OperationResult';
+import { useMultisigEvent } from '@renderer/services/multisigEvent/multisigEventService';
+import { useMultisigChainContext } from '@renderer/context/MultisigChainContext';
 
 type ResultProps = Pick<ComponentProps<typeof OperationResult>, 'title' | 'description' | 'variant'>;
 
@@ -34,7 +36,7 @@ type Props = {
   signature: HexString;
   rejectReason?: string;
   isReject?: boolean;
-  onClose?: () => void;
+  onClose: () => void;
 };
 
 export const Submit = ({
@@ -53,57 +55,67 @@ export const Submit = ({
 
   const { matrix } = useMatrix();
   const { submitAndWatchExtrinsic, getSignedExtrinsic } = useTransaction();
-  const { updateMultisigTx } = useMultisigTx();
+  const { addTask } = useMultisigChainContext();
+  const { updateMultisigTx } = useMultisigTx({ addTask });
+  const { addEventWithQueue } = useMultisigEvent({ addTask });
 
   const [inProgress, toggleInProgress] = useToggle(true);
   const [successMessage, toggleSuccessMessage] = useToggle();
   const [errorMessage, setErrorMessage] = useState('');
 
+  useEffect(() => {
+    submitExtrinsic(signature).catch(() => console.warn('Error getting signed extrinsics'));
+  }, []);
+
   const submitExtrinsic = async (signature: HexString) => {
     const extrinsic = await getSignedExtrinsic(unsignedTx, signature, api);
 
-    submitAndWatchExtrinsic(extrinsic, unsignedTx, api, (executed, params) => {
+    submitAndWatchExtrinsic(extrinsic, unsignedTx, api, async (executed, params) => {
       if (executed) {
         const typedParams = params as ExtrinsicResultParams;
 
         if (multisigTx && tx && account?.accountId) {
           const isReject = tx.type === TransactionType.MULTISIG_CANCEL_AS_MULTI;
-          const eventStatus: SigningStatus = isReject ? 'CANCELLED' : 'SIGNED';
 
-          const event: MultisigEvent = {
-            status: eventStatus,
-            accountId: account.accountId,
-            extrinsicHash: typedParams.extrinsicHash,
-            eventBlock: typedParams.timepoint.height,
-            eventIndex: typedParams.timepoint.index,
-            dateCreated: Date.now(),
-          };
-
-          const updatedTx: MultisigTransaction = { ...multisigTx, events: multisigTx.events.concat(event) };
+          const updatedTx: MultisigTransaction = { ...multisigTx };
 
           if (typedParams.isFinalApprove) {
-            const transactionStatus = typedParams.multisigError
-              ? MultisigTxFinalStatus.ERROR
-              : MultisigTxFinalStatus.EXECUTED;
-
-            updatedTx.status = transactionStatus;
-            event.multisigOutcome = transactionStatus;
+            updatedTx.status = typedParams.multisigError ? MultisigTxFinalStatus.ERROR : MultisigTxFinalStatus.EXECUTED;
           }
 
           if (isReject) {
             updatedTx.status = MultisigTxFinalStatus.CANCELLED;
-            event.multisigOutcome = MultisigTxFinalStatus.CANCELLED;
           }
 
           if (matrix.userIsLoggedIn) {
             sendMultisigEvent(updatedTx, typedParams, rejectReason);
           } else {
-            updateMultisigTx(updatedTx);
+            await updateMultisigTx(updatedTx);
+
+            const eventStatus: SigningStatus = isReject ? 'CANCELLED' : 'SIGNED';
+            const event: MultisigEvent = {
+              txAccountId: multisigTx.accountId,
+              txChainId: multisigTx.chainId,
+              txCallHash: multisigTx.callHash,
+              txBlock: multisigTx.blockCreated,
+              txIndex: multisigTx.indexCreated,
+              status: eventStatus,
+              accountId: account.accountId,
+              extrinsicHash: typedParams.extrinsicHash,
+              eventBlock: typedParams.timepoint.height,
+              eventIndex: typedParams.timepoint.index,
+              dateCreated: Date.now(),
+            };
+
+            await addEventWithQueue(event);
           }
         }
 
         toggleSuccessMessage();
-        setTimeout(toggleSuccessMessage, 2000);
+        setTimeout(() => {
+          toggleSuccessMessage();
+          onClose();
+        }, 2000);
       } else {
         setErrorMessage(params as string);
       }
@@ -151,28 +163,18 @@ export const Submit = ({
     return { title: '' };
   };
 
-  useEffect(() => {
-    submitExtrinsic(signature);
-  }, []);
+  const closeErrorMessage = () => {
+    onClose();
+    setErrorMessage('');
+  };
 
   return (
-    <>
-      <OperationResult
-        isOpen={Boolean(inProgress || errorMessage || successMessage)}
-        {...getResultProps()}
-        onClose={() => onClose?.()}
-      >
-        {errorMessage && (
-          <Button
-            onClick={() => {
-              setErrorMessage('');
-              onClose?.();
-            }}
-          >
-            {t('operation.feeErrorButton')}
-          </Button>
-        )}
-      </OperationResult>
-    </>
+    <OperationResult
+      isOpen={Boolean(inProgress || errorMessage || successMessage)}
+      {...getResultProps()}
+      onClose={onClose}
+    >
+      {errorMessage && <Button onClick={closeErrorMessage}>{t('operation.feeErrorButton')}</Button>}
+    </OperationResult>
   );
 };

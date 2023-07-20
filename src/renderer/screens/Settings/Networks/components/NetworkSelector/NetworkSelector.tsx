@@ -101,7 +101,7 @@ export const NetworkSelector = ({
             <FootnoteText className="truncate">
               {selectedNode?.node?.name || selectedNode?.title || t('settings.networks.selectorPlaceholder')}
             </FootnoteText>
-            <Icon name="down" size={16} className="text-icon-default" />
+            <Icon name="down" size={16} />
           </Listbox.Button>
 
           <Transition

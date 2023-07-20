@@ -29,10 +29,7 @@ describe('ui-redesign/Popover', () => {
 
     await act(async () => user.unhover(text));
 
-    await waitForElementToBeRemoved(screen.queryByText('content'), { timeout: 300 });
-
-    // content = screen.queryByText('content');
-    // expect(content).not.toBeInTheDocument();
+    await waitForElementToBeRemoved(screen.queryByText('content'));
   });
 
   test('should toggle popover on focus/blur', async () => {
@@ -49,9 +46,6 @@ describe('ui-redesign/Popover', () => {
 
     await act(async () => text.blur());
 
-    await waitForElementToBeRemoved(screen.queryByText('content'), { timeout: 300 });
-
-    // content = screen.queryByText('content');
-    // expect(content).not.toBeInTheDocument();
+    await waitForElementToBeRemoved(screen.queryByText('content'));
   });
 });

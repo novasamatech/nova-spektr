@@ -3,10 +3,10 @@ import { ApiPromise } from '@polkadot/api';
 import { PropsWithChildren, useState, useEffect } from 'react';
 
 import { Icon } from '@renderer/components/ui';
-import { Button, FootnoteText, CaptionText, InputHint, Tooltip } from '@renderer/components/ui-redesign';
+import { Button, FootnoteText, CaptionText, InputHint } from '@renderer/components/ui-redesign';
 import { useI18n } from '@renderer/context/I18nContext';
 import { useToggle } from '@renderer/shared/hooks';
-import { Deposit, BalanceNew, Fee } from '@renderer/components/common';
+import { BalanceNew, Fee, DepositWithLabel } from '@renderer/components/common';
 import { RewardsDestination } from '@renderer/domain/stake';
 import { Validator } from '@renderer/domain/validator';
 import { Account } from '@renderer/domain/account';
@@ -57,7 +57,7 @@ export const Confirmation = ({
   onGoBack,
 }: PropsWithChildren<Props>) => {
   const { t } = useI18n();
-  const { getMultisigTxs } = useMultisigTx();
+  const { getMultisigTxs } = useMultisigTx({});
 
   const [isAccountsOpen, toggleAccounts] = useToggle();
   const [isValidatorsOpen, toggleValidators] = useToggle();
@@ -119,7 +119,7 @@ export const Confirmation = ({
                 <div className="rounded-[30px] px-1.5 py-[1px] bg-icon-accent">
                   <CaptionText className="text-white">{accounts.length}</CaptionText>
                 </div>
-                <Icon className="text-icon-default group-hover:text-icon-hover" name="info" size={16} />
+                <Icon className="group-hover:text-icon-hover" name="info" size={16} />
               </button>
             )}
           </div>
@@ -147,7 +147,7 @@ export const Confirmation = ({
                 <div className="rounded-[30px] px-1.5 py-[1px] bg-icon-accent">
                   <CaptionText className="text-white">{validators.length}</CaptionText>
                 </div>
-                <Icon className="text-icon-default group-hover:text-icon-hover" name="info" size={16} />
+                <Icon className="group-hover:text-icon-hover" name="info" size={16} />
               </button>
             </div>
           )}
@@ -172,20 +172,7 @@ export const Confirmation = ({
             </>
           )}
 
-          {multisigTx && (
-            <div className="flex justify-between items-center gap-x-2">
-              <div className="flex items-center gap-x-1">
-                <Icon className="text-text-tertiary" name="lock" size={12} />
-                <FootnoteText className="text-text-tertiary">{t('staking.networkDepositLabel')}</FootnoteText>
-                <Tooltip content={t('staking.tooltips.depositDescription')} pointer="up">
-                  <Icon name="info" className="cursor-pointer" size={16} />
-                </Tooltip>
-              </div>
-              <FootnoteText>
-                <Deposit api={api} asset={asset} threshold={threshold} />
-              </FootnoteText>
-            </div>
-          )}
+          {multisigTx && <DepositWithLabel api={api} asset={asset} threshold={threshold} />}
 
           <div className="flex justify-between items-center gap-x-2">
             <FootnoteText className="text-text-tertiary">

@@ -3,6 +3,7 @@ import noop from 'lodash/noop';
 
 import { Chain } from '@renderer/domain/chain';
 import { NetworkInfo } from './NetworkInfo';
+import { useSettingsStorage } from '@renderer/services/settings/settingsStorage';
 
 jest.mock('@renderer/context/I18nContext', () => ({
   useI18n: jest.fn().mockReturnValue({
@@ -16,9 +17,15 @@ jest.mock('@renderer/services/network/chainsService', () => ({
     getChainsData: jest.fn().mockResolvedValue([
       {
         chainId: '0x123',
-        name: 'My test chain',
-        addressPrefix: 0,
+        name: 'WND chain',
+        addressPrefix: 42,
         assets: [{ symbol: 'WND', staking: 'relaychain', name: 'Westend' }],
+      },
+      {
+        chainId: '0x567',
+        name: 'DOT chain',
+        addressPrefix: 0,
+        assets: [{ symbol: 'DOT', staking: 'relaychain', name: 'Polkadot' }],
       },
     ]),
   }),
@@ -27,10 +34,19 @@ jest.mock('@renderer/services/network/chainsService', () => ({
 jest.mock('@renderer/services/settings/settingsStorage', () => ({
   useSettingsStorage: jest.fn().mockReturnValue({
     getStakingNetwork: jest.fn().mockReturnValue('0x123'),
+    setStakingNetwork: jest.fn(),
   }),
 }));
 
 describe('screens/Staking/Overview/NetworkInfo', () => {
+  const defaultProps = {
+    isRewardsLoading: false,
+    isStakingLoading: false,
+    rewards: [],
+    totalStakes: [],
+    onNetworkChange: noop,
+  };
+
   afterEach(() => {
     jest.clearAllMocks();
   });
@@ -38,13 +54,7 @@ describe('screens/Staking/Overview/NetworkInfo', () => {
   test('should render component', async () => {
     await act(async () => {
       render(
-        <NetworkInfo
-          isRewardsLoading={false}
-          isStakingLoading={false}
-          rewards={[]}
-          totalStakes={['10000']}
-          onNetworkChange={noop}
-        >
+        <NetworkInfo {...defaultProps} totalStakes={['10000']}>
           children
         </NetworkInfo>,
       );
@@ -61,13 +71,7 @@ describe('screens/Staking/Overview/NetworkInfo', () => {
   test('should expand children', async () => {
     await act(async () => {
       render(
-        <NetworkInfo
-          isRewardsLoading={false}
-          isStakingLoading={false}
-          rewards={['100', '200']}
-          totalStakes={[]}
-          onNetworkChange={noop}
-        >
+        <NetworkInfo {...defaultProps} rewards={['100', '200']}>
           children
         </NetworkInfo>,
       );
@@ -85,15 +89,7 @@ describe('screens/Staking/Overview/NetworkInfo', () => {
 
   test('should render loading state', async () => {
     await act(async () => {
-      render(
-        <NetworkInfo
-          isRewardsLoading={true}
-          isStakingLoading={true}
-          rewards={[]}
-          totalStakes={[]}
-          onNetworkChange={noop}
-        />,
-      );
+      render(<NetworkInfo {...defaultProps} isRewardsLoading={true} isStakingLoading={true} />);
     });
 
     const balances = screen.queryAllByText('assetBalance.number');
@@ -106,11 +102,9 @@ describe('screens/Staking/Overview/NetworkInfo', () => {
     await act(async () => {
       render(
         <NetworkInfo
-          isRewardsLoading={false}
-          isStakingLoading={false}
+          {...defaultProps}
           rewards={['360854699511', '519204699511']}
           totalStakes={['201494854699', '401494854699']}
-          onNetworkChange={noop}
         />,
       );
     });
@@ -119,5 +113,29 @@ describe('screens/Staking/Overview/NetworkInfo', () => {
     const staking = screen.getByText(/602.98/);
     expect(rewards).toBeInTheDocument();
     expect(staking).toBeInTheDocument();
+  });
+
+  test('should save staking network', async () => {
+    const spyGet = jest.fn();
+    const spySet = jest.fn();
+
+    (useSettingsStorage as jest.Mock).mockImplementation(() => ({
+      getStakingNetwork: spyGet,
+      setStakingNetwork: spySet,
+    }));
+
+    await act(async () => {
+      render(<NetworkInfo {...defaultProps} />);
+    });
+
+    expect(spyGet).toBeCalled();
+
+    const button = screen.getByText('WND chain');
+    await act(async () => button.click());
+
+    const dotButton = screen.getByText('DOT chain');
+    dotButton.click();
+
+    expect(spySet).toBeCalledWith('0x567');
   });
 });

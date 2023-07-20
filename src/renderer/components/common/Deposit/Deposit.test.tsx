@@ -19,7 +19,7 @@ jest.mock('@renderer/services/transaction/transactionService', () => ({
   }),
 }));
 
-describe('components/common/Fee', () => {
+describe('components/common/Deposit', () => {
   beforeAll(() => {
     (BalanceNew as jest.Mock).mockImplementation(({ value }: any) => <p>{value}</p>);
   });

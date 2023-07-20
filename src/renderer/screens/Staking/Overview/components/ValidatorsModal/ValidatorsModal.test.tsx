@@ -2,7 +2,6 @@ import { render, screen, act } from '@testing-library/react';
 import noop from 'lodash/noop';
 import { ApiPromise } from '@polkadot/api';
 
-import { Expandable } from '@renderer/components/common';
 import { ValidatorMap } from '@renderer/services/staking/common/types';
 import { useValidators } from '@renderer/services/staking/validatorsService';
 import { ValidatorsModal } from './ValidatorsModal';
@@ -43,19 +42,6 @@ describe('screens/Staking/Overview/ValidatorsModal', () => {
       },
     },
   } as unknown as ValidatorMap;
-
-  beforeAll(() => {
-    (Expandable as jest.Mock).mockImplementation(({ children, item }: any) => (
-      <div>
-        {item}
-        {children}
-      </div>
-    ));
-  });
-
-  afterEach(() => {
-    jest.clearAllMocks();
-  });
 
   test('should render no results', async () => {
     await act(async () => {

@@ -88,9 +88,9 @@ export const useStakingData = (): IStakingDataService => {
       const unbondingDuration = api.consts.staking.bondingDuration.toNumber();
       const sessionsPerEra = api.consts.staking.sessionsPerEra.toNumber();
       const sessionDuration = api.consts.babe.epochDuration.toNumber();
-      const blockTime = api.consts.babe.expectedBlockTime.toNumber();
+      const blockTime = api.consts.babe.expectedBlockTime.toNumber() / 1000;
 
-      return ((unbondingDuration * sessionsPerEra * sessionDuration * blockTime) / 1000).toString();
+      return (unbondingDuration * sessionsPerEra * sessionDuration * blockTime).toString();
     } catch (error) {
       console.warn(error);
 

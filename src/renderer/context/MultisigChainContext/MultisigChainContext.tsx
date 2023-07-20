@@ -1,5 +1,5 @@
 import { createContext, PropsWithChildren, useContext, useEffect } from 'react';
-import { UnsubscribePromise } from '@polkadot/api/types';
+import { VoidFn } from '@polkadot/api/types';
 import { Event } from '@polkadot/types/interfaces';
 
 import { useChainSubscription } from '@renderer/services/chainSubscription/chainSubscriptionService';
@@ -10,9 +10,15 @@ import { MultisigAccount } from '@renderer/domain/account';
 import { MultisigTxFinalStatus, SigningStatus } from '@renderer/domain/transaction';
 import { toAddress } from '@renderer/shared/utils/address';
 import { ChainId } from '@renderer/domain/shared-kernel';
-import { useDebounce } from '@renderer/shared/hooks';
+import { useDebounce, useTaskQueue } from '@renderer/shared/hooks';
+import { useMultisigEvent } from '@renderer/services/multisigEvent/multisigEventService';
+import { ConnectionStatus } from '@renderer/domain/connection';
+import { getCreatedDateFromApi } from '@renderer/shared/utils/substrate';
+import { Task } from '@renderer/shared/hooks/useTaskQueue';
 
-type MultisigChainContextProps = {};
+type MultisigChainContextProps = {
+  addTask: (task: Task) => void;
+};
 
 const MULTISIG_RESULT_SUCCESS: string = 'Ok';
 const MULTISIG_RESULT_ERROR: string = 'err';
@@ -21,9 +27,12 @@ const MultisigChainContext = createContext<MultisigChainContextProps>({} as Mult
 
 export const MultisigChainProvider = ({ children }: PropsWithChildren) => {
   const { connections } = useNetworkContext();
+  const { addTask } = useTaskQueue();
   const { subscribeMultisigAccount, updateMultisigTx, getMultisigTx, getLiveAccountMultisigTxs, updateCallData } =
-    useMultisigTx();
+    useMultisigTx({ addTask });
   const { getActiveMultisigAccount } = useAccount();
+  const { updateEvent, getEvents, addEventWithQueue } = useMultisigEvent({ addTask });
+
   const { subscribeEvents } = useChainSubscription();
   const debouncedConnections = useDebounce(connections, 1000);
 
@@ -35,8 +44,31 @@ export const MultisigChainProvider = ({ children }: PropsWithChildren) => {
     txs.forEach(async (tx) => {
       const connection = connections[tx.chainId];
 
-      if (connection?.api && tx.callData && !tx.transaction) {
+      if (!connection?.api) return;
+
+      if (tx.callData && !tx.transaction) {
         updateCallData(connection.api, tx, tx.callData);
+      }
+
+      if (!tx.dateCreated && tx.blockCreated) {
+        const dateCreated = await getCreatedDateFromApi(tx.blockCreated, connection.api);
+        updateMultisigTx({ ...tx, dateCreated });
+
+        const events = await getEvents({
+          txAccountId: tx.accountId,
+          txChainId: tx.chainId,
+          txCallHash: tx.callHash,
+          txBlock: tx.blockCreated,
+          txIndex: tx.indexCreated,
+          status: 'SIGNED',
+          accountId: tx.depositor,
+        });
+
+        if (events[0]) {
+          updateEvent({ ...events[0], dateCreated });
+        }
+
+        console.log(`Create date recovered for multisig tx ${tx.callHash}`);
       }
     });
   }, [txs, debouncedConnections]);
@@ -59,38 +91,36 @@ export const MultisigChainProvider = ({ children }: PropsWithChildren) => {
 
     const accountId = event.data[0].toHex();
 
-    const newEvents = tx.events;
-    const pendingEvent = newEvents.findIndex(
-      (event) => pendingEventStatuses.includes(event.status) && event.accountId === accountId,
+    await addEventWithQueue(
+      {
+        txAccountId: account.accountId,
+        txChainId: chainId,
+        txCallHash: callHash,
+        txBlock: blockCreated,
+        txIndex: indexCreated,
+        status: resultEventStatus,
+        accountId,
+        dateCreated: Date.now(),
+      },
+      pendingEventStatuses,
     );
 
-    if (pendingEvent >= 0) {
-      newEvents[pendingEvent].status = resultEventStatus;
-    } else {
-      newEvents.push({
-        status: resultEventStatus,
-        accountId: event.data[0].toHex(),
-        multisigOutcome: resultTransactionStatus,
-        dateCreated: Date.now(),
-      });
-    }
-
-    await updateMultisigTx({
-      ...tx,
-      events: newEvents,
-      status: resultTransactionStatus,
-    });
+    await updateMultisigTx({ ...tx, status: resultTransactionStatus });
 
     console.log(
       `Transaction with call hash ${tx.callHash} and timepoint ${tx.blockCreated}-${tx.indexCreated} was updated`,
     );
   };
 
+  const availableConnectionsAmount = Object.values(debouncedConnections).filter(
+    (c) => c.connection.connectionStatus === ConnectionStatus.CONNECTED,
+  ).length;
+
   useEffect(() => {
     const unsubscribeMultisigs: (() => void)[] = [];
-    const unsubscribeEvents: UnsubscribePromise[] = [];
+    const unsubscribeEvents: VoidFn[] = [];
 
-    Object.values(connections).forEach(({ api, addressPrefix }) => {
+    Object.values(connections).forEach(async ({ api, addressPrefix }) => {
       if (!api?.query.multisig || !account) return;
 
       const unsubscribeMultisig = subscribeMultisigAccount(api, account as MultisigAccount);
@@ -101,12 +131,14 @@ export const MultisigChainProvider = ({ children }: PropsWithChildren) => {
         method: 'MultisigExecuted',
         data: [undefined, undefined, toAddress(account.accountId, { prefix: addressPrefix })],
       };
-      const unsubscribeSuccessEvent = subscribeEvents(api, successParams, (event: Event) => {
+
+      const unsubscribeSuccessEvent = await subscribeEvents(api, successParams, (event: Event) => {
         console.log(
           `Receive MultisigExecuted event for ${
             account.accountId
           } with call hash ${event.data[3].toHex()} with result ${event.data[4]}`,
         );
+
         const multisigResult = event.data[4].toString();
         eventCallback(
           account as MultisigAccount,
@@ -126,7 +158,7 @@ export const MultisigChainProvider = ({ children }: PropsWithChildren) => {
         method: 'MultisigCancelled',
         data: [undefined, undefined, toAddress(account.accountId, { prefix: addressPrefix })],
       };
-      const unsubscribeCancelEvent = subscribeEvents(api, cancelParams, (event: Event) => {
+      const unsubscribeCancelEvent = await subscribeEvents(api, cancelParams, (event: Event) => {
         console.log(`Receive MultisigCancelled event for ${account.accountId} with call hash ${event.data[3].toHex()}`);
 
         eventCallback(
@@ -143,12 +175,12 @@ export const MultisigChainProvider = ({ children }: PropsWithChildren) => {
     });
 
     return () => {
-      unsubscribeMultisigs.forEach((unsubscribeEvent) => unsubscribeEvent());
-      Promise.all(unsubscribeEvents).then(() => console.info('unsubscribed from events'));
+      unsubscribeMultisigs.forEach((unsubscribe) => unsubscribe());
+      unsubscribeEvents.forEach((unsubscribe) => unsubscribe());
     };
-  }, [debouncedConnections, account]);
+  }, [availableConnectionsAmount, account]);
 
-  return <MultisigChainContext.Provider value={{}}>{children}</MultisigChainContext.Provider>;
+  return <MultisigChainContext.Provider value={{ addTask }}>{children}</MultisigChainContext.Provider>;
 };
 
 export const useMultisigChainContext = () => useContext<MultisigChainContextProps>(MultisigChainContext);

@@ -3,9 +3,9 @@ import { TFunction } from 'react-i18next';
 import { useForm, SubmitHandler, Controller } from 'react-hook-form';
 
 import { useI18n } from '@renderer/context/I18nContext';
-import { Button, Input, InputHint, FootnoteText, InputFile } from '@renderer/components/ui-redesign';
+import { Button, Input, InputHint, FootnoteText, InputFile, Tabs } from '@renderer/components/ui-redesign';
 import { useMatrix } from '@renderer/context/MatrixContext';
-import Tabs, { TabItem } from '@renderer/components/ui-redesign/Tabs/Tabs';
+import { TabItem } from '@renderer/components/ui-redesign/Tabs/common/types';
 import { Icon } from '@renderer/components/ui';
 
 type VerifyForm = {
@@ -55,10 +55,9 @@ const Verification = () => {
   const { t } = useI18n();
   const { matrix } = useMatrix();
 
-  const [verifyMethod, setVerifyMethod] = useState<VerifyMethodsType>(VerifyMethods.SECRET_KEY);
-
-  const [sessionIsVerified, setSessionIsVerified] = useState(matrix.sessionIsVerified);
   const [verifyFailed, setVerifyFailed] = useState(false);
+  const [sessionIsVerified, setSessionIsVerified] = useState(matrix.sessionIsVerified);
+  const [verifyMethod, setVerifyMethod] = useState<VerifyMethodsType>(VerifyMethods.SECRET_KEY);
 
   const {
     handleSubmit,
@@ -172,9 +171,9 @@ const Verification = () => {
       {!sessionIsVerified ? (
         <form className="flex flex-col gap-y-2" onSubmit={handleSubmit(submitVerification)}>
           <Tabs
-            items={tabItems}
             panelClassName=""
-            onChange={(index: number) => changeVerifyMethod(index as VerifyMethodsType)}
+            items={tabItems}
+            onChange={(index) => changeVerifyMethod(index as VerifyMethodsType)}
           />
 
           <InputHint variant="error" active={verifyFailed}>

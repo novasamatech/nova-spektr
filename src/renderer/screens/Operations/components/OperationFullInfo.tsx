@@ -1,12 +1,12 @@
 import { useEffect, useState } from 'react';
 
-import { MultisigEvent, MultisigTransaction, SigningStatus } from '@renderer/domain/transaction';
+import { MultisigEvent, SigningStatus } from '@renderer/domain/transaction';
 import { MultisigAccount } from '@renderer/domain/account';
 import { Icon } from '@renderer/components/ui';
 import Details from '@renderer/screens/Operations/components/Details';
 import RejectTx from '@renderer/screens/Operations/components/modals/RejectTx';
 import ApproveTx from '@renderer/screens/Operations/components/modals/ApproveTx';
-import { getMultisigExtrinsicLink } from '@renderer/screens/Operations/common/utils';
+import { getMultisigExtrinsicLink, getSignatoryName } from '@renderer/screens/Operations/common/utils';
 import { Signatory } from '@renderer/domain/signatory';
 import CallDataModal from '@renderer/screens/Operations/components/modals/CallDataModal';
 import { AccountId, CallData, ChainId } from '@renderer/domain/shared-kernel';
@@ -19,19 +19,31 @@ import { useI18n } from '@renderer/context/I18nContext';
 import { Button, CaptionText, InfoLink, SmallTitleText } from '@renderer/components/ui-redesign';
 import SignatoryCard from '@renderer/components/common/SignatoryCard/SignatoryCard';
 import LogModal from './Log';
+import { useContact } from '@renderer/services/contact/contactService';
+import { useAccount } from '@renderer/services/account/accountService';
+import { MultisigTransactionDS } from '@renderer/services/storage';
+import { useMultisigEvent } from '@renderer/services/multisigEvent/multisigEventService';
+import { useMultisigChainContext } from '@renderer/context/MultisigChainContext';
 
 type Props = {
-  tx: MultisigTransaction;
+  tx: MultisigTransactionDS;
   account?: MultisigAccount;
 };
 
 const OperationFullInfo = ({ tx, account }: Props) => {
   const { t } = useI18n();
-  const { callData, events, signatories } = tx;
+  const { getLiveContacts } = useContact();
+  const { getLiveAccounts } = useAccount();
+
+  const { callData, signatories, accountId, chainId, callHash, blockCreated, indexCreated } = tx;
 
   const { matrix } = useMatrix();
+  const { getLiveTxEvents } = useMultisigEvent({});
 
-  const { updateCallData } = useMultisigTx();
+  const events = getLiveTxEvents(accountId, chainId, callHash, blockCreated, indexCreated);
+
+  const { addTask } = useMultisigChainContext();
+  const { updateCallData } = useMultisigTx({ addTask });
   const { connections } = useNetworkContext();
   const connection = connections[tx?.chainId as ChainId];
   const approvals = events.filter((e) => e.status === 'SIGNED');
@@ -43,16 +55,17 @@ const OperationFullInfo = ({ tx, account }: Props) => {
   const [signatoriesList, setSignatories] = useState<Signatory[]>([]);
   const explorerLink = getMultisigExtrinsicLink(tx.callHash, tx.indexCreated, tx.blockCreated, connection?.explorers);
 
+  const contacts = getLiveContacts();
+  const accounts = getLiveAccounts();
+
   const setupCallData = async (callData: CallData) => {
     const api = connection.api;
 
     if (!api || !tx) return;
 
-    if (!account?.matrixRoomId) {
-      updateCallData(api, tx, callData as CallData);
+    updateCallData(api, tx, callData as CallData);
 
-      return;
-    }
+    if (!account?.matrixRoomId) return;
 
     matrix.sendUpdate(account?.matrixRoomId, {
       senderAccountId: tx.depositor || '0x00',
@@ -131,7 +144,7 @@ const OperationFullInfo = ({ tx, account }: Props) => {
             pallet="secondary"
             variant="fill"
             size="sm"
-            prefixElement={<Icon name="chatRedesign" className="text-icon-default" size={16} />}
+            prefixElement={<Icon name="chatRedesign" size={16} />}
             suffixElement={
               <CaptionText className="!text-white bg-chip-icon rounded-full pt-[1px] pb-[2px] px-1.5">
                 {events.length}
@@ -144,24 +157,32 @@ const OperationFullInfo = ({ tx, account }: Props) => {
         </div>
 
         <ul className="flex flex-col gap-y-0.5">
-          {signatoriesList.map(({ accountId, name }) => {
-            return (
-              <li key={accountId}>
-                <SignatoryCard
-                  addressPrefix={connection.addressPrefix}
-                  accountId={accountId}
-                  type="short"
-                  name={name}
-                  status={getSignatoryStatus(accountId)}
-                />
-              </li>
-            );
-          })}
+          {signatoriesList.map(({ accountId, matrixId }) => (
+            <li key={accountId}>
+              <SignatoryCard
+                addressPrefix={connection.addressPrefix}
+                accountId={accountId}
+                type="short"
+                matrixId={matrixId}
+                explorers={connection?.explorers}
+                name={getSignatoryName(accountId, tx.signatories, contacts, accounts, connection.addressPrefix)}
+                status={getSignatoryStatus(accountId)}
+              />
+            </li>
+          ))}
         </ul>
       </div>
 
       <CallDataModal isOpen={isCallDataModalOpen} tx={tx} onSubmit={setupCallData} onClose={toggleCallDataModal} />
-      <LogModal isOpen={isLogModalOpen} tx={tx} account={account} connection={connection} onClose={toggleLogModal} />
+      <LogModal
+        isOpen={isLogModalOpen}
+        tx={tx}
+        account={account}
+        connection={connection}
+        accounts={accounts}
+        contacts={contacts}
+        onClose={toggleLogModal}
+      />
     </div>
   );
 };

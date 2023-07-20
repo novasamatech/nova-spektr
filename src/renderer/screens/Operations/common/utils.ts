@@ -2,16 +2,22 @@ import { TFunction } from 'react-i18next';
 
 import { IconNames } from '@renderer/components/ui/Icon/data';
 import { Explorer } from '@renderer/domain/chain';
-import { HexString } from '@renderer/domain/shared-kernel';
+import { AccountId, HexString } from '@renderer/domain/shared-kernel';
 import {
+  DecodedTransaction,
   MultisigTxFinalStatus,
   MultisigTxInitStatus,
   Transaction,
   TransactionType,
 } from '@renderer/domain/transaction';
-import { DEFAULT } from '@shared/constants/common';
+import { toAddress } from '@renderer/shared/utils/address';
+import { Contact } from '@renderer/domain/contact';
+import { Account } from '@renderer/domain/account';
+import { Signatory } from '@renderer/domain/signatory';
+import { formatSectionAndMethod } from '@renderer/shared/utils/strings';
 
 export const UNKNOWN_TYPE = 'UNKNOWN_TYPE';
+export const TRANSACTION_UNKNOWN = 'operations.titles.unknown';
 export const TransferTypes = [TransactionType.TRANSFER, TransactionType.ASSET_TRANSFER, TransactionType.ORML_TRANSFER];
 
 const TransactionTitles: Record<TransactionType, string> = {
@@ -56,8 +62,12 @@ const TransactionIcons: Record<TransactionType, IconNames> = {
   [TransactionType.BATCH_ALL]: 'unknownMst',
 };
 
-export const getTransactionTitle = (transaction?: Transaction): string => {
-  if (!transaction?.type) return 'operations.titles.unknown';
+export const getTransactionTitle = (transaction?: Transaction | DecodedTransaction): string => {
+  if (!transaction) return TRANSACTION_UNKNOWN;
+
+  if (!transaction.type) {
+    return formatSectionAndMethod(transaction.section, transaction.method);
+  }
 
   if (transaction.type === TransactionType.BATCH_ALL) {
     return getTransactionTitle(transaction?.args?.transactions?.[0]);
@@ -66,7 +76,7 @@ export const getTransactionTitle = (transaction?: Transaction): string => {
   return TransactionTitles[transaction.type];
 };
 
-export const getIconName = (transaction?: Transaction): IconNames => {
+export const getIconName = (transaction?: Transaction | DecodedTransaction): IconNames => {
   if (!transaction?.type) return 'question';
 
   if (transaction.type === TransactionType.BATCH_ALL) {
@@ -185,8 +195,9 @@ export const getTransactionOptions = (t: TFunction) => {
   ];
 };
 
-export const getTransactionAmount = (tx: Transaction): string | null => {
-  const txType = tx.type || DEFAULT;
+export const getTransactionAmount = (tx: Transaction | DecodedTransaction): string | null => {
+  const txType = tx.type;
+  if (!txType) return null;
 
   if (
     [
@@ -218,4 +229,28 @@ export const getTransactionAmount = (tx: Transaction): string | null => {
   }
 
   return null;
+};
+
+export const getSignatoryName = (
+  signatoryId: AccountId,
+  txSignatories: Signatory[],
+  contacts: Contact[],
+  accounts: Account[],
+  addressPrefix?: number,
+): string => {
+  const finderFn = <T extends { accountId: AccountId }>(collection: T[]): T | undefined => {
+    return collection.find((c) => c.accountId === signatoryId);
+  };
+
+  // signatory data source priority: transaction -> contacts -> wallets -> address
+  const fromTx = finderFn(txSignatories)?.name;
+  if (fromTx) return fromTx;
+
+  const fromContact = finderFn(contacts)?.name;
+  if (fromContact) return fromContact;
+
+  const fromAccount = finderFn(accounts)?.name;
+  if (fromAccount) return fromAccount;
+
+  return toAddress(signatoryId, { chunk: 5, prefix: addressPrefix });
 };

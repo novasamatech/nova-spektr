@@ -207,15 +207,12 @@ const InitOperation = ({ api, chainId, accounts, asset, addressPrefix, onResult 
               label={t('staking.bond.signatoryLabel')}
               placeholder={t('staking.bond.signatoryPlaceholder')}
               disabled={!signatoryOptions.length}
-              invalid={!isValidDeposit || !isValidFee}
+              invalid={!isValidDeposit}
               selectedId={activeSignatory?.id}
               options={signatoryOptions}
               onChange={setActiveSignatory}
             />
             <InputHint active={!signatoryOptions.length}>{t('multisigOperations.noSignatory')}</InputHint>
-            <InputHint active={!isValidFee} variant="error">
-              {t('staking.notEnoughBalanceForFeeError')}
-            </InputHint>
             <InputHint active={!isValidDeposit} variant="error">
               {t('staking.notEnoughBalanceForDepositError')}
             </InputHint>

@@ -14,7 +14,7 @@ const ExtrinsicExplorers = ({ hash, explorers = [] }: Props) => {
 
   return (
     <InfoPopover data={popoverItems} position="right-0 top-full">
-      <Icon name="info" size={16} className="text-icon-default hover:text-icon-hover" />
+      <Icon name="info" size={16} className="hover:text-icon-hover" />
     </InfoPopover>
   );
 };

@@ -1,21 +1,28 @@
-import { ComponentProps, useState } from 'react';
-import { SubmitHandler } from 'react-hook-form';
+import { ComponentProps, useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 import { BaseModal, HeaderTitleText, StatusLabel, Button } from '@renderer/components/ui-redesign';
 import { useI18n } from '@renderer/context/I18nContext';
 import { useMatrix } from '@renderer/context/MatrixContext';
 import { useAccount } from '@renderer/services/account/accountService';
-import { Signatory } from '@renderer/domain/signatory';
-import { createMultisigAccount, MultisigAccount } from '@renderer/domain/account';
+import { createMultisigAccount, MultisigAccount, Account, getMultisigAccountId } from '@renderer/domain/account';
 import { useToggle } from '@renderer/shared/hooks';
-import OperationResult from '@renderer/components/ui-redesign/OperationResult/OperationResult';
-import { MultisigAccountForm, WalletForm } from './components/WalletForm';
-import AddSignatory from './components/AddSignatory';
+import { OperationResult } from '@renderer/components/common/OperationResult/OperationResult';
 import { MatrixModal } from '../MatrixModal/MatrixModal';
+import { Wallet } from '@renderer/domain/wallet';
+import { useWallet } from '@renderer/services/wallet/walletService';
+import { useContact } from '@renderer/services/contact/contactService';
+import { ExtendedContact, ExtendedWallet } from './common/types';
+import { SelectSignatories, ConfirmSignatories, WalletForm } from './components';
+import { AccountId } from '@renderer/domain/shared-kernel';
 import Paths from '@renderer/routes/paths';
 
 type OperationResultProps = Pick<ComponentProps<typeof OperationResult>, 'variant' | 'description'>;
+
+const enum Step {
+  INIT,
+  CONFIRMATION,
+}
 
 type Props = {
   isOpen: boolean;
@@ -25,76 +32,116 @@ type Props = {
 export const CreateMultisigAccount = ({ isOpen, onClose }: Props) => {
   const { t } = useI18n();
   const { matrix, isLoggedIn } = useMatrix();
+  const { getWallets } = useWallet();
+  const { getLiveContacts } = useContact();
+  const { getAccounts, addAccount, setActiveAccount } = useAccount();
   const navigate = useNavigate();
-  const { getLiveAccounts, addAccount, setActiveAccount } = useAccount();
-  const accounts = getLiveAccounts();
 
   const [isLoading, toggleLoading] = useToggle();
   const [isResultModalOpen, toggleResultModal] = useToggle();
 
   const [name, setName] = useState('');
   const [error, setError] = useState('');
-  const [isEditing, setIsEditing] = useState(true);
-  const [signatories, setSignatories] = useState<Signatory[]>([]);
+  const [activeStep, setActiveStep] = useState<Step>(Step.INIT);
 
-  const goBack = () => {
-    if (isEditing) {
+  const [signatoryWallets, setSignatoryWallets] = useState<ExtendedWallet[]>([]);
+  const [signatoryContacts, setSignatoryContacts] = useState<ExtendedContact[]>([]);
+
+  const [wallets, setWallets] = useState<Wallet[]>([]);
+  const [accounts, setAccounts] = useState<Account[]>([]);
+
+  const contacts = getLiveContacts();
+  const signatories = signatoryWallets.concat(signatoryContacts);
+
+  useEffect(() => {
+    if (!isOpen) return;
+
+    getAccounts().then(setAccounts);
+    getWallets().then(setWallets);
+  }, [isOpen]);
+
+  const goToPrevStep = () => {
+    if (activeStep === Step.INIT) {
       onClose();
     } else {
-      setIsEditing(true);
+      setActiveStep((prev) => prev - 1);
     }
   };
 
   const handleSuccessClose = () => {
     toggleResultModal();
-    navigate(Paths.BALANCES);
+    navigate(Paths.ASSETS);
   };
 
-  const onCreateAccount: SubmitHandler<MultisigAccountForm> = async ({ name, threshold }) => {
+  const onCreateAccount = async (name: string, threshold: number, creatorId: AccountId): Promise<void> => {
     setName(name);
     toggleLoading();
     toggleResultModal();
 
-    const inviter = signatories.find((s) => s.matrixId === matrix.userId);
-    if (!inviter || !threshold) return;
+    try {
+      const multisigAccountId = getMultisigAccountId(
+        signatories.map((s) => s.accountId),
+        threshold,
+      );
+
+      const roomId = matrix.joinedRooms(multisigAccountId)[0]?.roomId;
+      if (roomId) {
+        await createFromExistingRoom(name, threshold, creatorId, roomId);
+      } else {
+        await createNewRoom(name, threshold, creatorId);
+      }
+
+      setTimeout(handleSuccessClose, 2000);
+    } catch (error: any) {
+      setError(error?.message || t('createMultisigAccount.errorMessage'));
+    }
+
+    toggleLoading();
+    handleClose();
+  };
+
+  const createFromExistingRoom = async (
+    name: string,
+    threshold: number,
+    creatorId: AccountId,
+    matrixRoomId: string,
+  ): Promise<void> => {
+    console.log('Trying to create Multisig from existing room ', matrixRoomId);
 
     const mstAccount = createMultisigAccount({
       name,
       signatories,
-      threshold: threshold.value,
-      creatorAccountId: inviter.accountId,
-      matrixRoomId: '',
+      threshold,
+      matrixRoomId,
+      creatorAccountId: creatorId,
       isActive: false,
     });
 
-    if (!mstAccount.accountId) return;
-
-    try {
-      const matrixRoomId = await matrix.createRoom({
-        creatorAccountId: inviter.accountId,
-        accountName: mstAccount.name,
-        accountId: mstAccount.accountId,
-        threshold: mstAccount.threshold,
-        signatories: signatories.map(({ accountId, matrixId }) => ({ accountId, matrixId })),
-      });
-      await addAccount<MultisigAccount>({ ...mstAccount, matrixRoomId }).then(setActiveAccount);
-
-      toggleLoading();
-      setTimeout(handleSuccessClose, 2000);
-    } catch (error: any) {
-      toggleLoading();
-      setError(error?.message || t('createMultisigAccount.errorMessage'));
-    }
-
-    handleClose();
+    await addAccount<MultisigAccount>(mstAccount).then(setActiveAccount);
   };
 
-  const modalTitle = (
-    <div className="flex justify-between items-center px-5 py-3 w-[472px] bg-white rounded-tl-lg">
-      <HeaderTitleText className="py-[3px]">{t('createMultisigAccount.title')}</HeaderTitleText>
-      <StatusLabel title={matrix.userId || ''} variant="success" />
-    </div>
-  );
+  const createNewRoom = async (name: string, threshold: number, creatorId: AccountId): Promise<void> => {
+    console.log('Trying to create new Multisig room');
+
+    const mstAccount = createMultisigAccount({
+      name,
+      signatories,
+      threshold,
+      matrixRoomId: '',
+      creatorAccountId: creatorId,
+      isActive: false,
+    });
+
+    const matrixRoomId = await matrix.createRoom({
+      creatorAccountId: creatorId,
+      accountName: mstAccount.name,
+      accountId: mstAccount.accountId,
+      threshold: mstAccount.threshold,
+      signatories: signatories.map(({ accountId, matrixId }) => ({ accountId, matrixId })),
+    });
+
+    await addAccount<MultisigAccount>({ ...mstAccount, matrixRoomId }).then(setActiveAccount);
+  };
 
   const getResultProps = (): OperationResultProps => {
     if (isLoading) return { variant: 'loading' };
@@ -103,11 +150,20 @@ export const CreateMultisigAccount = ({ isOpen, onClose }: Props) => {
     return { variant: 'success', description: t('createMultisigAccount.successMessage') };
   };
 
+  // TODO: use modal navigation
   const handleClose = () => {
     onClose();
-    setIsEditing(true);
-    setSignatories([]);
+    setActiveStep(Step.INIT);
+    setSignatoryWallets([]);
+    setSignatoryContacts([]);
   };
+
+  const modalTitle = (
+    <div className="flex justify-between items-center px-5 py-3 w-[472px] bg-white rounded-tl-lg">
+      <HeaderTitleText className="py-[3px]">{t('createMultisigAccount.title')}</HeaderTitleText>
+      <StatusLabel title={matrix.userId || ''} variant="success" />
+    </div>
+  );
 
   return (
     <>
@@ -121,21 +177,36 @@ export const CreateMultisigAccount = ({ isOpen, onClose }: Props) => {
         onClose={handleClose}
       >
         <WalletForm
-          signatories={signatories}
           accounts={accounts}
-          isEditing={isEditing}
+          signatories={signatories}
+          isEditState={activeStep === Step.INIT}
           isLoading={isLoading}
-          onContinue={() => setIsEditing(false)}
-          onGoBack={goBack}
+          onGoBack={goToPrevStep}
+          onContinue={() => setActiveStep(Step.CONFIRMATION)}
           onCreateAccount={onCreateAccount}
         />
 
-        <AddSignatory isEditing={isEditing} onSelect={setSignatories} />
+        <SelectSignatories
+          isActive={activeStep === Step.INIT}
+          wallets={wallets}
+          accounts={accounts}
+          contacts={contacts}
+          onSelect={(wallets, contacts) => {
+            setSignatoryWallets(wallets);
+            setSignatoryContacts(contacts);
+          }}
+        />
+        <ConfirmSignatories
+          isActive={activeStep === Step.CONFIRMATION}
+          wallets={signatoryWallets}
+          contacts={signatoryContacts}
+        />
       </BaseModal>
 
       <OperationResult {...getResultProps()} title={name} isOpen={isResultModalOpen} onClose={handleSuccessClose}>
         {error && <Button onClick={toggleResultModal}>{t('createMultisigAccount.closeButton')}</Button>}
       </OperationResult>
+
       <MatrixModal isOpen={isOpen && !isLoggedIn} onClose={onClose} />
     </>
   );

@@ -57,3 +57,32 @@ export const includes = (value?: string, searchString?: string): boolean => {
 
   return value.toLowerCase().includes((searchString || '').toLowerCase());
 };
+
+/**
+ * Truncate text leaving fixed number of characters
+ * @param text text to truncate
+ * @param start number of leading symbols
+ * @param end number of ending symbols
+ * @return {String}
+ */
+export const truncate = (text: string, start = 5, end = 5): string => {
+  if (text.length <= start + end) return text;
+
+  return `${text.slice(0, start)}...${text.slice(-1 * end)}`;
+};
+
+/**
+ * Formats the section and method of transaction to the format:
+ * Section split camel case to separate words, 1st capital: Method split camel case to separate words - 1st capital
+ * @param section extrinsic call section
+ * @param method extrinsic call method
+ * @return {String}
+ */
+export const formatSectionAndMethod = (section: string, method: string): string => {
+  const splitFn = (value: string) => `${value[0].toUpperCase()}${value.slice(1)}`;
+
+  const sectionSplit = section.replace(/([a-z0-9])([A-Z])/g, '$1 $2').toLowerCase();
+  const methodSplit = method.replace(/([a-z0-9])([A-Z])/g, '$1 $2').toLowerCase();
+
+  return `${splitFn(sectionSplit)}: ${splitFn(methodSplit)}`;
+};
