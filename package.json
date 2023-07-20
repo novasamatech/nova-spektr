@@ -1,7 +1,7 @@
 {
   "name": "nova-spektr",
   "description": "Polkadot Enterprise application",
-  "version": "1.0.0",
+  "version": "1.0.2",
   "main": "./release/build/main.js",
   "license": "MIT",
   "author": {
@@ -80,6 +80,7 @@
     "graphql": "^16.6.0",
     "i18next": "^21.8.13",
     "lodash": "^4.17.21",
+    "lottie-react": "^2.4.0",
     "parity-scale-codec": "^0.6.1",
     "qrcode-generator": "^1.4.4",
     "raptorq": "^1.7.22",
@@ -88,7 +89,6 @@
     "react-error-boundary": "^3.1.4",
     "react-hook-form": "^7.33.1",
     "react-i18next": "^11.18.0",
-    "react-lottie": "^1.2.3",
     "react-router-dom": "^6.4.5",
     "stream-browserify": "^3.0.0",
     "styled-components": "^5.3.6",

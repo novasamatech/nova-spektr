@@ -109,6 +109,12 @@ export const SelectSignatories = ({ isActive, wallets, accounts, contacts, onSel
     });
   };
 
+  const isDisabled = (index: string, accountId: AccountId): boolean => {
+    return (
+      isSameItemSelected(index, selectedWallets[accountId]) || isSameItemSelected(index, selectedContacts[accountId])
+    );
+  };
+
   const searchedContactList = contactList.filter((c) => {
     return includes(c.address, query) || includes(c.matrixId, query) || includes(c.name, query);
   });
@@ -125,7 +131,7 @@ export const SelectSignatories = ({ isActive, wallets, accounts, contacts, onSel
         <li key={index + 'wallets'} className="p-1 mb-0.5 last:mb-0 rounded-md hover:bg-action-background-hover">
           <Checkbox
             checked={selectedWallets[accountId]?.[index] || false}
-            disabled={isSameItemSelected(index, selectedWallets[accountId])}
+            disabled={isDisabled(index, accountId)}
             onChange={() => selectSignatory(SignatoryTabs.WALLETS, index, accountId, selectedWallets)}
           >
             <WalletsTabItem
@@ -164,7 +170,7 @@ export const SelectSignatories = ({ isActive, wallets, accounts, contacts, onSel
             <li key={index + 'contacts'} className="p-1 mb-0.5 last:mb-0 rounded-md hover:bg-action-background-hover">
               <Checkbox
                 checked={selectedContacts[accountId]?.[index] || false}
-                disabled={isSameItemSelected(index, selectedContacts[accountId])}
+                disabled={isDisabled(index, accountId)}
                 onChange={() => selectSignatory(SignatoryTabs.CONTACTS, index, accountId, selectedContacts)}
               >
                 <WalletsTabItem name={name} accountId={accountId} />

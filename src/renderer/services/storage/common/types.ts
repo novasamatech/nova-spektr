@@ -5,7 +5,7 @@ import { Connection, ConnectionType } from '@renderer/domain/connection';
 import { Contact } from '@renderer/domain/contact';
 import { Address, ChainId, AccountId, CallHash } from '@renderer/domain/shared-kernel';
 import { Wallet } from '@renderer/domain/wallet';
-import { MultisigTransaction } from '@renderer/domain/transaction';
+import { MultisigEvent, MultisigTransaction, MultisigTransactionKey } from '@renderer/domain/transaction';
 import { Account, MultisigAccount } from '@renderer/domain/account';
 import { Notification } from '@renderer/domain/notification';
 
@@ -43,7 +43,16 @@ export interface IWalletStorage {
   getWallets: <T extends Wallet>(where?: Partial<T>) => Promise<WalletDS[]>;
   addWallet: (wallet: Wallet) => Promise<ID>;
   updateWallet: (wallet: Wallet) => Promise<ID>;
-  deleteWallet: (walletId: string) => Promise<void>;
+  deleteWallet: (walletId: ID) => Promise<void>;
+}
+
+export interface IMultisigEventStorage {
+  getEvent: (eventId: ID) => Promise<MultisigEventDS | undefined>;
+  getEvents: <T extends MultisigEvent>(where?: Partial<T>) => Promise<MultisigEventDS[]>;
+  getEventsByKeys: (keys: MultisigTransactionKey[]) => Promise<MultisigEventDS[]>;
+  addEvent: (event: MultisigEvent) => Promise<ID>;
+  updateEvent: (event: MultisigEventDS) => Promise<ID>;
+  deleteEvent: (eventId: ID) => Promise<void>;
 }
 
 export interface IAccountStorage {
@@ -99,6 +108,7 @@ export type DataStorage = {
   accounts: IAccountStorage;
   contacts: IContactStorage;
   multisigTransactions: IMultisigTransactionStorage;
+  multisigEvents: IMultisigEventStorage;
   notifications: INotificationStorage;
 };
 
@@ -111,6 +121,7 @@ export type BalanceDS = WithID<Balance>;
 export type ConnectionDS = WithID<Connection>;
 export type AccountDS = WithID<Account | MultisigAccount>;
 export type MultisigTransactionDS = WithID<MultisigTransaction>;
+export type MultisigEventDS = WithID<MultisigEvent>;
 export type NotificationDS = WithID<Notification>;
 
 export type TWallet = Table<Wallet, ID>;
@@ -119,4 +130,5 @@ export type TBalance = Table<Balance, ID[]>;
 export type TConnection = Table<Connection, ID>;
 export type TAccount = Table<Account | MultisigAccount, ID>;
 export type TMultisigTransaction = Table<MultisigTransaction, ID[]>;
+export type TMultisigEvent = Table<MultisigEvent, ID>;
 export type TNotification = Table<Notification, ID>;

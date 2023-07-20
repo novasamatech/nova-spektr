@@ -17,7 +17,7 @@ import { Shimmering } from '@renderer/components/ui';
 
 const Navigation = () => {
   const { getActiveAccounts } = useAccount();
-  const { getLiveAccountMultisigTxs } = useMultisigTx();
+  const { getLiveAccountMultisigTxs } = useMultisigTx({});
   const { getChainsData } = useChains();
   const { getLiveWallets } = useWallet();
   const wallets = getLiveWallets();
@@ -31,11 +31,11 @@ const Navigation = () => {
   const activeAccounts = getActiveAccounts();
 
   const txs = getLiveAccountMultisigTxs(activeAccounts.map((a) => a.accountId)).filter(
-    (tx) => tx.status === MultisigTxInitStatus.SIGNING,
+    (tx) => tx.status === MultisigTxInitStatus.SIGNING && chains[tx.chainId],
   );
 
   const NavItems: NavItemProps[] = [
-    { icon: 'asset', title: 'navigation.balancesLabel', link: Paths.BALANCES },
+    { icon: 'asset', title: 'navigation.balancesLabel', link: Paths.ASSETS },
     { icon: 'staking', title: 'navigation.stakingLabel', link: Paths.STAKING },
     {
       icon: 'operations',

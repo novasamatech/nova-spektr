@@ -1,4 +1,6 @@
 import { ApiPromise } from '@polkadot/api';
+import { Vec } from '@polkadot/types';
+import { AccountId32 } from '@polkadot/types/interfaces';
 
 import { MultisigAccount } from '@renderer/domain/account';
 import { Address, ChainId } from '@renderer/domain/shared-kernel';
@@ -24,27 +26,32 @@ export const getPendingMultisigTxs = async (
     }, []);
 };
 
-export const updateTransactionPayload = (
-  transaction: MultisigTransaction,
-  pendingTransaction: PendingMultisigTransaction,
-): MultisigTransaction | undefined => {
-  const { events } = transaction;
-  const { when, deposit, depositor } = pendingTransaction.params;
+export const updateOldEventsPayload = (events: MultisigEvent[], approvals: Vec<AccountId32>): MultisigEvent[] => {
+  return events.map((e) => {
+    const isPendingSigned = e.status === 'PENDING_SIGNED';
+    const hasApproval = approvals.find((a) => a.toHex() === e.accountId);
 
-  const oldEvents = events.map((e) => {
-    return e.status === 'PENDING_SIGNED' && pendingTransaction.params.approvals.find((a) => a.toHex() === e.accountId)
-      ? ({
-          ...e,
-          status: 'SIGNED',
-        } as MultisigEvent)
-      : e;
+    if (!isPendingSigned || !hasApproval) return e;
+
+    return { ...e, status: 'SIGNED' };
   });
+};
 
-  const newApprovals = pendingTransaction.params.approvals.reduce<MultisigEvent[]>((acc, a) => {
+export const createNewEventsPayload = (
+  events: MultisigEvent[],
+  tx: MultisigTransaction,
+  approvals: Vec<AccountId32>,
+): MultisigEvent[] => {
+  return approvals.reduce<MultisigEvent[]>((acc, a) => {
     const hasApprovalEvent = events.find((e) => e.status === 'SIGNED' && e.accountId === a.toHex());
 
     if (!hasApprovalEvent) {
       acc.push({
+        txAccountId: tx.accountId,
+        txChainId: tx.chainId,
+        txCallHash: tx.callHash,
+        txBlock: tx.blockCreated,
+        txIndex: tx.indexCreated,
         status: 'SIGNED',
         accountId: a.toHex(),
         dateCreated: Date.now(),
@@ -53,12 +60,18 @@ export const updateTransactionPayload = (
 
     return acc;
   }, []);
+};
+
+export const updateTransactionPayload = (
+  transaction: MultisigTransaction,
+  pendingTransaction: PendingMultisigTransaction,
+): MultisigTransaction | undefined => {
+  const { when, deposit, depositor } = pendingTransaction.params;
 
   const blockCreated = when.height.toNumber();
   const indexCreated = when.index.toNumber();
 
   if (
-    newApprovals.length === 0 &&
     transaction.blockCreated === blockCreated &&
     transaction.indexCreated === indexCreated &&
     transaction.deposit === deposit.toString() &&
@@ -73,8 +86,32 @@ export const updateTransactionPayload = (
     indexCreated,
     deposit: deposit.toString(),
     depositor: depositor.toHex(),
-    events: [...oldEvents, ...newApprovals],
   };
+};
+
+export const createEventsPayload = (
+  tx: MultisigTransaction,
+  pendingTransaction: PendingMultisigTransaction,
+  account: MultisigAccount,
+  currentBlock: number,
+  blockTime: number,
+): MultisigEvent[] => {
+  const { when, approvals, depositor } = pendingTransaction.params;
+
+  const dateCreated = getCreatedDate(when.height.toNumber(), currentBlock, blockTime);
+
+  const events: MultisigEvent[] = approvals.map((a) => ({
+    txAccountId: tx.accountId,
+    txChainId: tx.chainId,
+    txCallHash: tx.callHash,
+    txBlock: tx.blockCreated,
+    txIndex: tx.indexCreated,
+    status: 'SIGNED',
+    accountId: account.signatories.find((s) => s.accountId === a.toHuman())?.accountId || a.toHex(),
+    dateCreated: a.toHex() === depositor.toHex() ? dateCreated : undefined,
+  }));
+
+  return events;
 };
 
 export const createTransactionPayload = (
@@ -84,18 +121,12 @@ export const createTransactionPayload = (
   currentBlock: number,
   blockTime: number,
 ): MultisigTransaction => {
-  const { when, approvals, deposit, depositor } = pendingTransaction.params;
+  const { when, deposit, depositor } = pendingTransaction.params;
 
   const dateCreated = getCreatedDate(when.height.toNumber(), currentBlock, blockTime);
-  const events: MultisigEvent[] = approvals.map((a) => ({
-    status: 'SIGNED',
-    accountId: account.signatories.find((s) => s.accountId === a.toHuman())?.accountId || a.toHex(),
-    dateCreated: a.toHex() === depositor.toHex() ? dateCreated : undefined,
-  }));
 
   return {
     chainId,
-    events,
     dateCreated,
     blockCreated: when.height.toNumber(),
     indexCreated: when.index.toNumber(),

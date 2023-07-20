@@ -4,7 +4,7 @@ import { format } from 'date-fns';
 import { useI18n } from '@renderer/context/I18nContext';
 import { Account, MultisigAccount } from '@renderer/domain/account';
 import { ExtendedChain } from '@renderer/services/network/common/types';
-import { MultisigEvent, MultisigTransaction, SigningStatus } from '@renderer/domain/transaction';
+import { MultisigEvent, SigningStatus } from '@renderer/domain/transaction';
 import TransactionTitle from './TransactionTitle/TransactionTitle';
 import OperationStatus from './OperationStatus';
 import { getSignatoryName, getTransactionAmount, sortByDateAsc } from '../common/utils';
@@ -15,9 +15,11 @@ import { toAddress } from '@renderer/shared/utils/address';
 import { SS58_DEFAULT_PREFIX } from '@renderer/shared/utils/constants';
 import { ExtrinsicExplorers } from '@renderer/components/common';
 import { Contact } from '@renderer/domain/contact';
+import { useMultisigEvent } from '@renderer/services/multisigEvent/multisigEventService';
+import { MultisigTransactionDS } from '@renderer/services/storage';
 
 type Props = {
-  tx: MultisigTransaction;
+  tx: MultisigTransactionDS;
   account?: MultisigAccount;
   connection?: ExtendedChain;
   accounts: Account[];
@@ -36,15 +38,17 @@ const EventMessage: Partial<Record<SigningStatus | 'INITIATED', string>> = {
 
 const LogModal = ({ isOpen, onClose, tx, account, connection, contacts, accounts }: Props) => {
   const { t, dateLocale } = useI18n();
+  const { getLiveTxEvents } = useMultisigEvent({});
+  const events = getLiveTxEvents(tx.accountId, tx.chainId, tx.callHash, tx.blockCreated, tx.indexCreated);
 
   const { transaction, description, status } = tx;
-  const approvals = tx.events.filter((e) => e.status === 'SIGNED');
+  const approvals = events.filter((e) => e.status === 'SIGNED');
 
   const asset = getAssetById(transaction?.args.assetId, connection?.assets);
   const addressPrefix = connection?.addressPrefix || SS58_DEFAULT_PREFIX;
   const showAsset = Boolean(transaction && getTransactionAmount(transaction));
 
-  const groupedEvents = groupBy(tx.events, ({ dateCreated }) =>
+  const groupedEvents = groupBy(events, ({ dateCreated }) =>
     format(new Date(dateCreated || 0), 'PP', { locale: dateLocale }),
   );
 

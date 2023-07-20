@@ -1,6 +1,7 @@
 import { render, screen } from '@testing-library/react';
 
 import { TEST_ACCOUNT_ID } from '@renderer/shared/utils/constants';
+import { ConnectionType } from '@renderer/domain/connection';
 import Operations from './Operations';
 
 jest.mock('@renderer/context/I18nContext', () => ({
@@ -9,16 +10,39 @@ jest.mock('@renderer/context/I18nContext', () => ({
   }),
 }));
 
+const mockTxs = [{ name: 'Test Wallet', accountId: TEST_ACCOUNT_ID }];
+const mockAccounts = [{ name: 'Test Account', accountId: TEST_ACCOUNT_ID }];
+
 jest.mock('@renderer/services/multisigTx/multisigTxService', () => ({
   useMultisigTx: jest.fn().mockReturnValue({
-    getLiveAccountMultisigTxs: () => [{ name: 'Test Wallet', accountId: TEST_ACCOUNT_ID }],
+    getLiveAccountMultisigTxs: () => mockTxs,
+  }),
+}));
+
+jest.mock('@renderer/services/multisigEvent/multisigEventService', () => ({
+  useMultisigEvent: jest.fn().mockReturnValue({
+    getLiveEventsByKeys: jest.fn().mockResolvedValue([]),
   }),
 }));
 
 jest.mock('@renderer/services/account/accountService', () => ({
   useAccount: jest.fn().mockReturnValue({
-    getActiveMultisigAccount: () => [{ name: 'Test Account', accountId: TEST_ACCOUNT_ID }],
+    getActiveMultisigAccount: () => mockAccounts,
   }),
+}));
+
+jest.mock('@renderer/context/NetworkContext', () => ({
+  useNetworkContext: jest.fn(() => ({
+    connections: {
+      '0x0000000000000000000000000000000000000000': {
+        chainId: '1',
+        assets: [{ assetId: '1', symbol: '1' }],
+        connection: {
+          connectionType: ConnectionType.RPC_NODE,
+        },
+      },
+    },
+  })),
 }));
 
 // TODO add test for Operation component and move it there

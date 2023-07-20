@@ -1,4 +1,3 @@
-import cnTw from '@renderer/shared/utils/twMerge';
 import AccountAddress, {
   getAddress,
   Props as AccountAddressProps,
@@ -13,6 +12,7 @@ import { ChainId } from '@renderer/domain/shared-kernel';
 import { Asset } from '@renderer/domain/asset';
 import BalanceNew from '../BalanceNew/BalanceNew';
 import { transferableAmount } from '@renderer/shared/utils/balance';
+import cnTw from '@renderer/shared/utils/twMerge';
 
 type Props<T extends any> = {
   explorers?: Explorer[];
@@ -46,12 +46,12 @@ const SelectableSignatory = <T extends any>({
     >
       <AccountAddress addressFont="text-body text-inherit" size={size} name={name} {...addressProps} />
       <InfoPopover data={popoverItems}>
-        <Icon name="info" size={14} className="text-icon-default ml-2 mr-auto" />
+        <Icon name="info" size={14} className="ml-2 mr-auto" />
       </InfoPopover>
       {balance && asset && (
         <BalanceNew value={transferableAmount(balance)} asset={asset} className="text-body text-inherit ml-auto mr-6" />
       )}
-      <Icon name="right" className={cnTw('text-icon-default', !balance && 'ml-auto')} size={20} />
+      <Icon name="right" className={cnTw(!balance && 'ml-auto')} size={20} />
     </button>
   );
 };

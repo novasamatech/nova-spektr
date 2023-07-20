@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 
-import { MultisigEvent, MultisigTransaction, SigningStatus } from '@renderer/domain/transaction';
+import { MultisigEvent, SigningStatus } from '@renderer/domain/transaction';
 import { MultisigAccount } from '@renderer/domain/account';
 import { Icon } from '@renderer/components/ui';
 import Details from '@renderer/screens/Operations/components/Details';
@@ -21,9 +21,12 @@ import SignatoryCard from '@renderer/components/common/SignatoryCard/SignatoryCa
 import LogModal from './Log';
 import { useContact } from '@renderer/services/contact/contactService';
 import { useAccount } from '@renderer/services/account/accountService';
+import { MultisigTransactionDS } from '@renderer/services/storage';
+import { useMultisigEvent } from '@renderer/services/multisigEvent/multisigEventService';
+import { useMultisigChainContext } from '@renderer/context/MultisigChainContext';
 
 type Props = {
-  tx: MultisigTransaction;
+  tx: MultisigTransactionDS;
   account?: MultisigAccount;
 };
 
@@ -32,11 +35,15 @@ const OperationFullInfo = ({ tx, account }: Props) => {
   const { getLiveContacts } = useContact();
   const { getLiveAccounts } = useAccount();
 
-  const { callData, events, signatories } = tx;
+  const { callData, signatories, accountId, chainId, callHash, blockCreated, indexCreated } = tx;
 
   const { matrix } = useMatrix();
+  const { getLiveTxEvents } = useMultisigEvent({});
 
-  const { updateCallData } = useMultisigTx();
+  const events = getLiveTxEvents(accountId, chainId, callHash, blockCreated, indexCreated);
+
+  const { addTask } = useMultisigChainContext();
+  const { updateCallData } = useMultisigTx({ addTask });
   const { connections } = useNetworkContext();
   const connection = connections[tx?.chainId as ChainId];
   const approvals = events.filter((e) => e.status === 'SIGNED');
@@ -56,11 +63,9 @@ const OperationFullInfo = ({ tx, account }: Props) => {
 
     if (!api || !tx) return;
 
-    if (!account?.matrixRoomId) {
-      updateCallData(api, tx, callData as CallData);
+    updateCallData(api, tx, callData as CallData);
 
-      return;
-    }
+    if (!account?.matrixRoomId) return;
 
     matrix.sendUpdate(account?.matrixRoomId, {
       senderAccountId: tx.depositor || '0x00',
@@ -139,7 +144,7 @@ const OperationFullInfo = ({ tx, account }: Props) => {
             pallet="secondary"
             variant="fill"
             size="sm"
-            prefixElement={<Icon name="chatRedesign" className="text-icon-default" size={16} />}
+            prefixElement={<Icon name="chatRedesign" size={16} />}
             suffixElement={
               <CaptionText className="!text-white bg-chip-icon rounded-full pt-[1px] pb-[2px] px-1.5">
                 {events.length}
@@ -159,7 +164,8 @@ const OperationFullInfo = ({ tx, account }: Props) => {
                 accountId={accountId}
                 type="short"
                 matrixId={matrixId}
-                name={getSignatoryName(accountId, tx.signatories, contacts, accounts, connection?.addressPrefix)}
+                explorers={connection?.explorers}
+                name={getSignatoryName(accountId, tx.signatories, contacts, accounts, connection.addressPrefix)}
                 status={getSignatoryStatus(accountId)}
               />
             </li>

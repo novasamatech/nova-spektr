@@ -1,11 +1,11 @@
-import Lottie from 'react-lottie';
+import { useLottie } from 'lottie-react';
 
 import Animations from './Data';
 
 export type AnimationNames = keyof typeof Animations;
 
 export type Props = {
-  name: AnimationNames;
+  animation: Object;
   width?: number;
   height?: number;
   loop?: boolean;
@@ -13,19 +13,17 @@ export type Props = {
   className?: string;
 };
 
-export const Animation = ({ name, width = 80, height = 80, loop = false, autoplay = true, className }: Props) => {
+export const Animation = ({ animation, width = 80, height = 80, loop = false, autoplay = true, className }: Props) => {
   const defaultOptions = {
     loop,
     autoplay,
-    animationData: Animations[name],
+    animationData: animation,
     rendererSettings: {
       preserveAspectRatio: 'xMidYMid slice',
     },
   };
 
-  return (
-    <div className={className}>
-      <Lottie options={defaultOptions} isClickToPauseDisabled={true} height={height} width={width} />
-    </div>
-  );
+  const { View } = useLottie(defaultOptions, { width: width, height: height });
+
+  return <div className={className}>{View}</div>;
 };

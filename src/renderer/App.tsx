@@ -47,13 +47,13 @@ const App = () => {
     <I18Provider>
       <ErrorBoundary FallbackComponent={FallbackScreen} onError={console.error}>
         <NetworkProvider>
-          <MatrixProvider>
-            <MultisigChainProvider>
+          <MultisigChainProvider>
+            <MatrixProvider>
               <ConfirmDialogProvider>
                 <GraphqlContext>{getContent()}</GraphqlContext>
               </ConfirmDialogProvider>
-            </MultisigChainProvider>
-          </MatrixProvider>
+            </MatrixProvider>
+          </MultisigChainProvider>
         </NetworkProvider>
       </ErrorBoundary>
     </I18Provider>

@@ -33,6 +33,14 @@ jest.mock('@renderer/services/notification/notificationService', () => ({
   }),
 }));
 
+jest.mock('@renderer/services/multisigEvent/multisigEventService', () => ({
+  useMultisigEvent: jest.fn().mockReturnValue({
+    addEvent: jest.fn(),
+    updateEvent: jest.fn(),
+    getEvents: jest.fn().mockReturnValue([]),
+  }),
+}));
+
 jest.mock('@renderer/context/NetworkContext', () => ({
   useNetworkContext: jest.fn(() => ({
     connections: {

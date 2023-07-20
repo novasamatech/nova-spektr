@@ -1,40 +1,10 @@
 import { render, screen } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 
-import Balances from './Balances';
 import { TEST_ACCOUNT_ID } from '@renderer/shared/utils/constants';
 import { ConnectionType } from '@renderer/domain/connection';
 import { useAccount } from '@renderer/services/account/accountService';
-
-jest.mock('@renderer/services/account/accountService', () => ({
-  useAccount: jest.fn().mockReturnValue({
-    getActiveAccounts: () => [{ name: 'Test Wallet', accountId: TEST_ACCOUNT_ID }],
-  }),
-}));
-
-jest.mock('@renderer/context/NetworkContext', () => ({
-  useNetworkContext: jest.fn(() => ({
-    connections: {
-      '0x0': {
-        chainId: '1',
-        assets: [
-          { assetId: '1', symbol: '1' },
-          { assetId: '2', symbol: '2' },
-        ],
-        connection: {
-          connectionType: ConnectionType.RPC_NODE,
-        },
-      },
-      '0x1': {
-        chainId: '2',
-        assets: [{ assetId: '1', symbol: '1' }],
-        connection: {
-          connectionType: ConnectionType.RPC_NODE,
-        },
-      },
-    },
-  })),
-}));
+import { Assets } from './Assets';
 
 jest.mock('@renderer/context/I18nContext', () => ({
   useI18n: jest.fn().mockReturnValue({
@@ -42,26 +12,72 @@ jest.mock('@renderer/context/I18nContext', () => ({
   }),
 }));
 
-jest.mock('../NetworkBalances/NetworkBalances', () => () => <div>NetworkBalances</div>);
-jest.mock('@renderer/screens/Transfer/Transfer', () => 'TransferButton');
+jest.mock('@renderer/services/account/accountService', () => ({
+  useAccount: jest.fn().mockReturnValue({
+    getActiveAccounts: () => [{ name: 'Test Wallet', accountId: TEST_ACCOUNT_ID }],
+  }),
+}));
+
+const CHAINS = [
+  {
+    chainId: '0x00',
+    assets: [
+      { assetId: '1', symbol: '1' },
+      { assetId: '2', symbol: '2' },
+    ],
+    connection: { connectionType: ConnectionType.RPC_NODE },
+  },
+  {
+    chainId: '0x01',
+    assets: [{ assetId: '1', symbol: '1' }],
+    connection: { connectionType: ConnectionType.RPC_NODE },
+  },
+];
+
+jest.mock('@renderer/services/network/chainsService', () => ({
+  useChains: jest.fn().mockReturnValue({
+    sortChainsByBalance: () => CHAINS,
+  }),
+}));
+
+jest.mock('@renderer/services/balance/balanceService', () => ({
+  useBalance: jest.fn().mockReturnValue({
+    getLiveBalances: jest.fn().mockReturnValue([]),
+  }),
+}));
+
+jest.mock('@renderer/context/NetworkContext', () => ({
+  useNetworkContext: jest.fn(() => ({
+    connections: {
+      '0x00': CHAINS[0],
+      '0x01': CHAINS[1],
+    },
+  })),
+}));
 
 jest.mock(
   '@renderer/components/common/AddressWithExplorers/AddressWithExplorers',
   jest.fn().mockReturnValue(({ address }: { address: string }) => <span data-testid="validator">{address}</span>),
 );
 
-describe('screen/Balances/Balances', () => {
+jest.mock('@renderer/screens/Transfer/Transfer', () => <span>TransferButton</span>);
+
+jest.mock('./components/NetworkAssets/NetworkAssets', () => ({
+  NetworkAssets: () => <span>NetworkAssets</span>,
+}));
+
+describe('screen/Assets/Assets', () => {
   test('should render component', () => {
-    render(<Balances />, { wrapper: MemoryRouter });
+    render(<Assets />, { wrapper: MemoryRouter });
 
     const text = screen.getByText('balances.title');
     expect(text).toBeInTheDocument();
   });
 
   test('should render networks', () => {
-    render(<Balances />, { wrapper: MemoryRouter });
+    render(<Assets />, { wrapper: MemoryRouter });
 
-    const balances = screen.getAllByText('NetworkBalances');
+    const balances = screen.getAllByText('NetworkAssets');
     expect(balances).toHaveLength(2);
   });
 
@@ -70,7 +86,7 @@ describe('screen/Balances/Balances', () => {
       getActiveAccounts: () => [{ name: 'Test Wallet', accountId: TEST_ACCOUNT_ID }],
     });
 
-    render(<Balances />, { wrapper: MemoryRouter });
+    render(<Assets />, { wrapper: MemoryRouter });
 
     const noResults = screen.getByTestId('emptyList-img');
     expect(noResults).toBeInTheDocument();

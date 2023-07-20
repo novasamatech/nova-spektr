@@ -49,17 +49,27 @@ const RejectTx = ({ tx, account, connection }: Props) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isRejectReasonModalOpen, toggleRejectReasonModal] = useToggle();
   const [isFeeModalOpen, toggleFeeModal] = useToggle();
-  const [countdown, resetCountdown] = useCountdown(connection.api);
 
   const [activeStep, setActiveStep] = useState(Step.CONFIRMATION);
-  const [rejectReason, setRejectReason] = useState('');
+  const [countdown, resetCountdown] = useCountdown(connection.api);
+
   const [rejectTx, setRejectTx] = useState<Transaction>();
-  const [signature, setSignature] = useState<HexString>();
   const [unsignedTx, setUnsignedTx] = useState<UnsignedTransaction>();
+
+  const [rejectReason, setRejectReason] = useState('');
+  const [signature, setSignature] = useState<HexString>();
 
   const accounts = getLiveAccounts();
   const signAccount = accounts.find((a) => a.accountId === tx.depositor);
   const transactionTitle = getTransactionTitle(tx.transaction);
+
+  useEffect(() => {
+    const accountId = signAccount?.accountId || account.signatories[0].accountId;
+
+    setRejectTx(getMultisigTx(accountId));
+  }, [tx, signAccount?.accountId]);
+
+  const nativeAsset = connection.assets[0];
 
   const goBack = () => {
     setActiveStep(AllSteps.indexOf(activeStep) - 1);
@@ -76,17 +86,10 @@ const RejectTx = ({ tx, account, connection }: Props) => {
     setActiveStep(Step.CONFIRMATION);
   };
 
-  useEffect(() => {
-    const multisigTx = getMultisigTx(signAccount?.accountId || account.signatories[0].accountId);
-
-    setRejectTx(multisigTx);
-  }, [tx, accounts.length, signAccount?.accountId]);
-
-  const nativeAsset = connection.assets[0];
-
   const getMultisigTx = (signer: Address): Transaction => {
+    const signerAddress = toAddress(signer, { prefix: connection?.addressPrefix });
+
     const otherSignatories = account.signatories.reduce<Address[]>((acc, s) => {
-      const signerAddress = toAddress(signer, { prefix: connection?.addressPrefix });
       const signatoryAddress = toAddress(s.accountId, { prefix: connection?.addressPrefix });
 
       if (signerAddress !== signatoryAddress) {
@@ -124,8 +127,7 @@ const RejectTx = ({ tx, account, connection }: Props) => {
   };
 
   const cancellable = tx.status === 'SIGNING' && signAccount;
-
-  if (!cancellable) return <></>;
+  if (!cancellable) return null;
 
   const handleRejectReason = async (reason: string) => {
     const isValid = await validateBalanceForFee(signAccount);
@@ -228,6 +230,7 @@ const RejectTx = ({ tx, account, connection }: Props) => {
 
       {isSubmitStep && connection.api && (
         <Submit
+          isReject
           tx={rejectTx}
           api={connection.api}
           multisigTx={tx}
@@ -236,7 +239,6 @@ const RejectTx = ({ tx, account, connection }: Props) => {
           unsignedTx={unsignedTx}
           signature={signature}
           rejectReason={rejectReason}
-          isReject
           onClose={handleClose}
         />
       )}
