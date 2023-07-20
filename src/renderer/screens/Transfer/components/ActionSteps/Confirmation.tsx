@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react';
 import { Transaction } from '@renderer/domain/transaction';
 import TransactionAmount from '@renderer/screens/Operations/components/TransactionAmount';
 import { Button, FootnoteText } from '@renderer/components/ui-redesign';
-import { Deposit, Fee, DetailRow } from '@renderer/components/common';
+import { Fee, DetailRow, DepositWithLabel } from '@renderer/components/common';
 import { Account, MultisigAccount } from '@renderer/domain/account';
 import { ExtendedChain } from '@renderer/services/network/common/types';
 import { useI18n } from '@renderer/context/I18nContext';
@@ -70,17 +70,12 @@ const Confirmation = ({ account, connection, transaction, signatory, description
         )}
       </DetailRow>
 
-      {signatory && (
-        <DetailRow label={t('transfer.networkDeposit')} className="text-text-primary">
-          {connection.api && feeTx && (
-            <Deposit
-              className="text-footnote text-text-primary"
-              api={connection.api}
-              asset={connection.assets[0]}
-              threshold={(account as MultisigAccount).threshold}
-            />
-          )}
-        </DetailRow>
+      {signatory && connection.api && (
+        <DepositWithLabel
+          api={connection.api}
+          asset={connection.assets[0]}
+          threshold={(account as MultisigAccount).threshold}
+        />
       )}
 
       <div className="flex w-full justify-between mt-5">

@@ -50,7 +50,7 @@ const ActiveAccountCard = ({ activeAccounts, chains, wallets }: Props) => {
         </div>
       </div>
 
-      <Icon name="down" size={16} className="text-icon-default ml-auto shrink-0" />
+      <Icon name="down" size={16} className="ml-auto shrink-0" />
     </div>
   );
 };

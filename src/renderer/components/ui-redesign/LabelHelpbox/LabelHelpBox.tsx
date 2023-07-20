@@ -18,10 +18,6 @@ export const LabelHelpBox = ({ className, children }: PropsWithChildren<Props>) 
     data-testid="labelHelpbox"
   >
     <BodyText>{children}</BodyText>
-    <Icon
-      name="questionOutline"
-      className="text-icon-default group-hover:text-icon-hover group-active:text-icon-active"
-      size={16}
-    />
+    <Icon name="questionOutline" className="group-hover:text-icon-hover group-active:text-icon-active" size={16} />
   </div>
 );

@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 
-import { SeedInfo } from '@renderer/components/common/QrCode/QrReader/common/types';
+import { SeedInfo } from '@renderer/components/common/QrCode/common/types';
 import ScanStep from './ScanStep/ScanStep';
 import ManageStep from './ManageStep/ManageStep';
 import ManageStepSingle from './ManageStepSingle/ManageStepSingle';

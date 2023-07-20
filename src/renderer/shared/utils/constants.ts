@@ -1,12 +1,14 @@
 import { SigningType } from '@renderer/domain/shared-kernel';
 
+export const ZERO_BALANCE = '0';
+
 export const DEFAULT_TRANSITION = 300;
 
 export const PUBLIC_KEY_LENGTH = 64;
 
 export const PUBLIC_KEY_LENGTH_BYTES = 32;
 
-export const ADDRESS_ALLOWED_ENCODED_LENGTHS = [3, 4, 6, 10, 35, 36, 37, 38];
+export const ADDRESS_ALLOWED_ENCODED_LENGTHS = [35, 36, 37, 38];
 
 export const DEFAULT_QR_LIFETIME = 64;
 

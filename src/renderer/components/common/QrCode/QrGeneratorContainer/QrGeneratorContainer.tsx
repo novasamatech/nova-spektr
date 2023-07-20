@@ -4,9 +4,9 @@ import cn from 'classnames';
 import { Button, CaptionText, FootnoteText, InfoLink, SmallTitleText } from '@renderer/components/ui-redesign';
 import { secondsToMinutes } from '@renderer/shared/utils/time';
 import { Icon, Shimmering } from '@renderer/components/ui';
-import { getMetadataPortalUrl, TROUBLESHOOTING_URL } from '@renderer/screens/Signing/common/consts';
 import { useI18n } from '@renderer/context/I18nContext';
 import { ChainId } from '@renderer/domain/shared-kernel';
+import { getMetadataPortalMetadataUrl, TROUBLESHOOTING_URL } from '../common/constants';
 
 type Props = {
   countdown: number;
@@ -43,7 +43,7 @@ const QrGeneratorContainer = ({ countdown, onQrReset, chainId, children }: Props
           ) : (
             <>
               {/* qr expired */}
-              <Icon name="qrFrame" className="absolute w-full h-full text-icon-default" />
+              <Icon name="qrFrame" className="absolute w-full h-full" />
               <FootnoteText>{t('signing.qrNotValid')}</FootnoteText>
               <Button className="z-10" size="sm" prefixElement={<Icon size={16} name="refresh" />} onClick={onQrReset}>
                 {t('signing.generateNewQrButton')}
@@ -59,7 +59,7 @@ const QrGeneratorContainer = ({ countdown, onQrReset, chainId, children }: Props
 
         <span className="border border-divider h-4"></span>
 
-        <InfoLink url={getMetadataPortalUrl(chainId)}>{t('signing.metadataPortalLink')}</InfoLink>
+        <InfoLink url={getMetadataPortalMetadataUrl(chainId)}>{t('signing.metadataPortalLink')}</InfoLink>
       </div>
     </section>
   );

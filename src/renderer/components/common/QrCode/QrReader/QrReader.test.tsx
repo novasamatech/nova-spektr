@@ -1,8 +1,8 @@
 import { act, render, screen } from '@testing-library/react';
 import { BrowserCodeReader, BrowserQRCodeReader } from '@zxing/browser';
 
-import { QR_READER_ERRORS } from '@renderer/components/common/QrCode/QrReader/common/errors';
-import { QrError } from '@renderer/components/common/QrCode/QrReader/common/types';
+import { QR_READER_ERRORS } from '../common/errors';
+import { QrError } from '../common/types';
 import QrReader from './QrReader';
 
 jest.mock('raptorq');

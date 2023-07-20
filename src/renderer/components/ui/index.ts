@@ -17,7 +17,6 @@ import Carousel from './Carousel/Carousel';
 import Dropdown from './Dropdowns/Dropdown/Dropdown';
 import Select from './Dropdowns/Select/Select';
 import Balance from './Balance/Balance';
-import Popover from './Popover/Popover';
 import Filter from './Dropdowns/Filter/Filter';
 import Table from './Table/Table';
 import Shimmering from './Shimmering/Shimmering';
@@ -46,7 +45,6 @@ export {
   Select,
   Carousel,
   Balance,
-  Popover,
   Filter,
   Table,
   Shimmering,

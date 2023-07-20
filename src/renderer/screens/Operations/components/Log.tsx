@@ -1,30 +1,29 @@
 import { groupBy } from 'lodash';
 import { format } from 'date-fns';
-import { useEffect, useState } from 'react';
 
 import { useI18n } from '@renderer/context/I18nContext';
-import { MultisigAccount } from '@renderer/domain/account';
+import { Account, MultisigAccount } from '@renderer/domain/account';
 import { ExtendedChain } from '@renderer/services/network/common/types';
-import { MultisigEvent, MultisigTransaction, SigningStatus } from '@renderer/domain/transaction';
+import { MultisigEvent, SigningStatus } from '@renderer/domain/transaction';
 import TransactionTitle from './TransactionTitle/TransactionTitle';
 import OperationStatus from './OperationStatus';
-import { getTransactionAmount, sortByDateAsc } from '../common/utils';
+import { getSignatoryName, getTransactionAmount, sortByDateAsc } from '../common/utils';
 import { AssetIcon, BaseModal, BodyText, FootnoteText } from '@renderer/components/ui-redesign';
-import { useChains } from '@renderer/services/network/chainsService';
 import { getAssetById } from '@renderer/shared/utils/assets';
 import { Identicon } from '@renderer/components/ui';
 import { toAddress } from '@renderer/shared/utils/address';
-import { Chain } from '@renderer/domain/chain';
 import { SS58_DEFAULT_PREFIX } from '@renderer/shared/utils/constants';
 import { ExtrinsicExplorers } from '@renderer/components/common';
-import { AccountId } from '@renderer/domain/shared-kernel';
-import { useContact } from '@renderer/services/contact/contactService';
-import { useAccount } from '@renderer/services/account/accountService';
+import { Contact } from '@renderer/domain/contact';
+import { useMultisigEvent } from '@renderer/services/multisigEvent/multisigEventService';
+import { MultisigTransactionDS } from '@renderer/services/storage';
 
 type Props = {
-  tx: MultisigTransaction;
+  tx: MultisigTransactionDS;
   account?: MultisigAccount;
   connection?: ExtendedChain;
+  accounts: Account[];
+  contacts: Contact[];
   isOpen: boolean;
   onClose: () => void;
 };
@@ -37,46 +36,33 @@ const EventMessage: Partial<Record<SigningStatus | 'INITIATED', string>> = {
   ERROR_CANCELLED: 'log.errorCancelledMessage',
 } as const;
 
-const LogModal = ({ isOpen, onClose, tx, account, connection }: Props) => {
+const LogModal = ({ isOpen, onClose, tx, account, connection, contacts, accounts }: Props) => {
   const { t, dateLocale } = useI18n();
-  const { getChainById } = useChains();
-  const { getLiveContacts } = useContact();
-  const { getLiveAccounts } = useAccount();
-
-  const [chain, setChain] = useState<Chain>();
-
-  const contacts = getLiveContacts();
-  const accounts = getLiveAccounts();
-
-  useEffect(() => {
-    getChainById(tx.chainId).then((chain) => setChain(chain));
-  }, []);
+  const { getLiveTxEvents } = useMultisigEvent({});
+  const events = getLiveTxEvents(tx.accountId, tx.chainId, tx.callHash, tx.blockCreated, tx.indexCreated);
 
   const { transaction, description, status } = tx;
-  const approvals = tx.events.filter((e) => e.status === 'SIGNED');
+  const approvals = events.filter((e) => e.status === 'SIGNED');
 
-  const asset = getAssetById(transaction?.args.assetId, chain?.assets);
-  const addressPrefix = chain?.addressPrefix || SS58_DEFAULT_PREFIX;
+  const asset = getAssetById(transaction?.args.assetId, connection?.assets);
+  const addressPrefix = connection?.addressPrefix || SS58_DEFAULT_PREFIX;
   const showAsset = Boolean(transaction && getTransactionAmount(transaction));
 
-  const groupedEvents = groupBy(tx.events, ({ dateCreated }) =>
+  const groupedEvents = groupBy(events, ({ dateCreated }) =>
     format(new Date(dateCreated || 0), 'PP', { locale: dateLocale }),
   );
 
-  const getSignatory = (accountId: AccountId): { name?: string; accountId?: AccountId } | undefined => {
-    const fromSignatory = account?.signatories.find((s) => s.accountId === accountId);
-    const fromAccount = accounts.find((a) => a.accountId === accountId);
-    const fromContact = contacts.find((c) => c.accountId === accountId);
-
-    return fromSignatory || fromAccount || fromContact;
-  };
-
   const getEventMessage = (event: MultisigEvent): string => {
-    const signatory = getSignatory(event.accountId);
     const isCreatedEvent =
-      signatory?.accountId === tx.depositor && (event.status === 'SIGNED' || event.status === 'PENDING_SIGNED');
+      event.accountId === tx.depositor && (event.status === 'SIGNED' || event.status === 'PENDING_SIGNED');
 
-    const signatoryName = signatory?.name || toAddress(event.accountId, { chunk: 5, prefix: chain?.addressPrefix });
+    const signatoryName = getSignatoryName(
+      event.accountId,
+      tx.signatories,
+      contacts,
+      accounts,
+      connection?.addressPrefix,
+    );
     const eventType = isCreatedEvent ? 'INITIATED' : event.status;
     const eventMessage = EventMessage[eventType] || 'log.unknownMessage';
 

@@ -4,14 +4,14 @@ import { Weight } from '@polkadot/types/interfaces';
 import { BN } from '@polkadot/util';
 
 import { Icon } from '@renderer/components/ui';
-import { Button, BaseModal } from '@renderer/components/ui-redesign';
+import { BaseModal, Button } from '@renderer/components/ui-redesign';
 import { useI18n } from '@renderer/context/I18nContext';
-import { AccountDS } from '@renderer/services/storage';
-import { useToggle, useCountdown } from '@renderer/shared/hooks';
+import { AccountDS, MultisigTransactionDS } from '@renderer/services/storage';
+import { useCountdown, useToggle } from '@renderer/shared/hooks';
 import { Account, MultisigAccount } from '@renderer/domain/account';
 import { ExtendedChain } from '@renderer/services/network/common/types';
-import { MultisigTransaction, Transaction, TransactionType } from '@renderer/domain/transaction';
-import { Address, HexString, Timepoint } from '@renderer/domain/shared-kernel';
+import { Transaction, TransactionType, isDecodedTx } from '@renderer/domain/transaction';
+import { Address, HexString, SigningType, Timepoint } from '@renderer/domain/shared-kernel';
 import { toAddress } from '@renderer/shared/utils/address';
 import { useAccount } from '@renderer/services/account/accountService';
 import { getTransactionTitle } from '../../common/utils';
@@ -22,13 +22,14 @@ import { transferableAmount } from '@renderer/shared/utils/balance';
 import { TEST_ADDRESS } from '@renderer/shared/utils/constants';
 import Confirmation from '@renderer/screens/Operations/components/ActionSteps/Confirmation';
 import SignatorySelectModal from '@renderer/screens/Operations/components/modals/SignatorySelectModal';
-import OperationResult from '@renderer/components/ui-redesign/OperationResult/OperationResult';
+import { OperationResult } from '@renderer/components/common/OperationResult/OperationResult';
 import OperationModalTitle from '@renderer/screens/Operations/components/OperationModalTitle';
 import { Signing } from '@renderer/screens/Transfer/components/ActionSteps';
 import ScanSingleframeQr from '@renderer/components/common/Scanning/ScanSingleframeQr';
+import { useMultisigEvent } from '@renderer/services/multisigEvent/multisigEventService';
 
 type Props = {
-  tx: MultisigTransaction;
+  tx: MultisigTransactionDS;
   account: MultisigAccount;
   connection: ExtendedChain;
 };
@@ -47,31 +48,50 @@ const ApproveTx = ({ tx, account, connection }: Props) => {
   const { getBalance } = useBalance();
   const { getLiveAccounts } = useAccount();
   const { getTransactionFee, getTxWeight } = useTransaction();
+  const { getLiveTxEvents } = useMultisigEvent({});
+  const events = getLiveTxEvents(tx.accountId, tx.chainId, tx.callHash, tx.blockCreated, tx.indexCreated);
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isSelectAccountModalOpen, toggleSelectAccountModal] = useToggle();
   const [isFeeModalOpen, toggleFeeModal] = useToggle();
+
   const [activeStep, setActiveStep] = useState(Step.CONFIRMATION);
   const [countdown, resetCountdown] = useCountdown(connection.api);
   const [signAccount, setSignAccount] = useState<Account>();
 
+  const [feeTx, setFeeTx] = useState<Transaction>();
+  const [approveTx, setApproveTx] = useState<Transaction>();
+  const [unsignedTx, setUnsignedTx] = useState<UnsignedTransaction>();
+
+  const [txWeight, setTxWeight] = useState<Weight>();
+  const [signature, setSignature] = useState<HexString>();
+
   const accounts = getLiveAccounts();
+  const transactionTitle = getTransactionTitle(tx.transaction);
 
   const unsignedAccounts = accounts.filter((a) => {
     const isSignatory = account.signatories.find((s) => s.accountId === a.accountId);
-    const notSigned = !tx.events.find((e) => e.accountId === a.accountId);
+    const notSigned = !events.find((e) => e.accountId === a.accountId);
     const isCurrentChain = !a.chainId || a.chainId === tx.chainId;
+    const notWatchOnly = account.signingType !== SigningType.WATCH_ONLY;
 
-    return isSignatory && notSigned && isCurrentChain;
+    return isSignatory && notSigned && isCurrentChain && notWatchOnly;
   });
 
-  const [approveTx, setApproveTx] = useState<Transaction>();
-  const [feeTx, setFeeTx] = useState<Transaction>();
-  const [signature, setSignature] = useState<HexString>();
-  const [unsignedTx, setUnsignedTx] = useState<UnsignedTransaction>();
-  const [txWeight, setTxWeight] = useState<Weight>();
+  useEffect(() => {
+    setFeeTx(getMultisigTx(TEST_ADDRESS));
 
-  const transactionTitle = getTransactionTitle(tx.transaction);
+    if (!signAccount?.accountId) return;
+
+    setApproveTx(getMultisigTx(signAccount?.accountId));
+  }, [tx, signAccount?.accountId, txWeight]);
+
+  useEffect(() => {
+    if (!tx.transaction || !connection.api) return;
+    if (isDecodedTx(tx.transaction)) return;
+
+    getTxWeight(tx.transaction, connection.api).then(setTxWeight);
+  }, [tx.transaction, connection.api]);
 
   const goBack = () => {
     setActiveStep(AllSteps.indexOf(activeStep) - 1);
@@ -88,53 +108,28 @@ const ApproveTx = ({ tx, account, connection }: Props) => {
     setActiveStep(Step.CONFIRMATION);
   };
 
-  useEffect(() => {
-    if (!signAccount?.accountId) return;
-
-    const multisigTx = getMultisigTx(signAccount?.accountId);
-
-    setApproveTx(multisigTx);
-  }, [tx, accounts.length, signAccount?.accountId, txWeight]);
-
-  useEffect(() => {
-    const feeTx = getMultisigTx(TEST_ADDRESS);
-
-    setFeeTx(feeTx);
-  }, [tx, accounts.length, signAccount?.accountId, txWeight]);
-
-  useEffect(() => {
-    if (!tx.transaction || !connection.api) return;
-
-    getTxWeight(tx.transaction, connection.api).then((txWeight) => {
-      setTxWeight(txWeight);
-    });
-  }, [tx.transaction, connection.api]);
-
   const nativeAsset = connection.assets[0];
 
   const getMultisigTx = (signer: Address): Transaction => {
-    const chainId = tx.chainId;
+    const signerAddress = toAddress(signer, { prefix: connection?.addressPrefix });
 
-    const otherSignatories = account.signatories
-      .reduce<Address[]>((acc, s) => {
-        const signerAddress = toAddress(signer, { prefix: connection?.addressPrefix });
-        const signatoryAddress = toAddress(s.accountId, { prefix: connection?.addressPrefix });
+    const otherSignatories = account.signatories.reduce<Address[]>((acc, s) => {
+      const signatoryAddress = toAddress(s.accountId, { prefix: connection?.addressPrefix });
 
-        if (signerAddress !== signatoryAddress) {
-          acc.push(signatoryAddress);
-        }
+      if (signerAddress !== signatoryAddress) {
+        acc.push(signatoryAddress);
+      }
 
-        return acc;
-      }, [])
-      .sort();
+      return acc;
+    }, []);
 
     return {
-      chainId,
+      chainId: tx.chainId,
       address: signer,
       type: tx.callData ? TransactionType.MULTISIG_AS_MULTI : TransactionType.MULTISIG_APPROVE_AS_MULTI,
       args: {
         threshold: account.threshold,
-        otherSignatories,
+        otherSignatories: otherSignatories.sort(),
         maxWeight: txWeight,
         maybeTimepoint: {
           height: tx.blockCreated,
@@ -150,7 +145,6 @@ const ApproveTx = ({ tx, account, connection }: Props) => {
     if (!connection.api || !feeTx || !signAccount.accountId || !nativeAsset) return false;
 
     const fee = await getTransactionFee(feeTx, connection.api);
-
     const balance = await getBalance(signAccount.accountId, connection.chainId, nativeAsset.assetId.toString());
 
     if (!balance) return false;
@@ -158,10 +152,10 @@ const ApproveTx = ({ tx, account, connection }: Props) => {
     return new BN(fee).lte(new BN(transferableAmount(balance)));
   };
 
-  const handleAccountSelect = async (a: AccountDS) => {
-    setSignAccount(a);
+  const handleAccountSelect = async (account: Account) => {
+    setSignAccount(account);
 
-    const isValid = await validateBalanceForFee(a);
+    const isValid = await validateBalanceForFee(account);
 
     if (isValid) {
       setActiveStep(Step.SCANNING);
@@ -181,13 +175,13 @@ const ApproveTx = ({ tx, account, connection }: Props) => {
     }
   };
 
-  const thresholdReached = tx.events.filter((e) => e.status === 'SIGNED').length === account.threshold - 1;
+  const thresholdReached = events.filter((e) => e.status === 'SIGNED').length === account.threshold - 1;
 
   const readyForSign = tx.status === 'SIGNING' && unsignedAccounts.length > 0;
   const readyForNonFinalSign = readyForSign && !thresholdReached;
   const readyForFinalSign = readyForSign && thresholdReached && !!tx.callData;
 
-  if (!(readyForFinalSign || readyForNonFinalSign)) return <></>;
+  if (!readyForFinalSign && !readyForNonFinalSign) return null;
 
   const isSubmitStep = activeStep === Step.SUBMIT && approveTx && signAccount && signature && unsignedTx;
 
@@ -253,8 +247,7 @@ const ApproveTx = ({ tx, account, connection }: Props) => {
         <SignatorySelectModal
           isOpen={isSelectAccountModalOpen}
           accounts={unsignedAccounts}
-          explorers={connection.explorers}
-          chainId={connection.chainId}
+          chain={connection}
           asset={nativeAsset}
           onClose={toggleSelectAccountModal}
           onSelect={handleAccountSelect}

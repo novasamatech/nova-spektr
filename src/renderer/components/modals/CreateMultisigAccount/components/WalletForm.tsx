@@ -1,13 +1,14 @@
-import { Controller, SubmitHandler, useForm } from 'react-hook-form';
+import { Controller, useForm, SubmitHandler } from 'react-hook-form';
 
 import { Alert, Button, Input, InputHint, Select, SmallTitleText } from '@renderer/components/ui-redesign';
 import { useI18n } from '@renderer/context/I18nContext';
 import { DropdownOption, DropdownResult } from '@renderer/components/ui/Dropdowns/common/types';
 import { Signatory } from '@renderer/domain/signatory';
-import { Account, getMultisigAccountId, isMultisig, isWalletContact, MultisigAccount } from '@renderer/domain/account';
-import { SigningType } from '@renderer/domain/shared-kernel';
+import { getMultisigAccountId, isMultisig, isWalletContact, Account, MultisigAccount } from '@renderer/domain/account';
+import { SigningType, AccountId } from '@renderer/domain/shared-kernel';
+import { useMatrix } from '@renderer/context/MatrixContext';
 
-export type MultisigAccountForm = {
+type MultisigAccountForm = {
   name: string;
   threshold: DropdownResult<number> | undefined;
 };
@@ -25,23 +26,24 @@ const getThresholdOptions = (optionsAmount: number): DropdownOption<number>[] =>
 type Props = {
   signatories: Signatory[];
   accounts: (Account | MultisigAccount)[];
-  isEditing: boolean;
+  isEditState: boolean;
   isLoading: boolean;
   onContinue: () => void;
-  onCreateAccount: SubmitHandler<MultisigAccountForm>;
   onGoBack: () => void;
+  onCreateAccount: (name: string, threshold: number, creatorId: AccountId) => void;
 };
 
 export const WalletForm = ({
   signatories,
   accounts,
-  onCreateAccount,
   onContinue,
-  isEditing,
+  isEditState,
   isLoading,
   onGoBack,
+  onCreateAccount,
 }: Props) => {
   const { t } = useI18n();
+  const { matrix } = useMatrix();
 
   const {
     control,
@@ -66,11 +68,19 @@ export const WalletForm = ({
       threshold.value,
     );
 
+  const submitMstAccount: SubmitHandler<MultisigAccountForm> = ({ name, threshold }) => {
+    const creator = signatories.find((s) => s.matrixId === matrix.userId);
+
+    if (!threshold || !creator) return;
+
+    onCreateAccount(name, threshold.value, creator.accountId);
+  };
+
   const hasNoAccounts = accounts.filter(isWalletContact).length === 0;
   const hasOwnSignatory = signatories.some((s) =>
     accounts.find((a) => a.accountId === s.accountId && a.signingType !== SigningType.WATCH_ONLY && !isMultisig(a)),
   );
-  const accountAlreadyExists = accounts.find((a) => a.accountId === multisigAccountId);
+  const accountAlreadyExists = accounts.some((a) => a.accountId === multisigAccountId);
   const hasTwoSignatories = signatories.length > 1;
 
   const signatoriesAreValid = hasOwnSignatory && hasTwoSignatories && !accountAlreadyExists;
@@ -81,7 +91,7 @@ export const WalletForm = ({
     <section className="flex flex-col gap-y-4 px-5 py-4 flex-1 h-full">
       <SmallTitleText className="py-2">{t('createMultisigAccount.walletFormTitle')}</SmallTitleText>
 
-      <form id="multisigForm" className="flex flex-col gap-y-4 h-full" onSubmit={handleSubmit(onCreateAccount)}>
+      <form id="multisigForm" className="flex flex-col gap-y-4 h-full" onSubmit={handleSubmit(submitMstAccount)}>
         <Controller
           name="name"
           control={control}
@@ -92,7 +102,7 @@ export const WalletForm = ({
               label={t('createMultisigAccount.walletNameLabel')}
               invalid={!!error}
               value={value}
-              disabled={!isEditing}
+              disabled={!isEditState}
               onChange={onChange}
             />
           )}
@@ -109,7 +119,7 @@ export const WalletForm = ({
                 label={t('createMultisigAccount.thresholdName')}
                 className="w-[208px]"
                 selectedId={value?.id.toString()}
-                disabled={signatories.length < 2 || !isEditing}
+                disabled={signatories.length < 2 || !isEditState}
                 options={thresholdOptions}
                 onChange={onChange}
               />
@@ -121,8 +131,14 @@ export const WalletForm = ({
         </div>
 
         {Boolean(signatories.length) && !hasOwnSignatory && (
-          <Alert title={t('createMultisigAccount.alertTitle')} variant="warn">
-            <Alert.Item withDot={false}>{t('createMultisigAccount.alertText')}</Alert.Item>
+          <Alert title={t('createMultisigAccount.walletAlertTitle')} variant="warn">
+            <Alert.Item withDot={false}>{t('createMultisigAccount.walletAlertText')}</Alert.Item>
+          </Alert>
+        )}
+
+        {accountAlreadyExists && (
+          <Alert title={t('createMultisigAccount.multisigExistTitle')} variant="warn">
+            <Alert.Item withDot={false}>{t('createMultisigAccount.multisigExistText')}</Alert.Item>
           </Alert>
         )}
 
@@ -136,7 +152,7 @@ export const WalletForm = ({
           <Button variant="text" onClick={onGoBack}>
             {t('createMultisigAccount.backButton')}
           </Button>
-          {isEditing ? (
+          {isEditState ? (
             // without key continue button triggers form submit
             <Button key="continue" disabled={!canContinue} onClick={onContinue}>
               {t('createMultisigAccount.continueButton')}
