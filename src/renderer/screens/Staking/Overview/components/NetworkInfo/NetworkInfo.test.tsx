@@ -5,7 +5,7 @@ import { Chain } from '@renderer/domain/chain';
 import { NetworkInfo } from './NetworkInfo';
 import { useSettingsStorage } from '@renderer/services/settings/settingsStorage';
 
-jest.mock('@renderer/context/I18nContext', () => ({
+jest.mock('@renderer/app/providers', () => ({
   useI18n: jest.fn().mockReturnValue({
     t: (key: string, params?: any) => `${key} ${params?.value || ''}`,
   }),

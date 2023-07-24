@@ -4,7 +4,7 @@ import { MemoryRouter } from 'react-router-dom';
 import { ConnectionStatus } from '@renderer/domain/connection';
 import { Destination } from './Destination';
 
-jest.mock('@renderer/context/I18nContext', () => ({
+jest.mock('@renderer/app/providers', () => ({
   useI18n: jest.fn().mockReturnValue({
     t: (key: string) => key,
   }),
@@ -22,7 +22,7 @@ jest.mock('@renderer/services/account/accountService', () => ({
   }),
 }));
 
-jest.mock('@renderer/context/NetworkContext', () => ({
+jest.mock('@renderer/app/providers', () => ({
   useNetworkContext: jest.fn(() => ({
     connections: {
       '0x123': {

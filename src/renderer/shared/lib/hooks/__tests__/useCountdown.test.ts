@@ -5,7 +5,7 @@ import { ApiPromise } from '@polkadot/api';
 import { DEFAULT_QR_LIFETIME } from '@renderer/shared/lib/utils';
 import { useCountdown } from '../useCountdown';
 
-jest.mock('@renderer/shared/utils/substrate', () => ({
+jest.mock('@renderer/shared/lib/utils', () => ({
   getExpectedBlockTime: jest.fn().mockReturnValue(BN_MILLION.muln(2)),
 }));
 

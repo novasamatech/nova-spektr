@@ -3,13 +3,13 @@ import { MemoryRouter } from 'react-router-dom';
 
 import { MatrixAction } from './MatrixAction';
 
-jest.mock('@renderer/context/I18nContext', () => ({
+jest.mock('@renderer/app/providers', () => ({
   useI18n: jest.fn().mockReturnValue({
     t: (key: string) => key,
   }),
 }));
 
-jest.mock('@renderer/context/MatrixContext', () => ({
+jest.mock('@renderer/app/providers', () => ({
   useMatrix: jest.fn().mockReturnValue({
     matrix: { userId: '@some_id:matrix.com' },
     isLoggedIn: true,

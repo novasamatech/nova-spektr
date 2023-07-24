@@ -7,7 +7,7 @@ import { Validators } from './Validators';
 
 jest.mock('@renderer/components/common');
 
-jest.mock('@renderer/context/I18nContext', () => ({
+jest.mock('@renderer/app/providers', () => ({
   useI18n: jest.fn().mockReturnValue({
     t: (key: string) => key,
   }),

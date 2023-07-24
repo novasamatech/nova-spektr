@@ -3,7 +3,7 @@ import userEvent from '@testing-library/user-event';
 
 import InputArea from './InputArea';
 
-describe('ui-redesign/Inputs/InputArea', () => {
+describe('ui/Inputs/InputArea', () => {
   test('should render component', () => {
     render(<InputArea value="test input" />);
 

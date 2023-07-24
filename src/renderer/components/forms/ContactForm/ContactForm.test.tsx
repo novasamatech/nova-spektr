@@ -5,13 +5,13 @@ import { ContactForm } from './ContactForm';
 import { Contact } from '@renderer/domain/contact';
 import { TEST_ADDRESS, TEST_ACCOUNT_ID } from '@renderer/shared/lib/utils';
 
-jest.mock('@renderer/context/I18nContext', () => ({
+jest.mock('@renderer/app/providers', () => ({
   useI18n: jest.fn().mockReturnValue({
     t: (key: string) => key,
   }),
 }));
 
-jest.mock('@renderer/context/MatrixContext', () => ({
+jest.mock('@renderer/app/providers', () => ({
   useMatrix: jest.fn().mockReturnValue({
     matrix: { validateFullUserName: jest.fn().mockReturnValue(true) },
   }),

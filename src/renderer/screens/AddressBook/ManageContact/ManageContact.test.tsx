@@ -3,7 +3,7 @@ import { MemoryRouter } from 'react-router-dom';
 
 import { ManageContact } from './ManageContact';
 
-jest.mock('@renderer/context/I18nContext', () => ({
+jest.mock('@renderer/app/providers', () => ({
   useI18n: jest.fn().mockReturnValue({
     t: (key: string) => key,
   }),

@@ -4,7 +4,7 @@ import { MemoryRouter } from 'react-router-dom';
 import Navigation from './Navigation';
 import { TEST_ACCOUNT_ID } from '@renderer/shared/lib/utils';
 
-jest.mock('@renderer/context/I18nContext', () => ({
+jest.mock('@renderer/app/providers', () => ({
   useI18n: jest.fn().mockReturnValue({
     LocaleComponent: () => <div>localeComponent</div>,
     t: (key: string) => key,

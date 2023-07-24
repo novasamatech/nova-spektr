@@ -15,7 +15,7 @@ jest.mock('@renderer/services/account/accountService', () => ({
   }),
 }));
 
-jest.mock('@renderer/context/MatrixContext', () => ({
+jest.mock('@renderer/app/providers', () => ({
   useMatrix: jest.fn().mockReturnValue({ matrix: { userId: 'some_id' } }),
 }));
 

@@ -3,7 +3,7 @@ import { act, render, renderHook, screen } from '@testing-library/react';
 import { useToggle } from '@renderer/shared/lib/hooks';
 import { ConfirmDialogProvider, useConfirmContext } from './ConfirmContext';
 
-jest.mock('@renderer/shared/hooks');
+jest.mock('@renderer/shared/lib/hooks');
 
 describe('context/ConfirmContext', () => {
   afterEach(() => {

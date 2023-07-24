@@ -8,7 +8,7 @@ import InitOperation from './InitOperation';
 import { ChainId } from '@renderer/domain/shared-kernel';
 import { Account } from '@renderer/domain/account';
 
-jest.mock('@renderer/context/I18nContext', () => ({
+jest.mock('@renderer/app/providers', () => ({
   useI18n: jest.fn().mockReturnValue({
     t: (key: string) => key,
   }),

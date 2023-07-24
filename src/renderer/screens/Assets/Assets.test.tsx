@@ -6,7 +6,7 @@ import { ConnectionType } from '@renderer/domain/connection';
 import { useAccount } from '@renderer/services/account/accountService';
 import { Assets } from './Assets';
 
-jest.mock('@renderer/context/I18nContext', () => ({
+jest.mock('@renderer/app/providers', () => ({
   useI18n: jest.fn().mockReturnValue({
     t: (key: string) => key,
   }),
@@ -46,7 +46,7 @@ jest.mock('@renderer/services/balance/balanceService', () => ({
   }),
 }));
 
-jest.mock('@renderer/context/NetworkContext', () => ({
+jest.mock('@renderer/app/providers', () => ({
   useNetworkContext: jest.fn(() => ({
     connections: {
       '0x00': CHAINS[0],

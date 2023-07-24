@@ -4,7 +4,7 @@ import { MemoryRouter } from 'react-router-dom';
 import { GeneralActions } from './GeneralActions';
 import { Paths } from '@renderer/app/providers';
 
-jest.mock('@renderer/context/I18nContext', () => ({
+jest.mock('@renderer/app/providers', () => ({
   useI18n: jest.fn().mockReturnValue({
     t: (key: string) => key,
   }),

@@ -3,7 +3,7 @@ import noop from 'lodash/noop';
 
 import Alert from './Alert';
 
-describe('ui-redesign/Alert', () => {
+describe('ui/Alert', () => {
   test('should render title and items', () => {
     render(
       <Alert title="My title">

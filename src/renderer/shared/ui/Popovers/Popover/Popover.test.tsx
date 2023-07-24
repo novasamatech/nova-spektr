@@ -3,7 +3,7 @@ import userEvent from '@testing-library/user-event';
 
 import { Popover } from './Popover';
 
-describe('ui-redesign/Popover', () => {
+describe('ui/Popover', () => {
   test('should render component', () => {
     render(<Popover content="content">Hover me</Popover>);
 

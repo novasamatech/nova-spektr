@@ -1,5 +1,5 @@
-import { Paths } from '@renderer/app/providers';
-import { createLink } from '@renderer/app/providers/routes/utils';
+import { Paths } from './paths';
+import { createLink } from './utils';
 
 describe('routes/utils/createLink', () => {
   test('parse route with params', () => {

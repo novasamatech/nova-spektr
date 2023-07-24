@@ -5,7 +5,7 @@ import noop from 'lodash/noop';
 import { TEST_ACCOUNT_ID } from '@renderer/shared/lib/utils';
 import { CreateMultisigAccount } from './CreateMultisigAccount';
 
-jest.mock('@renderer/context/I18nContext', () => ({
+jest.mock('@renderer/app/providers', () => ({
   useI18n: jest.fn().mockReturnValue({
     t: (key: string) => key,
   }),
@@ -41,7 +41,7 @@ jest.mock('@renderer/services/network/chainsService', () => ({
   }),
 }));
 
-jest.mock('@renderer/context/MatrixContext', () => ({
+jest.mock('@renderer/app/providers', () => ({
   useMatrix: jest.fn().mockReturnValue({
     isLoggedIn: true,
     matrix: {

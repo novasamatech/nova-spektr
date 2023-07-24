@@ -7,19 +7,19 @@ import { ConnectionType } from '@renderer/domain/connection';
 import { TEST_ACCOUNT_ID } from '@renderer/shared/lib/utils';
 import { Overview } from './Overview';
 
-jest.mock('@renderer/context/I18nContext', () => ({
+jest.mock('@renderer/app/providers', () => ({
   useI18n: jest.fn().mockReturnValue({
     t: (key: string) => key,
   }),
 }));
 
-jest.mock('@renderer/context/NetworkContext', () => ({
+jest.mock('@renderer/app/providers', () => ({
   useNetworkContext: jest.fn(() => ({
     connections: {},
   })),
 }));
 
-jest.mock('@renderer/context/GraphqlContext', () => ({
+jest.mock('@renderer/app/providers', () => ({
   useGraphql: jest.fn(() => ({
     changeClient: jest.fn(),
   })),

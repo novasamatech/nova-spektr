@@ -5,7 +5,7 @@ import { Stake } from '@renderer/domain/stake';
 import { TEST_ADDRESS } from '@renderer/shared/lib/utils';
 import { Actions } from './Actions';
 
-jest.mock('@renderer/context/I18nContext', () => ({
+jest.mock('@renderer/app/providers', () => ({
   useI18n: jest.fn().mockReturnValue({
     t: (key: string) => key,
   }),

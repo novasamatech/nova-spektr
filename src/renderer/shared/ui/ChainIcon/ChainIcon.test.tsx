@@ -3,7 +3,7 @@ import { act, render, screen } from '@testing-library/react';
 import { ChainIcon } from './ChainIcon';
 import { TEST_CHAIN_ICON } from '@renderer/shared/lib/utils';
 
-describe('ui-redesign/ChainIcon', () => {
+describe('ui/ChainIcon', () => {
   test('should render component', async () => {
     await act(async () => {
       render(<ChainIcon src={TEST_CHAIN_ICON} />);

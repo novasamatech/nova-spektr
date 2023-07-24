@@ -4,7 +4,7 @@ import { Validator } from '@renderer/domain/validator';
 import { Asset } from '@renderer/domain/asset';
 import ValidatorsModal from './ValidatorsModal';
 
-jest.mock('@renderer/context/I18nContext', () => ({
+jest.mock('@renderer/app/providers', () => ({
   useI18n: jest.fn().mockReturnValue({
     t: (key: string) => key,
   }),

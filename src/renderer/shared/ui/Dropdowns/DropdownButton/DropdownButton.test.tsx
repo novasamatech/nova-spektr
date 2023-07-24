@@ -3,7 +3,7 @@ import noop from 'lodash/noop';
 
 import DropdownButton, { ButtonDropdownOption } from './DropdownButton';
 
-describe('ui-redesign/Dropdowns/DropdownButton', () => {
+describe('ui/Dropdowns/DropdownButton', () => {
   const options: ButtonDropdownOption[] = [
     { id: '0', title: 'label_0', iconName: 'globe', onClick: noop },
     { id: '1', title: 'label_1', iconName: 'globe', onClick: noop },

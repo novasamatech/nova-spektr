@@ -6,13 +6,13 @@ import { ExtendedChain } from '@renderer/services/network/common/types';
 import { NetworkSelector } from './NetworkSelector';
 import { useScrollTo } from '@renderer/shared/lib/hooks';
 
-jest.mock('@renderer/context/I18nContext', () => ({
+jest.mock('@renderer/app/providers', () => ({
   useI18n: jest.fn().mockReturnValue({
     t: (key: string) => key,
   }),
 }));
 
-jest.mock('@renderer/shared/hooks');
+jest.mock('@renderer/shared/lib/hooks');
 
 describe('screen/Settings/Networks/NetworkSelector', () => {
   beforeAll(() => {

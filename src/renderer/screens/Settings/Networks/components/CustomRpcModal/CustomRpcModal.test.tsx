@@ -5,13 +5,13 @@ import { RpcValidation, ExtendedChain } from '@renderer/services/network/common/
 import { useNetworkContext } from '@renderer/app/providers';
 import { CustomRpcModal } from './CustomRpcModal';
 
-jest.mock('@renderer/context/I18nContext', () => ({
+jest.mock('@renderer/app/providers', () => ({
   useI18n: jest.fn().mockReturnValue({
     t: (key: string) => key,
   }),
 }));
 
-jest.mock('@renderer/context/NetworkContext', () => ({
+jest.mock('@renderer/app/providers', () => ({
   useNetworkContext: jest.fn(() => ({
     validateRpcNode: jest.fn(),
     addRpcNode: jest.fn(),

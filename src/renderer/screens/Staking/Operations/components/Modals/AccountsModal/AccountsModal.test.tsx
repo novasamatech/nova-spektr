@@ -5,7 +5,7 @@ import { SigningType, ChainType, CryptoType } from '@renderer/domain/shared-kern
 import { Account } from '@renderer/domain/account';
 import AccountsModal from './AccountsModal';
 
-jest.mock('@renderer/context/I18nContext', () => ({
+jest.mock('@renderer/app/providers', () => ({
   useI18n: jest.fn().mockReturnValue({
     t: (key: string) => key,
   }),

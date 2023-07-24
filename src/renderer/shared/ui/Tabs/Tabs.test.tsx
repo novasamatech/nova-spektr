@@ -10,7 +10,7 @@ const tabItems: TabItem[] = [
   { id: '3', title: 'Tab 3 title', panel: <div>tab 3 content</div> },
 ];
 
-describe('ui-redesign/Tabs', () => {
+describe('ui/Tabs', () => {
   test('should render component', () => {
     render(<Tabs items={tabItems} />);
 

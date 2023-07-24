@@ -41,7 +41,7 @@ jest.mock('@renderer/services/multisigEvent/multisigEventService', () => ({
   }),
 }));
 
-jest.mock('@renderer/context/NetworkContext', () => ({
+jest.mock('@renderer/app/providers', () => ({
   useNetworkContext: jest.fn(() => ({
     connections: {
       '0x0000000000000000000000000000000000000000': {

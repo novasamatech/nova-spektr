@@ -4,17 +4,17 @@ import userEvent from '@testing-library/user-event';
 import Verification from './Verification';
 import { useMatrix } from '@renderer/app/providers';
 
-jest.mock('@renderer/context/I18nContext', () => ({
+jest.mock('@renderer/app/providers', () => ({
   useI18n: jest.fn().mockReturnValue({
     t: (key: string) => key,
   }),
 }));
 
-jest.mock('@renderer/shared/utils/browser', () => ({
+jest.mock('@renderer/shared/lib/utils', () => ({
   getOperatingSystem: jest.fn().mockReturnValue('macOS'),
 }));
 
-jest.mock('@renderer/context/MatrixContext', () => ({
+jest.mock('@renderer/app/providers', () => ({
   useMatrix: jest.fn().mockReturnValue({
     matrix: {
       sessionIsVerified: false,

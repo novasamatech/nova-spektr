@@ -2,7 +2,7 @@ import { render, screen } from '@testing-library/react';
 
 import Counter from './Counter';
 
-describe('ui-redesign/Counter', () => {
+describe('ui/Counter', () => {
   test('should render component', () => {
     render(<Counter variant="success">25</Counter>);
 
