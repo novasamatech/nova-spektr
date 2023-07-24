@@ -92,6 +92,15 @@ jobs:
           filename="${original%.*}"
           new="$filename"_x86_64.AppImage
           mv "$original" "$new"
+      
+      - name: Replace space by "-"
+        run: |
+          for file in *; do
+            if [ -f "$file" ]; then
+              new_name=$(echo "$file" | tr ' ' '-')
+              mv "$file" "$new_name"
+            fi
+          done
 
       - name: 🔐 Generate checksum
         run: |
