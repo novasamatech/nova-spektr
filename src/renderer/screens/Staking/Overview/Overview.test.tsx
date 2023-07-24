@@ -11,15 +11,9 @@ jest.mock('@renderer/app/providers', () => ({
   useI18n: jest.fn().mockReturnValue({
     t: (key: string) => key,
   }),
-}));
-
-jest.mock('@renderer/app/providers', () => ({
   useNetworkContext: jest.fn(() => ({
     connections: {},
   })),
-}));
-
-jest.mock('@renderer/app/providers', () => ({
   useGraphql: jest.fn(() => ({
     changeClient: jest.fn(),
   })),

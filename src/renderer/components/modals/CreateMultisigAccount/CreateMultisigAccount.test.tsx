@@ -9,6 +9,13 @@ jest.mock('@renderer/app/providers', () => ({
   useI18n: jest.fn().mockReturnValue({
     t: (key: string) => key,
   }),
+  useMatrix: jest.fn().mockReturnValue({
+    isLoggedIn: true,
+    matrix: {
+      createRoom: jest.fn(),
+      userId: 'userId',
+    },
+  }),
 }));
 
 jest.mock('react-router-dom', () => ({
@@ -38,16 +45,6 @@ jest.mock('@renderer/services/wallet/walletService', () => ({
 jest.mock('@renderer/services/network/chainsService', () => ({
   useChains: jest.fn().mockReturnValue({
     getChainsData: jest.fn().mockResolvedValue([]),
-  }),
-}));
-
-jest.mock('@renderer/app/providers', () => ({
-  useMatrix: jest.fn().mockReturnValue({
-    isLoggedIn: true,
-    matrix: {
-      createRoom: jest.fn(),
-      userId: 'userId',
-    },
   }),
 }));
 

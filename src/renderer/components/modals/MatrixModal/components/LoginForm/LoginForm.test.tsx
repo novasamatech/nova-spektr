@@ -13,9 +13,6 @@ jest.mock('@renderer/app/providers', () => ({
       loginWithCreds: jest.fn(),
     },
   }),
-}));
-
-jest.mock('@renderer/app/providers', () => ({
   useI18n: jest.fn().mockReturnValue({
     t: (key: string) => key,
   }),

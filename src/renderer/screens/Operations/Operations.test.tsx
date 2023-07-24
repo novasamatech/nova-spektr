@@ -8,6 +8,17 @@ jest.mock('@renderer/app/providers', () => ({
   useI18n: jest.fn().mockReturnValue({
     t: (key: string) => key,
   }),
+  useNetworkContext: jest.fn(() => ({
+    connections: {
+      '0x0000000000000000000000000000000000000000': {
+        chainId: '1',
+        assets: [{ assetId: '1', symbol: '1' }],
+        connection: {
+          connectionType: ConnectionType.RPC_NODE,
+        },
+      },
+    },
+  })),
 }));
 
 const mockTxs = [{ name: 'Test Wallet', accountId: TEST_ACCOUNT_ID }];
@@ -29,20 +40,6 @@ jest.mock('@renderer/services/account/accountService', () => ({
   useAccount: jest.fn().mockReturnValue({
     getActiveMultisigAccount: () => mockAccounts,
   }),
-}));
-
-jest.mock('@renderer/app/providers', () => ({
-  useNetworkContext: jest.fn(() => ({
-    connections: {
-      '0x0000000000000000000000000000000000000000': {
-        chainId: '1',
-        assets: [{ assetId: '1', symbol: '1' }],
-        connection: {
-          connectionType: ConnectionType.RPC_NODE,
-        },
-      },
-    },
-  })),
 }));
 
 // TODO add test for Operation component and move it there

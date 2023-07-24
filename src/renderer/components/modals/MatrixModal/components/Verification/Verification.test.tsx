@@ -8,13 +8,6 @@ jest.mock('@renderer/app/providers', () => ({
   useI18n: jest.fn().mockReturnValue({
     t: (key: string) => key,
   }),
-}));
-
-jest.mock('@renderer/shared/lib/utils', () => ({
-  getOperatingSystem: jest.fn().mockReturnValue('macOS'),
-}));
-
-jest.mock('@renderer/app/providers', () => ({
   useMatrix: jest.fn().mockReturnValue({
     matrix: {
       sessionIsVerified: false,
@@ -22,6 +15,10 @@ jest.mock('@renderer/app/providers', () => ({
       verifyWithFile: jest.fn().mockReturnValue(true),
     },
   }),
+}));
+
+jest.mock('@renderer/shared/lib/utils', () => ({
+  getOperatingSystem: jest.fn().mockReturnValue('macOS'),
 }));
 
 describe('screens/Settings/Matrix/Verification', () => {

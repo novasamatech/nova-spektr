@@ -4,12 +4,6 @@ import { MemoryRouter } from 'react-router-dom';
 import { ConnectionStatus } from '@renderer/domain/connection';
 import { Destination } from './Destination';
 
-jest.mock('@renderer/app/providers', () => ({
-  useI18n: jest.fn().mockReturnValue({
-    t: (key: string) => key,
-  }),
-}));
-
 jest.mock('react-router-dom', () => ({
   useSearchParams: jest.fn().mockReturnValue([new URLSearchParams('id=1,2,3')]),
   useParams: jest.fn().mockReturnValue({ chainId: '0x123' }),
@@ -23,6 +17,9 @@ jest.mock('@renderer/services/account/accountService', () => ({
 }));
 
 jest.mock('@renderer/app/providers', () => ({
+  useI18n: jest.fn().mockReturnValue({
+    t: (key: string) => key,
+  }),
   useNetworkContext: jest.fn(() => ({
     connections: {
       '0x123': {

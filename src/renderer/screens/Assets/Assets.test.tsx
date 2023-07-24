@@ -10,6 +10,12 @@ jest.mock('@renderer/app/providers', () => ({
   useI18n: jest.fn().mockReturnValue({
     t: (key: string) => key,
   }),
+  useNetworkContext: jest.fn(() => ({
+    connections: {
+      '0x00': CHAINS[0],
+      '0x01': CHAINS[1],
+    },
+  })),
 }));
 
 jest.mock('@renderer/services/account/accountService', () => ({
@@ -44,15 +50,6 @@ jest.mock('@renderer/services/balance/balanceService', () => ({
   useBalance: jest.fn().mockReturnValue({
     getLiveBalances: jest.fn().mockReturnValue([]),
   }),
-}));
-
-jest.mock('@renderer/app/providers', () => ({
-  useNetworkContext: jest.fn(() => ({
-    connections: {
-      '0x00': CHAINS[0],
-      '0x01': CHAINS[1],
-    },
-  })),
 }));
 
 jest.mock(

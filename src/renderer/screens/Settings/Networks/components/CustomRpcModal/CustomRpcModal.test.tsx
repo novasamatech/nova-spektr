@@ -9,9 +9,6 @@ jest.mock('@renderer/app/providers', () => ({
   useI18n: jest.fn().mockReturnValue({
     t: (key: string) => key,
   }),
-}));
-
-jest.mock('@renderer/app/providers', () => ({
   useNetworkContext: jest.fn(() => ({
     validateRpcNode: jest.fn(),
     addRpcNode: jest.fn(),

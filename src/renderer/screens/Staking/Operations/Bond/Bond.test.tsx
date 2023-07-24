@@ -5,12 +5,6 @@ import { ConnectionStatus } from '@renderer/domain/connection';
 import { TEST_ACCOUNT_ID } from '@renderer/shared/lib/utils';
 import { Bond } from './Bond';
 
-jest.mock('@renderer/app/providers', () => ({
-  useI18n: jest.fn().mockReturnValue({
-    t: (key: string) => key,
-  }),
-}));
-
 jest.mock('react-router-dom', () => ({
   useSearchParams: jest.fn().mockReturnValue([new URLSearchParams('id=1,2,3')]),
   useParams: jest.fn().mockReturnValue({ chainId: '0x123' }),
@@ -45,6 +39,9 @@ jest.mock('@renderer/app/providers', () => ({
       },
     },
   })),
+  useI18n: jest.fn().mockReturnValue({
+    t: (key: string) => key,
+  }),
 }));
 
 const mockButton = (text: string, callback: () => void) => (

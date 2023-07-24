@@ -8,17 +8,6 @@ import { ExtendedChain } from '@renderer/services/network/common/types';
 import { useNetworkContext } from '@renderer/app/providers';
 
 const confirmSpy = jest.fn();
-jest.mock('@renderer/app/providers', () => ({
-  useConfirmContext: jest.fn(() => ({
-    confirm: confirmSpy,
-  })),
-}));
-
-jest.mock('@renderer/app/providers', () => ({
-  useI18n: jest.fn().mockReturnValue({
-    t: (key: string) => key,
-  }),
-}));
 
 jest.mock('@renderer/app/providers', () => ({
   useNetworkContext: jest.fn(() => ({
@@ -45,6 +34,12 @@ jest.mock('@renderer/app/providers', () => ({
     connectWithAutoBalance: jest.fn(),
     removeRpcNode: jest.fn(),
     getParachains: jest.fn().mockReturnValue([]),
+  })),
+  useI18n: jest.fn().mockReturnValue({
+    t: (key: string) => key,
+  }),
+  useConfirmContext: jest.fn(() => ({
+    confirm: confirmSpy,
   })),
 }));
 
