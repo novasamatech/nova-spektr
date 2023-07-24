@@ -3,13 +3,11 @@ import { BN } from '@polkadot/util';
 
 import { Account, MultisigAccount } from '@renderer/domain/account';
 import { Address } from '@renderer/domain/shared-kernel';
-import { DropdownOption } from '@renderer/components/ui-redesign/Dropdowns/common/types';
-import { toAddress } from '@renderer/shared/utils/address';
+import { DropdownOption } from '@renderer/shared/ui/Dropdowns/common/types';
+import { toAddress, cnTw, transferableAmount } from '@renderer/shared/lib/utils';
 import { AccountAddress, BalanceNew } from '@renderer/components/common';
 import { Balance } from '@renderer/domain/balance';
-import cnTw from '@renderer/shared/utils/twMerge';
 import { Asset } from '@renderer/domain/asset';
-import { transferableAmount } from '@renderer/shared/utils/balance';
 
 type Params = {
   asset: Asset;

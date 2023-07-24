@@ -2,8 +2,8 @@ import { useEffect, useState } from 'react';
 import { keyBy } from 'lodash';
 
 import { AccountId, ChainId } from '@renderer/domain/shared-kernel';
-import { BaseModal, Button, Checkbox, FootnoteText, SearchInput, Chain } from '@renderer/components/ui-redesign';
-import { useI18n } from '@renderer/context/I18nContext';
+import { BaseModal, Button, Checkbox, FootnoteText, SearchInput, Chain } from '@renderer/shared/ui';
+import { useI18n } from '@renderer/app/providers';
 import { AccountDS } from '@renderer/services/storage';
 import { useChains } from '@renderer/services/network/chainsService';
 import AddressWithExplorers from '@renderer/components/common/AddressWithExplorers/AddressWithExplorers';

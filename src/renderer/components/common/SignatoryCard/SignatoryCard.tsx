@@ -2,12 +2,11 @@ import AccountAddress, {
   getAddress,
   Props as AccountAddressProps,
 } from '@renderer/components/common/AccountAddress/AccountAddress';
-import { InfoPopover } from '@renderer/components/ui-redesign';
-import { Icon } from '@renderer/components/ui';
+import { InfoPopover, Icon } from '@renderer/shared/ui';
 import { Explorer } from '@renderer/domain/chain';
 import { SigningStatus } from '@renderer/domain/transaction';
 import useAddressInfo from '@renderer/components/common/AccountAddress/useAddressInfo';
-import cnTw from '@renderer/shared/utils/twMerge';
+import { cnTw } from '@renderer/shared/lib/utils';
 
 const IconProps = {
   SIGNED: { className: 'group-hover:hidden text-text-positive', name: 'checkLineRedesign' },

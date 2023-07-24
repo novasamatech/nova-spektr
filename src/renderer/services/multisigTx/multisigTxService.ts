@@ -17,10 +17,10 @@ import {
 import { useChains } from '../network/chainsService';
 import { useTransaction } from '../transaction/transactionService';
 import { CallData, AccountId } from '@renderer/domain/shared-kernel';
-import { toAddress } from '@renderer/shared/utils/address';
-import { getCurrentBlockNumber, getExpectedBlockTime } from '@renderer/shared/utils/substrate';
+import { toAddress } from '@renderer/shared/lib/utils';
+import { getCurrentBlockNumber, getExpectedBlockTime } from '@renderer/shared/lib/utils';
 import { useMultisigEvent } from '../multisigEvent/multisigEventService';
-import { Task } from '@renderer/shared/hooks/useTaskQueue';
+import { Task } from '@renderer/shared/lib/hooks/useTaskQueue';
 
 type Props = {
   addTask?: (task: Task) => void;

@@ -2,8 +2,7 @@ import { Controller, SubmitHandler, useForm } from 'react-hook-form';
 import { Trans } from 'react-i18next';
 import { useEffect, useState } from 'react';
 
-import { useMatrix } from '@renderer/context/MatrixContext';
-import { useI18n } from '@renderer/context/I18nContext';
+import { useMatrix, useI18n } from '@renderer/app/providers';
 import { WELL_KNOWN_SERVERS } from '@renderer/services/matrix';
 import {
   Alert,
@@ -14,9 +13,10 @@ import {
   Input,
   InputHint,
   PasswordInput,
-} from '@renderer/components/ui-redesign';
-import { Icon, Loader } from '@renderer/components/ui';
-import { ComboboxOption } from '@renderer/components/ui-redesign/Dropdowns/common/types';
+  Icon,
+  Loader,
+} from '@renderer/shared/ui';
+import { ComboboxOption } from '@renderer/shared/ui/Dropdowns/common/types';
 
 const HOME_SERVERS = WELL_KNOWN_SERVERS.map((server) => ({
   id: server.domain,

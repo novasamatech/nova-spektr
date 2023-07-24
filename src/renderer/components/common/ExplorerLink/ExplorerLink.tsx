@@ -1,11 +1,9 @@
-import cnTw from '@renderer/shared/utils/twMerge';
-import { toAddress } from '@renderer/shared/utils/address';
-import { Icon } from '@renderer/components/ui';
+import { cnTw, toAddress } from '@renderer/shared/lib/utils';
+import { Icon, FootnoteText } from '@renderer/shared/ui';
 import { DefaultExplorer, ExplorerIcons } from '@renderer/components/common/ExplorerLink/constants';
 import { Explorer } from '@renderer/domain/chain';
-import { useI18n } from '@renderer/context/I18nContext';
+import { useI18n } from '@renderer/app/providers';
 import { AccountId, Address, HexString } from '@renderer/domain/shared-kernel';
-import { FootnoteText } from '@renderer/components/ui-redesign';
 
 const isExtrinsic = (props: WithAccount | WithExtrinsic): props is WithExtrinsic =>
   (props as WithExtrinsic).hash !== undefined;

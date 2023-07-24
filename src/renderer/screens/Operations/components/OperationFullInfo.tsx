@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 
 import { MultisigEvent, SigningStatus } from '@renderer/domain/transaction';
 import { MultisigAccount } from '@renderer/domain/account';
-import { Icon } from '@renderer/components/ui';
+import { Icon, Button, CaptionText, InfoLink, SmallTitleText } from '@renderer/shared/ui';
 import Details from '@renderer/screens/Operations/components/Details';
 import RejectTx from '@renderer/screens/Operations/components/modals/RejectTx';
 import ApproveTx from '@renderer/screens/Operations/components/modals/ApproveTx';
@@ -10,20 +10,16 @@ import { getMultisigExtrinsicLink, getSignatoryName } from '@renderer/screens/Op
 import { Signatory } from '@renderer/domain/signatory';
 import CallDataModal from '@renderer/screens/Operations/components/modals/CallDataModal';
 import { AccountId, CallData, ChainId } from '@renderer/domain/shared-kernel';
-import { nonNullable } from '@renderer/shared/utils/functions';
-import { useMatrix } from '@renderer/context/MatrixContext';
+import { nonNullable } from '@renderer/shared/lib/utils';
+import { useMatrix, useNetworkContext, useI18n, useMultisigChainContext } from '@renderer/app/providers';
 import { useMultisigTx } from '@renderer/services/multisigTx/multisigTxService';
-import { useNetworkContext } from '@renderer/context/NetworkContext';
-import { useToggle } from '@renderer/shared/hooks';
-import { useI18n } from '@renderer/context/I18nContext';
-import { Button, CaptionText, InfoLink, SmallTitleText } from '@renderer/components/ui-redesign';
+import { useToggle } from '@renderer/shared/lib/hooks';
 import SignatoryCard from '@renderer/components/common/SignatoryCard/SignatoryCard';
 import LogModal from './Log';
 import { useContact } from '@renderer/services/contact/contactService';
 import { useAccount } from '@renderer/services/account/accountService';
 import { MultisigTransactionDS } from '@renderer/services/storage';
 import { useMultisigEvent } from '@renderer/services/multisigEvent/multisigEventService';
-import { useMultisigChainContext } from '@renderer/context/MultisigChainContext';
 
 type Props = {
   tx: MultisigTransactionDS;

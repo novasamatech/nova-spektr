@@ -4,19 +4,19 @@ import { ReactNode } from 'react';
 
 import { Account, MultisigAccount } from '@renderer/domain/account';
 import { Address } from '@renderer/domain/shared-kernel';
-import { DropdownOption } from '@renderer/components/ui-redesign/Dropdowns/common/types';
+import { DropdownOption } from '@renderer/shared/ui/Dropdowns/common/types';
 import { Balance as AccountBalance } from '@renderer/domain/balance';
 import { Asset } from '@renderer/domain/asset';
-import { toAddress } from '@renderer/shared/utils/address';
-import { Stake } from '@renderer/domain/stake';
-import { AccountAddress, BalanceNew } from '@renderer/components/common';
 import {
+  toAddress,
   stakeableAmount,
   formatAmount,
   transferableAmount,
   unlockingAmount,
   redeemableAmount,
-} from '@renderer/shared/utils/balance';
+} from '@renderer/shared/lib/utils';
+import { Stake } from '@renderer/domain/stake';
+import { AccountAddress, BalanceNew } from '@renderer/components/common';
 
 export const validateBalanceForFee = (balance: AccountBalance | string, fee: string): boolean => {
   const transferableBalance = typeof balance === 'string' ? balance : transferableAmount(balance);

@@ -1,4 +1,4 @@
-import { Chain } from '@renderer/components/ui-redesign';
+import { Chain } from '@renderer/shared/ui';
 import { ChainId } from '@renderer/domain/shared-kernel';
 
 type Props = {

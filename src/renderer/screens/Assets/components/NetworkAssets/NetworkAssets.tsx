@@ -1,22 +1,18 @@
 import { useEffect, useMemo, useState } from 'react';
 import { groupBy } from 'lodash';
 
-import { Icon } from '@renderer/components/ui';
+import { Icon, CaptionText, Chain, Tooltip, Accordion } from '@renderer/shared/ui';
 import { Asset } from '@renderer/domain/asset';
 import { Chain as ChainType } from '@renderer/domain/chain';
 import { useBalance } from '@renderer/services/balance/balanceService';
-import { ZERO_BALANCE } from '@renderer/shared/utils/constants';
-import { totalAmount } from '@renderer/shared/utils/balance';
+import { ZERO_BALANCE, totalAmount, includes, cnTw } from '@renderer/shared/lib/utils';
 import { ExtendedChain } from '@renderer/services/network/common/types';
-import { useI18n } from '@renderer/context/I18nContext';
+import { useI18n } from '@renderer/app/providers';
 import { Balance } from '@renderer/domain/balance';
-import { includes } from '@renderer/shared/utils/strings';
-import { CaptionText, Chain, Tooltip, Accordion } from '@renderer/components/ui-redesign';
 import { AssetCard } from '../AssetCard/AssetCard';
 import { balanceSorter, sumBalances } from '../../common/utils';
 import { Account } from '@renderer/domain/account';
 import { AccountId } from '@renderer/domain/shared-kernel';
-import cnTw from '@renderer/shared/utils/twMerge';
 
 type Props = {
   hideZeroBalance?: boolean;

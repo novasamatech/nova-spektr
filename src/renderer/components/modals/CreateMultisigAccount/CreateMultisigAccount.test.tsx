@@ -2,7 +2,7 @@ import { render, screen } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import noop from 'lodash/noop';
 
-import { TEST_ACCOUNT_ID } from '@renderer/shared/utils/constants';
+import { TEST_ACCOUNT_ID } from '@renderer/shared/lib/utils';
 import { CreateMultisigAccount } from './CreateMultisigAccount';
 
 jest.mock('@renderer/context/I18nContext', () => ({

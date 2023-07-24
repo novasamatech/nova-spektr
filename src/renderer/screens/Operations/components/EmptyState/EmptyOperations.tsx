@@ -1,6 +1,5 @@
-import { Icon } from '@renderer/components/ui';
-import { useI18n } from '@renderer/context/I18nContext';
-import { BodyText } from '@renderer/components/ui-redesign';
+import { Icon, BodyText } from '@renderer/shared/ui';
+import { useI18n } from '@renderer/app/providers';
 import { Account } from '@renderer/domain/account';
 
 type Props = {

@@ -1,6 +1,6 @@
 import { render, screen } from '@testing-library/react';
 
-import { TEST_ADDRESS } from '@renderer/shared/utils/constants';
+import { TEST_ADDRESS } from '@renderer/shared/lib/utils';
 import SignatoryCard from './SignatoryCard';
 
 jest.mock('@renderer/services/contact/contactService', () => ({

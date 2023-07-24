@@ -1,11 +1,8 @@
 import { Link } from 'react-router-dom';
 
-import { Icon } from '@renderer/components/ui';
-import { useI18n } from '@renderer/context/I18nContext';
-import { BodyText, Plate, FootnoteText } from '@renderer/components/ui-redesign';
-import { HelpText } from '@renderer/components/ui-redesign/Typography';
-import Paths from '@renderer/routes/paths';
-import cnTw from '@renderer/shared/utils/twMerge';
+import { Icon, BodyText, Plate, FootnoteText, HelpText } from '@renderer/shared/ui';
+import { useI18n, Paths } from '@renderer/app/providers';
+import { cnTw } from '@renderer/shared/lib/utils';
 
 // TODO: Language switcher temporary removed
 export const GeneralActions = () => {

@@ -3,7 +3,7 @@ import { act, render, screen } from '@testing-library/react';
 import noop from 'lodash/noop';
 
 import { Asset } from '@renderer/domain/asset';
-import { TEST_ACCOUNT_ID } from '@renderer/shared/utils/constants';
+import { TEST_ACCOUNT_ID } from '@renderer/shared/lib/utils';
 import InitOperation from './InitOperation';
 import { ChainId } from '@renderer/domain/shared-kernel';
 import { Account } from '@renderer/domain/account';

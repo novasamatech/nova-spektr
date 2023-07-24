@@ -1,10 +1,8 @@
-import { BodyText, CaptionText, FootnoteText } from '@renderer/components/ui-redesign';
-import { Icon, Identicon } from '@renderer/components/ui';
+import { BodyText, CaptionText, FootnoteText, Icon, Identicon } from '@renderer/shared/ui';
 import { WalletType } from '@renderer/domain/shared-kernel';
 import { GroupIcons, GroupLabels } from '@renderer/components/layout/PrimaryLayout/Wallets/common/constants';
-import { toAddress } from '@renderer/shared/utils/address';
-import { SS58_DEFAULT_PREFIX } from '@renderer/shared/utils/constants';
-import { useI18n } from '@renderer/context/I18nContext';
+import { toAddress, SS58_DEFAULT_PREFIX } from '@renderer/shared/lib/utils';
+import { useI18n } from '@renderer/app/providers';
 import { WalletDS } from '@renderer/services/storage';
 import { ChainsRecord } from './common/types';
 import { Account, getActiveWalletType } from '@renderer/domain/account';

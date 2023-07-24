@@ -1,10 +1,10 @@
 import { Controller, SubmitHandler, useForm } from 'react-hook-form';
 
-import { BaseModal, Button, InputHint, InputArea } from '@renderer/components/ui-redesign';
-import { useI18n } from '@renderer/context/I18nContext';
+import { BaseModal, Button, InputHint, InputArea } from '@renderer/shared/ui';
+import { useI18n } from '@renderer/app/providers';
 import { MultisigTransactionDS } from '@renderer/services/storage';
 import { CallData } from '@renderer/domain/shared-kernel';
-import { validateCallData } from '@renderer/shared/utils/substrate';
+import { validateCallData } from '@renderer/shared/lib/utils';
 
 type CallDataForm = {
   callData: string;

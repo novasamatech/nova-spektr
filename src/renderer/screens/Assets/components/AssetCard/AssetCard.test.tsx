@@ -4,7 +4,7 @@ import { MemoryRouter } from 'react-router-dom';
 import { Chain } from '@renderer/domain/chain';
 import { Asset } from '@renderer/domain/asset';
 import chains from '@renderer/services/network/common/chains/chains.json';
-import { TEST_ACCOUNT_ID } from '@renderer/shared/utils/constants';
+import { TEST_ACCOUNT_ID } from '@renderer/shared/lib/utils';
 import { Balance } from '@renderer/domain/balance';
 import { AssetCard } from './AssetCard';
 

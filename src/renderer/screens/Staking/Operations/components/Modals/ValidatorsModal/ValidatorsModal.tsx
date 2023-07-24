@@ -1,10 +1,9 @@
-import { BaseModal } from '@renderer/components/ui-redesign';
-import { useI18n } from '@renderer/context/I18nContext';
+import { BaseModal } from '@renderer/shared/ui';
+import { useI18n } from '@renderer/app/providers';
 import { Explorer } from '@renderer/domain/chain';
 import { Validator } from '@renderer/domain/validator';
 import AddressWithExplorers from '@renderer/components/common/AddressWithExplorers/AddressWithExplorers';
-import { getComposedIdentity } from '@renderer/shared/utils/strings';
-import cnTw from '@renderer/shared/utils/twMerge';
+import { getComposedIdentity, cnTw } from '@renderer/shared/lib/utils';
 
 type Props = {
   isOpen: boolean;

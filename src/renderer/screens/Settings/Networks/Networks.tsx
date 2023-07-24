@@ -3,21 +3,16 @@ import { useNavigate } from 'react-router-dom';
 import { Trans } from 'react-i18next';
 import uniqBy from 'lodash/uniqBy';
 
-import { useI18n } from '@renderer/context/I18nContext';
-import { BaseModal, SearchInput, BodyText, InfoLink } from '@renderer/components/ui-redesign';
-import { useToggle } from '@renderer/shared/hooks';
-import { useNetworkContext } from '@renderer/context/NetworkContext';
+import { useI18n, useNetworkContext, useConfirmContext, Paths } from '@renderer/app/providers';
+import { BaseModal, SearchInput, BodyText, InfoLink, Icon } from '@renderer/shared/ui';
+import { useToggle } from '@renderer/shared/lib/hooks';
 import { ExtendedChain } from '@renderer/services/network/common/types';
-import { includes } from '@renderer/shared/utils/strings';
+import { includes, DEFAULT_TRANSITION } from '@renderer/shared/lib/utils';
 import { ConnectionType, ConnectionStatus } from '@renderer/domain/connection';
 import { useChains } from '@renderer/services/network/chainsService';
-import { DEFAULT_TRANSITION } from '@renderer/shared/utils/constants';
-import { Icon } from '@renderer/components/ui';
 import { RpcNode } from '@renderer/domain/chain';
-import { useConfirmContext } from '@renderer/context/ConfirmContext';
 import { ChainId } from '@renderer/domain/shared-kernel';
 import { NetworkList, NetworkItem, CustomRpcModal } from './components';
-import Paths from '@renderer/routes/paths';
 import { useBalance } from '@renderer/services/balance/balanceService';
 import { useAccount } from '@renderer/services/account/accountService';
 

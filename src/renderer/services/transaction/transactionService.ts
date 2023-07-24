@@ -15,8 +15,8 @@ import { Weight } from '@polkadot/types/interfaces';
 
 import { HexString, Threshold } from '@renderer/domain/shared-kernel';
 import { Transaction, TransactionType } from '@renderer/domain/transaction';
-import { createTxMetadata } from '@renderer/shared/utils/substrate';
-import { toAccountId } from '@renderer/shared/utils/address';
+import { createTxMetadata } from '@renderer/shared/lib/utils';
+import { toAccountId } from '@renderer/shared/lib/utils';
 import { ITransactionService, HashData, ExtrinsicResultParams } from './common/types';
 import { decodeDispatchError, getMaxWeight, isControllerMissing, isOldMultisigPallet } from './common/utils';
 import { useCallDataDecoder } from './callDataDecoder';

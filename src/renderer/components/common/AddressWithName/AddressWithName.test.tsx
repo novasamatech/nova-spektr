@@ -1,7 +1,7 @@
 import { render, screen } from '@testing-library/react';
 
 import AddressWithName from './AddressWithName';
-import { TEST_ACCOUNT_ID, TEST_ADDRESS } from '@renderer/shared/utils/constants';
+import { TEST_ACCOUNT_ID, TEST_ADDRESS } from '@renderer/shared/lib/utils';
 
 describe('ui/Address', () => {
   test('should render component', () => {

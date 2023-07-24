@@ -1,10 +1,10 @@
 import { useState, useEffect } from 'react';
 
-import { useI18n } from '@renderer/context/I18nContext';
+import { useI18n } from '@renderer/app/providers';
 import { EmptySearch } from '../EmptyState/EmptySearch';
-import { includes } from '@renderer/shared/utils/strings';
+import { includes } from '@renderer/shared/lib/utils';
 import { AddressWithName } from '@renderer/components/common';
-import { BodyText, FootnoteText, IconButton, Plate } from '@renderer/components/ui-redesign';
+import { BodyText, FootnoteText, IconButton, Plate } from '@renderer/shared/ui';
 import { Contact } from '@renderer/domain/contact';
 
 type Props = {

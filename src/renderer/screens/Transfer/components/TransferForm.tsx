@@ -4,20 +4,24 @@ import { Controller, useForm, SubmitHandler } from 'react-hook-form';
 import { ApiPromise } from '@polkadot/api';
 import { Trans } from 'react-i18next';
 
-import { toAccountId, validateAddress, toAddress } from '@renderer/shared/utils/address';
-import { Icon, Identicon } from '@renderer/components/ui';
+import {
+  toAccountId,
+  validateAddress,
+  toAddress,
+  formatAmount,
+  transferableAmount,
+  getAssetId,
+} from '@renderer/shared/lib/utils';
+import { Icon, Identicon, Button, AmountInput, Input, InputHint } from '@renderer/shared/ui';
 import { Fee, DetailRow, DepositWithLabel } from '@renderer/components/common';
-import { useI18n } from '@renderer/context/I18nContext';
+import { useI18n } from '@renderer/app/providers';
 import { Asset, AssetType } from '@renderer/domain/asset';
 import { Transaction, MultisigTxInitStatus, TransactionType } from '@renderer/domain/transaction';
 import { useBalance } from '@renderer/services/balance/balanceService';
-import { formatAmount, transferableAmount } from '@renderer/shared/utils/balance';
 import { Address, ChainId, AccountId } from '@renderer/domain/shared-kernel';
 import { useTransaction } from '@renderer/services/transaction/transactionService';
 import { useMultisigTx } from '@renderer/services/multisigTx/multisigTxService';
-import { getAssetId } from '@renderer/shared/utils/assets';
 import { MultisigAccount, Account, isMultisig } from '@renderer/domain/account';
-import { Button, AmountInput, Input, InputHint } from '@renderer/components/ui-redesign';
 
 const DESCRIPTION_MAX_LENGTH = 120;
 

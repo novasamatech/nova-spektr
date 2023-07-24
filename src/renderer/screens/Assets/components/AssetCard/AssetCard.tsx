@@ -1,16 +1,14 @@
 import cn from 'classnames';
 import { KeyboardEvent, MouseEvent } from 'react';
 
-import { Shimmering } from '@renderer/components/ui';
+import { Shimmering, AssetIcon, BodyText, IconButton } from '@renderer/shared/ui';
 import { Asset } from '@renderer/domain/asset';
 import { Balance } from '@renderer/domain/balance';
-import { useToggle } from '@renderer/shared/hooks';
-import { totalAmount, transferableAmount } from '@renderer/shared/utils/balance';
-import { KeyboardKey } from '@renderer/shared/utils/constants';
-import { AssetIcon, BodyText, IconButton } from '@renderer/components/ui-redesign';
+import { useToggle } from '@renderer/shared/lib/hooks';
+import { totalAmount, transferableAmount, KeyboardKey } from '@renderer/shared/lib/utils';
 import { BalanceNew } from '@renderer/components/common';
 import { AssetDetails } from '../AssetDetails/AssetDetails';
-import { useI18n } from '@renderer/context/I18nContext';
+import { useI18n } from '@renderer/app/providers';
 
 type Props = {
   asset: Asset;

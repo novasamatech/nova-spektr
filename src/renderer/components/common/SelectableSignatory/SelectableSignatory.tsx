@@ -2,17 +2,14 @@ import AccountAddress, {
   getAddress,
   Props as AccountAddressProps,
 } from '@renderer/components/common/AccountAddress/AccountAddress';
-import { InfoPopover } from '@renderer/components/ui-redesign';
-import { Icon } from '@renderer/components/ui';
+import { InfoPopover, Icon } from '@renderer/shared/ui';
 import { Explorer } from '@renderer/domain/chain';
 import useAddressInfo from '@renderer/components/common/AccountAddress/useAddressInfo';
-import { toAccountId } from '@renderer/shared/utils/address';
+import { toAccountId, transferableAmount, cnTw } from '@renderer/shared/lib/utils';
 import { useBalance } from '@renderer/services/balance/balanceService';
 import { ChainId } from '@renderer/domain/shared-kernel';
 import { Asset } from '@renderer/domain/asset';
 import BalanceNew from '../BalanceNew/BalanceNew';
-import { transferableAmount } from '@renderer/shared/utils/balance';
-import cnTw from '@renderer/shared/utils/twMerge';
 
 type Props<T extends any> = {
   explorers?: Explorer[];

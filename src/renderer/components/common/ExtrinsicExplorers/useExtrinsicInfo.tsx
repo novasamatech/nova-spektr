@@ -1,4 +1,4 @@
-import { InfoSection } from '@renderer/components/ui-redesign/Popovers/InfoPopover/InfoPopover';
+import { InfoSection } from '@renderer/shared/ui/Popovers/InfoPopover/InfoPopover';
 import { HexString } from '@renderer/domain/shared-kernel';
 import { Explorer } from '@renderer/domain/chain';
 import { ExplorerLink } from '@renderer/components/common';

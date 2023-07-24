@@ -1,15 +1,14 @@
 import { PropsWithChildren, useEffect, useState } from 'react';
 import { BN, BN_ZERO } from '@polkadot/util';
 
-import { Select, FootnoteText, Plate, IconButton, Chain as ChainComponent } from '@renderer/components/ui-redesign';
-import { DropdownOption, DropdownResult } from '@renderer/components/ui-redesign/Dropdowns/common/types';
-import { getRelaychainAsset } from '@renderer/shared/utils/assets';
+import { Select, FootnoteText, Plate, IconButton, Chain as ChainComponent, Shimmering } from '@renderer/shared/ui';
+import { DropdownOption, DropdownResult } from '@renderer/shared/ui/Dropdowns/common/types';
+import { getRelaychainAsset } from '@renderer/shared/lib/utils';
 import { useChains } from '@renderer/services/network/chainsService';
 import { useSettingsStorage } from '@renderer/services/settings/settingsStorage';
 import { Chain } from '@renderer/domain/chain';
-import { useToggle } from '@renderer/shared/hooks';
-import { useI18n } from '@renderer/context/I18nContext';
-import { Shimmering } from '@renderer/components/ui';
+import { useToggle } from '@renderer/shared/lib/hooks';
+import { useI18n } from '@renderer/app/providers';
 import { BalanceNew } from '@renderer/components/common';
 
 const getTotal = (values: string[]): BN => {

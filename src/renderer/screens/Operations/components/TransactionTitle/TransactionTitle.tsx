@@ -1,9 +1,8 @@
-import { Icon } from '@renderer/components/ui';
-import { useI18n } from '@renderer/context/I18nContext';
+import { Icon, BodyText, FootnoteText } from '@renderer/shared/ui';
+import { useI18n } from '@renderer/app/providers';
 import { DecodedTransaction, Transaction } from '@renderer/domain/transaction';
 import { getIconName, getTransactionTitle } from '../../common/utils';
-import { BodyText, FootnoteText } from '@renderer/components/ui-redesign';
-import cnTw from '@renderer/shared/utils/twMerge';
+import { cnTw } from '@renderer/shared/lib/utils';
 
 type Props = {
   tx?: Transaction | DecodedTransaction;

@@ -2,13 +2,12 @@ import { useEffect, useState } from 'react';
 
 import { Transaction } from '@renderer/domain/transaction';
 import TransactionAmount from '@renderer/screens/Operations/components/TransactionAmount';
-import { Button, FootnoteText } from '@renderer/components/ui-redesign';
+import { Button, FootnoteText, Icon } from '@renderer/shared/ui';
 import { Fee, DetailRow, DepositWithLabel } from '@renderer/components/common';
 import { Account, MultisigAccount } from '@renderer/domain/account';
 import { ExtendedChain } from '@renderer/services/network/common/types';
-import { useI18n } from '@renderer/context/I18nContext';
+import { useI18n } from '@renderer/app/providers';
 import Details from '../Details';
-import { Icon } from '@renderer/components/ui';
 import { Wallet } from '@renderer/domain/wallet';
 import { useWallet } from '@renderer/services/wallet/walletService';
 

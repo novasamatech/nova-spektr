@@ -1,5 +1,5 @@
-import { BaseModal } from '@renderer/components/ui-redesign';
-import { useI18n } from '@renderer/context/I18nContext';
+import { BaseModal } from '@renderer/shared/ui';
+import { useI18n } from '@renderer/app/providers';
 import { AccountDS } from '@renderer/services/storage';
 import SelectableSignatory from '@renderer/components/common/SelectableSignatory/SelectableSignatory';
 import { Asset } from '@renderer/domain/asset';

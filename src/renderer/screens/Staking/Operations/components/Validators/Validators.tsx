@@ -2,18 +2,11 @@ import { ApiPromise } from '@polkadot/api';
 import { useEffect, useState } from 'react';
 import { mapValues } from 'lodash';
 
-import { Icon, Identicon, Shimmering, Loader } from '@renderer/components/ui';
-import { useI18n } from '@renderer/context/I18nContext';
-import { Asset } from '@renderer/domain/asset';
-import { Explorer } from '@renderer/domain/chain';
-import { Address, ChainId } from '@renderer/domain/shared-kernel';
-import { ValidatorMap } from '@renderer/services/staking/common/types';
-import { useEra } from '@renderer/services/staking/eraService';
-import { useValidators } from '@renderer/services/staking/validatorsService';
-import { includes, getComposedIdentity } from '@renderer/shared/utils/strings';
-import { toShortAddress } from '@renderer/shared/utils/address';
-import { ExplorerLink, BalanceNew } from '@renderer/components/common';
 import {
+  Icon,
+  Identicon,
+  Shimmering,
+  Loader,
   BodyText,
   InfoPopover,
   FootnoteText,
@@ -21,7 +14,16 @@ import {
   SearchInput,
   SmallTitleText,
   Checkbox,
-} from '@renderer/components/ui-redesign';
+} from '@renderer/shared/ui';
+import { useI18n } from '@renderer/app/providers';
+import { Asset } from '@renderer/domain/asset';
+import { Explorer } from '@renderer/domain/chain';
+import { Address, ChainId } from '@renderer/domain/shared-kernel';
+import { ValidatorMap } from '@renderer/services/staking/common/types';
+import { useEra } from '@renderer/services/staking/eraService';
+import { useValidators } from '@renderer/services/staking/validatorsService';
+import { includes, getComposedIdentity, toShortAddress } from '@renderer/shared/lib/utils';
+import { ExplorerLink, BalanceNew } from '@renderer/components/common';
 
 type Props = {
   api: ApiPromise;

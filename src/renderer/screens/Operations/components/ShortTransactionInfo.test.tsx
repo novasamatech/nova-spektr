@@ -2,7 +2,7 @@ import { act, render, screen } from '@testing-library/react';
 
 import TransactionAmount from './TransactionAmount';
 import { Transaction, TransactionType } from '@renderer/domain/transaction';
-import { TEST_ADDRESS, TEST_CHAIN_ID } from '@renderer/shared/utils/constants';
+import { TEST_ADDRESS, TEST_CHAIN_ID } from '@renderer/shared/lib/utils';
 
 jest.mock('@renderer/context/I18nContext', () => ({
   useI18n: jest.fn().mockReturnValue({

@@ -2,18 +2,17 @@ import { useEffect, useState } from 'react';
 import { groupBy } from 'lodash';
 import { format } from 'date-fns';
 
-import { useI18n } from '@renderer/context/I18nContext';
+import { useI18n, useNetworkContext } from '@renderer/app/providers';
 import EmptyOperations from './components/EmptyState/EmptyOperations';
 import { useAccount } from '@renderer/services/account/accountService';
 import { MultisigAccount } from '@renderer/domain/account';
 import Operation from './components/Operation';
 import { sortByDateDesc } from './common/utils';
-import { FootnoteText } from '@renderer/components/ui-redesign';
+import { FootnoteText } from '@renderer/shared/ui';
 import Filters from './components/Filters';
 import { MultisigTransactionDS } from '@renderer/services/storage';
 import { useMultisigTx } from '@renderer/services/multisigTx/multisigTxService';
 import { Header } from '@renderer/components/common';
-import { useNetworkContext } from '@renderer/context/NetworkContext';
 import { MultisigEvent, MultisigTransactionKey } from '@renderer/domain/transaction';
 import { useMultisigEvent } from '@renderer/services/multisigEvent/multisigEventService';
 

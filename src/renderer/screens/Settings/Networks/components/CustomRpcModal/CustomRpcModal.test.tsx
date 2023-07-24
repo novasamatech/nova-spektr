@@ -2,7 +2,7 @@ import { act, render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 
 import { RpcValidation, ExtendedChain } from '@renderer/services/network/common/types';
-import { useNetworkContext } from '@renderer/context/NetworkContext';
+import { useNetworkContext } from '@renderer/app/providers';
 import { CustomRpcModal } from './CustomRpcModal';
 
 jest.mock('@renderer/context/I18nContext', () => ({

@@ -1,10 +1,10 @@
-import { useI18n } from '@renderer/context/I18nContext';
+import { useI18n } from '@renderer/app/providers';
 import { Asset } from '@renderer/domain/asset';
 import { Explorer } from '@renderer/domain/chain';
 import { Account } from '@renderer/domain/account';
-import { BaseModal } from '@renderer/components/ui-redesign';
+import { BaseModal } from '@renderer/shared/ui';
 import AddressWithExplorers from '@renderer/components/common/AddressWithExplorers/AddressWithExplorers';
-import cnTw from '@renderer/shared/utils/twMerge';
+import { cnTw } from '@renderer/shared/lib/utils';
 
 type Props = {
   isOpen: boolean;

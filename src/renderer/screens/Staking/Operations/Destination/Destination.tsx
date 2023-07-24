@@ -2,26 +2,22 @@ import { UnsignedTransaction } from '@substrate/txwrapper-polkadot';
 import { useState, useEffect } from 'react';
 import { Navigate, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 
-import { toAddress } from '@renderer/shared/utils/address';
-import { getRelaychainAsset } from '@renderer/shared/utils/assets';
+import { toAddress, getRelaychainAsset, DEFAULT_TRANSITION } from '@renderer/shared/lib/utils';
 import { RewardsDestination } from '@renderer/domain/stake';
-import { useI18n } from '@renderer/context/I18nContext';
-import { useNetworkContext } from '@renderer/context/NetworkContext';
+import { useI18n, useNetworkContext } from '@renderer/app/providers';
 import { Address, ChainId, HexString, AccountId } from '@renderer/domain/shared-kernel';
 import { Transaction, TransactionType } from '@renderer/domain/transaction';
 import { Confirmation, Signing, Submit, NoAsset } from '../components';
 import InitOperation, { DestinationResult } from './InitOperation/InitOperation';
-import { useCountdown, useToggle } from '@renderer/shared/hooks';
+import { useCountdown, useToggle } from '@renderer/shared/lib/hooks';
 import { MultisigAccount, isMultisig, Account } from '@renderer/domain/account';
 import { useTransaction } from '@renderer/services/transaction/transactionService';
-import { DEFAULT_TRANSITION } from '@renderer/shared/utils/constants';
 import { DestinationType } from '../common/types';
-import { BaseModal, Button } from '@renderer/components/ui-redesign';
-import Paths from '@renderer/routes/paths';
+import { BaseModal, Button, Loader } from '@renderer/shared/ui';
+import { Paths } from '@renderer/app/providers';
 import { useAccount } from '@renderer/services/account/accountService';
 import ScanMultiframeQr from '@renderer/components/common/Scanning/ScanMultiframeQr';
 import ScanSingleframeQr from '@renderer/components/common/Scanning/ScanSingleframeQr';
-import { Loader } from '@renderer/components/ui';
 import OperationModalTitle from '@renderer/screens/Operations/components/OperationModalTitle';
 
 const enum Step {

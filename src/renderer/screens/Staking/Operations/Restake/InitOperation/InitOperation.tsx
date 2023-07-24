@@ -2,21 +2,19 @@ import { ApiPromise } from '@polkadot/api';
 import { BN } from '@polkadot/util';
 import { useEffect, useState } from 'react';
 
-import { DropdownOption, DropdownResult } from '@renderer/components/ui-redesign/Dropdowns/common/types';
-import { useI18n } from '@renderer/context/I18nContext';
+import { DropdownOption, DropdownResult } from '@renderer/shared/ui/Dropdowns/common/types';
+import { useI18n } from '@renderer/app/providers';
 import { Asset } from '@renderer/domain/asset';
 import { ChainId, AccountId, SigningType } from '@renderer/domain/shared-kernel';
 import { Transaction, TransactionType } from '@renderer/domain/transaction';
 import { useAccount } from '@renderer/services/account/accountService';
 import { useBalance } from '@renderer/services/balance/balanceService';
-import { formatAmount, unlockingAmount } from '@renderer/shared/utils/balance';
+import { formatAmount, unlockingAmount, toAddress, nonNullable } from '@renderer/shared/lib/utils';
 import { StakingMap } from '@renderer/services/staking/common/types';
-import { toAddress } from '@renderer/shared/utils/address';
 import { Account, isMultisig } from '@renderer/domain/account';
 import { Balance as AccountBalance } from '@renderer/domain/balance';
 import { OperationForm } from '../../components';
-import { nonNullable } from '@renderer/shared/utils/functions';
-import { Select, MultiSelect, InputHint } from '@renderer/components/ui-redesign';
+import { Select, MultiSelect, InputHint } from '@renderer/shared/ui';
 import { useStakingData } from '@renderer/services/staking/stakingDataService';
 import {
   getRestakeAccountOption,

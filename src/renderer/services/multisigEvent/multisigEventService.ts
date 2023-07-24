@@ -4,7 +4,7 @@ import storage, { MultisigEventDS } from '@renderer/services/storage';
 import { IMultisigEventService } from './common/types';
 import { AccountId, CallHash, ChainId } from '@renderer/domain/shared-kernel';
 import { MultisigEvent, MultisigTransactionKey, SigningStatus } from '@renderer/domain/transaction';
-import { Task } from '@renderer/shared/hooks/useTaskQueue';
+import { Task } from '@renderer/shared/lib/hooks/useTaskQueue';
 
 type Props = {
   addTask?: (task: Task) => void;

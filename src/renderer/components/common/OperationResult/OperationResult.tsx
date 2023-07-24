@@ -1,12 +1,12 @@
 import { Fragment, PropsWithChildren, useEffect, useState } from 'react';
 import { Dialog, Transition } from '@headlessui/react';
 
-import { ModalBackdrop, ModalTransition } from '@renderer/components/ui-redesign/Modals/common';
-import { FootnoteText, SmallTitleText } from '@renderer/components/ui-redesign';
-import { Animation } from '@renderer/components/ui-redesign/Animation/Animation';
+import { ModalBackdrop, ModalTransition } from '@renderer/shared/ui/Modals/common';
+import { FootnoteText, SmallTitleText } from '@renderer/shared/ui';
+import { Animation } from '@renderer/shared/ui/Animation/Animation';
 import { VariantAnimationProps } from './common/constants';
 import { Variant } from './common/types';
-import Animations from '@renderer/components/ui-redesign/Animation/Data';
+import Animations from '@renderer/shared/ui/Animation/Data';
 
 type Props = {
   title: string;

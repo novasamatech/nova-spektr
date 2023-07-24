@@ -2,17 +2,15 @@ import { useEffect, useState } from 'react';
 import { BN } from '@polkadot/util';
 import { ApiPromise } from '@polkadot/api';
 
-import { useI18n } from '@renderer/context/I18nContext';
+import { useI18n } from '@renderer/app/providers';
 import QrReaderWrapper from '@renderer/components/common/QrCode/QrReader/QrReaderWrapper';
-import { ValidationErrors } from '@renderer/shared/utils/validation';
-import { toAccountId } from '@renderer/shared/utils/address';
-import { transferableAmount } from '@renderer/shared/utils/balance';
+import { ValidationErrors, toAccountId, transferableAmount } from '@renderer/shared/lib/utils';
 import { Transaction } from '@renderer/domain/transaction';
 import { useBalance } from '@renderer/services/balance/balanceService';
 import { ChainId, HexString } from '@renderer/domain/shared-kernel';
 import { useTransaction } from '@renderer/services/transaction/transactionService';
 import { Balance } from '@renderer/domain/balance';
-import { Button } from '@renderer/components/ui-redesign';
+import { Button } from '@renderer/shared/ui';
 
 type Props = {
   api: ApiPromise;

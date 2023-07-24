@@ -1,6 +1,5 @@
-import { Icon } from '@renderer/components/ui';
-import { BodyText } from '@renderer/components/ui-redesign';
-import { useI18n } from '@renderer/context/I18nContext';
+import { Icon, BodyText } from '@renderer/shared/ui';
+import { useI18n } from '@renderer/app/providers';
 
 export const EmptySearch = () => {
   const { t } = useI18n();

@@ -2,11 +2,11 @@ import { act, render, screen, waitFor } from '@testing-library/react';
 
 import { QrReader } from '@renderer/components/common';
 import { QrError } from '@renderer/components/common/QrCode/common/types';
-import { Button, Select } from '@renderer/components/ui-redesign';
+import { Button, Select } from '@renderer/shared/ui';
 import KeyQrReader from './KeyQrReader';
 
 jest.mock('@renderer/components/common');
-jest.mock('@renderer/components/ui');
+jest.mock('@renderer/shared/ui');
 
 jest.mock('@renderer/context/I18nContext', () => ({
   useI18n: jest.fn().mockReturnValue({

@@ -11,9 +11,9 @@ import ActiveAccountCard from '@renderer/components/layout/PrimaryLayout/Wallets
 import NavItem, { Props as NavItemProps } from '../NavItem/NavItem';
 import { useChains } from '@renderer/services/network/chainsService';
 import { ChainsRecord } from '@renderer/components/layout/PrimaryLayout/Wallets/common/types';
-import Paths from '@renderer/routes/paths';
+import { Paths } from '@renderer/app/providers';
 import { useWallet } from '@renderer/services/wallet/walletService';
-import { Shimmering } from '@renderer/components/ui';
+import { Shimmering } from '@renderer/shared/ui';
 
 const Navigation = () => {
   const { getActiveAccounts } = useAccount();

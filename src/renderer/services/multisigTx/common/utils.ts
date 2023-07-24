@@ -6,7 +6,7 @@ import { MultisigAccount } from '@renderer/domain/account';
 import { Address, ChainId } from '@renderer/domain/shared-kernel';
 import { MultisigEvent, MultisigTransaction, MultisigTxInitStatus } from '@renderer/domain/transaction';
 import { PendingMultisigTransaction } from './types';
-import { getCreatedDate } from '@renderer/shared/utils/substrate';
+import { getCreatedDate } from '@renderer/shared/lib/utils';
 
 export const getPendingMultisigTxs = async (
   api: ApiPromise,

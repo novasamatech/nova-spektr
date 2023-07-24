@@ -3,22 +3,19 @@ import { useEffect, useState, ComponentProps } from 'react';
 import { ApiPromise } from '@polkadot/api';
 import { useNavigate } from 'react-router-dom';
 
-import { useI18n } from '@renderer/context/I18nContext';
+import { useI18n, useMatrix, useMultisigChainContext } from '@renderer/app/providers';
 import { HexString } from '@renderer/domain/shared-kernel';
 import { useTransaction } from '@renderer/services/transaction/transactionService';
 import { ExtrinsicResultParams } from '@renderer/services/transaction/common/types';
 import { isMultisig, Account, MultisigAccount } from '@renderer/domain/account';
-import { toAccountId } from '@renderer/shared/utils/address';
-import { useMatrix } from '@renderer/context/MatrixContext';
-import { Button } from '@renderer/components/ui-redesign';
+import { toAccountId, DEFAULT_TRANSITION } from '@renderer/shared/lib/utils';
+import { Button } from '@renderer/shared/ui';
 import { OperationResult } from '@renderer/components/common/OperationResult/OperationResult';
-import { useToggle } from '@renderer/shared/hooks';
+import { useToggle } from '@renderer/shared/lib/hooks';
 import { useMultisigTx } from '@renderer/services/multisigTx/multisigTxService';
-import { DEFAULT_TRANSITION } from '@renderer/shared/utils/constants';
-import Paths from '@renderer/routes/paths';
+import { Paths } from '@renderer/app/providers';
 import { Transaction, MultisigEvent, MultisigTransaction, MultisigTxInitStatus } from '@renderer/domain/transaction';
 import { useMultisigEvent } from '@renderer/services/multisigEvent/multisigEventService';
-import { useMultisigChainContext } from '@renderer/context/MultisigChainContext';
 
 type ResultProps = Pick<ComponentProps<typeof OperationResult>, 'title' | 'description' | 'variant'>;
 

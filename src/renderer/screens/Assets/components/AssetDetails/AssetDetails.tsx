@@ -1,7 +1,6 @@
 import { Asset } from '@renderer/domain/asset';
-import { HelpText } from '@renderer/components/ui-redesign/Typography';
 import { BalanceNew } from '@renderer/components/common';
-import { Shimmering } from '@renderer/components/ui';
+import { Shimmering, HelpText } from '@renderer/shared/ui';
 
 type Props = {
   asset: Asset;

@@ -1,7 +1,7 @@
 import { render, screen, act } from '@testing-library/react';
 
 import { Asset } from '@renderer/domain/asset';
-import { TEST_ACCOUNT_ID } from '@renderer/shared/utils/constants';
+import { TEST_ACCOUNT_ID } from '@renderer/shared/lib/utils';
 import chains from '@renderer/services/network/common/chains/chains.json';
 import { useAccount } from '@renderer/services/account/accountService';
 import { SigningType } from '@renderer/domain/shared-kernel';
@@ -20,7 +20,7 @@ jest.mock('@renderer/services/account/accountService', () => ({
   }),
 }));
 
-jest.mock('@renderer/components/ui/Truncate/Truncate', () => () => (
+jest.mock('@renderer/shared/ui/Truncate/Truncate', () => () => (
   <span>5CGQ7BPJZZKNirQgVhzbX9wdkgbnUHtJ5V7FkMXdZeVbXyr9</span>
 ));
 

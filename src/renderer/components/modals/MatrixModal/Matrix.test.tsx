@@ -3,7 +3,7 @@ import { MemoryRouter } from 'react-router-dom';
 import noop from 'lodash/noop';
 
 import { MatrixModal } from './MatrixModal';
-import { useMatrix } from '@renderer/context/MatrixContext';
+import { useMatrix } from '@renderer/app/providers';
 
 jest.mock('@renderer/context/I18nContext', () => ({
   useI18n: jest.fn().mockReturnValue({

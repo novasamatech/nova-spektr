@@ -2,10 +2,9 @@ import { BN, BN_ZERO } from '@polkadot/util';
 import { ApiPromise } from '@polkadot/api';
 import { PropsWithChildren, useState, useEffect } from 'react';
 
-import { Icon } from '@renderer/components/ui';
-import { Button, FootnoteText, CaptionText, InputHint } from '@renderer/components/ui-redesign';
-import { useI18n } from '@renderer/context/I18nContext';
-import { useToggle } from '@renderer/shared/hooks';
+import { Icon, Button, FootnoteText, CaptionText, InputHint } from '@renderer/shared/ui';
+import { useI18n } from '@renderer/app/providers';
+import { useToggle } from '@renderer/shared/lib/hooks';
 import { BalanceNew, Fee, DepositWithLabel } from '@renderer/components/common';
 import { RewardsDestination } from '@renderer/domain/stake';
 import { Validator } from '@renderer/domain/validator';
@@ -17,7 +16,7 @@ import AddressWithExplorers from '@renderer/components/common/AddressWithExplore
 import AccountsModal from '../Modals/AccountsModal/AccountsModal';
 import ValidatorsModal from '../Modals/ValidatorsModal/ValidatorsModal';
 import { DestinationType } from '../../common/types';
-import cnTw from '@renderer/shared/utils/twMerge';
+import { cnTw } from '@renderer/shared/lib/utils';
 import { useMultisigTx } from '@renderer/services/multisigTx/multisigTxService';
 
 const ActionStyle = 'group hover:bg-action-background-hover px-2 py-1 rounded';

@@ -1,25 +1,13 @@
 import { useState, useEffect } from 'react';
 import { keyBy } from 'lodash';
 
-import cnTw from '@renderer/shared/utils/twMerge';
-import { useI18n } from '@renderer/context/I18nContext';
-import { useMatrix } from '@renderer/context/MatrixContext';
-import { includes } from '@renderer/shared/utils/strings';
-import { toAddress } from '@renderer/shared/utils/address';
+import { cnTw, includes, toAddress } from '@renderer/shared/lib/utils';
+import { useI18n, useMatrix, useNetworkContext } from '@renderer/app/providers';
 import { AccountId } from '@renderer/domain/shared-kernel';
-import { useToggle } from '@renderer/shared/hooks';
+import { useToggle } from '@renderer/shared/lib/hooks';
 import { WalletsTabItem } from './WalletsTabItem';
-import { Icon } from '@renderer/components/ui';
-import { EmptyContacts } from '@renderer/screens/AddressBook/Overview/components';
-import { isWalletContact, Account, MultisigAccount } from '@renderer/domain/account';
-import { ContactForm } from '@renderer/components/forms';
-import { TabItem } from '@renderer/components/ui-redesign/Tabs/common/types';
-import { Contact } from '@renderer/domain/contact';
-import { WalletDS } from '@renderer/services/storage';
-import { useNetworkContext } from '@renderer/context/NetworkContext';
-import { getSelectedLength } from '../common/utils';
-import { ExtendedWallet, ExtendedContact, SelectedMap } from '../common/types';
 import {
+  Icon,
   FootnoteText,
   SearchInput,
   SmallTitleText,
@@ -27,7 +15,15 @@ import {
   Button,
   BaseModal,
   Tabs,
-} from '@renderer/components/ui-redesign';
+} from '@renderer/shared/ui';
+import { EmptyContacts } from '@renderer/screens/AddressBook/Overview/components';
+import { isWalletContact, Account, MultisigAccount } from '@renderer/domain/account';
+import { ContactForm } from '@renderer/components/forms';
+import { TabItem } from '@renderer/shared/ui/Tabs/common/types';
+import { Contact } from '@renderer/domain/contact';
+import { WalletDS } from '@renderer/services/storage';
+import { getSelectedLength } from '../common/utils';
+import { ExtendedWallet, ExtendedContact, SelectedMap } from '../common/types';
 
 const enum SignatoryTabs {
   WALLETS = 'wallets',

@@ -1,9 +1,9 @@
 import { ApiPromise } from '@polkadot/api';
 import { useEffect, useState } from 'react';
 
-import { Select, MultiSelect, InputHint } from '@renderer/components/ui-redesign';
-import { DropdownOption, DropdownResult } from '@renderer/components/ui-redesign/Dropdowns/common/types';
-import { useI18n } from '@renderer/context/I18nContext';
+import { Select, MultiSelect, InputHint } from '@renderer/shared/ui';
+import { DropdownOption, DropdownResult } from '@renderer/shared/ui/Dropdowns/common/types';
+import { useI18n } from '@renderer/app/providers';
 import { Asset } from '@renderer/domain/asset';
 import { Address, ChainId, AccountId, SigningType } from '@renderer/domain/shared-kernel';
 import { Transaction, TransactionType } from '@renderer/domain/transaction';
@@ -11,9 +11,7 @@ import { useAccount } from '@renderer/services/account/accountService';
 import { useBalance } from '@renderer/services/balance/balanceService';
 import { Balance as AccountBalance } from '@renderer/domain/balance';
 import { Account, isMultisig } from '@renderer/domain/account';
-import { toAddress } from '@renderer/shared/utils/address';
-import { nonNullable } from '@renderer/shared/utils/functions';
-import { TEST_ADDRESS } from '@renderer/shared/utils/constants';
+import { toAddress, nonNullable, TEST_ADDRESS } from '@renderer/shared/lib/utils';
 import { OperationForm } from '../../components';
 import {
   getSignatoryOptions,

@@ -1,10 +1,10 @@
-import { InfoSection } from '@renderer/components/ui-redesign/Popovers/InfoPopover/InfoPopover';
+import { InfoSection } from '@renderer/shared/ui/Popovers/InfoPopover/InfoPopover';
 import { Address } from '@renderer/domain/shared-kernel';
 import { Explorer } from '@renderer/domain/chain';
 import { useContact } from '@renderer/services/contact/contactService';
 import { useAccount } from '@renderer/services/account/accountService';
-import { useMatrix } from '@renderer/context/MatrixContext';
-import { toAccountId } from '@renderer/shared/utils/address';
+import { useMatrix } from '@renderer/app/providers';
+import { toAccountId } from '@renderer/shared/lib/utils';
 import { ExplorerLink } from '@renderer/components/common';
 
 const useAddressInfo = (address: Address, explorers?: Explorer[], showMatrix = false): InfoSection[] => {

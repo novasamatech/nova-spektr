@@ -4,12 +4,11 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useContact } from '@renderer/services/contact/contactService';
 import { Contact } from '@renderer/domain/contact';
 import { ContactForm } from '@renderer/components/forms';
-import Paths from '@renderer/routes/paths';
-import { DEFAULT_TRANSITION } from '@renderer/shared/utils/constants';
-import { useToggle } from '@renderer/shared/hooks';
-import { BaseModal } from '@renderer/components/ui-redesign';
-import { useI18n } from '@renderer/context/I18nContext';
-import { Loader } from '@renderer/components/ui';
+import { Paths } from '@renderer/app/providers';
+import { DEFAULT_TRANSITION } from '@renderer/shared/lib/utils';
+import { useToggle } from '@renderer/shared/lib/hooks';
+import { BaseModal, Loader } from '@renderer/shared/ui';
+import { useI18n } from '@renderer/app/providers';
 
 export const ManageContact = () => {
   const { t } = useI18n();

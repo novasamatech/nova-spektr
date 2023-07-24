@@ -1,18 +1,15 @@
 import { groupBy } from 'lodash';
 import { format } from 'date-fns';
 
-import { useI18n } from '@renderer/context/I18nContext';
+import { useI18n } from '@renderer/app/providers';
 import { Account, MultisigAccount } from '@renderer/domain/account';
 import { ExtendedChain } from '@renderer/services/network/common/types';
 import { MultisigEvent, SigningStatus } from '@renderer/domain/transaction';
 import TransactionTitle from './TransactionTitle/TransactionTitle';
 import OperationStatus from './OperationStatus';
 import { getSignatoryName, getTransactionAmount, sortByDateAsc } from '../common/utils';
-import { AssetIcon, BaseModal, BodyText, FootnoteText } from '@renderer/components/ui-redesign';
-import { getAssetById } from '@renderer/shared/utils/assets';
-import { Identicon } from '@renderer/components/ui';
-import { toAddress } from '@renderer/shared/utils/address';
-import { SS58_DEFAULT_PREFIX } from '@renderer/shared/utils/constants';
+import { AssetIcon, BaseModal, BodyText, FootnoteText, Identicon } from '@renderer/shared/ui';
+import { getAssetById, toAddress, SS58_DEFAULT_PREFIX } from '@renderer/shared/lib/utils';
 import { ExtrinsicExplorers } from '@renderer/components/common';
 import { Contact } from '@renderer/domain/contact';
 import { useMultisigEvent } from '@renderer/services/multisigEvent/multisigEventService';

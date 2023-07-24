@@ -3,20 +3,16 @@ import { useEffect, useState } from 'react';
 
 import { AccountAddress, QrTextGenerator } from '@renderer/components/common';
 import { DefaultExplorer, ExplorerIcons } from '@renderer/components/common/ExplorerLink/constants';
-import { Icon } from '@renderer/components/ui';
-import { DropdownOption, DropdownResult } from '@renderer/components/ui-redesign/Dropdowns/common/types';
-import { useI18n } from '@renderer/context/I18nContext';
+import { Icon, BaseModal, Button, FootnoteText, Select, HelpText } from '@renderer/shared/ui';
+import { DropdownOption, DropdownResult } from '@renderer/shared/ui/Dropdowns/common/types';
+import { useI18n } from '@renderer/app/providers';
 import { Asset } from '@renderer/domain/asset';
 import { Chain } from '@renderer/domain/chain';
 import { SigningType } from '@renderer/domain/shared-kernel';
-import { copyToClipboard } from '@renderer/shared/utils/strings';
+import { copyToClipboard, toAddress, cnTw } from '@renderer/shared/lib/utils';
 import { useAccount } from '@renderer/services/account/accountService';
-import { toAddress } from '@renderer/shared/utils/address';
-import { BaseModal, Button, FootnoteText, Select } from '@renderer/components/ui-redesign';
 import OperationModalTitle from '@renderer/screens/Operations/components/OperationModalTitle';
-import { HelpText } from '@renderer/components/ui-redesign/Typography';
-import cnTw from '@renderer/shared/utils/twMerge';
-import { IconButtonStyle } from '@renderer/components/ui-redesign/Buttons/IconButton/IconButton';
+import { IconButtonStyle } from '@renderer/shared/ui/Buttons/IconButton/IconButton';
 
 type Props = {
   chain: Chain;

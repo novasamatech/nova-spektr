@@ -1,14 +1,12 @@
 import { useState } from 'react';
 import { Outlet, useNavigate } from 'react-router-dom';
 
-import { useI18n } from '@renderer/context/I18nContext';
+import { useI18n, createLink, Paths } from '@renderer/app/providers';
 import { Header } from '@renderer/components/common';
 import { useContact } from '@renderer/services/contact/contactService';
-import { Button, SearchInput } from '@renderer/components/ui-redesign';
-import { createLink } from '@renderer/routes/utils';
+import { Button, SearchInput } from '@renderer/shared/ui';
 import { ContactDS } from '@renderer/services/storage';
 import { EmptyContacts, ContactList } from './components';
-import Paths from '@renderer/routes/paths';
 
 export const Overview = () => {
   const { t } = useI18n();

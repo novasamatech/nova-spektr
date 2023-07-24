@@ -2,11 +2,10 @@ import AccountAddress, {
   getAddress,
   Props as AccountAddressProps,
 } from '@renderer/components/common/AccountAddress/AccountAddress';
-import { InfoPopover } from '@renderer/components/ui-redesign';
-import { Icon } from '@renderer/components/ui';
+import { InfoPopover, Icon } from '@renderer/shared/ui';
 import { Explorer } from '@renderer/domain/chain';
 import useAddressInfo from '@renderer/components/common/AccountAddress/useAddressInfo';
-import cnTw from '@renderer/shared/utils/twMerge';
+import { cnTw } from '@renderer/shared/lib/utils';
 
 type Props = {
   showMatrix?: boolean;

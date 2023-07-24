@@ -2,22 +2,19 @@ import { UnsignedTransaction } from '@substrate/txwrapper-polkadot';
 import { useState, useEffect } from 'react';
 import { Navigate, useParams, useSearchParams, useNavigate } from 'react-router-dom';
 
-import { toAddress } from '@renderer/shared/utils/address';
-import { getRelaychainAsset } from '@renderer/shared/utils/assets';
+import { toAddress, getRelaychainAsset, DEFAULT_TRANSITION } from '@renderer/shared/lib/utils';
 import { RewardsDestination } from '@renderer/domain/stake';
-import { useI18n } from '@renderer/context/I18nContext';
-import { useNetworkContext } from '@renderer/context/NetworkContext';
+import { useI18n, useNetworkContext } from '@renderer/app/providers';
 import { Address, ChainId, HexString, AccountId } from '@renderer/domain/shared-kernel';
 import { Transaction, TransactionType } from '@renderer/domain/transaction';
 import { ValidatorMap } from '@renderer/services/staking/common/types';
 import { Validators, Confirmation, Signing, Submit, NoAsset } from '../components';
-import { useCountdown, useToggle } from '@renderer/shared/hooks';
+import { useCountdown, useToggle } from '@renderer/shared/lib/hooks';
 import { Account, MultisigAccount, isMultisig } from '@renderer/domain/account';
 import { useTransaction } from '@renderer/services/transaction/transactionService';
-import { BaseModal, Alert, Button } from '@renderer/components/ui-redesign';
+import { BaseModal, Alert, Button, Loader } from '@renderer/shared/ui';
 import InitOperation, { BondResult } from './InitOperation/InitOperation';
-import Paths from '@renderer/routes/paths';
-import { DEFAULT_TRANSITION } from '@renderer/shared/utils/constants';
+import { Paths } from '@renderer/app/providers';
 import OperationModalTitle from '@renderer/screens/Operations/components/OperationModalTitle';
 import { useAccount } from '@renderer/services/account/accountService';
 import { DestinationType } from '../common/types';
@@ -25,7 +22,6 @@ import ScanMultiframeQr from '@renderer/components/common/Scanning/ScanMultifram
 import ScanSingleframeQr from '@renderer/components/common/Scanning/ScanSingleframeQr';
 import { UnstakingDuration } from '@renderer/screens/Staking/Overview/components';
 import { isLightClient } from '@renderer/services/network/common/utils';
-import { Loader } from '@renderer/components/ui';
 
 const enum Step {
   INIT,

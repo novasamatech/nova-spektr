@@ -1,18 +1,16 @@
 import { useState, useEffect } from 'react';
 import { UnsignedTransaction } from '@substrate/txwrapper-polkadot';
 
-import { useI18n } from '@renderer/context/I18nContext';
+import { useI18n, useNetworkContext } from '@renderer/app/providers';
 import { ChainId, HexString } from '@renderer/domain/shared-kernel';
-import { useNetworkContext } from '@renderer/context/NetworkContext';
 import { useChains } from '@renderer/services/network/chainsService';
 import { Transaction } from '@renderer/domain/transaction';
 import { Account, MultisigAccount, isMultisig, isMultishard } from '@renderer/domain/account';
-import { useCountdown } from '@renderer/shared/hooks';
-import { BaseModal, Button } from '@renderer/components/ui-redesign';
+import { useCountdown } from '@renderer/shared/lib/hooks';
+import { BaseModal, Button, Loader } from '@renderer/shared/ui';
 import OperationModalTitle from '../Operations/components/OperationModalTitle';
 import { InitOperation, Confirmation, Signing, Submit } from './components/ActionSteps';
 import ScanSingleframeQr from '@renderer/components/common/Scanning/ScanSingleframeQr';
-import { Loader } from '@renderer/components/ui';
 
 const enum Step {
   INIT,

@@ -1,13 +1,11 @@
 import { Controller, SubmitHandler, useForm } from 'react-hook-form';
 import { useEffect, useState } from 'react';
 
-import { Icon, Identicon } from '@renderer/components/ui';
-import { useI18n } from '@renderer/context/I18nContext';
+import { Icon, Identicon, Button, Input, InputHint } from '@renderer/shared/ui';
+import { useI18n, useMatrix } from '@renderer/app/providers';
 import { Address, ErrorType } from '@renderer/domain/shared-kernel';
 import { useContact } from '@renderer/services/contact/contactService';
-import { toAccountId, validateAddress } from '@renderer/shared/utils/address';
-import { Button, Input, InputHint } from '@renderer/components/ui-redesign';
-import { useMatrix } from '@renderer/context/MatrixContext';
+import { toAccountId, validateAddress } from '@renderer/shared/lib/utils';
 import { Contact } from '@renderer/domain/contact';
 
 type ContactFormData = {

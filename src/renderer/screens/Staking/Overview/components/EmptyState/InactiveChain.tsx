@@ -1,9 +1,9 @@
 import cn from 'classnames';
 
 import NoConnection from '@images/misc/no-connection.webp';
-import { useI18n } from '@renderer/context/I18nContext';
-import { FootnoteText, ButtonLink } from '@renderer/components/ui-redesign';
-import Paths from '@renderer/routes/paths';
+import { useI18n } from '@renderer/app/providers';
+import { FootnoteText, ButtonLink } from '@renderer/shared/ui';
+import { Paths } from '@renderer/app/providers';
 
 type Props = {
   className?: string;

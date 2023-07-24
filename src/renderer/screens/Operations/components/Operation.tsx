@@ -1,9 +1,9 @@
 import { format } from 'date-fns';
 
-import { useI18n } from '@renderer/context/I18nContext';
+import { useI18n } from '@renderer/app/providers';
 import TransactionTitle from './TransactionTitle/TransactionTitle';
 import { MultisigAccount } from '@renderer/domain/account';
-import { FootnoteText, Chain, Accordion } from '@renderer/components/ui-redesign';
+import { FootnoteText, Chain, Accordion } from '@renderer/shared/ui';
 import TransactionAmount from './TransactionAmount';
 import OperationStatus from './OperationStatus';
 import OperationFullInfo from './OperationFullInfo';

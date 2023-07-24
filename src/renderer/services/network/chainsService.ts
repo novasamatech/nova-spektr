@@ -7,11 +7,11 @@ import { Chain } from '@renderer/domain/chain';
 import chainsProd from './common/chains/chains.json';
 import chainsDev from './common/chains/chains_dev.json';
 import { ChainId } from '@renderer/domain/shared-kernel';
-import { getRelaychainAsset } from '@renderer/shared/utils/assets';
-import { nonNullable } from '@renderer/shared/utils/functions';
+import { getRelaychainAsset } from '@renderer/shared/lib/utils';
+import { nonNullable } from '@renderer/shared/lib/utils';
 import { Balance } from '@renderer/domain/balance';
-import { totalAmount } from '@renderer/shared/utils/balance';
-import { ZERO_BALANCE } from '@renderer/shared/utils/constants';
+import { totalAmount } from '@renderer/shared/lib/utils';
+import { ZERO_BALANCE } from '@renderer/shared/lib/utils';
 import { ChainLike, IChainService } from './common/types';
 import { isKusama, isPolkadot, isTestnet, isNameWithNumber } from './common/utils';
 

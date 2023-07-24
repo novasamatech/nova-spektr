@@ -1,8 +1,7 @@
 import { ComponentProps } from 'react';
 
-import { useI18n } from '@renderer/context/I18nContext';
-import { Icon } from '@renderer/components/ui';
-import { FootnoteText, Tooltip } from '@renderer/components/ui-redesign';
+import { useI18n } from '@renderer/app/providers';
+import { Icon, FootnoteText, Tooltip } from '@renderer/shared/ui';
 import { Deposit, DetailRow } from '@renderer/components/common';
 
 export const DepositWithLabel = ({ ...depositProps }: ComponentProps<typeof Deposit>) => {

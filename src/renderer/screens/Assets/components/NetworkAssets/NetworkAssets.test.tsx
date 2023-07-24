@@ -1,7 +1,7 @@
 import { act, render, screen } from '@testing-library/react';
 
 import { Chain } from '@renderer/domain/chain';
-import { TEST_ACCOUNT_ID } from '@renderer/shared/utils/constants';
+import { TEST_ACCOUNT_ID } from '@renderer/shared/lib/utils';
 import chains from '@renderer/services/network/common/chains/chains.json';
 import { NetworkAssets } from './NetworkAssets';
 import { Account } from '@renderer/domain/account';

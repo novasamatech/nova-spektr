@@ -1,7 +1,7 @@
 import { SeedInfo } from '@renderer/components/common/QrCode/common/types';
-import { useI18n } from '@renderer/context/I18nContext';
+import { useI18n } from '@renderer/app/providers';
 import KeyQrReader from '../KeyQrReader/KeyQrReader';
-import { Button, HeaderTitleText, SmallTitleText } from '@renderer/components/ui-redesign';
+import { Button, HeaderTitleText, SmallTitleText } from '@renderer/shared/ui';
 import onboarding_tutorial from '@video/onboarding_tutorial.mp4';
 import onboarding_tutorial_webm from '@video/onboarding_tutorial.webm';
 

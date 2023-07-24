@@ -1,17 +1,15 @@
 import { Listbox, Transition } from '@headlessui/react';
 import { useState, Fragment, useEffect } from 'react';
 
-import cnTw from '@renderer/shared/utils/twMerge';
-import { Icon } from '@renderer/components/ui';
-import { useI18n } from '@renderer/context/I18nContext';
+import { cnTw } from '@renderer/shared/lib/utils';
+import { Icon, FootnoteText, IconButton, Button, HelpText } from '@renderer/shared/ui';
+import { useI18n } from '@renderer/app/providers';
 import { RpcNode } from '@renderer/domain/chain';
 import { ConnectionType } from '@renderer/domain/connection';
 import { ExtendedChain } from '@renderer/services/network/common/types';
-import { SelectButtonStyle, OptionStyle } from '@renderer/components/ui-redesign/Dropdowns/common/constants';
-import { FootnoteText, IconButton, Button } from '@renderer/components/ui-redesign';
-import { HelpText } from '@renderer/components/ui-redesign/Typography';
-import { useScrollTo } from '@renderer/shared/hooks';
-import CommonInputStyles from '@renderer/components/ui-redesign/Inputs/common/styles';
+import { SelectButtonStyle, OptionStyle } from '@renderer/shared/ui/Dropdowns/common/constants';
+import { useScrollTo } from '@renderer/shared/lib/hooks';
+import CommonInputStyles from '@renderer/shared/ui/Inputs/common/styles';
 
 export const OptionsContainerStyle =
   'mt-1 absolute z-20 py-1 px-1 w-full border border-token-container-border rounded bg-input-background shadow-card-shadow';

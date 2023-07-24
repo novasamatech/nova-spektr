@@ -1,8 +1,7 @@
-import cnTw from '@renderer/shared/utils/twMerge';
-import { Icon } from '@renderer/components/ui';
-import { BodyText, CaptionText, FootnoteText } from '@renderer/components/ui-redesign';
-import { useI18n } from '@renderer/context/I18nContext';
-import { IconNames } from '@renderer/components/ui/Icon/data';
+import { cnTw } from '@renderer/shared/lib/utils';
+import { Icon, BodyText, CaptionText, FootnoteText } from '@renderer/shared/ui';
+import { useI18n } from '@renderer/app/providers';
+import { IconNames } from '@renderer/shared/ui/Icon/data';
 
 type Props = {
   title: string;

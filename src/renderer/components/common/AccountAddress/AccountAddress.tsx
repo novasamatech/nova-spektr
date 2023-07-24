@@ -1,8 +1,7 @@
-import cnTw from '@renderer/shared/utils/twMerge';
-import { Identicon } from '@renderer/components/ui';
+import { cnTw, toShortAddress, toAddress } from '@renderer/shared/lib/utils';
+import { Identicon } from '@renderer/shared/ui';
 import { SigningType, AccountId, Address } from '@renderer/domain/shared-kernel';
-import { toShortAddress, toAddress } from '@renderer/shared/utils/address';
-import Truncate from '@renderer/components/ui/Truncate/Truncate';
+import Truncate from '@renderer/shared/ui/Truncate/Truncate';
 
 type AddressType = 'full' | 'short' | 'adaptive';
 

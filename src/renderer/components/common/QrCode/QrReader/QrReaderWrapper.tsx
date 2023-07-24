@@ -1,13 +1,10 @@
 import cn from 'classnames';
 import React, { useState } from 'react';
 
-import cnTw from '@renderer/shared/utils/twMerge';
-import { Icon, Shimmering } from '@renderer/components/ui';
-import { DropdownOption, DropdownResult } from '@renderer/components/ui-redesign/Dropdowns/common/types';
-import { useI18n } from '@renderer/context/I18nContext';
-import { ValidationErrors } from '@renderer/shared/utils/validation';
-import { secondsToMinutes } from '@renderer/shared/utils/time';
-import { Button, CaptionText, FootnoteText, Select, SmallTitleText } from '@renderer/components/ui-redesign';
+import { cnTw, ValidationErrors, secondsToMinutes } from '@renderer/shared/lib/utils';
+import { Icon, Shimmering, Button, CaptionText, FootnoteText, Select, SmallTitleText } from '@renderer/shared/ui';
+import { DropdownOption, DropdownResult } from '@renderer/shared/ui/Dropdowns/common/types';
+import { useI18n } from '@renderer/app/providers';
 import SignatureReaderError from './SignatureReaderError';
 import QrMultiframeSignatureReader from './QrMultiframeSignatureReader';
 import { HexString } from '@renderer/domain/shared-kernel';

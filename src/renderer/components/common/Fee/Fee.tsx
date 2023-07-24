@@ -6,7 +6,7 @@ import { Asset } from '@renderer/domain/asset';
 import { Transaction } from '@renderer/domain/transaction';
 import { useTransaction } from '@renderer/services/transaction/transactionService';
 import { BalanceNew } from '@renderer/components/common';
-import { Shimmering } from '@renderer/components/ui';
+import { Shimmering } from '@renderer/shared/ui';
 
 type Props = {
   api: ApiPromise;

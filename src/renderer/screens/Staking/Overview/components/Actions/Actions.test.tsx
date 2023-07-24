@@ -2,7 +2,7 @@ import { render, screen, act } from '@testing-library/react';
 import noop from 'lodash/noop';
 
 import { Stake } from '@renderer/domain/stake';
-import { TEST_ADDRESS } from '@renderer/shared/utils/constants';
+import { TEST_ADDRESS } from '@renderer/shared/lib/utils';
 import { Actions } from './Actions';
 
 jest.mock('@renderer/context/I18nContext', () => ({

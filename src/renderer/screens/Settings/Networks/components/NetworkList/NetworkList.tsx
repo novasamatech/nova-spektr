@@ -1,7 +1,7 @@
 import { useEffect, useState, ReactNode } from 'react';
 
 import { ExtendedChain } from '@renderer/services/network/common/types';
-import { CaptionText, Counter, Accordion } from '@renderer/components/ui-redesign';
+import { CaptionText, Counter, Accordion } from '@renderer/shared/ui';
 import { ConnectionType, ConnectionStatus } from '@renderer/domain/connection';
 
 type Props = {

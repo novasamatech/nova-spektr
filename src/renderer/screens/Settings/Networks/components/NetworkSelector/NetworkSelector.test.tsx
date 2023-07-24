@@ -4,7 +4,7 @@ import noop from 'lodash/noop';
 import { ConnectionStatus, ConnectionType } from '@renderer/domain/connection';
 import { ExtendedChain } from '@renderer/services/network/common/types';
 import { NetworkSelector } from './NetworkSelector';
-import { useScrollTo } from '@renderer/shared/hooks';
+import { useScrollTo } from '@renderer/shared/lib/hooks';
 
 jest.mock('@renderer/context/I18nContext', () => ({
   useI18n: jest.fn().mockReturnValue({

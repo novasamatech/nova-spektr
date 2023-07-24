@@ -3,9 +3,8 @@ import { TFunction } from 'react-i18next';
 import { ConnectionStatus, ConnectionType } from '@renderer/domain/connection';
 import { ExtendedChain } from '@renderer/services/network/common/types';
 import { NetworkSelector } from '../NetworkSelector/NetworkSelector';
-import { BodyText, StatusLabel, FootnoteText, ChainIcon } from '@renderer/components/ui-redesign';
-import { HelpText } from '@renderer/components/ui-redesign/Typography';
-import { useI18n } from '@renderer/context/I18nContext';
+import { BodyText, StatusLabel, FootnoteText, ChainIcon, HelpText } from '@renderer/shared/ui';
+import { useI18n } from '@renderer/app/providers';
 import { RpcNode } from '@renderer/domain/chain';
 import './NetworkItem.css';
 

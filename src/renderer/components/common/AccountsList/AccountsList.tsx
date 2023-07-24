@@ -1,9 +1,9 @@
-import cnTw from '@renderer/shared/utils/twMerge';
+import { cnTw } from '@renderer/shared/lib/utils';
 import { Chain as ChainType } from '@renderer/domain/chain';
 import { AccountId } from '@renderer/domain/shared-kernel';
 import AddressWithExplorers from '../AddressWithExplorers/AddressWithExplorers';
-import { useI18n } from '@renderer/context/I18nContext';
-import { Chain, FootnoteText } from '@renderer/components/ui-redesign';
+import { useI18n } from '@renderer/app/providers';
+import { Chain, FootnoteText } from '@renderer/shared/ui';
 
 type Props = {
   accountId: AccountId;

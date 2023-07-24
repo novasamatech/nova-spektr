@@ -2,13 +2,21 @@ import cn from 'classnames';
 import { useEffect, useState } from 'react';
 import { Controller, SubmitHandler, useForm } from 'react-hook-form';
 
-import { Icon, Identicon } from '@renderer/components/ui';
-import { useI18n } from '@renderer/context/I18nContext';
+import {
+  Icon,
+  Identicon,
+  BaseModal,
+  Button,
+  Input,
+  InputHint,
+  HeaderTitleText,
+  SmallTitleText,
+} from '@renderer/shared/ui';
+import { useI18n } from '@renderer/app/providers';
 import { Chain } from '@renderer/domain/chain';
 import { ErrorType, AccountId, SigningType } from '@renderer/domain/shared-kernel';
 import { useChains } from '@renderer/services/network/chainsService';
-import { toAccountId, validateAddress } from '@renderer/shared/utils/address';
-import { BaseModal, Button, Input, InputHint, HeaderTitleText, SmallTitleText } from '@renderer/components/ui-redesign';
+import { toAccountId, validateAddress } from '@renderer/shared/lib/utils';
 import EmptyState from './EmptyState';
 import { createAccount } from '@renderer/domain/account';
 import { useAccount } from '@renderer/services/account/accountService';

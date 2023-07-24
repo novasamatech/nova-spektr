@@ -1,8 +1,6 @@
-import { Icon } from '@renderer/components/ui';
-import { useI18n } from '@renderer/context/I18nContext';
-import { FootnoteText, Plate, BodyText } from '@renderer/components/ui-redesign';
-import { HelpText } from '@renderer/components/ui-redesign/Typography';
-import cnTw from '@renderer/shared/utils/twMerge';
+import { Icon, FootnoteText, Plate, BodyText, HelpText } from '@renderer/shared/ui';
+import { useI18n } from '@renderer/app/providers';
+import { cnTw } from '@renderer/shared/lib/utils';
 
 const Links = [
   {

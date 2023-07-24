@@ -1,7 +1,6 @@
-import { useI18n } from '@renderer/context/I18nContext';
-import { BodyText } from '@renderer/components/ui-redesign';
-import { Icon } from '@renderer/components/ui';
-import cnTw from '@renderer/shared/utils/twMerge';
+import { useI18n } from '@renderer/app/providers';
+import { BodyText, Icon } from '@renderer/shared/ui';
+import { cnTw } from '@renderer/shared/lib/utils';
 
 type Props = {
   className?: string;

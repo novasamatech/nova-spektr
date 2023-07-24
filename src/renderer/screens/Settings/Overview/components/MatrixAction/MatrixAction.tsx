@@ -1,11 +1,8 @@
-import { Icon } from '@renderer/components/ui';
-import { useI18n } from '@renderer/context/I18nContext';
-import { FootnoteText, Plate, BodyText, StatusLabel } from '@renderer/components/ui-redesign';
-import { HelpText } from '@renderer/components/ui-redesign/Typography';
-import { useMatrix } from '@renderer/context/MatrixContext';
-import { useToggle } from '@renderer/shared/hooks';
+import { Icon, FootnoteText, Plate, BodyText, StatusLabel, HelpText } from '@renderer/shared/ui';
+import { useI18n, useMatrix } from '@renderer/app/providers';
+import { useToggle } from '@renderer/shared/lib/hooks';
 import { MatrixModal } from '@renderer/components/modals';
-import cnTw from '@renderer/shared/utils/twMerge';
+import { cnTw } from '@renderer/shared/lib/utils';
 
 export const MatrixAction = () => {
   const { t } = useI18n();

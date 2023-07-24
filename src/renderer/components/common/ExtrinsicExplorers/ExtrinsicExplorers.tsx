@@ -1,5 +1,4 @@
-import { InfoPopover } from '@renderer/components/ui-redesign';
-import { Icon } from '@renderer/components/ui';
+import { InfoPopover, Icon } from '@renderer/shared/ui';
 import { Explorer } from '@renderer/domain/chain';
 import useExtrinsicInfo from './useExtrinsicInfo';
 import { HexString } from '@renderer/domain/shared-kernel';

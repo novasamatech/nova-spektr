@@ -2,25 +2,21 @@ import { UnsignedTransaction } from '@substrate/txwrapper-polkadot';
 import { useEffect, useState } from 'react';
 import { Navigate, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 
-import Paths from '@renderer/routes/paths';
-import { useI18n } from '@renderer/context/I18nContext';
-import { useNetworkContext } from '@renderer/context/NetworkContext';
+import { Paths } from '@renderer/app/providers';
+import { useI18n, useNetworkContext } from '@renderer/app/providers';
 import { ChainId, HexString, AccountId, Address } from '@renderer/domain/shared-kernel';
 import { Transaction, TransactionType } from '@renderer/domain/transaction';
 import { useAccount } from '@renderer/services/account/accountService';
 import InitOperation, { RedeemResult } from './InitOperation/InitOperation';
 import { Confirmation, Signing, Submit, NoAsset } from '../components';
-import { getRelaychainAsset } from '@renderer/shared/utils/assets';
-import { useCountdown, useToggle } from '@renderer/shared/hooks';
+import { getRelaychainAsset, toAddress, DEFAULT_TRANSITION } from '@renderer/shared/lib/utils';
+import { useCountdown, useToggle } from '@renderer/shared/lib/hooks';
 import { Account, MultisigAccount, isMultisig } from '@renderer/domain/account';
-import { toAddress } from '@renderer/shared/utils/address';
 import { useTransaction } from '@renderer/services/transaction/transactionService';
-import { DEFAULT_TRANSITION } from '@renderer/shared/utils/constants';
 import OperationModalTitle from '@renderer/screens/Operations/components/OperationModalTitle';
-import { BaseModal, Button } from '@renderer/components/ui-redesign';
+import { BaseModal, Button, Loader } from '@renderer/shared/ui';
 import ScanMultiframeQr from '@renderer/components/common/Scanning/ScanMultiframeQr';
 import ScanSingleframeQr from '@renderer/components/common/Scanning/ScanSingleframeQr';
-import { Loader } from '@renderer/components/ui';
 
 const enum Step {
   INIT,

@@ -3,7 +3,7 @@ import noop from 'lodash/noop';
 
 import { ContactForm } from './ContactForm';
 import { Contact } from '@renderer/domain/contact';
-import { TEST_ADDRESS, TEST_ACCOUNT_ID } from '@renderer/shared/utils/constants';
+import { TEST_ADDRESS, TEST_ACCOUNT_ID } from '@renderer/shared/lib/utils';
 
 jest.mock('@renderer/context/I18nContext', () => ({
   useI18n: jest.fn().mockReturnValue({

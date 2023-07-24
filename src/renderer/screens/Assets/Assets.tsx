@@ -1,18 +1,16 @@
 import { useEffect, useState } from 'react';
 
-import { Icon } from '@renderer/components/ui';
-import { useI18n } from '@renderer/context/I18nContext';
-import { useNetworkContext } from '@renderer/context/NetworkContext';
+import { Icon, BodyText, Button, SmallTitleText } from '@renderer/shared/ui';
+import { useI18n, useNetworkContext } from '@renderer/app/providers';
 import { Asset } from '@renderer/domain/asset';
 import { Chain } from '@renderer/domain/chain';
 import { ConnectionType } from '@renderer/domain/connection';
 import { SigningType } from '@renderer/domain/shared-kernel';
-import { useToggle } from '@renderer/shared/hooks';
+import { useToggle } from '@renderer/shared/lib/hooks';
 import { useChains } from '@renderer/services/network/chainsService';
 import { useSettingsStorage } from '@renderer/services/settings/settingsStorage';
 import { useAccount } from '@renderer/services/account/accountService';
 import { isMultisig, Account } from '@renderer/domain/account';
-import { BodyText, Button, SmallTitleText } from '@renderer/components/ui-redesign';
 import { AssetsFilters, NetworkAssets, ReceiveModal, SelectShardModal } from './components';
 import { Header } from '@renderer/components/common';
 import { useBalance } from '@renderer/services/balance/balanceService';

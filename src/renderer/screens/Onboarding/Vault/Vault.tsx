@@ -4,7 +4,7 @@ import { SeedInfo } from '@renderer/components/common/QrCode/common/types';
 import ScanStep from './ScanStep/ScanStep';
 import ManageStep from './ManageStep/ManageStep';
 import ManageStepSingle from './ManageStepSingle/ManageStepSingle';
-import { BaseModal } from '@renderer/components/ui-redesign';
+import { BaseModal } from '@renderer/shared/ui';
 
 const enum Step {
   SCAN,

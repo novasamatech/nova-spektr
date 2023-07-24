@@ -2,7 +2,7 @@ import { render, screen } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 
 import { GeneralActions } from './GeneralActions';
-import Paths from '@renderer/routes/paths';
+import { Paths } from '@renderer/app/providers';
 
 jest.mock('@renderer/context/I18nContext', () => ({
   useI18n: jest.fn().mockReturnValue({

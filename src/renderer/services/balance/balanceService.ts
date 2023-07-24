@@ -15,7 +15,7 @@ import storage, { BalanceDS } from '../storage';
 import { IBalanceService } from './common/types';
 import { VERIFY_TIMEOUT } from './common/constants';
 import { useSubscription } from '@renderer/services/subscription/subscriptionService';
-import { toAddress } from '@renderer/shared/utils/address';
+import { toAddress } from '@renderer/shared/lib/utils';
 
 export const useBalance = (): IBalanceService => {
   const balanceStorage = storage.connectTo('balances');

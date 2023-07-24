@@ -3,15 +3,13 @@ import { Trans } from 'react-i18next';
 
 import { Address, SigningType, EraIndex } from '@renderer/domain/shared-kernel';
 import { Unlocking } from '@renderer/domain/stake';
-import { useI18n } from '@renderer/context/I18nContext';
-import { FootnoteText, Plate, Checkbox, InfoPopover, Tooltip } from '@renderer/components/ui-redesign';
+import { useI18n } from '@renderer/app/providers';
+import { FootnoteText, Plate, Checkbox, InfoPopover, Tooltip, Icon, Shimmering, HelpText } from '@renderer/shared/ui';
 import { AccountAddress, BalanceNew, ExplorerLink } from '@renderer/components/common';
-import { Icon, Shimmering } from '@renderer/components/ui';
 import { Explorer } from '@renderer/domain/chain';
 import { Asset } from '@renderer/domain/asset';
 import { TimeToEra } from '../TimeToEra/TimeToEra';
-import { redeemableAmount } from '@renderer/shared/utils/balance';
-import { HelpText } from '@renderer/components/ui-redesign/Typography';
+import { redeemableAmount } from '@renderer/shared/lib/utils';
 
 const getNextUnstakingEra = (unlocking: Unlocking[] = [], era?: number): EraIndex | undefined => {
   if (!era) return undefined;

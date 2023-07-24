@@ -3,11 +3,11 @@ import { useEffect, useState } from 'react';
 import { Controller, useForm, SubmitHandler } from 'react-hook-form';
 import { u8aToHex } from '@polkadot/util';
 
-import { useI18n } from '@renderer/context/I18nContext';
+import { useI18n } from '@renderer/app/providers';
 import { Chain } from '@renderer/domain/chain';
 import { ErrorType, SigningType } from '@renderer/domain/shared-kernel';
 import { useChains } from '@renderer/services/network/chainsService';
-import { Button, Input, InputHint, HeaderTitleText, SmallTitleText } from '@renderer/components/ui-redesign';
+import { Button, Input, InputHint, HeaderTitleText, SmallTitleText } from '@renderer/shared/ui';
 import { SeedInfo } from '@renderer/components/common/QrCode/common/types';
 import { useAccount } from '@renderer/services/account/accountService';
 import { createAccount } from '@renderer/domain/account';

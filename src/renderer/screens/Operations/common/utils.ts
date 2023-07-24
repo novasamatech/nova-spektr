@@ -1,6 +1,6 @@
 import { TFunction } from 'react-i18next';
 
-import { IconNames } from '@renderer/components/ui/Icon/data';
+import { IconNames } from '@renderer/shared/ui/Icon/data';
 import { Explorer } from '@renderer/domain/chain';
 import { AccountId, HexString } from '@renderer/domain/shared-kernel';
 import {
@@ -10,11 +10,10 @@ import {
   Transaction,
   TransactionType,
 } from '@renderer/domain/transaction';
-import { toAddress } from '@renderer/shared/utils/address';
+import { toAddress, formatSectionAndMethod } from '@renderer/shared/lib/utils';
 import { Contact } from '@renderer/domain/contact';
 import { Account } from '@renderer/domain/account';
 import { Signatory } from '@renderer/domain/signatory';
-import { formatSectionAndMethod } from '@renderer/shared/utils/strings';
 
 export const UNKNOWN_TYPE = 'UNKNOWN_TYPE';
 export const TRANSACTION_UNKNOWN = 'operations.titles.unknown';

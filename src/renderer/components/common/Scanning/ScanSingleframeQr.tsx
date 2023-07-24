@@ -3,13 +3,13 @@ import { useEffect, useState } from 'react';
 import { UnsignedTransaction } from '@substrate/txwrapper-polkadot';
 
 import { QrTxGenerator, QrGeneratorContainer } from '@renderer/components/common';
-import { useI18n } from '@renderer/context/I18nContext';
+import { useI18n } from '@renderer/app/providers';
 import { Transaction } from '@renderer/domain/transaction';
 import { useTransaction } from '@renderer/services/transaction/transactionService';
 import { ChainId } from '@renderer/domain/shared-kernel';
 import { Explorer } from '@renderer/domain/chain';
 import { Account } from '@renderer/domain/account';
-import { Button, FootnoteText } from '@renderer/components/ui-redesign';
+import { Button, FootnoteText } from '@renderer/shared/ui';
 import AddressWithExplorers from '@renderer/components/common/AddressWithExplorers/AddressWithExplorers';
 
 type Props = {

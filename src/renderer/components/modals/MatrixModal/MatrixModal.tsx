@@ -1,6 +1,5 @@
-import { useI18n } from '@renderer/context/I18nContext';
-import { useMatrix } from '@renderer/context/MatrixContext';
-import { BaseModal } from '@renderer/components/ui-redesign';
+import { useI18n, useMatrix } from '@renderer/app/providers';
+import { BaseModal } from '@renderer/shared/ui';
 import MatrixInfoPopover from './components/MatrixInfoPopover/MatrixInfoPopover';
 import Credentials from './components/Credentials/Credentials';
 import Verification from './components/Verification/Verification';

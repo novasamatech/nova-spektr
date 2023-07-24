@@ -2,17 +2,15 @@ import { useNavigate } from 'react-router-dom';
 import { useLayoutEffect, useRef, useState } from 'react';
 import { throttle } from 'lodash';
 
-import { Icon } from '@renderer/components/ui';
-import { TitleText } from '@renderer/components/ui-redesign';
-import { useI18n } from '@renderer/context/I18nContext';
-import { useToggle } from '@renderer/shared/hooks';
-import cnTw from '@renderer/shared/utils/twMerge';
+import { Icon, TitleText } from '@renderer/shared/ui';
+import { useI18n } from '@renderer/app/providers';
+import { useToggle } from '@renderer/shared/lib/hooks';
+import { cnTw, DEFAULT_TRANSITION } from '@renderer/shared/lib/utils';
 import WatchOnly from '../WatchOnly/WatchOnly';
-import Paths from '@renderer/routes/paths';
+import { Paths } from '@renderer/app/providers';
 import Vault from '../Vault/Vault';
 import PrivacyPolicy from './PrivacyPolicy';
 import { WelcomeCard } from './WelcomeCard';
-import { DEFAULT_TRANSITION } from '@renderer/shared/utils/constants';
 
 const LOGO_WIDTH = 232;
 const RIGHT_PADDING = 225;

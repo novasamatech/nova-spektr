@@ -2,25 +2,26 @@ import { ApiPromise } from '@polkadot/api';
 import { useEffect, useState, ReactNode } from 'react';
 
 import { BalanceNew, ExplorerLink } from '@renderer/components/common';
-import { useI18n } from '@renderer/context/I18nContext';
+import { useI18n } from '@renderer/app/providers';
 import { Asset } from '@renderer/domain/asset';
 import { Explorer } from '@renderer/domain/chain';
 import { Address } from '@renderer/domain/shared-kernel';
 import { Validator } from '@renderer/domain/validator';
 import { ValidatorMap } from '@renderer/services/staking/common/types';
 import { useValidators } from '@renderer/services/staking/validatorsService';
-import { getComposedIdentity } from '@renderer/shared/utils/strings';
-import { toShortAddress } from '@renderer/shared/utils/address';
+import { getComposedIdentity, toShortAddress } from '@renderer/shared/lib/utils';
 import { NoValidators } from '../EmptyState/NoValidators';
-import { Icon, Identicon, Loader } from '@renderer/components/ui';
 import {
+  Icon,
+  Identicon,
+  Loader,
   BaseModal,
   SmallTitleText,
   FootnoteText,
   InfoPopover,
   BodyText,
   Accordion,
-} from '@renderer/components/ui-redesign';
+} from '@renderer/shared/ui';
 
 type Props = {
   api?: ApiPromise;

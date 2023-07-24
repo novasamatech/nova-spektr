@@ -2,13 +2,12 @@ import { ApiPromise } from '@polkadot/api';
 import { useEffect, useState } from 'react';
 import { Trans } from 'react-i18next';
 
-import { Duration, Shimmering } from '@renderer/components/ui';
-import { useI18n } from '@renderer/context/I18nContext';
+import { Duration, Shimmering, FootnoteText } from '@renderer/shared/ui';
+import { useI18n } from '@renderer/app/providers';
 import { Asset } from '@renderer/domain/asset';
 import { EraIndex } from '@renderer/domain/shared-kernel';
 import { Validator } from '@renderer/domain/validator';
 import { useStakingData } from '@renderer/services/staking/stakingDataService';
-import { FootnoteText } from '@renderer/components/ui-redesign';
 import { BalanceNew } from '@renderer/components/common';
 
 type Props = {

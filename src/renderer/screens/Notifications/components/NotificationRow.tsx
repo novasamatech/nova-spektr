@@ -1,16 +1,15 @@
 import { format } from 'date-fns';
 import { TFunction, Trans } from 'react-i18next';
 
-import { BodyText, FootnoteText } from '@renderer/components/ui-redesign';
+import { BodyText, FootnoteText, Identicon } from '@renderer/shared/ui';
 import {
   MultisigAccountInvitedNotification,
   MultisigNotification,
   MultisigNotificationType,
   Notification,
 } from '@renderer/domain/notification';
-import { useI18n } from '@renderer/context/I18nContext';
-import { Identicon } from '@renderer/components/ui';
-import { toAddress } from '@renderer/shared/utils/address';
+import { useI18n } from '@renderer/app/providers';
+import { toAddress } from '@renderer/shared/lib/utils';
 
 const NotificationBody = {
   [MultisigNotificationType.ACCOUNT_INVITED]: (n: Notification, t: TFunction) => {

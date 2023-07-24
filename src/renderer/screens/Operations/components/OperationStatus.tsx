@@ -6,8 +6,8 @@ import {
   MultisigTxInitStatus,
   MultisigTxStatus,
 } from '@renderer/domain/transaction';
-import { CaptionText } from '@renderer/components/ui-redesign';
-import { useI18n } from '@renderer/context/I18nContext';
+import { CaptionText } from '@renderer/shared/ui';
+import { useI18n } from '@renderer/app/providers';
 
 const StatusTitle: Record<MultisigTxStatus, string> = {
   [MultisigTxInitStatus.SIGNING]: 'operation.status.signing',

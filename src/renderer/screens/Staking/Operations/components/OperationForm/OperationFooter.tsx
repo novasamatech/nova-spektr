@@ -1,9 +1,8 @@
 import { ApiPromise } from '@polkadot/api';
 
-import { Icon } from '@renderer/components/ui';
-import { FootnoteText, Tooltip } from '@renderer/components/ui-redesign';
+import { Icon, FootnoteText, Tooltip } from '@renderer/shared/ui';
 import { Deposit, Fee } from '@renderer/components/common';
-import { useI18n } from '@renderer/context/I18nContext';
+import { useI18n } from '@renderer/app/providers';
 import { Asset } from '@renderer/domain/asset';
 import { Transaction } from '@renderer/domain/transaction';
 import { MultisigAccount, Account, isMultisig } from '@renderer/domain/account';

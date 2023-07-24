@@ -1,7 +1,7 @@
 import { Trans } from 'react-i18next';
 
-import { useI18n } from '@renderer/context/I18nContext';
-import { FootnoteText, InfoLink } from '@renderer/components/ui-redesign';
+import { useI18n } from '@renderer/app/providers';
+import { FootnoteText, InfoLink } from '@renderer/shared/ui';
 
 const TERMS_AND_CONDITIONS = 'https://novaspektr.io/terms';
 const PRIVACY_POLICY = 'https://novaspektr.io/privacy';

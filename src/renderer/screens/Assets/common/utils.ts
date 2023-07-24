@@ -2,7 +2,7 @@ import { BN } from '@polkadot/util';
 import BigNumber from 'bignumber.js';
 
 import { Balance } from '@renderer/domain/balance';
-import { Decimal, totalAmount } from '@renderer/shared/utils/balance';
+import { Decimal, totalAmount } from '@renderer/shared/lib/utils';
 import { Asset } from '@renderer/domain/asset';
 
 export const sumBalances = (firstBalance: Balance, secondBalance?: Balance): Balance => {

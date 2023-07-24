@@ -1,6 +1,5 @@
-import { Switch } from '@renderer/components/ui';
-import { useI18n } from '@renderer/context/I18nContext';
-import { IconButton, MenuPopover, SearchInput } from '@renderer/components/ui-redesign';
+import { Switch, IconButton, MenuPopover, SearchInput } from '@renderer/shared/ui';
+import { useI18n } from '@renderer/app/providers';
 
 type Props = {
   searchQuery: string;
