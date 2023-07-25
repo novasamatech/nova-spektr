@@ -4,7 +4,7 @@ import { Fragment, useId } from 'react';
 import cnTw from '@renderer/shared/utils/twMerge';
 import { Icon } from '@renderer/components/ui';
 import { DropdownOption, DropdownResult, Position } from '../common/types';
-import CommonInputStyles from '@renderer/components/ui-redesign/Inputs/common/styles';
+import { CommonInputStyles } from '@renderer/components/ui-redesign/Inputs/common/styles';
 import { Checkbox, FootnoteText, LabelText, CaptionText } from '@renderer/components/ui-redesign';
 import { OptionsContainerStyle, OptionStyle, SelectButtonStyle, ViewClass } from '../common/constants';
 

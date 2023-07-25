@@ -42,6 +42,7 @@ const Transfer = ({ assetId, chainId, isOpen, onClose }: Props) => {
   const [transferTx, setTransferTx] = useState<Transaction>({} as Transaction);
   const [multisigTx, setMultisigTx] = useState<Transaction>();
   const [unsignedTx, setUnsignedTx] = useState<UnsignedTransaction>({} as UnsignedTransaction);
+  const [txPayload, setTxPayload] = useState<Uint8Array>();
   const [signature, setSignature] = useState<HexString>('0x0');
 
   const connection = connections[chainId];
@@ -101,7 +102,7 @@ const Transfer = ({ assetId, chainId, isOpen, onClose }: Props) => {
         title={<OperationModalTitle title={`${t('transfer.title', { asset: asset?.symbol })}`} chainId={chainId} />}
         contentClass={activeStep === Step.SIGNING ? '' : undefined}
         panelClass="w-[440px]"
-        headerClass="py-4 px-5 max-w-[440px]"
+        headerClass="py-3 px-5 max-w-[440px]"
         onClose={handleClose}
       >
         {!api?.isConnected ? (
@@ -146,9 +147,10 @@ const Transfer = ({ assetId, chainId, isOpen, onClose }: Props) => {
                 countdown={countdown}
                 api={api}
                 onResetCountdown={resetCountdown}
-                onResult={(tx) => {
+                onResult={(tx, payload) => {
                   setUnsignedTx(tx);
                   setActiveStep(Step.SIGNING);
+                  setTxPayload(payload);
                 }}
                 onGoBack={() => setActiveStep(Step.CONFIRMATION)}
                 {...commonProps}
@@ -161,6 +163,8 @@ const Transfer = ({ assetId, chainId, isOpen, onClose }: Props) => {
                 assetId={assetId.toString()}
                 countdown={countdown}
                 api={api}
+                accountId={(signatory || account).accountId}
+                txPayload={txPayload}
                 onGoBack={() => setActiveStep(Step.SCANNING)}
                 onStartOver={onStartOver}
                 onResult={onSignResult}

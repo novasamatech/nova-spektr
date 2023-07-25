@@ -196,7 +196,7 @@ const ApproveTx = ({ tx, account, connection }: Props) => {
         isOpen={activeStep !== Step.SUBMIT && isModalOpen}
         title={<OperationModalTitle title={`${t(transactionTitle)} ${t('on')}`} chainId={tx.chainId} />}
         contentClass={activeStep === Step.SIGNING ? '' : undefined}
-        headerClass="py-4 px-5 max-w-[440px]"
+        headerClass="py-3 px-5 max-w-[440px]"
         panelClass="w-[440px]"
         onClose={handleClose}
       >
@@ -235,6 +235,7 @@ const ApproveTx = ({ tx, account, connection }: Props) => {
                 chainId={tx.chainId}
                 transaction={approveTx}
                 countdown={countdown}
+                accountId={signAccount?.accountId}
                 assetId={nativeAsset?.assetId.toString() || '0'}
                 onGoBack={goBack}
                 onStartOver={() => {}}

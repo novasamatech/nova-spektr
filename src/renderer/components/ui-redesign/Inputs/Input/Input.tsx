@@ -3,7 +3,7 @@ import { ReactNode, ComponentPropsWithoutRef, forwardRef, useId } from 'react';
 import cnTw from '@renderer/shared/utils/twMerge';
 import { LabelText } from '../../Typography';
 import { HTMLInputProps } from '../common/types';
-import CommonInputStyles from '../common/styles';
+import { CommonInputStyles } from '../common/styles';
 
 export type Props = Pick<ComponentPropsWithoutRef<'input'>, HTMLInputProps> & {
   label?: ReactNode;

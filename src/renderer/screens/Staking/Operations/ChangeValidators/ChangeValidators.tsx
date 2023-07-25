@@ -98,7 +98,7 @@ export const ChangeValidators = () => {
       <BaseModal
         closeButton
         contentClass=""
-        headerClass="py-4 px-5 max-w-[440px]"
+        headerClass="py-3 px-5 max-w-[440px]"
         panelClass="w-max"
         isOpen={isValidatorsModalOpen}
         title={<OperationModalTitle title={`${t('staking.validators.title', { asset: '' })}`} chainId={chainId} />}
@@ -119,7 +119,7 @@ export const ChangeValidators = () => {
       <BaseModal
         closeButton
         contentClass=""
-        headerClass="py-4 px-5 max-w-[440px]"
+        headerClass="py-3 px-5 max-w-[440px]"
         panelClass="w-max"
         isOpen={isValidatorsModalOpen}
         title={<OperationModalTitle title={`${t('staking.validators.title', { asset: '' })}`} chainId={chainId} />}
@@ -212,7 +212,7 @@ export const ChangeValidators = () => {
       <BaseModal
         closeButton
         contentClass=""
-        headerClass="py-4 px-5 max-w-[440px]"
+        headerClass="py-3 px-5 max-w-[440px]"
         panelClass="w-max"
         isOpen={activeStep !== Step.SUBMIT && isValidatorsModalOpen}
         title={<OperationModalTitle title={`${t('staking.validators.title', { asset: '' })}`} chainId={chainId} />}
@@ -284,7 +284,10 @@ export const ChangeValidators = () => {
         )}
         {activeStep === Step.SIGNING && (
           <Signing
+            api={api}
+            transaction={multisigTx || transactions[0]}
             countdown={countdown}
+            accountId={(signer || txAccounts[0]).accountId}
             multiQr={transactions.length > 1}
             onResult={onSignResult}
             onGoBack={() => setActiveStep(Step.SCANNING)}

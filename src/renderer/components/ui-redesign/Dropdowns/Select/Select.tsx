@@ -3,10 +3,16 @@ import { Fragment, useId } from 'react';
 
 import cnTw from '@renderer/shared/utils/twMerge';
 import { Icon } from '@renderer/components/ui';
-import { DropdownOption, DropdownResult, Position } from '../common/types';
-import CommonInputStyles from '@renderer/components/ui-redesign/Inputs/common/styles';
+import { DropdownOption, DropdownResult, Position, Theme } from '../common/types';
+import { CommonInputStyles } from '@renderer/components/ui-redesign/Inputs/common/styles';
 import { FootnoteText, LabelText } from '@renderer/components/ui-redesign';
-import { OptionsContainerStyle, OptionStyle, SelectButtonStyle, ViewClass } from '../common/constants';
+import {
+  OptionsContainerStyle,
+  OptionsContainerStyleTheme,
+  OptionStyle,
+  SelectButtonStyle,
+  ViewClass,
+} from '../common/constants';
 
 type Props<T> = {
   className?: string;
@@ -18,6 +24,7 @@ type Props<T> = {
   options: DropdownOption<T>[];
   position?: Position;
   tabIndex?: number;
+  theme?: Theme;
   onChange: (data: DropdownResult<T>) => void;
 };
 
@@ -32,6 +39,7 @@ const Select = <T extends any>({
   onChange,
   position = 'down',
   tabIndex,
+  theme = 'light',
 }: Props<T>) => {
   const id = useId();
   const selectedOption = options.find((option) => option.id === selectedId);
@@ -69,7 +77,13 @@ const Select = <T extends any>({
           </Listbox.Button>
 
           <Transition as={Fragment} leave="transition ease-in duration-100" leaveFrom="opacity-100" leaveTo="opacity-0">
-            <Listbox.Options className={cnTw(OptionsContainerStyle, position !== 'auto' && ViewClass[position])}>
+            <Listbox.Options
+              className={cnTw(
+                OptionsContainerStyle,
+                OptionsContainerStyleTheme[theme],
+                position !== 'auto' && ViewClass[position],
+              )}
+            >
               {options.map(({ id, value, element }) => (
                 <Listbox.Option
                   key={id}

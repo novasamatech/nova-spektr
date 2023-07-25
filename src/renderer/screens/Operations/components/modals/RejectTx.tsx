@@ -160,7 +160,7 @@ const RejectTx = ({ tx, account, connection }: Props) => {
           />
         }
         panelClass="w-[440px]"
-        headerClass="py-4 px-5 max-w-[440px]"
+        headerClass="py-3 px-5 max-w-[440px]"
         contentClass={activeStep === Step.SIGNING ? '' : undefined}
         onClose={handleClose}
       >
@@ -202,6 +202,7 @@ const RejectTx = ({ tx, account, connection }: Props) => {
                 chainId={tx.chainId}
                 transaction={rejectTx}
                 countdown={countdown}
+                accountId={signAccount?.accountId}
                 assetId={nativeAsset?.assetId.toString() || '0'}
                 onGoBack={goBack}
                 onStartOver={() => {}}

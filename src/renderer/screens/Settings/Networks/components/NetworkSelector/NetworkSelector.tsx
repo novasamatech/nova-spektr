@@ -11,7 +11,7 @@ import { SelectButtonStyle, OptionStyle } from '@renderer/components/ui-redesign
 import { FootnoteText, IconButton, Button } from '@renderer/components/ui-redesign';
 import { HelpText } from '@renderer/components/ui-redesign/Typography';
 import { useScrollTo } from '@renderer/shared/hooks';
-import CommonInputStyles from '@renderer/components/ui-redesign/Inputs/common/styles';
+import { CommonInputStyles } from '@renderer/components/ui-redesign/Inputs/common/styles';
 
 export const OptionsContainerStyle =
   'mt-1 absolute z-20 py-1 px-1 w-full border border-token-container-border rounded bg-input-background shadow-card-shadow';

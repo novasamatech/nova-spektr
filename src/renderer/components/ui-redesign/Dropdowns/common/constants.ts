@@ -1,4 +1,4 @@
-import { Position } from './types';
+import { Position, Theme } from './types';
 
 export const ViewClass: Record<Exclude<Position, 'auto'>, string> = {
   up: 'bottom-full mb-2.5',
@@ -6,7 +6,12 @@ export const ViewClass: Record<Exclude<Position, 'auto'>, string> = {
 };
 
 export const OptionsContainerStyle =
-  'mt-1 absolute z-20 py-1 px-1 max-h-60 w-full overflow-auto border border-token-container-border rounded bg-input-background shadow-card-shadow';
+  'mt-1 absolute z-20 py-1 px-1 max-h-60 w-full overflow-auto border rounded shadow-card-shadow';
+
+export const OptionsContainerStyleTheme: Record<Theme, string> = {
+  light: 'border-token-container-border bg-input-background',
+  dark: 'border-border-dark bg-background-dark',
+};
 
 export const OptionStyle = 'p-2 rounded cursor-pointer hover:bg-action-background-hover';
 
