@@ -4,9 +4,8 @@ import { useEffect, useState } from 'react';
 import { Icon, Identicon, Button, Input, InputHint } from '@renderer/shared/ui';
 import { useI18n, useMatrix } from '@renderer/app/providers';
 import { Address, ErrorType } from '@renderer/domain/shared-kernel';
-import { useContact } from '@renderer/entities/contact/lib/contactService';
+import { useContact, Contact } from '@renderer/entities/contact';
 import { toAccountId, validateAddress } from '@renderer/shared/lib/utils';
-import { Contact } from '@renderer/entities/contact/model/contact';
 
 type ContactFormData = {
   name: string;

@@ -1,7 +1,7 @@
 import { render, screen } from '@testing-library/react';
 
 import { Validator } from '@renderer/domain/validator';
-import { Asset } from '@renderer/entities/asset/model/asset';
+import { Asset } from '@renderer/entities/asset';
 import ValidatorsModal from './ValidatorsModal';
 
 jest.mock('@renderer/app/providers', () => ({

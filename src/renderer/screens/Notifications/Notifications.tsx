@@ -5,9 +5,8 @@ import { useI18n } from '@renderer/app/providers';
 import EmptyNotifications from './components/EmptyNotifications';
 import { sortByDate } from './common/utils';
 import { FootnoteText } from '@renderer/shared/ui';
-import { useNotification } from '@renderer/entities/notification/lib/notificationService';
+import { useNotification, NotificationRow } from '@renderer/entities/notification';
 import { Header } from '@renderer/components/common';
-import { NotificationRow } from '@renderer/entities/notification';
 
 const Notifications = () => {
   const { t, dateLocale } = useI18n();

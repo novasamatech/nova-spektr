@@ -1,11 +1,10 @@
 import { act, render, screen } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 
-import { Chain } from '@renderer/entities/chain/model/chain';
-import { Asset } from '@renderer/entities/asset/model/asset';
-import chains from '@renderer/entities/network/lib/common/chains/chains.json';
+import { Chain } from '@renderer/entities/chain';
+import { Asset, Balance } from '@renderer/entities/asset';
+import chains from '@renderer/assets/chains/chains.json';
 import { TEST_ACCOUNT_ID } from '@renderer/shared/lib/utils';
-import { Balance } from '@renderer/entities/asset/model/balance';
 import { AssetCard } from './AssetCard';
 
 jest.mock('@renderer/app/providers', () => ({

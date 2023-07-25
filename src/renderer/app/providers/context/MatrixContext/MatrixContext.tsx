@@ -1,16 +1,22 @@
 import { createContext, PropsWithChildren, useContext, useEffect, useRef, useState } from 'react';
 
-import { createMultisigAccount, getMultisigAccountId, MultisigAccount } from '@renderer/entities/account/model/account';
-import { useAccount } from '@renderer/entities/account/lib/accountService';
+import { createMultisigAccount, getMultisigAccountId, MultisigAccount, useAccount } from '@renderer/entities/account';
 import { toAddress, getCreatedDateFromApi, validateCallData } from '@renderer/shared/lib/utils';
-import { useContact } from '@renderer/entities/contact/lib/contactService';
+import { useContact } from '@renderer/entities/contact';
 import { AccountId, Address, CallHash, ChainId, SigningType } from '@renderer/domain/shared-kernel';
-import { useMultisigTx } from '@renderer/entities/multisig/lib/multisigTx/multisigTxService';
-import { Signatory } from '@renderer/entities/signatory/model/signatory';
+import { useMultisigTx, useMultisigEvent } from '@renderer/entities/multisig';
+import { Signatory } from '@renderer/entities/signatory';
 import { useNetworkContext } from '@renderer/app/providers/context/NetworkContext/NetworkContext';
-import { useTransaction } from '@renderer/entities/transaction/lib/transactionService';
-import { useNotification } from '@renderer/entities/notification/lib/notificationService';
-import { MultisigNotificationType } from '@renderer/entities/notification/model/notification';
+import {
+  useTransaction,
+  MultisigEvent,
+  MultisigTransaction,
+  MultisigTxFinalStatus,
+  MultisigTxInitStatus,
+  MultisigTxStatus,
+  SigningStatus,
+} from '@renderer/entities/transaction';
+import { useNotification, MultisigNotificationType } from '@renderer/entities/notification';
 import {
   Matrix,
   ApprovePayload,
@@ -23,15 +29,6 @@ import {
   SpektrExtras,
   UpdatePayload,
 } from '@renderer/entities/matrix';
-import {
-  MultisigEvent,
-  MultisigTransaction,
-  MultisigTxFinalStatus,
-  MultisigTxInitStatus,
-  MultisigTxStatus,
-  SigningStatus,
-} from '@renderer/entities/transaction/model/transaction';
-import { useMultisigEvent } from '@renderer/entities/multisig/lib/multisigEvent/multisigEventService';
 import { useMultisigChainContext } from '@renderer/app/providers';
 
 type MatrixContextProps = {

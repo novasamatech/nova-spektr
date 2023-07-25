@@ -1,7 +1,7 @@
 import { render, screen, act } from '@testing-library/react';
 import { ApiPromise } from '@polkadot/api';
 
-import { Asset } from '@renderer/entities/asset/model/asset';
+import { Asset } from '@renderer/entities/asset';
 import { Validator } from '@renderer/domain/validator';
 import { AboutStaking } from './AboutStaking';
 

@@ -77,7 +77,7 @@ The `production` run configuration is the same as [production build](#production
 installed in the operating system and source code hot-reload will be used.
 
 Production configuration uses:
-1. [`chains.json`](/src/renderer/entities/network/lib/common/chains/chains.json) file for chains configuration
+1. [`chains.json`](/src/renderer/assets/chains/chains.json) file for chains configuration
 2. debug tools are disabled by default
 3. errors are handled in a smooth way in order not to interrupt the user
 
@@ -97,7 +97,7 @@ The `dev` run configuration **shouldn't be** used for production. This configura
 debugging errors.
 
 Development configuration uses:
-1. [`chains_dev.json`](/src/renderer/entities/network/lib/common/chains/chains_dev.json) file that contains testnets in order to debug and test new features
+1. [`chains_dev.json`](/src/renderer/assets/chains/chains_dev.json) file that contains testnets in order to debug and test new features
 2. debug tools are enabled by default
 3. error handling is turned off in order to pay developer's attention to errors
 

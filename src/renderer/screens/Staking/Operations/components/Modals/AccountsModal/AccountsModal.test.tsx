@@ -1,8 +1,8 @@
 import { render, screen } from '@testing-library/react';
 
-import { Asset } from '@renderer/entities/asset/model/asset';
+import { Asset } from '@renderer/entities/asset';
 import { SigningType, ChainType, CryptoType } from '@renderer/domain/shared-kernel';
-import { Account } from '@renderer/entities/account/model/account';
+import { Account } from '@renderer/entities/account';
 import AccountsModal from './AccountsModal';
 
 jest.mock('@renderer/app/providers', () => ({

@@ -2,10 +2,10 @@ import { useEffect, useState } from 'react';
 import { keyBy } from 'lodash';
 
 import { AccountId, ChainId } from '@renderer/domain/shared-kernel';
-import { BaseModal, Button, Checkbox, FootnoteText, SearchInput, Chain } from '@renderer/shared/ui';
+import { BaseModal, Button, Checkbox, FootnoteText, SearchInput } from '@renderer/shared/ui';
 import { useI18n } from '@renderer/app/providers';
-import { AccountDS } from '@renderer/services/storage';
-import { useChains } from '@renderer/entities/network/lib/chainsService';
+import { AccountDS } from '@renderer/shared/api/storage';
+import { useChains } from '@renderer/entities/network';
 import {
   getMultishardStructure,
   getSelectableShards,
@@ -17,6 +17,7 @@ import {
   SelectableShards,
 } from '@renderer/components/layout/PrimaryLayout/Wallets/common/types';
 import { AddressWithExplorers } from '@renderer/entities/account';
+import { ChainTitle } from '@renderer/entities/chain';
 
 type Props = {
   accounts: AccountDS[];
@@ -173,7 +174,7 @@ export const SelectShardModal = ({ isOpen, onClose, activeAccounts, accounts }: 
                     semiChecked={chain.selectedAmount > 0 && chain.selectedAmount < chain.accounts.length}
                     onChange={(event) => selectChain(event.target?.checked, chain.chainId, root.accountId)}
                   >
-                    <Chain chain={chain} fontClass="text-text-primary" />
+                    <ChainTitle chain={chain} fontClass="text-text-primary" />
                     <FootnoteText className="text-text-tertiary">
                       {chain.selectedAmount}/{chain.accounts.length}
                     </FootnoteText>

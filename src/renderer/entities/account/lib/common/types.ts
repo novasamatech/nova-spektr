@@ -1,6 +1,7 @@
+import { AccountDS, ID } from '@renderer/shared/api/storage';
+
 import { Account } from '@renderer/entities/account/model/account';
 import { Address } from '@renderer/domain/shared-kernel';
-import { AccountDS, ID } from '@renderer/services/storage';
 
 export interface IAccountService {
   getAccount: (accountId: Address) => Promise<AccountDS | undefined>;

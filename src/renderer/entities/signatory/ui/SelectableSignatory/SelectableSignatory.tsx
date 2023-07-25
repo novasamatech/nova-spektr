@@ -1,12 +1,9 @@
-import { AccountAddress, getAddress, AccountAddressProps } from '@renderer/entities/account';
+import { AccountAddress, getAddress, AccountAddressProps, useAddressInfo } from '@renderer/entities/account';
 import { InfoPopover, Icon } from '@renderer/shared/ui';
-import { Explorer } from '@renderer/entities/chain/model/chain';
-import useAddressInfo from '@renderer/entities/account/lib/useAddressInfo';
+import { Explorer } from '@renderer/entities/chain';
 import { toAccountId, transferableAmount, cnTw } from '@renderer/shared/lib/utils';
-import { useBalance } from '@renderer/entities/asset/lib/balanceService';
+import { useBalance, Asset, AssetBalance } from '@renderer/entities/asset';
 import { ChainId } from '@renderer/domain/shared-kernel';
-import { Asset } from '@renderer/entities/asset/model/asset';
-import { BalanceNew } from '@renderer/entities/asset';
 
 type Props<T extends any> = {
   explorers?: Explorer[];
@@ -43,7 +40,11 @@ export const SelectableSignatory = <T extends any>({
         <Icon name="info" size={14} className="ml-2 mr-auto" />
       </InfoPopover>
       {balance && asset && (
-        <BalanceNew value={transferableAmount(balance)} asset={asset} className="text-body text-inherit ml-auto mr-6" />
+        <AssetBalance
+          value={transferableAmount(balance)}
+          asset={asset}
+          className="text-body text-inherit ml-auto mr-6"
+        />
       )}
       <Icon name="right" className={cnTw(!balance && 'ml-auto')} size={20} />
     </button>

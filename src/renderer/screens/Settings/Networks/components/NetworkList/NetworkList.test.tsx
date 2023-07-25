@@ -1,7 +1,7 @@
 import { act, render, screen, waitFor } from '@testing-library/react';
 
 import { ConnectionStatus, ConnectionType } from '@renderer/domain/connection';
-import { ExtendedChain } from '@renderer/entities/network/lib/common/types';
+import { ExtendedChain } from '@renderer/entities/network';
 import { NetworkList } from './NetworkList';
 
 describe('screen/Settings/Networks/NetworkList', () => {

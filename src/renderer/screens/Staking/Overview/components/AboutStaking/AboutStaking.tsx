@@ -4,11 +4,10 @@ import { Trans } from 'react-i18next';
 
 import { Duration, Shimmering, FootnoteText } from '@renderer/shared/ui';
 import { useI18n } from '@renderer/app/providers';
-import { Asset } from '@renderer/entities/asset/model/asset';
+import { Asset, AssetBalance } from '@renderer/entities/asset';
 import { EraIndex } from '@renderer/domain/shared-kernel';
 import { Validator } from '@renderer/domain/validator';
-import { useStakingData } from '@renderer/entities/staking/lib/stakingDataService';
-import { BalanceNew } from '@renderer/entities/asset';
+import { useStakingData } from '@renderer/entities/staking';
 
 type Props = {
   api?: ApiPromise;
@@ -106,7 +105,7 @@ export const AboutStaking = ({ api, era, asset, validators }: Props) => {
         <div className="flex justify-between gap-x-1">
           <FootnoteText className="text-text-secondary">{t('staking.about.totalStakedLabel')}</FootnoteText>
           {totalStaked && asset ? (
-            <BalanceNew value={totalStaked} asset={asset} className="text-footnote text-right" />
+            <AssetBalance value={totalStaked} asset={asset} className="text-footnote text-right" />
           ) : (
             <Shimmering className="justify-self-end" width={100} height={18} />
           )}
@@ -115,7 +114,7 @@ export const AboutStaking = ({ api, era, asset, validators }: Props) => {
         <div className="flex justify-between gap-x-1">
           <FootnoteText className="text-text-secondary">{t('staking.about.minimumStakeLabel')}</FootnoteText>
           {minimumStake && asset ? (
-            <BalanceNew value={minimumStake} asset={asset} className="text-footnote text-right" />
+            <AssetBalance value={minimumStake} asset={asset} className="text-footnote text-right" />
           ) : (
             <Shimmering className="justify-self-end" width={100} height={18} />
           )}

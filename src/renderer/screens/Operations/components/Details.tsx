@@ -1,17 +1,16 @@
 import cn from 'classnames';
 
 import { useI18n } from '@renderer/app/providers';
-import { MultisigAccount } from '@renderer/entities/account/model/account';
+import { MultisigAccount, AddressWithExplorers } from '@renderer/entities/account';
 import { Icon, Button, FootnoteText, DetailRow } from '@renderer/shared/ui';
 import { copyToClipboard, truncate, cnTw } from '@renderer/shared/lib/utils';
 import { useToggle } from '@renderer/shared/lib/hooks';
-import { ExtendedChain } from '@renderer/entities/network/lib/common/types';
-import { MultisigTransaction, Transaction, TransactionType } from '@renderer/entities/transaction/model/transaction';
+import { ExtendedChain } from '@renderer/entities/network';
+import { MultisigTransaction, Transaction, TransactionType } from '@renderer/entities/transaction';
 import ValidatorsModal from '@renderer/screens/Staking/Operations/components/Modals/ValidatorsModal/ValidatorsModal';
 import { AddressStyle, DescriptionBlockStyle, InteractionStyle } from '../common/constants';
 import { getMultisigExtrinsicLink } from '../common/utils';
-import { AddressWithExplorers } from '@renderer/entities/account';
-import { BalanceNew } from '@renderer/entities/asset';
+import { AssetBalance } from '@renderer/entities/asset';
 
 type Props = {
   tx: MultisigTransaction;
@@ -197,7 +196,7 @@ const Details = ({ tx, account, connection, isCardDetails = true }: Props) => {
 
           {deposit && defaultAsset && (
             <DetailRow label={t('operation.details.deposit')} className={valueClass}>
-              <BalanceNew
+              <AssetBalance
                 value={deposit}
                 asset={defaultAsset}
                 showIcon={false}

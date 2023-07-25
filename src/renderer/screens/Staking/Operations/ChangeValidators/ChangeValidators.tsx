@@ -2,22 +2,19 @@ import { UnsignedTransaction } from '@substrate/txwrapper-polkadot';
 import { useState, useEffect } from 'react';
 import { Navigate, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 
-import { useI18n, useNetworkContext } from '@renderer/app/providers';
+import { useI18n, useNetworkContext, Paths } from '@renderer/app/providers';
 import { ChainId, HexString, AccountId, Address } from '@renderer/domain/shared-kernel';
-import { Transaction, TransactionType } from '@renderer/entities/transaction/model/transaction';
-import { useAccount } from '@renderer/entities/account/lib/accountService';
-import { ValidatorMap } from '@renderer/entities/staking/lib/common/types';
+import { Transaction, TransactionType, useTransaction } from '@renderer/entities/transaction';
+import { useAccount, Account, isMultisig, MultisigAccount } from '@renderer/entities/account';
+import { ValidatorMap } from '@renderer/entities/staking';
 import { toAddress, getRelaychainAsset, DEFAULT_TRANSITION } from '@renderer/shared/lib/utils';
 import { Confirmation, Signing, Submit, Validators, NoAsset } from '../components';
 import { useCountdown, useToggle } from '@renderer/shared/lib/hooks';
 import { Alert, BaseModal, Button, Loader } from '@renderer/shared/ui';
-import { Account, isMultisig, MultisigAccount } from '@renderer/entities/account/model/account';
 import InitOperation, { ValidatorsResult } from './InitOperation/InitOperation';
-import { useTransaction } from '@renderer/entities/transaction/lib/transactionService';
 import ScanMultiframeQr from '@renderer/components/common/Scanning/ScanMultiframeQr';
 import ScanSingleframeQr from '@renderer/components/common/Scanning/ScanSingleframeQr';
-import { isLightClient } from '@renderer/entities/network/lib/common/utils';
-import { Paths } from '@renderer/app/providers';
+import { isLightClient } from '@renderer/entities/network';
 import OperationModalTitle from '@renderer/screens/Operations/components/OperationModalTitle';
 
 const enum Step {

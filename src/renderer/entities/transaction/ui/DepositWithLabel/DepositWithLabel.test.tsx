@@ -1,7 +1,7 @@
 import { ApiPromise } from '@polkadot/api';
 import { render, screen } from '@testing-library/react';
 
-import { Asset } from '@renderer/entities/asset/model/asset';
+import { Asset } from '@renderer/entities/asset';
 import { DepositWithLabel } from './DepositWithLabel';
 
 jest.mock('@renderer/app/providers', () => ({
@@ -16,7 +16,7 @@ jest.mock('@renderer/services/transaction/transactionService', () => ({
   }),
 }));
 
-jest.mock('@renderer/components/common/BalanceNew/BalanceNew', () => () => <div>deposit_value</div>);
+jest.mock('@renderer/components/common/AssetBalance/AssetBalance', () => () => <div>deposit_value</div>);
 
 describe('components/common/DepositWithLabel', () => {
   test('should render component', () => {

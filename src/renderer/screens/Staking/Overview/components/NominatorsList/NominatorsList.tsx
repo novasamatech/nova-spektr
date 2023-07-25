@@ -2,16 +2,15 @@ import { ApiPromise } from '@polkadot/api';
 import { Trans } from 'react-i18next';
 
 import { Address, SigningType, EraIndex } from '@renderer/domain/shared-kernel';
-import { Unlocking } from '@renderer/entities/staking/model/stake';
+import { Unlocking } from '@renderer/entities/staking';
 import { useI18n } from '@renderer/app/providers';
 import { FootnoteText, Plate, Checkbox, InfoPopover, Tooltip, Icon, Shimmering, HelpText } from '@renderer/shared/ui';
 import { ExplorerLink } from '@renderer/components/common';
-import { Explorer } from '@renderer/entities/chain/model/chain';
-import { Asset } from '@renderer/entities/asset/model/asset';
+import { Explorer } from '@renderer/entities/chain';
+import { Asset, AssetBalance } from '@renderer/entities/asset';
 import { TimeToEra } from '../TimeToEra/TimeToEra';
 import { redeemableAmount } from '@renderer/shared/lib/utils';
 import { AccountAddress } from '@renderer/entities/account';
-import { BalanceNew } from '@renderer/entities/asset';
 
 const getNextUnstakingEra = (unlocking: Unlocking[] = [], era?: number): EraIndex | undefined => {
   if (!era) return undefined;
@@ -139,12 +138,12 @@ export const NominatorsList = ({
                 {!stake.totalStake || !asset ? (
                   <Shimmering width={104} height={16} />
                 ) : (
-                  <BalanceNew value={stake.totalStake} asset={asset} />
+                  <AssetBalance value={stake.totalStake} asset={asset} />
                 )}
                 {!stake.totalReward || !asset ? (
                   <Shimmering width={104} height={16} />
                 ) : (
-                  <BalanceNew value={stake.totalReward} asset={asset} />
+                  <AssetBalance value={stake.totalReward} asset={asset} />
                 )}
                 <InfoPopover data={getExplorers(stake.address, stake.stash, explorers)} position="top-full right-0">
                   <Icon name="info" size={14} />

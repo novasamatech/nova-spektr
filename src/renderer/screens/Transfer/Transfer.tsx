@@ -3,9 +3,9 @@ import { UnsignedTransaction } from '@substrate/txwrapper-polkadot';
 
 import { useI18n, useNetworkContext } from '@renderer/app/providers';
 import { ChainId, HexString } from '@renderer/domain/shared-kernel';
-import { useChains } from '@renderer/entities/network/lib/chainsService';
-import { Transaction } from '@renderer/entities/transaction/model/transaction';
-import { Account, MultisigAccount, isMultisig, isMultishard } from '@renderer/entities/account/model/account';
+import { useChains } from '@renderer/entities/network';
+import { Transaction } from '@renderer/entities/transaction';
+import { Account, MultisigAccount, isMultisig, isMultishard } from '@renderer/entities/account';
 import { useCountdown } from '@renderer/shared/lib/hooks';
 import { BaseModal, Button, Loader } from '@renderer/shared/ui';
 import OperationModalTitle from '../Operations/components/OperationModalTitle';

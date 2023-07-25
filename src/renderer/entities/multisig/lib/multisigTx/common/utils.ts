@@ -4,7 +4,11 @@ import { AccountId32 } from '@polkadot/types/interfaces';
 
 import { MultisigAccount } from '@renderer/entities/account/model/account';
 import { Address, ChainId } from '@renderer/domain/shared-kernel';
-import { MultisigEvent, MultisigTransaction, MultisigTxInitStatus } from '@renderer/entities/transaction/model/transaction';
+import {
+  MultisigEvent,
+  MultisigTransaction,
+  MultisigTxInitStatus,
+} from '@renderer/entities/transaction/model/transaction';
 import { PendingMultisigTransaction } from './types';
 import { getCreatedDate } from '@renderer/shared/lib/utils';
 

@@ -1,8 +1,7 @@
 import { ApiPromise } from '@polkadot/api';
 import { act, render, screen } from '@testing-library/react';
 
-import { Asset } from '@renderer/entities/asset/model/asset';
-import { BalanceNew } from '@renderer/entities/asset';
+import { Asset, AssetBalance } from '@renderer/entities/asset';
 import { Deposit } from './Deposit';
 
 jest.mock('@renderer/components/common');
@@ -21,7 +20,7 @@ jest.mock('@renderer/services/transaction/transactionService', () => ({
 
 describe('components/common/Deposit', () => {
   beforeAll(() => {
-    (BalanceNew as jest.Mock).mockImplementation(({ value }: any) => <p>{value}</p>);
+    (AssetBalance as jest.Mock).mockImplementation(({ value }: any) => <p>{value}</p>);
   });
 
   afterEach(() => {

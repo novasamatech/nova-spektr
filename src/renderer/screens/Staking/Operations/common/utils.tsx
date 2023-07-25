@@ -2,11 +2,10 @@ import { BN } from '@polkadot/util';
 import cn from 'classnames';
 import { ReactNode } from 'react';
 
-import { Account, MultisigAccount } from '@renderer/entities/account/model/account';
+import { Account, MultisigAccount, AccountAddress } from '@renderer/entities/account';
 import { Address } from '@renderer/domain/shared-kernel';
 import { DropdownOption } from '@renderer/shared/ui/Dropdowns/common/types';
-import { Balance as AccountBalance } from '@renderer/entities/asset/model/balance';
-import { Asset } from '@renderer/entities/asset/model/asset';
+import { Balance as AccountBalance, Asset, AssetBalance } from '@renderer/entities/asset';
 import {
   toAddress,
   stakeableAmount,
@@ -15,9 +14,7 @@ import {
   unlockingAmount,
   redeemableAmount,
 } from '@renderer/shared/lib/utils';
-import { Stake } from '@renderer/entities/staking/model/stake';
-import { AccountAddress } from '@renderer/entities/account';
-import { BalanceNew } from '@renderer/entities/asset';
+import { Stake } from '@renderer/entities/staking';
 
 export const validateBalanceForFee = (balance: AccountBalance | string, fee: string): boolean => {
   const transferableBalance = typeof balance === 'string' ? balance : transferableAmount(balance);
@@ -75,7 +72,7 @@ const getElement = (address: Address, accountName: string, content?: ReactNode):
 const getBalance = (balance: string, asset: Asset, isCorrect = true): ReactNode => {
   if (!balance) return null;
 
-  return <BalanceNew className={cn(!isCorrect && 'text-text-negative')} value={balance} asset={asset} />;
+  return <AssetBalance className={cn(!isCorrect && 'text-text-negative')} value={balance} asset={asset} />;
 };
 
 type Params = {

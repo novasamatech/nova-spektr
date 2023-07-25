@@ -1,8 +1,8 @@
 import cn from 'classnames';
 import { KeyboardEvent, MouseEvent } from 'react';
 
-import { Shimmering, AssetIcon, BodyText, IconButton } from '@renderer/shared/ui';
-import { Asset, Balance, BalanceNew, AssetDetails } from '@renderer/entities/asset';
+import { Shimmering, BodyText, IconButton } from '@renderer/shared/ui';
+import { Asset, Balance, AssetBalance, AssetDetails, AssetIcon } from '@renderer/entities/asset';
 import { useToggle } from '@renderer/shared/lib/hooks';
 import { totalAmount, transferableAmount, KeyboardKey } from '@renderer/shared/lib/utils';
 import { useI18n } from '@renderer/app/providers';
@@ -59,7 +59,7 @@ export const AssetCard = ({ asset, balance, canMakeActions, onReceiveClick, onTr
           <BodyText>{asset.name}</BodyText>
         </div>
         {balance?.free ? (
-          <BalanceNew value={totalAmount(balance)} asset={asset} />
+          <AssetBalance value={totalAmount(balance)} asset={asset} />
         ) : (
           <Shimmering width={82} height={20} />
         )}

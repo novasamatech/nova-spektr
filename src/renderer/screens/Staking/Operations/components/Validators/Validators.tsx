@@ -16,15 +16,12 @@ import {
   Checkbox,
 } from '@renderer/shared/ui';
 import { useI18n } from '@renderer/app/providers';
-import { Asset } from '@renderer/entities/asset/model/asset';
-import { Explorer } from '@renderer/entities/chain/model/chain';
+import { Asset, AssetBalance } from '@renderer/entities/asset';
+import { Explorer } from '@renderer/entities/chain';
 import { Address, ChainId } from '@renderer/domain/shared-kernel';
-import { ValidatorMap } from '@renderer/entities/staking/lib/common/types';
-import { useEra } from '@renderer/entities/staking/lib/eraService';
-import { useValidators } from '@renderer/entities/staking/lib/validatorsService';
+import { ValidatorMap, useEra, useValidators } from '@renderer/entities/staking';
 import { includes, getComposedIdentity, toShortAddress } from '@renderer/shared/lib/utils';
 import { ExplorerLink } from '@renderer/components/common';
-import { BalanceNew } from '@renderer/entities/asset';
 
 type Props = {
   api: ApiPromise;
@@ -169,10 +166,10 @@ export const Validators = ({ api, chainId, asset, explorers, isLightClient, onGo
                   </div>
                 </Checkbox>
                 <BodyText>
-                  <BalanceNew value={v.ownStake || '0'} asset={asset} />
+                  <AssetBalance value={v.ownStake || '0'} asset={asset} />
                 </BodyText>
                 <BodyText>
-                  <BalanceNew value={v.totalStake || '0'} asset={asset} />
+                  <AssetBalance value={v.totalStake || '0'} asset={asset} />
                 </BodyText>
                 <InfoPopover data={getExplorers(v.address, explorers)} position="top-full right-0">
                   <Icon name="info" size={14} className="ml-2 mr-auto" />

@@ -2,11 +2,9 @@ import { ApiPromise } from '@polkadot/api';
 import { BN } from '@polkadot/util';
 import { useEffect, useState, memo } from 'react';
 
-import { Asset } from '@renderer/entities/asset/model/asset';
-import { Transaction } from '@renderer/entities/transaction/model/transaction';
-import { useTransaction } from '@renderer/entities/transaction/lib/transactionService';
+import { Asset, AssetBalance } from '@renderer/entities/asset';
+import { Transaction, useTransaction } from '@renderer/entities/transaction';
 import { Shimmering } from '@renderer/shared/ui';
-import { BalanceNew } from '@renderer/entities/asset';
 
 type Props = {
   api: ApiPromise;
@@ -56,5 +54,5 @@ export const Fee = memo(({ api, multiply = 1, asset, transaction, className, onF
 
   const totalFee = new BN(fee).muln(multiply).toString();
 
-  return <BalanceNew value={totalFee} asset={asset} className={className} />;
+  return <AssetBalance value={totalFee} asset={asset} className={className} />;
 });

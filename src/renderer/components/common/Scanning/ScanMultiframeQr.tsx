@@ -4,14 +4,13 @@ import { UnsignedTransaction } from '@substrate/txwrapper-polkadot';
 import init, { Encoder } from 'raptorq';
 import { useEffect, useState } from 'react';
 
+import { AccountDS } from '@renderer/shared/api/storage';
 import { Command } from '@renderer/components/common/QrCode/QrGenerator/common/constants';
 import QrMultiframeGenerator from '@renderer/components/common/QrCode/QrGenerator/QrMultiframeTxGenerator';
 import { TRANSACTION_BULK } from '@renderer/components/common/QrCode/common/constants';
 import { useI18n } from '@renderer/app/providers';
 import { ChainId } from '@renderer/domain/shared-kernel';
-import { Transaction } from '@renderer/entities/transaction/model/transaction';
-import { AccountDS } from '@renderer/services/storage';
-import { useTransaction } from '@renderer/entities/transaction/lib/transactionService';
+import { Transaction, useTransaction } from '@renderer/entities/transaction';
 import { toAddress } from '@renderer/shared/lib/utils';
 import { Button } from '@renderer/shared/ui';
 import { QrGeneratorContainer } from '@renderer/components/common';

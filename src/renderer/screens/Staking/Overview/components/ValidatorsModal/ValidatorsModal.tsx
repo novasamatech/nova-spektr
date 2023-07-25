@@ -3,12 +3,11 @@ import { useEffect, useState, ReactNode } from 'react';
 
 import { ExplorerLink } from '@renderer/components/common';
 import { useI18n } from '@renderer/app/providers';
-import { Asset } from '@renderer/entities/asset/model/asset';
-import { Explorer } from '@renderer/entities/chain/model/chain';
+import { Asset, AssetBalance } from '@renderer/entities/asset';
+import { Explorer } from '@renderer/entities/chain';
 import { Address } from '@renderer/domain/shared-kernel';
 import { Validator } from '@renderer/domain/validator';
-import { ValidatorMap } from '@renderer/entities/staking/lib/common/types';
-import { useValidators } from '@renderer/entities/staking/lib/validatorsService';
+import { ValidatorMap, useValidators } from '@renderer/entities/staking';
 import { getComposedIdentity, toShortAddress } from '@renderer/shared/lib/utils';
 import { NoValidators } from '../EmptyState/NoValidators';
 import {
@@ -22,7 +21,6 @@ import {
   BodyText,
   Accordion,
 } from '@renderer/shared/ui';
-import { BalanceNew } from '@renderer/entities/asset';
 
 type Props = {
   api?: ApiPromise;
@@ -105,8 +103,8 @@ export const ValidatorsModal = ({
                 <BodyText>{toShortAddress(validator.address, 11)}</BodyText>
               )}
             </div>
-            <BalanceNew value={validator.ownStake || '0'} asset={asset} />
-            <BalanceNew value={validator.totalStake || '0'} asset={asset} />
+            <AssetBalance value={validator.ownStake || '0'} asset={asset} />
+            <AssetBalance value={validator.totalStake || '0'} asset={asset} />
             <Icon name="info" size={14} className="group-hover:text-icon-hover" />
           </div>
         </InfoPopover>

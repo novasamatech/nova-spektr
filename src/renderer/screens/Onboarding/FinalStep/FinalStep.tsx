@@ -5,8 +5,7 @@ import LaptopImg from '@images/misc/onboarding/laptop.png';
 // import CardImg from '@images/misc/onboarding/default-card.png';
 import ParityImg from '@images/misc/onboarding/parity-card.png';
 import WatchImg from '@images/misc/onboarding/watch-card.png';
-import { Paths } from '@renderer/app/providers';
-import { useI18n } from '@renderer/app/providers';
+import { Paths, useI18n } from '@renderer/app/providers';
 import { SigningType } from '@renderer/domain/shared-kernel';
 
 type Props = {

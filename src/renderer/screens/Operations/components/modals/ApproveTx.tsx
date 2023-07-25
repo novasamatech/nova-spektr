@@ -5,25 +5,28 @@ import { BN } from '@polkadot/util';
 
 import { Icon, BaseModal, Button } from '@renderer/shared/ui';
 import { useI18n } from '@renderer/app/providers';
-import { AccountDS, MultisigTransactionDS } from '@renderer/services/storage';
+import { AccountDS, MultisigTransactionDS } from '@renderer/shared/api/storage';
 import { useCountdown, useToggle } from '@renderer/shared/lib/hooks';
-import { Account, MultisigAccount } from '@renderer/entities/account/model/account';
-import { ExtendedChain } from '@renderer/entities/network/lib/common/types';
-import { Transaction, TransactionType, isDecodedTx } from '@renderer/entities/transaction/model/transaction';
+import { Account, MultisigAccount, useAccount } from '@renderer/entities/account';
+import { ExtendedChain } from '@renderer/entities/network';
+import {
+  Transaction,
+  TransactionType,
+  isDecodedTx,
+  useTransaction,
+  OperationResult,
+} from '@renderer/entities/transaction';
 import { Address, HexString, SigningType, Timepoint } from '@renderer/domain/shared-kernel';
 import { toAddress, transferableAmount, TEST_ADDRESS } from '@renderer/shared/lib/utils';
-import { useAccount } from '@renderer/entities/account/lib/accountService';
 import { getTransactionTitle } from '../../common/utils';
 import { Submit } from '../ActionSteps/Submit';
-import { useTransaction } from '@renderer/entities/transaction/lib/transactionService';
-import { useBalance } from '@renderer/entities/asset/lib/balanceService';
+import { useBalance } from '@renderer/entities/asset';
 import Confirmation from '@renderer/screens/Operations/components/ActionSteps/Confirmation';
 import SignatorySelectModal from '@renderer/screens/Operations/components/modals/SignatorySelectModal';
-import { OperationResult } from '@renderer/entities/transaction/ui/OperationResult/OperationResult';
 import OperationModalTitle from '@renderer/screens/Operations/components/OperationModalTitle';
 import { Signing } from '@renderer/screens/Transfer/components/ActionSteps';
 import ScanSingleframeQr from '@renderer/components/common/Scanning/ScanSingleframeQr';
-import { useMultisigEvent } from '@renderer/entities/multisig/lib/multisigEvent/multisigEventService';
+import { useMultisigEvent } from '@renderer/entities/multisig';
 
 type Props = {
   tx: MultisigTransactionDS;

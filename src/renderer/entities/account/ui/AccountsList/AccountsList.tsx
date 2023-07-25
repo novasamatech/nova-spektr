@@ -1,13 +1,13 @@
 import { cnTw } from '@renderer/shared/lib/utils';
-import { Chain as ChainType } from '@renderer/entities/chain/model/chain';
+import { Chain, ChainTitle } from '@renderer/entities/chain';
 import { AccountId } from '@renderer/domain/shared-kernel';
 import { AddressWithExplorers } from '@renderer/entities/account';
 import { useI18n } from '@renderer/app/providers';
-import { Chain, FootnoteText } from '@renderer/shared/ui';
+import { FootnoteText } from '@renderer/shared/ui';
 
 type Props = {
   accountId: AccountId;
-  chains: ChainType[];
+  chains: Chain[];
   className?: string;
 };
 
@@ -29,7 +29,7 @@ export const AccountsList = ({ accountId, chains, className }: Props) => {
 
           return (
             <li key={chainId} className="flex items-center mx-3 py-4">
-              <Chain className="w-[214px]" fontClass="text-text-primary" chain={chain} />
+              <ChainTitle className="w-[214px]" fontClass="text-text-primary" chain={chain} />
 
               <div className="w-[214]">
                 <AddressWithExplorers

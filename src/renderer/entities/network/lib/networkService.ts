@@ -3,11 +3,11 @@ import * as Sc from '@substrate/connect';
 import { ProviderInterface } from '@polkadot/rpc-provider/types';
 import keyBy from 'lodash/keyBy';
 import { useRef, useState } from 'react';
+import storage from '@renderer/shared/api/storage';
 
 import { Chain, RpcNode } from '@renderer/entities/chain/model/chain';
 import { Connection, ConnectionStatus, ConnectionType } from '@renderer/domain/connection';
 import { ChainId } from '@renderer/domain/shared-kernel';
-import storage from '@renderer/services/storage';
 import { ISubscriptionService } from '../../../services/subscription/common/types';
 import { useChainSpec } from './chainSpecService';
 import { useChains } from './chainsService';

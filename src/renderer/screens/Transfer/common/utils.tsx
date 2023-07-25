@@ -1,14 +1,11 @@
 import { ReactNode } from 'react';
 import { BN } from '@polkadot/util';
 
-import { Account, MultisigAccount } from '@renderer/entities/account/model/account';
+import { Account, MultisigAccount, AccountAddress } from '@renderer/entities/account';
 import { Address } from '@renderer/domain/shared-kernel';
 import { DropdownOption } from '@renderer/shared/ui/Dropdowns/common/types';
 import { toAddress, cnTw, transferableAmount } from '@renderer/shared/lib/utils';
-import { Balance } from '@renderer/entities/asset/model/balance';
-import { Asset } from '@renderer/entities/asset/model/asset';
-import { AccountAddress } from '@renderer/entities/account';
-import { BalanceNew } from '@renderer/entities/asset';
+import { Balance, Asset, AssetBalance } from '@renderer/entities/asset';
 
 type Params = {
   asset: Asset;
@@ -23,7 +20,7 @@ type Params = {
 const getBalance = (balance: string, asset: Asset, isCorrect = true): ReactNode => {
   if (!balance) return null;
 
-  return <BalanceNew className={cnTw(!isCorrect && 'text-text-negative')} value={balance} asset={asset} />;
+  return <AssetBalance className={cnTw(!isCorrect && 'text-text-negative')} value={balance} asset={asset} />;
 };
 
 const getElement = (address: Address, accountName: string, content?: ReactNode): ReactNode => {

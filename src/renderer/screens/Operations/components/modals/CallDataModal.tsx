@@ -2,7 +2,7 @@ import { Controller, SubmitHandler, useForm } from 'react-hook-form';
 
 import { BaseModal, Button, InputHint, InputArea } from '@renderer/shared/ui';
 import { useI18n } from '@renderer/app/providers';
-import { MultisigTransactionDS } from '@renderer/services/storage';
+import { MultisigTransactionDS } from '@renderer/shared/api/storage';
 import { CallData } from '@renderer/domain/shared-kernel';
 import { validateCallData } from '@renderer/shared/lib/utils';
 

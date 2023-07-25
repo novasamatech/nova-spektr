@@ -2,20 +2,23 @@ import { useState, useEffect } from 'react';
 import { useNavigate, Outlet } from 'react-router-dom';
 
 import { Header } from '@renderer/components/common';
-import { Chain } from '@renderer/entities/chain/model/chain';
+import { Chain } from '@renderer/entities/chain';
 import { getRelaychainAsset, toAddress } from '@renderer/shared/lib/utils';
 import { useGraphql, useI18n, useNetworkContext, PathValue, createLink } from '@renderer/app/providers';
 import { ChainId, Address, SigningType } from '@renderer/domain/shared-kernel';
-import { useEra } from '@renderer/entities/staking/lib/eraService';
-import { useStakingData } from '@renderer/entities/staking/lib/stakingDataService';
-import { useAccount } from '@renderer/entities/account/lib/accountService';
-import { StakingMap, ValidatorMap } from '@renderer/entities/staking/lib/common/types';
+import {
+  useEra,
+  useStakingData,
+  StakingMap,
+  ValidatorMap,
+  useValidators,
+  useStakingRewards,
+  Stake,
+} from '@renderer/entities/staking';
+import { useAccount } from '@renderer/entities/account';
 import { useToggle } from '@renderer/shared/lib/hooks';
-import { useValidators } from '@renderer/entities/staking/lib/validatorsService';
-import { useStakingRewards } from '@renderer/entities/staking/lib/stakingRewardsService';
 import { NominatorInfo } from '@renderer/screens/Staking/Overview/components/NominatorsList/NominatorsList';
-import { Stake } from '@renderer/entities/staking/model/stake';
-import { AccountDS } from '@renderer/services/storage';
+import { AccountDS } from '@renderer/shared/api/storage';
 import { ConnectionType, ConnectionStatus } from '@renderer/domain/connection';
 import { AboutStaking, NetworkInfo, NominatorsList, Actions, ValidatorsModal, InactiveChain } from './components';
 

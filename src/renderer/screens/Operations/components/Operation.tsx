@@ -2,14 +2,15 @@ import { format } from 'date-fns';
 
 import { useI18n } from '@renderer/app/providers';
 import TransactionTitle from './TransactionTitle/TransactionTitle';
-import { MultisigAccount } from '@renderer/entities/account/model/account';
-import { FootnoteText, Chain, Accordion } from '@renderer/shared/ui';
+import { MultisigAccount } from '@renderer/entities/account';
+import { FootnoteText, Accordion } from '@renderer/shared/ui';
 import TransactionAmount from './TransactionAmount';
 import OperationStatus from './OperationStatus';
 import OperationFullInfo from './OperationFullInfo';
 import { getTransactionAmount } from '@renderer/screens/Operations/common/utils';
-import { MultisigTransactionDS } from '@renderer/services/storage';
-import { useMultisigEvent } from '@renderer/entities/multisig/lib/multisigEvent/multisigEventService';
+import { MultisigTransactionDS } from '@renderer/shared/api/storage';
+import { useMultisigEvent } from '@renderer/entities/multisig';
+import { ChainTitle } from '@renderer/entities/chain';
 
 type Props = {
   tx: MultisigTransactionDS;
@@ -38,7 +39,7 @@ const Operation = ({ tx, account }: Props) => {
           ) : (
             <span />
           )}
-          <Chain chainId={tx.chainId} className="px-2" />
+          <ChainTitle chainId={tx.chainId} className="px-2" />
           <div className="flex justify-end px-2 w-full">
             <OperationStatus status={tx.status} signed={approvals.length} threshold={account?.threshold || 0} />
           </div>

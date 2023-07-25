@@ -1,6 +1,6 @@
 import { useLiveQuery } from 'dexie-react-hooks';
+import storage, { WalletDS } from '@renderer/shared/api/storage';
 
-import storage, { WalletDS } from '@renderer/services/storage';
 import { IWalletService } from './common/types';
 import { Wallet } from '@renderer/entities/wallet/model/wallet';
 

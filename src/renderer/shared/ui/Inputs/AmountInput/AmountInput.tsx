@@ -1,13 +1,11 @@
 import { useCallback } from 'react';
 
 import { useI18n } from '@renderer/app/providers';
-import { Asset } from '@renderer/entities/asset/model/asset';
 import { FootnoteText, TitleText } from '../../Typography';
 // FIXME components in shared shouldn't use components from entity so we need to move it to entity
-import { BalanceNew } from '@renderer/entities/asset';
+import { AssetBalance, AssetIcon, Asset } from '@renderer/entities/asset';
 import Input from '../Input/Input';
 import { cleanAmount, formatGroups, validatePrecision, validateSymbols } from '@renderer/shared/lib/utils';
-import { AssetIcon } from '@renderer/shared/ui';
 
 type Props = {
   name?: string;
@@ -50,15 +48,15 @@ const AmountInput = ({
     if (Array.isArray(balance)) {
       return (
         <span className="flex gap-x-1">
-          <BalanceNew className="text-text-primary text-footnote" value={balance[0]} asset={asset} />
+          <AssetBalance className="text-text-primary text-footnote" value={balance[0]} asset={asset} />
           <span>-</span>
-          <BalanceNew className="text-text-primary text-footnote" value={balance[1]} asset={asset} />
+          <AssetBalance className="text-text-primary text-footnote" value={balance[1]} asset={asset} />
         </span>
       );
     }
 
     return (
-      <BalanceNew className="inline text-text-primary text-footnote" value={balance} asset={asset} showIcon={false} />
+      <AssetBalance className="inline text-text-primary text-footnote" value={balance} asset={asset} showIcon={false} />
     );
   }, [balance]);
 

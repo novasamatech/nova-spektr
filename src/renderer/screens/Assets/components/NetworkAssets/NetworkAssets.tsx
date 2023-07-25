@@ -1,24 +1,21 @@
 import { useEffect, useMemo, useState } from 'react';
 import { groupBy } from 'lodash';
 
-import { Icon, CaptionText, Chain, Tooltip, Accordion } from '@renderer/shared/ui';
-import { Asset } from '@renderer/entities/asset/model/asset';
-import { Chain as ChainType } from '@renderer/entities/chain/model/chain';
-import { useBalance } from '@renderer/entities/asset/lib/balanceService';
+import { Icon, CaptionText, Tooltip, Accordion } from '@renderer/shared/ui';
+import { Asset, useBalance, Balance, AssetCard } from '@renderer/entities/asset';
+import { Chain, ChainTitle } from '@renderer/entities/chain';
 import { ZERO_BALANCE, totalAmount, includes, cnTw } from '@renderer/shared/lib/utils';
-import { ExtendedChain } from '@renderer/entities/network/lib/common/types';
+import { ExtendedChain } from '@renderer/entities/network';
 import { useI18n } from '@renderer/app/providers';
-import { Balance } from '@renderer/entities/asset/model/balance';
-import { AssetCard } from '@renderer/entities/asset/ui/AssetCard/AssetCard';
 import { balanceSorter, sumBalances } from '../../common/utils';
-import { Account } from '@renderer/entities/account/model/account';
+import { Account } from '@renderer/entities/account';
 import { AccountId } from '@renderer/domain/shared-kernel';
 
 type Props = {
   hideZeroBalance?: boolean;
   searchSymbolOnly?: boolean;
   query?: string;
-  chain: ChainType | ExtendedChain;
+  chain: Chain | ExtendedChain;
   accounts: Account[];
   canMakeActions?: boolean;
   onReceiveClick?: (asset: Asset) => void;
@@ -106,7 +103,7 @@ export const NetworkAssets = ({
           )}
         >
           <div className="flex items-center justify-between gap-x-2">
-            <Chain chain={chain} fontClass="text-caption uppercase" as="h2" iconSize={20} />
+            <ChainTitle chain={chain} fontClass="text-caption uppercase" as="h2" iconSize={20} />
 
             {hasFailedVerification && (
               <div className="flex items-center gap-x-2 text-text-warning">

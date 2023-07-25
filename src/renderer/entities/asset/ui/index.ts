@@ -1,3 +1,4 @@
-export * from './BalanceNew/BalanceNew';
-export * from './AssetDetails/AssetDetails';
-export * from './AssetCard/AssetCard';
+export { AssetBalance } from './AssetBalance/AssetBalance';
+export { AssetDetails } from './AssetDetails/AssetDetails';
+export { AssetCard } from './AssetCard/AssetCard';
+export { AssetIcon } from './AssetIcon/AssetIcon';

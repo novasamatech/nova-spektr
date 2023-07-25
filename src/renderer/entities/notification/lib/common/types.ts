@@ -1,5 +1,6 @@
+import { ID, NotificationDS } from '@renderer/shared/api/storage';
+
 import { Notification } from '@renderer/entities/notification/model/notification';
-import { ID, NotificationDS } from '@renderer/services/storage';
 
 export interface INotificationService {
   getNotifications: <T extends Notification>(where?: Partial<T>) => Promise<NotificationDS[]>;

@@ -1,7 +1,6 @@
-import { AccountAddress, AccountAddressProps, getAddress } from '@renderer/entities/account';
+import { AccountAddress, AccountAddressProps, getAddress, useAddressInfo } from '@renderer/entities/account';
 import { InfoPopover, Icon } from '@renderer/shared/ui';
-import { Explorer } from '@renderer/entities/chain/model/chain';
-import useAddressInfo from '@renderer/entities/account/lib/useAddressInfo';
+import { Explorer } from '@renderer/entities/chain';
 import { cnTw } from '@renderer/shared/lib/utils';
 
 type Props = {

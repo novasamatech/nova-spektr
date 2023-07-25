@@ -3,11 +3,10 @@ import { useLayoutEffect, useRef, useState } from 'react';
 import { throttle } from 'lodash';
 
 import { Icon, TitleText } from '@renderer/shared/ui';
-import { useI18n } from '@renderer/app/providers';
+import { useI18n, Paths } from '@renderer/app/providers';
 import { useToggle } from '@renderer/shared/lib/hooks';
 import { cnTw, DEFAULT_TRANSITION } from '@renderer/shared/lib/utils';
 import WatchOnly from '../WatchOnly/WatchOnly';
-import { Paths } from '@renderer/app/providers';
 import Vault from '../Vault/Vault';
 import PrivacyPolicy from './PrivacyPolicy';
 import { WelcomeCard } from './WelcomeCard';

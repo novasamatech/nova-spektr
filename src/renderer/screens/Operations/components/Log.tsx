@@ -2,18 +2,19 @@ import { groupBy } from 'lodash';
 import { format } from 'date-fns';
 
 import { useI18n } from '@renderer/app/providers';
-import { Account, MultisigAccount } from '@renderer/entities/account/model/account';
-import { ExtendedChain } from '@renderer/entities/network/lib/common/types';
-import { MultisigEvent, SigningStatus } from '@renderer/entities/transaction/model/transaction';
+import { Account, MultisigAccount } from '@renderer/entities/account';
+import { ExtendedChain } from '@renderer/entities/network';
+import { MultisigEvent, SigningStatus } from '@renderer/entities/transaction';
 import TransactionTitle from './TransactionTitle/TransactionTitle';
 import OperationStatus from './OperationStatus';
 import { getSignatoryName, getTransactionAmount, sortByDateAsc } from '../common/utils';
-import { AssetIcon, BaseModal, BodyText, FootnoteText, Identicon } from '@renderer/shared/ui';
+import { BaseModal, BodyText, FootnoteText, Identicon } from '@renderer/shared/ui';
 import { getAssetById, toAddress, SS58_DEFAULT_PREFIX } from '@renderer/shared/lib/utils';
 import { ExtrinsicExplorers } from '@renderer/components/common';
-import { Contact } from '@renderer/entities/contact/model/contact';
-import { useMultisigEvent } from '@renderer/entities/multisig/lib/multisigEvent/multisigEventService';
-import { MultisigTransactionDS } from '@renderer/services/storage';
+import { Contact } from '@renderer/entities/contact';
+import { useMultisigEvent } from '@renderer/entities/multisig';
+import { MultisigTransactionDS } from '@renderer/shared/api/storage';
+import { AssetIcon } from '@renderer/entities/asset';
 
 type Props = {
   tx: MultisigTransactionDS;

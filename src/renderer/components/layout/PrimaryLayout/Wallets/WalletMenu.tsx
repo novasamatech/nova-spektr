@@ -4,19 +4,18 @@ import cn from 'classnames';
 import { useNavigate } from 'react-router-dom';
 
 import { DropdownButton, SearchInput, SmallTitleText } from '@renderer/shared/ui';
-import { useI18n } from '@renderer/app/providers';
+import { useI18n, Paths } from '@renderer/app/providers';
 import { WalletType } from '@renderer/domain/shared-kernel';
-import { useAccount } from '@renderer/entities/account/lib/accountService';
+import { useAccount } from '@renderer/entities/account';
 import WalletGroup from '@renderer/components/layout/PrimaryLayout/Wallets/WalletGroup';
 import { useGroupedWallets } from './common/useGroupedWallets';
-import { ID, WalletDS } from '@renderer/services/storage';
+import { ID, WalletDS } from '@renderer/shared/api/storage';
 import WatchOnly from '@renderer/screens/Onboarding/WatchOnly/WatchOnly';
 import Vault from '@renderer/screens/Onboarding/Vault/Vault';
 import { useToggle } from '@renderer/shared/lib/hooks';
-import { ButtonDropdownOption } from '@renderer/shared/ui/Dropdowns/DropdownButton/DropdownButton';
+import { ButtonDropdownOption } from '@renderer/shared/ui/types';
 import { CreateMultisigAccount } from '@renderer/components/modals';
 import { isMultishardWalletItem } from '@renderer/components/layout/PrimaryLayout/Wallets/common/utils';
-import { Paths } from '@renderer/app/providers';
 import { DEFAULT_TRANSITION } from '@renderer/shared/lib/utils';
 import {
   ChainsRecord,

@@ -1,8 +1,8 @@
 import { act, render, renderHook, screen, waitFor } from '@testing-library/react';
 
 import { ConnectionStatus, ConnectionType } from '@renderer/domain/connection';
-import { useBalance } from '@renderer/entities/asset/lib/balanceService';
-import { useNetwork } from '@renderer/entities/network/lib/networkService';
+import { useBalance } from '@renderer/entities/asset';
+import { useNetwork } from '@renderer/entities/network';
 import { NetworkProvider, useNetworkContext } from './NetworkContext';
 import { TEST_ACCOUNT_ID } from '@renderer/shared/lib/utils';
 

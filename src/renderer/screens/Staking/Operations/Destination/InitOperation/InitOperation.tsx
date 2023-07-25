@@ -4,13 +4,10 @@ import { useEffect, useState } from 'react';
 import { Select, MultiSelect, InputHint } from '@renderer/shared/ui';
 import { DropdownOption, DropdownResult } from '@renderer/shared/ui/Dropdowns/common/types';
 import { useI18n } from '@renderer/app/providers';
-import { Asset } from '@renderer/entities/asset/model/asset';
+import { Asset, useBalance, Balance as AccountBalance } from '@renderer/entities/asset';
 import { Address, ChainId, AccountId, SigningType } from '@renderer/domain/shared-kernel';
-import { Transaction, TransactionType } from '@renderer/entities/transaction/model/transaction';
-import { useAccount } from '@renderer/entities/account/lib/accountService';
-import { useBalance } from '@renderer/entities/asset/lib/balanceService';
-import { Balance as AccountBalance } from '@renderer/entities/asset/model/balance';
-import { Account, isMultisig } from '@renderer/entities/account/model/account';
+import { Transaction, TransactionType } from '@renderer/entities/transaction';
+import { useAccount, Account, isMultisig } from '@renderer/entities/account';
 import { toAddress, nonNullable, TEST_ADDRESS } from '@renderer/shared/lib/utils';
 import { OperationForm } from '../../components';
 import {

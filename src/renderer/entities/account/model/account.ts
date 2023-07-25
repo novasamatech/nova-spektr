@@ -1,9 +1,17 @@
 import { createKeyMulti } from '@polkadot/util-crypto';
 import { u8aToHex } from '@polkadot/util';
+import { AccountDS, ID } from '@renderer/shared/api/storage';
 
-import { ChainId, CryptoType, AccountId, ChainType, SigningType, Threshold, WalletType } from '../../../domain/shared-kernel';
+import {
+  ChainId,
+  CryptoType,
+  AccountId,
+  ChainType,
+  SigningType,
+  Threshold,
+  WalletType,
+} from '../../../domain/shared-kernel';
 import { Signatory } from '@renderer/entities/signatory/model/signatory';
-import { AccountDS, ID } from '@renderer/services/storage';
 
 export type Account = {
   walletId?: ID;

@@ -5,20 +5,17 @@ import { PropsWithChildren, useState, useEffect } from 'react';
 import { Icon, Button, FootnoteText, CaptionText, InputHint } from '@renderer/shared/ui';
 import { useI18n } from '@renderer/app/providers';
 import { useToggle } from '@renderer/shared/lib/hooks';
-import { RewardsDestination } from '@renderer/entities/staking/model/stake';
+import { RewardsDestination } from '@renderer/entities/staking';
 import { Validator } from '@renderer/domain/validator';
-import { Account } from '@renderer/entities/account/model/account';
-import { Asset } from '@renderer/entities/asset/model/asset';
-import { Explorer } from '@renderer/entities/chain/model/chain';
-import { Transaction, MultisigTxInitStatus } from '@renderer/entities/transaction/model/transaction';
+import { Account, AddressWithExplorers } from '@renderer/entities/account';
+import { Asset, AssetBalance } from '@renderer/entities/asset';
+import { Explorer } from '@renderer/entities/chain';
+import { Transaction, MultisigTxInitStatus, DepositWithLabel, Fee } from '@renderer/entities/transaction';
 import AccountsModal from '../Modals/AccountsModal/AccountsModal';
 import ValidatorsModal from '../Modals/ValidatorsModal/ValidatorsModal';
 import { DestinationType } from '../../common/types';
 import { cnTw } from '@renderer/shared/lib/utils';
-import { useMultisigTx } from '@renderer/entities/multisig/lib/multisigTx/multisigTxService';
-import { BalanceNew } from '@renderer/entities/asset';
-import { AddressWithExplorers } from '@renderer/entities/account';
-import { DepositWithLabel, Fee } from '@renderer/entities/transaction';
+import { useMultisigTx } from '@renderer/entities/multisig';
 
 const ActionStyle = 'group hover:bg-action-background-hover px-2 py-1 rounded';
 
@@ -91,7 +88,7 @@ export const Confirmation = ({
       <div className="w-[440px] px-5 py-4">
         <div className="flex flex-col items-center gap-y-3 mb-6">
           {amounts.length > 0 && (
-            <BalanceNew className="block mx-auto text-center text-4xl font-bold" value={totalAmount} asset={asset} />
+            <AssetBalance className="block mx-auto text-center text-4xl font-bold" value={totalAmount} asset={asset} />
           )}
 
           {description && (

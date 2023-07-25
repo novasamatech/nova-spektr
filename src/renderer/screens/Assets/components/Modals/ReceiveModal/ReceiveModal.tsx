@@ -6,14 +6,13 @@ import { DefaultExplorer, ExplorerIcons } from '@renderer/components/common/Expl
 import { Icon, BaseModal, Button, FootnoteText, Select, HelpText } from '@renderer/shared/ui';
 import { DropdownOption, DropdownResult } from '@renderer/shared/ui/Dropdowns/common/types';
 import { useI18n } from '@renderer/app/providers';
-import { Asset } from '@renderer/entities/asset/model/asset';
-import { Chain } from '@renderer/entities/chain/model/chain';
+import { Asset } from '@renderer/entities/asset';
+import { Chain } from '@renderer/entities/chain';
 import { SigningType } from '@renderer/domain/shared-kernel';
 import { copyToClipboard, toAddress, cnTw } from '@renderer/shared/lib/utils';
-import { useAccount } from '@renderer/entities/account/lib/accountService';
+import { useAccount, AccountAddress } from '@renderer/entities/account';
 import OperationModalTitle from '@renderer/screens/Operations/components/OperationModalTitle';
 import { IconButtonStyle } from '@renderer/shared/ui/Buttons/IconButton/IconButton';
-import { AccountAddress } from '@renderer/entities/account';
 
 type Props = {
   chain: Chain;

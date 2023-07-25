@@ -1,10 +1,10 @@
 import { useEffect, useState } from 'react';
 
 import { useI18n, useNetworkContext } from '@renderer/app/providers';
-import { MultisigTransactionDS } from '@renderer/services/storage';
+import { MultisigTransactionDS } from '@renderer/shared/api/storage';
 import { UNKNOWN_TYPE, getStatusOptions, getTransactionOptions, TransferTypes } from '../common/utils';
-import { DropdownOption, DropdownResult } from '@renderer/shared/ui/Dropdowns/common/types';
-import { MultisigTransaction, Transaction, TransactionType } from '@renderer/entities/transaction/model/transaction';
+import { DropdownOption, DropdownResult } from '@renderer/shared/ui/types';
+import { MultisigTransaction, Transaction, TransactionType } from '@renderer/entities/transaction';
 import { Button, MultiSelect } from '@renderer/shared/ui';
 
 type FilterName = 'status' | 'network' | 'type';

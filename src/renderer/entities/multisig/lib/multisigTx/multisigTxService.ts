@@ -2,8 +2,12 @@ import { ApiPromise } from '@polkadot/api';
 import { useLiveQuery } from 'dexie-react-hooks';
 
 import { MultisigAccount } from '@renderer/entities/account/model/account';
-import { MultisigTransaction, MultisigTxFinalStatus, MultisigTxInitStatus } from '@renderer/entities/transaction/model/transaction';
-import storage, { MultisigTransactionDS } from '../../../../services/storage';
+import {
+  MultisigTransaction,
+  MultisigTxFinalStatus,
+  MultisigTxInitStatus,
+} from '@renderer/entities/transaction/model/transaction';
+import storage, { MultisigTransactionDS } from '../../../../shared/api/storage';
 import { QUERY_INTERVAL } from './common/consts';
 import { IMultisigTxService } from './common/types';
 import {
@@ -17,8 +21,7 @@ import {
 import { useChains } from '../../../network/lib/chainsService';
 import { useTransaction } from '../../../transaction/lib/transactionService';
 import { CallData, AccountId } from '@renderer/domain/shared-kernel';
-import { toAddress } from '@renderer/shared/lib/utils';
-import { getCurrentBlockNumber, getExpectedBlockTime } from '@renderer/shared/lib/utils';
+import { toAddress, getCurrentBlockNumber, getExpectedBlockTime } from '@renderer/shared/lib/utils';
 import { useMultisigEvent } from '../multisigEvent/multisigEventService';
 import { Task } from '@renderer/shared/lib/hooks/useTaskQueue';
 

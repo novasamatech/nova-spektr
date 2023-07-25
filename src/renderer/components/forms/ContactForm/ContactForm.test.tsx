@@ -2,7 +2,7 @@ import { render, screen } from '@testing-library/react';
 import noop from 'lodash/noop';
 
 import { ContactForm } from './ContactForm';
-import { Contact } from '@renderer/entities/contact/model/contact';
+import { Contact } from '@renderer/entities/contact';
 import { TEST_ADDRESS, TEST_ACCOUNT_ID } from '@renderer/shared/lib/utils';
 
 jest.mock('@renderer/app/providers', () => ({

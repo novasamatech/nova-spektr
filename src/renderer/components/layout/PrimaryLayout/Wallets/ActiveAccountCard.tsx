@@ -3,9 +3,9 @@ import { WalletType } from '@renderer/domain/shared-kernel';
 import { GroupIcons, GroupLabels } from '@renderer/components/layout/PrimaryLayout/Wallets/common/constants';
 import { toAddress, SS58_DEFAULT_PREFIX } from '@renderer/shared/lib/utils';
 import { useI18n } from '@renderer/app/providers';
-import { WalletDS } from '@renderer/services/storage';
+import { WalletDS } from '@renderer/shared/api/storage';
 import { ChainsRecord } from './common/types';
-import { Account, getActiveWalletType } from '@renderer/entities/account/model/account';
+import { Account, getActiveWalletType } from '@renderer/entities/account';
 
 type Props = {
   activeAccounts: Account[];

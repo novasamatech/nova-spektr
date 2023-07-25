@@ -1,15 +1,15 @@
 import { PropsWithChildren, useEffect, useState } from 'react';
 import { BN, BN_ZERO } from '@polkadot/util';
 
-import { Select, FootnoteText, Plate, IconButton, Chain as ChainComponent, Shimmering } from '@renderer/shared/ui';
-import { DropdownOption, DropdownResult } from '@renderer/shared/ui/Dropdowns/common/types';
+import { Select, FootnoteText, Plate, IconButton, Shimmering } from '@renderer/shared/ui';
+import { DropdownOption, DropdownResult } from '@renderer/shared/ui/types';
 import { getRelaychainAsset } from '@renderer/shared/lib/utils';
-import { useChains } from '@renderer/entities/network/lib/chainsService';
-import { useSettingsStorage } from '@renderer/entities/setttings/lib/settingsStorage';
-import { Chain } from '@renderer/entities/chain/model/chain';
+import { useChains } from '@renderer/entities/network';
+import { useSettingsStorage } from '@renderer/entities/setttings';
+import { Chain, ChainTitle } from '@renderer/entities/chain';
 import { useToggle } from '@renderer/shared/lib/hooks';
 import { useI18n } from '@renderer/app/providers';
-import { BalanceNew } from '@renderer/entities/asset';
+import { AssetBalance } from '@renderer/entities/asset';
 
 const getTotal = (values: string[]): BN => {
   return values.reduce((acc, value) => acc.add(new BN(value || 0)), BN_ZERO);
@@ -48,7 +48,7 @@ export const NetworkInfo = ({
           // without key dropdown doesn't show changes (thought functionally everything works fine)
           // TODO look into it
           const element = (
-            <ChainComponent
+            <ChainTitle
               key={chain.chainId}
               className="overflow-hidden"
               fontClass="text-text-primary truncate"
@@ -108,7 +108,7 @@ export const NetworkInfo = ({
           ) : (
             <div key={title} className="text-left">
               <FootnoteText className="text-text-secondary">{title}</FootnoteText>
-              <BalanceNew value={amount.toString()} asset={asset} className="text-small-title" />
+              <AssetBalance value={amount.toString()} asset={asset} className="text-small-title" />
             </div>
           ),
         )}

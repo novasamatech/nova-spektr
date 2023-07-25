@@ -4,14 +4,11 @@ import keyBy from 'lodash/keyBy';
 import orderBy from 'lodash/orderBy';
 
 import { Chain } from '@renderer/entities/chain/model/chain';
-import chainsProd from './common/chains/chains.json';
-import chainsDev from './common/chains/chains_dev.json';
+import chainsProd from '@renderer/assets/chains/chains.json';
+import chainsDev from '@renderer/assets/chains/chains_dev.json';
 import { ChainId } from '@renderer/domain/shared-kernel';
-import { getRelaychainAsset } from '@renderer/shared/lib/utils';
-import { nonNullable } from '@renderer/shared/lib/utils';
+import { getRelaychainAsset, nonNullable, totalAmount, ZERO_BALANCE } from '@renderer/shared/lib/utils';
 import { Balance } from '@renderer/entities/asset/model/balance';
-import { totalAmount } from '@renderer/shared/lib/utils';
-import { ZERO_BALANCE } from '@renderer/shared/lib/utils';
 import { ChainLike, IChainService } from './common/types';
 import { isKusama, isPolkadot, isTestnet, isNameWithNumber } from './common/utils';
 

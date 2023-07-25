@@ -1,5 +1,5 @@
-import { Asset } from '@renderer/entities/asset/model/asset';
-import { BalanceNew } from '../index';
+import { Asset } from '@renderer/entities/asset';
+import { AssetBalance } from '../index';
 import { Shimmering, HelpText } from '@renderer/shared/ui';
 
 type Props = {
@@ -15,7 +15,7 @@ export const AssetDetails = ({ asset, value, label }: Props) => {
       <HelpText as="dt" className="text-text-tertiary">
         {label}
       </HelpText>
-      <dd>{value ? <BalanceNew value={value} asset={asset} /> : <Shimmering width={150} height={20} />}</dd>
+      <dd>{value ? <AssetBalance value={value} asset={asset} /> : <Shimmering width={150} height={20} />}</dd>
     </div>
   );
 };

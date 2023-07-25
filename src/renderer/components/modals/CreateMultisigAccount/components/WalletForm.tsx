@@ -3,14 +3,14 @@ import { Controller, useForm, SubmitHandler } from 'react-hook-form';
 import { Alert, Button, Input, InputHint, Select, SmallTitleText } from '@renderer/shared/ui';
 import { useI18n, useMatrix } from '@renderer/app/providers';
 import { DropdownOption, DropdownResult } from '@renderer/shared/ui/Dropdowns/common/types';
-import { Signatory } from '@renderer/entities/signatory/model/signatory';
+import { Signatory } from '@renderer/entities/signatory';
 import {
   getMultisigAccountId,
   isMultisig,
   isWalletContact,
   Account,
   MultisigAccount,
-} from '@renderer/entities/account/model/account';
+} from '@renderer/entities/account';
 import { SigningType, AccountId } from '@renderer/domain/shared-kernel';
 
 type MultisigAccountForm = {

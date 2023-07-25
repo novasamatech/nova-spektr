@@ -1,9 +1,9 @@
 import { ApiPromise } from '@polkadot/api';
 import { render, screen } from '@testing-library/react';
 
-import { Asset } from '@renderer/entities/asset/model/asset';
-import { Transaction } from '@renderer/entities/transaction/model/transaction';
-import { AccountDS } from '@renderer/services/storage';
+import { Asset } from '@renderer/entities/asset';
+import { Transaction } from '@renderer/entities/transaction';
+import { AccountDS } from '@renderer/shared/api/storage';
 import { Confirmation } from './Confirmation';
 
 jest.mock('@renderer/app/providers', () => ({

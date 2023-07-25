@@ -4,15 +4,12 @@ import { useEffect, useState } from 'react';
 
 import { DropdownOption, DropdownResult } from '@renderer/shared/ui/Dropdowns/common/types';
 import { useI18n } from '@renderer/app/providers';
-import { Asset } from '@renderer/entities/asset/model/asset';
-import { Balance, Balance as AccountBalance } from '@renderer/entities/asset/model/balance';
+import { Asset, Balance, Balance as AccountBalance, useBalance } from '@renderer/entities/asset';
 import { ChainId, AccountId, SigningType } from '@renderer/domain/shared-kernel';
-import { Transaction, TransactionType } from '@renderer/entities/transaction/model/transaction';
-import { useAccount } from '@renderer/entities/account/lib/accountService';
-import { useBalance } from '@renderer/entities/asset/lib/balanceService';
+import { Transaction, TransactionType } from '@renderer/entities/transaction';
+import { useAccount, Account, isMultisig } from '@renderer/entities/account';
 import { formatAmount, stakeableAmount, nonNullable, toAddress } from '@renderer/shared/lib/utils';
 import { OperationForm } from '../../components';
-import { Account, isMultisig } from '@renderer/entities/account/model/account';
 import { MultiSelect, Select, InputHint } from '@renderer/shared/ui';
 import {
   getStakeAccountOption,

@@ -4,13 +4,11 @@ import { UnsignedTransaction } from '@substrate/txwrapper-polkadot';
 
 import { QrTxGenerator, QrGeneratorContainer } from '@renderer/components/common';
 import { useI18n } from '@renderer/app/providers';
-import { Transaction } from '@renderer/entities/transaction/model/transaction';
-import { useTransaction } from '@renderer/entities/transaction/lib/transactionService';
+import { Transaction, useTransaction } from '@renderer/entities/transaction';
 import { ChainId } from '@renderer/domain/shared-kernel';
-import { Explorer } from '@renderer/entities/chain/model/chain';
-import { Account } from '@renderer/entities/account/model/account';
+import { Explorer } from '@renderer/entities/chain';
+import { Account, AddressWithExplorers } from '@renderer/entities/account';
 import { Button, FootnoteText } from '@renderer/shared/ui';
-import { AddressWithExplorers } from '@renderer/entities/account';
 
 type Props = {
   api: ApiPromise;

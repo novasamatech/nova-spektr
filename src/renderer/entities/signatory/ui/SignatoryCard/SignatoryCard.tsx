@@ -1,8 +1,7 @@
-import { AccountAddress, getAddress, AccountAddressProps } from '@renderer/entities/account';
+import { AccountAddress, getAddress, AccountAddressProps, useAddressInfo } from '@renderer/entities/account';
 import { InfoPopover, Icon } from '@renderer/shared/ui';
-import { Explorer } from '@renderer/entities/chain/model/chain';
-import { SigningStatus } from '@renderer/entities/transaction/model/transaction';
-import useAddressInfo from '@renderer/entities/account/lib/useAddressInfo';
+import { Explorer } from '@renderer/entities/chain';
+import { SigningStatus } from '@renderer/entities/transaction';
 import { cnTw } from '@renderer/shared/lib/utils';
 
 const IconProps = {

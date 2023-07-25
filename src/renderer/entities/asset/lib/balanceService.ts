@@ -11,7 +11,7 @@ import { ChainId, AccountId } from '@renderer/domain/shared-kernel';
 import { ExtendedChain } from '@renderer/entities/network/lib/common/types';
 import { isLightClient } from '@renderer/entities/network/lib/common/utils';
 import { validate } from '../../../services/dataVerification/dataVerification';
-import storage, { BalanceDS } from '../../../services/storage';
+import storage, { BalanceDS } from '../../../shared/api/storage';
 import { IBalanceService } from './common/types';
 import { VERIFY_TIMEOUT } from './common/constants';
 import { useSubscription } from '@renderer/services/subscription/subscriptionService';

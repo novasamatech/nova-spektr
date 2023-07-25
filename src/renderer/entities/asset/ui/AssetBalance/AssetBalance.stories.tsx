@@ -1,12 +1,12 @@
 import { ComponentMeta, ComponentStory } from '@storybook/react';
 
-import { BalanceNew } from './BalanceNew';
+import { AssetBalance } from './AssetBalance';
 
 export default {
   title: 'Redesign/Token balance',
-  component: BalanceNew,
+  component: AssetBalance,
   parameters: { actions: { argTypesRegex: '^on.*' } },
-} as ComponentMeta<typeof BalanceNew>;
+} as ComponentMeta<typeof AssetBalance>;
 
 const assetDot = {
   assetId: 3,
@@ -17,7 +17,7 @@ const assetDot = {
   name: 'Polkadot',
 };
 
-const Template: ComponentStory<typeof BalanceNew> = (args) => <BalanceNew {...args} />;
+const Template: ComponentStory<typeof AssetBalance> = (args) => <AssetBalance {...args} />;
 
 export const Default = Template.bind({});
 Default.args = {

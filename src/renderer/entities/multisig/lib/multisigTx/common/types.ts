@@ -1,9 +1,9 @@
 import { ApiPromise } from '@polkadot/api';
 import { U8aFixed } from '@polkadot/types';
 import { PalletMultisigMultisig } from '@polkadot/types/lookup';
+import { MultisigTransactionDS } from '@renderer/shared/api/storage';
 
 import { MultisigAccount } from '@renderer/entities/account/model/account';
-import { MultisigTransactionDS } from '@renderer/services/storage';
 import { MultisigTransaction } from '@renderer/entities/transaction/model/transaction';
 import { CallData, AccountId, ChainId, CallHash } from '@renderer/domain/shared-kernel';
 

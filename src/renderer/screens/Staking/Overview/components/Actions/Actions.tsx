@@ -3,7 +3,7 @@ import { Trans } from 'react-i18next';
 
 import { Paths, PathValue, useI18n } from '@renderer/app/providers';
 import { SmallTitleText, DropdownButton, Button, BaseModal, Icon } from '@renderer/shared/ui';
-import { Stake } from '@renderer/entities/staking/model/stake';
+import { Stake } from '@renderer/entities/staking';
 import { toAccountId } from '@renderer/shared/lib/utils';
 import { useToggle } from '@renderer/shared/lib/hooks';
 import { ButtonDropdownOption } from '@renderer/shared/ui/Dropdowns/DropdownButton/DropdownButton';

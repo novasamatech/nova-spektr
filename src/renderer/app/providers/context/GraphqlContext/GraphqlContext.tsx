@@ -3,8 +3,8 @@ import { onError } from '@apollo/client/link/error';
 import { createContext, PropsWithChildren, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
 
 import { ChainId } from '@renderer/domain/shared-kernel';
-import { useChains } from '@renderer/entities/network/lib/chainsService';
-import { useSettingsStorage } from '@renderer/entities/setttings/lib/settingsStorage';
+import { useChains } from '@renderer/entities/network';
+import { useSettingsStorage } from '@renderer/entities/setttings';
 
 type GraphqlContextProps = {
   changeClient: (chainId: ChainId) => void;

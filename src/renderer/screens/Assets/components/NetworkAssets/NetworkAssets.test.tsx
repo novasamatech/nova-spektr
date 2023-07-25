@@ -1,10 +1,10 @@
 import { act, render, screen } from '@testing-library/react';
 
-import { Chain } from '@renderer/entities/chain/model/chain';
+import { Chain } from '@renderer/entities/chain';
 import { TEST_ACCOUNT_ID } from '@renderer/shared/lib/utils';
-import chains from '@renderer/entities/network/lib/common/chains/chains.json';
+import chains from '@renderer/assets/chains/chains.json';
 import { NetworkAssets } from './NetworkAssets';
-import { Account } from '@renderer/entities/account/model/account';
+import { Account } from '@renderer/entities/account';
 import { ChainType, CryptoType, SigningType } from '@renderer/domain/shared-kernel';
 
 const testChain = chains.find((chain) => chain.assets.length > 1) as Chain;

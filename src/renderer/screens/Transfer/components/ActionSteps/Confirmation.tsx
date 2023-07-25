@@ -1,15 +1,13 @@
 import { useEffect, useState } from 'react';
 
-import { Transaction } from '@renderer/entities/transaction/model/transaction';
+import { Transaction, DepositWithLabel, Fee } from '@renderer/entities/transaction';
 import TransactionAmount from '@renderer/screens/Operations/components/TransactionAmount';
 import { Button, DetailRow, FootnoteText, Icon } from '@renderer/shared/ui';
-import { DepositWithLabel, Fee } from '@renderer/entities/transaction';
-import { Account, MultisigAccount } from '@renderer/entities/account/model/account';
-import { ExtendedChain } from '@renderer/entities/network/lib/common/types';
+import { Account, MultisigAccount } from '@renderer/entities/account';
+import { ExtendedChain } from '@renderer/entities/network';
 import { useI18n } from '@renderer/app/providers';
 import Details from '../Details';
-import { Wallet } from '@renderer/entities/wallet/model/wallet';
-import { useWallet } from '@renderer/entities/wallet/lib/walletService';
+import { Wallet, useWallet } from '@renderer/entities/wallet';
 
 const AmountFontStyle = 'font-manrope text-text-primary text-[32px] leading-[36px] font-bold';
 

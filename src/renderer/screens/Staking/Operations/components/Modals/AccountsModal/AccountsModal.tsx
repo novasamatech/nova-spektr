@@ -1,9 +1,8 @@
 import { useI18n } from '@renderer/app/providers';
-import { Asset } from '@renderer/entities/asset/model/asset';
-import { Explorer } from '@renderer/entities/chain/model/chain';
-import { Account } from '@renderer/entities/account/model/account';
+import { Asset } from '@renderer/entities/asset';
+import { Explorer } from '@renderer/entities/chain';
+import { Account, AddressWithExplorers } from '@renderer/entities/account';
 import { BaseModal } from '@renderer/shared/ui';
-import { AddressWithExplorers } from '@renderer/entities/account/ui/AddressWithExplorers/AddressWithExplorers';
 import { cnTw } from '@renderer/shared/lib/utils';
 
 type Props = {

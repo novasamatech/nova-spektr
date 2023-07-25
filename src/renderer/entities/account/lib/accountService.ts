@@ -1,6 +1,6 @@
 import { useLiveQuery } from 'dexie-react-hooks';
+import storage, { AccountDS, ID } from '@renderer/shared/api/storage';
 
-import storage, { AccountDS, ID } from '@renderer/services/storage';
 import { IAccountService } from './common/types';
 import { MultisigAccount, Account } from '@renderer/entities/account/model/account';
 

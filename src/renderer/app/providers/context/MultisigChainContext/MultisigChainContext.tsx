@@ -2,16 +2,14 @@ import { createContext, PropsWithChildren, useContext, useEffect } from 'react';
 import { VoidFn } from '@polkadot/api/types';
 import { Event } from '@polkadot/types/interfaces';
 
-import { useChainSubscription } from '@renderer/entities/chain/lib/chainSubscriptionService';
+import { useChainSubscription } from '@renderer/entities/chain';
 import { useNetworkContext } from '../NetworkContext';
-import { useMultisigTx } from '@renderer/entities/multisig/lib/multisigTx/multisigTxService';
-import { useAccount } from '@renderer/entities/account/lib/accountService';
-import { MultisigAccount } from '@renderer/entities/account/model/account';
-import { MultisigTxFinalStatus, SigningStatus } from '@renderer/entities/transaction/model/transaction';
+import { useMultisigTx, useMultisigEvent } from '@renderer/entities/multisig';
+import { useAccount, MultisigAccount } from '@renderer/entities/account';
+import { MultisigTxFinalStatus, SigningStatus } from '@renderer/entities/transaction';
 import { toAddress, getCreatedDateFromApi } from '@renderer/shared/lib/utils';
 import { ChainId } from '@renderer/domain/shared-kernel';
 import { useDebounce, useTaskQueue } from '@renderer/shared/lib/hooks';
-import { useMultisigEvent } from '@renderer/entities/multisig/lib/multisigEvent/multisigEventService';
 import { ConnectionStatus } from '@renderer/domain/connection';
 import { Task } from '@renderer/shared/lib/hooks/useTaskQueue';
 

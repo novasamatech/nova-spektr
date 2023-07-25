@@ -4,10 +4,11 @@ import { Controller, SubmitHandler, useForm } from 'react-hook-form';
 import { u8aToHex } from '@polkadot/util';
 import { keyBy } from 'lodash';
 
+import { useChains } from '@renderer/entities/network';
+import { ID } from '@renderer/shared/api/storage';
 import { useI18n } from '@renderer/app/providers';
-import { Chain as ChainType, Explorer } from '@renderer/entities/chain/model/chain';
+import { Chain, Explorer, ChainTitle } from '@renderer/entities/chain';
 import { Address, ChainId, ErrorType, HexString, SigningType, WalletType } from '@renderer/domain/shared-kernel';
-import { useChains } from '@renderer/entities/network/lib/chainsService';
 import {
   Button,
   Input,
@@ -16,17 +17,12 @@ import {
   SmallTitleText,
   IconButton,
   FootnoteText,
-  Chain,
   Icon,
 } from '@renderer/shared/ui';
 import { AddressInfo, CompactSeedInfo, SeedInfo } from '@renderer/components/common/QrCode/common/types';
-import { useWallet } from '@renderer/entities/wallet/lib/walletService';
-import { useAccount } from '@renderer/entities/account/lib/accountService';
+import { useWallet, createWallet } from '@renderer/entities/wallet';
+import { useAccount, Account, createAccount, AddressWithExplorers } from '@renderer/entities/account';
 import { toAccountId, toAddress, cnTw } from '@renderer/shared/lib/utils';
-import { Account, createAccount } from '@renderer/entities/account/model/account';
-import { ID } from '@renderer/services/storage';
-import { createWallet } from '@renderer/entities/wallet/model/wallet';
-import { AddressWithExplorers } from '@renderer/entities/account';
 
 const RootExplorers: Explorer[] = [
   { name: 'Subscan', account: 'https://subscan.io/account/{address}' },
@@ -61,7 +57,7 @@ const ManageStep = ({ seedInfo, onBack, onComplete }: Props) => {
   const { addWallet } = useWallet();
   const { addAccount, setActiveAccounts } = useAccount();
 
-  const [chainsObject, setChainsObject] = useState<Record<ChainId, ChainType>>({});
+  const [chainsObject, setChainsObject] = useState<Record<ChainId, Chain>>({});
 
   const [inactiveAccounts, setInactiveAccounts] = useState<Record<string, boolean>>({});
   const [accountNames, setAccountNames] = useState<Record<string, string>>({});
@@ -81,7 +77,7 @@ const ManageStep = ({ seedInfo, onBack, onComplete }: Props) => {
     });
   }, []);
 
-  const filterByExistingChains = (seedInfo: SeedInfo, chainsMap: Record<ChainId, ChainType>): SeedInfo => {
+  const filterByExistingChains = (seedInfo: SeedInfo, chainsMap: Record<ChainId, Chain>): SeedInfo => {
     const derivedKeysForChsains = seedInfo.derivedKeys.filter((key) => Boolean(chainsMap[u8aToHex(key.genesisHash)]));
 
     return { ...seedInfo, derivedKeys: derivedKeysForChsains };
@@ -324,7 +320,7 @@ const ManageStep = ({ seedInfo, onBack, onComplete }: Props) => {
                     <div key={chainId}>
                       <div className="flex items-center ml-4">
                         <div className="bg-divider w-[2px] h-[34px] mr-4"></div>
-                        <Chain fontClass="text-text-primary" chainId={chainId as ChainId} />
+                        <ChainTitle fontClass="text-text-primary" chainId={chainId as ChainId} />
                       </div>
                       {derivedKeys.map(({ address }, derivedKeyIndex) => (
                         <div

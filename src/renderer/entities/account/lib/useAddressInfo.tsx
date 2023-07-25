@@ -1,13 +1,13 @@
 import { InfoSection } from '@renderer/shared/ui/Popovers/InfoPopover/InfoPopover';
 import { Address } from '@renderer/domain/shared-kernel';
-import { Explorer } from '@renderer/entities/chain/model/chain';
-import { useContact } from '@renderer/entities/contact/lib/contactService';
-import { useAccount } from '@renderer/entities/account/lib/accountService';
+import { Explorer } from '@renderer/entities/chain';
+import { useContact } from '@renderer/entities/contact';
+import { useAccount } from '@renderer/entities/account';
 import { useMatrix } from '@renderer/app/providers';
 import { toAccountId } from '@renderer/shared/lib/utils';
 import { ExplorerLink } from '@renderer/components/common';
 
-const useAddressInfo = (address: Address, explorers?: Explorer[], showMatrix = false): InfoSection[] => {
+export const useAddressInfo = (address: Address, explorers?: Explorer[], showMatrix = false): InfoSection[] => {
   const { matrix } = useMatrix();
   const { getLiveContacts } = useContact();
   const { getLiveAccounts } = useAccount();
@@ -39,5 +39,3 @@ const useAddressInfo = (address: Address, explorers?: Explorer[], showMatrix = f
 
   return popoverItems;
 };
-
-export default useAddressInfo;

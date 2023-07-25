@@ -5,7 +5,7 @@ import { EmptySearch } from '@renderer/screens/AddressBook/Overview/components';
 import { includes } from '@renderer/shared/lib/utils';
 import { AddressWithName } from '@renderer/entities/account';
 import { BodyText, FootnoteText, IconButton, Plate } from '@renderer/shared/ui';
-import { Contact } from '@renderer/entities/contact/model/contact';
+import { Contact } from '@renderer/entities/contact';
 
 type Props = {
   query?: string;

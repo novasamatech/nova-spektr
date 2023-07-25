@@ -2,7 +2,7 @@ import { ApiPromise } from '@polkadot/api';
 import { useEffect, useState } from 'react';
 
 import { Duration } from '@renderer/shared/ui';
-import { useStakingData } from '@renderer/entities/staking/lib/stakingDataService';
+import { useStakingData } from '@renderer/entities/staking';
 
 type Props = {
   api?: ApiPromise;

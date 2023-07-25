@@ -1,14 +1,12 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 
-import { useContact } from '@renderer/entities/contact/lib/contactService';
-import { Contact } from '@renderer/entities/contact/model/contact';
+import { useContact, Contact } from '@renderer/entities/contact';
 import { ContactForm } from '@renderer/components/forms';
-import { Paths } from '@renderer/app/providers';
+import { Paths, useI18n } from '@renderer/app/providers';
 import { DEFAULT_TRANSITION } from '@renderer/shared/lib/utils';
 import { useToggle } from '@renderer/shared/lib/hooks';
 import { BaseModal, Loader } from '@renderer/shared/ui';
-import { useI18n } from '@renderer/app/providers';
 
 export const ManageContact = () => {
   const { t } = useI18n();

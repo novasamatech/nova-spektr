@@ -28,9 +28,6 @@ import StatusLabel from './StatusLabel/StatusLabel';
 import InputFile from './Inputs/InputFile/InputFile';
 import { Tooltip } from './Popovers/Tooltip/Tooltip';
 import { LabelHelpBox } from './LabelHelpbox/LabelHelpBox';
-import { Chain } from '@renderer/entities/chain/ui/Chain/Chain';
-import { ChainIcon } from './ChainIcon/ChainIcon';
-import { AssetIcon } from './AssetIcon/AssetIcon';
 import { Tabs } from './Tabs/Tabs';
 import {
   LargeTitleText,
@@ -99,9 +96,6 @@ export {
   InputFile,
   Tooltip,
   LabelHelpBox,
-  Chain,
-  ChainIcon,
-  AssetIcon,
   Tabs,
   InputArea,
   Switch,

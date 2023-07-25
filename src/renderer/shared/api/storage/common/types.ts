@@ -5,7 +5,11 @@ import { Connection, ConnectionType } from '@renderer/domain/connection';
 import { Contact } from '@renderer/entities/contact/model/contact';
 import { Address, ChainId, AccountId, CallHash } from '@renderer/domain/shared-kernel';
 import { Wallet } from '@renderer/entities/wallet/model/wallet';
-import { MultisigEvent, MultisigTransaction, MultisigTransactionKey } from '@renderer/entities/transaction/model/transaction';
+import {
+  MultisigEvent,
+  MultisigTransaction,
+  MultisigTransactionKey,
+} from '@renderer/entities/transaction/model/transaction';
 import { Account, MultisigAccount } from '@renderer/entities/account/model/account';
 import { Notification } from '@renderer/entities/notification/model/notification';
 

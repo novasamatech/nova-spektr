@@ -6,15 +6,14 @@ import uniqBy from 'lodash/uniqBy';
 import { useI18n, useNetworkContext, useConfirmContext, Paths } from '@renderer/app/providers';
 import { BaseModal, SearchInput, BodyText, InfoLink, Icon } from '@renderer/shared/ui';
 import { useToggle } from '@renderer/shared/lib/hooks';
-import { ExtendedChain } from '@renderer/entities/network/lib/common/types';
+import { ExtendedChain, useChains } from '@renderer/entities/network';
 import { includes, DEFAULT_TRANSITION } from '@renderer/shared/lib/utils';
 import { ConnectionType, ConnectionStatus } from '@renderer/domain/connection';
-import { useChains } from '@renderer/entities/network/lib/chainsService';
-import { RpcNode } from '@renderer/entities/chain/model/chain';
+import { RpcNode } from '@renderer/entities/chain';
 import { ChainId } from '@renderer/domain/shared-kernel';
 import { NetworkList, NetworkItem, CustomRpcModal } from './components';
-import { useBalance } from '@renderer/entities/asset/lib/balanceService';
-import { useAccount } from '@renderer/entities/account/lib/accountService';
+import { useBalance } from '@renderer/entities/asset';
+import { useAccount } from '@renderer/entities/account';
 
 const MAX_LIGHT_CLIENTS = 3;
 

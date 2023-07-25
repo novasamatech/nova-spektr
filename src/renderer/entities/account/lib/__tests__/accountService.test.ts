@@ -1,6 +1,6 @@
 import { waitFor } from '@testing-library/react';
+import storage from '@renderer/shared/api/storage';
 
-import storage from '@renderer/services/storage';
 import { useAccount } from '@renderer/entities/account/lib/accountService';
 
 jest.mock('@renderer/services/storage', () => jest.fn());

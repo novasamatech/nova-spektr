@@ -1,5 +1,6 @@
+import { WalletDS, ID } from '@renderer/shared/api/storage';
+
 import { Wallet } from '@renderer/entities/wallet/model/wallet';
-import { WalletDS, ID } from '@renderer/services/storage';
 
 export interface IWalletService {
   getWallet: (walletId: string) => Promise<WalletDS | undefined>;

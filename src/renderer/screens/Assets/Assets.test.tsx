@@ -3,7 +3,7 @@ import { MemoryRouter } from 'react-router-dom';
 
 import { TEST_ACCOUNT_ID } from '@renderer/shared/lib/utils';
 import { ConnectionType } from '@renderer/domain/connection';
-import { useAccount } from '@renderer/entities/account/lib/accountService';
+import { useAccount } from '@renderer/entities/account';
 import { Assets } from './Assets';
 
 jest.mock('@renderer/app/providers', () => ({

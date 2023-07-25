@@ -14,14 +14,18 @@ import {
 } from '@renderer/shared/lib/utils';
 import { Icon, Identicon, Button, AmountInput, Input, InputHint, DetailRow } from '@renderer/shared/ui';
 import { useI18n } from '@renderer/app/providers';
-import { Asset, AssetType } from '@renderer/entities/asset/model/asset';
-import { Transaction, MultisigTxInitStatus, TransactionType } from '@renderer/entities/transaction/model/transaction';
-import { useBalance } from '@renderer/entities/asset/lib/balanceService';
+import { Asset, AssetType, useBalance } from '@renderer/entities/asset';
+import {
+  Transaction,
+  MultisigTxInitStatus,
+  TransactionType,
+  useTransaction,
+  DepositWithLabel,
+  Fee,
+} from '@renderer/entities/transaction';
 import { Address, ChainId, AccountId } from '@renderer/domain/shared-kernel';
-import { useTransaction } from '@renderer/entities/transaction/lib/transactionService';
-import { useMultisigTx } from '@renderer/entities/multisig/lib/multisigTx/multisigTxService';
-import { MultisigAccount, Account, isMultisig } from '@renderer/entities/account/model/account';
-import { DepositWithLabel, Fee } from '@renderer/entities/transaction';
+import { useMultisigTx } from '@renderer/entities/multisig';
+import { MultisigAccount, Account, isMultisig } from '@renderer/entities/account';
 
 const DESCRIPTION_MAX_LENGTH = 120;
 

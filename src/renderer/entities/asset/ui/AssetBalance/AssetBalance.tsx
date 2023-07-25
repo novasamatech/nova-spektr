@@ -1,7 +1,6 @@
 import { cnTw, formatBalance } from '@renderer/shared/lib/utils';
-import { Asset } from '@renderer/entities/asset/model/asset';
+import { Asset, AssetIcon } from '@renderer/entities/asset';
 import { useI18n } from '@renderer/app/providers';
-import { AssetIcon } from '@renderer/shared/ui';
 
 type Props = {
   value: string;
@@ -12,7 +11,7 @@ type Props = {
   wrapperClassName?: string;
 };
 
-export const BalanceNew = ({ value, asset, className, showIcon, imgClassName, wrapperClassName }: Props) => {
+export const AssetBalance = ({ value, asset, className, showIcon, imgClassName, wrapperClassName }: Props) => {
   const { t } = useI18n();
   const { precision, symbol, icon, name } = asset;
   const { value: formattedValue, decimalPlaces, suffix } = formatBalance(value, precision);
