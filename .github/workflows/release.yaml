@@ -98,7 +98,9 @@ jobs:
           for file in *; do
             if [ -f "$file" ]; then
               new_name=$(echo "$file" | tr ' ' '-')
-              mv "$file" "$new_name"
+              if [ "$new_name" != "$file" ]; then # Skip files with no spaces
+                mv "$file" "$new_name"
+              fi
             fi
           done
 
