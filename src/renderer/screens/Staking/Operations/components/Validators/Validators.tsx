@@ -16,14 +16,15 @@ import {
   Checkbox,
 } from '@renderer/shared/ui';
 import { useI18n } from '@renderer/app/providers';
-import { Asset } from '@renderer/domain/asset';
-import { Explorer } from '@renderer/domain/chain';
+import { Asset } from '@renderer/entities/asset/model/asset';
+import { Explorer } from '@renderer/entities/chain/model/chain';
 import { Address, ChainId } from '@renderer/domain/shared-kernel';
-import { ValidatorMap } from '@renderer/services/staking/common/types';
-import { useEra } from '@renderer/services/staking/eraService';
-import { useValidators } from '@renderer/services/staking/validatorsService';
+import { ValidatorMap } from '@renderer/entities/staking/lib/common/types';
+import { useEra } from '@renderer/entities/staking/lib/eraService';
+import { useValidators } from '@renderer/entities/staking/lib/validatorsService';
 import { includes, getComposedIdentity, toShortAddress } from '@renderer/shared/lib/utils';
-import { ExplorerLink, BalanceNew } from '@renderer/components/common';
+import { ExplorerLink } from '@renderer/components/common';
+import { BalanceNew } from '@renderer/entities/asset';
 
 type Props = {
   api: ApiPromise;

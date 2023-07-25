@@ -2,17 +2,17 @@ import { useEffect, useState } from 'react';
 import { keyBy } from 'lodash';
 import cn from 'classnames';
 
-import { useAccount } from '@renderer/services/account/accountService';
-import { useMultisigTx } from '@renderer/services/multisigTx/multisigTxService';
+import { useAccount } from '@renderer/entities/account/lib/accountService';
+import { useMultisigTx } from '@renderer/entities/multisig/lib/multisigTx/multisigTxService';
 import './Navigation.css';
-import { MultisigTxInitStatus } from '@renderer/domain/transaction';
+import { MultisigTxInitStatus } from '@renderer/entities/transaction/model/transaction';
 import WalletMenu from '@renderer/components/layout/PrimaryLayout/Wallets/WalletMenu';
 import ActiveAccountCard from '@renderer/components/layout/PrimaryLayout/Wallets/ActiveAccountCard';
 import NavItem, { Props as NavItemProps } from '../NavItem/NavItem';
-import { useChains } from '@renderer/services/network/chainsService';
+import { useChains } from '@renderer/entities/network/lib/chainsService';
 import { ChainsRecord } from '@renderer/components/layout/PrimaryLayout/Wallets/common/types';
 import { Paths } from '@renderer/app/providers';
-import { useWallet } from '@renderer/services/wallet/walletService';
+import { useWallet } from '@renderer/entities/wallet/lib/walletService';
 import { Shimmering } from '@renderer/shared/ui';
 
 const Navigation = () => {

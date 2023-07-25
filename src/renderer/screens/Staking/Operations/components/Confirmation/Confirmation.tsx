@@ -5,19 +5,20 @@ import { PropsWithChildren, useState, useEffect } from 'react';
 import { Icon, Button, FootnoteText, CaptionText, InputHint } from '@renderer/shared/ui';
 import { useI18n } from '@renderer/app/providers';
 import { useToggle } from '@renderer/shared/lib/hooks';
-import { BalanceNew, Fee, DepositWithLabel } from '@renderer/components/common';
-import { RewardsDestination } from '@renderer/domain/stake';
+import { RewardsDestination } from '@renderer/entities/staking/model/stake';
 import { Validator } from '@renderer/domain/validator';
-import { Account } from '@renderer/domain/account';
-import { Asset } from '@renderer/domain/asset';
-import { Explorer } from '@renderer/domain/chain';
-import { Transaction, MultisigTxInitStatus } from '@renderer/domain/transaction';
-import AddressWithExplorers from '@renderer/components/common/AddressWithExplorers/AddressWithExplorers';
+import { Account } from '@renderer/entities/account/model/account';
+import { Asset } from '@renderer/entities/asset/model/asset';
+import { Explorer } from '@renderer/entities/chain/model/chain';
+import { Transaction, MultisigTxInitStatus } from '@renderer/entities/transaction/model/transaction';
 import AccountsModal from '../Modals/AccountsModal/AccountsModal';
 import ValidatorsModal from '../Modals/ValidatorsModal/ValidatorsModal';
 import { DestinationType } from '../../common/types';
 import { cnTw } from '@renderer/shared/lib/utils';
-import { useMultisigTx } from '@renderer/services/multisigTx/multisigTxService';
+import { useMultisigTx } from '@renderer/entities/multisig/lib/multisigTx/multisigTxService';
+import { BalanceNew } from '@renderer/entities/asset';
+import { AddressWithExplorers } from '@renderer/entities/account';
+import { DepositWithLabel, Fee } from '@renderer/entities/transaction';
 
 const ActionStyle = 'group hover:bg-action-background-hover px-2 py-1 rounded';
 

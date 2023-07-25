@@ -1,13 +1,14 @@
 import { ReactNode } from 'react';
 import { BN } from '@polkadot/util';
 
-import { Account, MultisigAccount } from '@renderer/domain/account';
+import { Account, MultisigAccount } from '@renderer/entities/account/model/account';
 import { Address } from '@renderer/domain/shared-kernel';
 import { DropdownOption } from '@renderer/shared/ui/Dropdowns/common/types';
 import { toAddress, cnTw, transferableAmount } from '@renderer/shared/lib/utils';
-import { AccountAddress, BalanceNew } from '@renderer/components/common';
-import { Balance } from '@renderer/domain/balance';
-import { Asset } from '@renderer/domain/asset';
+import { Balance } from '@renderer/entities/asset/model/balance';
+import { Asset } from '@renderer/entities/asset/model/asset';
+import { AccountAddress } from '@renderer/entities/account';
+import { BalanceNew } from '@renderer/entities/asset';
 
 type Params = {
   asset: Asset;

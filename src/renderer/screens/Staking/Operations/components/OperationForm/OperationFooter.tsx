@@ -1,11 +1,11 @@
 import { ApiPromise } from '@polkadot/api';
 
 import { Icon, FootnoteText, Tooltip } from '@renderer/shared/ui';
-import { Deposit, Fee } from '@renderer/components/common';
 import { useI18n } from '@renderer/app/providers';
-import { Asset } from '@renderer/domain/asset';
-import { Transaction } from '@renderer/domain/transaction';
-import { MultisigAccount, Account, isMultisig } from '@renderer/domain/account';
+import { Asset } from '@renderer/entities/asset/model/asset';
+import { Transaction } from '@renderer/entities/transaction/model/transaction';
+import { MultisigAccount, Account, isMultisig } from '@renderer/entities/account/model/account';
+import { Deposit, Fee } from '@renderer/entities/transaction';
 
 type Props = {
   api: ApiPromise;

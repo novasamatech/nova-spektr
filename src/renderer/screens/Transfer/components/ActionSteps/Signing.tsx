@@ -5,11 +5,11 @@ import { ApiPromise } from '@polkadot/api';
 import { useI18n } from '@renderer/app/providers';
 import QrReaderWrapper from '@renderer/components/common/QrCode/QrReader/QrReaderWrapper';
 import { ValidationErrors, toAccountId, transferableAmount } from '@renderer/shared/lib/utils';
-import { Transaction } from '@renderer/domain/transaction';
-import { useBalance } from '@renderer/services/balance/balanceService';
+import { Transaction } from '@renderer/entities/transaction/model/transaction';
+import { useBalance } from '@renderer/entities/asset/lib/balanceService';
 import { ChainId, HexString } from '@renderer/domain/shared-kernel';
-import { useTransaction } from '@renderer/services/transaction/transactionService';
-import { Balance } from '@renderer/domain/balance';
+import { useTransaction } from '@renderer/entities/transaction/lib/transactionService';
+import { Balance } from '@renderer/entities/asset/model/balance';
 import { Button } from '@renderer/shared/ui';
 
 type Props = {

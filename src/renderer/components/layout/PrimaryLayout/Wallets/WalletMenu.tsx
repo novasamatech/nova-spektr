@@ -6,7 +6,7 @@ import { useNavigate } from 'react-router-dom';
 import { DropdownButton, SearchInput, SmallTitleText } from '@renderer/shared/ui';
 import { useI18n } from '@renderer/app/providers';
 import { WalletType } from '@renderer/domain/shared-kernel';
-import { useAccount } from '@renderer/services/account/accountService';
+import { useAccount } from '@renderer/entities/account/lib/accountService';
 import WalletGroup from '@renderer/components/layout/PrimaryLayout/Wallets/WalletGroup';
 import { useGroupedWallets } from './common/useGroupedWallets';
 import { ID, WalletDS } from '@renderer/services/storage';

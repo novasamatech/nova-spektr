@@ -1,4 +1,4 @@
-import { Wallet } from '@renderer/domain/wallet';
+import { Wallet } from '@renderer/entities/wallet/model/wallet';
 import { IWalletStorage, WalletDS, TWallet, ID } from './common/types';
 
 export const useWalletStorage = (db: TWallet): IWalletStorage => ({

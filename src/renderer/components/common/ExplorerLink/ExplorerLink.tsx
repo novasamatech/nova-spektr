@@ -1,7 +1,7 @@
 import { cnTw, toAddress } from '@renderer/shared/lib/utils';
 import { Icon, FootnoteText } from '@renderer/shared/ui';
 import { DefaultExplorer, ExplorerIcons } from '@renderer/components/common/ExplorerLink/constants';
-import { Explorer } from '@renderer/domain/chain';
+import { Explorer } from '@renderer/entities/chain/model/chain';
 import { useI18n } from '@renderer/app/providers';
 import { AccountId, Address, HexString } from '@renderer/domain/shared-kernel';
 

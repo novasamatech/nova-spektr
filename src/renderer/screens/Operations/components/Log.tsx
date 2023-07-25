@@ -2,17 +2,17 @@ import { groupBy } from 'lodash';
 import { format } from 'date-fns';
 
 import { useI18n } from '@renderer/app/providers';
-import { Account, MultisigAccount } from '@renderer/domain/account';
-import { ExtendedChain } from '@renderer/services/network/common/types';
-import { MultisigEvent, SigningStatus } from '@renderer/domain/transaction';
+import { Account, MultisigAccount } from '@renderer/entities/account/model/account';
+import { ExtendedChain } from '@renderer/entities/network/lib/common/types';
+import { MultisigEvent, SigningStatus } from '@renderer/entities/transaction/model/transaction';
 import TransactionTitle from './TransactionTitle/TransactionTitle';
 import OperationStatus from './OperationStatus';
 import { getSignatoryName, getTransactionAmount, sortByDateAsc } from '../common/utils';
 import { AssetIcon, BaseModal, BodyText, FootnoteText, Identicon } from '@renderer/shared/ui';
 import { getAssetById, toAddress, SS58_DEFAULT_PREFIX } from '@renderer/shared/lib/utils';
 import { ExtrinsicExplorers } from '@renderer/components/common';
-import { Contact } from '@renderer/domain/contact';
-import { useMultisigEvent } from '@renderer/services/multisigEvent/multisigEventService';
+import { Contact } from '@renderer/entities/contact/model/contact';
+import { useMultisigEvent } from '@renderer/entities/multisig/lib/multisigEvent/multisigEventService';
 import { MultisigTransactionDS } from '@renderer/services/storage';
 
 type Props = {

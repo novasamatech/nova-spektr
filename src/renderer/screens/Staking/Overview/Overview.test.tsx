@@ -2,7 +2,7 @@ import { act, render, screen } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 
 import { useNetworkContext } from '@renderer/app/providers';
-import { Chain } from '@renderer/domain/chain';
+import { Chain } from '@renderer/entities/chain/model/chain';
 import { ConnectionType } from '@renderer/domain/connection';
 import { TEST_ACCOUNT_ID } from '@renderer/shared/lib/utils';
 import { Overview } from './Overview';

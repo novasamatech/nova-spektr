@@ -1,9 +1,9 @@
-import { MultisigTransaction, Transaction } from '@renderer/domain/transaction';
+import { MultisigTransaction, Transaction } from '@renderer/entities/transaction/model/transaction';
 import TransactionAmount from '@renderer/screens/Operations/components/TransactionAmount';
-import { FootnoteText } from '@renderer/shared/ui';
-import { Fee, DetailRow } from '@renderer/components/common';
-import { MultisigAccount } from '@renderer/domain/account';
-import { ExtendedChain } from '@renderer/services/network/common/types';
+import { DetailRow, FootnoteText } from '@renderer/shared/ui';
+import { Fee } from '@renderer/entities/transaction';
+import { MultisigAccount } from '@renderer/entities/account/model/account';
+import { ExtendedChain } from '@renderer/entities/network/lib/common/types';
 import { useI18n } from '@renderer/app/providers';
 import Details from '../Details';
 

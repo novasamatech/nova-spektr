@@ -3,14 +3,19 @@ import { useNavigate } from 'react-router-dom';
 
 import { BaseModal, HeaderTitleText, StatusLabel, Button } from '@renderer/shared/ui';
 import { useI18n, useMatrix, Paths } from '@renderer/app/providers';
-import { useAccount } from '@renderer/services/account/accountService';
-import { createMultisigAccount, MultisigAccount, Account, getMultisigAccountId } from '@renderer/domain/account';
+import { useAccount } from '@renderer/entities/account/lib/accountService';
+import {
+  createMultisigAccount,
+  MultisigAccount,
+  Account,
+  getMultisigAccountId,
+} from '@renderer/entities/account/model/account';
 import { useToggle } from '@renderer/shared/lib/hooks';
-import { OperationResult } from '@renderer/components/common/OperationResult/OperationResult';
+import { OperationResult } from '@renderer/entities/transaction/ui/OperationResult/OperationResult';
 import { MatrixModal } from '../MatrixModal/MatrixModal';
-import { Wallet } from '@renderer/domain/wallet';
-import { useWallet } from '@renderer/services/wallet/walletService';
-import { useContact } from '@renderer/services/contact/contactService';
+import { Wallet } from '@renderer/entities/wallet/model/wallet';
+import { useWallet } from '@renderer/entities/wallet/lib/walletService';
+import { useContact } from '@renderer/entities/contact/lib/contactService';
 import { ExtendedContact, ExtendedWallet } from './common/types';
 import { SelectSignatories, ConfirmSignatories, WalletForm } from './components';
 import { AccountId } from '@renderer/domain/shared-kernel';

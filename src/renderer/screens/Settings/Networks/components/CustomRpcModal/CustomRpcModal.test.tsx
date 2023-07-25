@@ -1,7 +1,7 @@
 import { act, render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 
-import { RpcValidation, ExtendedChain } from '@renderer/services/network/common/types';
+import { RpcValidation, ExtendedChain } from '@renderer/entities/network/lib/common/types';
 import { useNetworkContext } from '@renderer/app/providers';
 import { CustomRpcModal } from './CustomRpcModal';
 

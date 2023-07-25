@@ -1,4 +1,4 @@
-import { Notification } from '@renderer/domain/notification';
+import { Notification } from '@renderer/entities/notification/model/notification';
 import { ID, INotificationStorage, NotificationDS, TNotification } from './common/types';
 
 export const useNotificationStorage = (db: TNotification): INotificationStorage => ({

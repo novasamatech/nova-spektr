@@ -3,8 +3,8 @@ import { Controller, SubmitHandler, useForm } from 'react-hook-form';
 
 import { BaseModal, Button, Input, InputHint, Alert } from '@renderer/shared/ui';
 import { useI18n, useNetworkContext } from '@renderer/app/providers';
-import { RpcNode } from '@renderer/domain/chain';
-import { RpcValidation, ExtendedChain } from '@renderer/services/network/common/types';
+import { RpcNode } from '@renderer/entities/chain/model/chain';
+import { RpcValidation, ExtendedChain } from '@renderer/entities/network/lib/common/types';
 import { validateWsAddress } from '@renderer/shared/lib/utils';
 import OperationModalTitle from '@renderer/screens/Operations/components/OperationModalTitle';
 

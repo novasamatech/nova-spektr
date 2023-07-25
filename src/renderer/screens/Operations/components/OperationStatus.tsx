@@ -5,7 +5,7 @@ import {
   MultisigTxFinalStatus,
   MultisigTxInitStatus,
   MultisigTxStatus,
-} from '@renderer/domain/transaction';
+} from '@renderer/entities/transaction/model/transaction';
 import { CaptionText } from '@renderer/shared/ui';
 import { useI18n } from '@renderer/app/providers';
 

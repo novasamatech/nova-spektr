@@ -2,7 +2,7 @@ import { ApiPromise } from '@polkadot/api';
 import { BN, BN_TWO } from '@polkadot/util';
 
 import { getExpectedBlockTime } from '../substrate';
-import { DEFAULT_TIME, THRESHOLD } from '@renderer/services/network/common/constants';
+import { DEFAULT_TIME, THRESHOLD } from '@renderer/entities/network/lib/common/constants';
 
 describe('shared/utils/substrate', () => {
   const blockTime = new BN(10_000);

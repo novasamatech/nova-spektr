@@ -2,7 +2,7 @@ import { ApiPromise } from '@polkadot/api';
 import { useEffect, useState } from 'react';
 
 import { Duration, Shimmering } from '@renderer/shared/ui';
-import { useEra } from '@renderer/services/staking/eraService';
+import { useEra } from '@renderer/entities/staking/lib/eraService';
 
 interface Props {
   api?: ApiPromise;

@@ -10,17 +10,17 @@ import {
   Transaction,
   TransactionType,
   MultisigTransaction,
-} from '@renderer/domain/transaction';
+} from '@renderer/entities/transaction/model/transaction';
 import { HexString } from '@renderer/domain/shared-kernel';
-import { useTransaction } from '@renderer/services/transaction/transactionService';
-import { Account } from '@renderer/domain/account';
-import { ExtrinsicResultParams } from '@renderer/services/transaction/common/types';
-import { useMultisigTx } from '@renderer/services/multisigTx/multisigTxService';
+import { useTransaction } from '@renderer/entities/transaction/lib/transactionService';
+import { Account } from '@renderer/entities/account/model/account';
+import { ExtrinsicResultParams } from '@renderer/entities/transaction/lib/common/types';
+import { useMultisigTx } from '@renderer/entities/multisig/lib/multisigTx/multisigTxService';
 import { toAccountId } from '@renderer/shared/lib/utils';
 import { useToggle } from '@renderer/shared/lib/hooks';
 import { Button } from '@renderer/shared/ui';
-import { OperationResult } from '@renderer/components/common/OperationResult/OperationResult';
-import { useMultisigEvent } from '@renderer/services/multisigEvent/multisigEventService';
+import { OperationResult } from '@renderer/entities/transaction/ui/OperationResult/OperationResult';
+import { useMultisigEvent } from '@renderer/entities/multisig/lib/multisigEvent/multisigEventService';
 
 type ResultProps = Pick<ComponentProps<typeof OperationResult>, 'title' | 'description' | 'variant'>;
 

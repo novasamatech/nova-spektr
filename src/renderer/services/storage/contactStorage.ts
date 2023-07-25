@@ -1,4 +1,4 @@
-import { Contact } from '@renderer/domain/contact';
+import { Contact } from '@renderer/entities/contact/model/contact';
 import { ContactDS, IContactStorage, TContact, ID } from './common/types';
 
 export const useContactStorage = (db: TContact): IContactStorage => ({

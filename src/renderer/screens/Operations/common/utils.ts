@@ -1,7 +1,7 @@
 import { TFunction } from 'react-i18next';
 
 import { IconNames } from '@renderer/shared/ui/Icon/data';
-import { Explorer } from '@renderer/domain/chain';
+import { Explorer } from '@renderer/entities/chain/model/chain';
 import { AccountId, HexString } from '@renderer/domain/shared-kernel';
 import {
   DecodedTransaction,
@@ -9,11 +9,11 @@ import {
   MultisigTxInitStatus,
   Transaction,
   TransactionType,
-} from '@renderer/domain/transaction';
+} from '@renderer/entities/transaction/model/transaction';
 import { toAddress, formatSectionAndMethod } from '@renderer/shared/lib/utils';
-import { Contact } from '@renderer/domain/contact';
-import { Account } from '@renderer/domain/account';
-import { Signatory } from '@renderer/domain/signatory';
+import { Contact } from '@renderer/entities/contact/model/contact';
+import { Account } from '@renderer/entities/account/model/account';
+import { Signatory } from '@renderer/entities/signatory/model/signatory';
 
 export const UNKNOWN_TYPE = 'UNKNOWN_TYPE';
 export const TRANSACTION_UNKNOWN = 'operations.titles.unknown';

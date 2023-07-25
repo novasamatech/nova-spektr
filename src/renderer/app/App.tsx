@@ -3,14 +3,14 @@ import { ErrorBoundary } from 'react-error-boundary';
 import { useNavigate, useRoutes } from 'react-router-dom';
 
 import { FallbackScreen } from '@renderer/components/common';
-import { useAccount } from '../services/account/accountService';
-import { MultisigChainProvider } from '@renderer/app/providers/context/MultisigChainContext/MultisigChainContext';
+import { useAccount } from '../entities/account/lib/accountService';
 import {
   ConfirmDialogProvider,
   I18Provider,
   MatrixProvider,
   NetworkProvider,
   GraphqlProvider,
+  MultisigChainProvider,
   Paths,
   routesConfig,
 } from './providers';

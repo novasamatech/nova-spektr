@@ -1,4 +1,4 @@
-import { Chain } from '@renderer/domain/chain';
+import { Chain } from '@renderer/entities/chain/model/chain';
 import { ChainId, WalletType } from '@renderer/domain/shared-kernel';
 import { AccountDS, WalletDS } from '@renderer/services/storage';
 

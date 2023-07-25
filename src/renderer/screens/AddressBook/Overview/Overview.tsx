@@ -3,7 +3,7 @@ import { Outlet, useNavigate } from 'react-router-dom';
 
 import { useI18n, createLink, Paths } from '@renderer/app/providers';
 import { Header } from '@renderer/components/common';
-import { useContact } from '@renderer/services/contact/contactService';
+import { useContact } from '@renderer/entities/contact/lib/contactService';
 import { Button, SearchInput } from '@renderer/shared/ui';
 import { ContactDS } from '@renderer/services/storage';
 import { EmptyContacts, ContactList } from './components';

@@ -4,17 +4,17 @@ import { useEffect, useState } from 'react';
 
 import { DropdownOption, DropdownResult } from '@renderer/shared/ui/Dropdowns/common/types';
 import { useI18n } from '@renderer/app/providers';
-import { Asset } from '@renderer/domain/asset';
+import { Asset } from '@renderer/entities/asset/model/asset';
 import { ChainId, AccountId, SigningType } from '@renderer/domain/shared-kernel';
-import { Transaction, TransactionType } from '@renderer/domain/transaction';
-import { useAccount } from '@renderer/services/account/accountService';
-import { useBalance } from '@renderer/services/balance/balanceService';
+import { Transaction, TransactionType } from '@renderer/entities/transaction/model/transaction';
+import { useAccount } from '@renderer/entities/account/lib/accountService';
+import { useBalance } from '@renderer/entities/asset/lib/balanceService';
 import { formatAmount, nonNullable, toAddress } from '@renderer/shared/lib/utils';
-import { StakingMap } from '@renderer/services/staking/common/types';
-import { Balance as AccountBalance } from '@renderer/domain/balance';
+import { StakingMap } from '@renderer/entities/staking/lib/common/types';
+import { Balance as AccountBalance } from '@renderer/entities/asset/model/balance';
 import { OperationForm } from '@renderer/screens/Staking/Operations/components';
-import { isMultisig, Account } from '@renderer/domain/account';
-import { useStakingData } from '@renderer/services/staking/stakingDataService';
+import { isMultisig, Account } from '@renderer/entities/account/model/account';
+import { useStakingData } from '@renderer/entities/staking/lib/stakingDataService';
 import { Select, MultiSelect, InputHint } from '@renderer/shared/ui';
 import {
   getUnstakeAccountOption,

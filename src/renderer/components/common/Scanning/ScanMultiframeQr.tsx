@@ -9,9 +9,9 @@ import QrMultiframeGenerator from '@renderer/components/common/QrCode/QrGenerato
 import { TRANSACTION_BULK } from '@renderer/components/common/QrCode/common/constants';
 import { useI18n } from '@renderer/app/providers';
 import { ChainId } from '@renderer/domain/shared-kernel';
-import { Transaction } from '@renderer/domain/transaction';
+import { Transaction } from '@renderer/entities/transaction/model/transaction';
 import { AccountDS } from '@renderer/services/storage';
-import { useTransaction } from '@renderer/services/transaction/transactionService';
+import { useTransaction } from '@renderer/entities/transaction/lib/transactionService';
 import { toAddress } from '@renderer/shared/lib/utils';
 import { Button } from '@renderer/shared/ui';
 import { QrGeneratorContainer } from '@renderer/components/common';

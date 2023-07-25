@@ -5,7 +5,7 @@ import { toAddress, SS58_DEFAULT_PREFIX } from '@renderer/shared/lib/utils';
 import { useI18n } from '@renderer/app/providers';
 import { WalletDS } from '@renderer/services/storage';
 import { ChainsRecord } from './common/types';
-import { Account, getActiveWalletType } from '@renderer/domain/account';
+import { Account, getActiveWalletType } from '@renderer/entities/account/model/account';
 
 type Props = {
   activeAccounts: Account[];

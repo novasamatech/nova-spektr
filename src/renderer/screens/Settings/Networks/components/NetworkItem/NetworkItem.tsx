@@ -1,11 +1,11 @@
 import { TFunction } from 'react-i18next';
 
 import { ConnectionStatus, ConnectionType } from '@renderer/domain/connection';
-import { ExtendedChain } from '@renderer/services/network/common/types';
+import { ExtendedChain } from '@renderer/entities/network/lib/common/types';
 import { NetworkSelector } from '../NetworkSelector/NetworkSelector';
 import { BodyText, StatusLabel, FootnoteText, ChainIcon, HelpText } from '@renderer/shared/ui';
 import { useI18n } from '@renderer/app/providers';
-import { RpcNode } from '@renderer/domain/chain';
+import { RpcNode } from '@renderer/entities/chain/model/chain';
 import './NetworkItem.css';
 
 const Status = {

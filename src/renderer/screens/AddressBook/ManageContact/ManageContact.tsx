@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 
-import { useContact } from '@renderer/services/contact/contactService';
-import { Contact } from '@renderer/domain/contact';
+import { useContact } from '@renderer/entities/contact/lib/contactService';
+import { Contact } from '@renderer/entities/contact/model/contact';
 import { ContactForm } from '@renderer/components/forms';
 import { Paths } from '@renderer/app/providers';
 import { DEFAULT_TRANSITION } from '@renderer/shared/lib/utils';

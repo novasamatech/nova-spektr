@@ -5,8 +5,7 @@ import { AccountId, ChainId } from '@renderer/domain/shared-kernel';
 import { BaseModal, Button, Checkbox, FootnoteText, SearchInput, Chain } from '@renderer/shared/ui';
 import { useI18n } from '@renderer/app/providers';
 import { AccountDS } from '@renderer/services/storage';
-import { useChains } from '@renderer/services/network/chainsService';
-import AddressWithExplorers from '@renderer/components/common/AddressWithExplorers/AddressWithExplorers';
+import { useChains } from '@renderer/entities/network/lib/chainsService';
 import {
   getMultishardStructure,
   getSelectableShards,
@@ -17,6 +16,7 @@ import {
   SelectableAccount,
   SelectableShards,
 } from '@renderer/components/layout/PrimaryLayout/Wallets/common/types';
+import { AddressWithExplorers } from '@renderer/entities/account';
 
 type Props = {
   accounts: AccountDS[];

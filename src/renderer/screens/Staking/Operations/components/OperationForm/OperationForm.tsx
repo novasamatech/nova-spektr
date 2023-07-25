@@ -4,14 +4,14 @@ import { Trans, TFunction } from 'react-i18next';
 
 import { Identicon, Button, AmountInput, InputHint, Combobox, RadioGroup, Input } from '@renderer/shared/ui';
 import { useI18n } from '@renderer/app/providers';
-import { RewardsDestination } from '@renderer/domain/stake';
+import { RewardsDestination } from '@renderer/entities/staking/model/stake';
 import { validateAddress } from '@renderer/shared/lib/utils';
-import { Asset } from '@renderer/domain/asset';
+import { Asset } from '@renderer/entities/asset/model/asset';
 import { Address, ChainId, AccountId } from '@renderer/domain/shared-kernel';
 import { RadioOption } from '@renderer/shared/ui/RadioGroup/common/types';
 import { DropdownOption, ComboboxOption } from '@renderer/shared/ui/Dropdowns/common/types';
-import { useAccount } from '@renderer/services/account/accountService';
-import { useBalance } from '@renderer/services/balance/balanceService';
+import { useAccount } from '@renderer/entities/account/lib/accountService';
+import { useBalance } from '@renderer/entities/asset/lib/balanceService';
 import { getPayoutAccountOption } from '../../common/utils';
 import OperationFooter from './OperationFooter';
 

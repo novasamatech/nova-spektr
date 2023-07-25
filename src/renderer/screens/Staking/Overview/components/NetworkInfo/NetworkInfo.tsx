@@ -4,12 +4,12 @@ import { BN, BN_ZERO } from '@polkadot/util';
 import { Select, FootnoteText, Plate, IconButton, Chain as ChainComponent, Shimmering } from '@renderer/shared/ui';
 import { DropdownOption, DropdownResult } from '@renderer/shared/ui/Dropdowns/common/types';
 import { getRelaychainAsset } from '@renderer/shared/lib/utils';
-import { useChains } from '@renderer/services/network/chainsService';
-import { useSettingsStorage } from '@renderer/services/settings/settingsStorage';
-import { Chain } from '@renderer/domain/chain';
+import { useChains } from '@renderer/entities/network/lib/chainsService';
+import { useSettingsStorage } from '@renderer/entities/setttings/lib/settingsStorage';
+import { Chain } from '@renderer/entities/chain/model/chain';
 import { useToggle } from '@renderer/shared/lib/hooks';
 import { useI18n } from '@renderer/app/providers';
-import { BalanceNew } from '@renderer/components/common';
+import { BalanceNew } from '@renderer/entities/asset';
 
 const getTotal = (values: string[]): BN => {
   return values.reduce((acc, value) => acc.add(new BN(value || 0)), BN_ZERO);

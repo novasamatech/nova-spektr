@@ -2,14 +2,16 @@ import { ApiPromise } from '@polkadot/api';
 import { Trans } from 'react-i18next';
 
 import { Address, SigningType, EraIndex } from '@renderer/domain/shared-kernel';
-import { Unlocking } from '@renderer/domain/stake';
+import { Unlocking } from '@renderer/entities/staking/model/stake';
 import { useI18n } from '@renderer/app/providers';
 import { FootnoteText, Plate, Checkbox, InfoPopover, Tooltip, Icon, Shimmering, HelpText } from '@renderer/shared/ui';
-import { AccountAddress, BalanceNew, ExplorerLink } from '@renderer/components/common';
-import { Explorer } from '@renderer/domain/chain';
-import { Asset } from '@renderer/domain/asset';
+import { ExplorerLink } from '@renderer/components/common';
+import { Explorer } from '@renderer/entities/chain/model/chain';
+import { Asset } from '@renderer/entities/asset/model/asset';
 import { TimeToEra } from '../TimeToEra/TimeToEra';
 import { redeemableAmount } from '@renderer/shared/lib/utils';
+import { AccountAddress } from '@renderer/entities/account';
+import { BalanceNew } from '@renderer/entities/asset';
 
 const getNextUnstakingEra = (unlocking: Unlocking[] = [], era?: number): EraIndex | undefined => {
   if (!era) return undefined;

@@ -1,9 +1,9 @@
 import { render, screen, act } from '@testing-library/react';
 import noop from 'lodash/noop';
 
-import { Chain } from '@renderer/domain/chain';
+import { Chain } from '@renderer/entities/chain/model/chain';
 import { NetworkInfo } from './NetworkInfo';
-import { useSettingsStorage } from '@renderer/services/settings/settingsStorage';
+import { useSettingsStorage } from '@renderer/entities/setttings/lib/settingsStorage';
 
 jest.mock('@renderer/app/providers', () => ({
   useI18n: jest.fn().mockReturnValue({

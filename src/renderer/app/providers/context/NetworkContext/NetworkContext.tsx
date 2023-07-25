@@ -1,15 +1,15 @@
 import { createContext, PropsWithChildren, useContext, useEffect, useState } from 'react';
 
-import { RpcNode } from '@renderer/domain/chain';
+import { RpcNode } from '@renderer/entities/chain/model/chain';
 import { ConnectionStatus, ConnectionType } from '@renderer/domain/connection';
 import { ChainId, AccountId } from '@renderer/domain/shared-kernel';
-import { useBalance } from '@renderer/services/balance/balanceService';
-import { ConnectProps, ExtendedChain, RpcValidation } from '@renderer/services/network/common/types';
-import { useNetwork } from '@renderer/services/network/networkService';
+import { useBalance } from '@renderer/entities/asset/lib/balanceService';
+import { ConnectProps, ExtendedChain, RpcValidation } from '@renderer/entities/network/lib/common/types';
+import { useNetwork } from '@renderer/entities/network/lib/networkService';
 import { useSubscription } from '@renderer/services/subscription/subscriptionService';
-import { useAccount } from '@renderer/services/account/accountService';
+import { useAccount } from '@renderer/entities/account/lib/accountService';
 import { usePrevious } from '@renderer/shared/lib/hooks';
-import { isMultisig } from '@renderer/domain/account';
+import { isMultisig } from '@renderer/entities/account/model/account';
 
 type NetworkContextProps = {
   connections: Record<ChainId, ExtendedChain>;

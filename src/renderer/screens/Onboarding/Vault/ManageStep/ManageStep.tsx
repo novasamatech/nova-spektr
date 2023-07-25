@@ -5,9 +5,9 @@ import { u8aToHex } from '@polkadot/util';
 import { keyBy } from 'lodash';
 
 import { useI18n } from '@renderer/app/providers';
-import { Chain as ChainType, Explorer } from '@renderer/domain/chain';
+import { Chain as ChainType, Explorer } from '@renderer/entities/chain/model/chain';
 import { Address, ChainId, ErrorType, HexString, SigningType, WalletType } from '@renderer/domain/shared-kernel';
-import { useChains } from '@renderer/services/network/chainsService';
+import { useChains } from '@renderer/entities/network/lib/chainsService';
 import {
   Button,
   Input,
@@ -20,13 +20,13 @@ import {
   Icon,
 } from '@renderer/shared/ui';
 import { AddressInfo, CompactSeedInfo, SeedInfo } from '@renderer/components/common/QrCode/common/types';
-import { useWallet } from '@renderer/services/wallet/walletService';
-import { useAccount } from '@renderer/services/account/accountService';
+import { useWallet } from '@renderer/entities/wallet/lib/walletService';
+import { useAccount } from '@renderer/entities/account/lib/accountService';
 import { toAccountId, toAddress, cnTw } from '@renderer/shared/lib/utils';
-import { Account, createAccount } from '@renderer/domain/account';
+import { Account, createAccount } from '@renderer/entities/account/model/account';
 import { ID } from '@renderer/services/storage';
-import { createWallet } from '@renderer/domain/wallet';
-import AddressWithExplorers from '@renderer/components/common/AddressWithExplorers/AddressWithExplorers';
+import { createWallet } from '@renderer/entities/wallet/model/wallet';
+import { AddressWithExplorers } from '@renderer/entities/account';
 
 const RootExplorers: Explorer[] = [
   { name: 'Subscan', account: 'https://subscan.io/account/{address}' },

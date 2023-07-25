@@ -1,11 +1,11 @@
 import { render, screen, act } from '@testing-library/react';
 
-import { Asset } from '@renderer/domain/asset';
+import { Asset } from '@renderer/entities/asset/model/asset';
 import { TEST_ACCOUNT_ID } from '@renderer/shared/lib/utils';
-import chains from '@renderer/services/network/common/chains/chains.json';
-import { useAccount } from '@renderer/services/account/accountService';
+import chains from '@renderer/entities/network/lib/common/chains/chains.json';
+import { useAccount } from '@renderer/entities/account/lib/accountService';
 import { SigningType } from '@renderer/domain/shared-kernel';
-import { Chain } from '@renderer/domain/chain';
+import { Chain } from '@renderer/entities/chain/model/chain';
 import { ReceiveModal } from './ReceiveModal';
 
 jest.mock('@renderer/app/providers', () => ({

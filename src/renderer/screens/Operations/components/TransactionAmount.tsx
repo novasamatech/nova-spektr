@@ -1,11 +1,11 @@
 import { useEffect, useState, ComponentProps } from 'react';
 
-import { DecodedTransaction, Transaction } from '@renderer/domain/transaction';
-import { useChains } from '@renderer/services/network/chainsService';
-import { Asset } from '@renderer/domain/asset';
+import { DecodedTransaction, Transaction } from '@renderer/entities/transaction/model/transaction';
+import { useChains } from '@renderer/entities/network/lib/chainsService';
+import { Asset } from '@renderer/entities/asset/model/asset';
 import { getAssetById } from '@renderer/shared/lib/utils';
-import { BalanceNew } from '@renderer/components/common';
 import { getTransactionAmount } from '@renderer/screens/Operations/common/utils';
+import { BalanceNew } from '@renderer/entities/asset';
 
 type Props = {
   tx: Transaction | DecodedTransaction;

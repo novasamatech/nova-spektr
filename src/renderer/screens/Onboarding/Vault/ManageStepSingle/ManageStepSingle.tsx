@@ -4,14 +4,14 @@ import { Controller, useForm, SubmitHandler } from 'react-hook-form';
 import { u8aToHex } from '@polkadot/util';
 
 import { useI18n } from '@renderer/app/providers';
-import { Chain } from '@renderer/domain/chain';
+import { Chain } from '@renderer/entities/chain/model/chain';
 import { ErrorType, SigningType } from '@renderer/domain/shared-kernel';
-import { useChains } from '@renderer/services/network/chainsService';
+import { useChains } from '@renderer/entities/network/lib/chainsService';
 import { Button, Input, InputHint, HeaderTitleText, SmallTitleText } from '@renderer/shared/ui';
 import { SeedInfo } from '@renderer/components/common/QrCode/common/types';
-import { useAccount } from '@renderer/services/account/accountService';
-import { createAccount } from '@renderer/domain/account';
-import AccountsList from '@renderer/components/common/AccountsList/AccountsList';
+import { useAccount } from '@renderer/entities/account/lib/accountService';
+import { createAccount } from '@renderer/entities/account/model/account';
+import { AccountsList } from '@renderer/entities/account';
 
 type WalletForm = {
   walletName: string;

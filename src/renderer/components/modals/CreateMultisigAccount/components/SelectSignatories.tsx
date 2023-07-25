@@ -17,10 +17,10 @@ import {
   Tabs,
 } from '@renderer/shared/ui';
 import { EmptyContacts } from '@renderer/screens/AddressBook/Overview/components';
-import { isWalletContact, Account, MultisigAccount } from '@renderer/domain/account';
+import { isWalletContact, Account, MultisigAccount } from '@renderer/entities/account/model/account';
 import { ContactForm } from '@renderer/components/forms';
 import { TabItem } from '@renderer/shared/ui/Tabs/common/types';
-import { Contact } from '@renderer/domain/contact';
+import { Contact } from '@renderer/entities/contact/model/contact';
 import { WalletDS } from '@renderer/services/storage';
 import { getSelectedLength } from '../common/utils';
 import { ExtendedWallet, ExtendedContact, SelectedMap } from '../common/types';

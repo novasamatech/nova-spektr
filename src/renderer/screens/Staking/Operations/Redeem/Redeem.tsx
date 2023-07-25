@@ -5,14 +5,14 @@ import { Navigate, useNavigate, useParams, useSearchParams } from 'react-router-
 import { Paths } from '@renderer/app/providers';
 import { useI18n, useNetworkContext } from '@renderer/app/providers';
 import { ChainId, HexString, AccountId, Address } from '@renderer/domain/shared-kernel';
-import { Transaction, TransactionType } from '@renderer/domain/transaction';
-import { useAccount } from '@renderer/services/account/accountService';
+import { Transaction, TransactionType } from '@renderer/entities/transaction/model/transaction';
+import { useAccount } from '@renderer/entities/account/lib/accountService';
 import InitOperation, { RedeemResult } from './InitOperation/InitOperation';
 import { Confirmation, Signing, Submit, NoAsset } from '../components';
 import { getRelaychainAsset, toAddress, DEFAULT_TRANSITION } from '@renderer/shared/lib/utils';
 import { useCountdown, useToggle } from '@renderer/shared/lib/hooks';
-import { Account, MultisigAccount, isMultisig } from '@renderer/domain/account';
-import { useTransaction } from '@renderer/services/transaction/transactionService';
+import { Account, MultisigAccount, isMultisig } from '@renderer/entities/account/model/account';
+import { useTransaction } from '@renderer/entities/transaction/lib/transactionService';
 import OperationModalTitle from '@renderer/screens/Operations/components/OperationModalTitle';
 import { BaseModal, Button, Loader } from '@renderer/shared/ui';
 import ScanMultiframeQr from '@renderer/components/common/Scanning/ScanMultiframeQr';

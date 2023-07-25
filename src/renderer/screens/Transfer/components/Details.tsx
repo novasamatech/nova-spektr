@@ -1,11 +1,11 @@
 import { useI18n } from '@renderer/app/providers';
-import { Account, MultisigAccount } from '@renderer/domain/account';
-import { ExtendedChain } from '@renderer/services/network/common/types';
-import { DetailRow } from '@renderer/components/common';
-import { Transaction } from '@renderer/domain/transaction';
-import AddressWithExplorers from '@renderer/components/common/AddressWithExplorers/AddressWithExplorers';
+import { Account, MultisigAccount } from '@renderer/entities/account/model/account';
+import { ExtendedChain } from '@renderer/entities/network/lib/common/types';
+import { Transaction } from '@renderer/entities/transaction/model/transaction';
 import { AddressStyle } from '../common/constants';
-import { Wallet } from '@renderer/domain/wallet';
+import { Wallet } from '@renderer/entities/wallet/model/wallet';
+import { DetailRow } from '@renderer/shared/ui';
+import { AddressWithExplorers } from '@renderer/entities/account';
 
 type Props = {
   transaction: Transaction;

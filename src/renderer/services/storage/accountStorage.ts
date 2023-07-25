@@ -1,4 +1,4 @@
-import { Account } from '@renderer/domain/account';
+import { Account } from '@renderer/entities/account/model/account';
 import { Address } from '@renderer/domain/shared-kernel';
 import { AccountDS, IAccountStorage, TAccount, ID } from './common/types';
 

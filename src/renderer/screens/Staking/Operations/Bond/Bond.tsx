@@ -3,25 +3,25 @@ import { useState, useEffect } from 'react';
 import { Navigate, useParams, useSearchParams, useNavigate } from 'react-router-dom';
 
 import { toAddress, getRelaychainAsset, DEFAULT_TRANSITION } from '@renderer/shared/lib/utils';
-import { RewardsDestination } from '@renderer/domain/stake';
+import { RewardsDestination } from '@renderer/entities/staking/model/stake';
 import { useI18n, useNetworkContext } from '@renderer/app/providers';
 import { Address, ChainId, HexString, AccountId } from '@renderer/domain/shared-kernel';
-import { Transaction, TransactionType } from '@renderer/domain/transaction';
-import { ValidatorMap } from '@renderer/services/staking/common/types';
+import { Transaction, TransactionType } from '@renderer/entities/transaction/model/transaction';
+import { ValidatorMap } from '@renderer/entities/staking/lib/common/types';
 import { Validators, Confirmation, Signing, Submit, NoAsset } from '../components';
 import { useCountdown, useToggle } from '@renderer/shared/lib/hooks';
-import { Account, MultisigAccount, isMultisig } from '@renderer/domain/account';
-import { useTransaction } from '@renderer/services/transaction/transactionService';
+import { Account, MultisigAccount, isMultisig } from '@renderer/entities/account/model/account';
+import { useTransaction } from '@renderer/entities/transaction/lib/transactionService';
 import { BaseModal, Alert, Button, Loader } from '@renderer/shared/ui';
 import InitOperation, { BondResult } from './InitOperation/InitOperation';
 import { Paths } from '@renderer/app/providers';
 import OperationModalTitle from '@renderer/screens/Operations/components/OperationModalTitle';
-import { useAccount } from '@renderer/services/account/accountService';
+import { useAccount } from '@renderer/entities/account/lib/accountService';
 import { DestinationType } from '../common/types';
 import ScanMultiframeQr from '@renderer/components/common/Scanning/ScanMultiframeQr';
 import ScanSingleframeQr from '@renderer/components/common/Scanning/ScanSingleframeQr';
 import { UnstakingDuration } from '@renderer/screens/Staking/Overview/components';
-import { isLightClient } from '@renderer/services/network/common/utils';
+import { isLightClient } from '@renderer/entities/network/lib/common/utils';
 
 const enum Step {
   INIT,

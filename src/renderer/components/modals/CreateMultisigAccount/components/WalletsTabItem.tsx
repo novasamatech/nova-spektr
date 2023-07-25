@@ -1,6 +1,6 @@
-import { Explorer } from '@renderer/domain/chain';
+import { Explorer } from '@renderer/entities/chain/model/chain';
 import { toAddress } from '@renderer/shared/lib/utils';
-import useAddressInfo from '@renderer/components/common/AccountAddress/useAddressInfo';
+import useAddressInfo from '@renderer/entities/account/lib/useAddressInfo';
 import { Icon, Identicon, BodyText, InfoPopover, HelpText } from '@renderer/shared/ui';
 import { ExtendedWallet } from '../common/types';
 

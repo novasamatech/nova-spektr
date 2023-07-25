@@ -3,7 +3,7 @@ import { Trans } from 'react-i18next';
 import { useEffect, useState } from 'react';
 
 import { useMatrix, useI18n } from '@renderer/app/providers';
-import { WELL_KNOWN_SERVERS } from '@renderer/services/matrix';
+import { WELL_KNOWN_SERVERS } from '@renderer/entities/matrix/lib';
 import {
   Alert,
   Button,

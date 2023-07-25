@@ -2,16 +2,16 @@ import { useEffect, useMemo, useState } from 'react';
 import { groupBy } from 'lodash';
 
 import { Icon, CaptionText, Chain, Tooltip, Accordion } from '@renderer/shared/ui';
-import { Asset } from '@renderer/domain/asset';
-import { Chain as ChainType } from '@renderer/domain/chain';
-import { useBalance } from '@renderer/services/balance/balanceService';
+import { Asset } from '@renderer/entities/asset/model/asset';
+import { Chain as ChainType } from '@renderer/entities/chain/model/chain';
+import { useBalance } from '@renderer/entities/asset/lib/balanceService';
 import { ZERO_BALANCE, totalAmount, includes, cnTw } from '@renderer/shared/lib/utils';
-import { ExtendedChain } from '@renderer/services/network/common/types';
+import { ExtendedChain } from '@renderer/entities/network/lib/common/types';
 import { useI18n } from '@renderer/app/providers';
-import { Balance } from '@renderer/domain/balance';
-import { AssetCard } from '../AssetCard/AssetCard';
+import { Balance } from '@renderer/entities/asset/model/balance';
+import { AssetCard } from '@renderer/entities/asset/ui/AssetCard/AssetCard';
 import { balanceSorter, sumBalances } from '../../common/utils';
-import { Account } from '@renderer/domain/account';
+import { Account } from '@renderer/entities/account/model/account';
 import { AccountId } from '@renderer/domain/shared-kernel';
 
 type Props = {

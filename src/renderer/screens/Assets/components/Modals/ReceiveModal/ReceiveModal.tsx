@@ -1,18 +1,19 @@
 import cn from 'classnames';
 import { useEffect, useState } from 'react';
 
-import { AccountAddress, QrTextGenerator } from '@renderer/components/common';
+import { QrTextGenerator } from '@renderer/components/common';
 import { DefaultExplorer, ExplorerIcons } from '@renderer/components/common/ExplorerLink/constants';
 import { Icon, BaseModal, Button, FootnoteText, Select, HelpText } from '@renderer/shared/ui';
 import { DropdownOption, DropdownResult } from '@renderer/shared/ui/Dropdowns/common/types';
 import { useI18n } from '@renderer/app/providers';
-import { Asset } from '@renderer/domain/asset';
-import { Chain } from '@renderer/domain/chain';
+import { Asset } from '@renderer/entities/asset/model/asset';
+import { Chain } from '@renderer/entities/chain/model/chain';
 import { SigningType } from '@renderer/domain/shared-kernel';
 import { copyToClipboard, toAddress, cnTw } from '@renderer/shared/lib/utils';
-import { useAccount } from '@renderer/services/account/accountService';
+import { useAccount } from '@renderer/entities/account/lib/accountService';
 import OperationModalTitle from '@renderer/screens/Operations/components/OperationModalTitle';
 import { IconButtonStyle } from '@renderer/shared/ui/Buttons/IconButton/IconButton';
+import { AccountAddress } from '@renderer/entities/account';
 
 type Props = {
   chain: Chain;

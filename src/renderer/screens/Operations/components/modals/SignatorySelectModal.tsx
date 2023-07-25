@@ -1,9 +1,9 @@
 import { BaseModal } from '@renderer/shared/ui';
 import { useI18n } from '@renderer/app/providers';
 import { AccountDS } from '@renderer/services/storage';
-import SelectableSignatory from '@renderer/components/common/SelectableSignatory/SelectableSignatory';
-import { Asset } from '@renderer/domain/asset';
-import { Chain } from '@renderer/domain/chain';
+import { Asset } from '@renderer/entities/asset/model/asset';
+import { Chain } from '@renderer/entities/chain/model/chain';
+import { SelectableSignatory } from '@renderer/entities/signatory';
 
 type Props = {
   isOpen: boolean;

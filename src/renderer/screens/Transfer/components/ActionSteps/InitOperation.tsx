@@ -4,15 +4,15 @@ import { useEffect, useState } from 'react';
 import { useI18n } from '@renderer/app/providers';
 import { DropdownOption, DropdownResult } from '@renderer/shared/ui/Dropdowns/common/types';
 import { ChainId, SigningType } from '@renderer/domain/shared-kernel';
-import { useAccount } from '@renderer/services/account/accountService';
-import { Explorer } from '@renderer/domain/chain';
-import { Asset } from '@renderer/domain/asset';
-import { Transaction } from '@renderer/domain/transaction';
+import { useAccount } from '@renderer/entities/account/lib/accountService';
+import { Explorer } from '@renderer/entities/chain/model/chain';
+import { Asset } from '@renderer/entities/asset/model/asset';
+import { Transaction } from '@renderer/entities/transaction/model/transaction';
 import { TransferForm } from '../TransferForm';
-import { Account, isMultisig, MultisigAccount } from '@renderer/domain/account';
+import { Account, isMultisig, MultisigAccount } from '@renderer/entities/account/model/account';
 import { getAccountOption, getSignatoryOption } from '../../common/utils';
 import { InputHint, Select } from '@renderer/shared/ui';
-import { useBalance } from '@renderer/services/balance/balanceService';
+import { useBalance } from '@renderer/entities/asset/lib/balanceService';
 
 type Props = {
   api: ApiPromise;

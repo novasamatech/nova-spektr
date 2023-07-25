@@ -1,9 +1,9 @@
 import { BaseModal } from '@renderer/shared/ui';
 import { useI18n } from '@renderer/app/providers';
-import { Explorer } from '@renderer/domain/chain';
+import { Explorer } from '@renderer/entities/chain/model/chain';
 import { Validator } from '@renderer/domain/validator';
-import AddressWithExplorers from '@renderer/components/common/AddressWithExplorers/AddressWithExplorers';
 import { getComposedIdentity, cnTw } from '@renderer/shared/lib/utils';
+import { AddressWithExplorers } from '@renderer/entities/account';
 
 type Props = {
   isOpen: boolean;

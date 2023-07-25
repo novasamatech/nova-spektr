@@ -6,8 +6,8 @@ import { ChainsRecord, GroupedWallets } from './types';
 import { getMultishardStructure } from '@renderer/components/layout/PrimaryLayout/Wallets/common/utils';
 import { SigningType, WalletType } from '@renderer/domain/shared-kernel';
 import { includes, toAddress } from '@renderer/shared/lib/utils';
-import { useAccount } from '@renderer/services/account/accountService';
-import { Account } from '@renderer/domain/account';
+import { useAccount } from '@renderer/entities/account/lib/accountService';
+import { Account } from '@renderer/entities/account/model/account';
 
 export const useGroupedWallets = (
   liveWallets: WalletDS[],

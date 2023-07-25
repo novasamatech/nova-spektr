@@ -4,7 +4,7 @@ import { useI18n, useNetworkContext } from '@renderer/app/providers';
 import { MultisigTransactionDS } from '@renderer/services/storage';
 import { UNKNOWN_TYPE, getStatusOptions, getTransactionOptions, TransferTypes } from '../common/utils';
 import { DropdownOption, DropdownResult } from '@renderer/shared/ui/Dropdowns/common/types';
-import { MultisigTransaction, Transaction, TransactionType } from '@renderer/domain/transaction';
+import { MultisigTransaction, Transaction, TransactionType } from '@renderer/entities/transaction/model/transaction';
 import { Button, MultiSelect } from '@renderer/shared/ui';
 
 type FilterName = 'status' | 'network' | 'type';

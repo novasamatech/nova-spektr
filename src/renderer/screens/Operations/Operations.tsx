@@ -4,17 +4,17 @@ import { format } from 'date-fns';
 
 import { useI18n, useNetworkContext } from '@renderer/app/providers';
 import EmptyOperations from './components/EmptyState/EmptyOperations';
-import { useAccount } from '@renderer/services/account/accountService';
-import { MultisigAccount } from '@renderer/domain/account';
+import { useAccount } from '@renderer/entities/account/lib/accountService';
+import { MultisigAccount } from '@renderer/entities/account/model/account';
 import Operation from './components/Operation';
 import { sortByDateDesc } from './common/utils';
 import { FootnoteText } from '@renderer/shared/ui';
 import Filters from './components/Filters';
 import { MultisigTransactionDS } from '@renderer/services/storage';
-import { useMultisigTx } from '@renderer/services/multisigTx/multisigTxService';
+import { useMultisigTx } from '@renderer/entities/multisig/lib/multisigTx/multisigTxService';
 import { Header } from '@renderer/components/common';
-import { MultisigEvent, MultisigTransactionKey } from '@renderer/domain/transaction';
-import { useMultisigEvent } from '@renderer/services/multisigEvent/multisigEventService';
+import { MultisigEvent, MultisigTransactionKey } from '@renderer/entities/transaction/model/transaction';
+import { useMultisigEvent } from '@renderer/entities/multisig/lib/multisigEvent/multisigEventService';
 
 const Operations = () => {
   const { t, dateLocale } = useI18n();

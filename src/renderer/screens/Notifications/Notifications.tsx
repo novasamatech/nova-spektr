@@ -3,11 +3,11 @@ import { format } from 'date-fns';
 
 import { useI18n } from '@renderer/app/providers';
 import EmptyNotifications from './components/EmptyNotifications';
-import NotificationRow from './components/NotificationRow';
 import { sortByDate } from './common/utils';
 import { FootnoteText } from '@renderer/shared/ui';
-import { useNotification } from '@renderer/services/notification/notificationService';
+import { useNotification } from '@renderer/entities/notification/lib/notificationService';
 import { Header } from '@renderer/components/common';
+import { NotificationRow } from '@renderer/entities/notification';
 
 const Notifications = () => {
   const { t, dateLocale } = useI18n();

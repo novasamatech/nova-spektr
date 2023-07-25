@@ -2,8 +2,8 @@ import { render, screen, act } from '@testing-library/react';
 import noop from 'lodash/noop';
 import { ApiPromise } from '@polkadot/api';
 
-import { ValidatorMap } from '@renderer/services/staking/common/types';
-import { useValidators } from '@renderer/services/staking/validatorsService';
+import { ValidatorMap } from '@renderer/entities/staking/lib/common/types';
+import { useValidators } from '@renderer/entities/staking/lib/validatorsService';
 import { ValidatorsModal } from './ValidatorsModal';
 
 jest.mock('@renderer/components/common');

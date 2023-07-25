@@ -1,6 +1,6 @@
 import { act, render, screen } from '@testing-library/react';
 
-import Matrix from '@renderer/services/matrix';
+import { Matrix } from '@renderer/entities/matrix';
 import { MatrixProvider } from './MatrixContext';
 import { ConnectionType } from '@renderer/domain/connection';
 

@@ -4,11 +4,11 @@ import { Trans } from 'react-i18next';
 
 import { Duration, Shimmering, FootnoteText } from '@renderer/shared/ui';
 import { useI18n } from '@renderer/app/providers';
-import { Asset } from '@renderer/domain/asset';
+import { Asset } from '@renderer/entities/asset/model/asset';
 import { EraIndex } from '@renderer/domain/shared-kernel';
 import { Validator } from '@renderer/domain/validator';
-import { useStakingData } from '@renderer/services/staking/stakingDataService';
-import { BalanceNew } from '@renderer/components/common';
+import { useStakingData } from '@renderer/entities/staking/lib/stakingDataService';
+import { BalanceNew } from '@renderer/entities/asset';
 
 type Props = {
   api?: ApiPromise;

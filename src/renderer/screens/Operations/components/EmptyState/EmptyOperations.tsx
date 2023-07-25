@@ -1,6 +1,6 @@
 import { Icon, BodyText } from '@renderer/shared/ui';
 import { useI18n } from '@renderer/app/providers';
-import { Account } from '@renderer/domain/account';
+import { Account } from '@renderer/entities/account/model/account';
 
 type Props = {
   multisigAccount: Account | null;

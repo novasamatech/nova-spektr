@@ -2,11 +2,11 @@ import { ApiPromise } from '@polkadot/api';
 import { act, render, screen } from '@testing-library/react';
 import noop from 'lodash/noop';
 
-import { Asset } from '@renderer/domain/asset';
+import { Asset } from '@renderer/entities/asset/model/asset';
 import { TEST_ACCOUNT_ID } from '@renderer/shared/lib/utils';
 import InitOperation from './InitOperation';
 import { ChainId } from '@renderer/domain/shared-kernel';
-import { Account } from '@renderer/domain/account';
+import { Account } from '@renderer/entities/account/model/account';
 
 jest.mock('@renderer/app/providers', () => ({
   useI18n: jest.fn().mockReturnValue({

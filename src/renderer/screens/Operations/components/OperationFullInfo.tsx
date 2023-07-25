@@ -1,25 +1,25 @@
 import { useEffect, useState } from 'react';
 
-import { MultisigEvent, SigningStatus } from '@renderer/domain/transaction';
-import { MultisigAccount } from '@renderer/domain/account';
+import { MultisigEvent, SigningStatus } from '@renderer/entities/transaction/model/transaction';
+import { MultisigAccount } from '@renderer/entities/account/model/account';
 import { Icon, Button, CaptionText, InfoLink, SmallTitleText } from '@renderer/shared/ui';
 import Details from '@renderer/screens/Operations/components/Details';
 import RejectTx from '@renderer/screens/Operations/components/modals/RejectTx';
 import ApproveTx from '@renderer/screens/Operations/components/modals/ApproveTx';
 import { getMultisigExtrinsicLink, getSignatoryName } from '@renderer/screens/Operations/common/utils';
-import { Signatory } from '@renderer/domain/signatory';
+import { Signatory } from '@renderer/entities/signatory/model/signatory';
 import CallDataModal from '@renderer/screens/Operations/components/modals/CallDataModal';
 import { AccountId, CallData, ChainId } from '@renderer/domain/shared-kernel';
 import { nonNullable } from '@renderer/shared/lib/utils';
 import { useMatrix, useNetworkContext, useI18n, useMultisigChainContext } from '@renderer/app/providers';
-import { useMultisigTx } from '@renderer/services/multisigTx/multisigTxService';
+import { useMultisigTx } from '@renderer/entities/multisig/lib/multisigTx/multisigTxService';
 import { useToggle } from '@renderer/shared/lib/hooks';
-import SignatoryCard from '@renderer/components/common/SignatoryCard/SignatoryCard';
 import LogModal from './Log';
-import { useContact } from '@renderer/services/contact/contactService';
-import { useAccount } from '@renderer/services/account/accountService';
+import { useContact } from '@renderer/entities/contact/lib/contactService';
+import { useAccount } from '@renderer/entities/account/lib/accountService';
 import { MultisigTransactionDS } from '@renderer/services/storage';
-import { useMultisigEvent } from '@renderer/services/multisigEvent/multisigEventService';
+import { useMultisigEvent } from '@renderer/entities/multisig/lib/multisigEvent/multisigEventService';
+import { SignatoryCard } from '@renderer/entities/signatory';
 
 type Props = {
   tx: MultisigTransactionDS;

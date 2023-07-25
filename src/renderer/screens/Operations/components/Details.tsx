@@ -1,17 +1,17 @@
 import cn from 'classnames';
 
 import { useI18n } from '@renderer/app/providers';
-import { MultisigAccount } from '@renderer/domain/account';
-import { Icon, Button, FootnoteText } from '@renderer/shared/ui';
+import { MultisigAccount } from '@renderer/entities/account/model/account';
+import { Icon, Button, FootnoteText, DetailRow } from '@renderer/shared/ui';
 import { copyToClipboard, truncate, cnTw } from '@renderer/shared/lib/utils';
 import { useToggle } from '@renderer/shared/lib/hooks';
-import { ExtendedChain } from '@renderer/services/network/common/types';
-import { MultisigTransaction, Transaction, TransactionType } from '@renderer/domain/transaction';
+import { ExtendedChain } from '@renderer/entities/network/lib/common/types';
+import { MultisigTransaction, Transaction, TransactionType } from '@renderer/entities/transaction/model/transaction';
 import ValidatorsModal from '@renderer/screens/Staking/Operations/components/Modals/ValidatorsModal/ValidatorsModal';
-import { BalanceNew, DetailRow } from '@renderer/components/common';
-import AddressWithExplorers from '@renderer/components/common/AddressWithExplorers/AddressWithExplorers';
 import { AddressStyle, DescriptionBlockStyle, InteractionStyle } from '../common/constants';
 import { getMultisigExtrinsicLink } from '../common/utils';
+import { AddressWithExplorers } from '@renderer/entities/account';
+import { BalanceNew } from '@renderer/entities/asset';
 
 type Props = {
   tx: MultisigTransaction;

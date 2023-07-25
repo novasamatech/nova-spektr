@@ -1,4 +1,4 @@
-import { Balance, BalanceKey } from '@renderer/domain/balance';
+import { Balance, BalanceKey } from '@renderer/entities/asset/model/balance';
 import { ChainId, AccountId } from '@renderer/domain/shared-kernel';
 import { BalanceDS, IBalanceStorage, TBalance } from './common/types';
 

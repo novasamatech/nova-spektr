@@ -28,7 +28,7 @@ import StatusLabel from './StatusLabel/StatusLabel';
 import InputFile from './Inputs/InputFile/InputFile';
 import { Tooltip } from './Popovers/Tooltip/Tooltip';
 import { LabelHelpBox } from './LabelHelpbox/LabelHelpBox';
-import { Chain } from './Chain/Chain';
+import { Chain } from '@renderer/entities/chain/ui/Chain/Chain';
 import { ChainIcon } from './ChainIcon/ChainIcon';
 import { AssetIcon } from './AssetIcon/AssetIcon';
 import { Tabs } from './Tabs/Tabs';
@@ -52,6 +52,7 @@ import LanguageSwitcher from './LanguageSwitcher/LanguageSwitcher';
 import Shimmering from './Shimmering/Shimmering';
 import Duration from './Duration/Duration';
 import Loader from './Loader/Loader';
+import DetailRow from './DetailRow/DetailRow';
 
 // FIXME: Animation component exported separately.
 // Adding them to this file causes to crash all tests which use anything from that file
@@ -111,4 +112,5 @@ export {
   Duration,
   Loader,
   HelpText,
+  DetailRow,
 };

@@ -1,9 +1,10 @@
 import { useCallback } from 'react';
 
 import { useI18n } from '@renderer/app/providers';
-import { Asset } from '@renderer/domain/asset';
+import { Asset } from '@renderer/entities/asset/model/asset';
 import { FootnoteText, TitleText } from '../../Typography';
-import { BalanceNew } from '@renderer/components/common';
+// FIXME components in shared shouldn't use components from entity so we need to move it to entity
+import { BalanceNew } from '@renderer/entities/asset';
 import Input from '../Input/Input';
 import { cleanAmount, formatGroups, validatePrecision, validateSymbols } from '@renderer/shared/lib/utils';
 import { AssetIcon } from '@renderer/shared/ui';

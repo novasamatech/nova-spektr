@@ -5,17 +5,22 @@ import { useNavigate } from 'react-router-dom';
 
 import { useI18n, useMatrix, useMultisigChainContext } from '@renderer/app/providers';
 import { HexString } from '@renderer/domain/shared-kernel';
-import { useTransaction } from '@renderer/services/transaction/transactionService';
-import { ExtrinsicResultParams } from '@renderer/services/transaction/common/types';
-import { isMultisig, Account, MultisigAccount } from '@renderer/domain/account';
+import { useTransaction } from '@renderer/entities/transaction/lib/transactionService';
+import { ExtrinsicResultParams } from '@renderer/entities/transaction/lib/common/types';
+import { isMultisig, Account, MultisigAccount } from '@renderer/entities/account/model/account';
 import { toAccountId, DEFAULT_TRANSITION } from '@renderer/shared/lib/utils';
 import { Button } from '@renderer/shared/ui';
-import { OperationResult } from '@renderer/components/common/OperationResult/OperationResult';
+import { OperationResult } from '@renderer/entities/transaction/ui/OperationResult/OperationResult';
 import { useToggle } from '@renderer/shared/lib/hooks';
-import { useMultisigTx } from '@renderer/services/multisigTx/multisigTxService';
+import { useMultisigTx } from '@renderer/entities/multisig/lib/multisigTx/multisigTxService';
 import { Paths } from '@renderer/app/providers';
-import { Transaction, MultisigEvent, MultisigTransaction, MultisigTxInitStatus } from '@renderer/domain/transaction';
-import { useMultisigEvent } from '@renderer/services/multisigEvent/multisigEventService';
+import {
+  Transaction,
+  MultisigEvent,
+  MultisigTransaction,
+  MultisigTxInitStatus,
+} from '@renderer/entities/transaction/model/transaction';
+import { useMultisigEvent } from '@renderer/entities/multisig/lib/multisigEvent/multisigEventService';
 
 type ResultProps = Pick<ComponentProps<typeof OperationResult>, 'title' | 'description' | 'variant'>;
 

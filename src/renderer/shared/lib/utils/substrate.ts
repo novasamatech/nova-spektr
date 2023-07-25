@@ -4,7 +4,7 @@ import { isHex, hexToU8a, bnMin, BN_TWO, BN } from '@polkadot/util';
 import { blake2AsHex } from '@polkadot/util-crypto';
 
 import { Address, CallData, CallHash } from '@renderer/domain/shared-kernel';
-import { DEFAULT_TIME, ONE_DAY, THRESHOLD } from '@renderer/services/network/common/constants';
+import { DEFAULT_TIME, ONE_DAY, THRESHOLD } from '@renderer/entities/network/lib/common/constants';
 
 /**
  * Compose and return all the data needed for @substrate/txwrapper-polkadot signing

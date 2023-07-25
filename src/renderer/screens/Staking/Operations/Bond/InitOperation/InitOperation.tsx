@@ -4,15 +4,15 @@ import { useEffect, useState } from 'react';
 
 import { DropdownOption, DropdownResult } from '@renderer/shared/ui/Dropdowns/common/types';
 import { useI18n } from '@renderer/app/providers';
-import { Asset } from '@renderer/domain/asset';
-import { Balance as AccountBalance } from '@renderer/domain/balance';
+import { Asset } from '@renderer/entities/asset/model/asset';
+import { Balance as AccountBalance } from '@renderer/entities/asset/model/balance';
 import { AccountId, Address, ChainId, SigningType } from '@renderer/domain/shared-kernel';
-import { Transaction, TransactionType } from '@renderer/domain/transaction';
-import { useAccount } from '@renderer/services/account/accountService';
-import { useBalance } from '@renderer/services/balance/balanceService';
+import { Transaction, TransactionType } from '@renderer/entities/transaction/model/transaction';
+import { useAccount } from '@renderer/entities/account/lib/accountService';
+import { useBalance } from '@renderer/entities/asset/lib/balanceService';
 import { formatAmount, stakeableAmount, toAddress, nonNullable, TEST_ADDRESS } from '@renderer/shared/lib/utils';
-import { useValidators } from '@renderer/services/staking/validatorsService';
-import { Account, isMultisig, MultisigAccount } from '@renderer/domain/account';
+import { useValidators } from '@renderer/entities/staking/lib/validatorsService';
+import { Account, isMultisig, MultisigAccount } from '@renderer/entities/account/model/account';
 import { InputHint, MultiSelect, Select } from '@renderer/shared/ui';
 import { OperationForm } from '../../components';
 import {

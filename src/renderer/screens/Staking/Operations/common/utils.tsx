@@ -2,11 +2,11 @@ import { BN } from '@polkadot/util';
 import cn from 'classnames';
 import { ReactNode } from 'react';
 
-import { Account, MultisigAccount } from '@renderer/domain/account';
+import { Account, MultisigAccount } from '@renderer/entities/account/model/account';
 import { Address } from '@renderer/domain/shared-kernel';
 import { DropdownOption } from '@renderer/shared/ui/Dropdowns/common/types';
-import { Balance as AccountBalance } from '@renderer/domain/balance';
-import { Asset } from '@renderer/domain/asset';
+import { Balance as AccountBalance } from '@renderer/entities/asset/model/balance';
+import { Asset } from '@renderer/entities/asset/model/asset';
 import {
   toAddress,
   stakeableAmount,
@@ -15,8 +15,9 @@ import {
   unlockingAmount,
   redeemableAmount,
 } from '@renderer/shared/lib/utils';
-import { Stake } from '@renderer/domain/stake';
-import { AccountAddress, BalanceNew } from '@renderer/components/common';
+import { Stake } from '@renderer/entities/staking/model/stake';
+import { AccountAddress } from '@renderer/entities/account';
+import { BalanceNew } from '@renderer/entities/asset';
 
 export const validateBalanceForFee = (balance: AccountBalance | string, fee: string): boolean => {
   const transferableBalance = typeof balance === 'string' ? balance : transferableAmount(balance);

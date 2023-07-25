@@ -12,16 +12,16 @@ import {
   transferableAmount,
   getAssetId,
 } from '@renderer/shared/lib/utils';
-import { Icon, Identicon, Button, AmountInput, Input, InputHint } from '@renderer/shared/ui';
-import { Fee, DetailRow, DepositWithLabel } from '@renderer/components/common';
+import { Icon, Identicon, Button, AmountInput, Input, InputHint, DetailRow } from '@renderer/shared/ui';
 import { useI18n } from '@renderer/app/providers';
-import { Asset, AssetType } from '@renderer/domain/asset';
-import { Transaction, MultisigTxInitStatus, TransactionType } from '@renderer/domain/transaction';
-import { useBalance } from '@renderer/services/balance/balanceService';
+import { Asset, AssetType } from '@renderer/entities/asset/model/asset';
+import { Transaction, MultisigTxInitStatus, TransactionType } from '@renderer/entities/transaction/model/transaction';
+import { useBalance } from '@renderer/entities/asset/lib/balanceService';
 import { Address, ChainId, AccountId } from '@renderer/domain/shared-kernel';
-import { useTransaction } from '@renderer/services/transaction/transactionService';
-import { useMultisigTx } from '@renderer/services/multisigTx/multisigTxService';
-import { MultisigAccount, Account, isMultisig } from '@renderer/domain/account';
+import { useTransaction } from '@renderer/entities/transaction/lib/transactionService';
+import { useMultisigTx } from '@renderer/entities/multisig/lib/multisigTx/multisigTxService';
+import { MultisigAccount, Account, isMultisig } from '@renderer/entities/account/model/account';
+import { DepositWithLabel, Fee } from '@renderer/entities/transaction';
 
 const DESCRIPTION_MAX_LENGTH = 120;
 

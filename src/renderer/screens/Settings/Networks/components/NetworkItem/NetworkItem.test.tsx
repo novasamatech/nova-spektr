@@ -2,7 +2,7 @@ import { render, screen } from '@testing-library/react';
 import noop from 'lodash/noop';
 
 import { ConnectionStatus, ConnectionType } from '@renderer/domain/connection';
-import { ExtendedChain } from '@renderer/services/network/common/types';
+import { ExtendedChain } from '@renderer/entities/network/lib/common/types';
 import { NetworkItem } from './NetworkItem';
 
 jest.mock('@renderer/app/providers', () => ({

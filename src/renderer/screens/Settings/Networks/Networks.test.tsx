@@ -4,7 +4,7 @@ import { MemoryRouter } from 'react-router-dom';
 
 import { ConnectionStatus, ConnectionType } from '@renderer/domain/connection';
 import Networks from './Networks';
-import { ExtendedChain } from '@renderer/services/network/common/types';
+import { ExtendedChain } from '@renderer/entities/network/lib/common/types';
 import { useNetworkContext } from '@renderer/app/providers';
 
 const confirmSpy = jest.fn();

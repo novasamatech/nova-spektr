@@ -2,14 +2,14 @@ import { format } from 'date-fns';
 
 import { useI18n } from '@renderer/app/providers';
 import TransactionTitle from './TransactionTitle/TransactionTitle';
-import { MultisigAccount } from '@renderer/domain/account';
+import { MultisigAccount } from '@renderer/entities/account/model/account';
 import { FootnoteText, Chain, Accordion } from '@renderer/shared/ui';
 import TransactionAmount from './TransactionAmount';
 import OperationStatus from './OperationStatus';
 import OperationFullInfo from './OperationFullInfo';
 import { getTransactionAmount } from '@renderer/screens/Operations/common/utils';
 import { MultisigTransactionDS } from '@renderer/services/storage';
-import { useMultisigEvent } from '@renderer/services/multisigEvent/multisigEventService';
+import { useMultisigEvent } from '@renderer/entities/multisig/lib/multisigEvent/multisigEventService';
 
 type Props = {
   tx: MultisigTransactionDS;

@@ -1,4 +1,4 @@
-import { MultisigTransaction } from '@renderer/domain/transaction';
+import { MultisigTransaction } from '@renderer/entities/transaction/model/transaction';
 import { MultisigTransactionDS, IMultisigTransactionStorage, TMultisigTransaction } from './common/types';
 import { AccountId, CallHash, ChainId } from '@renderer/domain/shared-kernel';
 
