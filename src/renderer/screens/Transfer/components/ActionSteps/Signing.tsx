@@ -82,8 +82,6 @@ const Signing = ({
 
     const isVerified = txPayload && verifySignature(txPayload, u8aToHex(hexToU8a(signature)), accountId);
 
-    console.log('putt', isVerified, txPayload, accountId);
-
     if (!balanceIsEnough) {
       setValidationError(ValidationErrors.INSUFFICIENT_BALANCE);
     } else if (!feeIsEnough) {
