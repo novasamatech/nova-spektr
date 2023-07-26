@@ -14,7 +14,7 @@ jest.mock('@renderer/app/providers', () => ({
   }),
 }));
 
-jest.mock('@renderer/services/contact/contactService', () => ({
+jest.mock('@renderer/entities/contact', () => ({
   useContact: jest.fn().mockReturnValue({
     addContact: jest.fn(),
     updateContact: jest.fn(),

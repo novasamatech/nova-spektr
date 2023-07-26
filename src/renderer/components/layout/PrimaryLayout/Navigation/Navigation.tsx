@@ -11,7 +11,7 @@ import ActiveAccountCard from '@renderer/components/layout/PrimaryLayout/Wallets
 import NavItem, { Props as NavItemProps } from '../NavItem/NavItem';
 import { useChains } from '@renderer/entities/network';
 import { ChainsRecord } from '@renderer/components/layout/PrimaryLayout/Wallets/common/types';
-import { Paths } from '@renderer/app/providers';
+import { Paths } from '../../../../app/providers/routes/paths';
 import { useWallet } from '@renderer/entities/wallet';
 import { Shimmering } from '@renderer/shared/ui';
 

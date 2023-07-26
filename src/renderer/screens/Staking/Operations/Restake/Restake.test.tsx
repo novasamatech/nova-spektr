@@ -11,7 +11,7 @@ jest.mock('react-router-dom', () => ({
   useNavigate: jest.fn(),
 }));
 
-jest.mock('@renderer/services/account/accountService', () => ({
+jest.mock('@renderer/entities/account', () => ({
   useAccount: jest.fn().mockReturnValue({
     getActiveAccounts: () => [{ name: 'Test Wallet', accountId: TEST_ACCOUNT_ID }],
   }),
@@ -44,7 +44,7 @@ jest.mock('@renderer/app/providers', () => ({
   })),
 }));
 
-jest.mock('@renderer/services/staking/stakingDataService', () => ({
+jest.mock('@renderer/entities/staking', () => ({
   useStakingData: jest.fn().mockReturnValue({
     subscribeStaking: jest.fn(),
   }),

@@ -1,7 +1,7 @@
 import { ApiPromise } from '@polkadot/api';
 import { act, render, screen } from '@testing-library/react';
 
-import { Asset, AssetBalance } from '@renderer/entities/asset';
+import { Asset } from '@renderer/entities/asset';
 import { Transaction } from '@renderer/entities/transaction';
 import { Fee } from './Fee';
 
@@ -13,21 +13,18 @@ jest.mock('@renderer/app/providers', () => ({
   }),
 }));
 
-jest.mock('@renderer/services/transaction/transactionService', () => ({
+jest.mock('@renderer/entities/transaction', () => ({
   useTransaction: jest.fn().mockReturnValue({
     getTransactionFee: jest.fn().mockResolvedValue('12'),
   }),
 }));
 
+jest.mock('@renderer/entities/asset', () => ({
+  ...jest.requireActual('@renderer/entities/asset'),
+  AssetBalance: ({ value }: any) => <div>{value}</div>,
+}));
+
 describe('components/common/Fee', () => {
-  beforeAll(() => {
-    (AssetBalance as jest.Mock).mockImplementation(({ value }: any) => <p>{value}</p>);
-  });
-
-  afterEach(() => {
-    jest.clearAllMocks();
-  });
-
   test('should render component', async () => {
     const asset = { symbol: 'DOT', precision: 10 } as Asset;
     const tx = { address: '0x123', args: {} } as Transaction;

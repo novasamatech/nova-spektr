@@ -1,6 +1,6 @@
 import { render, screen } from '@testing-library/react';
 
-import Truncate from './Truncate';
+import { Truncate } from './Truncate';
 
 describe('ui/Truncate', () => {
   test('should render component', () => {

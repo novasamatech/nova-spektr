@@ -1,9 +1,9 @@
 import { waitFor } from '@testing-library/react';
-import storage from '@renderer/shared/api/storage';
 
+import storage from '@renderer/shared/api/storage';
 import { useAccount } from '@renderer/entities/account/lib/accountService';
 
-jest.mock('@renderer/services/storage', () => jest.fn());
+jest.mock('@renderer/shared/api/storage', () => jest.fn());
 
 jest.mock('dexie-react-hooks', () => ({
   useLiveQuery: (handler: () => any) => handler(),

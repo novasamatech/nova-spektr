@@ -19,7 +19,7 @@ jest.mock('@renderer/app/providers', () => ({
   })),
 }));
 
-jest.mock('@renderer/services/network/chainsService', () => ({
+jest.mock('@renderer/entities/network', () => ({
   useChains: jest.fn().mockReturnValue({
     sortChains: (value: Chain[]) => value,
     getChainsData: jest.fn().mockResolvedValue([
@@ -33,35 +33,26 @@ jest.mock('@renderer/services/network/chainsService', () => ({
   }),
 }));
 
-jest.mock('@renderer/services/account/accountService', () => ({
+jest.mock('@renderer/entities/account', () => ({
   useAccount: jest.fn().mockReturnValue({
     getActiveAccounts: () => [{ name: 'Test Wallet', accountId: TEST_ACCOUNT_ID }],
   }),
 }));
 
-jest.mock('@renderer/services/staking/stakingDataService', () => ({
-  useStakingData: jest.fn().mockReturnValue({
-    staking: {},
-    subscribeLedger: jest.fn(),
-  }),
-}));
-
-jest.mock('@renderer/services/staking/validatorsService', () => ({
+jest.mock('@renderer/entities/staking', () => ({
   useValidators: jest.fn().mockReturnValue({
     getValidatorsWithInfo: jest.fn(),
   }),
-}));
-
-jest.mock('@renderer/services/staking/eraService', () => ({
   useEra: jest.fn().mockReturnValue({
     subscribeActiveEra: jest.fn(),
   }),
-}));
-
-jest.mock('@renderer/services/staking/stakingRewardsService', () => ({
   useStakingRewards: jest.fn().mockReturnValue({
     rewards: {},
     isLoading: false,
+  }),
+  useStakingData: jest.fn().mockReturnValue({
+    staking: {},
+    subscribeLedger: jest.fn(),
   }),
 }));
 

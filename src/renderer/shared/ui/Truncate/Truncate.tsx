@@ -12,7 +12,7 @@ type Props = {
   style?: CSSProperties;
 };
 
-const Truncate = ({ text, ellipsis = '...', end = 5, start = 5, className = '', style = {} }: Props) => {
+export const Truncate = ({ text, ellipsis = '...', end = 5, start = 5, className = '', style = {} }: Props) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const textRef = useRef<HTMLParagraphElement>(null);
   const ellipsisRef = useRef<HTMLParagraphElement>(null);
@@ -97,5 +97,3 @@ const Truncate = ({ text, ellipsis = '...', end = 5, start = 5, className = '', 
     </div>
   );
 };
-
-export default Truncate;

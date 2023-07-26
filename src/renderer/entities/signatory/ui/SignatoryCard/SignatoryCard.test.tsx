@@ -3,13 +3,14 @@ import { render, screen } from '@testing-library/react';
 import { TEST_ADDRESS } from '@renderer/shared/lib/utils';
 import { SignatoryCard } from './SignatoryCard';
 
-jest.mock('@renderer/services/contact/contactService', () => ({
+jest.mock('@renderer/entities/contact', () => ({
   useContact: jest.fn().mockReturnValue({
     getLiveContacts: jest.fn().mockReturnValue([]),
   }),
 }));
 
-jest.mock('@renderer/services/account/accountService', () => ({
+jest.mock('@renderer/entities/account', () => ({
+  ...jest.requireActual('@renderer/entities/account'),
   useAccount: jest.fn().mockReturnValue({
     getLiveAccounts: jest.fn().mockReturnValue([]),
   }),

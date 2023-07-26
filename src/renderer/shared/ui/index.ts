@@ -50,6 +50,7 @@ import Shimmering from './Shimmering/Shimmering';
 import Duration from './Duration/Duration';
 import Loader from './Loader/Loader';
 import DetailRow from './DetailRow/DetailRow';
+import { Truncate } from './Truncate/Truncate';
 
 // FIXME: Animation component exported separately.
 // Adding them to this file causes to crash all tests which use anything from that file
@@ -107,4 +108,5 @@ export {
   Loader,
   HelpText,
   DetailRow,
+  Truncate,
 };

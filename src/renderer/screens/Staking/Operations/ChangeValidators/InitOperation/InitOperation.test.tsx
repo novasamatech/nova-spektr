@@ -14,19 +14,20 @@ jest.mock('@renderer/app/providers', () => ({
   }),
 }));
 
-jest.mock('@renderer/services/staking/validatorsService', () => ({
+jest.mock('@renderer/entities/staking', () => ({
   useValidators: jest.fn().mockReturnValue({
     getMaxValidators: () => 4,
   }),
 }));
 
-jest.mock('@renderer/services/account/accountService', () => ({
+jest.mock('@renderer/entities/account', () => ({
+  ...jest.requireActual('@renderer/entities/account'),
   useAccount: jest.fn().mockReturnValue({
     getLiveAccounts: () => [{ name: 'Test Wallet', accountId: TEST_ACCOUNT_ID }],
   }),
 }));
 
-jest.mock('@renderer/services/balance/balanceService', () => ({
+jest.mock('@renderer/entities/asset', () => ({
   useBalance: jest.fn().mockReturnValue({
     getLiveAssetBalances: jest.fn().mockReturnValue([
       {
@@ -38,6 +39,7 @@ jest.mock('@renderer/services/balance/balanceService', () => ({
       },
     ]),
   }),
+  AssetBalance: () => <span>balance</span>,
 }));
 
 jest.mock('../../components', () => ({

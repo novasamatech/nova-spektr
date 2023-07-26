@@ -18,10 +18,12 @@ jest.mock('@renderer/app/providers', () => ({
   })),
 }));
 
-jest.mock('@renderer/services/account/accountService', () => ({
+jest.mock('@renderer/entities/account', () => ({
   useAccount: jest.fn().mockReturnValue({
     getActiveAccounts: () => [{ name: 'Test Wallet', accountId: TEST_ACCOUNT_ID }],
   }),
+  AddressWithExplorers: ({ address }: { address: string }) => <span data-testid="validator">{address}</span>,
+  isMultisig: () => true,
 }));
 
 const CHAINS = [
@@ -40,22 +42,17 @@ const CHAINS = [
   },
 ];
 
-jest.mock('@renderer/services/network/chainsService', () => ({
+jest.mock('@renderer/entities/network', () => ({
   useChains: jest.fn().mockReturnValue({
     sortChainsByBalance: () => CHAINS,
   }),
 }));
 
-jest.mock('@renderer/services/balance/balanceService', () => ({
+jest.mock('@renderer/entities/asset', () => ({
   useBalance: jest.fn().mockReturnValue({
     getLiveBalances: jest.fn().mockReturnValue([]),
   }),
 }));
-
-jest.mock(
-  '@renderer/components/common/AddressWithExplorers/AddressWithExplorers',
-  jest.fn().mockReturnValue(({ address }: { address: string }) => <span data-testid="validator">{address}</span>),
-);
 
 jest.mock('@renderer/screens/Transfer/Transfer', () => <span>TransferButton</span>);
 

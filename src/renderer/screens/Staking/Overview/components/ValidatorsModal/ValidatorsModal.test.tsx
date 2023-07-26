@@ -13,7 +13,7 @@ jest.mock('@renderer/app/providers', () => ({
   }),
 }));
 
-jest.mock('@renderer/services/staking/validatorsService', () => ({
+jest.mock('@renderer/entities/staking', () => ({
   useValidators: jest.fn().mockReturnValue({
     getNominators: jest.fn().mockResolvedValue({}),
   }),

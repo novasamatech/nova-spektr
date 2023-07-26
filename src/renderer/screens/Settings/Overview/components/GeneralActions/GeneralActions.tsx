@@ -1,7 +1,8 @@
 import { Link } from 'react-router-dom';
 
 import { Icon, BodyText, Plate, FootnoteText, HelpText } from '@renderer/shared/ui';
-import { useI18n, Paths } from '@renderer/app/providers';
+import { useI18n } from '@renderer/app/providers';
+import { Paths } from '../../../../../app/providers/routes/paths';
 import { cnTw } from '@renderer/shared/lib/utils';
 
 // TODO: Language switcher temporary removed

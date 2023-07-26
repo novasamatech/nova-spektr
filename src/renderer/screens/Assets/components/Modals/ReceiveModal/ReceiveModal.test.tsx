@@ -14,15 +14,12 @@ jest.mock('@renderer/app/providers', () => ({
   }),
 }));
 
-jest.mock('@renderer/services/account/accountService', () => ({
+jest.mock('@renderer/entities/account', () => ({
   useAccount: jest.fn().mockReturnValue({
     getActiveAccounts: () => [{ name: 'Test Wallet', accountId: TEST_ACCOUNT_ID }],
   }),
+  AccountAddress: ({ name, address }: { name?: string; address?: string }) => <span>{name || address}</span>,
 }));
-
-jest.mock('@renderer/shared/ui/Truncate/Truncate', () => () => (
-  <span>5CGQ7BPJZZKNirQgVhzbX9wdkgbnUHtJ5V7FkMXdZeVbXyr9</span>
-));
 
 const westendExplorers = chains.find((chain) => chain.name === 'Westend')?.explorers || [];
 

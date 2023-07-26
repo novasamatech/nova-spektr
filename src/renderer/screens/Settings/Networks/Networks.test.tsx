@@ -43,13 +43,13 @@ jest.mock('@renderer/app/providers', () => ({
   })),
 }));
 
-jest.mock('@renderer/services/balance/balanceService', () => ({
+jest.mock('@renderer/entities/asset', () => ({
   useBalance: jest.fn().mockReturnValue({
     setBalanceIsValid: jest.fn(),
   }),
 }));
 
-jest.mock('@renderer/services/account/accountService', () => ({
+jest.mock('@renderer/entities/account', () => ({
   useAccount: jest.fn().mockReturnValue({
     getAccounts: jest.fn().mockReturnValue([]),
   }),

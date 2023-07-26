@@ -10,13 +10,13 @@ jest.mock('@renderer/app/providers', () => ({
   }),
 }));
 
-jest.mock('@renderer/services/transaction/transactionService', () => ({
+jest.mock('@renderer/entities/transaction', () => ({
   useTransaction: jest.fn().mockReturnValue({
     getTransactionDeposit: jest.fn().mockReturnValue('46'),
   }),
 }));
 
-jest.mock('@renderer/components/common/AssetBalance/AssetBalance', () => () => <div>deposit_value</div>);
+jest.mock('@renderer/entities/asset', () => ({ AssetBalance: () => <div>deposit_value</div> }));
 
 describe('components/common/DepositWithLabel', () => {
   test('should render component', () => {

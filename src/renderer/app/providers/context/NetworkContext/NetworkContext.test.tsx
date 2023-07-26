@@ -6,14 +6,14 @@ import { useNetwork } from '@renderer/entities/network';
 import { NetworkProvider, useNetworkContext } from './NetworkContext';
 import { TEST_ACCOUNT_ID } from '@renderer/shared/lib/utils';
 
-jest.mock('@renderer/services/network/networkService', () => ({
+jest.mock('@renderer/entities/network', () => ({
   useNetwork: jest.fn().mockReturnValue({
     connections: {},
     setupConnections: jest.fn(),
   }),
 }));
 
-jest.mock('@renderer/services/balance/balanceService', () => ({
+jest.mock('@renderer/entities/asset', () => ({
   useBalance: jest.fn().mockReturnValue({
     subscribeBalances: jest.fn(),
     subscribeLockBalances: jest.fn(),
@@ -29,7 +29,8 @@ jest.mock('@renderer/services/subscription/subscriptionService', () => ({
   }),
 }));
 
-jest.mock('@renderer/services/account/accountService', () => ({
+jest.mock('@renderer/entities/account', () => ({
+  ...jest.requireActual('@renderer/entities/account'),
   useAccount: jest.fn().mockReturnValue({
     getActiveAccounts: () => [{ name: 'Test Wallet', accountId: TEST_ACCOUNT_ID }],
     getLiveAccounts: () => [{ name: 'Test Wallet', accountId: TEST_ACCOUNT_ID }],

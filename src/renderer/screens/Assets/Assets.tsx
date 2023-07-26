@@ -8,7 +8,7 @@ import { ConnectionType } from '@renderer/domain/connection';
 import { SigningType } from '@renderer/domain/shared-kernel';
 import { useToggle } from '@renderer/shared/lib/hooks';
 import { useChains } from '@renderer/entities/network';
-import { useSettingsStorage } from '@renderer/entities/setttings';
+import { useSettingsStorage } from '@renderer/entities/settings';
 import { useAccount, isMultisig, Account } from '@renderer/entities/account';
 import { AssetsFilters, NetworkAssets, ReceiveModal, SelectShardModal } from './components';
 import { Header } from '@renderer/components/common';

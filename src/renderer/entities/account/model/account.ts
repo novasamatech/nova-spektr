@@ -97,7 +97,7 @@ export function createMultisigAccount({
   } as MultisigAccount;
 }
 
-export function isMultisig(account?: Account | MultisigAccount): account is MultisigAccount {
+export const isMultisig = (account?: Account | MultisigAccount): account is MultisigAccount => {
   if (!account) return false;
 
   const hasSignatories = 'signatories' in (account as MultisigAccount);

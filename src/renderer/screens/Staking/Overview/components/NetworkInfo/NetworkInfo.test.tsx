@@ -3,7 +3,7 @@ import noop from 'lodash/noop';
 
 import { Chain } from '@renderer/entities/chain';
 import { NetworkInfo } from './NetworkInfo';
-import { useSettingsStorage } from '@renderer/entities/setttings';
+import { useSettingsStorage } from '@renderer/entities/settings';
 
 jest.mock('@renderer/app/providers', () => ({
   useI18n: jest.fn().mockReturnValue({
@@ -11,7 +11,7 @@ jest.mock('@renderer/app/providers', () => ({
   }),
 }));
 
-jest.mock('@renderer/services/network/chainsService', () => ({
+jest.mock('@renderer/entities/network', () => ({
   useChains: jest.fn().mockReturnValue({
     sortChains: jest.fn((value: Chain[]) => value),
     getChainsData: jest.fn().mockResolvedValue([
@@ -31,7 +31,7 @@ jest.mock('@renderer/services/network/chainsService', () => ({
   }),
 }));
 
-jest.mock('@renderer/services/settings/settingsStorage', () => ({
+jest.mock('@renderer/entities/settings', () => ({
   useSettingsStorage: jest.fn().mockReturnValue({
     getStakingNetwork: jest.fn().mockReturnValue('0x123'),
     setStakingNetwork: jest.fn(),

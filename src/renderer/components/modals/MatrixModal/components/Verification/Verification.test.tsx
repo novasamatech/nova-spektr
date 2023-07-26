@@ -18,6 +18,7 @@ jest.mock('@renderer/app/providers', () => ({
 }));
 
 jest.mock('@renderer/shared/lib/utils', () => ({
+  ...jest.requireActual('@renderer/shared/lib/utils'),
   getOperatingSystem: jest.fn().mockReturnValue('macOS'),
 }));
 

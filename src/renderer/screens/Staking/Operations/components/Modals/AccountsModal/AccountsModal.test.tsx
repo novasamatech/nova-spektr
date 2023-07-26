@@ -11,10 +11,9 @@ jest.mock('@renderer/app/providers', () => ({
   }),
 }));
 
-jest.mock(
-  '@renderer/components/common/AddressWithExplorers/AddressWithExplorers',
-  jest.fn().mockReturnValue(({ address }: { address: string }) => <span data-testid="account">{address}</span>),
-);
+jest.mock('@renderer/entities/account', () => ({
+  AddressWithExplorers: ({ address }: { address: string }) => <span data-testid="account">{address}</span>,
+}));
 
 describe('screens/Staking/components/AccountsModal', () => {
   const defaultProps = {

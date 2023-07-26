@@ -13,11 +13,8 @@ jest.mock('@renderer/app/providers', () => ({
   }),
 }));
 
-jest.mock('@renderer/services/staking/apyCalculator', () => ({
+jest.mock('@renderer/entities/staking', () => ({
   getAvgApy: jest.fn().mockResolvedValue('3'),
-}));
-
-jest.mock('@renderer/services/staking/stakingDataService', () => ({
   useStakingData: jest.fn().mockReturnValue({
     getMinNominatorBond: jest.fn().mockResolvedValue('1000000000000'),
     getUnbondingPeriod: jest.fn().mockReturnValue('43200'),
@@ -65,8 +62,8 @@ describe('screens/Staking/Overview/AboutStaking', () => {
       render(<AboutStaking api={api} era={100} asset={asset} validators={validators} />);
     });
 
-    const totalStaked = screen.getByText(/assetBalance.number 1.42M/);
-    const minimumStake = screen.getByText('assetBalance.number 1');
+    const totalStaked = screen.getByText(/assetBalance.number 1.42\sM/);
+    const minimumStake = screen.getAllByText(/assetBalance.number 1/)[0];
     // const activeNominators = screen.getByText('2');
     const stakingPeriod = screen.getByText('staking.about.unlimitedLabel');
     const unstakingPeriod = screen.getByText('time.hours');

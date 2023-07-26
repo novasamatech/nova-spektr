@@ -14,7 +14,7 @@ jest.mock('react-router-dom', () => ({
   Outlet: () => 'outlet',
 }));
 
-jest.mock('@renderer/services/contact/contactService', () => ({
+jest.mock('@renderer/entities/contact', () => ({
   useContact: jest.fn().mockReturnValue({
     getLiveContacts: jest.fn().mockReturnValue([]),
   }),

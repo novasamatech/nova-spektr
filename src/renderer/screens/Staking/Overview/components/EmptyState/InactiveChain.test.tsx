@@ -1,7 +1,7 @@
 import { render, screen } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 
-import { Paths } from '@renderer/app/providers';
+import { Paths } from '../../../../../app/providers';
 import { InactiveChain } from './InactiveChain';
 
 jest.mock('@renderer/app/providers', () => ({

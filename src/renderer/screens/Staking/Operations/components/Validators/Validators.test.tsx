@@ -13,7 +13,7 @@ jest.mock('@renderer/app/providers', () => ({
   }),
 }));
 
-jest.mock('@renderer/services/staking/validatorsService', () => ({
+jest.mock('@renderer/entities/staking', () => ({
   useValidators: jest.fn().mockReturnValue({
     getMaxValidators: jest.fn().mockReturnValue(6),
     getValidatorsWithInfo: jest.fn().mockResolvedValue({
@@ -25,9 +25,6 @@ jest.mock('@renderer/services/staking/validatorsService', () => ({
       },
     }),
   }),
-}));
-
-jest.mock('@renderer/services/staking/eraService', () => ({
   useEra: jest.fn().mockReturnValue({
     subscribeActiveEra: jest.fn().mockImplementation((api: any, eraCallback: any) => eraCallback(1)),
   }),

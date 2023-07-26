@@ -4,40 +4,37 @@ import { Matrix } from '@renderer/entities/matrix';
 import { MatrixProvider } from './MatrixContext';
 import { ConnectionType } from '@renderer/domain/connection';
 
-jest.mock('@renderer/services/matrix', () => jest.fn().mockReturnValue({}));
+jest.mock('@renderer/entities/matrix', () => ({ Matrix: jest.fn().mockReturnValue({}) }));
 
-jest.mock('@renderer/services/account/accountService', () => ({
+jest.mock('@renderer/entities/account', () => ({
   useAccount: jest.fn().mockReturnValue({
     getAccounts: jest.fn().mockReturnValue([]),
   }),
 }));
 
-jest.mock('@renderer/services/multisigTx/multisigTxService', () => ({
+jest.mock('@renderer/entities/multisig', () => ({
   useMultisigTx: jest.fn().mockReturnValue({
     getMultisigTxs: jest.fn(),
     addMultisigTx: jest.fn(),
     updateMultisigTx: jest.fn(),
     updateCallData: jest.fn(),
   }),
+  useMultisigEvent: jest.fn().mockReturnValue({
+    addEvent: jest.fn(),
+    updateEvent: jest.fn(),
+    getEvents: jest.fn().mockReturnValue([]),
+  }),
 }));
 
-jest.mock('@renderer/services/contact/contactService', () => ({
+jest.mock('@renderer/entities/contact', () => ({
   useContact: jest.fn().mockReturnValue({
     getContacts: jest.fn().mockReturnValue([]),
   }),
 }));
 
-jest.mock('@renderer/services/notification/notificationService', () => ({
+jest.mock('@renderer/entities/notification', () => ({
   useNotification: jest.fn().mockReturnValue({
     addNotification: jest.fn(),
-  }),
-}));
-
-jest.mock('@renderer/services/multisigEvent/multisigEventService', () => ({
-  useMultisigEvent: jest.fn().mockReturnValue({
-    addEvent: jest.fn(),
-    updateEvent: jest.fn(),
-    getEvents: jest.fn().mockReturnValue([]),
   }),
 }));
 
@@ -52,6 +49,9 @@ jest.mock('@renderer/app/providers', () => ({
         },
       },
     },
+  })),
+  useMultisigChainContext: jest.fn(() => ({
+    addTask: () => undefined,
   })),
 }));
 

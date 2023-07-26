@@ -24,29 +24,21 @@ jest.mock('@renderer/app/providers', () => ({
 const mockTxs = [{ name: 'Test Wallet', accountId: TEST_ACCOUNT_ID }];
 const mockAccounts = [{ name: 'Test Account', accountId: TEST_ACCOUNT_ID }];
 
-jest.mock('@renderer/services/multisigTx/multisigTxService', () => ({
+jest.mock('@renderer/entities/multisig', () => ({
   useMultisigTx: jest.fn().mockReturnValue({
     getLiveAccountMultisigTxs: () => mockTxs,
   }),
-}));
-
-jest.mock('@renderer/services/multisigEvent/multisigEventService', () => ({
   useMultisigEvent: jest.fn().mockReturnValue({
     getLiveEventsByKeys: jest.fn().mockResolvedValue([]),
   }),
 }));
 
-jest.mock('@renderer/services/account/accountService', () => ({
+jest.mock('@renderer/entities/account', () => ({
   useAccount: jest.fn().mockReturnValue({
     getActiveMultisigAccount: () => mockAccounts,
   }),
 }));
 
-// TODO add test for Operation component and move it there
-// jest.mock('./components/Chain/Chain', () => () => 'Chain');
-// jest.mock('./components/TransactionAmount', () => () => 'TransactionAmount');
-// jest.mock('./components/TransactionTitle/TransactionTitle', () => () => 'TransactionTitle');
-// jest.mock('./components/EmptyState/EmptyOperations', () => () => 'EmptyState/EmptyOperations');
 jest.mock('./components/Operation', () => () => 'Operation');
 jest.mock('./components/Filters', () => () => 'Filters');
 

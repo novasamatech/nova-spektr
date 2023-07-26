@@ -4,7 +4,7 @@ import { GraphqlProvider, useGraphql } from './GraphqlContext';
 
 jest.mock('@renderer/shared/lib/hooks');
 
-jest.mock('@renderer/services/network/chainsService', () => ({
+jest.mock('@renderer/entities/network', () => ({
   useChains: jest.fn().mockReturnValue({
     getStakingChainsData: jest
       .fn()
@@ -14,7 +14,7 @@ jest.mock('@renderer/services/network/chainsService', () => ({
   }),
 }));
 
-jest.mock('@renderer/services/settings/settingsStorage', () => ({
+jest.mock('@renderer/entities/settings', () => ({
   useSettingsStorage: jest.fn().mockReturnValue({
     getStakingNetwork: jest.fn().mockReturnValue('0x123'),
   }),

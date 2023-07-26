@@ -22,7 +22,7 @@ jest.mock('react-router-dom', () => ({
   useNavigate: jest.fn(),
 }));
 
-jest.mock('@renderer/services/account/accountService', () => ({
+jest.mock('@renderer/entities/account', () => ({
   useAccount: jest.fn().mockReturnValue({
     addAccount: jest.fn(),
     setActiveAccount: jest.fn(),
@@ -30,19 +30,19 @@ jest.mock('@renderer/services/account/accountService', () => ({
   }),
 }));
 
-jest.mock('@renderer/services/contact/contactService', () => ({
+jest.mock('@renderer/entities/contact', () => ({
   useContact: jest.fn().mockReturnValue({
     getLiveContacts: jest.fn().mockReturnValue([]),
   }),
 }));
 
-jest.mock('@renderer/services/wallet/walletService', () => ({
+jest.mock('@renderer/entities/wallet', () => ({
   useWallet: jest.fn().mockReturnValue({
     getWallets: jest.fn().mockResolvedValue([]),
   }),
 }));
 
-jest.mock('@renderer/services/network/chainsService', () => ({
+jest.mock('@renderer/entities/network', () => ({
   useChains: jest.fn().mockReturnValue({
     getChainsData: jest.fn().mockResolvedValue([]),
   }),
@@ -52,7 +52,7 @@ jest.mock('@renderer/components/modals/MatrixModal/MatrixModal', () => ({
   MatrixModal: () => <span>matrixModal</span>,
 }));
 
-jest.mock('@renderer/components/common/OperationResult/OperationResult', () => ({
+jest.mock('@renderer/entities/transaction', () => ({
   OperationResult: () => <span>operationResult</span>,
 }));
 

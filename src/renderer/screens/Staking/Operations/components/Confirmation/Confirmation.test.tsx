@@ -12,16 +12,15 @@ jest.mock('@renderer/app/providers', () => ({
   }),
 }));
 
-jest.mock('@renderer/services/multisigTx/multisigTxService', () => ({
+jest.mock('@renderer/entities/multisig', () => ({
   useMultisigTx: jest.fn().mockReturnValue({
     getMultisigTxs: jest.fn().mockReturnValue([]),
   }),
 }));
 
-jest.mock(
-  '@renderer/components/common/AddressWithExplorers/AddressWithExplorers',
-  jest.fn().mockReturnValue(({ address }: any) => <span data-testid="address">{address}</span>),
-);
+jest.mock('@renderer/entities/account', () => ({
+  AddressWithExplorers: ({ address }: any) => <span data-testid="address">{address}</span>,
+}));
 
 describe('screens/Staking/components/Confirmation', () => {
   const spyResult = jest.fn();

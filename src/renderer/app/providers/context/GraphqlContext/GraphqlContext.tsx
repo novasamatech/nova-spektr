@@ -4,7 +4,7 @@ import { createContext, PropsWithChildren, useCallback, useContext, useEffect, u
 
 import { ChainId } from '@renderer/domain/shared-kernel';
 import { useChains } from '@renderer/entities/network';
-import { useSettingsStorage } from '@renderer/entities/setttings';
+import { useSettingsStorage } from '@renderer/entities/settings';
 
 type GraphqlContextProps = {
   changeClient: (chainId: ChainId) => void;

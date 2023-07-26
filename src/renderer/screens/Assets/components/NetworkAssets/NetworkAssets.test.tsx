@@ -35,13 +35,10 @@ const testBalances = [
   },
 ];
 
-jest.mock('@renderer/services/balance/balanceService', () => ({
+jest.mock('@renderer/entities/asset', () => ({
   useBalance: jest.fn().mockReturnValue({
     getLiveNetworkBalances: () => testBalances,
   }),
-}));
-
-jest.mock('../AssetCard/AssetCard', () => ({
   AssetCard: ({ asset }: any) => <span data-testid="AssetCard">{asset.name}</span>,
 }));
 

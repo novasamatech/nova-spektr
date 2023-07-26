@@ -2,16 +2,23 @@ import { act, render, screen, waitFor } from '@testing-library/react';
 
 import { QrReader } from '@renderer/components/common';
 import { QrError } from '@renderer/components/common/QrCode/common/types';
-import { Button, Select } from '@renderer/shared/ui';
 import KeyQrReader from './KeyQrReader';
 
 jest.mock('@renderer/components/common');
-jest.mock('@renderer/shared/ui');
 
 jest.mock('@renderer/app/providers', () => ({
   useI18n: jest.fn().mockReturnValue({
     t: (key: string) => key,
   }),
+}));
+
+jest.mock('@renderer/shared/ui', () => ({
+  Select: ({ options }: any) => options.map((o: any) => <span key="1">{o.element}</span>),
+  Button: ({ children }: any) => <button type="button">{children}</button>,
+  Loader: () => '',
+  Icon: () => '',
+  FootnoteText: () => '',
+  CaptionText: () => '',
 }));
 
 describe('screens/Onboarding/Vault/KeyQrReader', () => {
@@ -41,9 +48,6 @@ describe('screens/Onboarding/Vault/KeyQrReader', () => {
           qrReader
         </button>
       ));
-      (Select as jest.Mock).mockImplementation(({ options }: any) =>
-        options.map((o: any) => <span key="1">{o.element}</span>),
-      );
 
       render(<KeyQrReader onResult={() => {}} />);
 
@@ -108,12 +112,6 @@ describe('screens/Onboarding/Vault/KeyQrReader', () => {
       const qrButton = screen.getByRole('button');
       act(() => qrButton.click());
     };
-
-    beforeAll(() => {
-      (Button as unknown as jest.Mock).mockImplementation(({ children }: any) => (
-        <button type="button">{children}</button>
-      ));
-    });
 
     afterEach(() => {
       jest.clearAllMocks();

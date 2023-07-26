@@ -14,7 +14,7 @@ jest.mock('react-router-dom', () => ({
   useSearchParams: jest.fn().mockReturnValue([new URLSearchParams('id=7')]),
 }));
 
-jest.mock('@renderer/services/contact/contactService', () => ({
+jest.mock('@renderer/entities/contact', () => ({
   useContact: jest.fn().mockReturnValue({
     getContact: jest.fn().mockResolvedValue({
       name: 'Contact',

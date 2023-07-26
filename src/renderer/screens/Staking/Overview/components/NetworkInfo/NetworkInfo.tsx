@@ -5,7 +5,7 @@ import { Select, FootnoteText, Plate, IconButton, Shimmering } from '@renderer/s
 import { DropdownOption, DropdownResult } from '@renderer/shared/ui/types';
 import { getRelaychainAsset } from '@renderer/shared/lib/utils';
 import { useChains } from '@renderer/entities/network';
-import { useSettingsStorage } from '@renderer/entities/setttings';
+import { useSettingsStorage } from '@renderer/entities/settings';
 import { Chain, ChainTitle } from '@renderer/entities/chain';
 import { useToggle } from '@renderer/shared/lib/hooks';
 import { useI18n } from '@renderer/app/providers';
