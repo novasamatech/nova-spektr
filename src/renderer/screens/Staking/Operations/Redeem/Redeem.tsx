@@ -100,8 +100,8 @@ export const Redeem = () => {
       <BaseModal
         closeButton
         contentClass=""
+        panelClass="w-[440px]"
         headerClass="py-3 px-5 max-w-[440px]"
-        panelClass="w-max"
         isOpen={isRedeemModalOpen}
         title={<OperationModalTitle title={`${t('staking.redeem.title', { asset: '' })}`} chainId={chainId} />}
         onClose={closeRedeemModal}
@@ -264,7 +264,9 @@ export const Redeem = () => {
             api={api}
             transaction={multisigTx || transactions[0]}
             countdown={countdown}
-            accountId={(signer || txAccounts[0]).accountId}
+            accountIds={
+              transactions.length > 1 ? txAccounts.map((t) => t.accountId) : [(signer || txAccounts[0]).accountId]
+            }
             multiQr={transactions.length > 1}
             onResult={onSignResult}
             onGoBack={() => setActiveStep(Step.SCANNING)}

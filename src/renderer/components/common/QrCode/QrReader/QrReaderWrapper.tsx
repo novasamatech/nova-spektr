@@ -99,9 +99,9 @@ const QrReaderWrapper = ({ className, onResult, countdown, validationError, isMu
 
   const qrReaderProps: QrReaderProps = {
     size: 240,
-    bgVideoClassName: 'w-[440px] h-[532px]',
+    bgVideoClassName: 'w-[440px] h-[544px]',
     className: cnTw(
-      'z-10 w-[440px] h-[532px] top-[-124px]',
+      'z-10 w-[440px] h-[544px] top-[-126px]',
       error === CameraError.INVALID_ERROR && 'blur-[13px]',
       className,
     ),
@@ -154,7 +154,7 @@ const QrReaderWrapper = ({ className, onResult, countdown, validationError, isMu
           </div>
         )}
 
-        {isLoading && <Shimmering width={240} height={240} className="absolute rounded-[1.75rem]" />}
+        {isLoading && <Shimmering width={240} height={240} className="absolute rounded-[22px]" />}
 
         {isCameraOn && (
           <div className={cn(isLoading && 'hidden', className)}>
@@ -170,6 +170,7 @@ const QrReaderWrapper = ({ className, onResult, countdown, validationError, isMu
       <div className="h-8.5 mb-4">
         {availableCameras && availableCameras.length > 1 && (
           <Select
+            theme="dark"
             placeholder={t('onboarding.paritySigner.selectCameraLabel')}
             selectedId={activeCamera?.id}
             options={availableCameras}

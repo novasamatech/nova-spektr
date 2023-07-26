@@ -442,7 +442,7 @@ export const useTransaction = (): ITransactionService => {
       });
   };
 
-  const verifySignature = (payload: Uint8Array, signature: HexString, accountId: AccountId): Boolean => {
+  const verifySignature = (payload: string | Uint8Array, signature: HexString, accountId: AccountId): Boolean => {
     const result: VerifyResult = signatureVerify(payload, signature, accountId);
 
     return result.isValid;

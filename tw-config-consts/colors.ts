@@ -98,4 +98,6 @@ export default {
   'selected-background': 'var(--selected-background)',
   'black-background': 'var(--black-background)',
   'background-dark': 'var(--background-dark)',
+  'background-item-hover': 'var(--background-item-hover)',
+  'background-item-selected': 'var(--background-item-selected)',
 };

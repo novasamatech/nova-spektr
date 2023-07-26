@@ -93,10 +93,11 @@ const ScanMultiframeQr = ({
 
   return (
     <div className="flex flex-col items-center w-full">
-      <QrGeneratorContainer countdown={countdown} chainId={chainId} onQrReset={setupTransactions}>
-        {bulkTxExist && encoder && <QrMultiframeGenerator payload={bulkTransactions} size={200} encoder={encoder} />}
-      </QrGeneratorContainer>
-
+      <div className="mt-10">
+        <QrGeneratorContainer countdown={countdown} chainId={chainId} onQrReset={setupTransactions}>
+          {bulkTxExist && encoder && <QrMultiframeGenerator payload={bulkTransactions} size={200} encoder={encoder} />}
+        </QrGeneratorContainer>
+      </div>
       <div className="flex w-full justify-between mt-3">
         <Button variant="text" onClick={onGoBack}>
           {t('operation.goBackButton')}

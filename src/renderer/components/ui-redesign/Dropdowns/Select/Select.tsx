@@ -4,12 +4,15 @@ import { Fragment, useId } from 'react';
 import cnTw from '@renderer/shared/utils/twMerge';
 import { Icon } from '@renderer/components/ui';
 import { DropdownOption, DropdownResult, Position, Theme } from '../common/types';
-import { CommonInputStyles } from '@renderer/components/ui-redesign/Inputs/common/styles';
+import { CommonInputStyles, CommonInputStylesTheme } from '@renderer/components/ui-redesign/Inputs/common/styles';
 import { FootnoteText, LabelText } from '@renderer/components/ui-redesign';
 import {
+  ButtonTextStyle,
   OptionsContainerStyle,
   OptionsContainerStyleTheme,
   OptionStyle,
+  OptionStyleTheme,
+  OptionTextStyle,
   SelectButtonStyle,
   ViewClass,
 } from '../common/constants';
@@ -52,24 +55,25 @@ const Select = <T extends any>({
             id={id}
             tabIndex={tabIndex}
             className={cnTw(
-              open && SelectButtonStyle.open,
-              !open && !invalid && SelectButtonStyle.closed,
-              invalid && SelectButtonStyle.invalid,
-              SelectButtonStyle.disabled,
+              open && SelectButtonStyle[theme].open,
+              !open && !invalid && SelectButtonStyle[theme].closed,
+              invalid && SelectButtonStyle[theme].invalid,
+              SelectButtonStyle[theme].disabled,
               CommonInputStyles,
+              CommonInputStylesTheme[theme],
               'w-full flex items-center gap-x-2 justify-between pr-2',
             )}
           >
             {selectedOption ? (
               typeof selectedOption.element === 'string' ? (
-                <FootnoteText as="span" className="truncate">
+                <FootnoteText as="span" className={cnTw('truncate', ButtonTextStyle[theme])}>
                   {selectedOption.element}
                 </FootnoteText>
               ) : (
                 selectedOption.element
               )
             ) : (
-              <FootnoteText as="span" className="text-text-secondary">
+              <FootnoteText as="span" className={ButtonTextStyle[theme]}>
                 {placeholder}
               </FootnoteText>
             )}
@@ -88,11 +92,13 @@ const Select = <T extends any>({
                 <Listbox.Option
                   key={id}
                   value={{ id, value }}
-                  className={({ active, selected }) =>
-                    cnTw(OptionStyle, active && 'bg-action-background-hover', selected && 'bg-selected-background')
-                  }
+                  className={({ active, selected }) => cnTw(OptionStyle, OptionStyleTheme[theme](active, selected))}
                 >
-                  {['string', 'number'].includes(typeof element) ? <FootnoteText>{element}</FootnoteText> : element}
+                  {['string', 'number'].includes(typeof element) ? (
+                    <FootnoteText className={OptionTextStyle[theme]}>{element}</FootnoteText>
+                  ) : (
+                    element
+                  )}
                 </Listbox.Option>
               ))}
             </Listbox.Options>

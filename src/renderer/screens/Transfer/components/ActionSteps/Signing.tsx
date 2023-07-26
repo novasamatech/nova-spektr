@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { BN, hexToU8a, u8aToHex } from '@polkadot/util';
+import { BN } from '@polkadot/util';
 import { ApiPromise } from '@polkadot/api';
 
 import QrReaderWrapper from '@renderer/components/common/QrCode/QrReader/QrReaderWrapper';
@@ -80,7 +80,8 @@ const Signing = ({
   const handleResult = async (signature: string): Promise<void> => {
     const [balanceIsEnough, feeIsEnough] = await Promise.all([validateBalance(), validateBalanceForFee()]);
 
-    const isVerified = txPayload && verifySignature(txPayload, u8aToHex(hexToU8a(signature)), accountId);
+    const verifiablePayload = txPayload?.slice(2);
+    const isVerified = verifiablePayload && verifySignature(verifiablePayload, signature as HexString, accountId);
 
     if (!balanceIsEnough) {
       setValidationError(ValidationErrors.INSUFFICIENT_BALANCE);
@@ -94,7 +95,7 @@ const Signing = ({
   };
 
   return (
-    <div className="flex flex-col items-center gap-y-2.5 w-full">
+    <div className="flex flex-col items-center gap-y-2.5 rounded-b-lg w-[440px] bg-black">
       <QrReaderWrapper
         countdown={countdown}
         validationError={validationError}

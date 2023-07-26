@@ -88,6 +88,12 @@ const Transfer = ({ assetId, chainId, isOpen, onClose }: Props) => {
     setSignatory(undefined);
   };
 
+  const onScanResult = (tx: UnsignedTransaction, payload: Uint8Array) => {
+    setUnsignedTx(tx);
+    setActiveStep(Step.SIGNING);
+    setTxPayload(payload);
+  };
+
   const commonProps = { explorers, addressPrefix };
 
   const getSignatory = (): Account | undefined => {
@@ -147,11 +153,7 @@ const Transfer = ({ assetId, chainId, isOpen, onClose }: Props) => {
                 countdown={countdown}
                 api={api}
                 onResetCountdown={resetCountdown}
-                onResult={(tx, payload) => {
-                  setUnsignedTx(tx);
-                  setActiveStep(Step.SIGNING);
-                  setTxPayload(payload);
-                }}
+                onResult={onScanResult}
                 onGoBack={() => setActiveStep(Step.CONFIRMATION)}
                 {...commonProps}
               />

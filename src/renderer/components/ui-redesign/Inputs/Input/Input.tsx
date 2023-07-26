@@ -3,7 +3,8 @@ import { ReactNode, ComponentPropsWithoutRef, forwardRef, useId } from 'react';
 import cnTw from '@renderer/shared/utils/twMerge';
 import { LabelText } from '../../Typography';
 import { HTMLInputProps } from '../common/types';
-import { CommonInputStyles } from '../common/styles';
+import { CommonInputStyles, CommonInputStylesTheme } from '../common/styles';
+import { Theme } from '../../Dropdowns/common/types';
 
 export type Props = Pick<ComponentPropsWithoutRef<'input'>, HTMLInputProps> & {
   label?: ReactNode;
@@ -11,6 +12,7 @@ export type Props = Pick<ComponentPropsWithoutRef<'input'>, HTMLInputProps> & {
   wrapperClass?: string;
   prefixElement?: ReactNode;
   suffixElement?: ReactNode;
+  theme?: Theme;
   onChange?: (value: string) => void;
 };
 
@@ -27,6 +29,7 @@ const Input = forwardRef<HTMLInputElement, Props>(
       onChange,
       disabled,
       spellCheck = false,
+      theme = 'light',
       ...props
     },
     ref,
@@ -38,6 +41,7 @@ const Input = forwardRef<HTMLInputElement, Props>(
         className={cnTw(
           'relative flex object-contain',
           CommonInputStyles,
+          CommonInputStylesTheme[theme],
           !disabled && 'hover:shadow-card-shadow',
           !invalid && 'focus-within:border-active-container-border',
           disabled && 'bg-input-background-disabled text-text-tertiary',
