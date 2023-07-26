@@ -7,7 +7,7 @@ import {
   MultisigNotification,
   MultisigNotificationType,
   Notification,
-} from '@renderer/entities/notification';
+} from '../../model/notification';
 import { useI18n } from '@renderer/app/providers';
 import { toAddress } from '@renderer/shared/lib/utils';
 

@@ -3,6 +3,9 @@ import noop from 'lodash/noop';
 
 import Alert from './Alert';
 
+// jest.mock('dexie-react-hooks');
+// jest.mock('dexie');
+
 describe('ui/Alert', () => {
   test('should render title and items', () => {
     render(

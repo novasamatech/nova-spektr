@@ -1,12 +1,13 @@
 import { useState } from 'react';
 import { Trans } from 'react-i18next';
 
-import { Paths, PathValue, useI18n } from '@renderer/app/providers';
+import { useI18n, PathValue } from '@renderer/app/providers';
+import { Paths } from '../../../../../app/providers/routes/paths';
 import { SmallTitleText, DropdownButton, Button, BaseModal, Icon } from '@renderer/shared/ui';
 import { Stake } from '@renderer/entities/staking';
 import { toAccountId } from '@renderer/shared/lib/utils';
 import { useToggle } from '@renderer/shared/lib/hooks';
-import { ButtonDropdownOption } from '@renderer/shared/ui/Dropdowns/DropdownButton/DropdownButton';
+import { ButtonDropdownOption } from '@renderer/shared/ui/types';
 import { Address } from '@renderer/domain/shared-kernel';
 import { IconNames } from '@renderer/shared/ui/Icon/data';
 

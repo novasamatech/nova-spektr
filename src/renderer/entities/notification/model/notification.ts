@@ -1,12 +1,13 @@
 import { AccountId, CallHash, ChainId, Timepoint } from '../../../domain/shared-kernel';
+import { ObjectValues } from '@renderer/domain/utility';
 
-export const enum MultisigNotificationType {
-  ACCOUNT_INVITED = 'MultisigAccountInvitedNotification',
-  MST_CREATED = 'MultisigCreatedNotification',
-  MST_APPROVED = 'MultisigApprovedNotification',
-  MST_EXECUTED = 'MultisigExecutedNotification',
-  MST_CANCELLED = 'MultisigCancelledNotification',
-}
+export const MultisigNotificationType = {
+  ACCOUNT_INVITED: 'MultisigAccountInvitedNotification',
+  MST_CREATED: 'MultisigCreatedNotification',
+  MST_APPROVED: 'MultisigApprovedNotification',
+  MST_EXECUTED: 'MultisigExecutedNotification',
+  MST_CANCELLED: 'MultisigCancelledNotification',
+} as const;
 
 export type MultisigAccountInvitedNotification = {
   signatories: AccountId[];
@@ -29,5 +30,5 @@ export type MultisigNotification = {
 export type Notification = {
   read: boolean;
   dateCreated: number;
-  type: MultisigNotificationType;
+  type: ObjectValues<typeof MultisigNotificationType>;
 } & MultisigNotification;
