@@ -9,7 +9,12 @@ export const ViewClass: Record<Exclude<Position, 'auto'>, string> = {
 export const OptionsContainerStyle =
   'mt-1 absolute z-20 py-1 px-1 max-h-60 w-full overflow-auto border rounded shadow-card-shadow';
 
-export const ButtonTextStyle = {
+export const ButtonTextFilledStyle = {
+  light: 'text-text-primary',
+  dark: 'text-white',
+};
+
+export const ButtonTextEmptyStyle = {
   light: 'text-text-secondary',
   dark: 'text-text-tertiary',
 };

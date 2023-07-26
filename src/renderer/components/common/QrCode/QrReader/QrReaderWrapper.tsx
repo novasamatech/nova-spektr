@@ -139,20 +139,18 @@ const QrReaderWrapper = ({ className, onResult, countdown, validationError, isMu
 
       {/* scanning frame */}
       <div className="w-[240px] h-[240px] mb-4">
-        {!isLoading && (
-          <div className="relative">
-            <div
-              className={cnTw(
-                'absolute w-[240px] h-[240px] z-20',
-                isCameraOn ? 'border-white' : 'border-filter-border',
-                'border-2 rounded-[22px]',
-              )}
-            ></div>
-            <div className="z-30 absolute flex flex-col items-center justify-center gap-y-4 w-full h-[240px]">
-              <SignatureReaderError error={error} isCameraOn={isCameraOn && !isLoading} onTryAgain={onRetryCamera} />
-            </div>
+        <div className="relative">
+          <div
+            className={cnTw(
+              'absolute w-[240px] h-[240px] z-20',
+              isCameraOn ? 'border-white' : 'border-filter-border',
+              'border-2 rounded-[22px]',
+            )}
+          ></div>
+          <div className="z-30 absolute flex flex-col items-center justify-center gap-y-4 w-full h-[240px]">
+            <SignatureReaderError error={error} isCameraOn={isCameraOn && !isLoading} onTryAgain={onRetryCamera} />
           </div>
-        )}
+        </div>
 
         {isLoading && <Shimmering width={240} height={240} className="absolute rounded-[22px]" />}
 

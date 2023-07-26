@@ -7,7 +7,8 @@ import { DropdownOption, DropdownResult, Position, Theme } from '../common/types
 import { CommonInputStyles, CommonInputStylesTheme } from '@renderer/components/ui-redesign/Inputs/common/styles';
 import { FootnoteText, LabelText } from '@renderer/components/ui-redesign';
 import {
-  ButtonTextStyle,
+  ButtonTextFilledStyle,
+  ButtonTextEmptyStyle,
   OptionsContainerStyle,
   OptionsContainerStyleTheme,
   OptionStyle,
@@ -66,14 +67,14 @@ const Select = <T extends any>({
           >
             {selectedOption ? (
               typeof selectedOption.element === 'string' ? (
-                <FootnoteText as="span" className={cnTw('truncate', ButtonTextStyle[theme])}>
+                <FootnoteText as="span" className={cnTw('truncate', ButtonTextFilledStyle[theme])}>
                   {selectedOption.element}
                 </FootnoteText>
               ) : (
                 selectedOption.element
               )
             ) : (
-              <FootnoteText as="span" className={ButtonTextStyle[theme]}>
+              <FootnoteText as="span" className={ButtonTextEmptyStyle[theme]}>
                 {placeholder}
               </FootnoteText>
             )}
