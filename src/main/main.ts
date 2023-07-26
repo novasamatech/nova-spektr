@@ -25,18 +25,8 @@ log.transports.file.archiveLogFn = (oldLogFile: LogFile): void => {
   const info = path.parse(file);
 
   try {
-    const date = new Date();
-    let newFileName = path.join(
-      info.dir,
-      info.name + '.' + date.getFullYear() + '-' + (date.getMonth() + 1) + '-' + date.getDate() + info.ext,
-    );
-    if (fs.existsSync(newFileName)) {
-      let i: number = 1;
-      do {
-        i++;
-      } while (fs.existsSync(newFileName + '-' + i));
-      newFileName = newFileName + '-' + i;
-    }
+    const date = new Date().toISOString();
+    let newFileName = path.join(info.dir, info.name + '.' + date + info.ext);
     fs.renameSync(file, newFileName);
   } catch (e) {
     console.warn('Could not rotate log', e);
