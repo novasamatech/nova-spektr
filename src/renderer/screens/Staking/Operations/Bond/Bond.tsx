@@ -330,7 +330,7 @@ export const Bond = () => {
           <Signing
             countdown={countdown}
             accountIds={
-              transactions.length > 1 ? txAccounts.map((t) => t.accountId) : [(signer || txAccounts[0]).accountId]
+              transactions.length > 1 ? txAccounts.map((t) => t.accountId) : [(signer || txAccounts[0])?.accountId]
             }
             txPayloads={txPayloads}
             multiQr={transactions.length > 1}

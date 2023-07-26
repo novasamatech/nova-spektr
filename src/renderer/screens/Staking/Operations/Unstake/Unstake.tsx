@@ -298,7 +298,7 @@ export const Unstake = () => {
             txPayloads={txPayloads}
             countdown={countdown}
             accountIds={
-              transactions.length > 1 ? txAccounts.map((t) => t.accountId) : [(signer || txAccounts[0]).accountId]
+              transactions.length > 1 ? txAccounts.map((t) => t.accountId) : [(signer || txAccounts[0])?.accountId]
             }
             multiQr={transactions.length > 1}
             onResult={onSignResult}
