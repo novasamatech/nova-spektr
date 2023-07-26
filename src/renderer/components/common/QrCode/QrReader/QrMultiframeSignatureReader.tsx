@@ -34,7 +34,7 @@ const QrMultiframeSignatureReader = ({
   size = 300,
   cameraId,
   className,
-  bgVideo,
+  bgVideo = true,
   bgVideoClassName,
   onCameraList,
   onResult,
@@ -288,7 +288,7 @@ const QrMultiframeSignatureReader = ({
         controls={false}
         ref={videoRef}
         data-testid="qr-reader"
-        className={cnTw('object-cover absolute -scale-x-100', className)}
+        className={cnTw('object-cover  absolute -scale-x-100', className)}
         style={videoStyle}
       >
         {t('qrReader.videoError')}
@@ -318,7 +318,7 @@ const QrMultiframeSignatureReader = ({
         data-testid="qr-reader"
         className={cnTw('absolute -scale-x-100 object-cover top-0 left-0 blur-[14px] max-w-none', bgVideoClassName)}
       />
-      <div className="video-cover" />
+      <div className="video-cover rounded-b-lg" />
     </>
   );
 };

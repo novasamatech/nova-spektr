@@ -55,6 +55,7 @@ const RejectTx = ({ tx, account, connection }: Props) => {
 
   const [rejectTx, setRejectTx] = useState<Transaction>();
   const [unsignedTx, setUnsignedTx] = useState<UnsignedTransaction>();
+  const [txPayload, setTxPayload] = useState<Uint8Array>();
 
   const [rejectReason, setRejectReason] = useState('');
   const [signature, setSignature] = useState<HexString>();
@@ -187,8 +188,9 @@ const RejectTx = ({ tx, account, connection }: Props) => {
             countdown={countdown}
             onResetCountdown={resetCountdown}
             onGoBack={goBack}
-            onResult={(tx) => {
+            onResult={(tx, txPayload) => {
               setUnsignedTx(tx);
+              setTxPayload(txPayload);
               setActiveStep(Step.SIGNING);
             }}
           />
@@ -204,6 +206,7 @@ const RejectTx = ({ tx, account, connection }: Props) => {
                 countdown={countdown}
                 accountId={signAccount?.accountId}
                 assetId={nativeAsset?.assetId.toString() || '0'}
+                txPayload={txPayload}
                 onGoBack={goBack}
                 onStartOver={() => {}}
                 onResult={onSignResult}

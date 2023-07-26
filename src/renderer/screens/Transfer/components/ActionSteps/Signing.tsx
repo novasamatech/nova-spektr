@@ -95,7 +95,7 @@ const Signing = ({
   };
 
   return (
-    <div className="flex flex-col items-center gap-y-2.5 rounded-b-lg w-[440px] bg-black">
+    <div className="flex flex-col items-center gap-y-2.5 w-[440px] rounded-b-lg bg-black">
       <QrReaderWrapper
         countdown={countdown}
         validationError={validationError}

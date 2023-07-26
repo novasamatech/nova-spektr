@@ -29,7 +29,7 @@ type Props = {
   countdown: number;
   onGoBack: () => void;
   onResetCountdown: () => void;
-  onResult: (unsigned: UnsignedTransaction[]) => void;
+  onResult: (unsigned: UnsignedTransaction[], txPayloads: Uint8Array[]) => void;
 };
 
 const ScanMultiframeQr = ({
@@ -49,6 +49,7 @@ const ScanMultiframeQr = ({
   const [encoder, setEncoder] = useState<Encoder>();
   const [bulkTransactions, setBulkTransactions] = useState<Uint8Array>();
   const [unsignedTransactions, setUnsignedTransactions] = useState<UnsignedTransaction[]>([]);
+  const [txPayloads, setTxPayloads] = useState<Uint8Array[]>([]);
 
   useEffect(() => {
     if (unsignedTransactions.length) return;
@@ -84,6 +85,7 @@ const ScanMultiframeQr = ({
 
     setBulkTransactions(createMultipleSignPayload(transactionsEncoded));
     setUnsignedTransactions(txRequests.map((t) => t.unsigned));
+    setTxPayloads(txRequests.map((t) => t.signPayload));
     setEncoder(Encoder.with_defaults(bulk, 128));
   };
 
@@ -103,7 +105,7 @@ const ScanMultiframeQr = ({
           {t('operation.goBackButton')}
         </Button>
 
-        <Button disabled={!bulkTxExist || countdown === 0} onClick={() => onResult(unsignedTransactions)}>
+        <Button disabled={!bulkTxExist || countdown === 0} onClick={() => onResult(unsignedTransactions, txPayloads)}>
           {t('signing.continueButton')}
         </Button>
       </div>

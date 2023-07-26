@@ -51,6 +51,7 @@ export const Destination = () => {
   const [multisigTx, setMultisigTx] = useState<Transaction>();
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [unsignedTransactions, setUnsignedTransactions] = useState<UnsignedTransaction[]>([]);
+  const [txPayloads, setTxPayloads] = useState<Uint8Array[]>([]);
 
   const [accounts, setAccounts] = useState<Account[]>([]);
   const [txAccounts, setTxAccounts] = useState<Account[]>([]);
@@ -117,7 +118,7 @@ export const Destination = () => {
       <BaseModal
         closeButton
         contentClass=""
-        panelClass="w-[440px]"
+        panelClass="w-max"
         headerClass="py-3 px-5 max-w-[440px]"
         isOpen={isDestModalOpen}
         title={<OperationModalTitle title={`${t('staking.destination.title', { asset: '' })}`} chainId={chainId} />}
@@ -240,7 +241,10 @@ export const Destination = () => {
                 chainId={chainId}
                 onGoBack={() => setActiveStep(Step.CONFIRMATION)}
                 onResetCountdown={resetCountdown}
-                onResult={onScanResult}
+                onResult={(unsignedTx, payloads) => {
+                  onScanResult(unsignedTx);
+                  setTxPayloads(payloads);
+                }}
               />
             ) : (
               <ScanSingleframeQr
@@ -252,15 +256,17 @@ export const Destination = () => {
                 chainId={chainId}
                 onGoBack={() => setActiveStep(Step.CONFIRMATION)}
                 onResetCountdown={resetCountdown}
-                onResult={(unsignedTx) => onScanResult([unsignedTx])}
+                onResult={(unsignedTx, txPayload) => {
+                  onScanResult([unsignedTx]);
+                  setTxPayloads([txPayload]);
+                }}
               />
             )}
           </div>
         )}
         {activeStep === Step.SIGNING && (
           <Signing
-            api={api}
-            transaction={multisigTx || transactions[0]}
+            txPayloads={txPayloads}
             countdown={countdown}
             accountIds={
               transactions.length > 1 ? txAccounts.map((t) => t.accountId) : [(signer || txAccounts[0]).accountId]
