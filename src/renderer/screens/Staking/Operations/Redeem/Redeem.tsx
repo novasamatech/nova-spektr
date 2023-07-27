@@ -54,6 +54,7 @@ export const Redeem = () => {
   const [multisigTx, setMultisigTx] = useState<Transaction>();
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [unsignedTransactions, setUnsignedTransactions] = useState<UnsignedTransaction[]>([]);
+  const [txPayloads, setTxPayloads] = useState<Uint8Array[]>([]);
 
   const [signatures, setSignatures] = useState<HexString[]>([]);
 
@@ -100,8 +101,8 @@ export const Redeem = () => {
       <BaseModal
         closeButton
         contentClass=""
-        headerClass="py-4 px-5 max-w-[440px]"
         panelClass="w-max"
+        headerClass="py-3 px-5 max-w-[440px]"
         isOpen={isRedeemModalOpen}
         title={<OperationModalTitle title={`${t('staking.redeem.title', { asset: '' })}`} chainId={chainId} />}
         onClose={closeRedeemModal}
@@ -121,7 +122,7 @@ export const Redeem = () => {
       <BaseModal
         closeButton
         contentClass=""
-        headerClass="py-4 px-5 max-w-[440px]"
+        headerClass="py-3 px-5 max-w-[440px]"
         panelClass="w-max"
         isOpen={isRedeemModalOpen}
         title={<OperationModalTitle title={`${t('staking.redeem.title', { asset: '' })}`} chainId={chainId} />}
@@ -205,7 +206,7 @@ export const Redeem = () => {
       <BaseModal
         closeButton
         contentClass=""
-        headerClass="py-4 px-5 max-w-[440px]"
+        headerClass="py-3 px-5 max-w-[440px]"
         panelClass="w-max"
         isOpen={activeStep !== Step.SUBMIT && isRedeemModalOpen}
         title={
@@ -242,7 +243,10 @@ export const Redeem = () => {
                 chainId={chainId}
                 onGoBack={() => setActiveStep(Step.CONFIRMATION)}
                 onResetCountdown={resetCountdown}
-                onResult={onScanResult}
+                onResult={(unsignedTx, payloads) => {
+                  onScanResult(unsignedTx);
+                  setTxPayloads(payloads);
+                }}
               />
             ) : (
               <ScanSingleframeQr
@@ -254,14 +258,21 @@ export const Redeem = () => {
                 chainId={chainId}
                 onGoBack={() => setActiveStep(Step.CONFIRMATION)}
                 onResetCountdown={resetCountdown}
-                onResult={(unsignedTx) => onScanResult([unsignedTx])}
+                onResult={(unsignedTx, txPayload) => {
+                  onScanResult([unsignedTx]);
+                  setTxPayloads([txPayload]);
+                }}
               />
             )}
           </div>
         )}
         {activeStep === Step.SIGNING && (
           <Signing
+            txPayloads={txPayloads}
             countdown={countdown}
+            accountIds={
+              transactions.length > 1 ? txAccounts.map((t) => t.accountId) : [(signer || txAccounts[0])?.accountId]
+            }
             multiQr={transactions.length > 1}
             onResult={onSignResult}
             onGoBack={() => setActiveStep(Step.SCANNING)}

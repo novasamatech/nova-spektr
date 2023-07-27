@@ -11,7 +11,8 @@ import { SelectButtonStyle, OptionStyle } from '@renderer/components/ui-redesign
 import { FootnoteText, IconButton, Button } from '@renderer/components/ui-redesign';
 import { HelpText } from '@renderer/components/ui-redesign/Typography';
 import { useScrollTo } from '@renderer/shared/hooks';
-import CommonInputStyles from '@renderer/components/ui-redesign/Inputs/common/styles';
+import { CommonInputStyles, CommonInputStylesTheme } from '@renderer/components/ui-redesign/Inputs/common/styles';
+import { Theme } from '@renderer/components/ui-redesign/Dropdowns/common/types';
 
 export const OptionsContainerStyle =
   'mt-1 absolute z-20 py-1 px-1 w-full border border-token-container-border rounded bg-input-background shadow-card-shadow';
@@ -26,6 +27,7 @@ type SelectorPayload = {
 
 type Props = {
   networkItem: ExtendedChain;
+  theme?: Theme;
   onDisconnect: () => void;
   onConnect: (type: ConnectionType, node?: RpcNode) => void;
   onRemoveCustomNode: (node: RpcNode) => void;
@@ -34,6 +36,7 @@ type Props = {
 
 export const NetworkSelector = ({
   networkItem,
+  theme = 'light',
   onDisconnect,
   onConnect,
   onRemoveCustomNode,
@@ -91,9 +94,10 @@ export const NetworkSelector = ({
         <div className="relative">
           <Listbox.Button
             className={cnTw(
-              open && SelectButtonStyle.open,
-              SelectButtonStyle.disabled,
+              open && SelectButtonStyle[theme].open,
+              SelectButtonStyle[theme].disabled,
               CommonInputStyles,
+              CommonInputStylesTheme[theme],
               'w-[248px] flex items-center gap-x-2 justify-between',
             )}
             onClick={scroll}

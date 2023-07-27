@@ -62,6 +62,7 @@ const ApproveTx = ({ tx, account, connection }: Props) => {
   const [feeTx, setFeeTx] = useState<Transaction>();
   const [approveTx, setApproveTx] = useState<Transaction>();
   const [unsignedTx, setUnsignedTx] = useState<UnsignedTransaction>();
+  const [txPayload, setTxPayload] = useState<Uint8Array>();
 
   const [txWeight, setTxWeight] = useState<Weight>();
   const [signature, setSignature] = useState<HexString>();
@@ -196,7 +197,7 @@ const ApproveTx = ({ tx, account, connection }: Props) => {
         isOpen={activeStep !== Step.SUBMIT && isModalOpen}
         title={<OperationModalTitle title={`${t(transactionTitle)} ${t('on')}`} chainId={tx.chainId} />}
         contentClass={activeStep === Step.SIGNING ? '' : undefined}
-        headerClass="py-4 px-5 max-w-[440px]"
+        headerClass="py-3 px-5 max-w-[440px]"
         panelClass="w-[440px]"
         onClose={handleClose}
       >
@@ -220,8 +221,9 @@ const ApproveTx = ({ tx, account, connection }: Props) => {
             countdown={countdown}
             onResetCountdown={resetCountdown}
             onGoBack={goBack}
-            onResult={(tx) => {
+            onResult={(tx, txPayload) => {
               setUnsignedTx(tx);
+              setTxPayload(txPayload);
               setActiveStep(Step.SIGNING);
             }}
           />
@@ -235,7 +237,9 @@ const ApproveTx = ({ tx, account, connection }: Props) => {
                 chainId={tx.chainId}
                 transaction={approveTx}
                 countdown={countdown}
+                accountId={signAccount?.accountId}
                 assetId={nativeAsset?.assetId.toString() || '0'}
+                txPayload={txPayload}
                 onGoBack={goBack}
                 onStartOver={() => {}}
                 onResult={onSignResult}

@@ -509,9 +509,9 @@
     "qrNotValid": "QR code isn’t valid anymore",
     "scanQrTitle": "Scan the operation QR code with Polkadot Vault",
     "scanSignatureTitle": "Scan QR code from Polkadot Vault",
-    "signatory": "Signatory:",
     "signatureExpiredDescription": "For security reasons generated operations valid for only 5 mins. Please generate new QR code and sign it with Polkadot Vault",
     "signatureExpiredLabel": "QR Code has expired",
+    "signer": "Signer:",
     "title": "Signing",
     "troubleshootingLink": "I have an error in Polkadot Vault"
   },
@@ -744,6 +744,7 @@
     "formTitle": "Send <strong>{ asset }</strong> on <strong>{ network }</strong>",
     "inProgress": "Submitting operation...",
     "incorrectRecipientError": "Please enter correct recipient address",
+    "invalidSignature": "QR code isn’t valid anymore",
     "multiple": {
       "executing": "Submitting operations",
       "transactions": "Transactions"

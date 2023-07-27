@@ -2,15 +2,13 @@ import { useEffect, useState } from 'react';
 import { BN } from '@polkadot/util';
 import { ApiPromise } from '@polkadot/api';
 
-import { useI18n } from '@renderer/context/I18nContext';
-import { Button } from '@renderer/components/ui';
 import QrReaderWrapper from '@renderer/components/common/QrCode/QrReader/QrReaderWrapper';
 import { ValidationErrors } from '@renderer/shared/utils/validation';
 import { toAccountId } from '@renderer/shared/utils/address';
 import { transferableAmount } from '@renderer/shared/utils/balance';
 import { Transaction } from '@renderer/domain/transaction';
 import { useBalance } from '@renderer/services/balance/balanceService';
-import { ChainId, HexString } from '@renderer/domain/shared-kernel';
+import { AccountId, ChainId, HexString } from '@renderer/domain/shared-kernel';
 import { useTransaction } from '@renderer/services/transaction/transactionService';
 import { Balance } from '@renderer/domain/balance';
 
@@ -20,15 +18,27 @@ type Props = {
   transaction: Transaction;
   assetId: string;
   countdown: number;
+  accountId: AccountId;
+  txPayload?: Uint8Array;
   onStartOver: () => void;
   onGoBack: () => void;
   onResult: (signature: HexString) => void;
 };
 
-const Signing = ({ api, chainId, transaction, assetId, countdown, onGoBack, onStartOver, onResult }: Props) => {
-  const { t } = useI18n();
+const Signing = ({
+  api,
+  chainId,
+  transaction,
+  assetId,
+  countdown,
+  accountId,
+  txPayload,
+  onGoBack,
+  onStartOver,
+  onResult,
+}: Props) => {
   const { getBalance } = useBalance();
-  const { getTransactionFee } = useTransaction();
+  const { getTransactionFee, verifySignature } = useTransaction();
 
   const [validationError, setValidationError] = useState<ValidationErrors>();
 
@@ -70,29 +80,28 @@ const Signing = ({ api, chainId, transaction, assetId, countdown, onGoBack, onSt
   const handleResult = async (signature: string): Promise<void> => {
     const [balanceIsEnough, feeIsEnough] = await Promise.all([validateBalance(), validateBalanceForFee()]);
 
+    const verifiablePayload = txPayload?.slice(2);
+    const isVerified = verifiablePayload && verifySignature(verifiablePayload, signature as HexString, accountId);
+
     if (!balanceIsEnough) {
       setValidationError(ValidationErrors.INSUFFICIENT_BALANCE);
     } else if (!feeIsEnough) {
       setValidationError(ValidationErrors.INSUFFICIENT_BALANCE_FOR_FEE);
+    } else if (!isVerified) {
+      setValidationError(ValidationErrors.INVALID_SIGNATURE);
     } else {
       onResult(signature as HexString);
     }
   };
 
   return (
-    <div className="flex flex-col items-center gap-y-2.5 w-full">
+    <div className="flex flex-col items-center gap-y-2.5 w-[440px] rounded-b-lg bg-black">
       <QrReaderWrapper
         countdown={countdown}
         validationError={validationError}
         onResult={(res) => handleResult(res as string)}
         onGoBack={onGoBack}
       />
-
-      {validationError && (
-        <Button className="w-max mb-5" weight="lg" variant="fill" pallet="primary" onClick={onStartOver}>
-          {t('transfer.editOperationButton')}
-        </Button>
-      )}
     </div>
   );
 };

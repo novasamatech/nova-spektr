@@ -34,7 +34,7 @@ const QrMultiframeSignatureReader = ({
   size = 300,
   cameraId,
   className,
-  bgVideo,
+  bgVideo = true,
   bgVideoClassName,
   onCameraList,
   onResult,
@@ -298,7 +298,7 @@ const QrMultiframeSignatureReader = ({
 
   return (
     <>
-      <div className="relative w-[240px] h-[240px] rounded-[1.75rem] overflow-hidden">
+      <div className="relative w-[240px] h-[240px] rounded-[22px] overflow-hidden">
         <video
           muted
           autoPlay
