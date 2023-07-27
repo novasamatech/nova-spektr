@@ -3,8 +3,8 @@ import { Transition, Combobox as HeadlessCombobox } from '@headlessui/react';
 
 import { cnTw, includes } from '@renderer/shared/lib/utils';
 import { Props as InputProps } from '@renderer/shared/ui/Inputs/Input/Input';
-import { OptionsContainerStyle, OptionStyle, ViewClass } from '../common/constants';
-import { Position, ComboboxOption } from '../common/types';
+import { OptionsContainerStyle, OptionStyle, OptionStyleTheme, ViewClass } from '../common/constants';
+import { Position, ComboboxOption, Theme } from '../common/types';
 import { FootnoteText, Input } from '@renderer/shared/ui';
 
 type Props = Omit<InputProps, 'onChange' | 'value'> & {
@@ -13,9 +13,19 @@ type Props = Omit<InputProps, 'onChange' | 'value'> & {
   position?: Position;
   onChange: (data: ComboboxOption) => void;
   tabIndex?: number;
+  theme?: Theme;
 };
 
-const Combobox = ({ className, value, options, disabled, position = 'down', onChange, ...inputProps }: Props) => {
+const Combobox = ({
+  className,
+  value,
+  options,
+  disabled,
+  position = 'down',
+  theme = 'light',
+  onChange,
+  ...inputProps
+}: Props) => {
   const [query, setQuery] = useState('');
 
   const filteredOptions = query
@@ -40,7 +50,7 @@ const Combobox = ({ className, value, options, disabled, position = 'down', onCh
             {nothingFound && (
               <HeadlessCombobox.Option
                 value={{ id: '', value: query, element: query }}
-                className={({ active }) => cnTw(OptionStyle, active && 'bg-action-background-hover')}
+                className={({ active }) => cnTw(OptionStyle, OptionStyleTheme[theme](active, false))}
               >
                 <FootnoteText>{query}</FootnoteText>
               </HeadlessCombobox.Option>
@@ -50,9 +60,7 @@ const Combobox = ({ className, value, options, disabled, position = 'down', onCh
               <HeadlessCombobox.Option
                 key={option.id}
                 value={option}
-                className={({ active, selected }) =>
-                  cnTw(OptionStyle, active && 'bg-action-background-hover', selected && 'bg-selected-background')
-                }
+                className={({ active, selected }) => cnTw(OptionStyle, OptionStyleTheme[theme](active, selected))}
               >
                 {typeof option.element === 'string' ? <FootnoteText>{option.element}</FootnoteText> : option.element}
               </HeadlessCombobox.Option>

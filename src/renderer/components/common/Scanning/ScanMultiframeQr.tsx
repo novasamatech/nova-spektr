@@ -28,7 +28,7 @@ type Props = {
   countdown: number;
   onGoBack: () => void;
   onResetCountdown: () => void;
-  onResult: (unsigned: UnsignedTransaction[]) => void;
+  onResult: (unsigned: UnsignedTransaction[], txPayloads: Uint8Array[]) => void;
 };
 
 const ScanMultiframeQr = ({
@@ -48,6 +48,7 @@ const ScanMultiframeQr = ({
   const [encoder, setEncoder] = useState<Encoder>();
   const [bulkTransactions, setBulkTransactions] = useState<Uint8Array>();
   const [unsignedTransactions, setUnsignedTransactions] = useState<UnsignedTransaction[]>([]);
+  const [txPayloads, setTxPayloads] = useState<Uint8Array[]>([]);
 
   useEffect(() => {
     if (unsignedTransactions.length) return;
@@ -83,6 +84,7 @@ const ScanMultiframeQr = ({
 
     setBulkTransactions(createMultipleSignPayload(transactionsEncoded));
     setUnsignedTransactions(txRequests.map((t) => t.unsigned));
+    setTxPayloads(txRequests.map((t) => t.signPayload));
     setEncoder(Encoder.with_defaults(bulk, 128));
   };
 
@@ -92,16 +94,17 @@ const ScanMultiframeQr = ({
 
   return (
     <div className="flex flex-col items-center w-full">
-      <QrGeneratorContainer countdown={countdown} chainId={chainId} onQrReset={setupTransactions}>
-        {bulkTxExist && encoder && <QrMultiframeGenerator payload={bulkTransactions} size={200} encoder={encoder} />}
-      </QrGeneratorContainer>
-
+      <div className="mt-10">
+        <QrGeneratorContainer countdown={countdown} chainId={chainId} onQrReset={setupTransactions}>
+          {bulkTxExist && encoder && <QrMultiframeGenerator payload={bulkTransactions} size={200} encoder={encoder} />}
+        </QrGeneratorContainer>
+      </div>
       <div className="flex w-full justify-between mt-3">
         <Button variant="text" onClick={onGoBack}>
           {t('operation.goBackButton')}
         </Button>
 
-        <Button disabled={!bulkTxExist || countdown === 0} onClick={() => onResult(unsignedTransactions)}>
+        <Button disabled={!bulkTxExist || countdown === 0} onClick={() => onResult(unsignedTransactions, txPayloads)}>
           {t('signing.continueButton')}
         </Button>
       </div>

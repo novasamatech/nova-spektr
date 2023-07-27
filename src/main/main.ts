@@ -1,7 +1,9 @@
 import { join } from 'path';
 import { BrowserWindow, shell } from 'electron';
-import log from 'electron-log';
+import log, { LogFile } from 'electron-log';
 import windowStateKeeper from 'electron-window-state';
+import * as path from 'path';
+import * as fs from 'fs';
 
 import { ENVIRONMENT } from '@shared/constants';
 import { APP_CONFIG } from '../../app.config';
@@ -17,12 +19,24 @@ log.transports.console.useStyles = true;
 log.transports.file.fileName = 'nova-spektr.log';
 log.transports.file.format = '{y}/{m}/{d} {h}:{i}:{s}.{ms} [{env}#{version}]-{processType} [{level}] > {text}';
 log.transports.file.level = 'info';
-log.transports.file.maxSize = 1048576 * 5; //5mb
+log.transports.file.maxSize = 1048576 * 5; // 5 MB;
+log.transports.file.archiveLogFn = (oldLogFile: LogFile): void => {
+  const file = oldLogFile.toString();
+  const info = path.parse(file);
+
+  try {
+    const date = new Date().toISOString();
+    let newFileName = path.join(info.dir, info.name + '.' + date + info.ext);
+    fs.renameSync(file, newFileName);
+  } catch (e) {
+    console.warn('Could not rotate log', e);
+  }
+};
 
 Object.assign(console, log.functions);
 log.errorHandler.startCatching({
   showDialog: false,
-  onError({ createIssue, error, processType, versions }) {
+  onError({ error }) {
     console.error('Uncaught error', error);
   },
 });

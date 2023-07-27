@@ -12,8 +12,9 @@ import {
   UnsignedTransaction,
 } from '@substrate/txwrapper-polkadot';
 import { Weight } from '@polkadot/types/interfaces';
+import { signatureVerify } from '@polkadot/util-crypto';
 
-import { HexString, Threshold } from '@renderer/domain/shared-kernel';
+import { AccountId, HexString, Threshold } from '@renderer/domain/shared-kernel';
 import { Transaction, TransactionType } from '@renderer/entities/transaction/model/transaction';
 import { createTxMetadata, toAccountId } from '@renderer/shared/lib/utils';
 import { ITransactionService, HashData, ExtrinsicResultParams } from './common/types';
@@ -439,6 +440,10 @@ export const useTransaction = (): ITransactionService => {
       });
   };
 
+  const verifySignature = (payload: string | Uint8Array, signature: HexString, accountId: AccountId): Boolean => {
+    return signatureVerify(payload, signature, accountId).isValid;
+  };
+
   return {
     createPayload,
     getSignedExtrinsic,
@@ -448,5 +453,6 @@ export const useTransaction = (): ITransactionService => {
     getTransactionDeposit,
     getTransactionHash,
     decodeCallData,
+    verifySignature,
   };
 };

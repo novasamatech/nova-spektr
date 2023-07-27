@@ -2,7 +2,7 @@ import cn from 'classnames';
 import React, { useState } from 'react';
 
 import { cnTw, ValidationErrors, secondsToMinutes } from '@renderer/shared/lib/utils';
-import { Icon, Shimmering, Button, CaptionText, FootnoteText, Select, SmallTitleText } from '@renderer/shared/ui';
+import { Shimmering, Button, CaptionText, FootnoteText, Select, SmallTitleText } from '@renderer/shared/ui';
 import { DropdownOption, DropdownResult } from '@renderer/shared/ui/Dropdowns/common/types';
 import { useI18n } from '@renderer/app/providers';
 import SignatureReaderError from './SignatureReaderError';
@@ -14,6 +14,12 @@ import QrSignatureReader from './QrSignatureReader';
 import './style.css';
 
 const RESULT_DELAY = 250;
+
+const ValidationErrorLabels = {
+  [ValidationErrors.INSUFFICIENT_BALANCE]: 'transfer.notEnoughBalanceError',
+  [ValidationErrors.INSUFFICIENT_BALANCE_FOR_FEE]: 'transfer.notEnoughBalanceForFeeError',
+  [ValidationErrors.INVALID_SIGNATURE]: 'transfer.invalidSignature',
+};
 
 type ScanResult = HexString | HexString[];
 type QrReaderProps = Omit<React.ComponentProps<typeof QrSignatureReader>, 'onResult'>;
@@ -84,14 +90,15 @@ const QrReaderWrapper = ({ className, onResult, countdown, validationError, isMu
     } else {
       setError(CameraError.UNKNOWN_ERROR);
     }
+
     setIsLoading(false);
   };
 
   const qrReaderProps: QrReaderProps = {
     size: 240,
-    bgVideoClassName: 'w-[440px] h-[532px]',
+    bgVideoClassName: 'w-[440px] h-[544px]',
     className: cnTw(
-      'z-10 w-[440px] h-[532px] top-[-124px]',
+      'z-10 w-[440px] h-[544px] top-[-126px]',
       error === CameraError.INVALID_ERROR && 'blur-[13px]',
       className,
     ),
@@ -102,7 +109,12 @@ const QrReaderWrapper = ({ className, onResult, countdown, validationError, isMu
   };
 
   return (
-    <div className="flex flex-col items-center flex-1 w-full relative pt-[52px] overflow-y-hidden">
+    <div
+      className={cnTw(
+        'flex flex-col items-center flex-1 w-full relative pt-[52px] overflow-y-hidden',
+        isLoading && 'bg-black',
+      )}
+    >
       <SmallTitleText as="h3" className={cnTw('z-10', isCameraOn && 'text-white')}>
         {t('signing.scanQrTitle')}
       </SmallTitleText>
@@ -124,28 +136,20 @@ const QrReaderWrapper = ({ className, onResult, countdown, validationError, isMu
 
       {/* scanning frame */}
       <div className="w-[240px] h-[240px] mb-4">
-        {!isLoading && (
-          <div className="relative">
-            <Icon
-              name="qrFrame"
-              size={240}
-              className={cnTw(
-                'absolute w-full h-full min-h-[240px] camera-frame z-20',
-                isCameraOn ? 'text-white' : 'text-filter-border',
-              )}
-            />
-            <div className="z-30 absolute flex flex-col items-center justify-center gap-y-4 w-full h-[240px]">
-              <SignatureReaderError
-                error={error}
-                validationError={validationError}
-                isCameraOn={isCameraOn && !isLoading}
-                onTryAgain={onRetryCamera}
-              />
-            </div>
+        <div className="relative">
+          <div
+            className={cnTw(
+              'absolute w-[240px] h-[240px] z-20',
+              isCameraOn ? 'border-white' : 'border-filter-border',
+              'border-2 rounded-[22px]',
+            )}
+          ></div>
+          <div className="z-30 absolute flex flex-col items-center justify-center gap-y-4 w-full h-[240px]">
+            <SignatureReaderError error={error} isCameraOn={isCameraOn && !isLoading} onTryAgain={onRetryCamera} />
           </div>
-        )}
+        </div>
 
-        {isLoading && <Shimmering width={240} height={240} className="absolute rounded-[1.75rem]" />}
+        {isLoading && <Shimmering width={240} height={240} className="absolute rounded-[22px]" />}
 
         {isCameraOn && (
           <div className={cn(isLoading && 'hidden', className)}>
@@ -158,30 +162,45 @@ const QrReaderWrapper = ({ className, onResult, countdown, validationError, isMu
         )}
       </div>
 
-      {availableCameras && availableCameras.length > 1 && (
-        <Select
-          placeholder={t('onboarding.paritySigner.selectCameraLabel')}
-          selectedId={activeCamera?.id}
-          options={availableCameras}
-          className="mb-4 w-[208px]"
-          onChange={setActiveCamera}
-        />
-      )}
+      <div className="h-8.5 mb-4">
+        {availableCameras && availableCameras.length > 1 && (
+          <Select
+            theme="dark"
+            placeholder={t('onboarding.paritySigner.selectCameraLabel')}
+            selectedId={activeCamera?.id}
+            options={availableCameras}
+            className="w-[208px]"
+            onChange={setActiveCamera}
+          />
+        )}
+      </div>
 
-      {progress && (
-        <div className="flex items-center gap-x-2 mt-4 z-10">
-          <FootnoteText className="text-text-tertiary">{t('signing.parsingLabel')}</FootnoteText>
-          <CaptionText as="span" className="bg-label-background-gray text-white uppercase px-2 py-1 rounded-[26px]">
-            {t('signing.parsingCount', { current: progress.decoded, total: progress.total })}
-          </CaptionText>
-        </div>
-      )}
+      <div className="h-9 mb-3 z-10">
+        {validationError && (
+          <FootnoteText className="text-white h-full flex items-center justify-center ">
+            {t(ValidationErrorLabels[validationError as keyof typeof ValidationErrorLabels])}
+          </FootnoteText>
+        )}
+      </div>
 
-      <footer className="flex w-full justify-start mt-auto pt-5 pb-6 pl-7 z-10">
+      <footer className="flex w-full justify-between items-center mt-auto h-[66px] px-5 mb-1 z-10">
         {onGoBack && (
-          <Button variant="text" className={cn('h-6.5', isCameraOn ? WhiteTextButtonStyle : '')} onClick={onGoBack}>
+          <Button
+            variant="text"
+            className={cn('h-6.5 px-4', isCameraOn ? WhiteTextButtonStyle : '')}
+            onClick={onGoBack}
+          >
             {t('operation.goBackButton')}
           </Button>
+        )}
+
+        {progress && (
+          <div className="flex items-center gap-x-2 z-10 p-1.5 pl-3 rounded-2xl bg-black-background">
+            <FootnoteText className="text-text-tertiary">{t('signing.parsingLabel')}</FootnoteText>
+            <CaptionText as="span" className="bg-label-background-gray text-white uppercase px-2 py-1 rounded-[26px]">
+              {t('signing.parsingCount', { current: progress.decoded, total: progress.total })}
+            </CaptionText>
+          </div>
         )}
       </footer>
     </div>

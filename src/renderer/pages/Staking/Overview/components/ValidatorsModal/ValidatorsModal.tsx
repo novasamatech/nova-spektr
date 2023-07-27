@@ -116,7 +116,7 @@ export const ValidatorsModal = ({
     <BaseModal
       closeButton
       contentClass=""
-      headerClass="py-4 px-5"
+      headerClass="py-3 px-5"
       panelClass="w-[784px]"
       title={t('staking.nominators.yourValidatorsTitle')}
       isOpen={isOpen}

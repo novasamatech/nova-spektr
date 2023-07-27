@@ -20,7 +20,7 @@ type Props = {
   countdown: number;
   onGoBack: () => void;
   onResetCountdown: () => void;
-  onResult: (unsignedTx: UnsignedTransaction) => void;
+  onResult: (unsignedTx: UnsignedTransaction, txPayload: Uint8Array) => void;
 };
 
 const ScanSingleframeQr = ({
@@ -64,17 +64,19 @@ const ScanSingleframeQr = ({
 
   return (
     <div className="flex flex-col items-center w-full">
-      {account && (
-        <div className="flex justify-center items-center w-1/2 gap-x-0.5 mb-2">
-          <FootnoteText className="text-text-secondary">{t('signing.signatory')}</FootnoteText>
-          <AddressWithExplorers
-            accountId={account.accountId}
-            name={account.name}
-            explorers={explorers}
-            addressPrefix={addressPrefix}
-          />
-        </div>
-      )}
+      <div className="flex items-center justify-center mb-2 mt-4.5 h-8 w-full">
+        {account && (
+          <div className="flex h-full w-1/2 justify-center items-center gap-x-0.5 ">
+            <FootnoteText className="text-text-secondary">{t('signing.signer')}</FootnoteText>
+            <AddressWithExplorers
+              accountId={account.accountId}
+              name={account.name}
+              explorers={explorers}
+              addressPrefix={addressPrefix}
+            />
+          </div>
+        )}
+      </div>
 
       <QrGeneratorContainer countdown={countdown} chainId={chainId} onQrReset={setupTransaction}>
         {txPayload && (
@@ -87,7 +89,7 @@ const ScanSingleframeQr = ({
           {t('operation.goBackButton')}
         </Button>
 
-        <Button disabled={!unsignedTx || countdown === 0} onClick={() => onResult(unsignedTx!)}>
+        <Button disabled={!unsignedTx || countdown === 0} onClick={() => onResult(unsignedTx!, txPayload!)}>
           {t('signing.continueButton')}
         </Button>
       </div>

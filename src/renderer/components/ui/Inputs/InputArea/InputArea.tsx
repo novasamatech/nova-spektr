@@ -1,9 +1,8 @@
 import { ComponentPropsWithoutRef, forwardRef } from 'react';
 
 import { cnTw } from '@renderer/shared/lib/utils';
-import { HTMLTextAreaProps } from '../common/types';
-import { CommonInputStyles, CommonInputStylesTheme } from '../common/styles';
-import { Theme } from '../../Dropdowns/common/types';
+import type { HTMLTextAreaProps, Theme } from '@renderer/shared/ui/types';
+import { CommonInputStyles, CommonInputStylesTheme } from '@renderer/shared/ui/Inputs/common/styles';
 
 interface Props extends Pick<ComponentPropsWithoutRef<'textarea'>, HTMLTextAreaProps> {
   invalid?: boolean;
@@ -12,7 +11,7 @@ interface Props extends Pick<ComponentPropsWithoutRef<'textarea'>, HTMLTextAreaP
 }
 
 const InputArea = forwardRef<HTMLTextAreaElement, Props>(
-  ({ className, invalid, theme = 'light', onChange, ...props }, ref) => (
+  ({ className, theme = 'light', invalid = false, onChange, ...props }, ref) => (
     <textarea
       className={cnTw(
         'resize-none text-footnote flex-1',
