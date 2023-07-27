@@ -143,7 +143,7 @@ export const WalletForm = ({
         )}
 
         {hasNoAccounts && (
-          <Alert title={t('createMultisigAccount.alertTitle')} variant="warn">
+          <Alert title={t('createMultisigAccount.walletAlertTitle')} variant="warn">
             <Alert.Item withDot={false}>{t('createMultisigAccount.accountsAlertText')}</Alert.Item>
           </Alert>
         )}

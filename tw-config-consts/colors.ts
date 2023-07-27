@@ -57,6 +57,7 @@ export default {
   'alert-border-warning': 'var(--alert-border-warning)',
   'alert-border-negative': 'var(--alert-border-negative)',
   'token-border': 'var(--token-border)',
+  'border-dark': 'var(--border-dark)',
 
   /* DIVIDER */
   divider: 'var(--divider)',
@@ -95,4 +96,8 @@ export default {
   'label-background-red': 'var(--label-background-red)',
   'label-background-gray': 'var(--label-background-gray)',
   'selected-background': 'var(--selected-background)',
+  'black-background': 'var(--black-background)',
+  'background-dark': 'var(--background-dark)',
+  'background-item-hover': 'var(--background-item-hover)',
+  'background-item-selected': 'var(--background-item-selected)',
 };

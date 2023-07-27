@@ -163,7 +163,7 @@ const QrSignatureReader = ({
         controls={false}
         ref={videoRef}
         data-testid="qr-reader"
-        className={cnTw('object-cover  absolute -scale-x-100', className)}
+        className={cnTw('object-cover absolute -scale-x-100', className)}
         style={videoStyle}
       >
         {t('qrReader.videoError')}
@@ -173,7 +173,7 @@ const QrSignatureReader = ({
 
   return (
     <>
-      <div className="relative w-[240px] h-[240px] rounded-[1.75rem] overflow-hidden">
+      <div className="relative w-[240px] h-[240px] rounded-[22px] overflow-hidden">
         <video
           muted
           autoPlay

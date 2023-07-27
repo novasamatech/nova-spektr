@@ -3,10 +3,16 @@ import { Fragment, useId } from 'react';
 
 import cnTw from '@renderer/shared/utils/twMerge';
 import { Icon } from '@renderer/components/ui';
-import { DropdownOption, DropdownResult, Position } from '../common/types';
-import CommonInputStyles from '@renderer/components/ui-redesign/Inputs/common/styles';
+import { DropdownOption, DropdownResult, Position, Theme } from '../common/types';
+import { CommonInputStyles, CommonInputStylesTheme } from '@renderer/components/ui-redesign/Inputs/common/styles';
 import { Checkbox, FootnoteText, LabelText, CaptionText } from '@renderer/components/ui-redesign';
-import { OptionsContainerStyle, OptionStyle, SelectButtonStyle, ViewClass } from '../common/constants';
+import {
+  OptionsContainerStyle,
+  OptionStyle,
+  OptionStyleTheme,
+  SelectButtonStyle,
+  ViewClass,
+} from '../common/constants';
 
 type Props = {
   className?: string;
@@ -19,6 +25,7 @@ type Props = {
   options: DropdownOption[];
   position?: Position;
   tabIndex?: number;
+  theme?: Theme;
   onChange: (data: DropdownResult[]) => void;
 };
 
@@ -34,6 +41,7 @@ const MultiSelect = ({
   onChange,
   position = 'down',
   tabIndex,
+  theme = 'light',
 }: Props) => {
   const id = useId();
   const selectedOptions = options.filter((option) => selectedIds?.includes(option.id));
@@ -76,11 +84,12 @@ const MultiSelect = ({
           <Listbox.Button
             id={id}
             className={cnTw(
-              open && SelectButtonStyle.open,
-              !open && !invalid && SelectButtonStyle.closed,
-              invalid && SelectButtonStyle.invalid,
-              SelectButtonStyle.disabled,
+              open && SelectButtonStyle[theme].open,
+              !open && !invalid && SelectButtonStyle[theme].closed,
+              invalid && SelectButtonStyle[theme].invalid,
+              SelectButtonStyle[theme].disabled,
               CommonInputStyles,
+              CommonInputStylesTheme[theme],
               'w-full inline-flex items-center gap-x-2 justify-between pr-2 py-2',
             )}
             tabIndex={tabIndex}
@@ -95,7 +104,7 @@ const MultiSelect = ({
                 <Listbox.Option
                   key={id}
                   value={{ id, value }}
-                  className={({ active }) => cnTw(OptionStyle, active && 'bg-action-background-hover')}
+                  className={({ active }) => cnTw(OptionStyle, OptionStyleTheme[theme](active, false))}
                 >
                   {({ selected }) => (
                     <Checkbox
