@@ -16,7 +16,7 @@ jest.mock('@renderer/context/I18nContext', () => ({
 
 jest.mock('@renderer/services/account/accountService', () => ({
   useAccount: jest.fn().mockReturnValue({
-    getActiveAccounts: () => [{ name: 'Test Wallet', accountId: TEST_ACCOUNT_ID }],
+    getActiveAccounts: () => [{ name: 'Test Wallet', accountId: TEST_ACCOUNT_ID, signingType: SigningType.WATCH_ONLY }],
   }),
 }));
 
@@ -75,7 +75,7 @@ describe('screens/Assets/ReceiveModal', () => {
     (useAccount as jest.Mock).mockImplementation(() => ({
       getActiveAccounts: () => [
         { name: 'Test Wallet 1', accountId: TEST_ACCOUNT_ID, signingType: SigningType.PARITY_SIGNER },
-        { name: 'Test Wallet 2', accountId: TEST_ACCOUNT_ID, signingType: SigningType.MULTISIG },
+        { name: 'Test Wallet 2', accountId: TEST_ACCOUNT_ID, signingType: SigningType.PARITY_SIGNER },
       ],
     }));
 
