@@ -13,7 +13,6 @@ import {
 } from '@substrate/txwrapper-polkadot';
 import { Weight } from '@polkadot/types/interfaces';
 import { signatureVerify } from '@polkadot/util-crypto';
-import { VerifyResult } from '@polkadot/util-crypto/types';
 
 import { AccountId, HexString, Threshold } from '@renderer/domain/shared-kernel';
 import { Transaction, TransactionType } from '@renderer/domain/transaction';
@@ -443,9 +442,7 @@ export const useTransaction = (): ITransactionService => {
   };
 
   const verifySignature = (payload: string | Uint8Array, signature: HexString, accountId: AccountId): Boolean => {
-    const result: VerifyResult = signatureVerify(payload, signature, accountId);
-
-    return result.isValid;
+    return signatureVerify(payload, signature, accountId).isValid;
   };
 
   return {
