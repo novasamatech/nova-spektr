@@ -1,7 +1,7 @@
 import { createKeyMulti } from '@polkadot/util-crypto';
 import { u8aToHex } from '@polkadot/util';
-import { AccountDS, ID } from '@renderer/shared/api/storage';
 
+import { AccountDS, ID } from '@renderer/shared/api/storage';
 import {
   ChainId,
   CryptoType,
@@ -104,7 +104,7 @@ export const isMultisig = (account?: Account | MultisigAccount): account is Mult
   const hasThreshold = 'threshold' in (account as MultisigAccount);
 
   return hasSignatories && hasThreshold;
-}
+};
 
 export function isMultishard(account?: Account | MultisigAccount): boolean {
   if (!account) return false;

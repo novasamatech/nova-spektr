@@ -1,6 +1,6 @@
 import { useLiveQuery } from 'dexie-react-hooks';
-import storage, { MultisigEventDS } from '@renderer/shared/api/storage';
 
+import storage, { MultisigEventDS } from '@renderer/shared/api/storage';
 import { IMultisigEventService } from './common/types';
 import { AccountId, CallHash, ChainId } from '@renderer/domain/shared-kernel';
 import { MultisigEvent, MultisigTransactionKey, SigningStatus } from '@renderer/entities/transaction/model/transaction';

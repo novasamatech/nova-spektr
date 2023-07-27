@@ -1,6 +1,6 @@
 import { groupBy } from 'lodash';
-import { AccountDS } from '@renderer/shared/api/storage';
 
+import { AccountDS } from '@renderer/shared/api/storage';
 import {
   ChainsRecord,
   ChainWithAccounts,

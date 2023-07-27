@@ -1,5 +1,4 @@
 import { ID, NotificationDS } from '@renderer/shared/api/storage';
-
 import { Notification } from '@renderer/entities/notification/model/notification';
 
 export interface INotificationService {

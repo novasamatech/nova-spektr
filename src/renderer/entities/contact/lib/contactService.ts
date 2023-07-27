@@ -1,6 +1,6 @@
 import { useLiveQuery } from 'dexie-react-hooks';
-import storage, { ContactDS } from '@renderer/shared/api/storage';
 
+import storage, { ContactDS } from '@renderer/shared/api/storage';
 import { IContactService } from './common/types';
 import { Contact } from '@renderer/entities/contact/model/contact';
 

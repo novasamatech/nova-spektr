@@ -1,5 +1,4 @@
 import { WalletDS, ID } from '@renderer/shared/api/storage';
-
 import { Wallet } from '@renderer/entities/wallet/model/wallet';
 
 export interface IWalletService {

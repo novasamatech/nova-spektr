@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { uniq } from 'lodash';
-import { WalletDS } from '@renderer/shared/api/storage';
 
+import { WalletDS } from '@renderer/shared/api/storage';
 import { ChainsRecord, GroupedWallets } from './types';
 import { getMultishardStructure } from '@renderer/components/layout/PrimaryLayout/Wallets/common/utils';
 import { SigningType, WalletType } from '@renderer/domain/shared-kernel';

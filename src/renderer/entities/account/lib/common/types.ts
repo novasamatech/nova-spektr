@@ -1,5 +1,4 @@
 import { AccountDS, ID } from '@renderer/shared/api/storage';
-
 import { Account } from '@renderer/entities/account/model/account';
 import { Address } from '@renderer/domain/shared-kernel';
 

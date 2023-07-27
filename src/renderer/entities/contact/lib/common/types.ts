@@ -1,5 +1,4 @@
 import { ContactDS, ID } from '@renderer/shared/api/storage';
-
 import { Contact } from '@renderer/entities/contact/model/contact';
 
 export interface IContactService {
