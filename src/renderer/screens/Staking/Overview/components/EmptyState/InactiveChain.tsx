@@ -2,7 +2,7 @@ import cn from 'classnames';
 
 import NoConnection from '@images/misc/no-connection.webp';
 import { useI18n } from '@renderer/app/providers';
-import { Paths } from '../../../../../app/providers';
+import { Paths } from '../../../../../app/providers/routes/paths';
 import { FootnoteText, ButtonLink } from '@renderer/shared/ui';
 
 type Props = {
