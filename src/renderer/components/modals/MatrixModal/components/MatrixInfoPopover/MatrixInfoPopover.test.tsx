@@ -11,7 +11,7 @@ jest.mock('@renderer/app/providers', () => ({
   }),
 }));
 
-describe('screens/Settings/Matrix/MatrixInfoPopover', () => {
+describe('pages/Settings/Matrix/MatrixInfoPopover', () => {
   test('should render component', async () => {
     const user = userEvent.setup();
 

@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 
 import { useI18n } from '@renderer/app/providers';
-import { EmptySearch } from '@renderer/screens/AddressBook/Overview/components';
+import { EmptySearch } from '@renderer/pages/AddressBook/Overview/components';
 import { includes } from '@renderer/shared/lib/utils';
 import { AddressWithName } from '@renderer/entities/account';
 import { BodyText, FootnoteText, IconButton, Plate } from '@renderer/shared/ui';

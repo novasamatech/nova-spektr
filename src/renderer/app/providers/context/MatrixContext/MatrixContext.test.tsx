@@ -41,7 +41,7 @@ jest.mock('@renderer/entities/notification', () => ({
 jest.mock('@renderer/app/providers', () => ({
   useNetworkContext: jest.fn(() => ({
     connections: {
-      '0x0000000000000000000000000000000000000000': {
+      '0x00': {
         chainId: '1',
         assets: [{ assetId: '1', symbol: '1' }],
         connection: {

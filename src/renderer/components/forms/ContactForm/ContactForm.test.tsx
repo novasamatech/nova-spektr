@@ -22,7 +22,7 @@ jest.mock('@renderer/entities/contact', () => ({
   }),
 }));
 
-describe('screens/AddressBook/ContactForm', () => {
+describe('pages/AddressBook/ContactForm', () => {
   const contact: Contact = {
     name: 'Contact',
     address: TEST_ADDRESS,

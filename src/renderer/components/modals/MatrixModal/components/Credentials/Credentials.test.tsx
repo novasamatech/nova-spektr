@@ -13,7 +13,7 @@ jest.mock('@renderer/app/providers', () => ({
   }),
 }));
 
-describe('screens/Settings/Matrix/Credentials', () => {
+describe('pages/Settings/Matrix/Credentials', () => {
   afterEach(() => {
     jest.clearAllMocks();
   });

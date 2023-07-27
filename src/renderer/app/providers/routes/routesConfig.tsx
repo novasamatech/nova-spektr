@@ -1,13 +1,13 @@
 import { Navigate, RouteObject } from 'react-router-dom';
 
 import Layouts from '@renderer/components/layout';
-import Screens from '@renderer/screens';
 import { Paths } from './paths';
+import * as Screens from '@renderer/pages';
 
 // React router v6 hint:
 // https://github.com/remix-run/react-router/blob/main/docs/upgrading/v5.md#use-useroutes-instead-of-react-router-config
 export const routesConfig: RouteObject[] = [
-  { path: Paths.ONBOARDING, element: <Screens.Onboarding.Welcome /> },
+  { path: Paths.ONBOARDING, element: <Screens.Onboarding /> },
   {
     path: Paths.ROOT,
     element: <Layouts.PrimaryLayout />,

@@ -16,7 +16,7 @@ import {
   BaseModal,
   Tabs,
 } from '@renderer/shared/ui';
-import { EmptyContacts } from '@renderer/screens/AddressBook/Overview/components';
+import { EmptyContacts } from '@renderer/pages/AddressBook/Overview/components';
 import { isWalletContact, Account, MultisigAccount } from '@renderer/entities/account';
 import { ContactForm } from '@renderer/components/forms';
 import { TabItem } from '@renderer/shared/ui/types';

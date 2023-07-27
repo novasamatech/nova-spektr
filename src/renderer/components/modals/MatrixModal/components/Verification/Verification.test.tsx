@@ -22,7 +22,7 @@ jest.mock('@renderer/shared/lib/utils', () => ({
   getOperatingSystem: jest.fn().mockReturnValue('macOS'),
 }));
 
-describe('screens/Settings/Matrix/Verification', () => {
+describe('pages/Settings/Matrix/Verification', () => {
   const submitFormWithString = async () => {
     const user = userEvent.setup({ delay: null });
     render(<Verification />);
