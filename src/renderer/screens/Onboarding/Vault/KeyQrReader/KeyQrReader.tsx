@@ -81,12 +81,13 @@ const KeyQrReader = ({ size = 300, className, onResult }: Props) => {
         if (qr.multiSigner) {
           encodeAddress(qr.multiSigner.public);
         }
-
         if (qr.derivedKeys.length === 0) return;
 
-        qr.derivedKeys.forEach(({ address }) =>
-          encodeAddress(isHex(address) ? hexToU8a(address) : decodeAddress(address)),
-        );
+        qr.derivedKeys.forEach(({ address }) => {
+          const accountId = isHex(address) ? hexToU8a(address) : decodeAddress(address);
+
+          return accountId.length === 20 ? address : encodeAddress(accountId);
+        });
       });
 
       setIsScanComplete(true);
