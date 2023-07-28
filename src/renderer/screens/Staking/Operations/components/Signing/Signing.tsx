@@ -28,11 +28,17 @@ export const Signing = ({ multiQr, countdown, txPayloads, accountIds, onResult, 
     const signatures = Array.isArray(data) ? (data as HexString[]) : [data as HexString];
 
     const isVerified = signatures.every((signature, index) => {
-      const verifiablePayload = txPayloads[index]?.slice(2);
+      // TODO: Research complex verification
+      const verifiablePayload = txPayloads[index]?.slice(1);
+      const verifiableComplexPayload = txPayloads[index]?.slice(2);
+
       const isVerified =
         verifiablePayload && verifySignature(verifiablePayload, signature as HexString, accountIds[index]);
+      const isComplexVerified =
+        verifiableComplexPayload &&
+        verifySignature(verifiableComplexPayload, signature as HexString, accountIds[index]);
 
-      return isVerified;
+      return isVerified || isComplexVerified;
     });
 
     if (!isVerified) {
