@@ -3471,10 +3471,9 @@
     }
   },
   {
-    "name": "Efinity (PAUSED)",
+    "name": "Efinity",
     "addressPrefix": 1110,
-    "chainId": "0x335369975fced3fc22e23498da306a712f4fd964c957364d53c49cea9db8bc2f",
-    "parentId": "0x91b171bb158e2d3848fa23a9f1c25182fb8e20313b2c1eb49219da7a70ce90c3",
+    "chainId": "0x99ded175d436bee7d751fa3f2f8c7a257ddc063a541f8daa5e6152604f66b2a0",
     "icon": "https://raw.githubusercontent.com/nova-wallet/nova-spektr-utils/main/icons/v1/chains/Efinity.svg",
     "nodes": [
       {
@@ -3484,6 +3483,10 @@
       {
         "url": "wss://efinity-rpc.dwellir.com",
         "name": "Dwellir node"
+      },
+      {
+        "url": "wss://efinity.api.onfinality.io/public-ws",
+        "name": "OnFinality node"
       }
     ],
     "assets": [
@@ -4650,7 +4653,7 @@
     }
   },
   {
-    "name": "Dora Factory",
+    "name": "Dora Factory (PAUSED)",
     "addressPrefix": 128,
     "chainId": "0x577d331ca43646f547cdaa07ad0aa387a383a93416764480665103081f3eaf14",
     "parentId": "0xb0a8d493285c2df73290dfb7e61f870f17b41801197a149ca93654499ea3dafe",
@@ -5009,7 +5012,7 @@
     }
   },
   {
-    "name": "GM",
+    "name": "GM (PAUSED)",
     "addressPrefix": 7013,
     "chainId": "0x19a3733beb9cb8a970a308d835599e9005e02dc007a35440e461a451466776f8",
     "parentId": "0xb0a8d493285c2df73290dfb7e61f870f17b41801197a149ca93654499ea3dafe",
