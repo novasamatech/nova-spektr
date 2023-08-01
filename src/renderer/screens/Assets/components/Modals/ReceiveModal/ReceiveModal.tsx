@@ -62,6 +62,7 @@ export const ReceiveModal = ({ chain, asset, isOpen, onClose }: Props) => {
     setActiveAccount({ id: accounts[0].id, value: accounts[0].value });
   }, [activeAccounts.length, chain.chainId]);
 
+  const hasShards = activeAccounts.length > 1;
   const account = activeAccount ? activeAccounts[activeAccount.value] : undefined;
   const accountId = account?.accountId || '0x00';
   const prefix = chain.addressPrefix;
@@ -74,19 +75,21 @@ export const ReceiveModal = ({ chain, asset, isOpen, onClose }: Props) => {
     <BaseModal
       title={<OperationModalTitle title={t('receive.title', { asset: asset.symbol })} chainId={chain.chainId} />}
       contentClass="pb-6 px-4 pt-4 flex flex-col items-center"
-      headerClass="py-4 px-5 max-w-[440px]"
+      headerClass="py-3 px-5 max-w-[440px]"
       closeButton
       isOpen={isOpen}
       onClose={onClose}
     >
-      <Select
-        placeholder={t('receive.selectWalletPlaceholder')}
-        className="w-full mb-6"
-        disabled={activeAccountsOptions.length === 1}
-        selectedId={activeAccount?.id}
-        options={activeAccountsOptions}
-        onChange={setActiveAccount}
-      />
+      {hasShards && (
+        <Select
+          placeholder={t('receive.selectWalletPlaceholder')}
+          className="w-full mb-6"
+          disabled={activeAccountsOptions.length === 1}
+          selectedId={activeAccount?.id}
+          options={activeAccountsOptions}
+          onChange={setActiveAccount}
+        />
+      )}
 
       <FootnoteText className="w-[240px] mb-4" align="center">
         {/* eslint-disable-next-line i18next/no-literal-string */}
