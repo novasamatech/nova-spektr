@@ -1,5 +1,5 @@
 import cn from 'classnames';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 
 import cnTw from '@renderer/shared/utils/twMerge';
 import { Shimmering } from '@renderer/components/ui';
@@ -46,6 +46,12 @@ const QrReaderWrapper = ({ className, onResult, countdown, validationError, isMu
 
   const [activeCamera, setActiveCamera] = useState<DropdownResult<string>>();
   const [availableCameras, setAvailableCameras] = useState<DropdownOption<string>[]>([]);
+
+  useEffect(() => {
+    if (validationError) {
+      setIsSuccess(false);
+    }
+  }, [validationError]);
 
   const isCameraOn = !(error && CameraAccessErrors.includes(error));
 
@@ -97,6 +103,7 @@ const QrReaderWrapper = ({ className, onResult, countdown, validationError, isMu
       setError(CameraError.UNKNOWN_ERROR);
     }
 
+    setIsSuccess(false);
     setIsLoading(false);
   };
 
