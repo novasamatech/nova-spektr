@@ -56,6 +56,7 @@
   --alert-border-warning: rgb(246, 143, 7);
   --alert-border-negative: rgb(245, 33, 99);
   --token-border: #c3c3cb;
+  --border-dark: #6e6e78;
 
   /* DIVIDER */
   --divider: rgba(69, 69, 137, 0.06);
@@ -94,6 +95,10 @@
   --label-background-green: #01a63e;
   --label-background-red: #f52163;
   --selected-background: rgba(69, 69, 137, 0.1);
+  --black-background: rgba(0, 0, 0, 0.5);
+  --background-dark: #262626;
+  --background-item-hover: #4e4e57;
+  --background-item-selected: #6e6e78;
 
   /* SHADOW */
   --card-shadow: 0px 3px 4px rgba(69, 69, 137, 0.04), inset 0px -0.5px 0px rgba(69, 69, 137, 0.12);

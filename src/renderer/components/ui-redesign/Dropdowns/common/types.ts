@@ -1,6 +1,7 @@
 import { ReactNode } from 'react';
 
 export type Position = 'up' | 'down' | 'auto';
+export type Theme = 'dark' | 'light';
 
 export type DropdownOption<T extends any = any> = {
   id: string;
