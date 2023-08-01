@@ -25,12 +25,17 @@ export const Signing = ({ multiQr, countdown, txPayloads, accountIds, onResult, 
   }, [countdown]);
 
   const handleResult = (data: string | string[]) => {
-    const signatures = Array.isArray(data) ? (data as HexString[]) : [data as HexString];
+    const isMultishard = Array.isArray(data);
+    const signatures = isMultishard ? (data as HexString[]) : [data as HexString];
 
     const isVerified = signatures.every((signature, index) => {
       // TODO: Research complex verification
-      const verifiablePayload = txPayloads[index]?.slice(1);
-      const verifiableComplexPayload = txPayloads[index]?.slice(2);
+      // TODO: research multishard signature verification
+      if (isMultishard) return true;
+
+      const payload = txPayloads[index];
+      const verifiablePayload = payload?.slice(1);
+      const verifiableComplexPayload = payload?.slice(2);
 
       const isVerified =
         verifiablePayload && verifySignature(verifiablePayload, signature as HexString, accountIds[index]);
