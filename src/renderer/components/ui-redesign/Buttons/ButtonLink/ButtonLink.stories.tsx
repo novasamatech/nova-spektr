@@ -5,7 +5,7 @@ import { Icon } from '@renderer/components/ui';
 import ButtonLink from './ButtonLink';
 
 export default {
-  title: 'ButtonLink',
+  title: 'ButtonLinkRedesign',
   component: ButtonLink,
   parameters: { actions: { argTypesRegex: '^on.*' } },
   decorators: [

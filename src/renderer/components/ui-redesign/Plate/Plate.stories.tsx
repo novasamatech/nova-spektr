@@ -3,7 +3,7 @@ import { StoryFn, Meta } from '@storybook/react';
 import Plate from './Plate';
 
 export default {
-  title: 'Plate',
+  title: 'PlateRedesign',
   component: Plate,
   parameters: { actions: { argTypesRegex: '^on.*' } },
 } as Meta<typeof Plate>;

@@ -20,10 +20,7 @@ module.exports = {
       },
     },
   ],
-  framework: {
-    name: '@storybook/react-webpack5',
-    options: {},
-  },
+  framework: '@storybook/react-webpack5',
   webpackFinal: async (config) => {
     config.resolve.plugins = [new TsconfigPathsPlugin()];
     const storybookSvgLoader = config.module.rules.find(({ test }) => test?.test('.svg'));
