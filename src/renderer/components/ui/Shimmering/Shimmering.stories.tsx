@@ -1,4 +1,4 @@
-import { ComponentMeta, ComponentStory } from '@storybook/react';
+import { Meta, StoryFn } from '@storybook/react';
 
 import Shimmering from './Shimmering';
 
@@ -6,9 +6,9 @@ export default {
   title: 'Shimmering',
   component: Shimmering,
   parameters: { actions: { argTypesRegex: '^on.*' } },
-} as ComponentMeta<typeof Shimmering>;
+} as Meta<typeof Shimmering>;
 
-const Template: ComponentStory<typeof Shimmering> = (args) => <Shimmering {...args} />;
+const Template: StoryFn<typeof Shimmering> = (args) => <Shimmering {...args} />;
 
 export const Primary = Template.bind({});
 Primary.args = {

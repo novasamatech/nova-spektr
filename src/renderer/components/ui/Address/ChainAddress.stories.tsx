@@ -1,4 +1,4 @@
-import { ComponentStory, ComponentMeta } from '@storybook/react';
+import { StoryFn, Meta } from '@storybook/react';
 
 import ChainAddress from './ChainAddress';
 import { TEST_ACCOUNT_ID } from '@renderer/shared/utils/constants';
@@ -7,9 +7,9 @@ export default {
   title: 'Address',
   component: ChainAddress,
   parameters: { actions: { argTypesRegex: '^on.*' } },
-} as ComponentMeta<typeof ChainAddress>;
+} as Meta<typeof ChainAddress>;
 
-const Template: ComponentStory<typeof ChainAddress> = (args) => <ChainAddress {...args} />;
+const Template: StoryFn<typeof ChainAddress> = (args) => <ChainAddress {...args} />;
 
 export const Primary = Template.bind({});
 Primary.args = {

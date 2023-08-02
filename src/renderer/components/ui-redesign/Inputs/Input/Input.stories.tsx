@@ -1,4 +1,4 @@
-import { ComponentMeta, ComponentStory } from '@storybook/react';
+import { Meta, StoryFn } from '@storybook/react';
 
 import Input from './Input';
 import { Icon } from '@renderer/components/ui';
@@ -7,9 +7,9 @@ export default {
   title: 'Redesign/Input',
   component: Input,
   parameters: { actions: { argTypesRegex: '^on.*' } },
-} as ComponentMeta<typeof Input>;
+} as Meta<typeof Input>;
 
-const Template: ComponentStory<typeof Input> = (args) => <Input {...args} />;
+const Template: StoryFn<typeof Input> = (args) => <Input {...args} />;
 
 export const Primary = Template.bind({});
 Primary.args = {

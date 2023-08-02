@@ -1,4 +1,4 @@
-import { ComponentStory, ComponentMeta } from '@storybook/react';
+import { StoryFn, Meta } from '@storybook/react';
 
 import Table from './Table';
 
@@ -13,9 +13,9 @@ export default {
       </div>
     ),
   ],
-} as ComponentMeta<typeof Table>;
+} as Meta<typeof Table>;
 
-const Template: ComponentStory<typeof Table> = (args) => <Table {...args} />;
+const Template: StoryFn<typeof Table> = (args) => <Table {...args} />;
 
 type Struct = {
   name: string;

@@ -1,4 +1,4 @@
-import { ComponentMeta, ComponentStory } from '@storybook/react';
+import { Meta, StoryFn } from '@storybook/react';
 
 import SlideOne from '@images/misc/onboarding/slide-1.svg';
 import SlideTwo from '@images/misc/onboarding/slide-2.svg';
@@ -9,9 +9,9 @@ export default {
   title: 'Carousel',
   component: Carousel,
   parameters: { actions: { argTypesRegex: '^on.*' } },
-} as ComponentMeta<typeof Carousel>;
+} as Meta<typeof Carousel>;
 
-const Template: ComponentStory<typeof Carousel> = (args) => <Carousel {...args} />;
+const Template: StoryFn<typeof Carousel> = (args) => <Carousel {...args} />;
 
 const slides = [SlideOne, SlideTwo, SlideThree].map((slide, index) => ({
   id: index,

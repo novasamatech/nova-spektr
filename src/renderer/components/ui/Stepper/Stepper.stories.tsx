@@ -1,4 +1,4 @@
-import { ComponentMeta, ComponentStory } from '@storybook/react';
+import { Meta, StoryFn } from '@storybook/react';
 
 import Stepper from './Stepper';
 
@@ -6,9 +6,9 @@ export default {
   title: 'Stepper',
   component: Stepper,
   parameters: { actions: { argTypesRegex: '^on.*' } },
-} as ComponentMeta<typeof Stepper>;
+} as Meta<typeof Stepper>;
 
-const Template: ComponentStory<typeof Stepper> = (args) => <Stepper {...args} />;
+const Template: StoryFn<typeof Stepper> = (args) => <Stepper {...args} />;
 
 export const Start = Template.bind({});
 Start.args = {

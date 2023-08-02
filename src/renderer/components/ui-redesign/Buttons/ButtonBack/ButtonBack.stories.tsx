@@ -1,5 +1,5 @@
 import { MemoryRouter } from 'react-router-dom';
-import { ComponentMeta, ComponentStory } from '@storybook/react';
+import { Meta, StoryFn } from '@storybook/react';
 
 import ButtonBack from './ButtonBack';
 
@@ -14,9 +14,9 @@ export default {
       </MemoryRouter>
     ),
   ],
-} as ComponentMeta<typeof ButtonBack>;
+} as Meta<typeof ButtonBack>;
 
-const Template: ComponentStory<typeof ButtonBack> = (args) => <ButtonBack {...args} />;
+const Template: StoryFn<typeof ButtonBack> = (args) => <ButtonBack {...args} />;
 
 export const Primary = Template.bind({});
 Primary.args = {

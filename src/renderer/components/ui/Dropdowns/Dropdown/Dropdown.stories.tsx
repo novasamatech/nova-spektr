@@ -1,4 +1,4 @@
-import { ComponentMeta, ComponentStory } from '@storybook/react';
+import { Meta, StoryFn } from '@storybook/react';
 
 import { Icon, Identicon } from '@renderer/components/ui';
 import Dropdown from './Dropdown';
@@ -14,9 +14,9 @@ export default {
       </div>
     ),
   ],
-} as ComponentMeta<typeof Dropdown>;
+} as Meta<typeof Dropdown>;
 
-const Template: ComponentStory<typeof Dropdown> = (args) => <Dropdown {...args} />;
+const Template: StoryFn<typeof Dropdown> = (args) => <Dropdown {...args} />;
 
 const data = [
   { value: 'Durward Reynolds', address: '13mK8AssyPekT5cFuYQ7ijKNXcjHPq8Gnx6TxF5eFCAwoLQ' },

@@ -1,4 +1,4 @@
-import { ComponentStory, ComponentMeta } from '@storybook/react';
+import { StoryFn, Meta } from '@storybook/react';
 
 import Balance from './Balance';
 
@@ -6,9 +6,9 @@ export default {
   title: 'Balance',
   component: Balance,
   parameters: { actions: { argTypesRegex: '^on.*' } },
-} as ComponentMeta<typeof Balance>;
+} as Meta<typeof Balance>;
 
-const Template: ComponentStory<typeof Balance> = (args) => <Balance {...args} />;
+const Template: StoryFn<typeof Balance> = (args) => <Balance {...args} />;
 
 export const Primary = Template.bind({});
 Primary.args = {

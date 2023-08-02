@@ -1,4 +1,4 @@
-import { ComponentMeta, ComponentStory } from '@storybook/react';
+import { Meta, StoryFn } from '@storybook/react';
 
 import { Icon, Identicon } from '@renderer/components/ui';
 import Combobox from './Combobox';
@@ -14,9 +14,9 @@ export default {
       </div>
     ),
   ],
-} as ComponentMeta<typeof Combobox>;
+} as Meta<typeof Combobox>;
 
-const Template: ComponentStory<typeof Combobox> = (args) => <Combobox {...args} />;
+const Template: StoryFn<typeof Combobox> = (args) => <Combobox {...args} />;
 
 const data = [
   { value: 'Durward Reynolds', address: '13mK8AssyPekT5cFuYQ7ijKNXcjHPq8Gnx6TxF5eFCAwoLQ' },

@@ -15,12 +15,15 @@ export const createTxMetadata = async (
   accountId: Address,
   api: ApiPromise,
 ): Promise<{ registry: TypeRegistry; options: OptionsWithMeta; info: BaseTxInfo }> => {
-  const { block } = await api.rpc.chain.getBlock();
-  const blockHash = await api.rpc.chain.getBlockHash();
-  const genesisHash = await api.rpc.chain.getBlockHash(0);
-  const metadataRpc = await api.rpc.state.getMetadata();
-  const { nonce } = await api.query.system.account(accountId);
-  const { specVersion, transactionVersion, specName } = await api.rpc.state.getRuntimeVersion();
+  const [{ block }, blockHash, genesisHash, metadataRpc, { nonce }, { specVersion, transactionVersion, specName }] =
+    await Promise.all([
+      api.rpc.chain.getBlock(),
+      api.rpc.chain.getBlockHash(),
+      api.rpc.chain.getBlockHash(0),
+      api.rpc.state.getMetadata(),
+      api.query.system.account(accountId),
+      api.rpc.state.getRuntimeVersion(),
+    ]);
 
   const registry = getRegistry({
     chainName: specName.toString() as GetRegistryOpts['specName'],

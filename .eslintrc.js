@@ -1,10 +1,8 @@
 const fs = require('fs');
 const path = require('path');
-
 const prettierConfig = fs.readFileSync('./.prettierrc', 'utf8');
 const prettierOptions = JSON.parse(prettierConfig);
 const checkI18n = process.env.I18N === 'true';
-
 module.exports = {
   root: true,
   env: {
@@ -23,6 +21,7 @@ module.exports = {
     'plugin:i18n-json/recommended',
     'plugin:i18next/recommended',
     'prettier',
+    'plugin:storybook/recommended',
   ],
   plugins: ['@typescript-eslint', 'prettier', 'import', 'unused-imports', 'jest-dom', 'json'],
   parserOptions: {
@@ -33,8 +32,9 @@ module.exports = {
     createDefaultProgram: true,
   },
   settings: {
-    react: { version: 'detect' },
-
+    react: {
+      version: 'detect',
+    },
     'import/resolver': {
       alias: {
         map: [
@@ -71,7 +71,13 @@ module.exports = {
     'react/no-array-index-key': 'warn',
     'react/display-name': 'off',
     'react/react-in-jsx-scope': 'off',
-    'react/jsx-sort-props': ['error', { callbacksLast: true, noSortAlphabetically: true }],
+    'react/jsx-sort-props': [
+      'error',
+      {
+        callbacksLast: true,
+        noSortAlphabetically: true,
+      },
+    ],
     'react/function-component-definition': [
       'error',
       {
@@ -79,8 +85,18 @@ module.exports = {
         unnamedComponents: 'arrow-function',
       },
     ],
-    'i18n-json/identical-keys': ['error', { filePath: path.resolve('./src/shared/locale/en.json') }],
-    'i18n-json/identical-placeholders': ['error', { filePath: path.resolve('./src/shared/locale/en.json') }],
+    'i18n-json/identical-keys': [
+      'error',
+      {
+        filePath: path.resolve('./src/shared/locale/en.json'),
+      },
+    ],
+    'i18n-json/identical-placeholders': [
+      'error',
+      {
+        filePath: path.resolve('./src/shared/locale/en.json'),
+      },
+    ],
     'i18next/no-literal-string': [
       checkI18n ? 'error' : 'off',
       {

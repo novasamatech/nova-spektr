@@ -1,4 +1,4 @@
-import { ComponentStory, ComponentMeta } from '@storybook/react';
+import { StoryFn, Meta } from '@storybook/react';
 
 import Filter from './Filter';
 
@@ -13,9 +13,9 @@ export default {
       </div>
     ),
   ],
-} as ComponentMeta<typeof Filter>;
+} as Meta<typeof Filter>;
 
-const Template: ComponentStory<typeof Filter> = (args) => <Filter {...args} />;
+const Template: StoryFn<typeof Filter> = (args) => <Filter {...args} />;
 
 const options = [
   { id: '0', value: 'option_1', element: 'label_1' },

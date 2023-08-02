@@ -1,4 +1,4 @@
-import { ComponentStory, ComponentMeta } from '@storybook/react';
+import { StoryFn, Meta } from '@storybook/react';
 
 import InfoLink from './InfoLink';
 
@@ -6,9 +6,9 @@ export default {
   title: 'Redesign/Info Link',
   component: InfoLink,
   parameters: { actions: { argTypesRegex: '^on.*' } },
-} as ComponentMeta<typeof InfoLink>;
+} as Meta<typeof InfoLink>;
 
-const Template: ComponentStory<typeof InfoLink> = (args) => <InfoLink {...args} />;
+const Template: StoryFn<typeof InfoLink> = (args) => <InfoLink {...args} />;
 
 export const WithIcon = Template.bind({});
 WithIcon.args = {

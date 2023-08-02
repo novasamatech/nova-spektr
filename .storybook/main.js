@@ -1,5 +1,4 @@
 const TsconfigPathsPlugin = require('tsconfig-paths-webpack-plugin');
-
 module.exports = {
   stories: ['../src/**/*.stories.mdx', '../src/**/*.stories.@(js|jsx|ts|tsx)'],
   addons: [
@@ -21,13 +20,12 @@ module.exports = {
       },
     },
   ],
-  framework: '@storybook/react',
-  core: {
-    builder: 'webpack5',
+  framework: {
+    name: '@storybook/react-webpack5',
+    options: {},
   },
   webpackFinal: async (config) => {
     config.resolve.plugins = [new TsconfigPathsPlugin()];
-
     const storybookSvgLoader = config.module.rules.find(({ test }) => test?.test('.svg'));
     storybookSvgLoader.exclude = /svg$/;
     config.module.rules.push({
@@ -37,7 +35,12 @@ module.exports = {
           loader: '@svgr/webpack',
           options: {
             svgoConfig: {
-              plugins: [{ name: 'removeViewBox', active: false }],
+              plugins: [
+                {
+                  name: 'removeViewBox',
+                  active: false,
+                },
+              ],
             },
           },
         },
@@ -59,5 +62,8 @@ module.exports = {
     // });
 
     return config;
+  },
+  docs: {
+    autodocs: true,
   },
 };

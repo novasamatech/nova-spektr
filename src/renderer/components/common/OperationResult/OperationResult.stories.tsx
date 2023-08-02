@@ -1,4 +1,4 @@
-import { ComponentMeta, ComponentStory } from '@storybook/react';
+import { Meta, StoryFn } from '@storybook/react';
 
 import { OperationResult } from './OperationResult';
 
@@ -6,9 +6,9 @@ export default {
   title: 'Redesign/Operation Result',
   component: OperationResult,
   parameters: { actions: { argTypesRegex: '^on.*' } },
-} as ComponentMeta<typeof OperationResult>;
+} as Meta<typeof OperationResult>;
 
-const Template: ComponentStory<typeof OperationResult> = (args) => <OperationResult {...args} />;
+const Template: StoryFn<typeof OperationResult> = (args) => <OperationResult {...args} />;
 
 export const Primary = Template.bind({});
 Primary.args = {

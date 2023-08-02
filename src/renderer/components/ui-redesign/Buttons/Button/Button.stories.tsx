@@ -1,4 +1,4 @@
-import { ComponentMeta, ComponentStory } from '@storybook/react';
+import { Meta, StoryFn } from '@storybook/react';
 
 import { Icon } from '@renderer/components/ui';
 import Button from './Button';
@@ -6,9 +6,9 @@ export default {
   title: 'Redesign/Button',
   component: Button,
   parameters: { actions: { argTypesRegex: '^on.*' } },
-} as ComponentMeta<typeof Button>;
+} as Meta<typeof Button>;
 
-const Template: ComponentStory<typeof Button> = (args) => <Button {...args} />;
+const Template: StoryFn<typeof Button> = (args) => <Button {...args} />;
 
 export const Primary = Template.bind({});
 Primary.args = {
