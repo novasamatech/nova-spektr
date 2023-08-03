@@ -55,6 +55,8 @@ describe('screen/Settings/Matrix/LoginForm', () => {
 
   test('should disable submit button during submission', async () => {
     await setupForm(true);
+    // HACK: Wait for button will be enabled
+    await act(() => {});
 
     const button = screen.getByRole('button', { name: 'settings.matrix.logInButton' });
     expect(button).toBeEnabled();
