@@ -15,13 +15,13 @@ export const createTxMetadata = async (
   accountId: Address,
   api: ApiPromise,
 ): Promise<{ registry: TypeRegistry; options: OptionsWithMeta; info: BaseTxInfo }> => {
-  const [{ block }, blockHash, genesisHash, metadataRpc, { nonce }, { specVersion, transactionVersion, specName }] =
+  const [{ block }, blockHash, genesisHash, metadataRpc, nonce, { specVersion, transactionVersion, specName }] =
     await Promise.all([
       api.rpc.chain.getBlock(),
       api.rpc.chain.getBlockHash(),
       api.rpc.chain.getBlockHash(0),
       api.rpc.state.getMetadata(),
-      api.query.system.account(accountId),
+      api.rpc.system.accountNextIndex(accountId),
       api.rpc.state.getRuntimeVersion(),
     ]);
 
