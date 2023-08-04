@@ -12,7 +12,7 @@ import {
   UnsignedTransaction,
 } from '@substrate/txwrapper-polkadot';
 import { Weight } from '@polkadot/types/interfaces';
-import { signatureVerify } from '@polkadot/util-crypto';
+import { blake2AsU8a, signatureVerify } from '@polkadot/util-crypto';
 
 import { AccountId, HexString, Threshold } from '@renderer/domain/shared-kernel';
 import { Transaction, TransactionType } from '@renderer/domain/transaction';
@@ -440,8 +440,11 @@ export const useTransaction = (): ITransactionService => {
       });
   };
 
-  const verifySignature = (payload: string | Uint8Array, signature: HexString, accountId: AccountId): Boolean => {
-    return signatureVerify(payload, signature, accountId).isValid;
+  const verifySignature = (payload: HexString | Uint8Array, signature: HexString, accountId: AccountId): Boolean => {
+    const payloadData = Array.isArray(payload) ? payload : hexToU8a(payload as HexString);
+    const payloadToVerify = payloadData.length > 256 ? blake2AsU8a(payloadData) : payloadData;
+
+    return signatureVerify(payloadToVerify, signature, accountId).isValid;
   };
 
   return {
