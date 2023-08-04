@@ -734,6 +734,7 @@ export class Matrix implements ISecureMessenger {
       const memberKeys = await this.matrixClient.downloadKeys(matrixIds);
 
       const verifyRequests = matrixIds.map((matrixId) => {
+        // @ts-ignore
         const keys = Object.keys(memberKeys[matrixId]);
 
         return keys.map((deviceId) => this.matrixClient.setDeviceVerified(matrixId, deviceId));
