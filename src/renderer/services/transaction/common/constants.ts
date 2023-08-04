@@ -1,5 +1,5 @@
 export const MAX_WEIGHT = {
-  refTime: '640000000',
+  refTime: '0',
   proofSize: '0',
 };
 

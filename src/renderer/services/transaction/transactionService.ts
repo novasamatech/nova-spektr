@@ -351,9 +351,8 @@ export const useTransaction = (): ITransactionService => {
     return partialFee.toString();
   };
 
-  const getTxWeight = async (transaction: Transaction, api: ApiPromise): Promise<Weight> => {
-    const extrinsic = getExtrinsic[transaction.type](transaction.args, api);
-    const { weight } = await extrinsic.paymentInfo(transaction.address);
+  const getExtrinsicWeight = async (extrinsic: SubmittableExtrinsic<'promise'>, api: ApiPromise): Promise<Weight> => {
+    const { weight } = await extrinsic.paymentInfo(extrinsic.signer);
 
     return weight;
   };
@@ -450,7 +449,7 @@ export const useTransaction = (): ITransactionService => {
     getSignedExtrinsic,
     submitAndWatchExtrinsic,
     getTransactionFee,
-    getTxWeight,
+    getExtrinsicWeight,
     getTransactionDeposit,
     getTransactionHash,
     decodeCallData,
