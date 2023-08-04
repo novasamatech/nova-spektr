@@ -341,8 +341,8 @@ devDependencies:
     specifier: ^13.0.3
     version: 13.2.2
   matrix-js-sdk:
-    specifier: 24.1.0
-    version: 24.1.0
+    specifier: 27.1.0
+    version: 27.1.0
   mini-css-extract-plugin:
     specifier: ^2.6.1
     version: 2.7.5(webpack@5.82.1)
@@ -2763,8 +2763,8 @@ packages:
       - supports-color
     dev: true
 
-  /@matrix-org/matrix-sdk-crypto-js@0.1.4:
-    resolution: {integrity: sha512-OxG84iSeR89zYLFeb+DCaFtZT+DDiIu+kTkqY8OYfhE5vpGLFX2sDVBRrAdos1IUqEoboDloDBR9+yU7hNRyog==}
+  /@matrix-org/matrix-sdk-crypto-wasm@1.2.0:
+    resolution: {integrity: sha512-vmpbtXYFzfBSFjeAx/PNRjy7zyH+Xx2HVXNKdApgo3+hSALewcXwdOTJy5pKq+poumM2TjjKDhG2s6/zSDNUYg==}
     engines: {node: '>= 10'}
     dev: true
 
@@ -8642,6 +8642,10 @@ packages:
       randombytes: 2.1.0
       randomfill: 1.0.4
 
+  /crypto-js@4.1.1:
+    resolution: {integrity: sha512-o2JlM7ydqd3Qk9CA0L4NL6mTzU2sdx96a+oOfPu8Mkl/PK51vSyoi8/rQ8NknZtk44vq15lmhAj9CIAGwgeWKw==}
+    dev: true
+
   /css-color-keywords@1.0.0:
     resolution: {integrity: sha512-FyyrDHZKEjXDpNJYvVsV960FiqQyXc/LlYmsxl2BcdMb2WPx0OGRVgTg55rPSyLSNMqP52R9r8geSp7apN3Ofg==}
     engines: {node: '>=4'}
@@ -13318,6 +13322,10 @@ packages:
     engines: {node: '>=8'}
     dev: true
 
+  /jwt-decode@3.1.2:
+    resolution: {integrity: sha512-UfpWE/VZn0iP50d8cz9NrZLM9lSWhcJ+0Gt/nm4by88UL+J1SiKN8/5dkjMmbEzwL2CAe+67GsegCbIKtbp75A==}
+    dev: true
+
   /keyv@3.1.0:
     resolution: {integrity: sha512-9ykJ/46SN/9KPM/sichzQ7OvXyGDYKGTaDlKMGCAlg2UK8KRy4jb0d8sFc+0Tt0YYnThq8X2RZgCg74RPxgcVA==}
     dependencies:
@@ -13772,18 +13780,20 @@ packages:
     resolution: {integrity: sha512-1QEOsXO+bhyCroIe2/A5OwaxHvBm7EsSQ46DEDn8RBIfQwN5HWBpFvyWWR4QY0KHPPnnJdI99wgRiAl7Ad5qaA==}
     dev: true
 
-  /matrix-js-sdk@24.1.0:
-    resolution: {integrity: sha512-xEx2ZoNsS56dwgqLJ3rIv2SUpFxdQLrLKmJCpMatMUKCAg+NGuZfpQ3QXblIbGaqFNQZCH7fC7S48AeTMZp1Jw==}
-    engines: {node: '>=16.0.0'}
+  /matrix-js-sdk@27.1.0:
+    resolution: {integrity: sha512-ge1P1iNit0demKA11YzXt4QdsBHObrPdIVdecutFX7OwOBat6BC1F6AxsvPZQPDqnT5oelJt55ym4U7i8G9IRg==}
+    engines: {node: '>=18.0.0'}
     dependencies:
       '@babel/runtime': 7.21.5
-      '@matrix-org/matrix-sdk-crypto-js': 0.1.4
+      '@matrix-org/matrix-sdk-crypto-wasm': 1.2.0
       another-json: 0.2.0
       bs58: 5.0.0
       content-type: 1.0.5
+      jwt-decode: 3.1.2
       loglevel: 1.8.1
       matrix-events-sdk: 0.0.1
       matrix-widget-api: 1.4.0
+      oidc-client-ts: 2.2.4
       p-retry: 4.6.2
       sdp-transform: 2.14.1
       unhomoglyph: 1.0.6
@@ -14647,6 +14657,14 @@ packages:
 
   /obuf@1.1.2:
     resolution: {integrity: sha512-PX1wu0AmAdPqOL1mWhqmlOd8kOIZQwGZw6rh7uby9fTc5lhaOWFLX3I6R1hrF9k3zUY40e6igsLGkDXK92LJNg==}
+    dev: true
+
+  /oidc-client-ts@2.2.4:
+    resolution: {integrity: sha512-nOZwIomju+AmXObl5Oq5PjrES/qTt8bLsENJCIydVgi9TEWk7SCkOU6X3RNkY7yfySRM1OJJvDKdREZdmnDT2g==}
+    engines: {node: '>=12.13.0'}
+    dependencies:
+      crypto-js: 4.1.1
+      jwt-decode: 3.1.2
     dev: true
 
   /on-finished@2.4.1:
