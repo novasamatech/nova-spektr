@@ -10,7 +10,14 @@ import { BOND_WITH_CONTROLLER_ARGS_AMOUNT, OLD_MULTISIG_ARGS_AMOUNT } from './co
 import { ICallDataDecoder } from './common/types';
 
 export const useCallDataDecoder = (): ICallDataDecoder => {
-  const decodeCallData = (api: ApiPromise, address: Address, callData: CallData): DecodedTransaction => {
+  const getDataFromCallData = (
+    api: ApiPromise,
+    callData: CallData,
+  ): {
+    decoded: SubmittableExtrinsic<'promise'>;
+    method: string;
+    section: string;
+  } => {
     let extrinsicCall: Call;
     let decoded: SubmittableExtrinsic<'promise'> | null = null;
 
@@ -20,12 +27,25 @@ export const useCallDataDecoder = (): ICallDataDecoder => {
     } catch {
       extrinsicCall = api.createType('Call', callData);
     }
+
     const { method, section } = api.registry.findMetaCall(extrinsicCall.callIndex);
     const extrinsicFn = api.tx[section][method];
     const extrinsic = extrinsicFn(...extrinsicCall.args);
+
     if (!decoded) {
       decoded = extrinsic;
     }
+
+    return { decoded, method, section };
+  };
+
+  const getTxFromCallData = (api: ApiPromise, callData: CallData): SubmittableExtrinsic<'promise'> => {
+    return getDataFromCallData(api, callData).decoded;
+  };
+
+  const decodeCallData = (api: ApiPromise, address: Address, callData: CallData): DecodedTransaction => {
+    const { decoded, method, section } = getDataFromCallData(api, callData);
+
     if (isBatchExtrinsic(method, section)) {
       return parseBatch(method, section, address, decoded, api);
     }
@@ -246,5 +266,5 @@ export const useCallDataDecoder = (): ICallDataDecoder => {
     return undefined;
   };
 
-  return { decodeCallData };
+  return { decodeCallData, getTxFromCallData };
 };
