@@ -440,9 +440,8 @@ export const useTransaction = (): ITransactionService => {
       });
   };
 
-  const verifySignature = (payload: HexString | Uint8Array, signature: HexString, accountId: AccountId): Boolean => {
-    const payloadData = Array.isArray(payload) ? payload : hexToU8a(payload as HexString);
-    const payloadToVerify = payloadData.length > 256 ? blake2AsU8a(payloadData) : payloadData;
+  const verifySignature = (payload: Uint8Array, signature: HexString, accountId: AccountId): Boolean => {
+    const payloadToVerify = payload.length > 256 ? blake2AsU8a(payload) : payload;
 
     return signatureVerify(payloadToVerify, signature, accountId).isValid;
   };

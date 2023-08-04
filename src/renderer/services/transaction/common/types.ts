@@ -30,7 +30,7 @@ export type ITransactionService = {
   getTransactionDeposit: (threshold: Threshold, api: ApiPromise) => string;
   getTransactionHash: (transaction: Transaction, api: ApiPromise) => HashData;
   decodeCallData: (api: ApiPromise, accountId: Address, callData: CallData) => DecodedTransaction;
-  verifySignature: (payload: HexString | Uint8Array, signature: HexString, accountId: AccountId) => Boolean;
+  verifySignature: (payload: Uint8Array, signature: HexString, accountId: AccountId) => Boolean;
 };
 
 // =====================================================
