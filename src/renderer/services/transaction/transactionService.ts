@@ -12,7 +12,7 @@ import {
   UnsignedTransaction,
 } from '@substrate/txwrapper-polkadot';
 import { Weight } from '@polkadot/types/interfaces';
-import { signatureVerify } from '@polkadot/util-crypto';
+import { blake2AsU8a, signatureVerify } from '@polkadot/util-crypto';
 
 import { AccountId, HexString, Threshold } from '@renderer/domain/shared-kernel';
 import { Transaction, TransactionType } from '@renderer/domain/transaction';
@@ -99,7 +99,7 @@ export const useTransaction = (): ITransactionService => {
     [TransactionType.ASSET_TRANSFER]: (transaction, info, options) => {
       return methods.assets.transfer(
         {
-          id: transaction.args.assetId,
+          id: transaction.args.asset,
           target: transaction.args.dest,
           amount: transaction.args.value,
         },
@@ -113,7 +113,7 @@ export const useTransaction = (): ITransactionService => {
             {
               dest: transaction.args.dest,
               amount: transaction.args.value,
-              currencyId: transaction.args.assetId,
+              currencyId: transaction.args.asset,
             },
             info,
             options,
@@ -122,7 +122,7 @@ export const useTransaction = (): ITransactionService => {
             {
               dest: transaction.args.dest,
               amount: transaction.args.value,
-              currencyId: transaction.args.assetId,
+              currencyId: transaction.args.asset,
             },
             info,
             options,
@@ -440,8 +440,10 @@ export const useTransaction = (): ITransactionService => {
       });
   };
 
-  const verifySignature = (payload: string | Uint8Array, signature: HexString, accountId: AccountId): Boolean => {
-    return signatureVerify(payload, signature, accountId).isValid;
+  const verifySignature = (payload: Uint8Array, signature: HexString, accountId: AccountId): Boolean => {
+    const payloadToVerify = payload.length > 256 ? blake2AsU8a(payload) : payload;
+
+    return signatureVerify(payloadToVerify, signature, accountId).isValid;
   };
 
   return {
