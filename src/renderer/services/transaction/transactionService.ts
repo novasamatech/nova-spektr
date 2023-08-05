@@ -99,7 +99,7 @@ export const useTransaction = (): ITransactionService => {
     [TransactionType.ASSET_TRANSFER]: (transaction, info, options) => {
       return methods.assets.transfer(
         {
-          id: transaction.args.assetId,
+          id: transaction.args.asset,
           target: transaction.args.dest,
           amount: transaction.args.value,
         },
@@ -113,7 +113,7 @@ export const useTransaction = (): ITransactionService => {
             {
               dest: transaction.args.dest,
               amount: transaction.args.value,
-              currencyId: transaction.args.assetId,
+              currencyId: transaction.args.asset,
             },
             info,
             options,
@@ -122,7 +122,7 @@ export const useTransaction = (): ITransactionService => {
             {
               dest: transaction.args.dest,
               amount: transaction.args.value,
-              currencyId: transaction.args.assetId,
+              currencyId: transaction.args.asset,
             },
             info,
             options,
