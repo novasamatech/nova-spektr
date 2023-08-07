@@ -7,6 +7,7 @@ import { DropdownOption, DropdownResult, Position, Theme } from '../common/types
 import { CommonInputStyles, CommonInputStylesTheme } from '@renderer/shared/ui/Inputs/common/styles';
 import {
   OptionsContainerStyle,
+  OptionsContainerStyleTheme,
   OptionStyle,
   OptionStyleTheme,
   SelectButtonStyle,
@@ -98,7 +99,13 @@ const MultiSelect = ({
           </Listbox.Button>
 
           <Transition as={Fragment} leave="transition ease-in duration-100" leaveFrom="opacity-100" leaveTo="opacity-0">
-            <Listbox.Options className={cnTw(OptionsContainerStyle, position !== 'auto' && ViewClass[position])}>
+            <Listbox.Options
+              className={cnTw(
+                OptionsContainerStyle,
+                OptionsContainerStyleTheme[theme],
+                position !== 'auto' && ViewClass[position],
+              )}
+            >
               {options.map(({ id, value, element }) => (
                 <Listbox.Option
                   key={id}
