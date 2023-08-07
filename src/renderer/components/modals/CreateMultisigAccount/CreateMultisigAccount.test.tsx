@@ -2,46 +2,13 @@ import { render, screen } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import noop from 'lodash/noop';
 
-import { TEST_ACCOUNT_ID } from '@renderer/shared/utils/constants';
+import { TEST_ACCOUNT_ID } from '@renderer/shared/lib/utils';
 import { CreateMultisigAccount } from './CreateMultisigAccount';
 
-jest.mock('@renderer/context/I18nContext', () => ({
+jest.mock('@renderer/app/providers', () => ({
   useI18n: jest.fn().mockReturnValue({
     t: (key: string) => key,
   }),
-}));
-
-jest.mock('react-router-dom', () => ({
-  useNavigate: jest.fn(),
-}));
-
-jest.mock('@renderer/services/account/accountService', () => ({
-  useAccount: jest.fn().mockReturnValue({
-    addAccount: jest.fn(),
-    setActiveAccount: jest.fn(),
-    getAccounts: jest.fn().mockResolvedValue([{ name: 'Test Wallet', accountId: TEST_ACCOUNT_ID }]),
-  }),
-}));
-
-jest.mock('@renderer/services/contact/contactService', () => ({
-  useContact: jest.fn().mockReturnValue({
-    getLiveContacts: jest.fn().mockReturnValue([]),
-  }),
-}));
-
-jest.mock('@renderer/services/wallet/walletService', () => ({
-  useWallet: jest.fn().mockReturnValue({
-    getWallets: jest.fn().mockResolvedValue([]),
-  }),
-}));
-
-jest.mock('@renderer/services/network/chainsService', () => ({
-  useChains: jest.fn().mockReturnValue({
-    getChainsData: jest.fn().mockResolvedValue([]),
-  }),
-}));
-
-jest.mock('@renderer/context/MatrixContext', () => ({
   useMatrix: jest.fn().mockReturnValue({
     isLoggedIn: true,
     matrix: {
@@ -51,11 +18,41 @@ jest.mock('@renderer/context/MatrixContext', () => ({
   }),
 }));
 
+jest.mock('react-router-dom', () => ({
+  useNavigate: jest.fn(),
+}));
+
+jest.mock('@renderer/entities/account', () => ({
+  useAccount: jest.fn().mockReturnValue({
+    addAccount: jest.fn(),
+    setActiveAccount: jest.fn(),
+    getAccounts: jest.fn().mockResolvedValue([{ name: 'Test Wallet', accountId: TEST_ACCOUNT_ID }]),
+  }),
+}));
+
+jest.mock('@renderer/entities/contact', () => ({
+  useContact: jest.fn().mockReturnValue({
+    getLiveContacts: jest.fn().mockReturnValue([]),
+  }),
+}));
+
+jest.mock('@renderer/entities/wallet', () => ({
+  useWallet: jest.fn().mockReturnValue({
+    getWallets: jest.fn().mockResolvedValue([]),
+  }),
+}));
+
+jest.mock('@renderer/entities/network', () => ({
+  useChains: jest.fn().mockReturnValue({
+    getChainsData: jest.fn().mockResolvedValue([]),
+  }),
+}));
+
 jest.mock('@renderer/components/modals/MatrixModal/MatrixModal', () => ({
   MatrixModal: () => <span>matrixModal</span>,
 }));
 
-jest.mock('@renderer/components/common/OperationResult/OperationResult', () => ({
+jest.mock('@renderer/entities/transaction', () => ({
   OperationResult: () => <span>operationResult</span>,
 }));
 

@@ -1,10 +1,9 @@
 import { PropsWithChildren } from 'react';
 import cn from 'classnames';
 
-import { Button, CaptionText, FootnoteText, InfoLink, SmallTitleText } from '@renderer/components/ui-redesign';
-import { secondsToMinutes } from '@renderer/shared/utils/time';
-import { Icon, Shimmering } from '@renderer/components/ui';
-import { useI18n } from '@renderer/context/I18nContext';
+import { Button, CaptionText, FootnoteText, InfoLink, SmallTitleText, Icon, Shimmering } from '@renderer/shared/ui';
+import { secondsToMinutes } from '@renderer/shared/lib/utils';
+import { useI18n } from '@renderer/app/providers';
 import { ChainId } from '@renderer/domain/shared-kernel';
 import { getMetadataPortalMetadataUrl, TROUBLESHOOTING_URL } from '../common/constants';
 

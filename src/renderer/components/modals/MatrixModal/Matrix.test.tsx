@@ -3,15 +3,12 @@ import { MemoryRouter } from 'react-router-dom';
 import noop from 'lodash/noop';
 
 import { MatrixModal } from './MatrixModal';
-import { useMatrix } from '@renderer/context/MatrixContext';
+import { useMatrix } from '@renderer/app/providers';
 
-jest.mock('@renderer/context/I18nContext', () => ({
+jest.mock('@renderer/app/providers', () => ({
   useI18n: jest.fn().mockReturnValue({
     t: (key: string) => key,
   }),
-}));
-
-jest.mock('@renderer/context/MatrixContext', () => ({
   useMatrix: jest.fn().mockReturnValue({
     isLoggedIn: false,
     matrix: {

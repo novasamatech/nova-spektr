@@ -2,11 +2,9 @@ import { useState } from 'react';
 import { TFunction } from 'react-i18next';
 import { useForm, SubmitHandler, Controller } from 'react-hook-form';
 
-import { useI18n } from '@renderer/context/I18nContext';
-import { Button, Input, InputHint, FootnoteText, InputFile, Tabs } from '@renderer/components/ui-redesign';
-import { useMatrix } from '@renderer/context/MatrixContext';
-import { TabItem } from '@renderer/components/ui-redesign/Tabs/common/types';
-import { Icon } from '@renderer/components/ui';
+import { useI18n, useMatrix } from '@renderer/app/providers';
+import { Button, Input, InputHint, FootnoteText, InputFile, Tabs, Icon } from '@renderer/shared/ui';
+import { TabItem } from '@renderer/shared/ui/Tabs/common/types';
 
 type VerifyForm = {
   secretKey: string;
