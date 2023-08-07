@@ -12,9 +12,9 @@ import { ExtendedChain } from '@renderer/entities/network';
 import {
   Transaction,
   TransactionType,
-  isDecodedTx,
   useTransaction,
   OperationResult,
+  useCallDataDecoder,
 } from '@renderer/entities/transaction';
 import { Address, HexString, SigningType, Timepoint } from '@renderer/domain/shared-kernel';
 import { toAddress, transferableAmount, TEST_ADDRESS } from '@renderer/shared/lib/utils';
@@ -47,7 +47,8 @@ const ApproveTx = ({ tx, account, connection }: Props) => {
   const { t } = useI18n();
   const { getBalance } = useBalance();
   const { getLiveAccounts } = useAccount();
-  const { getTransactionFee, getTxWeight } = useTransaction();
+  const { getTransactionFee, getExtrinsicWeight } = useTransaction();
+  const { getTxFromCallData } = useCallDataDecoder();
   const { getLiveTxEvents } = useMultisigEvent({});
   const events = getLiveTxEvents(tx.accountId, tx.chainId, tx.callHash, tx.blockCreated, tx.indexCreated);
 
@@ -88,10 +89,11 @@ const ApproveTx = ({ tx, account, connection }: Props) => {
   }, [tx, signAccount?.accountId, txWeight]);
 
   useEffect(() => {
-    if (!tx.transaction || !connection.api) return;
-    if (isDecodedTx(tx.transaction)) return;
+    if (!tx.callData || !connection.api) return;
 
-    getTxWeight(tx.transaction, connection.api).then(setTxWeight);
+    const transaction = getTxFromCallData(connection.api, tx.callData);
+
+    getExtrinsicWeight(transaction, connection.api).then(setTxWeight);
   }, [tx.transaction, connection.api]);
 
   const goBack = () => {

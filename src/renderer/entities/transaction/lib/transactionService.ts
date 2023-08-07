@@ -12,7 +12,7 @@ import {
   UnsignedTransaction,
 } from '@substrate/txwrapper-polkadot';
 import { Weight } from '@polkadot/types/interfaces';
-import { signatureVerify } from '@polkadot/util-crypto';
+import { blake2AsU8a, signatureVerify } from '@polkadot/util-crypto';
 
 import { AccountId, HexString, Threshold } from '@renderer/domain/shared-kernel';
 import { Transaction, TransactionType } from '@renderer/entities/transaction/model/transaction';
@@ -98,7 +98,7 @@ export const useTransaction = (): ITransactionService => {
     [TransactionType.ASSET_TRANSFER]: (transaction, info, options) => {
       return methods.assets.transfer(
         {
-          id: transaction.args.assetId,
+          id: transaction.args.asset,
           target: transaction.args.dest,
           amount: transaction.args.value,
         },
@@ -112,7 +112,7 @@ export const useTransaction = (): ITransactionService => {
             {
               dest: transaction.args.dest,
               amount: transaction.args.value,
-              currencyId: transaction.args.assetId,
+              currencyId: transaction.args.asset,
             },
             info,
             options,
@@ -121,7 +121,7 @@ export const useTransaction = (): ITransactionService => {
             {
               dest: transaction.args.dest,
               amount: transaction.args.value,
-              currencyId: transaction.args.assetId,
+              currencyId: transaction.args.asset,
             },
             info,
             options,
@@ -350,9 +350,8 @@ export const useTransaction = (): ITransactionService => {
     return partialFee.toString();
   };
 
-  const getTxWeight = async (transaction: Transaction, api: ApiPromise): Promise<Weight> => {
-    const extrinsic = getExtrinsic[transaction.type](transaction.args, api);
-    const { weight } = await extrinsic.paymentInfo(transaction.address);
+  const getExtrinsicWeight = async (extrinsic: SubmittableExtrinsic<'promise'>, api: ApiPromise): Promise<Weight> => {
+    const { weight } = await extrinsic.paymentInfo(extrinsic.signer);
 
     return weight;
   };
@@ -440,8 +439,10 @@ export const useTransaction = (): ITransactionService => {
       });
   };
 
-  const verifySignature = (payload: string | Uint8Array, signature: HexString, accountId: AccountId): Boolean => {
-    return signatureVerify(payload, signature, accountId).isValid;
+  const verifySignature = (payload: Uint8Array, signature: HexString, accountId: AccountId): Boolean => {
+    const payloadToVerify = payload.length > 256 ? blake2AsU8a(payload) : payload;
+
+    return signatureVerify(payloadToVerify, signature, accountId).isValid;
   };
 
   return {
@@ -449,7 +450,7 @@ export const useTransaction = (): ITransactionService => {
     getSignedExtrinsic,
     submitAndWatchExtrinsic,
     getTransactionFee,
-    getTxWeight,
+    getExtrinsicWeight,
     getTransactionDeposit,
     getTransactionHash,
     decodeCallData,
