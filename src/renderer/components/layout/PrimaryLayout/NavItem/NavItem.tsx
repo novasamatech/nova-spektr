@@ -1,11 +1,10 @@
 import { ReactNode } from 'react';
 import { NavLink } from 'react-router-dom';
 
-import { Icon } from '@renderer/components/ui';
-import { BodyText } from '@renderer/components/ui-redesign';
-import { IconNames } from '@renderer/components/ui/Icon/data';
-import { useI18n } from '@renderer/context/I18nContext';
-import cnTw from '@renderer/shared/utils/twMerge';
+import { Icon, BodyText } from '@renderer/shared/ui';
+import { IconNames } from '@renderer/shared/ui/Icon/data';
+import { useI18n } from '@renderer/app/providers';
+import { cnTw } from '@renderer/shared/lib/utils';
 
 export type Props = {
   title: string;

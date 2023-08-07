@@ -1,4 +1,4 @@
-import Matrix, { RoomParams, Signatory } from '@renderer/services/matrix';
+import Matrix, { RoomParams, Signatory } from '../../../src/renderer/entities/matrix/lib';
 
 export async function createRoom(
   matrix: Matrix,

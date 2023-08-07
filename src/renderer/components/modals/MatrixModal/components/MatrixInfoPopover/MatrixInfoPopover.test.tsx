@@ -5,13 +5,13 @@ import MatrixInfoPopover from './MatrixInfoPopover';
 
 jest.mock('react-i18next', () => ({ Trans: (props: any) => props.i18nKey }));
 
-jest.mock('@renderer/context/I18nContext', () => ({
+jest.mock('@renderer/app/providers', () => ({
   useI18n: jest.fn().mockReturnValue({
     t: (key: string) => key,
   }),
 }));
 
-describe('screens/Settings/Matrix/MatrixInfoPopover', () => {
+describe('pages/Settings/Matrix/MatrixInfoPopover', () => {
   test('should render component', async () => {
     const user = userEvent.setup();
 

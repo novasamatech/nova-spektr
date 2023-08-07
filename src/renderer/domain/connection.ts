@@ -1,4 +1,4 @@
-import { RpcNode } from './chain';
+import { RpcNode } from '../entities/chain/model/chain';
 import { ChainId } from './shared-kernel';
 
 export type Connection = {

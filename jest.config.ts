@@ -37,7 +37,6 @@ const config: Config = {
     '^.+\\.(t|j)sx?$': ['@swc/jest', swcConfig],
     '^(?!.*\\.(js|jsx|mjs|cjs|ts|tsx|json)$)': '<rootDir>/scripts/fileTransform.js',
   },
-  // help @swc/jest to transform node_modules esm packages (swiper.js I look at you)
   transformIgnorePatterns: [],
   moduleNameMapper: {
     '\\.(css|less|scss|sass)$': 'identity-obj-proxy',
@@ -47,6 +46,8 @@ const config: Config = {
     '^@renderer(.*)$': '<rootDir>/src/renderer/$1',
     '^@images(.*)$': '<rootDir>/src/renderer/assets/images/$1',
     '^@video(.*)$': '<rootDir>/src/renderer/assets/video/$1',
+    '^dexie$': '<rootDir>/node_modules/dexie/dist/dexie.js',
+    '^lottie': 'lottie-react',
   },
   modulePathIgnorePatterns: ['<rootDir>/tests'],
   collectCoverageFrom: [

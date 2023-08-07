@@ -1,4 +1,4 @@
-import { Contact } from '@renderer/domain/contact';
+import { Contact } from '@renderer/entities/contact/model/contact';
 import { ChainId, AccountId } from '@renderer/domain/shared-kernel';
 
 export type ExtendedContact = Contact & { index: string };

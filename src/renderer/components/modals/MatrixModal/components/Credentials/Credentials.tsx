@@ -1,7 +1,6 @@
-import { useI18n } from '@renderer/context/I18nContext';
-import { useMatrix } from '@renderer/context/MatrixContext';
-import { useToggle } from '@renderer/shared/hooks';
-import { Button, FootnoteText, StatusLabel } from '@renderer/components/ui-redesign';
+import { useI18n, useMatrix } from '@renderer/app/providers';
+import { useToggle } from '@renderer/shared/lib/hooks';
+import { Button, FootnoteText, StatusLabel } from '@renderer/shared/ui';
 
 type Props = {
   onLogOut: () => void;

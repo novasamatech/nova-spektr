@@ -2,22 +2,19 @@ import { render, screen } from '@testing-library/react';
 import noop from 'lodash/noop';
 
 import { ContactForm } from './ContactForm';
-import { Contact } from '@renderer/domain/contact';
-import { TEST_ADDRESS, TEST_ACCOUNT_ID } from '@renderer/shared/utils/constants';
+import { Contact } from '@renderer/entities/contact';
+import { TEST_ADDRESS, TEST_ACCOUNT_ID } from '@renderer/shared/lib/utils';
 
-jest.mock('@renderer/context/I18nContext', () => ({
+jest.mock('@renderer/app/providers', () => ({
   useI18n: jest.fn().mockReturnValue({
     t: (key: string) => key,
   }),
-}));
-
-jest.mock('@renderer/context/MatrixContext', () => ({
   useMatrix: jest.fn().mockReturnValue({
     matrix: { validateFullUserName: jest.fn().mockReturnValue(true) },
   }),
 }));
 
-jest.mock('@renderer/services/contact/contactService', () => ({
+jest.mock('@renderer/entities/contact', () => ({
   useContact: jest.fn().mockReturnValue({
     addContact: jest.fn(),
     updateContact: jest.fn(),
@@ -25,7 +22,7 @@ jest.mock('@renderer/services/contact/contactService', () => ({
   }),
 }));
 
-describe('screens/AddressBook/ContactForm', () => {
+describe('pages/AddressBook/ContactForm', () => {
   const contact: Contact = {
     name: 'Contact',
     address: TEST_ADDRESS,

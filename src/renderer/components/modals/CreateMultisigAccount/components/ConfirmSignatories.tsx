@@ -1,7 +1,6 @@
-import cnTw from '@renderer/shared/utils/twMerge';
-import { useI18n } from '@renderer/context/I18nContext';
-import { useNetworkContext } from '@renderer/context/NetworkContext';
-import { FootnoteText, SmallTitleText } from '@renderer/components/ui-redesign';
+import { cnTw } from '@renderer/shared/lib/utils';
+import { useI18n, useNetworkContext } from '@renderer/app/providers';
+import { FootnoteText, SmallTitleText } from '@renderer/shared/ui';
 import { WalletsTabItem } from './WalletsTabItem';
 import { ExtendedWallet, ExtendedContact } from '../common/types';
 

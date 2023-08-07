@@ -1,7 +1,7 @@
 import { Trans } from 'react-i18next';
 
-import { FootnoteText, InfoLink, LabelHelpBox, Popover, SmallTitleText } from '@renderer/components/ui-redesign';
-import { useI18n } from '@renderer/context/I18nContext';
+import { FootnoteText, InfoLink, LabelHelpBox, Popover, SmallTitleText } from '@renderer/shared/ui';
+import { useI18n } from '@renderer/app/providers';
 
 const MATRIX = 'https://matrix.org/';
 const SMP = 'https://docs.novaspektr.io/multisig-accounts/spektr-matrix-protocol';
