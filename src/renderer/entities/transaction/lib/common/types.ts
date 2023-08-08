@@ -1,6 +1,7 @@
 import { ApiPromise } from '@polkadot/api';
 import { UnsignedTransaction } from '@substrate/txwrapper-polkadot';
 import { Weight } from '@polkadot/types/interfaces';
+import { SubmittableExtrinsic } from '@polkadot/api/types';
 
 import { Address, CallData, HexString, Timepoint, Threshold, AccountId } from '@renderer/domain/shared-kernel';
 import { DecodedTransaction, Transaction } from '@renderer/entities/transaction/model/transaction';
@@ -25,11 +26,11 @@ export type ITransactionService = {
     callback: (executed: boolean, params: ExtrinsicResultParams | string) => void,
   ) => void;
   getTransactionFee: (transaction: Transaction, api: ApiPromise) => Promise<string>;
-  getTxWeight: (transaction: Transaction, api: ApiPromise) => Promise<Weight>;
+  getExtrinsicWeight: (extrinsic: SubmittableExtrinsic<'promise'>, api: ApiPromise) => Promise<Weight>;
   getTransactionDeposit: (threshold: Threshold, api: ApiPromise) => string;
   getTransactionHash: (transaction: Transaction, api: ApiPromise) => HashData;
   decodeCallData: (api: ApiPromise, accountId: Address, callData: CallData) => DecodedTransaction;
-  verifySignature: (payload: string | Uint8Array, signature: HexString, accountId: AccountId) => Boolean;
+  verifySignature: (payload: Uint8Array, signature: HexString, accountId: AccountId) => Boolean;
 };
 
 // =====================================================
@@ -38,6 +39,7 @@ export type ITransactionService = {
 
 export type ICallDataDecoder = {
   decodeCallData: (api: ApiPromise, address: Address, callData: CallData) => DecodedTransaction;
+  getTxFromCallData: (api: ApiPromise, callData: CallData) => SubmittableExtrinsic<'promise'>;
 };
 
 // =====================================================

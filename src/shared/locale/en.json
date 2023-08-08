@@ -759,7 +759,7 @@
     "formTitle": "Send <strong>{ asset }</strong> on <strong>{ network }</strong>",
     "inProgress": "Submitting operation...",
     "incorrectRecipientError": "Please enter correct recipient address",
-    "invalidSignature": "QR code isn’t valid anymore",
+    "invalidSignature": "QR code is invalid. Please make sure you are scanning QR code for currently signing operation",
     "multiple": {
       "executing": "Submitting operations",
       "transactions": "Transactions"

@@ -9,13 +9,6 @@ import { AccountDS, MultisigTransactionDS } from '@renderer/shared/api/storage';
 import { useCountdown, useToggle } from '@renderer/shared/lib/hooks';
 import { Account, MultisigAccount, useAccount } from '@renderer/entities/account';
 import { ExtendedChain } from '@renderer/entities/network';
-import {
-  Transaction,
-  TransactionType,
-  isDecodedTx,
-  useTransaction,
-  OperationResult,
-} from '@renderer/entities/transaction';
 import { Address, HexString, SigningType, Timepoint } from '@renderer/domain/shared-kernel';
 import { toAddress, transferableAmount, TEST_ADDRESS } from '@renderer/shared/lib/utils';
 import { getTransactionTitle } from '../../common/utils';
@@ -27,6 +20,13 @@ import OperationModalTitle from '@renderer/pages/Operations/components/Operation
 import { Signing } from '@renderer/pages/Transfer/components/ActionSteps';
 import ScanSingleframeQr from '@renderer/components/common/Scanning/ScanSingleframeQr';
 import { useMultisigEvent } from '@renderer/entities/multisig';
+import {
+  Transaction,
+  TransactionType,
+  useTransaction,
+  OperationResult,
+  useCallDataDecoder,
+} from '@renderer/entities/transaction';
 
 type Props = {
   tx: MultisigTransactionDS;
@@ -47,7 +47,8 @@ const ApproveTx = ({ tx, account, connection }: Props) => {
   const { t } = useI18n();
   const { getBalance } = useBalance();
   const { getLiveAccounts } = useAccount();
-  const { getTransactionFee, getTxWeight } = useTransaction();
+  const { getTransactionFee, getExtrinsicWeight } = useTransaction();
+  const { getTxFromCallData } = useCallDataDecoder();
   const { getLiveTxEvents } = useMultisigEvent({});
   const events = getLiveTxEvents(tx.accountId, tx.chainId, tx.callHash, tx.blockCreated, tx.indexCreated);
 
@@ -88,10 +89,11 @@ const ApproveTx = ({ tx, account, connection }: Props) => {
   }, [tx, signAccount?.accountId, txWeight]);
 
   useEffect(() => {
-    if (!tx.transaction || !connection.api) return;
-    if (isDecodedTx(tx.transaction)) return;
+    if (!tx.callData || !connection.api) return;
 
-    getTxWeight(tx.transaction, connection.api).then(setTxWeight);
+    const transaction = getTxFromCallData(connection.api, tx.callData);
+
+    getExtrinsicWeight(transaction, connection.api).then(setTxWeight);
   }, [tx.transaction, connection.api]);
 
   const goBack = () => {

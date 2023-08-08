@@ -1,5 +1,5 @@
 import cn from 'classnames';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 
 import { cnTw, ValidationErrors, secondsToMinutes } from '@renderer/shared/lib/utils';
 import { Shimmering, Button, CaptionText, FootnoteText, Select, SmallTitleText } from '@renderer/shared/ui';
@@ -39,9 +39,16 @@ const QrReaderWrapper = ({ className, onResult, countdown, validationError, isMu
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<CameraError>();
   const [progress, setProgress] = useState<Progress>();
+  const [isSuccess, setIsSuccess] = useState<boolean>(false);
 
   const [activeCamera, setActiveCamera] = useState<DropdownResult<string>>();
   const [availableCameras, setAvailableCameras] = useState<DropdownOption<string>[]>([]);
+
+  useEffect(() => {
+    if (validationError) {
+      setIsSuccess(false);
+    }
+  }, [validationError]);
 
   const isCameraOn = !(error && CameraAccessErrors.includes(error));
 
@@ -71,11 +78,13 @@ const QrReaderWrapper = ({ className, onResult, countdown, validationError, isMu
 
   const onScanResult = (qrPayload: HexString | HexString[]) => {
     if (countdown === 0) return;
+    setIsSuccess(true);
 
     try {
       setTimeout(() => onResult(qrPayload), RESULT_DELAY);
     } catch (error) {
       setError(CameraError.INVALID_ERROR);
+      setIsSuccess(false);
 
       // try to scan again after 5 seconds
       setTimeout(() => setError(undefined), 5000);
@@ -91,6 +100,7 @@ const QrReaderWrapper = ({ className, onResult, countdown, validationError, isMu
       setError(CameraError.UNKNOWN_ERROR);
     }
 
+    setIsSuccess(false);
     setIsLoading(false);
   };
 
@@ -140,7 +150,7 @@ const QrReaderWrapper = ({ className, onResult, countdown, validationError, isMu
           <div
             className={cnTw(
               'absolute w-[240px] h-[240px] z-20',
-              isCameraOn ? 'border-white' : 'border-filter-border',
+              isCameraOn ? (isSuccess ? 'border-text-positive' : 'border-white') : 'border-filter-border',
               'border-2 rounded-[22px]',
             )}
           ></div>
@@ -177,7 +187,7 @@ const QrReaderWrapper = ({ className, onResult, countdown, validationError, isMu
 
       <div className="h-9 mb-3 z-10">
         {validationError && (
-          <FootnoteText className="text-white h-full flex items-center justify-center ">
+          <FootnoteText className="text-white text-center max-w-[320px] h-full flex items-center justify-center ">
             {t(ValidationErrorLabels[validationError as keyof typeof ValidationErrorLabels])}
           </FootnoteText>
         )}

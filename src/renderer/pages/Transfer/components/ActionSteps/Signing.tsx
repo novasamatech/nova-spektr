@@ -76,14 +76,19 @@ const Signing = ({
   const handleResult = async (signature: string): Promise<void> => {
     const [balanceIsEnough, feeIsEnough] = await Promise.all([validateBalance(), validateBalanceForFee()]);
 
-    const verifiablePayload = txPayload?.slice(2);
+    // TODO: Research complex verify
+    const verifiablePayload = txPayload?.slice(1);
+    const verifiableComplexPayload = txPayload?.slice(2);
+
     const isVerified = verifiablePayload && verifySignature(verifiablePayload, signature as HexString, accountId);
+    const isComplexVerified =
+      verifiableComplexPayload && verifySignature(verifiableComplexPayload, signature as HexString, accountId);
 
     if (!balanceIsEnough) {
       setValidationError(ValidationErrors.INSUFFICIENT_BALANCE);
     } else if (!feeIsEnough) {
       setValidationError(ValidationErrors.INSUFFICIENT_BALANCE_FOR_FEE);
-    } else if (!isVerified) {
+    } else if (!(isVerified || isComplexVerified)) {
       setValidationError(ValidationErrors.INVALID_SIGNATURE);
     } else {
       onResult(signature as HexString);
