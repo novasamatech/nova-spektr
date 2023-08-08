@@ -1,34 +1,10 @@
-import { useState, useEffect } from 'react';
+import { PropsWithChildren } from 'react';
 
+import { FootnoteText } from '@renderer/shared/ui';
 import { useI18n } from '@renderer/app/providers';
-import { EmptySearch } from '@renderer/pages/AddressBook/Overview/components';
-import { includes } from '@renderer/shared/lib/utils';
-import { AddressWithName } from '@renderer/entities/account';
-import { BodyText, FootnoteText, IconButton, Plate } from '@renderer/shared/ui';
-import { Contact } from '@renderer/entities/contact';
 
-type Props = {
-  query?: string;
-  contacts: Contact[];
-  onEditContact: (contact?: Contact) => void;
-};
-
-export const ContactList = ({ contacts, query, onEditContact }: Props) => {
+export const ContactList = ({ children }: PropsWithChildren) => {
   const { t } = useI18n();
-
-  const [filteredContacts, setFilteredContacts] = useState<Contact[]>([]);
-
-  useEffect(() => {
-    const filtered = contacts
-      .filter((c) => includes(c.name, query) || includes(c.address, query) || includes(c.matrixId, query))
-      .sort((a, b) => a.name.localeCompare(b.name));
-
-    setFilteredContacts(filtered);
-  }, [query, contacts]);
-
-  if (filteredContacts.length === 0) {
-    return <EmptySearch />;
-  }
 
   return (
     <div className="flex flex-col gap-y-2">
@@ -37,24 +13,7 @@ export const ContactList = ({ contacts, query, onEditContact }: Props) => {
         <FootnoteText className="text-text-secondary">{t('addressBook.contactList.matrixIdColumnTitle')}</FootnoteText>
       </div>
 
-      <ul className="flex flex-col gap-y-2">
-        {filteredContacts.map((contact) => (
-          <li key={contact.address}>
-            <Plate className="grid grid-cols-[250px,250px,1fr] items-center p-0">
-              <AddressWithName
-                canCopySubName
-                size={20}
-                type="short"
-                className="w-full truncate p-3"
-                name={contact.name}
-                address={contact.address}
-              />
-              <BodyText className="text-text-primary p-3 truncate">{contact.matrixId || '-'}</BodyText>
-              <IconButton size={16} name="edit" className="m-3" onClick={() => onEditContact(contact)} />
-            </Plate>
-          </li>
-        ))}
-      </ul>
+      <ul className="flex flex-col gap-y-2">{children}</ul>
     </div>
   );
 };

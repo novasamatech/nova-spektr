@@ -1,1 +1,1 @@
-export { verify } from './dataVerification';
+export { validate } from './dataVerification';
