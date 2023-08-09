@@ -46,11 +46,11 @@ jest.mock('@renderer/entities/asset', () => ({
 }));
 
 jest.mock('../../components', () => ({
-  OperationForm: ({ children }: any) => {
+  OperationForm: ({ header }: any) => {
     return (
       <div>
         <p>operationForm</p>
-        {children({ invalidBalance: false, invalidFee: false, invalidDeposit: false })}
+        {header({ invalidBalance: false, invalidFee: false, invalidDeposit: false })}
       </div>
     );
   },
