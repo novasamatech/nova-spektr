@@ -2,7 +2,7 @@ import { ReactNode, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useStore } from 'effector-react';
 
-import * as editGuardModel from '../../model/edit-guard';
+import * as editGuardModel from '../model/edit-guard';
 import { Contact } from '@renderer/entities/contact';
 
 type Props = {

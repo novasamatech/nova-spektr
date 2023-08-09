@@ -1,6 +1,6 @@
 import { render, screen } from '@testing-library/react';
 
-import { EmptyFilteredContacts } from './EmptyFilteredContacts';
+import { EmptyFilteredContacts } from '../EmptyFilteredContacts';
 
 jest.mock('@renderer/app/providers', () => ({
   useI18n: jest.fn().mockReturnValue({

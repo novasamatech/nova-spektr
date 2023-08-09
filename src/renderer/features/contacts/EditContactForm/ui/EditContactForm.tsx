@@ -2,27 +2,23 @@ import { useStore } from 'effector-react';
 import { FormEvent, useEffect } from 'react';
 import { useForm } from 'effector-forms';
 
-import * as createFormModel from '../../model/contact-form';
+import * as editFormModel from '../model/contact-form';
 import { Button, Icon, Identicon, Input, InputHint } from '@renderer/shared/ui';
 import { useI18n } from '@renderer/app/providers';
 
-export const CreateContactForm = (props: createFormModel.FormApi) => {
+export const EditContactForm = (props: editFormModel.FormApi) => {
   const { t } = useI18n();
 
   const {
     fields: { name, address, matrixId },
     eachValid,
     submit,
-  } = useForm(createFormModel.contactForm);
+  } = useForm(editFormModel.contactForm);
 
-  const pending = useStore(createFormModel.$submitPending);
-
-  useEffect(() => {
-    createFormModel.events.formInitiated();
-  }, []);
+  const pending = useStore(editFormModel.$submitPending);
 
   useEffect(() => {
-    createFormModel.events.formPropsChanged(props);
+    editFormModel.events.formPropsChanged(props);
   }, [props]);
 
   const onSubmit = (event: FormEvent) => {
@@ -39,8 +35,8 @@ export const CreateContactForm = (props: createFormModel.FormApi) => {
           name="name"
           className="w-full"
           wrapperClass="h-[42px]"
-          label={t('addressBook.createContact.nameLabel')}
-          placeholder={t('addressBook.createContact.namePlaceholder')}
+          label={t('addressBook.editContact.nameLabel')}
+          placeholder={t('addressBook.editContact.namePlaceholder')}
           invalid={name?.hasError()}
           value={name?.value}
           onChange={name?.onChange}
@@ -55,8 +51,8 @@ export const CreateContactForm = (props: createFormModel.FormApi) => {
           name="address"
           wrapperClass="h-[42px]"
           className="w-full ml-2"
-          label={t('addressBook.createContact.accountIdLabel')}
-          placeholder={t('addressBook.createContact.accountIdPlaceholder')}
+          label={t('addressBook.editContact.accountIdLabel')}
+          placeholder={t('addressBook.editContact.accountIdPlaceholder')}
           invalid={address?.hasError()}
           value={address?.value}
           prefixElement={
@@ -68,6 +64,9 @@ export const CreateContactForm = (props: createFormModel.FormApi) => {
           }
           onChange={address?.onChange}
         />
+        <InputHint variant="hint" active>
+          {t('addressBook.editContact.editWarning')}
+        </InputHint>
         <InputHint variant="error" active={address?.hasError()}>
           {t(address?.errorText())}
         </InputHint>
@@ -78,20 +77,20 @@ export const CreateContactForm = (props: createFormModel.FormApi) => {
           name="matrixId"
           className="w-full"
           wrapperClass="h-[42px]"
-          label={t('addressBook.createContact.matrixIdLabel')}
-          placeholder={t('addressBook.createContact.matrixIdPlaceholder')}
+          label={t('addressBook.editContact.matrixIdLabel')}
+          placeholder={t('addressBook.editContact.matrixIdPlaceholder')}
           invalid={matrixId?.hasError()}
           value={matrixId?.value}
           onChange={matrixId?.onChange}
         />
-        <InputHint active={!matrixId?.hasError()}>{t('addressBook.createContact.matrixIdHint')}</InputHint>
+        <InputHint active={!matrixId?.hasError()}>{t('addressBook.editContact.matrixIdHint')}</InputHint>
         <InputHint variant="error" active={matrixId?.hasError()}>
           {t(matrixId?.errorText())}
         </InputHint>
       </div>
 
       <Button className="ml-auto" type="submit" disabled={!eachValid || pending} isLoading={pending}>
-        {t('addressBook.createContact.addContactButton')}
+        {t('addressBook.editContact.saveContactButton')}
       </Button>
     </form>
   );

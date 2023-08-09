@@ -350,10 +350,10 @@ export const useTransaction = (): ITransactionService => {
     return partialFee.toString();
   };
 
-  const getExtrinsicWeight = async (extrinsic: SubmittableExtrinsic<'promise'>, api: ApiPromise): Promise<Weight> => {
-    const { weight } = await extrinsic.paymentInfo(extrinsic.signer);
+  const getExtrinsicWeight = async (extrinsic: SubmittableExtrinsic<'promise'>): Promise<Weight> => {
+    const paymentInfo = await extrinsic.paymentInfo(extrinsic.signer);
 
-    return weight;
+    return paymentInfo.weight;
   };
 
   const getTransactionDeposit = (threshold: Threshold, api: ApiPromise): string => {

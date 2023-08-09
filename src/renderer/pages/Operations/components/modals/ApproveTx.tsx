@@ -93,7 +93,7 @@ const ApproveTx = ({ tx, account, connection }: Props) => {
 
     const transaction = getTxFromCallData(connection.api, tx.callData);
 
-    getExtrinsicWeight(transaction, connection.api).then(setTxWeight);
+    getExtrinsicWeight(transaction).then(setTxWeight);
   }, [tx.transaction, connection.api]);
 
   const goBack = () => {
