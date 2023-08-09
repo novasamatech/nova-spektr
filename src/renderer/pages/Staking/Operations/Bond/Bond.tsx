@@ -66,7 +66,7 @@ export const Bond = () => {
 
     const accounts = activeAccounts.filter((a) => a.id && accountIds.includes(a.id.toString()));
     setAccounts(accounts);
-  }, [activeAccounts.length]);
+  }, [activeAccounts.length, activeAccounts.length && activeAccounts[0].accountId]);
 
   const connection = connections[chainId];
   const [countdown, resetCountdown] = useCountdown(connection?.api);
