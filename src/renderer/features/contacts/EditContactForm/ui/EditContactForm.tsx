@@ -5,23 +5,31 @@ import { useForm } from 'effector-forms';
 import * as editFormModel from '../model/contact-form';
 import { Button, Icon, Identicon, Input, InputHint } from '@renderer/shared/ui';
 import { useI18n } from '@renderer/app/providers';
+import { ContactDS } from '@renderer/shared/api/storage';
 
-export const EditContactForm = (props: editFormModel.FormApi) => {
+type Props = editFormModel.FormApi & {
+  contactToEdit: ContactDS;
+};
+export const EditContactForm = ({ contactToEdit, onSubmit }: Props) => {
   const { t } = useI18n();
 
   const {
-    fields: { name, address, matrixId },
-    eachValid,
     submit,
+    isValid,
+    fields: { name, address, matrixId },
   } = useForm(editFormModel.contactForm);
 
   const pending = useStore(editFormModel.$submitPending);
 
   useEffect(() => {
-    editFormModel.events.formPropsChanged(props);
-  }, [props]);
+    editFormModel.events.formInitiated(contactToEdit);
+  }, [contactToEdit]);
 
-  const onSubmit = (event: FormEvent) => {
+  useEffect(() => {
+    editFormModel.events.apiChanged({ onSubmit });
+  }, [onSubmit]);
+
+  const submitForm = (event: FormEvent) => {
     event.preventDefault();
     submit();
   };
@@ -29,7 +37,7 @@ export const EditContactForm = (props: editFormModel.FormApi) => {
   const canShowIdenticon = address?.value && !address?.hasError();
 
   return (
-    <form className="flex flex-col pt-4 gap-4" onSubmit={onSubmit}>
+    <form className="flex flex-col pt-4 gap-4" onSubmit={submitForm}>
       <div className="flex flex-col gap-2">
         <Input
           name="name"
@@ -89,7 +97,7 @@ export const EditContactForm = (props: editFormModel.FormApi) => {
         </InputHint>
       </div>
 
-      <Button className="ml-auto" type="submit" disabled={!eachValid || pending} isLoading={pending}>
+      <Button className="ml-auto" type="submit" disabled={!isValid || pending} isLoading={pending}>
         {t('addressBook.editContact.saveContactButton')}
       </Button>
     </form>

@@ -6,13 +6,14 @@ import * as createFormModel from '../model/contact-form';
 import { Button, Icon, Identicon, Input, InputHint } from '@renderer/shared/ui';
 import { useI18n } from '@renderer/app/providers';
 
-export const CreateContactForm = (props: createFormModel.FormApi) => {
+type Props = createFormModel.FormApi;
+export const CreateContactForm = ({ onSubmit }: Props) => {
   const { t } = useI18n();
 
   const {
-    fields: { name, address, matrixId },
-    eachValid,
     submit,
+    isValid,
+    fields: { name, address, matrixId },
   } = useForm(createFormModel.contactForm);
 
   const pending = useStore(createFormModel.$submitPending);
@@ -22,10 +23,10 @@ export const CreateContactForm = (props: createFormModel.FormApi) => {
   }, []);
 
   useEffect(() => {
-    createFormModel.events.formPropsChanged(props);
-  }, [props]);
+    createFormModel.events.apiChanged({ onSubmit });
+  }, [onSubmit]);
 
-  const onSubmit = (event: FormEvent) => {
+  const submitForm = (event: FormEvent) => {
     event.preventDefault();
     submit();
   };
@@ -33,7 +34,7 @@ export const CreateContactForm = (props: createFormModel.FormApi) => {
   const canShowIdenticon = address?.value && !address?.hasError();
 
   return (
-    <form className="flex flex-col pt-4 gap-4" onSubmit={onSubmit}>
+    <form className="flex flex-col pt-4 gap-4" onSubmit={submitForm}>
       <div className="flex flex-col gap-2">
         <Input
           name="name"
@@ -90,7 +91,7 @@ export const CreateContactForm = (props: createFormModel.FormApi) => {
         </InputHint>
       </div>
 
-      <Button className="ml-auto" type="submit" disabled={!eachValid || pending} isLoading={pending}>
+      <Button className="ml-auto" type="submit" disabled={!isValid || pending} isLoading={pending}>
         {t('addressBook.createContact.addContactButton')}
       </Button>
     </form>

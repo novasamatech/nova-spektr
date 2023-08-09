@@ -1,6 +1,6 @@
-import { attach, combine, createApi, createStore, sample } from 'effector';
+import { attach, combine, createApi, createStore, forward, sample } from 'effector';
 import { createForm } from 'effector-forms';
-import { not, or } from 'patronum';
+import { not } from 'patronum';
 
 import { Contact, contactModel } from '@renderer/entities/contact';
 import { toAccountId, validateAddress } from '@renderer/shared/lib/utils';
@@ -8,13 +8,16 @@ import { validateFullUserName } from '@renderer/shared/api/matrix';
 import { ContactDS } from '@renderer/shared/api/storage';
 
 export type FormApi = {
-  contactToEdit: ContactDS;
   onSubmit: () => void;
 };
 const $formApi = createStore<FormApi | null>(null);
+const formApi = createApi($formApi, {
+  apiChanged: (state, props: FormApi) => ({ ...state, ...props }),
+});
 
-const api = createApi($formApi, {
-  formPropsChanged: (state, props: FormApi) => ({ ...state, ...props }),
+export const $contactToEdit = createStore<ContactDS | null>(null);
+const contactApi = createApi($contactToEdit, {
+  formInitiated: (state, props: ContactDS) => ({ ...state, ...props }),
 });
 
 export const contactForm = createForm({
@@ -27,7 +30,7 @@ export const contactForm = createForm({
           name: 'exist',
           errorText: 'addressBook.editContact.nameExistsError',
           source: combine({
-            contactToEdit: $formApi.map((f) => f?.contactToEdit),
+            contactToEdit: $contactToEdit,
             contacts: contactModel.$contacts,
           }),
           validator: validateNameExist,
@@ -43,7 +46,7 @@ export const contactForm = createForm({
           name: 'exist',
           errorText: 'addressBook.editContact.accountIdExistsError',
           source: combine({
-            contactToEdit: $formApi.map((f) => f?.contactToEdit),
+            contactToEdit: $contactToEdit,
             contacts: contactModel.$contacts,
           }),
           validator: validateAddressExist,
@@ -52,10 +55,23 @@ export const contactForm = createForm({
     },
     matrixId: {
       init: '',
-      rules: [{ name: 'invalid', errorText: 'addressBook.editContact.matrixIdError', validator: validateFullUserName }],
+      rules: [{ name: 'invalid', errorText: 'addressBook.editContact.matrixIdError', validator: validateMatrixId }],
     },
   },
-  validateOn: ['change'],
+  validateOn: ['change', 'submit'],
+});
+
+sample({
+  clock: contactApi.formInitiated,
+  filter: contactForm.$isDirty,
+  target: contactForm.reset,
+});
+
+sample({
+  clock: contactApi.formInitiated,
+  filter: not(contactForm.$isDirty),
+  fn: ({ name, address, matrixId }) => ({ name, address, matrixId }),
+  target: contactForm.setForm,
 });
 
 type SourceParams = {
@@ -81,32 +97,26 @@ function validateAddressExist(value: string, _: unknown, params: SourceParams): 
   return isSameAddress || isUnique;
 }
 
-sample({
-  clock: api.formPropsChanged,
-  // filter: not(contactForm.$isDirty),
-  fn: ({ contactToEdit }: FormApi) => ({
-    name: contactToEdit.name,
-    address: contactToEdit.address,
-    matrixId: contactToEdit.matrixId,
-  }),
-  target: contactForm.setForm,
-});
+function validateMatrixId(value: string): boolean {
+  if (!value) return true;
+
+  return validateFullUserName(value);
+}
 
 const editContactFx = attach({
   effect: contactModel.effects.updateContactFx,
-  source: { id: $formApi.map((f) => f?.contactToEdit.id), values: contactForm.$values },
-  mapParams: (_, { id, values }) => {
-    return { ...values, id, accountId: toAccountId(values.address) };
+  source: {
+    contactToEdit: $contactToEdit,
+    form: contactForm.$values,
+  },
+  mapParams: (_, { contactToEdit, form }) => {
+    return { ...form, id: contactToEdit?.id, accountId: toAccountId(form.address) };
   },
 });
 
-export const $submitPending = editContactFx.pending;
-
-sample({
-  clock: contactForm.submit,
-  source: contactForm.$values,
-  filter: or(not($submitPending), contactForm.$eachValid),
-  target: editContactFx,
+forward({
+  from: contactForm.formValidated,
+  to: editContactFx,
 });
 
 sample({
@@ -117,6 +127,9 @@ sample({
   }),
 });
 
+export const $submitPending = editContactFx.pending;
+
 export const events = {
-  formPropsChanged: api.formPropsChanged,
+  apiChanged: formApi.apiChanged,
+  formInitiated: contactApi.formInitiated,
 };
