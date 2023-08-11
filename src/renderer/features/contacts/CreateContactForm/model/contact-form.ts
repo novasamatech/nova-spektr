@@ -5,12 +5,13 @@ import { Contact, contactModel } from '@renderer/entities/contact';
 import { toAccountId, validateAddress } from '@renderer/shared/lib/utils';
 import { validateFullUserName } from '@renderer/shared/api/matrix';
 
-export type FormApi = {
+export type Callbacks = {
   onSubmit: () => void;
 };
-const $formApi = createStore<FormApi | null>(null);
-const formApi = createApi($formApi, {
-  apiChanged: (state, props: FormApi) => ({ ...state, ...props }),
+
+const $callbacks = createStore<Callbacks | null>(null);
+const callbacksApi = createApi($callbacks, {
+  callbacksChanged: (state, props: Callbacks) => ({ ...state, ...props }),
 });
 
 export const contactForm = createForm({
@@ -84,7 +85,7 @@ forward({
 sample({
   clock: createContactFx.doneData,
   target: attach({
-    source: $formApi,
+    source: $callbacks,
     effect: (state) => state?.onSubmit(),
   }),
 });
@@ -92,6 +93,6 @@ sample({
 export const $submitPending = createContactFx.pending;
 
 export const events = {
-  apiChanged: formApi.apiChanged,
+  callbacksChanged: callbacksApi.callbacksChanged,
   formInitiated: contactForm.reset,
 };

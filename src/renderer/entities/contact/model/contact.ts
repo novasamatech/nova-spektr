@@ -1,30 +1,33 @@
 import { createEffect, createEvent, createStore, forward } from 'effector';
 
 import { ContactDS } from '@renderer/shared/api/storage';
+import { splice } from '@renderer/shared/lib/utils';
 import { useContact } from '../lib';
 import type { Contact } from './types';
+
+const contactService = useContact();
 
 export const $contacts = createStore<ContactDS[]>([]);
 const appStarted = createEvent();
 
 const populateContactsFx = createEffect(() => {
-  return useContact().getContacts();
+  return contactService.getContacts();
 });
 
 const addContactFx = createEffect(async (contact: Contact) => {
-  const id = await useContact().addContact(contact);
+  const id = await contactService.addContact(contact);
 
   return { id, ...contact };
 });
 
 const updateContactFx = createEffect(async (contact: Contact) => {
-  const id = await useContact().updateContact(contact);
+  const id = await contactService.updateContact(contact);
 
   return { id, ...contact };
 });
 
 const deleteContactFx = createEffect((contactId: string) => {
-  return useContact().deleteContact(contactId);
+  return contactService.deleteContact(contactId);
 });
 
 $contacts
@@ -38,9 +41,9 @@ $contacts
     return state.filter((s) => s.id !== contactId);
   })
   .on(updateContactFx.doneData, (state, contact) => {
-    const indexOf = state.findIndex((s) => s.id === contact.id);
+    const position = state.findIndex((s) => s.id === contact.id);
 
-    return [...state.slice(0, indexOf), contact, ...state.slice(indexOf + 1)];
+    return splice(state, contact, position);
   });
 
 forward({

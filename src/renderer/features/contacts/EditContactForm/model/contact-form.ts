@@ -7,12 +7,13 @@ import { toAccountId, validateAddress } from '@renderer/shared/lib/utils';
 import { validateFullUserName } from '@renderer/shared/api/matrix';
 import { ContactDS } from '@renderer/shared/api/storage';
 
-export type FormApi = {
+export type Callbacks = {
   onSubmit: () => void;
 };
-const $formApi = createStore<FormApi | null>(null);
-const formApi = createApi($formApi, {
-  apiChanged: (state, props: FormApi) => ({ ...state, ...props }),
+
+const $callbacks = createStore<Callbacks | null>(null);
+const callbacksApi = createApi($callbacks, {
+  callbacksChanged: (state, props: Callbacks) => ({ ...state, ...props }),
 });
 
 export const $contactToEdit = createStore<ContactDS | null>(null);
@@ -122,7 +123,7 @@ forward({
 sample({
   clock: editContactFx.doneData,
   target: attach({
-    source: $formApi,
+    source: $callbacks,
     effect: (state) => state?.onSubmit(),
   }),
 });
@@ -130,6 +131,6 @@ sample({
 export const $submitPending = editContactFx.pending;
 
 export const events = {
-  apiChanged: formApi.apiChanged,
+  callbacksChanged: callbacksApi.callbacksChanged,
   formInitiated: contactApi.formInitiated,
 };

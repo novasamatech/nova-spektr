@@ -1,4 +1,4 @@
 export * from './EditContactForm';
-export * from './CreateContact';
+export * from './CreateContactForm';
 export * from './ContactFilter';
 export * from './EditRouteGuard';

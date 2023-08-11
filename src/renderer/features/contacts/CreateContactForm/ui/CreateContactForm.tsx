@@ -6,7 +6,7 @@ import * as createFormModel from '../model/contact-form';
 import { Button, Icon, Identicon, Input, InputHint } from '@renderer/shared/ui';
 import { useI18n } from '@renderer/app/providers';
 
-type Props = createFormModel.FormApi;
+type Props = createFormModel.Callbacks;
 export const CreateContactForm = ({ onSubmit }: Props) => {
   const { t } = useI18n();
 
@@ -23,7 +23,7 @@ export const CreateContactForm = ({ onSubmit }: Props) => {
   }, []);
 
   useEffect(() => {
-    createFormModel.events.apiChanged({ onSubmit });
+    createFormModel.events.callbacksChanged({ onSubmit });
   }, [onSubmit]);
 
   const submitForm = (event: FormEvent) => {

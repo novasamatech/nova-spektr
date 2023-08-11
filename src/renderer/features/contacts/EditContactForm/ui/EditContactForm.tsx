@@ -7,7 +7,7 @@ import { Button, Icon, Identicon, Input, InputHint } from '@renderer/shared/ui';
 import { useI18n } from '@renderer/app/providers';
 import { ContactDS } from '@renderer/shared/api/storage';
 
-type Props = editFormModel.FormApi & {
+type Props = editFormModel.Callbacks & {
   contactToEdit: ContactDS;
 };
 export const EditContactForm = ({ contactToEdit, onSubmit }: Props) => {
@@ -26,7 +26,7 @@ export const EditContactForm = ({ contactToEdit, onSubmit }: Props) => {
   }, [contactToEdit]);
 
   useEffect(() => {
-    editFormModel.events.apiChanged({ onSubmit });
+    editFormModel.events.callbacksChanged({ onSubmit });
   }, [onSubmit]);
 
   const submitForm = (event: FormEvent) => {

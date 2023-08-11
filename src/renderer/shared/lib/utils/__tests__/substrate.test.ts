@@ -4,7 +4,7 @@ import { BN, BN_TWO } from '@polkadot/util';
 import { getExpectedBlockTime } from '../substrate';
 import { DEFAULT_TIME, THRESHOLD } from '@renderer/entities/network/lib/common/constants';
 
-describe('shared/utils/substrate', () => {
+describe('shared/lib/utils/substrate', () => {
   const blockTime = new BN(10_000);
 
   const getTime = (params: any): BN => {

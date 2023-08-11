@@ -16,7 +16,7 @@ export const EditRouteGuard = ({ redirectPath, children }: Props) => {
   const contact = useStore(editGuardModel.$contact);
 
   useEffect(() => {
-    editGuardModel.events.useNavigateApi({ navigate, redirectPath });
+    editGuardModel.events.navigateApiChanged({ navigate, redirectPath });
     editGuardModel.events.validateUrlParams(searchParams);
   }, [searchParams]);
 
