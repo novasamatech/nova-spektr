@@ -1,0 +1,76 @@
+name: Publish release on AppStore
+
+on:
+  push:
+    # Sequence of patterns matched against refs/tags
+    tags:
+      - 'v*' # Push events to matching v*, i.e. v1.0, v20.15.10
+
+env:
+  CSC_FOR_PULL_REQUEST: true
+  CI: true
+
+jobs:
+  release-build:
+    runs-on: macos-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: ⚙️ Install dependencies
+        uses: ./.github/workflows/install-pnpm
+
+      - name: Get tag name
+        uses: olegtarasov/get-tag@v2.1 # Put version in GIT_TAG_NAME environment variable
+        with:
+          tagRegex: '^.(.*)$'
+
+      - name: Update package.json version
+        uses: jossef/action-set-json-field@v2
+        with:
+          file: package.json
+          field: version
+          value: ${{ env.GIT_TAG_NAME }}
+
+      - name: Add MacOS certs
+        run: chmod +x .github/add_cert_in_keychain.sh && .github/add_cert_in_keychain.sh
+        env:
+          CERTIFICATE_OSX_APPLICATION: ${{ secrets.STORE_CERTIFICATE_OSX_APPLICATION }}
+          CERTIFICATE_PASSWORD: ${{ secrets.STORE_CERTIFICATE_PASSWORD }}
+
+      - name: Build app
+        run: |
+          pnpm build
+          pnpm postbuild
+          pnpm dist
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: build-artifats
+          path: |
+            release/dist/*.dmg
+            release/dist/*mac.zip
+
+  releas-project:
+    name: Release Nova Spektr build-project
+    runs-on: ubuntu-latest
+    needs: release-build
+    steps:
+      - name: Download build artifacts
+        uses: actions/download-artifact@v2
+        with:
+          name: build-artifats
+
+      - name: Debug
+        run: ls -la
+
+      - name: 'Upload app to TestFlight'
+        uses: apple-actions/upload-testflight-build@v1
+        with:
+          app-path: 'path/to/application.ipa'
+          issuer-id: ${{ secrets.APPSTORE_ISSUER_ID }}
+          api-key-id: ${{ secrets.APPSTORE_API_KEY_ID }}
+          api-private-key: ${{ secrets.APPSTORE_API_PRIVATE_KEY }}

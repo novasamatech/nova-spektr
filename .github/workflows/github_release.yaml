@@ -1,3 +1,5 @@
+name: Publish release on GitHub
+
 on:
   push:
     # Sequence of patterns matched against refs/tags

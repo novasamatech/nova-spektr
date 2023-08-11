@@ -22,10 +22,12 @@ module.exports = {
     extendInfo: {
       NSCameraUsageDescription: 'This app requires camera access to import accounts and sign operations',
     },
-    target: {
-      target: 'default',
-      arch: ['x64', 'arm64'],
-    },
+    target: ['mas', 'pkg', 'dmg'],
+  },
+  mas: {
+    hardenedRuntime: false, //IMPORTANT!!!!
+    type: 'distribution',
+    provisioningProfile: 'spektrprod.provisionprofile',
   },
   afterSign: 'scripts/notarize.js',
 
