@@ -2,16 +2,16 @@ import { Table } from 'dexie';
 
 import { Balance, BalanceKey } from '@renderer/entities/asset/model/balance';
 import { Connection, ConnectionType } from '@renderer/domain/connection';
-import { Contact } from '@renderer/entities/contact/model/contact';
-import { Address, ChainId, AccountId, CallHash } from '@renderer/domain/shared-kernel';
+import { AccountId, Address, CallHash, ChainId } from '@renderer/domain/shared-kernel';
 import { Wallet } from '@renderer/entities/wallet/model/wallet';
+import { Account, MultisigAccount } from '@renderer/entities/account/model/account';
+import { Notification } from '@renderer/entities/notification/model/notification';
+import type { Contact } from '@renderer/entities/contact';
 import {
   MultisigEvent,
   MultisigTransaction,
   MultisigTransactionKey,
 } from '@renderer/entities/transaction/model/transaction';
-import { Account, MultisigAccount } from '@renderer/entities/account/model/account';
-import { Notification } from '@renderer/entities/notification/model/notification';
 
 // =====================================================
 // ================ Storage interface ==================

@@ -9,13 +9,6 @@ import { AccountDS, MultisigTransactionDS } from '@renderer/shared/api/storage';
 import { useCountdown, useToggle } from '@renderer/shared/lib/hooks';
 import { Account, MultisigAccount, useAccount } from '@renderer/entities/account';
 import { ExtendedChain } from '@renderer/entities/network';
-import {
-  Transaction,
-  TransactionType,
-  useTransaction,
-  OperationResult,
-  useCallDataDecoder,
-} from '@renderer/entities/transaction';
 import { Address, HexString, SigningType, Timepoint } from '@renderer/domain/shared-kernel';
 import { toAddress, transferableAmount, TEST_ADDRESS } from '@renderer/shared/lib/utils';
 import { getTransactionTitle } from '../../common/utils';
@@ -27,6 +20,13 @@ import OperationModalTitle from '@renderer/pages/Operations/components/Operation
 import { Signing } from '@renderer/pages/Transfer/components/ActionSteps';
 import ScanSingleframeQr from '@renderer/components/common/Scanning/ScanSingleframeQr';
 import { useMultisigEvent } from '@renderer/entities/multisig';
+import {
+  Transaction,
+  TransactionType,
+  useTransaction,
+  OperationResult,
+  useCallDataDecoder,
+} from '@renderer/entities/transaction';
 
 type Props = {
   tx: MultisigTransactionDS;
@@ -93,7 +93,7 @@ const ApproveTx = ({ tx, account, connection }: Props) => {
 
     const transaction = getTxFromCallData(connection.api, tx.callData);
 
-    getExtrinsicWeight(transaction, connection.api).then(setTxWeight);
+    getExtrinsicWeight(transaction).then(setTxWeight);
   }, [tx.transaction, connection.api]);
 
   const goBack = () => {

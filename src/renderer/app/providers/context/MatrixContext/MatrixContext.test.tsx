@@ -1,10 +1,10 @@
 import { act, render, screen } from '@testing-library/react';
 
-import { Matrix } from '@renderer/entities/matrix';
-import { MatrixProvider } from './MatrixContext';
+import { Matrix } from '@renderer/shared/api/matrix';
 import { ConnectionType } from '@renderer/domain/connection';
+import { MatrixProvider } from './MatrixContext';
 
-jest.mock('@renderer/entities/matrix', () => ({ Matrix: jest.fn().mockReturnValue({}) }));
+jest.mock('@renderer/shared/api/matrix', () => ({ Matrix: jest.fn().mockReturnValue({}) }));
 
 jest.mock('@renderer/entities/account', () => ({
   useAccount: jest.fn().mockReturnValue({

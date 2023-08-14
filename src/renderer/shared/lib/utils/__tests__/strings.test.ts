@@ -1,6 +1,6 @@
 import { formatSectionAndMethod } from '../strings';
 
-describe('shared/utils/strings', () => {
+describe('shared/lib/utils/strings', () => {
   describe('formatSectionAndMethod', () => {
     test('should make capital and add :', () => {
       expect(formatSectionAndMethod('system', 'remark')).toEqual('System: Remark');

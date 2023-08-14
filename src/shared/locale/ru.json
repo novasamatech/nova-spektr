@@ -4,7 +4,15 @@
     "networksColumn": "Networks { chains }"
   },
   "addressBook": {
-    "addContact": {
+    "contactList": {
+      "emptySearchDescription": "Try to search for another name",
+      "emptySearchLabel": "No contact with entered name were found",
+      "matrixIdColumnTitle": "Matrix ID",
+      "nameColumnTitle": "Name",
+      "noContactsButton": "Add your first contact",
+      "noContactsLabel": "Your address book is empty"
+    },
+    "createContact": {
       "accountIdExistsError": "Account address already in use",
       "accountIdIncorrectError": "Incrorrect account address",
       "accountIdLabel": "адрес контакта",
@@ -24,19 +32,26 @@
       "typeAddressButton": "Type the address",
       "typeNameButton": "Type a name"
     },
-    "addContactButton": "Добавить контакт",
-    "contactList": {
-      "emptySearchDescription": "Try to search for another name",
-      "emptySearchLabel": "No contact with entered name were found",
-      "matrixIdColumnTitle": "Matrix ID",
-      "nameColumnTitle": "Name",
-      "noContactsButton": "Add your first contact",
-      "noContactsLabel": "Your address book is empty"
-    },
     "editContact": {
+      "accountIdExistsError": "Account address already in use",
+      "accountIdIncorrectError": "Incrorrect account address",
+      "accountIdLabel": "Адрес контакта",
+      "accountIdPlaceholder": "Enter or paste an address",
+      "accountIdRequiredError": "Account address is required",
       "editWarning": "If you have a multisig wallet with this contact, then changing the contact will not affect the multisig wallet",
-      "saveContactButton": "Save",
-      "title": "Edit contact"
+      "matrixIdError": "Incorrect matrix id",
+      "matrixIdHint": "В формате: @user_name:matrix.org",
+      "matrixIdLabel": "matrix id (optional)",
+      "matrixIdPlaceholder": "Enter or paste Matrix ID, ie: @bob:matrix.org",
+      "nameExistsError": "Name already in use",
+      "nameLabel": "Name",
+      "namePlaceholder": "Enter a name",
+      "nameRequiredError": "Name is required",
+      "saveContactButton": "Сохранить",
+      "title": "Редактировать контакт",
+      "typeAddressAndNameButton": "Type a name and address",
+      "typeAddressButton": "Type the address",
+      "typeNameButton": "Type a name"
     },
     "searchPlaceholder": "Введите название или адрес...",
     "title": "Адресная книга"

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { keyBy } from 'lodash';
 
 import { cnTw, includes, toAddress } from '@renderer/shared/lib/utils';
@@ -6,24 +6,15 @@ import { useI18n, useMatrix, useNetworkContext } from '@renderer/app/providers';
 import { AccountId } from '@renderer/domain/shared-kernel';
 import { useToggle } from '@renderer/shared/lib/hooks';
 import { WalletsTabItem } from './WalletsTabItem';
-import {
-  Icon,
-  FootnoteText,
-  SearchInput,
-  SmallTitleText,
-  Checkbox,
-  Button,
-  BaseModal,
-  Tabs,
-} from '@renderer/shared/ui';
-import { EmptyContacts } from '@renderer/pages/AddressBook/Overview/components';
-import { isWalletContact, Account, MultisigAccount } from '@renderer/entities/account';
-import { ContactForm } from '@renderer/components/forms';
+import { Button, Checkbox, FootnoteText, Icon, SearchInput, SmallTitleText, Tabs } from '@renderer/shared/ui';
+import { Account, isWalletContact, MultisigAccount } from '@renderer/entities/account';
 import { TabItem } from '@renderer/shared/ui/types';
-import { Contact } from '@renderer/entities/contact';
 import { WalletDS } from '@renderer/shared/api/storage';
+import { CreateContactModal } from '@renderer/widgets';
 import { getSelectedLength } from '../common/utils';
-import { ExtendedWallet, ExtendedContact, SelectedMap } from '../common/types';
+import { ExtendedContact, ExtendedWallet, SelectedMap } from '../common/types';
+import { EmptyContactList } from '@renderer/entities/contact';
+import type { Contact } from '@renderer/entities/contact';
 
 const enum SignatoryTabs {
   WALLETS = 'wallets',
@@ -141,7 +132,7 @@ export const SelectSignatories = ({ isActive, wallets, accounts, contacts, onSel
       ))}
     </ul>
   ) : (
-    <EmptyContacts description={t('createMultisigAccount.noWalletsLabel')} />
+    <EmptyContactList description={t('createMultisigAccount.noWalletsLabel')} />
   );
 
   const ContactsTab = (
@@ -175,7 +166,7 @@ export const SelectSignatories = ({ isActive, wallets, accounts, contacts, onSel
           ))}
         </ul>
       ) : (
-        <EmptyContacts onAddContact={toggleContactModalOpen} />
+        <EmptyContactList onNewContact={toggleContactModalOpen} />
       )}
     </div>
   );
@@ -226,16 +217,7 @@ export const SelectSignatories = ({ isActive, wallets, accounts, contacts, onSel
         />
       </section>
 
-      <BaseModal
-        closeButton
-        isOpen={isContactModalOpen}
-        title={t('addressBook.addContact.title')}
-        headerClass="py-[15px] px-5"
-        contentClass="px-5 pb-4 w-[440px]"
-        onClose={toggleContactModalOpen}
-      >
-        <ContactForm onFormSubmit={toggleContactModalOpen} />
-      </BaseModal>
+      <CreateContactModal isOpen={isContactModalOpen} onClose={toggleContactModalOpen} />
     </>
   );
 };

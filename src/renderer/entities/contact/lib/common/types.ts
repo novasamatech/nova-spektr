@@ -1,5 +1,5 @@
 import { ContactDS, ID } from '@renderer/shared/api/storage';
-import { Contact } from '@renderer/entities/contact/model/contact';
+import type { Contact } from '../../model/types';
 
 export interface IContactService {
   getContact: (contactId: ID) => Promise<ContactDS | undefined>;

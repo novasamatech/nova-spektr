@@ -11,7 +11,8 @@ export const Paths = {
 
   // Address book
   ADDRESS_BOOK: '/address-book',
-  MANAGE_CONTACT: '/address-book/contact',
+  CREATE_CONTACT: '/address-book/create-contact',
+  EDIT_CONTACT: '/address-book/edit-contact',
 
   // Settings
   SETTINGS: '/settings',
