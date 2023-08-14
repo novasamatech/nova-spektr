@@ -1,35 +1,35 @@
 import { createContext, PropsWithChildren, useContext, useEffect, useRef, useState } from 'react';
 
 import { createMultisigAccount, getMultisigAccountId, MultisigAccount, useAccount } from '@renderer/entities/account';
-import { toAddress, getCreatedDateFromApi, validateCallData } from '@renderer/shared/lib/utils';
-import { useContact } from '@renderer/entities/contact';
+import { getCreatedDateFromApi, toAddress, validateCallData } from '@renderer/shared/lib/utils';
 import { AccountId, Address, CallHash, ChainId, SigningType } from '@renderer/domain/shared-kernel';
-import { useMultisigTx, useMultisigEvent } from '@renderer/entities/multisig';
+import { useMultisigEvent, useMultisigTx } from '@renderer/entities/multisig';
 import { Signatory } from '@renderer/entities/signatory';
-import { useNetworkContext } from '@renderer/app/providers/context/NetworkContext/NetworkContext';
+import { useContact } from '@renderer/entities/contact';
+import { MultisigNotificationType, useNotification } from '@renderer/entities/notification';
+import { useMultisigChainContext } from '@renderer/app/providers';
+import { useNetworkContext } from '../NetworkContext';
 import {
-  useTransaction,
-  MultisigEvent,
-  MultisigTransaction,
-  MultisigTxFinalStatus,
-  MultisigTxInitStatus,
-  MultisigTxStatus,
-  SigningStatus,
-} from '@renderer/entities/transaction';
-import { useNotification, MultisigNotificationType } from '@renderer/entities/notification';
-import {
-  Matrix,
   ApprovePayload,
   BaseMultisigPayload,
   CancelPayload,
   FinalApprovePayload,
   InvitePayload,
   ISecureMessenger,
+  Matrix,
   MultisigPayload,
   SpektrExtras,
   UpdatePayload,
-} from '@renderer/entities/matrix';
-import { useMultisigChainContext } from '@renderer/app/providers';
+} from '@renderer/shared/api/matrix';
+import {
+  MultisigEvent,
+  MultisigTransaction,
+  MultisigTxFinalStatus,
+  MultisigTxInitStatus,
+  MultisigTxStatus,
+  SigningStatus,
+  useTransaction,
+} from '@renderer/entities/transaction';
 
 type MatrixContextProps = {
   matrix: ISecureMessenger;

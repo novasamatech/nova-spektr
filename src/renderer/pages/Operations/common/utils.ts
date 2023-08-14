@@ -11,9 +11,9 @@ import {
   TransactionType,
 } from '@renderer/entities/transaction/model/transaction';
 import { toAddress, formatSectionAndMethod } from '@renderer/shared/lib/utils';
-import { Contact } from '@renderer/entities/contact/model/contact';
 import { Account } from '@renderer/entities/account/model/account';
 import { Signatory } from '@renderer/entities/signatory/model/signatory';
+import type { Contact } from '@renderer/entities/contact';
 
 export const UNKNOWN_TYPE = 'UNKNOWN_TYPE';
 export const TRANSACTION_UNKNOWN = 'operations.titles.unknown';

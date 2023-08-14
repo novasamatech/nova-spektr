@@ -18,8 +18,11 @@ export const routesConfig: RouteObject[] = [
       { path: Paths.NOTIFICATIONS, element: <Screens.Notifications /> },
       {
         path: Paths.ADDRESS_BOOK,
-        element: <Screens.AddressBook.Overview />,
-        children: [{ path: Paths.MANAGE_CONTACT, element: <Screens.AddressBook.ManageContact /> }],
+        element: <Screens.AddressBook.Contacts />,
+        children: [
+          { path: Paths.CREATE_CONTACT, element: <Screens.AddressBook.CreateContact /> },
+          { path: Paths.EDIT_CONTACT, element: <Screens.AddressBook.EditContact /> },
+        ],
       },
       {
         path: Paths.SETTINGS,

@@ -3,6 +3,8 @@ import { Transition, Combobox as HeadlessCombobox } from '@headlessui/react';
 
 import { cnTw, includes } from '@renderer/shared/lib/utils';
 import { Props as InputProps } from '@renderer/shared/ui/Inputs/Input/Input';
+import { Position, ComboboxOption, Theme } from '../common/types';
+import { FootnoteText, Input } from '@renderer/shared/ui';
 import {
   OptionsContainerStyle,
   OptionsContainerStyleTheme,
@@ -10,8 +12,6 @@ import {
   OptionStyleTheme,
   ViewClass,
 } from '../common/constants';
-import { Position, ComboboxOption, Theme } from '../common/types';
-import { FootnoteText, Input } from '@renderer/shared/ui';
 
 type Props = Omit<InputProps, 'onChange' | 'value'> & {
   options: ComboboxOption[];
