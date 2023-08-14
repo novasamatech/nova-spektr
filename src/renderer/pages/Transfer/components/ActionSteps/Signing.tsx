@@ -16,7 +16,6 @@ type Props = {
   countdown: number;
   accountId: AccountId;
   txPayload?: Uint8Array;
-  onStartOver: () => void;
   onGoBack: () => void;
   onResult: (signature: HexString) => void;
 };
@@ -30,7 +29,6 @@ const Signing = ({
   accountId,
   txPayload,
   onGoBack,
-  onStartOver,
   onResult,
 }: Props) => {
   const { getBalance } = useBalance();

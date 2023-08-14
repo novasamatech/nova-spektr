@@ -51,7 +51,7 @@ const InitOperation = ({ api, chainId, accounts, addressPrefix, asset, onResult 
 
   const totalRedeem = redeemAmounts.reduce((acc, amount) => acc.add(new BN(amount)), BN_ZERO).toString();
 
-  const firstAccount = activeRedeemAccounts[0];
+  const firstAccount = activeRedeemAccounts[0] || accounts[0];
   const accountIsMultisig = isMultisig(firstAccount);
   const redeemBalance = formatBalance(totalRedeem, asset.precision);
   const formFields = accountIsMultisig
@@ -123,7 +123,7 @@ const InitOperation = ({ api, chainId, accounts, addressPrefix, asset, onResult 
   };
 
   const getSignatoryDrowdownOption = (account: Account) => {
-    const balance = balances.find((b) => b.accountId === account.accountId);
+    const balance = signatoriesBalances.find((b) => b.accountId === account.accountId);
 
     return getSignatoryOption(account, { balance, asset, addressPrefix, fee, deposit });
   };

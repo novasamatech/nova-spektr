@@ -41,19 +41,15 @@ export const OperationHeader = ({
   // we can select only one shard on staking overview page but we still need to show account selector with one option
   const isMultishard = !isMultisig(firstAccount);
 
-  const commonProps = {
-    invalid: invalid,
-    error: error,
-  };
-
   return (
     <div className="flex flex-col gap-y-4">
       {isMultisig(firstAccount) && (
         <MultisigOperation
           account={firstAccount as MultisigAccount}
+          invalid={invalid}
+          error={error}
           getSignatoryOption={getSignatoryOption}
           onSignatoryChange={onSignatoryChange}
-          {...commonProps}
         />
       )}
 

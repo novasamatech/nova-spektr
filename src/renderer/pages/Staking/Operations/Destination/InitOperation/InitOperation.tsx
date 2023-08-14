@@ -42,7 +42,7 @@ const InitOperation = ({ api, chainId, accounts, addressPrefix, asset, onResult 
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [activeBalances, setActiveBalances] = useState<AccountBalance[]>([]);
 
-  const firstAccount = activeDestAccounts[0];
+  const firstAccount = activeDestAccounts[0] || accounts[0];
   const accountIsMultisig = isMultisig(firstAccount);
   const formFields = accountIsMultisig ? [{ name: 'destination' }, { name: 'description' }] : [{ name: 'destination' }];
 
@@ -86,7 +86,7 @@ const InitOperation = ({ api, chainId, accounts, addressPrefix, asset, onResult 
   };
 
   const getSignatoryDrowdownOption = (account: Account) => {
-    const balance = balances.find((b) => b.accountId === account.accountId);
+    const balance = signatoriesBalances.find((b) => b.accountId === account.accountId);
 
     return getSignatoryOption(account, { balance, asset, addressPrefix, fee, deposit });
   };

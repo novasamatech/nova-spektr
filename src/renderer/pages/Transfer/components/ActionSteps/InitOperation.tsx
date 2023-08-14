@@ -62,6 +62,10 @@ const InitOperation = ({
   );
 
   useEffect(() => {
+    setActiveAccount(accounts[0]);
+  }, [accounts.length, accounts[0]?.accountId]);
+
+  useEffect(() => {
     if (!isMultisig(activeAccount)) {
       setDeposit('0');
     }
@@ -81,6 +85,7 @@ const InitOperation = ({
   };
 
   const changeAccount = (account: Account | MultisigAccount) => {
+    console.log(account);
     onAccountChange(account);
     setActiveAccount(account);
   };

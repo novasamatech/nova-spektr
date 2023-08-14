@@ -25,7 +25,7 @@ export const MultishardStaking = ({ accounts, invalid, error, getAccountOption, 
     if (formattedAccounts.length === 0) return;
 
     setAccountsOptions(formattedAccounts);
-  }, [accounts.length]);
+  }, [accounts.length, getAccountOption]);
 
   useEffect(() => {
     if (accountsOptions.length === 0) return;

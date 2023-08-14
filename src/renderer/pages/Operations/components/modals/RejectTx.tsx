@@ -5,7 +5,7 @@ import { BN } from '@polkadot/util';
 import { BaseModal, Button, Icon } from '@renderer/shared/ui';
 import { useI18n } from '@renderer/app/providers';
 import { AccountDS, MultisigTransactionDS } from '@renderer/shared/api/storage';
-import { useToggle, useCountdown } from '@renderer/shared/lib/hooks';
+import { useToggle } from '@renderer/shared/lib/hooks';
 import { MultisigAccount, useAccount } from '@renderer/entities/account';
 import { ExtendedChain } from '@renderer/entities/network';
 import { Transaction, TransactionType, useTransaction, OperationResult } from '@renderer/entities/transaction';
@@ -17,8 +17,8 @@ import { useBalance } from '@renderer/entities/asset';
 import RejectReasonModal from './RejectReasonModal';
 import Confirmation from '@renderer/pages/Operations/components/ActionSteps/Confirmation';
 import OperationModalTitle from '@renderer/pages/Operations/components/OperationModalTitle';
-import Signing from '@renderer/pages/Transfer/components/ActionSteps/Signing';
-import ScanSingleframeQr from '@renderer/components/common/Scanning/ScanSingleframeQr';
+import { Signing } from '@renderer/features/signing';
+import { useBalanceValidation } from '@renderer/entities/transaction/lib/useBalanceValidation';
 
 type Props = {
   tx: MultisigTransactionDS;
@@ -28,12 +28,11 @@ type Props = {
 
 const enum Step {
   CONFIRMATION,
-  SCANNING,
   SIGNING,
   SUBMIT,
 }
 
-const AllSteps = [Step.CONFIRMATION, Step.SCANNING, Step.SIGNING, Step.SUBMIT];
+const AllSteps = [Step.CONFIRMATION, Step.SIGNING, Step.SUBMIT];
 
 const RejectTx = ({ tx, account, connection }: Props) => {
   const { t } = useI18n();
@@ -46,11 +45,9 @@ const RejectTx = ({ tx, account, connection }: Props) => {
   const [isFeeModalOpen, toggleFeeModal] = useToggle();
 
   const [activeStep, setActiveStep] = useState(Step.CONFIRMATION);
-  const [countdown, resetCountdown] = useCountdown(connection.api);
 
   const [rejectTx, setRejectTx] = useState<Transaction>();
   const [unsignedTx, setUnsignedTx] = useState<UnsignedTransaction>();
-  const [txPayload, setTxPayload] = useState<Uint8Array>();
 
   const [rejectReason, setRejectReason] = useState('');
   const [signature, setSignature] = useState<HexString>();
@@ -59,20 +56,28 @@ const RejectTx = ({ tx, account, connection }: Props) => {
   const signAccount = accounts.find((a) => a.accountId === tx.depositor);
   const transactionTitle = getTransactionTitle(tx.transaction);
 
+  const nativeAsset = connection.assets[0];
+
+  const balanceValidationError = useBalanceValidation({
+    api: connection.api,
+    chainId: tx.chainId,
+    transaction: rejectTx,
+    assetId: nativeAsset?.assetId.toString(),
+  });
+
   useEffect(() => {
     const accountId = signAccount?.accountId || account.signatories[0].accountId;
 
     setRejectTx(getMultisigTx(accountId));
   }, [tx, signAccount?.accountId]);
 
-  const nativeAsset = connection.assets[0];
-
   const goBack = () => {
     setActiveStep(AllSteps.indexOf(activeStep) - 1);
   };
 
-  const onSignResult = (signature: HexString) => {
-    setSignature(signature);
+  const onSignResult = (signature: HexString[], unsigned: UnsignedTransaction[]) => {
+    setUnsignedTx(unsigned[0]);
+    setSignature(signature[0]);
     setIsModalOpen(false);
     setActiveStep(Step.SUBMIT);
   };
@@ -130,7 +135,7 @@ const RejectTx = ({ tx, account, connection }: Props) => {
 
     if (isValid) {
       setRejectReason(reason);
-      setActiveStep(Step.SCANNING);
+      setActiveStep(Step.SIGNING);
     } else {
       toggleFeeModal();
     }
@@ -172,42 +177,18 @@ const RejectTx = ({ tx, account, connection }: Props) => {
             </Button>
           </>
         )}
-        {activeStep === Step.SCANNING && rejectTx && connection.api && signAccount && (
-          <ScanSingleframeQr
-            api={connection.api}
+        {activeStep === Step.SIGNING && rejectTx && connection.api && signAccount && (
+          <Signing
             chainId={tx.chainId}
-            transaction={rejectTx}
-            account={signAccount}
-            explorers={connection?.explorers}
+            api={connection.api}
             addressPrefix={connection?.addressPrefix}
-            countdown={countdown}
-            onResetCountdown={resetCountdown}
+            accounts={[signAccount]}
+            transactions={[rejectTx]}
+            signatory={signAccount}
+            validationError={balanceValidationError}
             onGoBack={goBack}
-            onResult={(tx, txPayload) => {
-              setUnsignedTx(tx);
-              setTxPayload(txPayload);
-              setActiveStep(Step.SIGNING);
-            }}
+            onResult={onSignResult}
           />
-        )}
-
-        {activeStep === Step.SIGNING && (
-          <div>
-            {rejectTx && connection.api && signAccount && (
-              <Signing
-                api={connection.api}
-                chainId={tx.chainId}
-                transaction={rejectTx}
-                countdown={countdown}
-                accountId={signAccount?.accountId}
-                assetId={nativeAsset?.assetId.toString() || '0'}
-                txPayload={txPayload}
-                onGoBack={goBack}
-                onStartOver={() => {}}
-                onResult={onSignResult}
-              />
-            )}
-          </div>
         )}
 
         <RejectReasonModal
