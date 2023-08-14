@@ -38,7 +38,7 @@ export const OperationHeader = ({
 }: PropsWithChildren<Props>) => {
   const firstAccount = accounts[0];
 
-  // on staking page we can select only one shard on staking overview page but we still need to show account selector with one option
+  // we can select only one shard on staking overview page but we still need to show account selector with one option
   const isMultishard = !isMultisig(firstAccount);
 
   const commonProps = {

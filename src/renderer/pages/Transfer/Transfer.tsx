@@ -118,7 +118,7 @@ export const Transfer = ({ assetId, chainId, isOpen, onClose }: Props) => {
           </div>
         ) : (
           <>
-            {activeStep === Step.INIT && (
+            {activeStep === Step.INIT && asset && (
               <InitOperation
                 chainId={chainId}
                 asset={asset}
