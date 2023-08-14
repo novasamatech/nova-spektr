@@ -2,9 +2,9 @@ import { PropsWithChildren } from 'react';
 
 import { ChainId } from '@renderer/domain/shared-kernel';
 import { Account, isMultisig, MultisigAccount } from '@renderer/entities/account';
-import { MultisigOperation } from '@renderer/features/InitOperation/ui/MultisigOperation/MultisigOperation';
-import { MultishardStaking } from '@renderer/features/InitOperation/ui/MultishardStaking/MultishardStaking';
-import { MultishardTransfer } from '@renderer/features/InitOperation/ui/MultishardTransfer/MultishardTransfer';
+import { MultisigOperation } from '@renderer/features/init-operation/ui/MultisigOperation/MultisigOperation';
+import { MultishardStaking } from '@renderer/features/init-operation/ui/MultishardStaking/MultishardStaking';
+import { MultishardTransfer } from '@renderer/features/init-operation/ui/MultishardTransfer/MultishardTransfer';
 import { DropdownOption } from '@renderer/shared/ui/Dropdowns/common/types';
 
 type Props = {

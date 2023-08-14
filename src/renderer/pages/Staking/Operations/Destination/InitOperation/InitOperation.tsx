@@ -9,7 +9,7 @@ import { Account, isMultisig } from '@renderer/entities/account';
 import { toAddress, nonNullable, TEST_ADDRESS } from '@renderer/shared/lib/utils';
 import { OperationForm } from '../../components';
 import { validateBalanceForFeeDeposit, validateBalanceForFee, getGeneralAccountOption } from '../../common/utils';
-import { OperationFooter, OperationHeader } from '@renderer/features/InitOperation';
+import { OperationFooter, OperationHeader } from '@renderer/features/init-operation';
 import { getSignatoryOption } from '@renderer/pages/Transfer/common/utils';
 
 export type DestinationResult = {

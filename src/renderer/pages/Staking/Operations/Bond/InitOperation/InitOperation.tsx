@@ -2,6 +2,7 @@ import { ApiPromise } from '@polkadot/api';
 import { BN } from '@polkadot/util';
 import { useEffect, useState } from 'react';
 
+import { OperationFooter, OperationHeader } from '@renderer/features/init-operation';
 import { useI18n } from '@renderer/app/providers';
 import { Asset, Balance as AccountBalance, useBalance } from '@renderer/entities/asset';
 import { AccountId, Address, ChainId } from '@renderer/domain/shared-kernel';
@@ -16,7 +17,6 @@ import {
   validateBalanceForFeeDeposit,
   validateStake,
 } from '../../common/utils';
-import { OperationFooter, OperationHeader } from '@renderer/features/InitOperation';
 import { getSignatoryOption } from '@renderer/pages/Transfer/common/utils';
 
 export type BondResult = {

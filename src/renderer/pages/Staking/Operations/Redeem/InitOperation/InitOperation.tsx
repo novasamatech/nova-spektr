@@ -12,7 +12,7 @@ import { StakingMap, useStakingData, useEra } from '@renderer/entities/staking';
 import { OperationForm } from '../../components';
 import { validateBalanceForFee, validateBalanceForFeeDeposit, getRedeemAccountOption } from '../../common/utils';
 import { getSignatoryOption } from '@renderer/pages/Transfer/common/utils';
-import { OperationFooter, OperationHeader } from '@renderer/features/InitOperation';
+import { OperationFooter, OperationHeader } from '@renderer/features/init-operation';
 
 export type RedeemResult = {
   accounts: Account[];

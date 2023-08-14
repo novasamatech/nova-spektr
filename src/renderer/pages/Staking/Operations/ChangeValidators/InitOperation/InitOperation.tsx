@@ -10,7 +10,7 @@ import { useValidators } from '@renderer/entities/staking';
 import { toAddress, nonNullable } from '@renderer/shared/lib/utils';
 import { OperationForm } from '../../components';
 import { getGeneralAccountOption, validateBalanceForFee, validateBalanceForFeeDeposit } from '../../common/utils';
-import { OperationFooter, OperationHeader } from '@renderer/features/InitOperation';
+import { OperationFooter, OperationHeader } from '@renderer/features/init-operation';
 import { getSignatoryOption } from '@renderer/pages/Transfer/common/utils';
 
 export type ValidatorsResult = {
