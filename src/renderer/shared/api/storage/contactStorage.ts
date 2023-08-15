@@ -1,5 +1,5 @@
-import { Contact } from '@renderer/entities/contact/model/contact';
-import { ContactDS, IContactStorage, TContact, ID } from './common/types';
+import type { Contact } from '@renderer/entities/contact';
+import { ContactDS, IContactStorage, ID, TContact } from './common/types';
 
 export const useContactStorage = (db: TContact): IContactStorage => ({
   getContact: (contactId: ID): Promise<ContactDS | undefined> => {

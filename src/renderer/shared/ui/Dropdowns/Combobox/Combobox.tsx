@@ -3,9 +3,15 @@ import { Transition, Combobox as HeadlessCombobox } from '@headlessui/react';
 
 import { cnTw, includes } from '@renderer/shared/lib/utils';
 import { Props as InputProps } from '@renderer/shared/ui/Inputs/Input/Input';
-import { OptionsContainerStyle, OptionStyle, OptionStyleTheme, ViewClass } from '../common/constants';
 import { Position, ComboboxOption, Theme } from '../common/types';
 import { FootnoteText, Input } from '@renderer/shared/ui';
+import {
+  OptionsContainerStyle,
+  OptionsContainerStyleTheme,
+  OptionStyle,
+  OptionStyleTheme,
+  ViewClass,
+} from '../common/constants';
 
 type Props = Omit<InputProps, 'onChange' | 'value'> & {
   options: ComboboxOption[];
@@ -46,7 +52,13 @@ const Combobox = ({
         />
 
         <Transition as={Fragment} leave="transition" leaveFrom="opacity-100" leaveTo="opacity-0">
-          <HeadlessCombobox.Options className={cnTw(OptionsContainerStyle, position !== 'auto' && ViewClass[position])}>
+          <HeadlessCombobox.Options
+            className={cnTw(
+              OptionsContainerStyle,
+              OptionsContainerStyleTheme[theme],
+              position !== 'auto' && ViewClass[position],
+            )}
+          >
             {nothingFound && (
               <HeadlessCombobox.Option
                 value={{ id: '', value: query, element: query }}

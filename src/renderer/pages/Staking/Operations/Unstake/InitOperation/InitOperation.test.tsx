@@ -43,7 +43,6 @@ jest.mock('@renderer/entities/asset', () => ({
   AssetBalance: () => <span>balance</span>,
 }));
 
-jest.mock('../../../Overview/components', () => ({ UnstakingDuration: () => 'unstaking_duration' }));
 jest.mock('../../components', () => ({
   OperationForm: ({ header }: any) => {
     return (

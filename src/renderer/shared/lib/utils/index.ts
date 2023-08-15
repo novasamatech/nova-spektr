@@ -10,3 +10,4 @@ export * from './substrate';
 export * from './time';
 export * from './twMerge';
 export * from './validation';
+export * from './arrays';
