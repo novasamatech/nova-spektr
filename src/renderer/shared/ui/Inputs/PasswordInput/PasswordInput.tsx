@@ -1,6 +1,6 @@
 import { forwardRef } from 'react';
 
-import Input, { Props as InputProps } from '../Input/Input';
+import { Input, Props as InputProps } from '../Input/Input';
 import { Icon } from '../../Icon/Icon';
 import { useI18n } from '@renderer/app/providers';
 import { useToggle } from '@renderer/shared/lib/hooks';
@@ -8,7 +8,7 @@ import { useToggle } from '@renderer/shared/lib/hooks';
 type Props = Omit<InputProps, 'type' | 'suffixElement'>;
 
 // TODO: Use label, placeholder and alt from props not static values
-const PasswordInput = forwardRef<HTMLInputElement, Props>(({ ...props }, ref) => {
+export const PasswordInput = forwardRef<HTMLInputElement, Props>(({ ...props }, ref) => {
   const { t } = useI18n();
   const [isHidden, toggleVisibility] = useToggle(true);
 
@@ -28,5 +28,3 @@ const PasswordInput = forwardRef<HTMLInputElement, Props>(({ ...props }, ref) =>
     />
   );
 });
-
-export default PasswordInput;

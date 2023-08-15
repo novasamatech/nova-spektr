@@ -13,7 +13,7 @@ type Props = {
   tabIndex?: number;
 };
 
-const InfoLink = ({ url, children, iconName, size = 'sm', className, tabIndex }: PropsWithChildren<Props>) => (
+export const InfoLink = ({ url, children, iconName, size = 'sm', className, tabIndex }: PropsWithChildren<Props>) => (
   <a
     href={url}
     rel="noopener noreferrer"
@@ -30,5 +30,3 @@ const InfoLink = ({ url, children, iconName, size = 'sm', className, tabIndex }:
     {children}
   </a>
 );
-
-export default InfoLink;

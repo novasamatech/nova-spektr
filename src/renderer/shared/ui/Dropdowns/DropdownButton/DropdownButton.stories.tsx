@@ -1,9 +1,9 @@
 import { ComponentMeta, ComponentStory } from '@storybook/react';
 
-import DropdownButton, { ButtonDropdownOption } from './DropdownButton';
+import { DropdownButton, ButtonDropdownOption } from './DropdownButton';
 
 export default {
-  title: 'Redesign/Dropdown Button',
+  title: 'ui/Dropdown Button',
   component: DropdownButton,
   parameters: { actions: { argTypesRegex: '^on.*' } },
   decorators: [

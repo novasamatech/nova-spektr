@@ -1,9 +1,9 @@
 import { ComponentMeta, ComponentStory } from '@storybook/react';
 
-import Counter from './Counter';
+import { Counter } from './Counter';
 
 export default {
-  title: 'Redesign/Counter',
+  title: 'ui/Counter',
   component: Counter,
   parameters: { actions: { argTypesRegex: '^on.*' } },
 } as ComponentMeta<typeof Counter>;

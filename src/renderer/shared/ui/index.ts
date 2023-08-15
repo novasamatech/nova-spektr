@@ -1,34 +1,14 @@
-import Input from './Inputs/Input/Input';
-import Plate from './Plate/Plate';
-import AmountInput from './Inputs/AmountInput/AmountInput';
-import PasswordInput from './Inputs/PasswordInput/PasswordInput';
-import InputHint from './InputHint/InputHint';
-import Button from './Buttons/Button/Button';
-import ButtonLink from './Buttons/ButtonLink/ButtonLink';
-import BaseModal from './Modals/BaseModal/BaseModal';
-import ConfirmModal from './Modals/ConfirmModal/ConfirmModal';
-import InfoPopover from './Popovers/InfoPopover/InfoPopover';
-import { Popover } from './Popovers/Popover/Popover';
-import InfoLink from './InfoLink/InfoLink';
-import Select from './Dropdowns/Select/Select';
-import Combobox from './Dropdowns/Combobox/Combobox';
-import RadioGroup from './RadioGroup/RadioGroup';
-import PopoverLink from './PopoverLink/PopoverLink';
-import Checkbox from './Checkbox/Checkbox';
-import MultiSelect from './Dropdowns/MultiSelect/MultiSelect';
-import MenuPopover from './Popovers/MenuPopover/MenuPopover';
-import IconButton from './Buttons/IconButton/IconButton';
-import DropdownButton from './Dropdowns/DropdownButton/DropdownButton';
-import SearchInput from './Inputs/SearchInput/SearchInput';
-import Accordion from './Accordion/Accordion';
-import Alert from './Alert/Alert';
-import Counter from './Counter/Counter';
-import StatusLabel from './StatusLabel/StatusLabel';
-import InputFile from './Inputs/InputFile/InputFile';
-import { Tooltip } from './Popovers/Tooltip/Tooltip';
-import { LabelHelpBox } from './LabelHelpbox/LabelHelpBox';
-import { Tabs } from './Tabs/Tabs';
-import {
+export { Input, InputArea, InputFile, PasswordInput, AmountInput, SearchInput } from './Inputs';
+
+export { Button, ButtonLink, IconButton } from './Buttons';
+
+export { Select, Combobox, MultiSelect, DropdownButton } from './Dropdowns';
+
+export { InfoPopover, MenuPopover, Popover, Tooltip } from './Popovers';
+
+export { BaseModal, ConfirmModal } from './Modals';
+
+export {
   LargeTitleText,
   TitleText,
   SmallTitleText,
@@ -40,71 +20,29 @@ import {
   HeaderTitleText,
   HelpText,
 } from './Typography';
-import InputArea from './Inputs/InputArea/InputArea';
-import Switch from './Switch/Switch';
-import Identicon from './Identicon/Identicon';
-import LanguageSwitcher from './LanguageSwitcher/LanguageSwitcher';
-import Shimmering from './Shimmering/Shimmering';
-import Duration from './Duration/Duration';
-import Loader from './Loader/Loader';
-import DetailRow from './DetailRow/DetailRow';
-import { Icon } from './Icon/Icon';
-import { Truncate } from './Truncate/Truncate';
 
-// FIXME: Animation component exported separately.
+export { Plate } from './Plate/Plate';
+export { InputHint } from './InputHint/InputHint';
+export { InfoLink } from './InfoLink/InfoLink';
+export { RadioGroup } from './RadioGroup/RadioGroup';
+export { Checkbox } from './Checkbox/Checkbox';
+export { Accordion } from './Accordion/Accordion';
+export { Alert } from './Alert/Alert';
+export { Counter } from './Counter/Counter';
+export { StatusMark } from './StatusMark/StatusMark';
+export { LabelHelpBox } from './LabelHelpbox/LabelHelpBox';
+export { Tabs } from './Tabs/Tabs';
+export { Switch } from './Switch/Switch';
+export { Identicon } from './Identicon/Identicon';
+export { LanguageSwitcher } from './LanguageSwitcher/LanguageSwitcher';
+export { Shimmering } from './Shimmering/Shimmering';
+export { Duration } from './Duration/Duration';
+export { Loader } from './Loader/Loader';
+export { DetailRow } from './DetailRow/DetailRow';
+export { Icon } from './Icon/Icon';
+export { Truncate } from './Truncate/Truncate';
+
+// FIXME: UI components with services that access DB causes Jest to crash
 // Adding them to this file causes to crash all tests which use anything from that file
 // similar issue on stackoverflow:
 // https://stackoverflow.com/questions/49156356/why-does-jest-try-to-resolve-every-component-in-my-index-ts
-
-export {
-  Input,
-  Plate,
-  AmountInput,
-  PasswordInput,
-  SearchInput,
-  InputHint,
-  Button,
-  ButtonLink,
-  IconButton,
-  BaseModal,
-  ConfirmModal,
-  InfoPopover,
-  MenuPopover,
-  Popover,
-  InfoLink,
-  LargeTitleText,
-  TitleText,
-  SmallTitleText,
-  CaptionText,
-  HeadlineText,
-  BodyText,
-  FootnoteText,
-  LabelText,
-  Select,
-  Combobox,
-  PopoverLink,
-  Checkbox,
-  RadioGroup,
-  MultiSelect,
-  DropdownButton,
-  Alert,
-  Accordion,
-  Counter,
-  StatusLabel,
-  HeaderTitleText,
-  InputFile,
-  Tooltip,
-  LabelHelpBox,
-  Tabs,
-  InputArea,
-  Switch,
-  Icon,
-  Identicon,
-  LanguageSwitcher,
-  Shimmering,
-  Duration,
-  Loader,
-  HelpText,
-  DetailRow,
-  Truncate,
-};

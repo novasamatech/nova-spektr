@@ -31,7 +31,7 @@ type Props<T> = {
   onChange: (data: DropdownResult<T>) => void;
 };
 
-const Select = <T extends any>({
+export const Select = <T extends any>({
   className,
   placeholder,
   label,
@@ -121,5 +121,3 @@ const Select = <T extends any>({
     </div>
   );
 };
-
-export default Select;

@@ -1,14 +1,15 @@
 import { PropsWithChildren, ReactNode } from 'react';
 import cn from 'classnames';
 
-import { FootnoteText } from '@renderer/shared/ui';
+import { FootnoteText } from '../Typography';
 
 type Props = {
   label: ReactNode;
   className: string;
 };
 
-const DetailRow = ({ label, className, children }: PropsWithChildren<Props>) => (
+// TODO: should be move to entity/__group__/ui
+export const DetailRow = ({ label, className, children }: PropsWithChildren<Props>) => (
   <div className="flex justify-between items-center w-full">
     {typeof label === 'string' ? (
       <FootnoteText as="dt" className="text-text-tertiary">
@@ -27,5 +28,3 @@ const DetailRow = ({ label, className, children }: PropsWithChildren<Props>) => 
     )}
   </div>
 );
-
-export default DetailRow;

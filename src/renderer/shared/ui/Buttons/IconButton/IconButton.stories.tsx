@@ -1,9 +1,9 @@
 import { ComponentMeta, ComponentStory } from '@storybook/react';
 
-import IconButton from './IconButton';
+import { IconButton } from './IconButton';
 
 export default {
-  title: 'Redesign/Icon Button',
+  title: 'ui/Icon Button',
   component: IconButton,
   parameters: { actions: { argTypesRegex: '^on.*' } },
 } as ComponentMeta<typeof IconButton>;

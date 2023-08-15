@@ -3,7 +3,7 @@ import { TFunction } from 'react-i18next';
 import { ConnectionStatus, ConnectionType } from '@renderer/domain/connection';
 import { ExtendedChain } from '@renderer/entities/network';
 import { NetworkSelector } from '../NetworkSelector/NetworkSelector';
-import { BodyText, StatusLabel, FootnoteText, HelpText } from '@renderer/shared/ui';
+import { BodyText, StatusMark, FootnoteText, HelpText } from '@renderer/shared/ui';
 import { useI18n } from '@renderer/app/providers';
 import { RpcNode, ChainIcon } from '@renderer/entities/chain';
 import './NetworkItem.css';
@@ -54,7 +54,7 @@ export const NetworkItem = ({
         {networkIsActive && activeNode && <HelpText className="text-text-tertiary truncate">{activeNode.url}</HelpText>}
       </div>
       {networkIsActive && (
-        <StatusLabel
+        <StatusMark
           title={Status[connectionStatus].title(t)}
           variant={Status[connectionStatus].variant}
           className="mr-8.5"

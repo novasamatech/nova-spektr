@@ -1,6 +1,6 @@
 import { render, screen } from '@testing-library/react';
 
-import Loader from './Loader';
+import { Loader } from './Loader';
 
 describe('ui/Loader', () => {
   test('should render component', () => {

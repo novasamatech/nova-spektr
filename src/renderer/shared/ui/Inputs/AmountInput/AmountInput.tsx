@@ -1,11 +1,11 @@
 import { useCallback } from 'react';
 
-import { useI18n } from '@renderer/app/providers';
-import { FootnoteText, TitleText } from '../../Typography';
 // FIXME components in shared shouldn't use components from entity so we need to move it to entity
 import { AssetBalance, AssetIcon, Asset } from '@renderer/entities/asset';
-import Input from '../Input/Input';
 import { cleanAmount, formatGroups, validatePrecision, validateSymbols } from '@renderer/shared/lib/utils';
+import { useI18n } from '@renderer/app/providers';
+import { FootnoteText, TitleText } from '../../Typography';
+import { Input } from '../Input/Input';
 
 type Props = {
   name?: string;
@@ -19,7 +19,7 @@ type Props = {
   onChange?: (value: string) => void;
 };
 
-const AmountInput = ({
+export const AmountInput = ({
   name,
   value,
   asset,
@@ -93,5 +93,3 @@ const AmountInput = ({
     />
   );
 };
-
-export default AmountInput;

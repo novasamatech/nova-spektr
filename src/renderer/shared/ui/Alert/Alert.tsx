@@ -1,10 +1,12 @@
 import { PropsWithChildren, Children } from 'react';
 
 import { cnTw } from '@renderer/shared/lib/utils';
-import { IconButton, HeadlineText, Icon } from '@renderer/shared/ui';
+import { Icon } from '../Icon/Icon';
+import { IconButton } from '../Buttons';
+import { HeadlineText } from '../Typography';
 import { Variant } from './common/types';
 import { ViewStyle, IconStyle, IconName } from './common/constants';
-import AlertItem from './AlertItem';
+import { AlertItem } from './AlertItem';
 
 type Props = {
   title: string;
@@ -13,7 +15,7 @@ type Props = {
   onClose?: () => void;
 };
 
-const Alert = ({ title, variant = 'info', className, children, onClose }: PropsWithChildren<Props>) => {
+export const Alert = ({ title, variant = 'info', className, children, onClose }: PropsWithChildren<Props>) => {
   const isList = Children.toArray(children).length > 0;
 
   return (
@@ -34,5 +36,3 @@ const Alert = ({ title, variant = 'info', className, children, onClose }: PropsW
 };
 
 Alert.Item = AlertItem;
-
-export default Alert;

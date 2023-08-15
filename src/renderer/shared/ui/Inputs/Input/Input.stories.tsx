@@ -1,10 +1,10 @@
 import { ComponentMeta, ComponentStory } from '@storybook/react';
 
-import Input from './Input';
-import { Icon } from '@renderer/shared/ui';
+import { Input } from './Input';
+import { Icon } from '../../Icon/Icon';
 
 export default {
-  title: 'Redesign/Input',
+  title: 'ui/Input',
   component: Input,
   parameters: { actions: { argTypesRegex: '^on.*' } },
 } as ComponentMeta<typeof Input>;

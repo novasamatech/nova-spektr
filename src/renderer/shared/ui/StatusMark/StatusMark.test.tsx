@@ -1,10 +1,10 @@
 import { render, screen } from '@testing-library/react';
 
-import StatusLabel from './StatusLabel';
+import { StatusMark } from './StatusMark';
 
-describe('ui/StatusLabel', () => {
+describe('ui/StatusMark', () => {
   test('should render component', () => {
-    render(<StatusLabel title="My label" subtitle="Subtitle" variant="success" />);
+    render(<StatusMark title="My label" subtitle="Subtitle" variant="success" />);
 
     const title = screen.getByText('My label');
     const subtitle = screen.getByText('Subtitle');
@@ -14,17 +14,17 @@ describe('ui/StatusLabel', () => {
   });
 
   test('should render 4 variants', () => {
-    const { rerender } = render(<StatusLabel title="My label" variant="waiting" />);
+    const { rerender } = render(<StatusMark title="My label" variant="waiting" />);
     const title = screen.getByText('My label');
     expect(title).toHaveClass('text-text-tertiary');
 
-    rerender(<StatusLabel title="My label" variant="success" />);
+    rerender(<StatusMark title="My label" variant="success" />);
     expect(title).toHaveClass('text-text-positive');
 
-    rerender(<StatusLabel title="My label" variant="warn" />);
+    rerender(<StatusMark title="My label" variant="warn" />);
     expect(title).toHaveClass('text-text-warning');
 
-    rerender(<StatusLabel title="My label" variant="error" />);
+    rerender(<StatusMark title="My label" variant="error" />);
     expect(title).toHaveClass('text-text-negative');
   });
 });

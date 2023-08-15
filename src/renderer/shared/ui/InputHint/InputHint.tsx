@@ -8,7 +8,7 @@ type Props = {
   variant?: HintVariant;
 };
 
-const InputHint = ({ variant = 'hint', active, className, children, ...props }: Props & TypographyProps) => {
+export const InputHint = ({ variant = 'hint', active, className, children, ...props }: Props & TypographyProps) => {
   if (!active) return null;
 
   return (
@@ -17,5 +17,3 @@ const InputHint = ({ variant = 'hint', active, className, children, ...props }: 
     </FootnoteText>
   );
 };
-
-export default InputHint;

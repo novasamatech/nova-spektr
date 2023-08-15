@@ -5,15 +5,15 @@ import { LanguageItem, SupportedLocale } from '@renderer/services/translation/co
 import { Icon } from '../Icon/Icon';
 
 type Props = {
-  className?: string;
   languages: LanguageItem[];
-  onChange: (value: SupportedLocale) => void;
   selected: string;
   short?: boolean;
   top?: boolean;
+  className?: string;
+  onChange: (value: SupportedLocale) => void;
 };
 
-const LanguageSwitcher = ({ className, languages, selected, short, onChange, top }: Props) => {
+export const LanguageSwitcher = ({ className, languages, selected, short, onChange, top }: Props) => {
   const selectedLanguage = languages.find(({ value }) => value === selected) || languages[0];
   const availableLanguages = languages.filter((l) => l !== selectedLanguage);
   const languagesList = top ? [...availableLanguages, selectedLanguage] : [selectedLanguage, ...availableLanguages];
@@ -57,5 +57,3 @@ const LanguageSwitcher = ({ className, languages, selected, short, onChange, top
     </div>
   );
 };
-
-export default LanguageSwitcher;

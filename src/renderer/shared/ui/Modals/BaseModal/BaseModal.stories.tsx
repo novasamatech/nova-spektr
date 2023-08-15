@@ -1,9 +1,9 @@
 import { ComponentMeta, ComponentStory } from '@storybook/react';
 
-import BaseModal from './BaseModal';
+import { BaseModal } from './BaseModal';
 
 export default {
-  title: 'Redesign/Base Modal',
+  title: 'ui/Base Modal',
   component: BaseModal,
   parameters: { actions: { argTypesRegex: '^on.*' } },
 } as ComponentMeta<typeof BaseModal>;
