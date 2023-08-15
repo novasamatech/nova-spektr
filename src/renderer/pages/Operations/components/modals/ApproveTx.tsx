@@ -15,6 +15,7 @@ import {
   useTransaction,
   OperationResult,
   useCallDataDecoder,
+  validateBalance,
 } from '@renderer/entities/transaction';
 import { Address, HexString, SigningType, Timepoint } from '@renderer/domain/shared-kernel';
 import { toAddress, transferableAmount, TEST_ADDRESS } from '@renderer/shared/lib/utils';
@@ -26,7 +27,6 @@ import SignatorySelectModal from '@renderer/pages/Operations/components/modals/S
 import OperationModalTitle from '@renderer/pages/Operations/components/OperationModalTitle';
 import { useMultisigEvent } from '@renderer/entities/multisig';
 import { Signing } from '@renderer/features/operation';
-import { useBalanceValidation } from '@renderer/entities/transaction/lib/useBalanceValidation';
 
 type Props = {
   tx: MultisigTransactionDS;
@@ -78,13 +78,6 @@ const ApproveTx = ({ tx, account, connection }: Props) => {
   });
 
   const nativeAsset = connection.assets[0];
-
-  const balanceValidationError = useBalanceValidation({
-    api: connection.api,
-    chainId: tx.chainId,
-    transaction: approveTx,
-    assetId: nativeAsset?.assetId.toString(),
-  });
 
   useEffect(() => {
     setFeeTx(getMultisigTx(TEST_ADDRESS));
@@ -183,6 +176,16 @@ const ApproveTx = ({ tx, account, connection }: Props) => {
     }
   };
 
+  const checkBalance = () =>
+    validateBalance({
+      api: connection.api,
+      chainId: tx.chainId,
+      transaction: approveTx,
+      assetId: nativeAsset?.assetId.toString(),
+      getBalance,
+      getTransactionFee,
+    });
+
   const thresholdReached = events.filter((e) => e.status === 'SIGNED').length === account.threshold - 1;
 
   const readyForSign = tx.status === 'SIGNING' && unsignedAccounts.length > 0;
@@ -225,7 +228,7 @@ const ApproveTx = ({ tx, account, connection }: Props) => {
             accounts={[signAccount]}
             transactions={[approveTx]}
             signatory={signAccount}
-            validationError={balanceValidationError}
+            validateBalance={checkBalance}
             onGoBack={goBack}
             onResult={onSignResult}
           />

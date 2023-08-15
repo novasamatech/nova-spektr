@@ -48,7 +48,7 @@ export const MultisigOperation = ({ account, invalid, error, getSignatoryOption,
   };
 
   return (
-    <div className="flex flex-col gap-y-2 mb-4">
+    <div className="flex flex-col gap-y-2 mb-4" data-testid="signatory-select">
       <Select
         label={t('staking.bond.signatoryLabel')}
         placeholder={t('staking.bond.signatoryPlaceholder')}

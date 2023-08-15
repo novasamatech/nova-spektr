@@ -1,7 +1,5 @@
-import { PropsWithChildren } from 'react';
-
 import { ChainId } from '@renderer/domain/shared-kernel';
-import { Account, isMultisig, MultisigAccount } from '@renderer/entities/account';
+import { Account, isMultishard, isMultisig, MultisigAccount } from '@renderer/entities/account';
 import { MultisigOperation } from '../MultisigOperation/MultisigOperation';
 import { MultishardStaking } from '../MultishardStaking/MultishardStaking';
 import { MultishardTransfer } from '../MultishardTransfer/MultishardTransfer';
@@ -35,11 +33,8 @@ export const OperationHeader = ({
   getAccountOption,
   onAccountChange,
   onSignatoryChange,
-}: PropsWithChildren<Props>) => {
+}: Props) => {
   const firstAccount = accounts[0];
-
-  // we can select only one shard on staking overview page but we still need to show account selector with one option
-  const isMultishard = !isMultisig(firstAccount);
 
   return (
     <div className="flex flex-col gap-y-4">
@@ -53,7 +48,7 @@ export const OperationHeader = ({
         />
       )}
 
-      {isMultishard &&
+      {isMultishard(firstAccount) &&
         (isMultiselect ? (
           <MultishardStaking
             accounts={accounts}

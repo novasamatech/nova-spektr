@@ -47,7 +47,7 @@ export const MultishardTransfer = ({ accounts, invalid, chainId, error, getAccou
   };
 
   return (
-    <div className="flex flex-col gap-y-2 mb-4">
+    <div className="flex flex-col gap-y-2 mb-4" data-testid="shards-select">
       <Select
         label={t('transfer.senderLabel')}
         placeholder={t('receive.selectWalletPlaceholder')}

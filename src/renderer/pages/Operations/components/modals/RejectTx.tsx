@@ -8,7 +8,13 @@ import { AccountDS, MultisigTransactionDS } from '@renderer/shared/api/storage';
 import { useToggle } from '@renderer/shared/lib/hooks';
 import { MultisigAccount, useAccount } from '@renderer/entities/account';
 import { ExtendedChain } from '@renderer/entities/network';
-import { Transaction, TransactionType, useTransaction, OperationResult } from '@renderer/entities/transaction';
+import {
+  Transaction,
+  TransactionType,
+  useTransaction,
+  OperationResult,
+  validateBalance,
+} from '@renderer/entities/transaction';
 import { Address, HexString, Timepoint } from '@renderer/domain/shared-kernel';
 import { toAddress, transferableAmount } from '@renderer/shared/lib/utils';
 import { getTransactionTitle } from '../../common/utils';
@@ -18,7 +24,6 @@ import RejectReasonModal from './RejectReasonModal';
 import Confirmation from '@renderer/pages/Operations/components/ActionSteps/Confirmation';
 import OperationModalTitle from '@renderer/pages/Operations/components/OperationModalTitle';
 import { Signing } from '@renderer/features/operation';
-import { useBalanceValidation } from '@renderer/entities/transaction/lib/useBalanceValidation';
 
 type Props = {
   tx: MultisigTransactionDS;
@@ -58,12 +63,15 @@ const RejectTx = ({ tx, account, connection }: Props) => {
 
   const nativeAsset = connection.assets[0];
 
-  const balanceValidationError = useBalanceValidation({
-    api: connection.api,
-    chainId: tx.chainId,
-    transaction: rejectTx,
-    assetId: nativeAsset?.assetId.toString(),
-  });
+  const checkBalance = () =>
+    validateBalance({
+      api: connection.api,
+      chainId: tx.chainId,
+      transaction: rejectTx,
+      assetId: nativeAsset?.assetId.toString(),
+      getBalance,
+      getTransactionFee,
+    });
 
   useEffect(() => {
     const accountId = signAccount?.accountId || account.signatories[0].accountId;
@@ -185,7 +193,7 @@ const RejectTx = ({ tx, account, connection }: Props) => {
             accounts={[signAccount]}
             transactions={[rejectTx]}
             signatory={signAccount}
-            validationError={balanceValidationError}
+            validateBalance={checkBalance}
             onGoBack={goBack}
             onResult={onSignResult}
           />

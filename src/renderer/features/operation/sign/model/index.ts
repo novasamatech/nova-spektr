@@ -12,7 +12,7 @@ export type SigningProps = {
   addressPrefix: number;
   accounts: Account[];
   signatory?: Account;
-  validationError?: ValidationErrors | undefined;
+  validateBalance?: () => Promise<ValidationErrors | undefined>;
   onGoBack: () => void;
   transactions: Transaction[];
   onResult: (signatures: HexString[], unsignedTxs: UnsignedTransaction[]) => void;

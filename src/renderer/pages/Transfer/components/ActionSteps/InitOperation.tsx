@@ -113,7 +113,6 @@ const InitOperation = ({
           <OperationHeader
             chainId={chainId}
             accounts={accounts}
-            isMultiselect
             getSignatoryOption={getSignatoryDrowdownOption}
             getAccountOption={getAccountDropdownOption}
             onSignatoryChange={changeSignatory}

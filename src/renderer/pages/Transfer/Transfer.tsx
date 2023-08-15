@@ -4,13 +4,13 @@ import { UnsignedTransaction } from '@substrate/txwrapper-polkadot';
 import { useI18n, useNetworkContext } from '@renderer/app/providers';
 import { ChainId, HexString } from '@renderer/domain/shared-kernel';
 import { useChains } from '@renderer/entities/network';
-import { Transaction } from '@renderer/entities/transaction';
+import { Transaction, useTransaction, validateBalance } from '@renderer/entities/transaction';
 import { Account, MultisigAccount } from '@renderer/entities/account';
 import { BaseModal, Button, Loader } from '@renderer/shared/ui';
 import OperationModalTitle from '../Operations/components/OperationModalTitle';
 import { Confirmation, InitOperation, Submit } from './components/ActionSteps';
 import { Signing } from '@renderer/features/operation';
-import { useBalanceValidation } from '@renderer/entities/transaction/lib/useBalanceValidation';
+import { useBalance } from '@renderer/entities/asset';
 
 const enum Step {
   INIT,
@@ -29,6 +29,8 @@ type Props = {
 export const Transfer = ({ assetId, chainId, isOpen, onClose }: Props) => {
   const { t } = useI18n();
   const { getChainById } = useChains();
+  const { getBalance } = useBalance();
+  const { getTransactionFee } = useTransaction();
   const { connections } = useNetworkContext();
 
   const [activeStep, setActiveStep] = useState<Step>(Step.INIT);
@@ -55,14 +57,22 @@ export const Transfer = ({ assetId, chainId, isOpen, onClose }: Props) => {
   const { api, assets, addressPrefix, explorers } = connection;
   const asset = assets.find((a) => a.assetId === assetId);
 
-  const balanceValidationError = useBalanceValidation({ api, chainId, transaction, assetId: assetId.toString() });
-
   const onInitResult = (transferTx: Transaction, multisig?: { multisigTx: Transaction; description: string }) => {
     setTransferTx(transferTx);
     setMultisigTx(multisig?.multisigTx || undefined);
     setDescription(multisig?.description || '');
     setActiveStep(Step.CONFIRMATION);
   };
+
+  const checkBalance = () =>
+    validateBalance({
+      api,
+      chainId,
+      transaction,
+      assetId: assetId.toString(),
+      getBalance,
+      getTransactionFee,
+    });
 
   const onConfirmResult = () => {
     setActiveStep(Step.SIGNING);
@@ -138,7 +148,7 @@ export const Transfer = ({ assetId, chainId, isOpen, onClose }: Props) => {
                 accounts={[account]}
                 signatory={signatory}
                 transactions={[transaction]}
-                validationError={balanceValidationError}
+                validateBalance={checkBalance}
                 onGoBack={() => setActiveStep(Step.CONFIRMATION)}
                 onResult={onSignResult}
               />

@@ -14,7 +14,7 @@ export const VaultSigning = ({
   chainId,
   api,
   addressPrefix,
-  validationError: balanceValidationError,
+  validateBalance,
   onGoBack,
   accounts,
   signatory,
@@ -60,6 +60,8 @@ export const VaultSigning = ({
 
       return isVerified || isComplexVerified;
     });
+
+    const balanceValidationError = validateBalance && (await validateBalance());
 
     if (!isVerified || balanceValidationError) {
       setValidationError(balanceValidationError || ValidationErrors.INVALID_SIGNATURE);
