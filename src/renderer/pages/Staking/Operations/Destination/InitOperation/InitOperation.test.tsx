@@ -53,7 +53,7 @@ describe('pages/Staking/Destination/InitOperation', () => {
     api: {} as ApiPromise,
     chainId: '0x123' as ChainId,
     addressPrefix: 0,
-    accounts: [{ name: 'Test Wallet', accountId: TEST_ACCOUNT_ID }] as unknown as Account[],
+    accounts: [{ name: 'Test Wallet', accountId: TEST_ACCOUNT_ID, walletId: 1 }] as unknown as Account[],
     asset: { assetId: 1, symbol: 'DOT', precision: 10 } as Asset,
     onResult: noop,
   };
