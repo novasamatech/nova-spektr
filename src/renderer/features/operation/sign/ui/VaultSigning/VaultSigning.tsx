@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { UnsignedTransaction } from '@substrate/txwrapper-polkadot';
 
-import { SigningProps } from '@renderer/features/signing/model';
+import { SigningProps } from '@renderer/features/operation';
 import { useCountdown } from '@renderer/shared/lib/hooks';
 import ScanMultiframeQr from '@renderer/components/common/Scanning/ScanMultiframeQr';
 import ScanSingleframeQr from '@renderer/components/common/Scanning/ScanSingleframeQr';

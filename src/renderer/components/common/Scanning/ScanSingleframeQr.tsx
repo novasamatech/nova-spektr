@@ -43,8 +43,6 @@ const ScanSingleframeQr = ({
 
   useEffect(() => {
     if (txPayload) return;
-    console.log('useEffect', api);
-    console.log('useEffect', transaction);
 
     setupTransaction().catch(() => console.warn('ScanSingleframeQr | setupTransaction() failed'));
   }, [transaction, api]);
@@ -55,8 +53,6 @@ const ScanSingleframeQr = ({
 
       setTxPayload(payload);
       setUnsignedTx(unsigned);
-
-      console.log('setupTransaction', payload);
 
       if (payload) {
         onResetCountdown();

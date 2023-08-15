@@ -8,7 +8,7 @@ import { Asset, useBalance } from '@renderer/entities/asset';
 import { Transaction } from '@renderer/entities/transaction';
 import { TransferForm } from '../TransferForm';
 import { getAccountOption, getSignatoryOption } from '../../common/utils';
-import { OperationFooter, OperationHeader } from '@renderer/features/init-operation';
+import { OperationFooter, OperationHeader } from '@renderer/features/operation';
 
 type Props = {
   api: ApiPromise;

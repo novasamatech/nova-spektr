@@ -16,7 +16,7 @@ import {
   validateBalanceForFeeDeposit,
 } from '../../common/utils';
 import { getSignatoryOption } from '@renderer/pages/Transfer/common/utils';
-import { OperationFooter, OperationHeader } from '@renderer/features/init-operation';
+import { OperationFooter, OperationHeader } from '@renderer/features/operation';
 
 export type StakeMoreResult = {
   accounts: Account[];

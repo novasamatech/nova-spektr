@@ -12,7 +12,7 @@ import { useToggle } from '@renderer/shared/lib/hooks';
 import { isMultisig, MultisigAccount, Account, useAccount } from '@renderer/entities/account';
 import { Alert, BaseModal, Button, Loader } from '@renderer/shared/ui';
 import OperationModalTitle from '@renderer/pages/Operations/components/OperationModalTitle';
-import { Signing } from '@renderer/features/signing';
+import { Signing } from '@renderer/features/operation';
 
 const enum Step {
   INIT,

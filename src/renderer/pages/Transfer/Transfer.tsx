@@ -9,7 +9,7 @@ import { Account, MultisigAccount } from '@renderer/entities/account';
 import { BaseModal, Button, Loader } from '@renderer/shared/ui';
 import OperationModalTitle from '../Operations/components/OperationModalTitle';
 import { Confirmation, InitOperation, Submit } from './components/ActionSteps';
-import { Signing } from '@renderer/features/signing';
+import { Signing } from '@renderer/features/operation';
 import { useBalanceValidation } from '@renderer/entities/transaction/lib/useBalanceValidation';
 
 const enum Step {

@@ -14,7 +14,7 @@ import { Alert, BaseModal, Button, Loader } from '@renderer/shared/ui';
 import InitOperation, { ValidatorsResult } from './InitOperation/InitOperation';
 import { isLightClient } from '@renderer/entities/network';
 import OperationModalTitle from '@renderer/pages/Operations/components/OperationModalTitle';
-import { Signing } from '@renderer/features/signing';
+import { Signing } from '@renderer/features/operation';
 
 const enum Step {
   INIT,

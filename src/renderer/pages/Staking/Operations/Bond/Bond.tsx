@@ -16,7 +16,7 @@ import OperationModalTitle from '@renderer/pages/Operations/components/Operation
 import { DestinationType } from '../common/types';
 import { UnstakingDuration } from '@renderer/pages/Staking/Overview/components';
 import { isLightClient } from '@renderer/entities/network';
-import { Signing } from '@renderer/features/signing';
+import { Signing } from '@renderer/features/operation';
 
 const enum Step {
   INIT,

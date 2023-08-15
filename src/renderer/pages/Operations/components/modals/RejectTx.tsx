@@ -17,7 +17,7 @@ import { useBalance } from '@renderer/entities/asset';
 import RejectReasonModal from './RejectReasonModal';
 import Confirmation from '@renderer/pages/Operations/components/ActionSteps/Confirmation';
 import OperationModalTitle from '@renderer/pages/Operations/components/OperationModalTitle';
-import { Signing } from '@renderer/features/signing';
+import { Signing } from '@renderer/features/operation';
 import { useBalanceValidation } from '@renderer/entities/transaction/lib/useBalanceValidation';
 
 type Props = {

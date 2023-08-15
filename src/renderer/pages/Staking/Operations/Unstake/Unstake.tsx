@@ -13,7 +13,7 @@ import { toAddress, getRelaychainAsset, DEFAULT_TRANSITION } from '@renderer/sha
 import { useToggle } from '@renderer/shared/lib/hooks';
 import { Alert, BaseModal, Button, Loader } from '@renderer/shared/ui';
 import OperationModalTitle from '@renderer/pages/Operations/components/OperationModalTitle';
-import { Signing } from '@renderer/features/signing';
+import { Signing } from '@renderer/features/operation';
 
 const enum Step {
   INIT,
