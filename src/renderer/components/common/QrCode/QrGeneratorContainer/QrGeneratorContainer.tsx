@@ -6,7 +6,7 @@ import { secondsToMinutes } from '@renderer/shared/lib/utils';
 import { useI18n } from '@renderer/app/providers';
 import { ChainId } from '@renderer/domain/shared-kernel';
 import { getMetadataPortalMetadataUrl, TROUBLESHOOTING_URL } from '../common/constants';
-import QrFrame from '@renderer/assets/images/misc/qr-frame.svg';
+import QrFrame from '@images/misc/qr-frame.svg';
 
 type Props = {
   countdown: number;

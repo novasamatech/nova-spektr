@@ -13,7 +13,7 @@ import { useAccount, isMultisig, Account } from '@renderer/entities/account';
 import { AssetsFilters, NetworkAssets, ReceiveModal, SelectShardModal } from './components';
 import { Header } from '@renderer/components/common';
 import { Transfer } from '@renderer/pages';
-import EmptyList from '@renderer/assets/images/misc/empty-list.webp';
+import EmptyList from '@images/misc/empty-list.webp';
 
 export const Assets = () => {
   const { t } = useI18n();

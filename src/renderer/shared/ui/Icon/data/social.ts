@@ -1,5 +1,4 @@
-/* eslint-disable i18next/no-literal-string */
-import SocialSprite from '@renderer/assets/images/icons/social.svg';
+import SocialSprite from '@images/icons/social.svg';
 
 export const SocialImages = {
   github: {

@@ -1,6 +1,6 @@
 import { BodyText, Button } from '@renderer/shared/ui';
 import { useI18n } from '@renderer/app/providers';
-import Fallback from '@renderer/assets/images/misc/computer.webp';
+import Fallback from '@images/misc/computer.webp';
 
 const FallbackScreen = () => {
   const { t } = useI18n();

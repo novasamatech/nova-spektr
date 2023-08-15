@@ -1,7 +1,7 @@
 import { BodyText } from '@renderer/shared/ui';
 import { useI18n } from '@renderer/app/providers';
 import { Account } from '@renderer/entities/account';
-import EmptyList from '@renderer/assets/images/misc/empty-list.webp';
+import EmptyList from '@images/misc/empty-list.webp';
 
 type Props = {
   multisigAccount: Account | null;

@@ -1,5 +1,4 @@
-/* eslint-disable i18next/no-literal-string */
-import ProductSprite from '@renderer/assets/images/icons/product.svg';
+import ProductSprite from '@images/icons/product.svg';
 
 export const ProductImages = {
   'address-book': {

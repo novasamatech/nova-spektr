@@ -80,7 +80,7 @@ const Confirmation = ({ account, connection, transaction, signatory, description
           {t('operation.goBackButton')}
         </Button>
 
-        <Button disabled={!feeLoaded} prefixElement={<Icon name="polkadot-vault" size={16} />} onClick={onResult}>
+        <Button disabled={!feeLoaded} prefixElement={<Icon name="polkadotvault" size={16} />} onClick={onResult}>
           {t('operation.signButton')}
         </Button>
       </div>

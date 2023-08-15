@@ -1,6 +1,6 @@
 import { BodyText } from '@renderer/shared/ui';
 import { useI18n } from '@renderer/app/providers';
-import EmptyList from '@renderer/assets/images/misc/empty-list.webp';
+import EmptyList from '@images/misc/empty-list.webp';
 
 export const EmptyFilteredContacts = () => {
   const { t } = useI18n();

@@ -1,5 +1,4 @@
-/* eslint-disable i18next/no-literal-string */
-import StakingSprite from '@renderer/assets/images/icons/staking.svg';
+import StakingSprite from '@images/icons/staking.svg';
 
 export const StakingImages = {
   'change-reward-dest': {

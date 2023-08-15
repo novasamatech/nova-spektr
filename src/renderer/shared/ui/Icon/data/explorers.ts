@@ -1,6 +1,5 @@
-/* eslint-disable i18next/no-literal-string */
-import PolkaholicImg from '@images/icons/notSvg/polkaholic.webp';
-import ExplorersSprite from '@renderer/assets/images/icons/explorers.svg';
+import PolkaholicImg from '@images/icons/not-svg/polkaholic.webp';
+import ExplorersSprite from '@images/icons/explorers.svg';
 
 export const ExplorerImages = {
   'unknown-explorer': {
