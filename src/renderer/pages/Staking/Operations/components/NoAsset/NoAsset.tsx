@@ -1,5 +1,6 @@
-import { Icon, TitleText, BodyText, Button } from '@renderer/shared/ui';
+import { BodyText, Button, TitleText } from '@renderer/shared/ui';
 import { useI18n } from '@renderer/app/providers';
+import EmptyList from '@renderer/assets/images/misc/empty-list.webp';
 
 type Props = {
   chainName: string;
@@ -13,7 +14,7 @@ export const NoAsset = ({ chainName, onClose }: Props) => {
   return (
     <div className="flex flex-col h-full relative">
       <div className="flex w-full h-full flex-col items-center justify-center">
-        <Icon as="img" name="emptyList" size={178} />
+        <img src={EmptyList} alt="" width={178} height={178} />
         <TitleText className="mt-4">{t('staking.bond.noStakingAssetLabel')}</TitleText>
         <BodyText className="text-text-tertiary">{t('staking.bond.noStakingAssetDescription', { chainName })}</BodyText>
         <Button className="mt-7" onClick={onClose}>

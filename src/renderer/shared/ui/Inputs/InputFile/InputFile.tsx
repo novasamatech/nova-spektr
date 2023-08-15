@@ -3,7 +3,7 @@ import { useState, ChangeEvent, ComponentPropsWithoutRef, forwardRef } from 'rea
 import { cnTw } from '@renderer/shared/lib/utils';
 import { HTMLInputFileProps } from '../common/types';
 import TextBase from '@renderer/shared/ui/Typography/common/TextBase';
-import Icon from '../../Icon/Icon';
+import { Icon } from '../../Icon/Icon';
 import { FootnoteText } from '../../Typography';
 
 interface Props extends Pick<ComponentPropsWithoutRef<'input'>, HTMLInputFileProps> {
@@ -34,7 +34,7 @@ const InputFile = forwardRef<HTMLInputElement, Props>(
         )}
       >
         <div className="flex flex-col items-center gap-y-2">
-          <Icon name={invalid ? 'refresh' : 'uploadFile'} />
+          <Icon name={invalid ? 'refresh' : 'upload-file'} />
           {fileName ? (
             <FootnoteText>{fileName}</FootnoteText>
           ) : (

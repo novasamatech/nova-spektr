@@ -5,6 +5,7 @@ import { useForm, SubmitHandler, Controller } from 'react-hook-form';
 import { useI18n, useMatrix } from '@renderer/app/providers';
 import { Button, Input, InputHint, FootnoteText, InputFile, Tabs, Icon } from '@renderer/shared/ui';
 import { TabItem } from '@renderer/shared/ui/Tabs/common/types';
+import SpektrLogo from '@renderer/assets/images/misc/logo.svg';
 
 type VerifyForm = {
   secretKey: string;
@@ -156,7 +157,7 @@ const Verification = () => {
       <div className="flex flex-col gap-y-4">
         <FootnoteText className="text-text-tertiary">{t('settings.matrix.verificationLabel')}</FootnoteText>
         <div className="flex items-center">
-          <Icon name="logo" size={26} />
+          <img src={SpektrLogo} alt="" width={26} height={26} />
           <FootnoteText className="ml-[7px] mr-auto">{t('general.title.appName')}</FootnoteText>
           {sessionIsVerified ? (
             <FootnoteText className="text-text-positive">{t('settings.matrix.statusVerified')}</FootnoteText>
@@ -183,14 +184,14 @@ const Verification = () => {
           </InputHint>
 
           <div className="flex justify-between items-center pt-3 mt-2">
-            <Icon name="matrixFull" className="!w-[56px] text-[#00000066]" size={24} />
+            <Icon name="matrix" className="!w-[56px] text-[#00000066]" size={32} />
             <Button type="submit" disabled={!isValid}>
               {t('settings.matrix.verifyButton')}
             </Button>
           </div>
         </form>
       ) : (
-        <Icon name="matrixFull" className="!w-[56px] text-[#00000066] mt-3" size={24} />
+        <Icon name="matrix" className="!w-[56px] text-[#00000066] mt-3" size={32} />
       )}
     </>
   );

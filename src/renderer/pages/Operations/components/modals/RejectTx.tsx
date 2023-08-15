@@ -165,7 +165,7 @@ const RejectTx = ({ tx, account, connection }: Props) => {
             <Confirmation tx={tx} account={account} connection={connection} feeTx={rejectTx} />
             <Button
               className="mt-7 ml-auto"
-              prefixElement={<Icon name="vault" size={14} />}
+              prefixElement={<Icon name="polkadot-vault" size={16} />}
               onClick={toggleRejectReasonModal}
             >
               {t('operation.signButton')}

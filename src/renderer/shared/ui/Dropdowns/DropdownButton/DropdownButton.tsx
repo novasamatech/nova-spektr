@@ -3,7 +3,7 @@ import { Menu } from '@headlessui/react';
 import { ComponentProps } from 'react';
 import { Link } from 'react-router-dom';
 
-import { IconNames } from '@renderer/shared/ui/Icon/data';
+import { IconNames } from '@renderer/shared/ui/types';
 import { Button, FootnoteText, Icon } from '@renderer/shared/ui';
 import { cnTw } from '@renderer/shared/lib/utils';
 
@@ -32,7 +32,7 @@ const DropdownButton = ({ options, title, disabled, className, ...buttonProps }:
         <Menu.Button
           as={Button}
           disabled={disabled}
-          suffixElement={<Icon name={open ? 'up' : 'down'} size={16} className="text-inherit" />}
+          suffixElement={<Icon name={open ? 'chevron-up' : 'chevron-down'} size={16} className="text-inherit" />}
           className={cnTw('justify-center', className)}
           {...buttonProps}
         >

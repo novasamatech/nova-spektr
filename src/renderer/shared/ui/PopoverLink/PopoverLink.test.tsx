@@ -2,10 +2,10 @@ import { render, screen } from '@testing-library/react';
 
 import PopoverLink from './PopoverLink';
 
-describe('screen/Settings/PopoverLink', () => {
+describe('ui/PopoverLink', () => {
   test('should render component', () => {
     render(
-      <PopoverLink iconName="globe" showIcon>
+      <PopoverLink iconName="novawallet" showIcon>
         My link
       </PopoverLink>,
     );

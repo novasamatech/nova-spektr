@@ -1,46 +1,35 @@
-import CurrencyImages, { Currency } from './currency';
-import NavigationImages, { Navigation } from './navigation';
-import ChevronImages, { Chevron } from './chevron';
-import FunctionalImages, { Functional } from './functionals';
-import MiscImages, { Misc } from './misc';
-import FlagImages, { Flag } from './flag';
-import ExplorerImages, { Explorer } from './explorer';
-import AestheticImages, { Aesthetic } from './aesthetics';
-import ArrowImages, { Arrow } from './arrow';
-import WalletTypeImages, { WalletImages } from './walletType';
-import StakingImages, { Staking } from './staking';
-import SocialImages, { Social } from './social';
-import MstImages, { Mst } from '@renderer/shared/ui/Icon/data/mst';
-
-const AllIcons = {
-  ...CurrencyImages,
-  ...NavigationImages,
-  ...ChevronImages,
-  ...FunctionalImages,
-  ...MiscImages,
-  ...FlagImages,
-  ...ExplorerImages,
-  ...AestheticImages,
-  ...ArrowImages,
-  ...WalletTypeImages,
-  ...StakingImages,
-  ...SocialImages,
-  ...MstImages,
-};
+import { Arrows, ArrowImages } from './arrows';
+import { DerivationImages, Derivations } from './derivations';
+import { Explorers, ExplorerImages } from './explorers';
+import { Languages, LanguageImages } from './languages';
+import { Product, ProductImages } from './product';
+import { Service, ServiceImages } from './service';
+import { Social, SocialImages } from './social';
+import { Staking, StakingImages } from './staking';
+import { Status, StatusImages } from './status';
+import { WalletTypes, WalletTypeImages } from './walletTypes';
 
 export type IconNames =
-  | Currency
-  | Navigation
-  | Chevron
-  | Functional
-  | Misc
-  | Flag
-  | Explorer
-  | Aesthetic
-  | Arrow
-  | Staking
+  | Arrows
+  | Derivations
+  | Explorers
+  | Languages
+  | Product
+  | Service
   | Social
-  | WalletImages
-  | Mst;
+  | Staking
+  | Status
+  | WalletTypes;
 
-export default AllIcons;
+export const IconCollection = {
+  ...ArrowImages,
+  ...DerivationImages,
+  ...ExplorerImages,
+  ...LanguageImages,
+  ...ProductImages,
+  ...ServiceImages,
+  ...SocialImages,
+  ...StakingImages,
+  ...StatusImages,
+  ...WalletTypeImages,
+};

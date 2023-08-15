@@ -35,7 +35,7 @@ const Navigation = () => {
   );
 
   const NavItems: NavItemProps[] = [
-    { icon: 'asset', title: 'navigation.balancesLabel', link: Paths.ASSETS },
+    { icon: 'assets', title: 'navigation.balancesLabel', link: Paths.ASSETS },
     { icon: 'staking', title: 'navigation.stakingLabel', link: Paths.STAKING },
     {
       icon: 'operations',
@@ -43,7 +43,7 @@ const Navigation = () => {
       link: Paths.OPERATIONS,
       badge: txs.length,
     },
-    { icon: 'addressBook', title: 'navigation.addressBookLabel', link: Paths.ADDRESS_BOOK },
+    { icon: 'address-book', title: 'navigation.addressBookLabel', link: Paths.ADDRESS_BOOK },
 
     // { icon: <Icon name="history" />, title: 'navigation.historyLabel', link: Paths.HISTORY },
     // { icon: <Icon name="eth" />, title: 'navigation.cameraDEVLabel', link: Paths.CAMERA_DEV },
@@ -78,8 +78,8 @@ const Navigation = () => {
         </nav>
 
         <div className="flex flex-col gap-2">
-          <NavItem icon={'notification'} title={'navigation.notificationsLabel'} link={Paths.NOTIFICATIONS} />
-          <NavItem icon={'settings'} title={'navigation.settingsLabel'} link={Paths.SETTINGS} />
+          <NavItem icon="notifications" title="navigation.notificationsLabel" link={Paths.NOTIFICATIONS} />
+          <NavItem icon="settings" title="navigation.settingsLabel" link={Paths.SETTINGS} />
         </div>
       </aside>
     </>

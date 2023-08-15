@@ -4,7 +4,7 @@ import { cnTw } from '@renderer/shared/lib/utils';
 
 const Links = [
   {
-    icon: 'twitter',
+    icon: 'twitter-old',
     title: 'settings.overview.twitterLabel',
     subtitle: 'settings.overview.twitterDescription',
     href: 'https://twitter.com/NovaSpektr',
@@ -54,10 +54,10 @@ export const SocialLinks = () => {
               target="_blank"
               rel="noopener noreferrer"
             >
-              <Icon className="row-span-2" name={link.icon} size={36} />
+              <Icon className="row-span-2" name={link.icon} size={32} />
               <BodyText>{t(link.title)}</BodyText>
               <HelpText className="text-text-tertiary">{t(link.subtitle)}</HelpText>
-              <Icon className="row-span-2" name="link" size={16} />
+              <Icon className="row-span-2" name="new-tab" size={20} />
             </a>
           </Plate>
         ))}

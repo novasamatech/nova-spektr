@@ -287,7 +287,7 @@ const ManageStep = ({ seedInfo, onBack, onComplete }: Props) => {
         <div className="flex items-center justify-between px-5 mt-[52px] mb-6">
           <SmallTitleText>{t('onboarding.vault.accountsTitle')}</SmallTitleText>
 
-          <Button variant="text" suffixElement={<Icon name="magic" size={16} />} onClick={fillAccountNames}>
+          <Button variant="text" suffixElement={<Icon name="magic-wand" size={20} />} onClick={fillAccountNames}>
             {t('onboarding.vault.fillNamesButton')}
           </Button>
         </div>
@@ -347,9 +347,8 @@ const ManageStep = ({ seedInfo, onBack, onComplete }: Props) => {
                               onChange={(name) => updateAccountName(name, index, chainId, derivedKeyIndex)}
                             />
                             <IconButton
-                              name={
-                                inactiveAccounts[getAccountId(index, chainId, derivedKeyIndex)] ? 'eye' : 'eyeSlashed'
-                              }
+                              size={20}
+                              name={inactiveAccounts[getAccountId(index, chainId, derivedKeyIndex)] ? 'show' : 'hide'}
                               onClick={() => toggleAccount(index, chainId, derivedKeyIndex)}
                             />
                           </div>

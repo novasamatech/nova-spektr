@@ -1,23 +1,43 @@
-import RedeemImg, { ReactComponent as RedeemSvg } from '@images/staking/redeem.svg';
-import ChangeValidatorsImg, { ReactComponent as ChangeValidatorsSvg } from '@images/staking/change-validators.svg';
-import SetValidatorsImg, { ReactComponent as SetValidatorsSvg } from '@images/staking/set-validators.svg';
-import ReturnToStakeImg, { ReactComponent as ReturnToStakeSvg } from '@images/staking/return-to-stake.svg';
-import UnstakeImg, { ReactComponent as UnstakeSvg } from '@images/staking/unstake.svg';
-import DestinationImg, { ReactComponent as DestinationSvg } from '@images/staking/rewards-destination.svg';
-import StakeMoreImg, { ReactComponent as StakeMoreSvg } from '@images/staking/stake-more.svg';
-import StartStakingImg, { ReactComponent as StartStakingSvg } from '@images/staking/start-staking.svg';
+/* eslint-disable i18next/no-literal-string */
+import StakingSprite from '@renderer/assets/images/icons/staking.svg';
 
-const StakingImages = {
-  redeem: { svg: RedeemSvg, img: RedeemImg },
-  changeValidators: { svg: ChangeValidatorsSvg, img: ChangeValidatorsImg },
-  setValidators: { svg: SetValidatorsSvg, img: SetValidatorsImg },
-  returnToStake: { svg: ReturnToStakeSvg, img: ReturnToStakeImg },
-  unstake: { svg: UnstakeSvg, img: UnstakeImg },
-  destination: { svg: DestinationSvg, img: DestinationImg },
-  stakeMore: { svg: StakeMoreSvg, img: StakeMoreImg },
-  startStaking: { svg: StartStakingSvg, img: StartStakingImg },
+export const StakingImages = {
+  'change-reward-dest': {
+    svg: true,
+    size: { 20: `${StakingSprite}#change-reward-dest-20` },
+  },
+  'change-validators': {
+    svg: true,
+    size: { 20: `${StakingSprite}#change-validators-20` },
+  },
+  'return-to-stake': {
+    svg: true,
+    size: { 20: `${StakingSprite}#return-to-stake-20` },
+  },
+  'set-validators': {
+    svg: true,
+    size: { 20: `${StakingSprite}#set-validators-20` },
+  },
+  'stake-more': {
+    svg: true,
+    size: { 20: `${StakingSprite}#stake-more-20` },
+  },
+  'start-staking': {
+    svg: true,
+    size: { 20: `${StakingSprite}#start-staking-20` },
+  },
+  unstake: {
+    svg: true,
+    size: { 20: `${StakingSprite}#unstake-20` },
+  },
+  'view-validators': {
+    svg: true,
+    size: { 20: `${StakingSprite}#view-validators-20` },
+  },
+  'withdraw-unstake': {
+    svg: true,
+    size: { 20: `${StakingSprite}#withdraw-unstake-20` },
+  },
 } as const;
 
 export type Staking = keyof typeof StakingImages;
-
-export default StakingImages;

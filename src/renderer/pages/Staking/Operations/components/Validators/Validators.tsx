@@ -22,6 +22,7 @@ import { Address, ChainId } from '@renderer/domain/shared-kernel';
 import { ValidatorMap, useEra, useValidators } from '@renderer/entities/staking';
 import { includes, getComposedIdentity, toShortAddress } from '@renderer/shared/lib/utils';
 import { ExplorerLink } from '@renderer/components/common';
+import EmptyList from '@renderer/assets/images/misc/empty-list.webp';
 
 type Props = {
   api: ApiPromise;
@@ -124,13 +125,13 @@ export const Validators = ({ api, chainId, asset, explorers, isLightClient, onGo
 
       {isValidatorsLoading && (
         <div className="h-[288px] flex items-center justify-center">
-          <Loader color="primary" size={25} />
+          <Loader color="primary" size={20} />
         </div>
       )}
 
       {!isValidatorsLoading && validatorList.length === 0 && (
         <div className="flex flex-col items-center justify-center gap-y-4">
-          <Icon as="img" name="emptyList" alt={t('staking.validators.noValidatorsLabel')} size={178} />
+          <img src={EmptyList} alt={t('staking.validators.noValidatorsLabel')} width={178} height={178} />
           <BodyText className="w-52 text-center text-text-tertiary">
             {t('staking.validators.noValidatorsLabel')}
           </BodyText>
@@ -172,7 +173,7 @@ export const Validators = ({ api, chainId, asset, explorers, isLightClient, onGo
                   <AssetBalance value={v.totalStake || '0'} asset={asset} />
                 </BodyText>
                 <InfoPopover data={getExplorers(v.address, explorers)} position="top-full right-0">
-                  <Icon name="info" size={14} className="ml-2 mr-auto" />
+                  <Icon name="info" size={16} className="ml-2 mr-auto" />
                 </InfoPopover>
               </li>
             ))}

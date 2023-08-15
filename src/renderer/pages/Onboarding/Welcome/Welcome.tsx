@@ -2,10 +2,11 @@ import { useNavigate } from 'react-router-dom';
 import { useLayoutEffect, useRef, useState } from 'react';
 import { throttle } from 'lodash';
 
-import { Icon, TitleText } from '@renderer/shared/ui';
-import { useI18n, Paths } from '@renderer/app/providers';
+import { TitleText } from '@renderer/shared/ui';
+import { Paths, useI18n } from '@renderer/app/providers';
 import { useToggle } from '@renderer/shared/lib/hooks';
 import { cnTw, DEFAULT_TRANSITION } from '@renderer/shared/lib/utils';
+import SpektrLogo from '@renderer/assets/images/misc/logo-title.svg';
 import WatchOnly from '../WatchOnly/WatchOnly';
 import Vault from '../Vault/Vault';
 import PrivacyPolicy from './PrivacyPolicy';
@@ -59,21 +60,21 @@ export const Welcome = () => {
           <WelcomeCard
             title={t('onboarding.welcome.polkadotVaultTitle')}
             description={t('onboarding.welcome.polkadotVaultDescription')}
-            iconName="vault"
+            iconName="polkadot-vault"
             onClick={toggleVaultModal}
           />
 
           <WelcomeCard
             title={t('onboarding.welcome.watchOnlyTitle')}
             description={t('onboarding.welcome.watchOnlyDescription')}
-            iconName="watchOnlyOnboarding"
+            iconName="watchonly"
             onClick={toggleWatchOnlyModal}
           />
 
           <WelcomeCard
             title={t('onboarding.welcome.novaWalletTitle')}
             description={t('onboarding.welcome.novaWalletDescription')}
-            iconName="novaWallet"
+            iconName="novawallet"
             disabled
           />
 
@@ -87,7 +88,7 @@ export const Welcome = () => {
           <WelcomeCard
             title={t('onboarding.welcome.walletConnectTitle')}
             description={t('onboarding.welcome.walletConnectDescription')}
-            iconName="walletConnect"
+            iconName="walletconnect"
             disabled
           />
         </div>
@@ -101,7 +102,7 @@ export const Welcome = () => {
         className="relative flex-1 flex flex-col h-full bg-input-background-disabled justify-center items-end logo-background"
       >
         <div className={cnTw('relative w-fit', fixed ? `pr-[225px]` : 'self-center')}>
-          <Icon name="logoTitle" className="-scale-y-100" size={LOGO_WIDTH} />
+          <img src={SpektrLogo} alt="" className="-scale-y-100" width={LOGO_WIDTH} height={LOGO_WIDTH} />
         </div>
       </div>
 

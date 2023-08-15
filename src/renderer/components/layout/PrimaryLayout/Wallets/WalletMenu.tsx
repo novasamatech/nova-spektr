@@ -40,9 +40,9 @@ const WalletMenu = ({ children, chains, wallets }: PropsWithChildren<Props>) => 
 
   const groupedWallets = useGroupedWallets(wallets, chains, query);
 
-  const dropdownOptions: ButtonDropdownOption[] = [
-    { id: 'vault', title: t('wallets.addPolkadotVault'), onClick: toggleVaultModal, iconName: 'vault' },
-    { id: 'watch-only', title: t('wallets.addWatchOnly'), onClick: toggleWatchOnlyModal, iconName: 'watchOnly' },
+  const DropdownOptions: ButtonDropdownOption[] = [
+    { id: 'vault', title: t('wallets.addPolkadotVault'), onClick: toggleVaultModal, iconName: 'polkadot-vault' },
+    { id: 'watch-only', title: t('wallets.addWatchOnly'), onClick: toggleWatchOnlyModal, iconName: 'watchonly' },
     { id: 'multi', title: t('wallets.addMultisig'), onClick: toggleMultisigModalOpen, iconName: 'multisig' },
   ];
 
@@ -103,7 +103,7 @@ const WalletMenu = ({ children, chains, wallets }: PropsWithChildren<Props>) => 
                 <header className="px-5 py-3 flex items-center justify-between border-b border-divider">
                   <SmallTitleText>{t('wallets.title')}</SmallTitleText>
                   <DropdownButton
-                    options={dropdownOptions}
+                    options={DropdownOptions}
                     className="w-[134px] py-2 h-8.5"
                     title={t('wallets.addButtonTitle')}
                   />

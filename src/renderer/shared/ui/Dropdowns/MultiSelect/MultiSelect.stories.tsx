@@ -35,7 +35,7 @@ const customOptions = data.map((d, index) => ({
   value: d,
   element: (
     <div className="flex items-center gap-x-2.5">
-      <Identicon address={d.address} background={false} size={24} canCopy={false} />
+      <Identicon address={d.address} background={false} size={20} canCopy={false} />
       <p>{d.value}</p>
     </div>
   ),

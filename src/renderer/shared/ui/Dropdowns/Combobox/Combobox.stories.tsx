@@ -35,7 +35,7 @@ const customOptions = data.map((d, index) => ({
   value: d.value,
   element: (
     <div className="flex items-center gap-x-2.5">
-      <Identicon address={d.address} background={false} size={24} canCopy={false} />
+      <Identicon address={d.address} background={false} size={20} canCopy={false} />
       <p>{d.value}</p>
     </div>
   ),
@@ -62,6 +62,6 @@ Custom.args = {
   label: 'Payout account',
   value: customOptions[2],
   options: customOptions,
-  suffixElement: <Icon name="warnCutout" className="text-alert right-2 top-[9px] absolute" size={16} />,
+  suffixElement: <Icon name="status-warning" className="text-alert right-2 top-[9px] absolute" size={16} />,
   onChange: () => {},
 };

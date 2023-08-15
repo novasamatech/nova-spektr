@@ -7,9 +7,8 @@ import { SmallTitleText, DropdownButton, Button, BaseModal, Icon } from '@render
 import { Stake } from '@renderer/entities/staking';
 import { toAccountId } from '@renderer/shared/lib/utils';
 import { useToggle } from '@renderer/shared/lib/hooks';
-import { ButtonDropdownOption } from '@renderer/shared/ui/types';
+import { ButtonDropdownOption, IconNames } from '@renderer/shared/ui/types';
 import { Address } from '@renderer/domain/shared-kernel';
-import { IconNames } from '@renderer/shared/ui/Icon/data';
 
 const enum AccountTypes {
   STASH = 'stash',
@@ -37,22 +36,22 @@ const ControllerActions: StakeActions[] = [
 ];
 
 const OperationOptions: Record<StakeActions, { icon: IconNames; title: string; path: PathValue }> = {
-  [StakeActions.START_STAKING]: { icon: 'startStaking', title: 'staking.actions.startStakingLabel', path: Paths.BOND },
-  [StakeActions.STAKE_MORE]: { icon: 'stakeMore', title: 'staking.actions.stakeMoreLabel', path: Paths.STAKE_MORE },
+  [StakeActions.START_STAKING]: { icon: 'start-staking', title: 'staking.actions.startStakingLabel', path: Paths.BOND },
+  [StakeActions.STAKE_MORE]: { icon: 'stake-more', title: 'staking.actions.stakeMoreLabel', path: Paths.STAKE_MORE },
   [StakeActions.UNSTAKE]: { icon: 'unstake', title: 'staking.actions.unstakeLabel', path: Paths.UNSTAKE },
   [StakeActions.RETURN_TO_STAKE]: {
-    icon: 'returnToStake',
+    icon: 'return-to-stake',
     title: 'staking.actions.returnToStakeLabel',
     path: Paths.RESTAKE,
   },
-  [StakeActions.REDEEM]: { icon: 'redeem', title: 'staking.actions.redeemLabel', path: Paths.REDEEM },
+  [StakeActions.REDEEM]: { icon: 'withdraw-unstake', title: 'staking.actions.redeemLabel', path: Paths.REDEEM },
   [StakeActions.CHANGE_VALIDATORS]: {
-    icon: 'changeValidators',
+    icon: 'change-validators',
     title: 'staking.actions.changeValidatorsLabel',
     path: Paths.VALIDATORS,
   },
   [StakeActions.DESTINATION]: {
-    icon: 'destination',
+    icon: 'change-reward-dest',
     title: 'staking.actions.destinationLabel',
     path: Paths.DESTINATION,
   },
@@ -179,8 +178,7 @@ export const Actions = ({ canInteract, stakes, isStakingLoading, onNavigate }: P
         acc.push({
           id: key,
           iconName: option.icon,
-          //eslint-disable-next-line i18next/no-literal-string
-          title: t(`staking.actions.${option.icon}Label`),
+          title: t(option.title),
           onClick: () => onClickAction(typedKey, option.path),
         });
       }
@@ -222,7 +220,7 @@ export const Actions = ({ canInteract, stakes, isStakingLoading, onNavigate }: P
           <div className="flex items-center gap-2.5">
             {actionType && (
               <>
-                <Icon name={OperationOptions[actionType].icon} />
+                <Icon name={OperationOptions[actionType].icon} size={20} />
                 <p>{t(OperationOptions[actionType].title)}</p>
               </>
             )}

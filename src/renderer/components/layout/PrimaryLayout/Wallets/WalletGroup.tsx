@@ -30,14 +30,14 @@ const WalletGroup = ({ type, wallets, onWalletClick }: Props) => {
           {({ open }) => (
             <>
               <div className="flex items-center justify-between gap-x-1.5">
-                <Icon size={14} name={GroupIcons[type]} className="text-chip-icon" />
+                <Icon size={16} name={GroupIcons[type]} className="text-chip-icon" />
                 <CaptionText className="text-chip-text uppercase">{t(GroupLabels[type])}</CaptionText>
                 <CaptionText className="bg-chip-icon text-white px-1.5 py-0.5 h-4 rounded-full" align="center">
                   {wallets.length}
                 </CaptionText>
               </div>
 
-              <Icon name="down" size={16} className={cnTw(open && 'rotate-180')} />
+              <Icon name="chevron-down" size={16} className={cnTw(open && 'rotate-180')} />
             </>
           )}
         </Disclosure.Button>

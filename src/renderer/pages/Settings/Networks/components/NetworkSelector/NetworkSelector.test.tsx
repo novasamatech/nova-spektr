@@ -115,12 +115,12 @@ describe('screen/Settings/Networks/NetworkSelector', () => {
     const selectorBtn = screen.getByRole('button');
     await act(async () => selectorBtn.click());
 
-    const edit = screen.getByRole('button', { name: 'edit.svg' });
+    const edit = screen.getByTestId('edit-button');
     await act(async () => edit.click());
-    expect(changeSpy).toBeCalled();
+    expect(changeSpy).toHaveBeenCalled();
 
-    const remove = screen.getByRole('button', { name: 'delete.svg' });
+    const remove = screen.getByTestId('delete-button');
     await act(async () => remove.click());
-    expect(removeSpy).toBeCalled();
+    expect(removeSpy).toHaveBeenCalled();
   });
 });

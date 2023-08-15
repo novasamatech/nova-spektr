@@ -3,17 +3,18 @@ import { useNavigate } from 'react-router-dom';
 import { Trans } from 'react-i18next';
 import uniqBy from 'lodash/uniqBy';
 
-import { useI18n, useNetworkContext, useConfirmContext, Paths } from '@renderer/app/providers';
-import { BaseModal, SearchInput, BodyText, InfoLink, Icon } from '@renderer/shared/ui';
+import { Paths, useConfirmContext, useI18n, useNetworkContext } from '@renderer/app/providers';
+import { BaseModal, BodyText, InfoLink, SearchInput } from '@renderer/shared/ui';
 import { useToggle } from '@renderer/shared/lib/hooks';
 import { ExtendedChain, useChains } from '@renderer/entities/network';
-import { includes, DEFAULT_TRANSITION } from '@renderer/shared/lib/utils';
-import { ConnectionType, ConnectionStatus } from '@renderer/domain/connection';
+import { DEFAULT_TRANSITION, includes } from '@renderer/shared/lib/utils';
+import { ConnectionStatus, ConnectionType } from '@renderer/domain/connection';
 import { RpcNode } from '@renderer/entities/chain';
 import { ChainId } from '@renderer/domain/shared-kernel';
-import { NetworkList, NetworkItem, CustomRpcModal } from './components';
+import { CustomRpcModal, NetworkItem, NetworkList } from './components';
 import { useBalance } from '@renderer/entities/asset';
 import { useAccount } from '@renderer/entities/account';
+import EmptyList from '@renderer/assets/images/misc/empty-list.webp';
 
 const MAX_LIGHT_CLIENTS = 3;
 
@@ -272,7 +273,7 @@ export const Networks = () => {
 
           {!inactive.length && !active.length && (
             <div className="flex flex-col items-center mx-auto pt-12 pb-15">
-              <Icon as="img" name="emptyList" alt={t('settings.networks.emptyStateLabel')} size={178} />
+              <img src={EmptyList} alt={t('settings.networks.emptyStateLabel')} width={178} height={178} />
               <BodyText className="w-52 text-center text-text-tertiary">
                 {t('settings.networks.emptyStateLabel')}
               </BodyText>

@@ -20,9 +20,8 @@ describe('ui/Inputs/PasswordInput', () => {
     render(<PasswordInput />);
 
     let input = screen.queryByRole('textbox');
-    let eyeIcon = screen.getByText('eye-slashed.svg');
     expect(input).not.toBeInTheDocument();
-    expect(eyeIcon).toBeInTheDocument();
+    expect(screen.getByTestId('hide-svg')).toBeInTheDocument();
 
     const button = screen.getByRole('button');
     await act(() => button.click());
@@ -30,8 +29,7 @@ describe('ui/Inputs/PasswordInput', () => {
     input = screen.getByRole('textbox');
     expect(input).toBeInTheDocument();
 
-    expect(eyeIcon).not.toBeInTheDocument();
-    eyeIcon = screen.getByText('eye.svg');
-    expect(eyeIcon).toBeInTheDocument();
+    expect(screen.queryByTestId('hide-svg')).not.toBeInTheDocument();
+    expect(screen.getByTestId('show-svg')).toBeInTheDocument();
   });
 });

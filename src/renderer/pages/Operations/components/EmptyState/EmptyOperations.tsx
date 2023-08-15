@@ -1,6 +1,7 @@
-import { Icon, BodyText } from '@renderer/shared/ui';
+import { BodyText } from '@renderer/shared/ui';
 import { useI18n } from '@renderer/app/providers';
 import { Account } from '@renderer/entities/account';
+import EmptyList from '@renderer/assets/images/misc/empty-list.webp';
 
 type Props = {
   multisigAccount: Account | null;
@@ -18,7 +19,7 @@ const EmptyOperations = ({ multisigAccount, isEmptyFromFilters }: Props) => {
 
   return (
     <div className="flex flex-col items-center justify-center gap-y-8 flex-1 w-full">
-      <Icon as="img" name="emptyList" alt={t('operations.noOperationsDescription')} size={178} />
+      <img src={EmptyList} alt={t('operations.noOperationsDescription')} width={178} height={178} />
       <BodyText align="center" className="text-text-tertiary max-w-[340px]">
         {t(emptyText)}
       </BodyText>
