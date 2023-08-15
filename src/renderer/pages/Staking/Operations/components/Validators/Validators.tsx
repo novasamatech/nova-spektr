@@ -22,7 +22,7 @@ import { Address, ChainId } from '@renderer/domain/shared-kernel';
 import { ValidatorMap, useEra, useValidators } from '@renderer/entities/staking';
 import { includes, getComposedIdentity, toShortAddress } from '@renderer/shared/lib/utils';
 import { ExplorerLink } from '@renderer/components/common';
-import EmptyList from '@renderer/assets/images/misc/empty-list.webp';
+import EmptyList from '@images/misc/empty-list.webp';
 
 type Props = {
   api: ApiPromise;

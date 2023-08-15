@@ -41,7 +41,7 @@ const WalletMenu = ({ children, chains, wallets }: PropsWithChildren<Props>) => 
   const groupedWallets = useGroupedWallets(wallets, chains, query);
 
   const DropdownOptions: ButtonDropdownOption[] = [
-    { id: 'vault', title: t('wallets.addPolkadotVault'), onClick: toggleVaultModal, iconName: 'polkadot-vault' },
+    { id: 'vault', title: t('wallets.addPolkadotVault'), onClick: toggleVaultModal, iconName: 'polkadotvault' },
     { id: 'watch-only', title: t('wallets.addWatchOnly'), onClick: toggleWatchOnlyModal, iconName: 'watchonly' },
     { id: 'multi', title: t('wallets.addMultisig'), onClick: toggleMultisigModalOpen, iconName: 'multisig' },
   ];

@@ -1,4 +1,3 @@
-/* eslint-disable i18next/no-literal-string */
 import WalletTypesSprite from '@images/icons/walletTypes.svg';
 
 export const WalletTypeImages = {
@@ -28,12 +27,12 @@ export const WalletTypeImages = {
       20: `${WalletTypesSprite}#multisig-20`,
     },
   },
-  'polkadot-vault': {
+  polkadotvault: {
     svg: true,
     size: {
-      16: `${WalletTypesSprite}#polkadot-vault-16`,
-      20: `${WalletTypesSprite}#polkadot-vault-20`,
-      32: `${WalletTypesSprite}#polkadot-vault-32`,
+      16: `${WalletTypesSprite}#polkadotvault-16`,
+      20: `${WalletTypesSprite}#polkadotvault-20`,
+      32: `${WalletTypesSprite}#polkadotvault-32`,
     },
   },
   watchonly: {

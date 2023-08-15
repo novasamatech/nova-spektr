@@ -208,7 +208,7 @@ export const Confirmation = ({
           </Button>
           <Button
             disabled={feeLoading || multisigTxExist}
-            prefixElement={<Icon name="polkadot-vault" size={16} />}
+            prefixElement={<Icon name="polkadotvault" size={16} />}
             onClick={onResult}
           >
             {t('staking.confirmation.signButton')}

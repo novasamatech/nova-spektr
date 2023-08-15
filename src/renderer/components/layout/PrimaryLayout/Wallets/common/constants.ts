@@ -12,5 +12,5 @@ export const GroupIcons: Record<WalletType, IconNames> = {
   [WalletType.MULTISIG]: 'multisig',
   [WalletType.MULTISHARD_PARITY_SIGNER]: 'multishard',
   [WalletType.WATCH_ONLY]: 'watchonly',
-  [WalletType.SINGLE_PARITY_SIGNER]: 'polkadot-vault',
+  [WalletType.SINGLE_PARITY_SIGNER]: 'polkadotvault',
 };

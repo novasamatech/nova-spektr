@@ -2,7 +2,7 @@ import { useNavigate } from 'react-router-dom';
 
 import { BodyText, Button, Icon } from '@renderer/shared/ui';
 import { Paths, useI18n } from '@renderer/app/providers';
-import EmptyList from '@renderer/assets/images/misc/empty-list.webp';
+import EmptyList from '@images/misc/empty-list.webp';
 
 type Props = {
   description?: string;

@@ -6,7 +6,7 @@ import { TitleText } from '@renderer/shared/ui';
 import { Paths, useI18n } from '@renderer/app/providers';
 import { useToggle } from '@renderer/shared/lib/hooks';
 import { cnTw, DEFAULT_TRANSITION } from '@renderer/shared/lib/utils';
-import SpektrLogo from '@renderer/assets/images/misc/logo-title.svg';
+import SpektrLogo from '@images/misc/logo-title.svg';
 import WatchOnly from '../WatchOnly/WatchOnly';
 import Vault from '../Vault/Vault';
 import PrivacyPolicy from './PrivacyPolicy';
@@ -60,7 +60,7 @@ export const Welcome = () => {
           <WelcomeCard
             title={t('onboarding.welcome.polkadotVaultTitle')}
             description={t('onboarding.welcome.polkadotVaultDescription')}
-            iconName="polkadot-vault"
+            iconName="polkadotvault"
             onClick={toggleVaultModal}
           />
 

@@ -1,6 +1,6 @@
 import { BodyText, Button, TitleText } from '@renderer/shared/ui';
 import { useI18n } from '@renderer/app/providers';
-import EmptyList from '@renderer/assets/images/misc/empty-list.webp';
+import EmptyList from '@images/misc/empty-list.webp';
 
 type Props = {
   chainName: string;

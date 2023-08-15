@@ -1,5 +1,4 @@
-/* eslint-disable i18next/no-literal-string */
-import StatusSprite from '@renderer/assets/images/icons/status.svg';
+import StatusSprite from '@images/icons/status.svg';
 
 export const StatusImages = {
   'status-error': {

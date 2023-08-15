@@ -1,5 +1,4 @@
-/* eslint-disable i18next/no-literal-string */
-import ServiceSprite from '@renderer/assets/images/icons/service.svg';
+import ServiceSprite from '@images/icons/service.svg';
 
 export const ServiceImages = {
   'add-address': {

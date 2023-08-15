@@ -14,7 +14,7 @@ import { ChainId } from '@renderer/domain/shared-kernel';
 import { CustomRpcModal, NetworkItem, NetworkList } from './components';
 import { useBalance } from '@renderer/entities/asset';
 import { useAccount } from '@renderer/entities/account';
-import EmptyList from '@renderer/assets/images/misc/empty-list.webp';
+import EmptyList from '@images/misc/empty-list.webp';
 
 const MAX_LIGHT_CLIENTS = 3;
 

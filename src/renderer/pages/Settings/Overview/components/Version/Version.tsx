@@ -1,6 +1,6 @@
 import { HelpText } from '@renderer/shared/ui';
 import { useI18n } from '@renderer/app/providers';
-import SpektrLogo from '@renderer/assets/images/misc/logo.svg';
+import SpektrLogo from '@images/misc/logo.svg';
 
 export const Version = () => {
   const { t } = useI18n();

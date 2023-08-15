@@ -9,7 +9,7 @@ import { Icon, Loader, Button, CaptionText, FootnoteText, Select } from '@render
 import { DropdownOption, DropdownResult } from '@renderer/shared/ui/Dropdowns/common/types';
 import { useI18n } from '@renderer/app/providers';
 import { cnTw } from '@renderer/shared/lib/utils';
-import QrFrame from '@renderer/assets/images/misc/qr-frame.svg';
+import QrFrame from '@images/misc/qr-frame.svg';
 
 const enum CameraState {
   ACTIVE,

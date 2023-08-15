@@ -1,5 +1,4 @@
-/* eslint-disable i18next/no-literal-string */
-import LanguagesSprite from '@renderer/assets/images/icons/language.svg';
+import LanguagesSprite from '@images/icons/language.svg';
 
 export const LanguageImages = {
   ru: {

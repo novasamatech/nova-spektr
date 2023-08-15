@@ -208,7 +208,7 @@ const ApproveTx = ({ tx, account, connection }: Props) => {
             <Confirmation tx={tx} account={account} connection={connection} feeTx={feeTx} />
             <Button
               className="mt-7 ml-auto"
-              prefixElement={<Icon name="polkadot-vault" size={16} />}
+              prefixElement={<Icon name="polkadotvault" size={16} />}
               onClick={selectAccount}
             >
               {t('operation.signButton')}
