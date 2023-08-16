@@ -1,7 +1,7 @@
 import { cnTw } from '@renderer/shared/lib/utils';
-import { TypographyProps } from '@renderer/shared/ui/Typography/common/types';
-import { HintVariant, HintStyles } from '@renderer/shared/ui/InputHint/contants';
 import { FootnoteText } from '../Typography';
+import { TypographyProps } from '../Typography/common/types';
+import { HintVariant, HintStyles } from './common/contants';
 
 type Props = {
   active: boolean;
