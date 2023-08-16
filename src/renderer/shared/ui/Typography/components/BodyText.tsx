@@ -1,7 +1,8 @@
 import { cnTw } from '@renderer/shared/lib/utils';
-import { TypographyProps } from '../common/types';
+import { FontWeight, TypographyProps } from '../common/types';
 import TextBase from '../common/TextBase';
 
-export const BodyText = ({ className, ...props }: TypographyProps) => (
-  <TextBase className={cnTw('text-body', className)} {...props} />
+type Props = TypographyProps & { fontWeight?: FontWeight };
+export const BodyText = ({ className, fontWeight, ...props }: Props) => (
+  <TextBase className={cnTw('text-body', fontWeight && `font-${fontWeight}`, className)} {...props} />
 );

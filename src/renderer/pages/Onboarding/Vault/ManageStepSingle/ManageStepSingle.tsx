@@ -7,7 +7,7 @@ import { useI18n } from '@renderer/app/providers';
 import { Chain } from '@renderer/entities/chain';
 import { ErrorType, SigningType } from '@renderer/domain/shared-kernel';
 import { useChains } from '@renderer/entities/network';
-import { Button, Input, InputHint, HeaderTitleText, SmallTitleText } from '@renderer/shared/ui';
+import { Button, Input, InputHint, MediumTitleText, SmallTitleText } from '@renderer/shared/ui';
 import { SeedInfo } from '@renderer/components/common/QrCode/common/types';
 import { useAccount, createAccount, AccountsList } from '@renderer/entities/account';
 
@@ -67,7 +67,7 @@ const ManageStepSingle = ({ seedInfo, onBack, onComplete }: Props) => {
   return (
     <>
       <div className="w-[472px] flex flex-col px-5 py-4 bg-white rounded-l-lg">
-        <HeaderTitleText className="mb-10">{t('onboarding.vault.title')}</HeaderTitleText>
+        <MediumTitleText className="mb-10">{t('onboarding.vault.title')}</MediumTitleText>
         <SmallTitleText className="mb-6">{t('onboarding.vault.manageTitle')}</SmallTitleText>
 
         <form className="flex flex-col gap-4 h-full" onSubmit={handleSubmit(submitHandler)}>

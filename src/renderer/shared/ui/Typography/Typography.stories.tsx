@@ -4,11 +4,10 @@ import TextBase from './common/TextBase';
 import { BodyText } from './components/BodyText';
 import { CaptionText } from './components/CaptionText';
 import { FootnoteText } from './components/FootnoteText';
-import { HeadlineText } from './components/HeadlineText';
 import { HelpText } from './components/HelpText';
-import { LargeTitleText } from './components/LargeTitleText';
 import { SmallTitleText } from './components/SmallTitleText';
 import { TitleText } from './components/TitleText';
+import { MediumTitleText } from '@renderer/shared/ui';
 
 export default {
   title: 'Redesign/Typography',
@@ -16,50 +15,44 @@ export default {
   parameters: { actions: { argTypesRegex: '^on.*' } },
 } as ComponentMeta<typeof TextBase>;
 
-const LargeTitleTemplate: ComponentStory<typeof TextBase> = (args) => <LargeTitleText {...args} />;
-export const LargeTitle = LargeTitleTemplate.bind({});
-LargeTitle.args = {
+const TitleTemplate: ComponentStory<typeof TextBase> = (args) => <TitleText {...args} />;
+export const Headline_Title = TitleTemplate.bind({});
+Headline_Title.args = {
   children: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et ',
 };
 
-const TitleTemplate: ComponentStory<typeof TextBase> = (args) => <TitleText {...args} />;
-export const Title = TitleTemplate.bind({});
-Title.args = {
+const MediumTitleTemplate: ComponentStory<typeof TextBase> = (args) => <MediumTitleText {...args} />;
+export const Headline_MediumTitle = MediumTitleTemplate.bind({});
+Headline_MediumTitle.args = {
   children: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et ',
 };
 
 const SmallTitleTemplate: ComponentStory<typeof TextBase> = (args) => <SmallTitleText {...args} />;
-export const SmallTitle = SmallTitleTemplate.bind({});
-SmallTitle.args = {
+export const Headline_SmallTitle = SmallTitleTemplate.bind({});
+Headline_SmallTitle.args = {
   children: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et ',
 };
 
 const CaptionTemplate: ComponentStory<typeof TextBase> = (args) => <CaptionText {...args} />;
-export const Caption = CaptionTemplate.bind({});
-Caption.args = {
-  children: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et ',
-};
-
-const HeadlineTemplate: ComponentStory<typeof TextBase> = (args) => <HeadlineText {...args} />;
-export const Headline = HeadlineTemplate.bind({});
-Headline.args = {
+export const Body_Caption = CaptionTemplate.bind({});
+Body_Caption.args = {
   children: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et ',
 };
 
 const BodyTemplate: ComponentStory<typeof TextBase> = (args) => <BodyText {...args} />;
-export const Body = BodyTemplate.bind({});
-Body.args = {
+export const Body_Body = BodyTemplate.bind({});
+Body_Body.args = {
   children: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et ',
 };
 
 const FootnoteTemplate: ComponentStory<typeof TextBase> = (args) => <FootnoteText {...args} />;
-export const Footnote = FootnoteTemplate.bind({});
-Footnote.args = {
+export const Body_Footnote = FootnoteTemplate.bind({});
+Body_Footnote.args = {
   children: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et ',
 };
 
 const HelpTextTemplate: ComponentStory<typeof TextBase> = (args) => <HelpText {...args} />;
-export const Help = HelpTextTemplate.bind({});
-Help.args = {
+export const Body_Help = HelpTextTemplate.bind({});
+Body_Help.args = {
   children: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et ',
 };

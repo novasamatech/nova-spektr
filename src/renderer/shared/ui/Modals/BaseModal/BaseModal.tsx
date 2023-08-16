@@ -4,7 +4,7 @@ import { Dialog, Transition } from '@headlessui/react';
 import { cnTw } from '@renderer/shared/lib/utils';
 import { ModalBackdrop, ModalTransition } from '@renderer/shared/ui/Modals/common';
 import { useI18n } from '@renderer/app/providers';
-import { HeaderTitleText, IconButton } from '@renderer/shared/ui';
+import { MediumTitleText, IconButton } from '@renderer/shared/ui';
 
 // HINT: There are no modals with description right now
 // HeadlessUI provides description and title with some a11y features
@@ -50,7 +50,7 @@ const BaseModal = ({
                   as="header"
                   className={cnTw('text-text-primary font-bold', headerClass, closeButton && 'pr-12')}
                 >
-                  {typeof title === 'string' ? <HeaderTitleText className="truncate">{title}</HeaderTitleText> : title}
+                  {typeof title === 'string' ? <MediumTitleText className="truncate">{title}</MediumTitleText> : title}
                 </Dialog.Title>
               )}
 

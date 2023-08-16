@@ -38,7 +38,9 @@ const InputFile = forwardRef<HTMLInputElement, Props>(
           {fileName ? (
             <FootnoteText>{fileName}</FootnoteText>
           ) : (
-            <TextBase className="text-button-small text-primary-button-background-default">{placeholder}</TextBase>
+            <TextBase className="text-body font-semibold text-primary-button-background-default">
+              {placeholder}
+            </TextBase>
           )}
         </div>
         <input

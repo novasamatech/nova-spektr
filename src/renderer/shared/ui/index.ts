@@ -30,15 +30,13 @@ import { Tooltip } from './Popovers/Tooltip/Tooltip';
 import { LabelHelpBox } from './LabelHelpbox/LabelHelpBox';
 import { Tabs } from './Tabs/Tabs';
 import {
-  LargeTitleText,
+  MediumTitleText,
   TitleText,
   SmallTitleText,
   CaptionText,
-  HeadlineText,
   BodyText,
   FootnoteText,
   LabelText,
-  HeaderTitleText,
   HelpText,
 } from './Typography';
 import InputArea from './Inputs/InputArea/InputArea';
@@ -74,11 +72,10 @@ export {
   MenuPopover,
   Popover,
   InfoLink,
-  LargeTitleText,
+  MediumTitleText,
   TitleText,
   SmallTitleText,
   CaptionText,
-  HeadlineText,
   BodyText,
   FootnoteText,
   LabelText,
@@ -93,7 +90,6 @@ export {
   Accordion,
   Counter,
   StatusLabel,
-  HeaderTitleText,
   InputFile,
   Tooltip,
   LabelHelpBox,
