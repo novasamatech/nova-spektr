@@ -4,9 +4,10 @@ import { includes } from '@renderer/shared/lib/utils';
 import { contactModel } from '@renderer/entities/contact';
 
 export const $filterQuery = createStore<string>('');
-const setQuery = createEvent<string>();
+const queryChanged = createEvent<string>();
+const filterInited = createEvent();
 
-$filterQuery.on(setQuery, (_, query) => query);
+$filterQuery.on(queryChanged, (_, query) => query).reset(filterInited);
 
 export const $contactsFiltered = combine(contactModel.$contacts, $filterQuery, (contacts, query) => {
   return contacts
@@ -21,5 +22,6 @@ export const $contactsFiltered = combine(contactModel.$contacts, $filterQuery, (
 });
 
 export const events = {
-  setQuery,
+  filterInited,
+  queryChanged,
 };
