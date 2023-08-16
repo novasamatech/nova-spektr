@@ -1,6 +1,7 @@
 import { u8aConcat, u8aToU8a } from '@polkadot/util';
 import { decodeAddress } from '@polkadot/util-crypto';
 import qrcode from 'qrcode-generator';
+import QrCode from 'qrcode';
 import { Encoder } from 'raptorq';
 
 import { ChainId } from '@renderer/domain/shared-kernel';
@@ -25,6 +26,14 @@ export const getSvgString = (value: Uint8Array, bgColor = 'none'): string => {
     .replace(/width="\d+px"/, 'width="100%"')
     .replace(/height="\d+px"/, 'height="100%"')
     .replace(/white/, bgColor);
+};
+
+export const getDataURL = async (value: string, bgColor = 'none'): Promise<string> => {
+  try {
+    return await QrCode.toDataURL(value);
+  } catch (e) {
+    return '';
+  }
 };
 
 export const encodeNumber = (value: number): Uint8Array => new Uint8Array([value >> 8, value & 0xff]);

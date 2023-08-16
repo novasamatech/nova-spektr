@@ -10,24 +10,18 @@
   "scripts": {
     "start": "pnpm clean:build && concurrently \"pnpm start:renderer\" \"pnpm start:main\" && watch",
     "start:dev": "pnpm clean:build && concurrently \"pnpm start:renderer:dev\" \"pnpm start:main:dev\" && watch",
-
     "start:electron": "electron .",
-
     "start:renderer": "cross-env NODE_ENV=staging CHAINS_FILE=chains pnpm webpack:renderer:stage",
     "start:renderer:dev": "cross-env NODE_ENV=development CHAINS_FILE=chains-dev pnpm webpack:renderer:dev",
-
     "start:main": "cross-env NODE_ENV=staging pnpm r webpack:main:stage start:electron",
     "start:main:dev": "cross-env NODE_ENV=development pnpm r webpack:main:dev start:electron",
     "watch": "nodemon --watch src/main --watch src/renderer/bridge --watch src/shared --ignore src/main/resources --ext \"*\" --exec",
-
     "webpack:renderer:dev": "webpack serve --config webpack/webpack.renderer.dev.ts",
     "webpack:renderer:stage": "webpack serve --config webpack/webpack.renderer.stage.ts",
     "webpack:renderer:prod": "webpack --config webpack/webpack.renderer.prod.ts",
-
     "webpack:main:dev": "webpack --config webpack/webpack.main.dev.ts",
     "webpack:main:stage": "webpack --config webpack/webpack.main.stage.ts",
     "webpack:main:prod": "webpack --config webpack/webpack.main.prod.ts",
-
     "build": "cross-env NODE_ENV=production CHAINS_FILE=chains pnpm r clean:prod webpack:renderer:prod webpack:main:prod",
     "postbuild": "node scripts/postbuild.js",
     "dist": "electron-builder -p never",
@@ -70,6 +64,11 @@
     "@substrate/connect": "^0.7.26",
     "@substrate/txwrapper-orml": "^6.0.0",
     "@substrate/txwrapper-polkadot": "^6.0.0",
+    "@walletconnect/modal": "^2.6.1",
+    "@walletconnect/sign-client": "^2.9.2",
+    "@walletconnect/types": "^2.9.2",
+    "@walletconnect/universal-provider": "^2.9.2",
+    "@web3modal/react": "^2.7.1",
     "@zxing/browser": "^0.1.3",
     "@zxing/library": "^0.20.0",
     "bignumber.js": "^9.0.2",
@@ -91,6 +90,7 @@
     "lottie-react": "^2.4.0",
     "parity-scale-codec": "^0.6.1",
     "patronum": "^1.19.1",
+    "qrcode": "^1.5.3",
     "qrcode-generator": "^1.4.4",
     "raptorq": "^1.7.22",
     "react": "^18.2.0",
@@ -132,6 +132,7 @@
     "@types/jest": "^28.1.4",
     "@types/lodash": "^4.14.182",
     "@types/node": "^18.0.0",
+    "@types/qrcode": "^1.5.1",
     "@types/react": "^18.0.14",
     "@types/react-dom": "^18.0.5",
     "@types/react-lottie": "^1.2.6",

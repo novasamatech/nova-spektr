@@ -22,6 +22,7 @@ import {
   WalletGroupItem,
   MultishardWallet,
 } from '@renderer/components/layout/PrimaryLayout/Wallets/common/types';
+import WalletConnectQR from '@renderer/shared/ui/WalletConnectQR/WalletConnectQR';
 
 type Props = {
   chains: ChainsRecord;
@@ -37,6 +38,7 @@ const WalletMenu = ({ children, chains, wallets }: PropsWithChildren<Props>) => 
   const [isWatchOnlyModalOpen, toggleWatchOnlyModal] = useToggle();
   const [isVaultModalOpen, toggleVaultModal] = useToggle();
   const [isMultisigModalOpen, toggleMultisigModalOpen] = useToggle();
+  const [isWalletConnectModalOpen, toggleWalletConnectModalOpen] = useToggle();
 
   const groupedWallets = useGroupedWallets(wallets, chains, query);
 
@@ -44,6 +46,12 @@ const WalletMenu = ({ children, chains, wallets }: PropsWithChildren<Props>) => 
     { id: 'vault', title: t('wallets.addPolkadotVault'), onClick: toggleVaultModal, iconName: 'vault' },
     { id: 'watch-only', title: t('wallets.addWatchOnly'), onClick: toggleWatchOnlyModal, iconName: 'watchOnly' },
     { id: 'multi', title: t('wallets.addMultisig'), onClick: toggleMultisigModalOpen, iconName: 'multisig' },
+    {
+      id: 'wallet-connect',
+      title: t('wallets.addWalletConnect'),
+      onClick: toggleWalletConnectModalOpen,
+      iconName: 'multisig',
+    },
   ];
 
   const getAllShardsIds = (wallet: MultishardWallet): ID[] => {
@@ -137,6 +145,7 @@ const WalletMenu = ({ children, chains, wallets }: PropsWithChildren<Props>) => 
       />
       <Vault isOpen={isVaultModalOpen} onClose={toggleVaultModal} onComplete={handleCompleteVaultWalletCreation} />
       <CreateMultisigAccount isOpen={isMultisigModalOpen} onClose={toggleMultisigModalOpen} />
+      <WalletConnectQR isOpen={isWalletConnectModalOpen} onClose={toggleWalletConnectModalOpen} />
     </>
   );
 };

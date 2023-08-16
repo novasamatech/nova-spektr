@@ -33,7 +33,7 @@ log.transports.file.archiveLogFn = (oldLogFile: LogFile): void => {
   }
 };
 
-Object.assign(console, log.functions);
+// Object.assign(console, log.functions);
 log.errorHandler.startCatching({
   showDialog: false,
   onError({ error }) {
