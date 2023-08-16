@@ -1,7 +1,7 @@
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 
-import InputArea from './InputArea';
+import { InputArea } from './InputArea';
 
 describe('ui/Inputs/InputArea', () => {
   test('should render component', () => {

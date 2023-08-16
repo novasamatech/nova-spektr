@@ -1,8 +1,8 @@
 import { PropsWithChildren } from 'react';
 
 import { cnTw } from '@renderer/shared/lib/utils';
-import { Button } from '@renderer/shared/ui';
-import BaseModal from '../BaseModal/BaseModal';
+import { Button } from '../../Buttons';
+import { BaseModal } from '../BaseModal/BaseModal';
 
 type Props = {
   isOpen: boolean;
@@ -14,7 +14,7 @@ type Props = {
   onConfirm: () => void;
 };
 
-const ConfirmModal = ({
+export const ConfirmModal = ({
   isOpen,
   children,
   contentClass,
@@ -40,5 +40,3 @@ const ConfirmModal = ({
     </div>
   </BaseModal>
 );
-
-export default ConfirmModal;

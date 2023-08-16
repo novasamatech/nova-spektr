@@ -1,10 +1,10 @@
 import { ComponentMeta, ComponentStory } from '@storybook/react';
 
-import { Identicon } from '@renderer/shared/ui';
-import MultiSelect from './MultiSelect';
+import { Identicon } from '../../Identicon/Identicon';
+import { MultiSelect } from './MultiSelect';
 
 export default {
-  title: 'Redesign/MultiSelect',
+  title: 'ui/MultiSelect',
   component: MultiSelect,
   parameters: { actions: { argTypesRegex: '^on.*' } },
   decorators: [

@@ -1,7 +1,7 @@
 import { render, screen } from '@testing-library/react';
 import noop from 'lodash/noop';
 
-import ConfirmModal from './ConfirmModal';
+import { ConfirmModal } from './ConfirmModal';
 
 describe('ui/Modals/ConfirmModal', () => {
   const defaultProps = {

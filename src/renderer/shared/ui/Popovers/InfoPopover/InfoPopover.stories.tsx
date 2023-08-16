@@ -1,10 +1,10 @@
 import { ComponentMeta, ComponentStory } from '@storybook/react';
 
-import InfoPopover from './InfoPopover';
+import { InfoPopover } from './InfoPopover';
 import { popoverItems } from './InfoPopover.test';
 
 export default {
-  title: 'Redesign/Info Popover',
+  title: 'ui/Info Popover',
   component: InfoPopover,
   parameters: { actions: { argTypesRegex: '^on.*' } },
 } as ComponentMeta<typeof InfoPopover>;

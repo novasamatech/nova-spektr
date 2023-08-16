@@ -1,6 +1,6 @@
 import { act, render, screen } from '@testing-library/react';
 
-import InfoPopover, { InfoSection } from './InfoPopover';
+import { InfoPopover, InfoSection } from './InfoPopover';
 
 const menuLinks = [
   {

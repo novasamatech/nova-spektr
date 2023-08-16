@@ -1,9 +1,9 @@
 import { ComponentMeta, ComponentStory } from '@storybook/react';
 
-import { Icon } from '@renderer/shared/ui';
-import Button from './Button';
+import { Icon } from '../../Icon/Icon';
+import { Button } from './Button';
 export default {
-  title: 'Redesign/Button',
+  title: 'ui/Button',
   component: Button,
   parameters: { actions: { argTypesRegex: '^on.*' } },
 } as ComponentMeta<typeof Button>;

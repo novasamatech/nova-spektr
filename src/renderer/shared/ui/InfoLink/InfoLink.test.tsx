@@ -1,6 +1,6 @@
 import { render, screen } from '@testing-library/react';
 
-import InfoLink from './InfoLink';
+import { InfoLink } from './InfoLink';
 
 describe('ui/InfoLink', () => {
   test('should render component', () => {

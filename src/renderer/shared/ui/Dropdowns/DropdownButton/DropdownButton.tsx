@@ -25,7 +25,7 @@ type Props = {
   options: ButtonDropdownOption[];
 } & Omit<ButtonProps, 'children' | 'suffixElement' | 'onClick'>;
 
-const DropdownButton = ({ options, title, disabled, className, ...buttonProps }: Props) => (
+export const DropdownButton = ({ options, title, disabled, className, ...buttonProps }: Props) => (
   <Menu>
     {({ open }) => (
       <div className={cn('relative', open && 'z-10')}>
@@ -71,5 +71,3 @@ const DropdownButton = ({ options, title, disabled, className, ...buttonProps }:
     )}
   </Menu>
 );
-
-export default DropdownButton;

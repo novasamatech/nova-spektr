@@ -1,10 +1,10 @@
 import { ComponentMeta, ComponentStory } from '@storybook/react';
 
-import { Identicon } from '@renderer/shared/ui';
-import Select from './Select';
+import { Identicon } from '../../Identicon/Identicon';
+import { Select } from './Select';
 
 export default {
-  title: 'Redesign/Select',
+  title: 'ui/Select',
   component: Select,
   parameters: { actions: { argTypesRegex: '^on.*' } },
   decorators: [

@@ -2,7 +2,7 @@ import { ComponentMeta, ComponentStory } from '@storybook/react';
 import { enGB, ru } from 'date-fns/locale';
 
 import { LanguageItem } from '@renderer/services/translation/common/types';
-import LanguageSwitcher from './LanguageSwitcher';
+import { LanguageSwitcher } from './LanguageSwitcher';
 
 const languages: LanguageItem[] = [
   {

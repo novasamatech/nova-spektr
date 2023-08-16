@@ -17,7 +17,7 @@ export const IconButtonStyle = cn(
   'hover:text-icon-hover hover:bg-hover active:bg-hover active:text-tab-icon-active',
 );
 
-const IconButton = ({ onClick, size = 16, className, ariaLabel, ...iconProps }: Props) => (
+export const IconButton = ({ onClick, size = 16, className, ariaLabel, ...iconProps }: Props) => (
   <button
     type="button"
     data-testid={`${iconProps.name}-button`}
@@ -28,5 +28,3 @@ const IconButton = ({ onClick, size = 16, className, ariaLabel, ...iconProps }: 
     <Icon size={size} className="text-inherit" {...iconProps} />
   </button>
 );
-
-export default IconButton;

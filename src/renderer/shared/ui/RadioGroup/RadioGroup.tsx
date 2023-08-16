@@ -15,7 +15,15 @@ type Props = {
   onChange: (data: RadioResult) => void;
 };
 
-const RadioGroup = ({ name, label, activeId, options, className, children, onChange }: PropsWithChildren<Props>) => {
+export const RadioGroup = ({
+  name,
+  label,
+  activeId,
+  options,
+  className,
+  children,
+  onChange,
+}: PropsWithChildren<Props>) => {
   const activeOption = options.find((option) => option.id === activeId);
 
   const radioElement = (
@@ -37,5 +45,3 @@ const RadioGroup = ({ name, label, activeId, options, className, children, onCha
 };
 
 RadioGroup.Option = Option;
-
-export default RadioGroup;

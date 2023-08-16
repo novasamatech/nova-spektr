@@ -29,7 +29,7 @@ type Props = {
   onChange: (data: DropdownResult[]) => void;
 };
 
-const MultiSelect = ({
+export const MultiSelect = ({
   className,
   placeholder,
   multiPlaceholder,
@@ -146,5 +146,3 @@ const MultiSelect = ({
     </div>
   );
 };
-
-export default MultiSelect;

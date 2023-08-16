@@ -12,7 +12,7 @@ export type Props = {
   position?: string;
 };
 
-const MenuPopover = ({
+export const MenuPopover = ({
   content,
   className,
   containerClassName,
@@ -52,5 +52,3 @@ const MenuPopover = ({
     </Menu>
   );
 };
-
-export default MenuPopover;
