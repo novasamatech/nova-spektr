@@ -1,7 +1,7 @@
 import { forwardRef } from 'react';
 
 import Input, { Props as InputProps } from '../Input/Input';
-import Icon from '@renderer/shared/ui/Icon/Icon';
+import { Icon } from '../../Icon/Icon';
 import { useI18n } from '@renderer/app/providers';
 import { useToggle } from '@renderer/shared/lib/hooks';
 
@@ -20,7 +20,7 @@ const PasswordInput = forwardRef<HTMLInputElement, Props>(({ ...props }, ref) =>
       placeholder={t('settings.matrix.passwordPlaceholder')}
       suffixElement={
         <button type="button" className="ml-2" onClick={toggleVisibility}>
-          <Icon name={isHidden ? 'eyeSlashed' : 'eye'} size={20} alt={t('settings.matrix.passwordVisibilityButton')} />
+          <Icon name={isHidden ? 'hide' : 'show'} size={20} alt={t('settings.matrix.passwordVisibilityButton')} />
         </button>
       }
       {...props}

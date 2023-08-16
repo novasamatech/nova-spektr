@@ -1,10 +1,10 @@
 import { Variant } from './types';
-import { IconNames } from '@renderer/shared/ui/Icon/data';
+import { IconNames } from '@renderer/shared/ui/types';
 
 export const IconName: Record<Variant, IconNames> = {
   info: 'info',
-  warn: 'warn',
-  error: 'warn',
+  warn: 'status-warning',
+  error: 'status-error',
 };
 
 export const ViewStyle: Record<Variant, string> = {

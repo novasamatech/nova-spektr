@@ -19,12 +19,12 @@ const Template: ComponentStory<typeof Loader> = (args) => <Loader {...args} />;
 
 export const Primary = Template.bind({});
 Primary.args = {
-  size: 50,
+  size: 32,
   color: 'primary',
 };
 
 export const White = Template.bind({});
 White.args = {
-  size: 50,
+  size: 32,
   color: 'white',
 };

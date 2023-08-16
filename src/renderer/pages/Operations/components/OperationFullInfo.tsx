@@ -114,7 +114,7 @@ const OperationFullInfo = ({ tx, account }: Props) => {
               {explorerLink && (
                 <InfoLink url={explorerLink} className="flex items-center gap-x-0.5 ml-0.5 text-footnote">
                   <span>{t('operation.explorerLink')}</span>
-                  <Icon name="right" size={16} />
+                  <Icon name="chevron-right" size={16} />
                 </InfoLink>
               )}
             </div>
@@ -137,7 +137,7 @@ const OperationFullInfo = ({ tx, account }: Props) => {
             pallet="secondary"
             variant="fill"
             size="sm"
-            prefixElement={<Icon name="chatRedesign" size={16} />}
+            prefixElement={<Icon name="chat" size={16} />}
             suffixElement={
               <CaptionText className="!text-white bg-chip-icon rounded-full pt-[1px] pb-[2px] px-1.5">
                 {events.length}

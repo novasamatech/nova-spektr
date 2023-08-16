@@ -99,7 +99,7 @@ export const ChangeValidators = () => {
         onClose={closeValidatorsModal}
       >
         <div className="w-[440px] px-5 py-4">
-          <Loader className="my-24 mx-auto" color="primary" size={25} />
+          <Loader className="my-24 mx-auto" color="primary" size={20} />
           <Button disabled className="w-fit flex-0 mt-7 ml-auto">
             {t('staking.bond.continueButton')}
           </Button>

@@ -5,8 +5,8 @@ import { SigningStatus } from '@renderer/entities/transaction';
 import { cnTw } from '@renderer/shared/lib/utils';
 
 const IconProps = {
-  SIGNED: { className: 'group-hover:hidden text-text-positive', name: 'checkLineRedesign' },
-  CANCELLED: { className: 'group-hover:hidden text-text-negative', name: 'closeLineRedesign' },
+  SIGNED: { className: 'group-hover:hidden text-text-positive', name: 'status-success' },
+  CANCELLED: { className: 'group-hover:hidden text-text-negative', name: 'status-error' },
 } as const;
 
 type Props = {
@@ -46,8 +46,8 @@ export const SignatoryCard = ({
         )}
       >
         <AccountAddress addressFont={addressFont} size={size} name={name} {...addressProps} />
-        <Icon name="info" size={14} className="text-icon-hover invisible group-hover:visible" />
-        {status && status in IconProps && <Icon size={14} {...IconProps[status as keyof typeof IconProps]} />}
+        <Icon name="info" size={16} className="text-icon-hover invisible group-hover:visible" />
+        {status && status in IconProps && <Icon size={16} {...IconProps[status as keyof typeof IconProps]} />}
       </div>
     </InfoPopover>
   );

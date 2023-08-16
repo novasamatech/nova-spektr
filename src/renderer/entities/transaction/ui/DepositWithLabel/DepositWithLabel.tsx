@@ -11,7 +11,7 @@ export const DepositWithLabel = ({ ...depositProps }: ComponentProps<typeof Depo
     <DetailRow
       label={
         <>
-          <Icon className="text-text-tertiary" name="lock" size={12} />
+          <Icon className="text-text-tertiary" name="lock" size={16} />
           <FootnoteText className="text-text-tertiary">{t('staking.networkDepositLabel')}</FootnoteText>
           <Tooltip content={t('staking.tooltips.depositDescription')} offsetPx={-90} pointer="down">
             <Icon name="info" className="hover:text-icon-hover cursor-pointer" size={16} />

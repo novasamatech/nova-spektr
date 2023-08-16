@@ -2,7 +2,7 @@ import { ReactNode } from 'react';
 import { NavLink } from 'react-router-dom';
 
 import { Icon, BodyText } from '@renderer/shared/ui';
-import { IconNames } from '@renderer/shared/ui/Icon/data';
+import { IconNames } from '@renderer/shared/ui/types';
 import { useI18n } from '@renderer/app/providers';
 import { cnTw } from '@renderer/shared/lib/utils';
 

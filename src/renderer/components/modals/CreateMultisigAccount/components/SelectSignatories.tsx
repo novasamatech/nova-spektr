@@ -145,7 +145,7 @@ export const SelectSignatories = ({ isActive, wallets, accounts, contacts, onSel
           onChange={setQuery}
         />
         {hasContacts && (
-          <Button variant="text" suffixElement={<Icon name="add" size={16} />} onClick={toggleContactModalOpen}>
+          <Button variant="text" suffixElement={<Icon name="add-address" size={16} />} onClick={toggleContactModalOpen}>
             {t('createMultisigAccount.addContact')}
           </Button>
         )}

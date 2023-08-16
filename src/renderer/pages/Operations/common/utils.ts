@@ -1,6 +1,6 @@
 import { TFunction } from 'react-i18next';
 
-import { IconNames } from '@renderer/shared/ui/Icon/data';
+import { IconNames } from '@renderer/shared/ui/types';
 import { Explorer } from '@renderer/entities/chain/model/chain';
 import { AccountId, HexString } from '@renderer/domain/shared-kernel';
 import {
@@ -42,23 +42,23 @@ const TransactionTitles: Record<TransactionType, string> = {
 
 const TransactionIcons: Record<TransactionType, IconNames> = {
   // Transfer
-  [TransactionType.ASSET_TRANSFER]: 'transferMst',
-  [TransactionType.ORML_TRANSFER]: 'transferMst',
-  [TransactionType.TRANSFER]: 'transferMst',
-  [TransactionType.MULTISIG_AS_MULTI]: 'transferMst',
-  [TransactionType.MULTISIG_APPROVE_AS_MULTI]: 'transferMst',
-  [TransactionType.MULTISIG_CANCEL_AS_MULTI]: 'transferMst',
+  [TransactionType.ASSET_TRANSFER]: 'arrow-diagonal',
+  [TransactionType.ORML_TRANSFER]: 'arrow-diagonal',
+  [TransactionType.TRANSFER]: 'arrow-diagonal',
+  [TransactionType.MULTISIG_AS_MULTI]: 'arrow-diagonal',
+  [TransactionType.MULTISIG_APPROVE_AS_MULTI]: 'arrow-diagonal',
+  [TransactionType.MULTISIG_CANCEL_AS_MULTI]: 'arrow-diagonal',
   // Staking
-  [TransactionType.BOND]: 'stakingMst',
-  [TransactionType.NOMINATE]: 'stakingMst',
-  [TransactionType.STAKE_MORE]: 'stakingMst',
-  [TransactionType.REDEEM]: 'stakingMst',
-  [TransactionType.RESTAKE]: 'stakingMst',
-  [TransactionType.DESTINATION]: 'stakingMst',
-  [TransactionType.UNSTAKE]: 'stakingMst',
+  [TransactionType.BOND]: 'start-staking',
+  [TransactionType.NOMINATE]: 'start-staking',
+  [TransactionType.STAKE_MORE]: 'start-staking',
+  [TransactionType.REDEEM]: 'start-staking',
+  [TransactionType.RESTAKE]: 'start-staking',
+  [TransactionType.DESTINATION]: 'start-staking',
+  [TransactionType.UNSTAKE]: 'start-staking',
   // Technical
-  [TransactionType.CHILL]: 'stakingMst',
-  [TransactionType.BATCH_ALL]: 'unknownMst',
+  [TransactionType.CHILL]: 'start-staking',
+  [TransactionType.BATCH_ALL]: 'learn-more',
 };
 
 export const getTransactionTitle = (transaction?: Transaction | DecodedTransaction): string => {
@@ -76,7 +76,7 @@ export const getTransactionTitle = (transaction?: Transaction | DecodedTransacti
 };
 
 export const getIconName = (transaction?: Transaction | DecodedTransaction): IconNames => {
-  if (!transaction?.type) return 'question';
+  if (!transaction?.type) return 'learn-more';
 
   if (transaction.type === TransactionType.BATCH_ALL) {
     return getIconName(transaction?.args?.transactions?.[0]);

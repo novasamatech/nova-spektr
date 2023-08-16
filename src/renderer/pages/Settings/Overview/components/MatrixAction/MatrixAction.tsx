@@ -22,7 +22,7 @@ export const MatrixAction = () => {
             )}
             onClick={toggleModalOpen}
           >
-            <Icon className="row-span-2" name="matrix" size={36} />
+            <Icon className="row-span-2" name="matrix" size={32} />
             <BodyText>{t('settings.overview.matrixLabel')}</BodyText>
             <HelpText className="text-text-tertiary">{t('settings.overview.matrixDescription')}</HelpText>
 

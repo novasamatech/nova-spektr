@@ -5,7 +5,6 @@ import PasswordInput from './Inputs/PasswordInput/PasswordInput';
 import InputHint from './InputHint/InputHint';
 import Button from './Buttons/Button/Button';
 import ButtonLink from './Buttons/ButtonLink/ButtonLink';
-import ButtonBack from './Buttons/ButtonBack/ButtonBack';
 import BaseModal from './Modals/BaseModal/BaseModal';
 import ConfirmModal from './Modals/ConfirmModal/ConfirmModal';
 import InfoPopover from './Popovers/InfoPopover/InfoPopover';
@@ -43,13 +42,13 @@ import {
 } from './Typography';
 import InputArea from './Inputs/InputArea/InputArea';
 import Switch from './Switch/Switch';
-import Icon from './Icon/Icon';
 import Identicon from './Identicon/Identicon';
 import LanguageSwitcher from './LanguageSwitcher/LanguageSwitcher';
 import Shimmering from './Shimmering/Shimmering';
 import Duration from './Duration/Duration';
 import Loader from './Loader/Loader';
 import DetailRow from './DetailRow/DetailRow';
+import { Icon } from './Icon/Icon';
 import { Truncate } from './Truncate/Truncate';
 
 // FIXME: Animation component exported separately.
@@ -66,7 +65,6 @@ export {
   InputHint,
   Button,
   ButtonLink,
-  ButtonBack,
   IconButton,
   BaseModal,
   ConfirmModal,

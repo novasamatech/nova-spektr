@@ -45,5 +45,5 @@ export const Suffix = Template.bind({});
 Suffix.args = {
   label: 'With suffix element',
   value: 'This is value',
-  suffixElement: <Icon name="warnCutout" className="text-alert right-2 top-[9px] absolute" size={16} />,
+  suffixElement: <Icon name="status-warning" className="text-alert right-2 top-[9px] absolute" size={16} />,
 };

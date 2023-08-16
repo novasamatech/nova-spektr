@@ -12,5 +12,5 @@ const Template: ComponentStory<typeof IconButton> = (args) => <IconButton {...ar
 
 export const Primary = Template.bind({});
 Primary.args = {
-  name: 'settingsLite',
+  name: 'settings-lite',
 };

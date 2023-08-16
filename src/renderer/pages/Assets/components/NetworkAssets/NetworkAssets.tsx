@@ -109,7 +109,7 @@ export const NetworkAssets = ({
               <div className="flex items-center gap-x-2 text-text-warning">
                 {/* FIXME: tooltip not visible when first displayed network invalid. For now just render it below icon */}
                 <Tooltip content={t('balances.verificationTooltip')} pointer="up">
-                  <Icon name="warn" className="cursor-pointer" size={16} />
+                  <Icon name="status-warning" className="cursor-pointer" size={16} />
                 </Tooltip>
                 <CaptionText className="uppercase text-inherit">{t('balances.verificationFailedLabel')}</CaptionText>
               </div>

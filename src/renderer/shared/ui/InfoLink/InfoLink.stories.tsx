@@ -15,7 +15,7 @@ WithIcon.args = {
   url: 'https://test.com',
   children: 'This is my link',
   showIcon: true,
-  iconName: 'globe',
+  iconName: 'novawallet',
 };
 
 export const NoIcon = Template.bind({});

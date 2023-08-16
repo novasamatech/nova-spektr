@@ -1,7 +1,7 @@
 import { cnTw } from '@renderer/shared/lib/utils';
 import { Icon, BodyText, CaptionText, FootnoteText } from '@renderer/shared/ui';
 import { useI18n } from '@renderer/app/providers';
-import { IconNames } from '@renderer/shared/ui/Icon/data';
+import { IconNames } from '@renderer/shared/ui/types';
 
 type Props = {
   title: string;
@@ -26,7 +26,7 @@ export const WelcomeCard = ({ title, description, iconName, disabled, onClick }:
     >
       <Icon
         className={cnTw('p-2 text-icon-button rounded-xl', disabled ? 'bg-tab-icon-inactive' : 'bg-icon-active')}
-        size={40}
+        size={32}
         name={iconName}
       />
 
@@ -42,7 +42,7 @@ export const WelcomeCard = ({ title, description, iconName, disabled, onClick }:
               {t('onboarding.welcome.soonBadge')}
             </CaptionText>
           ) : (
-            <Icon name="arrowRight" size={24} />
+            <Icon name="arrow-right" size={20} />
           )}
         </div>
         <FootnoteText className="text-text-tertiary">{description}</FootnoteText>

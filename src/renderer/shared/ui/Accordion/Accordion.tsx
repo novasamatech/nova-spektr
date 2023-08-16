@@ -28,8 +28,7 @@ const Button = ({ className, children }: PropsWithChildren<ButtonProps>) => {
         <>
           {children}
           <Icon
-            name={open ? 'up' : 'down'}
-            size={16}
+            name={open ? 'chevron-up' : 'chevron-down'}
             className={cnTw(
               'cursor-pointer rounded-full transition-colors',
               'group-hover:text-icon-hover group-hover:bg-hover',

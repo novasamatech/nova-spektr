@@ -37,7 +37,7 @@ export const SelectableSignatory = <T extends any>({
     >
       <AccountAddress addressFont="text-body text-inherit" size={size} name={name} {...addressProps} />
       <InfoPopover data={popoverItems}>
-        <Icon name="info" size={14} className="ml-2 mr-auto" />
+        <Icon name="info" size={16} className="ml-2 mr-auto" />
       </InfoPopover>
       {balance && asset && (
         <AssetBalance
@@ -46,7 +46,7 @@ export const SelectableSignatory = <T extends any>({
           className="text-body text-inherit ml-auto mr-6"
         />
       )}
-      <Icon name="right" className={cnTw(!balance && 'ml-auto')} size={20} />
+      <Icon name="chevron-right" className={cnTw(!balance && 'ml-auto')} size={20} />
     </button>
   );
 };

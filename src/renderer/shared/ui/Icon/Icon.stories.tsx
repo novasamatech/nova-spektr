@@ -1,6 +1,6 @@
 import { ComponentMeta, ComponentStory } from '@storybook/react';
 
-import Icon from './Icon';
+import { Icon } from './Icon';
 
 export default {
   title: 'Icon',
@@ -10,9 +10,17 @@ export default {
 
 const Template: ComponentStory<typeof Icon> = (args) => <Icon {...args} />;
 
-export const Primary = Template.bind({});
-Primary.args = {
+export const Image = Template.bind({});
+Image.args = {
   as: 'img',
-  size: 40,
-  name: 'settings',
+  size: 16,
+  name: 'learn-more',
+};
+
+export const Svg = Template.bind({});
+Image.args = {
+  as: 'svg',
+  size: 32,
+  name: 'upload-file',
+  className: 'hover:text-red-500',
 };
