@@ -43,7 +43,7 @@ export const Contacts = () => {
 
             {hasContacts && hasContactsFiltered && (
               <ContactList>
-                {contacts.map((contact) => (
+                {contactsFiltered.map((contact) => (
                   <ContactRow key={contact.id} contact={contact}>
                     <EditContactNavigation contactId={contact.id || '-1'} />
                   </ContactRow>

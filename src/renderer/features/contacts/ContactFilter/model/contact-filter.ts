@@ -1,12 +1,20 @@
-import { combine, createEvent, createStore } from 'effector';
+import { combine, createEvent, createStore, forward } from 'effector';
 
 import { includes } from '@renderer/shared/lib/utils';
 import { contactModel } from '@renderer/entities/contact';
 
-export const $filterQuery = createStore<string>('');
-const setQuery = createEvent<string>();
+const componentMounted = createEvent();
 
-$filterQuery.on(setQuery, (_, query) => query);
+export const $filterQuery = createStore<string>('');
+const queryChanged = createEvent<string>();
+const queryReset = createEvent();
+
+$filterQuery.on(queryChanged, (_, query) => query).reset(queryReset);
+
+forward({
+  from: componentMounted,
+  to: queryReset,
+});
 
 export const $contactsFiltered = combine(contactModel.$contacts, $filterQuery, (contacts, query) => {
   return contacts
@@ -21,5 +29,6 @@ export const $contactsFiltered = combine(contactModel.$contacts, $filterQuery, (
 });
 
 export const events = {
-  setQuery,
+  componentMounted,
+  queryChanged,
 };
