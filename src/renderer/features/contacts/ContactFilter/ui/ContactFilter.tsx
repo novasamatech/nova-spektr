@@ -8,7 +8,7 @@ export const ContactFilter = () => {
   const { t } = useI18n();
 
   useEffect(() => {
-    filterModel.events.filterInited();
+    filterModel.events.componentMounted();
   }, []);
 
   return (
