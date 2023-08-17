@@ -34,17 +34,16 @@ type Props = {
 const OperationStatus = ({ status, signed, threshold }: Props) => {
   const { t } = useI18n();
 
+  const isSigning = status === 'SIGNING';
+
   return (
     <CaptionText
-      className={cn('py-1 px-2.5 rounded-[20px] border border-redesign-shade-8 uppercase', StatusColor[status])}
       align="center"
+      className={cn('py-1 px-2.5 rounded-[20px] border border-filter-border uppercase', StatusColor[status])}
     >
-      {status === 'SIGNING'
-        ? t('operation.signing', {
-            signed: signed,
-            threshold: threshold || 0,
-          })
-        : t(StatusTitle[status])}
+      {isSigning && t('operation.signing', { signed, threshold: threshold || 0 })}
+
+      {!isSigning && t(StatusTitle[status])}
     </CaptionText>
   );
 };
