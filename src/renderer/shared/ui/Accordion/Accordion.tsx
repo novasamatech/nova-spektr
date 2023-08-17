@@ -1,7 +1,7 @@
 import { PropsWithChildren } from 'react';
 import { Disclosure, Transition } from '@headlessui/react';
 
-import { Icon } from '@renderer/shared/ui';
+import { Icon } from '../Icon/Icon';
 import { cnTw } from '@renderer/shared/lib/utils';
 
 type Props = {
@@ -9,7 +9,7 @@ type Props = {
   isDefaultOpen?: boolean;
 };
 
-const Accordion = ({ className, isDefaultOpen, children }: PropsWithChildren<Props>) => {
+export const Accordion = ({ className, isDefaultOpen, children }: PropsWithChildren<Props>) => {
   return (
     <div className={cnTw('w-full', className)}>
       <Disclosure defaultOpen={isDefaultOpen}>{children}</Disclosure>
@@ -28,8 +28,7 @@ const Button = ({ className, children }: PropsWithChildren<ButtonProps>) => {
         <>
           {children}
           <Icon
-            name={open ? 'up' : 'down'}
-            size={16}
+            name={open ? 'chevron-up' : 'chevron-down'}
             className={cnTw(
               'cursor-pointer rounded-full transition-colors',
               'group-hover:text-icon-hover group-hover:bg-hover',
@@ -63,5 +62,3 @@ const Content = ({ children, className }: PropsWithChildren<ContentProps>) => {
 
 Accordion.Button = Button;
 Accordion.Content = Content;
-
-export default Accordion;

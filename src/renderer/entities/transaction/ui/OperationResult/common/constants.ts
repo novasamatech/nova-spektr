@@ -1,11 +1,11 @@
-import { IconNames } from '@renderer/shared/ui/Icon/data';
+import { IconNames } from '@renderer/shared/ui/types';
 import { Variant } from './types';
 import { AnimationNames, Props } from '@renderer/shared/ui/Animation/Animation';
 
 export const VariantIcons: Record<Variant, IconNames> = {
-  success: 'checkLineRedesign',
-  error: 'closeLineRedesign',
-  loading: 'loader',
+  success: 'status-success',
+  error: 'status-error',
+  loading: 'refresh', // TODO: replace with loader icon
 };
 
 export const VariantAnimations: Record<Variant, AnimationNames> = {

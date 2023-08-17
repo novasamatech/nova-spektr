@@ -1,8 +1,8 @@
 import { PropsWithChildren } from 'react';
 
 import { cnTw } from '@renderer/shared/lib/utils';
-import { IconNames } from '@renderer/shared/ui/Icon/data';
-import { Icon } from '@renderer/shared/ui';
+import { Icon } from '../Icon/Icon';
+import { IconNames } from '../Icon/data';
 
 type Props = {
   url: string;
@@ -13,7 +13,7 @@ type Props = {
   tabIndex?: number;
 };
 
-const InfoLink = ({ url, children, iconName, size = 'sm', className, tabIndex }: PropsWithChildren<Props>) => (
+export const InfoLink = ({ url, children, iconName, size = 'sm', className, tabIndex }: PropsWithChildren<Props>) => (
   <a
     href={url}
     rel="noopener noreferrer"
@@ -30,5 +30,3 @@ const InfoLink = ({ url, children, iconName, size = 'sm', className, tabIndex }:
     {children}
   </a>
 );
-
-export default InfoLink;

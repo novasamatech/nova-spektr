@@ -1,6 +1,6 @@
 import { render, screen } from '@testing-library/react';
 
-import BaseModal from './BaseModal';
+import { BaseModal } from './BaseModal';
 
 describe('ui/Modals/BaseModal', () => {
   test('should render component', () => {

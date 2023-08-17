@@ -2,7 +2,7 @@ import { ComponentProps, MouseEvent } from 'react';
 import cn from 'classnames';
 
 import { cnTw } from '@renderer/shared/lib/utils';
-import Icon from '@renderer/shared/ui/Icon/Icon';
+import { Icon } from '@renderer/shared/ui/Icon/Icon';
 import './IconButton.css';
 
 type IconProps = ComponentProps<typeof Icon>;
@@ -17,9 +17,10 @@ export const IconButtonStyle = cn(
   'hover:text-icon-hover hover:bg-hover active:bg-hover active:text-tab-icon-active',
 );
 
-const IconButton = ({ onClick, size = 16, className, ariaLabel, ...iconProps }: Props) => (
+export const IconButton = ({ onClick, size = 16, className, ariaLabel, ...iconProps }: Props) => (
   <button
     type="button"
+    data-testid={`${iconProps.name}-button`}
     className={cnTw('spektr-icon-button', IconButtonStyle, className)}
     aria-label={ariaLabel}
     onClick={onClick}
@@ -27,5 +28,3 @@ const IconButton = ({ onClick, size = 16, className, ariaLabel, ...iconProps }: 
     <Icon size={size} className="text-inherit" {...iconProps} />
   </button>
 );
-
-export default IconButton;

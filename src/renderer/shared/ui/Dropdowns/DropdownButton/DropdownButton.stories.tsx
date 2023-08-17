@@ -1,9 +1,9 @@
 import { ComponentMeta, ComponentStory } from '@storybook/react';
 
-import DropdownButton, { ButtonDropdownOption } from './DropdownButton';
+import { DropdownButton, ButtonDropdownOption } from './DropdownButton';
 
 export default {
-  title: 'Redesign/Dropdown Button',
+  title: 'ui/Dropdown Button',
   component: DropdownButton,
   parameters: { actions: { argTypesRegex: '^on.*' } },
   decorators: [
@@ -18,8 +18,8 @@ export default {
 const Template: ComponentStory<typeof DropdownButton> = (args) => <DropdownButton {...args} />;
 
 const options: ButtonDropdownOption[] = [
-  { id: 'button1', title: 'Button Option 1', iconName: 'globe', onClick: () => alert('click1') },
-  { id: 'button2', title: 'Button Option 2', iconName: 'arrowUp', onClick: () => alert('click2') },
+  { id: 'button1', title: 'Button Option 1', iconName: 'show', onClick: () => alert('click1') },
+  { id: 'button2', title: 'Button Option 2', iconName: 'hide', onClick: () => alert('click2') },
 ];
 
 export const Primary = Template.bind({});

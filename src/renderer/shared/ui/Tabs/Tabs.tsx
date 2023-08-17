@@ -1,7 +1,7 @@
 import { Tab } from '@headlessui/react';
 
 import { cnTw } from '@renderer/shared/lib/utils';
-import { FootnoteText } from '@renderer/shared/ui';
+import { FootnoteText } from '../Typography';
 import { TabItem } from './common/types';
 
 type Props = {

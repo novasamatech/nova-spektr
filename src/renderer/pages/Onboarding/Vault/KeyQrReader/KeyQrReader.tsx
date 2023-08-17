@@ -9,6 +9,7 @@ import { Icon, Loader, Button, CaptionText, FootnoteText, Select } from '@render
 import { DropdownOption, DropdownResult } from '@renderer/shared/ui/Dropdowns/common/types';
 import { useI18n } from '@renderer/app/providers';
 import { cnTw } from '@renderer/shared/lib/utils';
+import QrFrame from '@images/misc/qr-frame.svg';
 
 const enum CameraState {
   ACTIVE,
@@ -114,7 +115,7 @@ const KeyQrReader = ({ size = 300, className, onResult }: Props) => {
         <div className="flex flex-col items-center justify-center text-center w-full h-full">
           {cameraState === CameraState.INVALID_ERROR && (
             <>
-              <Icon className="text-alert" name="warnCutout" size={70} />
+              <Icon className="text-alert" name="status-warning" size={16} />
               <p className="text-neutral text-xl leading-6 font-semibold mt-5">
                 {t('onboarding.paritySigner.wrongQRCodeLabel')}
               </p>
@@ -125,7 +126,7 @@ const KeyQrReader = ({ size = 300, className, onResult }: Props) => {
           )}
           {cameraState === CameraState.UNKNOWN_ERROR && (
             <>
-              <Icon className="text-alert" name="warnCutout" size={70} />
+              <Icon className="text-alert" name="status-warning" size={16} />
               <p className="text-neutral text-xl leading-6 font-semibold mt-5">
                 {t('onboarding.paritySigner.notWorkingLabel')}
               </p>
@@ -134,7 +135,7 @@ const KeyQrReader = ({ size = 300, className, onResult }: Props) => {
           )}
           {cameraState === CameraState.DECODE_ERROR && (
             <>
-              <Icon className="text-alert" name="warnCutout" size={70} />
+              <Icon className="text-alert" name="status-warning" size={16} />
               <p className="text-neutral text-xl leading-6 font-semibold mt-5">
                 {t('onboarding.paritySigner.decodeErrorLabel')}
               </p>
@@ -143,7 +144,7 @@ const KeyQrReader = ({ size = 300, className, onResult }: Props) => {
           )}
           {cameraState === CameraState.DENY_ERROR && (
             <>
-              <Icon className="text-alert" name="warnCutout" size={70} />
+              <Icon className="text-alert" name="status-warning" size={16} />
               <p className="text-neutral text-xl leading-6 font-semibold mt-5">
                 {t('onboarding.paritySigner.accessDeniedLabel')}
               </p>
@@ -177,7 +178,7 @@ const KeyQrReader = ({ size = 300, className, onResult }: Props) => {
               <Loader color="primary" />
               {t('onboarding.paritySigner.startCameraLabel')}
             </p>
-            <Icon className="absolute text-shade-10" name="qrFrame" size={240} />
+            <img src={QrFrame} alt="" className="absolute" width={240} height={240} />
           </div>
         </div>
       )}
@@ -200,10 +201,10 @@ const KeyQrReader = ({ size = 300, className, onResult }: Props) => {
             {isScanComplete ? (
               <>
                 <div className="backdrop-blur-sm rounded-2lg after:absolute after:inset-0 after:bg-white/50" />
-                <Icon size={100} name="checkmarkCutout" className="text-success" />
+                <Icon name="status-success" className="text-success" size={16} />
               </>
             ) : (
-              <Icon name="qrFrame" size={240} className="text-white z-20" />
+              <img src={QrFrame} alt="" className="z-20" width={240} height={240} />
             )}
           </div>
         </div>

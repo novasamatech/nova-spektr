@@ -293,7 +293,7 @@ export const TransferForm = ({
                   value && !error ? (
                     <Identicon className="mr-2" size={20} address={value} background={false} />
                   ) : (
-                    <Icon className="mr-2" size={20} name="emptyIdenticon" />
+                    <Icon className="mr-2" size={20} name="identicon-placeholder" />
                   )
                 }
                 className="w-full"

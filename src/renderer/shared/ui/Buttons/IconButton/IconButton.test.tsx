@@ -1,6 +1,6 @@
 import { render, screen } from '@testing-library/react';
 
-import IconButton from './IconButton';
+import { IconButton } from './IconButton';
 
 describe('ui/Buttons/ButtonBack', () => {
   afterEach(() => {
@@ -8,7 +8,7 @@ describe('ui/Buttons/ButtonBack', () => {
   });
 
   test('should render component', () => {
-    render(<IconButton name="balance" />);
+    render(<IconButton name="novawallet" />);
 
     const children = screen.getByRole('button');
     expect(children).toBeInTheDocument();

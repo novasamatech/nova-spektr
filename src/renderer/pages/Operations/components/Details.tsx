@@ -141,7 +141,7 @@ const Details = ({ tx, account, connection, isCardDetails = true }: Props) => {
           variant="text"
           pallet="primary"
           size="sm"
-          suffixElement={<Icon name={isAdvancedShown ? 'up' : 'down'} size={16} />}
+          suffixElement={<Icon name={isAdvancedShown ? 'chevron-up' : 'chevron-down'} size={16} />}
           className="text-action-text-default hover:text-action-text-default w-fit -ml-2"
           onClick={toggleAdvanced}
         >
@@ -219,7 +219,7 @@ const Details = ({ tx, account, connection, isCardDetails = true }: Props) => {
                   <FootnoteText className="text-text-secondary">
                     {blockCreated}-{indexCreated}
                   </FootnoteText>
-                  <Icon name="globe" size={16} className="group-hover:text-icon-hover" />
+                  <Icon name="new-tab" size={20} className="group-hover:text-icon-hover" />
                 </a>
               ) : (
                 `${blockCreated}-${indexCreated}`

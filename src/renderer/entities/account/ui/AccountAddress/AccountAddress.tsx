@@ -1,6 +1,7 @@
-import { cnTw, toShortAddress, toAddress } from '@renderer/shared/lib/utils';
+import { cnTw, toAddress, toShortAddress } from '@renderer/shared/lib/utils';
 import { Identicon, Truncate } from '@renderer/shared/ui';
-import { SigningType, AccountId, Address } from '@renderer/domain/shared-kernel';
+import { IconSize } from '@renderer/shared/ui/types';
+import { AccountId, Address, SigningType } from '@renderer/domain/shared-kernel';
 
 type AddressType = 'full' | 'short' | 'adaptive';
 
@@ -13,13 +14,12 @@ type WithAddress = {
   address: Address;
 };
 
-export type Props = {
+export type Props = IconSize & {
   className?: string;
   type?: AddressType;
   addressFont?: string;
   signType?: SigningType;
   name?: string;
-  size?: number;
   symbols?: number;
   canCopy?: boolean;
   showIcon?: boolean;
@@ -68,14 +68,7 @@ export const AccountAddress = ({
   return (
     <div className={cnTw('flex items-center gap-x-2', className)}>
       {showIcon && (
-        <Identicon
-          className="inline-block"
-          address={currentAddress}
-          signType={signType}
-          size={size}
-          background={false}
-          canCopy={canCopy}
-        />
+        <Identicon className="inline-block" address={currentAddress} size={size} background={false} canCopy={canCopy} />
       )}
       {nameContent || addressContent}
     </div>

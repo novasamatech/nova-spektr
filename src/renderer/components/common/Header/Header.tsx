@@ -1,6 +1,6 @@
 import { PropsWithChildren } from 'react';
 
-import { TitleText } from '@renderer/shared/ui/Typography';
+import { TitleText } from '@renderer/shared/ui';
 import { cnTw } from '@renderer/shared/lib/utils';
 
 type Props = {

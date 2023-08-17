@@ -2,9 +2,9 @@ import { Fragment, PropsWithChildren, ReactNode } from 'react';
 import { Dialog, Transition } from '@headlessui/react';
 
 import { cnTw } from '@renderer/shared/lib/utils';
-import { ModalBackdrop, ModalTransition } from '@renderer/shared/ui/Modals/common';
 import { useI18n } from '@renderer/app/providers';
 import { MediumTitleText, IconButton } from '@renderer/shared/ui';
+import { ModalBackdrop, ModalTransition } from '../common';
 
 // HINT: There are no modals with description right now
 // HeadlessUI provides description and title with some a11y features
@@ -19,7 +19,7 @@ type Props = {
   onClose: () => void;
 };
 
-const BaseModal = ({
+export const BaseModal = ({
   isOpen,
   title,
   children,
@@ -72,5 +72,3 @@ const BaseModal = ({
     </Transition>
   );
 };
-
-export default BaseModal;

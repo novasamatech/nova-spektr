@@ -1,11 +1,11 @@
 import { render, screen } from '@testing-library/react';
 
-import InfoLink from './InfoLink';
+import { InfoLink } from './InfoLink';
 
-describe('screen/Settings/InfoLink', () => {
+describe('ui/InfoLink', () => {
   test('should render component', () => {
     render(
-      <InfoLink url="https://test.com" iconName="globe" showIcon>
+      <InfoLink url="https://test.com" iconName="novawallet" showIcon>
         My link
       </InfoLink>,
     );

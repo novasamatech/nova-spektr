@@ -37,18 +37,18 @@ const ActiveAccountCard = ({ activeAccounts, chains, wallets }: Props) => {
         </FootnoteText>
       )}
       {!isMultishard && account && (
-        <Identicon address={toAddress(account.accountId, { prefix: addressPrefix })} background={false} size={28} />
+        <Identicon address={toAddress(account.accountId, { prefix: addressPrefix })} background={false} size={32} />
       )}
 
       <div className="flex flex-col gap-y-1 overflow-hidden">
         <BodyText className="truncate">{(account || multishardWallet)?.name}</BodyText>
         <div className="flex items-center gap-x-1">
-          <Icon name={GroupIcons[walletType]} className="text-chip-icon" size={14} />
+          <Icon name={GroupIcons[walletType]} className="text-chip-icon" size={16} />
           <CaptionText className="text-chip-text uppercase">{t(GroupLabels[walletType])}</CaptionText>
         </div>
       </div>
 
-      <Icon name="down" size={16} className="ml-auto shrink-0" />
+      <Icon name="chevron-down" size={16} className="ml-auto shrink-0" />
     </div>
   );
 };

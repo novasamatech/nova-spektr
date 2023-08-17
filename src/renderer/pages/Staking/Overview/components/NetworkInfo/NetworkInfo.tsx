@@ -112,7 +112,7 @@ export const NetworkInfo = ({
             </div>
           ),
         )}
-        <IconButton name={isChildrenShown ? 'up' : 'down'} onClick={toggleChildren} />
+        <IconButton name={isChildrenShown ? 'chevron-up' : 'chevron-down'} onClick={toggleChildren} />
       </div>
 
       {isChildrenShown && (

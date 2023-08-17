@@ -1,9 +1,9 @@
 import { ComponentStory, ComponentMeta } from '@storybook/react';
 
-import InfoLink from './InfoLink';
+import { InfoLink } from './InfoLink';
 
 export default {
-  title: 'Redesign/Info Link',
+  title: 'ui/Info Link',
   component: InfoLink,
   parameters: { actions: { argTypesRegex: '^on.*' } },
 } as ComponentMeta<typeof InfoLink>;
@@ -15,7 +15,7 @@ WithIcon.args = {
   url: 'https://test.com',
   children: 'This is my link',
   showIcon: true,
-  iconName: 'globe',
+  iconName: 'novawallet',
 };
 
 export const NoIcon = Template.bind({});

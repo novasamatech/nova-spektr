@@ -2,8 +2,7 @@ import { useState, ChangeEvent, ComponentPropsWithoutRef, forwardRef } from 'rea
 
 import { cnTw } from '@renderer/shared/lib/utils';
 import { HTMLInputFileProps } from '../common/types';
-import TextBase from '@renderer/shared/ui/Typography/common/TextBase';
-import Icon from '../../Icon/Icon';
+import { Icon } from '../../Icon/Icon';
 import { FootnoteText } from '../../Typography';
 
 interface Props extends Pick<ComponentPropsWithoutRef<'input'>, HTMLInputFileProps> {
@@ -11,7 +10,7 @@ interface Props extends Pick<ComponentPropsWithoutRef<'input'>, HTMLInputFilePro
   onChange?: (file: File) => void;
 }
 
-const InputFile = forwardRef<HTMLInputElement, Props>(
+export const InputFile = forwardRef<HTMLInputElement, Props>(
   ({ placeholder, className, invalid = false, onChange, ...props }, ref) => {
     const [fileName, setFileName] = useState('');
 
@@ -34,13 +33,13 @@ const InputFile = forwardRef<HTMLInputElement, Props>(
         )}
       >
         <div className="flex flex-col items-center gap-y-2">
-          <Icon name={invalid ? 'refresh' : 'uploadFile'} />
+          <Icon name={invalid ? 'refresh' : 'upload-file'} />
           {fileName ? (
             <FootnoteText>{fileName}</FootnoteText>
           ) : (
-            <TextBase className="text-body font-semibold text-primary-button-background-default">
+            <FootnoteText className="text-button-small text-primary-button-background-default">
               {placeholder}
-            </TextBase>
+            </FootnoteText>
           )}
         </div>
         <input
@@ -56,5 +55,3 @@ const InputFile = forwardRef<HTMLInputElement, Props>(
     );
   },
 );
-
-export default InputFile;

@@ -2,18 +2,18 @@ import { Listbox } from '@headlessui/react';
 
 import { cnTw } from '@renderer/shared/lib/utils';
 import { LanguageItem, SupportedLocale } from '@renderer/services/translation/common/types';
-import Icon from '../Icon/Icon';
+import { Icon } from '../Icon/Icon';
 
 type Props = {
-  className?: string;
   languages: LanguageItem[];
-  onChange: (value: SupportedLocale) => void;
   selected: string;
   short?: boolean;
   top?: boolean;
+  className?: string;
+  onChange: (value: SupportedLocale) => void;
 };
 
-const LanguageSwitcher = ({ className, languages, selected, short, onChange, top }: Props) => {
+export const LanguageSwitcher = ({ className, languages, selected, short, onChange, top }: Props) => {
   const selectedLanguage = languages.find(({ value }) => value === selected) || languages[0];
   const availableLanguages = languages.filter((l) => l !== selectedLanguage);
   const languagesList = top ? [...availableLanguages, selectedLanguage] : [selectedLanguage, ...availableLanguages];
@@ -57,5 +57,3 @@ const LanguageSwitcher = ({ className, languages, selected, short, onChange, top
     </div>
   );
 };
-
-export default LanguageSwitcher;

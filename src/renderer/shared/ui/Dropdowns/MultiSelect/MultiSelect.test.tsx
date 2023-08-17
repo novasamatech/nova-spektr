@@ -1,6 +1,6 @@
 import { act, render, screen } from '@testing-library/react';
 
-import MultiSelect from './MultiSelect';
+import { MultiSelect } from './MultiSelect';
 
 describe('ui/Dropdowns/MultiSelect', () => {
   const options = [

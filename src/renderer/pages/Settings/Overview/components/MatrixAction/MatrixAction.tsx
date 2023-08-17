@@ -1,4 +1,4 @@
-import { Icon, FootnoteText, Plate, BodyText, StatusLabel, HelpText } from '@renderer/shared/ui';
+import { Icon, FootnoteText, Plate, BodyText, StatusMark, HelpText } from '@renderer/shared/ui';
 import { useI18n, useMatrix } from '@renderer/app/providers';
 import { useToggle } from '@renderer/shared/lib/hooks';
 import { MatrixModal } from '@renderer/components/modals';
@@ -22,12 +22,12 @@ export const MatrixAction = () => {
             )}
             onClick={toggleModalOpen}
           >
-            <Icon className="row-span-2" name="matrix" size={36} />
+            <Icon className="row-span-2" name="matrix" size={32} />
             <BodyText>{t('settings.overview.matrixLabel')}</BodyText>
             <HelpText className="text-text-tertiary">{t('settings.overview.matrixDescription')}</HelpText>
 
             {isLoggedIn ? (
-              <StatusLabel
+              <StatusMark
                 className="row-span-2"
                 variant="success"
                 title={matrix.userId || ''}
@@ -38,7 +38,7 @@ export const MatrixAction = () => {
                 }
               />
             ) : (
-              <StatusLabel className="row-span-2" title={t('settings.overview.matrixStatusLogin')} variant="waiting" />
+              <StatusMark className="row-span-2" title={t('settings.overview.matrixStatusLogin')} variant="waiting" />
             )}
           </button>
         </Plate>

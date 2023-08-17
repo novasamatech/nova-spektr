@@ -1,57 +1,46 @@
-import AllIcons, { IconNames } from './data';
+import { IconCollection, IconNames } from './data';
 import { cnTw } from '@renderer/shared/lib/utils';
 
-type Props = {
+export type IconSize = { size?: 16 | 20 | 32 };
+
+type Props = IconSize & {
   as?: 'img' | 'svg';
   name: IconNames;
-  size?: number;
   className?: string;
   alt?: string;
 };
 
-const Icon = ({ as = 'svg', name, size = 24, className, alt = '' }: Props) => {
-  let iconType = as;
-  let IconComponent = AllIcons[name][as];
+export const Icon = ({ as = 'svg', name, size = 16, className, alt = '' }: Props) => {
+  const sources = IconCollection[name];
+  const availableSizes = Object.keys(sources.size).map(Number);
+  const activeSize = availableSizes.includes(size) ? size : availableSizes[0];
+  // @ts-ignore
+  const image = sources.size[activeSize];
 
-  if (!IconComponent) {
-    console.warn(`Icon "${name}" doesn't have "${as}" type`);
-
-    iconType = as === 'svg' ? 'img' : 'svg';
-    IconComponent = AllIcons[name][iconType];
-
-    if (!IconComponent) {
-      console.warn(`Icon "${name}" doesn't exist`);
-
-      return <div style={{ width: size, height: size, borderRadius: 10, backgroundColor: 'lightgrey' }} />;
-    }
-  }
-
-  if (iconType === 'svg') {
-    return (
-      <IconComponent
-        className={cnTw('text-icon-default', className)}
-        width={size}
-        height={size}
-        role="img"
-        data-testid={`${name}-svg`}
-      />
-    );
-  }
-
-  if (iconType === 'img') {
+  if (as === 'img' || !sources.svg) {
     return (
       <img
         className={className}
-        src={IconComponent as string}
+        src={image}
         alt={alt}
-        width={size}
-        height={size}
+        width={activeSize}
+        height={activeSize}
         data-testid={`${name}-img`}
       />
     );
   }
 
-  return null;
+  return (
+    <svg
+      role="img"
+      xmlns="http://www.w3.org/2000/svg"
+      className={cnTw('text-icon-default', className)}
+      width={activeSize}
+      height={activeSize}
+      viewBox={`0 0 ${activeSize} ${activeSize}`}
+      data-testid={`${name}-svg`}
+    >
+      <use href={image} />
+    </svg>
+  );
 };
-
-export default Icon;

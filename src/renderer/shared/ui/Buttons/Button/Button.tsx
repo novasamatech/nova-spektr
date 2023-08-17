@@ -21,7 +21,7 @@ type Props = {
   isLoading?: boolean;
 };
 
-const Button = forwardRef<HTMLButtonElement, PropsWithChildren<Props>>(
+export const Button = forwardRef<HTMLButtonElement, PropsWithChildren<Props>>(
   (
     {
       variant = 'fill',
@@ -63,5 +63,3 @@ const Button = forwardRef<HTMLButtonElement, PropsWithChildren<Props>>(
     </button>
   ),
 );
-
-export default Button;

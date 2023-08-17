@@ -1,23 +1,9 @@
-import { BodyText } from './components/BodyText';
-import { FootnoteText } from './components/FootnoteText';
-import { TitleText } from './components/TitleText';
-import { SmallTitleText } from './components/SmallTitleText';
-import { CaptionText } from './components/CaptionText';
-import { MediumTitleText } from './components/MediumTitleText';
-import { LabelText } from './components/LabelText';
-import { HelpText } from './components/HelpText';
-import TextBase from './common/TextBase';
-import { LargeTitleText } from './components/LargeTitleText';
-
-export {
-  TextBase,
-  FootnoteText,
-  BodyText,
-  SmallTitleText,
-  TitleText,
-  LargeTitleText,
-  CaptionText,
-  MediumTitleText,
-  LabelText,
-  HelpText,
-};
+export { BodyText } from './components/BodyText';
+export { FootnoteText } from './components/FootnoteText';
+export { TitleText } from './components/TitleText';
+export { SmallTitleText } from './components/SmallTitleText';
+export { CaptionText } from './components/CaptionText';
+export { MediumTitleText } from './components/MediumTitleText';
+export { LargeTitleText } from './components/LargeTitleText';
+export { LabelText } from './components/LabelText';
+export { HelpText } from './components/HelpText';

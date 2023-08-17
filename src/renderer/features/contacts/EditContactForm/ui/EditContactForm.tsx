@@ -67,7 +67,7 @@ export const EditContactForm = ({ contactToEdit, onSubmit }: Props) => {
             canShowIdenticon ? (
               <Identicon address={address?.value} background={false} />
             ) : (
-              <Icon name="emptyIdenticon" />
+              <Icon name="identicon-placeholder" />
             )
           }
           onChange={address?.onChange}

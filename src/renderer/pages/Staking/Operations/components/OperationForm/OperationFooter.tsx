@@ -34,7 +34,7 @@ const OperationFooter = ({
       {isMultisig(account) && (
         <div className="flex justify-between items-center gap-x-2">
           <div className="flex items-center gap-x-1">
-            <Icon className="text-text-tertiary" name="lock" size={12} />
+            <Icon className="text-text-tertiary" name="lock" size={16} />
             <FootnoteText className="text-text-tertiary">{t('staking.networkDepositLabel')}</FootnoteText>
             <Tooltip content={t('staking.tooltips.depositDescription')} offsetPx={-90} pointer="down">
               <Icon name="info" className="cursor-pointer hover:text-icon-hover" size={16} />

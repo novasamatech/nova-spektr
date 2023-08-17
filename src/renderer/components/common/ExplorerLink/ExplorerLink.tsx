@@ -38,7 +38,7 @@ const ExplorerLink = ({ explorer, ...props }: Props) => {
       rel="noopener noreferrer"
       target="_blank"
     >
-      <Icon as="img" name={ExplorerIcons[name] || ExplorerIcons[DefaultExplorer]} size={12} />
+      <Icon as="img" name={ExplorerIcons[name] || ExplorerIcons[DefaultExplorer]} size={16} />
       <FootnoteText as="span" className="text-text-secondary">
         {t('general.explorers.explorerButton', { name })}
       </FootnoteText>

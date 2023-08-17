@@ -130,7 +130,11 @@ const WatchOnly = ({ isOpen, onClose, onComplete }: Props) => {
                   value={value}
                   prefixElement={
                     <div className="mr-2">
-                      {isValid ? <Identicon address={value} background={false} /> : <Icon name="emptyIdenticon" />}
+                      {isValid ? (
+                        <Identicon address={value} background={false} size={16} />
+                      ) : (
+                        <Icon name="identicon-placeholder" size={16} />
+                      )}
                     </div>
                   }
                   onChange={onChange}

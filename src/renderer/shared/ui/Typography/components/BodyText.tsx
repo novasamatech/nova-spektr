@@ -1,6 +1,6 @@
 import { cnTw } from '@renderer/shared/lib/utils';
+import { TextBase } from '../common/TextBase';
 import { FontWeight, TypographyProps } from '../common/types';
-import TextBase from '../common/TextBase';
 
 type Props = TypographyProps & { fontWeight?: FontWeight };
 export const BodyText = ({ className, fontWeight, ...props }: Props) => (

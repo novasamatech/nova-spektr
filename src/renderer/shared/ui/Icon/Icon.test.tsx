@@ -1,19 +1,19 @@
 import { render, screen } from '@testing-library/react';
 
-import Icon from './Icon';
+import { Icon } from './Icon';
 
-describe('ui/Icon', () => {
+describe('components/primitives/Icon', () => {
   test('should render svg component', () => {
-    render(<Icon name="copy" />);
+    render(<Icon name="novawallet" />);
 
-    const label = screen.getByTestId('copy-svg');
+    const label = screen.getByTestId('novawallet-svg');
     expect(label).toBeInTheDocument();
   });
 
   test('should render img component', () => {
-    render(<Icon as="img" name="copy" />);
+    render(<Icon as="img" name="novawallet" />);
 
-    const label = screen.getByTestId('copy-img');
+    const label = screen.getByTestId('novawallet-img');
     expect(label).toBeInTheDocument();
   });
 });

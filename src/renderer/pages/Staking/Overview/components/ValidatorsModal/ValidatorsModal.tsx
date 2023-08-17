@@ -105,7 +105,7 @@ export const ValidatorsModal = ({
             </div>
             <AssetBalance value={validator.ownStake || '0'} asset={asset} />
             <AssetBalance value={validator.totalStake || '0'} asset={asset} />
-            <Icon name="info" size={14} className="group-hover:text-icon-hover" />
+            <Icon name="info" size={16} className="group-hover:text-icon-hover" />
           </div>
         </InfoPopover>
       </li>
@@ -124,7 +124,7 @@ export const ValidatorsModal = ({
     >
       {isValidatorsLoading && (
         <div className="h-[366px] flex items-center justify-center">
-          <Loader className="my-24 mx-auto" color="primary" size={25} />
+          <Loader className="my-24 mx-auto" color="primary" size={20} />
         </div>
       )}
 

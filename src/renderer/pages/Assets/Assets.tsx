@@ -13,6 +13,7 @@ import { useAccount, isMultisig, Account } from '@renderer/entities/account';
 import { AssetsFilters, NetworkAssets, ReceiveModal, SelectShardModal } from './components';
 import { Header } from '@renderer/components/common';
 import { Transfer } from '@renderer/pages';
+import EmptyList from '@images/misc/empty-list.webp';
 
 export const Assets = () => {
   const { t } = useI18n();
@@ -141,7 +142,13 @@ export const Assets = () => {
               ))}
 
               <div className="hidden only:flex flex-col items-center justify-center gap-y-8 w-full h-full">
-                <Icon as="img" name="emptyList" alt={t('balances.emptyStateLabel')} size={178} />
+                <img
+                  src={EmptyList}
+                  alt={t('balances.emptyStateLabel')}
+                  width={178}
+                  height={178}
+                  data-testid="emptylist-img"
+                />
                 <BodyText align="center" className="text-text-tertiary">
                   {t('balances.emptyStateLabel')}
                   <br />

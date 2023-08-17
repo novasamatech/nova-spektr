@@ -1,10 +1,7 @@
 import { render, screen } from '@testing-library/react';
 import noop from 'lodash/noop';
 
-import Alert from './Alert';
-
-// jest.mock('dexie-react-hooks');
-// jest.mock('dexie');
+import { Alert } from './Alert';
 
 describe('ui/Alert', () => {
   test('should render title and items', () => {

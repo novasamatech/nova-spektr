@@ -3,7 +3,7 @@ import { Menu } from '@headlessui/react';
 import { ComponentProps } from 'react';
 import { Link } from 'react-router-dom';
 
-import { IconNames } from '@renderer/shared/ui/Icon/data';
+import { IconNames } from '@renderer/shared/ui/types';
 import { Button, FootnoteText, Icon } from '@renderer/shared/ui';
 import { cnTw } from '@renderer/shared/lib/utils';
 
@@ -25,14 +25,14 @@ type Props = {
   options: ButtonDropdownOption[];
 } & Omit<ButtonProps, 'children' | 'suffixElement' | 'onClick'>;
 
-const DropdownButton = ({ options, title, disabled, className, ...buttonProps }: Props) => (
+export const DropdownButton = ({ options, title, disabled, className, ...buttonProps }: Props) => (
   <Menu>
     {({ open }) => (
       <div className={cn('relative', open && 'z-10')}>
         <Menu.Button
           as={Button}
           disabled={disabled}
-          suffixElement={<Icon name={open ? 'up' : 'down'} size={16} className="text-inherit" />}
+          suffixElement={<Icon name={open ? 'chevron-up' : 'chevron-down'} size={16} className="text-inherit" />}
           className={cnTw('justify-center', className)}
           {...buttonProps}
         >
@@ -71,5 +71,3 @@ const DropdownButton = ({ options, title, disabled, className, ...buttonProps }:
     )}
   </Menu>
 );
-
-export default DropdownButton;

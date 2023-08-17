@@ -103,7 +103,7 @@ export const NetworkSelector = ({
             <FootnoteText className="truncate">
               {selectedNode?.node?.name || selectedNode?.title || t('settings.networks.selectorPlaceholder')}
             </FootnoteText>
-            <Icon name="down" size={16} />
+            <Icon name="chevron-down" size={16} />
           </Listbox.Button>
 
           <Transition
@@ -160,12 +160,7 @@ export const NetworkSelector = ({
                 })}
               </Listbox.Options>
               <Listbox.Option as="div" value={null} className="h-8.5">
-                <Button
-                  size="sm"
-                  variant="text"
-                  className="w-full h-full justify-center"
-                  suffixElement={<Icon name="add" size={16} />}
-                >
+                <Button size="sm" variant="text" className="w-full h-full justify-center">
                   {t('settings.networks.addNodeButton')}
                 </Button>
               </Listbox.Option>

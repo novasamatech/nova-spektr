@@ -17,12 +17,12 @@ export const WalletsTabItem = ({ accountId, name, walletName, explorers = [] }: 
       <div className="flex flex-col max-w-[348px]">
         <BodyText as="span" className=" tracking-tight truncate">
           {name || address}
-          {walletName && <Icon className="inline-block ml-1 mb-0.5 text-chip-icon" name="vault" size={14} />}
+          {walletName && <Icon className="inline-block ml-1 mb-0.5 text-chip-icon" name="polkadotvault" size={16} />}
         </BodyText>
 
         {walletName && (
           <HelpText className="text-text-tertiary flex items-center">
-            <Icon name="curveArrow" className="mr-0.5" size={12} /> {walletName}
+            <Icon name="arrow-curve-left" className="mr-0.5" size={16} /> {walletName}
           </HelpText>
         )}
       </div>

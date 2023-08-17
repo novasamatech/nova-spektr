@@ -1,9 +1,9 @@
-import { Explorer } from '@renderer/shared/ui/Icon/data/explorer';
+import { IconNames } from '@renderer/shared/ui/types';
 
 export const DefaultExplorer = 'default';
 
-export const ExplorerIcons: Record<string, Explorer> = {
-  [DefaultExplorer]: 'defaultExplorer',
+export const ExplorerIcons: Record<string, IconNames> = {
+  [DefaultExplorer]: 'unknown-explorer',
   Polkaholic: 'polkaholic',
   Polkascan: 'polkascan',
   Statescan: 'statescan',

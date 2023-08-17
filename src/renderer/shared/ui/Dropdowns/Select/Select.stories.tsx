@@ -1,10 +1,10 @@
 import { ComponentMeta, ComponentStory } from '@storybook/react';
 
-import { Identicon } from '@renderer/shared/ui';
-import Select from './Select';
+import { Identicon } from '../../Identicon/Identicon';
+import { Select } from './Select';
 
 export default {
-  title: 'Redesign/Select',
+  title: 'ui/Select',
   component: Select,
   parameters: { actions: { argTypesRegex: '^on.*' } },
   decorators: [
@@ -47,7 +47,7 @@ const customOptions = data.map((d, index) => ({
   value: d,
   element: (
     <div className="flex items-center gap-x-2.5">
-      <Identicon address={d.address} background={false} size={24} canCopy={false} />
+      <Identicon address={d.address} background={false} size={20} canCopy={false} />
       <p>{d.value}</p>
     </div>
   ),

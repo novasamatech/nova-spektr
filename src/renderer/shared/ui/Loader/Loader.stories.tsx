@@ -1,9 +1,9 @@
 import { ComponentMeta, ComponentStory } from '@storybook/react';
 
-import Loader from './Loader';
+import { Loader } from './Loader';
 
 export default {
-  title: 'Redesign/Loader ',
+  title: 'ui/Loader ',
   component: Loader,
   parameters: { actions: { argTypesRegex: '^on.*' } },
   decorators: [
@@ -19,12 +19,12 @@ const Template: ComponentStory<typeof Loader> = (args) => <Loader {...args} />;
 
 export const Primary = Template.bind({});
 Primary.args = {
-  size: 50,
+  size: 32,
   color: 'primary',
 };
 
 export const White = Template.bind({});
 White.args = {
-  size: 50,
+  size: 32,
   color: 'white',
 };

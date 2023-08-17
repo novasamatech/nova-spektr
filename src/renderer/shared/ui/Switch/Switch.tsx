@@ -2,18 +2,18 @@ import { Switch as HeadlessSwitch } from '@headlessui/react';
 import { PropsWithChildren } from 'react';
 
 import { cnTw } from '@renderer/shared/lib/utils';
-import { LabelText } from '@renderer/shared/ui';
+import { LabelText } from '../Typography';
 
-interface Props {
+type Props = {
   checked?: boolean;
   defaultChecked?: boolean;
   disabled?: boolean;
   className?: string;
   labelPosition?: 'left' | 'right';
   onChange?: (checked: boolean) => void;
-}
+};
 
-const Switch = ({
+export const Switch = ({
   checked,
   defaultChecked,
   disabled,
@@ -55,5 +55,3 @@ const Switch = ({
     </HeadlessSwitch.Group>
   );
 };
-
-export default Switch;

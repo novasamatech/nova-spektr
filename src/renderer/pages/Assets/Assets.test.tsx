@@ -82,7 +82,7 @@ describe('screen/Assets/Assets', () => {
 
     render(<Assets />, { wrapper: MemoryRouter });
 
-    const noResults = screen.getByTestId('emptyList-img');
+    const noResults = screen.getByTestId('emptylist-img');
     expect(noResults).toBeInTheDocument();
   });
 });

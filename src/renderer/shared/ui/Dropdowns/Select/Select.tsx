@@ -31,7 +31,7 @@ type Props<T> = {
   onChange: (data: DropdownResult<T>) => void;
 };
 
-const Select = <T extends any>({
+export const Select = <T extends any>({
   className,
   placeholder,
   label,
@@ -77,7 +77,7 @@ const Select = <T extends any>({
                 {placeholder}
               </FootnoteText>
             )}
-            <Icon name={open ? 'up' : 'down'} size={16} />
+            <Icon name={open ? 'chevron-up' : 'chevron-down'} size={16} />
           </Listbox.Button>
 
           <Transition as={Fragment} leave="transition ease-in duration-100" leaveFrom="opacity-100" leaveTo="opacity-0">
@@ -121,5 +121,3 @@ const Select = <T extends any>({
     </div>
   );
 };
-
-export default Select;

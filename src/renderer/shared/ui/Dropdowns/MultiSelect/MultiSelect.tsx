@@ -29,7 +29,7 @@ type Props = {
   onChange: (data: DropdownResult[]) => void;
 };
 
-const MultiSelect = ({
+export const MultiSelect = ({
   className,
   placeholder,
   multiPlaceholder,
@@ -95,7 +95,7 @@ const MultiSelect = ({
             tabIndex={tabIndex}
           >
             {getSelectButtonElement()}
-            <Icon name={open ? 'up' : 'down'} size={16} />
+            <Icon name={open ? 'chevron-up' : 'chevron-down'} size={16} />
           </Listbox.Button>
 
           <Transition as={Fragment} leave="transition ease-in duration-100" leaveFrom="opacity-100" leaveTo="opacity-0">
@@ -146,5 +146,3 @@ const MultiSelect = ({
     </div>
   );
 };
-
-export default MultiSelect;

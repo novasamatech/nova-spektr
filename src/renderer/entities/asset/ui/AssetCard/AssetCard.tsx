@@ -65,8 +65,8 @@ export const AssetCard = ({ asset, balance, canMakeActions, onReceiveClick, onTr
         )}
         {canMakeActions && (
           <div className="flex gap-x-2 ml-3">
-            <IconButton name="sendArrow" size={20} onClick={onTransfer} />
-            <IconButton name="receiveArrow" size={20} onClick={onReceive} />
+            <IconButton name="arrow-diagonal" size={16} onClick={onTransfer} />
+            <IconButton name="arrow-down" size={16} onClick={onReceive} />
           </div>
         )}
       </div>
