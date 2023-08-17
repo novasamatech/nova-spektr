@@ -19,17 +19,16 @@ export const Alert = ({ title, variant = 'info', className, children, onClose }:
   const isList = Children.toArray(children).length > 0;
 
   return (
-    <div className={cnTw('p-[15px] rounded-lg border', ViewStyle[variant])}>
-      <div className="flex items-start gap-x-1.5">
-        <div className="flex flex-col gap-y-1 flex-1">
-          <div className="flex items-center gap-x-1.5">
-            <Icon name={IconName[variant]} size={16} className={IconStyle[variant]} />
-            <HeadlineText>{title}</HeadlineText>
-          </div>
-          {isList ? <ul className={cnTw('flex flex-col gap-y-1 list-none pl-5 ', className)}>{children}</ul> : children}
+    <div className={cnTw('box-border p-4b rounded-lg border', ViewStyle[variant])}>
+      <div className="flex gap-x-2">
+        <Icon name={IconName[variant]} size={16} className={cnTw('mt-0.5', IconStyle[variant])} />
+
+        <div className="flex flex-col gap-y-2 flex-1">
+          <HeadlineText>{title}</HeadlineText>
+          {isList ? <ul className={cnTw('flex flex-col gap-y-2 list-none', className)}>{children}</ul> : children}
         </div>
 
-        {onClose && <IconButton size={16} name="close" onClick={onClose} />}
+        {onClose && <IconButton className="self-start mt-0.5" size={16} name="close" onClick={onClose} />}
       </div>
     </div>
   );
