@@ -28,7 +28,7 @@ export default {
         'card-shadow-level2': 'var(--card-shadow-level2)',
       },
       colors: {
-        // TODO: delete other shades
+        // TODO: delete other shades - [Colors redesign] https://app.clickup.com/t/85ztnpw40
         shade: {
           5: '#F1F1F1',
           40: '#989898',
@@ -54,6 +54,7 @@ export default {
       },
       fontSize: fontSizes,
       padding: {
+        '1.5b': '5px',
         '2b': '7px',
         '3b': '11px',
         '4b': '15px',
