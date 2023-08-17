@@ -38,6 +38,7 @@ import {
   FootnoteText,
   LabelText,
   HelpText,
+  LargeTitleText,
 } from './Typography';
 import InputArea from './Inputs/InputArea/InputArea';
 import Switch from './Switch/Switch';
@@ -78,6 +79,7 @@ export {
   CaptionText,
   BodyText,
   FootnoteText,
+  LargeTitleText,
   LabelText,
   Select,
   Combobox,

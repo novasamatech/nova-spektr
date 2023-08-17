@@ -3,6 +3,7 @@ import type { Config } from 'tailwindcss';
 const fontSizes: Required<Config>['theme']['fontSize'] = {
   // HEADLINE
   // Used for titles and large ones (by visual weight) text blocks
+  'large-title': ['1.875rem', { lineHeight: '2.5rem', fontWeight: 800 }], // 30/40px
   title: ['1.5rem', { lineHeight: '2rem', fontWeight: 800 }], // 24/32px
   'medium-title': ['1.125rem', { lineHeight: '1.5rem', fontWeight: 800 }], // 18/24px
   'small-title': ['1rem', { lineHeight: '1.25rem', fontWeight: 800 }], // 16/20px

@@ -7,6 +7,7 @@ import { MediumTitleText } from './components/MediumTitleText';
 import { LabelText } from './components/LabelText';
 import { HelpText } from './components/HelpText';
 import TextBase from './common/TextBase';
+import { LargeTitleText } from './components/LargeTitleText';
 
 export {
   TextBase,
@@ -14,6 +15,7 @@ export {
   BodyText,
   SmallTitleText,
   TitleText,
+  LargeTitleText,
   CaptionText,
   MediumTitleText,
   LabelText,
