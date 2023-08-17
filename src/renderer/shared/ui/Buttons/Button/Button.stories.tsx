@@ -32,7 +32,7 @@ PrefixText.args = {
   pallet: 'primary',
   children: 'Hello button',
   disabled: false,
-  prefixElement: <Icon name="address-book" className="text-redesign-primary" size={16} />,
+  prefixElement: <Icon name="address-book" className="text-primary" size={16} />,
 };
 
 export const Suffix = Template.bind({});
@@ -60,6 +60,6 @@ export const OnlyIcon = Template.bind({});
 OnlyIcon.args = {
   variant: 'fill',
   pallet: 'primary',
-  children: <Icon name="address-book" className="text-redesign-primary" size={16} />,
+  children: <Icon name="address-book" className="text-primary" size={16} />,
   disabled: false,
 };

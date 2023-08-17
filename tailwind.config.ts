@@ -15,11 +15,12 @@ export default {
         sans: ['Inter', ...defaultTheme.fontFamily.sans],
         manrope: ['Manrope', ...defaultTheme.fontFamily.sans],
       },
+      colors,
+      fontSize: fontSizes,
       boxShadow: {
         'shadow-primary': '0 4px 4px rgba(69, 69, 137, 0.12), 0 -0.5px 0 rgba(69, 69, 137, 0.04)',
         'shadow-secondary': '0 4px 6px rgba(69, 69, 137, 0.12), 0 -0.5px 0 rgba(69, 69, 137, 0.06)',
       },
-      colors,
       spacing: {
         1.25: '0.3125rem',
         2.5: '0.625rem',
@@ -35,7 +36,13 @@ export default {
         12.5: '3.125rem',
         15: '3.75rem',
       },
-      fontSize: fontSizes,
+      padding: {
+        '1.5b': '5px',
+        '2b': '7px',
+        '3b': '11px',
+        '4b': '15px',
+        '5b': '19px',
+      },
       borderRadius: {
         '2lg': '10px',
       },
