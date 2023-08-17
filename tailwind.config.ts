@@ -15,27 +15,11 @@ export default {
         sans: ['Inter', ...defaultTheme.fontFamily.sans],
         manrope: ['Manrope', ...defaultTheme.fontFamily.sans],
       },
+      colors,
+      fontSize: fontSizes,
       boxShadow: {
-        surface: '0 0 15px rgba(0, 0, 0, 0.05)',
-        element: '0 0 5px rgba(0, 0, 0, 0.15)',
-        component: '0 0 50px rgba(0, 0, 0, 0.1)',
-        'icon-button': '0px 2px 2px rgba(0, 0, 0, 0.04), inset 0px -0.5px 0px rgba(8, 9, 14, 0.16)',
-        'active-input': '0px 0px 0px 2px rgba(36, 99, 235, 0.16)',
-        modal: '0px 2px 6px rgba(24, 24, 28, 0.06), 0px 32px 41px -23px rgba(24, 24, 28, 0.07)',
-        'card-shadow': 'var(--card-shadow)',
-        'knob-shadow': 'var(--knob-shadow)',
-        'input-active-shadow': 'var(--input-active-shadow)',
-        'card-shadow-level2': 'var(--card-shadow-level2)',
-      },
-      colors: {
-        // TODO: delete other shades - [Colors redesign] https://app.clickup.com/t/85ztnpw40
-        shade: {
-          5: '#F1F1F1',
-          40: '#989898',
-          70: '#4C4C4C',
-          100: '#000000',
-        },
-        ...colors,
+        'shadow-primary': '0 4px 4px rgba(69, 69, 137, 0.12), 0 -0.5px 0 rgba(69, 69, 137, 0.04)',
+        'shadow-secondary': '0 4px 6px rgba(69, 69, 137, 0.12), 0 -0.5px 0 rgba(69, 69, 137, 0.06)',
       },
       spacing: {
         1.25: '0.3125rem',
@@ -52,7 +36,6 @@ export default {
         12.5: '3.125rem',
         15: '3.75rem',
       },
-      fontSize: fontSizes,
       padding: {
         '1.5b': '5px',
         '2b': '7px',
