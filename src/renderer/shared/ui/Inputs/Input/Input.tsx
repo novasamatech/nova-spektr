@@ -39,14 +39,14 @@ export const Input = forwardRef<HTMLInputElement, Props>(
     const inputElement = (
       <div
         className={cnTw(
-          'relative flex object-contain',
+          'relative flex object-contain gap-x-2',
           CommonInputStyles,
           CommonInputStylesTheme[theme],
-          !disabled && 'hover:shadow-card-shadow',
-          !invalid && 'focus-within:border-active-container-border',
-          disabled && 'bg-input-background-disabled text-text-tertiary',
-          'border-filter-border',
-          invalid && 'border-filter-border-negative',
+          !invalid &&
+            !disabled &&
+            'focus-within:border-border-accent hover:focus-within:border-border-accent hover:border-border-secondary',
+          disabled && 'bg-bg-secondary text-text-tertiary',
+          invalid && 'border-border-negative',
           wrapperClass,
         )}
       >
@@ -54,7 +54,7 @@ export const Input = forwardRef<HTMLInputElement, Props>(
         <input
           id={id}
           className={cnTw(
-            'focus:outline-none w-full placeholder:text-text-secondary',
+            'focus:outline-none w-full placeholder:text-text-secondary bg-transparent',
             disabled && 'text-text-tertiary placeholder:text-text-tertiary',
             className,
           )}
