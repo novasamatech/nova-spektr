@@ -1,7 +1,7 @@
 import { ComponentProps, useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 
-import { BaseModal, HeaderTitleText, StatusMark, Button } from '@renderer/shared/ui';
+import { BaseModal, MediumTitleText, StatusMark, Button } from '@renderer/shared/ui';
 import { useI18n, useMatrix, Paths } from '@renderer/app/providers';
 import {
   useAccount,
@@ -162,7 +162,7 @@ export const CreateMultisigAccount = ({ isOpen, onClose }: Props) => {
 
   const modalTitle = (
     <div className="flex justify-between items-center px-5 py-3 w-[472px] bg-white rounded-tl-lg">
-      <HeaderTitleText className="py-[3px]">{t('createMultisigAccount.title')}</HeaderTitleText>
+      <MediumTitleText className="py-[3px]">{t('createMultisigAccount.title')}</MediumTitleText>
       <StatusMark title={matrix.userId || ''} variant="success" />
     </div>
   );

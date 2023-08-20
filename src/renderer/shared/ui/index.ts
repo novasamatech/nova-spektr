@@ -13,12 +13,11 @@ export {
   TitleText,
   SmallTitleText,
   CaptionText,
-  HeadlineText,
   BodyText,
   FootnoteText,
   LabelText,
-  HeaderTitleText,
   HelpText,
+  MediumTitleText,
 } from './Typography';
 
 export { Plate } from './Plate/Plate';

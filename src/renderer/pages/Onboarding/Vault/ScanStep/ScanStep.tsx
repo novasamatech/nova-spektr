@@ -1,7 +1,7 @@
 import { SeedInfo } from '@renderer/components/common/QrCode/common/types';
 import { useI18n } from '@renderer/app/providers';
 import KeyQrReader from '../KeyQrReader/KeyQrReader';
-import { Button, HeaderTitleText, SmallTitleText } from '@renderer/shared/ui';
+import { Button, MediumTitleText, SmallTitleText } from '@renderer/shared/ui';
 import onboarding_tutorial from '@video/onboarding_tutorial.mp4';
 import onboarding_tutorial_webm from '@video/onboarding_tutorial.webm';
 
@@ -16,7 +16,7 @@ const ScanStep = ({ onBack, onNextStep }: Props) => {
   return (
     <>
       <div className="w-[472px] flex flex-col px-5 py-4 bg-white rounded-l-lg">
-        <HeaderTitleText className="mb-10">{t('onboarding.vault.title')}</HeaderTitleText>
+        <MediumTitleText className="mb-10">{t('onboarding.vault.title')}</MediumTitleText>
         <SmallTitleText className="mb-6">{t('onboarding.vault.scanTitle')}</SmallTitleText>
 
         <div>

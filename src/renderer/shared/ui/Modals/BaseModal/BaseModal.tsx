@@ -3,8 +3,7 @@ import { Dialog, Transition } from '@headlessui/react';
 
 import { cnTw } from '@renderer/shared/lib/utils';
 import { useI18n } from '@renderer/app/providers';
-import { HeaderTitleText } from '../../Typography';
-import { IconButton } from '../../Buttons';
+import { MediumTitleText, IconButton } from '@renderer/shared/ui';
 import { ModalBackdrop, ModalTransition } from '../common';
 
 // HINT: There are no modals with description right now
@@ -51,7 +50,7 @@ export const BaseModal = ({
                   as="header"
                   className={cnTw('text-text-primary font-bold', headerClass, closeButton && 'pr-12')}
                 >
-                  {typeof title === 'string' ? <HeaderTitleText className="truncate">{title}</HeaderTitleText> : title}
+                  {typeof title === 'string' ? <MediumTitleText className="truncate">{title}</MediumTitleText> : title}
                 </Dialog.Title>
               )}
 

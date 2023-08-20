@@ -1,9 +1,7 @@
 import { PropsWithChildren, Children } from 'react';
 
 import { cnTw } from '@renderer/shared/lib/utils';
-import { Icon } from '../Icon/Icon';
-import { IconButton } from '../Buttons';
-import { HeadlineText } from '../Typography';
+import { IconButton, Icon, SmallTitleText } from '@renderer/shared/ui';
 import { Variant } from './common/types';
 import { ViewStyle, IconStyle, IconName } from './common/constants';
 import { AlertItem } from './AlertItem';
@@ -24,7 +22,7 @@ export const Alert = ({ title, variant = 'info', className, children, onClose }:
         <Icon name={IconName[variant]} size={16} className={cnTw('mt-0.5', IconStyle[variant])} />
 
         <div className="flex flex-col gap-y-2 flex-1">
-          <HeadlineText>{title}</HeadlineText>
+          <SmallTitleText>{title}</SmallTitleText>
           {isList ? <ul className={cnTw('flex flex-col gap-y-2 list-none', className)}>{children}</ul> : children}
         </div>
 

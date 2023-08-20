@@ -9,7 +9,7 @@ import { useI18n } from '@renderer/app/providers';
 import Details from '../Details';
 import { Wallet, useWallet } from '@renderer/entities/wallet';
 
-const AmountFontStyle = 'font-manrope text-text-primary text-[32px] leading-[36px] font-bold';
+const AmountFontStyle = 'font-manrope text-text-primary text-large-title';
 
 type Props = {
   transaction: Transaction;
