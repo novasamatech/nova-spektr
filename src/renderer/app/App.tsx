@@ -14,6 +14,7 @@ import {
   MultisigChainProvider,
   Paths,
   routesConfig,
+  WalletConnectProvider,
 } from './providers';
 
 const SPLASH_SCREEN_DELAY = 450;
@@ -57,7 +58,9 @@ const App = () => {
           <MultisigChainProvider>
             <MatrixProvider>
               <ConfirmDialogProvider>
-                <GraphqlProvider>{getContent()}</GraphqlProvider>
+                <WalletConnectProvider>
+                  <GraphqlProvider>{getContent()}</GraphqlProvider>
+                </WalletConnectProvider>
               </ConfirmDialogProvider>
             </MatrixProvider>
           </MultisigChainProvider>

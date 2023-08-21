@@ -44,6 +44,9 @@ dependencies:
   '@substrate/txwrapper-polkadot':
     specifier: ^6.0.0
     version: 6.0.0(@polkadot/util-crypto@12.2.1)(@polkadot/util@12.2.1)
+  '@walletconnect/core':
+    specifier: ^2.10.0
+    version: 2.10.0
   '@walletconnect/modal':
     specifier: ^2.6.1
     version: 2.6.1(react@18.2.0)
@@ -54,6 +57,9 @@ dependencies:
     specifier: ^2.10.0
     version: 2.10.0
   '@walletconnect/universal-provider':
+    specifier: ^2.10.0
+    version: 2.10.0
+  '@walletconnect/utils':
     specifier: ^2.10.0
     version: 2.10.0
   '@web3modal/react':
