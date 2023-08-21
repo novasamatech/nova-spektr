@@ -18,9 +18,7 @@ export const InputArea = forwardRef<HTMLTextAreaElement, Props>(
         'resize-none py-2 flex-1',
         CommonInputStyles,
         CommonInputStylesTheme[theme],
-        'focus-within:enabled:border-border-focus',
-        invalid && 'border-filter-border-negative',
-        'hover:enabled:shadow-card-shadow',
+        'focus-within:enabled:border-border-focus focus:outline-none',
         'disabled:bg-input-background-disabled disabled:text-text-tertiary disabled:placeholder:text-text-tertiary',
         !invalid &&
           'enabled:focus-within:border-border-accent enabled:hover:focus-within:border-border-accent enabled:hover:border-border-secondary',
