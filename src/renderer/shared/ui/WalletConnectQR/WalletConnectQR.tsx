@@ -1,8 +1,6 @@
 import { useEffect, useState } from 'react';
-import { UniversalProvider } from '@walletconnect/universal-provider';
+import Provider, { UniversalProvider } from '@walletconnect/universal-provider';
 import { WalletConnectModal } from '@walletconnect/modal';
-import SignClient from '@walletconnect/sign-client';
-import { SessionTypes } from '@walletconnect/types';
 
 import BaseModal from '../Modals/BaseModal/BaseModal';
 import QrSimpleTextGenerator from '@renderer/components/common/QrCode/QrGenerator/QrSimpleTextGenerator';
@@ -26,11 +24,18 @@ const metadata = {
 
 const WalletConnectQR = ({ isOpen, onClose, size = 240 }: Props) => {
   const [uri, setUri] = useState<string>();
+  const [provider, setProvider] = useState<Provider>();
+
   const { connections } = useNetworkContext();
   const { createPayload, getSignedExtrinsic, submitAndWatchExtrinsic } = useTransaction();
 
   useEffect(() => {
-    makeNewConnection();
+    const justConnect = true;
+    if (justConnect) {
+      makeConnection();
+    } else {
+      signTransaction();
+    }
   }, []);
 
   const params = {
@@ -44,68 +49,17 @@ const WalletConnectQR = ({ isOpen, onClose, size = 240 }: Props) => {
     },
   };
 
-  const [sessions, setSessions] = useState<SessionTypes.Struct[]>([]);
-  const [client, setClient] = useState<SignClient>();
-
-  useEffect(() => {
-    const initClient = async () => {
-      const signClient = await SignClient.init({
-        projectId: PROJECT_ID,
-        // optional parameters
-        metadata,
-      });
-
-      setClient(signClient);
-      setSessions(signClient.session.getAll());
-
-      makePrerequest(sessions[0]);
-    };
-
-    initClient();
-  }, []);
-
-  useEffect(() => {
-    if (client) {
-      client.on('session_update', ({ topic }) => {
-        const _session = client.session.get(topic);
-        onSessionUpdate(_session);
-      });
-
-      client.on('session_delete', ({ topic }) => {
-        alert(topic);
-        setSessions((prev) => prev.filter((s) => s.topic !== topic));
-      });
-    }
-  }, [client]);
-
-  const onSessionUpdate = (session: any) => {
-    setSessions((prev) => {
-      const index = prev.findIndex((s) => s.topic === session.topic);
-      if (index === -1) {
-        return [...prev, session];
-      } else {
-        const newSessions = [...prev];
-        newSessions[index] = session;
-
-        return newSessions;
-      }
-    });
-  };
-
-  const makeNewConnection = async () => {
+  const makeConnection = async () => {
     try {
-      if (!client) return;
-
-      const { uri, approval } = await client.connect({
-        // Provide the namespaces and chains (e.g. `eip155` for EVM-based chains) we want to use in this session.
-        requiredNamespaces: {
-          eip155: {
-            methods: ['eth_sendTransaction'],
-            chains: ['eip155:1'],
-            events: ['chainChanged', 'accountsChanged'],
-          },
-        },
+      const universalProvider = await UniversalProvider.init({
+        projectId: PROJECT_ID,
+        metadata,
+        logger: 'debug',
       });
+
+      setProvider(provider);
+
+      const { uri, approval } = await universalProvider.client.connect(params);
 
       if (uri) {
         setUri(uri);
@@ -115,8 +69,10 @@ const WalletConnectQR = ({ isOpen, onClose, size = 240 }: Props) => {
         });
 
         walletConnectModal.openModal({ uri });
+
         const session = await approval();
-        onSessionUpdate(session);
+        console.log('session', session);
+
         walletConnectModal.closeModal();
       }
     } catch (e) {
@@ -124,20 +80,18 @@ const WalletConnectQR = ({ isOpen, onClose, size = 240 }: Props) => {
     }
   };
 
-  const makePrerequest = async (session: SessionTypes.Struct) => {
-    const provider = await UniversalProvider.init({
+  const signTransaction = async () => {
+    const universalProvider = await UniversalProvider.init({
       projectId: PROJECT_ID,
       metadata,
-      client,
       logger: 'debug',
     });
-    provider.session = session;
+    setProvider(universalProvider);
 
-    await provider.connect(params);
-    const pairings = provider.client.session.getAll();
+    await universalProvider.connect(params);
+    const sessions = universalProvider.client.session.getAll();
+    console.log(sessions);
     const connection = Object.values(connections).find((c) => c.chainId.includes('e143f23803ac50e8f6f8e62695d1ce9e'));
-
-    console.log('wallet', pairings);
 
     if (!connection?.api) return;
 
@@ -153,7 +107,7 @@ const WalletConnectQR = ({ isOpen, onClose, size = 240 }: Props) => {
 
     const { unsigned } = await createPayload(transaction, connection.api);
 
-    const result = await provider.client.request({
+    const result = await universalProvider.client.request({
       chainId: 'polkadot:e143f23803ac50e8f6f8e62695d1ce9e',
       topic: '98a83c1052624b30420286a258eb46dd9468ec9ec548f448efe65bbe1063ee00',
       request: {
@@ -165,8 +119,6 @@ const WalletConnectQR = ({ isOpen, onClose, size = 240 }: Props) => {
       },
     });
 
-    console.log('wallet', result);
-
     const extrinsic = await getSignedExtrinsic(
       unsigned,
       (result as { signature: HexString }).signature,
@@ -175,7 +127,7 @@ const WalletConnectQR = ({ isOpen, onClose, size = 240 }: Props) => {
 
     submitAndWatchExtrinsic(extrinsic, unsigned, connection.api, async (executed, params) => {
       if (executed) {
-        console.log('wallet', params);
+        console.log('submit result params', params);
       }
     });
   };
