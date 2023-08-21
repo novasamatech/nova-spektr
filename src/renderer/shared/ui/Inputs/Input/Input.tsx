@@ -5,6 +5,7 @@ import { LabelText } from '../../Typography';
 import { HTMLInputProps } from '../common/types';
 import { CommonInputStyles, CommonInputStylesTheme } from '../common/styles';
 import { Theme } from '../../Dropdowns/common/types';
+import './style.css';
 
 export type Props = Pick<ComponentPropsWithoutRef<'input'>, HTMLInputProps> & {
   label?: ReactNode;
@@ -39,7 +40,7 @@ export const Input = forwardRef<HTMLInputElement, Props>(
     const inputElement = (
       <div
         className={cnTw(
-          'relative flex object-contain gap-x-2',
+          'input-wrapper relative flex object-contain gap-x-2',
           CommonInputStyles,
           CommonInputStylesTheme[theme],
           !invalid &&

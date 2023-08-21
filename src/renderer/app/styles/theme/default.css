@@ -65,6 +65,6 @@
   --bg-transparent: rgba(54, 54, 67, 0.4);
 
   /* GRADIENT */
-  --gradient-shimmering-primary: linear-gradient(0deg, #f0f0f6 0%, #e1e1ec 50%, #f0f0f6 100%);
-  --gradient-border-primary: linear-gradient(90deg, #7a7a7a 0%, #f0f0f6 100%);
+  --gr-shimmering-primary: linear-gradient(0deg, #f0f0f6 0%, #e1e1ec 50%, #f0f0f6 100%);
+  --gr-border-primary: linear-gradient(90deg, #7a7a7a 0%, #f0f0f6 100%);
 }

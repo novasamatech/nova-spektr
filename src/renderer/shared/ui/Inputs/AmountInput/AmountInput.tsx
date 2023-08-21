@@ -2,9 +2,9 @@ import { useCallback } from 'react';
 
 // FIXME components in shared shouldn't use components from entity so we need to move it to entity
 import { AssetBalance, AssetIcon, Asset } from '@renderer/entities/asset';
-import { cleanAmount, formatGroups, validatePrecision, validateSymbols } from '@renderer/shared/lib/utils';
+import { cleanAmount, cnTw, formatGroups, validatePrecision, validateSymbols } from '@renderer/shared/lib/utils';
 import { useI18n } from '@renderer/app/providers';
-import { FootnoteText, TitleText } from '../../Typography';
+import { FootnoteText, HelpText, TitleText } from '../../Typography';
 import { Input } from '../Input/Input';
 
 type Props = {
@@ -16,6 +16,7 @@ type Props = {
   balancePlaceholder?: string;
   balance?: string | string[];
   invalid?: boolean;
+  fiatValue?: string;
   onChange?: (value: string) => void;
 };
 
@@ -28,6 +29,7 @@ export const AmountInput = ({
   placeholder,
   disabled,
   invalid,
+  fiatValue,
   onChange,
 }: Props) => {
   const { t } = useI18n();
@@ -79,15 +81,21 @@ export const AmountInput = ({
     </div>
   );
 
+  const suffixElement = (
+    <HelpText className="absolute uppercase right-3 bottom-2 text-text-tertiary">{fiatValue}</HelpText>
+  );
+
   return (
     <Input
       name={name}
-      className="text-right text-title font-manrope"
+      className={cnTw('text-right text-title font-manrope', fiatValue && 'mb-4')}
+      wrapperClass="py-2 items-start"
       label={label}
       value={formatGroups(value)}
       placeholder={t('transfer.amountPlaceholder')}
       invalid={invalid}
       prefixElement={prefixElement}
+      suffixElement={fiatValue && suffixElement}
       disabled={disabled}
       onChange={handleChange}
     />

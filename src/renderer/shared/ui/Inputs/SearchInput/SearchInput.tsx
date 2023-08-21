@@ -3,21 +3,19 @@ import cn from 'classnames';
 
 import { Icon, IconButton, Input } from '@renderer/shared/ui';
 import { Props as InputProps } from '../Input/Input';
-import { cnTw } from '@renderer/shared/lib/utils';
 
 type Props = Omit<InputProps, 'prefixElement' | 'suffixElement'>;
 
-export const SearchInput = forwardRef<HTMLInputElement, Props>(({ className, wrapperClass, ...props }, ref) => (
+export const SearchInput = forwardRef<HTMLInputElement, Props>(({ className, ...props }, ref) => (
   <Input
     ref={ref}
     className={className}
-    wrapperClass={cnTw('hover:shadow-none', wrapperClass)}
-    prefixElement={<Icon name="search" size={16} className="mr-2" />}
+    prefixElement={<Icon name="search" size={20} />}
     suffixElement={
       <IconButton
         name="close"
         ariaLabel="clear search"
-        className={cn('ml-2 p-[1px]', !props.value && 'hidden')}
+        className={cn(!props.value && 'invisible')}
         onClick={() => props.onChange?.('')}
       />
     }

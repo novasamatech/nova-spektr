@@ -15,14 +15,17 @@ export const InputArea = forwardRef<HTMLTextAreaElement, Props>(
   ({ className, invalid, theme = 'light', onChange, ...props }, ref) => (
     <textarea
       className={cnTw(
-        'resize-none text-footnote flex-1',
+        'resize-none py-2 flex-1',
         CommonInputStyles,
         CommonInputStylesTheme[theme],
-        'focus-within:enabled:border-active-container-border',
+        'focus-within:enabled:border-border-focus',
         invalid && 'border-filter-border-negative',
         'hover:enabled:shadow-card-shadow',
         'disabled:bg-input-background-disabled disabled:text-text-tertiary disabled:placeholder:text-text-tertiary',
-        'flex-1 border-filter-border',
+        !invalid &&
+          'enabled:focus-within:border-border-accent enabled:hover:focus-within:border-border-accent enabled:hover:border-border-secondary',
+        'disabled:bg-bg-secondary disabled:text-text-tertiary',
+        invalid && 'border-border-negative',
         className,
       )}
       ref={ref}

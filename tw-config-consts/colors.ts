@@ -66,6 +66,6 @@ export default {
   'bg-transparent': 'var(--bg-transparent)',
 
   /* GRADIENT */
-  'gradient-shimmering-primary': 'var(--gradient-shimmering-primary)',
-  'gradient-border-primary': 'var(--gradient-border-primary)',
+  'gr-shimmering-primary': 'var(--gr-shimmering-primary)',
+  'gr-border-primary': 'var(--gr-border-primary)',
 };
