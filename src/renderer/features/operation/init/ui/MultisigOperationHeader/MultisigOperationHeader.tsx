@@ -14,7 +14,7 @@ type Props = {
   onSignatoryChange: (account: Account) => void;
 };
 
-export const MultisigOperation = ({ account, invalid, error, getSignatoryOption, onSignatoryChange }: Props) => {
+export const MultisigOperationHeader = ({ account, invalid, error, getSignatoryOption, onSignatoryChange }: Props) => {
   const { t } = useI18n();
   const { getLiveAccounts } = useAccount();
 

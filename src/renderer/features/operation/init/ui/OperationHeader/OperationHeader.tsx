@@ -1,9 +1,9 @@
 import { ChainId } from '@renderer/domain/shared-kernel';
 import { Account, isMultishard, isMultisig, MultisigAccount } from '@renderer/entities/account';
-import { MultisigOperation } from '../MultisigOperation/MultisigOperation';
-import { MultishardStaking } from '../MultishardStaking/MultishardStaking';
-import { MultishardTransfer } from '../MultishardTransfer/MultishardTransfer';
+import { SingleSelectMultishardHeader } from '../SingleSelectMultishardHeader/SingleSelectMultishardHeader';
+import { MultiSelectMultishardHeader } from '../MultiSelectMultishardHeader/MultiSelectMultishardHeader';
 import { DropdownOption } from '@renderer/shared/ui/Dropdowns/common/types';
+import { MultisigOperationHeader } from '../MultisigOperationHeader/MultisigOperationHeader';
 
 type Props = {
   accounts: Account[] | [MultisigAccount];
@@ -39,7 +39,7 @@ export const OperationHeader = ({
   return (
     <div className="flex flex-col gap-y-4">
       {isMultisig(firstAccount) && (
-        <MultisigOperation
+        <MultisigOperationHeader
           account={firstAccount as MultisigAccount}
           invalid={invalid}
           error={error}
@@ -50,13 +50,13 @@ export const OperationHeader = ({
 
       {isMultishard(firstAccount) &&
         (isMultiselect ? (
-          <MultishardStaking
+          <SingleSelectMultishardHeader
             accounts={accounts}
             getAccountOption={getAccountOption}
             onAccountsChange={onAccountChange as MultiselectAccount}
           />
         ) : (
-          <MultishardTransfer
+          <MultiSelectMultishardHeader
             accounts={accounts}
             chainId={chainId}
             getAccountOption={getAccountOption}

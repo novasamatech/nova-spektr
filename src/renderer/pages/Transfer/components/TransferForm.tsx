@@ -370,29 +370,6 @@ export const TransferForm = ({
           />
         )}
 
-        {/*<div className="flex flex-col items-center mt-2 gap-y-4">*/}
-        {/*  {isMultisig(account) && (*/}
-        {/*    <DepositWithLabel*/}
-        {/*      className="text-footnote text-text-primary"*/}
-        {/*      api={api}*/}
-        {/*      asset={nativeToken}*/}
-        {/*      threshold={account.threshold}*/}
-        {/*      onDepositChange={setDeposit}*/}
-        {/*    />*/}
-        {/*  )}*/}
-        {/*  <DetailRow label={t('operation.networkFee')} className="text-text-primary">*/}
-        {/*    {api && (*/}
-        {/*      <Fee*/}
-        {/*        className="text-footnote text-text-primary"*/}
-        {/*        api={api}*/}
-        {/*        asset={nativeToken}*/}
-        {/*        transaction={transferTx}*/}
-        {/*        onFeeLoading={setFeeLoading}*/}
-        {/*        onFeeChange={updateFee}*/}
-        {/*      />*/}
-        {/*    )}*/}
-        {/*  </DetailRow>*/}
-        {/*</div>*/}
         {footer}
       </div>
 

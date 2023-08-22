@@ -13,7 +13,13 @@ type Props = {
   onAccountsChange: (accounts: Account[]) => void;
 };
 
-export const MultishardStaking = ({ accounts, invalid, error, getAccountOption, onAccountsChange }: Props) => {
+export const SingleSelectMultishardHeader = ({
+  accounts,
+  invalid,
+  error,
+  getAccountOption,
+  onAccountsChange,
+}: Props) => {
   const { t } = useI18n();
 
   const [activeAccounts, setActiveAccounts] = useState<DropdownResult<Account | MultisigAccount>[]>([]);

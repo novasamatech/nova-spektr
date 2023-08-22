@@ -20,6 +20,7 @@ export const validateBalance = async (
   props: PartialBy<Props, 'transaction' | 'api'>,
 ): Promise<ValidationErrors | undefined> => {
   if (!props.api || !props.transaction) return;
+
   const [balanceIsEnough, feeIsEnough] = await Promise.all([
     validateBalanceForAmount(props as Props),
     validateBalanceForFee(props as Props),
@@ -44,19 +45,21 @@ const getNativeTokenBalance = ({ assetId, transaction, chainId, getBalance }: Pr
 
 const validateBalanceForAmount = async ({ transaction, ...props }: Props): Promise<boolean> => {
   const amount = transaction.args.value;
-  const transferableBalance = transferableAmount(await getTokenBalance({ transaction, ...props }));
+  const tokenBalance = await getTokenBalance({ transaction, ...props });
+  const transferableBalance = transferableAmount(tokenBalance);
 
-  return new BN(transferableBalance).gt(new BN(amount));
+  return new BN(transferableBalance).gte(new BN(amount));
 };
 
 const validateBalanceForFee = async ({ transaction, getTransactionFee, api, ...props }: Props): Promise<boolean> => {
   const amount = transaction.args.value;
   const nativeTokenBalance = await getNativeTokenBalance({ transaction, api, getTransactionFee, ...props });
-  const transferableBalance = transferableAmount(await getTokenBalance({transaction, api, getTransactionFee, ...props}));
+  const tokenBalance = await getTokenBalance({ transaction, api, getTransactionFee, ...props });
+  const transferableBalance = transferableAmount(tokenBalance);
   const transferableNativeTokenBalance = transferableAmount(nativeTokenBalance);
   const fee = await getTransactionFee(transaction, api);
 
   return nativeTokenBalance
-    ? new BN(transferableNativeTokenBalance).gt(new BN(fee))
-    : new BN(transferableBalance).gt(new BN(fee).add(new BN(amount)));
+    ? new BN(transferableNativeTokenBalance).gte(new BN(fee))
+    : new BN(transferableBalance).gte(new BN(fee).add(new BN(amount)));
 };

@@ -15,7 +15,14 @@ type Props = {
   onAccountChange: (account: Account) => void;
 };
 
-export const MultishardTransfer = ({ accounts, invalid, chainId, error, getAccountOption, onAccountChange }: Props) => {
+export const MultiSelectMultishardHeader = ({
+  accounts,
+  invalid,
+  chainId,
+  error,
+  getAccountOption,
+  onAccountChange,
+}: Props) => {
   const { t } = useI18n();
 
   const [activeAccount, setActiveAccount] = useState<DropdownResult<Account | MultisigAccount>>();
