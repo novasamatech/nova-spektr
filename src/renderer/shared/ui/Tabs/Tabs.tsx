@@ -25,7 +25,7 @@ export const Tabs = ({ items, unmount = true, tabClassName, panelClassName = 'mt
         >
           <FootnoteText
             align="center"
-            className="flex items-center text-button-small text-text-secondary ui-selected:text-text-primary"
+            className="flex items-center text-body font-semibold text-text-secondary ui-selected:text-text-primary"
           >
             {title}
           </FootnoteText>

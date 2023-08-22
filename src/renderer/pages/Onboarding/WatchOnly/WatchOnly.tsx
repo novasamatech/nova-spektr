@@ -9,7 +9,7 @@ import {
   Button,
   Input,
   InputHint,
-  HeaderTitleText,
+  MediumTitleText,
   SmallTitleText,
   ButtonText,
 } from '@renderer/shared/ui';
@@ -89,7 +89,7 @@ const WatchOnly = ({ isOpen, onClose, onComplete }: Props) => {
       onClose={closeModal}
     >
       <div className="w-[472px] flex flex-col px-5 py-4 bg-white rounded-l-lg">
-        <HeaderTitleText className="mb-10">{t('onboarding.watchOnly.title')}</HeaderTitleText>
+        <MediumTitleText className="mb-10">{t('onboarding.watchOnly.title')}</MediumTitleText>
         <SmallTitleText className="mb-6">{t('onboarding.watchOnly.manageTitle')}</SmallTitleText>
 
         <form className="flex flex-col gap-4 h-full" onSubmit={handleSubmit(createWallet)}>

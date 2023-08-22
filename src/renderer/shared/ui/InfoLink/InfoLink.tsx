@@ -21,7 +21,7 @@ export const InfoLink = ({ url, children, iconName, size = 'sm', className, tabI
     tabIndex={tabIndex}
     className={cnTw(
       'text-primary-button-background-default hover:text-primary-button-background-hover active:text-primary-button-background-active disabled:text-primary-button-background-inactive',
-      size === 'sm' ? 'text-button-small' : 'text-button-large',
+      size === 'sm' ? 'text-body font-semibold' : 'text-body font-semibold',
       iconName && 'flex items-center gap-x-0.5',
       className,
     )}

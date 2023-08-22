@@ -10,4 +10,6 @@ type Props = {
   className?: string;
 };
 
+export type FontWeight = 'medium' | 'semibold';
+
 export type TypographyProps = PropsWithChildren<Partial<Props>>;

@@ -6,7 +6,7 @@ import { ExtendedChain } from '@renderer/entities/network';
 import { useI18n } from '@renderer/app/providers';
 import Details from '../Details';
 
-const AmountFontStyle = 'font-manrope text-text-primary text-[32px] leading-[36px] font-bold';
+const AmountFontStyle = 'font-manrope text-text-primary text-large-title';
 
 type Props = {
   tx: MultisigTransaction;

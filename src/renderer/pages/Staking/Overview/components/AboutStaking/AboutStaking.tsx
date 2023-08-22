@@ -83,11 +83,11 @@ export const AboutStaking = ({ api, era, asset, validators }: Props) => {
       {/*    <FootnoteText>{t('staking.about.yearlyEarningLabel')}</FootnoteText>*/}
 
       {/*    {maximumApy ? (*/}
-      {/*      <LargeTitleText as="p">{apyToMonthlyRate(maximumApy)}%</LargeTitleText>*/}
+      {/*      <MediumTitleText as="p">{apyToMonthlyRate(maximumApy)}%</MediumTitleText>*/}
       {/*    ) : (*/}
       {/*      <Shimmering width={96} height={36} />*/}
       {/*    )}*/}
-      {/*    {maximumApy ? <LargeTitleText as="p">{maximumApy}%</LargeTitleText> : <Shimmering width={96} height={36} />}*/}
+      {/*    {maximumApy ? <MediumTitleText as="p">{maximumApy}%</MediumTitleText> : <Shimmering width={96} height={36} />}*/}
       {/*  </div>*/}
 
       {/*  <hr className="border-divider my-2" />*/}
