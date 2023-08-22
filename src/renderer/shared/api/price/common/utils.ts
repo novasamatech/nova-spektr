@@ -1,6 +1,6 @@
 import { PriceObject, PriceDB } from './types';
 
-export const getCurrencyChangeTitle = (currency: string): string => {
+export const getCurrencyChangeKey = (currency: string): string => {
   return `${currency}_24h_change`;
 };
 
@@ -23,6 +23,10 @@ export const convertPriceToDBView = (price: PriceObject): PriceDB[] => {
 
 export const convertPriceToObjectView = (prices: PriceDB[]): PriceObject => {
   return prices.reduce<PriceObject>((result, { assetId, currency, price, change }) => {
+    if (!result[assetId]) {
+      result[assetId] = {};
+    }
+
     result[assetId][currency] = {
       price,
       change,

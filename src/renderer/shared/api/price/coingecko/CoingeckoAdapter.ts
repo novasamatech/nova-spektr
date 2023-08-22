@@ -1,16 +1,18 @@
 import { AssetId, Currency, PriceObject, PriceAdapter, PriceItem, PriceRange } from '../common/types';
-import { getCurrencyChangeTitle } from '../common/utils';
+import { getCurrencyChangeKey } from '../common/utils';
 import { COINGECKO_URL } from './consts';
 
 export class CoinGeckoAdapter implements PriceAdapter {
   async getPrice(ids: AssetId[], currencies: Currency[], includeRateChange: boolean): Promise<PriceObject> {
-    const response = await fetch(`${COINGECKO_URL}/simple/price`, {
+    const url = new URL(`${COINGECKO_URL}/simple/price`);
+    url.search = new URLSearchParams({
+      ids: ids.join(','),
+      vs_currencies: currencies.join(','),
+      include_24hr_change: includeRateChange ? 'true' : 'false',
+    }).toString();
+
+    const response = await fetch(url, {
       method: 'GET',
-      body: JSON.stringify({
-        ids: ids.join(','),
-        vs_currencies: currencies.join(','),
-        include_24hr_change: includeRateChange ? 'true' : 'false',
-      }),
     });
 
     const data = await response.json();
@@ -19,7 +21,7 @@ export class CoinGeckoAdapter implements PriceAdapter {
       result[assetId] = currencies.reduce<Record<string, PriceItem>>((result, currency) => {
         result[currency] = {
           price: data[assetId][currency],
-          change: data[assetId][getCurrencyChangeTitle(currency)],
+          change: data[assetId][getCurrencyChangeKey(currency)],
         };
 
         return result;
@@ -32,13 +34,15 @@ export class CoinGeckoAdapter implements PriceAdapter {
   }
 
   async getHistoryData(id: string, currency: string, from: number, to: number): Promise<PriceRange[]> {
-    const response = await fetch(`${COINGECKO_URL}/coins/${id}/market_chart/range`, {
+    const url = new URL(`${COINGECKO_URL}/coins/${id}/market_chart/range`);
+    url.search = new URLSearchParams({
+      vs_currency: currency,
+      from: from.toString(),
+      to: to.toString(),
+    }).toString();
+
+    const response = await fetch(url, {
       method: 'GET',
-      body: JSON.stringify({
-        vs_currency: currency,
-        from,
-        to,
-      }),
     });
 
     const data = await response.json();
