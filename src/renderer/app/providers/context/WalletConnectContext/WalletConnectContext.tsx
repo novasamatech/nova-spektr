@@ -5,7 +5,14 @@ import { WalletConnectModal } from '@walletconnect/modal';
 import { RELAYER_EVENTS } from '@walletconnect/core';
 import { getSdkError } from '@walletconnect/utils';
 
-import { DEFAULT_APP_METADATA, DEFAULT_LOGGER, DEFAULT_PROJECT_ID, DEFAULT_RELAY_URL } from './const';
+import {
+  DEFAULT_APP_METADATA,
+  DEFAULT_LOGGER,
+  DEFAULT_POLKADOT_EVENTS,
+  DEFAULT_POLKADOT_METHODS,
+  DEFAULT_PROJECT_ID,
+  DEFAULT_RELAY_URL,
+} from './const';
 import { useChains } from '@renderer/entities/network';
 
 /**
@@ -33,7 +40,7 @@ export const WalletConnectContext = createContext<IContext>({} as IContext);
 /**
  * Web3Modal Config
  */
-const web3Modal = new WalletConnectModal({
+const walletConnectModal = new WalletConnectModal({
   projectId: DEFAULT_PROJECT_ID,
   themeMode: 'light',
 });
@@ -80,19 +87,17 @@ export const WalletConnectProvider = ({ children }: { children: ReactNode | Reac
       }
       console.log('connect, pairing topic is:', pairing?.topic);
       const chains = await getChainsData();
-      console.log('wallet', chains);
 
       try {
         const optionalNamespaces = {
           polkadot: {
-            methods: ['polkadot_signTransaction', 'polkadot_signMessage'],
+            methods: [DEFAULT_POLKADOT_METHODS.POLKADOT_SIGN_TRANSACTION],
             //eslint-disable-next-line i18next/no-literal-string
             chains: chains.map((c) => `polkadot:${c.chainId.slice(2, 34)}`),
-            events: ['chainChanged", "accountsChanged'],
+            events: [DEFAULT_POLKADOT_EVENTS.CHAIN_CHANGED, DEFAULT_POLKADOT_EVENTS.ACCOUNTS_CHANGED],
           },
         };
 
-        console.log('optionalNamespaces config for connect:', optionalNamespaces);
         const { uri, approval } = await client.connect({
           pairingTopic: pairing?.topic,
           optionalNamespaces,
@@ -100,20 +105,19 @@ export const WalletConnectProvider = ({ children }: { children: ReactNode | Reac
 
         // Open QRCode modal if a URI was returned (i.e. we're not connecting an existing pairing).
         if (uri) {
-          web3Modal.openModal({ uri });
+          walletConnectModal.openModal({ uri });
         }
 
         const session = await approval();
         console.log('Established session:', session);
+
         await onSessionConnected(session);
-        // Update known pairings after session is connected.
+
         setPairings(client.pairing.getAll({ active: true }));
       } catch (e) {
         console.error(e);
-        // ignore rejection
       } finally {
-        // close modal in case it was open
-        web3Modal.closeModal();
+        walletConnectModal.closeModal();
       }
     },
     [chains, client, onSessionConnected],
@@ -135,7 +139,7 @@ export const WalletConnectProvider = ({ children }: { children: ReactNode | Reac
     } catch (error) {
       return;
     }
-    // Reset app state after disconnect.
+
     reset();
   }, [client, session]);
 
@@ -174,12 +178,12 @@ export const WalletConnectProvider = ({ children }: { children: ReactNode | Reac
       if (typeof _client === 'undefined') {
         throw new Error('WalletConnect is not initialized');
       }
-      // populates existing pairings to state
+
       setPairings(_client.pairing.getAll({ active: true }));
       console.log('RESTORED PAIRINGS: ', _client.pairing.getAll({ active: true }));
 
       if (typeof session !== 'undefined') return;
-      // populates (the last) existing session to state
+
       if (_client.session.length) {
         const lastKeyIndex = _client.session.keys.length - 1;
         const _session = _client.session.get(_client.session.keys[lastKeyIndex]);
@@ -239,11 +243,11 @@ export const WalletConnectProvider = ({ children }: { children: ReactNode | Reac
   useEffect(() => {
     if (!client) return;
     client.core.relayer.on(RELAYER_EVENTS.connect, () => {
-      console.log('Network connection is restored!');
+      console.log('Network connection is restored');
     });
 
     client.core.relayer.on(RELAYER_EVENTS.disconnect, () => {
-      console.log('Network connection lost.');
+      console.log('Network connection lost');
     });
   }, [client]);
 
@@ -289,6 +293,7 @@ export const WalletConnectProvider = ({ children }: { children: ReactNode | Reac
 
 export const useWalletConnectClient = () => {
   const context = useContext(WalletConnectContext);
+
   if (context === undefined) {
     throw new Error('useWalletConnectClient must be used within a ClientContextProvider');
   }

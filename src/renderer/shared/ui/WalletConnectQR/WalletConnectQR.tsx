@@ -15,7 +15,7 @@ type Props = {
 
 const WalletConnectQR = ({ isOpen, onClose, size = 240 }: Props) => {
   const { t } = useI18n();
-  const { connect, client, pairings, session } = useWalletConnectClient();
+  const { connect, client, pairings, session, isInitializing } = useWalletConnectClient();
   const { getSignedExtrinsic, createPayload, submitAndWatchExtrinsic } = useTransaction();
   const { connections } = useNetworkContext();
 
@@ -75,11 +75,15 @@ const WalletConnectQR = ({ isOpen, onClose, size = 240 }: Props) => {
       onClose={onClose}
     >
       {session ? (
-        <Button onClick={() => signTransaction()}> {t('Sign')}</Button>
+        <>{!isInitializing && <Button onClick={() => signTransaction()}> {t('Sign transaction')}</Button>}</>
       ) : (
-        <Button onClick={() => connect(pairings.length > 0 ? pairings[pairings.length - 1] : undefined)}>
-          {t('Connect')}
-        </Button>
+        <>
+          {!isInitializing && (
+            <Button onClick={() => connect(pairings.length > 0 ? pairings[pairings.length - 1] : undefined)}>
+              {t('Connect')}
+            </Button>
+          )}
+        </>
       )}
     </BaseModal>
   );
