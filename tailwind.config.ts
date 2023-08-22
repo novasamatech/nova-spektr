@@ -37,6 +37,7 @@ export default {
         15: '3.75rem',
       },
       padding: {
+        '0.5b': '1px',
         '1.5b': '5px',
         '2b': '7px',
         '3b': '11px',
