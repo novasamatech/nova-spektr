@@ -1,11 +1,11 @@
-import { ComponentStory, ComponentMeta } from '@storybook/react';
+import type { Meta, StoryObj } from '@storybook/react';
 
 import { Switch } from './Switch';
 
-export default {
+const meta: Meta<typeof Switch> = {
   title: 'Switch',
   component: Switch,
-  parameters: { actions: { argTypesRegex: '^on.*' } },
+
   decorators: [
     (Story) => (
       <div className="w-max">
@@ -13,17 +13,20 @@ export default {
       </div>
     ),
   ],
-} as ComponentMeta<typeof Switch>;
-
-const Template: ComponentStory<typeof Switch> = (args) => <Switch {...args} />;
-
-export const Primary = Template.bind({});
-Primary.args = {
-  children: 'Switch label',
 };
 
-export const Disabled = Template.bind({});
-Disabled.args = {
-  children: 'Switch label',
-  disabled: true,
+export default meta;
+type Story = StoryObj<typeof Switch>;
+
+export const Primary: Story = {
+  args: {
+    children: 'Switch label',
+  },
+};
+
+export const Disabled: Story = {
+  args: {
+    children: 'Switch label',
+    disabled: true,
+  },
 };

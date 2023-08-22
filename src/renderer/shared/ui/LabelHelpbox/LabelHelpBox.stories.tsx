@@ -1,16 +1,17 @@
-import { ComponentStory, ComponentMeta } from '@storybook/react';
+import type { Meta, StoryObj } from '@storybook/react';
 
 import { LabelHelpBox } from './LabelHelpBox';
 
-export default {
+const meta: Meta<typeof LabelHelpBox> = {
   title: 'LabelHelpBox',
   component: LabelHelpBox,
-  parameters: { actions: { argTypesRegex: '^on.*' } },
-} as ComponentMeta<typeof LabelHelpBox>;
+};
 
-const Template: ComponentStory<typeof LabelHelpBox> = (args) => <LabelHelpBox {...args} />;
+export default meta;
+type Story = StoryObj<typeof LabelHelpBox>;
 
-export const Primary = Template.bind({});
-Primary.args = {
-  children: 'This is simple content',
+export const Primary: Story = {
+  args: {
+    children: 'This is simple content',
+  },
 };

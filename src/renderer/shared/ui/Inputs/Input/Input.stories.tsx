@@ -1,49 +1,55 @@
-import { ComponentMeta, ComponentStory } from '@storybook/react';
+import type { Meta, StoryObj } from '@storybook/react';
 
 import { Input } from './Input';
 import { Icon } from '../../Icon/Icon';
 
-export default {
+const meta: Meta<typeof Input> = {
   title: 'ui/Input',
   component: Input,
-  parameters: { actions: { argTypesRegex: '^on.*' } },
-} as ComponentMeta<typeof Input>;
-
-const Template: ComponentStory<typeof Input> = (args) => <Input {...args} />;
-
-export const Primary = Template.bind({});
-Primary.args = {
-  placeholder: 'Test input',
 };
 
-export const Filled = Template.bind({});
-Filled.args = {
-  value: 'This is value',
+export default meta;
+type Story = StoryObj<typeof Input>;
+
+export const Primary: Story = {
+  args: {
+    placeholder: 'Test input',
+  },
 };
 
-export const Label = Template.bind({});
-Label.args = {
-  label: 'With label',
-  value: 'This is value',
+export const Filled: Story = {
+  args: {
+    value: 'This is value',
+  },
 };
 
-export const Invalid = Template.bind({});
-Invalid.args = {
-  label: 'With invalid',
-  value: 'This is value',
-  invalid: true,
+export const Label: Story = {
+  args: {
+    label: 'With label',
+    value: 'This is value',
+  },
 };
 
-export const Disabled = Template.bind({});
-Disabled.args = {
-  label: 'With disabled label',
-  value: 'This is value',
-  disabled: true,
+export const Invalid: Story = {
+  args: {
+    label: 'With invalid',
+    value: 'This is value',
+    invalid: true,
+  },
 };
 
-export const Suffix = Template.bind({});
-Suffix.args = {
-  label: 'With suffix element',
-  value: 'This is value',
-  suffixElement: <Icon name="status-warning" className="text-alert right-2 top-[9px] absolute" size={16} />,
+export const Disabled: Story = {
+  args: {
+    label: 'With disabled label',
+    value: 'This is value',
+    disabled: true,
+  },
+};
+
+export const Suffix: Story = {
+  args: {
+    label: 'With suffix element',
+    value: 'This is value',
+    suffixElement: <Icon name="status-warning" className="text-alert right-2 top-[9px] absolute" size={16} />,
+  },
 };

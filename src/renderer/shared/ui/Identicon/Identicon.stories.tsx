@@ -1,24 +1,26 @@
-import { ComponentMeta, ComponentStory } from '@storybook/react';
+import type { Meta, StoryObj } from '@storybook/react';
 
 import { TEST_ADDRESS } from '@renderer/shared/lib/utils';
 import { Identicon } from './Identicon';
 
-export default {
+const meta: Meta<typeof Identicon> = {
   title: 'Identicon',
   component: Identicon,
-  parameters: { actions: { argTypesRegex: '^on.*' } },
-} as ComponentMeta<typeof Identicon>;
-
-const Template: ComponentStory<typeof Identicon> = (args) => <Identicon {...args} />;
-
-export const Primary = Template.bind({});
-Primary.args = {
-  size: 32,
-  address: TEST_ADDRESS,
 };
 
-export const WithSignBadge = Template.bind({});
-WithSignBadge.args = {
-  size: 32,
-  address: TEST_ADDRESS,
+export default meta;
+type Story = StoryObj<typeof Identicon>;
+
+export const Primary: Story = {
+  args: {
+    size: 32,
+    address: TEST_ADDRESS,
+  },
+};
+
+export const WithSignBadge: Story = {
+  args: {
+    size: 32,
+    address: TEST_ADDRESS,
+  },
 };

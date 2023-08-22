@@ -1,23 +1,25 @@
-import { ComponentMeta, ComponentStory } from '@storybook/react';
+import type { Meta, StoryObj } from '@storybook/react';
 
 import { StatusMark } from './StatusMark';
 
-export default {
+const meta: Meta<typeof StatusMark> = {
   title: 'ui/StatusMark',
   component: StatusMark,
-  parameters: { actions: { argTypesRegex: '^on.*' } },
-} as ComponentMeta<typeof StatusMark>;
-
-const Template: ComponentStory<typeof StatusMark> = (args) => <StatusMark {...args} />;
-export const Waiting = Template.bind({});
-Waiting.args = {
-  title: '@user_name:matrix.org',
-  variant: 'waiting',
 };
 
-export const Success = Template.bind({});
-Success.args = {
-  title: '@user_name:matrix.org',
-  subtitle: 'Session verified',
-  variant: 'success',
+export default meta;
+type Story = StoryObj<typeof StatusMark>;
+export const Waiting: Story = {
+  args: {
+    title: '@user_name:matrix.org',
+    variant: 'waiting',
+  },
+};
+
+export const Success: Story = {
+  args: {
+    title: '@user_name:matrix.org',
+    subtitle: 'Session verified',
+    variant: 'success',
+  },
 };

@@ -1,25 +1,27 @@
-import { ComponentMeta, ComponentStory } from '@storybook/react';
+import type { Meta, StoryObj } from '@storybook/react';
 
 import { ButtonIcon } from './ButtonIcon';
 
-export default {
+const meta: Meta<typeof ButtonIcon> = {
   title: 'ui/Buttons/ButtonIcon',
   component: ButtonIcon,
-  parameters: { actions: { argTypesRegex: '^on.*' } },
-} as ComponentMeta<typeof ButtonIcon>;
-
-const Template: ComponentStory<typeof ButtonIcon> = (args) => <ButtonIcon {...args} />;
-
-export const Background = Template.bind({});
-Background.args = {
-  icon: 'close',
-  size: 'sm',
-  background: true,
 };
 
-export const NoBackground = Template.bind({});
-NoBackground.args = {
-  icon: 'close',
-  size: 'sm',
-  background: false,
+export default meta;
+type Story = StoryObj<typeof ButtonIcon>;
+
+export const Background: Story = {
+  args: {
+    icon: 'close',
+    size: 'sm',
+    background: true,
+  },
+};
+
+export const NoBackground: Story = {
+  args: {
+    icon: 'close',
+    size: 'sm',
+    background: false,
+  },
 };

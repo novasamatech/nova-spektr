@@ -1,24 +1,25 @@
-import { ComponentStory, ComponentMeta } from '@storybook/react';
+import type { Meta, StoryObj } from '@storybook/react';
 
 import { Alert } from './Alert';
 
-export default {
+const meta: Meta<typeof Alert> = {
   title: 'Alert',
   component: Alert,
-  parameters: { actions: { argTypesRegex: '^on.*' } },
-} as ComponentMeta<typeof Alert>;
+};
 
-const Template: ComponentStory<typeof Alert> = (args) => <Alert {...args} />;
+export default meta;
+type Story = StoryObj<typeof Alert>;
 
-export const Primary = Template.bind({});
-Primary.args = {
-  title: 'Alert title',
-  variant: 'info',
-  children: (
-    <>
-      <Alert.Item>Item 1</Alert.Item>
-      <Alert.Item>Item 2</Alert.Item>
-      <Alert.Item>Item 3</Alert.Item>
-    </>
-  ),
+export const Primary: Story = {
+  args: {
+    title: 'Alert title',
+    variant: 'info',
+    children: (
+      <>
+        <Alert.Item>Item 1</Alert.Item>
+        <Alert.Item>Item 2</Alert.Item>
+        <Alert.Item>Item 3</Alert.Item>
+      </>
+    ),
+  },
 };

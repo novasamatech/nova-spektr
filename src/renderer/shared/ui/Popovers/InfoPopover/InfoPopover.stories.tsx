@@ -1,17 +1,19 @@
-import { ComponentMeta, ComponentStory } from '@storybook/react';
+import type { Meta, StoryObj } from '@storybook/react';
 
 import { InfoPopover } from './InfoPopover';
 import { popoverItems } from './InfoPopover.test';
 
-export default {
+const meta: Meta<typeof InfoPopover> = {
   title: 'ui/Info Popover',
   component: InfoPopover,
-  parameters: { actions: { argTypesRegex: '^on.*' } },
-} as ComponentMeta<typeof InfoPopover>;
+};
 
-const Template: ComponentStory<typeof InfoPopover> = (args) => <InfoPopover {...args} />;
-export const Primary = Template.bind({});
-Primary.args = {
-  data: popoverItems,
-  children: <button>click me</button>,
+export default meta;
+type Story = StoryObj<typeof InfoPopover>;
+
+export const Primary: Story = {
+  args: {
+    data: popoverItems,
+    children: <button>click me</button>,
+  },
 };

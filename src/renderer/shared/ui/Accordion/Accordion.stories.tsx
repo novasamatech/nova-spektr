@@ -1,22 +1,23 @@
-import { ComponentMeta, ComponentStory } from '@storybook/react';
+import type { Meta, StoryObj } from '@storybook/react';
 
 import { Accordion } from './Accordion';
 
-export default {
+const meta: Meta<typeof Accordion> = {
   title: 'Accordion',
   component: Accordion,
-  parameters: { actions: { argTypesRegex: '^on.*' } },
-} as ComponentMeta<typeof Accordion>;
+};
 
-const Template: ComponentStory<typeof Accordion> = (args) => <Accordion {...args} />;
+export default meta;
+type Story = StoryObj<typeof Accordion>;
 
-export const Primary = Template.bind({});
-Primary.args = {
-  isDefaultOpen: false,
-  children: (
-    <>
-      <Accordion.Button>Button</Accordion.Button>
-      <Accordion.Content>Hidden content</Accordion.Content>
-    </>
-  ),
+export const Primary: Story = {
+  args: {
+    isDefaultOpen: false,
+    children: (
+      <>
+        <Accordion.Button>Button</Accordion.Button>
+        <Accordion.Content>Hidden content</Accordion.Content>
+      </>
+    ),
+  },
 };
