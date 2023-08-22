@@ -2,38 +2,34 @@ import { AssetId, Currency, PriceObject, PriceAdapter, PriceItem, PriceRange } f
 import { getCurrencyChangeKey } from '../common/utils';
 import { COINGECKO_URL } from './consts';
 
-export class CoinGeckoAdapter implements PriceAdapter {
-  async getPrice(ids: AssetId[], currencies: Currency[], includeRateChange: boolean): Promise<PriceObject> {
+export const useCoinGeckoAdapter = (): PriceAdapter => {
+  const getPrice = async (ids: AssetId[], currencies: Currency[], includeRateChange: boolean): Promise<PriceObject> => {
     const url = new URL(`${COINGECKO_URL}/simple/price`);
     url.search = new URLSearchParams({
       ids: ids.join(','),
       vs_currencies: currencies.join(','),
-      include_24hr_change: includeRateChange ? 'true' : 'false',
+      include_24hr_change: includeRateChange.toString(),
     }).toString();
 
-    const response = await fetch(url, {
-      method: 'GET',
-    });
+    const response = await fetch(url);
 
     const data = await response.json();
 
-    const result = ids.reduce<PriceObject>((result, assetId) => {
-      result[assetId] = currencies.reduce<Record<string, PriceItem>>((result, currency) => {
-        result[currency] = {
+    return ids.reduce<PriceObject>((acc, assetId) => {
+      acc[assetId] = currencies.reduce<Record<string, PriceItem>>((accPrice, currency) => {
+        accPrice[currency] = {
           price: data[assetId][currency],
           change: data[assetId][getCurrencyChangeKey(currency)],
         };
 
-        return result;
+        return accPrice;
       }, {});
 
-      return result;
+      return acc;
     }, {});
+  };
 
-    return result;
-  }
-
-  async getHistoryData(id: string, currency: string, from: number, to: number): Promise<PriceRange[]> {
+  const getHistoryData = async (id: string, currency: string, from: number, to: number): Promise<PriceRange[]> => {
     const url = new URL(`${COINGECKO_URL}/coins/${id}/market_chart/range`);
     url.search = new URLSearchParams({
       vs_currency: currency,
@@ -41,12 +37,15 @@ export class CoinGeckoAdapter implements PriceAdapter {
       to: to.toString(),
     }).toString();
 
-    const response = await fetch(url, {
-      method: 'GET',
-    });
+    const response = await fetch(url);
 
     const data = await response.json();
 
     return data.prices;
-  }
-}
+  };
+
+  return {
+    getPrice,
+    getHistoryData,
+  };
+};
