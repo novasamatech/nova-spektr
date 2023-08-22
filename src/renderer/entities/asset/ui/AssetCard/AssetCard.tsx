@@ -1,7 +1,7 @@
 import cn from 'classnames';
 import { KeyboardEvent, MouseEvent } from 'react';
 
-import { Shimmering, BodyText, IconButton } from '@renderer/shared/ui';
+import { Shimmering, BodyText, ButtonIcon } from '@renderer/shared/ui';
 import { Asset, Balance, AssetBalance, AssetDetails, AssetIcon } from '@renderer/entities/asset';
 import { useToggle } from '@renderer/shared/lib/hooks';
 import { totalAmount, transferableAmount, KeyboardKey } from '@renderer/shared/lib/utils';
@@ -65,8 +65,8 @@ export const AssetCard = ({ asset, balance, canMakeActions, onReceiveClick, onTr
         )}
         {canMakeActions && (
           <div className="flex gap-x-2 ml-3">
-            <IconButton name="arrow-diagonal" size={16} onClick={onTransfer} />
-            <IconButton name="arrow-down" size={16} onClick={onReceive} />
+            <ButtonIcon icon="arrow-diagonal" size="sm" onClick={onTransfer} />
+            <ButtonIcon icon="arrow-down" size="sm" onClick={onReceive} />
           </div>
         )}
       </div>

@@ -7,7 +7,7 @@ import { useI18n } from '@renderer/app/providers';
 import { Chain } from '@renderer/entities/chain';
 import { ErrorType, SigningType } from '@renderer/domain/shared-kernel';
 import { useChains } from '@renderer/entities/network';
-import { Button, Input, InputHint, HeaderTitleText, SmallTitleText } from '@renderer/shared/ui';
+import { Button, Input, InputHint, HeaderTitleText, SmallTitleText, ButtonText } from '@renderer/shared/ui';
 import { SeedInfo } from '@renderer/components/common/QrCode/common/types';
 import { useAccount, createAccount, AccountsList } from '@renderer/entities/account';
 
@@ -96,9 +96,7 @@ const ManageStepSingle = ({ seedInfo, onBack, onComplete }: Props) => {
           />
 
           <div className="flex flex-1 justify-between items-end">
-            <Button variant="text" onClick={goBack}>
-              {t('onboarding.backButton')}
-            </Button>
+            <ButtonText onClick={goBack}>{t('onboarding.backButton')}</ButtonText>
 
             <Button type="submit" disabled={!isValid}>
               {t('onboarding.continueButton')}

@@ -1,16 +1,16 @@
 import { render, screen } from '@testing-library/react';
 
-import { IconButton } from './IconButton';
+import { ButtonIcon } from './ButtonIcon';
 
-describe('ui/Buttons/ButtonBack', () => {
+describe('ui/Buttons/ButtonIcon', () => {
   afterEach(() => {
     jest.clearAllMocks();
   });
 
   test('should render component', () => {
-    render(<IconButton name="novawallet" />);
+    render(<ButtonIcon icon="chat" />);
 
-    const children = screen.getByRole('button');
+    const children = screen.getByTestId('chat-button');
     expect(children).toBeInTheDocument();
   });
 });

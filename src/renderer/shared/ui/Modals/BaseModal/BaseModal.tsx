@@ -4,7 +4,7 @@ import { Dialog, Transition } from '@headlessui/react';
 import { cnTw } from '@renderer/shared/lib/utils';
 import { useI18n } from '@renderer/app/providers';
 import { HeaderTitleText } from '../../Typography';
-import { IconButton } from '../../Buttons';
+import { ButtonIcon } from '../../Buttons';
 import { ModalBackdrop, ModalTransition } from '../common';
 
 // HINT: There are no modals with description right now
@@ -56,9 +56,9 @@ export const BaseModal = ({
               )}
 
               {closeButton && (
-                <IconButton
-                  name="close"
-                  size={20}
+                <ButtonIcon
+                  icon="close"
+                  size="md"
                   className="absolute top-[18px] right-[14px] z-10"
                   ariaLabel={t('basemodal.closeButton')}
                   onClick={onClose}

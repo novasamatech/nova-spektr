@@ -1,55 +1,55 @@
-import { PropsWithChildren, ReactNode } from 'react';
 import { Link } from 'react-router-dom';
 
 import { cnTw } from '@renderer/shared/lib/utils';
-import { ViewClass, SizeClass, Padding } from '../common/constants';
-import { Pallet, Variant } from '../common/types';
+import { Disabled, IconStyle, SizeStyle, TextStyle } from './common/constants';
+import { Icon } from '../../Icon/Icon';
+import { IconNames } from '../../Icon/data';
 
 type Props = {
   to: string;
+  remote?: boolean;
   className?: string;
-  variant?: Variant;
-  pallet?: Pallet;
-  size?: keyof typeof SizeClass;
+  size?: keyof typeof SizeStyle;
   disabled?: boolean;
-  prefixElement?: ReactNode;
-  suffixElement?: ReactNode;
+  icon?: IconNames;
+  children?: string;
   callback?: () => void;
 };
 
-export const ButtonLink = ({
-  to,
-  variant = 'fill',
-  pallet = 'primary',
-  size = 'md',
-  className,
-  disabled,
-  children,
-  prefixElement,
-  suffixElement,
-  callback,
-}: PropsWithChildren<Props>) => {
-  const classes = cnTw(
-    'flex items-center justify-center gap-x-2 font-medium select-none outline-offset-1',
-    SizeClass[size],
-    variant !== 'text' && Padding[size],
-    ViewClass[`${variant}_${pallet}`],
+export const ButtonLink = ({ to, remote, className, size = 'md', disabled, icon, callback, children }: Props) => {
+  const wrapperClass = cnTw(
+    'group flex items-center justify-center gap-x-1.5 select-none outline-offset-1',
+    disabled && 'pointer-events-none',
+    SizeStyle[size],
     className,
   );
 
-  const content = (
-    <>
-      {prefixElement && <div data-testid="prefix">{prefixElement}</div>}
-      <div className={cnTw(prefixElement && 'ml-auto', suffixElement && 'ml-0 mr-auto')}>{children}</div>
-      {suffixElement && <div data-testid="suffix">{suffixElement}</div>}
-    </>
-  );
+  const getContent = (isDisabled = false) => {
+    const disabledClass = isDisabled && Disabled;
 
-  return disabled ? (
-    <div className={classes}>{content}</div>
-  ) : (
-    <Link to={to} className={classes} onClick={callback}>
-      {content}
+    return (
+      <>
+        {icon && <Icon name={icon} size={20} className={cnTw(IconStyle, disabledClass)} />}
+        <span className={cnTw(TextStyle[size], disabledClass)}>{children}</span>
+      </>
+    );
+  };
+
+  if (disabled) {
+    return <div className={wrapperClass}>{getContent(true)}</div>;
+  }
+
+  if (remote) {
+    return (
+      <a href={to} target="_blank" rel="noopener noreferrer" className={wrapperClass}>
+        {getContent()}
+      </a>
+    );
+  }
+
+  return (
+    <Link to={to} className={wrapperClass} onClick={callback}>
+      {getContent()}
     </Link>
   );
 };

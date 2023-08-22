@@ -1,7 +1,7 @@
 import { PropsWithChildren } from 'react';
 import cn from 'classnames';
 
-import { Button, CaptionText, FootnoteText, InfoLink, SmallTitleText, Icon, Shimmering } from '@renderer/shared/ui';
+import { Button, CaptionText, FootnoteText, InfoLink, Shimmering, SmallTitleText } from '@renderer/shared/ui';
 import { secondsToMinutes } from '@renderer/shared/lib/utils';
 import { useI18n } from '@renderer/app/providers';
 import { ChainId } from '@renderer/domain/shared-kernel';
@@ -44,7 +44,7 @@ const QrGeneratorContainer = ({ countdown, onQrReset, chainId, children }: Props
             <>
               <img src={QrFrame} alt="" className="absolute w-full h-full" />
               <FootnoteText>{t('signing.qrNotValid')}</FootnoteText>
-              <Button className="z-10" size="sm" prefixElement={<Icon size={16} name="refresh" />} onClick={onQrReset}>
+              <Button className="z-10" size="sm" icon="refresh" onClick={onQrReset}>
                 {t('signing.generateNewQrButton')}
               </Button>
             </>

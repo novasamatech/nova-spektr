@@ -1,4 +1,4 @@
-import { Switch, IconButton, MenuPopover, SearchInput } from '@renderer/shared/ui';
+import { Switch, ButtonIcon, MenuPopover, SearchInput } from '@renderer/shared/ui';
 import { useI18n } from '@renderer/app/providers';
 
 type Props = {
@@ -31,7 +31,7 @@ export const AssetsFilters = ({ searchQuery, onSearchChange, hideZeroBalances, o
         }
       >
         <div className="relative">
-          <IconButton name="settings-lite" className="p-1.5" />
+          <ButtonIcon icon="settings-lite" className="p-1.5" />
           {hideZeroBalances && <span className="absolute rounded-full w-1.5 h-1.5 right-0 top-0 bg-icon-accent" />}
         </div>
       </MenuPopover>

@@ -6,7 +6,7 @@ import { useI18n, useMatrix, useNetworkContext } from '@renderer/app/providers';
 import { AccountId } from '@renderer/domain/shared-kernel';
 import { useToggle } from '@renderer/shared/lib/hooks';
 import { WalletsTabItem } from './WalletsTabItem';
-import { Button, Checkbox, FootnoteText, Icon, SearchInput, SmallTitleText, Tabs } from '@renderer/shared/ui';
+import { ButtonText, Checkbox, FootnoteText, SearchInput, SmallTitleText, Tabs } from '@renderer/shared/ui';
 import { Account, isWalletContact, MultisigAccount } from '@renderer/entities/account';
 import { TabItem } from '@renderer/shared/ui/types';
 import { WalletDS } from '@renderer/shared/api/storage';
@@ -145,9 +145,9 @@ export const SelectSignatories = ({ isActive, wallets, accounts, contacts, onSel
           onChange={setQuery}
         />
         {hasContacts && (
-          <Button variant="text" suffixElement={<Icon name="add-address" size={16} />} onClick={toggleContactModalOpen}>
+          <ButtonText icon="add-address" onClick={toggleContactModalOpen}>
             {t('createMultisigAccount.addContact')}
-          </Button>
+          </ButtonText>
         )}
       </div>
 
