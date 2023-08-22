@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { useI18n } from '@renderer/app/providers';
 import { Asset, Balance as AccountBalance, useBalance } from '@renderer/entities/asset';
 import { ChainId, AccountId } from '@renderer/domain/shared-kernel';
-import { Transaction, TransactionType } from '@renderer/entities/transaction';
+import { getOperationErrors, Transaction, TransactionType } from '@renderer/entities/transaction';
 import { Account, isMultisig, MultisigAccount } from '@renderer/entities/account';
 import { useValidators } from '@renderer/entities/staking';
 import { toAddress, nonNullable } from '@renderer/shared/lib/utils';
@@ -137,6 +137,7 @@ const InitOperation = ({ api, chainId, accounts, asset, addressPrefix, onResult 
 
   const isValidFee = validateFee();
   const isValidDeposit = validateDeposit();
+  const errors = getOperationErrors(!isValidFee, !isValidDeposit);
   const canSubmit =
     !feeLoading && (activeValidatorsAccounts.length > 0 || Boolean(activeSignatory)) && isValidFee && isValidDeposit;
 
@@ -166,12 +167,7 @@ const InitOperation = ({ api, chainId, accounts, asset, addressPrefix, onResult 
             chainId={chainId}
             accounts={accounts}
             isMultiselect
-            invalid={accountIsMultisig ? !isValidDeposit : !isValidFee}
-            error={
-              (!isValidDeposit && t('staking.notEnoughBalanceForDepositError')) ||
-              (!isValidFee && t('staking.notEnoughBalanceForFeeError')) ||
-              ''
-            }
+            errors={errors}
             getAccountOption={getAccountDropdownOption}
             getSignatoryOption={getSignatoryDrowdownOption}
             onSignatoryChange={setActiveSignatory}

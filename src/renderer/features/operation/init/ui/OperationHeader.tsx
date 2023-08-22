@@ -4,13 +4,13 @@ import { SingleSelectMultishardHeader } from './SingleSelectMultishardHeader';
 import { MultiSelectMultishardHeader } from './MultiSelectMultishardHeader';
 import { DropdownOption } from '@renderer/shared/ui/Dropdowns/common/types';
 import { MultisigOperationHeader } from './MultisigOperationHeader';
+import { OperationError, OperationErrorType } from '@renderer/features/operation/init/model';
 
 type Props = {
   accounts: Account[] | [MultisigAccount];
   chainId: ChainId;
   isMultiselect?: boolean;
-  invalid?: boolean;
-  error?: string;
+  errors?: OperationErrorType[];
   getAccountOption: (account: Account) => DropdownOption<Account>;
   getSignatoryOption: (account: Account) => DropdownOption<Account>;
   onSignatoryChange: (account: Account) => void;
@@ -26,9 +26,8 @@ type AccountSelectProps =
 export const OperationHeader = ({
   chainId,
   isMultiselect,
-  invalid,
   accounts,
-  error,
+  errors = [],
   getSignatoryOption,
   getAccountOption,
   onAccountChange,
@@ -36,28 +35,39 @@ export const OperationHeader = ({
 }: Props) => {
   const firstAccount = accounts[0];
 
+  const accountIsMultisig = isMultisig(firstAccount);
+  const accountIsMultishard = isMultishard(firstAccount);
+
+  const multisigError = (accountIsMultisig && errors.find((e) => e === OperationError.INVALID_DEPOSIT)) || undefined;
+  const multishardError = (accountIsMultishard && errors.find((e) => e === OperationError.INVALID_FEE)) || undefined;
+  const emptyError = errors.find((e) => e === OperationError.EMPTY_ERROR);
+
   return (
     <div className="flex flex-col gap-y-4">
-      {isMultisig(firstAccount) && (
+      {accountIsMultisig && (
         <MultisigOperationHeader
-          account={firstAccount as MultisigAccount}
-          invalid={invalid}
-          error={error}
+          account={firstAccount}
+          invalid={Boolean(multisigError || emptyError)}
+          error={multisigError}
           getSignatoryOption={getSignatoryOption}
           onSignatoryChange={onSignatoryChange}
         />
       )}
 
-      {isMultishard(firstAccount) &&
+      {accountIsMultishard &&
         (isMultiselect ? (
           <SingleSelectMultishardHeader
             accounts={accounts}
+            invalid={Boolean(multishardError || emptyError)}
+            error={multishardError}
             getAccountOption={getAccountOption}
             onAccountsChange={onAccountChange as MultiselectAccount}
           />
         ) : (
           <MultiSelectMultishardHeader
             accounts={accounts}
+            invalid={Boolean(multishardError || emptyError)}
+            error={multishardError}
             chainId={chainId}
             getAccountOption={getAccountOption}
             onAccountChange={onAccountChange}

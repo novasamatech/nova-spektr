@@ -6,7 +6,7 @@ import { OperationFooter, OperationHeader } from '@renderer/features/operation';
 import { useI18n } from '@renderer/app/providers';
 import { Asset, Balance as AccountBalance, useBalance } from '@renderer/entities/asset';
 import { AccountId, Address, ChainId } from '@renderer/domain/shared-kernel';
-import { Transaction, TransactionType } from '@renderer/entities/transaction';
+import { getOperationErrors, Transaction, TransactionType } from '@renderer/entities/transaction';
 import { Account, isMultisig, MultisigAccount } from '@renderer/entities/account';
 import { formatAmount, stakeableAmount, toAddress, nonNullable, TEST_ADDRESS } from '@renderer/shared/lib/utils';
 import { useValidators } from '@renderer/entities/staking';
@@ -228,7 +228,7 @@ const InitOperation = ({ api, chainId, accounts, asset, addressPrefix, onResult 
             chainId={chainId}
             accounts={accounts}
             isMultiselect
-            invalid={accountIsMultisig ? invalidDeposit || invalidFee : invalidBalance || invalidFee}
+            errors={getOperationErrors(invalidFee, invalidDeposit, invalidBalance)}
             getSignatoryOption={getSignatoryDrowdownOption}
             getAccountOption={getAccountDropdownOption}
             onSignatoryChange={setActiveSignatory}

@@ -5,12 +5,13 @@ import { InputHint, Select } from '@renderer/shared/ui';
 import { useI18n } from '@renderer/app/providers';
 import { DropdownOption, DropdownResult } from '@renderer/shared/ui/Dropdowns/common/types';
 import { ChainId } from '@renderer/domain/shared-kernel';
+import { OperationErrorType } from '@renderer/features/operation/init/model';
 
 type Props = {
   accounts: Account[];
   chainId: ChainId;
   invalid?: boolean;
-  error?: string;
+  error?: OperationErrorType;
   getAccountOption: (account: Account) => DropdownOption<Account>;
   onAccountChange: (account: Account) => void;
 };
@@ -64,7 +65,7 @@ export const MultiSelectMultishardHeader = ({
         options={accountsOptions}
         onChange={changeAccount}
       />
-      <InputHint active={Boolean(error)}>{error}</InputHint>
+      <InputHint active={Boolean(error)}>{t(error || '')}</InputHint>
     </div>
   );
 };

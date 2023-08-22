@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { useI18n } from '@renderer/app/providers';
 import { Asset, useBalance, Balance as AccountBalance } from '@renderer/entities/asset';
 import { Address, ChainId, AccountId } from '@renderer/domain/shared-kernel';
-import { Transaction, TransactionType } from '@renderer/entities/transaction';
+import { getOperationErrors, Transaction, TransactionType } from '@renderer/entities/transaction';
 import { Account, isMultisig } from '@renderer/entities/account';
 import { toAddress, nonNullable, TEST_ADDRESS } from '@renderer/shared/lib/utils';
 import { OperationForm } from '../../components';
@@ -163,12 +163,7 @@ const InitOperation = ({ api, chainId, accounts, addressPrefix, asset, onResult 
             chainId={chainId}
             accounts={accounts}
             isMultiselect
-            invalid={accountIsMultisig ? !isValidDeposit : !isValidFee}
-            error={
-              (!isValidDeposit && t('staking.notEnoughBalanceForDepositError')) ||
-              (!isValidFee && t('staking.notEnoughBalanceForFeeError')) ||
-              ''
-            }
+            errors={getOperationErrors(!isValidFee, !isValidDeposit)}
             getAccountOption={getAccountDropdownOption}
             getSignatoryOption={getSignatoryDrowdownOption}
             onSignatoryChange={setActiveSignatory}

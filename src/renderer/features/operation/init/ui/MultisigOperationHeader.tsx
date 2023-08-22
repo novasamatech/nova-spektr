@@ -5,11 +5,12 @@ import { Account, MultisigAccount, useAccount } from '@renderer/entities/account
 import { SigningType } from '@renderer/domain/shared-kernel';
 import { InputHint, Select } from '@renderer/shared/ui';
 import { useI18n } from '@renderer/app/providers';
+import { OperationErrorType } from '@renderer/features/operation/init/model';
 
 type Props = {
   account: MultisigAccount;
   invalid?: boolean;
-  error?: string;
+  error?: OperationErrorType;
   getSignatoryOption: (account: Account) => DropdownOption<Account>;
   onSignatoryChange: (account: Account) => void;
 };
@@ -59,7 +60,7 @@ export const MultisigOperationHeader = ({ account, invalid, error, getSignatoryO
         onChange={onChange}
       />
       <InputHint active={!signatoryOptions.length}>{t('multisigOperations.noSignatory')}</InputHint>
-      <InputHint active={Boolean(error)}>{error}</InputHint>
+      <InputHint active={Boolean(error)}>{t(error || '')}</InputHint>
     </div>
   );
 };

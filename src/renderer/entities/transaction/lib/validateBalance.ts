@@ -6,6 +6,7 @@ import { ITransactionService, Transaction } from '@renderer/entities/transaction
 import { toAccountId, transferableAmount, ValidationErrors } from '@renderer/shared/lib/utils';
 import { ChainId } from '@renderer/domain/shared-kernel';
 import { PartialBy } from '@renderer/domain/utility';
+import { OperationError, OperationErrorType } from '@renderer/features/operation';
 
 type Props = {
   api: ApiPromise;
@@ -62,4 +63,26 @@ const validateBalanceForFee = async ({ transaction, getTransactionFee, api, ...p
   return nativeTokenBalance
     ? new BN(transferableNativeTokenBalance).gte(new BN(fee))
     : new BN(transferableBalance).gte(new BN(fee).add(new BN(amount)));
+};
+
+export const getOperationErrors = (
+  isFeeInvalid: boolean,
+  isDepositInvalid: boolean,
+  hasOtherErrors?: boolean,
+): OperationErrorType[] => {
+  const errors: OperationErrorType[] = [];
+
+  if (isFeeInvalid) {
+    errors.push(OperationError.INVALID_DEPOSIT);
+  }
+
+  if (isDepositInvalid) {
+    errors.push(OperationError.INVALID_FEE);
+  }
+
+  if (hasOtherErrors) {
+    errors.push(OperationError.EMPTY_ERROR);
+  }
+
+  return errors;
 };
