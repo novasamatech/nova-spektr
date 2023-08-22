@@ -75,54 +75,57 @@ export const VaultSigning = ({
     setTxPayloads([]);
   };
 
-  return (
-    <>
-      {isScanStep && (
-        <div className="w-[440px] px-5 py-4">
-          {isMultiframe ? (
-            <ScanMultiframeQr
-              api={api}
-              addressPrefix={addressPrefix}
-              countdown={countdown}
-              accounts={accounts}
-              transactions={transactions}
-              chainId={chainId}
-              onGoBack={onGoBack}
-              onResetCountdown={resetCountdown}
-              onResult={(unsignedTx, payloads) => {
-                setUnsignedTxs(unsignedTx);
-                setTxPayloads(payloads);
-              }}
-            />
-          ) : (
-            <ScanSingleframeQr
-              api={api}
-              addressPrefix={addressPrefix}
-              countdown={countdown}
-              account={signatory || accounts[0]}
-              transaction={transactions[0]}
-              chainId={chainId}
-              onGoBack={onGoBack}
-              onResetCountdown={resetCountdown}
-              onResult={(unsignedTx, payload) => {
-                setUnsignedTxs([unsignedTx]);
-                setTxPayloads([payload]);
-              }}
-            />
-          )}
-        </div>
+  const ScanStep = (
+    <div className="w-[440px] px-5 py-4">
+      {isMultiframe ? (
+        <ScanMultiframeQr
+          api={api}
+          addressPrefix={addressPrefix}
+          countdown={countdown}
+          accounts={accounts}
+          transactions={transactions}
+          chainId={chainId}
+          onGoBack={onGoBack}
+          onResetCountdown={resetCountdown}
+          onResult={(unsignedTx, payloads) => {
+            setUnsignedTxs(unsignedTx);
+            setTxPayloads(payloads);
+          }}
+        />
+      ) : (
+        <ScanSingleframeQr
+          api={api}
+          addressPrefix={addressPrefix}
+          countdown={countdown}
+          account={signatory || accounts[0]}
+          transaction={transactions[0]}
+          chainId={chainId}
+          onGoBack={onGoBack}
+          onResetCountdown={resetCountdown}
+          onResult={(unsignedTx, payload) => {
+            setUnsignedTxs([unsignedTx]);
+            setTxPayloads([payload]);
+          }}
+        />
       )}
-      {!isScanStep && (
-        <div className="flex flex-col items-center gap-y-2.5 w-[440px] rounded-b-lg bg-black">
-          <QrReaderWrapper
-            isMultiFrame={isMultiframe}
-            countdown={countdown || 0}
-            validationError={validationError}
-            onResult={handleSignature}
-            onGoBack={scanAgain}
-          />
-        </div>
-      )}
-    </>
+    </div>
   );
+
+  const SignStep = (
+    <div className="flex flex-col items-center gap-y-2.5 w-[440px] rounded-b-lg bg-black">
+      <QrReaderWrapper
+        isMultiFrame={isMultiframe}
+        countdown={countdown || 0}
+        validationError={validationError}
+        onResult={handleSignature}
+        onGoBack={scanAgain}
+      />
+    </div>
+  );
+
+  if (isScanStep) {
+    return ScanStep;
+  }
+
+  return SignStep;
 };

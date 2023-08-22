@@ -2,7 +2,7 @@ import { act, render, screen } from '@testing-library/react';
 import { ComponentProps } from 'react';
 import noop from 'lodash/noop';
 
-import { OperationHeader } from './OperationHeader';
+import { OperationHeader } from '../OperationHeader';
 import { TEST_ACCOUNT_ID, TEST_ADDRESS, TEST_CHAIN_ID } from '@renderer/shared/lib/utils';
 import { AccountId, ChainType, CryptoType, SigningType } from '@renderer/domain/shared-kernel';
 import { Account } from '@renderer/entities/account';

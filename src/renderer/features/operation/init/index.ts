@@ -1,2 +1,2 @@
-export * from './ui/OperationHeader/OperationHeader';
-export * from './ui/OperationFooter/OperationFooter';
+export * from './ui/OperationHeader';
+export * from './ui/OperationFooter';

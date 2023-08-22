@@ -1,9 +1,9 @@
 import { ChainId } from '@renderer/domain/shared-kernel';
 import { Account, isMultishard, isMultisig, MultisigAccount } from '@renderer/entities/account';
-import { SingleSelectMultishardHeader } from '../SingleSelectMultishardHeader/SingleSelectMultishardHeader';
-import { MultiSelectMultishardHeader } from '../MultiSelectMultishardHeader/MultiSelectMultishardHeader';
+import { SingleSelectMultishardHeader } from './SingleSelectMultishardHeader';
+import { MultiSelectMultishardHeader } from './MultiSelectMultishardHeader';
 import { DropdownOption } from '@renderer/shared/ui/Dropdowns/common/types';
-import { MultisigOperationHeader } from '../MultisigOperationHeader/MultisigOperationHeader';
+import { MultisigOperationHeader } from './MultisigOperationHeader';
 
 type Props = {
   accounts: Account[] | [MultisigAccount];
