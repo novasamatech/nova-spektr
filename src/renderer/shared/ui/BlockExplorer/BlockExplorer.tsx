@@ -1,36 +1,14 @@
-import { cnTw, toAddress } from '@renderer/shared/lib/utils';
+import { cnTw } from '@renderer/shared/lib/utils';
 import { Icon, FootnoteText } from '@renderer/shared/ui';
-import { DefaultExplorer, ExplorerIcons } from '@renderer/components/common/ExplorerLink/constants';
-import { Explorer } from '@renderer/entities/chain';
-import { useI18n } from '@renderer/app/providers';
-import { AccountId, Address, HexString } from '@renderer/domain/shared-kernel';
-
-const isExtrinsic = (props: WithAccount | WithExtrinsic): props is WithExtrinsic =>
-  (props as WithExtrinsic).hash !== undefined;
-
-type WithAccount = {
-  address: Address | AccountId;
-  addressPrefix?: number;
-};
-
-type WithExtrinsic = {
-  hash: HexString;
-};
+import { DefaultExplorer, ExplorerIcons } from './constants';
 
 type Props = {
-  explorer: Explorer;
-} & (WithAccount | WithExtrinsic);
+  href: string;
+  icon?: keyof typeof ExplorerIcons;
+  children: string;
+};
 
-export const BlockExplorer = ({ explorer, ...props }: Props) => {
-  const { t } = useI18n();
-  const { account, extrinsic, name } = explorer;
-
-  const href = isExtrinsic(props)
-    ? extrinsic && extrinsic.replace('{hash}', props.hash)
-    : account && account.replace('{address}', toAddress(props.address, { prefix: props.addressPrefix }));
-
-  if (!href) return null;
-
+export const BlockExplorer = ({ href, icon = DefaultExplorer, children }: Props) => {
   return (
     <a
       className={cnTw(
@@ -41,10 +19,10 @@ export const BlockExplorer = ({ explorer, ...props }: Props) => {
       rel="noopener noreferrer"
       target="_blank"
     >
-      <Icon as="img" name={ExplorerIcons[name] || ExplorerIcons[DefaultExplorer]} size={16} />
+      <Icon as="img" name={ExplorerIcons[icon]} size={16} />
 
       <FootnoteText as="span" className="text-text-secondary group-active:text-text-primary">
-        {t('general.explorers.explorerButton', { name })}
+        {children}
       </FootnoteText>
     </a>
   );
