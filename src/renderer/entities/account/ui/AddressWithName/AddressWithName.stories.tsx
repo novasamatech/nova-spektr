@@ -12,7 +12,7 @@ const meta: Meta<typeof AddressWithName> = {
 export default meta;
 type Story = StoryObj<typeof AddressWithName>;
 
-export const Primary: Story = {
+export const Playground: Story = {
   args: {
     accountId: TEST_ACCOUNT_ID,
   },

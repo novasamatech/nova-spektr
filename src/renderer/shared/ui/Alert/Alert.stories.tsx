@@ -12,16 +12,34 @@ const meta: Meta<typeof Alert> = {
 export default meta;
 type Story = StoryObj<typeof Alert>;
 
-export const Primary: Story = {
+const UiOptions: Story['argTypes'] = {
+  className: { control: false },
+  onClose: { control: false },
+};
+
+export const Playground: Story = {
   args: {
     title: 'Alert title',
     variant: 'info',
+    className: 'w-[420px]',
     children: (
       <>
-        <Alert.Item>Item 1</Alert.Item>
-        <Alert.Item>Item 2</Alert.Item>
-        <Alert.Item>Item 3</Alert.Item>
+        <Alert.Item>Tokens in stake produce rewards each era (6 hours)</Alert.Item>
+        <Alert.Item>To unstake tokens you will have to wait for the unstaking period (7 days)</Alert.Item>
       </>
     ),
   },
+  argTypes: UiOptions,
+};
+
+export const Error: Story = {
+  render: () => (
+    <Alert variant="error" title="Info alert title" className="w-[420px]">
+      <Alert.Item>Invalid homeserver, username or password</Alert.Item>
+    </Alert>
+  ),
+};
+
+export const Warn: Story = {
+  render: () => <Alert variant="warn" title="Warning alert title" className="w-[420px]" />,
 };

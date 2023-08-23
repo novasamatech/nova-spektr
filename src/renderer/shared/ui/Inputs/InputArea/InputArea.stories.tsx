@@ -12,7 +12,7 @@ const meta: Meta<typeof InputArea> = {
 export default meta;
 type Story = StoryObj<typeof InputArea>;
 
-export const Primary: Story = {
+export const Playground: Story = {
   args: {
     rows: 3,
     maxLength: 120,

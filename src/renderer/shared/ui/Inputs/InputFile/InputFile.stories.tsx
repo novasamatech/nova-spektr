@@ -12,7 +12,7 @@ const meta: Meta<typeof InputFile> = {
 export default meta;
 type Story = StoryObj<typeof InputFile>;
 
-export const Primary: Story = {
+export const Playground: Story = {
   args: {
     placeholder: 'Upload file',
   },

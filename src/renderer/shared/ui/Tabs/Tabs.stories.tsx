@@ -19,7 +19,7 @@ const tabItems: TabItem[] = [
 export default meta;
 type Story = StoryObj<typeof Tabs>;
 
-export const Primary: Story = {
+export const Playground: Story = {
   args: {
     items: tabItems,
   },

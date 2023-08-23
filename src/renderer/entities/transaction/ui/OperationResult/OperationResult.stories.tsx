@@ -12,7 +12,7 @@ const meta: Meta<typeof OperationResult> = {
 export default meta;
 type Story = StoryObj<typeof OperationResult>;
 
-export const Primary: Story = {
+export const Playground: Story = {
   args: {
     isOpen: true,
     onClose: () => undefined,

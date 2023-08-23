@@ -13,7 +13,7 @@ const meta: Meta<typeof InfoPopover> = {
 export default meta;
 type Story = StoryObj<typeof InfoPopover>;
 
-export const Primary: Story = {
+export const Playground: Story = {
   args: {
     data: popoverItems,
     children: <button>click me</button>,

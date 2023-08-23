@@ -12,7 +12,7 @@ const meta: Meta<typeof ConfirmModal> = {
 export default meta;
 type Story = StoryObj<typeof ConfirmModal>;
 
-export const Primary: Story = {
+export const Playground: Story = {
   args: {
     isOpen: true,
     children: <h2>Children content</h2>,

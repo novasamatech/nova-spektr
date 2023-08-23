@@ -12,7 +12,7 @@ const meta: Meta<typeof Shimmering> = {
 export default meta;
 type Story = StoryObj<typeof Shimmering>;
 
-export const Primary: Story = {
+export const Playground: Story = {
   args: {
     width: 200,
     height: 40,

@@ -12,7 +12,7 @@ const meta: Meta<typeof BaseModal> = {
 export default meta;
 type Story = StoryObj<typeof BaseModal>;
 
-export const Primary: Story = {
+export const Playground: Story = {
   args: {
     title: 'Base modal',
     isOpen: true,

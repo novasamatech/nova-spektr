@@ -12,7 +12,7 @@ const meta: Meta<typeof ChainTitle> = {
 export default meta;
 type Story = StoryObj<typeof ChainTitle>;
 
-export const Primary: Story = {
+export const Playground: Story = {
   args: {
     chainId: TEST_CHAIN_ID,
   },

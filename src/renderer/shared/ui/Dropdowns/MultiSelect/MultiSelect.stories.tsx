@@ -36,7 +36,7 @@ const customOptions = data.map((d, index) => ({
   ),
 }));
 
-export const Primary: Story = {
+export const Playground: Story = {
   args: {
     placeholder: 'Select an option',
     options,

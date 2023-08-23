@@ -11,17 +11,24 @@ const meta: Meta<typeof StatusMark> = {
 
 export default meta;
 type Story = StoryObj<typeof StatusMark>;
-export const Waiting: Story = {
-  args: {
-    title: '@user_name:matrix.org',
-    variant: 'waiting',
-  },
+
+const UiOptions: Story['argTypes'] = {
+  className: { control: false },
 };
 
-export const Success: Story = {
+export const Playground: Story = {
   args: {
     title: '@user_name:matrix.org',
     subtitle: 'Session verified',
-    variant: 'success',
+    variant: 'waiting',
   },
+  argTypes: UiOptions,
+};
+
+export const Success: Story = {
+  render: () => <StatusMark title="Success mark" variant="success" />,
+};
+
+export const Error: Story = {
+  render: () => <StatusMark title="Error mark" variant="error" subtitle="Something went wrong" />,
 };

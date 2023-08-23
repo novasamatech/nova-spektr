@@ -12,7 +12,7 @@ const meta: Meta<typeof LabelHelpBox> = {
 export default meta;
 type Story = StoryObj<typeof LabelHelpBox>;
 
-export const Primary: Story = {
+export const Playground: Story = {
   args: {
     children: 'This is simple content',
   },

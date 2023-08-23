@@ -12,7 +12,7 @@ const meta: Meta<typeof Switch> = {
 export default meta;
 type Story = StoryObj<typeof Switch>;
 
-export const Primary: Story = {
+export const Playground: Story = {
   args: {
     children: 'Switch label',
   },

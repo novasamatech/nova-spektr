@@ -12,7 +12,7 @@ const meta: Meta<typeof Accordion> = {
 export default meta;
 type Story = StoryObj<typeof Accordion>;
 
-export const Primary: Story = {
+export const Playground: Story = {
   args: {
     isDefaultOpen: false,
     children: (

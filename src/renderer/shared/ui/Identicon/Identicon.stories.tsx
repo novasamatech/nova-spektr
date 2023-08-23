@@ -12,7 +12,7 @@ const meta: Meta<typeof Identicon> = {
 export default meta;
 type Story = StoryObj<typeof Identicon>;
 
-export const Primary: Story = {
+export const Playground: Story = {
   args: {
     size: 32,
     address: TEST_ADDRESS,

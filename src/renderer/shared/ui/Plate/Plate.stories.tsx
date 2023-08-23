@@ -12,7 +12,7 @@ const meta: Meta<typeof Plate> = {
 export default meta;
 type Story = StoryObj<typeof Plate>;
 
-export const Primary: Story = {
+export const Playground: Story = {
   args: {
     children: 'This is simple content',
   },

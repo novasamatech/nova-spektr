@@ -12,7 +12,7 @@ const meta: Meta<typeof SignatoryCard> = {
 export default meta;
 type Story = StoryObj<typeof SignatoryCard>;
 
-export const Primary: Story = {
+export const Playground: Story = {
   args: {
     address: TEST_ADDRESS,
     name: 'John Doe',

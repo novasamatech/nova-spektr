@@ -12,7 +12,7 @@ const meta: Meta<typeof InputHint> = {
 export default meta;
 type Story = StoryObj<typeof InputHint>;
 
-export const Primary: Story = {
+export const Playground: Story = {
   args: {
     active: true,
     variant: 'hint',

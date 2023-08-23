@@ -13,7 +13,7 @@ const meta: Meta<typeof Input> = {
 export default meta;
 type Story = StoryObj<typeof Input>;
 
-export const Primary: Story = {
+export const Playground: Story = {
   args: {
     placeholder: 'Test input',
   },

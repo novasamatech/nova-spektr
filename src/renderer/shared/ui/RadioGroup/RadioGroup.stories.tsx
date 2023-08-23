@@ -18,7 +18,7 @@ const defaultOptions = [
   { id: '2', value: 2, title: 'Test 2' },
 ];
 
-export const Primary: Story = {
+export const Playground: Story = {
   args: {
     activeId: defaultOptions[1].id,
     options: defaultOptions,

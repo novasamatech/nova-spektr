@@ -12,7 +12,7 @@ const meta: Meta<typeof Duration> = {
 export default meta;
 type Story = StoryObj<typeof Duration>;
 
-export const Primary: Story = {
+export const Playground: Story = {
   args: {
     seconds: '1',
   },
