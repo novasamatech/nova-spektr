@@ -14,6 +14,7 @@ type Story = StoryObj<typeof Alert>;
 
 const UiOptions: Story['argTypes'] = {
   className: { control: false },
+  children: { control: false },
   onClose: { control: false },
 };
 
