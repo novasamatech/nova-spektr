@@ -4,7 +4,7 @@ import { Fragment, useId } from 'react';
 import { cnTw } from '@renderer/shared/lib/utils';
 import { Icon, Checkbox, FootnoteText, LabelText, CaptionText } from '@renderer/shared/ui';
 import { DropdownOption, DropdownResult, Position, Theme } from '../common/types';
-import { CommonInputStyles, CommonInputStylesTheme } from '@renderer/shared/ui/Inputs/common/styles';
+import { CommonInputStylesTheme, InputStyles } from '@renderer/shared/ui/Inputs/common/styles';
 import {
   OptionsContainerStyle,
   OptionsContainerStyleTheme,
@@ -88,7 +88,7 @@ export const MultiSelect = ({
               !open && !invalid && SelectButtonStyle[theme].closed,
               invalid && SelectButtonStyle[theme].invalid,
               SelectButtonStyle[theme].disabled,
-              CommonInputStyles,
+              InputStyles.base,
               CommonInputStylesTheme[theme],
               'w-full inline-flex items-center gap-x-2 justify-between pr-2 py-2',
             )}

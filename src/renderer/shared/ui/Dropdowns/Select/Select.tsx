@@ -4,7 +4,7 @@ import { Fragment, useId } from 'react';
 import { cnTw } from '@renderer/shared/lib/utils';
 import { Icon, FootnoteText, LabelText } from '@renderer/shared/ui';
 import { DropdownOption, DropdownResult, Position, Theme } from '../common/types';
-import { CommonInputStyles, CommonInputStylesTheme } from '@renderer/shared/ui/Inputs/common/styles';
+import { CommonInputStylesTheme, InputStyles } from '@renderer/shared/ui/Inputs/common/styles';
 import {
   ButtonTextFilledStyle,
   ButtonTextEmptyStyle,
@@ -59,7 +59,7 @@ export const Select = <T extends any>({
               !open && !invalid && SelectButtonStyle[theme].closed,
               invalid && SelectButtonStyle[theme].invalid,
               SelectButtonStyle[theme].disabled,
-              CommonInputStyles,
+              InputStyles.base,
               CommonInputStylesTheme[theme],
               'w-full flex items-center gap-x-2 justify-between pr-2',
             )}

@@ -9,7 +9,7 @@ import { ConnectionType } from '@renderer/domain/connection';
 import { ExtendedChain } from '@renderer/entities/network';
 import { SelectButtonStyle, OptionStyle } from '@renderer/shared/ui/Dropdowns/common/constants';
 import { useScrollTo } from '@renderer/shared/lib/hooks';
-import { CommonInputStyles, CommonInputStylesTheme } from '@renderer/shared/ui/Inputs/common/styles';
+import { CommonInputStylesTheme, InputStyles } from '@renderer/shared/ui/Inputs/common/styles';
 import type { Theme } from '@renderer/shared/ui/types';
 
 export const OptionsContainerStyle =
@@ -94,7 +94,7 @@ export const NetworkSelector = ({
             className={cnTw(
               open && SelectButtonStyle[theme].open,
               SelectButtonStyle[theme].disabled,
-              CommonInputStyles,
+              InputStyles.base,
               CommonInputStylesTheme[theme],
               'w-[248px] flex items-center gap-x-2 justify-between',
             )}

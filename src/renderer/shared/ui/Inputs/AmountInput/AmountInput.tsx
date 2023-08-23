@@ -16,7 +16,7 @@ type Props = {
   balancePlaceholder?: string;
   balance?: string | string[];
   invalid?: boolean;
-  fiatValue?: string;
+  altValue?: string;
   onChange?: (value: string) => void;
 };
 
@@ -29,7 +29,7 @@ export const AmountInput = ({
   placeholder,
   disabled,
   invalid,
-  fiatValue,
+  altValue,
   onChange,
 }: Props) => {
   const { t } = useI18n();
@@ -82,20 +82,20 @@ export const AmountInput = ({
   );
 
   const suffixElement = (
-    <HelpText className="absolute uppercase right-3 bottom-2 text-text-tertiary">{fiatValue}</HelpText>
+    <HelpText className="absolute uppercase right-3 bottom-2 text-text-tertiary">{altValue}</HelpText>
   );
 
   return (
     <Input
       name={name}
-      className={cnTw('text-right text-title font-manrope', fiatValue && 'mb-4')}
+      className={cnTw('text-right text-title font-manrope', altValue && 'mb-4')}
       wrapperClass="py-2 items-start"
       label={label}
       value={formatGroups(value)}
       placeholder={t('transfer.amountPlaceholder')}
       invalid={invalid}
       prefixElement={prefixElement}
-      suffixElement={fiatValue && suffixElement}
+      suffixElement={altValue && suffixElement}
       disabled={disabled}
       onChange={handleChange}
     />
