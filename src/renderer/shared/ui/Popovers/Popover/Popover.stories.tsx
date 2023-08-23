@@ -1,17 +1,12 @@
 import type { Meta, StoryObj } from '@storybook/react';
 
+import { withVersion } from '@renderer/shared/lib/utils/storybook';
 import { Popover } from './Popover';
 
 const meta: Meta<typeof Popover> = {
-  title: 'ui/Popover ',
+  title: 'Design system/Popover ',
   component: Popover,
-  decorators: [
-    (Story) => (
-      <div className="mt-28 mx-auto w-max">
-        <Story />
-      </div>
-    ),
-  ],
+  decorators: [withVersion('1.0.0')],
 };
 
 export default meta;

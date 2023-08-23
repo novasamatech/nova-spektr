@@ -1,10 +1,12 @@
 import type { Meta, StoryObj } from '@storybook/react';
 
+import { withVersion } from '@renderer/shared/lib/utils/storybook';
 import { InputArea } from './InputArea';
 
 const meta: Meta<typeof InputArea> = {
-  title: 'InputArea',
+  title: 'Design system/Inputs/InputArea',
   component: InputArea,
+  decorators: [withVersion('1.0.0')],
 };
 
 export default meta;

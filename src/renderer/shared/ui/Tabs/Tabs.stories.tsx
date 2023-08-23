@@ -1,11 +1,13 @@
 import type { Meta, StoryObj } from '@storybook/react';
 
+import { withVersion } from '@renderer/shared/lib/utils/storybook';
 import { Tabs } from './Tabs';
 import { TabItem } from './common/types';
 
 const meta: Meta<typeof Tabs> = {
-  title: 'ui/Tabs',
+  title: 'Design system/Tabs',
   component: Tabs,
+  decorators: [withVersion('1.0.0')],
 };
 
 const tabItems: TabItem[] = [

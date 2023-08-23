@@ -1,20 +1,14 @@
 import type { Meta, StoryObj } from '@storybook/react';
 
+import { withVersion } from '@renderer/shared/lib/utils/storybook';
 import { Icon } from '../../Icon/Icon';
 import { Identicon } from '../../Identicon/Identicon';
 import { Combobox } from './Combobox';
 
 const meta: Meta<typeof Combobox> = {
-  title: 'ui/Combobox',
+  title: 'Design system/Combobox',
   component: Combobox,
-
-  decorators: [
-    (Story) => (
-      <div className="mt-28 w-[280px]">
-        <Story />
-      </div>
-    ),
-  ],
+  decorators: [withVersion('1.0.0')],
 };
 
 export default meta;

@@ -1,11 +1,12 @@
 import type { Meta, StoryObj } from '@storybook/react';
 
-import { TEST_ADDRESS } from '@renderer/shared/lib/utils';
+import { TEST_ADDRESS, withVersion } from '@renderer/shared/lib/utils';
 import { Identicon } from './Identicon';
 
 const meta: Meta<typeof Identicon> = {
-  title: 'Identicon',
+  title: 'Design system/Identicon',
   component: Identicon,
+  decorators: [withVersion('1.0.0')],
 };
 
 export default meta;

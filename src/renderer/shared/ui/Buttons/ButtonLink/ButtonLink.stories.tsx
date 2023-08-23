@@ -4,13 +4,15 @@ import type { Meta, StoryObj } from '@storybook/react';
 import { ButtonLink } from './ButtonLink';
 
 const meta: Meta<typeof ButtonLink> = {
-  title: 'ui/Buttons/ButtonLink',
+  title: 'Design system/Buttons/ButtonLink',
   component: ButtonLink,
-
   decorators: [
     (Story) => (
       <MemoryRouter>
-        <Story />
+        <div className="flex flex-col gap-y-4 items-center">
+          <h1>Version - 1.0.0</h1>
+          <Story />
+        </div>
       </MemoryRouter>
     ),
   ],
@@ -19,43 +21,34 @@ const meta: Meta<typeof ButtonLink> = {
 export default meta;
 type Story = StoryObj<typeof ButtonLink>;
 
-export const Primary: Story = {
-  args: {
-    to: 'test_path',
-    children: 'Link',
-    className: 'w-[200px]',
-    disabled: false,
+const UiOptions: Story['argTypes'] = {
+  icon: {
+    options: [undefined, 'new-tab', 'chat', 'learn-more'],
   },
+  className: { control: false },
 };
 
-export const Prefix: Story = {
+export const Playground: Story = {
   args: {
     to: 'test_path',
-    children: 'Link',
-    className: 'w-[200px]',
-    disabled: false,
-    icon: 'chat',
-  },
-};
-
-export const Medium: Story = {
-  args: {
-    to: 'test_path',
-    children: 'Link',
-    className: 'w-[200px]',
-    disabled: false,
+    children: 'Inner Link',
     size: 'md',
-    icon: 'chat',
   },
+  argTypes: UiOptions,
 };
 
-export const Small: Story = {
-  args: {
-    to: 'test_path',
-    children: 'Link',
-    className: 'w-[200px]',
-    disabled: false,
-    size: 'sm',
-    icon: 'chat',
-  },
+export const External: Story = {
+  render: () => (
+    <ButtonLink remote icon="new-tab" to="https://novaspektr.io/">
+      Visit NovaSpektr
+    </ButtonLink>
+  ),
+};
+
+export const Disabled: Story = {
+  render: () => (
+    <ButtonLink disabled remote icon="learn-more" to="https://novawallet.io/">
+      Visit NovaWallet
+    </ButtonLink>
+  ),
 };

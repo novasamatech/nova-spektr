@@ -1,10 +1,12 @@
 import type { Meta, StoryObj } from '@storybook/react';
 
+import { withVersion } from '@renderer/shared/lib/utils/storybook';
 import { InputHint } from './InputHint';
 
 const meta: Meta<typeof InputHint> = {
-  title: 'ui/Input Hint',
+  title: 'Design system/Input Hint',
   component: InputHint,
+  decorators: [withVersion('1.0.0')],
 };
 
 export default meta;

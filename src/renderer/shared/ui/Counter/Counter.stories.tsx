@@ -1,10 +1,12 @@
 import type { Meta, StoryObj } from '@storybook/react';
 
+import { withVersion } from '@renderer/shared/lib/utils/storybook';
 import { Counter } from './Counter';
 
 const meta: Meta<typeof Counter> = {
-  title: 'ui/Counter',
+  title: 'Design system/Counter',
   component: Counter,
+  decorators: [withVersion('1.0.0')],
 };
 
 export default meta;

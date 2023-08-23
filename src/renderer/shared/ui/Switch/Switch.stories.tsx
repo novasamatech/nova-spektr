@@ -1,18 +1,12 @@
 import type { Meta, StoryObj } from '@storybook/react';
 
+import { withVersion } from '@renderer/shared/lib/utils';
 import { Switch } from './Switch';
 
 const meta: Meta<typeof Switch> = {
-  title: 'Switch',
+  title: 'Design system/Switch',
   component: Switch,
-
-  decorators: [
-    (Story) => (
-      <div className="w-max">
-        <Story />
-      </div>
-    ),
-  ],
+  decorators: [withVersion('1.0.0')],
 };
 
 export default meta;

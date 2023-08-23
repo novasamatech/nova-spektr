@@ -1,11 +1,13 @@
 import type { Meta, StoryObj } from '@storybook/react';
 
+import { withVersion } from '@renderer/shared/lib/utils/storybook';
 import { TextBase } from './common/TextBase';
 import * as Typography from './index';
 
 const meta: Meta<typeof TextBase> = {
-  title: 'ui/Typography',
+  title: 'Design system/Typography',
   component: TextBase,
+  decorators: [withVersion('1.0.0')],
 };
 
 export default meta;

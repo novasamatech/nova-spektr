@@ -1,11 +1,12 @@
 import type { Meta, StoryObj } from '@storybook/react';
 
+import { TEST_ACCOUNT_ID, withVersion } from '@renderer/shared/lib/utils';
 import { AccountAddress } from './AccountAddress';
-import { TEST_ACCOUNT_ID } from '@renderer/shared/lib/utils';
 
 const meta: Meta<typeof AccountAddress> = {
-  title: 'Redesign/Address',
+  title: 'Design system/Address',
   component: AccountAddress,
+  decorators: [withVersion('1.0.0')],
 };
 
 export default meta;

@@ -51,7 +51,7 @@ export const Button = forwardRef<HTMLButtonElement, Props>(
     >
       {icon && <Icon name={icon} size={16} className={IconStyle[pallet]} />}
       <span className={TextStyle[pallet]}>{children}</span>
-      {suffixElement && <div data-testid="suffix">{suffixElement}</div>}
+      {suffixElement}
     </button>
   ),
 );

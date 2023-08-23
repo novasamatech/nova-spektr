@@ -28,7 +28,7 @@ describe('ui/Buttons/Button', () => {
       </Button>,
     );
 
-    const suffix = screen.getByTestId('suffix');
+    const suffix = screen.getByText('Suffix');
     expect(suffix).toBeInTheDocument();
   });
 

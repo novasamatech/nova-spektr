@@ -1,11 +1,12 @@
 import type { Meta, StoryObj } from '@storybook/react';
 
+import { TEST_ACCOUNT_ID, withVersion } from '@renderer/shared/lib/utils';
 import { AddressWithName } from './AddressWithName';
-import { TEST_ACCOUNT_ID } from '@renderer/shared/lib/utils';
 
 const meta: Meta<typeof AddressWithName> = {
-  title: 'AddressWithName',
+  title: 'Design system/AddressWithName',
   component: AddressWithName,
+  decorators: [withVersion('1.0.0')],
 };
 
 export default meta;

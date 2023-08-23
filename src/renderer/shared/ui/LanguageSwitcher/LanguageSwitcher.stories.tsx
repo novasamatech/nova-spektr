@@ -1,6 +1,10 @@
+// TODO: Right now we don't fully support i18n
+
 import type { Meta, StoryObj } from '@storybook/react';
 import { enGB, ru } from 'date-fns/locale';
+import noop from 'lodash/noop';
 
+import { withVersion } from '@renderer/shared/lib/utils/storybook';
 import { LanguageItem } from '@renderer/services/translation/common/types';
 import { LanguageSwitcher } from './LanguageSwitcher';
 
@@ -20,14 +24,15 @@ const languages: LanguageItem[] = [
 ];
 
 const meta: Meta<typeof LanguageSwitcher> = {
-  title: 'LanguageSwitcher',
+  title: 'Design system/LanguageSwitcher',
   component: LanguageSwitcher,
+  decorators: [withVersion('1.0.0')],
 };
 
 export default meta;
 type Story = StoryObj<typeof LanguageSwitcher>;
 
-export const BottomFull: Story = {
+export const Playground: Story = {
   args: {
     languages,
     selected: 'en',
@@ -35,11 +40,7 @@ export const BottomFull: Story = {
 };
 
 export const TopShort: Story = {
-  args: {
-    className: 'w-16 pt-8',
-    languages,
-    top: true,
-    short: true,
-    selected: 'ru',
-  },
+  render: () => (
+    <LanguageSwitcher className="w-16 pt-8" languages={languages} top short selected="ru" onChange={noop} />
+  ),
 };

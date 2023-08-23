@@ -1,10 +1,12 @@
 import type { Meta, StoryObj } from '@storybook/react';
 
+import { withVersion } from '@renderer/shared/lib/utils/storybook';
 import { AssetBalance } from './AssetBalance';
 
 const meta: Meta<typeof AssetBalance> = {
-  title: 'Redesign/Token balance',
+  title: 'Design system/AssetBalance',
   component: AssetBalance,
+  decorators: [withVersion('1.0.0')],
 };
 
 const assetDot = {

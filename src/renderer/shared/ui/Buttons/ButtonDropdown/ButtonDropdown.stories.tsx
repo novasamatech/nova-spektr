@@ -1,23 +1,25 @@
 import type { Meta, StoryObj } from '@storybook/react';
 import noop from 'lodash/noop';
 
+import { withVersion } from '@renderer/shared/lib/utils/storybook';
 import { ButtonDropdown } from './ButtonDropdown';
 
 const meta: Meta<typeof ButtonDropdown> = {
-  title: 'ui/Buttons/ButtonDropdown',
+  title: 'Design system/Buttons/ButtonDropdown',
   component: ButtonDropdown,
-
-  decorators: [
-    (Story) => (
-      <div className="mt-28 w-[280px]">
-        <Story />
-      </div>
-    ),
-  ],
+  parameters: {
+    controls: { sort: 'requiredFirst' },
+  },
+  decorators: [withVersion('1.0.0')],
 };
 
 export default meta;
 type Story = StoryObj<typeof ButtonDropdown>;
+
+const UiOptions: Story['argTypes'] = {
+  className: { control: false },
+  children: { control: false },
+};
 
 const Options = [
   { id: 'button1', title: 'Button Option 1', onClick: noop },
@@ -26,21 +28,24 @@ const Options = [
 
 const RenderOptions = Options.map(({ id, title, onClick }) => (
   <ButtonDropdown.Item key={id}>
-    <button onClick={onClick}>{title}</button>
+    <button className="flex items-center gap-x-1.5 w-full p-2" onClick={onClick}>
+      <span className="text-footnote">{title}</span>
+    </button>
   </ButtonDropdown.Item>
 ));
 
-export const Primary: Story = {
+export const Playground: Story = {
   args: {
-    title: 'Action Dropdown',
+    title: 'Active Dropdown',
     children: RenderOptions,
   },
+  argTypes: UiOptions,
 };
 
 export const Disabled: Story = {
-  args: {
-    title: 'Action Dropdown',
-    disabled: true,
-    children: RenderOptions,
-  },
+  render: () => (
+    <ButtonDropdown disabled title="Disabled Dropdown">
+      {RenderOptions}
+    </ButtonDropdown>
+  ),
 };

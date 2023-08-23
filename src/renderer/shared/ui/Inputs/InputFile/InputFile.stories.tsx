@@ -1,10 +1,12 @@
 import type { Meta, StoryObj } from '@storybook/react';
 
+import { withVersion } from '@renderer/shared/lib/utils/storybook';
 import { InputFile } from './InputFile';
 
 const meta: Meta<typeof InputFile> = {
-  title: 'InputFile',
+  title: 'Design system/Inputs/InputFile',
   component: InputFile,
+  decorators: [withVersion('1.0.0')],
 };
 
 export default meta;

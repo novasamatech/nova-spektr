@@ -1,10 +1,12 @@
 import type { Meta, StoryObj } from '@storybook/react';
 
+import { withVersion } from '@renderer/shared/lib/utils/storybook';
 import { Alert } from './Alert';
 
 const meta: Meta<typeof Alert> = {
-  title: 'Alert',
+  title: 'Design system/Alert',
   component: Alert,
+  decorators: [withVersion('1.0.0')],
 };
 
 export default meta;

@@ -1,18 +1,12 @@
 import type { Meta, StoryObj } from '@storybook/react';
 
+import { withVersion } from '@renderer/shared/lib/utils/storybook';
 import { Tooltip } from './Tooltip';
 
 const meta: Meta<typeof Tooltip> = {
-  title: 'ui/Tooltip ',
+  title: 'Design system/Tooltip ',
   component: Tooltip,
-
-  decorators: [
-    (Story) => (
-      <div className="mt-28 mx-auto w-max">
-        <Story />
-      </div>
-    ),
-  ],
+  decorators: [withVersion('1.0.0')],
 };
 
 export default meta;

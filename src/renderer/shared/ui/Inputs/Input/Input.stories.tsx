@@ -1,11 +1,13 @@
 import type { Meta, StoryObj } from '@storybook/react';
 
+import { withVersion } from '@renderer/shared/lib/utils/storybook';
 import { Input } from './Input';
 import { Icon } from '../../Icon/Icon';
 
 const meta: Meta<typeof Input> = {
-  title: 'ui/Input',
+  title: 'Design system/Inputs/Input',
   component: Input,
+  decorators: [withVersion('1.0.0')],
 };
 
 export default meta;

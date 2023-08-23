@@ -1,10 +1,12 @@
 import type { Meta, StoryObj } from '@storybook/react';
 
+import { withVersion } from '@renderer/shared/lib/utils/storybook';
 import { InfoLink } from './InfoLink';
 
 const meta: Meta<typeof InfoLink> = {
-  title: 'ui/Info Link',
+  title: 'Design system/InfoLink',
   component: InfoLink,
+  decorators: [withVersion('1.0.0')],
 };
 
 export default meta;

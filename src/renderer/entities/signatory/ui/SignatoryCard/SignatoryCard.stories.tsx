@@ -1,11 +1,12 @@
 import type { Meta, StoryObj } from '@storybook/react';
 
+import { TEST_ADDRESS, withVersion } from '@renderer/shared/lib/utils';
 import { SignatoryCard } from './SignatoryCard';
-import { TEST_ADDRESS } from '@renderer/shared/lib/utils';
 
 const meta: Meta<typeof SignatoryCard> = {
-  title: 'Redesign/Signatory',
+  title: 'Design system/Signatory',
   component: SignatoryCard,
+  decorators: [withVersion('1.0.0')],
 };
 
 export default meta;

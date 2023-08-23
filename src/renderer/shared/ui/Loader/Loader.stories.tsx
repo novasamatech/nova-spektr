@@ -1,18 +1,12 @@
 import type { Meta, StoryObj } from '@storybook/react';
 
+import { withVersion } from '@renderer/shared/lib/utils/storybook';
 import { Loader } from './Loader';
 
 const meta: Meta<typeof Loader> = {
-  title: 'ui/Loader ',
+  title: 'Design system/Loader ',
   component: Loader,
-
-  decorators: [
-    (Story) => (
-      <div className="mt-28 mx-auto w-[200px] bg-gray-200 rounded-lg">
-        <Story />
-      </div>
-    ),
-  ],
+  decorators: [withVersion('1.0.0')],
 };
 
 export default meta;

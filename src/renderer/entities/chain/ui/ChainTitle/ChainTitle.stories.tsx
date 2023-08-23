@@ -1,11 +1,12 @@
 import type { Meta, StoryObj } from '@storybook/react';
 
+import { TEST_CHAIN_ID, withVersion } from '@renderer/shared/lib/utils';
 import { ChainTitle } from './ChainTitle';
-import { TEST_CHAIN_ID } from '@renderer/shared/lib/utils';
 
 const meta: Meta<typeof ChainTitle> = {
-  title: 'Redesign/Chain',
+  title: 'Design system/Chain',
   component: ChainTitle,
+  decorators: [withVersion('1.0.0')],
 };
 
 export default meta;

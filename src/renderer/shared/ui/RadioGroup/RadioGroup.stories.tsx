@@ -1,11 +1,13 @@
 import type { Meta, StoryObj } from '@storybook/react';
 import noop from 'lodash/noop';
 
+import { withVersion } from '@renderer/shared/lib/utils/storybook';
 import { RadioGroup } from './RadioGroup';
 
 const meta: Meta<typeof RadioGroup> = {
-  title: 'RadioGroup',
+  title: 'Design system/RadioGroup',
   component: RadioGroup,
+  decorators: [withVersion('1.0.0')],
 };
 
 export default meta;

@@ -1,10 +1,12 @@
 import type { Meta, StoryObj } from '@storybook/react';
 
+import { withVersion } from '@renderer/shared/lib/utils/storybook';
 import { Shimmering } from './Shimmering';
 
 const meta: Meta<typeof Shimmering> = {
-  title: 'Shimmering',
+  title: 'Design system/Shimmering',
   component: Shimmering,
+  decorators: [withVersion('1.0.0')],
 };
 
 export default meta;
