@@ -20,13 +20,13 @@ export const getPendingMultisigTxs = async (
 
   return multisigs
     .filter(([, opt]) => opt.isSome)
-    .reduce<PendingMultisigTransaction[]>((result, [storage, opt]) => {
-      if (opt.isNone) return result;
+    .reduce<PendingMultisigTransaction[]>((acc, [storage, opt]) => {
+      if (opt.isNone) return acc;
 
       const params = opt.unwrap();
       const [, callHash] = storage.args;
 
-      return [...result, { callHash, params }];
+      return [...acc, { callHash, params }];
     }, []);
 };
 
