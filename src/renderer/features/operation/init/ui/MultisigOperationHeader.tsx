@@ -59,8 +59,12 @@ export const MultisigOperationHeader = ({ account, invalid, error, getSignatoryO
         options={signatoryOptions}
         onChange={onChange}
       />
-      <InputHint active={!signatoryOptions.length}>{t('multisigOperations.noSignatory')}</InputHint>
-      <InputHint active={Boolean(error)}>{t(error || '')}</InputHint>
+      <InputHint active={!signatoryOptions.length} variant="error">
+        {t('multisigOperations.noSignatory')}
+      </InputHint>
+      <InputHint active={Boolean(error)} variant="error">
+        {t(error || '')}
+      </InputHint>
     </div>
   );
 };

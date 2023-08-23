@@ -10,6 +10,7 @@ type Props = {
   accounts: Account[] | [MultisigAccount];
   chainId: ChainId;
   isMultiselect?: boolean;
+  invalid?: boolean;
   errors?: OperationErrorType[];
   getAccountOption: (account: Account) => DropdownOption<Account>;
   getSignatoryOption: (account: Account) => DropdownOption<Account>;
@@ -27,6 +28,7 @@ export const OperationHeader = ({
   chainId,
   isMultiselect,
   accounts,
+  invalid,
   errors = [],
   getSignatoryOption,
   getAccountOption,

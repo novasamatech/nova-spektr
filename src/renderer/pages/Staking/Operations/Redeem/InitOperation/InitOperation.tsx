@@ -5,14 +5,14 @@ import { useEffect, useState } from 'react';
 import { useI18n } from '@renderer/app/providers';
 import { Asset, Balance as AccountBalance, useBalance } from '@renderer/entities/asset';
 import { ChainId, AccountId } from '@renderer/domain/shared-kernel';
-import { getOperationErrors, Transaction, TransactionType } from '@renderer/entities/transaction';
+import { Transaction, TransactionType } from '@renderer/entities/transaction';
 import { Account, isMultisig } from '@renderer/entities/account';
 import { redeemableAmount, formatBalance, nonNullable, toAddress } from '@renderer/shared/lib/utils';
 import { StakingMap, useStakingData, useEra } from '@renderer/entities/staking';
 import { OperationForm } from '../../components';
 import { validateBalanceForFee, validateBalanceForFeeDeposit, getRedeemAccountOption } from '../../common/utils';
 import { getSignatoryOption } from '@renderer/pages/Transfer/common/utils';
-import { OperationFooter, OperationHeader } from '@renderer/features/operation';
+import { OperationError, OperationFooter, OperationHeader } from '@renderer/features/operation';
 
 export type RedeemResult = {
   accounts: Account[];
@@ -209,7 +209,7 @@ const InitOperation = ({ api, chainId, accounts, addressPrefix, asset, onResult 
             chainId={chainId}
             accounts={accounts}
             isMultiselect
-            errors={getOperationErrors(invalidFee, invalidDeposit, invalidBalance)}
+            errors={invalidDeposit || invalidFee || invalidBalance ? [OperationError.EMPTY_ERROR] : undefined}
             getSignatoryOption={getSignatoryDrowdownOption}
             getAccountOption={getAccountDropdownOption}
             onSignatoryChange={setActiveSignatory}

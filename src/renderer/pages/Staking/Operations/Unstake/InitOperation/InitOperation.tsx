@@ -5,7 +5,7 @@ import { useEffect, useState } from 'react';
 import { useI18n } from '@renderer/app/providers';
 import { Asset, useBalance, Balance as AccountBalance } from '@renderer/entities/asset';
 import { ChainId, AccountId } from '@renderer/domain/shared-kernel';
-import { getOperationErrors, Transaction, TransactionType } from '@renderer/entities/transaction';
+import { Transaction, TransactionType } from '@renderer/entities/transaction';
 import { isMultisig, Account } from '@renderer/entities/account';
 import { formatAmount, nonNullable, toAddress } from '@renderer/shared/lib/utils';
 import { StakingMap, useStakingData } from '@renderer/entities/staking';
@@ -17,7 +17,7 @@ import {
   validateBalanceForFeeDeposit,
 } from '../../common/utils';
 import { getSignatoryOption } from '@renderer/pages/Transfer/common/utils';
-import { OperationFooter, OperationHeader } from '@renderer/features/operation';
+import { OperationError, OperationFooter, OperationHeader } from '@renderer/features/operation';
 
 export type UnstakeResult = {
   accounts: Account[];
@@ -230,7 +230,7 @@ const InitOperation = ({ api, chainId, addressPrefix, accounts, asset, onResult 
             chainId={chainId}
             accounts={accounts}
             isMultiselect
-            errors={getOperationErrors(invalidFee, invalidDeposit, invalidBalance)}
+            errors={invalidDeposit || invalidFee || invalidBalance ? [OperationError.EMPTY_ERROR] : undefined}
             getSignatoryOption={getSignatoryDrowdownOption}
             getAccountOption={getAccountDropdownOption}
             onSignatoryChange={setActiveSignatory}

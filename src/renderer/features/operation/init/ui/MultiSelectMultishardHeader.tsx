@@ -65,7 +65,9 @@ export const MultiSelectMultishardHeader = ({
         options={accountsOptions}
         onChange={changeAccount}
       />
-      <InputHint active={Boolean(error)}>{t(error || '')}</InputHint>
+      <InputHint active={Boolean(error)} variant="error">
+        {t(error || '')}
+      </InputHint>
     </div>
   );
 };
