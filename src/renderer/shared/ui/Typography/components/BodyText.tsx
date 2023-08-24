@@ -4,5 +4,13 @@ import { FontWeight, TypographyProps } from '../common/types';
 
 type Props = TypographyProps & { fontWeight?: FontWeight };
 export const BodyText = ({ className, fontWeight, ...props }: Props) => (
-  <TextBase className={cnTw('text-body', fontWeight && `font-${fontWeight}`, className)} {...props} />
+  <TextBase
+    className={cnTw(
+      'text-body',
+      fontWeight && `font-${fontWeight}`,
+      fontWeight === 'semibold' && 'leading-4',
+      className,
+    )}
+    {...props}
+  />
 );
