@@ -1,4 +1,5 @@
 import { Pallet } from './types';
+import { cnTw } from '@renderer/shared/lib/utils';
 
 export const SizeStyle: Record<'sm' | 'md', string> = {
   sm: 'h-7 px-3 rounded-[14px]',
@@ -6,15 +7,18 @@ export const SizeStyle: Record<'sm' | 'md', string> = {
 };
 
 export const ButtonStyle: Record<Pallet, string> = {
-  primary:
-    'bg-button-primary-default transition-colors ' +
+  primary: cnTw(
+    'bg-button-primary-default transition-colors',
     'hover:bg-button-primary-hover active:bg-button-primary-active disabled:bg-button-primary-disabled',
-  secondary:
-    'bg-button-secondary-default transition-colors ' +
+  ),
+  secondary: cnTw(
+    'bg-button-secondary-default transition-colors',
     'hover:bg-button-secondary-hover active:bg-button-secondary-active disabled:bg-button-secondary-disabled',
-  error:
-    'bg-button-negative-default transition-colors ' +
+  ),
+  error: cnTw(
+    'bg-button-negative-default transition-colors',
     'hover:bg-button-negative-hover active:bg-button-negative-active disabled:bg-button-negative-disabled',
+  ),
 };
 
 export const TextStyle: Record<Pallet, string> = {
@@ -25,8 +29,9 @@ export const TextStyle: Record<Pallet, string> = {
 
 export const IconStyle: Record<Pallet, string> = {
   primary: 'text-icon-white-default',
-  secondary:
-    'text-icon-primary-default transition-colors ' +
-    'group-hover:text-icon-primary-hover group-active:text-icon-primary-active ',
+  secondary: cnTw(
+    'text-icon-primary-default transition-colors',
+    'group-hover:text-icon-primary-hover group-active:text-icon-primary-active',
+  ),
   error: '',
 };
