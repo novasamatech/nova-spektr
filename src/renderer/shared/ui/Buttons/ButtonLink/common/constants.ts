@@ -4,7 +4,7 @@ export const SizeStyle: Record<'sm' | 'md', string> = {
 };
 
 const TextGeneralStyle =
-  'text-body text-button-primary-default font-semibold transition-colors ' +
+  'text-button-primary-default font-semibold transition-colors ' +
   'group-hover:text-button-primary-hover group-active:text-button-primary-active';
 
 export const TextStyle: Record<keyof typeof SizeStyle, string> = {
