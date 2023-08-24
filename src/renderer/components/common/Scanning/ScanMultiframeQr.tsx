@@ -4,16 +4,15 @@ import { UnsignedTransaction } from '@substrate/txwrapper-polkadot';
 import init, { Encoder } from 'raptorq';
 import { useEffect, useState } from 'react';
 
+import { AccountDS } from '@renderer/shared/api/storage';
 import { Command } from '@renderer/components/common/QrCode/QrGenerator/common/constants';
 import QrMultiframeGenerator from '@renderer/components/common/QrCode/QrGenerator/QrMultiframeTxGenerator';
 import { TRANSACTION_BULK } from '@renderer/components/common/QrCode/common/constants';
-import { useI18n } from '@renderer/context/I18nContext';
+import { useI18n } from '@renderer/app/providers';
 import { ChainId } from '@renderer/domain/shared-kernel';
-import { Transaction } from '@renderer/domain/transaction';
-import { AccountDS } from '@renderer/services/storage';
-import { useTransaction } from '@renderer/services/transaction/transactionService';
-import { toAddress } from '@renderer/shared/utils/address';
-import { Button } from '@renderer/components/ui-redesign';
+import { Transaction, useTransaction } from '@renderer/entities/transaction';
+import { toAddress } from '@renderer/shared/lib/utils';
+import { Button } from '@renderer/shared/ui';
 import { QrGeneratorContainer } from '@renderer/components/common';
 import {
   createMultipleSignPayload,
@@ -29,7 +28,7 @@ type Props = {
   countdown: number;
   onGoBack: () => void;
   onResetCountdown: () => void;
-  onResult: (unsigned: UnsignedTransaction[]) => void;
+  onResult: (unsigned: UnsignedTransaction[], txPayloads: Uint8Array[]) => void;
 };
 
 const ScanMultiframeQr = ({
@@ -49,6 +48,7 @@ const ScanMultiframeQr = ({
   const [encoder, setEncoder] = useState<Encoder>();
   const [bulkTransactions, setBulkTransactions] = useState<Uint8Array>();
   const [unsignedTransactions, setUnsignedTransactions] = useState<UnsignedTransaction[]>([]);
+  const [txPayloads, setTxPayloads] = useState<Uint8Array[]>([]);
 
   useEffect(() => {
     if (unsignedTransactions.length) return;
@@ -84,6 +84,7 @@ const ScanMultiframeQr = ({
 
     setBulkTransactions(createMultipleSignPayload(transactionsEncoded));
     setUnsignedTransactions(txRequests.map((t) => t.unsigned));
+    setTxPayloads(txRequests.map((t) => t.signPayload));
     setEncoder(Encoder.with_defaults(bulk, 128));
   };
 
@@ -93,16 +94,17 @@ const ScanMultiframeQr = ({
 
   return (
     <div className="flex flex-col items-center w-full">
-      <QrGeneratorContainer countdown={countdown} chainId={chainId} onQrReset={setupTransactions}>
-        {bulkTxExist && encoder && <QrMultiframeGenerator payload={bulkTransactions} size={200} encoder={encoder} />}
-      </QrGeneratorContainer>
-
+      <div className="mt-10">
+        <QrGeneratorContainer countdown={countdown} chainId={chainId} onQrReset={setupTransactions}>
+          {bulkTxExist && encoder && <QrMultiframeGenerator payload={bulkTransactions} size={200} encoder={encoder} />}
+        </QrGeneratorContainer>
+      </div>
       <div className="flex w-full justify-between mt-3">
         <Button variant="text" onClick={onGoBack}>
           {t('operation.goBackButton')}
         </Button>
 
-        <Button disabled={!bulkTxExist || countdown === 0} onClick={() => onResult(unsignedTransactions)}>
+        <Button disabled={!bulkTxExist || countdown === 0} onClick={() => onResult(unsignedTransactions, txPayloads)}>
           {t('signing.continueButton')}
         </Button>
       </div>

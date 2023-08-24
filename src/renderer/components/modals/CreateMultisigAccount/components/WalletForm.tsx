@@ -1,12 +1,17 @@
 import { Controller, useForm, SubmitHandler } from 'react-hook-form';
 
-import { Alert, Button, Input, InputHint, Select, SmallTitleText } from '@renderer/components/ui-redesign';
-import { useI18n } from '@renderer/context/I18nContext';
-import { DropdownOption, DropdownResult } from '@renderer/components/ui/Dropdowns/common/types';
-import { Signatory } from '@renderer/domain/signatory';
-import { getMultisigAccountId, isMultisig, isWalletContact, Account, MultisigAccount } from '@renderer/domain/account';
+import { Alert, Button, Input, InputHint, Select, SmallTitleText } from '@renderer/shared/ui';
+import { useI18n, useMatrix } from '@renderer/app/providers';
+import { DropdownOption, DropdownResult } from '@renderer/shared/ui/Dropdowns/common/types';
+import { Signatory } from '@renderer/entities/signatory';
+import {
+  getMultisigAccountId,
+  isMultisig,
+  isWalletContact,
+  Account,
+  MultisigAccount,
+} from '@renderer/entities/account';
 import { SigningType, AccountId } from '@renderer/domain/shared-kernel';
-import { useMatrix } from '@renderer/context/MatrixContext';
 
 type MultisigAccountForm = {
   name: string;
@@ -143,7 +148,7 @@ export const WalletForm = ({
         )}
 
         {hasNoAccounts && (
-          <Alert title={t('createMultisigAccount.alertTitle')} variant="warn">
+          <Alert title={t('createMultisigAccount.walletAlertTitle')} variant="warn">
             <Alert.Item withDot={false}>{t('createMultisigAccount.accountsAlertText')}</Alert.Item>
           </Alert>
         )}

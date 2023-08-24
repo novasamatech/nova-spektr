@@ -2,21 +2,21 @@ import { Controller, SubmitHandler, useForm } from 'react-hook-form';
 import { Trans } from 'react-i18next';
 import { useEffect, useState } from 'react';
 
-import { useMatrix } from '@renderer/context/MatrixContext';
-import { useI18n } from '@renderer/context/I18nContext';
-import { WELL_KNOWN_SERVERS } from '@renderer/services/matrix';
+import { useI18n, useMatrix } from '@renderer/app/providers';
+import { validateShortUserName, WELL_KNOWN_SERVERS } from '@renderer/shared/api/matrix';
 import {
   Alert,
   Button,
   Combobox,
   FootnoteText,
+  Icon,
   InfoLink,
   Input,
   InputHint,
+  Loader,
   PasswordInput,
-} from '@renderer/components/ui-redesign';
-import { Icon, Loader } from '@renderer/components/ui';
-import { ComboboxOption } from '@renderer/components/ui-redesign/Dropdowns/common/types';
+} from '@renderer/shared/ui';
+import type { ComboboxOption } from '@renderer/shared/ui/types';
 
 const HOME_SERVERS = WELL_KNOWN_SERVERS.map((server) => ({
   id: server.domain,
@@ -174,7 +174,7 @@ const LoginForm = () => {
               <Controller
                 name="username"
                 control={control}
-                rules={{ required: true, validate: matrix.validateShortUserName }}
+                rules={{ required: true, validate: validateShortUserName }}
                 render={({ field: { value, onChange }, fieldState: { error } }) => (
                   <>
                     <Input

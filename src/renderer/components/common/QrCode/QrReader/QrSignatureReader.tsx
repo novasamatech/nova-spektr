@@ -3,8 +3,8 @@ import { BrowserCodeReader, BrowserQRCodeReader, IScannerControls } from '@zxing
 import { useEffect, useRef } from 'react';
 import init from 'raptorq';
 
-import cnTw from '@renderer/shared/utils/twMerge';
-import { useI18n } from '@renderer/context/I18nContext';
+import { cnTw } from '@renderer/shared/lib/utils';
+import { useI18n } from '@renderer/app/providers';
 import { ErrorFields } from '../common/constants';
 import { QR_READER_ERRORS } from '../common/errors';
 import { DecodeCallback, ErrorObject, QrError, VideoInput } from '../common/types';
@@ -163,7 +163,7 @@ const QrSignatureReader = ({
         controls={false}
         ref={videoRef}
         data-testid="qr-reader"
-        className={cnTw('object-cover  absolute -scale-x-100', className)}
+        className={cnTw('object-cover absolute -scale-x-100', className)}
         style={videoStyle}
       >
         {t('qrReader.videoError')}
@@ -173,7 +173,7 @@ const QrSignatureReader = ({
 
   return (
     <>
-      <div className="relative w-[240px] h-[240px] rounded-[1.75rem] overflow-hidden">
+      <div className="relative w-[240px] h-[240px] rounded-[22px] overflow-hidden">
         <video
           muted
           autoPlay

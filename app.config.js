@@ -29,10 +29,10 @@ exports.APP_CONFIG = {
     ENTRY_POINTS: {
       MAIN: 'src/main/index.ts',
       BRIDGE: 'src/shared/bridge.ts',
-      RENDERER: 'src/renderer/index.tsx',
+      RENDERER: 'src/renderer/app/index.tsx',
     },
 
-    INDEX_HTML: 'src/renderer/index.html',
+    INDEX_HTML: 'src/renderer/app/index.html',
     RESOURCES: 'src/main/resources',
     DEV_BUILD: 'release/build/',
     PROD_BUILD: 'release/dist/',

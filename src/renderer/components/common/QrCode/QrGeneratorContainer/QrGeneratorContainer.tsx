@@ -1,10 +1,9 @@
 import { PropsWithChildren } from 'react';
 import cn from 'classnames';
 
-import { Button, CaptionText, FootnoteText, InfoLink, SmallTitleText } from '@renderer/components/ui-redesign';
-import { secondsToMinutes } from '@renderer/shared/utils/time';
-import { Icon, Shimmering } from '@renderer/components/ui';
-import { useI18n } from '@renderer/context/I18nContext';
+import { Button, CaptionText, FootnoteText, InfoLink, SmallTitleText, Icon, Shimmering } from '@renderer/shared/ui';
+import { secondsToMinutes } from '@renderer/shared/lib/utils';
+import { useI18n } from '@renderer/app/providers';
 import { ChainId } from '@renderer/domain/shared-kernel';
 import { getMetadataPortalMetadataUrl, TROUBLESHOOTING_URL } from '../common/constants';
 
@@ -21,7 +20,7 @@ const QrGeneratorContainer = ({ countdown, onQrReset, chainId, children }: Props
     <section className="flex flex-col items-center flex-1">
       <SmallTitleText>{t('signing.scanQrTitle')}</SmallTitleText>
 
-      <div className="flex items-center gap-x-2 mt-3 mb-4">
+      <div className="flex items-center gap-x-2 mt-2 mb-6">
         <FootnoteText className="text-text-tertiary">{t('signing.qrCountdownTitle')}</FootnoteText>
         <CaptionText
           align="center"
@@ -54,7 +53,7 @@ const QrGeneratorContainer = ({ countdown, onQrReset, chainId, children }: Props
         {!children && <Shimmering />}
       </div>
 
-      <div className="flex flex-row items-center gap-x-2 mt-6 mb-4">
+      <div className="flex flex-row items-center gap-x-2 mt-2 mb-4.5 h-[78px]">
         <InfoLink url={TROUBLESHOOTING_URL}>{t('signing.troubleshootingLink')}</InfoLink>
 
         <span className="border border-divider h-4"></span>

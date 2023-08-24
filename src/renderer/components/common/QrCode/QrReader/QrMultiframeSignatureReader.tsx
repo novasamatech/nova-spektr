@@ -4,8 +4,8 @@ import { useEffect, useRef } from 'react';
 import { u8aToHex } from '@polkadot/util';
 
 import RaptorFrame from './RaptorFrame';
-import cnTw from '@renderer/shared/utils/twMerge';
-import { useI18n } from '@renderer/context/I18nContext';
+import { cnTw } from '@renderer/shared/lib/utils';
+import { useI18n } from '@renderer/app/providers';
 import { HexString } from '@renderer/domain/shared-kernel';
 import { QR_READER_ERRORS } from '../common/errors';
 import { ErrorFields, FRAME_KEY, SIGNED_TRANSACTION_BULK } from '../common/constants';
@@ -34,7 +34,7 @@ const QrMultiframeSignatureReader = ({
   size = 300,
   cameraId,
   className,
-  bgVideo,
+  bgVideo = true,
   bgVideoClassName,
   onCameraList,
   onResult,
@@ -298,7 +298,7 @@ const QrMultiframeSignatureReader = ({
 
   return (
     <>
-      <div className="relative w-[240px] h-[240px] rounded-[1.75rem] overflow-hidden">
+      <div className="relative w-[240px] h-[240px] rounded-[22px] overflow-hidden">
         <video
           muted
           autoPlay

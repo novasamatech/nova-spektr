@@ -1,9 +1,7 @@
-import { Explorer } from '@renderer/domain/chain';
-import { toAddress } from '@renderer/shared/utils/address';
-import useAddressInfo from '@renderer/components/common/AccountAddress/useAddressInfo';
-import { Icon, Identicon } from '@renderer/components/ui';
-import { BodyText, InfoPopover } from '@renderer/components/ui-redesign';
-import { HelpText } from '@renderer/components/ui-redesign/Typography';
+import { useAddressInfo } from '@renderer/entities/account';
+import { Explorer } from '@renderer/entities/chain';
+import { toAddress } from '@renderer/shared/lib/utils';
+import { Icon, Identicon, BodyText, InfoPopover, HelpText } from '@renderer/shared/ui';
 import { ExtendedWallet } from '../common/types';
 
 type Props = Pick<ExtendedWallet, 'accountId' | 'walletName' | 'name'> & { explorers?: Explorer[] };

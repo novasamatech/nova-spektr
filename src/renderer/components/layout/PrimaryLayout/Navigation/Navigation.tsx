@@ -2,18 +2,18 @@ import { useEffect, useState } from 'react';
 import { keyBy } from 'lodash';
 import cn from 'classnames';
 
-import { useAccount } from '@renderer/services/account/accountService';
-import { useMultisigTx } from '@renderer/services/multisigTx/multisigTxService';
+import { useAccount } from '@renderer/entities/account';
+import { useMultisigTx } from '@renderer/entities/multisig';
 import './Navigation.css';
-import { MultisigTxInitStatus } from '@renderer/domain/transaction';
+import { MultisigTxInitStatus } from '@renderer/entities/transaction';
 import WalletMenu from '@renderer/components/layout/PrimaryLayout/Wallets/WalletMenu';
 import ActiveAccountCard from '@renderer/components/layout/PrimaryLayout/Wallets/ActiveAccountCard';
 import NavItem, { Props as NavItemProps } from '../NavItem/NavItem';
-import { useChains } from '@renderer/services/network/chainsService';
+import { useChains } from '@renderer/entities/network';
 import { ChainsRecord } from '@renderer/components/layout/PrimaryLayout/Wallets/common/types';
-import Paths from '@renderer/routes/paths';
-import { useWallet } from '@renderer/services/wallet/walletService';
-import { Shimmering } from '@renderer/components/ui';
+import { Paths } from '../../../../app/providers/routes/paths';
+import { useWallet } from '@renderer/entities/wallet';
+import { Shimmering } from '@renderer/shared/ui';
 
 const Navigation = () => {
   const { getActiveAccounts } = useAccount();
