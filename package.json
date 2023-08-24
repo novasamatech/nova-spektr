@@ -45,13 +45,12 @@
 
     "githook:pre-commit": "cross-env NODE_ENV=production lint-staged && tsc -p tsconfig.json",
     "githook:pre-push": "cross-env pnpm test:coverage",
-
-    "storybook": "storybook dev -p 6006",
-    "storybook:build": "storybook build",
-
     "update:chains-file": "node scripts/buildChainsJson.js",
     "prepare": "husky install",
-    "r": "pnpm run-s"
+    "r": "pnpm run-s",
+
+    "storybook": "storybook dev -p 6006",
+    "build-storybook": "storybook build"
   },
   "engines": {
     "node": ">=16.x",

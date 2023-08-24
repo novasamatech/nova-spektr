@@ -4,7 +4,7 @@ import { withVersion } from '@renderer/shared/lib/utils';
 import { Button } from './Button';
 
 const meta: Meta<typeof Button> = {
-  title: 'Design system/Buttons/Buttons/Button',
+  title: 'Design system/Buttons/Button',
   component: Button,
   parameters: {
     controls: { sort: 'requiredFirst' },
