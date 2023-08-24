@@ -1,7 +1,7 @@
 import { PropsWithChildren, useEffect, useState } from 'react';
 import { BN, BN_ZERO } from '@polkadot/util';
 
-import { Select, FootnoteText, Plate, IconButton, Shimmering } from '@renderer/shared/ui';
+import { Select, FootnoteText, Plate, ButtonIcon, Shimmering } from '@renderer/shared/ui';
 import { DropdownOption, DropdownResult } from '@renderer/shared/ui/types';
 import { getRelaychainAsset } from '@renderer/shared/lib/utils';
 import { useChains } from '@renderer/entities/network';
@@ -112,7 +112,7 @@ export const NetworkInfo = ({
             </div>
           ),
         )}
-        <IconButton name={isChildrenShown ? 'chevron-up' : 'chevron-down'} onClick={toggleChildren} />
+        <ButtonIcon icon={isChildrenShown ? 'chevron-up' : 'chevron-down'} onClick={toggleChildren} />
       </div>
 
       {isChildrenShown && (

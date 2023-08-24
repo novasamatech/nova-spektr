@@ -1,6 +1,6 @@
 import { useNavigate } from 'react-router-dom';
 
-import { BodyText, Button, Icon } from '@renderer/shared/ui';
+import { ButtonText, BodyText } from '@renderer/shared/ui';
 import { Paths, useI18n } from '@renderer/app/providers';
 import EmptyList from '@images/misc/empty-list.webp';
 
@@ -25,14 +25,9 @@ export const EmptyContactList = ({ description, onNewContact }: Props) => {
       <img src={EmptyList} alt={t('addressBook.contactList.noContactsLabel')} width={178} height={178} />
       <BodyText className="text-text-tertiary">{description || t('addressBook.contactList.noContactsLabel')}</BodyText>
 
-      <Button
-        variant="text"
-        className="h-4.5"
-        suffixElement={<Icon size={16} name="add-address" />}
-        onClick={navigateToNewContact}
-      >
+      <ButtonText icon="add-address" className="h-4.5" onClick={navigateToNewContact}>
         {t('addressBook.createContact.addContactButton')}
-      </Button>
+      </ButtonText>
     </div>
   );
 };

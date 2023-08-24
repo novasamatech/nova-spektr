@@ -4,30 +4,26 @@ import { Button } from './Button';
 
 describe('ui/Buttons/Button', () => {
   test('should render component', () => {
-    render(
-      <Button variant="fill" pallet="primary">
-        Hello button
-      </Button>,
-    );
+    render(<Button pallet="primary">Hello button</Button>);
 
     const button = screen.getByRole('button', { name: 'Hello button' });
     expect(button).toBeInTheDocument();
   });
 
-  test('should render prefix', () => {
+  test('should render prefix icon', () => {
     render(
-      <Button variant="fill" pallet="primary" prefixElement="Prefix">
+      <Button pallet="primary" icon="polkadotvault">
         Hello button
       </Button>,
     );
 
-    const prefix = screen.getByTestId('prefix');
+    const prefix = screen.getByRole('img');
     expect(prefix).toBeInTheDocument();
   });
 
   test('should render suffix', () => {
     render(
-      <Button variant="fill" pallet="primary" suffixElement="Suffix">
+      <Button pallet="primary" suffixElement="Suffix">
         Hello button
       </Button>,
     );
@@ -39,7 +35,7 @@ describe('ui/Buttons/Button', () => {
   test('should call onClick', () => {
     const spyClick = jest.fn();
     render(
-      <Button variant="fill" pallet="primary" onClick={spyClick}>
+      <Button pallet="primary" onClick={spyClick}>
         Hello button
       </Button>,
     );

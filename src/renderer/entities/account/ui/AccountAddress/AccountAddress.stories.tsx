@@ -9,7 +9,7 @@ export default {
   parameters: { actions: { argTypesRegex: '^on.*' } },
 } as ComponentMeta<typeof AccountAddress>;
 
-const Template: ComponentStory<typeof AccountAddress> = (args) => <AccountAddress {...args} />;
+const Template: ComponentStory<typeof AccountAddress> = (args: any) => <AccountAddress {...args} />;
 
 export const Primary = Template.bind({});
 Primary.args = {

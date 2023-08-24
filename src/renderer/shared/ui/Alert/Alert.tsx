@@ -1,9 +1,11 @@
-import { PropsWithChildren, Children } from 'react';
+import { Children, PropsWithChildren } from 'react';
 
 import { cnTw } from '@renderer/shared/lib/utils';
-import { IconButton, Icon, SmallTitleText } from '@renderer/shared/ui';
+import { Icon } from '../Icon/Icon';
+import { ButtonIcon } from '../Buttons';
+import { SmallTitleText } from '../Typography';
 import { Variant } from './common/types';
-import { ViewStyle, IconStyle, IconName } from './common/constants';
+import { IconName, IconStyle, ViewStyle } from './common/constants';
 import { AlertItem } from './AlertItem';
 
 type Props = {
@@ -26,7 +28,7 @@ export const Alert = ({ title, variant = 'info', className, children, onClose }:
           {isList ? <ul className={cnTw('flex flex-col gap-y-2 list-none', className)}>{children}</ul> : children}
         </div>
 
-        {onClose && <IconButton className="self-start mt-0.5" size={16} name="close" onClick={onClose} />}
+        {onClose && <ButtonIcon className="self-start mt-0.5" size="sm" icon="close" onClick={onClose} />}
       </div>
     </div>
   );

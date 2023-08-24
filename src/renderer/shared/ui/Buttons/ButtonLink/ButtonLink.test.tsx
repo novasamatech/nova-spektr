@@ -1,5 +1,6 @@
-import { act, render, screen } from '@testing-library/react';
+import { render, screen } from '@testing-library/react';
 import { BrowserRouter, MemoryRouter } from 'react-router-dom';
+import userEvent from '@testing-library/user-event';
 
 import { ButtonLink } from './ButtonLink';
 
@@ -11,15 +12,14 @@ describe('ui/Buttons/ButtonLink', () => {
     expect(buttonLink).toBeInTheDocument();
   });
 
-  test('should navigate on click', () => {
+  test('should navigate on click', async () => {
     window.history.pushState({}, '', '/init_page');
 
     render(<ButtonLink to="test_page" />, { wrapper: BrowserRouter });
 
     expect(window.location.href).toEqual('http://localhost/init_page');
 
-    const buttonLink = screen.getByRole('link');
-    act(() => buttonLink.click());
+    await userEvent.click(screen.getByRole('link'));
 
     expect(window.location.href).toEqual('http://localhost/test_page');
   });
@@ -45,9 +45,8 @@ describe('ui/Buttons/ButtonLink', () => {
       wrapper: MemoryRouter,
     });
 
-    const buttonLink = screen.getByRole('link');
-    await act(() => buttonLink.click());
+    await userEvent.click(screen.getByRole('link'));
 
-    expect(spyCallback).toBeCalled();
+    expect(spyCallback).toHaveBeenCalled();
   });
 });

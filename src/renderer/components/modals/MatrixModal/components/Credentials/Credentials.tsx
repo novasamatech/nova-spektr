@@ -28,6 +28,7 @@ const Credentials = ({ onLogOut }: Props) => {
       <FootnoteText className="text-text-tertiary">{t('settings.matrix.userIdLabel')}</FootnoteText>
       <div className="flex items-center justify-between">
         <StatusMark className="row-span-2" variant="success" title={matrix.userId || ''} />
+
         <Button pallet="error" size="sm" disabled={inProgress} onClick={handleLogout}>
           {t('settings.matrix.logOutButton')}
         </Button>

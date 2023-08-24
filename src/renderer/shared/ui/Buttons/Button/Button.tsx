@@ -1,41 +1,37 @@
 import noop from 'lodash/noop';
-import { MouseEvent, PropsWithChildren, ReactNode, forwardRef } from 'react';
+import { forwardRef, MouseEvent, ReactNode } from 'react';
 
 import { cnTw } from '@renderer/shared/lib/utils';
-import { ViewClass, SizeClass, Padding } from '../common/constants';
-import { Pallet, Variant } from '../common/types';
-import { Loader } from '@renderer/shared/ui';
+import { ButtonStyle, IconStyle, SizeStyle, TextStyle } from './common/constants';
+import { Pallet } from './common/types';
+import { Icon } from '../../Icon/Icon';
+import { IconNames } from '../../Icon/data';
 
 type Props = {
   className?: string;
   type?: 'button' | 'submit';
   form?: string;
-  variant?: Variant;
   pallet?: Pallet;
-  size?: keyof typeof SizeClass;
+  size?: keyof typeof SizeStyle;
   disabled?: boolean;
-  prefixElement?: ReactNode;
+  icon?: IconNames;
   suffixElement?: ReactNode;
+  children?: string;
   onClick?: (event: MouseEvent<HTMLButtonElement>) => void;
-  tabIndex?: number;
-  isLoading?: boolean;
 };
 
-export const Button = forwardRef<HTMLButtonElement, PropsWithChildren<Props>>(
+export const Button = forwardRef<HTMLButtonElement, Props>(
   (
     {
-      variant = 'fill',
       pallet = 'primary',
       type = 'button',
       size = 'md',
       form,
       className,
       disabled,
-      prefixElement,
+      icon,
       suffixElement,
-      tabIndex,
       children,
-      isLoading,
       onClick = noop,
     },
     ref,
@@ -46,19 +42,15 @@ export const Button = forwardRef<HTMLButtonElement, PropsWithChildren<Props>>(
       form={form}
       disabled={disabled}
       className={cnTw(
-        'flex items-center justify-center gap-x-2 select-none outline-offset-1',
-        (prefixElement || suffixElement || isLoading) && 'justify-between',
-        SizeClass[size],
-        variant !== 'text' && Padding[size],
-        ViewClass[`${variant}_${pallet}`],
+        'group flex items-center justify-center gap-x-1.5 select-none outline-offset-1',
+        SizeStyle[size],
+        ButtonStyle[pallet],
         className,
       )}
-      tabIndex={tabIndex}
-      onClick={(e) => !isLoading && onClick(e)}
+      onClick={onClick}
     >
-      {isLoading && <Loader color="white" />}
-      {prefixElement && <div data-testid="prefix">{prefixElement}</div>}
-      <div>{children}</div>
+      {icon && <Icon name={icon} size={16} className={IconStyle[pallet]} />}
+      <span className={TextStyle[pallet]}>{children}</span>
       {suffixElement && <div data-testid="suffix">{suffixElement}</div>}
     </button>
   ),

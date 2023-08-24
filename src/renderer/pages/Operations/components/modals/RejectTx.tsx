@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { UnsignedTransaction } from '@substrate/txwrapper-polkadot';
 import { BN } from '@polkadot/util';
 
-import { BaseModal, Button, Icon } from '@renderer/shared/ui';
+import { BaseModal, Button } from '@renderer/shared/ui';
 import { useI18n } from '@renderer/app/providers';
 import { AccountDS, MultisigTransactionDS } from '@renderer/shared/api/storage';
 import { useToggle, useCountdown } from '@renderer/shared/lib/hooks';
@@ -141,7 +141,7 @@ const RejectTx = ({ tx, account, connection }: Props) => {
   return (
     <>
       <div className="flex justify-between">
-        <Button size="sm" pallet="error" variant="fill" onClick={() => setIsModalOpen(true)}>
+        <Button size="sm" pallet="error" onClick={() => setIsModalOpen(true)}>
           {t('operation.rejectButton')}
         </Button>
       </div>
@@ -163,11 +163,7 @@ const RejectTx = ({ tx, account, connection }: Props) => {
         {activeStep === Step.CONFIRMATION && (
           <>
             <Confirmation tx={tx} account={account} connection={connection} feeTx={rejectTx} />
-            <Button
-              className="mt-7 ml-auto"
-              prefixElement={<Icon name="polkadotvault" size={16} />}
-              onClick={toggleRejectReasonModal}
-            >
+            <Button icon="polkadotvault" className="mt-7 ml-auto" onClick={toggleRejectReasonModal}>
               {t('operation.signButton')}
             </Button>
           </>

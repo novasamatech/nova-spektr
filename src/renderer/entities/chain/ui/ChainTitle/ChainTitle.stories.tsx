@@ -9,7 +9,7 @@ export default {
   parameters: { actions: { argTypesRegex: '^on.*' } },
 } as ComponentMeta<typeof ChainTitle>;
 
-const Template: ComponentStory<typeof ChainTitle> = (args) => <ChainTitle {...args} />;
+const Template: ComponentStory<typeof ChainTitle> = (args: any) => <ChainTitle {...args} />;
 
 export const Primary = Template.bind({});
 Primary.args = {

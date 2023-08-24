@@ -12,7 +12,7 @@ import { useI18n } from '@renderer/app/providers';
 import { ChainId } from '@renderer/domain/shared-kernel';
 import { Transaction, useTransaction } from '@renderer/entities/transaction';
 import { toAddress } from '@renderer/shared/lib/utils';
-import { Button } from '@renderer/shared/ui';
+import { Button, ButtonText } from '@renderer/shared/ui';
 import { QrGeneratorContainer } from '@renderer/components/common';
 import {
   createMultipleSignPayload,
@@ -100,9 +100,7 @@ const ScanMultiframeQr = ({
         </QrGeneratorContainer>
       </div>
       <div className="flex w-full justify-between mt-3">
-        <Button variant="text" onClick={onGoBack}>
-          {t('operation.goBackButton')}
-        </Button>
+        <ButtonText onClick={onGoBack}>{t('operation.goBackButton')}</ButtonText>
 
         <Button disabled={!bulkTxExist || countdown === 0} onClick={() => onResult(unsignedTransactions, txPayloads)}>
           {t('signing.continueButton')}

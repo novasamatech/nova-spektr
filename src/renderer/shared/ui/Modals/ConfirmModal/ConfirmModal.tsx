@@ -1,7 +1,7 @@
 import { PropsWithChildren } from 'react';
 
 import { cnTw } from '@renderer/shared/lib/utils';
-import { Button } from '../../Buttons';
+import { Button, ButtonText } from '../../Buttons';
 import { BaseModal } from '../BaseModal/BaseModal';
 
 type Props = {
@@ -28,12 +28,12 @@ export const ConfirmModal = ({
     {children}
     <div className="flex gap-x-3 mt-4">
       {cancelText && (
-        <Button className="flex-1" variant="text" size="sm" onClick={onClose}>
+        <ButtonText className="flex-1" size="sm" onClick={onClose}>
           {cancelText}
-        </Button>
+        </ButtonText>
       )}
       {confirmText && (
-        <Button className="flex-1" variant="fill" size="sm" onClick={onConfirm}>
+        <Button className="flex-1" size="sm" onClick={onConfirm}>
           {confirmText}
         </Button>
       )}
