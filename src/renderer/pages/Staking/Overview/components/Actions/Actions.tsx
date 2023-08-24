@@ -5,7 +5,7 @@ import { useI18n, PathValue } from '@renderer/app/providers';
 import { Paths } from '../../../../../app/providers/routes/paths';
 import { SmallTitleText, ButtonDropdown, Button, BaseModal, Icon, FootnoteText, ButtonText } from '@renderer/shared/ui';
 import { Stake } from '@renderer/entities/staking';
-import { toAccountId } from '@renderer/shared/lib/utils';
+import { cnTw, toAccountId } from '@renderer/shared/lib/utils';
 import { useToggle } from '@renderer/shared/lib/hooks';
 import { IconNames } from '@renderer/shared/ui/types';
 import { Address } from '@renderer/domain/shared-kernel';
@@ -198,14 +198,21 @@ export const Actions = ({ canInteract, stakes, isStakingLoading, onNavigate }: P
             const { title, path, icon } = OperationOptions[typedKey];
 
             acc.push(
-              <ButtonDropdown.Item key={icon}>
-                <button
-                  className="flex items-center gap-x-1.5 w-full p-2"
-                  onClick={() => onClickAction(typedKey, path)}
-                >
-                  <Icon name={icon} size={20} className="text-icon-accent-default shrink-0" />
-                  <FootnoteText className="text-text-secondary">{t(title)}</FootnoteText>
-                </button>
+              <ButtonDropdown.Item
+                key={icon}
+                className="flex items-center gap-x-1.5 p-2"
+                onClick={() => onClickAction(typedKey, path)}
+              >
+                {(active) => (
+                  <>
+                    <Icon name={icon} size={20} className="text-icon-accent-default shrink-0" />
+                    <FootnoteText
+                      className={cnTw('text-text-secondary transition-colors', active && 'text-text-primary')}
+                    >
+                      {t(title)}
+                    </FootnoteText>
+                  </>
+                )}
               </ButtonDropdown.Item>,
             );
 

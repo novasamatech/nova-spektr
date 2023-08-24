@@ -9,7 +9,7 @@ export default {
   parameters: { actions: { argTypesRegex: '^on.*' } },
 } as ComponentMeta<typeof SignatoryCard>;
 
-const Template: ComponentStory<typeof SignatoryCard> = (args) => <SignatoryCard {...args} />;
+const Template: ComponentStory<typeof SignatoryCard> = (args: any) => <SignatoryCard {...args} />;
 
 export const Primary = Template.bind({});
 Primary.args = {

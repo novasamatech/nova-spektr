@@ -25,7 +25,7 @@ export const ButtonDropdown = ({ title, disabled, className, children }: PropsWi
           {title}
         </Menu.Button>
         <Menu.Items
-          as="ul"
+          as="div"
           className="absolute w-full p-1 mt-1 z-10 rounded bg-bg-primary-default shadow-shadow-secondary"
         >
           {children}

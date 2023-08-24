@@ -24,8 +24,8 @@ const Options = [
 ];
 
 const RenderOptions = Options.map(({ id, title, onClick }) => (
-  <ButtonDropdown.Item key={id}>
-    <button onClick={onClick}>{title}</button>
+  <ButtonDropdown.Item key={id} onClick={onClick}>
+    {title}
   </ButtonDropdown.Item>
 ));
 

@@ -41,7 +41,8 @@
   outline: 2px solid var(--border-focus);
 }
 
-ul:focus-visible {
+ul:focus-visible,
+div:focus-visible {
   outline: none;
 }
 
