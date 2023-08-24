@@ -13,5 +13,5 @@ export const EditContactNavigation = ({ contactId }: Props) => {
     navigate(createLink(Paths.EDIT_CONTACT, {}, { id: [contactId] }));
   };
 
-  return <ButtonIcon size="md" icon="edit" className="m-3" onClick={navigateToEdit} />;
+  return <ButtonIcon background size="md" icon="edit" className="m-3" onClick={navigateToEdit} />;
 };

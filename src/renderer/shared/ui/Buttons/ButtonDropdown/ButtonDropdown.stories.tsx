@@ -27,10 +27,8 @@ const Options = [
 ];
 
 const RenderOptions = Options.map(({ id, title, onClick }) => (
-  <ButtonDropdown.Item key={id}>
-    <button className="flex items-center gap-x-1.5 w-full p-2" onClick={onClick}>
-      <span className="text-footnote">{title}</span>
-    </button>
+  <ButtonDropdown.Item key={id} onClick={onClick}>
+    {title}
   </ButtonDropdown.Item>
 ));
 

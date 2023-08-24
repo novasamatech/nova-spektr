@@ -15,7 +15,7 @@ import Vault from '@renderer/pages/Onboarding/Vault/Vault';
 import { useToggle } from '@renderer/shared/lib/hooks';
 import { CreateMultisigAccount } from '@renderer/components/modals';
 import { isMultishardWalletItem } from '@renderer/components/layout/PrimaryLayout/Wallets/common/utils';
-import { DEFAULT_TRANSITION } from '@renderer/shared/lib/utils';
+import { cnTw, DEFAULT_TRANSITION } from '@renderer/shared/lib/utils';
 import { IconNames } from '@renderer/shared/ui/types';
 import {
   ChainsRecord,
@@ -105,11 +105,17 @@ const WalletMenu = ({ children, chains, wallets }: PropsWithChildren<Props>) => 
 
                   <ButtonDropdown className="w-[134px] py-2 h-8.5" title={t('wallets.addButtonTitle')}>
                     {DropdownOptions.map(({ title, icon, onClick }) => (
-                      <ButtonDropdown.Item key={icon}>
-                        <button className="flex items-center gap-x-1.5 w-full p-2" onClick={onClick}>
-                          <Icon name={icon as IconNames} size={20} className="text-icon-accent" />
-                          <FootnoteText className="text-text-secondary">{title}</FootnoteText>
-                        </button>
+                      <ButtonDropdown.Item key={icon} className="flex items-center gap-x-1.5 p-2" onClick={onClick}>
+                        {(active) => (
+                          <>
+                            <Icon name={icon as IconNames} size={20} className="text-icon-accent" />
+                            <FootnoteText
+                              className={cnTw('text-text-secondary transition-colors', active && 'text-text-primary')}
+                            >
+                              {title}
+                            </FootnoteText>
+                          </>
+                        )}
                       </ButtonDropdown.Item>
                     ))}
                   </ButtonDropdown>
