@@ -108,7 +108,7 @@ export const NetworkAssets = ({
             {hasFailedVerification && (
               <div className="flex items-center gap-x-2 text-text-warning">
                 {/* FIXME: tooltip not visible when first displayed network invalid. For now just render it below icon */}
-                <Tooltip content={t('balances.verificationTooltip')} pointer="up">
+                <Tooltip content={t('balances.verificationTooltip')} pointerDirection="up">
                   <Icon name="status-warning" className="cursor-pointer" size={16} />
                 </Tooltip>
                 <CaptionText className="uppercase text-inherit">{t('balances.verificationFailedLabel')}</CaptionText>
