@@ -1,1 +1,2 @@
 export const QUERY_INTERVAL = 5000;
+export const MULTISIG_EXTRINSIC_CALL_INDEX = 3;

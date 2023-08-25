@@ -8,7 +8,7 @@ import {
   MultisigTxInitStatus,
 } from '@renderer/entities/transaction/model/transaction';
 import storage, { MultisigTransactionDS } from '../../../../shared/api/storage';
-import { QUERY_INTERVAL } from './common/consts';
+import { MULTISIG_EXTRINSIC_CALL_INDEX, QUERY_INTERVAL } from './common/consts';
 import { IMultisigTxService } from './common/types';
 import {
   createTransactionPayload,
@@ -215,6 +215,25 @@ export const useMultisigTx = ({ addTask }: Props): IMultisigTxService => {
     await updateMultisigTx({ ...tx, callData, transaction });
   };
 
+  const updateCallDataFromChain = async (
+    api: ApiPromise,
+    tx: MultisigTransaction,
+    blockHeight: number,
+    extrinsicIndex: number,
+  ) => {
+    try {
+      const blockHash = await api.rpc.chain.getBlockHash(blockHeight);
+      const { block } = await api.rpc.chain.getBlock(blockHash);
+      const extrinsic = block.extrinsics[extrinsicIndex];
+
+      const callData = extrinsic.args[MULTISIG_EXTRINSIC_CALL_INDEX].toHex();
+
+      updateCallData(api, tx, callData);
+    } catch (e) {
+      console.log('Error during update call data from chain', e);
+    }
+  };
+
   return {
     subscribeMultisigAccount,
     getMultisigTx,
@@ -226,5 +245,6 @@ export const useMultisigTx = ({ addTask }: Props): IMultisigTxService => {
     updateMultisigTx,
     deleteMultisigTx,
     updateCallData,
+    updateCallDataFromChain,
   };
 };
