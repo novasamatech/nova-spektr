@@ -8,7 +8,7 @@ import {
   MultisigTxInitStatus,
 } from '@renderer/entities/transaction/model/transaction';
 import storage, { MultisigTransactionDS } from '../../../../shared/api/storage';
-import { MULTISIG_EXTRINSIC_CALL_INDEX, QUERY_INTERVAL } from './common/consts';
+import { DEFAULT_BLOCK_HASH, MULTISIG_EXTRINSIC_CALL_INDEX, QUERY_INTERVAL } from './common/consts';
 import { IMultisigTxService } from './common/types';
 import {
   createTransactionPayload,
@@ -208,11 +208,15 @@ export const useMultisigTx = ({ addTask }: Props): IMultisigTxService => {
   };
 
   const updateCallData = async (api: ApiPromise, tx: MultisigTransaction, callData: CallData) => {
-    const chain = await getChainById(tx.chainId);
+    try {
+      const chain = await getChainById(tx.chainId);
 
-    const transaction = decodeCallData(api, toAddress(tx.accountId, { prefix: chain?.addressPrefix }), callData);
+      const transaction = decodeCallData(api, toAddress(tx.accountId, { prefix: chain?.addressPrefix }), callData);
 
-    await updateMultisigTx({ ...tx, callData, transaction });
+      await updateMultisigTx({ ...tx, callData, transaction });
+    } catch (e) {
+      console.log('Error during update callData: ', e);
+    }
   };
 
   const updateCallDataFromChain = async (
@@ -223,8 +227,12 @@ export const useMultisigTx = ({ addTask }: Props): IMultisigTxService => {
   ) => {
     try {
       const blockHash = await api.rpc.chain.getBlockHash(blockHeight);
+      if (blockHash.toHex() === DEFAULT_BLOCK_HASH) return;
+
       const { block } = await api.rpc.chain.getBlock(blockHash);
       const extrinsic = block.extrinsics[extrinsicIndex];
+
+      if (!extrinsic.argsDef.call) return;
 
       const callData = extrinsic.args[MULTISIG_EXTRINSIC_CALL_INDEX].toHex();
 
