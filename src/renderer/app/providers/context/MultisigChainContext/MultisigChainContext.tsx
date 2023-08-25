@@ -53,7 +53,7 @@ export const MultisigChainProvider = ({ children }: PropsWithChildren) => {
         updateCallData(connection.api, tx, tx.callData);
       }
 
-      if (tx.blockCreated && tx.indexCreated && !tx.transaction) {
+      if (tx.blockCreated && tx.indexCreated && !tx.callData && !tx.transaction) {
         updateCallDataFromChain(connection.api, tx, tx.blockCreated, tx.indexCreated);
       }
 
