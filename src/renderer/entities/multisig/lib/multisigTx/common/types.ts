@@ -30,6 +30,12 @@ export interface IMultisigTxService {
     indexCreated: number,
   ) => Promise<void>;
   updateCallData: (api: ApiPromise, tx: MultisigTransaction, callData: CallData) => Promise<void>;
+  updateCallDataFromChain: (
+    api: ApiPromise,
+    tx: MultisigTransaction,
+    blockHeight: number,
+    extrinsicIndex: number,
+  ) => Promise<void>;
 }
 
 export type PendingMultisigTransaction = {

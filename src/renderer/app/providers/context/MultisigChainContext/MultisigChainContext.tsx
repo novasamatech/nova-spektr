@@ -25,8 +25,14 @@ const MultisigChainContext = createContext<MultisigChainContextProps>({} as Mult
 export const MultisigChainProvider = ({ children }: PropsWithChildren) => {
   const { connections } = useNetworkContext();
   const { addTask } = useTaskQueue();
-  const { subscribeMultisigAccount, updateMultisigTx, getMultisigTx, getLiveAccountMultisigTxs, updateCallData } =
-    useMultisigTx({ addTask });
+  const {
+    subscribeMultisigAccount,
+    updateMultisigTx,
+    getMultisigTx,
+    getLiveAccountMultisigTxs,
+    updateCallData,
+    updateCallDataFromChain,
+  } = useMultisigTx({ addTask });
   const { getActiveMultisigAccount } = useAccount();
   const { updateEvent, getEvents, addEventWithQueue } = useMultisigEvent({ addTask });
 
@@ -45,6 +51,10 @@ export const MultisigChainProvider = ({ children }: PropsWithChildren) => {
 
       if (tx.callData && !tx.transaction) {
         updateCallData(connection.api, tx, tx.callData);
+      }
+
+      if (tx.blockCreated && tx.indexCreated && !tx.callData && !tx.transaction) {
+        updateCallDataFromChain(connection.api, tx, tx.blockCreated, tx.indexCreated);
       }
 
       if (!tx.dateCreated && tx.blockCreated) {
