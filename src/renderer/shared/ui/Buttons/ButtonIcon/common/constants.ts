@@ -5,13 +5,13 @@ export const SizeStyle: Record<'sm' | 'md', string> = {
   md: 'h-5 w-5',
 };
 
-export const SizeStyleBG: Record<'sm' | 'md', string> = {
+export const SizeStyleWithBG: Record<'sm' | 'md', string> = {
   sm: 'h-7 w-7',
   md: 'h-8 w-8',
 };
 
 export const ButtonStyle = 'rounded';
-export const ButtonStyleBG = cnTw(
+export const ButtonStyleWithBG = cnTw(
   'rounded-full transition-colors',
   'hover:bg-bg-primary-hover active:bg-bg-primary-hover',
 );
