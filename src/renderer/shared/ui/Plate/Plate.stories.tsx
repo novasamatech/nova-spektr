@@ -1,16 +1,19 @@
-import { ComponentStory, ComponentMeta } from '@storybook/react';
+import type { Meta, StoryObj } from '@storybook/react';
 
+import { withVersion } from '@renderer/shared/lib/utils/storybook';
 import { Plate } from './Plate';
 
-export default {
-  title: 'Plate',
+const meta: Meta<typeof Plate> = {
+  title: 'Design system/Plate',
   component: Plate,
-  parameters: { actions: { argTypesRegex: '^on.*' } },
-} as ComponentMeta<typeof Plate>;
+  decorators: [withVersion('1.0.0')],
+};
 
-const Template: ComponentStory<typeof Plate> = (args) => <Plate {...args} />;
+export default meta;
+type Story = StoryObj<typeof Plate>;
 
-export const Primary = Template.bind({});
-Primary.args = {
-  children: 'This is simple content',
+export const Playground: Story = {
+  args: {
+    children: 'This is simple content',
+  },
 };

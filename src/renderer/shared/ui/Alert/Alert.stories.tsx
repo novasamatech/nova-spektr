@@ -1,24 +1,46 @@
-import { ComponentStory, ComponentMeta } from '@storybook/react';
+import type { Meta, StoryObj } from '@storybook/react';
 
+import { withVersion } from '@renderer/shared/lib/utils/storybook';
 import { Alert } from './Alert';
 
-export default {
-  title: 'Alert',
+const meta: Meta<typeof Alert> = {
+  title: 'Design system/Alert',
   component: Alert,
-  parameters: { actions: { argTypesRegex: '^on.*' } },
-} as ComponentMeta<typeof Alert>;
+  decorators: [withVersion('1.0.0')],
+};
 
-const Template: ComponentStory<typeof Alert> = (args) => <Alert {...args} />;
+export default meta;
+type Story = StoryObj<typeof Alert>;
 
-export const Primary = Template.bind({});
-Primary.args = {
-  title: 'Alert title',
-  variant: 'info',
-  children: (
-    <>
-      <Alert.Item>Item 1</Alert.Item>
-      <Alert.Item>Item 2</Alert.Item>
-      <Alert.Item>Item 3</Alert.Item>
-    </>
+const UiOptions: Story['argTypes'] = {
+  className: { control: false },
+  children: { control: false },
+  onClose: { control: false },
+};
+
+export const Playground: Story = {
+  args: {
+    title: 'Alert title',
+    variant: 'info',
+    className: 'w-[420px]',
+    children: (
+      <>
+        <Alert.Item>Tokens in stake produce rewards each era (6 hours)</Alert.Item>
+        <Alert.Item>To unstake tokens you will have to wait for the unstaking period (7 days)</Alert.Item>
+      </>
+    ),
+  },
+  argTypes: UiOptions,
+};
+
+export const Error: Story = {
+  render: () => (
+    <Alert variant="error" title="Info alert title" className="w-[420px]">
+      <Alert.Item>Invalid homeserver, username or password</Alert.Item>
+    </Alert>
   ),
+};
+
+export const Warn: Story = {
+  render: () => <Alert variant="warn" title="Warning alert title" className="w-[420px]" />,
 };

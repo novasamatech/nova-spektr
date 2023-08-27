@@ -1,23 +1,18 @@
-import { ComponentMeta, ComponentStory } from '@storybook/react';
+import type { Meta, StoryObj } from '@storybook/react';
 
+import { withVersion } from '@renderer/shared/lib/utils/storybook';
 import { Icon } from '../../Icon/Icon';
 import { Identicon } from '../../Identicon/Identicon';
 import { Combobox } from './Combobox';
 
-export default {
-  title: 'ui/Combobox',
+const meta: Meta<typeof Combobox> = {
+  title: 'Design system/Combobox',
   component: Combobox,
-  parameters: { actions: { argTypesRegex: '^on.*' } },
-  decorators: [
-    (Story) => (
-      <div className="mt-28 w-[280px]">
-        <Story />
-      </div>
-    ),
-  ],
-} as ComponentMeta<typeof Combobox>;
+  decorators: [withVersion('1.0.0')],
+};
 
-const Template: ComponentStory<typeof Combobox> = (args) => <Combobox {...args} />;
+export default meta;
+type Story = StoryObj<typeof Combobox>;
 
 const data = [
   { value: 'Durward Reynolds', address: '13mK8AssyPekT5cFuYQ7ijKNXcjHPq8Gnx6TxF5eFCAwoLQ' },
@@ -42,27 +37,30 @@ const customOptions = data.map((d, index) => ({
   ),
 }));
 
-export const Primary = Template.bind({});
-Primary.args = {
-  placeholder: 'Select an option',
-  options,
-  onChange: () => {},
+export const Playground: Story = {
+  args: {
+    placeholder: 'Select an option',
+    options,
+    onChange: () => {},
+  },
 };
 
-export const WithLabel = Template.bind({});
-WithLabel.args = {
-  placeholder: 'Select an option',
-  label: 'Payout account',
-  options,
-  onChange: () => {},
+export const WithLabel: Story = {
+  args: {
+    placeholder: 'Select an option',
+    label: 'Payout account',
+    options,
+    onChange: () => {},
+  },
 };
 
-export const Custom = Template.bind({});
-Custom.args = {
-  placeholder: 'Select an option',
-  label: 'Payout account',
-  value: customOptions[2],
-  options: customOptions,
-  suffixElement: <Icon name="status-warning" className="text-alert right-2 top-[9px] absolute" size={16} />,
-  onChange: () => {},
+export const Custom: Story = {
+  args: {
+    placeholder: 'Select an option',
+    label: 'Payout account',
+    value: customOptions[2],
+    options: customOptions,
+    suffixElement: <Icon name="status-warning" className="text-alert right-2 top-[9px] absolute" size={16} />,
+    onChange: () => {},
+  },
 };

@@ -208,9 +208,7 @@ const LoginForm = () => {
                       value={value}
                       onChange={changeInputValue(onChange)}
                     />
-                    {invalidLogin && (
-                      <Alert title={t('settings.matrix.badCredentialsError')} variant="error" className="-mt-2" />
-                    )}
+                    {invalidLogin && <Alert title={t('settings.matrix.badCredentialsError')} variant="error" />}
                   </>
                 )}
               />

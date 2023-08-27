@@ -1,23 +1,32 @@
-import { ComponentMeta, ComponentStory } from '@storybook/react';
+import type { Meta, StoryObj } from '@storybook/react';
 
+import { withVersion } from '@renderer/shared/lib/utils/storybook';
 import { ButtonText } from './ButtonText';
 
-export default {
-  title: 'ui/Buttons/ButtonText',
+const meta: Meta<typeof ButtonText> = {
+  title: 'Design system/Buttons/ButtonText',
   component: ButtonText,
-  parameters: { actions: { argTypesRegex: '^on.*' } },
-} as ComponentMeta<typeof ButtonText>;
-
-const Template: ComponentStory<typeof ButtonText> = (args) => <ButtonText {...args} />;
-
-export const Primary = Template.bind({});
-Primary.args = {
-  children: 'Hello button',
+  decorators: [withVersion('1.0.0')],
 };
 
-export const Prefix = Template.bind({});
-Prefix.args = {
-  children: 'Hello button',
-  disabled: false,
-  icon: 'address-book',
+export default meta;
+type Story = StoryObj<typeof ButtonText>;
+
+const UiOptions: Story['argTypes'] = {
+  icon: {
+    options: [undefined, 'address-book', 'chat', 'learn-more'],
+  },
+  className: { control: false },
+};
+
+export const Playground: Story = {
+  args: {
+    size: 'md',
+    children: 'Hello button',
+  },
+  argTypes: UiOptions,
+};
+
+export const WithIcon: Story = {
+  render: () => <ButtonText icon="address-book">Hello button</ButtonText>,
 };

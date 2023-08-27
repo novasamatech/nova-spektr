@@ -1,39 +1,45 @@
-import { ComponentMeta, ComponentStory } from '@storybook/react';
+import type { Meta, StoryObj } from '@storybook/react';
 
+import { withVersion } from '@renderer/shared/lib/utils/storybook';
 import { InputArea } from './InputArea';
 
-export default {
-  title: 'InputArea',
+const meta: Meta<typeof InputArea> = {
+  title: 'Design system/Inputs/InputArea',
   component: InputArea,
-  parameters: { actions: { argTypesRegex: '^on.*' } },
-} as ComponentMeta<typeof InputArea>;
-
-const Template: ComponentStory<typeof InputArea> = (args) => <InputArea {...args} />;
-
-export const Primary = Template.bind({});
-Primary.args = {
-  rows: 3,
-  maxLength: 120,
-  placeholder: 'Max length is 120',
+  decorators: [withVersion('1.0.0')],
 };
 
-export const Filled = Template.bind({});
-Filled.args = {
-  rows: 2,
-  value:
-    'Lorem ipsum dolor sit amet, consectetur adipisicing elit. Culpa doloribus iusto possimus praesentium ratione temporibus. Aperiam autem cumque esse eum fugit laborum quas! Architecto at, cupiditate dignissimos eveniet sunt voluptatibus.',
+export default meta;
+type Story = StoryObj<typeof InputArea>;
+
+export const Playground: Story = {
+  args: {
+    rows: 3,
+    maxLength: 120,
+    placeholder: 'Max length is 120',
+  },
 };
 
-export const Invalid = Template.bind({});
-Invalid.args = {
-  rows: 1,
-  value: 'This is value',
-  invalid: true,
+export const Filled: Story = {
+  args: {
+    rows: 2,
+    value:
+      'Lorem ipsum dolor sit amet, consectetur adipisicing elit. Culpa doloribus iusto possimus praesentium ratione temporibus. Aperiam autem cumque esse eum fugit laborum quas! Architecto at, cupiditate dignissimos eveniet sunt voluptatibus.',
+  },
 };
 
-export const Disabled = Template.bind({});
-Disabled.args = {
-  rows: 1,
-  value: 'This is value',
-  disabled: true,
+export const Invalid: Story = {
+  args: {
+    rows: 1,
+    value: 'This is value',
+    invalid: true,
+  },
+};
+
+export const Disabled: Story = {
+  args: {
+    rows: 1,
+    value: 'This is value',
+    disabled: true,
+  },
 };

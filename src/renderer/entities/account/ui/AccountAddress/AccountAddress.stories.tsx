@@ -1,23 +1,26 @@
-import { ComponentStory, ComponentMeta } from '@storybook/react';
+import type { Meta, StoryObj } from '@storybook/react';
 
+import { TEST_ACCOUNT_ID, withVersion } from '@renderer/shared/lib/utils';
 import { AccountAddress } from './AccountAddress';
-import { TEST_ACCOUNT_ID } from '@renderer/shared/lib/utils';
 
-export default {
-  title: 'Redesign/Address',
+const meta: Meta<typeof AccountAddress> = {
+  title: 'Design system/Address',
   component: AccountAddress,
-  parameters: { actions: { argTypesRegex: '^on.*' } },
-} as ComponentMeta<typeof AccountAddress>;
-
-const Template: ComponentStory<typeof AccountAddress> = (args: any) => <AccountAddress {...args} />;
-
-export const Primary = Template.bind({});
-Primary.args = {
-  accountId: TEST_ACCOUNT_ID,
+  decorators: [withVersion('1.0.0')],
 };
 
-export const Full = Template.bind({});
-Full.args = {
-  accountId: TEST_ACCOUNT_ID,
-  type: 'full',
+export default meta;
+type Story = StoryObj<typeof AccountAddress>;
+
+export const Playground: Story = {
+  args: {
+    accountId: TEST_ACCOUNT_ID,
+  },
+};
+
+export const Full: Story = {
+  args: {
+    accountId: TEST_ACCOUNT_ID,
+    type: 'full',
+  },
 };

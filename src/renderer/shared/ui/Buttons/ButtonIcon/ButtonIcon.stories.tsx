@@ -1,25 +1,38 @@
-import { ComponentMeta, ComponentStory } from '@storybook/react';
+import type { Meta, StoryObj } from '@storybook/react';
 
+import { withVersion } from '@renderer/shared/lib/utils/storybook';
 import { ButtonIcon } from './ButtonIcon';
 
-export default {
-  title: 'ui/Buttons/ButtonIcon',
+const meta: Meta<typeof ButtonIcon> = {
+  title: 'Design system/Buttons/ButtonIcon',
   component: ButtonIcon,
-  parameters: { actions: { argTypesRegex: '^on.*' } },
-} as ComponentMeta<typeof ButtonIcon>;
-
-const Template: ComponentStory<typeof ButtonIcon> = (args) => <ButtonIcon {...args} />;
-
-export const Background = Template.bind({});
-Background.args = {
-  icon: 'close',
-  size: 'sm',
-  background: true,
+  decorators: [withVersion('1.0.0')],
 };
 
-export const NoBackground = Template.bind({});
-NoBackground.args = {
-  icon: 'close',
-  size: 'sm',
-  background: false,
+export default meta;
+type Story = StoryObj<typeof ButtonIcon>;
+
+const UiOptions: Story['argTypes'] = {
+  icon: {
+    options: [undefined, 'chat', 'learn-more', 'close'],
+  },
+  className: { control: false },
+  ariaLabel: { control: false },
+};
+
+export const Playground: Story = {
+  args: {
+    icon: 'close',
+    size: 'md',
+    background: true,
+  },
+  argTypes: UiOptions,
+};
+
+export const WithBackground: Story = {
+  render: () => <ButtonIcon background icon="refresh" />,
+};
+
+export const NoBackground: Story = {
+  render: () => <ButtonIcon icon="refresh" />,
 };

@@ -1,13 +1,14 @@
-import { ComponentMeta, ComponentStory } from '@storybook/react';
+import type { Meta, StoryObj } from '@storybook/react';
 
+import { withVersion } from '@renderer/shared/lib/utils/storybook';
 import { Tabs } from './Tabs';
 import { TabItem } from './common/types';
 
-export default {
-  title: 'ui/Tabs',
+const meta: Meta<typeof Tabs> = {
+  title: 'Design system/Tabs',
   component: Tabs,
-  parameters: { actions: { argTypesRegex: '^on.*' } },
-} as ComponentMeta<typeof Tabs>;
+  decorators: [withVersion('1.0.0')],
+};
 
 const tabItems: TabItem[] = [
   { id: '1', title: 'Tab 1 title', panel: <div>tab 1 content</div> },
@@ -15,9 +16,11 @@ const tabItems: TabItem[] = [
   { id: '3', title: 'Tab 3 title', panel: <div>tab 3 content</div> },
 ];
 
-const Template: ComponentStory<typeof Tabs> = (args) => <Tabs {...args} />;
+export default meta;
+type Story = StoryObj<typeof Tabs>;
 
-export const Primary = Template.bind({});
-Primary.args = {
-  items: tabItems,
+export const Playground: Story = {
+  args: {
+    items: tabItems,
+  },
 };

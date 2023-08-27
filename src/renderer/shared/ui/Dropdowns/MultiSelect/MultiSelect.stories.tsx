@@ -1,22 +1,17 @@
-import { ComponentMeta, ComponentStory } from '@storybook/react';
+import type { Meta, StoryObj } from '@storybook/react';
 
+import { withVersion } from '@renderer/shared/lib/utils/storybook';
 import { Identicon } from '../../Identicon/Identicon';
 import { MultiSelect } from './MultiSelect';
 
-export default {
-  title: 'ui/MultiSelect',
+const meta: Meta<typeof MultiSelect> = {
+  title: 'Design system/MultiSelect',
   component: MultiSelect,
-  parameters: { actions: { argTypesRegex: '^on.*' } },
-  decorators: [
-    (Story) => (
-      <div className="mt-28 w-[280px]">
-        <Story />
-      </div>
-    ),
-  ],
-} as ComponentMeta<typeof MultiSelect>;
+  decorators: [withVersion('1.0.0')],
+};
 
-const Template: ComponentStory<typeof MultiSelect> = (args) => <MultiSelect {...args} />;
+export default meta;
+type Story = StoryObj<typeof MultiSelect>;
 
 const data = [
   { value: 'Durward Reynolds', address: '13mK8AssyPekT5cFuYQ7ijKNXcjHPq8Gnx6TxF5eFCAwoLQ' },
@@ -41,34 +36,38 @@ const customOptions = data.map((d, index) => ({
   ),
 }));
 
-export const Primary = Template.bind({});
-Primary.args = {
-  placeholder: 'Select an option',
-  options,
-  onChange: () => {},
+export const Playground: Story = {
+  args: {
+    placeholder: 'Select an option',
+    options,
+    onChange: () => {},
+  },
 };
 
-export const Selected = Template.bind({});
-Selected.args = {
-  placeholder: 'Select an option',
-  selectedIds: [options[0].id, options[1].id],
-  options,
-  onChange: () => {},
+export const Selected: Story = {
+  args: {
+    placeholder: 'Select an option',
+    selectedIds: [options[0].id, options[1].id],
+    options,
+    onChange: () => {},
+  },
 };
 
-export const WithLabel = Template.bind({});
-WithLabel.args = {
-  placeholder: 'Select an option',
-  label: 'Payout account',
-  options,
-  onChange: () => {},
+export const WithLabel: Story = {
+  args: {
+    placeholder: 'Select an option',
+    label: 'Payout account',
+    options,
+    onChange: () => {},
+  },
 };
 
-export const Custom = Template.bind({});
-Custom.args = {
-  placeholder: 'Select an option',
-  label: 'Payout account',
-  selectedIds: [customOptions[2].id],
-  options: customOptions,
-  onChange: () => {},
+export const Custom: Story = {
+  args: {
+    placeholder: 'Select an option',
+    label: 'Payout account',
+    selectedIds: [customOptions[2].id],
+    options: customOptions,
+    onChange: () => {},
+  },
 };

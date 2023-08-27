@@ -1,18 +1,20 @@
-import { ComponentStory, ComponentMeta } from '@storybook/react';
+import type { Meta, StoryObj } from '@storybook/react';
 
+import { TEST_ADDRESS, withVersion } from '@renderer/shared/lib/utils';
 import { SignatoryCard } from './SignatoryCard';
-import { TEST_ADDRESS } from '@renderer/shared/lib/utils';
 
-export default {
-  title: 'Redesign/Signatory',
+const meta: Meta<typeof SignatoryCard> = {
+  title: 'Design system/Signatory',
   component: SignatoryCard,
-  parameters: { actions: { argTypesRegex: '^on.*' } },
-} as ComponentMeta<typeof SignatoryCard>;
+  decorators: [withVersion('1.0.0')],
+};
 
-const Template: ComponentStory<typeof SignatoryCard> = (args: any) => <SignatoryCard {...args} />;
+export default meta;
+type Story = StoryObj<typeof SignatoryCard>;
 
-export const Primary = Template.bind({});
-Primary.args = {
-  address: TEST_ADDRESS,
-  name: 'John Doe',
+export const Playground: Story = {
+  args: {
+    address: TEST_ADDRESS,
+    name: 'John Doe',
+  },
 };

@@ -1,23 +1,34 @@
-import { ComponentMeta, ComponentStory } from '@storybook/react';
+import type { Meta, StoryObj } from '@storybook/react';
 
+import { withVersion } from '@renderer/shared/lib/utils/storybook';
 import { StatusMark } from './StatusMark';
 
-export default {
-  title: 'ui/StatusMark',
+const meta: Meta<typeof StatusMark> = {
+  title: 'Design system/StatusMark',
   component: StatusMark,
-  parameters: { actions: { argTypesRegex: '^on.*' } },
-} as ComponentMeta<typeof StatusMark>;
-
-const Template: ComponentStory<typeof StatusMark> = (args) => <StatusMark {...args} />;
-export const Waiting = Template.bind({});
-Waiting.args = {
-  title: '@user_name:matrix.org',
-  variant: 'waiting',
+  decorators: [withVersion('1.0.0')],
 };
 
-export const Success = Template.bind({});
-Success.args = {
-  title: '@user_name:matrix.org',
-  subtitle: 'Session verified',
-  variant: 'success',
+export default meta;
+type Story = StoryObj<typeof StatusMark>;
+
+const UiOptions: Story['argTypes'] = {
+  className: { control: false },
+};
+
+export const Playground: Story = {
+  args: {
+    title: '@user_name:matrix.org',
+    subtitle: 'Session verified',
+    variant: 'waiting',
+  },
+  argTypes: UiOptions,
+};
+
+export const Success: Story = {
+  render: () => <StatusMark title="Success mark" variant="success" />,
+};
+
+export const Error: Story = {
+  render: () => <StatusMark title="Error mark" variant="error" subtitle="Something went wrong" />,
 };

@@ -1,9 +1,9 @@
 import { ReactNode } from 'react';
 
 import { cnTw } from '@renderer/shared/lib/utils';
-import { FootnoteText } from '@renderer/shared/ui';
+import { BodyText } from '@renderer/shared/ui';
 import { HelpText } from '../Typography';
-import { DotStyles, TitleStyles } from './common/constants';
+import { DotStyle } from './common/constants';
 import { Variant } from './common/types';
 
 type Props = {
@@ -15,8 +15,9 @@ type Props = {
 
 export const StatusMark = ({ title, subtitle, variant, className }: Props) => (
   <div className={cnTw('grid grid-flow-col gap-x-1.5', className)}>
-    <span className={cnTw('w-2 h-2 mt-1.5 rounded-full row-span-2', DotStyles[variant])} />
-    {typeof title === 'string' ? <FootnoteText className={TitleStyles[variant]}>{title}</FootnoteText> : title}
+    <span className={cnTw('w-2 h-2 mt-1.5 self-start rounded-full row-span-2', DotStyle[variant])} />
+
+    {typeof title === 'string' ? <BodyText className="text-text-primary">{title}</BodyText> : title}
     {subtitle && <HelpText className="text-text-tertiary">{subtitle}</HelpText>}
   </div>
 );

@@ -8,13 +8,13 @@ export const IconName: Record<Variant, IconNames> = {
 };
 
 export const ViewStyle: Record<Variant, string> = {
-  info: 'bg-alert-background border-alert-border',
-  warn: 'bg-alert-background-warning border-alert-border-warning',
-  error: 'bg-alert-background-negative border-alert-border-negative',
+  info: 'bg-bg-accent-secondary border-border-accent',
+  warn: 'bg-bg-warning-secondary border-border-warning',
+  error: 'bg-bg-negative-secondary border-border-negative',
 };
 
 export const IconStyle: Record<Variant, string> = {
-  info: 'shrink-0 text-icon-alert',
-  warn: 'shrink-0 text-icon-warning',
-  error: 'shrink-0 text-icon-negative',
+  info: 'shrink-0 text-icon-accent-default',
+  warn: 'shrink-0 text-icon-warning-default',
+  error: 'shrink-0 text-icon-negative-default',
 };

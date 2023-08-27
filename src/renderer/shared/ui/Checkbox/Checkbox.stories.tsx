@@ -1,28 +1,33 @@
-import { ComponentStory, ComponentMeta } from '@storybook/react';
+import type { Meta, StoryObj } from '@storybook/react';
 
+import { withVersion } from '@renderer/shared/lib/utils/storybook';
 import { Checkbox } from './Checkbox';
 
-export default {
-  title: 'ui/Checkbox',
+const meta: Meta<typeof Checkbox> = {
+  title: 'Design system/Checkbox',
   component: Checkbox,
-  parameters: { actions: { argTypesRegex: '^on.*' } },
-} as ComponentMeta<typeof Checkbox>;
-
-const Template: ComponentStory<typeof Checkbox> = (args) => <Checkbox {...args} />;
-
-export const Primary = Template.bind({});
-Primary.args = {
-  children: 'Checkbox',
+  decorators: [withVersion('1.0.0')],
 };
 
-export const Left = Template.bind({});
-Left.args = {
-  position: 'left',
-  children: 'Checkbox',
+export default meta;
+type Story = StoryObj<typeof Checkbox>;
+
+export const Playground: Story = {
+  args: {
+    children: 'Checkbox',
+  },
 };
 
-export const Disabled = Template.bind({});
-Disabled.args = {
-  children: 'Checkbox',
-  disabled: true,
+export const Left: Story = {
+  args: {
+    position: 'left',
+    children: 'Checkbox',
+  },
+};
+
+export const Disabled: Story = {
+  args: {
+    children: 'Checkbox',
+    disabled: true,
+  },
 };

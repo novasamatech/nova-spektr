@@ -3,7 +3,7 @@ import { MouseEvent } from 'react';
 import { cnTw } from '@renderer/shared/lib/utils';
 import { Icon } from '../../Icon/Icon';
 import { IconNames } from '../../Icon/data';
-import { ButtonStyle, ButtonStyleBG, IconStyle, SizeStyle, SizeStyleBG } from './common/constants';
+import { ButtonStyle, ButtonStyleWithBG, IconStyle, SizeStyle, SizeStyleWithBG } from './common/constants';
 
 type Props = {
   ariaLabel?: string;
@@ -20,8 +20,8 @@ export const ButtonIcon = ({ ariaLabel, icon, size = 'md', background, className
     data-testid={`${icon}-button`}
     className={cnTw(
       'group flex items-center justify-center select-none outline-offset-1',
-      background ? ButtonStyleBG : ButtonStyle,
-      background ? SizeStyleBG[size] : SizeStyle[size],
+      background ? ButtonStyleWithBG : ButtonStyle,
+      background ? SizeStyleWithBG[size] : SizeStyle[size],
       className,
     )}
     aria-label={ariaLabel}
