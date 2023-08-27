@@ -1,7 +1,7 @@
 lockfileVersion: '6.0'
 
 settings:
-  autoInstallPeers: false
+  autoInstallPeers: true
   excludeLinksFromLockfile: false
 
 dependencies:
@@ -39,11 +39,11 @@ dependencies:
     specifier: ^0.7.26
     version: 0.7.26
   '@substrate/txwrapper-orml':
-    specifier: ^6.0.0
-    version: 6.0.0(@polkadot/util-crypto@12.2.1)(@polkadot/util@12.2.1)
+    specifier: ^6.0.1
+    version: 6.0.1(@polkadot/util-crypto@12.2.1)(@polkadot/util@12.2.1)
   '@substrate/txwrapper-polkadot':
-    specifier: ^6.0.0
-    version: 6.0.0(@polkadot/util-crypto@12.2.1)(@polkadot/util@12.2.1)
+    specifier: ^6.0.1
+    version: 6.0.1(@polkadot/util-crypto@12.2.1)(@polkadot/util@12.2.1)
   '@zxing/browser':
     specifier: ^0.1.3
     version: 0.1.3(@zxing/library@0.20.0)
@@ -3062,6 +3062,18 @@ packages:
       tslib: 2.5.0
     dev: false
 
+  /@polkadot/keyring@12.2.2(@polkadot/util-crypto@12.2.1)(@polkadot/util@12.2.1):
+    resolution: {integrity: sha512-z8MVdgrhzg/bFiR2i5/W06Ma+IPeisH7EtGuIQ+ZwXiCJlXMAGUy5spfk3fUbXYubCCqNycqFgKTYDM/rDhXSg==}
+    engines: {node: '>=16'}
+    peerDependencies:
+      '@polkadot/util': 12.2.2
+      '@polkadot/util-crypto': 12.2.2
+    dependencies:
+      '@polkadot/util': 12.2.1
+      '@polkadot/util-crypto': 12.2.1(@polkadot/util@12.2.1)
+      tslib: 2.5.3
+    dev: false
+
   /@polkadot/keyring@12.2.2(@polkadot/util-crypto@12.2.2)(@polkadot/util@12.2.2):
     resolution: {integrity: sha512-z8MVdgrhzg/bFiR2i5/W06Ma+IPeisH7EtGuIQ+ZwXiCJlXMAGUy5spfk3fUbXYubCCqNycqFgKTYDM/rDhXSg==}
     engines: {node: '>=16'}
@@ -5073,11 +5085,11 @@ packages:
     resolution: {integrity: sha512-QuU2nBql3J4KCnOWtWDw4n1K4JU0T79j54ZZvm/9nhsX6AIar13FyhsaBfs6QkJ2ixTQAnd7TocJIoJRWbqMZA==}
     dev: false
 
-  /@substrate/txwrapper-core@6.0.0(@polkadot/util-crypto@12.2.1)(@polkadot/util@12.2.1):
-    resolution: {integrity: sha512-qkWwoLOBDpIYB2Eor2q2qOXcnGloaug0do/vamhNJQFjnaNHmjsiP5QJMLipiXy4EKzOvNmAy2FmQHPj7rvP1g==}
+  /@substrate/txwrapper-core@6.0.1(@polkadot/util-crypto@12.2.1)(@polkadot/util@12.2.1):
+    resolution: {integrity: sha512-pwYvrDgTyNRqOxxmmbhjpuPoZR8+WKYtmY4Eqv++FUUfPVo6xMQGps8n1LQAwKrA3/79F0dCrdV2LPDlUtjmYQ==}
     dependencies:
       '@polkadot/api': 10.8.1
-      '@polkadot/keyring': 12.2.1(@polkadot/util-crypto@12.2.1)(@polkadot/util@12.2.1)
+      '@polkadot/keyring': 12.2.2(@polkadot/util-crypto@12.2.1)(@polkadot/util@12.2.1)
       memoizee: 0.4.15
     transitivePeerDependencies:
       - '@polkadot/util'
@@ -5087,10 +5099,10 @@ packages:
       - utf-8-validate
     dev: false
 
-  /@substrate/txwrapper-orml@6.0.0(@polkadot/util-crypto@12.2.1)(@polkadot/util@12.2.1):
-    resolution: {integrity: sha512-kjGc4tvtEzJyOLjF7a21OQwlKAwdIFArWWe3ZRm9SnOUk7y7pXNkaFWbTv8WnpYm4HLY8SvRge6TmWRfmX/UJg==}
+  /@substrate/txwrapper-orml@6.0.1(@polkadot/util-crypto@12.2.1)(@polkadot/util@12.2.1):
+    resolution: {integrity: sha512-hKrThXBdXs1/Hsn34N2KKoYpFJrBnYr8ruoshXdvjz3dJ/R475kjkEKLFf06ZegGSdMOuRvqcjQP5kU21PI0Tw==}
     dependencies:
-      '@substrate/txwrapper-core': 6.0.0(@polkadot/util-crypto@12.2.1)(@polkadot/util@12.2.1)
+      '@substrate/txwrapper-core': 6.0.1(@polkadot/util-crypto@12.2.1)(@polkadot/util@12.2.1)
     transitivePeerDependencies:
       - '@polkadot/util'
       - '@polkadot/util-crypto'
@@ -5099,11 +5111,11 @@ packages:
       - utf-8-validate
     dev: false
 
-  /@substrate/txwrapper-polkadot@6.0.0(@polkadot/util-crypto@12.2.1)(@polkadot/util@12.2.1):
-    resolution: {integrity: sha512-bxqw8aC0GBEyxodM7lP488TECH1OHZLKH72yyicwKbPzXGsmtWzgDqCqUbPzZ5qEiEFw4MG43mwlZNtSUXDT1g==}
+  /@substrate/txwrapper-polkadot@6.0.1(@polkadot/util-crypto@12.2.1)(@polkadot/util@12.2.1):
+    resolution: {integrity: sha512-adIa8/npvB0+Y2chgx6cwE5BEcGK7He+yrLiSIUyd5f92pW+94nt48mOLyKm9fJl1Uvsc23Apn6USECAtouPfQ==}
     dependencies:
-      '@substrate/txwrapper-core': 6.0.0(@polkadot/util-crypto@12.2.1)(@polkadot/util@12.2.1)
-      '@substrate/txwrapper-substrate': 6.0.0(@polkadot/util-crypto@12.2.1)(@polkadot/util@12.2.1)
+      '@substrate/txwrapper-core': 6.0.1(@polkadot/util-crypto@12.2.1)(@polkadot/util@12.2.1)
+      '@substrate/txwrapper-substrate': 6.0.1(@polkadot/util-crypto@12.2.1)(@polkadot/util@12.2.1)
     transitivePeerDependencies:
       - '@polkadot/util'
       - '@polkadot/util-crypto'
@@ -5112,10 +5124,10 @@ packages:
       - utf-8-validate
     dev: false
 
-  /@substrate/txwrapper-substrate@6.0.0(@polkadot/util-crypto@12.2.1)(@polkadot/util@12.2.1):
-    resolution: {integrity: sha512-r1jyk/xcCdHDk4OBPKjj5bfsQ2Y34NsYX+hgu+1S1Liat2SwPN8kY3w6j3uNbjUr/xUsiLqLIt82cyQV29WmzQ==}
+  /@substrate/txwrapper-substrate@6.0.1(@polkadot/util-crypto@12.2.1)(@polkadot/util@12.2.1):
+    resolution: {integrity: sha512-LxskfiF1lf+/TMU1C50imLl9+NR+/Hx/BIqf4KfbiF7pXgGFN2bUs/50p5NIJmCt78DRNrHvtVoRraINeMbvLA==}
     dependencies:
-      '@substrate/txwrapper-core': 6.0.0(@polkadot/util-crypto@12.2.1)(@polkadot/util@12.2.1)
+      '@substrate/txwrapper-core': 6.0.1(@polkadot/util-crypto@12.2.1)(@polkadot/util@12.2.1)
     transitivePeerDependencies:
       - '@polkadot/util'
       - '@polkadot/util-crypto'
