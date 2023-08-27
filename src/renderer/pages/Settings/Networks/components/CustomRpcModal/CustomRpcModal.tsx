@@ -212,7 +212,7 @@ export const CustomRpcModal = ({ network, node, isOpen, onClose }: Props) => {
         </div>
 
         <div className="flex justify-end mt-7 w-full">
-          <Button type="submit" isLoading={isLoading} disabled={submitDisabled || isLoading}>
+          <Button type="submit" disabled={submitDisabled || isLoading}>
             {submitLabel}
           </Button>
         </div>

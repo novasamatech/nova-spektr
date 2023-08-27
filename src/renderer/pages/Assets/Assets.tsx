@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 
-import { Icon, BodyText, Button, SmallTitleText } from '@renderer/shared/ui';
+import { BodyText, SmallTitleText, ButtonText } from '@renderer/shared/ui';
 import { useI18n, useNetworkContext } from '@renderer/app/providers';
 import { Asset, useBalance } from '@renderer/entities/asset';
 import { Chain } from '@renderer/entities/chain';
@@ -113,14 +113,9 @@ export const Assets = () => {
         {isMultishard && (
           <div className="w-[546px] mx-auto flex items-center mt-4">
             <SmallTitleText as="h3">{t('balances.shardsTitle')} </SmallTitleText>
-            <Button
-              variant="text"
-              suffixElement={<Icon name="edit" size={16} className="text-icon-accent" />}
-              className="outline-offset-reduced"
-              onClick={toggleSelectShardsOpen}
-            >
-              {activeAccounts.length} {t('balances.shards')}
-            </Button>
+            <ButtonText icon="edit" className="outline-offset-reduced" onClick={toggleSelectShardsOpen}>
+              {`${activeAccounts.length} ${t('balances.shards')}`}
+            </ButtonText>
           </div>
         )}
 

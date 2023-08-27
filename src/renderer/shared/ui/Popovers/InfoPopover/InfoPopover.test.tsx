@@ -1,4 +1,5 @@
-import { act, render, screen } from '@testing-library/react';
+import { render, screen } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 
 import { InfoPopover, InfoSection } from './InfoPopover';
 
@@ -20,26 +21,26 @@ const menuLinks = [
     ),
   },
 ];
-export const popoverItems: InfoSection[] = [
+
+const popoverItems: InfoSection[] = [
   {
-    title: 'adress',
+    title: 'address',
     items: [{ value: 'some text', id: '1' }],
   },
-  { title: 'id', items: [{ value: '123456789', id: '2' }] },
+  { title: 'id', items: [{ value: 'item_value', id: '2' }] },
   {
     title: 'links',
     items: menuLinks,
   },
 ];
 
-describe('components/ui-redesign/InfoPopover', () => {
+describe('ui/Popovers/InfoPopover', () => {
   test('should render component', async () => {
     window.HTMLElement.prototype.scrollIntoView = jest.fn();
 
     render(<InfoPopover data={popoverItems}>test</InfoPopover>);
 
-    const button = screen.getByText('test');
-    await act(async () => button.click());
+    await userEvent.click(screen.getByText('test'));
 
     const menuItems = screen.getAllByRole('menuitem');
     expect(menuItems).toHaveLength(menuLinks.length);

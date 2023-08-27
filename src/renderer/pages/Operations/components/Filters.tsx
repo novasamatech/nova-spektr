@@ -2,10 +2,10 @@ import { useEffect, useState } from 'react';
 
 import { useI18n, useNetworkContext } from '@renderer/app/providers';
 import { MultisigTransactionDS } from '@renderer/shared/api/storage';
-import { UNKNOWN_TYPE, getStatusOptions, getTransactionOptions, TransferTypes } from '../common/utils';
+import { getStatusOptions, getTransactionOptions, TransferTypes, UNKNOWN_TYPE } from '../common/utils';
 import { DropdownOption, DropdownResult } from '@renderer/shared/ui/types';
 import { MultisigTransaction, Transaction, TransactionType } from '@renderer/entities/transaction';
-import { Button, MultiSelect } from '@renderer/shared/ui';
+import { ButtonText, MultiSelect } from '@renderer/shared/ui';
 
 type FilterName = 'status' | 'network' | 'type';
 
@@ -137,9 +137,9 @@ const Filters = ({ txs, onChangeFilters }: Props) => {
       />
 
       {Boolean(filtersSelected) && (
-        <Button variant="text" className="ml-auto py-0 h-8.5" onClick={clearFilters}>
+        <ButtonText className="ml-auto py-0 h-8.5" onClick={clearFilters}>
           {t('operations.filters.clearAll')}
-        </Button>
+        </ButtonText>
       )}
     </div>
   );

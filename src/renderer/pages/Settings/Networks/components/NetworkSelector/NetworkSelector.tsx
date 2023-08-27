@@ -1,13 +1,13 @@
 import { Listbox, Transition } from '@headlessui/react';
-import { useState, Fragment, useEffect } from 'react';
+import { Fragment, useEffect, useState } from 'react';
 
 import { cnTw } from '@renderer/shared/lib/utils';
-import { Icon, FootnoteText, IconButton, Button, HelpText } from '@renderer/shared/ui';
+import { ButtonIcon, ButtonText, FootnoteText, HelpText, Icon } from '@renderer/shared/ui';
 import { useI18n } from '@renderer/app/providers';
 import { RpcNode } from '@renderer/entities/chain';
 import { ConnectionType } from '@renderer/domain/connection';
 import { ExtendedChain } from '@renderer/entities/network';
-import { SelectButtonStyle, OptionStyle } from '@renderer/shared/ui/Dropdowns/common/constants';
+import { OptionStyle, SelectButtonStyle } from '@renderer/shared/ui/Dropdowns/common/constants';
 import { useScrollTo } from '@renderer/shared/lib/hooks';
 import { CommonInputStylesTheme, InputStyles } from '@renderer/shared/ui/Inputs/common/styles';
 import type { Theme } from '@renderer/shared/ui/types';
@@ -136,16 +136,16 @@ export const NetworkSelector = ({
                         </div>
                         {node && isCustomNode(node.url) && (
                           <>
-                            <IconButton
-                              name="edit"
+                            <ButtonIcon
+                              icon="edit"
                               onClick={(event) => {
                                 event.stopPropagation();
                                 onChangeCustomNode(node);
                               }}
                             />
                             {activeNode?.url !== node.url && (
-                              <IconButton
-                                name="delete"
+                              <ButtonIcon
+                                icon="delete"
                                 onClick={(event) => {
                                   event.stopPropagation();
                                   onRemoveCustomNode(node);
@@ -160,9 +160,9 @@ export const NetworkSelector = ({
                 })}
               </Listbox.Options>
               <Listbox.Option as="div" value={null} className="h-8.5">
-                <Button size="sm" variant="text" className="w-full h-full justify-center">
+                <ButtonText size="sm" className="w-full h-full justify-center">
                   {t('settings.networks.addNodeButton')}
-                </Button>
+                </ButtonText>
               </Listbox.Option>
             </div>
           </Transition>

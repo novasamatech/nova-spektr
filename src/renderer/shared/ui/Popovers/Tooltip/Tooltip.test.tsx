@@ -3,7 +3,7 @@ import userEvent from '@testing-library/user-event';
 
 import { Tooltip } from './Tooltip';
 
-describe('ui/Popover', () => {
+describe('ui/Popovers/Tooltip', () => {
   test('should render component', () => {
     render(<Tooltip content="content">Hover me</Tooltip>);
 

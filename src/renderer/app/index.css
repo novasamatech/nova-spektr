@@ -31,7 +31,7 @@
 
 /* Handle */
 ::-webkit-scrollbar-thumb {
-  background-color: var(--scroll-background-default);
+  background-color: var(--bg-shade);
   border-radius: 4px;
   border: 2px solid transparent;
   background-clip: padding-box;
@@ -41,15 +41,9 @@
   outline: 2px solid var(--border-focus);
 }
 
-ul:focus-visible {
+ul:focus-visible,
+div:focus-visible {
   outline: none;
-}
-
-.logo-background {
-  background-size: cover;
-  background-position: center;
-  background-image: url('../assets/images/misc/bg.webp');
-  transform: scaleY(-1);
 }
 
 .video-cover {

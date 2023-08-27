@@ -11,6 +11,7 @@ import {
   InputHint,
   MediumTitleText,
   SmallTitleText,
+  ButtonText,
 } from '@renderer/shared/ui';
 import { useI18n } from '@renderer/app/providers';
 import { Chain } from '@renderer/entities/chain';
@@ -148,9 +149,7 @@ const WatchOnly = ({ isOpen, onClose, onComplete }: Props) => {
           />
 
           <div className="flex flex-1 justify-between items-end">
-            <Button variant="text" onClick={closeModal}>
-              {t('onboarding.backButton')}
-            </Button>
+            <ButtonText onClick={closeModal}>{t('onboarding.backButton')}</ButtonText>
 
             <Button type="submit" disabled={!isValid}>
               {t('onboarding.continueButton')}

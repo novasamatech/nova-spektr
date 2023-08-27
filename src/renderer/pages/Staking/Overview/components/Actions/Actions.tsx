@@ -1,13 +1,13 @@
-import { useState } from 'react';
+import { ReactNode, useState } from 'react';
 import { Trans } from 'react-i18next';
 
 import { useI18n, PathValue } from '@renderer/app/providers';
 import { Paths } from '../../../../../app/providers/routes/paths';
-import { SmallTitleText, DropdownButton, Button, BaseModal, Icon } from '@renderer/shared/ui';
+import { SmallTitleText, ButtonDropdown, Button, BaseModal, Icon, FootnoteText, ButtonText } from '@renderer/shared/ui';
 import { Stake } from '@renderer/entities/staking';
-import { toAccountId } from '@renderer/shared/lib/utils';
+import { cnTw, toAccountId } from '@renderer/shared/lib/utils';
 import { useToggle } from '@renderer/shared/lib/hooks';
-import { ButtonDropdownOption, IconNames } from '@renderer/shared/ui/types';
+import { IconNames } from '@renderer/shared/ui/types';
 import { Address } from '@renderer/domain/shared-kernel';
 
 const enum AccountTypes {
@@ -167,26 +167,6 @@ export const Actions = ({ canInteract, stakes, isStakingLoading, onNavigate }: P
     }
   };
 
-  const getAvailableButtonOptions = (): ButtonDropdownOption[] => {
-    if (noStakes || wrongOverlaps) return [];
-
-    return Object.entries(actionsSummary).reduce<ButtonDropdownOption[]>((acc, [key, value]) => {
-      if (stakes.length === value) {
-        const typedKey = key as StakeActions;
-        const option = OperationOptions[typedKey];
-
-        acc.push({
-          id: key,
-          iconName: option.icon,
-          title: t(option.title),
-          onClick: () => onClickAction(typedKey, option.path),
-        });
-      }
-
-      return acc;
-    }, []);
-  };
-
   const getActionButtonText = (): string => {
     if (noStakes) return t('staking.actions.selectAccPlaceholder');
     if (wrongOverlaps) return t('staking.actions.noOverlapPlaceholder');
@@ -206,12 +186,39 @@ export const Actions = ({ canInteract, stakes, isStakingLoading, onNavigate }: P
         {/*  selectedIds={activeFilters.map((f) => f.id)}*/}
         {/*  onChange={setActiveFilters}*/}
         {/*/>*/}
-        <DropdownButton
+        <ButtonDropdown
           className="min-w-[228px]"
           title={getActionButtonText()}
           disabled={isStakingLoading || noStakes || wrongOverlaps}
-          options={getAvailableButtonOptions()}
-        />
+        >
+          {Object.entries(actionsSummary).reduce<ReactNode[]>((acc, [key, value]) => {
+            if (stakes.length !== value) return acc;
+
+            const typedKey = key as StakeActions;
+            const { title, path, icon } = OperationOptions[typedKey];
+
+            acc.push(
+              <ButtonDropdown.Item
+                key={icon}
+                className="flex items-center gap-x-1.5 p-2"
+                onClick={() => onClickAction(typedKey, path)}
+              >
+                {(active) => (
+                  <>
+                    <Icon name={icon} size={20} className="text-icon-accent-default shrink-0" />
+                    <FootnoteText
+                      className={cnTw('text-text-secondary transition-colors', active && 'text-text-primary')}
+                    >
+                      {t(title)}
+                    </FootnoteText>
+                  </>
+                )}
+              </ButtonDropdown.Item>,
+            );
+
+            return acc;
+          }, [])}
+        </ButtonDropdown>
       </div>
 
       <BaseModal
@@ -233,9 +240,9 @@ export const Actions = ({ canInteract, stakes, isStakingLoading, onNavigate }: P
         </p>
 
         <div className="flex items-center gap-2.5 mt-5">
-          <Button className="flex-1" variant="text" onClick={toggleIsDialogOpen}>
+          <ButtonText className="flex-1" onClick={toggleIsDialogOpen}>
             {t('staking.warning.noButton')}
-          </Button>
+          </ButtonText>
 
           <Button className="flex-1" onClick={onDeselectAccounts}>
             {t('staking.warning.yesButton')}

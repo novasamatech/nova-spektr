@@ -1,75 +1,54 @@
 import { MemoryRouter } from 'react-router-dom';
-import { ComponentMeta, ComponentStory } from '@storybook/react';
+import type { Meta, StoryObj } from '@storybook/react';
 
-import { Icon } from '@renderer/shared/ui';
 import { ButtonLink } from './ButtonLink';
 
-export default {
-  title: 'ButtonLink',
+const meta: Meta<typeof ButtonLink> = {
+  title: 'Design system/Buttons/ButtonLink',
   component: ButtonLink,
-  parameters: { actions: { argTypesRegex: '^on.*' } },
   decorators: [
     (Story) => (
       <MemoryRouter>
-        <Story />
+        <div className="flex flex-col gap-y-4 items-center">
+          <h1>Version - 1.0.0</h1>
+          <Story />
+        </div>
       </MemoryRouter>
     ),
   ],
-} as ComponentMeta<typeof ButtonLink>;
-
-const Template: ComponentStory<typeof ButtonLink> = (args) => <ButtonLink {...args} />;
-
-export const Primary = Template.bind({});
-Primary.args = {
-  to: 'test_path',
-  variant: 'fill',
-  pallet: 'primary',
-  children: 'Link',
-  className: 'w-[200px]',
-  disabled: false,
 };
 
-export const Prefix = Template.bind({});
+export default meta;
+type Story = StoryObj<typeof ButtonLink>;
 
-Prefix.args = {
-  to: 'test_path',
-  variant: 'fill',
-  pallet: 'primary',
-  children: 'Link',
-  className: 'w-[200px]',
-  disabled: false,
-  prefixElement: <Icon name="show" className="text-white" size={16} />,
-};
-export const Suffix = Template.bind({});
-
-Suffix.args = {
-  to: 'test_path',
-  variant: 'fill',
-  pallet: 'primary',
-  children: 'Link',
-  className: 'w-[200px]',
-  disabled: false,
-  suffixElement: <Icon name="status-error" className="text-white" size={16} />,
-};
-export const Both = Template.bind({});
-
-Both.args = {
-  to: 'test_path',
-  variant: 'fill',
-  pallet: 'primary',
-  children: 'Link',
-  className: 'w-[200px]',
-  disabled: false,
-  prefixElement: <Icon name="search" className="text-white" size={16} />,
-  suffixElement: <Icon name="status-success" className="text-white" size={16} />,
+const UiOptions: Story['argTypes'] = {
+  icon: {
+    options: [undefined, 'new-tab', 'chat', 'learn-more'],
+  },
+  className: { control: false },
 };
 
-export const OnlyIcon = Template.bind({});
-OnlyIcon.args = {
-  to: 'test_path',
-  variant: 'fill',
-  pallet: 'primary',
-  className: 'w-max',
-  children: <Icon name="chat" className="text-white" size={16} />,
-  disabled: false,
+export const Playground: Story = {
+  args: {
+    to: 'test_path',
+    children: 'Inner Link',
+    size: 'md',
+  },
+  argTypes: UiOptions,
+};
+
+export const External: Story = {
+  render: () => (
+    <ButtonLink remote icon="new-tab" to="https://novaspektr.io/">
+      Visit NovaSpektr
+    </ButtonLink>
+  ),
+};
+
+export const Disabled: Story = {
+  render: () => (
+    <ButtonLink disabled remote icon="learn-more" to="https://novawallet.io/">
+      Visit NovaWallet
+    </ButtonLink>
+  ),
 };

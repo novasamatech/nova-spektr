@@ -15,6 +15,7 @@ module.exports = {
   parser: '@typescript-eslint/parser',
   extends: [
     'eslint:recommended',
+    'plugin:storybook/recommended',
     'plugin:react/recommended',
     'plugin:import/recommended',
     'plugin:import/errors',

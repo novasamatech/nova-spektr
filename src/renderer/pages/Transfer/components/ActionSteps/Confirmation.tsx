@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 
 import { Transaction, DepositWithLabel, Fee } from '@renderer/entities/transaction';
 import TransactionAmount from '@renderer/pages/Operations/components/TransactionAmount';
-import { Button, DetailRow, FootnoteText, Icon } from '@renderer/shared/ui';
+import { Button, ButtonText, DetailRow, FootnoteText } from '@renderer/shared/ui';
 import { Account, MultisigAccount } from '@renderer/entities/account';
 import { ExtendedChain } from '@renderer/entities/network';
 import { useI18n } from '@renderer/app/providers';
@@ -76,11 +76,9 @@ const Confirmation = ({ account, connection, transaction, signatory, description
       )}
 
       <div className="flex w-full justify-between mt-5">
-        <Button variant="text" onClick={onBack}>
-          {t('operation.goBackButton')}
-        </Button>
+        <ButtonText onClick={onBack}>{t('operation.goBackButton')}</ButtonText>
 
-        <Button disabled={!feeLoaded} prefixElement={<Icon name="polkadotvault" size={16} />} onClick={onResult}>
+        <Button icon="polkadotvault" disabled={!feeLoaded} onClick={onResult}>
           {t('operation.signButton')}
         </Button>
       </div>

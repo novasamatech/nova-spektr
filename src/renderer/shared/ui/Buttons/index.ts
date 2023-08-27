@@ -1,3 +1,5 @@
 export { Button } from './Button/Button';
-export { IconButton } from './IconButton/IconButton';
+export { ButtonIcon } from './ButtonIcon/ButtonIcon';
 export { ButtonLink } from './ButtonLink/ButtonLink';
+export { ButtonText } from './ButtonText/ButtonText';
+export { ButtonDropdown } from './ButtonDropdown/ButtonDropdown';

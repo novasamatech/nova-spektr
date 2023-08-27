@@ -3,7 +3,7 @@ import { UnsignedTransaction } from '@substrate/txwrapper-polkadot';
 import { Weight } from '@polkadot/types/interfaces';
 import { BN } from '@polkadot/util';
 
-import { Icon, BaseModal, Button } from '@renderer/shared/ui';
+import { BaseModal, Button } from '@renderer/shared/ui';
 import { useI18n } from '@renderer/app/providers';
 import { AccountDS, MultisigTransactionDS } from '@renderer/shared/api/storage';
 import { useCountdown, useToggle } from '@renderer/shared/lib/hooks';
@@ -206,11 +206,7 @@ const ApproveTx = ({ tx, account, connection }: Props) => {
         {activeStep === Step.CONFIRMATION && (
           <>
             <Confirmation tx={tx} account={account} connection={connection} feeTx={feeTx} />
-            <Button
-              className="mt-7 ml-auto"
-              prefixElement={<Icon name="polkadotvault" size={16} />}
-              onClick={selectAccount}
-            >
+            <Button className="mt-7 ml-auto" icon="polkadotvault" onClick={selectAccount}>
               {t('operation.signButton')}
             </Button>
           </>
