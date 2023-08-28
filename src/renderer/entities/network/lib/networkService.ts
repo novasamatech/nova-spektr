@@ -1,4 +1,4 @@
-import { ApiPromise, WsProvider, ScProvider } from '@polkadot/api';
+import { ApiPromise } from '@polkadot/api';
 import * as Sc from '@substrate/connect';
 import { ProviderInterface } from '@polkadot/rpc-provider/types';
 import keyBy from 'lodash/keyBy';
@@ -13,6 +13,9 @@ import { useChainSpec } from './chainSpecService';
 import { useChains } from './chainsService';
 import { AUTO_BALANCE_TIMEOUT, MAX_ATTEMPTS, PROGRESSION_BASE } from './common/constants';
 import { ConnectionsMap, ConnectProps, INetworkService, RpcValidation } from './common/types';
+import { createWrappedScProvider } from './provider/WrappedScProvider';
+import { createWrappedWsProvider } from './provider/WrappedWsProvider';
+import { useMetadata } from '@renderer/entities/metadata';
 
 export const useNetwork = (networkSubscription?: ISubscriptionService<ChainId>): INetworkService => {
   const chains = useRef<Record<ChainId, Chain>>({});
@@ -20,6 +23,7 @@ export const useNetwork = (networkSubscription?: ISubscriptionService<ChainId>):
 
   const { getChainsData, sortChains } = useChains();
   const { getKnownChain, getLightClientChains } = useChainSpec();
+  const { getMetadata, subscribeMetadata } = useMetadata();
 
   const connectionStorage = storage.connectTo('connections');
 
@@ -150,14 +154,26 @@ export const useNetwork = (networkSubscription?: ISubscriptionService<ChainId>):
     const knownChainId = getKnownChain(chainId);
 
     if (knownChainId) {
+      const ScProvider = createWrappedScProvider(async () => {
+        const metadata = await getMetadata(chainId);
+
+        return metadata?.metadata;
+      });
+
       return new ScProvider(Sc, knownChainId);
     } else {
       throw new Error('Parachains do not support Substrate Connect yet');
     }
   };
 
-  const createWebsocketProvider = (rpcUrl: string): ProviderInterface => {
+  const createWebsocketProvider = (rpcUrl: string, chainId: ChainId): ProviderInterface => {
     // TODO: handle limited retries provider = new WsProvider(node.address, 5000, {1}, 11000);
+    const WsProvider = createWrappedWsProvider(async () => {
+      const metadata = await getMetadata(chainId);
+
+      return metadata?.metadata;
+    });
+
     return new WsProvider(rpcUrl, 2000);
   };
 
@@ -167,6 +183,10 @@ export const useNetwork = (networkSubscription?: ISubscriptionService<ChainId>):
 
       const api = await ApiPromise.create({ provider, throwOnConnect: true, throwOnUnknown: true });
       if (!api) await provider.disconnect();
+
+      if (api) {
+        networkSubscription?.subscribe(chainId, subscribeMetadata(api));
+      }
 
       updateConnectionState(
         chainId,
@@ -245,7 +265,7 @@ export const useNetwork = (networkSubscription?: ISubscriptionService<ChainId>):
     if (type === ConnectionType.LIGHT_CLIENT) {
       provider.instance = createSubstrateProvider(chainId);
     } else if ([ConnectionType.RPC_NODE, ConnectionType.AUTO_BALANCE].includes(type) && node) {
-      provider.instance = createWebsocketProvider(node.url);
+      provider.instance = createWebsocketProvider(node.url, chainId);
     }
 
     setConnections((currentConnections) => ({
@@ -285,6 +305,12 @@ export const useNetwork = (networkSubscription?: ISubscriptionService<ChainId>):
 
   const validateRpcNode = (chainId: ChainId, rpcUrl: string): Promise<RpcValidation> => {
     return new Promise((resolve) => {
+      const WsProvider = createWrappedWsProvider(async () => {
+        const metadata = await getMetadata(chainId);
+
+        return metadata?.metadata;
+      });
+
       const provider = new WsProvider(rpcUrl);
 
       provider.on('connected', async () => {
