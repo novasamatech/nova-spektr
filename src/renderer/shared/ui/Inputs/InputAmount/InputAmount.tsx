@@ -1,10 +1,10 @@
 import { useCallback } from 'react';
 
-// FIXME components in shared shouldn't use components from entity so we need to move it to entity
+// FIXME: components in shared shouldn't use components from entity, so we need to move it to entity
 import { AssetBalance, AssetIcon, Asset } from '@renderer/entities/asset';
-import { cleanAmount, formatGroups, validatePrecision, validateSymbols } from '@renderer/shared/lib/utils';
+import { cleanAmount, cnTw, formatGroups, validatePrecision, validateSymbols } from '@renderer/shared/lib/utils';
 import { useI18n } from '@renderer/app/providers';
-import { FootnoteText, TitleText } from '../../Typography';
+import { FootnoteText, HelpText, TitleText } from '../../Typography';
 import { Input } from '../Input/Input';
 
 type Props = {
@@ -16,10 +16,11 @@ type Props = {
   balancePlaceholder?: string;
   balance?: string | string[];
   invalid?: boolean;
+  altValue?: string;
   onChange?: (value: string) => void;
 };
 
-export const AmountInput = ({
+export const InputAmount = ({
   name,
   value,
   asset,
@@ -28,6 +29,7 @@ export const AmountInput = ({
   placeholder,
   disabled,
   invalid,
+  altValue,
   onChange,
 }: Props) => {
   const { t } = useI18n();
@@ -48,15 +50,20 @@ export const AmountInput = ({
     if (Array.isArray(balance)) {
       return (
         <span className="flex gap-x-1">
-          <AssetBalance className="text-text-primary text-footnote" value={balance[0]} asset={asset} />
+          <AssetBalance className="text-text-tertiary text-footnote" value={balance[0]} asset={asset} />
           <span>-</span>
-          <AssetBalance className="text-text-primary text-footnote" value={balance[1]} asset={asset} />
+          <AssetBalance className="text-text-tertiary text-footnote" value={balance[1]} asset={asset} />
         </span>
       );
     }
 
     return (
-      <AssetBalance className="inline text-text-primary text-footnote" value={balance} asset={asset} showIcon={false} />
+      <AssetBalance
+        className="inline text-text-tertiary text-footnote"
+        value={balance}
+        asset={asset}
+        showIcon={false}
+      />
     );
   }, [balance]);
 
@@ -79,15 +86,21 @@ export const AmountInput = ({
     </div>
   );
 
+  const suffixElement = (
+    <HelpText className="absolute uppercase right-3 bottom-2 text-text-tertiary">{altValue}</HelpText>
+  );
+
   return (
     <Input
       name={name}
-      className="text-right text-title font-manrope"
+      className={cnTw('text-right text-title font-manrope', altValue && 'mb-4')}
+      wrapperClass="py-2 items-start"
       label={label}
       value={formatGroups(value)}
       placeholder={t('transfer.amountPlaceholder')}
       invalid={invalid}
       prefixElement={prefixElement}
+      suffixElement={altValue && suffixElement}
       disabled={disabled}
       onChange={handleChange}
     />

@@ -1,9 +1,8 @@
 import { ComponentPropsWithoutRef, forwardRef } from 'react';
 
 import { cnTw } from '@renderer/shared/lib/utils';
-import { HTMLTextAreaProps } from '../common/types';
-import { CommonInputStyles, CommonInputStylesTheme } from '../common/styles';
-import { Theme } from '../../Dropdowns/common/types';
+import { HTMLTextAreaProps, Theme } from '../common/types';
+import { CommonInputStylesTheme, InputStyles } from '../common/constants';
 
 interface Props extends Pick<ComponentPropsWithoutRef<'textarea'>, HTMLTextAreaProps> {
   invalid?: boolean;
@@ -12,17 +11,14 @@ interface Props extends Pick<ComponentPropsWithoutRef<'textarea'>, HTMLTextAreaP
 }
 
 export const InputArea = forwardRef<HTMLTextAreaElement, Props>(
-  ({ className, invalid, theme = 'light', onChange, ...props }, ref) => (
+  ({ className, invalid, disabled, theme = 'light', onChange, ...props }, ref) => (
     <textarea
       className={cnTw(
-        'resize-none text-footnote flex-1',
-        CommonInputStyles,
+        'resize-none py-2 flex-1 focus:outline-none',
         CommonInputStylesTheme[theme],
-        'focus-within:enabled:border-active-container-border',
-        invalid && 'border-filter-border-negative',
-        'hover:enabled:shadow-card-shadow',
-        'disabled:bg-input-background-disabled disabled:text-text-tertiary disabled:placeholder:text-text-tertiary',
-        'flex-1 border-filter-border',
+        !invalid && !disabled && InputStyles.enabled,
+        disabled && InputStyles.disabled,
+        invalid && InputStyles.invalid,
         className,
       )}
       ref={ref}

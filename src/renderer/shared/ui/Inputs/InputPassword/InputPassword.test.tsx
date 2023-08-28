@@ -1,6 +1,6 @@
 import { render, screen, act } from '@testing-library/react';
 
-import { PasswordInput } from './PasswordInput';
+import { InputPassword } from './InputPassword';
 
 jest.mock('@renderer/app/providers', () => ({
   useI18n: jest.fn().mockReturnValue({
@@ -8,16 +8,16 @@ jest.mock('@renderer/app/providers', () => ({
   }),
 }));
 
-describe('ui/Inputs/PasswordInput', () => {
+describe('ui/Inputs/InputPassword', () => {
   test('should render password visibility button', () => {
-    render(<PasswordInput />);
+    render(<InputPassword />);
 
     const button = screen.getByRole('button');
     expect(button).toBeInTheDocument();
   });
 
   test('should change input type', async () => {
-    render(<PasswordInput />);
+    render(<InputPassword />);
 
     let input = screen.queryByRole('textbox');
     expect(input).not.toBeInTheDocument();

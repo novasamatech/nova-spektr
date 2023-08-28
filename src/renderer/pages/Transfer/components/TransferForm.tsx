@@ -12,7 +12,7 @@ import {
   transferableAmount,
   getAssetId,
 } from '@renderer/shared/lib/utils';
-import { Icon, Identicon, Button, AmountInput, Input, InputHint, DetailRow } from '@renderer/shared/ui';
+import { Icon, Identicon, Button, InputAmount, Input, InputHint, DetailRow } from '@renderer/shared/ui';
 import { useI18n } from '@renderer/app/providers';
 import { Asset, AssetType, useBalance } from '@renderer/entities/asset';
 import {
@@ -327,7 +327,7 @@ export const TransferForm = ({
           }}
           render={({ field: { onChange, value }, fieldState: { error } }) => (
             <div className="flex flex-col gap-y-2">
-              <AmountInput
+              <InputAmount
                 invalid={Boolean(error)}
                 value={value}
                 balance={accountBalance}

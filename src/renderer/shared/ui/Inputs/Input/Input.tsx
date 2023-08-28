@@ -2,9 +2,8 @@ import { ReactNode, ComponentPropsWithoutRef, forwardRef, useId } from 'react';
 
 import { cnTw } from '@renderer/shared/lib/utils';
 import { LabelText } from '../../Typography';
-import { HTMLInputProps } from '../common/types';
-import { CommonInputStyles, CommonInputStylesTheme } from '../common/styles';
-import { Theme } from '../../Dropdowns/common/types';
+import { HTMLInputProps, Theme } from '../common/types';
+import { CommonInputStylesTheme, InputStyles } from '../common/constants';
 
 export type Props = Pick<ComponentPropsWithoutRef<'input'>, HTMLInputProps> & {
   label?: ReactNode;
@@ -39,14 +38,12 @@ export const Input = forwardRef<HTMLInputElement, Props>(
     const inputElement = (
       <div
         className={cnTw(
-          'relative flex object-contain',
-          CommonInputStyles,
+          'input-wrapper relative flex object-contain gap-x-2',
           CommonInputStylesTheme[theme],
-          !disabled && 'hover:shadow-card-shadow',
-          !invalid && 'focus-within:border-active-container-border',
-          disabled && 'bg-input-background-disabled text-text-tertiary',
-          'border-filter-border',
-          invalid && 'border-filter-border-negative',
+          InputStyles.base,
+          !invalid && !disabled && InputStyles.enabled,
+          disabled && InputStyles.disabled,
+          invalid && InputStyles.invalid,
           wrapperClass,
         )}
       >
@@ -54,7 +51,7 @@ export const Input = forwardRef<HTMLInputElement, Props>(
         <input
           id={id}
           className={cnTw(
-            'focus:outline-none w-full placeholder:text-text-secondary',
+            'focus:outline-none w-full placeholder:text-text-secondary bg-transparent',
             disabled && 'text-text-tertiary placeholder:text-text-tertiary',
             className,
           )}

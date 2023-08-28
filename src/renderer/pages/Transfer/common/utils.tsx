@@ -3,7 +3,7 @@ import { BN } from '@polkadot/util';
 
 import { Account, MultisigAccount, AccountAddress } from '@renderer/entities/account';
 import { Address } from '@renderer/domain/shared-kernel';
-import { DropdownOption } from '@renderer/shared/ui/Dropdowns/common/types';
+import { DropdownOption } from '@renderer/shared/ui/types';
 import { toAddress, cnTw, transferableAmount } from '@renderer/shared/lib/utils';
 import { Balance, Asset, AssetBalance } from '@renderer/entities/asset';
 

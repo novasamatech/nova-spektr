@@ -34,7 +34,7 @@ export const Icon = ({ as = 'svg', name, size = 16, className, alt = '' }: Props
     <svg
       role="img"
       xmlns="http://www.w3.org/2000/svg"
-      className={cnTw('text-icon-default', className)}
+      className={cnTw('text-icon-primary-default', className)}
       width={activeSize}
       height={activeSize}
       viewBox={`0 0 ${activeSize} ${activeSize}`}

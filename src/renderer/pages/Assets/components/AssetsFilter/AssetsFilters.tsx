@@ -1,4 +1,4 @@
-import { Switch, ButtonIcon, MenuPopover, SearchInput } from '@renderer/shared/ui';
+import { Switch, ButtonIcon, MenuPopover, InputSearch } from '@renderer/shared/ui';
 import { useI18n } from '@renderer/app/providers';
 
 type Props = {
@@ -13,7 +13,7 @@ export const AssetsFilters = ({ searchQuery, onSearchChange, hideZeroBalances, o
 
   return (
     <div className="flex items-center gap-x-3">
-      <SearchInput
+      <InputSearch
         value={searchQuery}
         placeholder={t('balances.searchPlaceholder')}
         className="w-[230px]"

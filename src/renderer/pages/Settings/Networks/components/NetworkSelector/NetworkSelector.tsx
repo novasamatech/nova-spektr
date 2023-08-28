@@ -1,16 +1,20 @@
 import { Listbox, Transition } from '@headlessui/react';
 import { Fragment, useEffect, useState } from 'react';
 
+import type { Theme } from '@renderer/shared/ui/types';
 import { cnTw } from '@renderer/shared/lib/utils';
 import { ButtonIcon, ButtonText, FootnoteText, HelpText, Icon } from '@renderer/shared/ui';
 import { useI18n } from '@renderer/app/providers';
 import { RpcNode } from '@renderer/entities/chain';
 import { ConnectionType } from '@renderer/domain/connection';
 import { ExtendedChain } from '@renderer/entities/network';
-import { OptionStyle, SelectButtonStyle } from '@renderer/shared/ui/Dropdowns/common/constants';
 import { useScrollTo } from '@renderer/shared/lib/hooks';
-import { CommonInputStyles, CommonInputStylesTheme } from '@renderer/shared/ui/Inputs/common/styles';
-import type { Theme } from '@renderer/shared/ui/types';
+import {
+  OptionStyle,
+  SelectButtonStyle,
+  CommonInputStylesTheme,
+  InputStyles,
+} from '@renderer/shared/ui/Inputs/common/constants';
 
 export const OptionsContainerStyle =
   'mt-1 absolute z-20 py-1 px-1 w-full border border-token-container-border rounded bg-input-background shadow-card-shadow';
@@ -94,7 +98,7 @@ export const NetworkSelector = ({
             className={cnTw(
               open && SelectButtonStyle[theme].open,
               SelectButtonStyle[theme].disabled,
-              CommonInputStyles,
+              InputStyles.base,
               CommonInputStylesTheme[theme],
               'w-[248px] flex items-center gap-x-2 justify-between',
             )}

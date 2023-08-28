@@ -13,45 +13,42 @@ const meta: Meta<typeof Input> = {
 export default meta;
 type Story = StoryObj<typeof Input>;
 
+const UiOptions: Story['argTypes'] = {
+  className: { control: false },
+  wrapperClass: { control: false },
+  prefixElement: { control: false },
+  suffixElement: { control: false },
+};
+
 export const Playground: Story = {
   args: {
     placeholder: 'Test input',
   },
-};
-
-export const Filled: Story = {
-  args: {
-    value: 'This is value',
-  },
+  argTypes: UiOptions,
 };
 
 export const Label: Story = {
-  args: {
-    label: 'With label',
-    value: 'This is value',
-  },
-};
-
-export const Invalid: Story = {
-  args: {
-    label: 'With invalid',
-    value: 'This is value',
-    invalid: true,
-  },
+  render: () => <Input label="With label" value="This is value" />,
 };
 
 export const Disabled: Story = {
-  args: {
-    label: 'With disabled label',
-    value: 'This is value',
-    disabled: true,
-  },
+  render: () => <Input value="This is value" disabled />,
+};
+
+export const Prefix: Story = {
+  render: () => (
+    <Input
+      value="This is value"
+      prefixElement={<Icon name="status-success" className="text-alert right-2 absolute" size={16} />}
+    />
+  ),
 };
 
 export const Suffix: Story = {
-  args: {
-    label: 'With suffix element',
-    value: 'This is value',
-    suffixElement: <Icon name="status-warning" className="text-alert right-2 top-[9px] absolute" size={16} />,
-  },
+  render: () => (
+    <Input
+      value="This is value"
+      suffixElement={<Icon name="status-warning" className="text-alert right-2 absolute" size={16} />}
+    />
+  ),
 };

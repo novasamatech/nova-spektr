@@ -56,14 +56,6 @@ const sharedConfig: Configuration = {
         test: /\.svg$/,
         use: [
           {
-            loader: '@svgr/webpack',
-            options: {
-              svgoConfig: {
-                plugins: [{ name: 'removeViewBox', active: false }],
-              },
-            },
-          },
-          {
             loader: 'file-loader',
             options: {
               name: '[name]-[hash:8].[ext]',
