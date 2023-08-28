@@ -78,11 +78,11 @@ export interface IContactStorage {
 }
 
 export interface IMetadataStorage {
-  getMetadata: (chainId: ChainId, metadataVersion: number) => Promise<MetadataDS | undefined>;
+  getMetadata: (chainId: ChainId, version: number) => Promise<MetadataDS | undefined>;
   getAllMetadata: <T extends Metadata>(where?: Partial<T>) => Promise<MetadataDS[]>;
   addMetadata: (metadata: Metadata) => Promise<ID[]>;
   updateMetadata: (metadata: Metadata) => Promise<ID[]>;
-  deleteMetadata: (chainId: ChainId, metadataVersion: number) => Promise<void>;
+  deleteMetadata: (chainId: ChainId, version: number) => Promise<void>;
 }
 
 export interface IMultisigTransactionStorage {

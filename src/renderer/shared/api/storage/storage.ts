@@ -74,7 +74,7 @@ class DexieStorage extends Dexie {
         '[accountId+chainId+callHash+blockCreated+indexCreated],[accountId+status],[accountId+callHash],[callHash+status+chainId],accountId,status,callHash',
       multisigEvents: '++id,[txAccountId+txChainId+txCallHash+txBlock+txIndex],status,accountId',
       notifications: '++id,type,read',
-      metadata: '[chainId+metadataVersion],chainId',
+      metadata: '[chainId+version],chainId',
     });
 
     this.connections = this.table('connections');

@@ -8,6 +8,7 @@ export const createWrappedWsProvider = (getMetadata: () => Promise<HexString | u
     async send(method: string, params: unknown[], isCacheable?: boolean, subscription?: any): Promise<any> {
       if (method === GET_METADATA_METHOD && params.length === 0) {
         const metadata = await getMetadata();
+
         if (metadata) return metadata;
       }
 

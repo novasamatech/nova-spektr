@@ -3,8 +3,8 @@ import { ID, IMetadataStorage, MetadataDS, TMetadata } from './common/types';
 import { ChainId } from '@renderer/domain/shared-kernel';
 
 export const useMetadataStorage = (db: TMetadata): IMetadataStorage => ({
-  getMetadata: (chainId: ChainId, metadataVersion: number): Promise<MetadataDS | undefined> => {
-    return db.get([chainId, metadataVersion]);
+  getMetadata: (chainId: ChainId, version: number): Promise<MetadataDS | undefined> => {
+    return db.get([chainId, version]);
   },
 
   getAllMetadata: <T extends Metadata>(where?: Partial<T>): Promise<MetadataDS[]> => {
@@ -19,7 +19,7 @@ export const useMetadataStorage = (db: TMetadata): IMetadataStorage => ({
     return db.put(metadata);
   },
 
-  deleteMetadata: (chainId: ChainId, metadataVersion: number): Promise<void> => {
-    return db.delete([chainId, metadataVersion.toString()]);
+  deleteMetadata: (chainId: ChainId, version: number): Promise<void> => {
+    return db.delete([chainId, version.toString()]);
   },
 });

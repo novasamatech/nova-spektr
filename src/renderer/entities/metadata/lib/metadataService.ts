@@ -19,9 +19,9 @@ export const useMetadata = (): IMetadataService => {
     const metadata = await getAllMetadata({ chainId });
 
     if (metadata.length) {
-      const lastMetadata = metadata.reduce<Metadata>((acc, metadata) => {
-        if (metadata.metadataVersion > acc.metadataVersion) {
-          return metadata;
+      const lastMetadata = metadata.reduce<Metadata>((acc, md) => {
+        if (md.version >= (acc.version || -1)) {
+          return md;
         }
 
         return acc;
@@ -35,7 +35,7 @@ export const useMetadata = (): IMetadataService => {
     const metadata = await api.rpc.state.getMetadata();
     const newMetadata: Metadata = {
       metadata: metadata.toHex(),
-      metadataVersion: metadata.version,
+      version: metadata.version,
       chainId: api.genesisHash.toHex(),
     };
     metadataModel.effects.addMetadataFx(newMetadata);
@@ -48,7 +48,7 @@ export const useMetadata = (): IMetadataService => {
       const chainId = api.genesisHash.toHex();
       const oldMetadata = await getMetadata(chainId);
 
-      if (!oldMetadata || version.specVersion.toNumber() > oldMetadata.metadataVersion) {
+      if (!oldMetadata || version.specVersion.toNumber() > oldMetadata.version) {
         syncMetadata(api);
       }
     });

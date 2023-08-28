@@ -30,10 +30,10 @@ const updateMetadataFx = createEffect(async (metadata: Metadata) => {
   return metadata;
 });
 
-const deleteMetadataFx = createEffect(({ chainId, metadataVersion }: { chainId: ChainId; metadataVersion: number }) => {
-  metadataStorage.deleteMetadata(chainId, metadataVersion);
+const deleteMetadataFx = createEffect(({ chainId, version }: { chainId: ChainId; version: number }) => {
+  metadataStorage.deleteMetadata(chainId, version);
 
-  return { chainId, metadataVersion };
+  return { chainId, version };
 });
 
 $metadata
@@ -43,13 +43,11 @@ $metadata
   .on(addMetadataFx.doneData, (state, metadata) => {
     return state.concat(metadata);
   })
-  .on(deleteMetadataFx.doneData, (state, { chainId, metadataVersion }) => {
-    return state.filter((m) => m.chainId === chainId && m.metadataVersion === metadataVersion);
+  .on(deleteMetadataFx.doneData, (state, { chainId, version }) => {
+    return state.filter((m) => m.chainId === chainId && m.version === version);
   })
   .on(updateMetadataFx.doneData, (state, metadata) => {
-    const position = state.findIndex(
-      (m) => m.chainId === metadata.chainId && m.metadataVersion === metadata.metadataVersion,
-    );
+    const position = state.findIndex((m) => m.chainId === metadata.chainId && m.version === metadata.version);
 
     return splice(state, metadata, position);
   });
