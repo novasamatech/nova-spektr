@@ -2,7 +2,6 @@ import { ApiPromise } from '@polkadot/api';
 import { useEffect, useState } from 'react';
 
 import { useI18n } from '@renderer/app/providers';
-import { DropdownOption, DropdownResult } from '@renderer/shared/ui/Dropdowns/common/types';
 import { ChainId, SigningType } from '@renderer/domain/shared-kernel';
 import { useAccount, Account, isMultisig, MultisigAccount } from '@renderer/entities/account';
 import { Explorer } from '@renderer/entities/chain';
@@ -11,6 +10,7 @@ import { Transaction } from '@renderer/entities/transaction';
 import { TransferForm } from '../TransferForm';
 import { getAccountOption, getSignatoryOption } from '../../common/utils';
 import { InputHint, Select } from '@renderer/shared/ui';
+import { DropdownOption, DropdownResult } from '@renderer/shared/ui/types';
 
 type Props = {
   api: ApiPromise;

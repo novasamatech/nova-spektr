@@ -2,7 +2,7 @@ import { Controller, useForm, SubmitHandler } from 'react-hook-form';
 
 import { Alert, Button, Input, InputHint, Select, SmallTitleText } from '@renderer/shared/ui';
 import { useI18n, useMatrix } from '@renderer/app/providers';
-import { DropdownOption, DropdownResult } from '@renderer/shared/ui/Dropdowns/common/types';
+import { DropdownOption, DropdownResult } from '@renderer/shared/ui/types';
 import { Signatory } from '@renderer/entities/signatory';
 import {
   getMultisigAccountId,

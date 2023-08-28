@@ -3,7 +3,7 @@ import React, { useEffect, useState } from 'react';
 
 import { cnTw, ValidationErrors, secondsToMinutes } from '@renderer/shared/lib/utils';
 import { Shimmering, Button, CaptionText, FootnoteText, Select, SmallTitleText } from '@renderer/shared/ui';
-import { DropdownOption, DropdownResult } from '@renderer/shared/ui/Dropdowns/common/types';
+import { DropdownOption, DropdownResult } from '@renderer/shared/ui/types';
 import { useI18n } from '@renderer/app/providers';
 import SignatureReaderError from './SignatureReaderError';
 import QrMultiframeSignatureReader from './QrMultiframeSignatureReader';

@@ -4,7 +4,7 @@ import { ReactNode } from 'react';
 
 import { Account, MultisigAccount, AccountAddress } from '@renderer/entities/account';
 import { Address } from '@renderer/domain/shared-kernel';
-import { DropdownOption } from '@renderer/shared/ui/Dropdowns/common/types';
+import { DropdownOption } from '@renderer/shared/ui/types';
 import { Balance as AccountBalance, Asset, AssetBalance } from '@renderer/entities/asset';
 import {
   toAddress,

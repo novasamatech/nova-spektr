@@ -4,3 +4,7 @@ export { InputFile } from './InputFile/InputFile';
 export { InputArea } from './InputArea/InputArea';
 export { AmountInput } from './AmountInput/AmountInput';
 export { SearchInput } from './SearchInput/SearchInput';
+export { Combobox } from './Combobox/Combobox';
+export { Select } from './Select/Select';
+export { MultiSelect } from './MultiSelect/MultiSelect';
+export { DropdownButton } from './DropdownButton/DropdownButton';

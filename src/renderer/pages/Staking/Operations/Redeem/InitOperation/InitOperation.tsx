@@ -2,7 +2,7 @@ import { ApiPromise } from '@polkadot/api';
 import { BN, BN_ZERO } from '@polkadot/util';
 import { useEffect, useState } from 'react';
 
-import { DropdownOption, DropdownResult } from '@renderer/shared/ui/Dropdowns/common/types';
+import { DropdownOption, DropdownResult } from '@renderer/shared/ui/types';
 import { useI18n } from '@renderer/app/providers';
 import { Asset, Balance as AccountBalance, useBalance } from '@renderer/entities/asset';
 import { ChainId, AccountId, SigningType } from '@renderer/domain/shared-kernel';

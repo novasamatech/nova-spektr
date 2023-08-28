@@ -1,4 +1,4 @@
-import { Theme } from '../../Dropdowns/common/types';
+import { Theme } from './types';
 
 export const CommonInputStylesTheme: Record<Theme, string> = {
   light: 'bg-primary-default text-text-primary',
