@@ -185,6 +185,7 @@ const Verification = () => {
 
           <div className="flex justify-between items-center pt-3 mt-2">
             <Icon name="matrix" className="!w-[56px] text-[#00000066]" size={32} />
+
             <Button type="submit" disabled={!isValid}>
               {t('settings.matrix.verifyButton')}
             </Button>

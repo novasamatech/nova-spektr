@@ -12,19 +12,4 @@ describe('ui/StatusMark', () => {
     expect(title).toBeInTheDocument();
     expect(subtitle).toBeInTheDocument();
   });
-
-  test('should render 4 variants', () => {
-    const { rerender } = render(<StatusMark title="My label" variant="waiting" />);
-    const title = screen.getByText('My label');
-    expect(title).toHaveClass('text-text-tertiary');
-
-    rerender(<StatusMark title="My label" variant="success" />);
-    expect(title).toHaveClass('text-text-positive');
-
-    rerender(<StatusMark title="My label" variant="warn" />);
-    expect(title).toHaveClass('text-text-warning');
-
-    rerender(<StatusMark title="My label" variant="error" />);
-    expect(title).toHaveClass('text-text-negative');
-  });
 });

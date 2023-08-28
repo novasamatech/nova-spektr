@@ -9,10 +9,9 @@ import { useI18n } from '@renderer/app/providers';
 import { Asset } from '@renderer/entities/asset';
 import { Chain } from '@renderer/entities/chain';
 import { SigningType } from '@renderer/domain/shared-kernel';
-import { copyToClipboard, toAddress, cnTw } from '@renderer/shared/lib/utils';
+import { copyToClipboard, toAddress } from '@renderer/shared/lib/utils';
 import { useAccount, AccountAddress } from '@renderer/entities/account';
 import OperationModalTitle from '@renderer/pages/Operations/components/OperationModalTitle';
-import { IconButtonStyle } from '@renderer/shared/ui/Buttons/IconButton/IconButton';
 
 type Props = {
   chain: Chain;
@@ -103,12 +102,7 @@ export const ReceiveModal = ({ chain, asset, isOpen, onClose }: Props) => {
         <ul className="flex gap-x-2 mb-4">
           {chain.explorers?.map(({ name, account }) => (
             <li aria-label={t('receive.explorerLinkLabel', { name })} key={name} className="flex">
-              <a
-                href={account?.replace('{address}', address)}
-                rel="noopener noreferrer"
-                target="_blank"
-                className={cnTw(IconButtonStyle, 'spektr-icon-button flex py-1 px-1.5 rounded')}
-              >
+              <a href={account?.replace('{address}', address)} rel="noopener noreferrer" target="_blank">
                 <Icon size={16} as="img" name={ExplorerIcons[name] || ExplorerIcons[DefaultExplorer]} />
               </a>
             </li>
@@ -125,7 +119,7 @@ export const ReceiveModal = ({ chain, asset, isOpen, onClose }: Props) => {
         />
       </HelpText>
 
-      <Button variant="text" size="sm" onClick={() => copyToClipboard(address)}>
+      <Button size="sm" onClick={() => copyToClipboard(address)}>
         {t('receive.copyAddressButton')}
       </Button>
     </BaseModal>

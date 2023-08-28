@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 
 import { MultisigEvent, SigningStatus } from '@renderer/entities/transaction';
 import { MultisigAccount, useAccount } from '@renderer/entities/account';
-import { Icon, Button, CaptionText, InfoLink, SmallTitleText } from '@renderer/shared/ui';
+import { Icon, Button, CaptionText, InfoLink, SmallTitleText, ButtonText } from '@renderer/shared/ui';
 import Details from '@renderer/pages/Operations/components/Details';
 import RejectTx from '@renderer/pages/Operations/components/modals/RejectTx';
 import ApproveTx from '@renderer/pages/Operations/components/modals/ApproveTx';
@@ -107,9 +107,9 @@ const OperationFullInfo = ({ tx, account }: Props) => {
           {(!callData || explorerLink) && (
             <div className="flex items-center">
               {!callData && (
-                <Button pallet="primary" variant="text" size="sm" onClick={toggleCallDataModal}>
+                <ButtonText size="sm" onClick={toggleCallDataModal}>
                   {t('operation.addCallDataButton')}
-                </Button>
+                </ButtonText>
               )}
               {explorerLink && (
                 <InfoLink url={explorerLink} className="flex items-center gap-x-0.5 ml-0.5 text-footnote">
@@ -134,10 +134,9 @@ const OperationFullInfo = ({ tx, account }: Props) => {
           <SmallTitleText>{t('operation.signatoriesTitle')}</SmallTitleText>
 
           <Button
-            pallet="secondary"
-            variant="fill"
+            icon="chat"
             size="sm"
-            prefixElement={<Icon name="chat" size={16} />}
+            pallet="secondary"
             suffixElement={
               <CaptionText className="!text-white bg-chip-icon rounded-full pt-[1px] pb-[2px] px-1.5">
                 {events.length}

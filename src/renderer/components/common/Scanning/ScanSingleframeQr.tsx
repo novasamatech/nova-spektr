@@ -8,7 +8,7 @@ import { Transaction, useTransaction } from '@renderer/entities/transaction';
 import { ChainId } from '@renderer/domain/shared-kernel';
 import { Explorer } from '@renderer/entities/chain';
 import { Account, AddressWithExplorers } from '@renderer/entities/account';
-import { Button, FootnoteText } from '@renderer/shared/ui';
+import { Button, ButtonText, FootnoteText } from '@renderer/shared/ui';
 
 type Props = {
   api: ApiPromise;
@@ -85,9 +85,7 @@ const ScanSingleframeQr = ({
       </QrGeneratorContainer>
 
       <div className="flex w-full justify-between mt-3 pl-2">
-        <Button variant="text" onClick={onGoBack}>
-          {t('operation.goBackButton')}
-        </Button>
+        <ButtonText onClick={onGoBack}>{t('operation.goBackButton')}</ButtonText>
 
         <Button disabled={!unsignedTx || countdown === 0} onClick={() => onResult(unsignedTx!, txPayload!)}>
           {t('signing.continueButton')}

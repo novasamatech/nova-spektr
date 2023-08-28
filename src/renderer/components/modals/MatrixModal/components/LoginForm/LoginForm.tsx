@@ -208,9 +208,7 @@ const LoginForm = () => {
                       value={value}
                       onChange={changeInputValue(onChange)}
                     />
-                    {invalidLogin && (
-                      <Alert title={t('settings.matrix.badCredentialsError')} variant="error" className="-mt-2" />
-                    )}
+                    {invalidLogin && <Alert title={t('settings.matrix.badCredentialsError')} variant="error" />}
                   </>
                 )}
               />
@@ -235,7 +233,8 @@ const LoginForm = () => {
 
       <div className="flex justify-between items-center pt-3">
         <Icon name="matrix" className="!w-[56px] text-[#00000066]" size={32} />
-        <Button type="submit" isLoading={inProgress} disabled={logInDisabled || inProgress}>
+
+        <Button type="submit" disabled={logInDisabled || inProgress}>
           {t('settings.matrix.logInButton')}
         </Button>
       </div>

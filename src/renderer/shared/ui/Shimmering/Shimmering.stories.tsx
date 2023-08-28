@@ -1,22 +1,26 @@
-import { ComponentMeta, ComponentStory } from '@storybook/react';
+import type { Meta, StoryObj } from '@storybook/react';
 
+import { withVersion } from '@renderer/shared/lib/utils/storybook';
 import { Shimmering } from './Shimmering';
 
-export default {
-  title: 'Shimmering',
+const meta: Meta<typeof Shimmering> = {
+  title: 'Design system/Shimmering',
   component: Shimmering,
-  parameters: { actions: { argTypesRegex: '^on.*' } },
-} as ComponentMeta<typeof Shimmering>;
-
-const Template: ComponentStory<typeof Shimmering> = (args) => <Shimmering {...args} />;
-
-export const Primary = Template.bind({});
-Primary.args = {
-  width: 200,
-  height: 40,
+  decorators: [withVersion('1.0.0')],
 };
 
-export const Height = Template.bind({});
-Height.args = {
-  height: 40,
+export default meta;
+type Story = StoryObj<typeof Shimmering>;
+
+export const Playground: Story = {
+  args: {
+    width: 200,
+    height: 40,
+  },
+};
+
+export const Height: Story = {
+  args: {
+    height: 40,
+  },
 };

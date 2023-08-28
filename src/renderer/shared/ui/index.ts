@@ -8,10 +8,9 @@ export {
   Select,
   Combobox,
   MultiSelect,
-  DropdownButton,
 } from './Inputs';
 
-export { Button, ButtonLink, IconButton } from './Buttons';
+export { Button, ButtonLink, ButtonText, ButtonIcon, ButtonDropdown } from './Buttons';
 
 export { InfoPopover, MenuPopover, Popover, Tooltip } from './Popovers';
 

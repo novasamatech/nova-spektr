@@ -1,19 +1,22 @@
-import { ComponentMeta, ComponentStory } from '@storybook/react';
+import type { Meta, StoryObj } from '@storybook/react';
 
+import { withVersion } from '@renderer/shared/lib/utils/storybook';
 import { OperationResult } from './OperationResult';
 
-export default {
-  title: 'Redesign/Operation Result',
+const meta: Meta<typeof OperationResult> = {
+  title: 'Design system/OperationResult',
   component: OperationResult,
-  parameters: { actions: { argTypesRegex: '^on.*' } },
-} as ComponentMeta<typeof OperationResult>;
+  decorators: [withVersion('1.0.0')],
+};
 
-const Template: ComponentStory<typeof OperationResult> = (args) => <OperationResult {...args} />;
+export default meta;
+type Story = StoryObj<typeof OperationResult>;
 
-export const Primary = Template.bind({});
-Primary.args = {
-  isOpen: true,
-  onClose: () => undefined,
-  title: 'Success',
-  description: 'Success Success Success Success',
+export const Playground: Story = {
+  args: {
+    isOpen: true,
+    onClose: () => undefined,
+    title: 'Success',
+    description: 'Success Success Success Success',
+  },
 };

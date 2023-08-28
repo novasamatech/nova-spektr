@@ -1,7 +1,7 @@
 import { SeedInfo } from '@renderer/components/common/QrCode/common/types';
 import { useI18n } from '@renderer/app/providers';
 import KeyQrReader from '../KeyQrReader/KeyQrReader';
-import { Button, MediumTitleText, SmallTitleText } from '@renderer/shared/ui';
+import { ButtonText, MediumTitleText, SmallTitleText } from '@renderer/shared/ui';
 import onboarding_tutorial from '@video/onboarding_tutorial.mp4';
 import onboarding_tutorial_webm from '@video/onboarding_tutorial.webm';
 
@@ -24,9 +24,7 @@ const ScanStep = ({ onBack, onNextStep }: Props) => {
         </div>
 
         <div className="flex-1 flex justify-between items-end">
-          <Button variant="text" onClick={onBack}>
-            {t('onboarding.backButton')}
-          </Button>
+          <ButtonText onClick={onBack}>{t('onboarding.backButton')}</ButtonText>
         </div>
       </div>
 

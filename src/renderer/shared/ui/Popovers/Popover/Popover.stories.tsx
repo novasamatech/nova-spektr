@@ -1,25 +1,21 @@
-import { ComponentMeta, ComponentStory } from '@storybook/react';
+import type { Meta, StoryObj } from '@storybook/react';
 
+import { withVersion } from '@renderer/shared/lib/utils/storybook';
 import { Popover } from './Popover';
 
-export default {
-  title: 'ui/Popover ',
+const meta: Meta<typeof Popover> = {
+  title: 'Design system/Popover ',
   component: Popover,
-  parameters: { actions: { argTypesRegex: '^on.*' } },
-  decorators: [
-    (Story) => (
-      <div className="mt-28 mx-auto w-max">
-        <Story />
-      </div>
-    ),
-  ],
-} as ComponentMeta<typeof Popover>;
+  decorators: [withVersion('1.0.0')],
+};
 
-const Template: ComponentStory<typeof Popover> = (args) => <Popover {...args} />;
+export default meta;
+type Story = StoryObj<typeof Popover>;
 
-export const OnHover = Template.bind({});
-OnHover.args = {
-  content: 'Staking will automatically start when the next era starts',
-  contentClass: 'p-2',
-  children: <button className="py-2 px-3 bg-gray-200 w-40 text-center">Hover me</button>,
+export const OnHover: Story = {
+  args: {
+    content: 'Staking will automatically start when the next era starts',
+    contentClass: 'p-2',
+    children: <button className="py-2 px-3 bg-gray-200 w-40 text-center">Hover me</button>,
+  },
 };

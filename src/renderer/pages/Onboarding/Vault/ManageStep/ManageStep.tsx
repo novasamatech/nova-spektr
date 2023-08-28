@@ -15,9 +15,9 @@ import {
   InputHint,
   MediumTitleText,
   SmallTitleText,
-  IconButton,
+  ButtonIcon,
   FootnoteText,
-  Icon,
+  ButtonText,
 } from '@renderer/shared/ui';
 import { AddressInfo, CompactSeedInfo, SeedInfo } from '@renderer/components/common/QrCode/common/types';
 import { useWallet, createWallet } from '@renderer/entities/wallet';
@@ -272,9 +272,7 @@ const ManageStep = ({ seedInfo, onBack, onComplete }: Props) => {
           </InputHint>
 
           <div className="flex flex-1 justify-between items-end">
-            <Button variant="text" onClick={goBack}>
-              {t('onboarding.backButton')}
-            </Button>
+            <ButtonText onClick={goBack}>{t('onboarding.backButton')}</ButtonText>
 
             <Button type="submit" disabled={!isValid || !activeWalletsHaveName}>
               {t('onboarding.continueButton')}
@@ -287,9 +285,9 @@ const ManageStep = ({ seedInfo, onBack, onComplete }: Props) => {
         <div className="flex items-center justify-between px-5 mt-[52px] mb-6">
           <SmallTitleText>{t('onboarding.vault.accountsTitle')}</SmallTitleText>
 
-          <Button variant="text" suffixElement={<Icon name="magic-wand" size={20} />} onClick={fillAccountNames}>
+          <ButtonText icon="magic-wand" onClick={fillAccountNames}>
             {t('onboarding.vault.fillNamesButton')}
-          </Button>
+          </ButtonText>
         </div>
         <div className="flex mx-5 py-2">
           <FootnoteText className="w-[182px] text-text-tertiary">{t('onboarding.vault.addressColumn')}</FootnoteText>
@@ -346,9 +344,8 @@ const ManageStep = ({ seedInfo, onBack, onComplete }: Props) => {
                               value={accountNames[getAccountId(index, chainId, derivedKeyIndex)] || ''}
                               onChange={(name) => updateAccountName(name, index, chainId, derivedKeyIndex)}
                             />
-                            <IconButton
-                              size={20}
-                              name={inactiveAccounts[getAccountId(index, chainId, derivedKeyIndex)] ? 'show' : 'hide'}
+                            <ButtonIcon
+                              icon={inactiveAccounts[getAccountId(index, chainId, derivedKeyIndex)] ? 'show' : 'hide'}
                               onClick={() => toggleAccount(index, chainId, derivedKeyIndex)}
                             />
                           </div>

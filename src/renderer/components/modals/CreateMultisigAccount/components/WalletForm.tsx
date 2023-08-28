@@ -1,6 +1,6 @@
 import { Controller, useForm, SubmitHandler } from 'react-hook-form';
 
-import { Alert, Button, Input, InputHint, Select, SmallTitleText } from '@renderer/shared/ui';
+import { Alert, Button, ButtonText, Input, InputHint, Select, SmallTitleText } from '@renderer/shared/ui';
 import { useI18n, useMatrix } from '@renderer/app/providers';
 import { DropdownOption, DropdownResult } from '@renderer/shared/ui/types';
 import { Signatory } from '@renderer/entities/signatory';
@@ -154,9 +154,8 @@ export const WalletForm = ({
         )}
 
         <div className="flex justify-between items-center mt-auto">
-          <Button variant="text" onClick={onGoBack}>
-            {t('createMultisigAccount.backButton')}
-          </Button>
+          <ButtonText onClick={onGoBack}>{t('createMultisigAccount.backButton')}</ButtonText>
+
           {isEditState ? (
             // without key continue button triggers form submit
             <Button key="continue" disabled={!canContinue} onClick={onContinue}>

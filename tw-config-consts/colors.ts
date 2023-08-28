@@ -15,10 +15,10 @@ export default {
   'icon-accent-default': 'var(--icon-accent-default)',
   'icon-accent-hover': 'var(--icon-accent-hover)',
   'icon-accent-active': 'var(--icon-accent-active)',
+  'icon-accent-disabled': 'var(--icon-accent-disabled)',
   'icon-positive-default': 'var(--icon-positive-default)',
   'icon-warning-default': 'var(--icon-warning-default)',
   'icon-negative-default': 'var(--icon-negative-default)',
-  '': 'var(--)',
 
   /* BUTTON */
   /* primary */

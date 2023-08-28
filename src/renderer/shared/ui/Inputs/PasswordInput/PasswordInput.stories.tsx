@@ -1,16 +1,19 @@
-import { ComponentMeta, ComponentStory } from '@storybook/react';
+import type { Meta, StoryObj } from '@storybook/react';
 
+import { withVersion } from '@renderer/shared/lib/utils/storybook';
 import { PasswordInput } from './PasswordInput';
 
-export default {
-  title: 'ui/Password Input',
+const meta: Meta<typeof PasswordInput> = {
+  title: 'Design system/Inputs/PasswordInput',
   component: PasswordInput,
-  parameters: { actions: { argTypesRegex: '^on.*' } },
-} as ComponentMeta<typeof PasswordInput>;
+  decorators: [withVersion('1.0.0')],
+};
 
-const Template: ComponentStory<typeof PasswordInput> = (args) => <PasswordInput {...args} />;
+export default meta;
+type Story = StoryObj<typeof PasswordInput>;
 
-export const Primary = Template.bind({});
-Primary.args = {
-  placeholder: 'Test input',
+export const Playground: Story = {
+  args: {
+    placeholder: 'Test input',
+  },
 };

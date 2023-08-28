@@ -1,16 +1,19 @@
-import { ComponentStory, ComponentMeta } from '@storybook/react';
+import type { Meta, StoryObj } from '@storybook/react';
 
+import { withVersion } from '@renderer/shared/lib/utils/storybook';
 import { Duration } from './Duration';
 
-export default {
-  title: 'Duration',
+const meta: Meta<typeof Duration> = {
+  title: 'Design system/Duration',
   component: Duration,
-  parameters: { actions: { argTypesRegex: '^on.*' } },
-} as ComponentMeta<typeof Duration>;
+  decorators: [withVersion('1.0.0')],
+};
 
-const Template: ComponentStory<typeof Duration> = (args) => <Duration {...args} />;
+export default meta;
+type Story = StoryObj<typeof Duration>;
 
-export const Primary = Template.bind({});
-Primary.args = {
-  seconds: '1',
+export const Playground: Story = {
+  args: {
+    seconds: '1',
+  },
 };

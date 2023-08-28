@@ -1,30 +1,27 @@
-import { ComponentMeta, ComponentStory } from '@storybook/react';
+import type { Meta, StoryObj } from '@storybook/react';
 
+import { withVersion } from '@renderer/shared/lib/utils/storybook';
 import { Loader } from './Loader';
 
-export default {
-  title: 'ui/Loader ',
+const meta: Meta<typeof Loader> = {
+  title: 'Design system/Loader ',
   component: Loader,
-  parameters: { actions: { argTypesRegex: '^on.*' } },
-  decorators: [
-    (Story) => (
-      <div className="mt-28 mx-auto w-[200px] bg-gray-200 rounded-lg">
-        <Story />
-      </div>
-    ),
-  ],
-} as ComponentMeta<typeof Loader>;
-
-const Template: ComponentStory<typeof Loader> = (args) => <Loader {...args} />;
-
-export const Primary = Template.bind({});
-Primary.args = {
-  size: 32,
-  color: 'primary',
+  decorators: [withVersion('1.0.0')],
 };
 
-export const White = Template.bind({});
-White.args = {
-  size: 32,
-  color: 'white',
+export default meta;
+type Story = StoryObj<typeof Loader>;
+
+export const Playground: Story = {
+  args: {
+    size: 32,
+    color: 'primary',
+  },
+};
+
+export const White: Story = {
+  args: {
+    size: 32,
+    color: 'white',
+  },
 };

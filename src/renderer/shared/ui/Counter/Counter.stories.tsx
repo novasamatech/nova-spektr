@@ -1,22 +1,26 @@
-import { ComponentMeta, ComponentStory } from '@storybook/react';
+import type { Meta, StoryObj } from '@storybook/react';
 
+import { withVersion } from '@renderer/shared/lib/utils/storybook';
 import { Counter } from './Counter';
 
-export default {
-  title: 'ui/Counter',
+const meta: Meta<typeof Counter> = {
+  title: 'Design system/Counter',
   component: Counter,
-  parameters: { actions: { argTypesRegex: '^on.*' } },
-} as ComponentMeta<typeof Counter>;
-
-const Template: ComponentStory<typeof Counter> = (args) => <Counter {...args} />;
-export const Waiting = Template.bind({});
-Waiting.args = {
-  variant: 'waiting',
-  children: 5,
+  decorators: [withVersion('1.0.0')],
 };
 
-export const Success = Template.bind({});
-Success.args = {
-  variant: 'success',
-  children: '21',
+export default meta;
+type Story = StoryObj<typeof Counter>;
+export const Waiting: Story = {
+  args: {
+    variant: 'waiting',
+    children: 5,
+  },
+};
+
+export const Success: Story = {
+  args: {
+    variant: 'success',
+    children: '21',
+  },
 };
