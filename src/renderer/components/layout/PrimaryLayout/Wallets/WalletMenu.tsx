@@ -3,7 +3,7 @@ import { Fragment, PropsWithChildren, useState } from 'react';
 import cn from 'classnames';
 import { useNavigate } from 'react-router-dom';
 
-import { ButtonDropdown, FootnoteText, Icon, SearchInput, SmallTitleText } from '@renderer/shared/ui';
+import { ButtonDropdown, FootnoteText, Icon, InputSearch, SmallTitleText } from '@renderer/shared/ui';
 import { Paths, useI18n } from '@renderer/app/providers';
 import { WalletType } from '@renderer/domain/shared-kernel';
 import { useAccount } from '@renderer/entities/account';
@@ -122,7 +122,7 @@ const WalletMenu = ({ children, chains, wallets }: PropsWithChildren<Props>) => 
                 </header>
 
                 <div className="p-2 border-b border-divider">
-                  <SearchInput value={query} placeholder={t('wallets.searchPlaceholder')} onChange={setQuery} />
+                  <InputSearch value={query} placeholder={t('wallets.searchPlaceholder')} onChange={setQuery} />
                 </div>
 
                 <ul className="flex flex-col divide-y divide-divider overflow-y-auto max-h-[530px]">

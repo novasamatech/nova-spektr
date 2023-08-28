@@ -2,7 +2,6 @@ import { ApiPromise } from '@polkadot/api';
 import { BN, BN_ZERO } from '@polkadot/util';
 import { useEffect, useState } from 'react';
 
-import { DropdownOption, DropdownResult } from '@renderer/shared/ui/Dropdowns/common/types';
 import { useI18n } from '@renderer/app/providers';
 import { Asset, Balance as AccountBalance, useBalance } from '@renderer/entities/asset';
 import { ChainId, AccountId, SigningType } from '@renderer/domain/shared-kernel';
@@ -10,6 +9,7 @@ import { Transaction, TransactionType } from '@renderer/entities/transaction';
 import { useAccount, Account, isMultisig } from '@renderer/entities/account';
 import { redeemableAmount, formatBalance, nonNullable, toAddress } from '@renderer/shared/lib/utils';
 import { StakingMap, useStakingData, useEra } from '@renderer/entities/staking';
+import { DropdownOption, DropdownResult } from '@renderer/shared/ui/types';
 import { MultiSelect, Select, InputHint } from '@renderer/shared/ui';
 import { OperationForm } from '../../components';
 import {

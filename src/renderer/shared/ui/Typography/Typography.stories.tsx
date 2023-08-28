@@ -21,49 +21,33 @@ type FootnoteStory = StoryObj<typeof Typography.FootnoteText>;
 type HelpTextStory = StoryObj<typeof Typography.HelpText>;
 
 export const Headline_Title: TitleStory = {
-  args: {
-    children: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et ',
-  },
+  render: () => <Typography.TitleText>This is a TitleText</Typography.TitleText>,
 };
 
 export const Headline_LargeTitle: LargeTitleStory = {
-  args: {
-    children: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et ',
-  },
+  render: () => <Typography.LargeTitleText>This is a LargeTitleText</Typography.LargeTitleText>,
 };
 
 export const Headline_MediumTitle: MediumTitleStory = {
-  args: {
-    children: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et ',
-  },
+  render: () => <Typography.MediumTitleText>This is a MediumTitleText</Typography.MediumTitleText>,
 };
 
 export const Headline_SmallTitle: SmallTitleStory = {
-  args: {
-    children: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et ',
-  },
+  render: () => <Typography.SmallTitleText>This is a SmallTitleText</Typography.SmallTitleText>,
 };
 
 export const Body_Caption: CaptionStory = {
-  args: {
-    children: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et ',
-  },
+  render: () => <Typography.CaptionText>This is a CaptionText</Typography.CaptionText>,
 };
 
 export const Body_Body: BodyStory = {
-  args: {
-    children: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et ',
-  },
+  render: () => <Typography.BodyText>This is a BodyText</Typography.BodyText>,
 };
 
 export const Body_Footnote: FootnoteStory = {
-  args: {
-    children: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et ',
-  },
+  render: () => <Typography.FootnoteText>This is a FootnoteText</Typography.FootnoteText>,
 };
 
 export const Body_Help: HelpTextStory = {
-  args: {
-    children: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et ',
-  },
+  render: () => <Typography.HelpText>This is a HelpText</Typography.HelpText>,
 };

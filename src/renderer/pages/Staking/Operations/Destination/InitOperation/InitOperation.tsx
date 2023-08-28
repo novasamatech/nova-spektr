@@ -2,7 +2,7 @@ import { ApiPromise } from '@polkadot/api';
 import { useEffect, useState } from 'react';
 
 import { Select, MultiSelect, InputHint } from '@renderer/shared/ui';
-import { DropdownOption, DropdownResult } from '@renderer/shared/ui/Dropdowns/common/types';
+import { DropdownOption, DropdownResult } from '@renderer/shared/ui/types';
 import { useI18n } from '@renderer/app/providers';
 import { Asset, useBalance, Balance as AccountBalance } from '@renderer/entities/asset';
 import { Address, ChainId, AccountId, SigningType } from '@renderer/domain/shared-kernel';

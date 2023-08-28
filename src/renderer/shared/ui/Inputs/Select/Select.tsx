@@ -4,7 +4,6 @@ import { Fragment, useId } from 'react';
 import { cnTw } from '@renderer/shared/lib/utils';
 import { Icon, FootnoteText, LabelText } from '@renderer/shared/ui';
 import { DropdownOption, DropdownResult, Position, Theme } from '../common/types';
-import { CommonInputStylesTheme, InputStyles } from '@renderer/shared/ui/Inputs/common/styles';
 import {
   ButtonTextFilledStyle,
   ButtonTextEmptyStyle,
@@ -15,6 +14,8 @@ import {
   OptionTextStyle,
   SelectButtonStyle,
   ViewClass,
+  CommonInputStylesTheme,
+  InputStyles,
 } from '../common/constants';
 
 type Props<T> = {

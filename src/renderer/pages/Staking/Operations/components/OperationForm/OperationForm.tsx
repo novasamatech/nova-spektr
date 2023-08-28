@@ -2,14 +2,14 @@ import { useForm, Controller, SubmitHandler } from 'react-hook-form';
 import { useState, useEffect, ReactNode } from 'react';
 import { Trans, TFunction } from 'react-i18next';
 
-import { Identicon, Button, AmountInput, InputHint, Combobox, RadioGroup, Input } from '@renderer/shared/ui';
+import { Identicon, Button, InputAmount, InputHint, Combobox, RadioGroup, Input } from '@renderer/shared/ui';
 import { useI18n } from '@renderer/app/providers';
 import { RewardsDestination } from '@renderer/entities/staking';
 import { validateAddress } from '@renderer/shared/lib/utils';
 import { Asset, useBalance } from '@renderer/entities/asset';
 import { Address, ChainId, AccountId } from '@renderer/domain/shared-kernel';
 import { RadioOption } from '@renderer/shared/ui/RadioGroup/common/types';
-import { DropdownOption, ComboboxOption } from '@renderer/shared/ui/Dropdowns/common/types';
+import { DropdownOption, ComboboxOption } from '@renderer/shared/ui/types';
 import { useAccount } from '@renderer/entities/account';
 import { getPayoutAccountOption } from '../../common/utils';
 import OperationFooter from './OperationFooter';
@@ -182,7 +182,7 @@ export const OperationForm = ({
             }}
             render={({ field: { onChange, value }, fieldState: { error } }) => (
               <div className="flex flex-col gap-y-2">
-                <AmountInput
+                <InputAmount
                   name="amount"
                   placeholder={t('general.input.amountLabel')}
                   balancePlaceholder={t('general.input.availableLabel')}

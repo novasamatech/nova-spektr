@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 
-import { SearchInput } from '@renderer/shared/ui';
+import { InputSearch } from '@renderer/shared/ui';
 import { useI18n } from '@renderer/app/providers';
 import * as filterModel from '../model/contact-filter';
 
@@ -12,7 +12,7 @@ export const ContactFilter = () => {
   }, []);
 
   return (
-    <SearchInput
+    <InputSearch
       className="w-[230px]"
       placeholder={t('addressBook.searchPlaceholder')}
       onChange={filterModel.events.queryChanged}

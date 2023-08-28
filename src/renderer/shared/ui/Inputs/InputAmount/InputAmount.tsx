@@ -1,6 +1,6 @@
 import { useCallback } from 'react';
 
-// FIXME components in shared shouldn't use components from entity so we need to move it to entity
+// FIXME: components in shared shouldn't use components from entity, so we need to move it to entity
 import { AssetBalance, AssetIcon, Asset } from '@renderer/entities/asset';
 import { cleanAmount, cnTw, formatGroups, validatePrecision, validateSymbols } from '@renderer/shared/lib/utils';
 import { useI18n } from '@renderer/app/providers';
@@ -20,7 +20,7 @@ type Props = {
   onChange?: (value: string) => void;
 };
 
-export const AmountInput = ({
+export const InputAmount = ({
   name,
   value,
   asset,

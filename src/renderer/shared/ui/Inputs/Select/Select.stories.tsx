@@ -1,18 +1,18 @@
 import type { Meta, StoryObj } from '@storybook/react';
+import noop from 'lodash/noop';
 
 import { withVersion } from '@renderer/shared/lib/utils/storybook';
-import { Icon } from '../../Icon/Icon';
 import { Identicon } from '../../Identicon/Identicon';
-import { Combobox } from './Combobox';
+import { Select } from './Select';
 
-const meta: Meta<typeof Combobox> = {
-  title: 'Design system/Combobox',
-  component: Combobox,
+const meta: Meta<typeof Select> = {
+  title: 'Design system/Inputs/Select',
+  component: Select,
   decorators: [withVersion('1.0.0')],
 };
 
 export default meta;
-type Story = StoryObj<typeof Combobox>;
+type Story = StoryObj<typeof Select>;
 
 const data = [
   { value: 'Durward Reynolds', address: '13mK8AssyPekT5cFuYQ7ijKNXcjHPq8Gnx6TxF5eFCAwoLQ' },
@@ -28,7 +28,7 @@ const options = data.map((d, index) => ({
 
 const customOptions = data.map((d, index) => ({
   id: index.toString(),
-  value: d.value,
+  value: d,
   element: (
     <div className="flex items-center gap-x-2.5">
       <Identicon address={d.address} background={false} size={20} canCopy={false} />
@@ -45,22 +45,22 @@ export const Playground: Story = {
   },
 };
 
+export const Selected: Story = {
+  render: () => <Select placeholder="Select an option" selectedId={options[1].id} options={options} onChange={noop} />,
+};
+
 export const WithLabel: Story = {
-  args: {
-    placeholder: 'Select an option',
-    label: 'Payout account',
-    options,
-    onChange: () => {},
-  },
+  render: () => <Select placeholder="Select an option" label="Payout account" options={options} onChange={noop} />,
 };
 
 export const Custom: Story = {
-  args: {
-    placeholder: 'Select an option',
-    label: 'Payout account',
-    value: customOptions[2],
-    options: customOptions,
-    suffixElement: <Icon name="status-warning" className="text-alert right-2 top-[9px] absolute" size={16} />,
-    onChange: () => {},
-  },
+  render: () => (
+    <Select
+      placeholder="Select an option"
+      label="Payout account"
+      selectedId={customOptions[2].id}
+      options={customOptions}
+      onChange={noop}
+    />
+  ),
 };

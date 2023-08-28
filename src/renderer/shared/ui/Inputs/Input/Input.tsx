@@ -2,9 +2,8 @@ import { ReactNode, ComponentPropsWithoutRef, forwardRef, useId } from 'react';
 
 import { cnTw } from '@renderer/shared/lib/utils';
 import { LabelText } from '../../Typography';
-import { HTMLInputProps } from '../common/types';
-import { CommonInputStylesTheme, InputStyles } from '../common/styles';
-import { Theme } from '../../Dropdowns/common/types';
+import { HTMLInputProps, Theme } from '../common/types';
+import { CommonInputStylesTheme, InputStyles } from '../common/constants';
 
 export type Props = Pick<ComponentPropsWithoutRef<'input'>, HTMLInputProps> & {
   label?: ReactNode;

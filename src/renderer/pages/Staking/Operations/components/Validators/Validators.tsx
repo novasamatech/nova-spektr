@@ -11,7 +11,7 @@ import {
   InfoPopover,
   FootnoteText,
   Button,
-  SearchInput,
+  InputSearch,
   SmallTitleText,
   Checkbox,
   ButtonText,
@@ -116,7 +116,7 @@ export const Validators = ({ api, chainId, asset, explorers, isLightClient, onGo
             {t('staking.validators.maxValidatorsLabel', { max: maxValidators })}
           </SmallTitleText>
         )}
-        <SearchInput
+        <InputSearch
           wrapperClass="w-[220px] ml-auto"
           placeholder={t('staking.validators.searchPlaceholder')}
           value={query}

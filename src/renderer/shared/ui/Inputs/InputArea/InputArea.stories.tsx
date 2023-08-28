@@ -21,25 +21,14 @@ export const Playground: Story = {
 };
 
 export const Filled: Story = {
-  args: {
-    rows: 2,
-    value:
-      'Lorem ipsum dolor sit amet, consectetur adipisicing elit. Culpa doloribus iusto possimus praesentium ratione temporibus. Aperiam autem cumque esse eum fugit laborum quas! Architecto at, cupiditate dignissimos eveniet sunt voluptatibus.',
-  },
-};
-
-export const Invalid: Story = {
-  args: {
-    rows: 1,
-    value: 'This is value',
-    invalid: true,
-  },
+  render: () => (
+    <InputArea
+      rows={2}
+      value="Lorem ipsum dolor sit amet, consectetur adipisicing elit. Culpa doloribus iusto possimus praesentium ratione temporibus. Aperiam autem cumque esse eum fugit laborum quas! Architecto at, cupiditate dignissimos eveniet sunt voluptatibus"
+    />
+  ),
 };
 
 export const Disabled: Story = {
-  args: {
-    rows: 1,
-    value: 'This is value',
-    disabled: true,
-  },
+  render: () => <InputArea rows={1} value="This is value" disabled />,
 };

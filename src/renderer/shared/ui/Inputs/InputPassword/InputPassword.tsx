@@ -8,7 +8,7 @@ import { useToggle } from '@renderer/shared/lib/hooks';
 type Props = Omit<InputProps, 'type' | 'suffixElement'>;
 
 // TODO: Use label, placeholder and alt from props not static values
-export const PasswordInput = forwardRef<HTMLInputElement, Props>(({ ...props }, ref) => {
+export const InputPassword = forwardRef<HTMLInputElement, Props>(({ ...props }, ref) => {
   const { t } = useI18n();
   const [isHidden, toggleVisibility] = useToggle(true);
 

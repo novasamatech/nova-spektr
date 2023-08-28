@@ -14,7 +14,7 @@ import {
   Input,
   InputHint,
   Loader,
-  PasswordInput,
+  InputPassword,
 } from '@renderer/shared/ui';
 import type { ComboboxOption } from '@renderer/shared/ui/types';
 
@@ -199,7 +199,7 @@ const LoginForm = () => {
                 rules={{ required: true }}
                 render={({ field: { value, onChange } }) => (
                   <>
-                    <PasswordInput
+                    <InputPassword
                       label={t('settings.matrix.passwordLabel')}
                       placeholder={t('settings.matrix.passwordPlaceholder')}
                       wrapperClass="py-[11px]"

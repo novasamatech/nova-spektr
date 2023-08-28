@@ -18,16 +18,10 @@ export const Playground: Story = {
   },
 };
 
-export const Invalid: Story = {
-  args: {
-    placeholder: 'Upload file',
-    invalid: true,
-  },
+export const Disabled: Story = {
+  render: () => <InputFile placeholder="Upload file" disabled />,
 };
 
-export const Disabled: Story = {
-  args: {
-    placeholder: 'Upload file',
-    disabled: true,
-  },
+export const Invalid: Story = {
+  render: () => <InputFile placeholder="Upload file" invalid />,
 };

@@ -1,11 +1,12 @@
 import type { Meta, StoryObj } from '@storybook/react';
+import noop from 'lodash/noop';
 
 import { withVersion } from '@renderer/shared/lib/utils/storybook';
 import { Identicon } from '../../Identicon/Identicon';
 import { MultiSelect } from './MultiSelect';
 
 const meta: Meta<typeof MultiSelect> = {
-  title: 'Design system/MultiSelect',
+  title: 'Design system/Inputs/MultiSelect',
   component: MultiSelect,
   decorators: [withVersion('1.0.0')],
 };
@@ -45,29 +46,28 @@ export const Playground: Story = {
 };
 
 export const Selected: Story = {
-  args: {
-    placeholder: 'Select an option',
-    selectedIds: [options[0].id, options[1].id],
-    options,
-    onChange: () => {},
-  },
+  render: () => (
+    <MultiSelect
+      placeholder="Select an option"
+      selectedIds={[options[0].id, options[1].id]}
+      options={options}
+      onChange={noop}
+    />
+  ),
 };
 
 export const WithLabel: Story = {
-  args: {
-    placeholder: 'Select an option',
-    label: 'Payout account',
-    options,
-    onChange: () => {},
-  },
+  render: () => <MultiSelect placeholder="Select an option" label="Payout account" options={options} onChange={noop} />,
 };
 
 export const Custom: Story = {
-  args: {
-    placeholder: 'Select an option',
-    label: 'Payout account',
-    selectedIds: [customOptions[2].id],
-    options: customOptions,
-    onChange: () => {},
-  },
+  render: () => (
+    <MultiSelect
+      placeholder="Select an option"
+      label="Payout account"
+      selectedIds={[customOptions[2].id]}
+      options={customOptions}
+      onChange={noop}
+    />
+  ),
 };
