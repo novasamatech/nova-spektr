@@ -121,11 +121,9 @@ const sharedConfig: Configuration = {
     }),
 
     new webpack.DefinePlugin({
-      'process.env': {
-        PRODUCT_NAME: JSON.stringify(APP_CONFIG.TITLE),
-        VERSION: JSON.stringify(APP_CONFIG.VERSION),
-        CHAINS_FILE: JSON.stringify(process.env.CHAINS_FILE),
-      },
+      'process.env.PRODUCT_NAME': JSON.stringify(APP_CONFIG.TITLE),
+      'process.env.VERSION': JSON.stringify(APP_CONFIG.VERSION),
+      'process.env.CHAINS_FILE': JSON.stringify(process.env.CHAINS_FILE),
     }),
   ],
 };
