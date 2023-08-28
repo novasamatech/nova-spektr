@@ -38,7 +38,6 @@ export const Disabled: Story = {
 export const Prefix: Story = {
   render: () => (
     <Input
-      label="With label"
       value="This is value"
       prefixElement={<Icon name="status-success" className="text-alert right-2 absolute" size={16} />}
     />
@@ -48,7 +47,6 @@ export const Prefix: Story = {
 export const Suffix: Story = {
   render: () => (
     <Input
-      label="With label"
       value="This is value"
       suffixElement={<Icon name="status-warning" className="text-alert right-2 absolute" size={16} />}
     />
