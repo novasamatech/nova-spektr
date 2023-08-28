@@ -66,6 +66,7 @@ const LoginForm = () => {
     defaultValues: { homeserver: DEFAULT_HOMESERVER, username: '', password: '' },
   });
 
+  // @ts-ignore
   const homeserver = watch('homeserver');
 
   useEffect(() => {
