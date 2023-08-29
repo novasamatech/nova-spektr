@@ -1,4 +1,3 @@
-// import { ScProvider, WsProvider } from '@polkadot/rpc-provider';
 import { ProviderInterface } from '@polkadot/rpc-provider/types';
 
 import { GET_METADATA_METHOD } from '../common/constants';
