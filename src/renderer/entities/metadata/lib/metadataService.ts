@@ -38,6 +38,7 @@ export const useMetadata = (): IMetadataService => {
       version: metadata.version,
       chainId: api.genesisHash.toHex(),
     };
+
     metadataModel.effects.addMetadataFx(newMetadata);
 
     return newMetadata;
